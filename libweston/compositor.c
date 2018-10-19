@@ -61,6 +61,7 @@
 #include "viewporter-server-protocol.h"
 #include "presentation-time-server-protocol.h"
 #include "linux-explicit-synchronization-unstable-v1-server-protocol.h"
+#include "linux-explicit-synchronization.h"
 #include "shared/fd-util.h"
 #include "shared/helpers.h"
 #include "shared/os-compatibility.h"
@@ -476,6 +477,7 @@ weston_surface_state_fini(struct weston_surface_state *state)
 	state->buffer = NULL;
 
 	fd_clear(&state->acquire_fence_fd);
+	weston_buffer_release_reference(&state->buffer_release_ref, NULL);
 }
 
 static void
@@ -2011,6 +2013,7 @@ weston_surface_destroy(struct weston_surface *surface)
 	weston_surface_state_fini(&surface->pending);
 
 	weston_buffer_reference(&surface->buffer_ref, NULL);
+	weston_buffer_release_reference(&surface->buffer_release_ref, NULL);
 
 	pixman_region32_fini(&surface->damage);
 	pixman_region32_fini(&surface->opaque);
@@ -2123,6 +2126,68 @@ weston_buffer_reference(struct weston_buffer_reference *ref,
 
 	ref->buffer = buffer;
 	ref->destroy_listener.notify = weston_buffer_reference_handle_destroy;
+}
+
+static void
+weston_buffer_release_reference_handle_destroy(struct wl_listener *listener,
+					       void *data)
+{
+	struct weston_buffer_release_reference *ref =
+		container_of(listener, struct weston_buffer_release_reference,
+			     destroy_listener);
+
+	assert((struct wl_resource *)data == ref->buffer_release->resource);
+	ref->buffer_release = NULL;
+}
+
+static void
+weston_buffer_release_destroy(struct weston_buffer_release *buffer_release)
+{
+	struct wl_resource *resource = buffer_release->resource;
+	int release_fence_fd = buffer_release->fence_fd;
+
+	if (release_fence_fd >= 0) {
+		zwp_linux_buffer_release_v1_send_fenced_release(
+			resource, release_fence_fd);
+	} else {
+		zwp_linux_buffer_release_v1_send_immediate_release(
+			resource);
+	}
+
+	wl_resource_destroy(resource);
+}
+
+WL_EXPORT void
+weston_buffer_release_reference(struct weston_buffer_release_reference *ref,
+				struct weston_buffer_release *buffer_release)
+{
+	if (buffer_release == ref->buffer_release)
+		return;
+
+	if (ref->buffer_release) {
+		ref->buffer_release->ref_count--;
+		wl_list_remove(&ref->destroy_listener.link);
+		if (ref->buffer_release->ref_count == 0)
+			weston_buffer_release_destroy(ref->buffer_release);
+	}
+
+	if (buffer_release) {
+		buffer_release->ref_count++;
+		wl_resource_add_destroy_listener(buffer_release->resource,
+						 &ref->destroy_listener);
+	}
+
+	ref->buffer_release = buffer_release;
+	ref->destroy_listener.notify =
+		weston_buffer_release_reference_handle_destroy;
+}
+
+WL_EXPORT void
+weston_buffer_release_move(struct weston_buffer_release_reference *dest,
+			   struct weston_buffer_release_reference *src)
+{
+	weston_buffer_release_reference(dest, src->buffer_release);
+	weston_buffer_release_reference(src, NULL);
 }
 
 static void
@@ -2250,8 +2315,11 @@ compositor_accumulate_damage(struct weston_compositor *ec)
 		 * reference now, and allow early buffer release. This enables
 		 * clients to use single-buffering.
 		 */
-		if (!ev->surface->keep_buffer)
+		if (!ev->surface->keep_buffer) {
 			weston_buffer_reference(&ev->surface->buffer_ref, NULL);
+			weston_buffer_release_reference(
+				&ev->surface->buffer_release_ref, NULL);
+		}
 	}
 }
 
@@ -3231,11 +3299,15 @@ weston_surface_commit_state(struct weston_surface *surface,
 		/* zwp_surface_synchronization_v1.set_acquire_fence */
 		fd_move(&surface->acquire_fence_fd,
 			&state->acquire_fence_fd);
+		/* zwp_surface_synchronization_v1.get_release */
+		weston_buffer_release_move(&surface->buffer_release_ref,
+					   &state->buffer_release_ref);
 
 		weston_surface_attach(surface, state->buffer);
 	}
 	weston_surface_state_set_buffer(state, NULL);
 	assert(state->acquire_fence_fd == -1);
+	assert(state->buffer_release_ref.buffer_release == NULL);
 
 	weston_surface_build_buffer_matrix(surface,
 					   &surface->surface_to_buffer_matrix);
@@ -3373,6 +3445,17 @@ surface_commit(struct wl_client *client, struct wl_resource *resource)
 				wl_resource_get_id(resource));
 			return;
 		}
+	}
+
+	if (surface->pending.buffer_release_ref.buffer_release &&
+	    !surface->pending.buffer) {
+		assert(surface->synchronization_resource);
+
+		wl_resource_post_error(surface->synchronization_resource,
+			ZWP_LINUX_SURFACE_SYNCHRONIZATION_V1_ERROR_NO_BUFFER,
+			"wl_surface@%"PRIu32" no buffer for synchronization",
+			wl_resource_get_id(resource));
+		return;
 	}
 
 	if (sub) {
@@ -3584,8 +3667,12 @@ weston_subsurface_commit_to_cache(struct weston_subsurface *sub)
 		/* zwp_surface_synchronization_v1.set_acquire_fence */
 		fd_move(&sub->cached.acquire_fence_fd,
 			&surface->pending.acquire_fence_fd);
+		/* zwp_surface_synchronization_v1.get_release */
+		weston_buffer_release_move(&sub->cached.buffer_release_ref,
+					   &surface->pending.buffer_release_ref);
 	}
 	assert(surface->pending.acquire_fence_fd == -1);
+	assert(surface->pending.buffer_release_ref.buffer_release == NULL);
 	sub->cached.sx += surface->pending.sx;
 	sub->cached.sy += surface->pending.sy;
 

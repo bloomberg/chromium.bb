@@ -35,6 +35,16 @@
 #include "shared/fd-util.h"
 
 static void
+destroy_linux_buffer_release(struct wl_resource *resource)
+{
+	struct weston_buffer_release *buffer_release =
+		wl_resource_get_user_data(resource);
+
+	fd_clear(&buffer_release->fence_fd);
+	free(buffer_release);
+}
+
+static void
 destroy_linux_surface_synchronization(struct wl_resource *resource)
 {
 	struct weston_surface *surface =
@@ -97,7 +107,53 @@ linux_surface_synchronization_get_release(struct wl_client *client,
 					  struct wl_resource *resource,
 					  uint32_t id)
 {
+	struct weston_surface *surface =
+		wl_resource_get_user_data(resource);
+	struct weston_buffer_release *buffer_release;
+
+	if (!surface) {
+		wl_resource_post_error(
+			resource,
+			ZWP_LINUX_SURFACE_SYNCHRONIZATION_V1_ERROR_NO_SURFACE,
+			"surface no longer exists");
+		return;
+	}
+
+	if (surface->pending.buffer_release_ref.buffer_release) {
+		wl_resource_post_error(
+			resource,
+			ZWP_LINUX_SURFACE_SYNCHRONIZATION_V1_ERROR_DUPLICATE_RELEASE,
+			"already has a buffer release");
+		return;
+	}
+
+	buffer_release = zalloc(sizeof *buffer_release);
+	if (buffer_release == NULL)
+		goto err_alloc;
+
+	buffer_release->fence_fd = -1;
+	buffer_release->resource =
+		wl_resource_create(client,
+				   &zwp_linux_buffer_release_v1_interface,
+				   wl_resource_get_version(resource), id);
+	if (!buffer_release->resource)
+		goto err_create;
+
+	wl_resource_set_implementation(buffer_release->resource, NULL,
+				       buffer_release,
+				       destroy_linux_buffer_release);
+
+	weston_buffer_release_reference(&surface->pending.buffer_release_ref,
+					buffer_release);
+
+	return;
+
+err_create:
+	free(buffer_release);
+
+err_alloc:
 	wl_client_post_no_memory(client);
+
 }
 
 const struct zwp_linux_surface_synchronization_v1_interface

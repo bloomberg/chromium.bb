@@ -146,3 +146,184 @@ TEST(set_acquire_fence_on_destroyed_surface_raises_error)
 	zwp_linux_surface_synchronization_v1_destroy(surface_sync);
 	zwp_linux_explicit_synchronization_v1_destroy(sync);
 }
+
+TEST(second_buffer_release_in_commit_raises_error)
+{
+	struct client *client = create_test_client();
+	struct zwp_linux_explicit_synchronization_v1 *sync =
+		get_linux_explicit_synchronization(client);
+	struct zwp_linux_surface_synchronization_v1 *surface_sync =
+		zwp_linux_explicit_synchronization_v1_get_synchronization(
+			sync, client->surface->wl_surface);
+	struct zwp_linux_buffer_release_v1 *buffer_release1;
+	struct zwp_linux_buffer_release_v1 *buffer_release2;
+
+	buffer_release1 =
+		zwp_linux_surface_synchronization_v1_get_release(surface_sync);
+	client_roundtrip(client);
+
+	/* Second buffer_release creation should fail */
+	buffer_release2 =
+		zwp_linux_surface_synchronization_v1_get_release(surface_sync);
+	expect_protocol_error(
+		client,
+		&zwp_linux_surface_synchronization_v1_interface,
+		ZWP_LINUX_SURFACE_SYNCHRONIZATION_V1_ERROR_DUPLICATE_RELEASE);
+
+	zwp_linux_buffer_release_v1_destroy(buffer_release2);
+	zwp_linux_buffer_release_v1_destroy(buffer_release1);
+	zwp_linux_surface_synchronization_v1_destroy(surface_sync);
+	zwp_linux_explicit_synchronization_v1_destroy(sync);
+}
+
+TEST(get_release_without_buffer_raises_commit_error)
+{
+	struct client *client = create_test_client();
+	struct zwp_linux_explicit_synchronization_v1 *sync =
+		get_linux_explicit_synchronization(client);
+	struct zwp_linux_surface_synchronization_v1 *surface_sync =
+		zwp_linux_explicit_synchronization_v1_get_synchronization(
+			sync, client->surface->wl_surface);
+	struct wl_surface *surface = client->surface->wl_surface;
+	struct zwp_linux_buffer_release_v1 *buffer_release;
+
+	buffer_release =
+		zwp_linux_surface_synchronization_v1_get_release(surface_sync);
+	wl_surface_commit(surface);
+	expect_protocol_error(
+		client,
+		&zwp_linux_surface_synchronization_v1_interface,
+		ZWP_LINUX_SURFACE_SYNCHRONIZATION_V1_ERROR_NO_BUFFER);
+
+	zwp_linux_buffer_release_v1_destroy(buffer_release);
+	zwp_linux_surface_synchronization_v1_destroy(surface_sync);
+	zwp_linux_explicit_synchronization_v1_destroy(sync);
+}
+
+TEST(get_release_on_destroyed_surface_raises_error)
+{
+	struct client *client = create_test_client();
+	struct zwp_linux_explicit_synchronization_v1 *sync =
+		get_linux_explicit_synchronization(client);
+	struct zwp_linux_surface_synchronization_v1 *surface_sync =
+		zwp_linux_explicit_synchronization_v1_get_synchronization(
+			sync, client->surface->wl_surface);
+	struct zwp_linux_buffer_release_v1 *buffer_release;
+
+	wl_surface_destroy(client->surface->wl_surface);
+	buffer_release =
+		zwp_linux_surface_synchronization_v1_get_release(surface_sync);
+	expect_protocol_error(
+		client,
+		&zwp_linux_surface_synchronization_v1_interface,
+		ZWP_LINUX_SURFACE_SYNCHRONIZATION_V1_ERROR_NO_SURFACE);
+
+	zwp_linux_buffer_release_v1_destroy(buffer_release);
+	zwp_linux_surface_synchronization_v1_destroy(surface_sync);
+	zwp_linux_explicit_synchronization_v1_destroy(sync);
+}
+
+TEST(get_release_after_commit_succeeds)
+{
+	struct client *client = create_test_client();
+	struct zwp_linux_explicit_synchronization_v1 *sync =
+		get_linux_explicit_synchronization(client);
+	struct wl_surface *surface = client->surface->wl_surface;
+	struct zwp_linux_surface_synchronization_v1 *surface_sync =
+		zwp_linux_explicit_synchronization_v1_get_synchronization(
+			sync, surface);
+	struct buffer *buf1 = create_shm_buffer_a8r8g8b8(client, 100, 100);
+	struct zwp_linux_buffer_release_v1 *buffer_release1;
+	struct zwp_linux_buffer_release_v1 *buffer_release2;
+
+	buffer_release1 =
+		zwp_linux_surface_synchronization_v1_get_release(surface_sync);
+	client_roundtrip(client);
+
+	wl_surface_attach(surface, buf1->proxy, 0, 0);
+	wl_surface_commit(surface);
+
+	buffer_release2 =
+		zwp_linux_surface_synchronization_v1_get_release(surface_sync);
+	client_roundtrip(client);
+
+	buffer_destroy(buf1);
+	zwp_linux_buffer_release_v1_destroy(buffer_release2);
+	zwp_linux_buffer_release_v1_destroy(buffer_release1);
+	zwp_linux_surface_synchronization_v1_destroy(surface_sync);
+	zwp_linux_explicit_synchronization_v1_destroy(sync);
+}
+
+static void
+buffer_release_fenced_handler(void *data,
+			      struct zwp_linux_buffer_release_v1 *buffer_release,
+			      int32_t fence)
+{
+	assert(!"Fenced release not supported yet");
+}
+
+static void
+buffer_release_immediate_handler(void *data,
+				 struct zwp_linux_buffer_release_v1 *buffer_release)
+{
+	int *released = data;
+
+	*released += 1;
+}
+
+struct zwp_linux_buffer_release_v1_listener buffer_release_listener = {
+	buffer_release_fenced_handler,
+	buffer_release_immediate_handler
+};
+
+TEST(get_release_events_are_emitted)
+{
+	struct client *client = create_test_client();
+	struct zwp_linux_explicit_synchronization_v1 *sync =
+		get_linux_explicit_synchronization(client);
+	struct zwp_linux_surface_synchronization_v1 *surface_sync =
+		zwp_linux_explicit_synchronization_v1_get_synchronization(
+			sync, client->surface->wl_surface);
+	struct buffer *buf1 = create_shm_buffer_a8r8g8b8(client, 100, 100);
+	struct buffer *buf2 = create_shm_buffer_a8r8g8b8(client, 100, 100);
+	struct wl_surface *surface = client->surface->wl_surface;
+	struct zwp_linux_buffer_release_v1 *buffer_release1;
+	struct zwp_linux_buffer_release_v1 *buffer_release2;
+	int buf_released1 = 0;
+	int buf_released2 = 0;
+	int frame;
+
+	buffer_release1 =
+		zwp_linux_surface_synchronization_v1_get_release(surface_sync);
+	zwp_linux_buffer_release_v1_add_listener(buffer_release1,
+						 &buffer_release_listener,
+						 &buf_released1);
+	wl_surface_attach(surface, buf1->proxy, 0, 0);
+	frame_callback_set(surface, &frame);
+	wl_surface_commit(surface);
+	frame_callback_wait(client, &frame);
+	/* Check that exactly one buffer_release event was emitted. */
+	assert(buf_released1 == 1);
+
+	buffer_release2 =
+		zwp_linux_surface_synchronization_v1_get_release(surface_sync);
+	zwp_linux_buffer_release_v1_add_listener(buffer_release2,
+						 &buffer_release_listener,
+						 &buf_released2);
+	wl_surface_attach(surface, buf2->proxy, 0, 0);
+	frame_callback_set(surface, &frame);
+	wl_surface_commit(surface);
+	frame_callback_wait(client, &frame);
+	/* Check that we didn't get any new events on the inactive
+	 * buffer_release. */
+	assert(buf_released1 == 1);
+	/* Check that exactly one buffer_release event was emitted. */
+	assert(buf_released2 == 1);
+
+	buffer_destroy(buf2);
+	buffer_destroy(buf1);
+	zwp_linux_buffer_release_v1_destroy(buffer_release2);
+	zwp_linux_buffer_release_v1_destroy(buffer_release1);
+	zwp_linux_surface_synchronization_v1_destroy(surface_sync);
+	zwp_linux_explicit_synchronization_v1_destroy(sync);
+}

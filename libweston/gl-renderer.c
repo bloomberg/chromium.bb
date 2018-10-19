@@ -52,6 +52,7 @@
 #include "linux-explicit-synchronization.h"
 #include "pixel-formats.h"
 
+#include "shared/fd-util.h"
 #include "shared/helpers.h"
 #include "shared/platform.h"
 #include "shared/timespec-util.h"
@@ -175,6 +176,7 @@ struct gl_surface_state {
 	int num_images;
 
 	struct weston_buffer_reference buffer_ref;
+	struct weston_buffer_release_reference buffer_release_ref;
 	enum buffer_type buffer_type;
 	int pitch; /* in pixels */
 	int height; /* in pixels */
@@ -186,6 +188,10 @@ struct gl_surface_state {
 	int vsub[3];  /* vertical subsampling per plane */
 
 	struct weston_surface *surface;
+
+	/* Whether this surface was used in the current output repaint.
+	   Used only in the context of a gl_renderer_repaint_output call. */
+	bool used_in_output_repaint;
 
 	struct wl_listener surface_destroy_listener;
 	struct wl_listener renderer_destroy_listener;
@@ -1022,12 +1028,14 @@ draw_view(struct weston_view *ev, struct weston_output *output,
 			glDisable(GL_BLEND);
 
 		repaint_region(ev, &repaint, &surface_opaque);
+		gs->used_in_output_repaint = true;
 	}
 
 	if (pixman_region32_not_empty(&surface_blend)) {
 		use_shader(gr, gs->shader);
 		glEnable(GL_BLEND);
 		repaint_region(ev, &repaint, &surface_blend);
+		gs->used_in_output_repaint = true;
 	}
 
 	pixman_region32_fini(&surface_blend);
@@ -1046,6 +1054,73 @@ repaint_views(struct weston_output *output, pixman_region32_t *damage)
 	wl_list_for_each_reverse(view, &compositor->view_list, link)
 		if (view->plane == &compositor->primary_plane)
 			draw_view(view, output, damage);
+}
+
+static int
+gl_renderer_create_fence_fd(struct weston_output *output);
+
+/* Updates the release fences of surfaces that were used in the current output
+ * repaint. Should only be used from gl_renderer_repaint_output, so that the
+ * information in gl_surface_state.used_in_output_repaint is accurate.
+ */
+static void
+update_buffer_release_fences(struct weston_compositor *compositor,
+			     struct weston_output *output)
+{
+	struct weston_view *view;
+
+	wl_list_for_each_reverse(view, &compositor->view_list, link) {
+		struct gl_surface_state *gs;
+		struct weston_buffer_release *buffer_release;
+		int fence_fd;
+
+		if (view->plane != &compositor->primary_plane)
+			continue;
+
+		gs = get_surface_state(view->surface);
+		buffer_release = gs->buffer_release_ref.buffer_release;
+
+		if (!gs->used_in_output_repaint || !buffer_release)
+			continue;
+
+		fence_fd = gl_renderer_create_fence_fd(output);
+
+		/* If we have a buffer_release then it means we support fences,
+		 * and we should be able to create the release fence. If we
+		 * can't, something has gone horribly wrong, so disconnect the
+		 * client.
+		 */
+		if (fence_fd == -1) {
+			linux_explicit_synchronization_send_server_error(
+				buffer_release->resource,
+				"Failed to create release fence");
+			fd_clear(&buffer_release->fence_fd);
+			continue;
+		}
+
+		/* At the moment it is safe to just replace the fence_fd,
+		 * discarding the previous one:
+		 *
+		 * 1. If the previous fence fd represents a sync fence from
+		 *    a previous repaint cycle, that fence fd is now not
+		 *    sufficient to provide the release guarantee and should
+		 *    be replaced.
+		 *
+		 * 2. If the fence fd represents a sync fence from another
+		 *    output in the same repaint cycle, it's fine to replace
+		 *    it since we are rendering to all outputs using the same
+		 *    EGL context, so a fence issued for a later output rendering
+		 *    is guaranteed to signal after fences for previous output
+		 *    renderings.
+		 *
+		 * Note that the above is only valid if the buffer_release
+		 * fences only originate from the GL renderer, which guarantees
+		 * a total order of operations and fences.  If we introduce
+		 * fences from other sources (e.g., plane out-fences), we will
+		 * need to merge fences instead.
+		 */
+		fd_update(&buffer_release->fence_fd, fence_fd);
+	}
 }
 
 static void
@@ -1298,9 +1373,20 @@ gl_renderer_repaint_output(struct weston_output *output,
 	pixman_box32_t *rects;
 	pixman_region32_t buffer_damage, total_damage;
 	enum gl_border_status border_damage = BORDER_STATUS_CLEAN;
+	struct weston_view *view;
 
 	if (use_output(output) < 0)
 		return;
+
+	/* Clear the used_in_output_repaint flag, so that we can properly track
+	 * which surfaces were used in this output repaint. */
+	wl_list_for_each_reverse(view, &compositor->view_list, link) {
+		if (view->plane == &compositor->primary_plane) {
+			struct gl_surface_state *gs =
+				get_surface_state(view->surface);
+			gs->used_in_output_repaint = false;
+		}
+	}
 
 	if (go->begin_render_sync != EGL_NO_SYNC_KHR)
 		gr->destroy_sync(gr->egl_display, go->begin_render_sync);
@@ -1413,6 +1499,8 @@ gl_renderer_repaint_output(struct weston_output *output,
 				    TIMELINE_RENDER_POINT_TYPE_BEGIN);
 	timeline_submit_render_sync(gr, compositor, output, go->end_render_sync,
 				    TIMELINE_RENDER_POINT_TYPE_END);
+
+	update_buffer_release_fences(compositor, output);
 }
 
 static int
@@ -1571,6 +1659,7 @@ done:
 	gs->needs_full_upload = false;
 
 	weston_buffer_reference(&gs->buffer_ref, NULL);
+	weston_buffer_release_reference(&gs->buffer_release_ref, NULL);
 }
 
 static void
@@ -2395,6 +2484,8 @@ gl_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 	int i;
 
 	weston_buffer_reference(&gs->buffer_ref, buffer);
+	weston_buffer_release_reference(&gs->buffer_release_ref,
+					es->buffer_release_ref.buffer_release);
 
 	if (!buffer) {
 		for (i = 0; i < gs->num_images; i++) {
@@ -2427,6 +2518,7 @@ gl_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 		  gl_renderer_print_egl_error_state();
 		}
 		weston_buffer_reference(&gs->buffer_ref, NULL);
+		weston_buffer_release_reference(&gs->buffer_release_ref, NULL);
 		gs->buffer_type = BUFFER_TYPE_NULL;
 		gs->y_inverted = 1;
 		es->is_opaque = false;
@@ -2614,6 +2706,7 @@ surface_state_destroy(struct gl_surface_state *gs, struct gl_renderer *gr)
 		egl_image_unref(gs->images[i]);
 
 	weston_buffer_reference(&gs->buffer_ref, NULL);
+	weston_buffer_release_reference(&gs->buffer_release_ref, NULL);
 	pixman_region32_fini(&gs->texture_damage);
 	free(gs);
 }

@@ -385,6 +385,7 @@ struct drm_fb {
 	int width, height;
 	int fd;
 	struct weston_buffer_reference buffer_ref;
+	struct weston_buffer_release_reference buffer_release_ref;
 
 	/* Used by gbm fbs */
 	struct gbm_bo *bo;
@@ -951,6 +952,7 @@ drm_fb_destroy(struct drm_fb *fb)
 	if (fb->fb_id != 0)
 		drmModeRmFB(fb->fd, fb->fb_id);
 	weston_buffer_reference(&fb->buffer_ref, NULL);
+	weston_buffer_release_reference(&fb->buffer_release_ref, NULL);
 	free(fb);
 }
 
@@ -1338,11 +1340,14 @@ err_free:
 }
 
 static void
-drm_fb_set_buffer(struct drm_fb *fb, struct weston_buffer *buffer)
+drm_fb_set_buffer(struct drm_fb *fb, struct weston_buffer *buffer,
+		  struct weston_buffer_release *buffer_release)
 {
 	assert(fb->buffer_ref.buffer == NULL);
 	assert(fb->type == BUFFER_CLIENT || fb->type == BUFFER_DMABUF);
 	weston_buffer_reference(&fb->buffer_ref, buffer);
+	weston_buffer_release_reference(&fb->buffer_release_ref,
+					buffer_release);
 }
 
 static void
@@ -1650,7 +1655,8 @@ drm_fb_get_from_view(struct drm_output_state *state, struct weston_view *ev)
 
 	drm_debug(b, "\t\t\t[view] view %p format: %s\n",
 		  ev, fb->format->drm_format_name);
-	drm_fb_set_buffer(fb, buffer);
+	drm_fb_set_buffer(fb, buffer,
+			  ev->surface->buffer_release_ref.buffer_release);
 	return fb;
 }
 
