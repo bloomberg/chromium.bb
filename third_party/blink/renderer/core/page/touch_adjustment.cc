@@ -19,6 +19,7 @@
 
 #include "third_party/blink/renderer/core/page/touch_adjustment.h"
 
+#include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -33,6 +34,8 @@
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
@@ -44,8 +47,8 @@ namespace blink {
 namespace touch_adjustment {
 
 const float kZeroTolerance = 1e-6f;
-// The maximum adjustment range (diameters) in css pixel.
-constexpr float kMaxAdjustmentSize = 32.f;
+// The maximum adjustment range (diameters) in dip.
+constexpr float kMaxAdjustmentSizeDip = 32.f;
 
 // Class for remembering absolute quads of a target node and what node they
 // represent.
@@ -514,11 +517,23 @@ bool FindBestContextMenuCandidate(Node*& target_node,
       subtargets, touch_adjustment::HybridDistanceFunction);
 }
 
-LayoutSize GetHitTestRectForAdjustment(const LayoutSize& touch_area,
-                                       float zoom_factor) {
-  const LayoutSize max_size(touch_adjustment::kMaxAdjustmentSize,
-                            touch_adjustment::kMaxAdjustmentSize);
-  return touch_area.ShrunkTo(max_size * zoom_factor);
+LayoutSize GetHitTestRectForAdjustment(const LocalFrame& frame,
+                                       const LayoutSize& touch_area) {
+  float device_scale_factor =
+      frame.GetPage()->GetChromeClient().GetScreenInfo().device_scale_factor;
+  // Check if zoom-for-dsf is enabled. If not, touch_area is in dip, so we don't
+  // need to convert max_size_in_dip to physical pixel.
+  if (frame.GetPage()->DeviceScaleFactorDeprecated() != 1)
+    device_scale_factor = 1;
+
+  float page_scale_factor = frame.GetPage()->PageScaleFactor();
+  const LayoutSize max_size_in_dip(touch_adjustment::kMaxAdjustmentSizeDip,
+                                   touch_adjustment::kMaxAdjustmentSizeDip);
+
+  // (when use-zoom-for-dsf enabled) touch_area is in physical pixel scaled,
+  // max_size_in_dip should be converted to physical pixel and scale too.
+  return touch_area.ShrunkTo(max_size_in_dip *
+                             (device_scale_factor / page_scale_factor));
 }
 
 }  // namespace blink
