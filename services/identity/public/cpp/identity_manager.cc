@@ -5,6 +5,7 @@
 #include "services/identity/public/cpp/identity_manager.h"
 
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace identity {
 
@@ -156,6 +157,19 @@ IdentityManager::CreateAccessTokenFetcherForAccount(
   return std::make_unique<AccessTokenFetcher>(account_id, oauth_consumer_name,
                                               token_service_, scopes,
                                               std::move(callback), mode);
+}
+
+std::unique_ptr<AccessTokenFetcher>
+IdentityManager::CreateAccessTokenFetcherForAccount(
+    const std::string& account_id,
+    const std::string& oauth_consumer_name,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    const OAuth2TokenService::ScopeSet& scopes,
+    AccessTokenFetcher::TokenCallback callback,
+    AccessTokenFetcher::Mode mode) {
+  return std::make_unique<AccessTokenFetcher>(
+      account_id, oauth_consumer_name, token_service_, url_loader_factory,
+      scopes, std::move(callback), mode);
 }
 
 void IdentityManager::RemoveAccessTokenFromCache(
