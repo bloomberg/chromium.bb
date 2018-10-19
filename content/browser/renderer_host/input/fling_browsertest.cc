@@ -355,9 +355,8 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
   WaitForFrameScroll(GetRootNode(), 15, true /* upward */);
 }
 
-// Flaky, probably because of https://crbug.com/892656
 IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
-                       DISABLED_TouchpadFlingBubblesFromOOPIF) {
+                       TouchpadFlingBubblesFromOOPIF) {
   LoadPageWithOOPIF();
   // Scroll the parent down so that it is scrollable upward.
   EXPECT_TRUE(
