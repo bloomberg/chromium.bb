@@ -2067,10 +2067,6 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   // and show the message accordingly.
   tpm_firmware_update::ShowNotificationIfNeeded(profile);
 
-  // Show the one-time notification and update the relevant pref about the
-  // completion of the file system migration necessary for ARC, when needed.
-  arc::ShowArcMigrationSuccessNotificationIfNeeded(profile);
-
   if (should_launch_browser_)
     SyncConsentScreen::MaybeLaunchSyncConstentSettings(profile);
 }

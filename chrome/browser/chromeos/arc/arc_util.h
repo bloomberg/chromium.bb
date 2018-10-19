@@ -39,7 +39,10 @@ enum FileSystemCompatibilityState : int32_t {
   // Migration has happened. New filesystem is in use.
   kFileSystemCompatible = 1,
   // Migration has happened, and a notification about it was already shown.
-  kFileSystemCompatibleAndNotified = 2,
+  // This pref value will not be written anymore since we stopped showing the
+  // notification, but existing profiles which had shown the notification can
+  // have this value in their pref.
+  kFileSystemCompatibleAndNotifiedDeprecated = 2,
 
   // Existing code assumes that kFileSystemIncompatible is the only state
   // representing incompatibility and other values are all variants of
