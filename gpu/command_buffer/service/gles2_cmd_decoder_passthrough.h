@@ -16,6 +16,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/common/debug_marker_manager.h"
+#include "gpu/command_buffer/common/discardable_handle.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -437,6 +438,11 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   void UpdateTextureBinding(GLenum target,
                             GLuint client_id,
                             TexturePassthrough* texture);
+
+  void UpdateTextureSizeFromTexturePassthrough(TexturePassthrough* texture,
+                                               GLuint client_id);
+  void UpdateTextureSizeFromTarget(GLenum target);
+  void UpdateTextureSizeFromClientID(GLuint client_id);
 
   error::Error BindTexImage2DCHROMIUMImpl(GLenum target,
                                           GLenum internalformat,

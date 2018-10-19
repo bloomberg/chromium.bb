@@ -422,6 +422,7 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
         params.image_factory, nullptr /* progress_reporter */,
         task_executor_->gpu_feature_info(),
         task_executor_->discardable_manager(),
+        task_executor_->passthrough_discardable_manager(),
         task_executor_->shared_image_manager());
   }
 

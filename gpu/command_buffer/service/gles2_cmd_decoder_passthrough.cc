@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gpu_fence_manager.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
+#include "gpu/command_buffer/service/passthrough_discardable_manager.h"
 #include "gpu/command_buffer/service/program_cache.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "ui/gl/gl_version_info.h"
@@ -96,6 +97,32 @@ void RunCallbacks(std::vector<base::OnceClosure> callbacks) {
   for (base::OnceClosure& callback : callbacks) {
     std::move(callback).Run();
   }
+}
+
+// Converts texture targets to texture binding types.  Does not validate the
+// input.
+GLenum TextureTargetToTextureType(GLenum texture_target) {
+  switch (texture_target) {
+    case GL_TEXTURE_CUBE_MAP_POSITIVE_X:
+    case GL_TEXTURE_CUBE_MAP_NEGATIVE_X:
+    case GL_TEXTURE_CUBE_MAP_POSITIVE_Y:
+    case GL_TEXTURE_CUBE_MAP_NEGATIVE_Y:
+    case GL_TEXTURE_CUBE_MAP_POSITIVE_Z:
+    case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
+      return GL_TEXTURE_CUBE_MAP;
+
+    default:
+      return texture_target;
+  }
+}
+
+void UpdateBoundTexturePassthroughSize(gl::GLApi* api,
+                                       TexturePassthrough* texture) {
+  GLint texture_memory_size = 0;
+  api->glGetTexParameterivFn(texture->target(), GL_MEMORY_SIZE_ANGLE,
+                             &texture_memory_size);
+
+  texture->SetEstimatedSize(texture_memory_size);
 }
 
 }  // anonymous namespace
@@ -300,6 +327,7 @@ void GLES2DecoderPassthroughImpl::EmulatedColorBuffer::Resize(
                       format.color_texture_internal_format, size.width(),
                       size.height(), 0, format.color_texture_format,
                       format.color_texture_type, nullptr);
+  UpdateBoundTexturePassthroughSize(api, texture.get());
 }
 
 void GLES2DecoderPassthroughImpl::EmulatedColorBuffer::Destroy(
@@ -669,11 +697,9 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
         gl::GetRequestableGLExtensionsFromCurrentContext());
 
     static constexpr const char* kRequiredFunctionalityExtensions[] = {
-        "GL_CHROMIUM_bind_uniform_location",
-        "GL_CHROMIUM_sync_query",
-        "GL_EXT_debug_marker",
-        "GL_KHR_debug",
-        "GL_NV_fence",
+        "GL_ANGLE_memory_size",   "GL_CHROMIUM_bind_uniform_location",
+        "GL_CHROMIUM_sync_query", "GL_EXT_debug_marker",
+        "GL_KHR_debug",           "GL_NV_fence",
     };
     RequestExtensions(api(), requestable_extensions,
                       kRequiredFunctionalityExtensions,
@@ -1612,6 +1638,9 @@ void GLES2DecoderPassthroughImpl::BindOnePendingImage(
   // If copy / bind fail, then we could keep the bind state the same.
   // However, for now, we only try once.
   texture->set_is_bind_pending(false);
+
+  // No client ID available here, can this texture already be discardable?
+  UpdateTextureSizeFromTexturePassthrough(texture, 0);
 }
 
 void GLES2DecoderPassthroughImpl::BindPendingImagesForSamplers() {
@@ -1678,7 +1707,8 @@ error::Error GLES2DecoderPassthroughImpl::PatchGetNumericResults(GLenum pname,
     case GL_TEXTURE_BINDING_CUBE_MAP:
     case GL_TEXTURE_BINDING_2D_ARRAY:
     case GL_TEXTURE_BINDING_3D:
-      if (!GetClientID(&resources_->texture_id_map, *params, params)) {
+      if (*params != 0 &&
+          !GetClientID(&resources_->texture_id_map, *params, params)) {
         return error::kInvalidArguments;
       }
       break;
@@ -1691,44 +1721,50 @@ error::Error GLES2DecoderPassthroughImpl::PatchGetNumericResults(GLenum pname,
     case GL_COPY_READ_BUFFER_BINDING:
     case GL_COPY_WRITE_BUFFER_BINDING:
     case GL_UNIFORM_BUFFER_BINDING:
-      if (!GetClientID(&resources_->buffer_id_map, *params, params)) {
+      if (*params != 0 &&
+          !GetClientID(&resources_->buffer_id_map, *params, params)) {
         return error::kInvalidArguments;
       }
       break;
 
     case GL_RENDERBUFFER_BINDING:
-      if (!GetClientID(&resources_->renderbuffer_id_map, *params, params)) {
+      if (*params != 0 &&
+          !GetClientID(&resources_->renderbuffer_id_map, *params, params)) {
         return error::kInvalidArguments;
       }
       break;
 
     case GL_SAMPLER_BINDING:
-      if (!GetClientID(&resources_->sampler_id_map, *params, params)) {
+      if (*params != 0 &&
+          !GetClientID(&resources_->sampler_id_map, *params, params)) {
         return error::kInvalidArguments;
       }
       break;
 
     case GL_ACTIVE_PROGRAM:
-      if (!GetClientID(&resources_->program_id_map, *params, params)) {
+      if (*params != 0 &&
+          !GetClientID(&resources_->program_id_map, *params, params)) {
         return error::kInvalidArguments;
       }
       break;
 
     case GL_FRAMEBUFFER_BINDING:
     case GL_READ_FRAMEBUFFER_BINDING:
-      if (!GetClientID(&framebuffer_id_map_, *params, params)) {
+      if (*params != 0 && !GetClientID(&framebuffer_id_map_, *params, params)) {
         return error::kInvalidArguments;
       }
       break;
 
     case GL_TRANSFORM_FEEDBACK_BINDING:
-      if (!GetClientID(&transform_feedback_id_map_, *params, params)) {
+      if (*params != 0 &&
+          !GetClientID(&transform_feedback_id_map_, *params, params)) {
         return error::kInvalidArguments;
       }
       break;
 
     case GL_VERTEX_ARRAY_BINDING:
-      if (!GetClientID(&vertex_array_id_map_, *params, params)) {
+      if (*params != 0 &&
+          !GetClientID(&vertex_array_id_map_, *params, params)) {
         return error::kInvalidArguments;
       }
       break;
@@ -2197,6 +2233,64 @@ void GLES2DecoderPassthroughImpl::UpdateTextureBinding(
   }
 }
 
+void GLES2DecoderPassthroughImpl::UpdateTextureSizeFromTexturePassthrough(
+    TexturePassthrough* texture,
+    GLuint client_id) {
+  if (texture == nullptr) {
+    return;
+  }
+
+  CheckErrorCallbackState();
+
+  GLenum target = texture->target();
+  TextureTarget internal_texture_type = GLenumToTextureTarget(target);
+  BoundTexture& bound_texture =
+      bound_textures_[static_cast<size_t>(internal_texture_type)]
+                     [active_texture_unit_];
+  bool needs_rebind = bound_texture.texture == texture;
+  if (needs_rebind) {
+    glBindTexture(target, texture->service_id());
+  }
+
+  UpdateBoundTexturePassthroughSize(api(), texture);
+
+  // If a client ID is available, notify the discardable manager of the size
+  // change
+  if (client_id != 0) {
+    group_->passthrough_discardable_manager()->UpdateTextureSize(
+        client_id, group_.get(), texture->estimated_size());
+  }
+
+  if (needs_rebind) {
+    GLuint old_texture =
+        bound_texture.texture ? bound_texture.texture->service_id() : 0;
+    glBindTexture(target, old_texture);
+  }
+
+  DCHECK(!CheckErrorCallbackState());
+}
+
+void GLES2DecoderPassthroughImpl::UpdateTextureSizeFromTarget(GLenum target) {
+  GLenum texture_type = TextureTargetToTextureType(target);
+  TextureTarget internal_texture_type = GLenumToTextureTarget(texture_type);
+  if (internal_texture_type == TextureTarget::kUnkown) {
+    return;
+  }
+  BoundTexture& bound_texture =
+      bound_textures_[static_cast<size_t>(internal_texture_type)]
+                     [active_texture_unit_];
+  UpdateTextureSizeFromTexturePassthrough(bound_texture.texture.get(),
+                                          bound_texture.client_id);
+}
+
+void GLES2DecoderPassthroughImpl::UpdateTextureSizeFromClientID(
+    GLuint client_id) {
+  scoped_refptr<TexturePassthrough> texture = nullptr;
+  if (resources_->texture_object_map.GetServiceID(client_id, &texture)) {
+    UpdateTextureSizeFromTexturePassthrough(texture.get(), client_id);
+  }
+}
+
 error::Error GLES2DecoderPassthroughImpl::BindTexImage2DCHROMIUMImpl(
     GLenum target,
     GLenum internalformat,
@@ -2229,6 +2323,8 @@ error::Error GLES2DecoderPassthroughImpl::BindTexImage2DCHROMIUMImpl(
       image->CopyTexImage(target);
     }
   }
+
+  UpdateTextureSizeFromTarget(target);
 
   DCHECK(bound_texture.texture != nullptr);
   bound_texture.texture->SetLevelImage(target, 0, image);

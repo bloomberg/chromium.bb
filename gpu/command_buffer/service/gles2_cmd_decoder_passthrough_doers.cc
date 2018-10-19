@@ -6,9 +6,11 @@
 
 #include "base/bind_helpers.h"
 #include "base/strings/string_number_conversions.h"
+#include "gpu/command_buffer/common/discardable_handle.h"
 #include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/gpu_fence_manager.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
+#include "gpu/command_buffer/service/passthrough_discardable_manager.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -696,6 +698,8 @@ error::Error GLES2DecoderPassthroughImpl::DoCompressedTexImage2D(
                                              width, height, border, image_size,
                                              data_size, data);
 
+  UpdateTextureSizeFromTarget(target);
+
   // Texture data upload can be slow.  Exit command processing to allow for
   // context preemption and GPU watchdog checks.
   ExitCommandProcessingEarly();
@@ -739,6 +743,8 @@ error::Error GLES2DecoderPassthroughImpl::DoCompressedTexImage3D(
   api()->glCompressedTexImage3DRobustANGLEFn(target, level, internalformat,
                                              width, height, depth, border,
                                              image_size, data_size, data);
+
+  UpdateTextureSizeFromTarget(target);
 
   // Texture data upload can be slow.  Exit command processing to allow for
   // context preemption and GPU watchdog checks.
@@ -793,6 +799,8 @@ error::Error GLES2DecoderPassthroughImpl::DoCopyTexImage2D(
     GLint border) {
   api()->glCopyTexImage2DFn(target, level, internalformat, x, y, width, height,
                             border);
+
+  UpdateTextureSizeFromTarget(target);
 
   // Texture data copying can be slow.  Exit command processing to allow for
   // context preemption and GPU watchdog checks.
@@ -1003,6 +1011,10 @@ error::Error GLES2DecoderPassthroughImpl::DoDeleteTextures(
       resources_->texture_shared_image_map.erase(client_id);
       UpdateTextureBinding(texture->target(), client_id, nullptr);
     }
+
+    // Notify the discardable manager that the texture is deleted
+    group_->passthrough_discardable_manager()->DeleteTexture(client_id,
+                                                             group_.get());
   }
   return DeleteHelper(
       non_mailbox_client_ids.size(), non_mailbox_client_ids.data(),
@@ -2389,6 +2401,8 @@ error::Error GLES2DecoderPassthroughImpl::DoTexImage2D(GLenum target,
   api()->glTexImage2DRobustANGLEFn(target, level, internalformat, width, height,
                                    border, format, type, image_size, pixels);
 
+  UpdateTextureSizeFromTarget(target);
+
   // Texture data upload can be slow.  Exit command processing to allow for
   // context preemption and GPU watchdog checks.
   ExitCommandProcessingEarly();
@@ -2412,6 +2426,8 @@ error::Error GLES2DecoderPassthroughImpl::DoTexImage3D(GLenum target,
   api()->glTexImage3DRobustANGLEFn(target, level, internalformat, width, height,
                                    depth, border, format, type, image_size,
                                    pixels);
+
+  UpdateTextureSizeFromTarget(target);
 
   // Texture data upload can be slow.  Exit command processing to allow for
   // context preemption and GPU watchdog checks.
@@ -2463,6 +2479,7 @@ error::Error GLES2DecoderPassthroughImpl::DoTexStorage3D(GLenum target,
                                                          GLsizei height,
                                                          GLsizei depth) {
   api()->glTexStorage3DFn(target, levels, internalFormat, width, height, depth);
+  UpdateTextureSizeFromTarget(target);
   return error::kNoError;
 }
 
@@ -3005,6 +3022,7 @@ error::Error GLES2DecoderPassthroughImpl::DoTexStorage2DEXT(
     GLsizei width,
     GLsizei height) {
   api()->glTexStorage2DEXTFn(target, levels, internalFormat, width, height);
+  UpdateTextureSizeFromTarget(target);
   return error::kNoError;
 }
 
@@ -3015,6 +3033,7 @@ error::Error GLES2DecoderPassthroughImpl::DoTexStorage2DImageCHROMIUM(
     GLsizei width,
     GLsizei height) {
   NOTIMPLEMENTED();
+  // Call  UpdateTextureSizeFromTarget(target) if implemented
   return error::kNoError;
 }
 
@@ -3972,6 +3991,9 @@ error::Error GLES2DecoderPassthroughImpl::DoCopyTextureCHROMIUM(
       dest_target, GetTextureServiceID(api(), dest_id, resources_, false),
       dest_level, internalformat, dest_type, unpack_flip_y,
       unpack_premultiply_alpha, unpack_unmultiply_alpha);
+
+  UpdateTextureSizeFromClientID(dest_id);
+
   return error::kNoError;
 }
 
@@ -4161,6 +4183,8 @@ error::Error GLES2DecoderPassthroughImpl::DoReleaseTexImage2DCHROMIUM(
     image->ReleaseTexImage(target);
     bound_texture.texture->SetLevelImage(target, 0, nullptr);
   }
+
+  UpdateTextureSizeFromTarget(target);
 
   return error::kNoError;
 }
@@ -4908,6 +4932,52 @@ GLES2DecoderPassthroughImpl::DoSetReadbackBufferShadowAllocationINTERNAL(
 error::Error GLES2DecoderPassthroughImpl::DoMaxShaderCompilerThreadsKHR(
     GLuint count) {
   api()->glMaxShaderCompilerThreadsKHRFn(count);
+  return error::kNoError;
+}
+
+error::Error
+GLES2DecoderPassthroughImpl::DoInitializeDiscardableTextureCHROMIUM(
+    GLuint texture_id,
+    ServiceDiscardableHandle&& discardable_handle) {
+  scoped_refptr<TexturePassthrough> texture_passthrough = nullptr;
+  if (!resources_->texture_object_map.GetServiceID(texture_id,
+                                                   &texture_passthrough) ||
+      texture_passthrough == nullptr) {
+    InsertError(GL_INVALID_VALUE, "Invalid texture ID");
+    return error::kNoError;
+  }
+
+  group_->passthrough_discardable_manager()->InitializeTexture(
+      texture_id, group_.get(), texture_passthrough->estimated_size(),
+      std::move(discardable_handle));
+
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderPassthroughImpl::DoUnlockDiscardableTextureCHROMIUM(
+    GLuint texture_id) {
+  TexturePassthrough* texture_to_unbind = nullptr;
+  if (!group_->passthrough_discardable_manager()->UnlockTexture(
+          texture_id, group_.get(), &texture_to_unbind)) {
+    InsertError(GL_INVALID_VALUE, "Texture ID not initialized");
+    return error::kNoError;
+  }
+
+  if (texture_to_unbind != nullptr) {
+    UpdateTextureBinding(texture_to_unbind->target(), texture_id, nullptr);
+  }
+
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderPassthroughImpl::DoLockDiscardableTextureCHROMIUM(
+    GLuint texture_id) {
+  if (!group_->passthrough_discardable_manager()->LockTexture(texture_id,
+                                                              group_.get())) {
+    InsertError(GL_INVALID_VALUE, "Texture ID not initialized");
+    return error::kNoError;
+  }
+
   return error::kNoError;
 }
 

@@ -265,7 +265,7 @@ bool Context::CreateService(gl::GLSurface* gl_surface) {
       &translator_cache_, &completeness_cache_, feature_info, true,
       &image_manager_, nullptr /* image_factory */,
       nullptr /* progress_reporter */, gpu_feature_info, &discardable_manager_,
-      &shared_image_manager_));
+      &passthrough_discardable_manager_, &shared_image_manager_));
 
   transfer_buffer_manager_ =
       std::make_unique<gpu::TransferBufferManager>(nullptr);

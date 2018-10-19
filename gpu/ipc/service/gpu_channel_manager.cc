@@ -336,6 +336,7 @@ void GpuChannelManager::HandleMemoryPressure(
   if (program_cache_)
     program_cache_->HandleMemoryPressure(memory_pressure_level);
   discardable_manager_.HandleMemoryPressure(memory_pressure_level);
+  passthrough_discardable_manager_.HandleMemoryPressure(memory_pressure_level);
   if (raster_decoder_context_state_)
     raster_decoder_context_state_->PurgeMemory(memory_pressure_level);
   if (gr_shader_cache_)

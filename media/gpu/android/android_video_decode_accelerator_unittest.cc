@@ -110,7 +110,8 @@ class AndroidVideoDecodeAcceleratorTest
     context_group_ = new gpu::gles2::ContextGroup(
         gpu_preferences_, false, &mailbox_manager_, nullptr, nullptr, nullptr,
         feature_info_, false, &image_manager_, nullptr, nullptr,
-        gpu::GpuFeatureInfo(), &discardable_manager_, &shared_image_manager_);
+        gpu::GpuFeatureInfo(), &discardable_manager_, nullptr,
+        &shared_image_manager_);
 
     // By default, allow deferred init.
     config_.is_deferred_initialization_allowed = true;

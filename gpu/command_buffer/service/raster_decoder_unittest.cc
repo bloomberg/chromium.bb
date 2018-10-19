@@ -569,7 +569,8 @@ class RasterDecoderOOPTest : public testing::Test, DecoderClient {
         &framebuffer_completeness_cache_, feature_info,
         false /* bind_generates_resource */, &image_manager_,
         nullptr /* image_factory */, nullptr /* progress_reporter */,
-        gpu_feature_info, &discardable_manager_, &shared_image_manager_);
+        gpu_feature_info, &discardable_manager_,
+        nullptr /* passthrough_discardable_manager */, &shared_image_manager_);
   }
   void TearDown() override {
     context_state_ = nullptr;

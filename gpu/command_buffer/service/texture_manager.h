@@ -78,6 +78,9 @@ class GPU_GLES2_EXPORT TexturePassthrough final
     is_bind_pending_ = is_bind_pending;
   }
 
+  void SetEstimatedSize(size_t size);
+  size_t estimated_size() const { return estimated_size_; }
+
  protected:
   ~TexturePassthrough() override;
 
@@ -86,6 +89,8 @@ class GPU_GLES2_EXPORT TexturePassthrough final
 
   bool have_context_;
   bool is_bind_pending_ = false;
+
+  size_t estimated_size_ = 0;
 
   // Bound images divided into faces and then levels
   std::vector<std::vector<scoped_refptr<gl::GLImage>>> level_images_;
