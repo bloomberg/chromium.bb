@@ -31,7 +31,7 @@
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_collection_view_controller.h"
-#import "ios/chrome/browser/ui/settings/dataplan_usage_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/dataplan_usage_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/handoff_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
@@ -269,7 +269,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (CollectionViewItem*)sendUsageDetailItem {
-  NSString* detailText = [DataplanUsageCollectionViewController
+  NSString* detailText = [DataplanUsageTableViewController
       currentLabelForPreference:GetApplicationContext()->GetLocalState()
                        basePref:metrics::prefs::kMetricsReportingEnabled
                        wifiPref:prefs::kMetricsReportingWifiOnly];
@@ -329,7 +329,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self.collectionViewModel itemTypeForIndexPath:indexPath];
 
   // Items that push a new view controller.
-  SettingsRootCollectionViewController* controller;
+  UIViewController<SettingsRootViewControlling>* controller;
 
   switch (itemType) {
     case ItemTypeOtherDevicesHandoff:
@@ -337,7 +337,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
           initWithBrowserState:_browserState];
       break;
     case ItemTypeWebServicesSendUsageData:
-      controller = [[DataplanUsageCollectionViewController alloc]
+      controller = [[DataplanUsageTableViewController alloc]
           initWithPrefs:GetApplicationContext()->GetLocalState()
                basePref:metrics::prefs::kMetricsReportingEnabled
                wifiPref:prefs::kMetricsReportingWifiOnly
@@ -485,7 +485,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   if (preferenceName == metrics::prefs::kMetricsReportingEnabled ||
       preferenceName == prefs::kMetricsReportingWifiOnly) {
-    NSString* detailText = [DataplanUsageCollectionViewController
+    NSString* detailText = [DataplanUsageTableViewController
         currentLabelForPreference:GetApplicationContext()->GetLocalState()
                          basePref:metrics::prefs::kMetricsReportingEnabled
                          wifiPref:prefs::kMetricsReportingWifiOnly];

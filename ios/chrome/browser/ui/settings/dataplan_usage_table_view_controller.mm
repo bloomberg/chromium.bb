@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/dataplan_usage_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/dataplan_usage_table_view_controller.h"
 
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -33,7 +33,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace.
 
-@interface DataplanUsageCollectionViewController () {
+@interface DataplanUsageTableViewController () {
   BooleanPrefMember basePreference_;
   BooleanPrefMember wifiPreference_;
 }
@@ -45,7 +45,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)updateBasePref:(BOOL)basePref wifiPref:(BOOL)wifiPref;
 @end
 
-@implementation DataplanUsageCollectionViewController
+@implementation DataplanUsageTableViewController
 
 #pragma mark - Initialization
 
@@ -53,40 +53,45 @@ typedef NS_ENUM(NSInteger, ItemType) {
                      basePref:(const char*)basePreference
                      wifiPref:(const char*)wifiPreference
                         title:(NSString*)title {
-  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
   self =
-      [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
+      [super initWithTableViewStyle:UITableViewStyleGrouped
+                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
   if (self) {
     self.title = title;
     basePreference_.Init(basePreference, prefs);
     wifiPreference_.Init(wifiPreference, prefs);
-    // TODO(crbug.com/764578): -loadModel should not be called from
-    // initializer. A possible fix is to move this call to -viewDidLoad.
-    [self loadModel];
   }
   return self;
 }
 
+- (void)viewDidLoad {
+  [super viewDidLoad];
+  self.tableView.estimatedRowHeight = 70;
+  self.tableView.rowHeight = UITableViewAutomaticDimension;
+  [self loadModel];
+}
+
 - (void)loadModel {
   [super loadModel];
-  CollectionViewModel* model = self.collectionViewModel;
+  self.styler.cellTitleColor = [UIColor blackColor];
 
+  TableViewModel<TableViewItem*>* model = self.tableViewModel;
   [model addSectionWithIdentifier:SectionIdentifierOptions];
 
-  SettingsTextItem* always =
-      [[SettingsTextItem alloc] initWithType:ItemTypeOptionsAlways];
+  TableViewDetailTextItem* always =
+      [[TableViewDetailTextItem alloc] initWithType:ItemTypeOptionsAlways];
   [always setText:l10n_util::GetNSString(IDS_IOS_OPTIONS_DATA_USAGE_ALWAYS)];
   [always setAccessibilityTraits:UIAccessibilityTraitButton];
   [model addItem:always toSectionWithIdentifier:SectionIdentifierOptions];
 
-  SettingsTextItem* wifi =
-      [[SettingsTextItem alloc] initWithType:ItemTypeOptionsOnlyOnWiFi];
+  TableViewDetailTextItem* wifi =
+      [[TableViewDetailTextItem alloc] initWithType:ItemTypeOptionsOnlyOnWiFi];
   [wifi setText:l10n_util::GetNSString(IDS_IOS_OPTIONS_DATA_USAGE_ONLY_WIFI)];
   [wifi setAccessibilityTraits:UIAccessibilityTraitButton];
   [model addItem:wifi toSectionWithIdentifier:SectionIdentifierOptions];
 
-  SettingsTextItem* never =
-      [[SettingsTextItem alloc] initWithType:ItemTypeOptionsNever];
+  TableViewDetailTextItem* never =
+      [[TableViewDetailTextItem alloc] initWithType:ItemTypeOptionsNever];
   [never setText:l10n_util::GetNSString(IDS_IOS_OPTIONS_DATA_USAGE_NEVER)];
   [never setAccessibilityTraits:UIAccessibilityTraitButton];
   [model addItem:never toSectionWithIdentifier:SectionIdentifierOptions];
@@ -97,7 +102,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)updateCheckedState {
   BOOL basePrefOn = basePreference_.GetValue();
   BOOL wifiPrefOn = wifiPreference_.GetValue();
-  CollectionViewModel* model = self.collectionViewModel;
+  TableViewModel<TableViewItem*>* model = self.tableViewModel;
 
   std::unordered_map<NSInteger, bool> optionsMap = {
       {ItemTypeOptionsAlways, basePrefOn && !wifiPrefOn},
@@ -106,14 +111,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
   };
 
   NSMutableArray* modifiedItems = [NSMutableArray array];
-  for (SettingsTextItem* item in
+  for (TableViewDetailTextItem* item in
        [model itemsInSectionWithIdentifier:SectionIdentifierOptions]) {
     auto value = optionsMap.find(item.type);
     DCHECK(value != optionsMap.end());
 
-    MDCCollectionViewCellAccessoryType desiredType =
-        value->second ? MDCCollectionViewCellAccessoryCheckmark
-                      : MDCCollectionViewCellAccessoryNone;
+    UITableViewCellAccessoryType desiredType =
+        value->second ? UITableViewCellAccessoryCheckmark
+                      : UITableViewCellAccessoryNone;
     if (item.accessoryType != desiredType) {
       item.accessoryType = desiredType;
       [modifiedItems addObject:item];
@@ -145,13 +150,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return l10n_util::GetNSString(IDS_IOS_OPTIONS_DATA_USAGE_NEVER);
 }
 
-#pragma mark - UICollectionViewDelegate
+#pragma mark - UITableViewDelegate
 
-- (void)collectionView:(UICollectionView*)collectionView
-    didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
-  [super collectionView:collectionView didSelectItemAtIndexPath:indexPath];
-
-  NSInteger type = [self.collectionViewModel itemTypeForIndexPath:indexPath];
+- (void)tableView:(UITableView*)tableView
+    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  NSInteger type = [self.tableViewModel itemTypeForIndexPath:indexPath];
   switch (type) {
     case ItemTypeOptionsAlways:
       [self updateBasePref:YES wifiPref:NO];
@@ -163,6 +166,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self updateBasePref:NO wifiPref:NO];
       break;
   }
+
+  [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 @end
