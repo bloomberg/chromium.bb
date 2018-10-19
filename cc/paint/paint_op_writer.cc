@@ -103,19 +103,14 @@ void PaintOpWriter::WriteSimple(const T& val) {
 }
 
 void PaintOpWriter::WriteFlattenable(const SkFlattenable* val) {
-  AlignMemory(8);
   if (!val) {
     WriteSize(static_cast<size_t>(0u));
     return;
   }
 
-  size_t size_offset = sizeof(uint64_t);
-  EnsureBytes(size_offset);
+  uint64_t* size_memory = WriteSize(0u);
   if (!valid_)
     return;
-  char* size_memory = memory_;
-  memory_ += size_offset;
-  remaining_bytes_ -= size_offset;
 
   size_t bytes_written = val->serialize(
       memory_, RoundDownToAlignment(remaining_bytes_, kSkiaAlignment));
@@ -123,14 +118,16 @@ void PaintOpWriter::WriteFlattenable(const SkFlattenable* val) {
     valid_ = false;
     return;
   }
-  reinterpret_cast<uint64_t*>(size_memory)[0] = bytes_written;
+  *size_memory = bytes_written;
   memory_ += bytes_written;
   remaining_bytes_ -= bytes_written;
 }
 
-void PaintOpWriter::WriteSize(size_t size) {
+uint64_t* PaintOpWriter::WriteSize(size_t size) {
   AlignMemory(8);
+  uint64_t* memory = reinterpret_cast<uint64_t*>(memory_);
   WriteSimple<uint64_t>(size);
+  return memory;
 }
 
 void PaintOpWriter::Write(SkScalar data) {
@@ -289,22 +286,14 @@ void PaintOpWriter::Write(const SkColorSpace* color_space) {
   remaining_bytes_ -= written;
 }
 
-void PaintOpWriter::Write(const scoped_refptr<PaintTextBlob>& paint_blob) {
-  DCHECK(paint_blob);
+void PaintOpWriter::Write(const sk_sp<SkTextBlob>& blob) {
+  DCHECK(blob);
   if (!valid_)
     return;
 
-  AlignMemory(8);
-
-  const auto& blob = paint_blob->ToSkTextBlob();
-  size_t size_offset = sizeof(uint64_t);
-  EnsureBytes(size_offset);
+  uint64_t* size_memory = WriteSize(0u);
   if (!valid_)
     return;
-
-  char* size_memory = memory_;
-  memory_ += size_offset;
-  remaining_bytes_ -= size_offset;
 
   auto encodeTypeface = [](SkTypeface* tf, void* ctx) -> sk_sp<SkData> {
     return static_cast<SkStrikeServer*>(ctx)->serializeTypeface(tf);
@@ -320,7 +309,7 @@ void PaintOpWriter::Write(const scoped_refptr<PaintTextBlob>& paint_blob) {
     valid_ = false;
     return;
   }
-  reinterpret_cast<uint64_t*>(size_memory)[0] = bytes_written;
+  *size_memory = bytes_written;
   memory_ += bytes_written;
   remaining_bytes_ -= bytes_written;
 }
@@ -484,7 +473,7 @@ void PaintOpWriter::Write(const PaintFilter* filter) {
   if (!valid_)
     return;
 
-  AlignMemory(4);
+  AlignMemory(kSkiaAlignment);
   switch (filter->type()) {
     case PaintFilter::Type::kNullFilter:
       NOTREACHED();
@@ -748,16 +737,12 @@ void PaintOpWriter::Write(const PaintRecord* record,
   if (!valid_)
     return;
 
-  char* size_memory = memory_;
-
-  memory_ += size_offset;
-  remaining_bytes_ -= size_offset;
+  uint64_t* size_memory = WriteSize(0u);
   if (!valid_)
     return;
 
   if (enable_security_constraints_) {
     // We don't serialize PaintRecords when security constraints are enabled.
-    reinterpret_cast<size_t*>(size_memory)[0] = 0u;
     return;
   }
 
@@ -784,7 +769,7 @@ void PaintOpWriter::Write(const PaintRecord* record,
 
   // Write the size to the size memory, which preceeds the memory for the
   // record.
-  reinterpret_cast<uint64_t*>(size_memory)[0] = serializer.written();
+  *size_memory = serializer.written();
 
   // The serializer should have failed if it ran out of space. DCHECK to verify
   // that it wrote at most as many bytes as we had left.

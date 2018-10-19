@@ -1352,7 +1352,7 @@ void DrawTextBlobOp::RasterWithFlags(const DrawTextBlobOp* op,
                                      SkCanvas* canvas,
                                      const PlaybackParams& params) {
   SkPaint paint = flags->ToSkPaint();
-  canvas->drawTextBlob(op->blob->ToSkTextBlob().get(), op->x, op->y, paint);
+  canvas->drawTextBlob(op->blob.get(), op->x, op->y, paint);
 }
 
 void RestoreOp::Raster(const RestoreOp* op,
@@ -1759,13 +1759,9 @@ bool DrawTextBlobOp::AreEqual(const PaintOp* base_left,
   if (!AreEqualEvenIfNaN(left->y, right->y))
     return false;
 
-  DCHECK(*left->blob);
-  DCHECK(*right->blob);
-
   SkSerialProcs default_procs;
-  return left->blob->ToSkTextBlob()
-      ->serialize(default_procs)
-      ->equals(right->blob->ToSkTextBlob()->serialize(default_procs).get());
+  return left->blob->serialize(default_procs)
+      ->equals(right->blob->serialize(default_procs).get());
 }
 
 bool NoopOp::AreEqual(const PaintOp* base_left, const PaintOp* base_right) {
@@ -1999,8 +1995,7 @@ bool PaintOp::GetBounds(const PaintOp* op, SkRect* rect) {
     }
     case PaintOpType::DrawTextBlob: {
       auto* text_op = static_cast<const DrawTextBlobOp*>(op);
-      *rect = text_op->blob->ToSkTextBlob()->bounds().makeOffset(text_op->x,
-                                                                 text_op->y);
+      *rect = text_op->blob->bounds().makeOffset(text_op->x, text_op->y);
       rect->sort();
       return true;
     }
@@ -2191,11 +2186,11 @@ bool DrawRecordOp::HasDiscardableImages() const {
 
 DrawTextBlobOp::DrawTextBlobOp() : PaintOpWithFlags(kType) {}
 
-DrawTextBlobOp::DrawTextBlobOp(scoped_refptr<PaintTextBlob> paint_blob,
+DrawTextBlobOp::DrawTextBlobOp(sk_sp<SkTextBlob> blob,
                                SkScalar x,
                                SkScalar y,
                                const PaintFlags& flags)
-    : PaintOpWithFlags(kType, flags), blob(std::move(paint_blob)), x(x), y(y) {}
+    : PaintOpWithFlags(kType, flags), blob(std::move(blob)), x(x), y(y) {}
 
 DrawTextBlobOp::~DrawTextBlobOp() = default;
 

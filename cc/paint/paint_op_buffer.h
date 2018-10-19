@@ -724,7 +724,7 @@ class CC_PAINT_EXPORT DrawTextBlobOp final : public PaintOpWithFlags {
  public:
   static constexpr PaintOpType kType = PaintOpType::DrawTextBlob;
   static constexpr bool kIsDrawOp = true;
-  DrawTextBlobOp(scoped_refptr<PaintTextBlob> blob,
+  DrawTextBlobOp(sk_sp<SkTextBlob> blob,
                  SkScalar x,
                  SkScalar y,
                  const PaintFlags& flags);
@@ -737,7 +737,7 @@ class CC_PAINT_EXPORT DrawTextBlobOp final : public PaintOpWithFlags {
   static bool AreEqual(const PaintOp* left, const PaintOp* right);
   HAS_SERIALIZATION_FUNCTIONS();
 
-  scoped_refptr<PaintTextBlob> blob;
+  sk_sp<SkTextBlob> blob;
   SkScalar x;
   SkScalar y;
 

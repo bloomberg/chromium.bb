@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TEST_MOCK_PAINT_CANVAS_H_
 
 #include "cc/paint/paint_canvas.h"
-#include "cc/paint/paint_text_blob.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
@@ -89,11 +88,9 @@ class MockPaintCanvas : public cc::PaintCanvas {
                     SkScalar left,
                     SkScalar top,
                     const PaintFlags* flags));
-  MOCK_METHOD4(drawTextBlob,
-               void(scoped_refptr<cc::PaintTextBlob>,
-                    SkScalar x,
-                    SkScalar y,
-                    const PaintFlags& flags));
+  MOCK_METHOD4(
+      drawTextBlob,
+      void(sk_sp<SkTextBlob>, SkScalar x, SkScalar y, const PaintFlags& flags));
   MOCK_METHOD1(drawPicture, void(sk_sp<const PaintRecord> record));
   MOCK_CONST_METHOD0(isClipEmpty, bool());
   MOCK_CONST_METHOD0(isClipRect, bool());

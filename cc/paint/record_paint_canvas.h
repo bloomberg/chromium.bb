@@ -15,7 +15,6 @@
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_record.h"
-#include "cc/paint/paint_text_blob.h"
 #include "third_party/skia/include/utils/SkNoDrawCanvas.h"
 
 namespace cc {
@@ -87,7 +86,7 @@ class CC_PAINT_EXPORT RecordPaintCanvas final : public PaintCanvas {
   void drawSkottie(scoped_refptr<SkottieWrapper> skottie,
                    const SkRect& dst,
                    float t) override;
-  void drawTextBlob(scoped_refptr<PaintTextBlob> blob,
+  void drawTextBlob(sk_sp<SkTextBlob> blob,
                     SkScalar x,
                     SkScalar y,
                     const PaintFlags& flags) override;

@@ -374,7 +374,8 @@ void PaintOpReader::Read(sk_sp<SkColorSpace>* color_space) {
   remaining_bytes_ -= size;
 }
 
-void PaintOpReader::Read(scoped_refptr<PaintTextBlob>* paint_blob) {
+void PaintOpReader::Read(sk_sp<SkTextBlob>* blob) {
+  AlignMemory(4);
   size_t data_bytes = 0u;
   ReadSize(&data_bytes);
   if (remaining_bytes_ < data_bytes || data_bytes == 0u)
@@ -387,15 +388,14 @@ void PaintOpReader::Read(scoped_refptr<PaintTextBlob>* paint_blob) {
   TypefaceCtx typeface_ctx(options_.strike_client);
   procs.fTypefaceProc = &DeserializeTypeface;
   procs.fTypefaceCtx = &typeface_ctx;
-  sk_sp<SkTextBlob> blob = SkTextBlob::Deserialize(
+  sk_sp<SkTextBlob> deserialized_blob = SkTextBlob::Deserialize(
       const_cast<const char*>(memory_), data_bytes, procs);
-  if (!blob || typeface_ctx.invalid_typeface) {
+  if (!deserialized_blob || typeface_ctx.invalid_typeface) {
     SetInvalid();
     return;
   }
 
-  *paint_blob = base::MakeRefCounted<PaintTextBlob>(
-      std::move(blob), std::vector<sk_sp<SkTypeface>>());
+  *blob = std::move(deserialized_blob);
   memory_ += data_bytes;
   remaining_bytes_ -= data_bytes;
 }

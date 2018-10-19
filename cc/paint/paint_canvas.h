@@ -11,8 +11,8 @@
 #include "build/build_config.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_image.h"
-#include "cc/paint/paint_text_blob.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkTextBlob.h"
 
 namespace cc {
 class SkottieWrapper;
@@ -140,7 +140,7 @@ class CC_PAINT_EXPORT PaintCanvas {
                            const SkRect& dst,
                            float t) = 0;
 
-  virtual void drawTextBlob(scoped_refptr<PaintTextBlob> blob,
+  virtual void drawTextBlob(sk_sp<SkTextBlob> blob,
                             SkScalar x,
                             SkScalar y,
                             const PaintFlags& flags) = 0;

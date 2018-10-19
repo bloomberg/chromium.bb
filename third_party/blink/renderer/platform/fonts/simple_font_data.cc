@@ -79,10 +79,9 @@ void SimpleFontData::PlatformInit(bool subpixel_ascent_descent) {
 
   SkPaint::FontMetrics metrics;
 
-  PaintFont font;
-  platform_data_.SetupPaintFont(&font);
-  font.SetTextEncoding(SkPaint::kGlyphID_TextEncoding);
-  paint_ = font.ToSkPaint();
+  paint_ = SkPaint();
+  platform_data_.SetupSkPaint(&paint_);
+  paint_.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
   paint_.getFontMetrics(&metrics);
 
   float ascent;
