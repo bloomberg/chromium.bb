@@ -193,10 +193,8 @@ TEST_F(IdleSpellCheckControllerTest, ColdModeRangeCrossesShadow) {
       "<menu style=\"all: initial\">1127</menu>"
       "<object><optgroup></optgroup></object>"
       "</div>");
-  auto* html_object_element =
-      ToHTMLObjectElement(GetDocument().QuerySelector("object"));
-  html_object_element->RenderFallbackContent(
-      html_object_element->ContentFrame());
+  ToHTMLObjectElement(GetDocument().QuerySelector("object"))
+      ->RenderFallbackContent();
   GetDocument().QuerySelector("div")->focus();
   UpdateAllLifecyclePhases();
 

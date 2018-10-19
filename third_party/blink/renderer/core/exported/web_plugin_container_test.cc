@@ -36,7 +36,6 @@
 #include "build/build_config.h"
 #include "cc/layers/layer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_mouse_wheel_event.h"
@@ -199,8 +198,7 @@ class TestPluginWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
                                   const WebString& fallback_name,
                                   WebSandboxFlags sandbox_flags,
                                   const ParsedFeaturePolicy& container_policy,
-                                  const WebFrameOwnerProperties&,
-                                  FrameOwnerElementType owner_type) override {
+                                  const WebFrameOwnerProperties&) override {
     return CreateLocalChild(*parent, scope,
                             std::make_unique<TestPluginWebFrameClient>());
   }

@@ -151,12 +151,12 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     // Create a frame under an existing parent. The parent is always expected
     // to be a RenderFrameProxy, because navigations initiated by local frames
     // should not wind up here.
+
     web_frame = parent->web_frame()->CreateRemoteChild(
         replicated_state.scope,
         blink::WebString::FromUTF8(replicated_state.name),
         replicated_state.frame_policy.sandbox_flags,
-        replicated_state.frame_policy.container_policy,
-        replicated_state.frame_owner_element_type, proxy.get(), opener);
+        replicated_state.frame_policy.container_policy, proxy.get(), opener);
     proxy->unique_name_ = replicated_state.unique_name;
     render_view = parent->render_view();
     render_widget = parent->render_widget();
@@ -433,7 +433,6 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_BubbleLogicalScroll, OnBubbleLogicalScroll)
     IPC_MESSAGE_HANDLER(FrameMsg_SetHasReceivedUserGestureBeforeNavigation,
                         OnSetHasReceivedUserGestureBeforeNavigation)
-    IPC_MESSAGE_HANDLER(FrameMsg_RenderFallbackContent, OnRenderFallbackContent)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -700,10 +699,6 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
 
 void RenderFrameProxy::OnSetHasReceivedUserGestureBeforeNavigation(bool value) {
   web_frame_->SetHasReceivedUserGestureBeforeNavigation(value);
-}
-
-void RenderFrameProxy::OnRenderFallbackContent() const {
-  web_frame_->RenderFallbackContent();
 }
 
 void RenderFrameProxy::FrameDetached(DetachType type) {

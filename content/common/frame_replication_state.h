@@ -11,7 +11,6 @@
 #include "content/common/content_export.h"
 #include "content/common/content_security_policy_header.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "url/origin.h"
@@ -34,8 +33,7 @@ struct CONTENT_EXPORT FrameReplicationState {
                         const std::vector<uint32_t>& insecure_navigations_set,
                         bool has_potentially_trustworthy_unique_origin,
                         bool has_received_user_gesture,
-                        bool has_received_user_gesture_before_nav,
-                        blink::FrameOwnerElementType owner_type);
+                        bool has_received_user_gesture_before_nav);
   FrameReplicationState(const FrameReplicationState& other);
   ~FrameReplicationState();
 
@@ -135,14 +133,6 @@ struct CONTENT_EXPORT FrameReplicationState {
   // Whether the frame has received a user gesture in a previous navigation so
   // long as a the frame has staying on the same eTLD+1.
   bool has_received_user_gesture_before_nav;
-
-  // The type of the (local) frame owner for this frame in the parent process.
-  // Note: This should really be const, as it can never change once a frame is
-  // created. However, making it const makes it a pain to embed into IPC message
-  // params: having a const member implicitly deletes the copy assignment
-  // operator.
-  blink::FrameOwnerElementType frame_owner_element_type =
-      blink::FrameOwnerElementType::kNone;
 
   // IMPORTANT NOTE: When adding a new member to this struct, don't forget to
   // also add a corresponding entry to the struct traits in frame_messages.h!
