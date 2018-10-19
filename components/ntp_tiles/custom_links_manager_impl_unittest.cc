@@ -219,18 +219,20 @@ TEST_F(CustomLinksManagerImplTest, UpdateLink) {
 
   // Update the link's URL.
   EXPECT_TRUE(custom_links_->UpdateLink(GURL(kTestCase1[0].url), GURL(kTestUrl),
-                                        base::string16()));
+                                        base::string16(),
+                                        /*is_user_action=*/true));
   EXPECT_EQ(links_after_update_url, custom_links_->GetLinks());
 
   // Update the link's title.
   EXPECT_TRUE(custom_links_->UpdateLink(GURL(kTestUrl), GURL(),
-                                        base::UTF8ToUTF16(kTestTitle)));
+                                        base::UTF8ToUTF16(kTestTitle),
+                                        /*is_user_action=*/true));
   EXPECT_EQ(links_after_update_title, custom_links_->GetLinks());
 
   // Update the link's URL and title.
-  EXPECT_TRUE(
-      custom_links_->UpdateLink(GURL(kTestUrl), GURL(kTestCase1[0].url),
-                                base::UTF8ToUTF16(kTestCase1[0].title)));
+  EXPECT_TRUE(custom_links_->UpdateLink(GURL(kTestUrl), GURL(kTestCase1[0].url),
+                                        base::UTF8ToUTF16(kTestCase1[0].title),
+                                        /*is_user_action=*/true));
   EXPECT_EQ(links_after_update_both, custom_links_->GetLinks());
 }
 
@@ -246,20 +248,24 @@ TEST_F(CustomLinksManagerImplTest, UpdateLinkWithInvalidParams) {
   // Try to update a link that does not exist. This should fail and not modify
   // the list.
   EXPECT_FALSE(custom_links_->UpdateLink(GURL(kTestUrl), GURL(),
-                                         base::UTF8ToUTF16(kTestTitle)));
+                                         base::UTF8ToUTF16(kTestTitle),
+                                         /*is_user_action=*/true));
   EXPECT_EQ(initial_links, custom_links_->GetLinks());
 
   // Try to pass empty params. This should fail and not modify the list.
   EXPECT_FALSE(custom_links_->UpdateLink(GURL(kTestCase1[0].url), GURL(),
-                                         base::string16()));
+                                         base::string16(),
+                                         /*is_user_action=*/true));
   EXPECT_EQ(initial_links, custom_links_->GetLinks());
 
   // Try to pass an invalid URL. This should fail and not modify the list.
   EXPECT_FALSE(custom_links_->UpdateLink(kInvalidUrl, GURL(),
-                                         base::UTF8ToUTF16(kTestTitle)));
+                                         base::UTF8ToUTF16(kTestTitle),
+                                         /*is_user_action=*/true));
   EXPECT_EQ(initial_links, custom_links_->GetLinks());
   EXPECT_FALSE(custom_links_->UpdateLink(GURL(kTestCase1[0].url), kInvalidUrl,
-                                         base::string16()));
+                                         base::string16(),
+                                         /*is_user_action=*/true));
   EXPECT_EQ(initial_links, custom_links_->GetLinks());
 }
 
@@ -274,7 +280,8 @@ TEST_F(CustomLinksManagerImplTest, UpdateLinkWhenUrlAlreadyExists) {
   // Try to update a link with a URL that exists in the list. This should fail
   // and not modify the list.
   EXPECT_FALSE(custom_links_->UpdateLink(
-      GURL(kTestCase2[0].url), GURL(kTestCase2[1].url), base::string16()));
+      GURL(kTestCase2[0].url), GURL(kTestCase2[1].url), base::string16(),
+      /*is_user_action=*/true));
   EXPECT_EQ(initial_links, custom_links_->GetLinks());
 }
 
@@ -350,7 +357,8 @@ TEST_F(CustomLinksManagerImplTest, UndoUpdateLink) {
 
   // Update the link's URL.
   EXPECT_TRUE(custom_links_->UpdateLink(GURL(kTestCase1[0].url), GURL(kTestUrl),
-                                        base::string16()));
+                                        base::string16(),
+                                        /*is_user_action=*/true));
   EXPECT_EQ(links_after_update_url, custom_links_->GetLinks());
 
   // Undo update link.
@@ -359,7 +367,8 @@ TEST_F(CustomLinksManagerImplTest, UndoUpdateLink) {
 
   // Update the link's title.
   EXPECT_TRUE(custom_links_->UpdateLink(GURL(kTestCase1[0].url), GURL(),
-                                        base::UTF8ToUTF16(kTestTitle)));
+                                        base::UTF8ToUTF16(kTestTitle),
+                                        /*is_user_action=*/true));
   EXPECT_EQ(links_after_update_title, custom_links_->GetLinks());
 
   // Undo update link.
@@ -411,6 +420,48 @@ TEST_F(CustomLinksManagerImplTest, UndoDeleteLinkAfterAdd) {
   // Undo delete link.
   EXPECT_TRUE(custom_links_->UndoAction());
   EXPECT_EQ(expected_links, custom_links_->GetLinks());
+}
+
+TEST_F(CustomLinksManagerImplTest, ShouldNotUndoActionIfInternal) {
+  NTPTilesVector initial_tiles = FillTestTiles(kTestCase1);
+  std::vector<Link> initial_links = FillTestLinks(kTestCase1);
+  std::vector<Link> links_after_update_twice;
+  links_after_update_twice.emplace_back(
+      Link{GURL(kTestUrl), base::UTF8ToUTF16(kTestTitle), false});
+  std::vector<Link> links_after_add_and_update(initial_links);
+  links_after_add_and_update.emplace_back(Link{
+      GURL(kTestCase2[1].url), base::UTF8ToUTF16(kTestCase2[1].title), false});
+  links_after_add_and_update[0].url = GURL(kTestUrl);
+  links_after_add_and_update[0].is_most_visited = false;
+
+  // Initialize.
+  ASSERT_TRUE(custom_links_->Initialize(initial_tiles));
+  ASSERT_EQ(initial_links, custom_links_->GetLinks());
+
+  // Update twice. Specify that the second update was internal.
+  EXPECT_TRUE(custom_links_->UpdateLink(GURL(kTestCase1[0].url), GURL(),
+                                        base::UTF8ToUTF16(kTestTitle),
+                                        /*is_user_action=*/true));
+  EXPECT_TRUE(custom_links_->UpdateLink(GURL(kTestCase1[0].url), GURL(kTestUrl),
+                                        base::string16(),
+                                        /*is_user_action=*/false));
+  EXPECT_EQ(links_after_update_twice, custom_links_->GetLinks());
+
+  // Undo should revert to the state before the first action.
+  EXPECT_TRUE(custom_links_->UndoAction());
+  EXPECT_EQ(initial_links, custom_links_->GetLinks());
+
+  // Add then update. Specify that the update was internal.
+  EXPECT_TRUE(custom_links_->AddLink(GURL(kTestCase2[1].url),
+                                     base::UTF8ToUTF16(kTestCase2[1].title)));
+  EXPECT_TRUE(custom_links_->UpdateLink(GURL(kTestCase1[0].url), GURL(kTestUrl),
+                                        base::string16(),
+                                        /*is_user_action=*/false));
+  EXPECT_EQ(links_after_add_and_update, custom_links_->GetLinks());
+
+  // Undo should revert to the state before the first action.
+  EXPECT_TRUE(custom_links_->UndoAction());
+  EXPECT_EQ(initial_links, custom_links_->GetLinks());
 }
 
 TEST_F(CustomLinksManagerImplTest, ShouldDeleteMostVisitedOnHistoryDeletion) {

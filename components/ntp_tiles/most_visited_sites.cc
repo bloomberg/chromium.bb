@@ -301,16 +301,19 @@ bool MostVisitedSites::AddCustomLink(const GURL& url,
 
 bool MostVisitedSites::UpdateCustomLink(const GURL& url,
                                         const GURL& new_url,
-                                        const base::string16& new_title) {
+                                        const base::string16& new_title,
+                                        bool is_user_action) {
   if (!custom_links_ || !custom_links_enabled_)
     return false;
 
   // Initialize custom links if they have not been initialized yet.
   InitializeCustomLinks();
 
-  bool success = custom_links_->UpdateLink(url, new_url, new_title);
+  bool success =
+      custom_links_->UpdateLink(url, new_url, new_title, is_user_action);
   if (success) {
-    if (custom_links_action_count_ != -1)
+    // Only update the action count if this was executed by the user.
+    if (is_user_action && custom_links_action_count_ != -1)
       custom_links_action_count_++;
     BuildCurrentTiles();
   }
