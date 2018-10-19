@@ -10,6 +10,7 @@
 #include "base/unguessable_token.h"
 #include "chromeos/components/drivefs/drivefs_host_observer.h"
 #include "chromeos/components/drivefs/pending_connection_manager.h"
+#include "components/drive/drive_notification_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/system/invitation.h"
@@ -210,6 +211,26 @@ class DriveFsHost::MountState
     for (auto& observer : host_->observers_) {
       observer.OnError(*error);
     }
+  }
+
+  void OnTeamDrivesListReady(
+      const std::vector<std::string>& team_drive_ids) override {
+    host_->delegate_->GetDriveNotificationManager().UpdateTeamDriveIds(
+        std::set<std::string>(team_drive_ids.begin(), team_drive_ids.end()),
+        {});
+  }
+
+  void OnTeamDriveChanged(const std::string& team_drive_id,
+                          CreateOrDelete change_type) override {
+    std::set<std::string> additions;
+    std::set<std::string> removals;
+    if (change_type == mojom::DriveFsDelegate::CreateOrDelete::kCreated) {
+      additions.insert(team_drive_id);
+    } else {
+      removals.insert(team_drive_id);
+    }
+    host_->delegate_->GetDriveNotificationManager().UpdateTeamDriveIds(
+        additions, removals);
   }
 
   void OnConnectionError() {

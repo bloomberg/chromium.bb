@@ -18,6 +18,8 @@
 #include "chromeos/components/drivefs/drivefs_host_observer.h"
 #include "chromeos/components/drivefs/pending_connection_manager.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
+#include "components/drive/drive_notification_manager.h"
+#include "components/invalidation/impl/fake_invalidation_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -113,7 +115,13 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate,
   TestingDriveFsHostDelegate(
       std::unique_ptr<service_manager::Connector> connector,
       const AccountId& account_id)
-      : connector_(std::move(connector)), account_id_(account_id) {}
+      : connector_(std::move(connector)),
+        account_id_(account_id),
+        drive_notification_manager_(&invalidation_service_) {}
+
+  ~TestingDriveFsHostDelegate() override {
+    drive_notification_manager_.Shutdown();
+  }
 
   MockOAuth2MintTokenFlow& mock_flow() { return mock_flow_; }
 
@@ -125,6 +133,10 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate,
   MOCK_METHOD1(OnMounted, void(const base::FilePath&));
   MOCK_METHOD1(OnMountFailed, void(base::Optional<base::TimeDelta>));
   MOCK_METHOD1(OnUnmounted, void(base::Optional<base::TimeDelta>));
+
+  drive::DriveNotificationManager& GetDriveNotificationManager() override {
+    return drive_notification_manager_;
+  }
 
  private:
   // DriveFsHost::Delegate:
@@ -163,6 +175,8 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate,
   const AccountId account_id_;
   MockOAuth2MintTokenFlow mock_flow_;
   mojom::DriveFsBootstrapPtrInfo pending_bootstrap_;
+  invalidation::FakeInvalidationService invalidation_service_;
+  drive::DriveNotificationManager drive_notification_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingDriveFsHostDelegate);
 };
@@ -913,6 +927,30 @@ TEST_F(DriveFsHostTest, OnError_IgnoreUnknownErrorTypes) {
           1),
       base::FilePath("/foo")));
   delegate_ptr_.FlushForTesting();
+}
+
+TEST_F(DriveFsHostTest, TeamDriveTracking) {
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+
+  delegate_ptr_->OnTeamDrivesListReady({"a", "b"});
+  delegate_ptr_.FlushForTesting();
+  EXPECT_EQ(
+      (std::set<std::string>{"a", "b"}),
+      host_delegate_->GetDriveNotificationManager().team_drive_ids_for_test());
+
+  delegate_ptr_->OnTeamDriveChanged(
+      "c", mojom::DriveFsDelegate::CreateOrDelete::kCreated);
+  delegate_ptr_.FlushForTesting();
+  EXPECT_EQ(
+      (std::set<std::string>{"a", "b", "c"}),
+      host_delegate_->GetDriveNotificationManager().team_drive_ids_for_test());
+
+  delegate_ptr_->OnTeamDriveChanged(
+      "b", mojom::DriveFsDelegate::CreateOrDelete::kDeleted);
+  delegate_ptr_.FlushForTesting();
+  EXPECT_EQ(
+      (std::set<std::string>{"a", "c"}),
+      host_delegate_->GetDriveNotificationManager().team_drive_ids_for_test());
 }
 
 }  // namespace

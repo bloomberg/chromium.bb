@@ -20,6 +20,10 @@
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
 #include "services/identity/public/mojom/identity_manager.mojom.h"
 
+namespace drive {
+class DriveNotificationManager;
+}
+
 namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
@@ -74,6 +78,7 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost {
     virtual service_manager::Connector* GetConnector() = 0;
     virtual const AccountId& GetAccountId() = 0;
     virtual std::string GetObfuscatedAccountId() = 0;
+    virtual drive::DriveNotificationManager& GetDriveNotificationManager() = 0;
     virtual std::unique_ptr<OAuth2MintTokenFlow> CreateMintTokenFlow(
         OAuth2MintTokenFlow::Delegate* delegate,
         const std::string& client_id,
