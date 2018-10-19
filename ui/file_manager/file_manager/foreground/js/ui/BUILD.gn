@@ -362,6 +362,6 @@ js_library("suggest_apps_dialog") {
     "../../../common/js:metrics",
     "../../../common/js:util",
     "../../../common/js:volume_manager_common",
-    "//components/chrome_apps/webstore_widget/cws_widget:cws_widget_container",
+    "../../../cws_widget:cws_widget_container",
   ]
 }
