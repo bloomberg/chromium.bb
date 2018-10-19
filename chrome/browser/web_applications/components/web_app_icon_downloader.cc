@@ -124,7 +124,8 @@ void WebAppIconDownloader::DidDownloadFavicon(
 // content::WebContentsObserver overrides:
 void WebAppIconDownloader::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
+  if (!navigation_handle->IsInMainFrame() ||
+      !navigation_handle->HasCommitted() || navigation_handle->IsSameDocument())
     return;
 
   // Clear all pending requests.
