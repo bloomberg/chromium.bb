@@ -80,6 +80,17 @@ void InformPLMOfOptOut(content::WebContents* web_contents) {
       PreviewsUITabHelper::OptOutEventKey());
 }
 
+bool ShouldShowUIForPreviewsType(previews::PreviewsType type) {
+  if (type == previews::PreviewsType::NONE)
+    return false;
+
+  // Show the UI for LoFi at commit if the UI is the Android Omnibox.
+  if (type == previews::PreviewsType::LOFI)
+    return previews::params::IsPreviewsOmniboxUiEnabled();
+
+  return true;
+}
+
 }  // namespace
 
 PreviewsUITabHelper::~PreviewsUITabHelper() {}
@@ -303,8 +314,7 @@ void PreviewsUITabHelper::DidFinishNavigation(
   if (previews_user_data_ && previews_user_data_->HasCommittedPreviewsType()) {
     previews::PreviewsType main_frame_preview =
         previews_user_data_->committed_previews_type();
-    if (main_frame_preview != previews::PreviewsType::NONE &&
-        main_frame_preview != previews::PreviewsType::LOFI) {
+    if (ShouldShowUIForPreviewsType(main_frame_preview)) {
       if (main_frame_preview == previews::PreviewsType::LITE_PAGE) {
         const net::HttpResponseHeaders* headers =
             navigation_handle->GetResponseHeaders();

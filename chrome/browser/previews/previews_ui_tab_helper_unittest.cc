@@ -216,7 +216,11 @@ TEST_F(PreviewsUITabHelperUnitTest,
 }
 
 TEST_F(PreviewsUITabHelperUnitTest,
-       DidFinishNavigationDoesNotCreateLoFiPreviewsInfoBar) {
+       DidFinishNavigationDoesCreateLoFiPreviewsInfoBar) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      previews::features::kAndroidOmniboxPreviewsBadge);
+
   PreviewsUITabHelper* ui_tab_helper =
       PreviewsUITabHelper::FromWebContents(web_contents());
   EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
@@ -225,8 +229,44 @@ TEST_F(PreviewsUITabHelperUnitTest,
   SimulateWillProcessResponse();
   CallDidFinishNavigation();
 
+#if defined(OS_ANDROID)
+  EXPECT_TRUE(ui_tab_helper->should_display_android_omnibox_badge());
+#else
+  EXPECT_EQ(1U, infobar_service()->infobar_count());
+  EXPECT_TRUE(ui_tab_helper->displayed_preview_ui());
+#endif
+
+  // Navigate to reset the displayed state.
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL(kTestUrl));
+
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(ui_tab_helper->should_display_android_omnibox_badge());
+#else
+  EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
+#endif
+}
+
+TEST_F(PreviewsUITabHelperUnitTest,
+       DidFinishNavigationDoesNotCreateLoFiPreviewsInfoBar) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      previews::features::kAndroidOmniboxPreviewsBadge);
+
+  PreviewsUITabHelper* ui_tab_helper =
+      PreviewsUITabHelper::FromWebContents(web_contents());
+  EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
+
+  SetCommittedPreviewsType(previews::PreviewsType::LOFI);
+  SimulateWillProcessResponse();
+  CallDidFinishNavigation();
+
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(ui_tab_helper->should_display_android_omnibox_badge());
+#else
   EXPECT_EQ(0U, infobar_service()->infobar_count());
   EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
+#endif
 }
 
 TEST_F(PreviewsUITabHelperUnitTest, TestPreviewsIDSet) {
