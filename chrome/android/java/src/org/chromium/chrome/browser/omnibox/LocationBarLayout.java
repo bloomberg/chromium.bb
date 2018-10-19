@@ -213,11 +213,6 @@ public class LocationBarLayout extends FrameLayout
     }
 
     @Override
-    public boolean isSuggestionsListShown() {
-        return mAutocompleteCoordinator.isSuggestionsListShown();
-    }
-
-    @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
 

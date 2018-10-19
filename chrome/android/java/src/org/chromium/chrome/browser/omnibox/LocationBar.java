@@ -167,11 +167,6 @@ public interface LocationBar extends UrlBarDelegate {
     void setDefaultTextEditActionModeCallback(ToolbarActionModeCallback callback);
 
     /**
-     * @return Whether suggestions are being shown for the location bar.
-     */
-    boolean isSuggestionsListShown();
-
-    /**
      * @return The margin to be applied to the URL bar based on the buttons currently visible next
      *         to it, used to avoid text overlapping the buttons and vice versa.
      */

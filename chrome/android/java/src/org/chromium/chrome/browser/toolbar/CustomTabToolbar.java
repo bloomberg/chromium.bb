@@ -828,12 +828,6 @@ public class CustomTabToolbar
     protected void setMenuButtonHighlightDrawable(boolean highlighting) {}
 
     @Override
-    public boolean isSuggestionsListShown() {
-        // Custom tabs do not support suggestions.
-        return false;
-    }
-
-    @Override
     public int getUrlContainerMarginEnd() {
         return 0;
     }
