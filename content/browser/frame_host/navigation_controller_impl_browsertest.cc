@@ -6573,8 +6573,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Tests that inserting a named subframe into the FrameTree clears any
 // previously existing FrameNavigationEntry objects for the same name.
 // See https://crbug.com/628677.
-// Crashes inconsistently on windows only: https://crbug.com/783806.
-#if defined(OS_WIN)
+// Crashes/fails inconsistently on windows and ChromeOS:
+// https://crbug.com/783806.
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 #define MAYBE_EnsureFrameNavigationEntriesClearedOnMismatch \
   DISABLED_EnsureFrameNavigationEntriesClearedOnMismatch
 #else
