@@ -2710,22 +2710,30 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
   DCHECK_EQ(-1, GetIndexOfEntry(&entry));
   GURL url_to_load;
   GURL virtual_url;
-  bool reverse_on_redirect = false;
-  RewriteUrlForNavigation(params.url, browser_context_, &url_to_load,
-                          &virtual_url, &reverse_on_redirect);
+  // For main frames, rewrite the URL if necessary and compute the virtual URL
+  // that should be shown in the address bar.
+  if (node->IsMainFrame()) {
+    bool reverse_on_redirect = false;
+    RewriteUrlForNavigation(params.url, browser_context_, &url_to_load,
+                            &virtual_url, &reverse_on_redirect);
 
-  // For DATA loads, override the virtual URL.
-  if (params.load_type == LOAD_TYPE_DATA)
-    virtual_url = params.virtual_url_for_data_url;
+    // For DATA loads, override the virtual URL.
+    if (params.load_type == LOAD_TYPE_DATA)
+      virtual_url = params.virtual_url_for_data_url;
 
-  if (virtual_url.is_empty())
-    virtual_url = url_to_load;
+    if (virtual_url.is_empty())
+      virtual_url = url_to_load;
+
+    // TODO(clamy): In order to remove the pending NavigationEntry,
+    // |virtual_url| and |reverse_on_redirect| should be stored in the
+    // NavigationRequest.
+  } else {
+    url_to_load = params.url;
+    virtual_url = params.url;
+  }
 
   CHECK(!node->IsMainFrame() || virtual_url == entry.GetVirtualURL());
   CHECK_EQ(url_to_load, frame_entry->url());
-
-  // TODO(clamy): In order to remove the pending NavigationEntry, |virtual_url|
-  // and |reverse_on_redirect| should be stored in the NavigationRequest.
 
   if (!IsValidURLForNavigation(node->IsMainFrame(), virtual_url, url_to_load))
     return nullptr;
