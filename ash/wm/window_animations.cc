@@ -231,7 +231,7 @@ void AnimateHideWindow_BrightnessGrayscale(aura::Window* window) {
   AnimateShowHideWindowCommon_BrightnessGrayscale(window, false);
 }
 
-void AnimateShowWindow_SlideDown(aura::Window* window) {
+bool AnimateShowWindow_SlideDown(aura::Window* window) {
   AppListControllerImpl* app_list_controller =
       Shell::Get()->app_list_controller();
 
@@ -249,18 +249,18 @@ void AnimateShowWindow_SlideDown(aura::Window* window) {
       // style to default so that normal animation applies.
       ::wm::SetWindowVisibilityAnimationType(
           window, ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
-      return;
+      return true;
     }
   }
 
-  // Fallback to use minimize animation.
-  AnimateShowWindow_Minimize(window);
+  // Fallback to no animation.
+  return false;
 }
 
-void AnimateHideWindow_SlideDown(aura::Window* window) {
+bool AnimateHideWindow_SlideDown(aura::Window* window) {
   // The hide animation should be handled in HomeLauncherGestureHandler, so
-  // fallback to use minimize animation here.
-  AnimateHideWindow_Minimize(window);
+  // fallback to no animation.
+  return false;
 }
 
 bool AnimateShowWindow(aura::Window* window) {
@@ -277,8 +277,7 @@ bool AnimateShowWindow(aura::Window* window) {
       AnimateShowWindow_BrightnessGrayscale(window);
       return true;
     case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_DOWN:
-      AnimateShowWindow_SlideDown(window);
-      return true;
+      return AnimateShowWindow_SlideDown(window);
     default:
       NOTREACHED();
       return false;
@@ -299,8 +298,7 @@ bool AnimateHideWindow(aura::Window* window) {
       AnimateHideWindow_BrightnessGrayscale(window);
       return true;
     case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_DOWN:
-      AnimateHideWindow_SlideDown(window);
-      return true;
+      return AnimateHideWindow_SlideDown(window);
     default:
       NOTREACHED();
       return false;
