@@ -224,6 +224,8 @@ void ClearPasswordStore() {
 
 - (void)tearDown {
   ClearPasswordStore();
+  [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
+                           errorOrNil:nil];
   [super tearDown];
 }
 
@@ -498,6 +500,28 @@ void ClearPasswordStore() {
 
   // Verify the "Manage Passwords..." is on screen.
   [[EarlGrey selectElementWithMatcher:OtherPasswordsMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Test that the Password View Controller stays on rotation.
+- (void)testPasswordControllerSupportsRotation {
+  // Bring up the keyboard.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+
+  // Tap on the passwords icon.
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      performAction:grey_tap()];
+
+  // Verify the password controller table view is visible.
+  [[EarlGrey selectElementWithMatcher:PasswordTableViewMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
+                           errorOrNil:nil];
+
+  // Verify the password controller table view is still visible.
+  [[EarlGrey selectElementWithMatcher:PasswordTableViewMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
