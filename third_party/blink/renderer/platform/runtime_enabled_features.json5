@@ -676,6 +676,7 @@
     },
     {
       name: "LayoutViewIsolationNodes",
+      status: "stable",
     },
     {
       name: "LazyFrameLoading",
