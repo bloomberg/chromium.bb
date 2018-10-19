@@ -107,7 +107,7 @@ ChromeKeyboardUI::~ChromeKeyboardUI() {
 }
 
 void ChromeKeyboardUI::UpdateInsetsForWindow(aura::Window* window) {
-  if (!HasKeyboardWindow() || !ShouldWindowOverscroll(window))
+  if (!GetKeyboardWindow() || !ShouldWindowOverscroll(window))
     return;
 
   std::unique_ptr<content::RenderWidgetHostIterator> widgets(
@@ -127,13 +127,12 @@ void ChromeKeyboardUI::UpdateInsetsForWindow(aura::Window* window) {
   }
 }
 
-aura::Window* ChromeKeyboardUI::GetKeyboardWindow() {
-  if (keyboard_contents_)
-    return keyboard_contents_->web_contents()->GetNativeView();
+aura::Window* ChromeKeyboardUI::LoadKeyboardWindow(LoadCallback callback) {
+  DCHECK(!keyboard_contents_);
 
   GURL keyboard_url = GetVirtualKeyboardUrl();
   keyboard_contents_ = std::make_unique<ChromeKeyboardWebContents>(
-      browser_context_, keyboard_url);
+      browser_context_, keyboard_url, std::move(callback));
 
   aura::Window* keyboard_window =
       keyboard_contents_->web_contents()->GetNativeView();
@@ -166,8 +165,10 @@ aura::Window* ChromeKeyboardUI::GetKeyboardWindow() {
   return keyboard_window;
 }
 
-bool ChromeKeyboardUI::HasKeyboardWindow() const {
-  return !!keyboard_contents_;
+aura::Window* ChromeKeyboardUI::GetKeyboardWindow() const {
+  return keyboard_contents_
+             ? keyboard_contents_->web_contents()->GetNativeView()
+             : nullptr;
 }
 
 ui::InputMethod* ChromeKeyboardUI::GetInputMethod() {
@@ -286,10 +287,10 @@ bool ChromeKeyboardUI::ShouldWindowOverscroll(aura::Window* window) {
   if (!root_window)
     return true;
 
-  if (!HasKeyboardWindow())
+  aura::Window* keyboard_window = GetKeyboardWindow();
+  if (!keyboard_window)
     return false;
 
-  aura::Window* keyboard_window = GetKeyboardWindow();
   if (root_window != keyboard_window->GetRootWindow())
     return false;
 
@@ -310,8 +311,9 @@ void ChromeKeyboardUI::AddBoundsChangedObserver(aura::Window* window) {
 }
 
 void ChromeKeyboardUI::SetShadowAroundKeyboard() {
-  DCHECK(HasKeyboardWindow());
   aura::Window* contents_window = GetKeyboardWindow();
+  DCHECK(contents_window);
+
   if (!shadow_) {
     shadow_ = std::make_unique<ui::Shadow>();
     shadow_->Init(kShadowElevationVirtualKeyboard);
