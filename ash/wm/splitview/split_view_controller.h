@@ -159,6 +159,8 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  void FlushForTesting();
+
   // mojom::SplitViewObserver:
   void AddObserver(mojom::SplitViewObserverPtr observer) override;
 

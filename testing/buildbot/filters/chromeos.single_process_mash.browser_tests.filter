@@ -35,9 +35,6 @@
 -TopControlsSlideControllerTest.TestScrollingPage
 -TopControlsSlideControllerTest.TestScrollingPageAndSwitchingToNTP
 
-# Crash in ash::SplitViewController
--NonHomeLauncherBrowserNonClientFrameViewAshTest.HeaderHeightForSnappedBrowserInSplitView/*
-
 # Need pixel copy support. http://crbug.com/754864 http://crbug.com/754872
 -CastMirroringServiceHostBrowserTest.CaptureTabVideo
 -CastStreamingApiTestWithPixelOutput.*
