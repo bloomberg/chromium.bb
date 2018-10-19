@@ -16,6 +16,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/host/hit_test/hit_test_query.h"
 #include "components/viz/host/host_frame_sink_client.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/common/content_export.h"
@@ -69,9 +70,11 @@ class CONTENT_EXPORT DelegatedFrameHost
   // is responsible for registering the associated FrameSinkId with the
   // compositor or not. This is set only on non-aura platforms, since aura is
   // responsible for doing the appropriate [un]registration.
-  DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
-                     DelegatedFrameHostClient* client,
-                     bool should_register_frame_sink_id);
+  DelegatedFrameHost(
+      const viz::FrameSinkId& frame_sink_id,
+      DelegatedFrameHostClient* client,
+      bool should_register_frame_sink_id,
+      viz::ReportFirstSurfaceActivation should_report_activation);
   ~DelegatedFrameHost() override;
 
   // ui::CompositorObserver implementation.
@@ -149,11 +152,9 @@ class CONTENT_EXPORT DelegatedFrameHost
   void SetWantsAnimateOnlyBeginFrames();
   void DidNotProduceFrame(const viz::BeginFrameAck& ack);
 
-  // Returns the surface id for the surface most recently activated by
-  // OnFirstSurfaceActivation.
-  // TODO(ccameron): GetActiveSurfaceId may be a better name.
+  // Returns the surface id for the most recently embedded surface.
   viz::SurfaceId GetCurrentSurfaceId() const {
-    return viz::SurfaceId(frame_sink_id_, active_local_surface_id_);
+    return viz::SurfaceId(frame_sink_id_, local_surface_id_);
   }
   viz::CompositorFrameSinkSupport* GetCompositorFrameSinkSupportForTesting() {
     return support_.get();
@@ -209,12 +210,10 @@ class CONTENT_EXPORT DelegatedFrameHost
   // OnFirstSurfaceActivation.
   viz::LocalSurfaceId active_local_surface_id_;
 
-  // The local surface id as of the most recent call to
-  // EmbedSurface or WasShown. This is the surface that we expect
-  // future frames to reference. This will eventually equal the active surface.
-  viz::LocalSurfaceId pending_local_surface_id_;
+  // The LocalSurfaceId of the currently embedded surface.
+  viz::LocalSurfaceId local_surface_id_;
   // The size of the above surface (updated at the same time).
-  gfx::Size pending_surface_dip_size_;
+  gfx::Size surface_dip_size_;
 
   // In non-surface sync, this is the size of the most recently activated
   // surface (which is suitable for calculating gutter size). In surface sync,
@@ -238,6 +237,8 @@ class CONTENT_EXPORT DelegatedFrameHost
   std::unique_ptr<viz::FrameEvictor> frame_evictor_;
 
   viz::LocalSurfaceId first_local_surface_id_after_navigation_;
+
+  viz::ReportFirstSurfaceActivation should_report_activation_;
 
   base::WeakPtrFactory<DelegatedFrameHost> weak_factory_;
 
