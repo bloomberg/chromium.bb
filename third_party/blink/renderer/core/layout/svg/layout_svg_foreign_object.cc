@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
+#include "third_party/blink/renderer/core/layout/svg/transformed_hit_test_location.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/svg_foreign_object_painter.h"
 #include "third_party/blink/renderer/core/svg/svg_foreign_object_element.h"
@@ -130,23 +131,13 @@ bool LayoutSVGForeignObject::NodeAtPointFromSVG(
     const LayoutPoint& accumulated_offset,
     HitTestAction) {
   DCHECK_EQ(accumulated_offset, LayoutPoint());
-  AffineTransform local_transform = LocalSVGTransform();
-  if (!local_transform.IsInvertible())
+  TransformedHitTestLocation local_location(location_in_parent,
+                                            LocalSVGTransform());
+  if (!local_location)
     return false;
 
-  AffineTransform inverse = local_transform.Inverse();
-  base::Optional<HitTestLocation> local_location;
-  if (location_in_parent.IsRectBasedTest()) {
-    local_location.emplace(
-        inverse.MapPoint(location_in_parent.TransformedPoint()),
-        inverse.MapQuad(location_in_parent.TransformedRect()));
-  } else {
-    local_location.emplace(
-        (inverse.MapPoint(location_in_parent.TransformedPoint())));
-  }
-
-  // |local_point| already includes the offset of the <foreignObject> element,
-  // but PaintLayer::HitTestLayer assumes it has not been.
+  // |local_location| already includes the offset of the <foreignObject>
+  // element, but PaintLayer::HitTestLayer assumes it has not been.
   HitTestLocation local_without_offset(
       *local_location, -ToLayoutSize(Layer()->LayoutBoxLocation()));
   HitTestResult layer_result(result.GetHitTestRequest(), local_without_offset);

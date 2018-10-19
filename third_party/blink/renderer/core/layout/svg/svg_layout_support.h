@@ -75,18 +75,7 @@ class CORE_EXPORT SVGLayoutSupport {
 
   // Determine whether the passed point intersects the clip path of |object|.
   static bool IntersectsClipPath(const LayoutObject&, const FloatPoint&);
-
-  // Transform |location_in_parent| to |object|'s user-space and check if it is
-  // within the clipping area. Returns a pointer to a HitTestLocation object
-  // to use as the local location. Returns nullptr if the transform is singular
-  // or the point is outside the clipping area. The object backing
-  // the pointer is either |location_in_parent| or an emplacement of
-  // |local_storage|.
-  static const HitTestLocation* TransformToUserSpaceAndCheckClipping(
-      const LayoutObject&,
-      const AffineTransform& local_transform,
-      const HitTestLocation& location_in_parent,
-      base::Optional<HitTestLocation>& local_storage);
+  static bool IntersectsClipPath(const LayoutObject&, const HitTestLocation&);
 
   // Shared child hit-testing code between LayoutSVGRoot/LayoutSVGContainer.
   static bool HitTestChildren(LayoutObject* last_child,

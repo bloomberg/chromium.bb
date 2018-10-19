@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
+#include "third_party/blink/renderer/core/layout/svg/transformed_hit_test_location.h"
 #include "third_party/blink/renderer/core/paint/svg_container_painter.h"
 
 namespace blink {
@@ -179,12 +180,11 @@ bool LayoutSVGContainer::NodeAtPoint(
     const LayoutPoint& accumulated_offset,
     HitTestAction hit_test_action) {
   DCHECK_EQ(accumulated_offset, LayoutPoint());
-  base::Optional<HitTestLocation> local_storage;
-  const HitTestLocation* local_location =
-      SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
-          *this, LocalToSVGParentTransform(), location_in_container,
-          local_storage);
+  TransformedHitTestLocation local_location(location_in_container,
+                                            LocalToSVGParentTransform());
   if (!local_location)
+    return false;
+  if (!SVGLayoutSupport::IntersectsClipPath(*this, *local_location))
     return false;
 
   if (SVGLayoutSupport::HitTestChildren(LastChild(), result, *local_location,
