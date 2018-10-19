@@ -8941,6 +8941,7 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="INSTALL_FAILURE"/>
   <int value="3" label="MOUNT_FAILURE"/>
   <int value="4" label="COMPATIBILITY_CHECK_FAILED"/>
+  <int value="5" label="NOT_FOUND"/>
 </enum>
 
 <enum name="CrosDictationToggleDictationMethod">

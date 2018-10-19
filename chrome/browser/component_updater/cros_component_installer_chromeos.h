@@ -76,8 +76,8 @@ class CrOSComponentInstallerPolicy : public ComponentInstallerPolicy {
 // This class contains functions used to register and install a component.
 class CrOSComponentInstaller : public CrOSComponentManager {
  public:
-  explicit CrOSComponentInstaller(
-      std::unique_ptr<MetadataTable> metadata_table);
+  CrOSComponentInstaller(std::unique_ptr<MetadataTable> metadata_table,
+                         ComponentUpdateService* component_updater);
   ~CrOSComponentInstaller() override;
 
   // CrOSComponentManager:
@@ -111,21 +111,18 @@ class CrOSComponentInstaller : public CrOSComponentManager {
   FRIEND_TEST_ALL_PREFIXES(CrOSComponentInstallerTest, CompatibleCrOSComponent);
 
   // Registers a component with a dedicated ComponentUpdateService instance.
-  void Register(ComponentUpdateService* cus,
-                const ComponentConfig& config,
+  void Register(const ComponentConfig& config,
                 base::OnceClosure register_callback);
 
   // Installs a component with a dedicated ComponentUpdateService instance.
-  void Install(ComponentUpdateService* cus,
-               const std::string& name,
+  void Install(const std::string& name,
                UpdatePolicy update_policy,
                MountPolicy mount_policy,
                LoadCallback load_callback);
 
   // Calls OnDemandUpdate to install the component right after being registered.
   // |id| is the component id generated from its sha2 hash.
-  void StartInstall(ComponentUpdateService* cus,
-                    const std::string& name,
+  void StartInstall(const std::string& name,
                     const std::string& id,
                     UpdatePolicy update_policy,
                     update_client::Callback install_callback);
@@ -133,6 +130,7 @@ class CrOSComponentInstaller : public CrOSComponentManager {
   // Calls LoadInternal to load the installed component.
   void FinishInstall(const std::string& name,
                      MountPolicy mount_policy,
+                     UpdatePolicy update_policy,
                      LoadCallback load_callback,
                      update_client::Error error);
 
@@ -161,6 +159,8 @@ class CrOSComponentInstaller : public CrOSComponentManager {
 
   // Table storing metadata (installs, usage, etc.).
   std::unique_ptr<MetadataTable> metadata_table_;
+
+  ComponentUpdateService* const component_updater_;
 
   DISALLOW_COPY_AND_ASSIGN(CrOSComponentInstaller);
 };

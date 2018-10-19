@@ -26,6 +26,8 @@ class CrOSComponentManager {
     INSTALL_FAILURE = 2,    // update_client fails to install component.
     MOUNT_FAILURE = 3,      // Component can not be mounted.
     COMPATIBILITY_CHECK_FAILED = 4,  // Compatibility check failed.
+    NOT_FOUND = 5,  // A component installation was not found - reported for
+                    // load requests with kSkip update policy.
     ERROR_MAX
   };
 
