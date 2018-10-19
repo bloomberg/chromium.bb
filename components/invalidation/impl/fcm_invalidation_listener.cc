@@ -23,7 +23,7 @@ FCMInvalidationListener::FCMInvalidationListener(
     std::unique_ptr<FCMSyncNetworkChannel> network_channel)
     : network_channel_(std::move(network_channel)),
       delegate_(nullptr),
-      ticl_state_(DEFAULT_INVALIDATION_ERROR),
+      subscription_channel_state_(DEFAULT_INVALIDATION_ERROR),
       fcm_network_state_(DEFAULT_INVALIDATION_ERROR),
       weak_factory_(this) {
   network_channel_->AddObserver(this);
@@ -46,6 +46,7 @@ void FCMInvalidationListener::Start(
   per_user_topic_registration_manager_ =
       std::move(per_user_topic_registration_manager);
   per_user_topic_registration_manager_->Init();
+  per_user_topic_registration_manager_->AddObserver(this);
   invalidation_client_ = std::move(create_invalidation_client_callback)
                              .Run(network_channel_.get(), &logger_, this);
   invalidation_client_->Start();
@@ -59,7 +60,7 @@ void FCMInvalidationListener::UpdateRegisteredTopics(const TopicSet& topics) {
 
 void FCMInvalidationListener::Ready(InvalidationClient* client) {
   DCHECK_EQ(client, invalidation_client_.get());
-  ticl_state_ = INVALIDATIONS_ENABLED;
+  subscription_channel_state_ = INVALIDATIONS_ENABLED;
   EmitStateChange();
   DoRegistrationUpdate();
 }
@@ -139,8 +140,7 @@ void FCMInvalidationListener::Drop(const invalidation::ObjectId& id,
 }
 
 void FCMInvalidationListener::DoRegistrationUpdate() {
-  if (ticl_state_ != INVALIDATIONS_ENABLED ||
-      !per_user_topic_registration_manager_ || token_.empty() ||
+  if (!per_user_topic_registration_manager_ || token_.empty() ||
       !ids_update_requested_) {
     return;
   }
@@ -188,20 +188,24 @@ void FCMInvalidationListener::Stop() {
 
   invalidation_client_.reset();
   delegate_ = nullptr;
+
+  if (per_user_topic_registration_manager_) {
+    per_user_topic_registration_manager_->RemoveObserver(this);
+  }
   per_user_topic_registration_manager_.reset();
 
-  ticl_state_ = DEFAULT_INVALIDATION_ERROR;
+  subscription_channel_state_ = DEFAULT_INVALIDATION_ERROR;
   fcm_network_state_ = DEFAULT_INVALIDATION_ERROR;
 }
 
 InvalidatorState FCMInvalidationListener::GetState() const {
-  if (ticl_state_ == INVALIDATION_CREDENTIALS_REJECTED ||
+  if (subscription_channel_state_ == INVALIDATION_CREDENTIALS_REJECTED ||
       fcm_network_state_ == INVALIDATION_CREDENTIALS_REJECTED) {
     // If either the ticl or the push client rejected our credentials,
     // return INVALIDATION_CREDENTIALS_REJECTED.
     return INVALIDATION_CREDENTIALS_REJECTED;
   }
-  if (ticl_state_ == INVALIDATIONS_ENABLED &&
+  if (subscription_channel_state_ == INVALIDATIONS_ENABLED &&
       fcm_network_state_ == INVALIDATIONS_ENABLED) {
     // If the ticl is ready and the push client notifications are
     // enabled, return INVALIDATIONS_ENABLED.
@@ -218,6 +222,12 @@ void FCMInvalidationListener::EmitStateChange() {
 void FCMInvalidationListener::OnFCMSyncNetworkChannelStateChanged(
     InvalidatorState invalidator_state) {
   fcm_network_state_ = invalidator_state;
+  EmitStateChange();
+}
+
+void FCMInvalidationListener::OnSubscriptionChannelStateChanged(
+    InvalidatorState invalidator_state) {
+  subscription_channel_state_ = invalidator_state;
   EmitStateChange();
 }
 
