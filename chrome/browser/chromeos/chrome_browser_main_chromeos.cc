@@ -550,13 +550,6 @@ int ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
                         .value();
   }
 
-#if defined(GOOGLE_CHROME_BUILD)
-  const char kChromeOSReleaseTrack[] = "CHROMEOS_RELEASE_TRACK";
-  std::string channel;
-  if (base::SysInfo::GetLsbReleaseValue(kChromeOSReleaseTrack, &channel))
-    chrome::SetChannel(channel);
-#endif
-
   if (!is_dbus_initialized_)
     PreEarlyInitDBus();
 
