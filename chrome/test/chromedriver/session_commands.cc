@@ -474,7 +474,9 @@ Status ExecuteGetCurrentWindowHandle(Session* session,
   Status status = session->GetTargetWindow(&web_view);
   if (status.IsError())
     return status;
-
+  status = web_view->ConnectIfNecessary();
+  if (status.IsError())
+    return status;
   value->reset(new base::Value(WebViewIdToWindowHandle(web_view->GetId())));
   return Status(kOk);
 }
