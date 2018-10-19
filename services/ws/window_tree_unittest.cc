@@ -1723,6 +1723,18 @@ TEST(WindowTreeTest, StackAbove) {
       top_level1, non_top_level_window));
 }
 
+TEST(WindowTreeTest, VisibilityChanged) {
+  WindowServiceTestSetup setup;
+  aura::Window* window = setup.window_tree_test_helper()->NewTopLevelWindow();
+  setup.changes()->clear();
+  EXPECT_FALSE(window->IsVisible());
+
+  window->Show();
+  EXPECT_TRUE(window->IsVisible());
+  EXPECT_EQ("VisibilityChanged window=0,1 visible=true",
+            SingleChangeToDescription(*setup.changes()));
+}
+
 TEST(WindowTreeTest, RunMoveLoopTouch) {
   WindowServiceTestSetup setup;
   aura::Window* top_level =
@@ -1740,6 +1752,7 @@ TEST(WindowTreeTest, RunMoveLoopTouch) {
 
   // Make the window visible and repeat.
   top_level->Show();
+  setup.changes()->clear();
   setup.window_tree_test_helper()->window_tree()->PerformWindowMove(
       13, top_level_id, mojom::MoveLoopSource::TOUCH, gfx::Point());
   // WindowServiceDelegate should be asked to do the move.

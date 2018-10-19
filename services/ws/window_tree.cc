@@ -1025,6 +1025,8 @@ bool WindowTree::SetWindowVisibilityImpl(const ClientWindowId& window_id,
       (IsClientRootWindow(window) && can_change_root_window_visibility_)) {
     if (window->TargetVisibility() == visible)
       return true;
+    ClientChange change(property_change_tracker_.get(), window,
+                        ClientChangeType::kVisibility);
     if (visible)
       window->Show();
     else
@@ -1364,6 +1366,16 @@ void WindowTree::OnWindowDestroyed(aura::Window* window) {
 
   const bool delete_if_owned = false;
   RemoveWindowFromKnownWindows(window, delete_if_owned);
+}
+
+void WindowTree::OnWindowVisibilityChanging(aura::Window* window,
+                                            bool visible) {
+  if (property_change_tracker_->IsProcessingChangeForWindow(
+          window, ClientChangeType::kVisibility)) {
+    return;
+  }
+  window_tree_client_->OnWindowVisibilityChanged(TransportIdForWindow(window),
+                                                 visible);
 }
 
 void WindowTree::OnCaptureChanged(aura::Window* lost_capture,

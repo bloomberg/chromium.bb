@@ -264,16 +264,6 @@
 -PlatformAppBrowserTest.PictureInPicture
 -PictureInPictureLazyBackgroundPageApiTest.PictureInPictureInBackgroundPage
 
-# These started failing with the switch to ws2.
-# https:://crbug.com/855767
--AppWindowApiTest.OnRestoredEvent
--BrowserActionApiTest.BrowserActionPopupWithIframe
--FirstRunUIBrowserTest.ModalWindowDoesNotBlock
--LauncherPlatformAppBrowserTest.PackagedAppClickBehaviorInMinimizeMode
--LoginWebDialogTest.CannotMinimize
--LoginWebDialogTest.CloseDialogByAccelerator
--ShelfAppBrowserTestNoDefaultBrowser.BrowserShortcutLauncherItemController
-
 # Excluded from Mash because pointer events from EventGenerator aren't seen.
 # https://crbug.com/814675
 -ChromeOSInfoPrivateTest.StylusSeen

@@ -356,6 +356,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // aura::WindowObserver:
   void OnWindowHierarchyChanging(const HierarchyChangeParams& params) override;
   void OnWindowDestroyed(aura::Window* window) override;
+  void OnWindowVisibilityChanging(aura::Window* window, bool visible) override;
 
   // aura::client::CaptureClientObserver:
   void OnCaptureChanged(aura::Window* lost_capture,
