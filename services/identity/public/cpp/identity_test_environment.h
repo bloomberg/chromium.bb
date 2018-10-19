@@ -13,6 +13,7 @@
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 
+class IdentityTestEnvironmentChromeBrowserStateAdaptor;
 class IdentityTestEnvironmentProfileAdaptor;
 
 namespace identity {
@@ -200,6 +201,7 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   void SetCallbackForNextAccessTokenRequest(base::OnceClosure callback);
 
  private:
+  friend class ::IdentityTestEnvironmentChromeBrowserStateAdaptor;
   friend class ::IdentityTestEnvironmentProfileAdaptor;
 
   struct AccessTokenRequestState {
