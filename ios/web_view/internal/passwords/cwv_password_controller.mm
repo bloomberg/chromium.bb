@@ -360,22 +360,14 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
   [self.suggestionHelper
       checkIfSuggestionsAvailableForForm:formName
                          fieldIdentifier:fieldIdentifier
+                               fieldType:fieldType
                                     type:@"focus"
                                  frameID:frameID
                              isMainFrame:YES
                                 webState:_webState
                        completionHandler:^(BOOL suggestionsAvailable) {
-                         // Currently -checkIfSuggestionsAvailableForForm always
-                         // returns NO for password fields, in this case, we
-                         // still need to retrieve suggestions.
-                         // TODO(crbug.com/865114): Update
-                         // -checkIfSuggestionsAvailableForForm to return YES
-                         // for password fields if matching form is found.
-                         BOOL willRetrieve =
-                             suggestionsAvailable ||
-                             [fieldType isEqualToString:@"password"];
                          CWVPasswordController* strongSelf = weakSelf;
-                         if (!strongSelf || !willRetrieve) {
+                         if (!strongSelf || !suggestionsAvailable) {
                            completionHandler(@[]);
                            return;
                          }
@@ -407,6 +399,7 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
       getFillDataForUsername:suggestion.formSuggestion.value];
   if (!fillData) {
     DLOG(WARNING) << "Failed to fill password suggestion: Fill data not found.";
+    return;
   }
   [self.formHelper fillPasswordFormWithFillData:*fillData
                               completionHandler:^(BOOL success) {

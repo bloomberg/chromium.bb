@@ -99,6 +99,7 @@ retrieveSuggestionsWithFormName:(NSString*)formName
 
 - (void)checkIfSuggestionsAvailableForForm:(NSString*)formName
                            fieldIdentifier:(NSString*)fieldIdentifier
+                                 fieldType:(NSString*)fieldType
                                       type:(NSString*)type
                                    frameID:(NSString*)frameID
                                isMainFrame:(BOOL)isMainFrame
@@ -121,16 +122,19 @@ retrieveSuggestionsWithFormName:(NSString*)formName
       // Passwords is only supported on main frame and iframes with the same
       // origin.
       completion(NO);
+      return;
     }
   }
 
+  BOOL isPasswordField = [fieldType isEqual:kPasswordFieldType];
   if (!_sentPasswordFormToPasswordManager && [type isEqual:@"focus"]) {
     // Save the callback until fill data is ready.
     _suggestionsAvailableCompletion = ^(const AccountSelectFillData* fillData) {
       completion(!fillData ? NO
                            : fillData->IsSuggestionsAvailable(
                                  SysNSStringToUTF16(formName),
-                                 SysNSStringToUTF16(fieldIdentifier), false));
+                                 SysNSStringToUTF16(fieldIdentifier),
+                                 isPasswordField));
     };
     // Form extraction is required for this check.
     [self.delegate suggestionHelperShouldTriggerFormExtraction:self];
@@ -139,7 +143,7 @@ retrieveSuggestionsWithFormName:(NSString*)formName
 
   completion(_fillData.IsSuggestionsAvailable(
       SysNSStringToUTF16(formName), SysNSStringToUTF16(fieldIdentifier),
-      false));
+      isPasswordField));
 }
 
 - (std::unique_ptr<password_manager::FillData>)getFillDataForUsername:
