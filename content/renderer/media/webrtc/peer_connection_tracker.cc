@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
