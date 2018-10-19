@@ -2232,10 +2232,6 @@ class MockNetworkServiceClient : public mojom::NetworkServiceClient {
     NOTREACHED();
   }
 
-  void OnDataUseUpdate(int32_t network_traffic_annotation_id_hash,
-                       int64_t recv_bytes,
-                       int64_t sent_bytes) override {}
-
   void set_credentials_response(CredentialsResponse credentials_response) {
     credentials_response_ = credentials_response;
   }
