@@ -29,6 +29,11 @@ extern NSString* const PasswordDoneButtonAccessibilityIdentifier;
                            appBarStyle:
                                (ChromeTableViewControllerStyle)appBarStyle
     NS_UNAVAILABLE;
+
+// If set to YES, the controller will add negative content insets inverse to the
+// ones added by UITableViewController to accommodate for the keyboard.
+@property(nonatomic, assign) BOOL contentInsetsAlwaysEqualToSafeArea;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_PASSWORD_VIEW_CONTROLLER_H_

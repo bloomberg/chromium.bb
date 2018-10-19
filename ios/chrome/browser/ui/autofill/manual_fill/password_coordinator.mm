@@ -71,7 +71,7 @@ initWithBaseViewController:(UIViewController*)viewController
   if (self) {
     _passwordViewController =
         [[PasswordViewController alloc] initWithSearchController:nil];
-
+    _passwordViewController.contentInsetsAlwaysEqualToSafeArea = YES;
     _manualFillInjectionHandler = injectionHandler;
 
     auto passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
