@@ -26,6 +26,7 @@
 #include "config.h"
 
 #include <string.h>
+#include <unistd.h>
 
 #include "linux-explicit-synchronization-unstable-v1-client-protocol.h"
 #include "weston-test-client-helper.h"
@@ -92,5 +93,56 @@ TEST(second_surface_synchronization_on_surface_raises_error)
 
 	zwp_linux_surface_synchronization_v1_destroy(surface_sync2);
 	zwp_linux_surface_synchronization_v1_destroy(surface_sync1);
+	zwp_linux_explicit_synchronization_v1_destroy(sync);
+}
+
+TEST(set_acquire_fence_with_invalid_fence_raises_error)
+{
+	struct client *client = create_test_client();
+	struct zwp_linux_explicit_synchronization_v1 *sync =
+		get_linux_explicit_synchronization(client);
+	struct zwp_linux_surface_synchronization_v1 *surface_sync =
+		zwp_linux_explicit_synchronization_v1_get_synchronization(
+			sync, client->surface->wl_surface);
+	int pipefd[2] = { -1, -1 };
+
+	assert(pipe(pipefd) == 0);
+
+	zwp_linux_surface_synchronization_v1_set_acquire_fence(surface_sync,
+							       pipefd[0]);
+	expect_protocol_error(
+		client,
+		&zwp_linux_surface_synchronization_v1_interface,
+		ZWP_LINUX_SURFACE_SYNCHRONIZATION_V1_ERROR_INVALID_FENCE);
+
+	close(pipefd[0]);
+	close(pipefd[1]);
+	zwp_linux_surface_synchronization_v1_destroy(surface_sync);
+	zwp_linux_explicit_synchronization_v1_destroy(sync);
+}
+
+TEST(set_acquire_fence_on_destroyed_surface_raises_error)
+{
+	struct client *client = create_test_client();
+	struct zwp_linux_explicit_synchronization_v1 *sync =
+		get_linux_explicit_synchronization(client);
+	struct zwp_linux_surface_synchronization_v1 *surface_sync =
+		zwp_linux_explicit_synchronization_v1_get_synchronization(
+			sync, client->surface->wl_surface);
+	int pipefd[2] = { -1, -1 };
+
+	assert(pipe(pipefd) == 0);
+
+	wl_surface_destroy(client->surface->wl_surface);
+	zwp_linux_surface_synchronization_v1_set_acquire_fence(surface_sync,
+							       pipefd[0]);
+	expect_protocol_error(
+		client,
+		&zwp_linux_surface_synchronization_v1_interface,
+		ZWP_LINUX_SURFACE_SYNCHRONIZATION_V1_ERROR_NO_SURFACE);
+
+	close(pipefd[0]);
+	close(pipefd[1]);
+	zwp_linux_surface_synchronization_v1_destroy(surface_sync);
 	zwp_linux_explicit_synchronization_v1_destroy(sync);
 }

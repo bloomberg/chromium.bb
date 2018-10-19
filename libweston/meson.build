@@ -17,6 +17,7 @@ srcs_libweston = [
 	'input.c',
 	'linux-dmabuf.c',
 	'linux-explicit-synchronization.c',
+	'linux-sync-file.c',
 	'log.c',
 	'noop-renderer.c',
 	'pixel-formats.c',

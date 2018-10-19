@@ -25,11 +25,14 @@
 
 #include "config.h"
 
+#include <assert.h>
 #include <inttypes.h>
 
 #include "compositor.h"
 #include "linux-explicit-synchronization.h"
 #include "linux-explicit-synchronization-unstable-v1-server-protocol.h"
+#include "linux-sync-file.h"
+#include "shared/fd-util.h"
 
 static void
 destroy_linux_surface_synchronization(struct wl_resource *resource)
@@ -37,8 +40,10 @@ destroy_linux_surface_synchronization(struct wl_resource *resource)
 	struct weston_surface *surface =
 		wl_resource_get_user_data(resource);
 
-	if (surface)
+	if (surface) {
+		fd_clear(&surface->pending.acquire_fence_fd);
 		surface->synchronization_resource = NULL;
+	}
 }
 
 static void
@@ -53,7 +58,38 @@ linux_surface_synchronization_set_acquire_fence(struct wl_client *client,
 						struct wl_resource *resource,
 						int32_t fd)
 {
-	wl_client_post_no_memory(client);
+	struct weston_surface *surface = wl_resource_get_user_data(resource);
+
+	if (!surface) {
+		wl_resource_post_error(
+			resource,
+			ZWP_LINUX_SURFACE_SYNCHRONIZATION_V1_ERROR_NO_SURFACE,
+			"surface no longer exists");
+		goto err;
+	}
+
+	if (!linux_sync_file_is_valid(fd)) {
+		wl_resource_post_error(
+			resource,
+			ZWP_LINUX_SURFACE_SYNCHRONIZATION_V1_ERROR_INVALID_FENCE,
+			"invalid fence fd");
+		goto err;
+	}
+
+	if (surface->pending.acquire_fence_fd != -1) {
+		wl_resource_post_error(
+			resource,
+			ZWP_LINUX_SURFACE_SYNCHRONIZATION_V1_ERROR_DUPLICATE_FENCE,
+			"already have a fence fd");
+		goto err;
+	}
+
+	fd_update(&surface->pending.acquire_fence_fd, fd);
+
+	return;
+
+err:
+	close(fd);
 }
 
 static void
@@ -161,4 +197,36 @@ linux_explicit_synchronization_setup(struct weston_compositor *compositor)
 		return -1;
 
 	return 0;
+}
+
+/** Resolve an internal compositor error by disconnecting the client.
+ *
+ * This function is used in cases when explicit synchronization
+ * turns out to be unusable and there is no fallback path.
+ *
+ * It is possible the fault is caused by a compositor bug, the underlying
+ * graphics stack bug or normal behaviour, or perhaps a client mistake.
+ * In any case, the options are to either composite garbage or nothing,
+ * or disconnect the client. This is a helper function for the latter.
+ *
+ * The error is sent as an INVALID_OBJECT error on the client's wl_display.
+ *
+ * \param sync The explicit synchronization related resource that is unusable.
+ * \param msg A custom error message attached to the protocol error.
+ */
+WL_EXPORT void
+linux_explicit_synchronization_send_server_error(struct wl_resource *resource,
+						 const char *msg)
+{
+	uint32_t id = wl_resource_get_id(resource);
+	const char *class = wl_resource_get_class(resource);
+	struct wl_client *client = wl_resource_get_client(resource);
+	struct wl_resource *display_resource = wl_client_get_object(client, 1);
+
+	assert(display_resource);
+	wl_resource_post_error(display_resource,
+			       WL_DISPLAY_ERROR_INVALID_OBJECT,
+			       "linux_explicit_synchronization server error "
+			       "with %s@%"PRIu32": %s",
+			       class, id, msg);
 }

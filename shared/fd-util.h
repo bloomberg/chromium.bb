@@ -23,17 +23,34 @@
  * SOFTWARE.
  */
 
-#ifndef WESTON_LINUX_EXPLICIT_SYNCHRONIZATION_H
-#define WESTON_LINUX_EXPLICIT_SYNCHRONIZATION_H
+#ifndef FD_UTIL_H
+#define FD_UTIL_H
 
-struct weston_compositor;
-struct wl_resource;
+#include <unistd.h>
 
-int
-linux_explicit_synchronization_setup(struct weston_compositor *compositor);
+static inline void
+fd_update(int *fd, int new_fd)
+{
+	if (*fd == new_fd)
+		return;
+	if (*fd >= 0)
+		close(*fd);
+	*fd = new_fd;
+}
 
-void
-linux_explicit_synchronization_send_server_error(struct wl_resource *resource,
-						 const char *msg);
+static inline void
+fd_move(int *dest, int *src)
+{
+	if (dest == src)
+		return;
+	fd_update(dest, *src);
+	*src = -1;
+}
 
-#endif /* WESTON_LINUX_EXPLICIT_SYNCHRONIZATION */
+static inline void
+fd_clear(int *fd)
+{
+	fd_update(fd, -1);
+}
+
+#endif /* FD_UTIL_H */

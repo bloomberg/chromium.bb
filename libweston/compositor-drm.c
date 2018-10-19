@@ -66,6 +66,7 @@
 #include "presentation-time-server-protocol.h"
 #include "linux-dmabuf.h"
 #include "linux-dmabuf-unstable-v1-server-protocol.h"
+#include "linux-explicit-synchronization.h"
 
 #ifndef DRM_CLIENT_CAP_ASPECT_RATIO
 #define DRM_CLIENT_CAP_ASPECT_RATIO	4
@@ -171,6 +172,7 @@ enum wdrm_plane_property {
 	WDRM_PLANE_FB_ID,
 	WDRM_PLANE_CRTC_ID,
 	WDRM_PLANE_IN_FORMATS,
+	WDRM_PLANE_IN_FENCE_FD,
 	WDRM_PLANE__COUNT
 };
 
@@ -213,6 +215,7 @@ static const struct drm_property_info plane_props[] = {
 	[WDRM_PLANE_FB_ID] = { .name = "FB_ID", },
 	[WDRM_PLANE_CRTC_ID] = { .name = "CRTC_ID", },
 	[WDRM_PLANE_IN_FORMATS] = { .name = "IN_FORMATS" },
+	[WDRM_PLANE_IN_FENCE_FD] = { .name = "IN_FENCE_FD" },
 };
 
 /**
@@ -455,6 +458,9 @@ struct drm_plane_state {
 	uint32_t dest_w, dest_h;
 
 	bool complete;
+
+	/* We don't own the fd, so we shouldn't close it */
+	int in_fence_fd;
 
 	struct wl_list link; /* drm_output_state::plane_list */
 };
@@ -1381,6 +1387,7 @@ drm_plane_state_alloc(struct drm_output_state *state_output,
 	assert(state);
 	state->output_state = state_output;
 	state->plane = plane;
+	state->in_fence_fd = -1;
 
 	/* Here we only add the plane state to the desired link, and not
 	 * set the member. Having an output pointer set means that the
@@ -1411,6 +1418,7 @@ drm_plane_state_free(struct drm_plane_state *state, bool force)
 	wl_list_remove(&state->link);
 	wl_list_init(&state->link);
 	state->output_state = NULL;
+	state->in_fence_fd = -1;
 
 	if (force || state != state->plane->state_cur) {
 		drm_fb_unref(state->fb);
@@ -2010,6 +2018,13 @@ drm_output_prepare_scanout_view(struct drm_output_state *output_state,
 	    extents->y2 != output->base.y + output->base.height)
 		return NULL;
 
+	/* If the surface buffer has an in-fence fd, but the plane doesn't
+	 * support fences, we can't place the buffer on this plane. */
+	if (ev->surface->acquire_fence_fd >= 0 &&
+	    (!b->atomic_modeset ||
+	     scanout_plane->props[WDRM_PLANE_IN_FENCE_FD].prop_id == 0))
+		return NULL;
+
 	fb = drm_fb_get_from_view(output_state, ev);
 	if (!fb) {
 		drm_debug(b, "\t\t\t\t[scanout] not placing view %p on scanout: "
@@ -2048,6 +2063,8 @@ drm_output_prepare_scanout_view(struct drm_output_state *output_state,
 	     state->src_w != state->dest_w << 16 ||
 	     state->src_h != state->dest_h << 16))
 		goto err;
+
+	state->in_fence_fd = ev->surface->acquire_fence_fd;
 
 	/* In plane-only mode, we don't need to test the state now, as we
 	 * will only test it once at the end. */
@@ -2293,6 +2310,8 @@ drm_output_apply_state_legacy(struct drm_output_state *state)
 	assert(scanout_state->dest_y == 0);
 	assert(scanout_state->dest_w == scanout_state->src_w >> 16);
 	assert(scanout_state->dest_h == scanout_state->src_h >> 16);
+	/* The legacy SetCrtc API doesn't support fences */
+	assert(scanout_state->in_fence_fd == -1);
 
 	mode = to_drm_mode(output->base.current_mode);
 	if (backend->state_invalid ||
@@ -2351,6 +2370,8 @@ drm_output_apply_state_legacy(struct drm_output_state *state)
 		assert(!ps->complete);
 		assert(!ps->output || ps->output == output);
 		assert(!!ps->output == !!ps->fb);
+		/* The legacy SetPlane API doesn't support fences */
+		assert(ps->in_fence_fd == -1);
 
 		if (ps->fb && !backend->sprites_hidden)
 			fb_id = ps->fb->fb_id;
@@ -2567,6 +2588,12 @@ drm_output_apply_state_atomic(struct drm_output_state *state,
 		drm_debug(plane->backend, "\t\t\t[PLANE:%lu] FORMAT: %s\n",
 				(unsigned long) plane->plane_id,
 				pinfo ? pinfo->drm_format_name : "UNKNOWN");
+
+		if (plane_state->in_fence_fd >= 0) {
+			ret |= plane_add_prop(req, plane,
+					      WDRM_PLANE_IN_FENCE_FD,
+					      plane_state->in_fence_fd);
+		}
 
 		if (ret != 0) {
 			weston_log("couldn't set plane state\n");
@@ -3262,11 +3289,26 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 			continue;
 		}
 
+		/* If the surface buffer has an in-fence fd, but the plane
+		 * doesn't support fences, we can't place the buffer on this
+		 * plane. */
+		if (ev->surface->acquire_fence_fd >= 0 &&
+		    (!b->atomic_modeset ||
+		     p->props[WDRM_PLANE_IN_FENCE_FD].prop_id == 0)) {
+			drm_debug(b, "\t\t\t\t[overlay] not placing view %p on overlay: "
+				     "no in-fence support\n", ev);
+			drm_plane_state_put_back(state);
+			state = NULL;
+			continue;
+		}
+
 		/* We hold one reference for the lifetime of this function;
 		 * from calling drm_fb_get_from_view, to the out label where
 		 * we unconditionally drop the reference. So, we take another
 		 * reference here to live within the state. */
 		state->fb = drm_fb_ref(fb);
+
+		state->in_fence_fd = ev->surface->acquire_fence_fd;
 
 		/* In planes-only mode, we don't have an incremental state to
 		 * test against, so we just hope it'll work. */
@@ -7014,11 +7056,14 @@ switch_to_gl_renderer(struct drm_backend *b)
 {
 	struct drm_output *output;
 	bool dmabuf_support_inited;
+	bool linux_explicit_sync_inited;
 
 	if (!b->use_pixman)
 		return;
 
 	dmabuf_support_inited = !!b->compositor->renderer->import_dmabuf;
+	linux_explicit_sync_inited =
+		b->compositor->capabilities & WESTON_CAP_EXPLICIT_SYNC;
 
 	weston_log("Switching to GL renderer\n");
 
@@ -7050,6 +7095,13 @@ switch_to_gl_renderer(struct drm_backend *b)
 		if (linux_dmabuf_setup(b->compositor) < 0)
 			weston_log("Error: initializing dmabuf "
 				   "support failed.\n");
+	}
+
+	if (!linux_explicit_sync_inited &&
+	    (b->compositor->capabilities & WESTON_CAP_EXPLICIT_SYNC)) {
+		if (linux_explicit_synchronization_setup(b->compositor) < 0)
+			weston_log("Error: initializing explicit "
+				   " synchronization support failed.\n");
 	}
 }
 
@@ -7480,6 +7532,12 @@ drm_backend_create(struct weston_compositor *compositor,
 		if (linux_dmabuf_setup(compositor) < 0)
 			weston_log("Error: initializing dmabuf "
 				   "support failed.\n");
+	}
+
+	if (compositor->capabilities & WESTON_CAP_EXPLICIT_SYNC) {
+		if (linux_explicit_synchronization_setup(compositor) < 0)
+			weston_log("Error: initializing explicit "
+				   " synchronization support failed.\n");
 	}
 
 	ret = weston_plugin_api_register(compositor, WESTON_DRM_OUTPUT_API_NAME,

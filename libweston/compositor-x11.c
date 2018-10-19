@@ -62,6 +62,7 @@
 #include "pixman-renderer.h"
 #include "presentation-time-server-protocol.h"
 #include "linux-dmabuf.h"
+#include "linux-explicit-synchronization.h"
 #include "windowed-output-api.h"
 
 #define DEFAULT_AXIS_STEP_DISTANCE 10
@@ -1893,6 +1894,12 @@ x11_backend_create(struct weston_compositor *compositor,
 		if (linux_dmabuf_setup(compositor) < 0)
 			weston_log("Error: initializing dmabuf "
 				   "support failed.\n");
+	}
+
+	if (compositor->capabilities & WESTON_CAP_EXPLICIT_SYNC) {
+		if (linux_explicit_synchronization_setup(compositor) < 0)
+			weston_log("Error: initializing explicit "
+				   " synchronization support failed.\n");
 	}
 
 	ret = weston_plugin_api_register(compositor, WESTON_WINDOWED_OUTPUT_API_NAME,

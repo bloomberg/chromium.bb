@@ -49,6 +49,7 @@
 #include "vertex-clipping.h"
 #include "linux-dmabuf.h"
 #include "linux-dmabuf-unstable-v1-server-protocol.h"
+#include "linux-explicit-synchronization.h"
 #include "pixel-formats.h"
 
 #include "shared/helpers.h"
@@ -258,6 +259,9 @@ struct gl_renderer {
 	PFNEGLCREATESYNCKHRPROC create_sync;
 	PFNEGLDESTROYSYNCKHRPROC destroy_sync;
 	PFNEGLDUPNATIVEFENCEFDANDROIDPROC dup_native_fence_fd;
+
+	int has_wait_sync;
+	PFNEGLWAITSYNCKHRPROC wait_sync;
 };
 
 enum timeline_render_point_type {
@@ -861,6 +865,72 @@ shader_uniforms(struct gl_shader *shader,
 		glUniform1i(shader->tex_uniforms[i], i);
 }
 
+static int
+ensure_surface_buffer_is_ready(struct gl_renderer *gr,
+			       struct gl_surface_state *gs)
+{
+	EGLint attribs[] = {
+		EGL_SYNC_NATIVE_FENCE_FD_ANDROID,
+		-1,
+		EGL_NONE
+	};
+	struct weston_surface *surface = gs->surface;
+	struct weston_buffer *buffer = gs->buffer_ref.buffer;
+	EGLSyncKHR sync;
+	EGLint wait_ret;
+	EGLint destroy_ret;
+
+	if (!buffer)
+		return 0;
+
+	if (surface->acquire_fence_fd < 0)
+		return 0;
+
+	/* We should only get a fence if we support EGLSyncKHR, since
+	 * we don't advertise the explicit sync protocol otherwise. */
+	assert(gr->has_native_fence_sync);
+	/* We should only get a fence for non-SHM buffers, since surface
+	 * commit would have failed otherwise. */
+	assert(wl_shm_buffer_get(buffer->resource) == NULL);
+
+	attribs[1] = dup(surface->acquire_fence_fd);
+	if (attribs[1] == -1) {
+		linux_explicit_synchronization_send_server_error(
+			gs->surface->synchronization_resource,
+			"Failed to dup acquire fence");
+		return -1;
+	}
+
+	sync = gr->create_sync(gr->egl_display,
+			       EGL_SYNC_NATIVE_FENCE_ANDROID,
+			       attribs);
+	if (sync == EGL_NO_SYNC_KHR) {
+		linux_explicit_synchronization_send_server_error(
+			gs->surface->synchronization_resource,
+			"Failed to create EGLSyncKHR object");
+		close(attribs[1]);
+		return -1;
+	}
+
+	wait_ret = gr->wait_sync(gr->egl_display, sync, 0);
+	if (wait_ret == EGL_FALSE) {
+		linux_explicit_synchronization_send_server_error(
+			gs->surface->synchronization_resource,
+			"Failed to wait on EGLSyncKHR object");
+		/* Continue to try to destroy the sync object. */
+	}
+
+
+	destroy_ret = gr->destroy_sync(gr->egl_display, sync);
+	if (destroy_ret == EGL_FALSE) {
+		linux_explicit_synchronization_send_server_error(
+			gs->surface->synchronization_resource,
+			"Failed to destroy on EGLSyncKHR object");
+	}
+
+	return (wait_ret == EGL_TRUE && destroy_ret == EGL_TRUE) ? 0 : -1;
+}
+
 static void
 draw_view(struct weston_view *ev, struct weston_output *output,
 	  pixman_region32_t *damage) /* in global coordinates */
@@ -889,6 +959,9 @@ draw_view(struct weston_view *ev, struct weston_output *output,
 	pixman_region32_subtract(&repaint, &repaint, &ev->clip);
 
 	if (!pixman_region32_not_empty(&repaint))
+		goto out;
+
+	if (ensure_surface_buffer_is_ready(gr, gs) < 0)
 		goto out;
 
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
@@ -3288,8 +3361,17 @@ gl_renderer_setup_egl_extensions(struct weston_compositor *ec)
 			(void *) eglGetProcAddress("eglDupNativeFenceFDANDROID");
 		gr->has_native_fence_sync = 1;
 	} else {
-		weston_log("warning: Disabling render GPU timeline due to "
-			   "missing EGL_ANDROID_native_fence_sync extension\n");
+		weston_log("warning: Disabling render GPU timeline and explicit "
+			   "synchronization due to missing "
+			   "EGL_ANDROID_native_fence_sync extension\n");
+	}
+
+	if (weston_check_egl_extension(extensions, "EGL_KHR_wait_sync")) {
+		gr->wait_sync = (void *) eglGetProcAddress("eglWaitSyncKHR");
+		gr->has_wait_sync = 1;
+	} else {
+		weston_log("warning: Disabling explicit synchronization due"
+			   "to missing EGL_KHR_wait_sync extension\n");
 	}
 
 	renderer_setup_egl_client_extensions(gr);
@@ -3521,12 +3603,15 @@ gl_renderer_display_create(struct weston_compositor *ec, EGLenum platform,
 	}
 
 	ec->renderer = &gr->base;
-	ec->capabilities |= WESTON_CAP_ROTATION_ANY;
-	ec->capabilities |= WESTON_CAP_CAPTURE_YFLIP;
-	ec->capabilities |= WESTON_CAP_VIEW_CLIP_MASK;
 
 	if (gl_renderer_setup_egl_extensions(ec) < 0)
 		goto fail_with_error;
+
+	ec->capabilities |= WESTON_CAP_ROTATION_ANY;
+	ec->capabilities |= WESTON_CAP_CAPTURE_YFLIP;
+	ec->capabilities |= WESTON_CAP_VIEW_CLIP_MASK;
+	if (gr->has_native_fence_sync && gr->has_wait_sync)
+		ec->capabilities |= WESTON_CAP_EXPLICIT_SYNC;
 
 	wl_list_init(&gr->dmabuf_images);
 	if (gr->has_dmabuf_import) {

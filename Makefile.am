@@ -96,10 +96,13 @@ libweston_@LIBWESTON_MAJOR@_la_SOURCES =			\
 	libweston/linux-dmabuf.h			\
 	libweston/linux-explicit-synchronization.c	\
 	libweston/linux-explicit-synchronization.h	\
+	libweston/linux-sync-file.c			\
+	libweston/linux-sync-file.h			\
 	libweston/pixel-formats.c			\
 	libweston/pixel-formats.h			\
 	libweston/weston-debug.c			\
 	libweston/weston-debug.h			\
+	shared/fd-util.h				\
 	shared/helpers.h				\
 	shared/matrix.c					\
 	shared/matrix.h					\

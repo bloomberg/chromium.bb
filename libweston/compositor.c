@@ -51,6 +51,7 @@
 #include <sys/time.h>
 #include <time.h>
 #include <errno.h>
+#include <inttypes.h>
 
 #include "timeline.h"
 
@@ -59,6 +60,8 @@
 #include "linux-dmabuf.h"
 #include "viewporter-server-protocol.h"
 #include "presentation-time-server-protocol.h"
+#include "linux-explicit-synchronization-unstable-v1-server-protocol.h"
+#include "shared/fd-util.h"
 #include "shared/helpers.h"
 #include "shared/os-compatibility.h"
 #include "shared/string-helpers.h"
@@ -448,6 +451,8 @@ weston_surface_state_init(struct weston_surface_state *state)
 	state->buffer_viewport.buffer.src_width = wl_fixed_from_int(-1);
 	state->buffer_viewport.surface.width = -1;
 	state->buffer_viewport.changed = 0;
+
+	state->acquire_fence_fd = -1;
 }
 
 static void
@@ -469,6 +474,8 @@ weston_surface_state_fini(struct weston_surface_state *state)
 	if (state->buffer)
 		wl_list_remove(&state->buffer_destroy_listener.link);
 	state->buffer = NULL;
+
+	fd_clear(&state->acquire_fence_fd);
 }
 
 static void
@@ -524,6 +531,8 @@ weston_surface_create(struct weston_compositor *compositor)
 	weston_matrix_init(&surface->surface_to_buffer_matrix);
 
 	wl_list_init(&surface->pointer_constraints);
+
+	surface->acquire_fence_fd = -1;
 
 	return surface;
 }
@@ -2017,6 +2026,8 @@ weston_surface_destroy(struct weston_surface *surface)
 			      link)
 		weston_pointer_constraint_destroy(constraint);
 
+	fd_clear(&surface->acquire_fence_fd);
+
 	free(surface);
 }
 
@@ -3216,9 +3227,15 @@ weston_surface_commit_state(struct weston_surface *surface,
 	surface->buffer_viewport = state->buffer_viewport;
 
 	/* wl_surface.attach */
-	if (state->newly_attached)
+	if (state->newly_attached) {
+		/* zwp_surface_synchronization_v1.set_acquire_fence */
+		fd_move(&surface->acquire_fence_fd,
+			&state->acquire_fence_fd);
+
 		weston_surface_attach(surface, state->buffer);
+	}
 	weston_surface_state_set_buffer(state, NULL);
+	assert(state->acquire_fence_fd == -1);
 
 	weston_surface_build_buffer_matrix(surface,
 					   &surface->surface_to_buffer_matrix);
@@ -3327,6 +3344,35 @@ surface_commit(struct wl_client *client, struct wl_resource *resource)
 			"wl_surface@%d viewport dst size not integer",
 			wl_resource_get_id(resource));
 		return;
+	}
+
+	if (surface->pending.acquire_fence_fd >= 0) {
+		assert(surface->synchronization_resource);
+
+		if (!surface->pending.buffer) {
+			fd_clear(&surface->pending.acquire_fence_fd);
+			wl_resource_post_error(surface->synchronization_resource,
+				ZWP_LINUX_SURFACE_SYNCHRONIZATION_V1_ERROR_NO_BUFFER,
+				"wl_surface@%"PRIu32" no buffer for synchronization",
+				wl_resource_get_id(resource));
+			return;
+		}
+
+		/* We support fences for both wp_linux_dmabuf and opaque EGL
+		 * buffers, as mandated by minor version 2 of the
+		 * zwp_linux_explicit_synchronization_v1 protocol. Since
+		 * renderers that support fences currently only support these
+		 * two buffer types plus SHM buffers, we can just check for the
+		 * SHM buffer case here.
+		 */
+		if (wl_shm_buffer_get(surface->pending.buffer->resource)) {
+			fd_clear(&surface->pending.acquire_fence_fd);
+			wl_resource_post_error(surface->synchronization_resource,
+				ZWP_LINUX_SURFACE_SYNCHRONIZATION_V1_ERROR_UNSUPPORTED_BUFFER,
+				"wl_surface@%"PRIu32" unsupported buffer for synchronization",
+				wl_resource_get_id(resource));
+			return;
+		}
 	}
 
 	if (sub) {
@@ -3535,7 +3581,11 @@ weston_subsurface_commit_to_cache(struct weston_subsurface *sub)
 					surface->pending.buffer);
 		weston_presentation_feedback_discard_list(
 					&sub->cached.feedback_list);
+		/* zwp_surface_synchronization_v1.set_acquire_fence */
+		fd_move(&sub->cached.acquire_fence_fd,
+			&surface->pending.acquire_fence_fd);
 	}
+	assert(surface->pending.acquire_fence_fd == -1);
 	sub->cached.sx += surface->pending.sx;
 	sub->cached.sy += surface->pending.sy;
 
