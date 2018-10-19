@@ -4,6 +4,8 @@
 
 #include "chromeos/components/drivefs/drivefs_host.h"
 
+#include <map>
+#include <set>
 #include <utility>
 
 #include "base/strings/strcat.h"
@@ -11,6 +13,7 @@
 #include "chromeos/components/drivefs/drivefs_host_observer.h"
 #include "chromeos/components/drivefs/pending_connection_manager.h"
 #include "components/drive/drive_notification_manager.h"
+#include "components/drive/drive_notification_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/system/invitation.h"
@@ -73,7 +76,8 @@ DriveFsHost::Delegate::CreateMojoConnectionDelegate() {
 class DriveFsHost::MountState
     : public mojom::DriveFsDelegate,
       public OAuth2MintTokenFlow::Delegate,
-      public chromeos::disks::DiskMountManager::Observer {
+      public chromeos::disks::DiskMountManager::Observer,
+      public drive::DriveNotificationObserver {
  public:
   explicit MountState(DriveFsHost* host)
       : host_(host),
@@ -117,6 +121,7 @@ class DriveFsHost::MountState
   ~MountState() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
     chromeos::disks::DiskMountManager::GetInstance()->RemoveObserver(this);
+    host_->delegate_->GetDriveNotificationManager().RemoveObserver(this);
     host_->timer_->Stop();
     if (pending_token_) {
       PendingConnectionManager::Get().CancelExpectedOpenIpcChannel(
@@ -215,6 +220,7 @@ class DriveFsHost::MountState
 
   void OnTeamDrivesListReady(
       const std::vector<std::string>& team_drive_ids) override {
+    host_->delegate_->GetDriveNotificationManager().AddObserver(this);
     host_->delegate_->GetDriveNotificationManager().UpdateTeamDriveIds(
         std::set<std::string>(team_drive_ids.begin(), team_drive_ids.end()),
         {});
@@ -328,6 +334,20 @@ class DriveFsHost::MountState
     mount_path_ = base::FilePath(mount_info.mount_path);
     MaybeNotifyDelegateOnMounted();
   }
+
+  // DriveNotificationObserver overrides:
+  void OnNotificationReceived(
+      const std::map<std::string, int64_t>& invalidations) override {
+    std::vector<mojom::FetchChangeLogOptionsPtr> options;
+    options.reserve(invalidations.size());
+    for (const auto& invalidation : invalidations) {
+      options.emplace_back(base::in_place, invalidation.second,
+                           invalidation.first);
+    }
+    drivefs_->FetchChangeLog(std::move(options));
+  }
+
+  void OnNotificationTimerFired() override { drivefs_->FetchAllChangeLogs(); }
 
   // Owns |this|.
   DriveFsHost* const host_;

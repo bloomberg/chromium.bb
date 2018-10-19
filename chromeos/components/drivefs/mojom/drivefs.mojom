@@ -50,6 +50,12 @@ interface DriveFs {
 
   // Start a search query with given parameters.
   StartSearchQuery(SearchQuery& query, QueryParameters query_params);
+
+  // Fetches all changelogs, i.e. for My Drive and all Team Drives.
+  FetchAllChangeLogs();
+
+  // Fetches the changelog(s) using the provided |options|.
+  FetchChangeLog(array<FetchChangeLogOptions> options);
 };
 
 // Implemented by Chrome, used from DriveFS.
@@ -305,4 +311,14 @@ interface SearchQuery {
 struct QueryItem {
   FileMetadata metadata;
   mojo_base.mojom.FilePath path;
+};
+
+struct FetchChangeLogOptions {
+  // Change ID for My Drive or Team Drive specified in a received push
+  // notification.
+  int64 change_id = -1;
+
+  // ID of the Team Drive to fetch the changelog for. Set to an empty string to
+  // fetch the My Drive changelog instead.
+  string team_drive_id;
 };

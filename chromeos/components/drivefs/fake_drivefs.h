@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -71,6 +72,11 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
   void StartSearchQuery(
       drivefs::mojom::SearchQueryRequest query,
       drivefs::mojom::QueryParametersPtr query_params) override;
+
+  void FetchAllChangeLogs() override;
+
+  void FetchChangeLog(
+      std::vector<mojom::FetchChangeLogOptionsPtr> options) override;
 
   const base::FilePath mount_path_;
 
