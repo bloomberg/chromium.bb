@@ -34,6 +34,7 @@
 
 class InstantIOContext;
 class InstantServiceObserver;
+class NtpBackgroundService;
 class Profile;
 struct InstantMostVisitedItem;
 struct ThemeBackgroundInfo;
@@ -138,6 +139,8 @@ class InstantService : public KeyedService,
   // Used for testing.
   ThemeBackgroundInfo* GetThemeInfoForTesting() { return theme_info_.get(); }
 
+  void AddValidBackdropUrlForTesting(const GURL& url) const;
+
   // Used for testing.
   void SetUrlValidityCheckerForTesting(UrlValidityChecker* url_checker) {
     url_checker_for_testing_ = url_checker;
@@ -199,6 +202,8 @@ class InstantService : public KeyedService,
 
   void FallbackToDefaultThemeInfo();
 
+  void RemoveLocalBackgroundImageCopy();
+
   // Update the background pref to point to
   // chrome-search://local-ntp/background.jpg
   void SetBackgroundToLocalResource();
@@ -237,6 +242,8 @@ class InstantService : public KeyedService,
   PrefChangeRegistrar pref_change_registrar_;
 
   PrefService* pref_service_;
+
+  NtpBackgroundService* background_service_;
 
   base::WeakPtrFactory<InstantService> weak_ptr_factory_;
 

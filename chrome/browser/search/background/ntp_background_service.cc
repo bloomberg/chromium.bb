@@ -519,6 +519,20 @@ void NtpBackgroundService::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
+bool NtpBackgroundService::IsValidBackdropUrl(const GURL& url) const {
+  for (auto& image : collection_images_) {
+    if (image.image_url == url)
+      return true;
+  }
+  return false;
+}
+
+void NtpBackgroundService::AddValidBackdropUrlForTesting(const GURL& url) {
+  CollectionImage image;
+  image.image_url = url;
+  collection_images_.push_back(image);
+}
+
 void NtpBackgroundService::NotifyObservers(FetchComplete fetch_complete) {
   for (auto& observer : observers_) {
     switch (fetch_complete) {
