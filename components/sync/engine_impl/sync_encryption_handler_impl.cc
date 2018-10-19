@@ -310,9 +310,7 @@ SyncEncryptionHandlerImpl::SyncEncryptionHandlerImpl(
     const std::string& restored_keystore_key_for_bootstrapping,
     const base::RepeatingCallback<std::string()>& random_salt_generator)
     : user_share_(user_share),
-      vault_unsafe_(encryptor,
-                    SensitiveTypes(),
-                    PassphraseType::IMPLICIT_PASSPHRASE),
+      vault_unsafe_(encryptor, SensitiveTypes(), kInitialPassphraseType),
       encrypt_everything_(false),
       nigori_overwrite_count_(0),
       random_salt_generator_(random_salt_generator),

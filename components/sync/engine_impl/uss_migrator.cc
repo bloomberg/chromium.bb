@@ -89,7 +89,6 @@ bool MigrateDirectoryDataWithBatchSize(ModelType type,
                                        UserShare* user_share,
                                        ModelTypeWorker* worker,
                                        int* cumulative_migrated_entity_count) {
-  DCHECK_NE(PASSWORDS, type);
   ReadTransaction trans(FROM_HERE, user_share);
 
   ReadNode root(&trans);

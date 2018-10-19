@@ -109,7 +109,7 @@ void ModelTypeRegistry::ConnectNonBlockingType(
 
   auto worker = std::make_unique<ModelTypeWorker>(
       type, activation_response->model_type_state, trigger_initial_sync,
-      std::move(cryptographer_copy), nudge_handler_,
+      std::move(cryptographer_copy), passphrase_type_, nudge_handler_,
       std::move(activation_response->type_processor), emitter,
       cancelation_signal_);
 
@@ -356,7 +356,14 @@ void ModelTypeRegistry::OnCryptographerStateChanged(
 }
 
 void ModelTypeRegistry::OnPassphraseTypeChanged(PassphraseType type,
-                                                base::Time passphrase_time) {}
+                                                base::Time passphrase_time) {
+  passphrase_type_ = type;
+  for (const auto& worker : model_type_workers_) {
+    if (encrypted_types_.Has(worker->GetModelType())) {
+      worker->UpdatePassphraseType(type);
+    }
+  }
+}
 
 void ModelTypeRegistry::OnLocalSetPassphraseEncryption(
     const SyncEncryptionHandler::NigoriState& nigori_state) {}

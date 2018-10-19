@@ -38,24 +38,12 @@ namespace {
 // Special constant value taken from cryptographer.cc.
 const char kNigoriKeyName[] = "nigori-key";
 
-const ModelType kModelType = PREFERENCES;
-
-std::string GenerateTagHash(const std::string& tag) {
-  if (tag.empty()) {
-    return std::string();
-  }
-  return GenerateSyncableHash(kModelType, tag);
-}
-
 const char kTag1[] = "tag1";
 const char kTag2[] = "tag2";
 const char kTag3[] = "tag3";
 const char kValue1[] = "value1";
 const char kValue2[] = "value2";
 const char kValue3[] = "value3";
-const std::string kHash1(GenerateTagHash(kTag1));
-const std::string kHash2(GenerateTagHash(kTag2));
-const std::string kHash3(GenerateTagHash(kTag3));
 
 enum class ExpectedSyncPositioningScheme {
   UNIQUE_POSITION = 0,
@@ -107,9 +95,24 @@ void EncryptUpdate(const KeyParams& params, EntitySpecifics* specifics) {
   nigori.Encrypt(plaintext, &encrypted);
 
   specifics->Clear();
-  AddDefaultFieldValue(kModelType, specifics);
+  AddDefaultFieldValue(PREFERENCES, specifics);
   specifics->mutable_encrypted()->set_key_name(GetNigoriName(nigori));
   specifics->mutable_encrypted()->set_blob(encrypted);
+}
+
+sync_pb::EntitySpecifics EncryptPasswordSpecifics(
+    const KeyParams& key_params,
+    const sync_pb::PasswordSpecificsData& unencrypted_password) {
+  Nigori nigori;
+  nigori.InitByDerivation(key_params.derivation_params, key_params.password);
+  std::string encrypted_blob;
+  nigori.Encrypt(unencrypted_password.SerializeAsString(), &encrypted_blob);
+  sync_pb::EntitySpecifics encrypted_specifics;
+  encrypted_specifics.mutable_password()->mutable_encrypted()->set_key_name(
+      GetNigoriName(nigori));
+  encrypted_specifics.mutable_password()->mutable_encrypted()->set_blob(
+      encrypted_blob);
+  return encrypted_specifics;
 }
 
 void VerifyCommitCount(const DataTypeDebugInfoEmitter* emitter,
@@ -153,15 +156,27 @@ void VerifyCommitCount(const DataTypeDebugInfoEmitter* emitter,
 // class, so we don't have to mock out any of it. We wrap it with some
 // convenience functions so we can emulate server behavior.
 class ModelTypeWorkerTest : public ::testing::Test {
- public:
-  ModelTypeWorkerTest()
-      : foreign_encryption_key_index_(0),
+ protected:
+  static std::string GenerateTagHash(const std::string& tag) {
+    if (tag.empty()) {
+      return std::string();
+    }
+    return GenerateSyncableHash(PREFERENCES, tag);
+  }
+
+  const std::string kHash1 = GenerateTagHash(kTag1);
+  const std::string kHash2 = GenerateTagHash(kTag2);
+  const std::string kHash3 = GenerateTagHash(kTag3);
+
+  explicit ModelTypeWorkerTest(ModelType model_type = PREFERENCES)
+      : model_type_(model_type),
+        foreign_encryption_key_index_(0),
         update_encryption_filter_index_(0),
         mock_type_processor_(nullptr),
-        mock_server_(std::make_unique<SingleTypeMockServer>(kModelType)),
+        mock_server_(std::make_unique<SingleTypeMockServer>(model_type)),
         is_processor_disconnected_(false),
         emitter_(std::make_unique<NonBlockingTypeDebugInfoEmitter>(
-            kModelType,
+            model_type,
             &type_observers_)) {}
 
   ~ModelTypeWorkerTest() override {}
@@ -175,9 +190,9 @@ class ModelTypeWorkerTest : public ::testing::Test {
   void FirstInitialize() {
     ModelTypeState initial_state;
     initial_state.mutable_progress_marker()->set_data_type_id(
-        GetSpecificsFieldNumberFromModelType(kModelType));
+        GetSpecificsFieldNumberFromModelType(model_type_));
 
-    InitializeWithState(kModelType, initial_state, UpdateResponseDataList());
+    InitializeWithState(model_type_, initial_state, UpdateResponseDataList());
   }
 
   // Initializes with some existing data type state. Allows us to start
@@ -191,13 +206,13 @@ class ModelTypeWorkerTest : public ::testing::Test {
       const UpdateResponseDataList& initial_pending_updates) {
     ModelTypeState initial_state;
     initial_state.mutable_progress_marker()->set_data_type_id(
-        GetSpecificsFieldNumberFromModelType(kModelType));
+        GetSpecificsFieldNumberFromModelType(model_type_));
     initial_state.mutable_progress_marker()->set_token(
         "some_saved_progress_token");
 
     initial_state.set_initial_sync_done(true);
 
-    InitializeWithState(kModelType, initial_state, initial_pending_updates);
+    InitializeWithState(model_type_, initial_state, initial_pending_updates);
 
     nudge_handler()->ClearCounters();
   }
@@ -235,15 +250,19 @@ class ModelTypeWorkerTest : public ::testing::Test {
     // TODO(maxbogue): crbug.com/529498: Inject pending updates somehow.
     worker_ = std::make_unique<ModelTypeWorker>(
         type, state, !state.initial_sync_done(), std::move(cryptographer_copy),
-        &mock_nudge_handler_, std::move(processor), emitter_.get(),
-        &cancelation_signal_);
+        PassphraseType::IMPLICIT_PASSPHRASE, &mock_nudge_handler_,
+        std::move(processor), emitter_.get(), &cancelation_signal_);
+  }
+
+  void InitializeCryptographer() {
+    if (!cryptographer_) {
+      cryptographer_ = std::make_unique<Cryptographer>(&fake_encryptor_);
+    }
   }
 
   // Introduce a new key that the local cryptographer can't decrypt.
   void AddPendingKey() {
-    if (!cryptographer_) {
-      cryptographer_ = std::make_unique<Cryptographer>(&fake_encryptor_);
-    }
+    InitializeCryptographer();
 
     foreign_encryption_key_index_++;
 
@@ -286,9 +305,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
 
   // Update the local cryptographer with all relevant keys.
   void DecryptPendingKey() {
-    if (!cryptographer_) {
-      cryptographer_ = std::make_unique<Cryptographer>(&fake_encryptor_);
-    }
+    InitializeCryptographer();
 
     KeyParams params = GetNthKeyParams(foreign_encryption_key_index_);
     bool success = cryptographer_->DecryptPendingKeys(params);
@@ -490,6 +507,8 @@ class ModelTypeWorkerTest : public ::testing::Test {
   StatusController* status_controller() { return &status_controller_; }
 
  private:
+  const ModelType model_type_;
+
   // An encryptor for our cryptographer.
   FakeEncryptor fake_encryptor_;
 
@@ -629,7 +648,7 @@ TEST_F(ModelTypeWorkerTest, SimpleDelete) {
 
   // Deletions should contain enough specifics to identify the type.
   EXPECT_TRUE(entity.has_specifics());
-  EXPECT_EQ(kModelType, GetModelTypeFromSpecifics(entity.specifics()));
+  EXPECT_EQ(PREFERENCES, GetModelTypeFromSpecifics(entity.specifics()));
 
   // Verify the commit response returned to the model thread.
   ASSERT_EQ(2U, processor()->GetNumCommitResponses());
@@ -1257,7 +1276,7 @@ TEST_F(ModelTypeWorkerTest, ReceiveUndecryptableEntries) {
   // updates will be undecryptable. This will block all updates.
   EXPECT_EQ(0U, processor()->GetNumUpdateResponses());
 
-  // The update should know that the cryptographer is ready.
+  // The update should indicate that the cryptographer is ready.
   DecryptPendingKey();
   EXPECT_EQ(1U, processor()->GetNumUpdateResponses());
   ASSERT_TRUE(processor()->HasUpdateResponse(kHash1));
@@ -1669,6 +1688,7 @@ TEST_F(GetLocalChangesRequestTest, CancelationSignaledAfterRequest) {
 
 // Tests that setting response unblocks request.
 TEST_F(GetLocalChangesRequestTest, SuccessfulRequest) {
+  const std::string kHash1 = "SomeHash";
   auto request = MakeRequest();
   ScheduleBlockingWait(request);
   start_event_.Wait();
@@ -1683,6 +1703,132 @@ TEST_F(GetLocalChangesRequestTest, SuccessfulRequest) {
   CommitRequestDataList response = request->ExtractResponse();
   EXPECT_EQ(1U, response.size());
   EXPECT_EQ(kHash1, response[0].specifics_hash);
+}
+
+// Analogous test fixture but uses PASSWORDS instead of PREFERENCES, in order
+// to test some special encryption requirements for PASSWORDS.
+class ModelTypeWorkerPasswordsTest : public ModelTypeWorkerTest {
+ protected:
+  const std::string kPassword = "SomePassword";
+
+  ModelTypeWorkerPasswordsTest() : ModelTypeWorkerTest(PASSWORDS) {
+    InitializeCryptographer();
+  }
+};
+
+// Similar to EncryptedCommit but tests PASSWORDS specifically, which use a
+// different encryption mechanism.
+TEST_F(ModelTypeWorkerPasswordsTest, EncryptedPasswordCommit) {
+  const std::string kEncryptedPasswordBlob = "encryptedpasswordblob";
+
+  NormalInitialize();
+
+  EXPECT_EQ(0U, processor()->GetNumUpdateResponses());
+
+  // Init the Cryptographer, it'll cause the EKN to be pushed.
+  AddPendingKey();
+  DecryptPendingKey();
+  ASSERT_EQ(1U, processor()->GetNumUpdateResponses());
+  EXPECT_EQ(GetLocalCryptographerKeyName(),
+            processor()->GetNthUpdateState(0).encryption_key_name());
+
+  EntitySpecifics specifics;
+  specifics.mutable_password()->mutable_encrypted()->set_blob(
+      kEncryptedPasswordBlob);
+
+  // Normal commit request stuff.
+  processor()->SetCommitRequest(GenerateCommitRequest(kHash1, specifics));
+  DoSuccessfulCommit();
+  ASSERT_EQ(1U, server()->GetNumCommitMessages());
+  EXPECT_EQ(1, server()->GetNthCommitMessage(0).commit().entries_size());
+  ASSERT_TRUE(server()->HasCommitEntity(kHash1));
+  const SyncEntity& tag1_entity = server()->GetLastCommittedEntity(kHash1);
+
+  EXPECT_FALSE(tag1_entity.specifics().has_encrypted());
+  EXPECT_TRUE(tag1_entity.specifics().has_password());
+  EXPECT_TRUE(tag1_entity.specifics().password().has_encrypted());
+  EXPECT_EQ(kEncryptedPasswordBlob,
+            tag1_entity.specifics().password().encrypted().blob());
+
+  // The title should be overwritten.
+  EXPECT_EQ(tag1_entity.name(), "encrypted");
+}
+
+// Similar to ReceiveDecryptableEntities but for PASSWORDS, which have a custom
+// encryption mechanism.
+TEST_F(ModelTypeWorkerPasswordsTest, ReceiveDecryptablePasswordEntities) {
+  NormalInitialize();
+
+  // Create a new Nigori and allow the cryptographer to decrypt it.
+  AddPendingKey();
+  DecryptPendingKey();
+
+  sync_pb::PasswordSpecificsData unencrypted_password;
+  unencrypted_password.set_password_value(kPassword);
+  sync_pb::EntitySpecifics encrypted_specifics =
+      EncryptPasswordSpecifics(GetNthKeyParams(1), unencrypted_password);
+
+  // Receive an encrypted password, encrypted with a key that is already known.
+  SyncEntity entity = server()->UpdateFromServer(
+      /*version_offset=*/10, kHash1, encrypted_specifics);
+  worker()->ProcessGetUpdatesResponse(server()->GetProgress(),
+                                      server()->GetContext(), {&entity},
+                                      status_controller());
+  worker()->ApplyUpdates(status_controller());
+
+  // Test its basic features and the value of encryption_key_name.
+  ASSERT_TRUE(processor()->HasUpdateResponse(kHash1));
+  UpdateResponseData update = processor()->GetUpdateResponse(kHash1);
+  EXPECT_TRUE(update.entity->specifics.password().has_encrypted());
+  EXPECT_EQ(encrypted_specifics.password().encrypted().key_name(),
+            update.entity->specifics.password().encrypted().key_name());
+  EXPECT_EQ(encrypted_specifics.password().encrypted().blob(),
+            update.entity->specifics.password().encrypted().blob());
+  EXPECT_FALSE(update.entity->specifics.has_encrypted());
+  EXPECT_FALSE(
+      update.entity->specifics.password().has_client_only_encrypted_data());
+}
+
+// Analogous to ReceiveUndecryptableEntries but for PASSWORDS, which have a
+// custom encryption mechanism.
+TEST_F(ModelTypeWorkerPasswordsTest, ReceiveUndecryptablePasswordEntries) {
+  NormalInitialize();
+
+  // Receive a new foreign encryption key that we can't decrypt.
+  AddPendingKey();
+
+  sync_pb::PasswordSpecificsData unencrypted_password;
+  unencrypted_password.set_password_value(kPassword);
+  sync_pb::EntitySpecifics encrypted_specifics =
+      EncryptPasswordSpecifics(GetNthKeyParams(1), unencrypted_password);
+
+  // Receive an encrypted with that new key, which we can't access.
+  SyncEntity entity = server()->UpdateFromServer(
+      /*version_offset=*/10, kHash1, encrypted_specifics);
+  worker()->ProcessGetUpdatesResponse(server()->GetProgress(),
+                                      server()->GetContext(), {&entity},
+                                      status_controller());
+  worker()->ApplyUpdates(status_controller());
+
+  // At this point, the cryptographer does not have access to the key, so the
+  // updates will be undecryptable. This will block all updates.
+  EXPECT_EQ(0U, processor()->GetNumUpdateResponses());
+
+  // The update should indicate that the cryptographer is ready.
+  DecryptPendingKey();
+  EXPECT_EQ(1U, processor()->GetNumUpdateResponses());
+  ASSERT_TRUE(processor()->HasUpdateResponse(kHash1));
+  UpdateResponseData update = processor()->GetUpdateResponse(kHash1);
+  // Password should remain unencrypted when sent to the processor.
+  EXPECT_TRUE(update.entity->specifics.has_password());
+  EXPECT_TRUE(update.entity->specifics.password().has_encrypted());
+  EXPECT_EQ(encrypted_specifics.password().encrypted().key_name(),
+            update.entity->specifics.password().encrypted().key_name());
+  EXPECT_EQ(encrypted_specifics.password().encrypted().blob(),
+            update.entity->specifics.password().encrypted().blob());
+  EXPECT_FALSE(update.entity->specifics.has_encrypted());
+  EXPECT_FALSE(
+      update.entity->specifics.password().has_client_only_encrypted_data());
 }
 
 }  // namespace syncer
