@@ -7,6 +7,8 @@
 #include "third_party/blink/renderer/platform/bindings/active_script_wrappable_base.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
 #include "third_party/blink/renderer/platform/heap/marking_visitor.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 
@@ -28,11 +30,14 @@ UnifiedHeapController::UnifiedHeapController(ThreadState* thread_state)
 
 void UnifiedHeapController::TracePrologue() {
   VLOG(2) << "UnifiedHeapController::TracePrologue";
+  ThreadHeapStatsCollector::BlinkGCInV8Scope nested_scope(
+      thread_state_->Heap().stats_collector());
 
   // Be conservative here as a new garbage collection gets started right away.
   thread_state_->FinishIncrementalMarkingIfRunning(
       BlinkGC::kHeapPointersOnStack, BlinkGC::kIncrementalMarking,
       BlinkGC::kLazySweeping, thread_state_->current_gc_data_.reason);
+
   // Reset any previously scheduled garbage collections.
   thread_state_->SetGCState(ThreadState::kNoGCScheduled);
   // Start incremental marking with unified tracing.
@@ -43,6 +48,11 @@ void UnifiedHeapController::TracePrologue() {
 
 void UnifiedHeapController::EnterFinalPause(EmbedderStackState stack_state) {
   VLOG(2) << "UnifiedHeapController::EnterFinalPause";
+  ThreadHeapStatsCollector::BlinkGCInV8Scope nested_scope(
+      thread_state_->Heap().stats_collector());
+  ThreadHeapStatsCollector::Scope stats_scope(
+      thread_state_->Heap().stats_collector(),
+      ThreadHeapStatsCollector::kAtomicPhase);
 
   // ActiveScriptWrappable may not have persistents keeping them alive but rely
   // on explicit tracing to be kept alive.
@@ -61,11 +71,19 @@ void UnifiedHeapController::EnterFinalPause(EmbedderStackState stack_state) {
 void UnifiedHeapController::TraceEpilogue() {
   VLOG(2) << "UnifiedHeapController::TraceEpilogue";
 
-  thread_state_->AtomicPauseMarkEpilogue(BlinkGC::kIncrementalMarking);
-  thread_state_->LeaveAtomicPause();
-  thread_state_->LeaveGCForbiddenScope();
-  thread_state_->AtomicPauseSweepAndCompact(BlinkGC::kIncrementalMarking,
-                                            BlinkGC::kLazySweeping);
+  {
+    ThreadHeapStatsCollector::BlinkGCInV8Scope nested_scope(
+        thread_state_->Heap().stats_collector());
+    ThreadHeapStatsCollector::Scope stats_scope(
+        thread_state_->Heap().stats_collector(),
+        ThreadHeapStatsCollector::kAtomicPhase);
+    thread_state_->AtomicPauseMarkEpilogue(BlinkGC::kIncrementalMarking);
+    thread_state_->LeaveAtomicPause();
+    thread_state_->LeaveGCForbiddenScope();
+    thread_state_->AtomicPauseSweepAndCompact(BlinkGC::kIncrementalMarking,
+                                              BlinkGC::kLazySweeping);
+  }
+
   if (!thread_state_->IsSweepingInProgress()) {
     // Sweeping was finished during the atomic pause. Update statistics needs to
     // run outside of the top-most stats scope.
@@ -77,7 +95,6 @@ void UnifiedHeapController::RegisterV8References(
     const std::vector<std::pair<void*, void*>>&
         internal_fields_of_potential_wrappers) {
   VLOG(2) << "UnifiedHeapController::RegisterV8References";
-
   DCHECK(thread_state()->IsMarkingInProgress());
 
   const bool was_in_atomic_pause = thread_state()->in_atomic_pause();
@@ -102,7 +119,7 @@ bool UnifiedHeapController::AdvanceTracing(double deadline_in_ms) {
 
   if (!thread_state_->in_atomic_pause()) {
     // V8 calls into embedder tracing from its own marking to ensure
-    // progress.Oilpan will additionally schedule marking steps.
+    // progress. Oilpan will additionally schedule marking steps.
     ThreadState::AtomicPauseScope atomic_pause_scope(thread_state_);
     TimeTicks deadline =
         TimeTicks() + TimeDelta::FromMillisecondsD(deadline_in_ms);

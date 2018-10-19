@@ -147,12 +147,21 @@ void VisitWeakHandlesForMinorGC(v8::Isolate* isolate) {
   isolate->VisitWeakHandles(&visitor);
 }
 
+bool IsNestedInV8GC(ThreadState* thread_state, v8::GCType type) {
+  return thread_state && (type == v8::kGCTypeMarkSweepCompact ||
+                          type == v8::kGCTypeIncrementalMarking);
+}
+
 }  // namespace
 
 void V8GCController::GcPrologue(v8::Isolate* isolate,
                                 v8::GCType type,
                                 v8::GCCallbackFlags flags) {
   RUNTIME_CALL_TIMER_SCOPE(isolate, RuntimeCallStats::CounterId::kGcPrologue);
+  ThreadHeapStatsCollector::BlinkGCInV8Scope nested_scope(
+      IsNestedInV8GC(ThreadState::Current(), type)
+          ? ThreadState::Current()->Heap().stats_collector()
+          : nullptr);
   ScriptForbiddenScope::Enter();
 
   // Attribute garbage collection to the all frames instead of a specific
@@ -264,6 +273,10 @@ void V8GCController::GcEpilogue(v8::Isolate* isolate,
                                 v8::GCType type,
                                 v8::GCCallbackFlags flags) {
   RUNTIME_CALL_TIMER_SCOPE(isolate, RuntimeCallStats::CounterId::kGcEpilogue);
+  ThreadHeapStatsCollector::BlinkGCInV8Scope nested_scope(
+      IsNestedInV8GC(ThreadState::Current(), type)
+          ? ThreadState::Current()->Heap().stats_collector()
+          : nullptr);
   UpdateCollectedPhantomHandles(isolate);
   switch (type) {
     case v8::kGCTypeScavenge:
