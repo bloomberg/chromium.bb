@@ -74,6 +74,11 @@ class GaiaScreenHandler : public BaseScreenHandler,
   void LoadGaiaWithPartition(const GaiaContext& context,
                              const std::string& partition_name);
 
+  // Called after the GAPS cookie, if present, is added to the cookie store.
+  void OnSetCookieForLoadGaiaWithPartition(const GaiaContext& context,
+                                           const std::string& partition_name,
+                                           bool success);
+
   // Callback that loads GAIA after version and stat consent information has
   // been retrieved.
   void LoadGaiaWithPartitionAndVersionAndConsent(

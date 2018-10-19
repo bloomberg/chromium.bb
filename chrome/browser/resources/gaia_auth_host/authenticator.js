@@ -28,8 +28,6 @@ cr.define('cr.login', function() {
   var SIGN_IN_HEADER = 'google-accounts-signin';
   var EMBEDDED_FORM_HEADER = 'google-accounts-embedded';
   var LOCATION_HEADER = 'location';
-  var COOKIE_HEADER = 'cookie';
-  var GAPS_COOKIE = 'GAPS';
   var SERVICE_ID = 'chromeoslogin';
   var EMBEDDED_SETUP_CHROMEOS_ENDPOINT = 'embedded/setup/chromeos';
   var EMBEDDED_SETUP_CHROMEOS_ENDPOINT_V2 = 'embedded/setup/v2/chromeos';
@@ -86,7 +84,6 @@ cr.define('cr.login', function() {
     'platformVersion',           // Version of the OS build.
     'releaseChannel',            // Installation channel.
     'endpointGen',               // Current endpoint generation.
-    'gapsCookie',                // GAPS cookie
     'chromeOSApiVersion',        // GAIA Chrome OS API version
     'menuGuestMode',             // Enables "Guest mode" menu item
     'menuKeyboardOptions',       // Enables "Keyboard options" menu item
@@ -138,8 +135,6 @@ cr.define('cr.login', function() {
     this.initialFrameUrl_ = null;
     this.reloadUrl_ = null;
     this.trusted_ = true;
-    this.gapsCookie_ = null;
-    this.gapsCookieSent_ = false;
     this.readyFired_ = false;
     this.webviewEventManager_ = WebviewEventManager.create();
 
@@ -187,8 +182,6 @@ cr.define('cr.login', function() {
     this.email_ = null;
     this.gaiaId_ = null;
     this.password_ = null;
-    this.gapsCookie_ = null;
-    this.gapsCookieSent_ = false;
     this.readyFired_ = false;
     this.chooseWhatToSync_ = false;
     this.skipForNow_ = false;
@@ -251,7 +244,6 @@ cr.define('cr.login', function() {
         this.onHeadersReceived_.bind(this),
         {urls: ['<all_urls>'], types: ['main_frame', 'xmlhttprequest']},
         ['responseHeaders']);
-    this.onBeforeSetHeadersSet_ = false;
   };
 
   /**
@@ -295,8 +287,6 @@ cr.define('cr.login', function() {
     this.isConstrainedWindow_ = data.constrained == '1';
     this.isNewGaiaFlow = data.isNewGaiaFlow;
     this.clientId_ = data.clientId;
-    this.gapsCookie_ = data.gapsCookie;
-    this.gapsCookieSent_ = false;
     this.dontResizeNonEmbeddedPages = data.dontResizeNonEmbeddedPages;
     this.chromeOSApiVersion_ = data.chromeOSApiVersion;
 
@@ -312,16 +302,6 @@ cr.define('cr.login', function() {
       this.webview_.contextMenus.onShow.addListener(function(e) {
         e.preventDefault();
       });
-
-      if (!this.onBeforeSetHeadersSet_) {
-        this.onBeforeSetHeadersSet_ = true;
-        var filterPrefix = this.constructChromeOSAPIUrl_();
-        // This depends on gaiaUrl parameter, that is why it is here.
-        this.webview_.request.onBeforeSendHeaders.addListener(
-            this.onBeforeSendHeaders_.bind(this),
-            {urls: [filterPrefix + '?*', filterPrefix + '/*']},
-            ['requestHeaders', 'blocking']);
-      }
     }
 
     this.webview_.src = this.reloadUrl_;
@@ -550,64 +530,6 @@ cr.define('cr.login', function() {
         this.chooseWhatToSync_ = !!location.match(/(\?|&)source=3($|&)/);
       }
     }
-  };
-
-  /**
-   * This method replaces cookie value in cookie header.
-   * @param@ {string} header_value Original string value of Cookie header.
-   * @param@ {string} cookie_name Name of cookie to be replaced.
-   * @param@ {string} cookie_value New cookie value.
-   * @return {string} New Cookie header value.
-   * @private
-   */
-  Authenticator.prototype.updateCookieValue_ = function(
-      header_value, cookie_name, cookie_value) {
-    var cookies = header_value.split(/\s*;\s*/);
-    var found = false;
-    for (var i = 0; i < cookies.length; ++i) {
-      if (cookies[i].startsWith(cookie_name + '=')) {
-        found = true;
-        cookies[i] = cookie_name + '=' + cookie_value;
-        break;
-      }
-    }
-    if (!found) {
-      cookies.push(cookie_name + '=' + cookie_value);
-    }
-    return cookies.join('; ');
-  };
-
-  /**
-   * Handler for webView.request.onBeforeSendHeaders .
-   * @return {!Object} Modified request headers.
-   * @private
-   */
-  Authenticator.prototype.onBeforeSendHeaders_ = function(details) {
-    // We should re-send cookie if first request was unsuccessful (i.e. no new
-    // GAPS cookie was received).
-    if (this.isNewGaiaFlow && this.gapsCookie_ &&
-        (!this.gapsCookieSent_ || !this.newGapsCookie_)) {
-      var headers = details.requestHeaders;
-      var found = false;
-      var gapsCookie = this.gapsCookie_;
-
-      for (var i = 0, l = headers.length; i < l; ++i) {
-        if (headers[i].name == COOKIE_HEADER) {
-          // TODO(jam): this doesn't work with network service since webRequest
-          // won't see the Cookie header. Who uses this?
-          headers[i].value = this.updateCookieValue_(
-              headers[i].value, GAPS_COOKIE, gapsCookie);
-          found = true;
-          break;
-        }
-      }
-      if (!found) {
-        details.requestHeaders.push(
-            {name: COOKIE_HEADER, value: GAPS_COOKIE + '=' + gapsCookie});
-      }
-      this.gapsCookieSent_ = true;
-    }
-    return {requestHeaders: details.requestHeaders};
   };
 
   /**
