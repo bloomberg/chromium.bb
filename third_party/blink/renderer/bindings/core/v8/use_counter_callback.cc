@@ -208,6 +208,12 @@ void UseCounterCallback(v8::Isolate* isolate,
     case v8::Isolate::kDateToLocaleTimeString:
       blink_feature = WebFeature::kDateToLocaleTimeString;
       break;
+    case v8::Isolate::kAttemptOverrideReadOnlyOnPrototypeSloppy:
+      blink_feature = WebFeature::kV8AttemptOverrideReadOnlyOnPrototypeSloppy;
+      break;
+    case v8::Isolate::kAttemptOverrideReadOnlyOnPrototypeStrict:
+      blink_feature = WebFeature::kV8AttemptOverrideReadOnlyOnPrototypeStrict;
+      break;
     default:
       // This can happen if V8 has added counters that this version of Blink
       // does not know about. It's harmless.
