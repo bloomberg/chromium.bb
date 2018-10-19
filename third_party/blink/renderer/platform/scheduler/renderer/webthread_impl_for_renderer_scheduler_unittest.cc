@@ -51,7 +51,7 @@ class WebThreadImplForRendererSchedulerTest : public testing::Test {
 
   ~WebThreadImplForRendererSchedulerTest() override = default;
 
-  void SetWorkBatchSizeForTesting(size_t work_batch_size) {
+  void SetWorkBatchSizeForTesting(int work_batch_size) {
     scheduler_->GetSchedulerHelperForTesting()->SetWorkBatchSizeForTesting(
         work_batch_size);
   }

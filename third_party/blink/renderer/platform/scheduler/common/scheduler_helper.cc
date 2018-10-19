@@ -55,7 +55,7 @@ SchedulerHelper::DefaultTaskRunner() {
   return default_task_runner_;
 }
 
-void SchedulerHelper::SetWorkBatchSizeForTesting(size_t work_batch_size) {
+void SchedulerHelper::SetWorkBatchSizeForTesting(int work_batch_size) {
   CheckOnValidThread();
   DCHECK(sequence_manager_.get());
   sequence_manager_->SetWorkBatchSize(work_batch_size);

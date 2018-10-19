@@ -21,9 +21,9 @@ constexpr const char kPrioritizeCompositingAfterInputTrial[] =
 constexpr const char kNumberOfCompositingTasksToPrioritizeAfterInputParam[] =
     "number_of_tasks";
 
-constexpr size_t kDefaultNumberOfTasksToPrioritizeAfterInput = 1;
+constexpr int kDefaultNumberOfTasksToPrioritizeAfterInput = 1;
 
-size_t GetNumberOfCompositingTasksToPrioritizeAfterInput() {
+int GetNumberOfCompositingTasksToPrioritizeAfterInput() {
   if (!base::FeatureList::IsEnabled(kPrioritizeCompositingAfterInput))
     return 0;
   int number_of_tasks;

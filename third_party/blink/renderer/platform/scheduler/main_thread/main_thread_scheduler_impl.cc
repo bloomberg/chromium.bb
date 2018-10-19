@@ -2349,14 +2349,16 @@ void MainThreadSchedulerImpl::ResetForNavigationLocked() {
   UpdatePolicyLocked(UpdateType::kMayEarlyOutIfPolicyUnchanged);
 
   UMA_HISTOGRAM_COUNTS_100("RendererScheduler.WebViewsPerScheduler",
-                           main_thread_only().page_schedulers.size());
+                           base::saturated_cast<base::HistogramBase::Sample>(
+                               main_thread_only().page_schedulers.size()));
 
   size_t frame_count = 0;
   for (PageSchedulerImpl* page_scheduler : main_thread_only().page_schedulers) {
     frame_count += page_scheduler->FrameCount();
   }
-  UMA_HISTOGRAM_COUNTS_100("RendererScheduler.WebFramesPerScheduler",
-                           frame_count);
+  UMA_HISTOGRAM_COUNTS_100(
+      "RendererScheduler.WebFramesPerScheduler",
+      base::saturated_cast<base::HistogramBase::Sample>(frame_count));
 }
 
 void MainThreadSchedulerImpl::SetTopLevelBlameContext(
@@ -2600,7 +2602,7 @@ UkmRecordingStatus MainThreadSchedulerImpl::RecordTaskUkmImpl(
 
     // Trade off for privacy: Round to seconds for times below 10 minutes and
     // minutes afterwards.
-    int seconds_since_backgrounded = 0;
+    int64_t seconds_since_backgrounded = 0;
     if (time_since_backgrounded < base::TimeDelta::FromMinutes(10)) {
       seconds_since_backgrounded = time_since_backgrounded.InSeconds();
     } else {
