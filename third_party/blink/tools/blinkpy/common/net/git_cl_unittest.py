@@ -43,12 +43,10 @@ class GitCLTest(unittest.TestCase):
         # default. Besides, `git cl try` invocations are grouped by buckets.
         host = MockHost()
         git_cl = GitCL(host, auth_refresh_token_json='token.json')
-        git_cl.trigger_try_jobs(['android_blink_rel', 'fake_blink_try_linux',
-                                 'fake_blink_try_win', 'fake_mac_cq'])
+        git_cl.trigger_try_jobs(['android_blink_rel', 'fake_blink_try_linux', 'fake_blink_try_win'])
         self.assertEqual(host.executive.calls, [
             [
                 'git', 'cl', 'try',
-                '-B', 'master.tryserver.blink',
                 '-b', 'fake_blink_try_linux', '-b', 'fake_blink_try_win',
                 '--auth-refresh-token-json', 'token.json'
             ],
@@ -56,12 +54,6 @@ class GitCLTest(unittest.TestCase):
                 'git', 'cl', 'try',
                 '-B', 'master.tryserver.chromium.android',
                 '-b', 'android_blink_rel',
-                '--auth-refresh-token-json', 'token.json'
-            ],
-            [
-                'git', 'cl', 'try',
-                '-B', 'master.tryserver.chromium.mac',
-                '-b', 'fake_mac_cq',
                 '--auth-refresh-token-json', 'token.json'
             ],
         ])
@@ -74,7 +66,6 @@ class GitCLTest(unittest.TestCase):
         self.assertEqual(host.executive.calls, [
             [
                 'git', 'cl', 'try',
-                '-B', 'master.tryserver.blink',
                 '-b', 'fake_blink_try_linux', '-b', 'fake_blink_try_win',
                 '--auth-refresh-token-json', 'token.json'
             ],
@@ -84,13 +75,13 @@ class GitCLTest(unittest.TestCase):
         # An explicit bucket overrides configured or default buckets.
         host = MockHost()
         git_cl = GitCL(host, auth_refresh_token_json='token.json')
-        git_cl.trigger_try_jobs(['fake_blink_try_linux', 'fake_mac_cq'],
+        git_cl.trigger_try_jobs(['fake_blink_try_linux', 'android_blink_rel'],
                                 bucket='luci.dummy')
         self.assertEqual(host.executive.calls, [
             [
                 'git', 'cl', 'try',
                 '-B', 'luci.dummy',
-                '-b', 'fake_blink_try_linux', '-b', 'fake_mac_cq',
+                '-b', 'android_blink_rel', '-b', 'fake_blink_try_linux',
                 '--auth-refresh-token-json', 'token.json'
             ],
         ])
