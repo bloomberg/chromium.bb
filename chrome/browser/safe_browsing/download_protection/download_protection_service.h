@@ -161,7 +161,6 @@ class DownloadProtectionService {
       bool show_download_in_folder);
 
  private:
-  // todo(jialiul): Remove the need for non-test friending.
   friend class PPAPIDownloadRequest;
   friend class DownloadUrlSBClient;
   friend class DownloadProtectionServiceTest;
@@ -169,35 +168,11 @@ class DownloadProtectionService {
   friend class CheckClientDownloadRequest;
 
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
-                           CheckClientDownloadWhitelistedUrlWithoutSampling);
-  FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
-                           CheckClientDownloadWhitelistedUrlWithSampling);
-  FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
-                           CheckClientDownloadValidateRequest);
-  FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
-                           CheckClientDownloadSuccess);
-  FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
-                           CheckClientDownloadHTTPS);
-  FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
-                           CheckClientDownloadBlob);
-  FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
-                           CheckClientDownloadData);
-  FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
-                           CheckClientDownloadZip);
-  FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
-                           CheckClientDownloadFetchFailed);
-  FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
                            TestDownloadRequestTimeout);
-  FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
-                           CheckClientCrxDownloadSuccess);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
                            PPAPIDownloadRequest_InvalidResponse);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
                            PPAPIDownloadRequest_Timeout);
-  FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceFlagTest,
-                           CheckClientDownloadOverridenByFlag);
-  FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
-                           VerifyMaybeSendDangerousDownloadOpenedReport);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
                            VerifyReferrerChainWithEmptyNavigationHistory);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
