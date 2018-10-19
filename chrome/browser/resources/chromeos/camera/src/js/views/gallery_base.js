@@ -16,19 +16,16 @@ camera.views = camera.views || {};
 
 /**
  * Creates the Gallery Base view controller.
- *
- * @param {camera.View.Context} context Context object.
  * @param {camera.Router} router View router to switch views.
  * @param {camera.models.Gallery} model Model object.
- * @param {HTMLElement} rootElement Root element containing elements of the
- *     view.
+ * @param {HTMLElement} rootElement Root element of the view.
  * @param {string} name View name.
  * @extends {camera.View}
  * @implements {camera.models.Gallery.Observer}
  * @constructor
  */
-camera.views.GalleryBase = function(context, router, model, rootElement, name) {
-  camera.View.call(this, context, router, rootElement, name);
+camera.views.GalleryBase = function(router, model, rootElement, name) {
+  camera.View.call(this, router, rootElement, name);
 
   /**
    * @type {camera.models.Gallery}
@@ -60,7 +57,6 @@ camera.views.GalleryBase = function(context, router, model, rootElement, name) {
 /**
  * Represents a picture attached to the DOM by combining the picture data
  * object with the DOM element.
- *
  * @param {camera.models.Gallery.Picture} picture Picture data.
  * @param {HTMLImageElement} element DOM element holding the picture.
  * @constructor
@@ -104,16 +100,6 @@ camera.views.GalleryBase.prototype.exportSelection = function() {
   if (!selectedIndexes.length)
     return;
 
-  var onError = (filename) => {
-    // TODO(yuli): Show a non-intrusive toast message instead.
-    this.context_.onError(
-        'gallery-export-error',
-        chrome.i18n.getMessage('errorMsgGalleryExportFailed', filename));
-    setTimeout(() => {
-      this.context_.onErrorRecovered('gallery-export-error');
-    }, 2000);
-  };
-
   chrome.fileSystem.chooseEntry({type: 'openDirectory'}, dirEntry => {
     if (!dirEntry)
       return;
@@ -126,7 +112,8 @@ camera.views.GalleryBase.prototype.exportSelection = function() {
           {create: true, exclusive: false}, entry => {
         this.model_.exportPicture(picture, entry).catch(error => {
           console.error(error);
-          onError(entry.name);
+          camera.toast.show(chrome.i18n.getMessage(
+              'errorMsgGalleryExportFailed', entry.name));
         });
       });
     });

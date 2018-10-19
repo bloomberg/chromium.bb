@@ -17,15 +17,14 @@ camera.views = camera.views || {};
 /**
  * Creates the Browser view controller.
  * TODO(yuli): Merge GalleryBase into Browser.
- * @param {camera.View.Context} context Context object.
  * @param {camera.Router} router View router to switch views.
  * @param {camera.models.Gallery} model Model object.
  * @extends {camera.view.GalleryBase}
  * @constructor
  */
-camera.views.Browser = function(context, router, model) {
-  camera.views.GalleryBase.call(this, context, router, model,
-      document.querySelector('#browser'), 'browser');
+camera.views.Browser = function(router, model) {
+  camera.views.GalleryBase.call(
+      this, router, model, document.querySelector('#browser'), 'browser');
 
   /**
    * @type {camera.util.SmoothScroller}

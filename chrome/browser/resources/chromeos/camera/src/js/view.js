@@ -11,15 +11,12 @@ var camera = camera || {};
 
 /**
  * Creates a named view controller attached to the root element.
- *
- * @param {camera.View.Context} context Context of the app.
  * @param {camera.Router} router View router to switch views.
- * @param {HTMLElement} rootElement Root element containing elements of the
- *     view.
+ * @param {HTMLElement} rootElement Root element of the view.
  * @param {string} name View name.
  * @constructor
  */
-camera.View = function(context, router, rootElement, name) {
+camera.View = function(router, rootElement, name) {
   /**
    * @type {boolean}
    * @private
@@ -31,12 +28,6 @@ camera.View = function(context, router, rootElement, name) {
    * @private
    */
   this.entered_ = false;
-
-  /**
-   * @type {camera.View.Context}
-   * @private
-   */
-  this.context_ = context;
 
   /**
    * @type {camera.Router}
@@ -70,9 +61,6 @@ camera.View.prototype = {
   get active() {
     return this.active_;
   },
-  get context() {
-    return this.context_;
-  },
   get router() {
     return this.router_;
   }
@@ -92,7 +80,7 @@ camera.View.prototype.onResize = function() {
 };
 
 /**
- * Handles enters the view.
+ * Handles entering the view.
  * @param {Object=} opt_arguments Optional arguments.
  */
 camera.View.prototype.onEnter = function(opt_arguments) {
@@ -173,11 +161,3 @@ camera.View.prototype.inactivate = function() {
     element.tabIndex = -1;
   }
 };
-
-/**
- * Creates a shared context object for views.
- * @constructor
- */
-camera.View.Context = function() {
-};
-

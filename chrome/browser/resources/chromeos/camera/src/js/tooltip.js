@@ -15,15 +15,80 @@ var camera = camera || {};
  */
 camera.Tooltip = function() {
   /**
-   * @type {camera.util.StyleEffect}
+   * @type {camera.Tooltip.StyleEffect}
    * @private
    */
-  this.effect_ = new camera.util.StyleEffect((args, callback) => {
+  this.effect_ = new camera.Tooltip.StyleEffect((args, callback) => {
     this.setVisibility_(args.element, args.visibility, callback);
   });
 
   // No more properties. Freeze the object.
   Object.freeze(this);
+};
+
+/**
+ * Wraps an effect in style implemented as either CSS3 animation or CSS3
+ * transition. The passed closure should invoke the effect.
+ * Only the last callback, passed to the latest invoke() call will be called
+ * on the transition or the animation end.
+ * @param {function(*, function())} closure Closure for invoking the effect.
+ * TODO(yuli): Remove StyleEffect after simplifying Tooltip.
+ * @constructor
+ */
+camera.Tooltip.StyleEffect = function(closure) {
+  /**
+   * @type {function(*, function()}
+   * @private
+   */
+  this.closure_ = closure;
+
+  /**
+   * Callback to be called for the latest invokation.
+   * @type {?function()}
+   * @private
+   */
+  this.callback_ = null;
+
+  /**
+   * @type {?number{
+   * @private
+   */
+  this.invocationTimer_ = null;
+
+  // End of properties. Seal the object.
+  Object.seal(this);
+};
+
+/**
+ * Invokes the animation and calls the callback on completion. Note, that
+ * the callback will not be called if there is another invocation called after.
+ * @param {*} state State of the effect to be set
+ * @param {function()} callback Completion callback.
+ * @param {number=} delay Timeout in milliseconds before invoking.
+ */
+camera.Tooltip.StyleEffect.prototype.invoke = function(state, callback, delay) {
+  if (this.invocationTimer_) {
+    clearTimeout(this.invocationTimer_);
+    this.invocationTimer_ = null;
+  }
+
+  var invokeClosure = function() {
+    this.callback_ = callback;
+    this.closure_(state, function() {
+      if (!this.callback_)
+        return;
+      var callback = this.callback_;
+      this.callback_ = null;
+
+      // Let the animation neatly finish.
+      setTimeout(callback, 0);
+    }.bind(this));
+  }.bind(this);
+
+  if (delay !== undefined)
+    this.invocationTimer_ = setTimeout(invokeClosure, delay);
+  else
+    invokeClosure();
 };
 
 /**
@@ -76,7 +141,7 @@ camera.Tooltip.prototype.setVisibility_ = function(
 
   // Show the tooltip element.
   tooltip.classList.add('visible');
-  camera.util.waitForTransitionCompletion(tooltip, 1000, callback);
+  camera.util.waitAnimationCompleted(tooltip, 1000, callback);
 };
 
 /**

@@ -16,14 +16,13 @@ camera.views = camera.views || {};
 
 /**
  * Creates the camera-view controller.
- * @param {camera.View.Context} context Context object.
  * @param {camera.Router} router View router to switch views.
  * @param {camera.models.Gallery} model Model object.
+ * @param {camera.views.camera.Preview.Observer} observer Observer object.
  * @constructor
  */
-camera.views.Camera = function(context, router, model) {
-  camera.View.call(
-      this, context, router, document.querySelector('#camera'), 'camera');
+camera.views.Camera = function(router, model, observer) {
+  camera.View.call(this, router, document.querySelector('#camera'), 'camera');
 
   /**
    * Gallery model used to save taken pictures.
@@ -37,7 +36,7 @@ camera.views.Camera = function(context, router, model) {
    * @type {camera.views.camera.Preview}
    * @private
    */
-  this.preview_ = new camera.views.camera.Preview(context);
+  this.preview_ = new camera.views.camera.Preview(observer);
 
   /**
    * Layout handler for the camera view.
@@ -234,8 +233,8 @@ camera.views.Camera.prototype.onShutterButtonClicked_ = function(event) {
     this.beginTake_();
   } catch (e) {
     console.error(e);
-    this.context_.onToast(this.recordMode ?
-        'errorMsgRecordStartFailed' : 'errorMsgTakePhotoFailed', true);
+    camera.toast.show(this.recordMode ?
+        'errorMsgRecordStartFailed' : 'errorMsgTakePhotoFailed');
   }
 };
 
@@ -283,12 +282,12 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
   this.keyBuffer_ = this.keyBuffer_.substr(-10);
 
   if (this.keyBuffer_.indexOf('VER') !== -1) {
-    this.context_.onToast(chrome.runtime.getManifest().version, false);
+    camera.toast.show(chrome.runtime.getManifest().version);
     this.keyBuffer_ = '';
   }
   if (this.keyBuffer_.indexOf('RES') !== -1) {
     if (this.capturing) {
-      this.context_.onToast(this.preview_.toString(), false);
+      camera.toast.show(this.preview_.toString());
     }
     this.keyBuffer_ = '';
   }
@@ -356,7 +355,7 @@ camera.views.Camera.prototype.endTake_ = function() {
     }
   }).catch(([error, message]) => {
     console.error(error);
-    this.context_.onToast(message, true);
+    camera.toast.show(message);
   }).finally(() => {
     // Re-enable UI controls after finishing the take.
     this.take_ = null;
@@ -572,9 +571,7 @@ camera.views.Camera.prototype.start_ = function() {
 
   var onFailure = (error) => {
     console.error(error);
-    this.context_.onError('no-camera',
-        chrome.i18n.getMessage('errorMsgNoCamera'),
-        chrome.i18n.getMessage('errorMsgNoCameraHint'));
+    camera.App.onError('no-camera', 'errorMsgNoCamera', 'errorMsgNoCameraHint');
     scheduleRetry();
   };
 
@@ -594,8 +591,7 @@ camera.views.Camera.prototype.start_ = function() {
         clearTimeout(this.retryStartTimeout_);
         this.retryStartTimeout_ = null;
       }
-      // Remove the error layer if any.
-      this.context_.onErrorRecovered('no-camera');
+      camera.App.onErrorRecovered('no-camera');
     }, error => {
       if (error && error.name != 'ConstraintNotSatisfiedError') {
         // Constraint errors are expected, so don't report them.
