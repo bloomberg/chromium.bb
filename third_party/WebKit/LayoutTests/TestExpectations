@@ -5301,8 +5301,6 @@ crbug.com/886566 http/tests/csspaint/invalidation-content-image.html [ Pass Time
 
 # Enable AnimationWorklet tests for mainthread
 crbug.com/887659 animations/animationworklet/animation-worklet-inside-iframe.html [ Failure ]
-crbug.com/887659 animations/animationworklet/animator-animate.html [ Failure ]
-crbug.com/887659 animations/animationworklet/animator-with-options.html [ Failure ]
 crbug.com/887659 animations/animationworklet/worklet-animation-currentTime.html [ Failure ]
 crbug.com/887659 animations/animationworklet/worklet-animation-local-time-after-duration.html [ Failure ]
 
