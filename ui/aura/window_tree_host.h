@@ -223,6 +223,10 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // Returns a map of KeyboardEvent code to KeyboardEvent key values.
   virtual base::flat_map<std::string, std::string> GetKeyboardLayoutMap() = 0;
 
+  // Returns true if KeyEvents should be send to IME. This is called from
+  // WindowEventDispatcher during event dispatch.
+  virtual bool ShouldSendKeyEventToIme();
+
  protected:
   friend class ScopedKeyboardHook;
   friend class TestScreen;  // TODO(beng): see if we can remove/consolidate.
