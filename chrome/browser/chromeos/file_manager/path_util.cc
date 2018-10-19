@@ -37,11 +37,12 @@ namespace util {
 
 namespace {
 
-const char kDownloadsFolderName[] = "Downloads";
-const char kGoogleDriveDisplayName[] = "Google Drive";
-const char kRootRelativeToDriveMount[] = "root";
-const char kTeamDrivesRelativeToDriveMount[] = "team_drives";
-const char kAndroidFilesMountPointName[] = "android_files";
+constexpr char kDownloadsFolderName[] = "Downloads";
+constexpr char kGoogleDriveDisplayName[] = "Google Drive";
+constexpr char kRootRelativeToDriveMount[] = "root";
+constexpr char kTeamDrivesRelativeToDriveMount[] = "team_drives";
+constexpr char kComputersRelativeToDriveMount[] = "Computers";
+constexpr char kAndroidFilesMountPointName[] = "android_files";
 
 // Sync with the file provider in ARC++ side.
 constexpr char kArcFileProviderUrl[] =
@@ -350,6 +351,13 @@ std::string GetPathDisplayTextForSettings(Profile* profile,
                                .value(),
                            l10n_util::GetStringUTF8(
                                IDS_FILE_BROWSER_DRIVE_TEAM_DRIVES_LABEL))) {
+  } else if (drive_integration_service &&
+             ReplacePrefix(&result,
+                           drive_integration_service->GetMountPointPath()
+                               .Append(kComputersRelativeToDriveMount)
+                               .value(),
+                           l10n_util::GetStringUTF8(
+                               IDS_FILE_BROWSER_DRIVE_COMPUTERS_LABEL))) {
   } else if (ReplacePrefix(&result, kAndroidFilesPath,
                            l10n_util::GetStringUTF8(
                                IDS_FILE_BROWSER_ANDROID_FILES_ROOT_LABEL))) {
