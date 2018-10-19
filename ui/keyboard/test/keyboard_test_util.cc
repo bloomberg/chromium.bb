@@ -124,21 +124,23 @@ TestKeyboardUI::~TestKeyboardUI() {
   window_.reset();
 }
 
-aura::Window* TestKeyboardUI::GetKeyboardWindow() {
-  if (!window_) {
-    window_.reset(new aura::Window(&delegate_));
-    window_->Init(ui::LAYER_NOT_DRAWN);
-    window_->set_owned_by_parent(false);
-  }
+aura::Window* TestKeyboardUI::LoadKeyboardWindow(LoadCallback callback) {
+  DCHECK(!window_);
+  window_ = std::make_unique<aura::Window>(&delegate_);
+  window_->Init(ui::LAYER_NOT_DRAWN);
+  window_->set_owned_by_parent(false);
+
+  // TODO(https://crbug.com/849995): Call |callback| instead of having tests
+  // call |NotifyKeyboardWindowLoaded|.
+  return window_.get();
+}
+
+aura::Window* TestKeyboardUI::GetKeyboardWindow() const {
   return window_.get();
 }
 
 ui::InputMethod* TestKeyboardUI::GetInputMethod() {
   return input_method_;
-}
-
-bool TestKeyboardUI::HasKeyboardWindow() const {
-  return !!window_;
 }
 
 }  // namespace keyboard
