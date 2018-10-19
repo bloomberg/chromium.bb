@@ -366,9 +366,7 @@
           "--browser=cros-chrome",
           "--remote=127.0.0.1",
           "--remote-ssh-port=9222",
-          "--xvfb",
-          "--skip=core.perf_benchmark_unittest.PerfBenchmarkTest.testVariationArgs",
-          "--skip=measurements.clock_domain_test.ClockDomainTest.testTelemetryUsesChromeClockDomain"
+          "--xvfb"
         ],
         "isolate_name": "telemetry_perf_unittests",
         "name": "telemetry_perf_unittests",
