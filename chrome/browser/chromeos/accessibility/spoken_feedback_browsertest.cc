@@ -556,8 +556,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OverviewMode) {
   EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
 }
 
-#if defined(MEMORY_SANITIZER)
+#if defined(MEMORY_SANITIZER) || defined(OS_CHROMEOS)
 // Fails under MemorySanitizer: http://crbug.com/472125
+// Test is flaky under ChromeOS: http://crbug.com/897249
 #define MAYBE_ChromeVoxShiftSearch DISABLED_ChromeVoxShiftSearch
 #else
 #define MAYBE_ChromeVoxShiftSearch ChromeVoxShiftSearch
