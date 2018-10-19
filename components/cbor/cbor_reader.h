@@ -20,13 +20,17 @@
 // as defined by section 3.9.
 //
 // This implementation supports the following major types:
-//  - 0: Unsigned integers, up to 64-bit values.
-//  - 1: Signed integers, up to 64-bit values.
+//  - 0: Unsigned integers, up to 64-bit values*.
+//  - 1: Signed integers, up to 64-bit values*.
 //  - 2: Byte strings.
 //  - 3: UTF-8 strings.
 //  - 4: Definite-length arrays.
 //  - 5: Definite-length maps.
 //  - 7: Simple values.
+//
+//  * Note: For simplicity, this implementation represents both signed and
+//    unsigned integers with signed int64_t. This reduces the effective range
+//    of unsigned integers.
 //
 // Requirements for canonical CBOR representation:
 //  - Duplicate keys in maps are not allowed.
@@ -139,10 +143,10 @@ class CBOR_EXPORT CBORReader {
   // `span<uint8_t>` to satisfy this function's interface. Maybe we can make
   // this function take a `const span<const uint8_t>` and avoid copying?
   bool HasValidUTF8Format(const std::string& string_data);
-  bool CheckOutOfOrderKey(const CBORValue& new_key, CBORValue::MapValue* map);
-  bool CheckMinimalEncoding(uint8_t additional_bytes, uint64_t uint_data);
+  bool IsKeyInOrder(const CBORValue& new_key, CBORValue::MapValue* map);
+  bool IsEncodingMinimal(uint8_t additional_bytes, uint64_t uint_data);
 
-  DecoderError GetErrorCode();
+  DecoderError GetErrorCode() { return error_code_; }
 
   size_t num_bytes_remaining() const { return rest_.size(); }
 
