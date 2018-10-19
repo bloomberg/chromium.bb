@@ -116,3 +116,6 @@ crbug.com/807675 http/tests/images/image-decode-in-frame.html [ Crash Failure ]
 
 # https://crbug.com/872952: Autoplay is still disabled if there is no gesture.
 crbug.com/872952 http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html [ Failure Pass Timeout ]
+
+# https://crbug.com/895001: Blink layout tests with cross-origin mouse clicks can fail without slow path hit testing
+crbug.com/895001 external/wpt/html/user-activation/message-event-activation-api-iframe-cross-origin.sub.tentative.html [ Timeout Pass ]
