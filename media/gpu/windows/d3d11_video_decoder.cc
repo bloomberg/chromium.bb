@@ -110,7 +110,7 @@ void D3D11VideoDecoder::InitializeAcceleratedDecoder(
   if (isVP9(config)) {
     accelerated_video_decoder_ =
         std::make_unique<VP9Decoder>(std::make_unique<D3D11VP9Accelerator>(
-            this, media_log_.get(), video_decoder, video_device_,
+            this, media_log_.get(), proxy_context, video_decoder, video_device_,
             video_context_));
     return;
   }
@@ -126,7 +126,6 @@ void D3D11VideoDecoder::InitializeAcceleratedDecoder(
 
   // No other type of config should make it this far due to earlier checks.
   NOTREACHED();
-  return;
 }
 
 bool D3D11VideoDecoder::DeviceHasDecoderID(GUID decoder_guid) {
@@ -272,6 +271,12 @@ void D3D11VideoDecoder::Initialize(
   if (cdm_context)
     proxy_context = cdm_context->GetCdmProxyContext();
 #endif
+
+  // Ensure that if we are encrypted, that we have a CDM.
+  if (is_encrypted_ && !proxy_context) {
+    NotifyError("Video stream is encrypted, but no cdm was found");
+    return;
+  }
 
   InitializeAcceleratedDecoder(config, proxy_context, video_decoder);
 
