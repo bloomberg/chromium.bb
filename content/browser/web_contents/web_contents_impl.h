@@ -1680,6 +1680,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // to continue loading the page once the tab is ready.
   std::unique_ptr<OpenURLParams> delayed_open_url_params_;
 
+  // When a new tab is created with window.open(), navigation can be deferred
+  // to execute asynchronously. In such case, the parameters need to be saved
+  // for the navigation to be started at a later point.
+  std::unique_ptr<NavigationController::LoadURLParams> delayed_load_url_params_;
+
   // Whether overscroll should be unconditionally disabled.
   bool force_disable_overscroll_content_;
 
