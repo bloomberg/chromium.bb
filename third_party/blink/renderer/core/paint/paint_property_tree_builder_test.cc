@@ -1061,7 +1061,7 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossHTMLSVGBoundary) {
 TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossSVGHTMLBoundary) {
   SetBodyInnerHTML(R"HTML(
     <svg id='svgRootWithOpacity' style='opacity: 0.3;'>
-      <foreignObject id='foreignObjectWithOpacity' opacity='0.4'>
+      <foreignObject id='foreignObjectWithOpacity' opacity='0.4' style='overflow: visible;'>
         <body>
           <span id='spanWithOpacity' style='opacity: 0.5'/>
         </body>
@@ -1624,7 +1624,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ControlClipInsideForeignObject) {
     <div style='column-count:2;'>
       <div style='columns: 2'>
         <svg style='width: 500px; height: 500px;'>
-          <foreignObject>
+          <foreignObject style='overflow: visible;'>
             <input id='button' style='width:345px; height:123px'
                  value='some text'/>
           </foreignObject>
