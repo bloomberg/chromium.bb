@@ -41,7 +41,6 @@ class KeyEvent;
 class LocatedEvent;
 class MouseEvent;
 class MouseWheelEvent;
-class PointerEvent;
 class ScrollEvent;
 class TouchEvent;
 
@@ -155,19 +154,6 @@ class EVENTS_EXPORT Event {
            type_ == ET_TOUCH_CANCELLED;
   }
 
-  bool IsPointerEvent() const {
-    return type_ == ET_POINTER_DOWN || type_ == ET_POINTER_MOVED ||
-           type_ == ET_POINTER_UP || type_ == ET_POINTER_CANCELLED ||
-           type_ == ET_POINTER_ENTERED || type_ == ET_POINTER_EXITED ||
-           type_ == ET_POINTER_WHEEL_CHANGED ||
-           type_ == ET_POINTER_CAPTURE_CHANGED;
-  }
-
-  // Convenience methods to check pointer type of |this|. Returns false if
-  // |this| is not a PointerEvent.
-  bool IsMousePointerEvent() const;
-  bool IsTouchPointerEvent() const;
-
   bool IsGestureEvent() const {
     switch (type_) {
       case ET_GESTURE_SCROLL_BEGIN:
@@ -250,7 +236,7 @@ class EVENTS_EXPORT Event {
 
   bool IsLocatedEvent() const {
     return IsMouseEvent() || IsScrollEvent() || IsTouchEvent() ||
-           IsGestureEvent() || IsPointerEvent();
+           IsGestureEvent();
   }
 
   // Convenience methods to cast |this| to a CancelModeEvent.
@@ -284,11 +270,6 @@ class EVENTS_EXPORT Event {
   // methods.
   MouseWheelEvent* AsMouseWheelEvent();
   const MouseWheelEvent* AsMouseWheelEvent() const;
-
-  // Convenience methods to cast |this| to a PointerEvent. IsPointerEvent()
-  // must be true as a precondition to calling these methods.
-  PointerEvent* AsPointerEvent();
-  const PointerEvent* AsPointerEvent() const;
 
   // Convenience methods to cast |this| to a ScrollEvent. IsScrollEvent()
   // must be true as a precondition to calling these methods.
@@ -525,12 +506,6 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
   // void*, see PlatformEvent.
   explicit MouseEvent(const PlatformEvent& native_event);
 
-  // |pointer_event.IsMousePointerEvent()| must be true.
-  // Note: If |pointer_event| is a mouse wheel pointer event, use the
-  // MouseWheelEvent version of this function to convert to a MouseWheelEvent
-  // instead.
-  explicit MouseEvent(const PointerEvent& pointer_event);
-
   // Create a new MouseEvent based on the provided model.
   // Uses the provided |type| and |flags| for the new event.
   // If source / target windows are provided, the model location will be
@@ -658,7 +633,6 @@ class EVENTS_EXPORT MouseWheelEvent : public MouseEvent {
 
   explicit MouseWheelEvent(const PlatformEvent& native_event);
   explicit MouseWheelEvent(const ScrollEvent& scroll_event);
-  explicit MouseWheelEvent(const PointerEvent& pointer_event);
   MouseWheelEvent(const MouseEvent& mouse_event, int x_offset, int y_offset);
   MouseWheelEvent(const MouseWheelEvent& copy);
   ~MouseWheelEvent() override;
@@ -695,9 +669,6 @@ class EVENTS_EXPORT MouseWheelEvent : public MouseEvent {
 class EVENTS_EXPORT TouchEvent : public LocatedEvent {
  public:
   explicit TouchEvent(const PlatformEvent& native_event);
-
-  // |pointer_event.IsTouchPointerEvent()| must be true.
-  explicit TouchEvent(const PointerEvent& pointer_event);
 
   // Create a new TouchEvent which is identical to the provided model.
   // If source / target windows are provided, the model location will be
@@ -780,33 +751,6 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
 
   // Structure for holding pointer details for implementing PointerEvents API.
   PointerDetails pointer_details_;
-};
-
-class EVENTS_EXPORT PointerEvent : public LocatedEvent {
- public:
-  // Returns true if a PointerEvent can be constructed from |event|. Currently,
-  // only mouse and touch events can be converted to pointer events.
-  static bool CanConvertFrom(const Event& event);
-
-  PointerEvent(const PointerEvent& pointer_event);
-  explicit PointerEvent(const MouseEvent& mouse_event);
-  explicit PointerEvent(const TouchEvent& touch_event);
-
-  PointerEvent(EventType type,
-               const gfx::Point& location,
-               const gfx::Point& root_location,
-               int flags,
-               int changed_button_flags,
-               const PointerDetails& pointer_details,
-               base::TimeTicks time_stamp);
-
-  int changed_button_flags() const { return changed_button_flags_; }
-  void set_changed_button_flags(int flags) { changed_button_flags_ = flags; }
-  const PointerDetails& pointer_details() const { return details_; }
-
- private:
-  int changed_button_flags_;
-  PointerDetails details_;
 };
 
 // A KeyEvent is really two distinct classes, melded together due to the

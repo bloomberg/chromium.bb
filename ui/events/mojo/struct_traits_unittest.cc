@@ -107,111 +107,6 @@ TEST(StructTraitsTest, KeyEvent) {
   }
 }
 
-TEST(StructTraitsTest, PointerEvent) {
-  const PointerEvent kTestData[] = {
-      // Mouse pointer events:
-      {ET_POINTER_DOWN, gfx::Point(10, 10), gfx::Point(20, 30), EF_NONE, 0,
-       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
-                      MouseEvent::kMousePointerId),
-       base::TimeTicks() + base::TimeDelta::FromMicroseconds(201)},
-      {ET_POINTER_MOVED, gfx::Point(1, 5), gfx::Point(5, 1),
-       EF_LEFT_MOUSE_BUTTON, EF_LEFT_MOUSE_BUTTON,
-       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
-                      MouseEvent::kMousePointerId),
-       base::TimeTicks() + base::TimeDelta::FromMicroseconds(202)},
-      {ET_POINTER_UP, gfx::Point(411, 130), gfx::Point(20, 30),
-       EF_MIDDLE_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON, EF_RIGHT_MOUSE_BUTTON,
-       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
-                      MouseEvent::kMousePointerId),
-       base::TimeTicks() + base::TimeDelta::FromMicroseconds(203)},
-      {ET_POINTER_CANCELLED, gfx::Point(0, 1), gfx::Point(2, 3), EF_ALT_DOWN, 0,
-       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
-                      MouseEvent::kMousePointerId),
-       base::TimeTicks() + base::TimeDelta::FromMicroseconds(204)},
-      {ET_POINTER_ENTERED, gfx::Point(6, 7), gfx::Point(8, 9), EF_NONE, 0,
-       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
-                      MouseEvent::kMousePointerId),
-       base::TimeTicks() + base::TimeDelta::FromMicroseconds(205)},
-      {ET_POINTER_EXITED, gfx::Point(10, 10), gfx::Point(20, 30),
-       EF_BACK_MOUSE_BUTTON, 0,
-       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
-                      MouseEvent::kMousePointerId),
-       base::TimeTicks() + base::TimeDelta::FromMicroseconds(206)},
-      {ET_POINTER_CAPTURE_CHANGED, gfx::Point(99, 99), gfx::Point(99, 99),
-       EF_CONTROL_DOWN, 0,
-       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
-                      MouseEvent::kMousePointerId),
-       base::TimeTicks() + base::TimeDelta::FromMicroseconds(207)},
-
-      // Touch pointer events:
-      {ET_POINTER_DOWN, gfx::Point(10, 10), gfx::Point(20, 30), EF_NONE, 0,
-       PointerDetails(EventPointerType::POINTER_TYPE_TOUCH,
-                      /* pointer_id */ 1,
-                      /* radius_x */ 1.0f,
-                      /* radius_y */ 2.0f,
-                      /* force */ 3.0f,
-                      /* twist */ 0,
-                      /* tilt_x */ 4.0f,
-                      /* tilt_y */ 5.0f),
-       base::TimeTicks() + base::TimeDelta::FromMicroseconds(208)},
-      {ET_POINTER_CANCELLED, gfx::Point(120, 120), gfx::Point(2, 3), EF_NONE, 0,
-       PointerDetails(EventPointerType::POINTER_TYPE_TOUCH,
-                      /* pointer_id */ 2,
-                      /* radius_x */ 5.5f,
-                      /* radius_y */ 4.5f,
-                      /* force */ 3.5f,
-                      /* twist */ 0,
-                      /* tilt_x */ 2.5f,
-                      /* tilt_y */ 0.5f),
-       base::TimeTicks() + base::TimeDelta::FromMicroseconds(209)},
-
-      // Pen pointer events:
-      {ET_POINTER_DOWN, gfx::Point(1, 2), gfx::Point(3, 4), EF_NONE, 0,
-       PointerDetails(EventPointerType::POINTER_TYPE_PEN,
-                      /* pointer_id */ 3,
-                      /* radius_x */ 1.0f,
-                      /* radius_y */ 2.0f,
-                      /* force */ 3.0f,
-                      /* twist */ 90,
-                      /* tilt_x */ 4.0f,
-                      /* tilt_y */ 5.0f,
-                      /* tangential_pressure */ -1.f),
-       base::TimeTicks() + base::TimeDelta::FromMicroseconds(210)},
-      {ET_POINTER_UP, gfx::Point(5, 6), gfx::Point(7, 8), EF_NONE, 0,
-       PointerDetails(EventPointerType::POINTER_TYPE_PEN,
-                      /* pointer_id */ 3,
-                      /* radius_x */ 1.0f,
-                      /* radius_y */ 2.0f,
-                      /* force */ 3.0f,
-                      /* twist */ 180,
-                      /* tilt_x */ 4.0f,
-                      /* tilt_y */ 5.0f,
-                      /* tangential_pressure */ 1.f),
-       base::TimeTicks() + base::TimeDelta::FromMicroseconds(211)},
-  };
-
-  for (size_t i = 0; i < base::size(kTestData); i++) {
-    std::unique_ptr<Event> expected_copy = Event::Clone(kTestData[i]);
-    std::unique_ptr<Event> output;
-    ASSERT_TRUE(mojo::test::SerializeAndDeserialize<mojom::Event>(
-        &expected_copy, &output));
-    EXPECT_TRUE(output->IsPointerEvent());
-
-    const PointerEvent* output_ptr_event = output->AsPointerEvent();
-    EXPECT_EQ(kTestData[i].type(), output_ptr_event->type());
-    EXPECT_EQ(kTestData[i].flags(), output_ptr_event->flags());
-    EXPECT_EQ(kTestData[i].location(), output_ptr_event->location());
-    EXPECT_EQ(kTestData[i].root_location(), output_ptr_event->root_location());
-    EXPECT_EQ(kTestData[i].pointer_details().id,
-              output_ptr_event->pointer_details().id);
-    EXPECT_EQ(kTestData[i].changed_button_flags(),
-              output_ptr_event->changed_button_flags());
-    EXPECT_EQ(kTestData[i].pointer_details(),
-              output_ptr_event->pointer_details());
-    EXPECT_EQ(kTestData[i].time_stamp(), output_ptr_event->time_stamp());
-  }
-}
-
 TEST(StructTraitsTest, MouseEvent) {
   const MouseEvent kTestData[] = {
       {ET_MOUSE_PRESSED, gfx::Point(10, 10), gfx::Point(20, 30),
@@ -260,40 +155,6 @@ TEST(StructTraitsTest, MouseEvent) {
   }
 }
 
-TEST(StructTraitsTest, PointerWheelEvent) {
-  const MouseWheelEvent kTestData[] = {
-      {gfx::Vector2d(11, 15), gfx::Point(3, 4), gfx::Point(40, 30),
-       base::TimeTicks() + base::TimeDelta::FromMicroseconds(301),
-       EF_LEFT_MOUSE_BUTTON, EF_LEFT_MOUSE_BUTTON},
-      {gfx::Vector2d(-5, 3), gfx::Point(40, 3), gfx::Point(4, 0),
-       base::TimeTicks() + base::TimeDelta::FromMicroseconds(302),
-       EF_MIDDLE_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON,
-       EF_MIDDLE_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON},
-      {gfx::Vector2d(1, 0), gfx::Point(3, 4), gfx::Point(40, 30),
-       base::TimeTicks() + base::TimeDelta::FromMicroseconds(303), EF_NONE,
-       EF_NONE},
-  };
-
-  for (size_t i = 0; i < base::size(kTestData); i++) {
-    std::unique_ptr<Event> expected_copy =
-        std::make_unique<PointerEvent>(kTestData[i]);
-    std::unique_ptr<Event> output;
-    ASSERT_TRUE(mojo::test::SerializeAndDeserialize<mojom::Event>(
-        &expected_copy, &output));
-    EXPECT_EQ(ET_POINTER_WHEEL_CHANGED, output->type());
-
-    const PointerEvent* output_pointer_event = output->AsPointerEvent();
-    EXPECT_EQ(ET_POINTER_WHEEL_CHANGED, output_pointer_event->type());
-    EXPECT_EQ(kTestData[i].flags(), output_pointer_event->flags());
-    EXPECT_EQ(kTestData[i].location(), output_pointer_event->location());
-    EXPECT_EQ(kTestData[i].root_location(),
-              output_pointer_event->root_location());
-    EXPECT_EQ(kTestData[i].offset(),
-              output_pointer_event->pointer_details().offset);
-    EXPECT_EQ(kTestData[i].time_stamp(), output_pointer_event->time_stamp());
-  }
-}
-
 TEST(StructTraitsTest, MouseWheelEvent) {
   const MouseWheelEvent kTestData[] = {
       {gfx::Vector2d(11, 15), gfx::Point(3, 4), gfx::Point(40, 30),
@@ -309,8 +170,7 @@ TEST(StructTraitsTest, MouseWheelEvent) {
   };
 
   for (size_t i = 0; i < base::size(kTestData); i++) {
-    std::unique_ptr<Event> expected_copy =
-        std::make_unique<MouseWheelEvent>(PointerEvent(kTestData[i]));
+    std::unique_ptr<Event> expected_copy = Event::Clone(kTestData[i]);
     std::unique_ptr<Event> output;
     ASSERT_TRUE(mojo::test::SerializeAndDeserialize<mojom::Event>(
         &expected_copy, &output));
@@ -373,7 +233,7 @@ TEST(StructTraitsTest, GestureEvent) {
     std::unique_ptr<Event> output;
     ASSERT_TRUE(mojo::test::SerializeAndDeserialize<mojom::Event>(
         &expected_copy, &output));
-    EXPECT_TRUE(output->IsGestureEvent());
+    ASSERT_TRUE(output->IsGestureEvent());
 
     const GestureEvent* output_ptr_event = output->AsGestureEvent();
     ExpectEventsEqual(kTestData[i], *output);

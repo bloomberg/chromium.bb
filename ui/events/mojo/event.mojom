@@ -56,57 +56,6 @@ struct LocationData {
   gfx.mojom.PointF root_location;
 };
 
-// TODO(rjkroege,sadrul): Add gesture representation.
-struct PointerData {
-  int32 pointer_id;
-  int32 changed_button_flags;
-  PointerKind kind;
-  LocationData location;
-  // Some devices (e.g. pen, finger) can extend across multiple pixels
-  // at once. |brush_data| provides additional data for this case and
-  // is available when |kind| is PEN or TOUCH.
-  BrushData? brush_data;
-  // Only set for |WHEEL| events.
-  WheelData? wheel_data;
-};
-
-// Information payload to support
-// https://developer.mozilla.org/en-US/docs/Web/Events/wheel.
-// TODO(rjkroege): Handle MacOS momentum scrolling.
-struct WheelData {
-  WheelMode mode;
-  // |delta_x|, |delta_y|, |delta_z| can be in units of pixels, lines, pages
-  // or control scaling as controlled by |mode|. Pixel scroll is physical
-  // pixels in the coordinate system of the target View.
-  float delta_x;
-  float delta_y;
-  float delta_z;
-};
-
-// Supplementary data to support pointers where the pointer can
-// cover multiple pixels per http://www.w3.org/TR/pointerevents/
-struct BrushData {
-  // |width| and |height| are in CSS pixels in the coordinate system of
-  // the target View.
-  float width;
-  float height;
-  // |pressure| range is [0,1]. For devices like mice buttons where the
-  // pressure is not available, it will be set to 0.5 if the button is down.
-  float pressure;
-  // |tilt_x| and |tilt_y| are in degrees. See comments in ui::PointerDetails
-  // for more information.
-  float tilt_x;
-  float tilt_y;
-  // The normalized tangential pressure (or barrel pressure), typically set by
-  // an additional control of the stylus, which has a range of [-1,1], where 0
-  // is the neutral position of the control. Always 0 if the device does not
-  // support it.
-  float tangential_pressure;
-  // The clockwise rotation of a pen stylus around its own major axis, in
-  // degrees in the range [0,359]. Always 0 if the device does not support it.
-  int32 twist;
-};
-
 // Data to support gesture events.
 // TODO(crbug.com/767087): Expand GestureEvent and GestureEventDetails support.
 struct GestureData {
@@ -170,8 +119,6 @@ struct Event {
   EventType action;
   // A bitfield of kEventFlag* and kMouseEventFlag* values in
   // input_event_constants.mojom.
-  //
-  // TODO(sky): parts of this should move to PointerData.
   int32 flags;
   // This value accurately orders events w.r.t. to each other but does not
   // position them at an absolute time since the TimeTicks origin is only
@@ -179,7 +126,6 @@ struct Event {
   mojo_base.mojom.TimeTicks time_stamp;
   LatencyInfo latency;
   KeyData? key_data;
-  PointerData? pointer_data;
   GestureData? gesture_data;
   ScrollData? scroll_data;
   TouchData? touch_data;

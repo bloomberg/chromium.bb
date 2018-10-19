@@ -42,7 +42,6 @@ struct StructTraits<ui::mojom::EventDataView, EventUniquePtr> {
   static base::TimeTicks time_stamp(const EventUniquePtr& event);
   static const ui::LatencyInfo& latency(const EventUniquePtr& event);
   static ui::mojom::KeyDataPtr key_data(const EventUniquePtr& event);
-  static ui::mojom::PointerDataPtr pointer_data(const EventUniquePtr& event);
   static ui::mojom::GestureDataPtr gesture_data(const EventUniquePtr& event);
   static ui::mojom::ScrollDataPtr scroll_data(const EventUniquePtr& event);
   static ui::mojom::TouchDataPtr touch_data(const EventUniquePtr& event);
