@@ -15,7 +15,6 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/model_type_controller.h"
 #include "components/sync/model/model_type_store.h"
-#include "components/sync/model_impl/syncable_service_based_bridge.h"
 
 namespace syncer {
 
@@ -40,9 +39,7 @@ class NonUiSyncableServiceBasedModelTypeController
       OnceModelTypeStoreFactory store_factory,
       SyncableServiceProvider syncable_service_provider,
       const base::RepeatingClosure& dump_stack,
-      scoped_refptr<base::SequencedTaskRunner> task_runner,
-      scoped_refptr<SyncableServiceBasedBridge::ModelCryptographer>
-          cryptographer = nullptr);
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
   ~NonUiSyncableServiceBasedModelTypeController() override;
 
  private:

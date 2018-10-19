@@ -372,13 +372,7 @@ void ClientTagBasedModelTypeProcessor::Put(
   DCHECK(data);
   DCHECK(!data->is_deleted());
   DCHECK(!data->non_unique_name.empty());
-
-  // Only the pseudo-USS bridge for PASSWORDS populates encrypted data.
-  // TODO(crbug.com/856941): Remove when PASSWORDS are migrated to USS and
-  // replace instead with a DCHECK that verifies the input is not encrypted.
-  if (!data->specifics.has_encrypted()) {
-    DCHECK_EQ(type_, GetModelTypeFromSpecifics(data->specifics));
-  }
+  DCHECK_EQ(type_, GetModelTypeFromSpecifics(data->specifics));
 
   if (!model_type_state_.initial_sync_done()) {
     // Ignore changes before the initial sync is done.
