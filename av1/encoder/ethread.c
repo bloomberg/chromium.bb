@@ -455,12 +455,17 @@ static void launch_enc_workers(AV1_COMP *cpi, int num_workers) {
 
 static void sync_enc_workers(AV1_COMP *cpi, int num_workers) {
   const AVxWorkerInterface *const winterface = aom_get_worker_interface();
+  int had_error = 0;
 
   // Encoding ends.
   for (int i = 0; i < num_workers; i++) {
     AVxWorker *const worker = &cpi->workers[i];
-    winterface->sync(worker);
+    had_error |= !winterface->sync(worker);
   }
+
+  if (had_error)
+    aom_internal_error(&cpi->common.error, AOM_CODEC_ERROR,
+                       "Failed to encode tile data");
 }
 
 static void accumulate_counters_enc_workers(AV1_COMP *cpi, int num_workers) {
