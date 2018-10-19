@@ -25,7 +25,6 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
-#include "ui/views/view_properties.h"
 #include "ui/views/widget/widget.h"
 
 ToolbarButton::ToolbarButton(views::ButtonListener* listener)
@@ -119,10 +118,7 @@ bool ToolbarButton::IsMenuShowing() const {
 }
 
 void ToolbarButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  SetProperty(
-      views::kHighlightPathKey,
-      CreateToolbarHighlightPath(this, gfx::Insets(0, leading_margin_, 0, 0))
-          .release());
+  SetToolbarButtonHighlightPath(this, gfx::Insets(0, leading_margin_, 0, 0));
 
   UpdateHighlightBackgroundAndInsets();
   LabelButton::OnBoundsChanged(previous_bounds);

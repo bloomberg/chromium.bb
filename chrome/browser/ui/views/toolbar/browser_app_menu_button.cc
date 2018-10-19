@@ -39,7 +39,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/metrics.h"
-#include "ui/views/view_properties.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/keyboard/keyboard_controller.h"
@@ -287,10 +286,8 @@ BrowserAppMenuButton::CreateDefaultBorder() const {
 
 void BrowserAppMenuButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   // TODO(pbos): Consolidate with ToolbarButton::OnBoundsChanged.
-  SetProperty(
-      views::kHighlightPathKey,
-      CreateToolbarHighlightPath(this, gfx::Insets(0, 0, 0, margin_trailing_))
-          .release());
+  SetToolbarButtonHighlightPath(this, gfx::Insets(0, 0, 0, margin_trailing_));
+
   AppMenuButton::OnBoundsChanged(previous_bounds);
 }
 

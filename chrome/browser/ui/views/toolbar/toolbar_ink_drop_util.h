@@ -37,14 +37,9 @@ constexpr SkAlpha kToolbarButtonBackgroundAlpha = 32;
 gfx::Insets GetToolbarInkDropInsets(const views::View* host_view,
                                     const gfx::Insets& margin_insets);
 
-// Create a SkPath matching the toolbar inkdrops to be used for the focus ring.
-// TODO(pbos): Consolidate inkdrop effects, highlights and ripples along with
-// focus rings so that they are derived from the same actual SkPath or other
-// shared primitive. That way they would be significantly easier to keep in
-// sync. This method at least reuses GetToolbarInkDropInsets.
-std::unique_ptr<SkPath> CreateToolbarHighlightPath(
-    const views::View* host_view,
-    const gfx::Insets& margin_insets);
+// Set the highlight path to be used for inkdrops and focus rings.
+void SetToolbarButtonHighlightPath(views::View* host_view,
+                                   const gfx::Insets& margin_insets);
 
 // Creates the appropriate ink drop for the calling button. When the newer
 // material UI is not enabled, it uses the default implementation of the
