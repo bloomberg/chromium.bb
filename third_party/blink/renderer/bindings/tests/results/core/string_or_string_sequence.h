@@ -8,8 +8,8 @@
 // DO NOT MODIFY!
 
 // clang-format off
-#ifndef StringOrStringSequence_h
-#define StringOrStringSequence_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_STRING_OR_STRING_SEQUENCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_STRING_OR_STRING_SEQUENCE_H_
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
@@ -92,4 +92,4 @@ struct V8TypeOf<StringOrStringSequence> {
 // See https://codereview.chromium.org/1118993002/#msg5 for more details.
 WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::StringOrStringSequence);
 
-#endif  // StringOrStringSequence_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_STRING_OR_STRING_SEQUENCE_H_
