@@ -94,14 +94,8 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
       bool is_opaque,
       blink::WebFrameSinkDestroyedCallback frame_sink_destroyed_callback);
 
-  // Updates the rotation information for frames given to |submitter_|.
-  void UpdateRotation(media::VideoRotation rotation);
-
   // Notifies the |submitter_| that the frames must be submitted.
-  void SetForceSubmit(bool);
-
-  // Updates the opacity information for frames given to |submitter_|.
-  void UpdateIsOpaque(bool);
+  void SetForceSubmit(bool force_submit);
 
   // VideoFrameProvider implementation.
   void SetVideoFrameProviderClient(
@@ -161,6 +155,10 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
 
   // Update |current_frame_| and |dropped_frame_count_|
   void SetCurrentFrame(const scoped_refptr<media::VideoFrame>& frame);
+  // Following the update to |current_frame_|, this will check for changes that
+  // require updating video layer.
+  void CheckForFrameChanges(const scoped_refptr<media::VideoFrame>& old_frame,
+                            const scoped_refptr<media::VideoFrame>& new_frame);
 
   void StartRenderingInternal();
   void StopRenderingInternal();

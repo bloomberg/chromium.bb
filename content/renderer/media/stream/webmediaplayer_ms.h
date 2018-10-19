@@ -190,6 +190,11 @@ class CONTENT_EXPORT WebMediaPlayerMS
   void OnPictureInPictureModeEnded() override;
   void OnPictureInPictureControlClicked(const std::string& control_id) override;
 
+  void OnFirstFrameReceived(media::VideoRotation video_rotation,
+                            bool is_opaque);
+  void OnOpacityChanged(bool is_opaque);
+  void OnRotationChanged(media::VideoRotation video_rotation);
+
   bool CopyVideoTextureToPlatformTexture(
       gpu::gles2::GLES2Interface* gl,
       unsigned target,
@@ -246,11 +251,6 @@ class CONTENT_EXPORT WebMediaPlayerMS
   // prevent frames from being submitted. The current surface_ids become
   // invalid.
   void OnFrameSinkDestroyed();
-
-  void OnFirstFrameReceived(media::VideoRotation video_rotation,
-                            bool is_opaque);
-  void OnOpacityChanged(bool is_opaque);
-  void OnRotationChanged(media::VideoRotation video_rotation, bool is_opaque);
 
   bool IsInPictureInPicture() const;
 
