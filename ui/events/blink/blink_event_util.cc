@@ -1079,13 +1079,13 @@ EventType WebEventTypeToEventType(WebInputEvent::Type type) {
       return ET_TOUCH_CANCELLED;
     case WebInputEvent::kTouchScrollStarted:
     case WebInputEvent::kPointerDown:
-      return ET_POINTER_DOWN;
+      return ET_TOUCH_PRESSED;
     case WebInputEvent::kPointerUp:
-      return ET_POINTER_UP;
+      return ET_TOUCH_RELEASED;
     case WebInputEvent::kPointerMove:
-      return ET_POINTER_MOVED;
+      return ET_TOUCH_MOVED;
     case WebInputEvent::kPointerCancel:
-      return ET_POINTER_CANCELLED;
+      return ET_TOUCH_CANCELLED;
     default:
       return ET_UNKNOWN;
   }

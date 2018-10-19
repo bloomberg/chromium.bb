@@ -206,7 +206,6 @@ void ImmersiveFullscreenController::OnEvent(const ui::Event& event) {
   if (!event.IsLocatedEvent())
     return;
 
-  DCHECK(!event.IsPointerEvent());
   const ui::LocatedEvent* located_event = event.AsLocatedEvent();
   aura::Window* target = static_cast<aura::Window*>(event.target());
   if (event.IsMouseEvent()) {

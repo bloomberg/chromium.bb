@@ -1274,7 +1274,6 @@ void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
                                           std::unique_ptr<ui::Event> event,
                                           bool matches_event_observer) {
   DCHECK(event);
-  DCHECK(!event->IsPointerEvent());
   WindowMus* window = GetWindowByServerId(window_id);  // May be null.
 
   // If the window has already been deleted, use |event| to update event states
