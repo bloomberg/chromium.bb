@@ -8,27 +8,19 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "base/supports_user_data.h"
 #include "components/previews/core/previews_experiments.h"
+#include "content/public/common/previews_state.h"
 
 namespace previews {
 
 // A representation of previews information related to a navigation.
-class PreviewsUserData : public base::SupportsUserData::Data {
+// TODO(ryansturm): rename this to remove UserData.
+class PreviewsUserData {
  public:
   PreviewsUserData(uint64_t page_id);
-  ~PreviewsUserData() override;
+  ~PreviewsUserData();
 
-  // Makes a deep copy.
-  std::unique_ptr<PreviewsUserData> DeepCopy() const;
-
-  // Creates the data on |owner| if it does not exist, and returns a pointer
-  // to the data.
-  static PreviewsUserData* Create(base::SupportsUserData* owner,
-                                  uint64_t page_id);
-
-  // Gets the data from the owner if the data exists.
-  static PreviewsUserData* GetData(const base::SupportsUserData& owner);
+  PreviewsUserData(const PreviewsUserData& previews_user_data);
 
   // A session unique ID related to this navigation.
   uint64_t page_id() const { return page_id_; }
@@ -88,8 +80,25 @@ class PreviewsUserData : public base::SupportsUserData::Data {
   }
   bool offline_preview_used() { return offline_preview_used_; }
 
+  // The PreviewsState that was allowed for the navigation.
+  content::PreviewsState allowed_previews_state() {
+    return allowed_previews_state_;
+  }
+  void set_allowed_previews_state(
+      content::PreviewsState allowed_previews_state) {
+    allowed_previews_state_ = allowed_previews_state;
+  }
+
+  // The PreviewsState that was committed for the navigation.
+  content::PreviewsState committed_previews_state() {
+    return committed_previews_state_;
+  }
+  void set_committed_previews_state(
+      content::PreviewsState committed_previews_state) {
+    committed_previews_state_ = committed_previews_state;
+  }
+
  private:
-  PreviewsUserData(const PreviewsUserData& previews_user_data);
 
   // A session unique ID related to this navigation.
   const uint64_t page_id_;
@@ -107,6 +116,13 @@ class PreviewsUserData : public base::SupportsUserData::Data {
 
   // The committed previews type, if any.
   previews::PreviewsType committed_previews_type_ = PreviewsType::NONE;
+
+  // The PreviewsState that was allowed for the navigation.
+  content::PreviewsState allowed_previews_state_ =
+      content::PREVIEWS_UNSPECIFIED;
+
+  // The PreviewsState that was committed for the navigation.
+  content::PreviewsState committed_previews_state_ = content::PREVIEWS_OFF;
 
   DISALLOW_ASSIGN(PreviewsUserData);
 };

@@ -38,7 +38,6 @@
 #include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/request_header/offline_page_navigation_ui_data.h"
 #include "components/offline_pages/core/stub_system_download_manager.h"
-#include "components/previews/content/previews_user_data.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
@@ -1139,8 +1138,6 @@ std::unique_ptr<net::URLRequest> OfflinePageRequestJobBuilder::CreateRequest(
       test_url_request_context_->CreateRequest(url, net::DEFAULT_PRIORITY,
                                                url_request_delegate_.get());
   request->set_method(method);
-
-  previews::PreviewsUserData::Create(request.get(), 1u);
 
   content::ResourceRequestInfo::AllocateForTesting(
       request.get(),

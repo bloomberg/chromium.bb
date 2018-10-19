@@ -15,7 +15,7 @@ bool HasEnabledPreviews(content::PreviewsState previews_state) {
          !(previews_state & content::PREVIEWS_NO_TRANSFORM);
 }
 
-content::PreviewsState DetermineEnabledClientPreviewsState(
+content::PreviewsState DetermineAllowedClientPreviewsState(
     previews::PreviewsUserData* previews_data,
     const GURL& url,
     bool is_reload,
