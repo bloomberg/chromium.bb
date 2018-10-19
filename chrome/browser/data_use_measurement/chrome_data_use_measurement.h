@@ -17,13 +17,21 @@ class DataUseAscriber;
 
 class ChromeDataUseMeasurement : public DataUseMeasurement {
  public:
+  static std::unique_ptr<ChromeDataUseMeasurement> CreateForNetworkService();
+
   ChromeDataUseMeasurement(
       std::unique_ptr<URLRequestClassifier> url_request_classifier,
-      DataUseAscriber* ascriber);
+      DataUseAscriber* ascriber,
+      network::NetworkConnectionTracker* network_connection_tracker);
 
   void UpdateDataUseToMetricsService(int64_t total_bytes,
                                      bool is_cellular,
                                      bool is_metrics_service_usage) override;
+
+  // Called when requests complete from NetworkService.
+  void ReportNetworkServiceDataUse(int32_t network_traffic_annotation_id_hash,
+                                   int64_t recv_bytes,
+                                   int64_t sent_bytes);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeDataUseMeasurement);

@@ -581,7 +581,8 @@ void DataReductionProxyNetworkDelegate::CalculateAndRecordDataUsage(
 
   AccumulateDataUsage(
       data_used, original_size, request_type, mime_type,
-      data_use_measurement::DataUseMeasurement::IsUserRequest(request),
+      data_use_measurement::DataUseMeasurement::IsUserRequest(
+          request.traffic_annotation().unique_id_hash_code),
       data_use_measurement::DataUseMeasurement::GetContentTypeForRequest(
           request),
       request.traffic_annotation().unique_id_hash_code);
