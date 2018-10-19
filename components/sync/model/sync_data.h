@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <iosfwd>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -58,11 +59,10 @@ class SyncData {
                                   const sync_pb::EntitySpecifics& specifics);
 
   // Helper method for creating SyncData objects originating from the syncer.
-  static SyncData CreateRemoteData(
-      int64_t id,
-      const sync_pb::EntitySpecifics& specifics,
-      const base::Time& last_modified_time,
-      const std::string& client_tag_hash = std::string());
+  static SyncData CreateRemoteData(int64_t id,
+                                   sync_pb::EntitySpecifics specifics,
+                                   base::Time last_modified_time,
+                                   std::string client_tag_hash = std::string());
 
   // Whether this SyncData holds valid data. The only way to have a SyncData
   // without valid data is to use the default constructor.
