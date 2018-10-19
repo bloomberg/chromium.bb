@@ -98,6 +98,9 @@ class TrafficAnnotationAuditor {
   // Checks if a call instance can stay not annotated.
   bool CheckIfCallCanBeUnannotated(const CallInstance& call);
 
+  // Checks if all 'os_list' entries in annotations.xml are supported platforms.
+  void CheckArchivedAnnotationsHaveValidOsList();
+
   // Performs all checks on extracted annotations and calls. The input path
   // filters are passed so that the data for files that were not tested would be
   // read from annotations.xml. If |report_xml_updates| is set and

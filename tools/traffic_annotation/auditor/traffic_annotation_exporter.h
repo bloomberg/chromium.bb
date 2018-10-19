@@ -34,6 +34,8 @@ class TrafficAnnotationExporter {
     std::string file_path;
   };
 
+  static const base::FilePath kAnnotationsXmlPath;
+
   TrafficAnnotationExporter(const base::FilePath& source_path);
   ~TrafficAnnotationExporter();
   TrafficAnnotationExporter(const TrafficAnnotationExporter&) = delete;
@@ -65,6 +67,10 @@ class TrafficAnnotationExporter {
   const std::map<std::string, ArchivedAnnotation>& GetArchivedAnnotations()
       const {
     return archive_;
+  }
+
+  const std::vector<std::string>& GetAllSupportedPlatforms() const {
+    return all_supported_platforms_;
   }
 
   // Checks if the current platform is in the os list of archived annotation.

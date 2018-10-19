@@ -645,6 +645,10 @@
       'nacl_helper_nonsfi_unittests': {},
     },
 
+    'chromium_gtests_for_win_and_linux_only': {
+      'traffic_annotation_auditor_unittests': {},
+    },
+
     'chromium_junit_tests': {
       'base_junit_tests': {},
       'chrome_junit_tests': {},
@@ -2074,7 +2078,6 @@
       'service_manager_unittests': {}, # https://crbug.com/843134
       'snapshot_unittests': {},
       'sync_integration_tests': {},
-      'traffic_annotation_auditor_unittests': {},
       'views_unittests': {},
       'webui_polymer2_browser_tests': {
         'args': [
@@ -2487,6 +2490,7 @@
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
       'chromium_gtests_for_linux_and_chromeos_only',
+      'chromium_gtests_for_win_and_linux_only',
       'linux_flavor_specific_chromium_gtests',
       'network_service_gtests',
       'non_android_chromium_gtests',
@@ -2519,6 +2523,7 @@
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
       'chromium_gtests_for_linux_and_chromeos_only',
+      'chromium_gtests_for_win_and_linux_only',
       'linux_flavor_specific_chromium_gtests',
       'network_service_gtests',
       'non_android_chromium_gtests',
@@ -2554,6 +2559,7 @@
       'aura_gtests',
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
+      'chromium_gtests_for_win_and_linux_only',
       'network_service_gtests',
       'non_android_chromium_gtests',
       'non_android_and_cast_and_chromeos_chromium_gtests',
@@ -2833,6 +2839,7 @@
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
       'chromium_gtests_for_linux_and_chromeos_only',
+      'chromium_gtests_for_win_and_linux_only',
       'linux_chromeos_specific_gtests',
       'linux_flavor_specific_chromium_gtests',
       'non_android_chromium_gtests',
