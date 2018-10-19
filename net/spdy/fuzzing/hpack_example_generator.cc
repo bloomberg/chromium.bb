@@ -7,7 +7,7 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "net/third_party/spdy/core/fuzzing/hpack_fuzz_util.h"
+#include "net/spdy/fuzzing/hpack_fuzz_util.h"
 #include "net/third_party/spdy/core/hpack/hpack_constants.h"
 #include "net/third_party/spdy/core/hpack/hpack_encoder.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
