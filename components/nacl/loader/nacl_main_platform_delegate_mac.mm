@@ -6,13 +6,22 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/common/sandbox_init.h"
+#include "sandbox/mac/seatbelt.h"
+#include "sandbox/mac/seatbelt_exec.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 
 void NaClMainPlatformDelegate::EnableSandbox(
     const content::MainFunctionParams& parameters) {
-  CHECK(content::InitializeSandbox(service_manager::SANDBOX_TYPE_NACL_LOADER))
-      << "Error initializing sandbox for " << switches::kNaClLoaderProcess;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          sandbox::switches::kSeatbeltClientName)) {
+    // Make sure the sandbox is actually enabled if the V2 flag is present.
+    CHECK(sandbox::Seatbelt::IsSandboxed());
+  } else {
+    CHECK(content::InitializeSandbox(service_manager::SANDBOX_TYPE_NACL_LOADER))
+        << "Error initializing sandbox for " << switches::kNaClLoaderProcess;
+  }
 }
