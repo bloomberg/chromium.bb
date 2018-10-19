@@ -36,6 +36,7 @@ class MailboxManager;
 class TransferBufferManager;
 class SharedImageManager;
 class ServiceDiscardableManager;
+class PassthroughDiscardableManager;
 class DecoderContext;
 
 namespace gles2 {
@@ -74,6 +75,7 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
                gl::ProgressReporter* progress_reporter,
                const GpuFeatureInfo& gpu_feature_info,
                ServiceDiscardableManager* discardable_manager,
+               PassthroughDiscardableManager* passthrough_discardable_manager,
                SharedImageManager* shared_image_manager);
 
   // This should only be called by a DecoderContext. This must be paired with a
@@ -245,6 +247,10 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
     return passthrough_resources_.get();
   }
 
+  PassthroughDiscardableManager* passthrough_discardable_manager() const {
+    return passthrough_discardable_manager_;
+  }
+
   const GpuFeatureInfo& gpu_feature_info() const { return gpu_feature_info_; }
 
   void ReportProgress();
@@ -320,6 +326,7 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
 
   bool use_passthrough_cmd_decoder_;
   std::unique_ptr<PassthroughResources> passthrough_resources_;
+  PassthroughDiscardableManager* passthrough_discardable_manager_;
 
   // Used to notify the watchdog thread of progress during destruction,
   // preventing time-outs when destruction takes a long time. May be null when

@@ -22,6 +22,7 @@
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
+#include "gpu/command_buffer/service/passthrough_discardable_manager.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
@@ -180,7 +181,8 @@ class RecordReplayContext : public GpuControl {
         &translator_cache_, &completeness_cache_, feature_info,
         bind_generates_resource, &image_manager_, nullptr /* image_factory */,
         nullptr /* progress_reporter */, GpuFeatureInfo(),
-        &discardable_manager_, &shared_image_manager_);
+        &discardable_manager_, &passthrough_discardable_manager_,
+        &shared_image_manager_);
     command_buffer_.reset(new RecordReplayCommandBuffer(
         context_group->transfer_buffer_manager()));
 
@@ -326,6 +328,7 @@ class RecordReplayContext : public GpuControl {
   scoped_refptr<gl::GLShareGroup> share_group_;
   gles2::ImageManager image_manager_;
   ServiceDiscardableManager discardable_manager_;
+  PassthroughDiscardableManager passthrough_discardable_manager_;
   SharedImageManager shared_image_manager_;
 
   scoped_refptr<gl::GLSurface> surface_;

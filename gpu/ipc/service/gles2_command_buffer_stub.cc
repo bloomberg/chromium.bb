@@ -104,6 +104,7 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
         gmb_factory ? gmb_factory->AsImageFactory() : nullptr,
         manager->watchdog() /* progress_reporter */,
         manager->gpu_feature_info(), manager->discardable_manager(),
+        manager->passthrough_discardable_manager(),
         manager->shared_image_manager());
   }
 

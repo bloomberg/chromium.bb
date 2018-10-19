@@ -564,6 +564,10 @@ gl::GLImage* TexturePassthrough::GetLevelImage(GLenum target,
   return level_images_[face_idx][level].get();
 }
 
+void TexturePassthrough::SetEstimatedSize(size_t size) {
+  estimated_size_ = size;
+}
+
 Texture::Texture(GLuint service_id)
     : TextureBase(service_id),
       owned_service_id_(service_id) {}
@@ -1227,8 +1231,22 @@ void Texture::SetLevelInfo(GLenum target,
   {
     ScopedMemTrackerChange change(this);
     estimated_size_ -= info.estimated_size;
-    GLES2Util::ComputeImageDataSizes(width, height, depth, format, type, 4,
-                                     &info.estimated_size, nullptr, nullptr);
+
+    if (format != GL_NONE) {
+      // Uncompressed image
+      GLES2Util::ComputeImageDataSizes(width, height, depth, format, type, 4,
+                                       &info.estimated_size, nullptr, nullptr);
+    } else if (internal_format != GL_NONE) {
+      // Compressed image
+      GLsizei compressed_size = 0;
+      GetCompressedTexSizeInBytes(nullptr, width, height, depth,
+                                  internal_format, &compressed_size, nullptr);
+      info.estimated_size = compressed_size;
+    } else {
+      // No image
+      info.estimated_size = 0;
+    }
+
     estimated_size_ += info.estimated_size;
   }
 

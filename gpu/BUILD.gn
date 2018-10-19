@@ -208,6 +208,7 @@ test("gl_tests") {
     "command_buffer/tests/gl_cube_map_texture_unittest.cc",
     "command_buffer/tests/gl_depth_texture_unittest.cc",
     "command_buffer/tests/gl_deschedule_unittest.cc",
+    "command_buffer/tests/gl_discardable_textures_unittest.cc",
     "command_buffer/tests/gl_dynamic_config_unittest.cc",
     "command_buffer/tests/gl_ext_blend_func_extended_unittest.cc",
     "command_buffer/tests/gl_ext_multisample_compatibility_unittest.cc",
@@ -476,6 +477,7 @@ test("gpu_unittests") {
     sources += [
       "command_buffer/service/gles2_cmd_decoder_passthrough_unittest_buffers.cc",
       "command_buffer/service/gles2_cmd_decoder_passthrough_unittest_commands.cc",
+      "command_buffer/service/gles2_cmd_decoder_passthrough_unittest_discardable_textures.cc",
       "command_buffer/service/gles2_cmd_decoder_passthrough_unittest_drawing.cc",
       "command_buffer/service/gles2_cmd_decoder_passthrough_unittest_framebuffers.cc",
       "command_buffer/service/gles2_cmd_decoder_passthrough_unittest_textures.cc",
