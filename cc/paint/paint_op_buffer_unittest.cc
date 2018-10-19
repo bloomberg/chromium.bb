@@ -1216,6 +1216,16 @@ std::vector<PaintImage> test_images = {
     CreateDiscardablePaintImage(gfx::Size(50, 50)),
 };
 
+std::vector<scoped_refptr<SkottieWrapper>> test_skotties = {
+    CreateSkottie(gfx::Size(10, 20), 4), CreateSkottie(gfx::Size(100, 40), 5),
+    CreateSkottie(gfx::Size(80, 70), 6)};
+
+std::vector<float> test_skottie_floats = {0, 0.1f, 1.f};
+
+std::vector<SkRect> test_skottie_rects = {SkRect::MakeXYWH(10, 20, 30, 40),
+                                          SkRect::MakeXYWH(0, 5, 10, 20),
+                                          SkRect::MakeXYWH(6, 0, 3, 50)};
+
 // Writes as many ops in |buffer| as can fit in |output_size| to |output|.
 // Records the numbers of bytes written for each op.
 class SimpleSerializer {
@@ -1498,6 +1508,15 @@ void PushDrawRRectOps(PaintOpBuffer* buffer) {
   ValidateOps<DrawRRectOp>(buffer);
 }
 
+void PushDrawSkottieOps(PaintOpBuffer* buffer) {
+  size_t len = std::min(test_skotties.size(), test_flags.size());
+  for (size_t i = 0; i < len; i++) {
+    buffer->push<DrawSkottieOp>(test_skotties[i], test_skottie_rects[i],
+                                test_skottie_floats[i]);
+  }
+  ValidateOps<DrawSkottieOp>(buffer);
+}
+
 void PushDrawTextBlobOps(PaintOpBuffer* buffer) {
   size_t len = std::min(std::min(test_paint_blobs.size(), test_flags.size()),
                         test_floats.size() - 1);
@@ -1637,6 +1656,10 @@ class PaintOpSerializationTest : public ::testing::TestWithParam<uint8_t> {
       case PaintOpType::DrawRRect:
         PushDrawRRectOps(&buffer_);
         break;
+      case PaintOpType::DrawSkottie:
+        // Not supported
+        // TODO(malaykeshav): Add test when Drawable supports serialization.
+        break;
       case PaintOpType::DrawTextBlob:
         PushDrawTextBlobOps(&buffer_);
         break;
@@ -1679,9 +1702,11 @@ class PaintOpSerializationTest : public ::testing::TestWithParam<uint8_t> {
   }
 
   bool IsTypeSupported() {
-    // DrawRecordOps must be flattened and are not currently serialized.
-    // All other types must push non-zero amounts of ops in PushTestOps.
-    return GetParamType() != PaintOpType::DrawRecord;
+    // DrawRecordOps and DrawSkottieOps must be flattened and are not currently
+    // serialized. All other types must push non-zero amounts of ops in
+    // PushTestOps.
+    return GetParamType() != PaintOpType::DrawRecord &&
+           GetParamType() != PaintOpType::DrawSkottie;
   }
 
  protected:
@@ -2657,6 +2682,19 @@ TEST(PaintOpBufferTest, BoundingRect_DrawDRRectOp) {
 
     ASSERT_TRUE(PaintOp::GetBounds(op, &rect));
     EXPECT_EQ(rect, op->outer.getBounds().makeSorted());
+  }
+}
+
+TEST(PaintOpBufferTest, BoundingRect_DrawSkottieOp) {
+  PaintOpBuffer buffer;
+  PushDrawSkottieOps(&buffer);
+
+  SkRect rect;
+  for (auto* base_op : PaintOpBuffer::Iterator(&buffer)) {
+    auto* op = static_cast<DrawSkottieOp*>(base_op);
+
+    ASSERT_TRUE(PaintOp::GetBounds(op, &rect));
+    EXPECT_EQ(rect, op->dst.makeSorted());
   }
 }
 

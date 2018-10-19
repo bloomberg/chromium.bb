@@ -108,6 +108,10 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
                      const PaintFlags* flags,
                      SrcRectConstraint constraint) override;
 
+  void drawSkottie(scoped_refptr<SkottieWrapper> skottie,
+                   const SkRect& dst,
+                   float t) override;
+
   void drawTextBlob(scoped_refptr<PaintTextBlob> blob,
                     SkScalar x,
                     SkScalar y,

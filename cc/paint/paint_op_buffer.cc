@@ -65,6 +65,7 @@ SkRect AdjustSrcRectForScale(SkRect original, SkSize scale_adjustment) {
   M(DrawRecordOp)     \
   M(DrawRectOp)       \
   M(DrawRRectOp)      \
+  M(DrawSkottieOp)    \
   M(DrawTextBlobOp)   \
   M(NoopOp)           \
   M(RestoreOp)        \
@@ -263,6 +264,8 @@ std::string PaintOpTypeToString(PaintOpType type) {
       return "DrawRect";
     case PaintOpType::DrawRRect:
       return "DrawRRect";
+    case PaintOpType::DrawSkottie:
+      return "DrawSkottie";
     case PaintOpType::DrawTextBlob:
       return "DrawTextBlob";
     case PaintOpType::Noop:
@@ -576,6 +579,16 @@ size_t DrawRRectOp::Serialize(const PaintOp* base_op,
   helper.Write(*serialized_flags);
   helper.Write(op->rrect);
   return helper.size();
+}
+
+size_t DrawSkottieOp::Serialize(const PaintOp* op,
+                                void* memory,
+                                size_t size,
+                                const SerializeOptions& options) {
+  // TODO(malaykeshav): these must be flattened.  Serializing this will not do
+  // anything. See https://crbug.com/894635
+  NOTREACHED();
+  return 0u;
 }
 
 size_t DrawTextBlobOp::Serialize(const PaintOp* base_op,
@@ -987,6 +1000,16 @@ PaintOp* DrawRRectOp::Deserialize(const volatile void* input,
   return op;
 }
 
+PaintOp* DrawSkottieOp::Deserialize(const volatile void* input,
+                                    size_t input_size,
+                                    void* output,
+                                    size_t output_size,
+                                    const DeserializeOptions& options) {
+  // TODO(malaykeshav): these must be flattened and not sent directly.
+  // See https://crbug.com/894635
+  return nullptr;
+}
+
 PaintOp* DrawTextBlobOp::Deserialize(const volatile void* input,
                                      size_t input_size,
                                      void* output,
@@ -1316,6 +1339,12 @@ void DrawRRectOp::RasterWithFlags(const DrawRRectOp* op,
                                   const PlaybackParams& params) {
   SkPaint paint = flags->ToSkPaint();
   canvas->drawRRect(op->rrect, paint);
+}
+
+void DrawSkottieOp::Raster(const DrawSkottieOp* op,
+                           SkCanvas* canvas,
+                           const PlaybackParams& params) {
+  op->skottie->Draw(canvas, op->t, op->dst);
 }
 
 void DrawTextBlobOp::RasterWithFlags(const DrawTextBlobOp* op,
@@ -1702,6 +1731,21 @@ bool DrawRRectOp::AreEqual(const PaintOp* base_left,
   return true;
 }
 
+bool DrawSkottieOp::AreEqual(const PaintOp* base_left,
+                             const PaintOp* base_right) {
+  auto* left = static_cast<const DrawSkottieOp*>(base_left);
+  auto* right = static_cast<const DrawSkottieOp*>(base_right);
+  DCHECK(left->IsValid());
+  DCHECK(right->IsValid());
+  // TODO(malaykeshav): Verify the skottie objects of each PaintOb are equal
+  // based on the serialized bytes.
+  if (left->t != right->t)
+    return false;
+  if (!AreSkRectsEqual(left->dst, right->dst))
+    return false;
+  return true;
+}
+
 bool DrawTextBlobOp::AreEqual(const PaintOp* base_left,
                               const PaintOp* base_right) {
   auto* left = static_cast<const DrawTextBlobOp*>(base_left);
@@ -1947,6 +1991,12 @@ bool PaintOp::GetBounds(const PaintOp* op, SkRect* rect) {
     }
     case PaintOpType::DrawRecord:
       return false;
+    case PaintOpType::DrawSkottie: {
+      auto* skottie_op = static_cast<const DrawSkottieOp*>(op);
+      *rect = skottie_op->dst;
+      rect->sort();
+      return true;
+    }
     case PaintOpType::DrawTextBlob: {
       auto* text_op = static_cast<const DrawTextBlobOp*>(op);
       *rect = text_op->blob->ToSkTextBlob()->bounds().makeOffset(text_op->x,
@@ -2125,6 +2175,15 @@ size_t DrawRecordOp::AdditionalBytesUsed() const {
 size_t DrawRecordOp::AdditionalOpCount() const {
   return record->total_op_count();
 }
+
+DrawSkottieOp::DrawSkottieOp(scoped_refptr<SkottieWrapper> skottie,
+                             SkRect dst,
+                             float t)
+    : PaintOp(kType), skottie(std::move(skottie)), dst(dst), t(t) {}
+
+DrawSkottieOp::DrawSkottieOp() : PaintOp(kType) {}
+
+DrawSkottieOp::~DrawSkottieOp() = default;
 
 bool DrawRecordOp::HasDiscardableImages() const {
   return record->HasDiscardableImages();

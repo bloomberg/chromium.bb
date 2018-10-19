@@ -15,7 +15,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 
 namespace cc {
-
+class SkottieWrapper;
 class PaintFlags;
 class PaintOpBuffer;
 
@@ -132,6 +132,13 @@ class CC_PAINT_EXPORT PaintCanvas {
                              const SkRect& dst,
                              const PaintFlags* flags,
                              SrcRectConstraint constraint) = 0;
+
+  // Draws the frame of the |skottie| animation specified by the normalized time
+  // t [0->first frame..1->last frame] at the destination bounds given by |dst|
+  // onto the canvas.
+  virtual void drawSkottie(scoped_refptr<SkottieWrapper> skottie,
+                           const SkRect& dst,
+                           float t) = 0;
 
   virtual void drawTextBlob(scoped_refptr<PaintTextBlob> blob,
                             SkScalar x,
