@@ -32,4 +32,7 @@ extern const CGFloat kTableViewLabelVerticalTopSpacing;
 // Hex Value for light gray label text color.
 extern const CGFloat kTableViewTextLabelColorLightGrey;
 
+// The text color of the secondary labels (e.g. details, URL, metadata...).
+extern const CGFloat kSecondaryLabelLightGrayTextColor;
+
 #endif  // IOS_CHROME_BROWSER_UI_TABLE_VIEW_CELLS_TABLE_VIEW_CELLS_CONSTANTS_H_
