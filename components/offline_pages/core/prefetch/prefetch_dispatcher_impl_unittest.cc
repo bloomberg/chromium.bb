@@ -263,12 +263,11 @@ class PrefetchDispatcherTest : public PrefetchRequestTestBase {
 
   void ExpectHasThumbnailForOfflineId(int64_t offline_id, bool to_return) {
     EXPECT_CALL(*offline_model_, HasThumbnailForOfflineId(offline_id, _))
-        .WillOnce(
-            [&, offline_id, to_return](
-                int64_t offline_id, base::OnceCallback<void(bool)> callback) {
-              task_runner()->PostTask(
-                  FROM_HERE, base::BindOnce(std::move(callback), to_return));
-            });
+        .WillOnce([&, to_return](int64_t offline_id,
+                                 base::OnceCallback<void(bool)> callback) {
+          task_runner()->PostTask(
+              FROM_HERE, base::BindOnce(std::move(callback), to_return));
+        });
   }
 
   PrefetchDispatcherImpl* dispatcher() { return dispatcher_; }
