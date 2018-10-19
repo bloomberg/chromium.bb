@@ -12,3 +12,10 @@
 ; Allow a Native Client application to use semaphores, specifically
 ; sem_init(), et.al.
 (allow ipc-posix-sem)
+
+(allow iokit-get-properties
+  (iokit-registry-entry-class "IORegisterForSystemPower"))
+
+(allow iokit-open
+  (iokit-user-client-class "IOSurfaceSendRight")
+  (iokit-user-client-class "RootDomainUserClient"))
