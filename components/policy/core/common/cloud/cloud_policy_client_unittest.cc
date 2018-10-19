@@ -983,8 +983,8 @@ TEST_F(CloudPolicyClientTest, PolicyFetchWithExtensionPolicy) {
   EXPECT_TRUE(expected_namespaces.empty());
 
   // Verify that the client got all the responses mapped to their namespaces.
-  for (ResponseMap::iterator it = expected_responses.begin();
-       it != expected_responses.end(); ++it) {
+  for (auto it = expected_responses.begin(); it != expected_responses.end();
+       ++it) {
     const em::PolicyFetchResponse* response =
         client_->GetPolicyFor(it->first.first, it->first.second);
     ASSERT_TRUE(response);
