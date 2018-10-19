@@ -1142,6 +1142,19 @@ void UpdateTraceCounters(const ThreadHeapStatsCollector& stats_collector) {
 void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
   UMA_HISTOGRAM_ENUMERATION("BlinkGC.GCReason", event.reason);
 
+  // Blink GC cycle time.
+  const WTF::TimeDelta cycle_duration =
+      event.scope_data
+          [ThreadHeapStatsCollector::kIncrementalMarkingStartMarking] +
+      event.scope_data[ThreadHeapStatsCollector::kIncrementalMarkingStep] +
+      event.scope_data[ThreadHeapStatsCollector::kAtomicPhase] +
+      event.scope_data[ThreadHeapStatsCollector::kCompleteSweep] +
+      event.scope_data[ThreadHeapStatsCollector::kLazySweepInIdle] +
+      event.scope_data[ThreadHeapStatsCollector::kLazySweepOnAllocation];
+  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForGCCycle", cycle_duration);
+
+  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForNestedInV8", event.gc_nested_in_v8_);
+
   // TODO(mlippautz): Update name of this histogram.
   UMA_HISTOGRAM_TIMES(
       "BlinkGC.CollectGarbage",
