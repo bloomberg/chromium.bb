@@ -70,9 +70,7 @@ class TestDataUseMeasurement : public DataUseMeasurement {
   TestDataUseMeasurement(
       std::unique_ptr<URLRequestClassifier> url_request_classifier,
       DataUseAscriber* ascriber)
-      : DataUseMeasurement(std::move(url_request_classifier),
-                           ascriber,
-                           nullptr) {}
+      : DataUseMeasurement(std::move(url_request_classifier), ascriber) {}
 
   void UpdateDataUseToMetricsService(int64_t total_bytes,
                                      bool is_cellular,

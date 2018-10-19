@@ -118,9 +118,4 @@ void TestNetworkServiceClient::OnClearSiteData(
   NOTREACHED();
 }
 
-void TestNetworkServiceClient::OnDataUseUpdate(
-    int32_t network_traffic_annotation_id_hash,
-    int64_t recv_bytes,
-    int64_t sent_bytes) {}
-
 }  // namespace network

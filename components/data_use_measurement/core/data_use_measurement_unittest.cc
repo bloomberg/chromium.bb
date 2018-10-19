@@ -92,9 +92,7 @@ class TestDataUseMeasurement : public DataUseMeasurement {
   TestDataUseMeasurement(
       std::unique_ptr<URLRequestClassifier> url_request_classifier,
       DataUseAscriber* ascriber)
-      : DataUseMeasurement(std::move(url_request_classifier),
-                           ascriber,
-                           nullptr) {}
+      : DataUseMeasurement(std::move(url_request_classifier), ascriber) {}
 
   void UpdateDataUseToMetricsService(int64_t total_bytes,
                                      bool is_cellular,
@@ -315,7 +313,7 @@ TEST_F(DataUseMeasurementTest, TimeOfBackgroundDownstreamBytes) {
     std::unique_ptr<net::URLRequest> request = CreateTestRequest(kUserRequest);
     data_use_measurement_.OnBeforeURLRequest(request.get());
     base::HistogramTester histogram_tester;
-    data_use_measurement()->OnApplicationStateChangeForTesting(
+    data_use_measurement()->OnApplicationStateChange(
         base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES);
     data_use_measurement_.OnNetworkBytesSent(*request, 100);
     data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
@@ -346,7 +344,7 @@ TEST_F(DataUseMeasurementTest, TimeOfBackgroundDownstreamBytes) {
     std::unique_ptr<net::URLRequest> request = CreateTestRequest(kUserRequest);
     data_use_measurement_.OnBeforeURLRequest(request.get());
     base::HistogramTester histogram_tester;
-    data_use_measurement()->OnApplicationStateChangeForTesting(
+    data_use_measurement()->OnApplicationStateChange(
         base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES);
     data_use_measurement_.OnNetworkBytesSent(*request, 100);
     data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
@@ -397,7 +395,7 @@ TEST_F(DataUseMeasurementTest, TimeOfBackgroundDownstreamBytes) {
     std::unique_ptr<net::URLRequest> request = CreateTestRequest(kUserRequest);
     data_use_measurement_.OnBeforeURLRequest(request.get());
     base::HistogramTester histogram_tester;
-    data_use_measurement()->OnApplicationStateChangeForTesting(
+    data_use_measurement()->OnApplicationStateChange(
         base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES);
     data_use_measurement_.OnNetworkBytesSent(*request, 100);
     data_use_measurement_.OnNetworkBytesReceived(*request, 1000);

@@ -1355,13 +1355,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // perform additional checks, such as requiring --user-data-dir flag too to
   // make sure that insecure contents will not persist accidentally.
   virtual bool CanIgnoreCertificateErrorIfNeeded();
-
-  // Called on every request completion to update the data use when network
-  // service is enabled.
-  virtual void OnNetworkServiceDataUseUpdate(
-      int32_t network_traffic_annotation_id_hash,
-      int64_t recv_bytes,
-      int64_t sent_bytes);
 };
 
 }  // namespace content

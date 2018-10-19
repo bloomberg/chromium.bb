@@ -200,8 +200,6 @@ class BrowserProcessImpl : public BrowserProcess,
   shell_integration::DefaultWebClientState CachedDefaultWebClientState()
       override;
   prefs::InProcessPrefServiceFactory* pref_service_factory() const override;
-  data_use_measurement::ChromeDataUseMeasurement* data_use_measurement()
-      override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -428,9 +426,6 @@ class BrowserProcessImpl : public BrowserProcess,
   // Called to signal the process' main message loop to exit.
   base::OnceClosure quit_closure_;
 #endif
-
-  std::unique_ptr<data_use_measurement::ChromeDataUseMeasurement>
-      data_use_measurement_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

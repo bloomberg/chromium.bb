@@ -43,7 +43,6 @@
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/data_use_measurement/chrome_data_use_measurement.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
@@ -4925,14 +4924,4 @@ bool ChromeContentBrowserClient::CanIgnoreCertificateErrorIfNeeded() {
   // in the user's regular profile.
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kUserDataDir);
-}
-
-void ChromeContentBrowserClient::OnNetworkServiceDataUseUpdate(
-    int32_t network_traffic_annotation_id_hash,
-    int64_t recv_bytes,
-    int64_t sent_bytes) {
-  if (g_browser_process->data_use_measurement()) {
-    g_browser_process->data_use_measurement()->ReportNetworkServiceDataUse(
-        network_traffic_annotation_id_hash, recv_bytes, sent_bytes);
-  }
 }
