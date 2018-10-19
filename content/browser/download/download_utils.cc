@@ -10,7 +10,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "components/download/database/in_progress/download_entry.h"
-#include "components/download/database/in_progress/in_progress_cache.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_interrupt_reasons_utils.h"
 #include "components/download/public/common/download_save_info.h"
