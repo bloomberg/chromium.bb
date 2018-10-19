@@ -1,6 +1,7 @@
 This directory contains experimental APIs for farming tasks out to a pool of worker threads. Everything in this directory is still highly in flux, and is not anywhere near ready to ship.
 
 thread_pool.{h,cc} contain a class that manages a pool of worker threads and can distribute work to them.
+thread_pool_thread.{h,cc} is a subclass of WorkerThread that these distirubted tasks run on.
 
 worker_task_queue.{h,cc,idl} exposes two APIs:
 * postFunction - a simple API for posting a task to a worker.
