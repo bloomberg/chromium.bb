@@ -101,7 +101,7 @@ class Testprinter(unittest.TestCase):
         self._port = host.port_factory.get('test', options)
 
         regular_output = StringIO.StringIO()
-        printer = printing.Printer(self._port, options, regular_output)
+        printer = printing.Printer(host, options, regular_output)
         return printer, regular_output
 
     def get_result(self, test_name, result_type=test_expectations.PASS, run_time=0):
@@ -129,7 +129,7 @@ class Testprinter(unittest.TestCase):
         printer._options.slow_time_out_ms = 12000
         printer._options.order = 'random'
         printer._options.seed = 1234
-        printer.print_config('/tmp')
+        printer.print_config(self._port)
         self.assertIn("Using port 'test-mac-mac10.10'", err.getvalue())
         self.assertIn('Test configuration: <mac10.10, x86, release>', err.getvalue())
         self.assertIn('View the test results at file:///tmp', err.getvalue())
@@ -142,7 +142,7 @@ class Testprinter(unittest.TestCase):
 
         self.reset(err)
         printer._options.quiet = True
-        printer.print_config('/tmp')
+        printer.print_config(self._port)
         self.assertNotIn('Baseline search path: test-mac-mac10.10 -> test-mac-mac10.11 -> generic', err.getvalue())
 
     def test_print_summary(self):
@@ -201,7 +201,7 @@ class Testprinter(unittest.TestCase):
         printer, err = self.get_printer(['--details'])
         result = self.get_result('passes/image.html')
         printer.print_started_test('passes/image.html')
-        printer.print_finished_test(result, expected=False, exp_str='', got_str='')
+        printer.print_finished_test(self._port, result, expected=False, exp_str='', got_str='')
         self.assertNotEmpty(err)
 
     def test_print_found(self):
@@ -224,11 +224,11 @@ class Testprinter(unittest.TestCase):
 
         result = self.get_result('passes/image.html')
         printer.print_started_test('passes/image.html')
-        printer.print_finished_test(result, expected=True, exp_str='', got_str='')
+        printer.print_finished_test(self._port, result, expected=True, exp_str='', got_str='')
 
         printer.print_started_test('passes/text.html')
         result = self.get_result('passes/text.html')
-        printer.print_finished_test(result, expected=True, exp_str='', got_str='')
+        printer.print_finished_test(self._port, result, expected=True, exp_str='', got_str='')
 
         # Only the first test's start should be printed.
         lines = err.buflist

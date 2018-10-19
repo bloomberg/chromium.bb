@@ -43,7 +43,7 @@ from blinkpy.web_tests.views import printing
 _log = logging.getLogger(__name__)
 
 
-def main(argv, stdout, stderr):
+def main(argv, stderr):
     options, args = parse_args(argv)
 
     if options.platform and 'test' in options.platform and not 'browser_test' in options.platform:
@@ -55,27 +55,31 @@ def main(argv, stdout, stderr):
     else:
         host = Host()
 
+    printer = printing.Printer(host, options, stderr)
+
     try:
         port = host.port_factory.get(options.platform, options)
     except (NotImplementedError, ValueError) as error:
-        # FIXME: is this the best way to handle unsupported port names?
-        print >> stderr, str(error)
+        _log.error(error)
+        printer.cleanup()
         return exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
 
     try:
-        return run(port, options, args, stderr, stdout).exit_code
+        return run(port, options, args, printer).exit_code
 
     # We need to still handle KeyboardInterrupt, at least for blinkpy unittest cases.
     except KeyboardInterrupt:
         return exit_codes.INTERRUPTED_EXIT_STATUS
     except test_run_results.TestRunException as error:
-        print >> stderr, error.msg
+        _log.error(error.msg)
         return error.code
     except BaseException as error:
         if isinstance(error, Exception):
-            print >> stderr, '\n%s raised: %s' % (error.__class__.__name__, error)
+            _log.error('\n%s raised: %s', error.__class__.__name__, error)
             traceback.print_exc(file=stderr)
         return exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
+    finally:
+        printer.cleanup()
 
 
 def deprecate(option, opt_str, _, parser):
@@ -596,29 +600,16 @@ def _set_up_derived_options(port, options, args):
             options.image_first_tests.extend(line for line in contents.splitlines(False) if line)
 
 
-def _run_tests(port, options, args, printer):
+def run(port, options, args, printer):
     _set_up_derived_options(port, options, args)
     manager = Manager(port, options, printer)
-    printer.print_config(port.results_directory())
-    return manager.run(args)
-
-
-def run(port, options, args, logging_stream, stdout):
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG if options.debug_rwt_logging else logging.INFO)
-
-    printer = printing.Printer(port, options, logging_stream, logger=logger)
-    try:
-        run_details = _run_tests(port, options, args, printer)
-        printer.flush()
-
-        _log.debug('')
-        _log.debug('Testing completed. Exit status: %d', run_details.exit_code)
-        return run_details
-
-    finally:
-        printer.cleanup()
+    printer.print_config(port)
+    run_details = manager.run(args)
+    _log.debug('')
+    _log.debug('Testing completed. Exit status: %d', run_details.exit_code)
+    printer.flush()
+    return run_details
 
 
 if __name__ == '__main__':
-    sys.exit(main(sys.argv[1:], sys.stdout, sys.stderr))
+    sys.exit(main(sys.argv[1:], sys.stderr))
