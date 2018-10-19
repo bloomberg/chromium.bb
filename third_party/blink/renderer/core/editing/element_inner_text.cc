@@ -494,7 +494,6 @@ void ElementInnerTextCollector::ProcessNode(const Node& node) {
   const LayoutObject& layout_object = *node.GetLayoutObject();
   if (style->Display() == EDisplay::kTableCell) {
     ProcessChildrenWithRequiredLineBreaks(node, 0);
-    result_.EmitEndBlock();
     if (layout_object.IsTableCell() &&
         ToLayoutTableCell(layout_object).NextCell())
       result_.EmitTab();
