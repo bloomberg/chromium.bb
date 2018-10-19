@@ -19,6 +19,7 @@
 #include "components/sync/base/cancelation_observer.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/base/passphrase_enums.h"
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync/engine/sync_encryption_handler.h"
@@ -66,6 +67,7 @@ class ModelTypeWorker : public UpdateHandler,
                   const sync_pb::ModelTypeState& initial_state,
                   bool trigger_initial_sync,
                   std::unique_ptr<Cryptographer> cryptographer,
+                  PassphraseType passphrase_type,
                   NudgeHandler* nudge_handler,
                   std::unique_ptr<ModelTypeProcessor> model_type_processor,
                   DataTypeDebugInfoEmitter* debug_info_emitter,
@@ -83,6 +85,7 @@ class ModelTypeWorker : public UpdateHandler,
   ModelType GetModelType() const;
 
   void UpdateCryptographer(std::unique_ptr<Cryptographer> cryptographer);
+  void UpdatePassphraseType(PassphraseType type);
 
   // UpdateHandler implementation.
   bool IsInitialSyncEnded() const override;
@@ -209,6 +212,10 @@ class ModelTypeWorker : public UpdateHandler,
   // Initialized at construction time and updated with UpdateCryptographer().
   // null if encryption is not enabled for this type.
   std::unique_ptr<Cryptographer> cryptographer_;
+
+  // A private copy of the most recent passphrase type. Initialized at
+  // construction time and updated with UpdatePassphraseType().
+  PassphraseType passphrase_type_;
 
   // Interface used to access and send nudges to the sync scheduler. Not owned.
   NudgeHandler* nudge_handler_;

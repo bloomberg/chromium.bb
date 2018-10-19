@@ -62,7 +62,8 @@ class UssMigratorTest : public ::testing::Test {
     auto processor = std::make_unique<MockModelTypeProcessor>();
     processor_ = processor.get();
     worker_ = std::make_unique<ModelTypeWorker>(
-        kModelType, sync_pb::ModelTypeState(), false, nullptr, &nudge_handler_,
+        kModelType, sync_pb::ModelTypeState(), false, /*cryptographer=*/nullptr,
+        PassphraseType::IMPLICIT_PASSPHRASE, &nudge_handler_,
         std::move(processor), &debug_emitter_, &cancelation_signal_);
   }
 

@@ -76,6 +76,7 @@ ModelTypeWorker::ModelTypeWorker(
     const sync_pb::ModelTypeState& initial_state,
     bool trigger_initial_sync,
     std::unique_ptr<Cryptographer> cryptographer,
+    PassphraseType passphrase_type,
     NudgeHandler* nudge_handler,
     std::unique_ptr<ModelTypeProcessor> model_type_processor,
     DataTypeDebugInfoEmitter* debug_info_emitter,
@@ -85,10 +86,12 @@ ModelTypeWorker::ModelTypeWorker(
       model_type_state_(initial_state),
       model_type_processor_(std::move(model_type_processor)),
       cryptographer_(std::move(cryptographer)),
+      passphrase_type_(passphrase_type),
       nudge_handler_(nudge_handler),
       cancelation_signal_(cancelation_signal),
       weak_ptr_factory_(this) {
   DCHECK(model_type_processor_);
+  DCHECK(type_ != PASSWORDS || cryptographer_);
 
   // Request an initial sync if it hasn't been completed yet.
   if (trigger_initial_sync) {
@@ -135,6 +138,11 @@ void ModelTypeWorker::UpdateCryptographer(
   UpdateEncryptionKeyName();
   DecryptStoredEntities();
   NudgeIfReadyToCommit();
+}
+
+void ModelTypeWorker::UpdatePassphraseType(PassphraseType type) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  passphrase_type_ = type;
 }
 
 // UpdateHandler implementation.
@@ -295,6 +303,29 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
       update_entity.deleted() ? sync_pb::EntitySpecifics::default_instance()
                               : update_entity.specifics();
 
+  // Passwords use their own legacy encryption scheme.
+  if (specifics.has_password()) {
+    DCHECK(cryptographer);
+
+    // Independently of whether the password can be decrypted or not, we send it
+    // encrypted to the processor.
+    // TODO(crbug.com/856941): Reconsider when PASSWORDS are migrated to full
+    // USS.
+    data.specifics = specifics;
+    response_data->entity = data.PassToPtr();
+
+    // Make sure the worker defers password entities if the encryption key
+    // hasn't been received yet.
+    if (!update_entity.server_defined_unique_tag().empty() ||
+        cryptographer->CanDecrypt(specifics.password().encrypted())) {
+      response_data->encryption_key_name =
+          specifics.password().encrypted().key_name();
+      return SUCCESS;
+    } else {
+      return DECRYPTION_PENDING;
+    }
+  }
+
   // Check if specifics are encrypted and try to decrypt if so.
   if (!specifics.has_encrypted()) {
     // No encryption.
@@ -447,7 +478,7 @@ std::unique_ptr<CommitContribution> ModelTypeWorker::GetContribution(
   DCHECK(response.size() <= max_entries);
   return std::make_unique<NonBlockingTypeCommitContribution>(
       GetModelType(), model_type_state_.type_context(), response, this,
-      cryptographer_.get(), debug_info_emitter_,
+      cryptographer_.get(), passphrase_type_, debug_info_emitter_,
       CommitOnlyTypes().Has(GetModelType()));
 }
 
@@ -518,13 +549,22 @@ void ModelTypeWorker::DecryptStoredEntities() {
        it != entries_pending_decryption_.end();) {
     const UpdateResponseData& encrypted_update = it->second;
     EntityDataPtr data = encrypted_update.entity;
-    DCHECK(data->specifics.has_encrypted());
 
     sync_pb::EntitySpecifics specifics;
-    if (!cryptographer_->CanDecrypt(data->specifics.encrypted()) ||
-        !DecryptSpecifics(*cryptographer_, data->specifics, &specifics)) {
-      ++it;
-      continue;
+
+    if (data->specifics.has_password()) {
+      if (!cryptographer_->CanDecrypt(data->specifics.password().encrypted())) {
+        ++it;
+        continue;
+      }
+      specifics = data->specifics;
+    } else {
+      DCHECK(data->specifics.has_encrypted());
+      if (!cryptographer_->CanDecrypt(data->specifics.encrypted()) ||
+          !DecryptSpecifics(*cryptographer_, data->specifics, &specifics)) {
+        ++it;
+        continue;
+      }
     }
 
     UpdateResponseData decrypted_update;
@@ -595,6 +635,7 @@ void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnClientTagHash() {
 bool ModelTypeWorker::DecryptSpecifics(const Cryptographer& cryptographer,
                                        const sync_pb::EntitySpecifics& in,
                                        sync_pb::EntitySpecifics* out) {
+  DCHECK(!in.has_password());
   DCHECK(in.has_encrypted());
   DCHECK(cryptographer.CanDecrypt(in.encrypted()));
 
