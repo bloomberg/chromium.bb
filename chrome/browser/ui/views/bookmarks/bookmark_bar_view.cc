@@ -150,15 +150,14 @@ gfx::ImageSkia* GetImageSkiaNamed(int id) {
   return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
 }
 
-// Returns a |SkPath| for bookmark inkdrops and focus rings.
-std::unique_ptr<SkPath> CreateBookmarkHighlightPath(
-    views::InkDropHostView* host_view) {
+// Set the highlight path for inkdrops and focus rings.
+void SetBookmarkHighlightPath(views::View* host_view) {
   auto path = std::make_unique<SkPath>();
   const int radius = ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
       views::EMPHASIS_MAXIMUM, host_view->size());
   path->addRoundRect(gfx::RectToSkRect(gfx::Rect(host_view->size())), radius,
                      radius);
-  return path;
+  host_view->SetProperty(views::kHighlightPathKey, path.release());
 }
 
 std::unique_ptr<views::InkDrop> CreateBookmarkButtonInkDrop(
@@ -213,8 +212,7 @@ class BookmarkButtonBase : public views::LabelButton {
 
   // LabelButton:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
-    SetProperty(views::kHighlightPathKey,
-                CreateBookmarkHighlightPath(this).release());
+    SetBookmarkHighlightPath(this);
     LabelButton::OnBoundsChanged(previous_bounds);
   }
 
@@ -336,8 +334,7 @@ class BookmarkMenuButtonBase : public views::MenuButton {
 
   // MenuButton:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
-    SetProperty(views::kHighlightPathKey,
-                CreateBookmarkHighlightPath(this).release());
+    SetBookmarkHighlightPath(this);
     MenuButton::OnBoundsChanged(previous_bounds);
   }
 

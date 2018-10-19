@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 
 #include "ui/gfx/color_palette.h"
+#include "ui/views/view_properties.h"
 
 gfx::Insets GetToolbarInkDropInsets(const views::View* host_view,
                                     const gfx::Insets& margin_insets) {
@@ -25,9 +26,8 @@ gfx::Insets GetToolbarInkDropInsets(const views::View* host_view,
   return inkdrop_insets;
 }
 
-std::unique_ptr<SkPath> CreateToolbarHighlightPath(
-    const views::View* host_view,
-    const gfx::Insets& margin_insets) {
+void SetToolbarButtonHighlightPath(views::View* host_view,
+                                   const gfx::Insets& margin_insets) {
   gfx::Rect rect(host_view->size());
   rect.Inset(GetToolbarInkDropInsets(host_view, margin_insets));
 
@@ -36,7 +36,7 @@ std::unique_ptr<SkPath> CreateToolbarHighlightPath(
 
   auto path = std::make_unique<SkPath>();
   path->addRoundRect(gfx::RectToSkRect(rect), radii, radii);
-  return path;
+  host_view->SetProperty(views::kHighlightPathKey, path.release());
 }
 
 std::unique_ptr<views::InkDropHighlight> CreateToolbarInkDropHighlight(

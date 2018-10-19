@@ -34,7 +34,6 @@
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/mouse_constants.h"
-#include "ui/views/view_properties.h"
 
 using views::LabelButtonBorder;
 
@@ -86,8 +85,7 @@ ToolbarActionView::~ToolbarActionView() {
 
 void ToolbarActionView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   // TODO(pbos): Consolidate with ToolbarButton::OnBoundsChanged.
-  SetProperty(views::kHighlightPathKey,
-              CreateToolbarHighlightPath(this, gfx::Insets()).release());
+  SetToolbarButtonHighlightPath(this, gfx::Insets());
 
   MenuButton::OnBoundsChanged(previous_bounds);
 }
