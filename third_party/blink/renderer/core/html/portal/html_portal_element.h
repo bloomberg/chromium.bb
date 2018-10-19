@@ -35,6 +35,10 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
   // idl implementation.
   ScriptPromise activate(ScriptState*);
 
+  FrameOwnerElementType OwnerType() const override {
+    return FrameOwnerElementType::kPortal;
+  }
+
  private:
   explicit HTMLPortalElement(Document&);
 

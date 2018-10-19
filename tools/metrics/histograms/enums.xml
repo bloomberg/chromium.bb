@@ -3574,6 +3574,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="204" label="RFPH_BLOB_URL_TOKEN_FOR_NON_BLOB_URL"/>
   <int value="205" label="RFH_ERROR_PROCESS_NON_ERROR_COMMIT"/>
   <int value="206" label="RFH_ERROR_PROCESS_NON_UNIQUE_ORIGIN_COMMIT"/>
+  <int value="207" label="RFH_CANNOT_RENDER_FALLBACK_CONTENT"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">

@@ -36,6 +36,7 @@
 
 #include "base/unguessable_token.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-shared.h"
@@ -220,7 +221,8 @@ class BLINK_EXPORT WebLocalFrameClient {
       const WebString& fallback_name,
       WebSandboxFlags sandbox_flags,
       const ParsedFeaturePolicy& container_policy,
-      const WebFrameOwnerProperties&) {
+      const WebFrameOwnerProperties&,
+      FrameOwnerElementType) {
     return nullptr;
   }
 
@@ -519,6 +521,11 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual base::UnguessableToken GetDevToolsFrameToken() {
     return base::UnguessableToken::Create();
   }
+
+  // When a same-site load fails and the original frame in parent process is
+  // owned by an <object> element, this call notifies the owner element that it
+  // should render fallback content of its own.
+  virtual void RenderFallbackContentInParentProcess() {}
 
   // PlzNavigate
   // Called to abort a navigation that is being handled by the browser process.
