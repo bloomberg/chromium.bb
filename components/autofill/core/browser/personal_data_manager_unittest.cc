@@ -6068,51 +6068,8 @@ TEST_F(PersonalDataManagerTest, CannotAddFullServerCardOnLinux) {
 // These tests are not applicable on Linux since it does not support full server
 // cards.
 #if !defined(OS_LINUX) || defined(OS_CHROMEOS)
-// Make sure that an auth error does not mask all the server cards if the
-// feature is disabled.
-TEST_F(PersonalDataManagerTest, SyncAuthErrorMasksServerCards_FeatureDisabled) {
-  // Explicitely disable the feature that remasks server cards on auth error.
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndDisableFeature(
-      features::kAutofillResetFullServerCardsOnAuthError);
-
-  base::HistogramTester histogram_tester;
-  SetUpThreeCardTypes();
-
-  // Set an auth error and inform the personal data manager.
-  sync_service_.SetInAuthError(true);
-  personal_data_->OnStateChanged(&sync_service_);
-
-  // Remove the auth error to be able to get the server cards.
-  sync_service_.SetInAuthError(false);
-
-  // Check that the full server card was not remasked and that the others are
-  // still present.
-  EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
-  std::vector<CreditCard*> server_cards =
-      personal_data_->GetServerCreditCards();
-  EXPECT_EQ(2U, server_cards.size());
-  EXPECT_EQ(CreditCard::MASKED_SERVER_CARD, server_cards[0]->record_type());
-  EXPECT_EQ(CreditCard::FULL_SERVER_CARD, server_cards[1]->record_type());
-
-  // Check that the metrics are logged correctly.
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.ResetFullServerCards.SyncServiceStatusOnStateChanged",
-      syncer::UploadState::NOT_ACTIVE, 1);
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.ResetFullServerCards.NumberOfCardsReset.DryRun", 1, 1);
-  histogram_tester.ExpectTotalCount(
-      "Autofill.ResetFullServerCards.NumberOfCardsReset", 0);
-}
-
-// Make sure that an auth error masks all the server cards if the feature is
-// enabled.
-TEST_F(PersonalDataManagerTest, SyncAuthErrorMasksServerCards_FeatureEnabled) {
-  // Explicitely enable the feature that remasks server cards on auth error.
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(
-      features::kAutofillResetFullServerCardsOnAuthError);
-
+// Make sure that an auth error masks all the server cards.
+TEST_F(PersonalDataManagerTest, SyncAuthErrorMasksServerCards) {
   base::HistogramTester histogram_tester;
   SetUpThreeCardTypes();
 
@@ -6138,52 +6095,11 @@ TEST_F(PersonalDataManagerTest, SyncAuthErrorMasksServerCards_FeatureEnabled) {
       syncer::UploadState::NOT_ACTIVE, 1);
   histogram_tester.ExpectUniqueSample(
       "Autofill.ResetFullServerCards.NumberOfCardsReset", 1, 1);
-  histogram_tester.ExpectTotalCount(
-      "Autofill.ResetFullServerCards.NumberOfCardsReset.DryRun", 0);
-}
-
-// Test that calling OnSyncServiceInitialized with a null sync service does not
-// remask full server cards if the feature is disabled.
-TEST_F(PersonalDataManagerTest,
-       OnSyncServiceInitialized_NoSyncService_FeatureDisabled) {
-  // Explicitely disable the feature that remasks server cards on auth error.
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndDisableFeature(
-      features::kAutofillResetFullServerCardsOnAuthError);
-
-  base::HistogramTester histogram_tester;
-  SetUpThreeCardTypes();
-
-  // Call OnSyncServiceInitialized with no sync service.
-  personal_data_->OnSyncServiceInitialized(nullptr);
-
-  // Check that the full server card was not remasked and that the others are
-  // still present.
-  EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
-  std::vector<CreditCard*> server_cards =
-      personal_data_->GetServerCreditCards();
-  EXPECT_EQ(2U, server_cards.size());
-  EXPECT_EQ(CreditCard::MASKED_SERVER_CARD, server_cards[0]->record_type());
-  EXPECT_EQ(CreditCard::FULL_SERVER_CARD, server_cards[1]->record_type());
-
-  // Check that the metrics are logged correctly.
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.ResetFullServerCards.SyncServiceNullOnInitialized", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.ResetFullServerCards.NumberOfCardsReset.DryRun", 1, 1);
-  histogram_tester.ExpectTotalCount(
-      "Autofill.ResetFullServerCards.NumberOfCardsReset", 0);
 }
 
 // Test that calling OnSyncServiceInitialized with a null sync service remasks
-// full server cards if the feature is enabled.
-TEST_F(PersonalDataManagerTest,
-       OnSyncServiceInitialized_NoSyncService_FeatureEnabled) {
-  // Explicitely enable the feature that remasks server cards on auth error.
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(
-      features::kAutofillResetFullServerCardsOnAuthError);
-
+// full server cards.
+TEST_F(PersonalDataManagerTest, OnSyncServiceInitialized_NoSyncService) {
   base::HistogramTester histogram_tester;
   SetUpThreeCardTypes();
 
@@ -6204,58 +6120,11 @@ TEST_F(PersonalDataManagerTest,
       "Autofill.ResetFullServerCards.SyncServiceNullOnInitialized", true, 1);
   histogram_tester.ExpectUniqueSample(
       "Autofill.ResetFullServerCards.NumberOfCardsReset", 1, 1);
-  histogram_tester.ExpectTotalCount(
-      "Autofill.ResetFullServerCards.NumberOfCardsReset.DryRun", 0);
 }
 
 // Test that calling OnSyncServiceInitialized with a sync service in auth error
-// does not remask full server cards if the feature is disabled.
-TEST_F(PersonalDataManagerTest,
-       OnSyncServiceInitialized_NotActiveSyncService_FeatureDisabled) {
-  // Explicitely disable the feature that remasks server cards on auth error.
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndDisableFeature(
-      features::kAutofillResetFullServerCardsOnAuthError);
-
-  base::HistogramTester histogram_tester;
-  SetUpThreeCardTypes();
-
-  // Call OnSyncServiceInitialized with a sync service in auth error.
-  TestSyncService sync_service;
-  sync_service.SetInAuthError(true);
-  personal_data_->OnSyncServiceInitialized(&sync_service);
-
-  // Remove the auth error to be able to get the server cards.
-  sync_service.SetInAuthError(false);
-
-  // Check that the full server card was not remasked and that the others are
-  // still present.
-  EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
-  std::vector<CreditCard*> server_cards =
-      personal_data_->GetServerCreditCards();
-  EXPECT_EQ(2U, server_cards.size());
-  EXPECT_EQ(CreditCard::MASKED_SERVER_CARD, server_cards[0]->record_type());
-  EXPECT_EQ(CreditCard::FULL_SERVER_CARD, server_cards[1]->record_type());
-
-  // Check that the metrics are logged correctly.
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.ResetFullServerCards.SyncServiceNotActiveOnInitialized", true,
-      1);
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.ResetFullServerCards.NumberOfCardsReset.DryRun", 1, 1);
-  histogram_tester.ExpectTotalCount(
-      "Autofill.ResetFullServerCards.NumberOfCardsReset", 0);
-}
-
-// Test that calling OnSyncServiceInitialized with a sync service in auth error
-// remasks full server cards if the feature is enabled.
-TEST_F(PersonalDataManagerTest,
-       OnSyncServiceInitialized_NotActiveSyncService_FeatureEnabled) {
-  // Explicitely enable the feature that remasks server cards on auth error.
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(
-      features::kAutofillResetFullServerCardsOnAuthError);
-
+// remasks full server cards.
+TEST_F(PersonalDataManagerTest, OnSyncServiceInitialized_NotActiveSyncService) {
   base::HistogramTester histogram_tester;
   SetUpThreeCardTypes();
 
@@ -6284,8 +6153,6 @@ TEST_F(PersonalDataManagerTest,
       1);
   histogram_tester.ExpectUniqueSample(
       "Autofill.ResetFullServerCards.NumberOfCardsReset", 1, 1);
-  histogram_tester.ExpectTotalCount(
-      "Autofill.ResetFullServerCards.NumberOfCardsReset.DryRun", 0);
 }
 #endif  // !defined(OS_LINUX) || defined(OS_CHROMEOS)
 

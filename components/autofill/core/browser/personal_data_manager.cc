@@ -551,10 +551,7 @@ void PersonalDataManager::OnSyncServiceInitialized(
         "Autofill.ResetFullServerCards.SyncServiceNullOnInitialized",
         !sync_service_);
     if (!sync_service_) {
-      // TODO(crbug.com/851294): Reset server cards once the auth error
-      // investigation is done.
-      ResetFullServerCards(/*dry_run=*/!base::FeatureList::IsEnabled(
-          features::kAutofillResetFullServerCardsOnAuthError));
+      ResetFullServerCards();
       return;
     }
 
@@ -568,10 +565,7 @@ void PersonalDataManager::OnSyncServiceInitialized(
         "Autofill.ResetFullServerCards.SyncServiceNotActiveOnInitialized",
         is_upload_not_active);
     if (is_upload_not_active) {
-      // TODO(crbug.com/851294): Reset server cards once the auth error
-      // investigation is done.
-      ResetFullServerCards(/*dry_run=*/!base::FeatureList::IsEnabled(
-          features::kAutofillResetFullServerCardsOnAuthError));
+      ResetFullServerCards();
     }
     if (base::FeatureList::IsEnabled(
             autofill::features::kAutofillEnableAccountWalletStorage)) {
@@ -714,10 +708,7 @@ void PersonalDataManager::OnStateChanged(syncer::SyncService* sync_service) {
       "Autofill.ResetFullServerCards.SyncServiceStatusOnStateChanged",
       upload_state);
   if (upload_state == syncer::UploadState::NOT_ACTIVE) {
-    // TODO(crbug.com/851294): Reset server cards once the auth error
-    // investigation is done.
-    ResetFullServerCards(/*dry_run=*/!base::FeatureList::IsEnabled(
-        features::kAutofillResetFullServerCardsOnAuthError));
+    ResetFullServerCards();
   }
   if (base::FeatureList::IsEnabled(
           autofill::features::kAutofillEnableAccountWalletStorage)) {
@@ -1033,27 +1024,19 @@ void PersonalDataManager::ResetFullServerCard(const std::string& guid) {
   }
 }
 
-void PersonalDataManager::ResetFullServerCards(bool is_dry_run) {
+void PersonalDataManager::ResetFullServerCards() {
   size_t nb_cards_reset = 0;
   for (const auto& card : server_credit_cards_) {
     if (card->record_type() == CreditCard::FULL_SERVER_CARD) {
       ++nb_cards_reset;
-      if (!is_dry_run) {
-        CreditCard card_copy = *card;
-        card_copy.set_record_type(CreditCard::MASKED_SERVER_CARD);
-        card_copy.SetNumber(card->LastFourDigits());
-        UpdateServerCreditCard(card_copy);
-      }
+      CreditCard card_copy = *card;
+      card_copy.set_record_type(CreditCard::MASKED_SERVER_CARD);
+      card_copy.SetNumber(card->LastFourDigits());
+      UpdateServerCreditCard(card_copy);
     }
   }
-  if (is_dry_run) {
-    UMA_HISTOGRAM_COUNTS_100(
-        "Autofill.ResetFullServerCards.NumberOfCardsReset.DryRun",
-        nb_cards_reset);
-  } else {
     UMA_HISTOGRAM_COUNTS_100("Autofill.ResetFullServerCards.NumberOfCardsReset",
                              nb_cards_reset);
-  }
 }
 
 void PersonalDataManager::ClearAllServerData() {
