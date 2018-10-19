@@ -342,8 +342,9 @@ bool DownloadItemModel::ShouldNotifyUI() const {
   //    DownloadManager.
   // *  There are other UI activities that need to be performed. E.g. if the
   //    download was initiated from a new tab, then that tab should be closed.
-  return download_->GetDownloadType() !=
-             download::DownloadItem::DownloadType::TYPE_HISTORY_IMPORT ||
+  return download_->GetDownloadCreationType() !=
+             download::DownloadItem::DownloadCreationType::
+                 TYPE_HISTORY_IMPORT ||
          download_->GetState() == download::DownloadItem::IN_PROGRESS;
 }
 

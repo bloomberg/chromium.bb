@@ -91,11 +91,6 @@ class DownloadHistoryData : public base::SupportsUserData::Data {
   PersistenceState state() const { return state_; }
   void SetState(PersistenceState s) { state_ = s; }
 
-  bool was_restored_from_history() const { return was_restored_from_history_; }
-  void set_was_restored_from_history(bool value) {
-    was_restored_from_history_ = value;
-  }
-
   // This allows DownloadHistory::OnDownloadUpdated() to see what changed in a
   // DownloadItem if anything, in order to prevent writing to the database
   // unnecessarily.  It is nullified when the item is no longer in progress in
@@ -114,7 +109,6 @@ class DownloadHistoryData : public base::SupportsUserData::Data {
 
   PersistenceState state_ = NOT_PERSISTED;
   std::unique_ptr<history::DownloadRow> info_;
-  bool was_restored_from_history_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadHistoryData);
 };
@@ -288,19 +282,6 @@ void DownloadHistory::AddObserver(DownloadHistory::Observer* observer) {
 void DownloadHistory::RemoveObserver(DownloadHistory::Observer* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   observers_.RemoveObserver(observer);
-}
-
-bool DownloadHistory::WasRestoredFromHistory(
-    const download::DownloadItem* download) const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  const DownloadHistoryData* data = DownloadHistoryData::Get(download);
-
-  // The OnDownloadCreated handler sets the was_restored_from_history flag when
-  // resetting the loading_id_. So one of the two conditions below will hold for
-  // a download restored from history even if the caller of this method is
-  // racing with our OnDownloadCreated handler.
-  return (data && data->was_restored_from_history()) ||
-         download->GetId() == loading_id_;
 }
 
 void DownloadHistory::QueryCallback(std::unique_ptr<InfoVector> infos) {
@@ -584,7 +565,6 @@ void DownloadHistory::OnDownloadRestoredFromHistory(
     download::DownloadItem* item) {
   DownloadHistoryData* data = DownloadHistoryData::Get(item);
   data->SetState(DownloadHistoryData::PERSISTED);
-  data->set_was_restored_from_history(true);
   loading_id_ = download::DownloadItem::kInvalidId;
 }
 
