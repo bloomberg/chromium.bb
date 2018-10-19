@@ -1125,18 +1125,16 @@ TEST_P(QuicDispatcherStatelessRejectTest, BufferNonChlo) {
           CreateSessionBasedOnTestParams(connection_id, client_address)));
   EXPECT_CALL(*reinterpret_cast<MockQuicConnection*>(session1_->connection()),
               ProcessUdpPacket(_, client_address, _))
-      .WillOnce(WithArg<2>(
-          Invoke([this, connection_id](const QuicEncryptedPacket& packet) {
-            ValidatePacket(connection_id, packet);
-          })));
+      .WillOnce(WithArg<2>(Invoke([this](const QuicEncryptedPacket& packet) {
+        ValidatePacket(connection_id, packet);
+      })));
   // Expect both packets to be passed to ProcessUdpPacket(). And one of them
   // is already expected in CreateSessionBasedOnTestParams().
   EXPECT_CALL(*reinterpret_cast<MockQuicConnection*>(session1_->connection()),
               ProcessUdpPacket(_, client_address, _))
-      .WillOnce(WithArg<2>(
-          Invoke([this, connection_id](const QuicEncryptedPacket& packet) {
-            ValidatePacket(connection_id, packet);
-          })))
+      .WillOnce(WithArg<2>(Invoke([this](const QuicEncryptedPacket& packet) {
+        ValidatePacket(connection_id, packet);
+      })))
       .RetiresOnSaturation();
   ProcessPacket(client_address, connection_id, true,
                 QuicString(client_hello.GetSerialized().AsStringPiece()));

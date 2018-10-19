@@ -1252,16 +1252,14 @@ TEST_F(BbrSenderTest, SimpleCompetition) {
   // Transfer 10% of data in first transfer.
   bbr_sender_.AddBytesToTransfer(transfer_size);
   bool simulator_result = simulator_.RunUntilOrTimeout(
-      [this, transfer_size]() {
-        return receiver_.bytes_received() >= 0.1 * transfer_size;
-      },
+      [this]() { return receiver_.bytes_received() >= 0.1 * transfer_size; },
       transfer_time);
   ASSERT_TRUE(simulator_result);
 
   // Start the second transfer and wait until both finish.
   competing_sender_.AddBytesToTransfer(transfer_size);
   simulator_result = simulator_.RunUntilOrTimeout(
-      [this, transfer_size]() {
+      [this]() {
         return receiver_.bytes_received() == transfer_size &&
                competing_receiver_.bytes_received() == transfer_size;
       },
