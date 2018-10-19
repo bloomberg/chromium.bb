@@ -37,6 +37,8 @@
 
 using ActionModule = assistant_client::ActionModule;
 using Resolution = assistant_client::ConversationStateListener::Resolution;
+using SpeakerIdEnrollmentState =
+    assistant_client::SpeakerIdEnrollmentUpdate::State;
 
 namespace api = ::assistant::api;
 
@@ -44,6 +46,7 @@ namespace chromeos {
 namespace assistant {
 namespace {
 
+constexpr char kUserID[] = "0";
 constexpr char kWiFiDeviceSettingId[] = "WIFI";
 constexpr char kBluetoothDeviceSettingId[] = "BLUETOOTH";
 constexpr char kVolumeLevelDeviceSettingId[] = "VOLUME_LEVEL";
@@ -138,8 +141,8 @@ void AssistantManagerServiceImpl::SetAccessToken(
   // it is started. |user_id| is used to pair a user to their |access_token|,
   // since we do not support multi-user in this example we can set it to a
   // dummy value like "0".
-  assistant_manager_->SetAuthTokens({std::pair<std::string, std::string>(
-      /* user_id: */ "0", access_token)});
+  assistant_manager_->SetAuthTokens(
+      {std::pair<std::string, std::string>(kUserID, access_token)});
 }
 
 void AssistantManagerServiceImpl::RegisterFallbackMediaHandler() {
@@ -218,6 +221,44 @@ void AssistantManagerServiceImpl::SendUpdateSettingsUiRequest(
                   std::move(weak_ptr), repeating_callback, update));
         }
       });
+}
+
+void AssistantManagerServiceImpl::StartSpeakerIdEnrollment(
+    bool skip_cloud_enrollment,
+    mojom::SpeakerIdEnrollmentClientPtr client) {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+
+  speaker_id_enrollment_client_ = std::move(client);
+
+  assistant_client::SpeakerIdEnrollmentConfig client_config;
+  client_config.user_id = kUserID;
+  client_config.skip_cloud_enrollment = skip_cloud_enrollment;
+
+  assistant_manager_internal_->StartSpeakerIdEnrollment(client_config, [
+    weak_ptr = weak_factory_.GetWeakPtr(),
+    task_runner = main_thread_task_runner_
+  ](const assistant_client::SpeakerIdEnrollmentUpdate& update) {
+    task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &AssistantManagerServiceImpl::HandleSpeakerIdEnrollmentUpdate,
+            weak_ptr, update));
+  });
+}
+
+void AssistantManagerServiceImpl::StopSpeakerIdEnrollment(
+    AssistantSettingsManager::StopSpeakerIdEnrollmentCallback callback) {
+  assistant_manager_internal_->StopSpeakerIdEnrollment([
+    repeating_callback = base::AdaptCallbackForRepeating(std::move(callback)),
+    task_runner = main_thread_task_runner_,
+    weak_ptr = weak_factory_.GetWeakPtr()
+  ]() {
+    task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &AssistantManagerServiceImpl::HandleStopSpeakerIdEnrollment,
+            std::move(weak_ptr), repeating_callback));
+  });
 }
 
 void AssistantManagerServiceImpl::StartVoiceInteraction() {
@@ -807,6 +848,35 @@ void AssistantManagerServiceImpl::HandleUpdateSettingsResponse(
     base::RepeatingCallback<void(const std::string&)> callback,
     const std::string& result) {
   callback.Run(result);
+}
+
+void AssistantManagerServiceImpl::HandleSpeakerIdEnrollmentUpdate(
+    const assistant_client::SpeakerIdEnrollmentUpdate& update) {
+  switch (update.state) {
+    case SpeakerIdEnrollmentState::LISTEN:
+      speaker_id_enrollment_client_->OnListeningHotword();
+      break;
+    case SpeakerIdEnrollmentState::PROCESS:
+      speaker_id_enrollment_client_->OnProcessingHotword();
+      break;
+    case SpeakerIdEnrollmentState::DONE:
+      speaker_id_enrollment_client_->OnSpeakerIdEnrollmentDone();
+      break;
+    case SpeakerIdEnrollmentState::FAILURE:
+      speaker_id_enrollment_client_->OnSpeakerIdEnrollmentFailure();
+      break;
+    case SpeakerIdEnrollmentState::INIT:
+    case SpeakerIdEnrollmentState::CHECK:
+    case SpeakerIdEnrollmentState::UPLOAD:
+    case SpeakerIdEnrollmentState::FETCH:
+      break;
+  }
+}
+
+void AssistantManagerServiceImpl::HandleStopSpeakerIdEnrollment(
+    base::RepeatingCallback<void()> callback) {
+  speaker_id_enrollment_client_.reset();
+  callback.Run();
 }
 
 // assistant_client::DeviceStateListener overrides
