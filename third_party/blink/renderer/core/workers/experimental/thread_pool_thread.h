@@ -14,7 +14,11 @@ class ThreadedObjectProxyBase;
 
 class ThreadPoolThread final : public WorkerThread {
  public:
-  ThreadPoolThread(ExecutionContext*, ThreadedObjectProxyBase&);
+  enum ThreadBackingPolicy { kWorker, kWorklet };
+
+  ThreadPoolThread(ExecutionContext*,
+                   ThreadedObjectProxyBase&,
+                   ThreadBackingPolicy);
   ~ThreadPoolThread() override = default;
 
   void IncrementTasksInProgressCount() {
@@ -31,6 +35,8 @@ class ThreadPoolThread final : public WorkerThread {
     return tasks_in_progress_;
   }
 
+  bool IsWorklet() const { return backing_policy_ == kWorklet; }
+
  private:
   WorkerBackingThread& GetWorkerBackingThread() override {
     return *worker_backing_thread_;
@@ -46,6 +52,12 @@ class ThreadPoolThread final : public WorkerThread {
   }
   std::unique_ptr<WorkerBackingThread> worker_backing_thread_;
   size_t tasks_in_progress_ = 0;
+  const ThreadBackingPolicy backing_policy_;
+};
+
+class ThreadPoolThreadProvider {
+ public:
+  virtual ThreadPoolThread* GetLeastBusyThread() = 0;
 };
 
 }  // namespace blink

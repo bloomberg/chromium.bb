@@ -9,28 +9,58 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_task.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
+#include "third_party/blink/renderer/core/workers/experimental/task_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/experimental/thread_pool.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 
 namespace blink {
 
-ThreadPoolTask::ThreadPoolTask(ThreadPool* thread_pool,
+ThreadPoolTask::ThreadPoolTask(ThreadPoolThreadProvider* thread_provider,
                                v8::Isolate* isolate,
                                const ScriptValue& function,
                                const Vector<ScriptValue>& arguments,
                                TaskType task_type)
+    : ThreadPoolTask(thread_provider,
+                     isolate,
+                     function,
+                     String(),
+                     arguments,
+                     task_type) {}
+
+ThreadPoolTask::ThreadPoolTask(ThreadPoolThreadProvider* thread_provider,
+                               v8::Isolate* isolate,
+                               const String& function_name,
+                               const Vector<ScriptValue>& arguments,
+                               TaskType task_type)
+    : ThreadPoolTask(thread_provider,
+                     isolate,
+                     ScriptValue(),
+                     function_name,
+                     arguments,
+                     task_type) {}
+
+ThreadPoolTask::ThreadPoolTask(ThreadPoolThreadProvider* thread_provider,
+                               v8::Isolate* isolate,
+                               const ScriptValue& function,
+                               const String& function_name,
+                               const Vector<ScriptValue>& arguments,
+                               TaskType task_type)
     : task_type_(task_type),
       self_keep_alive_(base::AdoptRef(this)),
+      function_name_(function_name.IsolatedCopy()),
       arguments_(arguments.size()),
       weak_factory_(this) {
   DCHECK(IsMainThread());
+  DCHECK_EQ(!function.IsEmpty(), function_name.IsNull());
   DCHECK(task_type_ == TaskType::kUserInteraction ||
          task_type_ == TaskType::kIdleTask);
 
   // TODO(japhet): Handle serialization failures
-  function_ = SerializedScriptValue::SerializeAndSwallowExceptions(
-      isolate, function.V8Value()->ToString(isolate));
+  if (!function.IsEmpty()) {
+    function_ = SerializedScriptValue::SerializeAndSwallowExceptions(
+        isolate, function.V8Value()->ToString(isolate));
+  }
 
   Vector<ThreadPoolTask*> prerequisites;
   Vector<size_t> prerequisites_indices;
@@ -50,7 +80,7 @@ ThreadPoolTask::ThreadPoolTask(ThreadPool* thread_pool,
     prerequisites_indices.push_back(i);
   }
 
-  worker_thread_ = SelectThread(prerequisites, thread_pool);
+  worker_thread_ = SelectThread(prerequisites, thread_provider);
   worker_thread_->IncrementTasksInProgressCount();
 
   if (prerequisites.IsEmpty()) {
@@ -68,9 +98,9 @@ ThreadPoolTask::ThreadPoolTask(ThreadPool* thread_pool,
 // static
 ThreadPoolThread* ThreadPoolTask::SelectThread(
     const Vector<ThreadPoolTask*>& prerequisites,
-    ThreadPool* thread_pool) {
+    ThreadPoolThreadProvider* thread_provider) {
   DCHECK(IsMainThread());
-  HashCountedSet<WorkerThread*> prerequisite_location_counts;
+  HashCountedSet<ThreadPoolThread*> prerequisite_location_counts;
   size_t max_prerequisite_location_count = 0;
   ThreadPoolThread* max_prerequisite_thread = nullptr;
   for (ThreadPoolTask* prerequisite : prerequisites) {
@@ -88,7 +118,7 @@ ThreadPoolThread* ThreadPoolTask::SelectThread(
     }
   }
   return max_prerequisite_thread ? max_prerequisite_thread
-                                 : thread_pool->GetLeastBusyThread();
+                                 : thread_provider->GetLeastBusyThread();
 }
 
 ThreadPoolThread* ThreadPoolTask::GetScheduledThread() {
@@ -211,9 +241,12 @@ void ThreadPoolTask::StartTaskOnWorkerThread() {
     return_value = V8String(isolate, "Task aborted");
   } else {
     return_value = RunTaskOnWorkerThread(isolate);
-    DCHECK_EQ(return_value.IsEmpty(), block.HasCaught());
-    if (block.HasCaught())
-      return_value = block.Exception()->ToString(isolate);
+    if (return_value.IsEmpty()) {
+      if (block.HasCaught())
+        return_value = block.Exception()->ToString(isolate);
+      else
+        return_value = V8String(isolate, "Invalid task");
+    }
   }
 
   scoped_refptr<SerializedScriptValue> local_result =
@@ -253,13 +286,30 @@ v8::Local<v8::Value> ThreadPoolTask::RunTaskOnWorkerThread(
   // No other thread should be touching function_ or arguments_ at this point,
   // so no mutex needed while actually running the task.
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
-  String core_script =
-      "(" + ToCoreString(function_->Deserialize(isolate).As<v8::String>()) +
-      ")";
-  v8::MaybeLocal<v8::Script> script = v8::Script::Compile(
-      isolate->GetCurrentContext(), V8String(isolate, core_script));
-  v8::Local<v8::Function> script_function =
-      script.ToLocalChecked()->Run(context).ToLocalChecked().As<v8::Function>();
+  v8::Local<v8::Function> script_function;
+  v8::Local<v8::Value> receiver;
+  if (function_) {
+    String core_script =
+        "(" + ToCoreString(function_->Deserialize(isolate).As<v8::String>()) +
+        ")";
+    v8::MaybeLocal<v8::Script> script = v8::Script::Compile(
+        isolate->GetCurrentContext(), V8String(isolate, core_script));
+    script_function = script.ToLocalChecked()
+                          ->Run(context)
+                          .ToLocalChecked()
+                          .As<v8::Function>();
+    receiver = script_function;
+  } else if (worker_thread_->IsWorklet()) {
+    TaskWorkletGlobalScope* task_worklet_global_scope =
+        static_cast<TaskWorkletGlobalScope*>(worker_thread_->GlobalScope());
+    script_function = task_worklet_global_scope->GetProcessFunctionForName(
+        function_name_, isolate);
+    receiver =
+        task_worklet_global_scope->GetInstanceForName(function_name_, isolate);
+  }
+
+  if (script_function.IsEmpty())
+    return v8::Local<v8::Value>();
 
   Vector<v8::Local<v8::Value>> params(arguments_.size());
   for (size_t i = 0; i < arguments_.size(); i++) {
@@ -270,8 +320,8 @@ v8::Local<v8::Value> ThreadPoolTask::RunTaskOnWorkerThread(
       params[i] = arguments_[i].v8_value->NewLocal(isolate);
   }
 
-  v8::MaybeLocal<v8::Value> ret = script_function->Call(
-      context, script_function, params.size(), params.data());
+  v8::MaybeLocal<v8::Value> ret =
+      script_function->Call(context, receiver, params.size(), params.data());
 
   v8::Local<v8::Value> return_value;
   if (!ret.IsEmpty()) {
@@ -333,11 +383,13 @@ void ThreadPoolTask::Cancel() {
 void ThreadPoolTask::AdvanceState(State new_state) {
   switch (new_state) {
     case State::kPending:
-      NOTREACHED() << "kPending should only be set via initialiation";
+      NOTREACHED() << "kPending should only be set via initialization";
       break;
-    case State::kCancelPending:
     case State::kStarted:
       DCHECK_EQ(State::kPending, state_);
+      break;
+    case State::kCancelPending:
+      DCHECK(state_ == State::kPending || state_ == State::kCancelPending);
       break;
     case State::kCompleted:
       DCHECK_EQ(State::kStarted, state_);

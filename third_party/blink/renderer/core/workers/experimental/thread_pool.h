@@ -9,13 +9,13 @@
 #include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
-
 class Document;
 class ThreadPoolMessagingProxy;
 
 class ThreadPool final : public GarbageCollectedFinalized<ThreadPool>,
                          public Supplement<Document>,
-                         public ContextLifecycleObserver {
+                         public ContextLifecycleObserver,
+                         public ThreadPoolThreadProvider {
   USING_GARBAGE_COLLECTED_MIXIN(ThreadPool);
   EAGERLY_FINALIZE();
 
@@ -24,7 +24,7 @@ class ThreadPool final : public GarbageCollectedFinalized<ThreadPool>,
   static ThreadPool* From(Document&);
   ~ThreadPool();
 
-  ThreadPoolThread* GetLeastBusyThread();
+  ThreadPoolThread* GetLeastBusyThread() override;
   void ContextDestroyed(ExecutionContext*) final;
   void Trace(blink::Visitor*) final;
 
