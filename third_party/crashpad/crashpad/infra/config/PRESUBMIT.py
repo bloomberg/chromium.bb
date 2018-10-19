@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import("../../build/crashpad_buildconfig.gni")
+def CheckChangeOnUpload(input_api, output_api):
+  return input_api.canned_checks.CheckChangedLUCIConfigs(input_api, output_api)
 
-declare_args() {
-  crashpad_use_boringssl_for_http_transport_socket = crashpad_is_fuchsia
-}
+def CheckChangeOnCommit(input_api, output_api):
+  return input_api.canned_checks.CheckChangedLUCIConfigs(input_api, output_api)

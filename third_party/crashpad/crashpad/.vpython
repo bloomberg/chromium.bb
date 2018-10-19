@@ -12,8 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import("../../build/crashpad_buildconfig.gni")
+# This is a vpython "spec" file.
+#
+# It describes patterns for python wheel dependencies of the python scripts.
+#
+# Read more about `vpython` and how to modify this file here:
+#   https://chromium.googlesource.com/infra/infra/+/master/doc/users/vpython.md
 
-declare_args() {
-  crashpad_use_boringssl_for_http_transport_socket = crashpad_is_fuchsia
-}
+# This is needed for snapshot/win/end_to_end_test.py.
+wheel: <
+  name: "infra/python/wheels/pypiwin32/${vpython_platform}"
+  version: "version:219"
+  match_tag: <
+    platform: "win32"
+  >
+  match_tag: <
+    platform: "win_amd64"
+  >
+>
