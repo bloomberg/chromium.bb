@@ -134,9 +134,6 @@ public class WebappActivity extends SingleTabActivity {
     private static LoadUrlParams createLoadUrlParams(WebappInfo info, Intent intent) {
         LoadUrlParams params =
                 new LoadUrlParams(info.uri().toString(), PageTransition.AUTO_TOPLEVEL);
-        String headers = IntentHandler.getExtraHeadersFromIntent(intent, true);
-        if (headers != null) params.setVerbatimHeaders(headers);
-
         return params;
     }
 
