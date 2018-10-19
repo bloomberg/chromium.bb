@@ -88,6 +88,7 @@ const spdy::SpdyStreamId kLastStreamId = 0x7fffffff;
 
 struct LoadTimingInfo;
 class NetLog;
+class NetworkQualityEstimator;
 class SpdyStream;
 class SSLInfo;
 class TransportSecurityState;
@@ -304,6 +305,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                   greased_http2_frame,
               TimeFunc time_func,
               ServerPushDelegate* push_delegate,
+              NetworkQualityEstimator* network_quality_estimator,
               NetLog* net_log);
 
   ~SpdySession() override;
@@ -1139,6 +1141,10 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   TimeFunc time_func_;
 
   Http2PriorityDependencies priority_dependency_state_;
+
+  // Network quality estimator to which the ping RTTs should be reported. May be
+  // nullptr.
+  NetworkQualityEstimator* network_quality_estimator_;
 
   // Used for posting asynchronous IO tasks.  We use this even though
   // SpdySession is refcounted because we don't need to keep the SpdySession

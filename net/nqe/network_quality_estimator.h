@@ -260,6 +260,10 @@ class NET_EXPORT NetworkQualityEstimator
   void SimulateNetworkQualityChangeForTesting(
       net::EffectiveConnectionType type);
 
+  // Notifies |this| of round trip ping latency reported by H2 connections.
+  virtual void RecordSpdyPingLatency(const HostPortPair& host_port_pair,
+                                     base::TimeDelta rtt);
+
   typedef nqe::internal::Observation Observation;
   typedef nqe::internal::ObservationBuffer ObservationBuffer;
 

@@ -31,6 +31,7 @@
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
+#include "net/nqe/network_quality_estimator_test_util.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
@@ -1025,6 +1026,10 @@ TEST_F(SpdySessionTestWithMockTime, ClientPing) {
   AddSSLSocketData();
 
   CreateNetworkSession();
+  TestNetworkQualityEstimator estimator;
+
+  spdy_session_pool_->set_network_quality_estimator(&estimator);
+
   CreateSpdySession();
 
   base::WeakPtr<SpdyStream> spdy_stream1 =
@@ -1075,6 +1080,8 @@ TEST_F(SpdySessionTestWithMockTime, ClientPing) {
 
   EXPECT_TRUE(data.AllWriteDataConsumed());
   EXPECT_TRUE(data.AllReadDataConsumed());
+
+  EXPECT_LE(1u, estimator.ping_rtt_received_count());
 }
 
 TEST_F(SpdySessionTest, ServerPing) {
