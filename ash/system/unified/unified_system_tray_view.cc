@@ -195,9 +195,14 @@ class UnifiedSystemTrayView::FocusSearch : public views::FocusSearch {
       FocusSearch::AnchoredDialogPolicy can_go_into_anchored_dialog,
       views::FocusTraversable** focus_traversable,
       views::View** focus_traversable_view) override {
+    // Initial view that is focused when first time Tab or Shift-Tab is pressed.
+    views::View* default_start_view =
+        search_direction == FocusSearch::SearchDirection::kForwards
+            ? view_->system_tray_container_
+            : view_->notification_hidden_view_;
     return views::FocusSearch::FindNextFocusableView(
-        starting_view ? starting_view : view_->system_tray_container_,
-        search_direction, traversal_direction,
+        starting_view ? starting_view : default_start_view, search_direction,
+        traversal_direction,
         starting_view ? check_starting_view
                       : StartingViewPolicy::kCheckStartingView,
         can_go_into_anchored_dialog, focus_traversable, focus_traversable_view);
@@ -276,8 +281,8 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
   // |system_tray_container_|, but we have to complete the cycle by setting
   // |message_center_view_| next to |detailed_view_container_|.
   // Also, SetNextFocusableView does not support loop as mentioned in the doc,
-  // we have to set null to |message_center_view_|.
-  message_center_view->SetNextFocusableView(nullptr);
+  // we have to set null to |notification_hidden_view_|.
+  notification_hidden_view_->SetNextFocusableView(nullptr);
   detailed_view_container_->SetNextFocusableView(message_center_view);
 
   top_shortcuts_view_->SetExpandedAmount(expanded_amount_);
