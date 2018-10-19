@@ -51,10 +51,6 @@
 -PDFExtensionTest.*
 -PDFExtensionHitTestTest.*
 
-# Fails: immersive_controller->IsRevealed() returns false.
-# http://crbug.com/791148
--vZoomBubbleBrowserTest.*
-
 # ash::Shell::display_manager() to update displays.
 # http://crbug.com/831826
 -PolicyDisplayRotationDefault/DisplayRotationDefaultTest.*

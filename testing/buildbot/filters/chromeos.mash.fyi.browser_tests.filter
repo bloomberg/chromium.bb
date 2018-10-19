@@ -95,10 +95,6 @@
 # TODO: Very slow (>25 seconds) and occasional timeouts.
 -ExecuteScriptApiTest/DestructiveScriptTest.*
 
-# Fails: immersive_controller->IsRevealed() returns false.
-# http://crbug.com/791148
--ZoomBubbleBrowserTest.*
-
 # ozone_platform.cc(61) Check failed: instance_. OzonePlatform is not initialized
 -ExtensionWebstoreGetWebGLStatusTest.*
 
