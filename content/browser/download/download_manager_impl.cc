@@ -23,7 +23,6 @@
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/download/database/in_progress/download_entry.h"
-#include "components/download/database/in_progress/in_progress_cache_impl.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_file.h"
