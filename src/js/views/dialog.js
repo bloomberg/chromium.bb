@@ -16,14 +16,13 @@ camera.views = camera.views || {};
 
 /**
  * Creates the Dialog view controller.
- * @param {camera.View.Context} context Context object.
  * @param {camera.Router} router View router to switch views.
  * @extends {camera.View}
  * @constructor
  */
-camera.views.Dialog = function(context, router) {
+camera.views.Dialog = function(router) {
   camera.View.call(
-      this, context, router, document.querySelector('#dialog'), 'dialog');
+      this, router, document.querySelector('#dialog'), 'dialog');
 
   /**
    * @type {HTMLButtonElement}

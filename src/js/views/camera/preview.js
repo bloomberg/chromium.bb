@@ -21,15 +21,15 @@ camera.views.camera = camera.views.camera || {};
 
 /**
  * Creates a controller for the video preview of Camera view.
- * @param {camera.View.Context} context Context object.
+ * @param {camera.views.camera.Preview.Observer} observer Observer object.
  * @constructor
  */
-camera.views.camera.Preview = function(context) {
+camera.views.camera.Preview = function(observer) {
   /**
-   * @type {camera.View.Context}
+   * @type {camera.views.camera.Preview.Observer}
    * @private
    */
-  this.context_ = context;
+  this.observer_ = observer;
 
   /**
    * Video element to capture the stream.
@@ -49,6 +49,21 @@ camera.views.camera.Preview = function(context) {
   Object.seal(this);
 
   this.video_.cleanup = () => {};
+};
+
+/**
+ * Observer interface for preview.
+ * @constructor
+ */
+camera.views.camera.Preview.Observer = function() {
+};
+
+/**
+ * Listens to the changed aspect ratio.
+ * @param {number} aspectRatio Aspect ratio of window's inner-bounds.
+ */
+camera.views.camera.Preview.Observer.prototype.onAspectRatio = function(
+    aspectRatio) {
 };
 
 /**
@@ -74,7 +89,7 @@ camera.views.camera.Preview.prototype.setSource = function(stream) {
       var onIntrinsicSize = () => {
         // Handles the intrinsic size first fetched or its orientation changes.
         if (this.video_.videoWidth && this.video_.videoHeight) {
-          this.context_.onAspectRatio(
+          this.observer_.onAspectRatio(
               this.video_.videoWidth / this.video_.videoHeight);
         }
         this.cancelFocus_();

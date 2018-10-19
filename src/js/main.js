@@ -12,30 +12,15 @@ var camera = camera || {};
 /**
  * Creates the Camera App main object.
  * @param {number} aspectRatio Aspect ratio of app window when launched.
+ * @implements {camera.views.camera.Preview.Observer}
  * @constructor
  */
-camera.Camera = function(aspectRatio) {
+camera.App = function(aspectRatio) {
   /**
-   * @type {camera.Camera.Context}
+   * @type {camera.ViewsStack}
    * @private
    */
-  this.context_ = new camera.Camera.Context(
-      this.onAspectRatio_.bind(this),
-      this.onError_.bind(this),
-      this.onErrorRecovered_.bind(this),
-      this.onToast_.bind(this));
-
-  /**
-   * @type {camera.Toast}
-   * @private
-   */
-  this.toast_ = new camera.Toast();
-
-  /**
-   * @type {Array.<camera.ViewsStack>}
-   * @private
-   */
-  this.viewsStack_ = new camera.Camera.ViewsStack();
+  this.viewsStack_ = new camera.App.ViewsStack();
 
   /**
    * @type {camera.Router}
@@ -89,59 +74,10 @@ camera.Camera = function(aspectRatio) {
 };
 
 /**
- * Creates context for the views.
- * @param {function(number)} onAspectRatio Callback when the aspect ratio is
- *     changed. Arguments: aspect ratio.
- * @param {function(string, string, string=)} onError Callback when an error
- *     occurs. Arguments: identifier, first line, second line.
- * @param {function(string)} onErrorRecovered Callback when an error goes away.
- *     Arguments: error id.
- * @param {function(string, boolean)} onToast Callback when a toast occurs.
- *     Arguments: toast message, i18n-named.
- * @constructor
- */
-camera.Camera.Context = function(
-    onAspectRatio, onError, onErrorRecovered, onToast) {
-  camera.View.Context.call(this);
-
-  /**
-   * @type {boolean}
-   */
-  this.hasError = false;
-
-  /**
-   * @type {function(number)}
-   */
-  this.onAspectRatio = onAspectRatio;
-
-  /**
-   * @type {function(string, string, string=)}
-   */
-  this.onError = onError;
-
-  /**
-   * @type {function(string)}
-   */
-  this.onErrorRecovered = onErrorRecovered;
-
-  /**
-   * @type {function(string, boolean)}
-   */
-  this.onToast = onToast;
-
-  // End of properties. Seal the object.
-  Object.seal(this);
-};
-
-camera.Camera.Context.prototype = {
-  __proto__: camera.View.Context.prototype
-};
-
-/**
  * Creates a stack of views.
  * @constructor
  */
-camera.Camera.ViewsStack = function() {
+camera.App.ViewsStack = function() {
   /**
    * Stack with the views as well as return callbacks.
    * @type {Array.<Object>}
@@ -153,7 +89,7 @@ camera.Camera.ViewsStack = function() {
   Object.seal(this);
 };
 
-camera.Camera.ViewsStack.prototype = {
+camera.App.ViewsStack.prototype = {
   get current() {
     return this.stack_.length ? this.stack_[this.stack_.length - 1].view : null;
   },
@@ -170,7 +106,7 @@ camera.Camera.ViewsStack.prototype = {
  * @param {function(Object=)} opt_callback Optional result callback to be called
  *     when the view is closed.
  */
-camera.Camera.ViewsStack.prototype.push = function(
+camera.App.ViewsStack.prototype.push = function(
     view, opt_arguments, opt_callback) {
   if (!view)
     return;
@@ -193,7 +129,7 @@ camera.Camera.ViewsStack.prototype.push = function(
  * @param {Object=} opt_result Optional result. If not passed, then undefined
  *     will be passed to the callback.
  */
-camera.Camera.ViewsStack.prototype.pop = function(opt_result) {
+camera.App.ViewsStack.prototype.pop = function(opt_result) {
   var entry = this.stack_.pop();
   entry.view.inactivate();
   entry.view.leave();
@@ -207,13 +143,11 @@ camera.Camera.ViewsStack.prototype.pop = function(opt_result) {
 /**
  * Starts the app by initializing views and showing the camera view.
  */
-camera.Camera.prototype.start = function() {
+camera.App.prototype.start = function() {
   var model = new camera.models.Gallery();
-  this.cameraView_ =
-      new camera.views.Camera(this.context_, this.router_, model);
-  this.browserView_ =
-      new camera.views.Browser(this.context_, this.router_, model);
-  this.dialogView_ = new camera.views.Dialog(this.context_, this.router_);
+  this.cameraView_ = new camera.views.Camera(this.router_, model, this);
+  this.browserView_ = new camera.views.Browser(this.router_, model);
+  this.dialogView_ = new camera.views.Dialog(this.router_);
 
   var promptMigrate = () => {
     return new Promise((resolve, reject) => {
@@ -247,8 +181,7 @@ camera.Camera.prototype.start = function() {
       chrome.app.window.current().close();
       return;
     }
-    this.onError_('filesystem-failure',
-        chrome.i18n.getMessage('errorMsgFileSystemFailed'));
+    camera.App.onError('filesystem-failure', 'errorMsgFileSystemFailed');
   });
 };
 
@@ -260,7 +193,7 @@ camera.Camera.prototype.start = function() {
  *     when the view is closed.
  * @private
  */
-camera.Camera.prototype.navigateById_ = function(
+camera.App.prototype.navigateById_ = function(
     viewIdentifier, opt_arguments, opt_callback) {
   switch (viewIdentifier) {
     case camera.Router.ViewIdentifier.CAMERA:
@@ -279,7 +212,7 @@ camera.Camera.prototype.navigateById_ = function(
  * Resizes the window to match the last known aspect ratio if applicable.
  * @private
  */
-camera.Camera.prototype.resizeByAspectRatio_ = function() {
+camera.App.prototype.resizeByAspectRatio_ = function() {
   // Don't update window size if it's maximized or fullscreen.
   if (camera.util.isWindowFullSize()) {
     return;
@@ -306,7 +239,7 @@ camera.Camera.prototype.resizeByAspectRatio_ = function() {
  * @param {number=} aspectRatio Aspect ratio changed.
  * @private
  */
-camera.Camera.prototype.onWindowResize_ = function(aspectRatio) {
+camera.App.prototype.onWindowResize_ = function(aspectRatio) {
   if (this.resizeWindowTimeout_) {
     clearTimeout(this.resizeWindowTimeout_);
     this.resizeWindowTimeout_ = null;
@@ -336,24 +269,22 @@ camera.Camera.prototype.onWindowResize_ = function(aspectRatio) {
  * @param {Event} event Key press event.
  * @private
  */
-camera.Camera.prototype.onKeyPressed_ = function(event) {
+camera.App.prototype.onKeyPressed_ = function(event) {
   if (camera.util.getShortcutIdentifier(event) == 'BrowserBack') {
     chrome.app.window.current().minimize();
     return;
   }
 
   var currentView = this.viewsStack_.current;
-  if (currentView && !this.context_.hasError) {
+  if (currentView && !document.body.classList.contains('has-error')) {
     currentView.onKeyPressed(event);
   }
 };
 
 /**
- * Updates the window apsect ratio.
- * @param {number} aspectRatio Aspect ratio of window's inner-bounds.
- * @private
+ * @override
  */
-camera.Camera.prototype.onAspectRatio_ = function(aspectRatio) {
+camera.App.prototype.onAspectRatio = function(aspectRatio) {
   this.onWindowResize_(aspectRatio);
 };
 
@@ -361,53 +292,43 @@ camera.Camera.prototype.onAspectRatio_ = function(aspectRatio) {
  * Shows an error message.
  * @param {string} identifier Identifier of the error.
  * @param {string} message Message for the error.
- * @param {string=} opt_hint Optional hint for the error message.
- * @private
+ * @param {string=} hint Hint for the error.
  */
-camera.Camera.prototype.onError_ = function(identifier, message, opt_hint) {
+camera.App.onError = function(identifier, message, hint) {
   // TODO(yuli): Implement error-identifier to look up messages/hints and handle
   // multiple errors. Make 'error' a view to block buttons on other views.
   document.body.classList.add('has-error');
-  this.context_.hasError = true;
-  document.querySelector('#error-msg').textContent = message;
-  document.querySelector('#error-msg-hint').textContent = opt_hint || '';
+  document.querySelector('#error-msg').textContent =
+      chrome.i18n.getMessage(message) || message;
+  if (hint) {
+    document.querySelector('#error-msg-hint').textContent =
+        chrome.i18n.getMessage(hint) || hint;
+  }
 };
 
 /**
  * Removes the error message when an error goes away.
  * @param {string} identifier Identifier of the error.
- * @private
  */
-camera.Camera.prototype.onErrorRecovered_ = function(identifier) {
-  this.context_.hasError = false;
+camera.App.onErrorRecovered = function(identifier) {
   document.body.classList.remove('has-error');
 };
 
 /**
- * Shows a non-intrusive toast message.
- * @param {string} message Message to be shown.
- * @param {boolean} named True if it's i18n named message, false otherwise.
+ * @type {camera.App} Singleton of the Camera object.
  * @private
  */
-camera.Camera.prototype.onToast_ = function(message, named) {
-  this.toast_.showMessage(named ? chrome.i18n.getMessage(message) : message);
-};
-
-/**
- * @type {camera.Camera} Singleton of the Camera object.
- * @private
- */
-camera.Camera.instance_ = null;
+camera.App.instance_ = null;
 
 /**
  * Creates the Camera object and starts screen capturing.
  */
 document.addEventListener('DOMContentLoaded', () => {
   var appWindow = chrome.app.window.current();
-  if (!camera.Camera.instance_) {
+  if (!camera.App.instance_) {
     var inner = appWindow.innerBounds;
-    camera.Camera.instance_ = new camera.Camera(inner.width / inner.height);
+    camera.App.instance_ = new camera.App(inner.width / inner.height);
   }
-  camera.Camera.instance_.start();
+  camera.App.instance_.start();
   appWindow.show();
 });

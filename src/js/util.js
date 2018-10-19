@@ -216,7 +216,7 @@ camera.util.animateOnce = function(element) {
   element.classList.remove('animate');
   element.offsetWidth;  // Force calculation to re-apply animation.
   element.classList.add('animate');
-  camera.util.waitForTransitionCompletion(element, 0, () => {
+  camera.util.waitAnimationCompleted(element, 0, () => {
     element.classList.remove('animate');
   });
 };
@@ -230,31 +230,33 @@ camera.util.animateCancel = function(element) {
 };
 
 /**
- * Waits for transition completion and calls the callback.
- * @param {HTMLElement} transitionElement Element to be transitioned.
+ * Waits for animation completed and calls the callback.
+ * @param {HTMLElement} element Element to be animated.
  * @param {number} timeout Timeout for completion. 0 for no timeout.
- * @param {function()} onCompletion Completion callback.
+ * @param {function()} callback Callback called on completion.
  */
-camera.util.waitForTransitionCompletion = function(
-    transitionElement, timeout, onCompletion) {
+camera.util.waitAnimationCompleted = function(element, timeout, callback) {
   var completed = false;
-  var onTransitionCompleted = function(opt_event) {
-    if (completed || (opt_event && opt_event.target != transitionElement))
+  var onCompleted = (event) => {
+    if (completed || (event && event.target != element)) {
       return;
+    }
     completed = true;
-    transitionElement.removeEventListener(
-        'webkitTransitionEnd', onTransitionCompleted);
-    onCompletion();
+    element.removeEventListener('transitionend', onCompleted);
+    element.removeEventListener('animationend', onCompleted);
+    callback();
   };
-  if (timeout)
-    setTimeout(onTransitionCompleted, timeout);
-  transitionElement.addEventListener(
-      'webkitTransitionEnd', onTransitionCompleted);
+  if (timeout) {
+    setTimeout(onCompleted, timeout);
+  }
+  // Assume only either 'transition' or 'animation' is applied on the element.
+  // Listen to both end-events for its completion.
+  element.addEventListener('transitionend', onCompleted);
+  element.addEventListener('animationend', onCompleted);
 };
 
 /**
  * Scrolls the parent of the element so the element is visible.
- *
  * @param {HTMLElement} element Element to be visible.
  * @param {camera.util.SmoothScroller} scroller Scroller to be used.
  * @param {camera.util.SmoothScroller.Mode=} opt_mode Scrolling mode. Default:
@@ -283,7 +285,6 @@ camera.util.ensureVisible = function(element, scroller, opt_mode) {
 
 /**
  * Scrolls the parent of the element so the element is centered.
- *
  * @param {HTMLElement} element Element to be visible.
  * @param {camera.util.SmoothScroller} scroller Scroller to be used.
  * @param {camera.util.SmoothScroller.Mode=} opt_mode Scrolling mode. Default:
@@ -299,82 +300,8 @@ camera.util.scrollToCenter = function(element, scroller, opt_mode) {
 };
 
 /**
- * Wraps an effect in style implemented as either CSS3 animation or CSS3
- * transition. The passed closure should invoke the effect.
- * Only the last callback, passed to the latest invoke() call will be called
- * on the transition or the animation end.
- *
- * @param {function(*, function())} closure Closure for invoking the effect.
- * @constructor
- */
-camera.util.StyleEffect = function(closure) {
-  /**
-   * @type {function(*, function()}
-   * @private
-   */
-  this.closure_ = closure;
-
-  /**
-   * Callback to be called for the latest invokation.
-   * @type {?function()}
-   * @private
-   */
-  this.callback_ = null;
-
-  /**
-   * @type {?number{
-   * @private
-   */
-  this.invocationTimer_ = null;
-
-  // End of properties. Seal the object.
-  Object.seal(this);
-};
-
-camera.util.StyleEffect.prototype = {
-  get animating() {
-    return !!this.callback_;
-  }
-};
-
-/**
- * Invokes the animation and calls the callback on completion. Note, that
- * the callback will not be called if there is another invocation called after.
- *
- * @param {*} state State of the effect to be set
- * @param {function()} callback Completion callback.
- * @param {number=} opt_delay Timeout in milliseconds before invoking.
- */
-camera.util.StyleEffect.prototype.invoke = function(
-    state, callback, opt_delay) {
-  if (this.invocationTimer_) {
-    clearTimeout(this.invocationTimer_);
-    this.invocationTimer_ = null;
-  }
-
-  var invokeClosure = function() {
-    this.callback_ = callback;
-    this.closure_(state, function() {
-      if (!this.callback_)
-        return;
-      var callback = this.callback_;
-      this.callback_ = null;
-
-      // Let the animation neatly finish.
-      setTimeout(callback, 0);
-    }.bind(this));
-  }.bind(this);
-
-  if (opt_delay !== undefined)
-    this.invocationTimer_ = setTimeout(invokeClosure, opt_delay);
-  else
-    invokeClosure();
-};
-
-/**
  * Performs smooth scrolling of a scrollable DOM element using a accelerated
  * CSS3 transform and transition for smooth animation.
- *
  * @param {HTMLElement} element Element to be scrolled.
  * @param {HTMLElement} padder Element holding contents within the scrollable
  *     element.
@@ -478,7 +405,6 @@ camera.util.SmoothScroller.prototype.flushScroll_ = function() {
 
 /**
  * Scrolls smoothly to specified position.
- *
  * @param {number} x X Target scrollLeft value.
  * @param {number} y Y Target scrollTop value.
  * @param {camera.util.SmoothScroller.Mode=} opt_mode Scrolling mode. Default:
@@ -526,7 +452,7 @@ camera.util.SmoothScroller.prototype.scrollTo = function(x, y, opt_mode) {
 
       // Remove translation, and switch to scrollLeft/scrollTop when the
       // animation is finished.
-      camera.util.waitForTransitionCompletion(
+      camera.util.waitAnimationCompleted(
           this.padder_,
           0,
           function() {
@@ -541,7 +467,6 @@ camera.util.SmoothScroller.prototype.scrollTo = function(x, y, opt_mode) {
 /**
  * Tracks the mouse for click and move, and the touch screen for touches. If
  * any of these are detected, then the callback is called.
- *
  * @param {HTMLElement} element Element to be monitored.
  * @param {function(Event)} callback Callback triggered on events detected.
  * @constructor
@@ -577,7 +502,6 @@ camera.util.PointerTracker = function(element, callback) {
 
 /**
  * Handles the mouse down event.
- *
  * @param {Event} event Mouse down event.
  * @private
  */
@@ -588,7 +512,6 @@ camera.util.PointerTracker.prototype.onMouseDown_ = function(event) {
 
 /**
  * Handles the mouse move event.
- *
  * @param {Event} event Mouse move event.
  * @private
  */
@@ -607,7 +530,6 @@ camera.util.PointerTracker.prototype.onMouseMove_ = function(event) {
 
 /**
  * Handles the touch start event.
- *
  * @param {Event} event Touch start event.
  * @private
  */
@@ -617,7 +539,6 @@ camera.util.PointerTracker.prototype.onTouchStart_ = function(event) {
 
 /**
  * Handles the touch move event.
- *
  * @param {Event} event Touch move event.
  * @private
  */
@@ -628,7 +549,6 @@ camera.util.PointerTracker.prototype.onTouchMove_ = function(event) {
 /**
  * Tracks scrolling and calls a callback, when scrolling is started and ended
  * by either the scroller or the user.
- *
  * @param {camera.util.SmoothScroller} scroller Scroller object to be tracked.
  * @param {function()} onScrollStarted Callback called when scrolling is
  *     started.
@@ -840,7 +760,6 @@ camera.util.ScrollTracker.prototype.probe_ = function() {
 
 /**
  * Makes an element scrollable by dragging with a mouse.
- *
  * @param {camera.util.Scroller} scroller Scroller for the element.
  * @constructor
  */

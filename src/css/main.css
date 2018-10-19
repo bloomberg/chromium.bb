@@ -749,8 +749,23 @@ body.capturing.grid #preview-grid-vertical {
   z-index: 100;
 }
 
-#toast.visible {
-  opacity: 0.9;
+#toast.animate {
+  animation: toast-opacity 2500ms ease-out;
+}
+
+@keyframes toast-opacity {
+  0% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.9;
+  }
+  90% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 #dialog {
