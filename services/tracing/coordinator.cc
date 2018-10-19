@@ -482,7 +482,7 @@ void Coordinator::OnFlushDone() {
   std::move(stop_and_flush_callback_)
       .Run(std::move(*trace_streamer_->GetMetadata()));
   background_task_runner_->DeleteSoon(FROM_HERE, trace_streamer_.release());
-  agent_registry_->ForAllAgents([this](AgentRegistry::AgentEntry* agent_entry) {
+  agent_registry_->ForAllAgents([](AgentRegistry::AgentEntry* agent_entry) {
     agent_entry->set_is_tracing(false);
   });
   is_tracing_ = false;
