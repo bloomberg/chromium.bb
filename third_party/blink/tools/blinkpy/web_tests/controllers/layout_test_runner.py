@@ -108,7 +108,7 @@ class LayoutTestRunner(object):
         num_workers = min(num_workers, len(all_shards))
 
         if retry_attempt < 1:
-            self._printer.print_workers_and_shards(num_workers, len(all_shards), len(locked_shards))
+            self._printer.print_workers_and_shards(self._port, num_workers, len(all_shards), len(locked_shards))
 
         if self._options.dry_run:
             return test_run_results
@@ -198,11 +198,11 @@ class LayoutTestRunner(object):
         actual_string = self._expectations.expectation_to_string(result.type)
 
         if result.device_failed:
-            self._printer.print_finished_test(result, False, expectation_string, 'Aborted')
+            self._printer.print_finished_test(self._port, result, False, expectation_string, 'Aborted')
             return
 
         test_run_results.add(result, expected, self._test_is_slow(result.test_name))
-        self._printer.print_finished_test(result, expected, expectation_string, actual_string)
+        self._printer.print_finished_test(self._port, result, expected, expectation_string, actual_string)
         self._interrupt_if_at_failure_limits(test_run_results)
 
     def handle(self, name, source, *args):
