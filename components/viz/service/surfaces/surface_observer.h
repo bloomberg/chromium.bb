@@ -18,9 +18,6 @@ struct BeginFrameArgs;
 
 class SurfaceObserver {
  public:
-  // Called when a Surface with a new SurfaceId is created.
-  virtual void OnSurfaceCreated(const SurfaceId& surface_id) = 0;
-
   // Called when a CompositorFrame with a new SurfaceId activates for the first
   // time.
   virtual void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) = 0;
