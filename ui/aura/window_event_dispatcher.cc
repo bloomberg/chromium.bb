@@ -1089,8 +1089,10 @@ DispatchDetails WindowEventDispatcher::PreDispatchTouchEvent(
 DispatchDetails WindowEventDispatcher::PreDispatchKeyEvent(
     ui::KeyEvent* event) {
   if (skip_ime_ || !host_->has_input_method() ||
-      (event->flags() & ui::EF_IS_SYNTHESIZED))
+      (event->flags() & ui::EF_IS_SYNTHESIZED) ||
+      !host_->ShouldSendKeyEventToIme()) {
     return DispatchDetails();
+  }
   DispatchDetails details = host_->GetInputMethod()->DispatchKeyEvent(event);
   event->StopPropagation();
   return details;

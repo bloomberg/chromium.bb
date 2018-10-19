@@ -62,6 +62,7 @@ class ASH_EXPORT AshWindowTreeHostPlatform
   void SetBoundsInPixels(const gfx::Rect& bounds,
                          const viz::LocalSurfaceId& local_surface_id) override;
   void DispatchEvent(ui::Event* event) override;
+  bool ShouldSendKeyEventToIme() override;
 
   // aura::InputMethodMusDelegate:
   void SetTextInputState(ui::mojom::TextInputStatePtr state) override;

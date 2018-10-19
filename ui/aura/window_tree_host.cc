@@ -288,6 +288,10 @@ std::unique_ptr<ScopedKeyboardHook> WindowTreeHost::CaptureSystemKeyEvents(
   return nullptr;
 }
 
+bool WindowTreeHost::ShouldSendKeyEventToIme() {
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHost, protected:
 

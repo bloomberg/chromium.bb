@@ -15,6 +15,7 @@
 #include "base/trace_event/trace_event.h"
 #include "services/ws/public/cpp/input_devices/input_device_controller_client.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
+#include "services/ws/window_service.h"
 #include "ui/aura/mus/input_method_mus.h"
 #include "ui/aura/null_window_targeter.h"
 #include "ui/aura/window.h"
@@ -203,6 +204,13 @@ void AshWindowTreeHostPlatform::SetTapToClickPaused(bool state) {
 
   // Temporarily pause tap-to-click when the cursor is hidden.
   input_device_controller_client->SetTapToClickPaused(state);
+}
+
+bool AshWindowTreeHostPlatform::ShouldSendKeyEventToIme() {
+  // Don't send key events to IME if they are going to go to a remote client.
+  // Remote clients handle forwarding to IME (as necessary).
+  aura::Window* target = window()->targeter()->FindTargetForKeyEvent(window());
+  return !target || !ws::WindowService::HasRemoteClient(target);
 }
 
 void AshWindowTreeHostPlatform::SetTextInputState(
