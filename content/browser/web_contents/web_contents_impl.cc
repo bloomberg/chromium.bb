@@ -2780,19 +2780,21 @@ void WebContentsImpl::CreateNewWindow(
     }
 
     if (!was_blocked) {
-      OpenURLParams open_params(params.target_url, params.referrer,
-                                WindowOpenDisposition::CURRENT_TAB,
-                                ui::PAGE_TRANSITION_LINK,
-                                true /* is_renderer_initiated */);
-      open_params.user_gesture = params.mimic_user_gesture;
+      std::unique_ptr<NavigationController::LoadURLParams> load_params =
+          std::make_unique<NavigationController::LoadURLParams>(
+              params.target_url);
+      load_params->referrer = params.referrer;
+      load_params->transition_type = ui::PAGE_TRANSITION_LINK;
+      load_params->is_renderer_initiated = true;
+      load_params->has_user_gesture = params.mimic_user_gesture;
 
       if (delegate_ && !is_guest &&
           !delegate_->ShouldResumeRequestsForCreatedWindow()) {
-        // We are in asynchronous add new contents path, delay opening url
-        new_contents_impl->delayed_open_url_params_.reset(
-            new OpenURLParams(open_params));
+        // We are in asynchronous add new contents path, delay navigation.
+        DCHECK(!new_contents_impl->delayed_open_url_params_);
+        new_contents_impl->delayed_load_url_params_ = std::move(load_params);
       } else {
-        new_contents_impl->OpenURL(open_params);
+        new_contents_impl->controller_.LoadURLWithParams(*load_params.get());
       }
     }
   }
@@ -3318,6 +3320,11 @@ WebContents* WebContentsImpl::OpenURL(const OpenURLParams& params) {
     // time, navigations, including the initial one, that goes through OpenURL
     // should be delayed until embedder is ready to resume loading.
     delayed_open_url_params_ = std::make_unique<OpenURLParams>(params);
+
+    // If there was a navigation deferred when creating the window through
+    // CreateNewWindow, drop it in favor of this navigation.
+    delayed_load_url_params_.reset();
+
     return nullptr;
   }
 
@@ -4069,6 +4076,13 @@ void WebContentsImpl::ExitFullscreen(bool will_cause_resize) {
 }
 
 void WebContentsImpl::ResumeLoadingCreatedWebContents() {
+  if (delayed_load_url_params_.get()) {
+    DCHECK(!delayed_open_url_params_);
+    controller_.LoadURLWithParams(*delayed_load_url_params_.get());
+    delayed_load_url_params_.reset(nullptr);
+    return;
+  }
+
   if (delayed_open_url_params_.get()) {
     OpenURL(*delayed_open_url_params_.get());
     delayed_open_url_params_.reset(nullptr);
