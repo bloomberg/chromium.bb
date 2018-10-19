@@ -70,10 +70,6 @@ class VIEWS_EXPORT PlatformStyle {
   // dragging but available to do so.
   static const bool kTextfieldUsesDragCursorWhenDraggable;
 
-  // Whether bookmarks in the bookmarks bar are elided [and show elipses at the
-  // tail] or fade out.
-  static const bool kShouldElideBookmarksInBookmarksBar;
-
   // The thickness and inset amount of focus ring halos.
   static const float kFocusHaloThickness;
   static const float kFocusHaloInset;
