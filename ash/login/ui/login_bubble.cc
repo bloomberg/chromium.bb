@@ -545,8 +545,15 @@ void LoginBubble::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void LoginBubble::OnKeyEvent(ui::KeyEvent* event) {
-  if (!bubble_view_ || event->type() != ui::ET_KEY_PRESSED)
+  // Ignore VKEY_PROCESSKEY; it is an IME event saying that the key has been
+  // processed. This event is also generated in tablet mode, ie, after
+  // submitting a password a VKEY_PROCESSKEY event is generated. If we treat
+  // that as a normal key event the password bubble will be dismissed
+  // immediately after submitting.
+  if (!bubble_view_ || event->type() != ui::ET_KEY_PRESSED ||
+      event->key_code() == ui::VKEY_PROCESSKEY) {
     return;
+  }
 
   // If current focus view is the button view, don't process the event here,
   // let the button logic handle the event and determine show/hide behavior.
