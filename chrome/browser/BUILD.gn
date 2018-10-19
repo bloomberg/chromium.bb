@@ -3439,10 +3439,9 @@ jumbo_split_static_library("browser") {
 
   if (is_win || (is_linux && !is_chromeos)) {
     sources += [
+      "browser_switcher/alternative_browser_driver.h",
       "browser_switcher/alternative_browser_driver_linux.cc",
-      "browser_switcher/alternative_browser_driver_linux.h",
       "browser_switcher/alternative_browser_driver_win.cc",
-      "browser_switcher/alternative_browser_driver_win.h",
       "browser_switcher/alternative_browser_launcher.cc",
       "browser_switcher/alternative_browser_launcher.h",
       "browser_switcher/browser_switcher_navigation_throttle.cc",
