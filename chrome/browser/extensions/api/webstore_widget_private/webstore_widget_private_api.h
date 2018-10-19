@@ -14,24 +14,6 @@
 namespace extensions {
 namespace api {
 
-class WebstoreWidgetPrivateGetStringsFunction
-    : public UIThreadExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("webstoreWidgetPrivate.getStrings",
-                             WEBSTOREWIDGETPRIVATE_GETSTRINGS)
-
-  WebstoreWidgetPrivateGetStringsFunction();
-
- protected:
-  ~WebstoreWidgetPrivateGetStringsFunction() override;
-
-  // UIThreadExtensionFunction overrides:
-  ResponseAction Run() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebstoreWidgetPrivateGetStringsFunction);
-};
-
 class WebstoreWidgetPrivateInstallWebstoreItemFunction
     : public UIThreadExtensionFunction {
  public:

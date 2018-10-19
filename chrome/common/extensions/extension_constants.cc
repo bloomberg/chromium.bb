@@ -64,7 +64,6 @@ const char kSpeechSynthesisExtensionPath[] =
 const char kSpeechSynthesisExtensionId[] =
     "gjjabgpgjpampikjhjpfhneeoapjbjaf";
 const char kWallpaperManagerId[] = "obklkkbkpaoaejdabbfldmcfplpdgolj";
-const char kWebstoreWidgetAppId[] = "fbjakikfhfdajcamjleinfciajelkpek";
 const char kZipArchiverExtensionId[] = "dmboannefpncccogfdikhmhpmdnddgoe";
 const char kZipArchiverExtensionPath[] = "chromeos/zip_archiver";
 #endif

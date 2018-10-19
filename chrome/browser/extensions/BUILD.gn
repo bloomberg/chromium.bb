@@ -965,7 +965,6 @@ jumbo_static_library("extensions") {
       "//chromeos/services/machine_learning/public/mojom",
       "//chromeos/services/media_perception/public/mojom",
       "//components/arc",
-      "//components/chrome_apps",
       "//components/constrained_window",
       "//components/drive",
       "//components/user_manager",
