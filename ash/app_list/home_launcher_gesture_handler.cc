@@ -593,8 +593,17 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
   const bool overview_active =
       Shell::Get()->window_selector_controller()->IsSelecting();
   const bool split_view_active = split_view_controller->IsSplitViewModeActive();
+  auto windows = Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
   if (window && (mode != Mode::kSlideDownToHide || overview_active ||
                  split_view_active)) {
+    window_ = nullptr;
+    return false;
+  }
+
+  if (window && !windows.empty() && windows[0] != window &&
+      windows[0]->IsVisible()) {
+    // Do not run slide down animation for the |window| if another active window
+    // in mru list exists.
     window_ = nullptr;
     return false;
   }
@@ -611,7 +620,6 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
   // Always hide split view windows if they exist. Otherwise, hide the specified
   // window if it is not null. If non of above is true, we want the first window
   // in the mru list, if it exists and is usable.
-  auto windows = Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
   window_ = split_view_active
                 ? split_view_controller->GetDefaultSnappedWindow()
                 : (window ? window : (windows.empty() ? nullptr : windows[0]));
