@@ -50,6 +50,9 @@ class AutomationManagerAura : public ui::AXHostDelegate,
   // Handle an event fired upon a |View|.
   void HandleEvent(views::View* view, ax::mojom::Event event_type);
 
+  // Handle an event fired upon the root view.
+  void HandleEvent(ax::mojom::Event event_type);
+
   void HandleAlert(const std::string& text);
 
   // AXHostDelegate implementation.

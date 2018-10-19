@@ -8,13 +8,18 @@
 
 goog.provide('BackgroundMouseHandler');
 
+goog.require('BaseAutomationHandler');
+
+var AutomationEvent = chrome.automation.AutomationEvent;
 var EventType = chrome.automation.EventType;
 
-/** @constructor */
+/**
+ * @constructor
+ * @extends {BaseAutomationHandler}
+ */
 BackgroundMouseHandler = function() {
-  document.addEventListener('mousemove', this.onMouseMove.bind(this));
-
   chrome.automation.getDesktop(function(desktop) {
+    BaseAutomationHandler.call(this, desktop);
     /**
      *
      * The desktop node.
@@ -22,18 +27,18 @@ BackgroundMouseHandler = function() {
      * @private {!chrome.automation.AutomationNode}
      */
     this.desktop_ = desktop;
+    this.addListener_(EventType.MOUSE_MOVED, this.onMouseMove);
   }.bind(this));
 };
 
 BackgroundMouseHandler.prototype = {
+  __proto__: BaseAutomationHandler.prototype,
+
   /**
    * Handles mouse move events.
-   * @param {Event} evt The mouse move event to process.
-   * @return {boolean} True if the default action should be performed.
+   * @param {AutomationEvent} evt The mouse move event to process.
    */
   onMouseMove: function(evt) {
-    // Immediately save the most recent mouse coordinates.
-    this.desktop_.hitTest(evt.screenX, evt.screenY, EventType.HOVER);
-    return false;
+    this.desktop_.hitTest(evt.mouseX, evt.mouseY, EventType.HOVER);
   },
 };
