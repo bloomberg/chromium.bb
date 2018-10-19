@@ -72,6 +72,11 @@ class DriveNotificationManager : public KeyedService,
     return team_drive_ids_;
   }
 
+  const base::ObserverList<DriveNotificationObserver>::Unchecked&
+  observers_for_test() {
+    return observers_;
+  }
+
  private:
   enum NotificationSource {
     NOTIFICATION_XMPP,

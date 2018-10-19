@@ -4,6 +4,7 @@
 
 #include "chromeos/components/drivefs/drivefs_host.h"
 
+#include <set>
 #include <type_traits>
 #include <utility>
 
@@ -19,6 +20,7 @@
 #include "chromeos/components/drivefs/pending_connection_manager.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "components/drive/drive_notification_manager.h"
+#include "components/drive/drive_notification_observer.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -107,6 +109,28 @@ class ForwardingOAuth2MintTokenFlow : public OAuth2MintTokenFlow {
  private:
   Delegate* const delegate_;
   MockOAuth2MintTokenFlow* mock_;
+};
+
+class MockDriveFs : public mojom::DriveFsInterceptorForTesting {
+ public:
+  DriveFs* GetForwardingInterface() override {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  void FetchChangeLog(std::vector<mojom::FetchChangeLogOptionsPtr> options) {
+    std::vector<std::pair<int64_t, std::string>> unwrapped_options;
+    for (auto& entry : options) {
+      unwrapped_options.push_back(
+          std::make_pair(entry->change_id, entry->team_drive_id));
+    }
+    FetchChangeLogImpl(unwrapped_options);
+  }
+
+  MOCK_METHOD1(
+      FetchChangeLogImpl,
+      void(const std::vector<std::pair<int64_t, std::string>>& options));
+  MOCK_METHOD0(FetchAllChangeLogs, void());
 };
 
 class TestingDriveFsHostDelegate : public DriveFsHost::Delegate,
@@ -265,7 +289,7 @@ ACTION_P(RunQuitClosure, quit) {
 
 class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
  public:
-  DriveFsHostTest() : bootstrap_binding_(this) {}
+  DriveFsHostTest() : bootstrap_binding_(this), binding_(&mock_drivefs_) {}
 
  protected:
   void SetUp() override {
@@ -369,7 +393,7 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
             mojom::DriveFsRequest drive_fs_request,
             mojom::DriveFsDelegatePtr delegate) override {
     EXPECT_EQ("test@example.com", config->user_email);
-    drive_fs_request_ = std::move(drive_fs_request);
+    binding_.Bind(std::move(drive_fs_request));
     mojo::FuseInterface(std::move(pending_delegate_request_),
                         delegate.PassInterface());
   }
@@ -385,7 +409,8 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
   base::MockOneShotTimer* timer_;
 
   mojo::Binding<mojom::DriveFsBootstrap> bootstrap_binding_;
-  mojom::DriveFsRequest drive_fs_request_;
+  MockDriveFs mock_drivefs_;
+  mojo::Binding<mojom::DriveFs> binding_;
   mojom::DriveFsDelegatePtr delegate_ptr_;
   mojom::DriveFsDelegateRequest pending_delegate_request_;
 
@@ -951,6 +976,54 @@ TEST_F(DriveFsHostTest, TeamDriveTracking) {
   EXPECT_EQ(
       (std::set<std::string>{"a", "c"}),
       host_delegate_->GetDriveNotificationManager().team_drive_ids_for_test());
+}
+
+TEST_F(DriveFsHostTest, Invalidation) {
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+
+  delegate_ptr_->OnTeamDrivesListReady({"a", "b"});
+  delegate_ptr_.FlushForTesting();
+
+  EXPECT_CALL(mock_drivefs_,
+              FetchChangeLogImpl(std::vector<std::pair<int64_t, std::string>>{
+                  {123, ""}, {456, "a"}}));
+
+  for (auto& observer :
+       host_delegate_->GetDriveNotificationManager().observers_for_test()) {
+    observer.OnNotificationReceived({{"", 123}, {"a", 456}});
+  }
+  binding_.FlushForTesting();
+}
+
+TEST_F(DriveFsHostTest, InvalidateAll) {
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+
+  delegate_ptr_->OnTeamDrivesListReady({"a", "b"});
+  delegate_ptr_.FlushForTesting();
+
+  EXPECT_CALL(mock_drivefs_, FetchAllChangeLogs());
+
+  for (auto& observer :
+       host_delegate_->GetDriveNotificationManager().observers_for_test()) {
+    observer.OnNotificationTimerFired();
+  }
+  binding_.FlushForTesting();
+}
+
+TEST_F(DriveFsHostTest, RemoveDriveNotificationObserver) {
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+
+  delegate_ptr_->OnTeamDrivesListReady({"a", "b"});
+  delegate_ptr_.FlushForTesting();
+  EXPECT_TRUE(host_delegate_->GetDriveNotificationManager()
+                  .observers_for_test()
+                  .might_have_observers());
+
+  host_.reset();
+
+  EXPECT_FALSE(host_delegate_->GetDriveNotificationManager()
+                   .observers_for_test()
+                   .might_have_observers());
 }
 
 }  // namespace

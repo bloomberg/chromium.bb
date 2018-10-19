@@ -407,4 +407,9 @@ void FakeDriveFs::StartSearchQuery(
   mojo::MakeStrongBinding(std::move(search_query), std::move(query));
 }
 
+void FakeDriveFs::FetchAllChangeLogs() {}
+
+void FakeDriveFs::FetchChangeLog(
+    std::vector<mojom::FetchChangeLogOptionsPtr> options) {}
+
 }  // namespace drivefs
