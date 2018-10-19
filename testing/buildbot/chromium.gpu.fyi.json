@@ -13341,7 +13341,8 @@
         "args": [
           "-v",
           "--use-cmd-decoder=passthrough",
-          "--use-angle=gl-null"
+          "--use-angle=gl-null",
+          "--fast-run"
         ],
         "isolate_name": "command_buffer_perftests",
         "name": "passthrough_command_buffer_perftests",
@@ -13369,7 +13370,8 @@
         "args": [
           "-v",
           "--use-cmd-decoder=validating",
-          "--use-stub"
+          "--use-stub",
+          "--fast-run"
         ],
         "isolate_name": "command_buffer_perftests",
         "name": "validating_command_buffer_perftests",
@@ -16342,7 +16344,8 @@
         "args": [
           "-v",
           "--use-cmd-decoder=passthrough",
-          "--use-angle=gl-null"
+          "--use-angle=gl-null",
+          "--fast-run"
         ],
         "isolate_name": "command_buffer_perftests",
         "name": "passthrough_command_buffer_perftests",
@@ -16482,7 +16485,8 @@
         "args": [
           "-v",
           "--use-cmd-decoder=validating",
-          "--use-stub"
+          "--use-stub",
+          "--fast-run"
         ],
         "isolate_name": "command_buffer_perftests",
         "name": "validating_command_buffer_perftests",

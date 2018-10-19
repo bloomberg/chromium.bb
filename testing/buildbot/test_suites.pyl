@@ -1250,6 +1250,7 @@
           '-v',
           '--use-cmd-decoder=passthrough',
           '--use-angle=gl-null',
+          '--fast-run',
         ],
       },
       # TODO(jmadill): Run on Linux bots when possible.
@@ -1259,6 +1260,7 @@
           '-v',
           '--use-cmd-decoder=validating',
           '--use-stub',
+          '--fast-run',
         ],
       },
     },

@@ -39,8 +39,8 @@
 namespace gpu {
 namespace {
 
-constexpr int kDefaultRuns = 4;
-constexpr int kDefaultIterations = 10000;
+constexpr int kDefaultRuns = 8;
+constexpr int kDefaultIterations = 50000;
 
 // A command buffer that can record and replay commands
 // This goes through 3 states, allowing setting up of initial state before
@@ -361,6 +361,10 @@ class PerfIterator {
     // 3- avoid unneeded syscalls (time, print).
     for_linux_perf_ =
         base::CommandLine::ForCurrentProcess()->HasSwitch("for-linux-perf");
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch("fast-run")) {
+      runs_ = 1;
+      iterations_ = 100;
+    }
   }
 
   bool Iterate() {
