@@ -704,9 +704,7 @@ bool PasswordProtectionService::PathVariantsMatchCacheExpression(
 
 bool PasswordProtectionService::IsCacheExpired(int cache_creation_time,
                                                int cache_duration) {
-  // TODO(jialiul): For now, we assume client's clock is accurate or almost
-  // accurate. Need some logic to handle cases where client's clock is way
-  // off.
+  // Note that we assume client's clock is accurate or almost accurate.
   return base::Time::Now().ToDoubleT() >
          static_cast<double>(cache_creation_time + cache_duration);
 }

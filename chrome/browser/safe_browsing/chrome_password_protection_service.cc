@@ -1037,7 +1037,6 @@ void ChromePasswordProtectionService::HandleUserActionOnModalWarning(
               content::Referrer(),
               /*in_new_tab=*/true);
       web_contents_with_unhandled_enterprise_reuses_.erase(web_contents);
-      // TODO(jialiul): Remove web_contents pointer when it is closed.
     } else {
       // Opens accounts.google.com in a new tab.
       OpenUrl(web_contents, GetDefaultChangePasswordURL(), content::Referrer(),
