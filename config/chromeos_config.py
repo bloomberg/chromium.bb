@@ -157,12 +157,6 @@ def GeneralTemplates(site_config, ge_build_config):
       unittests=False,
   )
 
-  site_config.AddTemplate(
-      'no_hwtest_builder',
-      hw_tests=[],
-      hw_tests_override=[],
-  )
-
   # Builder type templates.
 
   site_config.AddTemplate(
@@ -258,7 +252,6 @@ def GeneralTemplates(site_config, ge_build_config):
 
   site_config.AddTemplate(
       'lakitu',
-      site_config.templates.no_hwtest_builder,
       sync_chrome=False,
       chrome_sdk=False,
       afdo_use=False,
@@ -274,7 +267,6 @@ def GeneralTemplates(site_config, ge_build_config):
 
   site_config.AddTemplate(
       'x30evb',
-      site_config.templates.no_hwtest_builder,
       sync_chrome=False,
       chrome_sdk=False,
       signer_tests=False,
@@ -289,7 +281,6 @@ def GeneralTemplates(site_config, ge_build_config):
 
   site_config.AddTemplate(
       'termina',
-      site_config.templates.no_hwtest_builder,
       sync_chrome=False,
       chrome_sdk=False,
       afdo_use=False,
@@ -308,7 +299,6 @@ def GeneralTemplates(site_config, ge_build_config):
 
   site_config.AddTemplate(
       'loonix',
-      site_config.templates.no_hwtest_builder,
       sync_chrome=False,
       chrome_sdk=False,
       afdo_use=False,
@@ -611,7 +601,6 @@ def GeneralTemplates(site_config, ge_build_config):
   # Create tryjob build configs to help with stress testing.
   site_config.AddTemplate(
       'unittest_stress',
-      site_config.templates.no_hwtest_builder,
       display_label=config_lib.DISPLAY_LABEL_TRYJOB,
       build_type=constants.TRYJOB_TYPE,
       description='Run Unittests repeatedly to look for flake.',
@@ -796,7 +785,6 @@ def GeneralTemplates(site_config, ge_build_config):
       'payloads',
       site_config.templates.internal,
       site_config.templates.no_unittest_builder,
-      site_config.templates.no_hwtest_builder,
       display_label=config_lib.DISPLAY_LABEL_TRYJOB,
       build_type=constants.PAYLOADS_TYPE,
       builder_class_name='release_builders.GeneratePayloadsBuilder',

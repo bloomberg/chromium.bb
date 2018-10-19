@@ -675,6 +675,12 @@ def GeneralTemplates(site_config, ge_build_config):
   )
 
   site_config.AddTemplate(
+      'no_hwtest_builder',
+      hw_tests=[],
+      hw_tests_override=[],
+  )
+
+  site_config.AddTemplate(
       'moblab',
       site_config.templates.no_vmtest_builder,
       image_test=False,
@@ -773,9 +779,16 @@ def GeneralTemplates(site_config, ge_build_config):
   )
   # END Firmware
 
+  # BEGIN Lakitu
+  site_config.templates.lakitu.apply(
+      site_config.templates.no_hwtest_builder,
+  )
+  # END Lakitu
+
   # BEGIN Loonix
   site_config.templates.loonix.apply(
       site_config.templates.no_vmtest_builder,
+      site_config.templates.no_hwtest_builder,
   )
   # END Loonix
 
@@ -807,6 +820,7 @@ def GeneralTemplates(site_config, ge_build_config):
 
   site_config.templates.payloads.apply(
       site_config.templates.no_vmtest_builder,
+      site_config.templates.no_hwtest_builder,
   )
   # END Release
 
@@ -818,12 +832,14 @@ def GeneralTemplates(site_config, ge_build_config):
   # BEGIN Termina
   site_config.templates.termina.apply(
       site_config.templates.no_vmtest_builder,
+      site_config.templates.no_hwtest_builder,
   )
   #END Termina
 
   # BEGIN Unittest Stress
   site_config.templates.unittest_stress.apply(
       site_config.templates.no_vmtest_builder,
+      site_config.templates.no_hwtest_builder,
   )
   # END Unittest Stress
 
@@ -836,6 +852,12 @@ def GeneralTemplates(site_config, ge_build_config):
       site_config.templates.default_hw_tests_override,
   )
   # END Ubsan
+
+  # BEGIN x30evb
+  site_config.templates.x30evb.apply(
+      site_config.templates.no_hwtest_builder,
+  )
+  # END x30evb
 
 
 def AndroidTemplates(site_config):
