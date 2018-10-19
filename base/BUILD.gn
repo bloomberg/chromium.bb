@@ -154,7 +154,6 @@ jumbo_component("base") {
     "allocator/allocator_extension.h",
     "allocator/allocator_interception_mac.h",
     "allocator/allocator_interception_mac.mm",
-    "allocator/allocator_shim.h",
     "allocator/malloc_zone_functions_mac.cc",
     "allocator/malloc_zone_functions_mac.h",
     "at_exit.cc",
@@ -1071,7 +1070,6 @@ jumbo_component("base") {
 
   if (is_posix) {
     sources += [
-      "base_paths_posix.h",
       "debug/debugger_posix.cc",
       "debug/stack_trace_posix.cc",
       "file_descriptor_posix.h",
@@ -1129,12 +1127,15 @@ jumbo_component("base") {
       "base_paths_android.h",
       "base_paths_mac.h",
       "base_paths_mac.mm",
-      "base_paths_posix.h",
       "base_paths_win.cc",
       "base_paths_win.h",
       "metrics/persistent_histogram_storage.cc",
       "metrics/persistent_histogram_storage.h",
     ]
+
+    if (is_posix) {
+      sources += [ "base_paths_posix.h" ]
+    }
 
     if (is_linux) {
       sources += [
