@@ -60,7 +60,9 @@ typedef enum {
   DUAL_FILTER_LAYER = 1 << 12,
   Q_INDEX_LAYER = 1 << 13,
   SEGMENT_ID_LAYER = 1 << 14,
-  ALL_LAYERS = (1 << 15) - 1
+  MOTION_MODE_LAYER = 1 << 15,
+  COMPOUND_TYPE_LAYER = 1 << 16,
+  ALL_LAYERS = (1 << 17) - 1
 } LayerType;
 
 static LayerType layers = 0;
@@ -84,6 +86,10 @@ static const arg_def_t dump_transform_size_arg =
 static const arg_def_t dump_transform_type_arg =
     ARG_DEF("tt", "transformType", 0, "Dump Transform Type");
 static const arg_def_t dump_mode_arg = ARG_DEF("m", "mode", 0, "Dump Mode");
+static const arg_def_t dump_motion_mode_arg =
+    ARG_DEF("mm", "motion_mode", 0, "Dump Motion Modes");
+static const arg_def_t dump_compound_type_arg =
+    ARG_DEF("ct", "compound_type", 0, "Dump Compound Types");
 static const arg_def_t dump_uv_mode_arg =
     ARG_DEF("uvm", "uv_mode", 0, "Dump UV Intra Prediction Modes");
 static const arg_def_t dump_skip_arg = ARG_DEF("s", "skip", 0, "Dump Skip");
@@ -113,6 +119,8 @@ static const arg_def_t *main_args[] = { &limit_arg,
                                         &dump_transform_type_arg,
                                         &dump_mode_arg,
                                         &dump_uv_mode_arg,
+                                        &dump_motion_mode_arg,
+                                        &dump_compound_type_arg,
                                         &dump_skip_arg,
                                         &dump_filter_arg,
                                         &dump_cdef_arg,
@@ -192,6 +200,15 @@ const map_entry prediction_mode_map[] = {
   ENUM(NEAR_NEWMV),  ENUM(NEW_NEARMV),    ENUM(GLOBAL_GLOBALMV),
   ENUM(NEW_NEWMV),   ENUM(INTRA_INVALID), LAST_ENUM
 };
+
+const map_entry motion_mode_map[] = { ENUM(SIMPLE_TRANSLATION),
+                                      ENUM(OBMC_CAUSAL),    // 2-sided OBMC
+                                      ENUM(WARPED_CAUSAL),  // 2-sided WARPED
+                                      LAST_ENUM };
+
+const map_entry compound_type_map[] = { ENUM(COMPOUND_AVERAGE),
+                                        ENUM(COMPOUND_WEDGE),
+                                        ENUM(COMPOUND_DIFFWTD), LAST_ENUM };
 
 const map_entry uv_prediction_mode_map[] = {
   ENUM(UV_DC_PRED),       ENUM(UV_V_PRED),
@@ -523,6 +540,14 @@ void inspect(void *pbi, void *data) {
     buf += put_block_info(buf, uv_prediction_mode_map, "uv_mode",
                           offsetof(insp_mi_data, uv_mode), 0);
   }
+  if (layers & MOTION_MODE_LAYER) {
+    buf += put_block_info(buf, motion_mode_map, "motion_mode",
+                          offsetof(insp_mi_data, motion_mode), 0);
+  }
+  if (layers & COMPOUND_TYPE_LAYER) {
+    buf += put_block_info(buf, compound_type_map, "compound_type",
+                          offsetof(insp_mi_data, compound_type), 0);
+  }
   if (layers & SKIP_LAYER) {
     buf +=
         put_block_info(buf, skip_map, "skip", offsetof(insp_mi_data, skip), 0);
@@ -563,7 +588,8 @@ void inspect(void *pbi, void *data) {
     buf += put_accounting(buf);
   }
 #endif
-  buf += snprintf(buf, MAX_BUFFER, "  \"frame\": %d,\n", decoded_frame_count);
+  buf +=
+      snprintf(buf, MAX_BUFFER, "  \"frame\": %d,\n", frame_data.frame_number);
   buf += snprintf(buf, MAX_BUFFER, "  \"showFrame\": %d,\n",
                   frame_data.show_frame);
   buf += snprintf(buf, MAX_BUFFER, "  \"frameType\": %d,\n",
@@ -707,6 +733,10 @@ static void parse_args(char **argv) {
       layers |= MODE_LAYER;
     else if (arg_match(&arg, &dump_uv_mode_arg, argi))
       layers |= UV_MODE_LAYER;
+    else if (arg_match(&arg, &dump_motion_mode_arg, argi))
+      layers |= MOTION_MODE_LAYER;
+    else if (arg_match(&arg, &dump_compound_type_arg, argi))
+      layers |= COMPOUND_TYPE_LAYER;
     else if (arg_match(&arg, &dump_skip_arg, argi))
       layers |= SKIP_LAYER;
     else if (arg_match(&arg, &dump_filter_arg, argi))
