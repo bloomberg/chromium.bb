@@ -32,6 +32,8 @@ enum class ClientChangeType {
   kFocus,
   // Used for WindowTree::SetWindowProperty().
   kProperty,
+  // Used for WindowTree::SetWindowVisibility().
+  kVisibility,
 };
 
 // ClientChange represents an incoming request from a WindowTreeClient. For
