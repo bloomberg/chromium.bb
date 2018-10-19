@@ -476,6 +476,8 @@ ProcessInfoVector GetProcessInfo(ukm::TestUkmRecorder& ukm_recorder) {
     PageInfoPtr page_info(resource_coordinator::mojom::PageInfo::New());
 
     page_info->ukm_source_id = first_source_id;
+    page_info->tab_id = 201;
+    page_info->hosts_main_frame = true;
     page_info->is_visible = true;
     page_info->time_since_last_visibility_change =
         base::TimeDelta::FromSeconds(15);
@@ -497,11 +499,15 @@ ProcessInfoVector GetProcessInfo(ukm::TestUkmRecorder& ukm_recorder) {
                                  GURL("http://www.url2022.com/"));
     PageInfoPtr page_info1(resource_coordinator::mojom::PageInfo::New());
     page_info1->ukm_source_id = first_source_id;
+    page_info1->tab_id = 2021;
+    page_info1->hosts_main_frame = true;
     page_info1->time_since_last_visibility_change =
         base::TimeDelta::FromSeconds(11);
     page_info1->time_since_last_navigation = base::TimeDelta::FromSeconds(21);
     PageInfoPtr page_info2(resource_coordinator::mojom::PageInfo::New());
     page_info2->ukm_source_id = second_source_id;
+    page_info2->tab_id = 2022;
+    page_info2->hosts_main_frame = true;
     page_info2->time_since_last_visibility_change =
         base::TimeDelta::FromSeconds(12);
     page_info2->time_since_last_navigation = base::TimeDelta::FromSeconds(22);
@@ -783,4 +789,30 @@ TEST_F(ProcessMemoryMetricsEmitterTest,
   samples = sentinel.GetHistogramSamplesSinceCreation(
       "Memory.Total.RendererPrivateMemoryFootprint");
   EXPECT_EQ(1, samples->TotalCount());
+}
+
+TEST_F(ProcessMemoryMetricsEmitterTest, MainFramePMFEmitted) {
+  GlobalMemoryDumpPtr global_dump(
+      memory_instrumentation::mojom::GlobalMemoryDump::New());
+  base::flat_map<const char*, int64_t> expected_metrics =
+      GetExpectedRendererMetrics();
+  AddPageMetrics(expected_metrics);
+  PopulateRendererMetrics(global_dump, expected_metrics, 201);
+
+  auto entries = test_ukm_recorder_.GetEntriesByName(
+      ukm::builders::Memory_TabFootprint::kEntryName);
+  ASSERT_EQ(entries.size(), 0u);
+
+  scoped_refptr<ProcessMemoryMetricsEmitterFake> emitter(
+      new ProcessMemoryMetricsEmitterFake(test_ukm_recorder_));
+  emitter->ReceivedMemoryDump(
+      true, GlobalMemoryDump::MoveFrom(std::move(global_dump)));
+  emitter->ReceivedProcessInfos(GetProcessInfo(test_ukm_recorder_));
+
+  entries = test_ukm_recorder_.GetEntriesByName(
+      ukm::builders::Memory_TabFootprint::kEntryName);
+  ASSERT_EQ(entries.size(), 1u);
+  const auto* entry = entries.front();
+  ASSERT_TRUE(test_ukm_recorder_.EntryHasMetric(
+      entry, ukm::builders::Memory_TabFootprint::kMainFrameProcessPMFName));
 }

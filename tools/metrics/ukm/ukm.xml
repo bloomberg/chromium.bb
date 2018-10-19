@@ -2776,6 +2776,52 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Memory.TabFootprint">
+  <owner>tommckee@chromium.org</owner>
+  <summary>
+    Measure of memory used by the processes that host an instance of a tab.
+    Intended as a high-level metric for analyzing effective memory use of
+    individual sites.
+  </summary>
+  <metric name="MainFrameProcessPMF">
+    <summary>
+      Measure of private memory, in MB, consumed by the render process dedicated
+      to hosting the main frame. Undefined if the main frame is hosted by a
+      render process used by other tabs. If this is undefined, TabPMF will be
+      undefined.
+    </summary>
+  </metric>
+  <metric name="SubFrameProcessPMF.Excluded">
+    <summary>
+      Number of render processes that were blocked from contributing to
+      SubFrameProcessPMF.Total. A process can have its contribution blocked if
+      the process has responsiblities outside the scope of the relevant tab. If
+      this is non-zero, TabPMF will be undefined.
+    </summary>
+  </metric>
+  <metric name="SubFrameProcessPMF.Included">
+    <summary>
+      Number of render processes that contributed to SubFrameProcessPMF.Total.
+    </summary>
+  </metric>
+  <metric name="SubFrameProcessPMF.Total">
+    <summary>
+      Measure of total private memory, in MB, consumed by the render processes
+      dedicated to hosting sub-frames of the tab. Note that, if a render process
+      hosts frames of other tabs, it isn't considered to be 'dedicated' and so
+      it doesn't contribute to this total.
+    </summary>
+  </metric>
+  <metric name="TabPMF">
+    <summary>
+      Measure of private memory, in MB, consumed by all render processes
+      dedicated to hosting some part of a tab. Undefined if there are processes
+      responsible for hosting parts of this tab while hosting parts of other
+      tabs.
+    </summary>
+  </metric>
+</event>
+
 <event name="Notification">
   <owner>peter@chromium.org</owner>
   <summary>

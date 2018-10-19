@@ -10,6 +10,7 @@
 #include "base/trace_event/memory_dump_request_args.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/tab_footprint_aggregator.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/audio_service_info.h"
 #include "content/public/browser/render_process_host.h"
@@ -546,9 +547,12 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
   uint32_t shared_footprint_total_kb = 0;
   bool emit_metrics_for_all_processes = pid_scope_ == base::kNullProcessId;
 
+  TabFootprintAggregator per_tab_metrics;
+
   base::Time now = base::Time::Now();
   for (const auto& pmd : global_dump_->process_dumps()) {
-    private_footprint_total_kb += pmd.os_dump().private_footprint_kb;
+    uint32_t process_pmf_kb = pmd.os_dump().private_footprint_kb;
+    private_footprint_total_kb += process_pmf_kb;
     shared_footprint_total_kb += pmd.os_dump().shared_footprint_kb;
 
     if (!emit_metrics_for_all_processes && pid_scope_ != pmd.pid())
@@ -562,23 +566,42 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
         break;
       }
       case memory_instrumentation::mojom::ProcessType::RENDERER: {
-        renderer_private_footprint_total_kb +=
-            pmd.os_dump().private_footprint_kb;
-        resource_coordinator::mojom::PageInfoPtr page_info;
-        // If there is more than one frame being hosted in a renderer, don't
-        // emit any URLs. This is not ideal, but UKM does not support
-        // multiple-URLs per entry, and we must have one entry per process.
-        if (process_infos_.find(pmd.pid()) != process_infos_.end()) {
+        renderer_private_footprint_total_kb += process_pmf_kb;
+        resource_coordinator::mojom::PageInfoPtr single_page_info;
+        auto iter = process_infos_.find(pmd.pid());
+        if (iter != process_infos_.end()) {
           const resource_coordinator::mojom::ProcessInfoPtr& process_info =
-              process_infos_[pmd.pid()];
+              iter->second;
+
+          if (emit_metrics_for_all_processes) {
+            // Renderer metrics-by-tab only make sense if we're visiting all
+            // render processes.
+            for (const resource_coordinator::mojom::PageInfoPtr& page_info :
+                 process_info->page_infos) {
+              if (page_info->hosts_main_frame) {
+                per_tab_metrics.AssociateMainFrame(page_info->ukm_source_id,
+                                                   pmd.pid(), page_info->tab_id,
+                                                   process_pmf_kb);
+              } else {
+                per_tab_metrics.AssociateSubFrame(page_info->ukm_source_id,
+                                                  pmd.pid(), page_info->tab_id,
+                                                  process_pmf_kb);
+              }
+            }
+          }
+
+          // If there is more than one frame being hosted in a renderer, don't
+          // emit any per-renderer URLs. This is not ideal, but UKM does not
+          // support multiple-URLs per entry, and we must have one entry per
+          // process.
           if (process_info->page_infos.size() == 1) {
-            page_info = std::move(process_info->page_infos[0]);
+            single_page_info = std::move(process_info->page_infos[0]);
           }
         }
 
         int number_of_extensions = GetNumberOfExtensions(pmd.pid());
         EmitRendererMemoryMetrics(
-            pmd, page_info, GetUkmRecorder(), number_of_extensions,
+            pmd, single_page_info, GetUkmRecorder(), number_of_extensions,
             GetProcessUptime(now, pmd.pid()), emit_metrics_for_all_processes);
         break;
       }
@@ -622,6 +645,9 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
         .SetTotal2_PrivateMemoryFootprint(private_footprint_total_kb / 1024)
         .SetTotal2_SharedMemoryFootprint(shared_footprint_total_kb / 1024)
         .Record(GetUkmRecorder());
-  }
 
+    // Renderer metrics-by-tab only make sense if we're visiting all render
+    // processes.
+    per_tab_metrics.RecordPmfs(GetUkmRecorder());
+  }
 }

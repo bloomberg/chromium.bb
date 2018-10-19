@@ -790,6 +790,8 @@ jumbo_split_static_library("browser") {
     "metrics/sampling_metrics_provider.h",
     "metrics/subprocess_metrics_provider.cc",
     "metrics/subprocess_metrics_provider.h",
+    "metrics/tab_footprint_aggregator.cc",
+    "metrics/tab_footprint_aggregator.h",
     "metrics/testing/metrics_reporting_pref_helper.cc",
     "metrics/testing/metrics_reporting_pref_helper.h",
     "metrics/thread_watcher.cc",
