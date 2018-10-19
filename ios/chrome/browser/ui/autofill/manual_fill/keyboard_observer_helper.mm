@@ -10,8 +10,15 @@
 
 @interface KeyboardObserverHelper ()
 
-// Boolean to check if the keyboard was actually dismissed.
-@property(nonatomic) BOOL keyboardOnScreen;
+// Flag that indicates if the keyboard is on screen.
+@property(nonatomic, getter=isKeyboardOnScreen) BOOL keyboardOnScreen;
+
+// Flag that indicates if the next keyboard did hide notification should be
+// ignored. This happens when the keyboard is on screen and the device rotates.
+// Causing keyboard notifications to be sent, but the keyboard never leaves the
+// screen.
+@property(nonatomic, getter=shouldIgnoreNextKeyboardDidHide)
+    BOOL ignoreNextKeyboardDidHide;
 
 @end
 
@@ -35,6 +42,11 @@
            selector:@selector(keyboardDidHide:)
                name:UIKeyboardDidHideNotification
              object:nil];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(orientationDidChange:)
+               name:UIApplicationDidChangeStatusBarOrientationNotification
+             object:nil];
   }
   return self;
 }
@@ -53,11 +65,25 @@
 }
 
 - (void)keyboardDidHide:(NSNotification*)notification {
+  // If UIKeyboardDidHideNotification was sent because of a orientation
+  // change, reset the flag and ignore.
+  if (self.shouldIgnoreNextKeyboardDidHide) {
+    self.ignoreNextKeyboardDidHide = NO;
+    return;
+  }
   dispatch_async(dispatch_get_main_queue(), ^{
     if (!self.keyboardOnScreen) {
       [self.delegate keyboardDidHide];
     }
   });
+}
+
+- (void)orientationDidChange:(NSNotification*)notification {
+  // If the keyboard is on screen, set the flag to ignore next keyboard did
+  // hide.
+  if (self.keyboardOnScreen) {
+    self.ignoreNextKeyboardDidHide = YES;
+  }
 }
 
 @end
