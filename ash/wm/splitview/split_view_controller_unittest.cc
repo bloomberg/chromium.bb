@@ -1652,6 +1652,7 @@ TEST_F(SplitViewControllerTest, AdjustTransientChildBounds) {
       display::Screen::GetScreen()->GetDisplayNearestWindow(window));
   // Test that the bubble can't be moved outside of its anchor widget.
   EXPECT_TRUE(window_bounds.Contains(bubble_window->GetBoundsInScreen()));
+  EndSplitView();
 }
 
 // Test the tab-dragging related functionalities in tablet mode. Tab(s) can be
