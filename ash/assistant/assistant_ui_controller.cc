@@ -427,12 +427,18 @@ void AssistantUiController::OnPressedEvent(const ui::LocatedEvent& event) {
 
   const gfx::Rect screen_bounds =
       container_view_->GetWidget()->GetWindowBoundsInScreen();
+  const gfx::Rect keyboard_bounds =
+      keyboard::KeyboardController::Get()->GetWorkspaceOccludedBounds();
 
-  // Pressed events outside our widget bounds should result in hiding of
-  // Assistant UI. This event does not fire during a Metalayer session so we
-  // needn't enforce logic to prevent hiding when using the stylus.
-  if (!screen_bounds.Contains(screen_location))
+  // Pressed events outside our widget bounds should result in hiding of the
+  // Assistant UI. The exception to this rule is if the user is interacting
+  // with the virtual keyboard in which case we should not dismiss Assistant UI.
+  // Note that this event does not fire during a Metalayer session so we needn't
+  // enforce logic to prevent hiding when using the stylus.
+  if (!screen_bounds.Contains(screen_location) &&
+      !keyboard_bounds.Contains(screen_location)) {
     HideUi(AssistantSource::kUnspecified);
+  }
 }
 
 void AssistantUiController::UpdateUsableWorkArea(aura::Window* root_window) {
