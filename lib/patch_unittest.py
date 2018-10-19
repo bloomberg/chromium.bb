@@ -186,6 +186,7 @@ FAKE_CHANGE_JSON = {
     'status': 'NEW',
     'subject': 'my super great message',
     'submit_type': 'CHERRY_PICK',
+    'topic': 'some-topic',
     'updated': '2016-09-14 23:02:46.000000000',
 }
 
@@ -1183,6 +1184,7 @@ class TestGerritPatch(TestGitRepoPatch):
         'lastUpdated': 1473894166,
         'number': str(j['_number']),
         'private': False,
+        'topic': 'some-topic',
     }
     ret = cros_patch.GerritPatch.ConvertQueryResults(j, 'host')
     self.assertEqual(ret, exp)
