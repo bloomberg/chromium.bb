@@ -1079,7 +1079,7 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
   // disabled. Otherwise, show the email attached to the profile.
   bool show_email = !is_guest && avatar_item.signed_in && !mirror_enabled;
   const base::string16 hover_button_title =
-      dice_enabled_ && profile->IsSyncAllowed()
+      dice_enabled_ && profile->IsSyncAllowed() && show_email
           ? l10n_util::GetStringUTF16(IDS_PROFILES_SYNC_COMPLETE_TITLE)
           : profile_name;
   HoverButton* profile_card = new HoverButton(
