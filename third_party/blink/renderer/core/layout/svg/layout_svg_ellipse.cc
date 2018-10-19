@@ -33,7 +33,7 @@
 namespace blink {
 
 LayoutSVGEllipse::LayoutSVGEllipse(SVGGeometryElement* node)
-    : LayoutSVGShape(node), use_path_fallback_(false) {}
+    : LayoutSVGShape(node, kSimple), use_path_fallback_(false) {}
 
 LayoutSVGEllipse::~LayoutSVGEllipse() = default;
 
@@ -74,7 +74,7 @@ void LayoutSVGEllipse::UpdateShapeFromElement() {
     ClearPath();
 
   fill_bounding_box_ = FloatRect(center_ - radii_, radii_.ScaledBy(2));
-  stroke_bounding_box_ = CalculateStrokeBoundingBox(kSimple);
+  stroke_bounding_box_ = CalculateStrokeBoundingBox();
 }
 
 void LayoutSVGEllipse::CalculateRadiiAndCenter() {

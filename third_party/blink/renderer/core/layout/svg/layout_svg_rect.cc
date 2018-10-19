@@ -33,7 +33,7 @@
 namespace blink {
 
 LayoutSVGRect::LayoutSVGRect(SVGRectElement* node)
-    : LayoutSVGShape(node), use_path_fallback_(false) {}
+    : LayoutSVGShape(node, kSimple), use_path_fallback_(false) {}
 
 LayoutSVGRect::~LayoutSVGRect() = default;
 
@@ -43,10 +43,8 @@ void LayoutSVGRect::UpdateShapeFromElement() {
   fill_bounding_box_ = FloatRect();
   stroke_bounding_box_ = FloatRect();
   use_path_fallback_ = false;
-  SVGRectElement* rect = ToSVGRectElement(GetElement());
-  DCHECK(rect);
 
-  SVGLengthContext length_context(rect);
+  SVGLengthContext length_context(GetElement());
   const ComputedStyle& style = StyleRef();
   FloatSize bounding_box_size(ToFloatSize(
       length_context.ResolveLengthPair(style.Width(), style.Height(), style)));
@@ -79,7 +77,7 @@ void LayoutSVGRect::UpdateShapeFromElement() {
   fill_bounding_box_ = FloatRect(
       length_context.ResolveLengthPair(svg_style.X(), svg_style.Y(), style),
       bounding_box_size);
-  stroke_bounding_box_ = CalculateStrokeBoundingBox(kSimple);
+  stroke_bounding_box_ = CalculateStrokeBoundingBox();
 }
 
 bool LayoutSVGRect::ShapeDependentStrokeContains(const FloatPoint& point) {
