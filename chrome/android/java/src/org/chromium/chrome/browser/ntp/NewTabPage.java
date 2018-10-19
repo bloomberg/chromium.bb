@@ -325,7 +325,16 @@ public class NewTabPage
         updateSearchProviderHasLogo();
 
         initializeMainView(activity);
-        updateMargins(mTab.getBrowserControlsStateConstraints());
+        getView().addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override
+            public void onViewAttachedToWindow(View view) {
+                updateMargins(mTab.getBrowserControlsStateConstraints());
+                getView().removeOnAttachStateChangeListener(this);
+            }
+
+            @Override
+            public void onViewDetachedFromWindow(View view) {}
+        });
 
         eventReporter.onSurfaceOpened();
 
@@ -384,12 +393,7 @@ public class NewTabPage
         View view = getView();
         ViewGroup.MarginLayoutParams layoutParams =
                 ((ViewGroup.MarginLayoutParams) view.getLayoutParams());
-        if (layoutParams == null) {
-            // We could be updating the margin before the root view is attached to window.
-            layoutParams = new ViewGroup.MarginLayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-            view.setLayoutParams(layoutParams);
-        }
+        if (layoutParams == null) return;
 
         int bottomMargin = 0;
         if (FeatureUtilities.isBottomToolbarEnabled()
