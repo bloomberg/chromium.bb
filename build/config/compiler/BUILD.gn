@@ -1480,12 +1480,16 @@ config("default_warnings") {
         # TODO(thakis): https://crbug.com/604888
         "-Wno-undefined-var-template",
       ]
+
+      if (is_win) {
+        # TODO(thakis): https://crbug.com/617318
+        # Currently goma can not handle case sensitiveness for windows well.
+        cflags += [ "-Wno-nonportable-include-path" ]
+      }
+
       if (current_toolchain == host_toolchain || !use_xcode_clang ||
           xcode_version_int >= 930) {
         cflags += [
-          # TODO(thakis): https://crbug.com/617318
-          "-Wno-nonportable-include-path",
-
           # TODO(hans): https://crbug.com/681136
           "-Wno-unused-lambda-capture",
         ]
