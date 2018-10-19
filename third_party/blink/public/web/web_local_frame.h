@@ -283,11 +283,6 @@ class WebLocalFrame : public WebFrame {
   virtual FallbackContentResult MaybeRenderFallbackContent(
       const WebURLError&) const = 0;
 
-  // When load failure is in a cross-process frame this notifies the frame here
-  // that its owner should render fallback content if any. Only called on owners
-  // that render their own content (i.e., <object>).
-  virtual void RenderFallbackContent() const = 0;
-
   // Called when a navigation is blocked because a Content Security Policy (CSP)
   // is infringed.
   virtual void ReportContentSecurityPolicyViolation(

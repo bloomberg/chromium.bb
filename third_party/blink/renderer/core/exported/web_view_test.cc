@@ -40,7 +40,6 @@
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -3607,8 +3606,7 @@ class CreateChildCounterFrameClient
                                   const WebString& fallback_name,
                                   WebSandboxFlags,
                                   const ParsedFeaturePolicy&,
-                                  const WebFrameOwnerProperties&,
-                                  FrameOwnerElementType) override;
+                                  const WebFrameOwnerProperties&) override;
 
   int Count() const { return count_; }
 
@@ -3623,12 +3621,11 @@ WebLocalFrame* CreateChildCounterFrameClient::CreateChildFrame(
     const WebString& fallback_name,
     WebSandboxFlags sandbox_flags,
     const ParsedFeaturePolicy& container_policy,
-    const WebFrameOwnerProperties& frame_owner_properties,
-    FrameOwnerElementType frame_owner_element_type) {
+    const WebFrameOwnerProperties& frame_owner_properties) {
   ++count_;
   return TestWebFrameClient::CreateChildFrame(
       parent, scope, name, fallback_name, sandbox_flags, container_policy,
-      frame_owner_properties, frame_owner_element_type);
+      frame_owner_properties);
 }
 
 TEST_F(WebViewTest, ChangeDisplayMode) {

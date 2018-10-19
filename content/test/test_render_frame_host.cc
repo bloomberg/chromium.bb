@@ -30,7 +30,6 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
-#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
@@ -108,11 +107,11 @@ void TestRenderFrameHost::InitializeRenderFrameIfNeeded() {
 TestRenderFrameHost* TestRenderFrameHost::AppendChild(
     const std::string& frame_name) {
   std::string frame_unique_name = base::GenerateGUID();
-  OnCreateChildFrame(
-      GetProcess()->GetNextRoutingID(), CreateStubInterfaceProviderRequest(),
-      blink::WebTreeScopeType::kDocument, frame_name, frame_unique_name, false,
-      base::UnguessableToken::Create(), blink::FramePolicy(),
-      FrameOwnerProperties(), blink::FrameOwnerElementType::kIframe);
+  OnCreateChildFrame(GetProcess()->GetNextRoutingID(),
+                     CreateStubInterfaceProviderRequest(),
+                     blink::WebTreeScopeType::kDocument, frame_name,
+                     frame_unique_name, false, base::UnguessableToken::Create(),
+                     blink::FramePolicy(), FrameOwnerProperties());
   return static_cast<TestRenderFrameHost*>(
       child_creation_observer_.last_created_frame());
 }

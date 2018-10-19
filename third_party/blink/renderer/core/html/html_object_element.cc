@@ -288,7 +288,7 @@ void HTMLObjectElement::UpdatePluginInternal() {
     if (!url_.IsEmpty())
       DispatchErrorEvent();
     if (HasFallbackContent())
-      RenderFallbackContent(ContentFrame());
+      RenderFallbackContent();
   } else {
     if (IsErrorplaceholder())
       DispatchErrorEvent();
@@ -340,8 +340,7 @@ void HTMLObjectElement::ReattachFallbackContent() {
     LazyReattachIfAttached();
 }
 
-void HTMLObjectElement::RenderFallbackContent(Frame* frame) {
-  DCHECK(!frame || frame == ContentFrame());
+void HTMLObjectElement::RenderFallbackContent() {
   if (UseFallbackContent())
     return;
 

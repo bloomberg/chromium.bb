@@ -73,7 +73,6 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/manifest/manifest_manager.mojom.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
@@ -607,8 +606,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebString& fallback_name,
       blink::WebSandboxFlags sandbox_flags,
       const blink::ParsedFeaturePolicy& container_policy,
-      const blink::WebFrameOwnerProperties& frame_owner_properties,
-      blink::FrameOwnerElementType frame_owner_element_type) override;
+      const blink::WebFrameOwnerProperties& frame_owner_properties) override;
   blink::WebFrame* FindFrame(const blink::WebString& name) override;
   void DidChangeOpener(blink::WebFrame* frame) override;
   void FrameDetached(DetachType type) override;
@@ -692,7 +690,6 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebURLRequest::PreviewsState GetPreviewsStateForFrame() const override;
   void DidBlockFramebust(const blink::WebURL& url) override;
   base::UnguessableToken GetDevToolsFrameToken() override;
-  void RenderFallbackContentInParentProcess() override;
   void AbortClientNavigation() override;
   void DidChangeSelection(bool is_empty_selection) override;
   bool HandleCurrentKeyboardEvent() override;
@@ -1077,7 +1074,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnNotifyUserActivation();
   void OnMediaPlayerActionAt(const gfx::PointF&,
                              const blink::WebMediaPlayerAction&);
-  void OnRenderFallbackContent() const;
 
   void PostMessageEvent(FrameMsg_PostMessage_Params params);
 

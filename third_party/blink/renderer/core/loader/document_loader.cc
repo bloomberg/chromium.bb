@@ -433,7 +433,7 @@ void DocumentLoader::NotifyFinished(Resource* resource) {
 
 void DocumentLoader::LoadFailed(const ResourceError& error) {
   if (!error.IsCancellation() && frame_->Owner())
-    frame_->Owner()->RenderFallbackContent(frame_);
+    frame_->Owner()->RenderFallbackContent();
   fetcher_->ClearResourcesFromPreviousFetcher();
 
   WebHistoryCommitType history_commit_type = LoadTypeToCommitType(load_type_);
@@ -701,7 +701,7 @@ void DocumentLoader::ResponseReceived(
 
   if (frame_->Owner() && response_.IsHTTP() &&
       !CORS::IsOkStatus(response_.HttpStatusCode()))
-    frame_->Owner()->RenderFallbackContent(frame_);
+    frame_->Owner()->RenderFallbackContent();
 }
 
 void DocumentLoader::CommitNavigation(const AtomicString& mime_type,

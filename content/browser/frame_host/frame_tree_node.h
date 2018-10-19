@@ -20,7 +20,6 @@
 #include "content/common/content_export.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/common/frame_replication_state.h"
-#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/frame/user_activation_state.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
@@ -77,8 +76,7 @@ class CONTENT_EXPORT FrameTreeNode {
                 const std::string& unique_name,
                 bool is_created_by_script,
                 const base::UnguessableToken& devtools_frame_token,
-                const FrameOwnerProperties& frame_owner_properties,
-                blink::FrameOwnerElementType owner_type);
+                const FrameOwnerProperties& frame_owner_properties);
 
   ~FrameTreeNode();
 
