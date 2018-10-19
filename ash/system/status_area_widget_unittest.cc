@@ -333,7 +333,7 @@ TEST_F(UnifiedStatusAreaWidgetTest, Basics) {
   EXPECT_TRUE(status->unified_system_tray());
 }
 
-class StatusAreaVirtualKeyboardTest : public AshTestBase {
+class StatusAreaWidgetVirtualKeyboardTest : public AshTestBase {
  protected:
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -352,50 +352,53 @@ class StatusAreaVirtualKeyboardTest : public AshTestBase {
   }
 };
 
-TEST_F(StatusAreaVirtualKeyboardTest, ClickingHidesVirtualKeyboard) {
+TEST_F(StatusAreaWidgetVirtualKeyboardTest, ClickingHidesVirtualKeyboard) {
   keyboard_controller()->ShowKeyboard(false /* locked */);
   keyboard_controller()->NotifyKeyboardWindowLoaded();
   ASSERT_TRUE(keyboard_controller()->IsKeyboardVisible());
 
-  StatusAreaWidget* status = StatusAreaWidgetTestHelper::GetStatusAreaWidget();
-  ui::test::EventGenerator generator(
-      status->GetNativeWindow()->GetRootWindow(),
-      status->GetWindowBoundsInScreen().CenterPoint());
-  generator.ClickLeftButton();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->set_current_location(
+      StatusAreaWidgetTestHelper::GetStatusAreaWidget()
+          ->GetWindowBoundsInScreen()
+          .CenterPoint());
+  generator->ClickLeftButton();
 
   // Times out if test fails.
   ASSERT_TRUE(keyboard::WaitUntilHidden());
 }
 
-TEST_F(StatusAreaVirtualKeyboardTest, TappingHidesVirtualKeyboard) {
+TEST_F(StatusAreaWidgetVirtualKeyboardTest, TappingHidesVirtualKeyboard) {
   keyboard_controller()->ShowKeyboard(false /* locked */);
   keyboard_controller()->NotifyKeyboardWindowLoaded();
   ASSERT_TRUE(keyboard_controller()->IsKeyboardVisible());
 
-  StatusAreaWidget* status = StatusAreaWidgetTestHelper::GetStatusAreaWidget();
-  ui::test::EventGenerator generator(
-      status->GetNativeWindow()->GetRootWindow(),
-      status->GetWindowBoundsInScreen().CenterPoint());
-  generator.PressTouch();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->set_current_location(
+      StatusAreaWidgetTestHelper::GetStatusAreaWidget()
+          ->GetWindowBoundsInScreen()
+          .CenterPoint());
+  generator->PressTouch();
 
   // Times out if test fails.
   ASSERT_TRUE(keyboard::WaitUntilHidden());
 }
 
-TEST_F(StatusAreaVirtualKeyboardTest, DoesNotHideLockedVirtualKeyboard) {
+TEST_F(StatusAreaWidgetVirtualKeyboardTest, DoesNotHideLockedVirtualKeyboard) {
   keyboard_controller()->ShowKeyboard(true /* locked */);
   keyboard_controller()->NotifyKeyboardWindowLoaded();
   ASSERT_TRUE(keyboard_controller()->IsKeyboardVisible());
 
-  StatusAreaWidget* status = StatusAreaWidgetTestHelper::GetStatusAreaWidget();
-  ui::test::EventGenerator generator(
-      status->GetNativeWindow()->GetRootWindow(),
-      status->GetWindowBoundsInScreen().CenterPoint());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->set_current_location(
+      StatusAreaWidgetTestHelper::GetStatusAreaWidget()
+          ->GetWindowBoundsInScreen()
+          .CenterPoint());
 
-  generator.ClickLeftButton();
+  generator->ClickLeftButton();
   EXPECT_FALSE(keyboard::IsKeyboardHiding());
 
-  generator.PressTouch();
+  generator->PressTouch();
   EXPECT_FALSE(keyboard::IsKeyboardHiding());
 }
 
