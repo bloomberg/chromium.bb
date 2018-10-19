@@ -36290,6 +36290,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="HTTP-layer external estimate provider"/>
   <int value="6" label="Transport-layer cached"/>
   <int value="7" label="Transport-layer default"/>
+  <int value="8" label="H2 pings"/>
 </enum>
 
 <enum name="NTPBackgroundCustomizationAvailability">

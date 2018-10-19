@@ -1692,4 +1692,16 @@ void NetworkQualityEstimator::SimulateNetworkQualityChangeForTesting(
   ComputeEffectiveConnectionType();
 }
 
+void NetworkQualityEstimator::RecordSpdyPingLatency(
+    const HostPortPair& host_port_pair,
+    base::TimeDelta rtt) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_LT(nqe::internal::INVALID_RTT_THROUGHPUT, rtt.InMilliseconds());
+
+  Observation observation(rtt.InMilliseconds(), tick_clock_->NowTicks(),
+                          current_network_id_.signal_strength,
+                          NETWORK_QUALITY_OBSERVATION_SOURCE_H2_PINGS);
+  AddAndNotifyObserversOfRTT(observation);
+}
+
 }  // namespace net
