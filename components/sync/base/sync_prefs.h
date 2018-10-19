@@ -216,9 +216,8 @@ class SyncPrefs : public CryptoSyncPrefs,
   void GetNigoriSpecificsForPassphraseTransition(
       sync_pb::NigoriSpecifics* nigori_specifics) const override;
 
-  // Gets the local sync backend enabled state and its database location.
+  // Gets the local sync backend enabled state.
   bool IsLocalSyncEnabled() const;
-  base::FilePath GetLocalSyncBackendDir() const;
 
   // Returns a ModelTypeSet based on |types| expanded to include pref groups
   // (see |pref_groups_|), but as a subset of |registered_types|.
