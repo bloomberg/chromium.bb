@@ -372,9 +372,15 @@ void FileSystemDispatcher::Write(const KURL& path,
   mojom::blink::FileSystemOperationListenerPtr listener_ptr;
   mojom::blink::FileSystemOperationListenerRequest request =
       mojo::MakeRequest(&listener_ptr);
-  op_listeners_.AddBinding(std::make_unique<WriteListener>(
-                               success_callback, std::move(error_callback)),
-                           std::move(request));
+  op_listeners_.AddBinding(
+      std::make_unique<WriteListener>(
+          WTF::BindRepeating(&FileSystemDispatcher::DidWrite,
+                             WrapWeakPersistent(this), success_callback,
+                             operation_id),
+          WTF::Bind(&FileSystemDispatcher::WriteErrorCallback,
+                    WrapWeakPersistent(this), std::move(error_callback),
+                    operation_id)),
+      std::move(request));
 
   GetFileSystemManager().Write(path, blob_id, offset, std::move(op_request),
                                std::move(listener_ptr));
@@ -518,6 +524,23 @@ void FileSystemDispatcher::DidTruncate(int operation_id,
   if (error_code != base::File::FILE_ERROR_ABORT)
     RemoveOperationPtr(operation_id);
   std::move(callback).Run(error_code);
+}
+
+void FileSystemDispatcher::DidWrite(const WriteCallback& callback,
+                                    int operation_id,
+                                    int64_t bytes,
+                                    bool complete) {
+  callback.Run(bytes, complete);
+  if (complete)
+    RemoveOperationPtr(operation_id);
+}
+
+void FileSystemDispatcher::WriteErrorCallback(StatusCallback callback,
+                                              int operation_id,
+                                              base::File::Error error) {
+  std::move(callback).Run(error);
+  if (error != base::File::FILE_ERROR_ABORT)
+    RemoveOperationPtr(operation_id);
 }
 
 void FileSystemDispatcher::DidCancel(StatusCallback callback,
