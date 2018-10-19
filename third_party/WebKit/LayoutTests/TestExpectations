@@ -5334,4 +5334,4 @@ crbug.com/891155 [ Linux ] fast/events/middleClickAutoscroll-drag.html [ Failure
 crbug.com/895777 external/wpt/infrastructure/assumptions/blank.html [ Failure Crash ]
 
 #Sheriff 2018-10-18
-crbug.com/896765 [ Linux Mac ] http/tests/performance-timing/element-timing/observe-child-element.html [ Failure Pass ]
+crbug.com/896765 [ Linux Mac Win ] http/tests/performance-timing/element-timing/observe-child-element.html [ Failure Pass ]
