@@ -272,10 +272,11 @@ class MockCustomLinksManager : public CustomLinksManager {
   MOCK_CONST_METHOD0(IsInitialized, bool());
   MOCK_CONST_METHOD0(GetLinks, const std::vector<CustomLinksManager::Link>&());
   MOCK_METHOD2(AddLink, bool(const GURL& url, const base::string16& title));
-  MOCK_METHOD3(UpdateLink,
+  MOCK_METHOD4(UpdateLink,
                bool(const GURL& url,
                     const GURL& new_url,
-                    const base::string16& new_title));
+                    const base::string16& new_title,
+                    bool is_user_action));
   MOCK_METHOD1(DeleteLink, bool(const GURL& url));
   MOCK_METHOD0(UndoAction, bool());
   MOCK_METHOD1(RegisterCallbackForOnChanged,
@@ -1501,7 +1502,8 @@ TEST_P(MostVisitedSitesWithCustomLinksTest,
 
   // Initialize custom links and complete a custom link action.
   EXPECT_CALL(*mock_custom_links_, Initialize(_)).WillOnce(Return(true));
-  EXPECT_CALL(*mock_custom_links_, UpdateLink(_, _, _)).WillOnce(Return(true));
+  EXPECT_CALL(*mock_custom_links_, UpdateLink(_, _, _, _))
+      .WillOnce(Return(true));
   EXPECT_CALL(*mock_custom_links_, IsInitialized())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_custom_links_, GetLinks())
@@ -1509,7 +1511,8 @@ TEST_P(MostVisitedSitesWithCustomLinksTest,
   EXPECT_CALL(mock_observer_, OnURLsAvailable(_))
       .WillOnce(SaveArg<0>(&sections));
   most_visited_sites_->UpdateCustomLink(GURL("test.com"), GURL("test.com"),
-                                        base::UTF8ToUTF16("test"));
+                                        base::UTF8ToUTF16("test"),
+                                        /*is_user_action=*/true);
   base::RunLoop().RunUntilIdle();
   ASSERT_THAT(
       sections.at(SectionType::PERSONALIZED),
