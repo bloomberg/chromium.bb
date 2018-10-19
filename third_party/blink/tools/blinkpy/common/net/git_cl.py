@@ -71,10 +71,13 @@ class GitCL(object):
             builders_by_bucket = {bucket: builders}
         else:
             builders_by_bucket = self._group_builders_by_bucket(builders)
-
         # Sort both buckets and builders to ensure stable unit tests.
         for bucket in sorted(builders_by_bucket):
-            command = ['try', '-B', bucket]
+            command = ['try']
+            # Only specify bucket if it's explicitly given to us. Otherwise,
+            # `git cl` will figure out the appropriate bucket.
+            if bucket:
+                command.extend(['-B', bucket])
             for builder in sorted(builders_by_bucket[bucket]):
                 command.extend(['-b', builder])
             self.run(command)
@@ -84,7 +87,7 @@ class GitCL(object):
         for builder in builders:
             bucket = self._host.builders.bucket_for_builder(builder)
             builders_by_bucket[bucket].append(builder)
-        return builders_by_bucket
+        return dict(builders_by_bucket)
 
     def get_issue_number(self):
         """Returns the issue number as a string, or "None"."""
