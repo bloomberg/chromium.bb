@@ -14,6 +14,7 @@
 #include "base/time/time_to_iso8601.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_test_utils.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
@@ -482,7 +483,14 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, ShowConfirmationDialogAndProceed) {
   EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, ShowConfirmationDialogAndCancel) {
+#if defined(OS_CHROMEOS)
+// Flaky on ChromeOS. crbug.com/895120
+#define MAYBE_ShowConfirmationDialogAndCancel \
+  DISABLED_ShowConfirmationDialogAndCancel
+#else
+#define MAYBE_ShowConfirmationDialogAndCancel ShowConfirmationDialogAndCancel
+#endif
+IN_PROC_BROWSER_TEST_F(DemoSetupTest, MAYBE_ShowConfirmationDialogAndCancel) {
   EXPECT_FALSE(IsConfirmationDialogShown());
 
   InvokeDemoModeWithAccelerator();
