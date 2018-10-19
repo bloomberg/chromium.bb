@@ -2059,6 +2059,8 @@ enum WebFeature {
   kDateToLocaleDateString = 2606,
   kDateToLocaleTimeString = 2607,
   kMalformedCSP = 2608,
+  kV8AttemptOverrideReadOnlyOnPrototypeSloppy = 2609,
+  kV8AttemptOverrideReadOnlyOnPrototypeStrict = 2610,
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
   // Also, run update_use_counter_feature_enum.py in
