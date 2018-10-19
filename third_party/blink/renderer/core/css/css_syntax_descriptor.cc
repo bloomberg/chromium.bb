@@ -210,7 +210,7 @@ const CSSValue* ConsumeSyntaxComponent(const CSSSyntaxComponent& syntax,
         return nullptr;
       list->Append(*value);
     }
-    return list;
+    return list->length() ? list : nullptr;
   }
   if (syntax.GetRepeat() == CSSSyntaxRepeat::kCommaSeparated) {
     CSSValueList* list = CSSValueList::CreateCommaSeparated();
@@ -220,7 +220,7 @@ const CSSValue* ConsumeSyntaxComponent(const CSSSyntaxComponent& syntax,
         return nullptr;
       list->Append(*value);
     } while (CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(range));
-    return list;
+    return list->length() ? list : nullptr;
   }
   const CSSValue* result = ConsumeSingleType(syntax, range, context);
   if (!range.AtEnd())
