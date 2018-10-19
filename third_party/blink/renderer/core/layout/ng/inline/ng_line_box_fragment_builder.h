@@ -196,8 +196,6 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   NGLineHeightMetrics metrics_;
   Vector<NGPositionedFloat> positioned_floats_;
 
-  scoped_refptr<NGInlineBreakToken> break_token_;
-
   TextDirection base_direction_;
 
   DISALLOW_COPY_AND_ASSIGN(NGLineBoxFragmentBuilder);

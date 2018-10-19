@@ -47,10 +47,11 @@ NGFragmentBuilder::NGFragmentBuilder(NGLayoutInputNode node,
                                      TextDirection direction)
     : NGContainerFragmentBuilder(std::move(style), writing_mode, direction),
       node_(node),
-      layout_object_(node.GetLayoutBox()),
       box_type_(NGPhysicalFragment::NGBoxType::kNormalBox),
       is_old_layout_root_(false),
-      did_break_(false) {}
+      did_break_(false) {
+  layout_object_ = node.GetLayoutBox();
+}
 
 NGFragmentBuilder::NGFragmentBuilder(LayoutObject* layout_object,
                                      scoped_refptr<const ComputedStyle> style,
@@ -58,10 +59,11 @@ NGFragmentBuilder::NGFragmentBuilder(LayoutObject* layout_object,
                                      TextDirection direction)
     : NGContainerFragmentBuilder(std::move(style), writing_mode, direction),
       node_(nullptr),
-      layout_object_(layout_object),
       box_type_(NGPhysicalFragment::NGBoxType::kNormalBox),
       is_old_layout_root_(false),
-      did_break_(false) {}
+      did_break_(false) {
+  layout_object_ = layout_object;
+}
 
 NGFragmentBuilder::~NGFragmentBuilder() = default;
 

@@ -213,13 +213,10 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
       HashMap<const LayoutObject*, FragmentPair>* inline_container_fragments,
       NGLogicalSize* container_size);
 
-  LayoutObject* GetLayoutObject() { return layout_object_; }
-
  private:
   scoped_refptr<NGLayoutResult> ToBoxFragment(WritingMode);
 
   NGLayoutInputNode node_;
-  LayoutObject* layout_object_;
 
   LayoutUnit intrinsic_block_size_;
   NGBoxStrut borders_;
