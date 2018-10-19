@@ -205,8 +205,9 @@ class NET_EXPORT UDPSocketWin : public base::win::ObjectWatcher::Delegate {
   //   alive by the caller until the callback is placed.
   // |callback| is the callback on completion of the RecvFrom.
   // Returns a net error code, or ERR_IO_PENDING if the IO is in progress.
-  // If ERR_IO_PENDING is returned, the caller must keep |buf| and |address|,
-  // alive until the callback is called.
+  // If ERR_IO_PENDING is returned, this socket takes a ref to |buf| to keep
+  // it alive until the data is received. However, the caller must keep
+  // |address| alive until the callback is called.
   int RecvFrom(IOBuffer* buf,
                int buf_len,
                IPEndPoint* address,
@@ -218,8 +219,9 @@ class NET_EXPORT UDPSocketWin : public base::win::ObjectWatcher::Delegate {
   // |address| is the recipient address.
   // |callback| is the user callback function to call on complete.
   // Returns a net error code, or ERR_IO_PENDING if the IO is in progress.
-  // If ERR_IO_PENDING is returned, the caller must keep |buf| and |address|
-  // alive until the callback is called.
+  // If ERR_IO_PENDING is returned, this socket copies |address| for
+  // asynchronous sending, and takes a ref to |buf| to keep it alive until the
+  // data is sent.
   int SendTo(IOBuffer* buf,
              int buf_len,
              const IPEndPoint& address,
