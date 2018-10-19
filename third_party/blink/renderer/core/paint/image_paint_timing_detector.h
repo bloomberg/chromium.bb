@@ -69,8 +69,8 @@ class CORE_EXPORT ImagePaintTimingDetector final
                    const PaintLayer& painting_layer);
   void OnPrePaintFinished();
   void NotifyNodeRemoved(DOMNodeId);
-  base::TimeTicks LargestImagePaint() { return largest_image_paint_; }
-  base::TimeTicks LastImagePaint() { return last_image_paint_; }
+  base::TimeTicks LargestImagePaint() const { return largest_image_paint_; }
+  base::TimeTicks LastImagePaint() const { return last_image_paint_; }
   void Trace(blink::Visitor*);
 
  private:

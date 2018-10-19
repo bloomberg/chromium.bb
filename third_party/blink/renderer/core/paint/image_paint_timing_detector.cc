@@ -156,6 +156,19 @@ void ImagePaintTimingDetector::NotifyNodeRemoved(DOMNodeId node_id) {
     // bother to remove these records from largest_image_heap_ or
     // latest_image_heap_, to reduce computation.
     id_record_map_.erase(node_id);
+
+    if (id_record_map_.size() == 0) {
+      const bool largest_image_paint_invalidated =
+          largest_image_paint_ != base::TimeTicks();
+      const bool last_image_paint_invalidated =
+          last_image_paint_ != base::TimeTicks();
+      if (largest_image_paint_invalidated)
+        largest_image_paint_ = base::TimeTicks();
+      if (last_image_paint_invalidated)
+        last_image_paint_ = base::TimeTicks();
+      if (largest_image_paint_invalidated || last_image_paint_invalidated)
+        frame_view_->GetPaintTracker().DidChangePerformanceTiming();
+    }
   }
 }
 
