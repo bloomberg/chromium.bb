@@ -2841,7 +2841,6 @@ jumbo_split_static_library("browser") {
       "resource_coordinator/decision_details.h",
       "resource_coordinator/discard_metrics_lifecycle_unit_observer.cc",
       "resource_coordinator/discard_metrics_lifecycle_unit_observer.h",
-      "resource_coordinator/discard_reason.h",
       "resource_coordinator/intervention_policy_database.cc",
       "resource_coordinator/intervention_policy_database.h",
       "resource_coordinator/leveldb_site_characteristics_database.cc",
