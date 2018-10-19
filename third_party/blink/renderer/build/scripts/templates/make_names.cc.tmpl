@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
-namespace {{namespace}}Names {
+namespace {{namespace}} {
 
 void* {{suffix}}NamesStorage[k{{suffix}}NamesCount * ((sizeof(AtomicString) + sizeof(void *) - 1) / sizeof(void *))];
 
@@ -40,5 +40,5 @@ void init{{suffix}}() {
   }
 }
 
-} // {{namespace}}Names
-} // namespace blink
+}  // namespace {{namespace}}
+}  // namespace blink
