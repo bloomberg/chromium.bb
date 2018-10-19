@@ -1,15 +1,15 @@
 <!doctype HTML>
 
 <!--
-Runs an acquireDisplayLock, the callback throws.
+Runs an acquireDisplayLock, which suspends the context.
+The associated promise should never resolve.
 -->
 
 <style>
 #parent {
-  contain: paint;
   width: 100px;
   height: 100px;
-  background: lightblue;
+  contain: content;
 }
 </style>
 
@@ -20,10 +20,6 @@ Runs an acquireDisplayLock, the callback throws.
 if (window.testRunner)
   window.testRunner.waitUntilDone();
 
-function throwingFunction(context) {
-  throw "Error";
-}
-
 function finishTest(status_string) {
   if (document.getElementById("log").innerHTML === "")
     document.getElementById("log").innerHTML = status_string;
@@ -32,10 +28,16 @@ function finishTest(status_string) {
 }
 
 function acquire() {
-  document.getElementById("parent").acquireDisplayLock(throwingFunction).then(
+  document.getElementById("parent").acquireDisplayLock(
+    (context) => {
+      context.suspend();
+  }).then(
     () => { finishTest("FAIL"); },
-    () => { finishTest("PASS"); });
+    () => { finishTest("FAIL"); });
+  setTimeout(() => { finishTest("PASS"); }, 50);
 }
 
 window.onload = acquire;
 </script>
+
+
