@@ -2271,6 +2271,9 @@ def PushImages(board, archive_url, dryrun, profile, sign_types=(),
   if sign_types:
     log_cmd.append('--sign-types=%s' % ' '.join(sign_types))
 
+  if buildroot:
+    log_cmd.append('--buildroot=%s' % buildroot)
+
   log_cmd.append(archive_url)
   logging.info('Running: %s', cros_build_lib.CmdToStr(log_cmd))
 
