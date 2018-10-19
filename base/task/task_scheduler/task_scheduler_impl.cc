@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
-#include "base/feature_list.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/stl_util.h"
@@ -28,27 +27,6 @@
 
 namespace base {
 namespace internal {
-
-namespace {
-
-// Returns worker pool EnvironmentType for given arguments |is_background| and
-// |is_blocking|.
-EnvironmentType GetEnvironmentIndex(bool is_background, bool is_blocking) {
-  if (is_background) {
-    if (is_blocking)
-      return BACKGROUND_BLOCKING;
-    return BACKGROUND;
-  }
-
-  if (is_blocking)
-    return FOREGROUND_BLOCKING;
-  return FOREGROUND;
-}
-
-}  // namespace
-
-const base::Feature kMergeBlockingNonBlockingPools = {
-    "MergeBlockingNonBlockingPools", base::FEATURE_DISABLED_BY_DEFAULT};
 
 TaskSchedulerImpl::TaskSchedulerImpl(StringPiece histogram_label)
     : TaskSchedulerImpl(histogram_label,
@@ -87,20 +65,22 @@ TaskSchedulerImpl::TaskSchedulerImpl(
         task_tracker_->GetTrackedRef(), &delayed_task_manager_));
   }
 
-  // Map environment indexes to pools. |kMergeBlockingNonBlockingPools| is
-  // assumed to be disabled.
-  environment_to_worker_pool_[FOREGROUND] =
-      worker_pools_[GetEnvironmentIndex(false, false)].get();
+  // Map environment indexes to pools.
+  environment_to_worker_pool_[FOREGROUND] = worker_pools_[FOREGROUND].get();
   environment_to_worker_pool_[FOREGROUND_BLOCKING] =
-      worker_pools_[GetEnvironmentIndex(false, true)].get();
-  environment_to_worker_pool_[BACKGROUND] =
-      worker_pools_[GetEnvironmentIndex(
-                        CanUseBackgroundPriorityForSchedulerWorker(), false)]
-          .get();
-  environment_to_worker_pool_[BACKGROUND_BLOCKING] =
-      worker_pools_[GetEnvironmentIndex(
-                        CanUseBackgroundPriorityForSchedulerWorker(), true)]
-          .get();
+      worker_pools_[FOREGROUND_BLOCKING].get();
+
+  if (CanUseBackgroundPriorityForSchedulerWorker()) {
+    environment_to_worker_pool_[BACKGROUND] = worker_pools_[BACKGROUND].get();
+    environment_to_worker_pool_[BACKGROUND_BLOCKING] =
+        worker_pools_[BACKGROUND_BLOCKING].get();
+  } else {
+    // On platforms without background thread priority, tasks posted to the
+    // background environment are run by foreground pools.
+    environment_to_worker_pool_[BACKGROUND] = worker_pools_[FOREGROUND].get();
+    environment_to_worker_pool_[BACKGROUND_BLOCKING] =
+        worker_pools_[FOREGROUND_BLOCKING].get();
+  }
 }
 
 TaskSchedulerImpl::~TaskSchedulerImpl() {
@@ -118,26 +98,6 @@ void TaskSchedulerImpl::Start(
                                     "AllTasksUserBlocking") == "true") {
     all_tasks_user_blocking_.Set();
   }
-
-  const bool use_blocking_pools =
-      !base::FeatureList::IsEnabled(kMergeBlockingNonBlockingPools);
-
-  // Remap environment indexes to pools with |use_blocking_pools|.
-  // TODO(etiennep): This is only necessary because of the kMergeBlockingNonBlockingPools
-  // experiment. Remove this after the experiment.
-  environment_to_worker_pool_[FOREGROUND] =
-      worker_pools_[GetEnvironmentIndex(false, false)].get();
-  environment_to_worker_pool_[FOREGROUND_BLOCKING] =
-      worker_pools_[GetEnvironmentIndex(false, use_blocking_pools)].get();
-  environment_to_worker_pool_[BACKGROUND] =
-      worker_pools_[GetEnvironmentIndex(
-                        CanUseBackgroundPriorityForSchedulerWorker(), false)]
-          .get();
-  environment_to_worker_pool_[BACKGROUND_BLOCKING] =
-      worker_pools_[GetEnvironmentIndex(
-                        CanUseBackgroundPriorityForSchedulerWorker(),
-                        use_blocking_pools)]
-          .get();
 
   // Start the service thread. On platforms that support it (POSIX except NaCL
   // SFI), the service thread runs a MessageLoopForIO which is used to support
@@ -193,10 +153,10 @@ void TaskSchedulerImpl::Start(
       max_best_effort_tasks_in_foreground_pool, service_thread_task_runner,
       scheduler_worker_observer, worker_environment);
   const int max_best_effort_tasks_in_foreground_blocking_pool = std::max(
-      1, std::min(
-             init_params.background_blocking_worker_pool_params.max_tasks(),
-             init_params.foreground_blocking_worker_pool_params.max_tasks() /
-                 2));
+      1,
+      std::min(
+          init_params.background_blocking_worker_pool_params.max_tasks(),
+          init_params.foreground_blocking_worker_pool_params.max_tasks() / 2));
   worker_pools_[FOREGROUND_BLOCKING]->Start(
       init_params.foreground_blocking_worker_pool_params,
       max_best_effort_tasks_in_foreground_blocking_pool,
