@@ -73,6 +73,8 @@ void CloseGpuMemoryBufferHandle(const gfx::GpuMemoryBufferHandle& handle) {
 #endif
 
 // Returns true if the CPU is an Intel Kaby Lake or later.
+// cpu platform id's are referenced from the following file in kernel source
+// arch/x86/include/asm/intel-family.h
 bool IsKabyLakeOrLater() {
   constexpr int kPentiumAndLaterFamily = 0x06;
   constexpr int kFirstKabyLakeModelId = 0x8E;
@@ -83,6 +85,15 @@ bool IsKabyLakeOrLater() {
   return is_kaby_lake_or_later;
 }
 
+bool IsGeminiLakeOrLater() {
+  constexpr int kPentiumAndLaterFamily = 0x06;
+  constexpr int kGeminiLakeModelId = 0x7A;
+  static base::CPU cpuid;
+  static bool is_geminilake_or_later =
+      cpuid.family() == kPentiumAndLaterFamily &&
+      cpuid.model() >= kGeminiLakeModelId;
+  return is_geminilake_or_later;
+}
 }  // namespace
 
 #define RETURN_AND_NOTIFY_ON_FAILURE(result, log, error_code, ret) \
@@ -620,9 +631,10 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
     surfaces_available_.Signal();
   }
 
-  decode_using_client_picture_buffers_ = !va_surface_ids.empty() &&
-                                         IsKabyLakeOrLater() &&
-                                         profile_ == VP9PROFILE_PROFILE0;
+  decode_using_client_picture_buffers_ =
+      !va_surface_ids.empty() &&
+      (IsKabyLakeOrLater() || IsGeminiLakeOrLater()) &&
+      profile_ == VP9PROFILE_PROFILE0;
 
   // If we have some |va_surface_ids|, use them for decode, otherwise ask
   // |vaapi_wrapper_| to allocate them for us.
