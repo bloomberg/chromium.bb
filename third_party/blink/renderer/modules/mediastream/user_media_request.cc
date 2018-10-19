@@ -298,12 +298,12 @@ WebMediaConstraints ParseOptions(ExecutionContext* context,
   if (options.IsNull()) {
     // Do nothing.
   } else if (options.IsMediaTrackConstraints()) {
-    constraints = MediaConstraintsImpl::Create(
+    constraints = media_constraints_impl::Create(
         context, options.GetAsMediaTrackConstraints(), error_state);
   } else {
     DCHECK(options.IsBoolean());
     if (options.GetAsBoolean()) {
-      constraints = MediaConstraintsImpl::Create();
+      constraints = media_constraints_impl::Create();
     }
   }
 
