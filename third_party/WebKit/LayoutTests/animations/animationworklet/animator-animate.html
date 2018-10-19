@@ -8,14 +8,8 @@
 </style>
 <script id="simple_animate" type="text/worklet">
 registerAnimator("test_animator", class {
-  constructor() {
-    console.log("test animator constructor called.");
-  }
   animate(currentTime, effect) {
-    if (!this.animated)
-        console.log("test animator animate called.");
-    effect.localTime = 0;
-    this.animated = true;
+    effect.localTime = 500;
   }
 });
 </script>
@@ -32,12 +26,14 @@ if (window.testRunner) {
 runInAnimationWorklet(
   document.getElementById('simple_animate').textContent
 ).then(_ => {
-  const effect = new KeyframeEffect(document.getElementById("target"), [{ opacity: 0 }], { duration: 1000 });
+  const target = document.getElementById('target');
+  const effect = new KeyframeEffect(target, [{ opacity: 0 }], { duration: 1000 });
   const animation = new WorkletAnimation('test_animator', [effect], document.timeline, {});
   animation.play();
 
   if (window.testRunner) {
     waitTwoAnimationFrames( _ => {
+      console.log(`opacity of target is ${getComputedStyle(target).opacity}`);
       testRunner.notifyDone();
     });
   }
