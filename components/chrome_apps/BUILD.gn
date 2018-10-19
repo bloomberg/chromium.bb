@@ -18,8 +18,6 @@ grit("resources") {
 component("chrome_apps") {
   sources = [
     "chrome_apps_export.h",
-    "chrome_apps_resource_util.cc",
-    "chrome_apps_resource_util.h",
   ]
 
   defines = [ "CHROME_APPS_IMPLEMENTATION" ]

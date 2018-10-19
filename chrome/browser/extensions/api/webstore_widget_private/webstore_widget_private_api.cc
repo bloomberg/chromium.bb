@@ -7,16 +7,11 @@
 #include <memory>
 #include <utility>
 
-#include "base/values.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/extensions/api/webstore_widget_private/app_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/webstore_widget_private.h"
-#include "chrome/grit/generated_resources.h"
 #include "extensions/browser/extension_function_constants.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/webui/web_ui_util.h"
 
 namespace extensions {
 namespace api {
@@ -25,43 +20,7 @@ namespace {
 
 const char kGoogleCastApiExtensionId[] = "mafeflapfdfljijmlienjedomfjfmhpd";
 
-void SetL10nString(base::DictionaryValue* dict, const std::string& string_id,
-                   int resource_id) {
-  dict->SetString(string_id, l10n_util::GetStringUTF16(resource_id));
-}
-
 }  // namespace
-
-WebstoreWidgetPrivateGetStringsFunction::
-    WebstoreWidgetPrivateGetStringsFunction() {
-}
-
-WebstoreWidgetPrivateGetStringsFunction::
-    ~WebstoreWidgetPrivateGetStringsFunction() {
-}
-
-ExtensionFunction::ResponseAction
-WebstoreWidgetPrivateGetStringsFunction::Run() {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-
-  SetL10nString(dict.get(), "TITLE_PRINTER_PROVIDERS",
-                IDS_WEBSTORE_WIDGET_TITLE_PRINTER_PROVIDERS);
-  SetL10nString(dict.get(), "DEFAULT_ERROR_MESSAGE",
-                IDS_WEBSTORE_WIDGET_DEFAULT_ERROR);
-  SetL10nString(dict.get(), "OK_BUTTON", IDS_FILE_BROWSER_OK_LABEL);
-  SetL10nString(dict.get(), "INSTALLATION_FAILED_MESSAGE",
-                IDS_FILE_BROWSER_SUGGEST_DIALOG_INSTALLATION_FAILED);
-  SetL10nString(dict.get(), "LINK_TO_WEBSTORE",
-                IDS_FILE_BROWSER_SUGGEST_DIALOG_LINK_TO_WEBSTORE);
-  SetL10nString(dict.get(), "LOADING_SPINNER_ALT",
-                IDS_WEBSTORE_WIDGET_LOADING_SPINNER_ALT);
-  SetL10nString(dict.get(), "INSTALLING_SPINNER_ALT",
-                IDS_WEBSTORE_WIDGET_INSTALLING_SPINNER_ALT);
-
-  const std::string& app_locale = g_browser_process->GetApplicationLocale();
-  webui::SetLoadTimeDataDefaults(app_locale, dict.get());
-  return RespondNow(OneArgument(std::move(dict)));
-}
 
 WebstoreWidgetPrivateInstallWebstoreItemFunction::
     WebstoreWidgetPrivateInstallWebstoreItemFunction() {

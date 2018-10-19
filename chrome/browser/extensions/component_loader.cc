@@ -46,7 +46,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/chromeos_switches.h"
-#include "components/chrome_apps/grit/chrome_apps_resources.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
@@ -332,16 +331,6 @@ void ComponentLoader::AddZipArchiverExtension() {
 #endif  // defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_NACL)
 }
 
-void ComponentLoader::AddWebstoreWidgetExtension() {
-#if defined(OS_CHROMEOS)
-  AddWithNameAndDescription(
-      IDR_CHROME_APPS_WEBSTORE_WIDGET_MANIFEST,
-      base::FilePath(FILE_PATH_LITERAL("webstore_widget")),
-      l10n_util::GetStringUTF8(IDS_WEBSTORE_WIDGET_APP_NAME),
-      l10n_util::GetStringUTF8(IDS_WEBSTORE_WIDGET_APP_DESC));
-#endif
-}
-
 void ComponentLoader::AddHangoutServicesExtension() {
 #if BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
   Add(IDR_HANGOUT_SERVICES_MANIFEST,
@@ -540,7 +529,6 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
     AddFileManagerExtension();
     AddGalleryExtension();
     AddZipArchiverExtension();
-    AddWebstoreWidgetExtension();
 
     AddHangoutServicesExtension();
     AddImageLoaderExtension();

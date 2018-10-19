@@ -15537,7 +15537,8 @@ Called by update_net_error_codes.py.-->
   <int value="239" label="SOCKETS_UDP_ON_RECEIVE"/>
   <int value="240" label="SOCKETS_UDP_ON_RECEIVE_ERROR"/>
   <int value="241" label="STORAGE_ON_CHANGED"/>
-  <int value="242" label="STREAMS_PRIVATE_ON_EXECUTE_MIME_TYPE_HANDLER"/>
+  <int value="242"
+      label="DELETED_STREAMS_PRIVATE_ON_EXECUTE_MIME_TYPE_HANDLER"/>
   <int value="243" label="SYNC_FILE_SYSTEM_ON_FILE_STATUS_CHANGED"/>
   <int value="244" label="SYNC_FILE_SYSTEM_ON_SERVICE_STATUS_CHANGED"/>
   <int value="245" label="SYSTEM_DISPLAY_ON_DISPLAY_CHANGED"/>
@@ -15599,7 +15600,7 @@ Called by update_net_error_codes.py.-->
   <int value="301" label="WEBRTC_AUDIO_PRIVATE_ON_SINKS_CHANGED"/>
   <int value="302" label="WEBSTORE_ON_DOWNLOAD_PROGRESS"/>
   <int value="303" label="WEBSTORE_ON_INSTALL_STAGE_CHANGED"/>
-  <int value="304" label="WEBSTORE_WIDGET_PRIVATE_ON_SHOW_WIDGET"/>
+  <int value="304" label="DELETED_WEBSTORE_WIDGET_PRIVATE_ON_SHOW_WIDGET"/>
   <int value="305" label="WEBVIEW_TAG_CLOSE"/>
   <int value="306" label="WEBVIEW_TAG_CONSOLEMESSAGE"/>
   <int value="307" label="WEBVIEW_TAG_CONTENTLOAD"/>
@@ -16551,7 +16552,7 @@ Called by update_net_error_codes.py.-->
   <int value="780" label="ENTERPRISE_PLATFORMKEYS_IMPORTCERTIFICATE"/>
   <int value="781" label="ENTERPRISE_PLATFORMKEYS_REMOVECERTIFICATE"/>
   <int value="782" label="FILEMANAGERPRIVATE_OPENINSPECTOR"/>
-  <int value="783" label="STREAMSPRIVATE_ABORT"/>
+  <int value="783" label="DELETED_STREAMSPRIVATE_ABORT"/>
   <int value="784" label="MANAGEMENT_SETLAUNCHTYPE"/>
   <int value="785" label="MANAGEMENT_GENERATEAPPFORLINK"/>
   <int value="786" label="DELETED_GUESTVIEWINTERNAL_ALLOCATEINSTANCEID"/>
@@ -16804,7 +16805,7 @@ Called by update_net_error_codes.py.-->
   <int value="1028" label="DELETED_SEARCHENGINESPRIVATE_UPDATESEARCHENGINE"/>
   <int value="1029" label="DELETED_SEARCHENGINESPRIVATE_OPTINTOHOTWORDING"/>
   <int value="1030" label="WEBSTOREWIDGETPRIVATE_INSTALLWEBSTOREITEM"/>
-  <int value="1031" label="WEBSTOREWIDGETPRIVATE_GETSTRINGS"/>
+  <int value="1031" label="DELETED_WEBSTOREWIDGETPRIVATE_GETSTRINGS"/>
   <int value="1032" label="WEBRTCDESKTOPCAPTUREPRIVATE_CHOOSEDESKTOPMEDIA"/>
   <int value="1033"
       label="WEBRTCDESKTOPCAPTUREPRIVATE_CANCELCHOOSEDESKTOPMEDIA"/>
