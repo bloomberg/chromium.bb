@@ -248,7 +248,7 @@ void MHTMLArchive::GenerateMHTMLHeader(const String& boundary,
 
   // We use utf8() below instead of ascii() as ascii() replaces CRLFs with ??
   // (we still only have put ASCII characters in it).
-  DCHECK(string_builder.ToString().ContainsOnlyASCII());
+  DCHECK(string_builder.ToString().ContainsOnlyASCIIOrEmpty());
   CString ascii_string = string_builder.ToString().Utf8();
 
   output_buffer.Append(ascii_string.data(), ascii_string.length());
