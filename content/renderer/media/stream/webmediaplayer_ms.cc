@@ -81,10 +81,7 @@ class WebMediaPlayerMS::FrameDeliverer {
                  scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
                  scoped_refptr<base::TaskRunner> worker_task_runner,
                  media::GpuVideoAcceleratorFactories* gpu_factories)
-      : last_frame_opaque_(true),
-        last_frame_rotation_(media::VIDEO_ROTATION_0),
-        received_first_frame_(false),
-        main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         player_(player),
         enqueue_frame_cb_(enqueue_frame_cb),
         media_task_runner_(media_task_runner),
@@ -174,43 +171,18 @@ class WebMediaPlayerMS::FrameDeliverer {
   void EnqueueFrame(const scoped_refptr<media::VideoFrame>& frame) {
     DCHECK(io_thread_checker_.CalledOnValidThread());
 
-    bool tracing_enabled = false;
-    TRACE_EVENT_CATEGORY_GROUP_ENABLED("media", &tracing_enabled);
-    if (tracing_enabled) {
-      base::TimeTicks render_time;
-      if (frame->metadata()->GetTimeTicks(
-              media::VideoFrameMetadata::REFERENCE_TIME, &render_time)) {
-        TRACE_EVENT1("media", "EnqueueFrame", "Ideal Render Instant",
-                     render_time.ToInternalValue());
-      } else {
-        TRACE_EVENT0("media", "EnqueueFrame");
-      }
-    }
-
-    const bool is_opaque = media::IsOpaque(frame->format());
-    media::VideoRotation video_rotation = media::VIDEO_ROTATION_0;
-    ignore_result(frame->metadata()->GetRotation(
-        media::VideoFrameMetadata::ROTATION, &video_rotation));
-
-    if (!received_first_frame_) {
-      received_first_frame_ = true;
-      last_frame_opaque_ = is_opaque;
-      last_frame_rotation_ = video_rotation;
-      main_task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(&WebMediaPlayerMS::OnFirstFrameReceived,
-                                    player_, video_rotation, is_opaque));
-    } else {
-      if (last_frame_opaque_ != is_opaque) {
-        last_frame_opaque_ = is_opaque;
-        main_task_runner_->PostTask(
-            FROM_HERE, base::BindOnce(&WebMediaPlayerMS::OnOpacityChanged,
-                                      player_, is_opaque));
-      }
-      if (last_frame_rotation_ != video_rotation) {
-        last_frame_rotation_ = video_rotation;
-        main_task_runner_->PostTask(
-            FROM_HERE, base::BindOnce(&WebMediaPlayerMS::OnRotationChanged,
-                                      player_, video_rotation, is_opaque));
+    {
+      bool tracing_enabled = false;
+      TRACE_EVENT_CATEGORY_GROUP_ENABLED("media", &tracing_enabled);
+      if (tracing_enabled) {
+        base::TimeTicks render_time;
+        if (frame->metadata()->GetTimeTicks(
+                media::VideoFrameMetadata::REFERENCE_TIME, &render_time)) {
+          TRACE_EVENT1("media", "EnqueueFrame", "Ideal Render Instant",
+                       render_time.ToInternalValue());
+        } else {
+          TRACE_EVENT0("media", "EnqueueFrame");
+        }
       }
     }
 
@@ -234,9 +206,6 @@ class WebMediaPlayerMS::FrameDeliverer {
     weak_factory_for_pool_.InvalidateWeakPtrs();
   }
 
-  bool last_frame_opaque_;
-  media::VideoRotation last_frame_rotation_;
-  bool received_first_frame_;
   bool render_frame_suspended_ = false;
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
@@ -1112,7 +1081,7 @@ void WebMediaPlayerMS::OnFirstFrameReceived(media::VideoRotation video_rotation,
     bridge_ = std::move(create_bridge_callback_)
                   .Run(this, compositor_->GetUpdateSubmissionStateCallback());
     bridge_->CreateSurfaceLayer();
-    bridge_->SetContentsOpaque(opaque_);
+    bridge_->SetContentsOpaque(is_opaque);
 
     compositor_task_runner_->PostTask(
         FROM_HERE,
@@ -1123,11 +1092,13 @@ void WebMediaPlayerMS::OnFirstFrameReceived(media::VideoRotation video_rotation,
             media::BindToCurrentLoop(base::BindRepeating(
                 &WebMediaPlayerMS::OnFrameSinkDestroyed, AsWeakPtr()))));
   }
+  OnRotationChanged(video_rotation);
+  OnOpacityChanged(is_opaque);
 
   SetReadyState(WebMediaPlayer::kReadyStateHaveMetadata);
   SetReadyState(WebMediaPlayer::kReadyStateHaveEnoughData);
-
-  OnRotationChanged(video_rotation, is_opaque);
+  TriggerResize();
+  ResetCanvasCache();
 }
 
 void WebMediaPlayerMS::OnOpacityChanged(bool is_opaque) {
@@ -1135,42 +1106,28 @@ void WebMediaPlayerMS::OnOpacityChanged(bool is_opaque) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   opaque_ = is_opaque;
-
   if (!bridge_) {
     // Opacity can be changed during the session without resetting
     // |video_layer_|.
     video_layer_->SetContentsOpaque(opaque_);
   } else {
     DCHECK(bridge_);
-
     bridge_->SetContentsOpaque(opaque_);
-    compositor_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&WebMediaPlayerMSCompositor::UpdateIsOpaque,
-                                  compositor_, opaque_));
   }
 }
 
-void WebMediaPlayerMS::OnRotationChanged(media::VideoRotation video_rotation,
-                                         bool is_opaque) {
+void WebMediaPlayerMS::OnRotationChanged(media::VideoRotation video_rotation) {
   DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   video_rotation_ = video_rotation;
-  opaque_ = is_opaque;
 
   if (!bridge_) {
     // Keep the old |video_layer_| alive until SetCcLayer() is called with a new
     // pointer, as it may use the pointer from the last call.
     auto new_video_layer =
         cc::VideoLayer::Create(compositor_.get(), video_rotation);
-    new_video_layer->SetContentsOpaque(is_opaque);
-
     get_client()->SetCcLayer(new_video_layer.get());
-
     video_layer_ = std::move(new_video_layer);
-  } else {
-    compositor_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&WebMediaPlayerMSCompositor::UpdateRotation,
-                                  compositor_, video_rotation));
   }
 }
 

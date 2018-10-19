@@ -739,6 +739,12 @@ void WebMediaPlayerMSTest::NetworkStateChanged() {
 void WebMediaPlayerMSTest::ReadyStateChanged() {
   blink::WebMediaPlayer::ReadyState state = player_->GetReadyState();
   DoReadyStateChanged(state);
+  if (state == blink::WebMediaPlayer::ReadyState::kReadyStateHaveMetadata &&
+      !player_->HasAudio()) {
+    const auto& size = player_->NaturalSize();
+    EXPECT_GT(size.width, 0);
+    EXPECT_GT(size.height, 0);
+  }
   if (state == blink::WebMediaPlayer::ReadyState::kReadyStateHaveEnoughData)
     player_->Play();
 }
@@ -1080,7 +1086,7 @@ TEST_P(WebMediaPlayerMSTest, RotationChange) {
   MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(true);
 
   const int kTestBrake = static_cast<int>(FrameType::TEST_BRAKE);
-  static int tokens[] = {0, 33, kTestBrake};
+  int tokens[] = {0, kTestBrake};
   std::vector<int> timestamps(tokens, tokens + sizeof(tokens) / sizeof(int));
   provider->QueueFrames(timestamps, false, false, 17, media::VIDEO_ROTATION_90);
   if (enable_surface_layer_for_video_) {
@@ -1104,6 +1110,8 @@ TEST_P(WebMediaPlayerMSTest, RotationChange) {
   EXPECT_EQ(kStandardWidth, natural_size.height);
 
   // Change rotation.
+  tokens[0] = 33;
+  timestamps = std::vector<int>(tokens, tokens + arraysize(tokens));
   provider->QueueFrames(timestamps, false, false, 17, media::VIDEO_ROTATION_0);
   if (enable_surface_layer_for_video_) {
     EXPECT_CALL(*submitter_ptr_, SetRotation(media::VIDEO_ROTATION_0));
@@ -1135,9 +1143,10 @@ TEST_P(WebMediaPlayerMSTest, OpacityChange) {
 
   // Push one opaque frame.
   const int kTestBrake = static_cast<int>(FrameType::TEST_BRAKE);
-  static int tokens[] = {0, kTestBrake};
+  int tokens[] = {0, kTestBrake};
   std::vector<int> timestamps(tokens, tokens + arraysize(tokens));
   provider->QueueFrames(timestamps, true);
+
   if (enable_surface_layer_for_video_) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
     EXPECT_CALL(*submitter_ptr_, StartRendering());
@@ -1153,29 +1162,33 @@ TEST_P(WebMediaPlayerMSTest, OpacityChange) {
               CheckSizeChanged(gfx::Size(kStandardWidth, kStandardHeight)));
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
-
   if (!enable_surface_layer_for_video_) {
     ASSERT_TRUE(layer_ != nullptr);
     EXPECT_TRUE(layer_->contents_opaque());
   }
 
   // Push one transparent frame.
+  tokens[0] = 33;
+  timestamps = std::vector<int>(tokens, tokens + arraysize(tokens));
+  provider->QueueFrames(timestamps, false);
   if (enable_surface_layer_for_video_) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
     EXPECT_CALL(*submitter_ptr_, SetIsOpaque(false));
   }
-  provider->QueueFrames(timestamps, false);
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
-  if (!enable_surface_layer_for_video_)
+  if (!enable_surface_layer_for_video_) {
     EXPECT_FALSE(layer_->contents_opaque());
+  }
 
+  // Push another transparent frame.
+  tokens[0] = 66;
+  timestamps = std::vector<int>(tokens, tokens + arraysize(tokens));
+  provider->QueueFrames(timestamps, true);
   if (enable_surface_layer_for_video_) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(true));
     EXPECT_CALL(*submitter_ptr_, SetIsOpaque(true));
   }
-  // Push another opaque frame.
-  provider->QueueFrames(timestamps, true);
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
   if (!enable_surface_layer_for_video_)
