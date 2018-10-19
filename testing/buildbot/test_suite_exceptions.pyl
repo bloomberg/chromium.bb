@@ -661,6 +661,12 @@
       'Linux ASan LSan Tests (1)',  # https://crbug.com/843732
     ],
   },
+  'http_service_tests': {
+    'remove_from': [
+      # chromium.linux
+      'Fuchsia x64',  # https://crbug.com/896884
+    ],
+  },
   'info_collection_tests': {
     'remove_from': [
       # chromium.gpu.fyi
