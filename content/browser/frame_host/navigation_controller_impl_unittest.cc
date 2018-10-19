@@ -23,6 +23,7 @@
 #include "base/test/gtest_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "content/browser/browser_url_handler_impl.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_entry_screenshot_manager.h"
@@ -5304,6 +5305,44 @@ TEST_F(NavigationControllerTest, SubFrameNavigationUIData) {
   // We DCHECK to prevent misuse of the API.
   EXPECT_DEATH_IF_SUPPORTED(controller_impl().LoadURLWithParams(params), "");
 #endif
+}
+
+bool SrcDocRewriter(GURL* url, BrowserContext* browser_context) {
+  if (*url == GURL("about:srcdoc")) {
+    *url = GURL("chrome://srcdoc");
+    return true;
+  }
+  return false;
+}
+
+// Tests that receiving a request to navigate a subframe will not rewrite the
+// subframe URL. Regression test for https://crbug.com/895065.
+TEST_F(NavigationControllerTest, NoURLRewriteForSubframes) {
+  const GURL kUrl1("http://google.com");
+  const GURL kUrl2("http://chromium.org");
+  const GURL kSrcDoc("about:srcdoc");
+
+  // First, set up a handler that will rewrite srcdoc urls.
+  BrowserURLHandlerImpl::GetInstance()->SetFixupHandlerForTesting(
+      &SrcDocRewriter);
+
+  // Simulate navigating to a page that has a subframe.
+  NavigationSimulator::NavigateAndCommitFromDocument(kUrl1, main_test_rfh());
+  TestRenderFrameHost* subframe = main_test_rfh()->AppendChild("subframe");
+  NavigationSimulator::NavigateAndCommitFromDocument(kUrl2, subframe);
+
+  // Simulate the subframe receiving a request from a RenderFrameProxyHost to
+  // navigate to about:srcdoc. This should not crash.
+  FrameTreeNode* subframe_node =
+      main_test_rfh()->frame_tree_node()->child_at(0);
+  controller_impl().NavigateFromFrameProxy(
+      subframe_node->current_frame_host(), kSrcDoc,
+      true /* is_renderer_initiated */, main_test_rfh()->GetSiteInstance(),
+      Referrer(), ui::PAGE_TRANSITION_LINK,
+      false /* should_replace_current_entry */, "GET", nullptr, "", nullptr);
+
+  // Clean up the handler.
+  BrowserURLHandlerImpl::GetInstance()->SetFixupHandlerForTesting(nullptr);
 }
 
 }  // namespace content
