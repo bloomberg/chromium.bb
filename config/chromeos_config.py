@@ -2376,6 +2376,7 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
           active_builders,
           active_waterfall=waterfall.WATERFALL_SWARMING,
           manifest_version=True,
+          gs_path='gs://chromiumos-image-archive/full',
       )
   )
 
