@@ -1022,6 +1022,20 @@ TEST_F(CommitToPendingTreeLayerTreeHostImplTest,
       "Compositing.Renderer.GPUMemoryForTilingsInKb", 1);
 }
 
+TEST_F(LayerTreeHostImplTest, ScrollBeforeRootLayerAttached) {
+  InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
+      BeginState(gfx::Point()).get(), InputHandler::WHEEL);
+  EXPECT_EQ(InputHandler::SCROLL_IGNORED, status.thread);
+  EXPECT_EQ(MainThreadScrollingReason::kNoScrollingLayer,
+            status.main_thread_scrolling_reasons);
+
+  status = host_impl_->RootScrollBegin(BeginState(gfx::Point()).get(),
+                                       InputHandler::WHEEL);
+  EXPECT_EQ(InputHandler::SCROLL_IGNORED, status.thread);
+  EXPECT_EQ(MainThreadScrollingReason::kNoScrollingLayer,
+            status.main_thread_scrolling_reasons);
+}
+
 TEST_F(LayerTreeHostImplTest, ScrollRootCallsCommitAndRedraw) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
