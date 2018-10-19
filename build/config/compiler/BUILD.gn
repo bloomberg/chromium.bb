@@ -1479,6 +1479,12 @@ config("default_warnings") {
       cflags += [
         # TODO(thakis): https://crbug.com/604888
         "-Wno-undefined-var-template",
+
+        # TODO(hans): https://crbug.com/681136
+        "-Wno-unused-lambda-capture",
+
+        # TODO(hans): https://crbug.com/766891
+        "-Wno-null-pointer-arithmetic",
       ]
 
       if (is_win) {
@@ -1487,20 +1493,6 @@ config("default_warnings") {
         cflags += [ "-Wno-nonportable-include-path" ]
       }
 
-      if (current_toolchain == host_toolchain || !use_xcode_clang ||
-          xcode_version_int >= 930) {
-        cflags += [
-          # TODO(hans): https://crbug.com/681136
-          "-Wno-unused-lambda-capture",
-        ]
-      }
-      if (current_toolchain == host_toolchain || !use_xcode_clang ||
-          xcode_version_int >= 1000) {
-        cflags += [
-          # TODO(hans): https://crbug.com/766891
-          "-Wno-null-pointer-arithmetic",
-        ]
-      }
       if (current_toolchain == host_toolchain || !use_xcode_clang) {
         # Flags NaCl (Clang 3.7) and Xcode 9.2 (Clang clang-900.0.39.2) do not
         # recognize.
