@@ -12,7 +12,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnCreateContextMenuListener;
-import android.widget.GridLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -24,6 +23,7 @@ import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.suggestions.TileGridLayout;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
@@ -38,9 +38,11 @@ import java.util.List;
 public class ExploreSitesCategoryCardView extends LinearLayout {
     private static final String TAG = "ExploreSitesCategoryCardView";
     private static final int MAX_TILE_COUNT = 8;
+    private static final int MAX_COLUMNS = 4;
+    private static final int MAX_ROWS = 2;
 
     private TextView mTitleView;
-    private GridLayout mTileView;
+    private TileGridLayout mTileView;
     private RoundedIconGenerator mIconGenerator;
     private ContextMenuManager mContextMenuManager;
     private NativePageNavigationDelegate mNavigationDelegate;
@@ -144,6 +146,8 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
         super.onFinishInflate();
         mTitleView = findViewById(R.id.category_title);
         mTileView = findViewById(R.id.category_sites);
+        mTileView.setMaxColumns(MAX_COLUMNS);
+        mTileView.setMaxRows(MAX_ROWS);
     }
 
     public void setCategory(ExploreSitesCategory category, int categoryCardIndex,

@@ -22,13 +22,14 @@
         android:minHeight="@dimen/explore_sites_category_title_height"
         tools:text="Category" />
 
-    <GridLayout
+    <org.chromium.chrome.browser.suggestions.TileGridLayout
         android:id="@+id/category_sites"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:orientation="horizontal"
         android:columnCount="4"
-        android:columnOrderPreserved="true" />
+        android:columnOrderPreserved="true"
+        android:paddingTop="@dimen/explore_sites_category_title_spacing" />
 
 </org.chromium.chrome.browser.explore_sites.ExploreSitesCategoryCardView>
