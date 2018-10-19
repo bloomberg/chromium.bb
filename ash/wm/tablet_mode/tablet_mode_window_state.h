@@ -20,7 +20,7 @@ class TabletModeWindowManager;
 class TabletModeWindowState : public wm::WindowState::State {
  public:
   // Called when the window position might need to be updated.
-  static void UpdateWindowPosition(wm::WindowState* window_state);
+  static void UpdateWindowPosition(wm::WindowState* window_state, bool animate);
 
   // The |window|'s state object will be modified to use this new window mode
   // state handler. Upon destruction it will restore the previous state handler

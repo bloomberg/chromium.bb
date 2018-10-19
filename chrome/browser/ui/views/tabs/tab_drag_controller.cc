@@ -575,13 +575,12 @@ void TabDragController::EndDrag(EndDragReason reason) {
   // It's also possible that we need to merge the dragged tabs back into the
   // source window even if the dragged tabs is dragged away from the source
   // window.
-  // TODO(xdai/mukai): Move ClearTabDraggingInfo() to a later point and let
-  // RevertDrag() handle this case.
   if (source_tabstrip_ &&
       GetWindowForTabDraggingProperties(source_tabstrip_)
           ->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey)) {
-    SetDeferredTargetTabstrip(source_tabstrip_);
-    PerformDeferredAttach();
+    GetWindowForTabDraggingProperties(source_tabstrip_)
+        ->ClearProperty(ash::kIsDeferredTabDraggingTargetWindowKey);
+    reason = END_DRAG_CANCEL;
   }
 #endif
 
@@ -1225,7 +1224,6 @@ void TabDragController::Detach(ReleaseCapture release_capture) {
     }
   }
 
-  ClearIsDraggingTabs();
   ClearTabDraggingInfo();
   attached_tabstrip_->DraggedTabsDetached();
   attached_tabstrip_ = NULL;
@@ -1561,10 +1559,6 @@ void TabDragController::EndDragImpl(EndDragType type) {
     // End the nested drag loop.
     GetAttachedBrowserWidget()->EndMoveLoop();
   }
-
-  // "IsDraggingTabs" flag needs to be cleared since some part of CompleteDrag()
-  // assumes it's cleared beforehand. See https://crbug.com/892221.
-  ClearIsDraggingTabs();
 
   if (type != TAB_DESTROYED) {
     // We only finish up the drag if we were actually dragging. If start_drag_
@@ -2128,7 +2122,7 @@ void TabDragController::SetTabDraggingInfo() {
 #endif
 }
 
-void TabDragController::ClearIsDraggingTabs() {
+void TabDragController::ClearTabDraggingInfo() {
 #if defined(OS_CHROMEOS)
   TabStrip* dragged_tabstrip =
       attached_tabstrip_ ? attached_tabstrip_ : source_tabstrip_;
@@ -2141,19 +2135,9 @@ void TabDragController::ClearIsDraggingTabs() {
   if (GetModel(dragged_tabstrip)->empty())
     return;
 
-  GetWindowForTabDraggingProperties(dragged_tabstrip)
-      ->ClearProperty(ash::kIsDraggingTabsKey);
-#endif
-}
-
-void TabDragController::ClearTabDraggingInfo() {
-#if defined(OS_CHROMEOS)
-  TabStrip* dragged_tabstrip =
-      attached_tabstrip_ ? attached_tabstrip_ : source_tabstrip_;
-  DCHECK(!dragged_tabstrip->IsDragSessionActive() || !active_);
-
   aura::Window* dragged_window =
       GetWindowForTabDraggingProperties(dragged_tabstrip);
+  dragged_window->ClearProperty(ash::kIsDraggingTabsKey);
   dragged_window->ClearProperty(ash::kTabDraggingSourceWindowKey);
   dragged_window->ClearProperty(ash::kTabDroppedWindowStateTypeKey);
 #endif

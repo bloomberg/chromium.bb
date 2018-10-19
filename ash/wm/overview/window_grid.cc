@@ -1482,7 +1482,7 @@ void WindowGrid::AddDraggedWindowIntoOverviewOnDragEnd(
     // its changed bounds.
     dragged_window->SetProperty(ash::kCanAttachToAnotherWindowKey, false);
     TabletModeWindowState::UpdateWindowPosition(
-        wm::GetWindowState(dragged_window));
+        wm::GetWindowState(dragged_window), /*animate=*/false);
     const gfx::Rect new_bounds = dragged_window->bounds();
     if (old_bounds != new_bounds) {
       // It's for smoother animation.
