@@ -36,16 +36,6 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
 
   ~NGContainerFragmentBuilder() override;
 
-  LayoutUnit InlineSize() const { return size_.inline_size; }
-  LayoutUnit BlockSize() const { return size_.block_size; }
-  const NGLogicalSize& Size() const { return size_; }
-  NGContainerFragmentBuilder& SetInlineSize(LayoutUnit inline_size) {
-    DCHECK_GE(inline_size, LayoutUnit());
-    size_.inline_size = inline_size;
-    return *this;
-  }
-  void SetBlockSize(LayoutUnit block_size) { size_.block_size = block_size; }
-
   LayoutUnit BfcLineOffset() const { return bfc_line_offset_; }
   NGContainerFragmentBuilder& SetBfcLineOffset(LayoutUnit bfc_line_offset) {
     bfc_line_offset_ = bfc_line_offset;
@@ -213,7 +203,6 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
                              WritingMode,
                              TextDirection);
 
-  NGLogicalSize size_;
 
   LayoutUnit bfc_line_offset_;
   base::Optional<LayoutUnit> bfc_block_offset_;

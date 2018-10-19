@@ -7,6 +7,8 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_style_variant.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
@@ -15,6 +17,8 @@
 namespace blink {
 
 class ComputedStyle;
+class LayoutObject;
+class NGBreakToken;
 
 class CORE_EXPORT NGBaseFragmentBuilder {
   STACK_ALLOCATED();
@@ -35,6 +39,18 @@ class CORE_EXPORT NGBaseFragmentBuilder {
   WritingMode GetWritingMode() const { return writing_mode_; }
   TextDirection Direction() const { return direction_; }
 
+  LayoutUnit InlineSize() const { return size_.inline_size; }
+  LayoutUnit BlockSize() const { return size_.block_size; }
+  const NGLogicalSize& Size() const { return size_; }
+  NGBaseFragmentBuilder& SetInlineSize(LayoutUnit inline_size) {
+    DCHECK_GE(inline_size, LayoutUnit());
+    size_.inline_size = inline_size;
+    return *this;
+  }
+  void SetBlockSize(LayoutUnit block_size) { size_.block_size = block_size; }
+
+  LayoutObject* GetLayoutObject() { return layout_object_; }
+
  protected:
   NGBaseFragmentBuilder(scoped_refptr<const ComputedStyle>,
                         WritingMode,
@@ -48,6 +64,9 @@ class CORE_EXPORT NGBaseFragmentBuilder {
 
  protected:
   NGStyleVariant style_variant_;
+  NGLogicalSize size_;
+  LayoutObject* layout_object_ = nullptr;
+  scoped_refptr<NGBreakToken> break_token_;
 };
 
 }  // namespace blink
