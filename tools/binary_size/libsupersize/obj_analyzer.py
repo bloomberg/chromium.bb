@@ -146,7 +146,9 @@ class _BulkObjectFileAnalyzerWorker(object):
 
     # Names are still mangled.
     all_paths_by_name = self._paths_by_name
-    for encoded_syms, encoded_strs in results:
+    total_no_symbols = 0
+    for encoded_syms, encoded_strs, num_no_symbols in results:
+      total_no_symbols += num_no_symbols
       symbol_names_by_path = concurrent.DecodeDictOfLists(encoded_syms)
       for path, names in symbol_names_by_path.iteritems():
         for name in names:
@@ -154,6 +156,8 @@ class _BulkObjectFileAnalyzerWorker(object):
 
       if encoded_strs != concurrent.EMPTY_ENCODED_DICT:
         self._encoded_string_addresses_by_path_chunks.append(encoded_strs)
+    if total_no_symbols:
+      logging.warn('nm found no symbols in %d objects.', total_no_symbols)
 
   def _RunLlvmBcAnalyzer(self, paths_by_type):
     """Calls llvm-bcanalyzer to extract string data (for LLD-LTO)."""
