@@ -43,7 +43,8 @@ const char kIncompleteCBORData[] =
 const char kIncorrectMapKeyType[] =
     "Specified map key type is not supported by the current implementation.";
 const char kTooMuchNesting[] = "Too much nesting.";
-const char kInvalidUTF8[] = "String encoding other than utf8 are not allowed.";
+const char kInvalidUTF8[] =
+    "String encodings other than UTF-8 are not allowed.";
 const char kExtraneousData[] = "Trailing data bytes are not allowed.";
 const char kMapKeyOutOfOrder[] =
     "Map keys must be strictly monotonically increasing based on byte length "
@@ -69,16 +70,17 @@ base::Optional<CBORValue> CBORReader::Read(base::span<uint8_t const> data,
                                            DecoderError* error_code_out,
                                            int max_nesting_level) {
   size_t num_bytes_consumed;
-  auto decoded_cbor =
+  auto value =
       Read(data, &num_bytes_consumed, error_code_out, max_nesting_level);
 
-  if (decoded_cbor && num_bytes_consumed != data.size()) {
-    if (error_code_out)
+  if (value && num_bytes_consumed != data.size()) {
+    if (error_code_out) {
       *error_code_out = DecoderError::EXTRANEOUS_DATA;
+    }
     return base::nullopt;
   }
 
-  return decoded_cbor;
+  return value;
 }
 
 // static
@@ -87,20 +89,20 @@ base::Optional<CBORValue> CBORReader::Read(base::span<uint8_t const> data,
                                            DecoderError* error_code_out,
                                            int max_nesting_level) {
   CBORReader reader(data);
-  base::Optional<CBORValue> decoded_cbor =
+  base::Optional<CBORValue> value =
       reader.DecodeCompleteDataItem(max_nesting_level);
 
-  auto error_code = reader.GetErrorCode();
-  const bool failed = !decoded_cbor.has_value();
+  auto error = reader.GetErrorCode();
+  const bool success = value.has_value();
+  DCHECK_EQ(success, error == DecoderError::CBOR_NO_ERROR);
 
-  // An error code must be set iff parsing failed.
-  DCHECK_EQ(failed, error_code != DecoderError::CBOR_NO_ERROR);
+  if (error_code_out) {
+    *error_code_out = error;
+  }
 
-  if (error_code_out)
-    *error_code_out = error_code;
-
-  *num_bytes_consumed = failed ? 0 : data.size() - reader.num_bytes_remaining();
-  return decoded_cbor;
+  *num_bytes_consumed =
+      success ? data.size() - reader.num_bytes_remaining() : 0;
+  return value;
 }
 
 base::Optional<CBORValue> CBORReader::DecodeCompleteDataItem(
@@ -111,8 +113,9 @@ base::Optional<CBORValue> CBORReader::DecodeCompleteDataItem(
   }
 
   base::Optional<DataItemHeader> header = DecodeDataItemHeader();
-  if (!header.has_value())
+  if (!header.has_value()) {
     return base::nullopt;
+  }
 
   switch (header->type) {
     case CBORValue::Type::UNSIGNED:
@@ -183,7 +186,7 @@ base::Optional<uint64_t> CBORReader::ReadVariadicLengthInteger(
     int_data |= b;
   }
 
-  return CheckMinimalEncoding(additional_bytes, int_data)
+  return IsEncodingMinimal(additional_bytes, int_data)
              ? base::make_optional(int_data)
              : base::nullopt;
 }
@@ -265,14 +268,15 @@ base::Optional<CBORValue> CBORReader::ReadByteStringContent(
 base::Optional<CBORValue> CBORReader::ReadArrayContent(
     const CBORReader::DataItemHeader& header,
     int max_nesting_level) {
-  uint64_t length = header.value;
+  const uint64_t length = header.value;
 
   CBORValue::ArrayValue cbor_array;
   for (uint64_t i = 0; i < length; ++i) {
     base::Optional<CBORValue> cbor_element =
         DecodeCompleteDataItem(max_nesting_level - 1);
-    if (!cbor_element.has_value())
+    if (!cbor_element.has_value()) {
       return base::nullopt;
+    }
     cbor_array.push_back(std::move(cbor_element.value()));
   }
   return CBORValue(std::move(cbor_array));
@@ -281,7 +285,7 @@ base::Optional<CBORValue> CBORReader::ReadArrayContent(
 base::Optional<CBORValue> CBORReader::ReadMapContent(
     const CBORReader::DataItemHeader& header,
     int max_nesting_level) {
-  uint64_t length = header.value;
+  const uint64_t length = header.value;
 
   CBORValue::MapValue cbor_map;
   for (uint64_t i = 0; i < length; ++i) {
@@ -289,8 +293,9 @@ base::Optional<CBORValue> CBORReader::ReadMapContent(
         DecodeCompleteDataItem(max_nesting_level - 1);
     base::Optional<CBORValue> value =
         DecodeCompleteDataItem(max_nesting_level - 1);
-    if (!key.has_value() || !value.has_value())
+    if (!key.has_value() || !value.has_value()) {
       return base::nullopt;
+    }
 
     switch (key.value().type()) {
       case CBORValue::Type::UNSIGNED:
@@ -302,7 +307,7 @@ base::Optional<CBORValue> CBORReader::ReadMapContent(
         error_code_ = DecoderError::INCORRECT_MAP_KEY_TYPE;
         return base::nullopt;
     }
-    if (!CheckOutOfOrderKey(key.value(), &cbor_map)) {
+    if (!IsKeyInOrder(key.value(), &cbor_map)) {
       return base::nullopt;
     }
 
@@ -327,8 +332,8 @@ base::Optional<base::span<const uint8_t>> CBORReader::ReadBytes(
   return ret;
 }
 
-bool CBORReader::CheckMinimalEncoding(uint8_t additional_bytes,
-                                      uint64_t uint_data) {
+bool CBORReader::IsEncodingMinimal(uint8_t additional_bytes,
+                                   uint64_t uint_data) {
   if ((additional_bytes == 1 && uint_data < 24) ||
       uint_data <= (1ULL << 8 * (additional_bytes >> 1)) - 1) {
     error_code_ = DecoderError::NON_MINIMAL_CBOR_ENCODING;
@@ -345,8 +350,8 @@ bool CBORReader::HasValidUTF8Format(const std::string& string_data) {
   return true;
 }
 
-bool CBORReader::CheckOutOfOrderKey(const CBORValue& new_key,
-                                    CBORValue::MapValue* map) {
+bool CBORReader::IsKeyInOrder(const CBORValue& new_key,
+                              CBORValue::MapValue* map) {
   if (map->empty()) {
     return true;
   }
@@ -358,10 +363,6 @@ bool CBORReader::CheckOutOfOrderKey(const CBORValue& new_key,
     return false;
   }
   return true;
-}
-
-CBORReader::DecoderError CBORReader::GetErrorCode() {
-  return error_code_;
 }
 
 // static
