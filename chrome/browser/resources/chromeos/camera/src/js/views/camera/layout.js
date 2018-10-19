@@ -116,7 +116,7 @@ camera.views.camera.Layout.prototype.update = function() {
     return shutter ? [100, 88, 12, 56] : [76, 56, 20, 48];
   };
   var accommodate = (measure) => {
-    var [_, leastShutter, _, _] = dimens(true);
+    var [, leastShutter] = dimens(true);
     return (measure > leastShutter) && (measure < leastShutter * 2);
   };
   if (document.body.classList.toggle('shift-preview-left',
