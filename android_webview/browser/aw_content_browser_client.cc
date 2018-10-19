@@ -41,6 +41,7 @@
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
@@ -284,7 +285,7 @@ bool AwContentBrowserClient::IsHandledURL(const GURL& url) {
     // even if access to file: scheme is not granted to the child process.
     return !IsAndroidSpecialFileUrl(url);
   }
-  for (size_t i = 0; i < arraysize(kProtocolList); ++i) {
+  for (size_t i = 0; i < base::size(kProtocolList); ++i) {
     if (scheme == kProtocolList[i])
       return true;
   }
