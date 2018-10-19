@@ -33,7 +33,8 @@ void WorkerModuleScriptFetcher::Fetch(FetchParameters& fetch_params,
   // Step 13.2. "Fetch request, and asynchronously wait to run the remaining
   // steps as part of fetch's process response for the response response." [spec
   // text]
-  ScriptResource::Fetch(fetch_params, global_scope_->EnsureFetcher(), this);
+  ScriptResource::Fetch(fetch_params, global_scope_->EnsureFetcher(), this,
+                        ScriptResource::kNoStreaming);
 }
 
 void WorkerModuleScriptFetcher::Trace(blink::Visitor* visitor) {

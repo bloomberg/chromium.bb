@@ -58,7 +58,7 @@ v8.compile Properties:
         columnNumber : 0
         consumedCacheSize : <number>
         lineNumber : 0
-        notStreamedReason : "resource no longer alive"
+        notStreamedReason : "already used streamed data"
         streamed : <boolean>
         url : .../devtools/resources/v8-cache-script.js
     }
