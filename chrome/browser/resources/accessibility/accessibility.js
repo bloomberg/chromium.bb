@@ -36,6 +36,17 @@ cr.define('accessibility', function() {
     return [];
   }
 
+  function getIdFromData(data) {
+    if (data.type == 'page') {
+      return data.processId + '.' + data.routeId;
+    } else if (data.type == 'browser') {
+      return 'browser.' + data.sessionId;
+    } else {
+      console.error('Unknown data type.', data);
+      return '';
+    }
+  }
+
   function toggleAccessibility(data, element, mode) {
     chrome.send(
         'toggleAccessibility',
@@ -43,10 +54,17 @@ cr.define('accessibility', function() {
     document.location.reload();
   }
 
-  function requestWebContentsTree(data, element) {
-    chrome.send(
-        'requestWebContentsTree',
-        [String(data.processId), String(data.routeId)]);
+  function requestTree(data, element) {
+    if (data.type == 'browser') {
+      let delay = $('native_ui_delay').value;
+      setTimeout(() => {
+        chrome.send('requestNativeUITree', [String(data.sessionId)]);
+      }, delay);
+    } else {
+      chrome.send(
+          'requestWebContentsTree',
+          [String(data.processId), String(data.routeId)]);
+    }
   }
 
   function initialize() {
@@ -62,18 +80,15 @@ cr.define('accessibility', function() {
 
     $('pages').textContent = '';
 
-    var list = data['list'];
-    for (var i = 0; i < list.length; i++) {
-      addToPagesList(list[i]);
+    let pages = data['pages'];
+    for (var i = 0; i < pages.length; i++) {
+      addToPagesList(pages[i]);
     }
 
-    var showNativeUI = $('showNativeUI');
-    showNativeUI.addEventListener('click', function() {
-      var delay = $('native_ui_delay').value;
-      setTimeout(function() {
-        chrome.send('requestNativeUITree');
-      }, delay);
-    });
+    let browsers = data['browsers'];
+    for (let i = 0; i < browsers.length; i++) {
+      addToBrowsersList(browsers[i]);
+    }
   }
 
   function bindCheckbox(name, value) {
@@ -91,8 +106,8 @@ cr.define('accessibility', function() {
 
   function addToPagesList(data) {
     // TODO: iterate through data and pages rows instead
-    var id = data['processId'] + '.' + data['routeId'];
-    var row = document.createElement('div');
+    let id = getIdFromData(data);
+    let row = document.createElement('div');
     row.className = 'row';
     row.id = id;
     formatRow(row, data);
@@ -100,8 +115,19 @@ cr.define('accessibility', function() {
     row.processId = data.processId;
     row.routeId = data.routeId;
 
-    var list = $('pages');
-    list.appendChild(row);
+    let pages = $('pages');
+    pages.appendChild(row);
+  }
+
+  function addToBrowsersList(data) {
+    let id = getIdFromData(data);
+    let row = document.createElement('div');
+    row.className = 'row';
+    row.id = id;
+    formatRow(row, data);
+
+    let browsers = $('browsers');
+    browsers.appendChild(row);
   }
 
   function formatRow(row, data) {
@@ -112,38 +138,40 @@ cr.define('accessibility', function() {
       }
     }
 
-    var siteInfo = document.createElement('div');
-    var properties = ['favicon_url', 'name', 'url'];
-    for (var j = 0; j < properties.length; j++)
-      siteInfo.appendChild(formatValue(data, properties[j]));
-    row.appendChild(siteInfo);
+    if (data.type == 'page') {
+      let siteInfo = document.createElement('div');
+      let properties = ['favicon_url', 'name', 'url'];
+      for (var j = 0; j < properties.length; j++)
+        siteInfo.appendChild(formatValue(data, properties[j]));
+      row.appendChild(siteInfo);
 
-    row.appendChild(createModeElement(AXMode.kNativeAPIs, data));
-    row.appendChild(createModeElement(AXMode.kWebContents, data));
-    row.appendChild(createModeElement(AXMode.kInlineTextBoxes, data));
-    row.appendChild(createModeElement(AXMode.kScreenReader, data));
-    row.appendChild(createModeElement(AXMode.kHTML, data));
+      row.appendChild(createModeElement(AXMode.kNativeAPIs, data));
+      row.appendChild(createModeElement(AXMode.kWebContents, data));
+      row.appendChild(createModeElement(AXMode.kInlineTextBoxes, data));
+      row.appendChild(createModeElement(AXMode.kScreenReader, data));
+      row.appendChild(createModeElement(AXMode.kHTML, data));
+    } else {
+      let siteInfo = document.createElement('span');
+      siteInfo.appendChild(formatValue(data, 'name'));
+      row.appendChild(siteInfo);
+    }
 
     row.appendChild(document.createTextNode(' | '));
 
     if ('tree' in data) {
-      row.appendChild(createShowAccessibilityTreeElement(data, row, true));
-      if (navigator.clipboard) {
-        row.appendChild(createCopyAccessibilityTreeElement(row.id));
-      }
-      row.appendChild(createHideAccessibilityTreeElement(row.id));
-      row.appendChild(createAccessibilityTreeElement(data));
+      row.appendChild(createTreeButtons(data, row.id));
     } else {
-      row.appendChild(createShowAccessibilityTreeElement(data, row, false));
+      row.appendChild(createShowAccessibilityTreeElement(data, row.id, false));
       if ('error' in data)
         row.appendChild(createErrorMessageElement(data, row));
     }
   }
 
-  function insertHeadingInline(parentElement, headingText) {
+  function insertHeadingInline(parentElement, headingText, id) {
     var h4 = document.createElement('h4');
     h4.textContent = headingText;
     h4.style.display = 'inline';
+    h4.id = id + ':title';
     parentElement.appendChild(h4);
   }
 
@@ -165,7 +193,8 @@ cr.define('accessibility', function() {
     var span = document.createElement('span');
     var content = ' ' + text + ' ';
     if (property == 'name') {
-      insertHeadingInline(span, content);
+      let id = getIdFromData(data);
+      insertHeadingInline(span, content, id);
     } else {
       span.textContent = content;
     }
@@ -202,31 +231,41 @@ cr.define('accessibility', function() {
     return link;
   }
 
-  function createShowAccessibilityTreeElement(data, row, opt_refresh) {
+  function createTreeButtons(data, id) {
+    let row = document.createElement('span');
+    row.appendChild(createShowAccessibilityTreeElement(data, id, true));
+    if (navigator.clipboard) {
+      row.appendChild(createCopyAccessibilityTreeElement(id));
+    }
+    row.appendChild(createHideAccessibilityTreeElement(id));
+    row.appendChild(createAccessibilityTreeElement(data, id));
+    return row;
+  }
+
+  function createShowAccessibilityTreeElement(data, id, opt_refresh) {
     let show = document.createElement('button');
     if (opt_refresh) {
       show.textContent = 'Refresh accessibility tree';
     } else {
       show.textContent = 'Show accessibility tree';
     }
-    show.id = row.id + ':showTree';
-    show.addEventListener(
-        'click', requestWebContentsTree.bind(this, data, show));
+    show.id = id + ':showTree';
+    show.addEventListener('click', requestTree.bind(this, data, show));
     return show;
   }
 
   function createHideAccessibilityTreeElement(id) {
     let hide = document.createElement('button');
     hide.textContent = 'Hide accessibility tree';
+    hide.id = id + ':hideTree';
     hide.addEventListener('click', function() {
       $(id + ':showTree').textContent = 'Show accessibility tree';
-      var existingTreeElements = $(id).getElementsByTagName('pre');
-      for (var i = 0; i < existingTreeElements.length; i++) {
-        $(id).removeChild(existingTreeElements[i]);
-      }
-      var row = $(id);
-      while (row.lastChild != $(id + ':showTree')) {
-        row.removeChild(row.lastChild);
+      let elements = ['hideTree', 'tree'];
+      for (let i = 0; i < elements.length; i++) {
+        let elt = $(id + ':' + elements[i]);
+        if (elt) {
+          elt.style.display = 'none';
+        }
       }
     });
     return hide;
@@ -235,11 +274,9 @@ cr.define('accessibility', function() {
   function createCopyAccessibilityTreeElement(id) {
     let copy = document.createElement('button');
     copy.textContent = 'Copy accessibility tree';
+    copy.id = id + ':copyTree';
     copy.addEventListener('click', () => {
-      // |id| refers to the div containing accessibility information for a
-      // single page, so there should only be one <pre> child containing the
-      // accessibility tree as a string.
-      let tree = $(id).getElementsByTagName('pre')[0];
+      let tree = $(id + ':tree');
       navigator.clipboard.writeText(tree.textContent)
           .then(() => {
             copy.textContent = 'Copied to clipboard!';
@@ -248,7 +285,7 @@ cr.define('accessibility', function() {
             }, 5000);
           })
           .catch(err => {
-            console.err('Unable to copy accessibility tree.', err);
+            console.error('Unable to copy accessibility tree.', err);
           });
     });
     return copy;
@@ -273,8 +310,8 @@ cr.define('accessibility', function() {
 
   // Called from C++
   function showTree(data) {
-    var id = data.processId + '.' + data.routeId;
-    var row = $(id);
+    let id = getIdFromData(data);
+    let row = $(id);
     if (!row)
       return;
 
@@ -282,63 +319,29 @@ cr.define('accessibility', function() {
     formatRow(row, data);
   }
 
-  // Called from C++
-  function showNativeUITree(data) {
-    var treeContainer = document.querySelector('#native_ui div');
-    if (!treeContainer) {
-      var treeContainer = document.createElement('div');
-      $('native_ui').appendChild(treeContainer);
-    }
-
-    var dstIds =
-        new Set(Array.prototype.map.call(treeContainer.children, el => el.id));
-    data.forEach(function(browser) {
-      var srcId = 'browser_' + browser.id;
-      if (dstIds.has(srcId)) {
-        // Update browser windows in place.
-        dstIds.delete(srcId);
-        var title = document.querySelector('#' + srcId + ' h4');
-        title.textContent = browser.title;
-        var tree = document.querySelector('#' + srcId + ' pre');
-        tree.textContent = browser.tree;
-      } else {
-        // Add new browser windows.
-        var browserElement = createNativeUITreeElement(browser);
-        treeContainer.appendChild(browserElement);
-      }
-    });
-    dstIds.forEach(function(dstId) {
-      // Remove browser windows that no longer exist.
-      var browserElement = document.querySelector('#' + dstId);
-      treeContainer.removeChild(browserElement);
-    });
-  }
-
   function createNativeUITreeElement(browser) {
-    var details = document.createElement('details');
-    var summary = document.createElement('summary');
-    var treeElement = document.createElement('pre');
-    insertHeadingInline(summary, browser.title);
-    treeElement.textContent = browser.tree;
-    details.id = 'browser_' + browser.id;
-    details.appendChild(summary);
-    details.appendChild(treeElement);
-    return details;
+    let id = 'browser.' + browser.id;
+    let row = document.createElement('div');
+    row.className = 'row';
+    row.id = id;
+    formatRow(row, browser);
+    return row;
   }
 
-  function createAccessibilityTreeElement(data) {
-    var treeElement = document.createElement('pre');
-    var tree = data.tree;
-    treeElement.textContent = tree;
+  function createAccessibilityTreeElement(data, id) {
+    var treeElement = $(id + ':tree');
+    if (treeElement) {
+      treeElement.style.display = '';
+    } else {
+      treeElement = document.createElement('pre');
+      treeElement.id = id + ':tree';
+    }
+    treeElement.textContent = data.tree;
     return treeElement;
   }
 
   // These are the functions we export so they can be called from C++.
-  return {
-    initialize: initialize,
-    showTree: showTree,
-    showNativeUITree: showNativeUITree
-  };
+  return {initialize: initialize, showTree: showTree};
 });
 
 document.addEventListener('DOMContentLoaded', accessibility.initialize);
