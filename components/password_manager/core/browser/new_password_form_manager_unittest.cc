@@ -5,12 +5,14 @@
 #include "components/password_manager/core/browser/new_password_form_manager.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
 #include "components/password_manager/core/browser/stub_form_saver.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
@@ -1135,6 +1137,50 @@ TEST_F(NewPasswordFormManagerTest, PresaveGeneratedPasswordExistingCredential) {
   EXPECT_TRUE(saved_form.username_value.empty());
   EXPECT_EQ(saved_form.password_value,
             form_data.fields[kPasswordFieldIndex].value);
+}
+
+TEST_F(NewPasswordFormManagerTest, UserEventsForGeneration) {
+  using GeneratedPasswordStatus =
+      PasswordFormMetricsRecorder::GeneratedPasswordStatus;
+
+  PasswordForm submitted_form(parsed_observed_form_);
+  submitted_form.form_data = submitted_form_;
+  FormData& form_data = submitted_form.form_data;
+
+  {  // User accepts a generated password.
+    base::HistogramTester histogram_tester;
+    CreateFormManager(observed_form_);
+    form_manager_->PresaveGeneratedPassword(submitted_form);
+    form_manager_.reset();
+    histogram_tester.ExpectUniqueSample(
+        "PasswordGeneration.UserDecision",
+        GeneratedPasswordStatus::kPasswordAccepted, 1);
+  }
+
+  {  // User edits the generated password.
+    base::HistogramTester histogram_tester;
+    CreateFormManager(observed_form_);
+    form_manager_->PresaveGeneratedPassword(submitted_form);
+    form_data.fields[kPasswordFieldIndex].value += ASCIIToUTF16("1");
+    form_manager_->PresaveGeneratedPassword(submitted_form);
+    form_manager_.reset();
+    histogram_tester.ExpectUniqueSample(
+        "PasswordGeneration.UserDecision",
+        GeneratedPasswordStatus::kPasswordEdited, 1);
+  }
+
+  {  // User clears the generated password.
+    base::HistogramTester histogram_tester;
+    CreateFormManager(observed_form_);
+    form_manager_->PresaveGeneratedPassword(submitted_form);
+    form_data.fields[kPasswordFieldIndex].value += ASCIIToUTF16("2");
+    form_manager_->PresaveGeneratedPassword(submitted_form);
+    form_manager_->PasswordNoLongerGenerated();
+    form_manager_.reset();
+    histogram_tester.ExpectUniqueSample(
+        "PasswordGeneration.UserDecision",
+        GeneratedPasswordStatus::kPasswordDeleted, 1);
+  }
 }
 
 }  // namespace

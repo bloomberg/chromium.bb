@@ -38384,7 +38384,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Password accepted"/>
   <int value="1" label="Password edited"/>
   <int value="2" label="Password deleted"/>
-  <int value="3" label="Password rejected in modal dialog"/>
+  <int value="3" label="Password rejected in modal dialog (obsolete)"/>
 </enum>
 
 <enum name="PasswordImportFromCSVResult">

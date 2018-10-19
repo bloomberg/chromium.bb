@@ -37,7 +37,6 @@ namespace {
 using autofill::FillingStatus;
 using autofill::PasswordForm;
 using autofill::password_generation::PasswordGenerationUIData;
-using autofill::password_generation::PasswordGenerationUserEvent;
 using base::ASCIIToUTF16;
 using base::UTF16ToWide;
 using testing::_;
@@ -311,7 +310,6 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<NiceMock<MockPasswordGenerationManager>>
       mock_generation_manager_;
   std::unique_ptr<NiceMock<MockPasswordGenerationDialogView>> mock_dialog_;
-  base::HistogramTester histogram_tester_;
 
  private:
   NiceMock<base::MockCallback<PasswordAccessoryController::CreateDialogFactory>>
@@ -787,75 +785,32 @@ TEST_F(PasswordAccessoryControllerTest, NoFaviconCallbacksWhenOriginChanges) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(PasswordAccessoryControllerTest, RecordsGeneratedPasswordAccepted) {
-  base::string16 test_password = ASCIIToUTF16("t3stp@ssw0rd");
-
-  InitializeGeneration(test_password);
-
-  controller()->OnGenerationRequested();
-  controller()->GeneratedPasswordAccepted(test_password);
-
-  histogram_tester_.ExpectUniqueSample(
-      "PasswordGeneration.UserEvent",
-      PasswordGenerationUserEvent::kPasswordAccepted, 1);
-}
-
-TEST_F(PasswordAccessoryControllerTest, RecordsGeneratedPasswordEdited) {
-  base::string16 test_password = ASCIIToUTF16("t3stp@ssw0rd");
-
-  InitializeGeneration(test_password);
-
-  controller()->OnGenerationRequested();
-  controller()->GeneratedPasswordAccepted(test_password);
-  controller()->MaybeGeneratedPasswordChanged(test_password);
-
-  // Since MaybeGeneratedPasswordChanged was called with the same password
-  // the histogram should not record an edit operation.
-  histogram_tester_.ExpectBucketCount(
-      "PasswordGeneration.UserEvent",
-      PasswordGenerationUserEvent::kPasswordEdited, 0);
-
-  controller()->MaybeGeneratedPasswordChanged(
-      ASCIIToUTF16("changed_t3stp@ssw0rd"));
-  histogram_tester_.ExpectBucketCount(
-      "PasswordGeneration.UserEvent",
-      PasswordGenerationUserEvent::kPasswordEdited, 1);
-
-  // Since the edit operation should only be logged once per lifetime
-  // of the generated password, check that changing the password again doesn't
-  // record editing again.
-  controller()->MaybeGeneratedPasswordChanged(
-      ASCIIToUTF16("changed_t3stp@ssw0rd_again"));
-  histogram_tester_.ExpectBucketCount(
-      "PasswordGeneration.UserEvent",
-      PasswordGenerationUserEvent::kPasswordEdited, 1);
-}
-
-TEST_F(PasswordAccessoryControllerTest, RecordsGeneratedPasswordDeleted) {
-  base::string16 test_password = ASCIIToUTF16("t3stp@ssw0rd");
-
-  InitializeGeneration(test_password);
-
-  controller()->OnGenerationRequested();
-  controller()->GeneratedPasswordAccepted(test_password);
-  controller()->GeneratedPasswordDeleted();
-
-  histogram_tester_.ExpectBucketCount(
-      "PasswordGeneration.UserEvent",
-      PasswordGenerationUserEvent::kPasswordDeleted, 1);
-}
-
 TEST_F(PasswordAccessoryControllerTest, RecordsGeneratedPasswordRejected) {
   base::string16 test_password = ASCIIToUTF16("t3stp@ssw0rd");
 
   InitializeGeneration(test_password);
 
+  base::HistogramTester histogram_tester;
+
   controller()->OnGenerationRequested();
   controller()->GeneratedPasswordRejected();
 
-  histogram_tester_.ExpectBucketCount(
-      "PasswordGeneration.UserEvent",
-      PasswordGenerationUserEvent::kPasswordRejectedInDialog, 1);
+  histogram_tester.ExpectUniqueSample(
+      "KeyboardAccessory.GeneratedPasswordDialog", false, 1);
+}
+
+TEST_F(PasswordAccessoryControllerTest, RecordsGeneratedPasswordAccepted) {
+  base::string16 test_password = ASCIIToUTF16("t3stp@ssw0rd");
+
+  InitializeGeneration(test_password);
+
+  base::HistogramTester histogram_tester;
+
+  controller()->OnGenerationRequested();
+  controller()->GeneratedPasswordAccepted(test_password);
+
+  histogram_tester.ExpectUniqueSample(
+      "KeyboardAccessory.GeneratedPasswordDialog", true, 1);
 }
 
 TEST_F(PasswordAccessoryControllerTest, RelaysShowAndHideKeyboardAccessory) {

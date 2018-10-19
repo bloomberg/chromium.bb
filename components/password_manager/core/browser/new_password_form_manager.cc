@@ -322,16 +322,28 @@ void NewPasswordFormManager::PresaveGeneratedPassword(
 
   // If a password had been generated already, a call to
   // PresaveGeneratedPassword() implies that this password was modified.
-  SetGeneratedPasswordChanged(has_generated_password_);
-  if (!has_generated_password_)
-    SetHasGeneratedPassword(true);
+  if (!has_generated_password_) {
+    votes_uploader_.set_generated_password_changed(false);
+    metrics_recorder_->SetGeneratedPasswordStatus(
+        PasswordFormMetricsRecorder::GeneratedPasswordStatus::
+            kPasswordAccepted);
+  } else {
+    votes_uploader_.set_generated_password_changed(true);
+    metrics_recorder_->SetGeneratedPasswordStatus(
+        PasswordFormMetricsRecorder::GeneratedPasswordStatus::kPasswordEdited);
+  }
+  has_generated_password_ = true;
+  votes_uploader_.set_has_generated_password(true);
 }
 
 void NewPasswordFormManager::PasswordNoLongerGenerated() {
   DCHECK(has_generated_password_);
   form_saver_->RemovePresavedPassword();
-  SetHasGeneratedPassword(false);
-  SetGeneratedPasswordChanged(false);
+  has_generated_password_ = false;
+  votes_uploader_.set_has_generated_password(false);
+  votes_uploader_.set_generated_password_changed(false);
+  metrics_recorder_->SetGeneratedPasswordStatus(
+      PasswordFormMetricsRecorder::GeneratedPasswordStatus::kPasswordDeleted);
 }
 
 bool NewPasswordFormManager::HasGeneratedPassword() const {
@@ -867,18 +879,6 @@ NewPasswordFormManager::FindOtherCredentialsToUpdate() {
   }
 
   return credentials_to_update;
-}
-
-void NewPasswordFormManager::SetHasGeneratedPassword(bool generated_password) {
-  has_generated_password_ = generated_password;
-  votes_uploader_.set_has_generated_password(generated_password);
-  metrics_recorder_->SetHasGeneratedPassword(generated_password);
-}
-
-void NewPasswordFormManager::SetGeneratedPasswordChanged(
-    bool generated_password_changed) {
-  votes_uploader_.set_generated_password_changed(generated_password_changed);
-  metrics_recorder_->SetHasGeneratedPasswordChanged(generated_password_changed);
 }
 
 std::unique_ptr<PasswordForm> NewPasswordFormManager::ParseFormAndMakeLogging(

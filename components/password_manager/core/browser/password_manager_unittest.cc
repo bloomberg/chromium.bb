@@ -393,6 +393,8 @@ TEST_F(PasswordManagerTest, FormSubmitWithOnlyNewPasswordField) {
 
 TEST_F(PasswordManagerTest, GeneratedPasswordFormSubmitEmptyStore) {
   for (bool new_parsing_for_saving : {false, true}) {
+    SCOPED_TRACE(testing::Message()
+                 << "new_parsing_for_saving = " << new_parsing_for_saving);
     base::test::ScopedFeatureList scoped_feature_list;
     if (new_parsing_for_saving)
       TurnOnNewParsingForSaving(&scoped_feature_list);
