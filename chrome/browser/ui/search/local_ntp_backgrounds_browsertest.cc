@@ -149,6 +149,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsTest,
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
 
   // Check that a URL with no attributions can be set.
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(browser()->profile());
+  instant_service->AddValidBackdropUrlForTesting(GURL("https://www.test.com/"));
   EXPECT_TRUE(content::ExecuteScript(active_tab,
                                      "window.chrome.embeddedSearch.newTabPage."
                                      "setBackgroundURL('https://www.test.com/"
@@ -181,6 +184,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsTest, AttributionSetAndReset) {
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
 
   // Set a custom background attribution via the EmbeddedSearch API.
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(browser()->profile());
+  instant_service->AddValidBackdropUrlForTesting(GURL("https://www.test.com/"));
   EXPECT_TRUE(content::ExecuteScript(active_tab,
                                      "window.chrome.embeddedSearch.newTabPage."
                                      "setBackgroundURLWithAttributions('https:/"
@@ -222,6 +228,10 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsTest,
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
 
   // Set a custom background image via the EmbeddedSearch API.
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(browser()->profile());
+  instant_service->AddValidBackdropUrlForTesting(
+      GURL("chrome-search://local-ntp/background1.jpg"));
   EXPECT_TRUE(content::ExecuteScript(
       active_tab,
       "window.chrome.embeddedSearch.newTabPage."
@@ -264,6 +274,10 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsTest,
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
 
   // Set a custom background image via the EmbeddedSearch API.
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(browser()->profile());
+  instant_service->AddValidBackdropUrlForTesting(
+      GURL("chrome-search://local-ntp/background1.jpg"));
   ASSERT_TRUE(content::ExecuteScript(
       active_tab,
       "window.chrome.embeddedSearch.newTabPage."
@@ -371,6 +385,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
 
   // Set a custom background attribution via the EmbeddedSearch API.
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile());
+  instant_service->AddValidBackdropUrlForTesting(GURL("https://www.test.com/"));
   ASSERT_TRUE(content::ExecuteScript(active_tab,
                                      "window.chrome.embeddedSearch.newTabPage."
                                      "setBackgroundURLWithAttributions('https:/"
@@ -428,6 +445,10 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
 
   // Set a custom background image via the EmbeddedSearch API.
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile());
+  instant_service->AddValidBackdropUrlForTesting(
+      GURL("chrome-search://local-ntp/background1.jpg"));
   ASSERT_TRUE(content::ExecuteScript(
       active_tab,
       "window.chrome.embeddedSearch.newTabPage."

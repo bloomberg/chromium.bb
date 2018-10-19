@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/search/background/ntp_background_service.h"
 #include "chrome/browser/search/instant_unittest_base.h"
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/common/chrome_paths.h"
@@ -177,6 +178,8 @@ TEST_F(InstantServiceTestCustomLinksEnabled, DoesUrlResolve_OnFailure) {
 
 TEST_F(InstantServiceTestCustomBackgroundsEnabled, SetCustomBackgroundURL) {
   const GURL kUrl("https://www.foo.com");
+
+  instant_service_->AddValidBackdropUrlForTesting(kUrl);
   instant_service_->SetCustomBackgroundURL(kUrl);
 
   ThemeBackgroundInfo* theme_info = instant_service_->GetThemeInfoForTesting();
@@ -185,6 +188,8 @@ TEST_F(InstantServiceTestCustomBackgroundsEnabled, SetCustomBackgroundURL) {
 
 TEST_F(InstantServiceTest, SetCustomBackgroundURL) {
   const GURL kUrl("https://www.foo.com");
+
+  instant_service_->UpdateThemeInfo();
   instant_service_->SetCustomBackgroundURL(kUrl);
 
   ThemeBackgroundInfo* theme_info = instant_service_->GetThemeInfoForTesting();
@@ -195,6 +200,7 @@ TEST_F(InstantServiceTestCustomBackgroundsEnabled,
        SetCustomBackgroundURLInvalidURL) {
   const GURL kInvalidUrl("foo");
   const GURL kValidUrl("https://www.foo.com");
+  instant_service_->AddValidBackdropUrlForTesting(kValidUrl);
   instant_service_->SetCustomBackgroundURL(kValidUrl);
 
   ThemeBackgroundInfo* theme_info = instant_service_->GetThemeInfoForTesting();
@@ -212,6 +218,7 @@ TEST_F(InstantServiceTestCustomBackgroundsEnabled,
   const std::string kAttributionLine1 = "foo";
   const std::string kAttributionLine2 = "bar";
   const GURL kActionUrl("https://www.bar.com");
+  instant_service_->AddValidBackdropUrlForTesting(kUrl);
   instant_service_->SetCustomBackgroundURLWithAttributions(
       kUrl, kAttributionLine1, kAttributionLine2, kActionUrl);
 
@@ -232,6 +239,7 @@ TEST_F(InstantServiceTestCustomBackgroundsEnabled,
   const GURL kActionUrl("https://www.bar.com");
 
   SetUserSelectedDefaultSearchProvider("{google:baseURL}");
+  instant_service_->AddValidBackdropUrlForTesting(kUrl);
   instant_service_->SetCustomBackgroundURLWithAttributions(
       kUrl, kAttributionLine1, kAttributionLine2, kActionUrl);
 
@@ -335,6 +343,7 @@ TEST_F(InstantServiceTestCustomBackgroundsEnabled,
   const GURL kHttpActionUrl("http://www.bar.com");
 
   SetUserSelectedDefaultSearchProvider("{google:baseURL}");
+  instant_service_->AddValidBackdropUrlForTesting(kUrl);
   instant_service_->SetCustomBackgroundURLWithAttributions(
       kUrl, kAttributionLine1, kAttributionLine2, kHttpsActionUrl);
 
@@ -469,4 +478,30 @@ TEST_F(InstantServiceTestCustomBackgroundsEnabled,
 
   EXPECT_FALSE(base::PathExists(old_path));
   EXPECT_TRUE(base::PathExists(new_path));
+}
+
+TEST_F(InstantServiceTestCustomBackgroundsEnabled, ValidateBackdropUrls) {
+  const GURL kBackdropUrl1("https://www.foo.com");
+  const GURL kBackdropUrl2("https://www.bar.com");
+  const GURL kNonBackdropUrl1("https://www.test.com");
+  const GURL kNonBackdropUrl2("https://www.foo.com/path");
+
+  instant_service_->AddValidBackdropUrlForTesting(kBackdropUrl1);
+  instant_service_->AddValidBackdropUrlForTesting(kBackdropUrl2);
+
+  instant_service_->SetCustomBackgroundURL(kBackdropUrl1);
+  ThemeBackgroundInfo* theme_info = instant_service_->GetThemeInfoForTesting();
+  EXPECT_EQ(kBackdropUrl1, theme_info->custom_background_url);
+
+  instant_service_->SetCustomBackgroundURL(kNonBackdropUrl1);
+  theme_info = instant_service_->GetThemeInfoForTesting();
+  EXPECT_EQ(GURL(), theme_info->custom_background_url);
+
+  instant_service_->SetCustomBackgroundURL(kBackdropUrl2);
+  theme_info = instant_service_->GetThemeInfoForTesting();
+  EXPECT_EQ(kBackdropUrl2, theme_info->custom_background_url);
+
+  instant_service_->SetCustomBackgroundURL(kNonBackdropUrl2);
+  theme_info = instant_service_->GetThemeInfoForTesting();
+  EXPECT_EQ(GURL(), theme_info->custom_background_url);
 }

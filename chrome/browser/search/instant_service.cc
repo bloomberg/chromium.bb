@@ -21,6 +21,8 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/ntp_tiles/chrome_most_visited_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/background/ntp_background_service.h"
+#include "chrome/browser/search/background/ntp_background_service_factory.h"
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/search/local_ntp_source.h"
@@ -102,12 +104,6 @@ void CopyFileToProfilePath(const base::FilePath& from_path,
   base::CopyFile(from_path,
                  profile_path.AppendASCII(
                      chrome::kChromeSearchLocalNtpBackgroundFilename));
-}
-
-void RemoveLocalBackgroundImageCopy(const base::FilePath& profile_path) {
-  base::DeleteFile(
-      profile_path.AppendASCII(chrome::kChromeSearchLocalNtpBackgroundFilename),
-      false);
 }
 
 // In some cases (Sync, upgrading versions) its necessary to check if the file
@@ -232,6 +228,8 @@ InstantService::InstantService(Profile* profile)
         base::BindOnce(&InstantIOContext::SetUserDataOnIO,
                        profile->GetResourceContext(), instant_io_context_));
   }
+
+  background_service_ = NtpBackgroundServiceFactory::GetForProfile(profile_);
 
   // Listen for theme installation.
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
@@ -427,12 +425,14 @@ void InstantService::SetCustomBackgroundURLWithAttributions(
     const std::string& attribution_line_1,
     const std::string& attribution_line_2,
     const GURL& action_url) {
-  pref_service_->SetBoolean(prefs::kNtpCustomBackgroundLocalToDevice, false);
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-      base::BindOnce(&RemoveLocalBackgroundImageCopy, profile_->GetPath()));
+  bool is_backdrop_url =
+      background_service_ &&
+      background_service_->IsValidBackdropUrl(background_url);
 
-  if (background_url.is_valid()) {
+  pref_service_->SetBoolean(prefs::kNtpCustomBackgroundLocalToDevice, false);
+  RemoveLocalBackgroundImageCopy();
+
+  if (background_url.is_valid() && is_backdrop_url) {
     base::DictionaryValue background_info = GetBackgroundInfoAsDict(
         background_url, attribution_line_1, attribution_line_2, action_url);
     pref_service_->Set(prefs::kNtpCustomBackgroundDict, background_info);
@@ -803,10 +803,7 @@ void InstantService::ApplyCustomBackgroundThemeInfo() {
 void InstantService::ResetCustomBackgroundThemeInfo() {
   pref_service_->ClearPref(prefs::kNtpCustomBackgroundDict);
   pref_service_->SetBoolean(prefs::kNtpCustomBackgroundLocalToDevice, false);
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-      base::BindOnce(&RemoveLocalBackgroundImageCopy, profile_->GetPath()));
-
+  RemoveLocalBackgroundImageCopy();
   FallbackToDefaultThemeInfo();
 }
 
@@ -815,6 +812,14 @@ void InstantService::FallbackToDefaultThemeInfo() {
   theme_info_->custom_background_attribution_line_1 = std::string();
   theme_info_->custom_background_attribution_line_2 = std::string();
   theme_info_->custom_background_attribution_action_url = GURL();
+}
+
+void InstantService::RemoveLocalBackgroundImageCopy() {
+  base::FilePath path = profile_->GetPath().AppendASCII(
+      chrome::kChromeSearchLocalNtpBackgroundFilename);
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+      base::BindOnce(IgnoreResult(&base::DeleteFile), path, false));
 }
 
 UrlValidityChecker* InstantService::GetUrlValidityChecker() {
@@ -826,6 +831,10 @@ UrlValidityChecker* InstantService::GetUrlValidityChecker() {
           ->GetSharedURLLoaderFactory(),
       base::DefaultTickClock::GetInstance());
   return checker.get();
+}
+
+void InstantService::AddValidBackdropUrlForTesting(const GURL& url) const {
+  background_service_->AddValidBackdropUrlForTesting(url);
 }
 
 // static
