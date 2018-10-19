@@ -13,6 +13,7 @@
 namespace blink {
 
 class V8DisplayLockCallback;
+class DisplayLockSuspendedHandle;
 class CORE_EXPORT DisplayLockContext final
     : public ScriptWrappable,
       public ActiveScriptWrappable<DisplayLockContext>,
@@ -24,7 +25,7 @@ class CORE_EXPORT DisplayLockContext final
   DisplayLockContext(ExecutionContext*);
   ~DisplayLockContext() override;
 
-  // GC Functions.
+  // GC functions.
   void Trace(blink::Visitor*) override;
   void Dispose();
 
@@ -53,17 +54,34 @@ class CORE_EXPORT DisplayLockContext final
 
   // JavaScript interface implementation.
   void schedule(V8DisplayLockCallback*);
+  DisplayLockSuspendedHandle* suspend();
 
  private:
+  friend class DisplayLockSuspendedHandle;
+
   // Processes the current queue of callbacks.
   void ProcessQueue();
+
   // Rejects the associated promise if one exists, and clears the current queue.
   // This effectively makes the context finalized.
   void RejectAndCleanUp();
 
+  // Called by the suspended handle in order to resume context operations.
+  void Resume();
+
+  // Called by the suspended handle informing us that it was disposed without
+  // resuming, meaning it will never resume.
+  void NotifyWillNotResume();
+
+  // Schedule a task if one is required. Specifically, this would schedule a
+  // task if one was not already scheduled and if we need to either process
+  // callbacks or to resolve the associated promise.
+  void ScheduleTaskIfNeeded();
+
   HeapVector<Member<V8DisplayLockCallback>> callbacks_;
   Member<ScriptPromiseResolver> resolver_;
   bool process_queue_task_scheduled_ = false;
+  unsigned suspended_count_ = 0;
 };
 
 }  // namespace blink

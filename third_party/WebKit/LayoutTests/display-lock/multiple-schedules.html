@@ -57,7 +57,8 @@ function addChild1(context) {
 }
 
 function finishTest(status_string) {
-  document.getElementById("log").innerHTML = status_string;
+  if (document.getElementById("log").innerHTML === "")
+    document.getElementById("log").innerHTML = status_string;
   if (window.testRunner)
     window.testRunner.notifyDone();
 }

@@ -101,6 +101,7 @@ core_idl_files =
                     "css/cssom/style_property_map.idl",
                     "css/cssom/style_property_map_read_only.idl",
                     "display_lock/display_lock_context.idl",
+                    "display_lock/display_lock_suspended_handle.idl",
                     "dom/abort_controller.idl",
                     "dom/abort_signal.idl",
                     "dom/attr.idl",
