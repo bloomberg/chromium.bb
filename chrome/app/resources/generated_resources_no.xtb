@@ -231,7 +231,6 @@
 <translation id="131461803491198646">Hjemmenettverk, datastreifing ikke aktivert</translation>
 <translation id="1316136264406804862">Søker …</translation>
 <translation id="1316495628809031177">Synkroniseringen er satt på pause</translation>
-<translation id="1319979322914001937">En app som viser en filtrert liste over utvidelser fra Chrome Nettmarked. Utvidelser i listen kan installeres direkte fra appen.</translation>
 <translation id="1322046419516468189">Se og administrer lagrede passord i <ph name="SAVED_PASSWORDS_STORE" /> din</translation>
 <translation id="1326317727527857210">For å få fanene dine fra de andre enhetene du bruker, logg på Chrome.</translation>
 <translation id="1327074568633507428">Skriver på Google Cloud Print</translation>
@@ -2282,7 +2281,6 @@
 <translation id="4451757071857432900">Blokkert på nettsteder som viser forstyrrende eller villedende annonser (anbefalt)</translation>
 <translation id="4453946976636652378">Søk i <ph name="SEARCH_ENGINE_NAME" /> eller skriv inn en nettadresse</translation>
 <translation id="4462159676511157176">Egendefinerte navnetjenere</translation>
-<translation id="4467100756425880649">Chrome Nettmarked Galleri</translation>
 <translation id="4467101674048705704">Vis <ph name="FOLDER_NAME" /></translation>
 <translation id="4469477701382819144">Blokkert på nettsteder som viser forstyrrende eller villedende annonser</translation>
 <translation id="447252321002412580">Hjelp til med å forbedre funksjonene og ytelsen til Chrome</translation>
@@ -2400,7 +2398,6 @@
 <translation id="4647697156028544508">Skriv inn PIN-koden for «<ph name="DEVICE_NAME" />»:</translation>
 <translation id="4648491805942548247">Utilstrekkelige tillatelser</translation>
 <translation id="4648499713050786492">Du må låse opp profilen din før du kan legge til en person.</translation>
-<translation id="465499440663162826">Kunne ikke koble til Chrome Nettmarked.</translation>
 <translation id="4656293982926141856">Denne datamaskinen</translation>
 <translation id="4660476621274971848">Den forventede versjonen var «<ph name="EXPECTED_VERSION" />», men den faktiske versjonen var «<ph name="NEW_ID" />»</translation>
 <translation id="4662788913887017617">Del dette bokmerket med iPhone</translation>
@@ -2647,7 +2644,6 @@
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> nye bilder</translation>
 <translation id="5010043101506446253">Sertifiseringsinstanser</translation>
 <translation id="5015344424288992913">Konverterer proxy ...</translation>
-<translation id="5015762597229892204">Velg en skriverdriverapp</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5017633213534173756">Husk</translation>
 <translation id="5018207570537526145">Åpne nettstedet for utvidelsen</translation>

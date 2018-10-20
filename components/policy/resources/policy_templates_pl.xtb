@@ -704,7 +704,7 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="2873651257716068683">Zastępuje domyślny rozmiar drukowanej strony. Jeśli dany rozmiar strony jest niedostępny, zasada jest ignorowana.</translation>
 <translation id="2874209944580848064">Uwaga dotycząca urządzeń z <ph name="PRODUCT_OS_NAME" /> obsługujących aplikacje na Androida:</translation>
 <translation id="2877225735001246144">Wyłącz wyszukiwanie rekordu CNAME podczas negocjowania uwierzytelniania Kerberos</translation>
-<translation id="2890645751406497668">Automatycznie przyznaj tym stronom uprawnienie do łączenia się z urządzeniami USB o podanych identyfikatorach producenta i produktu.</translation>
+<translation id="2890645751406497668">Automatycznie przyznaj tym stronom uprawnienia do łączenia się z urządzeniami USB o podanych identyfikatorach producenta i produktu.</translation>
 <translation id="2892414556511568464">Ogranicza tryb drukowania dwustronnego. Zasada nieskonfigurowana i pusty zbiór są traktowane jako brak ograniczeń.</translation>
 <translation id="2893546967669465276">Wysyłaj dzienniki systemowe na serwer zarządzania</translation>
 <translation id="2899002520262095963">Aplikacje na Androida mogą używać konfiguracji sieci i certyfikatów CA ustawianych przez tę zasadę, ale nie mają dostępu do niektórych opcji konfiguracji.</translation>
@@ -2340,7 +2340,7 @@ Wyniki czyszczenia będą przesyłane do Google, a użytkownik nie będzie pytan
       Ta zasada nie ma wpływu na to, czy użytkownicy mogą konfigurować drukarki na poszczególnych urządzeniach. Ma być uzupełnieniem konfigurowania drukarek przez poszczególnych użytkowników.
 
       W przypadku urządzeń zarządzanych przez Active Directory ta zasada obsługuje rozwijanie ciągu <ph name="MACHINE_NAME_VARIABLE" /> do nazwy komputera w Active Directory lub części tej nazwy. Jeśli na przykład nazwą komputera jest <ph name="MACHINE_NAME_EXAMPLE" />, to ciąg <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> zostanie zastąpiony przez cztery znaki po 6. miejscu, czyli <ph name="MACHINE_NAME_PART_EXAMPLE" />. Miejsca liczymy od zera.
-      Obsługa ciągu <ph name="MACHINE_NAME_VARIABLE_LOWERCASE" /> (małe litery) została wycofana M71 i zostanie usunięta w M72.
+      Obsługa ciągu <ph name="MACHINE_NAME_VARIABLE_LOWERCASE" /> (małe litery) została wycofana w wersji M71 i zostanie usunięta w M72.
       </translation>
 <translation id="7340034977315324840">Zgłoś godziny aktywności urządzenia</translation>
 <translation id="7343497214039883642">Plik konfiguracji drukarek firmowych dla urządzeń</translation>

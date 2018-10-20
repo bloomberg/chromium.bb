@@ -232,7 +232,6 @@
 <translation id="131461803491198646">Domáca sieť, bez roamingu</translation>
 <translation id="1316136264406804862">Prebieha vyhľadávanie...</translation>
 <translation id="1316495628809031177">Synchronizácia je pozastavená</translation>
-<translation id="1319979322914001937">Aplikácia, ktorá zobrazuje filtrovaný zoznam rozšírení z Internetového obchodu Chrome. Rozšírenia z tohto zoznamu sa dajú nainštalovať priamo z aplikácie.</translation>
 <translation id="1322046419516468189">Uložené heslá si môžete zobraziť a spravovať v časti <ph name="SAVED_PASSWORDS_STORE" /></translation>
 <translation id="1326317727527857210">Ak chcete získať karty z ďalších svojich zariadení, prihláste sa do Chromu.</translation>
 <translation id="1327074568633507428">Tlačiareň v službe Google Cloud Print</translation>
@@ -2300,7 +2299,6 @@ dotyku</translation>
 <translation id="4451757071857432900">Blokované na weboch, ktoré zobrazujú obťažujúce alebo zavádzajúce reklamy (odporúčané)</translation>
 <translation id="4453946976636652378">Vyhľadajte v službe <ph name="SEARCH_ENGINE_NAME" /> alebo zadajte webovú adresu</translation>
 <translation id="4462159676511157176">Vlastné menné servery</translation>
-<translation id="4467100756425880649">Galéria Internetového obchodu Chrome</translation>
 <translation id="4467101674048705704">Rozbaliť <ph name="FOLDER_NAME" /></translation>
 <translation id="4469477701382819144">Blokované na weboch, ktoré zobrazujú obťažujúce alebo zavádzajúce reklamy</translation>
 <translation id="447252321002412580">Pomáhať s vylepšovaním funkcií a výkonu Chromu</translation>
@@ -2419,7 +2417,6 @@ dotyku</translation>
 <translation id="4647697156028544508">Zadajte kód PIN pre zariadenie <ph name="DEVICE_NAME" />:</translation>
 <translation id="4648491805942548247">Nedostatočné povolenia</translation>
 <translation id="4648499713050786492">Skôr ako pridáte osobu, odomknite svoj profil.</translation>
-<translation id="465499440663162826">K Internetovému obchodu Chrome sa nepodarilo pripojiť</translation>
 <translation id="4656293982926141856">Tento počítač</translation>
 <translation id="4660476621274971848">Očakávaná verzia bola „<ph name="EXPECTED_VERSION" />“. Skutočná verzia bola „<ph name="NEW_ID" />“.</translation>
 <translation id="4662788913887017617">Zdieľajte túto záložku so zariadením iPhone</translation>
@@ -2668,7 +2665,6 @@ dotyku</translation>
 <translation id="5004584466530475658">Nové fotky: <ph name="FILE_COUNT" /></translation>
 <translation id="5010043101506446253">Certifikačná autorita</translation>
 <translation id="5015344424288992913">Určenie proxy...</translation>
-<translation id="5015762597229892204">Výber aplikácie ovládača tlačiarne</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5017633213534173756">Zapamätať</translation>
 <translation id="5018207570537526145">Otvoriť web rozšírenia</translation>
@@ -3383,7 +3379,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6042308850641462728">Viac</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> zdieľa kartu Chromu s kartou <ph name="TAB_NAME" />.</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> zdieľa kartu Chromu a zvuk s kartou <ph name="TAB_NAME" />.</translation>
-<translation id="6045021379489914695">Chromebook a telefón s Androidom môžu spolu lepšie fungovať. Prepojte ich, aby ste mohli odosielať textové správy z počítača, zdieľať internetové pripojenie a odomykať Chromebooku telefónom.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Ďalšie informácie<ph name="LINK_END" /></translation>
+<translation id="6045021379489914695">Chromebook a telefón s Androidom môžu spolu fungovať lepšie. Prepojte ich, aby ste mohli odosielať textové správy z počítača, zdieľať internetové pripojenie a odomykať Chromebook telefónom.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Ďalšie informácie<ph name="LINK_END" /></translation>
 <translation id="6049004884579590341">Pridržaním klávesa |<ph name="ACCELERATOR" />| ukončite režim celej obrazovky</translation>
 <translation id="6049065490165456785">Fotografia z vnútorného fotoaparátu</translation>
 <translation id="6051354611314852653">Ojoj!  Systému sa nepodarilo autorizovať prístup k rozhraniu API pre toto zariadenie.</translation>
@@ -3731,7 +3727,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="656293578423618167">Názov súboru alebo cesta má veľa znakov. Uložte súbor pod kratším názvom alebo inde.</translation>
 <translation id="656398493051028875">Prebieha odstraňovanie súboru <ph name="FILENAME" />...</translation>
 <translation id="6567688344210276845">Nepodarilo sa načítať ikonu „<ph name="ICON" />“ akcie stránky.</translation>
-<translation id="6571979863037191371">Odpojte telefón od Chromebooku. Už sa nebudú automaticky pripájať.</translation>
+<translation id="6571979863037191371">Odpojte telefón od Chromebooku. Už sa nebude automaticky pripájať.</translation>
 <translation id="657402800789773160">&amp;Obnoviť túto stránku</translation>
 <translation id="6577284282025554716">Sťahovanie bolo zrušené: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Šifrovať synchronizované heslá pomocou používateľského mena a hesla Google</translation>

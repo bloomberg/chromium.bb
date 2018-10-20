@@ -15,7 +15,7 @@
 <translation id="1016566241875885511">Maelezo ya ziada (hiari)</translation>
 <translation id="1017280919048282932">&amp;Ongeza kwa kamusi</translation>
 <translation id="1018656279737460067">Imeghairiwa</translation>
-<translation id="1023873740278604399">Sogeza kidole chako kwa utaratibu ili uongeze sehemu mbalimbali za alama ya kidole</translation>
+<translation id="1023873740278604399">Sogeza kidole chako kwa utaratibu ili uongeze sehemu mbalimbali za alama ya kidole.</translation>
 <translation id="1026822031284433028">Pakia Picha</translation>
 <translation id="1029317248976101138">Kuza</translation>
 <translation id="1030706264415084469"><ph name="URL" /> inataka kuhifadhi data nyingi kwenye kifaa chako kwa muda mrefu</translation>
@@ -231,7 +231,6 @@
 <translation id="131461803491198646">Uko katika mtandao wako wa kawaida</translation>
 <translation id="1316136264406804862">Inatafuta...</translation>
 <translation id="1316495628809031177">Imesitisha Usawazishaji</translation>
-<translation id="1319979322914001937">Programu inaonyesha orodha iliyochujwa ya viendelezi kutoka kwenye Duka la Chrome kwenye Wavuti. Viendelezi katika orodha vinaweza kusakinishwa moja kwa moja kutoka kwenye programu.</translation>
 <translation id="1322046419516468189">Angalia na udhibiti manenosiri yaliyohifadhiwa kwenye <ph name="SAVED_PASSWORDS_STORE" /> yako</translation>
 <translation id="1326317727527857210">Ili upate vichupo kutoka kwenye vifaa vyako vingine, ingia katika Chrome.</translation>
 <translation id="1327074568633507428">Printa kwenye Google Cloud Print</translation>
@@ -1187,7 +1186,7 @@
 <translation id="2749881179542288782">Kagua Sarufi Pamoja na Tahajia</translation>
 <translation id="2751739896257479635">Uthibitishaji wa awamu ya pili wa EAP</translation>
 <translation id="2755367719610958252">Dhibiti vipengele vya zana za walio na matatizo ya kuona au kusikia</translation>
-<translation id="2755628026949580719">Ikiwa ufunguo wako wa usalama haujaorodheshwa, bonyeza kifufe cha ufunguo kwa angalau sekunde 5.</translation>
+<translation id="2755628026949580719">Ikiwa ufunguo wako wa usalama haujaorodheshwa, bonyeza kitufe cha ufunguo kwa angalau sekunde 5.</translation>
 <translation id="275662540872599901">skrini imezimwa</translation>
 <translation id="2761898608071930085">Tumia Akaunti Nyingine</translation>
 <translation id="2762441749940182211">Kamera imezuiwa</translation>
@@ -1253,7 +1252,7 @@
 <translation id="2850124913210091882">Hifadhi nakala</translation>
 <translation id="2850541429955027218">Ongeza mandhari</translation>
 <translation id="2853916256216444076">Video $1</translation>
-<translation id="2859806420264540918">Tovuti inaonyesha matangazo yanayopotosha au yanayokatiza huduma</translation>
+<translation id="2859806420264540918">Tovuti inaonyesha matangazo yanayopotosha au yanayokatiza huduma.</translation>
 <translation id="2860150991415616761">mrefu sana (sekunde 4)</translation>
 <translation id="2861301611394761800">Usasishaji mfumo umekamilika. Tafadhali zima mfumo na uuwashe.</translation>
 <translation id="2861941300086904918">Kidhibiti usalama cha Mteja Asili</translation>
@@ -2280,7 +2279,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4451757071857432900">Yamezuiwa kwenye tovuti zinazoonyesha matangazo yanayopotosha au yanayokatiza huduma (inapendekezwa)</translation>
 <translation id="4453946976636652378">Tafuta kwenye <ph name="SEARCH_ENGINE_NAME" /> au uandike URL</translation>
 <translation id="4462159676511157176">Seva za jina maalum</translation>
-<translation id="4467100756425880649">Ghala la Duka la Chrome kwenye Wavuti</translation>
 <translation id="4467101674048705704">Panua <ph name="FOLDER_NAME" /></translation>
 <translation id="4469477701382819144">Yamezuiwa kwenye tovuti zinazoonyesha matangazo yanayopotosha au yanayokatiza huduma</translation>
 <translation id="447252321002412580">Tusaidie tuboreshe utendaji na vipengele vya Chrome</translation>
@@ -2398,7 +2396,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4647697156028544508">Tafadhali ingiza PIN ya "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Idhini isiyotosha</translation>
 <translation id="4648499713050786492">Tafadhali fungua wasifu wako kabla ya kumwongeza mtumiaji.</translation>
-<translation id="465499440663162826">Haikuweza kuunganisha kwenye Duka la Chrome kwenye Wavuti.</translation>
 <translation id="4656293982926141856">Kompyuta hii</translation>
 <translation id="4660476621274971848">Ilitarajia toleo la "<ph name="EXPECTED_VERSION" />", lakini ilipata toleo la "<ph name="NEW_ID" />"</translation>
 <translation id="4662788913887017617">Shiriki alamisho hii na iPhone yako</translation>
@@ -2645,7 +2642,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5004584466530475658">Picha <ph name="FILE_COUNT" /> mpya</translation>
 <translation id="5010043101506446253">Mamlaka ya cheti</translation>
 <translation id="5015344424288992913">Inatafuta seva mbadala...</translation>
-<translation id="5015762597229892204">Chagua programu ya kiendeshaji cha printa</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5017633213534173756">Kumbuka</translation>
 <translation id="5018207570537526145">Fungua tovuti ya kiendelezi</translation>

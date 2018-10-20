@@ -232,7 +232,6 @@
 <translation id="131461803491198646">Home network, not roaming</translation>
 <translation id="1316136264406804862">Searching...</translation>
 <translation id="1316495628809031177">Sync is paused</translation>
-<translation id="1319979322914001937">An app that shows a filtered list of extensions from Chrome Web Store. Extensions in the list can be installed directly from the app.</translation>
 <translation id="1322046419516468189">View and manage saved passwords in your <ph name="SAVED_PASSWORDS_STORE" /></translation>
 <translation id="1326317727527857210">To get your tabs from your other devices, sign in to Chrome.</translation>
 <translation id="1327074568633507428">Printer on Google Cloud Print</translation>
@@ -2300,7 +2299,6 @@
 <translation id="4451757071857432900">Blocked on sites that show intrusive or misleading ads (recommended)</translation>
 <translation id="4453946976636652378">Search <ph name="SEARCH_ENGINE_NAME" /> or type a URL</translation>
 <translation id="4462159676511157176">Custom name servers</translation>
-<translation id="4467100756425880649">Chrome Web Store Gallery</translation>
 <translation id="4467101674048705704">Expand <ph name="FOLDER_NAME" /></translation>
 <translation id="4469477701382819144">Blocked on sites that show intrusive or misleading ads</translation>
 <translation id="447252321002412580">Help improve Chrome's features and performance</translation>
@@ -2419,7 +2417,6 @@
 <translation id="4647697156028544508">Please enter the PIN for "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Insufficient permissions</translation>
 <translation id="4648499713050786492">Please unlock your profile before adding a person.</translation>
-<translation id="465499440663162826">Could not connect to the Chrome Web Store.</translation>
 <translation id="4656293982926141856">This computer</translation>
 <translation id="4660476621274971848">Expected version '<ph name="EXPECTED_VERSION" />', but version was '<ph name="NEW_ID" />'</translation>
 <translation id="4662788913887017617">Share this bookmark with your iPhone</translation>
@@ -2668,7 +2665,6 @@
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> new photos</translation>
 <translation id="5010043101506446253">Certificate authority</translation>
 <translation id="5015344424288992913">Resolving proxy...</translation>
-<translation id="5015762597229892204">Select a printer driver app</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5017633213534173756">Remember</translation>
 <translation id="5018207570537526145">Open extension website</translation>

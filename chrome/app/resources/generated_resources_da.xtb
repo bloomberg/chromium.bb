@@ -231,7 +231,6 @@
 <translation id="131461803491198646">Hjemmenetværk, uden roaming</translation>
 <translation id="1316136264406804862">Søger...</translation>
 <translation id="1316495628809031177">Synkroniseringen er sat på pause</translation>
-<translation id="1319979322914001937">En app, der viser en filtreret liste over udvidelser fra Chrome Webshop. Udvidelserne på listen kan installeres direkte fra appen.</translation>
 <translation id="1322046419516468189">Se og administrer gemte adgangskoder på din <ph name="SAVED_PASSWORDS_STORE" /></translation>
 <translation id="1326317727527857210">Log ind på Chrome for at få adgang til dine faner på dine andre enheder.</translation>
 <translation id="1327074568633507428">Printer i Google Cloudprinter</translation>
@@ -2287,7 +2286,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4451757071857432900">Blokeret på websites, der viser påtrængende eller vildledende annoncer (anbefales)</translation>
 <translation id="4453946976636652378">Søg på <ph name="SEARCH_ENGINE_NAME" />, eller angiv en webadresse</translation>
 <translation id="4462159676511157176">Tilpassede navneservere</translation>
-<translation id="4467100756425880649">Chrome Webshop Galleri</translation>
 <translation id="4467101674048705704">Udvid <ph name="FOLDER_NAME" /></translation>
 <translation id="4469477701382819144">Blokeret på websites, der viser påtrængende eller vildledende annoncer</translation>
 <translation id="447252321002412580">Vær med til at forbedre Chromes funktioner og ydeevne</translation>
@@ -2405,7 +2403,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4647697156028544508">Angiv pinkoden for "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Utilstrækkelige tilladelser</translation>
 <translation id="4648499713050786492">Lås din profil op, før du kan tilføje en person.</translation>
-<translation id="465499440663162826">Der kunne ikke oprettes forbindelse til Chrome Webshop.</translation>
 <translation id="4656293982926141856">Denne computer</translation>
 <translation id="4660476621274971848">Den forventede version var "<ph name="EXPECTED_VERSION" />", men versionen viste sig at være "<ph name="NEW_ID" />"</translation>
 <translation id="4662788913887017617">Del dette bogmærke med din iPhone</translation>
@@ -2652,7 +2649,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> nye billeder</translation>
 <translation id="5010043101506446253">Certificeringsautoritet</translation>
 <translation id="5015344424288992913">Identificerer proxy...</translation>
-<translation id="5015762597229892204">Vælg en app til printerdrivere</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5017633213534173756">Husk</translation>
 <translation id="5018207570537526145">Åbn udvidelsens website</translation>

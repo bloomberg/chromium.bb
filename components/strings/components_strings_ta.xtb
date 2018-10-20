@@ -950,7 +950,6 @@
 <translation id="7564049878696755256"><ph name="ORG_NAME" /> கணக்கிற்கான அணுகலை நீங்கள் இழக்கக்கூடும் அல்லது அடையாளத் திருட்டை எதிர்கொள்ளக்கூடும். இப்போதே உங்கள் கடவுச்சொல்லை மாற்றும்படி Chrome பரிந்துரைக்கிறது.</translation>
 <translation id="7567204685887185387">இது <ph name="DOMAIN" /> தான் என்பதை இந்தச் சேவையகம் உறுதிப்படுத்தவில்லை; இதன் பாதுகாப்புச் சான்றிதழில் மோசடி செய்யப்பட்டிருக்கலாம். இது தவறான உள்ளமைவால் ஏற்பட்டிருக்கலாம் அல்லது தீங்கிழைப்பவர் உங்கள் இணைப்பில் குறுக்கிட்டிருக்கலாம்.</translation>
 <translation id="7569952961197462199">Chrome இலிருந்து கிரெடிட் கார்டை அகற்றவா?</translation>
-<translation id="7575800019233204241">"உங்கள் இணைப்பு தனிப்பட்டது அல்ல" அல்லது "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" அல்லது "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" அல்லது "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" அல்லது "SSL சான்றிதழ் பிழை"</translation>
 <translation id="7578104083680115302">Google இல் நீங்கள் சேமித்துள்ள கார்டுகளைப் பயன்படுத்தி பல தளங்களிலும் பயன்பாடுகளிலும் உங்களுடைய  சாதனங்களில் அனைத்திலும் விரைவாகப் பணம் செலுத்தலாம்.</translation>
 <translation id="7592362899630581445">பெயர் கட்டுப்பாடுகளைச் சேவையகத்தின் சான்றிதழ் மீறுகிறது.</translation>
 <translation id="7598391785903975535"><ph name="UPPER_ESTIMATE" /> அளவை விடக் குறைவாக உள்ளது</translation>

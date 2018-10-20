@@ -231,7 +231,6 @@
 <translation id="131461803491198646">شبکه اصلی، بدون رومینگ</translation>
 <translation id="1316136264406804862">در حال جستجو...</translation>
 <translation id="1316495628809031177">همگام‌سازی موقتاً متوقف شده است</translation>
-<translation id="1319979322914001937">‏برنامه‌ای که فهرست فیلترشده‌ای از افزونه‌ها از فروشگاه وب Chrome را نشان می‌دهد. می‌توان افزونه‌ها در این فهرست را به‌طور مستقیم از برنامه نصب کرد.</translation>
 <translation id="1322046419516468189">در <ph name="SAVED_PASSWORDS_STORE" /> گذرواژه‌های ذخیره‌شده‌تان را مشاهده و مدیریت کنید</translation>
 <translation id="1326317727527857210">‏برای دسترسی به برگه‌هایتان در دستگاه‌های دیگر، به سیستم Chrome وارد شوید.</translation>
 <translation id="1327074568633507428">‏چاپگر در Google Cloud Print</translation>
@@ -2285,7 +2284,6 @@
 <translation id="4451757071857432900">در سایت‌هایی که آگهی‌های مزاحم یا گمراه‌کننده نشان می‌دهند مسدود شود (توصیه‌شده)</translation>
 <translation id="4453946976636652378">جستجوی <ph name="SEARCH_ENGINE_NAME" /> یا تایپ نشانی وب</translation>
 <translation id="4462159676511157176">سرورهای نام سفارشی</translation>
-<translation id="4467100756425880649">‏گالری فروشگاه وب Chrome</translation>
 <translation id="4467101674048705704">بزرگ کردن <ph name="FOLDER_NAME" /></translation>
 <translation id="4469477701382819144">در سایت‌هایی که آگهی‌های مزاحم یا گمراه‌کننده نشان می‌دهند مسدود شود</translation>
 <translation id="447252321002412580">‏کمک به بهبود ویژگی‌ها و عملکرد Chrome</translation>
@@ -2403,7 +2401,6 @@
 <translation id="4647697156028544508">لطفاً پین را برای "<ph name="DEVICE_NAME" />" وارد کنید:</translation>
 <translation id="4648491805942548247">مجوزها کافی نیستند</translation>
 <translation id="4648499713050786492">لطفاً قبل از افزودن شخصی، قفل نمایه‌تان را باز کنید.</translation>
-<translation id="465499440663162826">‏اتصال به فروشگاه وب Chrome انجام نشد.</translation>
 <translation id="4656293982926141856">این رایانه</translation>
 <translation id="4660476621274971848">نسخه موردانتظار «<ph name="EXPECTED_VERSION" />» است، اما نسخه «<ph name="NEW_ID" />» بود</translation>
 <translation id="4662788913887017617">‏این نشانک را با iPhone خود به اشتراک بگذارید</translation>
@@ -2650,7 +2647,6 @@
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> عکس جدید</translation>
 <translation id="5010043101506446253">مدیر گواهی‌نامه</translation>
 <translation id="5015344424288992913">در حال تحلیل پراکسی...</translation>
-<translation id="5015762597229892204">یک برنامه درایور چاپگر انتخاب کنید</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5017633213534173756">به خاطر سپردن</translation>
 <translation id="5018207570537526145">باز کردن وب‌سایت افزونه</translation>

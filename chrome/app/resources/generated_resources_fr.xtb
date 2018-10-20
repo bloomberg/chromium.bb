@@ -231,7 +231,6 @@
 <translation id="131461803491198646">Réseau domestique, sans itinérance</translation>
 <translation id="1316136264406804862">Recherche en cours…</translation>
 <translation id="1316495628809031177">La synchronisation est mise en veille</translation>
-<translation id="1319979322914001937">Application qui présente une liste filtrée d'extensions du Chrome Web Store. Les extensions figurant sur cette liste peuvent être installées directement depuis l'application.</translation>
 <translation id="1322046419516468189">Afficher et gérer les mots de passe enregistrés de votre <ph name="SAVED_PASSWORDS_STORE" /></translation>
 <translation id="1326317727527857210">Connectez-vous à Chrome pour accéder à vos onglets sur vos autres appareils.</translation>
 <translation id="1327074568633507428">Imprimante connectée à Google Cloud Print</translation>
@@ -2289,7 +2288,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4451757071857432900">Bloqué sur les sites qui affichent des annonces intrusives ou trompeuses (recommandé)</translation>
 <translation id="4453946976636652378">Effectuez une recherche sur <ph name="SEARCH_ENGINE_NAME" /> ou saisissez une URL</translation>
 <translation id="4462159676511157176">Serveurs de noms personnalisés</translation>
-<translation id="4467100756425880649">Chrome Web Store Gallery</translation>
 <translation id="4467101674048705704">Développer le dossier "<ph name="FOLDER_NAME" />"</translation>
 <translation id="4469477701382819144">Bloqué sur les sites qui affichent des annonces intrusives ou trompeuses</translation>
 <translation id="447252321002412580">Contribuer à l'amélioration des fonctionnalités et des performances de Chrome</translation>
@@ -2407,7 +2405,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4647697156028544508">Saisissez le code d'accès de "<ph name="DEVICE_NAME" />" :</translation>
 <translation id="4648491805942548247">Autorisations insuffisantes.</translation>
 <translation id="4648499713050786492">Veuillez déverrouiller votre profil avant d'ajouter une personne.</translation>
-<translation id="465499440663162826">Impossible de se connecter au Chrome Web Store.</translation>
 <translation id="4656293982926141856">Cet ordinateur</translation>
 <translation id="4660476621274971848">Version <ph name="NEW_ID" /> reçue au lieu de la version <ph name="EXPECTED_VERSION" /> attendue</translation>
 <translation id="4662788913887017617">Partager ce favori avec votre iPhone</translation>
@@ -2654,7 +2651,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> nouvelles photos</translation>
 <translation id="5010043101506446253">Autorité de certification</translation>
 <translation id="5015344424288992913">Résolution du proxy...</translation>
-<translation id="5015762597229892204">Sélectionner une application de pilote d'imprimante</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5017633213534173756">Mémoriser</translation>
 <translation id="5018207570537526145">Ouvrir le site Web de l'extension</translation>

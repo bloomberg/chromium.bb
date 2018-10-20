@@ -1636,9 +1636,9 @@
           Als deze instelling is uitgeschakeld of niet is ingesteld, kunnen zowel lokale als externe gebruikers met de host communiceren terwijl deze wordt gedeeld.</translation>
 <translation id="5396049152026347991">De gebruiker toestaan VPN-verbindingen te beheren.
 
-      Als dit beleid is ingesteld op false, worden alle gebruikersinterfaces van <ph name="PRODUCT_NAME" /> uitgeschakeld die de gebruiker zouden toestaan VPN-verbindingen te verbreken of bewerken.
+      Als dit beleid is ingesteld op 'false', worden alle gebruikersinterfaces van <ph name="PRODUCT_NAME" /> uitgeschakeld die de gebruiker zouden toestaan VPN-verbindingen te verbreken of bewerken.
 
-      Als dit beleid niet is ingesteld of is ingesteld op true, kunnen gebruikers zoals gebruikelijk VPN-verbindingen verbreken of bewerken.
+      Als dit beleid niet is ingesteld of is ingesteld op 'true', kunnen gebruikers zoals gebruikelijk VPN-verbindingen verbreken of bewerken.
 
       Als de VPN-verbinding via een VPN-app wordt gemaakt, heeft dit beleid geen gevolgen voor de gebruikersinterface binnen de app. Daarom kan de gebruiker nog steeds de app gebruiken om de VPN-verbinding te bewerken.
 
@@ -1728,9 +1728,9 @@
       Als deze instelling is uitgeschakeld of niet is geconfigureerd, kunnen gebruikers alle ondersteunde typen externe opslag gebruiken op hun apparaat.</translation>
 <translation id="5697306356229823047">Apparaatgebruikers melden</translation>
 <translation id="570062449808736508">Wanneer dit beleid is ingesteld op een niet-lege tekenreeks, leest de WebView de URL-beperkingen van de contentprovider met de opgegeven autoriteitsnaam.</translation>
-<translation id="5701714006401683963">Als dit beleid is ingesteld op false, vertoont de beheerde gastsessie het gedrag dat is gedocumenteerd op https://support.google.com/chrome/a/answer/3017014 (de standaard 'openbare sessie').
+<translation id="5701714006401683963">Als dit beleid is ingesteld op 'false', vertoont de beheerde gastsessie het gedrag dat is gedocumenteerd op https://support.google.com/chrome/a/answer/3017014 (de standaard 'openbare sessie').
 
-      Als dit beleid is ingesteld op true of niet is ingesteld, vertoont de beheerde gastsessie het gedrag van een 'beheerde sessie', waardoor veel van de beperkingen die gelden voor gewone 'openbare sessies' worden opgeheven.
+      Als dit beleid is ingesteld op 'true' of niet is ingesteld, vertoont de beheerde gastsessie het gedrag van een 'beheerde sessie', waardoor veel van de beperkingen die gelden voor gewone 'openbare sessies' worden opgeheven.
 
       Als dit beleid is ingesteld, kan de gebruiker het niet wijzigen of overschrijven.</translation>
 <translation id="5722934961007828462">Als deze instelling is ingeschakeld, voert <ph name="PRODUCT_NAME" /> altijd een intrekkingscontrole uit voor servercertificaten die kunnen worden gevalideerd en zijn ondertekend door lokaal geïnstalleerde CA-certificaten.
@@ -2399,9 +2399,9 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7329968046053403405">Hiermee wordt het accounttype gespecificeerd van de accounts die worden geleverd door de verificatie-app voor Android die <ph name="HTTP_NEGOTIATE" />-verificatie ondersteunt (zoals Kerberos-verificatie). Deze informatie is beschikbaar via de leverancier van de verificatie-app. Ga voor meer informatie naar https://goo.gl/hajyfN.
 
           Als er geen instelling is opgegeven, wordt <ph name="HTTP_NEGOTIATE" />-verificatie uitgeschakeld voor Android.</translation>
-<translation id="7331962793961469250">Wanneer dit is ingesteld op 'True', worden promoties voor apps van de Chrome Web Store niet weergegeven op de pagina 'Nieuw tabblad'.
+<translation id="7331962793961469250">Wanneer dit is ingesteld op 'true', worden promoties voor apps van de Chrome Web Store niet weergegeven op de pagina 'Nieuw tabblad'.
 
-      Als je deze optie instelt op 'False' of deze niet instelt, worden promoties voor apps van de Chrome Web Store wel op de pagina 'Nieuw tabblad' weergegeven.</translation>
+      Als je deze optie instelt op 'false' of deze niet instelt, worden promoties voor apps van de Chrome Web Store wel op de pagina 'Nieuw tabblad' weergegeven.</translation>
 <translation id="7332963785317884918">Dit beleid is niet langer in gebruik. <ph name="PRODUCT_OS_NAME" /> gebruikt altijd de opschoonstrategie 'RemoveLRU'.
 
       Bepaalt het automatische opschoongedrag op <ph name="PRODUCT_OS_NAME" />-apparaten. Automatisch opschonen wordt geactiveerd wanneer de hoeveelheid vrije schijfruimte een kritiek niveau bereikt, om wat schijfruimte vrij te maken.
@@ -3001,7 +3001,7 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 <translation id="8801680448782904838">Een gebruiker laten weten dat het aanbevolen of vereist is om de browser of het apparaat opnieuw op te starten</translation>
 <translation id="8818173863808665831">De geografische locatie van het apparaat rapporteren.
 
-      Als het beleid niet is ingesteld of is ingesteld op 'False', wordt de locatie niet gerapporteerd.</translation>
+      Als het beleid niet is ingesteld of is ingesteld op 'false', wordt de locatie niet gerapporteerd.</translation>
 <translation id="8818768076343557335">Netwerkacties voorspellen op elk netwerk dat niet mobiel is.
           (Beëindigd in 50, verwijderd in 52. Als na 52 waarde 1 is ingesteld, wordt deze waarde verwerkt als 0 - netwerkacties voorspellen voor elke netwerkverbinding.)</translation>
 <translation id="8825782996899863372">Waarschuwing voor wachtwoordbeveiliging wordt geactiveerd bij hergebruik van een wachtwoord op een phishingpagina</translation>

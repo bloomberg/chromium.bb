@@ -950,7 +950,6 @@
 <translation id="7564049878696755256">നിങ്ങളുടെ <ph name="ORG_NAME" /> അക്കൗണ്ടിലേക്കുള്ള ആക്‌സസ് നഷ്‌ടമാകാനോ നിങ്ങളുടെ ഐഡന്‍റിറ്റി മോഷ്ടിക്കപ്പെടാനോ സാധ്യതയുണ്ട്. ഇപ്പോൾ തന്നെ പാസ്‍വേഡ് മാറ്റാൻ Chrome ശുപാർശ ചെയ്യുന്നു.</translation>
 <translation id="7567204685887185387">ഈ സെർവറിന് അത് <ph name="DOMAIN" /> ആണെന്ന് തെളിയിക്കാനായില്ല; സെർവറിന്റെ സുരക്ഷ സർട്ടിഫിക്കറ്റ് വഞ്ചനാപരമായി ഇഷ്യൂ ചെയ്‌തിരിക്കാം. തെറ്റായ കോൺഫിഗറേഷൻ കാരണമോ ഒരു അക്രമണകാരി നിങ്ങളുടെ കണക്ഷനെ തടസ്സപ്പെടുത്തുന്നത് കൊണ്ടോ ആയിരിക്കാം ഇത് സംഭവിച്ചത്.</translation>
 <translation id="7569952961197462199">Chrome-ൽ നിന്ന് ക്രെഡിറ്റ് കാർഡ് നീക്കംചെയ്യണോ?</translation>
-<translation id="7575800019233204241">"നിങ്ങളുടെ കണക്ഷൻ സ്വകാര്യമല്ല" അല്ലെങ്കിൽ "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" അല്ലെങ്കിൽ "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" അല്ലെങ്കിൽ "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" അല്ലെങ്കിൽ "SSL സർട്ടിഫിക്കറ്റ് പിശക്"</translation>
 <translation id="7578104083680115302">നിങ്ങൾ Google-ൽ സംരക്ഷിച്ച കാർഡുകൾ ഉപയോഗിച്ച് ഉപകരണങ്ങളിലുടനീളമുള്ള സൈറ്റുകളിലും ആപ്‌സിലും പെട്ടെന്ന് പണമടയ്‌ക്കുക.</translation>
 <translation id="7592362899630581445">സെർവറിന്റെ സർട്ടിഫിക്കറ്റ് പേരിന്റെ പരിധി ലംഘിക്കുന്നു.</translation>
 <translation id="7598391785903975535"><ph name="UPPER_ESTIMATE" />-യിൽ താഴെ</translation>

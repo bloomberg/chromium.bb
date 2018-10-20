@@ -63,7 +63,7 @@
 <translation id="1085697365578766383">Ralat semasa memulakan mesin maya. Sila cuba lagi.</translation>
 <translation id="1089439967362294234">Tukar Kata Laluan</translation>
 <translation id="1090126737595388931">Tiada Apl Latar Belakang Dijalankan</translation>
-<translation id="1090918500949388876">Akses Assistant pada bila-bila masa anda menyebut "Ok Google" semasa skrin anda dihidupkan.</translation>
+<translation id="1090918500949388876">Akses Assistant pada bila-bila masa anda menyebut "Ok Google" semasa skrin anda dihidupkan</translation>
 <translation id="1091767800771861448">Tekan ESCAPE untuk melangkau (Binaan tidak rasmi sahaja).</translation>
 <translation id="1093457606523402488">Rangkaian Kelihatan:</translation>
 <translation id="1094607894174825014">Pengendalian baca atau tulis diminta dengan ofset tidak sah pada: "<ph name="DEVICE_NAME" />".</translation>
@@ -231,7 +231,6 @@
 <translation id="131461803491198646">Rangkaian utama, bukan perayauan</translation>
 <translation id="1316136264406804862">Mencari...</translation>
 <translation id="1316495628809031177">Penyegerakan dijeda</translation>
-<translation id="1319979322914001937">Apl yang menunjukkan senarai ditapis bagi sambungan daripada Gedung Web Chrome. Sambungan dalam senarai boleh dipasang terus daripada apl.</translation>
 <translation id="1322046419516468189">Lihat dan urus kata laluan yang disimpan dalam <ph name="SAVED_PASSWORDS_STORE" /> anda</translation>
 <translation id="1326317727527857210">Log masuk ke Chrome untuk mendapatkan tab daripada peranti anda yang lain.</translation>
 <translation id="1327074568633507428">Pencetak di Cetakan Awan Google</translation>
@@ -2290,7 +2289,6 @@
 <translation id="4451757071857432900">Disekat di tapak yang menyiarkan iklan yang mengganggu atau mengelirukan (disyorkan)</translation>
 <translation id="4453946976636652378">Cari <ph name="SEARCH_ENGINE_NAME" /> atau taipkan URL</translation>
 <translation id="4462159676511157176">Nama pelayan tersuai</translation>
-<translation id="4467100756425880649">Galeri Gedung Web Chrome</translation>
 <translation id="4467101674048705704">Kembangkan <ph name="FOLDER_NAME" /></translation>
 <translation id="4469477701382819144">Disekat di tapak yang menyiarkan iklan yang mengganggu atau mengelirukan</translation>
 <translation id="447252321002412580">Bantu meningkatkan ciri dan prestasi Chrome</translation>
@@ -2408,7 +2406,6 @@
 <translation id="4647697156028544508">Sila masukkan PIN untuk "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Kebenaran tidak mencukupi</translation>
 <translation id="4648499713050786492">Sila buka kunci profil anda sebelum menambahkan seseorang.</translation>
-<translation id="465499440663162826">Tidak dapat menyambung ke Gedung Web Chrome.</translation>
 <translation id="4656293982926141856">Komputer ini</translation>
 <translation id="4660476621274971848">Versi yang dijangkakan "<ph name="EXPECTED_VERSION" />", tetapi versi sebenar ialah "<ph name="NEW_ID" />"</translation>
 <translation id="4662788913887017617">Kongsi penanda halaman ini dengan iPhone anda</translation>
@@ -2655,7 +2652,6 @@
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> foto baharu</translation>
 <translation id="5010043101506446253">Pihak berkuasa sijil</translation>
 <translation id="5015344424288992913">Menyelesaikan proksi...</translation>
-<translation id="5015762597229892204">Pilih apl pemacu pencetak</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5017633213534173756">Ingat</translation>
 <translation id="5018207570537526145">Buka tapak web sambungan</translation>
@@ -4233,7 +4229,7 @@
 <translation id="7360233684753165754"><ph name="PAGE_NUMBER" /> halaman ke <ph name="PRINTER_NAME" /></translation>
 <translation id="7361039089383199231">$1 bait</translation>
 <translation id="7361297102842600584">Klik kanan untuk menjalankan <ph name="PLUGIN_NAME" /></translation>
-<translation id="7361537270840348817">Putuskan sambungan telefon anda dari Chromebook</translation>
+<translation id="7361537270840348817">Putuskan sambungan telefon anda daripada Chromebook</translation>
 <translation id="7364796246159120393">Pilih Fail</translation>
 <translation id="7366415735885268578">Tambahkan tapak</translation>
 <translation id="7366909168761621528">Data penyemakan imbas</translation>

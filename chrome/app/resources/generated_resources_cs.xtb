@@ -231,7 +231,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="131461803491198646">Domácí síť, bez roamingu</translation>
 <translation id="1316136264406804862">Vyhledávání...</translation>
 <translation id="1316495628809031177">Synchronizace je pozastavena</translation>
-<translation id="1319979322914001937">Aplikace, která zobrazuje filtrovaný seznam rozšíření v Internetovém obchodu Chrome. Rozšíření v seznamu lze nainstalovat přímo z této aplikace.</translation>
 <translation id="1322046419516468189">K zobrazení a správě uložených hesel můžete použít svůj <ph name="SAVED_PASSWORDS_STORE" /></translation>
 <translation id="1326317727527857210">Chcete-li získat přístup ke kartám ze svých ostatních zařízení, přihlaste se do Chromu.</translation>
 <translation id="1327074568633507428">Tiskárna ve službě Google Cloud Print</translation>
@@ -418,7 +417,7 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="1598233202702788831">Administrátor aktualizace zakázal.</translation>
 <translation id="1600857548979126453">Získat přístup k ladicímu programu stránky na serveru</translation>
 <translation id="1601560923496285236">Použít</translation>
-<translation id="1603300902586586390">Nechat aplikace Linux otevřít tento počet souborů: $1.</translation>
+<translation id="1603300902586586390">Nechat aplikace Linux otevřít tyto soubory (celkem $1).</translation>
 <translation id="1603914832182249871">(Anonymní režim)</translation>
 <translation id="1607139524282324606">Vymazat položku</translation>
 <translation id="1608626060424371292">Odebrat tohoto uživatele</translation>
@@ -1815,7 +1814,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="370415077757856453">Byl zablokován JavaScript</translation>
 <translation id="3704331259350077894">Ukončení operace</translation>
 <translation id="3705722231355495246">-</translation>
-<translation id="3706463572498736864">Stránky na tabulku</translation>
+<translation id="3706463572498736864">Stránek na tabulku</translation>
 <translation id="370665806235115550">Načítání...</translation>
 <translation id="3709244229496787112">Prohlížeč byl zavřen před dokončením stahování.</translation>
 <translation id="3711895659073496551">Pozastavit</translation>
@@ -2286,7 +2285,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4451757071857432900">Blokováno na webech, které zobrazují rušivé nebo zavádějící reklamy (doporučeno)</translation>
 <translation id="4453946976636652378">Zadejte dotaz pro vyhledávač <ph name="SEARCH_ENGINE_NAME" /> nebo adresu URL</translation>
 <translation id="4462159676511157176">Vlastní názvové servery</translation>
-<translation id="4467100756425880649">Galerie Internetového obchodu Chrome</translation>
 <translation id="4467101674048705704">Rozbalit složku <ph name="FOLDER_NAME" /></translation>
 <translation id="4469477701382819144">Blokováno na webech, které zobrazují rušivé nebo zavádějící reklamy</translation>
 <translation id="447252321002412580">Pomoci s vylepšováním funkcí a výkonu prohlížeče Chrome</translation>
@@ -2404,7 +2402,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4647697156028544508">Zadejte prosím PIN pro zařízení <ph name="DEVICE_NAME" />:</translation>
 <translation id="4648491805942548247">Nedostatečná oprávnění</translation>
 <translation id="4648499713050786492">Před přidáním osoby prosím odemkněte svůj profil.</translation>
-<translation id="465499440663162826">K Internetovému obchodu Chrome se nelze připojit.</translation>
 <translation id="4656293982926141856">Tento počítač</translation>
 <translation id="4660476621274971848">Byla očekávána verze <ph name="EXPECTED_VERSION" />, ale použita byla verze <ph name="NEW_ID" /></translation>
 <translation id="4662788913887017617">Sdílejte tuto záložku se svým iPhonem</translation>
@@ -2651,7 +2648,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="5004584466530475658">nové fotky (<ph name="FILE_COUNT" />)</translation>
 <translation id="5010043101506446253">Certifikační autorita</translation>
 <translation id="5015344424288992913">Rozpoznávání proxy serveru...</translation>
-<translation id="5015762597229892204">Vyberte aplikaci ovladače tiskárny</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5017633213534173756">Zapamatovat</translation>
 <translation id="5018207570537526145">Otevřít web rozšíření</translation>
@@ -3710,7 +3706,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="656293578423618167">Cesta nebo název souboru jsou příliš dlouhé. Použijte kratší název nebo vyberte jiné umístění.</translation>
 <translation id="656398493051028875">Mazání souboru <ph name="FILENAME" />...</translation>
 <translation id="6567688344210276845">Nelze načíst ikonu „<ph name="ICON" />“ pro akci stránky.</translation>
-<translation id="6571979863037191371">Odpojte telefon od Chromebooku. Již se nebudou připojovat automaticky.</translation>
+<translation id="6571979863037191371">Odpojte telefon od Chromebooku. Již se nebudou propojovat automaticky.</translation>
 <translation id="657402800789773160">&amp;Načíst tuto stránku znovu</translation>
 <translation id="6577284282025554716">Stahování zrušeno: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Šifrovat synchronizovaná hesla pomocí vašeho uživatelského jména a hesla</translation>

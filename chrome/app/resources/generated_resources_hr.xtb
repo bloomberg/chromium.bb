@@ -231,7 +231,6 @@
 <translation id="131461803491198646">Matična mreža, bez roaminga</translation>
 <translation id="1316136264406804862">Pretraživanje...</translation>
 <translation id="1316495628809031177">Sinkronizacija je pauzirana</translation>
-<translation id="1319979322914001937">Aplikacija koja prikazuje filtrirani popis proširenja iz Chrome web-trgovine. Proširenja na popisu mogu se instalirati izravno iz te aplikacije.</translation>
 <translation id="1322046419516468189">Spremljene zaporke možete pregledati i upravljati njima ovdje: <ph name="SAVED_PASSWORDS_STORE" /></translation>
 <translation id="1326317727527857210">Da bi se prikazale kartice s vaših ostalih uređaja, prijavite se na Chrome.</translation>
 <translation id="1327074568633507428">Pisač na usluzi Google Cloud Print</translation>
@@ -418,7 +417,7 @@
 <translation id="1598233202702788831">Administrator je onemogućio ažuriranja.</translation>
 <translation id="1600857548979126453">pristupiti pozadini programa za ispravljanje pogrešaka na stranici</translation>
 <translation id="1601560923496285236">Primijeni</translation>
-<translation id="1603300902586586390">Dopustite Linux aplikacijama da otvaraju $1 datoteke.</translation>
+<translation id="1603300902586586390">Dopustite Linux aplikacijama da otvore sljedeći broj datoteka: $1</translation>
 <translation id="1603914832182249871">(Anonimno)</translation>
 <translation id="1607139524282324606">Brisanje unosa</translation>
 <translation id="1608626060424371292">Ukloni tog korisnika</translation>
@@ -2289,7 +2288,6 @@
 <translation id="4451757071857432900">Blokirano na web-lokacijama koje prikazuju ometajuće ili obmanjujuće oglase (preporučeno)</translation>
 <translation id="4453946976636652378">Pretraži <ph name="SEARCH_ENGINE_NAME" /> ili unesi URL</translation>
 <translation id="4462159676511157176">Prilagođeni poslužitelji naziva</translation>
-<translation id="4467100756425880649">Galerija Chrome web-trgovine</translation>
 <translation id="4467101674048705704">Proširivanje mape <ph name="FOLDER_NAME" /></translation>
 <translation id="4469477701382819144">Blokirano na web-lokacijama koje prikazuju ometajuće ili obmanjujuće oglase</translation>
 <translation id="447252321002412580">Pomozite poboljšati Chromeove značajke i izvedbu</translation>
@@ -2407,7 +2405,6 @@
 <translation id="4647697156028544508">Unesite PIN-a za uređaj "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Nedovoljne dozvole</translation>
 <translation id="4648499713050786492">Otključajte profil da biste mogli dodati osobu.</translation>
-<translation id="465499440663162826">Povezivanje s Chrome web-trgovinom nije uspjelo.</translation>
 <translation id="4656293982926141856">Ovo računalo</translation>
 <translation id="4660476621274971848">Očekivana je verzija "<ph name="EXPECTED_VERSION" />", no verzija je bila "<ph name="NEW_ID" />"</translation>
 <translation id="4662788913887017617">Dijelite ovu oznaku sa svojim iPhoneom</translation>
@@ -2654,7 +2651,6 @@
 <translation id="5004584466530475658">Broj novih fotografija: <ph name="FILE_COUNT" /></translation>
 <translation id="5010043101506446253">Tijelo za izdavanje certifikata</translation>
 <translation id="5015344424288992913">Traženje proxyja...</translation>
-<translation id="5015762597229892204">Odaberite aplikaciju upravljačkog programa pisača</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5017633213534173756">Zapamti</translation>
 <translation id="5018207570537526145">Otvori web-lokaciju proširenja</translation>

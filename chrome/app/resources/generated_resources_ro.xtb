@@ -231,7 +231,6 @@
 <translation id="131461803491198646">Rețeaua de domiciliu, nu de roaming</translation>
 <translation id="1316136264406804862">Se caută...</translation>
 <translation id="1316495628809031177">Sincronizarea este întreruptă</translation>
-<translation id="1319979322914001937">O aplicație care afișează o listă filtrată de extensii din Magazinul web Chrome. Extensiile din listă pot fi instalate direct din aplicație.</translation>
 <translation id="1322046419516468189">Vezi și gestionează parolele salvate în <ph name="SAVED_PASSWORDS_STORE" /></translation>
 <translation id="1326317727527857210">Pentru a accesa filele de pe alte dispozitive, conectează-te la Chrome.</translation>
 <translation id="1327074568633507428">Imprimantă în Google Cloud Print</translation>
@@ -483,7 +482,7 @@
 <translation id="1680849702532889074">A apărut o eroare în timpul instalării aplicației Linux.</translation>
 <translation id="16815041330799488">Nu permite site-urilor să vadă textul și imaginile copiate în clipboard</translation>
 <translation id="1682548588986054654">Fereastră &amp;incognito nouă</translation>
-<translation id="1683850629661177840">Modul simplificat accelerează acum navigarea pe toate paginile, inclusiv HTTPS.</translation>
+<translation id="1683850629661177840">Modul Lite accelerează acum navigarea pe toate paginile, inclusiv HTTPS.</translation>
 <translation id="168715261339224929">Pentru a accesa marcajele pe toate dispozitivele, activează sincronizarea.</translation>
 <translation id="1688867105868176567">Ștergi datele site-ului?</translation>
 <translation id="1688935057616748272">Tastează o literă</translation>
@@ -1191,7 +1190,7 @@
 <translation id="2749881179542288782">Verificare gramaticală și ortografică</translation>
 <translation id="2751739896257479635">Autentificare EAP din a doua fază</translation>
 <translation id="2755367719610958252">Gestionează funcțiile de accesibilitate</translation>
-<translation id="2755628026949580719">În cazul în care cheia de securitate nu este înregistrată, apasă butonul cheii timp de cel puțin cinci secunde.</translation>
+<translation id="2755628026949580719">Dacă cheia de securitate nu este afișată, apasă butonul cheii timp de cel puțin cinci secunde.</translation>
 <translation id="275662540872599901">ecran dezactivat</translation>
 <translation id="2761898608071930085">Folosește alt cont</translation>
 <translation id="2762441749940182211">Camera foto este blocată</translation>
@@ -2289,7 +2288,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4451757071857432900">Blocate pe site-uri care afișează anunțuri deranjante sau înșelătoare (recomandat)</translation>
 <translation id="4453946976636652378">Caută <ph name="SEARCH_ENGINE_NAME" /> sau introdu o adresă URL</translation>
 <translation id="4462159676511157176">Servere de nume personalizate</translation>
-<translation id="4467100756425880649">Galeria Magazinului web Chrome</translation>
 <translation id="4467101674048705704">Extinde <ph name="FOLDER_NAME" /></translation>
 <translation id="4469477701382819144">Blocate pe site-urile care afișează anunțuri deranjante sau înșelătoare</translation>
 <translation id="447252321002412580">Contribuie la îmbunătățirea funcțiilor și performanței Chrome</translation>
@@ -2407,7 +2405,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4647697156028544508">Introduceți codul PIN pentru „<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Permisiuni insuficiente</translation>
 <translation id="4648499713050786492">Deblochează profilul înainte de a adăuga o persoană.</translation>
-<translation id="465499440663162826">Nu s-a putut stabili conexiunea la Magazinul web Chrome.</translation>
 <translation id="4656293982926141856">Acest computer</translation>
 <translation id="4660476621274971848">Versiunea așteptată era „<ph name="EXPECTED_VERSION" />”, dar versiunea a fost „<ph name="NEW_ID" />”</translation>
 <translation id="4662788913887017617">Trimite marcajul pe iPhone</translation>
@@ -2654,7 +2651,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> fotografii noi</translation>
 <translation id="5010043101506446253">Autoritate de certificare</translation>
 <translation id="5015344424288992913">Se rezolvă proxy-ul...</translation>
-<translation id="5015762597229892204">Selectează o aplicație pentru driverele de imprimantă</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5017633213534173756">Reține</translation>
 <translation id="5018207570537526145">Deschide site-ul extensiei</translation>
@@ -3366,7 +3362,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6042308850641462728">Mai multe</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> trimite conținutul unei file Chrome către <ph name="TAB_NAME" />.</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> trimite conținutul unei file Chrome și conținutul audio către <ph name="TAB_NAME" />.</translation>
-<translation id="6045021379489914695">Chromebook și telefonul Android funcționează mai bine împreună. Conectează-le ca să trimiți mesaje de pe computer, să permiți accesul la conexiunea la internet și să deblochezi Chromebookul cu ajutorul telefonului.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Află mai multe<ph name="LINK_END" /></translation>
+<translation id="6045021379489914695">Chromebookul și telefonul Android funcționează mai bine împreună. Conectează-le ca să trimiți mesaje de pe computer, să permiți accesul la conexiunea la internet și să deblochezi Chromebookul cu ajutorul telefonului.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Află mai multe<ph name="LINK_END" /></translation>
 <translation id="6049004884579590341">Pentru a ieși din ecranul complet, apasă lung |<ph name="ACCELERATOR" />|</translation>
 <translation id="6049065490165456785">Fotografii de pe camera foto internă</translation>
 <translation id="6051354611314852653">Hopa! Sistemul nu a putut să autorizeze accesul la API pentru acest dispozitiv.</translation>
@@ -5212,7 +5208,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8846141544112579928">Se caută tastatura...</translation>
 <translation id="8846319957959474018">Deschide aplicații cu ușurință folosind marcajele</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="8848561196844274665">Când îți conectezi dispozitivele, ești de acord că Chromebook poate:</translation>
+<translation id="8848561196844274665">Când îți conectezi dispozitivele, ești de acord că Chromebookul poate:</translation>
 <translation id="8859057652521303089">Selectează limba:</translation>
 <translation id="8859174528519900719">Subcadru: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Foaie de calcul Excel</translation>

@@ -231,7 +231,6 @@
 <translation id="131461803491198646">ഹോം നെറ്റ്‍വര്‍ക്ക്, റോമിംഗ് അല്ല</translation>
 <translation id="1316136264406804862">തിരയുന്നു...</translation>
 <translation id="1316495628809031177">സമന്വയം താൽക്കാലികമായി നിർത്തി</translation>
-<translation id="1319979322914001937">ഒരു ആപ്പ് Chrome വെബ് സ്റ്റോറിൽ നിന്നുള്ള ഫിൽട്ടർ ചെയ്‌ത വിപുലീകരണങ്ങളുടെ ലിസ്റ്റ് കാണിക്കുന്നു. ലിസ്റ്റിലെ വിപുലീകരണങ്ങൾ ആപ്പിൽ നിന്ന് നേരിട്ട് ഇൻസ്റ്റാൾ ചെയ്യാനാകും.</translation>
 <translation id="1322046419516468189">നിങ്ങളുടെ <ph name="SAVED_PASSWORDS_STORE" /> എന്നതിൽ സംരക്ഷിച്ച പാസ്‌വേഡുകൾ കാണുക, മാനേജ് ചെയ്യുക</translation>
 <translation id="1326317727527857210">നിങ്ങളുടെ മറ്റ് ഉപകരണങ്ങളിൽ നിന്നുള്ള ടാബുകൾ ലഭിക്കാൻ, Chrome-ൽ സൈൻ ഇൻ ചെയ്യുക.</translation>
 <translation id="1327074568633507428">Google ക്ലൗഡ് പ്രിന്റിലെ പ്രിന്റർ</translation>
@@ -2285,7 +2284,6 @@
 <translation id="4451757071857432900">അനാവശ്യമോ തെറ്റിദ്ധരിപ്പിക്കുന്നതോ ആയ പരസ്യങ്ങൾ കാണിക്കുന്ന സൈറ്റുകളിൽ ബ്ലോക്ക് ചെയ്‌തിരിക്കുന്നു (ശുപാർശ ചെയ്യുന്നു)</translation>
 <translation id="4453946976636652378"><ph name="SEARCH_ENGINE_NAME" /> തിരയുക അല്ലെങ്കിൽ ഒരു URL ടൈപ്പ് ചെയ്യുക</translation>
 <translation id="4462159676511157176">ഇഷ്‌ടാനുസൃത നാമ സെർവറുകൾ</translation>
-<translation id="4467100756425880649">Chrome വെബ് സ്‌റ്റോർ ഗാലറി</translation>
 <translation id="4467101674048705704"><ph name="FOLDER_NAME" /> വികസിപ്പിക്കുക</translation>
 <translation id="4469477701382819144">അനാവശ്യമോ തെറ്റിദ്ധരിപ്പിക്കുന്നതോ ആയ പരസ്യങ്ങൾ കാണിക്കുന്ന സൈറ്റുകളിൽ ബ്ലോക്ക് ചെയ്‌തിരിക്കുന്നു</translation>
 <translation id="447252321002412580">Chrome-ന്റെ ഫീച്ചറുകളും പ്രകടനവും മെച്ചപ്പെടുത്താൻ സഹായിക്കുക</translation>
@@ -2403,7 +2401,6 @@
 <translation id="4647697156028544508">"<ph name="DEVICE_NAME" />" എന്നതിനായി PIN നൽകുക:</translation>
 <translation id="4648491805942548247">അപര്യാപ്‌തമായ അനുമതികൾ</translation>
 <translation id="4648499713050786492">ഒരാളെ ചേർക്കുന്നതിന് മുമ്പ് നിങ്ങളുടെ പ്രൊഫൈൽ അൺലോക്കുചെയ്യുക.</translation>
-<translation id="465499440663162826">Chrome വെബ് സ്‌റ്റോറിൽ കണക്‌റ്റുചെയ്യാനായില്ല.</translation>
 <translation id="4656293982926141856">ഈ കമ്പ്യൂട്ടറിൽ</translation>
 <translation id="4660476621274971848">പ്രതീക്ഷിച്ച പതിപ്പ് "<ph name="EXPECTED_VERSION" />" ആണ്, എന്നാൽ ലഭിച്ച പതിപ്പ് "<ph name="NEW_ID" />" ആയിരുന്നു</translation>
 <translation id="4662788913887017617">നിങ്ങളുടെ iPhone ഉപയോഗിച്ച് ഈ ബുക്ക്‌മാർക്ക് പങ്കിടുക</translation>
@@ -2650,7 +2647,6 @@
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> പുതിയ ഫോട്ടോകൾ</translation>
 <translation id="5010043101506446253">സർട്ടിഫിക്കറ്റ് അധികാരി</translation>
 <translation id="5015344424288992913">റിസോള്‍വിംഗ് പ്രോക്സി...</translation>
-<translation id="5015762597229892204">പ്രിന്റർ ഡ്രൈവർ ആപ്പ് തിരഞ്ഞെടുക്കുക</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5017633213534173756">ഓർമിക്കുക</translation>
 <translation id="5018207570537526145">വിപുലീകരണ വെബ്‌സൈറ്റ് തുറക്കുക</translation>

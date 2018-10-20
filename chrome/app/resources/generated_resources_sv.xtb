@@ -231,7 +231,6 @@
 <translation id="131461803491198646">Hemnätverk, ingen roaming</translation>
 <translation id="1316136264406804862">Söker ...</translation>
 <translation id="1316495628809031177">Synkroniseringen har pausats</translation>
-<translation id="1319979322914001937">En app som visar en filtrerad lista över tillägg från Chrome Web Store. Tillägg på listan kan installeras direkt från appen.</translation>
 <translation id="1322046419516468189">Visa och hantera sparade lösenord i <ph name="SAVED_PASSWORDS_STORE" /></translation>
 <translation id="1326317727527857210">Logga in i Chrome om du vill ha samma flikar tillgängliga på alla enheter.</translation>
 <translation id="1327074568633507428">Skrivare på Google Cloud Print</translation>
@@ -2288,7 +2287,6 @@
 <translation id="4451757071857432900">Blockeras på webbplatser där påträngande eller vilseledande annonser visas (rekommenderas)</translation>
 <translation id="4453946976636652378">Sök på <ph name="SEARCH_ENGINE_NAME" /> eller skriv en webbadress</translation>
 <translation id="4462159676511157176">Anpassade namnservrar</translation>
-<translation id="4467100756425880649">Chrome Web Store Gallery</translation>
 <translation id="4467101674048705704">Utöka <ph name="FOLDER_NAME" /></translation>
 <translation id="4469477701382819144">Blockeras på webbplatser där påträngande eller vilseledande annonser visas</translation>
 <translation id="447252321002412580">Bidra till att förbättra Chromes funktioner och prestanda</translation>
@@ -2406,7 +2404,6 @@
 <translation id="4647697156028544508">Ange pinkoden för <ph name="DEVICE_NAME" />:</translation>
 <translation id="4648491805942548247">Otillräckliga behörigheter</translation>
 <translation id="4648499713050786492">Du måste låsa upp din profil innan du kan lägga till en person.</translation>
-<translation id="465499440663162826">Det gick inte att ansluta till Chrome Web Store.</translation>
 <translation id="4656293982926141856">Den här datorn</translation>
 <translation id="4660476621274971848">Version <ph name="EXPECTED_VERSION" /> förväntades men versionen är <ph name="NEW_ID" /></translation>
 <translation id="4662788913887017617">Dela det här bokmärket med din iPhone</translation>
@@ -2653,7 +2650,6 @@
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> nya foton</translation>
 <translation id="5010043101506446253">Certifikatutfärdare</translation>
 <translation id="5015344424288992913">Tolkar proxy...</translation>
-<translation id="5015762597229892204">Välj en drivrutinsapp för en skrivare</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5017633213534173756">Kom ihåg</translation>
 <translation id="5018207570537526145">Öppna webbplatsen för tillägget</translation>

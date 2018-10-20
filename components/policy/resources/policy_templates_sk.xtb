@@ -2443,7 +2443,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
       Toto pravidlo umožňuje správcom poskytnúť používateľom konfigurácie
       tlačiarní.
 
-      <ph name="PRINTER_DISPLAY_NAME" /> a <ph name="PRINTER_DESCRIPTION" /> sú prispôsobiteľné textové reťazce, pomocou ktorých je možné zjednodušiť výber tlačiarne. Hodnoty <ph name="PRINTER_MANUFACTURER" /> a <ph name="PRINTER_MODEL" /> uľahčujú identifikáciu tlačiarní koncovými používateľmi. Predstavujú výrobcu a model tlačiarne. <ph name="PRINTER_URI" /> by mala byť adresa dostupná z klientskeho počítača vrátane údajov <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> a <ph name="URI_QUEUE" />. Hodnota <ph name="PRINTER_UUID" /> je voliteľná.  Ak je zadaná, používa sa na odobranie duplicitných tlačiarní <ph name="ZEROCONF_DISCOVERY" />.
+      <ph name="PRINTER_DISPLAY_NAME" /> a <ph name="PRINTER_DESCRIPTION" /> sú prispôsobiteľné textové reťazce, pomocou ktorých je možné zjednodušiť výber tlačiarne. Hodnoty <ph name="PRINTER_MANUFACTURER" /> a <ph name="PRINTER_MODEL" /> uľahčujú identifikáciu tlačiarní koncovými používateľmi. Predstavujú výrobcu a model tlačiarne. <ph name="PRINTER_URI" /> by mala byť adresa dostupná z klientskeho počítača vrátane údajov <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> a <ph name="URI_QUEUE" />. Hodnota <ph name="PRINTER_UUID" /> je voliteľná. Ak je zadaná, používa sa na odobranie duplicitných tlačiarní <ph name="ZEROCONF_DISCOVERY" />.
 
       <ph name="PRINTER_EFFECTIVE_MODEL" /> sa musí zhodovať s jedným reťazcom predstavujúcim podporovanú tlačiareň <ph name="PRODUCT_NAME" />. Reťazec sa použije na identifikáciu a inštaláciu príslušného súboru PPD pre tlačiareň. Ďalšie informácie nájdete na https://support.google.com/chrome?p=noncloudprint.
 

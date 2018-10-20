@@ -231,7 +231,6 @@
 <translation id="131461803491198646">Домашняя сеть, без роуминга</translation>
 <translation id="1316136264406804862">Поиск...</translation>
 <translation id="1316495628809031177">Синхронизация приостановлена.</translation>
-<translation id="1319979322914001937">В "Галерее" показан список избранных расширений из Интернет-магазина Chrome, которые можно установить прямо из приложения.</translation>
 <translation id="1322046419516468189">Просматривайте сохраненные пароли и управляйте ими на странице <ph name="SAVED_PASSWORDS_STORE" /></translation>
 <translation id="1326317727527857210">Чтобы получить доступ к вкладкам на всех ваших устройствах, войдите в Chrome.</translation>
 <translation id="1327074568633507428">Принтер, подключенный к Виртуальному принтеру Google</translation>
@@ -417,7 +416,7 @@
 <translation id="1598233202702788831">Функция обновления отключена администратором.</translation>
 <translation id="1600857548979126453">Доступ к работе отладчика страниц</translation>
 <translation id="1601560923496285236">Применить</translation>
-<translation id="1603300902586586390">Разрешить Linux открывать файлы $1.</translation>
+<translation id="1603300902586586390">Разрешить Linux-приложениям открывать несколько ($1) файлов.</translation>
 <translation id="1603914832182249871">(инкогнито)</translation>
 <translation id="1607139524282324606">Очистить запись</translation>
 <translation id="1608626060424371292">Удалить профиль</translation>
@@ -2290,7 +2289,6 @@
 <translation id="4451757071857432900">Заблокированы на сайтах, которые показывают навязчивую или вводящую в заблуждение рекламу (рекомендуется)</translation>
 <translation id="4453946976636652378">Введите поисковый запрос в <ph name="SEARCH_ENGINE_NAME" /> или укажите URL</translation>
 <translation id="4462159676511157176">Другие серверы имен</translation>
-<translation id="4467100756425880649">Галерея Интернет-магазина Chrome</translation>
 <translation id="4467101674048705704">Развернуть папку <ph name="FOLDER_NAME" /></translation>
 <translation id="4469477701382819144">Объявления заблокированы на сайтах, которые показывают навязчивую или вводящую в заблуждение рекламу.</translation>
 <translation id="447252321002412580">Помогать повышать производительность Chrome и улучшать функции</translation>
@@ -2408,7 +2406,6 @@
 <translation id="4647697156028544508">Введите PIN-код для "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Недостаточно прав</translation>
 <translation id="4648499713050786492">Разблокируйте свой профиль, прежде чем добавлять ещё один.</translation>
-<translation id="465499440663162826">Не удалось подключиться к Интернет-магазину Chrome.</translation>
 <translation id="4656293982926141856">С компьютера</translation>
 <translation id="4660476621274971848">Ожидаемая версия: <ph name="EXPECTED_VERSION" />, полученная версия: <ph name="NEW_ID" /></translation>
 <translation id="4662788913887017617">Поделитесь закладкой с iPhone</translation>
@@ -2655,7 +2652,6 @@
 <translation id="5004584466530475658">новых фото: <ph name="FILE_COUNT" /></translation>
 <translation id="5010043101506446253">Центр сертификации</translation>
 <translation id="5015344424288992913">Определение прокси-сервера...</translation>
-<translation id="5015762597229892204">Выберите драйвер для принтера</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5017633213534173756">Запомнить</translation>
 <translation id="5018207570537526145">Перейти на сайт разработчика</translation>

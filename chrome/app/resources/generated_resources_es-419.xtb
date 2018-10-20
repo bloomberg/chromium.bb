@@ -231,7 +231,6 @@
 <translation id="131461803491198646">Red local, no en modo roaming</translation>
 <translation id="1316136264406804862">Buscando...</translation>
 <translation id="1316495628809031177">Se pausó la sincronización</translation>
-<translation id="1319979322914001937">Se trata de una aplicación que muestra una lista filtrada de extensiones de Chrome Web Store. Las extensiones de la lista se pueden instalar directamente desde la aplicación.</translation>
 <translation id="1322046419516468189">Consulta y administra las contraseñas guardadas en tu <ph name="SAVED_PASSWORDS_STORE" /></translation>
 <translation id="1326317727527857210">Accede a Chrome para obtener las pestañas de tus otros dispositivos.</translation>
 <translation id="1327074568633507428">Impresora en Google Cloud Print</translation>
@@ -2286,7 +2285,6 @@
 <translation id="4451757071857432900">Bloqueados en sitios que muestran anuncios intrusivos o engañosos (opción recomendada)</translation>
 <translation id="4453946976636652378">Buscar en <ph name="SEARCH_ENGINE_NAME" /> o escribir una URL</translation>
 <translation id="4462159676511157176">Servidores de nombres personalizados</translation>
-<translation id="4467100756425880649">Galería de Chrome Web Store</translation>
 <translation id="4467101674048705704">Expandir <ph name="FOLDER_NAME" /></translation>
 <translation id="4469477701382819144">Bloqueados en sitios que muestran anuncios intrusivos o engañosos</translation>
 <translation id="447252321002412580">Ayudar a mejorar las funciones y el rendimiento de Chrome</translation>
@@ -2404,7 +2402,6 @@
 <translation id="4647697156028544508">Ingresa el PIN para "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Permisos insuficientes</translation>
 <translation id="4648499713050786492">Desbloquea tu perfil antes de agregar una persona.</translation>
-<translation id="465499440663162826">No fue posible establecer conexión con Chrome Web Store.</translation>
 <translation id="4656293982926141856">Esta computadora</translation>
 <translation id="4660476621274971848">Se esperaba la versión "<ph name="EXPECTED_VERSION" />", pero la versión fue "<ph name="NEW_ID" />"</translation>
 <translation id="4662788913887017617">Compartir este favorito con tu iPhone</translation>
@@ -2651,7 +2648,6 @@
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> fotos nuevas</translation>
 <translation id="5010043101506446253">Autoridad de certificación</translation>
 <translation id="5015344424288992913">Resolviendo proxy...</translation>
-<translation id="5015762597229892204">Selecciona una aplicación de controlador de impresora</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5017633213534173756">Recordar</translation>
 <translation id="5018207570537526145">Abrir el sitio web de la extensión</translation>
