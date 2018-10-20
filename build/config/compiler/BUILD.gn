@@ -1497,9 +1497,6 @@ config("default_warnings") {
         # Flags NaCl (Clang 3.7) and Xcode 9.2 (Clang clang-900.0.39.2) do not
         # recognize.
         cflags += [
-          # TODO(thakis): https://crbug.com/753973
-          "-Wno-enum-compare-switch",
-
           # Ignore warnings about MSVC optimization pragmas.
           # TODO(thakis): Only for no_chromium_code? http://crbug.com/505314
           "-Wno-ignored-pragma-optimize",
