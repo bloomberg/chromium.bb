@@ -501,18 +501,11 @@ int TtsControllerImpl::GetMatchingVoice(
     if (!voice.lang.empty() && !utterance->lang().empty()) {
       // An exact language match is worth more than a partial match.
       if (voice.lang == utterance->lang()) {
-        score += 64;
+        score += 128;
       } else if (l10n_util::GetLanguage(voice.lang) ==
                  l10n_util::GetLanguage(utterance->lang())) {
-        score += 32;
+        score += 64;
       }
-    }
-
-    // Prefer the system language after that.
-    if (!voice.lang.empty()) {
-      if (l10n_util::GetLanguage(voice.lang) ==
-          l10n_util::GetLanguage(app_lang))
-        score += 16;
     }
 
     // Next, prefer required event types.
@@ -526,11 +519,11 @@ int TtsControllerImpl::GetMatchingVoice(
         }
       }
       if (has_all_required_event_types)
-        score += 8;
+        score += 32;
     }
 
 #if defined(OS_CHROMEOS)
-    // Finally, prefer the user's preference voice for the language:
+    // Prefer the user's preference voice for the language:
     if (lang_to_voice_pref) {
       // First prefer the user's preference voice for the utterance language,
       // if the utterance language is specified.
@@ -539,7 +532,7 @@ int TtsControllerImpl::GetMatchingVoice(
         lang_to_voice_pref->GetString(l10n_util::GetLanguage(utterance->lang()),
                                       &voice_id);
         if (VoiceIdMatches(voice_id, voice))
-          score += 4;
+          score += 16;
       }
 
       // Then prefer the user's preference voice for the system language.
@@ -548,7 +541,7 @@ int TtsControllerImpl::GetMatchingVoice(
       lang_to_voice_pref->GetString(l10n_util::GetLanguage(app_lang),
                                     &voice_id);
       if (VoiceIdMatches(voice_id, voice))
-        score += 2;
+        score += 8;
 
       // Finally, prefer the user's preference voice for any language. This will
       // pick the default voice if there is no better match for the current
@@ -556,9 +549,19 @@ int TtsControllerImpl::GetMatchingVoice(
       voice_id.clear();
       lang_to_voice_pref->GetString("noLanguageCode", &voice_id);
       if (VoiceIdMatches(voice_id, voice))
-        score += 1;
+        score += 4;
     }
 #endif  // defined(OS_CHROMEOS)
+
+    // Finally, prefer system language.
+    if (!voice.lang.empty()) {
+      if (voice.lang == app_lang) {
+        score += 2;
+      } else if (l10n_util::GetLanguage(voice.lang) ==
+                 l10n_util::GetLanguage(app_lang)) {
+        score += 1;
+      }
+    }
 
     if (score > best_score) {
       best_score = score;
