@@ -5,18 +5,14 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_WIN_NOTIFICATION_IMAGE_RETAINER_H_
 #define CHROME_BROWSER_NOTIFICATIONS_WIN_NOTIFICATION_IMAGE_RETAINER_H_
 
-#include <memory>
-#include <utility>
-#include <vector>
+#include <string>
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "base/time/tick_clock.h"
-#include "base/time/time.h"
-#include "base/timer/timer.h"
+
+class GURL;
 
 namespace gfx {
 class Image;
@@ -30,63 +26,44 @@ class Image;
 //
 // Also, on Windows, temp file deletion is not guaranteed and, since the images
 // can potentially be large, this presents a problem because Chrome might then
-// be leaving chunks of dead bits lying around on users' computers during
+// be leaving chunks of dead bits lying around on user’s computers during
 // unclean shutdowns.
-class NotificationImageRetainer {
+class NotificationImageRetainer
+    : public base::SupportsWeakPtr<NotificationImageRetainer> {
  public:
-  NotificationImageRetainer(
-      scoped_refptr<base::SequencedTaskRunner> deletion_task_runner,
-      const base::TickClock* tick_clock);
-
-  NotificationImageRetainer();
+  explicit NotificationImageRetainer(
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
   virtual ~NotificationImageRetainer();
 
-  // Deletes all the remaining files in image_dir_ due to previous unclean
-  // shutdowns.
-  virtual void CleanupFilesFromPrevSessions();
+  // Stores an |image| from a particular profile (|profile_id|) and |origin| on
+  // disk in a temporary (short-lived) file. Returns the path to the file
+  // created, which will be valid for a few seconds only. It will be deleted
+  // either after a short timeout or after a restart of Chrome (the next time
+  // this function is called). The function returns an empty FilePath if file
+  // creation fails.
+  virtual base::FilePath RegisterTemporaryImage(const gfx::Image& image,
+                                                const std::string& profile_id,
+                                                const GURL& origin);
 
-  // Stores an |image| on disk in a temporary (short-lived) file. Returns the
-  // path to the file created, which will be valid for a few seconds only. It
-  // will be deleted either after a short timeout or after a restart of Chrome
-  // (the next time this function is called). The function returns an empty
-  // FilePath if file creation fails.
-  virtual base::FilePath RegisterTemporaryImage(const gfx::Image& image);
-
-  base::WeakPtr<NotificationImageRetainer> AsWeakPtr();
-
-  const base::FilePath& image_dir() { return image_dir_; }
+  // Sets whether to override temp file destruction time. If set to |true|, the
+  // temp files will be scheduled for deletion right after their creation. If
+  // |false|, the standard deletion delay will apply.
+  static void OverrideTempFileLifespanForTesting(
+      bool override_file_destruction);
 
  private:
-  using PathAndTime = std::pair<base::FilePath, base::TimeTicks>;
-  using PathsAndTimes = std::vector<PathAndTime>;
-
-  // Deletes expired (older than a pre-defined threshold) files.
-  void DeleteExpiredFiles();
-
-  // A collection of paths to registered image files, each of which must stay
-  // valid for a short time while the Notification Center processes them. Each
-  // path has a corresponding registration timestamp. Files in this collection
-  // that have outlived the required minimum lifespan are scheduled for deletion
-  // periodically by |deletion_timer_|. The items in this collection are sorted
-  // by increasing registration time.
-  PathsAndTimes registered_images_;
-
-  // The task runner used to handle file deletion.
-  scoped_refptr<base::SequencedTaskRunner> deletion_task_runner_;
-
   // The path to where to store the temporary files.
-  const base::FilePath image_dir_;
+  base::FilePath image_directory_;
 
-  // Not owned.
-  const base::TickClock* const tick_clock_;
+  // Whether this class has initialized.
+  bool initialized_ = false;
 
-  // A timer used to handle deleting files in batch.
-  base::RepeatingTimer deletion_timer_;
+  // Whether to override the time to wait before deleting the temp files. For
+  // testing use only.
+  static bool override_file_destruction_;
 
-  SEQUENCE_CHECKER(sequence_checker_);
-
-  // For callbacks may run after destruction.
-  base::WeakPtrFactory<NotificationImageRetainer> weak_ptr_factory_;
+  // The task runner to use.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationImageRetainer);
 };

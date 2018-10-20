@@ -78,7 +78,6 @@ typedef winfoundtn::ITypedEventHandler<
     winui::Notifications::ToastNotification*,
     winui::Notifications::ToastDismissedEventArgs*>
     ToastDismissedHandler;
-
 typedef winfoundtn::ITypedEventHandler<
     winui::Notifications::ToastNotification*,
     winui::Notifications::ToastFailedEventArgs*>
@@ -109,9 +108,9 @@ void ForwardNotificationOperationOnUiThread(
 
   g_browser_process->profile_manager()->LoadProfile(
       profile_id, incognito,
-      base::BindOnce(&NotificationDisplayServiceImpl::ProfileLoadedCallback,
-                     operation, notification_type, origin, notification_id,
-                     action_index, reply, by_user));
+      base::Bind(&NotificationDisplayServiceImpl::ProfileLoadedCallback,
+                 operation, notification_type, origin, notification_id,
+                 action_index, reply, by_user));
 }
 
 }  // namespace
@@ -138,14 +137,18 @@ class NotificationPlatformBridgeWinImpl
             base::win::ResolveCoreWinRTDelayload() &&
             ScopedHString::ResolveCoreWinRTStringDelayload()),
         notification_task_runner_(std::move(notification_task_runner)),
-        image_retainer_(std::make_unique<NotificationImageRetainer>()) {
-    // Delete any remaining temp files in the image folder from the previous
-    // sessions.
+        // file_deletion_task_runner_ runs tasks to delete notification image
+        // files on the disk. This task will be retried on each Chrome startup,
+        // so it's okay to specify TaskShutdownBehavior to be
+        // CONTINUE_ON_SHUTDOWN (i.e., ignore this task for all purposes at
+        // shutdown).
+        file_deletion_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
+        image_retainer_(std::make_unique<NotificationImageRetainer>(
+            file_deletion_task_runner_)) {
     DCHECK(notification_task_runner_);
-    content::BrowserThread::PostAfterStartupTask(
-        FROM_HERE, notification_task_runner_,
-        base::BindOnce(&NotificationImageRetainer::CleanupFilesFromPrevSessions,
-                       image_retainer_->AsWeakPtr()));
+    DCHECK(file_deletion_task_runner_);
   }
 
   // Obtain an IToastNotification interface from a given XML (provided by the
@@ -353,8 +356,8 @@ class NotificationPlatformBridgeWinImpl
                                    profile_id, incognito,
                                    notification->origin_url());
     std::unique_ptr<NotificationTemplateBuilder> notification_template =
-        NotificationTemplateBuilder::Build(image_retainer_->AsWeakPtr(),
-                                           launch_id, *notification);
+        NotificationTemplateBuilder::Build(
+            image_retainer_->AsWeakPtr(), launch_id, profile_id, *notification);
     mswr::ComPtr<winui::Notifications::IToastNotification> toast =
         GetToastNotification(*notification, *notification_template, profile_id,
                              incognito);
@@ -664,9 +667,7 @@ class NotificationPlatformBridgeWinImpl
   friend class MockIToastNotifier;
   friend class NotificationPlatformBridgeWin;
 
-  ~NotificationPlatformBridgeWinImpl() {
-    notification_task_runner_->DeleteSoon(FROM_HERE, image_retainer_.release());
-  }
+  ~NotificationPlatformBridgeWinImpl() = default;
 
   base::string16 GetAppId() const {
     return ShellUtil::GetBrowserModelId(InstallUtil::IsPerUserInstall());
@@ -756,6 +757,9 @@ class NotificationPlatformBridgeWinImpl
 
   // The task runner running notification related tasks.
   scoped_refptr<base::SequencedTaskRunner> notification_task_runner_;
+
+  // The task runner running tasks to delete files.
+  scoped_refptr<base::SequencedTaskRunner> file_deletion_task_runner_;
 
   // An object that keeps temp files alive long enough for Windows to pick up.
   std::unique_ptr<NotificationImageRetainer> image_retainer_;

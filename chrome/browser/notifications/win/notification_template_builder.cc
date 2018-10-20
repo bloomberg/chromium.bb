@@ -84,9 +84,10 @@ const char* NotificationTemplateBuilder::context_menu_label_override_ = nullptr;
 std::unique_ptr<NotificationTemplateBuilder> NotificationTemplateBuilder::Build(
     base::WeakPtr<NotificationImageRetainer> notification_image_retainer,
     const NotificationLaunchId& launch_id,
+    const std::string& profile_id,
     const message_center::Notification& notification) {
   std::unique_ptr<NotificationTemplateBuilder> builder = base::WrapUnique(
-      new NotificationTemplateBuilder(notification_image_retainer));
+      new NotificationTemplateBuilder(notification_image_retainer, profile_id));
 
   builder->StartToastElement(launch_id, notification);
   builder->StartVisualElement();
@@ -143,9 +144,11 @@ std::unique_ptr<NotificationTemplateBuilder> NotificationTemplateBuilder::Build(
 }
 
 NotificationTemplateBuilder::NotificationTemplateBuilder(
-    base::WeakPtr<NotificationImageRetainer> notification_image_retainer)
+    base::WeakPtr<NotificationImageRetainer> notification_image_retainer,
+    const std::string& profile_id)
     : xml_writer_(std::make_unique<XmlWriter>()),
-      image_retainer_(notification_image_retainer) {
+      image_retainer_(notification_image_retainer),
+      profile_id_(profile_id) {
   xml_writer_->StartWriting();
 }
 
@@ -248,23 +251,26 @@ void NotificationTemplateBuilder::WriteItems(
 
 void NotificationTemplateBuilder::WriteIconElement(
     const message_center::Notification& notification) {
-  WriteImageElement(notification.icon(), kPlacementAppLogoOverride,
-                    kHintCropNone);
+  WriteImageElement(notification.icon(), notification.origin_url(),
+                    kPlacementAppLogoOverride, kHintCropNone);
 }
 
 void NotificationTemplateBuilder::WriteLargeImageElement(
     const message_center::Notification& notification) {
-  WriteImageElement(notification.image(), kHero, std::string());
+  WriteImageElement(notification.image(), notification.origin_url(), kHero,
+                    std::string());
 }
 
 void NotificationTemplateBuilder::WriteImageElement(
     const gfx::Image& image,
+    const GURL& origin,
     const std::string& placement,
     const std::string& hint_crop) {
   // Although image_retainer_ is a WeakPtr, it should never be nullptr here.
   DCHECK(image_retainer_);
 
-  base::FilePath path = image_retainer_->RegisterTemporaryImage(image);
+  base::FilePath path =
+      image_retainer_->RegisterTemporaryImage(image, profile_id_, origin);
   if (!path.empty()) {
     xml_writer_->StartElement(kImageElement);
     xml_writer_->AddAttribute(kPlacement, placement);
@@ -313,7 +319,7 @@ void NotificationTemplateBuilder::AddActions(
   }
 
   for (size_t i = 0; i < buttons.size(); ++i)
-    WriteActionElement(buttons[i], i, launch_id);
+    WriteActionElement(buttons[i], i, notification.origin_url(), launch_id);
 }
 
 void NotificationTemplateBuilder::AddContextMenu(
@@ -345,6 +351,7 @@ void NotificationTemplateBuilder::WriteAudioSilentElement() {
 void NotificationTemplateBuilder::WriteActionElement(
     const message_center::ButtonInfo& button,
     int index,
+    const GURL& origin,
     NotificationLaunchId copied_launch_id) {
   xml_writer_->StartElement(kActionElement);
   xml_writer_->AddAttribute(kActivationType, kForeground);
@@ -356,7 +363,8 @@ void NotificationTemplateBuilder::WriteActionElement(
     // Although image_retainer_ is a WeakPtr, it should never be nullptr here.
     DCHECK(image_retainer_);
 
-    base::FilePath path = image_retainer_->RegisterTemporaryImage(button.icon);
+    base::FilePath path = image_retainer_->RegisterTemporaryImage(
+        button.icon, profile_id_, origin);
     if (!path.empty())
       xml_writer_->AddAttribute(kImageUri, path.AsUTF8Unsafe());
   }
