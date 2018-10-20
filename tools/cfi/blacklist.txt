@@ -200,10 +200,6 @@ src:*third_party/blink/renderer/platform/wtf/*
 # v8/src/intl.cc
 fun:*LocaleConvertCase*
 
-# Casts away const qualifier
-# third_party/boringssl/src/crypto/pem/pem_lib.c
-fun:*PEM_ASN1_write*
-
 # PropertyCallbackArguments::Call methods cast function pointers
 src:*v8/src/api-arguments-inl.h
 
