@@ -112,6 +112,7 @@ void AudioFocusDelegateDefault::AbandonAudioFocus() {
 
   request_client_ptr_->AbandonAudioFocus();
   request_client_ptr_.reset();
+  audio_focus_ptr_.reset();
 }
 
 base::Optional<media_session::mojom::AudioFocusType>
