@@ -220,7 +220,9 @@ public class WebappActivity extends SingleTabActivity {
             LoadUrlParams params = createLoadUrlParams(mWebappInfo, getIntent());
             tab.loadUrl(params);
         } else {
-            if (NetworkChangeNotifier.isOnline()) tab.reloadIgnoringCache();
+            if (getActivityType() != ActivityType.WEBAPK && NetworkChangeNotifier.isOnline()) {
+                tab.reloadIgnoringCache();
+            }
         }
         tab.addObserver(createTabObserver());
     }
