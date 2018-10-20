@@ -2952,9 +2952,9 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled_List",
                     "params": {
-                        "ui-alternate": "content_preview"
+                        "ui-alternate": "content_list"
                     },
                     "enable_features": [
                         "NewNetErrorPageUI"
