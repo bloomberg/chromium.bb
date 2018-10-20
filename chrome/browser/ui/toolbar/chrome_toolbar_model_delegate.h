@@ -40,6 +40,7 @@ class ChromeToolbarModelDelegate : public ToolbarModelDelegate {
   bool GetURL(GURL* url) const override;
   SecurityLevel GetSecurityLevel() const override;
   scoped_refptr<net::X509Certificate> GetCertificate() const override;
+  bool FailsBillingCheck() const override;
   bool FailsMalwareCheck() const override;
   const gfx::VectorIcon* GetVectorIconOverride() const override;
   bool IsOfflinePage() const override;
