@@ -20,7 +20,6 @@
 namespace {
 
 struct KeyboardsStateResult {
-  bool has_internal_keyboard = false;
   bool has_external_non_apple_keyboard = false;
   bool has_apple_keyboard = false;
 };
@@ -29,8 +28,6 @@ KeyboardsStateResult GetKeyboardsState() {
   KeyboardsStateResult result;
   for (const ui::InputDevice& keyboard :
        ui::InputDeviceManager::GetInstance()->GetKeyboardDevices()) {
-    result.has_internal_keyboard = (keyboard.type == ui::INPUT_DEVICE_INTERNAL);
-
     const ui::EventRewriterChromeOS::DeviceType type =
         ui::EventRewriterChromeOS::GetDeviceType(keyboard);
     if (type == ui::EventRewriterChromeOS::kDeviceAppleKeyboard) {
@@ -149,8 +146,6 @@ void KeyboardHandler::UpdateShowKeys() {
       base::Value(keyboards_state.has_external_non_apple_keyboard));
   keyboard_params.SetKey("showAppleCommandKey",
                          base::Value(keyboards_state.has_apple_keyboard));
-  keyboard_params.SetKey("hasInternalKeyboard",
-                         base::Value(keyboards_state.has_internal_keyboard));
 
   FireWebUIListener(kShowKeysChangedName, keyboard_params);
 }
