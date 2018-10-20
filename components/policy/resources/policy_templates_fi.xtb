@@ -24,6 +24,10 @@
       Jos käytännön arvo on Epätosi tai sitä ei aseteta, tunnistuspalvelun asettamat evästeet siirretään käyttäjän profiiliin vain hänen kirjautuessaan laitteelle ensimmäisen kerran.
 
       Tämä käytäntö vaikuttaa vain käyttäjiin, joiden verkkotunnus vastaa verkkotunnusta, johon laite on rekisteröity. Muiden käyttäjien osalta tunnistuspalvelun asettamat evästeet siirretään käyttäjän profiiliin vain käyttäjän kirjautuessa laitteelle ensimmäisen kerran.</translation>
+<translation id="1035385378988781231">Tämä käytäntö määrittää, käyttääkö <ph name="PRODUCT_NAME" /> ‑tiedostonjako verkossa todennukseen NTLM:ää.
+      Jos tämän käytännön arvo on Tosi, SMB-jaot todennetaan tarvittaessa NTLM:llä.
+      Jos tämän käytännön arvo on Epätosi, SMB-jakoja ei voi todentaa NTLM:llä.
+      Jos käytännöllä ei ole arvoa, oletusarvo on yrityksen ylläpitämillä käyttäjillä Ei käytössä ja muilla käyttäjillä Käytössä.</translation>
 <translation id="1040446814317236570">Ota PAC-URL-osoitteiden karsinta käyttöön (https://)</translation>
 <translation id="1044878202534415707">Raportoi laitteistotietoja, kuten suorittimen ja RAM-muistin käyttötietoja.
 
@@ -102,6 +106,13 @@
       Oletusarvo on RollbackDisabled.</translation>
 <translation id="1221359380862872747">Lataa määritetyt osoitteet esittelykirjautumisen yhteydessä</translation>
 <translation id="1223789468190631420">Selaussuojan käyttöönottotila luotetuissa lähteissä</translation>
+<translation id="122899932962115297">Luettelo sallituista lukituksen pika-avaamisen tiloista, joita käyttäjä voi määrittää ja käyttää lukitusnäytön avaamiseen.
+
+          Tämä arvo on merkkijonoluettelo; mahdollisia luettelokohtia ovat esimerkiksi "all", "PIN" ja "FINGERPRINT". Jos lisäät luetteloon "all", se tarkoittaa, että kaikki lukituksen pika-avaamisen tilat ovat käyttäjän käytettävissä, mukaan lukien tulevaisuudessa käyttöön otettavat. Muuten vain luettelossa mainitut lukituksen pika-avaamisen tilat ovat käytettävissä.
+
+          Jos esimerkiksi haluat sallia kaikki lukituksen pika-avaamisen tilat, syötä ["all"]. Jos haluat sallia vain PIN-koodin avaamisen, syötä ["PIN"]. Jos haluat sallia PIN-koodin ja sormenjäljet, syötä ["PIN", "FINGERPRINT"]. Jos haluat poistaa käytöstä kaikki lukituksen pika-avaamisen tilat, syötä [].
+
+          Oletuksena mitkään lukituksen pika-avaamisen tilat eivät ole käytettävissä ylläpidetyillä laitteilla.</translation>
 <translation id="123081309365616809">Salli sisällön suoratoisto laitteeseen</translation>
 <translation id="1243570869342663665">Vain aikuisille suunnatun sisällön SafeSites-suodatuksen määritys</translation>
 <translation id="1257550411839719984">Aseta oletuslataushakemisto</translation>
@@ -635,6 +646,7 @@ Jos tämä asetus ei ole käytössä, käyttäjät eivät voi tulostaa tuotteest
 
       Jos asetuksella ei ole arvoa, oletusarvo on yrityksen hallinnoimilla käyttäjillä Ei sallittu ja muilla käyttäjillä Sallittu.</translation>
 <translation id="2660846099862559570">Älä käytä välityspalvelinta</translation>
+<translation id="2672012807430078509">Hallitsee NTLM:n käyttöä SMB-käyttöönottojen todennusprotokollana</translation>
 <translation id="267596348720209223">Määrittää hakupalvelun tukemat merkkikoodaukset. Koodaukset ovat koodisivun nimiä, kuten UTF-8, GB2312 ja ISO-8859-1. Koodauksia yritetään käyttää määritetyssä järjestyksessä. Tämä käytäntö on valinnainen, ja jos sitä ei ole määritetty, käytetään oletusasetusta (UTF-8). Tämä käytäntö on voimassa vain, jos DefaultSearchProviderEnabled-käytäntö on käytössä.</translation>
 <translation id="268577405881275241">Ota käyttöön tietojen pakkauksen välitysominaisuus</translation>
 <translation id="2693108589792503178">Määritä salasanan vaihdon URL-osoite.</translation>
@@ -970,6 +982,11 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
       Jos käytäntö ei ole käytössä, sivustoja ei eristetä ja IsolateOrigins- ja SitePerProcess-käytäntöjen kokeilut poistetaan käytöstä. Käyttäjät voivat edelleen ottaa IsolateOrigins-asetuksen käyttöön.
       Jos käytäntöä ei määritetä, kirjautumisnäytöllä käytetään alustan oletusarvoisia sivustojen eristysasetuksia.
       </translation>
+<translation id="3748900290998155147">Määrittää, sallitaanko lepotilan estot. Laajennukset voivat pyytää lepotilan estoa virranhallintalaajennuksen sovellusliittymän kautta. Myös ARC-sovellukset voivat pyytää sitä.
+
+          Jos käytännön arvo on Tosi tai sillä ei ole arvoa, virranhallinta noudattaa lepotilan estoja.
+
+          Jos käytännön arvo on Epätosi, lepotilan estopyynnöt ohitetaan.</translation>
 <translation id="3750220015372671395">Estä avainten luominen näillä sivustoilla</translation>
 <translation id="3756011779061588474">Estä kehittäjätila</translation>
 <translation id="3758089716224084329">Voit määrittää välityspalvelimen, jota <ph name="PRODUCT_NAME" /> käyttää, ja estää käyttäjiä muokkaamasta välityspalvelinasetuksia.
@@ -1003,6 +1020,11 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 
           Jos EnableMediaRouter-käytännön arvo on Epätosi, tämän käytännön arvolla ei ole merkitystä eikä yläpalkkikuvaketta näytetä.</translation>
 <translation id="3788662722837364290">Virransäästöasetukset laitteen ollessa käyttämättä</translation>
+<translation id="3790085888761753785">Jos tämä asetus on käytössä, käyttäjä voi kirjautua tililleen Smart Lockilla. Tavallisesti käyttäjä voi vain avata näytön lukituksen Smart Lockilla, joten tämä on laajempi oikeus.
+
+      Jos tämä asetus on poistettu käytöstä, kirjautuminen Smart Lockilla ei ole sallittua.
+
+      Jos asetuksella ei ole arvoa, oletusarvo on yrityksen ylläpitämillä käyttäjillä Ei sallittu ja muilla käyttäjillä Sallittu.</translation>
 <translation id="379602782757302612">Voit määrittää, mitä laajennuksia käyttäjät EIVÄT saa asentaa. Jo asennetut laajennukset poistetaan käytöstä, jos ne ovat kieltoluettelossa, eikä käyttäjä voi ottaa niitä käyttöön. Kun kieltoluettelon vuoksi käytöstä poistettu laajennus on poistettu luettelosta, se otetaan automaattisesti takaisin käyttöön.
 
           Jos kieltoluettelossa on arvo "*", se tarkoittaa, että kaikki laajennukset on lisätty kieltoluetteloon, ellei niitä ole erikseen lisätty sallittujen luetteloon.
@@ -1104,6 +1126,9 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
 
           Jos arvoa ei ole asetettu tai se on epätosi, käyttäjät voivat siirtää tiedostoja Google Driveen.</translation>
 <translation id="3915395663995367577">Välityspalvelimen .pac-tiedoston URL-osoite</translation>
+<translation id="3925020515212192040">Listaa ennalta määritetyt verkon tiedostojaot.
+
+     Käytännön jokainen luettelokohde koostuu kahdesta osasta: "share_url" ja "mode". "share_url" on jaon URL-osoite ja "mode"-arvon tulee olla "drop_down", jotta "share_url" lisätään avattavaan jaon kohteiden hakuvalikkoon.</translation>
 <translation id="3939893074578116847">Lähetä hallintapalvelimelle verkkopaketteja verkkotilan valvontaa varten,
       jotta palvelin voi havaita laitteen siirtymisen offline-tilaan.
 
@@ -1251,6 +1276,7 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
 <translation id="4377599627073874279">Salli kaikkien sivustojen näyttää kaikki kuvat</translation>
 <translation id="437791893267799639">Käytäntöä ei määritetty, estä tietojen siirtäminen ja ARC</translation>
 <translation id="4389091865841123886">Määritä etätodennus TPM-mekanismilla.</translation>
+<translation id="4408428864159735559">Ennalta määritettyjen verkon tiedostojakojen luettelo</translation>
 <translation id="4410236409016356088">Ota verkon kaistanleveyden rajoitus käyttöön</translation>
 <translation id="441217499641439905">Poista Google Drive käytöstä <ph name="PRODUCT_OS_NAME" />:n Tiedostot-sovelluksesta mobiiliyhteyttä käytettäessä</translation>
 <translation id="4418726081189202489">Jos tämän käytännön arvo on Epätosi, <ph name="PRODUCT_NAME" /> ei voi lähettää ajoittaisia kyselyjä Googlen palvelimille oikean aikaleiman saamiseksi. Jos tämän käytännön arvo on Tosi tai sillä ei ole arvoa, nämä kyselyt sallitaan.</translation>
@@ -1944,6 +1970,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
       Jos haluat hallinnoida, mitkä verkkosivustot saavat suorittaa Flash-sisältöä, tutustu DefaultPluginsSetting-, PluginsAllowedForUrls- ja PluginsBlockedForUrls-käytäntöihin.
 
       Jos tämä käytäntö on poistettu käytöstä tai sitä ei ole määritetty, muista lähteistä tuleva tai pieni Flash-sisältö saattaa olla estetty.</translation>
+<translation id="6532769014584932288">Salli lepotilan estot</translation>
 <translation id="653608967792832033">Määrittää käyttämättömyysajan, jonka kuluttua näyttö lukitaan, kun laitetta käytetään akkuvirralla.
 
           Kun tämän käytännön arvo on yli nolla, se määrittää käyttämättömyysajan, jonka kuluttua <ph name="PRODUCT_OS_NAME" /> lukitsee näytön.
@@ -1961,6 +1988,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6544897973797372144">Jos käytännön arvo on Tosi ja ChromeOsReleaseChannel-käytäntöä ei ole määritetty, käyttäjät voivat vaihtaa laitteen julkaisuversiota. Jos käytännön arvo on Epätosi, laitteeseen lukitaan viimeksi määritetty julkaisuversio.
 
       ChromeOsReleaseChannel-käytäntö ohittaa käyttäjän valitseman julkaisuversion. Jos käytännössä määritetty versio on vakaampi kuin laitteelle asennettu versio, versiota vaihdetaan vasta, kun vakaamman julkaisuversion versionumero on laitteelle asennettua julkaisuversiota suurempi.</translation>
+<translation id="6553143066970470539">Näytön kirkkausprosentti</translation>
 <translation id="6559057113164934677">Älä anna minkään sivuston käyttää kameraa ja mikrofonia</translation>
 <translation id="6561396069801924653">Näytä käytettävyysvalinnat ilmaisinalueen valikossa</translation>
 <translation id="6565312346072273043">Määritä kirjautumisruudun ruutunäppäimistö-esteettömyysominaisuuden oletustila.
@@ -2234,6 +2262,11 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7167436895080860385">Anna käyttäjien katsella salasanoja salasanan hallinnassa (vanhentunut)</translation>
 <translation id="7173856672248996428">Lyhytkestoinen profiili</translation>
 <translation id="717630378807352957">Salli kaikki määritystiedoston tulostimet.</translation>
+<translation id="7176721759719212761">Määrittää, sallitaanko näytön lepotilan estot. Laajennukset voivat pyytää näytön lepotilan estoa virranhallintalaajennuksen sovellusliittymän kautta. Myös ARC-sovellukset voivat pyytää sitä.
+
+          Jos käytännön arvo on Tosi tai sillä ei ole arvoa, virranhallinta noudattaa näytön lepotilan estoja, paitsi jos AllowWakeLocks-arvo on Epätosi.
+
+          Jos käytännön arvo on Epätosi, näytön lepotilan estopyyntöjä käsitellään pelkkinä järjestelmän lepotilan estopyyntöinä.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Päivityksille sallitut yhteystyypit</translation>
 <translation id="7194407337890404814">Oletushakupalvelun nimi</translation>
@@ -2247,6 +2280,11 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
           Automaattinen toisto on sallittu vain käytännössä <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> ilmoitetuille verkkotunnuksille. Jos haluat sallia automaattisen toiston kaikille sivustoille, sinun kannattaa lisätä luetteloon http://* ja https://*.
 
           Jos käytäntöä ei ole määritetty, käyttäjä voi muuttaa asetusta manuaalisesti.</translation>
+<translation id="7229975860249300121">Määrittää säännöllisellä lausekkeella, mitkä Google-tilit <ph name="PRODUCT_NAME" /> voi asettaa selaimen päätiliksi, joka valitaan synkronoinnin käyttöönoton yhteydessä.
+
+      Jos käyttäjä yrittää asettaa selaimen päätiliksi tilin, joka ei vastaa kuviota, hän näkee virheviestin.
+
+      Jos käytännöllä ei ole arvoa tai se on tyhjä, käyttäjä voi asettaa minkä tahansa Google-tilin <ph name="PRODUCT_NAME" /> ‑selaimen päätiliksi.</translation>
 <translation id="723103540848640830">Määritä lukitusnäytön PIN-koodin vähimmäispituus</translation>
 <translation id="7232816984286843471">Jos käytännön arvo on epätosi, riippumattomat käyttäjät eivät voi käyttää Crostinia.
 
@@ -2396,6 +2434,10 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       </translation>
 <translation id="7511361072385293666">Jos tämän käytännön arvo on Tosi tai sitä ei aseteta, <ph name="PRODUCT_NAME" /> sallii QUIC-protokollan käytön.
       Jos käytännön arvo on Epätosi, QUIC-protokollan käyttöä ei sallita.</translation>
+<translation id="7517845714620372896">Määrittää näytön kirkkausprosentin.
+          Käytännön määrittämisen yhteydessä näytön kirkkaus muuttuu käytännön arvon mukaiseksi, mutta käyttäjä voi muokata sitä myöhemmin. Automaattiset kirkkaudensäädöt poistetaan käytöstä.
+          Jos tätä käytäntöä ei määritetä, käyttäjän näytönhallinta tai automaattiset kirkkaudensäädöt eivät muutu.
+          Käytännön arvon tulee olla prosentti väliltä 0–100.</translation>
 <translation id="7519251620064708155">Salli avainten luominen näillä sivustoilla.</translation>
 <translation id="7529100000224450960">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka saavat avata ponnahdusikkunoita. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultPopupsSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="7529144158022474049">Hajontatekijän automaattinen päivitys</translation>
@@ -2500,6 +2542,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
       Tunnistettuja yhteystyypin tunnuksia ovat ethernet, wifi, wimax, bluetooth ja cellular.</translation>
 <translation id="7763614521440615342">Näytä sisältöehdotuksia Uusi välilehti ‑sivulla</translation>
+<translation id="7765879851993224640">Salli kirjautuminen Smart Lockilla</translation>
 <translation id="7774768074957326919">Käytä järjestelmän välityspalvelimen asetuksia</translation>
 <translation id="7775831859772431793">Voit määrittää välityspalvelimen URL-osoitteen tässä.
 
@@ -2608,6 +2651,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Kun käytännön arvoksi muutetaan epätosi, muutos koskee uusien virtuaalikoneiden käynnistämistä, mutta jo käynnissä olevia virtuaalikoneita ei sammuteta.
       Jos tätä asetusta ei ole määritetty hallinnoidulla laitteella, laitteella ei voi suorittaa virtuaalikoneita.
       Ei-hallinnoiduilla laitteilla voidaan suorittaa virtuaalikoneita.</translation>
+<translation id="8001701200415781021">Rajoittaa Google-tilejä, jotka <ph name="PRODUCT_NAME" /> voi asettaa selaimen päätiliksi</translation>
 <translation id="802147957407376460">Kierrä näyttöä 0 astetta.</translation>
 <translation id="8033913082323846868">Tämä käytäntö on poistettu käytöstä M70:ssä, käytä sen sijaan AutofillAddressEnabled- ja AutofillCreditCardEnabled-käytäntöjä.
 
@@ -2855,6 +2899,25 @@ Jos tämän käytännön arvoksi on määritetty Tosi, käyttäjän on suoritett
       Jos käytännölle ei ole määritetty arvoa tai sen arvo on tosi, kaikilla käyttäjillä on oikeus käyttää ARC:tä (paitsi jos ARC on poistettu käytöstä toisella tavalla).
 
       Käytäntöön tehtyjä muutoksia sovelletaan vain, jos ARC ei ole käynnissä, esimerkiksi Chrome-käyttöjärjestelmän käynnistyksen aikana.</translation>
+<translation id="8615400197788843468"><ph name="PRODUCT_NAME" /> saa käyttää rajoitettua G Suite ‑kirjautumistoimintoa, eikä käyttäjä voi muuttaa tätä asetusta
+
+      Jos määrität tämän asetuksen, käyttäjä pääsee Google Apps
+      ‑sovelluksiin vain määrättyjen verkkotunnusten tileiltä (Huomaa, että
+      tämä ei toimi gmail.comin/googlemail.com-tilien kohdalla.
+      Lisää verkkotunnusluetteloon "consumer_accounts" ilman lainausmerkkejä.).
+
+      Asetus estää käyttäjää kirjautumasta sisään ja lisäämästä
+      toissijaista tiliä ylläpidetyllä laitteella, joka edellyttää Google-todennusta,
+      jos käyttäjän tili ei ole sallittujen verkkotunnusten luettelossa.
+
+      Jos tätä asetusta ei määritetä tai sen arvo on tyhjä, käyttäjä pääsee G Suiteen
+      millä tahansa tilillä.
+
+      Tämän käytännön seurauksena X-GoogApps-Allowed-Domains-otsikko
+      lisätään kaikkiin google.com-verkkotunnuksiin tehtäviin HTTP- ja HTTPS-
+      pyyntöihin. Lisätietoja on artikkelissa https://support.google.com/a/answer/1668854.
+
+      Käyttäjät eivät voi muuttaa tai ohittaa tätä asetusta.</translation>
 <translation id="8631434304112909927">versioon <ph name="UNTIL_VERSION" /> saakka</translation>
 <translation id="863319402127182273">Android-sovellusten kohdalla tämä käytäntö vaikuttaa vain sisäänrakennettuun kameraan. Kun käytännön arvoksi on määritetty tosi, kamera ei ole minkään Android-sovellusten käytössä, ilman poikkeuksia.</translation>
 <translation id="8649763579836720255">Chrome-käyttöjärjestelmää käyttävät laitteet voivat käyttää etävahvistusta (vahvistetut käyttöoikeudet), jotta saavat Chrome-käyttöjärjestelmän CA:n lähettämän todistuksen, joka vahvistaa, että laitteella voi toistaa suojattua sisältöä. Tähän prosessiin kuuluu laitteistosuositusten lähettäminen Chrome-käyttöjärjestelmän CA:lle, joka tunnistaa jokaisen yksittäisen laitteen.

@@ -231,7 +231,6 @@
 <translation id="131461803491198646">홈 네트워크 로밍 안함</translation>
 <translation id="1316136264406804862">검색 중...</translation>
 <translation id="1316495628809031177">동기화 일시중지됨</translation>
-<translation id="1319979322914001937">Chrome 웹 스토어의 필터링된 확장 프로그램 목록을 보여주는 앱입니다. 앱에서 직접 이 목록에 있는 확장 프로그램을 설치할 수 있습니다.</translation>
 <translation id="1322046419516468189"><ph name="SAVED_PASSWORDS_STORE" />에 저장된 비밀번호 보기 및 관리</translation>
 <translation id="1326317727527857210">다른 기기에서 탭을 가져오려면 Chrome에 로그인하세요.</translation>
 <translation id="1327074568633507428">Google 클라우드 프린트의 프린터</translation>
@@ -2287,7 +2286,6 @@
 <translation id="4451757071857432900">방해가 되거나 사용자를 현혹하는 광고를 표시하는 사이트에서 광고가 차단됨(권장)</translation>
 <translation id="4453946976636652378"><ph name="SEARCH_ENGINE_NAME" />에서 검색하거나 URL을 입력하세요.</translation>
 <translation id="4462159676511157176">맞춤 이름 서버</translation>
-<translation id="4467100756425880649">Chrome 웹 스토어 갤러리</translation>
 <translation id="4467101674048705704"><ph name="FOLDER_NAME" /> 펼치기</translation>
 <translation id="4469477701382819144">방해가 되거나 사용자를 현혹하는 광고를 표시하는 사이트에서 광고가 차단됩니다.</translation>
 <translation id="447252321002412580">Chrome의 기능 및 성능 개선에 참여</translation>
@@ -2405,7 +2403,6 @@
 <translation id="4647697156028544508">'<ph name="DEVICE_NAME" />'의 PIN을 입력하세요:</translation>
 <translation id="4648491805942548247">권한 부족</translation>
 <translation id="4648499713050786492">프로필을 잠금 해제한 다음 사용자를 추가하세요.</translation>
-<translation id="465499440663162826">Chrome 웹 스토어에 연결할 수 없습니다.</translation>
 <translation id="4656293982926141856">이 컴퓨터</translation>
 <translation id="4660476621274971848">'<ph name="EXPECTED_VERSION" />' 버전을 예상했으나 '<ph name="NEW_ID" />' 버전이 표시되었습니다</translation>
 <translation id="4662788913887017617">이 북마크를 내 iPhone과 공유</translation>
@@ -2652,7 +2649,6 @@
 <translation id="5004584466530475658">새로운 사진 <ph name="FILE_COUNT" />장</translation>
 <translation id="5010043101506446253">인증 기관</translation>
 <translation id="5015344424288992913">프록시 알아내는 중...</translation>
-<translation id="5015762597229892204">프린터 드라이버 앱 선택</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5017633213534173756">저장</translation>
 <translation id="5018207570537526145">확장 프로그램 웹사이트 열기</translation>

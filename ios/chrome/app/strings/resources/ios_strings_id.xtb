@@ -226,8 +226,12 @@
 
 Data Anda dienkripsi dengan frasa sandi sinkronisasi. Masukkan frasa sandi untuk memulai sinkronisasi.</translation>
 <translation id="473775607612524610">Mutakhirkan</translation>
+<translation id="4747097190499141774">Enkripsi frasa sandi tidak mencakup alamat dan metode pembayaran dari Google Pay. Hanya pengguna yang memiliki frasa sandi Anda yang dapat membaca data yang telah Anda enkripsi. Frasa sandi tidak dikirim atau disimpan oleh Google. Jika lupa frasa sandi Anda atau ingin mengubah setelan ini, Anda harus menyetel ulang sinkronisasi. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Cari pada Halaman...</translation>
 <translation id="4751645464639803239">Tab Penyamaran Baru</translation>
+<translation id="4802417911091824046">Enkripsi frasa sandi tidak mencakup alamat dan metode pembayaran dari Google Pay.
+
+Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">1 artikel yang belum dibaca di Daftar Bacaan.</translation>
 <translation id="481968316161811770">Cookie, Data Situs</translation>
 <translation id="4854345657858711387">Setel Kode Sandi</translation>

@@ -231,7 +231,6 @@
 <translation id="131461803491198646">Собствената мрежа, не роуминг</translation>
 <translation id="1316136264406804862">Търси се...</translation>
 <translation id="1316495628809031177">Синхронизирането е на пауза</translation>
-<translation id="1319979322914001937">Приложение, което показва филтриран списък с разширения от уеб магазина на Chrome. Те могат да бъдат инсталирани направо от приложението.</translation>
 <translation id="1322046419516468189">Преглеждайте и управлявайте запазените пароли в <ph name="SAVED_PASSWORDS_STORE" /></translation>
 <translation id="1326317727527857210">Влезте в Chrome, за да получите разделите си от другите си устройства.</translation>
 <translation id="1327074568633507428">Принтер в Google Отпечатване в облак</translation>
@@ -2288,7 +2287,6 @@
 <translation id="4451757071857432900">Блокиране за сайтовете, на които се показват натрапчиви или подвеждащи реклами (препоръчително)</translation>
 <translation id="4453946976636652378">Търсете с(ъс) <ph name="SEARCH_ENGINE_NAME" /> или въведете URL адрес</translation>
 <translation id="4462159676511157176">Специално зададени сървъри за имена</translation>
-<translation id="4467100756425880649">Галерия на уеб магазина на Chrome</translation>
 <translation id="4467101674048705704">Разгъване на „<ph name="FOLDER_NAME" />“</translation>
 <translation id="4469477701382819144">Блокиране за сайтовете, на които се показват натрапчиви или подвеждащи реклами</translation>
 <translation id="447252321002412580">Помощ за подобряването на функциите и ефективността на Chrome</translation>
@@ -2406,7 +2404,6 @@
 <translation id="4647697156028544508">Моля, въведете ПИН кода за „<ph name="DEVICE_NAME" />“:</translation>
 <translation id="4648491805942548247">Недостатъчни разрешения</translation>
 <translation id="4648499713050786492">Моля, отключете потребителския си профил, преди да добавите човек.</translation>
-<translation id="465499440663162826">Не можа да се установи връзка с уеб магазина на Chrome.</translation>
 <translation id="4656293982926141856">Този компютър</translation>
 <translation id="4660476621274971848">Очакваната версия е <ph name="EXPECTED_VERSION" />, но тя бе <ph name="NEW_ID" /></translation>
 <translation id="4662788913887017617">Споделете тази отметка със своя iPhone</translation>
@@ -2653,7 +2650,6 @@
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> нови снимки</translation>
 <translation id="5010043101506446253">Сертифициращ орган</translation>
 <translation id="5015344424288992913">Получава се разрешение от прокси сървъра...</translation>
-<translation id="5015762597229892204">Избор на приложение за драйвер за принтер</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5017633213534173756">Запомняне</translation>
 <translation id="5018207570537526145">Отваряне на уебсайта на разширението</translation>

@@ -231,7 +231,6 @@
 <translation id="131461803491198646">家用網路，非漫遊狀態</translation>
 <translation id="1316136264406804862">搜尋中...</translation>
 <translation id="1316495628809031177">已暫停同步處理</translation>
-<translation id="1319979322914001937">這個應用程式會顯示經過篩選的 Chrome 線上應用程式商店擴充功能清單。使用者可以直接透過應用程式安裝清單中的擴充功能。</translation>
 <translation id="1322046419516468189">你可以查看及管理 <ph name="SAVED_PASSWORDS_STORE" />中儲存的密碼</translation>
 <translation id="1326317727527857210">如要存取您在其他裝置上開啟的分頁，請登入 Chrome。</translation>
 <translation id="1327074568633507428">Google 雲端列印中的印表機</translation>
@@ -1257,7 +1256,7 @@
 <translation id="2850124913210091882">備份</translation>
 <translation id="2850541429955027218">新增主題</translation>
 <translation id="2853916256216444076">$1 影片</translation>
-<translation id="2859806420264540918">這個網站會顯示侵入性或誤導性廣告。</translation>
+<translation id="2859806420264540918">這個網站會顯示干擾性或誤導性的廣告。</translation>
 <translation id="2860150991415616761">很長 (4 秒)</translation>
 <translation id="2861301611394761800">系統更新完成，請重新啟動系統。</translation>
 <translation id="2861941300086904918">Native Client 安全性管理員</translation>
@@ -2285,12 +2284,11 @@
 <translation id="4448844063988177157">正在搜尋 Wi-Fi 網路...</translation>
 <translation id="4449996769074858870">這個分頁正在播放音訊。</translation>
 <translation id="4450974146388585462">診斷</translation>
-<translation id="4451757071857432900">已針對顯示侵入性或誤導性廣告的網站封鎖廣告 (建議)</translation>
+<translation id="4451757071857432900">已封鎖干擾性或誤導性的網站廣告 (建議)</translation>
 <translation id="4453946976636652378">執行 <ph name="SEARCH_ENGINE_NAME" /> 搜尋或輸入網址</translation>
 <translation id="4462159676511157176">自訂名稱伺服器</translation>
-<translation id="4467100756425880649">Chrome 線上應用程式商店擴充功能庫</translation>
 <translation id="4467101674048705704">展開「<ph name="FOLDER_NAME" />」</translation>
-<translation id="4469477701382819144">已針對顯示侵入性或誤導性廣告的網站封鎖廣告</translation>
+<translation id="4469477701382819144">已封鎖干擾性或誤導性的網站廣告</translation>
 <translation id="447252321002412580">協助改善 Chrome 的功能與效能</translation>
 <translation id="4472575034687746823">開始使用</translation>
 <translation id="4474155171896946103">將所有分頁加入書籤...</translation>
@@ -2406,7 +2404,6 @@
 <translation id="4647697156028544508">請輸入「<ph name="DEVICE_NAME" />」的 PIN：</translation>
 <translation id="4648491805942548247">權限不足</translation>
 <translation id="4648499713050786492">新增任何人之前，請先取消鎖定您的個人資料。</translation>
-<translation id="465499440663162826">無法連上 Chrome 線上應用程式商店。</translation>
 <translation id="4656293982926141856">這台電腦</translation>
 <translation id="4660476621274971848">預期的版本為「<ph name="EXPECTED_VERSION" />」，但實際的版本為「<ph name="NEW_ID" />」</translation>
 <translation id="4662788913887017617">在 iPhone 上取得這個書籤</translation>
@@ -2653,7 +2650,6 @@
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> 張新相片</translation>
 <translation id="5010043101506446253">憑證授權單位</translation>
 <translation id="5015344424288992913">正在解析 proxy...</translation>
-<translation id="5015762597229892204">選取印表機驅動程式應用程式</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5017633213534173756">記住</translation>
 <translation id="5018207570537526145">開啟擴充功能網站</translation>
@@ -3290,7 +3286,7 @@
 <translation id="5925147183566400388">憑證實務作業基準指標</translation>
 <translation id="592880897588170157">下載 PDF 檔案，而不自動在 Chrome 中開啟</translation>
 <translation id="5931146425219109062">讀取及變更你造訪過的網站上的所有資料</translation>
-<translation id="5932224571077948991">網站顯示侵入性或誤導性廣告</translation>
+<translation id="5932224571077948991">網站顯示干擾性或誤導性廣告</translation>
 <translation id="5932881020239635062">序列</translation>
 <translation id="5933376509899483611">時區</translation>
 <translation id="5938002010494270685">可進行安全性更新</translation>
@@ -3354,7 +3350,7 @@
 <translation id="6029292188939175871">刪除[<ph name="FINGERPRINT_NAME" />]，按鈕</translation>
 <translation id="6029587122245504742">最慢</translation>
 <translation id="6032912588568283682">檔案系統</translation>
-<translation id="6038929619733116134">針對顯示侵入性或誤導性廣告的網站封鎖廣告</translation>
+<translation id="6038929619733116134">封鎖干擾性或誤導性的網站廣告</translation>
 <translation id="6039651071822577588">網路屬性字典格式錯誤</translation>
 <translation id="604001903249547235">雲端備份</translation>
 <translation id="6040143037577758943">關閉</translation>

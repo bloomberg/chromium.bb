@@ -231,7 +231,6 @@
 <translation id="131461803491198646">家庭网络，非漫游</translation>
 <translation id="1316136264406804862">正在搜索...</translation>
 <translation id="1316495628809031177">同步已暂停</translation>
-<translation id="1319979322914001937">此应用可以显示一个列表，其中会列出从 Chrome 网上应用店中筛选出来的扩展程序。您可以直接通过此应用安装列出的扩展程序。</translation>
 <translation id="1322046419516468189">您可以查看和管理 <ph name="SAVED_PASSWORDS_STORE" />中保存的密码</translation>
 <translation id="1326317727527857210">要在您的其他设备上访问您的标签页，请登录 Chrome。</translation>
 <translation id="1327074568633507428">Google 云打印中的打印机</translation>
@@ -617,7 +616,7 @@
 <translation id="1875387611427697908">只能通过<ph name="CHROME_WEB_STORE" />添加此项内容</translation>
 <translation id="1877520246462554164">未能获取身份验证令牌。请退出并重新登录，然后重试。</translation>
 <translation id="1878302395768190018">您可以随时在 Chrome 设置中自定义此设置</translation>
-<translation id="1879000426787380528">使用以下身份登录：</translation>
+<translation id="1879000426787380528">登录身份</translation>
 <translation id="1880905663253319515">要删除证书“<ph name="CERTIFICATE_NAME" />”吗？</translation>
 <translation id="1886996562706621347">允许网站要求成为协议的默认处理程序（推荐）</translation>
 <translation id="1887442540531652736">登录错误</translation>
@@ -2282,7 +2281,6 @@
 <translation id="4451757071857432900">已禁止会展示侵扰性或误导性广告的网站显示广告（推荐）</translation>
 <translation id="4453946976636652378">在<ph name="SEARCH_ENGINE_NAME" />中搜索，或者输入一个网址</translation>
 <translation id="4462159676511157176">自定义域名服务器</translation>
-<translation id="4467100756425880649">Chrome 网上应用店扩展程序列表</translation>
 <translation id="4467101674048705704">展开“<ph name="FOLDER_NAME" />”</translation>
 <translation id="4469477701382819144">已禁止会展示侵扰性或误导性广告的网站显示广告</translation>
 <translation id="447252321002412580">帮助我们改进 Chrome 的功能和性能</translation>
@@ -2400,7 +2398,6 @@
 <translation id="4647697156028544508">请输入“<ph name="DEVICE_NAME" />”的 PIN：</translation>
 <translation id="4648491805942548247">权限不足</translation>
 <translation id="4648499713050786492">在添加用户前，请先解锁您的个人资料。</translation>
-<translation id="465499440663162826">无法连接到 Chrome 网上应用店。</translation>
 <translation id="4656293982926141856">此计算机</translation>
 <translation id="4660476621274971848">预期版本是“<ph name="EXPECTED_VERSION" />”，但实际版本是“<ph name="NEW_ID" />”</translation>
 <translation id="4662788913887017617">将此书签共享给您的 iPhone</translation>
@@ -2647,7 +2644,6 @@
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> 张新照片</translation>
 <translation id="5010043101506446253">证书授权中心</translation>
 <translation id="5015344424288992913">正在解析代理...</translation>
-<translation id="5015762597229892204">选择打印机驱动程序应用</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5017633213534173756">保存</translation>
 <translation id="5018207570537526145">打开扩展程序网站</translation>

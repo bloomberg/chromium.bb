@@ -231,7 +231,6 @@
 <translation id="131461803491198646">Εγχώριο δίκτυο, χωρίς περιαγωγή </translation>
 <translation id="1316136264406804862">Αναζήτηση...</translation>
 <translation id="1316495628809031177">Ο συγχρονισμός τέθηκε σε παύση</translation>
-<translation id="1319979322914001937">Μια εφαρμογή που εμφανίζει μια φιλτραρισμένη λίστα των επεκτάσεων από το Chrome Web Store. Οι επεκτάσεις στον κατάλογο μπορούν να εγκατασταθούν απευθείας από την εφαρμογή.</translation>
 <translation id="1322046419516468189">Προβολή και διαχείριση αποθηκευμένων κωδικών πρόσβασης στον <ph name="SAVED_PASSWORDS_STORE" /></translation>
 <translation id="1326317727527857210">Για να εμφανίζονται οι καρτέλες από τις άλλες συσκευές σας, συνδεθείτε στο Chrome.</translation>
 <translation id="1327074568633507428">Εκτυπωτής στο Google Cloud Print</translation>
@@ -2289,7 +2288,6 @@
 <translation id="4451757071857432900">Αποκλεισμένες σε ιστότοπους που εμφανίζουν παρεμβατικές ή παραπλανητικές διαφημίσεις (συνιστάται)</translation>
 <translation id="4453946976636652378">Αναζητήστε στο <ph name="SEARCH_ENGINE_NAME" /> ή πληκτρολογήστε κάποιο URL</translation>
 <translation id="4462159676511157176">Προσαρμοσμένοι διακομιστές ονομάτων</translation>
-<translation id="4467100756425880649">Chrome Web Store Gallery</translation>
 <translation id="4467101674048705704">Ανάπτυξη <ph name="FOLDER_NAME" /></translation>
 <translation id="4469477701382819144">Αποκλεισμένες σε ιστότοπους που εμφανίζουν παρεμβατικές ή παραπλανητικές διαφημίσεις</translation>
 <translation id="447252321002412580">Συμβάλλετε στη βελτίωση των λειτουργιών και της απόδοσης του Chrome</translation>
@@ -2407,7 +2405,6 @@
 <translation id="4647697156028544508">Εισαγάγετε το PIN για τη συσκευή "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Ανεπαρκείς άδειες</translation>
 <translation id="4648499713050786492">Ξεκλειδώστε το προφίλ σας προτού προσθέσετε κάποιο άτομο.</translation>
-<translation id="465499440663162826">Δεν ήταν δυνατή η σύνδεση στο Chrome Web Store.</translation>
 <translation id="4656293982926141856">Αυτός ο υπολογιστής</translation>
 <translation id="4660476621274971848">Αναμενόταν η έκδοση "<ph name="EXPECTED_VERSION" />", ωστόσο η έκδοση ήταν η "<ph name="NEW_ID" />"</translation>
 <translation id="4662788913887017617">Μοιραστείτε αυτόν τον σελιδοδείκτη με το iPhone</translation>
@@ -2654,7 +2651,6 @@
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> νέες φωτογραφίες</translation>
 <translation id="5010043101506446253">Αρχή έκδοσης πιστοποιητικών</translation>
 <translation id="5015344424288992913">Ανάλυση της διεύθυνσης του διακομιστή μεσολάβησης...</translation>
-<translation id="5015762597229892204">Επιλέξτε μια εφαρμογή προγράμματος οδήγησης εκτυπωτή</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5017633213534173756">Διατήρηση</translation>
 <translation id="5018207570537526145">Άνοιγμα ιστοτόπου επεκτάσεων</translation>

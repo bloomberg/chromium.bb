@@ -10,7 +10,7 @@
 <translation id="1067922213147265141">‏خدمات Google الأخرى</translation>
 <translation id="1068672505746868501">عدم ترجمة الصفحات باللغة <ph name="SOURCE_LANGUAGE" /> مُطلقًا</translation>
 <translation id="1080790410959514870">‏أنت بصدد الخروج من حساب تحت إدارة <ph name="DOMAIN_NAME" />. سيؤدي هذا إلى حذف بيانات Chrome المخزنة على هذا الجهاز، إلا أن البيانات ستظل في حسابك على Google.</translation>
-<translation id="1099080783256647258">‏عند إيقاف أداة توفير البيانات، يستخدم Chrome خوادم Google لزيادة سرعة تحميل الصفحات وضغطها. وخاصة في الصفحات البطيئة، تعيد أداة توفير البيانات كتابة الصفحة لتحميل المحتوى غير الأساسي فقط. لا تؤدي أداة توفير البيانات إلى تحسين الصفحات المحمَّلة في وضع التصفُّح المتخفي.</translation>
+<translation id="1099080783256647258">‏عند تفعيل أداة توفير البيانات، يستخدم Chrome خوادم Google لزيادة سرعة تحميل الصفحات وضغطها. وخاصة في الصفحات البطيئة، تعيد أداة توفير البيانات كتابة الصفحة لتحميل المحتوى الأساسي فقط. ولا تعمل أداة توفير البيانات على تحسين الصفحات المحمَّلة في وضع التصفُّح المتخفي.</translation>
 <translation id="1105960400813249514">التقاط الشاشة</translation>
 <translation id="1111673857033749125">ستظهر هنا الإشارات التي تم حفظها على أجهزتك الأخرى.</translation>
 <translation id="1113597929977215864">إظهار العرض المبسَّط</translation>
@@ -559,7 +559,6 @@
 <translation id="5466407412363861127">تستخدم هذه الميزة <ph name="BEGIN_LINK" />المزامنة<ph name="END_LINK" />.</translation>
 <translation id="548278423535722844">فتح في تطبيق الخرائط</translation>
 <translation id="5487521232677179737">محو البيانات</translation>
-<translation id="5487729733663684359">‏لم يعد يتم دعم تحديثات Chrome لهذا الإصدار من Android.</translation>
 <translation id="5494920125229734069">تحديد الكل</translation>
 <translation id="550684401320795253">‏جارٍ تحديث Chrome...</translation>
 <translation id="5512137114520586844">تتم إدارة هذا الحساب بواسطة <ph name="PARENT_NAME" />.</translation>
@@ -946,7 +945,7 @@
 <translation id="8349013245300336738">الترتيب حسب مقدار البيانات المُستخدَمة</translation>
 <translation id="8372893542064058268">السماح بتشغيل "مزامنة الخلفية" لموقع ويب معين.</translation>
 <translation id="8374821112118309944">‏يلزمك تحديث TalkBack إلى إصدار جديد.</translation>
-<translation id="8380167699614421159">يعرض هذا الموقع الإلكتروني إعلانات متداخلة أو مضلِّلة</translation>
+<translation id="8380167699614421159">يعرض هذا الموقع الإلكتروني إعلانات مضلِّلة أو غير مرغوب فيها</translation>
 <translation id="8393700583063109961">إرسال رسالة</translation>
 <translation id="8413126021676339697">عرض السجل بكامله</translation>
 <translation id="8428213095426709021">الإعدادات</translation>
@@ -1060,7 +1059,7 @@
 <translation id="945632385593298557">الدخول إلى الميكروفون</translation>
 <translation id="951339005376969845">يمكنك حذف البيانات الحالية. يمكنك استرداد هذه البيانات بالتبديل مرة أخرى إلى <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">‏يمكن لـ Chrome استخدام <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> للبحث في الصين. ويمكنك تغيير هذا في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>
-<translation id="965817943346481315">الحظر في حال كان موقع الويب يعرض إعلانات متداخلة أو مضلِّلة (مُقترح)</translation>
+<translation id="965817943346481315">الحظر في حال كان موقع الويب يعرض إعلانات مضلِّلة أو غير مرغوب فيها (مُستحسَن)</translation>
 <translation id="970715775301869095">عدد الدقائق المتبقية: <ph name="MINUTES" /></translation>
 <translation id="974555521953189084">إدخال عبارة المرور لبدء المزامنة</translation>
 <translation id="981121421437150478">بلا اتصال</translation>
