@@ -157,9 +157,13 @@ base::string16 ToolbarModelImpl::GetSecureText() const {
     case security_state::SECURE:
       return l10n_util::GetStringUTF16(IDS_SECURE_VERBOSE_STATE);
     case security_state::DANGEROUS:
-      return l10n_util::GetStringUTF16(delegate_->FailsMalwareCheck()
-                                           ? IDS_DANGEROUS_VERBOSE_STATE
-                                           : IDS_NOT_SECURE_VERBOSE_STATE);
+      if (delegate_->FailsMalwareCheck())
+        return l10n_util::GetStringUTF16(IDS_DANGEROUS_VERBOSE_STATE);
+      // Don't show any text in the security indicator for sites on the billing
+      // interstitial list.
+      return delegate_->FailsBillingCheck()
+                 ? base::string16()
+                 : l10n_util::GetStringUTF16(IDS_NOT_SECURE_VERBOSE_STATE);
     default:
       return base::string16();
   }

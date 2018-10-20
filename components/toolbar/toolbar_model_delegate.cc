@@ -18,6 +18,10 @@ scoped_refptr<net::X509Certificate> ToolbarModelDelegate::GetCertificate()
   return nullptr;
 }
 
+bool ToolbarModelDelegate::FailsBillingCheck() const {
+  return false;
+}
+
 bool ToolbarModelDelegate::FailsMalwareCheck() const {
   return false;
 }
