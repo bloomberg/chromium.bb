@@ -169,14 +169,16 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
 class TestPreviewsUIService : public PreviewsUIService {
  public:
   TestPreviewsUIService(
-      std::unique_ptr<PreviewsDeciderImpl> previews_decider_impl,
+      PreviewsDeciderImpl* previews_decider_impl,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       std::unique_ptr<blacklist::OptOutStore> previews_opt_out_store,
       std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
       const PreviewsIsEnabledCallback& is_enabled_callback,
       std::unique_ptr<PreviewsLogger> logger,
       blacklist::BlacklistData::AllowedTypesAndVersions allowed_types,
       network::NetworkQualityTracker* network_quality_tracker)
-      : PreviewsUIService(std::move(previews_decider_impl),
+      : PreviewsUIService(previews_decider_impl,
+                          io_task_runner,
                           std::move(previews_opt_out_store),
                           std::move(previews_opt_guide),
                           is_enabled_callback,
@@ -298,14 +300,36 @@ class TestPreviewsUIService : public PreviewsUIService {
 
 class TestPreviewsDeciderImpl : public PreviewsDeciderImpl {
  public:
-  TestPreviewsDeciderImpl(base::Clock* clock) : PreviewsDeciderImpl(clock) {}
+  TestPreviewsDeciderImpl(
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
+      base::Clock* clock)
+      : PreviewsDeciderImpl(io_task_runner, ui_task_runner, clock),
+        initialized_(false) {}
   ~TestPreviewsDeciderImpl() override {}
+
+  // Whether Initialize was called.
+  bool initialized() { return initialized_; }
 
   // Expose the injecting blacklist method from PreviewsDeciderImpl, and inject
   // |blacklist| into |this|.
   void InjectTestBlacklist(std::unique_ptr<PreviewsBlackList> blacklist) {
     SetPreviewsBlacklistForTesting(std::move(blacklist));
   }
+
+ private:
+  // Set |initialized_| to true and use base class functionality.
+  void InitializeOnIOThread(
+      std::unique_ptr<blacklist::OptOutStore> previews_opt_out_store,
+      blacklist::BlacklistData::AllowedTypesAndVersions allowed_previews)
+      override {
+    initialized_ = true;
+    PreviewsDeciderImpl::InitializeOnIOThread(std::move(previews_opt_out_store),
+                                              std::move(allowed_previews));
+  }
+
+  // Whether Initialize was called.
+  bool initialized_;
 };
 
 void RunLoadCallback(blacklist::LoadBlackListCallback callback,
@@ -339,7 +363,10 @@ class PreviewsDeciderImplTest : public testing::Test {
  public:
   PreviewsDeciderImplTest()
       : field_trial_list_(nullptr),
-        previews_decider_impl_(nullptr),
+        previews_decider_impl_(std::make_unique<TestPreviewsDeciderImpl>(
+            scoped_task_environment_.GetMainThreadTaskRunner(),
+            scoped_task_environment_.GetMainThreadTaskRunner(),
+            &clock_)),
         optimization_guide_service_(
             scoped_task_environment_.GetMainThreadTaskRunner()) {
     clock_.SetNow(base::Time::Now());
@@ -354,6 +381,12 @@ class PreviewsDeciderImplTest : public testing::Test {
     variations::testing::ClearAllVariationParams();
   }
 
+  void InitializeIOData() {
+    previews_decider_impl_ = std::make_unique<TestPreviewsDeciderImpl>(
+        scoped_task_environment_.GetMainThreadTaskRunner(),
+        scoped_task_environment_.GetMainThreadTaskRunner(), &clock_);
+  }
+
   void TearDown() override { ui_service_.reset(); }
 
   void InitializeUIServiceWithoutWaitingForBlackList() {
@@ -364,12 +397,10 @@ class PreviewsDeciderImplTest : public testing::Test {
     allowed_types[static_cast<int>(PreviewsType::LITE_PAGE_REDIRECT)] = 0;
     allowed_types[static_cast<int>(PreviewsType::NOSCRIPT)] = 0;
     allowed_types[static_cast<int>(PreviewsType::RESOURCE_LOADING_HINTS)] = 0;
-
-    std::unique_ptr<TestPreviewsDeciderImpl> previews_decider_impl =
-        std::make_unique<TestPreviewsDeciderImpl>(&clock_);
-    previews_decider_impl_ = previews_decider_impl.get();
     ui_service_.reset(new TestPreviewsUIService(
-        std::move(previews_decider_impl), std::make_unique<TestOptOutStore>(),
+        previews_decider_impl_.get(),
+        scoped_task_environment_.GetMainThreadTaskRunner(),
+        std::make_unique<TestOptOutStore>(),
         std::make_unique<TestPreviewsOptimizationGuide>(
             &optimization_guide_service_,
             scoped_task_environment_.GetMainThreadTaskRunner()),
@@ -385,7 +416,7 @@ class PreviewsDeciderImplTest : public testing::Test {
   }
 
   TestPreviewsDeciderImpl* previews_decider_impl() {
-    return previews_decider_impl_;
+    return previews_decider_impl_.get();
   }
   TestPreviewsUIService* ui_service() { return ui_service_.get(); }
 
@@ -402,11 +433,18 @@ class PreviewsDeciderImplTest : public testing::Test {
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::FieldTrialList field_trial_list_;
-  TestPreviewsDeciderImpl* previews_decider_impl_;
+  std::unique_ptr<TestPreviewsDeciderImpl> previews_decider_impl_;
   optimization_guide::OptimizationGuideService optimization_guide_service_;
   std::unique_ptr<TestPreviewsUIService> ui_service_;
   network::TestNetworkQualityTracker network_quality_tracker_;
 };
+
+TEST_F(PreviewsDeciderImplTest, TestInitialization) {
+  InitializeUIService();
+  // After the outstanding posted tasks have run, |previews_decider_impl_|
+  // should be fully initialized.
+  EXPECT_TRUE(previews_decider_impl()->initialized());
+}
 
 TEST_F(PreviewsDeciderImplTest, AllPreviewsDisabledByFeature) {
   base::test::ScopedFeatureList scoped_feature_list;
@@ -442,21 +480,27 @@ TEST_F(PreviewsDeciderImplTest, TestDisallowPreviewBecauseOfBlackListState) {
   base::HistogramTester histogram_tester;
 
   PreviewsUserData user_data(kDefaultPageId);
+  // The blacklist is not created yet.
+  EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreview(
+      &user_data, GURL("https://www.google.com"), false,
+      PreviewsType::OFFLINE));
+  histogram_tester.ExpectUniqueSample(
+      "Previews.EligibilityReason.Offline",
+      static_cast<int>(PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE), 1);
 
   InitializeUIServiceWithoutWaitingForBlackList();
 
-  // The blacklist is not loaded yet.
+  // The blacklist is not created yet.
   EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreview(
       &user_data, GURL("https://www.google.com"), false,
       PreviewsType::OFFLINE));
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.Offline",
-      static_cast<int>(PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED),
-      1);
+      static_cast<int>(PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE), 2);
 
   base::RunLoop().RunUntilIdle();
 
-  histogram_tester.ExpectTotalCount("Previews.EligibilityReason.Offline", 1);
+  histogram_tester.ExpectTotalCount("Previews.EligibilityReason.Offline", 2);
 
   // Return one of the failing statuses from the blacklist; cause the blacklist
   // to not be loaded by clearing the blacklist.
@@ -469,7 +513,7 @@ TEST_F(PreviewsDeciderImplTest, TestDisallowPreviewBecauseOfBlackListState) {
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.Offline",
       static_cast<int>(PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED),
-      2);
+      1);
   histogram_tester.ExpectTotalCount("Previews.EligibilityReason.NoScript", 0);
 
   variations::testing::ClearAllVariationParams();
@@ -1601,6 +1645,7 @@ TEST_F(PreviewsDeciderImplTest, IgnoreBlacklistEnabledViaFlag) {
   ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kIgnorePreviewsBlacklist));
 
+  InitializeIOData();
   InitializeUIService();
 
   std::unique_ptr<TestPreviewsBlackList> blacklist =

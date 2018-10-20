@@ -168,6 +168,33 @@ void AbortRequestBeforeItStarts(
   url_loader_client->OnComplete(status);
 }
 
+// Returns the PreviewsState for enabled previews after requesting it from
+// the delegate. The PreviewsState is a bitmask of potentially several
+// Previews optimizations that are initially enabled for a navigation.
+// If previews_to_allow is set to anything other than PREVIEWS_UNSPECIFIED,
+// it is either the values passed in for a sub-frame to use, or if this is
+// the main frame, it is a limitation on which previews to allow.
+PreviewsState DetermineEnabledPreviews(PreviewsState previews_to_allow,
+                                       ResourceDispatcherHostDelegate* delegate,
+                                       net::URLRequest* request,
+                                       ResourceContext* resource_context,
+                                       bool is_main_frame) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // If previews have already been turned off, or we are inheriting values on a
+  // sub-frame, don't check any further.
+  if (previews_to_allow & PREVIEWS_OFF ||
+      previews_to_allow & PREVIEWS_NO_TRANSFORM || !is_main_frame ||
+      !delegate) {
+    return previews_to_allow;
+  }
+
+  // Get the mask of previews we could apply to the current navigation.
+  PreviewsState previews_state = delegate->DetermineEnabledPreviews(
+      request, resource_context, previews_to_allow);
+
+  return previews_state;
+}
+
 bool ValidatePluginChildId(int plugin_child_id) {
   if (plugin_child_id == ChildProcessHost::kInvalidUniqueID)
     return true;
@@ -1510,6 +1537,10 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
             .get()));
   }
 
+  PreviewsState previews_state = DetermineEnabledPreviews(
+      info.common_params.previews_state, delegate_, new_request.get(),
+      resource_context, info.is_main_frame);
+
   // Make extra info and read footer (contains request ID).
   //
   // TODO(davidben): Associate the request with the FrameTreeNode and/or tab so
@@ -1539,7 +1570,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       // ContinuePendingBeginRequest.
       info.report_raw_headers,
       true,  // is_async
-      info.common_params.previews_state, info.common_params.post_data,
+      previews_state, info.common_params.post_data,
       // TODO(mek): Currently initiated_in_secure_context is only used for
       // subresource requests, so it doesn't matter what value it gets here.
       // If in the future this changes this should be updated to somehow get a

@@ -1118,7 +1118,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
     bool is_download;
     bool is_stream;
-
+    // If there is not an explicit PreviewsState set on the request, turn
+    // Previews off.
+    PreviewsState previews_state = PREVIEWS_OFF;
     std::unique_ptr<NavigationData> cloned_navigation_data;
 
     if (IsLoaderInterceptionEnabled()) {
@@ -1148,7 +1150,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           !default_loader_used_) {
         CallOnReceivedResponse(head, std::move(url_loader_client_endpoints),
                                std::move(cloned_navigation_data), is_download,
-                               is_stream);
+                               is_stream, previews_state);
         return;
       }
     }
@@ -1165,6 +1167,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           ResourceRequestInfoImpl::ForRequest(url_request);
       is_download = !response_intercepted && info->IsDownload();
       is_stream = info->is_stream();
+      previews_state = info->GetPreviewsState();
       if (rdh->delegate()) {
         NavigationData* navigation_data =
             rdh->delegate()->GetNavigationData(url_request);
@@ -1206,7 +1209,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
     CallOnReceivedResponse(head, std::move(url_loader_client_endpoints),
                            std::move(cloned_navigation_data), is_download,
-                           is_stream);
+                           is_stream, previews_state);
   }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -1240,7 +1243,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     bool is_download = !has_plugin && is_download_if_not_handled_by_plugin;
 
     CallOnReceivedResponse(head, std::move(url_loader_client_endpoints),
-                           nullptr, is_download, false /* is_stream */);
+                           nullptr, is_download, false /* is_stream */,
+                           PREVIEWS_OFF /* previews_state */);
   }
 #endif
 
@@ -1249,7 +1253,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       std::unique_ptr<NavigationData> cloned_navigation_data,
       bool is_download,
-      bool is_stream) {
+      bool is_stream,
+      PreviewsState previews_state) {
     scoped_refptr<network::ResourceResponse> response(
         new network::ResourceResponse());
     response->head = head;
@@ -1266,7 +1271,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
                        response->DeepCopy(),
                        std::move(url_loader_client_endpoints),
                        std::move(cloned_navigation_data), global_request_id_,
-                       is_download, is_stream));
+                       is_download, is_stream, previews_state));
   }
 
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
@@ -1740,7 +1745,8 @@ void NavigationURLLoaderImpl::OnReceiveResponse(
     std::unique_ptr<NavigationData> navigation_data,
     const GlobalRequestID& global_request_id,
     bool is_download,
-    bool is_stream) {
+    bool is_stream,
+    PreviewsState previews_state) {
   TRACE_EVENT_ASYNC_END2("navigation", "Navigation timeToResponseStarted", this,
                          "&NavigationURLLoaderImpl", this, "success", true);
 
@@ -1750,7 +1756,7 @@ void NavigationURLLoaderImpl::OnReceiveResponse(
   delegate_->OnResponseStarted(
       std::move(response), std::move(url_loader_client_endpoints),
       std::move(navigation_data), global_request_id,
-      allow_download_ && is_download, is_stream,
+      allow_download_ && is_download, is_stream, previews_state,
       request_controller_->TakeSubresourceLoaderParams());
 }
 

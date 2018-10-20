@@ -96,7 +96,7 @@ bool ShouldShowUIForPreviewsType(previews::PreviewsType type) {
 PreviewsUITabHelper::~PreviewsUITabHelper() {}
 
 PreviewsUITabHelper::PreviewsUITabHelper(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents), weak_factory_(this) {
+    : content::WebContentsObserver(web_contents) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
@@ -244,20 +244,11 @@ void PreviewsUITabHelper::DidFinishNavigation(
 #if defined(OS_ANDROID)
   should_display_android_omnibox_badge_ = false;
 #endif
-  previews::PreviewsUserData* user_data =
-      GetPreviewsUserData(navigation_handle);
-
   // Store Previews information for this navigation.
-  if (user_data) {
-    previews_user_data_ =
-        std::make_unique<previews::PreviewsUserData>(*user_data);
-    // Delete this information later, so that other DidFinishNavigation methods
-    // can reliably use GetPreviewsUserData regardless of order of
-    // WebContentsObservers.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&PreviewsUITabHelper::RemovePreviewsUserData,
-                       weak_factory_.GetWeakPtr(), navigation_handle));
+  ChromeNavigationData* nav_data = static_cast<ChromeNavigationData*>(
+      navigation_handle->GetNavigationData());
+  if (nav_data && nav_data->previews_user_data()) {
+    previews_user_data_ = nav_data->previews_user_data()->DeepCopy();
   }
 
   uint64_t page_id = (previews_user_data_) ? previews_user_data_->page_id() : 0;
@@ -338,31 +329,6 @@ void PreviewsUITabHelper::DidFinishNavigation(
                                    main_frame_preview, page_id));
     }
   }
-}
-
-previews::PreviewsUserData*
-PreviewsUITabHelper::CreatePreviewsUserDataForNavigationHandle(
-    content::NavigationHandle* navigation_handle,
-    int64_t page_id) {
-  inflight_previews_user_datas_.emplace(
-      std::piecewise_construct, std::forward_as_tuple(navigation_handle),
-      std::forward_as_tuple(page_id));
-
-  auto data = inflight_previews_user_datas_.find(navigation_handle);
-
-  return data == inflight_previews_user_datas_.end() ? nullptr : &data->second;
-}
-
-previews::PreviewsUserData* PreviewsUITabHelper::GetPreviewsUserData(
-    content::NavigationHandle* navigation_handle) {
-  auto data = inflight_previews_user_datas_.find(navigation_handle);
-  return data == inflight_previews_user_datas_.end() ? nullptr
-                                                     : &(data->second);
-}
-
-void PreviewsUITabHelper::RemovePreviewsUserData(
-    content::NavigationHandle* navigation_handle) {
-  inflight_previews_user_datas_.erase(navigation_handle);
 }
 
 // static

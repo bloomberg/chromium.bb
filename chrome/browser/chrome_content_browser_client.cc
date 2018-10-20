@@ -50,7 +50,6 @@
 #include "chrome/browser/font_family_cache.h"
 #include "chrome/browser/language/chrome_language_detection_tab_helper.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
-#include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/presentation/presentation_service_delegate_impl.h"
 #include "chrome/browser/media/router/presentation/receiver_presentation_service_delegate_impl.h"
@@ -61,8 +60,6 @@
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/net_benchmarking.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
@@ -85,9 +82,6 @@
 #include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/previews/previews_lite_page_decider.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
-#include "chrome/browser/previews/previews_service.h"
-#include "chrome/browser/previews/previews_service_factory.h"
-#include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -182,9 +176,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/content_settings/core/common/pref_names.h"
-#include "components/data_reduction_proxy/content/browser/content_lofi_decider.h"
 #include "components/data_reduction_proxy/content/common/data_reduction_proxy_url_loader_throttle.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
@@ -209,12 +201,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/previews/content/previews_content_util.h"
-#include "components/previews/content/previews_decider_impl.h"
-#include "components/previews/content/previews_ui_service.h"
-#include "components/previews/content/previews_user_data.h"
-#include "components/previews/core/previews_decider.h"
-#include "components/previews/core/previews_experiments.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_recorder_impl.h"
 #include "components/rappor/rappor_service_impl.h"
@@ -546,7 +532,6 @@
 #endif
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-#include "chrome/browser/offline_pages/offline_page_tab_helper.h"
 #include "chrome/browser/offline_pages/offline_page_url_loader_request_interceptor.h"
 #endif
 
@@ -4950,236 +4935,4 @@ void ChromeContentBrowserClient::OnNetworkServiceDataUseUpdate(
     g_browser_process->data_use_measurement()->ReportNetworkServiceDataUse(
         network_traffic_annotation_id_hash, recv_bytes, sent_bytes);
   }
-}
-
-content::PreviewsState ChromeContentBrowserClient::DetermineAllowedPreviews(
-    content::PreviewsState initial_state,
-    content::NavigationHandle* navigation_handle) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // If the embedder does not want previews, do not provide any.
-  if (initial_state & content::PREVIEWS_OFF ||
-      initial_state & content::PREVIEWS_NO_TRANSFORM) {
-    return initial_state;
-  }
-
-  // If this is not a main frame, return the initial state. If there are no
-  // previews in the state, return the state as is.
-  if (!navigation_handle->IsInMainFrame() ||
-      navigation_handle->IsSameDocument()) {
-    return initial_state;
-  }
-
-  auto* browser_context =
-      navigation_handle->GetWebContents()->GetBrowserContext();
-
-  PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
-      Profile::FromBrowserContext(browser_context));
-  auto* data_reduction_proxy_settings =
-      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-          browser_context);
-  // If the profile does not support previews or Data Saver, do not turn on
-  // Previews.
-  if (!previews_service || !previews_service->previews_ui_service() ||
-      !data_reduction_proxy_settings) {
-    return content::PREVIEWS_OFF;
-  }
-
-  PreviewsUITabHelper* ui_tab_helper =
-      PreviewsUITabHelper::FromWebContents(navigation_handle->GetWebContents());
-  // If this tab does not have a PreviewsUITabHelper, no preview should be
-  // served.
-  if (!ui_tab_helper)
-    return content::PREVIEWS_OFF;
-
-  DCHECK(!browser_context->IsOffTheRecord());
-
-  // Other previews objects should all exist and be initialized if we have made
-  // it past earlier checks.
-  previews::PreviewsDeciderImpl* previews_decider_impl =
-      previews_service->previews_ui_service()->previews_decider_impl();
-  DCHECK(previews_decider_impl);
-
-  previews::PreviewsUserData* previews_data =
-      ui_tab_helper->CreatePreviewsUserDataForNavigationHandle(
-          navigation_handle, previews_decider_impl->GeneratePageId());
-  DCHECK(previews_data);
-
-  // Start with a completely empty state, |initial_state| will be considered at
-  // the end of the method.
-  content::PreviewsState previews_state = content::PREVIEWS_UNSPECIFIED;
-
-  bool is_reload =
-      navigation_handle->GetReloadType() != content::ReloadType::NONE;
-
-  // For now, treat server previews types as a single decision.
-  if (navigation_handle->GetURL().SchemeIsHTTPOrHTTPS() &&
-      previews_decider_impl->ShouldAllowPreviewAtECT(
-          previews_data, navigation_handle->GetURL(), is_reload,
-          previews::PreviewsType::LITE_PAGE, net::EFFECTIVE_CONNECTION_TYPE_4G,
-          std::vector<std::string>(), true) &&
-      previews_decider_impl->ShouldAllowPreviewAtECT(
-          previews_data, navigation_handle->GetURL(), is_reload,
-          previews::PreviewsType::LOFI, net::EFFECTIVE_CONNECTION_TYPE_4G,
-          std::vector<std::string>(), true)) {
-    previews_state |= content::SERVER_LOFI_ON;
-    previews_state |= content::SERVER_LITE_PAGE_ON;
-  }
-
-  // Evaluate client LoFi, Offline, NoScript, and ResourceBlocking previews.
-  previews_state |= previews::DetermineAllowedClientPreviewsState(
-      previews_data, navigation_handle->GetURL(), is_reload,
-      data_reduction_proxy_settings->IsDataReductionProxyEnabled(),
-      previews_decider_impl);
-
-  if (previews_state & content::PREVIEWS_OFF) {
-    return content::PREVIEWS_OFF;
-  }
-
-  if (previews_state & content::PREVIEWS_NO_TRANSFORM) {
-    return content::PREVIEWS_NO_TRANSFORM;
-  }
-
-  // At this point, if no Preview is allowed, don't allow previews.
-  if (previews_state == content::PREVIEWS_UNSPECIFIED)
-    return content::PREVIEWS_OFF;
-
-  // If the allowed previews are limited by the embedder, ensure previews honors
-  // those limits.
-  if (initial_state != content::PREVIEWS_UNSPECIFIED) {
-    previews_state = previews_state & initial_state;
-    // If no valid previews are left, set the state explicitly to PREVIEWS_OFF.
-    if (previews_state == content::PREVIEWS_UNSPECIFIED)
-      previews_state = content::PREVIEWS_OFF;
-  }
-  return previews_state;
-}
-
-// static
-content::PreviewsState
-ChromeContentBrowserClient::DetermineCommittedPreviewsForURL(
-    const GURL& url,
-    data_reduction_proxy::DataReductionProxyData* drp_data,
-    previews::PreviewsUserData* previews_user_data,
-    const previews::PreviewsDecider* previews_decider,
-    content::PreviewsState initial_state) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!previews::HasEnabledPreviews(initial_state))
-    return content::PREVIEWS_OFF;
-
-  // Check if the server sent a preview directive.
-  content::PreviewsState previews_state =
-      data_reduction_proxy::ContentLoFiDecider::
-          DetermineCommittedServerPreviewsState(drp_data, initial_state);
-
-  // Check if the current URL indicates that we redirected to HTTPS server
-  // previews.
-  if (PreviewsLitePageNavigationThrottle::GetOriginalURL(
-          url, nullptr /* original_url */)) {
-    return previews_state & content::LITE_PAGE_REDIRECT_ON;
-  }
-
-  // Check the various other client previews types.
-  return previews::DetermineCommittedClientPreviewsState(
-      previews_user_data, url, previews_state, previews_decider);
-}
-
-content::PreviewsState ChromeContentBrowserClient::DetermineCommittedPreviews(
-    content::PreviewsState initial_state,
-    content::NavigationHandle* navigation_handle,
-    const net::HttpResponseHeaders* response_headers) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // Only support HTTP and HTTPS.
-  if (navigation_handle->IsErrorPage() ||
-      !navigation_handle->GetURL().SchemeIsHTTPOrHTTPS()) {
-    return content::PREVIEWS_OFF;
-  }
-
-  // If this is not a main frame, return the initial state. If there are no
-  // previews in the state, return the state as is.
-  if (!previews::HasEnabledPreviews(initial_state) ||
-      !navigation_handle->IsInMainFrame() ||
-      navigation_handle->IsSameDocument()) {
-    return initial_state;
-  }
-
-  // WebContents that don't have a PreviewsUITabHelper are not supported.
-  PreviewsUITabHelper* ui_tab_helper =
-      PreviewsUITabHelper::FromWebContents(navigation_handle->GetWebContents());
-  if (!ui_tab_helper)
-    return content::PREVIEWS_OFF;
-
-  // If we did not previously create a PreviewsUserData, do not go any further.
-  previews::PreviewsUserData* previews_user_data =
-      ui_tab_helper->GetPreviewsUserData(navigation_handle);
-  if (!previews_user_data)
-    return content::PREVIEWS_OFF;
-
-  PreviewsService* previews_service =
-      PreviewsServiceFactory::GetForProfile(Profile::FromBrowserContext(
-          navigation_handle->GetWebContents()->GetBrowserContext()));
-
-  if (!previews_service || !previews_service->previews_ui_service())
-    return content::PREVIEWS_OFF;
-
-// Check if offline previews are being used and set it in the user data.
-#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-  offline_pages::OfflinePageTabHelper* tab_helper =
-      offline_pages::OfflinePageTabHelper::FromWebContents(
-          navigation_handle->GetWebContents());
-
-  previews_user_data->set_offline_preview_used(
-      tab_helper && tab_helper->GetOfflinePreviewItem());
-#endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
-
-  // Annotate request if no-transform directive found in response headers.
-  if (response_headers &&
-      response_headers->HasHeaderValue("cache-control", "no-transform")) {
-    previews_user_data->SetCacheControlNoTransformDirective();
-  }
-
-  previews::PreviewsDeciderImpl* previews_decider_impl =
-      previews_service->previews_ui_service()->previews_decider_impl();
-  DCHECK(previews_decider_impl);
-
-  // ChromeNavigationData should be null after network s13n is turned on.
-  data_reduction_proxy::DataReductionProxyData* drp_data = nullptr;
-  ChromeNavigationData* chrome_navigation_data =
-      static_cast<ChromeNavigationData*>(
-          navigation_handle->GetNavigationData());
-  if (chrome_navigation_data)
-    drp_data = chrome_navigation_data->GetDataReductionProxyData();
-
-  // Determine effective PreviewsState for this committed main frame response.
-  content::PreviewsState committed_state = DetermineCommittedPreviewsForURL(
-      navigation_handle->GetURL(), drp_data, previews_user_data,
-      previews_decider_impl, initial_state);
-
-  // Double check that we never serve a preview when we have a
-  // cache-control:no-transform directive.
-  DCHECK(!previews_user_data->cache_control_no_transform_directive() ||
-         !previews::HasEnabledPreviews(committed_state));
-
-  previews_user_data->set_committed_previews_state(committed_state);
-
-  previews::PreviewsType committed_type =
-      previews::GetMainFramePreviewsType(committed_state);
-
-  // Capture committed previews type, if any, in PreviewsUserData.
-  // Note: this is for the subset of previews types that are decided upon
-  // navigation commit. Previews types that are determined prior to
-  // navigation (such as for offline pages or for redirecting to another
-  // url), are not set here.
-  previews_user_data->SetCommittedPreviewsType(committed_type);
-
-  // Log the commit decision.
-  std::vector<previews::PreviewsEligibilityReason> passed_reasons;
-  previews_decider_impl->LogPreviewDecisionMade(
-      (previews_user_data->cache_control_no_transform_directive()
-           ? previews::PreviewsEligibilityReason::CACHE_CONTROL_NO_TRANSFORM
-           : previews::PreviewsEligibilityReason::COMMITTED),
-      navigation_handle->GetURL(), base::Time::Now(),
-      previews_user_data->committed_previews_type(), std::move(passed_reasons),
-      previews_user_data->page_id());
-
-  return committed_state;
 }

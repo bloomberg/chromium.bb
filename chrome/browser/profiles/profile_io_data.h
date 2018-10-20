@@ -82,6 +82,10 @@ namespace policy {
 class PolicyCertVerifier;
 }  // namespace policy
 
+namespace previews {
+class PreviewsDeciderImpl;
+}
+
 // Conceptually speaking, the ProfileIOData represents data that lives on the IO
 // thread that is owned by a Profile, such as, but not limited to, network
 // objects like CookieMonster, HttpTransactionFactory, etc.  Profile owns
@@ -240,6 +244,10 @@ class ProfileIOData {
   data_reduction_proxy::DataReductionProxyIOData*
   data_reduction_proxy_io_data() const {
     return data_reduction_proxy_io_data_.get();
+  }
+
+  previews::PreviewsDeciderImpl* previews_decider_impl() const {
+    return previews_decider_impl_.get();
   }
 
   // Returns the predictor service for this Profile. Returns nullptr if there is
@@ -415,6 +423,9 @@ class ProfileIOData {
       std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
           data_reduction_proxy_io_data) const;
 
+  void set_previews_decider_impl(std::unique_ptr<previews::PreviewsDeciderImpl>
+                                     previews_decider_impl) const;
+
   net::URLRequestContext* main_request_context() const {
     return main_request_context_;
   }
@@ -561,6 +572,8 @@ class ProfileIOData {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   mutable scoped_refptr<extensions::InfoMap> extension_info_map_;
 #endif
+
+  mutable std::unique_ptr<previews::PreviewsDeciderImpl> previews_decider_impl_;
 
   mutable std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
       data_reduction_proxy_io_data_;

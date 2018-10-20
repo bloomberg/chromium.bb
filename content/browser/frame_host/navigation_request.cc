@@ -596,11 +596,6 @@ void NavigationRequest::BeginNavigation() {
 
   if (IsURLHandledByNetworkStack(common_params_.url) &&
       !navigation_handle_->IsSameDocument()) {
-    // Update PreviewsState if we are going to use the NetworkStack.
-    common_params_.previews_state =
-        GetContentClient()->browser()->DetermineAllowedPreviews(
-            common_params_.previews_state, navigation_handle_.get());
-
     // It's safe to use base::Unretained because this NavigationRequest owns
     // the NavigationHandle where the callback will be stored.
     // TODO(clamy): pass the method to the NavigationHandle instead of a
@@ -900,6 +895,7 @@ void NavigationRequest::OnResponseStarted(
     const GlobalRequestID& request_id,
     bool is_download,
     bool is_stream,
+    PreviewsState previews_state,
     base::Optional<SubresourceLoaderParams> subresource_loader_params) {
   DCHECK_EQ(state_, STARTED);
   DCHECK(response);
@@ -982,6 +978,9 @@ void NavigationRequest::OnResponseStarted(
     }
   }
 
+  // Update the previews state of the request.
+  common_params_.previews_state = previews_state;
+
   // Select an appropriate renderer to commit the navigation.
   RenderFrameHostImpl* render_frame_host = nullptr;
   if (response_should_be_rendered_) {
@@ -1011,12 +1010,6 @@ void NavigationRequest::OnResponseStarted(
 
   if (navigation_data)
     navigation_handle_->set_navigation_data(std::move(navigation_data));
-
-  // Update the previews state of the request.
-  common_params_.previews_state =
-      GetContentClient()->browser()->DetermineCommittedPreviews(
-          common_params_.previews_state, navigation_handle_.get(),
-          response->head.headers.get());
 
   // Store the response and the URLLoaderClient endpoints until checks have been
   // processed.
@@ -1120,7 +1113,6 @@ void NavigationRequest::OnRequestFailedInternal(
   DCHECK(state_ == STARTED || state_ == RESPONSE_STARTED);
   DCHECK(!(status.error_code == net::ERR_ABORTED &&
            error_page_content.has_value()));
-  common_params_.previews_state = content::PREVIEWS_OFF;
 
   RenderFrameDevToolsAgentHost::OnNavigationRequestFailed(*this, status);
 

@@ -96,6 +96,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   bool IsDownload() const override;
   // Returns a bitmask of potentially several Previews optimizations.
   PreviewsState GetPreviewsState() const override;
+  void SetPreviewsState(PreviewsState previews_state) override;
   NavigationUIData* GetNavigationUIData() const override;
   void SetResourceRequestBlockedReason(
       blink::ResourceRequestBlockedReason reason) override;

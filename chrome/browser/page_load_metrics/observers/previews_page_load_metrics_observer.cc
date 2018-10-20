@@ -13,7 +13,6 @@
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
-#include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
@@ -112,25 +111,20 @@ page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 PreviewsPageLoadMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle,
     ukm::SourceId source_id) {
-  PreviewsUITabHelper* ui_tab_helper =
-      PreviewsUITabHelper::FromWebContents(navigation_handle->GetWebContents());
-  if (!ui_tab_helper)
+  ChromeNavigationData* nav_data = static_cast<ChromeNavigationData*>(
+      navigation_handle->GetNavigationData());
+  if (!nav_data)
     return STOP_OBSERVING;
 
-  previews::PreviewsUserData* previews_user_data =
-      ui_tab_helper->GetPreviewsUserData(navigation_handle);
-  if (!previews_user_data)
-    return STOP_OBSERVING;
-
-  previews_type_ = previews::GetMainFramePreviewsType(
-      previews_user_data->committed_previews_state());
+  previews_type_ =
+      previews::GetMainFramePreviewsType(nav_data->previews_state());
   if (previews_type_ != previews::PreviewsType::NOSCRIPT &&
       previews_type_ != previews::PreviewsType::RESOURCE_LOADING_HINTS) {
     return STOP_OBSERVING;
   }
 
   data_savings_inflation_percent_ =
-      previews_user_data->data_savings_inflation_percent();
+      nav_data->previews_user_data()->data_savings_inflation_percent();
 
   browser_context_ = navigation_handle->GetWebContents()->GetBrowserContext();
 
