@@ -304,6 +304,8 @@ DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
           browser_context_->RetriveInProgressDownloadManager()),
       next_download_id_(download::DownloadItem::kInvalidId),
       is_history_download_id_retrieved_(false),
+      cancelled_download_cleared_from_history_(0),
+      interrupted_download_cleared_from_history_(0),
       weak_factory_(this) {
   DCHECK(browser_context);
   download::SetIOTaskRunner(
@@ -545,14 +547,22 @@ void DownloadManagerImpl::OnInProgressDownloadManagerInitialized() {
   for (auto& download : in_progress_downloads) {
     DCHECK(!base::ContainsKey(downloads_by_guid_, download->GetGuid()));
     DCHECK(!base::ContainsKey(downloads_, download->GetId()));
+    uint32_t id = download->GetId();
+    if (id > max_id)
+      max_id = id;
+#if defined(OS_ANDROID)
+    // On android, clean up cancelled and non resumable interrupted downloads.
+    if (ShouldClearDownloadFromDB(download->GetState(),
+                                  download->GetLastReason())) {
+      cleared_download_guids_on_startup_.insert(download->GetGuid());
+      continue;
+    }
+#endif  // defined(OS_ANDROID)
     DownloadItemUtils::AttachInfo(download.get(), GetBrowserContext(), nullptr);
     download::DownloadItemImpl* item = download.get();
     item->SetDelegate(this);
     downloads_by_guid_[download->GetGuid()] = item;
-    uint32_t id = download->GetId();
     downloads_[id] = std::move(download);
-    if (id > max_id)
-      max_id = id;
     for (auto& observer : observers_)
       observer.OnDownloadCreated(this, item);
     DVLOG(20) << __func__ << "() download = " << item->DebugString(true);
@@ -942,6 +952,16 @@ download::DownloadItem* DownloadManagerImpl::CreateDownloadItem(
     base::Time last_access_time,
     bool transient,
     const std::vector<download::DownloadItem::ReceivedSlice>& received_slices) {
+#if defined(OS_ANDROID)
+  // On Android, there is no way to interact with cancelled or non-resumable
+  // download. Simply returning null and don't store them in this class to
+  // reduce memory usage.
+  if (cleared_download_guids_on_startup_.find(guid) !=
+          cleared_download_guids_on_startup_.end() ||
+      ShouldClearDownloadFromDB(state, interrupt_reason)) {
+    return nullptr;
+  }
+#endif
   if (base::ContainsKey(downloads_, id)) {
     // If a completed or cancelled download item is already in the history db,
     // remove it from the in-progress db.
@@ -993,6 +1013,21 @@ void DownloadManagerImpl::PostInitialization(
   initialized_ = history_db_initialized_ && in_progress_cache_initialized_;
 
   if (initialized_) {
+#if defined(OS_ANDROID)
+    for (const auto& guid : cleared_download_guids_on_startup_)
+      in_progress_manager_->RemoveInProgressDownload(guid);
+    if (cancelled_download_cleared_from_history_ > 0) {
+      UMA_HISTOGRAM_COUNTS_1000(
+          "MobileDownload.CancelledDownloadRemovedFromHistory",
+          cancelled_download_cleared_from_history_);
+    }
+
+    if (interrupted_download_cleared_from_history_ > 0) {
+      UMA_HISTOGRAM_COUNTS_1000(
+          "MobileDownload.InterruptedDownloadsRemovedFromHistory",
+          interrupted_download_cleared_from_history_);
+    }
+#endif
     for (auto& observer : observers_)
       observer.OnManagerInitialized();
   }
@@ -1272,5 +1307,24 @@ void DownloadManagerImpl::BeginDownloadInternal(
 bool DownloadManagerImpl::IsNextIdInitialized() const {
   return is_history_download_id_retrieved_ && in_progress_cache_initialized_;
 }
+
+#if defined(OS_ANDROID)
+bool DownloadManagerImpl::ShouldClearDownloadFromDB(
+    download::DownloadItem::DownloadState state,
+    download::DownloadInterruptReason reason) {
+  if (state == download::DownloadItem::CANCELLED) {
+    ++cancelled_download_cleared_from_history_;
+    return true;
+  }
+  if (reason != download::DOWNLOAD_INTERRUPT_REASON_NONE &&
+      download::GetDownloadResumeMode(reason, false /* restart_required */,
+                                      false /* user_action_required */) ==
+          download::ResumeMode::INVALID) {
+    ++interrupted_download_cleared_from_history_;
+    return true;
+  }
+  return false;
+}
+#endif  // defined(OS_ANDROID)
 
 }  // namespace content

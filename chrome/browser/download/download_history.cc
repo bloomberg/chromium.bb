@@ -48,10 +48,6 @@
 #include "content/public/browser/download_manager.h"
 #include "extensions/buildflags/buildflags.h"
 
-#if defined(OS_ANDROID)
-#include "components/download/public/common/download_utils.h"
-#endif  // defined(OS_ANDROID)
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
 #endif
@@ -299,30 +295,11 @@ void DownloadHistory::LoadHistoryDownloads(std::unique_ptr<InfoVector> infos) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(notifier_.GetManager());
 
-  int cancelled_download_cleared_from_history = 0;
-  int interrupted_download_cleared_from_history = 0;
   for (InfoVector::const_iterator it = infos->begin();
        it != infos->end(); ++it) {
     loading_id_ = history::ToContentDownloadId(it->id);
     download::DownloadItem::DownloadState history_download_state =
         history::ToContentDownloadState(it->state);
-#if defined(OS_ANDROID)
-    // Clean up cancelled download on Android.
-    if (history_download_state == download::DownloadItem::CANCELLED) {
-      ScheduleRemoveDownload(it->id);
-      ++cancelled_download_cleared_from_history;
-      continue;
-    }
-    download::DownloadInterruptReason reason =
-        history::ToContentDownloadInterruptReason(it->interrupt_reason);
-    if (reason != download::DOWNLOAD_INTERRUPT_REASON_NONE &&
-        download::GetDownloadResumeMode(reason, false, false) ==
-            download::ResumeMode::INVALID) {
-      ScheduleRemoveDownload(it->id);
-      ++interrupted_download_cleared_from_history;
-      continue;
-    }
-#endif  // defined(OS_ANDROID)
     download::DownloadItem* item = notifier_.GetManager()->CreateDownloadItem(
         it->guid, loading_id_, it->current_path, it->target_path, it->url_chain,
         it->referrer_url, it->site_url, it->tab_url, it->tab_referrer_url,
@@ -336,12 +313,22 @@ void DownloadHistory::LoadHistoryDownloads(std::unique_ptr<InfoVector> infos) {
         history::ToContentDownloadInterruptReason(it->interrupt_reason),
         it->opened, it->last_access_time, it->transient,
         history::ToContentReceivedSlices(it->download_slice_info));
+    // DownloadManager returns a nullptr if it decides to remove the download
+    // permanently.
+    if (item == nullptr) {
+      ScheduleRemoveDownload(it->id);
+      continue;
+    }
     if (item->GetId() == loading_id_)
       OnDownloadRestoredFromHistory(item);
 
-    // Update the history DB if download is completed.
-    if (history_download_state != download::DownloadItem::COMPLETE &&
-        item->GetState() == download::DownloadItem::COMPLETE) {
+    // The download might have been completed or cancelled without informing
+    // history DB. If this is the case, populate the new state back to history
+    // DB.
+    if ((history_download_state != download::DownloadItem::COMPLETE &&
+         item->GetState() == download::DownloadItem::COMPLETE) ||
+        (history_download_state != download::DownloadItem::CANCELLED &&
+         item->GetState() == download::DownloadItem::CANCELLED)) {
       OnDownloadUpdated(notifier_.GetManager(), item);
     }
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -354,18 +341,6 @@ void DownloadHistory::LoadHistoryDownloads(std::unique_ptr<InfoVector> infos) {
     DCHECK_EQ(DownloadHistoryData::PERSISTED,
               DownloadHistoryData::Get(item)->state());
     ++history_size_;
-  }
-
-  if (cancelled_download_cleared_from_history > 0) {
-    UMA_HISTOGRAM_COUNTS_1000(
-        "MobileDownload.CancelledDownloadRemovedFromHistory",
-        cancelled_download_cleared_from_history);
-  }
-
-  if (interrupted_download_cleared_from_history > 0) {
-    UMA_HISTOGRAM_COUNTS_1000(
-        "MobileDownload.InterruptedDownloadsRemovedFromHistory",
-        interrupted_download_cleared_from_history);
   }
 
   // Indicate that the history db is initialized.
@@ -581,10 +556,12 @@ bool DownloadHistory::NeedToUpdateDownloadHistory(
   }
 #endif
 
-  // When download DB is enabled, only completed download should be added to or
-  // updated in history DB.
+  // When download DB is enabled, only completed or cancelled download should be
+  // added to or updated in history DB. In-progress and interrupted download
+  // will be stored in the in-progress DB.
   return !base::FeatureList::IsEnabled(
              download::features::kDownloadDBForNewDownloads) ||
          item->IsSavePackageDownload() ||
-         item->GetState() == download::DownloadItem::COMPLETE;
+         item->GetState() == download::DownloadItem::COMPLETE ||
+         item->GetState() == download::DownloadItem::CANCELLED;
 }

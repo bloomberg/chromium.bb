@@ -209,8 +209,13 @@ class DownloadHistoryTest : public testing::Test {
     return manager_observer_;
   }
 
+  // Creates the DownloadHistory. If |call_on_download_created| is false,
+  // DownloadHistory::OnDownloadCreated() will not be called by |manager_|.
+  // If |return_null_item| is true, |manager_| will return nullptr on
+  // CreateDownloadItem() call,
   void CreateDownloadHistory(std::unique_ptr<InfoVector> infos,
-                             bool call_on_download_created = true) {
+                             bool call_on_download_created = true,
+                             bool return_null_item = false) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     CHECK(infos.get());
     EXPECT_CALL(manager(), AddObserver(_)).WillOnce(WithArg<0>(Invoke(
@@ -237,8 +242,10 @@ class DownloadHistoryTest : public testing::Test {
                     this, &DownloadHistoryTest::CallOnDownloadCreatedInOrder),
                 Return(&item(index))));
       } else {
+        download::DownloadItem* download =
+            return_null_item ? nullptr : &item(index);
         EXPECT_CALL(manager(), MockCreateDownloadItem(adapter))
-            .WillOnce(Return(&item(index)));
+            .WillOnce(Return(download));
       }
     }
     history_ = new FakeHistoryAdapter();
@@ -900,6 +907,28 @@ TEST_F(DownloadHistoryTest, CreateHistoryItemInDownloadDB) {
   info.state = history::DownloadState::COMPLETE;
   item(0).NotifyObserversDownloadUpdated();
   ExpectDownloadUpdated(info, false);
+}
+
+// Test loading history download item that will be cleared by |manager_|
+TEST_F(DownloadHistoryTest, RemoveClearedItemFromHistory) {
+  // Enable download DB.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      download::features::kDownloadDBForNewDownloads);
+
+  history::DownloadRow info;
+  InitBasicItem(FILE_PATH_LITERAL("/foo/bar.pdf"), "http://example.com/bar.pdf",
+                "http://example.com/referrer.html",
+                download::DownloadItem::IN_PROGRESS, &info);
+
+  std::unique_ptr<InfoVector> infos(new InfoVector());
+  infos->push_back(info);
+  CreateDownloadHistory(std::move(infos), false, true);
+
+  // The download should be removed from history afterwards.
+  IdSet ids;
+  ids.insert(info.id);
+  ExpectDownloadsRemoved(ids);
 }
 
 }  // anonymous namespace
