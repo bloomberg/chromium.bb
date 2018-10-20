@@ -1375,7 +1375,7 @@
           'isolated_scripts': 'chromium_linux_rel_isolated_scripts',
         },
       },
-      'linux-code-coverage-generation': {
+      'linux-code-coverage-tester': {
         'mixins': [
             'code-coverage',
         ],

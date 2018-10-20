@@ -5747,7 +5747,7 @@
       }
     ]
   },
-  "linux-code-coverage-generation": {
+  "linux-code-coverage-tester": {
     "gtest_tests": [
       {
         "isolate_coverage_data": true,
