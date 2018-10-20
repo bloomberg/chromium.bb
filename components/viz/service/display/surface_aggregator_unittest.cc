@@ -3103,33 +3103,35 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
     EXPECT_EQ(1u, aggregated_pass_list[2]->quad_list.size());
   }
 
-  // TODO(wutao): Partial swap does not work with pixel moving background
-  // filter. See https://crbug.com/737255.
-  // Has background filter on render pass will make the whole output rect as
-  // damaged.
+  // Render passes with pixel-moving filters will increase the damage only if
+  // the damage of the contents will overlap the render pass.
   {
     int root_pass_ids[] = {1, 2};
+    const gfx::Size pass_with_filter_size(5, 5);
     Quad root_quads1[] = {
-        Quad::SolidColorQuad(1, gfx::Rect(5, 5)),
+        Quad::SolidColorQuad(1, gfx::Rect(pass_with_filter_size)),
     };
     Quad root_quads2[] = {
         Quad::RenderPassQuad(root_pass_ids[0]),
         Quad::SurfaceQuad(SurfaceRange(base::nullopt, child_surface_id),
                           SK_ColorWHITE, gfx::Rect(5, 5), false)};
     Pass root_passes[] = {Pass(root_quads1, base::size(root_quads1),
-                               root_pass_ids[0], SurfaceSize()),
+                               root_pass_ids[0], pass_with_filter_size),
                           Pass(root_quads2, base::size(root_quads2),
                                root_pass_ids[1], SurfaceSize())};
 
     RenderPassList root_pass_list;
     AddPasses(&root_pass_list, root_passes, base::size(root_passes));
 
-    auto* pass = root_pass_list[0].get();
+    auto* pass_with_filter = root_pass_list[0].get();
     auto* root_pass = root_pass_list[1].get();
     root_pass->shared_quad_state_list.ElementAt(1)
-        ->quad_to_target_transform.Translate(10, 10);
-    pass->background_filters.Append(cc::FilterOperation::CreateBlurFilter(2));
-    root_pass->damage_rect = gfx::Rect(10, 10, 2, 2);
+        ->quad_to_target_transform.Translate(5, 5);
+    pass_with_filter->background_filters.Append(
+        cc::FilterOperation::CreateBlurFilter(2));
+    // Damage rect intersects with render passes of |pass_with_filter| and
+    // |root_pass|.
+    root_pass->damage_rect = gfx::Rect(3, 3, 3, 3);
     SubmitPassListAsFrame(support_.get(), root_local_surface_id_,
                           &root_pass_list, device_scale_factor);
   }
@@ -3142,17 +3144,71 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
 
     ASSERT_EQ(3u, aggregated_pass_list.size());
 
-    // Pass 0 has background blur filter, so should be drawn.
-    EXPECT_EQ(gfx::Rect(SurfaceSize()), aggregated_pass_list[0]->damage_rect);
+    // Pass 0 has background blur filter and overlaps with damage rect,
+    // therefore the whole render pass should be damaged.
+    EXPECT_EQ(gfx::Rect(0, 0, 5, 5), aggregated_pass_list[0]->damage_rect);
     EXPECT_EQ(1u, aggregated_pass_list[0]->quad_list.size());
     EXPECT_EQ(gfx::Rect(SurfaceSize()), aggregated_pass_list[1]->damage_rect);
     EXPECT_EQ(1u, aggregated_pass_list[1]->quad_list.size());
 
-    // First render pass draw quad is outside damage rect but has background
-    // filter, so should be drawn. SurfaceDrawQuad is after background filter,
-    // so corresponding RenderPassDrawQuad should be drawn.
-    EXPECT_EQ(gfx::Rect(SurfaceSize()), aggregated_pass_list[2]->damage_rect);
+    // First render pass draw quad overlaps with damage rect and has background
+    // filter, so it should be damaged. SurfaceDrawQuad is after background
+    // filter, so corresponding RenderPassDrawQuad should be drawn.
+    EXPECT_EQ(gfx::Rect(0, 0, 6, 6), aggregated_pass_list[2]->damage_rect);
     EXPECT_EQ(2u, aggregated_pass_list[2]->quad_list.size());
+  }
+
+  // If the render pass with background filters does not intersect the damage
+  // rect, the damage won't be expanded to cover the render pass.
+  {
+    int root_pass_ids[] = {1, 2};
+    const gfx::Size pass_with_filter_size(5, 5);
+    Quad root_quads1[] = {
+        Quad::SolidColorQuad(1, gfx::Rect(pass_with_filter_size)),
+    };
+    Quad root_quads2[] = {
+        Quad::RenderPassQuad(root_pass_ids[0]),
+        Quad::SurfaceQuad(SurfaceRange(base::nullopt, child_surface_id),
+                          SK_ColorWHITE, gfx::Rect(5, 5), false)};
+    Pass root_passes[] = {Pass(root_quads1, base::size(root_quads1),
+                               root_pass_ids[0], pass_with_filter_size),
+                          Pass(root_quads2, base::size(root_quads2),
+                               root_pass_ids[1], SurfaceSize())};
+
+    RenderPassList root_pass_list;
+    AddPasses(&root_pass_list, root_passes, base::size(root_passes));
+
+    auto* pass_with_filter = root_pass_list[0].get();
+    auto* root_pass = root_pass_list[1].get();
+    root_pass->shared_quad_state_list.ElementAt(1)
+        ->quad_to_target_transform.Translate(5, 5);
+    pass_with_filter->background_filters.Append(
+        cc::FilterOperation::CreateBlurFilter(2));
+    // Damage rect does not intersect with render pass.
+    root_pass->damage_rect = gfx::Rect(6, 6, 3, 3);
+    SubmitPassListAsFrame(support_.get(), root_local_surface_id_,
+                          &root_pass_list, device_scale_factor);
+  }
+
+  {
+    CompositorFrame aggregated_frame = aggregator_.Aggregate(
+        root_surface_id, GetNextDisplayTimeAndIncrement());
+
+    const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
+
+    ASSERT_EQ(3u, aggregated_pass_list.size());
+
+    // Pass 0 has background blur filter but does NOT overlap with damage rect.
+    EXPECT_EQ(gfx::Rect(), aggregated_pass_list[0]->damage_rect);
+    EXPECT_EQ(0u, aggregated_pass_list[0]->quad_list.size());
+    EXPECT_EQ(gfx::Rect(SurfaceSize()), aggregated_pass_list[1]->damage_rect);
+    EXPECT_EQ(1u, aggregated_pass_list[1]->quad_list.size());
+
+    // First render pass draw quad is outside damage rect, so shouldn't be
+    // drawn. SurfaceDrawQuad is after background filter, so corresponding
+    // RenderPassDrawQuad should be drawn.
+    EXPECT_EQ(gfx::Rect(6, 6, 3, 3), aggregated_pass_list[2]->damage_rect);
+    EXPECT_EQ(1u, aggregated_pass_list[2]->quad_list.size());
   }
 }
 
