@@ -20,11 +20,11 @@ const char kCommonScript[] = "Zyyy";
   static_assert(static_cast<int>(a) == static_cast<int>(b), \
                 "mismatching enums: " #a)
 
-STATIC_ASSERT_ENUM(EDITING_BEHAVIOR_MAC, WebSettings::kEditingBehaviorMac);
-STATIC_ASSERT_ENUM(EDITING_BEHAVIOR_WIN, WebSettings::kEditingBehaviorWin);
-STATIC_ASSERT_ENUM(EDITING_BEHAVIOR_UNIX, WebSettings::kEditingBehaviorUnix);
+STATIC_ASSERT_ENUM(EDITING_BEHAVIOR_MAC, WebSettings::EditingBehavior::kMac);
+STATIC_ASSERT_ENUM(EDITING_BEHAVIOR_WIN, WebSettings::EditingBehavior::kWin);
+STATIC_ASSERT_ENUM(EDITING_BEHAVIOR_UNIX, WebSettings::EditingBehavior::kUnix);
 STATIC_ASSERT_ENUM(EDITING_BEHAVIOR_ANDROID,
-                   WebSettings::kEditingBehaviorAndroid);
+                   WebSettings::EditingBehavior::kAndroid);
 
 STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_DEFAULT,
                    WebSettings::V8CacheOptions::kDefault);
@@ -46,11 +46,11 @@ STATIC_ASSERT_ENUM(SavePreviousDocumentResources::UNTIL_ON_LOAD,
                    WebSettings::SavePreviousDocumentResources::kUntilOnLoad);
 
 STATIC_ASSERT_ENUM(IMAGE_ANIMATION_POLICY_ALLOWED,
-                   WebSettings::kImageAnimationPolicyAllowed);
+                   WebSettings::ImageAnimationPolicy::kAllowed);
 STATIC_ASSERT_ENUM(IMAGE_ANIMATION_POLICY_ANIMATION_ONCE,
-                   WebSettings::kImageAnimationPolicyAnimateOnce);
+                   WebSettings::ImageAnimationPolicy::kAnimateOnce);
 STATIC_ASSERT_ENUM(IMAGE_ANIMATION_POLICY_NO_ANIMATION,
-                   WebSettings::kImageAnimationPolicyNoAnimation);
+                   WebSettings::ImageAnimationPolicy::kNoAnimation);
 
 STATIC_ASSERT_ENUM(ui::POINTER_TYPE_NONE, blink::kPointerTypeNone);
 STATIC_ASSERT_ENUM(ui::POINTER_TYPE_COARSE, blink::kPointerTypeCoarse);

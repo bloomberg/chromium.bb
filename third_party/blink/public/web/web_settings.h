@@ -49,18 +49,9 @@ class WebString;
 // WebCore/page/Settings.h.
 class WebSettings {
  public:
-  enum ImageAnimationPolicy {
-    kImageAnimationPolicyAllowed,
-    kImageAnimationPolicyAnimateOnce,
-    kImageAnimationPolicyNoAnimation
-  };
+  enum class ImageAnimationPolicy { kAllowed, kAnimateOnce, kNoAnimation };
 
-  enum EditingBehavior {
-    kEditingBehaviorMac,
-    kEditingBehaviorWin,
-    kEditingBehaviorUnix,
-    kEditingBehaviorAndroid
-  };
+  enum class EditingBehavior { kMac, kWin, kUnix, kAndroid };
 
   enum class V8CacheOptions {
     kDefault,
