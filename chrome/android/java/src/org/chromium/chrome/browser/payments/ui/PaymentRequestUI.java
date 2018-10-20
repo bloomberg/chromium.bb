@@ -401,8 +401,11 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
         mEditorDialog = new EditorDialog(activity, sEditorObserverForTest,
                 /*deleteRunnable =*/null);
+        DimmingDialog.setVisibleStatusBarIconColor(mEditorDialog.getWindow());
+
         mCardEditorDialog = new EditorDialog(activity, sEditorObserverForTest,
                 /*deleteRunnable =*/null);
+        DimmingDialog.setVisibleStatusBarIconColor(mCardEditorDialog.getWindow());
 
         // Allow screenshots of the credit card number in Canary, Dev, and developer builds.
         if (ChromeVersionInfo.isBetaBuild() || ChromeVersionInfo.isStableBuild()) {
