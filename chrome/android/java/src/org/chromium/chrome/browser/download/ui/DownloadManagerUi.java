@@ -14,10 +14,8 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.FileUtils;
@@ -29,14 +27,12 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.download.DirectoryOption;
-import org.chromium.chrome.browser.download.DownloadDirectoryProvider;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.home.DownloadManagerCoordinator;
 import org.chromium.chrome.browser.download.home.UmaUtils;
+import org.chromium.chrome.browser.download.home.toolbar.ToolbarUtils;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
-import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.native_page.BasicNativePage;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.download.DownloadPreferences;
@@ -46,16 +42,11 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.widget.ThumbnailProvider;
 import org.chromium.chrome.browser.widget.ThumbnailProviderImpl;
-import org.chromium.chrome.browser.widget.ViewHighlighter;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar.SearchDelegate;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
-import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.chrome.download.R;
-import org.chromium.components.feature_engagement.FeatureConstants;
-import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
-import org.chromium.ui.widget.ViewRectProvider;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -252,12 +243,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
 
         mToolbar.setInfoMenuItem(mInfoMenuId);
 
-        if (isLocationEnabled) {
-            final Tracker tracker =
-                    TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
-            tracker.addOnInitializedCallback(
-                    (Callback<Boolean>) success -> maybeShowDownloadSettingsTextBubble(tracker));
-        }
+        if (isLocationEnabled) ToolbarUtils.setupTrackerForDownloadSettingsIPH(mToolbar);
 
         mSelectableListLayout.configureWideDisplayStyle();
         mHistoryAdapter.initialize(mBackendProvider, mSelectableListLayout.getUiConfig());
@@ -523,64 +509,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
         boolean infoHeaderIsVisible = layoutManager.findFirstVisibleItemPosition() == 0;
         mToolbar.updateInfoMenuItem(infoHeaderIsVisible && shouldShowInfoButton(),
                 mHistoryAdapter.shouldShowStorageInfoHeader());
-    }
-
-    private void maybeShowDownloadSettingsTextBubble(final Tracker tracker) {
-        // If the user doesn't have an SD card don't show the IPH.
-        DownloadDirectoryProvider.getInstance().getAllDirectoriesOptions(
-                (ArrayList<DirectoryOption> dirs) -> {
-                    onDirectoryOptionsRetrieved(dirs, tracker);
-                });
-    }
-
-    private void onDirectoryOptionsRetrieved(
-            ArrayList<DirectoryOption> dirs, final Tracker tracker) {
-        if (dirs.size() < 2) return;
-
-        // Check to see if the help UI should be triggered.
-        if (!tracker.shouldTriggerHelpUI(FeatureConstants.DOWNLOAD_SETTINGS_FEATURE)) return;
-
-        // Build and show text bubble.
-        View anchorView = mToolbar.findViewById(R.id.settings_menu_id);
-
-        // Show the setting text bubble after the root view is attached to window.
-        if (mToolbar.isAttachedToWindow()) {
-            showDownloadSettingsInProductHelp(tracker, anchorView);
-        } else {
-            mToolbar.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
-                @Override
-                public void onViewAttachedToWindow(View v) {
-                    showDownloadSettingsInProductHelp(tracker, anchorView);
-                    mToolbar.removeOnAttachStateChangeListener(this);
-                }
-                @Override
-                public void onViewDetachedFromWindow(View v) {}
-            });
-        }
-    }
-
-    private void showDownloadSettingsInProductHelp(final Tracker tracker, View anchorView) {
-        TextBubble textBubble =
-                new TextBubble(mActivity, (View) mToolbar, R.string.iph_download_settings_text,
-                        R.string.iph_download_settings_accessibility_text,
-                        new ViewRectProvider(anchorView));
-        textBubble.setDismissOnTouchInteraction(true);
-        textBubble.addOnDismissListener(() -> {
-            tracker.dismissed(FeatureConstants.DOWNLOAD_SETTINGS_FEATURE);
-            toggleHighlightForDownloadSettingsTextBubble(false);
-        });
-        toggleHighlightForDownloadSettingsTextBubble(true);
-        textBubble.show();
-    }
-
-    private void toggleHighlightForDownloadSettingsTextBubble(boolean shouldHighlight) {
-        View view = mToolbar.findViewById(R.id.settings_menu_id);
-
-        if (shouldHighlight) {
-            ViewHighlighter.turnOnHighlight(view, true);
-        } else {
-            ViewHighlighter.turnOffHighlight(view);
-        }
     }
 
     @VisibleForTesting
