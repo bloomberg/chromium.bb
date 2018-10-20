@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+FAIL Expected entry count for http://web-platform.test:8001/server-timing/resources/blue.png: 1 assert_equals: Expected entry count for http://web-platform.test:8001/server-timing/resources/blue.png: 1 expected 1 but got 0
+PASS Expected entry count for http://www1.web-platform.test:8001/server-timing/resources/blue.png: 0
+PASS Expected entry count for http://www1.web-platform.test:8001/server-timing/resources/blue_tao.png: 1
+Harness: the test ran to completion.
+
