@@ -1546,14 +1546,16 @@ def GeneralTemplates(site_config, ge_build_config):
       'tast_vm_paladin_tests',
       tast_vm_tests=[
           config_lib.TastVMTestConfig('tast_vm_paladin',
-                                      ['(!disabled && !informational)'])],
+                                      ['(!disabled && !"group:*" && '
+                                       '!informational)'])],
   )
   # The expression specified here matches the union of tast.mustpass-* and
   # tast.informational-*.
   site_config.AddTemplate(
       'tast_vm_canary_tests',
       tast_vm_tests=[
-          config_lib.TastVMTestConfig('tast_vm_canary', ['(!disabled)'])],
+          config_lib.TastVMTestConfig('tast_vm_canary',
+                                      ['(!disabled && !"group:*")'])],
   )
 
   site_config.AddTemplate(
