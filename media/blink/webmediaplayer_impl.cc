@@ -2262,6 +2262,8 @@ void WebMediaPlayerImpl::FlingingStarted() {
   DCHECK(!disable_pipeline_auto_suspend_);
   disable_pipeline_auto_suspend_ = true;
 
+  is_flinging_ = true;
+
   // Capabilities reporting should only be performed for local playbacks.
   video_decode_stats_reporter_.reset();
 
@@ -2274,6 +2276,8 @@ void WebMediaPlayerImpl::FlingingStopped() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK(disable_pipeline_auto_suspend_);
   disable_pipeline_auto_suspend_ = false;
+
+  is_flinging_ = false;
 
   CreateVideoDecodeStatsReporter();
 
@@ -3071,7 +3075,7 @@ bool WebMediaPlayerImpl::ShouldPauseVideoWhenHidden() const {
       return false;
 
 #if defined(OS_ANDROID)
-    if (IsRemote())
+    if (IsRemote() || is_flinging_)
       return false;
 #endif
 
@@ -3082,7 +3086,7 @@ bool WebMediaPlayerImpl::ShouldPauseVideoWhenHidden() const {
   // Otherwise only pause if the optimization is on and it's a video-only
   // optimization candidate.
   return IsBackgroundVideoPauseOptimizationEnabled() && !HasAudio() &&
-         IsBackgroundOptimizationCandidate();
+         IsBackgroundOptimizationCandidate() && !is_flinging_;
 }
 
 bool WebMediaPlayerImpl::ShouldDisableVideoWhenHidden() const {
