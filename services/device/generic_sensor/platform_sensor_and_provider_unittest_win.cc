@@ -250,8 +250,8 @@ class PlatformSensorAndProviderTestWin : public ::testing::Test {
 
   void SetUnsupportedSensor(REFSENSOR_TYPE_ID sensor) {
     EXPECT_CALL(*sensor_manager_, GetSensorsByType(sensor, _))
-        .WillRepeatedly(Invoke(
-            [this](REFSENSOR_TYPE_ID type, ISensorCollection** collection) {
+        .WillRepeatedly(
+            Invoke([](REFSENSOR_TYPE_ID type, ISensorCollection** collection) {
               return HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
             }));
   }
