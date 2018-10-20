@@ -218,6 +218,7 @@ static_library("common") {
     ":common_param_traits_macros",
     ":ini_parser",
     ":mojo_bindings",
+    ":offline_page_auto_fetcher_mojom",
     ":page_load_metrics_mojom",
     ":supervised_user_commands_mojom",
     "//base:base",
@@ -818,6 +819,15 @@ mojom("supervised_user_commands_mojom") {
 mojom("available_offline_content_mojom") {
   sources = [
     "available_offline_content.mojom",
+  ]
+  public_deps = [
+    "//url/mojom:url_mojom_gurl",
+  ]
+}
+
+mojom("offline_page_auto_fetcher_mojom") {
+  sources = [
+    "offline_page_auto_fetcher.mojom",
   ]
   public_deps = [
     "//url/mojom:url_mojom_gurl",

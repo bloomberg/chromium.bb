@@ -36844,7 +36844,8 @@ Called by update_net_trust_anchors.py.-->
     Namespace used when offline page is saved as last_n page.
   </int>
   <int value="3" label="Async_loading">
-    Namespace used when offline page is saved from save page later on dino page.
+    Namespace used when offline page is saved after the user clicks a button on
+    the dino page.
   </int>
   <int value="4" label="Custom_tabs">
     Namespace used when offline page is saved from custom tabs.
@@ -36863,6 +36864,10 @@ Called by update_net_trust_anchors.py.-->
   </int>
   <int value="9" label="Live_page_sharing">
     Namespace used when offline page is saved for live page sharing.
+  </int>
+  <int value="10" label="Auto_async_loading">
+    Namespace used for temporary offline pages requested to be downloaded when
+    the user landed in a dino page.
   </int>
 </enum>
 

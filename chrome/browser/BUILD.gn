@@ -4075,6 +4075,8 @@ jumbo_split_static_library("browser") {
       "offline_pages/downloads/resource_throttle.h",
       "offline_pages/fresh_offline_content_observer.cc",
       "offline_pages/fresh_offline_content_observer.h",
+      "offline_pages/offline_page_auto_fetcher.cc",
+      "offline_pages/offline_page_auto_fetcher.h",
       "offline_pages/offline_page_bookmark_observer.cc",
       "offline_pages/offline_page_bookmark_observer.h",
       "offline_pages/offline_page_info_handler.cc",
@@ -4155,6 +4157,7 @@ jumbo_split_static_library("browser") {
       ]
     }
     deps += [
+      "//chrome/common:offline_page_auto_fetcher_mojom",
       "//components/offline_pages/content/background_loader",
       "//components/offline_pages/content/renovations",
       "//components/offline_pages/core",
