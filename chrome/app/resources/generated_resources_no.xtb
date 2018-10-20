@@ -678,7 +678,6 @@
 <translation id="197560921582345123">Kan redigere</translation>
 <translation id="1975841812214822307">Fjern</translation>
 <translation id="1976150099241323601">Logg på sikkerhetsenhet</translation>
-<translation id="1976315108329706992">Nå kan du bruke Android-apper.</translation>
 <translation id="1976323404609382849">Informasjonskapsler fra flere nettsteder er blokkert.</translation>
 <translation id="1977965994116744507">Hold telefonen nærmere for å låse opp <ph name="DEVICE_TYPE" />-enheten.</translation>
 <translation id="1979280758666859181">Du endrer til en kanal med en eldre versjon av <ph name="PRODUCT_NAME" />. Kanalendringen trer i kraft når kanalversjonen samsvarer med versjonen som allerede er installert på enheten din.</translation>
@@ -3350,7 +3349,6 @@
 <translation id="6029292188939175871">slett [<ph name="FINGERPRINT_NAME" />], knapp</translation>
 <translation id="6029587122245504742">Langsomst</translation>
 <translation id="6032912588568283682">Filsystem</translation>
-<translation id="6034662038931255275">OS-oppdateringen er ferdig</translation>
 <translation id="6038929619733116134">Blokkér hvis nettstedet viser forstyrrende eller villedende annonser</translation>
 <translation id="6039651071822577588">Ordlisten som eies av nettverket, har feil format</translation>
 <translation id="604001903249547235">Skybasert sikkerhetskopiering</translation>

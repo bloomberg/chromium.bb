@@ -684,7 +684,6 @@
 <translation id="197560921582345123">Môže upravovať</translation>
 <translation id="1975841812214822307">Odstrániť...</translation>
 <translation id="1976150099241323601">Prihlásenie do zabezpečeného zariadenia</translation>
-<translation id="1976315108329706992">Teraz môžete používať aplikácie pre Android.</translation>
 <translation id="1976323404609382849">Boli zablokované súbory cookie z viacerých webových stránok.</translation>
 <translation id="1977965994116744507">Ak chcete odomknúť zariadenie <ph name="DEVICE_TYPE" />, priblížte k nemu svoj telefón.</translation>
 <translation id="1979280758666859181">Chystáte sa zmeniť na kanál so staršou verziou prehliadača <ph name="PRODUCT_NAME" />. Zmena kanála sa prejaví, keď sa verzia kanála bude zhodovať s verziou, ktorá je momentálne nainštalovaná v zariadení.</translation>
@@ -3372,7 +3371,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6029292188939175871">odstrániť [<ph name="FINGERPRINT_NAME" />], tlačidlo</translation>
 <translation id="6029587122245504742">Najpomalšia</translation>
 <translation id="6032912588568283682">Systém súborov</translation>
-<translation id="6034662038931255275">Operačný systém bol úspešne aktualizovaný</translation>
 <translation id="6038929619733116134">Blokovať, ak web zobrazuje obťažujúce alebo zavádzajúce reklamy</translation>
 <translation id="6039651071822577588">Slovník sieťového vlastníctva je v nesprávnom tvare</translation>
 <translation id="604001903249547235">Záloha v cloude</translation>
@@ -3384,7 +3382,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6042308850641462728">Viac</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> zdieľa kartu Chromu s kartou <ph name="TAB_NAME" />.</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> zdieľa kartu Chromu a zvuk s kartou <ph name="TAB_NAME" />.</translation>
-<translation id="6045021379489914695">Chromebook a telefón s Androidom môžu spolu lepšie fungovať. Prepojte ich, aby ste mohli odosielať textové správy z počítača, zdieľať internetové pripojenie a odomykať Chromebooku telefónom.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Ďalšie informácie<ph name="LINK_END" /></translation>
+<translation id="6045021379489914695">Chromebook a telefón s Androidom môžu spolu fungovať lepšie. Prepojte ich, aby ste mohli odosielať textové správy z počítača, zdieľať internetové pripojenie a odomykať Chromebook telefónom.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Ďalšie informácie<ph name="LINK_END" /></translation>
 <translation id="6047938872139769630">Po odhlásení môžete zariadenie odomknúť pomocou kódu PIN</translation>
 <translation id="6049004884579590341">Pridržaním klávesa |<ph name="ACCELERATOR" />| ukončite režim celej obrazovky</translation>
 <translation id="6049065490165456785">Fotografia z vnútorného fotoaparátu</translation>
@@ -3734,7 +3732,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="656293578423618167">Názov súboru alebo cesta má veľa znakov. Uložte súbor pod kratším názvom alebo inde.</translation>
 <translation id="656398493051028875">Prebieha odstraňovanie súboru <ph name="FILENAME" />...</translation>
 <translation id="6567688344210276845">Nepodarilo sa načítať ikonu „<ph name="ICON" />“ akcie stránky.</translation>
-<translation id="6571979863037191371">Odpojte telefón od Chromebooku. Už sa nebudú automaticky pripájať.</translation>
+<translation id="6571979863037191371">Odpojte telefón od Chromebooku. Už sa nebude automaticky pripájať.</translation>
 <translation id="657402800789773160">&amp;Obnoviť túto stránku</translation>
 <translation id="6577284282025554716">Sťahovanie bolo zrušené: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Šifrovať synchronizované heslá pomocou používateľského mena a hesla Google</translation>

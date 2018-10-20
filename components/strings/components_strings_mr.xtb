@@ -16,6 +16,7 @@
 <translation id="1074497978438210769">सुरक्षित नाही</translation>
 <translation id="1080116354587839789">रूंदीत फिट करा</translation>
 <translation id="1088860948719068836">कार्डवर नाव जोडा</translation>
+<translation id="109743633954054152">Chrome सेटिंग्जमध्ये पासवर्ड व्यवस्थापित करा</translation>
 <translation id="1103523840287552314">नेहमी भाषांतर करा <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">चेक केल्यास, अधिक जलद फॉर्म भरण्यासाठी या डिव्हाइसवर Chrome आपल्या कार्डची एक प्रत संचयित करेल.</translation>
 <translation id="1110994991967754504"><ph name="PERMISSION_NAME" /> ची परवानगी निवडा</translation>
@@ -146,6 +147,7 @@
 <translation id="1871208020102129563">प्रॉक्सी निश्चित प्रॉक्सी सर्व्हर वापरण्‍यास सेट करण्‍यात आले आहे, .pac स्क्रिप्ट URL नव्हे.</translation>
 <translation id="1871284979644508959">आवश्यक भाग</translation>
 <translation id="1874765382782611674">स्वीकारली जाणारी डेबिट कार्डे</translation>
+<translation id="1875512691959384712">Google फॉर्म</translation>
 <translation id="187918866476621466">प्रारंभ पृष्ठ उघडा</translation>
 <translation id="1883255238294161206">सूची संकुचित करा</translation>
 <translation id="1898423065542865115">फिल्टर करणे</translation>
@@ -199,6 +201,7 @@
 <translation id="2239100178324503013">आता पाठवा</translation>
 <translation id="225207911366869382">हे मूल्य या धोरणासाठी नापसंत करण्‍यात आले आहे.</translation>
 <translation id="2262243747453050782">HTTP एरर</translation>
+<translation id="2263079731045660823">Chrome सेटिंग्जमध्ये क्रेडिट कार्ड ऑटोफिल माहिती अपडेट करा</translation>
 <translation id="2270484714375784793">फोन नंबर</translation>
 <translation id="2283340219607151381">पत्ते भरा आणि सेव्ह करा</translation>
 <translation id="2292556288342944218">आपला इंटरनेट प्रवेश अवरोधित केला आहे</translation>
@@ -223,6 +226,7 @@
 <translation id="239429038616798445">ही शिपिंग पद्धत उपलब्ध नाही. वेगळी पद्धत वापरून पहा.</translation>
 <translation id="2396249848217231973">&amp;हटवा पूर्ववत करा</translation>
 <translation id="2413528052993050574">हा सर्व्हर हे <ph name="DOMAIN" /> असल्याचे सिद्ध करू शकला नाही; त्याचे सुरक्षितता सर्टिफिकेट कदाचित रद्द केले असू शकते. हे कदाचित एका चुकीच्या कॉंफिगरेशनमुळे किंवा हल्लेखोराने तुमचे कनेक्शन इंटरसेप्ट केल्यामुळे झाले असू शकते.</translation>
+<translation id="2463193859425327265">होम पेज बदला</translation>
 <translation id="2463739503403862330">भरून टाका</translation>
 <translation id="2465655957518002998">वितरणाची पद्धत निवडा</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />नेटवर्क निदान चालविणे<ph name="END_LINK" /></translation>
@@ -255,6 +259,7 @@
 <translation id="2650446666397867134">फाइलवरील प्रवेश नाकारण्यात आला</translation>
 <translation id="2653659639078652383">सबमिट करा</translation>
 <translation id="2666117266261740852">इतर टॅब किंवा अॅप्स बंद करा</translation>
+<translation id="267371737713284912">पहिल्यासारखे करण्यासाठी <ph name="MODIFIER_KEY_DESCRIPTION" /> दाबा</translation>
 <translation id="2674170444375937751">तुमची खात्री आहे की आपण ही पेज आपल्‍या इतिहासातून हटवू इच्छिता?</translation>
 <translation id="2677748264148917807">सोडा</translation>
 <translation id="2699302886720511147">स्वीकारली जाणारी कार्डे</translation>
@@ -405,6 +410,7 @@
 <translation id="3650584904733503804">प्रमाणीकरण यशस्वी</translation>
 <translation id="3655670868607891010">आपण हे वारंवार पहात असल्यास, हे वापरून पहा <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">पुनरावृत्ती</translation>
+<translation id="366077651725703012">क्रेडिट कार्ड अपडेट करा</translation>
 <translation id="3676592649209844519">डिव्हाइस आयडी:</translation>
 <translation id="3678029195006412963">विनंती स्वाक्षरीकृत करणे शक्य झाले नाही</translation>
 <translation id="3678529606614285348">पेज एका नवीन गुप्त विंडोमध्ये उघडा (Ctrl-Shift-N)</translation>
@@ -717,6 +723,7 @@
 <translation id="5784606427469807560">आपल्या कार्डची पुष्टी करताना समस्या आली. आपले इंटरनेट कनेक्शन तपासा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="5785756445106461925">पुढे, या पृष्ठात सुरक्षित नसलेली इतर संसाधने समाविष्ट आहेत. ही संसाधने संक्रमणात असताना इतरांद्वारे पाहिली जाऊ शकतात आणि पृष्ठाचे स्वरूप बदलण्यासाठी आक्रमणकर्त्याद्वारे सुधारित केली जाऊ शकतात.</translation>
 <translation id="5786044859038896871">आपण तुमची कार्ड माहिती भरू इच्छित आहात?</translation>
+<translation id="5798683403665926540">Chrome सेटिंग्जमध्ये होम पेज बदला</translation>
 <translation id="5803412860119678065">आपण आपले <ph name="CARD_DETAIL" /> भरू इच्छित आहात?</translation>
 <translation id="5810442152076338065">तुमचे <ph name="DOMAIN" /> वरील कनेक्शन अॉब्सोलीट सायफर सूट वापरून एंक्रिप्ट केलेले आहे.</translation>
 <translation id="5813119285467412249">&amp;जोडा पुन्हा करा</translation>
@@ -867,6 +874,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">हे शुल्क एकाच वेळी द्यायचे किंवा आवर्ती असू शकतात आणि स्पष्ट नसू शकतात.</translation>
 <translation id="7029809446516969842">पासवर्ड</translation>
+<translation id="7041710477964360998">{NUM_CARDS,plural, =1{सर्व डिव्हाइसवरून जलद चेकआउट करता यावे यासाठी हे कार्ड आणि त्याचा बिलिंग पत्ता तुमच्या Google खात्यावर सेव्ह केला जाईल.}one{सर्व डिव्हाइसवरून जलद चेकआउट करता यावे यासाठी हे कार्ड आणि त्याचा बिलिंग पत्ता तुमच्या Google खात्यावर सेव्ह केला जाईल.}other{सर्व डिव्हाइसवरून जलद चेकआउट करता यावे यासाठी ही कार्डे आणि त्यांचे बिलिंग पत्ते तुमच्या Google खात्यावर सेव्ह केली जातील.}}</translation>
 <translation id="7050187094878475250">तुम्ही <ph name="DOMAIN" /> वर पोहोचण्याचा प्रयत्न केला, परंतु सर्व्हरने एक सर्टिफिकेट सादर केले आहे ज्याचा वैधता कालावधी हा विश्वासार्हतेसाठी खूप मोठा आहे.</translation>
 <translation id="7053983685419859001">अवरोधित करा</translation>
 <translation id="7064851114919012435">संपर्क माहिती</translation>
@@ -973,7 +981,9 @@
 <translation id="7667346355482952095">परत केलेले धोरण टोकन रिक्त आहे किंवा वर्तमान टोकनशी जुळत नाही</translation>
 <translation id="7668654391829183341">अज्ञात डिव्हाइस</translation>
 <translation id="7669271284792375604">या साइट वरील आक्रमणकर्ते कदाचित आपल्या ब्राउझिंग अनुभवास हानी पोहोचविणारे प्रोग्राम (उदाहरणार्थ, आपले मुख्यपृष्ठ बदलून किंवा आपण भेट देता त्या साइटवर अतिरिक्त जाहिराती दर्शवून) इंस्टॉल करून तुमची फसवणूक करण्‍याचा प्रयत्न करू शकतात.</translation>
+<translation id="7681101578153515023">शोध इंजिन बदला</translation>
 <translation id="7682287625158474539">शिपिंग</translation>
+<translation id="7687186412095877299">तुमच्या सेव्ह केलेल्या पेमेंट पद्धतींसह पेमेंट फॉर्म भरते</translation>
 <translation id="7699293099605015246">लेख आत्ता उपलब्ध नाहीत</translation>
 <translation id="7701040980221191251">काहीही नाही</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" /> <ph name="SITE" /> (असुरक्षित) वर सुरु ठेवा<ph name="END_LINK" /></translation>
@@ -996,6 +1006,7 @@
 <translation id="7802523362929240268">साइट कायदेशीर आहे</translation>
 <translation id="780301667611848630">नाही, नको</translation>
 <translation id="7805768142964895445">स्थिती</translation>
+<translation id="7806344367022510803">Chrome मध्ये शोध इंजिन सेटिंग्ज बदला</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Chrome मधून सूचना फॉर्म काढून टाकायचा?</translation>
 <translation id="7815407501681723534">'<ph name="SEARCH_STRING" />' साठी <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> सापडले</translation>
@@ -1042,6 +1053,7 @@
 <translation id="8184538546369750125">सार्वत्रिक डीफॉल्‍ट वापरा (अनुमती द्या)</translation>
 <translation id="8191494405820426728">स्थानिक क्रॅश आयडी <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="8194797478851900357">&amp;हलवा पूर्ववत करा</translation>
+<translation id="8197543752516192074">पेजचे भाषांतर करा</translation>
 <translation id="8201077131113104583"><ph name="EXTENSION_ID" /> ID असलेल्या एक्स्टेंशनासाठी चुकीची अपडेट URL.</translation>
 <translation id="8202097416529803614">ऑर्डर सारांश</translation>
 <translation id="8211406090763984747">कनेक्शन सुरक्षित आहे</translation>
@@ -1086,6 +1098,7 @@
 <translation id="8428213095426709021">सेटिंग्ज</translation>
 <translation id="8433057134996913067">हे आपल्याला बहुतांश वेबसाइट वरून साइन आउट करेल.</translation>
 <translation id="8437238597147034694">&amp;हलवा पूर्ववत करा</translation>
+<translation id="8461694314515752532">तुमच्या स्वतःच्या सिंक पासफ्रेजसह सिंक केलेल्या केलेला डेटा एंक्रिप्ट करा</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 क्रेडिट कार्ड}one{# क्रेडिट कार्ड}other{# क्रेडिट कार्ड}}</translation>
 <translation id="8473863474539038330">पत्ते आणि बरेच काही</translation>
 <translation id="8483780878231876732">आपल्या Google खात्यावरून कार्ड वापरण्यासाठी Chrome मध्ये साइन इन करा</translation>

@@ -161,6 +161,7 @@
 <translation id="1973335181906896915">シリアル化エラーです</translation>
 <translation id="1974060860693918893">詳細設定</translation>
 <translation id="1978555033938440688">ファームウェアのバージョン</translation>
+<translation id="1981206234434200693">Chrome の閲覧履歴データを削除する</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{他 1 個}other{他 # 個}}</translation>
 <translation id="2003709556000175978">今すぐパスワードを再設定してください</translation>
 <translation id="2025186561304664664">プロキシは自動設定になっています。</translation>
@@ -228,6 +229,7 @@
 <translation id="2473195200299095979">このページを翻訳</translation>
 <translation id="2479410451996844060">検索 URL が無効です。</translation>
 <translation id="2482878487686419369">通知</translation>
+<translation id="248348093745724435">マシンポリシー</translation>
 <translation id="2491120439723279231">サーバーの証明書にエラーがあります。</translation>
 <translation id="2495083838625180221">JSON パーサー</translation>
 <translation id="2495093607237746763">チェックボックスをオンにすると、Chromium がカード情報をこの端末に保存するためフォームにすばやく入力できるようになります。</translation>
@@ -298,6 +300,7 @@
 <translation id="2972581237482394796">やり直し(&amp;R)</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />が現在選択されています。<ph name="ROW_CONTENT" /></translation>
 <translation id="298138621710431427">問題を修正するには</translation>
+<translation id="2982481275546140226">データを削除</translation>
 <translation id="2985306909656435243">有効にすると、Chromium がカード情報をこの端末に保存するためフォームにすばやく入力できるようになります。</translation>
 <translation id="2985398929374701810">有効な住所を入力してください</translation>
 <translation id="2986368408720340940">この受け取り方法はご利用いただけません。別の方法を選択してください。</translation>
@@ -317,6 +320,7 @@
 <translation id="3109728660330352905">このページを表示する権限がありません。</translation>
 <translation id="3120730422813725195">ELO</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />接続診断ツールを実行してみてください<ph name="END_LINK" />。</translation>
+<translation id="3137507986424712703">{COUNT,plural, =0{なし}=1{1 件のアカウントのログインデータ}other{# 件のアカウントのログインデータ}}</translation>
 <translation id="3145945101586104090">応答をデコードできませんでした</translation>
 <translation id="3150653042067488994">一時的なサーバー エラーです</translation>
 <translation id="3154506275960390542">このページのフォームは安全に送信されない可能性があります。送信中にデータが他者に閲覧されたり、悪意のあるユーザーによりデータが変更されてサーバーに別の内容が届いたりする可能性があります。</translation>
@@ -401,6 +405,7 @@
 <translation id="3650584904733503804">検証が正常に完了しました</translation>
 <translation id="3655670868607891010">このエラーが頻繁に表示される場合は、こちらの<ph name="HELP_LINK" />をお試しください。</translation>
 <translation id="3658742229777143148">変更履歴</translation>
+<translation id="3676592649209844519">端末 ID:</translation>
 <translation id="3678029195006412963">リクエストに署名できませんでした</translation>
 <translation id="3678529606614285348">ページを新しいシークレット ウィンドウで開く（Ctrl-Shift-N）</translation>
 <translation id="3679803492151881375"><ph name="CRASH_TIME" /> にクラッシュ レポートが作成され、<ph name="UPLOAD_TIME" /> にアップロードされました</translation>
@@ -585,6 +590,7 @@
 <translation id="4989163558385430922">すべて表示</translation>
 <translation id="4989809363548539747">このプラグインはサポートされていません</translation>
 <translation id="5002932099480077015">有効にすると、Chrome ではこの端末にカードのコピーが保存されます。これにより、フォームにすばやく入力できるようになります。</translation>
+<translation id="5015510746216210676">マシン名:</translation>
 <translation id="5018422839182700155">このページを開けません</translation>
 <translation id="5019198164206649151">代替ストアの状態が不適切です</translation>
 <translation id="5023310440958281426">管理者のポリシーを確認してください</translation>
@@ -724,6 +730,7 @@
 <translation id="5908541034548427511"><ph name="TYPE_1" />（同期済み）</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 個が使用中}other{# 個が使用中}}</translation>
 <translation id="5922853866070715753">ほぼ完了です</translation>
+<translation id="5932224571077948991">このサイトでは煩わしい広告や誤解を招く広告が表示されます</translation>
 <translation id="5939518447894949180">リセット</translation>
 <translation id="5951495562196540101">一般ユーザー向けアカウントでは登録できません（ライセンス パッケージが利用可能です）。</translation>
 <translation id="5966151627327109289">ほとんどのサイトからログアウトします。<ph name="SITE" /> と他の一部のサイトで、保護されたコンテンツにアクセスできなくなる可能性があります。</translation>
@@ -761,6 +768,7 @@
 <translation id="6203231073485539293">インターネット接続を確認してください</translation>
 <translation id="6218753634732582820">Chromium からアドレスを削除してもよろしいですか？</translation>
 <translation id="6221345481584921695"><ph name="BEGIN_LINK" /> では最近、Google セーフ ブラウジングにより、<ph name="END_LINK" />不正なソフトウェアが検出されました<ph name="SITE" />。通常は安全なウェブサイトであっても、不正なソフトウェアに感染している場合があります。今回の悪意のあるコンテンツは、不正なソフトウェアの既知の配布元である「<ph name="SUBRESOURCE_HOST" />」からもたらされました。</translation>
+<translation id="6240447795304464094">Google Pay ロゴ</translation>
 <translation id="6251924700383757765">プライバシー ポリシー</translation>
 <translation id="6254436959401408446">メモリが不足しているため、このページを開けません</translation>
 <translation id="625755898061068298">このサイトに関するセキュリティ警告を無効にするように指定されています。</translation>
@@ -779,6 +787,7 @@
 <translation id="6337133576188860026">最大で <ph name="SIZE" /> を解放します。サイトによっては、次回アクセスする際に読み込みに時間がかかる可能性があります。</translation>
 <translation id="6337534724793800597">ポリシーを名前でフィルタ</translation>
 <translation id="6358450015545214790">ヘルプ</translation>
+<translation id="6383221683286411806">続行すると料金が請求される可能性があります。</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{他 1 件の候補}other{他 # 件の候補}}</translation>
 <translation id="6387754724289022810">カードと請求先住所を Google アカウントとこの端末に保存すると、次回のお支払いが簡単になります。</translation>
 <translation id="6397451950548600259">パソコンにインストールされているソフトウェアが原因で、Chrome からインターネットに安全に接続することができません</translation>
@@ -816,6 +825,7 @@
 <translation id="6685834062052613830">ログアウトして設定を完了してください</translation>
 <translation id="6710213216561001401">前へ</translation>
 <translation id="6710594484020273272">&lt;検索キーワードを入力&gt;</translation>
+<translation id="671076103358959139">登録トークン:</translation>
 <translation id="6711464428925977395">プロキシ サーバーに問題がある、またはアドレスが正しくありません。</translation>
 <translation id="674375294223700098">不明なサーバー証明書エラー</translation>
 <translation id="6744009308914054259">接続するまでの間、[ダウンロード] に移動してオフラインで記事を読むことができます。</translation>
@@ -881,6 +891,7 @@
 <translation id="721197778055552897">この問題の詳細については、<ph name="BEGIN_LINK" />こちら<ph name="END_LINK" />をご覧ください。</translation>
 <translation id="7219179957768738017">この接続には <ph name="SSL_VERSION" /> を使用しています。</translation>
 <translation id="7220786058474068424">処理しています</translation>
+<translation id="7243010569062352439"><ph name="PASSWORDS" />、<ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">アクセス先のサイトで不正なソフトウェアを検出しました</translation>
 <translation id="724975217298816891">カードの詳細を更新するには <ph name="CREDIT_CARD" /> の有効期限と CVC を入力します。確認を行うと、カードの詳細がこのサイトと共有されます。</translation>
 <translation id="7251437084390964440">ネットワーク設定が ONC 標準に準拠していません。設定の一部がインポートされない可能性があります。
@@ -1061,6 +1072,7 @@
 <translation id="8364627913115013041">未設定</translation>
 <translation id="8368476060205742148">Google Play 開発者サービス</translation>
 <translation id="8380941800586852976">危険</translation>
+<translation id="8381674639488873545">料金の請求は 1 回限りの場合も毎月行われる場合もあり、課金されたかどうかわからないこともあります。<ph name="BEGIN_LINK" />理解したうえで表示する<ph name="END_LINK" /></translation>
 <translation id="8382348898565613901">最近アクセスしたブックマークがここに表示されます</translation>
 <translation id="8398259832188219207">クラッシュ レポートが <ph name="UPLOAD_TIME" /> にアップロードされました</translation>
 <translation id="8412145213513410671">障害数（<ph name="CRASH_COUNT" />）</translation>

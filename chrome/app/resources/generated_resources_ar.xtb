@@ -15,7 +15,7 @@
 <translation id="1016566241875885511">معلومات إضافية (اختياري)</translation>
 <translation id="1017280919048282932">إ&amp;ضافة التعبير إلى القاموس</translation>
 <translation id="1018656279737460067">تم الإلغاء</translation>
-<translation id="1023873740278604399">يمكنك تحريك إصبعك قليلاً لإضافة جميع الأجزاء المختلفة لبصمة إصبعك.</translation>
+<translation id="1023873740278604399">يرجى تحريك إصبعك قليلاً لإضافة البصمة بالكامل.</translation>
 <translation id="1026822031284433028">تحميل صورة</translation>
 <translation id="1029317248976101138">تكبير/تصغير</translation>
 <translation id="1030706264415084469">يريد <ph name="URL" /> تخزين حجم كبير من البيانات بشكل دائم على جهازك.</translation>
@@ -681,7 +681,6 @@
 <translation id="197560921582345123">يمكن التعديل</translation>
 <translation id="1975841812214822307">إزالة...</translation>
 <translation id="1976150099241323601">تسجيل الدخول إلى جهاز الأمان</translation>
-<translation id="1976315108329706992">‏يمكنك الآن استخدام تطبيقات Android.</translation>
 <translation id="1976323404609382849">تم منع ملفات تعريف الارتباط من مواقع متعددة.</translation>
 <translation id="1977965994116744507">اجعل هاتفك قريبًا منك لإلغاء قفل جهاز <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1979280758666859181">أنت الآن تُجري تغييرًا إلى قناة ذات إصدار سابق من <ph name="PRODUCT_NAME" />. وسيسري تغيير القناة عند تطابق إصدار القناة مع الإصدار المثبت حاليًا على الجهاز.</translation>
@@ -1257,7 +1256,7 @@
 <translation id="2850124913210091882">النسخ الاحتياطي</translation>
 <translation id="2850541429955027218">إضافة مظهر</translation>
 <translation id="2853916256216444076">فيديو $1</translation>
-<translation id="2859806420264540918">يعرض هذا الموقع الإلكتروني إعلانات متداخلة أو مضلِّلة.</translation>
+<translation id="2859806420264540918">يعرض هذا الموقع الإلكتروني إعلانات مضلِّلة أو غير مرغوب فيها.</translation>
 <translation id="2860150991415616761">طويل جدًا (4 ثوانٍ)</translation>
 <translation id="2861301611394761800">اكتمل تحديث النظام. يُرجى إعادة تشغيل النظام.</translation>
 <translation id="2861941300086904918">‏إدارة الأمان لـ Native Client</translation>
@@ -2282,12 +2281,12 @@
 <translation id="4448844063988177157">‏جارِ البحث عن شبكات Wi-Fi...</translation>
 <translation id="4449996769074858870">تشغّل علامة التبويب هذه صوتًا.</translation>
 <translation id="4450974146388585462">التشخيص</translation>
-<translation id="4451757071857432900">تم الحظر على المواقع الإلكترونية التي تعرض إعلانات متداخلة أو مضلِّلة (مُقترح)</translation>
+<translation id="4451757071857432900">تم حظر الإعلانات على المواقع الإلكترونية التي تعرض إعلانات مضلِّلة أو غير مرغوب فيها (مُستحسَن)</translation>
 <translation id="4453946976636652378">‏البحث في <ph name="SEARCH_ENGINE_NAME" /> أو كتابة عنوان URL</translation>
 <translation id="4462159676511157176">خوادم أسماء مخصصة</translation>
 <translation id="4467100756425880649">‏معرض سوق Chrome الإلكتروني</translation>
 <translation id="4467101674048705704">توسيع <ph name="FOLDER_NAME" /></translation>
-<translation id="4469477701382819144">تم الحظر على المواقع الإلكترونية التي تعرض إعلانات متداخلة أو مضلِّلة</translation>
+<translation id="4469477701382819144">تم حظر الإعلانات على المواقع الإلكترونية التي تعرض إعلانات مضلِّلة أو غير مرغوب فيها</translation>
 <translation id="447252321002412580">‏المساعدة في تحسين ميزات Chrome وأدائه</translation>
 <translation id="4472575034687746823">الخطوات الأولى</translation>
 <translation id="4474155171896946103">وضع إشارات على كل علامات التبويب...</translation>
@@ -3288,7 +3287,7 @@
 <translation id="5925147183566400388">مؤشر بيان تطبيق الشهادة</translation>
 <translation id="592880897588170157">‏تنزيل ملفات PDF بدلاً من فتحها تلقائيًا في Chrome</translation>
 <translation id="5931146425219109062">قراءة جميع بياناتك وتغييرها على مواقع الويب التي تزورها</translation>
-<translation id="5932224571077948991">عرض موقع الويب لإعلانات متداخلة أو مضلِّلة</translation>
+<translation id="5932224571077948991">يعرض موقع الويب إعلانات مضلِّلة أو غير مرغوب فيها</translation>
 <translation id="5932881020239635062">الرقم التسلسلي</translation>
 <translation id="5933376509899483611">المنطقة الزمنية</translation>
 <translation id="5938002010494270685">ترقية الأمان متاحة</translation>
@@ -3352,8 +3351,7 @@
 <translation id="6029292188939175871">الزر حذف [<ph name="FINGERPRINT_NAME" />]</translation>
 <translation id="6029587122245504742">الأبطأ</translation>
 <translation id="6032912588568283682">نظام الملفات</translation>
-<translation id="6034662038931255275">تم تحديث نظام التشغيل بنجاح</translation>
-<translation id="6038929619733116134">الحظر في حال كان موقع الويب يعرض إعلانات متداخلة أو مضلِّلة</translation>
+<translation id="6038929619733116134">الحظر في حال كان موقع الويب يعرض إعلانات مضلِّلة أو غير مرغوب فيها</translation>
 <translation id="6039651071822577588">قاموس خصائص الشبكة غير صالح</translation>
 <translation id="604001903249547235">النسخ الاحتياطي عبر السحاب.</translation>
 <translation id="6040143037577758943">إغلاق</translation>
@@ -5215,7 +5213,7 @@
 <translation id="8846141544112579928">جارٍ البحث عن لوحة المفاتيح...</translation>
 <translation id="8846319957959474018">فتح التطبيقات بسهولة باستخدام الإشارات المرجعية</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="8848561196844274665">‏عند ربط أجهزتك، فأنت توافق على أن جهاز Chromebook يمكنه ما يلي:</translation>
+<translation id="8848561196844274665">‏عند ربط أجهزتك، أنت توافق على أن جهاز Chromebook سيتمكّن مما يلي:</translation>
 <translation id="8859057652521303089">حدد لغتك:</translation>
 <translation id="8859174528519900719">هيكل سفلي: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">‏جدول بيانات Excel</translation>

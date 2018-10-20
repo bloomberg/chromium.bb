@@ -617,7 +617,7 @@
 <translation id="1875387611427697908">只能通过<ph name="CHROME_WEB_STORE" />添加此项内容</translation>
 <translation id="1877520246462554164">未能获取身份验证令牌。请退出并重新登录，然后重试。</translation>
 <translation id="1878302395768190018">您可以随时在 Chrome 设置中自定义此设置</translation>
-<translation id="1879000426787380528">使用以下身份登录：</translation>
+<translation id="1879000426787380528">登录身份</translation>
 <translation id="1880905663253319515">要删除证书“<ph name="CERTIFICATE_NAME" />”吗？</translation>
 <translation id="1886996562706621347">允许网站要求成为协议的默认处理程序（推荐）</translation>
 <translation id="1887442540531652736">登录错误</translation>
@@ -678,7 +678,6 @@
 <translation id="197560921582345123">可以修改</translation>
 <translation id="1975841812214822307">移除…</translation>
 <translation id="1976150099241323601">登录安全设备</translation>
-<translation id="1976315108329706992">您现在可以使用 Android 应用了。</translation>
 <translation id="1976323404609382849">已拦截来自多个网站的 Cookie。</translation>
 <translation id="1977965994116744507">需将您的手机靠近您的 <ph name="DEVICE_TYPE" />，才能为其解锁。</translation>
 <translation id="1979280758666859181">您正将版本更改为较旧版的 <ph name="PRODUCT_NAME" />。该版本的版本号必须与您设备上目前所安装版本的版本号相符，版本变更才会生效。</translation>
@@ -3345,7 +3344,6 @@
 <translation id="6029292188939175871">删除[<ph name="FINGERPRINT_NAME" />]，按钮</translation>
 <translation id="6029587122245504742">最慢</translation>
 <translation id="6032912588568283682">文件系统</translation>
-<translation id="6034662038931255275">操作系统更新成功</translation>
 <translation id="6038929619733116134">屏蔽会展示侵扰性或误导性广告的网站</translation>
 <translation id="6039651071822577588">网络属性字典格式不正确</translation>
 <translation id="604001903249547235">云端备份</translation>

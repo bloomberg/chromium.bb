@@ -681,7 +681,6 @@
 <translation id="197560921582345123">Makakapag-edit</translation>
 <translation id="1975841812214822307">Alisin...</translation>
 <translation id="1976150099241323601">Mag-sign in sa Pangseguridad na Device</translation>
-<translation id="1976315108329706992">Magagamit mo na ang mga Android app.</translation>
 <translation id="1976323404609382849">Na-block ang cookies mula sa maraming site.</translation>
 <translation id="1977965994116744507">Ilapit pa ang iyong telepono upang ma-unlock ang <ph name="DEVICE_TYPE" /> mo.</translation>
 <translation id="1979280758666859181">Lumilipat ka sa isang channel na may lumang bersyon ng <ph name="PRODUCT_NAME" />. Ilalapat ang paglilipat ng channel kapag tumugma ang bersyon ng channel sa bersyong kasalukuyang naka-install sa iyong device.</translation>
@@ -3357,7 +3356,6 @@
 <translation id="6029292188939175871">i-delete ang [<ph name="FINGERPRINT_NAME" />], button</translation>
 <translation id="6029587122245504742">Pinakamabagal</translation>
 <translation id="6032912588568283682">System ng file</translation>
-<translation id="6034662038931255275">Na-update na ang OS</translation>
 <translation id="6038929619733116134">I-block kung nagpapakita ang site ng mga nakakasagabal o nakakapanlinlang na ad</translation>
 <translation id="6039651071822577588">Mali ang anyo ng diskyunaryo ng katangian ng network</translation>
 <translation id="604001903249547235">Pag-back up sa Cloud</translation>

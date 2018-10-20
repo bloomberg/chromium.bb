@@ -238,7 +238,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb prywat
 <translation id="2744248271121720757">Kliknij słowo, by szybko je wyszukać lub wyświetlić powiązane czynności</translation>
 <translation id="2762000892062317888">przed chwilą</translation>
 <translation id="2777555524387840389">Pozostało: <ph name="SECONDS" /> s</translation>
-<translation id="2779651927720337254">nie udało się</translation>
+<translation id="2779651927720337254">Nie pobrano</translation>
 <translation id="2781151931089541271">Pozostała sekunda</translation>
 <translation id="2803478378562657435">Wyświetlam zapisane hasła i opcje haseł</translation>
 <translation id="2810645512293415242">Uproszczona wersja strony pozwala szybciej zapisywać i wczytywać dane.</translation>
@@ -620,7 +620,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="5833397272224757657">Zawartość otwieranych stron oraz informacje o Twoich interakcjach i aktywności w przeglądarce zostaną wykorzystane do personalizacji</translation>
 <translation id="5833984609253377421">Udostępnij link</translation>
 <translation id="584427517463557805">Wybrana karta prywatna</translation>
-<translation id="5853623416121554550">wstrzymano</translation>
+<translation id="5853623416121554550">Wstrzymano</translation>
 <translation id="5854790677617711513">Sprzed ponad 30 dni</translation>
 <translation id="5858741533101922242">Chrome nie może włączyć adaptera Bluetooth</translation>
 <translation id="5860033963881614850">Wyłączone</translation>
@@ -1024,7 +1024,7 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="8942627711005830162">Otwórz w innym oknie</translation>
 <translation id="8951232171465285730">Chrome pozwolił Ci zaoszczędzić <ph name="MEGABYTES" /> MB</translation>
 <translation id="8959122750345127698">Adres nieosiągalny: <ph name="URL" /></translation>
-<translation id="8965591936373831584">oczekuje</translation>
+<translation id="8965591936373831584">Oczekiwanie</translation>
 <translation id="8972098258593396643">Czy pobrać do folderu domyślnego?</translation>
 <translation id="8979405271719829084">Pobierz film, by obejrzeć go później</translation>
 <translation id="8981454092730389528">Zarządzanie aktywnością w Google</translation>

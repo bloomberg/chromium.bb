@@ -15,7 +15,7 @@
 <translation id="1016566241875885511">Maelezo ya ziada (hiari)</translation>
 <translation id="1017280919048282932">&amp;Ongeza kwa kamusi</translation>
 <translation id="1018656279737460067">Imeghairiwa</translation>
-<translation id="1023873740278604399">Sogeza kidole chako kwa utaratibu ili uongeze sehemu mbalimbali za alama ya kidole</translation>
+<translation id="1023873740278604399">Sogeza kidole chako kwa utaratibu ili uongeze sehemu mbalimbali za alama ya kidole.</translation>
 <translation id="1026822031284433028">Pakia Picha</translation>
 <translation id="1029317248976101138">Kuza</translation>
 <translation id="1030706264415084469"><ph name="URL" /> inataka kuhifadhi data nyingi kwenye kifaa chako kwa muda mrefu</translation>
@@ -678,7 +678,6 @@
 <translation id="197560921582345123">Unaweza kubadilisha</translation>
 <translation id="1975841812214822307">Ondoa...</translation>
 <translation id="1976150099241323601">Ingia kwenye Kifaa Salama</translation>
-<translation id="1976315108329706992">Sasa unaweza kutumia programu za Android.</translation>
 <translation id="1976323404609382849">Vidakuzi kutoka tovuti anuwai vimezuiwa.</translation>
 <translation id="1977965994116744507">Sogeza simu yako karibu ili ukifungue kifaa chako cha <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1979280758666859181">Unabadilisha hadi kituo chenye toleo zee la <ph name="PRODUCT_NAME" />. Mabadiliko ya kituo yatatumika wakati toleo la kituo linalingana na toleo lililosanidiwa kwenye kifaa chako.</translation>
@@ -1188,7 +1187,7 @@
 <translation id="2749881179542288782">Kagua Sarufi Pamoja na Tahajia</translation>
 <translation id="2751739896257479635">Uthibitishaji wa awamu ya pili wa EAP</translation>
 <translation id="2755367719610958252">Dhibiti vipengele vya zana za walio na matatizo ya kuona au kusikia</translation>
-<translation id="2755628026949580719">Ikiwa ufunguo wako wa usalama haujaorodheshwa, bonyeza kifufe cha ufunguo kwa angalau sekunde 5.</translation>
+<translation id="2755628026949580719">Ikiwa ufunguo wako wa usalama haujaorodheshwa, bonyeza kitufe cha ufunguo kwa angalau sekunde 5.</translation>
 <translation id="275662540872599901">skrini imezimwa</translation>
 <translation id="2761898608071930085">Tumia Akaunti Nyingine</translation>
 <translation id="2762441749940182211">Kamera imezuiwa</translation>
@@ -1254,7 +1253,7 @@
 <translation id="2850124913210091882">Hifadhi nakala</translation>
 <translation id="2850541429955027218">Ongeza mandhari</translation>
 <translation id="2853916256216444076">Video $1</translation>
-<translation id="2859806420264540918">Tovuti inaonyesha matangazo yanayopotosha au yanayokatiza huduma</translation>
+<translation id="2859806420264540918">Tovuti inaonyesha matangazo yanayopotosha au yanayokatiza huduma.</translation>
 <translation id="2860150991415616761">mrefu sana (sekunde 4)</translation>
 <translation id="2861301611394761800">Usasishaji mfumo umekamilika. Tafadhali zima mfumo na uuwashe.</translation>
 <translation id="2861941300086904918">Kidhibiti usalama cha Mteja Asili</translation>
@@ -3348,7 +3347,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6029292188939175871">futa [<ph name="FINGERPRINT_NAME" />], kitufe</translation>
 <translation id="6029587122245504742">Kasi ya chini zaidi</translation>
 <translation id="6032912588568283682">Mfumo wa faili</translation>
-<translation id="6034662038931255275">Imesasisha Mfumo wa Uendeshaji</translation>
 <translation id="6038929619733116134">Zuia iwapo tovuti inaonyesha matangazo yanayopotosha au yanayokatiza huduma</translation>
 <translation id="6039651071822577588">Kamusi ya sifa za mtandao imeharibika</translation>
 <translation id="604001903249547235">Hifadhi rudufu ya wingu</translation>

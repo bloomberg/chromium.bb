@@ -483,7 +483,7 @@
 <translation id="1680849702532889074">A apărut o eroare în timpul instalării aplicației Linux.</translation>
 <translation id="16815041330799488">Nu permite site-urilor să vadă textul și imaginile copiate în clipboard</translation>
 <translation id="1682548588986054654">Fereastră &amp;incognito nouă</translation>
-<translation id="1683850629661177840">Modul simplificat accelerează acum navigarea pe toate paginile, inclusiv HTTPS.</translation>
+<translation id="1683850629661177840">Modul Lite accelerează acum navigarea pe toate paginile, inclusiv HTTPS.</translation>
 <translation id="168715261339224929">Pentru a accesa marcajele pe toate dispozitivele, activează sincronizarea.</translation>
 <translation id="1688867105868176567">Ștergi datele site-ului?</translation>
 <translation id="1688935057616748272">Tastează o literă</translation>
@@ -681,7 +681,6 @@
 <translation id="197560921582345123">Poate edita</translation>
 <translation id="1975841812214822307">Elimină...</translation>
 <translation id="1976150099241323601">Conectează-te la dispozitivul de securitate</translation>
-<translation id="1976315108329706992">Acum poți să folosești aplicații Android.</translation>
 <translation id="1976323404609382849">Sunt blocate cookie-urile de la mai multe site-uri.</translation>
 <translation id="1977965994116744507">Pentru a debloca dispozitivul <ph name="DEVICE_TYPE" />, apropie mai mult telefonul.</translation>
 <translation id="1979280758666859181">Treceți la un canal cu o versiune <ph name="PRODUCT_NAME" /> mai veche. Schimbarea canalului se va aplica atunci când versiunea canalului va corespunde cu versiunea instalată în prezent pe dispozitiv.</translation>
@@ -1192,7 +1191,7 @@
 <translation id="2749881179542288782">Verificare gramaticală și ortografică</translation>
 <translation id="2751739896257479635">Autentificare EAP din a doua fază</translation>
 <translation id="2755367719610958252">Gestionează funcțiile de accesibilitate</translation>
-<translation id="2755628026949580719">În cazul în care cheia de securitate nu este înregistrată, apasă butonul cheii timp de cel puțin cinci secunde.</translation>
+<translation id="2755628026949580719">Dacă cheia de securitate nu este afișată, apasă butonul cheii timp de cel puțin cinci secunde.</translation>
 <translation id="275662540872599901">ecran dezactivat</translation>
 <translation id="2761898608071930085">Folosește alt cont</translation>
 <translation id="2762441749940182211">Camera foto este blocată</translation>
@@ -3357,7 +3356,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6029292188939175871">șterge [<ph name="FINGERPRINT_NAME" />], buton</translation>
 <translation id="6029587122245504742">Cea mai lentă</translation>
 <translation id="6032912588568283682">Sistem de fișiere</translation>
-<translation id="6034662038931255275">Sistemul de operare a fost actualizat</translation>
 <translation id="6038929619733116134">Blochează dacă site-ul afișează anunțuri deranjante sau înșelătoare</translation>
 <translation id="6039651071822577588">Dicționarul proprietăților de rețea este deteriorat</translation>
 <translation id="604001903249547235">Backup în cloud</translation>
@@ -3369,7 +3367,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6042308850641462728">Mai multe</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> trimite conținutul unei file Chrome către <ph name="TAB_NAME" />.</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> trimite conținutul unei file Chrome și conținutul audio către <ph name="TAB_NAME" />.</translation>
-<translation id="6045021379489914695">Chromebook și telefonul Android funcționează mai bine împreună. Conectează-le ca să trimiți mesaje de pe computer, să permiți accesul la conexiunea la internet și să deblochezi Chromebookul cu ajutorul telefonului.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Află mai multe<ph name="LINK_END" /></translation>
+<translation id="6045021379489914695">Chromebookul și telefonul Android funcționează mai bine împreună. Conectează-le ca să trimiți mesaje de pe computer, să permiți accesul la conexiunea la internet și să deblochezi Chromebookul cu ajutorul telefonului.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Află mai multe<ph name="LINK_END" /></translation>
 <translation id="6047938872139769630">Poți folosi codul PIN pentru a-ți debloca dispozitivul când te deconectezi</translation>
 <translation id="6049004884579590341">Pentru a ieși din ecranul complet, apasă lung |<ph name="ACCELERATOR" />|</translation>
 <translation id="6049065490165456785">Fotografii de pe camera foto internă</translation>
@@ -5218,7 +5216,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8846141544112579928">Se caută tastatura...</translation>
 <translation id="8846319957959474018">Deschide aplicații cu ușurință folosind marcajele</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="8848561196844274665">Când îți conectezi dispozitivele, ești de acord că Chromebook poate:</translation>
+<translation id="8848561196844274665">Când îți conectezi dispozitivele, ești de acord că Chromebookul poate:</translation>
 <translation id="8859057652521303089">Selectează limba:</translation>
 <translation id="8859174528519900719">Subcadru: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Foaie de calcul Excel</translation>

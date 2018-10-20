@@ -681,7 +681,6 @@
 <translation id="197560921582345123">Può modificare</translation>
 <translation id="1975841812214822307">Rimuovi...</translation>
 <translation id="1976150099241323601">Accedi a dispositivo di sicurezza</translation>
-<translation id="1976315108329706992">Ora puoi utilizzare le app Android.</translation>
 <translation id="1976323404609382849">Sono stati bloccati cookie provenienti da più siti.</translation>
 <translation id="1977965994116744507">Avvicina il telefono per sbloccare il tuo dispositivo <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1979280758666859181">Stai per passare a un canale con una versione precedente di <ph name="PRODUCT_NAME" />. Il cambio di canale verrà applicato quando la versione del canale corrisponderà alla versione attualmente installata sul dispositivo.</translation>
@@ -1672,7 +1671,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3495660573538963482">Impostazioni dell'Assistente Google</translation>
 <translation id="3496213124478423963">Riduci</translation>
 <translation id="3505030558724226696">Revoca accesso ai dispositivi</translation>
-<translation id="3506093155988721483">Usa la voce invece della tastiera per avviare l'assistente</translation>
+<translation id="3506093155988721483">Usa i comandi vocali invece della tastiera per avviare l'assistente</translation>
 <translation id="3507421388498836150">Autorizzazioni attuali di "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="3507547268929739059">Rimuovi app Linux per Chromebook</translation>
 <translation id="3507888235492474624">Ripeti la ricerca di dispositivi Bluetooth</translation>
@@ -3353,7 +3352,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6029292188939175871">elimina [<ph name="FINGERPRINT_NAME" />], pulsante</translation>
 <translation id="6029587122245504742">Minima</translation>
 <translation id="6032912588568283682">File system</translation>
-<translation id="6034662038931255275">Aggiornamento del sistema operativo eseguito correttamente</translation>
 <translation id="6038929619733116134">Blocca se il sito mostra annunci invasivi o fuorvianti</translation>
 <translation id="6039651071822577588">Formato del dizionario delle proprietà di rete non corretto</translation>
 <translation id="604001903249547235">Backup nella cloud</translation>

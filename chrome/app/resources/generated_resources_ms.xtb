@@ -63,7 +63,7 @@
 <translation id="1085697365578766383">Ralat semasa memulakan mesin maya. Sila cuba lagi.</translation>
 <translation id="1089439967362294234">Tukar Kata Laluan</translation>
 <translation id="1090126737595388931">Tiada Apl Latar Belakang Dijalankan</translation>
-<translation id="1090918500949388876">Akses Assistant pada bila-bila masa anda menyebut "Ok Google" semasa skrin anda dihidupkan.</translation>
+<translation id="1090918500949388876">Akses Assistant pada bila-bila masa anda menyebut "Ok Google" semasa skrin anda dihidupkan</translation>
 <translation id="1091767800771861448">Tekan ESCAPE untuk melangkau (Binaan tidak rasmi sahaja).</translation>
 <translation id="1093457606523402488">Rangkaian Kelihatan:</translation>
 <translation id="1094607894174825014">Pengendalian baca atau tulis diminta dengan ofset tidak sah pada: "<ph name="DEVICE_NAME" />".</translation>
@@ -681,7 +681,6 @@
 <translation id="197560921582345123">Boleh edit</translation>
 <translation id="1975841812214822307">Alih keluar...</translation>
 <translation id="1976150099241323601">Log masuk ke Peranti Keselamatan</translation>
-<translation id="1976315108329706992">Kini anda boleh menggunakan apl Android.</translation>
 <translation id="1976323404609382849">Kuki daripada berbilang tapak disekat.</translation>
 <translation id="1977965994116744507">Rapatkan telefon anda untuk membuka kunci <ph name="DEVICE_TYPE" /> anda</translation>
 <translation id="1979280758666859181">Anda sedang beralih kepada saluran dengan versi <ph name="PRODUCT_NAME" /> yang lebih lama. Perubahan saluran akan dilaksanakan apabila versi saluran sepadan dengan versi yang sedang terpasang pada peranti anda.</translation>
@@ -3358,7 +3357,6 @@
 <translation id="6029292188939175871">padamkan [<ph name="FINGERPRINT_NAME" />], butang</translation>
 <translation id="6029587122245504742">Paling perlahan</translation>
 <translation id="6032912588568283682">Sistem fail</translation>
-<translation id="6034662038931255275">Berjaya mengemas kini OS</translation>
 <translation id="6038929619733116134">Sekat jika tapak menyiarkan iklan yang mengganggu atau mengelirukan</translation>
 <translation id="6039651071822577588">Kamus ciri rangkaian tidak sempurna</translation>
 <translation id="604001903249547235">Sandaran awan</translation>
@@ -4239,7 +4237,7 @@
 <translation id="7360233684753165754"><ph name="PAGE_NUMBER" /> halaman ke <ph name="PRINTER_NAME" /></translation>
 <translation id="7361039089383199231">$1 bait</translation>
 <translation id="7361297102842600584">Klik kanan untuk menjalankan <ph name="PLUGIN_NAME" /></translation>
-<translation id="7361537270840348817">Putuskan sambungan telefon anda dari Chromebook</translation>
+<translation id="7361537270840348817">Putuskan sambungan telefon anda daripada Chromebook</translation>
 <translation id="7364796246159120393">Pilih Fail</translation>
 <translation id="7366415735885268578">Tambahkan tapak</translation>
 <translation id="7366909168761621528">Data penyemakan imbas</translation>

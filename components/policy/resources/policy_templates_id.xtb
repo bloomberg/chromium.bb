@@ -24,6 +24,12 @@
       Jika kebijakan ini disetel ke false atau tidak disetel, cookie yang ditetapkan IdP akan ditransfer ke profil pengguna selama proses masuk pertamanya di perangkat saja.
 
       Kebijakan ini memengaruhi pengguna yang domainnya cocok dengan domain pendaftaran perangkat saja. Untuk pengguna lainnya, cookie yang ditetapkan oleh IdP akan ditransfer ke profil pengguna selama proses masuk pertamanya hanya di perangkat.</translation>
+<translation id="1035385378988781231">Kebijakan ini mengontrol apakah fitur Berbagi File Jaringan untuk <ph name="PRODUCT_NAME" /> akan menggunakan NTLM untuk autentikasi.
+
+Jika kebijakan ini disetel ke True, NTLM akan digunakan untuk autentikasi ke URL berbagi SMB jika diperlukan.
+Jika kebijakan ini disetel ke False, autentikasi NTLM ke berbagi SMB akan dinonaktifkan.
+
+Jika kebijakan ini tidak disetel, setelan default-nya dinonaktifkan bagi pengguna yang dikelola perusahaan dan diaktifkan bagi pengguna yang tidak dikelola.</translation>
 <translation id="1040446814317236570">Aktifkan penyembunyian URL PAC (untuk https://)</translation>
 <translation id="1044878202534415707">Melaporkan statistik hardware, seperti penggunaan CPU/RAM.
 
@@ -64,7 +70,7 @@
       Jika kebijakan ini tidak disetel, direktori cache default akan digunakan dan pengguna dapat menggantikannya dengan tanda baris perintah '--disk-cache-dir'.</translation>
 <translation id="113521240853905588">Mengonfigurasi bahasa yang dapat digunakan sebagai bahasa pilihan oleh <ph name="PRODUCT_OS_NAME" />.
 
-      Jika kebijakan ini ditetapkan, pengguna hanya dapat menambahkan satu bahasa dari pilihan yang tercantum di kebijakan ini ke daftar bahasa pilihan. Jika kebijakan ini tidak ditetapkan atau ditetapkan ke daftar kosong, pengguna dapat menentukan bahasa apa pun sebagai bahasa pilihan. Jika kebijakan ini ditetapkan ke daftar yang memuat nilai yang tidak valid, semua nilai yang tidak valid akan diabaikan. Jika sebelumnya pengguna menambahkan beberapa bahasa yang tidak diizinkan oleh kebijakan ini ke daftar bahasa pilihan, bahasa tersebut akan dihapus. Jika pengguna pernah mengonfigurasi <ph name="PRODUCT_OS_NAME" /> untuk ditampilkan dalam salah satu bahasa yang tidak izinkan oleh kebijakan ini, bahasa tampilan akan dialihkan ke bahasa UI yang diizinkan saat pengguna login kembali. Jika tidak, <ph name="PRODUCT_OS_NAME" /> akan beralih ke nilai valid pertama yang ditentukan oleh kebijakan ini, atau ke lokal fallback (saat ini en-US), jika kebijakan ini hanya memuat entri yang tidak valid.</translation>
+      Jika kebijakan ini ditetapkan, pengguna hanya dapat menambahkan satu bahasa dari pilihan yang tercantum di kebijakan ini ke daftar bahasa pilihan. Jika kebijakan ini tidak ditetapkan atau ditetapkan ke daftar kosong, pengguna dapat menentukan bahasa apa pun sebagai bahasa pilihan. Jika kebijakan ini ditetapkan ke daftar yang memuat nilai yang tidak valid, semua nilai yang tidak valid akan diabaikan. Jika sebelumnya pengguna menambahkan beberapa bahasa yang tidak diizinkan oleh kebijakan ini ke daftar bahasa pilihan, bahasa tersebut akan dihapus. Jika pengguna pernah mengonfigurasi <ph name="PRODUCT_OS_NAME" /> untuk ditampilkan dalam salah satu bahasa yang tidak diizinkan oleh kebijakan ini, bahasa tampilan akan dialihkan ke bahasa UI yang diizinkan saat pengguna login kembali. Jika tidak, <ph name="PRODUCT_OS_NAME" /> akan beralih ke nilai valid pertama yang ditentukan oleh kebijakan ini, atau ke lokal fallback (saat ini en-US), jika kebijakan ini hanya memuat entri yang tidak valid.</translation>
 <translation id="1135264353752122851">Mengonfigurasi tata letak keyboard yang diizinkan untuk sesi pengguna <ph name="PRODUCT_OS_NAME" />.
 
       Jika kebijakan ini disetel, pengguna hanya dapat memilih salah satu metode masukan yang ditentukan oleh kebijakan ini. Jika kebijakan ini tidak disetel atau disetel ke daftar kosong, pengguna dapat memilih semua metode masukan yang didukung. Jika metode masukan saat ini tidak diizinkan oleh kebijakan ini, metode masukan akan dialihkan ke tata letak keyboard hardware (jika diizinkan) atau entri valid pertama di daftar ini. Semua metode masukan yang tidak valid atau tidak didukung di daftar ini akan diabaikan.</translation>
@@ -94,6 +100,13 @@
       Default adalah RollbackDisabled.</translation>
 <translation id="1221359380862872747">Muat url yang ditentukan di proses masuk demo</translation>
 <translation id="1223789468190631420">Safe Browsing mengaktifkan status untuk sumber tepercaya</translation>
+<translation id="122899932962115297">Daftar yang diizinkan mengontrol mode buka kunci cepat mana yang dapat dikonfigurasi dan digunakan pengguna untuk membuka layar kunci.
+
+Nilai ini adalah daftar string; entri daftar yang valid adalah: "semua", "PIN", "SIDIK JARI". Menambahkan "semua" ke daftar menandakan bahwa setiap mode buka kunci cepat tersedia bagi pengguna, termasuk mode yang digunakan di masa mendatang. Jika tidak, hanya mode buka kunci cepat yang ada dalam daftar akan tersedia.
+
+Misalnya, untuk mengaktifkan setiap mode buka kunci cepat, gunakan ["semua"]. Untuk mengizinkan buka kunci PIN saja, gunakan ["PIN"]. Untuk mengizinkan PIN dan sidik jari, gunakan ["PIN", "SIDIK JARI"]. Untuk menonaktifkan semua mode buka kunci cepat, gunakan [].
+
+Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat yang dikelola.</translation>
 <translation id="123081309365616809">Mengaktifkan casting konten ke perangkat</translation>
 <translation id="1243570869342663665">Mengontrol pemfilteran konten khusus dewasa SafeSites.</translation>
 <translation id="1257550411839719984">Setel direktori download default</translation>
@@ -622,6 +635,7 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 
       Jika kebijakan ini tidak ditetapkan, setelan defaultnya adalah tidak diizinkan untuk pengguna yang dikelola dan diizinkan untuk pengguna yang tidak dikelola.</translation>
 <translation id="2660846099862559570">Jangan pernah gunakan proxy</translation>
+<translation id="2672012807430078509">Kontrol yang mengaktifkan NTLM sebagai protokol autentikasi untuk pemasangan SMB</translation>
 <translation id="267596348720209223">Menentukan penyandiaksaraan karakter yang didukung oleh penyedia penelusuran. Penyandiaksaraan adalah nama-nama halaman kode seperti UTF-8, GB2312, dan ISO-8859-1. Kode tersebut dicoba dalam urutan yang disediakan. Kebijakan ini bersifat opsional. Jika tidak disetel, default yang akan digunakan adalah UTF-8. Kebijakan ini hanya dipatuhi jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
 <translation id="268577405881275241">Aktifkan fitur proxy kompresi data</translation>
 <translation id="2693108589792503178">Mengonfigurasi URL ubah sandi.</translation>
@@ -957,6 +971,11 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
       Jika kebijakan dinonaktifkan, Isolasi Situs eksplisit tidak akan terjadi dan uji coba kolom IsolateOrigins dan SitePerProcess akan dinonaktifkan. Pengguna tetap dapat mengaktifkan IsolateOrigins secara manual.
       Jika kebijakan tidak dikonfigurasi, setelan isolasi situs default platform akan digunakan untuk layar login.
       </translation>
+<translation id="3748900290998155147">Menentukan apakah penguncian layar saat aktif diizinkan. Penguncian layar saat aktif dapat diminta dengan ekstensi melalui power management extension API dan dengan aplikasi ARC.
+
+Jika kebijakan ini disetel ke true atau tidak disetel, penguncian layar saat aktif akan diterima untuk pengelolaan daya.
+
+Jika kebijakan ini disetel ke false, permintaan penguncian layar saat aktif akan diabaikan.</translation>
 <translation id="3750220015372671395">Blokir pembuatan kunci di situs ini</translation>
 <translation id="3756011779061588474">Blokir mode pengembang</translation>
 <translation id="3758089716224084329">Memungkinkan Anda menentukan server proxy yang digunakan oleh <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan proxy.
@@ -991,6 +1010,11 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 
           Jika kebijakan "EnableMediaRouter" disetel ke false, setelan kebijakan ini tidak akan berpengaruh, dan ikon toolbar tidak akan ditampilkan.</translation>
 <translation id="3788662722837364290">Setelan pengelolaan daya saat pengguna sedang menganggur</translation>
+<translation id="3790085888761753785">Jika setelan ini diaktifkan, pengguna akan diizinkan untuk login ke akun mereka dengan Smart Lock. Setelan ini lebih longgar dibandingkan perilaku Smart Lock biasa yang hanya mengizinkan pengguna membuka kunci layar mereka.
+
+Jika setelan ini dinonaktifkan, pengguna tidak akan diizinkan untuk menggunakan fitur Smart Lock Signin.
+
+Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengguna yang dikelola perusahaan dan diizinkan bagi pengguna yang tidak dikelola.</translation>
 <translation id="379602782757302612">Memungkinkan Anda menentukan ekstensi mana yang TIDAK dapat diinstal pengguna. Ekstensi yang sudah diinstal akan dinonaktifkan jika termasuk dalam daftar yang tidak diizinkan, tanpa memberikan opsi kepada pengguna untuk mengaktifkannya. Setelah ekstensi yang dinonaktifkan dihapus dari daftar karena termasuk dalam daftar yang tidak diizinkan, ekstensi akan diaktfikan kembali secara otomatis.
 
           Nilai pada daftar yang tidak diizinkan '*' berarti semua ekstensi termasuk dalam daftar yang tidak diizinkan sampai ekstensi tersebut dicantumkan secara eksplisit dalam daftar yang diizinkan.
@@ -1092,6 +1116,9 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 
           Jika tidak disetel atau disetel ke False, pengguna akan dapat mentransfer file ke Google Drive.</translation>
 <translation id="3915395663995367577">URL untuk proxy file .pac</translation>
+<translation id="3925020515212192040">Menentukan daftar berbagi file jaringan yang dikonfigurasi sebelumnya.
+
+Setiap item daftar kebijakan adalah objek yang terdiri dari dua anggota: "share_url" dan "mode". "share_url" harus berupa URL berbagi dan "mode" harus berupa "drop_down" yang menunjukkan bahwa "share_url" akan ditambahkan ke drop-down penemuan berbagi.</translation>
 <translation id="3939893074578116847">Kirimkan paket jaringan ke server pengelolaan untuk memantau status online,
       untuk memungkinkan server mendeteksi jika perangkat sedang offline.
 
@@ -1238,6 +1265,7 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 <translation id="4377599627073874279">Izinkan semua situs menampilkan semua gambar</translation>
 <translation id="437791893267799639">Kebijakan tidak disetel, jangan izinkan migrasi data dan ARC</translation>
 <translation id="4389091865841123886">Mengonfigurasi pengesahan jarak jauh dengan mekanisme TPM.</translation>
+<translation id="4408428864159735559">Daftar berbagi file jaringan yang telah dikonfigurasikan sebelumnya.</translation>
 <translation id="4410236409016356088">Aktifkan pembatasan bandwidth jaringan</translation>
 <translation id="441217499641439905">Nonaktifkan Google Drive melalui koneksi seluler di aplikasi File <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4418726081189202489">Menyetel kebijakan ini ke false akan menghentikan <ph name="PRODUCT_NAME" /> yang terkadang mengirim kueri ke server Google, untuk mengambil stempel waktu yang akurat. Kueri ini akan diaktifkan jika kebijakan disetel ke True atau tidak disetel.</translation>
@@ -1542,7 +1570,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Jika kebijakan ini tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan menggunakan versi maksimum default.
 
-      Jika kebijakan ini dikonfigurasi, produk dapat ditetapkan ke salah satu nilai berikut: "tls1.2" atau "tls1.3". Setelah ditetapan, <ph name="PRODUCT_NAME" /> tidak akan menggunakan versi SSL/TLS yang lebih baru daripada versi yang ditentukan. Nilai yang tidak dikenal akan diabaikan.</translation>
+      Jika kebijakan ini dikonfigurasi, produk dapat ditetapkan ke salah satu nilai berikut: "tls1.2" atau "tls1.3". Setelah ditetapkan, <ph name="PRODUCT_NAME" /> tidak akan menggunakan versi SSL/TLS yang lebih baru daripada versi yang ditentukan. Nilai yang tidak dikenal akan diabaikan.</translation>
 <translation id="5330684698007383292">Izinkan <ph name="PRODUCT_FRAME_NAME" /> menangani jenis konten berikut</translation>
 <translation id="5365946944967967336">Tampilkan tombol Layar Utama di toolbar</translation>
 <translation id="5366745336748853475">Memungkinkan Anda menentukan daftar pola URL yang menetapkan situs tempat sertifikat klien dipilih otomatis pada layar login dalam bingkai yang menjadi host alur SAML, jika situs meminta sertifikat. Contoh penggunaan adalah mengonfigurasi sertifikat tingkat perangkat untuk dimunculkan ke SAML IdP.
@@ -1933,6 +1961,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Untuk mengontrol situs yang diizinkan untuk menjalankan Flash, lihat kebijakan "DefaultPluginsSetting", "PluginsAllowedForUrls", dan "PluginsBlockedForUrls".
 
       Jika setelan ini dinonaktifkan atau tidak disetel, konten Flash dari asal lainnya atau konten kecil dapat diblokir.</translation>
+<translation id="6532769014584932288">Izinkan penguncian layar saat aktif</translation>
 <translation id="653608967792832033">Menentukan panjang waktu tanpa masukan pengguna sebelum layar terkunci ketika menggunakan daya baterai.
 
           Saat kebijakan ini disetel ke nilai yang lebih besar dari nol, nilai tersebut akan menentukan panjang waktu pengguna tetap menganggur sebelum <ph name="PRODUCT_OS_NAME" /> mengunci layar.
@@ -2222,6 +2251,11 @@ Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translatio
 <translation id="7167436895080860385">Mengizinkan pengguna menampilkan sandi di Pengelola Sandi (tak lagi digunakan)</translation>
 <translation id="7173856672248996428">Profil singkat</translation>
 <translation id="717630378807352957">Izinkan semua printer dari file konfigurasi.</translation>
+<translation id="7176721759719212761">Menentukan apakah penguncian layar saat aktif diizinkan. Penguncian layar saat aktif dapat diminta dengan ekstensi melalui power management extension API dan dengan aplikasi ARC.
+
+Jika kebijakan ini disetel ke true atau tidak disetel, penguncian layar saat aktif akan diterima untuk pengelolaan daya, kecuali AllowWakeLocks disetel ke false.
+
+Jika kebijakan ini disetel ke false, permintaan penguncian layar saat aktif akan didemosikan ke permintaan penguncian layar saat aktif di sistem.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Jenis sambungan yang diizinkan untuk pembaruan</translation>
 <translation id="7194407337890404814">Nama penyedia penelusuran default</translation>
@@ -2235,6 +2269,11 @@ Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translatio
           Pemutaran otomatis hanya diizinkan untuk domain yang secara eksplisit dicantumkan di kebijakan <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Jika Anda ingin mengaktifkan pemutaran otomatis untuk semua situs, pertimbangkanlah menambahkan http://* dan https://* ke daftar ini.
 
           Jika kebijakan ini tidak disetel, pengguna dapat mengubah setelan ini secara manual.</translation>
+<translation id="7229975860249300121">Berisi ekspresi reguler yang digunakan untuk menentukan akun Google mana yang dapat disetel sebagai akun utama browser di <ph name="PRODUCT_NAME" /> (akun yang dipilih selama alur keikutsertaan Sinkronisasi).
+
+Error yang sesuai ditampilkan jika pengguna mencoba untuk menyetel akun utama browser dengan nama pengguna yang tidak cocok dengan pola ini.
+
+Jika kebijakan ini tidak disetel atau kosong, pengguna dapat menyetel akun Google apa pun sebagai akun utama browser di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="723103540848640830">Setel panjang minimum PIN layar kunci.</translation>
 <translation id="7232816984286843471">Jika kebijakan ini ditetapkan ke false, pengguna tak terafiliasi tidak akan diizinkan menggunakan Crostini.
 
@@ -2488,6 +2527,7 @@ Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translatio
 
       Pengenal jenis koneksi yang diketahui saat ini adalah "ethernet", "wifi", "wimax", "bluetooth", dan "cellular".</translation>
 <translation id="7763614521440615342">Tampilkan saran konten di halaman Tab Baru</translation>
+<translation id="7765879851993224640">Izinkan Smart Lock Signin digunakan.</translation>
 <translation id="7774768074957326919">Gunakan setelan proxy sistem</translation>
 <translation id="7775831859772431793">Anda dapat menetapkan URL server proxy di sini.
 
@@ -2596,6 +2636,7 @@ Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translatio
       Jika diubah ke False, kebijakan ini berlaku untuk memulai mesin virtual baru, namun tidak mematikan mesin virtual yang sedang berjalan.
       Jika kebijakan ini tidak ditetapkan pada perangkat terkelola, perangkat tidak diizinkan untuk menjalankan mesin virtual.
       Perangkat tidak terkelola diizinkan untuk menjalankan mesin virtual.</translation>
+<translation id="8001701200415781021">Batasi akun Google mana yang diizinkan untuk disetel sebagai akun utama browser di <ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Putar layar sebesar 0 derajat</translation>
 <translation id="8033913082323846868">Kebijakan ini tidak digunakan lagi di M70. Sebagai gantinya, gunakan AutofillAddressEnabled dan AutofillCreditCardEnabled.
 
@@ -2827,6 +2868,25 @@ Kebijakan akan dihapus pada M75.</translation>
       Jika kebijakan tidak disetel atau disetel ke BENAR, semua pengguna diizinkan menggunakan ARC (kecuali ARC dinonaktifkan dengan cara lain).
 
       Perubahan kebijakan hanya akan diterapkan saat ARC tidak sedang berjalan, mis., saat Chrome OS dimulai.</translation>
+<translation id="8615400197788843468">Mengaktifkan fitur login yang dibatasi <ph name="PRODUCT_NAME" /> di G Suite dan mencegah pengguna untuk mengubah setelan ini.
+
+Jika Anda menetapkan setelan ini, pengguna hanya akan dapat mengakses Aplikasi
+Google yang menggunakan akun dari domain yang ditentukan (perlu diperhatikan bahwa untuk mengizinkan
+akun gmail.com/googlemail.com, Anda harus menambahkan "consumer_accounts"
+(tanpa tanda kutip) ke daftar domain).
+
+Setelan ini akan mencegah pengguna untuk login, dan menambahkan Akun
+Sekunder, di perangkat yang dikelola yang memerlukan autentikasi Google, jika
+akun tersebut tidak termasuk dalam daftar domain yang diizinkan yang disebutkan di atas.
+
+Jika Anda membiarkan setelan ini kosong/tidak dikonfigurasi, pengguna dapat
+mengakses G Suite menggunakan akun apa pun.
+
+Kebijakan ini menyebabkan header X-GoogApps-Allowed-Domains ditambahkan ke
+semua permintaan HTTP dan HTTPS ke semua domain google.com, seperti yang dijelaskan di
+https://support.google.com/a/answer/1668854.
+
+Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 <translation id="8631434304112909927">sampai versi <ph name="UNTIL_VERSION" /></translation>
 <translation id="863319402127182273">Untuk aplikasi Android, kebijakan ini hanya memengaruhi kamera built-in. Jika kebijakan ini disetel ke true, kamera akan dinonaktifkan untuk semua aplikasi Android, tanpa pengecualian.</translation>
 <translation id="8649763579836720255">Perangkat Chrome OS dapat menggunakan atestasi jarak jauh (Akses Terverifikasi) untuk mendapatkan sertifikat yang diberikan oleh Chrome OS CA yang menyatakan bahwa perangkat tersebut memenuhi syarat untuk memutar konten yang dilindungi. Proses ini mencakup pengiriman informasi dukungan hardware ke Chrome OS CA yang mengidentifikasi perangkat tersebut secara unik.

@@ -418,7 +418,7 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="1598233202702788831">Administrátor aktualizace zakázal.</translation>
 <translation id="1600857548979126453">Získat přístup k ladicímu programu stránky na serveru</translation>
 <translation id="1601560923496285236">Použít</translation>
-<translation id="1603300902586586390">Nechat aplikace Linux otevřít tento počet souborů: $1.</translation>
+<translation id="1603300902586586390">Nechat aplikace Linux otevřít tyto soubory (celkem $1).</translation>
 <translation id="1603914832182249871">(Anonymní režim)</translation>
 <translation id="1607139524282324606">Vymazat položku</translation>
 <translation id="1608626060424371292">Odebrat tohoto uživatele</translation>
@@ -681,7 +681,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="197560921582345123">Může upravovat</translation>
 <translation id="1975841812214822307">Odebrat...</translation>
 <translation id="1976150099241323601">Přihlášení do zabezpečeného zařízení</translation>
-<translation id="1976315108329706992">Nyní můžete používat aplikace pro Android.</translation>
 <translation id="1976323404609382849">Byly zablokovány soubory cookie z několika webů.</translation>
 <translation id="1977965994116744507">Chcete-li odemknout své zařízení <ph name="DEVICE_TYPE" />, umístěte telefon blíže k němu.</translation>
 <translation id="1979280758666859181">Přepínáte na kanál s nižší verzí <ph name="PRODUCT_NAME" />. Změna kanálu bude použita, až bude verze v nově zvoleném kanálu odpovídat verzi nainstalované v zařízení.</translation>
@@ -1816,7 +1815,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="370415077757856453">Byl zablokován JavaScript</translation>
 <translation id="3704331259350077894">Ukončení operace</translation>
 <translation id="3705722231355495246">-</translation>
-<translation id="3706463572498736864">Stránky na tabulku</translation>
+<translation id="3706463572498736864">Stránek na tabulku</translation>
 <translation id="370665806235115550">Načítání...</translation>
 <translation id="3709244229496787112">Prohlížeč byl zavřen před dokončením stahování.</translation>
 <translation id="3711895659073496551">Pozastavit</translation>
@@ -3353,7 +3352,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="6029292188939175871">smazat [<ph name="FINGERPRINT_NAME" />], tlačítko</translation>
 <translation id="6029587122245504742">Nejpomalejší</translation>
 <translation id="6032912588568283682">Systém souborů</translation>
-<translation id="6034662038931255275">Aktualizace operačního systému byla úspěšná</translation>
 <translation id="6038929619733116134">Blokovat, pokud web zobrazuje rušivé nebo zavádějící reklamy</translation>
 <translation id="6039651071822577588">Slovník vlastností sítě je v nesprávném tvaru</translation>
 <translation id="604001903249547235">Zálohování do cloudu</translation>
@@ -3715,7 +3713,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="656293578423618167">Cesta nebo název souboru jsou příliš dlouhé. Použijte kratší název nebo vyberte jiné umístění.</translation>
 <translation id="656398493051028875">Mazání souboru <ph name="FILENAME" />...</translation>
 <translation id="6567688344210276845">Nelze načíst ikonu „<ph name="ICON" />“ pro akci stránky.</translation>
-<translation id="6571979863037191371">Odpojte telefon od Chromebooku. Již se nebudou připojovat automaticky.</translation>
+<translation id="6571979863037191371">Odpojte telefon od Chromebooku. Již se nebudou propojovat automaticky.</translation>
 <translation id="657402800789773160">&amp;Načíst tuto stránku znovu</translation>
 <translation id="6577284282025554716">Stahování zrušeno: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Šifrovat synchronizovaná hesla pomocí vašeho uživatelského jména a hesla</translation>

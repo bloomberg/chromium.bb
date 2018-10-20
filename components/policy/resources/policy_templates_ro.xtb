@@ -1580,9 +1580,9 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Dacă această politică este dezactivată, toate interfețele de utilizare ale <ph name="PRODUCT_NAME" /> care îi permit utilizatorului să se deconecteze sau să modifice conexiunile VPN sunt dezactivate.
 
-      Dacă această politică nu este setată sau activată, utilizatorii pot să se deconecteze sau să modifice conexiunile VPN ca de obicei.
+      Dacă această politică nu este setată sau este activată, utilizatorii pot să se deconecteze sau să modifice conexiunile VPN ca de obicei.
 
-      În cazul în care conexiunea VPN este creată printr-o aplicație VPN, IU din aplicație nu va fi afectată de această politică. Astfel, este posibil ca utilizatorul să mai poată utiliza aplicația pentru a modifica conexiunea VPN.
+      În cazul în care conexiunea VPN este creată printr-o aplicație VPN, IU din aplicație nu va fi afectată de această politică. Astfel, utilizatorul poate utiliza aplicația pentru a modifica conexiunea VPN.
 
       Această politică a fost creată pentru a fi folosită împreună cu funcția „VPN activat permanent”, care permite administratorului să decidă dacă stabilește o conexiune VPN la pornire.</translation>
 <translation id="5405289061476885481">Configurează care aspecte ale tastaturii sunt permise pe ecranul de conectare din <ph name="PRODUCT_OS_NAME" />.
@@ -2329,9 +2329,9 @@ nu poate fi stabilit de utilizator din setările browserului.
 
       Această politică permite administratorilor să ofere utilizatorilor configurații ale imprimantelor.
 
-      <ph name="PRINTER_DISPLAY_NAME" /> și <ph name="PRINTER_DESCRIPTION" /> sunt șiruri fără formă care pot fi personalizate pentru a selecta mai ușor o imprimantă. <ph name="PRINTER_MANUFACTURER" /> și <ph name="PRINTER_MODEL" /> servesc la simplificarea identificării imprimantei de utilizatorii finali și reprezintă producătorul și modelul imprimantei. <ph name="PRINTER_URI" /> trebuie să fie o adresă care poate fi accesată de pe computerul unui client, inclusiv <ph name="URI_SCHEME" />, <ph name="URI_PORT" />, și <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> este opțional. Dacă este specificat, acesta este folosit pentru a elimina imprimantele <ph name="ZEROCONF_DISCOVERY" /> dublură.
+      <ph name="PRINTER_DISPLAY_NAME" /> și <ph name="PRINTER_DESCRIPTION" /> sunt șiruri cu formă liberă care pot fi personalizate pentru a selecta mai ușor o imprimantă. <ph name="PRINTER_MANUFACTURER" /> și <ph name="PRINTER_MODEL" /> servesc la simplificarea identificării imprimantei de utilizatorii finali și reprezintă producătorul și modelul imprimantei. <ph name="PRINTER_URI" /> trebuie să fie o adresă care poate fi accesată de pe un computer client, inclusiv <ph name="URI_SCHEME" />, <ph name="URI_PORT" />, și <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> este opțional. Dacă este specificat, acesta este folosit pentru a elimina imprimantele <ph name="ZEROCONF_DISCOVERY" /> dublură.
 
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> trebuie să corespundă cu unul dintre șirurile care reprezintă o imprimantă compatibilă <ph name="PRODUCT_NAME" />. Șirul va fi folosit pentru a identifica și instala PPD-ul corespunzător pentru imprimantă. Mai multe informații pot fi găsite la https://support.google.com/chrome?p=noncloudprint.
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> trebuie să corespundă unuia dintre șirurile care reprezintă o imprimantă compatibilă cu <ph name="PRODUCT_NAME" />. Șirul va fi folosit pentru a identifica și instala PPD-ul corespunzător pentru imprimantă. Mai multe informații pot fi găsite la https://support.google.com/chrome?p=noncloudprint.
 
       Configurarea imprimantei este finalizată odată cu prima folosire a unei imprimante.  PPD-urile nu sunt descărcate înainte de folosirea imprimantei.  După aceea, PPD-urile folosite des sunt stocate în memoria cache.
 
@@ -2745,7 +2745,7 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 <translation id="8359734107661430198">Activează API-ul ExampleDeprecatedFeature până pe 02.09.2008</translation>
 <translation id="8367209241899435947">Activează Chrome Cleanup în Windows</translation>
 <translation id="8369602308428138533">Interval până la oprirea ecranului la funcționarea pe c.a.</translation>
-<translation id="8371178326720637170">Permite extensiilor gestionate să folosească API-ul platformei hardware de întreprindere</translation>
+<translation id="8371178326720637170">Permite extensiilor gestionate să folosească API-ul Enterprise Hardware Platform</translation>
 <translation id="8382184662529825177">Permiteți utilizarea atestării la distanță pentru protejarea conținutului pe dispozitiv</translation>
 <translation id="838870586332499308">Activează roamingul de date</translation>
 <translation id="8390049129576938611">Dezactivează vizualizatorul PDF intern în <ph name="PRODUCT_NAME" />. Îl tratează ca pe o descărcare și permite utilizatorului să deschidă fișierele PDF folosind aplicația prestabilită.

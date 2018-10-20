@@ -678,7 +678,6 @@
 <translation id="197560921582345123">Kan redigere</translation>
 <translation id="1975841812214822307">Fjern...</translation>
 <translation id="1976150099241323601">Log ind på sikkerhedsenhed</translation>
-<translation id="1976315108329706992">Du kan nu bruge Android-apps.</translation>
 <translation id="1976323404609382849">Cookies fra flere websites er blokeret.</translation>
 <translation id="1977965994116744507">Flyt din telefon tættere på din <ph name="DEVICE_TYPE" /> for at låse den op.</translation>
 <translation id="1979280758666859181">Du er ved at skifte til en kanal med en ældre version af <ph name="PRODUCT_NAME" />. Kanalskiftet træder i kraft, når kanalversionen matcher den version, der i øjeblikket er installeret på din enhed.</translation>
@@ -3355,7 +3354,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6029292188939175871">slet [<ph name="FINGERPRINT_NAME" />], knap</translation>
 <translation id="6029587122245504742">Langsomst</translation>
 <translation id="6032912588568283682">Filsystem</translation>
-<translation id="6034662038931255275">OS-opdateringen er fuldført</translation>
 <translation id="6038929619733116134">Bloker, hvis websitet viser påtrængende eller vildledende annoncer</translation>
 <translation id="6039651071822577588">Forkert ordbog for netværksegenskaber</translation>
 <translation id="604001903249547235">Sikkerhedskopiering i skyen</translation>

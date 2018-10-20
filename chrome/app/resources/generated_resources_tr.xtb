@@ -681,7 +681,6 @@
 <translation id="197560921582345123">Düzenleyebilir</translation>
 <translation id="1975841812214822307">Kaldır...</translation>
 <translation id="1976150099241323601">Güvenlik Cihazında oturum açın</translation>
-<translation id="1976315108329706992">Artık Android uygulamalarını kullanabilirsiniz.</translation>
 <translation id="1976323404609382849">Birden çok siteden çerez alma engellendi.</translation>
 <translation id="1977965994116744507"><ph name="DEVICE_TYPE" /> cihazınızın kilidini açmak için telefonunuzu cihaza yaklaştırın.</translation>
 <translation id="1979280758666859181"><ph name="PRODUCT_NAME" /> ürününün eski sürümünü destekleyen bir kanala geçiyorsunuz. Kanal değişikliği, kanalın sürümü cihazınızda şu an yüklenmiş olan sürümle eşleştiğinde uygulanacak.</translation>
@@ -3358,7 +3357,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6029292188939175871">[<ph name="FINGERPRINT_NAME" />] parmak izini sil, düğme</translation>
 <translation id="6029587122245504742">En yavaş</translation>
 <translation id="6032912588568283682">Dosya sistemi</translation>
-<translation id="6034662038931255275">OS güncellemesi başarılı</translation>
 <translation id="6038929619733116134">Site, araya giren veya yanıltıcı reklamlar gösteriyorsa engelleyin</translation>
 <translation id="6039651071822577588">Ağ mülkü sözlüğü bozuk</translation>
 <translation id="604001903249547235">Bulut yedekleme</translation>
@@ -3907,7 +3905,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6853388645642883916">Güncelleyici uyku modunda</translation>
 <translation id="68541483639528434">Diğer sekmeleri kapat</translation>
 <translation id="6856623341093082836">Dokunmatik ekranınızı kurun ve doğruluğunu ayarlayın</translation>
-<translation id="6857699260879628349">Yapılandırma bilgisi alub</translation>
+<translation id="6857699260879628349">Yapılandırma bilgilerini alın</translation>
 <translation id="6860097299815761905">Proxy ayarları...</translation>
 <translation id="6860427144121307915">Sekmede aç</translation>
 <translation id="6862635236584086457">Bu klasöre kaydedilen tüm dosyalar otomatik bir şekilde çevrimiçi olarak yedeklenir</translation>

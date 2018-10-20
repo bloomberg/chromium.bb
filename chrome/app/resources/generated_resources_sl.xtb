@@ -681,7 +681,6 @@
 <translation id="197560921582345123">Urejanje dovoljeno</translation>
 <translation id="1975841812214822307">Odstrani ...</translation>
 <translation id="1976150099241323601">Prijava v varnostno napravo</translation>
-<translation id="1976315108329706992">Zdaj lahko uporabljate aplikacije za Android.</translation>
 <translation id="1976323404609382849">Piškotki z več mest so blokirani.</translation>
 <translation id="1977965994116744507">Približajte telefon, če želite odkleniti napravo <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1979280758666859181">Preklapljate na kanal s starejšo različico brskalnika <ph name="PRODUCT_NAME" />. Sprememba kanala bo uporabljena, ko se različica kanala ujema z različico, ki je trenutno nameščena v vaši napravi.</translation>
@@ -3358,7 +3357,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6029292188939175871">izbriši [<ph name="FINGERPRINT_NAME" />], gumb</translation>
 <translation id="6029587122245504742">Najpočasnejša</translation>
 <translation id="6032912588568283682">Datotečni sistem</translation>
-<translation id="6034662038931255275">Posodobitev operacijskega sistema je uspela</translation>
 <translation id="6038929619733116134">Blokiraj, če spletno mesto prikazuje vsiljive ali zavajajoče oglase</translation>
 <translation id="6039651071822577588">Slovar lastnosti omrežja je popačen</translation>
 <translation id="604001903249547235">Varnostno kopiranje v oblak</translation>
@@ -5416,7 +5414,7 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="9137916601698928395">Odpri povezavo kot <ph name="USER" /></translation>
 <translation id="9138978632494473300">Dodajte bližnjice tem mestom:</translation>
 <translation id="9140067245205650184">Uporabljate nepodprto zastavico funkcije: <ph name="BAD_FLAG" />. Ogroženi bosta stabilnost in varnost.</translation>
-<translation id="9147304170847707004">Način preverjanja</translation>
+<translation id="9147304170847707004">Način preverjanja pristnosti</translation>
 <translation id="9147392381910171771">&amp;Možnosti</translation>
 <translation id="9148058034647219655">Zapri</translation>
 <translation id="9148116311817999634">Nastavitev zaklepanja zaslona zaradi varnosti</translation>

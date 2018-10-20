@@ -154,6 +154,7 @@
 <translation id="3454224730401036106">より安全なネットワークに接続が切り替えられました</translation>
 <translation id="3477079411857374384">Control+Shift+Space</translation>
 <translation id="3510164367642747937">マウスカーソルをハイライト表示する</translation>
+<translation id="3510503721818156981">Chromebook が新しいスマートフォンに接続されました</translation>
 <translation id="3513798432020909783">このアカウントは <ph name="MANAGER_EMAIL" /> により管理されています</translation>
 <translation id="3573179567135747900">「<ph name="FROM_LOCALE" />」に戻します（再起動が必要です）</translation>
 <translation id="3595596368722241419">バッテリー残量: 満</translation>
@@ -197,6 +198,7 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">虫メガネ</translation>
 <translation id="4351433414020964307">アシスタントを読み込んでいます...</translation>
+<translation id="435527878592612277">写真を選択</translation>
 <translation id="4378551569595875038">接続中...</translation>
 <translation id="4379531060876907730">タッチペン ツール</translation>
 <translation id="4421231901400348175">リモート サポート経由で <ph name="HELPER_NAME" /> と画面の制御を共有しています。</translation>

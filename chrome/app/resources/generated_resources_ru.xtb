@@ -417,7 +417,7 @@
 <translation id="1598233202702788831">Функция обновления отключена администратором.</translation>
 <translation id="1600857548979126453">Доступ к работе отладчика страниц</translation>
 <translation id="1601560923496285236">Применить</translation>
-<translation id="1603300902586586390">Разрешить Linux открывать файлы $1.</translation>
+<translation id="1603300902586586390">Разрешить Linux-приложениям открывать несколько ($1) файлов.</translation>
 <translation id="1603914832182249871">(инкогнито)</translation>
 <translation id="1607139524282324606">Очистить запись</translation>
 <translation id="1608626060424371292">Удалить профиль</translation>
@@ -680,7 +680,6 @@
 <translation id="197560921582345123">Редактирование</translation>
 <translation id="1975841812214822307">Удалить</translation>
 <translation id="1976150099241323601">Вход в устройство безопасности</translation>
-<translation id="1976315108329706992">Теперь вы можете пользоваться приложениями для Android</translation>
 <translation id="1976323404609382849">Файлы cookie с различных сайтов заблокированы.</translation>
 <translation id="1977965994116744507">Чтобы снять блокировку, поднесите телефон ближе к устройству <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1979280758666859181">Вы переходите на канал обновления с более ранней версией <ph name="PRODUCT_NAME" />. Чтобы изменения вступили в силу, версия канала и текущая версия на вашем устройстве должны совпадать.</translation>
@@ -3358,7 +3357,6 @@
 <translation id="6029292188939175871">Кнопка удалить [<ph name="FINGERPRINT_NAME" />]</translation>
 <translation id="6029587122245504742">Минимальная</translation>
 <translation id="6032912588568283682">Файловая система</translation>
-<translation id="6034662038931255275">Обновление ОС завершено</translation>
 <translation id="6038929619733116134">Блокировать, если сайт показывает навязчивую или вводящую в заблуждение рекламу.</translation>
 <translation id="6039651071822577588">Словарь сетевых свойств поврежден</translation>
 <translation id="604001903249547235">Резервное копирование в облако</translation>

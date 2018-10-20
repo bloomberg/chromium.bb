@@ -681,7 +681,6 @@
 <translation id="197560921582345123">Éditeur</translation>
 <translation id="1975841812214822307">Supprimer…</translation>
 <translation id="1976150099241323601">Se connecter au dispositif de sécurité</translation>
-<translation id="1976315108329706992">Vous pouvez maintenant utiliser les applications Android.</translation>
 <translation id="1976323404609382849">Les cookies de plusieurs sites ont été bloqués.</translation>
 <translation id="1977965994116744507">Rapprochez votre téléphone pour déverrouiller votre <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1979280758666859181">Vous souhaitez installer une ancienne version de <ph name="PRODUCT_NAME" />. Ce changement sera appliqué dès que cette version correspondra à celle qui est installée sur votre appareil.</translation>
@@ -3358,7 +3357,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6029292188939175871">supprimer [<ph name="FINGERPRINT_NAME" />], bouton</translation>
 <translation id="6029587122245504742">La plus lente</translation>
 <translation id="6032912588568283682">Système de fichiers</translation>
-<translation id="6034662038931255275">Le système d'exploitation a bien été mis à jour</translation>
 <translation id="6038929619733116134">Bloquer si le site affiche des annonces intrusives ou trompeuses</translation>
 <translation id="6039651071822577588">Dictionnaire des propriétés du réseau non conforme.</translation>
 <translation id="604001903249547235">Sauvegarde Cloud</translation>

@@ -678,7 +678,6 @@
 <translation id="197560921582345123">Se puede editar</translation>
 <translation id="1975841812214822307">Eliminar…</translation>
 <translation id="1976150099241323601">Acceder al dispositivo de seguridad</translation>
-<translation id="1976315108329706992">Ahora puedes usar las apps de Android.</translation>
 <translation id="1976323404609382849">Las cookies de múltiples sitios se han bloqueado.</translation>
 <translation id="1977965994116744507">Acerca el teléfono para desbloquear tu <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1979280758666859181">Estás por cambiar a un canal que tiene una versión anterior de <ph name="PRODUCT_NAME" />. El cambio de canal se aplicará cuando la versión del canal coincida con la versión que esté instalada en ese momento en tu dispositivo.</translation>
@@ -3354,7 +3353,6 @@
 <translation id="6029292188939175871">borrar [<ph name="FINGERPRINT_NAME" />], botón</translation>
 <translation id="6029587122245504742">Más lento</translation>
 <translation id="6032912588568283682">Sistema de archivos</translation>
-<translation id="6034662038931255275">El SO se actualizó correctamente</translation>
 <translation id="6038929619733116134">Bloquear si el sitio muestra anuncios intrusivos o engañosos</translation>
 <translation id="6039651071822577588">Diccionario de propiedades de la red con formato no válido</translation>
 <translation id="604001903249547235">Copia de seguridad en la nube</translation>

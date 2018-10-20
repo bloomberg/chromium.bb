@@ -681,7 +681,6 @@
 <translation id="197560921582345123">สามารถแก้ไขได้</translation>
 <translation id="1975841812214822307">นำออก...</translation>
 <translation id="1976150099241323601">ลงชื่อเข้าใช้อุปกรณ์รักษาความปลอดภัย</translation>
-<translation id="1976315108329706992">คุณใช้แอป Android ได้แล้ว</translation>
 <translation id="1976323404609382849">ปิดกั้นคุกกี้จากหลายไซต์</translation>
 <translation id="1977965994116744507">นำโทรศัพท์เข้ามาใกล้ๆ เพื่อปลดล็อก <ph name="DEVICE_TYPE" /></translation>
 <translation id="1979280758666859181">คุณกำลังเปลี่ยนเป็นช่องที่มี <ph name="PRODUCT_NAME" /> เวอร์ชันเก่ากว่า การเปลี่ยนช่องจะถูกนำมาใช้เมื่อเวอร์ชันของช่องตรงกับเวอร์ชันที่ติดตั้งอยู่ในอุปกรณ์ของคุณในปัจจุบัน</translation>
@@ -3357,7 +3356,6 @@
 <translation id="6029292188939175871">ลบ [<ph name="FINGERPRINT_NAME" />], ปุ่ม</translation>
 <translation id="6029587122245504742">ช้าที่สุด</translation>
 <translation id="6032912588568283682">ระบบไฟล์</translation>
-<translation id="6034662038931255275">อัปเดตระบบปฏิบัติการสำเร็จแล้ว</translation>
 <translation id="6038929619733116134">บล็อกหากเว็บไซต์แสดงโฆษณาที่แทรกหรือทำให้เข้าใจผิด</translation>
 <translation id="6039651071822577588">พจนานุกรมคุณสมบัติเครือข่ายมีรูปแบบไม่ถูกต้อง</translation>
 <translation id="604001903249547235">การสำรองข้อมูลในระบบคลาวด์</translation>

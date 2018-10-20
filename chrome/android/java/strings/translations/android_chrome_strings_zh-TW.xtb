@@ -494,7 +494,7 @@
 <translation id="4913169188695071480">停止重新整理</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />查看說明<ph name="END_LINK" />。正在掃描裝置…</translation>
 <translation id="4943872375798546930">沒有結果</translation>
-<translation id="4956867391417827202">如果網站顯示侵入性或誤導性廣告，就封鎖廣告</translation>
+<translation id="4956867391417827202">封鎖干擾性或誤導性的網站廣告</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> 正在共用你的畫面。</translation>
 <translation id="4961334780091921942">你所有裝置上的密碼、歷史記錄和其他設定</translation>
 <translation id="4961700429721424617">您即將登出由 <ph name="MANAGED_DOMAIN" /> 所管理的帳戶。系統會將您的 Chrome 資料從這個裝置上刪除，但繼續保留在您的 Google 帳戶中。</translation>
@@ -951,7 +951,7 @@
 <translation id="8349013245300336738">依使用資料量排序</translation>
 <translation id="8372893542064058268">允許特定網站執行背景同步處理作業。</translation>
 <translation id="8374821112118309944">請更新至新版 TalkBack。</translation>
-<translation id="8380167699614421159">這個網站會顯示侵入性或誤導性廣告</translation>
+<translation id="8380167699614421159">這個網站會顯示干擾性或誤導性的廣告</translation>
 <translation id="8393700583063109961">傳送訊息</translation>
 <translation id="8413126021676339697">顯示完整記錄</translation>
 <translation id="8428213095426709021">設定</translation>
@@ -1065,7 +1065,7 @@
 <translation id="945632385593298557">存取您的麥克風</translation>
 <translation id="951339005376969845">刪除現有資料。你可以切換回 <ph name="FROM_ACCOUNT" />，重新取得現有資料。</translation>
 <translation id="95817756606698420">Chrome 可以在中國使用 <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> 搜尋。你可以在<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />中變更這項設定。</translation>
-<translation id="965817943346481315">針對顯示侵入性或誤導性廣告的網站封鎖廣告 (建議)</translation>
+<translation id="965817943346481315">封鎖干擾性或誤導性的網站廣告 (建議)</translation>
 <translation id="970715775301869095">還剩 <ph name="MINUTES" /> 分鐘</translation>
 <translation id="974555521953189084">如要開始同步處理，請輸入你的通關密語</translation>
 <translation id="981121421437150478">離線</translation>

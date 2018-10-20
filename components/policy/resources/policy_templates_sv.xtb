@@ -8,7 +8,7 @@
 
       Om inställningen är inaktiverad kontrollerar <ph name="PRODUCT_NAME" /> aldrig om den är standardwebbläsaren och användarkontrollerna för alternativet inaktiveras.
 
-      Om inställningen lämnas utan inställning <ph name="PRODUCT_NAME" /> kan användaren styra om webbläsaren är standardwebbläsaren och om användaraviseringar ska visas när den inte är det.
+      Om ingen inställningen anges <ph name="PRODUCT_NAME" /> kan användaren styra om webbläsaren är standardwebbläsaren och om användaraviseringar ska visas när den inte är det.
 
       Administratören av <ph name="MS_WIN_NAME" /> ska tänka på följande: Det går bara att aktivera den här inställningen på datorer med Windows 7. Om du har version 8 och senare av Windows måste du implementera en fil för standardprogramassociationer som gör <ph name="PRODUCT_NAME" /> till hanterare för protokoll <ph name="HHTPS_PROTOCOL" /> och <ph name="HTTP_PROTOCOL" /> (och, om du vill, protokollet <ph name="FTP_PROTOCOL" /> och filformat som <ph name="HTML_EXTENSION" />, <ph name="HTM_EXTENSION" />, <ph name="PDF_EXTENSION" />, <ph name="SVG_EXTENSION" />, <ph name="WEBP_EXTENSION" />, etc …). Läs <ph name="SUPPORT_URL" /> om du vill veta mer.</translation>
 <translation id="1017967144265860778">Energibesparing på inloggningssidan</translation>
@@ -75,7 +75,7 @@
       Om den här policyn inte ställs in används standardkatalogen för cacheminnet och användaren kan åsidosätta den med kommandoradsflaggan --disk-cache-dir.</translation>
 <translation id="113521240853905588">Konfigurerar vilka språk som kan användas som föredragna språk <ph name="PRODUCT_OS_NAME" />.
 
-      Om den här principen lämnas utan inställning kan användaren bara lägga till ett av språken i den här principen på listan över föredragna språk. Om principen lämnas utan inställning eller är inställd på en tom lista kan användare ange vilka språk som helst som föredragna. Om principen är inställd på en lista som innehåller ogiltiga värden ignoreras alla ogiltiga värden. Om en användare vid ett tidigare tillfälle har lagt till språk som inte tillåts av principen på listan över föredragna språk tas dessa språk bort. Om användare tidigare har angett att <ph name="PRODUCT_OS_NAME" /> ska visas på ett av språken som inte tillåts av principen byts visningsspråket till ett tillåtet gränssnittsspråk nästa gång användaren loggar in. Annars byter <ph name="PRODUCT_OS_NAME" /> till det första giltiga värdet som specificeras av den här principen eller till en reservspråkkod (för närvarande en-US) om den här principen endast innehåller ogiltiga poster.</translation>
+      Om inget anges för denna inställning kan användaren bara lägga till ett av språken i den här principen på listan över föredragna språk. Om principen lämnas utan inställning eller är inställd på en tom lista kan användare ange vilka språk som helst som föredragna. Om principen är inställd på en lista som innehåller ogiltiga värden ignoreras alla ogiltiga värden. Om en användare vid ett tidigare tillfälle har lagt till språk som inte tillåts av principen på listan över föredragna språk tas dessa språk bort. Om användare tidigare har angett att <ph name="PRODUCT_OS_NAME" /> ska visas på ett av språken som inte tillåts av principen byts visningsspråket till ett tillåtet gränssnittsspråk nästa gång användaren loggar in. Annars byter <ph name="PRODUCT_OS_NAME" /> till det första giltiga värdet som specificeras av den här principen eller till en reservspråkkod (för närvarande en-US) om den här principen endast innehåller ogiltiga poster.</translation>
 <translation id="1135264353752122851">Principen konfigurerar vilka tangentbordslayouter som är tillåtna för användarsessioner i <ph name="PRODUCT_OS_NAME" />.
 
       När den här principen har ställts in kan användaren bara välja mellan de inmatningsmetoder som angetts i principen. Om principen lämnas utan inställning eller ställs in på en tom lista kan användaren välja mellan alla inmatningsmetoder som stöds. Om den nuvarande inmatningsmetoden inte är tillåten enligt principen ersätts den med maskinvarans tangentbordslayout (om den är tillåten) eller med den första giltiga posten i listan. Alla inmatningsmetoder i listan som är ogiltiga eller inte stöds ignoreras.</translation>
@@ -2128,7 +2128,7 @@
 
       Om principen är inställd på något annat än en tom sträng används den strängen som enhetens värdnamn under DHCP-begäran.
 
-      Strängen kan innehålla variablerna ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, ${MACHINE_NAME} som ersätts av värden på enheten innan de används som värdnamn. Detta ersättningsvärde ska bara ett giltigt värdnamn (enligt RFC 1035, avsnitt 3.1).
+      Strängen kan innehålla variablerna ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, ${MACHINE_NAME} som ersätts av värden på enheten innan de används som värdnamn. Detta ersättningsvärde ska vara ett giltigt värdnamn (enligt RFC 1035, avsnitt 3.1).
 
       Om principen inte är inställd eller om värdet efter ersättningen inte är ett giltigt värdnamn så anges inget värdnamn i DHCP-förfrågan. </translation>
 <translation id="6835883744948188639">Visa användaren ett återkommande meddelande om att omstart rekommenderas</translation>

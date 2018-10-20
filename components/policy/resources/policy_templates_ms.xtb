@@ -2,9 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ms">
 <translation id="101438888985615157">Putar skrin 180 darjah</translation>
-<translation id="1016912092715201525">Mengkonfigurasi semakan penyemak imbas lalai dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukarnya.
+<translation id="1016912092715201525">Mengkonfigurasi semakan penyemak imbas lalai dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukar tetapan ini.
 
-      Jika anda mendayakan tetapan ini, <ph name="PRODUCT_NAME" /> sentiasa akan menyemak pada permulaan sama ada penyemak imbas itu ialah penyemak imbas lalai dan mendaftar sendiri  secara automatik jika boleh.
+      Jika anda mendayakan tetapan ini, <ph name="PRODUCT_NAME" /> sentiasa akan menyemak pada permulaan sama ada penyemak imbas itu ialah penyemak imbas lalai dan melakukan pendaftaran sendiri  secara automatik jika boleh.
 
       Jika tetapan ini dilumpuhkan, <ph name="PRODUCT_NAME" /> tidak akan menyemak sama ada penyemak imbas itu ialah penyemak imbas lalai dan akan melumpuhkan kawalan pengguna untuk penetapan pilihan ini.
 
@@ -77,7 +77,7 @@
       Jika dasar ini dibiarkan tanpa ditetapkan, direktori cache lalai akan digunakan dan pengguna dapat mengatasinya dengan bendera baris perintah '--disk-cache-dir'.</translation>
 <translation id="113521240853905588">Mengkonfigurasikan bahasa yang boleh digunakan sebagai bahasa pilihan oleh <ph name="PRODUCT_OS_NAME" />.
 
-      Jika dasar ini ditetapkan, pengguna hanya boleh menambahkan satu bahasa yang disenaraikan dalam dasar ini pada senarai bahasa pilihan. Jika dasar ini tidak ditetapkan atau ditetapkan kepada senarai kosong, pengguna boleh menentukan sebarang bahasa sebagai pilihan. Jika dasar ini ditetapkan kepada senarai dengan nilai tidak sah, semua nilai tidak sah akan diabaikan. Jika pengguna pernah menambahkan beberapa bahasa yang tidak dibenarkan oleh dasar ini pada senarai bahasa pilihan, bahasa tersebut akan dialih keluar. Jika pengguna pernah mengkonfigurasikan <ph name="PRODUCT_OS_NAME" /> supaya dipaparkan dalam salah satu bahasa yang tidak dibenarkan oleh dasar ini, bahasa paparan tersebut akan ditukar kepada bahasa UI yang dibenarkan apabila pengguna log masuk selepas ini. Jika tidak, <ph name="PRODUCT_OS_NAME" /> akan beralih kepada nilai sah pertama yang ditentukan oleh dasar ini atau kembali kepada penyetempatan sandaran (en-US pada masa ini), jika dasar ini hanya mengandungi masukan yang tidak sah.</translation>
+      Jika dasar ini ditetapkan, pengguna hanya boleh menambahkan satu bahasa yang disenaraikan dalam dasar ini pada senarai bahasa pilihan. Jika dasar ini tidak ditetapkan atau ditetapkan kepada senarai kosong, pengguna boleh menentukan sebarang bahasa sebagai pilihan. Jika dasar ini ditetapkan kepada senarai yang mengandungi nilai tidak sah, semua nilai tidak sah akan diabaikan. Jika pengguna telah menambahkan beberapa bahasa yang tidak dibenarkan oleh dasar ini pada senarai bahasa pilihan, bahasa tersebut akan dialih keluar. Jika pengguna telah mengkonfigurasikan <ph name="PRODUCT_OS_NAME" /> supaya dipaparkan dalam salah satu bahasa yang tidak dibenarkan oleh dasar ini, bahasa paparan tersebut akan ditukar kepada bahasa UI yang dibenarkan apabila pengguna log masuk selepas ini. Jika tidak, <ph name="PRODUCT_OS_NAME" /> akan beralih kepada nilai sah pertama yang ditentukan oleh dasar ini atau kembali kepada penyetempatan sandaran (en-US pada masa ini), jika dasar ini hanya mengandungi masukan yang tidak sah.</translation>
 <translation id="1135264353752122851">Konfigurasikan reka letak papan kekunci yang dibenarkan untuk sesi pengguna <ph name="PRODUCT_OS_NAME" />.
 
       Jika dasar ini ditetapkan, pengguna hanya boleh memilih salah satu kaedah input yang dinyatakan oleh dasar ini. Jika dasar ini tidak ditetapkan atau ditetapkan kepada senarai kosong, pengguna boleh memilih semua kaedah input yang disokong. Jika kaedah input semasa tidak dibenarkan oleh dasar ini, kaedah input akan ditukar kepada reka letak papan kekunci perkakasan (jika dibenarkan) atau entri sah pertama dalam senarai ini. Semua kaedah input yang tidak sah atau tidak disokong dalam senarai ini akan diabaikan.</translation>
@@ -1607,7 +1607,7 @@
 
       Jika dasar ini tidak dikonfigurasikan, maka <ph name="PRODUCT_NAME" /> akan menggunakan versi maksimum lalai.
 
-      Jika tidak, dasar ini mungkin ditetapkan kepada satu daripada nilai berikut: "tls1.2" atau "tls1.3". Apabila ditetapkan, <ph name="PRODUCT_NAME" /> tidak akan menggunakan versi SSL/TLS yang lebih tinggi daripada versi yang dinyatakan. Nilai yang tidak dikenal pasti akan diabaikan.</translation>
+      Jika tidak, salah satu nilai berikut akan ditetapkan: "tls1.2" atau "tls1.3". Apabila ditetapkan, <ph name="PRODUCT_NAME" /> tidak akan menggunakan versi SSL/TLS yang lebih tinggi daripada versi yang dinyatakan. Nilai yang tidak dikenal pasti akan diabaikan.</translation>
 <translation id="5330684698007383292">Benarkan <ph name="PRODUCT_FRAME_NAME" /> mengendalikan jenis kandungan berikut</translation>
 <translation id="5365946944967967336">Paparkan butang Halaman Utama pada bar alat</translation>
 <translation id="5366745336748853475">Membolehkan anda menentukan senarai pola url yang menentukan tapak yang sijil pelanggannya dipilih secara automatik pada skrin log masuk dalam bingkai yang mengehoskan aliran SAML, jika tapak tersebut meminta sijil. Satu contoh penggunaan adalah untuk mengkonfigurasikan sijil seluruh peranti yang akan disampaikan kepada SAML IdP.
@@ -2423,19 +2423,19 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7337967786223261174">Mengkonfigurasi senarai pencetak.
 
       Dasar ini membolehkan pentadbir menyediakan konfigurasi pencetak untuk
-      pengguna mereka
+      pengguna mereka.
 .
 
-      <ph name="PRINTER_DISPLAY_NAME" /> dan <ph name="PRINTER_DESCRIPTION" /> ialah rentetan bentuk bebas yang boleh disesuaikan untuk memudahkan pemilihan pencetak. <ph name="PRINTER_MANUFACTURER" /> dan <ph name="PRINTER_MODEL" /> bertujuan untuk memudahkan pengenalan pencetak oleh pengguna akhir. Dua butiran ini mewakili pengilang dan model pencetak. <ph name="PRINTER_URI" /> haruslah alamat yang boleh dicapai daripada komputer pelanggan termasuk <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> dan <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> adalah pilihan. Jika disediakan, maklumat ini digunakan untuk membantu penyahgandaduaan pencetak <ph name="ZEROCONF_DISCOVERY" />.
+      <ph name="PRINTER_DISPLAY_NAME" /> dan <ph name="PRINTER_DESCRIPTION" /> ialah rentetan bentuk bebas yang boleh disesuaikan untuk memudahkan pemilihan pencetak. <ph name="PRINTER_MANUFACTURER" /> dan <ph name="PRINTER_MODEL" /> akan memudahkan pengenalpastian pencetak oleh pengguna akhir. Butiran ini mewakili pengilang dan model pencetak. <ph name="PRINTER_URI" /> mestilah alamat yang boleh dicapai daripada komputer pelanggan termasuk <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> dan <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> adalah pilihan. Jika disediakan, maklumat ini digunakan untuk membantu penyahgandaduaan pencetak <ph name="ZEROCONF_DISCOVERY" />.
 
       <ph name="PRINTER_EFFECTIVE_MODEL" /> mesti sepadan dengan satu daripada rentetan yang mewakili pencetak yang menyokong <ph name="PRODUCT_NAME" />. Rentetan itu akan digunakan untuk mengenal pasti dan memasang PPD yang sesuai untuk pencetak. Maklumat lanjut boleh ditemukan di https://support.google.com/chrome?p=noncloudprint.
 
-      Penyediaan pencetak selesai pada penggunaan pertama pencetak. PPD tidak dimuat turun sehinggalah pencetak digunakan. Selepas waktu itu, PPD yang kerap digunakan akan dicache.
+      Penyediaan pencetak selesai pada penggunaan pertama pencetak. PPD tidak dimuat turun sehinggalah pencetak digunakan. Selepas itu, PPD yang kerap digunakan akan dicache.
 
       Dasar ini tidak mempengaruhi sama ada pengguna boleh mengkonfigurasi pencetak pada peranti individu atau tidak. Dasar ini bertujuan menjadi pelengkap kepada pengkonfigurasian pencetak oleh pengguna individu.
 
       Untuk peranti diurus Active Directory, dasar ini menyokong pengembangan <ph name="MACHINE_NAME_VARIABLE" /> kepada nama mesin Active Directory atau subrentetannya. Sebagai contoh, jika nama mesin ialah <ph name="MACHINE_NAME_EXAMPLE" />, maka <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> akan digantikan oleh 4 aksara yang bermula selepas kedudukan ke-6, iaitu <ph name="MACHINE_NAME_PART_EXAMPLE" />. Sila ambil perhatian bahawa kedudukan adalah berasaskan sifar.
-      <ph name="MACHINE_NAME_VARIABLE_LOWERCASE" /> (huruf kecil) ditamatkan dalam M71 dan akan dialih keluar dala M72.
+      <ph name="MACHINE_NAME_VARIABLE_LOWERCASE" /> (huruf kecil) ditamatkan dalam M71 dan akan dialih keluar dalam M72.
       </translation>
 <translation id="7340034977315324840">Laporkan masa aktiviti peranti</translation>
 <translation id="7343497214039883642">Fail konfigurasi pencetak perusahaan untuk peranti</translation>
@@ -2863,7 +2863,7 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 <translation id="8359734107661430198">Dayakan API ExampleDeprecatedFeature sehingga 2008/09/02</translation>
 <translation id="8367209241899435947">Dayakan Pembersih Chrome pada Windows</translation>
 <translation id="8369602308428138533">Kelewatan pemadaman skrin apabila dijalankan dengan kuasa AC</translation>
-<translation id="8371178326720637170">Mendayakan sambungan terurus untuk menggunakan API Enterprise Hardware Platform</translation>
+<translation id="8371178326720637170">Mendayakan sambungan terurus untuk menggunakan Enterprise Hardware Platform API</translation>
 <translation id="8382184662529825177">Dayakan penggunaan pembuktian jauh untuk perlindungan kandungan bagi peranti</translation>
 <translation id="838870586332499308">Dayakan perayauan data</translation>
 <translation id="8390049129576938611">Melumpuhkan pemapar PDF dalaman dalam <ph name="PRODUCT_NAME" />. Sebaliknya, dasar ini menganggapnya sebagai muat turun dan membenarkan pengguna membuka fail PDF dengan aplikasi lalai.
@@ -3145,7 +3145,7 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 <translation id="8976531594979650914">Gunakan Pencetak Lalai Sistem sebagai Lalai</translation>
 <translation id="898520305112996948">Membolehkan anda menetapkan senarai pola url yang menentukan tapak yang akan diberikan kebenaran secara automatik untuk mengakses peranti USB dengan ID vendor dan produk yang dinyatakan. Setiap item dalam senarai mesti mengandungi peranti dan juga pola url untuk menjadikan dasar ini sah. Setiap item dalam peranti boleh mengandungi medan ID vendor dan ID produk. Mana-mana ID yang tidak dimasukkan akan dikendalikan sebagai kad bebas dengan satu pengecualian dan pengecualian itu ialah ID produk tidak boleh dinyatakan jika ID vendor juga tidak dinyatakan. Jika tidak, dasar ini tidak akan sah. Nilai dasar yang tidak sah akan diabaikan.
 
-        Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada daripada dasar 'DefaultWebUsbGuardSetting' jika dasar ini ditetapkan. Jika tidak, konfigurasi peribadi pengguna akan digunakan.
+        Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak daripada dasar 'DefaultWebUsbGuardSetting' jika nilai ini ditetapkan. Jika tidak, konfigurasi peribadi pengguna akan digunakan.
 
         Pola URL dalam dasar ini seharusnya tidak bercanggah dengan pola yang dikonfigurasikan melalui WebUsbBlockedForUrls. Jika bercanggah, dasar ini akan mengatasi WebUsbBlockedForUrls dan WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">Jangan benarkan mana-mana tapak untuk menunjukkan imej</translation>
