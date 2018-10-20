@@ -82,6 +82,8 @@
 #include "ui/views/win/hwnd_util.h"
 #endif
 
+using MD = ui::MaterialDesignController;
+
 namespace {
 
 // Max number of stacked tabs.
@@ -155,14 +157,6 @@ void ResetDraggingStateDelegate::AnimationCanceled(
   AnimationEnded(animation);
 }
 
-base::flat_map<ui::MaterialDesignController::Mode, TabSizeInfo>*
-GetTabSizeInfoMap() {
-  static base::NoDestructor<
-      base::flat_map<ui::MaterialDesignController::Mode, TabSizeInfo>>
-      tab_size_info_map;
-  return tab_size_info_map.get();
-}
-
 // If |dest| contains the point |point_in_source| the event handler from |dest|
 // is returned. Otherwise returns null.
 views::View* ConvertPointToViewAndGetEventHandler(
@@ -194,25 +188,23 @@ TabDragController::EventSource EventSourceFromEvent(
 }
 
 const TabSizeInfo& GetTabSizeInfo() {
-  TabSizeInfo& tab_size_info =
-      (*GetTabSizeInfoMap())[ui::MaterialDesignController::GetMode()];
-
-  if (!tab_size_info.standard_size.IsEmpty())
-    return tab_size_info;
-
-  tab_size_info.pinned_tab_width = TabStyle::GetPinnedWidth();
-  tab_size_info.min_active_width = TabStyle::GetMinimumActiveWidth();
-  tab_size_info.min_inactive_width = TabStyle::GetMinimumInactiveWidth();
-  tab_size_info.standard_size =
-      gfx::Size(TabStyle::GetStandardWidth(), GetLayoutConstant(TAB_HEIGHT));
-  tab_size_info.tab_overlap = TabStyle::GetTabOverlap();
-  return tab_size_info;
+  static TabSizeInfo tab_size_info, touch_tab_size_info;
+  TabSizeInfo* info =
+      MD::IsTouchOptimizedUiEnabled() ? &touch_tab_size_info : &tab_size_info;
+  if (info->standard_size.IsEmpty()) {
+    info->pinned_tab_width = TabStyle::GetPinnedWidth();
+    info->min_active_width = TabStyle::GetMinimumActiveWidth();
+    info->min_inactive_width = TabStyle::GetMinimumInactiveWidth();
+    info->standard_size =
+        gfx::Size(TabStyle::GetStandardWidth(), GetLayoutConstant(TAB_HEIGHT));
+    info->tab_overlap = TabStyle::GetTabOverlap();
+  }
+  return *info;
 }
 
 int GetStackableTabWidth() {
   return TabStyle::GetTabOverlap() +
-         (ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 136
-                                                                    : 102);
+         (MD::IsTouchOptimizedUiEnabled() ? 136 : 102);
 }
 
 }  // namespace
@@ -269,7 +261,7 @@ TabStrip::TabStrip(std::unique_ptr<TabStripController> controller)
       current_active_width_(TabStyle::GetStandardWidth()) {
   Init();
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
-  md_observer_.Add(ui::MaterialDesignController::GetInstance());
+  md_observer_.Add(MD::GetInstance());
 }
 
 TabStrip::~TabStrip() {
@@ -2320,11 +2312,6 @@ bool TabStrip::IsPointInTab(Tab* tab,
   gfx::Point point_in_tab_coords(point_in_tabstrip_coords);
   View::ConvertPointToTarget(this, tab, &point_in_tab_coords);
   return tab->HitTestPoint(point_in_tab_coords);
-}
-
-// static
-void TabStrip::ResetTabSizeInfoForTesting() {
-  *GetTabSizeInfoMap() = {};
 }
 
 Tab* TabStrip::FindTabForEvent(const gfx::Point& point) {
