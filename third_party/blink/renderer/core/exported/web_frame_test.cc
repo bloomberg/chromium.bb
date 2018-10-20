@@ -6756,7 +6756,7 @@ TEST_F(WebFrameTest, ReplaceMisspelledRange) {
   Element* element = document->getElementById("data");
 
   web_view_helper.GetWebView()->GetSettings()->SetEditingBehavior(
-      WebSettings::kEditingBehaviorWin);
+      WebSettings::EditingBehavior::kWin);
 
   element->focus();
   NonThrowableExceptionState exception_state;
@@ -6802,7 +6802,7 @@ TEST_F(WebFrameTest, RemoveSpellingMarkers) {
   Element* element = document->getElementById("data");
 
   web_view_helper.GetWebView()->GetSettings()->SetEditingBehavior(
-      WebSettings::kEditingBehaviorWin);
+      WebSettings::EditingBehavior::kWin);
 
   element->focus();
   NonThrowableExceptionState exception_state;
@@ -6853,7 +6853,7 @@ TEST_F(WebFrameTest, RemoveSpellingMarkersUnderWords) {
   Element* element = document->getElementById("data");
 
   web_view_helper.GetWebView()->GetSettings()->SetEditingBehavior(
-      WebSettings::kEditingBehaviorWin);
+      WebSettings::EditingBehavior::kWin);
 
   element->focus();
   NonThrowableExceptionState exception_state;
@@ -6932,7 +6932,7 @@ TEST_F(WebFrameTest, SlowSpellcheckMarkerPosition) {
   Element* element = document->getElementById("data");
 
   web_view_helper.GetWebView()->GetSettings()->SetEditingBehavior(
-      WebSettings::kEditingBehaviorWin);
+      WebSettings::EditingBehavior::kWin);
 
   element->focus();
   NonThrowableExceptionState exception_state;
@@ -6966,7 +6966,7 @@ TEST_F(WebFrameTest, SpellcheckResultErasesMarkers) {
   Element* element = document->getElementById("data");
 
   web_view_helper.GetWebView()->GetSettings()->SetEditingBehavior(
-      WebSettings::kEditingBehaviorWin);
+      WebSettings::EditingBehavior::kWin);
 
   element->focus();
   NonThrowableExceptionState exception_state;
@@ -7002,7 +7002,7 @@ TEST_F(WebFrameTest, SpellcheckResultsSavedInDocument) {
   Element* element = document->getElementById("data");
 
   web_view_helper.GetWebView()->GetSettings()->SetEditingBehavior(
-      WebSettings::kEditingBehaviorWin);
+      WebSettings::EditingBehavior::kWin);
 
   element->focus();
   NonThrowableExceptionState exception_state;
