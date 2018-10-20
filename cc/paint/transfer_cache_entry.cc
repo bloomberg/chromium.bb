@@ -27,8 +27,9 @@ std::unique_ptr<ServiceTransferCacheEntry> ServiceTransferCacheEntry::Create(
     case TransferCacheEntryType::kPath:
       return std::make_unique<ServicePathTransferCacheEntry>();
     case TransferCacheEntryType::kShader:
-      // ServiceShaderTransferCache is only created via CreateLocalEntry
-      // and is never serialized/deserialized.
+    case TransferCacheEntryType::kTextBlob:
+      // ServiceShader/TextBlobTransferCache is only created via
+      // CreateLocalEntry and is never serialized/deserialized.
       return nullptr;
   }
 
