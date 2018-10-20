@@ -38,6 +38,10 @@ class NotificationControlButtonsView;
 
 // An base class for a notification entry. Contains background and other
 // elements shared by derived notification views.
+// TODO(pkasting): This class only subclasses InkDropHostView because the
+// NotificationViewMD subclass needs ink drop functionality.  Rework ink drops
+// to not need to be the base class of views which use them, and move the
+// functionality to the subclass that uses these.
 class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
                                           public SlideOutController::Delegate,
                                           public views::FocusChangeListener {
@@ -104,7 +108,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
   virtual void OnSettingsButtonPressed(const ui::Event& event);
   virtual void OnSnoozeButtonPressed(const ui::Event& event);
 
-  // views::View
+  // views::InkDropHostView:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
@@ -120,7 +124,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
   void AddedToWidget() override;
   const char* GetClassName() const final;
 
-  // message_center::SlideOutController::Delegate
+  // message_center::SlideOutController::Delegate:
   ui::Layer* GetSlideOutLayer() override;
   void OnSlideChanged() override;
   void OnSlideOut() override;

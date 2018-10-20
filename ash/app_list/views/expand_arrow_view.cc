@@ -105,7 +105,7 @@ ExpandArrowView::ExpandArrowView(ContentsView* contents_view,
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
-  SetInkDropMode(InkDropHostView::InkDropMode::ON);
+  SetInkDropMode(InkDropMode::ON);
 
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_APP_LIST_EXPAND_BUTTON));
 

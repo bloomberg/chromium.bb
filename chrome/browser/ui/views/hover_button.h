@@ -95,12 +95,8 @@ class HoverButton : public views::MenuButton, public views::MenuButtonListener {
   // views::MenuButton:
   KeyClickAction GetKeyClickActionForEvent(const ui::KeyEvent& event) override;
   void StateChanged(ButtonState old_state) override;
-
-  // views::InkDropHostView:
   SkColor GetInkDropBaseColor() const override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-
-  // views::View:
   void Layout() override;
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;

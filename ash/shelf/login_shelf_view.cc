@@ -154,13 +154,12 @@ class LoginShelfButton : public views::LabelButton {
         kButtonBackgroundMarginBottomDp, kButtonBackgroundMarginRightDp);
   }
 
-  // views::View:
+  // views::LabelButton:
   gfx::Insets GetInsets() const override {
     return gfx::Insets(kButtonMarginTopDp, kButtonMarginLeftDp,
                        kButtonMarginBottomDp, kButtonMarginRightDp);
   }
 
-  // views::Button:
   void PaintButtonContents(gfx::Canvas* canvas) override {
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
@@ -171,7 +170,6 @@ class LoginShelfButton : public views::LabelButton {
     canvas->DrawRoundRect(bounds, kButtonRoundedBorderRadiusDp, flags);
   }
 
-  // views::InkDropHostView:
   std::unique_ptr<views::InkDrop> CreateInkDrop() override {
     auto ink_drop = std::make_unique<views::InkDropImpl>(this, size());
     ink_drop->SetShowHighlightOnHover(false);
@@ -244,13 +242,12 @@ class KioskAppsButton : public views::MenuButton,
         kButtonBackgroundMarginBottomDp, kButtonBackgroundMarginRightDp);
   }
 
-  // views::View:
+  // views::MenuButton:
   gfx::Insets GetInsets() const override {
     return gfx::Insets(kButtonMarginTopDp, kButtonMarginLeftDp,
                        kButtonMarginBottomDp, kButtonMarginRightDp);
   }
 
-  // views::Button:
   void PaintButtonContents(gfx::Canvas* canvas) override {
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
@@ -261,11 +258,22 @@ class KioskAppsButton : public views::MenuButton,
     canvas->DrawRoundRect(bounds, kButtonRoundedBorderRadiusDp, flags);
   }
 
-  // views::MenuButton:
   void SetVisible(bool visible) override {
     MenuButton::SetVisible(visible);
     if (visible)
       is_launch_enabled_ = true;
+  }
+
+  std::unique_ptr<views::InkDrop> CreateInkDrop() override {
+    auto ink_drop = std::make_unique<views::InkDropImpl>(this, size());
+    ink_drop->SetShowHighlightOnHover(false);
+    ink_drop->SetShowHighlightOnFocus(false);
+    return ink_drop;
+  }
+
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
+    return std::make_unique<views::RoundRectInkDropMask>(
+        size(), GetBackgroundInsets(), kButtonRoundedBorderRadiusDp);
   }
 
   // views::MenuButtonListener:
@@ -285,7 +293,7 @@ class KioskAppsButton : public views::MenuButton,
                             views::MENU_ANCHOR_TOPLEFT, ui::MENU_SOURCE_NONE);
   }
 
-  // ui::MenuModel:
+  // ui::SimpleMenuModel:
   void ExecuteCommand(int command_id, int event_flags) override {
     DCHECK(command_id >= 0 &&
            base::checked_cast<size_t>(command_id) < kiosk_apps_.size());
@@ -312,18 +320,6 @@ class KioskAppsButton : public views::MenuButton,
   bool IsCommandIdChecked(int command_id) const override { return false; }
 
   bool IsCommandIdEnabled(int command_id) const override { return true; }
-
-  // views::InkDropHostView:
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override {
-    auto ink_drop = std::make_unique<views::InkDropImpl>(this, size());
-    ink_drop->SetShowHighlightOnHover(false);
-    ink_drop->SetShowHighlightOnFocus(false);
-    return ink_drop;
-  }
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    return std::make_unique<views::RoundRectInkDropMask>(
-        size(), GetBackgroundInsets(), kButtonRoundedBorderRadiusDp);
-  }
 
  private:
   std::unique_ptr<views::MenuRunner> menu_runner_;

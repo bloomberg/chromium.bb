@@ -56,7 +56,7 @@ class ImeListItemView : public ActionableView {
       : ActionableView(nullptr, TrayPopupInkDropStyle::FILL_BOUNDS),
         ime_list_view_(list_view),
         selected_(selected) {
-    SetInkDropMode(InkDropHostView::InkDropMode::ON);
+    SetInkDropMode(InkDropMode::ON);
 
     TriView* tri_view = TrayPopupUtils::CreateDefaultRowView();
     AddChildView(tri_view);

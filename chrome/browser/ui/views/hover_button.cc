@@ -79,7 +79,7 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
       DISTANCE_CONTROL_LIST_VERTICAL);
   SetBorder(CreateBorderWithVerticalSpacing(vert_spacing));
 
-  SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
+  SetInkDropMode(InkDropMode::ON);
 }
 
 HoverButton::HoverButton(views::ButtonListener* button_listener,

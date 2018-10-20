@@ -16,6 +16,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/layer_tree_owner.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"

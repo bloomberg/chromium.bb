@@ -28,6 +28,7 @@
 #include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/layer_tree_owner.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_manager.h"

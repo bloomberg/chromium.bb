@@ -53,6 +53,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/animation/bounds_animator.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
