@@ -91,6 +91,14 @@ ClientPolicyController::ClientPolicyController() {
                          .SetExpirePeriod(base::TimeDelta::FromHours(1))
                          .SetIsRestrictedToTabFromClientId(true)
                          .Build()));
+  policies_.insert(std::make_pair(
+      kAutoAsyncNamespace,
+      OfflinePageClientPolicyBuilder(
+          kAutoAsyncNamespace, LifetimeType::TEMPORARY, kUnlimitedPages, 1)
+          .SetIsRemovedOnCacheReset(true)
+          .SetExpirePeriod(base::TimeDelta::FromDays(30))
+          .SetIsUserRequestedDownload(false)
+          .Build()));
 
   // Fallback policy.
   policies_.insert(std::make_pair(

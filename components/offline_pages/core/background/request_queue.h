@@ -119,6 +119,8 @@ class RequestQueue : public TaskQueue::Delegate {
     cleanup_factory_ = std::move(factory);
   }
 
+  RequestQueueStore* GetStoreForTesting() { return store_.get(); }
+
  private:
   // Store initialization functions.
   void Initialize();
