@@ -44,10 +44,13 @@ class AssistantUiElement {
 // An Assistant UI element that will be rendered as an HTML card.
 class AssistantCardElement : public AssistantUiElement {
  public:
-  explicit AssistantCardElement(const std::string& html);
+  explicit AssistantCardElement(const std::string& html,
+                                const std::string& fallback);
   ~AssistantCardElement() override;
 
   const std::string& html() const { return html_; }
+
+  const std::string& fallback() const { return fallback_; }
 
   const base::UnguessableToken& id_token() const { return id_token_; }
 
@@ -62,6 +65,7 @@ class AssistantCardElement : public AssistantUiElement {
 
  private:
   const std::string html_;
+  const std::string fallback_;
   base::UnguessableToken id_token_;
   base::Optional<base::UnguessableToken> embed_token_ = base::nullopt;
 

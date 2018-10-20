@@ -90,8 +90,8 @@ void AssistantInteractionController::OnAssistantControllerDestroying() {
 void AssistantInteractionController::OnDeepLinkReceived(
     assistant::util::DeepLinkType type,
     const std::map<std::string, std::string>& params) {
-  using assistant::util::DeepLinkType;
   using assistant::util::DeepLinkParam;
+  using assistant::util::DeepLinkType;
 
   if (type == DeepLinkType::kWhatsOnMyScreen) {
     StartScreenContextInteraction();
@@ -339,7 +339,8 @@ void AssistantInteractionController::OnInteractionFinished(
 }
 
 void AssistantInteractionController::OnHtmlResponse(
-    const std::string& response) {
+    const std::string& response,
+    const std::string& fallback) {
   if (model_.interaction_state() != InteractionState::kActive) {
     return;
   }
@@ -352,7 +353,7 @@ void AssistantInteractionController::OnHtmlResponse(
   }
 
   model_.pending_response()->AddUiElement(
-      std::make_unique<AssistantCardElement>(response));
+      std::make_unique<AssistantCardElement>(response, fallback));
 }
 
 void AssistantInteractionController::OnSuggestionChipPressed(

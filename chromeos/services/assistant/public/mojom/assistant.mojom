@@ -76,8 +76,8 @@ interface AssistantInteractionSubscriber {
   // Assistant interaction has ended with the specified |resolution|.
   OnInteractionFinished(AssistantInteractionResolution resolution);
 
-  // Assistant got Html response from server.
-  OnHtmlResponse(string response);
+  // Assistant got Html response with fallback text from server.
+  OnHtmlResponse(string response, string fallback);
 
   // Assistant got suggestions response from server.
   OnSuggestionsResponse(array<AssistantSuggestion> response);

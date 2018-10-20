@@ -384,14 +384,15 @@ void AssistantManagerServiceImpl::OnShowContextualQueryFallback() {
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&AssistantManagerServiceImpl::OnShowHtmlOnMainThread,
-                     weak_factory_.GetWeakPtr(), html.str()));
+                     weak_factory_.GetWeakPtr(), html.str(), /*fallback=*/""));
 }
 
-void AssistantManagerServiceImpl::OnShowHtml(const std::string& html) {
+void AssistantManagerServiceImpl::OnShowHtml(const std::string& html,
+                                             const std::string& fallback) {
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&AssistantManagerServiceImpl::OnShowHtmlOnMainThread,
-                     weak_factory_.GetWeakPtr(), html));
+                     weak_factory_.GetWeakPtr(), html, fallback));
 }
 
 void AssistantManagerServiceImpl::OnShowSuggestions(
@@ -897,9 +898,10 @@ void AssistantManagerServiceImpl::OnConversationTurnFinishedOnMainThread(
 }
 
 void AssistantManagerServiceImpl::OnShowHtmlOnMainThread(
-    const std::string& html) {
+    const std::string& html,
+    const std::string& fallback) {
   interaction_subscribers_.ForAllPtrs(
-      [&html](auto* ptr) { ptr->OnHtmlResponse(html); });
+      [&html, &fallback](auto* ptr) { ptr->OnHtmlResponse(html, fallback); });
 }
 
 void AssistantManagerServiceImpl::OnShowSuggestionsOnMainThread(

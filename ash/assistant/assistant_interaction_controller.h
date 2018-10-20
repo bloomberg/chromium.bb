@@ -85,7 +85,8 @@ class AssistantInteractionController
   void OnInteractionStarted(bool is_voice_interaction) override;
   void OnInteractionFinished(
       AssistantInteractionResolution resolution) override;
-  void OnHtmlResponse(const std::string& response) override;
+  void OnHtmlResponse(const std::string& response,
+                      const std::string& fallback) override;
   void OnSuggestionsResponse(
       std::vector<AssistantSuggestionPtr> response) override;
   void OnTextResponse(const std::string& response) override;
