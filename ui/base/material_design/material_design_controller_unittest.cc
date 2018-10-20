@@ -16,7 +16,8 @@ namespace ui {
 
 TEST(MaterialDesignControllerDeathTest, CrashesWithoutInitialization) {
   ASSERT_FALSE(MaterialDesignController::is_mode_initialized());
-  EXPECT_DEATH_IF_SUPPORTED({ MaterialDesignController::GetMode(); }, "");
+  EXPECT_DEATH_IF_SUPPORTED(
+      MaterialDesignController::IsTouchOptimizedUiEnabled(), "");
 }
 
 namespace {
@@ -38,6 +39,7 @@ class MaterialDesignControllerTest : public testing::Test {
     test::MaterialDesignControllerTestAPI::Uninitialize();
     testing::Test::TearDown();
   }
+
   void SetCommandLineSwitch(const std::string& value_string) {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kTopChromeMD, value_string);
@@ -49,96 +51,11 @@ class MaterialDesignControllerTest : public testing::Test {
 
 }  // namespace
 
+// Verify that non-touch is the default.
 TEST_F(MaterialDesignControllerTest, NoCommandLineFlagIsRefresh) {
   ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kTopChromeMD));
-  EXPECT_EQ(MaterialDesignController::Mode::MATERIAL_REFRESH,
-            MaterialDesignController::GetMode());
-
   EXPECT_FALSE(MaterialDesignController::IsTouchOptimizedUiEnabled());
-  EXPECT_TRUE(MaterialDesignController::IsNewerMaterialUi());
-  EXPECT_TRUE(MaterialDesignController::IsRefreshUi());
-}
-
-namespace {
-
-class MaterialDesignControllerTestCommandLineForceMaterial
-    : public MaterialDesignControllerTest {
- public:
-  MaterialDesignControllerTestCommandLineForceMaterial() {
-    SetCommandLineSwitch(switches::kTopChromeMDMaterial);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(
-      MaterialDesignControllerTestCommandLineForceMaterial);
-};
-
-}  // namespace
-
-// Verify command line value |switches::kTopChromeMDMaterial| maps to
-// Mode::MATERIAL when the compile time flag is defined.
-TEST_F(MaterialDesignControllerTestCommandLineForceMaterial, CheckApiReturns) {
-  EXPECT_EQ(MaterialDesignController::Mode::MATERIAL_NORMAL,
-            MaterialDesignController::GetMode());
-
-  EXPECT_FALSE(MaterialDesignController::IsTouchOptimizedUiEnabled());
-  EXPECT_FALSE(MaterialDesignController::IsNewerMaterialUi());
-  EXPECT_FALSE(MaterialDesignController::IsRefreshUi());
-}
-
-namespace {
-
-class MaterialDesignControllerTestCommandLineForceHybrid
-    : public MaterialDesignControllerTest {
- public:
-  MaterialDesignControllerTestCommandLineForceHybrid() {
-    SetCommandLineSwitch(switches::kTopChromeMDMaterialHybrid);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MaterialDesignControllerTestCommandLineForceHybrid);
-};
-
-}  // namespace
-
-// Verify command line value |switches::kTopChromeMDMaterialHybrid| maps to
-// Mode::MATERIAL_HYBRID when the command line flag is defined.
-TEST_F(MaterialDesignControllerTestCommandLineForceHybrid, CheckApiReturns) {
-  EXPECT_EQ(MaterialDesignController::Mode::MATERIAL_HYBRID,
-            MaterialDesignController::GetMode());
-
-  EXPECT_FALSE(MaterialDesignController::IsTouchOptimizedUiEnabled());
-  EXPECT_FALSE(MaterialDesignController::IsNewerMaterialUi());
-  EXPECT_FALSE(MaterialDesignController::IsRefreshUi());
-}
-
-namespace {
-
-class MaterialDesignControllerTestCommandLineForceTouchOptimized
-    : public MaterialDesignControllerTest {
- public:
-  MaterialDesignControllerTestCommandLineForceTouchOptimized() {
-    SetCommandLineSwitch("material-touch-optimized");
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(
-      MaterialDesignControllerTestCommandLineForceTouchOptimized);
-};
-
-}  // namespace
-
-// Verify command line value "material-touch-optimized" maps to
-// Mode::MATERIAL_TOUCH_OPTIMIZED when the command line flag is defined.
-TEST_F(MaterialDesignControllerTestCommandLineForceTouchOptimized,
-       CheckApiReturns) {
-  EXPECT_EQ(MaterialDesignController::Mode::MATERIAL_TOUCH_OPTIMIZED,
-            MaterialDesignController::GetMode());
-
-  EXPECT_TRUE(MaterialDesignController::IsTouchOptimizedUiEnabled());
-  EXPECT_TRUE(MaterialDesignController::IsNewerMaterialUi());
-  EXPECT_FALSE(MaterialDesignController::IsRefreshUi());
 }
 
 namespace {
@@ -156,15 +73,9 @@ class MaterialDesignControllerTestCommandLineRefresh
 
 }  // namespace
 
-// Verify command line value |switches::kTopChromeMDMaterialRefresh| maps to
-// Mode::MATERIAL_REFRESH when the command line flag is defined.
+// Verify switches::kTopChromeMDMaterialRefresh maps to non-touch (the default).
 TEST_F(MaterialDesignControllerTestCommandLineRefresh, CheckApiReturns) {
-  EXPECT_EQ(MaterialDesignController::Mode::MATERIAL_REFRESH,
-            MaterialDesignController::GetMode());
-
   EXPECT_FALSE(MaterialDesignController::IsTouchOptimizedUiEnabled());
-  EXPECT_TRUE(MaterialDesignController::IsNewerMaterialUi());
-  EXPECT_TRUE(MaterialDesignController::IsRefreshUi());
 }
 
 namespace {
@@ -183,71 +94,10 @@ class MaterialDesignControllerTestCommandLineForceTouchRefresh
 
 }  // namespace
 
-// Verify command line value
-// |switches::kTopChromeMDMaterialRefreshTouchOptimized| maps to
-// Mode::MATERIAL_REFRESH when the command line flag is defined.
+// Verify switches::kTopChromeMDMaterialRefreshTouchOptimized maps to touch.
 TEST_F(MaterialDesignControllerTestCommandLineForceTouchRefresh,
        CheckApiReturns) {
-  EXPECT_EQ(MaterialDesignController::Mode::MATERIAL_TOUCH_REFRESH,
-            MaterialDesignController::GetMode());
-
   EXPECT_TRUE(MaterialDesignController::IsTouchOptimizedUiEnabled());
-  EXPECT_TRUE(MaterialDesignController::IsNewerMaterialUi());
-  EXPECT_TRUE(MaterialDesignController::IsRefreshUi());
-}
-
-namespace {
-
-class MaterialDesignControllerTestDefault :
-    public MaterialDesignControllerTest {
- public:
-  MaterialDesignControllerTestDefault() {
-    SetCommandLineSwitch(std::string());
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MaterialDesignControllerTestDefault);
-};
-
-}  // namespace
-
-// Verify command line value "" maps to the default mode when the command line
-// flag is defined.
-TEST_F(MaterialDesignControllerTestDefault, CheckApiReturns) {
-  EXPECT_EQ(MaterialDesignController::Mode::MATERIAL_REFRESH,
-            MaterialDesignController::GetMode());
-
-  EXPECT_FALSE(MaterialDesignController::IsTouchOptimizedUiEnabled());
-  EXPECT_TRUE(MaterialDesignController::IsNewerMaterialUi());
-  EXPECT_TRUE(MaterialDesignController::IsRefreshUi());
-}
-
-namespace {
-
-class MaterialDesignControllerTestCommandLineForceInvalidValue
-    : public MaterialDesignControllerTest {
- public:
-  MaterialDesignControllerTestCommandLineForceInvalidValue() {
-    const std::string kInvalidValue = "1nvalid-valu3";
-    SetCommandLineSwitch(kInvalidValue);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(
-      MaterialDesignControllerTestCommandLineForceInvalidValue);
-};
-
-}  // namespace
-
-// Verify an invalid command line value uses the default mode.
-TEST_F(MaterialDesignControllerTestCommandLineForceInvalidValue,
-       CheckApiReturns) {
-  EXPECT_EQ(MaterialDesignController::Mode::MATERIAL_REFRESH,
-            MaterialDesignController::GetMode());
-
-  EXPECT_FALSE(MaterialDesignController::IsTouchOptimizedUiEnabled());
-  EXPECT_TRUE(MaterialDesignController::IsNewerMaterialUi());
-  EXPECT_TRUE(MaterialDesignController::IsRefreshUi());
 }
 
 namespace {
@@ -297,13 +147,11 @@ TEST(MaterialDesignControllerObserver, TabletOnMdModeChanged) {
       &tablet_enabled_observer);
   ASSERT_FALSE(tablet_enabled_observer.on_md_mode_changed_called());
 
-  EXPECT_EQ(MaterialDesignController::Mode::MATERIAL_REFRESH,
-            MaterialDesignController::GetMode());
+  EXPECT_FALSE(MaterialDesignController::IsTouchOptimizedUiEnabled());
 
   MaterialDesignController::OnTabletModeToggled(true);
 
-  EXPECT_EQ(MaterialDesignController::Mode::MATERIAL_TOUCH_REFRESH,
-            MaterialDesignController::GetMode());
+  EXPECT_TRUE(MaterialDesignController::IsTouchOptimizedUiEnabled());
 
   EXPECT_TRUE(tablet_enabled_observer.on_md_mode_changed_called());
 
@@ -314,8 +162,7 @@ TEST(MaterialDesignControllerObserver, TabletOnMdModeChanged) {
 
   MaterialDesignController::OnTabletModeToggled(false);
 
-  EXPECT_EQ(MaterialDesignController::Mode::MATERIAL_REFRESH,
-            MaterialDesignController::GetMode());
+  EXPECT_FALSE(MaterialDesignController::IsTouchOptimizedUiEnabled());
 
   EXPECT_TRUE(tablet_disabled_observer.on_md_mode_changed_called());
 
