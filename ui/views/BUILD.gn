@@ -69,7 +69,6 @@ jumbo_component("views") {
     "animation/ink_drop_animation_ended_reason.h",
     "animation/ink_drop_highlight.h",
     "animation/ink_drop_highlight_observer.h",
-    "animation/ink_drop_host.h",
     "animation/ink_drop_host_view.h",
     "animation/ink_drop_impl.h",
     "animation/ink_drop_mask.h",

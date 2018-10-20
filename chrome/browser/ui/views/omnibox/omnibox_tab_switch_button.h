@@ -24,14 +24,10 @@ class OmniboxTabSwitchButton : public views::MdTextButton {
 
   ~OmniboxTabSwitchButton() override;
 
-  // views::View
+  // views::MdTextButton:
   gfx::Size CalculatePreferredSize() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-
-  // views::InkDropHostView
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
-
-  // views::Button
   void AnimationProgressed(const gfx::Animation* animation) override;
   void StateChanged(ButtonState old_state) override;
 

@@ -14,6 +14,10 @@
 
 class NewTabPromoBubbleView;
 
+namespace views {
+class InkDropContainerView;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // NewTabButton
 //

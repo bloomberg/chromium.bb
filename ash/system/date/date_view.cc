@@ -181,7 +181,7 @@ void DateView::SetAction(DateAction action) {
   // Disable |this| when not clickable so that the ripple is not shown.
   SetEnabled(action_ != DateAction::NONE);
   if (action_ != DateAction::NONE)
-    SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
+    SetInkDropMode(InkDropMode::ON);
 }
 
 void DateView::UpdateTextInternal(const base::Time& now) {

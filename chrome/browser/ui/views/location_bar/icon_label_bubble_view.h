@@ -130,7 +130,7 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // Sets the border padding around this view.
   virtual void UpdateBorder();
 
-  // views::InkDropHostView:
+  // views::Button:
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -144,8 +144,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
       const override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   SkColor GetInkDropBaseColor() const override = 0;
-
-  // views::Button:
   bool IsTriggerableEvent(const ui::Event& event) override;
   bool ShouldUpdateInkDropOnClickCanceled() const override;
   void NotifyClick(const ui::Event& event) override;

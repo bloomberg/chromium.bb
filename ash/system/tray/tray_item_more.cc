@@ -32,7 +32,7 @@ TrayItemMore::TrayItemMore(SystemTrayItem* owner)
   tri_view_->AddView(TriView::Container::CENTER, label_);
   tri_view_->AddView(TriView::Container::END, more_);
 
-  SetInkDropMode(InkDropHostView::InkDropMode::ON);
+  SetInkDropMode(InkDropMode::ON);
 }
 
 TrayItemMore::~TrayItemMore() = default;

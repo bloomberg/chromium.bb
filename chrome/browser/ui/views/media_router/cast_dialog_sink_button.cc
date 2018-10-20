@@ -42,7 +42,7 @@ class StopButton : public views::LabelButton {
     static const gfx::ImageSkia icon = CreateVectorIcon(
         kGenericStopIcon, kPrimaryIconSize, gfx::kGoogleBlue500);
     SetImage(views::Button::STATE_NORMAL, icon);
-    SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
+    SetInkDropMode(InkDropMode::ON);
     set_tag(button_tag);
     SetBorder(views::CreateEmptyBorder(gfx::Insets(kPrimaryIconBorderWidth)));
     SetEnabled(enabled);

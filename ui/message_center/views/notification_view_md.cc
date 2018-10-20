@@ -91,9 +91,6 @@ constexpr SkColor kLargeImageBackgroundColor = SkColorSetRGB(0xf5, 0xf5, 0xf5);
 constexpr SkColor kRegularTextColorMD = SkColorSetRGB(0x21, 0x21, 0x21);
 constexpr SkColor kDimTextColorMD = SkColorSetRGB(0x75, 0x75, 0x75);
 
-// Background of inline settings area.
-const SkColor kSettingsRowBackgroundColor = SkColorSetRGB(0xee, 0xee, 0xee);
-
 // Text color and icon color of inline reply area when the textfield is empty.
 constexpr SkColor kTextfieldPlaceholderTextColorMD =
     SkColorSetA(SK_ColorWHITE, 0x8A);
@@ -336,7 +333,7 @@ NotificationButtonMD::NotificationButtonMD(
                          views::style::CONTEXT_BUTTON_MD),
       placeholder_(placeholder) {
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  SetInkDropMode(views::LabelButton::InkDropMode::ON);
+  SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
   set_ink_drop_base_color(SK_ColorBLACK);
   set_ink_drop_visible_opacity(kActionButtonInkDropRippleVisibleOpacity);
@@ -1357,7 +1354,8 @@ std::unique_ptr<views::InkDropMask> NotificationViewMD::CreateInkDropMask()
 }
 
 SkColor NotificationViewMD::GetInkDropBaseColor() const {
-  return kSettingsRowBackgroundColor;
+  // Background of inline settings area.
+  return SkColorSetRGB(0xEE, 0xEE, 0xEE);
 }
 
 void NotificationViewMD::InkDropAnimationStarted() {

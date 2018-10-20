@@ -31,7 +31,7 @@ class HostedAppMenuButton : public AppMenuButton,
                            const gfx::Point& point,
                            const ui::Event* event) override;
 
-  // InkDropHostView:
+  // AppMenuButton:
   SkColor GetInkDropBaseColor() const override;
 
  private:

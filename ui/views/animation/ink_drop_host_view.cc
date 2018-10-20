@@ -20,20 +20,6 @@
 #include "ui/views/view_properties.h"
 
 namespace views {
-namespace {
-
-// The scale factor to compute the large size of the default
-// SquareInkDropRipple.
-constexpr float kLargeInkDropScale = 1.333f;
-
-// Default opacity of the ink drop when it is visible.
-constexpr float kInkDropVisibleOpacity = 0.175f;
-
-// Default corner radii used for the SquareInkDropRipple.
-constexpr int kInkDropSmallCornerRadius = 2;
-constexpr int kInkDropLargeCornerRadius = 4;
-
-}  // namespace
 
 // An EventHandler that is guaranteed to be invoked and is not prone to
 // InkDropHostView descendents who do not call
@@ -44,7 +30,8 @@ constexpr int kInkDropLargeCornerRadius = 4;
 class InkDropHostView::InkDropGestureHandler : public ui::EventHandler {
  public:
   explicit InkDropGestureHandler(InkDropHostView* host_view)
-      : target_handler_(new ui::ScopedTargetHandler(host_view, this)),
+      : target_handler_(
+            std::make_unique<ui::ScopedTargetHandler>(host_view, this)),
         host_view_(host_view) {}
 
   ~InkDropGestureHandler() override {}
@@ -110,21 +97,7 @@ class InkDropHostView::InkDropGestureHandler : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(InkDropGestureHandler);
 };
 
-// static
-
-gfx::Size InkDropHostView::CalculateLargeInkDropSize(
-    const gfx::Size& small_size) {
-  return gfx::ScaleToCeiledSize(gfx::Size(small_size), kLargeInkDropScale);
-}
-
-InkDropHostView::InkDropHostView()
-    : ink_drop_mode_(InkDropMode::OFF),
-      ink_drop_(nullptr),
-      ink_drop_visible_opacity_(kInkDropVisibleOpacity),
-      ink_drop_small_corner_radius_(kInkDropSmallCornerRadius),
-      ink_drop_large_corner_radius_(kInkDropLargeCornerRadius),
-      old_paint_to_layer_(false),
-      destroying_(false) {}
+InkDropHostView::InkDropHostView() = default;
 
 InkDropHostView::~InkDropHostView() {
   // TODO(bruthig): Improve InkDropImpl to be safer about calling back to
@@ -189,24 +162,9 @@ std::unique_ptr<views::InkDropMask> InkDropHostView::CreateInkDropMask() const {
   return nullptr;
 }
 
-std::unique_ptr<InkDropRipple> InkDropHostView::CreateDefaultInkDropRipple(
-    const gfx::Point& center_point,
-    const gfx::Size& size) const {
-  std::unique_ptr<InkDropRipple> ripple(new SquareInkDropRipple(
-      CalculateLargeInkDropSize(size), ink_drop_large_corner_radius_, size,
-      ink_drop_small_corner_radius_, center_point, GetInkDropBaseColor(),
-      ink_drop_visible_opacity()));
-  return ripple;
-}
-
-std::unique_ptr<InkDropHighlight>
-InkDropHostView::CreateDefaultInkDropHighlight(const gfx::PointF& center_point,
-                                               const gfx::Size& size) const {
-  std::unique_ptr<InkDropHighlight> highlight(
-      new InkDropHighlight(size, ink_drop_small_corner_radius_, center_point,
-                           GetInkDropBaseColor()));
-  highlight->set_explode_size(gfx::SizeF(CalculateLargeInkDropSize(size)));
-  return highlight;
+SkColor InkDropHostView::GetInkDropBaseColor() const {
+  NOTREACHED();
+  return gfx::kPlaceholderColor;
 }
 
 void InkDropHostView::SetInkDropMode(InkDropMode ink_drop_mode) {
@@ -217,12 +175,6 @@ void InkDropHostView::SetInkDropMode(InkDropMode ink_drop_mode) {
     gesture_handler_ = nullptr;
   else if (!gesture_handler_)
     gesture_handler_ = std::make_unique<InkDropGestureHandler>(this);
-}
-
-gfx::Point InkDropHostView::GetInkDropCenterBasedOnLastEvent() const {
-  return last_ripple_triggering_event_
-             ? last_ripple_triggering_event_->location()
-             : GetMirroredRect(GetContentsBounds()).CenterPoint();
 }
 
 void InkDropHostView::AnimateInkDrop(InkDropState state,
@@ -295,9 +247,38 @@ void InkDropHostView::OnMouseEvent(ui::MouseEvent* event) {
   View::OnMouseEvent(event);
 }
 
-SkColor InkDropHostView::GetInkDropBaseColor() const {
-  NOTREACHED();
-  return gfx::kPlaceholderColor;
+std::unique_ptr<InkDropImpl> InkDropHostView::CreateDefaultInkDropImpl() {
+  auto ink_drop = std::make_unique<InkDropImpl>(this, size());
+  ink_drop->SetAutoHighlightMode(
+      InkDropImpl::AutoHighlightMode::HIDE_ON_RIPPLE);
+  return ink_drop;
+}
+
+std::unique_ptr<InkDropImpl>
+InkDropHostView::CreateDefaultFloodFillInkDropImpl() {
+  std::unique_ptr<views::InkDropImpl> ink_drop = CreateDefaultInkDropImpl();
+  ink_drop->SetAutoHighlightMode(
+      views::InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE);
+  return ink_drop;
+}
+
+std::unique_ptr<InkDropRipple> InkDropHostView::CreateDefaultInkDropRipple(
+    const gfx::Point& center_point,
+    const gfx::Size& size) const {
+  auto ripple = std::make_unique<SquareInkDropRipple>(
+      CalculateLargeInkDropSize(size), ink_drop_large_corner_radius_, size,
+      ink_drop_small_corner_radius_, center_point, GetInkDropBaseColor(),
+      ink_drop_visible_opacity());
+  return ripple;
+}
+
+std::unique_ptr<InkDropHighlight>
+InkDropHostView::CreateDefaultInkDropHighlight(const gfx::PointF& center_point,
+                                               const gfx::Size& size) const {
+  auto highlight = std::make_unique<InkDropHighlight>(
+      size, ink_drop_small_corner_radius_, center_point, GetInkDropBaseColor());
+  highlight->set_explode_size(gfx::SizeF(CalculateLargeInkDropSize(size)));
+  return highlight;
 }
 
 bool InkDropHostView::HasInkDrop() const {
@@ -315,6 +296,12 @@ InkDrop* InkDropHostView::GetInkDrop() {
   return ink_drop_.get();
 }
 
+gfx::Point InkDropHostView::GetInkDropCenterBasedOnLastEvent() const {
+  return last_ripple_triggering_event_
+             ? last_ripple_triggering_event_->location()
+             : GetMirroredRect(GetContentsBounds()).CenterPoint();
+}
+
 void InkDropHostView::InstallInkDropMask(ui::Layer* ink_drop_layer) {
   ink_drop_mask_ = CreateInkDropMask();
   if (ink_drop_mask_)
@@ -330,20 +317,13 @@ void InkDropHostView::UpdateInkDropMaskLayerSize(const gfx::Size& new_size) {
     ink_drop_mask_->UpdateLayerSize(new_size);
 }
 
-std::unique_ptr<InkDropImpl> InkDropHostView::CreateDefaultInkDropImpl() {
-  auto ink_drop = std::make_unique<InkDropImpl>(this, size());
-  ink_drop->SetAutoHighlightMode(
-      InkDropImpl::AutoHighlightMode::HIDE_ON_RIPPLE);
-  return ink_drop;
-}
-
-std::unique_ptr<InkDropImpl>
-InkDropHostView::CreateDefaultFloodFillInkDropImpl() {
-  std::unique_ptr<views::InkDropImpl> ink_drop =
-      InkDropHostView::CreateDefaultInkDropImpl();
-  ink_drop->SetAutoHighlightMode(
-      views::InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE);
-  return ink_drop;
+// static
+gfx::Size InkDropHostView::CalculateLargeInkDropSize(
+    const gfx::Size& small_size) {
+  // The scale factor to compute the large size of the default
+  // SquareInkDropRipple.
+  constexpr float kLargeInkDropScale = 1.333f;
+  return gfx::ScaleToCeiledSize(gfx::Size(small_size), kLargeInkDropScale);
 }
 
 }  // namespace views
