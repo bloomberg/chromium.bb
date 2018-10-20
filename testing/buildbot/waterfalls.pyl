@@ -1376,6 +1376,9 @@
         },
       },
       'linux-code-coverage-generation': {
+        'mixins': [
+            'code-coverage',
+        ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_coverage_gtests',
         }
