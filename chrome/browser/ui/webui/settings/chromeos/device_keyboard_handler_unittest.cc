@@ -47,8 +47,7 @@ class KeyboardHandlerTest : public testing::Test {
   bool GetLastShowKeysChangedMessage(bool* has_caps_lock_out,
                                      bool* has_diamond_key_out,
                                      bool* has_external_meta_key_out,
-                                     bool* has_apple_command_key_out,
-                                     bool* has_internal_search_out)
+                                     bool* has_apple_command_key_out)
       WARN_UNUSED_RESULT {
     for (auto it = web_ui_.call_data().rbegin();
          it != web_ui_.call_data().rend(); ++it) {
@@ -71,7 +70,6 @@ class KeyboardHandlerTest : public testing::Test {
           {"showDiamondKey", has_diamond_key_out},
           {"showExternalMetaKey", has_external_meta_key_out},
           {"showAppleCommandKey", has_apple_command_key_out},
-          {"hasInternalKeyboard", has_internal_search_out},
       };
 
       for (const auto& pair : path_to_out_param) {
@@ -94,7 +92,7 @@ class KeyboardHandlerTest : public testing::Test {
     bool has_caps_lock = false;
     bool ignored = false;
     if (!GetLastShowKeysChangedMessage(&has_caps_lock, &ignored, &ignored,
-                                       &ignored, &ignored)) {
+                                       &ignored)) {
       ADD_FAILURE() << "Didn't get " << KeyboardHandler::kShowKeysChangedName;
       return false;
     }
@@ -108,7 +106,7 @@ class KeyboardHandlerTest : public testing::Test {
     bool has_diamond_key = false;
     bool ignored = false;
     if (!GetLastShowKeysChangedMessage(&ignored, &has_diamond_key, &ignored,
-                                       &ignored, &ignored)) {
+                                       &ignored)) {
       ADD_FAILURE() << "Didn't get " << KeyboardHandler::kShowKeysChangedName;
       return false;
     }
@@ -122,7 +120,7 @@ class KeyboardHandlerTest : public testing::Test {
     bool has_external_meta = false;
     bool ignored = false;
     if (!GetLastShowKeysChangedMessage(&ignored, &ignored, &has_external_meta,
-                                       &ignored, &ignored)) {
+                                       &ignored)) {
       ADD_FAILURE() << "Didn't get " << KeyboardHandler::kShowKeysChangedName;
       return false;
     }
@@ -136,25 +134,11 @@ class KeyboardHandlerTest : public testing::Test {
     bool has_apple_command_key = false;
     bool ignored = false;
     if (!GetLastShowKeysChangedMessage(&ignored, &ignored, &ignored,
-                                       &has_apple_command_key, &ignored)) {
+                                       &has_apple_command_key)) {
       ADD_FAILURE() << "Didn't get " << KeyboardHandler::kShowKeysChangedName;
       return false;
     }
     return has_apple_command_key;
-  }
-
-  // Returns true if the last keys-changed message reported that the device has
-  // an internal keyboard and hence an internal Search key remap option.
-  // A failure is added if a message wasn't found.
-  bool HasInternalSearchKey() {
-    bool has_internal_search_key = false;
-    bool ignored = false;
-    if (!GetLastShowKeysChangedMessage(&ignored, &ignored, &ignored, &ignored,
-                                       &has_internal_search_key)) {
-      ADD_FAILURE() << "Didn't get " << KeyboardHandler::kShowKeysChangedName;
-      return false;
-    }
-    return has_internal_search_key;
   }
 
   ws::InputDeviceClientTestApi input_device_client_test_api_;
@@ -170,7 +154,6 @@ TEST_F(KeyboardHandlerTest, DefaultKeys) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       chromeos::switches::kHasChromeOSKeyboard);
   handler_test_api_.Initialize();
-  EXPECT_FALSE(HasInternalSearchKey());
   EXPECT_FALSE(HasCapsLock());
   EXPECT_FALSE(HasDiamondKey());
   EXPECT_FALSE(HasExternalMetaKey());
@@ -181,7 +164,6 @@ TEST_F(KeyboardHandlerTest, NonChromeOSKeyboard) {
   // If kHasChromeOSKeyboard isn't passed, we should assume there's a Caps Lock
   // key.
   handler_test_api_.Initialize();
-  EXPECT_FALSE(HasInternalSearchKey());
   EXPECT_TRUE(HasCapsLock());
   EXPECT_FALSE(HasDiamondKey());
   EXPECT_FALSE(HasExternalMetaKey());
@@ -195,7 +177,6 @@ TEST_F(KeyboardHandlerTest, ExternalKeyboard) {
   input_device_client_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
       {1, ui::INPUT_DEVICE_INTERNAL, "internal keyboard"}});
   handler_test_api_.Initialize();
-  EXPECT_TRUE(HasInternalSearchKey());
   EXPECT_FALSE(HasCapsLock());
   EXPECT_FALSE(HasDiamondKey());
   EXPECT_FALSE(HasExternalMetaKey());
@@ -205,7 +186,6 @@ TEST_F(KeyboardHandlerTest, ExternalKeyboard) {
   // Caps Lock and Meta keys now.
   input_device_client_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
       {2, ui::INPUT_DEVICE_USB, "external keyboard"}});
-  EXPECT_FALSE(HasInternalSearchKey());
   EXPECT_TRUE(HasCapsLock());
   EXPECT_FALSE(HasDiamondKey());
   EXPECT_TRUE(HasExternalMetaKey());
@@ -215,7 +195,6 @@ TEST_F(KeyboardHandlerTest, ExternalKeyboard) {
   // the command key.
   input_device_client_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
       {3, ui::INPUT_DEVICE_USB, "Apple Inc. Apple Keyboard"}});
-  EXPECT_FALSE(HasInternalSearchKey());
   EXPECT_TRUE(HasCapsLock());
   EXPECT_FALSE(HasDiamondKey());
   EXPECT_FALSE(HasExternalMetaKey());
@@ -226,7 +205,6 @@ TEST_F(KeyboardHandlerTest, ExternalKeyboard) {
   input_device_client_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
       {2, ui::INPUT_DEVICE_USB, "external keyboard"},
       {3, ui::INPUT_DEVICE_USB, "Apple Inc. Apple Keyboard"}});
-  EXPECT_FALSE(HasInternalSearchKey());
   EXPECT_TRUE(HasCapsLock());
   EXPECT_FALSE(HasDiamondKey());
   EXPECT_TRUE(HasExternalMetaKey());
@@ -238,7 +216,6 @@ TEST_F(KeyboardHandlerTest, ExternalKeyboard) {
   // https://crbug.com/834594.
   input_device_client_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
       {4, ui::INPUT_DEVICE_USB, "Topre Corporation Realforce 87"}});
-  EXPECT_FALSE(HasInternalSearchKey());
   EXPECT_TRUE(HasCapsLock());
   EXPECT_FALSE(HasDiamondKey());
   EXPECT_TRUE(HasExternalMetaKey());
@@ -246,7 +223,6 @@ TEST_F(KeyboardHandlerTest, ExternalKeyboard) {
 
   // Disconnect the external keyboard and check that the key goes away.
   input_device_client_test_api_.SetKeyboardDevices({});
-  EXPECT_FALSE(HasInternalSearchKey());
   EXPECT_FALSE(HasCapsLock());
   EXPECT_FALSE(HasDiamondKey());
   EXPECT_FALSE(HasExternalMetaKey());
