@@ -9,6 +9,7 @@
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_directory.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "net/base/net_errors.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -32,7 +33,10 @@ using ResponseHeaders = std::multimap<std::string, std::string>;
 
 class HttpServiceTest : public ::testing::Test {
  public:
-  HttpServiceTest() : binding_(&http_service_server_) {
+  HttpServiceTest()
+      : task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+        binding_(&http_service_server_) {
     // Initialize the test server.
     test_server_.AddDefaultHandlers(
         base::FilePath(FILE_PATH_LITERAL(kTestFilePath)));
@@ -40,6 +44,8 @@ class HttpServiceTest : public ::testing::Test {
   }
 
  protected:
+  base::test::ScopedTaskEnvironment task_environment_;
+
   void SetUp() override {
     ASSERT_TRUE(test_server_.Start());
 
