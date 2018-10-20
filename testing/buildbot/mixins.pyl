@@ -144,6 +144,9 @@
       },
     },
   },
+  'code-coverage': {
+    'isolate_coverage_data': True,
+  },
   'flounder': {
     # Nexus 9
     'swarming': {
