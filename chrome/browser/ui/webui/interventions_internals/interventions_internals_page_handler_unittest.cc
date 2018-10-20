@@ -208,33 +208,37 @@ class TestPreviewsLogger : public previews::PreviewsLogger {
 class TestPreviewsDeciderImpl : public previews::PreviewsDeciderImpl {
  public:
   TestPreviewsDeciderImpl()
-      : PreviewsDeciderImpl(base::DefaultClock::GetInstance()) {}
+      : PreviewsDeciderImpl(nullptr,
+                            nullptr,
+                            base::DefaultClock::GetInstance()) {}
 
   // previews::PreviewsDeciderImpl:
   void Initialize(
-      previews::PreviewsUIService* previews_ui_service,
-      std::unique_ptr<blacklist::OptOutStore> previews_opt_out_store,
+      base::WeakPtr<previews::PreviewsUIService> previews_ui_service,
+      std::unique_ptr<blacklist::OptOutStore> opt_out_store,
       std::unique_ptr<previews::PreviewsOptimizationGuide> previews_opt_guide,
       const previews::PreviewsIsEnabledCallback& is_enabled_callback,
-      blacklist::BlacklistData::AllowedTypesAndVersions allowed_previews)
-      override {}
+      blacklist::BlacklistData::AllowedTypesAndVersions allowed_types)
+      override {
+    // Do nothing.
+  }
 };
 
 // Mocked TestPreviewsService for testing InterventionsInternalsPageHandler.
 class TestPreviewsUIService : public previews::PreviewsUIService {
  public:
   TestPreviewsUIService(
-      std::unique_ptr<previews::PreviewsDeciderImpl> previews_decider_impl,
+      TestPreviewsDeciderImpl* previews_decider_impl,
       std::unique_ptr<previews::PreviewsLogger> logger,
       network::TestNetworkQualityTracker* test_network_quality_tracker)
-      : previews::PreviewsUIService(
-            std::move(previews_decider_impl),
-            nullptr, /* previews_opt_out_store */
-            nullptr, /* previews_opt_guide */
-            base::BindRepeating(&MockedPreviewsIsEnabled),
-            std::move(logger),
-            blacklist::BlacklistData::AllowedTypesAndVersions(),
-            test_network_quality_tracker),
+      : PreviewsUIService(previews_decider_impl,
+                          nullptr, /* io_task_runner */
+                          nullptr, /* previews_opt_out_store */
+                          nullptr, /* previews_opt_guide */
+                          base::Bind(&MockedPreviewsIsEnabled),
+                          std::move(logger),
+                          blacklist::BlacklistData::AllowedTypesAndVersions(),
+                          test_network_quality_tracker),
         blacklist_ignored_(false) {}
   ~TestPreviewsUIService() override {}
 
@@ -259,13 +263,12 @@ class InterventionsInternalsPageHandlerTest : public testing::Test {
   ~InterventionsInternalsPageHandlerTest() override {}
 
   void SetUp() override {
+    TestPreviewsDeciderImpl io_data;
     std::unique_ptr<TestPreviewsLogger> logger =
         std::make_unique<TestPreviewsLogger>();
     logger_ = logger.get();
-
     previews_ui_service_ = std::make_unique<TestPreviewsUIService>(
-        std::make_unique<TestPreviewsDeciderImpl>(), std::move(logger),
-        &test_network_quality_tracker_);
+        &io_data, std::move(logger), &test_network_quality_tracker_);
 
     ASSERT_TRUE(profile_manager_.SetUp());
 

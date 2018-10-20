@@ -180,13 +180,8 @@ DataReductionProxyMetricsObserver::OnCommit(
   }
   data_ = data->DeepCopy();
 
-  PreviewsUITabHelper* ui_tab_helper =
-      PreviewsUITabHelper::FromWebContents(navigation_handle->GetWebContents());
-  previews::PreviewsUserData* previews_data = nullptr;
-
-  if (ui_tab_helper)
-    previews_data = ui_tab_helper->GetPreviewsUserData(navigation_handle);
-
+  previews::PreviewsUserData* previews_data =
+      chrome_navigation_data->previews_user_data();
   if (previews_data) {
     data_->set_black_listed(previews_data->black_listed_for_lite_page());
   }

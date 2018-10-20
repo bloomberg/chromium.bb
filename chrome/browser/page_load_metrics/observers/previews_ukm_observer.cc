@@ -7,6 +7,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/previews/content/previews_content_util.h"
 #include "components/previews/core/previews_experiments.h"
@@ -37,22 +39,23 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
 
   save_data_enabled_ = IsDataSaverEnabled(navigation_handle);
 
-  PreviewsUITabHelper* ui_tab_helper =
-      PreviewsUITabHelper::FromWebContents(navigation_handle->GetWebContents());
-  if (!ui_tab_helper)
+  // As documented in content/public/browser/navigation_handle.h, this
+  // NavigationData is a clone of the NavigationData instance returned from
+  // ResourceDispatcherHostDelegate::GetNavigationData during commit.
+  // Because ChromeResourceDispatcherHostDelegate always returns a
+  // ChromeNavigationData, it is safe to static_cast here.
+  ChromeNavigationData* chrome_navigation_data =
+      static_cast<ChromeNavigationData*>(
+          navigation_handle->GetNavigationData());
+  if (!chrome_navigation_data)
     return STOP_OBSERVING;
-
-  previews::PreviewsUserData* previews_user_data =
-      ui_tab_helper->GetPreviewsUserData(navigation_handle);
-  if (!previews_user_data)
-    return STOP_OBSERVING;
-
-  content::PreviewsState previews_state =
-      previews_user_data->committed_previews_state();
-  if (previews_state && previews::GetMainFramePreviewsType(previews_state) ==
-                            previews::PreviewsType::LITE_PAGE) {
+  data_reduction_proxy::DataReductionProxyData* data =
+      chrome_navigation_data->GetDataReductionProxyData();
+  if (data && data->lite_page_received()) {
     lite_page_seen_ = true;
   }
+  content::PreviewsState previews_state =
+      chrome_navigation_data->previews_state();
   if (previews_state && previews::GetMainFramePreviewsType(previews_state) ==
                             previews::PreviewsType::NOSCRIPT) {
     noscript_seen_ = true;
@@ -61,6 +64,8 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
                             previews::PreviewsType::RESOURCE_LOADING_HINTS) {
     resource_loading_hints_seen_ = true;
   }
+  previews::PreviewsUserData* previews_user_data =
+      chrome_navigation_data->previews_user_data();
   if (previews_user_data &&
       previews_user_data->cache_control_no_transform_directive()) {
     origin_opt_out_occurred_ = true;

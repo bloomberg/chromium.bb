@@ -36,55 +36,54 @@ ComponentInfo::ComponentInfo(const base::Version& hints_version,
 ComponentInfo::~ComponentInfo() {}
 
 OptimizationGuideService::OptimizationGuideService(
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread_task_runner)
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_task_runner)
     : background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
-      ui_thread_task_runner_(ui_thread_task_runner),
+      io_thread_task_runner_(io_thread_task_runner),
       latest_processed_version_(kNullVersion) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 OptimizationGuideService::~OptimizationGuideService() {}
 
 void OptimizationGuideService::SetLatestProcessedVersionForTesting(
     const base::Version& version) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   latest_processed_version_ = version;
 }
 
 void OptimizationGuideService::AddObserver(
     OptimizationGuideServiceObserver* observer) {
-  if (ui_thread_task_runner_->BelongsToCurrentThread()) {
-    AddObserverOnUIThread(observer);
+  if (io_thread_task_runner_->BelongsToCurrentThread()) {
+    AddObserverOnIOThread(observer);
   } else {
-    ui_thread_task_runner_->PostTask(
+    io_thread_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&OptimizationGuideService::AddObserverOnUIThread,
+        base::BindOnce(&OptimizationGuideService::AddObserverOnIOThread,
                        base::Unretained(this), observer));
   }
 }
 
-void OptimizationGuideService::AddObserverOnUIThread(
+void OptimizationGuideService::AddObserverOnIOThread(
     OptimizationGuideServiceObserver* observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
   observers_.AddObserver(observer);
 }
 
 void OptimizationGuideService::RemoveObserver(
     OptimizationGuideServiceObserver* observer) {
-  if (ui_thread_task_runner_->BelongsToCurrentThread()) {
-    RemoveObserverOnUIThread(observer);
+  if (io_thread_task_runner_->BelongsToCurrentThread()) {
+    RemoveObserverOnIOThread(observer);
   } else {
-    ui_thread_task_runner_->PostTask(
+    io_thread_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&OptimizationGuideService::RemoveObserverOnUIThread,
+        base::BindOnce(&OptimizationGuideService::RemoveObserverOnIOThread,
                        base::Unretained(this), observer));
   }
 }
 
-void OptimizationGuideService::RemoveObserverOnUIThread(
+void OptimizationGuideService::RemoveObserverOnIOThread(
     OptimizationGuideServiceObserver* observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
   observers_.RemoveObserver(observer);
 }
 
@@ -98,7 +97,7 @@ void OptimizationGuideService::ProcessHints(
 
 void OptimizationGuideService::ProcessHintsInBackground(
     const ComponentInfo& component_info) {
-  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // TODO(crbug.com/783246): Add crash loop detection to ensure bad component
   // updates do not crash Chrome.
@@ -127,16 +126,16 @@ void OptimizationGuideService::ProcessHintsInBackground(
   latest_processed_version_ = component_info.hints_version;
 
   RecordProcessHintsResult(ProcessHintsResult::SUCCESS);
-  ui_thread_task_runner_->PostTask(
+  io_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&OptimizationGuideService::DispatchHintsOnUIThread,
+      base::BindOnce(&OptimizationGuideService::DispatchHintsOnIOThread,
                      base::Unretained(this), new_config, component_info));
 }
 
-void OptimizationGuideService::DispatchHintsOnUIThread(
+void OptimizationGuideService::DispatchHintsOnIOThread(
     const proto::Configuration& config,
     const ComponentInfo& component_info) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
 
   for (auto& observer : observers_)
     observer.OnHintsProcessed(config, component_info);

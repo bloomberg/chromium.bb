@@ -10,7 +10,6 @@
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
-#include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/previews/content/previews_content_util.h"
 #include "components/previews/content/previews_ui_service.h"
@@ -44,17 +43,17 @@ void ResourceLoadingHintsWebContentsObserver::DidFinishNavigation(
     return;
   }
 
-  PreviewsUITabHelper* ui_tab_helper =
-      PreviewsUITabHelper::FromWebContents(navigation_handle->GetWebContents());
-  if (!ui_tab_helper)
+  // Store Previews information for this navigation.
+  ChromeNavigationData* nav_data = static_cast<ChromeNavigationData*>(
+      navigation_handle->GetNavigationData());
+  if (!nav_data || !nav_data->previews_user_data())
     return;
 
   previews::PreviewsUserData* previews_user_data =
-      ui_tab_helper->GetPreviewsUserData(navigation_handle);
+      nav_data->previews_user_data();
 
-  if (!previews_user_data ||
-      previews_user_data->committed_previews_type() !=
-          previews::PreviewsType::RESOURCE_LOADING_HINTS) {
+  if (previews_user_data->committed_previews_type() !=
+      previews::PreviewsType::RESOURCE_LOADING_HINTS) {
     return;
   }
 

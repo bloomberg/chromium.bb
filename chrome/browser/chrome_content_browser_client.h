@@ -21,7 +21,6 @@
 #include "chrome/browser/chrome_service.h"
 #include "chrome/browser/metrics/chrome_feature_list_creator.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
@@ -48,15 +47,6 @@ namespace content {
 class BrowserContext;
 class QuotaPermissionContext;
 }
-
-namespace data_reduction_proxy {
-class DataReductionProxyData;
-}  // namespace data_reduction_proxy
-
-namespace previews {
-class PreviewsDecider;
-class PreviewsUserData;
-}  // namespace previews
 
 namespace safe_browsing {
 class SafeBrowsingService;
@@ -518,23 +508,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void OnNetworkServiceDataUseUpdate(int32_t network_traffic_annotation_id_hash,
                                      int64_t recv_bytes,
                                      int64_t sent_bytes) override;
-
-  content::PreviewsState DetermineAllowedPreviews(
-      content::PreviewsState initial_state,
-      content::NavigationHandle* navigation_handle) override;
-
-  content::PreviewsState DetermineCommittedPreviews(
-      content::PreviewsState initial_state,
-      content::NavigationHandle* navigation_handle,
-      const net::HttpResponseHeaders* response_headers) override;
-
-  // Determines the committed previews state for the passed in params.
-  static content::PreviewsState DetermineCommittedPreviewsForURL(
-      const GURL& url,
-      data_reduction_proxy::DataReductionProxyData* drp_data,
-      previews::PreviewsUserData* previews_user_data,
-      const previews::PreviewsDecider* previews_decider,
-      content::PreviewsState initial_state);
 
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);

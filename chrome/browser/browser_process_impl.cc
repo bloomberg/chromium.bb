@@ -1366,7 +1366,7 @@ void BrowserProcessImpl::CreateOptimizationGuideService() {
   optimization_guide_service_ =
       std::make_unique<optimization_guide::OptimizationGuideService>(
           base::CreateSingleThreadTaskRunnerWithTraits(
-              {content::BrowserThread::UI}));
+              {content::BrowserThread::IO}));
 }
 
 void BrowserProcessImpl::CreateGCMDriver() {

@@ -11,9 +11,9 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/offline_pages/offliner_helper.h"
-#include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -25,7 +25,6 @@
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/stub_offline_page_model.h"
 #include "components/prefs/pref_service.h"
-#include "components/previews/content/previews_user_data.h"
 #include "content/public/browser/mhtml_extra_parts.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -667,12 +666,15 @@ TEST_F(BackgroundLoaderOfflinerTest, OffliningPreviewsStatusOffHistogram) {
       content::NavigationHandle::CreateNavigationHandleForTesting(
           kHttpUrl, offliner()->web_contents()->GetMainFrame(), true,
           net::Error::OK));
-  // Set up PreviewsUserData on the handle.
-  PreviewsUITabHelper::CreateForWebContents(offliner()->web_contents());
-  PreviewsUITabHelper::FromWebContents(offliner()->web_contents())
-      ->CreatePreviewsUserDataForNavigationHandle(handle.get(), 1u)
-      ->set_committed_previews_state(
-          content::PreviewsTypes::PREVIEWS_NO_TRANSFORM);
+  // Set up ChromeNavigationData on the handle.
+  std::unique_ptr<ChromeNavigationData> chrome_navigation_data(
+      new ChromeNavigationData());
+  chrome_navigation_data->set_previews_state(
+      content::PreviewsTypes::PREVIEWS_NO_TRANSFORM);
+  std::unique_ptr<content::NavigationData> navigation_data(
+      chrome_navigation_data.release());
+  offliner()->web_contents_tester()->SetNavigationData(
+      handle.get(), std::move(navigation_data));
   scoped_refptr<net::HttpResponseHeaders> header(
       new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
   offliner()->web_contents_tester()->SetHttpResponseHeaders(handle.get(),
@@ -698,11 +700,15 @@ TEST_F(BackgroundLoaderOfflinerTest, OffliningPreviewsStatusOnHistogram) {
       content::NavigationHandle::CreateNavigationHandleForTesting(
           kHttpUrl, offliner()->web_contents()->GetMainFrame(), true,
           net::Error::OK));
-  // Set up PreviewsUserData on the handle.
-  PreviewsUITabHelper::CreateForWebContents(offliner()->web_contents());
-  PreviewsUITabHelper::FromWebContents(offliner()->web_contents())
-      ->CreatePreviewsUserDataForNavigationHandle(handle.get(), 1u)
-      ->set_committed_previews_state(content::PreviewsTypes::CLIENT_LOFI_ON);
+  // Set up ChromeNavigationData on the handle.
+  std::unique_ptr<ChromeNavigationData> chrome_navigation_data(
+      new ChromeNavigationData());
+  chrome_navigation_data->set_previews_state(
+      content::PreviewsTypes::CLIENT_LOFI_ON);
+  std::unique_ptr<content::NavigationData> navigation_data(
+      chrome_navigation_data.release());
+  offliner()->web_contents_tester()->SetNavigationData(
+      handle.get(), std::move(navigation_data));
   scoped_refptr<net::HttpResponseHeaders> header(
       new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
   offliner()->web_contents_tester()->SetHttpResponseHeaders(handle.get(),
