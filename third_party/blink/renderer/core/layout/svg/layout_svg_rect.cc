@@ -80,12 +80,14 @@ void LayoutSVGRect::UpdateShapeFromElement() {
   stroke_bounding_box_ = CalculateStrokeBoundingBox();
 }
 
-bool LayoutSVGRect::ShapeDependentStrokeContains(const FloatPoint& point) {
+bool LayoutSVGRect::ShapeDependentStrokeContains(
+    const HitTestLocation& location) {
   // The optimized code below does not support the cases that we set
   // use_path_fallback_ in UpdateShapeFromElement().
   if (use_path_fallback_)
-    return LayoutSVGShape::ShapeDependentStrokeContains(point);
+    return LayoutSVGShape::ShapeDependentStrokeContains(location);
 
+  const FloatPoint& point = location.TransformedPoint();
   const float half_stroke_width = StrokeWidth() / 2;
   const float half_width = fill_bounding_box_.Width() / 2;
   const float half_height = fill_bounding_box_.Height() / 2;
@@ -104,10 +106,11 @@ bool LayoutSVGRect::ShapeDependentStrokeContains(const FloatPoint& point) {
          (half_height - half_stroke_width <= abs_delta_y);
 }
 
-bool LayoutSVGRect::ShapeDependentFillContains(const FloatPoint& point,
+bool LayoutSVGRect::ShapeDependentFillContains(const HitTestLocation& location,
                                                const WindRule fill_rule) const {
   if (use_path_fallback_)
-    return LayoutSVGShape::ShapeDependentFillContains(point, fill_rule);
+    return LayoutSVGShape::ShapeDependentFillContains(location, fill_rule);
+  const FloatPoint& point = location.TransformedPoint();
   return fill_bounding_box_.Contains(point.X(), point.Y());
 }
 

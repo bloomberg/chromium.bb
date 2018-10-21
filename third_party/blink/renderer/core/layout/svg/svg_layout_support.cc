@@ -413,26 +413,22 @@ bool SVGLayoutSupport::HasFilterResource(const LayoutObject& object) {
 
 bool SVGLayoutSupport::IntersectsClipPath(const LayoutObject& object,
                                           const HitTestLocation& location) {
-  return IntersectsClipPath(object, location.TransformedPoint());
-}
-
-bool SVGLayoutSupport::IntersectsClipPath(const LayoutObject& object,
-                                          const FloatPoint& point) {
   ClipPathOperation* clip_path_operation = object.StyleRef().ClipPath();
   if (!clip_path_operation)
     return true;
+  const FloatRect& reference_box = object.ObjectBoundingBox();
   if (clip_path_operation->GetType() == ClipPathOperation::SHAPE) {
     ShapeClipPathOperation& clip_path =
         ToShapeClipPathOperation(*clip_path_operation);
-    return clip_path.GetPath(object.ObjectBoundingBox()).Contains(point);
+    return clip_path.GetPath(reference_box)
+        .Contains(location.TransformedPoint());
   }
   DCHECK_EQ(clip_path_operation->GetType(), ClipPathOperation::REFERENCE);
   SVGResources* resources =
       SVGResourcesCache::CachedResourcesForLayoutObject(object);
   if (!resources || !resources->Clipper())
     return true;
-  return resources->Clipper()->HitTestClipContent(object.ObjectBoundingBox(),
-                                                  point);
+  return resources->Clipper()->HitTestClipContent(reference_box, location);
 }
 
 bool SVGLayoutSupport::HitTestChildren(LayoutObject* last_child,

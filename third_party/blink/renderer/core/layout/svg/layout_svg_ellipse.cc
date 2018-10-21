@@ -99,15 +99,17 @@ void LayoutSVGEllipse::CalculateRadiiAndCenter() {
   }
 }
 
-bool LayoutSVGEllipse::ShapeDependentStrokeContains(const FloatPoint& point) {
+bool LayoutSVGEllipse::ShapeDependentStrokeContains(
+    const HitTestLocation& location) {
   if (radii_.Width() < 0 || radii_.Height() < 0)
     return false;
 
   // The optimized check below for circles does not support non-circular and
   // the cases that we set use_path_fallback_ in UpdateShapeFromElement().
   if (use_path_fallback_ || radii_.Width() != radii_.Height())
-    return LayoutSVGShape::ShapeDependentStrokeContains(point);
+    return LayoutSVGShape::ShapeDependentStrokeContains(location);
 
+  const FloatPoint& point = location.TransformedPoint();
   const FloatPoint center =
       FloatPoint(center_.X() - point.X(), center_.Y() - point.Y());
   const float half_stroke_width = StrokeWidth() / 2;
@@ -116,8 +118,9 @@ bool LayoutSVGEllipse::ShapeDependentStrokeContains(const FloatPoint& point) {
 }
 
 bool LayoutSVGEllipse::ShapeDependentFillContains(
-    const FloatPoint& point,
+    const HitTestLocation& location,
     const WindRule fill_rule) const {
+  const FloatPoint& point = location.TransformedPoint();
   const FloatPoint center =
       FloatPoint(center_.X() - point.X(), center_.Y() - point.Y());
 
