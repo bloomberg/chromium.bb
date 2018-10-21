@@ -4337,6 +4337,9 @@ test("unit_tests") {
       "../browser/ui/views/translate/translate_bubble_view_unittest.cc",
       "../browser/ui/views/webshare/webshare_target_picker_view_unittest.cc",
     ]
+    if (is_mac) {
+      sources += [ "../browser/ui/views/frame/browser_non_client_frame_view_mac_unittest.mm" ]
+    }
     if (is_chromeos) {
       sources += [ "../browser/ui/views/ime_driver/input_method_bridge_chromeos_unittest.cc" ]
     }
