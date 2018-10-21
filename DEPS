@@ -97,11 +97,12 @@ vars = {
 
   'android_git': 'https://android.googlesource.com',
   'aomedia_git': 'https://aomedia.googlesource.com',
-  'chromium_git': 'https://chromium.googlesource.com',
-  'swiftshader_git': 'https://swiftshader.googlesource.com',
-  'pdfium_git': 'https://pdfium.googlesource.com',
   'boringssl_git': 'https://boringssl.googlesource.com',
+  'chromium_git': 'https://chromium.googlesource.com',
+  'dawn_git': 'https://dawn.googlesource.com',
+  'pdfium_git': 'https://pdfium.googlesource.com',
   'skia_git': 'https://skia.googlesource.com',
+  'swiftshader_git': 'https://swiftshader.googlesource.com',
   'webrtc_git': 'https://webrtc.googlesource.com',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling sfntly
@@ -223,6 +224,18 @@ vars = {
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
   'spv_headers_revision': '801cca8104245c07e8cc53292da87ee1b76946fe',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling feed
+  # and whatever else without interference from each other.
+  'spirv_cross_revision': '69b034f26e28a76a6f4e5d9521123072b24d7ea2',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling feed
+  # and whatever else without interference from each other.
+  'shaderc_revision': '196d38f64e4d919ddb26557f176ca134e2d88ddc',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling feed
+  # and whatever else without interference from each other.
+  'dawn_revision': '16092faa163b20f6b85ff407b1ec1d61cb9d7f2a',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -234,6 +247,7 @@ allowed_hosts = [
   'chrome-infra-packages.appspot.com',
   'chrome-internal.googlesource.com',
   'chromium.googlesource.com',
+  'dawn.googlesource.com',
   'pdfium.googlesource.com',
   'skia.googlesource.com',
   'swiftshader.googlesource.com',
@@ -403,6 +417,14 @@ deps = {
       'dep_type': 'cipd',
   },
 
+  # SPIRV-Cross is in third_party/spirv-cross/spirv-cross instead of
+  # third_party/spirv-cross/src  because its header files are at the root of
+  # the repository and dependencies include them like so:
+  #   #include "spirv-cross/spirv_glsl.hpp"
+  'src/third_party/spirv-cross/spirv-cross':
+    Var('chromium_git') + '/external/github.com/KhronosGroup/SPIRV-Cross.git@' +
+        Var('spirv_cross_revision'),
+
   'src/third_party/spirv-headers/src':
     Var('chromium_git') + '/external/github.com/KhronosGroup/SPIRV-Headers.git@' +
         Var('spv_headers_revision'),
@@ -410,6 +432,10 @@ deps = {
   'src/third_party/SPIRV-Tools/src':
     Var('chromium_git') + '/external/github.com/KhronosGroup/SPIRV-Tools.git@' +
         Var('spv_tools_revision'),
+
+  'src/third_party/shaderc/src':
+    Var('chromium_git') + '/external/github.com/google/shaderc.git@' +
+        Var('shaderc_revision'),
 
   'src/third_party/accessibility_test_framework': {
       'packages': [
@@ -536,6 +562,12 @@ deps = {
 
   'src/third_party/angle':
     Var('chromium_git') + '/angle/angle.git' + '@' +  Var('angle_revision'),
+
+  'src/third_party/dawn':
+    Var('dawn_git') + '/dawn.git' + '@' +  Var('dawn_revision'),
+
+  'src/third_party/glfw/src':
+    Var('chromium_git') + '/external/github.com/glfw/glfw.git@' +  '096efdf798896cff80a0b2db08d7398b703406fe',
 
   'src/third_party/apache-portable-runtime/src': {
       'url': Var('chromium_git') + '/external/apache-portable-runtime.git' + '@' + 'c3f11fcd86b42922834cae91103cf068246c6bb6',
@@ -705,7 +737,7 @@ deps = {
   },
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/google/glslang.git' + '@' + 'ec1476b7060306fd9109faf7a4c70a20ea3b538c',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + 'ca042a0ffbb6fe09a47c1c867d911b3a69d2102e',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
