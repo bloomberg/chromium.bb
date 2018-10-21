@@ -21,6 +21,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_TOUCH_ADJUSTMENT_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/int_point.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
@@ -31,6 +32,7 @@
 namespace blink {
 
 class Node;
+class LocalFrame;
 
 bool FindBestClickableCandidate(Node*& target_node,
                                 IntPoint& target_point,
@@ -45,9 +47,10 @@ bool FindBestContextMenuCandidate(Node*& target_node,
 
 // Applies an upper bound to the touch area as the adjustment rect. The
 // touch_area is in root frame coordinates, which is in physical pixel when
-// zoom-for-dsf is enabled, otherwise in dip (when page scale is 1). 
-LayoutSize GetHitTestRectForAdjustment(const LayoutSize& touch_area,
-                                       float zoom_factor);
+// zoom-for-dsf is enabled, otherwise in dip (when page scale is 1).
+CORE_EXPORT LayoutSize
+GetHitTestRectForAdjustment(const LocalFrame& frame,
+                            const LayoutSize& touch_area);
 
 struct TouchAdjustmentResult {
   uint32_t unique_event_id;

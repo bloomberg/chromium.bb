@@ -39,7 +39,12 @@ class CORE_EXPORT HitTestLocation {
 
  public:
   // Note that all points are in contents (aka "page") coordinate space for the
-  // document that is being hit tested.
+  // document that is being hit tested. All points and size are in root frame
+  // coordinates (physical pixel scaled by page_scale when zoom for dsf is
+  // enabled; otherwise in dip scaled by page_scale), Which means the points
+  // should already applied page_scale_factor, but not page_zoom_factor and
+  // scroll offset. See:
+  // http://www.chromium.org/developers/design-documents/blink-coordinate-spaces
   HitTestLocation();
   explicit HitTestLocation(const LayoutPoint&);
   explicit HitTestLocation(const IntPoint&);
