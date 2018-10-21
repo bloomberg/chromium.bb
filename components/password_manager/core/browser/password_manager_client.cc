@@ -40,10 +40,6 @@ SyncState PasswordManagerClient::GetPasswordSyncState() const {
   return NOT_SYNCING;
 }
 
-SyncState PasswordManagerClient::GetHistorySyncState() const {
-  return NOT_SYNCING;
-}
-
 bool PasswordManagerClient::WasLastNavigationHTTPError() const {
   return false;
 }
