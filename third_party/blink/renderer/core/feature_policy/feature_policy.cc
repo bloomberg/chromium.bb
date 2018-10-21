@@ -235,8 +235,8 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
     // runtime flags once it is out of trial.
     default_feature_name_map.Set("vr", mojom::FeaturePolicyFeature::kWebVr);
     if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled()) {
-      default_feature_name_map.Set("animations",
-                                   mojom::FeaturePolicyFeature::kAnimations);
+      default_feature_name_map.Set(
+          "layout-animations", mojom::FeaturePolicyFeature::kLayoutAnimations);
       default_feature_name_map.Set("document-write",
                                    mojom::FeaturePolicyFeature::kDocumentWrite);
       default_feature_name_map.Set(
