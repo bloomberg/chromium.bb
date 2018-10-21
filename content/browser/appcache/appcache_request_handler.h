@@ -44,7 +44,7 @@ class AppCacheHost;
 // given the opportunity to hijack the request along the way. Callers
 // should use AppCacheHost::CreateRequestHandler to manufacture instances
 // that can retrieve resources for a particular host.
-class CONTENT_EXPORT AppCacheRequestHandler
+class CONTENT_EXPORT AppCacheRequestHandler final
     : public base::SupportsUserData::Data,
       public AppCacheHost::Observer,
       public AppCacheServiceImpl::Observer,

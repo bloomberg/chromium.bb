@@ -42,7 +42,7 @@ class AppCacheUpdateJobTest;
 class HostNotifier;
 
 // Application cache Update algorithm and state.
-class CONTENT_EXPORT AppCacheUpdateJob
+class CONTENT_EXPORT AppCacheUpdateJob final
     : public AppCacheStorage::Delegate,
       public AppCacheHost::Observer,
       public AppCacheServiceImpl::Observer {

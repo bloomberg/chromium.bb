@@ -29,9 +29,10 @@ class AppCacheURLRequestJobTest;
 
 // A net::URLRequestJob derivative that knows how to return a response stored
 // in the appcache.
-class CONTENT_EXPORT AppCacheURLRequestJob : public AppCacheJob,
-                                             public AppCacheStorage::Delegate,
-                                             public net::URLRequestJob {
+class CONTENT_EXPORT AppCacheURLRequestJob final
+    : public AppCacheJob,
+      public AppCacheStorage::Delegate,
+      public net::URLRequestJob {
  public:
   ~AppCacheURLRequestJob() override;
 

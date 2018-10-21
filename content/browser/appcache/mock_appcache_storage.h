@@ -51,7 +51,7 @@ class AppCacheUpdateJobTest;
 // Note: This class is also being used to bootstrap our development efforts.
 // We can get layout tests up and running, and back fill with real storage
 // somewhat in parallel.
-class MockAppCacheStorage : public AppCacheStorage {
+class MockAppCacheStorage final : public AppCacheStorage {
  public:
   explicit MockAppCacheStorage(AppCacheServiceImpl* service);
   ~MockAppCacheStorage() override;
@@ -87,6 +87,7 @@ class MockAppCacheStorage : public AppCacheStorage {
   void DeleteResponses(const GURL& manifest_url,
                        const std::vector<int64_t>& response_ids) override;
   bool IsInitialized() override;
+  base::WeakPtr<AppCacheStorage> GetWeakPtr() override;
 
  private:
   friend class AppCacheRequestHandlerTest;

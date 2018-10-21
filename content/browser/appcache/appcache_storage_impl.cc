@@ -1740,6 +1740,10 @@ bool AppCacheStorageImpl::IsInitialized() {
   return IsInitTaskComplete();
 }
 
+base::WeakPtr<AppCacheStorage> AppCacheStorageImpl::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 void AppCacheStorageImpl::DelayedStartDeletingUnusedResponses() {
   // Only if we haven't already begun.
   if (!did_start_deleting_responses_) {
