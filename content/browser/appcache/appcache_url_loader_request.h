@@ -15,7 +15,7 @@ namespace content {
 
 // AppCacheRequest wrapper for the ResourceRequest class for users of
 // URLLoader.
-class CONTENT_EXPORT AppCacheURLLoaderRequest final : public AppCacheRequest {
+class CONTENT_EXPORT AppCacheURLLoaderRequest : public AppCacheRequest {
  public:
   // Factory function to create an instance of the AppCacheResourceRequest
   // class.

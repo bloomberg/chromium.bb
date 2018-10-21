@@ -89,22 +89,6 @@ class MockResponseReader : public AppCacheResponseReader {
   int data_size_;
 };
 
-class TestAppCacheServiceImpl : public AppCacheServiceImpl {
- public:
-  explicit TestAppCacheServiceImpl(
-      storage::QuotaManagerProxy* quota_manager_proxy)
-      : AppCacheServiceImpl(quota_manager_proxy), weak_factory_(this) {}
-
-  ~TestAppCacheServiceImpl() override = default;
-
-  base::WeakPtr<AppCacheServiceImpl> GetWeakPtr() override {
-    return weak_factory_.GetWeakPtr();
-  }
-
- private:
-  base::WeakPtrFactory<TestAppCacheServiceImpl> weak_factory_;
-};
-
 }  // namespace
 
 
@@ -114,7 +98,7 @@ class AppCacheServiceImplTest : public testing::Test {
       : kOriginURL("http://hello/"),
         kOrigin(url::Origin::Create(kOriginURL)),
         kManifestUrl(kOriginURL.Resolve("manifest")),
-        service_(std::make_unique<TestAppCacheServiceImpl>(nullptr)),
+        service_(new AppCacheServiceImpl(nullptr)),
         delete_result_(net::OK),
         delete_completion_count_(0) {
     // Setup to use mock storage.
@@ -355,8 +339,8 @@ TEST_F(AppCacheServiceImplTest, ScheduleReinitialize) {
   const base::TimeDelta kOneHour(base::TimeDelta::FromHours(1));
 
   // Do things get initialized as expected?
-  std::unique_ptr<AppCacheServiceImpl> service =
-      std::make_unique<TestAppCacheServiceImpl>(nullptr);
+  std::unique_ptr<AppCacheServiceImpl> service(
+      new AppCacheServiceImpl(nullptr));
   EXPECT_TRUE(service->last_reinit_time_.is_null());
   EXPECT_FALSE(service->reinit_timer_.IsRunning());
   EXPECT_EQ(kNoDelay, service->next_reinit_delay_);

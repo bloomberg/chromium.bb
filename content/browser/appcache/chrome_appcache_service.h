@@ -8,7 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/browser/appcache/appcache_backend_impl.h"
 #include "content/browser/appcache/appcache_policy.h"
@@ -42,7 +41,7 @@ struct ChromeAppCacheServiceDeleter;
 //
 // TODO(dpranke): Fix dependencies on AppCacheServiceImpl so that we don't have
 // to worry about clients calling AppCacheServiceImpl methods.
-class CONTENT_EXPORT ChromeAppCacheService final
+class CONTENT_EXPORT ChromeAppCacheService
     : public base::RefCountedThreadSafe<ChromeAppCacheService,
                                         ChromeAppCacheServiceDeleter>,
       public AppCacheServiceImpl,
@@ -77,7 +76,6 @@ class CONTENT_EXPORT ChromeAppCacheService final
 
   // AppCacheServiceImpl override
   void UnregisterBackend(AppCacheBackendImpl* backend_impl) override;
-  base::WeakPtr<AppCacheServiceImpl> GetWeakPtr() override;
 
  protected:
   ~ChromeAppCacheService() override;
@@ -96,8 +94,6 @@ class CONTENT_EXPORT ChromeAppCacheService final
 
   // A map from a process_id to a binding_id.
   std::map<int, mojo::BindingId> process_bindings_;
-
-  base::WeakPtrFactory<ChromeAppCacheService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAppCacheService);
 };

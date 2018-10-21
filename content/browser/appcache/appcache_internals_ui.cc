@@ -141,19 +141,18 @@ std::unique_ptr<base::ListValue> GetListValueForAppCacheResourceInfoVector(
 AppCacheInternalsUI::Proxy::Proxy(
     base::WeakPtr<AppCacheInternalsUI> appcache_internals_ui,
     const base::FilePath& partition_path)
-    : appcache_internals_ui_(std::move(appcache_internals_ui)),
+    : appcache_internals_ui_(appcache_internals_ui),
       partition_path_(partition_path) {}
 
 void AppCacheInternalsUI::Proxy::Initialize(
-    scoped_refptr<ChromeAppCacheService> chrome_appcache_service) {
+    const scoped_refptr<ChromeAppCacheService>& chrome_appcache_service) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&Proxy::Initialize, this,
-                       std::move(chrome_appcache_service)));
+        base::BindOnce(&Proxy::Initialize, this, chrome_appcache_service));
     return;
   }
-  appcache_service_ = chrome_appcache_service->GetWeakPtr();
+  appcache_service_ = chrome_appcache_service->AsWeakPtr();
   shutdown_called_ = false;
   preparing_response_ = false;
 }

@@ -33,7 +33,7 @@ namespace content {
 class AppCacheStorageImplTest;
 class ChromeAppCacheServiceTest;
 
-class CONTENT_EXPORT AppCacheStorageImpl final : public AppCacheStorage {
+class AppCacheStorageImpl : public AppCacheStorage {
  public:
   explicit AppCacheStorageImpl(AppCacheServiceImpl* service);
   ~AppCacheStorageImpl() override;
@@ -76,7 +76,6 @@ class CONTENT_EXPORT AppCacheStorageImpl final : public AppCacheStorage {
   void DeleteResponses(const GURL& manifest_url,
                        const std::vector<int64_t>& response_ids) override;
   bool IsInitialized() override;
-  base::WeakPtr<AppCacheStorage> GetWeakPtr() override;
 
  private:
   // The AppCacheStorageImpl class methods and datamembers may only be
@@ -155,7 +154,7 @@ class CONTENT_EXPORT AppCacheStorageImpl final : public AppCacheStorage {
                                const GURL& manifest_url);
 
   // Don't call this when |is_disabled_| is true.
-  AppCacheDiskCache* disk_cache();
+  CONTENT_EXPORT AppCacheDiskCache* disk_cache();
 
   // The directory in which we place files in the file system.
   base::FilePath cache_directory_;

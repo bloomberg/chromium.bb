@@ -34,8 +34,8 @@ namespace {
 //
 // This class owns and scopes the lifetime of the AppCacheRequestHandler
 // for the duration of a subresource load.
-class SubresourceLoader final : public network::mojom::URLLoader,
-                                public network::mojom::URLLoaderClient {
+class SubresourceLoader : public network::mojom::URLLoader,
+                          public network::mojom::URLLoaderClient {
  public:
   SubresourceLoader(
       network::mojom::URLLoaderRequest url_loader_request,
@@ -67,7 +67,7 @@ class SubresourceLoader final : public network::mojom::URLLoader,
   }
 
  private:
-  ~SubresourceLoader() override = default;
+  ~SubresourceLoader() override {}
 
   void OnConnectionError() { delete this; }
 

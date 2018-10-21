@@ -13,27 +13,17 @@
 
 namespace content {
 
-MockAppCacheService::MockAppCacheService()
-    : AppCacheServiceImpl(nullptr),
-      mock_delete_appcaches_for_origin_result_(net::OK),
-      delete_called_count_(0),
-      weak_factory_(this) {
-  storage_.reset(new MockAppCacheStorage(this));
+static void DeferredCallCallback(net::CompletionOnceCallback callback, int rv) {
+  std::move(callback).Run(rv);
 }
-
-MockAppCacheService::~MockAppCacheService() = default;
 
 void MockAppCacheService::DeleteAppCachesForOrigin(
     const url::Origin& origin,
     net::CompletionOnceCallback callback) {
   ++delete_called_count_;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback),
+      FROM_HERE, base::BindOnce(&DeferredCallCallback, std::move(callback),
                                 mock_delete_appcaches_for_origin_result_));
-}
-
-base::WeakPtr<AppCacheServiceImpl> MockAppCacheService::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace content

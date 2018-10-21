@@ -18,7 +18,7 @@ namespace content {
 
 // URLRequest subclass for the UpdateRequestBase class. Provides functionality
 // to update the AppCache using functionality provided by the URLRequest class.
-class AppCacheUpdateJob::UpdateURLRequest final
+class AppCacheUpdateJob::UpdateURLRequest
     : public AppCacheUpdateJob::UpdateRequestBase,
       public net::URLRequest::Delegate {
  public:
