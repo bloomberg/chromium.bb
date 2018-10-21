@@ -36,6 +36,7 @@
 #include "printing/metafile_skia.h"
 #include "printing/metafile_skia_wrapper.h"
 #include "printing/units.h"
+#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -741,7 +742,8 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
       const blink::WebString& fallback_name,
       blink::WebSandboxFlags sandbox_flags,
       const blink::ParsedFeaturePolicy& container_policy,
-      const blink::WebFrameOwnerProperties& frame_owner_properties) override;
+      const blink::WebFrameOwnerProperties& frame_owner_properties,
+      blink::FrameOwnerElementType owner_type) override;
   void FrameDetached(DetachType detach_type) override;
   std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() override;
 
@@ -908,7 +910,8 @@ blink::WebLocalFrame* PrepareFrameAndViewForPrint::CreateChildFrame(
     const blink::WebString& fallback_name,
     blink::WebSandboxFlags sandbox_flags,
     const blink::ParsedFeaturePolicy& container_policy,
-    const blink::WebFrameOwnerProperties& frame_owner_properties) {
+    const blink::WebFrameOwnerProperties& frame_owner_properties,
+    blink::FrameOwnerElementType frame_owner_type) {
   // This is called when printing a selection and when this selection contains
   // an iframe. This is not supported yet. An empty rectangle will be displayed
   // instead.

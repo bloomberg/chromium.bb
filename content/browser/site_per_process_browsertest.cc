@@ -12,6 +12,8 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -13552,5 +13554,68 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(original_frame_url,
             child->current_frame_host()->GetLastCommittedURL());
 }
+
+class CrossProcessNavigationObjectElementTest
+    : public SitePerProcessBrowserTest,
+      public testing::WithParamInterface<
+          std::tuple<std::string, std::string, std::string>> {};
+
+// This test verifies the correctness of rendering fallback in <object> when the
+// a cross-origin navigation leads to a 404 error. Assuming the page's origin
+// is "a.com", the test cases are:
+// 1- Navigating an <object> from "a.com" to invalid "b.com" resource. In this
+//    case the load fails for a provisional frame and at that time there is no
+//    proxy to parent.
+// 2- Navigating an <object> from "b.com" to invalid "b.com". Since navigation
+//    is not cross-origin the failure happens for a non-provisional frame.
+// 3- Navigation an <object> from "b.com" to invalid "c.com". The load fails for
+//    a provisional frame, and at that time there is a proxy to parent.
+IN_PROC_BROWSER_TEST_P(CrossProcessNavigationObjectElementTest, FallbackShown) {
+  const GURL main_url = embedded_test_server()->GetURL(
+      base::StringPrintf("%s.com", std::get<0>(GetParam()).c_str()),
+      "/page_with_object_fallback.html");
+  const GURL object_valid_url = embedded_test_server()->GetURL(
+      base::StringPrintf("%s.com", std::get<1>(GetParam()).c_str()),
+      "/title1.html");
+  const GURL object_invalid_url = embedded_test_server()->GetURL(
+      base::StringPrintf("%s.com", std::get<2>(GetParam()).c_str()),
+      "/does-not-exist-throws-404.html");
+
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Load the contents of <object> (first navigation which is to a valid
+  // existing resource) and wait for 'load' event on <object>.
+  std::string result;
+  ASSERT_TRUE(ExecuteScriptAndExtractString(
+      web_contents(),
+      base::StringPrintf("setUrl('%s', true);",
+                         object_valid_url.spec().c_str()),
+      &result));
+  ASSERT_EQ("OBJECT_LOAD", result);
+
+  // Verify fallback content is not shown.
+  bool fallback_visible = true;
+  ASSERT_TRUE(ExecuteScriptAndExtractBool(
+      web_contents(), "fallbackVisible(true)", &fallback_visible));
+  ASSERT_FALSE(fallback_visible);
+
+  // Navigate the <object>'s frame to invalid origin. Make sure we do not report
+  // the 'load' event (the 404 content loads inside the <object>'s frame and the
+  // 'load' event might fire before fallback is detected).
+  fallback_visible = false;
+  ASSERT_TRUE(ExecuteScriptAndExtractBool(
+      web_contents(),
+      base::StringPrintf("setUrl('%s', false);"
+                         "notifyWhenFallbackShown();",
+                         object_invalid_url.spec().c_str()),
+      &fallback_visible));
+  ASSERT_TRUE(fallback_visible);
+}
+
+INSTANTIATE_TEST_CASE_P(SitePerProcess,
+                        CrossProcessNavigationObjectElementTest,
+                        testing::Values(std::make_tuple("a", "a", "b"),
+                                        std::make_tuple("a", "b", "b"),
+                                        std::make_tuple("a", "b", "c")));
 
 }  // namespace content

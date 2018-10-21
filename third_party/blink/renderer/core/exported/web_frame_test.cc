@@ -43,6 +43,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
@@ -4700,7 +4701,8 @@ class ContextLifetimeTestWebFrameClient
                                   const WebString& fallback_name,
                                   WebSandboxFlags sandbox_flags,
                                   const ParsedFeaturePolicy& container_policy,
-                                  const WebFrameOwnerProperties&) override {
+                                  const WebFrameOwnerProperties&,
+                                  FrameOwnerElementType) override {
     return CreateLocalChild(*parent, scope,
                             std::make_unique<ContextLifetimeTestWebFrameClient>(
                                 create_notifications_, release_notifications_));
@@ -7548,7 +7550,8 @@ class TestCachePolicyWebFrameClient
       const WebString&,
       WebSandboxFlags,
       const ParsedFeaturePolicy&,
-      const WebFrameOwnerProperties& frame_owner_properties) override {
+      const WebFrameOwnerProperties& frame_owner_properties,
+      FrameOwnerElementType) override {
     auto child = std::make_unique<TestCachePolicyWebFrameClient>();
     auto* child_ptr = child.get();
     child_clients_.push_back(std::move(child));
@@ -7880,7 +7883,8 @@ class TestHistoryWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
                                   const WebString& fallback_name,
                                   WebSandboxFlags,
                                   const ParsedFeaturePolicy&,
-                                  const WebFrameOwnerProperties&) override {
+                                  const WebFrameOwnerProperties&,
+                                  FrameOwnerElementType) override {
     return CreateLocalChild(*parent, scope, &child_client_);
   }
 
@@ -8021,7 +8025,8 @@ class FailCreateChildFrame : public FrameTestHelpers::TestWebFrameClient {
       const WebString& fallback_name,
       WebSandboxFlags sandbox_flags,
       const ParsedFeaturePolicy& container_policy,
-      const WebFrameOwnerProperties& frame_owner_properties) override {
+      const WebFrameOwnerProperties& frame_owner_properties,
+      FrameOwnerElementType) override {
     ++call_count_;
     return nullptr;
   }
@@ -12164,7 +12169,8 @@ TEST_F(WebFrameTest, NoLoadingCompletionCallbacksInDetach) {
                                     const WebString& fallback_name,
                                     WebSandboxFlags sandbox_flags,
                                     const ParsedFeaturePolicy& container_policy,
-                                    const WebFrameOwnerProperties&) override {
+                                    const WebFrameOwnerProperties&,
+                                    FrameOwnerElementType) override {
       return CreateLocalChild(*parent, scope, &child_client_);
     }
 
@@ -12421,7 +12427,8 @@ class TestFallbackWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
       const WebString&,
       WebSandboxFlags,
       const ParsedFeaturePolicy& container_policy,
-      const WebFrameOwnerProperties& frameOwnerProperties) override {
+      const WebFrameOwnerProperties& frameOwnerProperties,
+      FrameOwnerElementType) override {
     DCHECK(child_client_);
     return CreateLocalChild(*parent, scope, child_client_);
   }

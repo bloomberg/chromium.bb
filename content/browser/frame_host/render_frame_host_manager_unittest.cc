@@ -1907,6 +1907,7 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
   const GURL kUrlA("http://www.google.com/");
   const GURL kUrlB("http://webkit.org/");
 
+  constexpr auto kOwnerType = blink::FrameOwnerElementType::kIframe;
   // Create a page with two child frames.
   contents()->NavigateAndCommit(kUrlA);
   contents()->GetMainFrame()->OnCreateChildFrame(
@@ -1914,13 +1915,13 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
       TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
       blink::WebTreeScopeType::kDocument, "frame_name", "uniqueName1", false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
-      FrameOwnerProperties());
+      FrameOwnerProperties(), kOwnerType);
   contents()->GetMainFrame()->OnCreateChildFrame(
       contents()->GetMainFrame()->GetProcess()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
       blink::WebTreeScopeType::kDocument, "frame_name", "uniqueName2", false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
-      FrameOwnerProperties());
+      FrameOwnerProperties(), kOwnerType);
   RenderFrameHostManager* root_manager =
       contents()->GetFrameTree()->root()->render_manager();
   RenderFrameHostManager* iframe1 =
@@ -2058,7 +2059,7 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
       TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
       blink::WebTreeScopeType::kDocument, "frame_name", "uniqueName1", false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
-      FrameOwnerProperties());
+      FrameOwnerProperties(), blink::FrameOwnerElementType::kIframe);
   RenderFrameHostManager* iframe =
       contents()->GetFrameTree()->root()->child_at(0)->render_manager();
   NavigationEntryImpl entry(
@@ -2110,7 +2111,7 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
       TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
       blink::WebTreeScopeType::kDocument, std::string(), "uniqueName1", false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
-      FrameOwnerProperties());
+      FrameOwnerProperties(), blink::FrameOwnerElementType::kIframe);
   RenderFrameHostManager* subframe_rfhm =
       contents()->GetFrameTree()->root()->child_at(0)->render_manager();
 
@@ -2266,16 +2267,19 @@ TEST_F(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
   FrameTree* tree1 = contents()->GetFrameTree();
   FrameTreeNode* root1 = tree1->root();
   int process_id = root1->current_frame_host()->GetProcess()->GetID();
+  constexpr auto kOwnerType = blink::FrameOwnerElementType::kIframe;
   tree1->AddFrame(root1, process_id, 12,
                   TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
                   blink::WebTreeScopeType::kDocument, std::string(),
                   "uniqueName0", false, base::UnguessableToken::Create(),
-                  blink::FramePolicy(), FrameOwnerProperties(), false);
+                  blink::FramePolicy(), FrameOwnerProperties(), false,
+                  kOwnerType);
   tree1->AddFrame(root1, process_id, 13,
                   TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
                   blink::WebTreeScopeType::kDocument, std::string(),
                   "uniqueName1", false, base::UnguessableToken::Create(),
-                  blink::FramePolicy(), FrameOwnerProperties(), false);
+                  blink::FramePolicy(), FrameOwnerProperties(), false,
+                  kOwnerType);
 
   std::unique_ptr<TestWebContents> tab2(
       TestWebContents::Create(browser_context(), nullptr));
@@ -2287,12 +2291,14 @@ TEST_F(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
                   TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
                   blink::WebTreeScopeType::kDocument, std::string(),
                   "uniqueName2", false, base::UnguessableToken::Create(),
-                  blink::FramePolicy(), FrameOwnerProperties(), false);
+                  blink::FramePolicy(), FrameOwnerProperties(), false,
+                  kOwnerType);
   tree2->AddFrame(root2, process_id, 23,
                   TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
                   blink::WebTreeScopeType::kDocument, std::string(),
                   "uniqueName3", false, base::UnguessableToken::Create(),
-                  blink::FramePolicy(), FrameOwnerProperties(), false);
+                  blink::FramePolicy(), FrameOwnerProperties(), false,
+                  kOwnerType);
 
   std::unique_ptr<TestWebContents> tab3(
       TestWebContents::Create(browser_context(), nullptr));
@@ -2309,7 +2315,8 @@ TEST_F(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
                   TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
                   blink::WebTreeScopeType::kDocument, std::string(),
                   "uniqueName4", false, base::UnguessableToken::Create(),
-                  blink::FramePolicy(), FrameOwnerProperties(), false);
+                  blink::FramePolicy(), FrameOwnerProperties(), false,
+                  kOwnerType);
 
   root1->child_at(1)->SetOpener(root1->child_at(1));
   root1->SetOpener(root2->child_at(1));
@@ -2352,6 +2359,7 @@ TEST_F(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
   const GURL kUrlB("http://b.com/");
   const GURL kUrlC("http://c.com/");
 
+  constexpr auto kOwnerType = blink::FrameOwnerElementType::kIframe;
   // Set up a page at a.com with three subframes: two for b.com and one for
   // c.com.
   contents()->NavigateAndCommit(kUrlA);
@@ -2360,19 +2368,19 @@ TEST_F(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
       TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
       blink::WebTreeScopeType::kDocument, "frame1", "uniqueName1", false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
-      FrameOwnerProperties());
+      FrameOwnerProperties(), kOwnerType);
   main_test_rfh()->OnCreateChildFrame(
       main_test_rfh()->GetProcess()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
       blink::WebTreeScopeType::kDocument, "frame2", "uniqueName2", false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
-      FrameOwnerProperties());
+      FrameOwnerProperties(), kOwnerType);
   main_test_rfh()->OnCreateChildFrame(
       main_test_rfh()->GetProcess()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
       blink::WebTreeScopeType::kDocument, "frame3", "uniqueName3", false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
-      FrameOwnerProperties());
+      FrameOwnerProperties(), kOwnerType);
 
   FrameTreeNode* root = contents()->GetFrameTree()->root();
   RenderFrameHostManager* child1 = root->child_at(0)->render_manager();
@@ -2461,6 +2469,7 @@ TEST_F(RenderFrameHostManagerTest,
   const GURL kUrlB("http://b.com/");
   const GURL kUrlC("http://c.com/");
 
+  constexpr auto kOwnerType = blink::FrameOwnerElementType::kIframe;
   // Set up a page at a.com with a b.com subframe.
   contents()->NavigateAndCommit(kUrlA);
   main_test_rfh()->OnCreateChildFrame(
@@ -2468,7 +2477,7 @@ TEST_F(RenderFrameHostManagerTest,
       TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
       blink::WebTreeScopeType::kDocument, "frame1", "uniqueName1", false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
-      FrameOwnerProperties());
+      FrameOwnerProperties(), kOwnerType);
 
   FrameTreeNode* root = contents()->GetFrameTree()->root();
   RenderFrameHostManager* child = root->child_at(0)->render_manager();
@@ -3067,7 +3076,7 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
       TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
       blink::WebTreeScopeType::kDocument, "frame1", "uniqueName1", false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
-      FrameOwnerProperties());
+      FrameOwnerProperties(), blink::FrameOwnerElementType::kIframe);
 
   FrameTreeNode* root = contents()->GetFrameTree()->root();
   RenderFrameHostManager* child = root->child_at(0)->render_manager();

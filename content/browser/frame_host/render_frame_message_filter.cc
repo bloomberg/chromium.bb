@@ -50,6 +50,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -79,6 +80,7 @@ void CreateChildFrameOnUI(
     const base::UnguessableToken& devtools_frame_token,
     const blink::FramePolicy& frame_policy,
     const FrameOwnerProperties& frame_owner_properties,
+    blink::FrameOwnerElementType owner_type,
     int new_routing_id,
     mojo::ScopedMessagePipeHandle interface_provider_request_handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -92,7 +94,7 @@ void CreateChildFrameOnUI(
         service_manager::mojom::InterfaceProviderRequest(
             std::move(interface_provider_request_handle)),
         scope, frame_name, frame_unique_name, is_created_by_script,
-        devtools_frame_token, frame_policy, frame_owner_properties);
+        devtools_frame_token, frame_policy, frame_owner_properties, owner_type);
   }
 }
 
@@ -444,7 +446,8 @@ void RenderFrameMessageFilter::OnCreateChildFrame(
                      params.parent_routing_id, params.scope, params.frame_name,
                      params.frame_unique_name, params.is_created_by_script,
                      *devtools_frame_token, params.frame_policy,
-                     params.frame_owner_properties, *new_routing_id,
+                     params.frame_owner_properties,
+                     params.frame_owner_element_type, *new_routing_id,
                      interface_provider_request.PassMessagePipe()));
 }
 

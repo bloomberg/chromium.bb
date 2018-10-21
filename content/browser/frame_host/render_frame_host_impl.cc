@@ -1284,6 +1284,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_BubbleLogicalScrollInParentFrame,
                         OnBubbleLogicalScrollInParentFrame)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FrameDidCallFocus, OnFrameDidCallFocus)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_RenderFallbackContentInParentProcess,
+                        OnRenderFallbackContentInParentProcess)
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ShowPopup, OnShowPopup)
     IPC_MESSAGE_HANDLER(FrameHostMsg_HidePopup, OnHidePopup)
@@ -1671,10 +1673,18 @@ void RenderFrameHostImpl::OnCreateChildFrame(
     bool is_created_by_script,
     const base::UnguessableToken& devtools_frame_token,
     const blink::FramePolicy& frame_policy,
-    const FrameOwnerProperties& frame_owner_properties) {
+    const FrameOwnerProperties& frame_owner_properties,
+    const blink::FrameOwnerElementType owner_type) {
   // TODO(lukasza): Call ReceivedBadMessage when |frame_unique_name| is empty.
   DCHECK(!frame_unique_name.empty());
   DCHECK(new_interface_provider_provider_request.is_pending());
+  if (owner_type == blink::FrameOwnerElementType::kNone) {
+    // Any child frame must have a HTMLFrameOwnerElement in its parent document
+    // and therefore the corresponding type of kNone (specific to main frames)
+    // is invalid.
+    bad_message::ReceivedBadMessage(
+        GetProcess(), bad_message::RFH_CHILD_FRAME_NEEDS_OWNER_ELEMENT_TYPE);
+  }
 
   // The RenderFrame corresponding to this host sent an IPC message to create a
   // child, but by the time we get here, it's possible for the host to have been
@@ -1686,11 +1696,11 @@ void RenderFrameHostImpl::OnCreateChildFrame(
   // |new_routing_id|, |new_interface_provider_provider_request|, and
   // |devtools_frame_token| were generated on the browser's IO thread and not
   // taken from the renderer process.
-  frame_tree_->AddFrame(frame_tree_node_, GetProcess()->GetID(), new_routing_id,
-                        std::move(new_interface_provider_provider_request),
-                        scope, frame_name, frame_unique_name,
-                        is_created_by_script, devtools_frame_token,
-                        frame_policy, frame_owner_properties, was_discarded_);
+  frame_tree_->AddFrame(
+      frame_tree_node_, GetProcess()->GetID(), new_routing_id,
+      std::move(new_interface_provider_provider_request), scope, frame_name,
+      frame_unique_name, is_created_by_script, devtools_frame_token,
+      frame_policy, frame_owner_properties, was_discarded_, owner_type);
 }
 
 void RenderFrameHostImpl::DidNavigate(
@@ -3258,6 +3268,33 @@ void RenderFrameHostImpl::OnBubbleLogicalScrollInParentFrame(
 
 void RenderFrameHostImpl::OnFrameDidCallFocus() {
   delegate_->DidCallFocus();
+}
+
+void RenderFrameHostImpl::OnRenderFallbackContentInParentProcess() {
+  bool is_object_type =
+      frame_tree_node()->current_replication_state().frame_owner_element_type ==
+      blink::FrameOwnerElementType::kObject;
+  if (!is_object_type) {
+    // Only object elements are expected to render their own fallback content
+    // and since the owner type is set at the creation time of the
+    // FrameTreeNode, this received IPC makes no sense here.
+    bad_message::ReceivedBadMessage(
+        GetProcess(), bad_message::RFH_CANNOT_RENDER_FALLBACK_CONTENT);
+    return;
+  }
+
+  // The ContentFrame() of the owner element in parent process could be either
+  // a frame or a proxy. When navigating cross-site from a frame which is same-
+  // site with its parent, the frame is still local (e.g., about:blank).
+  // However, navigating from an origin which is cross-site with parent, the
+  // frame of the owner is a proxy.
+  auto* rfh = frame_tree_node()->current_frame_host();
+  if (rfh->GetSiteInstance() == rfh->GetParent()->GetSiteInstance()) {
+    rfh->Send(new FrameMsg_RenderFallbackContent(rfh->GetRoutingID()));
+  } else if (auto* proxy =
+                 frame_tree_node()->render_manager()->GetProxyToParent()) {
+    proxy->Send(new FrameMsg_RenderFallbackContent(proxy->GetRoutingID()));
+  }
 }
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)

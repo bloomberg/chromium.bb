@@ -1358,6 +1358,7 @@ void RenderFrameImpl::CreateFrame(
         replicated_state.frame_policy.container_policy,
         ConvertFrameOwnerPropertiesToWebFrameOwnerProperties(
             frame_owner_properties),
+        replicated_state.frame_owner_element_type,
         ResolveOpener(opener_routing_id));
 
     // The RenderFrame is created and inserted into the frame tree in the above
@@ -2097,7 +2098,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnSetOverlayRoutingToken)
     IPC_MESSAGE_HANDLER(FrameMsg_NotifyUserActivation, OnNotifyUserActivation)
     IPC_MESSAGE_HANDLER(FrameMsg_MediaPlayerActionAt, OnMediaPlayerActionAt)
-
+    IPC_MESSAGE_HANDLER(FrameMsg_RenderFallbackContent, OnRenderFallbackContent)
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(FrameMsg_SelectPopupMenuItem, OnSelectPopupMenuItem)
@@ -3874,7 +3875,8 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
     const blink::WebString& fallback_name,
     blink::WebSandboxFlags sandbox_flags,
     const blink::ParsedFeaturePolicy& container_policy,
-    const blink::WebFrameOwnerProperties& frame_owner_properties) {
+    const blink::WebFrameOwnerProperties& frame_owner_properties,
+    blink::FrameOwnerElementType frame_owner_element_type) {
   DCHECK_EQ(frame_, parent);
 
   // Synchronously notify the browser of a child frame creation to get the
@@ -3909,6 +3911,7 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
   params.frame_owner_properties =
       ConvertWebFrameOwnerPropertiesToFrameOwnerProperties(
           frame_owner_properties);
+  params.frame_owner_element_type = frame_owner_element_type;
   Send(new FrameHostMsg_CreateChildFrame(params, &child_routing_id,
                                          &child_interface_provider_handle,
                                          &devtools_frame_token));
@@ -4711,6 +4714,10 @@ void RenderFrameImpl::DidBlockFramebust(const WebURL& url) {
 
 base::UnguessableToken RenderFrameImpl::GetDevToolsFrameToken() {
   return devtools_frame_token_;
+}
+
+void RenderFrameImpl::RenderFallbackContentInParentProcess() {
+  Send(new FrameHostMsg_RenderFallbackContentInParentProcess(routing_id_));
 }
 
 void RenderFrameImpl::AbortClientNavigation() {
@@ -6421,6 +6428,10 @@ void RenderFrameImpl::OnMediaPlayerActionAt(
   GetRenderWidget()->ConvertWindowToViewport(&viewport_position);
   frame_->PerformMediaPlayerAction(
       WebPoint(viewport_position.x, viewport_position.y), action);
+}
+
+void RenderFrameImpl::OnRenderFallbackContent() const {
+  frame_->RenderFallbackContent();
 }
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
