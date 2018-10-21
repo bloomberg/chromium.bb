@@ -54,6 +54,7 @@ bool IsDocumentWhitelisted(const Document& document) {
   if (whitelist_scope.IsNull() || whitelist_scope.IsEmpty())
     return false;
 
+  DCHECK_EQ(KURL(whitelist_scope).GetString(), whitelist_scope);
   return document.Url().GetString().StartsWith(whitelist_scope);
 }
 

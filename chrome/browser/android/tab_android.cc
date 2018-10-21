@@ -890,7 +890,7 @@ void TabAndroid::SetInterceptNavigationDelegate(
 void TabAndroid::SetWebappManifestScope(JNIEnv* env,
                                         const JavaParamRef<jobject>& obj,
                                         const JavaParamRef<jstring>& scope) {
-  webapp_manifest_scope_ = base::android::ConvertJavaStringToUTF8(scope);
+  webapp_manifest_scope_ = GURL(base::android::ConvertJavaStringToUTF8(scope));
 
   if (!web_contents() || !web_contents()->GetRenderViewHost())
     return;
