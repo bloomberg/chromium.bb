@@ -245,7 +245,7 @@ class NotificationTrayImageSubview : public NotificationTraySubview {
            gfx::Size(kTrayItemInnerIconSize, kTrayItemInnerIconSize));
     view_ = new views::ImageView();
     view_->SetImage(image);
-    view_->SetTooltipText(
+    view_->set_tooltip_text(
         l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_FOOTER_TITLE));
     AddChildView(view_);
   }

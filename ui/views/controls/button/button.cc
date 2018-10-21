@@ -113,8 +113,6 @@ void Button::SetFocusForPlatform() {
 
 void Button::SetTooltipText(const base::string16& tooltip_text) {
   tooltip_text_ = tooltip_text;
-  if (accessible_name_.empty())
-    accessible_name_ = tooltip_text_;
   OnSetTooltipText(tooltip_text);
   TooltipTextChanged();
 }
@@ -122,6 +120,10 @@ void Button::SetTooltipText(const base::string16& tooltip_text) {
 void Button::SetAccessibleName(const base::string16& name) {
   accessible_name_ = name;
   NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
+}
+
+const base::string16& Button::GetAccessibleName() const {
+  return accessible_name_.empty() ? tooltip_text_ : accessible_name_;
 }
 
 void Button::SetState(ButtonState state) {
@@ -431,7 +433,7 @@ void Button::OnPaint(gfx::Canvas* canvas) {
 
 void Button::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kButton;
-  node_data->SetName(accessible_name_);
+  node_data->SetName(GetAccessibleName());
   if (!enabled())
     node_data->SetRestriction(ax::mojom::Restriction::kDisabled);
 

@@ -572,7 +572,7 @@ void ImeMenuTray::CreateImageView() {
     label_ = nullptr;
   }
   image_view_ = new ImeMenuImageView();
-  image_view_->SetTooltipText(
+  image_view_->set_tooltip_text(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME));
   tray_container()->AddChildView(image_view_);
 }

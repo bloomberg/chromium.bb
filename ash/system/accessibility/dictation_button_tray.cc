@@ -34,7 +34,7 @@ DictationButtonTray::DictationButtonTray(Shelf* shelf)
   const int horizontal_padding = (kTrayItemSize - off_image_.width()) / 2;
   icon_->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(vertical_padding, horizontal_padding)));
-  icon_->SetTooltipText(
+  icon_->set_tooltip_text(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_DICTATION));
   tray_container()->AddChildView(icon_);
   Shell::Get()->AddShellObserver(this);
