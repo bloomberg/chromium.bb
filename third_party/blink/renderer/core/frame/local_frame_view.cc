@@ -2870,7 +2870,8 @@ void LocalFrameView::PaintTree() {
   if (auto* web_local_frame_impl = WebLocalFrameImpl::FromFrame(frame_))
     web_local_frame_impl->UpdateDevToolsOverlays();
 
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
+      !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     // BlinkGenPropertyTrees just needs a transient PaintController to
     // collect the foreign layers which doesn't need caching. It also
     // shouldn't affect caching status of DisplayItemClients because it's

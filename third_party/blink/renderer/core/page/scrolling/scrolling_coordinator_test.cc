@@ -343,6 +343,23 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForFixedPosition) {
   }
 }
 
+// BlinkGenPropertyTrees (BGPT) changes where the sticky constraints are stored.
+// Without BGPT, sticky constraints are stored on cc::Layer (via
+// GraphicsLayer::SetStickyPositionConstraint). With BGPT, sticky constraints
+// are stored on transform property tree nodes.
+static cc::LayerStickyPositionConstraint GetStickyConstraint(Element* element) {
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    cc::Layer* layer = CcLayerFromElement(element);
+    DCHECK(layer);
+    return layer->sticky_position_constraint();
+  }
+
+  const auto* properties =
+      element->GetLayoutObject()->FirstFragment().PaintProperties();
+  DCHECK(properties);
+  return *properties->StickyTranslation()->GetStickyConstraint();
+}
+
 TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
   RegisterMockedHttpURLLoad("sticky-position.html");
   NavigateTo(base_url_ + "sticky-position.html");
@@ -356,11 +373,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
   Document* document = GetFrame()->GetDocument();
   {
     Element* element = document->getElementById("div-tl");
-    ASSERT_TRUE(element);
-    cc::Layer* layer = CcLayerFromElement(element);
-    ASSERT_TRUE(layer);
-    cc::LayerStickyPositionConstraint constraint =
-        layer->sticky_position_constraint();
+    auto constraint = GetStickyConstraint(element);
     ASSERT_TRUE(constraint.is_sticky);
     EXPECT_TRUE(constraint.is_anchored_top && constraint.is_anchored_left &&
                 !constraint.is_anchored_right &&
@@ -374,44 +387,28 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
   }
   {
     Element* element = document->getElementById("div-tr");
-    ASSERT_TRUE(element);
-    cc::Layer* layer = CcLayerFromElement(element);
-    ASSERT_TRUE(layer);
-    cc::LayerStickyPositionConstraint constraint =
-        layer->sticky_position_constraint();
+    auto constraint = GetStickyConstraint(element);
     ASSERT_TRUE(constraint.is_sticky);
     EXPECT_TRUE(constraint.is_anchored_top && !constraint.is_anchored_left &&
                 constraint.is_anchored_right && !constraint.is_anchored_bottom);
   }
   {
     Element* element = document->getElementById("div-bl");
-    ASSERT_TRUE(element);
-    cc::Layer* layer = CcLayerFromElement(element);
-    ASSERT_TRUE(layer);
-    cc::LayerStickyPositionConstraint constraint =
-        layer->sticky_position_constraint();
+    auto constraint = GetStickyConstraint(element);
     ASSERT_TRUE(constraint.is_sticky);
     EXPECT_TRUE(!constraint.is_anchored_top && constraint.is_anchored_left &&
                 !constraint.is_anchored_right && constraint.is_anchored_bottom);
   }
   {
     Element* element = document->getElementById("div-br");
-    ASSERT_TRUE(element);
-    cc::Layer* layer = CcLayerFromElement(element);
-    ASSERT_TRUE(layer);
-    cc::LayerStickyPositionConstraint constraint =
-        layer->sticky_position_constraint();
+    auto constraint = GetStickyConstraint(element);
     ASSERT_TRUE(constraint.is_sticky);
     EXPECT_TRUE(!constraint.is_anchored_top && !constraint.is_anchored_left &&
                 constraint.is_anchored_right && constraint.is_anchored_bottom);
   }
   {
     Element* element = document->getElementById("span-tl");
-    ASSERT_TRUE(element);
-    cc::Layer* layer = CcLayerFromElement(element);
-    ASSERT_TRUE(layer);
-    cc::LayerStickyPositionConstraint constraint =
-        layer->sticky_position_constraint();
+    auto constraint = GetStickyConstraint(element);
     ASSERT_TRUE(constraint.is_sticky);
     EXPECT_TRUE(constraint.is_anchored_top && constraint.is_anchored_left &&
                 !constraint.is_anchored_right &&
@@ -419,11 +416,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
   }
   {
     Element* element = document->getElementById("span-tlbr");
-    ASSERT_TRUE(element);
-    cc::Layer* layer = CcLayerFromElement(element);
-    ASSERT_TRUE(layer);
-    cc::LayerStickyPositionConstraint constraint =
-        layer->sticky_position_constraint();
+    auto constraint = GetStickyConstraint(element);
     ASSERT_TRUE(constraint.is_sticky);
     EXPECT_TRUE(constraint.is_anchored_top && constraint.is_anchored_left &&
                 constraint.is_anchored_right && constraint.is_anchored_bottom);
@@ -434,11 +427,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
   }
   {
     Element* element = document->getElementById("composited-top");
-    ASSERT_TRUE(element);
-    cc::Layer* layer = CcLayerFromElement(element);
-    ASSERT_TRUE(layer);
-    cc::LayerStickyPositionConstraint constraint =
-        layer->sticky_position_constraint();
+    auto constraint = GetStickyConstraint(element);
     ASSERT_TRUE(constraint.is_sticky);
     EXPECT_TRUE(constraint.is_anchored_top);
     EXPECT_EQ(gfx::Rect(100, 110, 10, 10),
