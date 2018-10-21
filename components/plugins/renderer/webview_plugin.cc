@@ -304,7 +304,7 @@ void WebViewPlugin::WebViewHelper::SetToolTipText(
     plugin_->container_->GetElement().SetAttribute("title", text);
 }
 
-void WebViewPlugin::WebViewHelper::StartDragging(blink::WebReferrerPolicy,
+void WebViewPlugin::WebViewHelper::StartDragging(network::mojom::ReferrerPolicy,
                                                  const WebDragData&,
                                                  WebDragOperationsMask,
                                                  const SkBitmap&,

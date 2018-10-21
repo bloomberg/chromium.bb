@@ -124,7 +124,7 @@ void ProxyWebWidgetClient::ConvertViewportToWindow(blink::WebRect* rect) {
 void ProxyWebWidgetClient::ConvertWindowToViewport(blink::WebFloatRect* rect) {
   base_class_widget_client_->ConvertWindowToViewport(rect);
 }
-void ProxyWebWidgetClient::StartDragging(blink::WebReferrerPolicy policy,
+void ProxyWebWidgetClient::StartDragging(network::mojom::ReferrerPolicy policy,
                                          const blink::WebDragData& data,
                                          blink::WebDragOperationsMask mask,
                                          const SkBitmap& drag_image,

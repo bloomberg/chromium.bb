@@ -1174,7 +1174,7 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       false,     // enable_upload_progress
       false,     // do_not_prompt_for_login
       false,     // keepalive
-      blink::kWebReferrerPolicyDefault,
+      network::mojom::ReferrerPolicy::kDefault,
       false,  // is_prerendering
       context,
       false,           // report_raw_headers

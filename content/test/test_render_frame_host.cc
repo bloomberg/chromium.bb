@@ -447,7 +447,8 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
           base::nullopt /* devtools_initiator_info */);
   CommonNavigationParams common_params;
   common_params.url = url;
-  common_params.referrer = Referrer(GURL(), blink::kWebReferrerPolicyDefault);
+  common_params.referrer =
+      Referrer(GURL(), network::mojom::ReferrerPolicy::kDefault);
   common_params.transition = ui::PAGE_TRANSITION_LINK;
   common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
   common_params.has_user_gesture = has_user_gesture;

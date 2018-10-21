@@ -227,7 +227,7 @@ void OpenWindowOnUI(
   OpenURLParams params(
       url,
       Referrer::SanitizeForRequest(
-          url, Referrer(script_url, blink::kWebReferrerPolicyDefault)),
+          url, Referrer(script_url, network::mojom::ReferrerPolicy::kDefault)),
       type == WindowType::PAYMENT_HANDLER_WINDOW
           ? WindowOpenDisposition::NEW_POPUP
           : WindowOpenDisposition::NEW_FOREGROUND_TAB,
@@ -266,7 +266,7 @@ void NavigateClientOnUI(const GURL& url,
   OpenURLParams params(
       url,
       Referrer::SanitizeForRequest(
-          url, Referrer(script_url, blink::kWebReferrerPolicyDefault)),
+          url, Referrer(script_url, network::mojom::ReferrerPolicy::kDefault)),
       frame_tree_node_id, WindowOpenDisposition::CURRENT_TAB, transition,
       true /* is_renderer_initiated */);
   web_contents->OpenURL(params);

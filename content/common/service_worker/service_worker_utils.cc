@@ -222,7 +222,8 @@ std::string ServiceWorkerUtils::SerializeFetchRequestToString(
   request_proto.mutable_headers()->insert(request.headers.begin(),
                                           request.headers.end());
   request_proto.mutable_referrer()->set_url(request.referrer.url.spec());
-  request_proto.mutable_referrer()->set_policy(request.referrer.policy);
+  request_proto.mutable_referrer()->set_policy(
+      static_cast<int>(request.referrer.policy));
   request_proto.set_is_reload(request.is_reload);
   request_proto.set_mode(static_cast<int>(request.mode));
   request_proto.set_is_main_resource_load(request.is_main_resource_load);
@@ -253,7 +254,7 @@ ServiceWorkerFetchRequest ServiceWorkerUtils::DeserializeFetchRequestFromString(
       ServiceWorkerHeaderMap(request_proto.headers().begin(),
                              request_proto.headers().end()),
       Referrer(GURL(request_proto.referrer().url()),
-               static_cast<blink::WebReferrerPolicy>(
+               static_cast<network::mojom::ReferrerPolicy>(
                    request_proto.referrer().policy())),
       request_proto.is_reload());
   request.mode =

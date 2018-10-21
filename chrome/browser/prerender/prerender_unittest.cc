@@ -830,7 +830,7 @@ TEST_F(PrerenderTest, PendingPrerenderTest) {
           FINAL_STATUS_USED);
   prerender_link_manager()->OnAddPrerender(
       child_id, GetNextPrerenderID(), pending_url, kDefaultRelTypes,
-      Referrer(url, blink::kWebReferrerPolicyDefault), kSize, route_id);
+      Referrer(url, network::mojom::ReferrerPolicy::kDefault), kSize, route_id);
   EXPECT_FALSE(LauncherHasRunningPrerender(child_id, last_prerender_id()));
   EXPECT_FALSE(pending_prerender_contents->prerendering_has_started());
 
@@ -872,7 +872,7 @@ TEST_F(PrerenderTest, InvalidPendingPrerenderTest) {
           FINAL_STATUS_UNSUPPORTED_SCHEME);
   prerender_link_manager()->OnAddPrerender(
       child_id, GetNextPrerenderID(), pending_url, kDefaultRelTypes,
-      Referrer(url, blink::kWebReferrerPolicyDefault), kSize, route_id);
+      Referrer(url, network::mojom::ReferrerPolicy::kDefault), kSize, route_id);
   EXPECT_FALSE(LauncherHasRunningPrerender(child_id, last_prerender_id()));
   EXPECT_FALSE(pending_prerender_contents->prerendering_has_started());
 
@@ -905,7 +905,7 @@ TEST_F(PrerenderTest, CancelPendingPrerenderTest) {
   // Schedule a pending prerender launched from the prerender.
   prerender_link_manager()->OnAddPrerender(
       child_id, GetNextPrerenderID(), pending_url, kDefaultRelTypes,
-      Referrer(url, blink::kWebReferrerPolicyDefault), kSize, route_id);
+      Referrer(url, network::mojom::ReferrerPolicy::kDefault), kSize, route_id);
   EXPECT_FALSE(LauncherHasRunningPrerender(child_id, last_prerender_id()));
 
   // Cancel the pending prerender.

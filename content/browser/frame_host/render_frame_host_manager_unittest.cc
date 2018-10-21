@@ -976,7 +976,7 @@ TEST_F(RenderFrameHostManagerTest, Navigate) {
   const GURL kUrl2("http://www.google.com/foo");
   NavigationEntryImpl entry2(
       nullptr /* instance */, kUrl2,
-      Referrer(kUrl1, blink::kWebReferrerPolicyDefault),
+      Referrer(kUrl1, network::mojom::ReferrerPolicy::kDefault),
       base::string16() /* title */, ui::PAGE_TRANSITION_LINK,
       true /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   host = NavigateToEntry(manager, entry2);
@@ -1000,7 +1000,7 @@ TEST_F(RenderFrameHostManagerTest, Navigate) {
   const GURL kUrl3("http://webkit.org/");
   NavigationEntryImpl entry3(
       nullptr /* instance */, kUrl3,
-      Referrer(kUrl2, blink::kWebReferrerPolicyDefault),
+      Referrer(kUrl2, network::mojom::ReferrerPolicy::kDefault),
       base::string16() /* title */, ui::PAGE_TRANSITION_LINK,
       false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   host = NavigateToEntry(manager, entry3);
@@ -1577,7 +1577,7 @@ TEST_F(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
   const GURL kUrl2("http://www.chromium.org");
   NavigationEntryImpl entry2(
       nullptr /* instance */, kUrl2,
-      Referrer(kUrl1, blink::kWebReferrerPolicyDefault),
+      Referrer(kUrl1, network::mojom::ReferrerPolicy::kDefault),
       base::string16() /* title */, ui::PAGE_TRANSITION_LINK,
       true /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   host = NavigateToEntry(manager, entry2);
@@ -1951,7 +1951,7 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
   // 2) Cross-site navigate both frames to next site.
   NavigationEntryImpl entryB(
       nullptr /* instance */, kUrlB,
-      Referrer(kUrlA, blink::kWebReferrerPolicyDefault),
+      Referrer(kUrlA, network::mojom::ReferrerPolicy::kDefault),
       base::string16() /* title */, ui::PAGE_TRANSITION_LINK,
       false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   host1 = NavigateToEntry(iframe1, entryB);
@@ -2064,7 +2064,7 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
       contents()->GetFrameTree()->root()->child_at(0)->render_manager();
   NavigationEntryImpl entry(
       nullptr /* instance */, kUrl2,
-      Referrer(kUrl1, blink::kWebReferrerPolicyDefault),
+      Referrer(kUrl1, network::mojom::ReferrerPolicy::kDefault),
       base::string16() /* title */, ui::PAGE_TRANSITION_LINK,
       false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   RenderFrameHostImpl* cross_site = NavigateToEntry(iframe, entry);
@@ -2390,7 +2390,7 @@ TEST_F(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
   // Navigate first two subframes to B.
   NavigationEntryImpl entryB(
       nullptr /* instance */, kUrlB,
-      Referrer(kUrlA, blink::kWebReferrerPolicyDefault),
+      Referrer(kUrlA, network::mojom::ReferrerPolicy::kDefault),
       base::string16() /* title */, ui::PAGE_TRANSITION_LINK,
       false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   TestRenderFrameHost* host1 =
@@ -2405,7 +2405,7 @@ TEST_F(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
   // Navigate the third subframe to C.
   NavigationEntryImpl entryC(
       nullptr /* instance */, kUrlC,
-      Referrer(kUrlA, blink::kWebReferrerPolicyDefault),
+      Referrer(kUrlA, network::mojom::ReferrerPolicy::kDefault),
       base::string16() /* title */, ui::PAGE_TRANSITION_LINK,
       false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   TestRenderFrameHost* host3 =
@@ -2485,7 +2485,7 @@ TEST_F(RenderFrameHostManagerTest,
   // Navigate subframe to B.
   NavigationEntryImpl entryB(
       nullptr /* instance */, kUrlB,
-      Referrer(kUrlA, blink::kWebReferrerPolicyDefault),
+      Referrer(kUrlA, network::mojom::ReferrerPolicy::kDefault),
       base::string16() /* title */, ui::PAGE_TRANSITION_LINK,
       false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   TestRenderFrameHost* hostB =
@@ -2500,7 +2500,7 @@ TEST_F(RenderFrameHostManagerTest,
   // Navigate the subframe to C.
   NavigationEntryImpl entryC(
       nullptr /* instance */, kUrlC,
-      Referrer(kUrlA, blink::kWebReferrerPolicyDefault),
+      Referrer(kUrlA, network::mojom::ReferrerPolicy::kDefault),
       base::string16() /* title */, ui::PAGE_TRANSITION_LINK,
       false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   TestRenderFrameHost* hostC =
@@ -3084,7 +3084,7 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
   // Navigate subframe to kUrl2.
   NavigationEntryImpl entry1(
       nullptr /* instance */, kUrl2,
-      Referrer(kUrl1, blink::kWebReferrerPolicyDefault),
+      Referrer(kUrl1, network::mojom::ReferrerPolicy::kDefault),
       base::string16() /* title */, ui::PAGE_TRANSITION_LINK,
       false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   TestRenderFrameHost* child_host =

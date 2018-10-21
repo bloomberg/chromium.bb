@@ -30,6 +30,7 @@
 
 #include "third_party/blink/public/web/web_security_policy.h"
 
+#include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -115,7 +116,7 @@ void WebSecurityPolicy::AddSchemeToBypassSecureContextWhitelist(
 }
 
 WebString WebSecurityPolicy::GenerateReferrerHeader(
-    WebReferrerPolicy referrer_policy,
+    network::mojom::ReferrerPolicy referrer_policy,
     const WebURL& url,
     const WebString& referrer) {
   return SecurityPolicy::GenerateReferrer(

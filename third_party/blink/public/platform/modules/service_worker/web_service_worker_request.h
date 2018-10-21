@@ -6,11 +6,11 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICE_WORKER_WEB_SERVICE_WORKER_REQUEST_H_
 
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
-#include "third_party/blink/public/platform/web_referrer_policy.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -68,9 +68,9 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerRequest {
                long long size,
                mojo::ScopedMessagePipeHandle);
 
-  void SetReferrer(const WebString&, WebReferrerPolicy);
+  void SetReferrer(const WebString&, network::mojom::ReferrerPolicy);
   WebURL ReferrerUrl() const;
-  WebReferrerPolicy GetReferrerPolicy() const;
+  network::mojom::ReferrerPolicy GetReferrerPolicy() const;
 
   void SetMode(network::mojom::FetchRequestMode);
   network::mojom::FetchRequestMode Mode() const;

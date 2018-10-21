@@ -203,7 +203,7 @@ void WebFrameWidgetBase::CancelDrag() {
   doing_drag_and_drop_ = false;
 }
 
-void WebFrameWidgetBase::StartDragging(WebReferrerPolicy policy,
+void WebFrameWidgetBase::StartDragging(network::mojom::ReferrerPolicy policy,
                                        const WebDragData& data,
                                        WebDragOperationsMask mask,
                                        const SkBitmap& drag_image,

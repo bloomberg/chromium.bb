@@ -282,7 +282,6 @@ using blink::WebPoint;
 using blink::WebPopupMenuInfo;
 using blink::WebRange;
 using blink::WebRect;
-using blink::WebReferrerPolicy;
 using blink::WebScriptSource;
 using blink::WebSearchableFormData;
 using blink::WebSecurityOrigin;
@@ -300,6 +299,7 @@ using blink::WebUserGestureIndicator;
 using blink::WebVector;
 using blink::WebView;
 using blink::mojom::SelectionMenuBehavior;
+using network::mojom::ReferrerPolicy;
 
 #if defined(OS_ANDROID)
 using blink::WebFloatPoint;
@@ -471,8 +471,8 @@ WebURLRequest CreateURLRequestForNavigation(
     }
   }
 
-  if (!web_referrer.IsEmpty() ||
-      common_params.referrer.policy != blink::kWebReferrerPolicyDefault) {
+  if (!web_referrer.IsEmpty() || common_params.referrer.policy !=
+                                     network::mojom::ReferrerPolicy::kDefault) {
     request.SetHTTPReferrer(web_referrer, common_params.referrer.policy);
   }
 
@@ -5014,7 +5014,8 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
       WebUserGestureIndicator::IsProcessingUserGesture(frame_));
 
   if (!render_view_->renderer_preferences_.enable_referrers)
-    request.SetHTTPReferrer(WebString(), blink::kWebReferrerPolicyDefault);
+    request.SetHTTPReferrer(WebString(),
+                            network::mojom::ReferrerPolicy::kDefault);
 }
 
 void RenderFrameImpl::DidReceiveResponse(

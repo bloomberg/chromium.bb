@@ -1119,7 +1119,7 @@ void ChromePasswordProtectionService::HandleUserActionOnSettings(
   // Opens change password page in a new tab for user to change password.
   OpenUrl(web_contents, GetDefaultChangePasswordURL(),
           content::Referrer(web_contents->GetLastCommittedURL(),
-                            blink::kWebReferrerPolicyDefault),
+                            network::mojom::ReferrerPolicy::kDefault),
           /*in_new_tab=*/true);
 }
 
@@ -1130,7 +1130,7 @@ void ChromePasswordProtectionService::HandleResetPasswordOnInterstitial(
   // password.
   OpenUrl(web_contents, GetEnterpriseChangePasswordURL(),
           content::Referrer(web_contents->GetLastCommittedURL(),
-                            blink::kWebReferrerPolicyDefault),
+                            network::mojom::ReferrerPolicy::kDefault),
           /*in_new_tab=*/false);
 }
 

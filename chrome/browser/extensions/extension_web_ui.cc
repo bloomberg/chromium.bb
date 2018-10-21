@@ -179,7 +179,8 @@ void UnregisterAndReplaceOverrideForWebContents(const std::string& page,
   web_contents->GetController().LoadURL(
       url,
       content::Referrer::SanitizeForRequest(
-          url, content::Referrer(url, blink::kWebReferrerPolicyDefault)),
+          url,
+          content::Referrer(url, network::mojom::ReferrerPolicy::kDefault)),
       ui::PAGE_TRANSITION_RELOAD, std::string());
 }
 

@@ -132,7 +132,7 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
     auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
         url, web_contents());
     navigation->SetReferrer(
-        content::Referrer(referrer, blink::kWebReferrerPolicyDefault));
+        content::Referrer(referrer, network::mojom::ReferrerPolicy::kDefault));
     navigation->SetTransition(type);
     navigation->Commit();
   }

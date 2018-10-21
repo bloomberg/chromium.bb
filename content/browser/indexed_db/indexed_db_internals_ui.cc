@@ -364,7 +364,7 @@ void IndexedDBInternalsUI::OnDownloadDataReady(
           web_contents, url, traffic_annotation));
   content::Referrer referrer = content::Referrer::SanitizeForRequest(
       url, content::Referrer(web_contents->GetLastCommittedURL(),
-                             blink::kWebReferrerPolicyDefault));
+                             network::mojom::ReferrerPolicy::kDefault));
   dl_params->set_referrer(referrer.url);
   dl_params->set_referrer_policy(
       Referrer::ReferrerPolicyForUrlRequest(referrer.policy));

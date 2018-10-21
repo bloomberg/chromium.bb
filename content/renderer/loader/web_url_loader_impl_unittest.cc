@@ -196,7 +196,7 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
   bool WillFollowRedirect(const blink::WebURL& new_url,
                           const blink::WebURL& new_site_for_cookies,
                           const blink::WebString& new_referrer,
-                          blink::WebReferrerPolicy new_referrer_policy,
+                          network::mojom::ReferrerPolicy new_referrer_policy,
                           const blink::WebString& new_method,
                           const blink::WebURLResponse& passed_redirect_response,
                           bool& report_raw_headers) override {

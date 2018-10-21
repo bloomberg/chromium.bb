@@ -324,7 +324,7 @@ void WebWorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
 
   if (!renderer_preferences_.enable_referrers) {
     request.SetHTTPReferrer(blink::WebString(),
-                            blink::kWebReferrerPolicyDefault);
+                            network::mojom::ReferrerPolicy::kDefault);
   }
 }
 

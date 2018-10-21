@@ -60,7 +60,7 @@ void WebWidgetTestProxy::SetToolTipText(const blink::WebString& text,
   widget_test_client()->SetToolTipText(text, hint);
 }
 
-void WebWidgetTestProxy::StartDragging(blink::WebReferrerPolicy policy,
+void WebWidgetTestProxy::StartDragging(network::mojom::ReferrerPolicy policy,
                                        const blink::WebDragData& data,
                                        blink::WebDragOperationsMask mask,
                                        const SkBitmap& drag_image,

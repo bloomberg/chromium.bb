@@ -7,7 +7,7 @@
 #include "mojo/public/cpp/bindings/map_traits_wtf_hash_map.h"
 #include "mojo/public/cpp/bindings/string_traits_wtf.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
-#include "third_party/blink/public/platform/web_referrer_policy.h"
+#include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/renderer/platform/blob/serialized_blob_struct_traits.h"
 #include "third_party/blink/renderer/platform/mojo/kurl_struct_traits.h"
 #include "third_party/blink/renderer/platform/mojo/referrer_struct_traits.h"
@@ -106,8 +106,9 @@ bool StructTraits<blink::mojom::FetchAPIRequestDataView,
   for (const auto& pair : headers)
     out->SetHeader(pair.key, pair.value);
   out->SetBlobDataHandle(blob);
-  out->SetReferrer(referrer.referrer, static_cast<blink::WebReferrerPolicy>(
-                                          referrer.referrer_policy));
+  out->SetReferrer(
+      referrer.referrer,
+      static_cast<network::mojom::ReferrerPolicy>(referrer.referrer_policy));
   out->SetCredentialsMode(credentialsMode);
   out->SetCacheMode(data.cache_mode());
   out->SetRedirectMode(redirectMode);

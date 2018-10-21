@@ -36,7 +36,7 @@ class WebWidgetTestClient : public blink::WebWidgetClient {
   bool IsPointerLocked() override;
   void SetToolTipText(const blink::WebString& text,
                       blink::WebTextDirection direction) override;
-  void StartDragging(blink::WebReferrerPolicy policy,
+  void StartDragging(network::mojom::ReferrerPolicy policy,
                      const blink::WebDragData& data,
                      blink::WebDragOperationsMask mask,
                      const SkBitmap& drag_image,

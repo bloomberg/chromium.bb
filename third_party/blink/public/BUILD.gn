@@ -75,7 +75,6 @@ if (is_android) {
       "./platform/modules/remoteplayback/web_remote_playback_availability.h",
       "./platform/web_focus_type.h",
       "./platform/web_input_event.h",
-      "./platform/web_referrer_policy.h",
       "./platform/web_text_input_mode.h",
       "./platform/web_text_input_type.h",
       "./web/web_context_menu_data.h",
@@ -90,6 +89,7 @@ if (is_android) {
 
   android_library("blink_headers_java") {
     deps = [
+      "//services/network/public/mojom:mojom_java",
       "//third_party/android_deps:android_support_annotations_java",
     ]
     srcjar_deps = [ ":blink_headers_java_enums_srcjar" ]
@@ -307,7 +307,6 @@ source_set("blink_headers") {
     "platform/web_prescient_networking.h",
     "platform/web_private_ptr.h",
     "platform/web_rect.h",
-    "platform/web_referrer_policy.h",
     "platform/web_resource_timing_info.h",
     "platform/web_rtc_answer_options.h",
     "platform/web_rtc_api_name.h",
