@@ -55,6 +55,7 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
@@ -100,6 +101,8 @@ using FrameMsg_GetSerializedHtmlWithLocalLinks_FrameRoutingIdMap =
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
 #define IPC_MESSAGE_START FrameMsgStart
+IPC_ENUM_TRAITS_MAX_VALUE(blink::FrameOwnerElementType,
+                          blink::FrameOwnerElementType::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(
     blink::WebScrollIntoViewParams::AlignmentBehavior,
     blink::WebScrollIntoViewParams::kLastAlignmentBehavior)
@@ -544,6 +547,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::FrameReplicationState)
   IPC_STRUCT_TRAITS_MEMBER(has_potentially_trustworthy_unique_origin)
   IPC_STRUCT_TRAITS_MEMBER(has_received_user_gesture)
   IPC_STRUCT_TRAITS_MEMBER(has_received_user_gesture_before_nav)
+  IPC_STRUCT_TRAITS_MEMBER(frame_owner_element_type)
 IPC_STRUCT_TRAITS_END()
 
 // Parameters included with an OpenURL request.
@@ -662,6 +666,7 @@ IPC_STRUCT_BEGIN(FrameHostMsg_CreateChildFrame_Params)
   IPC_STRUCT_MEMBER(bool, is_created_by_script)
   IPC_STRUCT_MEMBER(blink::FramePolicy, frame_policy)
   IPC_STRUCT_MEMBER(content::FrameOwnerProperties, frame_owner_properties)
+  IPC_STRUCT_MEMBER(blink::FrameOwnerElementType, frame_owner_element_type)
 IPC_STRUCT_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::CSPSource)
@@ -1144,6 +1149,11 @@ IPC_MESSAGE_ROUTED2(FrameMsg_BubbleLogicalScroll,
 IPC_MESSAGE_ROUTED2(FrameMsg_MediaPlayerActionAt,
                     gfx::PointF /* location */,
                     blink::WebMediaPlayerAction)
+
+// Sent to the proxy or frame in parent frame's process to ask for rendering
+// fallback contents. This only happens for frame owners which render their own
+// fallback contents (i.e., <object>).
+IPC_MESSAGE_ROUTED0(FrameMsg_RenderFallbackContent)
 
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
@@ -1712,6 +1722,10 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_FrameDidCallFocus)
 IPC_MESSAGE_ROUTED2(FrameHostMsg_PrintCrossProcessSubframe,
                     gfx::Rect /* rect area of the frame content */,
                     int /* rendered document cookie */)
+
+// Asks the frame host to notify the owner element in parent process that it
+// should render fallback content.
+IPC_MESSAGE_ROUTED0(FrameHostMsg_RenderFallbackContentInParentProcess)
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 

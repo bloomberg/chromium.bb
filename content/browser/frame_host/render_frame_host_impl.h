@@ -64,6 +64,7 @@
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "services/viz/public/interfaces/hit_test/input_target_client.mojom.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
@@ -334,7 +335,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                           bool is_created_by_script,
                           const base::UnguessableToken& devtools_frame_token,
                           const blink::FramePolicy& frame_policy,
-                          const FrameOwnerProperties& frame_owner_properties);
+                          const FrameOwnerProperties& frame_owner_properties,
+                          blink::FrameOwnerElementType owner_type);
 
   // Update this frame's state at the appropriate time when a navigation
   // commits. This is called by NavigatorImpl::DidNavigate as a helper, in the
@@ -968,6 +970,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       blink::WebScrollDirection direction,
       blink::WebScrollGranularity granularity);
   void OnFrameDidCallFocus();
+  void OnRenderFallbackContentInParentProcess();
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   void OnShowPopup(const FrameHostMsg_ShowPopup_Params& params);

@@ -44,6 +44,7 @@ source_set("headers") {
     "experiments/memory_ablation_experiment.h",
     "feature_policy/feature_policy.h",
     "features.h",
+    "frame/frame_owner_element_type.h",
     "frame/frame_policy.h",
     "frame/sandbox_flags.h",
     "frame/user_activation_state.h",

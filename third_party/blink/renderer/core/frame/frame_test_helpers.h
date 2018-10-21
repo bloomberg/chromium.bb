@@ -41,6 +41,7 @@
 #include "content/renderer/gpu/layer_tree_view.h"
 #include "content/test/stub_layer_tree_view_delegate.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/test/fake_renderer_scheduler.h"
@@ -315,7 +316,8 @@ class TestWebFrameClient : public WebLocalFrameClient {
                                   const WebString& fallback_name,
                                   WebSandboxFlags,
                                   const ParsedFeaturePolicy&,
-                                  const WebFrameOwnerProperties&) override;
+                                  const WebFrameOwnerProperties&,
+                                  FrameOwnerElementType) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
   void DidCreateDocumentLoader(WebDocumentLoader*) override;

@@ -291,6 +291,7 @@ class CORE_EXPORT WebLocalFrameImpl final
       std::unique_ptr<WebDocumentLoader::ExtraData> navigation_data) override;
   FallbackContentResult MaybeRenderFallbackContent(
       const WebURLError&) const override;
+  void RenderFallbackContent() const override;
   void ReportContentSecurityPolicyViolation(
       const blink::WebContentSecurityPolicyViolation&) override;
   bool IsLoading() const override;
