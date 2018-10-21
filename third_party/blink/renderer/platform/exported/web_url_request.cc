@@ -148,8 +148,9 @@ void WebURLRequest::SetHTTPHeaderField(const WebString& name,
   resource_request_->SetHTTPHeaderField(name, value);
 }
 
-void WebURLRequest::SetHTTPReferrer(const WebString& web_referrer,
-                                    WebReferrerPolicy referrer_policy) {
+void WebURLRequest::SetHTTPReferrer(
+    const WebString& web_referrer,
+    network::mojom::ReferrerPolicy referrer_policy) {
   // WebString doesn't have the distinction between empty and null. We use
   // the null WTFString for referrer.
   DCHECK_EQ(Referrer::NoReferrer(), String());
@@ -208,8 +209,9 @@ network::mojom::RequestContextFrameType WebURLRequest::GetFrameType() const {
   return resource_request_->GetFrameType();
 }
 
-WebReferrerPolicy WebURLRequest::GetReferrerPolicy() const {
-  return static_cast<WebReferrerPolicy>(resource_request_->GetReferrerPolicy());
+network::mojom::ReferrerPolicy WebURLRequest::GetReferrerPolicy() const {
+  return static_cast<network::mojom::ReferrerPolicy>(
+      resource_request_->GetReferrerPolicy());
 }
 
 void WebURLRequest::SetHTTPOriginIfNeeded(const WebSecurityOrigin& origin) {

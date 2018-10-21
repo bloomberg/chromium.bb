@@ -168,7 +168,7 @@ class WebViewPlugin : public blink::WebPlugin,
     // WebWidgetClient methods:
     void SetToolTipText(const blink::WebString&,
                         blink::WebTextDirection) override;
-    void StartDragging(blink::WebReferrerPolicy,
+    void StartDragging(network::mojom::ReferrerPolicy,
                        const blink::WebDragData&,
                        blink::WebDragOperationsMask,
                        const SkBitmap&,

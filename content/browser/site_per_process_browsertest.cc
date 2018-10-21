@@ -458,7 +458,7 @@ void OpenURLBlockUntilNavigationComplete(Shell* shell, const GURL& url) {
   OpenURLParams params(
       url,
       content::Referrer(shell->web_contents()->GetLastCommittedURL(),
-                        blink::kWebReferrerPolicyAlways),
+                        network::mojom::ReferrerPolicy::kAlways),
       WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_LINK,
       true /* is_renderer_initiated */);
   shell->OpenURLFromTab(shell->web_contents(), params);

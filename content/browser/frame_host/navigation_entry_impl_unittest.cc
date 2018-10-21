@@ -61,7 +61,7 @@ class NavigationEntryTest : public testing::Test {
     instance_ = SiteInstanceImpl::Create(&browser_context_);
     entry2_.reset(new NavigationEntryImpl(
         instance_, GURL("test:url"),
-        Referrer(GURL("from"), blink::kWebReferrerPolicyDefault),
+        Referrer(GURL("from"), network::mojom::ReferrerPolicy::kDefault),
         ASCIIToUTF16("title"), ui::PAGE_TRANSITION_TYPED, false,
         nullptr /* blob_url_loader_factory */));
   }
@@ -220,7 +220,7 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   EXPECT_EQ(GURL(), entry1_->GetReferrer().url);
   EXPECT_EQ(GURL("from"), entry2_->GetReferrer().url);
   entry2_->SetReferrer(
-      Referrer(GURL("from2"), blink::kWebReferrerPolicyDefault));
+      Referrer(GURL("from2"), network::mojom::ReferrerPolicy::kDefault));
   EXPECT_EQ(GURL("from2"), entry2_->GetReferrer().url);
 
   // Title

@@ -32,7 +32,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.blink_public.web.WebReferrerPolicy;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
@@ -52,6 +51,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.net.HttpUtil;
+import org.chromium.network.mojom.ReferrerPolicy;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
@@ -555,11 +555,11 @@ public class IntentHandler {
         if (headers != null) params.setVerbatimHeaders(headers);
     }
 
-    public static @WebReferrerPolicy int getReferrerPolicyFromIntent(Intent intent) {
-        int policy = IntentUtils.safeGetIntExtra(
-                intent, EXTRA_REFERRER_POLICY, WebReferrerPolicy.DEFAULT);
-        if (policy < 0 || policy >= WebReferrerPolicy.LAST) {
-            policy = WebReferrerPolicy.DEFAULT;
+    public static int getReferrerPolicyFromIntent(Intent intent) {
+        int policy =
+                IntentUtils.safeGetIntExtra(intent, EXTRA_REFERRER_POLICY, ReferrerPolicy.DEFAULT);
+        if (policy < 0 || policy >= ReferrerPolicy.LAST) {
+            policy = ReferrerPolicy.DEFAULT;
         }
         return policy;
     }
@@ -587,7 +587,7 @@ public class IntentHandler {
                                     .authority(authority)
                                     .build()
                                     .toString(),
-                WebReferrerPolicy.DEFAULT);
+                ReferrerPolicy.DEFAULT);
     }
 
     /**

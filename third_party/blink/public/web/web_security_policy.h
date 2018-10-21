@@ -32,8 +32,8 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SECURITY_POLICY_H_
 
 #include "services/network/public/mojom/cors.mojom-shared.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_referrer_policy.h"
 
 namespace blink {
 
@@ -112,7 +112,7 @@ class WebSecurityPolicy {
   // navigation to a given URL. If the referrer returned is empty, the
   // referrer header should be omitted.
   BLINK_EXPORT static WebString GenerateReferrerHeader(
-      WebReferrerPolicy,
+      network::mojom::ReferrerPolicy,
       const WebURL&,
       const WebString& referrer);
 

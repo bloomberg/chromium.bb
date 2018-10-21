@@ -896,9 +896,9 @@ void Request::PopulateWebServiceWorkerRequest(
     web_request.AppendHeader(header.first, header.second);
   }
 
-  web_request.SetReferrer(
-      request_->ReferrerString(),
-      static_cast<WebReferrerPolicy>(request_->GetReferrerPolicy()));
+  web_request.SetReferrer(request_->ReferrerString(),
+                          static_cast<network::mojom::ReferrerPolicy>(
+                              request_->GetReferrerPolicy()));
   // FIXME: How can we set isReload properly? What is the correct place to load
   // it in to the Request object? We should investigate the right way to plumb
   // this information in to here.

@@ -488,8 +488,8 @@ void PageHandler::Navigate(const std::string& url,
   }
 
   NavigationController::LoadURLParams params(gurl);
-  params.referrer =
-      Referrer(GURL(referrer.fromMaybe("")), blink::kWebReferrerPolicyDefault);
+  params.referrer = Referrer(GURL(referrer.fromMaybe("")),
+                             network::mojom::ReferrerPolicy::kDefault);
   params.transition_type = type;
   params.frame_tree_node_id = frame_tree_node->frame_tree_node_id();
   frame_tree_node->navigator()->GetController()->LoadURLWithParams(params);

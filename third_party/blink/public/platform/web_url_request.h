@@ -36,8 +36,8 @@
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/platform/referrer.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_referrer_policy.h"
 
 namespace network {
 namespace mojom {
@@ -153,7 +153,7 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT void SetHTTPHeaderField(const WebString& name,
                                                 const WebString& value);
   BLINK_PLATFORM_EXPORT void SetHTTPReferrer(const WebString& referrer,
-                                             WebReferrerPolicy);
+                                             network::mojom::ReferrerPolicy);
   BLINK_PLATFORM_EXPORT void AddHTTPHeaderField(const WebString& name,
                                                 const WebString& value);
   BLINK_PLATFORM_EXPORT void ClearHTTPHeaderField(const WebString& name);
@@ -183,7 +183,8 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT void SetFrameType(
       network::mojom::RequestContextFrameType);
 
-  BLINK_PLATFORM_EXPORT WebReferrerPolicy GetReferrerPolicy() const;
+  BLINK_PLATFORM_EXPORT network::mojom::ReferrerPolicy GetReferrerPolicy()
+      const;
 
   // Sets an HTTP origin header if it is empty and the HTTP method of the
   // request requires it.

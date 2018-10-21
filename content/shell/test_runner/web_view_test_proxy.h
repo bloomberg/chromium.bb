@@ -95,7 +95,7 @@ class TEST_RUNNER_EXPORT ProxyWebWidgetClient : public blink::WebWidgetClient {
   void ShowVirtualKeyboardOnElementFocus() override;
   void ConvertViewportToWindow(blink::WebRect* rect) override;
   void ConvertWindowToViewport(blink::WebFloatRect* rect) override;
-  void StartDragging(blink::WebReferrerPolicy,
+  void StartDragging(network::mojom::ReferrerPolicy,
                      const blink::WebDragData&,
                      blink::WebDragOperationsMask,
                      const SkBitmap& drag_image,

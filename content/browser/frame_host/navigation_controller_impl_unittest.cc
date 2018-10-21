@@ -665,8 +665,8 @@ TEST_F(NavigationControllerTest, LoadURLWithParams) {
   NavigationControllerImpl& controller = controller_impl();
 
   NavigationController::LoadURLParams load_params(GURL("http://foo/2"));
-  load_params.referrer =
-      Referrer(GURL("http://referrer"), blink::kWebReferrerPolicyDefault);
+  load_params.referrer = Referrer(GURL("http://referrer"),
+                                  network::mojom::ReferrerPolicy::kDefault);
   load_params.transition_type = ui::PAGE_TRANSITION_GENERATED;
   load_params.extra_headers = "content-type: text/plain;\nX-Foo: Bar";
   load_params.load_type = NavigationController::LOAD_TYPE_DEFAULT;

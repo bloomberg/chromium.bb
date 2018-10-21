@@ -38,7 +38,6 @@
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/public/platform/web_referrer_policy.h"
 #include "url/gurl.h"
 
 namespace content {

@@ -222,7 +222,6 @@ using blink::WebNode;
 using blink::WebPluginAction;
 using blink::WebPoint;
 using blink::WebRect;
-using blink::WebReferrerPolicy;
 using blink::WebSandboxFlags;
 using blink::WebScriptSource;
 using blink::WebSearchableFormData;
@@ -244,7 +243,6 @@ using blink::WebWidget;
 using blink::WebWindowFeatures;
 using blink::WebRuntimeFeatures;
 using base::TimeDelta;
-
 
 namespace content {
 

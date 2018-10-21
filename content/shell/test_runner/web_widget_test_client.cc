@@ -74,7 +74,7 @@ void WebWidgetTestClient::SetToolTipText(const blink::WebString& text,
   test_runner()->setToolTipText(text);
 }
 
-void WebWidgetTestClient::StartDragging(blink::WebReferrerPolicy policy,
+void WebWidgetTestClient::StartDragging(network::mojom::ReferrerPolicy policy,
                                         const blink::WebDragData& data,
                                         blink::WebDragOperationsMask mask,
                                         const SkBitmap& drag_image,

@@ -19,9 +19,8 @@ namespace {
 TEST(ServiceWorkerRequestTest, SerialiazeDeserializeRoundTrip) {
   ServiceWorkerFetchRequest request(
       GURL("foo.com"), "GET", {{"User-Agent", "Chrome"}},
-      Referrer(
-          GURL("bar.com"),
-          blink::WebReferrerPolicy::kWebReferrerPolicyNoReferrerWhenDowngrade),
+      Referrer(GURL("bar.com"),
+               network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade),
       true);
   request.mode = network::mojom::FetchRequestMode::kSameOrigin;
   request.is_main_resource_load = true;

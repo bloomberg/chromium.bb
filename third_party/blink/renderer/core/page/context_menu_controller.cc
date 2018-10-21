@@ -428,7 +428,7 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
         WebContextMenuData::kCheckableMenuItemChecked;
   }
 
-  data.referrer_policy = static_cast<WebReferrerPolicy>(
+  data.referrer_policy = static_cast<network::mojom::ReferrerPolicy>(
       selected_frame->GetDocument()->GetReferrerPolicy());
 
   if (menu_provider_) {
@@ -448,7 +448,7 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
     // If the anchor wants to suppress the referrer, update the referrerPolicy
     // accordingly.
     if (anchor->HasRel(kRelationNoReferrer))
-      data.referrer_policy = kWebReferrerPolicyNever;
+      data.referrer_policy = network::mojom::ReferrerPolicy::kNever;
 
     data.link_text = anchor->innerText();
   }

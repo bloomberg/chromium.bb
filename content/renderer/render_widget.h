@@ -50,10 +50,10 @@
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "services/network/public/mojom/referrer_policy.mojom.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_rect.h"
-#include "third_party/blink/public/platform/web_referrer_policy.h"
 #include "third_party/blink/public/platform/web_text_input_info.h"
 #include "third_party/blink/public/web/web_ime_text_span.h"
 #include "third_party/blink/public/web/web_text_direction.h"
@@ -328,7 +328,7 @@ class CONTENT_EXPORT RenderWidget
   bool RequestPointerLock() override;
   void RequestPointerUnlock() override;
   bool IsPointerLocked() override;
-  void StartDragging(blink::WebReferrerPolicy policy,
+  void StartDragging(network::mojom::ReferrerPolicy policy,
                      const blink::WebDragData& data,
                      blink::WebDragOperationsMask mask,
                      const SkBitmap& drag_image,

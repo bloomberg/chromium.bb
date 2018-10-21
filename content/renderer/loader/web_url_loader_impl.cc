@@ -78,7 +78,6 @@ using blink::WebData;
 using blink::WebHTTPBody;
 using blink::WebHTTPHeaderVisitor;
 using blink::WebHTTPLoadInfo;
-using blink::WebReferrerPolicy;
 using blink::WebSecurityPolicy;
 using blink::WebString;
 using blink::WebURL;

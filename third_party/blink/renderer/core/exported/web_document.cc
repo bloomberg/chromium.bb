@@ -31,6 +31,7 @@
 #include "third_party/blink/public/web/web_document.h"
 
 #include "base/memory/scoped_refptr.h"
+#include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/web_distillability.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_dom_event.h"
@@ -231,8 +232,8 @@ void WebDocument::WatchCSSSelectors(const WebVector<WebString>& web_selectors) {
   CSSSelectorWatch::From(*document).WatchCSSSelectors(selectors);
 }
 
-WebReferrerPolicy WebDocument::GetReferrerPolicy() const {
-  return static_cast<WebReferrerPolicy>(
+network::mojom::ReferrerPolicy WebDocument::GetReferrerPolicy() const {
+  return static_cast<network::mojom::ReferrerPolicy>(
       ConstUnwrap<Document>()->GetReferrerPolicy());
 }
 

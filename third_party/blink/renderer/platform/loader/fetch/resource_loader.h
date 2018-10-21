@@ -106,7 +106,7 @@ class PLATFORM_EXPORT ResourceLoader final
   bool WillFollowRedirect(const WebURL& new_url,
                           const WebURL& new_site_for_cookies,
                           const WebString& new_referrer,
-                          WebReferrerPolicy new_referrer_policy,
+                          network::mojom::ReferrerPolicy new_referrer_policy,
                           const WebString& new_method,
                           const WebURLResponse& passed_redirect_response,
                           bool& report_raw_headers) override;
