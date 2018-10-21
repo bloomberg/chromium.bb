@@ -159,28 +159,14 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
   cc::DeadlinePolicy GetDeadlinePolicy(bool is_resize) const;
 
   // The state of |delegated_frame_host_| and |recyclable_compositor_| to
-  // manage being visible, occluded, hidden, or drawn via a ui::Layer. Note that
-  // TransitionToState will transition through each intermediate state according
-  // to enum values (e.g, going from HasAttachedCompositor to HasNoCompositor
-  // will temporarily go through HasDetachedCompositor).
+  // manage being visible, hidden, or drawn via a ui::Layer.
   enum State {
     // Effects:
     // - |recyclable_compositor_| exists and is attached to
     //   |delegated_frame_host_|.
     // Happens when:
     // - |render_widet_host_| is in the visible state.
-    HasAttachedCompositor = 0,
-    // Effects:
-    // - |recyclable_compositor_| exists, but |delegated_frame_host_| is
-    //   hidden and detached from it.
-    // Happens when:
-    // - The |render_widget_host_| is hidden, but |cocoa_view_| is still in the
-    //   NSWindow hierarchy (e.g, when the window is occluded or offscreen).
-    // - Note: In this state, |recyclable_compositor_| and its CALayers are kept
-    //   around so that we will have content to show when we are un-occluded. If
-    //   we had a way to keep the CALayers attached to the NSView while
-    //   detaching the ui::Compositor, then there would be no need for this
-    HasDetachedCompositor = 1,
+    HasAttachedCompositor,
     // Effects:
     // - |recyclable_compositor_| has been recycled and |delegated_frame_host_|
     //   is hidden and detached from it.
@@ -188,13 +174,13 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
     // - The |render_widget_host_| hidden or gone, and |cocoa_view_| is not
     //   attached to an NSWindow.
     // - This happens for backgrounded tabs.
-    HasNoCompositor = 2,
+    HasNoCompositor,
     // Effects:
     // - |recyclable_compositor_| does not exist. |delegated_frame_host_| is
     //   attached to |parent_ui_layer_|'s compositor.
     // Happens when:
     // - |parent_ui_layer_| is non-nullptr.
-    UseParentLayerCompositor = 3,
+    UseParentLayerCompositor,
   };
   State state_ = HasNoCompositor;
   void UpdateState();
