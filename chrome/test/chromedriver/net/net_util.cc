@@ -9,34 +9,31 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
+#include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "services/network/public/cpp/simple_url_loader.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
 namespace {
 
-class SyncUrlFetcher {
+class SyncUrlFetcher : public net::URLFetcherDelegate {
  public:
   SyncUrlFetcher(const GURL& url,
-                 network::mojom::URLLoaderFactory* url_loader_factory,
+                 URLRequestContextGetter* getter,
                  std::string* response)
       : url_(url),
-        url_loader_factory_(url_loader_factory),
-        network_task_runner_(
-            base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})),
+        getter_(getter),
         response_(response),
         event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
-  ~SyncUrlFetcher() {}
+  ~SyncUrlFetcher() override {}
 
   bool Fetch() {
-    network_task_runner_->PostTask(
+    getter_->GetNetworkTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&SyncUrlFetcher::FetchOnIOThread,
                                   base::Unretained(this)));
     event_.Wait();
@@ -44,36 +41,26 @@ class SyncUrlFetcher {
   }
 
   void FetchOnIOThread() {
-    DCHECK(network_task_runner_->RunsTasksInCurrentSequence());
-    auto request = std::make_unique<network::ResourceRequest>();
-    request->url = url_;
-
-    loader_ = network::SimpleURLLoader::Create(std::move(request),
-                                               TRAFFIC_ANNOTATION_FOR_TESTS);
-    loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-        url_loader_factory_, base::BindOnce(&SyncUrlFetcher::OnURLLoadComplete,
-                                            base::Unretained(this)));
+    fetcher_ = net::URLFetcher::Create(url_, net::URLFetcher::GET, this,
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
+    fetcher_->SetRequestContext(getter_);
+    fetcher_->Start();
   }
 
-  void OnURLLoadComplete(std::unique_ptr<std::string> response_body) {
-    int response_code = -1;
-    if (loader_->ResponseInfo() && loader_->ResponseInfo()->headers)
-      response_code = loader_->ResponseInfo()->headers->response_code();
-
-    success_ = response_code == 200 && response_body;
+  void OnURLFetchComplete(const net::URLFetcher* source) override {
+    success_ = (source->GetResponseCode() == 200);
     if (success_)
-      *response_ = std::move(*response_body);
-    loader_.reset();
+      success_ = source->GetResponseAsString(response_);
+    fetcher_.reset();  // Destroy the fetcher on IO thread.
     event_.Signal();
   }
 
  private:
   GURL url_;
-  network::mojom::URLLoaderFactory* url_loader_factory_;
-  const scoped_refptr<base::SequencedTaskRunner> network_task_runner_;
+  URLRequestContextGetter* getter_;
   std::string* response_;
   base::WaitableEvent event_;
-  std::unique_ptr<network::SimpleURLLoader> loader_;
+  std::unique_ptr<net::URLFetcher> fetcher_;
   bool success_;
 };
 
@@ -105,7 +92,7 @@ int NetAddress::port() const {
 }
 
 bool FetchUrl(const std::string& url,
-              network::mojom::URLLoaderFactory* factory,
+              URLRequestContextGetter* getter,
               std::string* response) {
-  return SyncUrlFetcher(GURL(url), factory, response).Fetch();
+  return SyncUrlFetcher(GURL(url), getter, response).Fetch();
 }

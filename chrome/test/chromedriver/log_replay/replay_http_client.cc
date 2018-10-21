@@ -6,7 +6,7 @@
 #include <utility>
 
 #include "chrome/test/chromedriver/chrome/device_metrics.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "url/gurl.h"
 
 namespace {
@@ -21,14 +21,14 @@ std::string UrlPath(const std::string& url) {
 
 ReplayHttpClient::ReplayHttpClient(
     const NetAddress& address,
-    network::mojom::URLLoaderFactory* factory,
+    scoped_refptr<URLRequestContextGetter> context_getter,
     const SyncWebSocketFactory& socket_factory,
     std::unique_ptr<DeviceMetrics> device_metrics,
     std::unique_ptr<std::set<WebViewInfo::Type>> window_types,
     std::string page_load_strategy,
     const base::FilePath& log_path)
     : DevToolsHttpClient(address,
-                         factory,
+                         context_getter,
                          socket_factory,
                          std::move(device_metrics),
                          std::move(window_types),
@@ -37,6 +37,7 @@ ReplayHttpClient::ReplayHttpClient(
 ReplayHttpClient::~ReplayHttpClient() {}
 
 bool ReplayHttpClient::FetchUrlAndLog(const std::string& url,
+                                      URLRequestContextGetter* getter,
                                       std::string* response) {
   VLOG(1) << "DevTools HTTP Request: " << url;
   std::string path_from_url = UrlPath(url);

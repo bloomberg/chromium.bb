@@ -21,16 +21,11 @@ namespace base {
 class TimeDelta;
 }
 
-namespace network {
-namespace mojom {
-class URLLoaderFactory;
-}
-}  // namespace network
-
 struct DeviceMetrics;
 class DevToolsClient;
 class NetAddress;
 class Status;
+class URLRequestContextGetter;
 
 struct WebViewInfo {
   enum Type {
@@ -80,7 +75,7 @@ class WebViewsInfo {
 class DevToolsHttpClient {
  public:
   DevToolsHttpClient(const NetAddress& address,
-                     network::mojom::URLLoaderFactory* factory,
+                     scoped_refptr<URLRequestContextGetter> context_getter,
                      const SyncWebSocketFactory& socket_factory,
                      std::unique_ptr<DeviceMetrics> device_metrics,
                      std::unique_ptr<std::set<WebViewInfo::Type>> window_types,
@@ -103,9 +98,11 @@ class DevToolsHttpClient {
 
  private:
   Status CloseFrontends(const std::string& for_client_id);
-  virtual bool FetchUrlAndLog(const std::string& url, std::string* response);
+  virtual bool FetchUrlAndLog(const std::string& url,
+                              URLRequestContextGetter* getter,
+                              std::string* response);
 
-  network::mojom::URLLoaderFactory* url_loader_factory_;
+  scoped_refptr<URLRequestContextGetter> context_getter_;
   SyncWebSocketFactory socket_factory_;
   std::string server_url_;
   std::string web_socket_url_prefix_;

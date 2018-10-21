@@ -38,7 +38,6 @@
 #include "chrome/test/chromedriver/logging.h"
 #include "chrome/test/chromedriver/server/http_handler.h"
 #include "chrome/test/chromedriver/version.h"
-#include "mojo/core/embedder/embedder.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -462,8 +461,6 @@ int main(int argc, char *argv[]) {
     printf("Unable to initialize logging. Exiting...\n");
     return 1;
   }
-
-  mojo::core::Init();
 
   base::TaskScheduler::CreateAndStartWithDefaultParams("ChromeDriver");
 

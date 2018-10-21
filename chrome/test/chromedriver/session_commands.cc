@@ -34,10 +34,10 @@
 #include "chrome/test/chromedriver/chrome_launcher.h"
 #include "chrome/test/chromedriver/command_listener.h"
 #include "chrome/test/chromedriver/logging.h"
+#include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/util.h"
 #include "chrome/test/chromedriver/version.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace {
 
@@ -87,10 +87,11 @@ Status EvaluateScriptAndIgnoreResult(Session* session, std::string expression) {
 
 }  // namespace
 
-InitSessionParams::InitSessionParams(network::mojom::URLLoaderFactory* factory,
-                                     const SyncWebSocketFactory& socket_factory,
-                                     DeviceManager* device_manager)
-    : url_loader_factory(factory),
+InitSessionParams::InitSessionParams(
+    scoped_refptr<URLRequestContextGetter> context_getter,
+    const SyncWebSocketFactory& socket_factory,
+    DeviceManager* device_manager)
+    : context_getter(context_getter),
       socket_factory(socket_factory),
       device_manager(device_manager) {}
 
@@ -266,10 +267,10 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   session->command_listeners.swap(command_listeners);
 
   status =
-      LaunchChrome(bound_params.url_loader_factory, bound_params.socket_factory,
-                   bound_params.device_manager, capabilities,
-                   std::move(devtools_event_listeners), &session->chrome,
-                   session->w3c_compliant);
+      LaunchChrome(bound_params.context_getter.get(),
+                   bound_params.socket_factory, bound_params.device_manager,
+                   capabilities, std::move(devtools_event_listeners),
+                   &session->chrome, session->w3c_compliant);
   if (status.IsError())
     return status;
 
