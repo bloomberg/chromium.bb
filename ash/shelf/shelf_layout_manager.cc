@@ -386,10 +386,8 @@ bool ShelfLayoutManager::ProcessGestureEvent(
   if (IsShelfHiddenForFullscreen())
     return false;
 
-  if (event_in_screen.type() == ui::ET_GESTURE_SCROLL_BEGIN) {
-    StartGestureDrag(event_in_screen);
-    return true;
-  }
+  if (event_in_screen.type() == ui::ET_GESTURE_SCROLL_BEGIN)
+    return StartGestureDrag(event_in_screen);
 
   if (gesture_drag_status_ != GESTURE_DRAG_IN_PROGRESS &&
       gesture_drag_status_ != GESTURE_DRAG_APPLIST_IN_PROGRESS) {
@@ -1191,7 +1189,7 @@ bool ShelfLayoutManager::ShouldBlurShelfBackground() {
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfLayoutManager, Gesture functions:
 
-void ShelfLayoutManager::StartGestureDrag(
+bool ShelfLayoutManager::StartGestureDrag(
     const ui::GestureEvent& gesture_in_screen) {
   if (CanStartFullscreenAppListDrag(
           gesture_in_screen.details().scroll_y_hint())) {
@@ -1207,28 +1205,30 @@ void ShelfLayoutManager::StartGestureDrag(
         shelf_bounds.y(), GetAppListBackgroundOpacityOnShelfOpacity());
     launcher_above_shelf_bottom_amount_ =
         shelf_bounds.bottom() - gesture_in_screen.location().y();
-  } else {
-    HomeLauncherGestureHandler* home_launcher_handler =
-        Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
-    if (home_launcher_handler && IsVisible() &&
-        home_launcher_handler->OnPressEvent(
-            HomeLauncherGestureHandler::Mode::kSlideUpToShow,
-            gesture_in_screen.location())) {
-      gesture_drag_status_ = GESTURE_DRAG_APPLIST_IN_PROGRESS;
-      return;
-    }
-
-    // Disable the shelf dragging if the fullscreen app list is opened.
-    if (is_app_list_visible_ && !IsHomeLauncherEnabledInTabletMode())
-      return;
-
-    gesture_drag_status_ = GESTURE_DRAG_IN_PROGRESS;
-    gesture_drag_auto_hide_state_ = visibility_state() == SHELF_AUTO_HIDE
-                                        ? auto_hide_state()
-                                        : SHELF_AUTO_HIDE_SHOWN;
-    MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
-    gesture_drag_amount_ = 0.f;
+    return true;
   }
+
+  HomeLauncherGestureHandler* home_launcher_handler =
+      Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
+  if (home_launcher_handler && IsVisible() &&
+      home_launcher_handler->OnPressEvent(
+          HomeLauncherGestureHandler::Mode::kSlideUpToShow,
+          gesture_in_screen.location())) {
+    gesture_drag_status_ = GESTURE_DRAG_APPLIST_IN_PROGRESS;
+    return true;
+  }
+
+  // Disable the shelf dragging if the fullscreen app list is opened.
+  if (is_app_list_visible_ && !IsHomeLauncherEnabledInTabletMode())
+    return false;
+
+  gesture_drag_status_ = GESTURE_DRAG_IN_PROGRESS;
+  gesture_drag_auto_hide_state_ = visibility_state() == SHELF_AUTO_HIDE
+                                      ? auto_hide_state()
+                                      : SHELF_AUTO_HIDE_SHOWN;
+  MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
+  gesture_drag_amount_ = 0.f;
+  return true;
 }
 
 void ShelfLayoutManager::UpdateGestureDrag(

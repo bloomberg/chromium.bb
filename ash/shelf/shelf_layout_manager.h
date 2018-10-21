@@ -333,7 +333,7 @@ class ASH_EXPORT ShelfLayoutManager
   bool IsShelfAutoHideForFullscreenMaximized() const;
 
   // Gesture related functions:
-  void StartGestureDrag(const ui::GestureEvent& gesture_in_screen);
+  bool StartGestureDrag(const ui::GestureEvent& gesture_in_screen);
   void UpdateGestureDrag(const ui::GestureEvent& gesture_in_screen);
   void CompleteGestureDrag(const ui::GestureEvent& gesture_in_screen);
   void CompleteAppListDrag(const ui::GestureEvent& gesture_in_screen);

@@ -1587,6 +1587,50 @@ TEST_F(ShelfLayoutManagerTest, FlingUpOnShelfForFullscreenAppList) {
   GetAppListTestHelper()->CheckState(app_list::AppListViewState::PEEKING);
 }
 
+// Tests that duplicate swipe up from bottom bezel should not make app list
+// undraggable. (See https://crbug.com/896934)
+TEST_F(ShelfLayoutManagerTest, DuplicateDragUpFromBezel) {
+  GetAppListTestHelper()->CheckVisibility(false);
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
+
+  // Start the drag from the bottom bezel to the area that snaps to fullscreen
+  // state.
+  gfx::Rect shelf_widget_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
+  gfx::Point start =
+      gfx::Point(shelf_widget_bounds.x() + shelf_widget_bounds.width() / 2,
+                 shelf_widget_bounds.bottom() + 1);
+  gfx::Point end = gfx::Point(
+      start.x(), shelf_widget_bounds.bottom() -
+                     ShelfLayoutManager::kAppListDragSnapToPeekingThreshold -
+                     10);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  constexpr base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(100);
+  constexpr int kNumScrollSteps = 4;
+  generator->GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
+  GetAppListTestHelper()->CheckState(
+      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
+
+  // Start the same drag event from bezel.
+  generator->GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
+  GetAppListTestHelper()->CheckState(
+      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
+
+  // Start the drag from top screen to the area that snaps to closed state. (The
+  // launcher is still draggable now.)
+  start.set_y(
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area().y());
+  end.set_y(shelf_widget_bounds.bottom() -
+            ShelfLayoutManager::kAppListDragSnapToClosedThreshold + 10);
+  generator->GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(false);
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
+}
+
 // Change the shelf alignment during dragging should dismiss the app list.
 TEST_F(ShelfLayoutManagerTest, ChangeShelfAlignmentDuringAppListDragging) {
   Shelf* shelf = GetPrimaryShelf();
