@@ -253,9 +253,7 @@ class TabAndroid : public CoreTabHelperDelegate,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& scope);
 
-  const std::string& GetWebappManifestScope() const {
-    return webapp_manifest_scope_;
-  }
+  const GURL& GetWebappManifestScope() const { return webapp_manifest_scope_; }
 
   void SetPictureInPictureEnabled(
       JNIEnv* env,
@@ -329,7 +327,7 @@ class TabAndroid : public CoreTabHelperDelegate,
   scoped_refptr<content::DevToolsAgentHost> devtools_host_;
   std::unique_ptr<browser_sync::SyncedTabDelegateAndroid> synced_tab_delegate_;
 
-  std::string webapp_manifest_scope_;
+  GURL webapp_manifest_scope_;
   bool picture_in_picture_enabled_;
   bool embedded_media_experience_enabled_;
 

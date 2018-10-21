@@ -825,8 +825,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->SetFullscreenSupported(prefs.fullscreen_supported);
   web_view->SetIgnoreViewportTagScaleLimits(prefs.force_enable_zoom);
   settings->SetAutoZoomFocusedNodeToLegibleScale(true);
-  settings->SetMediaPlaybackGestureWhitelistScope(
-      blink::WebString::FromUTF8(prefs.media_playback_gesture_whitelist_scope));
+  settings->SetMediaPlaybackGestureWhitelistScope(blink::WebString::FromASCII(
+      prefs.media_playback_gesture_whitelist_scope.spec()));
   settings->SetDefaultVideoPosterURL(
       WebString::FromASCII(prefs.default_video_poster_url.spec()));
   settings->SetSupportDeprecatedTargetDensityDPI(
