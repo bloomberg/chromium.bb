@@ -1165,6 +1165,7 @@ void AppListView::OnTabletModeChanged(bool started) {
   is_tablet_mode_ = started;
   search_box_view_->OnTabletModeChanged(started);
   search_model_->SetTabletMode(started);
+  GetAppsContainerView()->OnTabletModeChanged(started);
 
   if (is_home_launcher_enabled_) {
     if (!started) {
