@@ -20,6 +20,10 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/text_constants.h"
 
+namespace cc {
+class SkottieWrapper;
+}  // namespace cc
+
 namespace gfx {
 
 class Rect;
@@ -359,6 +363,13 @@ class GFX_EXPORT Canvas {
                        int y,
                        const SkPath& path,
                        const cc::PaintFlags& flags);
+
+  // Draws the frame of the |skottie| animation specified by the normalized time
+  // instant t [0->first frame .. 1->last frame] onto the region corresponded by
+  // |dst| in the canvas.
+  void DrawSkottie(scoped_refptr<cc::SkottieWrapper> skottie,
+                   const Rect& dst,
+                   float t);
 
   // Draws text with the specified color, fonts and location. The text is
   // aligned to the left, vertically centered, clipped to the region. If the
