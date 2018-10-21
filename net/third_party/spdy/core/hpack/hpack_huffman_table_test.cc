@@ -202,8 +202,8 @@ TEST_F(GenericHuffmanTableTest, ValidateInternalsWithSmallCode) {
 class HpackHuffmanTableTest : public GenericHuffmanTableTest {
  protected:
   void SetUp() override {
-    std::vector<HpackHuffmanSymbol> code = HpackHuffmanCode();
-    EXPECT_TRUE(table_.Initialize(&code[0], code.size()));
+    EXPECT_TRUE(table_.Initialize(HpackHuffmanCodeVector().data(),
+                                  HpackHuffmanCodeVector().size()));
     EXPECT_TRUE(table_.IsInitialized());
   }
 
