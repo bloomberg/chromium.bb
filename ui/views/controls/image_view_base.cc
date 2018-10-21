@@ -32,7 +32,7 @@ void ImageViewBase::ResetImageSize() {
 
 void ImageViewBase::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kImage;
-  node_data->SetName(accessible_name_);
+  node_data->SetName(GetAccessibleName());
 }
 
 void ImageViewBase::SetHorizontalAlignment(Alignment alignment) {
@@ -63,19 +63,8 @@ void ImageViewBase::SetAccessibleName(const base::string16& accessible_name) {
   accessible_name_ = accessible_name;
 }
 
-base::string16 ImageViewBase::GetAccessibleName() const {
-  return accessible_name_;
-}
-
-// TODO(crbug.com/890465): Update the duplicate code here and in views::Button.
-void ImageViewBase::SetTooltipText(const base::string16& tooltip) {
-  tooltip_text_ = tooltip;
-  if (accessible_name_.empty())
-    accessible_name_ = tooltip_text_;
-}
-
-base::string16 ImageViewBase::GetTooltipText() const {
-  return tooltip_text_;
+const base::string16& ImageViewBase::GetAccessibleName() const {
+  return accessible_name_.empty() ? tooltip_text_ : accessible_name_;
 }
 
 bool ImageViewBase::GetTooltipText(const gfx::Point& p,
@@ -83,7 +72,7 @@ bool ImageViewBase::GetTooltipText(const gfx::Point& p,
   if (tooltip_text_.empty())
     return false;
 
-  *tooltip = GetTooltipText();
+  *tooltip = tooltip_text();
   return true;
 }
 

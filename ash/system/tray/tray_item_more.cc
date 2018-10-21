@@ -72,8 +72,7 @@ bool TrayItemMore::PerformAction(const ui::Event& event) {
 
 void TrayItemMore::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   ActionableView::GetAccessibleNodeData(node_data);
-  if (!accessible_name().empty())
-    node_data->SetName(accessible_name());
+  node_data->SetName(GetAccessibleName());
 }
 
 void TrayItemMore::OnEnabledChanged() {

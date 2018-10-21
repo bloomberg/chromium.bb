@@ -77,7 +77,7 @@ AddUserButton::AddUserButton(UnifiedSystemTrayController* controller)
   auto* icon = new views::ImageView;
   icon->SetImage(
       gfx::CreateVectorIcon(kSystemMenuNewUserIcon, kUnifiedMenuIconColor));
-  icon->SetTooltipText(
+  icon->set_tooltip_text(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT));
   AddChildView(icon);
 
@@ -248,7 +248,7 @@ void UserItemButton::SetCaptureState(mojom::MediaCaptureState capture_state) {
       break;
   }
   if (res_id)
-    capture_icon_->SetTooltipText(l10n_util::GetStringUTF16(res_id));
+    capture_icon_->set_tooltip_text(l10n_util::GetStringUTF16(res_id));
 }
 
 void UserItemButton::ButtonPressed(views::Button* sender,
