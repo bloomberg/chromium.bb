@@ -66,6 +66,12 @@ MediaMetricsProvider::~MediaMetricsProvider() {
     suffix = "SRC";
   base::UmaHistogramMemoryKB("Media.BytesReceived." + suffix,
                              total_bytes_received_ >> 10);
+  if (is_ad_media_) {
+    base::UmaHistogramMemoryKB("Ads.Media.BytesReceived",
+                               total_bytes_received_ >> 10);
+    base::UmaHistogramMemoryKB("Ads.Media.BytesReceived." + suffix,
+                               total_bytes_received_ >> 10);
+  }
 }
 
 // static
@@ -94,6 +100,11 @@ void MediaMetricsProvider::Initialize(bool is_mse,
 void MediaMetricsProvider::OnError(PipelineStatus status) {
   DCHECK(initialized_);
   pipeline_status_ = status;
+}
+
+void MediaMetricsProvider::SetIsAdMedia() {
+  // This may be called before Initialize().
+  is_ad_media_ = true;
 }
 
 void MediaMetricsProvider::SetIsEME() {

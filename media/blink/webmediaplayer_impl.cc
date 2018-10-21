@@ -339,6 +339,9 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 
   memory_usage_reporting_timer_.SetTaskRunner(
       frame_->GetTaskRunner(blink::TaskType::kInternalMedia));
+
+  if (frame_->IsAdSubframe())
+    media_metrics_provider_->SetIsAdMedia();
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {

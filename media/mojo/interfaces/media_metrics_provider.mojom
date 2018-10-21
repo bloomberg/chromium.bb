@@ -42,6 +42,7 @@ interface MediaMetricsProvider {
   OnError(PipelineStatus status);
 
   // Setters for various one-time lazily generated metrics or properties.
+  SetIsAdMedia();
   SetIsEME();
   SetTimeToMetadata(mojo_base.mojom.TimeDelta elapsed);
   SetTimeToFirstFrame(mojo_base.mojom.TimeDelta elapsed);
