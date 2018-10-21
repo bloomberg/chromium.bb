@@ -94,20 +94,12 @@ class PreviewsUITabHelperUnitTest : public ChromeRenderViewHostTestHarness {
   }
 
   void SetCommittedPreviewsType(previews::PreviewsType previews_type) {
-    ChromeNavigationData* nav_data =
-        static_cast<ChromeNavigationData*>(test_handle_->GetNavigationData());
-    if (nav_data && nav_data->previews_user_data()) {
-      nav_data->previews_user_data()->SetCommittedPreviewsType(previews_type);
-      return;
-    }
-    std::unique_ptr<ChromeNavigationData> chrome_nav_data(
-        new ChromeNavigationData());
-    std::unique_ptr<previews::PreviewsUserData> previews_user_data(
-        new previews::PreviewsUserData(1));
+    PreviewsUITabHelper* ui_tab_helper =
+        PreviewsUITabHelper::FromWebContents(web_contents());
+    previews::PreviewsUserData* previews_user_data =
+        ui_tab_helper->CreatePreviewsUserDataForNavigationHandle(
+            test_handle_.get(), 1u);
     previews_user_data->SetCommittedPreviewsType(previews_type);
-    chrome_nav_data->set_previews_user_data(std::move(previews_user_data));
-    content::WebContentsTester::For(web_contents())
-        ->SetNavigationData(test_handle_.get(), std::move(chrome_nav_data));
   }
 
   void SimulateWillProcessResponse() {
@@ -124,22 +116,11 @@ class PreviewsUITabHelperUnitTest : public ChromeRenderViewHostTestHarness {
 
   void CallDidFinishNavigation() { test_handle_.reset(); }
 
-  void set_previews_user_data(
-      std::unique_ptr<previews::PreviewsUserData> previews_user_data) {
-    EXPECT_TRUE(test_handle_);
-    EXPECT_TRUE(previews_user_data);
-    // Store Previews information for this navigation.
-    ChromeNavigationData* nav_data =
-        static_cast<ChromeNavigationData*>(test_handle_->GetNavigationData());
-    if (nav_data) {
-      nav_data->set_previews_user_data(std::move(previews_user_data));
-      return;
-    }
-    std::unique_ptr<ChromeNavigationData> navigation_data =
-        std::make_unique<ChromeNavigationData>();
-    navigation_data->set_previews_user_data(std::move(previews_user_data));
-    content::WebContentsTester::For(web_contents())
-        ->SetNavigationData(test_handle_.get(), std::move(navigation_data));
+  previews::PreviewsUserData* CreatePreviewsUserData(int64_t page_id) {
+    PreviewsUITabHelper* ui_tab_helper =
+        PreviewsUITabHelper::FromWebContents(web_contents());
+    return ui_tab_helper->CreatePreviewsUserDataForNavigationHandle(
+        test_handle_.get(), page_id);
   }
 
   InfoBarService* infobar_service() {
@@ -162,6 +143,7 @@ TEST_F(PreviewsUITabHelperUnitTest, DidFinishNavigationCreatesLitePageInfoBar) {
   SetCommittedPreviewsType(previews::PreviewsType::LITE_PAGE);
   SimulateWillProcessResponse();
   CallDidFinishNavigation();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1U, infobar_service()->infobar_count());
   EXPECT_TRUE(ui_tab_helper->displayed_preview_ui());
@@ -188,6 +170,7 @@ TEST_F(PreviewsUITabHelperUnitTest, DidFinishNavigationDisplaysOmniboxBadge) {
   SetCommittedPreviewsType(previews::PreviewsType::LITE_PAGE);
   SimulateWillProcessResponse();
   CallDidFinishNavigation();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(ui_tab_helper->should_display_android_omnibox_badge());
   EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
@@ -204,6 +187,7 @@ TEST_F(PreviewsUITabHelperUnitTest,
   SetCommittedPreviewsType(previews::PreviewsType::NOSCRIPT);
   SimulateWillProcessResponse();
   CallDidFinishNavigation();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1U, infobar_service()->infobar_count());
   EXPECT_TRUE(ui_tab_helper->displayed_preview_ui());
@@ -228,6 +212,7 @@ TEST_F(PreviewsUITabHelperUnitTest,
   SetCommittedPreviewsType(previews::PreviewsType::LOFI);
   SimulateWillProcessResponse();
   CallDidFinishNavigation();
+  base::RunLoop().RunUntilIdle();
 
 #if defined(OS_ANDROID)
   EXPECT_TRUE(ui_tab_helper->should_display_android_omnibox_badge());
@@ -260,6 +245,7 @@ TEST_F(PreviewsUITabHelperUnitTest,
   SetCommittedPreviewsType(previews::PreviewsType::LOFI);
   SimulateWillProcessResponse();
   CallDidFinishNavigation();
+  base::RunLoop().RunUntilIdle();
 
 #if defined(OS_ANDROID)
   EXPECT_FALSE(ui_tab_helper->should_display_android_omnibox_badge());
@@ -276,11 +262,10 @@ TEST_F(PreviewsUITabHelperUnitTest, TestPreviewsIDSet) {
   SimulateCommit();
 
   uint64_t id = 5u;
-  std::unique_ptr<previews::PreviewsUserData> previews_user_data =
-      std::make_unique<previews::PreviewsUserData>(id);
-  set_previews_user_data(std::move(previews_user_data));
+  CreatePreviewsUserData(id);
 
   CallDidFinishNavigation();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(ui_tab_helper->previews_user_data());
   EXPECT_EQ(id, ui_tab_helper->previews_user_data()->page_id());
 
@@ -328,6 +313,7 @@ TEST_F(PreviewsUITabHelperUnitTest, CreateOfflineInfoBar) {
   SetCommittedPreviewsType(previews::PreviewsType::OFFLINE);
 
   CallDidFinishNavigation();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1U, infobar_service()->infobar_count());
   EXPECT_TRUE(ui_tab_helper->displayed_preview_ui());

@@ -2849,6 +2849,9 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
   }
 
   // Give the delegate an opportunity to adjust the previews state.
+  // TODO(ryansturm): move this into ContentBrowserClient
+  // DetermineEnabledPreviews, so redirects can be evaluated.
+  // https://crbug.com/892253.
   if (delegate_)
     delegate_->AdjustPreviewsStateForNavigation(&previews_state);
 

@@ -313,10 +313,6 @@ PreviewsState ResourceRequestInfoImpl::GetPreviewsState() const {
   return previews_state_;
 }
 
-void ResourceRequestInfoImpl::SetPreviewsState(PreviewsState previews_state) {
-  previews_state_ = previews_state;
-}
-
 NavigationUIData* ResourceRequestInfoImpl::GetNavigationUIData() const {
   return navigation_ui_data_.get();
 }

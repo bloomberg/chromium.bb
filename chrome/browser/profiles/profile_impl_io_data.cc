@@ -59,7 +59,6 @@
 #include "components/prefs/pref_filter.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
-#include "components/previews/content/previews_decider_impl.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -179,15 +178,11 @@ void ProfileImplIOData::Handle::Init(
   if (io_data_->lazy_params_->domain_reliability_monitor)
     io_data_->lazy_params_->domain_reliability_monitor->MoveToNetworkThread();
 
-  io_data_->set_previews_decider_impl(
-      std::make_unique<previews::PreviewsDeciderImpl>(
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
-          base::DefaultClock::GetInstance()));
+  // TODO(ryansturm): Move this call to a location unrelated to IO
+  // initialization. https://crbug.com/896001
   PreviewsServiceFactory::GetForProfile(profile_)->Initialize(
-      io_data_->previews_decider_impl(),
       g_browser_process->optimization_guide_service(),
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
       profile_path);
 
   io_data_->set_data_reduction_proxy_io_data(
