@@ -206,6 +206,7 @@ void DelegatedFrameHostAndroid::EvictDelegatedFrame() {
       viz::SurfaceId(frame_sink_id_, local_surface_id_)};
   host_frame_sink_manager_->EvictSurfaces(surface_ids);
   frame_evictor_->DiscardedFrame();
+  client_->WasEvicted();
 }
 
 void DelegatedFrameHostAndroid::ResetFallbackToFirstNavigationSurface() {
@@ -305,18 +306,8 @@ void DelegatedFrameHostAndroid::EmbedSurface(
   if (!enable_surface_synchronization_)
     return;
 
-  bool id_changed = local_surface_id_ != new_local_surface_id;
-
   local_surface_id_ = new_local_surface_id;
   surface_size_in_pixels_ = new_size_in_pixels;
-
-  if (id_changed) {
-    // TODO(fsamuel): "SwappedFrame" is a bad name. Also, this method doesn't
-    // really need to take in visibility. FrameEvictor already has the latest
-    // visibility state.
-    frame_evictor_->SwappedFrame(frame_evictor_->visible());
-    // Note: the frame may have been evicted immediately.
-  }
 
   viz::SurfaceId current_primary_surface_id =
       content_layer_->primary_surface_id();
@@ -337,6 +328,12 @@ void DelegatedFrameHostAndroid::EmbedSurface(
     // is visible, EmbedSurface will be called again. See WasShown.
     return;
   }
+
+  // TODO(fsamuel): "SwappedFrame" is a bad name. Also, this method doesn't
+  // really need to take in visibility. FrameEvictor already has the latest
+  // visibility state.
+  frame_evictor_->SwappedFrame(true /* visibility */);
+
   if (!current_primary_surface_id.is_valid() ||
       current_primary_surface_id.local_surface_id() != local_surface_id_) {
     if (base::android::BuildInfo::GetInstance()->sdk_int() <
