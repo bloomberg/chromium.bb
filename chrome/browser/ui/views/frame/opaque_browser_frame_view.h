@@ -20,7 +20,6 @@
 
 class BrowserView;
 class OpaqueBrowserFrameViewLayout;
-class HostedAppButtonContainer;
 class OpaqueBrowserFrameViewPlatformSpecific;
 class TabIconView;
 
@@ -65,11 +64,9 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   void UpdateWindowIcon() override;
   void UpdateWindowTitle() override;
   void SizeConstraintsChanged() override;
-  void ActivationChanged(bool active) override;
 
   // views::View:
   const char* GetClassName() const override;
-  void ChildPreferredSizeChanged(views::View* child) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // views::ButtonListener:
@@ -102,10 +99,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   bool UseCustomFrame() const override;
   bool IsFrameCondensed() const override;
   bool EverHasVisibleBackgroundTabShapes() const override;
-
-  HostedAppButtonContainer* hosted_app_button_container_for_testing() {
-    return hosted_app_button_container_;
-  }
 
  protected:
   views::ImageButton* minimize_button() const { return minimize_button_; }
@@ -192,8 +185,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // The window icon and title.
   TabIconView* window_icon_;
   views::Label* window_title_;
-
-  HostedAppButtonContainer* hosted_app_button_container_ = nullptr;
 
   // Background painter for the window frame.
   std::unique_ptr<views::FrameBackground> frame_background_;

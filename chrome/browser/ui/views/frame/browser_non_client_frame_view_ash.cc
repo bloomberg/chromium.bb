@@ -343,11 +343,9 @@ void BrowserNonClientFrameViewAsh::GetWindowMask(const gfx::Size& size,
 }
 
 void BrowserNonClientFrameViewAsh::ResetWindowControls() {
+  BrowserNonClientFrameView::ResetWindowControls();
   caption_button_container_->SetVisible(true);
   caption_button_container_->ResetWindowControls();
-
-  if (hosted_app_button_container_)
-    hosted_app_button_container_->UpdateContentSettingViewsVisibility();
 }
 
 void BrowserNonClientFrameViewAsh::UpdateWindowIcon() {
@@ -369,9 +367,6 @@ void BrowserNonClientFrameViewAsh::ActivationChanged(bool active) {
 
   const bool should_paint_as_active = ShouldPaintAsActive();
   frame_header_->SetPaintAsActive(should_paint_as_active);
-
-  if (hosted_app_button_container_)
-    hosted_app_button_container_->SetPaintAsActive(should_paint_as_active);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -401,8 +396,8 @@ void BrowserNonClientFrameViewAsh::Layout() {
 
   if (profile_indicator_icon_)
     LayoutProfileIndicator();
-  if (hosted_app_button_container_) {
-    hosted_app_button_container_->LayoutInContainer(
+  if (hosted_app_button_container()) {
+    hosted_app_button_container()->LayoutInContainer(
         0, caption_button_container_->x(), 0, painted_height);
   }
 
@@ -678,9 +673,9 @@ void BrowserNonClientFrameViewAsh::OnImmersiveRevealStarted() {
   // temporarily children of the TopContainerView while they're all painting to
   // their layers.
   browser_view()->top_container()->AddChildViewAt(caption_button_container_, 0);
-  if (hosted_app_button_container_) {
+  if (hosted_app_button_container()) {
     browser_view()->top_container()->AddChildViewAt(
-        hosted_app_button_container_, 0);
+        hosted_app_button_container(), 0);
   }
   if (back_button_)
     browser_view()->top_container()->AddChildViewAt(back_button_, 0);
@@ -690,8 +685,8 @@ void BrowserNonClientFrameViewAsh::OnImmersiveRevealStarted() {
 
 void BrowserNonClientFrameViewAsh::OnImmersiveRevealEnded() {
   AddChildViewAt(caption_button_container_, 0);
-  if (hosted_app_button_container_)
-    AddChildViewAt(hosted_app_button_container_, 0);
+  if (hosted_app_button_container())
+    AddChildViewAt(hosted_app_button_container(), 0);
   if (back_button_)
     AddChildViewAt(back_button_, 0);
   Layout();
@@ -699,11 +694,6 @@ void BrowserNonClientFrameViewAsh::OnImmersiveRevealEnded() {
 
 void BrowserNonClientFrameViewAsh::OnImmersiveFullscreenExited() {
   OnImmersiveRevealEnded();
-}
-
-HostedAppButtonContainer*
-BrowserNonClientFrameViewAsh::GetHostedAppButtonContainerForTesting() const {
-  return hosted_app_button_container_;
 }
 
 // static
@@ -822,9 +812,9 @@ void BrowserNonClientFrameViewAsh::SetUpForHostedApp(
       ash::FrameCaptionButton::GetInactiveButtonColorAlphaRatio();
   SkColor inactive_color =
       SkColorSetA(active_color, 255 * inactive_alpha_ratio);
-  hosted_app_button_container_ = new HostedAppButtonContainer(
-      frame(), browser_view(), active_color, inactive_color);
-  AddChildView(hosted_app_button_container_);
+  set_hosted_app_button_container(new HostedAppButtonContainer(
+      frame(), browser_view(), active_color, inactive_color));
+  AddChildView(hosted_app_button_container());
 }
 
 void BrowserNonClientFrameViewAsh::UpdateFrameColors() {
