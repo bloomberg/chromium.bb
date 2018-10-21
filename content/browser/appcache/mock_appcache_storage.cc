@@ -203,6 +203,10 @@ bool MockAppCacheStorage::IsInitialized() {
   return false;
 }
 
+base::WeakPtr<AppCacheStorage> MockAppCacheStorage::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 void MockAppCacheStorage::ProcessGetAllInfo(
     scoped_refptr<DelegateReference> delegate_ref) {
   if (delegate_ref->delegate)

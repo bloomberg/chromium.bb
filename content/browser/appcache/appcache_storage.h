@@ -87,7 +87,7 @@ class CONTENT_EXPORT AppCacheStorage {
                                      const GURL& mainfest_url) {}
 
    protected:
-    virtual ~Delegate() {}
+    virtual ~Delegate() = default;
   };
 
   explicit AppCacheStorage(AppCacheServiceImpl* service);
@@ -203,6 +203,9 @@ class CONTENT_EXPORT AppCacheStorage {
   // Returns true if the AppCacheStorage instance is initialized.
   virtual bool IsInitialized() = 0;
 
+  // Returns a weak pointer reference to the AppCacheStorage instance.
+  virtual base::WeakPtr<AppCacheStorage> GetWeakPtr() = 0;
+
   // Generates unique storage ids for different object types.
   int64_t NewCacheId() { return ++last_cache_id_; }
   int64_t NewGroupId() { return ++last_group_id_; }
@@ -215,9 +218,6 @@ class CONTENT_EXPORT AppCacheStorage {
 
   // Simple ptr back to the service object that owns us.
   AppCacheServiceImpl* service() { return service_; }
-
-  // Returns a weak pointer reference to the AppCacheStorage instance.
-  base::WeakPtr<AppCacheStorage> GetWeakPtr();
 
  protected:
   friend class content::AppCacheQuotaClientTest;
@@ -339,10 +339,6 @@ class CONTENT_EXPORT AppCacheStorage {
   FRIEND_TEST_ALL_PREFIXES(
       content::appcache_storage_unittest::AppCacheStorageTest,
       UsageMap);
-
-  // The WeakPtrFactory below must occur last in the class definition so they
-  // get destroyed last.
-  base::WeakPtrFactory<AppCacheStorage> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheStorage);
 };

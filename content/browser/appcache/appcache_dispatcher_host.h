@@ -26,7 +26,7 @@ class ChromeAppCacheService;
 // its child processes. There is a distinct host for each child process.
 // Messages are handled on the IO thread. The RenderProcessHostImpl creates
 // an instance and delegates calls to it.
-class AppCacheDispatcherHost : public mojom::AppCacheBackend {
+class AppCacheDispatcherHost final : public mojom::AppCacheBackend {
  public:
   AppCacheDispatcherHost(ChromeAppCacheService* appcache_service,
                          int process_id);

@@ -76,7 +76,7 @@ class CONTENT_EXPORT AppCacheHost
     // Called just prior to the instance being deleted.
     virtual void OnDestructionImminent(AppCacheHost* host) = 0;
 
-    virtual ~Observer() {}
+    virtual ~Observer() = default;
   };
 
   AppCacheHost(int host_id, AppCacheFrontend* frontend,
