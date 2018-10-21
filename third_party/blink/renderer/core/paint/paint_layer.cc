@@ -2501,7 +2501,8 @@ bool PaintLayer::HitTestClippedOutByClipPath(
   float inverse_zoom = 1 / GetLayoutObject().StyleRef().EffectiveZoom();
   point.Scale(inverse_zoom, inverse_zoom);
   reference_box.Scale(inverse_zoom);
-  return !clipper->HitTestClipContent(reference_box, point);
+  HitTestLocation location(point);
+  return !clipper->HitTestClipContent(reference_box, location);
 }
 
 bool PaintLayer::IntersectsDamageRect(

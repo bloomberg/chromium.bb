@@ -146,7 +146,8 @@ FloatRect LayoutSVGShape::HitTestStrokeBoundingBox() const {
   return ApproximateStrokeBoundingBox();
 }
 
-bool LayoutSVGShape::ShapeDependentStrokeContains(const FloatPoint& point) {
+bool LayoutSVGShape::ShapeDependentStrokeContains(
+    const HitTestLocation& location) {
   // In case the subclass didn't create path during UpdateShapeFromElement()
   // for optimization but still calls this method.
   if (!HasPath())
@@ -161,50 +162,50 @@ bool LayoutSVGShape::ShapeDependentStrokeContains(const FloatPoint& point) {
     if (!rare_data_)
       UpdateNonScalingStrokeData();
     return NonScalingStrokePath().StrokeContains(
-        NonScalingStrokeTransform().MapPoint(point), stroke_data);
+        NonScalingStrokeTransform().MapPoint(location.TransformedPoint()),
+        stroke_data);
   }
-
-  return path_->StrokeContains(point, stroke_data);
+  return path_->StrokeContains(location.TransformedPoint(), stroke_data);
 }
 
 bool LayoutSVGShape::ShapeDependentFillContains(
-    const FloatPoint& point,
+    const HitTestLocation& location,
     const WindRule fill_rule) const {
-  return GetPath().Contains(point, fill_rule);
+  return GetPath().Contains(location.TransformedPoint(), fill_rule);
 }
 
-bool LayoutSVGShape::FillContains(const FloatPoint& point,
+bool LayoutSVGShape::FillContains(const HitTestLocation& location,
                                   bool requires_fill,
                                   const WindRule fill_rule) {
-  if (!fill_bounding_box_.Contains(point))
+  if (!fill_bounding_box_.Contains(location.TransformedPoint()))
     return false;
 
   if (requires_fill && !SVGPaintServer::ExistsForLayoutObject(*this, StyleRef(),
                                                               kApplyToFillMode))
     return false;
 
-  return ShapeDependentFillContains(point, fill_rule);
+  return ShapeDependentFillContains(location, fill_rule);
 }
 
-bool LayoutSVGShape::StrokeContains(const FloatPoint& point,
+bool LayoutSVGShape::StrokeContains(const HitTestLocation& location,
                                     bool requires_stroke) {
   // "A zero value causes no stroke to be painted."
   if (StyleRef().SvgStyle().StrokeWidth().IsZero())
     return false;
 
   if (requires_stroke) {
-    if (!StrokeBoundingBox().Contains(point))
+    if (!StrokeBoundingBox().Contains(location.TransformedPoint()))
       return false;
 
     if (!SVGPaintServer::ExistsForLayoutObject(*this, StyleRef(),
                                                kApplyToStrokeMode))
       return false;
   } else {
-    if (!HitTestStrokeBoundingBox().Contains(point))
+    if (!HitTestStrokeBoundingBox().Contains(location.TransformedPoint()))
       return false;
   }
 
-  return ShapeDependentStrokeContains(point);
+  return ShapeDependentStrokeContains(location);
 }
 
 static inline bool TransformOriginIsFixed(const ComputedStyle& style) {
@@ -384,16 +385,14 @@ bool LayoutSVGShape::NodeAtPointInternal(const HitTestRequest& request,
   const SVGComputedStyle& svg_style = style.SvgStyle();
   if (hit_rules.can_hit_stroke &&
       (svg_style.HasStroke() || !hit_rules.require_stroke) &&
-      StrokeContains(local_location.TransformedPoint(),
-                     hit_rules.require_stroke))
+      StrokeContains(local_location, hit_rules.require_stroke))
     return true;
   WindRule fill_rule = svg_style.FillRule();
   if (request.SvgClipContent())
     fill_rule = svg_style.ClipRule();
   if (hit_rules.can_hit_fill &&
       (svg_style.HasFill() || !hit_rules.require_fill) &&
-      FillContains(local_location.TransformedPoint(), hit_rules.require_fill,
-                   fill_rule))
+      FillContains(local_location, hit_rules.require_fill, fill_rule))
     return true;
   return false;
 }

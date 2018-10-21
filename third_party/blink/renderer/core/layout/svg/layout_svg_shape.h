@@ -36,7 +36,6 @@
 
 namespace blink {
 
-class FloatPoint;
 class PointerEventsHitRules;
 class SVGGeometryElement;
 
@@ -140,8 +139,8 @@ class LayoutSVGShape : public LayoutSVGModelObject {
   // Update (cached) shape data and the (object) bounding box.
   virtual void UpdateShapeFromElement();
   FloatRect CalculateStrokeBoundingBox() const;
-  virtual bool ShapeDependentStrokeContains(const FloatPoint&);
-  virtual bool ShapeDependentFillContains(const FloatPoint&,
+  virtual bool ShapeDependentStrokeContains(const HitTestLocation&);
+  virtual bool ShapeDependentFillContains(const HitTestLocation&,
                                           const WindRule) const;
 
   FloatRect fill_bounding_box_;
@@ -151,10 +150,10 @@ class LayoutSVGShape : public LayoutSVGModelObject {
 
  private:
   // Hit-detection separated for the fill and the stroke
-  bool FillContains(const FloatPoint&,
+  bool FillContains(const HitTestLocation&,
                     bool requires_fill = true,
                     const WindRule fill_rule = RULE_NONZERO);
-  bool StrokeContains(const FloatPoint&, bool requires_stroke = true);
+  bool StrokeContains(const HitTestLocation&, bool requires_stroke = true);
 
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectSVGShape ||
@@ -166,7 +165,7 @@ class LayoutSVGShape : public LayoutSVGModelObject {
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation& location_in_parent,
                    const LayoutPoint& accumulated_offset,
-                   HitTestAction) override;
+                   HitTestAction) final;
 
   FloatRect StrokeBoundingBox() const final { return stroke_bounding_box_; }
 
