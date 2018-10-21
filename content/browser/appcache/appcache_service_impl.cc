@@ -392,7 +392,8 @@ AppCacheServiceImpl::AppCacheServiceImpl(
       quota_client_(nullptr),
       quota_manager_proxy_(quota_manager_proxy),
       request_context_(nullptr),
-      force_keep_session_state_(false) {
+      force_keep_session_state_(false),
+      weak_factory_(this) {
   if (quota_manager_proxy_.get()) {
     quota_client_ = new AppCacheQuotaClient(this);
     quota_manager_proxy_->RegisterClient(quota_client_);

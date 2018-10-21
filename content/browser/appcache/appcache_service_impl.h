@@ -79,7 +79,7 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
     // ref provided.
     virtual void OnServiceReinitialized(
         AppCacheStorageReference* old_storage_ref) {}
-    virtual ~Observer() = default;
+    virtual ~Observer() {}
   };
 
   // If not using quota management, the proxy may be NULL.
@@ -159,7 +159,9 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
 
   AppCacheStorage* storage() const { return storage_.get(); }
 
-  virtual base::WeakPtr<AppCacheServiceImpl> GetWeakPtr() = 0;
+  base::WeakPtr<AppCacheServiceImpl> AsWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
 
   // Disables the exit-time deletion of session-only data.
   void set_force_keep_session_state() { force_keep_session_state_ = true; }
@@ -216,6 +218,8 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
 
  private:
+  base::WeakPtrFactory<AppCacheServiceImpl> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(AppCacheServiceImpl);
 };
 

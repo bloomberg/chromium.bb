@@ -15,15 +15,17 @@ namespace content {
 // For use by unit tests.
 class MockAppCacheService : public AppCacheServiceImpl {
  public:
-  MockAppCacheService();
-  ~MockAppCacheService() override;
+  MockAppCacheService()
+    : AppCacheServiceImpl(NULL),
+      mock_delete_appcaches_for_origin_result_(net::OK),
+      delete_called_count_(0) {
+    storage_.reset(new MockAppCacheStorage(this));
+  }
 
   // Just returns a canned completion code without actually
   // removing groups and caches in our mock storage instance.
   void DeleteAppCachesForOrigin(const url::Origin& origin,
                                 net::CompletionOnceCallback callback) override;
-
-  base::WeakPtr<AppCacheServiceImpl> GetWeakPtr() override;
 
   void set_quota_manager_proxy(storage::QuotaManagerProxy* proxy) {
     quota_manager_proxy_ = proxy;
@@ -38,7 +40,6 @@ class MockAppCacheService : public AppCacheServiceImpl {
  private:
   int mock_delete_appcaches_for_origin_result_;
   int delete_called_count_;
-  base::WeakPtrFactory<MockAppCacheService> weak_factory_;
 };
 
 }  // namespace content

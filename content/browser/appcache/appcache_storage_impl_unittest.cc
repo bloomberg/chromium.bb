@@ -158,22 +158,6 @@ class IOThread : public base::Thread {
   std::unique_ptr<net::URLRequestContext> request_context_;
 };
 
-class TestAppCacheServiceImpl : public AppCacheServiceImpl {
- public:
-  explicit TestAppCacheServiceImpl(
-      storage::QuotaManagerProxy* quota_manager_proxy)
-      : AppCacheServiceImpl(quota_manager_proxy), weak_factory_(this) {}
-
-  ~TestAppCacheServiceImpl() override = default;
-
-  base::WeakPtr<AppCacheServiceImpl> GetWeakPtr() override {
-    return weak_factory_.GetWeakPtr();
-  }
-
- private:
-  base::WeakPtrFactory<TestAppCacheServiceImpl> weak_factory_;
-};
-
 std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment;
 std::unique_ptr<IOThread> io_thread;
 std::unique_ptr<base::Thread> background_thread;
@@ -409,7 +393,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
   void SetUpTest() {
     DCHECK(io_thread->task_runner()->BelongsToCurrentThread());
-    service_ = std::make_unique<TestAppCacheServiceImpl>(nullptr);
+    service_.reset(new AppCacheServiceImpl(nullptr));
     service_->Initialize(base::FilePath());
     mock_quota_manager_proxy_ = new MockQuotaManagerProxy();
     service_->quota_manager_proxy_ = mock_quota_manager_proxy_;
@@ -1726,7 +1710,7 @@ class AppCacheStorageImplTest : public testing::Test {
     }
 
     // Recreate the service to point at the db and corruption on disk.
-    service_ = std::make_unique<TestAppCacheServiceImpl>(nullptr);
+    service_.reset(new AppCacheServiceImpl(nullptr));
     service_->set_request_context(io_thread->request_context());
     service_->Initialize(temp_directory_.GetPath());
     mock_quota_manager_proxy_ = new MockQuotaManagerProxy();

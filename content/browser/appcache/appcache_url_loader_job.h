@@ -32,10 +32,9 @@ class AppCacheURLLoaderRequest;
 
 // AppCacheJob wrapper for a network::mojom::URLLoader implementation which
 // returns responses stored in the AppCache.
-class CONTENT_EXPORT AppCacheURLLoaderJob final
-    : public AppCacheJob,
-      public AppCacheStorage::Delegate,
-      public network::mojom::URLLoader {
+class CONTENT_EXPORT AppCacheURLLoaderJob : public AppCacheJob,
+                                            public AppCacheStorage::Delegate,
+                                            public network::mojom::URLLoader {
  public:
   ~AppCacheURLLoaderJob() override;
 

@@ -25,7 +25,7 @@ class AppCacheRequestHandler;
 class AppCacheServiceImpl;
 
 // Implements the URLLoaderFactory mojom for AppCache subresource requests.
-class CONTENT_EXPORT AppCacheSubresourceURLFactory final
+class CONTENT_EXPORT AppCacheSubresourceURLFactory
     : public network::mojom::URLLoaderFactory {
  public:
   ~AppCacheSubresourceURLFactory() override;

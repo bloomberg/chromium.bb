@@ -49,7 +49,7 @@ class CONTENT_EXPORT AppCacheGroup
    public:
     // Called just after an appcache update has completed.
     virtual void OnUpdateComplete(AppCacheGroup* group) = 0;
-    virtual ~UpdateObserver() = default;
+    virtual ~UpdateObserver() {}
   };
 
   enum UpdateAppCacheStatus {

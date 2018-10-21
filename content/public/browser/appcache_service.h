@@ -49,7 +49,7 @@ class CONTENT_EXPORT AppCacheService {
                                    net::CompletionOnceCallback callback) = 0;
 
  protected:
-  virtual ~AppCacheService() = default;
+  virtual ~AppCacheService() {}
 };
 
 }  // namespace content

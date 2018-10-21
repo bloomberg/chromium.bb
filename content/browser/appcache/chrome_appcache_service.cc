@@ -17,9 +17,7 @@ namespace content {
 
 ChromeAppCacheService::ChromeAppCacheService(
     storage::QuotaManagerProxy* quota_manager_proxy)
-    : AppCacheServiceImpl(quota_manager_proxy),
-      resource_context_(nullptr),
-      weak_factory_(this) {}
+    : AppCacheServiceImpl(quota_manager_proxy), resource_context_(nullptr) {}
 
 void ChromeAppCacheService::InitializeOnIOThread(
     const base::FilePath& cache_path,
@@ -67,10 +65,6 @@ void ChromeAppCacheService::UnregisterBackend(
   int process_id = backend_impl->process_id();
   process_bindings_.erase(process_bindings_.find(process_id));
   AppCacheServiceImpl::UnregisterBackend(backend_impl);
-}
-
-base::WeakPtr<AppCacheServiceImpl> ChromeAppCacheService::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
 }
 
 void ChromeAppCacheService::Shutdown() {

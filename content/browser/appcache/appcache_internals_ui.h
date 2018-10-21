@@ -32,7 +32,7 @@ namespace content {
 // This implementation is based on the WebUI API and consists of a controller on
 // The UI thread which communicates (through a Proxy) with the AppCacheService
 // and AppCache storage which live on the IO thread.
-class AppCacheInternalsUI final : public WebUIController {
+class AppCacheInternalsUI : public WebUIController {
  public:
   explicit AppCacheInternalsUI(WebUI* web_ui);
   ~AppCacheInternalsUI() override;
@@ -76,7 +76,7 @@ class AppCacheInternalsUI final : public WebUIController {
         scoped_refptr<net::IOBuffer> response_data,
         int net_result_code);
     void Initialize(
-        scoped_refptr<ChromeAppCacheService> chrome_appcache_service);
+        const scoped_refptr<ChromeAppCacheService>& chrome_appcache_service);
     void Shutdown();
 
     base::WeakPtr<AppCacheInternalsUI> appcache_internals_ui_;

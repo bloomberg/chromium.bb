@@ -24,7 +24,8 @@ AppCacheStorage::AppCacheStorage(AppCacheServiceImpl* service)
     : last_cache_id_(kUnitializedId),
       last_group_id_(kUnitializedId),
       last_response_id_(kUnitializedId),
-      service_(service) {}
+      service_(service),
+      weak_factory_(this) {}
 
 AppCacheStorage::~AppCacheStorage() {
   DCHECK(delegate_references_.empty());
@@ -95,6 +96,10 @@ void AppCacheStorage::LoadResponseInfo(const GURL& manifest_url,
   DCHECK(id == info_load->response_id());
   info_load->AddDelegate(GetOrCreateDelegateReference(delegate));
   info_load->StartIfNeeded();
+}
+
+base::WeakPtr<AppCacheStorage> AppCacheStorage::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 void AppCacheStorage::UpdateUsageMapAndNotify(const url::Origin& origin,
