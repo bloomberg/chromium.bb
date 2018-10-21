@@ -58,6 +58,7 @@
 /cros_system_api
 /custom_tabs_client/src
 /cygwin
+/dawn
 /depot_tools
 /devtools-node-modules
 /directxsdk
@@ -76,6 +77,7 @@
 /gestures/gestures
 /gles1_conform
 /gles2_conform
+/glfw/src
 /glslang/src
 /glslang-angle/src
 /gn/
@@ -197,6 +199,7 @@
 /smhasher/src
 /snappy/src
 /speex
+/spirv-cross/spirv-cross
 /spirv-headers/src
 /SPIRV-Tools/src
 /spirv-tools-angle/src
