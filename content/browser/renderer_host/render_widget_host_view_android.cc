@@ -2390,4 +2390,8 @@ RenderWidgetHostViewAndroid::DidUpdateVisualProperties(
   return viz::ScopedSurfaceIdAllocator(std::move(allocation_task));
 }
 
+void RenderWidgetHostViewAndroid::WasEvicted() {
+  local_surface_id_allocator_.GenerateId();
+}
+
 }  // namespace content

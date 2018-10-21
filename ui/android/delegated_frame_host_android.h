@@ -52,6 +52,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
     virtual void ReclaimResources(
         const std::vector<viz::ReturnedResource>& resources) = 0;
     virtual void OnFrameTokenChanged(uint32_t frame_token) = 0;
+    virtual void WasEvicted() = 0;
   };
 
   DelegatedFrameHostAndroid(ViewAndroid* view,

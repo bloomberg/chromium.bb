@@ -332,6 +332,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnRenderFrameMetadataChangedBeforeActivation(
       const cc::RenderFrameMetadata& metadata) override;
 
+  void WasEvicted();
+
  protected:
   // RenderWidgetHostViewBase:
   void UpdateBackgroundColor() override;

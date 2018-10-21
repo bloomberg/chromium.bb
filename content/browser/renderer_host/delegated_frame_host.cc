@@ -210,15 +210,8 @@ void DelegatedFrameHost::EmbedSurface(
   const viz::SurfaceId* primary_surface_id =
       client_->DelegatedFrameHostGetLayer()->GetPrimarySurfaceId();
 
-  bool id_changed = local_surface_id_ != new_local_surface_id;
-
   local_surface_id_ = new_local_surface_id;
   surface_dip_size_ = new_dip_size;
-
-  if (id_changed) {
-    frame_evictor_->SwappedFrame(client_->DelegatedFrameHostIsVisible());
-    // Note: the frame may have been evicted immediately.
-  }
 
   viz::SurfaceId new_primary_surface_id(frame_sink_id_, local_surface_id_);
 
@@ -236,6 +229,10 @@ void DelegatedFrameHost::EmbedSurface(
     // is visible, EmbedSurface will be called again. See WasShown.
     return;
   }
+
+  // Notify |frame_evictor_| that a new surface was embedded.
+  // TODO(samans): Rename this and remove visibility as parameter.
+  frame_evictor_->SwappedFrame(true /* visibility */);
 
   if (!primary_surface_id ||
       primary_surface_id->local_surface_id() != local_surface_id_) {

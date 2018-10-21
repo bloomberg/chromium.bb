@@ -40,6 +40,7 @@ class MockDelegatedFrameHostAndroidClient
   MOCK_METHOD2(DidPresentCompositorFrame,
                void(uint32_t, const gfx::PresentationFeedback&));
   MOCK_METHOD1(OnFrameTokenChanged, void(uint32_t));
+  MOCK_METHOD0(WasEvicted, void());
 };
 
 class MockWindowAndroidCompositor : public WindowAndroidCompositor {
@@ -301,6 +302,23 @@ TEST_F(DelegatedFrameHostAndroidTest, TestBothCompositorLocks) {
   // Submit a compositor frame of the right size, both locks should release.
   SubmitCompositorFrame(gfx::Size(50, 50));
   EXPECT_FALSE(IsLocked());
+}
+
+// Make sure frame evictor is notified of the newly embedded surface after
+// WasShown.
+TEST_F(DelegatedFrameHostAndroidSurfaceSynchronizationTest, EmbedWhileHidden) {
+  {
+    EXPECT_CALL(client_, WasEvicted());
+    frame_host_->EvictDelegatedFrame();
+  }
+  EXPECT_FALSE(frame_host_->HasSavedFrame());
+  viz::LocalSurfaceId id = allocator_.GenerateId();
+  gfx::Size size(100, 100);
+  frame_host_->WasHidden();
+  frame_host_->EmbedSurface(id, size, cc::DeadlinePolicy::UseDefaultDeadline());
+  EXPECT_FALSE(frame_host_->HasSavedFrame());
+  frame_host_->WasShown(id, size);
+  EXPECT_TRUE(frame_host_->HasSavedFrame());
 }
 
 }  // namespace
