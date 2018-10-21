@@ -204,23 +204,9 @@ void SkiaVectorAnimation::Paint(gfx::Canvas* canvas,
 void SkiaVectorAnimation::PaintFrame(gfx::Canvas* canvas,
                                      float t,
                                      const gfx::Size& size) {
-  TRACE_EVENT0("ui", "SkiaVectorAnimation Paint");
   DCHECK_GE(t, 0.f);
   DCHECK_LE(t, 1.f);
-
-  float scale = canvas->UndoDeviceScaleFactor();
-  gfx::Size pixel_size = gfx::ScaleToRoundedSize(size, scale);
-
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(std::round(pixel_size.width()),
-                        std::round(pixel_size.height()), false);
-  SkCanvas skcanvas(bitmap);
-  skcanvas.clear(SK_ColorTRANSPARENT);
-
-  skottie_->Draw(&skcanvas, t,
-                 SkRect::MakeWH(pixel_size.width(), pixel_size.height()));
-
-  canvas->DrawImageInt(gfx::ImageSkia::CreateFrom1xBitmap(bitmap), 0, 0);
+  canvas->DrawSkottie(skottie(), gfx::Rect(size), t);
 }
 
 void SkiaVectorAnimation::InitTimer(const base::TimeTicks& timestamp) {
