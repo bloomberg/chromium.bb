@@ -299,5 +299,8 @@ D. Local Modifications
       https://github.com/unicode-org/icu/pull/55
       https://github.com/unicode-org/icu/pull/129
 
+16. Align memory buffer used in UnicodeSet on ARM.
 
-
+  - patches/arm_align.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20001
