@@ -2906,6 +2906,7 @@ crbug.com/893480 external/wpt/infrastructure/testdriver/actions/eventOrder.html 
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-will-change/will-change-abspos-cb-dynamic-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-will-change/will-change-abspos-cb-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-conditional/at-supports-040.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
@@ -3084,9 +3085,7 @@ crbug.com/626703 external/wpt/editing/manual/delete-manual.html [ Skip ]
 crbug.com/626703 external/wpt/editing/manual/inserttext2-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-min-content-size-002.html [ Failure ]
 crbug.com/626703 external/wpt/content-security-policy/securitypolicyviolation/targeting.html [ Timeout ]
-crbug.com/626703 external/wpt/css/css-text/white-space/break-spaces-003.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/white-space/textarea-break-spaces-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/textarea-break-spaces-003.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-column-row-gap-003.html [ Failure ]
 crbug.com/863355 [ Mac ] external/wpt/svg/shapes/reftests/pathlength-002.svg [ Failure ]
 crbug.com/366559 external/wpt/svg/shapes/reftests/pathlength-003.svg [ Failure ]
