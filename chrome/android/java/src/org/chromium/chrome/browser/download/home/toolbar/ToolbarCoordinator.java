@@ -124,6 +124,8 @@ public class ToolbarCoordinator implements SelectionObserver<ListItem> {
                 mSearchDelegate, R.string.download_manager_search, searchMenuId);
         mToolbar.configureWideDisplayStyle(mUiConfig);
 
+        if (isLocationEnabled) ToolbarUtils.setupTrackerForDownloadSettingsIPH(mToolbar);
+
         mShadow.init(ApiCompatibilityUtils.getColor(
                              context.getResources(), R.color.toolbar_shadow_color),
                 FadingShadow.POSITION_TOP);
