@@ -15,10 +15,12 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -26,6 +28,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/views/background.h"
+#include "ui/views/window/hit_test_utils.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/views/frame/taskbar_decorator_win.h"
@@ -256,6 +259,22 @@ void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
     OnProfileAvatarChanged(base::FilePath());
 }
 
+int BrowserNonClientFrameView::NonClientHitTest(const gfx::Point& point) {
+  if (hosted_app_button_container_) {
+    int hosted_app_component =
+        views::GetHitTestComponent(hosted_app_button_container_, point);
+    if (hosted_app_component != HTNOWHERE)
+      return hosted_app_component;
+  }
+
+  return HTNOWHERE;
+}
+
+void BrowserNonClientFrameView::ResetWindowControls() {
+  if (hosted_app_button_container_)
+    hosted_app_button_container_->UpdateContentSettingViewsVisibility();
+}
+
 void BrowserNonClientFrameView::OnSingleTabModeChanged() {
   SchedulePaint();
 }
@@ -326,6 +345,11 @@ gfx::ImageSkia BrowserNonClientFrameView::GetFrameOverlayImage(
              : gfx::ImageSkia();
 }
 
+void BrowserNonClientFrameView::ChildPreferredSizeChanged(views::View* child) {
+  if (browser_view()->initialized() && child == hosted_app_button_container_)
+    Layout();
+}
+
 void BrowserNonClientFrameView::ActivationChanged(bool active) {
   // On Windows, while deactivating the widget, this is called before the
   // active HWND has actually been changed.  Since we want the state to reflect
@@ -340,6 +364,9 @@ void BrowserNonClientFrameView::ActivationChanged(bool active) {
   browser_view_->tabstrip()->SingleTabModeChanged();
 
   set_active_state_override(nullptr);
+
+  if (hosted_app_button_container_)
+    hosted_app_button_container_->SetPaintAsActive(active);
 
   // Changing the activation state may change the visible frame color.
   SchedulePaint();

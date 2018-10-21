@@ -122,7 +122,7 @@ class ImmersiveModeControllerAshHostedAppBrowserTest
 
   void VerifyButtonsInImmersiveMode(BrowserNonClientFrameViewAsh* frame_view) {
     HostedAppButtonContainer* container =
-        frame_view->hosted_app_button_container_;
+        frame_view->hosted_app_button_container_for_testing();
     views::test::InkDropHostViewTestApi ink_drop_api(
         container->app_menu_button_);
     EXPECT_TRUE(container->GetContentSettingContainerForTesting()->layer());

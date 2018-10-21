@@ -714,7 +714,7 @@ class HostedAppNonClientFrameViewAshTest
         static_cast<ash::DefaultFrameHeader*>(frame_view->frame_header_.get());
 
     hosted_app_button_container_ =
-        frame_view->GetHostedAppButtonContainerForTesting();
+        frame_view->hosted_app_button_container_for_testing();
     DCHECK(hosted_app_button_container_);
     DCHECK(hosted_app_button_container_->visible());
 

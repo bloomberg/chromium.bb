@@ -36,7 +36,6 @@
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/win/hwnd_util.h"
 #include "ui/views/window/client_view.h"
-#include "ui/views/window/hit_test_utils.h"
 
 HICON GlassBrowserFrameView::throbber_icons_[
     GlassBrowserFrameView::kThrobberIconCount];
@@ -119,9 +118,9 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
     // HostedAppButtonContainer::UpdateIconsColor() via a delegate interface.
     SkColor active_color = GetTitlebarFeatureColor(kActive);
     SkColor inactive_color = GetTitlebarFeatureColor(kInactive);
-    hosted_app_button_container_ = new HostedAppButtonContainer(
-        frame, browser_view, active_color, inactive_color);
-    AddChildView(hosted_app_button_container_);
+    set_hosted_app_button_container(new HostedAppButtonContainer(
+        frame, browser_view, active_color, inactive_color));
+    AddChildView(hosted_app_button_container());
   }
 
   minimize_button_ =
@@ -275,6 +274,10 @@ bool HitTestCaptionButton(Windows10CaptionButton* button,
 }  // namespace
 
 int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
+  int super_component = BrowserNonClientFrameView::NonClientHitTest(point);
+  if (super_component != HTNOWHERE)
+    return super_component;
+
   // For app windows and popups without a custom titlebar we haven't customized
   // the frame at all so Windows can figure it out.
   if (!ShouldCustomDrawSystemTitlebar() &&
@@ -285,15 +288,6 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   // the frame so again Windows can figure it out.
   if (!bounds().Contains(point))
     return HTNOWHERE;
-
-  if (hosted_app_button_container_) {
-    // TODO(alancutter): Assign hit test components to all children and refactor
-    // this entire function call to just be GetHitTestComponent(this, point).
-    int hosted_app_component =
-        views::GetHitTestComponent(hosted_app_button_container_, point);
-    if (hosted_app_component != HTNOWHERE)
-      return hosted_app_component;
-  }
 
   int frame_component = frame()->client_view()->NonClientHitTest(point);
 
@@ -375,12 +369,11 @@ void GlassBrowserFrameView::UpdateWindowTitle() {
 }
 
 void GlassBrowserFrameView::ResetWindowControls() {
+  BrowserNonClientFrameView::ResetWindowControls();
   minimize_button_->SetState(views::Button::STATE_NORMAL);
   maximize_button_->SetState(views::Button::STATE_NORMAL);
   restore_button_->SetState(views::Button::STATE_NORMAL);
   close_button_->SetState(views::Button::STATE_NORMAL);
-  if (hosted_app_button_container_)
-    hosted_app_button_container_->UpdateContentSettingViewsVisibility();
 }
 
 void GlassBrowserFrameView::ButtonPressed(views::Button* sender,
@@ -418,11 +411,6 @@ const char* GlassBrowserFrameView::GetClassName() const {
   return kClassName;
 }
 
-void GlassBrowserFrameView::ChildPreferredSizeChanged(views::View* child) {
-  if (browser_view()->initialized() && child == hosted_app_button_container_)
-    Layout();
-}
-
 void GlassBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
   TRACE_EVENT0("views.frame", "GlassBrowserFrameView::OnPaint");
   if (ShouldCustomDrawSystemTitlebar())
@@ -442,13 +430,6 @@ void GlassBrowserFrameView::Layout() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // GlassBrowserFrameView, private:
-
-void GlassBrowserFrameView::ActivationChanged(bool active) {
-  BrowserNonClientFrameView::ActivationChanged(active);
-
-  if (hosted_app_button_container_)
-    hosted_app_button_container_->SetPaintAsActive(active);
-}
 
 int GlassBrowserFrameView::FrameBorderThickness() const {
   return (IsMaximized() || frame()->IsFullscreen())
@@ -514,13 +495,13 @@ int GlassBrowserFrameView::TopAreaHeight(bool restored) const {
 int GlassBrowserFrameView::TitlebarMaximizedVisualHeight() const {
   int maximized_height =
       display::win::ScreenWin::GetSystemMetricsInDIP(SM_CYCAPTION);
-  if (hosted_app_button_container_) {
+  if (hosted_app_button_container()) {
     // Adding 2px of vertical padding puts at least 1 px of space on the top and
     // bottom of the element.
     constexpr int kVerticalPadding = 2;
     maximized_height =
         std::max(maximized_height,
-                 hosted_app_button_container_->GetPreferredSize().height() +
+                 hosted_app_button_container()->GetPreferredSize().height() +
                      kVerticalPadding);
   }
   return maximized_height;
@@ -572,7 +553,7 @@ bool GlassBrowserFrameView::IsToolbarVisible() const {
 
 bool GlassBrowserFrameView::ShowCustomIcon() const {
   // Hosted app windows don't include the window icon as per UI mocks.
-  return !hosted_app_button_container_ && ShouldCustomDrawSystemTitlebar() &&
+  return !hosted_app_button_container() && ShouldCustomDrawSystemTitlebar() &&
          browser_view()->ShouldShowWindowIcon();
 }
 
@@ -706,8 +687,8 @@ void GlassBrowserFrameView::LayoutTitleBar() {
     next_leading_x = window_icon_bounds.right() + kIconTitleSpacing;
   }
 
-  if (hosted_app_button_container_) {
-    next_trailing_x = hosted_app_button_container_->LayoutInContainer(
+  if (hosted_app_button_container()) {
+    next_trailing_x = hosted_app_button_container()->LayoutInContainer(
         next_leading_x, next_trailing_x, window_top, titlebar_visual_height);
   }
 

@@ -29,7 +29,6 @@ namespace {
 class HostedAppNonClientFrameViewAshTest;
 }
 
-class HostedAppButtonContainer;
 class ProfileIndicatorIcon;
 class TabIconView;
 
@@ -132,8 +131,6 @@ class BrowserNonClientFrameViewAsh
   void OnImmersiveRevealEnded() override;
   void OnImmersiveFullscreenExited() override;
 
-  HostedAppButtonContainer* GetHostedAppButtonContainerForTesting() const;
-
   // Returns true if the header should be painted so that it looks the same as
   // the header used for packaged apps.
   static bool UsePackagedAppHeaderStyle(const Browser* browser);
@@ -173,7 +170,6 @@ class BrowserNonClientFrameViewAsh
                            HeaderHeightForSnappedBrowserInSplitView);
 
   friend class HostedAppNonClientFrameViewAshTest;
-  friend class ImmersiveModeControllerAshHostedAppBrowserTest;
 
   // Returns whether the caption buttons should be visible. They are hidden, for
   // example, in overview mode and tablet mode.
@@ -245,10 +241,6 @@ class BrowserNonClientFrameViewAsh
 
   // A helper for controlling the window frame; only used in !Mash.
   std::unique_ptr<ash::AshFrameCaptionController> caption_controller_;
-
-  // Container for extra frame buttons shown for hosted app windows.
-  // Owned by views hierarchy.
-  HostedAppButtonContainer* hosted_app_button_container_ = nullptr;
 
   // Ash's mojom::SplitViewController.
   ash::mojom::SplitViewControllerPtr split_view_controller_;
