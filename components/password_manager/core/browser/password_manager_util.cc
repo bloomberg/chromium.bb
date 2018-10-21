@@ -70,20 +70,6 @@ password_manager::SyncState GetPasswordSyncState(
   return password_manager::NOT_SYNCING;
 }
 
-password_manager::SyncState GetHistorySyncState(
-    const syncer::SyncService* sync_service) {
-  if (sync_service && sync_service->IsFirstSetupComplete() &&
-      sync_service->IsSyncFeatureActive() &&
-      (sync_service->GetActiveDataTypes().Has(
-           syncer::HISTORY_DELETE_DIRECTIVES) ||
-       sync_service->GetActiveDataTypes().Has(syncer::PROXY_TABS))) {
-    return sync_service->IsUsingSecondaryPassphrase()
-               ? password_manager::SYNCING_WITH_CUSTOM_PASSPHRASE
-               : password_manager::SYNCING_NORMAL_ENCRYPTION;
-  }
-  return password_manager::NOT_SYNCING;
-}
-
 void FindDuplicates(std::vector<std::unique_ptr<PasswordForm>>* forms,
                     std::vector<std::unique_ptr<PasswordForm>>* duplicates,
                     std::vector<std::vector<PasswordForm*>>* tag_groups) {

@@ -47,11 +47,6 @@ void UpdateMetadataForUsage(autofill::PasswordForm* credential);
 password_manager::SyncState GetPasswordSyncState(
     const syncer::SyncService* sync_service);
 
-// Reports whether and how browsing history is currently synced. In particular,
-// for a null |sync_service| returns NOT_SYNCING.
-password_manager::SyncState GetHistorySyncState(
-    const syncer::SyncService* sync_service);
-
 // Finds the forms with a duplicate sync tags in |forms|. The first one of
 // the duplicated entries stays in |forms|, the others are moved to
 // |duplicates|.

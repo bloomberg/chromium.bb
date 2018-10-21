@@ -80,12 +80,6 @@ SyncState IOSChromePasswordManagerClient::GetPasswordSyncState() const {
   return password_manager_util::GetPasswordSyncState(sync_service);
 }
 
-SyncState IOSChromePasswordManagerClient::GetHistorySyncState() const {
-  browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForBrowserState(delegate_.browserState);
-  return password_manager_util::GetHistorySyncState(sync_service);
-}
-
 bool IOSChromePasswordManagerClient::PromptUserToChooseCredentials(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
     const GURL& origin,
