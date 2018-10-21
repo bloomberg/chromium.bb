@@ -22,17 +22,12 @@ class FilePath;
 enum TerminationStatus;
 }
 
-namespace network {
-namespace mojom {
-class URLLoaderFactory;
-}
-}  // namespace network
-
 class Chrome;
 class DeviceManager;
 class Status;
+class URLRequestContextGetter;
 
-Status LaunchChrome(network::mojom::URLLoaderFactory* factory,
+Status LaunchChrome(URLRequestContextGetter* context_getter,
                     const SyncWebSocketFactory& socket_factory,
                     DeviceManager* device_manager,
                     const Capabilities& capabilities,

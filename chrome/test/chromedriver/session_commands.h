@@ -11,7 +11,6 @@
 #include "base/callback_forward.h"
 #include "chrome/test/chromedriver/command.h"
 #include "chrome/test/chromedriver/net/sync_websocket_factory.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace base {
 class DictionaryValue;
@@ -21,15 +20,16 @@ class Value;
 class DeviceManager;
 struct Session;
 class Status;
+class URLRequestContextGetter;
 
 struct InitSessionParams {
-  InitSessionParams(network::mojom::URLLoaderFactory* factory,
+  InitSessionParams(scoped_refptr<URLRequestContextGetter> context_getter,
                     const SyncWebSocketFactory& socket_factory,
                     DeviceManager* device_manager);
   InitSessionParams(const InitSessionParams& other);
   ~InitSessionParams();
 
-  network::mojom::URLLoaderFactory* url_loader_factory;
+  scoped_refptr<URLRequestContextGetter> context_getter;
   SyncWebSocketFactory socket_factory;
   DeviceManager* device_manager;
 };
