@@ -127,7 +127,8 @@ NativeWidgetMacNSWindow* BrowserFrameMac::CreateNSWindow(
                           NSMiniaturizableWindowMask | NSResizableWindowMask;
 
   base::scoped_nsobject<NativeWidgetMacNSWindow> ns_window;
-  if (browser_view_->IsBrowserTypeNormal()) {
+  if (browser_view_->IsBrowserTypeNormal() ||
+      browser_view_->IsBrowserTypeHostedApp()) {
     if (@available(macOS 10.10, *))
       style_mask |= NSFullSizeContentViewWindowMask;
     ns_window.reset([[BrowserNativeWidgetWindow alloc]
@@ -136,8 +137,12 @@ NativeWidgetMacNSWindow* BrowserFrameMac::CreateNSWindow(
                     backing:NSBackingStoreBuffered
                       defer:NO]);
     // Ensure tabstrip/profile button are visible.
-    if (@available(macOS 10.10, *))
+    if (@available(macOS 10.10, *)) {
       [ns_window setTitlebarAppearsTransparent:YES];
+      // Hosted apps draw their own window title.
+      if (browser_view_->IsBrowserTypeHostedApp())
+        [ns_window setTitleVisibility:NSWindowTitleHidden];
+    }
   } else {
     ns_window.reset([[NativeWidgetMacNSWindow alloc]
         initWithContentRect:ui::kWindowSizeDeterminedLater

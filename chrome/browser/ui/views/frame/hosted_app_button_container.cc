@@ -164,10 +164,12 @@ HostedAppButtonContainer::ContentSettingsContainer::ContentSettingsContainer(
   }
 }
 
-HostedAppButtonContainer::HostedAppButtonContainer(views::Widget* widget,
-                                                   BrowserView* browser_view,
-                                                   SkColor active_color,
-                                                   SkColor inactive_color)
+HostedAppButtonContainer::HostedAppButtonContainer(
+    views::Widget* widget,
+    BrowserView* browser_view,
+    SkColor active_color,
+    SkColor inactive_color,
+    base::Optional<int> right_margin)
     : scoped_widget_observer_(this),
       browser_view_(browser_view),
       active_color_(active_color),
@@ -192,7 +194,8 @@ HostedAppButtonContainer::HostedAppButtonContainer(views::Widget* widget,
   views::BoxLayout& layout =
       *SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::kHorizontal,
-          gfx::Insets(0, HorizontalPaddingBetweenItems()),
+          gfx::Insets(0,
+                      right_margin.value_or(HorizontalPaddingBetweenItems())),
           HorizontalPaddingBetweenItems()));
   // Right align to clip the leftmost items first when not enough space.
   layout.set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);

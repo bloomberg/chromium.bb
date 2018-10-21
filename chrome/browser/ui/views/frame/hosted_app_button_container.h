@@ -65,7 +65,8 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   HostedAppButtonContainer(views::Widget* widget,
                            BrowserView* browser_view,
                            SkColor active_color,
-                           SkColor inactive_color);
+                           SkColor inactive_color,
+                           base::Optional<int> right_margin = base::nullopt);
   ~HostedAppButtonContainer() override;
 
   void UpdateContentSettingViewsVisibility();
@@ -73,6 +74,8 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   // Sets the container to paints its buttons the active/inactive color.
   void SetPaintAsActive(bool active);
 
+  // Sets own bounds to be right aligned and vertically centered in the given
+  // space, returns a new trailing_x value.
   int LayoutInContainer(int leading_x,
                         int trailing_x,
                         int y,

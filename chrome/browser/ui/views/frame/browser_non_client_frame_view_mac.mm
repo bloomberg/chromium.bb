@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
+#include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -24,13 +25,18 @@
 #include "ui/gfx/canvas.h"
 
 namespace {
+
+constexpr int kHostedAppMenuMargin = 7;
+constexpr int kFramePaddingLeft = 75;
+
 FullscreenToolbarStyle GetUserPreferredToolbarStyle(
     const PrefService* pref_service) {
   return pref_service->GetBoolean(prefs::kShowFullscreenToolbar)
              ? FullscreenToolbarStyle::TOOLBAR_PRESENT
              : FullscreenToolbarStyle::TOOLBAR_HIDDEN;
 }
-}
+
+}  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewMac, public:
@@ -50,6 +56,20 @@ BrowserNonClientFrameViewMac::BrowserNonClientFrameViewMac(
       prefs::kShowFullscreenToolbar,
       base::BindRepeating(&BrowserNonClientFrameViewMac::UpdateFullscreenTopUI,
                           base::Unretained(this), true));
+
+  if (browser_view->IsBrowserTypeHostedApp()) {
+    set_hosted_app_button_container(new HostedAppButtonContainer(
+        frame, browser_view, GetReadableFrameForegroundColor(kActive),
+        GetReadableFrameForegroundColor(kInactive), kHostedAppMenuMargin));
+    AddChildView(hosted_app_button_container());
+
+    DCHECK(browser_view->ShouldShowWindowTitle());
+    window_title_ = new views::Label(browser_view->GetWindowTitle());
+    // view::Label's readability algorithm conflicts with the one used by
+    // |GetReadableFrameForegroundColor|.
+    window_title_->SetAutoColorReadabilityEnabled(false);
+    AddChildView(window_title_);
+  }
 }
 
 BrowserNonClientFrameViewMac::~BrowserNonClientFrameViewMac() {
@@ -94,6 +114,10 @@ gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStrip(
 }
 
 int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
+  if (browser_view()->IsBrowserTypeHostedApp())
+    return hosted_app_button_container()->GetPreferredSize().height() +
+           kHostedAppMenuMargin * 2;
+
   if (!browser_view()->IsTabStripVisible())
     return 0;
 
@@ -188,6 +212,10 @@ gfx::Rect BrowserNonClientFrameViewMac::GetWindowBoundsForClientBounds(
 }
 
 int BrowserNonClientFrameViewMac::NonClientHitTest(const gfx::Point& point) {
+  int super_component = BrowserNonClientFrameView::NonClientHitTest(point);
+  if (super_component != HTNOWHERE)
+    return super_component;
+
   // BrowserView::NonClientHitTest will return HTNOWHERE for points that hit
   // the native title bar. On Mac, we need to explicitly return HTCAPTION for
   // those points.
@@ -200,13 +228,14 @@ void BrowserNonClientFrameViewMac::GetWindowMask(const gfx::Size& size,
                                                  gfx::Path* window_mask) {
 }
 
-void BrowserNonClientFrameViewMac::ResetWindowControls() {
-}
-
 void BrowserNonClientFrameViewMac::UpdateWindowIcon() {
 }
 
 void BrowserNonClientFrameViewMac::UpdateWindowTitle() {
+  if (window_title_ && !frame()->IsFullscreen()) {
+    window_title_->SetText(browser_view()->GetWindowTitle());
+    Layout();
+  }
 }
 
 void BrowserNonClientFrameViewMac::SizeConstraintsChanged() {
@@ -231,10 +260,19 @@ gfx::Size BrowserNonClientFrameViewMac::GetMinimumSize() const {
 // views::View:
 
 void BrowserNonClientFrameViewMac::OnPaint(gfx::Canvas* canvas) {
-  if (!browser_view()->IsBrowserTypeNormal())
+  if (!browser_view()->IsBrowserTypeNormal() &&
+      !browser_view()->IsBrowserTypeHostedApp()) {
     return;
+  }
 
-  canvas->DrawColor(GetFrameColor());
+  SkColor frame_color = GetFrameColor();
+  canvas->DrawColor(frame_color);
+
+  if (window_title_) {
+    window_title_->SetBackgroundColor(frame_color);
+    window_title_->SetEnabledColor(
+        GetReadableFrameForegroundColor(kUseCurrent));
+  }
 
   auto* theme_service =
       ThemeServiceFactory::GetForProfile(browser_view()->browser()->profile());
@@ -242,8 +280,43 @@ void BrowserNonClientFrameViewMac::OnPaint(gfx::Canvas* canvas) {
     PaintThemedFrame(canvas);
 }
 
+void BrowserNonClientFrameViewMac::Layout() {
+  const int available_height = GetTopInset(true);
+  int leading_x = kFramePaddingLeft;
+  int trailing_x = width();
+
+  if (hosted_app_button_container()) {
+    trailing_x = hosted_app_button_container()->LayoutInContainer(
+        leading_x, trailing_x, 0, available_height);
+    window_title_->SetBoundsRect(GetCenteredTitleBounds(
+        width(), available_height, leading_x, trailing_x,
+        window_title_->CalculatePreferredSize().width()));
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewMac, private:
+
+gfx::Rect BrowserNonClientFrameViewMac::GetCenteredTitleBounds(
+    int frame_width,
+    int frame_height,
+    int left_inset_x,
+    int right_inset_x,
+    int title_width) {
+  // Center in container.
+  int title_x = (frame_width - title_width) / 2;
+
+  // Align right side to right inset if overlapping.
+  title_x = std::min(title_x, right_inset_x - title_width);
+
+  // Align left side to left inset if overlapping.
+  title_x = std::max(title_x, left_inset_x);
+
+  // Clip width to right inset if overlapping.
+  title_width = std::min(title_width, right_inset_x - title_x);
+
+  return gfx::Rect(title_x, 0, title_width, frame_height);
+}
 
 void BrowserNonClientFrameViewMac::PaintThemedFrame(gfx::Canvas* canvas) {
   gfx::ImageSkia image = GetFrameImage();
@@ -251,6 +324,11 @@ void BrowserNonClientFrameViewMac::PaintThemedFrame(gfx::Canvas* canvas) {
                        image.height());
   gfx::ImageSkia overlay = GetFrameOverlayImage();
   canvas->DrawImageInt(overlay, 0, 0);
+}
+
+SkColor BrowserNonClientFrameViewMac::GetReadableFrameForegroundColor(
+    ActiveState active_state) const {
+  return color_utils::GetThemedAssetColor(GetFrameColor(active_state));
 }
 
 CGFloat BrowserNonClientFrameViewMac::FullscreenBackingBarHeight() const {
