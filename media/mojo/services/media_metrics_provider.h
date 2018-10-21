@@ -41,6 +41,7 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
   // mojom::MediaMetricsProvider implementation:
   void Initialize(bool is_mse, mojom::MediaURLScheme url_scheme) override;
   void OnError(PipelineStatus status) override;
+  void SetIsAdMedia() override;
   void SetIsEME() override;
   void SetTimeToMetadata(base::TimeDelta elapsed) override;
   void SetTimeToFirstFrame(base::TimeDelta elapsed) override;
@@ -68,6 +69,7 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
   // These values are not always sent but have known defaults.
   PipelineStatus pipeline_status_ = PIPELINE_OK;
   bool is_eme_ = false;
+  bool is_ad_media_ = false;
 
   // The values below are only set if |initialized_| is true.
   bool initialized_ = false;
