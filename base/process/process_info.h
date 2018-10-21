@@ -12,6 +12,7 @@ namespace base {
 
 class Time;
 
+#if !defined(OS_ANDROID)
 // Vends information about the current process.
 class BASE_EXPORT CurrentProcessInfo {
  public:
@@ -19,6 +20,7 @@ class BASE_EXPORT CurrentProcessInfo {
   // error occurred retrieving the information.
   static const Time CreationTime();
 };
+#endif  // !defined(OS_ANDROID)
 
 #if defined(OS_WIN)
 enum IntegrityLevel {

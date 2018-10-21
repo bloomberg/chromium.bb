@@ -4,14 +4,16 @@
 
 #include "base/process/process_info.h"
 
+#include "base/process/process.h"
 #include "base/time/time.h"
 
 namespace base {
 
+#if !defined(OS_ANDROID)
 // static
 const Time CurrentProcessInfo::CreationTime() {
-  // TODO(https://crbug.com/726484): There is no syscall providing this data.
-  return Time();
+  return Process::Current().CreationTime();
 }
+#endif  //! defined(OS_ANDROID)
 
 }  // namespace base
