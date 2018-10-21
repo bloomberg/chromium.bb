@@ -55,7 +55,7 @@ CSSInterpolationTypesMap::CSSInterpolationTypesMap(
     const Document& document)
     : registry_(registry) {
   allow_all_animations_ = document.IsFeatureEnabled(
-      blink::mojom::FeaturePolicyFeature::kAnimations);
+      blink::mojom::FeaturePolicyFeature::kLayoutAnimations);
 }
 
 static const PropertyRegistration* GetRegistration(
@@ -112,14 +112,14 @@ const InterpolationTypes& CSSInterpolationTypesMap::Get(
       property.IsCSSProperty() ? property : PropertyHandle(css_property);
   // TODO(crbug.com/838263): Support site-defined list of acceptable properties
   // through feature policy declarations.
-  bool is_compositor_animatable_property =
-      (css_property.IDEquals(CSSPropertyFilter) ||
-       css_property.IDEquals(CSSPropertyOpacity) ||
-       css_property.IDEquals(CSSPropertyRotate) ||
-       css_property.IDEquals(CSSPropertyScale) ||
-       css_property.IDEquals(CSSPropertyTransform) ||
-       css_property.IDEquals(CSSPropertyTranslate));
-  if (allow_all_animations_ || is_compositor_animatable_property) {
+  bool property_maybe_blocked_by_feature_policy =
+      css_property.IDEquals(CSSPropertyBottom) ||
+      css_property.IDEquals(CSSPropertyHeight) ||
+      css_property.IDEquals(CSSPropertyLeft) ||
+      css_property.IDEquals(CSSPropertyRight) ||
+      css_property.IDEquals(CSSPropertyTop) ||
+      css_property.IDEquals(CSSPropertyWidth);
+  if (allow_all_animations_ || !property_maybe_blocked_by_feature_policy) {
     switch (css_property.PropertyID()) {
       case CSSPropertyBaselineShift:
       case CSSPropertyBorderBottomWidth:

@@ -4,9 +4,9 @@
 // found in the LICENSE file.
 
 // This test ensures that non-composited animations are not interpolated when
-// the 'animations' feature is disabled.
+// the 'layout-animations' feature is disabled.
 
-Header("Feature-Policy: animations 'none'");
+Header("Feature-Policy: layout-animations 'none'");
 ?>
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
