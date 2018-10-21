@@ -155,7 +155,13 @@ void FileDefinitionListConverter::ConvertNextIterator(
       extensions::Extension::GetBaseURLFromExtensionId(extension_id_),
       storage::kFileSystemTypeExternal,
       iterator->virtual_path);
-  DCHECK(url.is_valid());
+
+  if (!url.is_valid()) {
+    OnIteratorConverted(
+        std::move(self_deleter), iterator,
+        CreateEntryDefinitionWithError(base::File::FILE_ERROR_NOT_FOUND));
+    return;
+  }
 
   // The converter object will be deleted if the callback is not called because
   // of shutdown during ResolveURL().
@@ -198,8 +204,14 @@ void FileDefinitionListConverter::OnResolvedURL(
 
   // Construct a target Entry.fullPath value from the virtual path and the
   // root URL. Eg. Downloads/A/b.txt -> A/b.txt.
-  const base::FilePath root_virtual_path =
-      file_system_context_->CrackURL(info.root_url).virtual_path();
+  storage::FileSystemURL fs_url = file_system_context_->CrackURL(info.root_url);
+  if (!fs_url.is_valid()) {
+    OnIteratorConverted(
+        std::move(self_deleter), iterator,
+        CreateEntryDefinitionWithError(base::File::FILE_ERROR_NOT_FOUND));
+    return;
+  }
+  const base::FilePath root_virtual_path = fs_url.virtual_path();
   DCHECK(root_virtual_path == iterator->virtual_path ||
          root_virtual_path.IsParent(iterator->virtual_path));
   base::FilePath full_path;
