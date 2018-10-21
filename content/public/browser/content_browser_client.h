@@ -28,6 +28,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/media_stream_request.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/renderer_preference_watcher.mojom.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/socket_permission_request.h"
@@ -1362,6 +1363,25 @@ class CONTENT_EXPORT ContentBrowserClient {
       int32_t network_traffic_annotation_id_hash,
       int64_t recv_bytes,
       int64_t sent_bytes);
+
+  // Asks the embedder for the PreviewsState which says which previews should
+  // be enabled for the given navigation. The PreviewsState is a bitmask of
+  // potentially several Previews optimizations. It is only called for requests
+  // with an unspecified Previews state.  If previews_to_allow is set to
+  // anything other than PREVIEWS_UNSPECIFIED, it is taken as a limit on
+  // available preview states.
+  virtual content::PreviewsState DetermineAllowedPreviews(
+      content::PreviewsState initial_state,
+      content::NavigationHandle* navigation_handle);
+
+  // Asks the embedder for the preview state that should be committed to the
+  // renderer. |initial_state| was pre-determined by |DetermineAllowedPreviews|.
+  // |navigation_handle| is the corresponding navigation object.
+  // |response_headers| are the response headers related to this navigation.
+  virtual content::PreviewsState DetermineCommittedPreviews(
+      content::PreviewsState initial_state,
+      content::NavigationHandle* navigation_handle,
+      const net::HttpResponseHeaders* response_headers);
 };
 
 }  // namespace content

@@ -22,6 +22,7 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_types.h"
@@ -29,6 +30,7 @@
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -36,6 +38,7 @@
 #include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
 #include "content/shell/browser/shell_network_delegate.h"
 #include "content/test/content_browser_test_utils_internal.h"
@@ -1214,6 +1217,130 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   // 3) Check the first pending navigation has been canceled.
   navigation.WaitForNavigationFinished();  // Resume navigation.
   EXPECT_FALSE(navigation.was_successful());
+}
+
+namespace {
+
+// Checks whether the given urls are requested, and that GetPreviewsState()
+// returns the appropriate value when the Previews are set.
+class PreviewsStateContentBrowserClient : public ContentBrowserClient {
+ public:
+  PreviewsStateContentBrowserClient(const GURL& main_frame_url)
+      : main_frame_url_(main_frame_url),
+        main_frame_url_seen_(false),
+        previews_state_(PREVIEWS_OFF),
+        determine_allowed_previews_called_(false),
+        determine_committed_previews_called_(false) {}
+
+  ~PreviewsStateContentBrowserClient() override {}
+
+  content::PreviewsState DetermineAllowedPreviews(
+      content::PreviewsState initial_state,
+      content::NavigationHandle* navigation_handle) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+    EXPECT_FALSE(determine_allowed_previews_called_);
+    determine_allowed_previews_called_ = true;
+    main_frame_url_seen_ = true;
+    EXPECT_EQ(main_frame_url_, navigation_handle->GetURL());
+    return previews_state_;
+  }
+
+  content::PreviewsState DetermineCommittedPreviews(
+      content::PreviewsState initial_state,
+      content::NavigationHandle* navigation_handle,
+      const net::HttpResponseHeaders* response_headers) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    EXPECT_EQ(previews_state_, initial_state);
+    determine_committed_previews_called_ = true;
+    return initial_state;
+  }
+
+  void SetClient() {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    content::SetBrowserClientForTesting(this);
+  }
+
+  void Reset(PreviewsState previews_state) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    main_frame_url_seen_ = false;
+    previews_state_ = previews_state;
+    determine_allowed_previews_called_ = false;
+  }
+
+  void CheckResourcesRequested() {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    EXPECT_TRUE(determine_allowed_previews_called_);
+    EXPECT_TRUE(determine_committed_previews_called_);
+    EXPECT_TRUE(main_frame_url_seen_);
+  }
+
+ private:
+  const GURL main_frame_url_;
+
+  bool main_frame_url_seen_;
+  PreviewsState previews_state_;
+  bool determine_allowed_previews_called_;
+  bool determine_committed_previews_called_;
+
+  DISALLOW_COPY_AND_ASSIGN(PreviewsStateContentBrowserClient);
+};
+
+}  // namespace
+
+class PreviewsStateBrowserTest : public ContentBrowserTest {
+ public:
+  ~PreviewsStateBrowserTest() override {}
+
+ protected:
+  void SetUpOnMainThread() override {
+    ContentBrowserTest::SetUpOnMainThread();
+
+    ASSERT_TRUE(embedded_test_server()->Start());
+
+    client_.reset(new PreviewsStateContentBrowserClient(
+        embedded_test_server()->GetURL("/title1.html")));
+
+    client_->SetClient();
+  }
+
+  void Reset(PreviewsState previews_state) { client_->Reset(previews_state); }
+
+  void CheckResourcesRequested() { client_->CheckResourcesRequested(); }
+
+ private:
+  std::unique_ptr<PreviewsStateContentBrowserClient> client_;
+};
+
+// Test that navigating calls GetPreviewsState with SERVER_LOFI_ON.
+IN_PROC_BROWSER_TEST_F(PreviewsStateBrowserTest, ShouldEnableLoFiModeOn) {
+  // Navigate with LoFi on.
+  Reset(SERVER_LOFI_ON);
+  NavigateToURLBlockUntilNavigationsComplete(
+      shell(), embedded_test_server()->GetURL("/title1.html"), 1);
+  CheckResourcesRequested();
+}
+
+// Test that navigating calls GetPreviewsState returning PREVIEWS_OFF.
+IN_PROC_BROWSER_TEST_F(PreviewsStateBrowserTest, ShouldEnableLoFiModeOff) {
+  // Navigate with No Previews.
+  NavigateToURLBlockUntilNavigationsComplete(
+      shell(), embedded_test_server()->GetURL("/title1.html"), 1);
+  CheckResourcesRequested();
+}
+
+// Test that reloading calls GetPreviewsState again and changes the Previews
+// state.
+IN_PROC_BROWSER_TEST_F(PreviewsStateBrowserTest, ShouldEnableLoFiModeReload) {
+  // Navigate with GetPreviewsState returning PREVIEWS_OFF.
+  NavigateToURLBlockUntilNavigationsComplete(
+      shell(), embedded_test_server()->GetURL("/title1.html"), 1);
+  CheckResourcesRequested();
+
+  // Reload. GetPreviewsState should be called.
+  Reset(SERVER_LOFI_ON);
+  ReloadBlockUntilNavigationsComplete(shell(), 1);
+  CheckResourcesRequested();
 }
 
 }  // namespace content
