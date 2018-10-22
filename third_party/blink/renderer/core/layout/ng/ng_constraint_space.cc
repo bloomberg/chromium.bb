@@ -22,10 +22,6 @@ NGConstraintSpace::NGConstraintSpace(WritingMode out_writing_mode,
       percentage_resolution_size_(builder.percentage_resolution_size_),
       replaced_percentage_resolution_size_(
           builder.replaced_percentage_resolution_size_),
-      parent_percentage_resolution_inline_size_(
-          builder.parent_percentage_resolution_size_
-              .value_or(percentage_resolution_size_)
-              .inline_size),
       initial_containing_block_size_(builder.initial_containing_block_size_),
       fragmentainer_block_size_(builder.fragmentainer_block_size_),
       fragmentainer_space_at_bfc_start_(
@@ -56,10 +52,6 @@ NGConstraintSpace::NGConstraintSpace(WritingMode out_writing_mode,
     available_size_.Flip();
     percentage_resolution_size_.Flip();
     replaced_percentage_resolution_size_.Flip();
-    parent_percentage_resolution_inline_size_ =
-        builder.parent_percentage_resolution_size_
-            .value_or(percentage_resolution_size_)
-            .block_size;
     // Swap the fixed size block/inline flags
     bool fixed_size_block = flags_ & kFixedSizeBlock;
     bool fixed_size_inline = flags_ & kFixedSizeInline;
@@ -241,20 +233,11 @@ NGConstraintSpace::PercentageResolutionInlineSizeForParentWritingMode() const {
   return InitialContainingBlockSize().width;
 }
 
-LayoutUnit NGConstraintSpace::ParentPercentageResolutionInlineSize() const {
-  if (parent_percentage_resolution_inline_size_ != NGSizeIndefinite)
-    return parent_percentage_resolution_inline_size_;
-  return initial_containing_block_size_.ConvertToLogical(GetWritingMode())
-      .inline_size;
-}
-
 bool NGConstraintSpace::operator==(const NGConstraintSpace& other) const {
   return available_size_ == other.available_size_ &&
          percentage_resolution_size_ == other.percentage_resolution_size_ &&
          replaced_percentage_resolution_size_ ==
              other.replaced_percentage_resolution_size_ &&
-         parent_percentage_resolution_inline_size_ ==
-             other.parent_percentage_resolution_inline_size_ &&
          initial_containing_block_size_ ==
              other.initial_containing_block_size_ &&
          fragmentainer_block_size_ == other.fragmentainer_block_size_ &&

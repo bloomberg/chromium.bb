@@ -107,10 +107,6 @@ class CORE_EXPORT NGConstraintSpace final {
   // writing mode.
   LayoutUnit PercentageResolutionInlineSizeForParentWritingMode() const;
 
-  // Parent's PercentageResolutionInlineSize().
-  // This is not always available.
-  LayoutUnit ParentPercentageResolutionInlineSize() const;
-
   // The available space size.
   // See: https://drafts.csswg.org/css-sizing/#available
   NGLogicalSize AvailableSize() const { return available_size_; }
@@ -302,7 +298,6 @@ class CORE_EXPORT NGConstraintSpace final {
   NGLogicalSize available_size_;
   NGLogicalSize percentage_resolution_size_;
   NGLogicalSize replaced_percentage_resolution_size_;
-  LayoutUnit parent_percentage_resolution_inline_size_;
   NGPhysicalSize initial_containing_block_size_;
 
   LayoutUnit fragmentainer_block_size_;
