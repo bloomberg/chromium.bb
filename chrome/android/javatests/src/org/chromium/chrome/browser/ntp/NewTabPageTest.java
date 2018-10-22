@@ -42,11 +42,13 @@ import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.feed.FeedNewTabPage;
+import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
+import org.chromium.chrome.browser.feed.TestNetworkClient;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
@@ -121,6 +123,8 @@ public class NewTabPageTest {
     }
 
     private static final String TEST_PAGE = "/chrome/test/data/android/navigate/simple.html";
+    private static final String TEST_FEED =
+            UrlUtils.getIsolatedTestFilePath("/chrome/test/data/android/feed/hello_world.gcl.bin");
 
     private boolean mInterestFeedEnabled;
     private Tab mTab;
@@ -143,10 +147,12 @@ public class NewTabPageTest {
 
     @Before
     public void setUp() throws Exception {
-        mActivityTestRule.startMainActivityWithURL("about:blank");
         if (mInterestFeedEnabled) {
-            ThreadUtils.runOnUiThreadBlocking(() -> FeedNewTabPage.setInTestMode(true));
+            TestNetworkClient client = new TestNetworkClient();
+            client.setNetworkResponseFile(TEST_FEED);
+            FeedProcessScopeFactory.setTestNetworkClient(client);
         }
+        mActivityTestRule.startMainActivityWithURL("about:blank");
 
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
 
@@ -170,7 +176,7 @@ public class NewTabPageTest {
     public void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
         if (mInterestFeedEnabled) {
-            ThreadUtils.runOnUiThreadBlocking(() -> FeedNewTabPage.setInTestMode(false));
+            FeedProcessScopeFactory.setTestNetworkClient(null);
         }
     }
 

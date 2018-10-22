@@ -16,4 +16,6 @@ public class FeedProcessScopeFactory {
     public static FeedAppLifecycle getFeedAppLifecycle() {
         return new FeedAppLifecycle();
     }
+
+    static public void setTestNetworkClient(TestNetworkClient client) {}
 }

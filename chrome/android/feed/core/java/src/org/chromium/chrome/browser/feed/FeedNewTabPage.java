@@ -18,7 +18,6 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ScrollView;
 
-import com.google.android.libraries.feed.api.common.ThreadUtils;
 import com.google.android.libraries.feed.api.scope.FeedProcessScope;
 import com.google.android.libraries.feed.api.scope.FeedStreamScope;
 import com.google.android.libraries.feed.api.stream.Header;
@@ -416,30 +415,6 @@ public class FeedNewTabPage extends NewTabPage {
                                   new NonDismissibleHeader(mSectionHeaderView))
                         : Arrays.asList(new NonDismissibleHeader(mNewTabPageLayout),
                                   new NonDismissibleHeader(mSectionHeaderView)));
-    }
-
-    /**
-     * Configures the {@link FeedNewTabPage} for testing.
-     * @param inTestMode Whether test mode is enabled. If true, test implementations of Feed
-     *                   interfaces will be used to create the {@link FeedProcessScope}. If false,
-     *                   the FeedProcessScope will be reset.
-     */
-    @VisibleForTesting
-    public static void setInTestMode(boolean inTestMode) {
-        if (inTestMode) {
-            FeedScheduler feedScheduler = new TestFeedScheduler();
-            FeedAppLifecycleListener lifecycleListener =
-                    new FeedAppLifecycleListener(new ThreadUtils());
-            Profile profile = Profile.getLastUsedProfile().getOriginalProfile();
-            FeedAppLifecycle feedAppLifecycle = new FeedAppLifecycle(
-                    lifecycleListener, new FeedLifecycleBridge(profile), feedScheduler);
-            FeedLoggingBridge loggingBridge = new FeedLoggingBridge(profile);
-            FeedProcessScopeFactory.createFeedProcessScopeForTesting(feedScheduler,
-                    new TestNetworkClient(), new TestFeedOfflineIndicator(), feedAppLifecycle,
-                    lifecycleListener, loggingBridge);
-        } else {
-            FeedProcessScopeFactory.clearFeedProcessScopeForTesting();
-        }
     }
 
     @VisibleForTesting
