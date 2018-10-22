@@ -113,7 +113,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   scoped_refptr<NGLayoutResult> CloneWithoutOffset() const;
 
  private:
-  friend class NGFragmentBuilder;
+  friend class NGBoxFragmentBuilder;
   friend class NGLineBoxFragmentBuilder;
 
   NGLayoutResult(scoped_refptr<const NGPhysicalFragment> physical_fragment,

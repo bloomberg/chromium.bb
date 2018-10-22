@@ -162,7 +162,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
 
  protected:
   // An out-of-flow positioned-candidate is a temporary data structure used
-  // within the NGFragmentBuilder.
+  // within the NGBoxFragmentBuilder.
   //
   // A positioned-candidate can be:
   // 1. A direct out-of-flow positioned child. The child_offset is (0,0).
@@ -173,7 +173,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
   // cannot be computed until we know the current fragment's size.
   //
   // When returning the positioned-candidates (from
-  // GetAndClearOutOfFlowDescendantCandidates), the NGFragmentBuilder will
+  // GetAndClearOutOfFlowDescendantCandidates), the NGBoxFragmentBuilder will
   // convert the positioned-candidate to a positioned-descendant using the
   // physical size the fragment builder.
   struct NGOutOfFlowPositionedCandidate {

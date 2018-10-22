@@ -10,9 +10,9 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_absolute_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_positioned_descendant.h"
@@ -22,7 +22,7 @@
 namespace blink {
 
 NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
-    NGFragmentBuilder* container_builder,
+    NGBoxFragmentBuilder* container_builder,
     bool contains_absolute,
     bool contains_fixed,
     const NGBoxStrut& borders_and_scrollers,
@@ -94,13 +94,13 @@ NGOutOfFlowLayoutPart::GetContainingBlockInfo(
 
 void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
     Vector<NGOutOfFlowPositionedDescendant> descendants) {
-  HashMap<const LayoutObject*, NGFragmentBuilder::FragmentPair>
+  HashMap<const LayoutObject*, NGBoxFragmentBuilder::FragmentPair>
       inline_container_fragments;
 
   for (auto& descendant : descendants) {
     if (descendant.inline_container &&
         !inline_container_fragments.Contains(descendant.inline_container)) {
-      NGFragmentBuilder::FragmentPair fragment_pair = {};
+      NGBoxFragmentBuilder::FragmentPair fragment_pair = {};
       inline_container_fragments.insert(descendant.inline_container,
                                         fragment_pair);
     }

@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment_builder.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
@@ -494,8 +494,8 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
   const ComputedStyle& style = *item->Style();
   // Because children are already in the visual order, use LTR for the
   // fragment builder so that it should not transform the coordinates for RTL.
-  NGFragmentBuilder box(item->GetLayoutObject(), &style, style.GetWritingMode(),
-                        TextDirection::kLtr);
+  NGBoxFragmentBuilder box(item->GetLayoutObject(), &style,
+                           style.GetWritingMode(), TextDirection::kLtr);
   box.SetBoxType(NGPhysicalFragment::kInlineBox);
   box.SetStyleVariant(item->StyleVariant());
 
