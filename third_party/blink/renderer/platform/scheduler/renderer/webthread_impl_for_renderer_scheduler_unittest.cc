@@ -16,7 +16,9 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/testing/scoped_scheduler_overrider.h"
 
 namespace blink {
 namespace scheduler {
@@ -46,7 +48,9 @@ class WebThreadImplForRendererSchedulerTest : public testing::Test {
         base::sequence_manager::SequenceManagerForTest::Create(
             &message_loop_, message_loop_.task_runner(), &clock_),
         base::nullopt));
-    thread_ = scheduler_->CreateMainThread();
+    scheduler_overrider_ =
+        std::make_unique<ScopedSchedulerOverrider>(scheduler_.get());
+    thread_ = Thread::Current();
   }
 
   ~WebThreadImplForRendererSchedulerTest() override = default;
@@ -62,7 +66,8 @@ class WebThreadImplForRendererSchedulerTest : public testing::Test {
   base::MessageLoop message_loop_;
   base::SimpleTestTickClock clock_;
   std::unique_ptr<MainThreadSchedulerImpl> scheduler_;
-  std::unique_ptr<Thread> thread_;
+  std::unique_ptr<ScopedSchedulerOverrider> scheduler_overrider_;
+  Thread* thread_;
 
   DISALLOW_COPY_AND_ASSIGN(WebThreadImplForRendererSchedulerTest);
 };
@@ -193,7 +198,7 @@ TEST_F(WebThreadImplForRendererSchedulerTest, TestNestedRunLoop) {
 
   message_loop_.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&EnterRunLoop, base::Unretained(&message_loop_),
-                                base::Unretained(thread_.get())));
+                                base::Unretained(thread_)));
   base::RunLoop().RunUntilIdle();
   thread_->RemoveTaskObserver(&observer);
 }

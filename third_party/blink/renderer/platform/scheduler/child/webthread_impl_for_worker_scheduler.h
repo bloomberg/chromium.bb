@@ -10,8 +10,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/threading/thread.h"
-#include "third_party/blink/public/platform/scheduler/child/webthread_base.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 
 namespace base {
 class WaitableEvent;
@@ -29,19 +29,17 @@ class NonMainThreadTaskQueue;
 class WorkerSchedulerProxy;
 
 class PLATFORM_EXPORT WebThreadImplForWorkerScheduler
-    : public WebThreadBase,
+    : public Thread,
       public base::MessageLoopCurrent::DestructionObserver {
  public:
   explicit WebThreadImplForWorkerScheduler(const ThreadCreationParams& params);
   ~WebThreadImplForWorkerScheduler() override;
 
   // Thread implementation.
+  void Init() override;
   ThreadScheduler* Scheduler() override;
   PlatformThreadId ThreadId() const override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const override;
-
-  // WebThreadBase implementation.
-  void Init() override;
 
   // base::MessageLoopCurrent::DestructionObserver implementation.
   void WillDestroyCurrentMessageLoop() override;
@@ -64,11 +62,6 @@ class PLATFORM_EXPORT WebThreadImplForWorkerScheduler
   scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner_;
 
  private:
-  void AddTaskObserverInternal(
-      base::MessageLoop::TaskObserver* observer) override;
-  void RemoveTaskObserverInternal(
-      base::MessageLoop::TaskObserver* observer) override;
-
   void InitOnThread(base::WaitableEvent* completion);
   void ShutdownOnThread(base::WaitableEvent* completion);
 

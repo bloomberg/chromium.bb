@@ -105,15 +105,5 @@ WebThreadImplForWorkerScheduler::GetTaskRunner() const {
   return task_runner_;
 }
 
-void WebThreadImplForWorkerScheduler::AddTaskObserverInternal(
-    base::MessageLoop::TaskObserver* observer) {
-  non_main_thread_scheduler_->AddTaskObserver(observer);
-}
-
-void WebThreadImplForWorkerScheduler::RemoveTaskObserverInternal(
-    base::MessageLoop::TaskObserver* observer) {
-  non_main_thread_scheduler_->RemoveTaskObserver(observer);
-}
-
 }  // namespace scheduler
 }  // namespace blink

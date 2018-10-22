@@ -27,10 +27,12 @@
 
 #include <stdint.h>
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/threading/thread.h"
 #include "third_party/blink/public/platform/web_thread_type.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -76,6 +78,7 @@ class PLATFORM_EXPORT Thread {
   // An IdleTask is expected to complete before the deadline it is passed.
   using IdleTask = base::OnceCallback<void(base::TimeTicks deadline)>;
 
+  // TODO(yutak): Migrate to base::MessageLoop::TaskObserver.
   class PLATFORM_EXPORT TaskObserver {
    public:
     virtual ~TaskObserver() = default;
@@ -105,6 +108,12 @@ class PLATFORM_EXPORT Thread {
   // null if the renderer was created with threaded rendering disabled.
   static Thread* CompositorThread();
 
+  Thread();
+  virtual ~Thread();
+
+  // Must be called immediately after the construction.
+  virtual void Init() {}
+
   // DEPRECATED: Returns a task runner bound to the underlying scheduler's
   // default task queue.
   //
@@ -115,16 +124,16 @@ class PLATFORM_EXPORT Thread {
     return nullptr;
   }
 
-  virtual bool IsCurrentThread() const = 0;
+  bool IsCurrentThread() const;
   virtual PlatformThreadId ThreadId() const { return 0; }
 
   // TaskObserver is an object that receives task notifications from the
-  // MessageLoop
+  // MessageLoop.
   // NOTE: TaskObserver implementation should be extremely fast!
   // This API is performance sensitive. Use only if you have a compelling
   // reason.
-  virtual void AddTaskObserver(TaskObserver*) {}
-  virtual void RemoveTaskObserver(TaskObserver*) {}
+  void AddTaskObserver(TaskObserver*);
+  void RemoveTaskObserver(TaskObserver*);
 
   // TaskTimeObserver is an object that receives notifications for
   // CPU time spent in each top-level MessageLoop task.
@@ -138,9 +147,21 @@ class PLATFORM_EXPORT Thread {
   // Returns the scheduler associated with the thread.
   virtual ThreadScheduler* Scheduler() = 0;
 
-  virtual ~Thread() = default;
-
  private:
+  class TaskObserverAdapter : public base::MessageLoop::TaskObserver {
+   public:
+    explicit TaskObserverAdapter(Thread::TaskObserver*);
+    ~TaskObserverAdapter() override = default;
+    void WillProcessTask(const base::PendingTask&) override;
+    void DidProcessTask(const base::PendingTask&) override;
+
+   private:
+    Thread::TaskObserver* task_observer_;
+  };
+
+  using TaskObserverMap =
+      WTF::HashMap<TaskObserver*, std::unique_ptr<TaskObserverAdapter>>;
+
   // For Platform and ScopedMainThreadOverrider. Return the thread object
   // previously set (if any).
   //
@@ -151,6 +172,10 @@ class PLATFORM_EXPORT Thread {
   // This is used to identify the actual Thread instance. This should be
   // used only in Platform, and other users should ignore this.
   virtual bool IsSimpleMainThread() const { return false; }
+
+  TaskObserverMap task_observer_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(Thread);
 };
 
 }  // namespace blink

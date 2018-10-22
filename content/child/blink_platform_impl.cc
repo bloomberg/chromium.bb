@@ -41,7 +41,6 @@
 #include "content/public/common/service_names.mojom.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/cpp/features.h"
-#include "third_party/blink/public/platform/scheduler/child/webthread_base.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_security_origin.h"

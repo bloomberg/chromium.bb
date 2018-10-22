@@ -8,8 +8,9 @@
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/scheduler/child/webthread_base.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/scheduler/child/webthread_impl_for_worker_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/compositor_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -61,6 +62,25 @@ std::unique_ptr<Thread>& GetCompositorThread() {
   return compositor_thread;
 }
 
+// TODO(yutak): This should live in a separate header.
+class WebThreadForCompositor
+    : public scheduler::WebThreadImplForWorkerScheduler {
+ public:
+  explicit WebThreadForCompositor(const ThreadCreationParams& params)
+      : scheduler::WebThreadImplForWorkerScheduler(params) {}
+  ~WebThreadForCompositor() override = default;
+
+ private:
+  // WebThreadImplForWorkerScheduler:
+  std::unique_ptr<blink::scheduler::NonMainThreadSchedulerImpl>
+  CreateNonMainThreadScheduler() override {
+    return std::make_unique<scheduler::CompositorThreadScheduler>(
+        base::sequence_manager::CreateSequenceManagerOnCurrentThread());
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(WebThreadForCompositor);
+};
+
 }  // namespace
 
 ThreadCreationParams::ThreadCreationParams(WebThreadType thread_type)
@@ -80,10 +100,24 @@ ThreadCreationParams& ThreadCreationParams::SetFrameOrWorkerScheduler(
   return *this;
 }
 
+Thread::TaskObserverAdapter::TaskObserverAdapter(
+    Thread::TaskObserver* task_observer)
+    : task_observer_(task_observer) {}
+
+void Thread::TaskObserverAdapter::WillProcessTask(
+    const base::PendingTask& pending_task) {
+  task_observer_->WillProcessTask();
+}
+
+void Thread::TaskObserverAdapter::DidProcessTask(
+    const base::PendingTask& pending_task) {
+  task_observer_->DidProcessTask();
+}
+
 std::unique_ptr<Thread> Thread::CreateThread(
     const ThreadCreationParams& params) {
-  std::unique_ptr<scheduler::WebThreadBase> thread =
-      scheduler::WebThreadBase::CreateWorkerThread(params);
+  auto thread =
+      std::make_unique<scheduler::WebThreadImplForWorkerScheduler>(params);
   thread->Init();
   UpdateThreadTLSAndWait(thread.get());
   return std::move(thread);
@@ -105,8 +139,7 @@ void Thread::CreateAndSetCompositorThread() {
 #if defined(OS_ANDROID)
   params.thread_options.priority = base::ThreadPriority::DISPLAY;
 #endif
-  std::unique_ptr<scheduler::WebThreadBase> compositor_thread =
-      scheduler::WebThreadBase::CreateCompositorThread(params);
+  auto compositor_thread = std::make_unique<WebThreadForCompositor>(params);
   compositor_thread->Init();
   UpdateThreadTLSAndWait(compositor_thread.get());
   GetCompositorThread() = std::move(compositor_thread);
@@ -131,6 +164,35 @@ std::unique_ptr<Thread> Thread::SetMainThread(
   ThreadTLSSlot() = main_thread.get();
   std::swap(GetMainThread(), main_thread);
   return main_thread;
+}
+
+Thread::Thread() = default;
+
+Thread::~Thread() {
+  DCHECK(task_observer_map_.IsEmpty());
+}
+
+bool Thread::IsCurrentThread() const {
+  return ThreadTLSSlot() == this;
+}
+
+void Thread::AddTaskObserver(TaskObserver* task_observer) {
+  CHECK(IsCurrentThread());
+  auto add_result = task_observer_map_.insert(task_observer, nullptr);
+  if (!add_result.stored_value->value) {
+    add_result.stored_value->value =
+        std::make_unique<TaskObserverAdapter>(task_observer);
+  }
+  Scheduler()->AddTaskObserver(add_result.stored_value->value.get());
+}
+
+void Thread::RemoveTaskObserver(TaskObserver* task_observer) {
+  CHECK(IsCurrentThread());
+  auto iterator = task_observer_map_.find(task_observer);
+  if (iterator == task_observer_map_.end())
+    return;
+  Scheduler()->RemoveTaskObserver(iterator->value.get());
+  task_observer_map_.erase(iterator);
 }
 
 #if defined(OS_WIN)

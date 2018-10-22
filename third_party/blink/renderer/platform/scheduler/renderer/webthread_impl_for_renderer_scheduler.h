@@ -8,8 +8,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "third_party/blink/public/platform/scheduler/child/webthread_base.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 
 namespace blink {
 class ThreadScheduler;
@@ -19,31 +19,23 @@ namespace blink {
 namespace scheduler {
 class MainThreadSchedulerImpl;
 
-class PLATFORM_EXPORT WebThreadImplForRendererScheduler : public WebThreadBase {
+class PLATFORM_EXPORT WebThreadImplForRendererScheduler : public Thread {
  public:
   explicit WebThreadImplForRendererScheduler(
       MainThreadSchedulerImpl* scheduler);
   ~WebThreadImplForRendererScheduler() override;
 
-  // WebThread implementation.
+  // Thread implementation.
+  void Init() override;
   ThreadScheduler* Scheduler() override;
   PlatformThreadId ThreadId() const override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const override;
 
-  // WebThreadBase implementation.
-  void Init() override;
+  void AddTaskTimeObserver(base::sequence_manager::TaskTimeObserver*) override;
+  void RemoveTaskTimeObserver(
+      base::sequence_manager::TaskTimeObserver*) override;
 
  private:
-  void AddTaskObserverInternal(
-      base::MessageLoop::TaskObserver* observer) override;
-  void RemoveTaskObserverInternal(
-      base::MessageLoop::TaskObserver* observer) override;
-
-  void AddTaskTimeObserverInternal(
-      base::sequence_manager::TaskTimeObserver*) override;
-  void RemoveTaskTimeObserverInternal(
-      base::sequence_manager::TaskTimeObserver*) override;
-
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   MainThreadSchedulerImpl* scheduler_;  // Not owned.
   PlatformThreadId thread_id_;

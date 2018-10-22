@@ -178,7 +178,6 @@ source_set("blink_headers") {
     "platform/modules/webmidi/web_midi_accessor_client.h",
     "platform/platform.h",
     "platform/pointer_properties.h",
-    "platform/scheduler/child/webthread_base.h",
     "platform/scheduler/renderer_process_type.h",
     "platform/scheduler/single_thread_idle_task_runner.h",
     "platform/scheduler/web_rail_mode_observer.h",

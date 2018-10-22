@@ -16,10 +16,6 @@ class ThreadWithCustomScheduler : public Thread {
       : scheduler_(scheduler) {}
   ~ThreadWithCustomScheduler() override {}
 
-  bool IsCurrentThread() const override {
-    DCHECK(WTF::IsMainThread());
-    return true;
-  }
   ThreadScheduler* Scheduler() override { return scheduler_; }
 
  private:
