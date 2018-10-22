@@ -277,7 +277,9 @@ public class ModuleLoader {
                 crashKeys.set(CrashKeyIndex.LOADED_DYNAMIC_MODULE, mModuleId);
                 crashKeys.set(CrashKeyIndex.ACTIVE_DYNAMIC_MODULE, mModuleId);
 
+                long entryPointInitStartTime = ModuleMetrics.now();
                 entryPoint.init(moduleHost);
+                ModuleMetrics.recordEntryPointInitTime(entryPointInitStartTime);
                 ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.SUCCESS_NEW);
                 mModuleEntryPoint = entryPoint;
                 mModuleUnusedTimeMs = ModuleMetrics.now();

@@ -131,4 +131,10 @@ public final class ModuleMetrics {
                 "CustomTabs.DynamicModule.EntryPointNewInstanceTime", now() - startTime,
                 TimeUnit.MILLISECONDS);
     }
+
+    public static void recordEntryPointInitTime(long startTime) {
+        RecordHistogram.recordMediumTimesHistogram(
+                "CustomTabs.DynamicModule.EntryPointInitTime", now() - startTime,
+                TimeUnit.MILLISECONDS);
+    }
 }
