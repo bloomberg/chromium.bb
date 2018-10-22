@@ -72,7 +72,7 @@ class TabGridCoordinatorTest : public BlockCleanupTest {
   }
 
  protected:
-  // The MainPresentingViewController that is under test.  The test fixture sets
+  // The TabGridCoordinator that is under test.  The test fixture sets
   // this VC as the root VC for the window.
   TabGridCoordinator* coordinator_;
 

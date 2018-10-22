@@ -325,7 +325,7 @@ enum class ShowTabSwitcherSnapshotResult {
   // Coordinator to display the Google services settings.
   GoogleServicesNavigationCoordinator* _googleServicesNavigationCoordinator;
 
-  // TabSwitcher object -- the stack view, tablet switcher, etc.
+  // TabSwitcher object -- the tab grid.
   id<TabSwitcher> _tabSwitcher;
 
   // YES while animating the dismissal of tab switcher.
@@ -424,8 +424,6 @@ enum class ShowTabSwitcherSnapshotResult {
 - (void)showTabSwitcher;
 // Starts a voice search on the current BVC.
 - (void)startVoiceSearchInCurrentBVC;
-// Dismisses the tab switcher UI without animation into the given model.
-- (void)dismissTabSwitcherWithoutAnimationInModel:(TabModel*)tabModel;
 // Dismisses |signinInteractionCoordinator|.
 - (void)dismissSigninInteractionCoordinator;
 // Called when the last incognito tab was closed.
@@ -1295,8 +1293,12 @@ enum class ShowTabSwitcherSnapshotResult {
     tabModel = mainTabModel;
     self.currentBVC = self.mainBVC;
   }
-  if (_tabSwitcherIsActive)
-    [self dismissTabSwitcherWithoutAnimationInModel:self.mainTabModel];
+  if (_tabSwitcherIsActive) {
+    DCHECK(!_dismissingTabSwitcher);
+    [self beginDismissingTabSwitcherWithCurrentModel:self.mainTabModel
+                                        focusOmnibox:NO];
+    [self finishDismissingTabSwitcher];
+  }
   if (firstRun || [self shouldOpenNTPTabOnActivationOfTabModel:tabModel]) {
     OpenNewTabCommand* command = [OpenNewTabCommand
         commandWithIncognito:(self.currentBVC == self.otrBVC)];
@@ -2050,19 +2052,6 @@ enum class ShowTabSwitcherSnapshotResult {
   return YES;
 }
 
-- (void)dismissTabSwitcherWithoutAnimationInModel:(TabModel*)tabModel {
-  DCHECK(_tabSwitcherIsActive);
-  DCHECK(!_dismissingTabSwitcher);
-  if ([_tabSwitcher respondsToSelector:@selector
-                    (tabSwitcherDismissWithModel:animated:)]) {
-    [self dismissModalDialogsWithCompletion:nil dismissOmnibox:YES];
-    [_tabSwitcher tabSwitcherDismissWithModel:tabModel animated:NO];
-  } else {
-    [self beginDismissingTabSwitcherWithCurrentModel:tabModel focusOmnibox:NO];
-    [self finishDismissingTabSwitcher];
-  }
-}
-
 #pragma mark - TabSwitcherDelegate
 
 - (void)tabSwitcher:(id<TabSwitcher>)tabSwitcher
@@ -2107,9 +2096,6 @@ enum class ShowTabSwitcherSnapshotResult {
   }
 
   _modeToDisplayOnTabSwitcherDismissal = TabSwitcherDismissalMode::NONE;
-
-  // Displaying the current BVC dismisses the tab switcher.
-  [self displayCurrentBVCAndFocusOmnibox:NO];
 
   ProceduralBlock action = [self completionBlockForTriggeringAction:
                                      self.NTPActionAfterTabSwitcherDismissal];
