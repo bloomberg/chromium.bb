@@ -10,21 +10,20 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_style_variant.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
-class ComputedStyle;
 class LayoutObject;
-class NGBreakToken;
 
 class CORE_EXPORT NGFragmentBuilder {
   STACK_ALLOCATED();
 
  public:
-  virtual ~NGFragmentBuilder();
+  virtual ~NGFragmentBuilder() {}
 
   const ComputedStyle& Style() const {
     DCHECK(style_);
@@ -34,8 +33,13 @@ class CORE_EXPORT NGFragmentBuilder {
     style_variant_ = style_variant;
     return *this;
   }
-  NGFragmentBuilder& SetStyle(scoped_refptr<const ComputedStyle>,
-                              NGStyleVariant);
+  NGFragmentBuilder& SetStyle(scoped_refptr<const ComputedStyle> style,
+                              NGStyleVariant style_variant) {
+    DCHECK(style);
+    style_ = std::move(style);
+    style_variant_ = style_variant;
+    return *this;
+  }
 
   WritingMode GetWritingMode() const { return writing_mode_; }
   TextDirection Direction() const { return direction_; }
@@ -53,10 +57,17 @@ class CORE_EXPORT NGFragmentBuilder {
   LayoutObject* GetLayoutObject() { return layout_object_; }
 
  protected:
-  NGFragmentBuilder(scoped_refptr<const ComputedStyle>,
-                    WritingMode,
-                    TextDirection);
-  NGFragmentBuilder(WritingMode, TextDirection);
+  NGFragmentBuilder(scoped_refptr<const ComputedStyle> style,
+                    WritingMode writing_mode,
+                    TextDirection direction)
+      : style_(std::move(style)),
+        writing_mode_(writing_mode),
+        direction_(direction),
+        style_variant_(NGStyleVariant::kStandard) {
+    DCHECK(style_);
+  }
+  NGFragmentBuilder(WritingMode writing_mode, TextDirection direction)
+      : writing_mode_(writing_mode), direction_(direction) {}
 
  private:
   scoped_refptr<const ComputedStyle> style_;
