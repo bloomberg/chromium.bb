@@ -89,7 +89,7 @@ class TypUnittestAdapter(common.BaseIsolatedScriptArgsAdapter):
 
 def main():
   adapter = TypUnittestAdapter()
-  adapter.run_test()
+  return adapter.run_test()
 
 # This is not really a "script test" so does not need to manually add
 # any additional compile targets.
