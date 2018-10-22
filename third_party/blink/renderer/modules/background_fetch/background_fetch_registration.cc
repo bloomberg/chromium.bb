@@ -203,25 +203,27 @@ ScriptPromise BackgroundFetchRegistration::MatchImpl(
   ScriptPromise promise = resolver->Promise();
 
   // Convert |request| to WebServiceWorkerRequest.
-  base::Optional<WebServiceWorkerRequest> request_to_match;
+  base::Optional<WebServiceWorkerRequest> optional_request;
   if (request.has_value()) {
+    WebServiceWorkerRequest request_to_match;
     if (request->IsRequest()) {
       request->GetAsRequest()->PopulateWebServiceWorkerRequest(
-          request_to_match.value());
+          request_to_match);
     } else {
       Request* new_request = Request::Create(
           script_state, request->GetAsUSVString(), exception_state);
       if (exception_state.HadException())
         return ScriptPromise();
-      new_request->PopulateWebServiceWorkerRequest(request_to_match.value());
+      new_request->PopulateWebServiceWorkerRequest(request_to_match);
     }
+    optional_request = request_to_match;
   }
 
   DCHECK(registration_);
 
   BackgroundFetchBridge::From(registration_)
       ->MatchRequests(
-          developer_id_, unique_id_, request_to_match,
+          developer_id_, unique_id_, optional_request,
           std::move(cache_query_params), match_all,
           WTF::Bind(&BackgroundFetchRegistration::DidGetMatchingRequests,
                     WrapPersistent(this), WrapPersistent(resolver), match_all));
@@ -254,6 +256,11 @@ void BackgroundFetchRegistration::DidGetMatchingRequests(
   }
 
   if (!return_all) {
+    if (settled_fetches.IsEmpty()) {
+      // Nothing was matched. Resolve with `undefined`.
+      resolver->Resolve();
+      return;
+    }
     DCHECK_EQ(settled_fetches.size(), 1u);
     DCHECK_EQ(to_return.size(), 1u);
     resolver->Resolve(to_return[0]);
