@@ -370,18 +370,15 @@ void DownloadHistory::MaybeAddToHistory(download::DownloadItem* item) {
     return;
 
   data->SetState(DownloadHistoryData::PERSISTING);
-  if (data->info() == nullptr) {
-    // Keep the info here regardless of whether the item is in progress so that,
-    // when ItemAdded() calls OnDownloadUpdated(), it can decide whether to
-    // Update the db and/or clear the info.
-    data->set_info(GetDownloadRow(item));
-  }
-
-  history_->CreateDownload(*data->info(), base::Bind(
-      &DownloadHistory::ItemAdded, weak_ptr_factory_.GetWeakPtr(),
-      download_id));
-  for (Observer& observer : observers_)
-    observer.OnDownloadStored(item, *data->info());
+  // Keep the info for in-progress download, so we can check whether history DB
+  // update is needed when DownloadUpdated() is called.
+  history::DownloadRow download_row = GetDownloadRow(item);
+  if (item->GetState() == download::DownloadItem::IN_PROGRESS)
+    data->set_info(download_row);
+  history_->CreateDownload(
+      download_row,
+      base::BindRepeating(&DownloadHistory::ItemAdded,
+                          weak_ptr_factory_.GetWeakPtr(), download_id));
 }
 
 void DownloadHistory::ItemAdded(uint32_t download_id, bool success) {
@@ -431,9 +428,6 @@ void DownloadHistory::ItemAdded(uint32_t download_id, bool success) {
     for (Observer& observer : observers_)
       observer.OnDownloadStored(item, *data->info());
   }
-
-  // In case the item changed or became temporary while it was being added.
-  OnDownloadUpdated(notifier_.GetManager(), item);
 }
 
 void DownloadHistory::OnDownloadCreated(content::DownloadManager* manager,
