@@ -380,6 +380,12 @@ void ContentBrowserClient::GetQuotaSettings(
   std::move(callback).Run(storage::GetNoQuotaSettings());
 }
 
+GeneratedCodeCacheSettings ContentBrowserClient::GetGeneratedCodeCacheSettings(
+    BrowserContext* context) {
+  // By default, code cache is disabled, embedders should override.
+  return GeneratedCodeCacheSettings(false, 0, base::FilePath());
+}
+
 void ContentBrowserClient::AllowCertificateError(
     WebContents* web_contents,
     int cert_error,

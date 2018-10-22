@@ -21,6 +21,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/certificate_request_result_type.h"
+#include "content/public/browser/generated_code_cache_settings.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -700,6 +701,11 @@ class CONTENT_EXPORT ContentBrowserClient {
       content::BrowserContext* context,
       content::StoragePartition* partition,
       storage::OptionalQuotaSettingsCallback callback);
+
+  // Allows the embedder to provide settings that determine if generated code
+  // can be cached and the amount of disk space used for caching generated code.
+  virtual GeneratedCodeCacheSettings GetGeneratedCodeCacheSettings(
+      BrowserContext* context);
 
   // Informs the embedder that a certificate error has occured.  If
   // |overridable| is true and if |strict_enforcement| is false, the user

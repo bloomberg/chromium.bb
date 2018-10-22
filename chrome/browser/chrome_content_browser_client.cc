@@ -153,6 +153,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/constants.mojom.h"
 #include "chrome/common/env_vars.h"
@@ -2636,6 +2637,17 @@ void ChromeContentBrowserClient::GetQuotaSettings(
   }
   storage::GetNominalDynamicSettings(
       partition->GetPath(), context->IsOffTheRecord(), std::move(callback));
+}
+
+content::GeneratedCodeCacheSettings
+ChromeContentBrowserClient::GetGeneratedCodeCacheSettings(
+    content::BrowserContext* context) {
+  base::FilePath cache_path;
+  chrome::GetUserCacheDirectory(context->GetPath(), &cache_path);
+  // If we pass 0 for size, disk_cache will pick a default size using the
+  // heuristics based on available disk size. These are implemented in
+  // disk_cache::PreferredCacheSize in net/disk_cache/cache_util.cc.
+  return content::GeneratedCodeCacheSettings(true, 0, cache_path);
 }
 
 void ChromeContentBrowserClient::AllowCertificateError(

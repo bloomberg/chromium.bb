@@ -32,6 +32,8 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* context,
       content::StoragePartition* partition,
       ::storage::OptionalQuotaSettingsCallback callback) override;
+  content::GeneratedCodeCacheSettings GetGeneratedCodeCacheSettings(
+      content::BrowserContext* context) override;
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,

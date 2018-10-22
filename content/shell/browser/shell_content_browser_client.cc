@@ -372,6 +372,15 @@ void ShellContentBrowserClient::GetQuotaSettings(
   std::move(callback).Run(storage::GetHardCodedSettings(100 * 1024 * 1024));
 }
 
+GeneratedCodeCacheSettings
+ShellContentBrowserClient::GetGeneratedCodeCacheSettings(
+    content::BrowserContext* context) {
+  // If we pass 0 for size, disk_cache will pick a default size using the
+  // heuristics based on available disk size. These are implemented in
+  // disk_cache::PreferredCacheSize in net/disk_cache/cache_util.cc.
+  return GeneratedCodeCacheSettings(true, 0, context->GetPath());
+}
+
 void ShellContentBrowserClient::SelectClientCertificate(
     WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,

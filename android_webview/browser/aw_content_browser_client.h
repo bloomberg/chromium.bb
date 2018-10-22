@@ -101,6 +101,8 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* context,
       content::StoragePartition* partition,
       storage::OptionalQuotaSettingsCallback callback) override;
+  content::GeneratedCodeCacheSettings GetGeneratedCodeCacheSettings(
+      content::BrowserContext* context) override;
   void AllowCertificateError(
       content::WebContents* web_contents,
       int cert_error,

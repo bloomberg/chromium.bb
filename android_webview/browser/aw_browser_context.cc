@@ -88,14 +88,6 @@ CreateSafeBrowsingWhitelistManager() {
       background_task_runner, io_task_runner);
 }
 
-base::FilePath GetCacheDirForAw() {
-  FilePath cache_path;
-  base::PathService::Get(base::DIR_CACHE, &cache_path);
-  cache_path =
-      cache_path.Append(FILE_PATH_LITERAL("org.chromium.android_webview"));
-  return cache_path;
-}
-
 }  // namespace
 
 AwBrowserContext::AwBrowserContext(
@@ -136,8 +128,17 @@ AwBrowserContext* AwBrowserContext::FromWebContents(
   return static_cast<AwBrowserContext*>(web_contents->GetBrowserContext());
 }
 
+// static
+base::FilePath AwBrowserContext::GetCacheDir() {
+  FilePath cache_path;
+  base::PathService::Get(base::DIR_CACHE, &cache_path);
+  cache_path =
+      cache_path.Append(FILE_PATH_LITERAL("org.chromium.android_webview"));
+  return cache_path;
+}
+
 void AwBrowserContext::PreMainMessageLoopRun(net::NetLog* net_log) {
-  FilePath cache_path = GetCacheDirForAw();
+  FilePath cache_path = GetCacheDir();
 
   url_request_context_getter_ = new AwURLRequestContextGetter(
       cache_path, context_storage_path_.Append(kChannelIDFilename),
@@ -210,7 +211,7 @@ base::FilePath AwBrowserContext::GetPath() const {
 }
 
 base::FilePath AwBrowserContext::GetCachePath() const {
-  return GetCacheDirForAw();
+  return GetCacheDir();
 }
 
 bool AwBrowserContext::IsOffTheRecord() const {
