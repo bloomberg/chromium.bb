@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/app_list/search/omnibox_provider.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chrome/browser/ui/app_list/search/settings_shortcut/settings_shortcut_provider.h"
-#include "chrome/browser/ui/app_list/search/webstore/webstore_provider.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/arc/arc_util.h"
 
@@ -39,7 +38,6 @@ namespace {
 // number of results to be displayed in UI.
 constexpr size_t kMaxAppsGroupResults = 7;
 constexpr size_t kMaxOmniboxResults = 4;
-constexpr size_t kMaxWebstoreResults = 2;
 constexpr size_t kMaxLauncherSearchResults = 2;
 // We show up to 6 Play Store results. However, part of Play Store results may
 // be filtered out because they may correspond to already installed Web apps. So
@@ -68,7 +66,7 @@ std::unique_ptr<SearchController> CreateSearchController(
   std::unique_ptr<SearchController> controller =
       std::make_unique<SearchController>(model_updater, list_controller);
 
-  // Add mixer groups. There are four main groups: answer card, apps, webstore
+  // Add mixer groups. There are four main groups: answer card, apps
   // and omnibox. Each group has a "soft" maximum number of results. However, if
   // a query turns up very few results, the mixer may take more than this
   // maximum from a particular group.
@@ -80,8 +78,6 @@ std::unique_ptr<SearchController> CreateSearchController(
   size_t apps_group_id =
       controller->AddGroup(kMaxAppsGroupResults, 1.0, kBoostOfApps);
   size_t omnibox_group_id = controller->AddGroup(kMaxOmniboxResults, 1.0, 0.0);
-  size_t webstore_group_id =
-      controller->AddGroup(kMaxWebstoreResults, 0.4, 0.0);
 
   // Add search providers.
   controller->AddProvider(
@@ -90,11 +86,6 @@ std::unique_ptr<SearchController> CreateSearchController(
                          base::DefaultClock::GetInstance(), model_updater));
   controller->AddProvider(omnibox_group_id, std::make_unique<OmniboxProvider>(
                                                 profile, list_controller));
-  if (arc::IsWebstoreSearchEnabled()) {
-    controller->AddProvider(
-        webstore_group_id,
-        std::make_unique<WebstoreProvider>(profile, list_controller));
-  }
   if (app_list_features::IsAnswerCardEnabled()) {
     controller->AddProvider(
         answer_card_group_id,
