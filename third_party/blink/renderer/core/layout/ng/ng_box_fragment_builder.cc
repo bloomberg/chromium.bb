@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
@@ -41,10 +41,11 @@ NGPhysicalFragment::NGBoxType BoxTypeFromLayoutObject(
 
 }  // namespace
 
-NGFragmentBuilder::NGFragmentBuilder(NGLayoutInputNode node,
-                                     scoped_refptr<const ComputedStyle> style,
-                                     WritingMode writing_mode,
-                                     TextDirection direction)
+NGBoxFragmentBuilder::NGBoxFragmentBuilder(
+    NGLayoutInputNode node,
+    scoped_refptr<const ComputedStyle> style,
+    WritingMode writing_mode,
+    TextDirection direction)
     : NGContainerFragmentBuilder(std::move(style), writing_mode, direction),
       node_(node),
       box_type_(NGPhysicalFragment::NGBoxType::kNormalBox),
@@ -53,10 +54,11 @@ NGFragmentBuilder::NGFragmentBuilder(NGLayoutInputNode node,
   layout_object_ = node.GetLayoutBox();
 }
 
-NGFragmentBuilder::NGFragmentBuilder(LayoutObject* layout_object,
-                                     scoped_refptr<const ComputedStyle> style,
-                                     WritingMode writing_mode,
-                                     TextDirection direction)
+NGBoxFragmentBuilder::NGBoxFragmentBuilder(
+    LayoutObject* layout_object,
+    scoped_refptr<const ComputedStyle> style,
+    WritingMode writing_mode,
+    TextDirection direction)
     : NGContainerFragmentBuilder(std::move(style), writing_mode, direction),
       node_(nullptr),
       box_type_(NGPhysicalFragment::NGBoxType::kNormalBox),
@@ -65,9 +67,9 @@ NGFragmentBuilder::NGFragmentBuilder(LayoutObject* layout_object,
   layout_object_ = layout_object;
 }
 
-NGFragmentBuilder::~NGFragmentBuilder() = default;
+NGBoxFragmentBuilder::~NGBoxFragmentBuilder() = default;
 
-NGContainerFragmentBuilder& NGFragmentBuilder::AddChild(
+NGContainerFragmentBuilder& NGBoxFragmentBuilder::AddChild(
     scoped_refptr<const NGPhysicalFragment> child,
     const NGLogicalOffset& child_offset) {
   switch (child->Type()) {
@@ -95,14 +97,14 @@ NGContainerFragmentBuilder& NGFragmentBuilder::AddChild(
   return NGContainerFragmentBuilder::AddChild(std::move(child), child_offset);
 }
 
-void NGFragmentBuilder::RemoveChildren() {
+void NGBoxFragmentBuilder::RemoveChildren() {
   child_break_tokens_.resize(0);
   inline_break_tokens_.resize(0);
   children_.resize(0);
   offsets_.resize(0);
 }
 
-NGFragmentBuilder& NGFragmentBuilder::AddBreakBeforeChild(
+NGBoxFragmentBuilder& NGBoxFragmentBuilder::AddBreakBeforeChild(
     NGLayoutInputNode child) {
   if (child.IsInline()) {
     if (inline_break_tokens_.IsEmpty()) {
@@ -121,7 +123,8 @@ NGFragmentBuilder& NGFragmentBuilder::AddBreakBeforeChild(
   return *this;
 }
 
-NGFragmentBuilder& NGFragmentBuilder::AddBreakBeforeLine(int line_number) {
+NGBoxFragmentBuilder& NGBoxFragmentBuilder::AddBreakBeforeLine(
+    int line_number) {
   DCHECK_GT(line_number, 0);
   DCHECK_LE(unsigned(line_number), inline_break_tokens_.size());
   int lines_to_remove = inline_break_tokens_.size() - line_number;
@@ -153,7 +156,7 @@ NGFragmentBuilder& NGFragmentBuilder::AddBreakBeforeLine(int line_number) {
   return *this;
 }
 
-NGFragmentBuilder& NGFragmentBuilder::PropagateBreak(
+NGBoxFragmentBuilder& NGBoxFragmentBuilder::PropagateBreak(
     const NGLayoutResult& child_layout_result) {
   if (!did_break_)
     PropagateBreak(*child_layout_result.PhysicalFragment());
@@ -164,7 +167,7 @@ NGFragmentBuilder& NGFragmentBuilder::PropagateBreak(
   return *this;
 }
 
-NGFragmentBuilder& NGFragmentBuilder::PropagateBreak(
+NGBoxFragmentBuilder& NGBoxFragmentBuilder::PropagateBreak(
     const NGPhysicalFragment& child_fragment) {
   if (!did_break_) {
     const auto* token = child_fragment.BreakToken();
@@ -173,7 +176,7 @@ NGFragmentBuilder& NGFragmentBuilder::PropagateBreak(
   return *this;
 }
 
-void NGFragmentBuilder::AddOutOfFlowLegacyCandidate(
+void NGBoxFragmentBuilder::AddOutOfFlowLegacyCandidate(
     NGBlockNode node,
     const NGStaticPosition& static_position,
     LayoutObject* inline_container) {
@@ -211,7 +214,7 @@ void NGFragmentBuilder::AddOutOfFlowLegacyCandidate(
       NGOutOfFlowPositionedCandidate{descendant, zero_offset});
 }
 
-NGPhysicalFragment::NGBoxType NGFragmentBuilder::BoxType() const {
+NGPhysicalFragment::NGBoxType NGBoxFragmentBuilder::BoxType() const {
   if (box_type_ != NGPhysicalFragment::NGBoxType::kNormalBox)
     return box_type_;
 
@@ -219,8 +222,8 @@ NGPhysicalFragment::NGBoxType NGFragmentBuilder::BoxType() const {
   return BoxTypeFromLayoutObject(layout_object_);
 }
 
-void NGFragmentBuilder::AddBaseline(NGBaselineRequest request,
-                                    LayoutUnit offset) {
+void NGBoxFragmentBuilder::AddBaseline(NGBaselineRequest request,
+                                       LayoutUnit offset) {
 #if DCHECK_IS_ON()
   for (const auto& baseline : baselines_)
     DCHECK(baseline.request != request);
@@ -228,12 +231,12 @@ void NGFragmentBuilder::AddBaseline(NGBaselineRequest request,
   baselines_.push_back(NGBaseline{request, offset});
 }
 
-EBreakBetween NGFragmentBuilder::JoinedBreakBetweenValue(
+EBreakBetween NGBoxFragmentBuilder::JoinedBreakBetweenValue(
     EBreakBetween break_before) const {
   return JoinFragmentainerBreakValues(previous_break_after_, break_before);
 }
 
-scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment(
+scoped_refptr<NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(
     WritingMode block_or_line_writing_mode) {
   DCHECK_EQ(offsets_.size(), children_.size());
 
@@ -290,7 +293,7 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment(
       is_pushed_by_floats_, adjoining_floats_, NGLayoutResult::kSuccess));
 }
 
-scoped_refptr<NGLayoutResult> NGFragmentBuilder::Abort(
+scoped_refptr<NGLayoutResult> NGBoxFragmentBuilder::Abort(
     NGLayoutResult::NGLayoutResultStatus status) {
   Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants;
   Vector<NGPositionedFloat> positioned_floats;
@@ -306,7 +309,7 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::Abort(
 // inline_container_fragments is a map whose keys specify which
 // inline containing blocks are required.
 // Not finding a required block is an unexpected behavior (DCHECK).
-void NGFragmentBuilder::ComputeInlineContainerFragments(
+void NGBoxFragmentBuilder::ComputeInlineContainerFragments(
     HashMap<const LayoutObject*, FragmentPair>* inline_container_fragments,
     NGLogicalSize* container_size) {
   // This function has detailed knowledge of inline fragment tree structure,
@@ -331,7 +334,7 @@ void NGFragmentBuilder::ComputeInlineContainerFragments(
           key = descendant.fragment->GetLayoutObject();
         }
         if (key && inline_container_fragments->Contains(key)) {
-          NGFragmentBuilder::FragmentPair value =
+          NGBoxFragmentBuilder::FragmentPair value =
               inline_container_fragments->at(key);
           if (!value.start_fragment) {
             value.start_fragment = descendant.fragment.get();

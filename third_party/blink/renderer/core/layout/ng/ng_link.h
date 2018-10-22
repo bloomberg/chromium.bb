@@ -46,7 +46,7 @@ class CORE_EXPORT NGLink {
   // The builder classes needs to set the offset_ field during
   // fragment construciton to allow the child vector to be moved
   // instead of reconstructed during fragment construction.
-  friend class NGFragmentBuilder;
+  friend class NGBoxFragmentBuilder;
   friend class NGLineBoxFragmentBuilder;
   friend class NGLayoutResult;
 };

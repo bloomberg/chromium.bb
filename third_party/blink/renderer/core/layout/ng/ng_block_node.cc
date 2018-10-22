@@ -19,12 +19,12 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_column_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fieldset_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_flex_layout_algorithm.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
@@ -850,8 +850,8 @@ scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
   }
   NGLogicalSize box_size(box_->LogicalWidth(), box_->LogicalHeight());
   // TODO(kojii): Implement use_first_line_style.
-  NGFragmentBuilder builder(*this, box_->Style(), writing_mode,
-                            box_->StyleRef().Direction());
+  NGBoxFragmentBuilder builder(*this, box_->Style(), writing_mode,
+                               box_->StyleRef().Direction());
   builder.SetIsOldLayoutRoot();
   builder.SetInlineSize(box_size.inline_size);
   builder.SetBlockSize(box_size.block_size);
@@ -870,7 +870,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
 
 void NGBlockNode::CopyBaselinesFromOldLayout(
     const NGConstraintSpace& constraint_space,
-    NGFragmentBuilder* builder) {
+    NGBoxFragmentBuilder* builder) {
   const Vector<NGBaselineRequest>& requests =
       constraint_space.BaselineRequests();
   if (requests.IsEmpty())

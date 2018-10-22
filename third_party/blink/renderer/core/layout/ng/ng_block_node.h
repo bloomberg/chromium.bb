@@ -15,7 +15,7 @@ namespace blink {
 class LayoutBox;
 class NGBreakToken;
 class NGConstraintSpace;
-class NGFragmentBuilder;
+class NGBoxFragmentBuilder;
 class NGLayoutResult;
 class NGPhysicalBoxFragment;
 class NGPhysicalContainerFragment;
@@ -127,7 +127,8 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
       const NGPhysicalOffset fragment_offset,
       const NGPhysicalOffset additional_offset = NGPhysicalOffset());
 
-  void CopyBaselinesFromOldLayout(const NGConstraintSpace&, NGFragmentBuilder*);
+  void CopyBaselinesFromOldLayout(const NGConstraintSpace&,
+                                  NGBoxFragmentBuilder*);
   LayoutUnit AtomicInlineBaselineFromOldLayout(const NGBaselineRequest&,
                                                const NGConstraintSpace&);
 

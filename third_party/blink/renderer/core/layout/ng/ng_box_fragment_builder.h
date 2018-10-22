@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGFragmentBuilder_h
-#define NGFragmentBuilder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BOX_FRAGMENT_BUILDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BOX_FRAGMENT_BUILDER_H_
 
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_border_edges.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
@@ -21,39 +21,40 @@ namespace blink {
 class NGPhysicalFragment;
 class NGPhysicalLineBoxFragment;
 
-class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
+class CORE_EXPORT NGBoxFragmentBuilder final
+    : public NGContainerFragmentBuilder {
   DISALLOW_NEW();
 
  public:
-  NGFragmentBuilder(NGLayoutInputNode,
-                    scoped_refptr<const ComputedStyle>,
-                    WritingMode,
-                    TextDirection);
+  NGBoxFragmentBuilder(NGLayoutInputNode,
+                       scoped_refptr<const ComputedStyle>,
+                       WritingMode,
+                       TextDirection);
 
   // Build a fragment for LayoutObject without NGLayoutInputNode. LayoutInline
   // has NGInlineItem but does not have corresponding NGLayoutInputNode.
-  NGFragmentBuilder(LayoutObject*,
-                    scoped_refptr<const ComputedStyle>,
-                    WritingMode,
-                    TextDirection);
+  NGBoxFragmentBuilder(LayoutObject*,
+                       scoped_refptr<const ComputedStyle>,
+                       WritingMode,
+                       TextDirection);
 
-  ~NGFragmentBuilder() override;
+  ~NGBoxFragmentBuilder() override;
 
-  NGFragmentBuilder& SetIntrinsicBlockSize(LayoutUnit intrinsic_block_size) {
+  NGBoxFragmentBuilder& SetIntrinsicBlockSize(LayoutUnit intrinsic_block_size) {
     intrinsic_block_size_ = intrinsic_block_size;
     return *this;
   }
-  NGFragmentBuilder& SetBorders(const NGBoxStrut& border) {
+  NGBoxFragmentBuilder& SetBorders(const NGBoxStrut& border) {
     DCHECK_NE(BoxType(), NGPhysicalFragment::kInlineBox);
     borders_ = border;
     return *this;
   }
-  NGFragmentBuilder& SetPadding(const NGBoxStrut& padding) {
+  NGBoxFragmentBuilder& SetPadding(const NGBoxStrut& padding) {
     DCHECK_NE(BoxType(), NGPhysicalFragment::kInlineBox);
     padding_ = padding;
     return *this;
   }
-  NGFragmentBuilder& SetPadding(const NGLineBoxStrut& padding) {
+  NGBoxFragmentBuilder& SetPadding(const NGLineBoxStrut& padding) {
     DCHECK_EQ(BoxType(), NGPhysicalFragment::kInlineBox);
     // Convert to flow-relative, because ToInlineBoxFragment() will convert
     // the padding to physical coordinates using flow-relative writing-mode.
@@ -73,21 +74,21 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   // Add a break token for a child that doesn't yet have any fragments, because
   // its first fragment is to be produced in the next fragmentainer. This will
   // add a break token for the child, but no fragment.
-  NGFragmentBuilder& AddBreakBeforeChild(NGLayoutInputNode child);
+  NGBoxFragmentBuilder& AddBreakBeforeChild(NGLayoutInputNode child);
 
   // Prepare for a break token before the specified line.
-  NGFragmentBuilder& AddBreakBeforeLine(int line_number);
+  NGBoxFragmentBuilder& AddBreakBeforeLine(int line_number);
 
   // Update if we have fragmented in this flow.
-  NGFragmentBuilder& PropagateBreak(const NGLayoutResult&);
-  NGFragmentBuilder& PropagateBreak(const NGPhysicalFragment&);
+  NGBoxFragmentBuilder& PropagateBreak(const NGLayoutResult&);
+  NGBoxFragmentBuilder& PropagateBreak(const NGPhysicalFragment&);
 
   void AddOutOfFlowLegacyCandidate(NGBlockNode,
                                    const NGStaticPosition&,
                                    LayoutObject* inline_container);
 
   // Set how much of the block size we've used so far for this box.
-  NGFragmentBuilder& SetUsedBlockSize(LayoutUnit used_block_size) {
+  NGBoxFragmentBuilder& SetUsedBlockSize(LayoutUnit used_block_size) {
     used_block_size_ = used_block_size;
     return *this;
   }
@@ -95,12 +96,12 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   // Specify that we broke.
   //
   // This will result in a fragment which has an unfinished break token.
-  NGFragmentBuilder& SetDidBreak() {
+  NGBoxFragmentBuilder& SetDidBreak() {
     did_break_ = true;
     return *this;
   }
 
-  NGFragmentBuilder& SetHasForcedBreak() {
+  NGBoxFragmentBuilder& SetHasForcedBreak() {
     has_forced_break_ = true;
     minimal_space_shortage_ = LayoutUnit();
     return *this;
@@ -109,7 +110,7 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   // Report space shortage, i.e. how much more space would have been sufficient
   // to prevent some piece of content from breaking. This information may be
   // used by the column balancer to stretch columns.
-  NGFragmentBuilder& PropagateSpaceShortage(LayoutUnit space_shortage) {
+  NGBoxFragmentBuilder& PropagateSpaceShortage(LayoutUnit space_shortage) {
     DCHECK_GT(space_shortage, LayoutUnit());
     if (minimal_space_shortage_ > space_shortage)
       minimal_space_shortage_ = space_shortage;
@@ -158,22 +159,22 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   const OffsetVector& Offsets() const { return offsets_; }
 
   NGPhysicalFragment::NGBoxType BoxType() const;
-  NGFragmentBuilder& SetBoxType(NGPhysicalFragment::NGBoxType box_type) {
+  NGBoxFragmentBuilder& SetBoxType(NGPhysicalFragment::NGBoxType box_type) {
     box_type_ = box_type;
     return *this;
   }
-  NGFragmentBuilder& SetIsFieldsetContainer() {
+  NGBoxFragmentBuilder& SetIsFieldsetContainer() {
     is_fieldset_container_ = true;
     return *this;
   }
-  NGFragmentBuilder& SetIsOldLayoutRoot() {
+  NGBoxFragmentBuilder& SetIsOldLayoutRoot() {
     is_old_layout_root_ = true;
     return *this;
   }
 
   bool DidBreak() const { return did_break_; }
 
-  NGFragmentBuilder& SetBorderEdges(NGBorderEdges border_edges) {
+  NGBoxFragmentBuilder& SetBorderEdges(NGBorderEdges border_edges) {
     border_edges_ = border_edges;
     return *this;
   }
@@ -248,4 +249,4 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
 
 }  // namespace blink
 
-#endif  // NGFragmentBuilder
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BOX_FRAGMENT_BUILDER_H_
