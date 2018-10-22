@@ -683,11 +683,15 @@ void AppListControllerImpl::ViewShown(int64_t display_id) {
 }
 
 void AppListControllerImpl::ViewClosing() {
-  // Clear results to prevent initializing the next app list view with outdated
-  // results.
-  presenter_.GetView()->search_box_view()->ClearSearch();
   if (client_)
     client_->ViewClosing();
+}
+
+void AppListControllerImpl::ViewClosed() {
+  // Clear results to prevent initializing the next app list view with outdated
+  // results.
+  if (client_)
+    client_->StartSearch(base::string16());
 }
 
 void AppListControllerImpl::GetWallpaperProminentColors(

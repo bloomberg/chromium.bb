@@ -51,7 +51,8 @@ class ASH_EXPORT AppListPresenterDelegateImpl
             int64_t display_id,
             int current_apps_page) override;
   void OnShown(int64_t display_id) override;
-  void OnDismissed() override;
+  void OnClosing() override;
+  void OnClosed() override;
   gfx::Vector2d GetVisibilityAnimationOffset(
       aura::Window* root_window) override;
   base::TimeDelta GetVisibilityAnimationDuration(aura::Window* root_window,
