@@ -28,15 +28,19 @@ constexpr int64_t kInvalidNodeId = 0;
 
 std::unique_ptr<EntityData> ConvertPersistedToEntityData(
     const std::string& client_tag_hash,
-    std::unique_ptr<sync_pb::PersistedEntityData> data) {
-  DCHECK(data);
+    sync_pb::PersistedEntityData data) {
   DCHECK(!client_tag_hash.empty());
-  DCHECK(!data->non_unique_name().empty());
+  DCHECK(!data.non_unique_name().empty());
   auto entity_data = std::make_unique<EntityData>();
 
-  entity_data->non_unique_name = std::move(*data->mutable_non_unique_name());
-  entity_data->specifics.Swap(data->mutable_specifics());
+  entity_data->non_unique_name = std::move(*data.mutable_non_unique_name());
+  entity_data->specifics = std::move(*data.mutable_specifics());
   entity_data->client_tag_hash = client_tag_hash;
+
+  // Purposefully crash if we have client only data, as this could result in
+  // sending password in plain text.
+  CHECK(!entity_data->specifics.password().has_client_only_encrypted_data());
+
   return entity_data;
 }
 
@@ -50,12 +54,12 @@ sync_pb::PersistedEntityData CreatePersistedFromEntityData(
   return persisted;
 }
 
-std::unique_ptr<sync_pb::PersistedEntityData> CreatePersistedFromSyncData(
+sync_pb::PersistedEntityData CreatePersistedFromSyncData(
     const SyncDataLocal& sync_data) {
   DCHECK(!sync_data.GetTitle().empty());
-  auto persisted = std::make_unique<sync_pb::PersistedEntityData>();
-  persisted->set_non_unique_name(sync_data.GetTitle());
-  *persisted->mutable_specifics() = sync_data.GetSpecifics();
+  sync_pb::PersistedEntityData persisted;
+  persisted.set_non_unique_name(sync_data.GetTitle());
+  *persisted.mutable_specifics() = sync_data.GetSpecifics();
   return persisted;
 }
 
@@ -90,11 +94,14 @@ class ChangeProcessorImpl : public SyncChangeProcessor {
           error_callback,
       ModelTypeStore* store,
       std::map<std::string, sync_pb::EntitySpecifics>* in_memory_store,
+      scoped_refptr<SyncableServiceBasedBridge::ModelCryptographer>
+          cryptographer,
       ModelTypeChangeProcessor* other)
       : type_(type),
         error_callback_(error_callback),
         store_(store),
         in_memory_store_(in_memory_store),
+        cryptographer_(std::move(cryptographer)),
         other_(other) {
     DCHECK(store);
     DCHECK(other);
@@ -128,10 +135,28 @@ class ChangeProcessorImpl : public SyncChangeProcessor {
               GenerateSyncableHash(type_, sync_data.GetTag());
           DCHECK(!storage_key.empty());
 
-          (*in_memory_store_)[storage_key] = sync_data.GetSpecifics();
-          std::unique_ptr<sync_pb::PersistedEntityData> persisted_entity =
+          sync_pb::PersistedEntityData persisted_entity =
               CreatePersistedFromSyncData(sync_data);
-          batch->WriteData(storage_key, persisted_entity->SerializeAsString());
+          // Production code uses a cryptographer only for PASSWORDS.
+          if (cryptographer_) {
+            const base::Optional<ModelError> error =
+                cryptographer_->Encrypt(persisted_entity.mutable_specifics());
+            if (error) {
+              other_->ReportError(*error);
+              return SyncError(error->location(), SyncError::CRYPTO_ERROR,
+                               error->message(), type_);
+            }
+            persisted_entity.set_non_unique_name("encrypted");
+          }
+
+          // Purposefully crash if we have client only data, as this could
+          // result in storing password in plain text.
+          CHECK(!persisted_entity.specifics()
+                     .password()
+                     .has_client_only_encrypted_data());
+
+          (*in_memory_store_)[storage_key] = persisted_entity.specifics();
+          batch->WriteData(storage_key, persisted_entity.SerializeAsString());
           other_->Put(
               storage_key,
               ConvertPersistedToEntityData(
@@ -212,6 +237,8 @@ class ChangeProcessorImpl : public SyncChangeProcessor {
       error_callback_;
   ModelTypeStore* const store_;
   std::map<std::string, sync_pb::EntitySpecifics>* const in_memory_store_;
+  const scoped_refptr<SyncableServiceBasedBridge::ModelCryptographer>
+      cryptographer_;
   ModelTypeChangeProcessor* const other_;
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -237,19 +264,26 @@ class SyncErrorFactoryImpl : public SyncErrorFactory {
 
 }  // namespace
 
+SyncableServiceBasedBridge::ModelCryptographer::ModelCryptographer() {}
+
+SyncableServiceBasedBridge::ModelCryptographer::~ModelCryptographer() {}
+
 SyncableServiceBasedBridge::SyncableServiceBasedBridge(
     ModelType type,
     OnceModelTypeStoreFactory store_factory,
     std::unique_ptr<ModelTypeChangeProcessor> change_processor,
-    SyncableService* syncable_service)
+    SyncableService* syncable_service,
+    scoped_refptr<ModelCryptographer> cryptographer)
     : ModelTypeSyncBridge(std::move(change_processor)),
       type_(type),
       syncable_service_(syncable_service),
+      cryptographer_(std::move(cryptographer)),
       store_factory_(std::move(store_factory)),
       syncable_service_started_(false),
       weak_ptr_factory_(this) {
   DCHECK(store_factory_);
   DCHECK(syncable_service_);
+  DCHECK(cryptographer_ || type_ != PASSWORDS);
 }
 
 SyncableServiceBasedBridge::~SyncableServiceBasedBridge() {
@@ -296,8 +330,13 @@ base::Optional<ModelError> SyncableServiceBasedBridge::MergeSyncData(
   DCHECK(!syncable_service_started_);
   DCHECK(in_memory_store_.empty());
 
-  const SyncChangeList sync_change_list = StoreAndConvertRemoteChanges(
-      std::move(metadata_change_list), std::move(entity_change_list));
+  SyncChangeList sync_change_list;
+  const base::Optional<ModelError> error = StoreAndConvertRemoteChanges(
+      std::move(metadata_change_list), std::move(entity_change_list),
+      &sync_change_list);
+  if (error) {
+    return error;
+  }
 
   SyncDataList initial_sync_data;
   initial_sync_data.reserve(sync_change_list.size());
@@ -309,7 +348,7 @@ base::Optional<ModelError> SyncableServiceBasedBridge::MergeSyncData(
       base::BindRepeating(&SyncableServiceBasedBridge::ReportErrorIfSet,
                           weak_ptr_factory_.GetWeakPtr());
   auto processor_impl = std::make_unique<ChangeProcessorImpl>(
-      type_, error_callback, store_.get(), &in_memory_store_,
+      type_, error_callback, store_.get(), &in_memory_store_, cryptographer_,
       change_processor());
 
   const base::Optional<ModelError> merge_error = ConvertToModelError(
@@ -334,8 +373,13 @@ base::Optional<ModelError> SyncableServiceBasedBridge::ApplySyncChanges(
   DCHECK(change_processor()->IsTrackingMetadata());
   DCHECK(syncable_service_started_);
 
-  const SyncChangeList sync_change_list = StoreAndConvertRemoteChanges(
-      std::move(metadata_change_list), std::move(entity_change_list));
+  SyncChangeList sync_change_list;
+  const base::Optional<ModelError> error = StoreAndConvertRemoteChanges(
+      std::move(metadata_change_list), std::move(entity_change_list),
+      &sync_change_list);
+  if (error) {
+    return error;
+  }
 
   if (sync_change_list.empty()) {
     return base::nullopt;
@@ -498,6 +542,10 @@ void SyncableServiceBasedBridge::OnReadAllMetadataForInit(
   }
 
   change_processor()->ModelReadyToSync(std::move(metadata_batch));
+
+  // TODO(crbug.com/870624) We may need to reencrypt the data if the encryption
+  // key has changed.
+
   MaybeStartSyncableService();
 }
 
@@ -515,10 +563,22 @@ void SyncableServiceBasedBridge::MaybeStartSyncableService() {
   // this function is reached only if sync is starting already.
   SyncDataList initial_sync_data;
   initial_sync_data.reserve(in_memory_store_.size());
-  for (const std::pair<std::string, sync_pb::EntitySpecifics>& record :
+  for (const std::pair<const std::string, sync_pb::EntitySpecifics>& record :
        in_memory_store_) {
+    sync_pb::EntitySpecifics specifics = record.second;
+
+    // Production code uses a cryptographer only for PASSWORDS.
+    if (cryptographer_) {
+      const base::Optional<ModelError> error =
+          cryptographer_->Decrypt(&specifics);
+      if (error) {
+        change_processor()->ReportError(*error);
+        return;
+      }
+    }
+
     initial_sync_data.push_back(SyncData::CreateRemoteData(
-        /*id=*/kInvalidNodeId, record.second,
+        /*id=*/kInvalidNodeId, std::move(specifics),
         /*last_modified_time=*/base::Time(),  // Used by legacy sessions only.
         /*client_tag_hash=*/record.first));
   }
@@ -527,7 +587,7 @@ void SyncableServiceBasedBridge::MaybeStartSyncableService() {
       base::BindRepeating(&SyncableServiceBasedBridge::ReportErrorIfSet,
                           weak_ptr_factory_.GetWeakPtr());
   auto processor_impl = std::make_unique<ChangeProcessorImpl>(
-      type_, error_callback, store_.get(), &in_memory_store_,
+      type_, error_callback, store_.get(), &in_memory_store_, cryptographer_,
       change_processor());
 
   const base::Optional<ModelError> merge_error = ConvertToModelError(
@@ -544,17 +604,22 @@ void SyncableServiceBasedBridge::MaybeStartSyncableService() {
   }
 }
 
-SyncChangeList SyncableServiceBasedBridge::StoreAndConvertRemoteChanges(
+base::Optional<ModelError>
+SyncableServiceBasedBridge::StoreAndConvertRemoteChanges(
     std::unique_ptr<MetadataChangeList> initial_metadata_change_list,
-    EntityChangeList entity_change_list) {
+    EntityChangeList input_entity_change_list,
+    SyncChangeList* output_sync_change_list) {
+  DCHECK(output_sync_change_list);
+
+  output_sync_change_list->clear();
+
   std::unique_ptr<ModelTypeStore::WriteBatch> batch =
       store_->CreateWriteBatch();
   batch->TakeMetadataChangesFrom(std::move(initial_metadata_change_list));
 
-  SyncChangeList output_change_list;
-  output_change_list.reserve(entity_change_list.size());
+  output_sync_change_list->reserve(input_entity_change_list.size());
 
-  for (const EntityChange& change : entity_change_list) {
+  for (const EntityChange& change : input_entity_change_list) {
     switch (change.type()) {
       case EntityChange::ACTION_DELETE: {
         const std::string& storage_key = change.storage_key();
@@ -562,10 +627,23 @@ SyncChangeList SyncableServiceBasedBridge::StoreAndConvertRemoteChanges(
         DVLOG(1) << ModelTypeToString(type_)
                  << ": Processing deletion with storage key: " << storage_key;
 
-        output_change_list.emplace_back(
+        sync_pb::EntitySpecifics specifics =
+            std::move(in_memory_store_[storage_key]);
+        in_memory_store_.erase(storage_key);
+
+        // Production code uses a cryptographer only for PASSWORDS.
+        if (cryptographer_) {
+          const base::Optional<ModelError> error =
+              cryptographer_->Decrypt(&specifics);
+          if (error) {
+            return error;
+          }
+        }
+
+        output_sync_change_list->emplace_back(
             FROM_HERE, SyncChange::ACTION_DELETE,
             SyncData::CreateRemoteData(
-                /*id=*/kInvalidNodeId, in_memory_store_[storage_key],
+                /*id=*/kInvalidNodeId, std::move(specifics),
                 change.data().modification_time,
                 change.data().client_tag_hash));
 
@@ -573,7 +651,6 @@ SyncChangeList SyncableServiceBasedBridge::StoreAndConvertRemoteChanges(
         // hash either, but the processor provides the storage key.
         DCHECK(!storage_key.empty());
         batch->DeleteData(storage_key);
-        in_memory_store_.erase(storage_key);
         break;
       }
 
@@ -590,17 +667,35 @@ SyncChangeList SyncableServiceBasedBridge::StoreAndConvertRemoteChanges(
         DVLOG(1) << ModelTypeToString(type_)
                  << ": Processing add/update with key: " << storage_key;
 
-        output_change_list.emplace_back(
+        sync_pb::PersistedEntityData persisted_entity =
+            CreatePersistedFromEntityData(change.data());
+
+        // Purposefully crash if we have client only data, as this could
+        // result in storing password in plain text.
+        CHECK(!persisted_entity.specifics()
+                   .password()
+                   .has_client_only_encrypted_data());
+
+        batch->WriteData(storage_key, persisted_entity.SerializeAsString());
+        in_memory_store_[storage_key] = persisted_entity.specifics();
+
+        // Production code uses a cryptographer only for PASSWORDS.
+        if (cryptographer_) {
+          const base::Optional<ModelError> error =
+              cryptographer_->Decrypt(persisted_entity.mutable_specifics());
+          if (error) {
+            return error;
+          }
+        }
+
+        output_sync_change_list->emplace_back(
             FROM_HERE, ConvertToSyncChangeType(change.type()),
             SyncData::CreateRemoteData(
-                /*id=*/kInvalidNodeId, change.data().specifics,
+                /*id=*/kInvalidNodeId,
+                std::move(*persisted_entity.mutable_specifics()),
                 change.data().modification_time,
                 change.data().client_tag_hash));
 
-        batch->WriteData(
-            storage_key,
-            CreatePersistedFromEntityData(change.data()).SerializeAsString());
-        in_memory_store_[storage_key] = change.data().specifics;
         break;
       }
     }
@@ -611,7 +706,7 @@ SyncChangeList SyncableServiceBasedBridge::StoreAndConvertRemoteChanges(
       base::BindOnce(&SyncableServiceBasedBridge::ReportErrorIfSet,
                      weak_ptr_factory_.GetWeakPtr()));
 
-  return output_change_list;
+  return base::nullopt;
 }
 
 void SyncableServiceBasedBridge::OnReadDataForProcessor(
@@ -635,8 +730,8 @@ void SyncableServiceBasedBridge::OnReadAllDataForProcessor(
 
   auto batch = std::make_unique<MutableDataBatch>();
   for (const ModelTypeStore::Record& record : *record_list) {
-    auto persisted_entity = std::make_unique<sync_pb::PersistedEntityData>();
-    if (record.id.empty() || !persisted_entity->ParseFromString(record.value)) {
+    sync_pb::PersistedEntityData persisted_entity;
+    if (record.id.empty() || !persisted_entity.ParseFromString(record.value)) {
       change_processor()->ReportError(
           {FROM_HERE, "Failed deserializing data."});
       return;

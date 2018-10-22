@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <ostream>
+#include <utility>
 
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
@@ -75,14 +76,13 @@ SyncData SyncData::CreateLocalData(const std::string& sync_tag,
 }
 
 // Static.
-SyncData SyncData::CreateRemoteData(
-    int64_t id,
-    const sync_pb::EntitySpecifics& specifics,
-    const base::Time& modification_time,
-    const std::string& client_tag_hash) {
+SyncData SyncData::CreateRemoteData(int64_t id,
+                                    sync_pb::EntitySpecifics specifics,
+                                    base::Time modification_time,
+                                    std::string client_tag_hash) {
   sync_pb::SyncEntity entity;
-  entity.mutable_specifics()->CopyFrom(specifics);
-  entity.set_client_defined_unique_tag(client_tag_hash);
+  *entity.mutable_specifics() = std::move(specifics);
+  entity.set_client_defined_unique_tag(std::move(client_tag_hash));
   return SyncData(/*is_local=*/false, id, &entity, modification_time);
 }
 
