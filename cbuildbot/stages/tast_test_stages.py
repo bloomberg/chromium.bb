@@ -86,9 +86,10 @@ class TastVMTestStage(generic_stages.BoardSpecificBuilderStage,
   """Runs Tast integration tests in a virtual machine."""
 
   category = constants.TEST_INFRA_STAGE
-  # Time allotted to cros_run_tast_vm_test to clean up (i.e. shut down the
-  # VM) after receiving SIGTERM. After this, SIGKILL is sent.
-  CLEANUP_TIMEOUT_SEC = 30 * 60
+
+  # Time allotted to cros_run_vm_test to clean up (i.e. shut down the VM) after
+  # receiving SIGTERM. After this, SIGKILL is sent.
+  CLEANUP_TIMEOUT_SEC = 10 * 60
 
   # These magic attributes can be used to turn off the stage via the build
   # config. See generic_stages.BuilderStage.
