@@ -57,6 +57,19 @@ interface BluetoothSystem {
   //  2. Support concurrent calls; currently BlueZ just drops other calls if
   //     there is one in progress already.
   SetPowered(bool powered) => (SetPoweredResult result);
+
+  // Whether the BT Radio is scanning for devices.
+  enum ScanState {
+    // The BT Radio is not scanning for devices, Bluetooth is unavailable, or
+    // the BT Radio is off.
+    kNotScanning,
+    // State is transitioning between Scanning and Not Scanning and vice versa.
+    kTransitioning,
+    // Scanning for devices.
+    kScanning,
+  };
+
+  GetScanState() => (ScanState scan_state);
 };
 
 // Interface used by clients of BluetoothSystem to get notified of events
