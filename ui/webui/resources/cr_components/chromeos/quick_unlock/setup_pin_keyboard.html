@@ -46,11 +46,11 @@ Where:
   <template>
     <style include="settings-shared">
       .error {
-        color: var(--paper-red-500);
+        color: var(--google-red-600);
       }
 
       .error > iron-icon {
-        --iron-icon-fill-color: var(--paper-red-500);
+        --iron-icon-fill-color: var(--google-red-600);
       }
 
       .warning {
@@ -61,15 +61,12 @@ Where:
         --iron-icon-fill-color: var(--google-grey-refresh-700);
       }
 
-      pin-keyboard {
-        --pin-keyboard-digit-button: {
-          font-size: 18px;
-          padding: 15px 21px;
-        };
-      }
-
-      #pinKeyboardDiv {
-        justify-content: center;
+      #problemDiv {
+        align-items: center;
+        display: flex;
+        flex-direction: row;
+        height: 32px;
+        min-height: 0;
       }
 
       /* Hide this using visibility: hidden instead of hidden so that the
@@ -89,8 +86,10 @@ Where:
       <!-- Warning/error; only shown if title is hidden. -->
       <div id="problemDiv" class$="[[problemClass_]]"
           invisible$="[[!problemMessage_]]" problem>
-        <iron-icon icon="cr:error-outline"></iron-icon>
-        <span id="problemMessage">[[problemMessage_]]</span>
+        <div>
+          <iron-icon icon="cr:error-outline"></iron-icon>
+          <span id="problemMessage">[[problemMessage_]]</span>
+        </div>
       </div>
     </pin-keyboard>
   </template>
