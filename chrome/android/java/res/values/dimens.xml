@@ -355,9 +355,7 @@
     <dimen name="explore_sites_category_padding">20dp</dimen>
     <dimen name="explore_sites_category_title_height">24dp</dimen>
     <dimen name="explore_sites_page_padding">12dp</dimen>
-    <dimen name="explore_sites_site_tile_min_height">88dp</dimen>
-    <dimen name="explore_sites_site_tile_padding">16dp</dimen>
-    <dimen name="explore_sites_site_tile_spacing">6dp</dimen>
+    <dimen name="explore_sites_category_title_spacing">16dp</dimen>
 
     <!-- Recent tabs page -->
     <dimen name="recent_tabs_visible_separator_padding">8dp</dimen>
