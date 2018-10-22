@@ -1,0 +1,10 @@
+# Tools relating to build determinism
+# https://crbug.com/314403
+
+dpranke@chromium.org
+erikchen@chromium.org
+maruel@chromium.org
+sebmarchand@chromium.org
+thakis@chromium.org
+tikuta@chromium.org
+yyanagisawa@chromium.org

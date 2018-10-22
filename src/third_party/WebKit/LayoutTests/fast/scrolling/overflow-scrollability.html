@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<script src='../../resources/testharness.js'></script>
+<script src='../../resources/testharnessreport.js'></script>
+<script src='../../resources/gesture-util.js'></script>
+
+<style>
+  body,
+  html {
+    margin: 0;
+  }
+  .container {
+    width: 100px;
+    height: 100px;
+  }
+  .content-big {
+    width: 200px;
+    height: 200px;
+  }
+  .content-small {
+    width: 20px;
+    height: 20px;
+  }
+</style>
+
+scroll with overflow
+<div id='overflow-1' class='container' style='overflow-x: scroll; overflow-y: scroll'>
+  <div class='content-big'>Content</div>
+</div>
+
+auto with overflow
+<div id='overflow-2' class='container' style='overflow-x: auto; overflow-y: auto'>
+  <div class='content-big'>Content</div>
+</div>
+
+hidden with overflow
+<div id='overflow-3' class='container' style='overflow-x: hidden; overflow-y: hidden'>
+  <div class='content-big'>Content</div>
+</div>
+
+overlay with overflow
+<div id='overflow-4' class='container' style='overflow-x: overlay; overflow-y: overlay'>
+  <div class='content-big'>Content</div>
+</div>
+
+scroll without overflow
+<div id='no-overflow-1' class='container' style='overflow-x: scroll; overflow-y: scroll'>
+  <div class='content-small'>Content</div>
+</div>
+
+auto without overflow
+<div id='no-overflow-2' class='container' style='overflow-x: auto; overflow-y: auto'>
+  <div class='content-small'>Content</div>
+</div>
+
+hidden without overflow
+<div id='no-overflow-3' class='container' style='overflow-x: hidden; overflow-y: hidden'>
+  <div class='content-small'>Content</div>
+</div>
+
+overlay without overflow
+<div id='no-overflow-4' class='container' style='overflow-x: overlay; overflow-y: overlay'>
+  <div class='content-small'>Content</div>
+</div>
+
+<script>
+  const mouse = GestureSourceType.MOUSE_INPUT;
+
+  async function testScrollable(div_id, can_scroll) {
+    let div = document.getElementById(div_id);
+    div.scrollIntoView({ block: 'start', inline: 'start', behavior: 'instant' });
+    await waitForCompositorCommit();
+
+    let x = div.offsetLeft - window.scrollX + 5;
+    let y = div.offsetTop - window.scrollY + 5
+    await mouseMoveTo(x, y);
+
+    await smoothScroll(10, x, y, mouse, 'down', 100000);
+    await waitForCompositorCommit();
+    await waitFor(
+      () => {
+        console.log(div_id + ':' + div.scrollTop);
+        if (can_scroll)
+          return div.scrollTop == 10;
+        return div.scrollTop == 0;
+      },
+      'wait for ' + div_id + ' try vertical scroll.'
+    );
+    
+    await smoothScroll(10, x, y, mouse, 'right', 100000);
+    await waitForCompositorCommit();
+    await waitFor(
+      () => {
+        if (can_scroll)
+          return div.scrollLeft == 10;
+        return div.scrollLeft == 0;
+      },
+      'wait for ' + div_id + ' try horizontal scroll.'
+    );
+  }
+
+  window.onload = async () => {
+    if (window.internals)
+      internals.settings.setScrollAnimatorEnabled(false);
+    await waitForCompositorCommit();
+
+    promise_test(async () => {
+      await testScrollable('overflow-1', true);
+      await testScrollable('overflow-2', true);
+      await testScrollable('overflow-3', false);
+      await testScrollable('overflow-4', true);
+      await testScrollable('no-overflow-1', false);
+      await testScrollable('no-overflow-2', false);
+      await testScrollable('no-overflow-3', false);
+      await testScrollable('no-overflow-4', false);
+    }, 'This tests that scrollable areas with the appropriate overflow mode set'
+      + ' are in fact scrollable by the user.');
+  };
+</script>

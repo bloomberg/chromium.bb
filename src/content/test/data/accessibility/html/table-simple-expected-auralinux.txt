@@ -1,0 +1,17 @@
+[document web] name='Table example'
+++[table]
+++++[table row]
+++++++[column header] name='Pair'
+++++++++[text] name='Pair'
+++++++[column header] name='Single'
+++++++++[text] name='Single'
+++++[table row]
+++++++[table cell] name='AB'
+++++++++[text] name='AB'
+++++++[table cell] name='B'
+++++++++[text] name='B'
+++++[table row]
+++++++[table cell] name='CD'
+++++++++[text] name='CD'
+++++++[table cell] name='D'
+++++++++[text] name='D'

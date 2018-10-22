@@ -1,0 +1,10 @@
+<script>
+const params = new URLSearchParams(location.search);
+const worker = new SharedWorker(
+    `fetch_from_shared_worker.js?url=${params.get('url')}`);
+worker.port.onmessage = e => {
+  document.body.innerText += e.data;
+  document.title = 'DONE';
+};
+worker.port.start();
+</script>

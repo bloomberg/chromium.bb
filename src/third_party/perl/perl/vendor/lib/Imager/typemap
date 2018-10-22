@@ -1,0 +1,109 @@
+#i_img *			T_PTR_NULL
+Imager::Color           T_PTROBJ
+Imager::Color::Float    T_PTROBJ
+Imager::ImgRaw          T_IMAGER_IMAGE
+Imager::Font::TT	T_PTROBJ
+Imager::IO              T_PTROBJ
+Imager::FillHandle      T_PTROBJ
+const char *		T_PV
+float			T_FLOAT
+float*			T_ARRAY
+undef_int		T_IV_U
+undef_neg_int           T_IV_NEGU
+HASH			T_HVREF
+utf8_str		T_UTF8_STR
+i_img_dim		T_IV
+
+# these types are for use by Inline, which can't handle types containing ::
+Imager__Color           T_PTROBJ_INV
+Imager__Color__Float    T_PTROBJ_INV
+Imager__ImgRaw          T_IMAGER_IMAGE
+Imager__FillHandle      T_PTROBJ_INV
+Imager__IO              T_PTROBJ_INV
+
+# mostly intended for non-Imager-core use
+Imager                  T_IMAGER_FULL_IMAGE
+
+#############################################################################
+INPUT
+T_PTR_NULL
+	if (SvOK($arg)) $var = INT2PTR($type,SvIV($arg));
+	else $var = NULL
+
+# handles Imager objects rather than just raw objects
+T_IMAGER_IMAGE
+        if (sv_derived_from($arg, \"Imager::ImgRaw\")) {
+            IV tmp = SvIV((SV*)SvRV($arg));
+            $var = INT2PTR($type,tmp);
+        }
+        else if (sv_derived_from($arg, \"Imager\") && 
+                 SvTYPE(SvRV($arg)) == SVt_PVHV) {
+            HV *hv = (HV *)SvRV($arg);
+            SV **sv = hv_fetch(hv, \"IMG\", 3, 0);
+            if (sv && *sv && sv_derived_from(*sv, \"Imager::ImgRaw\")) {
+                IV tmp = SvIV((SV*)SvRV(*sv));
+                $var = INT2PTR($type,tmp);
+            }
+            else
+                Perl_croak(aTHX_ \"$var is not of type Imager::ImgRaw\");
+        }
+        else
+            Perl_croak(aTHX_ \"$var is not of type Imager::ImgRaw\");
+
+T_IMAGER_FULL_IMAGE
+        if (sv_derived_from($arg, \"Imager\") && 
+                 SvTYPE(SvRV($arg)) == SVt_PVHV) {
+            HV *hv = (HV *)SvRV($arg);
+            SV **sv = hv_fetch(hv, \"IMG\", 3, 0);
+            if (sv && *sv && sv_derived_from(*sv, \"Imager::ImgRaw\")) {
+                IV tmp = SvIV((SV*)SvRV(*sv));
+                $var = INT2PTR($type,tmp);
+            }
+            else
+                Perl_croak(aTHX_ \"$var is not of type Imager::ImgRaw\");
+        }
+        else
+            Perl_croak(aTHX_ \"$var is not of type Imager\");
+
+# same as T_PTROBJ, but replace __ with ::, the opposite of the way
+# xsubpp's processing works
+# this is to compensate for Inline's problem with type names containing ::
+T_PTROBJ_INV
+        if (sv_derived_from($arg, \"${(my $ntt=$ntype)=~s/__/::/g;\$ntt}\")) {
+            IV tmp = SvIV((SV*)SvRV($arg));
+            $var = INT2PTR($type,tmp);
+        }
+        else
+            croak(\"$var is not of type ${(my $ntt=$ntype)=~s/__/::/g;\$ntt}\");
+
+#############################################################################
+OUTPUT
+T_IV_U
+	if ($var == 0) $arg=&PL_sv_undef;
+	else sv_setiv($arg, (IV)$var);
+T_IV_NEGU
+	if ($var < 0) $arg=&PL_sv_undef;
+	else sv_setiv($arg, (IV)$var);
+T_PTR_NULL
+	sv_setiv($arg, (IV)$var);
+
+# same as T_PTROBJ
+T_IMAGER_IMAGE
+        sv_setref_pv($arg, \"Imager::ImgRaw\", (void*)$var);
+
+T_PTROBJ_INV
+        sv_setref_pv($arg, \"${(my $ntt=$ntype)=~s/__/::/g;\$ntt}\", (void*)$var);
+
+# ugh, the things we do for ease of use
+# this isn't suitable in some cases
+T_IMAGER_FULL_IMAGE
+        if ($var) {
+          SV *imobj = NEWSV(0, 0);
+          HV *hv = newHV();
+          sv_setref_pv(imobj, \"Imager::ImgRaw\", $var);
+          hv_store(hv, "IMG", 3, imobj, 0);
+          $arg = sv_2mortal(sv_bless(newRV_noinc((SV*)hv), gv_stashpv("Imager", 1)));
+        }
+        else {
+          $arg = &PL_sv_undef;
+        }

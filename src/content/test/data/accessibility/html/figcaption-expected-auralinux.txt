@@ -1,0 +1,5 @@
+[document web]
+++[panel] name='Fig.1 - A green Box'
+++++[image] name='This is a green box.'
+++++[caption]
+++++++[text] name='Fig.1 - A green Box'

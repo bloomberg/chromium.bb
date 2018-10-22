@@ -1,0 +1,62 @@
+# Swedish messages for bison.
+# Copyright © 2001-2006, 2008 Free Software Foundation, Inc.
+# This file is distributed under the same license as the bison package.
+# Göran Uddeborg <goeran@uddeborg.se>, 2001-2006, 2008.
+#
+# $Revision: 1.22 $
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: bison-runtime 2.4\n"
+"Report-Msgid-Bugs-To: bug-bison@gnu.org\n"
+"POT-Creation-Date: 2008-12-11 17:06-0500\n"
+"PO-Revision-Date: 2008-11-11 14:39+0100\n"
+"Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
+"Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: data/glr.c:923 data/yacc.c:630
+msgid "syntax error: cannot back up"
+msgstr "syntaxfel: kan inte backa"
+
+#: data/glr.c:1806
+msgid "syntax is ambiguous"
+msgstr "tvetydig syntax"
+
+#: data/glr.c:2181 data/glr.c:2187 data/glr.c:2455 data/lalr1.cc:878
+#: data/yacc.c:1491 data/yacc.c:1519
+msgid "syntax error"
+msgstr "syntaxfel"
+
+#: data/glr.c:2515 data/yacc.c:1106 data/yacc.c:1108 data/yacc.c:1284
+#: data/yacc.c:1640
+msgid "memory exhausted"
+msgstr "minnet slut"
+
+#: data/yacc.c:918
+#, c-format
+msgid "syntax error, unexpected %s"
+msgstr "syntaxfel, oväntad %s"
+
+#: data/yacc.c:919
+#, c-format
+msgid "syntax error, unexpected %s, expecting %s"
+msgstr "syntaxfel, oväntad %s, förväntade %s"
+
+#: data/yacc.c:920
+#, c-format
+msgid "syntax error, unexpected %s, expecting %s or %s"
+msgstr "syntaxfel, oväntad %s, förväntade %s eller %s"
+
+#: data/yacc.c:921
+#, c-format
+msgid "syntax error, unexpected %s, expecting %s or %s or %s"
+msgstr "syntaxfel, oväntad %s, förväntade %s eller %s eller %s"
+
+#: data/yacc.c:922
+#, c-format
+msgid "syntax error, unexpected %s, expecting %s or %s or %s or %s"
+msgstr "syntaxfel, oväntad %s, förväntade %s eller %s eller %s eller %s"

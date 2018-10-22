@@ -1,0 +1,186 @@
+{
+  "name": "Sign In",
+  "startingURL": "https://www.walmart.com/checkout/#/sign-in",
+  "actions": [
+    {
+      "selectorType": "xpath",
+      "selector": "//button[@data-automation-id='new-guest-continue-button']",
+      "context": {
+        "isIframe": false
+      },
+      "type": "click"
+    },
+    {
+      "context": {
+        "isIframe": false
+      },
+      "type": "waitFor",
+      "assertions": [
+        "return automation_helper.isElementWithXpathReady(`//div[@aria-label='Select your shipping option']`);",
+        "return automation_helper.isElementWithXpathReady(`//div[@aria-label='Select your pickup option']`);",
+        "return automation_helper.isElementWithXpathReady(`//label[@data-automation-id='shipMethod-EXPEDITED']`);",
+        "return automation_helper.isElementWithXpathReady(`//div[@class='persistent-order-summary']`);"
+      ]
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//button[@aria-label='Continue to Shipping Address']",
+      "context": {
+        "isIframe": false
+      },
+      "type": "click"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//input[@type='text' and @name='firstName']",
+      "context": {
+        "isIframe": false
+      },
+      "type": "autofill"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//input[@type='text' and @name='firstName']",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "NAME_FIRST",
+      "expectedValue": "Milton",
+      "type": "validateField"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//input[@type='text' and @name='lastName']",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "NAME_LAST",
+      "expectedValue": "Waddams",
+      "type": "validateField"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//input[@type='text' and @name='phone']",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "PHONE_HOME_WHOLE_NUMBER",
+      "expectedValue": "5125551234",
+      "type": "validateField"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//input[@type='text' and @name='email']",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "EMAIL_ADDRESS",
+      "expectedValue": "red.swingline@initech.com",
+      "type": "validateField"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//input[@type='text' and @name='addressLineOne']",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "ADDRESS_HOME_LINE1",
+      "expectedValue": "4120 Freidrich Lane",
+      "type": "validateField"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//input[@type='text' and @name='addressLineTwo']",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "ADDRESS_HOME_LINE2",
+      "expectedValue": "Apt 8",
+      "type": "validateField"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//input[@type='text' and @name='city']",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "ADDRESS_HOME_CITY",
+      "expectedValue": "Austin",
+      "type": "validateField"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//*[@name='state']",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "ADDRESS_HOME_STATE",
+      "expectedValue": "TX",
+      "type": "validateField"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//input[@type='text' and @name='postalCode']",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "ADDRESS_HOME_ZIP",
+      "expectedValue": "78744",
+      "type": "validateField"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//button[contains(., 'Continue')]",
+      "context": {
+        "isIframe": false
+      },
+      "type": "click"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//button[contains(., 'Use Address Provided')]",
+      "context": {
+        "isIframe": false
+      },
+      "type": "click"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//*[@id=\"creditCard\"]",
+      "context": {
+        "isIframe": false
+      },
+      "type": "autofill"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//*[@id=\"creditCard\"]",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "HTML_TYPE_CREDIT_CARD_NUMBER",
+      "expectedValue": "9621327911759602",
+      "type": "validateField"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//*[@id=\"month-chooser\"]",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "HTML_TYPE_CREDIT_CARD_EXP_MONTH",
+      "expectedValue": "05",
+      "type": "validateField"
+    },
+    {
+      "selectorType": "xpath",
+      "selector": "//*[@id=\"year-chooser\"]",
+      "context": {
+        "isIframe": false
+      },
+      "expectedAutofillType": "HTML_TYPE_CREDIT_CARD_EXP_YEAR",
+      "expectedValue": "2027",
+      "type": "validateField"
+    }
+  ]
+}

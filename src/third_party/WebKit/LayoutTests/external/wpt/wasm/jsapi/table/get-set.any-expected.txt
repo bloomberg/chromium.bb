@@ -1,0 +1,32 @@
+This is a testharness.js-based test.
+FAIL Missing arguments: get assert_throws: function "() => table.get()" did not throw
+PASS Branding: get
+PASS Missing arguments: set
+PASS Branding: set
+PASS Basic
+PASS Growing
+PASS Setting out-of-bounds
+PASS Setting non-function
+PASS Setting non-wasm function
+PASS Setting non-wasm arrow function
+FAIL Getting out-of-range argument: undefined assert_throws: function "() => table.get(value)" did not throw
+FAIL Setting out-of-range argument: undefined assert_throws: function "() => table.set(value, null)" did not throw
+FAIL Getting out-of-range argument: NaN assert_throws: function "() => table.get(value)" did not throw
+FAIL Setting out-of-range argument: NaN assert_throws: function "() => table.set(value, null)" did not throw
+FAIL Getting out-of-range argument: Infinity assert_throws: function "() => table.get(value)" threw object "RangeError: WebAssembly.Table.get(): index out of bounds" ("RangeError") expected object "TypeError" ("TypeError")
+FAIL Setting out-of-range argument: Infinity assert_throws: function "() => table.set(value, null)" threw object "RangeError: WebAssembly.Table.set(): index out of bounds" ("RangeError") expected object "TypeError" ("TypeError")
+FAIL Getting out-of-range argument: -Infinity assert_throws: function "() => table.get(value)" threw object "RangeError: WebAssembly.Table.get(): index out of bounds" ("RangeError") expected object "TypeError" ("TypeError")
+FAIL Setting out-of-range argument: -Infinity assert_throws: function "() => table.set(value, null)" threw object "RangeError: WebAssembly.Table.set(): index out of bounds" ("RangeError") expected object "TypeError" ("TypeError")
+FAIL Getting out-of-range argument: -1 assert_throws: function "() => table.get(value)" threw object "RangeError: WebAssembly.Table.get(): index out of bounds" ("RangeError") expected object "TypeError" ("TypeError")
+FAIL Setting out-of-range argument: -1 assert_throws: function "() => table.set(value, null)" threw object "RangeError: WebAssembly.Table.set(): index out of bounds" ("RangeError") expected object "TypeError" ("TypeError")
+FAIL Getting out-of-range argument: 4294967296 assert_throws: function "() => table.get(value)" threw object "RangeError: WebAssembly.Table.get(): index out of bounds" ("RangeError") expected object "TypeError" ("TypeError")
+FAIL Setting out-of-range argument: 4294967296 assert_throws: function "() => table.set(value, null)" threw object "RangeError: WebAssembly.Table.set(): index out of bounds" ("RangeError") expected object "TypeError" ("TypeError")
+FAIL Getting out-of-range argument: 68719476736 assert_throws: function "() => table.get(value)" threw object "RangeError: WebAssembly.Table.get(): index out of bounds" ("RangeError") expected object "TypeError" ("TypeError")
+FAIL Setting out-of-range argument: 68719476736 assert_throws: function "() => table.set(value, null)" threw object "RangeError: WebAssembly.Table.set(): index out of bounds" ("RangeError") expected object "TypeError" ("TypeError")
+FAIL Getting out-of-range argument: "0x100000000" assert_throws: function "() => table.get(value)" threw object "RangeError: WebAssembly.Table.get(): index out of bounds" ("RangeError") expected object "TypeError" ("TypeError")
+FAIL Setting out-of-range argument: "0x100000000" assert_throws: function "() => table.set(value, null)" threw object "RangeError: WebAssembly.Table.set(): index out of bounds" ("RangeError") expected object "TypeError" ("TypeError")
+FAIL Getting out-of-range argument: object "[object Object]" assert_throws: function "() => table.get(value)" threw object "RangeError: WebAssembly.Table.get(): index out of bounds" ("RangeError") expected object "TypeError" ("TypeError")
+FAIL Setting out-of-range argument: object "[object Object]" assert_throws: function "() => table.set(value, null)" threw object "RangeError: WebAssembly.Table.set(): index out of bounds" ("RangeError") expected object "TypeError" ("TypeError")
+PASS Order of argument conversion
+Harness: the test ran to completion.
+

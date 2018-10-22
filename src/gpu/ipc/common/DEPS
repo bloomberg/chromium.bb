@@ -1,0 +1,8 @@
+include_rules = [
+  "+base",
+  "+components/viz/common/resources/resource_format.h",
+  "+ipc",
+  "+mojo",
+  "+ui/base",
+  "+ui/latency",
+]

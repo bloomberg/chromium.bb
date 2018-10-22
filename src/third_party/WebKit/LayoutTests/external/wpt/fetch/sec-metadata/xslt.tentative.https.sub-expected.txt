@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+PASS Same-Origin xslt
+FAIL Same-site xslt promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'trim' of undefined"
+FAIL Cross-site xslt promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'trim' of undefined"
+Harness: the test ran to completion.
+

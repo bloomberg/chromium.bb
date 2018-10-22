@@ -1,0 +1,20 @@
+This is a testharness.js-based test.
+PASS idl_test setup
+PASS Partial interface Document: original interface defined
+PASS Partial interface WorkerGlobalScope: original interface defined
+PASS HTMLElement interface: existence and properties of interface object
+PASS HTMLBodyElement interface: existence and properties of interface object
+PASS Window interface: existence and properties of interface object
+FAIL WorkerGlobalScope interface: attribute addressSpace assert_true: The prototype object must have a property "addressSpace" expected true got false
+FAIL WorkerGlobalScope interface: self must inherit property "addressSpace" with the proper type assert_inherits: property "addressSpace" not found in prototype chain
+PASS HTMLFrameSetElement interface: existence and properties of interface object
+PASS Node interface: existence and properties of interface object
+PASS Document interface: existence and properties of interface object
+PASS DocumentType interface: existence and properties of interface object
+PASS DocumentFragment interface: existence and properties of interface object
+PASS ShadowRoot interface: existence and properties of interface object
+PASS Element interface: existence and properties of interface object
+PASS CharacterData interface: existence and properties of interface object
+PASS Text interface: existence and properties of interface object
+Harness: the test ran to completion.
+

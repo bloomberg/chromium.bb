@@ -1,0 +1,49 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<dom-module id="print-preview-settings-section">
+  <template>
+    <style>
+      :host {
+        align-items: center;
+        display: flex;
+        margin-top: 10px;
+        padding: 5px 20px;
+      }
+
+      ::slotted([slot=controls]) {
+        flex: 1;
+        overflow: hidden;
+      }
+
+      ::slotted([slot=title]) {
+        color: #646464;
+        font-size: 1em;
+        max-width: 70px;
+        min-width: 70px;
+        padding-inline-end: 20px;
+        word-break: break-word;
+      }
+
+      :host(.multirow-controls) ::slotted([slot=title]) {
+        align-self: flex-start;
+        padding-top: 7px;
+      }
+
+      :host([managed]) ::slotted([slot=title]) {
+        max-width: 60px;
+        min-width: 60px;
+        padding-inline-end: 5px;
+      }
+
+      .policy-icon {
+        padding-inline-end: 5px;
+        width: 20px;
+      }
+    </style>
+    <slot name="title"></slot>
+    <img src="../../../../../ui/webui/resources/images/business.svg"
+         hidden$="[[!managed]]" class="policy-icon">
+    <slot name="controls"></slot>
+  </template>
+  <script src="settings_section.js"></script>
+</dom-module>

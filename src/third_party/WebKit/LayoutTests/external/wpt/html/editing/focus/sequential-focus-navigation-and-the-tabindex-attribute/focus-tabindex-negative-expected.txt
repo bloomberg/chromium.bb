@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL HTML Test: focus - negative tabindex Uncaught SyntaxError: Unexpected token ;
+Harness: the test ran to completion.
+

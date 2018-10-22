@@ -1,0 +1,47 @@
+<style>
+  div.scroll {
+    height: 200px;
+    width: 300px;
+    overflow: auto;
+    border: 1px solid #666;
+    background-color: #ccc;
+    padding: 8px;
+  }
+</style>
+
+<div><a id="start" href="a"><img src="resources/green.png" width=30 height=30></a></div>
+<div class="scroll">
+  <img src="resources/green.png" width=240 height=300>
+</div>
+
+<div class="scroll">
+  <img src="resources/green.png" width=240 height=300>
+</div>
+<div><a id="end" href="a"><img src="resources/green.png" width=30 height=30></a></div>
+This test is to test that a scrollable div can scroll and reveal its content even if it does not have any focusable content.
+
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="resources/snav-testharness.js"></script>
+<script>
+  var resultMap = [
+    ["Down", "start"],
+    ["Down", "start"],
+    ["Down", "start"],
+    ["Down", "start"],
+    ["Down", "start"],
+    ["Down", "start"],
+    ["Down", "end"],
+    ["Up"  , "end"],
+    ["Up"  , "end"],
+    ["Up"  , "end"],
+    ["Up"  , "end"],
+    ["Up"  , "end"],
+    ["Up"  , "end"],
+    ["Up"  , "start"],
+  ];
+
+  // Start at a known place.
+  document.getElementById("start").focus();
+  snav.assertFocusMoves(resultMap);
+</script>

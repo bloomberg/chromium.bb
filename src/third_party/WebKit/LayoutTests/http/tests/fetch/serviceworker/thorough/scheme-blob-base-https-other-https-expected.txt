@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = 1 duplicate test name: "scheme-blob"
+PASS Startup
+PASS scheme-blob
+PASS scheme-blob
+Harness: the test ran to completion.
+

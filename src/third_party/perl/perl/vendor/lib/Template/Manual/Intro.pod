@@ -1,0 +1,242 @@
+#============================================================= -*-perl-*-
+#
+# Template::Manual::Intro
+#
+# AUTHOR
+#   Andy Wardley  <abw@wardley.org>
+#
+# COPYRIGHT
+#   Copyright (C) 1996-2007 Andy Wardley.  All Rights Reserved.
+#
+#   This module is free software; you can redistribute it and/or
+#   modify it under the same terms as Perl itself.
+#
+#========================================================================
+
+=head1 NAME
+
+Template::Manual::Intro - Introduction to the Template Toolkit
+
+=head1 Introduction
+
+The Template Toolkit is a collection of Perl modules which implement a
+fast, flexible, powerful and extensible template processing system.
+It is most often used for generating dynamic web content, although it can 
+be used equally well for processing any kind of text documents.  
+
+At the simplest level it provides an easy way to process template
+files, filling in embedded variable references with their equivalent
+values.  Here's an example of a template.
+
+    Dear [% name %],
+    
+    It has come to our attention that your account is in 
+    arrears to the sum of [% debt %].
+    
+    Please settle your account before [% deadline %] or we 
+    will be forced to revoke your Licence to Thrill.
+    
+    The Management.
+
+By default, template directives are embedded within the character
+sequences C<[%> ... C<%]> but you can change these and various other
+options to configure how the Template Toolkit looks, feels and works.
+You can set the C<INTERPOLATE> option, for example, if you prefer to
+embed your variables in Perl style:
+
+    Dear $name,
+    
+    It has come to our attention that your account is in 
+    arrears to the sum of $debt.
+
+    ...etc...
+
+=head1 The Template Perl Module
+
+The L<Template> Perl module is the front end to the Template Toolkit for Perl
+programmers, providing access to the full range of functionality through a
+single module with a simple interface. It loads the other modules as required
+and instantiates a default set of objects to handle subsequent template
+processing requests. Configuration parameters may be passed to the L<Template>
+constructor method, L<new()|Template#new()>, which are then used to
+configure the generate object.
+
+    use Template;
+    
+    my $tt = Template->new({
+        INCLUDE_PATH => '/usr/local/templates',
+        INTERPOLATE  => 1,
+    }) || die "$Template::ERROR\n";
+
+The L<Template> object implements a L<process()|Template#process()> method for
+processing template files or text. The name of the input template (or various
+other sources) is passed as the first argument, followed by a reference to a
+hash array of variable definitions for substitution in the template.
+
+    my $vars = {
+        name     => 'Count Edward van Halen',
+        debt     => '3 riffs and a solo',
+        deadline => 'the next chorus',
+    };
+    
+    $tt->process('letters/overdrawn', $vars)
+        || die $tt->error(), "\n";
+
+The L<process()|Template#process()> method returns a true value (C<1>) on success
+and prints the template output to C<STDOUT>, by default. On error, the
+L<process()|Template#process()> method returns a false value (C<undef>).
+The L<error()|Template#error()> method can then be called to retrieve
+details of the error.
+
+=head1 Component Based Content Construction
+
+A number of special directives are provided, such as C<INSERT>, C<INCLUDE> and
+C<PROCESS>, which allow content to be built up from smaller template
+components. This permits a modular approach to building a web site or other
+content repository, promoting reusability, cross-site consistency, ease of
+construction and subsequent maintenance. Common elements such as headers,
+footers, menu bars, tables, and so on, can be created as separate template
+files which can then be processed into other documents as required. All
+defined variables are inherited by these templates along with any additional
+"local" values specified.
+
+    [% PROCESS header 
+         title = "The Cat Sat on the Mat"
+    %]
+    
+    [% PROCESS menu %]
+    
+    The location of the missing feline has now been established.
+    Thank you for your assistance.
+    
+    [% INSERT legal/disclaimer %]
+    
+    [% PROCESS footer %]
+
+You can also define a template as a BLOCK within the same file and
+PROCESS it just like any other template file.  This can be invaluable
+for building up repetitive elements such as tables, menus, etc.
+
+    [% BLOCK tabrow %]
+       <tr><td>[% name %]</td><td>[% email %]</td></tr>
+    [% END %]
+    
+    <table>
+    [% PROCESS tabrow name="tom"   email="tom@here.org"    %]
+    [% PROCESS tabrow name="dick"  email="disk@there.org"  %]
+    [% PROCESS tabrow name="larry" email="larry@where.org" %]
+    </table>
+
+=head1 Data and Code Binding
+
+One of the key features that sets the Template Toolkit apart from
+other template processors is the ability to bind template variables to
+any kind of Perl data: scalars, lists, hash arrays, sub-routines and
+objects.
+
+    my $vars = {
+        root   => 'http://here.com/there',
+        menu   => [ 'modules', 'authors', 'scripts' ],
+        client => {
+            name => 'Doctor Joseph von Satriani',
+            id   => 'JVSAT',
+        },
+        checkout => sub { my $total = shift; ...; return $something },
+        shopcart => My::Cool::Shopping::Cart->new(),
+    };
+
+The Template Toolkit will automatically Do The Right Thing to access the data
+in an appropriate manner to return some value which can then be output. The
+dot operator 'C<.>' is used to access into lists and hashes or to call object
+methods. The C<FOREACH> directive is provided for iterating through lists, and
+various logical tests are available using directives such as C<IF>, C<UNLESS>,
+C<ELSIF>, C<ELSE>, C<SWITCH>, C<CASE>, etc.
+
+    [% FOREACH section = menu %]
+       <a href="[% root %]/[% section %]/index.html">[% section %]</a>
+    [% END %]
+    
+    <b>Client</a>: [% client.name %] (id: [% client.id %])
+    
+    [% IF shopcart.nitems %]
+       Your shopping cart contains the following items:
+       <ul>
+       [% FOREACH item = shopcart.contents %]
+         <li>[% item.name %] : [% item.qty %] @ [% item.price %]
+       [% END %]
+       </ul>
+       
+       [% checkout(shopcart.total) %]
+       
+    [% ELSE %]
+       No items currently in shopping cart.
+    [% END %]
+
+=head1 Advanced Features: Filters, Macros, Exceptions, Plugins
+
+The Template Toolkit also provides a number of additional directives
+for advanced processing and programmatical functionality.  It supports
+output filters (FILTER), allows custom macros to be defined (MACRO),
+has a fully-featured exception handling system (TRY, THROW, CATCH,
+FINAL) and supports a plugin architecture (USE) which allows special
+plugin modules and even regular Perl modules to be loaded and used
+with the minimum of fuss.  The Template Toolkit is "just" a template
+processor but you can trivially extend it to incorporate the
+functionality of any Perl module you can get your hands on.  Thus, it
+is also a scalable and extensible template framework, ideally suited
+for managing the presentation layer for application servers, content
+management systems and other web applications.
+
+=head1 Separating Presentation and Application Logic
+
+Rather than embedding Perl code or some other scripting language
+directly into template documents, it encourages you to keep functional
+components (i.e. Perl code) separate from presentation components
+(e.g. HTML templates).  The template variables provide the interface
+between the two layers, allowing data to be generated in code and then
+passed to a template component for displaying (pipeline model) or for
+sub-routine or object references to be bound to variables which can
+then be called from the template as and when required (callback
+model).  
+
+The directives that the Template Toolkit provide implement their own
+mini programming language, but they're not really designed for
+serious, general purpose programming.  Perl is a far more appropriate
+language for that.  If you embed application logic (e.g. Perl or other
+scripting language fragments) in HTML templates then you risk losing
+the clear separation of concerns between functionality and
+presentation.  It becomes harder to maintain the two elements in
+isolation and more difficult, if not impossible, to reuse code or
+presentation elements by themselves.  It is far better to write your
+application code in separate Perl modules, libraries or scripts and
+then use templates to control how the resulting data is presented as
+output.  Thus you should think of the Template Toolkit language as a
+set of layout directives for displaying data, not calculating it.
+
+Having said that, the Template Toolkit doesn't force you into one
+approach or the other.  It attempts to be pragmatic rather than
+dogmatic in allowing you to do whatever best gets the job done.
+Thus, if you enable the EVAL_PERL option then you can happily embed
+real Perl code in your templates within PERL ... END directives.
+
+=head1 Performance
+
+The Template Toolkit uses a fast YACC-like parser which compiles
+templates into Perl code for maximum runtime efficiency.  It also has
+an advanced caching mechanism which manages in-memory and on-disk
+(i.e. persistent) versions of compiled templates.  The modules that
+comprise the toolkit are highly configurable and the architecture
+around which they're built is designed to be extensible.  The Template
+Toolkit provides a powerful framework around which content creation
+and delivery systems can be built while also providing a simple
+interface through the Template front-end module for general use.
+
+=cut
+
+# Local Variables:
+# mode: perl
+# perl-indent-level: 4
+# indent-tabs-mode: nil
+# End:
+#
+# vim: expandtab shiftwidth=4:

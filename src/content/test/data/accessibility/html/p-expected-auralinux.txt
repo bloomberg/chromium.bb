@@ -1,0 +1,5 @@
+[document web]
+++[text] name='Before'
+++[paragraph]
+++++[text] name='Paragraph'
+++[text] name='After'

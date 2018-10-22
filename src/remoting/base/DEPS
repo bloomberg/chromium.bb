@@ -1,0 +1,10 @@
+include_rules = [
+  "+google/protobuf",
+  "+google_apis",
+  "+mojo/core/embedder",
+  "+net",
+  "+services/network/public/cpp",
+  "+third_party/breakpad",
+  "+third_party/zlib",
+  "+ui/base",
+]

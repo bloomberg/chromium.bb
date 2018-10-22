@@ -1,0 +1,20 @@
+This test verifies the hit test regions given to the compositor specifically around non-composited overflow scroll elements.
+
+scrollContent: #document scrolling (14, 63, 273, 12)
+
+scrollContainerWithHandler: #document scrolling (13, 89, 290, 32)
+
+nestedContent: #document scrolling (15, 148, 256, 9)
+
+fixedPositionContentContainer: #document scrolling (14, 179, 273, 12)
+fixedPositionContentContainer: #document scrolling (310, 190, 132, 12)
+
+overflowwithhandler: #document scrolling (14, 221, 273, 20)
+
+divInsideNonScrollableLayer: #document scrolling (14, 273, 273, 10)
+
+divInsideCompositedLayer: DIV#compositedLayer (0, 10, 273, 12)
+
+overflowwithborder: #document scrolling (13, 336, 290, 50)
+
+

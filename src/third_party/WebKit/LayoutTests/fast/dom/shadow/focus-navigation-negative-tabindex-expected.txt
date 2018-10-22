@@ -1,0 +1,13 @@
+CONSOLE WARNING: line 87: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
+This tests navigation from non keyboard-focusable shadow host to its shadow. crbug.com/446584
+
+Should move from host-div to host-div/input-in-shadow in forward
+PASS
+Should move from host-div to input-in-document-before in backward
+PASS
+Test finished.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
+

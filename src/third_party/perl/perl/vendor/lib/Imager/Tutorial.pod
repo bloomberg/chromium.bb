@@ -1,0 +1,182 @@
+=head1 NAME
+
+Imager::Tutorial - an introduction to Imager.
+
+=head1 DESCRIPTION
+
+=head2 Before you start
+
+If you have the necessary knowledge, install the image format
+libraries you want Imager image file support for, and Imager itself,
+otherwise arrange to have it done.
+
+=for stopwords Photoshop
+
+You will also want some sort of image viewer tool, whether an image
+editor like Photoshop or the GIMP, or a web browser.
+
+=head2 Hello Boxes! - A Simple Start
+
+As with any perl program it's useful to start with a #! line, and to
+enable strict mode:
+
+  #!/usr/bin/perl -w
+  # you might to 'use warnings;' instead of the -w above
+  use strict;
+
+These lines will be omitted in further examples.
+
+As with any module, you need to load it:
+
+  use Imager;
+
+Now create a image to draw on:
+
+  my $image = Imager->new(xsize => 100, ysize => 100);
+
+and draw a couple of filled rectangles on it:
+
+  $image->box(xmin => 0, ymin => 0, xmax => 99, ymax => 99,
+              filled => 1, color => 'blue');
+  $image->box(xmin => 20, ymin => 20, xmax => 79, ymax => 79,
+              filled => 1, color => 'green');
+
+Since the first box fills the whole image, it can be simplified to:
+
+  $image->box(filled => 1, color => 'blue');
+
+and save it to a file:
+
+  $image->write(file=>'tutorial1.ppm')
+      or die 'Cannot save tutorial1.ppm: ', $image->errstr;
+
+So our completed program is:
+
+  use Imager;
+  
+  my $image = Imager->new(xsize => 100, ysize => 100);
+  
+  $image->box(filled => 1, color => 'blue');
+  $image->box(xmin => 20, ymin => 20, xmax => 79, ymax => 79,
+              filled => 1, color => 'green');
+  
+  $image->write(file=>'tutorial1.ppm')
+      or die 'Cannot save tutorial1.ppm: ', $image->errstr;
+
+=head2 Adding some text
+
+The first thing you need to draw text is a font object:
+
+  # use a different file, depending on the font support you have in
+  # your installed Imager.
+  my $font_filename = 'fontfiles/ImUgly.ttf';
+  my $font = Imager::Font->new(file=>$font_filename)
+    or die "Cannot load $font_filename: ", Imager->errstr;
+
+If you're on Windows, you can supply a face name instead:
+
+  my $font = Imager::Font->new(face=>'Arial Bold')
+    or die "Cannot load 'Arial Bold: ", Imager->errstr;
+
+and draw the text:
+
+  my $text = "Hello Boxes!";
+  my $text_size = 12;
+  
+  $font->align(string => $text,
+               size => $text_size,
+               color => 'red',
+               x => $image->getwidth/2,
+               y => $image->getheight/2,
+               halign => 'center',
+               valign => 'center',
+               image => $image);
+
+So inserting this into our existing code we have:
+
+  use Imager;
+  
+  my $image = Imager->new(xsize => 100, ysize => 100);
+  
+  $image->box(xmin => 0, ymin => 0, xmax => 99, ymax => 99,
+              filled => 1, color => 'blue');
+  $image->box(xmin => 20, ymin => 20, xmax => 79, ymax => 79,
+              filled => 1, color => 'green');
+  
+  # use a different file, depending on the font support you have in
+  # your installed Imager.
+  my $font_filename = 'fontfiles/ImUgly.ttf';
+  my $font = Imager::Font->new(file=>$font_filename)
+    or die "Cannot load $font_filename: ", Imager->errstr;
+  
+  my $text = "Hello Boxes!";
+  my $text_size = 12;
+  
+  $font->align(string => $text,
+               size => $text_size,
+               color => 'red',
+               x => $image->getwidth/2,
+               y => $image->getheight/2,
+               halign => 'center',
+               valign => 'center',
+               image => $image);
+  
+  $image->write(file=>'tutorial2.ppm')
+      or die 'Cannot save tutorial2.ppm: ', $image->errstr;
+
+=head2 Using an existing image as a base
+
+To load an image from a file, first create an empty image object:
+
+  my $read_image = Imager->new;
+
+then call the read method:
+
+  my $image_source = shift; # from the command-line
+  $read_image->read(file=>$image_source)
+    or die "Cannot load $image_source: ", $image->errstr;
+
+To keep to our working size, we'll scale the image:
+
+  # the scale() method always does a proportional scale, we don't want
+  # that here
+  my $scaled_image = $read_image->scaleX(pixels=>100)->scaleY(pixels=>100);
+
+draw our inner box on that, and save the result:
+
+  $scaled_image->box(xmin => 20, ymin => 20, xmax => 79, ymax => 79,
+              filled => 1, color => 'green');
+
+  $scaled_image->write(file=>'tutorial3.ppm')
+      or die 'Cannot save tutorial3.ppm: ', $image->errstr;
+
+so the complete program is:
+
+  use Imager;
+
+  my $read_image = Imager->new;
+
+  my $image_source = shift; # from the command-line
+  $read_image->read(file=>$image_source)
+    or die "Cannot load $image_source: ", $image->errstr;
+
+  # the scale() method always does a proportional scale, we don't want
+  # that here
+  my $scaled_image = $read_image->scaleX(pixels=>100)->scaleY(pixels=>100);
+
+  $scaled_image->box(xmin => 20, ymin => 20, xmax => 79, ymax => 79,
+              filled => 1, color => 'green');
+
+  $scaled_image->write(file=>'tutorial3.ppm')
+      or die 'Cannot save tutorial3.ppm: ', $image->errstr;
+
+
+=head1 AUTHOR
+
+Tony Cook <tonyc@cpan.org>
+
+=head1 REVISION
+
+$Revision$
+
+=cut

@@ -1,0 +1,41 @@
+<!-- Copyright 2018 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+<html>
+<head>
+<title class="i18n" msg="log_title">chromevox-log</title>
+<meta charset="utf-8">
+<link rel="stylesheet" type="text/css" href="log.css">
+<script type="text/javascript" src="../../chromeVoxLogScript.js"></script>
+</head>
+
+<body>
+<h1 class="i18n" msg="log_title">ChromeVox Log</h1>
+  <button id="clearLog">ClearLog</button>
+<div id="logFilters">
+  <label>Show: </label>
+  <label>
+    <input id="speechFilter" type="checkbox" class="log-filter"
+           name="speechFilter">
+    <span>speech</span>
+  </label>
+  <label>
+    <input id="earconFilter" type="checkbox" class="log-filter"
+           name="earconFilter">
+    <span>earcon</span>
+  </label>
+  <label>
+    <input id="brailleFilter" type="checkbox" class="log-filter"
+           name="brailleFilter">
+    <span>braille</span>
+  </label>
+  <label>
+    <input id="eventFilter" type="checkbox" class="log-filter"
+           name="eventFilter">
+    <span>event</span>
+  </label>
+</div>
+
+<div id="logList"></div>
+</body>
+</html>

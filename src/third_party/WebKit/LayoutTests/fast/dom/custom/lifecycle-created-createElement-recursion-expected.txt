@@ -1,0 +1,7 @@
+CONSOLE WARNING: line 8: document.registerElement is deprecated and will be removed in M73, around March 2019. Please use window.customElements.define instead. See https://www.chromestatus.com/features/4642138092470272 for more details.
+CONSOLE ERROR: line 8: Uncaught RangeError: Maximum call stack size exceeded.
+PASS unless crash
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

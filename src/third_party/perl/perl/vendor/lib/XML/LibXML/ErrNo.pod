@@ -1,0 +1,27 @@
+=head1 NAME
+
+XML::LibXML::ErrNo - Structured Errors
+This module is based on xmlerror.h libxml2 C header file. It defines symbolic
+constants for all libxml2 error codes. Currently libxml2 uses over 480
+different error codes. See also XML::LibXML::Error. 
+
+=head1 AUTHORS
+
+Matt Sergeant, 
+Christian Glahn, 
+Petr Pajas
+
+
+=head1 VERSION
+
+1.98
+
+=head1 COPYRIGHT
+
+2001-2007, AxKit.com Ltd.
+
+2002-2006, Christian Glahn.
+
+2006-2009, Petr Pajas.
+
+=cut

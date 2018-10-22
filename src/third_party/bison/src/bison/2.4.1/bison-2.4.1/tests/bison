@@ -1,0 +1,8 @@
+#! /bin/sh
+# tests/bison.  Generated from bison.in by configure.
+# Wrapper around a non installed bison to make it work as an installed one.
+
+# Use the shipped files, not those installed.
+BISON_PKGDATADIR=$(cygpath -m '/cygdrive/j/Devel/bison/2.4.1/bison-2.4.1/../bison-2.4.1-src/data')
+export BISON_PKGDATADIR
+exec $PREBISON $(cygpath -m '/cygdrive/j/Devel/bison/2.4.1/bison-2.4.1/src/bison') ${1+"$@"}

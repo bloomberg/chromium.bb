@@ -1,0 +1,313 @@
+#============================================================= -*-perl-*-
+#
+# Template::Manual::Plugins
+#
+# AUTHOR
+#   Andy Wardley  <abw@wardley.org>
+#
+# COPYRIGHT
+#   Copyright (C) 1996-2007 Andy Wardley.  All Rights Reserved.
+#
+#   This module is free software; you can redistribute it and/or
+#   modify it under the same terms as Perl itself.
+#
+#========================================================================
+
+=head1 NAME
+
+Template::Manual::Plugins - Standard plugins
+
+=head1 TEMPLATE TOOLKIT PLUGINS
+
+The following plugin modules are distributed with the Template
+Toolkit.  Some of the plugins interface to external modules (detailed
+below) which should be downloaded from any CPAN site and installed
+before using the plugin.
+
+=head2 Assert
+
+New in 2.20!  The L<Assert|Template::Plugin::Assert> plugin adds an 
+C<assert> virtual method that you can use to catch undefined values.
+
+For example, consider this dotop:
+
+    [% user.name %]
+
+If C<user.name> is an undefined value then TT will silently ignore the 
+fact and print nothing.  If you C<USE> the C<assert> plugin then you
+can add the C<assert> vmethod between the C<user> and C<name> elements,
+like so:
+
+    [% user.assert.name %]
+
+Now, if C<user.name> is an undefined value, an exception will be thrown:
+
+    assert error - undefined value for name
+
+=head2 CGI
+
+The L<CGI|Template::Plugin::CGI> plugin is a wrapper around Lincoln Stein's
+CGI.pm module. The plugin is distributed with the Template Toolkit (see
+L<Template::Plugin::CGI>) and the L<CGI> module itself is distributed with
+recent versions Perl, or is available from CPAN.
+
+    [% USE CGI %]
+    [% CGI.param('param_name') %]
+    [% CGI.start_form %]
+    [% CGI.popup_menu( Name   => 'color', 
+                       Values => [ 'Green', 'Brown' ] ) %]
+    [% CGI.end_form %]
+
+=head2 Datafile
+
+Provides an interface to data stored in a plain text file in a simple
+delimited format.  The first line in the file specifies field names
+which should be delimiter by any non-word character sequence.
+Subsequent lines define data using the same delimiter as in the first
+line.  Blank lines and comments (lines starting '#') are ignored.  See
+L<Template::Plugin::Datafile> for further details.
+
+/tmp/mydata:
+
+    # define names for each field
+    id : email : name : tel
+    # here's the data
+    fred : fred@here.com : Fred Smith : 555-1234
+    bill : bill@here.com : Bill White : 555-5678
+
+example:
+
+    [% USE userlist = datafile('/tmp/mydata') %]
+    
+    [% FOREACH user = userlist %]
+       [% user.name %] ([% user.id %])
+    [% END %]
+
+=head2 Date
+
+The L<Date|Template::Plugin::Date> plugin provides an easy way to generate
+formatted time and date strings by delegating to the L<POSIX> C<strftime()>
+routine. See L<Template::Plugin::Date> and L<POSIX> for further details.
+
+    [% USE date %]
+    [% date.format %]		# current time/date
+    
+    File last modified: [% date.format(template.modtime) %]
+
+=head2 Directory
+
+The L<Directory|Template::Plugin::Directory> plugin provides a simple
+interface to a directory and the files within it. See
+L<Template::Plugin::Directory> for further details.
+
+    [% USE dir = Directory('/tmp') %]
+    [% FOREACH file = dir.files %]
+        # all the plain files in the directory
+    [% END %]
+    [% FOREACH file = dir.dirs %]
+        # all the sub-directories
+    [% END %]
+
+=head2 DBI
+
+The C<DBI> plugin is no longer distributed as part of the Template Toolkit
+(as of version 2.15).  It is now available as a separate L<Template::DBI>
+distribution from CPAN.
+
+=head2 Dumper
+
+The L<Dumper|Template::Plugin::Dumper> plugin provides an interface to the
+Data::Dumper module. See L<Template::Plugin::Dumper> and L<Data::Dumper> for
+futher details.
+
+    [% USE dumper(indent=0, pad="<br>") %]
+    [% dumper.dump(myvar, yourvar) %]
+
+=head2 File
+
+The L<File|Template::Plugin::File> plugin provides a general abstraction for
+files and can be used to fetch information about specific files within a
+filesystem. See L<Template::Plugin::File> for further details.
+
+    [% USE File('/tmp/foo.html') %]
+    [% File.name %]     # foo.html
+    [% File.dir %]      # /tmp
+    [% File.mtime %]    # modification time
+
+=head2 Filter
+
+This module implements a base class plugin which can be subclassed
+to easily create your own modules that define and install new filters.
+
+    package MyOrg::Template::Plugin::MyFilter;
+    
+    use Template::Plugin::Filter;
+    use base qw( Template::Plugin::Filter );
+    
+    sub filter {
+        my ($self, $text) = @_;
+        # ...mungify $text...
+        return $text;
+    }
+
+Example of use:
+
+    # now load it...
+    [% USE MyFilter %]
+    
+    # ...and use the returned object as a filter
+    [% FILTER $MyFilter %]
+      ...
+    [% END %]
+
+See L<Template::Plugin::Filter> for further details.
+
+=head2 Format
+
+The L<Format|Template::Plugin::Format> plugin provides a simple way to format
+text according to a C<printf()>-like format. See L<Template::Plugin::Format> for
+further details.
+
+    [% USE bold = format('<b>%s</b>') %]
+    [% bold('Hello') %]
+
+=head2 GD
+
+The C<GD> plugins are no longer part of the core Template Toolkit distribution.
+They are now available from CPAN in a separate L<Template::GD> distribution.
+
+=head2 HTML
+
+The L<HTML|Template::Plugin::HTML> plugin is very basic, implementing a few
+useful methods for generating HTML. It is likely to be extended in the future
+or integrated with a larger project to generate HTML elements in a generic way.
+
+    [% USE HTML %]
+    [% HTML.escape("if (a < b && c > d) ..." %]
+    [% HTML.attributes(border => 1, cellpadding => 2) %]
+    [% HTML.element(table => { border => 1, cellpadding => 2 }) %]
+
+See L<Template::Plugin::HTML> for further details.
+
+=head2 Iterator
+
+The L<Iterator|Template::Plugin::Iterator> plugin provides a way to create a
+L<Template::Iterator> object to iterate over a data set. An iterator is
+created automatically by the C<FOREACH> directive and is aliased to the C<loop>
+variable. This plugin allows an iterator to be explicitly created with a given
+name, or the default plugin name, C<iterator>. See
+L<Template::Plugin::Iterator> for further details.
+
+    [% USE iterator(list, args) %]
+    
+    [% FOREACH item = iterator %]
+       [% '<ul>' IF iterator.first %]
+       <li>[% item %]
+       [% '</ul>' IF iterator.last %]
+    [% END %]
+
+=head2 Pod
+
+This plugin provides an interface to the L<Pod::POM|Pod::POM> module
+which parses POD documents into an internal object model which can
+then be traversed and presented through the Template Toolkit.
+
+    [% USE Pod(podfile) %]
+    
+    [% FOREACH head1 = Pod.head1;
+         FOREACH head2 = head1/head2;
+           ...
+         END;
+       END
+    %]
+
+=head2 Scalar
+
+The Template Toolkit calls user-defined subroutines and object methods
+using Perl's array context by default.  
+
+    # TT2 calls object methods in array context by default
+    [% object.method %]
+
+This plugin module provides a way for you to call subroutines and methods 
+in scalar context.
+
+    [% USE scalar %]
+    
+    # force it to use scalar context
+    [% object.scalar.method %]
+    
+    # also works with subroutine references
+    [% scalar.my_sub_ref %]
+
+=head2 String
+
+The L<String|Template::Plugin::String> plugin implements an object-oriented
+interface for manipulating strings. See L<Template::Plugin::String> for
+further details.
+
+    [% USE String 'Hello' %]
+    [% String.append(' World') %]
+    
+    [% msg = String.new('Another string') %]
+    [% msg.replace('string', 'text') %]
+    
+    The string "[% msg %]" is [% msg.length %] characters long.
+
+=head2 Table
+
+The L<Table|Template::Plugin::Table> plugin allows you to format a list of
+data items into a virtual table by specifying a fixed number of rows or
+columns, with an optional overlap. See L<Template::Plugin::Table> for further
+details.
+
+    [% USE table(list, rows=10, overlap=1) %]
+    
+    [% FOREACH item = table.col(3) %]
+       [% item %]
+    [% END %]
+
+=head2 URL
+
+The L<URL|Template::Plugin::URL> plugin provides a simple way of contructing
+URLs from a base part and a variable set of parameters. See
+L<Template::Plugin::URL> for further details.
+
+    [% USE mycgi = url('/cgi-bin/bar.pl', debug=1) %]
+    
+    [% mycgi %]
+       # ==> /cgi/bin/bar.pl?debug=1
+       
+    [% mycgi(mode='submit') %]
+       # ==> /cgi/bin/bar.pl?mode=submit&debug=1
+
+=head2 Wrap
+
+The L<Wrap|Template::Plugin::Wrap> plugin uses the L<Text::Wrap> module to
+provide simple paragraph formatting. See L<Template::Plugin::Wrap> and
+L<Text::Wrap> for further details.
+
+    [% USE wrap %]
+    [% wrap(mytext, 40, '* ', '  ') %]	# use wrap sub
+    [% mytext FILTER wrap(40) -%]	# or wrap FILTER
+
+The C<Text::Wrap> module is available from CPAN:
+
+    http://www.cpan.org/modules/by-module/Text/
+
+=head2 XML
+
+The C<XML::DOM>, C<XML::RSS>, C<XML::Simple> and C<XML::XPath> plugins are no
+longer distributed with the Template Toolkit as of version 2.15
+
+They are now available in a separate L<Template::XML> distribution.
+
+=cut
+
+# Local Variables:
+# mode: perl
+# perl-indent-level: 4
+# indent-tabs-mode: nil
+# End:
+#
+# vim: expandtab shiftwidth=4:

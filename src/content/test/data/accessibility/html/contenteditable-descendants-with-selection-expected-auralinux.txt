@@ -1,0 +1,19 @@
+[document web]
+++[section] editable multi-line selectable-text
+++++[paragraph] editable
+++++++[text] name='A contenteditable with a ' editable
+++++++[link] name='link' editable
+++++++++[text] name='link' editable
+++++++[text] name=' and an ' editable
+++++++[image] name='Image' editable
+++++++[text] name=' and a ' editable
+++++++[push button] name='Button' editable
+++++++[text] name='.' editable
+++++[table] editable
+++++++[table row] editable
+++++++++[table cell] name='Always expose editable tables as tables.' editable
+++++++++++[text] name='Always expose editable tables as tables.' editable
+++++[list] editable
+++++++[list item] editable
+++++++++[static] name='1. '
+++++++++[text] name='Editable list item.' editable

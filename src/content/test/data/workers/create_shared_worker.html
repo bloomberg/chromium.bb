@@ -1,0 +1,4 @@
+<script>
+const params = new URLSearchParams(location.search);
+const worker = new SharedWorker(params.get('worker_url'));
+</script>

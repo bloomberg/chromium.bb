@@ -1,0 +1,9 @@
+include_rules = [
+  "+components/version_info/version_info.h",
+  "+content/public/browser",
+  "+content/public/test",
+  "+content/shell/browser/shell.h",
+  "+google_apis",
+  "+net",
+  "+services/network/public/cpp",
+]

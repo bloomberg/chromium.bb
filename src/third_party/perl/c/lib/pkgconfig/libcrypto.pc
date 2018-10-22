@@ -1,0 +1,12 @@
+prefix=/mingw
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: OpenSSL-libcrypto
+Description: OpenSSL cryptography library
+Version: 1.0.1b
+Requires: 
+Libs: -L${libdir} -lcrypto
+Libs.private: -lws2_32 -lgdi32 -lcrypt32 -L/mingw/lib -lz
+Cflags: -I${includedir} 

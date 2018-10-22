@@ -1,0 +1,25 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "ios/chrome/browser/passwords/save_passwords_consumer.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
+namespace ios {
+
+SavePasswordsConsumer::SavePasswordsConsumer(
+    id<SavePasswordsConsumerDelegate> delegate)
+    : delegate_(delegate) {}
+
+SavePasswordsConsumer::~SavePasswordsConsumer() = default;
+
+void SavePasswordsConsumer::OnGetPasswordStoreResults(
+    std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
+  if (!results.empty())
+    [delegate_ onGetPasswordStoreResults:results];
+}
+
+}  // namespace ios

@@ -1,0 +1,13 @@
+<!doctype html>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="resources/stack-overflow.js"></script>
+<script>
+test(() => {
+  const rs = new ReadableStream();
+  const response = new Response(rs);
+  assert_throws("InvalidStateError",
+                () => fillStackAndRun(() => response.bodyUsed),
+                'getter should throw a DOMException');
+}, 'stack overflow in bodyUsed should not crash the browser');
+</script>

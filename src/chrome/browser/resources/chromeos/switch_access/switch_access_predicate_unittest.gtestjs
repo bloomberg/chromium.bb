@@ -1,0 +1,282 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+/**
+ * Test fixture for switch_access_predicate.js.
+ * @constructor
+ * @extends {testing.Test}
+ */
+function SwitchAccessPredicateUnitTest () {
+  testing.Test.call(this);
+};
+
+SwitchAccessPredicateUnitTest.prototype = {
+  __proto__: testing.Test.prototype,
+
+  /** @override */
+  extraLibraries: [
+    'switch_access_predicate.js',
+    'test_support.js'
+  ],
+
+  /** @override */
+  browsePreload: DUMMY_URL,
+
+  /** @override */
+  setUp: function() {
+    chrome.automation = {
+      RoleType: {
+        CLIENT: 'client', DESKTOP: 'desktop', ROOT_WEB_AREA: 'rootWebArea',
+        TAB: 'tab', TAB_LIST: 'tabList', WEB_VIEW: 'webView'
+      },
+      StateType: {FOCUSABLE: 'focusable', OFFSCREEN: 'offscreen'}
+    };
+  },
+
+  fakeLoc: function(x) {
+    return {left: x, top: x, width: x, height: x};
+  },
+
+  getSampleTree: function() {
+    // - = interesting, (g) = group
+    // root (g)
+    //   upper1 (g)
+    //     lower1 (g)
+    //       leaf1 -
+    //       leaf2
+    //       leaf3 -
+    //     lower2
+    //       leaf4
+    //       leaf5 -
+    //   upper2 -
+    //     lower3
+    //       leaf6
+    //       leaf7
+    let root = {location: this.fakeLoc(0), state: {}};
+    let upper1 = {location: this.fakeLoc(1), state: {}};
+    let upper2 = {location: this.fakeLoc(2), state: {focusable: true}};
+    let lower1 = {location: this.fakeLoc(3), state: {}};
+    let lower2 = {location: this.fakeLoc(4), state: {}};
+    let lower3 = {location: this.fakeLoc(5), state: {}};
+    let leaf1 = {location: this.fakeLoc(6), state: {focusable: true}};
+    let leaf2 = {location: this.fakeLoc(7), state: {}};
+    let leaf3 = {location: this.fakeLoc(8), state: {focusable: true}};
+    let leaf4 = {location: this.fakeLoc(9), state: {}};
+    let leaf5 = {location: this.fakeLoc(10), state: {focusable: true}};
+    let leaf6 = {location: this.fakeLoc(11), state: {}};
+    let leaf7 = {location: this.fakeLoc(12), state: {}};
+
+    let ts = new TestSupport();
+    ts.setChildren(root, [upper1, upper2]);
+    ts.setChildren(upper1, [lower1, lower2]);
+    ts.setChildren(upper2, [lower3]);
+    ts.setChildren(lower1, [leaf1, leaf2, leaf3]);
+    ts.setChildren(lower2, [leaf4, leaf5]);
+    ts.setChildren(lower3, [leaf6, leaf7]);
+
+    return {
+      root: root,
+      upper1: upper1,
+      upper2: upper2,
+      lower1: lower1,
+      lower2: lower2,
+      lower3: lower3,
+      leaf1: leaf1,
+      leaf2: leaf2,
+      leaf3: leaf3,
+      leaf4: leaf4,
+      leaf5: leaf5,
+      leaf6: leaf6,
+      leaf7: leaf7,
+    };
+  },
+};
+
+TEST_F('SwitchAccessPredicateUnitTest', 'IsSubtreeLeaf', function() {
+  let t = this.getSampleTree();
+
+  // Make t.leaf6 and t.leaf7 interesting. t.lower3 becomes a group.
+  t.leaf6.state = {focusable: true};
+  t.leaf7.state = {focusable: true};
+
+  assertTrue(SwitchAccessPredicate.isSubtreeLeaf(t.root, t.root));
+  assertTrue(SwitchAccessPredicate.isSubtreeLeaf(t.upper1, t.root));
+  assertTrue(SwitchAccessPredicate.isSubtreeLeaf(t.upper2, t.root));
+  assertTrue(SwitchAccessPredicate.isSubtreeLeaf(t.lower1, t.upper1));
+  assertFalse(SwitchAccessPredicate.isSubtreeLeaf(t.lower2, t.upper1));
+  assertTrue(SwitchAccessPredicate.isSubtreeLeaf(t.lower3, t.root));
+  assertTrue(SwitchAccessPredicate.isSubtreeLeaf(t.leaf1, t.lower1));
+  assertFalse(SwitchAccessPredicate.isSubtreeLeaf(t.leaf2, t.lower1));
+  assertTrue(SwitchAccessPredicate.isSubtreeLeaf(t.leaf3, t.lower1));
+  assertFalse(SwitchAccessPredicate.isSubtreeLeaf(t.leaf4, t.upper1));
+  assertTrue(SwitchAccessPredicate.isSubtreeLeaf(t.leaf5, t.upper1));
+  assertTrue(SwitchAccessPredicate.isSubtreeLeaf(t.leaf6, t.lower3));
+  assertTrue(SwitchAccessPredicate.isSubtreeLeaf(t.leaf7, t.lower3));
+});
+
+TEST_F('SwitchAccessPredicateUnitTest', 'IsGroup', function() {
+  let t = this.getSampleTree();
+
+  // Make t.leaf6 and t.leaf7 interesting. t.lower3 becomes a group.
+  t.leaf6.state = {focusable: true};
+  t.leaf7.state = {focusable: true};
+
+  assertTrue(SwitchAccessPredicate.isGroup(t.root, t.root));
+  assertTrue(SwitchAccessPredicate.isGroup(t.upper1, t.root));
+  assertFalse(SwitchAccessPredicate.isGroup(t.upper2, t.root));
+  assertTrue(SwitchAccessPredicate.isGroup(t.lower1, t.upper1));
+  assertFalse(SwitchAccessPredicate.isGroup(t.lower2, t.upper1));
+  assertTrue(SwitchAccessPredicate.isGroup(t.lower3, t.root));
+  assertFalse(SwitchAccessPredicate.isGroup(t.leaf1, t.lower1));
+  assertFalse(SwitchAccessPredicate.isGroup(t.leaf2, t.lower1));
+  assertFalse(SwitchAccessPredicate.isGroup(t.leaf3, t.lower1));
+  assertFalse(SwitchAccessPredicate.isGroup(t.leaf4, t.upper1));
+  assertFalse(SwitchAccessPredicate.isGroup(t.leaf5, t.upper1));
+  assertFalse(SwitchAccessPredicate.isGroup(t.leaf6, t.lower3));
+  assertFalse(SwitchAccessPredicate.isGroup(t.leaf7, t.lower3));
+
+  // Set location of t.upper1 to equal location of t.root
+  t.upper1.location = this.fakeLoc(0);
+  assertFalse(SwitchAccessPredicate.isGroup(t.upper1, t.root));
+});
+
+TEST_F('SwitchAccessPredicateUnitTest', 'IsInterestingSubtree', function() {
+  let t = this.getSampleTree();
+
+  assertTrue(SwitchAccessPredicate.isInterestingSubtree(t.root));
+  assertTrue(SwitchAccessPredicate.isInterestingSubtree(t.upper1));
+  assertTrue(SwitchAccessPredicate.isInterestingSubtree(t.upper2));
+  assertTrue(SwitchAccessPredicate.isInterestingSubtree(t.lower1));
+  assertTrue(SwitchAccessPredicate.isInterestingSubtree(t.lower2));
+  assertFalse(SwitchAccessPredicate.isInterestingSubtree(t.lower3));
+  assertTrue(SwitchAccessPredicate.isInterestingSubtree(t.leaf1));
+  assertFalse(SwitchAccessPredicate.isInterestingSubtree(t.leaf2));
+  assertTrue(SwitchAccessPredicate.isInterestingSubtree(t.leaf3));
+  assertFalse(SwitchAccessPredicate.isInterestingSubtree(t.leaf4));
+  assertTrue(SwitchAccessPredicate.isInterestingSubtree(t.leaf5));
+  assertFalse(SwitchAccessPredicate.isInterestingSubtree(t.leaf6));
+  assertFalse(SwitchAccessPredicate.isInterestingSubtree(t.leaf7));
+});
+
+TEST_F('SwitchAccessPredicateUnitTest', 'IsInteresting', function() {
+  // Testing focusable.
+  let loc1 = {left: 0, top: 0, width: 0, height: 0};
+  let node1 = {location: loc1, state: {}};
+  let node2 = {location: loc1, state: {focusable: false}};
+  let node3 = {location: loc1, state: {focusable: true}};
+  assertFalse(SwitchAccessPredicate.isActionable(node1));
+  assertFalse(SwitchAccessPredicate.isActionable(node2));
+  assertTrue(SwitchAccessPredicate.isActionable(node3));
+
+  // Testing onscreen.
+  let loc2 = {left: -1, top: 0, width: 0, height: 0};
+  let loc3 = {left: 0, top: -1, width: 0, height: 0};
+  let node4 = {location: loc2, state: {focusable: true}};
+  let node5 = {location: loc3, state: {focusable: true}};
+  let node6 = {location: loc1, state: {focusable: true, offscreen: true}}
+  assertFalse(SwitchAccessPredicate.isActionable(node4));
+  assertFalse(SwitchAccessPredicate.isActionable(node5));
+  assertFalse(SwitchAccessPredicate.isActionable(node6));
+
+  // Testing if tab.
+  let node7 = {location: loc1, role: 'desktop', state: {}};
+  let node8 = {location: loc1, role: 'tabList', state: {}};
+  let node9 =
+      {location: loc1, parent: node8, root: node7, role: 'tab', state: {}};
+  assertFalse(SwitchAccessPredicate.isActionable(node7));
+  assertFalse(SwitchAccessPredicate.isActionable(node8));
+  assertTrue(SwitchAccessPredicate.isActionable(node9));
+
+  // Testing if webView or rootWebArea.
+  let node10 = {location: loc1, role: 'webView', state: {focusable: true}};
+  let node11 = {location: loc1, role: 'rootWebArea', state: {focusable: true}};
+  assertFalse(SwitchAccessPredicate.isActionable(node10));
+  assertFalse(SwitchAccessPredicate.isActionable(node11));
+});
+
+TEST_F('SwitchAccessPredicateUnitTest', 'LeafPredicate', function() {
+  let t = this.getSampleTree();
+
+  // Start with root as scope
+  let leaf = SwitchAccessPredicate.leaf(t.root);
+
+  assertFalse(leaf(t.root));
+  assertTrue(leaf(t.upper1));
+  assertTrue(leaf(t.upper2));
+
+  // upper 1 as scope
+  leaf = SwitchAccessPredicate.leaf(t.upper1);
+
+  assertFalse(leaf(t.upper1));
+  assertTrue(leaf(t.lower1));
+  assertTrue(leaf(t.leaf4));
+  assertTrue(leaf(t.leaf5));
+
+  // lower 1 as scope
+  leaf = SwitchAccessPredicate.leaf(t.lower1);
+
+  assertFalse(leaf(t.lower1));
+  assertTrue(leaf(t.leaf1));
+  assertTrue(leaf(t.leaf2));
+  assertTrue(leaf(t.leaf3));
+});
+
+TEST_F('SwitchAccessPredicateUnitTest', 'RootPredicate', function() {
+  let t = this.getSampleTree();
+
+  // Start with root as scope
+  let root = SwitchAccessPredicate.root(t.root);
+
+  assertTrue(root(t.root));
+  assertFalse(root(t.upper1));
+  assertFalse(root(t.upper2));
+
+  // upper 1 as scope
+  root = SwitchAccessPredicate.root(t.upper1);
+
+  assertTrue(root(t.upper1));
+  assertFalse(root(t.lower1));
+  assertFalse(root(t.lower2));
+
+  // lower 1 as scope
+  root = SwitchAccessPredicate.root(t.lower1);
+
+  assertTrue(root(t.lower1));
+  assertFalse(root(t.leaf1));
+  assertFalse(root(t.leaf2));
+  assertFalse(root(t.leaf3));
+});
+
+TEST_F('SwitchAccessPredicateUnitTest', 'VisitPredicate', function() {
+  let t = this.getSampleTree();
+
+  // root as scope
+  let visit = SwitchAccessPredicate.visit(t.root);
+
+  assertTrue(visit(t.root));
+  assertTrue(visit(t.upper1));
+  assertTrue(visit(t.upper2));
+
+  // upper1 as scope
+  visit = SwitchAccessPredicate.visit(t.upper1);
+
+  assertTrue(visit(t.upper1));
+  assertTrue(visit(t.lower1));
+  assertFalse(visit(t.lower2));
+  assertFalse(visit(t.leaf4));
+  assertTrue(visit(t.leaf5));
+
+  // lower1 as scope
+  visit = SwitchAccessPredicate.visit(t.lower1);
+
+  assertTrue(visit(t.lower1));
+  assertTrue(visit(t.leaf1));
+  assertFalse(visit(t.leaf2));
+  assertTrue(visit(t.leaf3));
+
+  // An uninteresting subtree should return false, regardless of scope
+  assertFalse(visit(t.lower3));
+  assertFalse(visit(t.leaf6));
+  assertFalse(visit(t.leaf7));
+});

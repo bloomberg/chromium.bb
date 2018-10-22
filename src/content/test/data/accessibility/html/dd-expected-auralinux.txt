@@ -1,0 +1,6 @@
+[document web]
+++[description list]
+++++[description term]
+++++++[text] name='Coffee'
+++++[description value]
+++++++[text] name='Black hot drink'

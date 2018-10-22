@@ -1,0 +1,15 @@
+{
+  "name": "wifi_util_win",
+  "display_name": "Windows WiFi Utilities",
+  "sandbox_type": "none_and_elevated",
+  "options" : {
+    "instance_sharing" : "shared_instance_across_users"
+  },
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "wifi_credentials": [ "chrome.mojom.WiFiCredentialsGetter" ]
+       }
+     }
+  }
+}

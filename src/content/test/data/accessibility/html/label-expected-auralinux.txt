@@ -1,0 +1,4 @@
+[document web]
+++[section]
+++++[label]
+++++++[text] name='Label'

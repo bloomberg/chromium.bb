@@ -1,0 +1,5 @@
+include_rules = [
+  "-chrome/browser/ui/views",
+  "+mash/public/mojom",
+  "+services/device/public/mojom",
+]

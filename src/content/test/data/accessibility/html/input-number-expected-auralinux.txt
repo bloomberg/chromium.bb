@@ -1,0 +1,4 @@
+[document web]
+++[section]
+++++[spin button] selectable-text text-input-type:number valuetext:1
+++++[spin button] selectable-text text-input-type:number valuetext:6

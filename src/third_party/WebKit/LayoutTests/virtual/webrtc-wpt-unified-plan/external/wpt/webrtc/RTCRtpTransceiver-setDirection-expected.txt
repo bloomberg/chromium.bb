@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+FAIL setDirection should change transceiver.direction transceiver.setDirection is not a function
+FAIL setDirection with same direction should have no effect transceiver.setDirection is not a function
+FAIL setDirection should change transceiver.direction independent of transceiver.currentDirection assert_equals: expected "recvonly" but got "inactive"
+Harness: the test ran to completion.
+

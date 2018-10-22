@@ -1,0 +1,4 @@
+CONSOLE WARNING: line 18: document.registerElement is deprecated and will be removed in M73, around March 2019. Please use window.customElements.define instead. See https://www.chromestatus.com/features/4642138092470272 for more details.
+Tests that we can recurse up to 43 times between V8 and Blink. You should see PASS below, and no stack size exceeded RangeError.
+
+PASS.

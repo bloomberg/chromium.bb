@@ -1,0 +1,5 @@
+[document web]
+++[paragraph]
+++++[text] name='I am '
+++++[section]
+++++++[text] name='vegetarian'

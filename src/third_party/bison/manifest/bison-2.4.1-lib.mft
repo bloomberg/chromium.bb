@@ -1,0 +1,5 @@
+include/unistd.h 4bc238c92f216ef4cb5c3ba40b46ee36
+lib/charset.alias 9323aa4ddc9b421417e04c9998666dea
+lib/liby.a 9089168505158ea732fd642d95ddb519
+manifest/bison-2.4.1-lib.mft
+manifest/bison-2.4.1-lib.ver facf4d43bed002006bc65c54e0c47530

@@ -1,0 +1,12 @@
+[document web] name='Table example - th rowheader'
+++[table]
+++++[table row]
+++++++[row header] name='Firstname'
+++++++++[text] name='Firstname'
+++++++[table cell] name='Jill'
+++++++++[text] name='Jill'
+++++[table row]
+++++++[row header] name='Lastname'
+++++++++[text] name='Lastname'
+++++++[table cell] name='Smith'
+++++++++[text] name='Smith'

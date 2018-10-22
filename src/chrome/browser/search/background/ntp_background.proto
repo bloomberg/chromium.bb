@@ -1,0 +1,139 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Protocol buffer messages to get image information from the Backdrop
+// service, including collection names, image urls and descriptions.
+
+syntax = "proto2";
+
+package ntp.background;
+
+option optimize_for = LITE_RUNTIME;
+
+// Information about the creator or owner of an image.
+message Attribution {
+  // A localized description of the attribution of an image e.g.
+  // "Photo by John Doe" or "Geschrieben von John".
+  optional string text = 1;
+}
+
+message Image {
+  // A unique ID for the image.
+  optional fixed64 asset_id = 1;
+
+  // The image URL.
+  optional string image_url = 2;
+
+  // A URL that can be accessed to find out more information about the image.
+  // For example, a link to more information about an artist or photographer or
+  // to a Google+ post.
+  optional string action_url = 3;
+
+  // An attribution list for the image.
+  repeated Attribution attribution = 4;
+}
+
+// A logical grouping of images e.g. landscapes or space photography.
+message Collection {
+  // The unique id for the collection.
+  optional string collection_id = 1;
+
+  // A localized description of the collection e.g. "Landscapes" or "Kunst".
+  optional string collection_name = 2;
+
+  // A list of representative images for the collection. Currently only a single
+  // image will be returned.
+  repeated Image preview = 3;
+}
+
+message GetCollectionsRequest {
+  // Deprecated or unused tag numbers
+  reserved 3;
+
+  // The language that should be used for content. e.g. "en-US"
+  optional string language = 1;
+
+  // The approximate permanent location of the user. e.g. "us".
+  optional string region = 2;
+}
+
+message GetCollectionsResponse {
+  // A list of every available collection for the given language and region.
+  repeated Collection collections = 1;
+}
+
+message GetImagesInCollectionRequest {
+  // Deprecated or unused tag numbers
+  reserved 4;
+
+  // The id of the collection being requested.
+  optional string collection_id = 1;
+
+  // The language that should be used for content. e.g. "en-US"
+  optional string language = 2;
+
+  // The approximate permanent location of the user e.g. "us".
+  optional string region = 3;
+}
+
+message GetImagesInCollectionResponse {
+  // A list of all the images in the requested collection, filtered by language
+  // and region.
+  repeated Image images = 1;
+}
+
+message AlbumMetaData {
+  // Deprecated or unused tag numbers
+  reserved 4, 5, 6, 7;
+
+  optional int64 album_id = 1;
+  optional string album_name = 2;
+  optional string banner_image_url = 3;
+
+  // Generic photo container ID based on the photo provider.
+  // E.g., collection_id for Google photos.
+  optional string photo_container_id = 8;
+}
+
+message PersonalAlbumsResponse {
+  // Deprecated or unused tag numbers
+  reserved 1, 4;
+
+  repeated AlbumMetaData album_meta_data = 2;
+
+  // A token that the client application can use to retrieve the next batch of
+  // albums. If the token is not set in the response, it means that there are
+  // no more albums.
+  optional string resume_token = 3;
+
+  // Set to true if there was an error on the server.
+  optional bool error_on_server = 5;
+}
+
+// The Photos API returns metadata about photos within an album as a
+// SettingPreviewResponse. See NtpBackgroundService::FetchAlbumPhotos for the
+// API's usage. This is a server-defined message.
+message SettingPreviewResponse {
+  // Deprecated or unused tag numbers
+  reserved 1;
+
+  // A preview image for each photo.
+  message Preview { optional string preview_url = 1; }
+  repeated Preview preview = 2;
+
+  // A resume token can be used to get the next page of results.
+  optional string resume_token = 3;
+
+  // An error_msg is set when the status is not 'SUCCESS'.
+  optional ErrorCode status = 4 [default = SUCCESS];
+  optional string error_msg = 5;
+}
+
+// Server-defined ErrorCodes for the Photos API.
+enum ErrorCode {
+  UNKNOWN = 0;
+  SUCCESS = 1;
+  BAD_REQUEST = 2;
+  SERVER_ERROR = 3;
+}

@@ -1,0 +1,43 @@
+#============================================================= -*-perl-*-
+#
+# Template::Tutorial
+#
+# DESCRIPTION
+#   Section index for the Template::Tutorial documentation.
+#
+# AUTHOR
+#   Andy Wardley  <abw@wardley.org>
+#
+# COPYRIGHT
+#   Copyright (C) 1996-2007 Andy Wardley.  All Rights Reserved.
+#
+#   This module is free software; you can redistribute it and/or
+#   modify it under the same terms as Perl itself.
+#
+#========================================================================
+
+=head1 NAME
+
+Template::Tutorial - Template Toolkit Tutorials
+
+=head1 Template Toolkit Tutorials
+
+=head2 Template::Tutorial::Web
+
+The L<Template::Tutorial::Web> tutorial shows how you can use the 
+Template Toolkit to generate static and dynamic web content.
+
+=head2 Template::Tutorial::Datafile
+
+The L<Template::Tutorial::Datafile> tutorial shows how you can
+use the Template Toolkit to generate other data formats like XML.
+
+=cut
+
+# Local Variables:
+# mode: perl
+# perl-indent-level: 4
+# indent-tabs-mode: nil
+# End:
+#
+# vim: expandtab shiftwidth=4:

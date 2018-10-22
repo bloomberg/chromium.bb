@@ -1,0 +1,12 @@
+[document web]
+++[table]
+++++[table row]
+++++++[column header] name='Browser'
+++++++++[text] name='Browser'
+++++++[column header] name='Rendering Engine'
+++++++++[text] name='Rendering Engine'
+++++[table row]
+++++++[table cell] name='Chrome'
+++++++++[text] name='Chrome'
+++++++[table cell] name='Blink'
+++++++++[text] name='Blink'

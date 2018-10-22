@@ -1,0 +1,41 @@
+cc_defaults {
+    name: "libjsoncpp_defaults",
+
+    srcs: [
+        "src/lib_json/json_reader.cpp",
+        "src/lib_json/json_value.cpp",
+        "src/lib_json/json_writer.cpp",
+    ],
+
+    local_include_dirs: [
+        "src/lib_json",
+    ],
+
+    export_include_dirs: ["include"],
+
+    cflags: [
+        "-DJSON_USE_EXCEPTION=0",
+        "-Wall",
+        "-Werror",
+    ],
+
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
+}
+
+cc_library {
+    name: "libjsoncpp",
+    defaults: ["libjsoncpp_defaults"],
+    vendor_available: true,
+    host_supported: true,
+}
+
+cc_library_static {
+    name: "libjsoncpp_ndk",
+    defaults: ["libjsoncpp_defaults"],
+    sdk_version: "9",
+    stl: "libc++_static",
+}

@@ -1,0 +1,12 @@
+CONSOLE WARNING: line 15: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
+Touch event should be fired in Shadow DOM.
+
+Elements in ShadowDOM should not be revealed in touchTarget if it's examined in non shadow tree.
+
+PASS touchstartFiredInShadowDOM is true
+PASS touchTargetForHost1 is host1
+PASS touchTargetForInput1 is input1
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

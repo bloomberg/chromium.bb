@@ -1,0 +1,13 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# To create CIPD package run the following command.
+# cipd create --pkg-def cipd.yaml -tag version:$(cat version.txt)
+package: chromium/android_webview/tools/cts_archive
+description: Archive of WebView CTS tests
+data:
+  - file: arm64/L/android-cts-arm_64-4607260.zip
+  - file: arm64/M/android-cts-arm_64-4607285.zip
+  - file: arm64/N/android-cts-arm_64-4606956.zip
+  - file: arm64/O/android-cts-arm_64-4666824.zip

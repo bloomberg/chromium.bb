@@ -1,0 +1,25 @@
+This is a testharness.js-based test.
+PASS Test that 'resize: block' is supported.
+PASS Test 'resize: block' with 'writing-mode: horizontal-tb; direction: ltr; '.
+PASS Test 'resize: block' with 'writing-mode: horizontal-tb; direction: rtl; '.
+PASS Test 'resize: block' with 'writing-mode: vertical-rl; direction: rtl; '.
+FAIL Test 'resize: block' with 'writing-mode: sideways-rl; direction: rtl; '. assert_equals: computed value, resize expected "horizontal" but got "vertical"
+PASS Test 'resize: block' with 'writing-mode: vertical-rl; direction: ltr; '.
+FAIL Test 'resize: block' with 'writing-mode: sideways-rl; direction: ltr; '. assert_equals: computed value, resize expected "horizontal" but got "vertical"
+PASS Test 'resize: block' with 'writing-mode: vertical-lr; direction: rtl; '.
+FAIL Test 'resize: block' with 'writing-mode: sideways-lr; direction: ltr; '. assert_equals: computed value, resize expected "horizontal" but got "vertical"
+PASS Test 'resize: block' with 'writing-mode: vertical-lr; direction: ltr; '.
+FAIL Test 'resize: block' with 'writing-mode: sideways-lr; direction: rtl; '. assert_equals: computed value, resize expected "horizontal" but got "vertical"
+PASS Test that 'resize: inline' is supported.
+PASS Test 'resize: inline' with 'writing-mode: horizontal-tb; direction: ltr; '.
+PASS Test 'resize: inline' with 'writing-mode: horizontal-tb; direction: rtl; '.
+PASS Test 'resize: inline' with 'writing-mode: vertical-rl; direction: rtl; '.
+FAIL Test 'resize: inline' with 'writing-mode: sideways-rl; direction: rtl; '. assert_equals: computed value, resize expected "vertical" but got "horizontal"
+PASS Test 'resize: inline' with 'writing-mode: vertical-rl; direction: ltr; '.
+FAIL Test 'resize: inline' with 'writing-mode: sideways-rl; direction: ltr; '. assert_equals: computed value, resize expected "vertical" but got "horizontal"
+PASS Test 'resize: inline' with 'writing-mode: vertical-lr; direction: rtl; '.
+FAIL Test 'resize: inline' with 'writing-mode: sideways-lr; direction: ltr; '. assert_equals: computed value, resize expected "vertical" but got "horizontal"
+PASS Test 'resize: inline' with 'writing-mode: vertical-lr; direction: ltr; '.
+FAIL Test 'resize: inline' with 'writing-mode: sideways-lr; direction: rtl; '. assert_equals: computed value, resize expected "vertical" but got "horizontal"
+Harness: the test ran to completion.
+

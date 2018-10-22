@@ -1,0 +1,20 @@
+Package: gcc-4.6.3
+Homepage: http://gcc.gnu.org/
+Sources: ftp://gcc.gnu.org/pub/gcc/releases/
+Comment: based on Mark Dootson's 20120411 pack - check: http://sourceforge.net/projects/perlmingw/
+Comment: version 4.6.3 + patches
+
+Package: binutils-2.22.52
+Homepage: http://www.gnu.org/software/binutils/
+Sources: http://ftp.gnu.org/gnu/binutils/
+Comment: based on Mark Dootson's 20120411 pack - check: http://sourceforge.net/projects/perlmingw/
+Comment: version 2.22.52 + libiberty-md5-w64.patch + implib-compat.patch + longname-fix.patch 
+
+Package: mingw-w64-crt_2.x_r4936
+Homepage: http://mingw-w64.sourceforge.net/
+Sources: http://sourceforge.net/projects/mingw-w64/files/Toolchain%20sources/
+SVN: https://mingw-w64.svn.sourceforge.net/svnroot/mingw-w64/
+Comment: based on Mark Dootson's 20120411 pack - check: http://sourceforge.net/projects/perlmingw/
+Comment: mingw-w64 / stable-2.x branche / SVN rev4936
+Comment: wglext.h glxext.h glext.h (from the Khronos Group)
+Comment: opencl (from the Khronos Group)

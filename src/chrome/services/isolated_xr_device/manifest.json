@@ -1,0 +1,14 @@
+{
+  "name": "xr_device_service",
+  "display_name": "XR Isolated Device Service",
+  "sandbox_type": "none",
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "xr_device_provider": [ "device.mojom.IsolatedXRRuntimeProvider" ]
+      },
+      "requires": {
+      }
+    }
+  }
+}

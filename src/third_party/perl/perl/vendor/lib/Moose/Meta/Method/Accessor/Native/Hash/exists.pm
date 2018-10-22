@@ -1,0 +1,46 @@
+package Moose::Meta::Method::Accessor::Native::Hash::exists;
+BEGIN {
+  $Moose::Meta::Method::Accessor::Native::Hash::exists::AUTHORITY = 'cpan:STEVAN';
+}
+{
+  $Moose::Meta::Method::Accessor::Native::Hash::exists::VERSION = '2.0602';
+}
+
+use strict;
+use warnings;
+
+use Scalar::Util qw( looks_like_number );
+
+use Moose::Role;
+
+with 'Moose::Meta::Method::Accessor::Native::Reader' => {
+    -excludes => [
+        qw(
+            _minimum_arguments
+            _maximum_arguments
+            _inline_check_arguments
+            )
+    ],
+    },
+    'Moose::Meta::Method::Accessor::Native::Hash';
+
+sub _minimum_arguments { 1 }
+
+sub _maximum_arguments { 1 }
+
+sub _inline_check_arguments {
+    my $self = shift;
+
+    return $self->_inline_check_var_is_valid_key('$_[0]');
+}
+
+sub _return_value {
+    my $self = shift;
+    my ($slot_access) = shift;
+
+    return 'exists ' . $slot_access . '->{ $_[0] }';
+}
+
+no Moose::Role;
+
+1;

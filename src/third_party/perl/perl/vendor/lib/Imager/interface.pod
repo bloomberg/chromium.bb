@@ -1,0 +1,348 @@
+=head1 NAME
+
+Imager::interface.pod - describes the C level virtual image interface
+
+=head1 SYNOPSIS
+
+
+=head1 DESCRIPTION
+
+The Imager virtual interface aims to allow image types to be created
+for special purposes, both to allow consistent access to images with
+different sample sizes, and organizations, but also to allow creation
+of synthesized or virtual images.
+
+This is a C level interface rather than Perl.
+
+=head2 Existing Images
+
+As of this writing we have the following concrete image types:
+
+=over
+
+=item *
+
+8-bit/sample direct images
+
+=item *
+
+16-bit/sample direct images
+
+=item *
+
+double/sample direct images
+
+=item *
+
+8-bit/sample 8-bit/index paletted images
+
+=back
+
+Currently there is only one virtual image type:
+
+=over
+
+=item *
+
+masked images, where a mask image can control write access to an
+underlying image.
+
+=back
+
+Other possible concrete images include:
+
+=over
+
+=item *
+
+"bitmaps", 1 bit/sample images (perhaps limited to a single channel)
+
+=item *
+
+16-bit/index paletted images
+
+=back
+
+Some other possible virtual images:
+
+=for stopwords GIMP Photoshop
+
+=over
+
+=item *
+
+image alpha combining, where the combining function can be specified
+(see the layer modes in graphical editors like the GIMP or Photoshop.
+
+=back
+
+=head1 THE INTERFACE
+
+Each image type needs to define a number of functions which implement
+the image operations.
+
+The image structure includes information describes the image, which
+can be used to determine the structure of the image:
+
+=over
+
+=item *
+
+C<channels> - the number of samples kept for each pixel in the image.
+For paletted images the samples are kept for each entry in the
+palette.
+
+=item *
+
+C<xsize>, C<ysize> - the dimensions of the image in pixels.
+
+=item *
+
+C<bytes> - the number of bytes of data kept for the image.  Zero for
+virtual images.  Does not include the space required for the palette
+for paletted images.
+
+=item *
+
+C<ch_mask> - controls which samples will be written to for direct
+images.
+
+=item *
+
+C<bits> - the number of bits kept for each sample.  There are enum
+values i_8_bits, i_16_bits and i_double_bits (64).
+
+=item *
+
+C<type> - the type of image, either i_direct_type or i_palette_type.
+Direct images keep the samples for every pixel image, while
+i_palette_type images keep an index into a color table for each pixel.
+
+=item *
+
+C<virtual> - whether the image keeps any pixel data.  If this is
+non-zero then C<idata> points to image data, otherwise it points to
+implementation defined data, though C<ext_data> is more likely to be
+used for that.
+
+=item *
+
+C<idata> - image data.  If the image is 8-bit direct, non-virtual,
+then this consists of each sample of the image stored one after
+another, otherwise it is implementation defined.
+
+=item *
+
+C<tags> - will be used to store meta-data for an image, eg. tags from
+a TIFF file, or animation information from a GIF file.  This should be
+initialized with a call to i_tags_new() in your image constructor if
+creating a new image type.
+
+=item *
+
+C<ext_data> - for internal use of image types.  This is not released
+by the standard i_img_exorcise() function.  If you create a new image
+type and want to store a pointer to allocated memory here you should
+point i_f_destroy at a function that will release the data.
+
+=back
+
+If a caller has no knowledge of the internal format of an image, the
+caller must call the appropriate image function pointer.  Imager
+provides macros that wrap these functions, so it isn't necessary to
+call them directly.
+
+Many functions have a similar function with an 'f' suffix, these take
+or return samples specified with floating point values rather than
+8-bit integers (unsigned char).  Floating point samples are returned
+in the range 0 to 1 inclusive.
+
+=over
+
+=item i_f_ppix(im,x,y,color)
+
+=item i_f_ppixf(im,x,y,fcolor)
+
+stores the specified color at pixel (x,y) in the image.  If the pixel
+can be stored return 0, otherwise -1.  An image type may choose to
+return 0 under some circumstances, eg. writing to a masked area of an
+image.  The C<color> or C<fcolor> always contains the actual samples to be
+written, rather than a palette index.
+
+=item i_f_plin(im,l,r,y,colors)
+
+=item i_f_plinf(im,l,r,y,fcolors)
+
+stores (r-l) pixels at positions (l,y) ... (r-1, y) from the array
+specified by C<colors> (or C<fcolors>).  Returns the number of pixels
+written to.  If l is negative it will return 0.  If C<< r > im->xsize
+>> then only C<< (im->xsize - l) >> will be written.
+
+=item i_f_gpix(im,x,y,color)
+
+=item i_f_gpixf(im,x,y,fcolor)
+
+retrieves a single pixel from position (x,y).  This returns the
+samples rather than the index for paletted images.
+
+=item i_f_glin(im,l,r,y,colors)
+
+=item i_f_glinf(im,l,r,y,fcolors)
+
+retrieves (r-l) pixels from positions (l, y) through (r-1, y) into the
+array specified by colors.  Returns the number of pixels retrieved.
+If l < 0 no pixels are retrieved.  If C<< r > im->xsize >> then pixels
+C<< (l, y) >> ... C<< (im->xsize-1, y) >> are retrieved.  Retrieves
+the samples rather than the color indexes for paletted images.
+
+=item i_f_gsamp(im,l,r,y,samples,chans,chan_count)
+
+=item i_f_gsampf(im,l,r,y,fsamples,chans,chan_count)
+
+Retrieves samples from channels specified by C<chans> (for length
+C<chan_count>) from pixels at positions (l,y) ... (r-1, y).  If
+C<chans> is NULL then samples from channels 0 ... C<chan_count-1> will
+be retrieved.  Returns the number of sample retrieved (I<not> the
+number of channels).  If a channel in C<chans> is not present in the
+image or l < 0, returns 0.  If C<< r > im->xsize >>, then the samples
+from C<(l,y)> ... C<< (im->xsize-1, y) >> are returned.
+
+=back
+
+The following are for images where type == i_palette_type only.
+
+=over
+
+=item i_f_gpal(im,l,r,y,vals)
+
+Retrieves color indexes from the image for pixels (l, y) ... (r-1, y)
+into C<vals>.  Returns the number of indexes retrieved.
+
+=item i_f_ppal(im,l,r,y,vals)
+
+Stores color indexes into the image for pixels (l, y) ... (r-1, y)
+from C<vals>.  Returns the number of indexes retrieved.  If indexes are
+outside the range of the images palette, then you may have problems
+reading those pixels with i_gpix() or i_glin().
+
+=item i_f_addcolors(im,colors,count)
+
+Adds the count colors to the image's palette.  Returns the index of
+the first color added, or -1 if there is not enough space for count
+colors.
+
+=item i_f_getcolors(im,index,colors,count)
+
+Retrieves count colors from the image's palette starting from entry
+index in the palette.  Returns non-zero on success.
+
+=item i_f_colorcount(im)
+
+Returns the number of colors in the image's palette.  Returns -1 if
+this is not a paletted image.
+
+=item i_f_maxcolors(im)
+
+Returns the maximum number of colors that can fit in the image's
+palette.  Returns -1 if this is not a paletted image.
+
+=item i_f_findcolor(im,color,entry)
+
+Searches the image's palette for the specified color, setting *entry
+to the index and returning non-zero.  Returns zero if the color is not
+found.
+
+=item i_f_setcolors_t(im,index,colors,count)
+
+Sets count colors starting from index in the image from the array
+colors.  The colors to be set must already have entries in the image's
+palette.  Returns non-zero on success.
+
+=back
+
+Finally, the i_f_destroy function pointer can be set which is called
+when the image is destroyed.  This can be used to release memory
+pointed to by ext_data or release any other resources.
+
+When writing to a paletted image with i_ppix() or i_plin() and the
+color you are writing doesn't exist in the image, then it's possible
+that the image will be internally converted to a direct image with the
+same number of channels.
+
+=head1 TOOLS
+
+Several functions have been written to simplify creating new image types.
+
+These tools are available by including F<imagei.h>.
+
+=head2 Floating point wrappers
+
+These functions implement the floating point sample versions of each
+interface function in terms of the integer sample version.
+
+These are:
+
+=over
+
+=item i_ppixf_fp
+
+=item i_gpixf_fp
+
+=item i_plinf_fp
+
+=item i_glinf_fp
+
+=item i_gsampf_fp
+
+=back
+
+
+=head2 Forwarding functions
+
+These functions are used in virtual images where the call should
+simply be forwarded to the underlying image.  The underlying image is
+assumed to be the first pointer in a structure pointed at by ext_data.
+
+If this is not the case then these functions will just crash :)
+
+=over
+
+=item i_addcolors_forward
+
+=item i_getcolors_forward
+
+=item i_colorcount_forward
+
+=item i_maxcolors_forward
+
+=item i_findcolor_forward
+
+=item i_setcolors_forward
+
+=back
+
+=head2 Sample macros
+
+C<Imagei.h> defines several macros for converting samples between
+different sizes.
+
+Each macro is of the form C<Sample>I<size>C<To>I<size> where I<size> is one
+of 8, 16, or F (for floating-point samples).
+
+=over
+
+=item SampleFTo16(sample)
+
+=item Sample16ToF(sample)
+
+=item SampleFTo8(sample)
+
+=item Sample8ToF(sample)
+
+=item Sample16To8(num)
+
+=item Sample8To16(num)
+
+=back
+
+=cut

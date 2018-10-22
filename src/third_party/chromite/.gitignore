@@ -1,0 +1,18 @@
+# Generated files
+*.pyc
+*~
+*.swp
+.project
+.pydevproject
+
+# source cross-reference files.
+tags
+.ctags
+cscope.out
+
+# Chromite virtualenv.
+*.egg-info/
+
+# Obsolete
+/virtualenv/
+/.venv/

@@ -1,0 +1,168 @@
+# Checking Push Parsing.                            -*- Autotest -*-
+# Copyright (C) 2007 Free Software Foundation, Inc.
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+AT_BANNER([[Push Parsing Tests]])
+
+## ---------------------------------------------- ##
+## Push Parsing: Memory Leak for Early Deletion.  ##
+## ---------------------------------------------- ##
+
+AT_SETUP([[Push Parsing: Memory Leak for Early Deletion]])
+
+# Requires Valgrind.
+
+AT_DATA_GRAMMAR([[input.y]],
+[[
+%{
+  #include <assert.h>
+  #include <stdio.h>
+  #define YYINITDEPTH 1
+  void yyerror (char const *msg);
+%}
+
+%define api.pure %define api.push_pull "push"
+
+%%
+
+start: 'a' 'b' 'c' ;
+
+%%
+
+void
+yyerror (char const *msg)
+{
+  fprintf (stderr, "%s\n", msg);
+}
+
+int
+main (void)
+{
+  yypstate *ps;
+
+  /* Make sure we don't try to free ps->yyss in this case.  */
+  ps = yypstate_new ();
+  yypstate_delete (ps);
+
+  /* yypstate_delete used to leak ps->yyss if the stack was reallocated but the
+     parse did not return on success, syntax error, or memory exhaustion.  */
+  ps = yypstate_new ();
+  assert (yypush_parse (ps, 'a', NULL) == YYPUSH_MORE);
+  yypstate_delete (ps);
+
+  ps = yypstate_new ();
+  assert (yypush_parse (ps, 'a', NULL) == YYPUSH_MORE);
+  assert (yypush_parse (ps, 'b', NULL) == YYPUSH_MORE);
+  yypstate_delete (ps);
+
+  return 0;
+}
+]])
+
+AT_BISON_CHECK([[-o input.c input.y]])
+AT_COMPILE([[input]])
+AT_PARSER_CHECK([[./input]])
+
+AT_CLEANUP
+
+## ----------------------------------------- ##
+## Push Parsing: Multiple impure instances.  ##
+## ----------------------------------------- ##
+
+AT_SETUP([[Push Parsing: Multiple impure instances]])
+
+m4_pushdef([AT_MULTIPLE_IMPURE_INSTANCES_CHECK], [
+AT_DATA_GRAMMAR([[input.y]],
+[[
+%{
+  #include <assert.h>
+  #include <stdio.h>
+  void yyerror (char const *msg);
+  int yylex (void);
+%}
+
+%define api.push_pull "]$1["
+
+%%
+
+start: ;
+
+%%
+
+void
+yyerror (char const *msg)
+{
+  fprintf (stderr, "%s\n", msg);
+}
+
+int
+yylex (void)
+{
+  return 0;
+}
+
+int
+main (void)
+{
+  yypstate *ps;
+  int i;
+
+  for (i = 0; i < 2; ++i)
+    {
+      ps = yypstate_new ();
+      assert (ps);
+      assert (yypstate_new () == NULL);
+      ]m4_if([$1], [[both]], [[assert (yyparse () == 2)]])[;
+      yychar = 0;
+      assert (yypush_parse (ps) == 0);
+      assert (yypstate_new () == NULL);
+      ]m4_if([$1], [[both]], [[assert (yyparse () == 2)]])[;
+      yypstate_delete (ps);
+    }
+
+  return 0;
+}
+]])
+
+AT_BISON_CHECK([[-o input.c input.y]])
+AT_COMPILE([[input]])
+AT_PARSER_CHECK([[./input]])
+])
+
+AT_MULTIPLE_IMPURE_INSTANCES_CHECK([[both]])
+AT_MULTIPLE_IMPURE_INSTANCES_CHECK([[push]])
+
+m4_popdef([AT_MULTIPLE_IMPURE_INSTANCES_CHECK])
+
+AT_CLEANUP
+
+## ------------------------------------- ##
+## Push Parsing: Unsupported Skeletons.  ##
+## ------------------------------------- ##
+
+AT_SETUP([[Push Parsing: Unsupported Skeletons]])
+
+AT_DATA([[input.y]],
+[[%glr-parser
+%define api.push_pull "push"
+%%
+start: ;
+]])
+
+AT_BISON_CHECK([[input.y]], [0], [],
+[[input.y:2.9-21: warning: %define variable `api.push_pull' is not used
+]])
+
+AT_CLEANUP

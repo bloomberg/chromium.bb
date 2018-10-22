@@ -1,0 +1,6 @@
+FileChooser: opened; multiple=true directory=true
+FileChooser: testRunner doesn't support directory selection yet.
+Ensure pressing Enter key with focus on an INPUT element with TYPE=FILE and WEBKITDIRECTORY still launches a file chooser if preventDefault() is called on the 'keypress' event. Automated test passes if 'FileChooser: opened' was logged.
+
+keypress prevented
+

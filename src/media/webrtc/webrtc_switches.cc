@@ -1,0 +1,49 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "media/webrtc/webrtc_switches.h"
+
+namespace switches {
+
+// Enables a new tuning of the WebRTC Acoustic Echo Canceler (AEC). The new
+// tuning aims at resolving two issues with the AEC:
+// https://bugs.chromium.org/p/webrtc/issues/detail?id=5777
+// https://bugs.chromium.org/p/webrtc/issues/detail?id=5778
+// TODO(hlundin): Remove this switch when experimentation is over;
+// crbug.com/603821.
+const char kAecRefinedAdaptiveFilter[] = "aec-refined-adaptive-filter";
+
+// Override the default minimum starting volume of the Automatic Gain Control
+// algorithm in WebRTC used with audio tracks from getUserMedia.
+// The valid range is 12-255. Values outside that range will be clamped
+// to the lowest or highest valid value inside WebRTC.
+// TODO(tommi): Remove this switch when crbug.com/555577 is fixed.
+const char kAgcStartupMinVolume[] = "agc-startup-min-volume";
+
+}  // namespace switches
+
+namespace features {
+
+// Informs the WebRTC Acoustic Echo Canceler (AEC) that echo path loss is
+// bounded.
+const base::Feature kWebRtcAecBoundedErlSetup{
+    "WebRtcAecBoundedErlSetup", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Informs the WebRTC Acoustic Echo Canceler (AEC) that the playout and
+// capture is done using different clocks.
+const base::Feature kWebRtcAecClockDriftSetup{
+    "WebRtcAecClockDriftSetup", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Informs the WebRTC Acoustic Echo Canceler (AEC) that the feature providing
+// echo canceller transparency to render noise should be used.
+const base::Feature kWebRtcAecNoiseTransparency{
+    "WebRtcAecNoiseTransparency", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables running WebRTC Audio Processing in the audio service, rather than
+// in the renderer process. Should be combined with running the audio service
+// out of the browser process, except for when testing locally.
+const base::Feature kWebRtcApmInAudioService{"WebRtcApmInAudioService",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+}  // namespace features

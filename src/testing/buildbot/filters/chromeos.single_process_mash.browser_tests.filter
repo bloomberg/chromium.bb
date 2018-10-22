@@ -1,0 +1,6 @@
+# Placeholder tests that validate basic login functionality.
+# TODO: replace with full suite and blacklist once it's ready.
+# Bug: http://crbug.com/874090
+LoginPromptBrowserTest.*
+LoginUtilsTest.*
+LoginUIKeyboardTestWithUsersAndOwner.*
