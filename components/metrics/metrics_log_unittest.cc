@@ -138,8 +138,7 @@ TEST_F(MetricsLogTest, BasicRecord) {
   system_profile->set_application_locale(client.GetApplicationLocale());
 
 #if defined(ADDRESS_SANITIZER) || DCHECK_IS_ON()
-  // TODO(889105): Field will be renamed to is_instrumented_build up-stream.
-  system_profile->set_is_asan_build(true);
+  system_profile->set_is_instrumented_build(true);
 #endif
   metrics::SystemProfileProto::Hardware* hardware =
       system_profile->mutable_hardware();

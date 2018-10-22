@@ -59,8 +59,10 @@ message SystemProfileProto {
   }
   optional Channel channel = 10;
 
-  // True if Chrome build is ASan-instrumented.
-  optional bool is_asan_build = 20 [default = false];
+  // True if Chrome build is instrumented (e.g. built with ASAN instrumentation
+  // or with DCHECKs enabled).
+  // This field was renamed from |is_asan_build| to reflect its actual meaning.
+  optional bool is_instrumented_build = 20 [default = false];
 
   // The date the user enabled UMA, in seconds since the epoch.
   // If the user has toggled the UMA enabled state multiple times, this will
