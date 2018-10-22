@@ -903,8 +903,10 @@ void DeleteSelectionCommand::MergeParagraphs(EditingState* editing_state) {
   // the right.
   // FIXME: Consider RTL.
   if (!starts_at_empty_line_ && IsStartOfParagraph(merge_destination) &&
-      AbsoluteCaretBoundsOf(start_of_paragraph_to_move).X() >
-          AbsoluteCaretBoundsOf(merge_destination).X()) {
+      AbsoluteCaretBoundsOf(start_of_paragraph_to_move.ToPositionWithAffinity())
+              .X() >
+          AbsoluteCaretBoundsOf(merge_destination.ToPositionWithAffinity())
+              .X()) {
     if (IsHTMLBRElement(
             *MostForwardCaretPosition(merge_destination.DeepEquivalent())
                  .AnchorNode())) {

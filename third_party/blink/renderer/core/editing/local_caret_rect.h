@@ -39,8 +39,9 @@ LocalCaretRectOfPosition(const PositionInFlatTreeWithAffinity&);
 LocalCaretRect LocalSelectionRectOfPosition(const PositionWithAffinity&);
 
 // Bounds of (possibly transformed) caret in absolute coords
-CORE_EXPORT IntRect AbsoluteCaretBoundsOf(const VisiblePosition&);
-CORE_EXPORT IntRect AbsoluteCaretBoundsOf(const VisiblePositionInFlatTree&);
+CORE_EXPORT IntRect AbsoluteCaretBoundsOf(const PositionWithAffinity&);
+CORE_EXPORT IntRect
+AbsoluteCaretBoundsOf(const PositionInFlatTreeWithAffinity&);
 
 IntRect AbsoluteCaretRectOfPosition(
     const PositionWithAffinity&,
