@@ -142,23 +142,25 @@ camera.views.camera.Options = function(router, onNewStreamNeeded) {
       'click', this.onSwitchTakePhotoClicked_.bind(this));
   this.switchDevice_.addEventListener(
       'click', this.onSwitchDeviceClicked_.bind(this));
-  this.toggleMirror_.addEventListener(
-      'click', this.onToggleMirrorClicked_.bind(this));
-  this.toggleGrid_.addEventListener(
-      'click', this.onToggleGridClicked_.bind(this));
-  this.toggleTimer_.addEventListener(
-      'click', this.onToggleTimerClicked_.bind(this));
-  this.toggleMic_.addEventListener(
-      'click', this.onToggleMicClicked_.bind(this));
 
-  // Handle key-press for checkbox-type toggles.
-  [this.toggleMirror_, this.toggleGrid_, this.toggleTimer_, this.toggleMic_]
-      .forEach(element => {
-    element.addEventListener('keypress', event => {
+  // Add event listeners for toggles.
+  var toggles = [
+    [this.toggleMirror_, 'onToggleMirrorClicked_', 'mirror'],
+    [this.toggleGrid_, 'onToggleGridClicked_', 'grid'],
+    [this.toggleTimer_, 'onToggleTimerClicked_', 'timer'],
+    [this.toggleMic_, 'onToggleMicClicked_']
+  ];
+  toggles.forEach(([element, fn, attr]) => {
+    element.addEventListener('click', this[fn].bind(this));
+    element.addEventListener('keypress', (event) => {
       if (camera.util.getShortcutIdentifier(event) == 'Enter') {
         element.click();
       }
     });
+    if (attr) {
+      element.addEventListener('change',
+          (event) => document.body.classList.toggle(attr, element.checked));
+    }
   });
 
   // Load the shutter, tick, and recording sound.
@@ -189,18 +191,16 @@ camera.views.camera.Options.prototype.prepare = function() {
     this.toggleMirror_.hidden = !result;
   });
 
-  // Select the default state of the toggle buttons.
+  // Set the default or remembered states of the toggle buttons.
   chrome.storage.local.get({
     toggleMic: true,
     toggleTimer: false,
     toggleGrid: false,
     mirroringToggles: {},  // Manually mirroring states per video device.
   }, values => {
-    this.toggleMic_.checked = values.toggleMic;
-    this.toggleTimer_.checked = values.toggleTimer;
-    this.updateClass_(this.toggleTimer_, 'timer');
-    this.toggleGrid_.checked = values.toggleGrid;
-    this.updateClass_(this.toggleGrid_, 'grid');
+    this.changeToggle_(this.toggleMic_, values.toggleMic);
+    this.changeToggle_(this.toggleTimer_, values.toggleTimer);
+    this.changeToggle_(this.toggleGrid_, values.toggleGrid);
     this.mirroringToggles_ = values.mirroringToggles;
   });
   // Remove the deprecated values.
@@ -284,14 +284,14 @@ camera.views.camera.Options.prototype.onSwitchDeviceClicked_ = function(event) {
 };
 
 /**
- * Updates a class attribute by a toggle's value.
- * @param {HTMLInputElement} toggle Element of a toggle.
- * @param {string} name Class name.
- * @return {boolean} Whether the updated result contains the class or not.
+ * Changes the toggle's value manually.
+ * @param {HTMLInputElement} toggle Element of the toggle.
+ * @param {boolean} value Whether the toggle is checked.
  * @private
  */
-camera.views.camera.Options.prototype.updateClass_ = function(toggle, name) {
-  return document.body.classList.toggle(name, toggle.checked);
+camera.views.camera.Options.prototype.changeToggle_ = function(toggle, value) {
+  toggle.checked = value;
+  toggle.dispatchEvent(new Event('change'));
 };
 
 /**
@@ -310,8 +310,7 @@ camera.views.camera.Options.prototype.onToggleMicClicked_ = function(event) {
  * @private
  */
 camera.views.camera.Options.prototype.onToggleTimerClicked_ = function(event) {
-  chrome.storage.local.set(
-      {toggleTimer: this.updateClass_(this.toggleTimer_, 'timer')});
+  chrome.storage.local.set({toggleTimer: this.toggleTimer_.checked});
 };
 
 /**
@@ -322,8 +321,7 @@ camera.views.camera.Options.prototype.onToggleTimerClicked_ = function(event) {
 camera.views.camera.Options.prototype.onToggleGridClicked_ = function(event) {
   Array.from(document.querySelector('#preview-grid').children).forEach(
       grid => camera.util.animateOnce(grid));
-  chrome.storage.local.set(
-      {toggleGrid: this.updateClass_(this.toggleGrid_, 'grid')});
+  chrome.storage.local.set({toggleGrid: this.toggleGrid_.checked});
 };
 
 /**
@@ -332,8 +330,7 @@ camera.views.camera.Options.prototype.onToggleGridClicked_ = function(event) {
  * @private
  */
 camera.views.camera.Options.prototype.onToggleMirrorClicked_ = function(event) {
-  this.mirroringToggles_[this.videoDeviceId_] =
-      this.updateClass_(this.toggleMirror_, 'mirror');
+  this.mirroringToggles_[this.videoDeviceId_] = this.toggleMirror_.checked;
   chrome.storage.local.set({mirroringToggles: this.mirroringToggles_});
 };
 
@@ -469,8 +466,7 @@ camera.views.camera.Options.prototype.updateMirroring_ = function(
       this.videoDeviceId_ in this.mirroringToggles_) {
     enabled = this.mirroringToggles_[this.videoDeviceId_];
   }
-  this.toggleMirror_.checked = enabled;
-  this.updateClass_(this.toggleMirror_, 'mirror');
+  this.changeToggle_(this.toggleMirror_, enabled);
 };
 
 /**
@@ -495,7 +491,7 @@ camera.views.camera.Options.prototype.maybeRefreshVideoDeviceIds_ = function() {
     return availableVideoDevices;
   });
 
-  // Update UI options.
+  // Show switch-device button only when more than one camera.
   this.videoDeviceIds_.then(deviceIds => {
     this.switchDevice_.hidden = deviceIds.length < 2;
   }).catch(error => {
@@ -525,7 +521,6 @@ camera.views.camera.Options.prototype.videoDeviceIds = function() {
       }
       return 1;
     });
-
     // Prepended 'null' deviceId means the system default camera. Add it only
     // when the app is launched (no video-device-id set).
     if (this.videoDeviceId_ == null) {
