@@ -183,6 +183,7 @@ void D3D11VideoDecoder::Initialize(
   // could use our own device, and run on the mojo thread, but texture sharing
   // seems to be difficult.
   // TODO(liberato): take |device_| as input.
+  // TODO(liberato): On re-init, we can probably re-use the device.
   device_ = gl::QueryD3D11DeviceObjectFromANGLE();
   if (!device_) {
     // This happens if, for example, if chrome is configured to use
@@ -281,6 +282,7 @@ void D3D11VideoDecoder::Initialize(
   InitializeAcceleratedDecoder(config, proxy_context, video_decoder);
 
   // |cdm_context| could be null for clear playback.
+  // TODO(liberato): On re-init, should this still happen?
   if (cdm_context) {
     new_key_callback_registration_ =
         cdm_context->RegisterNewKeyCB(base::BindRepeating(

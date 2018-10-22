@@ -41,6 +41,15 @@ void D3D11VideoDecoderImpl::Initialize(
     ReturnPictureBufferCB return_picture_buffer_cb) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
+  return_picture_buffer_cb_ = std::move(return_picture_buffer_cb);
+
+  // If already have a stub, then we're as initialized as we need to be.
+  if (stub_) {
+    std::move(init_cb).Run(true);
+    return;
+  }
+
+  // First init.  Get the stub, register, and generally do stuff.
   stub_ = get_stub_cb_.Run();
   if (!MakeContextCurrent(stub_)) {
     const char* reason = "Failed to get decoder stub";
@@ -49,11 +58,10 @@ void D3D11VideoDecoderImpl::Initialize(
       media_log_->AddEvent(media_log_->CreateStringEvent(
           MediaLogEvent::MEDIA_ERROR_LOG_ENTRY, "error", reason));
     }
+    stub_ = nullptr;
     std::move(init_cb).Run(false);
     return;
   }
-
-  return_picture_buffer_cb_ = std::move(return_picture_buffer_cb);
 
   stub_->AddDestructionObserver(this);
   wait_sequence_id_ = stub_->channel()->scheduler()->CreateSequence(
