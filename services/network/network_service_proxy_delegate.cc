@@ -16,6 +16,9 @@ namespace {
 // alternate proxy list.
 constexpr size_t kMaxCacheSize = 15;
 
+// The maximum number of previous configs to keep.
+constexpr size_t kMaxPreviousConfigs = 2;
+
 void GetAlternativeProxy(const GURL& url,
                          const net::ProxyRetryInfoMap& proxy_retry_info,
                          net::ProxyInfo* result) {
@@ -55,10 +58,17 @@ bool ApplyProxyConfigToProxyInfo(const net::ProxyConfig::ProxyRules& rules,
 bool CheckProxyList(const net::ProxyList& proxy_list,
                     const net::ProxyServer& target_proxy) {
   for (const auto& proxy : proxy_list.GetAll()) {
-    if (proxy.host_port_pair().Equals(target_proxy.host_port_pair()))
+    if (!proxy.is_direct() &&
+        proxy.host_port_pair().Equals(target_proxy.host_port_pair())) {
       return true;
+    }
   }
   return false;
+}
+
+// Whether the custom proxy can proxy |url|.
+bool IsURLValidForProxy(const GURL& url) {
+  return url.SchemeIs(url::kHttpScheme) && !net::IsLocalhost(url);
 }
 
 }  // namespace
@@ -96,9 +106,7 @@ void NetworkServiceProxyDelegate::OnBeforeSendHeaders(
     if (url_loader) {
       headers->MergeFrom(url_loader->custom_proxy_post_cache_headers());
     }
-    // TODO(crbug.com/721403): This check may be incorrect if a new proxy config
-    // is set between OnBeforeStartTransaction and here.
-  } else if (MayProxyURL(request->url())) {
+  } else if (MayHaveProxiedURL(request->url())) {
     for (const auto& kv : proxy_config_->pre_cache_headers.GetHeaderVector()) {
       headers->RemoveHeader(kv.key);
     }
@@ -138,6 +146,11 @@ void NetworkServiceProxyDelegate::OnCustomProxyConfigUpdated(
     mojom::CustomProxyConfigPtr proxy_config) {
   DCHECK(proxy_config->rules.empty() ||
          !proxy_config->rules.proxies_for_http.IsEmpty());
+  if (proxy_config_) {
+    previous_proxy_configs_.push_front(std::move(proxy_config_));
+    if (previous_proxy_configs_.size() > kMaxPreviousConfigs)
+      previous_proxy_configs_.pop_back();
+  }
   proxy_config_ = std::move(proxy_config);
 }
 
@@ -146,12 +159,34 @@ bool NetworkServiceProxyDelegate::IsInProxyConfig(
   if (!proxy_server.is_valid() || proxy_server.is_direct())
     return false;
 
-  return CheckProxyList(proxy_config_->rules.proxies_for_http, proxy_server);
+  if (CheckProxyList(proxy_config_->rules.proxies_for_http, proxy_server))
+    return true;
+
+  for (const auto& config : previous_proxy_configs_) {
+    if (CheckProxyList(config->rules.proxies_for_http, proxy_server))
+      return true;
+  }
+
+  return false;
 }
 
 bool NetworkServiceProxyDelegate::MayProxyURL(const GURL& url) const {
-  return url.SchemeIs(url::kHttpScheme) && !proxy_config_->rules.empty() &&
-         !net::IsLocalhost(url);
+  return IsURLValidForProxy(url) && !proxy_config_->rules.empty();
+}
+
+bool NetworkServiceProxyDelegate::MayHaveProxiedURL(const GURL& url) const {
+  if (!IsURLValidForProxy(url))
+    return false;
+
+  if (!proxy_config_->rules.empty())
+    return true;
+
+  for (const auto& config : previous_proxy_configs_) {
+    if (!config->rules.empty())
+      return true;
+  }
+
+  return false;
 }
 
 bool NetworkServiceProxyDelegate::EligibleForProxy(
