@@ -40,9 +40,10 @@ public class ClientAppDataRegister {
     /**
      * Saves to Preferences that the app with |uid| has the application name |appName| and when it
      * is removed or cleared, we should consider doing the same with Chrome data relevant to
-     * |origin|.
+     * |domainAndRegistry|.
      */
-    /* package */ void registerPackageForOrigin(int uid, String appName, Origin origin) {
+    /* package */ void registerPackageForDomainAndRegistry(
+            int uid, String appName, String domainAndRegistry) {
         // Store the UID in the main Chrome Preferences.
         Set<String> uids = getUids();
         uids.add(String.valueOf(uid));
@@ -51,11 +52,12 @@ public class ClientAppDataRegister {
         // Store the package name for the UID.
         mPreferences.edit().putString(createAppNameKey(uid), appName).apply();
 
-        // Store the origin for the UID.
-        String key = createOriginsKey(uid);
-        Set<String> origins = new HashSet<>(mPreferences.getStringSet(key, Collections.emptySet()));
-        origins.add(origin.toString());
-        mPreferences.edit().putStringSet(key, origins).apply();
+        // Store the domainAndRegistry for the UID.
+        String key = createDomainAndRegistriesKey(uid);
+        Set<String> domainAndRegistries =
+                new HashSet<>(mPreferences.getStringSet(key, Collections.emptySet()));
+        domainAndRegistries.add(domainAndRegistry);
+        mPreferences.edit().putStringSet(key, domainAndRegistries).apply();
     }
 
     private void setUids(Set<String> uids) {
@@ -72,7 +74,7 @@ public class ClientAppDataRegister {
         setUids(uids);
 
         mPreferences.edit().putString(createAppNameKey(uid), null).apply();
-        mPreferences.edit().putStringSet(createOriginsKey(uid), null).apply();
+        mPreferences.edit().putStringSet(createDomainAndRegistriesKey(uid), null).apply();
     }
 
     /* package */ boolean chromeHoldsDataForPackage(int uid) {
@@ -87,11 +89,11 @@ public class ClientAppDataRegister {
     }
 
     /**
-     * Gets all the origins that have been registered for the uid.
+     * Gets all the 'domain and registry's that have been registered for the uid.
      * Do not modify the set returned by this method.
      */
-    /* package */ Set<String> getOriginsForRegisteredUid(int uid) {
-        return mPreferences.getStringSet(createOriginsKey(uid), Collections.emptySet());
+    /* package */ Set<String> getDomainAndRegistriesForRegisteredUid(int uid) {
+        return mPreferences.getStringSet(createDomainAndRegistriesKey(uid), Collections.emptySet());
     }
 
     /**
@@ -103,10 +105,10 @@ public class ClientAppDataRegister {
     }
 
     /**
-     * Creates the Preferences key to access the set of origins for an app.
+     * Creates the Preferences key to access the set of 'domain and registry's for an app.
      * If you modify this you'll have to migrate old data.
      */
-    private static String createOriginsKey(int uid) {
-        return uid + ".origins";
+    private static String createDomainAndRegistriesKey(int uid) {
+        return uid + ".domainAndRegistry";
     }
 }

@@ -43,6 +43,18 @@ public class ClientAppDataRecorderTest {
     @Mock public PackageManager mPackageManager;
 
     private ClientAppDataRecorder mRecorder;
+    private final ClientAppDataRecorder.UrlTransformer mUrlTransformer =
+            new ClientAppDataRecorder.UrlTransformer() {
+                @Override
+                String getDomainAndRegistry(Origin origin) {
+                    return transform(origin);
+                }
+            };
+
+    private static String transform(Origin origin) {
+        // Just an arbitrary string transformation so we can check it is applied.
+        return origin.toString().toUpperCase();
+    }
 
     @Before
     public void setUp() throws PackageManager.NameNotFoundException {
@@ -60,7 +72,7 @@ public class ClientAppDataRecorderTest {
                 .when(mPackageManager)
                 .getApplicationInfo(eq(MISSING_PACKAGE), anyInt());
 
-        mRecorder = new ClientAppDataRecorder(mPackageManager, mRegister);
+        mRecorder = new ClientAppDataRecorder(mPackageManager, mRegister, mUrlTransformer);
     }
 
 
@@ -68,7 +80,7 @@ public class ClientAppDataRecorderTest {
     @Feature("TrustedWebActivities")
     public void testRegister() {
         mRecorder.register(APP_PACKAGE, ORIGIN);
-        verify(mRegister).registerPackageForOrigin(APP_UID, APP_NAME, ORIGIN);
+        verify(mRegister).registerPackageForDomainAndRegistry(APP_UID, APP_NAME, transform(ORIGIN));
     }
 
     @Test
@@ -76,7 +88,7 @@ public class ClientAppDataRecorderTest {
     public void testDeduplicate() {
         mRecorder.register(APP_PACKAGE, ORIGIN);
         mRecorder.register(APP_PACKAGE, ORIGIN);
-        verify(mRegister).registerPackageForOrigin(APP_UID, APP_NAME, ORIGIN);
+        verify(mRegister).registerPackageForDomainAndRegistry(APP_UID, APP_NAME, transform(ORIGIN));
     }
 
     @Test
@@ -84,8 +96,9 @@ public class ClientAppDataRecorderTest {
     public void testDifferentOrigins() {
         mRecorder.register(APP_PACKAGE, ORIGIN);
         mRecorder.register(APP_PACKAGE, OTHER_ORIGIN);
-        verify(mRegister).registerPackageForOrigin(APP_UID, APP_NAME, ORIGIN);
-        verify(mRegister).registerPackageForOrigin(APP_UID, APP_NAME, OTHER_ORIGIN);
+        verify(mRegister).registerPackageForDomainAndRegistry(APP_UID, APP_NAME, transform(ORIGIN));
+        verify(mRegister).registerPackageForDomainAndRegistry(
+                APP_UID, APP_NAME, transform(OTHER_ORIGIN));
     }
 
     @Test
@@ -93,6 +106,7 @@ public class ClientAppDataRecorderTest {
     public void testMisingPackage() {
         mRecorder.register(MISSING_PACKAGE, ORIGIN);
         // Implicitly checking we don't throw.
-        verify(mRegister, times(0)).registerPackageForOrigin(anyInt(), anyString(), any());
+        verify(mRegister, times(0))
+                .registerPackageForDomainAndRegistry(anyInt(), anyString(), any());
     }
 }
