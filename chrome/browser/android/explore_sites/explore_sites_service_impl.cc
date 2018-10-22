@@ -113,6 +113,19 @@ void ExploreSitesServiceImpl::BlacklistSite(const std::string& url) {
   // TODO(https://crbug.com/893845): Remove cached category icon if affected.
 }
 
+// Validate the catalog.  Note this does not take ownership of the pointer.
+void ValidateCatalog(Catalog* catalog) {
+  // TODO(https://crbug.com/895541): Validate that the category type is in the
+  // valid range.  Also make sure the site has a title, else remove it.
+
+  // Convert the URLs to a standard format.
+  for (auto& category : *catalog->mutable_categories()) {
+    for (auto& site : *category.mutable_sites()) {
+      site.set_site_url(GURL(site.site_url()).spec());
+    }
+  }
+}
+
 void ExploreSitesServiceImpl::OnCatalogFetched(
     ExploreSitesRequestStatus status,
     std::unique_ptr<std::string> serialized_protobuf) {
@@ -138,6 +151,9 @@ void ExploreSitesServiceImpl::OnCatalogFetched(
   }
   std::string catalog_version = catalog_response->version_token();
   std::unique_ptr<Catalog> catalog(catalog_response->release_catalog());
+
+  // Check the catalog, canonicalizing any URLs in it.
+  ValidateCatalog(catalog.get());
 
   // Add the catalog to our internal database.
   task_queue_.AddTask(std::make_unique<ImportCatalogTask>(

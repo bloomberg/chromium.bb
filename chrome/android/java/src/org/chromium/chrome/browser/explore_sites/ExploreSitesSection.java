@@ -34,6 +34,7 @@ import java.util.Map;
  * It abstracts general tasks related to initializing and fetching data for the UI.
  */
 public class ExploreSitesSection {
+    private static final String TAG = "ExploreSitesSection";
     private static final int MAX_CATEGORIES = 3;
     // This is a number of UMA histogram buckets that should be an upper bound
     // of MAX_CATEGORIES over time, plus 1 for "More" button, and plus 1 for
