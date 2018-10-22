@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -139,14 +140,21 @@ class BookmarkModelTypeProcessorTest : public testing::Test {
     // TODO(crbug.com/516866): This class assumes model is loaded and sync has
     // started before running tests. We should test other variations (i.e. model
     // isn't loaded yet and/or sync didn't start yet).
+    processor_.SetFaviconService(&favicon_service_);
+  }
+
+  void SimulateModelReadyToSync() {
     processor_.ModelReadyToSync(
         /*metadata_str=*/std::string(), schedule_save_closure_.Get(),
         bookmark_model_.get());
+  }
+
+  void SimulateOnSyncStarting() {
     syncer::DataTypeActivationRequest request;
     request.cache_guid = kCacheGuid;
-    processor_.SetFaviconService(&favicon_service_);
     processor_.OnSyncStarting(request, base::DoNothing());
   }
+
   bookmarks::BookmarkModel* bookmark_model() { return bookmark_model_.get(); }
   BookmarkUndoService* bookmark_undo_service() {
     return &bookmark_undo_service_;
@@ -167,6 +175,8 @@ class BookmarkModelTypeProcessorTest : public testing::Test {
 };
 
 TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteCreation) {
+  SimulateModelReadyToSync();
+  SimulateOnSyncStarting();
   syncer::UniquePosition kRandomPosition =
       syncer::UniquePosition::InitialPosition(
           syncer::UniquePosition::RandomSuffix());
@@ -209,6 +219,8 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteUpdate) {
   std::vector<BookmarkInfo> bookmarks = {
       {kNodeId, kTitle, kUrl, kBookmarkBarId, /*server_tag=*/std::string()}};
 
+  SimulateModelReadyToSync();
+  SimulateOnSyncStarting();
   InitWithSyncedBookmarks(bookmarks, processor());
 
   // Make sure original bookmark exists.
@@ -248,6 +260,8 @@ TEST_F(BookmarkModelTypeProcessorTest,
   std::vector<BookmarkInfo> bookmarks = {
       {kNodeId, kTitle, kUrl, kBookmarkBarId, /*server_tag=*/std::string()}};
 
+  SimulateModelReadyToSync();
+  SimulateOnSyncStarting();
   InitWithSyncedBookmarks(bookmarks, processor());
 
   // Make sure original bookmark exists.
@@ -282,6 +296,8 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldDecodeSyncMetadata) {
       /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16(kTitle),
       GURL(kUrl));
 
+  SimulateModelReadyToSync();
+  SimulateOnSyncStarting();
   // TODO(crbug.com/516866): Remove this after initial sync done is properly set
   // within the processor.
   sync_pb::BookmarkModelMetadata model_metadata;
@@ -329,7 +345,8 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldDecodeEncodedSyncMetadata) {
       {kNodeId1, kTitle1, kUrl1, kBookmarkBarId, /*server_tag=*/std::string()},
       {kNodeId2, kTitle2, kUrl2, kBookmarkBarId,
        /*server_tag=*/std::string()}};
-
+  SimulateModelReadyToSync();
+  SimulateOnSyncStarting();
   InitWithSyncedBookmarks(bookmarks, processor());
 
   std::string metadata_str = processor()->EncodeSyncMetadata();
@@ -397,6 +414,8 @@ TEST_F(BookmarkModelTypeProcessorTest,
 // key name.
 TEST_F(BookmarkModelTypeProcessorTest,
        ShouldUpdateModelTypeStateUponHandlingRemoteUpdates) {
+  SimulateModelReadyToSync();
+  SimulateOnSyncStarting();
   // Initialize the process to make sure the tracker has been created.
   InitWithSyncedBookmarks({}, processor());
   const SyncedBookmarkTracker* tracker = processor()->GetTrackerForTest();
@@ -423,17 +442,37 @@ TEST_F(BookmarkModelTypeProcessorTest,
 // Verifies that the processor doesn't crash if sync is stopped before receiving
 // remote updates or tracking metadata.
 TEST_F(BookmarkModelTypeProcessorTest, ShouldStopBeforeReceivingRemoteUpdates) {
+  SimulateModelReadyToSync();
+  SimulateOnSyncStarting();
   ASSERT_THAT(processor()->GetTrackerForTest(), IsNull());
   processor()->OnSyncStopping(syncer::CLEAR_METADATA);
   EXPECT_THAT(processor()->GetTrackerForTest(), IsNull());
 }
 
 TEST_F(BookmarkModelTypeProcessorTest, ShouldStopAfterReceivingRemoteUpdates) {
+  SimulateModelReadyToSync();
+  SimulateOnSyncStarting();
   // Initialize the process to make sure the tracker has been created.
   InitWithSyncedBookmarks({}, processor());
   ASSERT_THAT(processor()->GetTrackerForTest(), NotNull());
   processor()->OnSyncStopping(syncer::CLEAR_METADATA);
   EXPECT_THAT(processor()->GetTrackerForTest(), IsNull());
+}
+
+TEST_F(BookmarkModelTypeProcessorTest,
+       ShouldReportNoCountersWhenModelIsNotLoaded) {
+  SimulateOnSyncStarting();
+  ASSERT_THAT(processor()->GetTrackerForTest(), IsNull());
+  syncer::StatusCounters status_counters;
+  // Assign an arbitrary non-zero number to the |num_entries| to be able to
+  // check that actually a 0 has been written to it later.
+  status_counters.num_entries = 1000;
+  processor()->GetStatusCountersForDebugging(
+      base::BindLambdaForTesting([&](syncer::ModelType model_type,
+                                     const syncer::StatusCounters& counters) {
+        status_counters = counters;
+      }));
+  EXPECT_EQ(0u, status_counters.num_entries);
 }
 
 }  // namespace
