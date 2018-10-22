@@ -19,7 +19,7 @@ void HTMLCanvasElementModule::getContext(
     const CanvasContextCreationAttributesModule& attributes,
     ExceptionState& exception_state,
     RenderingContext& result) {
-  if (canvas.SurfaceLayerBridge()) {
+  if (canvas.SurfaceLayerBridge() && !canvas.LowLatencyEnabled()) {
     // The existence of canvas surfaceLayerBridge indicates that
     // HTMLCanvasElement.transferControlToOffscreen() has been called.
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
@@ -31,9 +31,8 @@ void HTMLCanvasElementModule::getContext(
 
   CanvasRenderingContext* context = canvas.GetCanvasRenderingContext(
       type, ToCanvasContextCreationAttributes(attributes));
-  if (context) {
+  if (context)
     context->SetCanvasGetContextResult(result);
-  }
 }
 
 OffscreenCanvas* HTMLCanvasElementModule::transferControlToOffscreen(
