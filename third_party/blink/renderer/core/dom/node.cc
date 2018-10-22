@@ -1991,7 +1991,9 @@ void Node::ShowTreeForThisAcrossFrame() const {
 // --------
 
 Element* Node::EnclosingLinkEventParentOrSelf() const {
-  const Node* result = nullptr;
+  // https://crbug.com/784492
+  DCHECK(this);
+
   for (const Node* node = this; node; node = FlatTreeTraversal::Parent(*node)) {
     // For imagemaps, the enclosing link node is the associated area element not
     // the image itself.  So we don't let images be the enclosingLinkNode, even
@@ -1999,12 +2001,11 @@ Element* Node::EnclosingLinkEventParentOrSelf() const {
     if (node->IsLink() && !IsHTMLImageElement(*node)) {
       // Casting to Element is safe because only HTMLAnchorElement,
       // HTMLImageElement and SVGAElement can return true for isLink().
-      result = node;
-      break;
+      return ToElement(const_cast<Node*>(node));
     }
   }
 
-  return ToElement(const_cast<Node*>(result));
+  return nullptr;
 }
 
 const AtomicString& Node::InterfaceName() const {

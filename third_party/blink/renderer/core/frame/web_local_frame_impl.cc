@@ -2013,9 +2013,11 @@ WebFrame* WebLocalFrameImpl::FindFrameByName(const WebString& name) {
 
 void WebLocalFrameImpl::SendPings(const WebURL& destination_url) {
   DCHECK(GetFrame());
-  Element* anchor = ContextMenuNodeInner()->EnclosingLinkEventParentOrSelf();
-  if (auto* html_anchor = ToHTMLAnchorElementOrNull(anchor))
-    html_anchor->SendPings(destination_url);
+  if (Node* node = ContextMenuNodeInner()) {
+    Element* anchor = node->EnclosingLinkEventParentOrSelf();
+    if (auto* html_anchor = ToHTMLAnchorElementOrNull(anchor))
+      html_anchor->SendPings(destination_url);
+  }
 }
 
 bool WebLocalFrameImpl::DispatchBeforeUnloadEvent(bool is_reload) {
