@@ -103,6 +103,13 @@ void BluetoothSystem::SetPowered(bool powered, SetPoweredCallback callback) {
     return;
   }
 
+  // Update the BluetoothSystem state to kTransitioning if a previous call to
+  // SetPowered() has not done so already.
+  if (state_ != State::kTransitioning) {
+    state_ = State::kTransitioning;
+    client_ptr_->OnStateChanged(state_);
+  }
+
   GetBluetoothAdapterClient()
       ->GetProperties(active_adapter_.value())
       ->powered.Set(powered,
@@ -134,6 +141,13 @@ void BluetoothSystem::UpdateStateAndNotifyIfNecessary() {
 
 void BluetoothSystem::OnSetPoweredFinished(SetPoweredCallback callback,
                                            bool succeeded) {
+  if (!succeeded) {
+    // We change |state_| to `kTransitioning` before trying to set 'powered'. If
+    // the call to set 'powered' fails, then we need to change it back to
+    // `kPoweredOn` or `kPoweredOff` depending on the `active_adapter_` state.
+    UpdateStateAndNotifyIfNecessary();
+  }
+
   std::move(callback).Run(succeeded ? SetPoweredResult::kSuccess
                                     : SetPoweredResult::kFailedUnknownReason);
 }

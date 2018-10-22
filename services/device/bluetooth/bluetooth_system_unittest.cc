@@ -606,16 +606,18 @@ TEST_F(BluetoothSystemTest, SetPoweredOff_SucceedsAdapterInitiallyOn) {
             SetPoweredAndWait(system, false));
   EXPECT_EQ(1u, test_bluetooth_adapter_client_->GetSetPoweredCallCount(
                     kFooObjectPathStr));
-  // TODO(ortuno): Change to kTransitioning once implemented.
-  EXPECT_EQ(mojom::BluetoothSystem::State::kPoweredOn, GetStateAndWait(system));
-  EXPECT_TRUE(on_state_changed_states_.empty());
+  EXPECT_EQ(mojom::BluetoothSystem::State::kTransitioning,
+            GetStateAndWait(system));
+  EXPECT_EQ(StateVector({mojom::BluetoothSystem::State::kTransitioning}),
+            on_state_changed_states_);
 
   test_bluetooth_adapter_client_->SimulateSetPoweredCompleted(
       kFooObjectPathStr);
 
   EXPECT_EQ(mojom::BluetoothSystem::State::kPoweredOff,
             GetStateAndWait(system));
-  EXPECT_EQ(StateVector({mojom::BluetoothSystem::State::kPoweredOff}),
+  EXPECT_EQ(StateVector({mojom::BluetoothSystem::State::kTransitioning,
+                         mojom::BluetoothSystem::State::kPoweredOff}),
             on_state_changed_states_);
 }
 
@@ -632,16 +634,17 @@ TEST_F(BluetoothSystemTest, SetPoweredOn_SucceedsAdapterInitiallyOff) {
             SetPoweredAndWait(system, true));
   EXPECT_EQ(1u, test_bluetooth_adapter_client_->GetSetPoweredCallCount(
                     kFooObjectPathStr));
-  // TODO(ortuno): Change to kTransitioning once implemented.
-  EXPECT_EQ(mojom::BluetoothSystem::State::kPoweredOff,
+  EXPECT_EQ(mojom::BluetoothSystem::State::kTransitioning,
             GetStateAndWait(system));
-  EXPECT_TRUE(on_state_changed_states_.empty());
+  EXPECT_EQ(StateVector({mojom::BluetoothSystem::State::kTransitioning}),
+            on_state_changed_states_);
 
   test_bluetooth_adapter_client_->SimulateSetPoweredCompleted(
       kFooObjectPathStr);
 
   EXPECT_EQ(mojom::BluetoothSystem::State::kPoweredOn, GetStateAndWait(system));
-  EXPECT_EQ(StateVector({mojom::BluetoothSystem::State::kPoweredOn}),
+  EXPECT_EQ(StateVector({mojom::BluetoothSystem::State::kTransitioning,
+                         mojom::BluetoothSystem::State::kPoweredOn}),
             on_state_changed_states_);
 }
 
@@ -661,9 +664,9 @@ TEST_F(BluetoothSystemTest, SetPoweredOff_FailsAdapterInitiallyOn) {
   EXPECT_EQ(1u, test_bluetooth_adapter_client_->GetSetPoweredCallCount(
                     kFooObjectPathStr));
   EXPECT_EQ(mojom::BluetoothSystem::State::kPoweredOn, GetStateAndWait(system));
-  // TODO(ortuno): Test that the state change to kTransitioning and then back
-  // to kPoweredOff after the call failed.
-  EXPECT_TRUE(on_state_changed_states_.empty());
+  EXPECT_EQ(StateVector({mojom::BluetoothSystem::State::kTransitioning,
+                         mojom::BluetoothSystem::State::kPoweredOn}),
+            on_state_changed_states_);
 }
 
 // Tests failing to set powered to "On" when the adapter is "Off".
@@ -681,9 +684,9 @@ TEST_F(BluetoothSystemTest, SetPoweredOn_FailsAdapterInitiallyOff) {
                     kFooObjectPathStr));
   EXPECT_EQ(mojom::BluetoothSystem::State::kPoweredOff,
             GetStateAndWait(system));
-  // TODO(ortuno): Test that the state change to kTransitioning and then back
-  // to kPoweredOff after the call failed.
-  EXPECT_TRUE(on_state_changed_states_.empty());
+  EXPECT_EQ(StateVector({mojom::BluetoothSystem::State::kTransitioning,
+                         mojom::BluetoothSystem::State::kPoweredOff}),
+            on_state_changed_states_);
 }
 
 }  // namespace device

@@ -48,8 +48,9 @@ interface BluetoothSystem {
 
   // Attempts to change the state of the Bluetooth to `kPoweredOn` if |powered|
   // and `kPoweredOff` otherwise . Callback is run with `kSuccess if the command
-  // was successfully sent to the BT Radio. Once the BT radio actually changes
-  // state BluetoothSystemClient::OnStateChanged will be called.
+  // was successfully sent to the BT Radio. The state immediately changes to
+  // kTransitioning and once the BT radio actually changes state
+  // BluetoothSystemClient::OnStateChanged will be called.
   // TODO(https://crbug.com/896113): This function is missing two features:
   //  1. The new state should be saved in the user's pref so that the next time
   //     the machine turns off the state matches the user pref.
