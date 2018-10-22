@@ -29,13 +29,17 @@ from slave import build_directory
 SRC_DIR = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..', '..'))
 
+# If something adds a static initializer, revert it, don't increase these
+# numbers. We don't accept regressions in static initializers.
 EXPECTED_LINUX_SI_COUNTS = {
-  'chrome': 8,
-  'nacl_helper': 6,
+  'chrome': 7,
+  'nacl_helper': 5,
   'nacl_helper_bootstrap': 0,
 }
 
-EXPECTED_MAC_SI_COUNT = 1
+# If something adds a static initializer, revert it, don't increase these
+# numbers. We don't accept regressions in static initializers.
+EXPECTED_MAC_SI_COUNT = 1  # https://crbug.com/893594
 
 
 class ResultsCollector(object):
