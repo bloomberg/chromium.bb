@@ -71,7 +71,9 @@ const char kMp4Vp9Profile2VideoOnly[] =
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
 const char kWebMAv1VideoOnly[] = "video/webm; codecs=\"av01.0.04M.08\"";
+const char kWebMAv110bitVideoOnly[] = "video/webm; codecs=\"av01.0.04M.10\"";
 const char kMp4Av1VideoOnly[] = "video/mp4; codecs=\"av01.0.04M.08\"";
+const char kMp4Av110bitVideoOnly[] = "video/mp4; codecs=\"av01.0.04M.10\"";
 #endif  // BUILDFLAG(ENABLE_AV1_DECODER)
 
 // EME-specific test results and errors.
@@ -325,6 +327,11 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_WebM_AV1) {
   TestSimplePlayback("bear-av1-cenc.webm", kWebMAv1VideoOnly);
 }
 
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_WebM_AV1_10bit) {
+  TestSimplePlayback("bear-av1-320x180-10bit-cenc.webm",
+                     kWebMAv110bitVideoOnly);
+}
+
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_AV1) {
   // MP4 without MSE is not support yet, http://crbug.com/170793.
   if (CurrentSourceType() != SrcType::MSE) {
@@ -332,6 +339,15 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_AV1) {
     return;
   }
   TestSimplePlayback("bear-av1-cenc.mp4", kMp4Av1VideoOnly);
+}
+
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_AV1_10bit) {
+  // MP4 without MSE is not support yet, http://crbug.com/170793.
+  if (CurrentSourceType() != SrcType::MSE) {
+    DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
+    return;
+  }
+  TestSimplePlayback("bear-av1-320x180-10bit-cenc.mp4", kMp4Av110bitVideoOnly);
 }
 #endif  // BUILDFLAG(ENABLE_AV1_DECODER)
 

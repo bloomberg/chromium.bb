@@ -85,6 +85,9 @@ ffmpeg -i sfx.flac -map 0:0 -acodec copy -strict -2 -movflags frag_keyframe+empt
 
 ### AV1
 
+Unless noted otherwise, the codec string is `av01.0.04M.08` for 8-bit files,
+and `av01.0.04M.10` for 10-bit files.
+
 #### bear.y4m
 Not an AV1 file, but all of the following commands rely on this file. It was
 created using vpxdec with the following command:
@@ -423,6 +426,9 @@ using key ID [1] and key [2].
 
 ### AV1
 
+Unless noted otherwise, the codec string is `av01.0.04M.08` for 8-bit files,
+and `av01.0.04M.10` for 10-bit files.
+
 #### bear-av1-cenc.mp4
 Encrypted version of bear-av1.mp4. Encrypted by [Shaka Packager] built locally
 at commit 53aa775ea488c0ffd3a2e1cb78ad000154e414e1 using key ID [1] and key [2].
@@ -435,6 +441,16 @@ packager in=bear-av1.mp4,stream=video,output=bear-av1-cenc.mp4
 
 #### bear-av1-cenc.webm
 Same as bear-av1-cenc.mp4, except that the output name is bear-av1-cenc.webm.
+
+#### bear-av1-320x180-10bit-cenc.mp4
+Same as bear-av1-cenc.mp4, except that the input name is
+bear-av1-320x180-10bit.mp4, and the output name is
+bear-av1-320x180-10bit-cenc.mp4.
+
+#### bear-av1-320x180-10bit-cenc.webm
+Same as bear-av1-cenc.mp4, except that the input name is
+bear-av1-320x180-10bit.webm, and the output name is
+bear-av1-320x180-10bit-cenc.webm.
 
 ### Encryption Scheme Test
 
