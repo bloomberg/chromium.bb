@@ -54,10 +54,11 @@ AccountStatusChangeDelegateNotifierImpl::Factory::BuildInstance(
     HostStatusProvider* host_status_provider,
     PrefService* pref_service,
     HostDeviceTimestampManager* host_device_timestamp_manager,
+    OobeCompletionTracker* oobe_completion_tracker,
     base::Clock* clock) {
   return base::WrapUnique(new AccountStatusChangeDelegateNotifierImpl(
       host_status_provider, pref_service, host_device_timestamp_manager,
-      clock));
+      oobe_completion_tracker, clock));
 }
 
 // static
@@ -72,6 +73,9 @@ void AccountStatusChangeDelegateNotifierImpl::RegisterPrefs(
                               kTimestampNotSet);
   registry->RegisterInt64Pref(kExistingUserChromebookAddedPrefName,
                               kTimestampNotSet);
+
+  registry->RegisterInt64Pref(kOobeSetupFlowTimestampPrefName,
+                              kTimestampNotSet);
   registry->RegisterStringPref(
       kVerifiedHostDeviceIdFromMostRecentHostStatusUpdatePrefName, kNoHost);
 }
@@ -79,6 +83,7 @@ void AccountStatusChangeDelegateNotifierImpl::RegisterPrefs(
 AccountStatusChangeDelegateNotifierImpl::
     ~AccountStatusChangeDelegateNotifierImpl() {
   host_status_provider_->RemoveObserver(this);
+  oobe_completion_tracker_->RemoveObserver(this);
 }
 
 void AccountStatusChangeDelegateNotifierImpl::OnDelegateSet() {
@@ -108,24 +113,42 @@ const char AccountStatusChangeDelegateNotifierImpl::
     kVerifiedHostDeviceIdFromMostRecentHostStatusUpdatePrefName[] =
         "multidevice_setup.host_device_id_from_most_recent_sync";
 
+// The timestamps (in milliseconds since UNIX Epoch, aka JavaTime) of the user
+// seeing setup flow in OOBE. If it is 0, the user did not see the setup flow in
+// OOBE.
+// static
+const char
+    AccountStatusChangeDelegateNotifierImpl::kOobeSetupFlowTimestampPrefName[] =
+        "multidevice_setup.oobe_setup_flow_timestamp ";
+
 AccountStatusChangeDelegateNotifierImpl::
     AccountStatusChangeDelegateNotifierImpl(
         HostStatusProvider* host_status_provider,
         PrefService* pref_service,
         HostDeviceTimestampManager* host_device_timestamp_manager,
+        OobeCompletionTracker* oobe_completion_tracker,
         base::Clock* clock)
     : host_status_provider_(host_status_provider),
       pref_service_(pref_service),
       host_device_timestamp_manager_(host_device_timestamp_manager),
+      oobe_completion_tracker_(oobe_completion_tracker),
       clock_(clock) {
   verified_host_device_id_from_most_recent_update_ =
       LoadHostDeviceIdFromEndOfPreviousSession();
   host_status_provider_->AddObserver(this);
+  oobe_completion_tracker_->AddObserver(this);
 }
 
 void AccountStatusChangeDelegateNotifierImpl::OnHostStatusChange(
     const HostStatusProvider::HostStatusWithDevice& host_status_with_device) {
   CheckForMultiDeviceEvents(host_status_with_device);
+}
+
+void AccountStatusChangeDelegateNotifierImpl::OnOobeCompleted() {
+  pref_service_->SetInt64(kOobeSetupFlowTimestampPrefName,
+                          clock_->Now().ToJavaTime());
+  if (delegate())
+    delegate()->OnNoLongerNewUser();
 }
 
 void AccountStatusChangeDelegateNotifierImpl::CheckForMultiDeviceEvents(
@@ -174,6 +197,13 @@ void AccountStatusChangeDelegateNotifierImpl::
     CheckForNewUserPotentialHostExistsEvent(
         const HostStatusProvider::HostStatusWithDevice&
             host_status_with_device) {
+  // We do not notify the user if they already had a chance to go through setup
+  // flow in OOBE.
+  if (pref_service_->GetInt64(kOobeSetupFlowTimestampPrefName) !=
+      kTimestampNotSet) {
+    return;
+  }
+
   // We only check for new user events if there is no enabled host.
   if (verified_host_device_id_from_most_recent_update_)
     return;

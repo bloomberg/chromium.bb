@@ -42,6 +42,7 @@ class HostBackendDelegate;
 class HostDeviceTimestampManager;
 class HostStatusProvider;
 class HostVerifier;
+class OobeCompletionTracker;
 
 // Concrete MultiDeviceSetup implementation.
 class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
@@ -57,6 +58,7 @@ class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
         PrefService* pref_service,
         device_sync::DeviceSyncClient* device_sync_client,
         AuthTokenValidator* auth_token_validator,
+        OobeCompletionTracker* oobe_completion_tracker,
         std::unique_ptr<AndroidSmsAppHelperDelegate>
             android_sms_app_helper_delegate,
         std::unique_ptr<AndroidSmsPairingStateTracker>
@@ -76,6 +78,7 @@ class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
       PrefService* pref_service,
       device_sync::DeviceSyncClient* device_sync_client,
       AuthTokenValidator* auth_token_validator,
+      OobeCompletionTracker* oobe_completion_tracker,
       std::unique_ptr<AndroidSmsAppHelperDelegate>
           android_sms_app_helper_delegate,
       std::unique_ptr<AndroidSmsPairingStateTracker>

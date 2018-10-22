@@ -152,6 +152,7 @@
 #include "chrome/browser/chromeos/multidevice_setup/android_sms_pairing_state_tracker_impl.h"
 #include "chrome/browser/chromeos/multidevice_setup/auth_token_validator_factory.h"
 #include "chrome/browser/chromeos/multidevice_setup/auth_token_validator_impl.h"
+#include "chrome/browser/chromeos/multidevice_setup/oobe_completion_tracker_factory.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
@@ -1489,6 +1490,8 @@ ProfileImpl::CreateMultiDeviceSetupService() {
       GetPrefs(),
       chromeos::device_sync::DeviceSyncClientFactory::GetForProfile(this),
       chromeos::multidevice_setup::AuthTokenValidatorFactory::GetForProfile(
+          this),
+      chromeos::multidevice_setup::OobeCompletionTrackerFactory::GetForProfile(
           this),
       std::make_unique<
           chromeos::multidevice_setup::AndroidSmsAppHelperDelegateImpl>(this),

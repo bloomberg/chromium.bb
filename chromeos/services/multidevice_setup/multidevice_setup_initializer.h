@@ -27,6 +27,7 @@ namespace multidevice_setup {
 class AndroidSmsAppHelperDelegate;
 class AndroidSmsPairingStateTracker;
 class AuthTokenValidator;
+class OobeCompletionTracker;
 
 // Initializes the MultiDeviceSetup service. This class is responsible for
 // waiting for asynchronous initialization steps to complete before creating
@@ -44,6 +45,7 @@ class MultiDeviceSetupInitializer
         PrefService* pref_service,
         device_sync::DeviceSyncClient* device_sync_client,
         AuthTokenValidator* auth_token_validator,
+        OobeCompletionTracker* oobe_completion_tracker,
         std::unique_ptr<AndroidSmsAppHelperDelegate>
             android_sms_app_helper_delegate,
         std::unique_ptr<AndroidSmsPairingStateTracker>
@@ -81,6 +83,7 @@ class MultiDeviceSetupInitializer
       PrefService* pref_service,
       device_sync::DeviceSyncClient* device_sync_client,
       AuthTokenValidator* auth_token_validator,
+      OobeCompletionTracker* oobe_completion_tracker,
       std::unique_ptr<AndroidSmsAppHelperDelegate>
           android_sms_app_helper_delegate,
       std::unique_ptr<AndroidSmsPairingStateTracker>
@@ -123,6 +126,7 @@ class MultiDeviceSetupInitializer
   PrefService* pref_service_;
   device_sync::DeviceSyncClient* device_sync_client_;
   AuthTokenValidator* auth_token_validator_;
+  OobeCompletionTracker* oobe_completion_tracker_;
   std::unique_ptr<AndroidSmsAppHelperDelegate> android_sms_app_helper_delegate_;
   std::unique_ptr<AndroidSmsPairingStateTracker>
       android_sms_pairing_state_tracker_;
