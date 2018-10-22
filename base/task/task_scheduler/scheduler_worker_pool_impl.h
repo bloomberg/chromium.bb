@@ -73,7 +73,8 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
                           StringPiece pool_label,
                           ThreadPriority priority_hint,
                           TrackedRef<TaskTracker> task_tracker,
-                          DelayedTaskManager* delayed_task_manager);
+                          DelayedTaskManager* delayed_task_manager,
+                          TrackedRef<Delegate> delegate);
 
   // Creates workers following the |params| specification, allowing existing and
   // future tasks to run. The pool will run at most |max_best_effort_tasks|
@@ -97,6 +98,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   // SchedulerWorkerPool:
   void JoinForTesting() override;
+  void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override;
 
   const HistogramBase* num_tasks_before_detach_histogram() const {
     return num_tasks_before_detach_histogram_;
@@ -164,6 +166,9 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   // SchedulerWorkerPool:
   void OnCanScheduleSequence(scoped_refptr<Sequence> sequence) override;
+
+  // Pushes |sequence| to |shared_priority_queue_|.
+  void PushSequenceToPriorityQueue(scoped_refptr<Sequence> sequence);
 
   // Waits until at least |n| workers are idle. |lock_| must be held to call
   // this function.
