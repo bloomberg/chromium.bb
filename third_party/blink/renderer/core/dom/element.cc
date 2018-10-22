@@ -185,7 +185,6 @@ ScrollCustomizationCallbacks& GetScrollCustomizationCallbacks() {
 }  // namespace
 
 using namespace HTMLNames;
-using namespace XMLNames;
 
 enum class ClassStringContent { kEmpty, kWhiteSpaceOnly, kHasClasses };
 
@@ -3168,7 +3167,7 @@ void Element::ParseAttribute(const AttributeModificationParams& params) {
       // We only set when value is in integer range.
       SetTabIndexExplicitly();
     }
-  } else if (params.name == XMLNames::langAttr) {
+  } else if (params.name == xml_names::kLangAttr) {
     PseudoStateChanged(CSSSelector::kPseudoLang);
   }
 }
@@ -4023,7 +4022,7 @@ AtomicString Element::ComputeInheritedLanguage() const {
       if (const ElementData* element_data = ToElement(n)->GetElementData()) {
         AttributeCollection attributes = element_data->Attributes();
         // Spec: xml:lang takes precedence -- http://www.w3.org/TR/xhtml1/#C_7
-        if (const Attribute* attribute = attributes.Find(XMLNames::langAttr))
+        if (const Attribute* attribute = attributes.Find(xml_names::kLangAttr))
           value = attribute->Value();
         else if (const Attribute* attribute =
                      attributes.Find(HTMLNames::langAttr))

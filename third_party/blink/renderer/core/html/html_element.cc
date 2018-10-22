@@ -231,7 +231,7 @@ void HTMLElement::MapLanguageAttributeToLocale(
 
 bool HTMLElement::IsPresentationAttribute(const QualifiedName& name) const {
   if (name == alignAttr || name == contenteditableAttr || name == hiddenAttr ||
-      name == langAttr || name.Matches(XMLNames::langAttr) ||
+      name == langAttr || name.Matches(xml_names::kLangAttr) ||
       name == draggableAttr || name == dirAttr)
     return true;
   return Element::IsPresentationAttribute(name);
@@ -309,11 +309,11 @@ void HTMLElement::CollectStyleForPresentationAttribute(
         AddPropertyToPresentationAttributeStyle(style, CSSPropertyUnicodeBidi,
                                                 CSSValueIsolate);
     }
-  } else if (name.Matches(XMLNames::langAttr)) {
+  } else if (name.Matches(xml_names::kLangAttr)) {
     MapLanguageAttributeToLocale(value, style);
   } else if (name == langAttr) {
     // xml:lang has a higher priority than lang.
-    if (!FastHasAttribute(XMLNames::langAttr))
+    if (!FastHasAttribute(xml_names::kLangAttr))
       MapLanguageAttributeToLocale(value, style);
   } else {
     Element::CollectStyleForPresentationAttribute(name, value, style);
@@ -332,7 +332,7 @@ AttributeTriggers* HTMLElement::TriggersForAttributeName(
       {nonceAttr, kNoWebFeature, kNoEvent, &HTMLElement::OnNonceAttrChanged},
       {tabindexAttr, kNoWebFeature, kNoEvent,
        &HTMLElement::OnTabIndexAttrChanged},
-      {XMLNames::langAttr, kNoWebFeature, kNoEvent,
+      {xml_names::kLangAttr, kNoWebFeature, kNoEvent,
        &HTMLElement::OnXMLLangAttrChanged},
 
       {onabortAttr, kNoWebFeature, EventTypeNames::abort, nullptr},

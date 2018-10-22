@@ -224,7 +224,7 @@ void SVGTextContentElement::selectSubString(unsigned charnum,
 
 bool SVGTextContentElement::IsPresentationAttribute(
     const QualifiedName& name) const {
-  if (name.Matches(XMLNames::spaceAttr))
+  if (name.Matches(xml_names::kSpaceAttr))
     return true;
   return SVGGraphicsElement::IsPresentationAttribute(name);
 }
@@ -233,7 +233,7 @@ void SVGTextContentElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  if (name.Matches(XMLNames::spaceAttr)) {
+  if (name.Matches(xml_names::kSpaceAttr)) {
     DEFINE_STATIC_LOCAL(const AtomicString, preserve_string, ("preserve"));
 
     if (value == preserve_string) {
@@ -259,7 +259,7 @@ void SVGTextContentElement::SvgAttributeChanged(
 
   if (attr_name == SVGNames::textLengthAttr ||
       attr_name == SVGNames::lengthAdjustAttr ||
-      attr_name == XMLNames::spaceAttr) {
+      attr_name == xml_names::kSpaceAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
 
     if (LayoutObject* layout_object = GetLayoutObject())
