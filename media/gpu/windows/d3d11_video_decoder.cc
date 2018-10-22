@@ -31,12 +31,17 @@ namespace {
 #define INRANGE(_profile, codecname) \
   (_profile >= codecname##PROFILE_MIN && _profile <= codecname##PROFILE_MAX)
 
-bool isVP9(const VideoDecoderConfig& config) {
+bool IsVP9(const VideoDecoderConfig& config) {
   return INRANGE(config.profile(), VP9);
 }
 
-bool isH264(const VideoDecoderConfig& config) {
+bool IsH264(const VideoDecoderConfig& config) {
   return INRANGE(config.profile(), H264);
+}
+
+bool IsUnsupportedVP9Profile(const VideoDecoderConfig& config) {
+  return config.profile() == VP9PROFILE_PROFILE1 ||
+         config.profile() == VP9PROFILE_PROFILE3;
 }
 
 #undef INRANGE
@@ -107,7 +112,7 @@ void D3D11VideoDecoder::InitializeAcceleratedDecoder(
     const VideoDecoderConfig& config,
     CdmProxyContext* proxy_context,
     Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder) {
-  if (isVP9(config)) {
+  if (IsVP9(config)) {
     accelerated_video_decoder_ =
         std::make_unique<VP9Decoder>(std::make_unique<D3D11VP9Accelerator>(
             this, media_log_.get(), proxy_context, video_decoder, video_device_,
@@ -115,7 +120,7 @@ void D3D11VideoDecoder::InitializeAcceleratedDecoder(
     return;
   }
 
-  if (isH264(config)) {
+  if (IsH264(config)) {
     accelerated_video_decoder_ = std::make_unique<H264Decoder>(
         std::make_unique<D3D11H264Accelerator>(this, media_log_.get(),
                                                proxy_context, video_decoder,
@@ -141,11 +146,11 @@ bool D3D11VideoDecoder::DeviceHasDecoderID(GUID decoder_guid) {
 }
 
 GUID D3D11VideoDecoder::GetD3D11DecoderGUID(const VideoDecoderConfig& config) {
-  if (isVP9(config) && base::FeatureList::IsEnabled(kD3D11VP9Decoder))
+  if (IsVP9(config) && base::FeatureList::IsEnabled(kD3D11VP9Decoder))
     // TODO(tmathmeyer) set up a finch experiment.
     return D3D11_DECODER_PROFILE_VP9_VLD_PROFILE0;
 
-  if (isH264(config))
+  if (IsH264(config))
     return D3D11_DECODER_PROFILE_H264_VLD_NOFGT;
 
   return {};
@@ -681,13 +686,18 @@ bool D3D11VideoDecoder::IsPotentiallySupported(
     return false;
   }
 
+  if (IsUnsupportedVP9Profile(config)) {
+    SetWasSupportedReason(D3D11VideoNotSupportedReason::kProfileNotSupported);
+    return false;
+  }
+
   // Converts one of chromium's VideoCodecProfile options to a dxguid value.
   // If this GUID comes back empty then the profile is not supported.
-  GUID decoderGUID = GetD3D11DecoderGUID(config);
+  GUID decoder_GUID = GetD3D11DecoderGUID(config);
 
   // If we got the empty guid, fail.
   GUID empty_guid = {};
-  if (decoderGUID == empty_guid) {
+  if (decoder_GUID == empty_guid) {
     SetWasSupportedReason(D3D11VideoNotSupportedReason::kCodecNotSupported);
     return false;
   }

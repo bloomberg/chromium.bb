@@ -346,8 +346,7 @@ namespace media {
 
 static const VideoCodecProfile kSupportedProfiles[] = {
     H264PROFILE_BASELINE, H264PROFILE_MAIN,    H264PROFILE_HIGH,
-    VP8PROFILE_ANY,       VP9PROFILE_PROFILE0, VP9PROFILE_PROFILE1,
-    VP9PROFILE_PROFILE2,  VP9PROFILE_PROFILE3};
+    VP8PROFILE_ANY,       VP9PROFILE_PROFILE0, VP9PROFILE_PROFILE2};
 
 CreateDXGIDeviceManager
     DXVAVideoDecodeAccelerator::create_dxgi_device_manager_ = NULL;
