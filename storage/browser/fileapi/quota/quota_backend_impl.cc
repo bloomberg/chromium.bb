@@ -38,11 +38,11 @@ QuotaBackendImpl::~QuotaBackendImpl() = default;
 void QuotaBackendImpl::ReserveQuota(const url::Origin& origin,
                                     FileSystemType type,
                                     int64_t delta,
-                                    const ReserveQuotaCallback& callback) {
+                                    ReserveQuotaCallback callback) {
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!origin.opaque());
   if (!delta) {
-    callback.Run(base::File::FILE_OK, 0);
+    std::move(callback).Run(base::File::FILE_OK, 0);
     return;
   }
   DCHECK(quota_manager_proxy_.get());
@@ -50,7 +50,8 @@ void QuotaBackendImpl::ReserveQuota(const url::Origin& origin,
       file_task_runner_.get(), origin, FileSystemTypeToQuotaStorageType(type),
       base::BindOnce(&QuotaBackendImpl::DidGetUsageAndQuotaForReserveQuota,
                      weak_ptr_factory_.GetWeakPtr(),
-                     QuotaReservationInfo(origin, type, delta), callback));
+                     QuotaReservationInfo(origin, type, delta),
+                     std::move(callback)));
 }
 
 void QuotaBackendImpl::ReleaseReservedQuota(const url::Origin& origin,
@@ -103,7 +104,7 @@ void QuotaBackendImpl::DecrementDirtyCount(const url::Origin& origin,
 
 void QuotaBackendImpl::DidGetUsageAndQuotaForReserveQuota(
     const QuotaReservationInfo& info,
-    const ReserveQuotaCallback& callback,
+    ReserveQuotaCallback callback,
     blink::mojom::QuotaStatusCode status,
     int64_t usage,
     int64_t quota) {
@@ -112,7 +113,7 @@ void QuotaBackendImpl::DidGetUsageAndQuotaForReserveQuota(
   DCHECK_LE(0, usage);
   DCHECK_LE(0, quota);
   if (status != blink::mojom::QuotaStatusCode::kOk) {
-    callback.Run(base::File::FILE_ERROR_FAILED, 0);
+    std::move(callback).Run(base::File::FILE_ERROR_FAILED, 0);
     return;
   }
 
@@ -127,7 +128,7 @@ void QuotaBackendImpl::DidGetUsageAndQuotaForReserveQuota(
   }
 
   ReserveQuotaInternal(normalized_info);
-  if (callback.Run(base::File::FILE_OK, normalized_info.delta))
+  if (std::move(callback).Run(base::File::FILE_OK, normalized_info.delta))
     return;
   // The requester could not accept the reserved quota. Revert it.
   ReserveQuotaInternal(

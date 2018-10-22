@@ -52,8 +52,7 @@ class CopyOrMoveOperationDelegate
         std::unique_ptr<FileStreamWriter> writer,
         FlushPolicy flush_policy,
         int buffer_size,
-        const FileSystemOperation::CopyFileProgressCallback&
-            file_progress_callback,
+        FileSystemOperation::CopyFileProgressCallback file_progress_callback,
         const base::TimeDelta& min_progress_callback_invocation_span);
     ~StreamCopyHelper();
 

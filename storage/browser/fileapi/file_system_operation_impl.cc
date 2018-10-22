@@ -202,8 +202,8 @@ void FileSystemOperationImpl::WriteBlob(
   file_writer_delegate_ = std::move(writer_delegate);
   file_writer_delegate_->Start(
       std::move(blob_reader),
-      base::Bind(&FileSystemOperationImpl::DidWrite, weak_factory_.GetWeakPtr(),
-                 url, callback));
+      base::BindRepeating(&FileSystemOperationImpl::DidWrite,
+                          weak_factory_.GetWeakPtr(), url, callback));
 }
 
 void FileSystemOperationImpl::Write(

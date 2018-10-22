@@ -88,8 +88,8 @@ QuotaReservationBuffer::~QuotaReservationBuffer() {
   if (reserved_quota_ && reservation_manager_) {
     reservation_manager_->ReserveQuota(
         origin_, type_, -reserved_quota_,
-        base::Bind(&QuotaReservationBuffer::DecrementDirtyCount,
-                   reservation_manager_, origin_, type_));
+        base::BindOnce(&QuotaReservationBuffer::DecrementDirtyCount,
+                       reservation_manager_, origin_, type_));
   }
   reservation_manager_->ReleaseReservationBuffer(this);
 }

@@ -204,9 +204,9 @@ TEST_F(RecursiveOperationDelegateTest, RootIsFile) {
 
   base::File::Error error = base::File::FILE_ERROR_FAILED;
   std::unique_ptr<FileSystemOperationContext> context = NewContext();
-  std::unique_ptr<LoggingRecursiveOperation> operation(
-      new LoggingRecursiveOperation(context->file_system_context(), src_file,
-                                    base::Bind(&ReportStatus, &error)));
+  auto operation = std::make_unique<LoggingRecursiveOperation>(
+      context->file_system_context(), src_file,
+      base::BindOnce(&ReportStatus, &error));
   operation->RunRecursively();
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(base::File::FILE_OK, error);
@@ -228,9 +228,9 @@ TEST_F(RecursiveOperationDelegateTest, RootIsDirectory) {
 
   base::File::Error error = base::File::FILE_ERROR_FAILED;
   std::unique_ptr<FileSystemOperationContext> context = NewContext();
-  std::unique_ptr<LoggingRecursiveOperation> operation(
-      new LoggingRecursiveOperation(context->file_system_context(), src_root,
-                                    base::Bind(&ReportStatus, &error)));
+  auto operation = std::make_unique<LoggingRecursiveOperation>(
+      context->file_system_context(), src_root,
+      base::BindOnce(&ReportStatus, &error));
   operation->RunRecursively();
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(base::File::FILE_OK, error);
@@ -283,9 +283,9 @@ TEST_F(RecursiveOperationDelegateTest, Cancel) {
 
   base::File::Error error = base::File::FILE_ERROR_FAILED;
   std::unique_ptr<FileSystemOperationContext> context = NewContext();
-  std::unique_ptr<LoggingRecursiveOperation> operation(
-      new LoggingRecursiveOperation(context->file_system_context(), src_root,
-                                    base::Bind(&ReportStatus, &error)));
+  auto operation = std::make_unique<LoggingRecursiveOperation>(
+      context->file_system_context(), src_root,
+      base::BindOnce(&ReportStatus, &error));
   operation->RunRecursively();
 
   // Invoke Cancel(), after 5 times message posting.
@@ -303,9 +303,9 @@ TEST_F(RecursiveOperationDelegateTest, AbortWithError) {
 
   base::File::Error error = base::File::FILE_ERROR_FAILED;
   std::unique_ptr<FileSystemOperationContext> context = NewContext();
-  std::unique_ptr<LoggingRecursiveOperation> operation(
-      new LoggingRecursiveOperation(context->file_system_context(), src_root,
-                                    base::Bind(&ReportStatus, &error)));
+  auto operation = std::make_unique<LoggingRecursiveOperation>(
+      context->file_system_context(), src_root,
+      base::BindOnce(&ReportStatus, &error));
   operation->SetEntryToFail(src_file1);
   operation->RunRecursively();
   base::RunLoop().RunUntilIdle();
@@ -339,9 +339,9 @@ TEST_F(RecursiveOperationDelegateTest, ContinueWithError) {
 
   base::File::Error error = base::File::FILE_ERROR_FAILED;
   std::unique_ptr<FileSystemOperationContext> context = NewContext();
-  std::unique_ptr<LoggingRecursiveOperation> operation(
-      new LoggingRecursiveOperation(context->file_system_context(), src_root,
-                                    base::Bind(&ReportStatus, &error)));
+  auto operation = std::make_unique<LoggingRecursiveOperation>(
+      context->file_system_context(), src_root,
+      base::BindOnce(&ReportStatus, &error));
   operation->SetEntryToFail(src_file1);
   operation->RunRecursivelyWithIgnoringError();
   base::RunLoop().RunUntilIdle();

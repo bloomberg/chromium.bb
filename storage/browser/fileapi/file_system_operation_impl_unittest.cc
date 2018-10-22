@@ -177,10 +177,8 @@ class FileSystemOperationImplTest
   FileSystemOperation::StatusCallback RecordStatusCallback(
       const base::Closure& closure,
       base::File::Error* status) {
-    return base::Bind(&FileSystemOperationImplTest::DidFinish,
-                      weak_factory_.GetWeakPtr(),
-                      closure,
-                      status);
+    return base::BindOnce(&FileSystemOperationImplTest::DidFinish,
+                          weak_factory_.GetWeakPtr(), closure, status);
   }
 
   FileSystemOperation::ReadDirectoryCallback RecordReadDirectoryCallback(
@@ -194,10 +192,8 @@ class FileSystemOperationImplTest
   FileSystemOperation::GetMetadataCallback RecordMetadataCallback(
       const base::Closure& closure,
       base::File::Error* status) {
-    return base::Bind(&FileSystemOperationImplTest::DidGetMetadata,
-                      weak_factory_.GetWeakPtr(),
-                      closure,
-                      status);
+    return base::BindOnce(&FileSystemOperationImplTest::DidGetMetadata,
+                          weak_factory_.GetWeakPtr(), closure, status);
   }
 
   FileSystemOperation::SnapshotFileCallback RecordSnapshotFileCallback(

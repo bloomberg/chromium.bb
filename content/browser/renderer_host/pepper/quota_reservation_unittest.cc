@@ -48,9 +48,9 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
       const url::Origin& origin,
       storage::FileSystemType type,
       int64_t delta,
-      const QuotaReservationManager::ReserveQuotaCallback& callback) override {
+      QuotaReservationManager::ReserveQuotaCallback callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(base::IgnoreResult(callback),
+        FROM_HERE, base::BindOnce(base::IgnoreResult(std::move(callback)),
                                   base::File::FILE_OK, delta));
   }
 
@@ -81,9 +81,8 @@ class QuotaReservationTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(work_dir_.CreateUniqueTempDir());
 
-    reservation_manager_.reset(new QuotaReservationManager(
-        std::unique_ptr<QuotaReservationManager::QuotaBackend>(
-            new FakeBackend)));
+    reservation_manager_ = std::make_unique<QuotaReservationManager>(
+        std::make_unique<FakeBackend>());
   }
 
   void TearDown() override {
