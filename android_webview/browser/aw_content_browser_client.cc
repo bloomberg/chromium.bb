@@ -390,6 +390,16 @@ void AwContentBrowserClient::GetQuotaSettings(
       partition->GetPath(), context->IsOffTheRecord(), std::move(callback));
 }
 
+content::GeneratedCodeCacheSettings
+AwContentBrowserClient::GetGeneratedCodeCacheSettings(
+    content::BrowserContext* context) {
+  // If we pass 0 for size, disk_cache will pick a default size using the
+  // heuristics based on available disk size. These are implemented in
+  // disk_cache::PreferredCacheSize in net/disk_cache/cache_util.cc.
+  return content::GeneratedCodeCacheSettings(true, 0,
+                                             AwBrowserContext::GetCacheDir());
+}
+
 void AwContentBrowserClient::AllowCertificateError(
     content::WebContents* web_contents,
     int cert_error,

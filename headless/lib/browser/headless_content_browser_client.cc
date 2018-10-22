@@ -205,6 +205,15 @@ void HeadlessContentBrowserClient::GetQuotaSettings(
       partition->GetPath(), context->IsOffTheRecord(), std::move(callback));
 }
 
+content::GeneratedCodeCacheSettings
+HeadlessContentBrowserClient::GetGeneratedCodeCacheSettings(
+    content::BrowserContext* context) {
+  // If we pass 0 for size, disk_cache will pick a default size using the
+  // heuristics based on available disk size. These are implemented in
+  // disk_cache::PreferredCacheSize in net/disk_cache/cache_util.cc.
+  return content::GeneratedCodeCacheSettings(true, 0, context->GetPath());
+}
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 void HeadlessContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const base::CommandLine& command_line,

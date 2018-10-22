@@ -689,32 +689,28 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
       partition->service_worker_context_, base::DoNothing());
 
   if (base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache)) {
-    // TODO(crbug.com/867552): Currently we misuse GetCachePath to check if
-    // code caching is enabled. Fix this by having a better API.
+    GeneratedCodeCacheSettings settings =
+        GetContentClient()->browser()->GetGeneratedCodeCacheSettings(context);
 
     // For Incognito mode, we should not persist anything on the disk so
     // we do not create a code cache. Caching the generated code in memory
     // is not useful, since V8 already maintains one copy in memory.
-    if (!in_memory && !context->GetCachePath().empty()) {
+    if (!in_memory && settings.enabled()) {
       partition->generated_code_cache_context_ =
           base::MakeRefCounted<GeneratedCodeCacheContext>();
 
       base::FilePath code_cache_path;
       if (partition_domain.empty()) {
-        code_cache_path = context->GetCachePath().AppendASCII("Code Cache");
+        code_cache_path = settings.path().AppendASCII("Code Cache");
       } else {
         // For site isolated partitions use the config directory.
-        code_cache_path = context->GetPath()
+        code_cache_path = settings.path()
                               .Append(relative_partition_path)
                               .AppendASCII("Code Cache");
       }
-
-      // TODO(crbug.com/867552): Currently we set it to 0 and let the disk_cache
-      // backend selects the size based on some heuristics. Add support to let
-      // the embedder override the default value.
-      constexpr int kSizeInBytes = 0;
-      partition->GetGeneratedCodeCacheContext()->Initialize(code_cache_path,
-                                                            kSizeInBytes);
+      DCHECK_GE(settings.size_in_bytes(), 0);
+      partition->GetGeneratedCodeCacheContext()->Initialize(
+          code_cache_path, settings.size_in_bytes());
     }
   }
 
