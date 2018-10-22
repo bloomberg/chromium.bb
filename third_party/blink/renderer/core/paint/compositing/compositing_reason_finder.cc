@@ -257,7 +257,7 @@ bool CompositingReasonFinder::RequiresCompositingForRootScroller(
   const auto& settings = *layer.GetLayoutObject().GetDocument().GetSettings();
   if (!settings.GetAcceleratedCompositingEnabled())
     return false;
-  return root_scroller_util::IsGlobal(layer);
+  return RootScrollerUtil::IsGlobal(layer);
 }
 
 bool CompositingReasonFinder::RequiresCompositingForScrollDependentPosition(

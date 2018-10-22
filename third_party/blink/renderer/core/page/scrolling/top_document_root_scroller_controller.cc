@@ -56,8 +56,7 @@ void TopDocumentRootScrollerController::DidResizeViewport() {
 }
 
 ScrollableArea* TopDocumentRootScrollerController::RootScrollerArea() const {
-  return root_scroller_util::ScrollableAreaForRootScroller(
-      GlobalRootScroller());
+  return RootScrollerUtil::ScrollableAreaForRootScroller(GlobalRootScroller());
 }
 
 IntSize TopDocumentRootScrollerController::RootScrollerVisibleArea() const {
@@ -115,7 +114,7 @@ void SetNeedsCompositingUpdateOnAncestors(Element* element) {
     return;
 
   ScrollableArea* area =
-      root_scroller_util::ScrollableAreaForRootScroller(element);
+      RootScrollerUtil::ScrollableAreaForRootScroller(element);
 
   if (!area || !area->Layer())
     return;
@@ -141,7 +140,7 @@ void TopDocumentRootScrollerController::RecomputeGlobalRootScroller() {
     return;
 
   ScrollableArea* target_scroller =
-      root_scroller_util::ScrollableAreaForRootScroller(target);
+      RootScrollerUtil::ScrollableAreaForRootScroller(target);
 
   if (!target_scroller)
     return;
@@ -168,8 +167,8 @@ void TopDocumentRootScrollerController::RecomputeGlobalRootScroller() {
   SetNeedsCompositingUpdateOnAncestors(old_root_scroller);
   SetNeedsCompositingUpdateOnAncestors(target);
 
-  if (ScrollableArea* area = root_scroller_util::ScrollableAreaForRootScroller(
-          old_root_scroller)) {
+  if (ScrollableArea* area =
+          RootScrollerUtil::ScrollableAreaForRootScroller(old_root_scroller)) {
     if (old_root_scroller->GetDocument().IsActive())
       area->DidChangeGlobalRootScroller();
   }
@@ -238,7 +237,7 @@ bool TopDocumentRootScrollerController::IsViewportScrollCallback(
 
 GraphicsLayer* TopDocumentRootScrollerController::RootScrollerLayer() const {
   ScrollableArea* area =
-      root_scroller_util::ScrollableAreaForRootScroller(global_root_scroller_);
+      RootScrollerUtil::ScrollableAreaForRootScroller(global_root_scroller_);
 
   if (!area)
     return nullptr;
@@ -254,13 +253,13 @@ GraphicsLayer* TopDocumentRootScrollerController::RootScrollerLayer() const {
 
 GraphicsLayer* TopDocumentRootScrollerController::RootContainerLayer() const {
   ScrollableArea* area =
-      root_scroller_util::ScrollableAreaForRootScroller(global_root_scroller_);
+      RootScrollerUtil::ScrollableAreaForRootScroller(global_root_scroller_);
 
   return area ? area->LayerForContainer() : nullptr;
 }
 
 PaintLayer* TopDocumentRootScrollerController::RootScrollerPaintLayer() const {
-  return root_scroller_util::PaintLayerForRootScroller(global_root_scroller_);
+  return RootScrollerUtil::PaintLayerForRootScroller(global_root_scroller_);
 }
 
 Element* TopDocumentRootScrollerController::GlobalRootScroller() const {
