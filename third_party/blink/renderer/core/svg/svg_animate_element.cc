@@ -91,7 +91,7 @@ QualifiedName ConstructQualifiedName(const SVGElement& svg_element,
   // "Animation elements treat attributeName='xlink:href' as being an alias
   // for targetting the 'href' attribute."
   // https://svgwg.org/svg2-draft/types.html#__svg__SVGURIReference__href
-  if (resolved_attr_name == XLinkNames::hrefAttr)
+  if (resolved_attr_name == xlink_names::kHrefAttr)
     return SVGNames::hrefAttr;
   return resolved_attr_name;
 }

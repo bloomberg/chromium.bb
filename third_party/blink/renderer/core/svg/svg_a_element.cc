@@ -66,7 +66,7 @@ DEFINE_NODE_FACTORY(SVGAElement)
 
 String SVGAElement::title() const {
   // If the xlink:title is set (non-empty string), use it.
-  const AtomicString& title = FastGetAttribute(XLinkNames::titleAttr);
+  const AtomicString& title = FastGetAttribute(xlink_names::kTitleAttr);
   if (!title.IsEmpty())
     return title;
 
@@ -126,7 +126,7 @@ void SVGAElement::DefaultEventHandler(Event& event) {
       }
 
       AtomicString target(svg_target_->CurrentValue()->Value());
-      if (target.IsEmpty() && FastGetAttribute(XLinkNames::showAttr) == "new")
+      if (target.IsEmpty() && FastGetAttribute(xlink_names::kShowAttr) == "new")
         target = AtomicString("_blank");
       event.SetDefaultHandled();
 

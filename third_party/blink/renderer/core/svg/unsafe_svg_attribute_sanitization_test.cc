@@ -277,7 +277,7 @@ TEST(UnsafeSVGAttributeSanitizationTest, stringsShouldNotSupportAddition) {
   SVGElement* target = SVGAElement::Create(*document);
   SVGAnimateElement* element = SVGAnimateElement::Create(*document);
   element->SetTargetElement(target);
-  element->SetAttributeName(XLinkNames::hrefAttr);
+  element->SetAttributeName(xlink_names::kHrefAttr);
 
   // Sanity check that xlink:href was identified as a "string" attribute
   EXPECT_EQ(kAnimatedString, element->GetAnimatedPropertyType());
@@ -295,7 +295,7 @@ TEST(UnsafeSVGAttributeSanitizationTest, stringsShouldNotSupportAddition) {
 TEST(UnsafeSVGAttributeSanitizationTest,
      stripScriptingAttributes_animateElement) {
   Vector<Attribute> attributes;
-  attributes.push_back(Attribute(XLinkNames::hrefAttr, "javascript:alert()"));
+  attributes.push_back(Attribute(xlink_names::kHrefAttr, "javascript:alert()"));
   attributes.push_back(Attribute(SVGNames::hrefAttr, "javascript:alert()"));
   attributes.push_back(Attribute(SVGNames::fromAttr, "/home"));
   attributes.push_back(Attribute(SVGNames::toAttr, "javascript:own3d()"));
@@ -306,7 +306,7 @@ TEST(UnsafeSVGAttributeSanitizationTest,
 
   EXPECT_EQ(3ul, attributes.size())
       << "One of the attributes should have been stripped.";
-  EXPECT_EQ(XLinkNames::hrefAttr, attributes[0].GetName())
+  EXPECT_EQ(xlink_names::kHrefAttr, attributes[0].GetName())
       << "The 'xlink:href' attribute should not have been stripped from "
          "<animate> because it is not a URL attribute of <animate>.";
   EXPECT_EQ(SVGNames::hrefAttr, attributes[1].GetName())
@@ -329,7 +329,7 @@ TEST(UnsafeSVGAttributeSanitizationTest,
 
 TEST(UnsafeSVGAttributeSanitizationTest,
      isJavaScriptURLAttribute_xlinkHrefContainingJavascriptURL) {
-  Attribute attribute(XLinkNames::hrefAttr, "javascript:alert()");
+  Attribute attribute(xlink_names::kHrefAttr, "javascript:alert()");
   Document* document = Document::CreateForTest();
   Element* element = SVGAElement::Create(*document);
   EXPECT_TRUE(element->IsJavaScriptURLAttribute(attribute))
@@ -341,7 +341,7 @@ TEST(
     UnsafeSVGAttributeSanitizationTest,
     isJavaScriptURLAttribute_xlinkHrefContainingJavascriptURL_alternatePrefix) {
   QualifiedName href_alternate_prefix("foo", "href",
-                                      XLinkNames::xlinkNamespaceURI);
+                                      xlink_names::kNamespaceURI);
   Attribute evil_attribute(href_alternate_prefix, "javascript:alert()");
   Document* document = Document::CreateForTest();
   Element* element = SVGAElement::Create(*document);

@@ -361,7 +361,7 @@ void MarkupFormatter::AppendAttribute(StringBuilder& result,
         prefixed_name.SetPrefix(g_xmlns_atom);
     } else if (attribute.NamespaceURI() == xml_names::kNamespaceURI) {
       prefixed_name.SetPrefix(g_xml_atom);
-    } else if (attribute.NamespaceURI() == XLinkNames::xlinkNamespaceURI) {
+    } else if (attribute.NamespaceURI() == xlink_names::kNamespaceURI) {
       prefixed_name.SetPrefix(g_xlink_atom);
     }
     result.Append(' ');
@@ -380,7 +380,7 @@ void MarkupFormatter::AppendAttribute(StringBuilder& result,
       if (!attribute.Prefix())
         prefixed_name.SetPrefix(g_xml_atom);
     } else {
-      if (attribute.NamespaceURI() == XLinkNames::xlinkNamespaceURI) {
+      if (attribute.NamespaceURI() == xlink_names::kNamespaceURI) {
         if (!attribute.Prefix())
           prefixed_name.SetPrefix(g_xlink_atom);
       }

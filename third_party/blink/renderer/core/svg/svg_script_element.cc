@@ -173,7 +173,7 @@ void SVGScriptElement::SetScriptElementForBinding(
 #if DCHECK_IS_ON()
 bool SVGScriptElement::IsAnimatableAttribute(const QualifiedName& name) const {
   if (name == SVGNames::typeAttr || name == SVGNames::hrefAttr ||
-      name == XLinkNames::hrefAttr)
+      name == xlink_names::kHrefAttr)
     return false;
   return SVGElement::IsAnimatableAttribute(name);
 }

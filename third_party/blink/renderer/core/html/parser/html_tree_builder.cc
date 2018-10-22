@@ -517,8 +517,9 @@ static void AdjustForeignAttributes(AtomicHTMLToken* token) {
   if (!map) {
     map = new PrefixedNameToQualifiedNameMap;
 
-    std::unique_ptr<const QualifiedName* []> attrs = XLinkNames::GetAttrs();
-    AddNamesWithPrefix(map, g_xlink_atom, attrs.get(), XLinkNames::kAttrsCount);
+    std::unique_ptr<const QualifiedName* []> attrs = xlink_names::GetAttrs();
+    AddNamesWithPrefix(map, g_xlink_atom, attrs.get(),
+                       xlink_names::kAttrsCount);
 
     std::unique_ptr<const QualifiedName* []> xml_attrs = xml_names::GetAttrs();
     AddNamesWithPrefix(map, g_xml_atom, xml_attrs.get(),
