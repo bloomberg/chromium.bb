@@ -37,13 +37,6 @@ bool IsTabletModeEnabled() {
          TabletModeClient::Get()->tablet_mode_enabled();
 }
 
-bool IsSpokenFeedbackEnabled() {
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
-  return accessibility_manager &&
-         accessibility_manager->IsSpokenFeedbackEnabled();
-}
-
 // Based on the current status of |contents|, returns the browser top controls
 // shown state constraints, which specifies if the top controls are allowed to
 // be only shown, or either shown or hidden.
@@ -282,16 +275,7 @@ TopControlsSlideControllerChromeOS::TopControlsSlideControllerChromeOS(
 
   browser_view_->browser()->tab_strip_model()->AddObserver(this);
 
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
-  if (accessibility_manager) {
-    accessibility_status_subscription_ =
-        accessibility_manager->RegisterCallback(base::BindRepeating(
-            &TopControlsSlideControllerChromeOS::OnAccessibilityStatusChanged,
-            base::Unretained(this)));
-  }
-
-  OnEnabledStateChanged(CanEnable(base::nullopt));
+  OnEnabledStateChanged(IsTabletModeEnabled() && !browser_view->IsFullscreen());
 }
 
 TopControlsSlideControllerChromeOS::~TopControlsSlideControllerChromeOS() {
@@ -358,13 +342,14 @@ void TopControlsSlideControllerChromeOS::SetShownRatio(
     defer_disabling_ = false;
 
     // Don't just set |is_enabled_| to false. Make sure it's a correct value.
-    OnEnabledStateChanged(CanEnable(base::nullopt));
+    OnEnabledStateChanged(IsTabletModeEnabled() &&
+                          !browser_view_->IsFullscreen());
   }
 }
 
 void TopControlsSlideControllerChromeOS::OnBrowserFullscreenStateWillChange(
     bool new_fullscreen_state) {
-  OnEnabledStateChanged(CanEnable(new_fullscreen_state));
+  OnEnabledStateChanged(IsTabletModeEnabled() && !new_fullscreen_state);
 }
 
 bool TopControlsSlideControllerChromeOS::DoBrowserControlsShrinkRendererSize(
@@ -406,7 +391,7 @@ bool TopControlsSlideControllerChromeOS::IsTopControlsGestureScrollInProgress()
 
 void TopControlsSlideControllerChromeOS::OnTabletModeToggled(
     bool tablet_mode_enabled) {
-  OnEnabledStateChanged(CanEnable(base::nullopt));
+  OnEnabledStateChanged(tablet_mode_enabled && !browser_view_->IsFullscreen());
 }
 
 void TopControlsSlideControllerChromeOS::TabInsertedAt(
@@ -490,24 +475,6 @@ void TopControlsSlideControllerChromeOS::Observe(
   // top-chrome is able to be hidden again.
   if (node_details->is_editable_node || shown_ratio_ == 1.f)
     UpdateBrowserControlsStateShown(active_contents, true /* animate */);
-}
-
-bool TopControlsSlideControllerChromeOS::CanEnable(
-    base::Optional<bool> fullscreen_state) const {
-  return IsTabletModeEnabled() &&
-         !(fullscreen_state ? *fullscreen_state
-                            : browser_view_->IsFullscreen()) &&
-         !IsSpokenFeedbackEnabled();
-}
-
-void TopControlsSlideControllerChromeOS::OnAccessibilityStatusChanged(
-    const chromeos::AccessibilityStatusEventDetails& event_details) {
-  if (event_details.notification_type !=
-      chromeos::ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK) {
-    return;
-  }
-
-  OnEnabledStateChanged(CanEnable(base::nullopt));
 }
 
 void TopControlsSlideControllerChromeOS::OnEnabledStateChanged(bool new_state) {

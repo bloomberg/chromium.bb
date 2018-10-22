@@ -18,7 +18,6 @@
 #include "base/strings/safe_sprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "cc/base/math_util.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
@@ -1007,80 +1006,6 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
   waiter.WaitForRatio(1.f);
   EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 1.f);
   CheckBrowserLayout(browser_view(), TopChromeShownState::kFullyShown);
-}
-
-// Waits for a compositor frame to be drawn and committed on the given
-// web_contents.
-class CompositorFrameWaiter : content::WebContentsObserver {
- public:
-  explicit CompositorFrameWaiter(content::WebContents* contents)
-      : WebContentsObserver(contents) {}
-  ~CompositorFrameWaiter() override = default;
-
-  void Wait() { run_loop_.Run(); }
-
-  // content::WebContentsObserver:
-  void DidCommitAndDrawCompositorFrame() override { run_loop_.Quit(); }
-
- private:
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(CompositorFrameWaiter);
-};
-
-IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestToggleChromeVox) {
-  ToggleTabletMode();
-  ASSERT_TRUE(GetTabletModeEnabled());
-  EXPECT_TRUE(top_controls_slide_controller()->IsEnabled());
-  EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 1.f);
-
-  OpenUrlAtIndex(embedded_test_server()->GetURL("/top_controls_scroll.html"),
-                 0);
-  content::WebContents* active_contents =
-      browser_view()->GetActiveWebContents();
-  PageStateUpdateWaiter page_state_update_waiter(active_contents);
-  page_state_update_waiter.Wait();
-  EXPECT_TRUE(
-      browser_view()->DoBrowserControlsShrinkRendererSize(active_contents));
-
-  aura::Window* browser_window = browser()->window()->GetNativeWindow();
-  ui::test::EventGenerator event_generator(browser_window->GetRootWindow(),
-                                           browser_window);
-  const gfx::Point start_point = event_generator.current_location();
-  const gfx::Point end_point = start_point + gfx::Vector2d(0, -100);
-  GenerateGestureFlingScrollSequence(&event_generator, start_point, end_point);
-  TopControlsShownRatioWaiter waiter(top_controls_slide_controller());
-  waiter.WaitForRatio(0.f);
-  EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 0);
-  CheckBrowserLayout(browser_view(), TopChromeShownState::kFullyHidden);
-
-  // Enable Chromevox (spoken feedback) and expect that top-chrome will be fully
-  // shown, and sliding top-chrome is no longer enabled.
-  chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(true);
-  EXPECT_TRUE(chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
-  waiter.WaitForRatio(1.f);
-  EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 1.f);
-  EXPECT_FALSE(top_controls_slide_controller()->IsEnabled());
-  EXPECT_EQ(browser_view()->GetTopControlsHeight(), 0);
-  EXPECT_FALSE(
-      browser_view()->DoBrowserControlsShrinkRendererSize(active_contents));
-
-  // Now disable Chromevox, and expect it's now possible to hide top-chrome with
-  // gesture scrolling.
-  CompositorFrameWaiter compositor_frame_waiter(active_contents);
-  chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(false);
-  compositor_frame_waiter.Wait();
-  EXPECT_FALSE(
-      chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
-  EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 1.f);
-  EXPECT_TRUE(top_controls_slide_controller()->IsEnabled());
-  CheckBrowserLayout(browser_view(), TopChromeShownState::kFullyShown);
-  base::RunLoop().RunUntilIdle();
-  // Scroll down, top-chrome should hide.
-  GenerateGestureFlingScrollSequence(&event_generator, start_point, end_point);
-  waiter.WaitForRatio(0.f);
-  EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 0);
-  CheckBrowserLayout(browser_view(), TopChromeShownState::kFullyHidden);
 }
 
 }  // namespace
