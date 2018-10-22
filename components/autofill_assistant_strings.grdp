@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grit-part>
+  <if expr="is_android">
+    <message name="IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR" desc="Text label that is shown when communication with server fails.">
+      Service is not available. Try again later.
+    </message>
+  </if>
+</grit-part>

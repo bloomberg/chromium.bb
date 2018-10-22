@@ -9,10 +9,12 @@
 #include "base/task/post_task.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 namespace autofill_assistant {
@@ -191,7 +193,9 @@ void Controller::OnScriptExecuted(const std::string& script_path,
   GetUiController()->HideOverlay();
   if (!result.success) {
     LOG(ERROR) << "Failed to execute script " << script_path;
-    // TODO(crbug.com/806868): Handle script execution failure.
+    GetUiController()->ShowStatusMessage(
+        l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR));
+    return;
   }
 
   switch (result.at_end) {
