@@ -321,6 +321,8 @@ _CONFIG = [
             'cc::ContentLayerClient',
             'cc::DisplayItemList',
             'cc::DrawRecordOp',
+
+            'paint_property_tree_printer::UpdateDebugNames',
         ],
     },
     {
