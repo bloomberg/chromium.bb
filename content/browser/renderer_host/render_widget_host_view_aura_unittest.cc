@@ -3592,69 +3592,6 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   }
 }
 
-TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
-  // Early out because DelegatedFrameHost is not used in mash.
-  if (features::IsMultiProcessMash())
-    return;
-
-  view_->InitAsChild(nullptr);
-
-  size_t max_renderer_frames =
-      FrameEvictionManager::GetInstance()->GetMaxNumberOfSavedFrames();
-  ASSERT_LE(2u, max_renderer_frames);
-  size_t renderer_count = max_renderer_frames + 1;
-  gfx::Rect view_rect(100, 100);
-
-  std::unique_ptr<RenderWidgetHostImpl* []> hosts(
-      new RenderWidgetHostImpl*[renderer_count]);
-  std::unique_ptr<FakeRenderWidgetHostViewAura* []> views(
-      new FakeRenderWidgetHostViewAura*[renderer_count]);
-
-  // Create a bunch of renderers.
-  for (size_t i = 0; i < renderer_count; ++i) {
-    int32_t routing_id = process_host_->GetNextRoutingID();
-    delegates_.push_back(base::WrapUnique(new MockRenderWidgetHostDelegate));
-    hosts[i] = MockRenderWidgetHostImpl::Create(delegates_.back().get(),
-                                                process_host_, routing_id);
-    delegates_.back()->set_widget_host(hosts[i]);
-    hosts[i]->Init();
-    views[i] = new FakeRenderWidgetHostViewAura(hosts[i], false);
-    views[i]->InitAsChild(nullptr);
-    aura::client::ParentWindowWithContext(
-        views[i]->GetNativeView(),
-        parent_view_->GetNativeView()->GetRootWindow(),
-        gfx::Rect());
-    views[i]->SetSize(view_rect.size());
-  }
-
-  // Make each renderer visible and swap a frame on it. No eviction should
-  // occur because all frames are visible.
-  for (size_t i = 0; i < renderer_count; ++i) {
-    views[i]->Show();
-    EXPECT_HAS_FRAME(views[i]);
-  }
-
-  // If we hide [0], then [0] should be evicted.
-  views[0]->Hide();
-  EXPECT_EVICTED(views[0]);
-
-  // If we lock [0] before hiding it, then [0] should not be evicted.
-  views[0]->Show();
-  EXPECT_HAS_FRAME(views[0]);
-  views[0]->GetDelegatedFrameHost()->LockResources();
-  views[0]->Hide();
-  EXPECT_HAS_FRAME(views[0]);
-
-  // If we unlock [0] now, then [0] should be evicted.
-  views[0]->GetDelegatedFrameHost()->UnlockResources();
-  EXPECT_EVICTED(views[0]);
-
-  for (size_t i = 0; i < renderer_count; ++i) {
-    views[i]->Destroy();
-    delete hosts[i];
-  }
-}
-
 // Test that changing the memory pressure should delete saved frames. This test
 // only applies to ChromeOS.
 TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {

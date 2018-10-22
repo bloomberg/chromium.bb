@@ -25,12 +25,13 @@ class VIZ_CLIENT_EXPORT FrameEvictor : public FrameEvictionManagerClient {
   void SwappedFrame(bool visible);
   void DiscardedFrame();
   void SetVisible(bool visible);
-  void LockFrame();
-  void UnlockFrame();
   bool HasFrame() { return has_frame_; }
   bool visible() const { return visible_; }
 
  private:
+  void LockFrame();
+  void UnlockFrame();
+
   // FrameEvictionManagerClient implementation.
   void EvictCurrentFrame() override;
 
