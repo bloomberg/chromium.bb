@@ -717,6 +717,8 @@ registerLoadRequestForURL:(const GURL&)URL
 
 // Returns YES if the current live view is a web view with an image MIME type.
 - (BOOL)contentIsImage;
+// Restores the state for this page from session history.
+- (void)restoreStateFromHistory;
 // Extracts the current page's viewport tag information and calls |completion|.
 // If the page has changed before the viewport tag is successfully extracted,
 // |completion| is called with nullptr.

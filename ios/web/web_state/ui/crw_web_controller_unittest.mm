@@ -59,7 +59,6 @@
 #include "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 #include "third_party/ocmock/ocmock_extensions.h"
-#import "ui/base/test/ios/ui_view_test_utils.h"
 #include "url/scheme_host_port.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -68,10 +67,6 @@
 
 using base::test::ios::WaitUntilConditionOrTimeout;
 using base::test::ios::kWaitForPageLoadTimeout;
-
-@interface CRWWebController (PrivateAPI)
-@property(nonatomic, readwrite) web::PageDisplayState pageDisplayState;
-@end
 
 namespace web {
 namespace {
@@ -91,31 +86,6 @@ enum PageScalabilityType {
   PAGE_SCALABILITY_DISABLED = 0,
   PAGE_SCALABILITY_ENABLED,
 };
-NSString* GetHTMLForZoomState(const PageZoomState& zoom_state,
-                              PageScalabilityType scalability_type) {
-  NSString* const kHTMLFormat =
-      @"<html><head><meta name='viewport' content="
-       "'width=%f,minimum-scale=%f,maximum-scale=%f,initial-scale=%f,"
-       "user-scalable=%@'/></head><body>Test</body></html>";
-  CGFloat width =
-      CGRectGetWidth(UIApplication.sharedApplication.keyWindow.bounds) /
-      zoom_state.minimum_zoom_scale();
-  BOOL scalability_enabled = scalability_type == PAGE_SCALABILITY_ENABLED;
-  return [NSString
-      stringWithFormat:kHTMLFormat, width, zoom_state.minimum_zoom_scale(),
-                       zoom_state.maximum_zoom_scale(), zoom_state.zoom_scale(),
-                       scalability_enabled ? @"yes" : @"no"];
-}
-
-// Forces |webController|'s view to render and waits until |webController|'s
-// PageZoomState matches |zoom_state|.
-void WaitForZoomRendering(CRWWebController* webController,
-                          const PageZoomState& zoom_state) {
-  ui::test::uiview_utils::ForceViewRendering(webController.view);
-  base::test::ios::WaitUntilCondition(^bool() {
-    return webController.pageDisplayState.zoom_state() == zoom_state;
-  });
-}
 
 // Tests in this file are parameterized on this enum to test both
 // LegacyNavigationManagerImpl and WKBasedNavigationManagerImpl.
@@ -506,91 +476,6 @@ TEST_P(DialogsSuppressionTest, SuppressWindowOpen) {
 }
 
 INSTANTIATE_TEST_CASES(DialogsSuppressionTest);
-
-// A separate test class, as none of the |CRWWebControllerTest| setup is
-// needed.
-class CRWWebControllerPageScrollStateTest
-    : public ProgrammaticWebTestWithWebController {
- protected:
-  // Returns a PageDisplayState that will scroll a WKWebView to
-  // |scrollOffset| and zoom the content by |relativeZoomScale|.
-  inline PageDisplayState CreateTestPageDisplayState(
-      CGPoint scroll_offset,
-      CGFloat relative_zoom_scale,
-      CGFloat original_minimum_zoom_scale,
-      CGFloat original_maximum_zoom_scale,
-      CGFloat original_zoom_scale) const {
-    return PageDisplayState(scroll_offset.x, scroll_offset.y,
-                            original_minimum_zoom_scale,
-                            original_maximum_zoom_scale,
-                            relative_zoom_scale * original_minimum_zoom_scale);
-  }
-};
-
-// TODO(crbug/493427): Flaky on the bots.
-TEST_P(CRWWebControllerPageScrollStateTest,
-       FLAKY_SetPageDisplayStateWithUserScalableDisabled) {
-#if !TARGET_IPHONE_SIMULATOR
-  // TODO(crbug.com/493427): fails flakily on device, so skip it there.
-  return;
-#endif
-  PageZoomState zoom_state(1.0, 5.0, 1.0);
-  LoadHtml(GetHTMLForZoomState(zoom_state, PAGE_SCALABILITY_DISABLED));
-  WaitForZoomRendering(web_controller(), zoom_state);
-  PageZoomState original_zoom_state =
-      web_controller().pageDisplayState.zoom_state();
-
-  NavigationManager* nagivation_manager = web_state()->GetNavigationManager();
-  nagivation_manager->GetLastCommittedItem()->SetPageDisplayState(
-      CreateTestPageDisplayState(CGPointMake(1.0, 1.0),  // scroll offset
-                                 3.0,                    // relative zoom scale
-                                 1.0,    // original minimum zoom scale
-                                 5.0,    // original maximum zoom scale
-                                 1.0));  // original zoom scale
-  [web_controller() restoreStateFromHistory];
-
-  // |-restoreStateFromHistory| is async; wait for its completion.
-  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-    return web_controller().pageDisplayState.scroll_state().offset_x() == 1.0;
-  }));
-
-  ASSERT_EQ(original_zoom_state,
-            web_controller().pageDisplayState.zoom_state());
-};
-
-// TODO(crbug/493427): Flaky on the bots.
-TEST_P(CRWWebControllerPageScrollStateTest,
-       FLAKY_SetPageDisplayStateWithUserScalableEnabled) {
-#if !TARGET_IPHONE_SIMULATOR
-  // TODO(crbug.com/493427): fails flakily on device, so skip it there.
-  return;
-#endif
-  PageZoomState zoom_state(1.0, 5.0, 1.0);
-
-  LoadHtml(GetHTMLForZoomState(zoom_state, PAGE_SCALABILITY_ENABLED));
-  WaitForZoomRendering(web_controller(), zoom_state);
-
-  NavigationManager* nagivation_manager = web_state()->GetNavigationManager();
-  nagivation_manager->GetLastCommittedItem()->SetPageDisplayState(
-      CreateTestPageDisplayState(CGPointMake(1.0, 1.0),  // scroll offset
-                                 3.0,                    // relative zoom scale
-                                 1.0,    // original minimum zoom scale
-                                 5.0,    // original maximum zoom scale
-                                 1.0));  // original zoom scale
-  [web_controller() restoreStateFromHistory];
-
-  // |-restoreStateFromHistory| is async; wait for its completion.
-  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-    return web_controller().pageDisplayState.scroll_state().offset_x() == 1.0;
-  }));
-
-  PageZoomState final_zoom_state =
-      web_controller().pageDisplayState.zoom_state();
-  EXPECT_FLOAT_EQ(3, final_zoom_state.zoom_scale() /
-                        final_zoom_state.minimum_zoom_scale());
-};
-
-INSTANTIATE_TEST_CASES(CRWWebControllerPageScrollStateTest);
 
 // Test fixture for testing visible security state.
 typedef ProgrammaticWebTestWithWebState CRWWebStateSecurityStateTest;
