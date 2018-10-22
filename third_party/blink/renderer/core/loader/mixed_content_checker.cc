@@ -679,7 +679,7 @@ void MixedContentChecker::CheckMixedPrivatePublic(
     return;
 
   // Just count these for the moment, don't block them.
-  if (NetworkUtils::IsReservedIPAddress(resource_ip_address) &&
+  if (network_utils::IsReservedIPAddress(resource_ip_address) &&
       frame->GetDocument()->AddressSpace() == mojom::IPAddressSpace::kPublic) {
     UseCounter::Count(frame->GetDocument(),
                       WebFeature::kMixedContentPrivateHostnameInPublicHostname);

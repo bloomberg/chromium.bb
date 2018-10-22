@@ -369,7 +369,7 @@ void InspectorEmulationAgent::WillSendRequest(
       request.HttpHeaderField("Accept-Language").IsEmpty()) {
     request.SetHTTPHeaderField(
         "Accept-Language",
-        AtomicString(NetworkUtils::GenerateAcceptLanguageHeader(
+        AtomicString(network_utils::GenerateAcceptLanguageHeader(
             accept_language_override_.Get())));
   }
 }

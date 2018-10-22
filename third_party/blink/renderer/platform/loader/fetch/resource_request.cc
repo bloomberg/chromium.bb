@@ -307,7 +307,7 @@ void ResourceRequest::SetExternalRequestStateFromRequestorAddressSpace(
   }
 
   mojom::IPAddressSpace target_space = mojom::IPAddressSpace::kPublic;
-  if (NetworkUtils::IsReservedIPAddress(url_.Host()))
+  if (network_utils::IsReservedIPAddress(url_.Host()))
     target_space = mojom::IPAddressSpace::kPrivate;
   if (SecurityOrigin::Create(url_)->IsLocalhost())
     target_space = mojom::IPAddressSpace::kLocal;

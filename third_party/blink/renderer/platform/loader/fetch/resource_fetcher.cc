@@ -539,7 +539,7 @@ Resource* ResourceFetcher::ResourceForStaticData(
     response.SetExpectedContentLength(data->size());
     response.SetTextEncodingName(substitute_data.TextEncoding());
   } else if (url.ProtocolIsData()) {
-    data = NetworkUtils::ParseDataURLAndPopulateResponse(url, response);
+    data = network_utils::ParseDataURLAndPopulateResponse(url, response);
     if (!data)
       return nullptr;
     // |response| is modified by parseDataURLAndPopulateResponse() and is

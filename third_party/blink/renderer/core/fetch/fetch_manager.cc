@@ -520,7 +520,7 @@ void FetchManager::Loader::DidReceiveResponse(
         break;
       case FetchResponseType::kOpaqueRedirect:
         DCHECK(
-            NetworkUtils::IsRedirectResponseCode(response_http_status_code_));
+            network_utils::IsRedirectResponseCode(response_http_status_code_));
         break;  // The code below creates an opaque-redirect filtered response.
       case FetchResponseType::kError:
         LOG(FATAL) << "When ServiceWorker respond to the request from fetch() "
@@ -567,11 +567,11 @@ void FetchManager::Loader::DidReceiveResponse(
 
   FetchResponseData* tainted_response = nullptr;
 
-  DCHECK(!(NetworkUtils::IsRedirectResponseCode(response_http_status_code_) &&
+  DCHECK(!(network_utils::IsRedirectResponseCode(response_http_status_code_) &&
            HasNonEmptyLocationHeader(response_data->HeaderList()) &&
            fetch_request_data_->Redirect() != FetchRedirectMode::kManual));
 
-  if (NetworkUtils::IsRedirectResponseCode(response_http_status_code_) &&
+  if (network_utils::IsRedirectResponseCode(response_http_status_code_) &&
       fetch_request_data_->Redirect() == FetchRedirectMode::kManual) {
     tainted_response = response_data->CreateOpaqueRedirectFilteredResponse();
   } else {

@@ -720,14 +720,14 @@ void FrameFetchContext::DispatchDidFail(const KURL& url,
     return;
 
   if (DocumentLoader* loader = MasterDocumentLoader()) {
-    if (NetworkUtils::IsCertificateTransparencyRequiredError(
+    if (network_utils::IsCertificateTransparencyRequiredError(
             error.ErrorCode())) {
       loader->GetUseCounter().Count(
           WebFeature::kCertificateTransparencyRequiredErrorOnResourceLoad,
           GetFrame());
     }
 
-    if (NetworkUtils::IsLegacySymantecCertError(error.ErrorCode())) {
+    if (network_utils::IsLegacySymantecCertError(error.ErrorCode())) {
       loader->GetUseCounter().Count(
           WebFeature::kDistrustedLegacySymantecSubresource, GetFrame());
       GetLocalFrameClient()->ReportLegacySymantecCert(url, true /* did_fail */);
