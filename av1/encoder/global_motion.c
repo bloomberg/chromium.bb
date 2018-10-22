@@ -17,6 +17,7 @@
 
 #include "av1/encoder/global_motion.h"
 
+#include "av1/common/convolve.h"
 #include "av1/common/resize.h"
 #include "av1/common/warped_motion.h"
 
@@ -50,6 +51,8 @@ typedef struct {
   int strides[N_LEVELS];
   int level_loc[N_LEVELS];
   unsigned char *level_buffer;
+  double *level_dx_buffer;
+  double *level_dy_buffer;
 } ImagePyramid;
 
 static const double erroradv_tr[] = { 0.65, 0.60, 0.55 };
@@ -316,19 +319,47 @@ static int compute_global_motion_feature_based(
   return 0;
 }
 #else
+// Compute an image gradient using a sobel filter.
+// If dir == 1, compute the x gradient. If dir == 0, compute y. This function
+// assumes the images have been padded so that they can be processed in units
+// of 8.
+static INLINE void sobel_xy_image_gradient(const uint8_t *src, int src_stride,
+                                           double *dst, int dst_stride,
+                                           int height, int width, int dir) {
+  double norm = 1.0 / 8;
+  // TODO(sarahparker) experiment with doing this over larger block sizes
+  const int block_unit = 8;
+  // Filter in 8x8 blocks to eventually make use of optimized convolve function
+  for (int i = 0; i < height; i += block_unit) {
+    for (int j = 0; j < width; j += block_unit) {
+      av1_convolve_2d_sobel_y_c(src + i * src_stride + j, src_stride,
+                                dst + i * dst_stride + j, dst_stride,
+                                block_unit, block_unit, dir, norm);
+    }
+  }
+}
+
 static ImagePyramid *alloc_pyramid(int width, int height, int pad_size) {
   ImagePyramid *pyr = aom_malloc(sizeof(*pyr));
   // 2 * width * height is the upper bound for a buffer that fits
   // all pyramid levels + padding for each level
   const int buffer_size = sizeof(*pyr->level_buffer) * 2 * width * height +
                           (width + 2 * pad_size) * 2 * pad_size * N_LEVELS;
+  const int gradient_size = sizeof(*pyr->level_dx_buffer) * 2 * width * height +
+                            (width + 2 * pad_size) * 2 * pad_size * N_LEVELS;
   pyr->level_buffer = aom_malloc(buffer_size);
+  pyr->level_dx_buffer = aom_malloc(gradient_size);
+  pyr->level_dy_buffer = aom_malloc(gradient_size);
   memset(pyr->level_buffer, 0, buffer_size);
+  memset(pyr->level_dx_buffer, 0, gradient_size);
+  memset(pyr->level_dy_buffer, 0, gradient_size);
   return pyr;
 }
 
 static void free_pyramid(ImagePyramid *pyr) {
   aom_free(pyr->level_buffer);
+  aom_free(pyr->level_dx_buffer);
+  aom_free(pyr->level_dy_buffer);
   aom_free(pyr);
 }
 
@@ -384,7 +415,15 @@ static void compute_flow_pyramids(unsigned char *frm, const int frm_width,
                      frm_pyr->level_buffer + cur_loc, cur_height, cur_width,
                      cur_stride);
 
-    // TODO(sarahparker) Add computation of gradient pyramids here
+    // Computation x gradient
+    sobel_xy_image_gradient(frm_pyr->level_buffer + cur_loc, cur_stride,
+                            frm_pyr->level_dx_buffer + cur_loc, cur_stride,
+                            cur_height, cur_width, 1);
+
+    // Computation y gradient
+    sobel_xy_image_gradient(frm_pyr->level_buffer + cur_loc, cur_stride,
+                            frm_pyr->level_dy_buffer + cur_loc, cur_stride,
+                            cur_height, cur_width, 0);
   }
 }
 
@@ -416,6 +455,12 @@ static int compute_global_motion_disflow_based(
     ref_buffer = downconvert_frame(ref, bit_depth);
   }
 
+  // TODO(sarahparker) We will want to do the source pyramid computation
+  // outside of this function so it doesn't get recomputed for every
+  // reference. We also don't need to compute every pyramid level for the
+  // reference in advance, since lower levels can be overwritten once their
+  // flow field is computed and upscaled. I'll add these optimizations
+  // once the full implementation is working.
   // Allocate frm image pyramids
   ImagePyramid *frm_pyr = alloc_pyramid(frm_width, frm_height, pad_size);
   compute_flow_pyramids(frm_buffer, frm_width, frm_height, frm->y_stride,
