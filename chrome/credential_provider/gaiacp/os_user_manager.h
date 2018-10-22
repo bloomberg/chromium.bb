@@ -5,6 +5,7 @@
 #ifndef CHROME_CREDENTIAL_PROVIDER_GAIACP_OS_USER_MANAGER_H_
 #define CHROME_CREDENTIAL_PROVIDER_GAIACP_OS_USER_MANAGER_H_
 
+#include "base/win/scoped_handle.h"
 #include "base/win/windows_types.h"
 
 typedef wchar_t* BSTR;
@@ -41,13 +42,25 @@ class OSUserManager {
                                   const wchar_t* password,
                                   DWORD* error);
 
+  // Creates a logon token for the given user.  If |interactive| is true the
+  // token is of type interactive otherwise it is of type batch.
+  virtual HRESULT CreateLogonToken(const wchar_t* username,
+                                   const wchar_t* password,
+                                   bool interactive,
+                                   base::win::ScopedHandle* token);
+
   // Gets the SID of the given OS user.  The caller owns the pointer |sid| and
   // should free it with a call to LocalFree().
   virtual HRESULT GetUserSID(const wchar_t* username, PSID* sid);
 
-  // Returns NERR_Success if a user with the given SID exists, and
-  // NERR_BadUsername otherwise.
-  virtual HRESULT FindUserBySID(const wchar_t* sid);
+  // Finds a user created from a gaia account by its SID.  Returns S_OK if a
+  // user with the given SID exists, HRESULT_FROM_WIN32(ERROR_NONE_MAPPED)
+  // if not, or an arbitrary error otherwise.  If |username| is non-null and
+  // |length| is greater than zero, the username associated with the SID is
+  // returned.
+  virtual HRESULT FindUserBySID(const wchar_t* sid,
+                                wchar_t* username,
+                                DWORD length);
 
   // Removes the user from the machine.
   virtual HRESULT RemoveUser(const wchar_t* username, const wchar_t* password);

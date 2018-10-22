@@ -106,7 +106,7 @@ void CGaiaCredentialProvider::CleanupStaleTokenHandles() {
 
   OSUserManager* manager = OSUserManager::Get();
   for (auto it = handles.cbegin(); it != handles.cend(); ++it) {
-    HRESULT hr = manager->FindUserBySID(it->first.c_str());
+    HRESULT hr = manager->FindUserBySID(it->first.c_str(), nullptr, 0);
     if (hr == HRESULT_FROM_WIN32(ERROR_NONE_MAPPED)) {
       RemoveAllUserProperties(it->first.c_str());
     } else if (FAILED(hr)) {

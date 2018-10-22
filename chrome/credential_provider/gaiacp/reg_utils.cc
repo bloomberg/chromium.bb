@@ -181,6 +181,27 @@ HRESULT GetUserTokenHandles(std::map<base::string16, base::string16>* handles) {
   return S_OK;
 }
 
+HRESULT GetSidFromId(const base::string16& id, wchar_t* sid, ULONG length) {
+  DCHECK(sid);
+
+  wchar_t key_name[128];
+  swprintf_s(key_name, base::size(key_name), L"%ls\\Users", kGcpRootKeyName);
+
+  base::win::RegistryKeyIterator iter(HKEY_LOCAL_MACHINE, key_name);
+  for (; iter.Valid(); ++iter) {
+    const wchar_t* user_sid = iter.Name();
+    wchar_t user_id[256];
+    ULONG user_length = base::size(user_id);
+    HRESULT hr =
+        GetUserProperty(user_sid, kUserTokenHandle, user_id, &user_length);
+    if (SUCCEEDED(hr) && id == user_id) {
+      wcsncpy_s(sid, length, user_sid, wcslen(user_sid));
+      return S_OK;
+    }
+  }
+  return HRESULT_FROM_WIN32(ERROR_NONE_MAPPED);
+}
+
 const wchar_t* GetUsersRootKeyForTesting() {
   return CREDENTIAL_PROVIDER_REGISTRY_KEY L"\\Users";
 }

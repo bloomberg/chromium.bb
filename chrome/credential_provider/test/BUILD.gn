@@ -6,6 +6,7 @@ import("//testing/test.gni")
 
 test("gcp_unittests") {
   sources = [
+    "../gaiacp/gaia_credential_base_unittests.cc",
     "../gaiacp/gaia_credential_provider_unittests.cc",
     "../gaiacp/gaia_credential_unittests.cc",
     "../gaiacp/gcp_utils_unittests.cc",

@@ -23,6 +23,12 @@
 #define DIRECTORY_CREATE_SUBDIRECTORY 0x00000008
 #define DIRECTORY_ALL_ACCESS (STANDARD_RIGHTS_REQUIRED | 0xF)
 
+namespace base {
+
+class CommandLine;
+
+}  // namespace base
+
 namespace credential_provider {
 
 // Because of some strange dependency problems with windows header files,
@@ -93,9 +99,10 @@ HRESULT WaitForProcess(base::win::ScopedHandle::Handle process_handle,
                        char* stderr_buffer,
                        int buffer_size);
 
-// Creates a restricted, batch login token for the given user.
+// Creates a restricted, batch or interactive login token for the given user.
 HRESULT CreateLogonToken(const wchar_t* username,
                          const wchar_t* password,
+                         bool interactive,
                          base::win::ScopedHandle* token);
 
 HRESULT CreateJobForSignin(base::win::ScopedHandle* job);
@@ -137,8 +144,7 @@ HRESULT InitializeStdHandles(CommDirection direction,
 // exported entrypoint from the DLL given by |hDll|.
 HRESULT GetCommandLineForEntrypoint(HINSTANCE hDll,
                                     const wchar_t* entrypoint,
-                                    wchar_t* command_line,
-                                    size_t command_line_length);
+                                    base::CommandLine* command_line);
 
 // Enrolls the machine to with the Google MDM server if not already.
 HRESULT EnrollToGoogleMdmIfNeeded(const base::DictionaryValue& properties);
