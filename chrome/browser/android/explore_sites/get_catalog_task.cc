@@ -18,9 +18,10 @@ FROM categories
 WHERE version_token = ?
 ORDER BY category_id ASC;)";
 
-static const char kSelectSiteSql[] = R"(SELECT site_id, url, title
+static const char kSelectSiteSql[] = R"(SELECT site_id, sites.url, title
 FROM sites
-WHERE category_id = ?)";
+LEFT JOIN site_blacklist ON (sites.url = site_blacklist.url)
+WHERE category_id = ? AND site_blacklist.url IS NULL;)";
 
 const char kDeleteSiteSql[] = R"(DELETE FROM sites
 WHERE category_id NOT IN
@@ -126,6 +127,7 @@ GetCatalogSync(bool update_current, sql::Database* db) {
   if (!category_statement.Succeeded())
     return std::make_pair(GetCatalogStatus::kFailed, nullptr);
 
+  bool found_empty_category = false;
   for (auto& category : *result) {
     sql::Statement site_statement(
         db->GetCachedStatement(SQL_FROM_HERE, kSelectSiteSql));
@@ -139,6 +141,20 @@ GetCatalogSync(bool update_current, sql::Database* db) {
     }
     if (!site_statement.Succeeded())
       return std::make_pair(GetCatalogStatus::kFailed, nullptr);
+
+    if (category.sites.empty())
+      found_empty_category = true;
+  }
+
+  // Remove any categories with no sites.
+  if (found_empty_category) {
+    auto new_result = std::make_unique<GetCatalogTask::CategoryList>();
+    for (auto& category : *result) {
+      // Move all categories with sites into the new result
+      if (category.sites.size() > 0)
+        new_result->emplace_back(std::move(category));
+    }
+    result = std::move(new_result);
   }
 
   return std::make_pair(GetCatalogStatus::kSuccess, std::move(result));
