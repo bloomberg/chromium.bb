@@ -11638,8 +11638,17 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Check that when A opens a new window with B which embeds an A subframe, the
 // subframe is visible and generates paint events.  See
 // https://crbug.com/638375.
+
+#if defined(OS_ANDROID)
+// Flaky on Android: https://crbug.com/897709
+#define MAYBE_SubframeVisibleAfterRenderViewBecomesSwappedOut \
+  DISABLED_SubframeVisibleAfterRenderViewBecomesSwappedOut
+#else
+#define MAYBE_SubframeVisibleAfterRenderViewBecomesSwappedOut \
+  SubframeVisibleAfterRenderViewBecomesSwappedOut
+#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       SubframeVisibleAfterRenderViewBecomesSwappedOut) {
+                       MAYBE_SubframeVisibleAfterRenderViewBecomesSwappedOut) {
   GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
