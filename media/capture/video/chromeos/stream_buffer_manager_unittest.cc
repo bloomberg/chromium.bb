@@ -63,9 +63,6 @@ class MockStreamCaptureInterface : public StreamCaptureInterface {
   MOCK_METHOD2(DoProcessCaptureRequest,
                void(cros::mojom::Camera3CaptureRequestPtr& request,
                     base::OnceCallback<void(int32_t)>& callback));
-
-  void Flush(base::OnceCallback<void(int32_t)> callback) { DoFlush(callback); }
-  MOCK_METHOD1(DoFlush, void(base::OnceCallback<void(int32_t)>& callback));
 };
 
 const VideoCaptureFormat kDefaultCaptureFormat(gfx::Size(1280, 720),

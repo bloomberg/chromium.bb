@@ -178,8 +178,7 @@ enum class VideoCaptureError {
   kMacDeckLinkUnsupportedPixelFormat = 112,
   kMacAvFoundationReceivedAVCaptureSessionRuntimeErrorNotification = 113,
   kAndroidApi2ErrorConfiguringCamera = 114,
-  kCrosHalV3DeviceDelegateFailedToFlush = 115,
-  kMaxValue = 115
+  kMaxValue = 114
 };
 
 // WARNING: Do not change the values assigned to the entries. They are used for

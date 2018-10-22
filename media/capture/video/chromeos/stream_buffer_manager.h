@@ -116,14 +116,12 @@ class CAPTURE_EXPORT StreamBufferManager final
 
   // Stops the capture loop.  After StopPreview is called |callback_ops_| is
   // unbound, so no new capture request or result will be processed.
-  void StopPreview(base::OnceCallback<void(int32_t)> callback);
+  void StopPreview();
 
   cros::mojom::Camera3StreamPtr GetStreamConfiguration(StreamType stream_type);
 
   void TakePhoto(cros::mojom::CameraMetadataPtr settings,
                  VideoCaptureDevice::TakePhotoCallback callback);
-
-  size_t GetStreamNumber();
 
   // CaptureMetadataDispatcher implementations.
   void AddResultMetadataObserver(ResultMetadataObserver* observer) override;
