@@ -187,13 +187,9 @@ void StreamBufferManager::StartPreview(
   RegisterBuffer(StreamType::kPreview);
 }
 
-void StreamBufferManager::StopPreview(
-    base::OnceCallback<void(int32_t)> callback) {
+void StreamBufferManager::StopPreview() {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   capturing_ = false;
-  if (callback) {
-    capture_interface_->Flush(std::move(callback));
-  }
 }
 
 cros::mojom::Camera3StreamPtr StreamBufferManager::GetStreamConfiguration(
@@ -225,10 +221,6 @@ void StreamBufferManager::TakePhoto(
 
   oneshot_request_settings_.push(std::move(settings));
   RegisterBuffer(StreamType::kStillCapture);
-}
-
-size_t StreamBufferManager::GetStreamNumber() {
-  return stream_context_.size();
 }
 
 void StreamBufferManager::AddResultMetadataObserver(
@@ -424,6 +416,7 @@ void StreamBufferManager::OnRegisteredBuffer(StreamType stream_type,
 void StreamBufferManager::ProcessCaptureRequest() {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   DCHECK(stream_context_[StreamType::kPreview]);
+  DCHECK(stream_context_[StreamType::kStillCapture]);
 
   cros::mojom::Camera3CaptureRequestPtr request =
       cros::mojom::Camera3CaptureRequest::New();
@@ -446,8 +439,7 @@ void StreamBufferManager::ProcessCaptureRequest() {
     request->output_buffers.push_back(std::move(buffer));
   }
 
-  if (stream_context_.count(StreamType::kStillCapture) &&
-      !stream_context_[StreamType::kStillCapture]->registered_buffers.empty()) {
+  if (!stream_context_[StreamType::kStillCapture]->registered_buffers.empty()) {
     DCHECK(!still_capture_callbacks_currently_processing_.empty());
     cros::mojom::Camera3StreamBufferPtr buffer =
         cros::mojom::Camera3StreamBuffer::New();
