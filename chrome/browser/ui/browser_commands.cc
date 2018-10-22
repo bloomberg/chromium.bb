@@ -703,8 +703,8 @@ WebContents* DuplicateTabAt(Browser* browser, int index) {
     int index = browser->tab_strip_model()->GetIndexOfWebContents(contents);
     pinned = browser->tab_strip_model()->IsTabPinned(index);
     int add_types = TabStripModel::ADD_ACTIVE |
-        TabStripModel::ADD_INHERIT_GROUP |
-        (pinned ? TabStripModel::ADD_PINNED : 0);
+                    TabStripModel::ADD_INHERIT_OPENER |
+                    (pinned ? TabStripModel::ADD_PINNED : 0);
     browser->tab_strip_model()->InsertWebContentsAt(
         index + 1, std::move(contents_dupe), add_types);
   } else {
