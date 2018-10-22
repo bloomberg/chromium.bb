@@ -20528,6 +20528,7 @@ Called by update_net_error_codes.py.-->
   <int value="2608" label="MalformedCSP"/>
   <int value="2609" label="V8AttemptOverrideReadOnlyOnPrototypeSloppy"/>
   <int value="2610" label="V8AttemptOverrideReadOnlyOnPrototypeStrict"/>
+  <int value="2611" label="HTMLCanvasElementLowLatency"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

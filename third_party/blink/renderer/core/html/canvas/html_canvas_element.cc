@@ -317,6 +317,9 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
     // We don't actually need the begin frame signal when in low latency mode,
     // but we need to subscribe to it or else dispatching frames will not work.
     frame_dispatcher_->SetNeedsBeginFrame(GetPage()->IsPageVisible());
+
+    UseCounter::Count(GetDocument().GetFrame(),
+                      WebFeature::kHTMLCanvasElementLowLatency);
   }
 
   SetNeedsCompositingUpdate();
