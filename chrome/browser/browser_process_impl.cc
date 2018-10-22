@@ -138,6 +138,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "ui/base/idle/idle.h"
@@ -1150,7 +1151,8 @@ void BrowserProcessImpl::PreCreateThreads(
       extensions::kExtensionScheme, true);
 #endif
 
-  if (command_line.HasSwitch(network::switches::kLogNetLog)) {
+  if (command_line.HasSwitch(network::switches::kLogNetLog) &&
+      !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     base::FilePath log_file =
         command_line.GetSwitchValuePath(network::switches::kLogNetLog);
     if (log_file.empty()) {
