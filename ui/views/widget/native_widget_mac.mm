@@ -377,8 +377,8 @@ void NativeWidgetMac::Show(ui::WindowShowState show_state,
     case ui::SHOW_STATE_DEFAULT:
     case ui::SHOW_STATE_NORMAL:
     case ui::SHOW_STATE_INACTIVE:
-      break;
     case ui::SHOW_STATE_MINIMIZED:
+      break;
     case ui::SHOW_STATE_MAXIMIZED:
     case ui::SHOW_STATE_FULLSCREEN:
       NOTIMPLEMENTED();
@@ -387,10 +387,12 @@ void NativeWidgetMac::Show(ui::WindowShowState show_state,
       NOTREACHED();
       break;
   }
-  bridge()->SetVisibilityState(
-      show_state == ui::SHOW_STATE_INACTIVE
-          ? WindowVisibilityState::kShowInactive
-          : WindowVisibilityState::kShowAndActivateWindow);
+  auto window_state = WindowVisibilityState::kShowAndActivateWindow;
+  if (show_state == ui::SHOW_STATE_INACTIVE)
+    window_state = WindowVisibilityState::kShowInactive;
+  else if (show_state == ui::SHOW_STATE_MINIMIZED)
+    window_state = WindowVisibilityState::kHideWindow;
+  bridge()->SetVisibilityState(window_state);
 
   // Ignore the SetInitialFocus() result. BridgedContentView should get
   // firstResponder status regardless.

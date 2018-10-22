@@ -695,6 +695,8 @@ void BridgedNativeWidgetHostImpl::OnWindowFullscreenTransitionComplete(
 void BridgedNativeWidgetHostImpl::OnWindowMiniaturizedChanged(
     bool miniaturized) {
   is_miniaturized_ = miniaturized;
+  if (native_widget_mac_)
+    native_widget_mac_->GetWidget()->OnNativeWidgetWindowShowStateChanged();
 }
 
 void BridgedNativeWidgetHostImpl::OnWindowDisplayChanged(
