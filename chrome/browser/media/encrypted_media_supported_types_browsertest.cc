@@ -143,7 +143,8 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
     vp9_higher_profile_codecs_.push_back("vp09.03.10.10");
 
     // AV1 codec string: https://aomediacodec.github.io/av1-isobmff/#codecsparam
-    av1_codecs_.push_back("av01.0.00M.10.0.112");
+    av1_codecs_.push_back("av01.0.04M.08");        // 8 bit
+    av1_codecs_.push_back("av01.0.00M.10.0.112");  // 10 bit
 
     // Extended codecs are used, so make sure generic ones fail. These will be
     // tested against all init data types as they should always fail to be
