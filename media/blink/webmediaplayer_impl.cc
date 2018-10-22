@@ -310,13 +310,13 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   // with the MediaStream startup.
   const char* surface_layer_mode_name = "(unset)";
   switch (surface_layer_mode_) {
-    case WebMediaPlayerParams::SurfaceLayerMode::kAlways:
+    case SurfaceLayerMode::kAlways:
       surface_layer_mode_name = "kAlways";
       break;
-    case WebMediaPlayerParams::SurfaceLayerMode::kOnDemand:
+    case SurfaceLayerMode::kOnDemand:
       surface_layer_mode_name = "kOnDemand";
       break;
-    case WebMediaPlayerParams::SurfaceLayerMode::kNever:
+    case SurfaceLayerMode::kNever:
       surface_layer_mode_name = "kNever";
       break;
   }
@@ -1048,6 +1048,11 @@ WebMediaPlayer::ReadyState WebMediaPlayerImpl::GetReadyState() const {
   return ready_state_;
 }
 
+blink::WebMediaPlayer::SurfaceLayerMode
+WebMediaPlayerImpl::GetVideoSurfaceLayerMode() const {
+  return surface_layer_mode_;
+}
+
 blink::WebString WebMediaPlayerImpl::GetErrorMessage() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   return blink::WebString::FromUTF8(media_log_->GetErrorMessage());
@@ -1694,7 +1699,7 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
     }
 
     if (surface_layer_mode_ !=
-        WebMediaPlayerParams::SurfaceLayerMode::kAlways) {
+        blink::WebMediaPlayer::SurfaceLayerMode::kAlways) {
       DCHECK(!video_layer_);
       video_layer_ = cc::VideoLayer::Create(
           compositor_.get(),
