@@ -610,14 +610,14 @@ TEST_F(BluetoothSystemTest, SetPoweredOff_SucceedsAdapterInitiallyOn) {
             GetStateAndWait(system));
   EXPECT_EQ(StateVector({mojom::BluetoothSystem::State::kTransitioning}),
             on_state_changed_states_);
+  ResetResults();
 
   test_bluetooth_adapter_client_->SimulateSetPoweredCompleted(
       kFooObjectPathStr);
 
   EXPECT_EQ(mojom::BluetoothSystem::State::kPoweredOff,
             GetStateAndWait(system));
-  EXPECT_EQ(StateVector({mojom::BluetoothSystem::State::kTransitioning,
-                         mojom::BluetoothSystem::State::kPoweredOff}),
+  EXPECT_EQ(StateVector({mojom::BluetoothSystem::State::kPoweredOff}),
             on_state_changed_states_);
 }
 
@@ -638,13 +638,13 @@ TEST_F(BluetoothSystemTest, SetPoweredOn_SucceedsAdapterInitiallyOff) {
             GetStateAndWait(system));
   EXPECT_EQ(StateVector({mojom::BluetoothSystem::State::kTransitioning}),
             on_state_changed_states_);
+  ResetResults();
 
   test_bluetooth_adapter_client_->SimulateSetPoweredCompleted(
       kFooObjectPathStr);
 
   EXPECT_EQ(mojom::BluetoothSystem::State::kPoweredOn, GetStateAndWait(system));
-  EXPECT_EQ(StateVector({mojom::BluetoothSystem::State::kTransitioning,
-                         mojom::BluetoothSystem::State::kPoweredOn}),
+  EXPECT_EQ(StateVector({mojom::BluetoothSystem::State::kPoweredOn}),
             on_state_changed_states_);
 }
 
