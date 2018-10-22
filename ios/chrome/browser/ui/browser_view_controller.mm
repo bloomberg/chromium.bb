@@ -217,7 +217,6 @@
 #include "ios/chrome/browser/upgrade/upgrade_center.h"
 #import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 #import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
-#import "ios/chrome/browser/web/error_page_content.h"
 #import "ios/chrome/browser/web/image_fetch_tab_helper.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
@@ -3775,22 +3774,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 #pragma mark - CRWNativeContentProvider methods
 
-// TODO(crbug.com/725241): This method is deprecated and should be removed by
-// switching to DidFinishnavigation.
-- (id<CRWNativeContent>)controllerForURL:(const GURL&)url
-                               withError:(NSError*)error
-                                  isPost:(BOOL)isPost {
-  ErrorPageContent* errorPageContent =
-      [[ErrorPageContent alloc] initWithLoader:self
-                                  browserState:self.browserState
-                                           url:url
-                                         error:error
-                                        isPost:isPost
-                                   isIncognito:_isOffTheRecord];
-  [self setOverScrollActionControllerToStaticNativeContent:errorPageContent];
-  return errorPageContent;
-}
-
 - (BOOL)hasControllerForURL:(const GURL&)url {
   base::StringPiece host = url.host_piece();
   if (host == kChromeUIOfflineHost) {
@@ -4551,21 +4534,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (void)printTab {
-  Tab* currentTab = [_model currentTab];
-  // The UI should prevent users from printing non-printable pages. However,
-  // a page load error can happen after share dialog is invoked.
-  if (![currentTab viewForPrinting]) {
-    // Web-based error pages are printable.
-    DCHECK(!base::FeatureList::IsEnabled(web::features::kWebErrorPages));
-    TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeError);
-    [self showSnackbar:l10n_util::GetNSString(IDS_IOS_CANNOT_PRINT_PAGE_ERROR)];
-    return;
-  }
-  DCHECK(_browserState);
   if (!_printController) {
     _printController = [[PrintController alloc]
         initWithContextGetter:_browserState->GetRequestContext()];
   }
+  Tab* currentTab = [_model currentTab];
   [_printController printView:[currentTab viewForPrinting]
                     withTitle:[currentTab title]
                viewController:self];

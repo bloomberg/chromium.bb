@@ -188,10 +188,6 @@ source_set("web_internal") {
     "blocked_popup_tab_helper.mm",
     "chrome_web_client.h",
     "chrome_web_client.mm",
-    "error_page_content.h",
-    "error_page_content.mm",
-    "error_page_generator.h",
-    "error_page_generator.mm",
     "print_tab_helper.h",
     "print_tab_helper.mm",
     "web_state_printer.h",
@@ -264,7 +260,6 @@ source_set("unit_tests_internal") {
   sources = [
     "blocked_popup_tab_helper_unittest.mm",
     "chrome_web_client_unittest.mm",
-    "error_page_generator_unittest.mm",
   ]
   deps = [
     ":test_support",
