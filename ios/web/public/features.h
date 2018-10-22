@@ -19,9 +19,6 @@ extern const base::Feature kWebFrameMessaging;
 // Used to enable the WKBackForwardList based navigation manager.
 extern const base::Feature kSlimNavigationManager;
 
-// Used to enable displaying error pages in WebState by loading HTML string.
-extern const base::Feature kWebErrorPages;
-
 // Used to enable using WKHTTPSystemCookieStore in main context URL requests.
 extern const base::Feature kWKHTTPSystemCookieStore;
 

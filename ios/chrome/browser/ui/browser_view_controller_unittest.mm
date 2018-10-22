@@ -41,7 +41,6 @@
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/ui_util.h"
-#import "ios/chrome/browser/web/error_page_content.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
@@ -337,24 +336,6 @@ TEST_F(BrowserViewControllerTest, TestNativeContentController) {
                              webState:webStateImpl_.get()];
   EXPECT_TRUE(controller != nil);
   EXPECT_TRUE([controller isMemberOfClass:[PageNotAvailableController class]]);
-}
-
-TEST_F(BrowserViewControllerTest, TestErrorController) {
-  const GURL badUrl("http://floofywhizbangzzz.com");
-  NSString* badURLString = base::SysUTF8ToNSString(badUrl.spec());
-  NSDictionary* userInfoDic = [NSDictionary
-      dictionaryWithObjectsAndKeys:badURLString,
-                                   NSURLErrorFailingURLStringErrorKey,
-                                   [NSError errorWithDomain:net::kNSErrorDomain
-                                                       code:-104
-                                                   userInfo:nil],
-                                   NSUnderlyingErrorKey, nil];
-  NSError* testError =
-      [NSError errorWithDomain:@"testdomain" code:-1 userInfo:userInfoDic];
-  id<CRWNativeContent> controller =
-      [bvc_ controllerForURL:badUrl withError:testError isPost:NO];
-  EXPECT_TRUE(controller != nil);
-  EXPECT_TRUE([controller isMemberOfClass:[ErrorPageContent class]]);
 }
 
 // TODO(altse): Needs a testing |Profile| that implements AutocompleteClassifier

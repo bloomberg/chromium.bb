@@ -212,10 +212,6 @@ extern const char kIgnoresViewportScaleLimitsDescription[];
 extern const char kSlimNavigationManagerName[];
 extern const char kSlimNavigationManagerDescription[];
 
-// Title and description for the flag to enable web based error pages.
-extern const char kWebErrorPagesName[];
-extern const char kWebErrorPagesDescription[];
-
 // Title and description for the flag to enable annotating web forms with
 // Autofill field type predictions as placeholder.
 extern const char kShowAutofillTypePredictionsName[];

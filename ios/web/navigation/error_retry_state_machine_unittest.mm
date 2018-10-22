@@ -4,9 +4,7 @@
 
 #include "ios/web/navigation/error_retry_state_machine.h"
 
-#include "base/feature_list.h"
 #include "ios/web/navigation/wk_navigation_util.h"
-#include "ios/web/public/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -44,15 +42,9 @@ TEST_F(ErrorRetryStateMachineTest, OfflineThenReload) {
             machine.state());
 
   // Presents error.
-  if (base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
-    machine.SetDisplayingWebError();
-    ASSERT_EQ(ErrorRetryState::kDisplayingWebErrorForFailedNavigation,
-              machine.state());
-  } else {
-    machine.SetDisplayingNativeError();
-    ASSERT_EQ(ErrorRetryState::kDisplayingNativeErrorForFailedNavigation,
-              machine.state());
-  }
+  machine.SetDisplayingWebError();
+  ASSERT_EQ(ErrorRetryState::kDisplayingWebErrorForFailedNavigation,
+            machine.state());
 
   // Reload the failed navigation.
   ASSERT_EQ(ErrorRetryCommand::kRewriteWebViewURL,
