@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.omnibox;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
@@ -15,7 +14,6 @@ import android.graphics.drawable.Drawable;
 import android.support.annotation.ColorRes;
 import android.support.annotation.IntDef;
 import android.support.v4.view.ViewCompat;
-import android.support.v7.app.AlertDialog;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextPaint;
@@ -30,7 +28,6 @@ import android.widget.TextView;
 import android.widget.TextView.BufferType;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter.OmniboxResultItem;
 import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter.OmniboxSuggestionDelegate;
@@ -652,41 +649,7 @@ class SuggestionView extends ViewGroup {
             setOnLongClickListener(new OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    RecordUserAction.record("MobileOmniboxDeleteGesture");
-                    if (!mSuggestion.isDeletable()) return true;
-
-                    AlertDialog.Builder b =
-                            new AlertDialog.Builder(getContext(), R.style.AlertDialogTheme);
-                    b.setTitle(mSuggestion.getDisplayText());
-                    b.setMessage(R.string.omnibox_confirm_delete);
-                    DialogInterface.OnClickListener okListener =
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    RecordUserAction.record("MobileOmniboxDeleteRequested");
-                                    mSuggestionDelegate.onDeleteSuggestion(mSuggestion, mPosition);
-                                }
-                            };
-                    b.setPositiveButton(android.R.string.ok, okListener);
-                    DialogInterface.OnClickListener cancelListener =
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.cancel();
-                                }
-                            };
-                    b.setNegativeButton(android.R.string.cancel, cancelListener);
-
-                    AlertDialog dialog = b.create();
-                    dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                        @Override
-                        public void onDismiss(DialogInterface dialog) {
-                            mSuggestionDelegate.onHideModal();
-                        }
-                    });
-
-                    mSuggestionDelegate.onShowModal();
-                    dialog.show();
+                    mSuggestionDelegate.onLongPress(mSuggestion, mPosition);
                     return true;
                 }
             });

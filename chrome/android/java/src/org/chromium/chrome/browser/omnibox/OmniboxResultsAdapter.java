@@ -181,32 +181,22 @@ public class OmniboxResultsAdapter extends BaseAdapter {
 
         /**
          * Triggered when the user selects to refine one of the omnibox suggestions.
-         * @param suggestion
+         * @param suggestion The suggestion selected.
          */
         public void onRefineSuggestion(OmniboxSuggestion suggestion);
 
         /**
+         * Triggered when the user long presses the omnibox suggestion.
+         * @param suggestion The suggestion selected.
+         * @param position The position of the suggestion.
+         */
+        public void onLongPress(OmniboxSuggestion suggestion, int position);
+
+        /**
          * Triggered when the user navigates to one of the suggestions without clicking on it.
-         * @param suggestion
+         * @param suggestion The suggestion that was selected.
          */
         public void onSetUrlToSuggestion(OmniboxSuggestion suggestion);
-
-        /**
-         * Triggered before we show a modal dialog triggered through suggestions UI (e.g. the
-         * delete suggestions confirmation dialog).
-         */
-        public void onShowModal();
-
-        /**
-         * Triggered during the modal dialog dismissal.
-         */
-        public void onHideModal();
-
-        /**
-         * Triggered when the user indicates they want to delete a suggestion.
-         * @param position The position of the suggestion in the drop down view.
-         */
-        public void onDeleteSuggestion(OmniboxSuggestion suggestion, int position);
 
         /**
          * Triggered when the user touches the suggestion view.
