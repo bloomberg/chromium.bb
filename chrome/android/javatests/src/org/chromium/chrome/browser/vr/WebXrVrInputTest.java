@@ -97,6 +97,7 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/894796")
     @DisableIf.
     Build(message = "Flaky on K/L crbug.com/762126", sdk_is_less_than = Build.VERSION_CODES.M)
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
@@ -111,6 +112,7 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/894796")
     @DisableIf
             .Build(message = "Flaky on K/L crbug.com/762126",
                     sdk_is_less_than = Build.VERSION_CODES.M)
@@ -259,6 +261,7 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/894796")
     @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testScreenTapsRegisteredOnCardboard() throws InterruptedException {
@@ -289,6 +292,7 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/894796")
     @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
     @CommandLineFlags
             .Remove({"enable-webvr"})
@@ -636,6 +640,7 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/894796")
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @CommandLineFlags.Remove({"enable-webvr"})
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
@@ -650,6 +655,7 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/894796")
     @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
     @CommandLineFlags.Remove({"enable-webvr"})
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})

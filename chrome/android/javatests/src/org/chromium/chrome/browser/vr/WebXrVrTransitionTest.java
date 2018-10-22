@@ -369,6 +369,7 @@ public class WebXrVrTransitionTest {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/894796")
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testWindowRafStopsFiringWhilePresenting() throws InterruptedException {
         windowRafStopsFiringWhilePresentingImpl(
@@ -383,6 +384,7 @@ public class WebXrVrTransitionTest {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/894796")
     @CommandLineFlags
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
