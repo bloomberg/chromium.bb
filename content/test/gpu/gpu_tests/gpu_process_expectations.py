@@ -11,10 +11,7 @@ class GpuProcessExpectations(GpuTestExpectations):
     self.Fail('GpuProcess_video', ['linux'], bug=257109)
 
     # Seems to have become flaky on Windows recently.
-    self.Flaky('GpuProcess_only_one_workaround', ['win'], bug=700522)
+    self.Flaky('GpuProcess_one_extra_workaround', ['win'], bug=700522)
 
-    # Test needs fixing for Nexus 9
-    self.Fail('GpuProcess_disabling_workarounds_works', ['android', 'nvidia'],
-              bug=895020)
-    self.Fail('GpuProcess_webgl_disabled_extension', ['android', 'nvidia'],
-              bug=895945)
+    self.Fail('GpuProcess_feature_status_under_swiftshader',
+        ['mac'], bug=897914)

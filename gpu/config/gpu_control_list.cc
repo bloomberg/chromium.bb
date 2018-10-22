@@ -449,9 +449,11 @@ bool GpuControlList::Entry::Contains(OsType target_os_type,
 
 bool GpuControlList::Entry::AppliesToTestGroup(
     uint32_t target_test_group) const {
-  if (conditions.more)
+  // If an entry specifies non-zero test group, then the entry only applies
+  // if that test group is enabled (as specified in |target_test_group|).
+  if (conditions.more && conditions.more->test_group)
     return conditions.more->test_group == target_test_group;
-  return target_test_group == 0u;
+  return true;
 }
 
 bool GpuControlList::Conditions::NeedsMoreInfo(const GPUInfo& gpu_info) const {
