@@ -452,7 +452,6 @@ static INLINE void check_resync(aom_codec_alg_priv_t *const ctx,
     ctx->need_resync = 0;
 }
 
-#if !CONFIG_INSPECTION
 static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
                                   const uint8_t **data, size_t data_sz,
                                   void *user_priv) {
@@ -500,16 +499,16 @@ static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
 
   return AOM_CODEC_OK;
 }
-#endif
 
 #if CONFIG_INSPECTION
-
 // This function enables the inspector to inspect non visible frames.
 static aom_codec_err_t decoder_inspect(aom_codec_alg_priv_t *ctx,
                                        const uint8_t *data, size_t data_sz,
                                        void *user_priv) {
   aom_codec_err_t res = AOM_CODEC_OK;
+
   Av1DecodeReturn *data2 = (Av1DecodeReturn *)user_priv;
+
   if (ctx->frame_workers == NULL) {
     res = init_decoder(ctx);
     if (res != AOM_CODEC_OK) return res;
@@ -529,13 +528,18 @@ static aom_codec_err_t decoder_inspect(aom_codec_alg_priv_t *ctx,
   data2->buf = data;
   return res;
 }
-#else
+#endif
 
 static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
                                       const uint8_t *data, size_t data_sz,
                                       void *user_priv) {
   aom_codec_err_t res = AOM_CODEC_OK;
 
+#if CONFIG_INSPECTION
+  if (user_priv != 0) {
+    return decoder_inspect(ctx, data, data_sz, user_priv);
+  }
+#endif
   // Release any pending output frames from the previous decoder_decode call.
   // We need to do this even if the decoder is being flushed or the input
   // arguments are invalid.
@@ -620,7 +624,6 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
 
   return res;
 }
-#endif
 
 // If grain_params->apply_grain is false, returns img. Otherwise, adds film
 // grain to img, saves the result in *grain_img_ptr (allocating *grain_img_ptr
@@ -1314,13 +1317,9 @@ CODEC_INTERFACE(aom_codec_av1_dx) = {
   decoder_ctrl_maps,                        // aom_codec_ctrl_fn_map_t
   {
       // NOLINT
-      decoder_peek_si,  // aom_codec_peek_si_fn_t
-      decoder_get_si,   // aom_codec_get_si_fn_t
-#if CONFIG_INSPECTION
-      decoder_inspect,  // aom_codec_decode_fn_t
-#else
-      decoder_decode,  // aom_codec_decode_fn_t
-#endif
+      decoder_peek_si,    // aom_codec_peek_si_fn_t
+      decoder_get_si,     // aom_codec_get_si_fn_t
+      decoder_decode,     // aom_codec_decode_fn_t
       decoder_get_frame,  // aom_codec_get_frame_fn_t
       decoder_set_fb_fn,  // aom_codec_set_fb_fn_t
   },
