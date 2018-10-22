@@ -47,8 +47,6 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
   virtual bool DelegatedFrameHostIsVisible() const = 0;
   // Returns the color that the resize gutters should be drawn with.
   virtual SkColor DelegatedFrameHostGetGutterColor() const = 0;
-  virtual void OnFirstSurfaceActivation(
-      const viz::SurfaceInfo& surface_info) = 0;
   virtual void OnBeginFrame(base::TimeTicks frame_time) = 0;
   virtual void OnFrameTokenChanged(uint32_t frame_token) = 0;
   virtual float GetDeviceScaleFactor() const = 0;
@@ -70,11 +68,9 @@ class CONTENT_EXPORT DelegatedFrameHost
   // is responsible for registering the associated FrameSinkId with the
   // compositor or not. This is set only on non-aura platforms, since aura is
   // responsible for doing the appropriate [un]registration.
-  DelegatedFrameHost(
-      const viz::FrameSinkId& frame_sink_id,
-      DelegatedFrameHostClient* client,
-      bool should_register_frame_sink_id,
-      viz::ReportFirstSurfaceActivation should_report_activation);
+  DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
+                     DelegatedFrameHostClient* client,
+                     bool should_register_frame_sink_id);
   ~DelegatedFrameHost() override;
 
   // ui::CompositorObserver implementation.
@@ -183,8 +179,6 @@ class CONTENT_EXPORT DelegatedFrameHost
     return weak_factory_.GetWeakPtr();
   }
 
-  bool HasActiveSurface() const;
-
  private:
   friend class DelegatedFrameHostClient;
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
@@ -205,10 +199,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   const bool enable_viz_;
   const bool should_register_frame_sink_id_;
   ui::Compositor* compositor_ = nullptr;
-
-  // The surface id that was most recently activated by
-  // OnFirstSurfaceActivation.
-  viz::LocalSurfaceId active_local_surface_id_;
 
   // The LocalSurfaceId of the currently embedded surface.
   viz::LocalSurfaceId local_surface_id_;
@@ -237,8 +227,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   std::unique_ptr<viz::FrameEvictor> frame_evictor_;
 
   viz::LocalSurfaceId first_local_surface_id_after_navigation_;
-
-  viz::ReportFirstSurfaceActivation should_report_activation_;
 
   base::WeakPtrFactory<DelegatedFrameHost> weak_factory_;
 

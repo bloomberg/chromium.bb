@@ -36,11 +36,9 @@ namespace content {
 ////////////////////////////////////////////////////////////////////////////////
 // DelegatedFrameHost
 
-DelegatedFrameHost::DelegatedFrameHost(
-    const viz::FrameSinkId& frame_sink_id,
-    DelegatedFrameHostClient* client,
-    bool should_register_frame_sink_id,
-    viz::ReportFirstSurfaceActivation should_report_activation)
+DelegatedFrameHost::DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
+                                       DelegatedFrameHostClient* client,
+                                       bool should_register_frame_sink_id)
     : frame_sink_id_(frame_sink_id),
       client_(client),
       enable_viz_(
@@ -48,13 +46,12 @@ DelegatedFrameHost::DelegatedFrameHost(
       should_register_frame_sink_id_(should_register_frame_sink_id),
       host_frame_sink_manager_(GetHostFrameSinkManager()),
       frame_evictor_(std::make_unique<viz::FrameEvictor>(this)),
-      should_report_activation_(should_report_activation),
       weak_factory_(this) {
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   factory->GetContextFactory()->AddObserver(this);
   DCHECK(host_frame_sink_manager_);
-  host_frame_sink_manager_->RegisterFrameSinkId(frame_sink_id_, this,
-                                                should_report_activation);
+  host_frame_sink_manager_->RegisterFrameSinkId(
+      frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kNo);
   host_frame_sink_manager_->EnableSynchronizationReporting(
       frame_sink_id_, "Compositing.MainFrameSynchronization.Duration");
   host_frame_sink_manager_->SetFrameSinkDebugLabel(frame_sink_id_,
@@ -279,8 +276,6 @@ void DelegatedFrameHost::SubmitCompositorFrame(
     const viz::LocalSurfaceId& local_surface_id,
     viz::CompositorFrame frame,
     base::Optional<viz::HitTestRegionList> hit_test_region_list) {
-  // If surface synchronization is off, then OnFirstSurfaceActivation will be
-  // called in the same call stack.
   support_->SubmitCompositorFrame(local_surface_id, std::move(frame),
                                   std::move(hit_test_region_list));
 }
@@ -317,12 +312,7 @@ void DelegatedFrameHost::OnBeginFramePausedChanged(bool paused) {
 
 void DelegatedFrameHost::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
-  DCHECK_EQ(viz::ReportFirstSurfaceActivation::kYes, should_report_activation_);
-
-  active_local_surface_id_ = surface_info.id().local_surface_id();
-
-  // This is used by macOS' unique resize path.
-  client_->OnFirstSurfaceActivation(surface_info);
+  NOTREACHED();
 }
 
 void DelegatedFrameHost::OnFrameTokenChanged(uint32_t frame_token) {
@@ -368,7 +358,6 @@ void DelegatedFrameHost::EvictDelegatedFrame() {
   DCHECK(host_frame_sink_manager_);
   host_frame_sink_manager_->EvictSurfaces(surface_ids);
   frame_evictor_->DiscardedFrame();
-  active_local_surface_id_ = viz::LocalSurfaceId();
   client_->WasEvicted();
 }
 
@@ -506,11 +495,6 @@ void DelegatedFrameHost::TakeFallbackContentFrom(DelegatedFrameHost* other) {
   }
 
   client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(desired_fallback);
-}
-
-bool DelegatedFrameHost::HasActiveSurface() const {
-  DCHECK_EQ(viz::ReportFirstSurfaceActivation::kYes, should_report_activation_);
-  return active_local_surface_id_.is_valid();
 }
 
 }  // namespace content

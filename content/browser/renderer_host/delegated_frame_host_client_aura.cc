@@ -43,9 +43,6 @@ SkColor DelegatedFrameHostClientAura::DelegatedFrameHostGetGutterColor() const {
   return SK_ColorWHITE;
 }
 
-void DelegatedFrameHostClientAura::OnFirstSurfaceActivation(
-    const viz::SurfaceInfo& surface_info) {}
-
 void DelegatedFrameHostClientAura::OnBeginFrame(base::TimeTicks frame_time) {
   render_widget_host_view_->OnBeginFrame(frame_time);
 }
