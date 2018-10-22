@@ -80,7 +80,14 @@ void ParkableStringImpl::Unlock() {
   // Requires DCHECK_IS_ON() for the |owning_thread_| check.
   if (lock_depth_ == 0 && is_parkable_ && string_.Impl()->HasOneRef() &&
       owning_thread_ == CurrentThread()) {
-    AsanPoisonString(string_);
+    // Since |string_| is not deallocated, it remains in the per-thread
+    // AtomicStringTable, where its content can be accessed for equality
+    // comparison for instance, triggering a poisoned memory access.
+    // See crbug.com/883344 for an example.
+    // TODO(lizeb): park the string in |Unlock()| when ASAN is enabled, removing
+    // this check.
+    if (!string_.Impl()->IsAtomic())
+      AsanPoisonString(string_);
   }
 #endif  // defined(ADDRESS_SANITIZER) && DCHECK_IS_ON()
 }
@@ -122,7 +129,9 @@ bool ParkableStringImpl::Park() {
   // Cannot park strings with several references.
   if (string_.Impl()->HasOneRef()) {
 #if defined(ADDRESS_SANITIZER)
-    AsanPoisonString(string_);
+    // See comment in |Unlock()| for this restriction.
+    if (!string_.Impl()->IsAtomic())
+      AsanPoisonString(string_);
 #endif
     RecordParkingAction(ParkingAction::kParkedInBackground);
     is_parked_ = true;
