@@ -118,7 +118,6 @@
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/audio/audio_devices_pref_handler_impl.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/components/drivefs/fake_drivefs_launcher_client.h"
 #include "chromeos/cryptohome/async_method_caller.h"
@@ -265,22 +264,6 @@ bool ShallAttemptTpmOwnership() {
 #else
   return false;
 #endif
-}
-
-void RegisterStubPathOverridesIfNecessary() {
-  // These overrides need to occur before BrowserPolicyConnectorChromeOS
-  // (for one) is created. The DCHECK ensures that is the case.
-  DCHECK(!g_browser_process);
-
-  base::FilePath user_data_dir;
-  if (base::SysInfo::IsRunningOnChromeOS() ||
-      !base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
-    return;
-  }
-
-  // Override some paths with stub locations so that cloud policy and enterprise
-  // enrollment work on desktop builds, for ease of development.
-  chromeos::RegisterStubPathOverrides(user_data_dir);
 }
 
 }  // namespace
@@ -565,8 +548,6 @@ int ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
                         ->GetSwitchValuePath(switches::kLoginProfile)
                         .value();
   }
-
-  RegisterStubPathOverridesIfNecessary();
 
 #if defined(GOOGLE_CHROME_BUILD)
   const char kChromeOSReleaseTrack[] = "CHROMEOS_RELEASE_TRACK";

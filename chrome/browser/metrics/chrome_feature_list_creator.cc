@@ -12,10 +12,12 @@
 #include "base/files/file_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
+#include "base/sys_info.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/switches.h"
 #include "chrome/browser/about_flags.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -41,7 +43,30 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/dbus/dbus_helper.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#endif
+#include "chromeos/chromeos_paths.h"
+#endif  // defined(OS_CHROMEOS)
+
+namespace {
+
+#if defined(OS_CHROMEOS)
+void RegisterStubPathOverridesIfNecessary() {
+  // These overrides need to occur before BrowserPolicyConnectorChromeOS
+  // (for one) is created. The DCHECK ensures that is the case.
+  DCHECK(!g_browser_process);
+
+  base::FilePath user_data_dir;
+  if (base::SysInfo::IsRunningOnChromeOS() ||
+      !base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
+    return;
+  }
+
+  // Override some paths with stub locations so that cloud policy and enterprise
+  // enrollment work on desktop builds, for ease of development.
+  chromeos::RegisterStubPathOverrides(user_data_dir);
+}
+#endif  // defined(OS_CHROMEOS)
+
+}  // namespace
 
 ChromeFeatureListCreator::ChromeFeatureListCreator() = default;
 
@@ -88,6 +113,7 @@ void ChromeFeatureListCreator::CreatePrefService() {
   RegisterLocalState(pref_registry.get());
 
 #if defined(OS_CHROMEOS)
+  RegisterStubPathOverridesIfNecessary();
   chromeos::PreEarlyInitDBus();
   browser_policy_connector_ =
       std::make_unique<policy::BrowserPolicyConnectorChromeOS>();
