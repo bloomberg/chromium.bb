@@ -136,7 +136,7 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
     const blink::WebMediaStream& web_stream,
     base::RepeatingCallback<std::unique_ptr<blink::WebVideoFrameSubmitter>()>
         create_submitter_callback,
-    blink::WebMediaPlayer::SurfaceLayerMode surface_layer_mode,
+    bool surface_layer_for_video_enabled,
     const base::WeakPtr<WebMediaPlayerMS>& player)
     : RefCountedDeleteOnSequence<WebMediaPlayerMSCompositor>(
           video_frame_compositor_task_runner),
@@ -153,9 +153,7 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
       weak_ptr_factory_(this) {
   main_message_loop_ = base::MessageLoopCurrent::Get();
 
-  DCHECK(surface_layer_mode !=
-         blink::WebMediaPlayer::SurfaceLayerMode::kOnDemand);
-  if (surface_layer_mode != blink::WebMediaPlayer::SurfaceLayerMode::kNever) {
+  if (surface_layer_for_video_enabled) {
     submitter_ = create_submitter_callback.Run();
 
     video_frame_compositor_task_runner_->PostTask(

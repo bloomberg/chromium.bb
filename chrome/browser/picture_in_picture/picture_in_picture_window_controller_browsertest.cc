@@ -6,6 +6,7 @@
 
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
@@ -24,6 +25,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "media/base/media_switches.h"
 #include "net/dns/mock_host_resolver.h"
 #include "skia/ext/image_operations.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -77,7 +79,9 @@ class MockPictureInPictureWindowController
 class PictureInPictureWindowControllerBrowserTest
     : public InProcessBrowserTest {
  public:
-  PictureInPictureWindowControllerBrowserTest() = default;
+  PictureInPictureWindowControllerBrowserTest() {
+    feature_list_.InitWithFeatures({media::kUseSurfaceLayerForVideoMS}, {});
+  }
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -147,6 +151,7 @@ class PictureInPictureWindowControllerBrowserTest
 
  private:
   content::PictureInPictureWindowController* pip_window_controller_ = nullptr;
+  base::test::ScopedFeatureList feature_list_;
   MockPictureInPictureWindowController mock_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(PictureInPictureWindowControllerBrowserTest);

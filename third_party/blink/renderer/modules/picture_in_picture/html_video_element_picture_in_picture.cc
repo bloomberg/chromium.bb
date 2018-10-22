@@ -35,10 +35,6 @@ const char kUserGestureRequired[] =
     "Must be handling a user gesture to request picture in picture.";
 const char kDisablePictureInPicturePresent[] =
     "\"disablePictureInPicture\" attribute is present.";
-const char kVideoLayerNotSupported[] =
-    "The use of VideoLayer for video Picture-in-Picture is not supported. "
-    "Please enable the enable-surfaces-for-videos flag if you wish to use this "
-    "feature.";
 }  // namespace
 
 // static
@@ -79,11 +75,6 @@ ScriptPromise HTMLVideoElementPictureInPicture::requestPictureInPicture(
           script_state,
           DOMException::Create(DOMExceptionCode::kNotSupportedError,
                                kNotAvailable));
-    case Status::kVideoLayerNotSupported:
-      return ScriptPromise::RejectWithDOMException(
-          script_state,
-          DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                               kVideoLayerNotSupported));
     case Status::kEnabled:
       break;
   }

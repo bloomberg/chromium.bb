@@ -1194,6 +1194,11 @@ const char kUseSurfaceLayerForVideoName[] =
 const char kUseSurfaceLayerForVideoDescription[] =
     "Enable compositing onto a Surface instead of a VideoLayer "
     "for videos.";
+const char kUseSurfaceLayerForVideoMSName[] =
+    "Enable the use of SurfaceLayer objects for media stream videos.";
+const char kUseSurfaceLayerForVideoMSDescription[] =
+    "Enable compositing onto a Surface instead of a VideoLayer "
+    "for media stream videos.";
 
 const char kNewUsbBackendName[] = "Enable new USB backend";
 const char kNewUsbBackendDescription[] =

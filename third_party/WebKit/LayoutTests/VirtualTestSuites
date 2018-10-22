@@ -688,6 +688,7 @@
     "prefix": "video-surface-layer",
     "base": "media",
     "args": ["--enable-features=UseSurfaceLayerForVideo",
+             "--enable-features=UseSurfaceLayerForVideoMS",
              "--enable-display-compositor-pixel-dump"]
   },
   {

@@ -129,7 +129,7 @@ void PostContextProviderToCallback(
 namespace content {
 
 // static
-blink::WebMediaPlayer::SurfaceLayerMode
+media::WebMediaPlayerParams::SurfaceLayerMode
 MediaFactory::GetVideoSurfaceLayerMode() {
   // LayoutTests do not support SurfaceLayer by default at the moment.
   // See https://crbug.com/838128
@@ -137,19 +137,33 @@ MediaFactory::GetVideoSurfaceLayerMode() {
       content::RenderThreadImpl::current();
   if (render_thread && render_thread->layout_test_mode() &&
       !render_thread->LayoutTestModeUsesDisplayCompositorPixelDump()) {
-    return blink::WebMediaPlayer::SurfaceLayerMode::kNever;
+    return media::WebMediaPlayerParams::SurfaceLayerMode::kNever;
   }
 
   if (features::IsMultiProcessMash())
-    return blink::WebMediaPlayer::SurfaceLayerMode::kNever;
+    return media::WebMediaPlayerParams::SurfaceLayerMode::kNever;
 
   if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo))
-    return blink::WebMediaPlayer::SurfaceLayerMode::kAlways;
+    return media::WebMediaPlayerParams::SurfaceLayerMode::kAlways;
 
   if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideoPIP))
-    return blink::WebMediaPlayer::SurfaceLayerMode::kOnDemand;
+    return media::WebMediaPlayerParams::SurfaceLayerMode::kOnDemand;
 
-  return blink::WebMediaPlayer::SurfaceLayerMode::kNever;
+  return media::WebMediaPlayerParams::SurfaceLayerMode::kNever;
+}
+
+bool MediaFactory::VideoSurfaceLayerEnabledForMS() {
+  // LayoutTests do not support SurfaceLayer by default at the moment.
+  // See https://crbug.com/838128
+  content::RenderThreadImpl* render_thread =
+      content::RenderThreadImpl::current();
+  if (render_thread && render_thread->layout_test_mode() &&
+      !render_thread->LayoutTestModeUsesDisplayCompositorPixelDump()) {
+    return false;
+  }
+
+  return base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideoMS) &&
+         !features::IsMultiProcessMash();
 }
 
 MediaFactory::MediaFactory(
@@ -277,11 +291,11 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
   scoped_refptr<base::SingleThreadTaskRunner>
       video_frame_compositor_task_runner;
   std::unique_ptr<blink::WebVideoFrameSubmitter> submitter;
-  blink::WebMediaPlayer::SurfaceLayerMode use_surface_layer_for_video =
+  media::WebMediaPlayerParams::SurfaceLayerMode use_surface_layer_for_video =
       GetVideoSurfaceLayerMode();
   bool use_sync_primitives = false;
   if (use_surface_layer_for_video ==
-      blink::WebMediaPlayer::SurfaceLayerMode::kAlways) {
+      media::WebMediaPlayerParams::SurfaceLayerMode::kAlways) {
     // Run the compositor / frame submitter on its own thread.
     video_frame_compositor_task_runner =
         render_thread->CreateVideoFrameCompositorTaskRunner();
@@ -299,7 +313,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
   }
 
   if (use_surface_layer_for_video !=
-      blink::WebMediaPlayer::SurfaceLayerMode::kNever) {
+      media::WebMediaPlayerParams::SurfaceLayerMode::kNever) {
     submitter = blink::WebVideoFrameSubmitter::Create(
         base::BindRepeating(
             &PostContextProviderToCallback,
@@ -516,34 +530,10 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
         render_frame_->GetTaskRunner(blink::TaskType::kInternalMediaRealTime);
 
   scoped_refptr<base::SingleThreadTaskRunner>
-      video_frame_compositor_task_runner;
-  std::unique_ptr<blink::WebVideoFrameSubmitter> submitter;
-  blink::WebMediaPlayer::SurfaceLayerMode use_surface_layer_for_video =
-      GetVideoSurfaceLayerMode();
-
-  // Currently we do not support kOnDemand for MediaStreams.
-  if (use_surface_layer_for_video ==
-      blink::WebMediaPlayer::SurfaceLayerMode::kOnDemand) {
-    use_surface_layer_for_video =
-        blink::WebMediaPlayer::SurfaceLayerMode::kNever;
-  }
-
-  if (use_surface_layer_for_video ==
-      blink::WebMediaPlayer::SurfaceLayerMode::kAlways) {
-    // Run the compositor / frame submitter on its own thread.
-    video_frame_compositor_task_runner =
-        render_thread->CreateVideoFrameCompositorTaskRunner();
-    // We must use sync primitives on this thread.
-    const bool use_sync_primitives = true;
-
-    submitter = blink::WebVideoFrameSubmitter::Create(
-        base::BindRepeating(
-            &PostContextProviderToCallback,
-            RenderThreadImpl::current()->GetCompositorMainThreadTaskRunner()),
-        settings, use_sync_primitives);
-  } else {
-    video_frame_compositor_task_runner = compositor_task_runner;
-  }
+      media_stream_compositor_task_runner =
+          VideoSurfaceLayerEnabledForMS()
+              ? render_thread->CreateVideoFrameCompositorTaskRunner()
+              : compositor_task_runner;
 
   DCHECK(layer_tree_view);
   return new WebMediaPlayerMS(
@@ -552,7 +542,7 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
           url::Origin(security_origin).GetURL(),
           render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia)),
       CreateMediaStreamRendererFactory(), render_thread->GetIOTaskRunner(),
-      video_frame_compositor_task_runner,
+      media_stream_compositor_task_runner,
       render_thread->GetMediaThreadTaskRunner(),
       render_thread->GetWorkerTaskRunner(), render_thread->GetGpuFactories(),
       sink_id,
@@ -563,7 +553,7 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
               &PostContextProviderToCallback,
               RenderThreadImpl::current()->GetCompositorMainThreadTaskRunner()),
           settings, true),
-      use_surface_layer_for_video);
+      VideoSurfaceLayerEnabledForMS());
 }
 
 media::RendererWebMediaPlayerDelegate*

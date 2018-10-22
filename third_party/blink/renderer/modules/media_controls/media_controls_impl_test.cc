@@ -72,9 +72,6 @@ class MockWebMediaPlayerForImpl : public EmptyWebMediaPlayer {
   // WebMediaPlayer overrides:
   WebTimeRanges Seekable() const override { return seekable_; }
   bool HasVideo() const override { return true; }
-  SurfaceLayerMode GetVideoSurfaceLayerMode() const override {
-    return SurfaceLayerMode::kAlways;
-  }
 
   WebTimeRanges seekable_;
 };

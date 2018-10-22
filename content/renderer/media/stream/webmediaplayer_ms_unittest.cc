@@ -677,10 +677,6 @@ class WebMediaPlayerMSTest
 
 void WebMediaPlayerMSTest::InitializeWebMediaPlayerMS() {
   enable_surface_layer_for_video_ = testing::get<0>(GetParam());
-  blink::WebMediaPlayer::SurfaceLayerMode surface_layer_mode =
-      enable_surface_layer_for_video_
-          ? blink::WebMediaPlayer::SurfaceLayerMode::kAlways
-          : blink::WebMediaPlayer::SurfaceLayerMode::kNever;
   player_ = std::make_unique<WebMediaPlayerMS>(
       nullptr, this, &delegate_, std::make_unique<media::MediaLog>(),
       std::unique_ptr<MediaStreamRendererFactory>(render_factory_),
@@ -692,7 +688,7 @@ void WebMediaPlayerMSTest::InitializeWebMediaPlayerMS() {
       base::BindRepeating(
           &WebMediaPlayerMSTest::CreateWebMockVideoFrameSubmitter,
           base::Unretained(this)),
-      surface_layer_mode);
+      enable_surface_layer_for_video_);
 }
 
 MockMediaStreamVideoRenderer* WebMediaPlayerMSTest::LoadAndGetFrameProvider(
