@@ -4,7 +4,20 @@
 
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 
+#include "base/i18n/rtl.h"
+#include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "third_party/skia/include/core/SkPath.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/views/animation/ink_drop_host_view.h"
+#include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/style/platform_style.h"
+#include "ui/views/view.h"
 #include "ui/views/view_properties.h"
 
 gfx::Insets GetToolbarInkDropInsets(const views::View* host_view,
@@ -37,6 +50,17 @@ void SetToolbarButtonHighlightPath(views::View* host_view,
   auto path = std::make_unique<SkPath>();
   path->addRoundRect(gfx::RectToSkRect(rect), radii, radii);
   host_view->SetProperty(views::kHighlightPathKey, path.release());
+}
+
+std::unique_ptr<views::InkDrop> CreateToolbarInkDrop(
+    views::InkDropHostView* host_view) {
+  auto ink_drop =
+      std::make_unique<views::InkDropImpl>(host_view, host_view->size());
+  ink_drop->SetAutoHighlightMode(
+      views::InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE);
+  ink_drop->SetShowHighlightOnHover(true);
+  ink_drop->SetShowHighlightOnFocus(!views::PlatformStyle::kPreferFocusRings);
+  return ink_drop;
 }
 
 std::unique_ptr<views::InkDropHighlight> CreateToolbarInkDropHighlight(

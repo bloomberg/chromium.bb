@@ -37,6 +37,8 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/animation/ink_drop.h"
+#include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/metrics.h"
 
@@ -354,7 +356,7 @@ int BrowserAppMenuButton::OnPerformDrop(const ui::DropTargetEvent& event) {
 }
 
 std::unique_ptr<views::InkDrop> BrowserAppMenuButton::CreateInkDrop() {
-  return CreateToolbarInkDrop<MenuButton>(this);
+  return CreateToolbarInkDrop(this);
 }
 
 std::unique_ptr<views::InkDropHighlight>
