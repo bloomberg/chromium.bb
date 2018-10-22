@@ -227,8 +227,8 @@ class SyncEngineTest : public testing::Test {
     params.registrar = std::make_unique<SyncBackendRegistrar>(
         std::string(), base::Bind(&SyncClient::CreateModelWorkerForGroup,
                                   base::Unretained(&sync_client_)));
-    params.encryption_observer_proxy =
-        std::make_unique<NullEncryptionObserver>();
+    params.encryption_observer_proxies.push_back(
+        std::make_unique<NullEncryptionObserver>());
     params.http_factory_getter = std::move(http_post_provider_factory_getter);
     params.credentials = credentials_;
     params.sync_manager_factory = std::move(fake_manager_factory_);

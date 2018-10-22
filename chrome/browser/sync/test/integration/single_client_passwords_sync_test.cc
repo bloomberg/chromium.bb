@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "chrome/browser/sync/test/integration/feature_toggler.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "components/sync/driver/sync_driver_switches.h"
 
 using passwords_helper::AddLogin;
 using passwords_helper::CreateTestPasswordForm;
@@ -19,16 +21,18 @@ using passwords_helper::ProfileContainsSamePasswordFormsAsVerifier;
 
 using autofill::PasswordForm;
 
-class SingleClientPasswordsSyncTest : public SyncTest {
+class SingleClientPasswordsSyncTest : public FeatureToggler, public SyncTest {
  public:
-  SingleClientPasswordsSyncTest() : SyncTest(SINGLE_CLIENT) {}
+  SingleClientPasswordsSyncTest()
+      : FeatureToggler(switches::kSyncPseudoUSSPasswords),
+        SyncTest(SINGLE_CLIENT) {}
   ~SingleClientPasswordsSyncTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SingleClientPasswordsSyncTest);
 };
 
-IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTest, Sanity) {
+IN_PROC_BROWSER_TEST_P(SingleClientPasswordsSyncTest, Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   PasswordForm form = CreateTestPasswordForm(0);
@@ -45,7 +49,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTest, Sanity) {
 // Verifies that committed passwords contain the appropriate proto fields, and
 // in particular lack some others that could potentially contain unencrypted
 // data. In this test, custom passphrase is NOT set.
-IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTest,
+IN_PROC_BROWSER_TEST_P(SingleClientPasswordsSyncTest,
                        CommitWithoutCustomPassphrase) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -71,7 +75,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTest,
 
 // Same as above but with custom passphrase set, which requires to prune commit
 // data even further.
-IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTest,
+IN_PROC_BROWSER_TEST_P(SingleClientPasswordsSyncTest,
                        CommitWithCustomPassphrase) {
   SetEncryptionPassphraseForClient(/*index=*/0, "hunter2");
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -93,3 +97,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTest,
       entities[0].specifics().password().has_client_only_encrypted_data());
   EXPECT_FALSE(entities[0].specifics().password().has_unencrypted_metadata());
 }
+
+INSTANTIATE_TEST_CASE_P(USS,
+                        SingleClientPasswordsSyncTest,
+                        ::testing::Values(false, true));

@@ -30,6 +30,7 @@ extern const base::Feature kSyncPseudoUSSExtensionSettings;
 extern const base::Feature kSyncPseudoUSSExtensions;
 extern const base::Feature kSyncPseudoUSSFavicons;
 extern const base::Feature kSyncPseudoUSSHistoryDeleteDirectives;
+extern const base::Feature kSyncPseudoUSSPasswords;
 extern const base::Feature kSyncPseudoUSSPreferences;
 extern const base::Feature kSyncPseudoUSSPriorityPreferences;
 extern const base::Feature kSyncPseudoUSSSearchEngines;
