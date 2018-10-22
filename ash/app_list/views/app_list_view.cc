@@ -306,7 +306,6 @@ AppListView::AppListView(AppListViewDelegate* delegate)
       model_(delegate->GetModel()),
       search_model_(delegate->GetSearchModel()),
       is_background_blur_enabled_(app_list_features::IsBackgroundBlurEnabled()),
-      display_observer_(this),
       hide_view_animation_observer_(
           std::make_unique<HideViewAnimationObserver>()),
       transition_animation_observer_(
@@ -321,7 +320,6 @@ AppListView::AppListView(AppListViewDelegate* delegate)
       weak_ptr_factory_(this) {
   CHECK(delegate);
 
-  display_observer_.Add(display::Screen::GetScreen());
   // Enable arrow key in FocusManager. Arrow left/right and up/down triggers
   // the same focus movement as tab/shift+tab.
   views::FocusManager::set_arrow_key_traversal_enabled(true);
@@ -1602,8 +1600,7 @@ bool AppListView::CloseKeyboardIfVisible() {
   return false;
 }
 
-void AppListView::OnDisplayMetricsChanged(const display::Display& display,
-                                          uint32_t changed_metrics) {
+void AppListView::OnParentWindowBoundsChanged() {
   // Set the |fullscreen_widget_| size to fit the new display metrics.
   fullscreen_widget_->GetNativeView()->SetBounds(
       GetPreferredWidgetBoundsForState(app_list_state_));

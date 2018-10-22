@@ -14,9 +14,7 @@
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/scoped_observer.h"
 #include "build/build_config.h"
-#include "ui/display/display_observer.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -25,7 +23,7 @@ class Window;
 }
 
 namespace display {
-class Screen;
+class Display;
 }
 
 namespace ui {
@@ -49,8 +47,7 @@ class TransitionAnimationObserver;
 // and hosts a AppsGridView and passes AppListModel to it for display.
 // TODO(newcomer|weidongg): Organize the cc file to match the order of
 // definitions in this header.
-class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
-                                    public display::DisplayObserver {
+class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
  public:
   class TestApi {
    public:
@@ -187,6 +184,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Called when on-screen keyboard's visibility is changed.
   void OnScreenKeyboardShown(bool shown);
 
+  // Called when parent window's bounds is changed.
+  void OnParentWindowBoundsChanged();
+
   // If the on-screen keyboard is shown, hide it. Return whether keyboard was
   // hidden
   bool CloseKeyboardIfVisible();
@@ -321,10 +321,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Overridden from views::WidgetDelegateView:
   views::View* GetInitiallyFocusedView() override;
 
-  // Overridden from DisplayObserver:
-  void OnDisplayMetricsChanged(const display::Display& display,
-                               uint32_t changed_metrics) override;
-
   // Gets app list background opacity during dragging.
   float GetAppListBackgroundOpacityDuringDragging();
 
@@ -392,8 +388,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   const bool is_background_blur_enabled_;
   // The state of the app list, controlled via SetState().
   AppListViewState app_list_state_ = AppListViewState::PEEKING;
-  // An observer that notifies AppListView when the display has changed.
-  ScopedObserver<display::Screen, display::DisplayObserver> display_observer_;
 
   // A widget observer that sets the AppListView state when the widget is
   // closed.

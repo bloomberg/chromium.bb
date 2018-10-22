@@ -25,6 +25,7 @@
 #include "base/command_line.h"
 #include "chromeos/chromeos_switches.h"
 #include "ui/aura/window.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/events/event.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/widget/widget.h"
@@ -54,7 +55,9 @@ bool IsSideShelf(aura::Window* root_window) {
 
 AppListPresenterDelegateImpl::AppListPresenterDelegateImpl(
     AppListControllerImpl* controller)
-    : controller_(controller) {}
+    : controller_(controller), display_observer_(this) {
+  display_observer_.Add(display::Screen::GetScreen());
+}
 
 AppListPresenterDelegateImpl::~AppListPresenterDelegateImpl() {
   Shell::Get()->RemovePreTargetHandler(this);
@@ -77,11 +80,19 @@ void AppListPresenterDelegateImpl::Init(app_list::AppListView* view,
   aura::Window* root_window = Shell::GetRootWindowForDisplayId(display_id);
 
   app_list::AppListView::InitParams params;
-  params.parent =
+  aura::Window* parent_window =
       RootWindowController::ForWindow(root_window)
           ->GetContainer(IsHomeLauncherEnabledInTabletMode()
                              ? kShellWindowId_AppListTabletModeContainer
                              : kShellWindowId_AppListContainer);
+
+  // Snap the window bounds to fit the screen size (See
+  // https://crbug.com/884889).
+  const gfx::Rect bounds = ash::screen_util::SnapBoundsToDisplayEdge(
+      parent_window->GetBoundsInScreen(), parent_window);
+  parent_window->SetBoundsInScreen(
+      bounds, Shell::Get()->display_manager()->GetDisplayForId(display_id));
+  params.parent = parent_window;
   params.initial_apps_page = current_apps_page;
   params.is_tablet_mode = Shell::Get()
                               ->tablet_mode_controller()
@@ -169,6 +180,21 @@ void AppListPresenterDelegateImpl::OnVisibilityChanged(
 void AppListPresenterDelegateImpl::OnTargetVisibilityChanged(bool visible) {
   // Notify Chrome the target visibility change.
   controller_->OnTargetVisibilityChanged(visible);
+}
+
+void AppListPresenterDelegateImpl::OnDisplayMetricsChanged(
+    const display::Display& display,
+    uint32_t changed_metrics) {
+  if (!presenter_->GetWindow())
+    return;
+
+  // Snap the window bounds to fit the screen size (See
+  // https://crbug.com/884889).
+  aura::Window* parent_window = presenter_->GetWindow()->parent();
+  const gfx::Rect bounds = ash::screen_util::SnapBoundsToDisplayEdge(
+      parent_window->GetBoundsInScreen(), parent_window);
+  parent_window->SetBoundsInScreen(bounds, display);
+  view_->OnParentWindowBoundsChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
