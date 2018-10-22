@@ -518,14 +518,7 @@ void AppListView::Layout() {
         app_list_background_shield_bounds);
   }
 
-  // Translate the background shield to avoid holes left by rounded corner in
-  // fullscreen state.
-  gfx::Transform transform;
-  if (app_list_state_ == AppListViewState::FULLSCREEN_ALL_APPS ||
-      app_list_state_ == AppListViewState::FULLSCREEN_SEARCH) {
-    transform.Translate(0, -kAppListBackgroundRadius);
-  }
-  app_list_background_shield_->SetTransform(transform);
+  UpdateAppListBackgroundYPosition();
 }
 
 void AppListView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -1348,9 +1341,7 @@ void AppListView::StartCloseAnimation(base::TimeDelta animation_duration) {
   if (is_side_shelf_)
     return;
 
-  if (app_list_state_ != AppListViewState::CLOSED)
-    SetState(AppListViewState::CLOSED);
-
+  SetState(AppListViewState::CLOSED);
   app_list_main_view_->contents_view()->FadeOutOnClose(animation_duration);
 }
 
@@ -1512,25 +1503,15 @@ void AppListView::UpdateChildViewsYPositionAndOpacity() {
   if (app_list_state_ == AppListViewState::CLOSED)
     return;
 
-  // Update the Y position of the background shield.
-  float app_list_transition_progress = GetAppListTransitionProgress();
-  gfx::Transform transform;
-  if (app_list_transition_progress >= 1 && app_list_transition_progress <= 2) {
-    // Translate background shield so that it ends drag at y position
-    // -|kAppListBackgroundRadius| when dragging between peeking and fullscreen.
-    transform.Translate(
-        0, -kAppListBackgroundRadius * (app_list_transition_progress - 1));
-  }
-  app_list_background_shield_->SetTransform(transform);
+  UpdateAppListBackgroundYPosition();
 
   // Update the opacity of the background shield.
-  float shield_opacity =
+  const float shield_opacity =
       is_background_blur_enabled_ ? kAppListOpacityWithBlur : kAppListOpacity;
   app_list_background_shield_->layer()->SetOpacity(
       is_in_drag_ ? background_opacity_ : shield_opacity);
 
   search_box_view_->UpdateOpacity();
-
   app_list_main_view_->contents_view()->UpdateYPositionAndOpacity();
 }
 
@@ -1708,6 +1689,25 @@ gfx::Rect AppListView::GetPreferredWidgetBoundsForState(
   CHECK(parent);
   return gfx::Rect(0, GetPreferredWidgetYForState(state),
                    parent->bounds().width(), GetFullscreenStateHeight());
+}
+
+void AppListView::UpdateAppListBackgroundYPosition() {
+  // Update the y position of the background shield.
+  gfx::Transform transform;
+  if (is_in_drag_) {
+    float app_list_transition_progress = GetAppListTransitionProgress();
+    if (app_list_transition_progress >= 1 &&
+        app_list_transition_progress <= 2) {
+      // Translate background shield so that it ends drag at y position
+      // -|kAppListBackgroundRadius| when dragging between peeking and
+      // fullscreen.
+      transform.Translate(
+          0, -kAppListBackgroundRadius * (app_list_transition_progress - 1));
+    }
+  } else if (is_fullscreen()) {
+    transform.Translate(0, -kAppListBackgroundRadius);
+  }
+  app_list_background_shield_->SetTransform(transform);
 }
 
 }  // namespace app_list

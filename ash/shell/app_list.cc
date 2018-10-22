@@ -273,6 +273,10 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     // Nothing needs to be done.
   }
 
+  void ViewClosed() override {
+    // Nothing needs to be done.
+  }
+
   void GetWallpaperProminentColors(
       GetWallpaperProminentColorsCallback callback) override {
     NOTIMPLEMENTED();

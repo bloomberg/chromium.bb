@@ -344,6 +344,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   // widget is initialized.
   gfx::Rect GetPreferredWidgetBoundsForState(AppListViewState state);
 
+  // Updates y position of |app_list_background_shield_| based on the
+  // |app_list_state_| and |is_in_drag_|.
+  void UpdateAppListBackgroundYPosition();
+
   AppListViewDelegate* delegate_;    // Weak. Owned by AppListService.
   AppListModel* const model_;        // Not Owned.
   SearchModel* const search_model_;  // Not Owned.
