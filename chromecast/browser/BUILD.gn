@@ -376,6 +376,10 @@ service_manifest("cast_content_browser_manifest_overlay") {
 # interfaces in "content_renderer".
 service_manifest("cast_content_renderer_manifest_overlay") {
   source = "cast_content_renderer_manifest_overlay.json"
+
+  if (chromecast_branding != "public") {
+    overlays = [ "//chromecast/internal/shell/browser:cast_content_renderer_internal_manifest_overlay" ]
+  }
 }
 
 # This target is for packaged services that will run in the main (browser)
