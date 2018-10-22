@@ -15,10 +15,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "net/proxy_resolution/proxy_config.h"
 
-namespace net {
-class ProxyServer;
-}
-
 namespace data_reduction_proxy {
 
 class NetworkPropertiesManager;
@@ -30,8 +26,6 @@ class DataReductionProxyConfigurator {
   ~DataReductionProxyConfigurator();
 
   // Enables data reduction using the proxy servers in |proxies_for_http|.
-  // TODO: crbug.com/675764: Pass a vector of DataReductionProxyServer
-  // instead of net::ProxyServer.
   void Enable(const NetworkPropertiesManager& network_properties_manager,
               const std::vector<DataReductionProxyServer>& proxies_for_http);
 

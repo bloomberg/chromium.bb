@@ -112,6 +112,11 @@ bool IsIncludedInHoldbackFieldTrial() {
   return IsIncludedInFieldTrial("DataCompressionProxyHoldback");
 }
 
+bool IsIncludedInSecureProxyHoldbackFieldTrial() {
+  return base::FieldTrialList::FindFullName("DataCompressionProxyHoldback") ==
+         "SecureProxy_Disabled";
+}
+
 std::string HoldbackFieldTrialGroup() {
   return base::FieldTrialList::FindFullName("DataCompressionProxyHoldback");
 }
