@@ -39,11 +39,21 @@ DOMAgentAura::DOMAgentAura() {
 }
 
 DOMAgentAura::~DOMAgentAura() {
+  for (aura::Window* window : root_windows_)
+    window->RemoveObserver(this);
   aura::Env::GetInstance()->RemoveObserver(this);
 }
 
 void DOMAgentAura::OnHostInitialized(aura::WindowTreeHost* host) {
-  root_windows_.push_back(host->window());
+  aura::Window* window = host->window();
+  root_windows_.push_back(window);
+  window->AddObserver(this);
+}
+
+void DOMAgentAura::OnWindowDestroying(aura::Window* window) {
+  root_windows_.erase(
+      std::remove(root_windows_.begin(), root_windows_.end(), window),
+      root_windows_.end());
 }
 
 std::vector<UIElement*> DOMAgentAura::CreateChildrenForRoot() {
