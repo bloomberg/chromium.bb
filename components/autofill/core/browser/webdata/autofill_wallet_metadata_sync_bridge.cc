@@ -115,7 +115,7 @@ void AutofillWalletMetadataSyncBridge::CreateForWebDataServiceAndBackend(
 }
 
 // static
-syncer::ModelTypeSyncBridge*
+AutofillWalletMetadataSyncBridge*
 AutofillWalletMetadataSyncBridge::FromWebDataService(
     AutofillWebDataService* web_data_service) {
   return static_cast<AutofillWalletMetadataSyncBridge*>(
@@ -128,15 +128,21 @@ AutofillWalletMetadataSyncBridge::AutofillWalletMetadataSyncBridge(
     AutofillWebDataBackend* web_data_backend)
     : ModelTypeSyncBridge(std::move(change_processor)),
       web_data_backend_(web_data_backend),
-      scoped_observer_(this) {
+      scoped_observer_(this),
+      track_wallet_data_(false),
+      weak_ptr_factory_(this) {
   DCHECK(web_data_backend_);
-
   scoped_observer_.Add(web_data_backend_);
 
   LoadDataCacheAndMetadata();
 }
 
 AutofillWalletMetadataSyncBridge::~AutofillWalletMetadataSyncBridge() {}
+
+void AutofillWalletMetadataSyncBridge::OnWalletDataTrackingStateChanged(
+    bool is_tracking) {
+  track_wallet_data_ = is_tracking;
+}
 
 std::unique_ptr<syncer::MetadataChangeList>
 AutofillWalletMetadataSyncBridge::CreateMetadataChangeList() {
