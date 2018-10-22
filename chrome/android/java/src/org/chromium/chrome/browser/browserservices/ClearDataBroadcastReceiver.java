@@ -20,9 +20,10 @@ import java.util.Set;
  * corresponding to that app.
  *
  * Trusted Web Activities are registered to an origin (eg https://www.example.com), however because
- * cookies can be scoped more loosely, at TLD+1 level (eg *.example.com) [1], we need to clear data
- * at that level. This unfortunately can lead to too much data getting cleared - for example if the
- * https://peconn.github.io TWA is cleared, you'll loose cookies for https://beverloo.github.io too.
+ * cookies can be scoped more loosely, at 'domain and registry'/TLD+1 level (eg *.example.com) [1],
+ * we need to clear data at that level. This unfortunately can lead to too much data getting cleared
+ * - for example if the https://maps.google.com TWA is cleared, you'll loose cookies for
+ * https://mail.google.com too.
  *
  * We find this acceptable for two reasons:
  * - The alternative is *not* clearing some related data - eg a TWA linked to
@@ -62,12 +63,12 @@ public class ClearDataBroadcastReceiver extends BroadcastReceiver {
         }
 
         String appName = register.getAppNameForRegisteredUid(uid);
-        Set<String> origins = register.getOriginsForRegisteredUid(uid);
+        Set<String> domainAndRegistries = register.getDomainAndRegistriesForRegisteredUid(uid);
 
-        for (String origin : origins) {
+        for (String domainAndRegistry : domainAndRegistries) {
             String action = Intent.ACTION_PACKAGE_FULLY_REMOVED.equals(intent.getAction())
                     ? "been uninstalled" : "had its data cleared";
-            Log.d(TAG, "%s has just %s, it was linked to %s.", appName, action, origin);
+            Log.d(TAG, "%s has just %s, it was linked to %s.", appName, action, domainAndRegistry);
         }
     }
 }

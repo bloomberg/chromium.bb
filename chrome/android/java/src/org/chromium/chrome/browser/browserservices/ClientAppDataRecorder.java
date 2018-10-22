@@ -9,20 +9,23 @@ import android.content.pm.PackageManager;
 import android.text.TextUtils;
 
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.util.UrlUtilities;
 
 import java.util.HashSet;
 import java.util.Set;
 
 /**
  * Takes care of recording that Chrome contains data for the client app in the
- * {@link ClientAppDataRegister}. It performs two main duties:
+ * {@link ClientAppDataRegister}. It performs three main duties:
  * - Holds a cache to deduplicate requests (for performance not correctness).
  * - Transforming the package name into a uid and app label.
+ * - Transforming the origin into a domain and registry (requires native).
  *
  * Lifecycle: There should be a 1-1 relationship between this class and
  * {@link TrustedWebActivityUi}. Having more instances won't effect correctness, but will limit the
  * performance benefits of the cache.
  * Thread safety: All methods on this class should be called from the same thread.
+ * Native: The default {@link UrlTransformer} requires native to be loaded.
  */
 public class ClientAppDataRecorder {
     private static final String TAG = "TWAClientAppData";
@@ -30,23 +33,40 @@ public class ClientAppDataRecorder {
 
     /** Underlying data register. */
     private final ClientAppDataRegister mClientAppDataRegister;
+    private final UrlTransformer mUrlTransformer;
 
     /**
      * Cache so we don't send the same request multiple times. {@link #register} is called on each
-     * navigation and each call to {@link ClientAppDataRegister#registerPackageForOrigin} modifies
-     * SharedPreferences, so we need to cut down on the number of calls.
+     * navigation and each call to {@link ClientAppDataRegister#registerPackageForDomainAndRegistry}
+     * modifies SharedPreferences, so we need to cut down on the number of calls.
      */
     private final Set<String> mCache = new HashSet<>();
 
+    /** Class to allow mocking native calls in unit tests. */
+    /* package */ static class UrlTransformer {
+        /* package */ String getDomainAndRegistry(Origin origin) {
+            return UrlUtilities.getDomainAndRegistry(
+                    origin.toString(), true /* includePrivateRegistries */);
+        }
+    }
+
+    /** Creates a ClientAppDataRecorder with default dependencies. */
+    public ClientAppDataRecorder(PackageManager packageManager) {
+        this(packageManager, new ClientAppDataRegister(), new UrlTransformer());
+    }
+
+    /** Creates a ClientAppDataRecorder providing all dependencies. */
     public ClientAppDataRecorder(PackageManager packageManager,
-            ClientAppDataRegister clientAppDataRegister) {
+            ClientAppDataRegister clientAppDataRegister, UrlTransformer urlTransformer) {
         mPackageManager = packageManager;
         mClientAppDataRegister = clientAppDataRegister;
+        mUrlTransformer = urlTransformer;
     }
 
     /**
-     * Calls {@link ClientAppDataRegister#registerPackageForOrigin}, looking up the uid and
-     * app name for the |packageName| and deduplicating multiple requests with the same parameters.
+     * Calls {@link ClientAppDataRegister#registerPackageForDomainAndRegistry}, looking up the uid
+     * and app name for the |packageName|, extracting the domain and registry from the origin and
+     * deduplicating multiple requests with the same parameters.
      */
     /* package */ void register(String packageName, Origin origin) {
         if (mCache.contains(combine(packageName, origin))) return;
@@ -62,8 +82,11 @@ public class ClientAppDataRecorder {
                 return;
             }
 
-            Log.d(TAG, "Registering %d (%s) for %s", ai.uid, appLabel, origin);
-            mClientAppDataRegister.registerPackageForOrigin(ai.uid, appLabel, origin);
+            String domainAndRegistry = mUrlTransformer.getDomainAndRegistry(origin);
+
+            Log.d(TAG, "Registering %d (%s) for %s", ai.uid, appLabel, domainAndRegistry);
+            mClientAppDataRegister.registerPackageForDomainAndRegistry(
+                    ai.uid, appLabel, domainAndRegistry);
         } catch (PackageManager.NameNotFoundException e) {
             Log.e(TAG, "Couldn't find name for client package %s", packageName);
         }
