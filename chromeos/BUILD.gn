@@ -419,7 +419,7 @@ if (is_chromeos_chrome) {
   }
 
   tast_test("chrome_all_tast_tests") {
-    tast_conditional = "(!informational && !disabled && (\"dep:chrome\" || \"dep:chrome_login\"))"
+    tast_conditional = "(!disabled && !\"group:*\" && !informational && (\"dep:chrome\" || \"dep:chrome_login\"))"
   }
 
   group("cros_chrome_deploy") {
