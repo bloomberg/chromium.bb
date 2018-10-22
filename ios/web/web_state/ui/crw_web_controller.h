@@ -187,10 +187,6 @@ class WebStateImpl;
 // Records the state (scroll position, form values, whatever can be harvested)
 // from the current page into the current session entry.
 - (void)recordStateInHistory;
-// Restores the state for this page from session history.
-// TODO(stuartmorgan): This is public only temporarily; once refactoring is
-// complete it will be handled internally.
-- (void)restoreStateFromHistory;
 
 // Notifies the CRWWebController that it has been shown.
 - (void)wasShown;
