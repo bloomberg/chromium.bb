@@ -23,6 +23,7 @@ extern const char kKeyUsername[];
 extern const wchar_t kUserTokenHandle[];
 extern const wchar_t kUserNeedsReauth[];
 extern const wchar_t kUserEmail[];
+extern const wchar_t kUserId[];
 
 // Username and password key for special GAIA account to run GLS.
 extern const wchar_t kGaiaAccountName[];

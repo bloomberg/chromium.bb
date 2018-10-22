@@ -22,6 +22,7 @@ const char kKeyUsername[] = "user_name";
 const wchar_t kUserTokenHandle[] = L"th";
 const wchar_t kUserNeedsReauth[] = L"nr";
 const wchar_t kUserEmail[] = L"email";
+const wchar_t kUserId[] = L"id";
 
 // Username and password key for special GAIA account to run GLS.
 const wchar_t kGaiaAccountName[] = L"gaia";

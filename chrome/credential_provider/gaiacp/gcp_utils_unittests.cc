@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/process/launch.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/win/scoped_handle.h"
 #include "build/build_config.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
@@ -304,27 +306,23 @@ TEST_F(GcpProcHelperTest, WaitForProcess) {
 }
 
 TEST_F(GcpProcHelperTest, GetCommandLineForEntrypoint) {
-  wchar_t command_line[256];
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
 
-  EXPECT_NE(S_OK, GetCommandLineForEntrypoint(nullptr, L"entrypoint",
-                                              command_line, 0));
-  EXPECT_NE(S_OK, GetCommandLineForEntrypoint(nullptr, L"entrypoint",
-                                              command_line, 20));
+  // In tests, GetCommandLineForEntrypoint() will always return S_FALSE.
+  ASSERT_EQ(S_FALSE,
+            GetCommandLineForEntrypoint(nullptr, L"entrypoint", &command_line));
 
   // Get short path name of this binary and build the expect command line.
   wchar_t path[MAX_PATH];
   wchar_t short_path[MAX_PATH];
-  wchar_t expected_command_line[MAX_PATH];
   ASSERT_LT(0u, GetModuleFileName(nullptr, path, base::size(path)));
   ASSERT_LT(0u, GetShortPathName(path, short_path, base::size(short_path)));
-  ASSERT_NE(-1,
-            swprintf_s(expected_command_line, base::size(expected_command_line),
-                       L"rundll32 %s,entrypoint", short_path));
 
-  EXPECT_EQ(S_OK,
-            GetCommandLineForEntrypoint(nullptr, L"entrypoint", command_line,
-                                        base::size(command_line)));
-  EXPECT_STREQ(expected_command_line, command_line);
+  base::string16 expected_arg =
+      base::StringPrintf(L"%ls,%ls", short_path, L"entrypoint");
+
+  ASSERT_EQ(1u, command_line.GetArgs().size());
+  ASSERT_EQ(expected_arg, command_line.GetArgs()[0]);
 }
 
 }  // namespace credential_provider

@@ -23,8 +23,10 @@
 #include <iomanip>
 #include <memory>
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/path_service.h"
 #include "base/scoped_native_library.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -236,13 +238,16 @@ HRESULT WaitForProcess(base::win::ScopedHandle::Handle process_handle,
 
 HRESULT CreateLogonToken(const wchar_t* username,
                          const wchar_t* password,
+                         bool interactive,
                          base::win::ScopedHandle* token) {
   DCHECK(username);
   DCHECK(password);
   DCHECK(token);
 
+  DWORD logon_type =
+      interactive ? LOGON32_LOGON_INTERACTIVE : LOGON32_LOGON_BATCH;
   base::win::ScopedHandle::Handle handle;
-  if (!::LogonUserW(username, L".", password, LOGON32_LOGON_BATCH,
+  if (!::LogonUserW(username, L".", password, logon_type,
                     LOGON32_PROVIDER_DEFAULT, &handle)) {
     HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
     LOGFN(ERROR) << "LogonUserW hr=" << putHR(hr);
@@ -391,15 +396,23 @@ HRESULT InitializeStdHandles(CommDirection direction,
 
 HRESULT GetCommandLineForEntrypoint(HINSTANCE hDll,
                                     const wchar_t* entrypoint,
-                                    wchar_t* command_line,
-                                    size_t command_line_length) {
+                                    base::CommandLine* command_line) {
   DCHECK(entrypoint);
   DCHECK(command_line);
+
+  // Build the full path to rundll32.
+  base::FilePath system_dir;
+  if (!base::PathService::Get(base::DIR_SYSTEM, &system_dir))
+    return HRESULT_FROM_WIN32(::GetLastError());
+
+  command_line->SetProgram(
+      system_dir.Append(FILE_PATH_LITERAL("rundll32.exe")));
 
   // rundll32 expects the first command line argument to be the path to the
   // DLL, followed by a comma and the name of the function to call.  There can
   // be no spaces around the comma.  There can be no spaces in the path.  It
   // is recommended to use the short path name of the DLL.
+
   wchar_t path[MAX_PATH];
   DWORD length = base::size(path);
   length = ::GetModuleFileName(hDll, path, length);
@@ -419,25 +432,14 @@ HRESULT GetCommandLineForEntrypoint(HINSTANCE hDll,
     return hr;
   }
 
-  const wchar_t kCommandLineFormat[] = L"rundll32 %s,%s";
-  const int kCommandLineFormatRequiredLength = 10;
+  command_line->AppendArgNative(
+      base::StringPrintf(L"%ls,%ls", short_path, entrypoint));
 
-  // The command line buffer needs to be at least as large as the short path
-  // name plus the entrypoint length plus the extra overhead of the command
-  // line formatting.
-  if (command_line_length < short_length + wcslen(entrypoint) +
-      kCommandLineFormatRequiredLength) {
-    LOGFN(ERROR) << "command_line_length too short";
-    return E_OUTOFMEMORY;
-  }
-
-  if (swprintf_s(command_line, command_line_length, kCommandLineFormat,
-                 short_path, entrypoint) == -1) {
-    LOGFN(ERROR) << "_stprintf_s(command_line) doserror=" << _doserrno;
-    return E_OUTOFMEMORY;
-  }
-
-  return S_OK;
+  // In tests, the current module is the unittest exe, not the real dll.
+  // The unittest exe does not expose entrypoints, so return S_FALSE as a hint
+  // that this will not work.  The command line is built anyway though so tests
+  // of the command line construction can be written.
+  return wcsicmp(wcsrchr(path, L'.'), L".dll") == 0 ? S_OK : S_FALSE;
 }
 
 HRESULT EnrollToGoogleMdmIfNeeded(const base::DictionaryValue& properties) {

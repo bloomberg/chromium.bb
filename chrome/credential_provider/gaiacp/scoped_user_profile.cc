@@ -152,6 +152,12 @@ HRESULT ScopedUserProfile::SaveAccountInfo(
     return hr;
   }
 
+  hr = SetUserProperty(sid.c_str(), kUserId, id.c_str());
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "SetUserProperty(id) hr=" << putHR(hr);
+    return hr;
+  }
+
   hr = SetUserProperty(sid.c_str(), kUserEmail, email.c_str());
   if (FAILED(hr)) {
     LOGFN(ERROR) << "SetUserProperty(email) hr=" << putHR(hr);
