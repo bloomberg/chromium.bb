@@ -98,7 +98,7 @@ void VisualViewportPaintPropertyTreeBuilder::Update(
   context.fixed_position.scroll = visual_viewport.GetScrollNode();
 
 #if DCHECK_IS_ON()
-  PaintPropertyTreePrinter::UpdateDebugNames(visual_viewport);
+  paint_property_tree_printer::UpdateDebugNames(visual_viewport);
 #endif
 }
 
@@ -142,7 +142,7 @@ class FragmentPaintPropertyTreeBuilder {
     }
 #if DCHECK_IS_ON()
     if (properties_)
-      PaintPropertyTreePrinter::UpdateDebugNames(object_, *properties_);
+      paint_property_tree_printer::UpdateDebugNames(object_, *properties_);
 #endif
   }
 
