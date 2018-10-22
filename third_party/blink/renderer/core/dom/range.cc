@@ -1435,10 +1435,31 @@ static inline void BoundaryNodeChildrenWillBeRemoved(
   }
 }
 
+static void BoundaryShadowNodeChildrenWillBeRemoved(
+    RangeBoundaryPoint& boundary,
+    ContainerNode& container) {
+  for (Node* node_to_be_removed = container.firstChild(); node_to_be_removed;
+       node_to_be_removed = node_to_be_removed->nextSibling()) {
+    for (Node* n = &boundary.Container(); n;
+         n = n->ParentOrShadowHostElement()) {
+      if (n == node_to_be_removed) {
+        boundary.SetToStartOfNode(container);
+        return;
+      }
+    }
+  }
+}
+
 void Range::NodeChildrenWillBeRemoved(ContainerNode& container) {
   DCHECK_EQ(container.GetDocument(), owner_document_);
   BoundaryNodeChildrenWillBeRemoved(start_, container);
   BoundaryNodeChildrenWillBeRemoved(end_, container);
+}
+
+void Range::FixupRemovedChildrenAcrossShadowBoundary(ContainerNode& container) {
+  DCHECK_EQ(container.GetDocument(), owner_document_);
+  BoundaryShadowNodeChildrenWillBeRemoved(start_, container);
+  BoundaryShadowNodeChildrenWillBeRemoved(end_, container);
 }
 
 static inline void BoundaryNodeWillBeRemoved(RangeBoundaryPoint& boundary,
