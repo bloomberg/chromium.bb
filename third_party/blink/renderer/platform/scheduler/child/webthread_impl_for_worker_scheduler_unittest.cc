@@ -50,17 +50,15 @@ void RunTestTask(std::string* calls) {
   calls->append(" run");
 }
 
-void AddTaskObserver(WebThreadImplForWorkerScheduler* thread,
-                     TestObserver* observer) {
+void AddTaskObserver(Thread* thread, TestObserver* observer) {
   thread->AddTaskObserver(observer);
 }
 
-void RemoveTaskObserver(WebThreadImplForWorkerScheduler* thread,
-                        TestObserver* observer) {
+void RemoveTaskObserver(Thread* thread, TestObserver* observer) {
   thread->RemoveTaskObserver(observer);
 }
 
-void ShutdownOnThread(WebThreadImplForWorkerScheduler* thread) {
+void ShutdownOnThread(Thread* thread) {
   thread->Scheduler()->Shutdown();
 }
 
@@ -71,9 +69,8 @@ class WebThreadImplForWorkerSchedulerTest : public testing::Test {
   ~WebThreadImplForWorkerSchedulerTest() override = default;
 
   void SetUp() override {
-    thread_.reset(new WebThreadImplForWorkerScheduler(
-        ThreadCreationParams(WebThreadType::kTestThread)));
-    thread_->Init();
+    thread_ =
+        Thread::CreateThread(ThreadCreationParams(WebThreadType::kTestThread));
   }
 
   void RunOnWorkerThread(const base::Location& from_here,
@@ -96,7 +93,7 @@ class WebThreadImplForWorkerSchedulerTest : public testing::Test {
     completion->Signal();
   }
 
-  std::unique_ptr<WebThreadImplForWorkerScheduler> thread_;
+  std::unique_ptr<Thread> thread_;
 
   DISALLOW_COPY_AND_ASSIGN(WebThreadImplForWorkerSchedulerTest);
 };

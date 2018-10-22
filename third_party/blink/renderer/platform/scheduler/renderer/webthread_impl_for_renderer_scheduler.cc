@@ -20,6 +20,8 @@ WebThreadImplForRendererScheduler::WebThreadImplForRendererScheduler(
 WebThreadImplForRendererScheduler::~WebThreadImplForRendererScheduler() =
     default;
 
+void WebThreadImplForRendererScheduler::Init() {}
+
 blink::PlatformThreadId WebThreadImplForRendererScheduler::ThreadId() const {
   return thread_id_;
 }
@@ -33,27 +35,15 @@ WebThreadImplForRendererScheduler::GetTaskRunner() const {
   return task_runner_;
 }
 
-void WebThreadImplForRendererScheduler::AddTaskObserverInternal(
-    base::MessageLoop::TaskObserver* observer) {
-  scheduler_->AddTaskObserver(observer);
-}
-
-void WebThreadImplForRendererScheduler::RemoveTaskObserverInternal(
-    base::MessageLoop::TaskObserver* observer) {
-  scheduler_->RemoveTaskObserver(observer);
-}
-
-void WebThreadImplForRendererScheduler::AddTaskTimeObserverInternal(
+void WebThreadImplForRendererScheduler::AddTaskTimeObserver(
     base::sequence_manager::TaskTimeObserver* task_time_observer) {
   scheduler_->AddTaskTimeObserver(task_time_observer);
 }
 
-void WebThreadImplForRendererScheduler::RemoveTaskTimeObserverInternal(
+void WebThreadImplForRendererScheduler::RemoveTaskTimeObserver(
     base::sequence_manager::TaskTimeObserver* task_time_observer) {
   scheduler_->RemoveTaskTimeObserver(task_time_observer);
 }
-
-void WebThreadImplForRendererScheduler::Init() {}
 
 }  // namespace scheduler
 }  // namespace blink

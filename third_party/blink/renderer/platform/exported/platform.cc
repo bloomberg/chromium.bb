@@ -40,7 +40,6 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/modules/webmidi/web_midi_accessor.h"
-#include "third_party/blink/public/platform/scheduler/child/webthread_base.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_canvas_capture_handler.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
@@ -139,7 +138,6 @@ class SimpleMainThread : public Thread {
   // This function is called from Platform::SetMainThreadTaskRunnerForTesting()
   // and Platform::UnsetMainThreadTaskRunnerForTesting().
 
-  bool IsCurrentThread() const override { return WTF::IsMainThread(); }
   ThreadScheduler* Scheduler() override { return &scheduler_; }
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const override {
     if (main_thread_task_runner_for_testing_)
