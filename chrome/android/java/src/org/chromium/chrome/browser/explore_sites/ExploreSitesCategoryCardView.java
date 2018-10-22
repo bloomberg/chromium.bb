@@ -47,8 +47,8 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
     private Profile mProfile;
     private List<PropertyModelChangeProcessor<PropertyModel, ExploreSitesTileView, PropertyKey>>
             mModelChangeProcessors;
+    private ExploreSitesCategory mCategory;
     private int mCategoryCardIndex;
-    private int mCategoryType;
 
     private class CategoryCardInteractionDelegate
             implements ContextMenuManager.Delegate, OnClickListener, OnCreateContextMenuListener {
@@ -62,7 +62,7 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
 
         @Override
         public void onClick(View view) {
-            recordCategoryClick(mCategoryType);
+            recordCategoryClick(mCategory.getType());
             recordTileIndexClick(mCategoryCardIndex, mTileIndex);
             mNavigationDelegate.openUrl(WindowOpenDisposition.CURRENT_TAB,
                     new LoadUrlParams(getUrl(), PageTransition.AUTO_BOOKMARK));
@@ -82,11 +82,15 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
 
         @Override
         public void removeItem() {
-            // Update the database on the C++ side
+            // Update the database on the C++ side.
             ExploreSitesBridge.blacklistSite(mProfile, mSiteUrl);
 
-            // TODO(petewil): http://crbug.com/893845 - Remove the site tile from the EoS page, and
-            // replace it with a new one if we have it, sliding down the others as needed.
+            // Remove from model (category).
+            mCategory.removeSite(mTileIndex);
+
+            // Update the view This may add any sites that we didn't have room for before.  It
+            // should reset the tile indexeds for views we keep.
+            updateTileViews(mCategory.getSites());
         }
         @Override
         public String getUrl() {
@@ -105,6 +109,10 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
         public void onContextMenuCreated(){};
     }
 
+    // We use the MVC paradigm for the site tiles inside the category card.  We don't use the MVC
+    // paradigm for the category card view itself since it is mismatched to the needs of the
+    // recycler view that we use for category cards.  The controller for MVC is actually here, the
+    // bind code inside the view class.
     private class ExploreSitesSiteViewBinder
             implements PropertyModelChangeProcessor
                                .ViewBinder<PropertyModel, ExploreSitesTileView, PropertyKey> {
@@ -146,7 +154,7 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
         mNavigationDelegate = navigationDelegate;
         mProfile = profile;
         mCategoryCardIndex = categoryCardIndex;
-        mCategoryType = category.getType();
+        mCategory = category;
 
         updateTitle(category.getTitle());
         updateTileViews(category.getSites());
