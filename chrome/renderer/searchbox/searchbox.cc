@@ -43,7 +43,8 @@ bool AreMostVisitedItemsEqual(
 
   for (size_t i = 0; i < new_items.size(); ++i) {
     if (new_items[i].url != old_item_id_pairs[i].second.url ||
-        new_items[i].title != old_item_id_pairs[i].second.title) {
+        new_items[i].title != old_item_id_pairs[i].second.title ||
+        new_items[i].source != old_item_id_pairs[i].second.source) {
       return false;
     }
   }
