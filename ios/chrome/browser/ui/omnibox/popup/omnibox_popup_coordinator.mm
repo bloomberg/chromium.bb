@@ -81,7 +81,8 @@
   _popupView->SetMediator(self.mediator);
 
   if (base::FeatureList::IsEnabled(
-          omnibox::kOmniboxPopupShortcutIconsInZeroState)) {
+          omnibox::kOmniboxPopupShortcutIconsInZeroState) &&
+      !self.browserState->IsOffTheRecord()) {
     self.shortcutsCoordinator = [[ShortcutsCoordinator alloc]
         initWithBaseViewController:self.popupViewController
                       browserState:self.browserState];
@@ -107,7 +108,8 @@
   // are already part of the NTP.
   if (!IsVisibleUrlNewTabPage(self.webStateList->GetActiveWebState()) &&
       base::FeatureList::IsEnabled(
-          omnibox::kOmniboxPopupShortcutIconsInZeroState)) {
+          omnibox::kOmniboxPopupShortcutIconsInZeroState) &&
+      !self.browserState->IsOffTheRecord()) {
     self.popupViewController.shortcutsEnabled = YES;
   }
 

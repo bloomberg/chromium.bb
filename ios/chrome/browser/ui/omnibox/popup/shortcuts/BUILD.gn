@@ -9,10 +9,37 @@ source_set("shortcuts") {
     "shortcuts_view_controller.h",
     "shortcuts_view_controller.mm",
   ]
+  deps = [
+    ":shortcuts_internal",
+    "//base",
+    "//components/ntp_tiles",
+    "//ios/chrome/browser/favicon",
+    "//ios/chrome/browser/ntp_tiles",
+    "//ios/chrome/browser/reading_list",
+    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+    "//ios/chrome/browser/ui/ntp_tile_views",
+    "//ios/chrome/common/favicon",
+    "//ios/chrome/common/ui_util",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("shortcuts_internal") {
+  sources = [
+    "shortcuts_consumer.h",
+    "shortcuts_mediator.h",
+    "shortcuts_mediator.mm",
+    "shortcuts_most_visited_item.h",
+    "shortcuts_most_visited_item.mm",
+  ]
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
+    "//components/ntp_tiles",
+    "//components/reading_list/core",
+    "//ios/chrome/browser/ntp_tiles",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+    "//ios/chrome/browser/ui/favicon",
   ]
 }
 
@@ -25,6 +52,7 @@ source_set("unit_tests") {
   ]
   deps = [
     ":shortcuts",
+    ":shortcuts_internal",
     "//base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",

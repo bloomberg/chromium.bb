@@ -27,7 +27,7 @@
 namespace {
 const int kRowCount = 6;
 const CGFloat kRowHeight = 48.0;
-const CGFloat kShortcutsRowHeight = 100;
+const CGFloat kShortcutsRowHeight = 320;
 const CGFloat kAnswerRowHeight = 64.0;
 const CGFloat kTopAndBottomPadding = 8.0;
 UIColor* BackgroundColorTablet() {
@@ -627,6 +627,16 @@ UIColor* BackgroundColorIncognito() {
 
 #pragma mark -
 #pragma mark Table view delegate
+
+- (BOOL)tableView:(UITableView*)tableView
+    shouldHighlightRowAtIndexPath:(NSIndexPath*)indexPath {
+  if (self.shortcutsEnabled && indexPath.row == 0 &&
+      _currentResult.count == 0) {
+    return NO;
+  }
+
+  return YES;
+}
 
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
