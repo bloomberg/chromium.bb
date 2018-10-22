@@ -526,7 +526,9 @@ TEST_F('CrExtensionsPackDialogTest', 'Interaction', function() {
 // http://crbug.com/832885
 // Temporarily disabling on Mac due to flaky dialog visibility failure.
 // http://crbug.com/877109
-GEN('#if defined(OS_WIN) || defined(OS_MACOSX)');
+// And flay on ChromeOS as well. Added comments about ChromeOS to
+// http://crbug.com/877109
+GEN('#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)');
 GEN('#define MAYBE_PackSuccess DISABLED_PackSuccess');
 GEN('#else');
 GEN('#define MAYBE_PackSuccess PackSuccess');
