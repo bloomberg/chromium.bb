@@ -910,7 +910,7 @@ public class NewTabPageAdapterTest {
         resetUiDelegate();
         reloadNtp();
 
-        assertItemsFor(sectionWithStatusCard().withProgress(), signinPromo());
+        assertItemsFor(signinPromo(), sectionWithStatusCard().withProgress());
         assertTrue(isSignInPromoVisible());
 
         List<DestructionObserver> observers = getDestructionObserver(mUiDelegate);
