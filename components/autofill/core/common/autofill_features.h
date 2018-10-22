@@ -87,6 +87,7 @@ extern const char
     kAutofillCreditCardLocalCardMigrationParameterWithoutSettingsPage[];
 
 #if defined(OS_ANDROID)
+extern const base::Feature kAutofillManualFallbackAndroid;
 extern const base::Feature kAutofillRefreshStyleAndroid;
 #endif  // OS_ANDROID
 

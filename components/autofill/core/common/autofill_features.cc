@@ -294,6 +294,11 @@ const char kAutofillCreditCardLocalCardMigrationParameterWithoutSettingsPage[] =
 const char kCreditCardSigninPromoImpressionLimitParamKey[] = "impression_limit";
 
 #if defined(OS_ANDROID)
+// Controls whether the Autofill manual fallback for Addresses and Payments is
+// present on Android.
+const base::Feature kAutofillManualFallbackAndroid{
+    "AutofillManualFallbackAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to use modernized style for the Autofill dropdown.
 const base::Feature kAutofillRefreshStyleAndroid{
     "AutofillRefreshStyleAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
