@@ -930,7 +930,7 @@ void LockContentsView::OnFingerprintUnlockStateChanged(
   if (user_state->fingerprint_state ==
       mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT) {
     base::string16 error_text = l10n_util::GetStringUTF16(
-        IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_TIMEOUT_MESSAGE);
+        IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_TIMEOUT);
     auto* label = new views::Label(error_text);
     label->SetAutoColorReadabilityEnabled(false);
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
