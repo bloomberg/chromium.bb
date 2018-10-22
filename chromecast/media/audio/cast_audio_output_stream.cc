@@ -50,7 +50,6 @@
 
 namespace {
 const int64_t kInvalidTimestamp = std::numeric_limits<int64_t>::min();
-const int kMaxQueuedDataMs = 1000;
 // Below are settings for MixerService and the DirectAudio it uses.
 constexpr base::TimeDelta kFadeTime = base::TimeDelta::FromMilliseconds(5);
 constexpr base::TimeDelta kMixerStartThreshold =
@@ -314,14 +313,11 @@ void CastAudioOutputStream::CmaWrapper::OnPushBufferComplete(
     return;
   }
 
-  // Schedule next push buffer. We don't want to allow more than
-  // kMaxQueuedDataMs of queued audio.
+  // Schedule next push buffer.
   const base::TimeTicks now = base::TimeTicks::Now();
   next_push_time_ = std::max(now, next_push_time_ + buffer_duration_);
 
-  base::TimeDelta delay = (next_push_time_ - now) -
-                          base::TimeDelta::FromMilliseconds(kMaxQueuedDataMs);
-  delay = std::max(delay, base::TimeDelta());
+  base::TimeDelta delay = next_push_time_ - now;
   push_timer_.Start(FROM_HERE, delay, this, &CmaWrapper::PushBuffer);
   push_in_progress_ = true;
 }

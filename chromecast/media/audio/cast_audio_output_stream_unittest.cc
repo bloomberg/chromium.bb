@@ -699,6 +699,8 @@ TEST_F(CastAudioOutputStreamTest, DeviceBusy) {
 
   // Unblock the pipeline and verify that PushFrame resumes.
   audio_decoder->set_pipeline_status(FakeAudioDecoder::PIPELINE_STATUS_OK);
+  base::TimeDelta duration = GetAudioParams().GetBufferDuration() * 2;
+  scoped_task_environment_.FastForwardBy(duration);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_LT(1u, audio_decoder->pushed_buffer_count());
 
