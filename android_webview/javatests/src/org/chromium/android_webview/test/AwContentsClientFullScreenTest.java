@@ -71,13 +71,11 @@ public class AwContentsClientFullScreenTest {
         mTestContainerView.getAwContents().getSettings().setFullscreenSupported(true);
     }
 
-    /*
     @MediumTest
     @Feature({"AndroidWebView"})
     @DisableHardwareAccelerationForTest
-    */
     @Test
-    @DisabledTest(message = "crbug.com/618749")
+    @DisabledTest(message = "crbug.com/618749") // turning this on as an experiment.
     public void testFullscreenVideoInSoftwareModeDoesNotDeadlock() throws Throwable {
         // Although fullscreen video is not supported without hardware acceleration
         // we should not deadlock if apps try to use it.
@@ -88,33 +86,26 @@ public class AwContentsClientFullScreenTest {
         mContentsClient.waitForCustomViewHidden();
     }
 
-    /*
     @MediumTest
     @Feature({"AndroidWebView"})
     @DisableHardwareAccelerationForTest
-    */
     @Test
-    @DisabledTest(message = "crbug.com/618749")
     public void testFullscreenForNonVideoElementIsSupportedInSoftwareMode() throws Throwable {
         // Fullscreen for non-video elements is supported and works as expected. Note that
         // this test is the same as testOnShowAndHideCustomViewWithCallback_videoInsideDiv below.
         doTestOnShowAndHideCustomViewWithCallback(VIDEO_INSIDE_DIV_TEST_URL);
     }
 
-    /*
     @MediumTest
     @Feature({"AndroidWebView"})
-    */
     @Test
     @DisabledTest(message = "crbug.com/618749")
     public void testOnShowAndHideCustomViewWithCallback_video() throws Throwable {
         doTestOnShowAndHideCustomViewWithCallback(VIDEO_TEST_URL);
     }
 
-    /*
     @MediumTest
     @Feature({"AndroidWebView"})
-    */
     @Test
     @DisabledTest(message = "crbug.com/618749")
     public void testOnShowAndHideCustomViewWithCallback_videoInsideDiv() throws Throwable {
@@ -126,20 +117,16 @@ public class AwContentsClientFullScreenTest {
                 () -> mContentsClient.getExitCallback().onCustomViewHidden());
     }
 
-    /*
     @MediumTest
     @Feature({"AndroidWebView"})
-    */
     @Test
     @DisabledTest(message = "crbug.com/618749")
     public void testOnShowAndHideCustomViewWithJavascript_video() throws Throwable {
         doTestOnShowAndHideCustomViewWithJavascript(VIDEO_TEST_URL);
     }
 
-    /*
     @MediumTest
     @Feature({"AndroidWebView"})
-    */
     @Test
     @DisabledTest(message = "crbug.com/618749")
     public void testOnShowAndHideCustomViewWithJavascript_videoInsideDiv() throws Throwable {
@@ -151,21 +138,17 @@ public class AwContentsClientFullScreenTest {
                 videoTestUrl, () -> DOMUtils.exitFullscreen(mTestContainerView.getWebContents()));
     }
 
-    /*
     @MediumTest
     @Feature({"AndroidWebView"})
-    // Originally flaked only in multi-process mode (http://crbug.com/616501)
-    */
     @Test
+    // Originally flaked only in multi-process mode (http://crbug.com/616501)
     @DisabledTest(message = "crbug.com/618749")
     public void testOnShowAndHideCustomViewWithBackKey_video() throws Throwable {
         doTestOnShowAndHideCustomViewWithBackKey(VIDEO_TEST_URL);
     }
 
-    /*
     @MediumTest
     @Feature({"AndroidWebView"})
-    */
     @Test
     @DisabledTest(message = "crbug.com/618749")
     public void testOnShowAndHideCustomViewWithBackKey_videoInsideDiv() throws Throwable {
@@ -296,12 +279,9 @@ public class AwContentsClientFullScreenTest {
         assertWaitForKeepScreenOnActive(mTestContainerView, false);
     }
 
-    /*
     @MediumTest
     @Feature({"AndroidWebView"})
-    */
     @Test
-    @DisabledTest(message = "crbug.com/808444")
     public void testPowerSaveBlockerIsTransferredToFullscreen() throws Throwable {
         Assert.assertFalse(DOMUtils.isFullscreen(getWebContentsOnUiThread()));
         loadTestPage(VIDEO_INSIDE_DIV_TEST_URL);
