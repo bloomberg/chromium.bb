@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher_impl.h"
-
+#include "base/metrics/histogram_macros.h"
+#include "base/timer/elapsed_timer.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator.h"
@@ -67,6 +68,7 @@ void AnimationWorkletMutatorDispatcherImpl::Mutate(
   TRACE_EVENT0("cc", "AnimationWorkletMutatorDispatcherImpl::mutate");
   if (mutator_map_.IsEmpty())
     return;
+  base::ElapsedTimer timer;
   DCHECK(client_);
 
   Vector<std::unique_ptr<AnimationWorkletDispatcherOutput>> outputs(
@@ -113,6 +115,11 @@ void AnimationWorkletMutatorDispatcherImpl::Mutate(
       continue;
     client_->SetMutationUpdate(std::move(output));
   }
+
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+      "Animation.AnimationWorklet.Dispatcher.SynchronousMutateDuration",
+      timer.Elapsed(), base::TimeDelta::FromMicroseconds(1),
+      base::TimeDelta::FromMilliseconds(100), 50);
 }
 
 void AnimationWorkletMutatorDispatcherImpl::RegisterAnimationWorkletMutator(

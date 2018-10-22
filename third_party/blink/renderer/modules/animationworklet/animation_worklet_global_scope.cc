@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/animationworklet/animation_worklet_global_scope.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_parser.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
@@ -15,6 +16,7 @@
 #include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -78,6 +80,7 @@ Animator* AnimationWorkletGlobalScope::CreateAnimatorFor(
 
 std::unique_ptr<AnimationWorkletOutput> AnimationWorkletGlobalScope::Mutate(
     const AnimationWorkletInput& mutator_input) {
+  base::TimeTicks start_time = CurrentTimeTicks();
   DCHECK(IsContextThread());
 
   ScriptState* script_state = ScriptController()->GetScriptState();
@@ -130,6 +133,11 @@ std::unique_ptr<AnimationWorkletOutput> AnimationWorkletGlobalScope::Mutate(
     animation_output.local_times = animator->GetLocalTimes();
     result->animations.push_back(animation_output);
   }
+
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+      "Animation.AnimationWorklet.GlobalScope.MutateDuration",
+      CurrentTimeTicks() - start_time, base::TimeDelta::FromMicroseconds(1),
+      base::TimeDelta::FromMilliseconds(100), 50);
 
   return result;
 }
