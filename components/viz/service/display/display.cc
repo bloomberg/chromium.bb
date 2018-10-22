@@ -526,7 +526,14 @@ void Display::DidReceivePresentationFeedback(
   const auto swap_time = pending_presented_callbacks_.front().first;
   DCHECK(!swap_time.is_null());
   if (!feedback.timestamp.is_null()) {
-    if (feedback.timestamp > base::TimeTicks::Now()) {
+    const auto now = base::TimeTicks::Now();
+    if (feedback.timestamp > now) {
+      const auto diff = feedback.timestamp - now;
+      // This collects the time-delta in buckets from 10ms up-to 3minutes. This
+      // should provide sufficient information about the spread.
+      // https://crbug.com/894440
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "Graphics.PresentationTimestamp.InvalidFromFuture", diff);
       base::debug::DumpWithoutCrashing();
       // In debug builds, just crash immediately.
       DCHECK(false);
