@@ -342,7 +342,8 @@ GpuRasterBufferProvider::GpuRasterBufferProvider(
     viz::ResourceFormat tile_format,
     const gfx::Size& max_tile_size,
     bool unpremultiply_and_dither_low_bit_depth_tiles,
-    bool enable_oop_rasterization)
+    bool enable_oop_rasterization,
+    int raster_metric_frequency)
     : compositor_context_provider_(compositor_context_provider),
       worker_context_provider_(worker_context_provider),
       use_gpu_memory_buffer_resources_(use_gpu_memory_buffer_resources),
@@ -351,7 +352,8 @@ GpuRasterBufferProvider::GpuRasterBufferProvider(
       max_tile_size_(max_tile_size),
       unpremultiply_and_dither_low_bit_depth_tiles_(
           unpremultiply_and_dither_low_bit_depth_tiles),
-      enable_oop_rasterization_(enable_oop_rasterization) {
+      enable_oop_rasterization_(enable_oop_rasterization),
+      raster_metric_frequency_(raster_metric_frequency) {
   DCHECK(compositor_context_provider);
   DCHECK(worker_context_provider);
 }
@@ -469,7 +471,7 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThread(
       raster_dirty_rect, new_content_id, transform, playback_settings, url,
       &query);
 
-  {
+  if (query.query_id != 0u) {
     // Note that it is important to scope the raster context lock to
     // PlaybackOnWorkerThreadInternal and release it before acquiring this lock
     // to avoid a deadlock in CheckRasterFinishedQueries which acquires the
@@ -503,6 +505,13 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThreadInternal(
   gpu::raster::RasterInterface* ri = scoped_context.RasterInterface();
   DCHECK(ri);
 
+  raster_tasks_count_++;
+  bool measure_raster_metric = false;
+  if (raster_tasks_count_ == raster_metric_frequency_) {
+    measure_raster_metric = true;
+    raster_tasks_count_ = 0;
+  }
+
   gfx::Rect playback_rect = raster_full_rect;
   if (resource_has_previous_content) {
     playback_rect.Intersect(raster_dirty_rect);
@@ -524,12 +533,16 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThreadInternal(
         100.0f * fraction_saved);
   }
 
-  // Use a query to time the GPU side work for rasterizing this tile.
-  ri->GenQueriesEXT(1, &query->query_id);
-  ri->BeginQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM, query->query_id);
+  if (measure_raster_metric) {
+    // Use a query to time the GPU side work for rasterizing this tile.
+    ri->GenQueriesEXT(1, &query->query_id);
+    ri->BeginQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM, query->query_id);
+  }
 
   {
-    base::ElapsedTimer timer;
+    base::Optional<base::ElapsedTimer> timer;
+    if (measure_raster_metric)
+      timer.emplace();
     if (enable_oop_rasterization_) {
       RasterizeSourceOOP(raster_source, resource_has_previous_content, mailbox,
                          sync_token, texture_target,
@@ -547,7 +560,8 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThreadInternal(
                       ShouldUnpremultiplyAndDitherResource(resource_format),
                       max_tile_size_);
     }
-    query->worker_duration = timer.Elapsed();
+    if (measure_raster_metric)
+      query->worker_duration = timer->Elapsed();
   }
 
   ri->EndQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM);
