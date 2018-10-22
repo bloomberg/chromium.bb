@@ -67,15 +67,15 @@ AudioContext* AudioContext::Create(Document& document,
   AudioContext* audio_context = new AudioContext(document, latency_hint);
   audio_context->PauseIfNeeded();
 
-  if (!AudioUtilities::IsValidAudioBufferSampleRate(
+  if (!audio_utilities::IsValidAudioBufferSampleRate(
           audio_context->sampleRate())) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
         ExceptionMessages::IndexOutsideRange(
             "hardware sample rate", audio_context->sampleRate(),
-            AudioUtilities::MinAudioBufferSampleRate(),
+            audio_utilities::MinAudioBufferSampleRate(),
             ExceptionMessages::kInclusiveBound,
-            AudioUtilities::MaxAudioBufferSampleRate(),
+            audio_utilities::MaxAudioBufferSampleRate(),
             ExceptionMessages::kInclusiveBound));
     return audio_context;
   }

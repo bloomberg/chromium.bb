@@ -77,14 +77,14 @@ OfflineAudioContext* OfflineAudioContext::Create(
     return nullptr;
   }
 
-  if (!AudioUtilities::IsValidAudioBufferSampleRate(sample_rate)) {
+  if (!audio_utilities::IsValidAudioBufferSampleRate(sample_rate)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
         ExceptionMessages::IndexOutsideRange(
             "sampleRate", sample_rate,
-            AudioUtilities::MinAudioBufferSampleRate(),
+            audio_utilities::MinAudioBufferSampleRate(),
             ExceptionMessages::kInclusiveBound,
-            AudioUtilities::MaxAudioBufferSampleRate(),
+            audio_utilities::MaxAudioBufferSampleRate(),
             ExceptionMessages::kInclusiveBound));
     return nullptr;
   }
@@ -106,8 +106,8 @@ OfflineAudioContext* OfflineAudioContext::Create(
                       ("WebAudio.OfflineAudioContext.Length", 1, 1000000, 50));
   // The limits are the min and max AudioBuffer sample rates currently
   // supported.  We use explicit values here instead of
-  // AudioUtilities::minAudioBufferSampleRate() and
-  // AudioUtilities::maxAudioBufferSampleRate().  The number of buckets is
+  // audio_utilities::minAudioBufferSampleRate() and
+  // audio_utilities::maxAudioBufferSampleRate().  The number of buckets is
   // fairly arbitrary.
   DEFINE_STATIC_LOCAL(
       CustomCountHistogram, offline_context_sample_rate_histogram,

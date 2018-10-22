@@ -225,8 +225,8 @@ AudioBuffer* BaseAudioContext::createBuffer(unsigned number_of_channels,
                         ("WebAudio.AudioBuffer.Length", 1, 1000000, 50));
     // The limits are the min and max AudioBuffer sample rates currently
     // supported.  We use explicit values here instead of
-    // AudioUtilities::minAudioBufferSampleRate() and
-    // AudioUtilities::maxAudioBufferSampleRate().  The number of buckets is
+    // audio_utilities::minAudioBufferSampleRate() and
+    // audio_utilities::maxAudioBufferSampleRate().  The number of buckets is
     // fairly arbitrary.
     DEFINE_STATIC_LOCAL(
         CustomCountHistogram, audio_buffer_sample_rate_histogram,
