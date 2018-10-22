@@ -49,7 +49,7 @@ namespace blink {
 namespace {
 
 class LocalFrameMockWebFrameClient
-    : public FrameTestHelpers::TestWebFrameClient {
+    : public frame_test_helpers::TestWebFrameClient {
  public:
   ~LocalFrameMockWebFrameClient() override = default;
 
@@ -90,7 +90,7 @@ class LocalFrameClientImplTest : public testing::Test {
 
  private:
   LocalFrameMockWebFrameClient web_frame_client_;
-  FrameTestHelpers::WebViewHelper helper_;
+  frame_test_helpers::WebViewHelper helper_;
 };
 
 TEST_F(LocalFrameClientImplTest, UserAgentOverride) {

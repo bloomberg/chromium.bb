@@ -605,15 +605,15 @@ TEST_F(SpatialNavigationTest, TopOfPinchedViewport) {
 }
 
 TEST_F(SpatialNavigationTest, HasRemoteFrame) {
-  FrameTestHelpers::WebViewHelper helper;
+  frame_test_helpers::WebViewHelper helper;
   helper.InitializeAndLoad("about:blank", nullptr, nullptr, nullptr, nullptr);
 
   WebViewImpl* webview = helper.GetWebView();
   WebURL base_url = url_test_helpers::ToKURL("http://www.test.com/");
-  FrameTestHelpers::LoadHTMLString(webview->MainFrameImpl(),
-                                   "<!DOCTYPE html>"
-                                   "<iframe id='iframe'></iframe>",
-                                   base_url);
+  frame_test_helpers::LoadHTMLString(webview->MainFrameImpl(),
+                                     "<!DOCTYPE html>"
+                                     "<iframe id='iframe'></iframe>",
+                                     base_url);
 
   webview->ResizeWithBrowserControls(IntSize(400, 400), 50, 0, false);
   webview->MainFrameImpl()->GetFrame()->View()->UpdateAllLifecyclePhases();
@@ -624,7 +624,7 @@ TEST_F(SpatialNavigationTest, HasRemoteFrame) {
   EXPECT_FALSE(HasRemoteFrame(iframe));
 
   webview->MainFrameImpl()->FirstChild()->Swap(
-      FrameTestHelpers::CreateRemote());
+      frame_test_helpers::CreateRemote());
   EXPECT_TRUE(HasRemoteFrame(iframe));
 }
 

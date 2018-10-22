@@ -54,7 +54,7 @@ namespace blink {
 
 namespace {
 
-class TestWebViewClient : public FrameTestHelpers::TestWebViewClient {
+class TestWebViewClient : public frame_test_helpers::TestWebViewClient {
  public:
   explicit TestWebViewClient(WebNavigationPolicy* target) : target_(target) {}
   ~TestWebViewClient() override = default;
@@ -67,7 +67,7 @@ class TestWebViewClient : public FrameTestHelpers::TestWebViewClient {
 
 }  // anonymous namespace
 
-class ViewCreatingClient : public FrameTestHelpers::TestWebViewClient {
+class ViewCreatingClient : public frame_test_helpers::TestWebViewClient {
  public:
   WebView* CreateView(WebLocalFrame* opener,
                       const WebURLRequest&,
@@ -81,7 +81,7 @@ class ViewCreatingClient : public FrameTestHelpers::TestWebViewClient {
   }
 
  private:
-  FrameTestHelpers::WebViewHelper web_view_helper_;
+  frame_test_helpers::WebViewHelper web_view_helper_;
 };
 
 class CreateWindowTest : public testing::Test {
@@ -94,7 +94,7 @@ class CreateWindowTest : public testing::Test {
   }
 
   ViewCreatingClient web_view_client_;
-  FrameTestHelpers::WebViewHelper helper_;
+  frame_test_helpers::WebViewHelper helper_;
   WebViewImpl* web_view_;
   WebLocalFrame* main_frame_;
   Persistent<ChromeClientImpl> chrome_client_impl_;
@@ -206,7 +206,7 @@ class PagePopupSuppressionTest : public testing::Test {
   }
 
  protected:
-  FrameTestHelpers::WebViewHelper helper_;
+  frame_test_helpers::WebViewHelper helper_;
   WebViewImpl* web_view_;
   Persistent<WebLocalFrameImpl> main_frame_;
   Persistent<ChromeClientImpl> chrome_client_impl_;
@@ -242,7 +242,8 @@ TEST_F(PagePopupSuppressionTest, SuppressDateTimeChooser) {
 }
 
 // A WebLocalFrameClient which makes FileChooser::OpenFileChooser() success.
-class FrameClientForFileChooser : public FrameTestHelpers::TestWebFrameClient {
+class FrameClientForFileChooser
+    : public frame_test_helpers::TestWebFrameClient {
   bool RunFileChooser(const WebFileChooserParams& params,
                       WebFileChooserCompletion* chooser_completion) override {
     return true;
@@ -280,7 +281,7 @@ class FileChooserQueueTest : public testing::Test {
         ToChromeClientImpl(&web_view_->GetPage()->GetChromeClient());
   }
 
-  FrameTestHelpers::WebViewHelper helper_;
+  frame_test_helpers::WebViewHelper helper_;
   FrameClientForFileChooser frame_client_;
   WebViewImpl* web_view_;
   Persistent<ChromeClientImpl> chrome_client_impl_;

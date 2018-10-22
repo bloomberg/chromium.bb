@@ -58,7 +58,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
-namespace FrameTestHelpers {
+namespace frame_test_helpers {
 
 namespace {
 
@@ -530,5 +530,5 @@ TestWebViewClient::TestWebViewClient(content::LayerTreeViewDelegate* delegate) {
   layer_tree_view_ = layer_tree_view_factory_.Initialize(delegate);
 }
 
-}  // namespace FrameTestHelpers
+}  // namespace frame_test_helpers
 }  // namespace blink

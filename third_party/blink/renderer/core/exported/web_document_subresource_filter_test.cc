@@ -73,7 +73,7 @@ class TestDocumentSubresourceFilter : public WebDocumentSubresourceFilter {
 };
 
 class SubresourceFilteringWebFrameClient
-    : public FrameTestHelpers::TestWebFrameClient {
+    : public frame_test_helpers::TestWebFrameClient {
  public:
   void DidStartProvisionalLoad(
       WebDocumentLoader* data_source,
@@ -114,7 +114,8 @@ class WebDocumentSubresourceFilterTest : public testing::Test {
 
   void LoadDocument(TestDocumentSubresourceFilter::LoadPolicy policy) {
     client_.SetLoadPolicyFromNextLoad(policy);
-    FrameTestHelpers::LoadFrame(MainFrame(), BaseURL() + "foo_with_image.html");
+    frame_test_helpers::LoadFrame(MainFrame(),
+                                  BaseURL() + "foo_with_image.html");
   }
 
   void ExpectSubresourceWasLoaded(bool loaded) {
@@ -144,7 +145,7 @@ class WebDocumentSubresourceFilterTest : public testing::Test {
   }
 
   SubresourceFilteringWebFrameClient client_;
-  FrameTestHelpers::WebViewHelper web_view_helper_;
+  frame_test_helpers::WebViewHelper web_view_helper_;
   std::string base_url_;
 };
 

@@ -116,7 +116,7 @@ class WebFrameSerializerTest : public testing::Test {
     KURL parsed_url(url);
     String file_path("frameserialization/" + file_name);
     RegisterMockedFileURLLoad(parsed_url, file_path, "text/html");
-    FrameTestHelpers::LoadFrame(MainFrameImpl(), url.Utf8().data());
+    frame_test_helpers::LoadFrame(MainFrameImpl(), url.Utf8().data());
     SingleLinkRewritingDelegate delegate(parsed_url, WebString("local"));
     SimpleWebFrameSerializerClient serializer_client;
     WebFrameSerializer::Serialize(MainFrameImpl(), &serializer_client,
@@ -127,7 +127,7 @@ class WebFrameSerializerTest : public testing::Test {
   WebLocalFrameImpl* MainFrameImpl() { return helper_.LocalMainFrame(); }
 
  private:
-  FrameTestHelpers::WebViewHelper helper_;
+  frame_test_helpers::WebViewHelper helper_;
 };
 
 TEST_F(WebFrameSerializerTest, URLAttributeValues) {

@@ -65,7 +65,7 @@ class WebSearchableFormDataTest : public testing::Test {
         ->UnregisterAllURLsAndClearMemoryCache();
   }
 
-  FrameTestHelpers::WebViewHelper web_view_helper_;
+  frame_test_helpers::WebViewHelper web_view_helper_;
 };
 
 }  // namespace

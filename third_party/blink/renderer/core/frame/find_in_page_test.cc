@@ -32,7 +32,7 @@ class FindInPageTest : public testing::Test {
   TextFinder& GetTextFinder() const;
 
  private:
-  FrameTestHelpers::WebViewHelper web_view_helper_;
+  frame_test_helpers::WebViewHelper web_view_helper_;
   Persistent<Document> document_;
   Persistent<FindInPage> find_in_page_;
 };

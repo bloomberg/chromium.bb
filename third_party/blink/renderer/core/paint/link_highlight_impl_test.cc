@@ -108,7 +108,7 @@ class LinkHighlightImplTest : public testing::Test,
     return local_frame_view->GetPaintArtifactCompositorForTesting();
   }
 
-  FrameTestHelpers::WebViewHelper web_view_helper_;
+  frame_test_helpers::WebViewHelper web_view_helper_;
 };
 
 INSTANTIATE_TEST_CASE_P(All, LinkHighlightImplTest, testing::Bool());

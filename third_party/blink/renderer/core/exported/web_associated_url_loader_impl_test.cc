@@ -96,7 +96,7 @@ class WebAssociatedURLLoaderTest : public testing::Test,
       RegisterMockedUrl(url_root, iframe_support_files[i]);
     }
 
-    FrameTestHelpers::LoadFrame(MainFrame(), url.GetString().Utf8().data());
+    frame_test_helpers::LoadFrame(MainFrame(), url.GetString().Utf8().data());
 
     Platform::Current()->GetURLLoaderMockFactory()->UnregisterURL(url);
   }
@@ -250,7 +250,7 @@ class WebAssociatedURLLoaderTest : public testing::Test,
 
  protected:
   String frame_file_path_;
-  FrameTestHelpers::WebViewHelper helper_;
+  frame_test_helpers::WebViewHelper helper_;
 
   std::unique_ptr<WebAssociatedURLLoader> expected_loader_;
   WebURLResponse actual_response_;

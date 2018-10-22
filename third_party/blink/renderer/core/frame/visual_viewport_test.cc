@@ -108,7 +108,7 @@ class VisualViewportTest : public testing::Test,
   }
 
   void NavigateTo(const std::string& url) {
-    FrameTestHelpers::LoadFrame(WebView()->MainFrameImpl(), url);
+    frame_test_helpers::LoadFrame(WebView()->MainFrameImpl(), url);
   }
 
   void ForceFullCompositingUpdate() { WebView()->UpdateAllLifecyclePhases(); }
@@ -144,10 +144,10 @@ class VisualViewportTest : public testing::Test,
 
  protected:
   std::string base_url_;
-  FrameTestHelpers::TestWebViewClient mock_web_view_client_;
+  frame_test_helpers::TestWebViewClient mock_web_view_client_;
 
  private:
-  FrameTestHelpers::WebViewHelper helper_;
+  frame_test_helpers::WebViewHelper helper_;
 };
 
 INSTANTIATE_PAINT_TEST_CASE_P(VisualViewportTest);
@@ -568,7 +568,7 @@ TEST_P(VisualViewportTest, TestOffsetClamping) {
   WebView()->Resize(IntSize(320, 240));
 
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
-  FrameTestHelpers::LoadHTMLString(
+  frame_test_helpers::LoadHTMLString(
       WebView()->MainFrameImpl(),
       "<!DOCTYPE html>"
       "<meta name='viewport' content='width=2000'>",
@@ -934,8 +934,8 @@ TEST_P(VisualViewportTest, TestRestoredFromHistoryItem) {
   item.SetVisualViewportScrollOffset(WebFloatPoint(100, 120));
   item.SetPageScaleFactor(2);
 
-  FrameTestHelpers::LoadHistoryItem(WebView()->MainFrameImpl(), item,
-                                    mojom::FetchCacheMode::kDefault);
+  frame_test_helpers::LoadHistoryItem(WebView()->MainFrameImpl(), item,
+                                      mojom::FetchCacheMode::kDefault);
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   EXPECT_EQ(2, visual_viewport.Scale());
@@ -964,8 +964,8 @@ TEST_P(VisualViewportTest, TestRestoredFromLegacyHistoryItem) {
   item.SetScrollOffset(WebPoint(120, 180));
   item.SetPageScaleFactor(2);
 
-  FrameTestHelpers::LoadHistoryItem(WebView()->MainFrameImpl(), item,
-                                    mojom::FetchCacheMode::kDefault);
+  frame_test_helpers::LoadHistoryItem(WebView()->MainFrameImpl(), item,
+                                      mojom::FetchCacheMode::kDefault);
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   EXPECT_EQ(2, visual_viewport.Scale());
@@ -1075,7 +1075,7 @@ TEST_P(VisualViewportTest, TestWebViewResizeCausesViewportConstrainedLayout) {
 }
 
 class VisualViewportMockWebFrameClient
-    : public FrameTestHelpers::TestWebFrameClient {
+    : public frame_test_helpers::TestWebFrameClient {
  public:
   MOCK_METHOD1(ShowContextMenu, void(const WebContextMenuData&));
   MOCK_METHOD0(DidChangeScrollOffset, void());
@@ -1685,14 +1685,14 @@ TEST_P(VisualViewportTest, ElementVisibleBoundsInVisualViewport) {
 // Test that the various window.scroll and document.body.scroll properties and
 // methods don't change with the visual viewport.
 TEST_P(VisualViewportTest, visualViewportIsInert) {
-  FrameTestHelpers::WebViewHelper web_view_helper;
+  frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl = web_view_helper.Initialize(
       nullptr, nullptr, nullptr, &ConfigureAndroidCompositing);
 
   web_view_impl->Resize(IntSize(200, 300));
 
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
-  FrameTestHelpers::LoadHTMLString(
+  frame_test_helpers::LoadHTMLString(
       web_view_impl->MainFrameImpl(),
       "<!DOCTYPE html>"
       "<meta name='viewport' content='width=200,minimum-scale=1'>"
@@ -2040,7 +2040,7 @@ TEST_P(VisualViewportTest, ResizeCompositedAndFixedBackground) {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
-  FrameTestHelpers::WebViewHelper web_view_helper;
+  frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl = web_view_helper.Initialize(
       nullptr, nullptr, nullptr, &ConfigureAndroidCompositing);
 
@@ -2054,19 +2054,19 @@ TEST_P(VisualViewportTest, ResizeCompositedAndFixedBackground) {
 
   RegisterMockedHttpURLLoad("http://example.com/foo.png", "white-1x1.png");
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
-  FrameTestHelpers::LoadHTMLString(web_view_impl->MainFrameImpl(),
-                                   "<!DOCTYPE html>"
-                                   "<style>"
-                                   "  body {"
-                                   "    background: url('foo.png');"
-                                   "    background-attachment: fixed;"
-                                   "    background-size: cover;"
-                                   "    background-repeat: no-repeat;"
-                                   "  }"
-                                   "  div { height:1000px; width: 200px; }"
-                                   "</style>"
-                                   "<div></div>",
-                                   base_url);
+  frame_test_helpers::LoadHTMLString(web_view_impl->MainFrameImpl(),
+                                     "<!DOCTYPE html>"
+                                     "<style>"
+                                     "  body {"
+                                     "    background: url('foo.png');"
+                                     "    background-attachment: fixed;"
+                                     "    background-size: cover;"
+                                     "    background-repeat: no-repeat;"
+                                     "  }"
+                                     "  div { height:1000px; width: 200px; }"
+                                     "</style>"
+                                     "<div></div>",
+                                     base_url);
   web_view_impl->UpdateAllLifecyclePhases();
 
   Document* document =
@@ -2115,7 +2115,7 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
-  FrameTestHelpers::WebViewHelper web_view_helper;
+  frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl = web_view_helper.Initialize(
       nullptr, nullptr, nullptr, &ConfigureAndroidNonCompositing);
 
@@ -2129,20 +2129,20 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
 
   RegisterMockedHttpURLLoad("http://example.com/foo.png", "white-1x1.png");
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
-  FrameTestHelpers::LoadHTMLString(web_view_impl->MainFrameImpl(),
-                                   "<!DOCTYPE html>"
-                                   "<style>"
-                                   "  body {"
-                                   "    margin: 0px;"
-                                   "    background: url('foo.png');"
-                                   "    background-attachment: fixed;"
-                                   "    background-size: cover;"
-                                   "    background-repeat: no-repeat;"
-                                   "  }"
-                                   "  div { height:1000px; width: 200px; }"
-                                   "</style>"
-                                   "<div></div>",
-                                   base_url);
+  frame_test_helpers::LoadHTMLString(web_view_impl->MainFrameImpl(),
+                                     "<!DOCTYPE html>"
+                                     "<style>"
+                                     "  body {"
+                                     "    margin: 0px;"
+                                     "    background: url('foo.png');"
+                                     "    background-attachment: fixed;"
+                                     "    background-size: cover;"
+                                     "    background-repeat: no-repeat;"
+                                     "  }"
+                                     "  div { height:1000px; width: 200px; }"
+                                     "</style>"
+                                     "<div></div>",
+                                     base_url);
   web_view_impl->UpdateAllLifecyclePhases();
 
   Document* document =
@@ -2197,7 +2197,7 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
 // Make sure a browser control resize with background-attachment:not-fixed
 // background doesn't cause invalidation or layout.
 TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
-  FrameTestHelpers::WebViewHelper web_view_helper;
+  frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl = web_view_helper.Initialize(
       nullptr, nullptr, nullptr, &ConfigureAndroidCompositing);
 
@@ -2212,19 +2212,19 @@ TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
   RegisterMockedHttpURLLoad("http://example.com/foo.png", "white-1x1.png");
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   // This time the background is the default attachment.
-  FrameTestHelpers::LoadHTMLString(web_view_impl->MainFrameImpl(),
-                                   "<!DOCTYPE html>"
-                                   "<style>"
-                                   "  body {"
-                                   "    margin: 0px;"
-                                   "    background: url('foo.png');"
-                                   "    background-size: cover;"
-                                   "    background-repeat: no-repeat;"
-                                   "  }"
-                                   "  div { height:1000px; width: 200px; }"
-                                   "</style>"
-                                   "<div></div>",
-                                   base_url);
+  frame_test_helpers::LoadHTMLString(web_view_impl->MainFrameImpl(),
+                                     "<!DOCTYPE html>"
+                                     "<style>"
+                                     "  body {"
+                                     "    margin: 0px;"
+                                     "    background: url('foo.png');"
+                                     "    background-size: cover;"
+                                     "    background-repeat: no-repeat;"
+                                     "  }"
+                                     "  div { height:1000px; width: 200px; }"
+                                     "</style>"
+                                     "<div></div>",
+                                     base_url);
   web_view_impl->UpdateAllLifecyclePhases();
 
   Document* document =
@@ -2267,7 +2267,7 @@ TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
 }
 
 TEST_P(VisualViewportTest, InvalidateLayoutViewWhenDocumentSmallerThanView) {
-  FrameTestHelpers::WebViewHelper web_view_helper;
+  frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl = web_view_helper.Initialize(
       nullptr, nullptr, nullptr, &ConfigureAndroidCompositing);
 
@@ -2279,7 +2279,7 @@ TEST_P(VisualViewportTest, InvalidateLayoutViewWhenDocumentSmallerThanView) {
   web_view_impl->ResizeWithBrowserControls(WebSize(page_width, page_height),
                                            browser_controls_height, 0, true);
 
-  FrameTestHelpers::LoadFrame(web_view_impl->MainFrameImpl(), "about:blank");
+  frame_test_helpers::LoadFrame(web_view_impl->MainFrameImpl(), "about:blank");
   web_view_impl->UpdateAllLifecyclePhases();
 
   Document* document =
@@ -2379,16 +2379,16 @@ TEST_P(VisualViewportTest, AutoResizeNoHeightUsesMinimumHeight) {
   WebView()->ResizeWithBrowserControls(WebSize(0, 0), 0, 0, false);
   WebView()->EnableAutoResizeMode(WebSize(25, 25), WebSize(100, 100));
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
-  FrameTestHelpers::LoadHTMLString(WebView()->MainFrameImpl(),
-                                   "<!DOCTYPE html>"
-                                   "<style>"
-                                   "  body {"
-                                   "    margin: 0px;"
-                                   "  }"
-                                   "  div { height:110vh; width: 110vw; }"
-                                   "</style>"
-                                   "<div></div>",
-                                   base_url);
+  frame_test_helpers::LoadHTMLString(WebView()->MainFrameImpl(),
+                                     "<!DOCTYPE html>"
+                                     "<style>"
+                                     "  body {"
+                                     "    margin: 0px;"
+                                     "  }"
+                                     "  div { height:110vh; width: 110vw; }"
+                                     "</style>"
+                                     "<div></div>",
+                                     base_url);
 }
 
 class VisualViewportSimTest : public SimTest {

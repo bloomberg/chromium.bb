@@ -143,7 +143,7 @@ class BrowserControlsTest : public testing::Test {
 
  private:
   std::string base_url_;
-  FrameTestHelpers::WebViewHelper helper_;
+  frame_test_helpers::WebViewHelper helper_;
   ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
 };
 

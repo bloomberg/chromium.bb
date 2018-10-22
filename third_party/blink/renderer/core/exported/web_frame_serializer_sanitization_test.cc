@@ -116,7 +116,7 @@ class WebFrameSerializerSanitizationTest : public testing::Test {
     KURL parsed_url(url);
     String file_path("frameserialization/" + file_name);
     RegisterMockedFileURLLoad(parsed_url, file_path, mime_type);
-    FrameTestHelpers::LoadFrame(MainFrameImpl(), url.Utf8().data());
+    frame_test_helpers::LoadFrame(MainFrameImpl(), url.Utf8().data());
     MainFrameImpl()->GetFrame()->View()->UpdateAllLifecyclePhases();
   }
 
@@ -193,7 +193,7 @@ class WebFrameSerializerSanitizationTest : public testing::Test {
   HistogramTester histogram_tester_;
 
  private:
-  FrameTestHelpers::WebViewHelper helper_;
+  frame_test_helpers::WebViewHelper helper_;
   SimpleMHTMLPartsGenerationDelegate mhtml_delegate_;
 };
 

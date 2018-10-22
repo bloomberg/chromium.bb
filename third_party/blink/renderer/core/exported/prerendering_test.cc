@@ -174,13 +174,14 @@ class PrerenderingTest : public testing::Test {
     web_view_helper_.Initialize();
     web_view_helper_.GetWebView()->SetPrerendererClient(&prerenderer_client_);
 
-    FrameTestHelpers::LoadFrame(web_view_helper_.GetWebView()->MainFrameImpl(),
-                                std::string(base_url) + file_name);
+    frame_test_helpers::LoadFrame(
+        web_view_helper_.GetWebView()->MainFrameImpl(),
+        std::string(base_url) + file_name);
   }
 
   void NavigateAway() {
-    FrameTestHelpers::LoadFrame(web_view_helper_.GetWebView()->MainFrameImpl(),
-                                "about:blank");
+    frame_test_helpers::LoadFrame(
+        web_view_helper_.GetWebView()->MainFrameImpl(), "about:blank");
   }
 
   void Close() {
@@ -227,7 +228,7 @@ class PrerenderingTest : public testing::Test {
   TestPrerenderingSupport prerendering_support_;
   TestWebPrerendererClient prerenderer_client_;
 
-  FrameTestHelpers::WebViewHelper web_view_helper_;
+  frame_test_helpers::WebViewHelper web_view_helper_;
 };
 
 }  // namespace

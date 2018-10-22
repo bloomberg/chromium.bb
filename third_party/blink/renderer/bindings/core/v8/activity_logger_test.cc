@@ -17,8 +17,8 @@
 
 namespace blink {
 
-using blink::FrameTestHelpers::WebViewHelper;
-using blink::FrameTestHelpers::PumpPendingRequestsForFrameToLoad;
+using blink::frame_test_helpers::WebViewHelper;
+using blink::frame_test_helpers::PumpPendingRequestsForFrameToLoad;
 
 class TestActivityLogger : public V8DOMActivityLogger {
  public:
@@ -81,8 +81,8 @@ class ActivityLoggerTest : public testing::Test {
                               ->MainFrameImpl()
                               ->GetFrame()
                               ->GetScriptController();
-    FrameTestHelpers::LoadFrame(web_view_helper_.GetWebView()->MainFrameImpl(),
-                                "about:blank");
+    frame_test_helpers::LoadFrame(
+        web_view_helper_.GetWebView()->MainFrameImpl(), "about:blank");
   }
 
   ~ActivityLoggerTest() override { WebCache::Clear(); }
