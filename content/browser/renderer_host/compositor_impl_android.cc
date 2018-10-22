@@ -991,7 +991,7 @@ void CompositorImpl::TearDownDisplayAndUnregisterRootFrameSink() {
 
 void CompositorImpl::RegisterRootFrameSink() {
   GetHostFrameSinkManager()->RegisterFrameSinkId(
-      frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kYes);
+      frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kNo);
   GetHostFrameSinkManager()->SetFrameSinkDebugLabel(frame_sink_id_,
                                                     "CompositorImpl");
 }
@@ -1439,6 +1439,10 @@ void CompositorImpl::OnFatalOrSurfaceContextCreationFailure(
     SetSurface(nullptr);
     client_->RecreateSurface();
   }
+}
+
+void CompositorImpl::OnFirstSurfaceActivation(const viz::SurfaceInfo& info) {
+  NOTREACHED();
 }
 
 }  // namespace content

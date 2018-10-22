@@ -148,8 +148,7 @@ class CONTENT_EXPORT CompositorImpl
   void SetVSyncPaused(bool paused) override;
 
   // viz::HostFrameSinkClient implementation.
-  void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override {
-  }
+  void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
   void OnFrameTokenChanged(uint32_t frame_token) override {}
 
   // display::DisplayObserver implementation.
