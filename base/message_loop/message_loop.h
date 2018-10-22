@@ -260,8 +260,10 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
   // destructor to make sure all the task's destructors get called.
   void DeletePendingTasks();
 
-  // Wakes up the message pump. Can be called on any thread. The caller is
-  // responsible for synchronizing ScheduleWork() calls.
+  // Wakes up the message pump. Thread-safe (and callers should avoid holding a
+  // Lock at all cost while making this call as some platforms' priority
+  // boosting features have been observed to cause the caller to get descheduled
+  // : https://crbug.com/890978).
   void ScheduleWork();
 
   // Returns |next_run_time| capped at 1 day from |recent_time_|. This is used
