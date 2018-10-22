@@ -411,7 +411,6 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
                  @"Test did not switch to incognito");
 }
 
-// Tests the "Remove" action of the Most Visited context menu, and the "Undo"
 // action.
 - (void)testMostVisitedRemoveUndo {
   [self setupMostVisitedTileLongPress];
