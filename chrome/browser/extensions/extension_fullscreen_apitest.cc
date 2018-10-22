@@ -61,12 +61,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
   ASSERT_FALSE(browser()->window()->IsFullscreen());
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 // Fails on MAC: http://crbug.com/480370
+// Fails on chromium.memory/Linux Chromium OS ASan LSan:
+// https://crbug.com/897879
 #define MAYBE_DisplayModeWindowIsInFullscreen DISABLED_DisplayModeWindowIsInFullscreen
 #else
 #define MAYBE_DisplayModeWindowIsInFullscreen DisplayModeWindowIsInFullscreen
-#endif  // defined(OS_MACOSX)
+#endif
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
                        MAYBE_DisplayModeWindowIsInFullscreen) {

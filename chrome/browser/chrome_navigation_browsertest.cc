@@ -99,12 +99,22 @@ class DidStartNavigationObserver : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(DidStartNavigationObserver);
 };
 
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+// Fails on chromium.memory/Linux Chromium OS ASan LSan:
+// https://crbug.com/897879
+#define MAYBE_TransientEntryPreservedOnMultipleNavigationsDuringInterstitial \
+  DISABLED_TransientEntryPreservedOnMultipleNavigationsDuringInterstitial
+#else
+#define MAYBE_TransientEntryPreservedOnMultipleNavigationsDuringInterstitial \
+  TransientEntryPreservedOnMultipleNavigationsDuringInterstitial
+#endif
+
 // Test to verify that navigations are not deleting the transient
 // NavigationEntry when showing an interstitial page and the old renderer
 // process is trying to navigate. See https://crbug.com/600046.
 IN_PROC_BROWSER_TEST_F(
     ChromeNavigationBrowserTest,
-    TransientEntryPreservedOnMultipleNavigationsDuringInterstitial) {
+    MAYBE_TransientEntryPreservedOnMultipleNavigationsDuringInterstitial) {
   StartServerWithExpiredCert();
 
   GURL setup_url =
