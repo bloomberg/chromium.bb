@@ -871,6 +871,7 @@ TEST_F(DownloadHistoryTest, CreateWithDownloadDB) {
   // Completed download should be inserted.
   EXPECT_CALL(item(0), GetState())
       .WillRepeatedly(Return(download::DownloadItem::COMPLETE));
+  info.state = history::DownloadState::COMPLETE;
   item(0).NotifyObserversDownloadUpdated();
   ExpectDownloadCreated(info);
 }
