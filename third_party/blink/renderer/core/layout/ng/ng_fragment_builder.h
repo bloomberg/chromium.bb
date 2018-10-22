@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGBaseFragmentBuilder_h
-#define NGBaseFragmentBuilder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_FRAGMENT_BUILDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_FRAGMENT_BUILDER_H_
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -20,21 +20,22 @@ class ComputedStyle;
 class LayoutObject;
 class NGBreakToken;
 
-class CORE_EXPORT NGBaseFragmentBuilder {
+class CORE_EXPORT NGFragmentBuilder {
   STACK_ALLOCATED();
+
  public:
-  virtual ~NGBaseFragmentBuilder();
+  virtual ~NGFragmentBuilder();
 
   const ComputedStyle& Style() const {
     DCHECK(style_);
     return *style_;
   }
-  NGBaseFragmentBuilder& SetStyleVariant(NGStyleVariant style_variant) {
+  NGFragmentBuilder& SetStyleVariant(NGStyleVariant style_variant) {
     style_variant_ = style_variant;
     return *this;
   }
-  NGBaseFragmentBuilder& SetStyle(scoped_refptr<const ComputedStyle>,
-                                  NGStyleVariant);
+  NGFragmentBuilder& SetStyle(scoped_refptr<const ComputedStyle>,
+                              NGStyleVariant);
 
   WritingMode GetWritingMode() const { return writing_mode_; }
   TextDirection Direction() const { return direction_; }
@@ -42,7 +43,7 @@ class CORE_EXPORT NGBaseFragmentBuilder {
   LayoutUnit InlineSize() const { return size_.inline_size; }
   LayoutUnit BlockSize() const { return size_.block_size; }
   const NGLogicalSize& Size() const { return size_; }
-  NGBaseFragmentBuilder& SetInlineSize(LayoutUnit inline_size) {
+  NGFragmentBuilder& SetInlineSize(LayoutUnit inline_size) {
     DCHECK_GE(inline_size, LayoutUnit());
     size_.inline_size = inline_size;
     return *this;
@@ -52,10 +53,10 @@ class CORE_EXPORT NGBaseFragmentBuilder {
   LayoutObject* GetLayoutObject() { return layout_object_; }
 
  protected:
-  NGBaseFragmentBuilder(scoped_refptr<const ComputedStyle>,
-                        WritingMode,
-                        TextDirection);
-  NGBaseFragmentBuilder(WritingMode, TextDirection);
+  NGFragmentBuilder(scoped_refptr<const ComputedStyle>,
+                    WritingMode,
+                    TextDirection);
+  NGFragmentBuilder(WritingMode, TextDirection);
 
  private:
   scoped_refptr<const ComputedStyle> style_;
@@ -71,4 +72,4 @@ class CORE_EXPORT NGBaseFragmentBuilder {
 
 }  // namespace blink
 
-#endif  // NGBaseFragmentBuilder
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_FRAGMENT_BUILDER_H_
