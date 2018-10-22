@@ -171,7 +171,7 @@ class CheckVirtualSuiteTest(unittest.TestCase):
         host = MockHost()
         options = optparse.Values({'platform': 'test', 'debug_rwt_logging': False})
         orig_get = host.port_factory.get
-        host.port_factory.get = lambda : orig_get('test', options=options)
+        host.port_factory.get = lambda options: orig_get('test', options=options)
 
         res = lint_test_expectations.check_virtual_test_suites(host, options)
         self.assertTrue(res)
