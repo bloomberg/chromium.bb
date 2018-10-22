@@ -6,12 +6,11 @@
 {{source_files_for_generated_file(template_file, input_files)}}
 
 {% set sink_class = (name | to_singular) + "Sink" %}
-{% set sink_class_header = (header | to_singular) + "_sink" %}
 {% set export_header = config["settings"]["export_header"] %}
 {% set export_symbol = config["settings"]["export_symbol"] %}
 
-#ifndef {{sink_class_header.upper()}}_H
-#define {{sink_class_header.upper()}}_H
+#ifndef {{header_guard}}
+#define {{header_guard}}
 
 #include <atomic>
 
@@ -75,4 +74,4 @@ class {{export_symbol}} {{sink_class}} : public GarbageCollectedFinalized<{{sink
 
 } // namespace blink
 
-#endif // !defined({{sink_class_header.upper()}}_H)
+#endif // {{header_guard}}
