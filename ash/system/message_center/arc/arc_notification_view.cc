@@ -190,7 +190,7 @@ void ArcNotificationView::Layout() {
 }
 
 bool ArcNotificationView::HasFocus() const {
-  // In case that focus handling is defered to the content view, asking the
+  // In case that focus handling is deferred to the content view, asking the
   // content view about focus.
   return content_view_->IsFocusable() ? content_view_->HasFocus()
                                       : message_center::MessageView::HasFocus();
