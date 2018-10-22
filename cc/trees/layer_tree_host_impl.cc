@@ -2971,6 +2971,12 @@ void LayerTreeHostImpl::SetVisible(bool visible) {
       SetFullViewportDamage();
       SetNeedsRedraw();
     }
+    // If surface synchronization is off, force allocating a new LocalSurfaceId
+    // because the previous LocalSurfaceId might have been evicted while we were
+    // invisible. When surface synchronization is on, the embedder will pass us
+    // a new LocalSurfaceID.
+    if (layer_tree_frame_sink_ && !settings_.enable_surface_synchronization)
+      layer_tree_frame_sink_->ForceAllocateNewId();
   } else {
     EvictAllUIResources();
     // Call PrepareTiles to evict tiles when we become invisible.
