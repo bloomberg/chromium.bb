@@ -8,6 +8,7 @@
 #include <map>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -161,7 +162,7 @@ void AdaptMessagePattern(std::size_t key_pos,
 
 void InitMockDisplaySourceConnectionDelegate(content::BrowserContext* profile) {
   DisplaySourceConnectionDelegateFactory::GetInstance()->SetTestingFactory(
-    profile, &CreateMockDelegate);
+      profile, base::BindRepeating(&CreateMockDelegate));
 }
 namespace {
 
