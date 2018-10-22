@@ -8,6 +8,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
@@ -61,7 +62,11 @@ FootnoteContainerView::FootnoteContainerView(const gfx::Insets& margins,
 FootnoteContainerView::~FootnoteContainerView() = default;
 
 void FootnoteContainerView::SetCornerRadius(float corner_radius) {
-  SetBackground(std::make_unique<HalfRoundedRectBackground>(gfx::kGoogleGrey050,
+  // TODO(crbug.com/893598): Finalize dark mode color.
+  SkColor background_color = GetNativeTheme()->SystemDarkModeEnabled()
+                                 ? gfx::kGoogleGrey800
+                                 : gfx::kGoogleGrey050;
+  SetBackground(std::make_unique<HalfRoundedRectBackground>(background_color,
                                                             corner_radius));
 }
 
