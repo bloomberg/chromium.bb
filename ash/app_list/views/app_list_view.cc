@@ -518,13 +518,12 @@ void AppListView::Layout() {
         app_list_background_shield_bounds);
   }
 
-  float app_list_transition_progress = GetAppListTransitionProgress();
+  // Translate the background shield to avoid holes left by rounded corner in
+  // fullscreen state.
   gfx::Transform transform;
-  if (app_list_transition_progress >= 1 && app_list_transition_progress <= 2) {
-    // Translate background shield so that it ends drag at y position
-    // -|kAppListBackgroundRadius| when dragging between peeking and fullscreen.
-    transform.Translate(
-        0, -kAppListBackgroundRadius * (app_list_transition_progress - 1));
+  if (app_list_state_ == AppListViewState::FULLSCREEN_ALL_APPS ||
+      app_list_state_ == AppListViewState::FULLSCREEN_SEARCH) {
+    transform.Translate(0, -kAppListBackgroundRadius);
   }
   app_list_background_shield_->SetTransform(transform);
 }
