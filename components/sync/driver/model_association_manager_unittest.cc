@@ -580,6 +580,45 @@ TEST_F(SyncModelAssociationManagerTest, StopClearMetadata) {
       1, GetController(controllers_, BOOKMARKS)->clear_metadata_call_count());
 }
 
+// Test that stopping a single type clears the metadata for the disabled type.
+TEST_F(SyncModelAssociationManagerTest, StopDataType) {
+  controllers_[BOOKMARKS] = std::make_unique<FakeDataTypeController>(BOOKMARKS);
+  ModelAssociationManager model_association_manager(&controllers_, &delegate_);
+
+  ASSERT_EQ(GetController(controllers_, BOOKMARKS)->state(),
+            DataTypeController::NOT_RUNNING);
+
+  // Initialize() kicks off model loading.
+  model_association_manager.Initialize(
+      /*desired_types=*/ModelTypeSet(BOOKMARKS),
+      /*preferred_types=*/ModelTypeSet(BOOKMARKS), ConfigureContext());
+
+  ASSERT_EQ(GetController(controllers_, BOOKMARKS)->state(),
+            DataTypeController::MODEL_LOADED);
+
+  model_association_manager.StopDatatype(BOOKMARKS, DISABLE_SYNC, SyncError());
+
+  EXPECT_EQ(GetController(controllers_, BOOKMARKS)->state(),
+            DataTypeController::NOT_RUNNING);
+  EXPECT_EQ(
+      1, GetController(controllers_, BOOKMARKS)->clear_metadata_call_count());
+}
+
+// Test that stopping a single type is ignored when the type is not running.
+TEST_F(SyncModelAssociationManagerTest, StopDataType_NotRunning) {
+  controllers_[BOOKMARKS] = std::make_unique<FakeDataTypeController>(BOOKMARKS);
+  ModelAssociationManager model_association_manager(&controllers_, &delegate_);
+
+  ASSERT_EQ(GetController(controllers_, BOOKMARKS)->state(),
+            DataTypeController::NOT_RUNNING);
+
+  model_association_manager.StopDatatype(BOOKMARKS, DISABLE_SYNC, SyncError());
+
+  // The state should still be not running.
+  EXPECT_EQ(GetController(controllers_, BOOKMARKS)->state(),
+            DataTypeController::NOT_RUNNING);
+}
+
 // Test that Initialize stops controllers with KEEP_METADATA for preferred
 // types.
 TEST_F(SyncModelAssociationManagerTest, KeepsMetadataForPreferredDataType) {

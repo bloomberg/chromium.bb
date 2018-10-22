@@ -179,7 +179,10 @@ void ModelAssociationManager::StopDatatype(ModelType type,
                                            ShutdownReason shutdown_reason,
                                            SyncError error) {
   DataTypeController* dtc = controllers_->find(type)->second.get();
-  StopDatatypeImpl(error, shutdown_reason, dtc, base::DoNothing());
+  if (dtc->state() != DataTypeController::NOT_RUNNING &&
+      dtc->state() != DataTypeController::STOPPING) {
+    StopDatatypeImpl(error, shutdown_reason, dtc, base::DoNothing());
+  }
 }
 
 void ModelAssociationManager::StopDatatypeImpl(
