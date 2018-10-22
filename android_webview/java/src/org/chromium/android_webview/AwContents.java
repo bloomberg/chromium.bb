@@ -616,7 +616,9 @@ public class AwContents implements SmartClipProvider {
             // The shouldOverrideUrlLoading call might have resulted in posting messages to the
             // UI thread. Using sendMessage here (instead of calling onPageStarted directly)
             // will allow those to run in order.
-            mContentsClient.getCallbackHelper().postOnPageStarted(navigationParams.url);
+            if (!navigationParams.isRendererInitiated) {
+                mContentsClient.getCallbackHelper().postOnPageStarted(navigationParams.url);
+            }
             return false;
         }
     }
@@ -1589,7 +1591,7 @@ public class AwContents implements SmartClipProvider {
             return;
         }
 
-        LoadUrlParams params = new LoadUrlParams(url);
+        LoadUrlParams params = new LoadUrlParams(url, PageTransition.TYPED);
         if (additionalHttpHeaders != null) {
             params.setExtraHeaders(new HashMap<String, String>(additionalHttpHeaders));
         }
@@ -1741,7 +1743,7 @@ public class AwContents implements SmartClipProvider {
 
         // If we are reloading the same url, then set transition type as reload.
         if (params.getUrl() != null && params.getUrl().equals(mWebContents.getLastCommittedUrl())
-                && params.getTransitionType() == PageTransition.LINK) {
+                && params.getTransitionType() == PageTransition.TYPED) {
             params.setTransitionType(PageTransition.RELOAD);
         }
         params.setTransitionType(

@@ -274,8 +274,8 @@ public class AwContentsClientBridge {
     @CalledByNative
     private void onReceivedError(
             // WebResourceRequest
-            String url, boolean isMainFrame, boolean hasUserGesture, String method,
-            String[] requestHeaderNames, String[] requestHeaderValues,
+            String url, boolean isMainFrame, boolean hasUserGesture, boolean isRendererInitiated,
+            String method, String[] requestHeaderNames, String[] requestHeaderValues,
             // WebResourceError
             int errorCode, String description, boolean safebrowsingHit) {
         AwContentsClient.AwWebResourceRequest request = new AwContentsClient.AwWebResourceRequest(
@@ -300,6 +300,9 @@ public class AwContentsClientBridge {
                 error.errorCode = ErrorCodeConversionHelper.ERROR_UNSAFE_RESOURCE;
             } else {
                 error.errorCode = ErrorCodeConversionHelper.convertErrorCode(error.errorCode);
+            }
+            if (request.isMainFrame && isRendererInitiated) {
+                mClient.getCallbackHelper().postOnPageStarted(request.url);
             }
             mClient.getCallbackHelper().postOnReceivedError(request, error);
             if (request.isMainFrame) {

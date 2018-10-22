@@ -1405,6 +1405,7 @@ void AwContents::DidFinishNavigation(
                                navigation_handle->IsInMainFrame(),
                                navigation_handle->HasUserGesture(),
                                net::HttpRequestHeaders());
+  request.is_renderer_initiated = navigation_handle->IsRendererInitiated();
 
   client->OnReceivedError(request, error_code, false);
 }
