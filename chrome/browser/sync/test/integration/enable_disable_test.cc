@@ -8,12 +8,16 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/values.h"
+#include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/test/fake_server/bookmark_entity_builder.h"
+#include "components/sync/test/fake_server/entity_builder_factory.h"
 #include "components/unified_consent/feature.h"
 
 using base::FeatureList;
@@ -26,6 +30,8 @@ using syncer::SyncPrefs;
 using syncer::UserSelectableTypes;
 
 namespace {
+
+const char kSyncedBookmarkURL[] = "http://www.mybookmark.com";
 
 // Some types show up in multiple groups. This means that there are at least two
 // user selectable groups that will cause these types to become enabled. This
@@ -93,6 +99,20 @@ class EnableDisableSingleClientTest : public SyncTest {
     return false;
   }
 
+  void InjectSyncedBookmark() {
+    fake_server::BookmarkEntityBuilder bookmark_builder =
+        entity_builder_factory_.NewBookmarkEntityBuilder("My Bookmark");
+    GetFakeServer()->InjectEntity(
+        bookmark_builder.BuildBookmark(GURL(kSyncedBookmarkURL)));
+  }
+
+  int GetNumUpdatesDownloadedInLastCycle() {
+    return GetSyncService(0)
+        ->GetLastCycleSnapshot()
+        .model_neutral_state()
+        .num_updates_downloaded_total;
+  }
+
  protected:
   void SetupTest(bool all_types_enabled) {
     ASSERT_TRUE(SetupClients());
@@ -131,6 +151,8 @@ class EnableDisableSingleClientTest : public SyncTest {
   ModelTypeSet multi_grouped_types_;
 
  private:
+  fake_server::EntityBuilderFactory entity_builder_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(EnableDisableSingleClientTest);
 };
 
@@ -284,6 +306,109 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, FastEnableDisableEnable) {
   for (ModelType type : non_proxy_types) {
     EXPECT_TRUE(ModelTypeExists(type)) << " for " << ModelTypeToString(type);
   }
+}
+
+// This test makes sure that after a RequestStop(CLEAR_DATA), Sync data gets
+// redownloaded when Sync is started again. This does not actually verify that
+// the data is gone from disk (which seems infeasible); it's mostly here as a
+// baseline for the following tests.
+IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
+                       RedownloadsAfterClearData) {
+  ASSERT_TRUE(SetupClients());
+  ASSERT_FALSE(bookmarks_helper::GetBookmarkModel(0)->IsBookmarked(
+      GURL(kSyncedBookmarkURL)));
+
+  // Create a bookmark on the server, then turn on Sync on the client.
+  InjectSyncedBookmark();
+  ASSERT_TRUE(GetClient(0)->SetupSync());
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
+
+  // Make sure the bookmark got synced down.
+  ASSERT_TRUE(bookmarks_helper::GetBookmarkModel(0)->IsBookmarked(
+      GURL(kSyncedBookmarkURL)));
+  // Note: The response may also contain permanent nodes, so we can't check the
+  // exact count.
+  const int initial_updates_downloaded = GetNumUpdatesDownloadedInLastCycle();
+  ASSERT_GT(initial_updates_downloaded, 0);
+
+  // Stop and restart Sync.
+  GetClient(0)->StopSyncService(syncer::SyncService::CLEAR_DATA);
+  GetClient(0)->StartSyncService();
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
+
+  // Everything should have been redownloaded.
+  ASSERT_TRUE(bookmarks_helper::GetBookmarkModel(0)->IsBookmarked(
+      GURL(kSyncedBookmarkURL)));
+  EXPECT_EQ(GetNumUpdatesDownloadedInLastCycle(), initial_updates_downloaded);
+}
+
+IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
+                       DoesNotRedownloadAfterKeepData) {
+  ASSERT_TRUE(SetupClients());
+  ASSERT_FALSE(bookmarks_helper::GetBookmarkModel(0)->IsBookmarked(
+      GURL(kSyncedBookmarkURL)));
+
+  // Create a bookmark on the server, then turn on Sync on the client.
+  InjectSyncedBookmark();
+  ASSERT_TRUE(GetClient(0)->SetupSync());
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
+
+  // Make sure the bookmark got synced down.
+  ASSERT_TRUE(bookmarks_helper::GetBookmarkModel(0)->IsBookmarked(
+      GURL(kSyncedBookmarkURL)));
+  // Note: The response may also contain permanent nodes, so we can't check the
+  // exact count.
+  ASSERT_GT(GetNumUpdatesDownloadedInLastCycle(), 0);
+
+  // Stop and restart Sync.
+  GetClient(0)->StopSyncService(syncer::SyncService::KEEP_DATA);
+  GetClient(0)->StartSyncService();
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
+
+  // The bookmark should still be there, *without* having been redownloaded.
+  ASSERT_TRUE(bookmarks_helper::GetBookmarkModel(0)->IsBookmarked(
+      GURL(kSyncedBookmarkURL)));
+  EXPECT_EQ(0, GetNumUpdatesDownloadedInLastCycle());
+}
+
+IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
+                       DoesNotRedownloadAfterKeepDataWithStandaloneTransport) {
+  base::test::ScopedFeatureList enable_standalone_transport;
+  enable_standalone_transport.InitAndEnableFeature(
+      switches::kSyncStandaloneTransport);
+
+  ASSERT_TRUE(SetupClients());
+  ASSERT_FALSE(bookmarks_helper::GetBookmarkModel(0)->IsBookmarked(
+      GURL(kSyncedBookmarkURL)));
+
+  // Create a bookmark on the server, then turn on Sync on the client.
+  InjectSyncedBookmark();
+  ASSERT_TRUE(GetClient(0)->SetupSync());
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
+
+  // Make sure the bookmark got synced down.
+  ASSERT_TRUE(bookmarks_helper::GetBookmarkModel(0)->IsBookmarked(
+      GURL(kSyncedBookmarkURL)));
+  // Note: The response may also contain permanent nodes, so we can't check the
+  // exact count.
+  ASSERT_GT(GetNumUpdatesDownloadedInLastCycle(), 0);
+
+  // Stop Sync and let it start up again in standalone transport mode.
+  GetClient(0)->StopSyncService(syncer::SyncService::KEEP_DATA);
+  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
+      /*skip_passphrase_verification=*/false));
+  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            GetSyncService(0)->GetTransportState());
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureActive());
+
+  // Now start full Sync again.
+  GetClient(0)->StartSyncService();
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
+
+  // The bookmark should still be there, *without* having been redownloaded.
+  ASSERT_TRUE(bookmarks_helper::GetBookmarkModel(0)->IsBookmarked(
+      GURL(kSyncedBookmarkURL)));
+  EXPECT_EQ(0, GetNumUpdatesDownloadedInLastCycle());
 }
 
 }  // namespace
