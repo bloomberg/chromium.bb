@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/containers/flat_set.h"
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
@@ -619,7 +620,7 @@ class ClearDomainReliabilityTester {
     // Set and use factory that will attach service stuffed in kludgey struct.
     DomainReliabilityServiceFactory::GetInstance()->SetTestingFactoryAndUse(
         profile_,
-        &TestingDomainReliabilityServiceFactoryFunction);
+        base::BindRepeating(&TestingDomainReliabilityServiceFactoryFunction));
 
     // Verify and detach kludgey struct.
     EXPECT_EQ(data, profile_->GetUserData(kKey));
@@ -636,9 +637,10 @@ class RemovePasswordsTester {
   explicit RemovePasswordsTester(TestingProfile* testing_profile) {
     PasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
         testing_profile,
-        password_manager::BuildPasswordStore<
-            content::BrowserContext,
-            testing::NiceMock<password_manager::MockPasswordStore>>);
+        base::BindRepeating(
+            &password_manager::BuildPasswordStore<
+                content::BrowserContext,
+                testing::NiceMock<password_manager::MockPasswordStore>>));
 
     store_ = static_cast<password_manager::MockPasswordStore*>(
         PasswordStoreFactory::GetInstance()
@@ -1194,7 +1196,7 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
     remover_ = content::BrowserContext::GetBrowsingDataRemover(profile_.get());
 
     ProtocolHandlerRegistryFactory::GetInstance()->SetTestingFactory(
-        profile_.get(), &BuildProtocolHandlerRegistry);
+        profile_.get(), base::BindRepeating(&BuildProtocolHandlerRegistry));
 
 #if defined(OS_ANDROID)
     static_cast<ChromeBrowsingDataRemoverDelegate*>(
