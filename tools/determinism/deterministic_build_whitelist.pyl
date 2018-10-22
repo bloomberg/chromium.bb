@@ -17,6 +17,11 @@
 {
   # https://crbug.com/383340
   'android': [
+    # https://crbug.com/897969
+    'apks/VrNfcSimulator.apk',
+
+    # https://crbug.com/897970
+    'lib.java/chromium_commands.dex.jar',
   ],
 
   # https://crbug.com/330263
@@ -36,10 +41,16 @@
 
   # https://crbug.com/330262
   'mac': [
+    # ld64 in current Xcode versions is not deterministic. Most smaller binaries
+    # are fine, but larger binaries often get different outputs.
+    # To reduce flakiness, list most binaries here.
+    # TODO(erikchen): Once our fix for this has made it into Xcode and that
+    # is on all the bots, remove most binaries.
     'accelerated_widget_mac_unittests',
     'accessibility_unittests',
     'angle_end2end_tests',
     'angle_unittests',
+    'angle_white_box_tests',
     'App Shell',
     'app_shell_unittests',
     'ar_sample_test_driver',
@@ -162,6 +173,20 @@
     'viz_benchmark',
     'webkit_unit_tests',
     'wtf_unittests',
+
+    # TODO(tikuta): Remove this when crbug.com/870611 is fixed.
+    'remoting-webapp.v2.zip',
+
+    # TODO(thakis): Given we list most executables above, we should probably
+    # also list most isolated files here.
+    'angle_unittests.isolated',
+    'angle_white_box_tests.isolated',
+    'browser_tests.isolated',
+    'chrome_app_unittests.isolated',
+    'content_unittests.isolated',
+    'headless_browsertests',
+    'headless_browsertests.isolated',
+    'interactive_ui_tests.isolated',
   ],
 
   # https://crbug.com/330260
