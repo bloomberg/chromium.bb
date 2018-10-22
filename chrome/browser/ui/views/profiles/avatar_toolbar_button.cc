@@ -21,9 +21,11 @@
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -56,9 +58,14 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
 #if !defined(OS_CHROMEOS)
       error_controller_(this, profile_),
 #endif  // !defined(OS_CHROMEOS)
+      browser_list_observer_(this),
       profile_observer_(this),
       cookie_manager_service_observer_(this),
       account_tracker_service_observer_(this) {
+
+  if (IsIncognitoCounterActive())
+    browser_list_observer_.Add(BrowserList::GetInstance());
+
   profile_observer_.Add(
       &g_browser_process->profile_manager()->GetProfileAttributesStorage());
 
@@ -87,12 +94,14 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
 #if defined(OS_CHROMEOS)
   // On CrOS the avatar toolbar button should only show as badging for Incognito
   // and Guest sessions. It should not be instantiated for regular profiles and
-  // it should not be enabled as there's no profile switcher to trigger / show.
+  // it should not be enabled as there's no profile switcher to trigger / show,
+  // unless incognito window counter is available.
   DCHECK(IsIncognito() || profile_->IsGuestSession());
-  SetEnabled(false);
+  SetEnabled(IsIncognitoCounterActive());
 #else
-  // The profile switcher is only available outside incognito.
-  SetEnabled(!IsIncognito());
+  // The profile switcher is only available outside incognito or if incognito
+  // window counter is enabled.
+  SetEnabled(!IsIncognito() || IsIncognitoCounterActive());
 #endif  // !defined(OS_CHROMEOS)
 
   // Set initial text and tooltip. UpdateIcon() needs to be called from the
@@ -112,18 +121,26 @@ void AvatarToolbarButton::UpdateIcon() {
 void AvatarToolbarButton::UpdateText() {
   base::Optional<SkColor> color;
   base::string16 text;
-  switch (GetSyncState()) {
-    case SyncState::kError:
-      color = gfx::kGoogleRed600;
-      text = l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_SYNC_ERROR);
-      break;
-    case SyncState::kPaused:
-      color = gfx::kGoogleBlue600;
-      text = l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_SYNC_PAUSED);
-      break;
-    case SyncState::kNormal:
-      break;
+
+  const SyncState sync_state = GetSyncState();
+
+  if (IsIncognitoCounterActive()) {
+    const int incognito_window_count =
+        BrowserList::GetIncognitoSessionsActiveForProfile(profile_);
+    if (incognito_window_count > 1) {
+      text = base::IntToString16(incognito_window_count);
+      // TODO(http://crbug.com/896235): Update to select from theme colors and
+      // use GetColorWithMinimumContrast to guarantee readability.
+      color = gfx::kGoogleGrey900;
+    }
+  } else if (sync_state == SyncState::kError) {
+    color = gfx::kGoogleRed600;
+    text = l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_SYNC_ERROR);
+  } else if (sync_state == SyncState::kPaused) {
+    color = gfx::kGoogleBlue600;
+    text = l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_SYNC_PAUSED);
   }
+
   SetHighlightColor(color);
   SetText(text);
 
@@ -142,6 +159,16 @@ void AvatarToolbarButton::NotifyClick(const ui::Event& event) {
 }
 
 void AvatarToolbarButton::OnAvatarErrorChanged() {
+  UpdateIcon();
+  UpdateText();
+}
+
+void AvatarToolbarButton::OnBrowserAdded(Browser* browser) {
+  UpdateIcon();
+  UpdateText();
+}
+
+void AvatarToolbarButton::OnBrowserRemoved(Browser* browser) {
   UpdateIcon();
   UpdateText();
 }
@@ -201,6 +228,11 @@ bool AvatarToolbarButton::IsIncognito() const {
   return profile_->IsOffTheRecord() && !profile_->IsGuestSession();
 }
 
+bool AvatarToolbarButton::IsIncognitoCounterActive() const {
+  return IsIncognito() &&
+         base::FeatureList::IsEnabled(features::kEnableIncognitoWindowCounter);
+}
+
 bool AvatarToolbarButton::ShouldShowGenericIcon() const {
   // This function should only be used for regular profiles. Guest and Incognito
   // sessions should be handled separately and never call this function.
@@ -254,8 +286,15 @@ gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon() const {
   const int icon_size =
       ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 24 : 20;
 
-  const SkColor icon_color =
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+  SkColor icon_color;
+  if (IsIncognitoCounterActive() &&
+      BrowserList::GetIncognitoSessionsActiveForProfile(profile_) > 1) {
+    // TODO(http://crbug.com/896235): Update to select from theme colors.
+    icon_color = gfx::kGoogleGrey900;
+  } else {
+    icon_color = GetThemeProvider()->GetColor(
+        ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+  }
 
   if (IsIncognito())
     return gfx::CreateVectorIcon(kIncognitoIcon, icon_size, icon_color);

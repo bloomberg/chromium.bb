@@ -311,16 +311,13 @@ bool BrowserList::IsIncognitoSessionActive() {
 }
 
 // static
-bool BrowserList::IsIncognitoSessionActiveForProfile(Profile* profile) {
-  for (auto* browser : *BrowserList::GetInstance()) {
-    if (browser->profile()->IsSameProfile(profile) &&
-        browser->profile()->IsOffTheRecord()) {
-      return true;
-    }
-  }
-  return false;
+int BrowserList::GetIncognitoSessionsActiveForProfile(Profile* profile) {
+  BrowserList* list = BrowserList::GetInstance();
+  return std::count_if(list->begin(), list->end(), [profile](Browser* browser) {
+    return browser->profile()->IsSameProfile(profile) &&
+           browser->profile()->IsOffTheRecord();
+  });
 }
-
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserList, private:
 
