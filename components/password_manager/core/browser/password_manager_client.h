@@ -179,7 +179,6 @@ class PasswordManagerClient {
 
   // Reports whether and how passwords are synced in the embedder. The default
   // implementation always returns NOT_SYNCING.
-  // TODO(crbug.com/515108): Factor this out of the client to the sync layer.
   virtual SyncState GetPasswordSyncState() const;
 
   // Returns true if last navigation page had HTTP error i.e 5XX or 4XX
