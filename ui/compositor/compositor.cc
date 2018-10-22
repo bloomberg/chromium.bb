@@ -90,7 +90,7 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
     auto* host_frame_sink_manager =
         context_factory_private_->GetHostFrameSinkManager();
     host_frame_sink_manager->RegisterFrameSinkId(
-        frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kYes);
+        frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kNo);
     host_frame_sink_manager->SetFrameSinkDebugLabel(frame_sink_id_,
                                                     "Compositor");
   }
@@ -646,8 +646,7 @@ void Compositor::DidSubmitCompositorFrame() {
 
 void Compositor::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
-  // TODO(fsamuel): Once surface synchronization is turned on, the fallback
-  // surface should be set here.
+  NOTREACHED();
 }
 
 void Compositor::OnFrameTokenChanged(uint32_t frame_token) {
