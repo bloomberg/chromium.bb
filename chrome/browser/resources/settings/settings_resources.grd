@@ -1375,6 +1375,12 @@
         <structure name="IDR_SETTINGS_MULTIDEVICE_PAGE_JS"
                    file="multidevice_page/multidevice_page.js"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_MULTIDEVICE_RADIO_BUTTON_HTML"
+                   file="multidevice_page/multidevice_radio_button.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_MULTIDEVICE_RADIO_BUTTON_JS"
+                   file="multidevice_page/multidevice_radio_button.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_MULTIDEVICE_SMARTLOCK_SUBPAGE_HTML"
                    file="multidevice_page/multidevice_smartlock_subpage.html"
                    type="chrome_html" />

@@ -59,6 +59,13 @@ cr.define('settings', function() {
     setSmartLockSignInEnabled(enabled, opt_authToken) {}
 
     /**
+     * Returns the value of the preference controlling whether Smart Lock
+     * sign-in is allowed.
+     * @return {!Promise<boolean>}
+     */
+    getSmartLockSignInAllowed() {}
+
+    /**
      * Returns android messages info with messages feature state
      * and messages for web permissions origin.
      * @return {!Promise<!settings.AndroidSmsInfo>} Android SMS Info
@@ -109,6 +116,11 @@ cr.define('settings', function() {
     /** @override */
     setSmartLockSignInEnabled(enabled, opt_authToken) {
       chrome.send('setSmartLockSignInEnabled', [enabled, opt_authToken]);
+    }
+
+    /** @override */
+    getSmartLockSignInAllowed() {
+      return cr.sendWithPromise('getSmartLockSignInAllowed');
     }
 
     /** @override */
