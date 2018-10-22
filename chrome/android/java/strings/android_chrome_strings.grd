@@ -3553,11 +3553,6 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
         Image decoder
       </message>
 
-      <!-- Migration strings -->
-      <message name="IDS_TAB_SWITCHER_CALLOUT_BODY" desc="Indicates that clicking the tab switcher button gives you quick access to your tabs.">
-        Tap this button for quick access to your tabs.
-      </message>
-
       <!-- Special locale UI strings -->
       <message name="IDS_SEARCH_WITH_SOGOU" desc="Text telling the user that the search engine will be switched to Sogou.">
         Search with Sogou

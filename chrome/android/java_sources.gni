@@ -1531,7 +1531,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/toolbar/TabSwitcherButtonCoordinator.java",
   "java/src/org/chromium/chrome/browser/toolbar/TabSwitcherButtonProperties.java",
   "java/src/org/chromium/chrome/browser/toolbar/TabSwitcherButtonView.java",
-  "java/src/org/chromium/chrome/browser/toolbar/TabSwitcherCallout.java",
   "java/src/org/chromium/chrome/browser/toolbar/TabSwitcherDrawable.java",
   "java/src/org/chromium/chrome/browser/toolbar/Toolbar.java",
   "java/src/org/chromium/chrome/browser/toolbar/ToolbarActionModeCallback.java",
