@@ -144,11 +144,6 @@
 # Crashing flakily. https://crbug.com/883371
 -ExtensionDisabledGlobalErrorTest.UninstallWhilePromptBeingShown
 
-# Immersive mode tests.
--ImmersiveModeBrowserViewTest.TabNavigationAcceleratorsFullscreenBrowser/material
--ImmersiveModeBrowserViewTest.TestCaptionButtonsReceiveEventsInAppImmersiveMode/*
--ImmersiveModeBrowserViewTest.TestCaptionButtonsReceiveEventsInBrowserImmersiveMode/*
-
 # Flaky on ASAN bot. crbug.com/884216
 -KeyboardOverlayUIBrowserTest.*
 
