@@ -86,16 +86,8 @@ SelectFileDialogImplGTK::SelectFileDialogImplGTK(
     : SelectFileDialogImpl(listener, std::move(policy)), preview_(nullptr) {}
 
 SelectFileDialogImplGTK::~SelectFileDialogImplGTK() {
-  // gtk_widget_destroy() causes OnFileChooserDestroy() to run, which erases the
-  // dialog in |dialogs_|.  To prevent |dialogs_| from being modified while
-  // iterating over it, it is necessary to make a copy of its GtkWidgets.
-  std::vector<GtkWidget*> dialogs;
-  dialogs.reserve(dialogs_.size());
-  for (auto& pair : dialogs_)
-    dialogs.push_back(pair.first);
-  for (GtkWidget* dialog : dialogs)
-    gtk_widget_destroy(dialog);
-  DCHECK(dialogs_.empty());
+  while (!dialogs_.empty())
+    DestroyDialog(dialogs_.begin()->first);
 }
 
 bool SelectFileDialogImplGTK::IsRunning(gfx::NativeWindow parent_window) const {
@@ -282,7 +274,7 @@ void SelectFileDialogImplGTK::FileSelected(GtkWidget* dialog,
     g_slist_free(filters);
     listener_->FileSelected(path, idx + 1, GetParamsForDialog(dialog));
   }
-  gtk_widget_destroy(dialog);
+  DestroyDialog(dialog);
 }
 
 void SelectFileDialogImplGTK::MultiFilesSelected(
@@ -292,14 +284,14 @@ void SelectFileDialogImplGTK::MultiFilesSelected(
 
   if (listener_)
     listener_->MultiFilesSelected(files, GetParamsForDialog(dialog));
-  gtk_widget_destroy(dialog);
+  DestroyDialog(dialog);
 }
 
 void SelectFileDialogImplGTK::FileNotSelected(GtkWidget* dialog) {
   void* params = GetParamsForDialog(dialog);
   if (listener_)
     listener_->FileSelectionCanceled(params);
-  gtk_widget_destroy(dialog);
+  DestroyDialog(dialog);
 }
 
 GtkWidget* SelectFileDialogImplGTK::CreateFileOpenHelper(
@@ -446,6 +438,23 @@ GtkWidget* SelectFileDialogImplGTK::CreateSaveAsDialog(
   return dialog;
 }
 
+void SelectFileDialogImplGTK::DestroyDialog(GtkWidget* dialog) {
+  if (dialogs_.find(dialog) == dialogs_.end())
+    return;
+
+  // Ensure all signals associated with |dialog| that point back to |this| get
+  // cleaned up so there's no possibility of calling back into |this| after it
+  // gets destroyed.
+  gulong signal = 0;
+  while ((signal = g_signal_handler_find(dialog, G_SIGNAL_MATCH_DATA, 0, 0,
+                                         nullptr, nullptr, this))) {
+    g_signal_handler_disconnect(dialog, signal);
+  }
+
+  gtk_widget_destroy(dialog);
+  OnFileChooserDestroy(dialog);
+}
+
 void* SelectFileDialogImplGTK::GetParamsForDialog(GtkWidget* dialog) {
   DCHECK(dialogs_.find(dialog) != dialogs_.end());
   return dialogs_[dialog]->params;
@@ -492,17 +501,20 @@ void SelectFileDialogImplGTK::SelectSingleFileHelper(GtkWidget* dialog,
 void SelectFileDialogImplGTK::OnSelectSingleFileDialogResponse(
     GtkWidget* dialog,
     int response_id) {
+  scoped_refptr<SelectFileDialogImplGTK> keep_alive{this};
   SelectSingleFileHelper(dialog, response_id, false);
 }
 
 void SelectFileDialogImplGTK::OnSelectSingleFolderDialogResponse(
     GtkWidget* dialog,
     int response_id) {
+  scoped_refptr<SelectFileDialogImplGTK> keep_alive{this};
   SelectSingleFileHelper(dialog, response_id, true);
 }
 
 void SelectFileDialogImplGTK::OnSelectMultiFileDialogResponse(GtkWidget* dialog,
                                                               int response_id) {
+  scoped_refptr<SelectFileDialogImplGTK> keep_alive{this};
   if (IsCancelResponse(response_id)) {
     FileNotSelected(dialog);
     return;
@@ -532,11 +544,8 @@ void SelectFileDialogImplGTK::OnSelectMultiFileDialogResponse(GtkWidget* dialog,
 }
 
 void SelectFileDialogImplGTK::OnFileChooserDestroy(GtkWidget* dialog) {
-  // There might be a case that |dialog| is already deleted
-  // in SelectFileDialogImplGTK::FileSelected.
-  // See https://crbug.com/880073.
-  if (!dialog)
-    return;
+  scoped_refptr<SelectFileDialogImplGTK> keep_alive{this};
+  CHECK(dialog);
   // |parent| can be nullptr when closing the host window
   // while opening the file-picker.
   aura::Window* parent = dialogs_[dialog]->parent;
@@ -547,6 +556,7 @@ void SelectFileDialogImplGTK::OnFileChooserDestroy(GtkWidget* dialog) {
 }
 
 void SelectFileDialogImplGTK::OnUpdatePreview(GtkWidget* chooser) {
+  scoped_refptr<SelectFileDialogImplGTK> keep_alive{this};
   gchar* filename =
       gtk_file_chooser_get_preview_filename(GTK_FILE_CHOOSER(chooser));
   if (!filename) {
