@@ -33,7 +33,7 @@ namespace blink {
 namespace FloatBoxTest {
 
 bool ApproximatelyEqual(const float& a, const float& b) {
-  return GeometryTest::ApproximatelyEqual(a, b, kTestEpsilon);
+  return geometry_test::ApproximatelyEqual(a, b, kTestEpsilon);
 }
 
 bool ApproximatelyEqual(const FloatBox& a, const FloatBox& b) {

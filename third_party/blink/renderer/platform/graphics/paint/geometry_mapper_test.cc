@@ -53,16 +53,16 @@ class GeometryMapperTest : public testing::Test,
 
 INSTANTIATE_PAINT_TEST_CASE_P(GeometryMapperTest);
 
-#define EXPECT_FLOAT_RECT_NEAR(expected, actual)                            \
-  do {                                                                      \
-    EXPECT_PRED_FORMAT2(GeometryTest::AssertAlmostEqual, (actual).X(),      \
-                        (expected).X());                                    \
-    EXPECT_PRED_FORMAT2(GeometryTest::AssertAlmostEqual, (actual).Y(),      \
-                        (expected).Y());                                    \
-    EXPECT_PRED_FORMAT2(GeometryTest::AssertAlmostEqual, (actual).Width(),  \
-                        (expected).Width());                                \
-    EXPECT_PRED_FORMAT2(GeometryTest::AssertAlmostEqual, (actual).Height(), \
-                        (expected).Height());                               \
+#define EXPECT_FLOAT_RECT_NEAR(expected, actual)                             \
+  do {                                                                       \
+    EXPECT_PRED_FORMAT2(geometry_test::AssertAlmostEqual, (actual).X(),      \
+                        (expected).X());                                     \
+    EXPECT_PRED_FORMAT2(geometry_test::AssertAlmostEqual, (actual).Y(),      \
+                        (expected).Y());                                     \
+    EXPECT_PRED_FORMAT2(geometry_test::AssertAlmostEqual, (actual).Width(),  \
+                        (expected).Width());                                 \
+    EXPECT_PRED_FORMAT2(geometry_test::AssertAlmostEqual, (actual).Height(), \
+                        (expected).Height());                                \
   } while (false)
 
 #define EXPECT_CLIP_RECT_EQ(expected, actual)                       \
