@@ -20,6 +20,14 @@ class TextPaintTimingDetectorTest : public RenderingTest {
   LocalFrameView& GetFrameView() { return *GetFrame().View(); }
   PaintTracker& GetPaintTracker() { return GetFrameView().GetPaintTracker(); }
 
+  TimeTicks LargestPaintStoredResult() {
+    return GetPaintTracker().GetTextPaintTimingDetector().largest_text_paint_;
+  }
+
+  TimeTicks LastPaintStoredResult() {
+    return GetPaintTracker().GetTextPaintTimingDetector().last_text_paint_;
+  }
+
   void UpdateAllLifecyclePhasesAndSimulateSwapTime() {
     GetFrameView().UpdateAllLifecyclePhases();
     TextPaintTimingDetector& detector =
@@ -28,6 +36,10 @@ class TextPaintTimingDetectorTest : public RenderingTest {
       detector.ReportSwapTime(WebLayerTreeView::SwapResult::kDidSwap,
                               CurrentTimeTicks());
     }
+  }
+
+  void SimulateAnalyze() {
+    GetPaintTracker().GetTextPaintTimingDetector().Analyze();
   }
 };
 
@@ -72,6 +84,34 @@ TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_LargestText) {
                            .GetTextPaintTimingDetector()
                            .FindLargestPaintCandidate();
   EXPECT_EQ(record->text, "a long-long-long text");
+}
+
+TEST_F(TextPaintTimingDetectorTest, UpdateResultWhenCandidateChanged) {
+  TimeTicks time1 = CurrentTimeTicks();
+  SetBodyInnerHTML(R"HTML(
+    <div>small text</div>
+  )HTML");
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  SimulateAnalyze();
+  TimeTicks time2 = CurrentTimeTicks();
+  TimeTicks first_largest = LargestPaintStoredResult();
+  TimeTicks first_last = LastPaintStoredResult();
+  EXPECT_GE(first_largest, time1);
+  EXPECT_GE(time2, first_largest);
+  EXPECT_GE(first_last, time1);
+  EXPECT_GE(time2, first_last);
+
+  Text* larger_text = GetDocument().createTextNode("a long-long-long text");
+  GetDocument().body()->AppendChild(larger_text);
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  SimulateAnalyze();
+  TimeTicks time3 = CurrentTimeTicks();
+  TimeTicks second_largest = LargestPaintStoredResult();
+  TimeTicks second_last = LastPaintStoredResult();
+  EXPECT_GE(second_largest, time2);
+  EXPECT_GE(time3, second_largest);
+  EXPECT_GE(second_last, time2);
+  EXPECT_GE(time3, second_last);
 }
 
 TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_ReportFirstPaintTime) {

@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_tracker.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -75,23 +76,52 @@ IntRect TextPaintTimingDetector::CalculateTransformedRect(
   return invalidated_rect_in_viewport;
 }
 
-void TextPaintTimingDetector::TimerFired(TimerBase* timer) {
-  if (TextRecord* largest_text_first_paint = FindLargestPaintCandidate()) {
-    std::unique_ptr<TracedValue> value = TracedValue::Create();
-    PopulateTraceValue(*value, *largest_text_first_paint,
-                       largest_text_candidate_index_max_++);
-    TRACE_EVENT_INSTANT_WITH_TIMESTAMP1(
-        "loading", "LargestTextPaint::Candidate", TRACE_EVENT_SCOPE_THREAD,
-        largest_text_first_paint->first_paint_time, "data", std::move(value));
+void TextPaintTimingDetector::OnLargestTextDetected(
+    const TextRecord& largest_text_record) {
+  largest_text_paint_ = largest_text_record.first_paint_time;
+
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
+  PopulateTraceValue(*value, largest_text_record,
+                     largest_text_candidate_index_max_++);
+  TRACE_EVENT_INSTANT_WITH_TIMESTAMP1(
+      "loading", "LargestTextPaint::Candidate", TRACE_EVENT_SCOPE_THREAD,
+      largest_text_paint_, "data", std::move(value));
+}
+
+void TextPaintTimingDetector::OnLastTextDetected(
+    const TextRecord& last_text_record) {
+  last_text_paint_ = last_text_record.first_paint_time;
+
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
+  PopulateTraceValue(*value, last_text_record,
+                     last_text_candidate_index_max_++);
+  TRACE_EVENT_INSTANT_WITH_TIMESTAMP1(
+      "loading", "LastTextPaint::Candidate", TRACE_EVENT_SCOPE_THREAD,
+      last_text_paint_, "data", std::move(value));
+}
+
+void TextPaintTimingDetector::TimerFired(TimerBase* time) {
+  // Wrap Analyze method in TimerFired so that we can drop |time| for Analyze
+  // in testing.
+  Analyze();
+}
+
+void TextPaintTimingDetector::Analyze() {
+  TextRecord* largest_text_first_paint = FindLargestPaintCandidate();
+  bool new_candidate_detected = false;
+  if (largest_text_first_paint &&
+      largest_text_first_paint->first_paint_time != largest_text_paint_) {
+    OnLargestTextDetected(*largest_text_first_paint);
+    new_candidate_detected = true;
   }
-  if (TextRecord* last_text_first_paint = FindLastPaintCandidate()) {
-    std::unique_ptr<TracedValue> value = TracedValue::Create();
-    PopulateTraceValue(*value, *last_text_first_paint,
-                       last_text_candidate_index_max_++);
-    TRACE_EVENT_INSTANT_WITH_TIMESTAMP1(
-        "loading", "LastTextPaint::Candidate", TRACE_EVENT_SCOPE_THREAD,
-        last_text_first_paint->first_paint_time, "data", std::move(value));
+  TextRecord* last_text_first_paint = FindLastPaintCandidate();
+  if (last_text_first_paint &&
+      last_text_first_paint->first_paint_time != last_text_paint_) {
+    OnLastTextDetected(*last_text_first_paint);
+    new_candidate_detected = true;
   }
+  if (new_candidate_detected)
+    frame_view_->GetPaintTracker().DidChangePerformanceTiming();
 }
 
 void TextPaintTimingDetector::OnPrePaintFinished() {

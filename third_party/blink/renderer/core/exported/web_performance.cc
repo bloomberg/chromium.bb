@@ -183,6 +183,14 @@ double WebPerformance::LastImagePaint() const {
   return MillisecondsToSeconds(private_->timing()->LastImagePaint());
 }
 
+double WebPerformance::LargestTextPaint() const {
+  return MillisecondsToSeconds(private_->timing()->LargestTextPaint());
+}
+
+double WebPerformance::LastTextPaint() const {
+  return MillisecondsToSeconds(private_->timing()->LastTextPaint());
+}
+
 double WebPerformance::PageInteractive() const {
   return MillisecondsToSeconds(private_->timing()->PageInteractive());
 }

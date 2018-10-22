@@ -94,6 +94,8 @@ class WebPerformance {
   BLINK_EXPORT double FirstMeaningfulPaintCandidate() const;
   BLINK_EXPORT double LargestImagePaint() const;
   BLINK_EXPORT double LastImagePaint() const;
+  BLINK_EXPORT double LargestTextPaint() const;
+  BLINK_EXPORT double LastTextPaint() const;
   BLINK_EXPORT double PageInteractive() const;
   BLINK_EXPORT double PageInteractiveDetection() const;
   BLINK_EXPORT double FirstInputInvalidatingInteractive() const;
