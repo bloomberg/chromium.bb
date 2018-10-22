@@ -275,11 +275,10 @@ your "gn args".
 
 ### Source level debug with -fdebug-compilation-dir
 
-When you enable GN config `strip_absolute_paths_from_debug_symbols`, this is
-enabled by default for goma on Linux build, you need to add following command
-to your `~/.gdbinit` for source level debugging to load customized
-[gdbinit](../tools/gdb/gdbinit) or copy the content of the file to your
-`~/.gdbinit`.
+When `strip_absolute_paths_from_debug_symbols` is enabled (which is the
+default) you need to add following command to your `~/.gdbinit` for source
+level debugging to load customized [gdbinit](../tools/gdb/gdbinit) or copy the
+content of the file to your `~/.gdbinit`.
 
 ```
 source path/to/chromium/src/tools/gdb/gdbinit
