@@ -41,7 +41,6 @@ is_official_build = true
 dcheck_always_on = true
 is_component_build = false
 is_debug = false
-strip_absolute_paths_from_debug_symbols = true
 blink_symbol_level = 1
 symbol_level = 1
 
