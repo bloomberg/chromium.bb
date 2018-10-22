@@ -645,11 +645,6 @@ class WebMediaPlayerMSTest
     return std::move(surface_layer_bridge_);
   }
 
-  std::unique_ptr<blink::WebVideoFrameSubmitter>
-  CreateWebMockVideoFrameSubmitter() {
-    return std::move(submitter_);
-  }
-
   base::test::ScopedTaskEnvironment task_environment_;
   MockRenderFactory* render_factory_;
   std::unique_ptr<media::MockGpuVideoAcceleratorFactories> gpu_factories_;
@@ -692,10 +687,7 @@ void WebMediaPlayerMSTest::InitializeWebMediaPlayerMS() {
       gpu_factories_.get(), blink::WebString(),
       base::BindOnce(&WebMediaPlayerMSTest::CreateMockSurfaceLayerBridge,
                      base::Unretained(this)),
-      base::BindRepeating(
-          &WebMediaPlayerMSTest::CreateWebMockVideoFrameSubmitter,
-          base::Unretained(this)),
-      surface_layer_mode);
+      std::move(submitter_), surface_layer_mode);
 }
 
 MockMediaStreamVideoRenderer* WebMediaPlayerMSTest::LoadAndGetFrameProvider(
@@ -1416,7 +1408,7 @@ TEST_P(WebMediaPlayerMSTest, PictureInPictureTriggerCallback) {
   provider->QueueFrames(timestamps);
 
   EXPECT_CALL(*submitter_ptr_, StartRendering());
-  EXPECT_CALL(*this, DisplayType());
+  EXPECT_CALL(*this, DisplayType()).Times(2);
   EXPECT_CALL(*this, DoReadyStateChanged(
                          blink::WebMediaPlayer::kReadyStateHaveMetadata));
   EXPECT_CALL(*this, DoReadyStateChanged(
