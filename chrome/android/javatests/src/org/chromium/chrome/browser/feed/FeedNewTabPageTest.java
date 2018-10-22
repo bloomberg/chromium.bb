@@ -35,6 +35,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -83,10 +84,16 @@ public class FeedNewTabPageTest {
     private EmbeddedTestServer mTestServer;
     private List<SiteSuggestion> mSiteSuggestions;
 
+    private static final String TEST_FEED =
+            UrlUtils.getIsolatedTestFilePath("/chrome/test/data/android/feed/feed_large.gcl.bin");
+
     @Before
     public void setUp() throws Exception {
+        TestNetworkClient client = new TestNetworkClient();
+        client.setNetworkResponseFile(TEST_FEED);
+        FeedProcessScopeFactory.setTestNetworkClient(client);
+
         mActivityTestRule.startMainActivityWithURL("about:blank");
-        ThreadUtils.runOnUiThreadBlocking(() -> FeedNewTabPage.setInTestMode(true));
 
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mSiteSuggestions = NewTabPageTestUtils.createFakeSiteSuggestions(mTestServer);
@@ -107,7 +114,7 @@ public class FeedNewTabPageTest {
     @After
     public void tearDown() {
         mTestServer.stopAndDestroyServer();
-        ThreadUtils.runOnUiThreadBlocking(() -> FeedNewTabPage.setInTestMode(false));
+        FeedProcessScopeFactory.setTestNetworkClient(null);
     }
 
     @Test

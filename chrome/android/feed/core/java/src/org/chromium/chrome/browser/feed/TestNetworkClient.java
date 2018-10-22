@@ -25,7 +25,9 @@ import com.google.search.now.wire.feed.mockserver.MockServerProto.ConditionalRes
 import com.google.search.now.wire.feed.mockserver.MockServerProto.MockServer;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -47,6 +49,23 @@ public class TestNetworkClient implements NetworkClient {
         // TODO(aluo): Add ability to delay responses
         mResponseDelay = config.getValueOrDefault(ConfigKey.MOCK_SERVER_DELAY_MS, 0L);
         mMockServer = MockServer.getDefaultInstance();
+    }
+
+    /**
+     * Set stored protobuf responses from the filePath
+     *
+     * @param filePath The file path of the compiled MockServer proto, pass in null to use the
+     *                 default response.
+     */
+    @VisibleForTesting
+    public void setNetworkResponseFile(String filePath) throws IOException {
+        if (filePath == null) {
+            setResponseData(null);
+        } else {
+            FileInputStream fs = new FileInputStream(filePath);
+            setResponseData(fs);
+            fs.close();
+        }
     }
 
     /** Set stored protobuf responses from the InputStream
