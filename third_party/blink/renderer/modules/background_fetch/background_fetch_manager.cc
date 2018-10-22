@@ -103,7 +103,7 @@ bool ShouldBlockGateWayAttacks(ExecutionContext* execution_context,
     // all this up to //net and //content in order to have any real impact on
     // gateway attacks. That turns out to be a TON of work (crbug.com/378566).
     mojom::IPAddressSpace target_space = mojom::IPAddressSpace::kPublic;
-    if (NetworkUtils::IsReservedIPAddress(request_url.Host()))
+    if (network_utils::IsReservedIPAddress(request_url.Host()))
       target_space = mojom::IPAddressSpace::kPrivate;
     if (SecurityOrigin::Create(request_url)->IsLocalhost())
       target_space = mojom::IPAddressSpace::kLocal;

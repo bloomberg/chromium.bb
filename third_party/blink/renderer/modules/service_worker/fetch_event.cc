@@ -138,7 +138,7 @@ void FetchEvent::OnNavigationPreloadResponse(
     response_data->HeaderList()->Append(header.key, header.value);
   }
   FetchResponseData* tainted_response =
-      NetworkUtils::IsRedirectResponseCode(preload_response_->HttpStatusCode())
+      network_utils::IsRedirectResponseCode(preload_response_->HttpStatusCode())
           ? response_data->CreateOpaqueRedirectFilteredResponse()
           : response_data->CreateBasicFilteredResponse();
   preload_response_property_->Resolve(

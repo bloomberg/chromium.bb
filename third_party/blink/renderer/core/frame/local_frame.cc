@@ -1001,11 +1001,11 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
       return true;
     }
 
-    String target_domain = NetworkUtils::GetDomainAndRegistry(
+    String target_domain = network_utils::GetDomainAndRegistry(
         target_frame.GetSecurityContext()->GetSecurityOrigin()->Domain(),
-        NetworkUtils::kIncludePrivateRegistries);
-    String destination_domain = NetworkUtils::GetDomainAndRegistry(
-        destination_url.Host(), NetworkUtils::kIncludePrivateRegistries);
+        network_utils::kIncludePrivateRegistries);
+    String destination_domain = network_utils::GetDomainAndRegistry(
+        destination_url.Host(), network_utils::kIncludePrivateRegistries);
     if (!target_domain.IsEmpty() && !destination_domain.IsEmpty() &&
         target_domain == destination_domain) {
       return true;

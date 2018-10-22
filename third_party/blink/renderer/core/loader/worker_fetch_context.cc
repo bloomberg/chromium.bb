@@ -383,7 +383,8 @@ void WorkerFetchContext::DispatchDidFail(const KURL& url,
                                          int64_t encoded_data_length,
                                          bool is_internal_request) {
   probe::didFailLoading(global_scope_, identifier, nullptr, error);
-  if (NetworkUtils::IsCertificateTransparencyRequiredError(error.ErrorCode())) {
+  if (network_utils::IsCertificateTransparencyRequiredError(
+          error.ErrorCode())) {
     CountUsage(WebFeature::kCertificateTransparencyRequiredErrorOnResourceLoad);
   }
 }

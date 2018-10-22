@@ -170,7 +170,7 @@ void WorkerClassicScriptLoader::DidReceiveResponse(
   origin_trial_tokens_ = OriginTrialContext::ParseHeaderValue(
       response.HttpHeaderField(HTTPNames::Origin_Trial));
 
-  if (NetworkUtils::IsReservedIPAddress(response.RemoteIPAddress())) {
+  if (network_utils::IsReservedIPAddress(response.RemoteIPAddress())) {
     response_address_space_ =
         SecurityOrigin::Create(response_url_)->IsLocalhost()
             ? mojom::IPAddressSpace::kLocal

@@ -727,7 +727,7 @@ bool FrameLoader::PrepareRequestForThisFrame(FrameLoadRequest& request) {
           request.OriginDocument()->Url()) &&
       (url.ProtocolIs("filesystem") ||
        (url.ProtocolIsData() &&
-        NetworkUtils::IsDataURLMimeTypeSupported(url)))) {
+        network_utils::IsDataURLMimeTypeSupported(url)))) {
     frame_->GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
         kSecurityMessageSource, kErrorMessageLevel,
         "Not allowed to navigate top frame to " + url.Protocol() +

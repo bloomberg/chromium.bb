@@ -168,7 +168,7 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
   // https://crbug.com/590714
   KURL script_url = worker_start_data_.script_url;
   worker_start_data_.address_space = mojom::IPAddressSpace::kPublic;
-  if (NetworkUtils::IsReservedIPAddress(script_url.Host()))
+  if (network_utils::IsReservedIPAddress(script_url.Host()))
     worker_start_data_.address_space = mojom::IPAddressSpace::kPrivate;
   if (SecurityOrigin::Create(script_url)->IsLocalhost())
     worker_start_data_.address_space = mojom::IPAddressSpace::kLocal;
