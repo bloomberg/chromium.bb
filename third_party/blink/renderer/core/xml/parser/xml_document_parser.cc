@@ -866,8 +866,7 @@ static inline void HandleNamespaceAttributes(
           WTF::g_xmlns_with_colon + ToAtomicString(namespaces[i].prefix);
 
     QualifiedName parsed_name = g_any_name;
-    if (!Element::ParseAttributeName(parsed_name,
-                                     xmlns_names::xmlnsNamespaceURI,
+    if (!Element::ParseAttributeName(parsed_name, xmlns_names::kNamespaceURI,
                                      namespace_q_name, exception_state))
       return;
 

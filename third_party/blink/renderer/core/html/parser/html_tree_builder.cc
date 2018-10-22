@@ -525,7 +525,7 @@ static void AdjustForeignAttributes(AtomicHTMLToken* token) {
 
     map->insert(WTF::g_xmlns_atom, xmlns_names::kXmlnsAttr);
     map->insert("xmlns:xlink", QualifiedName(g_xmlns_atom, g_xlink_atom,
-                                             xmlns_names::xmlnsNamespaceURI));
+                                             xmlns_names::kNamespaceURI));
   }
 
   for (unsigned i = 0; i < token->Attributes().size(); ++i) {
