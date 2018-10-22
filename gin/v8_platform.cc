@@ -114,7 +114,13 @@ base::LazyInstance<EnabledStateObserverImpl>::Leaky g_trace_state_dispatcher =
 // TODO(skyostil): Deduplicate this with the clamper in Blink.
 class TimeClamper {
  public:
-  static constexpr double kResolutionSeconds = 0.001;
+// As site isolation is enabled on desktop platforms, we can safely provide
+// more timing resolution. Jittering is still enabled everywhere.
+#if defined(OS_ANDROID)
+  static constexpr double kResolutionSeconds = 100e-6;
+#else
+  static constexpr double kResolutionSeconds = 5e-6;
+#endif
 
   TimeClamper() : secret_(base::RandUint64()) {}
 
