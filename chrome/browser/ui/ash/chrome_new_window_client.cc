@@ -289,10 +289,16 @@ void ChromeNewWindowClient::OpenUrlFromArc(const GURL& url) {
 void ChromeNewWindowClient::OpenWebAppFromArc(const GURL& url) {
   DCHECK(url.is_valid() && url.SchemeIs(url::kHttpsScheme));
 
+  // Fetch the profile associated with ARC. This method should only be called
+  // for a |url| which was installed via ARC, and so we want the web app that is
+  // opened through here to be installed in the profile associated with ARC.
+  // |user| may be null if sign-in hasn't happened yet
   const auto* user = user_manager::UserManager::Get()->GetPrimaryUser();
   if (!user)
     return;
 
+  // |profile| may be null if sign-in has happened but the profile isn't loaded
+  // yet.
   Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
   if (!profile)
     return;

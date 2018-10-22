@@ -130,16 +130,34 @@ IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientWebAppBrowserTest, OpenWebApp) {
   const char* key =
       arc::ArcWebContentsData::ArcWebContentsData::kArcTransitionFlag;
 
-  // Calling OpenWebAppFromArc for an installed web app URL should open in an
-  // app window.
-  auto observer = GetTestNavigationObserver(app_url);
-  ChromeNewWindowClient::Get()->OpenWebAppFromArc(app_url);
-  observer->WaitForNavigationFinished();
+  {
+    // Calling OpenWebAppFromArc for a not installed HTTPS URL should open in
+    // an ordinary browser tab.
+    const GURL url("https://www.google.com");
+    auto observer = GetTestNavigationObserver(url);
+    ChromeNewWindowClient::Get()->OpenWebAppFromArc(url);
+    observer->WaitForNavigationFinished();
 
-  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
-  EXPECT_TRUE(GetLastActiveBrowser()->is_app());
-  content::WebContents* contents =
-      GetLastActiveBrowser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_EQ(app_url, contents->GetLastCommittedURL());
-  EXPECT_NE(nullptr, contents->GetUserData(key));
+    EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+    EXPECT_FALSE(GetLastActiveBrowser()->is_app());
+    content::WebContents* contents =
+        GetLastActiveBrowser()->tab_strip_model()->GetActiveWebContents();
+    EXPECT_EQ(url, contents->GetLastCommittedURL());
+    EXPECT_NE(nullptr, contents->GetUserData(key));
+  }
+
+  {
+    // Calling OpenWebAppFromArc for an installed web app URL should open in an
+    // app window.
+    auto observer = GetTestNavigationObserver(app_url);
+    ChromeNewWindowClient::Get()->OpenWebAppFromArc(app_url);
+    observer->WaitForNavigationFinished();
+
+    EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
+    EXPECT_TRUE(GetLastActiveBrowser()->is_app());
+    content::WebContents* contents =
+        GetLastActiveBrowser()->tab_strip_model()->GetActiveWebContents();
+    EXPECT_EQ(app_url, contents->GetLastCommittedURL());
+    EXPECT_NE(nullptr, contents->GetUserData(key));
+  }
 }
