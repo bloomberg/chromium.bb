@@ -11,6 +11,12 @@
 #include "cc/raster/raster_buffer_provider.h"
 #include "gpu/command_buffer/common/sync_token.h"
 
+namespace gpu {
+namespace raster {
+class RasterInterface;
+}  // namespace raster
+}  // namespace gpu
+
 namespace viz {
 class ContextProvider;
 class RasterContextProvider;
@@ -47,6 +53,7 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
       const base::Closure& callback,
       uint64_t pending_callback_id) const override;
   void Shutdown() override;
+  bool CheckRasterFinishedQueries() override;
 
   gpu::SyncToken PlaybackOnWorkerThread(
       gpu::Mailbox* mailbox,
@@ -117,6 +124,16 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
   const gfx::Size max_tile_size_;
   const bool unpremultiply_and_dither_low_bit_depth_tiles_;
   const bool enable_oop_rasterization_;
+
+  struct PendingRasterQuery {
+    // The id for querying the duration in executing the GPU side work.
+    GLuint query_id = 0u;
+
+    // The duration for executing the work on the raster worker thread.
+    base::TimeDelta worker_duration;
+  };
+  // This should only be accessed with the context lock acquired.
+  base::circular_deque<PendingRasterQuery> pending_raster_queries_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuRasterBufferProvider);
 };

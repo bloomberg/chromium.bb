@@ -1465,10 +1465,12 @@ void RasterDecoderImpl::BeginDecoding() {
   gpu_tracer_->BeginDecoding();
   gpu_trace_commands_ = gpu_tracer_->IsTracing() && *gpu_decoder_category_;
   gpu_debug_commands_ = log_commands() || debug() || gpu_trace_commands_;
+  query_manager_->BeginProcessingCommands();
 }
 
 void RasterDecoderImpl::EndDecoding() {
   gpu_tracer_->EndDecoding();
+  query_manager_->EndProcessingCommands();
 }
 
 const char* RasterDecoderImpl::GetCommandName(unsigned int command_id) const {

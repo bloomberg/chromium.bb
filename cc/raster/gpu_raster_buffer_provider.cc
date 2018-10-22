@@ -157,6 +157,7 @@ static void RasterizeSourceOOP(
   float recording_to_raster_scale =
       transform.scale() / raster_source->recording_scale_factor();
   gfx::Size content_size = raster_source->GetContentSize(transform.scale());
+
   // TODO(enne): could skip the clear on new textures, as the service side has
   // to do that anyway.  resource_has_previous_content implies that the texture
   // is not new, but the reverse does not hold, so more plumbing is needed.
@@ -486,22 +487,35 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThread(
         100.0f * fraction_saved);
   }
 
-  if (enable_oop_rasterization_) {
-    RasterizeSourceOOP(raster_source, resource_has_previous_content, mailbox,
-                       sync_token, texture_target, texture_is_overlay_candidate,
-                       resource_size, resource_format, color_space,
-                       raster_full_rect, playback_rect, transform,
-                       playback_settings, worker_context_provider_,
-                       msaa_sample_count_);
-  } else {
-    RasterizeSource(
-        raster_source, resource_has_previous_content, mailbox, sync_token,
-        texture_target, texture_is_overlay_candidate, resource_size,
-        resource_format, color_space, raster_full_rect, playback_rect,
-        transform, playback_settings, worker_context_provider_,
-        msaa_sample_count_,
-        ShouldUnpremultiplyAndDitherResource(resource_format), max_tile_size_);
+  // Use a query to time the GPU side work for rasterizing this tile.
+  pending_raster_queries_.emplace_back();
+  auto& query = pending_raster_queries_.back();
+  ri->GenQueriesEXT(1, &query.query_id);
+  ri->BeginQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM, query.query_id);
+
+  {
+    base::ElapsedTimer timer;
+    if (enable_oop_rasterization_) {
+      RasterizeSourceOOP(raster_source, resource_has_previous_content, mailbox,
+                         sync_token, texture_target,
+                         texture_is_overlay_candidate, resource_size,
+                         resource_format, color_space, raster_full_rect,
+                         playback_rect, transform, playback_settings,
+                         worker_context_provider_, msaa_sample_count_);
+    } else {
+      RasterizeSource(raster_source, resource_has_previous_content, mailbox,
+                      sync_token, texture_target, texture_is_overlay_candidate,
+                      resource_size, resource_format, color_space,
+                      raster_full_rect, playback_rect, transform,
+                      playback_settings, worker_context_provider_,
+                      msaa_sample_count_,
+                      ShouldUnpremultiplyAndDitherResource(resource_format),
+                      max_tile_size_);
+    }
+    query.worker_duration = timer.Elapsed();
   }
+
+  ri->EndQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM);
 
   // Generate sync token for cross context synchronization.
   return viz::ClientResourceProvider::GenerateSyncTokenHelper(ri);
@@ -515,6 +529,54 @@ bool GpuRasterBufferProvider::ShouldUnpremultiplyAndDitherResource(
     default:
       return false;
   }
+}
+
+#define UMA_HISTOGRAM_RASTER_TIME_CUSTOM_MICROSECONDS(name, total_time) \
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(                              \
+      name, total_time, base::TimeDelta::FromMicroseconds(1),           \
+      base::TimeDelta::FromMilliseconds(100), 100);
+
+bool GpuRasterBufferProvider::CheckRasterFinishedQueries() {
+  viz::RasterContextProvider::ScopedRasterContextLock scoped_context(
+      worker_context_provider_);
+  auto* ri = scoped_context.RasterInterface();
+
+  auto it = pending_raster_queries_.begin();
+  while (it != pending_raster_queries_.end()) {
+    GLuint complete = 1;
+    ri->GetQueryObjectuivEXT(it->query_id,
+                             GL_QUERY_RESULT_AVAILABLE_NO_FLUSH_CHROMIUM_EXT,
+                             &complete);
+    if (!complete)
+      break;
+
+    GLuint gpu_duration = 0u;
+    ri->GetQueryObjectuivEXT(it->query_id, GL_QUERY_RESULT_EXT, &gpu_duration);
+    ri->DeleteQueriesEXT(1, &it->query_id);
+
+    base::TimeDelta total_time =
+        it->worker_duration + base::TimeDelta::FromMicroseconds(gpu_duration);
+
+    // It is safe to use the UMA macros here with runtime generated strings
+    // because the client name should be initialized once in the process, before
+    // recording any metrics here.
+    const char* client_name = GetClientNameForMetrics();
+    if (enable_oop_rasterization_) {
+      UMA_HISTOGRAM_RASTER_TIME_CUSTOM_MICROSECONDS(
+          base::StringPrintf("Renderer4.%s.RasterTaskTotalDuration.Oop",
+                             client_name),
+          total_time);
+    } else {
+      UMA_HISTOGRAM_RASTER_TIME_CUSTOM_MICROSECONDS(
+          base::StringPrintf("Renderer4.%s.RasterTaskTotalDuration.Gpu",
+                             client_name),
+          total_time);
+    }
+
+    it = pending_raster_queries_.erase(it);
+  }
+
+  return pending_raster_queries_.size() > 0u;
 }
 
 }  // namespace cc
