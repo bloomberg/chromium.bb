@@ -499,6 +499,10 @@ void MenuController::Run(Widget* parent,
 }
 
 void MenuController::Cancel(ExitType type) {
+#if defined(OS_MACOSX)
+  menu_closure_animation_.reset();
+#endif
+
   // If the menu has already been destroyed, no further cancellation is
   // needed.  We especially don't want to set the |exit_type_| to a lesser
   // value.
@@ -2608,8 +2612,11 @@ void MenuController::RepostEventAndCancel(SubmenuView* source,
       exit_type = EXIT_OUTERMOST;
   }
 #if defined(OS_MACOSX)
+  SubmenuView* target = exit_type == EXIT_ALL
+                            ? source
+                            : state_.item->GetRootMenuItem()->GetSubmenu();
   menu_closure_animation_ = std::make_unique<MenuClosureAnimationMac>(
-      nullptr, source,
+      nullptr, target,
       base::BindOnce(&MenuController::Cancel, base::Unretained(this),
                      exit_type));
   menu_closure_animation_->Start();
