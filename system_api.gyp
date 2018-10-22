@@ -424,5 +424,28 @@
         '<(SHARED_INTERMEDIATE_DIR)/include/bootlockbox/proto_bindings/boot_lockbox_rpc.pb.cc',
       ],
     },
+    {
+      'target_name': 'system_api-dlcservice-protos-gen',
+      'type': 'none',
+      'variables': {
+        'proto_in_dir': 'dbus/dlcservice',
+        'proto_out_dir': 'include/dlcservice/proto_bindings',
+      },
+      'sources': [
+        '<(proto_in_dir)/dlcservice.proto',
+      ],
+      'includes': ['../common-mk/protoc.gypi'],
+    },
+    {
+      'target_name': 'system_api-dlcservice-protos',
+      'type': 'static_library',
+      'standalone_static_library': 1,
+      'dependencies': [
+        'system_api-dlcservice-protos-gen',
+      ],
+      'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/include/dlcservice/proto_bindings/dlcservice.pb.cc',
+      ],
+    },
   ],
 }
