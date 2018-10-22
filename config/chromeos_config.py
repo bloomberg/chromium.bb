@@ -881,7 +881,6 @@ def GeneralTemplates(site_config, ge_build_config):
       # This is the actual work we want to do.
       paygen=True,
       upload_hw_test_artifacts=False,
-      active_waterfall=waterfall.WATERFALL_SWARMING,
   )
 
   site_config.AddTemplate(
@@ -3215,7 +3214,7 @@ def PayloadBuilders(site_config, boards_dict):
           '%s-payloads' % board,
           site_config.templates.payloads,
           boards=[board],
-          luci_builder=config_lib.LUCI_BUILDER_TRY,
+          luci_builder=config_lib.LUCI_BUILDER_PROD,
       )
 
 
