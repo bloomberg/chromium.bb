@@ -167,6 +167,7 @@ class FakeNetstack : public fuchsia::netstack::Netstack {
       ::fidl::VectorPtr<::fuchsia::netstack::NetAddress> servers) override {}
   void AddEthernetDevice(
       ::fidl::StringPtr topological_path,
+      fuchsia::netstack::InterfaceConfig interfaceConfig,
       ::fidl::InterfaceHandle<::zircon::ethernet::Device> device) override {}
   void StartRouteTableTransaction(
       ::fidl::InterfaceRequest<::fuchsia::netstack::RouteTableTransaction>
