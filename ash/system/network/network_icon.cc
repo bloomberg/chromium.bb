@@ -250,12 +250,18 @@ gfx::Size GetSizeForIconType(IconType icon_type) {
   return gfx::Size(size, size);
 }
 
+int GetPaddingForIconType(IconType icon_type) {
+  if (features::IsSystemTrayUnifiedEnabled() && IsTrayIcon(icon_type))
+    return kUnifiedTrayNetworkIconPadding;
+  return kTrayNetworkIconPadding;
+}
+
 gfx::ImageSkia GetImageForIndex(ImageType image_type,
                                 IconType icon_type,
                                 int index) {
   return gfx::CanvasImageSource::MakeImageSkia<SignalStrengthImageSource>(
       image_type, GetDefaultColorForIconType(icon_type),
-      GetSizeForIconType(icon_type), index);
+      GetSizeForIconType(icon_type), index, GetPaddingForIconType(icon_type));
 }
 
 // Returns an image to represent either a fully connected network or a
