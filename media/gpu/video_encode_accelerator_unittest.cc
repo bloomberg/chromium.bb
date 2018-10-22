@@ -1743,28 +1743,19 @@ void VEAClient::InputNoLongerNeededCallback(int32_t input_id) {
 
 scoped_refptr<VideoFrame> VEAClient::CreateFrame(off_t position) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CHECK_GT(current_framerate_, 0U);
 
-  size_t num_planes = VideoFrame::NumPlanes(test_stream_->pixel_format);
-  CHECK_LE(num_planes, 3u);
-  uint8_t* frame_data[3] = {};
-  size_t plane_stride[3] = {};
-  frame_data[0] =
+  uint8_t* frame_data_y =
       reinterpret_cast<uint8_t*>(&test_stream_->aligned_in_file_data[0]) +
       position;
-  for (size_t i = 1; i < num_planes; i++) {
-    frame_data[i] = frame_data[i - 1] + test_stream_->aligned_plane_size[i - 1];
-  }
-  for (size_t i = 0; i < num_planes; i++) {
-    plane_stride[i] = VideoFrame::RowBytes(i, test_stream_->pixel_format,
-                                           input_coded_size_.width());
-  }
+  uint8_t* frame_data_u = frame_data_y + test_stream_->aligned_plane_size[0];
+  uint8_t* frame_data_v = frame_data_u + test_stream_->aligned_plane_size[1];
+  CHECK_GT(current_framerate_, 0U);
 
   scoped_refptr<VideoFrame> video_frame = VideoFrame::WrapExternalYuvData(
       test_stream_->pixel_format, input_coded_size_,
       gfx::Rect(test_stream_->visible_size), test_stream_->visible_size,
-      plane_stride[0], plane_stride[1], plane_stride[2], frame_data[0],
-      frame_data[1], frame_data[2],
+      input_coded_size_.width(), input_coded_size_.width() / 2,
+      input_coded_size_.width() / 2, frame_data_y, frame_data_u, frame_data_v,
       // Timestamp needs to avoid starting from 0.
       base::TimeDelta().FromMilliseconds((next_input_id_ + 1) *
                                          base::Time::kMillisecondsPerSecond /
@@ -2288,24 +2279,22 @@ void VEACacheLineUnalignedInputClient::FeedEncoderWithOneInput(
     return;
 
   const VideoPixelFormat pixel_format = g_env->test_streams_[0]->pixel_format;
-  size_t num_planes = VideoFrame::NumPlanes(pixel_format);
-  CHECK_LE(num_planes, 3);
   std::vector<char, AlignedAllocator<char, kPlatformBufferAlignment>>
-      aligned_data[3];
-  uint8_t* frame_data[3] = {};
-  uint8_t plane_stride[3] = {};
-  for (size_t i = 0; i < num_planes; i++) {
-    aligned_data[i].resize(
-        VideoFrame::PlaneSize(pixel_format, i, input_coded_size).GetArea());
-    frame_data[i] = reinterpret_cast<uint8_t*>(aligned_data[i].data());
-    plane_stride[i] =
-        VideoFrame::RowBytes(i, pixel_format, input_coded_size.width());
-  }
+      aligned_data_y, aligned_data_u, aligned_data_v;
+  aligned_data_y.resize(
+      VideoFrame::PlaneSize(pixel_format, 0, input_coded_size).GetArea());
+  aligned_data_u.resize(
+      VideoFrame::PlaneSize(pixel_format, 1, input_coded_size).GetArea());
+  aligned_data_v.resize(
+      VideoFrame::PlaneSize(pixel_format, 2, input_coded_size).GetArea());
+  uint8_t* frame_data_y = reinterpret_cast<uint8_t*>(&aligned_data_y[0]);
+  uint8_t* frame_data_u = reinterpret_cast<uint8_t*>(&aligned_data_u[0]);
+  uint8_t* frame_data_v = reinterpret_cast<uint8_t*>(&aligned_data_v[0]);
 
   scoped_refptr<VideoFrame> video_frame = VideoFrame::WrapExternalYuvData(
       pixel_format, input_coded_size, gfx::Rect(input_coded_size),
-      input_coded_size, plane_stride[0], plane_stride[1], plane_stride[2],
-      frame_data[0], frame_data[1], frame_data[2],
+      input_coded_size, input_coded_size.width(), input_coded_size.width() / 2,
+      input_coded_size.width() / 2, frame_data_y, frame_data_u, frame_data_v,
       base::TimeDelta().FromMilliseconds(base::Time::kMillisecondsPerSecond /
                                          fps_));
 
