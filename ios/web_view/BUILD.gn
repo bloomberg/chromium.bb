@@ -80,7 +80,7 @@ if (ios_web_view_enable_autofill) {
     "public/cwv_autofill_controller.h",
     "public/cwv_autofill_controller_delegate.h",
     "public/cwv_autofill_data_manager.h",
-    "public/cwv_autofill_data_manager_delegate.h",
+    "public/cwv_autofill_data_manager_observer.h",
     "public/cwv_autofill_profile.h",
     "public/cwv_autofill_suggestion.h",
     "public/cwv_credit_card.h",
