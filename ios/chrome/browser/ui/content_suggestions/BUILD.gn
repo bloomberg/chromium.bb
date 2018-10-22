@@ -46,6 +46,7 @@ source_set("content_suggestions") {
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui:notifications",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/collection_view/cells",

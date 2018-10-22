@@ -192,6 +192,8 @@
       [[ContentSuggestionsHeaderSynchronizer alloc]
           initWithCollectionController:self.suggestionsViewController
                       headerController:self.headerController];
+  self.NTPMediator.headerCollectionInteractionHandler =
+      self.headerCollectionInteractionHandler;
 }
 
 - (void)stop {

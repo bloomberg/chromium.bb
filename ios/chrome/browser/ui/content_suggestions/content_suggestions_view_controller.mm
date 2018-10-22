@@ -38,7 +38,9 @@ const CGFloat kCardBorderRadius = 11;
 
 }
 
-@interface ContentSuggestionsViewController ()<UIGestureRecognizerDelegate>
+@interface ContentSuggestionsViewController ()<UIGestureRecognizerDelegate> {
+  CGFloat _initialContentOffset;
+}
 
 @property(nonatomic, strong)
     ContentSuggestionsCollectionUpdater* collectionUpdater;
@@ -68,6 +70,7 @@ const CGFloat kCardBorderRadius = 11;
   self = [super initWithLayout:layout style:style];
   if (self) {
     _collectionUpdater = [[ContentSuggestionsCollectionUpdater alloc] init];
+    _initialContentOffset = NAN;
   }
   return self;
 }
@@ -185,6 +188,14 @@ const CGFloat kCardBorderRadius = 11;
   [self.overscrollActionsController clear];
 }
 
+- (void)setContentOffset:(CGFloat)offset {
+  _initialContentOffset = offset;
+  if (self.isViewLoaded && self.collectionView.window &&
+      self.collectionView.contentSize.height != 0) {
+    [self applyContentOffset];
+  }
+}
+
 + (NSString*)collectionAccessibilityIdentifier {
   return @"ContentSuggestionsCollectionIdentifier";
 }
@@ -257,6 +268,11 @@ const CGFloat kCardBorderRadius = 11;
   // presented (e.g. rotation on stack view).
   [self correctMissingSafeArea];
   [self updateConstraints];
+}
+
+- (void)viewDidLayoutSubviews {
+  [super viewDidLayoutSubviews];
+  [self applyContentOffset];
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
@@ -678,6 +694,27 @@ const CGFloat kCardBorderRadius = 11;
       [self.collectionUpdater addEmptyItemForSection:section];
   if (emptyItem)
     [self.collectionView insertItemsAtIndexPaths:@[ emptyItem ]];
+}
+
+// Sets the collectionView's contentOffset if |_initialContentOffset| is set.
+- (void)applyContentOffset {
+  if (!isnan(_initialContentOffset)) {
+    UICollectionView* collection = self.collectionView;
+    // Don't set the offset such as the content of the collection is smaller
+    // than the part of the collection which should be displayed with that
+    // offset, taking into account the size of the toolbar.
+    CGFloat offset =
+        MAX(0, MIN(_initialContentOffset, collection.contentSize.height -
+                                              collection.bounds.size.height -
+                                              ntp_header::ToolbarHeight() +
+                                              collection.contentInset.bottom));
+    if (collection.contentOffset.y != offset) {
+      collection.contentOffset = CGPointMake(0, offset);
+      // Update the constraints in case the omnibox needs to be moved.
+      [self updateConstraints];
+    }
+  }
+  _initialContentOffset = NAN;
 }
 
 @end

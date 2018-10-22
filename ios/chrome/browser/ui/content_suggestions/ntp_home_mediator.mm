@@ -25,6 +25,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_alert_factory.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_synchronizer.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recorder.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
@@ -35,6 +36,7 @@
 #include "ios/chrome/browser/ui/ntp/metrics.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -162,6 +164,7 @@ const char kNTPHelpURL[] =
   _searchEngineObserver.reset();
   DCHECK(_webStateObserver);
   if (_webState) {
+    [self saveContentOffsetForWebState:_webState];
     _webState->RemoveObserver(_webStateObserver.get());
     _webStateObserver.reset();
   }
@@ -186,23 +189,7 @@ const char kNTPHelpURL[] =
   if (!success)
     return;
 
-  web::NavigationManager* navigationManager = webState->GetNavigationManager();
-  web::NavigationItem* item = navigationManager->GetVisibleItem();
-  if (item && item->GetPageDisplayState().scroll_state().offset_y() > 0) {
-    CGFloat offset = item->GetPageDisplayState().scroll_state().offset_y();
-    UICollectionView* collection =
-        self.suggestionsViewController.collectionView;
-    // Don't set the offset such as the content of the collection is smaller
-    // than the part of the collection which should be displayed with that
-    // offset, taking into account the size of the toolbar.
-    offset = MAX(0, MIN(offset, collection.contentSize.height -
-                                    collection.bounds.size.height -
-                                    ntp_header::ToolbarHeight() +
-                                    collection.contentInset.bottom));
-    collection.contentOffset = CGPointMake(0, offset);
-    // Update the constraints in case the omnibox needs to be moved.
-    [self.suggestionsViewController updateConstraints];
-  }
+  [self setContentOffsetForWebState:webState];
 }
 
 - (void)webStateDestroyed:(web::WebState*)webState {
@@ -573,6 +560,40 @@ const char kNTPHelpURL[] =
   message.action = action;
   message.category = @"MostVisitedUndo";
   [self.dispatcher showSnackbarMessage:message];
+}
+
+// Save the NTP scroll offset into the last committed navigation item for the
+// before we navigate away.
+- (void)saveContentOffsetForWebState:(web::WebState*)webState {
+  if (webState->GetLastCommittedURL().GetOrigin() != kChromeUINewTabURL)
+    return;
+
+  if (!base::FeatureList::IsEnabled(kBrowserContainerContainsNTP))
+    return;
+
+  web::NavigationManager* manager = webState->GetNavigationManager();
+  web::NavigationItem* item = manager->GetLastCommittedItem();
+  web::PageDisplayState displayState;
+  CGPoint scrollOffset =
+      self.suggestionsViewController.collectionView.contentOffset;
+  scrollOffset.y -=
+      self.headerCollectionInteractionHandler.collectionShiftingOffset;
+  displayState.scroll_state().set_offset_x(scrollOffset.x);
+  displayState.scroll_state().set_offset_y(scrollOffset.y);
+  item->SetPageDisplayState(displayState);
+}
+
+// Set the NTP scroll offset for the current navigation item.
+- (void)setContentOffsetForWebState:(web::WebState*)webState {
+  if (webState->GetVisibleURL().GetOrigin() != kChromeUINewTabURL) {
+    return;
+  }
+  web::NavigationManager* navigationManager = webState->GetNavigationManager();
+  web::NavigationItem* item = navigationManager->GetVisibleItem();
+  if (item && item->GetPageDisplayState().scroll_state().offset_y() > 0) {
+    CGFloat offset = item->GetPageDisplayState().scroll_state().offset_y();
+    [self.suggestionsViewController setContentOffset:offset];
+  }
 }
 
 @end
