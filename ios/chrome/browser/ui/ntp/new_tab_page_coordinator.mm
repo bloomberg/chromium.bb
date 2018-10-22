@@ -81,6 +81,7 @@
 #pragma mark - Properties
 
 - (UIViewController*)viewController {
+  [self start];
   if (self.browserState->IsOffTheRecord()) {
     return self.incognitoViewController;
   } else {

@@ -16,9 +16,7 @@
 #include "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_controller_delegate.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
@@ -37,14 +35,6 @@
 namespace {
 const char kTestURL[] = "http://foo.bar";
 }  // namespace
-
-@protocol NewTabPageTabDispatcher<ApplicationCommands,
-                                  BrowserCommands,
-                                  OmniboxFocuser,
-                                  FakeboxFocuser,
-                                  SnackbarCommands,
-                                  UrlLoader>
-@end
 
 // Test fixture for testing NewTabPageTabHelper class.
 class NewTabPageTabHelperTest : public PlatformTest {
@@ -74,11 +64,6 @@ class NewTabPageTabHelperTest : public PlatformTest {
     test_web_state_.SetBrowserState(chrome_browser_state_.get());
 
     delegate_ = OCMProtocolMock(@protocol(NewTabPageTabHelperDelegate));
-    loader_ = OCMProtocolMock(@protocol(UrlLoader));
-    toolbar_delegate_ =
-        OCMProtocolMock(@protocol(NewTabPageControllerDelegate));
-    dispatcher_ = OCMProtocolMock(@protocol(NewTabPageTabDispatcher));
-    web_state_list_ = std::make_unique<WebStateList>(&web_state_list_delegate_);
   }
 
   NewTabPageTabHelper* tab_helper() {
@@ -86,14 +71,9 @@ class NewTabPageTabHelperTest : public PlatformTest {
   }
 
   void CreateTabHelper() {
-    NewTabPageTabHelper::CreateForWebState(
-        &test_web_state_, web_state_list_.get(), delegate_, loader_,
-        toolbar_delegate_, dispatcher_);
+    NewTabPageTabHelper::CreateForWebState(&test_web_state_, delegate_);
   }
 
-  id dispatcher_;
-  id toolbar_delegate_;
-  id loader_;
   id delegate_;
   web::TestWebThreadBundle thread_bundle_;
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
