@@ -75,10 +75,12 @@ void WaitWithoutBlockingObserver(WaitableEvent* event) {
   event->Wait();
 }
 
-class TaskSchedulerWorkerPoolImplTestBase {
+class TaskSchedulerWorkerPoolImplTestBase
+    : public SchedulerWorkerPool::Delegate {
  protected:
   TaskSchedulerWorkerPoolImplTestBase()
-      : service_thread_("TaskSchedulerServiceThread"){};
+      : service_thread_("TaskSchedulerServiceThread"),
+        tracked_ref_factory_(this){};
 
   void CommonSetUp(TimeDelta suggested_reclaim_time = TimeDelta::Max()) {
     CreateAndStartWorkerPool(suggested_reclaim_time, kMaxTasks);
@@ -89,6 +91,7 @@ class TaskSchedulerWorkerPoolImplTestBase {
     task_tracker_.FlushForTesting();
     if (worker_pool_)
       worker_pool_->JoinForTesting();
+    worker_pool_.reset();
   }
 
   void CreateWorkerPool() {
@@ -97,7 +100,8 @@ class TaskSchedulerWorkerPoolImplTestBase {
     delayed_task_manager_.Start(service_thread_.task_runner());
     worker_pool_ = std::make_unique<SchedulerWorkerPoolImpl>(
         "TestWorkerPool", "A", ThreadPriority::NORMAL,
-        task_tracker_.GetTrackedRef(), &delayed_task_manager_);
+        task_tracker_.GetTrackedRef(), &delayed_task_manager_,
+        tracked_ref_factory_.GetTrackedRef());
     ASSERT_TRUE(worker_pool_);
   }
 
@@ -118,11 +122,15 @@ class TaskSchedulerWorkerPoolImplTestBase {
 
   Thread service_thread_;
   TaskTracker task_tracker_ = {"Test"};
-
   std::unique_ptr<SchedulerWorkerPoolImpl> worker_pool_;
+  DelayedTaskManager delayed_task_manager_;
+  TrackedRefFactory<SchedulerWorkerPool::Delegate> tracked_ref_factory_;
 
  private:
-  DelayedTaskManager delayed_task_manager_;
+  // SchedulerWorkerPool::Delegate:
+  void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override {
+    worker_pool_->ReEnqueueSequence(std::move(sequence));
+  }
 
   DISALLOW_COPY_AND_ASSIGN(TaskSchedulerWorkerPoolImplTestBase);
 };
@@ -1314,28 +1322,43 @@ TEST_F(TaskSchedulerWorkerPoolBlockingTest,
   EXPECT_EQ(worker_pool_->GetMaxTasksForTesting(), kMaxTasks);
 }
 
+class TaskSchedulerWorkerPoolOverCapacityTest
+    : public TaskSchedulerWorkerPoolImplTestBase,
+      public testing::Test {
+ public:
+  TaskSchedulerWorkerPoolOverCapacityTest() = default;
+
+  void SetUp() override {
+    CreateAndStartWorkerPool(kReclaimTimeForCleanupTests, kLocalMaxTasks);
+    task_runner_ = worker_pool_->CreateTaskRunnerWithTraits(
+        {MayBlock(), WithBaseSyncPrimitives()});
+  }
+
+  void TearDown() override {
+    TaskSchedulerWorkerPoolImplTestBase::CommonTearDown();
+  }
+
+ protected:
+  scoped_refptr<TaskRunner> task_runner_;
+  static constexpr size_t kLocalMaxTasks = 3;
+
+  void CreateWorkerPool() {
+    ASSERT_FALSE(worker_pool_);
+    service_thread_.Start();
+    delayed_task_manager_.Start(service_thread_.task_runner());
+    worker_pool_ = std::make_unique<SchedulerWorkerPoolImpl>(
+        "OverCapacityTestWorkerPool", "A", ThreadPriority::NORMAL,
+        task_tracker_.GetTrackedRef(), &delayed_task_manager_,
+        tracked_ref_factory_.GetTrackedRef());
+    ASSERT_TRUE(worker_pool_);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(TaskSchedulerWorkerPoolOverCapacityTest);
+};
+
 // Verify that workers that become idle due to the pool being over capacity will
 // eventually cleanup.
-TEST(TaskSchedulerWorkerPoolOverCapacityTest, VerifyCleanup) {
-  constexpr size_t kLocalMaxTasks = 3;
-
-  TaskTracker task_tracker("Test");
-  DelayedTaskManager delayed_task_manager;
-  scoped_refptr<TaskRunner> service_thread_task_runner =
-      MakeRefCounted<TestSimpleTaskRunner>();
-  delayed_task_manager.Start(service_thread_task_runner);
-  SchedulerWorkerPoolImpl worker_pool(
-      "OverCapacityTestWorkerPool", "A", ThreadPriority::NORMAL,
-      task_tracker.GetTrackedRef(), &delayed_task_manager);
-  worker_pool.Start(
-      SchedulerWorkerPoolParams(kLocalMaxTasks, kReclaimTimeForCleanupTests),
-      kLocalMaxTasks, service_thread_task_runner, nullptr,
-      SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
-
-  scoped_refptr<TaskRunner> task_runner =
-      worker_pool.CreateTaskRunnerWithTraits(
-          {MayBlock(), WithBaseSyncPrimitives()});
-
+TEST_F(TaskSchedulerWorkerPoolOverCapacityTest, VerifyCleanup) {
   WaitableEvent threads_running;
   WaitableEvent threads_continue;
   RepeatingClosure threads_running_barrier = BarrierClosure(
@@ -1357,7 +1380,7 @@ TEST(TaskSchedulerWorkerPoolOverCapacityTest, VerifyCleanup) {
       Unretained(&blocked_call_continue));
 
   for (size_t i = 0; i < kLocalMaxTasks; ++i)
-    task_runner->PostTask(FROM_HERE, closure);
+    task_runner_->PostTask(FROM_HERE, closure);
 
   threads_running.Wait();
 
@@ -1369,7 +1392,7 @@ TEST(TaskSchedulerWorkerPoolOverCapacityTest, VerifyCleanup) {
       BindOnce(&WaitableEvent::Signal, Unretained(&extra_threads_running)));
   // These tasks should run on the new threads from increasing max tasks.
   for (size_t i = 0; i < kLocalMaxTasks; ++i) {
-    task_runner->PostTask(
+    task_runner_->PostTask(
         FROM_HERE, BindOnce(
                        [](Closure* extra_threads_running_barrier,
                           WaitableEvent* extra_threads_continue) {
@@ -1381,26 +1404,25 @@ TEST(TaskSchedulerWorkerPoolOverCapacityTest, VerifyCleanup) {
   }
   extra_threads_running.Wait();
 
-  ASSERT_EQ(kLocalMaxTasks * 2, worker_pool.NumberOfWorkersForTesting());
-  EXPECT_EQ(kLocalMaxTasks * 2, worker_pool.GetMaxTasksForTesting());
+  ASSERT_EQ(kLocalMaxTasks * 2, worker_pool_->NumberOfWorkersForTesting());
+  EXPECT_EQ(kLocalMaxTasks * 2, worker_pool_->GetMaxTasksForTesting());
   blocked_call_continue.Signal();
   extra_threads_continue.Signal();
 
   // Periodically post tasks to ensure that posting tasks does not prevent
   // workers that are idle due to the pool being over capacity from cleaning up.
   for (int i = 0; i < 16; ++i) {
-    task_runner->PostDelayedTask(FROM_HERE, DoNothing(),
-                                 kReclaimTimeForCleanupTests * i * 0.5);
+    task_runner_->PostDelayedTask(FROM_HERE, DoNothing(),
+                                  kReclaimTimeForCleanupTests * i * 0.5);
   }
 
   // Note: one worker above capacity will not get cleaned up since it's on the
   // top of the idle stack.
-  worker_pool.WaitForWorkersCleanedUpForTesting(kLocalMaxTasks - 1);
-  EXPECT_EQ(kLocalMaxTasks + 1, worker_pool.NumberOfWorkersForTesting());
+  worker_pool_->WaitForWorkersCleanedUpForTesting(kLocalMaxTasks - 1);
+  EXPECT_EQ(kLocalMaxTasks + 1, worker_pool_->NumberOfWorkersForTesting());
 
   threads_continue.Signal();
-
-  worker_pool.JoinForTesting();
+  task_tracker_.FlushForTesting();
 }
 
 // Verify that the maximum number of workers is 256 and that hitting the max

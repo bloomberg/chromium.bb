@@ -63,7 +63,8 @@ TaskSchedulerImpl::TaskSchedulerImpl(
           BindRepeating(&TaskSchedulerImpl::ReportHeartbeatMetrics,
                         Unretained(this)))),
       single_thread_task_runner_manager_(task_tracker_->GetTrackedRef(),
-                                         &delayed_task_manager_) {
+                                         &delayed_task_manager_),
+      tracked_ref_factory_(this) {
   DCHECK(!histogram_label.empty());
 
   static_assert(arraysize(environment_to_worker_pool_) == ENVIRONMENT_COUNT,
@@ -84,7 +85,8 @@ TaskSchedulerImpl::TaskSchedulerImpl(
             "."),
         kEnvironmentParams[environment_type].name_suffix,
         kEnvironmentParams[environment_type].priority_hint,
-        task_tracker_->GetTrackedRef(), &delayed_task_manager_));
+        task_tracker_->GetTrackedRef(), &delayed_task_manager_,
+        tracked_ref_factory_.GetTrackedRef()));
   }
 
   // Map environment indexes to pools. |kMergeBlockingNonBlockingPools| is
@@ -107,6 +109,9 @@ TaskSchedulerImpl::~TaskSchedulerImpl() {
 #if DCHECK_IS_ON()
   DCHECK(join_for_testing_returned_.IsSet());
 #endif
+
+  // Clear |worker_pools_| to release held TrackedRefs, which block teardown.
+  worker_pools_.clear();
 }
 
 void TaskSchedulerImpl::Start(
@@ -310,6 +315,13 @@ void TaskSchedulerImpl::JoinForTesting() {
 
 void TaskSchedulerImpl::SetExecutionFenceEnabled(bool execution_fence_enabled) {
   task_tracker_->SetExecutionFenceEnabled(execution_fence_enabled);
+}
+
+void TaskSchedulerImpl::ReEnqueueSequence(scoped_refptr<Sequence> sequence) {
+  DCHECK(sequence);
+  const TaskTraits new_traits =
+      SetUserBlockingPriorityIfNeeded(sequence->traits());
+  GetWorkerPoolForTraits(new_traits)->ReEnqueueSequence(std::move(sequence));
 }
 
 SchedulerWorkerPoolImpl* TaskSchedulerImpl::GetWorkerPoolForTraits(

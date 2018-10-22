@@ -24,6 +24,17 @@ class TaskTracker;
 // Interface for a worker pool.
 class BASE_EXPORT SchedulerWorkerPool : public CanScheduleSequenceObserver {
  public:
+  // Delegate interface for SchedulerWorkerPool.
+  class BASE_EXPORT Delegate {
+   public:
+    virtual ~Delegate() = default;
+
+    // Invoked when a |sequence| is non-empty after the SchedulerWorkerPool has
+    // run a task from it. The implementation must enqueue |sequence| in the
+    // appropriate priority queue, depending on |sequence| traits.
+    virtual void ReEnqueueSequence(scoped_refptr<Sequence> sequence) = 0;
+  };
+
   ~SchedulerWorkerPool() override;
 
   // Returns a TaskRunner whose PostTask invocations result in scheduling tasks
@@ -49,6 +60,9 @@ class BASE_EXPORT SchedulerWorkerPool : public CanScheduleSequenceObserver {
   // Resets the worker pool in TLS.
   void UnbindFromCurrentThread();
 
+  // Returns true if the worker pool is registered in TLS.
+  bool IsBoundToCurrentThread() const;
+
   // Prevents new tasks from starting to run and waits for currently running
   // tasks to complete their execution. It is guaranteed that no thread will do
   // work on behalf of this SchedulerWorkerPool after this returns. It is
@@ -57,9 +71,15 @@ class BASE_EXPORT SchedulerWorkerPool : public CanScheduleSequenceObserver {
   // task during JoinForTesting(). This can only be called once.
   virtual void JoinForTesting() = 0;
 
+  // Enqueues |sequence| in the worker pool's priority queue, then wakes up a
+  // worker if the worker pool is not bound to the current thread, i.e. if
+  // |sequence| is changing pools.
+  virtual void ReEnqueueSequence(scoped_refptr<Sequence> sequence) = 0;
+
  protected:
   SchedulerWorkerPool(TrackedRef<TaskTracker> task_tracker,
-                      DelayedTaskManager* delayed_task_manager);
+                      DelayedTaskManager* delayed_task_manager,
+                      TrackedRef<Delegate> delegate);
 
   // Posts |task| to be executed by this SchedulerWorkerPool as part of
   // |sequence|. This must only be called after |task| has gone through
@@ -68,6 +88,7 @@ class BASE_EXPORT SchedulerWorkerPool : public CanScheduleSequenceObserver {
 
   const TrackedRef<TaskTracker> task_tracker_;
   DelayedTaskManager* const delayed_task_manager_;
+  const TrackedRef<Delegate> delegate_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SchedulerWorkerPool);

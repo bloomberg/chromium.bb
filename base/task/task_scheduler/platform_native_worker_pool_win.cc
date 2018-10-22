@@ -11,8 +11,11 @@ namespace internal {
 
 PlatformNativeWorkerPoolWin::PlatformNativeWorkerPoolWin(
     TrackedRef<TaskTracker> task_tracker,
-    DelayedTaskManager* delayed_task_manager)
-    : SchedulerWorkerPool(task_tracker, delayed_task_manager) {}
+    DelayedTaskManager* delayed_task_manager,
+    TrackedRef<Delegate> delegate)
+    : SchedulerWorkerPool(std::move(task_tracker),
+                          delayed_task_manager,
+                          std::move(delegate)) {}
 
 PlatformNativeWorkerPoolWin::~PlatformNativeWorkerPoolWin() {
 #if DCHECK_IS_ON()
@@ -57,6 +60,11 @@ void PlatformNativeWorkerPoolWin::JoinForTesting() {
   DCHECK(!join_for_testing_returned_.IsSet());
   join_for_testing_returned_.Set();
 #endif
+}
+
+void PlatformNativeWorkerPoolWin::ReEnqueueSequence(
+    scoped_refptr<Sequence> sequence) {
+  OnCanScheduleSequence(std::move(sequence));
 }
 
 // static

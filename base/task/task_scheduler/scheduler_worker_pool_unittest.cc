@@ -91,10 +91,12 @@ class ThreadPostingTasks : public SimpleThread {
 };
 
 class TaskSchedulerWorkerPoolTest
-    : public testing::TestWithParam<PoolExecutionType> {
+    : public testing::TestWithParam<PoolExecutionType>,
+      public SchedulerWorkerPool::Delegate {
  protected:
   TaskSchedulerWorkerPoolTest()
-      : service_thread_("TaskSchedulerServiceThread") {}
+      : service_thread_("TaskSchedulerServiceThread"),
+        tracked_ref_factory_(this) {}
 
   void SetUp() override {
     service_thread_.Start();
@@ -106,6 +108,7 @@ class TaskSchedulerWorkerPoolTest
     service_thread_.Stop();
     if (worker_pool_)
       worker_pool_->JoinForTesting();
+    worker_pool_.reset();
   }
 
   void CreateWorkerPool() {
@@ -114,12 +117,14 @@ class TaskSchedulerWorkerPoolTest
       case PoolType::GENERIC:
         worker_pool_ = std::make_unique<SchedulerWorkerPoolImpl>(
             "TestWorkerPool", "A", ThreadPriority::NORMAL,
-            task_tracker_.GetTrackedRef(), &delayed_task_manager_);
+            task_tracker_.GetTrackedRef(), &delayed_task_manager_,
+            tracked_ref_factory_.GetTrackedRef());
         break;
 #if defined(OS_WIN)
       case PoolType::WINDOWS:
         worker_pool_ = std::make_unique<PlatformNativeWorkerPoolWin>(
-            task_tracker_.GetTrackedRef(), &delayed_task_manager_);
+            task_tracker_.GetTrackedRef(), &delayed_task_manager_,
+            tracked_ref_factory_.GetTrackedRef());
         break;
 #endif
     }
@@ -156,6 +161,13 @@ class TaskSchedulerWorkerPoolTest
   std::unique_ptr<SchedulerWorkerPool> worker_pool_;
 
  private:
+  // SchedulerWorkerPool::Delegate:
+  void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override {
+    worker_pool_->ReEnqueueSequence(std::move(sequence));
+  }
+
+  TrackedRefFactory<SchedulerWorkerPool::Delegate> tracked_ref_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(TaskSchedulerWorkerPoolTest);
 };
 

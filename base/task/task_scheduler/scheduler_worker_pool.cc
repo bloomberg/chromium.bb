@@ -169,9 +169,11 @@ bool SchedulerWorkerPool::PostTaskWithSequence(
 
 SchedulerWorkerPool::SchedulerWorkerPool(
     TrackedRef<TaskTracker> task_tracker,
-    DelayedTaskManager* delayed_task_manager)
+    DelayedTaskManager* delayed_task_manager,
+    TrackedRef<Delegate> delegate)
     : task_tracker_(std::move(task_tracker)),
-      delayed_task_manager_(delayed_task_manager) {
+      delayed_task_manager_(delayed_task_manager),
+      delegate_(std::move(delegate)) {
   DCHECK(task_tracker_);
   DCHECK(delayed_task_manager_);
   ++g_active_pools_count;
@@ -190,6 +192,10 @@ void SchedulerWorkerPool::BindToCurrentThread() {
 void SchedulerWorkerPool::UnbindFromCurrentThread() {
   DCHECK(GetCurrentWorkerPool());
   tls_current_worker_pool.Get().Set(nullptr);
+}
+
+bool SchedulerWorkerPool::IsBoundToCurrentThread() const {
+  return GetCurrentWorkerPool() == this;
 }
 
 void SchedulerWorkerPool::PostTaskWithSequenceNow(
