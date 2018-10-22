@@ -4230,12 +4230,8 @@ static const uint8_t mode_to_angle_bin[INTRA_MODES] = {
 };
 /* clang-format on */
 
-static void angle_estimation(const uint8_t *src, int src_stride, int rows,
-                             int cols, BLOCK_SIZE bsize,
-                             uint8_t *directional_mode_skip_mask) {
-  // Check if angle_delta is used
-  if (!av1_use_angle_delta(bsize)) return;
-  uint64_t hist[DIRECTIONAL_MODES] = { 0 };
+static void get_gradient_hist(const uint8_t *src, int src_stride, int rows,
+                              int cols, uint64_t *hist) {
   src += src_stride;
   for (int r = 1; r < rows; ++r) {
     for (int c = 1; c < cols; ++c) {
@@ -4256,37 +4252,12 @@ static void angle_estimation(const uint8_t *src, int src_stride, int rows,
       hist[index] += temp;
     }
     src += src_stride;
-  }
-
-  int i;
-  uint64_t hist_sum = 0;
-  for (i = 0; i < DIRECTIONAL_MODES; ++i) hist_sum += hist[i];
-  for (i = 0; i < INTRA_MODES; ++i) {
-    if (av1_is_directional_mode(i)) {
-      const uint8_t angle_bin = mode_to_angle_bin[i];
-      uint64_t score = 2 * hist[angle_bin];
-      int weight = 2;
-      if (angle_bin > 0) {
-        score += hist[angle_bin - 1];
-        ++weight;
-      }
-      if (angle_bin < DIRECTIONAL_MODES - 1) {
-        score += hist[angle_bin + 1];
-        ++weight;
-      }
-      const int thresh = 10;
-      if (score * thresh < hist_sum * weight) directional_mode_skip_mask[i] = 1;
-    }
   }
 }
 
-static void highbd_angle_estimation(const uint8_t *src8, int src_stride,
-                                    int rows, int cols, BLOCK_SIZE bsize,
-                                    uint8_t *directional_mode_skip_mask) {
-  // Check if angle_delta is used
-  if (!av1_use_angle_delta(bsize)) return;
+static void get_highbd_gradient_hist(const uint8_t *src8, int src_stride,
+                                     int rows, int cols, uint64_t *hist) {
   uint16_t *src = CONVERT_TO_SHORTPTR(src8);
-  uint64_t hist[DIRECTIONAL_MODES] = { 0 };
   src += src_stride;
   for (int r = 1; r < rows; ++r) {
     for (int c = 1; c < cols; ++c) {
@@ -4308,6 +4279,19 @@ static void highbd_angle_estimation(const uint8_t *src8, int src_stride,
     }
     src += src_stride;
   }
+}
+
+static void angle_estimation(const uint8_t *src, int src_stride, int rows,
+                             int cols, BLOCK_SIZE bsize, int is_hbd,
+                             uint8_t *directional_mode_skip_mask) {
+  // Check if angle_delta is used
+  if (!av1_use_angle_delta(bsize)) return;
+
+  uint64_t hist[DIRECTIONAL_MODES] = { 0 };
+  if (is_hbd)
+    get_highbd_gradient_hist(src, src_stride, rows, cols, hist);
+  else
+    get_gradient_hist(src, src_stride, rows, cols, hist);
 
   int i;
   uint64_t hist_sum = 0;
@@ -4399,13 +4383,9 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   if (cpi->sf.intra_angle_estimation) {
     const int src_stride = x->plane[0].src.stride;
     const uint8_t *src = x->plane[0].src.buf;
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-      highbd_angle_estimation(src, src_stride, rows, cols, bsize,
-                              directional_mode_skip_mask);
-    } else {
-      angle_estimation(src, src_stride, rows, cols, bsize,
-                       directional_mode_skip_mask);
-    }
+    angle_estimation(src, src_stride, rows, cols, bsize,
+                     xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH,
+                     directional_mode_skip_mask);
   }
   mbmi->filter_intra_mode_info.use_filter_intra = 0;
   pmi->palette_size[0] = 0;
@@ -10957,13 +10937,9 @@ static int64_t handle_intra_mode(InterModeSearchState *search_state,
     if (sf->intra_angle_estimation && !search_state->angle_stats_ready) {
       const int src_stride = x->plane[0].src.stride;
       const uint8_t *src = x->plane[0].src.buf;
-      if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-        highbd_angle_estimation(src, src_stride, rows, cols, bsize,
-                                search_state->directional_mode_skip_mask);
-      } else {
-        angle_estimation(src, src_stride, rows, cols, bsize,
-                         search_state->directional_mode_skip_mask);
-      }
+      angle_estimation(src, src_stride, rows, cols, bsize,
+                       xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH,
+                       search_state->directional_mode_skip_mask);
       search_state->angle_stats_ready = 1;
     }
     if (search_state->directional_mode_skip_mask[mbmi->mode]) return INT64_MAX;
