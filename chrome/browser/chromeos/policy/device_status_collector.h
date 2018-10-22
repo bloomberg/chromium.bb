@@ -39,10 +39,6 @@ class StatisticsProvider;
 }
 }
 
-namespace cryptohome {
-struct TpmStatusInfo;
-}
-
 namespace user_manager {
 class User;
 }
@@ -56,34 +52,6 @@ namespace policy {
 
 struct DeviceLocalAccount;
 class GetStatusState;
-
-// Holds TPM status info.  Cf. TpmStatusInfo in device_management_backend.proto.
-struct TpmStatusInfo {
-  TpmStatusInfo();
-  TpmStatusInfo(const TpmStatusInfo&);
-  TpmStatusInfo(bool enabled,
-                bool owned,
-                bool initialized,
-                bool attestation_prepared,
-                bool attestation_enrolled,
-                int32_t dictionary_attack_counter,
-                int32_t dictionary_attack_threshold,
-                bool dictionary_attack_lockout_in_effect,
-                int32_t dictionary_attack_lockout_seconds_remaining,
-                bool boot_lockbox_finalized);
-  ~TpmStatusInfo();
-
-  bool enabled = false;
-  bool owned = false;
-  bool initialized = false;
-  bool attestation_prepared = false;
-  bool attestation_enrolled = false;
-  int32_t dictionary_attack_counter = 0;
-  int32_t dictionary_attack_threshold = 0;
-  bool dictionary_attack_lockout_in_effect = false;
-  int32_t dictionary_attack_lockout_seconds_remaining = 0;
-  bool boot_lockbox_finalized = false;
-};
 
 // Collects and summarizes the status of an enterprised-managed ChromeOS device.
 class DeviceStatusCollector : public session_manager::SessionManagerObserver,
@@ -117,11 +85,6 @@ class DeviceStatusCollector : public session_manager::SessionManagerObserver,
   using AndroidStatusFetcher =
       base::Callback<bool(const AndroidStatusReceiver&)>;
 
-  // Format of the function that asynchronously receives TpmStatusInfo.
-  using TpmStatusReceiver = base::OnceCallback<void(const TpmStatusInfo&)>;
-  // Gets the TpmStatusInfo and passes it to TpmStatusReceiver.
-  using TpmStatusFetcher = base::RepeatingCallback<void(TpmStatusReceiver)>;
-
   // Called in the UI thread after the device and session status have been
   // collected asynchronously in GetDeviceAndSessionStatusAsync. Null pointers
   // indicate errors or that device or session status reporting is disabled.
@@ -143,7 +106,6 @@ class DeviceStatusCollector : public session_manager::SessionManagerObserver,
                         const CPUStatisticsFetcher& cpu_statistics_fetcher,
                         const CPUTempFetcher& cpu_temp_fetcher,
                         const AndroidStatusFetcher& android_status_fetcher,
-                        const TpmStatusFetcher& tpm_status_fetcher,
                         base::TimeDelta activity_day_start,
                         bool is_enterprise_reporting);
   ~DeviceStatusCollector() override;
@@ -340,8 +302,6 @@ class DeviceStatusCollector : public session_manager::SessionManagerObserver,
   CPUTempFetcher cpu_temp_fetcher_;
 
   AndroidStatusFetcher android_status_fetcher_;
-
-  TpmStatusFetcher tpm_status_fetcher_;
 
   chromeos::system::StatisticsProvider* const statistics_provider_;
 

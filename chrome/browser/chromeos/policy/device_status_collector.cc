@@ -12,7 +12,6 @@
 #include <limits>
 #include <set>
 #include <sstream>
-#include <utility>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -22,7 +21,6 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -51,8 +49,6 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/dbus/cryptohome/rpc.pb.h"
-#include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/update_engine_client.h"
@@ -259,57 +255,6 @@ bool ReadAndroidStatus(
   return true;
 }
 
-// Converts the given GetTpmStatusReply to TpmStatusInfo.
-policy::TpmStatusInfo GetTpmStatusReplyToTpmStatusInfo(
-    const base::Optional<cryptohome::BaseReply>& reply) {
-  policy::TpmStatusInfo tpm_status_info;
-
-  if (!reply.has_value()) {
-    LOG(ERROR) << "GetTpmStatus call failed with empty reply.";
-    return tpm_status_info;
-  }
-  if (reply->has_error() &&
-      reply->error() != cryptohome::CRYPTOHOME_ERROR_NOT_SET) {
-    LOG(ERROR) << "GetTpmStatus failed with error: " << reply->error();
-    return tpm_status_info;
-  }
-  if (!reply->HasExtension(cryptohome::GetTpmStatusReply::reply)) {
-    LOG(ERROR)
-        << "GetTpmStatus failed with no GetTpmStatusReply extension in reply.";
-    return tpm_status_info;
-  }
-
-  auto reply_proto = reply->GetExtension(cryptohome::GetTpmStatusReply::reply);
-
-  tpm_status_info.enabled = reply_proto.enabled();
-  tpm_status_info.owned = reply_proto.owned();
-  tpm_status_info.initialized = reply_proto.initialized();
-  tpm_status_info.attestation_prepared = reply_proto.attestation_prepared();
-  tpm_status_info.attestation_enrolled = reply_proto.attestation_enrolled();
-  tpm_status_info.dictionary_attack_counter =
-      reply_proto.dictionary_attack_counter();
-  tpm_status_info.dictionary_attack_threshold =
-      reply_proto.dictionary_attack_threshold();
-  tpm_status_info.dictionary_attack_lockout_in_effect =
-      reply_proto.dictionary_attack_lockout_in_effect();
-  tpm_status_info.dictionary_attack_lockout_seconds_remaining =
-      reply_proto.dictionary_attack_lockout_seconds_remaining();
-  tpm_status_info.boot_lockbox_finalized = reply_proto.boot_lockbox_finalized();
-
-  return tpm_status_info;
-}
-
-void ReadTpmStatus(policy::DeviceStatusCollector::TpmStatusReceiver callback) {
-  chromeos::DBusThreadManager::Get()->GetCryptohomeClient()->GetTpmStatus(
-      cryptohome::GetTpmStatusRequest(),
-      base::BindOnce(
-          [](policy::DeviceStatusCollector::TpmStatusReceiver callback,
-             base::Optional<cryptohome::BaseReply> reply) {
-            std::move(callback).Run(GetTpmStatusReplyToTpmStatusInfo(reply));
-          },
-          std::move(callback)));
-}
-
 // Returns the DeviceLocalAccount associated with the current kiosk session.
 // Returns null if there is no active kiosk session, or if that kiosk
 // session has been removed from policy since the session started, in which
@@ -448,17 +393,6 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
         base::Bind(&GetStatusState::OnAndroidInfoReceived, this));
   }
 
-  // Queues an async callback to query TPM status information.
-  void FetchTpmStatus(const policy::DeviceStatusCollector::TpmStatusFetcher&
-                          tpm_status_fetcher) {
-    // Call out to the blocking pool to get TPM status information.
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(
-            tpm_status_fetcher,
-            base::BindOnce(&GetStatusState::OnTpmStatusReceived, this)));
-  }
-
  private:
   friend class RefCountedThreadSafe<GetStatusState>;
 
@@ -493,29 +427,6 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
         session_status_->mutable_android_status();
     android_status->set_status_payload(status);
     android_status->set_droid_guard_info(droid_guard_info);
-  }
-
-  void OnTpmStatusReceived(const TpmStatusInfo& tpm_status_struct) {
-    em::TpmStatusInfo* const tpm_status_proto =
-        device_status_->mutable_tpm_status_info();
-
-    tpm_status_proto->set_enabled(tpm_status_struct.enabled);
-    tpm_status_proto->set_owned(tpm_status_struct.owned);
-    tpm_status_proto->set_initialized(tpm_status_struct.initialized);
-    tpm_status_proto->set_attestation_prepared(
-        tpm_status_struct.attestation_prepared);
-    tpm_status_proto->set_attestation_enrolled(
-        tpm_status_struct.attestation_enrolled);
-    tpm_status_proto->set_dictionary_attack_counter(
-        tpm_status_struct.dictionary_attack_counter);
-    tpm_status_proto->set_dictionary_attack_threshold(
-        tpm_status_struct.dictionary_attack_threshold);
-    tpm_status_proto->set_dictionary_attack_lockout_in_effect(
-        tpm_status_struct.dictionary_attack_lockout_in_effect);
-    tpm_status_proto->set_dictionary_attack_lockout_seconds_remaining(
-        tpm_status_struct.dictionary_attack_lockout_seconds_remaining);
-    tpm_status_proto->set_boot_lockbox_finalized(
-        tpm_status_struct.boot_lockbox_finalized);
   }
 
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
@@ -609,32 +520,6 @@ class DeviceStatusCollector::ActivityStorage {
 
   DISALLOW_COPY_AND_ASSIGN(ActivityStorage);
 };
-
-TpmStatusInfo::TpmStatusInfo() = default;
-TpmStatusInfo::TpmStatusInfo(const TpmStatusInfo&) = default;
-TpmStatusInfo::TpmStatusInfo(
-    bool enabled,
-    bool owned,
-    bool initialized,
-    bool attestation_prepared,
-    bool attestation_enrolled,
-    int32_t dictionary_attack_counter,
-    int32_t dictionary_attack_threshold,
-    bool dictionary_attack_lockout_in_effect,
-    int32_t dictionary_attack_lockout_seconds_remaining,
-    bool boot_lockbox_finalized)
-    : enabled(enabled),
-      owned(owned),
-      initialized(initialized),
-      attestation_prepared(attestation_prepared),
-      attestation_enrolled(attestation_enrolled),
-      dictionary_attack_counter(dictionary_attack_counter),
-      dictionary_attack_threshold(dictionary_attack_threshold),
-      dictionary_attack_lockout_in_effect(dictionary_attack_lockout_in_effect),
-      dictionary_attack_lockout_seconds_remaining(
-          dictionary_attack_lockout_seconds_remaining),
-      boot_lockbox_finalized(boot_lockbox_finalized) {}
-TpmStatusInfo::~TpmStatusInfo() = default;
 
 DeviceStatusCollector::ActivityStorage::ActivityStorage(
     PrefService* pref_service,
@@ -865,7 +750,6 @@ DeviceStatusCollector::DeviceStatusCollector(
     const CPUStatisticsFetcher& cpu_statistics_fetcher,
     const CPUTempFetcher& cpu_temp_fetcher,
     const AndroidStatusFetcher& android_status_fetcher,
-    const TpmStatusFetcher& tpm_status_fetcher,
     TimeDelta activity_day_start,
     bool is_enterprise_reporting)
     : max_stored_past_activity_interval_(kMaxStoredPastActivityInterval),
@@ -878,7 +762,6 @@ DeviceStatusCollector::DeviceStatusCollector(
       cpu_statistics_fetcher_(cpu_statistics_fetcher),
       cpu_temp_fetcher_(cpu_temp_fetcher),
       android_status_fetcher_(android_status_fetcher),
-      tpm_status_fetcher_(tpm_status_fetcher),
       statistics_provider_(provider),
       cros_settings_(chromeos::CrosSettings::Get()),
       power_manager_(
@@ -904,9 +787,6 @@ DeviceStatusCollector::DeviceStatusCollector(
 
   if (android_status_fetcher_.is_null())
     android_status_fetcher_ = base::Bind(&ReadAndroidStatus);
-
-  if (tpm_status_fetcher_.is_null())
-    tpm_status_fetcher_ = base::BindRepeating(&ReadTpmStatus);
 
   idle_poll_timer_.Start(FROM_HERE,
                          TimeDelta::FromSeconds(kIdlePollIntervalSeconds), this,
@@ -1566,9 +1446,6 @@ bool DeviceStatusCollector::GetHardwareStatus(
   // Get the current device sound volume level.
   chromeos::CrasAudioHandler* audio_handler = chromeos::CrasAudioHandler::Get();
   status->set_sound_volume(audio_handler->GetOutputVolumePercent());
-
-  // Fetch TPM status information on a background thread.
-  state->FetchTpmStatus(tpm_status_fetcher_);
 
   return true;
 }
