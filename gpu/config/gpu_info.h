@@ -26,6 +26,29 @@ typedef unsigned long VisualID;
 
 namespace gpu {
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class GpuSeriesType {
+  kUnknown = 0,
+  // Intel 6th gen
+  kIntelSandyBridge = 1,
+  // Intel 7th gen
+  kIntelValleyView = 2,  // BayTrail
+  kIntelIvyBridge = 3,
+  kIntelHaswell = 4,
+  // Intel 8th gen
+  kIntelCherryView = 5,  // Braswell
+  kIntelBroadwell = 6,
+  // Intel 9th gen
+  kIntelApolloLake = 7,
+  kIntelSkyLake = 8,
+  kIntelGeminiLake = 9,
+  kIntelKabyLake = 10,
+  kIntelCoffeeLake = 11,
+  // Please also update |gpu_series_map| in process_json.py.
+  kMaxValue = kIntelCoffeeLake,
+};
+
 // Video profile.  This *must* match media::VideoCodecProfile.
 enum VideoCodecProfile {
   VIDEO_CODEC_PROFILE_UNKNOWN = -1,
