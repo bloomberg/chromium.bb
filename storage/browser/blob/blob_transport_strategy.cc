@@ -163,16 +163,19 @@ class DataPipeTransportStrategy : public BlobTransportStrategy {
 
     current_source_offset_ = 0;
     provider->RequestAsStream(std::move(producer_handle));
-    watcher_.Watch(consumer_handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,
-                   base::Bind(&DataPipeTransportStrategy::OnDataPipeReadable,
-                              base::Unretained(this), expected_source_size,
-                              std::move(future_data)));
+    watcher_.Watch(
+        consumer_handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,
+        MOJO_WATCH_CONDITION_SATISFIED,
+        base::BindRepeating(&DataPipeTransportStrategy::OnDataPipeReadable,
+                            base::Unretained(this), expected_source_size,
+                            std::move(future_data)));
   }
 
   void OnDataPipeReadable(
       size_t expected_full_source_size,
       const std::vector<BlobDataBuilder::FutureData>& future_data,
-      MojoResult result) {
+      MojoResult result,
+      const mojo::HandleSignalsState& state) {
     // The index of the element data should currently be written to, relative to
     // the first element of this stream (the first item in future_data).
     size_t relative_element_index =

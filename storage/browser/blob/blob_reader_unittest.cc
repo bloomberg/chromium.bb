@@ -584,7 +584,7 @@ TEST_F(BlobReaderTest, DiskCacheWithSideData) {
   BlobReader::Status status = BlobReader::Status::DONE;
   EXPECT_EQ(BlobReader::Status::DONE,
             reader_->ReadSideData(
-                base::Bind(&SetValue<BlobReader::Status>, &status)));
+                base::BindOnce(&SetValue<BlobReader::Status>, &status)));
   EXPECT_EQ(net::OK, reader_->net_error());
   EXPECT_TRUE(reader_->side_data());
   std::string result(reader_->side_data()->data(),
