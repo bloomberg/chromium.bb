@@ -151,24 +151,6 @@ TEST(ScriptWrappableMarkingVisitorTest,
 }
 
 TEST(ScriptWrappableMarkingVisitorTest,
-     OilpanClearsMarkingDequeWhenObjectDied) {
-  V8TestingScope scope;
-
-  DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::Create();
-  InterceptingScriptWrappableMarkingVisitorScope intercepting_scope(
-      scope.GetIsolate());
-  ScriptWrappableMarkingVisitor* visitor = intercepting_scope.Visitor();
-
-  visitor->TraceWithWrappers(object);
-
-  EXPECT_EQ(visitor->MarkingDeque()->front().RawObjectPointer(), object);
-
-  PreciselyCollectGarbage();
-
-  EXPECT_EQ(visitor->MarkingDeque()->front().RawObjectPointer(), nullptr);
-}
-
-TEST(ScriptWrappableMarkingVisitorTest,
      MarkedObjectDoesNothingOnWriteBarrierHitWhenDependencyIsMarkedToo) {
   V8TestingScope scope;
 
@@ -448,6 +430,11 @@ TEST(ScriptWrappableMarkingVisitorTest, MixinTracing) {
 }
 
 TEST(ScriptWrappableMarkingVisitorTest, OilpanClearsHeadersWhenObjectDied) {
+  // This test depends on cleanup callbacks that are only fired when wrapper
+  // tracing is enabled.
+  if (RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled())
+    return;
+
   V8TestingScope scope;
 
   DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::Create();
@@ -461,6 +448,29 @@ TEST(ScriptWrappableMarkingVisitorTest, OilpanClearsHeadersWhenObjectDied) {
   PreciselyCollectGarbage();
 
   EXPECT_FALSE(visitor->headers_to_unmark_.Contains(header));
+}
+
+TEST(ScriptWrappableMarkingVisitorTest,
+     OilpanClearsMarkingDequeWhenObjectDied) {
+  // This test depends on cleanup callbacks that are only fired when wrapper
+  // tracing is enabled.
+  if (RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled())
+    return;
+
+  V8TestingScope scope;
+
+  DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::Create();
+  InterceptingScriptWrappableMarkingVisitorScope intercepting_scope(
+      scope.GetIsolate());
+  ScriptWrappableMarkingVisitor* visitor = intercepting_scope.Visitor();
+
+  visitor->TraceWithWrappers(object);
+
+  EXPECT_EQ(visitor->MarkingDeque()->front().RawObjectPointer(), object);
+
+  PreciselyCollectGarbage();
+
+  EXPECT_EQ(visitor->MarkingDeque()->front().RawObjectPointer(), nullptr);
 }
 
 }  // namespace blink
