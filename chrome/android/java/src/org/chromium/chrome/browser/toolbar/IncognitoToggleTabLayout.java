@@ -56,7 +56,7 @@ public class IncognitoToggleTabLayout extends TabLayout {
         mStandardButtonIcon.setContentDescription(
                 getResources().getString(R.string.accessibility_tab_switcher_standard_stack));
         mIncognitoButtonIcon = new AppCompatImageView(getContext());
-        mIncognitoButtonIcon.setImageResource(R.drawable.incognito_simple);
+        mIncognitoButtonIcon.setImageResource(R.drawable.incognito_small);
         mIncognitoButtonIcon.setContentDescription(getResources().getString(
                 ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
                         ? R.string.accessibility_tab_switcher_private_stack
