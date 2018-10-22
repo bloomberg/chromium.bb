@@ -32,8 +32,8 @@ SRC_DIR = os.path.abspath(
 # If something adds a static initializer, revert it, don't increase these
 # numbers. We don't accept regressions in static initializers.
 EXPECTED_LINUX_SI_COUNTS = {
-  'chrome': 6,
-  'nacl_helper': 5,
+  'chrome': 5,
+  'nacl_helper': 4,
   'nacl_helper_bootstrap': 0,
 }
 
