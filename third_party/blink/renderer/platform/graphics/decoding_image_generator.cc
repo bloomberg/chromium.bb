@@ -130,6 +130,7 @@ bool DecodingImageGenerator::GetPixels(const SkImageInfo& dst_info,
   // the requested color type from N32.
   SkImageInfo target_info = dst_info;
   char* memory = static_cast<char*>(pixels);
+  std::unique_ptr<char*> memory_ref_ptr;
   size_t adjusted_row_bytes = row_bytes;
   if ((target_info.colorType() != kN32_SkColorType) &&
       (target_info.colorType() != kRGBA_F16_SkColorType)) {
@@ -141,6 +142,7 @@ bool DecodingImageGenerator::GetPixels(const SkImageInfo& dst_info,
     adjusted_row_bytes =
         target_info.bytesPerPixel() * (row_bytes / dst_info.bytesPerPixel());
     memory = new char[target_info.computeMinByteSize()];
+    memory_ref_ptr = std::make_unique<char*>(memory);
   }
 
   // Skip the check for alphaType.  blink::ImageFrame may have changed the
@@ -179,14 +181,14 @@ bool DecodingImageGenerator::GetPixels(const SkImageInfo& dst_info,
   }
 
   // Convert the color type to the requested one if necessary
-  if (decoded && target_info.colorType() != dst_info.colorType()) {
-    decoded =
-        decoded && SkPixmap{target_info, memory, adjusted_row_bytes}.readPixels(
-                       SkPixmap{dst_info, pixels, row_bytes});
-    delete[] memory;
-    DCHECK(decoded);
+  if (target_info.colorType() != dst_info.colorType()) {
+    if (decoded) {
+      decoded = decoded &&
+                SkPixmap{target_info, memory, adjusted_row_bytes}.readPixels(
+                    SkPixmap{dst_info, pixels, row_bytes});
+      DCHECK(decoded);
+    }
   }
-
   return decoded;
 }
 
