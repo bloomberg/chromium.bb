@@ -130,8 +130,7 @@ bool ToolbarActionView::ShouldUseFloodFillInkDrop() const {
 }
 
 std::unique_ptr<views::InkDrop> ToolbarActionView::CreateInkDrop() {
-  auto ink_drop = CreateToolbarInkDrop<MenuButton>(this);
-
+  auto ink_drop = CreateToolbarInkDrop(this);
   ink_drop->SetShowHighlightOnHover(!delegate_->ShownInsideMenu());
   ink_drop->SetShowHighlightOnFocus(!focus_ring());
   return ink_drop;

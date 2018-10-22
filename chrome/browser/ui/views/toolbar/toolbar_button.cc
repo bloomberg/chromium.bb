@@ -21,6 +21,8 @@
 #include "ui/base/models/menu_model.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/views/animation/ink_drop.h"
+#include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
@@ -216,7 +218,7 @@ void ToolbarButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 std::unique_ptr<views::InkDrop> ToolbarButton::CreateInkDrop() {
-  return CreateToolbarInkDrop<LabelButton>(this);
+  return CreateToolbarInkDrop(this);
 }
 
 std::unique_ptr<views::InkDropHighlight> ToolbarButton::CreateInkDropHighlight()
