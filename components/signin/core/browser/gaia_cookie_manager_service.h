@@ -304,6 +304,10 @@ class GaiaCookieManagerService : public KeyedService,
                            MultiloginFailureMaxRetriesReached);
   FRIEND_TEST_ALL_PREFIXES(GaiaCookieManagerServiceTest,
                            FetcherRetriesZeroedBetweenCalls);
+  FRIEND_TEST_ALL_PREFIXES(GaiaCookieManagerServiceTest,
+                           MultiloginFailureInvalidGaiaCredentialsMobile);
+  FRIEND_TEST_ALL_PREFIXES(GaiaCookieManagerServiceTest,
+                           MultiloginFailureInvalidGaiaCredentialsDesktop);
   // Returns the source value to use for GaiaFetcher requests.  This is
   // virtual to allow tests and fake classes to override.
   virtual std::string GetSourceForRequest(
@@ -336,8 +340,7 @@ class GaiaCookieManagerService : public KeyedService,
   // Overridden from GaiaAuthConsumer.
   void OnMergeSessionSuccess(const std::string& data) override;
   void OnMergeSessionFailure(const GoogleServiceAuthError& error) override;
-  void OnOAuthMultiloginSuccess(const OAuthMultiloginResult& result) override;
-  void OnOAuthMultiloginFailure(const GoogleServiceAuthError& error) override;
+  void OnOAuthMultiloginFinished(const OAuthMultiloginResult& result) override;
   void OnListAccountsSuccess(const std::string& data) override;
   void OnListAccountsFailure(const GoogleServiceAuthError& error) override;
   void OnLogOutSuccess() override;

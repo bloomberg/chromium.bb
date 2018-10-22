@@ -843,29 +843,26 @@ void GaiaCookieManagerService::OnMergeSessionFailure(
   SignalComplete(account_id, error);
 }
 
-void GaiaCookieManagerService::OnOAuthMultiloginSuccess(
+void GaiaCookieManagerService::OnOAuthMultiloginFinished(
     const OAuthMultiloginResult& result) {
   DCHECK(requests_.front().request_type() ==
          GaiaCookieRequestType::SET_ACCOUNTS);
-  VLOG(1) << "Multilogin successful accounts="
-          << base::JoinString(requests_.front().account_ids(), " ");
-  RecordMultiloginFinished(GoogleServiceAuthError::AuthErrorNone());
-  std::vector<std::string> account_ids = requests_.front().account_ids();
-  access_tokens_.clear();
-  fetcher_backoff_.InformOfRequest(true);
-  StartSettingCookies(result);
-}
 
-void GaiaCookieManagerService::OnOAuthMultiloginFailure(
-    const GoogleServiceAuthError& error) {
-  VLOG(1) << "Failed Multilogin for accounts: "
-          << base::JoinString(requests_.front().account_ids(), " ")
-          << " error=" << error.ToString();
+  if (result.error().state() == GoogleServiceAuthError::NONE) {
+    VLOG(1) << "Multilogin successful accounts="
+            << base::JoinString(requests_.front().account_ids(), " ");
+    RecordMultiloginFinished(GoogleServiceAuthError::AuthErrorNone());
+    std::vector<std::string> account_ids = requests_.front().account_ids();
+    access_tokens_.clear();
+    fetcher_backoff_.InformOfRequest(true);
+    StartSettingCookies(result);
+    return;
+  }
   if (++fetcher_retries_ < signin::kMaxFetcherRetries &&
-      error.IsTransientError()) {
-    fetcher_backoff_.InformOfRequest(false);
-    UMA_HISTOGRAM_ENUMERATION("Signin.MultiloginRetry", error.state(),
+      result.error().IsTransientError()) {
+    UMA_HISTOGRAM_ENUMERATION("Signin.MultiloginRetry", result.error().state(),
                               GoogleServiceAuthError::NUM_STATES);
+    fetcher_backoff_.InformOfRequest(false);
     fetcher_timer_.Start(
         FROM_HERE, fetcher_backoff_.GetTimeUntilRelease(),
         base::BindOnce(
@@ -874,8 +871,24 @@ void GaiaCookieManagerService::OnOAuthMultiloginFailure(
                        base::Unretained(this))));
     return;
   }
-  RecordMultiloginFinished(error);
-  OnSetAccountsFinished(error);
+  RecordMultiloginFinished(result.error());
+  // If Gaia responded with status: "INVALID_TOKENS", we have to mark tokens as
+  // invalid.
+  if (result.error().state() ==
+      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS) {
+    for (const std::string& account_id : result.failed_accounts()) {
+      DCHECK(base::ContainsKey(access_tokens_, account_id));
+      token_service_->InvalidateTokenForMultilogin(account_id,
+                                                   access_tokens_[account_id]);
+      access_tokens_.erase(account_id);
+    }
+    for (const std::string& account_id : result.failed_accounts()) {
+      // Maybe the access token was expired, try to get a new one.
+      StartFetchingAccessTokenForMultilogin(account_id);
+    }
+    return;
+  }
+  OnSetAccountsFinished(result.error());
 }
 
 void GaiaCookieManagerService::OnListAccountsSuccess(const std::string& data) {
@@ -979,10 +992,8 @@ void GaiaCookieManagerService::OnLogOutFailure(
 
 void GaiaCookieManagerService::StartFetchingAccessTokenForMultilogin(
     const std::string& account_id) {
-  OAuth2TokenService::ScopeSet scopes;
-  scopes.insert(GaiaConstants::kOAuth1LoginScope);
   token_requests_.push_back(
-      token_service_->StartRequestForMultilogin(account_id, scopes, this));
+      token_service_->StartRequestForMultilogin(account_id, this));
 }
 
 void GaiaCookieManagerService::StartFetchingAccessTokensForMultilogin() {

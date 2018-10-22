@@ -57,6 +57,12 @@ class OAuth2TokenServiceDelegate {
                                      const std::set<std::string>& scopes,
                                      const std::string& access_token) {}
 
+  // If refresh token is accessible (on Desktop) sets error for it to
+  // INVALID_GAIA_CREDENTIALS and notifies the observers. Otherwise
+  // does nothing.
+  virtual void InvalidateTokenForMultilogin(const std::string& failed_account) {
+  }
+
   virtual void Shutdown() {}
   virtual void UpdateCredentials(const std::string& account_id,
                                  const std::string& refresh_token) {}
@@ -65,7 +71,8 @@ class OAuth2TokenServiceDelegate {
       const;
 
   // Returns refresh token if the platform allows it (on Desktop) and if it is
-  // available. Otherwise returns empty string (for iOS and Android).
+  // available and doesn't have error. Otherwise returns empty string (for iOS
+  // and Android).
   virtual std::string GetTokenForMultilogin(
       const std::string& account_id) const;
 

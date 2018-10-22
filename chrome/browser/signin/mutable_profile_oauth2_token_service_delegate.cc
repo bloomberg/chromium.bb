@@ -490,6 +490,13 @@ MutableProfileOAuth2TokenServiceDelegate::GetURLLoaderFactory() const {
   return client_->GetURLLoaderFactory();
 }
 
+void MutableProfileOAuth2TokenServiceDelegate::InvalidateTokenForMultilogin(
+    const std::string& failed_account) {
+  UpdateAuthError(
+      failed_account,
+      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+}
+
 void MutableProfileOAuth2TokenServiceDelegate::LoadCredentials(
     const std::string& primary_account_id) {
   if (load_credentials_state() == LOAD_CREDENTIALS_IN_PROGRESS) {

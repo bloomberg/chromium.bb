@@ -147,7 +147,7 @@ class MockGaiaConsumer : public GaiaAuthConsumer {
   MOCK_METHOD1(OnClientOAuthSuccess,
                void(const GaiaAuthConsumer::ClientOAuthResult& result));
   MOCK_METHOD1(OnMergeSessionSuccess, void(const std::string& data));
-  MOCK_METHOD1(OnOAuthMultiloginSuccess,
+  MOCK_METHOD1(OnOAuthMultiloginFinished,
                void(const OAuthMultiloginResult& result));
   MOCK_METHOD1(OnUberAuthTokenSuccess, void(const std::string& data));
   MOCK_METHOD1(OnClientLoginFailure,
@@ -158,8 +158,6 @@ class MockGaiaConsumer : public GaiaAuthConsumer {
                void(GaiaAuthConsumer::TokenRevocationStatus status));
   MOCK_METHOD1(OnMergeSessionFailure, void(
       const GoogleServiceAuthError& error));
-  MOCK_METHOD1(OnOAuthMultiloginFailure,
-               void(const GoogleServiceAuthError& error));
   MOCK_METHOD1(OnUberAuthTokenFailure, void(
       const GoogleServiceAuthError& error));
   MOCK_METHOD1(OnListAccountsSuccess, void(const std::string& data));
@@ -384,7 +382,11 @@ TEST_F(GaiaAuthFetcherTest, MergeSessionSuccess) {
 
 TEST_F(GaiaAuthFetcherTest, MultiloginSuccess) {
   MockGaiaConsumer consumer;
-  EXPECT_CALL(consumer, OnOAuthMultiloginSuccess(::testing::_)).Times(1);
+  EXPECT_CALL(consumer,
+              OnOAuthMultiloginFinished(::testing::Property(
+                  &OAuthMultiloginResult::error,
+                  ::testing::Eq(GoogleServiceAuthError::AuthErrorNone()))))
+      .Times(1);
 
   TestGaiaAuthFetcher auth(&consumer, std::string(), GetURLLoaderFactory());
   auth.StartOAuthMultilogin(
@@ -392,15 +394,33 @@ TEST_F(GaiaAuthFetcherTest, MultiloginSuccess) {
 
   EXPECT_TRUE(auth.HasPendingFetch());
   auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK, {},
-                                     "\n{\"status\": \"OK\"}");
+                                     R"()]}'
+        {
+          "status": "OK",
+          "cookies":[
+            {
+              "name":"SID",
+              "value":"vAlUe1",
+              "domain":".google.ru",
+              "path":"/",
+              "isSecure":true,
+              "isHttpOnly":false,
+              "priority":"HIGH",
+              "maxAge":63070000
+            }
+          ]
+        }
+      )");
 
   EXPECT_FALSE(auth.HasPendingFetch());
 }
 
 TEST_F(GaiaAuthFetcherTest, MultiloginFailureNetError) {
   MockGaiaConsumer consumer;
-  EXPECT_CALL(consumer, OnOAuthMultiloginFailure(GoogleServiceAuthError(
-                            GoogleServiceAuthError::REQUEST_CANCELED)))
+  EXPECT_CALL(consumer, OnOAuthMultiloginFinished(::testing::Property(
+                            &OAuthMultiloginResult::error,
+                            ::testing::Eq(GoogleServiceAuthError(
+                                GoogleServiceAuthError::REQUEST_CANCELED)))))
       .Times(1);
 
   TestGaiaAuthFetcher auth(&consumer, std::string(), GetURLLoaderFactory());
@@ -409,15 +429,33 @@ TEST_F(GaiaAuthFetcherTest, MultiloginFailureNetError) {
 
   EXPECT_TRUE(auth.HasPendingFetch());
   auth.TestOnURLLoadCompleteInternal(net::ERR_ABORTED, net::HTTP_OK, {},
-                                     "\n{\"status\": \"OK\"}");
+                                     R"()]}'
+        {
+          "status": "OK",
+          "cookies":[
+            {
+              "name":"SID",
+              "value":"vAlUe1",
+              "domain":".google.ru",
+              "path":"/",
+              "isSecure":true,
+              "isHttpOnly":false,
+              "priority":"HIGH",
+              "maxAge":63070000
+            }
+          ]
+        }
+      )");
 
   EXPECT_FALSE(auth.HasPendingFetch());
 }
 
 TEST_F(GaiaAuthFetcherTest, MultiloginFailureServerError) {
   MockGaiaConsumer consumer;
-  EXPECT_CALL(consumer, OnOAuthMultiloginFailure(GoogleServiceAuthError(
-                            GoogleServiceAuthError::SERVICE_ERROR)))
+  EXPECT_CALL(consumer, OnOAuthMultiloginFinished(::testing::Property(
+                            &OAuthMultiloginResult::error,
+                            ::testing::Eq(GoogleServiceAuthError(
+                                GoogleServiceAuthError::SERVICE_ERROR)))))
       .Times(1);
 
   TestGaiaAuthFetcher auth(&consumer, std::string(), GetURLLoaderFactory());

@@ -53,6 +53,12 @@ class RetryingTestingOAuth2TokenServiceConsumer
   std::unique_ptr<OAuth2TokenService::Request> request_;
 };
 
+class FakeOAuth2TokenServiceObserver : public OAuth2TokenService::Observer {
+ public:
+  MOCK_METHOD2(OnAuthErrorChanged,
+               void(const std::string&, const GoogleServiceAuthError&));
+};
+
 class TestOAuth2TokenService : public OAuth2TokenService {
  public:
   explicit TestOAuth2TokenService(
@@ -91,6 +97,12 @@ class FakeOAuth2TokenServiceDelegateDesktop
     }
     return FakeOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
         account_id, url_loader_factory, consumer);
+  }
+  void InvalidateTokenForMultilogin(
+      const std::string& failed_account) override {
+    UpdateAuthError(failed_account,
+                    GoogleServiceAuthError(
+                        GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
   }
 };
 
@@ -454,14 +466,11 @@ TEST_F(OAuth2TokenServiceTest, StartRequestForMultiloginDesktop) {
       .Times(1);
 
   std::unique_ptr<OAuth2TokenService::Request> request1(
-      token_service.StartRequestForMultilogin(
-          account_id_, OAuth2TokenService::ScopeSet(), &consumer));
+      token_service.StartRequestForMultilogin(account_id_, &consumer));
   std::unique_ptr<OAuth2TokenService::Request> request2(
-      token_service.StartRequestForMultilogin(
-          account_id_2, OAuth2TokenService::ScopeSet(), &consumer));
+      token_service.StartRequestForMultilogin(account_id_2, &consumer));
   std::unique_ptr<OAuth2TokenService::Request> request3(
-      token_service.StartRequestForMultilogin(
-          "unknown_account", OAuth2TokenService::ScopeSet(), &consumer));
+      token_service.StartRequestForMultilogin("unknown_account", &consumer));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -470,8 +479,7 @@ TEST_F(OAuth2TokenServiceTest, StartRequestForMultiloginMobile) {
       account_id_, "refreshToken");
 
   std::unique_ptr<OAuth2TokenService::Request> request(
-      oauth2_service_->StartRequestForMultilogin(
-          account_id_, OAuth2TokenService::ScopeSet(), &consumer_));
+      oauth2_service_->StartRequestForMultilogin(account_id_, &consumer_));
 
   base::RunLoop().RunUntilIdle();
   network::URLLoaderCompletionStatus ok_status(net::OK);
@@ -517,6 +525,68 @@ TEST_F(OAuth2TokenServiceTest, RetryingConsumer) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, consumer.number_of_successful_tokens_);
   EXPECT_EQ(2, consumer.number_of_errors_);
+}
+
+TEST_F(OAuth2TokenServiceTest, InvalidateTokensForMultiloginDesktop) {
+  auto delegate = std::make_unique<FakeOAuth2TokenServiceDelegateDesktop>();
+  TestOAuth2TokenService token_service(std::move(delegate));
+  FakeOAuth2TokenServiceObserver observer;
+  token_service.GetFakeOAuth2TokenServiceDelegate()->AddObserver(&observer);
+  EXPECT_CALL(
+      observer,
+      OnAuthErrorChanged(account_id_,
+                         GoogleServiceAuthError(
+                             GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS)))
+      .Times(1);
+
+  token_service.GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
+      account_id_, "refreshToken");
+  const std::string account_id_2 = "account_id_2";
+  token_service.GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
+      account_id_2, "refreshToken2");
+  token_service.InvalidateTokenForMultilogin(account_id_, "refreshToken");
+  // Check that refresh tokens for failed accounts are set in error.
+  EXPECT_EQ(token_service.GetFakeOAuth2TokenServiceDelegate()
+                ->GetAuthError(account_id_)
+                .state(),
+            GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+  EXPECT_EQ(token_service.GetFakeOAuth2TokenServiceDelegate()
+                ->GetAuthError(account_id_2)
+                .state(),
+            GoogleServiceAuthError::NONE);
+
+  token_service.GetFakeOAuth2TokenServiceDelegate()->RemoveObserver(&observer);
+}
+
+TEST_F(OAuth2TokenServiceTest, InvalidateTokensForMultiloginMobile) {
+  FakeOAuth2TokenServiceObserver observer;
+  oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->AddObserver(&observer);
+  EXPECT_CALL(
+      observer,
+      OnAuthErrorChanged(account_id_,
+                         GoogleServiceAuthError(
+                             GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS)))
+      .Times(0);
+
+  oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
+      account_id_, "refreshToken");
+  const std::string account_id_2 = "account_id_2";
+  oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
+      account_id_2, "refreshToken2");
+  ;
+  oauth2_service_->InvalidateTokenForMultilogin(account_id_, "refreshToken");
+  // Check that refresh tokens are not affected.
+  EXPECT_EQ(oauth2_service_->GetFakeOAuth2TokenServiceDelegate()
+                ->GetAuthError(account_id_)
+                .state(),
+            GoogleServiceAuthError::NONE);
+  EXPECT_EQ(oauth2_service_->GetFakeOAuth2TokenServiceDelegate()
+                ->GetAuthError(account_id_2)
+                .state(),
+            GoogleServiceAuthError::NONE);
+
+  oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->RemoveObserver(
+      &observer);
 }
 
 TEST_F(OAuth2TokenServiceTest, InvalidateToken) {
