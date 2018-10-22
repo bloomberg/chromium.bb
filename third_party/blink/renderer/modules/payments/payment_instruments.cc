@@ -40,10 +40,6 @@ bool rejectError(ScriptPromiseResolver* resolver,
   switch (status) {
     case payments::mojom::blink::PaymentHandlerStatus::SUCCESS:
       return false;
-    case payments::mojom::blink::PaymentHandlerStatus::NOT_IMPLEMENTED:
-      resolver->Reject(DOMException::Create(
-          DOMExceptionCode::kNotSupportedError, "Not implemented yet"));
-      return true;
     case payments::mojom::blink::PaymentHandlerStatus::NOT_FOUND:
       resolver->Resolve();
       return true;
