@@ -60,6 +60,7 @@
 #include "net/http/http_server_properties_manager.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_transaction_test_util.h"
+#include "net/http/transport_security_state_test_util.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
@@ -111,28 +112,6 @@ namespace {
 const GURL kURL("http://foo.com");
 const GURL kOtherURL("http://other.com");
 constexpr char kMockHost[] = "mock.host";
-
-// Sends an HttpResponse for requests for "/" that result in sending an HPKP
-// report.  Ignores other paths to avoid catching the subsequent favicon
-// request.
-std::unique_ptr<net::test_server::HttpResponse> SendReportHttpResponse(
-    const GURL& report_url,
-    const net::test_server::HttpRequest& request) {
-  if (request.relative_url == "/") {
-    std::unique_ptr<net::test_server::BasicHttpResponse> response(
-        new net::test_server::BasicHttpResponse());
-    std::string header_value = base::StringPrintf(
-        "max-age=50000;"
-        "pin-sha256=\"9999999999999999999999999999999999999999999=\";"
-        "pin-sha256=\"9999999999999999999999999999999999999999998=\";"
-        "report-uri=\"%s\"",
-        report_url.spec().c_str());
-    response->AddCustomHeader("Public-Key-Pins-Report-Only", header_value);
-    return std::move(response);
-  }
-
-  return nullptr;
-}
 
 mojom::NetworkContextParamsPtr CreateContextParams() {
   mojom::NetworkContextParamsPtr params = mojom::NetworkContextParams::New();
@@ -884,28 +863,33 @@ TEST_F(NetworkContextTest, TransportSecurityStatePersisted) {
   }
 }
 
-// Test that HPKP failures are reported if and only if certificate reporting is
+// Test that PKP failures are reported if and only if certificate reporting is
 // enabled.
 TEST_F(NetworkContextTest, CertReporting) {
-  const char kReportPath[] = "/report";
+  const char kPreloadedPKPHost[] = "with-report-uri-pkp.preloaded.test";
+  const char kReportHost[] = "report-uri.preloaded.test";
+  const char kReportPath[] = "/pkp";
 
   for (bool reporting_enabled : {false, true}) {
-    // Server that HPKP reports are sent to.
+    // Server that PKP reports are sent to.
     net::test_server::EmbeddedTestServer report_test_server;
     net::test_server::ControllableHttpResponse controllable_response(
         &report_test_server, kReportPath);
     ASSERT_TRUE(report_test_server.Start());
 
-    // Server that sends an HPKP report when its root document is fetched.
-    net::test_server::EmbeddedTestServer hpkp_test_server(
-        net::test_server::EmbeddedTestServer::TYPE_HTTPS);
-    hpkp_test_server.SetSSLConfig(
-        net::test_server::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
-    hpkp_test_server.RegisterRequestHandler(base::BindRepeating(
-        &SendReportHttpResponse, report_test_server.GetURL(kReportPath)));
-    ASSERT_TRUE(hpkp_test_server.Start());
+    // Configure the TransportSecurityStateSource so that kPreloadedPKPHost will
+    // have static PKP pins set, with a report URI on kReportHost.
+    net::ScopedTransportSecurityStateSource scoped_security_state_source(
+        report_test_server.port());
 
-    // Configure mock cert verifier to cause the HPKP check to fail.
+    // Configure a test HTTPS server.
+    net::test_server::EmbeddedTestServer pkp_test_server(
+        net::test_server::EmbeddedTestServer::TYPE_HTTPS);
+    pkp_test_server.SetSSLConfig(
+        net::test_server::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
+    ASSERT_TRUE(pkp_test_server.Start());
+
+    // Configure mock cert verifier to cause the PKP check to fail.
     net::CertVerifyResult result;
     result.verified_cert = net::CreateCertificateChainFromFile(
         net::GetTestCertsDirectory(), "ok_cert.pem",
@@ -915,9 +899,20 @@ TEST_F(NetworkContextTest, CertReporting) {
     result.public_key_hashes.push_back(net::HashValue(hash));
     result.is_issued_by_known_root = true;
     net::MockCertVerifier mock_verifier;
-    mock_verifier.AddResultForCert(hpkp_test_server.GetCertificate(), result,
+    mock_verifier.AddResultForCert(pkp_test_server.GetCertificate(), result,
                                    net::OK);
     NetworkContext::SetCertVerifierForTesting(&mock_verifier);
+
+    // Configure a MockHostResolver to map requests to kPreloadedPKPHost and
+    // kReportHost to the test servers:
+    scoped_refptr<net::RuleBasedHostResolverProc> mock_resolver_proc =
+        base::MakeRefCounted<net::RuleBasedHostResolverProc>(nullptr);
+    mock_resolver_proc->AddIPLiteralRule(
+        kPreloadedPKPHost, pkp_test_server.GetIPLiteralString(), std::string());
+    mock_resolver_proc->AddIPLiteralRule(
+        kReportHost, report_test_server.GetIPLiteralString(), std::string());
+    net::ScopedDefaultHostResolverProc scoped_default_host_resolver(
+        mock_resolver_proc.get());
 
     mojom::NetworkContextParamsPtr context_params = CreateContextParams();
     EXPECT_FALSE(context_params->enable_certificate_reporting);
@@ -925,8 +920,14 @@ TEST_F(NetworkContextTest, CertReporting) {
     std::unique_ptr<NetworkContext> network_context =
         CreateContextWithParams(std::move(context_params));
 
+    // Enable static pins so that requests made to kPreloadedPKPHost will check
+    // the pins, and send a report if the pinning check fails.
+    network_context->url_request_context()
+        ->transport_security_state()
+        ->EnableStaticPinsForTesting();
+
     ResourceRequest request;
-    request.url = hpkp_test_server.base_url();
+    request.url = pkp_test_server.GetURL(kPreloadedPKPHost, "/");
 
     mojom::URLLoaderFactoryPtr loader_factory;
     mojom::URLLoaderFactoryParamsPtr params =
@@ -945,7 +946,8 @@ TEST_F(NetworkContextTest, CertReporting) {
 
     client.RunUntilComplete();
     EXPECT_TRUE(client.has_received_completion());
-    EXPECT_EQ(net::OK, client.completion_status().error_code);
+    EXPECT_EQ(net::ERR_INSECURE_RESPONSE,
+              client.completion_status().error_code);
 
     if (reporting_enabled) {
       // If reporting is enabled, wait to see the request from the ReportSender.
