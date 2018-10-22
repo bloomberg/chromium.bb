@@ -355,6 +355,8 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
   WaitForFrameScroll(GetRootNode(), 15, true /* upward */);
 }
 
+// Touchpad fling only happens on ChromeOS.
+#if defined(CHROMEOS)
 IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
                        TouchpadFlingBubblesFromOOPIF) {
   LoadPageWithOOPIF();
@@ -372,6 +374,8 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
   SimulateTouchpadFling(child_view_->host(), GetWidgetHost(), fling_velocity);
   WaitForFrameScroll(GetRootNode(), 15, true /* upward */);
 }
+#endif  // defined(CHROMEOS)
+
 IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest, GFCGetsBubbledFromOOPIF) {
   LoadPageWithOOPIF();
   // Scroll the parent down so that it is scrollable upward.
