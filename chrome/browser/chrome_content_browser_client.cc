@@ -412,11 +412,8 @@
 #include "chrome/browser/webshare/share_service_impl.h"
 #endif
 
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-#include "chrome/browser/browser_switcher/browser_switcher_navigation_throttle.h"
-#endif
-
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 #include "chrome/browser/browser_switcher/browser_switcher_navigation_throttle.h"
 #endif
 
@@ -4173,7 +4170,8 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   if (previews_lite_page_throttle)
     throttles.push_back(std::move(previews_lite_page_throttle));
 
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   std::unique_ptr<content::NavigationThrottle> browser_switcher_throttle =
       browser_switcher::BrowserSwitcherNavigationThrottle ::
           MaybeCreateThrottleFor(handle);

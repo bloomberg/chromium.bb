@@ -3438,10 +3438,9 @@ jumbo_split_static_library("browser") {
     ]
   }
 
-  if (is_win || (is_linux && !is_chromeos)) {
+  if (is_win || is_mac || is_desktop_linux) {
     sources += [
       "browser_switcher/alternative_browser_driver.h",
-      "browser_switcher/alternative_browser_driver_linux.cc",
       "browser_switcher/alternative_browser_driver_win.cc",
       "browser_switcher/alternative_browser_launcher.cc",
       "browser_switcher/alternative_browser_launcher.h",
@@ -3458,6 +3457,9 @@ jumbo_split_static_library("browser") {
       "browser_switcher/ieem_sitelist_parser.cc",
       "browser_switcher/ieem_sitelist_parser.h",
     ]
+    if (is_mac || is_desktop_linux) {
+      sources += [ "browser_switcher/alternative_browser_driver_posix.cc" ]
+    }
   }
 
   if (is_chromeos && use_cras) {

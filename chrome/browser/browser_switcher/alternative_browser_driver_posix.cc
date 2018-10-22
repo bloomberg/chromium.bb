@@ -4,11 +4,11 @@
 
 #include "chrome/browser/browser_switcher/alternative_browser_driver.h"
 
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/process/launch.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_switcher/alternative_browser_launcher.h"
 #include "url/gurl.h"
 
@@ -22,13 +22,23 @@ namespace {
 
 const char kUrlVarName[] = "${url}";
 
+#if defined(OS_MACOSX)
+const char kChromeExecutableName[] = "Google Chrome";
+const char kFirefoxExecutableName[] = "Firefox";
+const char kOperaExecutableName[] = "Opera";
+const char kSafariExecutableName[] = "Safari";
+#else
 const char kChromeExecutableName[] = "google-chrome";
 const char kFirefoxExecutableName[] = "firefox";
 const char kOperaExecutableName[] = "opera";
+#endif
 
 const char kChromeVarName[] = "${chrome}";
 const char kFirefoxVarName[] = "${firefox}";
 const char kOperaVarName[] = "${opera}";
+#if defined(OS_MACOSX)
+const char kSafariVarName[] = "${safari}";
+#endif
 
 const struct {
   const char* var_name;
@@ -37,6 +47,9 @@ const struct {
     {kChromeVarName, kChromeExecutableName},
     {kFirefoxVarName, kFirefoxExecutableName},
     {kOperaVarName, kOperaExecutableName},
+#if defined(OS_MACOSX)
+    {kSafariVarName, kSafariExecutableName},
+#endif
 };
 
 bool ExpandUrlVarName(std::string* arg, const GURL& url) {
@@ -81,6 +94,33 @@ void ExpandEnvironmentVariables(std::string* arg) {
   std::swap(out, *arg);
 }
 
+#if defined(OS_MACOSX)
+bool ContainsUrlVarName(const std::vector<std::string>& tokens) {
+  return std::any_of(tokens.begin(), tokens.end(),
+                     [](const std::string& token) {
+                       return token.find(kUrlVarName) != std::string::npos;
+                     });
+}
+#endif  // defined(OS_MACOSX)
+
+// static
+void AppendCommandLineArguments(base::CommandLine* cmd_line,
+                                const std::vector<std::string>& raw_args,
+                                const GURL& url,
+                                bool always_append_url) {
+  bool contains_url = false;
+  for (const auto& arg : raw_args) {
+    std::string expanded_arg = arg;
+    ExpandTilde(&expanded_arg);
+    ExpandEnvironmentVariables(&expanded_arg);
+    if (ExpandUrlVarName(&expanded_arg, url))
+      contains_url = true;
+    cmd_line->AppendArg(expanded_arg);
+  }
+  if (always_append_url && !contains_url)
+    cmd_line->AppendArg(url.spec());
+}
+
 }  // namespace
 
 AlternativeBrowserDriver::~AlternativeBrowserDriver() {}
@@ -90,6 +130,13 @@ AlternativeBrowserDriverImpl::~AlternativeBrowserDriverImpl() {}
 
 void AlternativeBrowserDriverImpl::SetBrowserPath(base::StringPiece path) {
   browser_path_ = path.as_string();
+#if defined(OS_MACOSX)
+  // Unlike most POSIX platforms, MacOS always has another browser than Chrome,
+  // so admins don't have to explicitly configure one.
+  if (browser_path_.empty()) {
+    browser_path_ = kSafariExecutableName;
+  }
+#endif
   for (const auto& mapping : kBrowserVarMappings) {
     if (!browser_path_.compare(mapping.var_name)) {
       browser_path_ = mapping.executable_name;
@@ -120,16 +167,7 @@ bool AlternativeBrowserDriverImpl::TryLaunch(const GURL& url) {
 
   CHECK(url.SchemeIsHTTPOrHTTPS() || url.SchemeIsFile());
 
-  const int max_num_args = browser_params_.size() + 2;
-  std::vector<std::string> argv;
-  argv.reserve(max_num_args);
-  std::string path = browser_path_;
-  ExpandTilde(&path);
-  ExpandEnvironmentVariables(&path);
-  argv.push_back(path);
-  AppendCommandLineArguments(&argv, browser_params_, url);
-
-  base::CommandLine cmd_line = base::CommandLine(argv);
+  auto cmd_line = CreateCommandLine(url);
   base::LaunchOptions options;
   // Don't close the alternative browser when Chrome exits.
   options.new_process_group = true;
@@ -140,23 +178,45 @@ bool AlternativeBrowserDriverImpl::TryLaunch(const GURL& url) {
   return true;
 }
 
-// static
-void AlternativeBrowserDriverImpl::AppendCommandLineArguments(
-    std::vector<std::string>* argv,
-    const std::vector<std::string>& raw_args,
+base::CommandLine AlternativeBrowserDriverImpl::CreateCommandLine(
     const GURL& url) {
-  // TODO(crbug/882520): Do environment variable and tilde expansion.
-  bool contains_url = false;
-  for (const auto& arg : raw_args) {
-    std::string expanded_arg = arg;
-    ExpandTilde(&expanded_arg);
-    ExpandEnvironmentVariables(&expanded_arg);
-    if (ExpandUrlVarName(&expanded_arg, url))
-      contains_url = true;
-    argv->push_back(expanded_arg);
+  std::string path = browser_path_;
+  ExpandTilde(&path);
+  ExpandEnvironmentVariables(&path);
+
+#if defined(OS_MACOSX)
+  // On MacOS, if the path doesn't start with a '/', it's probably not an
+  // executable path. It is probably a name for an application, e.g. "Safari" or
+  // "Google Chrome". Those can be launched using the `open(1)' command.
+  //
+  // It may use the following syntax (first syntax):
+  //     open -a <browser_path> <url> [--args <browser_params...>]
+  //
+  // Or, if |browser_params| contains "${url}" (second syntax):
+  //     open -a <browser_path> --args <browser_params...>
+  //
+  // Safari only supports the first syntax.
+  if (!browser_path_.empty() && browser_path_[0] != '/') {
+    base::CommandLine cmd_line(std::vector<std::string>{"open"});
+    cmd_line.AppendArg("-a");
+    cmd_line.AppendArg(path);
+    if (!ContainsUrlVarName(browser_params_)) {
+      // First syntax.
+      cmd_line.AppendArg(url.spec());
+    }
+    if (!browser_params_.empty()) {
+      // First or second syntax, depending on what is in |browser_params_|.
+      cmd_line.AppendArg("--args");
+      AppendCommandLineArguments(&cmd_line, browser_params_, url,
+                                 /* always_append_url */ false);
+    }
+    return cmd_line;
   }
-  if (!contains_url)
-    argv->push_back(url.spec());
+#endif
+  base::CommandLine cmd_line(std::vector<std::string>{path});
+  AppendCommandLineArguments(&cmd_line, browser_params_, url,
+                             /* always_append_url */ true);
+  return cmd_line;
 }
 
 }  // namespace browser_switcher
