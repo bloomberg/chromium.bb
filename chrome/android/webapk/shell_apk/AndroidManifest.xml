@@ -69,6 +69,11 @@
                   android:label="{{{title}}}"
                   android:targetActivity="org.chromium.webapk.shell_apk.TransparentHostBrowserLauncherActivity">
           <meta-data android:name="org.chromium.webapk.shell_apk.shareAction" android:value="{{{action}}}" />
+          <meta-data android:name="org.chromium.webapk.shell_apk.shareMethod" android:value="{{{method}}}" />
+          {{#enctype}}
+          <meta-data android:name="org.chromium.webapk.shell_apk.shareEnctype" android:value="{{{enctype}}}" />
+          {{/enctype}}
+          {{^is_file_upload}}
           <meta-data android:name="org.chromium.webapk.shell_apk.shareParamTitle" android:value="{{{param_title}}}" />
           <meta-data android:name="org.chromium.webapk.shell_apk.shareParamText" android:value="{{{param_text}}}" />
           <meta-data android:name="org.chromium.webapk.shell_apk.shareParamUrl" android:value="{{{param_url}}}" />
@@ -77,6 +82,19 @@
             <category android:name="android.intent.category.DEFAULT" />
             <data android:mimeType="text/plain" />
           </intent-filter>
+          {{/is_file_upload}}
+          {{#is_file_upload}}
+          <meta-data android:name="org.chromium.webapk.shell_apk.shareParamNames" android:value="{{{param_names}}}" />
+          <meta-data android:name="org.chromium.webapk.shell_apk.shareParamAccepts" android:value="{{{param_accepts}}}" />
+          <intent-filter>
+            <action android:name="android.intent.action.SEND" />
+            <action android:name="android.intent.action.SEND_MULTIPLE" />
+            <category android:name="android.intent.category.DEFAULT" />
+            {{#mime_types}}
+            <data android:mimeType="{{{mime_type}}}" />
+            {{/mime_types}}
+          </intent-filter>
+          {{/is_file_upload}}
         </activity-alias>
         {{/share_template}}
         <meta-data android:name="org.chromium.webapk.shell_apk.shellApkVersion" android:value="{{{shell_apk_version}}}" />
