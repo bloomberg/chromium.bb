@@ -626,21 +626,25 @@ DocumentFragment* HTMLElement::TextToFragment(const String& text,
         break;
     }
 
-    fragment->AppendChild(
-        Text::Create(GetDocument(), text.Substring(start, i - start)),
-        exception_state);
+    if (i > start) {
+      fragment->AppendChild(
+          Text::Create(GetDocument(), text.Substring(start, i - start)),
+          exception_state);
+      if (exception_state.HadException())
+        return nullptr;
+    }
+
+    if (i == length)
+      break;
+
+    fragment->AppendChild(HTMLBRElement::Create(GetDocument()),
+                          exception_state);
     if (exception_state.HadException())
       return nullptr;
 
-    if (c == '\r' || c == '\n') {
-      fragment->AppendChild(HTMLBRElement::Create(GetDocument()),
-                            exception_state);
-      if (exception_state.HadException())
-        return nullptr;
-      // Make sure \r\n doesn't result in two line breaks.
-      if (c == '\r' && i + 1 < length && text[i + 1] == '\n')
-        i++;
-    }
+    // Make sure \r\n doesn't result in two line breaks.
+    if (c == '\r' && i + 1 < length && text[i + 1] == '\n')
+      i++;
 
     start = i + 1;  // Character after line break.
   }
@@ -658,25 +662,6 @@ void HTMLElement::setInnerText(const String& text,
       return;
     }
     ReplaceChildrenWithText(this, text, exception_state);
-    return;
-  }
-
-  // FIXME: Do we need to be able to detect preserveNewline style even when
-  // there's no layoutObject?
-  // FIXME: Can the layoutObject be out of date here? Do we need to call
-  // updateStyleIfNeeded?  For example, for the contents of textarea elements
-  // that are display:none?
-  LayoutObject* r = GetLayoutObject();
-  if (r && r->Style()->PreserveNewline()) {
-    if (!text.Contains('\r')) {
-      ReplaceChildrenWithText(this, text, exception_state);
-      return;
-    }
-    String text_with_consistent_line_breaks = text;
-    text_with_consistent_line_breaks.Replace("\r\n", "\n");
-    text_with_consistent_line_breaks.Replace('\r', '\n');
-    ReplaceChildrenWithText(this, text_with_consistent_line_breaks,
-                            exception_state);
     return;
   }
 
