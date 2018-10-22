@@ -8,6 +8,7 @@
 #include <sstream>
 #include <utility>
 
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/char_coding.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/javascript_message_sender_interface.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/javascript_requestor_interface.h"
@@ -53,9 +54,11 @@ pp::VarDictionary CreateEntry(int64_t index,
 
 void ConstructMetadata(int64_t index,
                        const std::string& entry_path,
+                       const std::string& raw_path,
                        int64_t size,
                        bool is_directory,
                        time_t modification_time,
+                       bool is_utf8,
                        pp::VarDictionary* parent_metadata) {
   if (entry_path == "")
     return;
@@ -64,11 +67,14 @@ void ConstructMetadata(int64_t index,
       pp::VarDictionary(parent_metadata->Get("entries"));
 
   std::string::size_type position = entry_path.find(kPathDelimiter);
+  std::string::size_type position_raw = raw_path.find(kPathDelimiter);
   pp::VarDictionary entry_metadata;
   std::string entry_name;
+  std::string raw_name;
 
   if (position == std::string::npos) {  // The entry itself.
     entry_name = entry_path;
+    raw_name = raw_path;
     entry_metadata =
         CreateEntry(index, entry_name, is_directory, size, modification_time);
 
@@ -83,6 +89,7 @@ void ConstructMetadata(int64_t index,
     }
   } else {  // Get next parent on the way to the entry.
     entry_name = entry_path.substr(0, position);
+    raw_name = raw_path.substr(0, position_raw);
 
     // Get next parent metadata. If none, create a new directory entry for it.
     // Some archives don't have directory information inside and for some the
@@ -97,9 +104,17 @@ void ConstructMetadata(int64_t index,
     // to the entry and for the entry itself.
     std::string entry_path_without_next_parent = entry_path.substr(
         position + sizeof(kPathDelimiter) - 1 /* Last char is '\0'. */);
+    std::string raw_path_without_next_parent =
+        raw_path.substr(position_raw + sizeof(kPathDelimiter) - 1);
 
-    ConstructMetadata(index, entry_path_without_next_parent, size, is_directory,
-                      modification_time, &entry_metadata);
+    ConstructMetadata(index, entry_path_without_next_parent,
+                      raw_path_without_next_parent, size, is_directory,
+                      modification_time, is_utf8, &entry_metadata);
+  }
+
+  if (!is_utf8) {
+    entry_metadata.Set("binary_name",
+                       base::HexEncode(raw_name.c_str(), raw_name.size()));
   }
 
   // Recreate parent_metadata. This is necessary because pp::VarDictionary::Get
@@ -336,8 +351,9 @@ void Volume::ReadMetadataCallback(int32_t /*result*/,
       display_name = Cp437ToUtf8(path_name);
     }
 
-    ConstructMetadata(index, display_name.c_str(), size, is_directory,
-                      modification_time, &root_metadata);
+    ConstructMetadata(index, display_name.c_str(), path_name, size,
+                      is_directory, modification_time, is_encoded_in_utf8,
+                      &root_metadata);
 
     index_to_pathname_[index] = path_name;
 

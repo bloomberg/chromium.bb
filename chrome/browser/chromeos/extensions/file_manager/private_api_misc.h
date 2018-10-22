@@ -425,6 +425,19 @@ class FileManagerPrivateInternalGetRecentFilesFunction
   DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateInternalGetRecentFilesFunction);
 };
 
+// Implements the chrome.fileManagerPrivate.detectCharacterEncoding method.
+class FileManagerPrivateDetectCharacterEncodingFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.detectCharacterEncoding",
+                             FILEMANAGERPRIVATE_DETECTCHARACTERENCODING);
+
+ protected:
+  ~FileManagerPrivateDetectCharacterEncodingFunction() override = default;
+
+  ResponseAction Run() override;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_MISC_H_

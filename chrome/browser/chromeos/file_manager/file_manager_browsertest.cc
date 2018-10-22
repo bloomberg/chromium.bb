@@ -251,6 +251,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FilesAppBrowserTest,
     ::testing::Values(ZipCase("zipFileOpenDownloads").InGuestMode(),
                       ZipCase("zipFileOpenDownloads"),
+                      ZipCase("zipFileOpenDownloadsShiftJIS"),
                       ZipCase("zipFileOpenDrive").EnableDriveFs(),
                       ZipCase("zipFileOpenDrive"),
                       ZipCase("zipFileOpenUsb"),

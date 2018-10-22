@@ -17021,6 +17021,7 @@ Called by update_net_error_codes.py.-->
   <int value="1284" label="ACCESSIBILITY_PRIVATE_TOGGLEDICTATION"/>
   <int value="1285" label="ACCESSIBILITY_PRIVATE_ENABLECHROMEVOXMOUSEEVENTS"/>
   <int value="1286" label="ACCESSIBILITY_PRIVATE_SENDSYNTHETICMOUSEEVENT"/>
+  <int value="1287" label="FILEMANAGERPRIVATE_DETECTCHARACTERENCODING"/>
 </enum>
 
 <enum name="ExtensionIconState">

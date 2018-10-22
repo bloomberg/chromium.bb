@@ -632,6 +632,17 @@ var ENTRIES = {
     typeText: 'Zip archive'
   }),
 
+  zipArchiveSJIS: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'archive_sjis.zip',
+    targetPath: 'archive_sjis.zip',
+    mimeType: 'application/x-zip',
+    lastModifiedTime: 'Dec 21, 2018, 12:21 PM',
+    nameText: 'archive_sjis.zip',
+    sizeText: '160 bytes',
+    typeText: 'Zip archive'
+  }),
+
   debPackage: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'package.deb',
