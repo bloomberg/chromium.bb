@@ -23,3 +23,11 @@ source_set("ntp_tile_views") {
     "//ios/chrome/common/ui_util",
   ]
 }
+
+source_set("constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "ntp_tile_constants.h",
+    "ntp_tile_constants.mm",
+  ]
+}

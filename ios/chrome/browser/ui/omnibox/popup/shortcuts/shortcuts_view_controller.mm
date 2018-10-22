@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/ntp_tile_views/ntp_most_visited_tile_view.h"
+#import "ios/chrome/browser/ui/ntp_tile_views/ntp_tile_constants.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
@@ -18,7 +19,6 @@ const NSInteger kNumberOfItemsPerRow = 4;
 const CGFloat kLineSpacing = 30;
 const CGFloat kItemSpacing = 10;
 const CGFloat kTopInset = 10;
-const CGSize kItemSize = {73, 100};
 }  // namespace
 
 #pragma mark - ShortcutCell
@@ -78,10 +78,10 @@ const CGSize kItemSize = {73, 100};
   [super viewWillAppear:animated];
 
   // Calculate insets to center the items in the view.
-  CGFloat widthInsets =
-      (self.view.bounds.size.width - kItemSize.width * kNumberOfItemsPerRow -
-       kItemSpacing * (kNumberOfItemsPerRow - 1)) /
-      2;
+  CGFloat widthInsets = (self.view.bounds.size.width -
+                         kMostVisitedCellSize.width * kNumberOfItemsPerRow -
+                         kItemSpacing * (kNumberOfItemsPerRow - 1)) /
+                        2;
   self.layout.sectionInset =
       UIEdgeInsetsMake(kTopInset, widthInsets, 0, widthInsets);
 }
@@ -111,7 +111,7 @@ const CGSize kItemSize = {73, 100};
 
   _layout = [[UICollectionViewFlowLayout alloc] init];
   _layout.minimumLineSpacing = kLineSpacing;
-  _layout.itemSize = kItemSize;
+  _layout.itemSize = kMostVisitedCellSize;
   return _layout;
 }
 
