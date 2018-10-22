@@ -56,10 +56,7 @@ v8::Local<v8::Object> CreatePlainWrapper(v8::Isolate* isolate,
   v8::Local<v8::Object> instance_template =
       V8ObjectConstructor::NewInstance(isolate, interface_object)
           .ToLocalChecked();
-  v8::Local<v8::Object> wrapper = instance_template->Clone();
-  wrapper->SetAlignedPointerInInternalField(kV8DOMWrapperTypeIndex,
-                                            const_cast<WrapperTypeInfo*>(type));
-  return wrapper;
+  return instance_template->Clone();
 }
 
 int GetSnapshotIndexForWorld(const DOMWrapperWorld& world) {
@@ -93,6 +90,9 @@ enum class InternalFieldType : uint8_t {
   kHTMLDocumentType,
   kHTMLDocumentObject,
 };
+
+constexpr uintptr_t SerializedHTMLDocumentHack =
+    (uintptr_t)((unsigned)InternalFieldType::kHTMLDocumentType << 3u);
 
 const WrapperTypeInfo* FieldTypeToWrapperTypeInfo(InternalFieldType type) {
   switch (type) {
@@ -326,13 +326,15 @@ v8::StartupData V8ContextSnapshot::SerializeInternalField(
   InternalFieldType field_type = InternalFieldType::kNone;
   const WrapperTypeInfo* wrapper_type = ToWrapperTypeInfo(object);
   if (kV8DOMWrapperObjectIndex == index) {
-    if (blink::V8HTMLDocument::wrapperTypeInfo.Equals(wrapper_type)) {
+    if ((uintptr_t)wrapper_type == SerializedHTMLDocumentHack ||
+        blink::V8HTMLDocument::wrapperTypeInfo.Equals(wrapper_type)) {
       field_type = InternalFieldType::kHTMLDocumentObject;
     }
     DCHECK_LE(kV8DefaultWrapperInternalFieldCount,
               object->InternalFieldCount());
   } else if (kV8DOMWrapperTypeIndex == index) {
-    if (blink::V8HTMLDocument::wrapperTypeInfo.Equals(wrapper_type)) {
+    if ((uintptr_t)wrapper_type == SerializedHTMLDocumentHack ||
+        blink::V8HTMLDocument::wrapperTypeInfo.Equals(wrapper_type)) {
       field_type = InternalFieldType::kHTMLDocumentType;
     } else if (blink::V8Document::wrapperTypeInfo.Equals(wrapper_type)) {
       field_type = InternalFieldType::kDocumentType;
@@ -494,8 +496,12 @@ void V8ContextSnapshot::TakeSnapshotForWorld(v8::SnapshotCreator* creator,
     v8::Local<v8::Object> document_wrapper = CreatePlainWrapper(
         isolate, world, context, &V8HTMLDocument::wrapperTypeInfo);
     int indices[] = {kV8DOMWrapperObjectIndex, kV8DOMWrapperTypeIndex};
-    void* values[] = {nullptr, const_cast<WrapperTypeInfo*>(
-                                   &V8HTMLDocument::wrapperTypeInfo)};
+    // TODO(https://crbug.com/870584): Once v8 no longer writes pointers
+    // that have explicit serialization code into the snapshot, put
+    // const_cast<WrapperTypeInfo*>(&V8HTMLDocument::wrapperTypeInfo)
+    // here and remove the SerializedHTMLDocumentHack instances in
+    // SerializeEmbedderFields().
+    void* values[] = {nullptr, (void*)SerializedHTMLDocumentHack};
     document_wrapper->SetAlignedPointerInInternalFields(base::size(indices),
                                                         indices, values);
 
