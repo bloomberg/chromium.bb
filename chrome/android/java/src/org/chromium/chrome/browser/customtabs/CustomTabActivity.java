@@ -72,6 +72,7 @@ import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsM
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ActivityDelegate;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ActivityHostImpl;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleEntryPoint;
+import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleLoader;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleMetrics;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.dependency_injection.CustomTabActivityComponent;
@@ -117,7 +118,6 @@ import org.chromium.ui.base.PageTransition;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -198,11 +198,12 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     private ModuleEntryPoint mModuleEntryPoint;
     @Nullable
     private ActivityDelegate mModuleActivityDelegate;
-    @Nullable
-    private Runnable mLoadModuleCancelRunnable;
+
     private boolean mModuleOnStartPending;
     private boolean mModuleOnResumePending;
     private boolean mHasSetOverlayView;
+    @Nullable
+    private LoadModuleCallback mModuleCallback;
 
     private ActivityTabTaskDescriptionHelper mTaskDescriptionHelper;
 
@@ -353,49 +354,40 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             return;
         }
 
-        mLoadModuleCancelRunnable =
-                mConnection.getModuleLoader(componentName).loadModule(new LoadModuleCallback(this));
+        ModuleLoader moduleLoader = mConnection.getModuleLoader(componentName);
+        moduleLoader.loadModule();
+        mModuleCallback = new LoadModuleCallback();
+        moduleLoader.addCallbackAndIncrementUseCount(mModuleCallback);
     }
 
     private boolean isModuleLoading() {
-        return mLoadModuleCancelRunnable != null;
-    }
-
-    private static class LoadModuleCallback implements Callback<ModuleEntryPoint> {
-        private final WeakReference<CustomTabActivity> mActivity;
-
-        LoadModuleCallback(CustomTabActivity activity) {
-            mActivity = new WeakReference<>(activity);
-        }
-
-        @Override
-        public void onResult(@Nullable ModuleEntryPoint entryPoint) {
-            CustomTabActivity activity = mActivity.get();
-            if (activity == null || activity.isActivityDestroyed()) return;
-            activity.onModuleLoaded(entryPoint);
-        }
+        return mModuleCallback != null;
     }
 
     /**
-     * Receives the entry point if it was loaded successfully, or null if there was a problem. This
-     * is always called on the UI thread.
+     * Callback to receive the entry point if it was loaded successfully,
+     * or null if there was a problem. This is always called on the UI thread.
      */
-    private void onModuleLoaded(@Nullable ModuleEntryPoint entryPoint) {
-        mLoadModuleCancelRunnable = null;
-        if (entryPoint == null) return;
+    private class LoadModuleCallback implements Callback<ModuleEntryPoint> {
+        @Override
+        public void onResult(@Nullable ModuleEntryPoint entryPoint) {
+            if (entryPoint == null) return;
 
-        mModuleEntryPoint = entryPoint;
+            mModuleEntryPoint = entryPoint;
 
-        long createActivityDelegateStartTime = ModuleMetrics.now();
-        mModuleActivityDelegate = entryPoint.createActivityDelegate(new ActivityHostImpl(this));
-        ModuleMetrics.recordCreateActivityDelegateTime(createActivityDelegateStartTime);
-        mModuleActivityDelegate.onCreate(getSavedInstanceState());
+            long createActivityDelegateStartTime = ModuleMetrics.now();
+            mModuleActivityDelegate = entryPoint.createActivityDelegate(
+                    new ActivityHostImpl(CustomTabActivity.this));
+            ModuleMetrics.recordCreateActivityDelegateTime(createActivityDelegateStartTime);
+            mModuleActivityDelegate.onCreate(getSavedInstanceState());
 
-        if (mModuleOnStartPending) startModule();
-        if (mModuleOnResumePending) resumeModule();
+            if (mModuleOnStartPending) startModule();
+            if (mModuleOnResumePending) resumeModule();
 
-        mConnection.setActivityDelegateForSession(mSession, mModuleActivityDelegate,
-                mModuleEntryPoint.getModuleVersion());
+            mConnection.setActivityDelegateForSession(mSession, mModuleActivityDelegate,
+                    mModuleEntryPoint.getModuleVersion());
+            mModuleCallback = null;
+        }
     }
 
     private void startModule() {
@@ -997,10 +989,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     @Override
     protected void onDestroyInternal() {
         super.onDestroyInternal();
-        if (mLoadModuleCancelRunnable != null) {
-            mLoadModuleCancelRunnable.run();
-            mLoadModuleCancelRunnable = null;
-        }
         if (mModuleActivityDelegate != null) {
             mModuleActivityDelegate.onDestroy();
             mModuleActivityDelegate = null;
@@ -1011,7 +999,8 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             moduleComponentName = mIntentDataProvider.getModuleComponentName();
         }
         if (moduleComponentName != null) {
-            mConnection.getModuleLoader(moduleComponentName).decrementModuleUseCount();
+            mConnection.getModuleLoader(moduleComponentName)
+                    .removeCallbackAndDecrementUseCount(mModuleCallback);
         }
         if (mIncognitoTabHost != null) {
             IncognitoTabHostRegistry.getInstance().unregister(mIncognitoTabHost);
