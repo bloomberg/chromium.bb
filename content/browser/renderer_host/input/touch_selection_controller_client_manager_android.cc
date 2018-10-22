@@ -74,8 +74,11 @@ void TouchSelectionControllerClientManagerAndroid::UpdateClientSelectionBounds(
 
 void TouchSelectionControllerClientManagerAndroid::InvalidateClient(
     ui::TouchSelectionControllerClient* client) {
-  if (active_client_ == client)
+  if (active_client_ == client) {
+    if (active_client_ != rwhv_)
+      host_frame_sink_manager_->RemoveHitTestRegionObserver(this);
     active_client_ = rwhv_;
+  }
 }
 
 ui::TouchSelectionController*
