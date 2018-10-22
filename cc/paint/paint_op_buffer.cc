@@ -2132,9 +2132,7 @@ DrawImageOp::DrawImageOp(const PaintImage& image,
       top(top) {}
 
 bool DrawImageOp::HasDiscardableImages() const {
-  // TODO(khushalsagar): Callers should not be able to change the lazy generated
-  // state for a PaintImage.
-  return image && image.IsLazyGenerated();
+  return image && !image.IsTextureBacked();
 }
 
 DrawImageOp::~DrawImageOp() = default;
@@ -2153,7 +2151,7 @@ DrawImageRectOp::DrawImageRectOp(const PaintImage& image,
       constraint(constraint) {}
 
 bool DrawImageRectOp::HasDiscardableImages() const {
-  return image && image.IsLazyGenerated();
+  return image && !image.IsTextureBacked();
 }
 
 DrawImageRectOp::~DrawImageRectOp() = default;

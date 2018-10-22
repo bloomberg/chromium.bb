@@ -214,7 +214,7 @@ PaintShader::PaintShader(Type type) : shader_type_(type) {}
 PaintShader::~PaintShader() = default;
 
 bool PaintShader::has_discardable_images() const {
-  return (image_ && image_.IsLazyGenerated()) ||
+  return (image_ && !image_.IsTextureBacked()) ||
          (record_ && record_->HasDiscardableImages());
 }
 

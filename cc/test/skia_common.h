@@ -64,6 +64,8 @@ PaintImage CreateBitmapImage(const gfx::Size& size,
 scoped_refptr<SkottieWrapper> CreateSkottie(const gfx::Size& size,
                                             int duration_secs);
 
+PaintImage CreateNonDiscardablePaintImage(const gfx::Size& size);
+
 }  // namespace cc
 
 #endif  // CC_TEST_SKIA_COMMON_H_

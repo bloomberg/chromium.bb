@@ -349,7 +349,7 @@ class DiscardableImageGenerator {
                 const gfx::Rect& image_rect,
                 const SkMatrix& matrix,
                 SkFilterQuality filter_quality) {
-    if (!paint_image.IsLazyGenerated())
+    if (paint_image.IsTextureBacked())
       return;
 
     SkIRect src_irect;
