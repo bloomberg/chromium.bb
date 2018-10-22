@@ -258,6 +258,8 @@ class PasswordStore : protected PasswordStoreSync,
   // Schedules the given |task| to be run on the PasswordStore's TaskRunner.
   bool ScheduleTask(base::OnceClosure task);
 
+  scoped_refptr<base::SequencedTaskRunner> GetBackgroundTaskRunner();
+
   // Returns true iff initialization was successful.
   virtual bool IsAbleToSavePasswords() const;
 

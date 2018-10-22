@@ -549,7 +549,22 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
       debug_identifier_,
       base::BindRepeating(&syncer::SyncClient::CreateModelWorkerForGroup,
                           base::Unretained(sync_client_.get())));
-  params.encryption_observer_proxy = crypto_.GetEncryptionObserverProxy();
+  params.encryption_observer_proxies.push_back(
+      crypto_.GetEncryptionObserverProxy());
+
+  // Let datatypes install their own proxy encryption observers that receive
+  // updates from the sync thread. Currently, this is necessary for pseudo-USS
+  // PASSWORDS only.
+  for (const std::pair<const syncer::ModelType,
+                       std::unique_ptr<DataTypeController>>&
+           type_and_controller : data_type_controllers_) {
+    std::unique_ptr<syncer::SyncEncryptionHandler::Observer> proxy_observer =
+        type_and_controller.second->GetEncryptionObserverProxy();
+    if (proxy_observer) {
+      params.encryption_observer_proxies.push_back(std::move(proxy_observer));
+    }
+  }
+
   params.extensions_activity = sync_client_->GetExtensionsActivity();
   params.event_handler = GetJsEventHandler();
   params.service_url = sync_service_url();

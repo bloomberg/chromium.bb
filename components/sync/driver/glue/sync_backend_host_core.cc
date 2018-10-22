@@ -115,9 +115,11 @@ void SyncBackendHostCore::OnInitializationComplete(
   // the initializing downloading control types or initializing the encryption
   // handler in order to receive notifications triggered during encryption
   // startup.
-  DCHECK(encryption_observer_proxy_);
-  sync_manager_->GetEncryptionHandler()->AddObserver(
-      encryption_observer_proxy_.get());
+  DCHECK(!encryption_observer_proxies_.empty());
+  for (const std::unique_ptr<SyncEncryptionHandler::Observer>& proxy_observer :
+       encryption_observer_proxies_) {
+    sync_manager_->GetEncryptionHandler()->AddObserver(proxy_observer.get());
+  }
 
   // Sync manager initialization is complete, so we can schedule recurring
   // SaveChanges.
@@ -300,9 +302,9 @@ void SyncBackendHostCore::DoInitialize(SyncEngine::InitParams params) {
   DCHECK(params.registrar);
   registrar_ = std::move(params.registrar);
 
-  DCHECK(!encryption_observer_proxy_);
-  DCHECK(params.encryption_observer_proxy);
-  encryption_observer_proxy_ = std::move(params.encryption_observer_proxy);
+  DCHECK(encryption_observer_proxies_.empty());
+  DCHECK(!params.encryption_observer_proxies.empty());
+  encryption_observer_proxies_ = std::move(params.encryption_observer_proxies);
 
   sync_manager_ = params.sync_manager_factory->CreateSyncManager(name_);
   sync_manager_->AddObserver(this);

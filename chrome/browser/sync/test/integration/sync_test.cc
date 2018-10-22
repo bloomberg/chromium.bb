@@ -333,6 +333,8 @@ bool SyncTest::CreateGaiaAccount(const std::string& username,
   return entry->GetHttpStatusCode() == 200;
 }
 
+void SyncTest::BeforeSetupClient(int index) {}
+
 bool SyncTest::CreateProfile(int index) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   tmp_profile_paths_[index] = new base::ScopedTempDir();
@@ -575,6 +577,7 @@ bool SyncTest::SetupClients() {
 #endif
 
   for (int i = 0; i < num_clients_; ++i) {
+    BeforeSetupClient(i);
     if (!CreateProfile(i)) {
       return false;
     }

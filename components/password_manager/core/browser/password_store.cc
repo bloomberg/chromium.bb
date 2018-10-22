@@ -347,6 +347,11 @@ bool PasswordStore::ScheduleTask(base::OnceClosure task) {
   return false;
 }
 
+scoped_refptr<base::SequencedTaskRunner>
+PasswordStore::GetBackgroundTaskRunner() {
+  return background_task_runner_;
+}
+
 bool PasswordStore::IsAbleToSavePasswords() const {
   return init_status_ == InitStatus::kSuccess;
 }

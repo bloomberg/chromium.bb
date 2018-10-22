@@ -328,6 +328,9 @@ class SyncTest : public InProcessBrowserTest {
   // The FakeServer used in tests with server type IN_PROCESS_FAKE_SERVER.
   std::unique_ptr<fake_server::FakeServer> fake_server_;
 
+ protected:
+  virtual void BeforeSetupClient(int index);
+
  private:
   // Handles Profile creation for given index. Profile's path and type is
   // determined at runtime based on server type.
