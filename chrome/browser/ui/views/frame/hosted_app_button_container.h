@@ -58,7 +58,7 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
       base::TimeDelta::FromMilliseconds(800);
 
   // The total duration of the origin fade animation.
-  static const base::TimeDelta kOriginTotalDuration;
+  static base::TimeDelta OriginTotalDuration();
 
   // |active_color| and |inactive_color| indicate the colors to use
   // for button icons when the window is focused and blurred respectively.
