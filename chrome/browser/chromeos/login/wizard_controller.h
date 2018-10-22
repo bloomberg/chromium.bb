@@ -231,6 +231,7 @@ class WizardController : public BaseScreenDelegate,
   void OnTermsOfServiceDeclined();
   void OnTermsOfServiceAccepted();
   void OnSyncConsentFinished();
+  void OnDiscoverScreenFinished();
   void OnFingerprintSetupFinished();
   void OnArcTermsOfServiceSkipped();
   void OnArcTermsOfServiceAccepted();

@@ -94,6 +94,8 @@
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/browser/ui/webui/chromeos/login/discover/discover_manager.h"
+#include "chrome/browser/ui/webui/chromeos/login/discover/modules/discover_module_pin_setup.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
@@ -1194,25 +1196,31 @@ void UserSessionManager::InitProfilePreferences(
         input_method::InputMethodManager::Get();
     manager->SetState(GetDefaultIMEState(profile));
   }
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   // Set initial prefs if the user is new, or if the user was already present on
   // the device and the profile was re-created. This can happen e.g. in ext4
   // migration in wipe mode.
-  if (user_manager::UserManager::Get()->IsCurrentUserNew() ||
-      profile->IsNewProfile()) {
+  if (user_manager->IsCurrentUserNew() || profile->IsNewProfile()) {
     SetFirstLoginPrefs(profile, user_context.GetPublicSessionLocale(),
                        user_context.GetPublicSessionInputMethod());
+
+    if (user_manager->GetPrimaryUser() == user &&
+        user->GetType() == user_manager::USER_TYPE_REGULAR &&
+        !user_manager->IsUserNonCryptohomeDataEphemeral(user->GetAccountId())) {
+      chromeos::DiscoverManager::Get()
+          ->GetModule<chromeos::DiscoverModulePinSetup>()
+          ->SetPrimaryUserPassword(user_context.GetPasswordKey()->GetSecret());
+    }
   }
 
-  if (user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser()) {
-    user_manager::User* active_user =
-        user_manager::UserManager::Get()->GetActiveUser();
+  if (user_manager->IsLoggedInAsSupervisedUser()) {
+    user_manager::User* active_user = user_manager->GetActiveUser();
     std::string supervised_user_sync_id =
         ChromeUserManager::Get()->GetSupervisedUserManager()->GetUserSyncId(
             active_user->GetAccountId().GetUserEmail());
     profile->GetPrefs()->SetString(prefs::kSupervisedUserId,
                                    supervised_user_sync_id);
-  } else if (user_manager::UserManager::Get()
-                 ->IsLoggedInAsUserWithGaiaAccount()) {
+  } else if (user_manager->IsLoggedInAsUserWithGaiaAccount()) {
     // Get the Gaia ID from the user context.  If it's not available, this may
     // not be available when unlocking a previously opened profile, or when
     // creating a supervised users.  However, in these cases the gaia_id should
@@ -1246,7 +1254,7 @@ void UserSessionManager::InitProfilePreferences(
         /*refresh_token=*/std::string());
     std::string account_id = identity_manager->GetPrimaryAccountId();
     const user_manager::User* user =
-        user_manager::UserManager::Get()->FindUser(user_context.GetAccountId());
+        user_manager->FindUser(user_context.GetAccountId());
     bool is_child = user->GetType() == user_manager::USER_TYPE_CHILD;
     DCHECK(is_child ==
            (user_context.GetUserType() == user_manager::USER_TYPE_CHILD));
