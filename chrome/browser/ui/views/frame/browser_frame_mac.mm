@@ -243,10 +243,5 @@ bool BrowserFrameMac::HandleKeyboardEvent(
 
   // Redispatch the event. If it's a keyEquivalent:, this gives
   // CommandDispatcher the opportunity to finish passing the event to consumers.
-  NSWindow* window = GetNativeWindow().GetNativeNSWindow();
-  DCHECK([window.class conformsToProtocol:@protocol(CommandDispatchingWindow)]);
-  NSObject<CommandDispatchingWindow>* command_dispatching_window =
-      base::mac::ObjCCastStrict<NSObject<CommandDispatchingWindow>>(window);
-  return [[command_dispatching_window commandDispatcher]
-      redispatchKeyEvent:event.os_event];
+  return RedispatchKeyEvent(event.os_event);
 }
