@@ -16,7 +16,7 @@ NGContainerFragmentBuilder::NGContainerFragmentBuilder(
     scoped_refptr<const ComputedStyle> style,
     WritingMode writing_mode,
     TextDirection direction)
-    : NGBaseFragmentBuilder(std::move(style), writing_mode, direction) {}
+    : NGFragmentBuilder(std::move(style), writing_mode, direction) {}
 
 NGContainerFragmentBuilder::~NGContainerFragmentBuilder() = default;
 

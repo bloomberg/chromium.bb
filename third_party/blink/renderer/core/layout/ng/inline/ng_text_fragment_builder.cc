@@ -32,7 +32,7 @@ NGLineOrientation ToLineOrientation(WritingMode writing_mode) {
 
 NGTextFragmentBuilder::NGTextFragmentBuilder(NGInlineNode node,
                                              WritingMode writing_mode)
-    : NGBaseFragmentBuilder(writing_mode, TextDirection::kLtr),
+    : NGFragmentBuilder(writing_mode, TextDirection::kLtr),
       inline_node_(node) {}
 
 void NGTextFragmentBuilder::SetItem(

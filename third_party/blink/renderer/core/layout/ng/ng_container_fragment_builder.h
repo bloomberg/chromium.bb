@@ -12,8 +12,8 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_base_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_link.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_positioned_descendant.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
@@ -27,7 +27,7 @@ class NGExclusionSpace;
 class NGLayoutResult;
 class NGPhysicalFragment;
 
-class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
+class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   STACK_ALLOCATED();
 
  public:
