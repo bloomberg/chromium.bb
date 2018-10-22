@@ -418,6 +418,12 @@ _CONFIG = [
     },
     {
         'paths': [
+            'third_party/blink/renderer/modules/webaudio/',
+        ],
+        'allowed': ['audio_utilities::.+'],
+    },
+    {
+        'paths': [
             'third_party/blink/renderer/modules/webdatabase/',
         ],
         'allowed': ['sql::.+'],

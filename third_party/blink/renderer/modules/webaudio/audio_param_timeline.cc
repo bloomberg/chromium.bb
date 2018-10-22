@@ -642,7 +642,7 @@ bool AudioParamTimeline::HasValues(size_t current_frame,
         // Need automation if the event starts somewhere before the
         // end of the current render quantum.
         return events_[0]->Time() <=
-               (current_frame + AudioUtilities::kRenderQuantumFrames) /
+               (current_frame + audio_utilities::kRenderQuantumFrames) /
                    sample_rate;
       default:
         // Otherwise, there's some kind of other event running, so we
@@ -821,7 +821,7 @@ float AudioParamTimeline::ValueForContextTime(
   double sample_rate = audio_destination.SampleRate();
   size_t start_frame = audio_destination.CurrentSampleFrame();
   // One parameter change per render quantum.
-  double control_rate = sample_rate / AudioUtilities::kRenderQuantumFrames;
+  double control_rate = sample_rate / audio_utilities::kRenderQuantumFrames;
   value =
       ValuesForFrameRange(start_frame, start_frame + 1, default_value, &value,
                           1, sample_rate, control_rate, min_value, max_value);
@@ -1212,7 +1212,7 @@ bool AudioParamTimeline::HandleAllEventsInThePast(double current_time,
   // the curve, so we don't need to worry that SetValueCurve time is a
   // start time, not an end time.
   if (last_event_time +
-          1.5 * AudioUtilities::kRenderQuantumFrames / sample_rate <
+          1.5 * audio_utilities::kRenderQuantumFrames / sample_rate <
       current_time) {
     // If the last event is SetTarget, make sure we've converged and, that
     // we're at least 5 time constants past the start of the event.  If not, we
@@ -1291,7 +1291,7 @@ void AudioParamTimeline::ProcessSetTargetFollowedByRamp(
       // SetTarget has already started.  Update |value| one frame because it's
       // the value from the previous frame.
       float discrete_time_constant =
-          static_cast<float>(AudioUtilities::DiscreteTimeConstantForSampleRate(
+          static_cast<float>(audio_utilities::DiscreteTimeConstantForSampleRate(
               event->TimeConstant(), control_rate));
       value += (event->Value() - value) * discrete_time_constant;
     }
@@ -1560,7 +1560,7 @@ std::tuple<size_t, float, unsigned> AudioParamTimeline::ProcessSetTarget(
   float target = value1;
   float time_constant = event->TimeConstant();
   float discrete_time_constant =
-      static_cast<float>(AudioUtilities::DiscreteTimeConstantForSampleRate(
+      static_cast<float>(audio_utilities::DiscreteTimeConstantForSampleRate(
           time_constant, control_rate));
 
   // Set the starting value correctly.  This is only needed when the
@@ -1864,8 +1864,8 @@ std::tuple<size_t, float, unsigned> AudioParamTimeline::ProcessCancelValues(
         float target = events_[event_index - 1]->Value();
         float time_constant = events_[event_index - 1]->TimeConstant();
         float discrete_time_constant = static_cast<float>(
-            AudioUtilities::DiscreteTimeConstantForSampleRate(time_constant,
-                                                              control_rate));
+            audio_utilities::DiscreteTimeConstantForSampleRate(time_constant,
+                                                               control_rate));
         value += (target - value) * discrete_time_constant;
       }
     }

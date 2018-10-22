@@ -95,7 +95,7 @@ void MediaElementAudioSourceHandler::SetFormat(size_t number_of_channels,
       source_sample_rate != source_sample_rate_) {
     if (!number_of_channels ||
         number_of_channels > BaseAudioContext::MaxNumberOfChannels() ||
-        !AudioUtilities::IsValidAudioBufferSampleRate(source_sample_rate)) {
+        !audio_utilities::IsValidAudioBufferSampleRate(source_sample_rate)) {
       // process() will generate silence for these uninitialized values.
       DLOG(ERROR) << "setFormat(" << number_of_channels << ", "
                   << source_sample_rate << ") - unhandled format change";

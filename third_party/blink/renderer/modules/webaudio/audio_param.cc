@@ -54,7 +54,7 @@ AudioParamHandler::AudioParamHandler(BaseAudioContext& context,
       min_value_(min_value),
       max_value_(max_value),
       summing_bus_(
-          AudioBus::Create(1, AudioUtilities::kRenderQuantumFrames, false)) {
+          AudioBus::Create(1, audio_utilities::kRenderQuantumFrames, false)) {
   // The destination MUST exist because we need the destination handler for the
   // AudioParam.
   CHECK(context.destination());
@@ -264,7 +264,7 @@ void AudioParamHandler::CalculateFinalValues(float* values,
   // together (unity-gain summing junction).  Note that connections would
   // normally be mono, but we mix down to mono if necessary.
   if (NumberOfRenderingConnections() > 0) {
-    DCHECK_LE(number_of_values, AudioUtilities::kRenderQuantumFrames);
+    DCHECK_LE(number_of_values, audio_utilities::kRenderQuantumFrames);
 
     summing_bus_->SetChannelMemory(0, values, number_of_values);
 
@@ -274,7 +274,7 @@ void AudioParamHandler::CalculateFinalValues(float* values,
 
       // Render audio from this output.
       AudioBus* connection_bus =
-          output->Pull(nullptr, AudioUtilities::kRenderQuantumFrames);
+          output->Pull(nullptr, audio_utilities::kRenderQuantumFrames);
 
       // Sum, with unity-gain.
       summing_bus_->SumFrom(*connection_bus);
@@ -286,7 +286,7 @@ void AudioParamHandler::CalculateTimelineValues(float* values,
                                                 unsigned number_of_values) {
   // Calculate values for this render quantum.  Normally
   // |numberOfValues| will equal to
-  // AudioUtilities::kRenderQuantumFrames (the render quantum size).
+  // audio_utilities::kRenderQuantumFrames (the render quantum size).
   double sample_rate = DestinationHandler().SampleRate();
   size_t start_frame = DestinationHandler().CurrentSampleFrame();
   size_t end_frame = start_frame + number_of_values;

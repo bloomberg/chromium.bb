@@ -69,7 +69,7 @@ class OfflineAudioDestinationHandler final : public AudioDestinationHandler {
   double SampleRate() const override { return sample_rate_; }
 
   size_t RenderQuantumFrames() const {
-    return AudioUtilities::kRenderQuantumFrames;
+    return audio_utilities::kRenderQuantumFrames;
   }
 
   // This is called when rendering of the offline context is started
