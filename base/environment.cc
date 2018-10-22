@@ -203,12 +203,12 @@ std::unique_ptr<char* []> AlterEnvironment(const char* const* const env,
   }
 
   // Now append all modified and new values.
-  for (auto i = changes.begin(); i != changes.end(); ++i) {
-    if (!i->second.empty()) {
+  for (const auto& i : changes) {
+    if (!i.second.empty()) {
       result_indices.push_back(value_storage.size());
-      value_storage.append(i->first);
+      value_storage.append(i.first);
       value_storage.push_back('=');
-      value_storage.append(i->second);
+      value_storage.append(i.second);
       value_storage.push_back(0);
     }
   }
