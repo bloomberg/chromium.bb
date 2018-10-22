@@ -61,9 +61,6 @@ def main(server_constructor, input_fn=None, argv=None, description=None, **kwarg
     logger.setLevel(logging.DEBUG if options.verbose else logging.INFO)
 
     host = Host()
-    # Constructing a port requires explicitly setting the configuration & target.
-    options.configuration = 'Release'
-    options.target = 'Release'
     port_obj = host.port_factory.get(options=options)
     if not options.output_dir:
         options.output_dir = port_obj.default_results_directory()

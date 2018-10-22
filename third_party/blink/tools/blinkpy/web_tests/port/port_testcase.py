@@ -66,9 +66,7 @@ class PortTestCase(LoggingTestCase):
 
     def make_port(self, host=None, port_name=None, options=None, os_name=None, os_version=None, **kwargs):
         host = host or MockSystemHost(os_name=(os_name or self.os_name), os_version=(os_version or self.os_version))
-        options = options or optparse.Values(
-            {'target': 'Release', 'configuration': 'Release'})
-
+        options = options or optparse.Values({'configuration': 'Release'})
         port_name = port_name or self.port_name
         port_name = self.port_maker.determine_full_port_name(host, options, port_name)
         return self.port_maker(host, port_name, options=options, **kwargs)
@@ -119,18 +117,14 @@ class PortTestCase(LoggingTestCase):
         self.assertEqual(port.default_max_locked_shards(), 1)
 
     def test_default_timeout_ms(self):
-        options = optparse.Values({'configuration': 'Release', 'target': 'Release'})
-        self.assertEqual(self.make_port(options=options).default_timeout_ms(), 6000)
-        options = optparse.Values({'configuration': 'Debug', 'target': 'Debug'})
-        self.assertEqual(self.make_port(options=options).default_timeout_ms(), 18000)
+        self.assertEqual(self.make_port(options=optparse.Values({'configuration': 'Release'})).default_timeout_ms(), 6000)
+        self.assertEqual(self.make_port(options=optparse.Values({'configuration': 'Debug'})).default_timeout_ms(), 18000)
 
     def test_driver_cmd_line(self):
         port = self.make_port()
         self.assertTrue(len(port.driver_cmd_line()))
 
-        options = optparse.Values({
-            'additional_driver_flag': ['--foo=bar', '--foo=baz'],
-            'configuration': 'Release', 'target': 'Release'})
+        options = optparse.Values(dict(additional_driver_flag=['--foo=bar', '--foo=baz']))
         port = self.make_port(options=options)
         cmd_line = port.driver_cmd_line()
         self.assertTrue('--foo=bar' in cmd_line)
@@ -267,9 +261,7 @@ class PortTestCase(LoggingTestCase):
         ordered_dict = port.expectations_dict()
         self.assertEqual(port.path_to_generic_test_expectations_file(), ordered_dict.keys()[0])
 
-        options = optparse.Values(
-            {'additional_expectations': ['/tmp/foo', '/tmp/bar'],
-             'configuration': 'Release', 'target': 'Release'})
+        options = optparse.Values(dict(additional_expectations=['/tmp/foo', '/tmp/bar']))
         port = self.make_port(options=options)
         for path in port.expectations_files():
             port.host.filesystem.write_text_file(path, '')
@@ -302,9 +294,7 @@ class PortTestCase(LoggingTestCase):
         self.assertEqual(port.path_to_apache_config_file(), '/existing/httpd.conf')
 
     def test_additional_platform_directory(self):
-        port = self.make_port(options=optparse.Values(
-            {'additional_platform_directory': ['/tmp/foo'],
-             'configuration': 'Release', 'target': 'Release'}))
+        port = self.make_port(options=optparse.Values(dict(additional_platform_directory=['/tmp/foo'])))
         self.assertEqual(port.baseline_search_path()[0], '/tmp/foo')
 
     def test_virtual_test_suites(self):
