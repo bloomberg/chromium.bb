@@ -97,7 +97,11 @@ void SuggestionChipView::SetBackgroundBlurEnabled(bool enabled) {
 
 gfx::Size SuggestionChipView::CalculatePreferredSize() const {
   const int preferred_width = views::View::CalculatePreferredSize().width();
-  return gfx::Size(preferred_width, kPreferredHeightDip);
+  return gfx::Size(preferred_width, GetHeightForWidth(preferred_width));
+}
+
+int SuggestionChipView::GetHeightForWidth(int width) const {
+  return kPreferredHeightDip;
 }
 
 void SuggestionChipView::ChildVisibilityChanged(views::View* child) {

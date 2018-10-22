@@ -47,6 +47,7 @@ class APP_LIST_EXPORT SuggestionChipView : public views::Button {
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
+  int GetHeightForWidth(int width) const override;
   void ChildVisibilityChanged(views::View* child) override;
   void OnPaintBackground(gfx::Canvas* canvas) override;
   void OnFocus() override;
