@@ -265,7 +265,13 @@ std::unique_ptr<WebURLLoader> WorkerFetchContext::CreateURLLoader(
         ->CreateURLLoader(wrapped, CreateResourceLoadingTaskRunnerHandle());
   }
 
-  if (request.GetRequestContext() == mojom::RequestContextType::SCRIPT) {
+  // Use |script_loader_factory_| to load types SCRIPT (classic imported
+  // scripts) and SERVICE_WORKER (module main scripts and module imported
+  // scripts). Note that classic main scripts are also SERVICE_WORKER but loaded
+  // by the shadow page on the main thread, not here.
+  if (request.GetRequestContext() == mojom::RequestContextType::SCRIPT ||
+      request.GetRequestContext() ==
+          mojom::RequestContextType::SERVICE_WORKER) {
     if (!script_loader_factory_)
       script_loader_factory_ = web_context_->CreateScriptLoaderFactory();
     if (script_loader_factory_) {
