@@ -46,6 +46,7 @@
 #include "content/public/test/test_utils.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source.h"
+#include "services/network/test/test_network_quality_tracker.h"
 #include "third_party/metrics_proto/ukm/report.pb.h"
 #include "third_party/zlib/google/compression_utils.h"
 
@@ -539,6 +540,47 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, LogProtoData) {
   EXPECT_EQ(base::SysInfo::HardwareModelName(),
             report.system_profile().hardware().hardware_class());
 #endif  // defined(OS_CHROMEOS)
+
+  harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  CloseBrowserSynchronously(sync_browser);
+}
+
+// Verifies that network provider attaches effective connection type correctly
+// to the UKM report.
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, NetworkProviderPopulatesSystemProfile) {
+  // Override network quality to 2G. This should cause the
+  // |max_effective_connection_type| in the system profile to be set to 2G.
+  g_browser_process->network_quality_tracker()
+      ->ReportEffectiveConnectionTypeForTesting(
+          net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  MetricsConsentOverride metrics_consent(true);
+
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  std::unique_ptr<ProfileSyncServiceHarness> harness =
+      EnableSyncForProfile(profile);
+
+  Browser* sync_browser = CreateBrowser(profile);
+  EXPECT_TRUE(ukm_enabled());
+  uint64_t original_client_id = client_id();
+  EXPECT_NE(0U, original_client_id);
+
+  // Override network quality to 4G. This should cause the
+  // |max_effective_connection_type| in the system profile to be set to 4G.
+  g_browser_process->network_quality_tracker()
+      ->ReportEffectiveConnectionTypeForTesting(
+          net::EFFECTIVE_CONNECTION_TYPE_4G);
+
+  // Make sure there is a persistent log.
+  BuildAndStoreUkmLog();
+  EXPECT_TRUE(HasUnsentUkmLogs());
+  // Check log contents.
+  ukm::Report report = GetUkmReport();
+
+  EXPECT_EQ(SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_2G,
+            report.system_profile().network().min_effective_connection_type());
+  EXPECT_EQ(SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_4G,
+            report.system_profile().network().max_effective_connection_type());
 
   harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
   CloseBrowserSynchronously(sync_browser);
