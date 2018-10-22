@@ -41,7 +41,9 @@ class ThreadConditionTest : public testing::Test {
   ThreadCondition condition_;
 };
 
-TEST_F(ThreadConditionTest, WaitReportsBlockingCall) {
+// TODO(https://crbug.com/897550): Test often flakes on its first run, only
+// passing when retried by the TestLauncher.
+TEST_F(ThreadConditionTest, DISABLED_WaitReportsBlockingCall) {
   EXPECT_CALL(observer_, BlockingStarted(base::BlockingType::MAY_BLOCK));
   EXPECT_CALL(observer_, BlockingEnded());
 
