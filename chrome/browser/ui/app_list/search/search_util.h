@@ -14,10 +14,10 @@ enum SearchResultType {
   OMNIBOX_SEARCH_RESULT,
   // An app result.
   APP_SEARCH_RESULT,
-  // A search result from the webstore.
-  WEBSTORE_SEARCH_RESULT,
-  // A result that opens a webstore search.
-  SEARCH_WEBSTORE_SEARCH_RESULT,
+  // A search result from the webstore (Deprecated).
+  WEBSTORE_SEARCH_RESULT_DEPRECATED,
+  // A result that opens a webstore search (Deprecated)
+  SEARCH_WEBSTORE_SEARCH_RESULT_DEPRECATED,
   // A result that opens a people search (Deprecated).
   SEARCH_PEOPLE_SEARCH_RESULT_DEPRECATED,
   // A result that opens a suggestion.

@@ -71,10 +71,6 @@ bool IsArcAvailable() {
           base::FeatureList::IsEnabled(kEnableArcFeature));
 }
 
-bool IsWebstoreSearchEnabled() {
-  return false;
-}
-
 bool ShouldArcAlwaysStart() {
   const auto* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(chromeos::switches::kArcStartMode))
