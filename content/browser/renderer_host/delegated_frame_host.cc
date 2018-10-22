@@ -414,14 +414,6 @@ void DelegatedFrameHost::DetachFromCompositor() {
   compositor_ = nullptr;
 }
 
-void DelegatedFrameHost::LockResources() {
-  frame_evictor_->LockFrame();
-}
-
-void DelegatedFrameHost::UnlockResources() {
-  frame_evictor_->UnlockFrame();
-}
-
 void DelegatedFrameHost::CreateCompositorFrameSinkSupport() {
   if (enable_viz_)
     return;

@@ -186,9 +186,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            DiscardDelegatedFramesWithLocking);
 
-  void LockResources();
-  void UnlockResources();
-
   SkColor GetGutterColor() const;
 
   void CreateCompositorFrameSinkSupport();
