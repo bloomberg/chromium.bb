@@ -11,8 +11,10 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -194,6 +196,43 @@ enum class FlashPermissions {
   kRepeated = 1,
   kMaxValue = kRepeated,
 };
+
+// Returns whether per-content setting exception information should be
+// collected. All content settings for which this method returns true here be
+// content settings, not website settings (i.e. their value should be a
+// ContentSetting).
+//
+// This method should be kept in sync with histograms.xml, as every type here
+// is an affected histogram under the "ContentSetting" suffix.
+bool ShouldCollectFineGrainedExceptionHistograms(ContentSettingsType type) {
+  switch (type) {
+    case CONTENT_SETTINGS_TYPE_COOKIES:
+    case CONTENT_SETTINGS_TYPE_POPUPS:
+    case CONTENT_SETTINGS_TYPE_ADS:
+      return true;
+    default:
+      return false;
+  }
+}
+
+const char* ContentSettingToString(ContentSetting setting) {
+  switch (setting) {
+    case CONTENT_SETTING_ALLOW:
+      return "Allow";
+    case CONTENT_SETTING_BLOCK:
+      return "Block";
+    case CONTENT_SETTING_ASK:
+      return "Ask";
+    case CONTENT_SETTING_SESSION_ONLY:
+      return "SessionOnly";
+    case CONTENT_SETTING_DETECT_IMPORTANT_CONTENT:
+      return "DetectImportantContent";
+    case CONTENT_SETTING_DEFAULT:
+    case CONTENT_SETTING_NUM_SETTINGS:
+      NOTREACHED();
+      return nullptr;
+  }
+}
 
 }  // namespace
 
@@ -586,6 +625,8 @@ void HostContentSettingsMap::SetClockForTesting(base::Clock* clock) {
 }
 
 void HostContentSettingsMap::RecordExceptionMetrics() {
+  auto* content_setting_registry =
+      content_settings::ContentSettingsRegistry::GetInstance();
   for (const content_settings::WebsiteSettingsInfo* info :
        *content_settings::WebsiteSettingsRegistry::GetInstance()) {
     ContentSettingsType content_type = info->type();
@@ -594,6 +635,9 @@ void HostContentSettingsMap::RecordExceptionMetrics() {
     ContentSettingsForOneType settings;
     GetSettingsForOneType(content_type, std::string(), &settings);
     size_t num_exceptions = 0;
+    base::flat_map<ContentSetting, size_t> num_exceptions_with_setting;
+    const content_settings::ContentSettingsInfo* content_info =
+        content_setting_registry->Get(content_type);
     for (const ContentSettingPatternSource& setting_entry : settings) {
       // Skip default settings.
       if (setting_entry.primary_pattern == ContentSettingsPattern::Wildcard() &&
@@ -624,17 +668,34 @@ void HostContentSettingsMap::RecordExceptionMetrics() {
         }
       }
 
-      if (setting_entry.source == "preference")
+      if (setting_entry.source == "preference") {
+        // |content_info| will be non-nullptr iff |content_type| is a content
+        // setting rather than a website setting.
+        if (content_info)
+          ++num_exceptions_with_setting[setting_entry.GetContentSetting()];
         ++num_exceptions;
+      }
     }
 
     std::string histogram_name =
         "ContentSettings.Exceptions." + type_name;
+    base::UmaHistogramCustomCounts(histogram_name, num_exceptions, 1, 1000, 30);
 
-    base::HistogramBase* histogram_pointer = base::Histogram::FactoryGet(
-        histogram_name, 1, 1000, 30,
-        base::HistogramBase::kUmaTargetedHistogramFlag);
-    histogram_pointer->Add(num_exceptions);
+    // For some ContentSettingTypes, collect exception histograms broken out by
+    // ContentSetting.
+    if (ShouldCollectFineGrainedExceptionHistograms(content_type)) {
+      DCHECK(content_info);
+      for (int setting = 0; setting < CONTENT_SETTING_NUM_SETTINGS; ++setting) {
+        ContentSetting content_setting = IntToContentSetting(setting);
+        if (!content_info->IsSettingValid(content_setting))
+          continue;
+        std::string histogram_with_suffix =
+            histogram_name + "." + ContentSettingToString(content_setting);
+        base::UmaHistogramCustomCounts(
+            histogram_with_suffix, num_exceptions_with_setting[content_setting],
+            1, 1000, 30);
+      }
+    }
   }
 }
 
