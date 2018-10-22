@@ -461,6 +461,43 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThread(
     const gfx::AxisTransform2d& transform,
     const RasterSource::PlaybackSettings& playback_settings,
     const GURL& url) {
+  PendingRasterQuery query;
+  gpu::SyncToken raster_finished_token = PlaybackOnWorkerThreadInternal(
+      mailbox, texture_target, texture_is_overlay_candidate, sync_token,
+      resource_size, resource_format, color_space,
+      resource_has_previous_content, raster_source, raster_full_rect,
+      raster_dirty_rect, new_content_id, transform, playback_settings, url,
+      &query);
+
+  {
+    // Note that it is important to scope the raster context lock to
+    // PlaybackOnWorkerThreadInternal and release it before acquiring this lock
+    // to avoid a deadlock in CheckRasterFinishedQueries which acquires the
+    // raster context lock while holding this lock.
+    base::AutoLock hold(pending_raster_queries_lock_);
+    pending_raster_queries_.push_back(query);
+  }
+
+  return raster_finished_token;
+}
+
+gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThreadInternal(
+    gpu::Mailbox* mailbox,
+    GLenum texture_target,
+    bool texture_is_overlay_candidate,
+    const gpu::SyncToken& sync_token,
+    const gfx::Size& resource_size,
+    viz::ResourceFormat resource_format,
+    const gfx::ColorSpace& color_space,
+    bool resource_has_previous_content,
+    const RasterSource* raster_source,
+    const gfx::Rect& raster_full_rect,
+    const gfx::Rect& raster_dirty_rect,
+    uint64_t new_content_id,
+    const gfx::AxisTransform2d& transform,
+    const RasterSource::PlaybackSettings& playback_settings,
+    const GURL& url,
+    PendingRasterQuery* query) {
   viz::RasterContextProvider::ScopedRasterContextLock scoped_context(
       worker_context_provider_, url.possibly_invalid_spec().c_str());
   gpu::raster::RasterInterface* ri = scoped_context.RasterInterface();
@@ -488,10 +525,8 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThread(
   }
 
   // Use a query to time the GPU side work for rasterizing this tile.
-  pending_raster_queries_.emplace_back();
-  auto& query = pending_raster_queries_.back();
-  ri->GenQueriesEXT(1, &query.query_id);
-  ri->BeginQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM, query.query_id);
+  ri->GenQueriesEXT(1, &query->query_id);
+  ri->BeginQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM, query->query_id);
 
   {
     base::ElapsedTimer timer;
@@ -512,7 +547,7 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThread(
                       ShouldUnpremultiplyAndDitherResource(resource_format),
                       max_tile_size_);
     }
-    query.worker_duration = timer.Elapsed();
+    query->worker_duration = timer.Elapsed();
   }
 
   ri->EndQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM);
@@ -537,6 +572,10 @@ bool GpuRasterBufferProvider::ShouldUnpremultiplyAndDitherResource(
       base::TimeDelta::FromMilliseconds(100), 100);
 
 bool GpuRasterBufferProvider::CheckRasterFinishedQueries() {
+  base::AutoLock hold(pending_raster_queries_lock_);
+  if (pending_raster_queries_.empty())
+    return false;
+
   viz::RasterContextProvider::ScopedRasterContextLock scoped_context(
       worker_context_provider_);
   auto* ri = scoped_context.RasterInterface();
