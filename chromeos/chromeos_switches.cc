@@ -552,6 +552,9 @@ const char kFilesAppDisableMyFilesNavigation[] = "disable-my-files-navigation";
 // This makes it easier to test layout logic.
 const char kShowLoginDevOverlay[] = "show-login-dev-overlay";
 
+// Show Play Store in Demo Mode.
+const char kShowPlayInDemoMode[] = "show-play-in-demo-mode";
+
 // Indicates that a stub implementation of CrosSettings that stores settings in
 // memory without signing should be used, treating current user as the owner.
 // This also modifies OwnerSettingsServiceChromeOS::HandlesSetting such that no
@@ -714,6 +717,10 @@ bool ShouldShowShelfHoverPreviews() {
 bool IsInstantTetheringBackgroundAdvertisingSupported() {
   return base::FeatureList::IsEnabled(
       kInstantTetheringBackgroundAdvertisementSupport);
+}
+
+bool ShouldShowPlayStoreInDemoMode() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kShowPlayInDemoMode);
 }
 
 }  // namespace switches

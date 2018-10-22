@@ -687,9 +687,15 @@ ArcSupervisionTransition GetSupervisionTransition(const Profile* profile) {
 }
 
 bool IsPlayStoreAvailable() {
-  return (!IsRobotOrOfflineDemoAccountMode() ||
-          chromeos::DemoSession::IsDeviceInDemoMode()) &&
-         !ShouldArcAlwaysStartWithNoPlayStore();
+  if (ShouldArcAlwaysStartWithNoPlayStore())
+    return false;
+
+  if (!IsRobotOrOfflineDemoAccountMode())
+    return true;
+
+  // Demo Mode is the only public session scenario that can launch Play.
+  return chromeos::DemoSession::IsDeviceInDemoMode() &&
+         chromeos::switches::ShouldShowPlayStoreInDemoMode();
 }
 
 }  // namespace arc

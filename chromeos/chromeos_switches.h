@@ -154,6 +154,7 @@ CHROMEOS_EXPORT extern const char kShelfHoverPreviews[];
 CHROMEOS_EXPORT extern const char kShowAndroidFilesInFilesApp[];
 CHROMEOS_EXPORT extern const char kFilesAppDisableMyFilesNavigation[];
 CHROMEOS_EXPORT extern const char kShowLoginDevOverlay[];
+CHROMEOS_EXPORT extern const char kShowPlayInDemoMode[];
 CHROMEOS_EXPORT extern const char kStubCrosSettings[];
 CHROMEOS_EXPORT extern const char kTestEncryptionMigrationUI[];
 CHROMEOS_EXPORT extern const char kTetherStub[];
@@ -223,6 +224,10 @@ CHROMEOS_EXPORT bool ShouldShowShelfHoverPreviews();
 // Returns true if Instant Tethering should support hosts which use the
 // background advertisement model
 CHROMEOS_EXPORT bool IsInstantTetheringBackgroundAdvertisingSupported();
+
+// Returns true if Play Store should be available in Demo Mode.
+// TODO(michaelpg): Remove after M71 branch to re-enable Play Store by default.
+CHROMEOS_EXPORT bool ShouldShowPlayStoreInDemoMode();
 
 }  // namespace switches
 }  // namespace chromeos
