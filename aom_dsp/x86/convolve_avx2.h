@@ -133,6 +133,15 @@ static INLINE __m256i convolve(const __m256i *const s,
   return res;
 }
 
+static INLINE __m256i convolve_4tap(const __m256i *const s,
+                                    const __m256i *const coeffs) {
+  const __m256i res_1 = _mm256_madd_epi16(s[0], coeffs[0]);
+  const __m256i res_2 = _mm256_madd_epi16(s[1], coeffs[1]);
+
+  const __m256i res = _mm256_add_epi32(res_1, res_2);
+  return res;
+}
+
 static INLINE __m256i convolve_lowbd_x(const __m256i data,
                                        const __m256i *const coeffs,
                                        const __m256i *const filt) {
