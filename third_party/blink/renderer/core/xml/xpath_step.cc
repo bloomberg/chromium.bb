@@ -185,7 +185,7 @@ static inline bool NodeMatchesBasicTest(Node* node,
 
         // In XPath land, namespace nodes are not accessible on the
         // attribute axis.
-        if (attr->namespaceURI() == XMLNSNames::xmlnsNamespaceURI)
+        if (attr->namespaceURI() == xmlns_names::xmlnsNamespaceURI)
           return false;
 
         if (name == g_star_atom)
@@ -389,7 +389,7 @@ void Step::NodesInAxis(EvaluationContext& evaluation_context,
             GetNodeTest().NamespaceURI(), GetNodeTest().Data());
         // In XPath land, namespace nodes are not accessible on the attribute
         // axis.
-        if (attr && attr->namespaceURI() != XMLNSNames::xmlnsNamespaceURI) {
+        if (attr && attr->namespaceURI() != xmlns_names::xmlnsNamespaceURI) {
           // Still need to check merged predicates.
           if (NodeMatches(evaluation_context, attr, kAttributeAxis,
                           GetNodeTest()))

@@ -356,7 +356,7 @@ void MarkupFormatter::AppendAttribute(StringBuilder& result,
 
   QualifiedName prefixed_name = attribute.GetName();
   if (document_is_html) {
-    if (attribute.NamespaceURI() == XMLNSNames::xmlnsNamespaceURI) {
+    if (attribute.NamespaceURI() == xmlns_names::xmlnsNamespaceURI) {
       if (!attribute.Prefix() && attribute.LocalName() != g_xmlns_atom)
         prefixed_name.SetPrefix(g_xmlns_atom);
     } else if (attribute.NamespaceURI() == XMLNames::xmlNamespaceURI) {
@@ -367,7 +367,7 @@ void MarkupFormatter::AppendAttribute(StringBuilder& result,
     result.Append(' ');
     result.Append(prefixed_name.ToString());
   } else {
-    if (attribute.NamespaceURI() == XMLNSNames::xmlnsNamespaceURI) {
+    if (attribute.NamespaceURI() == xmlns_names::xmlnsNamespaceURI) {
       if (!attribute.Prefix() && attribute.LocalName() != g_xmlns_atom)
         prefixed_name.SetPrefix(g_xmlns_atom);
       // Account for the namespace attribute we're about to append.
@@ -452,7 +452,7 @@ bool MarkupFormatter::ShouldAddNamespaceAttribute(
     const Element& element) const {
   // xmlns and xmlns:prefix attributes should be handled by another branch in
   // appendAttribute.
-  DCHECK_NE(attribute.NamespaceURI(), XMLNSNames::xmlnsNamespaceURI);
+  DCHECK_NE(attribute.NamespaceURI(), xmlns_names::xmlnsNamespaceURI);
 
   // Attributes are in the null namespace by default.
   if (!attribute.NamespaceURI())
