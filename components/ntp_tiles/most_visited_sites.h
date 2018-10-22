@@ -156,8 +156,8 @@ class MostVisitedSites : public history::TopSitesObserver,
   // if the request resulted in the set of tiles changing.
   void Refresh();
 
-  // Forces a rebuild of the current tiles to update the pinned homepage.
-  void RefreshHomepageTile();
+  // Forces a rebuild of the current tiles.
+  void RefreshTiles();
 
   // Initializes custom links, which "freezes" the current MV tiles and converts
   // them to custom links. Once custom links is initialized, MostVisitedSites

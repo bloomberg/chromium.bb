@@ -650,7 +650,7 @@ TEST_P(MostVisitedSitesTest, ShouldUpdateHomepageTileWhenRefreshHomepageTile) {
   EXPECT_CALL(*mock_top_sites_, SyncWithHistory()).Times(0);
   EXPECT_CALL(mock_observer_, OnURLsAvailable(Not(FirstPersonalizedTileIs(
                                   "", kHomepageUrl, TileSource::HOMEPAGE))));
-  most_visited_sites_->RefreshHomepageTile();
+  most_visited_sites_->RefreshTiles();
   base::RunLoop().RunUntilIdle();
 }
 
@@ -1152,6 +1152,7 @@ TEST_P(MostVisitedSitesWithCustomLinksTest,
   EXPECT_CALL(*mock_custom_links_, Initialize(_)).WillOnce(Return(true));
   ExpectBuildWithCustomLinks(expected_links, &sections);
   most_visited_sites_->InitializeCustomLinks();
+  most_visited_sites_->RefreshTiles();
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(
       sections.at(SectionType::PERSONALIZED),
@@ -1194,6 +1195,7 @@ TEST_P(MostVisitedSitesWithCustomLinksTest,
   EXPECT_CALL(*mock_custom_links_, Initialize(_)).WillOnce(Return(true));
   ExpectBuildWithCustomLinks(expected_links, &sections);
   most_visited_sites_->InitializeCustomLinks();
+  most_visited_sites_->RefreshTiles();
   base::RunLoop().RunUntilIdle();
   ASSERT_THAT(
       sections.at(SectionType::PERSONALIZED),
@@ -1235,6 +1237,7 @@ TEST_P(MostVisitedSitesWithCustomLinksTest,
   EXPECT_CALL(*mock_custom_links_, Initialize(_)).WillOnce(Return(true));
   ExpectBuildWithCustomLinks(expected_links, &sections);
   most_visited_sites_->InitializeCustomLinks();
+  most_visited_sites_->RefreshTiles();
   base::RunLoop().RunUntilIdle();
   ASSERT_THAT(
       sections.at(SectionType::PERSONALIZED),

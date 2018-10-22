@@ -244,7 +244,7 @@ void MostVisitedSites::Refresh() {
   suggestions_service_->FetchSuggestionsData();
 }
 
-void MostVisitedSites::RefreshHomepageTile() {
+void MostVisitedSites::RefreshTiles() {
   BuildCurrentTiles();
 }
 
@@ -252,10 +252,8 @@ void MostVisitedSites::InitializeCustomLinks() {
   if (!custom_links_ || !current_tiles_.has_value() || !custom_links_enabled_)
     return;
 
-  if (custom_links_->Initialize(current_tiles_.value())) {
+  if (custom_links_->Initialize(current_tiles_.value()))
     custom_links_action_count_ = 0;
-    BuildCurrentTiles();
-  }
 }
 
 void MostVisitedSites::UninitializeCustomLinks() {
