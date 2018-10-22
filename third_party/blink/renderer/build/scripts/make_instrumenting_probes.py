@@ -106,7 +106,7 @@ def load_model_from_idl(source):
 class File(object):
     def __init__(self, name, source):
         self.name = NameStyleConverter(name).to_snake_case()
-        self.header_name = self.name + "_inl"
+        self.header_name = self.name + "_inl.h"
         self.forward_declarations = []
         self.declarations = []
         for line in map(str.strip, source.split("\n")):
@@ -263,15 +263,18 @@ def main():
 
     template_context["template_file"] = "/probe_sink.h.tmpl"
     sink_h_template = jinja_env.get_template(template_context["template_file"])
-    sink_h_file = open(output_dirpath + "/" + to_singular(base_name) + "_sink.h", "w")
+    sink_h_file_name = to_singular(base_name) + "_sink.h"
+    sink_h_file = open(output_dirpath + "/" + sink_h_file_name, "w")
+    template_context["header_guard"] = NameStyleConverter(output_path_in_gen_dir + "/" + sink_h_file_name).to_header_guard()
     sink_h_file.write(sink_h_template.render(template_context))
     sink_h_file.close()
 
     for f in files:
         template_context["file"] = f
         template_context["template_file"] = "/instrumenting_probes_inl.h.tmpl"
+        template_context["header_guard"] = NameStyleConverter(output_path_in_gen_dir + "/" + f.header_name).to_header_guard()
         h_template = jinja_env.get_template(template_context["template_file"])
-        h_file = open(output_dirpath + "/" + f.header_name + ".h", "w")
+        h_file = open(output_dirpath + "/" + f.header_name, "w")
         h_file.write(h_template.render(template_context))
         h_file.close()
 
