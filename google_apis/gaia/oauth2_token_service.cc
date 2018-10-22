@@ -19,6 +19,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
@@ -411,13 +412,14 @@ void OAuth2TokenService::RemoveDiagnosticsObserver(
 std::unique_ptr<OAuth2TokenService::Request>
 OAuth2TokenService::StartRequestForMultilogin(
     const std::string& account_id,
-    const OAuth2TokenService::ScopeSet& scopes,
     OAuth2TokenService::Consumer* consumer) {
   const std::string refresh_token =
       delegate_->GetTokenForMultilogin(account_id);
   if (refresh_token.empty()) {
     // If we can't get refresh token from the delegate, start request for access
     // token.
+    OAuth2TokenService::ScopeSet scopes;
+    scopes.insert(GaiaConstants::kOAuth1LoginScope);
     return StartRequest(account_id, scopes, consumer);
   }
   std::unique_ptr<RequestImpl> request(new RequestImpl(account_id, consumer));
@@ -601,6 +603,19 @@ void OAuth2TokenService::InvalidateAccessToken(
   InvalidateAccessTokenImpl(account_id,
                             GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
                             scopes, access_token);
+}
+
+void OAuth2TokenService::InvalidateTokenForMultilogin(
+    const std::string& failed_account,
+    const std::string& token) {
+  OAuth2TokenService::ScopeSet scopes;
+  scopes.insert(GaiaConstants::kOAuth1LoginScope);
+  // Remove from cache. This will have no effect on desktop since token is a
+  // refresh token and is not in cache.
+  InvalidateAccessToken(failed_account, scopes, token);
+  // For desktop refresh tokens can be invalidated directly in delegate. This
+  // will have no effect on mobile.
+  delegate_->InvalidateTokenForMultilogin(failed_account);
 }
 
 void OAuth2TokenService::InvalidateAccessTokenForClient(

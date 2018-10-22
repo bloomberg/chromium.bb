@@ -40,6 +40,7 @@
 #include "google_apis/gaia/oauth2_token_service_test_util.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Defining constant here to handle backward compatiblity tests, but this
@@ -829,6 +830,48 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, UpdateInvalidToken) {
             signin_error_controller_.auth_error());
   EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
             oauth2_service_delegate_->GetAuthError("account_id"));
+}
+
+TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
+       InvalidateTokensForMultilogin) {
+  class TokenServiceErrorObserver : public OAuth2TokenService::Observer {
+   public:
+    MOCK_METHOD2(OnAuthErrorChanged,
+                 void(const std::string&, const GoogleServiceAuthError&));
+  };
+
+  CreateOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDice);
+  TokenServiceErrorObserver observer;
+  oauth2_service_delegate_->AddObserver(&observer);
+
+  const std::string account_id1 = "account_id1";
+  const std::string account_id2 = "account_id2";
+
+  // This will be fired from UpdateCredentials.
+  EXPECT_CALL(
+      observer,
+      OnAuthErrorChanged(::testing::_, GoogleServiceAuthError::AuthErrorNone()))
+      .Times(2);
+  oauth2_service_delegate_->UpdateCredentials(account_id1, "refresh_token1");
+  oauth2_service_delegate_->UpdateCredentials(account_id2, "refresh_token2");
+
+  testing::Mock::VerifyAndClearExpectations(&observer);
+
+  // This should be fired after error is set.
+  EXPECT_CALL(
+      observer,
+      OnAuthErrorChanged(account_id1,
+                         GoogleServiceAuthError(
+                             GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS)))
+      .Times(1);
+
+  oauth2_service_delegate_->InvalidateTokenForMultilogin(account_id1);
+  EXPECT_EQ(oauth2_service_delegate_->GetAuthError(account_id1).state(),
+            GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+  EXPECT_EQ(oauth2_service_delegate_->GetAuthError(account_id2).state(),
+            GoogleServiceAuthError::NONE);
+
+  oauth2_service_delegate_->RemoveObserver(&observer);
 }
 
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, LoadInvalidToken) {
