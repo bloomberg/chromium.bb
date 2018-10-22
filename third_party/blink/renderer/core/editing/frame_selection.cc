@@ -973,8 +973,10 @@ IntRect FrameSelection::ComputeRectToScroll(
   if (selection.IsCaret())
     return AbsoluteCaretBounds();
   DCHECK(selection.IsRange());
-  if (reveal_extent_option == kRevealExtent)
-    return AbsoluteCaretBoundsOf(CreateVisiblePosition(selection.Extent()));
+  if (reveal_extent_option == kRevealExtent) {
+    return AbsoluteCaretBoundsOf(
+        CreateVisiblePosition(selection.Extent()).ToPositionWithAffinity());
+  }
   layout_selection_->SetHasPendingSelection();
   return layout_selection_->AbsoluteSelectionBounds();
 }
