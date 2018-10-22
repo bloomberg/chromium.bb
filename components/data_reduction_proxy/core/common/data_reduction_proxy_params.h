@@ -44,6 +44,10 @@ bool IsIncludedInFREPromoFieldTrial();
 // is in effect.
 bool IsIncludedInHoldbackFieldTrial();
 
+// Returns true if this client is part of a holdback experiment that disables
+// the use of secure data compression proxies. Insecure proxies remain enabled.
+bool IsIncludedInSecureProxyHoldbackFieldTrial();
+
 // The name of the Holdback experiment group, this can return an empty string if
 // not included in a group.
 std::string HoldbackFieldTrialGroup();

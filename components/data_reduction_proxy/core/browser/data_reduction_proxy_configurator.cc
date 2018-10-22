@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/core/browser/network_properties_manager.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/proxy_resolution/proxy_config.h"
 
 namespace data_reduction_proxy {
@@ -77,6 +78,11 @@ net::ProxyConfig DataReductionProxyConfigurator::CreateProxyConfig(
     if (!probe_url_config &&
         !network_properties_manager.IsInsecureProxyAllowed(false) &&
         !http_proxy.IsSecureProxy() && !http_proxy.IsCoreProxy()) {
+      continue;
+    }
+
+    if (!probe_url_config && http_proxy.IsSecureProxy() &&
+        params::IsIncludedInSecureProxyHoldbackFieldTrial()) {
       continue;
     }
 
