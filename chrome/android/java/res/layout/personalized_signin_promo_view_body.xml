@@ -21,7 +21,7 @@
 
     <org.chromium.ui.widget.ButtonCompat
         android:id="@+id/signin_promo_signin_button"
-        style="@style/SigninButtonCompat"
+        style="@style/FilledButton.Flat"
         android:layout_width="match_parent"
         android:layout_height="36dp"
         android:layout_marginBottom="6dp"
