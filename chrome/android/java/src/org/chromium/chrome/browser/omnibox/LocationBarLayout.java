@@ -602,17 +602,13 @@ public class LocationBarLayout extends FrameLayout
      */
     @Override
     public int getUrlContainerMarginEnd() {
-        boolean addMarginForActionsContainer = !mUrlFocusChangeInProgress || isUrlBarFocused();
-
         int urlContainerMarginEnd = 0;
-        if (addMarginForActionsContainer) {
-            for (View childView : getUrlContainerViewsForMargin()) {
-                ViewGroup.MarginLayoutParams childLayoutParams =
-                        (ViewGroup.MarginLayoutParams) childView.getLayoutParams();
-                urlContainerMarginEnd += childLayoutParams.width
-                        + MarginLayoutParamsCompat.getMarginStart(childLayoutParams)
-                        + MarginLayoutParamsCompat.getMarginEnd(childLayoutParams);
-            }
+        for (View childView : getUrlContainerViewsForMargin()) {
+            ViewGroup.MarginLayoutParams childLayoutParams =
+                    (ViewGroup.MarginLayoutParams) childView.getLayoutParams();
+            urlContainerMarginEnd += childLayoutParams.width
+                    + MarginLayoutParamsCompat.getMarginStart(childLayoutParams)
+                    + MarginLayoutParamsCompat.getMarginEnd(childLayoutParams);
         }
         return urlContainerMarginEnd;
     }
