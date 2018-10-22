@@ -10,12 +10,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/navigation_context.h"
@@ -29,22 +26,12 @@
 // static
 void NewTabPageTabHelper::CreateForWebState(
     web::WebState* web_state,
-    WebStateList* web_state_list,
-    id<NewTabPageTabHelperDelegate> delegate,
-    id<UrlLoader> url_loader,
-    id<NewTabPageControllerDelegate> toolbar_delegate,
-    id<ApplicationCommands,
-       BrowserCommands,
-       OmniboxFocuser,
-       FakeboxFocuser,
-       SnackbarCommands,
-       UrlLoader> dispatcher) {
+    id<NewTabPageTabHelperDelegate> delegate) {
   DCHECK(web_state);
   if (!FromWebState(web_state)) {
-    web_state->SetUserData(UserDataKey(),
-                           base::WrapUnique(new NewTabPageTabHelper(
-                               web_state, web_state_list, delegate, url_loader,
-                               toolbar_delegate, dispatcher)));
+    web_state->SetUserData(
+        UserDataKey(),
+        base::WrapUnique(new NewTabPageTabHelper(web_state, delegate)));
   }
 }
 
@@ -52,52 +39,20 @@ NewTabPageTabHelper::~NewTabPageTabHelper() = default;
 
 NewTabPageTabHelper::NewTabPageTabHelper(
     web::WebState* web_state,
-    WebStateList* web_state_list,
-    id<NewTabPageTabHelperDelegate> delegate,
-    id<UrlLoader> url_loader,
-    id<NewTabPageControllerDelegate> toolbar_delegate,
-    id<ApplicationCommands,
-       BrowserCommands,
-       OmniboxFocuser,
-       FakeboxFocuser,
-       SnackbarCommands,
-       UrlLoader> dispatcher)
+    id<NewTabPageTabHelperDelegate> delegate)
     : delegate_(delegate), web_state_(web_state) {
   DCHECK(delegate);
   DCHECK(base::FeatureList::IsEnabled(kBrowserContainerContainsNTP));
 
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(web_state->GetBrowserState());
-
-  ntp_coordinator_ =
-      [[NewTabPageCoordinator alloc] initWithBrowserState:browser_state];
-  ntp_coordinator_.webStateList = web_state_list;
-  ntp_coordinator_.dispatcher = dispatcher;
-  ntp_coordinator_.URLLoader = url_loader;
-  ntp_coordinator_.toolbarDelegate = toolbar_delegate;
-
   web_state->AddObserver(this);
 
-  if (web_state->GetVisibleURL().GetOrigin() == kChromeUINewTabURL) {
-    [ntp_coordinator_ start];
-  }
+  active_ = web_state->GetVisibleURL().GetOrigin() == kChromeUINewTabURL;
+  if (active_)
+    [delegate_ newTabPageHelperDidChangeVisibility:this forWebState:web_state_];
 }
 
 bool NewTabPageTabHelper::IsActive() const {
-  return ntp_coordinator_.started;
-}
-
-UIViewController* NewTabPageTabHelper::GetViewController() const {
-  DCHECK(IsActive());
-  return ntp_coordinator_.viewController;
-}
-
-id<NewTabPageOwning> NewTabPageTabHelper::GetController() const {
-  return ntp_coordinator_;
-}
-
-void NewTabPageTabHelper::DismissModals() const {
-  return [ntp_coordinator_ dismissModals];
+  return active_;
 }
 
 void NewTabPageTabHelper::Deactivate() {
@@ -108,6 +63,7 @@ void NewTabPageTabHelper::Deactivate() {
 
 void NewTabPageTabHelper::WebStateDestroyed(web::WebState* web_state) {
   web_state->RemoveObserver(this);
+  SetActive(false);
 }
 
 void NewTabPageTabHelper::DidStartNavigation(
@@ -123,31 +79,18 @@ void NewTabPageTabHelper::DidStartNavigation(
 #pragma mark - Private
 
 void NewTabPageTabHelper::SetActive(bool active) {
-  // Save the NTP scroll offset before we navigate away.
-  web::NavigationManager* manager = web_state_->GetNavigationManager();
-  if (web_state_->GetLastCommittedURL().GetOrigin() == kChromeUINewTabURL) {
-    web::NavigationItem* item = manager->GetLastCommittedItem();
-    web::PageDisplayState displayState;
-    CGPoint scrollOffset = ntp_coordinator_.scrollOffset;
-    displayState.scroll_state().set_offset_x(scrollOffset.x);
-    displayState.scroll_state().set_offset_y(scrollOffset.y);
-    item->SetPageDisplayState(displayState);
-  }
-
-  bool was_active = IsActive();
+  bool was_active = active_;
+  active_ = active;
 
   if (active) {
     web::NavigationManager* manager = web_state_->GetNavigationManager();
     web::NavigationItem* item = manager->GetPendingItem();
     if (item)
       item->SetTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
-    [ntp_coordinator_ start];
-  } else {
-    [ntp_coordinator_ stop];
   }
 
   // Tell |delegate_| to show or hide the NTP, if necessary.
-  if (IsActive() != was_active) {
-    [delegate_ newTabPageHelperDidChangeVisibility:this];
+  if (active_ != was_active) {
+    [delegate_ newTabPageHelperDidChangeVisibility:this forWebState:web_state_];
   }
 }

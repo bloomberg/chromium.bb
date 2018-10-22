@@ -164,6 +164,7 @@
 #import "ios/chrome/browser/ui/main_content/main_content_ui_state.h"
 #import "ios/chrome/browser/ui/main_content/web_scroll_view_main_content_ui_forwarder.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_owning.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
@@ -424,6 +425,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     ManageAccountsDelegate,
                                     MFMailComposeViewControllerDelegate,
                                     NetExportTabHelperDelegate,
+                                    NewTabPageTabHelperDelegate,
                                     OverscrollActionsControllerDelegate,
                                     PageInfoPresentation,
                                     PasswordControllerDelegate,
@@ -433,7 +435,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     SideSwipeControllerDelegate,
                                     SnapshotGeneratorDelegate,
                                     TabDialogDelegate,
-                                    NewTabPageTabHelperDelegate,
                                     TabModelObserver,
                                     TabStripPresentation,
                                     ToolbarHeightProviderForFullscreen,
@@ -568,6 +569,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Coordinator for the Download Manager UI.
   DownloadManagerCoordinator* _downloadManagerCoordinator;
+
+  // A map associating webStates with their NTP coordinators.
+  std::map<web::WebState*, NewTabPageCoordinator*> _ntpCoordinatorsForWebStates;
 
   // Coordinator for presenting SKStoreProductViewController.
   StoreKitCoordinator* _storeKitCoordinator;
@@ -1476,7 +1480,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Keyboard shouldn't overlay the ecoutez window, so dismiss find in page and
   // dismiss the keyboard.
   [self closeFindInPage];
-  [_model.currentTab.view endEditing:NO];
+  [[self viewForTab:_model.currentTab] endEditing:NO];
 
   // Ensure that voice search objects are created.
   [self ensureVoiceSearchControllerCreated];
@@ -1507,7 +1511,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     NewTabPageTabHelper* NTPHelper =
         NewTabPageTabHelper::FromWebState(currentTab.webState);
     if (NTPHelper && NTPHelper->IsActive()) {
-      NTPHelper->DismissModals();
+      [_ntpCoordinatorsForWebStates[currentTab.webState] dismissModals];
     }
     auto* findHelper = FindTabHelper::FromWebState(currentTab.webState);
     if (findHelper) {
@@ -1584,6 +1588,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [_model closeAllTabs];
   [_paymentRequestManager setActiveWebState:nullptr];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+  DCHECK(_ntpCoordinatorsForWebStates.empty());
 }
 
 #pragma mark - NSObject
@@ -1714,8 +1719,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     NewTabPageTabHelper* NTPHelper =
         NewTabPageTabHelper::FromWebState(self.currentWebState);
     if (NTPHelper && NTPHelper->IsActive()) {
-      UIViewController* viewController = NTPHelper->GetViewController();
-      viewController.view.frame =
+      _ntpCoordinatorsForWebStates[self.currentWebState]
+          .viewController.view.frame =
           [self ntpFrameForWebState:self.currentWebState];
     }
   }
@@ -2570,11 +2575,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
     // Make new content visible, resizing it first as the orientation may
     // have changed from the last time it was displayed.
-    tab.view.frame = self.contentArea.bounds;
+    [self viewForTab:tab].frame = self.contentArea.bounds;
     NewTabPageTabHelper* NTPHelper =
         NewTabPageTabHelper::FromWebState(tab.webState);
     if (NTPHelper && NTPHelper->IsActive()) {
-      UIViewController* viewController = NTPHelper->GetViewController();
+      UIViewController* viewController =
+          _ntpCoordinatorsForWebStates[tab.webState].viewController;
       viewController.view.frame = [self ntpFrameForWebState:tab.webState];
       _browserContainerCoordinator.viewController.contentViewController =
           viewController;
@@ -2683,7 +2689,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 - (CGRect)visibleFrameForTab:(Tab*)tab {
   UIEdgeInsets headerInset = UIEdgeInsetsMake(
       [self nativeContentHeaderHeightForWebState:tab.webState], 0, 0, 0);
-  return UIEdgeInsetsInsetRect(tab.view.bounds, headerInset);
+  return UIEdgeInsetsInsetRect([self viewForTab:tab].bounds, headerInset);
 }
 
 - (CGFloat)headerHeightForTab:(Tab*)tab {
@@ -2727,6 +2733,18 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     if (header.view == self.tabStripView)
       [self setNeedsStatusBarAppearanceUpdate];
   }
+}
+
+- (UIView*)viewForTab:(Tab*)tab {
+  DCHECK(tab);
+  if (tab.webState) {
+    NewTabPageTabHelper* NTPHelper =
+        NewTabPageTabHelper::FromWebState(tab.webState);
+    if (NTPHelper && NTPHelper->IsActive()) {
+      return _ntpCoordinatorsForWebStates[tab.webState].viewController.view;
+    }
+  }
+  return tab.view;
 }
 
 #pragma mark - Private Methods: Find Bar UI
@@ -2960,9 +2978,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   DownloadManagerTabHelper::CreateForWebState(tab.webState,
                                               _downloadManagerCoordinator);
   if (base::FeatureList::IsEnabled(kBrowserContainerContainsNTP)) {
-    NewTabPageTabHelper::CreateForWebState(
-        tab.webState, self.tabModel.webStateList, self, self,
-        self.toolbarInterface, self.dispatcher);
+    NewTabPageTabHelper::CreateForWebState(tab.webState, self);
   }
 
   // The language detection helper accepts a callback from the translate
@@ -3048,7 +3064,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     NewTabPageTabHelper* NTPHelper =
         NewTabPageTabHelper::FromWebState(tab.webState);
     if (NTPHelper && NTPHelper->IsActive())
-      nativeController = NTPHelper->GetController();
+      nativeController = _ntpCoordinatorsForWebStates[tab.webState];
   }
   return nativeController ? nativeController : _temporaryNativeController;
 }
@@ -3168,8 +3184,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       NewTabPageTabHelper::FromWebState(tab.webState);
   if (NTPHelper && NTPHelper->IsActive()) {
     SnapshotOverlay* ntpOverlay =
-        [[SnapshotOverlay alloc] initWithView:[NTPHelper->GetController() view]
-                                      yOffset:0];
+        [[SnapshotOverlay alloc] initWithView:[self viewForTab:tab] yOffset:0];
     [overlays addObject:ntpOverlay];
   }
   UIView* infoBarView = [self infoBarOverlayViewForTab:tab];
@@ -4765,7 +4780,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Dismiss the omnibox (if open).
   [self.dispatcher cancelOmniboxEdit];
   // Dismiss the soft keyboard (if open).
-  [_model.currentTab.view endEditing:NO];
+  [[self viewForTab:_model.currentTab] endEditing:NO];
   // Dismiss Find in Page focus.
   [self updateFindBar:NO shouldFocus:NO];
 
@@ -5012,7 +5027,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     toolbarSnapshot.frame =
         [self.contentArea convertRect:toolbarSnapshot.frame fromView:self.view];
     [self.contentArea addSubview:toolbarSnapshot];
-    newPage = tab.view;
+    newPage = [self viewForTab:tab];
     newPage.userInteractionEnabled = NO;
     if (base::FeatureList::IsEnabled(
             web::features::kBrowserContainerFullscreen)) {
@@ -5027,11 +5042,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     }
   } else {
     UIImageView* pageScreenshot = [self pageOpenCloseAnimationView];
-    tab.view.frame = self.contentArea.bounds;
+    [self viewForTab:tab].frame = self.contentArea.bounds;
     // Setting the frame here doesn't trigger a layout pass. Trigger it manually
     // if needed. Not triggering it can create problem if the previous frame
     // wasn't the right one, for example in https://crbug.com/852106.
-    [tab.view layoutIfNeeded];
+    [[self viewForTab:tab] layoutIfNeeded];
     pageScreenshot.image = SnapshotTabHelper::FromWebState(tab.webState)
                                ->UpdateSnapshot(/*with_overlays=*/true,
                                                 /*visible_frame_only=*/true);
@@ -5043,7 +5058,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   // Cleanup steps needed for both UI Refresh and stack-view style animations.
   auto commonCompletion = ^{
-    tab.view.frame = self.contentArea.bounds;
+    [self viewForTab:tab].frame = self.contentArea.bounds;
     newPage.userInteractionEnabled = YES;
     self.inNewTabAnimation = NO;
     // Use the model's currentTab here because it is possible that it can
@@ -5485,9 +5500,23 @@ nativeContentHeaderHeightForPreloadController:(PreloadController*)controller
 
 #pragma mark - NewTabPageTabHelperDelegate
 
-- (void)newTabPageHelperDidChangeVisibility:(NewTabPageTabHelper*)NTPHelper {
+- (void)newTabPageHelperDidChangeVisibility:(NewTabPageTabHelper*)NTPHelper
+                                forWebState:(web::WebState*)webState {
   Tab* currentTab = [_model currentTab];
-  if (NewTabPageTabHelper::FromWebState(currentTab.webState) == NTPHelper) {
+  if (NTPHelper->IsActive()) {
+    DCHECK(!_ntpCoordinatorsForWebStates[webState]);
+    NewTabPageCoordinator* newTabPageCoordinator =
+        [[NewTabPageCoordinator alloc] initWithBrowserState:_browserState];
+    newTabPageCoordinator.dispatcher = self.dispatcher;
+    newTabPageCoordinator.URLLoader = self;
+    newTabPageCoordinator.toolbarDelegate = self.toolbarInterface;
+    newTabPageCoordinator.webStateList = [_model webStateList];
+    _ntpCoordinatorsForWebStates[webState] = newTabPageCoordinator;
+  } else {
+    DCHECK(_ntpCoordinatorsForWebStates[webState]);
+    _ntpCoordinatorsForWebStates.erase(webState);
+  }
+  if (currentTab.webState == webState) {
     [self displayTab:currentTab];
   }
 }
