@@ -606,7 +606,6 @@ class PaintOpHelper {
     str << ", blendMode="
         << PaintOpHelper::SkiaTypeToString(flags.getBlendMode());
     str << ", isAntiAlias=" << flags.isAntiAlias();
-    str << ", isVerticalText=" << flags.isVerticalText();
     str << ", isSubpixelText=" << flags.isSubpixelText();
     str << ", isLCDRenderText=" << flags.isLCDRenderText();
     str << ", hinting=" << PaintOpHelper::SkiaTypeToString(flags.getHinting());

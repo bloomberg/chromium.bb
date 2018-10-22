@@ -200,10 +200,6 @@ static hb_position_t HarfBuzzGetGlyphHorizontalKerning(
     void*) {
   HarfBuzzFontData* hb_font_data =
       reinterpret_cast<HarfBuzzFontData*>(font_data);
-  if (hb_font_data->paint_.isVerticalText()) {
-    // We don't support cross-stream kerning
-    return 0;
-  }
 
   SkTypeface* typeface = hb_font_data->paint_.getTypeface();
 

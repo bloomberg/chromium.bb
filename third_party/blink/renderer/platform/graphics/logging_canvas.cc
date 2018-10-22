@@ -354,7 +354,6 @@ String StringForSkPaintFlags(const SkPaint& paint) {
   AppendFlagToString(&flags_string, paint.isEmbeddedBitmapText(),
                      "EmbeddedBitmapText");
   AppendFlagToString(&flags_string, paint.isAutohinted(), "Autohinted");
-  AppendFlagToString(&flags_string, paint.isVerticalText(), "VerticalText");
   return flags_string;
 }
 

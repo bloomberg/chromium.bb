@@ -153,11 +153,6 @@ hb_position_t GetGlyphHorizontalKerning(hb_font_t* font,
                                         hb_codepoint_t right_glyph,
                                         void* user_data) {
   FontData* font_data = reinterpret_cast<FontData*>(data);
-  if (font_data->flags_.isVerticalText()) {
-    // We don't support cross-stream kerning.
-    return 0;
-  }
-
   return GetGlyphKerning(font_data, left_glyph, right_glyph);
 }
 
@@ -167,11 +162,6 @@ hb_position_t GetGlyphVerticalKerning(hb_font_t* font,
                                       hb_codepoint_t bottom_glyph,
                                       void* user_data) {
   FontData* font_data = reinterpret_cast<FontData*>(data);
-  if (!font_data->flags_.isVerticalText()) {
-    // We don't support cross-stream kerning.
-    return 0;
-  }
-
   return GetGlyphKerning(font_data, top_glyph, bottom_glyph);
 }
 
