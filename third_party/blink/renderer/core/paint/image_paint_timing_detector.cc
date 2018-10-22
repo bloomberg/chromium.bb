@@ -87,9 +87,6 @@ IntRect ImagePaintTimingDetector::CalculateTransformedRect(
 
 void ImagePaintTimingDetector::OnLargestImagePaintDetected(
     const ImageRecord& largest_image_record) {
-  if (largest_image_record.first_paint_time_after_loaded ==
-      largest_image_paint_)
-    return;
   largest_image_paint_ = largest_image_record.first_paint_time_after_loaded;
   std::unique_ptr<TracedValue> value = TracedValue::Create();
   PopulateTraceValue(*value, largest_image_record,
@@ -103,8 +100,6 @@ void ImagePaintTimingDetector::OnLargestImagePaintDetected(
 
 void ImagePaintTimingDetector::OnLastImagePaintDetected(
     const ImageRecord& last_image_record) {
-  if (last_image_record.first_paint_time_after_loaded == last_image_paint_)
-    return;
   last_image_paint_ = last_image_record.first_paint_time_after_loaded;
   std::unique_ptr<TracedValue> value = TracedValue::Create();
   PopulateTraceValue(*value, last_image_record,
@@ -117,18 +112,30 @@ void ImagePaintTimingDetector::OnLastImagePaintDetected(
 }
 
 void ImagePaintTimingDetector::Analyze() {
+  // These conditions represents the following scenarios:
+  // 1. candiate being nullptr: no loaded image is found.
+  // 2. candidate's first paint being null: largest/last image is still pending
+  //   for timing. We discard the candidate and wait for the next analysis.
+  // 3. new candidate equals to old candidate: we don't need to update the
+  //   result unless it's a new candidate.
   ImageRecord* largest_image_record = FindLargestPaintCandidate();
-  // In cases where largest/last image is still pending for timing, we discard
-  // the result and wait for the next analysis.
+  bool new_candidate_detected = false;
   if (largest_image_record &&
-      !largest_image_record->first_paint_time_after_loaded.is_null()) {
+      !largest_image_record->first_paint_time_after_loaded.is_null() &&
+      largest_image_record->first_paint_time_after_loaded !=
+          largest_image_paint_) {
+    new_candidate_detected = true;
     OnLargestImagePaintDetected(*largest_image_record);
   }
   ImageRecord* last_image_record = FindLastPaintCandidate();
   if (last_image_record &&
-      !last_image_record->first_paint_time_after_loaded.is_null()) {
+      !last_image_record->first_paint_time_after_loaded.is_null() &&
+      last_image_record->first_paint_time_after_loaded != last_image_paint_) {
+    new_candidate_detected = true;
     OnLastImagePaintDetected(*last_image_record);
   }
+  if (new_candidate_detected)
+    frame_view_->GetPaintTracker().DidChangePerformanceTiming();
 }
 
 void ImagePaintTimingDetector::OnPrePaintFinished() {
