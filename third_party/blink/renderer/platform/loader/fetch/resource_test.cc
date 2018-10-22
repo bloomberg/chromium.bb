@@ -42,7 +42,7 @@ class MockPlatform final : public TestingPlatformSupportWithMockScheduler {
 };
 
 ResourceResponse CreateTestResourceResponse() {
-  ResourceResponse response(URLTestHelpers::ToKURL("https://example.com/"));
+  ResourceResponse response(url_test_helpers::ToKURL("https://example.com/"));
   response.SetHTTPStatusCode(200);
   return response;
 }

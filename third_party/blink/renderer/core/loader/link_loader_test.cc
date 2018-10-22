@@ -119,7 +119,7 @@ class LinkLoaderPreloadTestBase : public testing::Test {
     Persistent<MockLinkLoaderClient> loader_client =
         MockLinkLoaderClient::Create(expected.link_loader_should_load_value);
     LinkLoader* loader = LinkLoader::Create(loader_client.Get());
-    URLTestHelpers::RegisterMockedErrorURLLoad(params.href);
+    url_test_helpers::RegisterMockedErrorURLLoad(params.href);
     loader->LoadLink(params, dummy_page_holder_->GetDocument(),
                      NetworkHintsMock());
     if (!expected.load_url.IsNull() &&
@@ -547,7 +547,7 @@ TEST(LinkLoaderTest, Prefetch) {
         MockLinkLoaderClient::Create(test_case.link_loader_should_load_value);
     LinkLoader* loader = LinkLoader::Create(loader_client.Get());
     KURL href_url = KURL(NullURL(), test_case.href);
-    URLTestHelpers::RegisterMockedErrorURLLoad(href_url);
+    url_test_helpers::RegisterMockedErrorURLLoad(href_url);
     LinkLoadParameters params(LinkRelAttribute("prefetch"),
                               kCrossOriginAttributeNotSet, test_case.type, "",
                               test_case.media, "", "", String(),
@@ -654,7 +654,7 @@ TEST(LinkLoaderTest, PreloadAndPrefetch) {
       MockLinkLoaderClient::Create(true);
   LinkLoader* loader = LinkLoader::Create(loader_client.Get());
   KURL href_url = KURL(KURL(), "https://www.example.com/");
-  URLTestHelpers::RegisterMockedErrorURLLoad(href_url);
+  url_test_helpers::RegisterMockedErrorURLLoad(href_url);
   LinkLoadParameters params(LinkRelAttribute("preload prefetch"),
                             kCrossOriginAttributeNotSet,
                             "application/javascript", "script", "", "", "",

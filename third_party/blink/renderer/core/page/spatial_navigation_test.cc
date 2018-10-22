@@ -609,7 +609,7 @@ TEST_F(SpatialNavigationTest, HasRemoteFrame) {
   helper.InitializeAndLoad("about:blank", nullptr, nullptr, nullptr, nullptr);
 
   WebViewImpl* webview = helper.GetWebView();
-  WebURL base_url = URLTestHelpers::ToKURL("http://www.test.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://www.test.com/");
   FrameTestHelpers::LoadHTMLString(webview->MainFrameImpl(),
                                    "<!DOCTYPE html>"
                                    "<iframe id='iframe'></iframe>",

@@ -136,7 +136,8 @@ class LinkSelectionTest : public LinkSelectionTestBase {
     web_view_ = helper_.Initialize(&test_frame_client_);
     main_frame_ = web_view_->MainFrameImpl();
     FrameTestHelpers::LoadHTMLString(
-        main_frame_, kHTMLString, URLTestHelpers::ToKURL("http://foobar.com"));
+        main_frame_, kHTMLString,
+        url_test_helpers::ToKURL("http://foobar.com"));
     web_view_->Resize(WebSize(800, 600));
     web_view_->GetPage()->GetFocusController().SetActive(true);
 
@@ -287,7 +288,8 @@ class LinkSelectionClickEventsTest : public LinkSelectionTestBase {
     web_view_ = helper_.Initialize();
     main_frame_ = web_view_->MainFrameImpl();
     FrameTestHelpers::LoadHTMLString(
-        main_frame_, kHTMLString, URLTestHelpers::ToKURL("http://foobar.com"));
+        main_frame_, kHTMLString,
+        url_test_helpers::ToKURL("http://foobar.com"));
     web_view_->Resize(WebSize(800, 600));
     web_view_->GetPage()->GetFocusController().SetActive(true);
 

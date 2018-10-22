@@ -58,7 +58,7 @@ namespace blink {
 namespace {
 
 WebURL ToWebURL(const char* url) {
-  return WebURL(blink::URLTestHelpers::ToKURL(url));
+  return WebURL(blink::url_test_helpers::ToKURL(url));
 }
 
 class TestWebPrerendererClient : public WebPrerendererClient {
@@ -168,7 +168,7 @@ class PrerenderingTest : public testing::Test {
   }
 
   void Initialize(const char* base_url, const char* file_name) {
-    URLTestHelpers::RegisterMockedURLLoadFromBase(
+    url_test_helpers::RegisterMockedURLLoadFromBase(
         WebString::FromUTF8(base_url), blink::test::CoreTestDataPath(),
         WebString::FromUTF8(file_name));
     web_view_helper_.Initialize();

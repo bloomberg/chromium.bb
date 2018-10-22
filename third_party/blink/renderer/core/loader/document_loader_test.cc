@@ -25,8 +25,8 @@ class DocumentLoaderTest : public testing::Test {
  protected:
   void SetUp() override {
     web_view_helper_.Initialize();
-    URLTestHelpers::RegisterMockedURLLoad(
-        URLTestHelpers::ToKURL("https://example.com/foo.html"),
+    url_test_helpers::RegisterMockedURLLoad(
+        url_test_helpers::ToKURL("https://example.com/foo.html"),
         test::CoreTestDataPath("foo.html"));
   }
 
@@ -172,7 +172,7 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy) {
   // This doesn't go through the mocked URL load path: it's just intended to
   // setup a situation where didReceiveData() can be invoked reentrantly.
   FrameTestHelpers::LoadHTMLString(MainFrame(), "<iframe></iframe>",
-                                   URLTestHelpers::ToKURL("about:blank"));
+                                   url_test_helpers::ToKURL("about:blank"));
 
   Platform::Current()->GetURLLoaderMockFactory()->SetLoaderDelegate(
       &child_delegate);

@@ -59,7 +59,7 @@
 using testing::_;
 using testing::PrintToString;
 using testing::Mock;
-using blink::URLTestHelpers::ToKURL;
+using blink::url_test_helpers::ToKURL;
 
 namespace blink {
 
@@ -114,14 +114,14 @@ class VisualViewportTest : public testing::Test,
   void ForceFullCompositingUpdate() { WebView()->UpdateAllLifecyclePhases(); }
 
   void RegisterMockedHttpURLLoad(const std::string& fileName) {
-    URLTestHelpers::RegisterMockedURLLoadFromBase(
+    url_test_helpers::RegisterMockedURLLoadFromBase(
         WebString::FromUTF8(base_url_), blink::test::CoreTestDataPath(),
         WebString::FromUTF8(fileName));
   }
 
   void RegisterMockedHttpURLLoad(const std::string& url,
                                  const std::string& fileName) {
-    URLTestHelpers::RegisterMockedURLLoad(
+    url_test_helpers::RegisterMockedURLLoad(
         ToKURL(url),
         blink::test::CoreTestDataPath(WebString::FromUTF8(fileName)));
   }
@@ -567,7 +567,7 @@ TEST_P(VisualViewportTest, TestOffsetClamping) {
   InitializeWithAndroidSettings();
   WebView()->Resize(IntSize(320, 240));
 
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(
       WebView()->MainFrameImpl(),
       "<!DOCTYPE html>"
@@ -928,7 +928,8 @@ TEST_P(VisualViewportTest, TestRestoredFromHistoryItem) {
 
   WebHistoryItem item;
   item.Initialize();
-  WebURL destination_url(URLTestHelpers::ToKURL(base_url_ + "200-by-300.html"));
+  WebURL destination_url(
+      url_test_helpers::ToKURL(base_url_ + "200-by-300.html"));
   item.SetURLString(destination_url.GetString());
   item.SetVisualViewportScrollOffset(WebFloatPoint(100, 120));
   item.SetPageScaleFactor(2);
@@ -955,7 +956,7 @@ TEST_P(VisualViewportTest, TestRestoredFromLegacyHistoryItem) {
   WebHistoryItem item;
   item.Initialize();
   WebURL destination_url(
-      URLTestHelpers::ToKURL(base_url_ + "200-by-300-viewport.html"));
+      url_test_helpers::ToKURL(base_url_ + "200-by-300-viewport.html"));
   item.SetURLString(destination_url.GetString());
   // (-1, -1) will be used if the HistoryItem is an older version prior to
   // having visual viewport scroll offset.
@@ -1690,7 +1691,7 @@ TEST_P(VisualViewportTest, visualViewportIsInert) {
 
   web_view_impl->Resize(IntSize(200, 300));
 
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(
       web_view_impl->MainFrameImpl(),
       "<!DOCTYPE html>"
@@ -2052,7 +2053,7 @@ TEST_P(VisualViewportTest, ResizeCompositedAndFixedBackground) {
                                            browser_controls_height, 0, false);
 
   RegisterMockedHttpURLLoad("http://example.com/foo.png", "white-1x1.png");
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(web_view_impl->MainFrameImpl(),
                                    "<!DOCTYPE html>"
                                    "<style>"
@@ -2127,7 +2128,7 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
                                            browser_controls_height, 0, false);
 
   RegisterMockedHttpURLLoad("http://example.com/foo.png", "white-1x1.png");
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(web_view_impl->MainFrameImpl(),
                                    "<!DOCTYPE html>"
                                    "<style>"
@@ -2209,7 +2210,7 @@ TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
                                            browser_controls_height, 0, false);
 
   RegisterMockedHttpURLLoad("http://example.com/foo.png", "white-1x1.png");
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   // This time the background is the default attachment.
   FrameTestHelpers::LoadHTMLString(web_view_impl->MainFrameImpl(),
                                    "<!DOCTYPE html>"
@@ -2377,7 +2378,7 @@ TEST_P(VisualViewportTest, AutoResizeNoHeightUsesMinimumHeight) {
   InitializeWithDesktopSettings();
   WebView()->ResizeWithBrowserControls(WebSize(0, 0), 0, 0, false);
   WebView()->EnableAutoResizeMode(WebSize(25, 25), WebSize(100, 100));
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(WebView()->MainFrameImpl(),
                                    "<!DOCTYPE html>"
                                    "<style>"

@@ -50,9 +50,9 @@ namespace {
 
 void RegisterMockedURLLoadFromBaseURL(const std::string& base_url,
                                       const std::string& file_name) {
-  URLTestHelpers::RegisterMockedURLLoadFromBase(WebString::FromUTF8(base_url),
-                                                test::CoreTestDataPath(),
-                                                WebString::FromUTF8(file_name));
+  url_test_helpers::RegisterMockedURLLoadFromBase(
+      WebString::FromUTF8(base_url), test::CoreTestDataPath(),
+      WebString::FromUTF8(file_name));
 }
 
 class WebSearchableFormDataTest : public testing::Test {

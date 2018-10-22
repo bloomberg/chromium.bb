@@ -77,14 +77,14 @@ class WebFrameSerializerTest : public testing::Test {
   void RegisterMockedImageURLLoad(const String& url) {
     // Image resources need to be mocked, but irrelevant here what image they
     // map to.
-    RegisterMockedFileURLLoad(URLTestHelpers::ToKURL(url.Utf8().data()),
+    RegisterMockedFileURLLoad(url_test_helpers::ToKURL(url.Utf8().data()),
                               "frameserialization/awesome.png");
   }
 
   void RegisterMockedFileURLLoad(const KURL& url,
                                  const String& file_path,
                                  const String& mime_type = "image/png") {
-    URLTestHelpers::RegisterMockedURLLoad(
+    url_test_helpers::RegisterMockedURLLoad(
         url, test::CoreTestDataPath(file_path.Utf8().data()), mime_type);
   }
 

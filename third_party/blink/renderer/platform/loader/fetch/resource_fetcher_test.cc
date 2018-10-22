@@ -77,13 +77,13 @@ constexpr int kTestResourceSize = 103;  // size of white-1x1.png
 
 void RegisterMockedURLLoadWithCustomResponse(const KURL& url,
                                              const ResourceResponse& response) {
-  URLTestHelpers::RegisterMockedURLLoadWithCustomResponse(
+  url_test_helpers::RegisterMockedURLLoadWithCustomResponse(
       url, test::PlatformTestDataPath(kTestResourceFilename),
       WrappedResourceResponse(response));
 }
 
 void RegisterMockedURLLoad(const KURL& url) {
-  URLTestHelpers::RegisterMockedURLLoad(
+  url_test_helpers::RegisterMockedURLLoad(
       url, test::PlatformTestDataPath(kTestResourceFilename),
       kTestResourceMimeType);
 }

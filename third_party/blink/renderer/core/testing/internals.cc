@@ -462,7 +462,7 @@ int Internals::getResourcePriority(const String& url, Document* document) {
     return static_cast<int>(ResourceLoadPriority::kUnresolved);
 
   Resource* resource = document->Fetcher()->AllResources().at(
-      URLTestHelpers::ToKURL(url.Utf8().data()));
+      url_test_helpers::ToKURL(url.Utf8().data()));
 
   if (!resource)
     return static_cast<int>(ResourceLoadPriority::kUnresolved);
@@ -476,7 +476,7 @@ String Internals::getResourceHeader(const String& url,
   if (!document)
     return String();
   Resource* resource = document->Fetcher()->AllResources().at(
-      URLTestHelpers::ToKURL(url.Utf8().data()));
+      url_test_helpers::ToKURL(url.Utf8().data()));
   if (!resource)
     return String();
   return resource->GetResourceRequest().HttpHeaderField(header.Utf8().data());

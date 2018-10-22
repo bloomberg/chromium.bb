@@ -53,7 +53,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
-using blink::URLTestHelpers::ToKURL;
+using blink::url_test_helpers::ToKURL;
 using blink::test::RunPendingTasks;
 
 namespace blink {

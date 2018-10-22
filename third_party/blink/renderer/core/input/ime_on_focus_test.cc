@@ -18,7 +18,7 @@
 
 using blink::FrameTestHelpers::LoadFrame;
 using blink::test::RunPendingTasks;
-using blink::URLTestHelpers::RegisterMockedURLLoadFromBase;
+using blink::url_test_helpers::RegisterMockedURLLoadFromBase;
 
 namespace blink {
 

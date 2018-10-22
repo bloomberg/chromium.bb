@@ -102,7 +102,7 @@ class RootScrollerTest : public testing::Test,
   }
 
   void RegisterMockedHttpURLLoad(const std::string& file_name) {
-    URLTestHelpers::RegisterMockedURLLoadFromBase(
+    url_test_helpers::RegisterMockedURLLoadFromBase(
         WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
         WebString::FromUTF8(file_name));
   }
@@ -613,7 +613,7 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback) {
 TEST_F(RootScrollerTest, RemoveCurrentRootScroller) {
   Initialize();
 
-  WebURL base_url = URLTestHelpers::ToKURL("http://www.test.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://www.test.com/");
   FrameTestHelpers::LoadHTMLString(GetWebView()->MainFrameImpl(),
                                    "<!DOCTYPE html>"
                                    "<style>"
@@ -659,7 +659,7 @@ TEST_F(RootScrollerTest, RemoveCurrentRootScroller) {
 TEST_F(RootScrollerTest, AlwaysCreateCompositedScrollingLayers) {
   Initialize();
 
-  WebURL base_url = URLTestHelpers::ToKURL("http://www.test.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://www.test.com/");
   FrameTestHelpers::LoadHTMLString(GetWebView()->MainFrameImpl(),
                                    "<!DOCTYPE html>"
                                    "<style>"
@@ -857,7 +857,7 @@ TEST_F(RootScrollerTest, NonMainLocalRootLifecycle) {
   // Setup a Local <- Remote <- Local frame hierarchy.
   {
     Initialize();
-    WebURL base_url = URLTestHelpers::ToKURL("http://www.test.com/");
+    WebURL base_url = url_test_helpers::ToKURL("http://www.test.com/");
     FrameTestHelpers::LoadHTMLString(GetWebView()->MainFrameImpl(),
                                      R"HTML(
                                               <!DOCTYPE html>
@@ -1000,7 +1000,7 @@ TEST_F(RootScrollerTest, UseVisualViewportScrollbarsIframe) {
 TEST_F(RootScrollerTest, TopControlsAdjustmentAppliedToRootScroller) {
   Initialize();
 
-  WebURL base_url = URLTestHelpers::ToKURL("http://www.test.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://www.test.com/");
   FrameTestHelpers::LoadHTMLString(GetWebView()->MainFrameImpl(),
                                    "<!DOCTYPE html>"
                                    "<style>"

@@ -98,7 +98,7 @@ class WebPluginContainerTest : public testing::Test {
   void RegisterMockedURL(
       const std::string& file_name,
       const std::string& mime_type = std::string("text/html")) {
-    URLTestHelpers::RegisterMockedURLLoadFromBase(
+    url_test_helpers::RegisterMockedURLLoadFromBase(
         WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
         WebString::FromUTF8(file_name), WebString::FromUTF8(mime_type));
   }

@@ -172,7 +172,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "v8/include/v8.h"
 
-using blink::URLTestHelpers::ToKURL;
+using blink::url_test_helpers::ToKURL;
 using blink::mojom::SelectionMenuBehavior;
 using blink::test::RunPendingTasks;
 using testing::ElementsAre;
@@ -226,7 +226,7 @@ class WebFrameTest : public testing::Test {
 
   void RegisterMockedURLLoadFromBase(const std::string& base_url,
                                      const std::string& file_name) {
-    URLTestHelpers::RegisterMockedURLLoadFromBase(
+    url_test_helpers::RegisterMockedURLLoadFromBase(
         WebString::FromUTF8(base_url), test::CoreTestDataPath(),
         WebString::FromUTF8(file_name));
   }
@@ -241,14 +241,14 @@ class WebFrameTest : public testing::Test {
                     : WebString("Content-Security-Policy"),
         WebString::FromUTF8(csp));
     std::string full_string = base_url_ + file_name;
-    URLTestHelpers::RegisterMockedURLLoadWithCustomResponse(
+    url_test_helpers::RegisterMockedURLLoadWithCustomResponse(
         ToKURL(full_string),
         test::CoreTestDataPath(WebString::FromUTF8(file_name)), response);
   }
 
   void RegisterMockedHttpURLLoadWithMimeType(const std::string& file_name,
                                              const std::string& mime_type) {
-    URLTestHelpers::RegisterMockedURLLoadFromBase(
+    url_test_helpers::RegisterMockedURLLoadFromBase(
         WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
         WebString::FromUTF8(file_name), WebString::FromUTF8(mime_type));
   }
@@ -5560,7 +5560,7 @@ TEST_F(WebFrameTest, FindInPageJavaScriptUpdatesDOMProperOrdinal) {
 
   WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
   FrameTestHelpers::LoadHTMLString(frame, html,
-                                   URLTestHelpers::ToKURL(base_url_));
+                                   url_test_helpers::ToKURL(base_url_));
   web_view_helper.Resize(WebSize(640, 480));
   web_view_helper.GetWebView()->SetFocus(true);
   RunPendingTasks();
@@ -5639,7 +5639,7 @@ TEST_F(WebFrameTest, FindInPageForcedRedoOfFindInPage) {
 
   WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
   FrameTestHelpers::LoadHTMLString(frame, html,
-                                   URLTestHelpers::ToKURL(base_url_));
+                                   url_test_helpers::ToKURL(base_url_));
   web_view_helper.Resize(WebSize(640, 480));
   web_view_helper.GetWebView()->SetFocus(true);
   RunPendingTasks();
@@ -6631,7 +6631,7 @@ class TestSubstituteDataWebFrameClient
                                 WebHistoryCommitType,
                                 WebGlobalObjectReusePolicy) override {
     if (Frame()->GetDocumentLoader()->GetResponse().Url() !=
-        WebURL(URLTestHelpers::ToKURL("about:blank")))
+        WebURL(url_test_helpers::ToKURL("about:blank")))
       commit_called_ = true;
   }
 
@@ -6657,7 +6657,7 @@ TEST_F(WebFrameTest, ReplaceNavigationAfterHistoryNavigation) {
   std::string error_url = "http://0.0.0.0";
   ResourceError error = ResourceError::Failure(ToKURL(error_url));
   WebURLResponse response;
-  response.SetURL(URLTestHelpers::ToKURL(error_url));
+  response.SetURL(url_test_helpers::ToKURL(error_url));
   response.SetMIMEType("text/html");
   response.SetHTTPStatusCode(500);
   WebHistoryItem error_history_item;
@@ -6665,7 +6665,7 @@ TEST_F(WebFrameTest, ReplaceNavigationAfterHistoryNavigation) {
   error_history_item.SetURLString(
       WebString::FromUTF8(error_url.c_str(), error_url.length()));
   Platform::Current()->GetURLLoaderMockFactory()->RegisterErrorURL(
-      URLTestHelpers::ToKURL(error_url), response, error);
+      url_test_helpers::ToKURL(error_url), response, error);
   FrameTestHelpers::LoadHistoryItem(frame, error_history_item,
                                     mojom::FetchCacheMode::kDefault);
   WebString text = WebFrameContentDumper::DumpWebViewAsText(
@@ -10884,7 +10884,7 @@ class SaveImageFromDataURLWebFrameClient
 TEST_F(WebFrameTest, SaveImageAt) {
   std::string url = base_url_ + "image-with-data-url.html";
   RegisterMockedURLLoadFromBase(base_url_, "image-with-data-url.html");
-  URLTestHelpers::RegisterMockedURLLoad(
+  url_test_helpers::RegisterMockedURLLoad(
       ToKURL("http://test"), test::CoreTestDataPath("white-1x1.png"));
 
   FrameTestHelpers::WebViewHelper helper;
@@ -10991,8 +10991,8 @@ TEST_F(WebFrameTest, LoadJavascriptURLInNewFrame) {
 
   std::string redirect_url = base_url_ + "foo.html";
   KURL javascript_url = ToKURL("javascript:location='" + redirect_url + "'");
-  URLTestHelpers::RegisterMockedURLLoad(ToKURL(redirect_url),
-                                        test::CoreTestDataPath("foo.html"));
+  url_test_helpers::RegisterMockedURLLoad(ToKURL(redirect_url),
+                                          test::CoreTestDataPath("foo.html"));
   helper.LocalMainFrame()->LoadJavaScriptURL(javascript_url);
 
   // Normally, the result of the JS url replaces the existing contents on the
@@ -11130,7 +11130,7 @@ class MultipleDataChunkDelegate : public WebURLLoaderTestDelegate {
 
 TEST_F(WebFrameTest, ImageDocumentDecodeError) {
   std::string url = base_url_ + "not_an_image.ico";
-  URLTestHelpers::RegisterMockedURLLoad(
+  url_test_helpers::RegisterMockedURLLoad(
       ToKURL(url), test::CoreTestDataPath("not_an_image.ico"), "image/x-icon");
   MultipleDataChunkDelegate delegate;
   Platform::Current()->GetURLLoaderMockFactory()->SetLoaderDelegate(&delegate);
@@ -12181,7 +12181,7 @@ TEST_F(WebFrameTest, NoLoadingCompletionCallbacksInDetach) {
   };
 
   RegisterMockedHttpURLLoad("single_iframe.html");
-  URLTestHelpers::RegisterMockedURLLoad(
+  url_test_helpers::RegisterMockedURLLoad(
       ToKURL(base_url_ + "visible_iframe.html"),
       test::CoreTestDataPath("frame_with_frame.html"));
   RegisterMockedHttpURLLoad("parent_detaching_frame.html");

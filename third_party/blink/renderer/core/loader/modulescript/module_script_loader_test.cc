@@ -342,7 +342,7 @@ void ModuleScriptLoaderTest::TestFetchURL(
     ModuleScriptCustomFetchType custom_fetch_type,
     TestModuleScriptLoaderClient* client) {
   KURL url("https://example.test/module.js");
-  URLTestHelpers::RegisterMockedURLLoad(
+  url_test_helpers::RegisterMockedURLLoad(
       url, test::CoreTestDataPath("module.js"), "text/javascript");
   auto* fetch_client_settings_object =
       GetDocument().CreateFetchClientSettingsObjectSnapshot();

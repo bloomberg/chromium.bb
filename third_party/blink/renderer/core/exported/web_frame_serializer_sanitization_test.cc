@@ -182,7 +182,7 @@ class WebFrameSerializerSanitizationTest : public testing::Test {
   void RegisterMockedFileURLLoad(const KURL& url,
                                  const String& file_path,
                                  const String& mime_type = "image/png") {
-    URLTestHelpers::RegisterMockedURLLoad(
+    url_test_helpers::RegisterMockedURLLoad(
         url, test::CoreTestDataPath(file_path.Utf8().data()), mime_type);
   }
 

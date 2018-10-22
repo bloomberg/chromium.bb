@@ -76,7 +76,7 @@ class LinkHighlightImplTest : public testing::Test,
   }
 
   void SetUp() override {
-    WebURL url = URLTestHelpers::RegisterMockedURLLoadFromBase(
+    WebURL url = url_test_helpers::RegisterMockedURLLoadFromBase(
         WebString::FromUTF8("http://www.test.com/"), test::CoreTestDataPath(),
         WebString::FromUTF8("test_touch_link_highlight.html"));
     web_view_helper_.InitializeAndLoad(url.GetString().Utf8());
