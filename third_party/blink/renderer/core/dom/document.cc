@@ -1427,7 +1427,7 @@ bool Document::HasValidNamespaceForElements(const QualifiedName& q_name) {
     return false;
   // createElementNS("http://www.example.com", "xml:lang")
   if (q_name.Prefix() == g_xml_atom &&
-      q_name.NamespaceURI() != XMLNames::xmlNamespaceURI)
+      q_name.NamespaceURI() != xml_names::kNamespaceURI)
     return false;
 
   // Required by DOM Level 3 Core and unspecified by DOM Level 2 Core:
