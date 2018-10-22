@@ -802,6 +802,7 @@ def UpdateClang(args):
         '-DLLVM_CONFIG_PATH=' + os.path.join(LLVM_BUILD_DIR, 'bin/llvm-config'),
         '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cflags),
+        '-DCMAKE_ASM_FLAGS=' + ' '.join(cflags),
         '-DSANITIZER_CXX_ABI=none',
         '-DSANITIZER_CXX_ABI_LIBRARY=' + abi_libs,
         '-DCMAKE_SHARED_LINKER_FLAGS=-Wl,-u__cxa_demangle',
