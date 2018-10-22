@@ -408,6 +408,14 @@ void ServiceWorkerRegisterJob::UpdateAndContinue() {
   set_new_version(new ServiceWorkerVersion(
       registration(), script_url_, worker_script_type_, version_id, context_));
   new_version()->set_force_bypass_cache_for_scripts(force_bypass_cache_);
+
+  // Module service workers don't support pause after download so we can't
+  // perform script comparison.
+  // TODO(asamidoi): Support pause after download in module workers.
+  if (worker_script_type_ == blink::mojom::ScriptType::kModule) {
+    skip_script_comparison_ = true;
+  }
+
   if (registration()->has_installed_version() && !skip_script_comparison_) {
     new_version()->SetToPauseAfterDownload(
         base::BindOnce(&ServiceWorkerRegisterJob::OnPausedAfterDownload,

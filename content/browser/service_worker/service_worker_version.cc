@@ -814,6 +814,8 @@ void ServiceWorkerVersion::Doom() {
 }
 
 void ServiceWorkerVersion::SetToPauseAfterDownload(base::OnceClosure callback) {
+  // TODO(asamidoi): Support pause after download in module workers.
+  DCHECK_EQ(blink::mojom::ScriptType::kClassic, script_type_);
   pause_after_download_callback_ = std::move(callback);
 }
 

@@ -309,6 +309,13 @@ void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {
     return;
   }
 
+  // If this is a module service worker, start the worker thread now. The worker
+  // thread will fetch the script.
+  if (worker_start_data_.script_type == mojom::ScriptType::kModule) {
+    StartWorkerThread();
+    return;
+  }
+
   // Note: We only get here if this is a new (i.e., not installed) service
   // worker.
   DCHECK(!main_script_loader_);
