@@ -4152,12 +4152,19 @@ id<GREYMatcher> SearchIconButton() {
 
   // Search 'zz'.
   [[EarlGrey selectElementWithMatcher:SearchIconButton()]
-      performAction:grey_typeText(@"zz")];
+      performAction:grey_typeText(@"zz\n")];
 
   // Verify that we have a 'No Results' label somewhere.
   [[EarlGrey selectElementWithMatcher:grey_text(l10n_util::GetNSString(
                                           IDS_HISTORY_NO_SEARCH_RESULTS))]
       assertWithMatcher:grey_notNil()];
+
+  // Verify that Edit button is disabled.
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                   [BookmarksTestCase contextBarSelectString])]
+      assertWithMatcher:grey_accessibilityTrait(
+                            UIAccessibilityTraitNotEnabled)];
 }
 
 // Tests that scrim is shown while search box is enabled with no queries.
