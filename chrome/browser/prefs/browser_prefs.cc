@@ -311,7 +311,8 @@
 #include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_util.h"
 #endif
 
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #endif
 
@@ -743,7 +744,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   safe_browsing::PostCleanupSettingsResetter::RegisterProfilePrefs(registry);
 #endif
 
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   browser_switcher::prefs::RegisterProfilePrefs(registry);
 #endif
 
