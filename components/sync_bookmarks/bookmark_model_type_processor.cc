@@ -481,12 +481,14 @@ void BookmarkModelTypeProcessor::AppendNodeAndChildrenForDebugging(
 void BookmarkModelTypeProcessor::GetStatusCountersForDebugging(
     StatusCountersCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(bookmark_tracker_);
   syncer::StatusCounters counters;
-  counters.num_entries = bookmark_tracker_->TrackedBookmarksCountForDebugging();
-  counters.num_entries_and_tombstones =
-      counters.num_entries +
-      bookmark_tracker_->TrackedUncommittedTombstonesCountForDebugging();
+  if (bookmark_tracker_) {
+    counters.num_entries =
+        bookmark_tracker_->TrackedBookmarksCountForDebugging();
+    counters.num_entries_and_tombstones =
+        counters.num_entries +
+        bookmark_tracker_->TrackedUncommittedTombstonesCountForDebugging();
+  }
   std::move(callback).Run(syncer::BOOKMARKS, counters);
 }
 
