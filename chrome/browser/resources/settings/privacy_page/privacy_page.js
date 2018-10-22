@@ -380,7 +380,15 @@ Polymer({
 
   /** @private */
   onSigninAllowedChange_: function() {
-    this.showRestart_ = true;
+    if (this.syncStatus.signedIn && !this.$.signinAllowedToggle.checked) {
+      // Switch the toggle back on and route to people_page's disconnect dialog.
+      this.$.signinAllowedToggle.checked = true;
+      settings.navigateTo(settings.routes.SIGN_OUT);
+    } else {
+      /** @type {!SettingsToggleButtonElement} */ (this.$.signinAllowedToggle)
+          .sendPrefChange();
+      this.showRestart_ = true;
+    }
   },
 
   /**

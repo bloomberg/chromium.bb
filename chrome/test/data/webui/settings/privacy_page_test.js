@@ -125,6 +125,12 @@ cr.define('settings_privacy_page', function() {
 
       setup(function() {
         page = document.createElement('settings-privacy-page');
+        page.prefs = {
+          signin: {
+            allowed_on_next_startup:
+                {type: chrome.settingsPrivate.PrefType.BOOLEAN, value: true},
+          },
+        };
         document.body.appendChild(page);
       });
 
@@ -150,18 +156,43 @@ cr.define('settings_privacy_page', function() {
       if (!cr.isChromeOS) {
         test('signinAllowedToggle', function() {
           const toggle = page.$.signinAllowedToggle;
+
           page.syncStatus = {signedIn: false};
-          // When the user is signed out, the toggle is enabled.
-          assertFalse(toggle.disabled);
+          // Check initial setup.
+          assertTrue(toggle.checked);
+          assertTrue(page.prefs.signin.allowed_on_next_startup.value);
+          assertFalse(page.$.toast.open);
+
+          // When the user is signed out, clicking the toggle should work
+          // normally and the restart toast should be opened.
+          toggle.click();
+          assertFalse(toggle.checked);
+          assertFalse(page.prefs.signin.allowed_on_next_startup.value);
+          assertTrue(page.$.toast.open);
+
+          // Clicking it again, turns the toggle back on. The toast remains
+          // open.
+          toggle.click();
+          assertTrue(toggle.checked);
+          assertTrue(page.prefs.signin.allowed_on_next_startup.value);
+          assertTrue(page.$.toast.open);
+
+          // Reset toast.
+          page.showRestart_ = false;
+          assertFalse(page.$.toast.open);
 
           page.syncStatus = {signedIn: true};
-          // When the user is signed in, the toggle is disabled.
-          assertTrue(toggle.disabled);
+          // When the user is signed in, clicking the toggle should open the
+          // sign-out dialog. The toggle should remain checked.
+          toggle.click();
+          assertTrue(toggle.checked);
+          assertTrue(page.prefs.signin.allowed_on_next_startup.value);
+          assertFalse(page.$.toast.open);
+          assertEquals(settings.routes.SIGN_OUT, settings.getCurrentRoute());
         });
       }
     });
   }
-
 
   function registerClearBrowsingDataTestsDice() {
     suite('ClearBrowsingDataDice', function() {
