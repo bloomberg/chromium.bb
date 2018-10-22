@@ -23,13 +23,19 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/network_service_instance.h"
+#include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/network/public/mojom/network_service_test.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace data_reduction_proxy {
@@ -62,19 +68,36 @@ std::unique_ptr<net::test_server::HttpResponse> IncrementRequestCount(
   return std::make_unique<net::test_server::BasicHttpResponse>();
 }
 
+void SimulateNetworkChange(network::mojom::ConnectionType type) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+      !content::IsNetworkServiceRunningInProcess()) {
+    network::mojom::NetworkServiceTestPtr network_service_test;
+    content::ServiceManagerConnection::GetForProcess()
+        ->GetConnector()
+        ->BindInterface(content::mojom::kNetworkServiceName,
+                        &network_service_test);
+    base::RunLoop run_loop;
+    network_service_test->SimulateNetworkChange(type, run_loop.QuitClosure());
+    run_loop.Run();
+    return;
+  }
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::ConnectionType(type));
+}
+
+ClientConfig CreateConfigForServer(const net::EmbeddedTestServer& server) {
+  net::HostPortPair host_port_pair = server.host_port_pair();
+  return CreateConfig(
+      kSessionKey, 1000, 0, ProxyServer_ProxyScheme_HTTP, host_port_pair.host(),
+      host_port_pair.port(), ProxyServer::CORE, ProxyServer_ProxyScheme_HTTP,
+      "fallback.net", 80, ProxyServer::UNSPECIFIED_TYPE, 0.5f, false);
+}
+
 }  // namespace
 
 class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    net::HostPortPair host_port_pair = embedded_test_server()->host_port_pair();
-    std::string config = EncodeConfig(CreateConfig(
-        kSessionKey, 1000, 0, ProxyServer_ProxyScheme_HTTP,
-        host_port_pair.host(), host_port_pair.port(), ProxyServer::CORE,
-        ProxyServer_ProxyScheme_HTTP, "fallback.net", 80,
-        ProxyServer::UNSPECIFIED_TYPE, 0.5f, false));
-    command_line->AppendSwitchASCII(
-        switches::kDataReductionProxyServerClientConfig, config);
     command_line->AppendSwitchASCII(
         network::switches::kForceEffectiveConnectionType, "4G");
 
@@ -84,6 +107,13 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
     command_line->AppendSwitchASCII(
         switches::kDataReductionProxySecureProxyCheckURL,
         secure_proxy_check_server_.base_url().spec());
+
+    config_server_.RegisterRequestHandler(base::BindRepeating(
+        &DataReductionProxyBrowsertestBase::GetConfigResponse,
+        base::Unretained(this)));
+    ASSERT_TRUE(config_server_.Start());
+    command_line->AppendSwitchASCII(switches::kDataReductionProxyConfigURL,
+                                    config_server_.base_url().spec());
   }
 
   void SetUp() override {
@@ -93,7 +123,6 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
         features::kDataReductionProxyRobustConnection,
         {{params::GetMissingViaBypassParamName(), "true"},
          {"warmup_fetch_callback_enabled", "true"}});
-    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
     InProcessBrowserTest::SetUp();
   }
 
@@ -102,10 +131,16 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
     favicon_catcher_ =
         std::make_unique<net::test_server::ControllableHttpResponse>(
             embedded_test_server(), "/favicon.ico");
-    embedded_test_server()->StartAcceptingConnections();
+    ASSERT_TRUE(embedded_test_server()->Start());
+    // Set a default proxy config if one isn't set yet.
+    if (!config_.has_proxy_config())
+      SetConfig(CreateConfigForServer(*embedded_test_server()));
 
     host_resolver()->AddRule(kMockHost, "127.0.0.1");
+
     EnableDataSaver(true);
+    // Make sure initial config has been loaded.
+    WaitForConfig();
   }
 
  protected:
@@ -134,10 +169,30 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
     return base_url.Resolve(relative_url);
   }
 
+  void SetConfig(const ClientConfig& config) {
+    config_run_loop_ = std::make_unique<base::RunLoop>();
+    config_ = config;
+  }
+
+  void WaitForConfig() { config_run_loop_->Run(); }
+
  private:
+  std::unique_ptr<net::test_server::HttpResponse> GetConfigResponse(
+      const net::test_server::HttpRequest& request) {
+    auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+    response->set_content(config_.SerializeAsString());
+    response->set_content_type("text/plain");
+    if (config_run_loop_)
+      config_run_loop_->Quit();
+    return response;
+  }
+
+  ClientConfig config_;
+  std::unique_ptr<base::RunLoop> config_run_loop_;
   base::test::ScopedFeatureList scoped_feature_list_;
   base::test::ScopedFeatureList param_feature_list_;
   net::EmbeddedTestServer secure_proxy_check_server_;
+  net::EmbeddedTestServer config_server_;
   std::unique_ptr<net::test_server::ControllableHttpResponse> favicon_catcher_;
 };
 
@@ -149,6 +204,36 @@ class DataReductionProxyBrowsertest : public DataReductionProxyBrowsertestBase {
         switches::kDisableDataReductionProxyWarmupURLFetch);
   }
 };
+
+IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, UpdateConfig) {
+  net::EmbeddedTestServer original_server;
+  original_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kPrimaryResponse));
+  ASSERT_TRUE(original_server.Start());
+
+  SetConfig(CreateConfigForServer(original_server));
+  // A network change forces the config to be fetched.
+  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
+  WaitForConfig();
+
+  ui_test_utils::NavigateToURL(browser(), GURL("http://does.not.resolve/foo"));
+
+  EXPECT_EQ(GetBody(), kPrimaryResponse);
+
+  net::EmbeddedTestServer new_server;
+  new_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kSecondaryResponse));
+  ASSERT_TRUE(new_server.Start());
+
+  SetConfig(CreateConfigForServer(new_server));
+  // A network change forces the config to be fetched.
+  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_2G);
+  WaitForConfig();
+
+  ui_test_utils::NavigateToURL(browser(), GURL("http://does.not.resolve/foo"));
+
+  EXPECT_EQ(GetBody(), kSecondaryResponse);
+}
 
 IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, ChromeProxyHeaderSet) {
   // Proxy will be used, so it shouldn't matter if the host cannot be resolved.
@@ -241,9 +326,7 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, UMAMetricsRecorded) {
 class DataReductionProxyFallbackBrowsertest
     : public DataReductionProxyBrowsertest {
  public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    DataReductionProxyBrowsertest::SetUpCommandLine(command_line);
-
+  void SetUpOnMainThread() override {
     // Set up a primary server which will return the Chrome-Proxy header set by
     // SetHeader() and status set by SetStatusCode(). Secondary server will just
     // return the secondary response.
@@ -259,14 +342,14 @@ class DataReductionProxyFallbackBrowsertest
     net::HostPortPair primary_host_port_pair = primary_server_.host_port_pair();
     net::HostPortPair secondary_host_port_pair =
         secondary_server_.host_port_pair();
-    std::string config = EncodeConfig(CreateConfig(
+    SetConfig(CreateConfig(
         kSessionKey, 1000, 0, ProxyServer_ProxyScheme_HTTP,
         primary_host_port_pair.host(), primary_host_port_pair.port(),
         ProxyServer::CORE, ProxyServer_ProxyScheme_HTTP,
         secondary_host_port_pair.host(), secondary_host_port_pair.port(),
         ProxyServer::CORE, 0.5f, false));
-    command_line->AppendSwitchASCII(
-        switches::kDataReductionProxyServerClientConfig, config);
+
+    DataReductionProxyBrowsertest::SetUpOnMainThread();
   }
 
   void SetHeader(const std::string& header) { header_ = header; }
@@ -387,9 +470,7 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
 class DataReductionProxyResourceTypeBrowsertest
     : public DataReductionProxyBrowsertest {
  public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    DataReductionProxyBrowsertest::SetUpCommandLine(command_line);
-
+  void SetUpOnMainThread() override {
     // Two proxies are set up here, one with type CORE and one UNSPECIFIED_TYPE.
     // The CORE proxy is the secondary, and should be used for requests from the
     // <video> tag.
@@ -404,14 +485,14 @@ class DataReductionProxyResourceTypeBrowsertest
     net::HostPortPair unspecified_host_port_pair =
         unspecified_server_.host_port_pair();
     net::HostPortPair core_host_port_pair = core_server_.host_port_pair();
-    std::string config = EncodeConfig(CreateConfig(
+    SetConfig(CreateConfig(
         kSessionKey, 1000, 0, ProxyServer_ProxyScheme_HTTP,
         unspecified_host_port_pair.host(), unspecified_host_port_pair.port(),
         ProxyServer::UNSPECIFIED_TYPE, ProxyServer_ProxyScheme_HTTP,
         core_host_port_pair.host(), core_host_port_pair.port(),
         ProxyServer::CORE, 0.5f, false));
-    command_line->AppendSwitchASCII(
-        switches::kDataReductionProxyServerClientConfig, config);
+
+    DataReductionProxyBrowsertest::SetUpOnMainThread();
   }
 
   int unspecified_request_count_ = 0;
@@ -458,23 +539,30 @@ class DataReductionProxyWarmupURLBrowsertest
         primary_server_(GetTestServerType()),
         secondary_server_(GetTestServerType()) {}
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    DataReductionProxyBrowsertestBase::SetUpCommandLine(command_line);
+  void SetUpOnMainThread() override {
+    primary_server_loop_ = std::make_unique<base::RunLoop>();
+    primary_server_.RegisterRequestHandler(base::BindRepeating(
+        &DataReductionProxyWarmupURLBrowsertest::WaitForWarmupRequest,
+        base::Unretained(this), primary_server_loop_.get()));
+    ASSERT_TRUE(primary_server_.Start());
 
-    ASSERT_TRUE(primary_server_.InitializeAndListen());
-    ASSERT_TRUE(secondary_server_.InitializeAndListen());
+    secondary_server_loop_ = std::make_unique<base::RunLoop>();
+    secondary_server_.RegisterRequestHandler(base::BindRepeating(
+        &DataReductionProxyWarmupURLBrowsertest::WaitForWarmupRequest,
+        base::Unretained(this), secondary_server_loop_.get()));
+    ASSERT_TRUE(secondary_server_.Start());
 
     net::HostPortPair primary_host_port_pair = primary_server_.host_port_pair();
     net::HostPortPair secondary_host_port_pair =
         secondary_server_.host_port_pair();
-    std::string config = EncodeConfig(CreateConfig(
+    SetConfig(CreateConfig(
         kSessionKey, 1000, 0, std::get<0>(GetParam()),
         primary_host_port_pair.host(), primary_host_port_pair.port(),
         ProxyServer::UNSPECIFIED_TYPE, std::get<0>(GetParam()),
         secondary_host_port_pair.host(), secondary_host_port_pair.port(),
         ProxyServer::CORE, 0.5f, false));
-    command_line->AppendSwitchASCII(
-        switches::kDataReductionProxyServerClientConfig, config);
+
+    DataReductionProxyBrowsertestBase::SetUpOnMainThread();
   }
 
   // Retries fetching |histogram_name| until it contains at least |count|
@@ -496,22 +584,6 @@ class DataReductionProxyWarmupURLBrowsertest
       SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
       base::RunLoop().RunUntilIdle();
     }
-  }
-
-  void SetUpOnMainThread() override {
-    primary_server_loop_ = std::make_unique<base::RunLoop>();
-    primary_server_.RegisterRequestHandler(base::BindRepeating(
-        &DataReductionProxyWarmupURLBrowsertest::WaitForWarmupRequest,
-        base::Unretained(this), primary_server_loop_.get()));
-    primary_server_.StartAcceptingConnections();
-
-    secondary_server_loop_ = std::make_unique<base::RunLoop>();
-    secondary_server_.RegisterRequestHandler(base::BindRepeating(
-        &DataReductionProxyWarmupURLBrowsertest::WaitForWarmupRequest,
-        base::Unretained(this), secondary_server_loop_.get()));
-    secondary_server_.StartAcceptingConnections();
-
-    DataReductionProxyBrowsertestBase::SetUpOnMainThread();
   }
 
   std::string GetHistogramName(ProxyServer::ProxyType type) {
