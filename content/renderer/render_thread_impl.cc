@@ -398,7 +398,6 @@ class RendererLocalSurfaceIdProvider : public viz::LocalSurfaceIdProvider {
   }
 
  private:
-  viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
   RenderWidgetSurfaceProperties surface_properties_;
 };
 

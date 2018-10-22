@@ -260,6 +260,11 @@ void AsyncLayerTreeFrameSink::DidDeleteSharedBitmap(
   compositor_frame_sink_ptr_->DidDeleteSharedBitmap(id);
 }
 
+void AsyncLayerTreeFrameSink::ForceAllocateNewId() {
+  DCHECK(!enable_surface_synchronization_);
+  local_surface_id_provider_->ForceAllocateNewId();
+}
+
 void AsyncLayerTreeFrameSink::DidReceiveCompositorFrameAck(
     const std::vector<viz::ReturnedResource>& resources) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
