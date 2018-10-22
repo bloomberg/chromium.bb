@@ -5339,5 +5339,5 @@ crbug.com/895777 external/wpt/infrastructure/assumptions/blank.html [ Failure Cr
 crbug.com/896765 [ Linux Mac Win ] http/tests/performance-timing/element-timing/observe-child-element.html [ Failure Pass ]
 
 #Sheriff 2018-10-22
-crbug.com/897775 [ Mac Win ] external/wpt/performance-timeline/webtiming-resolution.any.html [ Failure Pass ]
-crbug.com/897775 [ Mac Win ] external/wpt/performance-timeline/webtiming-resolution.any.worker.html [ Failure Pass ]
+crbug.com/897775 [ Linux Mac Win ] external/wpt/performance-timeline/webtiming-resolution.any.html [ Failure Pass ]
+crbug.com/897775 [ Linux Mac Win ] external/wpt/performance-timeline/webtiming-resolution.any.worker.html [ Failure Pass ]
