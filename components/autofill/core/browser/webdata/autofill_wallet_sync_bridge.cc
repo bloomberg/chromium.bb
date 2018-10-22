@@ -63,12 +63,14 @@ std::string GetClientTagForWalletDataSpecificsId(
 // static
 void AutofillWalletSyncBridge::CreateForWebDataServiceAndBackend(
     const std::string& app_locale,
+    const base::RepeatingCallback<void(bool)>& active_callback,
     bool has_persistent_storage,
     AutofillWebDataBackend* web_data_backend,
     AutofillWebDataService* web_data_service) {
   web_data_service->GetDBUserData()->SetUserData(
       &kAutofillWalletSyncBridgeUserDataKey,
       std::make_unique<AutofillWalletSyncBridge>(
+          active_callback,
           std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
               syncer::AUTOFILL_WALLET_DATA,
               /*dump_stack=*/base::RepeatingClosure()),
@@ -84,11 +86,13 @@ syncer::ModelTypeSyncBridge* AutofillWalletSyncBridge::FromWebDataService(
 }
 
 AutofillWalletSyncBridge::AutofillWalletSyncBridge(
+    const base::RepeatingCallback<void(bool)>& active_callback,
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
     bool has_persistent_storage,
     AutofillWebDataBackend* web_data_backend)
     : ModelTypeSyncBridge(std::move(change_processor)),
       has_persistent_storage_(has_persistent_storage),
+      active_callback_(active_callback),
       initial_sync_done_(false),
       web_data_backend_(web_data_backend) {
   DCHECK(web_data_backend_);
@@ -113,7 +117,10 @@ base::Optional<syncer::ModelError> AutofillWalletSyncBridge::MergeSyncData(
   SetSyncData(entity_data);
 
   // After the first sync, we are sure that initial sync is done.
-  initial_sync_done_ = true;
+  if (!initial_sync_done_) {
+    initial_sync_done_ = true;
+    active_callback_.Run(true);
+  }
   return base::nullopt;
 }
 
@@ -213,7 +220,12 @@ AutofillWalletSyncBridge::ApplyStopSyncChanges(
   // If a metadata change list gets passed in, that means sync is actually
   // disabled, so we want to delete the payments data.
   if (delete_metadata_change_list) {
+    if (initial_sync_done_) {
+      active_callback_.Run(false);
+    }
     SetSyncData(syncer::EntityChangeList());
+
+    initial_sync_done_ = false;
   }
   return StopSyncResponse::kModelStillReadyToSync;
 }
@@ -440,6 +452,8 @@ AutofillTable* AutofillWalletSyncBridge::GetAutofillTable() {
 }
 
 void AutofillWalletSyncBridge::LoadMetadata() {
+  DCHECK(!initial_sync_done_);
+
   if (!web_data_backend_ || !web_data_backend_->GetDatabase() ||
       !GetAutofillTable()) {
     change_processor()->ReportError(
@@ -454,9 +468,12 @@ void AutofillWalletSyncBridge::LoadMetadata() {
         {FROM_HERE, "Failed reading autofill metadata from WebDatabase."});
     return;
   }
-  initial_sync_done_ = batch->GetModelTypeState().initial_sync_done();
 
   change_processor()->ModelReadyToSync(std::move(batch));
+  if (change_processor()->IsTrackingMetadata()) {
+    initial_sync_done_ = true;
+    active_callback_.Run(true);
+  }
 }
 
 }  // namespace autofill

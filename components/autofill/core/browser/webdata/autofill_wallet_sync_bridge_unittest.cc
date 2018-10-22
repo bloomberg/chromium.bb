@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -220,9 +221,9 @@ class AutofillWalletSyncBridgeTest : public testing::Test {
     model_type_state.set_initial_sync_done(initial_sync_done);
     EXPECT_TRUE(table()->UpdateModelTypeState(syncer::AUTOFILL_WALLET_DATA,
                                               model_type_state));
-
     bridge_.reset(new AutofillWalletSyncBridge(
-        mock_processor_.CreateForwardingProcessor(), UseFullSync(), &backend_));
+        active_callback_.Get(), mock_processor_.CreateForwardingProcessor(),
+        UseFullSync(), &backend_));
   }
 
   void StartSyncing(
@@ -327,6 +328,10 @@ class AutofillWalletSyncBridgeTest : public testing::Test {
 
   MockAutofillWebDataBackend* backend() { return &backend_; }
 
+  base::MockCallback<base::RepeatingCallback<void(bool)>>* active_callback() {
+    return &active_callback_;
+  };
+
   virtual bool UseFullSync() { return true; }
 
  private:
@@ -340,6 +345,8 @@ class AutofillWalletSyncBridgeTest : public testing::Test {
   std::unique_ptr<syncer::ClientTagBasedModelTypeProcessor> real_processor_;
   std::unique_ptr<AutofillWalletSyncBridge> bridge_;
   base::HistogramTester histogram_tester_;
+  NiceMock<base::MockCallback<base::RepeatingCallback<void(bool)>>>
+      active_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillWalletSyncBridgeTest);
 };
@@ -761,6 +768,31 @@ TEST_F(AutofillWalletSyncBridgeTest, ApplyStopSyncChanges_KeepData) {
   EXPECT_FALSE(GetAllLocalData().empty());
   ExpectNoHistogramsForAddressesDiff();
   ExpectNoHistogramsForCardsDiff();
+}
+
+TEST_F(AutofillWalletSyncBridgeTest, NotifiesWhenActivelySyncing) {
+  testing::InSequence seq;
+
+  ResetProcessor();
+
+  EXPECT_CALL(*active_callback(), Run(true));
+  ResetBridge(/*initial_sync_done=*/true);
+
+  // Start and stop sync to check that we notify the callback.
+  StartSyncing({});
+
+  EXPECT_CALL(*active_callback(), Run(false));
+  // Stopping sync with change list to indicate that the type is disabled.
+  bridge()->ApplyStopSyncChanges(
+      std::make_unique<syncer::InMemoryMetadataChangeList>());
+
+  EXPECT_CALL(*active_callback(), Run(true));
+  // Start and stop sync again to make sure we notify the callback again.
+  StartSyncing({});
+  // Passing in a non-null metadata change list indicates to the bridge that
+  // sync is stopping but the data type is not disabled, so we should not get
+  // a callback.
+  bridge()->ApplyStopSyncChanges(/*delete_metadata_change_list=*/nullptr);
 }
 
 class AutofillWalletEphemeralSyncBridgeTest
