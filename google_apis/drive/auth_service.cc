@@ -15,6 +15,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "google_apis/drive/auth_service_observer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "services/identity/public/cpp/access_token_fetcher.h"
+#include "services/identity/public/cpp/access_token_info.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace google_apis {
@@ -36,25 +38,21 @@ void RecordAuthResultHistogram(int value) {
 }
 
 // OAuth2 authorization token retrieval request.
-class AuthRequest : public OAuth2TokenService::Consumer {
+class AuthRequest {
  public:
   AuthRequest(OAuth2TokenService* oauth2_token_service,
               const std::string& account_id,
               scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
               const AuthStatusCallback& callback,
               const std::vector<std::string>& scopes);
-  ~AuthRequest() override;
+  ~AuthRequest();
 
  private:
-  // Overridden from OAuth2TokenService::Consumer:
-  void OnGetTokenSuccess(
-      const OAuth2TokenService::Request* request,
-      const OAuth2AccessTokenConsumer::TokenResponse& token_response) override;
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                         const GoogleServiceAuthError& error) override;
+  void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
+                                  identity::AccessTokenInfo token_info);
 
   AuthStatusCallback callback_;
-  std::unique_ptr<OAuth2TokenService::Request> request_;
+  std::unique_ptr<identity::AccessTokenFetcher> access_token_fetcher_;
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthRequest);
@@ -66,49 +64,47 @@ AuthRequest::AuthRequest(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const AuthStatusCallback& callback,
     const std::vector<std::string>& scopes)
-    : OAuth2TokenService::Consumer("auth_service"), callback_(callback) {
+    : callback_(callback) {
   DCHECK(!callback_.is_null());
-  request_ = oauth2_token_service->StartRequestWithContext(
-      account_id, url_loader_factory,
-      OAuth2TokenService::ScopeSet(scopes.begin(), scopes.end()), this);
+
+  access_token_fetcher_ = std::make_unique<identity::AccessTokenFetcher>(
+      account_id, "auth_service", oauth2_token_service, url_loader_factory,
+      OAuth2TokenService::ScopeSet(scopes.begin(), scopes.end()),
+      base::BindOnce(&AuthRequest::OnAccessTokenFetchComplete,
+                     base::Unretained(this)),
+      identity::AccessTokenFetcher::Mode::kImmediate);
 }
 
 AuthRequest::~AuthRequest() {}
 
-// Callback for OAuth2AccessTokenFetcher on success. |access_token| is the token
-// used to start fetching user data.
-void AuthRequest::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
-    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
+void AuthRequest::OnAccessTokenFetchComplete(
+    GoogleServiceAuthError error,
+    identity::AccessTokenInfo token_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  RecordAuthResultHistogram(kSuccessRatioHistogramSuccess);
-  callback_.Run(HTTP_SUCCESS, token_response.access_token);
-  delete this;
-}
-
-// Callback for OAuth2AccessTokenFetcher on failure.
-void AuthRequest::OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                    const GoogleServiceAuthError& error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  LOG(WARNING) << "AuthRequest: token request using refresh token failed: "
-               << error.ToString();
-
-  // There are many ways to fail, but if the failure is due to connection,
-  // it's likely that the device is off-line. We treat the error differently
-  // so that the file manager works while off-line.
-  if (error.state() == GoogleServiceAuthError::CONNECTION_FAILED) {
-    RecordAuthResultHistogram(kSuccessRatioHistogramNoConnection);
-    callback_.Run(DRIVE_NO_CONNECTION, std::string());
-  } else if (error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE) {
-    RecordAuthResultHistogram(kSuccessRatioHistogramTemporaryFailure);
-    callback_.Run(HTTP_FORBIDDEN, std::string());
+  if (error.state() == GoogleServiceAuthError::NONE) {
+    RecordAuthResultHistogram(kSuccessRatioHistogramSuccess);
+    callback_.Run(HTTP_SUCCESS, token_info.token);
   } else {
-    // Permanent auth error.
-    RecordAuthResultHistogram(kSuccessRatioHistogramFailure);
-    callback_.Run(HTTP_UNAUTHORIZED, std::string());
+    LOG(WARNING) << "AuthRequest: token request using refresh token failed: "
+                 << error.ToString();
+
+    // There are many ways to fail, but if the failure is due to connection,
+    // it's likely that the device is off-line. We treat the error differently
+    // so that the file manager works while off-line.
+    if (error.state() == GoogleServiceAuthError::CONNECTION_FAILED) {
+      RecordAuthResultHistogram(kSuccessRatioHistogramNoConnection);
+      callback_.Run(DRIVE_NO_CONNECTION, std::string());
+    } else if (error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE) {
+      RecordAuthResultHistogram(kSuccessRatioHistogramTemporaryFailure);
+      callback_.Run(HTTP_FORBIDDEN, std::string());
+    } else {
+      // Permanent auth error.
+      RecordAuthResultHistogram(kSuccessRatioHistogramFailure);
+      callback_.Run(HTTP_UNAUTHORIZED, std::string());
+    }
   }
+
   delete this;
 }
 

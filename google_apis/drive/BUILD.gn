@@ -43,6 +43,7 @@ source_set("drive") {
     "//crypto",
     "//google_apis:google_apis",
     "//net",
+    "//services/identity/public/cpp:cpp",
     "//services/network/public/cpp",
   ]
 }
