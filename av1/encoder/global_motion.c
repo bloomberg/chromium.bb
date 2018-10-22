@@ -37,12 +37,16 @@
 #define N_LEVELS 5
 // Size of square patches in the disflow dense grid
 #define PATCH_SIZE 5
+// Minimum size of border padding for disflow
+#define MIN_PAD 7
 
 // Struct for an image pyramid
 typedef struct {
   int n_levels;
+  int pad_size;
   int widths[N_LEVELS];
   int heights[N_LEVELS];
+  int strides[N_LEVELS];
   int level_loc[N_LEVELS];
   unsigned char *level_buffer;
 } ImagePyramid;
@@ -312,12 +316,14 @@ int compute_global_motion_feature_based(TransformationType type,
   return 0;
 }
 
-static ImagePyramid *alloc_pyramid(int width, int height) {
+static ImagePyramid *alloc_pyramid(int width, int height, int pad_size) {
   ImagePyramid *pyr = aom_malloc(sizeof(*pyr));
   // 2 * width * height is the upper bound for a buffer that fits
-  // all pyramid levels
-  pyr->level_buffer =
-      aom_malloc(sizeof(*pyr->level_buffer) * 2 * width * height);
+  // all pyramid levels + padding for each level
+  const int buffer_size = sizeof(*pyr->level_buffer) * 2 * width * height +
+                          (width + 2 * pad_size) * 2 * pad_size * N_LEVELS;
+  pyr->level_buffer = aom_malloc(buffer_size);
+  memset(pyr->level_buffer, 0, buffer_size);
   return pyr;
 }
 
@@ -329,42 +335,54 @@ static void free_pyramid(ImagePyramid *pyr) {
 static INLINE void update_level_dims(ImagePyramid *frm_pyr, int level) {
   frm_pyr->widths[level] = frm_pyr->widths[level - 1] >> 1;
   frm_pyr->heights[level] = frm_pyr->heights[level - 1] >> 1;
+  frm_pyr->strides[level] = frm_pyr->widths[level] + 2 * frm_pyr->pad_size;
+  // Point the beginning of the next level buffer to the correct location inside
+  // the padded border
   frm_pyr->level_loc[level] =
       frm_pyr->level_loc[level - 1] +
-      frm_pyr->widths[level - 1] * frm_pyr->heights[level - 1];
+      frm_pyr->strides[level - 1] *
+          (2 * frm_pyr->pad_size + frm_pyr->heights[level - 1]);
 }
 
 // Compute coarse to fine pyramids for a frame
 static void compute_flow_pyramids(unsigned char *frm, const int frm_width,
                                   const int frm_height, const int frm_stride,
-                                  int n_levels, ImagePyramid *frm_pyr) {
-  int cur_width, cur_height, cur_loc;
+                                  int n_levels, int pad_size,
+                                  ImagePyramid *frm_pyr) {
+  int cur_width, cur_height, cur_stride, cur_loc;
   assert((frm_width >> n_levels) > 0);
   assert((frm_height >> n_levels) > 0);
 
   // Initialize first level
   frm_pyr->n_levels = n_levels;
+  frm_pyr->pad_size = pad_size;
   frm_pyr->widths[0] = frm_width;
   frm_pyr->heights[0] = frm_height;
-  frm_pyr->level_loc[0] = 0;
+  frm_pyr->strides[0] = frm_width + 2 * frm_pyr->pad_size;
+  // Point the beginning of the level buffer to the location inside
+  // the padded border
+  frm_pyr->level_loc[0] =
+      frm_pyr->strides[0] * frm_pyr->pad_size + frm_pyr->pad_size;
   // This essentially copies the original buffer into the pyramid buffer
   // without the original padding
   av1_resize_plane(frm, frm_height, frm_width, frm_stride,
-                   frm_pyr->level_buffer, frm_pyr->heights[0],
-                   frm_pyr->widths[0], frm_pyr->widths[0]);
+                   frm_pyr->level_buffer + frm_pyr->level_loc[0],
+                   frm_pyr->heights[0], frm_pyr->widths[0],
+                   frm_pyr->strides[0]);
 
   // Start at the finest level and resize down to the coarsest level
   for (int level = 1; level < n_levels; ++level) {
     update_level_dims(frm_pyr, level);
     cur_width = frm_pyr->widths[level];
     cur_height = frm_pyr->heights[level];
+    cur_stride = frm_pyr->strides[level];
     cur_loc = frm_pyr->level_loc[level];
 
     av1_resize_plane(frm_pyr->level_buffer + frm_pyr->level_loc[level - 1],
                      frm_pyr->heights[level - 1], frm_pyr->widths[level - 1],
-                     frm_pyr->widths[level - 1],
+                     frm_pyr->strides[level - 1],
                      frm_pyr->level_buffer + cur_loc, cur_height, cur_width,
-                     cur_width);
+                     cur_stride);
 
     // TODO(sarahparker) Add computation of gradient pyramids here
   }
@@ -382,6 +400,7 @@ int compute_global_motion_disflow_based(TransformationType type,
   const int frm_height = frm->y_height;
   const int ref_width = ref->y_width;
   const int ref_height = ref->y_height;
+  const int pad_size = AOMMAX(PATCH_SIZE, MIN_PAD);
   assert(frm_width == ref_width);
   assert(frm_height == ref_height);
 
@@ -400,13 +419,13 @@ int compute_global_motion_disflow_based(TransformationType type,
   }
 
   // Allocate frm image pyramids
-  ImagePyramid *frm_pyr = alloc_pyramid(frm_width, frm_height);
+  ImagePyramid *frm_pyr = alloc_pyramid(frm_width, frm_height, pad_size);
   compute_flow_pyramids(frm_buffer, frm_width, frm_height, frm->y_stride,
-                        n_levels, frm_pyr);
+                        n_levels, pad_size, frm_pyr);
   // Allocate ref image pyramids
-  ImagePyramid *ref_pyr = alloc_pyramid(ref_width, ref_height);
+  ImagePyramid *ref_pyr = alloc_pyramid(ref_width, ref_height, pad_size);
   compute_flow_pyramids(ref_buffer, ref_width, ref_height, ref->y_stride,
-                        n_levels, ref_pyr);
+                        n_levels, pad_size, ref_pyr);
 
   // TODO(sarahparker) Implement the rest of DISFlow, currently only the image
   // pyramid is implemented.
