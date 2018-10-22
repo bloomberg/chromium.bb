@@ -9,7 +9,7 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "base/stl_util.h"
+#include "net/third_party/http2/platform/api/http2_arraysize.h"
 #include "net/third_party/http2/platform/api/http2_string_piece.h"
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
 #include "net/third_party/http2/tools/random_decoder_test.h"
@@ -217,8 +217,7 @@ struct {
 };
 
 TEST_P(HpackVarintDecoderTest, Success) {
-  // TODO(diannahu): Add platform for base::size().
-  for (size_t i = 0; i < base::size(kSuccessTestData); ++i) {
+  for (size_t i = 0; i < HTTP2_ARRAYSIZE(kSuccessTestData); ++i) {
     DecodeExpectSuccess(Http2HexDecode(kSuccessTestData[i].data),
                         kSuccessTestData[i].prefix_length,
                         kSuccessTestData[i].expected_value);
@@ -252,8 +251,7 @@ struct {
 };
 
 TEST_P(HpackVarintDecoderTest, Error) {
-  // TODO(diannahu): Add platform for base::size().
-  for (size_t i = 0; i < base::size(kErrorTestData); ++i) {
+  for (size_t i = 0; i < HTTP2_ARRAYSIZE(kErrorTestData); ++i) {
     DecodeExpectError(Http2HexDecode(kErrorTestData[i].data),
                       kErrorTestData[i].prefix_length);
   }
