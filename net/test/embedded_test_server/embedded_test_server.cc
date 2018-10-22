@@ -505,7 +505,7 @@ bool EmbeddedTestServer::PostTaskToIOThreadAndWait(
   // already.
   //
   // To handle this situation, create temporary message loop to support the
-  // PostTaskAndReply operation if the current thread has no message loop.
+  // PostTaskAndReply operation if the current thread as no message loop.
   std::unique_ptr<base::MessageLoop> temporary_loop;
   if (!base::MessageLoopCurrent::Get())
     temporary_loop.reset(new base::MessageLoop());
@@ -516,9 +516,6 @@ bool EmbeddedTestServer::PostTaskToIOThreadAndWait(
     return false;
   }
   run_loop.Run();
-
-  base::ScopedAllowBaseSyncPrimitivesForTesting allow_wait_for_loop_destruction;
-  temporary_loop.reset();
 
   return true;
 }
