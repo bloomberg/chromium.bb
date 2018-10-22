@@ -451,9 +451,9 @@ bool OSExchangeDataProviderWin::GetFilenames(
   bool success =
       ClipboardUtil::GetFilenames(source_object_.Get(), &filenames_local);
   if (success) {
-    for (size_t i = 0; i < filenames_local.size(); ++i)
+    for (const base::string16& filename_local : filenames_local)
       filenames->push_back(
-          FileInfo(base::FilePath(filenames_local[i]), base::FilePath()));
+          FileInfo(base::FilePath(filename_local), base::FilePath()));
   }
   return success;
 }
