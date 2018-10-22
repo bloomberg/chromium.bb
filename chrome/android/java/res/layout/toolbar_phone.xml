@@ -13,7 +13,7 @@
     android:layout_width="match_parent"
     android:layout_height="@dimen/toolbar_height_no_shadow" >
 
-    <org.chromium.chrome.browser.widget.newtab.NewTabButton
+    <org.chromium.chrome.browser.toolbar.NewTabButton
         android:id="@+id/new_tab_button"
         style="@style/ToolbarButton"
         android:layout_width="wrap_content"
@@ -21,7 +21,6 @@
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
         android:visibility="invisible"
-        android:background="?attr/selectableItemBackground"
         android:contentDescription="@string/accessibility_toolbar_btn_new_tab" />
 
     <org.chromium.chrome.browser.toolbar.HomePageButton
