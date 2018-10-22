@@ -75,6 +75,7 @@ void BufferQueue::CopyBufferDamage(int texture,
 
   GLuint dst_framebuffer = 0;
   gl_->GenFramebuffers(1, &dst_framebuffer);
+  DCHECK(dst_framebuffer);
   gl_->BindFramebuffer(GL_FRAMEBUFFER, dst_framebuffer);
   gl_->BindTexture(texture_target_, texture);
   gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
@@ -86,8 +87,7 @@ void BufferQueue::CopyBufferDamage(int texture,
   }
   gl_->BindTexture(texture_target_, 0);
   gl_->Flush();
-  if (dst_framebuffer != 0)
-    gl_->DeleteFramebuffers(1, &dst_framebuffer);
+  gl_->DeleteFramebuffers(1, &dst_framebuffer);
 }
 
 void BufferQueue::UpdateBufferDamage(const gfx::Rect& damage) {
