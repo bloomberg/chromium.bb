@@ -415,8 +415,7 @@ void RootScrollerController::ProcessImplicitCandidates() {
 }
 
 PaintLayer* RootScrollerController::RootScrollerPaintLayer() const {
-  return root_scroller_util::PaintLayerForRootScroller(
-      effective_root_scroller_);
+  return RootScrollerUtil::PaintLayerForRootScroller(effective_root_scroller_);
 }
 
 bool RootScrollerController::ScrollsViewport(const Element& element) const {

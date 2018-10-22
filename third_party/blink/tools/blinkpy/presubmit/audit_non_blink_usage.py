@@ -221,7 +221,6 @@ _CONFIG = [
             'event_handling_util::.+',
             'event_util::.+',
             'media_constraints_impl::.+',
-            'root_scroller_util::.+',
             'scheduler::.+',
             'touch_action_util::.+',
             'vector_math::.+',

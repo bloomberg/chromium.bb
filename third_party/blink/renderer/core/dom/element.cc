@@ -650,7 +650,7 @@ void Element::CallDistributeScroll(ScrollState& scroll_state) {
                                        .IsViewportScrollCallback(callback);
 
   disable_custom_callbacks |=
-      !root_scroller_util::IsGlobal(this) &&
+      !RootScrollerUtil::IsGlobal(this) &&
       RuntimeEnabledFeatures::ScrollCustomizationEnabled() &&
       !GetScrollCustomizationCallbacks().InScrollPhase(this);
 
@@ -744,7 +744,7 @@ void Element::CallApplyScroll(ScrollState& scroll_state) {
                                        ->GlobalRootScrollerController()
                                        .IsViewportScrollCallback(callback);
   disable_custom_callbacks |=
-      !root_scroller_util::IsGlobal(this) &&
+      !RootScrollerUtil::IsGlobal(this) &&
       RuntimeEnabledFeatures::ScrollCustomizationEnabled() &&
       !GetScrollCustomizationCallbacks().InScrollPhase(this);
 
