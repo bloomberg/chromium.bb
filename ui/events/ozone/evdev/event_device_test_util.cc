@@ -81,18 +81,18 @@ bool ParseBitfield(const std::string& bitfield,
 
 // Captured from HJC Game ZD - V gamepad.
 const DeviceAbsoluteAxis kHJCGamepadAbsAxes[] = {
-    {ABS_X, {128, 0, 255, 15, 0}}, {ABS_Y, {128, 0, 255, 15, 0}},
-    {ABS_Z, {128, 0, 255, 15, 0}}, {ABS_RZ, {128, 0, 255, 15, 0}},
-    {ABS_HAT0X, {0, -1, 1, 0, 0}}, {ABS_HAT0Y, {0, 1, 1, 0, 0}}};
-
+    {ABS_X, {0, 0, 255, 0, 15, 0}},   {ABS_Y, {0, 0, 255, 0, 15, 0}},
+    {ABS_Z, {0, 0, 255, 0, 15, 0}},   {ABS_RZ, {0, 0, 255, 0, 15, 0}},
+    {ABS_HAT0X, {0, -1, 1, 0, 0, 0}}, {ABS_HAT0Y, {0, -1, 1, 0, 0, 0}},
+};
 const DeviceCapabilities kHJCGamepad = {
     /* path */
-    "/devices/pci0000:00/0000:00:14.0/usb1/1-2/1-2.2/1-2.2:1.0/"
-    "input/input38/event11",
+    "/sys/devices/pci0000:00/0000:00:14.0/usb1/1-1/1-1:1.0/"
+    "0003:11C5:5506.0005/input/input11/event8",
     /* name */ "HJC Game ZD - V",
-    /* phys */ "usb-0000:00:14.0-2.2/input0",
+    /* phys */ "usb-0000:00:14.0-1/input0",
     /* uniq */ "",
-    /* bustype */ "0011",
+    /* bustype */ "0003",
     /* vendor */ "11c5",
     /* product */ "5506",
     /* version */ "0111",
@@ -111,23 +111,22 @@ const DeviceCapabilities kHJCGamepad = {
 
 // Captured from Xbox 360 gamepad.
 const DeviceAbsoluteAxis kXboxGamepadAbsAxes[] = {
-    {ABS_X, {0, -32768, 32767, 16, 128}},
-    {ABS_Y, {0, -32768, 32767, 16, 128}},
-    {ABS_Z, {0, 0, 255, 0, 0}},
-    {ABS_RX, {0, -32768, 32767, 16, 128}},
-    {ABS_RY, {0, -32768, 32767, 16, 128}},
-    {ABS_RZ, {0, 0, 255, 0, 0}},
-    {ABS_HAT0X, {0, -1, 1, 0, 0}},
-    {ABS_HAT0Y, {0, -1, 1, 0, 0}}};
-
+    {ABS_X, {0, -32768, 32767, 16, 128, 0}},
+    {ABS_Y, {0, -32768, 32767, 16, 128, 0}},
+    {ABS_Z, {0, 0, 255, 0, 0, 0}},
+    {ABS_RX, {0, -32768, 32767, 16, 128, 0}},
+    {ABS_RY, {0, -32768, 32767, 16, 128, 0}},
+    {ABS_RZ, {0, 0, 255, 0, 0, 0}},
+    {ABS_HAT0X, {0, -1, 1, 0, 0, 0}},
+    {ABS_HAT0Y, {0, -1, 1, 0, 0, 0}},
+};
 const DeviceCapabilities kXboxGamepad = {
     /* path */
-    "/devices/pci0000:00/0000:00:14.0/usb1/1-2/1-2.2/1-2.2:1.0/"
-    "input/input38/event11",
+    "/sys/devices/pci0000:00/0000:00:14.0/usb1/1-1/1-1:1.0/input/input9/event8",
     /* name */ "Microsoft X-Box 360 pad",
-    /* phys */ "usb-0000:00:14.0-2.2/input0",
+    /* phys */ "usb-0000:00:14.0-1/input0",
     /* uniq */ "",
-    /* bustype */ "0011",
+    /* bustype */ "0003",
     /* vendor */ "045e",
     /* product */ "028e",
     /* version */ "0114",
@@ -139,24 +138,24 @@ const DeviceCapabilities kXboxGamepad = {
     /* msc */ "0",
     /* sw */ "0",
     /* led */ "0",
-    /* ff */ "0",
+    /* ff */ "107030000 0",
     kXboxGamepadAbsAxes,
     arraysize(kXboxGamepadAbsAxes),
 };
 
 // Captured from iBuffalo gamepad.
 const DeviceAbsoluteAxis kiBuffaloGamepadAbsAxes[] = {
-    {ABS_X, {128, 0, 255, 0, 15}},
-    {ABS_Y, {128, 0, 255, 0, 15}}};
-
+    {ABS_X, {0, 0, 255, 0, 15, 0}},
+    {ABS_Y, {0, 0, 255, 0, 15, 0}},
+};
 const DeviceCapabilities kiBuffaloGamepad = {
     /* path */
-    "/devices/pci0000:00/0000:00:14.0/usb3/3-14/3-14:1.0/0003:0583:2060.0011/"
-    "input/input30/event14",
-    /* name */ "USB,2-axis 8-button gamepad",
-    /* phys */ "usb-0000:00:14.0-14/input0",
+    "/sys/devices/pci0000:00/0000:00:14.0/usb1/1-1/"
+    "1-1:1.0/0003:0583:2060.0004/input/input10/event8",
+    /* name */ "USB,2-axis 8-button gamepad  ",
+    /* phys */ "usb-0000:00:14.0-1/input0",
     /* uniq */ "",
-    /* bustype */ "0011",
+    /* bustype */ "0003",
     /* vendor */ "0583",
     /* product */ "2060",
     /* version */ "0110",
@@ -175,8 +174,8 @@ const DeviceCapabilities kiBuffaloGamepad = {
 
 // Captured from Pixelbook.
 const DeviceAbsoluteAxis kEveTouchScreenAbsAxes[] = {
-    {ABS_X, {4624, 0, 10368, 0, 0, 40}},
-    {ABS_Y, {2177, 0, 6912, 0, 0, 40}},
+    {ABS_X, {0, 0, 10368, 0, 0, 40}},
+    {ABS_Y, {0, 0, 6912, 0, 0, 40}},
     {ABS_PRESSURE, {0, 0, 255, 0, 0, 0}},
     {ABS_MT_SLOT, {0, 0, 9, 0, 0, 0}},
     {ABS_MT_TOUCH_MAJOR, {0, 0, 255, 0, 0, 1}},
@@ -184,9 +183,10 @@ const DeviceAbsoluteAxis kEveTouchScreenAbsAxes[] = {
     {ABS_MT_ORIENTATION, {0, 0, 1, 0, 0, 0}},
     {ABS_MT_POSITION_X, {0, 0, 10368, 0, 0, 40}},
     {ABS_MT_POSITION_Y, {0, 0, 6912, 0, 0, 40}},
-    {ABS_MT_TOOL_TYPE, {0, 0, 2, 0, 0}},
-    {ABS_MT_PRESSURE, {0, 0, 255, 0, 0, 0}}};
-
+    {ABS_MT_TOOL_TYPE, {0, 0, 2, 0, 0, 0}},
+    {ABS_MT_TRACKING_ID, {0, 0, 65535, 0, 0, 0}},
+    {ABS_MT_PRESSURE, {0, 0, 255, 0, 0, 0}},
+};
 const DeviceCapabilities kEveTouchScreen = {
     /* path */
     "/sys/devices/pci0000:00/0000:00:15.0/i2c_designware.0/i2c-6/"
