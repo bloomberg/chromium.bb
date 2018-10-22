@@ -881,6 +881,7 @@ TEST_F('CrSettingsCertificateManagerTest', 'All', function() {
 
 GEN('#endif  // defined(USE_NSS_CERTS)');
 
+GEN('#if defined(GOOGLE_CHROME_BUILD)');
 /**
  * Test fixture for chrome/browser/resources/settings/privacy_page/.
  * @constructor
@@ -904,14 +905,8 @@ CrSettingsPersonalizationOptionsTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsPersonalizationOptionsTest', 'NonOfficialBuild', function() {
-  settings_personalization_options.registerTests();
-  mocha.run();
-});
 
-GEN('#if defined(GOOGLE_CHROME_BUILD)');
 TEST_F('CrSettingsPersonalizationOptionsTest', 'OfficialBuild', function() {
-  settings_personalization_options.registerOfficialBuildTests();
   mocha.run();
 });
 GEN('#endif');
