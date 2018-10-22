@@ -175,6 +175,9 @@ class ArcNotificationContentView
 
   base::string16 accessible_name_;
 
+  // If it's true, the surface gets active when attached to this view.
+  bool activate_on_attach_ = false;
+
   // Radiuses of rounded corners. These values are used in UpdateMask().
   int top_radius_ = 0;
   int bottom_radius_ = 0;

@@ -57,4 +57,9 @@ FakeNotificationsInstance::latest_do_not_disturb_status() const {
   return latest_do_not_disturb_status_;
 }
 
+void FakeNotificationsInstance::PerformDeferredUserAction(uint32_t action_id) {}
+void FakeNotificationsInstance::CancelDeferredUserAction(uint32_t action_id) {}
+void FakeNotificationsInstance::SetLockScreenSettingOnAndroid(
+    mojom::ArcLockScreenNotificationSettingPtr setting) {}
+
 }  // namespace arc

@@ -33,7 +33,7 @@ class ArcNotificationView : public message_center::MessageView,
                       const message_center::Notification& notification);
   ~ArcNotificationView() override;
 
-  // These method are called by the content view when focus handling is defered
+  // These method are called by the content view when focus handling is deferred
   // to the content.
   void OnContentFocused();
   void OnContentBlurred();

@@ -452,6 +452,11 @@ void ArcNotificationContentView::SetSurface(ArcNotificationSurface* surface) {
         surface_->Detach();
       }
       AttachSurface();
+
+      if (activate_on_attach_) {
+        ActivateWidget(true);
+        activate_on_attach_ = false;
+      }
     }
   }
 }
@@ -752,7 +757,11 @@ void ArcNotificationContentView::ActivateWidget(bool activate) {
   if (activate) {
     GetWidget()->widget_delegate()->set_can_activate(true);
     GetWidget()->Activate();
-    surface_->FocusSurfaceWindow();
+
+    if (surface_)
+      surface_->FocusSurfaceWindow();
+    else
+      activate_on_attach_ = true;
   } else {
     GetWidget()->widget_delegate()->set_can_activate(false);
   }
