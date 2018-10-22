@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/strings/string_piece.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/process_internals/process_internals.mojom.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/site_isolation_policy.h"
@@ -32,7 +33,11 @@ namespace {
       static_cast<SiteInstanceImpl*>(frame->GetSiteInstance());
   frame_info->site_instance = ::mojom::SiteInstanceInfo::New();
   frame_info->site_instance->id = site_instance->GetId();
-  frame_info->site_instance->locked = site_instance->lock_url().is_valid();
+
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  frame_info->site_instance->locked =
+      !policy->GetOriginLock(site_instance->GetProcess()->GetID()).is_empty();
+
   frame_info->site_instance->site_url =
       site_instance->HasSite()
           ? base::make_optional(site_instance->GetSiteURL())
