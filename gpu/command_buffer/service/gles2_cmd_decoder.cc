@@ -12254,6 +12254,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
       std::unique_ptr<ScopedFramebufferCopyBinder> binder;
       if (workarounds()
               .use_copyteximage2d_instead_of_readpixels_on_multisampled_textures &&
+          framebuffer_state_.bound_read_framebuffer.get() &&
           framebuffer_state_.bound_read_framebuffer.get()
               ->GetReadBufferIsMultisampledTexture()) {
         binder = std::make_unique<ScopedFramebufferCopyBinder>(this);
@@ -12292,6 +12293,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
       DCHECK(
           !workarounds()
                .use_copyteximage2d_instead_of_readpixels_on_multisampled_textures ||
+          !framebuffer_state_.bound_read_framebuffer.get() ||
           !framebuffer_state_.bound_read_framebuffer.get()
                ->GetReadBufferIsMultisampledTexture());
       // To simply the state tracking, we don't go down the async path if
@@ -12363,6 +12365,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
     } else if (
         workarounds()
             .use_copyteximage2d_instead_of_readpixels_on_multisampled_textures &&
+        framebuffer_state_.bound_read_framebuffer.get() &&
         framebuffer_state_.bound_read_framebuffer.get()
             ->GetReadBufferIsMultisampledTexture()) {
       ScopedFramebufferCopyBinder binder(this, x, y, width, height);
