@@ -286,8 +286,8 @@ class FooRemover : public Foo {
   void Observe(int x) override {
     std::vector<Foo*> tmp;
     tmp.swap(foos_);
-    for (auto it = tmp.begin(); it != tmp.end(); ++it) {
-      list_->RemoveObserver(*it);
+    for (auto* it : tmp) {
+      list_->RemoveObserver(it);
     }
   }
 
