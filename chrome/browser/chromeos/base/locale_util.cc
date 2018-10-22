@@ -60,7 +60,8 @@ void SwitchLanguageDoReloadLocale(SwitchLanguageData* data) {
 void FinishSwitchLanguage(std::unique_ptr<SwitchLanguageData> data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (data->result.success) {
-    g_browser_process->SetApplicationLocale(data->result.loaded_locale);
+    g_browser_process->SetApplicationLocale(data->result.loaded_locale,
+                                            data->result.requested_locale);
 
     // If the language switch was triggered by enterprise policy, it is possible
     // that the locale is not in the user's list of preferred languages yet,
