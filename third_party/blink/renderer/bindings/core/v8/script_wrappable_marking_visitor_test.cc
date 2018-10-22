@@ -30,6 +30,9 @@ class TemporaryScriptWrappableVisitorScope {
       v8::Isolate* isolate,
       std::unique_ptr<ScriptWrappableMarkingVisitor> controller)
       : isolate_(isolate), saved_controller_(std::move(controller)) {
+    // The save and restore logic assumes that V8 is interested in the
+    // wrapper tracing controller.
+    CHECK(!RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled());
     SwapWithV8PerIsolateDataVisitor();
   }
   ~TemporaryScriptWrappableVisitorScope() { SwapWithV8PerIsolateDataVisitor(); }
@@ -119,6 +122,11 @@ void PreciselyCollectGarbage() {
 
 TEST(ScriptWrappableMarkingVisitorTest,
      ScriptWrappableMarkingVisitorTracesWrappers) {
+  // Test depends on InterceptingScriptWrappableMarkingVisitorScope which is
+  // specialized for wrapper tracing.
+  if (RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled())
+    return;
+
   V8TestingScope scope;
 
   DeathAwareScriptWrappable* target = DeathAwareScriptWrappable::Create();
@@ -152,6 +160,11 @@ TEST(ScriptWrappableMarkingVisitorTest,
 
 TEST(ScriptWrappableMarkingVisitorTest,
      MarkedObjectDoesNothingOnWriteBarrierHitWhenDependencyIsMarkedToo) {
+  // Test depends on InterceptingScriptWrappableMarkingVisitorScope which is
+  // specialized for wrapper tracing.
+  if (RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled())
+    return;
+
   V8TestingScope scope;
 
   InterceptingScriptWrappableMarkingVisitorScope intercepting_scope(
@@ -179,6 +192,11 @@ TEST(ScriptWrappableMarkingVisitorTest,
 
 TEST(ScriptWrappableMarkingVisitorTest,
      MarkedObjectMarksDependencyOnWriteBarrierHitWhenNotMarked) {
+  // Test depends on InterceptingScriptWrappableMarkingVisitorScope which is
+  // specialized for wrapper tracing.
+  if (RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled())
+    return;
+
   V8TestingScope scope;
 
   InterceptingScriptWrappableMarkingVisitorScope intercepting_scope(
@@ -228,6 +246,11 @@ class HandleContainer
 }  // namespace
 
 TEST(ScriptWrappableMarkingVisitorTest, WriteBarrierOnUnmarkedContainer) {
+  // Test depends on InterceptingScriptWrappableMarkingVisitorScope which is
+  // specialized for wrapper tracing.
+  if (RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled())
+    return;
+
   V8TestingScope scope;
   InterceptingScriptWrappableMarkingVisitorScope visitor_scope(
       scope.GetIsolate());
@@ -246,6 +269,11 @@ TEST(ScriptWrappableMarkingVisitorTest, WriteBarrierOnUnmarkedContainer) {
 }
 
 TEST(ScriptWrappableMarkingVisitorTest, WriteBarrierTriggersOnMarkedContainer) {
+  // Test depends on InterceptingScriptWrappableMarkingVisitorScope which is
+  // specialized for wrapper tracing.
+  if (RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled())
+    return;
+
   V8TestingScope scope;
   InterceptingScriptWrappableMarkingVisitorScope visitor_scope(
       scope.GetIsolate());
@@ -276,6 +304,12 @@ TEST(ScriptWrappableMarkingVisitorTest, VtableAtObjectStart) {
 
 TEST(ScriptWrappableMarkingVisitor, WriteBarrierForScriptWrappable) {
   // Regression test for crbug.com/702490.
+
+  // Test depends on InterceptingScriptWrappableMarkingVisitorScope which is
+  // specialized for wrapper tracing.
+  if (RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled())
+    return;
+
   V8TestingScope scope;
   InterceptingScriptWrappableMarkingVisitorScope visitor_scope(
       scope.GetIsolate());
@@ -300,6 +334,11 @@ TEST(ScriptWrappableMarkingVisitor, WriteBarrierForScriptWrappable) {
 }
 
 TEST(ScriptWrappableMarkingVisitorTest, WriteBarrierOnHeapVectorSwap1) {
+  // Test depends on InterceptingScriptWrappableMarkingVisitorScope which is
+  // specialized for wrapper tracing.
+  if (RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled())
+    return;
+
   V8TestingScope scope;
 
   HeapVector<DeathAwareScriptWrappable::Wrapper> vector1;
@@ -321,6 +360,11 @@ TEST(ScriptWrappableMarkingVisitorTest, WriteBarrierOnHeapVectorSwap1) {
 }
 
 TEST(ScriptWrappableMarkingVisitorTest, WriteBarrierOnHeapVectorSwap2) {
+  // Test depends on InterceptingScriptWrappableMarkingVisitorScope which is
+  // specialized for wrapper tracing.
+  if (RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled())
+    return;
+
   V8TestingScope scope;
 
   HeapVector<DeathAwareScriptWrappable::Wrapper> vector1;
@@ -393,6 +437,11 @@ class Base : public blink::GarbageCollected<Base>,
 }  // namespace
 
 TEST(ScriptWrappableMarkingVisitorTest, MixinTracing) {
+  // Test depends on InterceptingScriptWrappableMarkingVisitorScope which is
+  // specialized for wrapper tracing.
+  if (RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled())
+    return;
+
   V8TestingScope scope;
 
   DeathAwareScriptWrappable* base_wrapper = DeathAwareScriptWrappable::Create();
