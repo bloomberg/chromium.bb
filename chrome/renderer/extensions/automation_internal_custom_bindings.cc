@@ -73,7 +73,7 @@ ui::AXNode* GetContainingTable(ui::AXNode* node) {
   while (node && !ui::IsTableLike(node->data().role))
     node = node->parent();
 
-  if (ui::IsTableLike(node->data().role))
+  if (node && ui::IsTableLike(node->data().role))
     return node;
 
   return nullptr;
