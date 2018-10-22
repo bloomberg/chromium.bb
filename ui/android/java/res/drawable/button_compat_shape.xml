@@ -5,5 +5,5 @@
 
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
     <solid android:color="#fff" />
-    <corners android:radius="2dp" />
+    <corners android:radius="@dimen/button_compat_corner_radius" />
 </shape>

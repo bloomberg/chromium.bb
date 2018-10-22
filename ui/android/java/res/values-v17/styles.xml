@@ -12,12 +12,16 @@
     </style>
 
     <!-- Buttons -->
-    <style name="ButtonCompatOverlay">
-        <item name="android:buttonStyle">@style/ButtonCompat</item>
+    <style name="FilledButtonThemeOverlay">
+        <item name="android:buttonStyle">@style/FilledButton</item>
     </style>
-    <style name="ButtonCompatBorderlessOverlay">
-        <item name="android:buttonStyle">@style/ButtonCompatBorderless</item>
+    <style name="FilledButtonThemeOverlay.Flat" tools:ignore="UnusedResources">
+        <item name="android:buttonStyle">@style/FilledButton.Flat</item>
     </style>
+    <style name="TextButtonThemeOverlay" tools:ignore="UnusedResources">
+        <item name="android:buttonStyle">@style/TextButton</item>
+    </style>
+
     <style name="ButtonCompatBase">
         <item name="android:minWidth">88dp</item>
         <item name="android:minHeight">36dp</item>
@@ -29,10 +33,27 @@
         <item name="android:clickable">true</item>
         <item name="android:gravity">center_vertical|center_horizontal</item>
     </style>
-    <style name="ButtonCompat" parent="ButtonCompatBase">
+    <style name="FilledButton" parent="ButtonCompatBase" tools:ignore="UnusedResources">
+        <item name="android:textAppearance">@style/WhiteButtonText</item>
+        <item name="buttonColor">@color/blue_when_enabled</item>
+        <item name="rippleColor">@color/filled_button_ripple_color</item>
+        <item name="buttonRaised">true</item>
+    </style>
+    <style name="FilledButton.Flat" tools:ignore="UnusedResources">
+        <item name="buttonRaised">false</item>
+    </style>
+    <style name="TextButton" parent="ButtonCompatBase" tools:ignore="UnusedResources">
+        <item name="android:textAppearance">@style/BlueButtonText2</item>
+        <item name="buttonColor">@android:color/transparent</item>
+        <item name="rippleColor">@color/text_button_ripple_color</item>
+        <item name="buttonRaised">false</item>
+    </style>
+
+    <!-- TODO(huayinz): Remove these once button unification is done. -->
+    <style name="ButtonCompat" parent="ButtonCompatBase" tools:ignore="UnusedResources">
         <item name="android:background">@drawable/button_compat_shape</item>
     </style>
-    <style name="ButtonCompatBorderless" parent="ButtonCompat">
+    <style name="ButtonCompatBorderless" parent="ButtonCompat" tools:ignore="UnusedResources">
         <item name="android:background">?android:attr/selectableItemBackground</item>
     </style>
 

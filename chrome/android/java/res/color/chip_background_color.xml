@@ -5,7 +5,7 @@
 -->
 
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:alpha="@dimen/chip_background_disabled_alpha"
+    <item android:alpha="@dimen/default_disabled_alpha"
         android:color="@color/modern_grey_100"
         android:state_enabled="false" />
     <item android:alpha="@dimen/chip_background_selected_focused_alpha"
@@ -15,7 +15,7 @@
     <item android:alpha="@dimen/chip_background_selected_alpha"
         android:color="@color/modern_blue_600"
         android:state_selected="true" />
-    <item android:alpha="@dimen/chip_background_focused_alpha"
+    <item android:alpha="@dimen/default_focused_alpha"
         android:color="@color/modern_grey_800"
         android:state_focused="true" />
     <item android:color="@android:color/white" />
