@@ -611,7 +611,9 @@ textItemWithItemType:(NSInteger)itemType
   BOOL enabled = self.isAuthenticated && !self.isConsentGiven;
   [self updateSectionWithCollapsibleItem:self.syncPersonalizationItem
                                    items:self.personalizedItems
-                                 enabled:enabled];
+                  collapsibleItemEnabled:enabled
+                       switchItemEnabled:enabled
+                         textItemEnabled:self.isAuthenticated];
   syncer::ModelType autofillModelType =
       _syncSetupService->GetModelType(SyncSetupService::kSyncAutofill);
   BOOL isAutofillOn = _syncSetupService->IsDataTypePreferred(autofillModelType);
@@ -627,16 +629,21 @@ textItemWithItemType:(NSInteger)itemType
   BOOL enabled = !self.isAuthenticated || !self.isConsentGiven;
   [self updateSectionWithCollapsibleItem:self.nonPersonalizedServicesItem
                                    items:self.nonPersonalizedItems
-                                 enabled:enabled];
+                  collapsibleItemEnabled:enabled
+                       switchItemEnabled:enabled
+                         textItemEnabled:enabled];
 }
 
-// Set a section (collapsible item, with all the items inside) to be enabled
-// or disabled.
+// Updates |collapsibleItem| and |items| using |collapsibleItemEnabled|,
+// |switchItemEnabled| and |textItemEnabled|.
 - (void)updateSectionWithCollapsibleItem:
             (SettingsCollapsibleItem*)collapsibleItem
                                    items:(ItemArray)items
-                                 enabled:(BOOL)enabled {
-  UIColor* textColor = enabled ? nil : [[MDCPalette greyPalette] tint500];
+                  collapsibleItemEnabled:(BOOL)collapsibleItemEnabled
+                       switchItemEnabled:(BOOL)switchItemEnabled
+                         textItemEnabled:(BOOL)textItemEnabled {
+  UIColor* textColor =
+      collapsibleItemEnabled ? nil : [[MDCPalette greyPalette] tint500];
   collapsibleItem.textColor = textColor;
   for (CollectionViewItem* item in items) {
     if ([item isKindOfClass:[SyncSwitchItem class]]) {
@@ -672,11 +679,11 @@ textItemWithItemType:(NSInteger)itemType
           NOTREACHED();
           break;
       }
-      switchItem.enabled = enabled;
+      switchItem.enabled = switchItemEnabled;
     } else if ([item isKindOfClass:[CollectionViewTextItem class]]) {
       CollectionViewTextItem* textItem =
           base::mac::ObjCCast<CollectionViewTextItem>(item);
-      textItem.enabled = enabled;
+      textItem.enabled = textItemEnabled;
     } else {
       NOTREACHED();
     }
