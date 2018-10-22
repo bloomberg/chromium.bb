@@ -257,10 +257,10 @@
           name, min, max, bucket_count,                                 \
           base::HistogramBase::kUmaTargetedHistogramFlag))
 
-// Scoped class which logs its time on this earth as a UMA statistic. This is
-// recommended for when you want a histogram which measures the time it takes
-// for a method to execute. This measures up to 10 seconds. It uses
-// UMA_HISTOGRAM_TIMES under the hood.
+// Scoped class which logs its time on this earth in milliseconds as a UMA
+// statistic. This is recommended for when you want a histogram which measures
+// the time it takes for a method to execute. This measures up to 10 seconds. It
+// uses UMA_HISTOGRAM_TIMES under the hood.
 
 // Sample usage:
 //   void Function() {
