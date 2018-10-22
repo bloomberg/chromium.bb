@@ -26,7 +26,6 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
-import android.support.annotation.StringRes;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
@@ -79,7 +78,6 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.animation.CancelAwareAnimatorListener;
-import org.chromium.chrome.browser.widget.newtab.NewTabButton;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.ui.UiUtils;
@@ -2614,23 +2612,7 @@ public class ToolbarPhone extends ToolbarLayout
             updateNtpTransitionAnimation();
         }
 
-        if (mNewTabButton != null) {
-            mNewTabButton.setIsIncognito(isIncognito);
-            @StringRes
-            int resId;
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)) {
-                resId = isIncognito ? R.string.accessibility_toolbar_btn_new_private_tab
-                                    : R.string.accessibility_toolbar_btn_new_tab;
-            } else {
-                resId = isIncognito ? R.string.accessibility_toolbar_btn_new_incognito_tab
-                                    : R.string.accessibility_toolbar_btn_new_tab;
-            }
-            CharSequence newTabContentDescription = getResources().getText(resId);
-
-            if (!newTabContentDescription.equals(mNewTabButton.getContentDescription())) {
-                mNewTabButton.setContentDescription(newTabContentDescription);
-            }
-        }
+        if (mNewTabButton != null) mNewTabButton.setIsIncognito(isIncognito);
 
         if (getMenuButtonWrapper() != null) {
             getMenuButtonWrapper().setVisibility(View.VISIBLE);
