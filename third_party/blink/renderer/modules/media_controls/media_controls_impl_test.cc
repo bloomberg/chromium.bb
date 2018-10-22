@@ -762,7 +762,7 @@ TEST_F(MediaControlsImplTest, TimelineSeekToRoundedEnd) {
   // rounded up slightly to |rounded_up_duration| when setting the timeline's
   // |max| attribute (crbug.com/695065).
   double exact_duration = 596.586667;
-  double rounded_up_duration = 596.587;
+  double rounded_up_duration = 596.586667;
   LoadMediaWithDuration(exact_duration);
 
   // Simulate a click slightly past the end of the track of the timeline's

@@ -4414,7 +4414,8 @@ double Element::GetFloatingPointAttribute(const QualifiedName& attribute_name,
 
 void Element::SetFloatingPointAttribute(const QualifiedName& attribute_name,
                                         double value) {
-  setAttribute(attribute_name, AtomicString::Number(value));
+  String serialized_value = SerializeForNumberType(value);
+  setAttribute(attribute_name, AtomicString(serialized_value));
 }
 
 void Element::SetContainsFullScreenElement(bool flag) {
