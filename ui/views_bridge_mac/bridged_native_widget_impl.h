@@ -172,6 +172,10 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   bool ShouldRunCustomAnimationFor(
       views_bridge_mac::mojom::VisibilityTransition transition) const;
 
+  // Redispatch a keyboard event using the widget's window's CommandDispatcher.
+  // Return true if the event is handled.
+  bool RedispatchKeyEvent(NSEvent* event);
+
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
@@ -217,6 +221,12 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   void UpdateTooltip() override;
   void AcquireCapture() override;
   void ReleaseCapture() override;
+  void RedispatchKeyEvent(uint64_t type,
+                          uint64_t modifier_flags,
+                          double timestamp,
+                          const base::string16& characters,
+                          const base::string16& characters_ignoring_modifiers,
+                          uint32_t key_code) override;
 
   // TODO(ccameron): This method exists temporarily as we move all direct access
   // of TextInputClient out of BridgedContentView.

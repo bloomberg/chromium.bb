@@ -961,6 +961,15 @@ bool BridgedNativeWidgetImpl::ShouldRunCustomAnimationFor(
   return true;
 }
 
+bool BridgedNativeWidgetImpl::RedispatchKeyEvent(NSEvent* event) {
+  NSWindow* window = ns_window();
+  DCHECK([window.class conformsToProtocol:@protocol(CommandDispatchingWindow)]);
+  NSObject<CommandDispatchingWindow>* command_dispatching_window =
+      base::mac::ObjCCastStrict<NSObject<CommandDispatchingWindow>>(window);
+  return
+      [[command_dispatching_window commandDispatcher] redispatchKeyEvent:event];
+}
+
 NSWindow* BridgedNativeWidgetImpl::ns_window() {
   return window_.get();
 }
@@ -1097,6 +1106,28 @@ void BridgedNativeWidgetImpl::UpdateTooltip() {
 void BridgedNativeWidgetImpl::SetTextInputClient(
     ui::TextInputClient* text_input_client) {
   [bridged_view_ setTextInputClient:text_input_client];
+}
+
+void BridgedNativeWidgetImpl::RedispatchKeyEvent(
+    uint64_t type,
+    uint64_t modifier_flags,
+    double timestamp,
+    const base::string16& characters,
+    const base::string16& characters_ignoring_modifiers,
+    uint32_t key_code) {
+  NSEvent* event =
+      [NSEvent keyEventWithType:static_cast<NSEventType>(type)
+                             location:NSZeroPoint
+                        modifierFlags:modifier_flags
+                            timestamp:timestamp
+                         windowNumber:[window_ windowNumber]
+                              context:nil
+                           characters:base::SysUTF16ToNSString(characters)
+          charactersIgnoringModifiers:base::SysUTF16ToNSString(
+                                          characters_ignoring_modifiers)
+                            isARepeat:NO
+                              keyCode:key_code];
+  RedispatchKeyEvent(event);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
