@@ -22,7 +22,6 @@
 #include "components/invalidation/impl/invalidation_prefs.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/prefs/pref_service.h"
-#include "components/reading_list/features/reading_list_buildflags.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/sync/base/bind_to_task_runner.h"
@@ -42,7 +41,6 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_type_preference_provider.h"
 #include "components/sync/driver/sync_util.h"
-#include "components/sync/driver/user_selectable_sync_type.h"
 #include "components/sync/engine/configure_reason.h"
 #include "components/sync/engine/cycle/type_debug_info_observer.h"
 #include "components/sync/engine/engine_components_factory_impl.h"
@@ -1341,65 +1339,6 @@ base::Time ProfileSyncService::GetLastSyncedTime() const {
   return sync_prefs_.GetLastSyncedTime();
 }
 
-void ProfileSyncService::UpdateSelectedTypesHistogram(
-    bool sync_everything,
-    const syncer::ModelTypeSet chosen_types) const {
-  if (!IsFirstSetupComplete() ||
-      sync_everything != sync_prefs_.HasKeepEverythingSynced()) {
-    UMA_HISTOGRAM_BOOLEAN("Sync.SyncEverything", sync_everything);
-  }
-
-  // Only log the data types that are shown in the sync settings ui.
-  // Note: the order of these types must match the ordering of
-  // the respective types in ModelType
-  const syncer::user_selectable_type::UserSelectableSyncType
-      user_selectable_types[] = {
-        syncer::user_selectable_type::BOOKMARKS,
-        syncer::user_selectable_type::PREFERENCES,
-        syncer::user_selectable_type::PASSWORDS,
-        syncer::user_selectable_type::AUTOFILL,
-        syncer::user_selectable_type::THEMES,
-        syncer::user_selectable_type::TYPED_URLS,
-        syncer::user_selectable_type::EXTENSIONS,
-        syncer::user_selectable_type::APPS,
-#if BUILDFLAG(ENABLE_READING_LIST)
-        syncer::user_selectable_type::READING_LIST,
-#endif
-        syncer::user_selectable_type::USER_EVENTS,
-        syncer::user_selectable_type::PROXY_TABS,
-      };
-
-  static_assert(42 == syncer::MODEL_TYPE_COUNT,
-                "If adding a user selectable type (that is exposed to the user "
-                "via the sync preferences UI), update "
-                "1) The user_selectable_types[] above;"
-                "2) UserSelectableSyncType in user_selectable_sync_type.h and "
-                "histograms.xml; "
-                "3) UserSelectableTypes() in sync/syncable/model_type.h.");
-
-  if (!sync_everything) {
-    const syncer::ModelTypeSet current_types = GetPreferredDataTypes();
-
-    syncer::ModelTypeSet type_set = syncer::UserSelectableTypes();
-    syncer::ModelTypeSet::Iterator it = type_set.begin();
-
-    DCHECK_EQ(base::size(user_selectable_types), type_set.Size());
-
-    for (size_t i = 0;
-         i < base::size(user_selectable_types) && it != type_set.end();
-         ++i, ++it) {
-      const syncer::ModelType type = *it;
-      if (chosen_types.Has(type) &&
-          (!IsFirstSetupComplete() || !current_types.Has(type))) {
-        // Selected type has changed - log it.
-        UMA_HISTOGRAM_ENUMERATION(
-            "Sync.CustomSync", user_selectable_types[i],
-            syncer::user_selectable_type::SELECTABLE_DATATYPE_COUNT + 1);
-      }
-    }
-  }
-}
-
 void ProfileSyncService::OnUserChoseDatatypes(
     bool sync_everything,
     syncer::ModelTypeSet chosen_types) {
@@ -1411,7 +1350,6 @@ void ProfileSyncService::OnUserChoseDatatypes(
     return;
   }
 
-  UpdateSelectedTypesHistogram(sync_everything, chosen_types);
   sync_prefs_.SetKeepEverythingSynced(sync_everything);
 
   if (data_type_manager_)
@@ -1600,6 +1538,24 @@ void ProfileSyncService::ConfigureDataTypeManager(
                             use_transport_only_mode
                                 ? ConfigureDataTypeManagerOption::kTransport
                                 : ConfigureDataTypeManagerOption::kFeature);
+
+  // Only if it's the full Sync feature, also record the user's choice of data
+  // types.
+  if (!use_transport_only_mode) {
+    bool sync_everything = sync_prefs_.HasKeepEverythingSynced();
+    UMA_HISTOGRAM_BOOLEAN("Sync.SyncEverything2", sync_everything);
+
+    if (!sync_everything) {
+      syncer::ModelTypeSet chosen_types = GetPreferredDataTypes();
+      chosen_types.RetainAll(syncer::UserSelectableTypes());
+
+      for (syncer::ModelType type : chosen_types) {
+        UMA_HISTOGRAM_ENUMERATION("Sync.CustomSync2",
+                                  syncer::ModelTypeToHistogramInt(type),
+                                  static_cast<int>(syncer::MODEL_TYPE_COUNT));
+      }
+    }
+  }
 }
 
 syncer::UserShare* ProfileSyncService::GetUserShare() const {

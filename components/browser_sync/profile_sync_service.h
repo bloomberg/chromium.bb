@@ -547,12 +547,6 @@ class ProfileSyncService : public syncer::SyncService,
   // Collects preferred sync data types from |preference_providers_|.
   syncer::ModelTypeSet GetDataTypesFromPreferenceProviders() const;
 
-  // Called when the user changes the sync configuration, to update the UMA
-  // stats.
-  void UpdateSelectedTypesHistogram(
-      bool sync_everything,
-      const syncer::ModelTypeSet chosen_types) const;
-
   // Update UMA for syncing engine.
   void UpdateEngineInitUMA(bool success) const;
 
