@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.StrictModeContext;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -30,8 +31,10 @@ public class ClientAppDataRegister {
 
     /** Creates a ClientAppDataRegister. */
     public ClientAppDataRegister() {
-        mPreferences = ContextUtils.getApplicationContext()
-                .getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE);
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+            mPreferences = ContextUtils.getApplicationContext()
+                    .getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE);
+        }
     }
 
     /**
