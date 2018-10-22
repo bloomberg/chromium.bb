@@ -672,8 +672,8 @@ void AXTree::CallNodeChangeCallbacks(AXNode* node, const AXNodeData& new_data) {
 void AXTree::UpdateReverseRelations(AXNode* node, const AXNodeData& new_data) {
   const AXNodeData& old_data = node->data();
   int id = new_data.id;
-  auto int_callback = [this, node, id](ax::mojom::IntAttribute attr,
-                                       const int& old_id, const int& new_id) {
+  auto int_callback = [this, id](ax::mojom::IntAttribute attr,
+                                 const int& old_id, const int& new_id) {
     if (!IsNodeIdIntAttribute(attr))
       return;
 
@@ -694,10 +694,9 @@ void AXTree::UpdateReverseRelations(AXNode* node, const AXNodeData& new_data) {
   CallIfAttributeValuesChanged(old_data.int_attributes, new_data.int_attributes,
                                0, int_callback);
 
-  auto intlist_callback = [this, node, id](
-                              ax::mojom::IntListAttribute attr,
-                              const std::vector<int32_t>& old_idlist,
-                              const std::vector<int32_t>& new_idlist) {
+  auto intlist_callback = [this, id](ax::mojom::IntListAttribute attr,
+                                     const std::vector<int32_t>& old_idlist,
+                                     const std::vector<int32_t>& new_idlist) {
     if (!IsNodeIdIntListAttribute(attr))
       return;
 
@@ -716,9 +715,9 @@ void AXTree::UpdateReverseRelations(AXNode* node, const AXNodeData& new_data) {
                                new_data.intlist_attributes,
                                std::vector<int32_t>(), intlist_callback);
 
-  auto string_callback = [this, node, id](ax::mojom::StringAttribute attr,
-                                          const std::string& old_string,
-                                          const std::string& new_string) {
+  auto string_callback = [this, id](ax::mojom::StringAttribute attr,
+                                    const std::string& old_string,
+                                    const std::string& new_string) {
     if (attr == ax::mojom::StringAttribute::kChildTreeId) {
       // Remove old_string -> id from the map, and clear map keys if
       // their values are now empty.
