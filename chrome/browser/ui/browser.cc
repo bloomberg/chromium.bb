@@ -556,7 +556,7 @@ Browser::~Browser() {
   if (profile_->IsOffTheRecord() &&
       profile_->GetOriginalProfile()->HasOffTheRecordProfile() &&
       profile_->GetOriginalProfile()->GetOffTheRecordProfile() == profile_ &&
-      !BrowserList::IsIncognitoSessionActiveForProfile(profile_) &&
+      !BrowserList::GetIncognitoSessionsActiveForProfile(profile_) &&
       !profile_->GetOriginalProfile()->IsSystemProfile()) {
     if (profile_->IsGuestSession()) {
 // ChromeOS handles guest data independently.
