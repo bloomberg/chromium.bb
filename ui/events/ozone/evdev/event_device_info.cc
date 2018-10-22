@@ -466,6 +466,7 @@ ui::InputDeviceType EventDeviceInfo::GetInputDeviceTypeFromId(input_id id) {
 
   switch (id.bustype) {
     case BUS_I2C:
+    case BUS_I8042:
       return ui::InputDeviceType::INPUT_DEVICE_INTERNAL;
     case BUS_USB:
       return ui::InputDeviceType::INPUT_DEVICE_USB;
