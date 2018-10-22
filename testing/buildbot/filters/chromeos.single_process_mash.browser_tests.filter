@@ -102,9 +102,6 @@
 # Tests failing only for SingleProcessMash.
 # --------------------------------------------------
 
-# Uses ash::WindowState in browser process.
--AcceleratorCommandsBrowserTest.ToggleMaximized
-
 # Crashes on exit, even without SingleProcessMash.
 -AffiliationCheck/EnterpriseDeviceAttributesTest.Success/*
 
@@ -115,18 +112,12 @@
 -Blub/UnaffiliatedArcAllowedTest.ProfileTest/0
 -Blub/UnaffiliatedArcAllowedTest.ProfileTest/1
 
-# Browser command controller tests.
--BrowserCommandControllerBrowserTest.LockedFullscreen
-
 # Enterprise keys tests.
 -CheckSystemTokenAvailability/EnterprisePlatformKeysTest.Basic/*
 
 # Flaky.  crbug.com/888188.
 -ChromeSessionManagerTest.LoginExistingUsers
 -ChromeSessionManagerTest.PRE_LoginExistingUsers
-
-# Context menu tests.
--ContextMenuBrowserTest.ContextMenuEntriesAreDisabledInLockedFullscreen
 
 # Flaky test. crbug.com/880584
 # Not implemented reached in virtual base::i18n::TextDirection content::RenderWidgetHostViewAura::GetTextDirection()
