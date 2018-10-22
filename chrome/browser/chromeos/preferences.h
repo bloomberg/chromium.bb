@@ -127,9 +127,6 @@ class Preferences : public sync_preferences::PrefServiceSyncableObserver,
   BooleanPrefMember mouse_reverse_scroll_;
   FilePathPrefMember download_default_directory_;
 
-  StringListPrefMember allowed_languages_;
-  StringPrefMember preferred_languages_;
-
   // Input method preferences.
   StringPrefMember preload_engines_;
   StringPrefMember current_input_method_;

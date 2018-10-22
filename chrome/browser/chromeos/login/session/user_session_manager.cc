@@ -247,13 +247,13 @@ void InitLocaleAndInputMethodsForNewUser(
       input_method_ids, &candidates);
   for (size_t i = 0; i < candidates.size(); ++i) {
     const std::string& candidate = candidates[i];
-    // Add a candidate if it's not yet in language_codes and is allowed.
+    // Skip if it's already in language_codes.
     if (std::count(language_codes.begin(), language_codes.end(), candidate) ==
-            0 &&
-        locale_util::IsAllowedLanguage(candidate, prefs)) {
+        0) {
       language_codes.push_back(candidate);
     }
   }
+
   // Save the preferred languages in the user's preferences.
   prefs->SetString(prefs::kLanguagePreferredLanguages,
                    base::JoinString(language_codes, ","));
@@ -800,7 +800,7 @@ bool UserSessionManager::RespectLocalePreference(
   if (user_manager->GetLoggedInUsers().size() != 1)
     return false;
 
-  PrefService* prefs = profile->GetPrefs();
+  const PrefService* prefs = profile->GetPrefs();
   if (prefs == NULL)
     return false;
 
@@ -816,7 +816,7 @@ bool UserSessionManager::RespectLocalePreference(
 
   const std::string* account_locale = NULL;
   if (pref_locale.empty() && user->has_gaia_account() &&
-      prefs->GetList(prefs::kAllowedLanguages)->GetList().empty()) {
+      prefs->GetList(prefs::kAllowedUILocales)->GetList().empty()) {
     if (user->GetAccountLocale() == NULL)
       return false;  // wait until Account profile is loaded.
     account_locale = user->GetAccountLocale();
@@ -841,9 +841,9 @@ bool UserSessionManager::RespectLocalePreference(
           ? Profile::APP_LOCALE_CHANGED_VIA_PUBLIC_SESSION_LOGIN
           : Profile::APP_LOCALE_CHANGED_VIA_LOGIN;
 
-  // check if pref_locale is allowed by policy (AllowedLanguages)
-  if (!chromeos::locale_util::IsAllowedUILanguage(pref_locale, prefs)) {
-    pref_locale = chromeos::locale_util::GetAllowedFallbackUILanguage(prefs);
+  // check if pref_locale is allowed by policy (AllowedUILocales)
+  if (!chromeos::locale_util::IsAllowedUILocale(pref_locale, prefs)) {
+    pref_locale = chromeos::locale_util::GetAllowedFallbackUILocale(prefs);
     app_locale_changed_via = Profile::APP_LOCALE_CHANGED_VIA_POLICY;
   }
 

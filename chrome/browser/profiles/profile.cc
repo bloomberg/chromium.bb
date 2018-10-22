@@ -181,6 +181,8 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(prefs::kApplicationLocaleBackup, std::string());
   registry->RegisterStringPref(prefs::kApplicationLocaleAccepted,
                                std::string());
+  registry->RegisterListPref(prefs::kAllowedUILocales,
+                             std::make_unique<base::ListValue>());
 #endif
 
   registry->RegisterBooleanPref(prefs::kDataSaverEnabled, false);
