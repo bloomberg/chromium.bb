@@ -359,12 +359,10 @@ public class PageInfoController
     }
 
     /**
-     * Whether to show a 'Details' link to the connection info popup. The link is only shown for
-     * HTTPS connections.
+     * Whether to show a 'Details' link to the connection info popup.
      */
     private boolean isConnectionDetailsLinkVisible() {
-        return mContentPublisher == null && !isShowingOfflinePage() && !isShowingPreview()
-                && UrlConstants.HTTPS_SCHEME.equals(mScheme);
+        return mContentPublisher == null && !isShowingOfflinePage() && !isShowingPreview();
     }
 
     /**
