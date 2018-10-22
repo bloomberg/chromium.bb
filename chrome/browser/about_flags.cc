@@ -3145,6 +3145,11 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_WIN
 
 #if defined(OS_ANDROID)
+    {"enable-autofill-manual-fallback",
+     flag_descriptions::kAutofillManualFallbackAndroidName,
+     flag_descriptions::kAutofillManualFallbackAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillManualFallbackAndroid)},
+
     {"enable-autofill-refresh-style",
      flag_descriptions::kEnableAutofillRefreshStyleName,
      flag_descriptions::kEnableAutofillRefreshStyleDescription, kOsAndroid,

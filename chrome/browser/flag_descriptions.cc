@@ -2322,6 +2322,12 @@ const char kEnableAndroidPayIntegrationV2Name[] = "Enable Android Pay v2";
 const char kEnableAndroidPayIntegrationV2Description[] =
     "Enable integration with Android Pay using the second version of the API";
 
+const char kAutofillManualFallbackAndroidName[] =
+    "Enable Autofill manual fallback for Addresses and Payments (Android)";
+const char kAutofillManualFallbackAndroidDescription[] =
+    "If enabled, adds toggle for addresses and payments bottom sheet to the "
+    "keyboard accessory.";
+
 const char kEnableAutofillRefreshStyleName[] =
     "Enable Autofill refresh style (Android)";
 const char kEnableAutofillRefreshStyleDescription[] =
