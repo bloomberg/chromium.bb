@@ -1299,8 +1299,17 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, UninstallPwaWithWindowMovedToTab) {
             GetSecureAppURL());
 }
 
+// Crashes on Mac 10.12 only.  https://crbug.com/897719
+#if defined(OS_MACOSX)
+#define MAYBE_DesktopPWAsFlagDisabledCreatedForInstalledPwa \
+  DISABLED_DesktopPWAsFlagDisabledCreatedForInstalledPwa
+#else
+#define MAYBE_DesktopPWAsFlagDisabledCreatedForInstalledPwa \
+  DesktopPWAsFlagDisabledCreatedForInstalledPwa
+#endif
+
 IN_PROC_BROWSER_TEST_P(HostedAppTest,
-                       DesktopPWAsFlagDisabledCreatedForInstalledPwa) {
+                       MAYBE_DesktopPWAsFlagDisabledCreatedForInstalledPwa) {
   const extensions::Extension* app;
   {
     base::test::ScopedFeatureList feature_list;
@@ -1369,8 +1378,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, OpenInChrome) {
 
     chrome::ExecuteCommand(app_browser, IDC_OPEN_IN_CHROME);
 
-    // The browser frame is closed next event loop so it's still safe to access
-    // here.
+    // The browser frame is closed next event loop so it's still safe to
+    // access here.
     EXPECT_EQ(0, app_browser->tab_strip_model()->count());
 
     EXPECT_EQ(2, browser()->tab_strip_model()->count());
