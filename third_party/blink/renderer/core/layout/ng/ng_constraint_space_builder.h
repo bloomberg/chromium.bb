@@ -28,8 +28,6 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   NGConstraintSpaceBuilder(const NGConstraintSpace& parent_space)
       : NGConstraintSpaceBuilder(parent_space.GetWritingMode(),
                                  parent_space.InitialContainingBlockSize()) {
-    parent_percentage_resolution_size_ =
-        parent_space.PercentageResolutionSize();
     flags_ = NGConstraintSpace::kFixedSizeBlockIsDefinite;
     if (parent_space.IsIntermediateLayout())
       flags_ |= NGConstraintSpace::kIntermediateLayout;
@@ -208,7 +206,6 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   NGLogicalSize percentage_resolution_size_;
   NGLogicalSize replaced_percentage_resolution_size_;
 
-  base::Optional<NGLogicalSize> parent_percentage_resolution_size_;
   NGPhysicalSize initial_containing_block_size_;
   LayoutUnit fragmentainer_block_size_ = NGSizeIndefinite;
   LayoutUnit fragmentainer_space_at_bfc_start_ = NGSizeIndefinite;
