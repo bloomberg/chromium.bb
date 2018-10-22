@@ -226,7 +226,7 @@ _CONFIG = [
             'touch_action_util::.+',
             'vector_math::.+',
             'xpath::.+',
-            '(xml|xmlns)_names::.+',
+            '(xlink|xml|xmlns)_names::.+',
 
             # Third-party libraries that don't depend on non-Blink Chrome code
             # are OK.

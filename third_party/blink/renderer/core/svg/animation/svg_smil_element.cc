@@ -567,7 +567,7 @@ void SVGSMILElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   } else if (attr_name == SVGNames::maxAttr) {
     cached_max_ = kInvalidCachedTime;
   } else if (attr_name.Matches(SVGNames::hrefAttr) ||
-             attr_name.Matches(XLinkNames::hrefAttr)) {
+             attr_name.Matches(xlink_names::kHrefAttr)) {
     // TODO(fs): Could be smarter here when 'href' is specified and 'xlink:href'
     // is changed.
     SVGElement::InvalidationGuard invalidation_guard(this);

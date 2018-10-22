@@ -582,7 +582,7 @@ static void RemoveAttributesFromReplacementElement(
   replacement_element.removeAttribute(SVGNames::widthAttr);
   replacement_element.removeAttribute(SVGNames::heightAttr);
   replacement_element.removeAttribute(SVGNames::hrefAttr);
-  replacement_element.removeAttribute(XLinkNames::hrefAttr);
+  replacement_element.removeAttribute(xlink_names::kHrefAttr);
 }
 
 void SVGUseElement::ExpandUseElementsInShadowTree() {

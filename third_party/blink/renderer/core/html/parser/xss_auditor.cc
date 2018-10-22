@@ -166,7 +166,7 @@ static bool FindAttributeWithName(const HTMLToken& token,
                                   wtf_size_t& index_of_matching_attribute) {
   // Notice that we're careful not to ref the StringImpl here because we might
   // be on a background thread.
-  const String& attr_name = name.NamespaceURI() == XLinkNames::xlinkNamespaceURI
+  const String& attr_name = name.NamespaceURI() == xlink_names::kNamespaceURI
                                 ? "xlink:" + name.LocalName().GetString()
                                 : name.LocalName().GetString();
 
@@ -593,9 +593,9 @@ bool XSSAuditor::FilterScriptToken(const FilterTokenRequest& request) {
     did_block_script |= EraseAttributeIfInjected(request, SVGNames::hrefAttr,
                                                  BlankURL().GetString(),
                                                  kSrcLikeAttributeTruncation);
-    did_block_script |= EraseAttributeIfInjected(request, XLinkNames::hrefAttr,
-                                                 BlankURL().GetString(),
-                                                 kSrcLikeAttributeTruncation);
+    did_block_script |= EraseAttributeIfInjected(
+        request, xlink_names::kHrefAttr, BlankURL().GetString(),
+        kSrcLikeAttributeTruncation);
   }
   return did_block_script;
 }

@@ -63,7 +63,7 @@ const AtomicString& SVGURIReference::LegacyHrefString(
     const SVGElement& element) {
   if (element.hasAttribute(SVGNames::hrefAttr))
     return element.getAttribute(SVGNames::hrefAttr);
-  return element.getAttribute(XLinkNames::hrefAttr);
+  return element.getAttribute(xlink_names::kHrefAttr);
 }
 
 KURL SVGURIReference::LegacyHrefURL(const Document& document) const {
