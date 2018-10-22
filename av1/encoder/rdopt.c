@@ -11115,7 +11115,7 @@ static int inter_mode_search_order_independent_skip(
   }
 
   if (sf->selective_ref_frame) {
-    if (sf->selective_ref_frame >= 2 || x->cb_partition_scan) {
+    if (sf->selective_ref_frame >= 3 || x->cb_partition_scan) {
       if (ref_frame[0] == ALTREF2_FRAME || ref_frame[1] == ALTREF2_FRAME)
         if (get_relative_dist(
                 cm, cm->cur_frame->ref_frame_offset[ALTREF2_FRAME - LAST_FRAME],
@@ -11127,20 +11127,26 @@ static int inter_mode_search_order_independent_skip(
                 cm->frame_offset) < 0)
           return 1;
     }
-    if (ref_frame[0] == LAST3_FRAME || ref_frame[1] == LAST3_FRAME)
-      if (get_relative_dist(
-              cm, cm->cur_frame->ref_frame_offset[LAST3_FRAME - LAST_FRAME],
-              cm->cur_frame->ref_frame_offset[GOLDEN_FRAME - LAST_FRAME]) <= 0)
-        return 1;
-    if (ref_frame[0] == LAST2_FRAME || ref_frame[1] == LAST2_FRAME)
-      if (get_relative_dist(
-              cm, cm->cur_frame->ref_frame_offset[LAST2_FRAME - LAST_FRAME],
-              cm->cur_frame->ref_frame_offset[GOLDEN_FRAME - LAST_FRAME]) <= 0)
-        return 1;
+
+    if (sf->selective_ref_frame >= 2 ||
+        (sf->selective_ref_frame == 1 && comp_pred)) {
+      if (ref_frame[0] == LAST3_FRAME || ref_frame[1] == LAST3_FRAME)
+        if (get_relative_dist(
+                cm, cm->cur_frame->ref_frame_offset[LAST3_FRAME - LAST_FRAME],
+                cm->cur_frame->ref_frame_offset[GOLDEN_FRAME - LAST_FRAME]) <=
+            0)
+          return 1;
+      if (ref_frame[0] == LAST2_FRAME || ref_frame[1] == LAST2_FRAME)
+        if (get_relative_dist(
+                cm, cm->cur_frame->ref_frame_offset[LAST2_FRAME - LAST_FRAME],
+                cm->cur_frame->ref_frame_offset[GOLDEN_FRAME - LAST_FRAME]) <=
+            0)
+          return 1;
+    }
   }
 
   // One-sided compound is used only when all reference frames are one-sided.
-  if (sf->selective_ref_frame && comp_pred && !cpi->all_one_sided_refs) {
+  if ((sf->selective_ref_frame >= 2) && comp_pred && !cpi->all_one_sided_refs) {
     unsigned int ref_offsets[2];
     for (int i = 0; i < 2; ++i) {
       const int buf_idx = cm->frame_refs[ref_frame[i] - LAST_FRAME].idx;

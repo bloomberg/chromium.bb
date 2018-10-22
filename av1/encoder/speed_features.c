@@ -198,10 +198,12 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
   sf->use_fast_interpolation_filter_search = 1;
   sf->intra_tx_size_search_init_depth_sqr = 1;
   sf->intra_angle_estimation = 1;
+  sf->selective_ref_frame = 1;
 
   if (speed >= 1) {
     sf->gm_erroradv_type = GM_ERRORADV_TR_1;
-    sf->selective_ref_frame = 1;
+    sf->selective_ref_frame = 2;
+
     sf->inter_tx_size_search_init_depth_rect = 1;
     sf->inter_tx_size_search_init_depth_sqr = 1;
     sf->intra_tx_size_search_init_depth_rect = 1;
@@ -237,7 +239,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
   if (speed >= 2) {
     sf->gm_erroradv_type = GM_ERRORADV_TR_2;
 
-    sf->selective_ref_frame = 2;
+    sf->selective_ref_frame = 3;
     sf->fast_cdef_search = 1;
 
     sf->adaptive_rd_thresh = 1;

@@ -4764,7 +4764,7 @@ static void first_partition_search_pass(AV1_COMP *cpi, ThreadData *td,
         // If there are not enough samples collected, make all available.
         memset(stat->ref0_counts, 0xff, sizeof(stat->ref0_counts));
         memset(stat->ref1_counts, 0xff, sizeof(stat->ref1_counts));
-      } else if (sf->selective_ref_frame < 2) {
+      } else if (sf->selective_ref_frame < 3) {
         // ALTREF2_FRAME and BWDREF_FRAME may be skipped during the
         // initial partition scan, so we don't eliminate them.
         stat->ref0_counts[ALTREF2_FRAME] = 0xff;
@@ -5792,7 +5792,7 @@ void av1_encode_frame(AV1_COMP *cpi) {
   }
 
   av1_setup_frame_buf_refs(cm);
-  if (cpi->sf.selective_ref_frame >= 2) enforce_max_ref_frames(cpi);
+  if (cpi->sf.selective_ref_frame >= 3) enforce_max_ref_frames(cpi);
   av1_setup_frame_sign_bias(cm);
 
 #if CONFIG_MISMATCH_DEBUG
