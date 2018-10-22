@@ -27,10 +27,10 @@ void RunV8MinorGC(v8::Isolate* isolate) {
       v8::Isolate::GarbageCollectionType::kMinorGarbageCollection);
 }
 
-void RunV8FullGC(v8::Isolate* isolate) {
+void RunV8FullGCWithoutScanningOilpanStack(v8::Isolate* isolate) {
   CHECK(isolate);
-  isolate->RequestGarbageCollectionForTesting(
-      v8::Isolate::GarbageCollectionType::kFullGarbageCollection);
+  V8GCController::CollectAllGarbageForTesting(
+      isolate, v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
 }
 
 }  // namespace v8_gc_integration_test
@@ -108,7 +108,7 @@ TEST(ScriptWrappableV8GCIntegrationTest,
   }
 
   v8_gc_integration_test::RunV8MinorGC(isolate);
-  v8_gc_integration_test::RunV8FullGC(isolate);
+  v8_gc_integration_test::RunV8FullGCWithoutScanningOilpanStack(isolate);
   v8_gc_integration_test::PreciselyCollectGarbage();
 
   EXPECT_FALSE(observer.WasCollected());
@@ -131,7 +131,7 @@ TEST(ScriptWrappableV8GCIntegrationTest,
   }
 
   v8_gc_integration_test::RunV8MinorGC(isolate);
-  v8_gc_integration_test::RunV8FullGC(isolate);
+  v8_gc_integration_test::RunV8FullGCWithoutScanningOilpanStack(isolate);
   v8_gc_integration_test::PreciselyCollectGarbage();
 
   EXPECT_TRUE(observer.WasCollected());
