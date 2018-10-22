@@ -369,7 +369,7 @@ public class CustomTabsConnection {
      * @param session The session for which the package name should be overridden.
      * @param packageName The new package name to set.
      */
-    void overridePackageNameForSessionForTesting(
+    public void overridePackageNameForSessionForTesting(
             CustomTabsSessionToken session, String packageName) {
         String originalPackage = getClientPackageNameForSession(session);
         String selfPackage = ContextUtils.getApplicationContext().getPackageName();
