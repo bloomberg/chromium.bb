@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
 #include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -43,8 +44,10 @@ CSSSyntaxType ParseSyntaxType(String type) {
     return CSSSyntaxType::kLengthPercentage;
   if (type == "color")
     return CSSSyntaxType::kColor;
-  if (type == "image")
-    return CSSSyntaxType::kImage;
+  if (RuntimeEnabledFeatures::CSSVariables2ImageValuesEnabled()) {
+    if (type == "image")
+      return CSSSyntaxType::kImage;
+  }
   if (type == "url")
     return CSSSyntaxType::kUrl;
   if (type == "integer")
@@ -55,10 +58,12 @@ CSSSyntaxType ParseSyntaxType(String type) {
     return CSSSyntaxType::kTime;
   if (type == "resolution")
     return CSSSyntaxType::kResolution;
-  if (type == "transform-function")
-    return CSSSyntaxType::kTransformFunction;
-  if (type == "transform-list")
-    return CSSSyntaxType::kTransformList;
+  if (RuntimeEnabledFeatures::CSSVariables2TransformValuesEnabled()) {
+    if (type == "transform-function")
+      return CSSSyntaxType::kTransformFunction;
+    if (type == "transform-list")
+      return CSSSyntaxType::kTransformList;
+  }
   if (type == "custom-ident")
     return CSSSyntaxType::kCustomIdent;
   // Not an Ident, just used to indicate failure

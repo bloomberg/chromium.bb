@@ -139,6 +139,11 @@
     "args": ["--stable-release-mode"]
   },
   {
+    "prefix": "stable",
+    "base": "fast/css/stable",
+    "args": ["--stable-release-mode"]
+  },
+  {
     "prefix": "feature-policy-permissions",
     "base": "external/wpt/mediacapture-streams",
     "args": ["--use-fake-device-for-media-stream",
