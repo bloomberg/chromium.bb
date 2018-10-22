@@ -822,6 +822,14 @@
                    file="people_page/manage_profile_browser_proxy.js"
                    type="chrome_html" />
       </if>
+      <structure name="IDR_SETTINGS_PEOPLE_PAGE_SIGNOUT_DIALOG_HTML"
+                 file="people_page/signout_dialog.html"
+                 type="chrome_html"
+                 preprocess="true" />
+      <structure name="IDR_SETTINGS_PEOPLE_PAGE_SIGNOUT_DIALOG_JS"
+                 file="people_page/signout_dialog.js"
+                 type="chrome_html"
+                 preprocess="true" />
       <structure name="IDR_SETTINGS_PEOPLE_PAGE_PROFILE_INFO_BROWSER_PROXY_HTML"
                  file="people_page/profile_info_browser_proxy.html"
                  type="chrome_html" />

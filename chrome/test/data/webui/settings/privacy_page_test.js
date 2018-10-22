@@ -183,12 +183,61 @@ cr.define('settings_privacy_page', function() {
 
           page.syncStatus = {signedIn: true};
           // When the user is signed in, clicking the toggle should open the
-          // sign-out dialog. The toggle should remain checked.
+          // sign-out dialog.
+          assertFalse(!!page.$$('settings-signout-dialog'));
           toggle.click();
-          assertTrue(toggle.checked);
-          assertTrue(page.prefs.signin.allowed_on_next_startup.value);
-          assertFalse(page.$.toast.open);
-          assertEquals(settings.routes.SIGN_OUT, settings.getCurrentRoute());
+          return test_util.eventToPromise('cr-dialog-open', page)
+              .then(function() {
+                Polymer.dom.flush();
+                // The toggle remains on.
+                assertTrue(toggle.checked);
+                assertTrue(page.prefs.signin.allowed_on_next_startup.value);
+                assertFalse(page.$.toast.open);
+
+                const signoutDialog = page.$$('settings-signout-dialog');
+                assertTrue(!!signoutDialog);
+                assertTrue(signoutDialog.$$('#dialog').open);
+
+                // The user clicks cancel.
+                const cancel = signoutDialog.$$('#disconnectCancel');
+                cancel.click();
+
+                return test_util.eventToPromise('close', signoutDialog);
+              })
+              .then(function() {
+                Polymer.dom.flush();
+                assertFalse(!!page.$$('settings-signout-dialog'));
+
+                // After the dialog is closed, the toggle remains turned on.
+                assertTrue(toggle.checked);
+                assertTrue(page.prefs.signin.allowed_on_next_startup.value);
+                assertFalse(page.$.toast.open);
+
+                // The user clicks the toggle again.
+                toggle.click();
+                return test_util.eventToPromise('cr-dialog-open', page);
+              })
+              .then(function() {
+                Polymer.dom.flush();
+                const signoutDialog = page.$$('settings-signout-dialog');
+                assertTrue(!!signoutDialog);
+                assertTrue(signoutDialog.$$('#dialog').open);
+
+                // The user clicks confirm, which signs them out.
+                const disconnectConfirm =
+                    signoutDialog.$$('#disconnectConfirm');
+                disconnectConfirm.click();
+
+                return test_util.eventToPromise('close', signoutDialog);
+              })
+              .then(function() {
+                Polymer.dom.flush();
+                // After the dialog is closed, the toggle is turned off and the
+                // toast is shown.
+                assertFalse(toggle.checked);
+                assertFalse(page.prefs.signin.allowed_on_next_startup.value);
+                assertTrue(page.$.toast.open);
+              });
         });
       }
     });
