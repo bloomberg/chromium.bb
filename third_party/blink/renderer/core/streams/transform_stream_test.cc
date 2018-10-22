@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_extras_test_utils.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_operations.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_default_controller.h"
@@ -469,8 +470,6 @@ TEST_F(TransformStreamTest, SurvivesGarbageCollectionWhenTraced) {
 }
 
 // Verify that JS TransformStream is collected when it is not reachable from V8.
-// TODO(ricea): Remove this test when unified garbage collection is introduced,
-// as it will fail.
 #if GTEST_HAS_DEATH_TEST
 #define MAYBE_IsGarbageCollectedWhenNotTraced IsGarbageCollectedWhenNotTraced
 #else
@@ -488,8 +487,10 @@ TEST_F(TransformStreamTest, MAYBE_IsGarbageCollectedWhenNotTraced) {
   Persistent<TransformStream> stream = Stream();
   ClearHolder();
   Microtask::PerformCheckpoint(script_state->GetIsolate());
-  script_state->GetIsolate()->RequestGarbageCollectionForTesting(
-      v8::Isolate::kFullGarbageCollection);
+  // Avoid scanning the stack here as it could accidentaly keep state alive.
+  V8GCController::CollectAllGarbageForTesting(
+      script_state->GetIsolate(),
+      v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
   ScriptState::Scope scope(script_state);
   // This emits a warning that death tests are unsafe with threads, but it works
   // anyway. The crash message depends on whether DCHECK is enabled or not, so

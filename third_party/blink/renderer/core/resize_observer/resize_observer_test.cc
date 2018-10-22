@@ -124,7 +124,9 @@ TEST_F(ResizeObserverUnitTest, TestMemoryLeaks) {
       ScriptSourceCode("ro = undefined;"), KURL(), kOpaqueResource,
       ScriptFetchOptions(),
       ScriptController::kExecuteScriptWhenScriptsDisabled);
-  V8GCController::CollectAllGarbageForTesting(v8::Isolate::GetCurrent());
+  V8GCController::CollectAllGarbageForTesting(
+      v8::Isolate::GetCurrent(),
+      v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
   WebHeap::CollectAllGarbageForTesting();
   ASSERT_EQ(observers.IsEmpty(), true);
 
@@ -139,14 +141,18 @@ TEST_F(ResizeObserverUnitTest, TestMemoryLeaks) {
       KURL(), kOpaqueResource, ScriptFetchOptions(),
       ScriptController::kExecuteScriptWhenScriptsDisabled);
   ASSERT_EQ(observers.size(), 1U);
-  V8GCController::CollectAllGarbageForTesting(v8::Isolate::GetCurrent());
+  V8GCController::CollectAllGarbageForTesting(
+      v8::Isolate::GetCurrent(),
+      v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
   WebHeap::CollectAllGarbageForTesting();
   ASSERT_EQ(observers.size(), 1U);
   script_controller.ExecuteScriptInMainWorldAndReturnValue(
       ScriptSourceCode("el = undefined;"), KURL(), kOpaqueResource,
       ScriptFetchOptions(),
       ScriptController::kExecuteScriptWhenScriptsDisabled);
-  V8GCController::CollectAllGarbageForTesting(v8::Isolate::GetCurrent());
+  V8GCController::CollectAllGarbageForTesting(
+      v8::Isolate::GetCurrent(),
+      v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
   WebHeap::CollectAllGarbageForTesting();
   ASSERT_EQ(observers.IsEmpty(), true);
 }
