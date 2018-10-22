@@ -523,9 +523,9 @@ static void AdjustForeignAttributes(AtomicHTMLToken* token) {
     std::unique_ptr<const QualifiedName* []> xml_attrs = XMLNames::GetAttrs();
     AddNamesWithPrefix(map, g_xml_atom, xml_attrs.get(), XMLNames::kAttrsCount);
 
-    map->insert(WTF::g_xmlns_atom, XMLNSNames::xmlnsAttr);
+    map->insert(WTF::g_xmlns_atom, xmlns_names::kXmlnsAttr);
     map->insert("xmlns:xlink", QualifiedName(g_xmlns_atom, g_xlink_atom,
-                                             XMLNSNames::xmlnsNamespaceURI));
+                                             xmlns_names::xmlnsNamespaceURI));
   }
 
   for (unsigned i = 0; i < token->Attributes().size(); ++i) {

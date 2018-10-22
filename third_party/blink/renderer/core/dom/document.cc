@@ -1436,8 +1436,8 @@ bool Document::HasValidNamespaceForElements(const QualifiedName& q_name) {
   // createElementNS(null, "xmlns:bar"), createElementNS(null, "xmlns")
   if (q_name.Prefix() == g_xmlns_atom ||
       (q_name.Prefix().IsEmpty() && q_name.LocalName() == g_xmlns_atom))
-    return q_name.NamespaceURI() == XMLNSNames::xmlnsNamespaceURI;
-  return q_name.NamespaceURI() != XMLNSNames::xmlnsNamespaceURI;
+    return q_name.NamespaceURI() == xmlns_names::xmlnsNamespaceURI;
+  return q_name.NamespaceURI() != xmlns_names::xmlnsNamespaceURI;
 }
 
 bool Document::HasValidNamespaceForAttributes(const QualifiedName& q_name) {

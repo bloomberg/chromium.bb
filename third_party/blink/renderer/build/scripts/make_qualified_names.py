@@ -91,7 +91,7 @@ class MakeQualifiedNamesWriter(json5_generator.Writer):
         self.namespace = self._metadata('namespace')
         cpp_namespace = self.namespace.lower() + '_names'
         # TODO(tkent): Remove the following branch.  crbug.com/889726
-        if self.namespace in ('HTML', 'MathML', 'SVG', 'XLink', 'XML', 'XMLNS'):
+        if self.namespace in ('HTML', 'MathML', 'SVG', 'XLink', 'XML'):
             cpp_namespace = self.namespace + 'Names'
             MakeQualifiedNamesWriter.filters['symbol'] = _legacy_symbol
 

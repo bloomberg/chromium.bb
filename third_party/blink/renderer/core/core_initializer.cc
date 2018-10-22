@@ -91,7 +91,8 @@ void CoreInitializer::Initialize() {
   const unsigned kQualifiedNamesCount =
       HTMLNames::kTagsCount + HTMLNames::kAttrsCount + MathMLNames::kTagsCount +
       MathMLNames::kAttrsCount + SVGNames::kTagsCount + SVGNames::kAttrsCount +
-      XLinkNames::kAttrsCount + XMLNSNames::kAttrsCount + XMLNames::kAttrsCount;
+      XLinkNames::kAttrsCount + XMLNames::kAttrsCount +
+      xmlns_names::kAttrsCount;
 
   const unsigned kCoreStaticStringsCount =
       kQualifiedNamesCount + EventNames::kNamesCount +
@@ -112,8 +113,8 @@ void CoreInitializer::Initialize() {
   SVGNames::init();
   XLinkNames::init();
   MathMLNames::init();
-  XMLNSNames::init();
   XMLNames::init();
+  xmlns_names::init();
 
   EventNames::init();
   EventTargetNames::init();
