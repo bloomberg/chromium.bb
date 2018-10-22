@@ -1620,8 +1620,9 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest,
   SendCopyCommandAndCheckCopyPasteClipboard("HEL");
 }
 
+// TODO: test is flaky. https://crbug.com/897801
 IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest,
-                       IndividualShiftLeftArrowPresses) {
+                       DISABLED_IndividualShiftLeftArrowPresses) {
   LoadTestComboBoxPdfGetGuestContents();
 
   // Give the editable combo box focus.
