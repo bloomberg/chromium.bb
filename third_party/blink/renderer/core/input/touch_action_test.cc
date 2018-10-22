@@ -93,13 +93,13 @@ class TouchActionTrackingWebWidgetClient
 class TouchActionTest : public testing::Test {
  public:
   TouchActionTest() : base_url_("http://www.test.com/") {
-    URLTestHelpers::RegisterMockedURLLoadFromBase(
+    url_test_helpers::RegisterMockedURLLoadFromBase(
         WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
         "touch-action-tests.css", "text/css");
-    URLTestHelpers::RegisterMockedURLLoadFromBase(
+    url_test_helpers::RegisterMockedURLLoadFromBase(
         WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
         "touch-action-tests.js", "text/javascript");
-    URLTestHelpers::RegisterMockedURLLoadFromBase(
+    url_test_helpers::RegisterMockedURLLoadFromBase(
         WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
         "white-1x1.png", "image/png");
   }
@@ -197,9 +197,9 @@ void TouchActionTest::RunIFrameTest(std::string file) {
 WebViewImpl* TouchActionTest::SetupTest(
     std::string file,
     TouchActionTrackingWebWidgetClient& client) {
-  URLTestHelpers::RegisterMockedURLLoadFromBase(WebString::FromUTF8(base_url_),
-                                                test::CoreTestDataPath(),
-                                                WebString::FromUTF8(file));
+  url_test_helpers::RegisterMockedURLLoadFromBase(
+      WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
+      WebString::FromUTF8(file));
   // Note that JavaScript must be enabled for shadow DOM tests.
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + file, nullptr, nullptr, &client);

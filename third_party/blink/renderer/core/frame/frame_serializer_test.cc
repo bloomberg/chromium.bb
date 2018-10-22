@@ -61,7 +61,7 @@ class FrameSerializerTest : public testing::Test,
  public:
   FrameSerializerTest()
       : folder_("frameserializer/"),
-        base_url_(URLTestHelpers::ToKURL("http://www.test.com")) {}
+        base_url_(url_test_helpers::ToKURL("http://www.test.com")) {}
 
  protected:
   void SetUp() override {
@@ -79,7 +79,7 @@ class FrameSerializerTest : public testing::Test,
   void SetRewriteURLFolder(const char* folder) { rewrite_folder_ = folder; }
 
   void RegisterURL(const KURL& url, const char* file, const char* mime_type) {
-    URLTestHelpers::RegisterMockedURLLoad(
+    url_test_helpers::RegisterMockedURLLoad(
         url, test::CoreTestDataPath(WebString::FromUTF8(folder_ + file)),
         WebString::FromUTF8(mime_type));
   }
@@ -355,7 +355,7 @@ TEST_F(FrameSerializerTest, CSS) {
   RegisterURL("ol-dot.png", "image.png", "image/png");
 
   const KURL image_url_from_data_url(
-      URLTestHelpers::ToKURL("http://www.dataurl.com"),
+      url_test_helpers::ToKURL("http://www.dataurl.com"),
       "fuchsia_background.png");
   RegisterURL(image_url_from_data_url, "image.png", "image/png");
 

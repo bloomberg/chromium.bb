@@ -208,7 +208,7 @@ TEST_F(ScrollbarsTest, ScrollbarSizeForUseZoomDSF) {
   web_view_impl->GetSettings()->SetViewportEnabled(true);
   web_view_impl->Resize(IntSize(800, 600));
 
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(web_view_impl->MainFrameImpl(),
                                    "<!DOCTYPE html>"
                                    "<style>"

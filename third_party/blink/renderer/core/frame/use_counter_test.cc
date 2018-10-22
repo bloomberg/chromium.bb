@@ -100,7 +100,7 @@ void UseCounterTest::HistogramBasicTest(
   // After a page load, the histograms will be updated, even when the URL
   // scheme is internal
   UseCounter use_counter1(context);
-  SetURL(URLTestHelpers::ToKURL(url));
+  SetURL(url_test_helpers::ToKURL(url));
   did_commit_load(GetFrame(), use_counter1);
   histogram_tester_.ExpectBucketCount(histogram, histogram_map(item), 1);
   histogram_tester_.ExpectBucketCount(histogram, histogram_map(second_item), 1);

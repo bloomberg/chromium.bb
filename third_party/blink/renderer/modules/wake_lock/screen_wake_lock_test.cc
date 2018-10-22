@@ -63,7 +63,7 @@ class ScreenWakeLockTest : public testing::Test {
                                             WTF::Unretained(&mock_wake_lock_)));
 
     web_view_helper_.Initialize(&test_web_frame_client_);
-    URLTestHelpers::RegisterMockedURLLoadFromBase(
+    url_test_helpers::RegisterMockedURLLoadFromBase(
         WebString::FromUTF8("http://example.com/"), test::CoreTestDataPath(),
         WebString::FromUTF8("foo.html"));
     LoadFrame();

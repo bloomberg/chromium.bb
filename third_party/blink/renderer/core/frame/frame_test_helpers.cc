@@ -113,7 +113,7 @@ std::unique_ptr<WebNavigationParams> BuildDummyNavigationParams() {
 }  // namespace
 
 void LoadFrame(WebLocalFrame* frame, const std::string& url) {
-  WebURL web_url(URLTestHelpers::ToKURL(url));
+  WebURL web_url(url_test_helpers::ToKURL(url));
   if (web_url.ProtocolIs("javascript")) {
     frame->LoadJavaScriptURL(web_url);
   } else {

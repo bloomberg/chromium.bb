@@ -142,8 +142,8 @@
 #endif  // BUILDFLAG(ENABLE_UNHANDLED_TAP)
 
 using blink::FrameTestHelpers::LoadFrame;
-using blink::URLTestHelpers::ToKURL;
-using blink::URLTestHelpers::RegisterMockedURLLoad;
+using blink::url_test_helpers::ToKURL;
+using blink::url_test_helpers::RegisterMockedURLLoad;
 using blink::test::RunPendingTasks;
 
 namespace blink {
@@ -268,7 +268,7 @@ class WebViewTest : public testing::Test {
   }
 
   std::string RegisterMockedHttpURLLoad(const std::string& file_name) {
-    return URLTestHelpers::RegisterMockedURLLoadFromBase(
+    return url_test_helpers::RegisterMockedURLLoadFromBase(
                WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
                WebString::FromUTF8(file_name))
         .GetString()
@@ -383,7 +383,7 @@ TEST_F(WebViewTest, ImageMapUrls) {
 }
 
 TEST_F(WebViewTest, BrokenImage) {
-  URLTestHelpers::RegisterMockedErrorURLLoad(
+  url_test_helpers::RegisterMockedErrorURLLoad(
       KURL(ToKURL(base_url_), "non_existent.png"));
   std::string url = RegisterMockedHttpURLLoad("image-broken.html");
 
@@ -400,7 +400,7 @@ TEST_F(WebViewTest, BrokenImage) {
 }
 
 TEST_F(WebViewTest, BrokenInputImage) {
-  URLTestHelpers::RegisterMockedErrorURLLoad(
+  url_test_helpers::RegisterMockedErrorURLLoad(
       KURL(ToKURL(base_url_), "non_existent.png"));
   std::string url = RegisterMockedHttpURLLoad("input-image-broken.html");
 
@@ -426,7 +426,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColor) {
   web_view->SetBaseBackgroundColor(SK_ColorBLUE);
   EXPECT_EQ(SK_ColorBLUE, web_view->BackgroundColor());
 
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
                                    "<html><head><style>body "
                                    "{background-color:#227788}</style></head></"
@@ -571,7 +571,7 @@ TEST_F(WebViewTest, DocumentHasFocus) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
   web_view->SetFocus(true);
 
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(
       web_view->MainFrameImpl(),
       "<input id=input></input>"
@@ -625,7 +625,7 @@ TEST_F(WebViewTest, ActiveState) {
 
 TEST_F(WebViewTest, HitTestResultAtWithPageScale) {
   std::string url = base_url_ + "specify_size.html?" + "50px" + ":" + "50px";
-  URLTestHelpers::RegisterMockedURLLoad(
+  url_test_helpers::RegisterMockedURLLoad(
       ToKURL(url), test::CoreTestDataPath("specify_size.html"));
   WebView* web_view = web_view_helper_.InitializeAndLoad(url);
   web_view->Resize(WebSize(100, 100));
@@ -646,7 +646,7 @@ TEST_F(WebViewTest, HitTestResultAtWithPageScale) {
 
 TEST_F(WebViewTest, HitTestResultAtWithPageScaleAndPan) {
   std::string url = base_url_ + "specify_size.html?" + "50px" + ":" + "50px";
-  URLTestHelpers::RegisterMockedURLLoad(
+  url_test_helpers::RegisterMockedURLLoad(
       ToKURL(url), test::CoreTestDataPath("specify_size.html"));
   WebViewImpl* web_view = web_view_helper_.Initialize();
   LoadFrame(web_view->MainFrameImpl(), url);
@@ -743,7 +743,7 @@ void WebViewTest::TestAutoResize(
   AutoResizeWebViewClient client;
   std::string url =
       base_url_ + "specify_size.html?" + page_width + ":" + page_height;
-  URLTestHelpers::RegisterMockedURLLoad(
+  url_test_helpers::RegisterMockedURLLoad(
       ToKURL(url), test::CoreTestDataPath("specify_size.html"));
   WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(url, nullptr, &client);
@@ -882,7 +882,7 @@ TEST_F(WebViewTest, TextInputInfoUpdateStyleAndLayout) {
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl = web_view_helper.Initialize();
 
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   // Here, we need to construct a document that has a special property:
   // Adding id="foo" to the <path> element will trigger creation of an SVG
   // instance tree for the use <use> element.
@@ -950,7 +950,7 @@ TEST_F(WebViewTest, InputMode) {
 
 TEST_F(WebViewTest, TextInputInfoWithReplacedElements) {
   std::string url = RegisterMockedHttpURLLoad("div_with_image.html");
-  URLTestHelpers::RegisterMockedURLLoad(
+  url_test_helpers::RegisterMockedURLLoad(
       ToKURL("http://www.test.com/foo.png"),
       test::CoreTestDataPath("white-1x1.png"));
   WebViewImpl* web_view_impl = web_view_helper_.InitializeAndLoad(url);
@@ -2706,7 +2706,7 @@ TEST_F(WebViewTest, LongPressLink) {
 TEST_F(WebViewTest, TouchCancelOnStartDragging) {
   RegisterMockedHttpURLLoad("long_press_draggable_div.html");
 
-  URLTestHelpers::RegisterMockedURLLoad(
+  url_test_helpers::RegisterMockedURLLoad(
       ToKURL("http://www.test.com/foo.png"),
       test::CoreTestDataPath("white-1x1.png"));
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
@@ -2746,7 +2746,7 @@ TEST_F(WebViewTest, TouchCancelOnStartDragging) {
 TEST_F(WebViewTest, showContextMenuOnLongPressingLinks) {
   RegisterMockedHttpURLLoad("long_press_links_and_images.html");
 
-  URLTestHelpers::RegisterMockedURLLoad(
+  url_test_helpers::RegisterMockedURLLoad(
       ToKURL("http://www.test.com/foo.png"),
       test::CoreTestDataPath("white-1x1.png"));
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
@@ -3166,7 +3166,7 @@ TEST_F(WebViewTest, ShowPressOnTransformedLink) {
   int page_height = 480;
   web_view_impl->Resize(WebSize(page_width, page_height));
 
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(
       web_view_impl->MainFrameImpl(),
       "<a href='http://www.test.com' style='position: absolute; left: 20px; "
@@ -3406,7 +3406,7 @@ TEST_F(WebViewTest, DoNotFocusCurrentFrameOnNavigateFromLocalFrame) {
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl = web_view_helper.Initialize(nullptr, &client);
 
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(
       web_view_impl->MainFrameImpl(),
       "<html><body><iframe src=\"about:blank\"></iframe></body></html>",
@@ -4039,7 +4039,7 @@ TEST_F(WebViewTest, AutoResizeSubtreeLayout) {
 
 TEST_F(WebViewTest, PreferredSize) {
   std::string url = base_url_ + "specify_size.html?100px:100px";
-  URLTestHelpers::RegisterMockedURLLoad(
+  url_test_helpers::RegisterMockedURLLoad(
       ToKURL(url), test::CoreTestDataPath("specify_size.html"));
   WebView* web_view = web_view_helper_.InitializeAndLoad(url);
 
@@ -4065,7 +4065,7 @@ TEST_F(WebViewTest, PreferredSize) {
   EXPECT_EQ(100, size.height);
 
   url = base_url_ + "specify_size.html?1.5px:1.5px";
-  URLTestHelpers::RegisterMockedURLLoad(
+  url_test_helpers::RegisterMockedURLLoad(
       ToKURL(url), test::CoreTestDataPath("specify_size.html"));
   web_view = web_view_helper_.InitializeAndLoad(url);
 
@@ -4085,7 +4085,7 @@ TEST_F(WebViewTest, PreferredMinimumSizeQuirksMode) {
           <div style="width: 99px; height: 100px; display: inline-block;"></div>
         </body>
       </html>)HTML",
-      URLTestHelpers::ToKURL("http://example.com/"));
+      url_test_helpers::ToKURL("http://example.com/"));
 
   WebSize size = web_view->ContentsPreferredMinimumSize();
   EXPECT_EQ(99, size.width);
@@ -4095,7 +4095,7 @@ TEST_F(WebViewTest, PreferredMinimumSizeQuirksMode) {
 
 TEST_F(WebViewTest, PreferredSizeWithGrid) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
                                    R"HTML(<!DOCTYPE html>
     <style>
@@ -4117,7 +4117,7 @@ TEST_F(WebViewTest, PreferredSizeWithGrid) {
 
 TEST_F(WebViewTest, PreferredSizeWithGridMinWidth) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
                                    R"HTML(<!DOCTYPE html>
     <body style="margin: 0px;">
@@ -4134,7 +4134,7 @@ TEST_F(WebViewTest, PreferredSizeWithGridMinWidth) {
 
 TEST_F(WebViewTest, PreferredSizeWithGridMinWidthFlexibleTracks) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
                                    R"HTML(<!DOCTYPE html>
     <body style="margin: 0px;">
@@ -4756,7 +4756,7 @@ TEST_F(WebViewTest, ResizeForPrintingViewportUnits) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
   web_view->Resize(WebSize(800, 600));
 
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
                                    "<style>"
                                    "  body { margin: 0px; }"
@@ -4800,7 +4800,7 @@ TEST_F(WebViewTest, WidthMediaQueryWithPageZoomAfterPrinting) {
   web_view->Resize(WebSize(800, 600));
   web_view->SetZoomLevel(WebView::ZoomFactorToZoomLevel(2.0));
 
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
                                    "<style>"
                                    "  @media (max-width: 600px) {"
@@ -4835,7 +4835,7 @@ TEST_F(WebViewTest, ViewportUnitsPrintingWithPageZoom) {
   web_view->Resize(WebSize(800, 600));
   web_view->SetZoomLevel(WebView::ZoomFactorToZoomLevel(2.0));
 
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
                                    "<style>"
                                    "  body { margin: 0 }"
@@ -4873,7 +4873,7 @@ TEST_F(WebViewTest, DeviceEmulationResetScrollbars) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
   web_view->Resize(WebSize(800, 600));
 
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
                                    "<!doctype html>"
                                    "<meta name='viewport'"
@@ -4918,7 +4918,7 @@ TEST_F(WebViewTest, SetZoomLevelWhilePluginFocused) {
   };
   PluginCreatingWebFrameClient frame_client;
   WebViewImpl* web_view = web_view_helper_.Initialize(&frame_client);
-  WebURL base_url = URLTestHelpers::ToKURL("https://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("https://example.com/");
   FrameTestHelpers::LoadHTMLString(
       web_view->MainFrameImpl(),
       "<!DOCTYPE html><html><body>"
@@ -4982,7 +4982,7 @@ TEST_F(WebViewTest, DetachPluginInLayout) {
 
   PluginCreatingWebFrameClient frame_client;
   WebViewImpl* web_view = web_view_helper_.Initialize(&frame_client);
-  WebURL base_url = URLTestHelpers::ToKURL("https://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("https://example.com/");
   FrameTestHelpers::LoadHTMLString(
       web_view->MainFrameImpl(),
       "<!DOCTYPE html><html><body>"
@@ -5007,7 +5007,7 @@ TEST_F(WebViewTest, DetachPluginInLayout) {
 // Check that first input delay is correctly reported to the document.
 TEST_F(WebViewTest, FirstInputDelayReported) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
                                    "<html><body></body></html>", base_url);
 
@@ -5061,7 +5061,7 @@ TEST_F(WebViewTest, FirstInputDelayReported) {
 // Check that longest input delay is correctly reported to the document.
 TEST_F(WebViewTest, LongestInputDelayReported) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
                                    "<html><body></body></html>", base_url);
 
@@ -5122,7 +5122,7 @@ TEST_F(WebViewTest, InputDelayReported) {
 
   WebViewImpl* web_view = web_view_helper_.Initialize();
 
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
                                    "<html><body></body></html>", base_url);
 
@@ -5170,7 +5170,7 @@ TEST_F(WebViewTest, InputDelayReported) {
 // we do not count its delay to calculate longest input delay.
 TEST_F(WebViewTest, LongestInputDelayPageBackgroundedDuringQueuing) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
                                    "<html><body></body></html>", base_url);
 
@@ -5224,7 +5224,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedDuringQueuing) {
 TEST_F(WebViewTest, LongestInputDelayPageBackgroundedAtNavStart) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
   web_view->SetVisibilityState(mojom::PageVisibilityState::kHidden, false);
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
                                    "<html><body></body></html>", base_url);
 
@@ -5258,7 +5258,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedAtNavStart) {
 // longest input delay.
 TEST_F(WebViewTest, LongestInputDelayPageBackgroundedNotDuringQueuing) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
                                    "<html><body></body></html>", base_url);
 
@@ -5301,7 +5301,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedNotDuringQueuing) {
 // first input is a pointer down event, and we receive a pointer up event.
 TEST_F(WebViewTest, PointerDownUpFirstInputDelay) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
                                    "<html><body></body></html>", base_url);
 
@@ -5348,7 +5348,7 @@ TEST_F(WebViewTest, PointerDownUpFirstInputDelay) {
 // first input is a pointer down event followed by a pointer cancel event.
 TEST_F(WebViewTest, PointerDownCancelFirstInputDelay) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
                                    "<html><body></body></html>", base_url);
 
@@ -5418,7 +5418,7 @@ TEST_F(WebViewTest, FirstInputDelayExcludesProcessingTime) {
   MockClockAdvancingWebFrameClient frame_client(
       &clock, TimeDelta::FromMilliseconds(6000));
   WebViewImpl* web_view = web_view_helper_.Initialize(&frame_client);
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
                                    "<html><body></body></html>", base_url);
 
@@ -5463,7 +5463,7 @@ TEST_F(WebViewTest, LongestInputDelayExcludesProcessingTime) {
   MockClockAdvancingWebFrameClient frame_client(
       &clock, TimeDelta::FromMilliseconds(6000));
   WebViewImpl* web_view = web_view_helper_.Initialize(&frame_client);
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
                                    "<html><body></body></html>", base_url);
 
