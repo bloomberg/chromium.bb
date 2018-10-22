@@ -96,7 +96,7 @@
             label="$i18n{signinAllowedTitle}"
             sub-label="$i18n{signinAllowedDescription}"
             on-settings-boolean-control-change="onSigninAllowedChange_"
-            disabled="[[syncStatus.signedIn]]">
+            no-set-pref>
         </settings-toggle-button>
 </if><!-- not chromeos -->
         <template is="dom-if" if="[[!unifiedConsentEnabled_]]">
