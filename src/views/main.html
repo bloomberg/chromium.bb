@@ -40,10 +40,6 @@
           </object>
         </div>
       </div>
-      <div class="centered-overlay" id="camera-mode"></div>
-      <div class="centered-overlay">
-        <div id="timer-tick-msg" role="timer" aria-live="polite"></div>
-      </div>
       <div class="actions-group buttons circle">
         <button id="switch-takephoto" disabled tabindex="0"
                 i18n-label="switchTakePhotoButton"></button>
@@ -52,13 +48,9 @@
         <button id="switch-recordvideo" disabled tabindex="0"
                 i18n-label="switchRecordVideoButton"></button>
       </div>
-      <div class="bottom-stripe left-stripe buttons circle">
-        <button id="switch-device" disabled tabindex="0"
-                i18n-label="switchCameraButton" hidden></button>
-      </div>
-      <div class="bottom-stripe right-stripe buttons circle">
-        <button id="gallery-enter" disabled tabindex="0"
-                i18n-label="galleryButton" hidden></button>
+      <div class="top-stripe right-stripe buttons">
+        <input type="checkbox" id="toggle-mic" disabled tabindex="0"
+               i18n-label="toggleMicButton">
       </div>
       <div class="left-stripe options-group buttons">
         <input type="checkbox" id="toggle-mirror" disabled tabindex="0"
@@ -68,14 +60,22 @@
         <input type="checkbox" id="toggle-timer" disabled tabindex="0"
                i18n-label="toggleTimerButton">
       </div>
+      <div class="bottom-stripe left-stripe buttons circle">
+        <button id="switch-device" disabled tabindex="0"
+                i18n-label="switchCameraButton" hidden></button>
+      </div>
+      <div class="bottom-stripe right-stripe buttons circle">
+        <button id="gallery-enter" disabled tabindex="0"
+                i18n-label="galleryButton" hidden></button>
+      </div>
       <div class="top-stripe" id="record-time">
         <div class="icon"></div>
         <div id="record-time-msg"></div>
       </div>
-      <div class="top-stripe right-stripe buttons">
-        <input type="checkbox" id="toggle-mic" disabled tabindex="0"
-               i18n-label="toggleMicButton">
+      <div class="centered-overlay">
+        <div id="timer-tick-msg" role="timer" aria-live="polite"></div>
       </div>
+      <div class="centered-overlay" id="camera-mode"></div>
     </div>
     <div class="centered-overlay" id="spinner"></div>
     <div id="browser" role="listbox" i18n-aria-label="galleryImages">
