@@ -574,6 +574,23 @@ class MetricsCollectorTest(unittest.TestCase):
         self.config_file,
         {'is-googler': True, 'countdown': 0, 'opt-in': None, 'version': 5})
 
+  def test_add_repeated(self):
+    """Tests that we can add repeated metrics."""
+    self.FileRead.side_effect = [
+        '{"is-googler": true, "countdown": 0, "opt-in": true}'
+    ]
+
+    @self.collector.collect_metrics('fun')
+    def fun():
+      self.collector.add_repeated('fun', 1)
+      self.collector.add_repeated('fun', 2)
+      self.collector.add_repeated('fun', 5)
+
+    fun()
+
+    # Assert that we collected all metrics for fun.
+    self.assert_collects_metrics({'fun': [1, 2, 5]})
+
 
 if __name__ == '__main__':
   unittest.main()

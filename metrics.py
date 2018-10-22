@@ -161,6 +161,11 @@ class MetricsCollector(object):
       with self._metrics_lock:
         self._reported_metrics[name] = value
 
+  def add_repeated(self, name, value):
+    if self._collect_custom_metrics:
+      with self._metrics_lock:
+        self._reported_metrics.setdefault(name, []).append(value)
+
   @contextlib.contextmanager
   def pause_metrics_collection(self):
     collect_custom_metrics = self._collect_custom_metrics
