@@ -1457,20 +1457,29 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_KEYBOARD_SELECTION_SELECT" desc="Label for keyboard selection dropdown">
         Set your keyboard
       </message>
-      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_MESSAGE" desc="Text shown in the user pod to remind user that fingerprint unlock is supported">
+      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_AVAILABLE" desc="Text shown in the user pod to remind user that fingerprint unlock is supported">
         Unlock with fingerprint
       </message>
-      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_AGE_AUTH_SUCCESS" desc="Text shown in the user pod that fingerprint unlock succeeded">
+      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_AUTH_SUCCESS" desc="Text shown in the user pod that fingerprint unlock succeeded">
         Signing in
       </message>
-      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_TIMEOUT_MESSAGE" desc="Text shown when fingerprint has been disabled because it has been too long since the user last used the device">
-        To sign back in, enter your password
-      </message>
-      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_FAILED_MESSAGE" desc="Text shown in the user pod to tell user that couldn't unlock because finger is not recognized">
+      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_AUTH_FAILED" desc="Text shown in the user pod to tell user that couldn't unlock because finger is not recognized">
         Not recognized
       </message>
-      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_MESSAGE" desc="Text shown in the user pod to tell user that fingerprint unlock has reached maximum attempt">
+      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_TIMEOUT" desc="Text shown when fingerprint has been disabled because it has been too long since the user last used the device">
+        To unlock, enter your password
+      </message>
+      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_ATTEMPTS" desc="Text shown in the user pod to tell user that fingerprint unlock has reached maximum attempt">
         Too many attempts
+      </message>
+      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_ACCESSIBLE_AUTH_SUCCESS" desc="Accessibility text read by chromevox when the user successfully authenticated with fingerprint on the lock screen">
+        Unlocking with fingerprint
+      </message>
+      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_ACCESSIBLE_AUTH_FAILED" desc="Accessibility text read by chromevox that the user's fingerprint authentication attempt was not successful">
+        Fingerprint not recognized
+      </message>
+      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_ACCESSIBLE_AUTH_DISABLED_FROM_ATTEMPTS" desc="Accessibility text read by chromevox when the user has made too many unsuccessful fingerprint unlock attempts; fingerprint is now disabled until the user unlocks with a different authentication method">
+        Too many fingerprint attempts
       </message>
       <message name="IDS_ASH_LOGIN_TAKE_BREAK_MESSAGE" desc="Message shown to user when unlocking the device is not allowed because their parent locked it for the day.">
         Take a break!
