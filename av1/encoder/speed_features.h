@@ -580,6 +580,11 @@ typedef struct SPEED_FEATURES {
   // Performs full pixel motion search before none_partition to decide if we
   // want to split directly without trying other partition types.
   int full_pixel_motion_search_based_split;
+
+  // Skip obmc or warped motion mode when neighborhood motion field is
+  // identical
+  int skip_obmc_in_uniform_mv_field;
+  int skip_wm_in_uniform_mv_field;
 } SPEED_FEATURES;
 
 struct AV1_COMP;

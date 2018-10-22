@@ -8923,6 +8923,11 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
       av1_is_interp_needed(xd) ? av1_get_switchable_rate(cm, x, xd) : 0;
   int64_t best_rd = INT64_MAX;
   int best_rate_mv = rate_mv0;
+  int identical_obmc_mv_field_detected =
+      (cpi->sf.skip_obmc_in_uniform_mv_field ||
+       cpi->sf.skip_wm_in_uniform_mv_field)
+          ? av1_check_identical_obmc_mv_field(cm, xd, mi_row, mi_col)
+          : 0;
   for (int mode_index = (int)SIMPLE_TRANSLATION;
        mode_index <= (int)last_motion_mode_allowed + interintra_allowed;
        mode_index++) {
@@ -8942,6 +8947,15 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
     } else {
       mbmi->motion_mode = (MOTION_MODE)mode_index;
       assert(mbmi->ref_frame[1] != INTRA_FRAME);
+    }
+
+    if (identical_obmc_mv_field_detected) {
+      if (cpi->sf.skip_obmc_in_uniform_mv_field &&
+          mbmi->motion_mode == OBMC_CAUSAL)
+        continue;
+      if (cpi->sf.skip_wm_in_uniform_mv_field &&
+          mbmi->motion_mode == WARPED_CAUSAL)
+        continue;
     }
 
     if (mbmi->motion_mode == SIMPLE_TRANSLATION && !is_interintra_mode) {

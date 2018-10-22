@@ -464,6 +464,8 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->use_jnt_comp_flag = JNT_COMP_ENABLED;
   sf->reuse_inter_intra_mode = 0;
   sf->intra_angle_estimation = 0;
+  sf->skip_obmc_in_uniform_mv_field = 0;
+  sf->skip_wm_in_uniform_mv_field = 0;
 
   for (i = 0; i < TX_SIZES; i++) {
     sf->intra_y_mode_mask[i] = INTRA_ALL;
