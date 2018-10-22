@@ -15,6 +15,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/http/transport_security_state.h"
+#include "net/http/transport_security_state_test_util.h"
 #include "net/log/net_log_source.h"
 #include "net/log/test_net_log.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
@@ -1180,6 +1181,18 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionPooledWithTlsChannelId) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, ConnectionNotPooledWithDifferentPin) {
+  // Configure the TransportSecurityStateSource so that kPreloadedPKPHost will
+  // have static PKP pins set.
+  ScopedTransportSecurityStateSource scoped_security_state_source;
+
+  // |net::test_default::kHSTSSource| defines pins for kPreloadedPKPHost.
+  // (This hostname must be in the spdy_pooling.pem SAN.)
+  const char kPreloadedPKPHost[] = "www.example.org";
+  // A hostname without any static state.  (This hostname isn't in
+  // spdy_pooling.pem SAN, but that's okay because the
+  // ProofVerifyDetailsChromium are faked.)
+  const char kNoPinsHost[] = "no-pkp.example.org";
+
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<quic::QuicEncryptedPacket> settings_packet(
       client_maker_.MakeInitialSettingsPacket(1, nullptr));
@@ -1188,16 +1201,13 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionNotPooledWithDifferentPin) {
   socket_data_.reset(new SequencedSocketData(reads, writes));
   Initialize();
 
-  uint8_t primary_pin = 1;
-  uint8_t backup_pin = 2;
-  uint8_t bad_pin = 3;
-  AddPin(&transport_security_state_, "mail.example.org", primary_pin,
-         backup_pin);
+  transport_security_state_.EnableStaticPinsForTesting();
 
   ProofVerifyDetailsChromium details;
   details.cert_verify_result.verified_cert =
       ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
   details.cert_verify_result.is_issued_by_known_root = true;
+  uint8_t bad_pin = 3;
   details.cert_verify_result.public_key_hashes.push_back(
       GetTestHashValue(bad_pin));
 
@@ -1205,14 +1215,16 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionNotPooledWithDifferentPin) {
 
   CompleteCryptoHandshake();
   session_->OnProofVerifyDetailsAvailable(details);
-  QuicChromiumClientSessionPeer::SetHostname(session_.get(), "www.example.org");
+  QuicChromiumClientSessionPeer::SetHostname(session_.get(), kNoPinsHost);
   session_->OverrideChannelIDSent();
 
-  EXPECT_FALSE(session_->CanPool("mail.example.org", PRIVACY_MODE_DISABLED,
-                                 SocketTag()));
+  EXPECT_FALSE(
+      session_->CanPool(kPreloadedPKPHost, PRIVACY_MODE_DISABLED, SocketTag()));
 }
 
 TEST_P(QuicChromiumClientSessionTest, ConnectionPooledWithMatchingPin) {
+  ScopedTransportSecurityStateSource scoped_security_state_source;
+
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<quic::QuicEncryptedPacket> settings_packet(
       client_maker_.MakeInitialSettingsPacket(1, nullptr));
@@ -1221,17 +1233,16 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionPooledWithMatchingPin) {
   socket_data_.reset(new SequencedSocketData(reads, writes));
   Initialize();
 
-  uint8_t primary_pin = 1;
-  uint8_t backup_pin = 2;
-  AddPin(&transport_security_state_, "mail.example.org", primary_pin,
-         backup_pin);
+  transport_security_state_.EnableStaticPinsForTesting();
 
   ProofVerifyDetailsChromium details;
   details.cert_verify_result.verified_cert =
       ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
   details.cert_verify_result.is_issued_by_known_root = true;
-  details.cert_verify_result.public_key_hashes.push_back(
-      GetTestHashValue(primary_pin));
+  HashValue primary_pin(HASH_VALUE_SHA256);
+  EXPECT_TRUE(primary_pin.FromString(
+      "sha256/Nn8jk5By4Vkq6BeOVZ7R7AC6XUUBZsWmUbJR1f1Y5FY="));
+  details.cert_verify_result.public_key_hashes.push_back(primary_pin);
 
   ASSERT_TRUE(details.cert_verify_result.verified_cert.get());
 

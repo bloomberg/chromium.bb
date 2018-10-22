@@ -25,6 +25,7 @@
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/http_util.h"
 #include "net/http/transport_security_state.h"
+#include "net/http/transport_security_state_test_util.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/mock_crypto_client_stream_factory.h"
 #include "net/quic/mock_quic_data.h"
@@ -1495,14 +1496,14 @@ TEST_P(QuicStreamFactoryTest, HttpsPoolingWithMatchingPins) {
 
   HostPortPair server1(kDefaultServerHostName, 443);
   HostPortPair server2(kServer2HostName, 443);
-  uint8_t primary_pin = 1;
-  uint8_t backup_pin = 2;
-  test::AddPin(&transport_security_state_, kServer2HostName, primary_pin,
-               backup_pin);
+  transport_security_state_.EnableStaticPinsForTesting();
+  ScopedTransportSecurityStateSource scoped_security_state_source;
 
+  HashValue primary_pin(HASH_VALUE_SHA256);
+  EXPECT_TRUE(primary_pin.FromString(
+      "sha256/Nn8jk5By4Vkq6BeOVZ7R7AC6XUUBZsWmUbJR1f1Y5FY="));
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
-  verify_details.cert_verify_result.public_key_hashes.push_back(
-      test::GetTestHashValue(primary_pin));
+  verify_details.cert_verify_result.public_key_hashes.push_back(primary_pin);
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   host_resolver_->set_synchronous_mode(true);
@@ -1548,20 +1549,20 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithDifferentPins) {
 
   HostPortPair server1(kDefaultServerHostName, 443);
   HostPortPair server2(kServer2HostName, 443);
-  uint8_t primary_pin = 1;
-  uint8_t backup_pin = 2;
-  uint8_t bad_pin = 3;
-  test::AddPin(&transport_security_state_, kServer2HostName, primary_pin,
-               backup_pin);
+  transport_security_state_.EnableStaticPinsForTesting();
+  ScopedTransportSecurityStateSource scoped_security_state_source;
 
   ProofVerifyDetailsChromium verify_details1 = DefaultProofVerifyDetails();
+  uint8_t bad_pin = 3;
   verify_details1.cert_verify_result.public_key_hashes.push_back(
       test::GetTestHashValue(bad_pin));
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details1);
 
+  HashValue primary_pin(HASH_VALUE_SHA256);
+  EXPECT_TRUE(primary_pin.FromString(
+      "sha256/Nn8jk5By4Vkq6BeOVZ7R7AC6XUUBZsWmUbJR1f1Y5FY="));
   ProofVerifyDetailsChromium verify_details2 = DefaultProofVerifyDetails();
-  verify_details2.cert_verify_result.public_key_hashes.push_back(
-      test::GetTestHashValue(primary_pin));
+  verify_details2.cert_verify_result.public_key_hashes.push_back(primary_pin);
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details2);
 
   host_resolver_->set_synchronous_mode(true);

@@ -312,6 +312,7 @@ source_set("tests") {
     "//net",
     "//net:extras",
     "//net:test_support",
+    "//net/http:transport_security_state_unittest_data_default",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
     "//services/service_manager/public/cpp",

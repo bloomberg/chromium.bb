@@ -71,6 +71,8 @@ const char* const kCookieResponseHeaders[] = {
 // This avoids erroneously re-processing them on page loads from cache ---
 // they are defined to be valid only on live and error-free HTTPS
 // connections.
+// TODO(https://crbug.com/893055): remove Public-Key-Pins from non-cachable
+// headers?
 const char* const kSecurityStateHeaders[] = {
   "strict-transport-security",
   "public-key-pins"
