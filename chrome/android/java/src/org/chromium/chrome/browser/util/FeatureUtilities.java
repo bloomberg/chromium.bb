@@ -343,14 +343,13 @@ public class FeatureUtilities {
             ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
 
             try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-                sIsBottomToolbarEnabled =
-                        prefManager.readBoolean(
-                                ChromePreferenceManager.BOTTOM_TOOLBAR_ENABLED_KEY, false)
-                        && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
-                                   ContextUtils.getApplicationContext());
+                sIsBottomToolbarEnabled = prefManager.readBoolean(
+                        ChromePreferenceManager.BOTTOM_TOOLBAR_ENABLED_KEY, false);
             }
         }
-        return sIsBottomToolbarEnabled;
+        return sIsBottomToolbarEnabled
+                && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
+                           ContextUtils.getApplicationContext());
     }
 
     /**
