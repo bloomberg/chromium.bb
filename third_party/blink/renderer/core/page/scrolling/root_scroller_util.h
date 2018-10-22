@@ -13,7 +13,7 @@ class Node;
 class PaintLayer;
 class ScrollableArea;
 
-namespace RootScrollerUtil {
+namespace root_scroller_util {
 
 // Returns the ScrollableArea that's associated with the root scroller Node.
 // For the <html> element and document Node this will be the FrameView or root
@@ -29,7 +29,7 @@ bool IsGlobal(const LayoutBox&);
 bool IsGlobal(const PaintLayer&);
 bool IsGlobal(const Element*);
 
-}  // namespace RootScrollerUtil
+}  // namespace root_scroller_util
 
 }  // namespace blink
 

@@ -19,7 +19,7 @@
 
 namespace blink {
 
-namespace RootScrollerUtil {
+namespace root_scroller_util {
 
 ScrollableArea* ScrollableAreaForRootScroller(const Node* node) {
   if (!node)
@@ -97,6 +97,6 @@ bool IsGlobal(const Element* element) {
              .GlobalRootScroller() == element;
 }
 
-}  // namespace RootScrollerUtil
+}  // namespace root_scroller_util
 
 }  // namespace blink
