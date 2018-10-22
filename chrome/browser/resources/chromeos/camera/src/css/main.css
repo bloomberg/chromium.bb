@@ -731,8 +731,8 @@ body.capturing.grid #preview-grid-vertical {
 }
 
 #tooltip.visible {
-  transition: opacity 350ms;
   opacity: 1;
+  transition: opacity 350ms ease-out 1500ms;
 }
 
 #toast {
