@@ -691,9 +691,6 @@
   <message name="IDS_DISCOVER_PIN_SETUP_SUBTITLE1" desc="A sub-title of the dialog that starts 'PIN-unlock' setup process. Subtitle explains to the user how this feature can be configured.">
     Use a number (PIN) instead of a password to unlock your device. To set your PIN later, go to Settings.
   </message>
-  <message name="IDS_DISCOVER_PIN_SETUP_LEARN_MORE" desc="A label on the link that leads to the help page.">
-    Learn more
-  </message>
   <message name="IDS_DISCOVER_PIN_SETUP_SKIP" desc="A label on the button that interrupts current setup flow.">
     Skip
   </message>
@@ -704,7 +701,19 @@
     Your PIN is added
   </message>
   <message name="IDS_DISCOVER_PIN_SETUP_SUBTITLE3" desc="A sub-title of the dialog that finishes 'PIN-unlock' setup process successfully suggesting how user can use the PIN that they have just set up.">
-    You can use PIN to unlock your device when signed out
+    You can use PIN to unlock your device when you signed out.
+  </message>
+  <message name="IDS_DISCOVER_PIN_SETUP" desc="A label on the button that leads to Pin Unlock feature set up.">
+    Pin setup
+  </message>
+  <message name="IDS_DISCOVER_PIN_SETUP_PASSWORD_TITLE" desc="A title of the dialog that starts 'PIN-unlock' setup process, and asks user to type their password first.">
+    Confirm your password
+  </message>
+  <message name="IDS_DISCOVER_PIN_SETUP_PASSWORD_SUBTITLE" desc="A sub-title of the dialog that starts 'PIN-unlock' setup process, and asks user to type their password first.">
+    Enter your password to configure screen lock and sign-in
+  </message>
+  <message name="IDS_DISCOVER_PIN_SETUP_DONE" desc="Label for the done button on the success screen in 'PIN-unlock' setup dialog.">
+    Done
   </message>
   <message name="IDS_APP_START_NETWORK_WAIT_MESSAGE" desc="Message displayed while installing and/or launching web application in kiosk mode.">
     Waiting for network connection...

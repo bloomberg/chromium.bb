@@ -658,7 +658,8 @@
     "contexts": ["webui"],
     "matches": [
       "chrome://multidevice-setup/*",
-      "chrome://settings/*"
+      "chrome://settings/*",
+      "chrome://oobe/*"
     ],
     "platforms": ["chromeos"]
   },
