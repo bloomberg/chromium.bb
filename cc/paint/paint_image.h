@@ -162,6 +162,7 @@ class CC_PAINT_EXPORT PaintImage {
   uint32_t unique_id() const { return GetSkImage()->uniqueID(); }
   explicit operator bool() const { return !!GetSkImage(); }
   bool IsLazyGenerated() const { return GetSkImage()->isLazyGenerated(); }
+  bool IsTextureBacked() const { return GetSkImage()->isTextureBacked(); }
   int width() const { return GetSkImage()->width(); }
   int height() const { return GetSkImage()->height(); }
   SkColorSpace* color_space() const { return GetSkImage()->colorSpace(); }

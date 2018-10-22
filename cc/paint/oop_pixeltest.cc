@@ -139,6 +139,7 @@ class OopPixelTest : public testing::Test,
     SkColor preclear_color;
     ImageDecodeCache* image_cache = nullptr;
     std::vector<scoped_refptr<DisplayItemList>> additional_lists;
+    PaintShader* shader_with_animated_images = nullptr;
   };
 
   SkBitmap Raster(scoped_refptr<DisplayItemList> display_item_list,
@@ -273,6 +274,9 @@ class OopPixelTest : public testing::Test,
     recording.UpdateAndExpandInvalidation(&fake_invalidation, layer_rect.size(),
                                           layer_rect);
     recording.SetRequiresClear(options.requires_clear);
+
+    if (options.shader_with_animated_images)
+      options.shader_with_animated_images->set_has_animated_images(true);
 
     PlaybackImageProvider image_provider(gpu_image_cache_.get(),
                                          options.color_space,
@@ -604,9 +608,6 @@ TEST_P(OopImagePixelTest, DrawRecordShaderWithImageScaled) {
   auto paint_record_shader = PaintShader::MakePaintRecord(
       paint_record, gfx::RectToSkRect(rect), SkShader::kRepeat_TileMode,
       SkShader::kRepeat_TileMode, nullptr);
-  // Set the shader has animated images so gpu also goes through cc's image
-  // upload stack, instead of using skia.
-  paint_record_shader->set_has_animated_images(true);
 
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
   display_item_list->StartPaint();
@@ -619,7 +620,11 @@ TEST_P(OopImagePixelTest, DrawRecordShaderWithImageScaled) {
   display_item_list->Finalize();
 
   auto actual = Raster(display_item_list, rect.size());
-  auto expected = RasterExpectedBitmap(display_item_list, rect.size());
+  // Set the shader has animated images so gpu also goes through cc's image
+  // upload stack, instead of using skia.
+  RasterOptions expected_options(rect.size());
+  expected_options.shader_with_animated_images = paint_record_shader.get();
+  auto expected = RasterExpectedBitmap(display_item_list, expected_options);
   ExpectEquals(actual, expected);
 }
 
