@@ -985,6 +985,14 @@ Response InterceptionJob::ProcessResponseOverride(std::string response) {
 
   head->request_time = start_time_;
   head->response_time = base::Time::Now();
+
+  // TODO(caseq): we're only doing this because some clients expect load timing
+  // to be present with mocked responses. Consider removing this.
+  const base::TimeTicks now_ticks = base::TimeTicks::Now();
+  head->load_timing.request_start_time = start_time_;
+  head->load_timing.request_start = start_ticks_;
+  head->load_timing.receive_headers_end = now_ticks;
+
   head->headers = new net::HttpResponseHeaders(std::move(raw_headers));
   head->headers->GetMimeTypeAndCharset(&head->mime_type, &head->charset);
   if (head->mime_type.empty()) {
@@ -1000,7 +1008,7 @@ Response InterceptionJob::ProcessResponseOverride(std::string response) {
   head->encoded_data_length = header_size;
   head->encoded_body_length = 0;
   head->request_start = start_ticks_;
-  head->response_start = base::TimeTicks::Now();
+  head->response_start = now_ticks;
 
   response_metadata_->transfer_size = body_size;
 
