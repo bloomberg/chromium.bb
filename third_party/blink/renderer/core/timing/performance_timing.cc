@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/paint/image_paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/paint_timing.h"
 #include "third_party/blink/renderer/core/paint/paint_tracker.h"
+#include "third_party/blink/renderer/core/paint/text_paint_timing_detector.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_timing.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
@@ -382,6 +383,24 @@ unsigned long long PerformanceTiming::LastImagePaint() const {
 
   return MonotonicTimeToIntegerMilliseconds(
       paint_tracker->GetImagePaintTimingDetector().LastImagePaint());
+}
+
+unsigned long long PerformanceTiming::LargestTextPaint() const {
+  PaintTracker* paint_tracker = GetPaintTracker();
+  if (!paint_tracker)
+    return 0;
+
+  return MonotonicTimeToIntegerMilliseconds(
+      paint_tracker->GetTextPaintTimingDetector().LargestTextPaint());
+}
+
+unsigned long long PerformanceTiming::LastTextPaint() const {
+  PaintTracker* paint_tracker = GetPaintTracker();
+  if (!paint_tracker)
+    return 0;
+
+  return MonotonicTimeToIntegerMilliseconds(
+      paint_tracker->GetTextPaintTimingDetector().LastTextPaint());
 }
 
 unsigned long long PerformanceTiming::PageInteractive() const {

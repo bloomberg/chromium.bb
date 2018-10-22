@@ -52,6 +52,8 @@ void PaintTracker::DidChangePerformanceTiming() {
   if (!document)
     return;
   DocumentLoader* loader = document->Loader();
+  if (!loader)
+    return;
   loader->DidChangePerformanceTiming();
 }
 

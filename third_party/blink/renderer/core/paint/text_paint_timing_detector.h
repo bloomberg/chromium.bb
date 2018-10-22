@@ -62,6 +62,8 @@ class CORE_EXPORT TextPaintTimingDetector final
   void OnPrePaintFinished();
   void NotifyNodeRemoved(DOMNodeId);
   void Dispose() { timer_.Stop(); }
+  base::TimeTicks LargestTextPaint() { return largest_text_paint_; }
+  base::TimeTicks LastTextPaint() { return last_text_paint_; }
   void Trace(blink::Visitor*);
 
  private:
@@ -71,10 +73,13 @@ class CORE_EXPORT TextPaintTimingDetector final
   IntRect CalculateTransformedRect(LayoutRect& visual_rect,
                                    const PaintLayer& painting_layer) const;
   void TimerFired(TimerBase*);
+  void Analyze();
 
   void ReportSwapTime(WebLayerTreeView::SwapResult result,
                       base::TimeTicks timestamp);
   void RegisterNotifySwapTime(ReportTimeCallback callback);
+  void OnLargestTextDetected(const TextRecord&);
+  void OnLastTextDetected(const TextRecord&);
 
   HashSet<DOMNodeId> recorded_text_node_ids_;
   HashSet<DOMNodeId> size_zero_node_ids_;
@@ -95,6 +100,9 @@ class CORE_EXPORT TextPaintTimingDetector final
   unsigned recorded_node_count_ = 0;
   unsigned largest_text_candidate_index_max_ = 0;
   unsigned last_text_candidate_index_max_ = 0;
+
+  base::TimeTicks largest_text_paint_;
+  base::TimeTicks last_text_paint_;
   TaskRunnerTimer<TextPaintTimingDetector> timer_;
   Member<LocalFrameView> frame_view_;
 };
