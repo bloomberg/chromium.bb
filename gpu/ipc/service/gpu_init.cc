@@ -109,6 +109,11 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   if (!PopGPUInfoCache(&gpu_info_)) {
     CollectBasicGraphicsInfo(command_line, &gpu_info_);
   }
+#if defined(OS_WIN)
+  GpuSeriesType gpu_series_type = GetGpuSeriesType(
+      gpu_info_.active_gpu().vendor_id, gpu_info_.active_gpu().device_id);
+  UMA_HISTOGRAM_ENUMERATION("GPU.GpuGeneration", gpu_series_type);
+#endif  // OS_WIN
 
   // Set keys for crash logging based on preliminary gpu info, in case we
   // crash during feature collection.

@@ -24364,6 +24364,24 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="Software"/>
 </enum>
 
+<enum name="GpuSeriesType">
+  <summary>
+    User device GPU generation. Currently only meaningful with Intel GPUs.
+  </summary>
+  <int value="0" label="Unknown (mostly Non-Intel)"/>
+  <int value="1" label="Intel SandyBridge"/>
+  <int value="2" label="Intel ValleyView (BayTrail)"/>
+  <int value="3" label="Intel IvyBridge"/>
+  <int value="4" label="Intel Haswell"/>
+  <int value="5" label="Intel CherryView (Braswell)"/>
+  <int value="6" label="Intel Broadwell"/>
+  <int value="7" label="Intel ApolloLake"/>
+  <int value="8" label="Intel SkyLake"/>
+  <int value="9" label="Intel GeminiLake"/>
+  <int value="10" label="Intel KabyLake"/>
+  <int value="11" label="Intel CoffeeLake"/>
+</enum>
+
 <enum name="GPUsetIsAcceleratedCompositingActive">
   <summary>
     Combinations of input parameter active and previous active state set in
