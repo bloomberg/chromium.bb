@@ -45,12 +45,10 @@
         sub-label="$i18n{safeBrowsingEnableProtectionDesc}"
         disabled="[[unifiedConsentGiven]]">
     </settings-toggle-button>
-    <settings-toggle-button id="safeBrowsingExtendedReportingControl"
-        pref="[[safeBrowsingExtendedReportingPref_]]"
+    <settings-toggle-button
+        pref="{{prefs.safebrowsing.scout_reporting_enabled}}"
         label="$i18n{safeBrowsingEnableExtendedReporting}"
         sub-label="$i18n{safeBrowsingEnableExtendedReportingDesc}"
-        on-settings-boolean-control-change="onSberChange_"
-        no-set-pref
         disabled="[[unifiedConsentGiven]]">
     </settings-toggle-button>
 <if expr="_google_chrome">
