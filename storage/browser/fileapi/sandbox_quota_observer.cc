@@ -54,8 +54,8 @@ void SandboxQuotaObserver::OnUpdate(const FileSystemURL& url, int64_t delta) {
     delayed_cache_update_helper_.Start(
         FROM_HERE,
         base::TimeDelta(),  // No delay.
-        base::Bind(&SandboxQuotaObserver::ApplyPendingUsageUpdate,
-                   base::Unretained(this)));
+        base::BindOnce(&SandboxQuotaObserver::ApplyPendingUsageUpdate,
+                       base::Unretained(this)));
   }
 }
 

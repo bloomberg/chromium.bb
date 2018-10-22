@@ -36,18 +36,18 @@ class STORAGE_EXPORT FileWriterDelegate {
   };
 
   using DelegateWriteCallback =
-      base::Callback<void(base::File::Error result,
-                          int64_t bytes,
-                          WriteProgressStatus write_status)>;
+      base::RepeatingCallback<void(base::File::Error result,
+                                   int64_t bytes,
+                                   WriteProgressStatus write_status)>;
 
   FileWriterDelegate(std::unique_ptr<FileStreamWriter> file_writer,
                      FlushPolicy flush_policy);
   virtual ~FileWriterDelegate();
 
   void Start(std::unique_ptr<BlobReader> blob_reader,
-             const DelegateWriteCallback& write_callback);
+             DelegateWriteCallback write_callback);
   void Start(mojo::ScopedDataPipeConsumerHandle data_pipe,
-             const DelegateWriteCallback& write_callback);
+             DelegateWriteCallback write_callback);
 
   // Cancels the current write operation.  This will synchronously or
   // asynchronously call the given write callback (which may result in

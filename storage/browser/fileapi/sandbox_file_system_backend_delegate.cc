@@ -182,11 +182,11 @@ SandboxFileSystemBackendDelegate::SandboxFileSystemBackendDelegate(
     leveldb::Env* env_override)
     : file_task_runner_(file_task_runner),
       quota_manager_proxy_(quota_manager_proxy),
-      sandbox_file_util_(new AsyncFileUtilAdapter(
+      sandbox_file_util_(std::make_unique<AsyncFileUtilAdapter>(
           new ObfuscatedFileUtil(special_storage_policy,
                                  profile_path.Append(kFileSystemDirectory),
                                  env_override,
-                                 base::Bind(&GetTypeStringForURL),
+                                 base::BindRepeating(&GetTypeStringForURL),
                                  GetKnownTypeStrings(),
                                  this))),
       file_system_usage_cache_(std::make_unique<FileSystemUsageCache>()),
@@ -702,7 +702,8 @@ ObfuscatedFileUtil* ObfuscatedFileUtil::CreateForTesting(
     const base::FilePath& file_system_directory,
     leveldb::Env* env_override) {
   return new ObfuscatedFileUtil(special_storage_policy, file_system_directory,
-                                env_override, base::Bind(&GetTypeStringForURL),
+                                env_override,
+                                base::BindRepeating(&GetTypeStringForURL),
                                 GetKnownTypeStrings(), nullptr);
 }
 

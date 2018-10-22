@@ -55,14 +55,13 @@ class CopyOrMoveOnSameFileSystemImpl
       const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
       CopyOrMoveOperationDelegate::CopyOrMoveOption option,
-      const FileSystemOperation::CopyFileProgressCallback&
-          file_progress_callback)
+      FileSystemOperation::CopyFileProgressCallback file_progress_callback)
       : operation_runner_(operation_runner),
         operation_type_(operation_type),
         src_url_(src_url),
         dest_url_(dest_url),
         option_(option),
-        file_progress_callback_(file_progress_callback) {}
+        file_progress_callback_(std::move(file_progress_callback)) {}
 
   void Run(CopyOrMoveOperationDelegate::StatusCallback callback) override {
     if (operation_type_ == CopyOrMoveOperationDelegate::OPERATION_MOVE) {
@@ -596,12 +595,12 @@ CopyOrMoveOperationDelegate::StreamCopyHelper::StreamCopyHelper(
     std::unique_ptr<FileStreamWriter> writer,
     storage::FlushPolicy flush_policy,
     int buffer_size,
-    const FileSystemOperation::CopyFileProgressCallback& file_progress_callback,
+    FileSystemOperation::CopyFileProgressCallback file_progress_callback,
     const base::TimeDelta& min_progress_callback_invocation_span)
     : reader_(std::move(reader)),
       writer_(std::move(writer)),
       flush_policy_(flush_policy),
-      file_progress_callback_(file_progress_callback),
+      file_progress_callback_(std::move(file_progress_callback)),
       io_buffer_(base::MakeRefCounted<net::IOBufferWithSize>(buffer_size)),
       num_copied_bytes_(0),
       previous_flush_offset_(0),
@@ -814,8 +813,8 @@ void CopyOrMoveOperationDelegate::ProcessFile(const FileSystemURL& src_url,
        operation_type_ == OPERATION_MOVE)) {
     impl = std::make_unique<CopyOrMoveOnSameFileSystemImpl>(
         operation_runner(), operation_type_, src_url, dest_url, option_,
-        base::Bind(&CopyOrMoveOperationDelegate::OnCopyFileProgress,
-                   weak_factory_.GetWeakPtr(), src_url));
+        base::BindRepeating(&CopyOrMoveOperationDelegate::OnCopyFileProgress,
+                            weak_factory_.GetWeakPtr(), src_url));
   } else {
     // Cross filesystem case.
     base::File::Error error = base::File::FILE_ERROR_FAILED;
@@ -841,8 +840,9 @@ void CopyOrMoveOperationDelegate::ProcessFile(const FileSystemURL& src_url,
         impl = std::make_unique<StreamCopyOrMoveImpl>(
             operation_runner(), file_system_context(), operation_type_, src_url,
             dest_url, option_, std::move(reader), std::move(writer),
-            base::Bind(&CopyOrMoveOperationDelegate::OnCopyFileProgress,
-                       weak_factory_.GetWeakPtr(), src_url));
+            base::BindRepeating(
+                &CopyOrMoveOperationDelegate::OnCopyFileProgress,
+                weak_factory_.GetWeakPtr(), src_url));
       }
     }
 
@@ -850,8 +850,8 @@ void CopyOrMoveOperationDelegate::ProcessFile(const FileSystemURL& src_url,
       impl = std::make_unique<SnapshotCopyOrMoveImpl>(
           operation_runner(), operation_type_, src_url, dest_url, option_,
           validator_factory,
-          base::Bind(&CopyOrMoveOperationDelegate::OnCopyFileProgress,
-                     weak_factory_.GetWeakPtr(), src_url));
+          base::BindRepeating(&CopyOrMoveOperationDelegate::OnCopyFileProgress,
+                              weak_factory_.GetWeakPtr(), src_url));
     }
   }
 
