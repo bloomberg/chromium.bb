@@ -35,6 +35,9 @@ void SpokenFeedbackEventRewriterDelegate::DispatchKeyEventToChromeVox(
     bool capture) {
   extensions::ExtensionHost* host = chromeos::GetAccessibilityExtensionHost(
       extension_misc::kChromeVoxExtensionId);
+  if (!host)
+    return;
+
   // Listen for any unhandled keyboard events from ChromeVox's background page
   // when capturing keys to reinject.
   host->host_contents()->SetDelegate(capture ? this : nullptr);
