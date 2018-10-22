@@ -77,8 +77,14 @@ constexpr base::TimeDelta HostedAppButtonContainer::kTitlebarAnimationDelay;
 constexpr base::TimeDelta HostedAppButtonContainer::kOriginFadeInDuration;
 constexpr base::TimeDelta HostedAppButtonContainer::kOriginPauseDuration;
 constexpr base::TimeDelta HostedAppButtonContainer::kOriginFadeOutDuration;
-const base::TimeDelta HostedAppButtonContainer::kOriginTotalDuration =
-    kOriginFadeInDuration + kOriginPauseDuration + kOriginFadeOutDuration;
+
+// static
+base::TimeDelta HostedAppButtonContainer::OriginTotalDuration() {
+  // TimeDelta.operator+ uses time_internal::SaturatedAdd() which isn't
+  // constexpr, so this needs to be a function to not introduce a static
+  // initializer.
+  return kOriginFadeInDuration + kOriginPauseDuration + kOriginFadeOutDuration;
+}
 
 class HostedAppButtonContainer::ContentSettingsContainer : public views::View {
  public:
@@ -405,7 +411,7 @@ void HostedAppButtonContainer::StartTitlebarAnimation() {
   hosted_app_origin_text_->StartFadeAnimation();
   app_menu_button_->StartHighlightAnimation();
   icon_fade_in_delay_.Start(
-      FROM_HERE, kOriginTotalDuration, this,
+      FROM_HERE, OriginTotalDuration(), this,
       &HostedAppButtonContainer::FadeInContentSettingIcons);
 }
 
