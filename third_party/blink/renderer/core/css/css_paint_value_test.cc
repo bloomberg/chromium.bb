@@ -26,8 +26,8 @@ class CSSPaintValueTest : public RenderingTest {
     WebURL url = url_test_helpers::RegisterMockedURLLoadFromBase(
         WebString::FromUTF8(base_url_), testing_path,
         WebString::FromUTF8(file_name));
-    FrameTestHelpers::LoadFrame(helper_.GetWebView()->MainFrameImpl(),
-                                base_url_ + file_name);
+    frame_test_helpers::LoadFrame(helper_.GetWebView()->MainFrameImpl(),
+                                  base_url_ + file_name);
     ForceFullCompositingUpdate();
     url_test_helpers::RegisterMockedURLUnregister(url);
   }
@@ -45,7 +45,7 @@ class CSSPaintValueTest : public RenderingTest {
     helper_.Initialize(nullptr, nullptr, nullptr);
     base_url_ = "https://www.test.com/";
   }
-  FrameTestHelpers::WebViewHelper helper_;
+  frame_test_helpers::WebViewHelper helper_;
   std::string base_url_;
 };
 

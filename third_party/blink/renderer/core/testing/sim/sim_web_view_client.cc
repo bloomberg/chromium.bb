@@ -9,7 +9,7 @@
 namespace blink {
 
 SimWebViewClient::SimWebViewClient(content::LayerTreeViewDelegate* delegate)
-    : FrameTestHelpers::TestWebViewClient(delegate) {}
+    : frame_test_helpers::TestWebViewClient(delegate) {}
 
 void SimWebViewClient::DidMeaningfulLayout(
     WebMeaningfulLayout meaningful_layout) {

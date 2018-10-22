@@ -93,12 +93,12 @@ class ScrollingCoordinatorTest : public testing::Test,
   }
 
   void NavigateTo(const std::string& url) {
-    FrameTestHelpers::LoadFrame(GetWebView()->MainFrameImpl(), url);
+    frame_test_helpers::LoadFrame(GetWebView()->MainFrameImpl(), url);
   }
 
   void LoadHTML(const std::string& html) {
-    FrameTestHelpers::LoadHTMLString(GetWebView()->MainFrameImpl(), html,
-                                     url_test_helpers::ToKURL("about:blank"));
+    frame_test_helpers::LoadHTMLString(GetWebView()->MainFrameImpl(), html,
+                                       url_test_helpers::ToKURL("about:blank"));
   }
 
   void ForceFullCompositingUpdate() {
@@ -134,7 +134,7 @@ class ScrollingCoordinatorTest : public testing::Test,
     settings->SetPreferCompositingToLCDTextEnabled(true);
   }
 
-  FrameTestHelpers::WebViewHelper helper_;
+  frame_test_helpers::WebViewHelper helper_;
 };
 
 INSTANTIATE_TEST_CASE_P(All, ScrollingCoordinatorTest, ::testing::Bool());
@@ -950,7 +950,7 @@ TEST_P(ScrollingCoordinatorTest, IframeWindowTouchHandler) {
       R"(<iframe style="width: 275px; height: 250px;"></iframe>)");
   WebLocalFrameImpl* child_frame =
       ToWebLocalFrameImpl(GetWebView()->MainFrameImpl()->FirstChild());
-  FrameTestHelpers::LoadHTMLString(child_frame, R"HTML(
+  frame_test_helpers::LoadHTMLString(child_frame, R"HTML(
       <p style="margin: 1000px"> Hello </p>
       <script>
         window.addEventListener('touchstart', (e) => {
@@ -958,7 +958,7 @@ TEST_P(ScrollingCoordinatorTest, IframeWindowTouchHandler) {
         }, {passive: false});
       </script>
     )HTML",
-                                   url_test_helpers::ToKURL("about:blank"));
+                                     url_test_helpers::ToKURL("about:blank"));
   ForceFullCompositingUpdate();
 
   PaintLayer* paint_layer_child_frame =

@@ -87,7 +87,7 @@ class WebLocalFrameImpl;
 class WebRemoteFrameImpl;
 class WebSettings;
 
-namespace FrameTestHelpers {
+namespace frame_test_helpers {
 
 class TestWebFrameClient;
 class TestWebRemoteFrameClient;
@@ -379,7 +379,7 @@ class TestWebRemoteFrameClient : public WebRemoteFrameClient {
   WebRemoteFrame* frame_ = nullptr;
 };
 
-}  // namespace FrameTestHelpers
+}  // namespace frame_test_helpers
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_TEST_HELPERS_H_

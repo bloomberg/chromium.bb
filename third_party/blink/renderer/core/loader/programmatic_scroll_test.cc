@@ -49,7 +49,7 @@ class ProgrammaticScrollTest : public testing::Test {
 TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale) {
   RegisterMockedHttpURLLoad("long_scroll.html");
 
-  FrameTestHelpers::WebViewHelper web_view_helper;
+  frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view =
       web_view_helper.InitializeAndLoad(base_url_ + "long_scroll.html");
   web_view->Resize(WebSize(1000, 1000));
@@ -81,7 +81,7 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale) {
 TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale) {
   RegisterMockedHttpURLLoad("long_scroll.html");
 
-  FrameTestHelpers::WebViewHelper web_view_helper;
+  frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view =
       web_view_helper.InitializeAndLoad(base_url_ + "long_scroll.html");
   web_view->Resize(WebSize(1000, 1000));

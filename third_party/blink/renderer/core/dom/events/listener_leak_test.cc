@@ -102,7 +102,7 @@ class ListenerLeakTest : public testing::Test {
   }
 
  protected:
-  FrameTestHelpers::WebViewHelper web_view_helper;
+  frame_test_helpers::WebViewHelper web_view_helper;
 };
 
 // This test tries to create a reference cycle between node and its listener.

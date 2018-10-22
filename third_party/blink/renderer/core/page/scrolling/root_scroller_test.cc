@@ -79,7 +79,7 @@ class RootScrollerTest : public testing::Test,
   }
 
   WebViewImpl* Initialize(const std::string& page_name,
-                          FrameTestHelpers::TestWebViewClient* client) {
+                          frame_test_helpers::TestWebViewClient* client) {
     return InitializeInternal(base_url_ + page_name, client);
   }
 
@@ -175,8 +175,9 @@ class RootScrollerTest : public testing::Test,
     return WebCoalescedInputEvent(event);
   }
 
-  WebViewImpl* InitializeInternal(const std::string& url,
-                                  FrameTestHelpers::TestWebViewClient* client) {
+  WebViewImpl* InitializeInternal(
+      const std::string& url,
+      frame_test_helpers::TestWebViewClient* client) {
     helper_.InitializeAndLoad(url, nullptr, client, nullptr,
                               &ConfigureSettings);
 
@@ -190,7 +191,7 @@ class RootScrollerTest : public testing::Test,
   }
 
   std::string base_url_;
-  FrameTestHelpers::WebViewHelper helper_;
+  frame_test_helpers::WebViewHelper helper_;
   RuntimeEnabledFeatures::Backup features_backup_;
 };
 
@@ -235,7 +236,8 @@ TEST_F(RootScrollerTest, defaultEffectiveRootScrollerIsDocumentNode) {
             EffectiveRootScroller(MainFrame()->GetDocument()));
 }
 
-class OverscrollTestWebViewClient : public FrameTestHelpers::TestWebViewClient {
+class OverscrollTestWebViewClient
+    : public frame_test_helpers::TestWebViewClient {
  public:
   MOCK_METHOD5(DidOverscroll,
                void(const WebFloatSize&,
@@ -614,21 +616,21 @@ TEST_F(RootScrollerTest, RemoveCurrentRootScroller) {
   Initialize();
 
   WebURL base_url = url_test_helpers::ToKURL("http://www.test.com/");
-  FrameTestHelpers::LoadHTMLString(GetWebView()->MainFrameImpl(),
-                                   "<!DOCTYPE html>"
-                                   "<style>"
-                                   "  body {"
-                                   "    margin: 0px;"
-                                   "  }"
-                                   "  #container {"
-                                   "    width: 100%;"
-                                   "    height: 100%;"
-                                   "    position: absolute;"
-                                   "    overflow: auto;"
-                                   "  }"
-                                   "</style>"
-                                   "<div id='container'></div>",
-                                   base_url);
+  frame_test_helpers::LoadHTMLString(GetWebView()->MainFrameImpl(),
+                                     "<!DOCTYPE html>"
+                                     "<style>"
+                                     "  body {"
+                                     "    margin: 0px;"
+                                     "  }"
+                                     "  #container {"
+                                     "    width: 100%;"
+                                     "    height: 100%;"
+                                     "    position: absolute;"
+                                     "    overflow: auto;"
+                                     "  }"
+                                     "</style>"
+                                     "<div id='container'></div>",
+                                     base_url);
 
   RootScrollerController& controller =
       MainFrame()->GetDocument()->GetRootScrollerController();
@@ -660,21 +662,21 @@ TEST_F(RootScrollerTest, AlwaysCreateCompositedScrollingLayers) {
   Initialize();
 
   WebURL base_url = url_test_helpers::ToKURL("http://www.test.com/");
-  FrameTestHelpers::LoadHTMLString(GetWebView()->MainFrameImpl(),
-                                   "<!DOCTYPE html>"
-                                   "<style>"
-                                   "  body {"
-                                   "    margin: 0px;"
-                                   "  }"
-                                   "  #container {"
-                                   "    width: 100%;"
-                                   "    height: 100%;"
-                                   "    position: absolute;"
-                                   "    overflow: auto;"
-                                   "  }"
-                                   "</style>"
-                                   "<div id='container'></div>",
-                                   base_url);
+  frame_test_helpers::LoadHTMLString(GetWebView()->MainFrameImpl(),
+                                     "<!DOCTYPE html>"
+                                     "<style>"
+                                     "  body {"
+                                     "    margin: 0px;"
+                                     "  }"
+                                     "  #container {"
+                                     "    width: 100%;"
+                                     "    height: 100%;"
+                                     "    position: absolute;"
+                                     "    overflow: auto;"
+                                     "  }"
+                                     "</style>"
+                                     "<div id='container'></div>",
+                                     base_url);
 
   GetWebView()->ResizeWithBrowserControls(IntSize(400, 400), 50, 0, true);
   MainFrameView()->UpdateAllLifecyclePhases();
@@ -740,7 +742,7 @@ TEST_F(RootScrollerTest, RemoteIFrame) {
   Initialize("root-scroller-iframe.html");
 
   // Initialization: Replace the iframe with a remote frame.
-  MainWebFrame()->FirstChild()->Swap(FrameTestHelpers::CreateRemote());
+  MainWebFrame()->FirstChild()->Swap(frame_test_helpers::CreateRemote());
 
   // Set the root scroller in the local main frame to the iframe (which is
   // remote). Make sure we don't promote a remote frame to the root scroller.
@@ -767,7 +769,7 @@ TEST_F(RootScrollerTest, IFrameSwapToRemote) {
 
   // Swap in a remote frame. Make sure we revert back to the document.
   {
-    MainWebFrame()->FirstChild()->Swap(FrameTestHelpers::CreateRemote());
+    MainWebFrame()->FirstChild()->Swap(frame_test_helpers::CreateRemote());
     MainFrameView()->UpdateAllLifecyclePhases();
     EXPECT_EQ(MainFrame()->GetDocument(),
               EffectiveRootScroller(MainFrame()->GetDocument()));
@@ -796,14 +798,14 @@ TEST_F(RootScrollerTest, RemoteMainFrame) {
   // Initialization: Set the main frame to be a RemoteFrame and add a local
   // child.
   {
-    WebRemoteFrameImpl* remote_main_frame = FrameTestHelpers::CreateRemote();
+    WebRemoteFrameImpl* remote_main_frame = frame_test_helpers::CreateRemote();
     helper_.LocalMainFrame()->Swap(remote_main_frame);
     remote_main_frame->SetReplicatedOrigin(
         WebSecurityOrigin(SecurityOrigin::CreateUniqueOpaque()), false);
-    local_frame = FrameTestHelpers::CreateLocalChild(*remote_main_frame);
+    local_frame = frame_test_helpers::CreateLocalChild(*remote_main_frame);
 
-    FrameTestHelpers::LoadFrame(local_frame,
-                                base_url_ + "root-scroller-child.html");
+    frame_test_helpers::LoadFrame(local_frame,
+                                  base_url_ + "root-scroller-child.html");
     widget = local_frame->FrameWidget();
     widget->Resize(WebSize(400, 400));
   }
@@ -858,22 +860,22 @@ TEST_F(RootScrollerTest, NonMainLocalRootLifecycle) {
   {
     Initialize();
     WebURL base_url = url_test_helpers::ToKURL("http://www.test.com/");
-    FrameTestHelpers::LoadHTMLString(GetWebView()->MainFrameImpl(),
-                                     R"HTML(
+    frame_test_helpers::LoadHTMLString(GetWebView()->MainFrameImpl(),
+                                       R"HTML(
                                               <!DOCTYPE html>
                                               <iframe></iframe>
                                           )HTML",
-                                     base_url);
+                                       base_url);
     MainFrameView()->UpdateAllLifecyclePhases();
 
-    WebRemoteFrameImpl* remote_frame = FrameTestHelpers::CreateRemote();
+    WebRemoteFrameImpl* remote_frame = frame_test_helpers::CreateRemote();
     WebLocalFrameImpl* child =
         ToWebLocalFrameImpl(helper_.LocalMainFrame()->FirstChild());
     child->Swap(remote_frame);
     remote_frame->SetReplicatedOrigin(
         WebSecurityOrigin(SecurityOrigin::CreateUniqueOpaque()), false);
 
-    non_main_local_root = FrameTestHelpers::CreateLocalChild(*remote_frame);
+    non_main_local_root = frame_test_helpers::CreateLocalChild(*remote_frame);
     ASSERT_EQ(non_main_local_root->LocalRoot(), non_main_local_root);
     ASSERT_TRUE(non_main_local_root->Parent());
   }
@@ -1001,24 +1003,24 @@ TEST_F(RootScrollerTest, TopControlsAdjustmentAppliedToRootScroller) {
   Initialize();
 
   WebURL base_url = url_test_helpers::ToKURL("http://www.test.com/");
-  FrameTestHelpers::LoadHTMLString(GetWebView()->MainFrameImpl(),
-                                   "<!DOCTYPE html>"
-                                   "<style>"
-                                   "  body, html {"
-                                   "    width: 100%;"
-                                   "    height: 100%;"
-                                   "    margin: 0px;"
-                                   "  }"
-                                   "  #container {"
-                                   "    width: 100%;"
-                                   "    height: 100%;"
-                                   "    overflow: auto;"
-                                   "  }"
-                                   "</style>"
-                                   "<div id='container'>"
-                                   "  <div style='height:1000px'>test</div>"
-                                   "</div>",
-                                   base_url);
+  frame_test_helpers::LoadHTMLString(GetWebView()->MainFrameImpl(),
+                                     "<!DOCTYPE html>"
+                                     "<style>"
+                                     "  body, html {"
+                                     "    width: 100%;"
+                                     "    height: 100%;"
+                                     "    margin: 0px;"
+                                     "  }"
+                                     "  #container {"
+                                     "    width: 100%;"
+                                     "    height: 100%;"
+                                     "    overflow: auto;"
+                                     "  }"
+                                     "</style>"
+                                     "<div id='container'>"
+                                     "  <div style='height:1000px'>test</div>"
+                                     "</div>",
+                                     base_url);
 
   GetWebView()->ResizeWithBrowserControls(IntSize(400, 400), 50, 0, true);
   MainFrameView()->UpdateAllLifecyclePhases();

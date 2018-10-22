@@ -76,14 +76,14 @@ class MHTMLLoadingTest : public testing::Test {
   }
 
   void LoadURLInTopFrame(const WebURL& url) {
-    FrameTestHelpers::LoadFrame(helper_.GetWebView()->MainFrameImpl(),
-                                url.GetString().Utf8().data());
+    frame_test_helpers::LoadFrame(helper_.GetWebView()->MainFrameImpl(),
+                                  url.GetString().Utf8().data());
   }
 
   Page* GetPage() const { return helper_.GetWebView()->GetPage(); }
 
  private:
-  FrameTestHelpers::WebViewHelper helper_;
+  frame_test_helpers::WebViewHelper helper_;
   ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
 };
 

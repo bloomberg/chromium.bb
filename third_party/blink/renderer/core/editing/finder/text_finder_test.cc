@@ -49,7 +49,7 @@ class TextFinderTest : public testing::Test {
                                      int end_offset);
 
  private:
-  FrameTestHelpers::WebViewHelper web_view_helper_;
+  frame_test_helpers::WebViewHelper web_view_helper_;
   Persistent<Document> document_;
   Persistent<TextFinder> text_finder_;
 };

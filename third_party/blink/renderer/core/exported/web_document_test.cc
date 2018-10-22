@@ -31,7 +31,7 @@
 
 namespace blink {
 
-using blink::FrameTestHelpers::WebViewHelper;
+using blink::frame_test_helpers::WebViewHelper;
 using blink::url_test_helpers::ToKURL;
 
 const char kDefaultOrigin[] = "https://example.test/";

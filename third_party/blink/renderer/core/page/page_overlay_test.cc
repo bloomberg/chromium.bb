@@ -88,7 +88,7 @@ class PageOverlayTest : public testing::Test {
   void RunPageOverlayTestWithAcceleratedCompositing();
 
  private:
-  FrameTestHelpers::WebViewHelper helper_;
+  frame_test_helpers::WebViewHelper helper_;
 };
 
 template <bool (*getter)(), void (*setter)(bool)>

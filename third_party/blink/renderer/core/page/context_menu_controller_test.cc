@@ -32,7 +32,7 @@ class MockWebMediaPlayerForContextMenu : public EmptyWebMediaPlayer {
   }
 };
 
-class TestWebFrameClientImpl : public FrameTestHelpers::TestWebFrameClient {
+class TestWebFrameClientImpl : public frame_test_helpers::TestWebFrameClient {
  public:
   void ShowContextMenu(const WebContextMenuData& data) override {
     context_menu_data_ = data;
@@ -92,7 +92,7 @@ class ContextMenuControllerTest : public testing::Test {
 
  private:
   TestWebFrameClientImpl web_frame_client_;
-  FrameTestHelpers::WebViewHelper web_view_helper_;
+  frame_test_helpers::WebViewHelper web_view_helper_;
 };
 
 TEST_F(ContextMenuControllerTest, VideoNotLoaded) {

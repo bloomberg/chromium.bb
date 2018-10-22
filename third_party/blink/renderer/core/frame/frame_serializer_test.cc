@@ -112,8 +112,9 @@ class FrameSerializerTest : public testing::Test,
   }
 
   void Serialize(const char* url) {
-    FrameTestHelpers::LoadFrame(helper_.GetWebView()->MainFrameImpl(),
-                                KURL(base_url_, url).GetString().Utf8().data());
+    frame_test_helpers::LoadFrame(
+        helper_.GetWebView()->MainFrameImpl(),
+        KURL(base_url_, url).GetString().Utf8().data());
     FrameSerializer serializer(resources_, *this);
     Frame* frame = helper_.LocalMainFrame()->GetFrame();
     for (; frame; frame = frame->Tree().TraverseNext()) {
@@ -187,7 +188,7 @@ class FrameSerializerTest : public testing::Test,
     return skip_urls_.Contains(url);
   }
 
-  FrameTestHelpers::WebViewHelper helper_;
+  frame_test_helpers::WebViewHelper helper_;
   std::string folder_;
   KURL base_url_;
   Deque<SerializedResource> resources_;

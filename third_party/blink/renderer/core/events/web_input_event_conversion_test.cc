@@ -117,7 +117,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
   const std::string file_name("fixed_layout.html");
 
   RegisterMockedURL(base_url, file_name);
-  FrameTestHelpers::WebViewHelper web_view_helper;
+  frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view =
       web_view_helper.InitializeAndLoad(base_url + file_name);
   web_view->GetSettings()->SetViewportEnabled(true);
@@ -332,7 +332,7 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
   const std::string file_name("fixed_layout.html");
 
   RegisterMockedURL(base_url, file_name);
-  FrameTestHelpers::WebViewHelper web_view_helper;
+  frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view =
       web_view_helper.InitializeAndLoad(base_url + file_name);
   web_view->GetSettings()->SetViewportEnabled(true);
@@ -595,7 +595,7 @@ TEST(WebInputEventConversionTest, InputEventsConversions) {
   const std::string file_name("fixed_layout.html");
 
   RegisterMockedURL(base_url, file_name);
-  FrameTestHelpers::WebViewHelper web_view_helper;
+  frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view =
       web_view_helper.InitializeAndLoad(base_url + file_name);
   int page_width = 640;
@@ -632,7 +632,7 @@ TEST(WebInputEventConversionTest, VisualViewportOffset) {
   const std::string file_name("fixed_layout.html");
 
   RegisterMockedURL(base_url, file_name);
-  FrameTestHelpers::WebViewHelper web_view_helper;
+  frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view =
       web_view_helper.InitializeAndLoad(base_url + file_name);
   int page_width = 640;
@@ -730,7 +730,7 @@ TEST(WebInputEventConversionTest, ElasticOverscroll) {
   const std::string file_name("fixed_layout.html");
 
   RegisterMockedURL(base_url, file_name);
-  FrameTestHelpers::WebViewHelper web_view_helper;
+  frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view =
       web_view_helper.InitializeAndLoad(base_url + file_name);
   int page_width = 640;
@@ -805,7 +805,7 @@ TEST(WebInputEventConversionTest, ElasticOverscrollWithPageReload) {
   const std::string file_name("fixed_layout.html");
 
   RegisterMockedURL(base_url, file_name);
-  FrameTestHelpers::WebViewHelper web_view_helper;
+  frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view =
       web_view_helper.InitializeAndLoad(base_url + file_name);
   int page_width = 640;
@@ -816,7 +816,8 @@ TEST(WebInputEventConversionTest, ElasticOverscrollWithPageReload) {
   gfx::Vector2dF elastic_overscroll(10, -20);
   web_view->ApplyViewportChanges(
       {gfx::Vector2dF(), elastic_overscroll, 1.0f, 0.0f});
-  FrameTestHelpers::ReloadFrame(web_view_helper.GetWebView()->MainFrameImpl());
+  frame_test_helpers::ReloadFrame(
+      web_view_helper.GetWebView()->MainFrameImpl());
   LocalFrameView* view = ToLocalFrame(web_view->GetPage()->MainFrame())->View();
 
   // Just elastic overscroll.

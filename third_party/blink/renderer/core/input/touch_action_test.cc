@@ -64,7 +64,7 @@ using blink::test::RunPendingTasks;
 namespace blink {
 
 class TouchActionTrackingWebWidgetClient
-    : public FrameTestHelpers::TestWebWidgetClient {
+    : public frame_test_helpers::TestWebWidgetClient {
  public:
   TouchActionTrackingWebWidgetClient()
       : action_set_count_(0), action_(TouchAction::kTouchActionAuto) {}
@@ -121,7 +121,7 @@ class TouchActionTest : public testing::Test {
                      TouchActionTrackingWebWidgetClient&);
 
   std::string base_url_;
-  FrameTestHelpers::WebViewHelper web_view_helper_;
+  frame_test_helpers::WebViewHelper web_view_helper_;
 };
 
 void TouchActionTest::RunTouchActionTest(std::string file) {
