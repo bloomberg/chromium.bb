@@ -308,7 +308,6 @@ jumbo_component("base") {
     "win/window_event_target.h",
     "window_open_disposition.cc",
     "window_open_disposition.h",
-    "work_area_watcher_observer.h",
   ]
 
   if (is_posix) {
