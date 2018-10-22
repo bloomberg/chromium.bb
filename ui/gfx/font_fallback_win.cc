@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -145,15 +146,19 @@ CachedFontLinkSettings* CachedFontLinkSettings::GetInstance() {
 
 const std::vector<Font>* CachedFontLinkSettings::GetLinkedFonts(
     const Font& font) {
+  SCOPED_UMA_HISTOGRAM_LONG_TIMER("FontFallback.GetLinkedFonts.Timing");
   const std::string& font_name = font.GetFontName();
   std::map<std::string, std::vector<Font> >::const_iterator it =
       cached_linked_fonts_.find(font_name);
   if (it != cached_linked_fonts_.end())
     return &it->second;
 
+  SCOPED_UMA_HISTOGRAM_LONG_TIMER(
+      "FontFallback.GetLinkedFonts.CacheMissTiming");
   std::vector<Font>* linked_fonts = &cached_linked_fonts_[font_name];
-
   QueryLinkedFontsFromRegistry(font, &cached_system_fonts_, linked_fonts);
+  UMA_HISTOGRAM_COUNTS_100("FontFallback.GetLinkedFonts.FontCount",
+                           linked_fonts->size());
   return linked_fonts;
 }
 
