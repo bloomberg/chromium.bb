@@ -171,11 +171,11 @@ camera.App.prototype.start = function() {
     this.browserView_.prepare();
     model.load([this.cameraView_.galleryButton, this.browserView_]);
 
-    camera.Tooltip.initialize();
+    camera.tooltip.setup();
     camera.util.makeElementsUnfocusableByMouse();
     camera.util.setupElementsAriaLabel();
     this.router_.navigate(camera.Router.ViewIdentifier.CAMERA);
-  }).catch(error => {
+  }).catch((error) => {
     console.error(error);
     if (error && error.exitApp) {
       chrome.app.window.current().close();
