@@ -789,7 +789,7 @@ DirectoryModel.prototype.replaceDirectoryContents_ = function(dirContents) {
 
 /**
  * Callback when an entry is changed.
- * @param {Event} event Entry change event.
+ * @param {EntriesChangedEvent} event Entry change event.
  * @private
  */
 DirectoryModel.prototype.onEntriesChanged_ = function(event) {
