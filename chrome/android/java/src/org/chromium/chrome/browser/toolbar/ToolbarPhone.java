@@ -47,7 +47,6 @@ import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.PopupWindow.OnDismissListener;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -60,8 +59,6 @@ import org.chromium.chrome.browser.compositor.Invalidator;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
-import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omnibox.LocationBar;
@@ -78,7 +75,6 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.animation.CancelAwareAnimatorListener;
-import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.LocalizationUtils;
@@ -264,18 +260,6 @@ public class ToolbarPhone extends ToolbarLayout
     private boolean mIsHomeButtonEnabled;
 
     private LayoutUpdateHost mLayoutUpdateHost;
-
-    /** Callout for the tab switcher button. */
-    private TextBubble mTabSwitcherCallout;
-
-    /** Whether or not we've checked if the TabSwitcherCallout needs to be shown. */
-    private boolean mHasCheckedIfTabSwitcherCalloutIsNecessary;
-
-    /** Manages when the Toolbar hides and unhides. */
-    private BrowserStateBrowserControlsVisibilityDelegate mControlsVisibilityDelegate;
-
-    /** Token held when the TabSwitcherCallout is displayed to prevent the Toolbar from hiding. */
-    private int mFullscreenCalloutToken = FullscreenManager.INVALID_TOKEN;
 
     /** The vertical inset of the location bar background. */
     private int mLocationBarBackgroundVerticalInset;
@@ -509,12 +493,6 @@ public class ToolbarPhone extends ToolbarLayout
         mNewTabButton.setOnLongClickListener(this);
     }
 
-    @Override
-    protected void onMenuShown() {
-        dismissTabSwitcherCallout();
-        super.onMenuShown();
-    }
-
     /**
      * Sets up click and key listeners once we have native library available to handle clicks.
      */
@@ -621,7 +599,6 @@ public class ToolbarPhone extends ToolbarLayout
         // and the listener is setup.
         if (mToggleTabStackButton != null && mToggleTabStackButton.isClickable()
                 && mTabSwitcherListener != null) {
-            dismissTabSwitcherCallout();
             cancelAppMenuUpdateBadgeAnimation();
             mTabSwitcherListener.onClick(mToggleTabStackButton);
         }
@@ -1966,11 +1943,6 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     @Override
-    public void destroy() {
-        dismissTabSwitcherCallout();
-    }
-
-    @Override
     public void setOnTabSwitcherClickHandler(OnClickListener listener) {
         mTabSwitcherListener = listener;
     }
@@ -2175,8 +2147,6 @@ public class ToolbarPhone extends ToolbarLayout
         super.onUrlFocusChange(hasFocus);
 
         triggerUrlFocusAnimation(hasFocus);
-
-        if (hasFocus) dismissTabSwitcherCallout();
     }
 
     protected void triggerUrlFocusAnimation(final boolean hasFocus) {
@@ -2292,13 +2262,6 @@ public class ToolbarPhone extends ToolbarLayout
         super.onTabOrModelChanged();
         updateNtpAnimationState();
         updateVisualsForToolbarState();
-
-        if (mHasCheckedIfTabSwitcherCalloutIsNecessary) {
-            dismissTabSwitcherCallout();
-        } else {
-            mHasCheckedIfTabSwitcherCalloutIsNecessary = true;
-            showTabSwitcherCalloutIfNecessary();
-        }
     }
 
     private static boolean isVisualStateValidForBrandColorTransition(@VisualState int state) {
@@ -2905,47 +2868,12 @@ public class ToolbarPhone extends ToolbarLayout
         ((BitmapDrawable) mTabSwitcherAnimationMenuBadgeLightDrawable).setGravity(Gravity.CENTER);
     }
 
-    @Override
-    public void setBrowserControlsVisibilityDelegate(
-            BrowserStateBrowserControlsVisibilityDelegate controlsVisibilityDelegate) {
-        super.setBrowserControlsVisibilityDelegate(controlsVisibilityDelegate);
-        mControlsVisibilityDelegate = controlsVisibilityDelegate;
-    }
-
     private void setUseLightDrawablesForTextureCapture() {
         int currentPrimaryColor = getToolbarDataProvider().getPrimaryColor();
         mUseLightDrawablesForTextureCapture =
                 isIncognito()
                 || (currentPrimaryColor != 0
                            && ColorUtils.shouldUseLightForegroundOnBackground(currentPrimaryColor));
-    }
-
-    private void dismissTabSwitcherCallout() {
-        if (mTabSwitcherCallout != null) mTabSwitcherCallout.dismiss();
-    }
-
-    private void showTabSwitcherCalloutIfNecessary() {
-        assert mTabSwitcherCallout == null;
-        mTabSwitcherCallout =
-                TabSwitcherCallout.showIfNecessary(getContext(), mToggleTabStackButton);
-        if (mTabSwitcherCallout == null) return;
-
-        mTabSwitcherCallout.addOnDismissListener(new OnDismissListener() {
-            @Override
-            public void onDismiss() {
-                if (mControlsVisibilityDelegate != null) {
-                    mControlsVisibilityDelegate.releasePersistentShowingToken(
-                            mFullscreenCalloutToken);
-                }
-                mTabSwitcherCallout = null;
-            }
-        });
-
-        if (mControlsVisibilityDelegate != null) {
-            mFullscreenCalloutToken =
-                    mControlsVisibilityDelegate.showControlsPersistentAndClearOldToken(
-                            mFullscreenCalloutToken);
-        }
     }
 
     /**
