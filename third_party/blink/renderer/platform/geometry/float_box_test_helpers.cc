@@ -30,7 +30,7 @@
 const static float kTestEpsilon = 1e-6;
 
 namespace blink {
-namespace FloatBoxTest {
+namespace float_box_test {
 
 bool ApproximatelyEqual(const float& a, const float& b) {
   return geometry_test::ApproximatelyEqual(a, b, kTestEpsilon);
@@ -77,5 +77,5 @@ testing::AssertionResult AssertContains(const char* expr,
   return testing::AssertionSuccess();
 }
 
-}  // namespace FloatBoxTest
+}  // namespace float_box_test
 }  // namespace blink
