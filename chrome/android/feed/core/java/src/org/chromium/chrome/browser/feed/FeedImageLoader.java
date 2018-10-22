@@ -143,6 +143,9 @@ public class FeedImageLoader implements ImageLoaderApi {
     }
 
     /**
+     * Translate {@Link BundledAssets} to android drawable resource. This method only translate
+     * resource name defined in {@Link BundledAssets}.
+     *
      * @param resourceName The name of the drawable asset.
      * @return The id of the drawable asset. May be 0 if it could not be found.
      */
@@ -152,10 +155,9 @@ public class FeedImageLoader implements ImageLoaderApi {
                 return R.drawable.offline_pin_round;
             case BundledAssets.VIDEO_INDICATOR_BADGE:
                 return R.drawable.ic_play_circle_filled_grey;
-            default:
-                return mActivityContext.getResources().getIdentifier(
-                        resourceName, DRAWABLE_RESOURCE_TYPE, mActivityContext.getPackageName());
         }
+
+        return 0;
     }
 
     /**

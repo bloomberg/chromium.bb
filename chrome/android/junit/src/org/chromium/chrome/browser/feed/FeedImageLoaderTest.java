@@ -51,7 +51,10 @@ public class FeedImageLoaderTest {
     private static final String HTTP_STRING3 = "http://www.test3.com";
 
     private static final String ASSET_PREFIX = "asset://";
-    private static final String ASSET_STRING = ASSET_PREFIX + "logo_avatar_anonymous";
+    private static final String OFFLINE_ASSET_STRING =
+            ASSET_PREFIX + BundledAssets.OFFLINE_INDICATOR_BADGE;
+    private static final String VIDEO_ASSET_STRING =
+            ASSET_PREFIX + BundledAssets.VIDEO_INDICATOR_BADGE;
     private static final String BAD_ASSET_STRING = ASSET_PREFIX + "does_not_exist";
 
     private static final String OVERLAY_IMAGE_START =
@@ -160,8 +163,15 @@ public class FeedImageLoaderTest {
 
     @Test
     @SmallTest
-    public void testLoadDrawableAsset() {
-        loadDrawable(ASSET_STRING);
+    public void testLoadOfflineBadge() {
+        loadDrawable(OFFLINE_ASSET_STRING);
+        verify(mConsumer, times(1)).accept(AdditionalMatchers.not(eq(null)));
+    }
+
+    @Test
+    @SmallTest
+    public void testLoadVideoBadge() {
+        loadDrawable(VIDEO_ASSET_STRING);
         verify(mConsumer, times(1)).accept(AdditionalMatchers.not(eq(null)));
     }
 
@@ -175,14 +185,14 @@ public class FeedImageLoaderTest {
     @Test
     @SmallTest
     public void testLoadDrawableAssetFallback() {
-        loadDrawable(BAD_ASSET_STRING, ASSET_STRING);
+        loadDrawable(BAD_ASSET_STRING, OFFLINE_ASSET_STRING);
         verify(mConsumer, times(1)).accept(AdditionalMatchers.not(eq(null)));
     }
 
     @Test
     @SmallTest
     public void testLoadDrawableAssetFirst() {
-        loadDrawable(ASSET_STRING, HTTP_STRING1);
+        loadDrawable(VIDEO_ASSET_STRING, HTTP_STRING1);
         verify(mBridge, times(0))
                 .fetchImage(eq(HTTP_STRING1), eq(ImageLoaderApi.DIMENSION_UNKNOWN),
                         eq(ImageLoaderApi.DIMENSION_UNKNOWN), any());
@@ -256,19 +266,5 @@ public class FeedImageLoaderTest {
     @SmallTest
     public void overlayImageTest_BadDirection() {
         loadDrawable(OVERLAY_IMAGE_BAD_DIRECTION);
-    }
-
-    @Test
-    @SmallTest
-    public void testLoadOfflineBadge() {
-        loadDrawable(ASSET_PREFIX + BundledAssets.OFFLINE_INDICATOR_BADGE);
-        verify(mConsumer, times(1)).accept(AdditionalMatchers.not(eq(null)));
-    }
-
-    @Test
-    @SmallTest
-    public void testLoadVideoBadge() {
-        loadDrawable(ASSET_PREFIX + BundledAssets.VIDEO_INDICATOR_BADGE);
-        verify(mConsumer, times(1)).accept(AdditionalMatchers.not(eq(null)));
     }
 }
