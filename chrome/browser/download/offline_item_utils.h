@@ -30,6 +30,11 @@ class OfflineItemUtils {
   ConvertDownloadInterruptReasonToFailState(
       download::DownloadInterruptReason reason);
 
+  // Converts offline_items_collection::FailState to DownloadInterruptReason.
+  static download::DownloadInterruptReason
+  ConvertFailStateToDownloadInterruptReason(
+      offline_items_collection::FailState fail_state);
+
   // Gets the short text to display for a offline_items_collection::FailState.
   static base::string16 GetFailStateMessage(
       offline_items_collection::FailState fail_state);
