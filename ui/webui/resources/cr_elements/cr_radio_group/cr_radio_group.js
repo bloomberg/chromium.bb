@@ -13,14 +13,6 @@
         radio.style.display != 'none' && radio.style.visibility != 'hidden';
   }
 
-  /**
-   * @param {!EventTarget} target
-   * @return {boolean}
-   */
-  function isRadioButton(target) {
-    return /^(cr|controlled)-radio-button$/i.test(target.tagName);
-  }
-
   Polymer({
     is: 'cr-radio-group',
 
@@ -33,8 +25,17 @@
 
       selected: {
         type: String,
-        value: '',
         notify: true,
+      },
+
+      selectable: {
+        type: String,
+        value: 'cr-radio-button, controlled-radio-button',
+      },
+
+      selectableRegExp_: {
+        type: Object,
+        computed: 'computeSelectableRegExp_(selectable)',
       },
     },
 
@@ -108,12 +109,28 @@
 
     /** @override */
     focus: function() {
-      if (!this.disabled) {
-        const radio =
-            this.buttons_.find(radio => radio.getAttribute('tabindex') == '0');
-        if (radio)
-          radio.focus();
-      }
+      if (this.disabled || !this.buttons_)
+        return;
+
+      const radio =
+          this.buttons_.find(radio => radio.getAttribute('tabindex') == '0');
+      if (radio)
+        radio.focus();
+    },
+
+    /** @private */
+    computeSelectableRegExp_: function() {
+      const tags = this.selectable.split(', ').join('|');
+      return new RegExp(`^(${tags})$`, 'i');
+    },
+
+    /**
+     * @param {!EventTarget} target
+     * @return {boolean}
+     * @private
+     */
+    isRadioButton_: function(target) {
+      return this.selectableRegExp_.test(target.tagName);
     },
 
     /**
@@ -167,7 +184,7 @@
     onClick_: function(event) {
       if (event.path.some(target => /^a$/i.test(target.tagName)))
         return;
-      const target = event.path.find(isRadioButton);
+      const target = event.path.find(n => this.isRadioButton_(n));
       const name = `${target.name}`;
       if (target && !target.disabled && this.selected != name)
         this.selected = name;
@@ -178,9 +195,9 @@
       // TODO(crbug.com/738611): After migration to Polymer 2, remove
       // Polymer 1 references.
       this.buttons_ = Polymer.DomIf ?
-          this.$$('slot').assignedNodes({flatten: true}).filter(isRadioButton) :
-          this.queryAllEffectiveChildren(
-              'cr-radio-button, controlled-radio-button');
+          this.$$('slot').assignedNodes({flatten: true})
+              .filter(n => this.isRadioButton_(n)) :
+          this.queryAllEffectiveChildren(this.selectable);
       this.buttonEventTracker_.removeAll();
       this.buttons_.forEach(el => {
         this.buttonEventTracker_.add(
@@ -193,11 +210,12 @@
 
     /** @private */
     update_: function() {
-      if (!this.buttons_ || this.selected == undefined)
+      if (!this.buttons_)
         return;
       let noneMadeFocusable = true;
       this.buttons_.forEach(radio => {
-        radio.checked = radio.name == this.selected;
+        radio.checked = this.selected != undefined &&
+            radio.name == this.selected;
         const canBeFocused =
             radio.checked && !this.disabled && isEnabled(radio);
         noneMadeFocusable &= !canBeFocused;

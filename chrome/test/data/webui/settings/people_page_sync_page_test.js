@@ -651,14 +651,17 @@ cr.define('settings_people_page_sync_page', function() {
 
         Polymer.dom.flush();
 
-        // Need to re-retrieve this, as a different show passphrase radio button
-        // is shown once |syncPrefs.fullEncryptionBody| is non-empty.
-        encryptWithPassphrase =
-            syncPage.$$('cr-radio-button[name="encrypt-with-passphrase"]');
+        return test_util.waitForRender(syncPage).then(() => {
+          // Need to re-retrieve this, as a different show passphrase radio
+          // button is shown once |syncPrefs.fullEncryptionBody| is non-empty.
+          encryptWithPassphrase =
+              syncPage.$$('cr-radio-button[name="encrypt-with-passphrase"]');
 
-        // Assert that the radio boxes are disabled after encryption enabled.
-        assertTrue(encryptWithGoogle.disabled);
-        assertTrue(encryptWithPassphrase.disabled);
+          // Assert that the radio boxes are disabled after encryption enabled.
+          assertTrue(syncPage.$$('cr-radio-group').disabled);
+          assertEquals('-1', encryptWithGoogle.getAttribute('tabindex'));
+          assertEquals('-1', encryptWithPassphrase.getAttribute('tabindex'));
+        });
       }
       return browserProxy.whenCalled('setSyncEncryption').then(verifyPrefs);
     });
@@ -834,8 +837,9 @@ cr.define('settings_people_page_sync_page', function() {
         Polymer.dom.flush();
 
         // Verify that the encryption radio boxes are shown but disabled.
-        assertTrue(encryptWithGoogle.disabled);
-        assertTrue(encryptWithPassphrase.disabled);
+        assertTrue(syncPage.$$('cr-radio-group').disabled);
+        assertEquals('-1', encryptWithGoogle.getAttribute('tabindex'));
+        assertEquals('-1', encryptWithPassphrase.getAttribute('tabindex'));
       });
     });
 

@@ -147,8 +147,8 @@ Polymer({
    * radio group representing the pref.
    * @private
    */
-  onSmartLockSignInEnabledChanged_: function(event) {
-    const radioGroup = event.target;
+  onSmartLockSignInEnabledChanged_: function() {
+    const radioGroup = this.$$('cr-radio-group');
     const enabled = radioGroup.selected == settings.SignInEnabledState.ENABLED;
 
     if (!enabled) {

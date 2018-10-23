@@ -529,11 +529,12 @@ Polymer({
 
   /**
    * Called when the encryption
+   * @param {!Event} event
    * @private
    */
   onEncryptionRadioSelectionChanged_: function(event) {
     this.creatingNewPassphrase_ =
-        event.target.selected == RadioButtonNames.ENCRYPT_WITH_PASSPHRASE;
+        event.detail.value == RadioButtonNames.ENCRYPT_WITH_PASSPHRASE;
   },
 
   /**

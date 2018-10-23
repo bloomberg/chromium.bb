@@ -102,7 +102,7 @@ suite('cr-radio-group', () => {
   });
 
   test('mouse event', () => {
-    assertEquals('', radioGroup.selected);
+    assertEquals(undefined, radioGroup.selected);
     radioGroup.querySelector('[name="2"]').click();
     checkSelected(2);
   });
