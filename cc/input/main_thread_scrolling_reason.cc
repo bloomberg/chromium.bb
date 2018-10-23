@@ -47,8 +47,6 @@ void MainThreadScrollingReason::AddToTracedValue(
     traced_value.AppendString("Has transform and LCD text");
   if (reasons & kBackgroundNotOpaqueInRectAndLCDText)
     traced_value.AppendString("Background is not opaque in rect and LCD text");
-  if (reasons & kHasBorderRadius)
-    traced_value.AppendString("Has border radius");
   if (reasons & kHasClipRelatedProperty)
     traced_value.AppendString("Has clip related property");
   if (reasons & kHasBoxShadowFromNonRootLayer)
