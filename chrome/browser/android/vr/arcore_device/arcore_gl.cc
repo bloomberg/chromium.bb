@@ -191,22 +191,8 @@ void ArCoreGl::ProduceFrame(
   DCHECK(IsOnGlThread());
   DCHECK(is_initialized_);
 
-  if (transfer_size_ != frame_size || display_rotation_ != display_rotation) {
-    // Set display geometry before calling Update. It's a pending request that
-    // applies to the next frame.
-    arcore_->SetDisplayGeometry(frame_size, display_rotation);
-
-    // Store the passed in values to ensure that we can update them only if they
-    // change.
-    transfer_size_ = frame_size;
-    display_rotation_ = display_rotation;
-
-    // Tell the uvs to recalculate on the next animation frame, by which time
-    // SetDisplayGeometry will have set the new values in arcore_.
-    should_recalculate_uvs_ = true;
-  }
-
-  // Check if the frame_size and display_rotation updated last frame.
+  // Check if the frame_size and display_rotation updated last frame. If yes,
+  // apply the update for this frame.
   if (should_recalculate_uvs_) {
     // Get the UV transform matrix from ArCore's UV transform.
     std::vector<float> uvs_transformed =
@@ -220,6 +206,24 @@ void ArCoreGl::ProduceFrame(
     constexpr float depth_far = 1000.f;
     projection_ = arcore_->GetProjectionMatrix(depth_near, depth_far);
     should_recalculate_uvs_ = false;
+  }
+
+  // Now check if the frame_size or display_rotation neds to be updated
+  // for the next frame. This must happen after the should_recalculate_uvs_
+  // check above to ensure it executes with the needed one-frame delay.
+  if (transfer_size_ != frame_size || display_rotation_ != display_rotation) {
+    // Set display geometry before calling Update. It's a pending request that
+    // applies to the next frame.
+    arcore_->SetDisplayGeometry(frame_size, display_rotation);
+
+    // Store the passed in values to ensure that we can update them only if they
+    // change.
+    transfer_size_ = frame_size;
+    display_rotation_ = display_rotation;
+
+    // Tell the uvs to recalculate on the next animation frame, by which time
+    // SetDisplayGeometry will have set the new values in arcore_.
+    should_recalculate_uvs_ = true;
   }
 
   TRACE_EVENT_BEGIN0("gpu", "ArCore Update");
