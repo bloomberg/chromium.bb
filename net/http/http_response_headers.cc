@@ -82,24 +82,31 @@ const char* const kSecurityStateHeaders[] = {
 // These response headers are not copied from a 304/206 response to the cached
 // response headers.  This list is based on Mozilla's nsHttpResponseHead.cpp.
 const char* const kNonUpdatedHeaders[] = {
-  "connection",
-  "proxy-connection",
-  "keep-alive",
-  "www-authenticate",
-  "proxy-authenticate",
-  "trailer",
-  "transfer-encoding",
-  "upgrade",
-  "etag",
-  "x-frame-options",
-  "x-xss-protection",
+    "connection",
+    "proxy-connection",
+    "keep-alive",
+    "www-authenticate",
+    "proxy-authenticate",
+    "proxy-authorization",
+    "te",
+    "trailer",
+    "transfer-encoding",
+    "upgrade",
+    "content-location",
+    "content-md5",
+    "etag",
+    "content-encoding",
+    "content-range",
+    "content-type",
+    "content-length",
+    "x-frame-options",
+    "x-xss-protection",
 };
 
 // Some header prefixes mean "Don't copy this header from a 304 response.".
 // Rather than listing all the relevant headers, we can consolidate them into
 // this list:
 const char* const kNonUpdatedHeaderPrefixes[] = {
-  "content-",
   "x-content-",
   "x-webkit-"
 };
