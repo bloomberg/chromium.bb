@@ -3345,6 +3345,18 @@ bool LayerTreeHostImpl::InitializeFrameSink(
   // TODO(crbug.com/469175): Replace with RequiresHighResToDraw.
   SetRequiresHighResToDraw();
 
+  // Always allocate a new viz::LocalSurfaceId when we get a new
+  // LayerTreeFrameSink to ensure that we do not reuse the same surface after
+  // it might have been garbage collected.
+  if (settings_.enable_surface_synchronization) {
+    const viz::LocalSurfaceId& local_surface_id =
+        child_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
+    if (local_surface_id.is_valid())
+      child_local_surface_id_allocator_.GenerateId();
+  } else {
+    layer_tree_frame_sink_->ForceAllocateNewId();
+  }
+
   return true;
 }
 
