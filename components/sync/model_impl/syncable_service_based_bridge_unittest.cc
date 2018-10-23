@@ -5,6 +5,7 @@
 #include "components/sync/model_impl/syncable_service_based_bridge.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -68,6 +69,10 @@ MATCHER(IsEncrypted, "") {
   return arg && arg->specifics.encrypted().has_blob();
 }
 
+MATCHER_P(IsEncryptedWithKey, key, "") {
+  return arg && arg->specifics.encrypted().key_name() == key;
+}
+
 class MockSyncableService : public SyncableService {
  public:
   MOCK_METHOD4(
@@ -84,18 +89,30 @@ class MockSyncableService : public SyncableService {
 };
 
 // Simple ModelCryptographer implementation that serializes the input proto to a
-// string and puts it in proto field EntitySpecifics.encrypted.blob.
+// string, prepends a prefix (representing the encryption key) and puts the
+// result in proto field EntitySpecifics.encrypted.blob.
 class TestModelCryptographer : public ModelCryptographer {
  public:
-  TestModelCryptographer() {}
+  TestModelCryptographer() { AddKey("DefaultKey"); }
+
+  void AddKey(const std::string& key) { keys_.push_back(key); }
 
   base::Optional<ModelError> Decrypt(
       sync_pb::EntitySpecifics* specifics) override {
     if (!specifics->has_encrypted()) {
       return ModelError(FROM_HERE, "Not encrypted");
     }
+    const std::string& actual_key = specifics->encrypted().key_name();
+    if (std::find(keys_.begin(), keys_.end(), actual_key) == keys_.end()) {
+      return ModelError(FROM_HERE, "Unknown key");
+    }
+    if (specifics->encrypted().blob().find(actual_key) != 0) {
+      return ModelError(FROM_HERE, "Corrupt blob");
+    }
     sync_pb::EntitySpecifics unencrypted_specifics;
-    if (!unencrypted_specifics.ParseFromString(specifics->encrypted().blob())) {
+    const std::string blob_without_key =
+        specifics->encrypted().blob().substr(actual_key.size());
+    if (!unencrypted_specifics.ParseFromString(blob_without_key)) {
       return ModelError(FROM_HERE, "Cannot parse blob");
     }
     *specifics = unencrypted_specifics;
@@ -108,8 +125,9 @@ class TestModelCryptographer : public ModelCryptographer {
       return ModelError(FROM_HERE, "Already encrypted");
     }
     sync_pb::EntitySpecifics encrypted_specifics;
+    encrypted_specifics.mutable_encrypted()->set_key_name(keys_.back());
     encrypted_specifics.mutable_encrypted()->set_blob(
-        specifics->SerializeAsString());
+        keys_.back() + specifics->SerializeAsString());
     *specifics = encrypted_specifics;
     return base::nullopt;
   }
@@ -118,6 +136,8 @@ class TestModelCryptographer : public ModelCryptographer {
   ~TestModelCryptographer() override {}
 
  private:
+  std::vector<std::string> keys_;
+
   DISALLOW_COPY_AND_ASSIGN(TestModelCryptographer);
 };
 
@@ -529,7 +549,6 @@ TEST_F(SyncableServiceBasedBridgeTest,
   specifics.mutable_encrypted()->set_blob("corrupt-encrypted-blob");
   ASSERT_TRUE(cryptographer->Decrypt(&specifics));
   worker_->UpdateFromServer(kClientTagHash, specifics);
-  EXPECT_THAT(GetAllData(), IsEmpty());
 }
 
 TEST_F(SyncableServiceBasedBridgeTest, ShouldDecryptForRemoteDeletion) {
@@ -600,6 +619,49 @@ TEST_F(SyncableServiceBasedBridgeTest, ShouldEncryptLocalCreation) {
       start_syncing_sync_processor_->ProcessSyncChanges(FROM_HERE, change_list);
   EXPECT_FALSE(error.IsSet());
   EXPECT_THAT(GetAllData(), ElementsAre(Pair(kClientTagHash, IsEncrypted())));
+}
+
+TEST_F(SyncableServiceBasedBridgeTest, ShouldReencryptDataUponKeyChange) {
+  const std::string kEncryptionKey1 = "EncryptionKey1";
+  const std::string kEncryptionKey2 = "EncryptionKey2";
+
+  auto cryptographer = base::MakeRefCounted<TestModelCryptographer>();
+  cryptographer->AddKey(kEncryptionKey1);
+  InitializeBridge(cryptographer);
+  StartSyncing();
+
+  EXPECT_CALL(mock_error_handler_, Run(_)).Times(0);
+
+  sync_pb::EntitySpecifics specifics = GetTestSpecifics("name1");
+  ASSERT_FALSE(cryptographer->Encrypt(&specifics));
+  worker_->UpdateFromServer(kClientTagHash, specifics);
+  // The bridge's store should contain encrypted content.
+  ASSERT_THAT(
+      GetAllData(),
+      ElementsAre(Pair(kClientTagHash, IsEncryptedWithKey(kEncryptionKey1))));
+
+  // Mimic reencryption.
+  EXPECT_CALL(mock_processor_, Put(_, _, _)).Times(0);
+  cryptographer->AddKey(kEncryptionKey2);
+  worker_->UpdateWithEncryptionKey(kEncryptionKey2);
+
+  // The bridge's store should still contain encrypted content.
+  EXPECT_THAT(
+      GetAllData(),
+      ElementsAre(Pair(kClientTagHash, IsEncryptedWithKey(kEncryptionKey2))));
+
+  // Mimic restart, which shouldn't start syncing until OnSyncStarting() is
+  // received (exercised in StartSyncing()). Having reencrypted the data should
+  // not be noticeable by the SyncableService, which should receive the data
+  // unencrypted.
+  ShutdownBridge();
+  InitializeBridge(cryptographer);
+
+  EXPECT_CALL(syncable_service_,
+              MergeDataAndStartSyncing(
+                  kModelType, ElementsAre(SyncDataRemoteMatches("name1")),
+                  NotNull(), NotNull()));
+  StartSyncing();
 }
 
 }  // namespace

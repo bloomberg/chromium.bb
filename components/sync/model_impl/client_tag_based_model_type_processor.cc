@@ -849,7 +849,7 @@ ConflictResolution::Type ClientTagBasedModelTypeProcessor::ResolveConflict(
 }
 
 void ClientTagBasedModelTypeProcessor::RecommitAllForEncryption(
-    std::unordered_set<std::string> already_updated,
+    const std::unordered_set<std::string>& already_updated,
     MetadataChangeList* metadata_changes) {
   ModelTypeSyncBridge::StorageKeyList entities_needing_data;
 
@@ -1026,11 +1026,12 @@ ClientTagBasedModelTypeProcessor::OnIncrementalUpdateReceived(
     // recommit only the ones whose encryption key doesn't match the one in
     // DataTypeState. Work is tracked in http://crbug.com/727874.
     RecommitAllForEncryption(already_updated, metadata_changes.get());
+    return bridge_->ApplySyncChangesWithNewEncryptionRequirements(
+        std::move(metadata_changes), std::move(entity_changes));
   }
   // Inform the bridge of the new or updated data.
-  base::Optional<ModelError> error =
-      bridge_->ApplySyncChanges(std::move(metadata_changes), entity_changes);
-  return error;
+  return bridge_->ApplySyncChanges(std::move(metadata_changes),
+                                   std::move(entity_changes));
 }
 
 void ClientTagBasedModelTypeProcessor::OnPendingDataLoaded(

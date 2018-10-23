@@ -21,6 +21,7 @@
 
 namespace sync_pb {
 class EntitySpecifics;
+class PersistedEntityData;
 }  // namespace sync_pb
 
 namespace syncer {
@@ -88,6 +89,9 @@ class SyncableServiceBasedBridge : public ModelTypeSyncBridge {
   StopSyncResponse ApplyStopSyncChanges(
       std::unique_ptr<MetadataChangeList> delete_metadata_change_list) override;
   size_t EstimateSyncOverheadMemoryUsage() const override;
+  base::Optional<ModelError> ApplySyncChangesWithNewEncryptionRequirements(
+      std::unique_ptr<MetadataChangeList> metadata_change_list,
+      EntityChangeList entity_changes) override;
 
  private:
   void OnStoreCreated(const base::Optional<ModelError>& error,
@@ -99,19 +103,16 @@ class SyncableServiceBasedBridge : public ModelTypeSyncBridge {
                                 std::unique_ptr<MetadataBatch> metadata_batch);
   void MaybeStartSyncableService();
   base::Optional<ModelError> StoreAndConvertRemoteChanges(
-      std::unique_ptr<MetadataChangeList> metadata_change_list,
+      std::unique_ptr<ModelTypeStore::WriteBatch> batch,
       EntityChangeList input_entity_change_list,
       SyncChangeList* output_sync_change_list);
-  void OnReadDataForProcessor(
-      DataCallback callback,
-      const base::Optional<ModelError>& error,
-      std::unique_ptr<ModelTypeStore::RecordList> record_list,
-      std::unique_ptr<ModelTypeStore::IdList> missing_id_list);
-  void OnReadAllDataForProcessor(
-      DataCallback callback,
-      const base::Optional<ModelError>& error,
-      std::unique_ptr<ModelTypeStore::RecordList> record_list);
   void ReportErrorIfSet(const base::Optional<ModelError>& error);
+  base::Optional<ModelError> ReencryptEverything(
+      ModelTypeStore::WriteBatch* batch);
+  base::Optional<ModelError> ApplySyncChangesWithBatch(
+      std::unique_ptr<MetadataChangeList> metadata_change_list,
+      EntityChangeList entity_change_list,
+      std::unique_ptr<ModelTypeStore::WriteBatch> batch);
 
   const ModelType type_;
   SyncableService* const syncable_service_;
@@ -123,7 +124,7 @@ class SyncableServiceBasedBridge : public ModelTypeSyncBridge {
 
   // In-memory copy of |store_|, needed for remote deletions, because we need to
   // provide specifics of the deleted entity to the SyncableService.
-  std::map<std::string, sync_pb::EntitySpecifics> in_memory_store_;
+  std::map<std::string, sync_pb::PersistedEntityData> in_memory_store_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

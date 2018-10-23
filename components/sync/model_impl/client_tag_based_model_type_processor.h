@@ -131,8 +131,9 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
                                            EntityChangeList* changes);
 
   // Recommit all entities for encryption except those in |already_updated|.
-  void RecommitAllForEncryption(std::unordered_set<std::string> already_updated,
-                                MetadataChangeList* metadata_changes);
+  void RecommitAllForEncryption(
+      const std::unordered_set<std::string>& already_updated,
+      MetadataChangeList* metadata_changes);
 
   // Validates the update specified by the input parameters and returns whether
   // it should get further processed. If the update is incorrect, this function
