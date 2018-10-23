@@ -4,6 +4,8 @@
 
 #include "ash/system/message_center/unified_message_center_view.h"
 
+#include "ash/session/session_controller.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/message_center/message_center_scroll_bar.h"
 #include "ash/system/unified/sign_out_button.h"
@@ -301,14 +303,19 @@ void UnifiedMessageCenterView::OnMessageCenterScrolled() {
 }
 
 void UnifiedMessageCenterView::NotifyHeightBelowScroll() {
-  parent_->SetNotificationHeightBelowScroll(
-      message_list_view_->GetHeightBelowVisibleRect());
+  int height_below_scroll =
+      (visible() ? message_list_view_->GetHeightBelowVisibleRect() : 0);
+  parent_->SetNotificationHeightBelowScroll(height_below_scroll);
 }
 
 void UnifiedMessageCenterView::Update() {
-  SetVisible(message_list_view_->GetNotificationCount() > 0);
-  if (GetWidget() && !GetWidget()->IsClosed())
+  SessionController* session_controller = Shell::Get()->session_controller();
+  SetVisible(message_list_view_->GetNotificationCount() > 0 &&
+             !session_controller->IsScreenLocked());
+  if (GetWidget() && !GetWidget()->IsClosed()) {
+    NotifyHeightBelowScroll();
     tray_controller_->OnMessageCenterVisibilityUpdated();
+  }
 
   size_t notification_count = message_list_view_->GetNotificationCount();
   // TODO(tetsui): This is O(n^2).
