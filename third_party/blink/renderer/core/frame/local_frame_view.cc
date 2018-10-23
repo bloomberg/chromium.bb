@@ -1238,7 +1238,7 @@ void LocalFrameView::ViewportSizeChanged(bool width_changed,
 
   if (GetLayoutView() && frame_->IsMainFrame() &&
       frame_->GetPage()->GetBrowserControls().TotalHeight()) {
-    if (GetLayoutView()->StyleRef().HasFixedBackgroundImage()) {
+    if (GetLayoutView()->StyleRef().HasFixedAttachmentBackgroundImage()) {
       // We've already issued a full invalidation above.
       GetLayoutView()->SetShouldDoFullPaintInvalidationOnResizeIfNeeded(
           width_changed, height_changed);

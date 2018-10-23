@@ -46,7 +46,7 @@ void TableCellPainter::PaintBackground(const PaintInfo& paint_info,
 
   Color c = background_object.ResolveColor(GetCSSPropertyBackgroundColor());
   const FillLayer& bg_layer = background_object.StyleRef().BackgroundLayers();
-  if (bg_layer.HasImage() || c.Alpha()) {
+  if (bg_layer.AnyLayerHasImage() || c.Alpha()) {
     // We have to clip here because the background would paint
     // on top of the borders otherwise.  This only matters for cells and rows.
     bool should_clip = background_object.HasLayer() &&

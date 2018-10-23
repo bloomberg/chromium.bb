@@ -251,7 +251,7 @@ void LayoutView::SetShouldDoFullPaintInvalidationOnResizeIfNeeded(
   // should fully invalidate on viewport resize if the background image is not
   // composited and needs full paint invalidation on background positioning area
   // resize.
-  if (StyleRef().HasFixedBackgroundImage()) {
+  if (StyleRef().HasFixedAttachmentBackgroundImage()) {
     if ((width_changed && MustInvalidateFillLayersPaintOnWidthChange(
                               StyleRef().BackgroundLayers())) ||
         (height_changed && MustInvalidateFillLayersPaintOnHeightChange(

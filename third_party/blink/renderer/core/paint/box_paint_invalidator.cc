@@ -25,8 +25,8 @@ PaintInvalidationReason BoxPaintInvalidator::ComputePaintInvalidationReason() {
 
   const ComputedStyle& style = box_.StyleRef();
 
-  if ((style.BackgroundLayers().ThisOrNextLayersUseContentBox() ||
-       style.MaskLayers().ThisOrNextLayersUseContentBox()) &&
+  if ((style.BackgroundLayers().AnyLayerUsesContentBox() ||
+       style.MaskLayers().AnyLayerUsesContentBox()) &&
       box_.PreviousPhysicalContentBoxRect() != box_.PhysicalContentBoxRect()) {
     return PaintInvalidationReason::kGeometry;
   }
@@ -88,9 +88,7 @@ PaintInvalidationReason BoxPaintInvalidator::ComputePaintInvalidationReason() {
 bool BoxPaintInvalidator::BackgroundGeometryDependsOnLayoutOverflowRect()
     const {
   return !box_.IsDocumentElement() && !box_.BackgroundStolenForBeingBody() &&
-         box_.StyleRef()
-             .BackgroundLayers()
-             .ThisOrNextLayersHaveLocalAttachment();
+         box_.StyleRef().BackgroundLayers().AnyLayerHasLocalAttachment();
 }
 
 // Background positioning in layout overflow rect doesn't mean it will
@@ -148,7 +146,7 @@ bool BoxPaintInvalidator::ViewBackgroundShouldFullyInvalidate() const {
   DCHECK(box_.IsLayoutView());
   // Fixed attachment background is handled in LayoutView::layout().
   // TODO(wangxianzhu): Combine code for fixed-attachment background.
-  if (box_.StyleRef().HasEntirelyFixedBackground())
+  if (box_.StyleRef().HasOnlyFixedAttachmentBackgroundImage())
     return false;
 
   // LayoutView's non-fixed-attachment background is positioned in the
@@ -265,8 +263,8 @@ bool BoxPaintInvalidator::
 
   // Background and mask layers can depend on other boxes than border box. See
   // crbug.com/490533
-  if ((style.BackgroundLayers().ThisOrNextLayersUseContentBox() ||
-       style.MaskLayers().ThisOrNextLayersUseContentBox()) &&
+  if ((style.BackgroundLayers().AnyLayerUsesContentBox() ||
+       style.MaskLayers().AnyLayerUsesContentBox()) &&
       box_.ContentSize() != box_.Size())
     return true;
   if ((BackgroundGeometryDependsOnLayoutOverflowRect() ||
