@@ -2907,6 +2907,7 @@ crbug.com/893480 external/wpt/infrastructure/testdriver/actions/eventOrder.html 
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.11 ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] virtual/outofblink-cors-ns/external/wpt/referrer-policy/same-origin/attr-referrer/cross-origin/http-https/script-tag/cross-origin.swap-origin-redirect.http.html [ Crash ]
 crbug.com/626703 [ Mac10.11 ] virtual/outofblink-cors-ns/external/wpt/referrer-policy/origin-when-cross-origin/http-rp/cross-origin/http-http/img-tag/cross-origin.swap-origin-redirect.http.html [ Crash ]
 crbug.com/626703 [ Mac10.11 ] virtual/outofblink-cors-ns/external/wpt/referrer-policy/origin-when-cross-origin/meta-referrer/cross-origin/http-https/fetch-request/cross-origin.no-redirect.http.html [ Crash ]
