@@ -352,11 +352,6 @@ void Env::NotifyHostInitialized(WindowTreeHost* host) {
     observer.OnHostInitialized(host);
 }
 
-void Env::NotifyHostActivated(WindowTreeHost* host) {
-  for (EnvObserver& observer : observers_)
-    observer.OnHostActivated(host);
-}
-
 void Env::WindowTreeClientDestroyed(aura::WindowTreeClient* client) {
   DCHECK_EQ(Mode::MUS, mode_);
 

@@ -239,9 +239,6 @@ class AURA_EXPORT Env : public ui::EventTarget,
   // Called by the WindowTreeHost when it is initialized. Notifies observers.
   void NotifyHostInitialized(WindowTreeHost* host);
 
-  // Invoked by WindowTreeHost when it is activated. Notifies observers.
-  void NotifyHostActivated(WindowTreeHost* host);
-
   void WindowTreeClientDestroyed(WindowTreeClient* client);
 
   // Overridden from ui::EventTarget:
