@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_screen_context_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
@@ -224,6 +225,12 @@ void AssistantInteractionController::OnInputModalityChanged(
   // interaction here for voice input modality would actually have the undesired
   // effect of stopping the voice interaction.
   StopActiveInteraction(false);
+}
+
+void AssistantInteractionController::OnMicStateChanged(MicState mic_state) {
+  // We should stop ChromeVox from speaking when opening the mic.
+  if (mic_state == MicState::kOpen)
+    Shell::Get()->accessibility_controller()->SilenceSpokenFeedback();
 }
 
 void AssistantInteractionController::OnResponseChanged(
