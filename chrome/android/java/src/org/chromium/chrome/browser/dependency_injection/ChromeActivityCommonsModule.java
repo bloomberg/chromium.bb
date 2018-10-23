@@ -9,6 +9,7 @@ import android.content.res.Resources;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
@@ -22,12 +23,15 @@ import dagger.Provides;
 @Module
 public class ChromeActivityCommonsModule {
     private final ChromeActivity<?> mActivity;
+    private final ActivityLifecycleDispatcher mLifecycleDispatcher;
 
     /** See {@link ModuleFactoryOverrides} */
     public interface Factory { ChromeActivityCommonsModule create(ChromeActivity<?> activity); }
 
-    public ChromeActivityCommonsModule(ChromeActivity<?> activity) {
+    public ChromeActivityCommonsModule(
+            ChromeActivity<?> activity, ActivityLifecycleDispatcher lifecycleDispatcher) {
         mActivity = activity;
+        mLifecycleDispatcher = lifecycleDispatcher;
     }
 
     @Provides
@@ -68,5 +72,10 @@ public class ChromeActivityCommonsModule {
     @Provides
     public Resources provideResources() {
         return mActivity.getResources();
+    }
+
+    @Provides
+    public ActivityLifecycleDispatcher provideLifecycleDispatcher() {
+        return mLifecycleDispatcher;
     }
 }

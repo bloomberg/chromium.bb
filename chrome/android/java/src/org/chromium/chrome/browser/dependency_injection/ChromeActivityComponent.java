@@ -16,5 +16,5 @@ import dagger.Subcomponent;
 @ActivityScope
 public interface ChromeActivityComponent {
     // Temporary getters for DI migration process.
-    ContextualSuggestionsCoordinator getContextualSuggestionsCoordinator();
+    ContextualSuggestionsCoordinator resolveContextualSuggestionsCoordinator();
 }

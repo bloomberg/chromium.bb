@@ -68,7 +68,6 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.compositor.layouts.content.ContentOffsetProvider;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsCoordinator;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModule;
 import org.chromium.chrome.browser.contextual_suggestions.PageViewTimer;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
@@ -270,7 +269,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private FindToolbarManager mFindToolbarManager;
     private BottomSheetController mBottomSheetController;
     private BottomSheet mBottomSheet;
-    private ContextualSuggestionsCoordinator mContextualSuggestionsCoordinator;
     private ScrimView mScrimView;
     private float mStatusBarScrimFraction;
     private int mBaseStatusBarColor;
@@ -353,7 +351,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 ModuleFactoryOverrides.getOverrideFor(ChromeActivityCommonsModule.Factory.class);
 
         ChromeActivityCommonsModule commonsModule = overridenCommonsFactory == null
-                ? new ChromeActivityCommonsModule(this)
+                ? new ChromeActivityCommonsModule(this, getLifecycleDispatcher())
                 : overridenCommonsFactory.create(this);
 
         ContextualSuggestionsModule.Factory overridenSuggestionsFactory =
@@ -1014,6 +1012,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         VrModuleProvider.getDelegate().maybeUnregisterVrEntryHook();
         markSessionEnd();
+
         super.onPauseWithNative();
     }
 
@@ -1302,11 +1301,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             mBottomSheet = null;
         }
 
-        if (mContextualSuggestionsCoordinator != null) {
-            mContextualSuggestionsCoordinator.destroy();
-            mContextualSuggestionsCoordinator = null;
-        }
-
         if (mTabModelsInitialized) {
             TabModelSelector selector = getTabModelSelector();
             if (selector != null) selector.destroy();
@@ -1473,7 +1467,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                     getCompositorViewHolder().getLayoutManager().getOverlayPanelManager(),
                     !ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON));
 
-            mContextualSuggestionsCoordinator = mComponent.getContextualSuggestionsCoordinator();
+            mComponent.resolveContextualSuggestionsCoordinator();
         }
     }
 
