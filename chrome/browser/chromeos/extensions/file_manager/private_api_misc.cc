@@ -759,13 +759,16 @@ FileManagerPrivateInternalGetLinuxPackageInfoFunction::Run() {
       file_manager::util::GetFileSystemContextForRenderFrameHost(
           profile, render_frame_host());
 
-  std::string url =
-      file_manager::util::ConvertFileSystemURLToPathInsideCrostini(
-          profile, file_system_context->CrackURL(GURL(params->url)));
+  base::FilePath path;
+  if (!file_manager::util::ConvertFileSystemURLToPathInsideCrostini(
+          profile, file_system_context->CrackURL(GURL(params->url)), &path)) {
+    return RespondNow(Error("Invalid url: " + params->url));
+  }
+
   crostini::CrostiniPackageInstallerService::GetForProfile(profile)
       ->GetLinuxPackageInfo(
           crostini::kCrostiniDefaultVmName,
-          crostini::kCrostiniDefaultContainerName, url,
+          crostini::kCrostiniDefaultContainerName, path.value(),
           base::BindOnce(
               &FileManagerPrivateInternalGetLinuxPackageInfoFunction::
                   OnGetLinuxPackageInfo,
@@ -804,13 +807,16 @@ FileManagerPrivateInternalInstallLinuxPackageFunction::Run() {
       file_manager::util::GetFileSystemContextForRenderFrameHost(
           profile, render_frame_host());
 
-  std::string url =
-      file_manager::util::ConvertFileSystemURLToPathInsideCrostini(
-          profile, file_system_context->CrackURL(GURL(params->url)));
+  base::FilePath path;
+  if (!file_manager::util::ConvertFileSystemURLToPathInsideCrostini(
+          profile, file_system_context->CrackURL(GURL(params->url)), &path)) {
+    return RespondNow(Error("Invalid url: " + params->url));
+  }
+
   crostini::CrostiniPackageInstallerService::GetForProfile(profile)
       ->InstallLinuxPackage(
           crostini::kCrostiniDefaultVmName,
-          crostini::kCrostiniDefaultContainerName, url,
+          crostini::kCrostiniDefaultContainerName, path.value(),
           base::BindOnce(
               &FileManagerPrivateInternalInstallLinuxPackageFunction::
                   OnInstallLinuxPackage,

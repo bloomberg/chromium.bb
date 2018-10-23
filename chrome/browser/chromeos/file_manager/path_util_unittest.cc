@@ -175,16 +175,27 @@ TEST(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
       GetDownloadsMountPointName(&profile), storage::kFileSystemTypeNativeLocal,
       storage::FileSystemMountOption(), GetDownloadsFolderForProfile(&profile));
 
-  EXPECT_EQ("/home/testing_profile/path/in/crostini",
-            ConvertFileSystemURLToPathInsideCrostini(
-                &profile, mount_points->CreateExternalFileSystemURL(
-                              GURL(), "crostini_test_termina_penguin",
-                              base::FilePath("path/in/crostini"))));
-  EXPECT_EQ("/ChromeOS/Downloads/path/in/downloads",
-            ConvertFileSystemURLToPathInsideCrostini(
-                &profile,
-                mount_points->CreateExternalFileSystemURL(
-                    GURL(), "Downloads", base::FilePath("path/in/downloads"))));
+  base::FilePath inside;
+  EXPECT_TRUE(ConvertFileSystemURLToPathInsideCrostini(
+      &profile,
+      mount_points->CreateExternalFileSystemURL(
+          GURL(), "crostini_test_termina_penguin",
+          base::FilePath("path/in/crostini")),
+      &inside));
+  EXPECT_EQ("/home/testing_profile/path/in/crostini", inside.value());
+
+  EXPECT_TRUE(ConvertFileSystemURLToPathInsideCrostini(
+      &profile,
+      mount_points->CreateExternalFileSystemURL(
+          GURL(), "Downloads", base::FilePath("path/in/downloads")),
+      &inside));
+  EXPECT_EQ("/ChromeOS/Downloads/path/in/downloads", inside.value());
+
+  EXPECT_FALSE(ConvertFileSystemURLToPathInsideCrostini(
+      &profile,
+      mount_points->CreateExternalFileSystemURL(
+          GURL(), "unknown", base::FilePath("path/in/unknown")),
+      &inside));
 }
 
 std::unique_ptr<KeyedService> CreateFileSystemOperationRunnerForTesting(
