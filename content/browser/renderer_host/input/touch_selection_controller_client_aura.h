@@ -70,7 +70,7 @@ class CONTENT_EXPORT TouchSelectionControllerClientAura
 
  private:
   friend class TestTouchSelectionControllerClientAura;
-  class EnvPreTargetHandler;
+  class EnvEventObserver;
 
   bool IsQuickMenuAvailable() const;
   void ShowQuickMenu();
@@ -133,9 +133,8 @@ class CONTENT_EXPORT TouchSelectionControllerClientAura
 
   bool show_quick_menu_immediately_for_test_;
 
-  // A pre-target event handler for aura::Env which deactivates touch selection
-  // on mouse and keyboard events.
-  std::unique_ptr<EnvPreTargetHandler> env_pre_target_handler_;
+  // An event observer that deactivates touch selection on certain input events.
+  std::unique_ptr<EnvEventObserver> env_event_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchSelectionControllerClientAura);
 };
