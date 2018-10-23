@@ -177,13 +177,7 @@ public class AppMenuPropertiesDelegate {
             menu.findItem(R.id.find_in_page_id).setVisible(
                     !currentTab.isNativePage() && currentTab.getWebContents() != null);
 
-            menu.findItem(R.id.translate_id)
-                    .setVisible(!isChromeScheme && !isFileScheme && !isContentScheme
-                            && !TextUtils.isEmpty(url) && currentTab.getWebContents() != null
-                            && ChromeFeatureList.isInitialized()
-                            && ChromeFeatureList.isEnabled(
-                                       ChromeFeatureList.TRANSLATE_ANDROID_MANUAL_TRIGGER)
-                            && TranslateBridge.canManuallyTranslate(currentTab));
+            prepareTranslateMenuItem(menu, currentTab);
 
             // Hide 'Add to homescreen' for the following:
             // * chrome:// pages - Android doesn't know how to direct those URLs.
@@ -290,6 +284,30 @@ public class AppMenuPropertiesDelegate {
             homescreenItem.setVisible(false);
             openWebApkItem.setVisible(false);
         }
+    }
+
+    /**
+     * Sets the visibility of the 'Translate' menu item.
+     */
+    private void prepareTranslateMenuItem(Menu menu, Tab currentTab) {
+        String url = currentTab.getUrl();
+        boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_URL_PREFIX)
+                || url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX);
+        boolean isFileScheme = url.startsWith(UrlConstants.FILE_URL_PREFIX);
+        boolean isContentScheme = url.startsWith(UrlConstants.CONTENT_URL_PREFIX);
+
+        boolean isVisible = !isChromeScheme && !isFileScheme && !isContentScheme
+                && !TextUtils.isEmpty(url) && currentTab.getWebContents() != null
+                && ChromeFeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.TRANSLATE_ANDROID_MANUAL_TRIGGER)
+                && TranslateBridge.canManuallyTranslate(currentTab);
+
+        if (ChromeFeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.TRANSLATE_ANDROID_MANUAL_TRIGGER))
+            RecordHistogram.recordBooleanHistogram(
+                    "Translate.MobileMenuTranslate.Shown", isVisible);
+
+        menu.findItem(R.id.translate_id).setVisible(isVisible);
     }
 
     /**
