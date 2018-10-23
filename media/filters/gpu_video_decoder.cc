@@ -83,7 +83,6 @@ GpuVideoDecoder::GpuVideoDecoder(
       state_(kNormal),
       next_picture_buffer_id_(0),
       next_bitstream_buffer_id_(0),
-      available_pictures_(0),
       needs_all_picture_buffers_to_decode_(false),
       supports_deferred_initialization_(false),
       requires_texture_copy_(false),
@@ -379,15 +378,23 @@ void GpuVideoDecoder::NotifyInitializationComplete(bool success) {
     std::move(init_cb_).Run(success);
 }
 
-void GpuVideoDecoder::DestroyPictureBuffers(PictureBufferMap* buffers) {
+void GpuVideoDecoder::DestroyPictureBuffers() {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
-  for (const auto& kv : *buffers) {
-    for (uint32_t id : kv.second.client_texture_ids())
-      factories_->DeleteTexture(id);
+
+  for (const auto& kv : assigned_picture_buffers_) {
+    int64_t picture_buffer_id = kv.first;
+    PictureBuffer::TextureIds texture_ids = kv.second.client_texture_ids();
+
+    // Not destroying PictureBuffers in |picture_buffers_at_display_| yet, since
+    // their textures may still be in use by the user of this GpuVideoDecoder.
+    if (picture_buffers_at_display_.find(picture_buffer_id) ==
+        picture_buffers_at_display_.end()) {
+      for (uint32_t id : texture_ids)
+        factories_->DeleteTexture(id);
+    }
   }
   factories_->ShallowFlushCHROMIUM();
-
-  buffers->clear();
+  assigned_picture_buffers_.clear();
 }
 
 void GpuVideoDecoder::DestroyVDA() {
@@ -395,11 +402,7 @@ void GpuVideoDecoder::DestroyVDA() {
 
   vda_.reset();
 
-  // Not destroying PictureBuffers in |picture_buffers_at_display_| yet, since
-  // their textures may still be in use by the user of this GpuVideoDecoder.
-  for (const auto& kv : picture_buffers_at_display_)
-    assigned_picture_buffers_.erase(kv.first);
-  DestroyPictureBuffers(&assigned_picture_buffers_);
+  DestroyPictureBuffers();
 }
 
 void GpuVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
@@ -511,11 +514,22 @@ bool GpuVideoDecoder::NeedsBitstreamConversion() const {
 
 bool GpuVideoDecoder::CanReadWithoutStalling() const {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
+  size_t available_pictures = AvailablePictures();
   return next_picture_buffer_id_ ==
              0 ||  // Decode() will ProvidePictureBuffers().
-         (!needs_all_picture_buffers_to_decode_ && available_pictures_ > 0) ||
-         available_pictures_ ==
-             static_cast<int>(assigned_picture_buffers_.size());
+         (!needs_all_picture_buffers_to_decode_ && available_pictures > 0) ||
+         available_pictures == assigned_picture_buffers_.size();
+}
+
+size_t GpuVideoDecoder::AvailablePictures() const {
+  size_t ret = 0;
+  for (const auto& kv : assigned_picture_buffers_) {
+    if (picture_buffers_at_display_.find(kv.first) ==
+        picture_buffers_at_display_.end()) {
+      ++ret;
+    }
+  }
+  return ret;
 }
 
 int GpuVideoDecoder::GetMaxDecodeRequests() const {
@@ -573,8 +587,6 @@ void GpuVideoDecoder::ProvidePictureBuffers(uint32_t count,
     DCHECK(inserted);
   }
 
-  available_pictures_ += count;
-
   vda_->AssignPictureBuffers(picture_buffers);
 }
 
@@ -588,19 +600,15 @@ void GpuVideoDecoder::DismissPictureBuffer(int32_t id) {
     return;
   }
 
-  PictureBuffer buffer_to_dismiss = it->second;
-  assigned_picture_buffers_.erase(it);
-
   // If it's in |picture_buffers_at_display_|, postpone deletion of it until
   // it's returned to us.
-  if (picture_buffers_at_display_.count(id))
-    return;
+  if (picture_buffers_at_display_.find(id) ==
+      picture_buffers_at_display_.end()) {
+    for (const auto texture_id : (it->second).client_texture_ids())
+      factories_->DeleteTexture(texture_id);
+  }
 
-  // Otherwise, we can delete the texture immediately.
-  for (uint32_t id : buffer_to_dismiss.client_texture_ids())
-    factories_->DeleteTexture(id);
-  CHECK_GT(available_pictures_, 0);
-  --available_pictures_;
+  assigned_picture_buffers_.erase(it);
 }
 
 void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
@@ -682,14 +690,8 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   if (requires_texture_copy_)
     frame->metadata()->SetBoolean(VideoFrameMetadata::COPY_REQUIRED, true);
 
-  CHECK_GT(available_pictures_, 0);
-  --available_pictures_;
-
-  bool inserted = picture_buffers_at_display_
-                      .insert(std::make_pair(picture.picture_buffer_id(),
-                                             pb.client_texture_ids()))
-                      .second;
-  DCHECK(inserted);
+  picture_buffers_at_display_.insert(
+      std::make_pair(picture.picture_buffer_id(), pb.client_texture_ids()));
 
   DeliverFrame(frame);
 }
@@ -734,21 +736,19 @@ void GpuVideoDecoder::ReusePictureBuffer(int64_t picture_buffer_id) {
   DVLOG(3) << "ReusePictureBuffer(" << picture_buffer_id << ")";
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
-  DCHECK(!picture_buffers_at_display_.empty());
-  PictureBufferTextureMap::iterator display_iterator =
-      picture_buffers_at_display_.find(picture_buffer_id);
-  PictureBuffer::TextureIds ids = display_iterator->second;
-  DCHECK(display_iterator != picture_buffers_at_display_.end());
-  picture_buffers_at_display_.erase(display_iterator);
+  auto iter_range = picture_buffers_at_display_.equal_range(picture_buffer_id);
+  DCHECK(iter_range.first != iter_range.second);
+  bool only_one_element = (std::next(iter_range.first) == iter_range.second);
+  PictureBuffer::TextureIds ids = iter_range.first->second;
+  picture_buffers_at_display_.erase(iter_range.first);
 
-  if (!assigned_picture_buffers_.count(picture_buffer_id)) {
+  if (only_one_element && assigned_picture_buffers_.find(picture_buffer_id) ==
+                              assigned_picture_buffers_.end()) {
     // This picture was dismissed while in display, so we postponed deletion.
-    for (uint32_t id : ids)
+    for (const auto id : ids)
       factories_->DeleteTexture(id);
     return;
   }
-
-  ++available_pictures_;
 
   // DestroyVDA() might already have been called.
   if (vda_)

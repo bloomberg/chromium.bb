@@ -108,7 +108,16 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
         return kDecodeError;
       }
 
-      if (!accelerator_->OutputPicture(ref_frames_[frame_to_show])) {
+      // Duplicate the VP9Picture and set the current bitstream id to keep the
+      // correct timestamp.
+      scoped_refptr<VP9Picture> pic = ref_frames_[frame_to_show]->Duplicate();
+      if (pic == nullptr) {
+        DVLOG(1) << "Failed to duplicate the VP9Picture.";
+        SetError();
+        return kDecodeError;
+      }
+      pic->set_bitstream_id(stream_id_);
+      if (!accelerator_->OutputPicture(std::move(pic))) {
         SetError();
         return kDecodeError;
       }

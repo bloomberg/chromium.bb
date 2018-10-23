@@ -181,6 +181,7 @@ V4L2SliceVideoDecodeAccelerator::InputRecord::InputRecord()
 V4L2SliceVideoDecodeAccelerator::OutputRecord::OutputRecord()
     : at_device(false),
       at_client(false),
+      num_times_sent_to_client(0),
       picture_id(-1),
       texture_id(0),
       cleared(false) {}
@@ -401,6 +402,8 @@ class V4L2VP9Picture : public VP9Picture {
  private:
   ~V4L2VP9Picture() override;
 
+  scoped_refptr<VP9Picture> CreateDuplicate() override;
+
   scoped_refptr<V4L2DecodeSurface> dec_surface_;
 
   DISALLOW_COPY_AND_ASSIGN(V4L2VP9Picture);
@@ -411,6 +414,10 @@ V4L2VP9Picture::V4L2VP9Picture(
     : dec_surface_(dec_surface) {}
 
 V4L2VP9Picture::~V4L2VP9Picture() {}
+
+scoped_refptr<VP9Picture> V4L2VP9Picture::CreateDuplicate() {
+  return new V4L2VP9Picture(dec_surface_);
+}
 
 V4L2SliceVideoDecodeAccelerator::V4L2SliceVideoDecodeAccelerator(
     const scoped_refptr<V4L2Device>& device,
@@ -1287,6 +1294,10 @@ bool V4L2SliceVideoDecodeAccelerator::StopDevicePoll(bool keep_input_state) {
       output_buffer_queued_count_--;
     }
   }
+  // Mark as decoded to allow reuse.
+  for (auto kv : surfaces_at_device_) {
+    kv.second->SetDecoded();
+  }
   surfaces_at_device_.clear();
   DCHECK_EQ(output_buffer_queued_count_, 0);
 
@@ -1547,6 +1558,7 @@ bool V4L2SliceVideoDecodeAccelerator::DestroyOutputBuffers() {
     OutputRecord& output_record = output_buffer_map_[index];
     DCHECK(output_record.at_client);
     output_record.at_client = false;
+    output_record.num_times_sent_to_client = 0;
   }
   surfaces_at_display_.clear();
   DCHECK_EQ(free_output_buffers_.size(), output_buffer_map_.size());
@@ -1894,13 +1906,17 @@ void V4L2SliceVideoDecodeAccelerator::ReusePictureBufferTask(
     return;
   }
 
-  DCHECK(!output_record.egl_fence);
   DCHECK(!output_record.at_device);
-  output_record.at_client = false;
-  // Take ownership of the EGL fence.
-  output_record.egl_fence = std::move(egl_fence);
+  --output_record.num_times_sent_to_client;
+  // A output buffer might be sent multiple times. We only use the last fence.
+  // When the last fence is signaled, all the previous fences must be executed.
+  if (output_record.num_times_sent_to_client == 0) {
+    output_record.at_client = false;
+    // Take ownership of the EGL fence.
+    output_record.egl_fence = std::move(egl_fence);
 
-  surfaces_at_display_.erase(it);
+    surfaces_at_display_.erase(it);
+  }
 }
 
 void V4L2SliceVideoDecodeAccelerator::Flush() {
@@ -3185,16 +3201,26 @@ void V4L2SliceVideoDecodeAccelerator::OutputSurface(
   OutputRecord& output_record =
       output_buffer_map_[dec_surface->output_record()];
 
-  bool inserted =
-      surfaces_at_display_
-          .insert(std::make_pair(output_record.picture_id, dec_surface))
-          .second;
-  DCHECK(inserted);
+  if (output_record.num_times_sent_to_client == 0) {
+    DCHECK(!output_record.at_client);
+    output_record.at_client = true;
+    bool inserted =
+        surfaces_at_display_
+            .insert(std::make_pair(output_record.picture_id, dec_surface))
+            .second;
+    DCHECK(inserted);
+  } else {
+    // The surface is already sent to client, and not returned back yet.
+    DCHECK(output_record.at_client);
+    DCHECK(surfaces_at_display_.find(output_record.picture_id) !=
+           surfaces_at_display_.end());
+    CHECK(surfaces_at_display_[output_record.picture_id].get() ==
+          dec_surface.get());
+  }
 
-  DCHECK(!output_record.at_client);
   DCHECK(!output_record.at_device);
   DCHECK_NE(output_record.picture_id, -1);
-  output_record.at_client = true;
+  ++output_record.num_times_sent_to_client;
 
   // TODO(hubbe): Insert correct color space. http://crbug.com/647725
   Picture picture(output_record.picture_id, bitstream_id,
