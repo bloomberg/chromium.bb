@@ -1760,12 +1760,33 @@ void NetworkHandler::OnSignedExchangeReceived(
       std::move(signed_exchange_info));
 }
 
+namespace {
+void UpdateSubresourceLoaderFactories(FrameTreeNode* root) {
+  base::queue<FrameTreeNode*> queue;
+  queue.push(root);
+  while (!queue.empty()) {
+    FrameTreeNode* node = queue.front();
+    queue.pop();
+    RenderFrameHostImpl* host = node->current_frame_host();
+    if (node != root && host->IsCrossProcessSubframe())
+      continue;
+    host->UpdateSubresourceLoaderFactories();
+    for (size_t i = 0; i < node->child_count(); ++i)
+      queue.push(node->child_at(i));
+  }
+}
+}  // namespace
+
 DispatchResponse NetworkHandler::SetRequestInterception(
     std::unique_ptr<protocol::Array<protocol::Network::RequestPattern>>
         patterns) {
   if (!patterns->length()) {
     interception_handle_.reset();
-    url_loader_interceptor_.reset();
+    if (url_loader_interceptor_) {
+      if (host_)
+        UpdateSubresourceLoaderFactories(host_->frame_tree_node());
+      url_loader_interceptor_.reset();
+    }
     return Response::OK();
   }
 
@@ -1791,11 +1812,13 @@ DispatchResponse NetworkHandler::SetRequestInterception(
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     if (!url_loader_interceptor_) {
       url_loader_interceptor_ = std::make_unique<DevToolsURLLoaderInterceptor>(
-          host_->frame_tree_node(),
           base::BindRepeating(&NetworkHandler::RequestIntercepted,
                               weak_factory_.GetWeakPtr()));
+      url_loader_interceptor_->SetPatterns(interceptor_patterns);
+      UpdateSubresourceLoaderFactories(host_->frame_tree_node());
+    } else {
+      url_loader_interceptor_->SetPatterns(interceptor_patterns);
     }
-    url_loader_interceptor_->SetPatterns(interceptor_patterns);
     return Response::OK();
   }
 
@@ -2021,13 +2044,13 @@ bool NetworkHandler::ShouldCancelNavigation(
 }
 
 bool NetworkHandler::MaybeCreateProxyForInterception(
-    const base::UnguessableToken& frame_token,
-    int process_id,
+    RenderFrameHostImpl* rfh,
+    bool is_navigation,
     bool is_download,
     network::mojom::URLLoaderFactoryRequest* target_factory_request) {
   return url_loader_interceptor_ &&
          url_loader_interceptor_->CreateProxyForInterception(
-             frame_token, process_id, is_download, target_factory_request);
+             rfh, is_navigation, is_download, target_factory_request);
 }
 
 void NetworkHandler::ApplyOverrides(net::HttpRequestHeaders* headers,

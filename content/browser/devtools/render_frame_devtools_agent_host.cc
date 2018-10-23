@@ -359,12 +359,10 @@ bool RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
     bool is_download,
     network::mojom::URLLoaderFactoryRequest* target_factory_request) {
   FrameTreeNode* frame_tree_node = rfh->frame_tree_node();
-  base::UnguessableToken frame_token = frame_tree_node->devtools_frame_token();
   frame_tree_node = GetFrameTreeNodeAncestor(frame_tree_node);
   RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(frame_tree_node);
   if (!agent_host)
     return false;
-  int process_id = is_navigation ? 0 : rfh->GetProcess()->GetID();
   DCHECK(!is_download || is_navigation);
   bool had_interceptors = false;
   const auto& network_handlers =
@@ -372,8 +370,8 @@ bool RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
   for (auto it = network_handlers.rbegin(); it != network_handlers.rend();
        ++it) {
     had_interceptors =
-        (*it)->MaybeCreateProxyForInterception(
-            frame_token, process_id, is_download, target_factory_request) ||
+        (*it)->MaybeCreateProxyForInterception(rfh, is_navigation, is_download,
+                                               target_factory_request) ||
         had_interceptors;
   }
   return had_interceptors;

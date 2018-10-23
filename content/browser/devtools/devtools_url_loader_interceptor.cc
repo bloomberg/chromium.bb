@@ -184,7 +184,8 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
                   bool is_download,
                   network::mojom::URLLoaderRequest loader_request,
                   network::mojom::URLLoaderClientPtr client,
-                  network::mojom::URLLoaderFactoryPtr target_factory);
+                  network::mojom::URLLoaderFactoryPtr target_factory,
+                  network::mojom::CookieManagerPtr cookie_manager);
 
   void GetResponseBody(
       std::unique_ptr<GetResponseBodyForInterceptionCallback> callback);
@@ -295,6 +296,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   network::mojom::URLLoaderClientPtr client_;
   network::mojom::URLLoaderPtr loader_;
   network::mojom::URLLoaderFactoryPtr target_factory_;
+  network::mojom::CookieManagerPtr cookie_manager_;
 
   enum State {
     kNotStarted,
@@ -323,8 +325,6 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   // TODO(https://crbug.com/882661): Remove this as soon as the bug is fixed.
   bool on_receive_response_sent_ = false;
 
-  base::WeakPtrFactory<InterceptionJob> weak_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(InterceptionJob);
 };
 
@@ -340,17 +340,14 @@ class DevToolsURLLoaderInterceptor::Impl
       entry.second->Detach();
   }
 
-  void SetCookieManager(network::mojom::CookieManagerPtrInfo cookie_manager) {
-    cookie_manager_.Bind(std::move(cookie_manager));
-  }
-
   void CreateJob(const base::UnguessableToken& frame_token,
                  int32_t process_id,
                  bool is_download,
                  std::unique_ptr<CreateLoaderParameters> create_params,
                  network::mojom::URLLoaderRequest loader_request,
                  network::mojom::URLLoaderClientPtr client,
-                 network::mojom::URLLoaderFactoryPtr target_factory) {
+                 network::mojom::URLLoaderFactoryPtr target_factory,
+                 network::mojom::CookieManagerPtr cookie_manager) {
     DCHECK(!frame_token.is_empty());
 
     static int last_id = 0;
@@ -360,7 +357,7 @@ class DevToolsURLLoaderInterceptor::Impl
     new InterceptionJob(this, std::move(id), frame_token, process_id,
                         std::move(create_params), is_download,
                         std::move(loader_request), std::move(client),
-                        std::move(target_factory));
+                        std::move(target_factory), std::move(cookie_manager));
   }
 
   void SetPatterns(std::vector<DevToolsNetworkInterceptor::Pattern> patterns) {
@@ -432,12 +429,7 @@ class DevToolsURLLoaderInterceptor::Impl
     jobs_.emplace(id, job);
   }
 
-  network::mojom::CookieManagerPtr::Proxy* GetCookieManager() {
-    return cookie_manager_.get();
-  }
-
   std::map<std::string, InterceptionJob*> jobs_;
-  network::mojom::CookieManagerPtr cookie_manager_;
   RequestInterceptedCallback request_intercepted_callback_;
   std::vector<DevToolsNetworkInterceptor::Pattern> patterns_;
 
@@ -452,6 +444,7 @@ class DevToolsURLLoaderFactoryProxy : public network::mojom::URLLoaderFactory {
       bool is_download,
       network::mojom::URLLoaderFactoryRequest loader_request,
       network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
+      network::mojom::CookieManagerPtrInfo cookie_manager,
       base::WeakPtr<DevToolsURLLoaderInterceptor::Impl> interceptor);
   ~DevToolsURLLoaderFactoryProxy() override;
 
@@ -468,7 +461,8 @@ class DevToolsURLLoaderFactoryProxy : public network::mojom::URLLoaderFactory {
   void Clone(network::mojom::URLLoaderFactoryRequest request) override;
 
   void StartOnIO(network::mojom::URLLoaderFactoryRequest loader_request,
-                 network::mojom::URLLoaderFactoryPtrInfo target_factory_info);
+                 network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
+                 network::mojom::CookieManagerPtrInfo cookie_manager);
   void OnProxyBindingError();
   void OnTargetFactoryError();
 
@@ -477,6 +471,7 @@ class DevToolsURLLoaderFactoryProxy : public network::mojom::URLLoaderFactory {
   const bool is_download_;
 
   network::mojom::URLLoaderFactoryPtr target_factory_;
+  network::mojom::CookieManagerPtr cookie_manager_;
   base::WeakPtr<DevToolsURLLoaderInterceptor::Impl> interceptor_;
   mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
 
@@ -489,6 +484,7 @@ DevToolsURLLoaderFactoryProxy::DevToolsURLLoaderFactoryProxy(
     bool is_download,
     network::mojom::URLLoaderFactoryRequest loader_request,
     network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
+    network::mojom::CookieManagerPtrInfo cookie_manager,
     base::WeakPtr<DevToolsURLLoaderInterceptor::Impl> interceptor)
     : frame_token_(frame_token),
       process_id_(process_id),
@@ -499,7 +495,8 @@ DevToolsURLLoaderFactoryProxy::DevToolsURLLoaderFactoryProxy(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&DevToolsURLLoaderFactoryProxy::StartOnIO,
                      base::Unretained(this), std::move(loader_request),
-                     std::move(target_factory_info)));
+                     std::move(target_factory_info),
+                     std::move(cookie_manager)));
 }
 
 DevToolsURLLoaderFactoryProxy::~DevToolsURLLoaderFactoryProxy() {}
@@ -525,14 +522,18 @@ void DevToolsURLLoaderFactoryProxy::CreateLoaderAndStart(
       routing_id, request_id, options, request, traffic_annotation);
   network::mojom::URLLoaderFactoryPtr factory_clone;
   target_factory_->Clone(MakeRequest(&factory_clone));
+  network::mojom::CookieManagerPtr cookie_manager_clone;
+  cookie_manager_->CloneInterface(mojo::MakeRequest(&cookie_manager_clone));
   interceptor->CreateJob(frame_token_, process_id_, is_download_,
                          std::move(creation_params), std::move(loader),
-                         std::move(client), std::move(factory_clone));
+                         std::move(client), std::move(factory_clone),
+                         std::move(cookie_manager_clone));
 }
 
 void DevToolsURLLoaderFactoryProxy::StartOnIO(
     network::mojom::URLLoaderFactoryRequest loader_request,
-    network::mojom::URLLoaderFactoryPtrInfo target_factory_info) {
+    network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
+    network::mojom::CookieManagerPtrInfo cookie_manager) {
   target_factory_.Bind(std::move(target_factory_info));
   target_factory_.set_connection_error_handler(
       base::BindOnce(&DevToolsURLLoaderFactoryProxy::OnTargetFactoryError,
@@ -542,6 +543,11 @@ void DevToolsURLLoaderFactoryProxy::StartOnIO(
   bindings_.set_connection_error_handler(
       base::BindRepeating(&DevToolsURLLoaderFactoryProxy::OnProxyBindingError,
                           base::Unretained(this)));
+
+  cookie_manager_.Bind(std::move(cookie_manager));
+  cookie_manager_.set_connection_error_handler(
+      base::BindOnce(&DevToolsURLLoaderFactoryProxy::OnTargetFactoryError,
+                     base::Unretained(this)));
 }
 
 void DevToolsURLLoaderFactoryProxy::Clone(
@@ -574,51 +580,19 @@ void DevToolsURLLoaderInterceptor::HandleAuthRequest(
 }
 
 DevToolsURLLoaderInterceptor::DevToolsURLLoaderInterceptor(
-    FrameTreeNode* local_root,
     RequestInterceptedCallback callback)
-    : local_root_(local_root),
-      enabled_(false),
+    : enabled_(false),
       impl_(new DevToolsURLLoaderInterceptor::Impl(std::move(callback)),
             base::OnTaskRunnerDeleter(
                 base::CreateSingleThreadTaskRunnerWithTraits(
                     {BrowserThread::IO}))),
-      weak_impl_(impl_->AsWeakPtr()) {
-  network::mojom::CookieManagerPtrInfo cookie_manager;
-  StoragePartition* storage_partition =
-      local_root->current_frame_host()->GetProcess()->GetStoragePartition();
-  storage_partition->GetNetworkContext()->GetCookieManager(
-      mojo::MakeRequest(&cookie_manager));
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&Impl::SetCookieManager, base::Unretained(impl_.get()),
-                     std::move(cookie_manager)));
-}
+      weak_impl_(impl_->AsWeakPtr()) {}
 
-DevToolsURLLoaderInterceptor::~DevToolsURLLoaderInterceptor() {
-  UpdateSubresourceLoaderFactories();
-};
-
-void DevToolsURLLoaderInterceptor::UpdateSubresourceLoaderFactories() {
-  base::queue<FrameTreeNode*> queue;
-  queue.push(local_root_);
-  while (!queue.empty()) {
-    FrameTreeNode* node = queue.front();
-    queue.pop();
-    RenderFrameHostImpl* host = node->current_frame_host();
-    if (node != local_root_ && host->IsCrossProcessSubframe())
-      continue;
-    host->UpdateSubresourceLoaderFactories();
-    for (size_t i = 0; i < node->child_count(); ++i)
-      queue.push(node->child_at(i));
-  }
-}
+DevToolsURLLoaderInterceptor::~DevToolsURLLoaderInterceptor() = default;
 
 void DevToolsURLLoaderInterceptor::SetPatterns(
     std::vector<DevToolsNetworkInterceptor::Pattern> patterns) {
-  if (enabled_ != !!patterns.size()) {
-    enabled_ = !!patterns.size();
-    UpdateSubresourceLoaderFactories();
-  }
+  enabled_ = !!patterns.size();
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&Impl::SetPatterns, base::Unretained(impl_.get()),
@@ -655,20 +629,27 @@ void DevToolsURLLoaderInterceptor::ContinueInterceptedRequest(
 }
 
 bool DevToolsURLLoaderInterceptor::CreateProxyForInterception(
-    const base::UnguessableToken frame_token,
-    int process_id,
+    RenderFrameHostImpl* rfh,
+    bool is_navigation,
     bool is_download,
     network::mojom::URLLoaderFactoryRequest* request) const {
   if (!enabled_)
     return false;
+
   network::mojom::URLLoaderFactoryRequest original_request =
       std::move(*request);
   network::mojom::URLLoaderFactoryPtrInfo target_ptr_info;
   *request = MakeRequest(&target_ptr_info);
-
-  new DevToolsURLLoaderFactoryProxy(frame_token, process_id, is_download,
-                                    std::move(original_request),
-                                    std::move(target_ptr_info), weak_impl_);
+  network::mojom::CookieManagerPtrInfo cookie_manager;
+  int process_id = is_navigation ? 0 : rfh->GetProcess()->GetID();
+  rfh->GetProcess()
+      ->GetStoragePartition()
+      ->GetNetworkContext()
+      ->GetCookieManager(mojo::MakeRequest(&cookie_manager));
+  new DevToolsURLLoaderFactoryProxy(rfh->GetDevToolsFrameToken(), process_id,
+                                    is_download, std::move(original_request),
+                                    std::move(target_ptr_info),
+                                    std::move(cookie_manager), weak_impl_);
   return true;
 }
 
@@ -681,7 +662,8 @@ InterceptionJob::InterceptionJob(
     bool is_download,
     network::mojom::URLLoaderRequest loader_request,
     network::mojom::URLLoaderClientPtr client,
-    network::mojom::URLLoaderFactoryPtr target_factory)
+    network::mojom::URLLoaderFactoryPtr target_factory,
+    network::mojom::CookieManagerPtr cookie_manager)
     : id_prefix_(id),
       global_req_id_(
           std::make_tuple(process_id,
@@ -698,10 +680,10 @@ InterceptionJob::InterceptionJob(
       loader_binding_(this),
       client_(std::move(client)),
       target_factory_(std::move(target_factory)),
+      cookie_manager_(std::move(cookie_manager)),
       state_(kNotStarted),
       waiting_for_resolution_(false),
-      redirect_count_(0),
-      weak_factory_(this) {
+      redirect_count_(0) {
   UpdateIdAndRegister();
   const network::ResourceRequest& request = create_loader_params_->request;
   stage_ = interceptor_->GetInterceptionStage(
@@ -1029,14 +1011,13 @@ Response InterceptionJob::ProcessResponseOverride(std::string response) {
     if (redirect_url.is_valid()) {
       continue_after_cookies_set =
           base::BindOnce(&InterceptionJob::ProcessRedirectByClient,
-                         weak_factory_.GetWeakPtr(), std::move(redirect_url));
+                         base::Unretained(this), std::move(redirect_url));
     }
   }
   if (!continue_after_cookies_set) {
-    continue_after_cookies_set =
-        base::BindOnce(&InterceptionJob::SendResponseAfterCookiesSet,
-                       weak_factory_.GetWeakPtr(), std::move(response),
-                       header_size, body_size);
+    continue_after_cookies_set = base::BindOnce(
+        &InterceptionJob::SendResponseAfterCookiesSet, base::Unretained(this),
+        std::move(response), header_size, body_size);
   }
   ProcessSetCookies(*head->headers, std::move(continue_after_cookies_set));
 
@@ -1077,8 +1058,7 @@ void InterceptionJob::ProcessSetCookies(const net::HttpResponseHeaders& headers,
       [](base::RepeatingClosure closure, bool) { closure.Run(); },
       base::BarrierClosure(cookies.size(), std::move(callback)));
   for (auto& cookie : cookies) {
-    interceptor_->GetCookieManager()->SetCanonicalCookie(*cookie, true, true,
-                                                         on_cookie_set);
+    cookie_manager_->SetCanonicalCookie(*cookie, true, true, on_cookie_set);
   }
 }
 
@@ -1258,15 +1238,13 @@ void InterceptionJob::FetchCookies(
           net::CookieOptions::SameSiteCookieMode::INCLUDE_LAX);
     }
   }
-  interceptor_->GetCookieManager()->GetCookieList(request.url, options,
-                                                  std::move(callback));
+  cookie_manager_->GetCookieList(request.url, options, std::move(callback));
 }
 
 void InterceptionJob::NotifyClient(
     std::unique_ptr<InterceptedRequestInfo> request_info) {
   FetchCookies(base::BindOnce(&InterceptionJob::NotifyClientWithCookies,
-                              weak_factory_.GetWeakPtr(),
-                              std::move(request_info)));
+                              base::Unretained(this), std::move(request_info)));
 }
 
 void InterceptionJob::NotifyClientWithCookies(
