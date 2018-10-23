@@ -52,7 +52,7 @@ typedef struct _AXPlatformNodeAuraLinuxClass AXPlatformNodeAuraLinuxClass;
 
 // TODO(aleventhal) Remove this and use atk_role_get_name() once the following
 // GNOME bug is fixed: https://bugzilla.gnome.org/show_bug.cgi?id=795983
-const char* role_names[] = {
+const char* const kRoleNames[] = {
     "invalid",  // ATK_ROLE_INVALID.
     "accelerator label",
     "alert",
@@ -1035,10 +1035,31 @@ G_END_DECLS
 
 namespace {
 
+// The root-level Application object that's the parent of all top-level windows.
+AXPlatformNode* g_root_application = nullptr;
+
+// The last AtkObject with keyboard focus. Tracking this is required to emit the
+// ATK_STATE_FOCUSED change to false.
+AtkObject* g_current_focused = nullptr;
+
 // The last object which was selected. Tracking this is required because
 // widgets in the browser UI only emit notifications upon becoming selected,
 // but clients also expect notifications when items become unselected.
 AXPlatformNodeAuraLinux* g_current_selected = nullptr;
+
+const char* GetUniqueAccessibilityGTypeName(int interface_mask) {
+  // 37 characters is enough for "AXPlatformNodeAuraLinux%x" with any integer
+  // value.
+  static char name[37];
+  snprintf(name, sizeof(name), "AXPlatformNodeAuraLinux%x", interface_mask);
+  return name;
+}
+
+bool IsRoleWithValueInterface(AtkRole role) {
+  return role == ATK_ROLE_SCROLL_BAR || role == ATK_ROLE_SLIDER ||
+         role == ATK_ROLE_PROGRESS_BAR || role == ATK_ROLE_SEPARATOR ||
+         role == ATK_ROLE_SPIN_BUTTON;
+}
 
 }  // namespace
 
@@ -1050,21 +1071,6 @@ void AXPlatformNodeAuraLinux::EnsureGTypeInit() {
     first_time = false;
   }
 #endif
-}
-
-const char* AXPlatformNodeAuraLinux::GetUniqueAccessibilityGTypeName(
-    int interface_mask) {
-  // 37 characters is enough for "AXPlatformNodeAuraLinux%x" with any integer
-  // value.
-  static char name[37];
-  snprintf(name, sizeof(name), "AXPlatformNodeAuraLinux%x", interface_mask);
-  return name;
-}
-
-static bool IsRoleWithValueInterface(AtkRole role) {
-  return role == ATK_ROLE_SCROLL_BAR || role == ATK_ROLE_SLIDER ||
-         role == ATK_ROLE_PROGRESS_BAR || role == ATK_ROLE_SEPARATOR ||
-         role == ATK_ROLE_SPIN_BUTTON;
 }
 
 int AXPlatformNodeAuraLinux::GetGTypeInterfaceMask() {
@@ -1167,8 +1173,8 @@ void AXPlatformNodeAuraLinux::DestroyAtkObjects() {
     atk_hyperlink_ = nullptr;
   }
   if (atk_object_) {
-    if (atk_object_ == current_focused_)
-      current_focused_ = nullptr;
+    if (atk_object_ == g_current_focused)
+      g_current_focused = nullptr;
     AXPlatformNodeAuraLinuxDetach(AX_PLATFORM_NODE_AURALINUX(atk_object_));
     g_object_unref(atk_object_);
     atk_object_ = nullptr;
@@ -1209,11 +1215,13 @@ AXPlatformNodeAuraLinux* AXPlatformNodeAuraLinux::GetFromUniqueId(
 //
 
 // static
-AXPlatformNode* AXPlatformNodeAuraLinux::application_ = nullptr;
+void AXPlatformNodeAuraLinux::SetApplication(AXPlatformNode* application) {
+  g_root_application = application;
+}
 
 // static
-void AXPlatformNodeAuraLinux::SetApplication(AXPlatformNode* application) {
-  application_ = application;
+AXPlatformNode* AXPlatformNodeAuraLinux::application() {
+  return g_root_application;
 }
 
 // static
@@ -1693,11 +1701,7 @@ void AXPlatformNodeAuraLinux::GetAtkRelations(
     AtkRelationSet* atk_relation_set) {
 }
 
-AXPlatformNodeAuraLinux::AXPlatformNodeAuraLinux()
-    : interface_mask_(0),
-      atk_object_(nullptr),
-      atk_hyperlink_(nullptr),
-      weak_factory_(this) {}
+AXPlatformNodeAuraLinux::AXPlatformNodeAuraLinux() : weak_factory_(this) {}
 
 AXPlatformNodeAuraLinux::~AXPlatformNodeAuraLinux() {
   if (g_current_selected == this)
@@ -1740,7 +1744,7 @@ void AXPlatformNodeAuraLinux::AddAccessibilityTreeProperties(
   AtkRole role = GetAtkRole();
   if (role != ATK_ROLE_UNKNOWN) {
     int role_index = static_cast<int>(role);
-    dict->SetString("role", role_names[role_index]);
+    dict->SetString("role", kRoleNames[role_index]);
   }
   const gchar* name = atk_object_get_name(atk_object_);
   if (name)
@@ -1785,21 +1789,19 @@ void AXPlatformNodeAuraLinux::OnExpandedStateChanged(bool is_expanded) {
                                  is_expanded);
 }
 
-AtkObject* AXPlatformNodeAuraLinux::current_focused_ = nullptr;
-
 void AXPlatformNodeAuraLinux::OnFocused() {
   DCHECK(atk_object_);
 
-  if (atk_object_ == current_focused_)
+  if (atk_object_ == g_current_focused)
     return;
 
-  if (current_focused_) {
-    g_signal_emit_by_name(current_focused_, "focus-event", false);
-    atk_object_notify_state_change(ATK_OBJECT(current_focused_),
+  if (g_current_focused) {
+    g_signal_emit_by_name(g_current_focused, "focus-event", false);
+    atk_object_notify_state_change(ATK_OBJECT(g_current_focused),
                                    ATK_STATE_FOCUSED, false);
   }
 
-  current_focused_ = atk_object_;
+  g_current_focused = atk_object_;
   g_signal_emit_by_name(atk_object_, "focus-event", true);
   atk_object_notify_state_change(ATK_OBJECT(atk_object_), ATK_STATE_FOCUSED,
                                  true);
