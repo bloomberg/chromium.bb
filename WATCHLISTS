@@ -1006,6 +1006,9 @@
                   'content/renderer/input|'\
                   'ui/events/blink/'
     },
+    'input_devices': {
+      'filepath': 'ui/events/devices/',
+    },
     'installable': {
       'filepath': 'chrome/browser/installable/',
     },
@@ -2191,6 +2194,7 @@
                    'jsbell+idb@chromium.org'],
     'ink_drop': ['bruthig+ink_drop@chromium.org'],
     'input': ['dtapuska+chromiumwatch@chromium.org'],
+    'input_devices': ['spang+watch@chromium.org'],
     'installable': ['dominickn+watch-installable@chromium.org'],
     'installer_linux': ['mmoss@chromium.org',
                         'raphael.kubo.da.costa@intel.com'],
