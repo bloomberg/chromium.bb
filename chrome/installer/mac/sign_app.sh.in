@@ -24,6 +24,9 @@ export -n SHELLOPTS
 ME="$(basename "${0}")"
 readonly ME
 
+# Note that |is_development| is tested for string length, not value.
+is_development=
+
 if [[ ${#} -eq 4 || ${#} -eq 6 ]]; then
   app_path="${1}"
   codesign_keychain="${2}"
@@ -41,7 +44,6 @@ else
   codesign_id="${3}"
   provisioning_profile="${4}"
   entitlements_plist="${5}"
-  is_development=0
 fi
 
 script_dir="$(dirname "${0}")"
