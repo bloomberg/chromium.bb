@@ -113,6 +113,14 @@ class ChangeProcessorImpl : public SyncChangeProcessor {
                                const SyncChangeList& change_list) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+    // Reject changes if the processor has already experienced errors.
+    base::Optional<ModelError> processor_error = other_->GetError();
+    if (processor_error) {
+      return SyncError(processor_error->location(),
+                       SyncError::UNRECOVERABLE_ERROR,
+                       processor_error->message(), type_);
+    }
+
     std::unique_ptr<ModelTypeStore::WriteBatch> batch =
         store_->CreateWriteBatch();
 

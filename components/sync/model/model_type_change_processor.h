@@ -10,6 +10,7 @@
 
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/model/model_error.h"
@@ -94,6 +95,10 @@ class ModelTypeChangeProcessor {
   // be called after an error. This will result in sync being temporarily
   // disabled for the model type (generally until the next restart).
   virtual void ReportError(const ModelError& error) = 0;
+
+  // Returns whether the processor has encountered any error, either reported
+  // by the bridge via ReportError() or by other means.
+  virtual base::Optional<ModelError> GetError() const = 0;
 
   // Returns the delegate for the controller.
   virtual base::WeakPtr<ModelTypeControllerDelegate>

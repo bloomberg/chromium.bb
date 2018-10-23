@@ -462,6 +462,32 @@ TEST_F(SyncableServiceBasedBridgeTest, ShouldPropagateLocalDeletion) {
   EXPECT_THAT(GetAllData(), IsEmpty());
 }
 
+TEST_F(SyncableServiceBasedBridgeTest,
+       ShouldIgnoreLocalCreationIfPreviousError) {
+  EXPECT_CALL(mock_processor_, Put(_, _, _)).Times(0);
+
+  InitializeBridge();
+  StartSyncing();
+  worker_->UpdateFromServer();
+  ASSERT_THAT(start_syncing_sync_processor_, NotNull());
+  ASSERT_THAT(GetAllData(), IsEmpty());
+
+  // We fake an error, reported by the bridge.
+  EXPECT_CALL(mock_error_handler_, Run(_));
+  real_processor_->ReportError(ModelError(FROM_HERE, "Fake error"));
+  ASSERT_TRUE(real_processor_->GetError());
+
+  // Further local changes should be ignored.
+  SyncChangeList change_list;
+  change_list.emplace_back(
+      FROM_HERE, SyncChange::ACTION_ADD,
+      SyncData::CreateLocalData(kClientTag, "title", GetTestSpecifics()));
+  const SyncError error =
+      start_syncing_sync_processor_->ProcessSyncChanges(FROM_HERE, change_list);
+  EXPECT_TRUE(error.IsSet());
+  EXPECT_THAT(GetAllData(), IsEmpty());
+}
+
 TEST_F(SyncableServiceBasedBridgeTest, ShouldPropagateRemoteCreation) {
   InitializeBridge();
   StartSyncing();

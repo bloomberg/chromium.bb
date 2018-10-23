@@ -42,14 +42,11 @@ class FakeModelTypeChangeProcessor : public ModelTypeChangeProcessor {
   bool IsTrackingMetadata() override;
   std::string TrackedAccountId() override;
   void ReportError(const ModelError& error) override;
+  base::Optional<ModelError> GetError() const override;
   base::WeakPtr<ModelTypeControllerDelegate> GetControllerDelegate() override;
 
-  // Indicates that ReportError should be called in the future.
-  void ExpectError();
-
  private:
-  // Whether we expect ReportError to be called.
-  bool expect_error_ = false;
+  base::Optional<ModelError> error_;
   base::WeakPtr<ModelTypeControllerDelegate> delegate_;
 };
 
