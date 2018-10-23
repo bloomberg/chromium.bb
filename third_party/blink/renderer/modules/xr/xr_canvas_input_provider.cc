@@ -54,7 +54,6 @@ XRCanvasInputProvider::XRCanvasInputProvider(XRSession* session,
 }
 
 XRCanvasInputProvider::~XRCanvasInputProvider() {
-  Stop();
 }
 
 void XRCanvasInputProvider::Stop() {
