@@ -423,6 +423,12 @@ VolumeManagerImpl.prototype.whenVolumeInfoReady = function(volumeId) {
   });
 };
 
+/** @override */
+VolumeManagerImpl.prototype.getDefaultDisplayRoot = function(callback) {
+  console.error('Unexpectedly called VolumeManagerImpl.getDefaultDisplayRoot.');
+  callback(null);
+};
+
 /**
  * @param {string} key Key produced by |makeRequestKey_|.
  * @param {function(VolumeInfo)} successCallback To be called when the request

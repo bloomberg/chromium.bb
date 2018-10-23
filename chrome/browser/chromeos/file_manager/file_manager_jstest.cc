@@ -68,8 +68,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DirectoryTreeTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileTableTest) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("foreground/js/ui/file_table_unittest.html")));
+  RunGeneratedTest("/foreground/js/ui/file_table_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MediaScannerTest) {
@@ -205,8 +204,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileTapHandler) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileListSelectionModelTest) {
-  RunTest(base::FilePath(FILE_PATH_LITERAL(
-      "foreground/js/ui/file_list_selection_model_unittest.html")));
+  RunGeneratedTest("/foreground/js/ui/file_list_selection_model_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FilesAppEntryTypes) {

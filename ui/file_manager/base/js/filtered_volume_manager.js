@@ -326,10 +326,7 @@ FilteredVolumeManager.prototype.getCurrentProfileVolumeInfo =
       this.volumeManager_.getCurrentProfileVolumeInfo(volumeType));
 };
 
-/**
- * Obtains the default display root entry.
- * @param {function(Entry)} callback Callback passed the default display root.
- */
+/** @override */
 FilteredVolumeManager.prototype.getDefaultDisplayRoot =
     function(callback) {
   this.ensureInitialized(function() {
