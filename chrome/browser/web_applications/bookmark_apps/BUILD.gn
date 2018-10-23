@@ -32,6 +32,21 @@ source_set("bookmark_apps") {
   ]
 }
 
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "test_system_web_app_manager.cc",
+    "test_system_web_app_manager.h",
+  ]
+
+  deps = [
+    ":bookmark_apps",
+    "//base",
+    "//url",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
 
@@ -43,6 +58,7 @@ source_set("unit_tests") {
 
   deps = [
     ":bookmark_apps",
+    ":test_support",
     "//base",
     "//chrome/browser",
     "//chrome/browser/web_applications:web_app_group",
@@ -59,6 +75,31 @@ source_set("unit_tests") {
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
+    "//url",
+  ]
+}
+
+source_set("browser_tests") {
+  testonly = true
+
+  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+
+  sources = [
+    "system_web_app_manager_browsertest.cc",
+  ]
+
+  deps = [
+    ":bookmark_apps",
+    ":test_support",
+    "//base",
+    "//base/test:test_support",
+    "//chrome/app/theme:chrome_unscaled_resources_grit",
+    "//chrome/browser/web_applications:web_applications_on_extensions",
+    "//chrome/browser/web_applications/components",
+    "//chrome/browser/web_applications/extensions",
+    "//chrome/common:constants",
+    "//chrome/test:test_support",
+    "//extensions/browser",
     "//url",
   ]
 }

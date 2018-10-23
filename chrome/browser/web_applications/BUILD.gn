@@ -108,6 +108,7 @@ source_set("browser_tests") {
 
   deps = [
     ":web_app_group",
+    "//chrome/browser/web_applications/bookmark_apps:browser_tests",
     "//chrome/browser/web_applications/extensions:browser_tests",
   ]
 }

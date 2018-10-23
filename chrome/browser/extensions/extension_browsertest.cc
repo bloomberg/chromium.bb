@@ -306,7 +306,7 @@ Browser* ExtensionBrowserTest::LaunchAppBrowser(const Extension* extension) {
 
 base::FilePath ExtensionBrowserTest::PackExtension(
     const base::FilePath& dir_path,
-    ExtensionCreator::RunFlags extra_run_flags) {
+    int extra_run_flags) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath crx_path = temp_dir_.GetPath().AppendASCII("temp.crx");
   if (!base::DeleteFile(crx_path, false)) {
@@ -337,7 +337,7 @@ base::FilePath ExtensionBrowserTest::PackExtensionWithOptions(
     const base::FilePath& crx_path,
     const base::FilePath& pem_path,
     const base::FilePath& pem_out_path,
-    ExtensionCreator::RunFlags extra_run_flags) {
+    int extra_run_flags) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   if (!base::PathExists(dir_path)) {
     ADD_FAILURE() << "Extension dir not found: " << dir_path.value();
@@ -451,9 +451,12 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     //                 and then always pack the extension here.
     base::FilePath crx_path = path;
     if (crx_path.Extension() != FILE_PATH_LITERAL(".crx")) {
-      ExtensionCreator::RunFlags run_flags = ExtensionCreator::kNoRunFlags;
-      if (creation_flags & Extension::FROM_BOOKMARK)
+      int run_flags = ExtensionCreator::kNoRunFlags;
+      if (creation_flags & Extension::FROM_BOOKMARK) {
         run_flags = ExtensionCreator::kBookmarkApp;
+        if (install_source == Manifest::EXTERNAL_COMPONENT)
+          run_flags |= ExtensionCreator::kSystemApp;
+      }
 
       crx_path = PackExtension(path, run_flags);
     }
