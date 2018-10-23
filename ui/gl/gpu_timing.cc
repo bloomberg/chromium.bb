@@ -524,11 +524,7 @@ void GPUTimer::Reset() {
 }
 
 void GPUTimer::QueryTimeStamp() {
-  // TODO(vikassoni): Adding CHECK instead of DCHECK temporarily to debug
-  // a crash - http://crbug.com/892354. This is only meant for canary and will
-  // be removed in few days.
-  CHECK(gpu_timing_client_);
-  CHECK(gpu_timing_client_->gpu_timing_);
+  DCHECK(gpu_timing_client_->gpu_timing_);
   Reset();
   time_stamp_result_ = gpu_timing_client_->gpu_timing_->DoTimeStampQuery();
   timer_state_ = kTimerState_WaitingForResult;
