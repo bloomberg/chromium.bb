@@ -180,23 +180,11 @@ int FFmpegVideoDecoder::GetVideoBuffer(struct AVCodecContext* codec_context,
 
   // Prefer the color space from the codec context. If it's not specified (or is
   // set to an unsupported value), fall back on the value from the config.
-  ColorSpace color_space = AVColorSpaceToColorSpace(codec_context->colorspace,
-                                                    codec_context->color_range);
-  if (color_space == COLOR_SPACE_UNSPECIFIED)
-    color_space = config_.color_space();
-  switch (color_space) {
-    case COLOR_SPACE_UNSPECIFIED:
-      break;
-    case COLOR_SPACE_HD_REC709:
-      video_frame->set_color_space(gfx::ColorSpace::CreateREC709());
-      break;
-    case COLOR_SPACE_SD_REC601:
-      video_frame->set_color_space(gfx::ColorSpace::CreateREC601());
-      break;
-    case COLOR_SPACE_JPEG:
-      video_frame->set_color_space(gfx::ColorSpace::CreateJpeg());
-      break;
-  }
+  VideoColorSpace color_space = AVColorSpaceToColorSpace(
+      codec_context->colorspace, codec_context->color_range);
+  if (!color_space.IsSpecified())
+    color_space = config_.color_space_info();
+  video_frame->set_color_space(color_space.ToGfxColorSpace());
 
   if (codec_context->codec_id == AV_CODEC_ID_VP8 &&
       codec_context->color_primaries == AVCOL_PRI_UNSPECIFIED &&

@@ -191,8 +191,8 @@ static void RecordVideoCodecStats(container_names::MediaContainerName container,
                           video_config.visible_rect());
   UMA_HISTOGRAM_ENUMERATION("Media.VideoPixelFormatUnion",
                             video_config.format(), PIXEL_FORMAT_MAX + 1);
-  UMA_HISTOGRAM_ENUMERATION("Media.VideoFrameColorSpace",
-                            video_config.color_space(), COLOR_SPACE_MAX + 1);
+
+  // TODO(hubbe): make better color space statistics
 
   // Note the PRESUBMIT_IGNORE_UMA_MAX below, this silences the PRESUBMIT.py
   // check for uma enum max usage, since we're abusing

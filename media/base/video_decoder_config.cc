@@ -61,7 +61,6 @@ VideoDecoderConfig::VideoDecoderConfig()
     : codec_(kUnknownVideoCodec),
       profile_(VIDEO_CODEC_PROFILE_UNKNOWN),
       format_(PIXEL_FORMAT_UNKNOWN),
-      color_space_(COLOR_SPACE_UNSPECIFIED),
       rotation_(VIDEO_ROTATION_0) {}
 
 VideoDecoderConfig::VideoDecoderConfig(
@@ -114,7 +113,6 @@ void VideoDecoderConfig::Initialize(VideoCodec codec,
   codec_ = codec;
   profile_ = profile;
   format_ = format;
-  color_space_ = color_space;
   rotation_ = rotation;
   coded_size_ = coded_size;
   visible_rect_ = visible_rect;

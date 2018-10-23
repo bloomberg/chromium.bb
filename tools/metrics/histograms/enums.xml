@@ -51189,6 +51189,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="VideoFrameColorSpace">
+  <obsolete>
+    Deprecated as of 10/2018.
+  </obsolete>
   <int value="0" label="Unspecified, usually Rec 601"/>
   <int value="1" label="Jpeg"/>
   <int value="2" label="HD Rec 709"/>

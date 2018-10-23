@@ -147,7 +147,6 @@ struct VideoDecoderConfig {
   VideoCodec codec;
   VideoCodecProfile profile;
   VideoPixelFormat format;
-  ColorSpace color_space;
   VideoRotation video_rotation;
   gfx.mojom.Size coded_size;
   gfx.mojom.Rect visible_rect;
