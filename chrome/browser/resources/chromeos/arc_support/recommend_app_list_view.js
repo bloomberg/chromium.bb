@@ -36,6 +36,11 @@ function generateContents(appIcon, appTitle, appPackageName) {
     }
   });
 
+  const chipContent = doc.createElement('div');
+  chipContent.classList.add('chip-content-container');
+  chipContent.tabIndex = -1;
+  chip.appendChild(chipContent);
+
   item.appendChild(chip);
 
   const img = doc.createElement('img');
@@ -46,8 +51,8 @@ function generateContents(appIcon, appTitle, appPackageName) {
   title.classList.add('app-title');
   title.innerHTML = appTitle;
 
-  chip.appendChild(img);
-  chip.appendChild(title);
+  chipContent.appendChild(img);
+  chipContent.appendChild(title);
 
   recommendAppsContainer.appendChild(item);
 }
@@ -64,7 +69,8 @@ function addRippleCircle_(e) {
   const offsetY = e.pageY - item.offsetTop;
   chip.style.setProperty('--x', offsetX);
   chip.style.setProperty('--y', offsetY);
-  chip.innerHTML += '<div class="ripple"></div>';
+  const chipContent = chip.querySelector('.chip-content-container');
+  chipContent.innerHTML += '<div class="ripple"></div>';
 }
 
 /**
