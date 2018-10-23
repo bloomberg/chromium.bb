@@ -1248,12 +1248,13 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
       UMA_HISTOGRAM_PERCENTAGE(
           "Compositing.RenderPass.AppendQuadData.RCMaskLayerPercent",
           rc_mask_layer_percent);
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Compositing.RenderPass.AppendQuadData.RCMaskAreaPercent",
+          rc_area_percent);
+      UMA_HISTOGRAM_COUNTS_10M(
+          "Compositing.RenderPass.AppendQuadData.RCMaskArea",
+          visible_rounded_corner_mask_layer_area);
     }
-    UMA_HISTOGRAM_PERCENTAGE(
-        "Compositing.RenderPass.AppendQuadData.RCMaskAreaPercent",
-        rc_area_percent);
-    UMA_HISTOGRAM_COUNTS_10M("Compositing.RenderPass.AppendQuadData.RCMaskArea",
-                             visible_rounded_corner_mask_layer_area);
   }
 
   TRACE_EVENT_END2("cc,benchmark", "LayerTreeHostImpl::CalculateRenderPasses",
