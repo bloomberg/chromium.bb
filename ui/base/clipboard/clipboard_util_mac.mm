@@ -150,10 +150,8 @@ bool ClipboardUtil::URLsAndTitlesFromPasteboard(NSPasteboard* pboard,
   if ([bookmarkPairs count] != 2)
     return false;
 
-  NSArray* urlsArr =
-      base::mac::ObjCCast<NSArray>([bookmarkPairs objectAtIndex:0]);
-  NSArray* titlesArr =
-      base::mac::ObjCCast<NSArray>([bookmarkPairs objectAtIndex:1]);
+  NSArray* urlsArr = base::mac::ObjCCast<NSArray>(bookmarkPairs[0]);
+  NSArray* titlesArr = base::mac::ObjCCast<NSArray>(bookmarkPairs[1]);
 
   if (!urlsArr || !titlesArr)
     return false;

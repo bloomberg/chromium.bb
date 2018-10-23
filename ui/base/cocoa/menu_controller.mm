@@ -103,13 +103,13 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
                         gfx::ELIDE_TAIL, gfx::Typesetter::NATIVE);
 }
 
-- (id)init {
+- (instancetype)init {
   self = [super init];
   return self;
 }
 
-- (id)initWithModel:(ui::MenuModel*)model
-    useWithPopUpButtonCell:(BOOL)useWithCell {
+- (instancetype)initWithModel:(ui::MenuModel*)model
+       useWithPopUpButtonCell:(BOOL)useWithCell {
   if ((self = [super init])) {
     model_ = model;
     useWithPopUpButtonCell_ = useWithCell;
@@ -237,10 +237,8 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
     }
     const gfx::FontList* font_list = model->GetLabelFontListAt(modelIndex);
     if (font_list) {
-      NSDictionary *attributes =
-          [NSDictionary dictionaryWithObject:font_list->GetPrimaryFont().
-                                             GetNativeFont()
-                                      forKey:NSFontAttributeName];
+      NSDictionary* attributes =
+          @{NSFontAttributeName : font_list->GetPrimaryFont().GetNativeFont()};
       base::scoped_nsobject<NSAttributedString> title(
           [[NSAttributedString alloc] initWithString:[(id)item title]
                                           attributes:attributes]);
