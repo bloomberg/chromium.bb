@@ -109,8 +109,6 @@ TEST_F(FormActivityTabHelperTest, TestObserverFormActivityFrameMessaging) {
   EXPECT_EQ(main_frame, observer_->form_activity_info()->sender_frame);
   EXPECT_EQ("form-name",
             observer_->form_activity_info()->form_activity.form_name);
-  EXPECT_EQ("field-name",
-            observer_->form_activity_info()->form_activity.field_name);
   EXPECT_EQ("text", observer_->form_activity_info()->form_activity.field_type);
   EXPECT_EQ("focus", observer_->form_activity_info()->form_activity.type);
   EXPECT_EQ("", observer_->form_activity_info()->form_activity.value);

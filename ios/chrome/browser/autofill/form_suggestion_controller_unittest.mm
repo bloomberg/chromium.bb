@@ -38,7 +38,7 @@
 
 @property(weak, nonatomic, readonly) FormSuggestion* suggestion;
 @property(weak, nonatomic, readonly) NSString* formName;
-@property(weak, nonatomic, readonly) NSString* fieldName;
+@property(weak, nonatomic, readonly) NSString* fieldIdentifier;
 @property(weak, nonatomic, readonly) NSString* frameID;
 @property(nonatomic, assign) BOOL selected;
 @property(nonatomic, assign) BOOL askedIfSuggestionsAvailable;
@@ -51,7 +51,6 @@
 @implementation TestSuggestionProvider {
   NSArray* _suggestions;
   NSString* _formName;
-  NSString* _fieldName;
   NSString* _fieldIdentifier;
   NSString* _frameID;
   FormSuggestion* _suggestion;
@@ -72,8 +71,8 @@
   return _formName;
 }
 
-- (NSString*)fieldName {
-  return _fieldName;
+- (NSString*)fieldIdentifier {
+  return _fieldIdentifier;
 }
 
 - (NSString*)frameID {
@@ -85,7 +84,6 @@
 }
 
 - (void)checkIfSuggestionsAvailableForForm:(NSString*)formName
-                                 fieldName:(NSString*)fieldName
                            fieldIdentifier:(NSString*)fieldIdentifier
                                  fieldType:(NSString*)fieldType
                                       type:(NSString*)type
@@ -101,7 +99,6 @@
 }
 
 - (void)retrieveSuggestionsForForm:(NSString*)formName
-                         fieldName:(NSString*)fieldName
                    fieldIdentifier:(NSString*)fieldIdentifier
                          fieldType:(NSString*)fieldType
                               type:(NSString*)type
@@ -114,17 +111,15 @@
 }
 
 - (void)didSelectSuggestion:(FormSuggestion*)suggestion
-                  fieldName:(NSString*)fieldName
-            fieldIdentifier:(NSString*)fieldIdentifier
                        form:(NSString*)formName
+            fieldIdentifier:(NSString*)fieldIdentifier
                     frameID:(NSString*)frameID
           completionHandler:(SuggestionHandledCompletion)completion {
   self.selected = YES;
   _suggestion = suggestion;
   _formName = [formName copy];
-  _fieldName = [fieldName copy];
-  _frameID = [frameID copy];
   _fieldIdentifier = [fieldIdentifier copy];
+  _frameID = [frameID copy];
   completion();
 }
 
@@ -276,7 +271,6 @@ TEST_F(FormSuggestionControllerTest,
   // Trigger form activity, which should set up the suggestions view.
   autofill::FormActivityParams params;
   params.form_name = "form";
-  params.field_name = "field";
   params.field_identifier = "field_id";
   params.field_type = "text";
   params.type = "type";
@@ -296,7 +290,6 @@ TEST_F(FormSuggestionControllerTest,
 TEST_F(FormSuggestionControllerTest, FormActivityBlurShouldBeIgnored) {
   autofill::FormActivityParams params;
   params.form_name = "form";
-  params.field_name = "field";
   params.field_identifier = "field_id";
   params.field_type = "text";
   params.type = "blur";  // blur!
@@ -315,7 +308,6 @@ TEST_F(FormSuggestionControllerTest,
   test_web_state_.SetCurrentURL(GURL("http://foo.com"));
   autofill::FormActivityParams params;
   params.form_name = "form";
-  params.field_name = "field";
   params.field_identifier = "field_id";
   params.field_type = "text";
   params.type = "type";
@@ -345,7 +337,6 @@ TEST_F(FormSuggestionControllerTest,
 
   autofill::FormActivityParams params;
   params.form_name = "form";
-  params.field_name = "field";
   params.field_identifier = "field_id";
   params.field_type = "text";
   params.type = "type";
@@ -396,7 +387,6 @@ TEST_F(FormSuggestionControllerTest,
 
   autofill::FormActivityParams params;
   params.form_name = "form";
-  params.field_name = "field";
   params.field_identifier = "field_id";
   params.field_type = "text";
   params.type = "type";
@@ -437,7 +427,6 @@ TEST_F(FormSuggestionControllerTest, SelectingSuggestionShouldNotifyDelegate) {
   test_web_state_.SetCurrentURL(GURL("http://foo.com"));
   autofill::FormActivityParams params;
   params.form_name = "form";
-  params.field_name = "field";
   params.field_identifier = "field_id";
   params.field_type = "text";
   params.type = "type";
@@ -451,7 +440,7 @@ TEST_F(FormSuggestionControllerTest, SelectingSuggestionShouldNotifyDelegate) {
   [suggestion_controller_ didSelectSuggestion:suggestions[0]];
   EXPECT_TRUE([provider selected]);
   EXPECT_NSEQ(@"form", [provider formName]);
-  EXPECT_NSEQ(@"field", [provider fieldName]);
+  EXPECT_NSEQ(@"field_id", [provider fieldIdentifier]);
   EXPECT_NSEQ(@"frame_id", [provider frameID]);
   EXPECT_NSEQ(suggestions[0], [provider suggestion]);
 }

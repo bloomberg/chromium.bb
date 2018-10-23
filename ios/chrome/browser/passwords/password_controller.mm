@@ -316,7 +316,6 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 }
 
 - (void)checkIfSuggestionsAvailableForForm:(NSString*)formName
-                                 fieldName:(NSString*)fieldName
                            fieldIdentifier:(NSString*)fieldIdentifier
                                  fieldType:(NSString*)fieldType
                                       type:(NSString*)type
@@ -343,7 +342,6 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 }
 
 - (void)retrieveSuggestionsForForm:(NSString*)formName
-                         fieldName:(NSString*)fieldName2
                    fieldIdentifier:(NSString*)fieldIdentifier
                          fieldType:(NSString*)fieldType
                               type:(NSString*)type
@@ -390,9 +388,8 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 }
 
 - (void)didSelectSuggestion:(FormSuggestion*)suggestion
-                  fieldName:(NSString*)fieldName2
-            fieldIdentifier:(NSString*)fieldIdentifier
                        form:(NSString*)formName
+            fieldIdentifier:(NSString*)fieldIdentifier
                     frameID:(NSString*)frameID
           completionHandler:(SuggestionHandledCompletion)completion {
   if (suggestion.identifier == 1) {

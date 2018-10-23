@@ -41,12 +41,11 @@
 #pragma mark - CWVAutofillControllerDelegate methods
 
 - (void)autofillController:(CWVAutofillController*)autofillController
-    didFocusOnFieldWithName:(NSString*)fieldName
-            fieldIdentifier:(NSString*)fieldIdentifier
-                  fieldType:(NSString*)fieldType
-                   formName:(NSString*)formName
-                    frameID:(NSString*)frameID
-                      value:(NSString*)value {
+    didFocusOnFieldWithIdentifier:(NSString*)fieldIdentifier
+                        fieldType:(NSString*)fieldType
+                         formName:(NSString*)formName
+                          frameID:(NSString*)frameID
+                            value:(NSString*)value {
   _autofillController = autofillController;
 
   __weak ShellAutofillDelegate* weakSelf = self;
@@ -82,7 +81,6 @@
     [strongSelf presentAlertController:alertController];
   };
   [autofillController fetchSuggestionsForFormWithName:formName
-                                            fieldName:fieldName
                                       fieldIdentifier:fieldIdentifier
                                             fieldType:fieldType
                                               frameID:frameID
@@ -90,20 +88,18 @@
 }
 
 - (void)autofillController:(CWVAutofillController*)autofillController
-    didInputInFieldWithName:(NSString*)fieldName
-            fieldIdentifier:(NSString*)fieldIdentifier
-                  fieldType:(NSString*)fieldType
-                   formName:(NSString*)formName
-                      value:(NSString*)value {
+    didInputInFieldWithIdentifier:(NSString*)fieldIdentifier
+                        fieldType:(NSString*)fieldType
+                         formName:(NSString*)formName
+                            value:(NSString*)value {
   // Not implemented.
 }
 
 - (void)autofillController:(CWVAutofillController*)autofillController
-    didBlurOnFieldWithName:(NSString*)fieldName
-           fieldIdentifier:(NSString*)fieldIdentifier
-                 fieldType:(NSString*)fieldType
-                  formName:(NSString*)formName
-                     value:(NSString*)value {
+    didBlurOnFieldWithIdentifier:(NSString*)fieldIdentifier
+                       fieldType:(NSString*)fieldType
+                        formName:(NSString*)formName
+                           value:(NSString*)value {
   [_alertController dismissViewControllerAnimated:YES completion:nil];
   _alertController = nil;
   _autofillController = nil;

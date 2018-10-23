@@ -15,7 +15,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithFormSuggestion:(FormSuggestion*)formSuggestion
                               formName:(NSString*)formName
-                             fieldName:(NSString*)fieldName
                        fieldIdentifier:(NSString*)fieldIdentifier
                                frameID:(NSString*)frameID
                   isPasswordSuggestion:(BOOL)isPasswordSuggestion
