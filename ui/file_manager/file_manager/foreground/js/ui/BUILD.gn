@@ -298,6 +298,14 @@ js_library("file_tap_handler") {
   ]
 }
 
+js_unittest("file_tap_handler_unittest") {
+  deps = [
+    ":file_tap_handler",
+    "//ui/file_manager/base/js:test_error_reporting",
+    "//ui/webui/resources/js:webui_resource_test",
+  ]
+}
+
 # TODO(tapted): Move this into //ui/file_manager/base.
 js_library("files_alert_dialog") {
   visibility += [ "//ui/file_manager/gallery/*" ]
@@ -412,5 +420,6 @@ js_unit_tests("unit_tests") {
     ":actions_submenu_unittest",
     ":file_list_selection_model_unittest",
     ":file_table_unittest",
+    ":file_tap_handler_unittest",
   ]
 }
