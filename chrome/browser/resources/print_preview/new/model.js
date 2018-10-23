@@ -607,7 +607,7 @@ Polymer({
 
   /** @private */
   updateRecentDestinations_: function() {
-    if (!this.initialized_)
+    if (!this.initialized_ || !this.destination)
       return;
 
     // Determine if this destination is already in the recent destinations,
