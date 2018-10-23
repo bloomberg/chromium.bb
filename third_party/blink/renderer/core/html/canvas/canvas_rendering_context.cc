@@ -158,7 +158,7 @@ CanvasRenderingContext::ContextType CanvasRenderingContext::ContextTypeFromId(
     return kContextImageBitmap;
   if (id == "xrpresent")
     return kContextXRPresent;
-  return kContextTypeCount;
+  return kContextTypeUnknown;
 }
 
 CanvasRenderingContext::ContextType
