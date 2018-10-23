@@ -63,8 +63,8 @@ class FakeDeviceSyncImplFactory : public DeviceSyncImpl::Factory {
       gcm::GCMDriver* gcm_driver,
       service_manager::Connector* connector,
       const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-      override {
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      std::unique_ptr<base::OneShotTimer> timer) override {
     EXPECT_TRUE(fake_device_sync_);
     return std::move(fake_device_sync_);
   }
