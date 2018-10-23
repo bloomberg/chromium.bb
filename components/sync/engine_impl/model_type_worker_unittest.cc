@@ -725,7 +725,7 @@ TEST_F(ModelTypeWorkerTest, TwoNewItemsCommittedSeparately) {
 TEST_F(ModelTypeWorkerTest, ReceiveUpdates) {
   NormalInitialize();
 
-  EXPECT_EQ(0, emitter()->GetUpdateCounters().num_updates_received);
+  EXPECT_EQ(0, emitter()->GetUpdateCounters().num_non_initial_updates_received);
   EXPECT_EQ(0, emitter()->GetUpdateCounters().num_updates_applied);
 
   const std::string& tag_hash = GenerateTagHash(kTag1);
@@ -750,7 +750,7 @@ TEST_F(ModelTypeWorkerTest, ReceiveUpdates) {
   EXPECT_EQ(kTag1, entity.specifics.preference().name());
   EXPECT_EQ(kValue1, entity.specifics.preference().value());
 
-  EXPECT_EQ(1, emitter()->GetUpdateCounters().num_updates_received);
+  EXPECT_EQ(1, emitter()->GetUpdateCounters().num_non_initial_updates_received);
   EXPECT_EQ(1, emitter()->GetUpdateCounters().num_updates_applied);
 }
 

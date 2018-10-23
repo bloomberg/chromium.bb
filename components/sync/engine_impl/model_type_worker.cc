@@ -181,6 +181,8 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
     StatusController* status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  const bool is_initial_sync = !model_type_state_.initial_sync_done();
+
   // TODO(rlarocque): Handle data type context conflicts.
   *model_type_state_.mutable_type_context() = mutated_context;
   *model_type_state_.mutable_progress_marker() = progress_marker;
@@ -188,14 +190,20 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
   UpdateCounters* counters = debug_info_emitter_->GetMutableUpdateCounters();
 
   if (!from_uss_migrator) {
-    counters->num_updates_received += applicable_updates.size();
+    if (is_initial_sync) {
+      counters->num_initial_updates_received += applicable_updates.size();
+    } else {
+      counters->num_non_initial_updates_received += applicable_updates.size();
+    }
   }
 
   std::vector<std::string> client_tag_hashes;
   for (const sync_pb::SyncEntity* update_entity : applicable_updates) {
     if (update_entity->deleted()) {
       status->increment_num_tombstone_updates_downloaded_by(1);
-      ++counters->num_tombstone_updates_received;
+      if (!is_initial_sync) {
+        ++counters->num_non_initial_tombstone_updates_received;
+      }
     }
 
     UpdateResponseData response_data;
