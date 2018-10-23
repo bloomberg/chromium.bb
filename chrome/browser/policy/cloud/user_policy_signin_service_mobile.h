@@ -19,6 +19,10 @@
 class ProfileOAuth2TokenService;
 class Profile;
 
+namespace identity {
+class IdentityManager;
+}
+
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -36,7 +40,7 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
       PrefService* local_state,
       DeviceManagementService* device_management_service,
       UserCloudPolicyManager* policy_manager,
-      SigninManager* signin_manager,
+      identity::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory,
       ProfileOAuth2TokenService* token_service);
   ~UserPolicySigninService() override;

@@ -20,6 +20,7 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -43,6 +44,7 @@
 #include "components/unified_consent/unified_consent_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -125,18 +127,18 @@ class FakeUserPolicySigninService : public policy::UserPolicySigninService {
   static std::unique_ptr<KeyedService> Build(content::BrowserContext* context) {
     Profile* profile = Profile::FromBrowserContext(context);
     return std::make_unique<FakeUserPolicySigninService>(
-        profile, SigninManagerFactory::GetForProfile(profile),
+        profile, IdentityManagerFactory::GetForProfile(profile),
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile));
   }
 
   FakeUserPolicySigninService(Profile* profile,
-                              SigninManager* signin_manager,
+                              identity::IdentityManager* identity_manager,
                               ProfileOAuth2TokenService* oauth2_token_service)
       : UserPolicySigninService(profile,
                                 nullptr,
                                 nullptr,
                                 nullptr,
-                                signin_manager,
+                                identity_manager,
                                 nullptr,
                                 oauth2_token_service) {}
 
