@@ -114,7 +114,7 @@ Polymer({
 
   /** @private */
   onOK_: function(e) {
-    switch (this.$$('paper-radio-group').selected) {
+    switch (this.$$('cr-radio-group').selected) {
       case 'reviewSettings':
         this.onGoToSettings_(e);
         break;

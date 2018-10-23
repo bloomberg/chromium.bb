@@ -592,10 +592,10 @@ cr.define('device_page_tests', function() {
         PolymerTest.flushTasks();
         expectNaturalScrollValue(pointersPage, false);
 
-        triggerKeyEvents(naturalScrollOn, 'Enter', 'Enter');
-        PolymerTest.flushTasks();
-        expectNaturalScrollValue(pointersPage, true);
-
+        pointersPage.$$('settings-radio-group').selected = '';
+        const falseRadio = pointersPage.$$('cr-radio-button[name="false"]');
+        assertTrue(!!falseRadio);
+        assertFalse(falseRadio.checked);
         triggerKeyEvents(naturalScrollOff, 'Space', ' ');
         PolymerTest.flushTasks();
         expectNaturalScrollValue(pointersPage, false);

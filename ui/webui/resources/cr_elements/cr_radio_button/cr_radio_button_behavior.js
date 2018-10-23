@@ -37,11 +37,9 @@ var CrRadioButtonBehaviorImpl = {
   },
 
   listeners: {
-    'blur': 'cancelRipple_',
-    'click': 'onClick_',
-    'focus': 'onFocus_',
-    'keyup': 'onKeyUp_',
-    'pointerup': 'cancelRipple_',
+    blur: 'cancelRipple_',
+    focus: 'onFocus_',
+    pointerup: 'cancelRipple_',
   },
 
   hostAttributes: {
@@ -64,8 +62,6 @@ var CrRadioButtonBehaviorImpl = {
     if (previous === undefined && !this.disabled)
       return;
 
-    if (this.disabled)
-      this.setAttribute('tabindex', '-1');
     this.setAttribute('aria-disabled', this.disabled ? 'true' : 'false');
   },
 
@@ -73,30 +69,6 @@ var CrRadioButtonBehaviorImpl = {
   onFocus_: function() {
     this.ensureRipple();
     this.$$('paper-ripple').holdDown = true;
-  },
-
-  /**
-   * @param {!Event} e
-   * @private
-   */
-  onClick_: function(e) {
-    // If this element is disabled, or event fired on a link, don't propagate
-    // to the parent paper-radio-group to avoid incorrect selection.
-    if (this.disabled || e.target.tagName == 'A')
-      e.stopPropagation();
-  },
-
-  /**
-   * @param {!Event} e
-   * @private
-   */
-  onKeyUp_: function(e) {
-    if (e.key != ' ' && e.key != 'Enter')
-      return;
-
-    // Simulating click on the key-up target, and let onClick decide if it
-    // should be propagated to the parent paper-radio-group.
-    e.target.click();
   },
 
   /** @private */
