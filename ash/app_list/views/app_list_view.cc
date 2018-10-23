@@ -579,9 +579,6 @@ void AppListView::InitContents(int initial_apps_page) {
   AddChildView(app_list_background_shield_);
   app_list_main_view_ = new AppListMainView(delegate_, this);
   AddChildView(app_list_main_view_);
-  app_list_main_view_->SetPaintToLayer();
-  app_list_main_view_->layer()->SetFillsBoundsOpaquely(false);
-  app_list_main_view_->layer()->SetMasksToBounds(true);
   // This will be added to the |search_box_widget_| after the app list widget is
   // initialized.
   search_box_view_ = new SearchBoxView(app_list_main_view_, delegate_, this);
@@ -637,7 +634,7 @@ void AppListView::InitializeFullscreen(gfx::NativeView parent) {
   app_list_overlay_view_params.delegate = this;
   app_list_overlay_view_params.opacity =
       views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  app_list_overlay_view_params.layer_type = ui::LAYER_SOLID_COLOR;
+  app_list_overlay_view_params.layer_type = ui::LAYER_NOT_DRAWN;
   fullscreen_widget_->Init(app_list_overlay_view_params);
   fullscreen_widget_->GetNativeWindow()->SetEventTargeter(
       std::make_unique<AppListEventTargeter>());
@@ -1304,14 +1301,6 @@ void AppListView::StartAnimationForState(AppListViewState target_state) {
     animation_duration = kAppListAnimationDurationMs;
   }
 
-  if (fullscreen_widget_->GetNativeView()->bounds().y() ==
-      display.work_area().bottom()) {
-    // If the animation start position is the bottom of the screen activate the
-    // fade in animation.
-    app_list_main_view_->contents_view()->FadeInOnOpen(
-        base::TimeDelta::FromMilliseconds(animation_duration));
-  }
-
   ui::Layer* layer = fullscreen_widget_->GetLayer();
   layer->SetBounds(target_bounds);
   gfx::Transform transform;
@@ -1342,7 +1331,6 @@ void AppListView::StartCloseAnimation(base::TimeDelta animation_duration) {
     return;
 
   SetState(AppListViewState::CLOSED);
-  app_list_main_view_->contents_view()->FadeOutOnClose(animation_duration);
 }
 
 void AppListView::SetStateFromSearchBoxView(bool search_box_is_empty,
