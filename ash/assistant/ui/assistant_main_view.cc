@@ -114,6 +114,12 @@ void AssistantMainView::ChildVisibilityChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
+views::View* AssistantMainView::FindFirstFocusableView() {
+  // In those instances in which we want to override views::FocusSearch
+  // behavior, DialogPlate will identify the first focusable view.
+  return dialog_plate_->FindFirstFocusableView();
+}
+
 void AssistantMainView::InitLayout() {
   views::BoxLayout* layout_manager =
       SetLayoutManager(std::make_unique<views::BoxLayout>(

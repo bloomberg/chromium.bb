@@ -234,6 +234,23 @@ void DialogPlate::RequestFocus() {
                ->input_modality());
 }
 
+views::View* DialogPlate::FindFirstFocusableView() {
+  InputModality input_modality = assistant_controller_->interaction_controller()
+                                     ->model()
+                                     ->input_modality();
+
+  // The first focusable view depends entirely on current input modality.
+  switch (input_modality) {
+    case InputModality::kKeyboard:
+      return textfield_;
+    case InputModality::kVoice:
+      return animated_voice_input_toggle_;
+    case InputModality::kStylus:
+      // Default views::FocusSearch behavior is acceptable.
+      return nullptr;
+  }
+}
+
 void DialogPlate::InitLayout() {
   constexpr int kRightPaddingDip = 8;
 
@@ -385,7 +402,6 @@ bool DialogPlate::OnAnimationEnded(
   InputModality input_modality = assistant_controller_->interaction_controller()
                                      ->model()
                                      ->input_modality();
-  SetFocus(input_modality);
 
   switch (input_modality) {
     case InputModality::kKeyboard:
@@ -401,6 +417,8 @@ bool DialogPlate::OnAnimationEnded(
       break;
   }
 
+  SetFocus(input_modality);
+
   // We return false so that the animation observer will not destroy itself.
   return false;
 }
@@ -411,10 +429,17 @@ void DialogPlate::SetFocus(InputModality input_modality) {
       textfield_->RequestFocus();
       break;
     case InputModality::kVoice:
-      animated_voice_input_toggle_->RequestFocus();
-      break;
     case InputModality::kStylus:
-      // No action necessary.
+      // When not using |kKeyboard| input modality we need to explicitly clear
+      // focus if the focused view is |textfield_| or |voice_input_toggle_| to
+      // prevent it from being read by ChromeVox. Clearing focus also allows
+      // AssistantContainerView's focus traversal to be reset.
+      views::FocusManager* focus_manager = GetFocusManager();
+      if (focus_manager &&
+          (focus_manager->GetFocusedView() == textfield_ ||
+           focus_manager->GetFocusedView() == voice_input_toggle_)) {
+        focus_manager->ClearFocus();
+      }
       break;
   }
 }
