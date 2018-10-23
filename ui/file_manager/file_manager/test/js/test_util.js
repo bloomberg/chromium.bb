@@ -11,6 +11,8 @@ var test = test || {};
 constants.FILES_QUICK_VIEW_HTML = 'test/gen/foreground/elements/files_quick_view.html';
 constants.DRIVE_WELCOME_CSS = FILE_MANAGER_ROOT + constants.DRIVE_WELCOME_CSS;
 
+test.FILE_MANAGER_EXTENSION_ID = 'hhaomjibdihmijegdhdafkllkbggdgoj';
+
 // Stores Blobs loaded from src/chrome/test/data/chromeos/file_manager.
 test.DATA = {
   'archive.zip': null,
@@ -18,6 +20,7 @@ test.DATA = {
   'image2.png': null,
   'image3.jpg': null,
   'music.ogg': null,
+  'package.deb': null,
   'random.bin': null,
   'text.txt': null,
   'video.ogv': null,
@@ -226,6 +229,11 @@ test.ENTRIES = {
       test.EntryType.FILE, 'archive.zip', 'archive.zip', 'application/x-zip',
       test.SharedOption.NONE, 'Jan 1, 2014, 1:00 AM', 'archive.zip',
       '533 bytes', 'Zip archive'),
+
+  debPackage: new test.TestEntryInfo(
+      test.EntryType.FILE, 'package.deb', 'package.deb',
+      'application/vnd.debian.binary-package', test.SharedOption.NONE,
+      'Jan 1, 2014, 1:00 AM', 'package.deb', '724 bytes', 'DEB file'),
 
   hiddenFile: new test.TestEntryInfo(
       test.EntryType.FILE, 'text.txt', '.hiddenfile.txt', 'text/plain',

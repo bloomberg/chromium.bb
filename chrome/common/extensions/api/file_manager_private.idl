@@ -629,6 +629,17 @@ dictionary Provider {
   manifestTypes.FileSystemProviderSource source;
 };
 
+// Information about a Linux package in response to GetLinuxPackageInfo.
+dictionary LinuxPackageInfo {
+  DOMString name;
+  DOMString version;
+
+  // A one-line summary of the project. Almost always present.
+  DOMString? summary;
+  // A longer description of the project. Almost always present.
+  DOMString? description;
+};
+
 // Callback that does not take arguments.
 callback SimpleCallback = void();
 
@@ -739,6 +750,10 @@ callback GetRecentFilesCallback = void([instanceOf=Entry] object[] entries);
 // |entries| Entries shared with crostini container.
 callback GetCrostiniSharedPathsCallback =
     void([instanceOf = Entry] object[] entries);
+
+// |linux_package_info| Package info for the queried package.
+callback GetLinuxPackageInfoCallback =
+    void(LinuxPackageInfo linux_package_info);
 
 // |status| Result of starting the install
 // |failure_reason| Reason for failure for a 'failed' status
@@ -1125,6 +1140,11 @@ interface Functions {
   // Returns list of paths shared with crostini container.
   [nocompile]
   static void getCrostiniSharedPaths(GetCrostiniSharedPathsCallback callback);
+
+  // Requests information about a Linux package. |entry| is a .deb file.
+  [nocompile]
+  static void getLinuxPackageInfo([instanceof=Entry] object entry,
+                                  GetLinuxPackageInfoCallback callback);
 
   // Starts installation of a Linux package.
   [nocompile]

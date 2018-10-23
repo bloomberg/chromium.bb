@@ -28,6 +28,7 @@ class RecentFile;
 
 namespace crostini {
 enum class CrostiniResult;
+struct LinuxPackageInfo;
 }
 
 namespace file_manager {
@@ -342,6 +343,26 @@ class FileManagerPrivateInternalGetCrostiniSharedPathsFunction
           entry_definition_list);
   DISALLOW_COPY_AND_ASSIGN(
       FileManagerPrivateInternalGetCrostiniSharedPathsFunction);
+};
+
+// Implements the chrome.fileManagerPrivate.getLinuxPackageInfo method.
+// Retrieves information about a Linux package.
+class FileManagerPrivateInternalGetLinuxPackageInfoFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.getLinuxPackageInfo",
+                             FILEMANAGERPRIVATEINTERNAL_GETLINUXPACKAGEINFO)
+  FileManagerPrivateInternalGetLinuxPackageInfoFunction() = default;
+
+ protected:
+  ~FileManagerPrivateInternalGetLinuxPackageInfoFunction() override = default;
+
+ private:
+  ResponseAction Run() override;
+  void OnGetLinuxPackageInfo(
+      const crostini::LinuxPackageInfo& linux_package_info);
+  DISALLOW_COPY_AND_ASSIGN(
+      FileManagerPrivateInternalGetLinuxPackageInfoFunction);
 };
 
 // Implements the chrome.fileManagerPrivate.installLinuxPackage method.
