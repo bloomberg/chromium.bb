@@ -314,8 +314,11 @@ enum QuicErrorCode {
   // Try to send stream data on a READ_UNIDIRECTIONAL stream.
   QUIC_TRY_TO_WRITE_DATA_ON_READ_UNIDIRECTIONAL_STREAM = 116,
 
+  // RETIRE CONNECTION ID frame data is malformed.
+  QUIC_INVALID_RETIRE_CONNECTION_ID_DATA = 117,
+
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 117,
+  QUIC_LAST_ERROR = 118,
 };
 // QuicErrorCodes is encoded as a single octet on-the-wire.
 static_assert(static_cast<int>(QUIC_LAST_ERROR) <=

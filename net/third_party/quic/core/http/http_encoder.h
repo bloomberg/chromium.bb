@@ -29,6 +29,11 @@ class QUIC_EXPORT_PRIVATE HttpEncoder {
   QuicByteCount SerializeDataFrameHeader(const DataFrame& data,
                                          std::unique_ptr<char[]>* output);
 
+  // Serializes the header of a HEADERS frame into a new buffer stored in
+  // |output|. Returns the length of the buffer on success, or 0 otherwise.
+  QuicByteCount SerializeHeadersFrameHeader(const HeadersFrame& headers,
+                                            std::unique_ptr<char[]>* output);
+
   // Serializes a PRIORITY frame into a new buffer stored in |output|.
   // Returns the length of the buffer on success, or 0 otherwise.
   QuicByteCount SerializePriorityFrame(const PriorityFrame& priority,
@@ -43,6 +48,13 @@ class QUIC_EXPORT_PRIVATE HttpEncoder {
   // Returns the length of the buffer on success, or 0 otherwise.
   QuicByteCount SerializeSettingsFrame(const SettingsFrame& settings,
                                        std::unique_ptr<char[]>* output);
+
+  // Serializes the header and push_id of a PUSH_PROMISE frame into a new buffer
+  // stored in |output|. Returns the length of the buffer on success, or 0
+  // otherwise.
+  QuicByteCount SerializePushPromiseFrameWithOnlyPushId(
+      const PushPromiseFrame& push_promise,
+      std::unique_ptr<char[]>* output);
 
   // Serializes a GOAWAY frame into a new buffer stored in |output|.
   // Returns the length of the buffer on success, or 0 otherwise.

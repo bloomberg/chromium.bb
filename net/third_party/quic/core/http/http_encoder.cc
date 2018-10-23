@@ -61,13 +61,30 @@ HttpEncoder::~HttpEncoder() {}
 QuicByteCount HttpEncoder::SerializeDataFrameHeader(
     const DataFrame& data,
     std::unique_ptr<char[]>* output) {
-  int header_length =
+  QuicByteCount header_length =
       QuicDataWriter::GetVarInt62Len(data.data.length()) + kFrameTypeLength;
 
   output->reset(new char[header_length]);
   QuicDataWriter writer(header_length, output->get(), NETWORK_BYTE_ORDER);
 
   if (WriteFrameHeader(data.data.length(), HttpFrameType::DATA, &writer)) {
+    return header_length;
+  }
+  return 0;
+}
+
+QuicByteCount HttpEncoder::SerializeHeadersFrameHeader(
+    const HeadersFrame& headers,
+    std::unique_ptr<char[]>* output) {
+  QuicByteCount header_length =
+      QuicDataWriter::GetVarInt62Len(headers.headers.length()) +
+      kFrameTypeLength;
+
+  output->reset(new char[header_length]);
+  QuicDataWriter writer(header_length, output->get(), NETWORK_BYTE_ORDER);
+
+  if (WriteFrameHeader(headers.headers.length(), HttpFrameType::HEADERS,
+                       &writer)) {
     return header_length;
   }
   return 0;
@@ -150,6 +167,27 @@ QuicByteCount HttpEncoder::SerializeSettingsFrame(
   }
 
   return total_length;
+}
+
+QuicByteCount HttpEncoder::SerializePushPromiseFrameWithOnlyPushId(
+    const PushPromiseFrame& push_promise,
+    std::unique_ptr<char[]>* output) {
+  QuicByteCount payload_length =
+      QuicDataWriter::GetVarInt62Len(push_promise.push_id) +
+      push_promise.headers.length();
+  // GetTotalLength() is not used because headers will not be serialized.
+  QuicByteCount total_length =
+      QuicDataWriter::GetVarInt62Len(payload_length) + kFrameTypeLength +
+      QuicDataWriter::GetVarInt62Len(push_promise.push_id);
+
+  output->reset(new char[total_length]);
+  QuicDataWriter writer(total_length, output->get(), NETWORK_BYTE_ORDER);
+
+  if (WriteFrameHeader(payload_length, HttpFrameType::PUSH_PROMISE, &writer) &&
+      writer.WriteVarInt62(push_promise.push_id)) {
+    return total_length;
+  }
+  return 0;
 }
 
 QuicByteCount HttpEncoder::SerializeGoAwayFrame(

@@ -296,6 +296,8 @@ const struct QuicErrorMapping {
      "quic.data.received.on.write.unidirectional.stream"},
     {quic::QUIC_TRY_TO_WRITE_DATA_ON_READ_UNIDIRECTIONAL_STREAM,
      "quic.try.to.write.data.on.read.unidirectional.stream"},
+    {quic::QUIC_INVALID_RETIRE_CONNECTION_ID_DATA,
+     "quic.invalid.retire.connection.id.data"},
 
     // No error. Used as bound while iterating.
     {quic::QUIC_LAST_ERROR, "quic.last_error"}};

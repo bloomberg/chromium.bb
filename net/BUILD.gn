@@ -1353,6 +1353,8 @@ component("net") {
       "third_party/quic/core/frames/quic_path_response_frame.h",
       "third_party/quic/core/frames/quic_ping_frame.cc",
       "third_party/quic/core/frames/quic_ping_frame.h",
+      "third_party/quic/core/frames/quic_retire_connection_id_frame.cc",
+      "third_party/quic/core/frames/quic_retire_connection_id_frame.h",
       "third_party/quic/core/frames/quic_rst_stream_frame.cc",
       "third_party/quic/core/frames/quic_rst_stream_frame.h",
       "third_party/quic/core/frames/quic_stop_sending_frame.cc",

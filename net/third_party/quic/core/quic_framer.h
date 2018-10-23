@@ -175,6 +175,10 @@ class QUIC_EXPORT_PRIVATE QuicFramerVisitorInterface {
   virtual bool OnNewConnectionIdFrame(
       const QuicNewConnectionIdFrame& frame) = 0;
 
+  // Called when a RetireConnectionIdFrame has been parsed.
+  virtual bool OnRetireConnectionIdFrame(
+      const QuicRetireConnectionIdFrame& frame) = 0;
+
   // Called when a NewTokenFrame has been parsed.
   virtual bool OnNewTokenFrame(const QuicNewTokenFrame& frame) = 0;
 
@@ -318,6 +322,10 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // Size in bytes for a serialized new connection id frame
   static size_t GetNewConnectionIdFrameSize(
       const QuicNewConnectionIdFrame& frame);
+
+  // Size in bytes for a serialized retire connection id frame
+  static size_t GetRetireConnectionIdFrameSize(
+      const QuicRetireConnectionIdFrame& frame);
 
   // Size in bytes for a serialized new token frame
   static size_t GetNewTokenFrameSize(const QuicNewTokenFrame& frame);
@@ -590,7 +598,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool ProcessTimestampsInAckFrame(uint8_t num_received_packets,
                                    QuicPacketNumber largest_acked,
                                    QuicDataReader* reader);
-  bool ProcessIetfAckFrame(QuicDataReader* reader, QuicAckFrame* ack_frame);
+  bool ProcessIetfAckFrame(QuicDataReader* reader,
+                           uint64_t frame_type,
+                           QuicAckFrame* ack_frame);
   bool ProcessStopWaitingFrame(QuicDataReader* reader,
                                const QuicPacketHeader& header,
                                QuicStopWaitingFrame* stop_waiting);
@@ -682,17 +692,11 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // Append IETF format ACK frame.
   //
   // AppendIetfAckFrameAndTypeByte adds the IETF type byte and the body
-  // of the frame (by calling AppendIetfAckFrame).
-  //
-  // AppendIetfAckFrameAndTypeByte adds just the frame - kept separate so
-  // that the Google QUIC  AppendAckFrameAndTypeByte method can insert
-  // the Google QUIC type-byte and the IETF format frame.
+  // of the frame.
   bool AppendIetfAckFrameAndTypeByte(const QuicAckFrame& frame,
                                      QuicDataWriter* writer);
-  // Appends just the frame, not the type byte.
-  bool AppendIetfAckFrame(const QuicAckFrame& frame, QuicDataWriter* writer);
 
-  // Used by AppendIetfAckFrame to figure out how many ack
+  // Used by AppendIetfAckFrameAndTypeByte to figure out how many ack
   // blocks can be included.
   int CalculateIetfAckBlockCount(const QuicAckFrame& frame,
                                  QuicDataWriter* writer,
@@ -782,6 +786,10 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                                   QuicDataWriter* writer);
   bool ProcessNewConnectionIdFrame(QuicDataReader* reader,
                                    QuicNewConnectionIdFrame* frame);
+  bool AppendRetireConnectionIdFrame(const QuicRetireConnectionIdFrame& frame,
+                                     QuicDataWriter* writer);
+  bool ProcessRetireConnectionIdFrame(QuicDataReader* reader,
+                                      QuicRetireConnectionIdFrame* frame);
 
   bool AppendNewTokenFrame(const QuicNewTokenFrame& frame,
                            QuicDataWriter* writer);

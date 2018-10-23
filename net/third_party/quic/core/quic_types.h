@@ -41,7 +41,8 @@ typedef std::array<uint8_t, kQuicPathFrameBufferSize> QuicPathFrameBuffer;
 typedef uint16_t QuicApplicationErrorCode;
 
 // The connection id sequence number specifies the order that connection
-// ids must be used in.
+// ids must be used in. This is also the sequence number carried in
+// the IETF QUIC NEW_CONNECTION_ID and RETIRE_CONNECTION_ID frames.
 typedef uint64_t QuicConnectionIdSequenceNumber;
 
 // A struct for functions which consume data payloads and fins.
@@ -186,6 +187,7 @@ enum QuicFrameType : uint8_t {
   MESSAGE_FRAME,
   CRYPTO_FRAME,
   NEW_TOKEN_FRAME,
+  RETIRE_CONNECTION_ID_FRAME,
 
   NUM_FRAME_TYPES
 };
@@ -215,7 +217,7 @@ enum QuicIetfFrameType : uint8_t {
   IETF_STREAM_ID_BLOCKED = 0x0a,
   IETF_NEW_CONNECTION_ID = 0x0b,
   IETF_STOP_SENDING = 0x0c,
-  IETF_ACK = 0x0d,
+  IETF_RETIRE_CONNECTION_ID = 0x0d,
   IETF_PATH_CHALLENGE = 0x0e,
   IETF_PATH_RESPONSE = 0x0f,
   // the low-3 bits of the stream frame type value are actually flags
@@ -227,6 +229,8 @@ enum QuicIetfFrameType : uint8_t {
   IETF_STREAM = 0x10,
   IETF_CRYPTO = 0x18,
   IETF_NEW_TOKEN = 0x19,
+  IETF_ACK = 0x1a,
+  IETF_ACK_ECN = 0x1b,
 
   // MESSAGE frame type is not yet determined, use 0x2x temporarily to give
   // stream frame some wiggle room.
