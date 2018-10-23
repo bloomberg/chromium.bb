@@ -137,8 +137,6 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   AtkObject* atk_object_ = nullptr;
   AtkHyperlink* atk_hyperlink_ = nullptr;
 
-  base::WeakPtrFactory<AXPlatformNodeAuraLinux> weak_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(AXPlatformNodeAuraLinux);
 };
 

@@ -1701,7 +1701,7 @@ void AXPlatformNodeAuraLinux::GetAtkRelations(
     AtkRelationSet* atk_relation_set) {
 }
 
-AXPlatformNodeAuraLinux::AXPlatformNodeAuraLinux() : weak_factory_(this) {}
+AXPlatformNodeAuraLinux::AXPlatformNodeAuraLinux() = default;
 
 AXPlatformNodeAuraLinux::~AXPlatformNodeAuraLinux() {
   if (g_current_selected == this)
