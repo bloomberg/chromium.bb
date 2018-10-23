@@ -162,10 +162,6 @@ void TaskSchedulerImpl::Start(
   // message_loop().
   task_tracker_->set_watch_file_descriptor_message_loop(
       static_cast<MessageLoopForIO*>(service_thread_->message_loop()));
-
-#if DCHECK_IS_ON()
-  task_tracker_->set_service_thread_handle(service_thread_->GetThreadHandle());
-#endif  // DCHECK_IS_ON()
 #endif  // defined(OS_POSIX) && !defined(OS_NACL_SFI)
 
   // Needs to happen after starting the service thread to get its task_runner().
