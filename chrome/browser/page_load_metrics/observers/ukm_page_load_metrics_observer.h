@@ -66,7 +66,7 @@ class UkmPageLoadMetricsObserver
   // as first contentful paint.
   void RecordTimingMetrics(
       const page_load_metrics::mojom::PageLoadTiming& timing,
-      ukm::SourceId source_id);
+      const page_load_metrics::PageLoadExtraInfo& info);
 
   // Records metrics based on the PageLoadExtraInfo struct, as well as updating
   // the URL. |app_background_time| should be set to a timestamp if the app was

@@ -316,6 +316,10 @@ mojom::PageLoadTimingPtr MetricsRenderFrameObserver::GetTiming() const {
     timing->paint_timing->first_meaningful_paint =
         ClampDelta(perf.FirstMeaningfulPaint(), start);
   }
+  if (perf.LargestImagePaint() > 0.0) {
+    timing->paint_timing->largest_image_paint =
+        ClampDelta(perf.LargestImagePaint(), start);
+  }
   if (perf.ParseStart() > 0.0)
     timing->parse_timing->parse_start = ClampDelta(perf.ParseStart(), start);
   if (perf.ParseStop() > 0.0)

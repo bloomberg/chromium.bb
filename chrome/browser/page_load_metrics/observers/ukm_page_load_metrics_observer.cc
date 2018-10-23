@@ -77,7 +77,7 @@ UkmPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   RecordPageLoadExtraInfoMetrics(info, base::TimeTicks::Now());
-  RecordTimingMetrics(timing, info.source_id);
+  RecordTimingMetrics(timing, info);
   return STOP_OBSERVING;
 }
 
@@ -86,7 +86,7 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnHidden(
     const page_load_metrics::PageLoadExtraInfo& info) {
   RecordPageLoadExtraInfoMetrics(
       info, base::TimeTicks() /* no app_background_time */);
-  RecordTimingMetrics(timing, info.source_id);
+  RecordTimingMetrics(timing, info);
   return STOP_OBSERVING;
 }
 
@@ -113,7 +113,7 @@ void UkmPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::PageLoadExtraInfo& info) {
   RecordPageLoadExtraInfoMetrics(
       info, base::TimeTicks() /* no app_background_time */);
-  RecordTimingMetrics(timing, info.source_id);
+  RecordTimingMetrics(timing, info);
 }
 
 void UkmPageLoadMetricsObserver::OnLoadedResource(
@@ -134,8 +134,8 @@ void UkmPageLoadMetricsObserver::OnLoadedResource(
 
 void UkmPageLoadMetricsObserver::RecordTimingMetrics(
     const page_load_metrics::mojom::PageLoadTiming& timing,
-    ukm::SourceId source_id) {
-  ukm::builders::PageLoad builder(source_id);
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  ukm::builders::PageLoad builder(info.source_id);
   if (timing.input_to_navigation_start) {
     builder.SetExperimental_InputToNavigationStart(
         timing.input_to_navigation_start.value().InMilliseconds());
@@ -164,6 +164,12 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
   if (timing.paint_timing->first_meaningful_paint) {
     builder.SetExperimental_PaintTiming_NavigationToFirstMeaningfulPaint(
         timing.paint_timing->first_meaningful_paint.value().InMilliseconds());
+  }
+  if (timing.paint_timing->largest_image_paint.has_value() &&
+      WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->largest_image_paint, info)) {
+    builder.SetExperimental_PaintTiming_NavigationToLargestImagePaint(
+        timing.paint_timing->largest_image_paint.value().InMilliseconds());
   }
   if (timing.interactive_timing->interactive) {
     base::TimeDelta time_to_interactive =

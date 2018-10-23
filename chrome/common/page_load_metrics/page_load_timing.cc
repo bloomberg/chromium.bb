@@ -28,7 +28,7 @@ bool IsEmpty(const page_load_metrics::mojom::InteractiveTiming& timing) {
 bool IsEmpty(const page_load_metrics::mojom::PaintTiming& timing) {
   return !timing.first_paint && !timing.first_text_paint &&
          !timing.first_image_paint && !timing.first_contentful_paint &&
-         !timing.first_meaningful_paint;
+         !timing.first_meaningful_paint && !timing.largest_image_paint;
 }
 
 bool IsEmpty(const page_load_metrics::mojom::ParseTiming& timing) {
