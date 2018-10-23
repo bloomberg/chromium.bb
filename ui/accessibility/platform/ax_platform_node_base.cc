@@ -399,14 +399,7 @@ AXPlatformNodeBase* AXPlatformNodeBase::GetTableCell(int row,
 }
 
 int AXPlatformNodeBase::GetTableCellIndex() const {
-  if (!IsCellOrTableHeader(GetData().role))
-    return -1;
-
-  AXPlatformNodeBase* table = GetTable();
-  if (!table)
-    return -1;
-
-  return table->delegate_->CellIdToIndex(GetData().id);
+  return delegate_->GetTableCellIndex();
 }
 
 int AXPlatformNodeBase::GetTableColumn() const {
@@ -716,13 +709,10 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
 
   // Expose table cell index.
   if (IsCellOrTableHeader(GetData().role)) {
-    AXPlatformNodeBase* table = GetTable();
-    if (table) {
-      int32_t index = table->delegate_->CellIdToIndex(GetData().id);
-      if (index >= 0) {
-        std::string str_index(base::IntToString(index));
-        AddAttributeToList("table-cell-index", str_index, attributes);
-      }
+    int32_t index = delegate_->GetTableCellIndex();
+    if (index >= 0) {
+      std::string str_index(base::IntToString(index));
+      AddAttributeToList("table-cell-index", str_index, attributes);
     }
   }
   if (GetData().role == ax::mojom::Role::kLayoutTable)

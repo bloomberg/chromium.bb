@@ -461,7 +461,14 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
   return true;
 }
 
-AXTableInfo* AXTree::GetTableInfo(AXNode* table_node) {
+AXTableInfo* AXTree::GetTableInfo(const AXNode* const_table_node) const {
+  // Note: the const_casts are here because we want this function to be able
+  // to be called from a const virtual function on AXNode. AXTableInfo is
+  // computed on demand and cached, but that's an implementation detail
+  // we want to hide from users of this API.
+  AXNode* table_node = const_cast<AXNode*>(const_table_node);
+  AXTree* tree = const_cast<AXTree*>(this);
+
   DCHECK(table_node);
   const auto& cached = table_info_map_.find(table_node->id());
   if (cached != table_info_map_.end()) {
@@ -476,19 +483,20 @@ AXTableInfo* AXTree::GetTableInfo(AXNode* table_node) {
         delete table_info;
         table_info_map_.erase(table_node->id());
       }
+      // See note about const_cast, above.
       if (delegate_)
-        delegate_->OnNodeChanged(this, table_node);
+        delegate_->OnNodeChanged(tree, table_node);
     }
     return table_info;
   }
 
-  AXTableInfo* table_info = AXTableInfo::Create(this, table_node);
+  AXTableInfo* table_info = AXTableInfo::Create(tree, table_node);
   if (!table_info)
     return nullptr;
 
   table_info_map_[table_node->id()] = table_info;
   if (delegate_)
-    delegate_->OnNodeChanged(this, table_node);
+    delegate_->OnNodeChanged(tree, table_node);
 
   return table_info;
 }
@@ -501,7 +509,7 @@ AXNode* AXTree::CreateNode(AXNode* parent,
                            int32_t id,
                            int32_t index_in_parent,
                            AXTreeUpdateState* update_state) {
-  AXNode* new_node = new AXNode(parent, id, index_in_parent);
+  AXNode* new_node = new AXNode(this, parent, id, index_in_parent);
   id_map_[new_node->id()] = new_node;
   if (delegate_) {
     if (update_state->HasChangedNode(new_node) &&

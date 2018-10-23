@@ -29,7 +29,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_range.h"
 #include "ui/accessibility/ax_role_properties.h"
-#include "ui/accessibility/ax_table_info.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 
 #import "ui/accessibility/platform/ax_platform_node_mac.h"
@@ -2334,14 +2333,11 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (![self instanceActive])
     return nil;
 
-  ui::AXTableInfo* table_info =
-      owner_->manager()->ax_tree()->GetTableInfo(owner_->node());
-  if (!table_info)
-    return nil;
-
+  std::vector<int32_t> unique_cell_ids;
+  owner_->node()->GetTableUniqueCellIds(&unique_cell_ids);
   NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
-  for (size_t i = 0; i < table_info->unique_cell_ids.size(); ++i) {
-    int id = table_info->unique_cell_ids[i];
+  for (size_t i = 0; i < unique_cell_ids.size(); ++i) {
+    int id = unique_cell_ids[i];
     BrowserAccessibility* cell = owner_->manager()->GetFromID(id);
     if (cell)
       [ret addObject:ToBrowserAccessibilityCocoa(cell)];
