@@ -723,10 +723,10 @@ body.capturing.grid #preview-grid-vertical {
   white-space: nowrap;
   padding: 0 8px;
   left: 0;
-  opacity: 0;
   pointer-events: none;
   position: absolute;
   top: 0;
+  opacity: 0;
   z-index: 100;
 }
 
@@ -745,22 +745,28 @@ body.capturing.grid #preview-grid-vertical {
   padding: 0 16px;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 250ms;
   z-index: 100;
 }
 
-#toast.animate {
-  animation: toast-opacity 2500ms ease-out;
+#toast.animate.spoken {
+  animation: toast-spoken 3000ms ease-out;
 }
 
-@keyframes toast-opacity {
+#toast.animate:not(.spoken) {
+  animation: toast-shown 3000ms ease-out;
+}
+
+@keyframes toast-spoken {
+  0%, 100% {
+    opacity: 0;
+  }
+}
+
+@keyframes toast-shown {
   0% {
     opacity: 0;
   }
-  10% {
-    opacity: 0.9;
-  }
-  90% {
+  10%, 90% {
     opacity: 0.9;
   }
   100% {

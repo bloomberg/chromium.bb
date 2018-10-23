@@ -19,8 +19,31 @@ camera.toast = camera.toast || {};
  * @param {string} message Message to be shown.
  */
 camera.toast.show = function(message) {
+  camera.toast.update_(message, false);
+};
+
+/**
+ * Speaks a toast message.
+ * @param {string} message Message to be spoken.
+ */
+camera.toast.speak = function(message) {
+  camera.toast.update_(message, true);
+};
+
+/**
+ * Updates the toast message.
+ * @param {string} message Message to be updated.
+ * @param {boolean} spoken Whether the toast is spoken only.
+ * @private
+ */
+camera.toast.update_ = function(message, spoken) {
+  // TTS speaks changes of on-screen aria-live elements. Force content changes
+  // and clear content once inactive to avoid stale content being read out.
   var element = document.querySelector('#toast');
-  camera.util.animateCancel(element); // Cancel the showing toast if any.
+  camera.util.animateCancel(element); // Cancel the active toast if any.
+  element.textContent = '';
   element.textContent = chrome.i18n.getMessage(message) || message;
-  camera.util.animateOnce(element);
+
+  element.classList.toggle('spoken', spoken);
+  camera.util.animateOnce(element, () => element.textContent = '');
 };

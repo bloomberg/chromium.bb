@@ -286,9 +286,7 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
     this.keyBuffer_ = '';
   }
   if (this.keyBuffer_.indexOf('RES') !== -1) {
-    if (this.capturing) {
-      camera.toast.show(this.preview_.toString());
-    }
+    camera.toast.show(this.preview_.toString());
     this.keyBuffer_ = '';
   }
 };

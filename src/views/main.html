@@ -73,12 +73,12 @@
         <div id="record-time-msg"></div>
       </div>
       <div class="centered-overlay">
-        <div id="timer-tick-msg" role="timer" aria-live="polite"></div>
+        <div id="timer-tick-msg"></div>
       </div>
       <div class="centered-overlay" id="camera-mode"></div>
     </div>
     <div class="centered-overlay" id="spinner"></div>
-    <div id="browser" role="listbox" i18n-aria-label="galleryImages">
+    <div id="browser" role="listbox" i18n-label="galleryImages">
       <div class="padder">
         <div class="bounds-padder"></div>
         <div class="bounds-padder"></div>
@@ -107,8 +107,7 @@
         </div>
       </div>
     </div>
-    <div class="centered-overlay" id="toast"></div>
-    <div id="tooltip"></div>
+    <div class="centered-overlay" id="toast" aria-live="polite"></div>
+    <div id="tooltip" aria-hidden="true"></div>
   </body>
 </html>
-

@@ -19,35 +19,35 @@
     "message": "Check if the camera is properly connected.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
-  "errorMsgGalleryLoadFailed": {
-    "message": "Unable to load the gallery.",
-    "description": "Error message shown when loading the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "Unable to export $file$.",
+    "message": "Unable to export $file$",
     "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
-        "example": "IMG_20160520_000000.jpg."
+        "example": "IMG_20160520_000000.jpg"
       }
     }
   },
   "errorMsgSaveFileFailed": {
-    "message": "Unable to save the file.",
+    "message": "Unable to save the file",
     "description": "Error message shown when saving/adding a image or video to the file system failed."
   },
   "errorMsgTakePhotoFailed": {
-    "message": "Unable to take photo.",
+    "message": "Unable to take photo",
     "description": "Error message shown when failing to take photo."
   },
   "errorMsgRecordStartFailed": {
-    "message": "Unable to start recording.",
+    "message": "Unable to start recording",
     "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
-    "message": "Nothing recorded.",
+    "message": "Nothing recorded",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "Recording stopped",
+    "description": "Status message for spoken feedback when video recording has been stopped."
   },
   "galleryButton": {
     "message": "Go to gallery",
