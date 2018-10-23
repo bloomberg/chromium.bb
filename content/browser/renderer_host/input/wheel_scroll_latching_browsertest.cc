@@ -250,8 +250,8 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
   EXPECT_EQ(1, ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
 }
 
-// crbug.com/777258 Flaky on Android.
-#if defined(OS_ANDROID)
+// crbug.com/777258 Flaky on Android and Chrome OS.
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
 #define MAYBE_WheelScrollingRelatchWhenLatchedScrollerRemoved \
   DISABLED_WheelScrollingRelatchWhenLatchedScrollerRemoved
 #else
