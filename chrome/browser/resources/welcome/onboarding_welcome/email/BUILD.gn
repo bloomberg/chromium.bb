@@ -12,6 +12,9 @@ js_type_check("closure_compile") {
 }
 
 js_library("nux_email") {
+  deps = [
+    "../shared:nux_types",
+  ]
 }
 
 js_library("email_chooser") {

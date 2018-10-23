@@ -84,6 +84,12 @@
       <structure name="IDR_WELCOME_ONBOARDING_WELCOME_SHARED_ONBOARDING_BACKGROUND_JS"
                  file="shared\onboarding_background.js"
                  type="chrome_html" />
+      <structure name="IDR_WELCOME_ONBOARDING_WELCOME_SHARED_STEP_INDICATOR_HTML"
+                 file="shared\step_indicator.html"
+                 type="chrome_html" />
+      <structure name="IDR_WELCOME_ONBOARDING_WELCOME_SHARED_STEP_INDICATOR_JS"
+                 file="shared\step_indicator.js"
+                 type="chrome_html" />
 
        <!-- NUX Email-->
       <structure name="IDR_NUX_EMAIL_CHOOSER_HTML"

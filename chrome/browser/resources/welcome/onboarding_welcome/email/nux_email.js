@@ -4,4 +4,9 @@
 
 Polymer({
   is: 'nux-email',
+
+  properties: {
+    /** @type {nux.stepIndicatorModel} */
+    indicatorModel: Object,
+  },
 });

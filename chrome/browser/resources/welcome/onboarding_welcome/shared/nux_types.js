@@ -13,3 +13,11 @@ cr.exportPath('nux');
  * }}
  */
 nux.BookmarkListItem;
+
+/**
+ * @typedef {{
+ *   total: number,
+ *   active: number,
+ * }}
+ */
+nux.stepIndicatorModel;

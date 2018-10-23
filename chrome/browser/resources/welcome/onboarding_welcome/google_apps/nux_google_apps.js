@@ -8,6 +8,9 @@ Polymer({
   properties: {
     /** @private */
     hasAppsSelected_: Boolean,
+
+    /** @type {nux.stepIndicatorModel} */
+    indicatorModel: Object,
   },
 
   /** @private */

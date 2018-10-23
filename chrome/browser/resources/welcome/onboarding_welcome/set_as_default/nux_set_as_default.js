@@ -10,6 +10,11 @@ Polymer({
   /** @private {nux.NuxSetAsDefaultProxy} */
   browserProxy_: null,
 
+  properties: {
+    /** @type {nux.stepIndicatorModel} */
+    indicatorModel: Object,
+  },
+
   /** @override */
   attached: function() {
     this.browserProxy_ = nux.NuxSetAsDefaultProxyImpl.getInstance();

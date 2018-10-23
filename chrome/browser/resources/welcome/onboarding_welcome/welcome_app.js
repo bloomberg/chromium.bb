@@ -11,6 +11,11 @@
  */
 let NuxOnboardingModules;
 
+// This list needs to be updated if new modules that need step-indicators are
+// added.
+const MODELS_NEEDING_INDICATOR =
+    ['nux-email', 'nux-google-apps', 'nux-set-as-default'];
+
 Polymer({
   is: 'welcome-app',
 
@@ -61,11 +66,25 @@ Polymer({
           element.remove();
         });
 
+    let indicatorElementCount = 0;
+    for (let i = 0; i < modules.length; i++) {
+      if (MODELS_NEEDING_INDICATOR.includes(modules[i]))
+        indicatorElementCount++;
+    }
+
+    let indicatorActiveCount = 0;
     modules.forEach((elementTagName, index) => {
       const element = document.createElement(elementTagName);
       element.id = 'step-' + (index + 1);
       element.setAttribute('slot', 'view');
       this.$.viewManager.appendChild(element);
+
+      if (MODELS_NEEDING_INDICATOR.includes(elementTagName)) {
+        element.indicatorModel = {
+          total: indicatorElementCount,
+          active: indicatorActiveCount++,
+        };
+      }
     });
   },
 });
