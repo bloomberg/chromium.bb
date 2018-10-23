@@ -220,6 +220,7 @@ public class NewTabPageTest {
         scrimView.disableAnimationForTesting(false);
     }
 
+    @DisabledTest(message = "https://crbug.com/898165")
     @Test
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage", "RenderTest"})
@@ -230,6 +231,7 @@ public class NewTabPageTest {
         mRenderTestRule.render(mNtp.getSignInPromoViewForTesting(), "sign_in_promo");
     }
 
+    @DisabledTest(message = "https://crbug.com/898165")
     @Test
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage", "RenderTest"})
