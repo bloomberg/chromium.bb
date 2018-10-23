@@ -185,7 +185,9 @@ void ProfileSyncServiceAndroid::SetSetupInProgress(
     jboolean in_progress) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (in_progress) {
-    sync_blocker_ = sync_service_->GetSetupInProgressHandle();
+    if (!sync_blocker_) {
+      sync_blocker_ = sync_service_->GetSetupInProgressHandle();
+    }
   } else {
     sync_blocker_.reset();
   }
