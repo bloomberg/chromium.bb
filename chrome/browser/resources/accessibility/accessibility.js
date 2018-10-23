@@ -59,15 +59,21 @@ cr.define('accessibility', function() {
   }
 
   function requestTree(data, element) {
+    // The calling |element| is a button with an id of the format
+    // <treeId>:<requestType>, where requestType is one of 'showTree',
+    // 'copyTree'. Send the request type to C++ so is calls the corresponding
+    // function with the result.
+    let requestType = element.id.split(':')[1];
     if (data.type == 'browser') {
       let delay = $('native_ui_delay').value;
       setTimeout(() => {
-        chrome.send('requestNativeUITree', [String(data.sessionId)]);
+        chrome.send(
+            'requestNativeUITree', [String(data.sessionId), requestType]);
       }, delay);
     } else {
       chrome.send(
           'requestWebContentsTree',
-          [String(data.processId), String(data.routeId)]);
+          [String(data.processId), String(data.routeId), requestType]);
     }
   }
 
@@ -166,6 +172,7 @@ cr.define('accessibility', function() {
       row.appendChild(createTreeButtons(data, row.id));
     } else {
       row.appendChild(createShowAccessibilityTreeElement(data, row.id, false));
+      row.appendChild(createCopyAccessibilityTreeElement(data, row.id));
       if ('error' in data)
         row.appendChild(createErrorMessageElement(data, row));
     }
@@ -239,7 +246,7 @@ cr.define('accessibility', function() {
     let row = document.createElement('span');
     row.appendChild(createShowAccessibilityTreeElement(data, id, true));
     if (navigator.clipboard) {
-      row.appendChild(createCopyAccessibilityTreeElement(id));
+      row.appendChild(createCopyAccessibilityTreeElement(data, id));
     }
     row.appendChild(createHideAccessibilityTreeElement(id));
     row.appendChild(createAccessibilityTreeElement(data, id));
@@ -276,23 +283,11 @@ cr.define('accessibility', function() {
     return hide;
   }
 
-  function createCopyAccessibilityTreeElement(id) {
+  function createCopyAccessibilityTreeElement(data, id) {
     let copy = document.createElement('button');
     copy.textContent = 'Copy accessibility tree';
     copy.id = id + ':copyTree';
-    copy.addEventListener('click', () => {
-      let tree = $(id + ':tree');
-      navigator.clipboard.writeText(tree.textContent)
-          .then(() => {
-            copy.textContent = 'Copied to clipboard!';
-            setTimeout(() => {
-              copy.textContent = 'Copy accessibility tree';
-            }, 5000);
-          })
-          .catch(err => {
-            console.error('Unable to copy accessibility tree.', err);
-          });
-    });
+    copy.addEventListener('click', requestTree.bind(this, data, copy));
     return copy;
   }
 
@@ -324,6 +319,37 @@ cr.define('accessibility', function() {
     formatRow(row, data);
   }
 
+  // Called from C++
+  function copyTree(data) {
+    let id = getIdFromData(data);
+    let row = $(id);
+    if (!row)
+      return;
+    let copy = $(id + ':copyTree');
+
+    if ('tree' in data) {
+      navigator.clipboard.writeText(data.tree)
+          .then(() => {
+            copy.textContent = 'Copied to clipboard!';
+            setTimeout(() => {
+              copy.textContent = 'Copy accessibility tree';
+            }, 5000);
+          })
+          .catch(err => {
+            console.error('Unable to copy accessibility tree.', err);
+          });
+    } else if ('error' in data) {
+      console.error('Unable to copy accessibility tree.', data.error);
+    }
+
+
+    let tree = $(id + ':tree');
+    // If the tree is currently shown, update it since it may have changed.
+    if (tree && tree.style.display != 'none') {
+      showTree(data);
+    }
+  }
+
   function createNativeUITreeElement(browser) {
     let id = 'browser.' + browser.id;
     let row = document.createElement('div');
@@ -346,7 +372,7 @@ cr.define('accessibility', function() {
   }
 
   // These are the functions we export so they can be called from C++.
-  return {initialize: initialize, showTree: showTree};
+  return {copyTree: copyTree, initialize: initialize, showTree: showTree};
 });
 
 document.addEventListener('DOMContentLoaded', accessibility.initialize);

@@ -395,11 +395,15 @@ void AccessibilityUIMessageHandler::RequestWebContentsTree(
   std::string route_id_str;
   int process_id;
   int route_id;
-  CHECK_EQ(2U, args->GetSize());
+  std::string request_type;
+  CHECK_EQ(3U, args->GetSize());
   CHECK(args->GetString(0, &process_id_str));
   CHECK(args->GetString(1, &route_id_str));
   CHECK(base::StringToInt(process_id_str, &process_id));
   CHECK(base::StringToInt(route_id_str, &route_id));
+  CHECK(args->GetString(2, &request_type));
+  CHECK(request_type == "showTree" || request_type == "copyTree");
+  request_type = "accessibility." + request_type;
 
   AllowJavascript();
   content::RenderViewHost* rvh =
@@ -409,7 +413,7 @@ void AccessibilityUIMessageHandler::RequestWebContentsTree(
     result->SetInteger(kProcessIdField, process_id);
     result->SetInteger(kRouteIdField, route_id);
     result->SetString("error", "Renderer no longer exists.");
-    CallJavascriptFunction("accessibility.showTree", *(result.get()));
+    CallJavascriptFunction(request_type, *(result.get()));
     return;
   }
 
@@ -426,16 +430,20 @@ void AccessibilityUIMessageHandler::RequestWebContentsTree(
   base::string16 accessibility_contents_utf16 =
       web_contents->DumpAccessibilityTree(internal);
   result->SetString("tree", base::UTF16ToUTF8(accessibility_contents_utf16));
-  CallJavascriptFunction("accessibility.showTree", *(result.get()));
+  CallJavascriptFunction(request_type, *(result.get()));
 }
 
 void AccessibilityUIMessageHandler::RequestNativeUITree(
     const base::ListValue* args) {
   std::string session_id_str;
   int session_id;
-  CHECK_EQ(1U, args->GetSize());
+  std::string request_type;
+  CHECK_EQ(2U, args->GetSize());
   CHECK(args->GetString(0, &session_id_str));
   CHECK(base::StringToInt(session_id_str, &session_id));
+  CHECK(args->GetString(1, &request_type));
+  CHECK(request_type == "showTree" || request_type == "copyTree");
+  request_type = "accessibility." + request_type;
 
   AllowJavascript();
 
@@ -449,7 +457,7 @@ void AccessibilityUIMessageHandler::RequestNativeUITree(
           ui::AXPlatformNode::FromNativeWindow(native_window);
       result->SetKey("tree",
                      base::Value(RecursiveDumpAXPlatformNodeAsString(node, 0)));
-      CallJavascriptFunction("accessibility.showTree", *(result.get()));
+      CallJavascriptFunction(request_type, *(result.get()));
       return;
     }
   }
@@ -459,7 +467,7 @@ void AccessibilityUIMessageHandler::RequestNativeUITree(
   result->SetInteger(kSessionIdField, session_id);
   result->SetString(kTypeField, "browser");
   result->SetString("error", "Browser no longer exists.");
-  CallJavascriptFunction("accessibility.showTree", *(result.get()));
+  CallJavascriptFunction(request_type, *(result.get()));
 }
 
 // static
