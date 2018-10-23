@@ -15,4 +15,7 @@ const char kOzoneDumpFile[] = "ozone-dump-file";
 // Try to enable wayland input method editor.
 const char kEnableWaylandIme[] = "enable-wayland-ime";
 
+// Disable explicit DMA-fences
+const char kDisableExplicitDmaFences[] = "disable-explicit-dma-fences";
+
 }  // namespace switches
