@@ -20,6 +20,17 @@
   <script src="js/audio_player_scripts.js"></script>
 </head>
 <body>
+  <custom-style>
+    <style is="custom-style">
+      html {
+        /* Customize control-panel buttons. */
+        --files-ripple-bg-color: black;
+        --files-toggle-ripple-bg-color: black;
+        --files-toggle-ripple-activated-bg-color: black;
+        --files-toggle-ripple-activated-opacity: 0.1;
+      }
+    </style>
+  </custom-style>
   <div class="audio-player">
     <!-- Place the audio player. -->
     <audio-player></audio-player>
