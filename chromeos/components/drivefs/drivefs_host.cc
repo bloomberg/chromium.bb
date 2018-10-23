@@ -71,6 +71,122 @@ DriveFsHost::Delegate::CreateMojoConnectionDelegate() {
   return std::make_unique<MojoConnectionDelegateImpl>();
 }
 
+class DriveFsHost::AccountTokenDelegate : public OAuth2MintTokenFlow::Delegate {
+ public:
+  explicit AccountTokenDelegate(DriveFsHost* host) : host_(host) {}
+  ~AccountTokenDelegate() override = default;
+
+  void GetAccessToken(bool use_cached,
+                      const std::string& client_id,
+                      const std::string& app_id,
+                      const std::vector<std::string>& scopes,
+                      mojom::DriveFsDelegate::GetAccessTokenCallback callback) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
+    if (get_access_token_callback_) {
+      std::move(callback).Run(mojom::AccessTokenStatus::kTransientError, "");
+      return;
+    }
+    DCHECK(!mint_token_flow_);
+    const std::string& token =
+        MaybeGetCachedToken(use_cached, client_id, app_id, scopes);
+    if (!token.empty()) {
+      std::move(callback).Run(mojom::AccessTokenStatus::kSuccess, token);
+      return;
+    }
+    get_access_token_callback_ = std::move(callback);
+    mint_token_flow_ =
+        host_->delegate_->CreateMintTokenFlow(this, client_id, app_id, scopes);
+    DCHECK(mint_token_flow_);
+    GetIdentityManager().GetPrimaryAccountWhenAvailable(base::BindOnce(
+        &AccountTokenDelegate::AccountReady, base::Unretained(this)));
+  }
+
+ private:
+  void AccountReady(const AccountInfo& info,
+                    const identity::AccountState& state) {
+    GetIdentityManager().GetAccessToken(
+        host_->delegate_->GetAccountId().GetUserEmail(), {},
+        kIdentityConsumerId,
+        base::BindOnce(&AccountTokenDelegate::GotChromeAccessToken,
+                       base::Unretained(this)));
+  }
+
+  void GotChromeAccessToken(const base::Optional<std::string>& access_token,
+                            base::Time expiration_time,
+                            const GoogleServiceAuthError& error) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
+    if (!access_token) {
+      OnMintTokenFailure(error);
+      return;
+    }
+    mint_token_flow_->Start(host_->delegate_->GetURLLoaderFactory(),
+                            *access_token);
+  }
+
+  // OAuth2MintTokenFlow::Delegate:
+  void OnMintTokenSuccess(const std::string& access_token,
+                          int time_to_live) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
+    UpdateCachedToken(access_token, base::TimeDelta::FromSeconds(time_to_live));
+    std::move(get_access_token_callback_)
+        .Run(mojom::AccessTokenStatus::kSuccess, access_token);
+    mint_token_flow_.reset();
+  }
+
+  void OnMintTokenFailure(const GoogleServiceAuthError& error) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
+    std::move(get_access_token_callback_)
+        .Run(error.IsPersistentError()
+                 ? mojom::AccessTokenStatus::kAuthError
+                 : mojom::AccessTokenStatus::kTransientError,
+             "");
+    mint_token_flow_.reset();
+  }
+
+  const std::string& MaybeGetCachedToken(
+      bool use_cached,
+      const std::string& client_id,
+      const std::string& app_id,
+      const std::vector<std::string>& scopes) {
+    // Return value from cache at most once per mount.
+    if (!use_cached || host_->clock_->Now() >= last_token_expiry_) {
+      last_token_.clear();
+    }
+    return last_token_;
+  }
+
+  void UpdateCachedToken(const std::string& token, const base::TimeDelta& ttl) {
+    last_token_ = token;
+    last_token_expiry_ = host_->clock_->Now() + ttl;
+  }
+
+  identity::mojom::IdentityManager& GetIdentityManager() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
+    if (!identity_manager_) {
+      host_->delegate_->GetConnector()->BindInterface(
+          identity::mojom::kServiceName, mojo::MakeRequest(&identity_manager_));
+    }
+    return *identity_manager_;
+  }
+
+  // Owns |this|.
+  DriveFsHost* const host_;
+
+  // The connection to the identity service. Access via |GetIdentityManager()|.
+  identity::mojom::IdentityManagerPtr identity_manager_;
+
+  // Pending callback for an in-flight GetAccessToken request.
+  mojom::DriveFsDelegate::GetAccessTokenCallback get_access_token_callback_;
+
+  // The mint token flow, if one is in flight.
+  std::unique_ptr<OAuth2MintTokenFlow> mint_token_flow_;
+
+  std::string last_token_;
+  base::Time last_token_expiry_;
+
+  DISALLOW_COPY_AND_ASSIGN(AccountTokenDelegate);
+};
+
 // A container of state tied to a particular mounting of DriveFS. None of this
 // should be shared between mounts.
 class DriveFsHost::MountState
@@ -85,7 +201,7 @@ class DriveFsHost::MountState
             host_->delegate_->CreateMojoConnectionDelegate()),
         pending_token_(base::UnguessableToken::Create()),
         binding_(this) {
-    chromeos::disks::DiskMountManager::GetInstance()->AddObserver(this);
+    host_->disk_mount_manager_->AddObserver(this);
     source_path_ = base::StrCat({kMountScheme, pending_token_.ToString()});
     std::string datadir_option =
         base::StrCat({"datadir=", host_->GetDataPath().value()});
@@ -107,7 +223,7 @@ class DriveFsHost::MountState
         base::BindOnce(&DriveFsHost::MountState::AcceptMojoConnection,
                        base::Unretained(this)));
 
-    chromeos::disks::DiskMountManager::GetInstance()->MountPath(
+    host_->disk_mount_manager_->MountPath(
         source_path_, "",
         base::StrCat({"drivefs-", host_->delegate_->GetObfuscatedAccountId()}),
         {datadir_option}, chromeos::MOUNT_TYPE_NETWORK_STORAGE,
@@ -120,7 +236,7 @@ class DriveFsHost::MountState
 
   ~MountState() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
-    chromeos::disks::DiskMountManager::GetInstance()->RemoveObserver(this);
+    host_->disk_mount_manager_->RemoveObserver(this);
     host_->delegate_->GetDriveNotificationManager().RemoveObserver(this);
     host_->timer_->Stop();
     if (pending_token_) {
@@ -128,7 +244,7 @@ class DriveFsHost::MountState
           pending_token_);
     }
     if (!mount_path_.empty()) {
-      chromeos::disks::DiskMountManager::GetInstance()->UnmountPath(
+      host_->disk_mount_manager_->UnmountPath(
           mount_path_.value(), chromeos::UNMOUNT_OPTIONS_NONE, {});
     }
     if (mounted()) {
@@ -159,17 +275,10 @@ class DriveFsHost::MountState
                       const std::vector<std::string>& scopes,
                       GetAccessTokenCallback callback) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
-    if (get_access_token_callback_) {
-      std::move(callback).Run(mojom::AccessTokenStatus::kTransientError, "");
-      return;
-    }
-    DCHECK(!mint_token_flow_);
-    get_access_token_callback_ = std::move(callback);
-    mint_token_flow_ =
-        host_->delegate_->CreateMintTokenFlow(this, client_id, app_id, scopes);
-    DCHECK(mint_token_flow_);
-    GetIdentityManager().GetPrimaryAccountWhenAvailable(base::BindOnce(
-        &DriveFsHost::MountState::AccountReady, base::Unretained(this)));
+    host_->account_token_delegate_->GetAccessToken(!token_fetch_attempted_,
+                                                   client_id, app_id, scopes,
+                                                   std::move(callback));
+    token_fetch_attempted_ = true;
   }
 
   void OnMounted() override {
@@ -262,55 +371,6 @@ class DriveFsHost::MountState
     }
   }
 
-  void AccountReady(const AccountInfo& info,
-                    const identity::AccountState& state) {
-    GetIdentityManager().GetAccessToken(
-        host_->delegate_->GetAccountId().GetUserEmail(), {},
-        kIdentityConsumerId,
-        base::BindOnce(&DriveFsHost::MountState::GotChromeAccessToken,
-                       base::Unretained(this)));
-  }
-
-  void GotChromeAccessToken(const base::Optional<std::string>& access_token,
-                            base::Time expiration_time,
-                            const GoogleServiceAuthError& error) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
-    if (!access_token) {
-      OnMintTokenFailure(error);
-      return;
-    }
-    mint_token_flow_->Start(host_->delegate_->GetURLLoaderFactory(),
-                            *access_token);
-  }
-
-  // OAuth2MintTokenFlow::Delegate:
-  void OnMintTokenSuccess(const std::string& access_token,
-                          int time_to_live) override {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
-    std::move(get_access_token_callback_)
-        .Run(mojom::AccessTokenStatus::kSuccess, access_token);
-    mint_token_flow_.reset();
-  }
-
-  void OnMintTokenFailure(const GoogleServiceAuthError& error) override {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
-    std::move(get_access_token_callback_)
-        .Run(error.IsPersistentError()
-                 ? mojom::AccessTokenStatus::kAuthError
-                 : mojom::AccessTokenStatus::kTransientError,
-             "");
-    mint_token_flow_.reset();
-  }
-
-  identity::mojom::IdentityManager& GetIdentityManager() {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
-    if (!identity_manager_) {
-      host_->delegate_->GetConnector()->BindInterface(
-          identity::mojom::kServiceName, mojo::MakeRequest(&identity_manager_));
-    }
-    return *identity_manager_;
-  }
-
   // DiskMountManager::Observer:
   void OnMountEvent(chromeos::disks::DiskMountManager::MountEvent event,
                     chromeos::MountError error_code,
@@ -365,21 +425,13 @@ class DriveFsHost::MountState
   // The path where DriveFS is mounted.
   base::FilePath mount_path_;
 
-  // Pending callback for an in-flight GetAccessToken request.
-  GetAccessTokenCallback get_access_token_callback_;
-
-  // The mint token flow, if one is in flight.
-  std::unique_ptr<OAuth2MintTokenFlow> mint_token_flow_;
-
   // Mojo connections to the DriveFS process.
   mojom::DriveFsPtr drivefs_;
   mojo::Binding<mojom::DriveFsDelegate> binding_;
 
   bool drivefs_has_mounted_ = false;
   bool drivefs_has_terminated_ = false;
-
-  // The connection to the identity service. Access via |GetIdentityManager()|.
-  identity::mojom::IdentityManagerPtr identity_manager_;
+  bool token_fetch_attempted_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MountState);
 };
@@ -387,13 +439,19 @@ class DriveFsHost::MountState
 DriveFsHost::DriveFsHost(const base::FilePath& profile_path,
                          DriveFsHost::Delegate* delegate,
                          DriveFsHost::MountObserver* mount_observer,
+                         const base::Clock* clock,
+                         chromeos::disks::DiskMountManager* disk_mount_manager,
                          std::unique_ptr<base::OneShotTimer> timer)
     : profile_path_(profile_path),
       delegate_(delegate),
       mount_observer_(mount_observer),
-      timer_(std::move(timer)) {
+      clock_(clock),
+      disk_mount_manager_(disk_mount_manager),
+      timer_(std::move(timer)),
+      account_token_delegate_(std::make_unique<AccountTokenDelegate>(this)) {
   DCHECK(delegate_);
   DCHECK(mount_observer_);
+  DCHECK(clock_);
 }
 
 DriveFsHost::~DriveFsHost() {
