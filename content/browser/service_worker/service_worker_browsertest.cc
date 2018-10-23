@@ -2369,15 +2369,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
   EXPECT_EQ(1, GetRequestCount(kPageUrl));
 }
 
-// Fails on Win. See https://crbug.com/897764
-#if defined(OS_WIN)
-#define MAYBE_GetLargeResponseReadableStream \
-  DISABLED_GetLargeResponseReadableStream
-#else
-#define MAYBE_GetLargeResponseReadableStream GetLargeResponseReadableStream
-#endif
 IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
-                       MAYBE_GetLargeResponseReadableStream) {
+                       GetLargeResponseReadableStream) {
   const char kPageUrl[] = "/service_worker/navigation_preload.html";
   const char kWorkerUrl[] = "/service_worker/navigation_preload.js";
   std::string title = "<title>PASS</title>";
@@ -2397,7 +2390,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
       "  var decoder = new TextDecoder();\n"
       "  function nextChunk(chunk) {\n"
       "    if (chunk.done)\n"
-      "      return data.join();\n"
+      "      return data.join('');\n"
       "    data.push(decoder.decode(chunk.value));\n"
       "    return reader.read().then(nextChunk);\n"
       "  }\n"
