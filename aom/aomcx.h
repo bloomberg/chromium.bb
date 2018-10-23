@@ -688,18 +688,6 @@ enum aome_enc_control_id {
    */
   AV1E_SET_MTU,
 
-  /*!\brief Codec control function to set dependent_horz_tiles.
-   *
-   * In encoding and decoding, AV1 allows enabling dependent horizontal tile
-   * The parameter for this control describes the value of this flag,
-   * which has a valid range [0, 1]:
-   *            0 = disable dependent horizontal tile
-   *            1 = enable dependent horizontal tile,
-   *
-   * By default, the value is 0, i.e. disable dependent horizontal tile.
-   */
-  AV1E_SET_TILE_DEPENDENT_ROWS,
-
   /*!\brief Codec control function to set the number of symbols in an ANS data
    * window.
    *
@@ -1012,9 +1000,6 @@ AOM_CTRL_USE_TYPE(AV1E_SET_TILE_ROWS, int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_TPL_MODEL, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_TPL_MODEL
-
-AOM_CTRL_USE_TYPE(AV1E_SET_TILE_DEPENDENT_ROWS, int)
-#define AOM_CTRL_AV1E_SET_TILE_DEPENDENT_ROWS
 
 AOM_CTRL_USE_TYPE(AV1E_SET_TILE_LOOPFILTER_V, int)
 #define AOM_CTRL_AV1E_SET_TILE_LOOPFILTER_V
