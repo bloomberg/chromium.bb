@@ -22,7 +22,7 @@ void FocusWindowSetHelper(const std::set<gfx::NativeWindow>& windows,
   NSWindow* frontmost_miniaturized_window = nil;
   bool all_miniaturized = true;
   for (int i = [ordered_windows count] - 1; i >= 0; i--) {
-    NSWindow* win = [ordered_windows objectAtIndex:i];
+    NSWindow* win = ordered_windows[i];
     if (windows.find(win) == windows.end())
       continue;
     if ([win isMiniaturized]) {
