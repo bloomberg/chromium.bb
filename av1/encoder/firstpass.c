@@ -2192,9 +2192,13 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
     }
   }
 
+#if USE_SYMM_MULTI_LAYER
+#if NEW_MULTI_LVL_BOOST_VBR_ALLOC
   // Save.
   const int tmp_frame_index = frame_index;
   int budget_reduced_from_leaf_level = 0;
+#endif  // NEW_MULTI_LVL_BOOST_VBR_ALLOC
+#endif  // USE_SYMM_MULTI_LAYER
 
   // Allocate bits to the other frames in the group.
   for (i = 0; i < rc->baseline_gf_interval - rc->source_alt_ref_pending; ++i) {
