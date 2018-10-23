@@ -171,7 +171,6 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   // Overridden from views::View:
   void Layout() override;
   void OnFocus() override;
-  void ScrollRectToVisible(const gfx::Rect& rect) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
