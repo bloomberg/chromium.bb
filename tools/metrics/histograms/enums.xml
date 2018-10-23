@@ -37235,6 +37235,10 @@ Called by update_net_trust_anchors.py.-->
   <int value="1100" label="STALE_AT_UNKNOWN">
     Entry became stale at an unknown state.
   </int>
+  <int value="1150" label="STUCK">
+    The item was terminated because it remained in the pipeline for more than 7
+    days.
+  </int>
   <int value="1200" label="GET_OPERATION_MAX_ATTEMPTS_REACHED">
     Exceeding maximum retries for get operation request.
   </int>
@@ -37250,6 +37254,10 @@ Called by update_net_trust_anchors.py.-->
   <int value="1600" label="IMPORT_LOST">
     The importing was not completed probably due to that Chrome was killed
     before it was done.
+  </int>
+  <int value="1700" label="SUGGESTION_INVALIDATED">
+    The page suggestion is no longer valid, so the item no longer needs to be
+    downloaded.
   </int>
 </enum>
 
