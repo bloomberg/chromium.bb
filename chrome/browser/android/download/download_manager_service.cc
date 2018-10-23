@@ -156,9 +156,7 @@ static jlong JNI_DownloadManagerService_Init(JNIEnv* env,
                                              const JavaParamRef<jobject>& jobj,
                                              jboolean is_full_browser_started) {
   DownloadManagerService* service = DownloadManagerService::GetInstance();
-  service->Init(env, jobj);
-  if (is_full_browser_started)
-    service->OnFullBrowserStarted(env, jobj);
+  service->Init(env, jobj, is_full_browser_started);
   return reinterpret_cast<intptr_t>(service);
 }
 
@@ -179,10 +177,14 @@ void DownloadManagerService::NotifyServiceStarted(
   connector_ = std::move(connector);
 }
 
-void DownloadManagerService::Init(
-    JNIEnv* env,
-    jobject obj) {
+void DownloadManagerService::Init(JNIEnv* env,
+                                  jobject obj,
+                                  bool is_full_browser_started) {
   java_ref_.Reset(env, obj);
+  if (is_full_browser_started)
+    OnFullBrowserStarted(env, obj);
+  else
+    CreateInProgressDownloadManager();
 }
 
 void DownloadManagerService::OnFullBrowserStarted(JNIEnv* env, jobject obj) {
@@ -257,11 +259,7 @@ void DownloadManagerService::OpenDownload(
     return;
 
   std::string download_guid = ConvertJavaStringToUTF8(env, jdownload_guid);
-  content::DownloadManager* manager = GetDownloadManager(is_off_the_record);
-  if (!manager)
-    return;
-
-  download::DownloadItem* item = manager->GetDownloadByGuid(download_guid);
+  download::DownloadItem* item = GetDownload(download_guid, is_off_the_record);
   if (!item)
     return;
 
@@ -440,12 +438,7 @@ void DownloadManagerService::OnDownloadRemoved(
 
 void DownloadManagerService::ResumeDownloadInternal(
     const std::string& download_guid, bool is_off_the_record) {
-  content::DownloadManager* manager = GetDownloadManager(is_off_the_record);
-  if (!manager) {
-    OnResumptionFailed(download_guid);
-    return;
-  }
-  download::DownloadItem* item = manager->GetDownloadByGuid(download_guid);
+  download::DownloadItem* item = GetDownload(download_guid, is_off_the_record);
   if (!item) {
     OnResumptionFailed(download_guid);
     return;
