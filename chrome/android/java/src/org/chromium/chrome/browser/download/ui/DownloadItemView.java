@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.download.ui;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
-import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.MarginLayoutParamsCompat;
@@ -22,9 +21,10 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.chrome.browser.download.home.metrics.UmaUtils;
+import org.chromium.chrome.browser.download.home.metrics.UmaUtils.ViewAction;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.ViewUtils;
@@ -39,8 +39,6 @@ import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.ui.UiUtils;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
 /**
@@ -51,21 +49,6 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     private static final String VARIATION_TRIAL_DOWNLOAD_HOME_MORE_BUTTON =
             "DownloadHomeMoreButton";
     private static final String VARIATION_PARAM_SHOW_MORE_BUTTON = "show_more_button";
-
-    // Please treat this list as append only and keep it in sync with
-    // Android.DownloadManager.List.View.Actions in enums.xml.
-    @IntDef({ViewAction.OPEN, ViewAction.RESUME, ViewAction.PAUSE, ViewAction.CANCEL,
-            ViewAction.MENU_SHARE, ViewAction.MENU_DELETE})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface ViewAction {
-        int OPEN = 0;
-        int RESUME = 1;
-        int PAUSE = 2;
-        int CANCEL = 3;
-        int MENU_SHARE = 4;
-        int MENU_DELETE = 5;
-        int NUM_ENTRIES = 6;
-    }
 
     /**
      * Set based on Chrome Variations to determine whether or not to show the "more" menu button on
@@ -129,10 +112,10 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     @Override
     public void onItemSelected(Item item) {
         if (item.getTextId() == R.string.share) {
-            recordViewActionHistogram(ViewAction.MENU_SHARE);
+            UmaUtils.recordItemAction(ViewAction.MENU_SHARE);
             mItem.share();
         } else if (item.getTextId() == R.string.delete) {
-            recordViewActionHistogram(ViewAction.MENU_DELETE);
+            UmaUtils.recordItemAction(ViewAction.MENU_DELETE);
             mItem.startRemove();
             RecordUserAction.record("Android.DownloadManager.RemoveItem");
         }
@@ -161,15 +144,15 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         mMoreButton.setDelegate(this);
         mPauseResumeButton.setOnClickListener(view -> {
             if (mItem.isPaused()) {
-                recordViewActionHistogram(ViewAction.RESUME);
+                UmaUtils.recordItemAction(ViewAction.RESUME);
                 mItem.resume();
             } else if (!mItem.isComplete()) {
-                recordViewActionHistogram(ViewAction.PAUSE);
+                UmaUtils.recordItemAction(ViewAction.PAUSE);
                 mItem.pause();
             }
         });
         mCancelButton.setOnClickListener(view -> {
-            recordViewActionHistogram(ViewAction.CANCEL);
+            UmaUtils.recordItemAction(ViewAction.CANCEL);
             mItem.cancel();
         });
     }
@@ -332,7 +315,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     @Override
     public void onClick() {
         if (mItem != null && mItem.isComplete()) {
-            recordViewActionHistogram(ViewAction.OPEN);
+            UmaUtils.recordItemAction(ViewAction.OPEN);
             mItem.open();
         }
     }
@@ -382,11 +365,6 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
             mLayoutContainer.removeView(mMoreButton);
             mLayoutContainer.addView(mMoreButton);
         }
-    }
-
-    private static void recordViewActionHistogram(@ViewAction int action) {
-        RecordHistogram.recordEnumeratedHistogram(
-                "Android.DownloadManager.List.View.Action", action, ViewAction.NUM_ENTRIES);
     }
 
     /**

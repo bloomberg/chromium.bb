@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadManagerService.DownloadObserver;
 import org.chromium.chrome.browser.download.DownloadSharedPreferenceHelper;
 import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.chrome.browser.download.home.metrics.FileExtensions;
 import org.chromium.chrome.browser.download.home.storage.StorageSummaryProvider;
 import org.chromium.chrome.browser.download.ui.BackendProvider.DownloadDelegate;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.DownloadItemWrapper;
@@ -291,8 +292,7 @@ public class DownloadHistoryAdapter
                 if (!isOffTheRecord && wrapper.getFilterType() == DownloadFilter.Type.OTHER) {
                     RecordHistogram.recordEnumeratedHistogram(
                             "Android.DownloadManager.OtherExtensions.InitialCount",
-                            wrapper.getFileExtensionType(),
-                            DownloadHistoryItemWrapper.FileExtension.NUM_ENTRIES);
+                            wrapper.getFileExtensionType(), FileExtensions.Type.NUM_ENTRIES);
                 }
             }
         }

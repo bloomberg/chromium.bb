@@ -20,6 +20,7 @@ import java.util.List;
  * properties that are effectively shared across all list items like callbacks.
  */
 public interface ListProperties {
+    /** A helper interface to support retrieving {@link OfflineItemVisuals} asynchronously. */
     @FunctionalInterface
     interface VisualsProvider {
         /**
@@ -78,8 +79,16 @@ public interface ListProperties {
     /** Whether or not selection mode is currently active. */
     WritableBooleanPropertyKey SELECTION_MODE_ACTIVE = new WritableBooleanPropertyKey();
 
+    /**
+     * The callback to trigger when a UI action starts general selection mode.  This is different
+     * from {@link #CALLBACK_SELECTION} in that it should be triggered when the UI enters selection
+     * mode without any particularly attached {@link ListItem}.
+     */
+    WritableObjectPropertyKey<Runnable> CALLBACK_START_SELECTION =
+            new WritableObjectPropertyKey<>();
+
     PropertyKey[] ALL_KEYS = new PropertyKey[] {ENABLE_ITEM_ANIMATIONS, CALLBACK_OPEN,
             CALLBACK_PAUSE, CALLBACK_RESUME, CALLBACK_CANCEL, CALLBACK_SHARE, CALLBACK_SHARE_ALL,
             CALLBACK_REMOVE, CALLBACK_REMOVE_ALL, PROVIDER_VISUALS, CALLBACK_SELECTION,
-            SELECTION_MODE_ACTIVE};
+            SELECTION_MODE_ACTIVE, CALLBACK_START_SELECTION};
 }
