@@ -453,6 +453,16 @@ chrome.fileManagerPrivate.DeviceEvent;
 chrome.fileManagerPrivate.Provider;
 
 /**
+ * @typedef {{
+ * name: string,
+ * version: string,
+ * summary: (string|undefined),
+ * description: (string|undefined),
+ * }}
+ */
+chrome.fileManagerPrivate.LinuxPackageInfo;
+
+/**
  * Logout the current user for navigating to the re-authentication screen for
  * the Google account.
  */
@@ -951,7 +961,17 @@ chrome.fileManagerPrivate.sharePathWithCrostini = function(
 chrome.fileManagerPrivate.getCrostiniSharedPaths = function(callback) {};
 
 /**
- * Begin installation of a Linux package.
+ * Requests information about a Linux package.
+ * @param {!Entry} entry
+ * @param {function((!chrome.fileManagerPrivate.LinuxPackageInfo|undefined))}
+ *     callback
+ *    Called when package information is retrieved.
+ *    chrome.runtime.lastError will be set if there was an error.
+ */
+chrome.fileManagerPrivate.getLinuxPackageInfo = function(entry, callback) {};
+
+/**
+ * Starts installation of a Linux package.
  * @param {!Entry} entry
  * @param {function(!chrome.fileManagerPrivate.InstallLinuxPackageResponse,
  *    string)} callback

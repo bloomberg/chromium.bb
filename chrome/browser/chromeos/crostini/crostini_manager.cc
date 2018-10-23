@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/no_destructor.h"
+#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/task/post_task.h"
@@ -421,6 +422,9 @@ void CrostiniManager::AddRunningVmForTesting(
   running_vms_[std::move(vm_name)] =
       std::make_pair(VmState::STARTED, std::move(vm_info));
 }
+
+LinuxPackageInfo::LinuxPackageInfo() = default;
+LinuxPackageInfo::~LinuxPackageInfo() = default;
 
 bool CrostiniManager::IsContainerRunning(std::string vm_name,
                                          std::string container_name) {
@@ -943,6 +947,24 @@ void CrostiniManager::GetContainerAppIcons(
   GetCiceroneClient()->GetContainerAppIcons(
       std::move(request),
       base::BindOnce(&CrostiniManager::OnGetContainerAppIcons,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void CrostiniManager::GetLinuxPackageInfo(
+    Profile* profile,
+    std::string vm_name,
+    std::string container_name,
+    std::string package_path,
+    GetLinuxPackageInfoCallback callback) {
+  vm_tools::cicerone::LinuxPackageInfoRequest request;
+  request.set_owner_id(CryptohomeIdForProfile(profile));
+  request.set_vm_name(std::move(vm_name));
+  request.set_container_name(std::move(container_name));
+  request.set_file_path(std::move(package_path));
+
+  GetCiceroneClient()->GetLinuxPackageInfo(
+      std::move(request),
+      base::BindOnce(&CrostiniManager::OnGetLinuxPackageInfo,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
@@ -1561,6 +1583,52 @@ void CrostiniManager::OnGetContainerAppIcons(
              .content = std::move(*icon.mutable_icon())});
   }
   std::move(callback).Run(CrostiniResult::SUCCESS, icons);
+}
+
+void CrostiniManager::OnGetLinuxPackageInfo(
+    GetLinuxPackageInfoCallback callback,
+    base::Optional<vm_tools::cicerone::LinuxPackageInfoResponse> reply) {
+  LinuxPackageInfo result;
+  if (!reply.has_value()) {
+    LOG(ERROR) << "Failed to get Linux package info. Empty response.";
+    result.success = false;
+    // The error message is currently only used in a console message. If we
+    // want to display it to the user, we'd need to localize this.
+    result.failure_reason = "D-Bus response was empty.";
+    std::move(callback).Run(result);
+    return;
+  }
+  vm_tools::cicerone::LinuxPackageInfoResponse response = reply.value();
+
+  if (!response.success()) {
+    LOG(ERROR) << "Failed to get Linux package info: "
+               << response.failure_reason();
+    result.success = false;
+    result.failure_reason = response.failure_reason();
+    std::move(callback).Run(result);
+    return;
+  }
+
+  // The |package_id| field is formatted like "name;version;arch;data". We're
+  // currently only interested in name and version.
+  std::vector<std::string> split = base::SplitString(
+      response.package_id(), ";", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  if (split.size() < 2 || split[0].empty() || split[1].empty()) {
+    LOG(ERROR) << "Linux package info contained invalid package id: \""
+               << response.package_id() << '"';
+    result.success = false;
+    result.failure_reason = "Linux package info contained invalid package id.";
+    std::move(callback).Run(result);
+    return;
+  }
+
+  result.success = true;
+  result.name = split[0];
+  result.version = split[1];
+  result.description = response.description();
+  result.summary = response.summary();
+
+  std::move(callback).Run(result);
 }
 
 void CrostiniManager::OnInstallLinuxPackage(

@@ -273,6 +273,24 @@
   <message name="IDS_FILE_BROWSER_INSTALL_LINUX_PACKAGE_TITLE" desc="In the File Manager, the title shown in the dialog for installing a Linux application.">
     Install app with Linux (Beta)
   </message>
+  <message name="IDS_FILE_BROWSER_INSTALL_LINUX_PACKAGE_DETAILS_LABEL" desc="In the File Manager, the label shown above the app information (name, version, etc.) in the dialog for installing a Linux application.">
+    Details
+  </message>
+  <message name="IDS_FILE_BROWSER_INSTALL_LINUX_PACKAGE_DETAILS_APPLICATION_LABEL" desc="In the File Manager, the label shown next to the application name in the dialog for installing a Linux application.">
+    Application
+  </message>
+  <message name="IDS_FILE_BROWSER_INSTALL_LINUX_PACKAGE_DETAILS_VERSION_LABEL" desc="In the File Manager, the label shown next to the version string in the dialog for installing a Linux application.">
+    Version
+  </message>
+  <message name="IDS_FILE_BROWSER_INSTALL_LINUX_PACKAGE_DETAILS_DESCRIPTION_LABEL" desc="In the File Manager, the label shown next to a block of text describing the application in the dialog for installing a Linux application.">
+    Description
+  </message>
+  <message name="IDS_FILE_BROWSER_INSTALL_LINUX_PACKAGE_DETAILS_LOADING" desc="In the File Manager, the message shown to indicate we are loading information about the application (name, version, etc.) in the dialog for installing a Linux application.">
+    Loading information...
+  </message>
+  <message name="IDS_FILE_BROWSER_INSTALL_LINUX_PACKAGE_DETAILS_NOT_AVAILABLE" desc="In the File Manager, the message shown to indicate we failed to load information about the application in the dialog for installing a Linux application.">
+    Failed to retrieve app info.
+  </message>
   <message name="IDS_FILE_BROWSER_INSTALL_LINUX_PACKAGE_DESCRIPTION" desc="In the File Manager, the message shown in the dialog for installing a Linux application.">
     The Linux application will be available within your Terminal and may also show an icon in your Launcher.
   </message>

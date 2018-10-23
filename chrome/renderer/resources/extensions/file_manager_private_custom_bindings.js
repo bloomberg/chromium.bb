@@ -234,6 +234,12 @@ binding.registerCustomHook(function(bindingsAPI) {
             });
       });
 
+  apiFunctions.setHandleRequest(
+      'getLinuxPackageInfo', function(entry, callback) {
+        var url = fileManagerPrivateNatives.GetEntryURL(entry);
+        fileManagerPrivateInternal.getLinuxPackageInfo(url, callback);
+      });
+
   apiFunctions.setHandleRequest('installLinuxPackage', function(
         entry, callback) {
     var url = fileManagerPrivateNatives.GetEntryURL(entry);

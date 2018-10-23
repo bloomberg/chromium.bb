@@ -749,6 +749,50 @@ void FileManagerPrivateInternalGetCrostiniSharedPathsFunction::
 }
 
 ExtensionFunction::ResponseAction
+FileManagerPrivateInternalGetLinuxPackageInfoFunction::Run() {
+  using api::file_manager_private_internal::GetLinuxPackageInfo::Params;
+  const std::unique_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  const scoped_refptr<storage::FileSystemContext> file_system_context =
+      file_manager::util::GetFileSystemContextForRenderFrameHost(
+          profile, render_frame_host());
+
+  std::string url =
+      file_manager::util::ConvertFileSystemURLToPathInsideCrostini(
+          profile, file_system_context->CrackURL(GURL(params->url)));
+  crostini::CrostiniPackageInstallerService::GetForProfile(profile)
+      ->GetLinuxPackageInfo(
+          crostini::kCrostiniDefaultVmName,
+          crostini::kCrostiniDefaultContainerName, url,
+          base::BindOnce(
+              &FileManagerPrivateInternalGetLinuxPackageInfoFunction::
+                  OnGetLinuxPackageInfo,
+              this));
+  return RespondLater();
+}
+
+void FileManagerPrivateInternalGetLinuxPackageInfoFunction::
+    OnGetLinuxPackageInfo(
+        const crostini::LinuxPackageInfo& linux_package_info) {
+  api::file_manager_private::LinuxPackageInfo result;
+  if (!linux_package_info.success) {
+    Respond(Error(linux_package_info.failure_reason));
+    return;
+  }
+
+  result.name = linux_package_info.name;
+  result.version = linux_package_info.version;
+  result.summary = std::make_unique<std::string>(linux_package_info.summary);
+  result.description =
+      std::make_unique<std::string>(linux_package_info.description);
+
+  Respond(ArgumentList(extensions::api::file_manager_private_internal::
+                           GetLinuxPackageInfo::Results::Create(result)));
+}
+
+ExtensionFunction::ResponseAction
 FileManagerPrivateInternalInstallLinuxPackageFunction::Run() {
   using extensions::api::file_manager_private_internal::InstallLinuxPackage::
       Params;

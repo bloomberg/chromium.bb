@@ -74,6 +74,22 @@ struct Icon {
   std::string content;
 };
 
+struct LinuxPackageInfo {
+  LinuxPackageInfo();
+  ~LinuxPackageInfo();
+
+  bool success;
+
+  // A textual reason for the failure, only set when success is false.
+  std::string failure_reason;
+
+  // The remaining fields are only set when success is true.
+  std::string name;
+  std::string version;
+  std::string summary;
+  std::string description;
+};
+
 class InstallLinuxPackageProgressObserver {
  public:
   // A successfully started package install will continually fire progress
@@ -130,6 +146,9 @@ class CrostiniManager : public KeyedService,
   using GetContainerAppIconsCallback =
       base::OnceCallback<void(CrostiniResult result,
                               const std::vector<Icon>& icons)>;
+  // The type of the callback for CrostiniManager::GetLinuxPackageInfo.
+  using GetLinuxPackageInfoCallback =
+      base::OnceCallback<void(const LinuxPackageInfo&)>;
   // The type of the callback for CrostiniManager::InstallLinuxPackage.
   // |failure_reason| is returned from the container upon failure
   // (INSTALL_LINUX_PACKAGE_FAILED), and not necessarily localized.
@@ -282,6 +301,14 @@ class CrostiniManager : public KeyedService,
                             int icon_size,
                             int scale,
                             GetContainerAppIconsCallback callback);
+
+  // Asynchronously retrieve information about a Linux Package (.deb) inside the
+  // container.
+  void GetLinuxPackageInfo(Profile* profile,
+                           std::string vm_name,
+                           std::string container_name,
+                           std::string package_path,
+                           GetLinuxPackageInfoCallback callback);
 
   // Begin installation of a Linux Package inside the container. If the
   // installation is successfully started, further updates will be sent to
@@ -485,6 +512,11 @@ class CrostiniManager : public KeyedService,
   void OnGetContainerAppIcons(
       GetContainerAppIconsCallback callback,
       base::Optional<vm_tools::cicerone::ContainerAppIconResponse> reply);
+
+  // Callback for CrostiniManager::GetLinuxPackageInfo.
+  void OnGetLinuxPackageInfo(
+      GetLinuxPackageInfoCallback callback,
+      base::Optional<vm_tools::cicerone::LinuxPackageInfoResponse> reply);
 
   // Callback for CrostiniManager::InstallLinuxPackage.
   void OnInstallLinuxPackage(

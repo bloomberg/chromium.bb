@@ -93,6 +93,13 @@ chrome.fileManagerPrivate = {
     // Returns Entry[].
     setTimeout(callback, 0, []);
   },
+  getLinuxPackageInfo: (entry, callback) => {
+    // Returns chrome.fileManagerPrivate.LinuxPackageInfo.
+    setTimeout(callback, 0, {
+      name: 'dummy-package',
+      version: '1.0',
+    });
+  },
   getPreferences: (callback) => {
     setTimeout(callback, 0, chrome.fileManagerPrivate.preferences_);
   },
