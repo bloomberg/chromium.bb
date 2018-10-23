@@ -13,7 +13,6 @@ import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.view.WindowManager;
@@ -286,19 +285,6 @@ public class AutocompleteCoordinator
                 || mShowCachedZeroSuggestResults
             : "Trying to initialize native suggestions list before native init";
         if (mSuggestionList != null) return;
-
-        OnLayoutChangeListener suggestionListResizer = new OnLayoutChangeListener() {
-            @Override
-            public void onLayoutChange(View v, int left, int top, int right, int bottom,
-                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                if (mSuggestionList.isShown()) mSuggestionList.updateLayoutParams();
-            }
-        };
-        // TODO(tedchoc): This should be passed in via the parent coordinator. Using findViewById
-        //                on the root view is working around component layering.
-        mParent.getRootView()
-                .findViewById(R.id.control_container)
-                .addOnLayoutChangeListener(suggestionListResizer);
 
         // TODO(tedchoc): Investigate lazily building the suggestion list off of the UI thread.
         try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
@@ -735,7 +721,6 @@ public class AutocompleteCoordinator
         mUrlTextAfterSuggestionsReceived = userText + inlineAutocompleteText;
 
         boolean itemsChanged = false;
-        boolean itemCountChanged = false;
         // If the length of the incoming suggestions matches that of those currently being shown,
         // replace them inline to allow transient entries to retain their proper highlighting.
         if (mSuggestionItems.size() == newSuggestions.size()) {
@@ -759,7 +744,6 @@ public class AutocompleteCoordinator
             }
         } else {
             itemsChanged = true;
-            itemCountChanged = true;
             clearSuggestions(false);
             for (int i = 0; i < newSuggestions.size(); i++) {
                 mSuggestionItems.add(new OmniboxResultItem(newSuggestions.get(i), userText));
@@ -784,11 +768,9 @@ public class AutocompleteCoordinator
         if (itemsChanged) mSuggestionListAdapter.notifySuggestionsChanged();
 
         if (mDelegate.isUrlBarFocused()) {
-            final boolean updateLayoutParams = itemCountChanged || mShowSuggestions != null;
             if (mShowSuggestions != null) mParent.removeCallbacks(mShowSuggestions);
             mShowSuggestions = () -> {
                 setSuggestionsListVisibility(true);
-                if (updateLayoutParams) mSuggestionList.updateLayoutParams();
                 mShowSuggestions = null;
             };
             if (!mDelegate.isUrlFocusChangeInProgress()) {
@@ -890,7 +872,6 @@ public class AutocompleteCoordinator
     public void showCachedZeroSuggestResultsIfAvailable() {
         if (!mShowCachedZeroSuggestResults || mSuggestionList == null) return;
         setSuggestionsListVisibility(true);
-        mSuggestionList.updateLayoutParams();
     }
 
     /**
