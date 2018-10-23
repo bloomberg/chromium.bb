@@ -2220,9 +2220,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   CGFloat unsafeHeight = 0.0;
   if (@available(iOS 11, *)) {
     unsafeHeight = self.view.safeAreaInsets.top;
-  } else {
+  }
+#if !defined(__IPHONE_11_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_11_0
+  else {
     unsafeHeight = self.topLayoutGuide.length;
   }
+#endif
+
   // The topmost header is laid out |headerOffset| from the top of |view|, so
   // subtract that from the unsafe height.
   unsafeHeight -= self.headerOffset;
@@ -3882,9 +3886,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     // TODO(crbug.com/826369) Remove this once NTP is out of native content.
     if (@available(iOS 11, *)) {
       return -self.view.safeAreaInsets.top;
-    } else {
+    }
+#if !defined(__IPHONE_11_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_11_0
+    else {
       return -self.topLayoutGuide.length;
     }
+#endif
   }
   return [self headerHeightForTab:tab];
 }

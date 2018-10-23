@@ -168,7 +168,15 @@ UIColor* BackgroundColorIncognito() {
   if ([self.tableView respondsToSelector:@selector(setLayoutMargins:)]) {
     [self.tableView setLayoutMargins:UIEdgeInsetsZero];
   }
-  self.automaticallyAdjustsScrollViewInsets = NO;
+  if (@available(iOS 11, *)) {
+    self.tableView.contentInsetAdjustmentBehavior =
+        UIScrollViewContentInsetAdjustmentNever;
+  }
+#if !defined(__IPHONE_11_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_11_0
+  else {
+    self.automaticallyAdjustsScrollViewInsets = NO;
+  }
+#endif
   [self.tableView setContentInset:UIEdgeInsetsMake(kTopAndBottomPadding, 0,
                                                    kTopAndBottomPadding, 0)];
   self.tableView.estimatedRowHeight = 0;
