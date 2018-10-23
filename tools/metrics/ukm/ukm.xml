@@ -3060,6 +3060,13 @@ be describing additional metrics about the same event.
       frame documents.
     </summary>
   </metric>
+  <metric name="Experimental.PaintTiming.NavigationToLargestImagePaint">
+    <summary>
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time when the page first paints the largest image within
+      viewport after the image finishes loading.
+    </summary>
+  </metric>
   <metric name="InteractiveTiming.FirstInputDelay">
     <summary>
       Measures First Input Delay, the duration between the hardware timestamp

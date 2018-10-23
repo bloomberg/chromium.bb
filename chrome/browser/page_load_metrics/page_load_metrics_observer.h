@@ -413,6 +413,14 @@ class PageLoadMetricsObserver {
       const mojom::PageLoadTiming& timing,
       const PageLoadExtraInfo& extra_info) {}
 
+  // As we want to report only the last one of Largest Image Paint candidates,
+  // we buffer and keep updating the candidate. The last candidate will be
+  // passed in this signature. This signature will be invoked at the end of page
+  // load's life time, around the time of the OnComplete callback.
+  virtual void OnLargestImagePaintInMainFrameDocument(
+      const mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info) {}
+
   virtual void OnPageInteractive(const mojom::PageLoadTiming& timing,
                                  const PageLoadExtraInfo& extra_info) {}
 

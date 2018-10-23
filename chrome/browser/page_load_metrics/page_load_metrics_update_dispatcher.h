@@ -62,6 +62,7 @@ enum PageLoadTimingStatus {
   INVALID_ORDER_FIRST_PAINT_FIRST_CONTENTFUL_PAINT,
   INVALID_ORDER_FIRST_PAINT_FIRST_MEANINGFUL_PAINT,
   INVALID_ORDER_FIRST_MEANINGFUL_PAINT_PAGE_INTERACTIVE,
+  INVALID_ORDER_FIRST_CONTENTFUL_PAINT_LARGEST_IMAGE_PAINT,
 
   // We received a first input delay without a first input timestamp.
   INVALID_NULL_FIRST_INPUT_TIMESTAMP,
@@ -169,6 +170,12 @@ class PageLoadMetricsUpdateDispatcher {
 
   // Time the navigation for this page load was initiated.
   const base::TimeTicks navigation_start_;
+
+  // As Largest Image Paint need to report the last candidate, this attribute is
+  // used as a buffer to store the latest one of the updating candidate. We
+  // buffer it here in a private member and only merge it back into
+  // current_merged_page_timing_ at the end of the pageload life time.
+  base::Optional<base::TimeDelta> largest_image_paint_;
 
   // PageLoadTiming for the currently tracked page. The fields in |paint_timing|
   // are merged across all frames in the document. All other fields are from the
