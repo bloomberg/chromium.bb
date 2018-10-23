@@ -611,6 +611,22 @@ converted to I420 pixel format. Written out by
 video_decode_accelerator_unittest when input file is test-25fps.vp9_2.
 This value must be identical on all platforms.
 
+
+### VP9 video with show_existing_frame flag
+
+#### vp90_2_10_show_existing_frame2.vp9.ivf
+VP9 video with show_existing_frame flag. The original test stream comes from
+Android CTS.
+```
+ffmpeg -i vp90_2_17_show_existing_frame.vp9 -vcodec copy -an -f ivf \
+    vp90_2_17_show_existing_frame.vp9.ivf
+```
+
+#### vp90_2_10_show_existing_frame2.vp9.ivf.md5
+MD5 of RGB thumbnail rendered version of vp90_2_10_show_existing_frame2.vp9.ivf.
+Written out by video_decode_accelerator_unittest.
+
+
 ### bear
 
 #### bear.h264
