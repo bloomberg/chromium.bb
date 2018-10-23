@@ -798,6 +798,11 @@ void WebController::GetOuterHtml(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+std::unique_ptr<BatchElementChecker>
+WebController::CreateBatchElementChecker() {
+  return std::make_unique<BatchElementChecker>(this);
+}
+
 void WebController::OnFindElementForGetOuterHtml(
     base::OnceCallback<void(bool, const std::string&)> callback,
     std::unique_ptr<FindElementResult> element_result) {

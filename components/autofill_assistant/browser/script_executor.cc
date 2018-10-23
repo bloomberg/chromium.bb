@@ -60,7 +60,7 @@ void ScriptExecutor::Stop() {
 
 std::unique_ptr<BatchElementChecker>
 ScriptExecutor::CreateBatchElementChecker() {
-  return std::make_unique<BatchElementChecker>(delegate_->GetWebController());
+  return delegate_->GetWebController()->CreateBatchElementChecker();
 }
 
 void ScriptExecutor::WaitForElement(const std::vector<std::string>& selectors,
