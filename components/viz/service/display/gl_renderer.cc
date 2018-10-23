@@ -785,6 +785,7 @@ uint32_t GLRenderer::GetBackdropTexture(const gfx::Rect& window_rect) {
 
   uint32_t texture_id;
   gl_->GenTextures(1, &texture_id);
+  DCHECK(texture_id);
   gl_->BindTexture(GL_TEXTURE_2D, texture_id);
 
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -792,7 +793,6 @@ uint32_t GLRenderer::GetBackdropTexture(const gfx::Rect& window_rect) {
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-  gl_->BindTexture(GL_TEXTURE_2D, texture_id);
   gl_->CopyTexImage2D(GL_TEXTURE_2D, 0, GetFramebufferCopyTextureFormat(),
                       window_rect.x(), window_rect.y(), window_rect.width(),
                       window_rect.height(), 0);
@@ -1029,8 +1029,7 @@ void GLRenderer::UpdateRPDQShadersForBlending(
       // LayerTreeHost::CalculateMemoryForRenderSurfaces.
       params->background_texture = GetBackdropTexture(params->background_rect);
 
-      if (ShouldApplyBackgroundFilters(quad, params->background_filters) &&
-          params->background_texture) {
+      if (ShouldApplyBackgroundFilters(quad, params->background_filters)) {
         // Apply the background filters to R, so that it is applied in the
         // pixels' coordinate space.
         params->background_image = ApplyBackgroundFilters(
@@ -1044,11 +1043,7 @@ void GLRenderer::UpdateRPDQShadersForBlending(
       }
     }
 
-    if (!params->background_texture) {
-      // Something went wrong with reading the backdrop.
-      DCHECK(!params->background_image_id);
-      params->use_shaders_for_blending = false;
-    } else if (params->background_image_id) {
+    if (params->background_image_id) {
       // Reset original background texture if there is not any mask.
       if (!quad->mask_resource_id()) {
         gl_->DeleteTextures(1, &params->background_texture);
