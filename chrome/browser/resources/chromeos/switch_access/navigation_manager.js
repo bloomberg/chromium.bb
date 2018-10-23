@@ -6,7 +6,7 @@
  * Class to manage interactions with the accessibility tree, including moving
  * to and selecting nodes.
  */
-class AutomationManager {
+class NavigationManager {
   /**
    * @param {!chrome.automation.AutomationNode} desktop
    */
@@ -348,7 +348,7 @@ class AutomationManager {
     this.node_ = this.scope_;
     this.visitingScopeAsActionable_ = true;
 
-    this.updateFocusRing_(AutomationManager.Color.LEAF);
+    this.updateFocusRing_(NavigationManager.Color.LEAF);
   }
 
   /**
@@ -381,17 +381,17 @@ class AutomationManager {
   /**
    * Set the focus ring for the current node and determine the color for it.
    *
-   * @param {AutomationManager.Color=} opt_color
+   * @param {NavigationManager.Color=} opt_color
    * @private
    */
   updateFocusRing_(opt_color) {
     let color;
     if (this.node_ === this.scope_)
-      color = AutomationManager.Color.SCOPE;
+      color = NavigationManager.Color.SCOPE;
     else if (SwitchAccessPredicate.isGroup(this.node_, this.scope_))
-      color = AutomationManager.Color.GROUP;
+      color = NavigationManager.Color.GROUP;
     else
-      color = AutomationManager.Color.LEAF;
+      color = NavigationManager.Color.LEAF;
 
     color = opt_color || color;
     chrome.accessibilityPrivate.setFocusRing([this.node_.location], color);
@@ -448,18 +448,18 @@ class AutomationManager {
    * To use, got to the console for SwitchAccess and run
    *    switchAccess.automationManager_.printDebugSwitchAccessTree()
    *
-   * @param {AutomationManager.DisplayMode} opt_displayMode - an optional
+   * @param {NavigationManager.DisplayMode} opt_displayMode - an optional
    *     parameter that controls which nodes are printed. Default is
    *     INTERESTING_NODE.
    * @return {SwitchAccessDebugNode|undefined}
    */
   printDebugSwitchAccessTree(
-      opt_displayMode = AutomationManager.DisplayMode.INTERESTING_NODE) {
-    let allNodes = opt_displayMode === AutomationManager.DisplayMode.ALL;
+      opt_displayMode = NavigationManager.DisplayMode.INTERESTING_NODE) {
+    let allNodes = opt_displayMode === NavigationManager.DisplayMode.ALL;
     let debugRoot =
-        AutomationManager.switchAccessDebugTree_(this.desktop_, allNodes);
+        NavigationManager.switchAccessDebugTree_(this.desktop_, allNodes);
     if (debugRoot)
-      AutomationManager.printDebugNode_(debugRoot, 0, opt_displayMode);
+      NavigationManager.printDebugNode_(debugRoot, 0, opt_displayMode);
     return debugRoot;
   }
   /**
@@ -518,7 +518,7 @@ class AutomationManager {
    *
    * @param {SwitchAccessDebugNode} node
    * @param {!number} indent
-   * @param {AutomationManager.DisplayMode} displayMode
+   * @param {NavigationManager.DisplayMode} displayMode
    * @private
    */
   static printDebugNode_(node, indent, displayMode) {
@@ -535,14 +535,14 @@ class AutomationManager {
     result += ', isInterestingSubtree? ' + node.isInterestingSubtree;
 
     switch (displayMode) {
-      case AutomationManager.DisplayMode.ALL:
+      case NavigationManager.DisplayMode.ALL:
         console.log(result);
         break;
-      case AutomationManager.DisplayMode.INTERESTING_SUBTREE:
+      case NavigationManager.DisplayMode.INTERESTING_SUBTREE:
         if (node.isInterestingSubtree)
           console.log(result);
         break;
-      case AutomationManager.DisplayMode.INTERESTING_NODE:
+      case NavigationManager.DisplayMode.INTERESTING_NODE:
       default:
         if (node.isActionable || node.isGroup)
           console.log(result);
@@ -562,7 +562,7 @@ class AutomationManager {
  * @enum {string}
  * @const
  */
-AutomationManager.Color = {
+NavigationManager.Color = {
   SCOPE: '#de742f',  // dark orange
   GROUP: '#ffbb33',  // light orange
   LEAF: '#78e428'    // light green
@@ -574,7 +574,7 @@ AutomationManager.Color = {
  * @enum {string}
  * @const
  */
-AutomationManager.DisplayMode = {
+NavigationManager.DisplayMode = {
   ALL: 'all',
   INTERESTING_SUBTREE: 'interestingSubtree',
   INTERESTING_NODE: 'interestingNode'
