@@ -26,6 +26,12 @@ const char* kXmlComment =
     "\nRefer to README.md for content description and update process.\n"
     "-->\n\n";
 
+const base::FilePath kAnnotationsXmlPath =
+    base::FilePath(FILE_PATH_LITERAL("tools"))
+        .Append(FILE_PATH_LITERAL("traffic_annotation"))
+        .Append(FILE_PATH_LITERAL("summary"))
+        .Append(FILE_PATH_LITERAL("annotations.xml"));
+
 // Extracts annotation id from a line of XML. Expects to have the line in the
 // following format: <... id="..." .../>
 // TODO(rhalavati): Use real XML parsing.
@@ -55,12 +61,6 @@ void ExtractXMLItems(const std::string& serialized_xml,
 }
 
 }  // namespace
-
-const base::FilePath TrafficAnnotationExporter::kAnnotationsXmlPath =
-    base::FilePath(FILE_PATH_LITERAL("tools"))
-        .Append(FILE_PATH_LITERAL("traffic_annotation"))
-        .Append(FILE_PATH_LITERAL("summary"))
-        .Append(FILE_PATH_LITERAL("annotations.xml"));
 
 TrafficAnnotationExporter::ArchivedAnnotation::ArchivedAnnotation()
     : type(AnnotationInstance::Type::ANNOTATION_COMPLETE),
@@ -166,11 +166,12 @@ bool TrafficAnnotationExporter::LoadAnnotationsXML() {
   return all_ok;
 }
 
-bool TrafficAnnotationExporter::UpdateAnnotations(
+void TrafficAnnotationExporter::UpdateAnnotations(
     const std::vector<AnnotationInstance>& annotations,
-    const std::map<int, std::string>& reserved_ids) {
-  if (archive_.empty() && !LoadAnnotationsXML())
-    return false;
+    const std::map<int, std::string>& reserved_ids,
+    std::vector<AuditorResult>* errors) {
+  CHECK(!archive_.empty());
+  DCHECK(errors);
 
   std::set<int> current_platform_hashcodes;
 
@@ -270,7 +271,7 @@ bool TrafficAnnotationExporter::UpdateAnnotations(
     }
   }
 
-  return CheckArchivedAnnotations();
+  CheckArchivedAnnotations(errors);
 }
 
 std::string TrafficAnnotationExporter::GenerateSerializedXML() const {
@@ -346,41 +347,56 @@ bool TrafficAnnotationExporter::SaveAnnotationsXML() const {
                          xml_content.c_str(), xml_content.length()) != -1;
 }
 
-bool TrafficAnnotationExporter::GetDeprecatedHashCodes(
+void TrafficAnnotationExporter::GetDeprecatedHashCodes(
     std::set<int>* hash_codes) {
-  if (archive_.empty() && !LoadAnnotationsXML())
-    return false;
+  CHECK(!archive_.empty());
 
   hash_codes->clear();
   for (const auto& item : archive_) {
     if (!item.second.deprecation_date.empty())
       hash_codes->insert(item.second.unique_id_hash_code);
   }
-  return true;
 }
 
-bool TrafficAnnotationExporter::CheckArchivedAnnotations() {
+void TrafficAnnotationExporter::CheckArchivedAnnotations(
+    std::vector<AuditorResult>* errors) {
+  DCHECK(errors);
   // Check for annotation hash code duplications.
-  std::set<int> used_codes;
+  std::map<int, std::string> used_codes;
   for (auto& item : archive_) {
     if (base::ContainsKey(used_codes, item.second.unique_id_hash_code)) {
-      LOG(ERROR) << "Unique id hash code " << item.second.unique_id_hash_code
-                 << " is used more than once.";
-      return false;
+      AuditorResult error(AuditorResult::Type::ERROR_HASH_CODE_COLLISION);
+      error.AddDetail(used_codes[item.second.unique_id_hash_code]);
+      error.AddDetail(item.first);
+      errors->push_back(std::move(error));
     } else {
-      used_codes.insert(item.second.unique_id_hash_code);
+      used_codes[item.second.unique_id_hash_code] = item.first;
     }
   }
 
   // Check for coexistence of OS(es) and deprecation date.
   for (auto& item : archive_) {
     if (!item.second.deprecation_date.empty() && !item.second.os_list.empty()) {
-      LOG(ERROR) << "Annotation " << item.first
-                 << " has a deprecation date and at least one active OS.";
-      return false;
+      errors->push_back(
+          AuditorResult(AuditorResult::Type::ERROR_DEPRECATED_WITH_OS,
+                        item.first, kAnnotationsXmlPath.MaybeAsASCII(),
+                        AuditorResult::kNoCodeLineSpecified));
     }
   }
-  return true;
+
+  // Check that listed OSes are valid.
+  for (const auto& pair : archive_) {
+    for (const auto& os : pair.second.os_list) {
+      if (!base::ContainsValue(all_supported_platforms_, os)) {
+        AuditorResult error(AuditorResult::Type::ERROR_INVALID_OS,
+                            std::string(), kAnnotationsXmlPath.MaybeAsASCII(),
+                            AuditorResult::kNoCodeLineSpecified);
+        error.AddDetail(os);
+        error.AddDetail(pair.first);
+        errors->push_back(std::move(error));
+      }
+    }
+  }
 }
 
 unsigned TrafficAnnotationExporter::GetXMLItemsCountForTesting() {
