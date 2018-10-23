@@ -35,7 +35,8 @@ ForwardingAudioStreamFactory::Core::Core(
       owner_(std::move(owner)),
       broker_factory_(std::move(broker_factory)),
       group_id_(base::UnguessableToken::Create()),
-      connector_(std::move(connector)) {
+      connector_(std::move(connector)),
+      weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(owner_);
   DCHECK(broker_factory_);
@@ -46,6 +47,11 @@ ForwardingAudioStreamFactory::Core::~Core() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   for (AudioStreamBroker::LoopbackSink* sink : loopback_sinks_)
     sink->OnSourceGone();
+}
+
+base::WeakPtr<ForwardingAudioStreamFactory::Core>
+ForwardingAudioStreamFactory::Core::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void ForwardingAudioStreamFactory::Core::CreateInputStream(
