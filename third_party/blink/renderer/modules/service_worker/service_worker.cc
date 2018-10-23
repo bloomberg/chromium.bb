@@ -183,11 +183,15 @@ ServiceWorker::ServiceWorker(ExecutionContext* execution_context,
       state_(info.state),
       binding_(this) {
   DCHECK_NE(mojom::blink::kInvalidServiceWorkerVersionId, info.version_id);
-  host_.Bind(mojom::blink::ServiceWorkerObjectHostAssociatedPtrInfo(
-      std::move(info.host_ptr_info),
-      mojom::blink::ServiceWorkerObjectHost::Version_));
-  binding_.Bind(mojom::blink::ServiceWorkerObjectAssociatedRequest(
-      std::move(info.request)));
+  host_.Bind(
+      mojom::blink::ServiceWorkerObjectHostAssociatedPtrInfo(
+          std::move(info.host_ptr_info),
+          mojom::blink::ServiceWorkerObjectHost::Version_),
+      execution_context->GetTaskRunner(blink::TaskType::kInternalDefault));
+  binding_.Bind(
+      mojom::blink::ServiceWorkerObjectAssociatedRequest(
+          std::move(info.request)),
+      execution_context->GetTaskRunner(blink::TaskType::kInternalDefault));
 }
 
 ServiceWorker::~ServiceWorker() = default;
