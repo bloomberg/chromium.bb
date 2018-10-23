@@ -19,15 +19,20 @@ namespace media {
 namespace {
 
 // Mime types for test files. Sorted in alphabetical order.
+const char kAacAdtsAudioOnly[] = "audio/aac";
+const char kMp2tAudioVideo[] = "video/mp2t; codecs=\"mp4a.40.2, avc1.42E01E\"";
 const char kMp4AacAudioOnly[] = "audio/mp4; codecs=\"mp4a.40.2\"";
+const char kMp4AudioOnly[] = "audio/mp4; codecs=\"mp4a.40.2\"'";
 const char kMp4Av110bitVideoOnly[] = "video/mp4; codecs=\"av01.0.04M.10\"";
 const char kMp4Av1VideoOnly[] = "video/mp4; codecs=\"av01.0.04M.08\"";
 const char kMp4Avc1VideoOnly[] = "video/mp4; codecs=\"avc1.64001E\"";
 const char kMp4FlacAudioOnly[] = "audio/mp4; codecs=\"flac\"";
+const char kMp4VideoOnly[] = "video/mp4; codecs=\"avc1.4D4041\"'";
 const char kMp4Vp9Profile2VideoOnly[] =
     "video/mp4; codecs=\"vp09.02.10.10.01.02.02.02.00\"";
 const char kMp4Vp9VideoOnly[] =
     "video/mp4; codecs=\"vp09.00.10.08.01.02.02.02.00\"";
+const char kWebMAudioVideo[] = "video/webm; codecs=\"vorbis, vp8\"";
 const char kWebMAv110bitVideoOnly[] = "video/webm; codecs=\"av01.0.04M.10\"";
 const char kWebMAv1VideoOnly[] = "video/webm; codecs=\"av01.0.04M.08\"";
 const char kWebMOpusAudioOnly[] = "audio/webm; codecs=\"opus\"";
@@ -47,6 +52,7 @@ using FileToMimeTypeMap = base::flat_map<std::string, std::string>;
 // alphabetical order.
 const FileToMimeTypeMap& GetFileToMimeTypeMap() {
   static const base::NoDestructor<FileToMimeTypeMap> kFileToMimeTypeMap({
+      {"bear-1280x720.ts", kMp2tAudioVideo},
       {"bear-320x240-audio-only.webm", kWebMVorbisAudioOnly},
       {"bear-320x240-av_enc-a.webm", kWebMVorbisAudioVp8Video},
       {"bear-320x240-av_enc-av.webm", kWebMVorbisAudioVp8Video},
@@ -63,20 +69,26 @@ const FileToMimeTypeMap& GetFileToMimeTypeMap() {
       {"bear-320x240-v_enc-v.webm", kWebMVp8VideoOnly},
       {"bear-320x240-v_frag-vp9-cenc.mp4", kMp4Vp9VideoOnly},
       {"bear-320x240-video-only.webm", kWebMVp8VideoOnly},
+      {"bear-320x240.webm", kWebMAudioVideo},
       {"bear-640x360-a_frag-cbcs.mp4", kMp4AacAudioOnly},
       {"bear-640x360-a_frag-cenc.mp4", kMp4AacAudioOnly},
+      {"bear-640x360-a_frag.mp4", kMp4AudioOnly},
       {"bear-640x360-v_frag-cbc1.mp4", kMp4Avc1VideoOnly},
       {"bear-640x360-v_frag-cbcs.mp4", kMp4Avc1VideoOnly},
       {"bear-640x360-v_frag-cenc-mdat.mp4", kMp4Avc1VideoOnly},
       {"bear-640x360-v_frag-cenc.mp4", kMp4Avc1VideoOnly},
       {"bear-640x360-v_frag-cens.mp4", kMp4Avc1VideoOnly},
+      {"bear-640x360-v_frag.mp4", kMp4VideoOnly},
       {"bear-a_enc-a.webm", kWebMVorbisAudioOnly},
       {"bear-av1-320x180-10bit-cenc.mp4", kMp4Av110bitVideoOnly},
       {"bear-av1-320x180-10bit-cenc.webm", kWebMAv110bitVideoOnly},
       {"bear-av1-cenc.mp4", kMp4Av1VideoOnly},
       {"bear-av1-cenc.webm", kWebMAv1VideoOnly},
       {"bear-flac-cenc.mp4", kMp4FlacAudioOnly},
+      {"bear-flac_frag.mp4", kMp4FlacAudioOnly},
+      {"bear-opus.webm", kWebMOpusAudioOnly},
       {"frame_size_change-av_enc-v.webm", kWebMVorbisAudioVp8Video},
+      {"sfx.adts", kAacAdtsAudioOnly},
   });
 
   return *kFileToMimeTypeMap;
@@ -146,10 +158,9 @@ scoped_refptr<DecoderBuffer> ReadTestDataFile(const std::string& name) {
   int file_size = base::checked_cast<int>(tmp);
 
   scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(file_size));
-  CHECK_EQ(file_size,
-           base::ReadFile(
-               file_path, reinterpret_cast<char*>(buffer->writable_data()),
-               file_size)) << "Failed to read '" << name << "'";
+  auto* data = reinterpret_cast<char*>(buffer->writable_data());
+  CHECK_EQ(file_size, base::ReadFile(file_path, data, file_size))
+      << "Failed to read '" << name << "'";
 
   return buffer;
 }
