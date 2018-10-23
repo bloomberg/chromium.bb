@@ -304,10 +304,10 @@ TEST_F(AXNativeWidgetMacTest, FocusableElementsAreLeafNodes) {
       1u,
       [[button->GetNativeViewAccessible()
           accessibilityAttributeValue:NSAccessibilityChildrenAttribute] count]);
-  EXPECT_EQ(button->label()->GetNativeViewAccessible(),
-            [[button->GetNativeViewAccessible()
-                accessibilityAttributeValue:NSAccessibilityChildrenAttribute]
-                objectAtIndex:0]);
+  EXPECT_EQ(
+      button->label()->GetNativeViewAccessible(),
+      [button->GetNativeViewAccessible()
+          accessibilityAttributeValue:NSAccessibilityChildrenAttribute][0]);
 
   // If the child is disabled, it should still be traversable.
   button->label()->SetEnabled(false);
@@ -315,10 +315,10 @@ TEST_F(AXNativeWidgetMacTest, FocusableElementsAreLeafNodes) {
       1u,
       [[button->GetNativeViewAccessible()
           accessibilityAttributeValue:NSAccessibilityChildrenAttribute] count]);
-  EXPECT_EQ(button->label()->GetNativeViewAccessible(),
-            [[button->GetNativeViewAccessible()
-                accessibilityAttributeValue:NSAccessibilityChildrenAttribute]
-                objectAtIndex:0]);
+  EXPECT_EQ(
+      button->label()->GetNativeViewAccessible(),
+      [button->GetNativeViewAccessible()
+          accessibilityAttributeValue:NSAccessibilityChildrenAttribute][0]);
 }
 
 // Test for NSAccessibilityChildrenAttribute, and ensure it excludes ignored
@@ -558,7 +558,7 @@ TEST_F(AXNativeWidgetMacTest, ViewWritableAttributes) {
       [AttributeValueAtMidpoint(NSAccessibilityFocusedAttribute) boolValue]);
   EXPECT_TRUE([ax_node
       accessibilityIsAttributeSettable:NSAccessibilityFocusedAttribute]);
-  [ax_node accessibilitySetValue:[NSNumber numberWithBool:YES]
+  [ax_node accessibilitySetValue:@YES
                     forAttribute:NSAccessibilityFocusedAttribute];
   EXPECT_TRUE(
       [AttributeValueAtMidpoint(NSAccessibilityFocusedAttribute) boolValue]);

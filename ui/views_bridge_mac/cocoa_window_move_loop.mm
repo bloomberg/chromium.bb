@@ -28,7 +28,8 @@
 @end
 
 @implementation WeakCocoaWindowMoveLoop
-- (id)initWithWeakPtr:(const base::WeakPtr<views::CocoaWindowMoveLoop>&)weak {
+- (instancetype)initWithWeakPtr:
+    (const base::WeakPtr<views::CocoaWindowMoveLoop>&)weak {
   if ((self = [super init])) {
     weak_ = weak;
   }
