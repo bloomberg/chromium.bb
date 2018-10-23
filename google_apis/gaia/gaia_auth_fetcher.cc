@@ -15,7 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#include "base/process/process_info.h"
+#include "base/process/process.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -693,7 +693,7 @@ void GaiaAuthFetcher::StartListAccounts() {
   list_accounts_system_uptime_ = base::SysInfo::Uptime();
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
   list_accounts_process_uptime_ =
-      base::Time::Now() - base::CurrentProcessInfo::CreationTime();
+      base::Time::Now() - base::Process::Current().CreationTime();
 #endif
 
   net::NetworkTrafficAnnotationTag traffic_annotation =

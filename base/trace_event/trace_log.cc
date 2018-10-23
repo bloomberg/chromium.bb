@@ -20,7 +20,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/no_destructor.h"
-#include "base/process/process_info.h"
+#include "base/process/process.h"
 #include "base/process/process_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
@@ -392,7 +392,7 @@ TraceLog::TraceLog()
 // Linux renderer processes and Android O processes are not allowed to read
 // "proc/stat" file, crbug.com/788870.
 #if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
-  process_creation_time_ = CurrentProcessInfo::CreationTime();
+  process_creation_time_ = Process::Current().CreationTime();
 #else
   // Use approximate time when creation time is not available.
   process_creation_time_ = TRACE_TIME_NOW();

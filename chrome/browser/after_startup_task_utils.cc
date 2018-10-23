@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/process/process_info.h"
+#include "base/process/process.h"
 #include "base/rand_util.h"
 #include "base/sequence_checker.h"
 #include "base/synchronization/atomic_flag.h"
@@ -108,9 +108,9 @@ void QueueTask(std::unique_ptr<AfterStartupTask> queued_task) {
 void SetBrowserStartupIsComplete() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
-  // CurrentProcessInfo::CreationTime() is not available on all platforms.
+  // Process::Current().CreationTime() is not available on all platforms.
   const base::Time process_creation_time =
-      base::CurrentProcessInfo::CreationTime();
+      base::Process::Current().CreationTime();
   if (!process_creation_time.is_null()) {
     UMA_HISTOGRAM_LONG_TIMES("Startup.AfterStartupTaskDelayedUntilTime",
                              base::Time::Now() - process_creation_time);
