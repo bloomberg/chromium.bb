@@ -78,6 +78,9 @@ void ParkableStringManager::ParkAllIfRendererBackgrounded() {
   if (!IsRendererBackgrounded())
     return;
 
+  if (!base::FeatureList::IsEnabled(kCompressParkableStringsInBackground))
+    return;
+
   size_t total_size = 0, count = 0;
   for (ParkableStringImpl* str : table_.Values()) {
     str->Park();
