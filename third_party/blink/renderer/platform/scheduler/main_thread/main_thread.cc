@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread.h"
 
 #include "base/location.h"
 #include "base/task/sequence_manager/task_queue.h"
@@ -11,36 +11,33 @@
 namespace blink {
 namespace scheduler {
 
-WebThreadImplForRendererScheduler::WebThreadImplForRendererScheduler(
-    MainThreadSchedulerImpl* scheduler)
+MainThread::MainThread(MainThreadSchedulerImpl* scheduler)
     : task_runner_(scheduler->DefaultTaskRunner()),
       scheduler_(scheduler),
       thread_id_(base::PlatformThread::CurrentId()) {}
 
-WebThreadImplForRendererScheduler::~WebThreadImplForRendererScheduler() =
-    default;
+MainThread::~MainThread() = default;
 
-void WebThreadImplForRendererScheduler::Init() {}
+void MainThread::Init() {}
 
-blink::PlatformThreadId WebThreadImplForRendererScheduler::ThreadId() const {
+blink::PlatformThreadId MainThread::ThreadId() const {
   return thread_id_;
 }
 
-blink::ThreadScheduler* WebThreadImplForRendererScheduler::Scheduler() {
+blink::ThreadScheduler* MainThread::Scheduler() {
   return scheduler_;
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-WebThreadImplForRendererScheduler::GetTaskRunner() const {
+scoped_refptr<base::SingleThreadTaskRunner> MainThread::GetTaskRunner() const {
   return task_runner_;
 }
 
-void WebThreadImplForRendererScheduler::AddTaskTimeObserver(
+void MainThread::AddTaskTimeObserver(
     base::sequence_manager::TaskTimeObserver* task_time_observer) {
   scheduler_->AddTaskTimeObserver(task_time_observer);
 }
 
-void WebThreadImplForRendererScheduler::RemoveTaskTimeObserver(
+void MainThread::RemoveTaskTimeObserver(
     base::sequence_manager::TaskTimeObserver* task_time_observer) {
   scheduler_->RemoveTaskTimeObserver(task_time_observer);
 }

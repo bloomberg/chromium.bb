@@ -35,9 +35,9 @@
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/task_queue_throttler.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/task_type_names.h"
-#include "third_party/blink/renderer/platform/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 
 namespace blink {
 namespace scheduler {
@@ -657,7 +657,7 @@ void MainThreadSchedulerImpl::Shutdown() {
 }
 
 std::unique_ptr<Thread> MainThreadSchedulerImpl::CreateMainThread() {
-  return std::make_unique<WebThreadImplForRendererScheduler>(this);
+  return std::make_unique<MainThread>(this);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
