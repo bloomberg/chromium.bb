@@ -2622,8 +2622,10 @@ void LocalFrameView::RunPaintLifecyclePhase() {
       // lifecycle state can be freed (such as raster invalidations).
       paint_controller_->FinishCycle();
       // PaintController for BlinkGenPropertyTrees is transient.
-      if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+      if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
+          !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
         paint_controller_ = nullptr;
+      }
     }
   }
 }
