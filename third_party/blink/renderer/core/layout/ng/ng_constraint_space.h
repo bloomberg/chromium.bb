@@ -105,7 +105,15 @@ class CORE_EXPORT NGConstraintSpace final {
   // The size to use for percentage resolution for margin/border/padding.
   // They are always get computed relative to the inline size, in the parent
   // writing mode.
-  LayoutUnit PercentageResolutionInlineSizeForParentWritingMode() const;
+  LayoutUnit PercentageResolutionInlineSizeForParentWritingMode() const {
+    if (!IsOrthogonalWritingModeRoot())
+      return PercentageResolutionSize().inline_size;
+    if (PercentageResolutionSize().block_size != NGSizeIndefinite)
+      return PercentageResolutionSize().block_size;
+    // TODO(mstensho): Figure out why we get here. It seems wrong, but we do get
+    // here in some grid layout situations.
+    return LayoutUnit();
+  }
 
   // The available space size.
   // See: https://drafts.csswg.org/css-sizing/#available
