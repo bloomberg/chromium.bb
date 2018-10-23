@@ -44,10 +44,18 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
     : public WebContentsObserver {
  public:
   // Note: all methods of Core may only be called on the IO thread except for
-  // the constructor. The destruction of Core is posted to the IO thread when
-  // the owning ForwardingAudioStreamFactory is destructed, so any task posted
-  // to the IO thread while the ForwardingAudioStreamFactory is alive may post
-  // |core()| using base::Unretained.
+  // the constructor and group_id(). The destruction of Core is posted to the
+  // IO thread when the owning ForwardingAudioStreamFactory is destructed. For
+  // using |core()|, two rules emerges.
+  // 1) If a task is posted from the UI thread to the IO thread while the
+  //    owning ForwardingAudioStreamFactory is alive, |core()| may be posted
+  //    Unretained.
+  // 2) If |core()| is held until the owning ForwardingAudioStreamFactory could
+  //    potentially be destructed, or if a task is posted to the IO thread with
+  //    the intention of accessing |core| after that task returns, using a raw
+  //    pointer is not safe. In those cases, take a weak pointer using
+  //    AsWeakPtr() and check it for validity before every use. The weak
+  //    pointer may only be checked/dereferenced on the IO thread.
   class CONTENT_EXPORT Core final : public AudioStreamBroker::LoopbackSource {
    public:
     Core(base::WeakPtr<ForwardingAudioStreamFactory> owner,
@@ -62,6 +70,8 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
     service_manager::Connector* get_connector_for_testing() {
       return connector_.get();
     }
+
+    base::WeakPtr<ForwardingAudioStreamFactory::Core> AsWeakPtr();
 
     // TODO(https://crbug.com/787806): Automatically restore streams on audio
     // service restart.
@@ -157,6 +167,9 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
     StreamBrokerSet inputs_;
     StreamBrokerSet outputs_;
     base::flat_set<AudioStreamBroker::LoopbackSink*> loopback_sinks_;
+
+    base::WeakPtrFactory<ForwardingAudioStreamFactory::Core> weak_ptr_factory_;
+
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
 

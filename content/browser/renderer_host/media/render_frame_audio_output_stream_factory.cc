@@ -76,9 +76,13 @@ class RenderFrameAudioOutputStreamFactory::Core final
                    "RenderFrameAudioOutputStreamFactory::ProviderImpl::Acquire",
                    "raw device id", device_id_);
 
-      owner_->forwarding_factory_->CreateOutputStream(
-          owner_->process_id_, owner_->frame_id_, device_id_, params,
-          processing_id, std::move(provider_client));
+      base::WeakPtr<ForwardingAudioStreamFactory::Core> factory =
+          owner_->forwarding_factory_;
+      if (factory) {
+        factory->CreateOutputStream(owner_->process_id_, owner_->frame_id_,
+                                    device_id_, params, processing_id,
+                                    std::move(provider_client));
+      }
 
       // Since the stream creation has been propagated, |this| is no longer
       // needed.
@@ -127,7 +131,8 @@ class RenderFrameAudioOutputStreamFactory::Core final
   AudioOutputAuthorizationHandler authorization_handler_;
 
   mojo::Binding<mojom::RendererAudioOutputStreamFactory> binding_;
-  ForwardingAudioStreamFactory::Core* forwarding_factory_;
+  // Always null-check this weak pointer before dereferencing it.
+  base::WeakPtr<ForwardingAudioStreamFactory::Core> forwarding_factory_;
 
   // The OutputStreamProviders for authorized streams are kept here while
   // waiting for the renderer to finish creating the stream, and destructed
@@ -179,16 +184,20 @@ RenderFrameAudioOutputStreamFactory::Core::Core(
       frame_id_(frame->GetRoutingID()),
       authorization_handler_(audio_system, media_stream_manager, process_id_),
       binding_(this),
-      forwarding_factory_(ForwardingAudioStreamFactory::CoreForFrame(frame)),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!forwarding_factory_) {
-    // The only case when we not have a forwarding factory is when the
-    // frame belongs to an interstitial. Interstitials don't need audio, so it's
-    // fine to drop the request.
+  ForwardingAudioStreamFactory::Core* tmp_factory =
+      ForwardingAudioStreamFactory::CoreForFrame(frame);
+
+  if (!tmp_factory) {
+    // The only case when we not have a forwarding factory at this point is when
+    // the frame belongs to an interstitial. Interstitials don't need audio, so
+    // it's fine to drop the request.
     return;
   }
+
+  forwarding_factory_ = tmp_factory->AsWeakPtr();
 
   // Unretained is safe since the destruction of |this| is posted to the IO
   // thread.
@@ -200,7 +209,6 @@ RenderFrameAudioOutputStreamFactory::Core::Core(
 void RenderFrameAudioOutputStreamFactory::Core::Init(
     mojom::RendererAudioOutputStreamFactoryRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(forwarding_factory_);
 
   binding_.Bind(std::move(request));
 }
@@ -211,7 +219,6 @@ void RenderFrameAudioOutputStreamFactory::Core::RequestDeviceAuthorization(
     const std::string& device_id,
     RequestDeviceAuthorizationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(forwarding_factory_);
   TRACE_EVENT2(
       "audio",
       "RenderFrameAudioOutputStreamFactory::RequestDeviceAuthorization",
