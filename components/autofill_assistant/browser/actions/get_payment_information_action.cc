@@ -58,6 +58,8 @@ void GetPaymentInformationAction::OnGetPaymentInformation(
       DCHECK(!payment_information->card_guid.empty());
       delegate->GetClientMemory()->set_selected_card(
           payment_information->card_guid);
+      processed_action_proto_->set_card_issuer_network(
+          payment_information->card_issuer_network);
     }
 
     if (!get_payment_information.shipping_address_name().empty()) {

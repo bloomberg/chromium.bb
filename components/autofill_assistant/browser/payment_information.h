@@ -16,6 +16,7 @@ struct PaymentInformation {
 
   bool succeed;
   std::string card_guid;
+  std::string card_issuer_network;
   std::string address_guid;
   std::string payer_name;
   std::string payer_phone;

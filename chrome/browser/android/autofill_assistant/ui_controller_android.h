@@ -72,6 +72,7 @@ class UiControllerAndroid : public UiController, public Client {
       jboolean jsucceed,
       const base::android::JavaParamRef<jstring>& jcard_guid,
       const base::android::JavaParamRef<jstring>& jaddress_guid,
+      const base::android::JavaParamRef<jstring>& jaddress_issuer_network,
       const base::android::JavaParamRef<jstring>& jpayer_name,
       const base::android::JavaParamRef<jstring>& jpayer_phone,
       const base::android::JavaParamRef<jstring>& jpayer_email);

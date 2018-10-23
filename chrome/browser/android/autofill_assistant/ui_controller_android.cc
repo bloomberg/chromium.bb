@@ -158,6 +158,7 @@ void UiControllerAndroid::OnGetPaymentInformation(
     const base::android::JavaParamRef<jobject>& jcaller,
     jboolean jsucceed,
     const base::android::JavaParamRef<jstring>& jcard_guid,
+    const base::android::JavaParamRef<jstring>& jcard_issuer_network,
     const base::android::JavaParamRef<jstring>& jaddress_guid,
     const base::android::JavaParamRef<jstring>& jpayer_name,
     const base::android::JavaParamRef<jstring>& jpayer_phone,
@@ -171,6 +172,10 @@ void UiControllerAndroid::OnGetPaymentInformation(
     if (jcard_guid != nullptr) {
       base::android::ConvertJavaStringToUTF8(env, jcard_guid,
                                              &payment_info->card_guid);
+    }
+    if (jcard_issuer_network != nullptr) {
+      base::android::ConvertJavaStringToUTF8(
+          env, jcard_issuer_network, &payment_info->card_issuer_network);
     }
     if (jaddress_guid != nullptr) {
       base::android::ConvertJavaStringToUTF8(env, jaddress_guid,

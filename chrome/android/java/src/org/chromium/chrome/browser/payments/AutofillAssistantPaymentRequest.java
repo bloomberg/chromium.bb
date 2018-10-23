@@ -68,6 +68,9 @@ public class AutofillAssistantPaymentRequest implements PaymentRequestUI.Client 
         /** Selected payment card's guid in personal data manager. */
         public String cardGuid;
 
+        /** Selected payment card's network identifier. */
+        public String cardIssuerNetwork;
+
         /** Selected shipping address's guid in personal data manager. */
         public String addressGuid;
 
@@ -440,8 +443,10 @@ public class AutofillAssistantPaymentRequest implements PaymentRequestUI.Client 
             SelectedPaymentInformation selectedPaymentInformation =
                     new SelectedPaymentInformation();
 
-            selectedPaymentInformation.cardGuid =
-                    ((AutofillPaymentInstrument) selectedPaymentMethod).getCard().getGUID();
+            PersonalDataManager.CreditCard creditCard =
+                    ((AutofillPaymentInstrument) selectedPaymentMethod).getCard();
+            selectedPaymentInformation.cardGuid = creditCard.getGUID();
+            selectedPaymentInformation.cardIssuerNetwork = creditCard.getBasicCardIssuerNetwork();
             if (mPaymentOptions.requestShipping && selectedShippingAddress != null) {
                 selectedPaymentInformation.addressGuid =
                         ((AutofillAddress) selectedShippingAddress).getProfile().getGUID();
