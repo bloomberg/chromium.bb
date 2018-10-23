@@ -663,6 +663,11 @@
     "args": ["--enable-features=SignedHTTPExchange,NetworkService"]
   },
   {
+    "prefix": "sxg-with-network-service",
+    "base": "external/wpt/signed-exchange",
+    "args": ["--enable-features=SignedHTTPExchange,NetworkService"]
+  },
+  {
     "prefix": "sxg-origin-trial",
     "base": "http/tests/loading/sxg",
     "args": ["--enable-features=SignedHTTPExchangeOriginTrial"]

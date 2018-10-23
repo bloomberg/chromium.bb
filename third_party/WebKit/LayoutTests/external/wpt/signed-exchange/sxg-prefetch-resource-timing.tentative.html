@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <title>Resource Timing for prefetched SignedHTTPExchange</title>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/common/get-host-info.sub.js"></script>
 <script src="./resources/sxg-util.js"></script>
 <body>
 <script>
@@ -11,7 +12,8 @@ function addPrefetch(url) {
   link.href = url;
   document.body.appendChild(link);
 }
-async function wait_for_performance_entries(url) {
+
+async function waitForPerformanceEntries(url) {
   let entries = performance.getEntriesByName(url);
   if (entries.length > 0) {
     return entries;
@@ -27,9 +29,9 @@ async function wait_for_performance_entries(url) {
 }
 
 promise_test(async (t) => {
-  const url = 'http://127.0.0.1:8000/loading/sxg/resources/sxg-location.sxg';
+  const url = get_host_info().HTTPS_ORIGIN + '/signed-exchange/resources/sxg-location.sxg';
   addPrefetch(url);
-  return wait_for_performance_entries(url).then((entries) => {
+  return waitForPerformanceEntries(url).then((entries) => {
     assert_equals(entries.length, 1, "Should have only one resource timing entry");
     const e = entries[0];
     assert_greater_than(e.duration, 0, "duration should be greater than 0");

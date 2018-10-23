@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <title>Loading SignedHTTPExchange from non secure origin must fail</title>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/common/get-host-info.sub.js"></script>
 <script src="./resources/sxg-util.js"></script>
 <body>
 <script>
 promise_test(async (t) => {
-  await waitUntilDidFinishLoadForFrame;
-
   try {
-    await openSXGInIframeAndWaitForMessage(
-        t, 'http://example.test:8080/loading/sxg/resources/sxg-location.sxg');
+    const sxgUrl = get_host_info().HTTP_ORIGIN + '/signed-exchange/resources/sxg-location.sxg';
+    await openSXGInIframeAndWaitForMessage(t, sxgUrl);
     assert_unreached('SXG should not have loaded');
   } catch (e) {
     assert_equals(e, 'timeout');
