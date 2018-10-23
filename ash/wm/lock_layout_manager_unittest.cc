@@ -57,13 +57,9 @@ class LockLayoutManagerTest : public AshTestBase {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
-    Shell::GetPrimaryRootWindowController()->ActivateKeyboard(
-        keyboard::KeyboardController::Get());
   }
 
   void TearDown() override {
-    Shell::GetPrimaryRootWindowController()->DeactivateKeyboard(
-        keyboard::KeyboardController::Get());
     AshTestBase::TearDown();
   }
 

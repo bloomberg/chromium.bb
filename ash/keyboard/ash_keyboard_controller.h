@@ -25,6 +25,7 @@ class KeyboardController;
 
 namespace ash {
 
+class RootWindowController;
 class SessionController;
 class VirtualKeyboardController;
 
@@ -78,10 +79,16 @@ class ASH_EXPORT AshKeyboardController
     return virtual_keyboard_controller_.get();
   }
 
- private:
-  // Ensures that the keyboard controller is activated for the primary window.
+  // Activates the keyboard controller for the primary root window controller.
   void ActivateKeyboard();
 
+  // Activates the keyboard controller for |controller|.
+  void ActivateKeyboardForRoot(RootWindowController* controller);
+
+  // Deactivates the keyboard controller.
+  void DeactivateKeyboard();
+
+ private:
   // Called whenever the enable flags may have changed the enabled state from
   // |was_enabled|. If changed, enables or disables the keyboard.
   void UpdateEnableFlag(bool was_enabled);

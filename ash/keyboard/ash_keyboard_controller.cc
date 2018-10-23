@@ -5,6 +5,7 @@
 #include "ash/keyboard/ash_keyboard_controller.h"
 
 #include "ash/keyboard/virtual_keyboard_controller.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -44,14 +45,10 @@ void AshKeyboardController::EnableKeyboard() {
   if (!keyboard_controller_->IsKeyboardEnableRequested())
     return;
 
-  if (keyboard_controller_->IsEnabled()) {
-    // Disable and re-enable the keyboard, as some callers expect the keyboard
-    // to be reloaded.
-    // TODO(https://crbug.com/731537): Add a separate function for reloading the
-    // keyboard.
-    for (auto* controller : Shell::Get()->GetAllRootWindowControllers())
-      controller->DeactivateKeyboard(keyboard_controller_.get());
-  }
+  // De-activate the keyboard, as some callers expect the keyboard to be
+  // reloaded. TODO(https://crbug.com/731537): Add a separate function for
+  // reloading the keyboard.
+  DeactivateKeyboard();
 
   // TODO(crbug.com/646565): The keyboard UI uses a WebContents that is
   // created by chrome code but parented to an ash-created container window.
@@ -69,11 +66,7 @@ void AshKeyboardController::EnableKeyboard() {
 }
 
 void AshKeyboardController::DisableKeyboard() {
-  if (keyboard_controller_->IsEnabled()) {
-    for (auto* controller : Shell::Get()->GetAllRootWindowControllers())
-      controller->DeactivateKeyboard(keyboard_controller_.get());
-  }
-
+  DeactivateKeyboard();
   keyboard_controller_->DisableKeyboard();
 }
 
@@ -153,10 +146,32 @@ void AshKeyboardController::OnSessionStateChanged(
 }
 
 void AshKeyboardController::ActivateKeyboard() {
+  ActivateKeyboardForRoot(Shell::Get()->GetPrimaryRootWindowController());
+}
+
+void AshKeyboardController::ActivateKeyboardForRoot(
+    RootWindowController* controller) {
+  DCHECK(controller);
   if (!keyboard_controller_->IsEnabled())
     return;
-  Shell::Get()->GetPrimaryRootWindowController()->ActivateKeyboard(
-      keyboard_controller_.get());
+
+  // If the keyboard is already activated for |controller|, do nothing.
+  if (controller->GetRootWindow() == keyboard_controller_->GetRootWindow())
+    return;
+
+  aura::Window* container =
+      controller->GetContainer(kShellWindowId_VirtualKeyboardContainer);
+  DCHECK(container);
+  keyboard_controller_->ActivateKeyboardInContainer(container);
+  keyboard_controller_->LoadKeyboardWindowInBackground();
+}
+
+void AshKeyboardController::DeactivateKeyboard() {
+  if (!keyboard_controller_->IsEnabled() ||
+      !keyboard_controller_->GetRootWindow()) {
+    return;
+  }
+  keyboard_controller_->DeactivateKeyboard();
 }
 
 void AshKeyboardController::UpdateEnableFlag(bool was_enabled) {
