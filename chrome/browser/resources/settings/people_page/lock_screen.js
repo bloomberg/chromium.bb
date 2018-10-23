@@ -135,6 +135,18 @@ Polymer({
     },
 
     /**
+     * True if Easy Unlock is in legacy host mode.
+     *
+     * TODO(crbug.com/894585): Remove this legacy special case after M71.
+     */
+    easyUnlockInLegacyHostMode_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('easyUnlockInLegacyHostMode');
+      },
+    },
+
+    /**
      * True if Multidevice Setup is enabled.
      * @private {boolean}
      */
@@ -453,7 +465,10 @@ Polymer({
    * @return {boolean} Whether Easy Unlock is available.
    * @private
    */
-  easyUnlockAvailable_: function(multiDeviceEnabled, easyUnlockAllowed) {
-    return !multiDeviceEnabled && easyUnlockAllowed;
+  easyUnlockAvailable_: function(
+      multiDeviceEnabled, easyUnlockAllowed, easyUnlockInLegacyHostMode) {
+    return (
+        (!multiDeviceEnabled || easyUnlockInLegacyHostMode) &&
+        easyUnlockAllowed);
   },
 });

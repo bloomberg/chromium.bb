@@ -293,6 +293,10 @@ bool EasyUnlockService::IsChromeOSLoginEnabled() const {
   return false;
 }
 
+bool EasyUnlockService::IsInLegacyHostMode() const {
+  return false;
+}
+
 void EasyUnlockService::OpenSetupApp() {
   app_manager_->LaunchSetup();
 }
