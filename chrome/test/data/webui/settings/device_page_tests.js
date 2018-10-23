@@ -610,15 +610,17 @@ cr.define('device_page_tests', function() {
             expectFalse(!!keyboardPage.$$('#capsLockKey'));
             expectFalse(!!keyboardPage.$$('#diamondKey'));
 
-            // Pretend the diamond key is available.
+            // Pretend the diamond key is available, and no internal keyboard.
             let keyboardParams = {
               'showCapsLock': false,
               'showDiamondKey': true,
               'showExternalMetaKey': false,
               'showAppleCommandKey': false,
+              'hasInternalKeyboard': false,
             };
             cr.webUIListenerCallback('show-keys-changed', keyboardParams);
             Polymer.dom.flush();
+            expectFalse(!!keyboardPage.$$('#internalSearchKey'));
             expectFalse(!!keyboardPage.$$('#capsLockKey'));
             expectTrue(!!keyboardPage.$$('#diamondKey'));
             expectFalse(!!keyboardPage.$$('#externalMetaKey'));
@@ -628,6 +630,7 @@ cr.define('device_page_tests', function() {
             keyboardParams['showCapsLock'] = true;
             cr.webUIListenerCallback('show-keys-changed', keyboardParams);
             Polymer.dom.flush();
+            expectFalse(!!keyboardPage.$$('#internalSearchKey'));
             expectTrue(!!keyboardPage.$$('#capsLockKey'));
             expectTrue(!!keyboardPage.$$('#diamondKey'));
             expectFalse(!!keyboardPage.$$('#externalMetaKey'));
@@ -637,6 +640,7 @@ cr.define('device_page_tests', function() {
             keyboardParams['showExternalMetaKey'] = true;
             cr.webUIListenerCallback('show-keys-changed', keyboardParams);
             Polymer.dom.flush();
+            expectFalse(!!keyboardPage.$$('#internalSearchKey'));
             expectTrue(!!keyboardPage.$$('#capsLockKey'));
             expectTrue(!!keyboardPage.$$('#diamondKey'));
             expectTrue(!!keyboardPage.$$('#externalMetaKey'));
@@ -646,6 +650,17 @@ cr.define('device_page_tests', function() {
             keyboardParams['showAppleCommandKey'] = true;
             cr.webUIListenerCallback('show-keys-changed', keyboardParams);
             Polymer.dom.flush();
+            expectFalse(!!keyboardPage.$$('#internalSearchKey'));
+            expectTrue(!!keyboardPage.$$('#capsLockKey'));
+            expectTrue(!!keyboardPage.$$('#diamondKey'));
+            expectTrue(!!keyboardPage.$$('#externalMetaKey'));
+            expectTrue(!!keyboardPage.$$('#externalCommandKey'));
+
+            // Add an internal keyboard.
+            keyboardParams['hasInternalKeyboard'] = true;
+            cr.webUIListenerCallback('show-keys-changed', keyboardParams);
+            Polymer.dom.flush();
+            expectTrue(!!keyboardPage.$$('#internalSearchKey'));
             expectTrue(!!keyboardPage.$$('#capsLockKey'));
             expectTrue(!!keyboardPage.$$('#diamondKey'));
             expectTrue(!!keyboardPage.$$('#externalMetaKey'));
