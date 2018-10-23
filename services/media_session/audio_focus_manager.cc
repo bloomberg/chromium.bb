@@ -216,6 +216,13 @@ void AudioFocusManager::AbandonAudioFocusInternal(RequestId id) {
   observers_.ForAllPtrs([&row](mojom::AudioFocusObserver* observer) {
     observer->OnFocusLost(row->info().Clone());
   });
+
+  // Notify observers that the session on top gained focus.
+  StackRow* new_session = audio_focus_stack_.back().get();
+  observers_.ForAllPtrs([&new_session](mojom::AudioFocusObserver* observer) {
+    observer->OnFocusGained(new_session->info().Clone(),
+                            new_session->audio_focus_type());
+  });
 }
 
 void AudioFocusManager::AddObserver(mojom::AudioFocusObserverPtr observer) {
