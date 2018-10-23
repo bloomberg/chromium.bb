@@ -63,7 +63,7 @@ def CleanStalePackages(srcroot, boards, package_atoms):
     if not osutils.FindMissingBinaries([emerge, eclean]):
       if package_atoms:
         # If nothing was found to be unmerged, emerge will exit(1).
-        result = runcmd([emerge, '-q', '--unmerge'] + package_atoms,
+        result = runcmd([emerge, '-q', '--unmerge'] + list(package_atoms),
                         enter_chroot=True, extra_env={'CLEAN_DELAY': '0'},
                         error_code_ok=True, cwd=srcroot)
         if not result.returncode in (0, 1):
