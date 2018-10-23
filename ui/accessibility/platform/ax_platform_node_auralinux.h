@@ -145,11 +145,6 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   // to emit the ATK_STATE_FOCUSED change to false.
   static AtkObject* current_focused_;
 
-  // The last object which was selected. Tracking this is required because
-  // widgets in the browser UI only emit notifications upon becoming selected,
-  // but clients also expect notifications when items become unselected.
-  static base::WeakPtr<AXPlatformNodeAuraLinux> current_selected_;
-
   base::WeakPtrFactory<AXPlatformNodeAuraLinux> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AXPlatformNodeAuraLinux);

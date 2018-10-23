@@ -1033,6 +1033,15 @@ void AXPlatformNodeAuraLinuxDetach(AXPlatformNodeAuraLinuxObject* atk_object) {
 
 G_END_DECLS
 
+namespace {
+
+// The last object which was selected. Tracking this is required because
+// widgets in the browser UI only emit notifications upon becoming selected,
+// but clients also expect notifications when items become unselected.
+AXPlatformNodeAuraLinux* g_current_selected = nullptr;
+
+}  // namespace
+
 void AXPlatformNodeAuraLinux::EnsureGTypeInit() {
 #if !GLIB_CHECK_VERSION(2, 36, 0)
   static bool first_time = true;
@@ -1691,6 +1700,9 @@ AXPlatformNodeAuraLinux::AXPlatformNodeAuraLinux()
       weak_factory_(this) {}
 
 AXPlatformNodeAuraLinux::~AXPlatformNodeAuraLinux() {
+  if (g_current_selected == this)
+    g_current_selected = nullptr;
+
   DestroyAtkObjects();
 }
 
@@ -1793,17 +1805,14 @@ void AXPlatformNodeAuraLinux::OnFocused() {
                                  true);
 }
 
-base::WeakPtr<AXPlatformNodeAuraLinux>
-    AXPlatformNodeAuraLinux::current_selected_ = nullptr;
-
 void AXPlatformNodeAuraLinux::OnSelected() {
-  if (current_selected_ && !current_selected_->GetData().GetBoolAttribute(
-                               ax::mojom::BoolAttribute::kSelected)) {
-    atk_object_notify_state_change(ATK_OBJECT(current_selected_->atk_object_),
+  if (g_current_selected && !g_current_selected->GetData().GetBoolAttribute(
+                                ax::mojom::BoolAttribute::kSelected)) {
+    atk_object_notify_state_change(ATK_OBJECT(g_current_selected->atk_object_),
                                    ATK_STATE_SELECTED, false);
   }
 
-  current_selected_ = weak_factory_.GetWeakPtr();
+  g_current_selected = this;
   if (ATK_IS_OBJECT(atk_object_)) {
     atk_object_notify_state_change(ATK_OBJECT(atk_object_), ATK_STATE_SELECTED,
                                    true);
