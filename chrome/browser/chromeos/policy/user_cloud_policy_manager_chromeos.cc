@@ -81,6 +81,21 @@ const char kUMAInitialFetchOAuth2Error[] =
     "Enterprise.UserPolicyChromeOS.InitialFetch.OAuth2Error";
 const char kUMAInitialFetchOAuth2NetworkError[] =
     "Enterprise.UserPolicyChromeOS.InitialFetch.OAuth2NetworkError";
+const char kUMAReregistrationResult[] =
+    "Enterprise.UserPolicyChromeOS.ReregistrationResult";
+
+// This enum is used in UMA, items should not be reordered/deleted. New values
+// should also be added to enums.xml.
+enum class RegistrationResult {
+  kReregistrationTriggered = 0,
+  kReregistrationSuccessful = 1,
+  kReregistrationUnsuccessful = 2,
+  kMaxValue = kReregistrationUnsuccessful,
+};
+
+void RegistrationResultUMA(RegistrationResult registration_result) {
+  UMA_HISTOGRAM_ENUMERATION(kUMAReregistrationResult, registration_result);
+}
 
 // This class is used to subscribe for notifications that the current profile is
 // being shut down.
@@ -394,6 +409,7 @@ void UserCloudPolicyManagerChromeOS::OnRegistrationStateChanged(
   // Trigger re-registration. This happens if the client ID used for policy
   // fetches is unknown/purged from the DMServer.
   if (!client()->is_registered() && client()->requires_reregistration()) {
+    RegistrationResultUMA(RegistrationResult::kReregistrationTriggered);
     is_in_reregistration_state_ = true;
     if (!access_token_.empty()) {
       OnOAuth2PolicyTokenFetched(
@@ -404,8 +420,10 @@ void UserCloudPolicyManagerChromeOS::OnRegistrationStateChanged(
     return;
   }
   // Reset re-registration state on successful registration.
-  if (client()->is_registered() && is_in_reregistration_state_)
+  if (client()->is_registered() && is_in_reregistration_state_) {
+    RegistrationResultUMA(RegistrationResult::kReregistrationSuccessful);
     is_in_reregistration_state_ = false;
+  }
 
   if (waiting_for_policy_fetch_) {
     time_client_registered_ = base::Time::Now();
@@ -455,6 +473,7 @@ void UserCloudPolicyManagerChromeOS::OnClientError(
   // If we are in re-registration state and re-registration fails, we mark the
   // user to require an online sign-in on his next sign-in.
   if (is_in_reregistration_state_) {
+    RegistrationResultUMA(RegistrationResult::kReregistrationUnsuccessful);
     LOG(ERROR) << "Re-registration failed, requiring the user to perform an "
                   "online sign-in.";
     chromeos::ChromeUserManager::Get()->SaveForceOnlineSignin(account_id_,
