@@ -222,7 +222,6 @@ class AutofillManager : public AutofillHandler,
   // indicates whether the upload is a result of an observed submission event.
   virtual void UploadFormDataAsyncCallback(
       const FormStructure* submitted_form,
-      const base::TimeTicks& load_time,
       const base::TimeTicks& interaction_time,
       const base::TimeTicks& submission_time,
       bool observed_submission);
@@ -560,8 +559,6 @@ class AutofillManager : public AutofillHandler,
   // Has the user edited a field that was previously autofilled?
   bool user_did_edit_autofilled_field_ = false;
 
-  // When the form finished loading.
-  std::map<FormData, base::TimeTicks> forms_loaded_timestamps_;
   // When the user first interacted with a potentially fillable form on this
   // page.
   base::TimeTicks initial_interaction_timestamp_;

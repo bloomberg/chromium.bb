@@ -6965,14 +6965,18 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
   second_form.fields[1].value = ASCIIToUTF16("theking@gmail.com");
   second_form.fields[2].value = ASCIIToUTF16("12345678901");
   second_form.fields[3].value = ASCIIToUTF16("51512345678");
+
   // Expect only form load metrics to be logged if the form is submitted without
   // user interaction.
   {
     base::HistogramTester histogram_tester;
-    autofill_manager_->OnFormsSeen(forms, TimeTicks::FromInternalValue(1));
-    autofill_manager_->OnFormSubmitted(form, false,
-                                       SubmissionSource::FORM_SUBMISSION,
-                                       TimeTicks::FromInternalValue(17));
+    autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
+    base::TimeTicks parse_time = autofill_manager_->form_structures()
+                                     .begin()
+                                     ->second->form_parsed_timestamp();
+    autofill_manager_->OnFormSubmitted(
+        form, false, SubmissionSource::FORM_SUBMISSION,
+        parse_time + base::TimeDelta::FromMicroseconds(17));
 
     histogram_tester.ExpectTotalCount(
         "Autofill.FillDuration.FromLoad.WithAutofill", 0);
@@ -6989,13 +6993,16 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
   // Expect metric to be logged if the user manually edited a form field.
   {
     base::HistogramTester histogram_tester;
-    autofill_manager_->OnFormsSeen(forms, TimeTicks::FromInternalValue(1));
-    autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
-                                            gfx::RectF(),
-                                            TimeTicks::FromInternalValue(3));
-    autofill_manager_->OnFormSubmitted(form, false,
-                                       SubmissionSource::FORM_SUBMISSION,
-                                       TimeTicks::FromInternalValue(17));
+    autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
+    base::TimeTicks parse_time = autofill_manager_->form_structures()
+                                     .begin()
+                                     ->second->form_parsed_timestamp();
+    autofill_manager_->OnTextFieldDidChange(
+        form, form.fields.front(), gfx::RectF(),
+        parse_time + base::TimeDelta::FromMicroseconds(3));
+    autofill_manager_->OnFormSubmitted(
+        form, false, SubmissionSource::FORM_SUBMISSION,
+        parse_time + base::TimeDelta::FromMicroseconds(17));
 
     histogram_tester.ExpectTotalCount(
         "Autofill.FillDuration.FromLoad.WithAutofill", 0);
@@ -7014,12 +7021,15 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
   form.fields[0].is_autofilled = true;
   {
     base::HistogramTester histogram_tester;
-    autofill_manager_->OnFormsSeen(forms, TimeTicks::FromInternalValue(1));
+    autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
+    base::TimeTicks parse_time = autofill_manager_->form_structures()
+                                     .begin()
+                                     ->second->form_parsed_timestamp();
     autofill_manager_->OnDidFillAutofillFormData(
-        form, TimeTicks::FromInternalValue(5));
-    autofill_manager_->OnFormSubmitted(form, false,
-                                       SubmissionSource::FORM_SUBMISSION,
-                                       TimeTicks::FromInternalValue(17));
+        form, parse_time + base::TimeDelta::FromMicroseconds(5));
+    autofill_manager_->OnFormSubmitted(
+        form, false, SubmissionSource::FORM_SUBMISSION,
+        parse_time + base::TimeDelta::FromMicroseconds(17));
 
     histogram_tester.ExpectUniqueSample(
         "Autofill.FillDuration.FromLoad.WithAutofill", 16, 1);
@@ -7040,15 +7050,18 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
   {
     base::HistogramTester histogram_tester;
 
-    autofill_manager_->OnFormsSeen(forms, TimeTicks::FromInternalValue(1));
+    autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
+    base::TimeTicks parse_time = autofill_manager_->form_structures()
+                                     .begin()
+                                     ->second->form_parsed_timestamp();
     autofill_manager_->OnDidFillAutofillFormData(
-        form, TimeTicks::FromInternalValue(5));
-    autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
-                                            gfx::RectF(),
-                                            TimeTicks::FromInternalValue(3));
-    autofill_manager_->OnFormSubmitted(form, false,
-                                       SubmissionSource::FORM_SUBMISSION,
-                                       TimeTicks::FromInternalValue(17));
+        form, parse_time + base::TimeDelta::FromMicroseconds(5));
+    autofill_manager_->OnTextFieldDidChange(
+        form, form.fields.front(), gfx::RectF(),
+        parse_time + base::TimeDelta::FromMicroseconds(3));
+    autofill_manager_->OnFormSubmitted(
+        form, false, SubmissionSource::FORM_SUBMISSION,
+        parse_time + base::TimeDelta::FromMicroseconds(17));
 
     histogram_tester.ExpectUniqueSample(
         "Autofill.FillDuration.FromLoad.WithAutofill", 16, 1);
@@ -7067,17 +7080,19 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
   // form.
   {
     base::HistogramTester histogram_tester;
-    autofill_manager_->OnFormsSeen(forms, TimeTicks::FromInternalValue(1));
-    autofill_manager_->OnFormsSeen(second_forms,
-                                   TimeTicks::FromInternalValue(3));
+    autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
+    base::TimeTicks parse_time = autofill_manager_->form_structures()
+                                     .begin()
+                                     ->second->form_parsed_timestamp();
+    autofill_manager_->OnFormsSeen(second_forms, TimeTicks::Now());
     autofill_manager_->OnDidFillAutofillFormData(
-        form, TimeTicks::FromInternalValue(5));
-    autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
-                                            gfx::RectF(),
-                                            TimeTicks::FromInternalValue(3));
-    autofill_manager_->OnFormSubmitted(form, false,
-                                       SubmissionSource::FORM_SUBMISSION,
-                                       TimeTicks::FromInternalValue(17));
+        form, parse_time + base::TimeDelta::FromMicroseconds(5));
+    autofill_manager_->OnTextFieldDidChange(
+        form, form.fields.front(), gfx::RectF(),
+        parse_time + base::TimeDelta::FromMicroseconds(3));
+    autofill_manager_->OnFormSubmitted(
+        form, false, SubmissionSource::FORM_SUBMISSION,
+        parse_time + base::TimeDelta::FromMicroseconds(17));
 
     histogram_tester.ExpectUniqueSample(
         "Autofill.FillDuration.FromLoad.WithAutofill", 16, 1);
@@ -7096,12 +7111,16 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
   // later loading time.
   {
     base::HistogramTester histogram_tester;
-    autofill_manager_->OnFormsSeen(forms, TimeTicks::FromInternalValue(1));
-    autofill_manager_->OnFormsSeen(second_forms,
-                                   TimeTicks::FromInternalValue(5));
-    autofill_manager_->OnFormSubmitted(second_form, false,
-                                       SubmissionSource::FORM_SUBMISSION,
-                                       TimeTicks::FromInternalValue(17));
+    autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
+    autofill_manager_->OnFormsSeen(second_forms, TimeTicks::Now());
+    base::TimeTicks parse_time{};
+    for (const auto& kv : autofill_manager_->form_structures()) {
+      if (kv.second->form_parsed_timestamp() > parse_time)
+        parse_time = kv.second->form_parsed_timestamp();
+    }
+    autofill_manager_->OnFormSubmitted(
+        second_form, false, SubmissionSource::FORM_SUBMISSION,
+        parse_time + base::TimeDelta::FromMicroseconds(17));
 
     histogram_tester.ExpectTotalCount(
         "Autofill.FillDuration.FromLoad.WithAutofill", 0);
@@ -7398,10 +7417,9 @@ TEST_F(AutofillMetricsTest, ProfileActionOnFormSubmitted) {
 
   // Expect to log NEW_PROFILE_CREATED for the metric since a new profile is
   // submitted.
-  autofill_manager_->OnFormsSeen(forms, TimeTicks::FromInternalValue(1));
-  autofill_manager_->OnFormSubmitted(form, false,
-                                     SubmissionSource::FORM_SUBMISSION,
-                                     TimeTicks::FromInternalValue(17));
+  autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
+  autofill_manager_->OnFormSubmitted(
+      form, false, SubmissionSource::FORM_SUBMISSION, TimeTicks::Now());
   histogram_tester.ExpectBucketCount("Autofill.ProfileActionOnFormSubmitted",
                                      AutofillMetrics::NEW_PROFILE_CREATED, 1);
   histogram_tester.ExpectBucketCount("Autofill.ProfileActionOnFormSubmitted",
@@ -7412,10 +7430,9 @@ TEST_F(AutofillMetricsTest, ProfileActionOnFormSubmitted) {
 
   // Expect to log EXISTING_PROFILE_USED for the metric since the same profile
   // is submitted.
-  autofill_manager_->OnFormsSeen(second_forms, TimeTicks::FromInternalValue(1));
-  autofill_manager_->OnFormSubmitted(second_form, false,
-                                     SubmissionSource::FORM_SUBMISSION,
-                                     TimeTicks::FromInternalValue(17));
+  autofill_manager_->OnFormsSeen(second_forms, TimeTicks::Now());
+  autofill_manager_->OnFormSubmitted(
+      second_form, false, SubmissionSource::FORM_SUBMISSION, TimeTicks::Now());
   histogram_tester.ExpectBucketCount("Autofill.ProfileActionOnFormSubmitted",
                                      AutofillMetrics::NEW_PROFILE_CREATED, 1);
   histogram_tester.ExpectBucketCount("Autofill.ProfileActionOnFormSubmitted",
@@ -7426,10 +7443,9 @@ TEST_F(AutofillMetricsTest, ProfileActionOnFormSubmitted) {
 
   // Expect to log NEW_PROFILE_CREATED for the metric since a new profile is
   // submitted.
-  autofill_manager_->OnFormsSeen(third_forms, TimeTicks::FromInternalValue(1));
-  autofill_manager_->OnFormSubmitted(third_form, false,
-                                     SubmissionSource::FORM_SUBMISSION,
-                                     TimeTicks::FromInternalValue(17));
+  autofill_manager_->OnFormsSeen(third_forms, TimeTicks::Now());
+  autofill_manager_->OnFormSubmitted(
+      third_form, false, SubmissionSource::FORM_SUBMISSION, TimeTicks::Now());
   histogram_tester.ExpectBucketCount("Autofill.ProfileActionOnFormSubmitted",
                                      AutofillMetrics::NEW_PROFILE_CREATED, 2);
   histogram_tester.ExpectBucketCount("Autofill.ProfileActionOnFormSubmitted",
@@ -7440,10 +7456,9 @@ TEST_F(AutofillMetricsTest, ProfileActionOnFormSubmitted) {
 
   // Expect to log EXISTING_PROFILE_UPDATED for the metric since the profile was
   // updated.
-  autofill_manager_->OnFormsSeen(fourth_forms, TimeTicks::FromInternalValue(1));
-  autofill_manager_->OnFormSubmitted(fourth_form, false,
-                                     SubmissionSource::FORM_SUBMISSION,
-                                     TimeTicks::FromInternalValue(17));
+  autofill_manager_->OnFormsSeen(fourth_forms, TimeTicks::Now());
+  autofill_manager_->OnFormSubmitted(
+      fourth_form, false, SubmissionSource::FORM_SUBMISSION, TimeTicks::Now());
   histogram_tester.ExpectBucketCount("Autofill.ProfileActionOnFormSubmitted",
                                      AutofillMetrics::NEW_PROFILE_CREATED, 2);
   histogram_tester.ExpectBucketCount("Autofill.ProfileActionOnFormSubmitted",

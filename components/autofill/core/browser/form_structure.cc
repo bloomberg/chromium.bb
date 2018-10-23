@@ -789,7 +789,8 @@ void FormStructure::RetrieveFromCache(
   UpdateAutofillCount();
 
   // Update form parsed timestamp
-  form_parsed_timestamp_ = cached_form.form_parsed_timestamp_;
+  form_parsed_timestamp_ =
+      std::min(form_parsed_timestamp_, cached_form.form_parsed_timestamp_);
 
   // The form signature should match between query and upload requests to the
   // server. On many websites, form elements are dynamically added, removed, or
@@ -888,7 +889,7 @@ void FormStructure::LogQualityMetrics(
       // dynamically added to the DOM.
       if (!load_time.is_null()) {
         // Submission should always chronologically follow form load.
-        DCHECK(submission_time > load_time);
+        DCHECK_GE(submission_time, load_time);
         base::TimeDelta elapsed = submission_time - load_time;
         if (did_autofill_some_possible_fields)
           AutofillMetrics::LogFormFillDurationFromLoadWithAutofill(elapsed);

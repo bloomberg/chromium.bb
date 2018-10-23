@@ -402,19 +402,19 @@ bool AutofillManager::MaybeStartVoteUploadProcess(
     copied_credit_cards.push_back(*card);
 
   // Note that ownership of |form_structure| is passed to the second task,
-  // using |base::Owned|.
+  // using |base::Owned|. We MUST temporarily hang on to the raw form pointer
+  // so that we can safely pass the address to the first callback regardless of
+  // the (undefined) order in which the callback parameters are computed.
   FormStructure* raw_form = form_structure.get();
-  TimeTicks loaded_timestamp = forms_loaded_timestamps_[raw_form->ToFormData()];
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&AutofillManager::DeterminePossibleFieldTypesForUpload,
                      copied_profiles, copied_credit_cards, app_locale_,
                      raw_form),
-      base::BindOnce(&AutofillManager::UploadFormDataAsyncCallback,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     base::Owned(form_structure.release()), loaded_timestamp,
-                     initial_interaction_timestamp_, timestamp,
-                     observed_submission));
+      base::BindOnce(
+          &AutofillManager::UploadFormDataAsyncCallback,
+          weak_ptr_factory_.GetWeakPtr(), base::Owned(form_structure.release()),
+          initial_interaction_timestamp_, timestamp, observed_submission));
   return true;
 }
 
@@ -1051,16 +1051,15 @@ bool AutofillManager::ShouldUploadForm(const FormStructure& form) {
 // get reset before this method executes.
 void AutofillManager::UploadFormDataAsyncCallback(
     const FormStructure* submitted_form,
-    const TimeTicks& load_time,
     const TimeTicks& interaction_time,
     const TimeTicks& submission_time,
     bool observed_submission) {
   if (submitted_form->ShouldRunHeuristics() ||
       submitted_form->ShouldBeQueried()) {
     submitted_form->LogQualityMetrics(
-        load_time, interaction_time, submission_time,
-        form_interactions_ukm_logger_.get(), did_show_suggestions_,
-        observed_submission);
+        submitted_form->form_parsed_timestamp(), interaction_time,
+        submission_time, form_interactions_ukm_logger_.get(),
+        did_show_suggestions_, observed_submission);
   }
   if (submitted_form->ShouldBeUploaded())
     UploadFormData(*submitted_form, observed_submission);
@@ -1119,7 +1118,6 @@ void AutofillManager::Reset() {
   unmasking_query_id_ = -1;
   unmasking_form_ = FormData();
   unmasking_field_ = FormFieldData();
-  forms_loaded_timestamps_.clear();
   initial_interaction_timestamp_ = TimeTicks();
   external_delegate_->Reset();
   filling_contexts_map_.clear();
@@ -1509,7 +1507,6 @@ void AutofillManager::OnFormsParsed(
     // times for a given form if it or other forms on the page are dynamic.
     LogDeveloperEngagementUkm(client_->GetUkmRecorder(),
                               client_->GetUkmSourceId(), form_structure);
-    forms_loaded_timestamps_[form_structure->ToFormData()] = timestamp;
     std::set<FormType> current_form_types = form_structure->GetFormTypes();
     form_types.insert(current_form_types.begin(), current_form_types.end());
     // Set aside forms with method GET or author-specified types, so that they
