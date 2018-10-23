@@ -5519,25 +5519,6 @@
             ]
         }
     ],
-    "WorkStealingInScriptRunner": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled2",
-                    "enable_features": [
-                        "WorkStealingInScriptRunner"
-                    ]
-                }
-            ]
-        }
-    ],
     "use-new-media-cache": [
         {
             "platforms": [
