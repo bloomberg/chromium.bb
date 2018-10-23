@@ -33,7 +33,6 @@ suite('cr-radio-button', function() {
   }
 
   function assertDisabled() {
-    assertEquals('-1', radioButton.getAttribute('tabindex'));
     assertTrue(radioButton.hasAttribute('disabled'));
     assertEquals('true', radioButton.getAttribute('aria-disabled'));
     assertEquals('none', getComputedStyle(radioButton).pointerEvents);
@@ -41,7 +40,6 @@ suite('cr-radio-button', function() {
   }
 
   function assertNotDisabled() {
-    assertEquals('0', radioButton.getAttribute('tabindex'));
     assertFalse(radioButton.hasAttribute('disabled'));
     assertEquals('false', radioButton.getAttribute('aria-disabled'));
     assertEquals('1', getComputedStyle(radioButton).opacity);

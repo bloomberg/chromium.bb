@@ -357,6 +357,31 @@ TEST_F('CrElementsRadioButtonTest', 'All', function() {
  * @constructor
  * @extends {CrElementsBrowserTest}
  */
+function CrElementsRadioGroupTest() {}
+
+CrElementsRadioGroupTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    '../settings/test_util.js',
+    'cr_radio_group_test.js',
+  ]),
+};
+
+TEST_F('CrElementsRadioGroupTest', 'All', function() {
+  mocha.run();
+});
+
+
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
 function CrElementsSearchableDropDownTest() {}
 
 CrElementsSearchableDropDownTest.prototype = {
