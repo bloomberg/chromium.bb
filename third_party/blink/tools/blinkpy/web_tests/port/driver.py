@@ -144,7 +144,7 @@ class Driver(object):
     def __del__(self):
         self.stop()
 
-    def run_test(self, driver_input, stop_when_done):
+    def run_test(self, driver_input):
         """Run a single test and return the results.
 
         Note that it is okay if a test times out or crashes. content_shell
@@ -182,10 +182,10 @@ class Driver(object):
                 self._crashed_process_name = 'unknown process name'
                 self._crashed_pid = 0
 
-        if stop_when_done or crashed or timed_out or leaked:
+        if crashed or timed_out or leaked:
             # We call stop() even if we crashed or timed out in order to get any remaining stdout/stderr output.
             # In the timeout case, we kill the hung process as well.
-            out, err = self._server_process.stop(self._port.driver_stop_timeout() if stop_when_done else 0.0)
+            out, err = self._server_process.stop(0.0)
             if out:
                 text += out
             if err:

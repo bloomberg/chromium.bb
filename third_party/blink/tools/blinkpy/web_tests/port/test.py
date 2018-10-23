@@ -564,7 +564,7 @@ class TestDriver(Driver):
         return [self._port._path_to_driver()] + \
             self._port.get_option('additional_driver_flag', []) + per_test_args
 
-    def run_test(self, driver_input, stop_when_done):
+    def run_test(self, driver_input):
         if not self.started:
             self.started = True
             self.pid = TestDriver.next_pid
@@ -632,9 +632,6 @@ class TestDriver(Driver):
             crashed_pid = 3
             crash = True
             crash_log = 'reftest crash log'
-
-        if stop_when_done:
-            self.stop()
 
         if test.actual_checksum == driver_input.image_hash:
             image = None
