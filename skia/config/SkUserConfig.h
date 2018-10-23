@@ -158,8 +158,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_AAA_CHOICE
 #endif
 
-#define SK_USE_LEGACY_LAZY_IMAGE_DECODE
-
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 
 /* In some places Skia can use static initializers for global initialization,
