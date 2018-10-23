@@ -195,30 +195,29 @@ camera.util.isChromeOS = function() {
 
 /**
  * Sets up localized aria attributes for TTS on the entire document. Uses the
- * dedicated i18n-aria-label attribute as a strings identifier. If it is not
- * found, then i18n-label is used as a fallback.
+ * dedicated i18n-label attribute as a strings identifier.
  */
-camera.util.setupElementsAriaLabel = function() {
-  var elements = document.querySelectorAll('*[i18n-aria-label], *[i18n-label]');
-  for (var index = 0; index < elements.length; index++) {
-    var label = elements[index].hasAttribute('i18n-aria-label') ?
-        elements[index].getAttribute('i18n-aria-label') :
-        elements[index].getAttribute('i18n-label');  // Fallback.
-
-    elements[index].setAttribute('aria-label', chrome.i18n.getMessage(label));
-  }
+camera.util.setupElementsAria = function() {
+  document.querySelectorAll('*[i18n-label]').forEach((element) => {
+    element.setAttribute('aria-label', chrome.i18n.getMessage(
+        element.getAttribute('i18n-label')));
+  });
 };
 
 /**
  * Animates the element once by applying 'animate' class.
  * @param {HTMLElement} element Element to be animated.
+ * @param {function()=} callback Callback called on completion.
  */
-camera.util.animateOnce = function(element) {
+camera.util.animateOnce = function(element, callback) {
   element.classList.remove('animate');
   element.offsetWidth;  // Force calculation to re-apply animation.
   element.classList.add('animate');
   camera.util.waitAnimationCompleted(element, 0, () => {
     element.classList.remove('animate');
+    if (callback) {
+      callback();
+    }
   });
 };
 
