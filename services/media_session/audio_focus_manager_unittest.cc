@@ -920,4 +920,69 @@ TEST_P(AudioFocusManagerTest, RecordUmaMetrics_NoSourceName) {
   EXPECT_EQ(0, GetAudioFocusHistogramCount());
 }
 
+TEST_P(AudioFocusManagerTest,
+       AbandonAudioFocus_ObserverFocusGain_NoTopSession) {
+  test::MockMediaSession media_session;
+
+  RequestAudioFocus(&media_session,
+                    mojom::AudioFocusType::kGainTransientMayDuck);
+  EXPECT_EQ(1, GetTransientMaybeDuckCount());
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session));
+
+  {
+    std::unique_ptr<test::TestAudioFocusObserver> observer = CreateObserver();
+    media_session.AbandonAudioFocusFromClient();
+
+    EXPECT_EQ(0, GetTransientMaybeDuckCount());
+    EXPECT_TRUE(observer->focus_lost_session_.Equals(
+        test::GetMediaSessionInfoSync(&media_session)));
+    EXPECT_TRUE(observer->focus_gained_session_.is_null());
+
+    auto notifications = observer->notifications();
+    EXPECT_EQ(1u, notifications.size());
+    EXPECT_EQ(test::TestAudioFocusObserver::NotificationType::kFocusLost,
+              notifications[0]);
+  }
+}
+
+TEST_P(AudioFocusManagerTest,
+       AbandonAudioFocus_ObserverFocusGain_NewTopSession) {
+  test::MockMediaSession media_session_1;
+  test::MockMediaSession media_session_2;
+
+  RequestAudioFocus(&media_session_1, mojom::AudioFocusType::kGain);
+  EXPECT_EQ(0, GetTransientMaybeDuckCount());
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_1));
+
+  RequestAudioFocus(&media_session_2,
+                    mojom::AudioFocusType::kGainTransientMayDuck);
+  EXPECT_EQ(1, GetTransientMaybeDuckCount());
+  EXPECT_EQ(GetStateFromParam(mojom::MediaSessionInfo::SessionState::kDucking),
+            GetState(&media_session_1));
+
+  mojom::MediaSessionInfoPtr media_session_1_info =
+      test::GetMediaSessionInfoSync(&media_session_1);
+
+  {
+    std::unique_ptr<test::TestAudioFocusObserver> observer = CreateObserver();
+    media_session_2.AbandonAudioFocusFromClient();
+
+    EXPECT_EQ(0, GetTransientMaybeDuckCount());
+    EXPECT_TRUE(observer->focus_lost_session_.Equals(
+        test::GetMediaSessionInfoSync(&media_session_2)));
+    EXPECT_TRUE(observer->focus_gained_session_.Equals(media_session_1_info));
+
+    // FocusLost should always come before FocusGained so observers always know
+    // the current session that has focus.
+    auto notifications = observer->notifications();
+    EXPECT_EQ(2u, notifications.size());
+    EXPECT_EQ(test::TestAudioFocusObserver::NotificationType::kFocusLost,
+              notifications[0]);
+    EXPECT_EQ(test::TestAudioFocusObserver::NotificationType::kFocusGained,
+              notifications[1]);
+  }
+}
+
 }  // namespace media_session
