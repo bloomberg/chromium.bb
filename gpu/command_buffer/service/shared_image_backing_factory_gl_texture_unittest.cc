@@ -186,6 +186,27 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
 
   shared_image_manager_.Unregister(mailbox);
   EXPECT_FALSE(mailbox_manager_.ConsumeTexture(mailbox));
+
+  if (!use_passthrough()) {
+    // Create a R-8 image texture, and check that the internal_format is that of
+    // the image (GL_RGBA for TextureImageFactory). This only matters for the
+    // validating decoder.
+    auto format = viz::ResourceFormat::RED_8;
+    backing = backing_factory_->CreateSharedImage(mailbox, format, size,
+                                                  color_space, usage);
+    EXPECT_TRUE(backing);
+    EXPECT_TRUE(shared_image_manager_.Register(std::move(backing)));
+    auto gl_representation = shared_image_manager_.ProduceGLTexture(mailbox);
+    ASSERT_TRUE(gl_representation);
+    gles2::Texture* texture = gl_representation->GetTexture();
+    ASSERT_TRUE(texture);
+    GLenum type = 0;
+    GLenum internal_format = 0;
+    EXPECT_TRUE(texture->GetLevelType(target, 0, &type, &internal_format));
+    EXPECT_EQ(internal_format, static_cast<GLenum>(GL_RGBA));
+    gl_representation.reset();
+    shared_image_manager_.Unregister(mailbox);
+  }
 }
 
 TEST_P(SharedImageBackingFactoryGLTextureTest, InvalidFormat) {
