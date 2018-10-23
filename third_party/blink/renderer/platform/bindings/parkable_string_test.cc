@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,9 +28,12 @@ class ParkableStringTest : public ::testing::Test {
  protected:
   void SetUp() override {
     ParkableStringManager::Instance().SetRendererBackgrounded(false);
+    scoped_feature_list_.InitAndEnableFeature(
+        kCompressParkableStringsInBackground);
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(ParkableStringTest, Simple) {

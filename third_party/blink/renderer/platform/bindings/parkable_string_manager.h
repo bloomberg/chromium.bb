@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_PARKABLE_STRING_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_PARKABLE_STRING_MANAGER_H_
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
@@ -18,6 +19,9 @@ namespace blink {
 
 class ParkableString;
 class ParkableStringImpl;
+
+const base::Feature kCompressParkableStringsInBackground{
+    "CompressParkableStringsInBackground", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Manages all the ParkableStrings, and parks eligible strings after the
 // renderer has been backgrounded.
