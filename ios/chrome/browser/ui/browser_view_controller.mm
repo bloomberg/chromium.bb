@@ -3183,13 +3183,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     return @[];
 
   NSMutableArray* overlays = [NSMutableArray array];
-  NewTabPageTabHelper* NTPHelper =
-      NewTabPageTabHelper::FromWebState(tab.webState);
-  if (NTPHelper && NTPHelper->IsActive()) {
-    SnapshotOverlay* ntpOverlay =
-        [[SnapshotOverlay alloc] initWithView:[self viewForTab:tab] yOffset:0];
-    [overlays addObject:ntpOverlay];
-  }
   UIView* infoBarView = [self infoBarOverlayViewForTab:tab];
   if (infoBarView) {
     CGFloat infoBarYOffset = [self infoBarOverlayYOffsetForTab:tab];
@@ -3228,6 +3221,19 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
   DCHECK([self.tabModel indexOfTab:tab] != NSNotFound);
   [self.tabModel notifyTabSnapshotChanged:tab withImage:snapshot];
+}
+
+- (UIView*)viewForWebState:(web::WebState*)webState {
+  NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
+  if (NTPHelper && NTPHelper->IsActive()) {
+    return _ntpCoordinatorsForWebStates[webState].viewController.view;
+  } else if (base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen)) {
+    // The webstate view is getting resized because of fullscreen. Using its
+    // superview ensure that we have a view with a with a consistent size.
+    return webState->GetView().superview;
+  } else {
+    return webState->GetView();
+  }
 }
 
 #pragma mark - SnapshotGeneratorDelegate helpers
