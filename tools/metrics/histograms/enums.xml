@@ -49780,6 +49780,11 @@ Full version information for the fingerprint enum values:
   <int value="9" label="Empty URL"/>
 </enum>
 
+<enum name="UkmResetReason">
+  <int value="0" label="OnSyncPrefsChanged"/>
+  <int value="1" label="UpdatePermissions"/>
+</enum>
+
 <enum name="UkmSyncDisableInfo">
   <int value="0" label="Enabled"/>
   <int value="1" label="Disabled by history"/>
