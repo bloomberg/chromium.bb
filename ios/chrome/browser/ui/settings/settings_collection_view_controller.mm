@@ -49,7 +49,7 @@
 #import "ios/chrome/browser/ui/settings/bandwidth_management_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/cells/account_signin_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_detail_item.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
+#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/ui/settings/content_settings_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_coordinator.h"
@@ -213,9 +213,9 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   // PrefBackedBoolean for ArticlesForYou switch.
   PrefBackedBoolean* _articlesEnabled;
   // The item related to the switch for the show suggestions setting.
-  SettingsSwitchItem* _showMemoryDebugToolsItem;
+  LegacySettingsSwitchItem* _showMemoryDebugToolsItem;
   // The item related to the switch for the show suggestions setting.
-  SettingsSwitchItem* _articlesForYouItem;
+  LegacySettingsSwitchItem* _articlesForYouItem;
 
   // Mediator to configure the sign-in promo cell. Also used to received
   // identity update notifications.
@@ -632,8 +632,8 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
                     iconImageName:kSettingsAboutChromeImageName];
 }
 
-- (SettingsSwitchItem*)showMemoryDebugSwitchItem {
-  SettingsSwitchItem* showMemoryDebugSwitchItem =
+- (LegacySettingsSwitchItem*)showMemoryDebugSwitchItem {
+  LegacySettingsSwitchItem* showMemoryDebugSwitchItem =
       [self switchItemWithType:ItemTypeMemoryDebugging
                          title:@"Show memory debug tools"
                  iconImageName:kSettingsDebugImageName
@@ -643,8 +643,8 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   return showMemoryDebugSwitchItem;
 }
 
-- (SettingsSwitchItem*)articlesForYouSwitchItem {
-  SettingsSwitchItem* articlesForYouSwitchItem =
+- (LegacySettingsSwitchItem*)articlesForYouSwitchItem {
+  LegacySettingsSwitchItem* articlesForYouSwitchItem =
       [self switchItemWithType:ItemTypeArticlesForYou
                          title:l10n_util::GetNSString(
                                    IDS_IOS_CONTENT_SUGGESTIONS_SETTING_TITLE)
@@ -656,14 +656,14 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
 }
 #if CHROMIUM_BUILD && !defined(NDEBUG)
 
-- (SettingsSwitchItem*)viewSourceSwitchItem {
+- (LegacySettingsSwitchItem*)viewSourceSwitchItem {
   return [self switchItemWithType:ItemTypeViewSource
                             title:@"View source menu"
                     iconImageName:kSettingsDebugImageName
                   withDefaultsKey:kDevViewSourceKey];
 }
 
-- (SettingsSwitchItem*)logJavascriptConsoleSwitchItem {
+- (LegacySettingsSwitchItem*)logJavascriptConsoleSwitchItem {
   return [self switchItemWithType:ItemTypeLogJavascript
                             title:@"Log JS"
                     iconImageName:kSettingsDebugImageName
@@ -713,12 +713,12 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   return detailItem;
 }
 
-- (SettingsSwitchItem*)switchItemWithType:(NSInteger)type
-                                    title:(NSString*)title
-                            iconImageName:(NSString*)iconImageName
-                          withDefaultsKey:(NSString*)key {
-  SettingsSwitchItem* switchItem =
-      [[SettingsSwitchItem alloc] initWithType:type];
+- (LegacySettingsSwitchItem*)switchItemWithType:(NSInteger)type
+                                          title:(NSString*)title
+                                  iconImageName:(NSString*)iconImageName
+                                withDefaultsKey:(NSString*)key {
+  LegacySettingsSwitchItem* switchItem =
+      [[LegacySettingsSwitchItem alloc] initWithType:type];
   switchItem.text = title;
   switchItem.iconImageName = iconImageName;
   if (key) {
@@ -766,16 +766,16 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
 
   switch (itemType) {
     case ItemTypeMemoryDebugging: {
-      SettingsSwitchCell* switchCell =
-          base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
+      LegacySettingsSwitchCell* switchCell =
+          base::mac::ObjCCastStrict<LegacySettingsSwitchCell>(cell);
       [switchCell.switchView addTarget:self
                                 action:@selector(memorySwitchToggled:)
                       forControlEvents:UIControlEventValueChanged];
       break;
     }
     case ItemTypeArticlesForYou: {
-      SettingsSwitchCell* switchCell =
-          base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
+      LegacySettingsSwitchCell* switchCell =
+          base::mac::ObjCCastStrict<LegacySettingsSwitchCell>(cell);
       [switchCell.switchView addTarget:self
                                 action:@selector(articlesForYouSwitchToggled:)
                       forControlEvents:UIControlEventValueChanged];
@@ -789,8 +789,8 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
     }
     case ItemTypeViewSource: {
 #if CHROMIUM_BUILD && !defined(NDEBUG)
-      SettingsSwitchCell* switchCell =
-          base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
+      LegacySettingsSwitchCell* switchCell =
+          base::mac::ObjCCastStrict<LegacySettingsSwitchCell>(cell);
       [switchCell.switchView addTarget:self
                                 action:@selector(viewSourceSwitchToggled:)
                       forControlEvents:UIControlEventValueChanged];
@@ -801,8 +801,8 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
     }
     case ItemTypeLogJavascript: {
 #if CHROMIUM_BUILD && !defined(NDEBUG)
-      SettingsSwitchCell* switchCell =
-          base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
+      LegacySettingsSwitchCell* switchCell =
+          base::mac::ObjCCastStrict<LegacySettingsSwitchCell>(cell);
       [switchCell.switchView addTarget:self
                                 action:@selector(logJSSwitchToggled:)
                       forControlEvents:UIControlEventValueChanged];
@@ -958,8 +958,8 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
       [self.collectionViewModel indexPathForItemType:ItemTypeMemoryDebugging
                                    sectionIdentifier:SectionIdentifierDebug];
 
-  SettingsSwitchItem* switchItem =
-      base::mac::ObjCCastStrict<SettingsSwitchItem>(
+  LegacySettingsSwitchItem* switchItem =
+      base::mac::ObjCCastStrict<LegacySettingsSwitchItem>(
           [self.collectionViewModel itemAtIndexPath:switchPath]);
 
   BOOL newSwitchValue = sender.isOn;
@@ -972,8 +972,8 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
       [self.collectionViewModel indexPathForItemType:ItemTypeArticlesForYou
                                    sectionIdentifier:SectionIdentifierAdvanced];
 
-  SettingsSwitchItem* switchItem =
-      base::mac::ObjCCastStrict<SettingsSwitchItem>(
+  LegacySettingsSwitchItem* switchItem =
+      base::mac::ObjCCastStrict<LegacySettingsSwitchItem>(
           [self.collectionViewModel itemAtIndexPath:switchPath]);
 
   BOOL newSwitchValue = sender.isOn;
@@ -987,8 +987,8 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
       [self.collectionViewModel indexPathForItemType:ItemTypeViewSource
                                    sectionIdentifier:SectionIdentifierDebug];
 
-  SettingsSwitchItem* switchItem =
-      base::mac::ObjCCastStrict<SettingsSwitchItem>(
+  LegacySettingsSwitchItem* switchItem =
+      base::mac::ObjCCastStrict<LegacySettingsSwitchItem>(
           [self.collectionViewModel itemAtIndexPath:switchPath]);
 
   BOOL newSwitchValue = sender.isOn;
@@ -1001,8 +1001,8 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
       [self.collectionViewModel indexPathForItemType:ItemTypeLogJavascript
                                    sectionIdentifier:SectionIdentifierDebug];
 
-  SettingsSwitchItem* switchItem =
-      base::mac::ObjCCastStrict<SettingsSwitchItem>(
+  LegacySettingsSwitchItem* switchItem =
+      base::mac::ObjCCastStrict<LegacySettingsSwitchItem>(
           [self.collectionViewModel itemAtIndexPath:switchPath]);
 
   BOOL newSwitchValue = sender.isOn;

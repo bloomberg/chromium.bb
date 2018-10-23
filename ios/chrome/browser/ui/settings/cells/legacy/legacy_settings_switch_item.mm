@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
+#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_switch_item.h"
 
 #include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
@@ -31,7 +31,7 @@ const CGFloat kVerticalPadding = 16;
 const CGFloat kIconImageSize = 28;
 }  // namespace
 
-@implementation SettingsSwitchItem
+@implementation LegacySettingsSwitchItem
 
 @synthesize enabled = _enabled;
 @synthesize iconImageName = _iconImageName;
@@ -41,7 +41,7 @@ const CGFloat kIconImageSize = 28;
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
   if (self) {
-    self.cellClass = [SettingsSwitchCell class];
+    self.cellClass = [LegacySettingsSwitchCell class];
     self.enabled = YES;
   }
   return self;
@@ -49,13 +49,13 @@ const CGFloat kIconImageSize = 28;
 
 #pragma mark CollectionViewItem
 
-- (void)configureCell:(SettingsSwitchCell*)cell {
+- (void)configureCell:(LegacySettingsSwitchCell*)cell {
   [super configureCell:cell];
   cell.textLabel.text = self.text;
   cell.switchView.enabled = self.isEnabled;
   cell.switchView.on = self.isOn;
   cell.textLabel.textColor =
-      [SettingsSwitchCell defaultTextColorForState:cell.switchView.state];
+      [LegacySettingsSwitchCell defaultTextColorForState:cell.switchView.state];
 
   // Update the icon image, if one is present.
   UIImage* iconImage = nil;
@@ -67,7 +67,7 @@ const CGFloat kIconImageSize = 28;
 
 @end
 
-@interface SettingsSwitchCell ()
+@interface LegacySettingsSwitchCell ()
 
 // The image view for the leading icon.
 @property(nonatomic, readonly, strong) UIImageView* iconImageView;
@@ -78,7 +78,7 @@ const CGFloat kIconImageSize = 28;
 
 @end
 
-@implementation SettingsSwitchCell
+@implementation LegacySettingsSwitchCell
 
 @synthesize iconHiddenConstraint = _iconHiddenConstraint;
 @synthesize iconImageView = _iconImageView;

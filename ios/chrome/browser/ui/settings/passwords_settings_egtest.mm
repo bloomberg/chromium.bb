@@ -878,8 +878,9 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   TapEdit();
 
   // Check that the "Save Passwords" switch is disabled.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
-                                          @"savePasswordsItem_switch", YES, NO)]
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::LegacySettingsSwitchCell(
+                                   @"savePasswordsItem_switch", YES, NO)]
       assertWithMatcher:grey_notNil()];
 
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
@@ -1272,7 +1273,7 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   for (BOOL expected_state : kExpectedState) {
     // Toggle the switch. It is located near the top, so if not interactable,
     // try scrolling up.
-    [GetInteractionForListItem(chrome_test_util::SettingsSwitchCell(
+    [GetInteractionForListItem(chrome_test_util::LegacySettingsSwitchCell(
                                    @"savePasswordsItem_switch", expected_state),
                                kGREYDirectionUp)
         performAction:chrome_test_util::TurnSettingsSwitchOn(!expected_state)];
@@ -1298,9 +1299,10 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   // preferences.
   constexpr BOOL kExpectedState[] = {YES, NO};
   for (BOOL expected_initial_state : kExpectedState) {
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
-                                            @"savePasswordsItem_switch",
-                                            expected_initial_state)]
+    [[EarlGrey
+        selectElementWithMatcher:chrome_test_util::LegacySettingsSwitchCell(
+                                     @"savePasswordsItem_switch",
+                                     expected_initial_state)]
         performAction:chrome_test_util::TurnSettingsSwitchOn(
                           !expected_initial_state)];
     ios::ChromeBrowserState* browserState =

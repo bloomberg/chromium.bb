@@ -260,8 +260,9 @@ NSString* GetTextFieldForID(int categoryId) {
       performAction:grey_tap()];
 
   // Check the Autofill profile switch is disabled.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
-                                          @"addressItem_switch", YES, NO)]
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::LegacySettingsSwitchCell(
+                                   @"addressItem_switch", YES, NO)]
       assertWithMatcher:grey_notNil()];
 
   [self exitSettingsMenu];
@@ -274,8 +275,9 @@ NSString* GetTextFieldForID(int categoryId) {
   [self openAutofillProfilesSettings];
 
   // Toggle the Autofill profiles switch off.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
-                                          @"addressItem_switch", YES, YES)]
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::LegacySettingsSwitchCell(
+                                   @"addressItem_switch", YES, YES)]
       performAction:chrome_test_util::TurnSettingsSwitchOn(NO)];
 
   // Expect Autofill profiles to remain visible.
@@ -283,8 +285,9 @@ NSString* GetTextFieldForID(int categoryId) {
       assertWithMatcher:grey_notNil()];
 
   // Toggle the Autofill profiles switch back on.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
-                                          @"addressItem_switch", NO, YES)]
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::LegacySettingsSwitchCell(
+                                   @"addressItem_switch", NO, YES)]
       performAction:chrome_test_util::TurnSettingsSwitchOn(YES)];
 
   // Expect Autofill profiles to remain visible.

@@ -6,6 +6,8 @@ source_set("legacy") {
   sources = [
     "legacy_settings_detail_item.h",
     "legacy_settings_detail_item.mm",
+    "legacy_settings_switch_item.h",
+    "legacy_settings_switch_item.mm",
   ]
 
   deps = [

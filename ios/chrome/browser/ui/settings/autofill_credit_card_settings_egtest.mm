@@ -194,8 +194,9 @@ NSString* const kCreditCardLabelTemplate = @"Test User, %@";
       performAction:grey_tap()];
 
   // Check the Autofill credit card switch is disabled.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
-                                          @"cardItem_switch", YES, NO)]
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::LegacySettingsSwitchCell(
+                                   @"cardItem_switch", YES, NO)]
       assertWithMatcher:grey_notNil()];
 
   [self exitSettingsMenu];
@@ -208,8 +209,9 @@ NSString* const kCreditCardLabelTemplate = @"Test User, %@";
   [self openCreditCardsSettings];
 
   // Toggle the Autofill credit cards switch off.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
-                                          @"cardItem_switch", YES, YES)]
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::LegacySettingsSwitchCell(
+                                   @"cardItem_switch", YES, YES)]
       performAction:chrome_test_util::TurnSettingsSwitchOn(NO)];
 
   // Expect Autofill credit cards to remain visible.
@@ -218,8 +220,9 @@ NSString* const kCreditCardLabelTemplate = @"Test User, %@";
       assertWithMatcher:grey_notNil()];
 
   // Toggle the Autofill credit cards switch back on.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
-                                          @"cardItem_switch", NO, YES)]
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::LegacySettingsSwitchCell(
+                                   @"cardItem_switch", NO, YES)]
       performAction:chrome_test_util::TurnSettingsSwitchOn(YES)];
 
   // Expect Autofill credit cards to remain visible.

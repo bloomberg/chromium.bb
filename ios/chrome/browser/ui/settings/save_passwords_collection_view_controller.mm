@@ -36,8 +36,8 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/settings/alpha_animated_collection_view_flow_layout.h"
+#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_search_item.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/ui/settings/password_details_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password_details_collection_view_controller_delegate.h"
@@ -159,7 +159,7 @@ initWithActivityItems:(NSArray*)activityItems
   // Saved passwords are only on if the password manager is enabled.
   PrefBackedBoolean* passwordManagerEnabled_;
   // The item related to the switch for the password manager setting.
-  SettingsSwitchItem* savePasswordsItem_;
+  LegacySettingsSwitchItem* savePasswordsItem_;
   // The item related to the button for exporting passwords.
   SettingsTextItem* exportPasswordsItem_;
   // The interface for getting and manipulating a user's saved passwords.
@@ -352,9 +352,10 @@ initWithActivityItems:(NSArray*)activityItems
   return footerItem;
 }
 
-- (SettingsSwitchItem*)savePasswordsItem {
-  SettingsSwitchItem* savePasswordsItem =
-      [[SettingsSwitchItem alloc] initWithType:ItemTypeSavePasswordsSwitch];
+- (LegacySettingsSwitchItem*)savePasswordsItem {
+  LegacySettingsSwitchItem* savePasswordsItem =
+      [[LegacySettingsSwitchItem alloc]
+          initWithType:ItemTypeSavePasswordsSwitch];
   savePasswordsItem.text = l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS);
   savePasswordsItem.on = [passwordManagerEnabled_ value];
   savePasswordsItem.accessibilityIdentifier = @"savePasswordsItem_switch";
@@ -472,8 +473,8 @@ blacklistedFormItemWithText:(NSString*)text
 
   if ([self.collectionViewModel itemTypeForIndexPath:indexPath] ==
       ItemTypeSavePasswordsSwitch) {
-    SettingsSwitchCell* switchCell =
-        base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
+    LegacySettingsSwitchCell* switchCell =
+        base::mac::ObjCCastStrict<LegacySettingsSwitchCell>(cell);
     [switchCell.switchView addTarget:self
                               action:@selector(savePasswordsSwitchChanged:)
                     forControlEvents:UIControlEventValueChanged];
@@ -1030,8 +1031,8 @@ blacklistedFormItemWithText:(NSString*)text
   NSIndexPath* switchPath =
       [model indexPathForItemType:ItemTypeSavePasswordsSwitch
                 sectionIdentifier:SectionIdentifierSavePasswordsSwitch];
-  SettingsSwitchItem* switchItem =
-      base::mac::ObjCCastStrict<SettingsSwitchItem>(
+  LegacySettingsSwitchItem* switchItem =
+      base::mac::ObjCCastStrict<LegacySettingsSwitchItem>(
           [model itemAtIndexPath:switchPath]);
   [switchItem setEnabled:enabled];
   [self reconfigureCellsForItems:@[ switchItem ]];

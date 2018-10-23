@@ -23,7 +23,7 @@ id<GREYAction> LongPressElementForContextMenu(
     web::test::ElementSelector selector,
     bool triggers_context_menu);
 
-// Action to turn the switch of a SettingsSwitchCell to the given |on|
+// Action to turn the switch of a LegacySettingsSwitchCell to the given |on|
 // state.
 id<GREYAction> TurnSettingsSwitchOn(BOOL on);
 
