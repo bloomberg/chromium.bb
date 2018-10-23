@@ -284,7 +284,7 @@ void PostStoreUpdateResultForIds(
     RequestQueueStore::UpdateCallback callback) {
   UpdateRequestsResult result(store_state);
   for (const auto& item_id : item_ids)
-    result.item_statuses.push_back(std::make_pair(item_id, action_status));
+    result.item_statuses.emplace_back(item_id, action_status);
   runner->PostTask(FROM_HERE,
                    base::BindOnce(std::move(callback), std::move(result)));
 }
@@ -376,7 +376,7 @@ void GetRequestsByIdsSync(sql::Database* db,
       result.updated_items.push_back(*request);
     ItemActionStatus status =
         request ? ItemActionStatus::SUCCESS : ItemActionStatus::NOT_FOUND;
-    result.item_statuses.push_back(std::make_pair(request_id, status));
+    result.item_statuses.emplace_back(request_id, status);
   }
 
   if (!transaction.Commit()) {
@@ -410,8 +410,7 @@ void UpdateRequestsSync(sql::Database* db,
 
   for (const auto& request : requests) {
     ItemActionStatus status = Update(db, request);
-    result.item_statuses.push_back(
-        std::make_pair(request.request_id(), status));
+    result.item_statuses.emplace_back(request.request_id(), status);
     if (status == ItemActionStatus::SUCCESS)
       result.updated_items.push_back(request);
   }

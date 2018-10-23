@@ -37,7 +37,7 @@ void RemoveRequestsTask::RemoveRequests() {
 void RemoveRequestsTask::CompleteEarly(ItemActionStatus status) {
   UpdateRequestsResult result(store_->state());
   for (int64_t request_id : request_ids_)
-    result.item_statuses.push_back(std::make_pair(request_id, status));
+    result.item_statuses.emplace_back(request_id, status);
   CompleteWithResult(std::move(result));
 }
 
