@@ -226,8 +226,12 @@
 
 Din data har krypterats med lösenfrasen för synkronisering. Ange den om du vill starta synkroniseringen.</translation>
 <translation id="473775607612524610">Uppdatera</translation>
+<translation id="4747097190499141774">Betalningsmetoder och adresser från Google Pay omfattas inte av kryptering med lösenfras. Endast personer som har ditt lösenord kan läsa dina krypterade uppgifter. Lösenfrasen skickas inte till och sparas inte av Google. Om du glömmer lösenfrasen måste du återställa synkroniseringen. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Hitta på sidan …</translation>
 <translation id="4751645464639803239">Ny inkognitoflik</translation>
+<translation id="4802417911091824046">Betalningsmetoder och adresser från Google Pay omfattas inte av kryptering med lösenfras.
+
+<ph name="BEGIN_LINK" />Återställ synkroniseringen<ph name="END_LINK" /> om du vill ändra den här inställningen.</translation>
 <translation id="4807020197310989387">1 oläst artikel i läslistan.</translation>
 <translation id="481968316161811770">Cookies, webbplatsdata</translation>
 <translation id="4854345657858711387">Ställ in ett lösenord</translation>

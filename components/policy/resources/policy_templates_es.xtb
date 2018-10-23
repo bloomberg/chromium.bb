@@ -74,9 +74,6 @@
       Para consultar una lista de variables que se pueden utilizar, accede a la página https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       Si no se establece esta política, se utilizará la ruta predeterminada de almacenamiento de los archivos, aunque el usuario podrá anularla con el indicador de línea de comandos "--disk-cache-dir".</translation>
-<translation id="113521240853905588">Permite configurar los idiomas preferidos en <ph name="PRODUCT_OS_NAME" />.
-
-      Si se configura esta política, el usuario solo puede añadir uno de los idiomas indicados en esta política a la lista de idiomas preferidos. Si no se configura o se le asigna una lista vacía, el usuario puede establecer cualquier idioma como preferido. Si se le asigna una lista con valores no válidos, todos ellos serán ignorados. Si un usuario ya había configurado <ph name="PRODUCT_OS_NAME" /> para que se mostrase en uno de los idiomas no permitidos por esta política, el idioma de visualización se cambiará a un idioma de interfaz permitido la siguiente vez que el usuario inicie sesión. De lo contrario, <ph name="PRODUCT_OS_NAME" /> cambiará al primer idioma válido definido por esta política o, si la política solo tiene registros no válidos, a una configuración regional de respaldo (actualmente, en-US).</translation>
 <translation id="1135264353752122851">Establece los diseños de teclado que se permiten en las sesiones de usuario de <ph name="PRODUCT_OS_NAME" />.
 
       Si se habilita esta política, el usuario solo puede seleccionar uno de los métodos de introducción especificados por la política. Si no se habilita o se le asigna una lista vacía, el usuario puede seleccionar todos los métodos de introducción admitidos. Si la política no admite el método de introducción actual, se cambiará al diseño de teclado del hardware (si se permite) o a la primera entrada válida de esta lista. Se ignorarán todos los métodos de introducción no válidos o no admitidos de esta lista.</translation>
@@ -616,6 +613,9 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           Todas las versiones recientes de los servidores Windows y Samba admiten la autenticación NTLMv2. Solo debe inhabilitarse para obtener compatibilidad con versiones anteriores, lo cual reduce la seguridad a la hora de autenticarse.
 
           Si no se le asigna ningún valor a esta política, se asignará el valor predeterminado "true" y la autenticación NTLMv2 se habilitará.</translation>
+<translation id="2598508021807251719">Establece las configuraciones regionales en las que puede mostrarse <ph name="PRODUCT_OS_NAME" />.
+
+      Si asigna a esta política una lista de configuraciones regionales, el usuario solo podrá mostrar <ph name="PRODUCT_OS_NAME" /> en una de esas configuraciones. Si no asigna ninguna configuración regional a esta política o le asigna una lista vacía, <ph name="PRODUCT_OS_NAME" /> se podrá mostrar en cualquier configuración de UI admitida. Si se asigna a esta política una lista con configuraciones regionales no válidas, los valores que no sean válidos se ignorarán. Si un usuario ya había configurado <ph name="PRODUCT_OS_NAME" /> anteriormente en un idioma no permitido por esta política, la configuración regional se cambiará a otra permitida la próxima vez que el usuario inicie sesión. Si el usuario había establecido configuraciones regionales de preferencia y una de ellas está permitida por esta política, <ph name="PRODUCT_OS_NAME" /> se mostrará en dicha configuración. De lo contrario, <ph name="PRODUCT_OS_NAME" /> se cambiará a la primera configuración regional válida especificada por esta política, o bien a una alternativa (actualmente en-US) si ninguna de las entradas de la política es válida.</translation>
 <translation id="2604182581880595781">Configura las políticas relacionadas con el uso compartido de archivos del sistema.</translation>
 <translation id="2623014935069176671">Esperar actividad inicial del usuario</translation>
 <translation id="262740370354162807">Habilitar el envío de documentos a <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1092,7 +1092,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           Una URL de sugerencias de Google se puede especificar de la siguiente forma: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Esta política solo se aplica si se habilita la política "DefaultSearchProviderEnabled".</translation>
-<translation id="3864129983143201415">Configurar los idiomas permitidos en una sesión de usuario</translation>
 <translation id="3866249974567520381">Descripción</translation>
 <translation id="3868347814555911633">Esta política solo se encuentra activa en el modo comercial.
 
@@ -1789,6 +1788,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5835124959204887277">Especifica las URL y los dominios para los que no se muestra ningún mensaje cuando se solicitan certificados de confirmación de las llaves de seguridad. Asimismo, se envía una señal a la llave de seguridad para indicar que es posible que se utilice esa confirmación individual. Sin esta política, se muestra un mensaje a los usuarios de Chrome 65 y versiones posteriores cuando los sitios web soliciten la confirmación de las llaves de seguridad.
 
       Las URL (como https://example.com/una/ruta) solo se identifican como appIDs U2F, mientras que los dominios (como example.com) se identifican únicamente como IDs RP de WebAuthn. Por ello, para incluir tanto las API WebAuthn como U2F de un determinado sitio web, se deben indican la URL appID y el dominio.</translation>
+<translation id="5835412847081687053">Configurar las configuraciones regionales de UI permitidas en una sesión de usuario</translation>
 <translation id="5836064773277134605">Restringe el intervalo de puertos UDP utilizado por el host de acceso remoto</translation>
 <translation id="5862253018042179045">Establece el estado predeterminado de la función de accesibilidad de comentarios por voz en la pantalla de inicio de sesión.
 

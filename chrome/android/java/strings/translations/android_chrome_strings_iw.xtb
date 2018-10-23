@@ -195,7 +195,6 @@
 <translation id="2414672073755873541">אין כאן תוכן</translation>
 <translation id="2414886740292270097">כהה</translation>
 <translation id="2416359993254398973">‏Chrome זקוק להרשאה גישה אל המצלמה בשביל האתר הזה.</translation>
-<translation id="24241740415720680">‏גרסת Lite של הדף נוצרה על ידי Google</translation>
 <translation id="2426805022920575512">בחירת חשבון אחר</translation>
 <translation id="2433507940547922241">מראה</translation>
 <translation id="2434158240863470628">ההורדה הושלמה <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -298,6 +297,7 @@
 <translation id="3295602654194328831">הסתר פרטים</translation>
 <translation id="3298243779924642547">‏מצב Lite</translation>
 <translation id="3303414029551471755">האם להוריד את התוכן?</translation>
+<translation id="3306398118552023113">‏האפליקציה הזו פועלת ב-Chrome</translation>
 <translation id="3328801116991980348">פרטי אתר</translation>
 <translation id="3341058695485821946">בדיקת החיסכון בצריכת נתונים</translation>
 <translation id="3350687908700087792">סגור את כל כרטיסיות הגלישה בסתר</translation>
@@ -310,6 +310,7 @@
 <translation id="3398320232533725830">פתח את מנהל הסימניות</translation>
 <translation id="3414952576877147120">גודל:</translation>
 <translation id="3443221991560634068">טען מחדש את הדף הנוכחי</translation>
+<translation id="3445014427084483498">ממש עכשיו</translation>
 <translation id="3452612588551937789">‏היכנס באמצעות חשבון Google כדי לקבל גישה אל הסימניות, הסיסמאות, ההיסטוריה והגדרות נוספות בכל המכשירים שלך.</translation>
 <translation id="3485359633434254965">{FILES,plural, =1{‏הושלמה ההורדה של קובץ %1$d}two{‏הושלמה ההורדה של %1$d קבצים}many{‏הושלמה ההורדה של %1$d קבצים}other{‏הושלמה ההורדה של %1$d קבצים}}</translation>
 <translation id="3492207499832628349">כרטיסייה חדשה לגלישה בסתר</translation>
@@ -354,7 +355,6 @@
 <translation id="3822502789641063741">למחוק נתוני אתר מהאחסון?</translation>
 <translation id="385051799172605136">חזור</translation>
 <translation id="3859306556332390985">הרץ קדימה</translation>
-<translation id="3860879523841717702">‏גרסת Lite של הדף נוצרה על ידי Google. אפשר להקיש כדי לטעון את הגרסה המקורית.</translation>
 <translation id="3868004864571585162">‏קובצי Cookie, רישיונות מדיה ונתוני אתרים</translation>
 <translation id="3894427358181296146">הוספת תיקייה</translation>
 <translation id="3895926599014793903">אלץ הפעלת שינוי מרחק מתצוגה</translation>
@@ -364,6 +364,7 @@
 <translation id="3950820424414687140">כניסה</translation>
 <translation id="395206256282351086">ההצעות למונחי חיפוש ואתרים הושבתו</translation>
 <translation id="3955193568934677022">התר לאתרים להפעיל תוכן מוגן (מומלץ)</translation>
+<translation id="3963007978381181125">‏הצפנה באמצעות ביטוי סיסמה לא כוללת אמצעי תשלום וכתובות מ-Google Pay. רק מי שיודע את ביטוי הסיסמה שלך יכול לקרוא את הנתונים המוצפנים. ביטוי הסיסמה לא נשלח אל Google והיא אינה מאחסנת אותו. אם שוכחים את ביטוי הסיסמה או רוצים לשנות את ההגדרה הזו, צריך לאפס את הסנכרון. <ph name="BEGIN_LINK" />מידע נוסף<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">ההורדה הושלמה</translation>
 <translation id="397583555483684758">הסנכרון הפסיק לפעול</translation>
 <translation id="3976396876660209797">הסרה ויצירה מחדש של מקש הקיצור הזה</translation>
@@ -402,7 +403,9 @@
 <translation id="4195643157523330669">פתח בכרטיסייה חדשה</translation>
 <translation id="4198423547019359126">אין מיקומים זמינים להורדה</translation>
 <translation id="4209895695669353772">‏כדי לקבל מ-Google הצעות לתוכן מותאם אישית, יש להפעיל את הסנכרון</translation>
+<translation id="4225719675976901337">לא נמצא תוכן</translation>
 <translation id="4226663524361240545">רטט של המכשיר אפשרי כשמתקבלת הודעה</translation>
+<translation id="423219824432660969">‏הצפנת נתונים מסונכרנים באמצעות סיסמת Google החל מ-<ph name="TIME" /></translation>
 <translation id="4242533952199664413">פתח את 'הגדרות'</translation>
 <translation id="4243710787042215766">פתיחה בכרטיסייה פרטית</translation>
 <translation id="424864128008805179">‏האם לצאת מ-Chrome?</translation>
@@ -473,6 +476,9 @@
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{הורדה אחת הושלמה.}two{# הורדות הושלמו.}many{# הורדות הושלמו.}other{# הורדות הושלמו.}}</translation>
 <translation id="4766369052440583386">‏חוסך הנתונים (Data Saver) פועל</translation>
 <translation id="4797039098279997504">גע כדי לחזור אל <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
+<translation id="4802417911091824046">‏הצפנה באמצעות ביטוי סיסמה לא כוללת אמצעי תשלום וכתובות מ-Google Pay
+
+כדי לשנות את ההגדרה הזו צריך <ph name="BEGIN_LINK" />לאפס את הסנכרון<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">שם על הכרטיס</translation>
 <translation id="4807963036345170158">‏חוסך הנתונים (Data Saver) כבוי</translation>
 <translation id="4816465935029283692">סוגי נתונים</translation>
@@ -484,6 +490,7 @@
 <translation id="4874967477260347223">רישיונות מדיה</translation>
 <translation id="4875775213178255010">תוכן מוצע</translation>
 <translation id="4878404682131129617">‏יצירת מנהרה בעזרת שרת proxy נכשלה</translation>
+<translation id="4880127995492972015">תרגום…</translation>
 <translation id="4881695831933465202">פתח</translation>
 <translation id="488187801263602086">שינוי שם של קובץ</translation>
 <translation id="4882831918239250449">הגדרת השימוש בהיסטוריית הגלישה לצורך התאמה אישית של החיפוש, המודעות ועוד</translation>
@@ -711,7 +718,7 @@
 <translation id="6545017243486555795">נקה את כל הנתונים</translation>
 <translation id="6560414384669816528">‏השתמש ב-Sogou לחיפוש</translation>
 <translation id="6566259936974865419">‏Chrome חסך לך ‎<ph name="GIGABYTES" /> GB</translation>
-<translation id="6567212464587185774">צריכת הנתונים מצטמצמת בשיעור של עד 60% והמהירות של האינטרנט גדלה.</translation>
+<translation id="6567212464587185774">צריכת הנתונים מצטמצמת בשיעור של עד 60% והגלישה באינטרנט מהירה יותר.</translation>
 <translation id="6573096386450695060">אני רוצה לאפשר תמיד</translation>
 <translation id="6573431926118603307">‏כרטיסיות שפתחת ב-Chrome במכשירים האחרים שלך יופיעו כאן.</translation>
 <translation id="6575643671698722332">האיפוס נכשל. ודא שהמכשיר שלך במצב מקוון ונסה שוב.</translation>
@@ -742,6 +749,7 @@
 <translation id="6738867403308150051">מוריד...</translation>
 <translation id="6746124502594467657">הזז למטה</translation>
 <translation id="6766622839693428701">החלקה מטה סוגרת.</translation>
+<translation id="6766758767654711248">הקשה תעביר אותך אל האתר</translation>
 <translation id="6768277682697012280">‏מתקין מודול AR...</translation>
 <translation id="6776813977906306442">אפשר ללחוץ על לחצן ההורדה כדי להוריד סרטונים ולצפות בהם מאוחר יותר</translation>
 <translation id="6790428901817661496">הפעל</translation>
@@ -815,7 +823,6 @@
 <translation id="729975465115245577">אין במכשיר אפליקציה לאחסון קובץ הסיסמאות.</translation>
 <translation id="7302081693174882195">פרטים: מיון לפי נפח הנתונים שנחסכו</translation>
 <translation id="7333031090786104871">עדיין מוסיף את האתר הקודם</translation>
-<translation id="7335671571918306053">‏גרסת Lite של הדף נוצרה על ידי Google. אפשר להקיש על לחצן טעינת המקור כדי לטעון את הדף המקורי.</translation>
 <translation id="7352939065658542140">סרטון</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{שתף פריט אחד שנבחר}two{שתף # פריטים שנבחרו}many{שתף # פריטים שנבחרו}other{שתף # פריטים שנבחרו}}</translation>
 <translation id="7359002509206457351">גישה לאמצעי תשלום</translation>
@@ -959,6 +966,7 @@
 <translation id="8441146129660941386">הרץ לאחור</translation>
 <translation id="8445448999790540984">אי אפשר לייצא סיסמאות</translation>
 <translation id="8447861592752582886">שלול הרשאות מכשיר</translation>
+<translation id="8461694314515752532">הצפנת נתונים מסונכרנים בעזרת ביטוי סיסמה אישי לסנכרון</translation>
 <translation id="8477071352266846533">הסנכרון כבוי בשביל <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">זמין במצב לא מקוון</translation>
@@ -1007,6 +1015,7 @@
 <translation id="8816439037877937734">‏האפליקציה <ph name="APP_NAME" /> תיפתח ב-Chrome. המשך השימוש מבטא את הסכמתך ל<ph name="BEGIN_LINK1" />תנאים ולהגבלות<ph name="END_LINK1" /> ול<ph name="BEGIN_LINK2" />הודעת הפרטיות<ph name="END_LINK2" /> של Chrome, וכן ל<ph name="BEGIN_LINK3" />הודעת הפרטיות לחשבונות Google שמנוהלים ב-Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">סימניות</translation>
 <translation id="8823704566850948458">הצעת סיסמה...</translation>
+<translation id="8833831881926404480">אתר משתף את המסך שלך</translation>
 <translation id="883806473910249246">אירעה שגיאה בזמן הורדת התוכן.</translation>
 <translation id="8840953339110955557">ייתכן שהדף הזה שונה מהגירסה המקוונת.</translation>
 <translation id="8847988622838149491">USB</translation>

@@ -16,6 +16,7 @@
 <translation id="1074497978438210769">Nezabezpečeno</translation>
 <translation id="1080116354587839789">Přizpůsobit na šířku</translation>
 <translation id="1088860948719068836">Přidání jména na kartě</translation>
+<translation id="109743633954054152">Hesla můžete spravovat v nastavení Chromu</translation>
 <translation id="1103523840287552314">Vždy překládat jazyk <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Pokud je tato možnost zaškrtnuta, Chrome v tomto zařízení bude za účelem rychlejšího vyplňování formulářů uchovávat kopii vaší karty.</translation>
 <translation id="1110994991967754504">Vyberte oprávnění pro <ph name="PERMISSION_NAME" /></translation>
@@ -146,6 +147,7 @@
 <translation id="1871208020102129563">Proxy je nastaveno na používání pevně daných serverů proxy, nikoliv adresy URL skriptu PAC.</translation>
 <translation id="1871284979644508959">Povinné pole</translation>
 <translation id="1874765382782611674">Přijímané debetní karty</translation>
+<translation id="1875512691959384712">Formuláře Google</translation>
 <translation id="187918866476621466">Otevřít počáteční stránky</translation>
 <translation id="1883255238294161206">Sbalit seznam</translation>
 <translation id="1898423065542865115">Filtrování</translation>
@@ -199,6 +201,7 @@
 <translation id="2239100178324503013">Odeslat</translation>
 <translation id="225207911366869382">Tato hodnota již pro tuto zásadu není podporována.</translation>
 <translation id="2262243747453050782">Chyba protokolu HTTP</translation>
+<translation id="2263079731045660823">Údaje k automatickému vyplňování platebních karet můžete aktualizovat v nastavení Chromu</translation>
 <translation id="2270484714375784793">Telefonní číslo</translation>
 <translation id="2283340219607151381">Ukládat a vyplňovat adresy</translation>
 <translation id="2292556288342944218">Vaše připojení k internetu je blokováno</translation>
@@ -223,6 +226,7 @@
 <translation id="239429038616798445">Tento způsob dopravy není k dispozici. Zkuste použít jiný způsob.</translation>
 <translation id="2396249848217231973">&amp;Vrátit smazání zpět</translation>
 <translation id="2413528052993050574">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Jeho bezpečnostní certifikát byl zřejmě zrušen. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
+<translation id="2463193859425327265">Změnit domovskou stránku</translation>
 <translation id="2463739503403862330">Vyplnit</translation>
 <translation id="2465655957518002998">Vybrat způsob doručení</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Spustit Diagnostiku sítě<ph name="END_LINK" /></translation>
@@ -255,6 +259,7 @@
 <translation id="2650446666397867134">Přístup k souboru byl odepřen.</translation>
 <translation id="2653659639078652383">Odeslat</translation>
 <translation id="2666117266261740852">Zavřete ostatní karty nebo aplikace</translation>
+<translation id="267371737713284912">akci vrátíte zpět stisknutím kombinace kláves <ph name="MODIFIER_KEY_DESCRIPTION" /></translation>
 <translation id="2674170444375937751">Jste si jisti, že chcete tyto stránky odstranit ze své historie?</translation>
 <translation id="2677748264148917807">Odejít</translation>
 <translation id="2699302886720511147">Přijímané karty</translation>
@@ -401,6 +406,7 @@
 <translation id="3650584904733503804">Ověření proběhlo úspěšně</translation>
 <translation id="3655670868607891010">Pokud se vám tato stránka zobrazuje často, zkuste využít tyto <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Verze</translation>
+<translation id="366077651725703012">Aktualizace platební karty</translation>
 <translation id="3676592649209844519">ID zařízení:</translation>
 <translation id="3678029195006412963">Požadavek nebylo možné podepsat</translation>
 <translation id="3678529606614285348">Otevřete stránku v novém anonymním okně (Ctrl-Shift-N)</translation>
@@ -713,6 +719,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5784606427469807560">Při ověřování vaší karty došlo k problému. Zkontrolujte připojení k internetu a zkuste to znovu.</translation>
 <translation id="5785756445106461925">Tato stránka obsahuje ještě další nezabezpečené zdroje. Tyto zdroje budou během přenosu moci zobrazit jiní uživatelé a případní útočníci je mohou upravit a změnit tak vzhled stránky.</translation>
 <translation id="5786044859038896871">Chcete vyplnit informace o kartě?</translation>
+<translation id="5798683403665926540">Domovskou stránku změníte v nastavení Chromu</translation>
 <translation id="5803412860119678065">Chcete vyplnit informace o kartě <ph name="CARD_DETAIL" />?</translation>
 <translation id="5810442152076338065">Vaše připojení k doméně <ph name="DOMAIN" /> je šifrováno za použití zastaralé šifrovací sady.</translation>
 <translation id="5813119285467412249">&amp;Opakovat přidání</translation>
@@ -861,6 +868,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Může se jednat o jednorázové nebo opakované poplatky, které nemusejí být jasně patrné.</translation>
 <translation id="7029809446516969842">Hesla</translation>
+<translation id="7041710477964360998">{NUM_CARDS,plural, =1{Tato karta a její fakturační adresa se kvůli zrychlení plateb na různých zařízeních uloží do vašeho účtu Google.}few{Tyto karty a jejich fakturační adresy se kvůli zrychlení plateb na různých zařízeních uloží do vašeho účtu Google.}many{Tyto karty a jejich fakturační adresy se kvůli zrychlení plateb na různých zařízeních uloží do vašeho účtu Google.}other{Tyto karty a jejich fakturační adresy se kvůli zrychlení plateb na různých zařízeních uloží do vašeho účtu Google.}}</translation>
 <translation id="7050187094878475250">Pokusili jste se připojit k doméně <ph name="DOMAIN" />, ale server předložil certifikát, který má příliš dlouhé období platnosti a je proto nedůvěryhodný.</translation>
 <translation id="7053983685419859001">Blokovat</translation>
 <translation id="7064851114919012435">Kontaktní údaje</translation>
@@ -966,7 +974,9 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7667346355482952095">Vrácený klíč zásady je prázdný nebo neodpovídá aktuálnímu klíči.</translation>
 <translation id="7668654391829183341">Neznámé zařízení</translation>
 <translation id="7669271284792375604">Útočníci na tomto webu by se mohli pokusit přimět vás k instalaci programů, které nepříznivě ovlivní procházení webu (například změní vaši domovskou stránku nebo na navštěvovaných stránkách budou zobrazovat další reklamy).</translation>
+<translation id="7681101578153515023">Změnit vyhledávač</translation>
 <translation id="7682287625158474539">Doprava</translation>
+<translation id="7687186412095877299">Vyplní platební formuláře údaji pro uložené platební metody</translation>
 <translation id="7699293099605015246">Články momentálně nejsou dostupné</translation>
 <translation id="7701040980221191251">Žádné</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Pokračovat na web <ph name="SITE" /> (nespolehlivý)<ph name="END_LINK" /></translation>
@@ -989,6 +999,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7802523362929240268">Web je důvěryhodný</translation>
 <translation id="780301667611848630">Ne, děkuji</translation>
 <translation id="7805768142964895445">Stav</translation>
+<translation id="7806344367022510803">Změnit nastavení vyhledávače v Chromu</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Odstranit návrh položky formuláře z Chromu?</translation>
 <translation id="7815407501681723534">Nalezené <ph name="SEARCH_RESULTS" /> pro dotaz „<ph name="SEARCH_STRING" />“: <ph name="NUMBER_OF_RESULTS" /></translation>
@@ -1035,6 +1046,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="8184538546369750125">Použít výchozí globální hodnotu (Povolit)</translation>
 <translation id="8191494405820426728">Místní ID selhání <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="8194797478851900357">&amp;Vrátit přesunutí zpět</translation>
+<translation id="8197543752516192074">Přeložit stránku</translation>
 <translation id="8201077131113104583">Neplatná adresa URL aktualizace rozšíření s ID <ph name="EXTENSION_ID" />.</translation>
 <translation id="8202097416529803614">Shrnutí objednávky</translation>
 <translation id="8211406090763984747">Připojení je zabezpečené</translation>
@@ -1079,6 +1091,7 @@ Další podrobnosti:
 <translation id="8428213095426709021">Nastavení</translation>
 <translation id="8433057134996913067">Budete odhlášeni z většiny webů.</translation>
 <translation id="8437238597147034694">&amp;Vrátit přesunutí zpět</translation>
+<translation id="8461694314515752532">Šifrovat synchronizovaná data pomocí vlastní heslové fráze pro synchronizaci</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 platební karta}few{# platební karty}many{# platební karty}other{# platebních karet}}</translation>
 <translation id="8473863474539038330">Adresy a další</translation>
 <translation id="8483780878231876732">Chcete-li používat karty z účtu Google, přihlaste se do Chromu.</translation>

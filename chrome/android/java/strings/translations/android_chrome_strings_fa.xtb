@@ -195,7 +195,6 @@
 <translation id="2414672073755873541">محتوایی موجود نیست</translation>
 <translation id="2414886740292270097">تاریک</translation>
 <translation id="2416359993254398973">‏Chrome به مجوز دسترسی به دوربین برای این سایت نیاز دارد.</translation>
-<translation id="24241740415720680">‏صفحه ساده‌شده توسط Google ارائه شده است</translation>
 <translation id="2426805022920575512">انتخاب حسابی دیگر</translation>
 <translation id="2433507940547922241">شکل ظاهری</translation>
 <translation id="2434158240863470628">بارگیری کامل شد <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -298,6 +297,7 @@
 <translation id="3295602654194328831">پنهان کردن اطلاعات</translation>
 <translation id="3298243779924642547">ساده</translation>
 <translation id="3303414029551471755">ادامه می‌دهید و محتوا را بارگیری می‌کنید؟</translation>
+<translation id="3306398118552023113">‏این برنامه در Chrome درحال اجرا است</translation>
 <translation id="3328801116991980348">اطلاعات سایت</translation>
 <translation id="3341058695485821946">ببینید چه مقدار داده صرفه‌جویی کرده‌اید</translation>
 <translation id="3350687908700087792">بستن همه برگه‌های ناشناس</translation>
@@ -310,6 +310,7 @@
 <translation id="3398320232533725830">باز کردن مدیر نشانک‌ها</translation>
 <translation id="3414952576877147120">اندازه:</translation>
 <translation id="3443221991560634068">تازه‌سازی صفحه کنونی</translation>
+<translation id="3445014427084483498">هم‌اکنون</translation>
 <translation id="3452612588551937789">‏برای دسترسی به نشانک‌ها، گذرواژه‌ها، سابقه و تنظیمات دیگر در همه دستگاه‌هایتان، به سیستم حساب Google خود وارد شوید.</translation>
 <translation id="3485359633434254965">{FILES,plural, =1{‏%1$d فایل بارگیری شد}one{‏%1$d فایل بارگیری شد}other{‏%1$d فایل بارگیری شد}}</translation>
 <translation id="3492207499832628349">برگه ناشناس جدید</translation>
@@ -354,7 +355,6 @@
 <translation id="3822502789641063741">فضای ذخیره سایت پاک شود؟</translation>
 <translation id="385051799172605136">بازگشت</translation>
 <translation id="3859306556332390985">جستجو به جلو</translation>
-<translation id="3860879523841717702">‏صفحه ساده‌شده توسط Google ارائه شده است. برای بارگیری صفحه اصلی ضربه بزنید.</translation>
 <translation id="3868004864571585162">کوکی‌ها، مجوزهای رسانه و داده‌های سایت</translation>
 <translation id="3894427358181296146">افزودن پوشه</translation>
 <translation id="3895926599014793903">فعال کردن اجباری بزرگ‌نمایی</translation>
@@ -364,6 +364,7 @@
 <translation id="3950820424414687140">ورود به سیستم</translation>
 <translation id="395206256282351086">پیشنهادهای جستجو و سایت غیرفعال است</translation>
 <translation id="3955193568934677022">به سایت‌ها اجازه داده شود محتوای محافظت‌شده پخش کنند (توصیه می‌شود)</translation>
+<translation id="3963007978381181125">‏رمزگذاری عبارت ورود شامل روش‌های پرداخت و نشانی‌های موجود در Google Pay نمی‌شود. فقط افرادی که عبارت عبورتان را داشته باشند می‌توانند داده‌های رمزگذاری‌شده‌تان را بخوانند. عبارت عبور به Google ارسال یا در سرورهای آن ذخیره نمی‌شود. اگر عبارت عبورتان را فراموش کنید یا بخواهید این تنظیم را تغییر دهید، باید همگام‌سازی را بازنشانی کنید. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">بارگیری کامل شد</translation>
 <translation id="397583555483684758">همگام‌سازی متوقف شده است</translation>
 <translation id="3976396876660209797">این میان‌بر را بردارید و دوباره ایجاد کنید</translation>
@@ -402,7 +403,9 @@
 <translation id="4195643157523330669">باز کردن در برگهٔ جدید</translation>
 <translation id="4198423547019359126">مکانی برای بارگیری دردسترس نیست</translation>
 <translation id="4209895695669353772">‏برای اینکه Google محتوای شخصی‌شده به شما پیشنهاد دهد، همگام‌سازی را روشن کنید</translation>
+<translation id="4225719675976901337">محتوایی پیدا نشد</translation>
 <translation id="4226663524361240545">اعلان‌ها ممکن است دستگاه را بلرزانند</translation>
+<translation id="423219824432660969">‏رمزگذاری داده‌های همگام‌سازی‌شده با گذرواژه Google از <ph name="TIME" /></translation>
 <translation id="4242533952199664413">باز کردن تنظیمات</translation>
 <translation id="4243710787042215766">باز کردن در برگه خصوصی</translation>
 <translation id="424864128008805179">‏از سیستم Chrome خارج می شوید؟</translation>
@@ -473,6 +476,9 @@
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{۱ بارگیری کامل شد.}one{# بارگیری کامل شد.}other{# بارگیری کامل شد.}}</translation>
 <translation id="4766369052440583386">صرفه‌جویی داده روشن است</translation>
 <translation id="4797039098279997504">برای برگشتن به <ph name="URL_OF_THE_CURRENT_TAB" />، لمس کنید</translation>
+<translation id="4802417911091824046">‏رمزگذاری عبارت ورود شامل روش‌های پرداخت و نشانی‌های موجود در Google Pay نمی‌شود.
+
+برای تغییر این تنظیم، <ph name="BEGIN_LINK" />همگام‌سازی را بازنشانی کنید<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">نام روی کارت</translation>
 <translation id="4807963036345170158">صرفه‌جویی داده خاموش است</translation>
 <translation id="4816465935029283692">انواع داده</translation>
@@ -484,6 +490,7 @@
 <translation id="4874967477260347223">مجوزهای رسانه</translation>
 <translation id="4875775213178255010">محتواهای پیشنهادی</translation>
 <translation id="4878404682131129617">برقراری تونل ازطریق سرور پروکسی ناموفق بود</translation>
+<translation id="4880127995492972015">ترجمه…</translation>
 <translation id="4881695831933465202">باز کردن</translation>
 <translation id="488187801263602086">تغییر نام فایل</translation>
 <translation id="4882831918239250449">کنترل نحوه استفاده از سابقه مرور برای شخصی‌سازی «جستجو»، آگهی‌ها و موارد دیگر</translation>
@@ -741,6 +748,7 @@
 <translation id="6738867403308150051">در حال بارگیری…</translation>
 <translation id="6746124502594467657">انتقال به پایین</translation>
 <translation id="6766622839693428701">برای بستن، تند به پایین بکشید.</translation>
+<translation id="6766758767654711248">برای رفتن به سایت، ضربه بزنید</translation>
 <translation id="6768277682697012280">‏درحال نصب مدول AR...</translation>
 <translation id="6776813977906306442">با استفاده از دکمه «بارگیری»، ویدیوها را برای تماشا در فرصتی دیگر بارگیری کنید</translation>
 <translation id="6790428901817661496">پخش</translation>
@@ -814,7 +822,6 @@
 <translation id="729975465115245577">دستگاه شما برنامه‌ای برای ذخیره فایل گذرواژه‌ها ندارد.</translation>
 <translation id="7302081693174882195">جزئیات: مرتب‌شده براساس مقدار داده صرفه‌جویی‌شده</translation>
 <translation id="7333031090786104871">همچنان درحال افزودن سایت قبلی</translation>
-<translation id="7335671571918306053">‏صفحه ساده‌شده توسط Google ارائه شده است. برای بارگیری صفحه اصلی روی دکمه بارگیری صفحه اصلی ضربه بزنید.</translation>
 <translation id="7352939065658542140">ویدیو</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{اشتراک‌گذاری ۱ مورد انتخاب‌شده}one{اشتراک‌گذاری # مورد انتخاب‌شده}other{اشتراک‌گذاری # مورد انتخاب‌شده}}</translation>
 <translation id="7359002509206457351">دسترسی به روش‌های پرداخت</translation>
@@ -958,6 +965,7 @@
 <translation id="8441146129660941386">جستجو به عقب</translation>
 <translation id="8445448999790540984">گذرواژه‌ها صادر نشدند</translation>
 <translation id="8447861592752582886">لغو مجوز دستگاه</translation>
+<translation id="8461694314515752532">رمزگذاری داده‌های همگام‌سازی‌شده با عبارت عبور همگام‌سازی خودتان</translation>
 <translation id="8477071352266846533">همگام‌سازی برای <ph name="SYNC_ACCOUNT_USER_NAME" /> خاموش است</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">امکان دسترسی به صورت آفلاین</translation>
@@ -1008,6 +1016,7 @@
 <translation id="8816439037877937734">‏<ph name="APP_NAME" /> در Chrome باز خواهد شد. درصورت ادامه دادن، با <ph name="BEGIN_LINK1" />شرایط خدمات<ph name="END_LINK1" /> و <ph name="BEGIN_LINK2" />اعلان حریم خصوصی<ph name="END_LINK2" /> Chrome و <ph name="BEGIN_LINK3" />اعلان حریم خصوصی برای حساب‌های Google مدیریت‌شده با Family<ph name="END_LINK3" /> موافقت می‌کنید.</translation>
 <translation id="8820817407110198400">نشانک‌ها</translation>
 <translation id="8823704566850948458">پیشنهاد گذرواژه…</translation>
+<translation id="8833831881926404480">سایتی درحال به‌اشتراک گذاشتن صفحه‌تان است</translation>
 <translation id="883806473910249246">هنگام بارگیری محتوا خطایی روی داد.</translation>
 <translation id="8840953339110955557">ممکن است این صفحه با نسخه آنلاین متفاوت باشد.</translation>
 <translation id="8847988622838149491">USB</translation>

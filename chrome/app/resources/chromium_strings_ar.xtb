@@ -41,7 +41,7 @@
 <translation id="2485422356828889247">إزالة التثبيت</translation>
 <translation id="2527042973354814951">‏إعادة تشغيل Chromium لتمكين <ph name="PLUGIN_NAME" /></translation>
 <translation id="2535480412977113886">‏تعذر على نظام التشغيل Chromium مزامنة البيانات نظرًا لأن تفاصيل تسجيل الدخول إلى حسابك قديمة.</translation>
-<translation id="2560420686485554789">‏يحتاج Chromium إلى الوصول إلى سعة التخزين لتنزيل الملفات.</translation>
+<translation id="2560420686485554789">‏يحتاج Chromium إلى الوصول إلى مساحة التخزين لتنزيل الملفات.</translation>
 <translation id="2572494885440352020">‏أداة مساعدة Chromium</translation>
 <translation id="2587578672395088481">‏يلزم إعادة تشغيل نظام التشغيل Chromium حتى يتم تطبيق التحديث.</translation>
 <translation id="2647554856022461007">‏قد يستخدم Chromium خدمات الويب لتحسين تجربة التصفح. يمكنك إيقاف هذه الخدمات بشكل اختياري. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>

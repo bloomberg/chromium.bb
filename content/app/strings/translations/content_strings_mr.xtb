@@ -35,7 +35,7 @@
 <translation id="2060505056492490888">'<ph name="DOT" />' '<ph name="INVALIDDOMAIN" />' मध्ये चुकीच्या स्थितीवर वापरले आहे.</translation>
 <translation id="2148716181193084225">आज</translation>
 <translation id="2158401438286456825">पेज सूची</translation>
-<translation id="2226276347425096477">कृपया हा मजकूर <ph name="MAX_CHARACTERS" /> वर्ण लहान किंवा कमी करा (आपण सध्या <ph name="CURRENT_LENGTH" /> वर्ण वापरत आहात).</translation>
+<translation id="2226276347425096477">कृपया हा मजकूर <ph name="MAX_CHARACTERS" /> वर्ण लहान किंवा कमी करा (तुम्ही सध्या <ph name="CURRENT_LENGTH" /> वर्ण वापरत आहात).</translation>
 <translation id="2247351761944213033">आठवडा <ph name="WEEKNUMBER" />, <ph name="YEAR" /></translation>
 <translation id="2277199496770840904">ट्रॅक <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">चेकबॉक्‍स</translation>
@@ -55,7 +55,7 @@
 <translation id="2723001399770238859">ऑडिओ</translation>
 <translation id="2746543609216772311">मूल्य <ph name="MINIMUM_DATE_OR_TIME" /> किंवा नंतरचे असणे आवश्यक आहे.</translation>
 <translation id="2759744352195237655">पॉप अप बटण</translation>
-<translation id="2761667185364618470">कृपया आपण पुढे चालू ठेवू इच्छित असल्यास हा बॉक्स पहा.</translation>
+<translation id="2761667185364618470">कृपया तुम्ही पुढे चालू ठेवू इच्छित असल्यास हा बॉक्स पहा.</translation>
 <translation id="2896972712917208084">रेडिओ गट</translation>
 <translation id="2908441821576996758">कृपया ईमेल पत्त्यांची स्वल्पविरामाद्वारे विभक्त सूची एंटर करा.</translation>
 <translation id="2940813599313844715">ऑब्जेक्ट</translation>
@@ -77,7 +77,7 @@
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3785482301506746191">चित्रपट वेळ स्क्रबर</translation>
 <translation id="3808586225841795776">संज्ञा</translation>
-<translation id="3822383571486410024">कृपया हा मजकूर <ph name="MIN_CHARACTERS" /> वर्ण किंवा त्यापेक्षा अधिक मोठा करा (आपण सध्‍या <ph name="CURRENT_LENGTH" /> वर्ण वापरत आहात).</translation>
+<translation id="3822383571486410024">कृपया हा मजकूर <ph name="MIN_CHARACTERS" /> वर्ण किंवा त्यापेक्षा अधिक मोठा करा (तुम्ही सध्‍या <ph name="CURRENT_LENGTH" /> वर्ण वापरत आहात).</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN" />' मागुन येणार्‍या भागामध्ये '<ph name="INVALIDCHARACTER" />' चिन्ह नसावे.</translation>
 <translation id="3846214748874656680">क्षेत्रेमधून बाहेर पडा</translation>
 <translation id="3920932319529768807">निष्कर्ष</translation>
@@ -168,7 +168,7 @@
 <translation id="6934078000481955284">ब्लॉककोट</translation>
 <translation id="6941933287844615239">मीडिया डाउनलोड करा</translation>
 <translation id="6981594929165378967">घालणे</translation>
-<translation id="6989848892321993519">कृपया हा मजकूर <ph name="MIN_CHARACTERS" /> वर्ण किंवा त्यापेक्षा अधिक मोठा करा (आपण सध्‍या 1 वर्ण वापरत आहात).</translation>
+<translation id="6989848892321993519">कृपया हा मजकूर <ph name="MIN_CHARACTERS" /> वर्ण किंवा त्यापेक्षा अधिक मोठा करा (तुम्ही सध्‍या 1 वर्ण वापरत आहात).</translation>
 <translation id="709897737746224366">कृपया विनंती केलेले स्वरूपन जुळवा.</translation>
 <translation id="7139483182332611405">प्रस्तावना</translation>
 <translation id="7223624360433298498">लोटलेला अवधी</translation>

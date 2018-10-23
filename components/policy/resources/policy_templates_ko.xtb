@@ -24,6 +24,12 @@
       이 정책이 'false'로 설정되거나 설정되지 않으면 IdP에서 설정한 쿠키가 기기에서 처음 로그인할 때만 사용자의 프로필로 전송됩니다.
 
       이 정책은 사용자의 도메인이 기기의 등록 도메인과 일치하는 사용자에게만 적용됩니다. 다른 모든 사용자의 경우 기기에서 처음 로그인할 때만 IdP에서 설정한 쿠키가 사용자의 프로필로 전송됩니다.</translation>
+<translation id="1035385378988781231">이 정책은 <ph name="PRODUCT_NAME" />의 네트워크 파일 공유 기능에서 인증에 NTLM을 사용할지 여부를 제어합니다.
+
+      이 정책이 True로 설정되면 필요한 경우 SMB 공유 시 NTLM이 사용됩니다.
+      이 정책이 False로 설정되면 SMB 공유 시 NTLM 인증이 사용 중지됩니다.
+
+      이 정책이 설정되지 않으면 기본적으로 엔터프라이즈 관리 사용자의 경우 사용 중지되고 관리되지 않는 사용자의 경우 사용 설정됩니다.</translation>
 <translation id="1040446814317236570">PAC URL 제거 사용(https://용)</translation>
 <translation id="1044878202534415707">CPU/RAM 사용 등의 하드웨어 통계를 보고합니다.
 
@@ -73,9 +79,6 @@
       https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables에서 사용 가능한 변수 목록을 참조하세요.
 
       이 정책을 설정하지 않으면 기본 캐시 디렉토리가 사용되며 사용자는 '--disk-cache-dir' 명령줄 플래그를 사용하여 이를 재정의할 수 있습니다.</translation>
-<translation id="113521240853905588"><ph name="PRODUCT_OS_NAME" />에서 기본 언어로 사용할 수 있는 언어를 설정합니다.
-
-      이 정책이 설정되면 사용자는 기본 언어 목록에 이 정책에 명시되어 있는 언어 중 하나만 추가할 수 있습니다. 이 정책이 설정되지 않거나 빈 목록으로 설정된 경우 사용자는 원하는 아무 언어를 기본 언어로 지정할 수 있습니다. 이 정책이 잘못된 값이 있는 목록으로 지정된 경우 잘못된 값은 모두 무시됩니다. 사용자가 이미 이 정책에서 허용되지 않는 일부 언어를 선호하는 언어 목록에 추가한 경우 목록에서 삭제됩니다. 사용자가 이미 <ph name="PRODUCT_OS_NAME" />가 이 정책에서 허용되지 않는 언어로 표시되도록 구성한 경우 다음번에 사용자가 로그인하면 표시되는 언어가 이 정책에서 허용되는 UI 언어로 변경됩니다. 그렇지 않은 경우 <ph name="PRODUCT_OS_NAME" />가 이 정책에서 지정된 첫 번째 유효한 값으로 변경되거나 이 정책에 잘못된 항목만 있으면 대체 언어(현재 미국 영어)로 변경됩니다.</translation>
 <translation id="1135264353752122851"><ph name="PRODUCT_OS_NAME" /> 사용자 세션에서 허용되는 키보드 레이아웃을 구성합니다.
 
       이 정책이 설정되면 사용자는 이 정책에서 지정된 입력 방법 중 하나만 선택할 수 있습니다. 이 정책이 설정되지 않거나 빈 목록으로 설정되면 사용자는 지원되는 모든 입력 방법을 선택할 수 있습니다. 현재 입력 방법이 이 정책에서 허용되지 않으면 이 입력 방법은 하드웨어 키보드 레이아웃(허용되는 경우) 또는 이 목록에서 첫 번째로 유효한 항목으로 변경됩니다. 이 목록에 있는 모든 잘못되었거나 지원되지 않는 입력 방법은 무시됩니다.</translation>
@@ -105,6 +108,13 @@
       기본값은 RollbackDisabled입니다.</translation>
 <translation id="1221359380862872747">데모 로그인 시 지정된 URL 로드</translation>
 <translation id="1223789468190631420">신뢰할 수 있는 소스에서 세이프 브라우징을 사용할 수 있는 상태</translation>
+<translation id="122899932962115297">사용자가 구성할 수 있으며 잠금 화면을 잠금 해제할 때 사용할 수 있는 빠른 잠금 해제 모드를 제어하는 허용 목록입니다.
+
+          값은 문자열 목록으로 목록에 포함될 수 있는 유효한 항목은 'all', 'PIN', 'FINGERPRINT'입니다. 목록에 'all'을 포함시키면 향후 구현될 모드를 포함하여 사용자가 모든 빠른 잠금 해제 모드를 사용할 수 있습니다. 'all'이 포함되지 않은 경우 목록에 있는 빠른 잠금 해제 모드만 사용될 수 있습니다.
+
+          예를 들어 모든 빠른 잠금 해제 모드를 허용하려면 ['all']을 사용합니다. PIN 잠금 해제만 허용하려면 ['PIN']을 사용합니다. PIN과 지문을 허용하려면 ['PIN', 'FINGERPRINT']를 사용합니다. 모든 빠른 잠금 해제 모드를 사용 중지하려면 []를 사용합니다.
+
+          기본적으로 관리되는 기기의 경우 빠른 잠금 해제 모드를 사용할 수 없습니다.</translation>
 <translation id="123081309365616809">기기에 콘텐츠 전송 허용</translation>
 <translation id="1243570869342663665">SafeSites 성인용 콘텐츠 필터링을 관리합니다.</translation>
 <translation id="1257550411839719984">기본 다운로드 디렉토리 설정</translation>
@@ -618,6 +628,9 @@
           NTLMv2는 최신 버전의 Samba 및 Windows 서버에서 모두 지원됩니다. 이 정책은 하위 호환성을 위해서만 사용 중지해야 하며, 사용 중지할 경우 인증 보안이 약화됩니다.
 
           이 정책을 설정하지 않으면 기본값인 true가 사용되며 NTLMv2가 사용 설정됩니다.</translation>
+<translation id="2598508021807251719"><ph name="PRODUCT_OS_NAME" />의 표시 언어를 구성합니다.
+
+      이 정책이 설정되면 사용자는 이 정책에서 지정된 언어 중 하나로만 <ph name="PRODUCT_OS_NAME" />이(가) 표시되도록 구성할 수 있습니다. 이 정책이 설정되지 않거나 빈 목록으로 설정될 경우 <ph name="PRODUCT_OS_NAME" />이(가) 지원되는 모든 언어로 표시될 수 있습니다. 이 정책이 잘못된 값을 포함하는 목록으로 설정될 경우 모든 잘못된 값은 무시됩니다. 사용자가 이전에 <ph name="PRODUCT_OS_NAME" />이(가) 이 정책에서 허용되지 않는 언어로 표시되도록 구성한 경우 다음번에 사용자가 로그인하면 표시 언어가 허용되는 언어로 전환됩니다. 사용자가 기본 언어를 구성했으며 기본 언어 중 하나가 이 정책에서 허용되는 경우 <ph name="PRODUCT_OS_NAME" />이(가) 이 언어로 전환됩니다. 그렇지 않은 경우 <ph name="PRODUCT_OS_NAME" />이(가) 이 정책에서 지정된 첫 번째 유효한 값으로 전환되거나, 이 정책에 잘못된 값만 있는 경우 대체 언어(현재 en-US)로 전환됩니다.</translation>
 <translation id="2604182581880595781">네트워크 파일 공유 관련 정책을 구성합니다.</translation>
 <translation id="2623014935069176671">첫 번째 사용자 활동 기다리기</translation>
 <translation id="262740370354162807"><ph name="CLOUD_PRINT_NAME" />(으)로 문서 제출 사용</translation>
@@ -652,6 +665,7 @@
 
       이 정책을 설정하지 않고 그대로 두면 기본적으로 관리되는 사용자에게는 허용되지 않고 관리되지 않는 사용자에게는 허용됩니다.</translation>
 <translation id="2660846099862559570">프록시 사용하지 않음</translation>
+<translation id="2672012807430078509">SMB 마운트용 인증 프로토콜로 NTLM을 사용할지 여부를 제어합니다.</translation>
 <translation id="267596348720209223">검색 공급자가 지원하는 문자 인코딩을 지정합니다. 인코딩은 UTF-8, GB2312 및 ISO-8859-1과 같은 코드 페이지 이름입니다. 인코딩은 제공된 순서대로 시도됩니다.
 
           이 정책은 선택사항입니다. 설정하지 않으면 기본값인 UTF-8이 사용됩니다.
@@ -997,6 +1011,11 @@
       정책을 사용 중지하면 명시적인 사이트 격리는 이루어지지 않고 IsolateOrigins 및 SitePerProcess 필드 평가판이 사용 중지됩니다. 사용자는 계속해서 IsolateOrigins를 직접 사용 설정할 수 있습니다.
       정책을 구성하지 않으면 로그인 화면에 플랫폼 기본 사이트 격리 설정이 사용됩니다.
       </translation>
+<translation id="3748900290998155147">wake lock 허용 여부를 지정합니다. 확장 프로그램(전원 관리 확장 프로그램 API를 통해) 또는 ARC 앱으로 wake lock을 요청할 수 있습니다.
+
+          이 정책이 true로 설정되거나 설정되지 않으면 전원 관리 시 wake lock이 적용됩니다.
+
+          이 정책이 false로 설정되면 wake lock 요청이 무시됩니다.</translation>
 <translation id="3750220015372671395">이 사이트에서 키 생성 차단</translation>
 <translation id="3756011779061588474">개발자 모드 차단</translation>
 <translation id="3758089716224084329"><ph name="PRODUCT_NAME" />에서사용하는 프록시 서버를 지정하도록 하며 사용자가 프록시 설정을 변경하지 못하게 합니다.
@@ -1030,6 +1049,11 @@
 
           정책 'EnableMediaRouter'를 'false'로 설정하면 이 정책의 값은 아무런 영향을 미치지 않으며, 툴바 아이콘이 표시되지 않습니다.</translation>
 <translation id="3788662722837364290">사용자가 유휴 상태가 될 때 전원 관리 설정</translation>
+<translation id="3790085888761753785">이 설정을 사용하면 사용자가 Smart Lock을 사용하여 자신의 계정에 로그인할 수 있습니다. 사용자가 화면을 잠금 해제하는 것만 허용하는 Smart Lock의 일반적인 행동에 비해 더 많은 권한을 허용합니다.
+
+      이 설정이 사용 중지되면 사용자는 Smart Lock 로그인을 사용할 수 없습니다.
+
+      이 정책이 설정되지 않으면 기본적으로 엔터프라이즈 관리 사용자의 경우 사용 중지되고 관리되지 않는 사용자의 경우 사용 설정됩니다.</translation>
 <translation id="379602782757302612">사용자가 설치할 수 없는 확장 프로그램을 지정하도록 허용합니다. 이미 설치된 확장 프로그램이 블랙리스트에 오를 경우에는 사용이 중지되며, 사용자가 사용 설정할 수 없습니다. 블랙리스트로 인해 중지된 확장 프로그램이 블랙리스트에서 제거되면 자동으로 다시 사용 설정됩니다.
 
           블랙리스트 값 '*'은 허용 목록에 명시적으로 등록되지 않은 경우 확장 프로그램이 모두 블랙리스트에 올라감을 의미합니다.
@@ -1091,7 +1115,6 @@
           Google의 추천 URL은 <ph name="GOOGLE_SUGGEST_SEARCH_URL" />(으)로 지정될 수 있습니다.
 
           이 정책은 'DefaultSearchProviderEnabled' 정책을 사용하도록 설정한 경우에만 적용됩니다.</translation>
-<translation id="3864129983143201415">사용자 세션에서 허용되는 언어를 구성합니다.</translation>
 <translation id="3866249974567520381">설명</translation>
 <translation id="3868347814555911633">이 정책은 판매 모드일 때만 사용할 수 있습니다.
 
@@ -1133,6 +1156,9 @@
 
           설정하지 않거나 False로 설정하면 파일을 Google 드라이브에 전송할 수 있습니다.</translation>
 <translation id="3915395663995367577">proxy .pac 파일에 대한 URL</translation>
+<translation id="3925020515212192040">사전 구성된 네트워크 파일 공유 목록을 지정합니다.
+
+      정책 목록에 있는 각 항목은 'share_url' 및 'mode'의 두 가지 구성 요소가 있는 객체입니다. 'share_url'은 공유할 URL이어야 하며 'mode'는 'share_url'이 공유 조회 드롭다운에 추가될지 여부를 나타내는 'drop_down'이어야 합니다.</translation>
 <translation id="3939893074578116847">온라인 상태를 모니터링하기 위해 관리 서버에 네트워크 패킷을 전송하여
       기기가 오프라인일 때 서버에서 감지할 수 있도록 합니다.
 
@@ -1281,6 +1307,7 @@
 <translation id="4377599627073874279">모든 사이트에서 모든 이미지를 표시하도록 허용</translation>
 <translation id="437791893267799639">정책이 설정되지 않음, 데이터 이전 및 ARC 허용 안함</translation>
 <translation id="4389091865841123886">TPM 메커니즘으로 원격 인증을 구성합니다.</translation>
+<translation id="4408428864159735559">미리 구성된 네트워크 파일 공유 목록입니다.</translation>
 <translation id="4410236409016356088">네트워크 대역폭 조절 사용</translation>
 <translation id="441217499641439905"><ph name="PRODUCT_OS_NAME" /> 파일 앱에서 모바일 데이터로 연결 시 Google 드라이브 사용 중지</translation>
 <translation id="4418726081189202489">이 정책을 False로 설정하면 <ph name="PRODUCT_NAME" />이(가) 정확한 타임스탬프를 가져오기 위해 Google 서버로 쿼리를 전송하지 못하는 경우가 발생할 수도 있습니다. 이 정책을 설정하지 않거나 True로 설정하며 이러한 쿼리가 사용 설정됩니다.</translation>
@@ -1784,6 +1811,7 @@
 <translation id="5835124959204887277">보안 키 인증서 요청 시 어떠한 프롬프트도 표시되지 않는 URL 및 도메인을 지정합니다. 또한 개별 인증이 사용될 수 있다는 것을 나타내는 신호가 보안 키로 전송됩니다. 그렇지 않으면 사이트에서 보안 키 인증을 요청할 때 Chrome 65+에서 사용자에게 메시지가 표시됩니다.
 
       https://example.com/some/path와 같은 URL은 example.com과 같은 U2F appID로만 일치합니다. example.com과 같은 도메인은 webauthn RP ID로만 일치합니다. 따라서 특정 사이트의 U2F 및 Webauthn API를 모두 처리하려면 appID URL과 도메인 모두 나열되어야 합니다.</translation>
+<translation id="5835412847081687053">사용자 세션에서 허용되는 UI 언어 구성</translation>
 <translation id="5836064773277134605">원격 액세스 호스트에서 사용되는 UDP 포트 범위 제한</translation>
 <translation id="5862253018042179045">로그인 화면에서 음성 피드백 접근성 기능의 기본 상태를 설정합니다.
 
@@ -2017,6 +2045,7 @@
       플래시를 실행하도록 허용된 웹사이트를 관리하려면 'DefaultPluginsSetting', 'PluginsAllowedForUrls', 'PluginsBlockedForUrls' 정책을 확인하세요.
 
       이 설정을 사용 중지하거나 설정하지 않으면 다른 출처의 플래시 콘텐츠나 용량이 작은 플래시 콘텐츠가 차단될 수 있습니다.</translation>
+<translation id="6532769014584932288">wake lock을 허용</translation>
 <translation id="653608967792832033">배터리 전원으로 실행할 때 사용자 입력이 없어서 화면이 잠길 때까지 걸리는 시간을 지정합니다.
 
           이 정책이 0보다 큰 값으로 설정되어 있으면 이는 <ph name="PRODUCT_OS_NAME" />에서 화면을 잠그기 전에 사용자가 유휴 상태여야 하는 시간을 의미합니다.
@@ -2321,6 +2350,11 @@
 <translation id="7167436895080860385">사용자가 비밀번호 관리자에 비밀번호를 표시할 수 있도록 허용(지원 중단됨)</translation>
 <translation id="7173856672248996428">임시 프로필</translation>
 <translation id="717630378807352957">설정 파일의 모든 프린터 허용</translation>
+<translation id="7176721759719212761">화면 wake lock 허용 여부를 지정합니다. 확장 프로그램(전원 관리 확장 프로그램 API를 통해) 또는 ARC 앱으로 wake lock을 요청할 수 있습니다.
+
+          이 정책이 true로 설정되거나 설정되지 않으면 AllowWakeLocks가 false로 설정되지 않은 이상 전원 관리 시 wake lock이 적용됩니다.
+
+          이 정책이 false로 설정되면 화면 wake lock 요청이 시스템 wake lock 요청으로 강등됩니다.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">업데이트에 허용되어 있는 연결 유형</translation>
 <translation id="7194407337890404814">기본 검색 공급자 이름</translation>
@@ -2334,6 +2368,11 @@
 자동 재생은 <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> 정책에 명시적으로 나열되어 있는 도메인에만 허용됩니다. 모든 사이트에서 자동 재생을 사용 설정하려면 이 목록에 http://* 및 https://*을 추가하는 것을 고려해 보세요.
 
 이 정책을 설정하지 않고 넘어가면 사용자는 이후에 이 설정을 직접 변경할 수 있습니다.</translation>
+<translation id="7229975860249300121"><ph name="PRODUCT_NAME" />에서 어떤 Google 계정이 브라우저 기본 계정(동기화 선택 과정에서 선택된 계정)으로 설정될 수 있는지 결정하는 데 사용되는 정규 표현식을 포함합니다. 동기화 선택 과정에서 선택된 계정입니다.
+
+      사용자가 이 패턴과 일치하지 않는 사용자 이름으로 브라우저 기본 계정을 설정하려고 시도하면 적절한 오류가 표시됩니다.
+
+      이 정책이 설정되지 않거나 공백으로 남아 있으면 사용자가 <ph name="PRODUCT_NAME" />에서 어떤 Google 계정이든 브라우저 기본 계정으로 설정할 수 있습니다.</translation>
 <translation id="723103540848640830">잠금 화면 PIN 최소 길이 설정</translation>
 <translation id="7232816984286843471">이 정책이 False로 설정되어 있으면 제휴되지 않은 사용자는 Crostini를 사용할 수 없습니다.
 
@@ -2596,6 +2635,7 @@
 
       인식할 수 있는 연결 유형 식별자는 'ethernet', 'wifi', 'wimax', 'bluetooth' 및 'cellular'입니다.</translation>
 <translation id="7763614521440615342">새 탭 페이지에 콘텐츠 추천 표시</translation>
+<translation id="7765879851993224640">Smart Lock을 사용하도록 허용합니다.</translation>
 <translation id="7774768074957326919">시스템 프록시 설정 사용</translation>
 <translation id="7775831859772431793">여기에서 프록시 서버의 URL을 지정할 수 있습니다.
 
@@ -2712,6 +2752,7 @@
       이 정책이 False로 변경되면 새 Crostini 컨테이너가 시작되지만 이미 실행 중인 컨테이너는 종료되지 않습니다.
       이 정책이 관리 기기에서 설정되어 있지 않으면 기기에서 가상 머신을 실행할 수 없습니다.
       관리되지 않는 기기는 가상 머신을 실행할 수 있습니다.</translation>
+<translation id="8001701200415781021"><ph name="PRODUCT_NAME" />에서 어떤 Google 계정이 브라우저 기본 계정으로 설정될 수 있는지 제한합니다.</translation>
 <translation id="802147957407376460">화면을 0도 회전</translation>
 <translation id="8033913082323846868">이 정책은 M70에서 지원이 중단되었습니다. 대신 AutofillAddressEnabled 및 AutofillCreditCardEnabled를 사용하시기 바랍니다.
 
@@ -2958,6 +2999,25 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
       이 정책이 설정되지 않거나 true로 설정되면 ARC가 다른 방법으로 사용 중지되지 않은 경우 모든 사용자가 ARC를 사용할 수 있습니다.
 
       정책을 변경하면 ARC가 실행되고 있지 않을 때(예: Chrome OS가 시작될 때)만 적용됩니다.</translation>
+<translation id="8615400197788843468"><ph name="PRODUCT_NAME" />의 제한된 로그인 기능을 G Suite에서 사용 설정하고 사용자가 이 설정을 변경하지 못하게 합니다.
+
+      이 설정을 정의하면 사용자가 지정된 도메인의 계정을 사용해서만
+      Google 앱에 액세스할 수 있습니다. 단, gmail.com/googlemail.com 계정을
+      허용하려면 도메인 목록에 'consumer_accounts'를 인용구 없이
+      추가해야 합니다.
+
+      이 설정을 사용하면 사용자는 Google 인증이 필요한 관리되는 기기에서
+      앞서 언급된 허용되는 도메인 목록에 속하지 않은 계정으로
+      로그인할 수 없으며, 이러한 계정을 보조 계정으로 추가할 수 없습니다.
+
+      이 설정을 비워두거나 구성하지 않으면 사용자가 어떤 계정을
+      사용하든 G Suite에 액세스할 수 있습니다.
+
+      이 정책을 사용하면 모든 google.com 도메인에 대한 모든
+      HTTP 및 HTTPS 요청에 X-GoogApps-Allowed-Domains 헤더가 추가됩니다
+      (https://support.google.com/a/answer/1668854 참조).
+
+      사용자는 이 설정을 변경하거나 재정의할 수 없습니다.</translation>
 <translation id="8631434304112909927">버전 <ph name="UNTIL_VERSION" /> 이하</translation>
 <translation id="863319402127182273">Android 앱의 경우 이 정책은 내장 카메라에만 영향을 줍니다. 이 정책이 true로 설정된 경우 카메라는 모든 앱에서 사용 중지되며 예외는 없습니다.</translation>
 <translation id="8649763579836720255">Chrome OS 기기는 기기에서 보호된 콘텐츠를 재생할 수 있음을 인증하는 Chrome OS CA에서 발행한 인증서를 받기 위해 원격 인증(인증된 액세스)을 사용할 수 있습니다.  이 프로세스는 기기를 고유하게 식별하는 Chrome OS CA로 하드웨어 보증 정보를 전송하는 과정을 포함합니다.

@@ -98,6 +98,7 @@
 <translation id="1137673463384776352">在「<ph name="APP" />」中開啟連結</translation>
 <translation id="1140351953533677694">存取你的藍牙和序列裝置</translation>
 <translation id="1140610710803014750">如要將書籤同步到所有裝置，請登入並開啟同步處理功能。</translation>
+<translation id="1140746652461896221">封鎖你造訪的任何網頁所含內容</translation>
 <translation id="1143142264369994168">憑證簽署者</translation>
 <translation id="1145292499998999162">已封鎖外掛程式</translation>
 <translation id="1145532888383813076">搜尋你的裝置、應用程式和網路。</translation>
@@ -374,6 +375,7 @@
 <translation id="1526560967942511387">未命名文件</translation>
 <translation id="1529116897397289129">你所儲存的卡片會顯示在這裡</translation>
 <translation id="1529891865407786369">電源</translation>
+<translation id="1529899284660134226">管理共用的檔案和資料夾</translation>
 <translation id="1530838837447122178">開啟滑鼠和觸控板裝置設定</translation>
 <translation id="1531004739673299060">應用程式視窗</translation>
 <translation id="15373452373711364">大型滑鼠游標</translation>
@@ -515,6 +517,7 @@
 <translation id="1731589410171062430">總計：<ph name="NUMBER_OF_SHEETS" /> 張，<ph name="SHEETS_LABEL" /> (<ph name="NUMBER_OF_PAGES" /> 頁，<ph name="PAGE_OR_PAGES_LABEL" />)</translation>
 <translation id="1731911755844941020">正在傳送要求...</translation>
 <translation id="1732215134274276513">取消固定分頁</translation>
+<translation id="1733383495376208985">使用你自己的<ph name="BEGIN_LINK" />同步通關密語<ph name="END_LINK" />，加密保護同步資料。這不包括 Google Pay 的付款方式和地址。</translation>
 <translation id="1734824808160898225">「<ph name="PRODUCT_NAME" />」可能無法自動更新</translation>
 <translation id="1736419249208073774">探索</translation>
 <translation id="1736827427463982819">關閉 Linux (測試版)</translation>
@@ -943,6 +946,7 @@
 <translation id="2378075407703503998">已選取 <ph name="SELCTED_FILE_COUNT" /> 個檔案</translation>
 <translation id="237828693408258535">要翻譯這個網頁嗎？</translation>
 <translation id="2378982052244864789">選取擴充功能目錄。</translation>
+<translation id="2379232090534544565">有網站正在存取音訊和視訊輸入</translation>
 <translation id="2379281330731083556">使用系統對話方塊進行列印... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">傳送前詢問我 (建議)</translation>
 <translation id="2384436799579181135">發生錯誤。請檢查你的印表機，然後再試一次。</translation>
@@ -956,6 +960,8 @@
 <translation id="2408955596600435184">請輸入你的 PIN 碼</translation>
 <translation id="241082044617551207">不明的外掛程式</translation>
 <translation id="2413749388954403953">變更書籤使用者介面</translation>
+<translation id="241727068219398187">資料已採用你在 <ph name="TIME" /> 設定的 Google 密碼
+          進行加密保護。這不包括 Google Pay 的付款方式和地址。</translation>
 <translation id="2419706071571366386">為了安全起見，當你未使用電腦時請登出帳戶。</translation>
 <translation id="2422426094670600218">&lt;未命名&gt;</translation>
 <translation id="2423578206845792524">另存圖檔(&amp;V)...</translation>
@@ -1307,6 +1313,7 @@
 <translation id="2925966894897775835">試算表</translation>
 <translation id="2926085873880284723">還原預設捷徑</translation>
 <translation id="2927017729816812676">快取儲存空間</translation>
+<translation id="2932085390869194046">建議密碼...</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (兒童專用帳戶)</translation>
 <translation id="2932483646085333864">如要開始同步處理，請先登出，再重新登入</translation>
 <translation id="2932883381142163287">檢舉濫用情形</translation>
@@ -1343,6 +1350,7 @@
 <translation id="2993517869960930405">應用程式資訊</translation>
 <translation id="2994669386200004489">無法備份 <ph name="FILE_NAME" /></translation>
 <translation id="299483336428448530">由您的家長安裝。</translation>
+<translation id="2996286169319737844">資料已採用你的同步通關密語進行加密保護。這不包括 Google Pay 的付款方式和地址。</translation>
 <translation id="3002017044809397427">找到您的 <ph name="PHONE_TYPE" />，但 Smart Lock 僅適用於搭載 Android 5.0 以上版本的裝置。&lt;a&gt;瞭解詳情&lt;/a&gt;</translation>
 <translation id="3003144360685731741">慣用網路</translation>
 <translation id="3003623123441819449">CSS 快取</translation>
@@ -1464,6 +1472,7 @@
 <translation id="316854673539778496">如要將擴充功能同步到所有裝置，請登入並開啟同步處理功能。</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">你也可以略過登入程序，<ph name="LINK_START" />以訪客身分瀏覽<ph name="LINK_END" />。</translation>
+<translation id="3172045848207518317">有網站正在存取視訊輸入</translation>
 <translation id="3177909033752230686">網頁語言：</translation>
 <translation id="3182749001423093222">拼字檢查</translation>
 <translation id="3183139917765991655">設定檔匯入工具</translation>
@@ -1644,6 +1653,7 @@
 <translation id="3461266716147554923"><ph name="URL" /> 要求讀取已複製到剪貼簿的文字和圖片</translation>
 <translation id="3462311546193741693">你會從大多數網站登出，但不會因此登出 Google 帳戶，所以仍可清除同步資料。</translation>
 <translation id="3462413494201477527">取消設定帳戶？</translation>
+<translation id="3464012987031883895">有網站正在存取音訊輸入</translation>
 <translation id="346431825526753">這是由 <ph name="CUSTODIAN_EMAIL" /> 所管理的兒童專用帳戶。</translation>
 <translation id="3466147780910026086">正在掃描您的媒體裝置...</translation>
 <translation id="3467267818798281173">啟用 Google 拼字建議功能</translation>
@@ -2029,6 +2039,7 @@
 <translation id="3994878504415702912">縮放(&amp;Z)</translation>
 <translation id="3995138139523574647">USB-C 裝置 (右後方連接埠)</translation>
 <translation id="4002066346123236978">標題</translation>
+<translation id="4002440992267487163">PIN 碼設定</translation>
 <translation id="40027638859996362">文字移動</translation>
 <translation id="4005817994523282006">時區偵測方法</translation>
 <translation id="4008291085758151621">無法在 VR 狀態下存取網站資訊</translation>
@@ -2259,6 +2270,7 @@
 <translation id="4412698727486357573">說明中心</translation>
 <translation id="44141919652824029">要允許「<ph name="APP_NAME" />」取得已連結 USB 裝置的清單嗎？</translation>
 <translation id="4414232939543644979">新增無痕式視窗(&amp;I)</translation>
+<translation id="4415245286584082850">找不到裝置。您可以在新分頁中開啟說明中心文章。</translation>
 <translation id="4415748029120993980">SECG 橢圓曲線 secp384r1 (亦稱為 NIST P-384)</translation>
 <translation id="4416582610654027550">請輸入有效的網址</translation>
 <translation id="4419409365248380979">一律允許 <ph name="HOST" /> 設定 Coockie</translation>
@@ -2323,6 +2335,7 @@
 <translation id="452039078290142656">由 <ph name="VENDOR_NAME" /> 製造的不明裝置</translation>
 <translation id="4522570452068850558">詳細資訊</translation>
 <translation id="4522600456902129422">繼續允許這個網站讀取剪貼簿</translation>
+<translation id="4525382759303819021">取得 Play 商店應用程式的最新更新和推薦項目</translation>
 <translation id="4530494379350999373">來源</translation>
 <translation id="4533985347672295764">CPU 時間</translation>
 <translation id="4534661889221639075">請再試一次。</translation>
@@ -2459,6 +2472,7 @@
 <translation id="4733082559415072992"><ph name="URL" /> 要求使用裝置的位置資訊</translation>
 <translation id="4733793249294335256">位置</translation>
 <translation id="4734518477988699048">輸入值無效。</translation>
+<translation id="4735265153267957659">輸入密碼即可啟用 Smart Lock，這樣下次手機就會為你的 <ph name="DEVICE_TYPE" /> 解鎖。你可以在「設定」中停用 Smart Lock。</translation>
 <translation id="473546211690256853">這個帳戶是由 <ph name="DOMAIN" /> 負責管理。</translation>
 <translation id="4737715515457435632">請連上網路</translation>
 <translation id="473775607612524610">更新</translation>
@@ -2479,6 +2493,7 @@
 <translation id="4762718786438001384">裝置磁碟空間嚴重不足</translation>
 <translation id="4763408175235639573">系統在你瀏覽這個網頁時設定了下列 Cookie</translation>
 <translation id="4763830802490665879">系統將於你退出時將多個網站產生的 Cookie 清除。</translation>
+<translation id="4765582662863429759">允許 Android 訊息將簡訊內容從手機轉送到 Chromebook</translation>
 <translation id="4768332406694066911">您有這些機構核發給您的憑證</translation>
 <translation id="4772404146526168240">本機螢幕和遠端螢幕</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> 的密碼</translation>
@@ -3191,8 +3206,10 @@
 <translation id="5787146423283493983">金鑰協議</translation>
 <translation id="5788127256798019331">Play 檔案</translation>
 <translation id="5788367137662787332">很抱歉，<ph name="DEVICE_LABEL" /> 裝置上至少有一個分割區無法掛載。</translation>
+<translation id="5793339252089865437">如果你透過行動網路下載更新，可能會產生超額傳輸費用。</translation>
 <translation id="5794414402486823030">一律使用系統檢視器開啟</translation>
 <translation id="5794786537412027208">結束所有 Chrome 應用程式</translation>
+<translation id="5799508265798272974">Linux 虛擬機器：<ph name="LINUX_VM_NAME" /></translation>
 <translation id="5800020978570554460">上次下載之後，目標檔案已遭截斷或移除。</translation>
 <translation id="5801568494490449797">偏好設定</translation>
 <translation id="5804241973901381774">權限</translation>
@@ -3367,7 +3384,6 @@
 <translation id="6043317578411397101"><ph name="APP_NAME" /> 正在與 <ph name="TAB_NAME" /> 共用 Chrome 分頁。</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> 正在與 <ph name="TAB_NAME" /> 共用 Chrome 分頁和音訊。</translation>
 <translation id="6045021379489914695">你的 Chromebook 和 Android 手機能透過更有效率的方式搭配運作。只要連結這兩個裝置，你就能透過電腦收發簡訊、讓電腦使用網際網路連線，以及使用手機解鎖 Chromebook 螢幕。<ph name="FOOTNOTE_POINTER" /><ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
-<translation id="6047938872139769630">登出之後，你可以使用 PIN 碼來解鎖裝置</translation>
 <translation id="6049004884579590341">按住 |<ph name="ACCELERATOR" />| 即可結束全螢幕模式</translation>
 <translation id="6049065490165456785">內部相機中的相片</translation>
 <translation id="6051354611314852653">糟糕！系統無法將 API 存取權授予這個裝置。</translation>
@@ -3941,6 +3957,7 @@
 <translation id="6921709132208495314">停止這個網頁使用數據流量</translation>
 <translation id="6922128026973287222">使用 Google Data Saver 不僅能節約數據流量，還可讓您享有更快速的瀏覽體驗。按一下即可瞭解詳情。</translation>
 <translation id="6923132443355966645">捲動/點選</translation>
+<translation id="6923633482430812883">掛接共用裝置時發生錯誤。請檢查你要連接的檔案伺服器是否支援 SMBv2 以上版本。</translation>
 <translation id="6930242544192836755">持續時間</translation>
 <translation id="6934241953272494177">正在掃描你的媒體裝置...
     <ph name="LINE_BREAK1" />
@@ -4059,6 +4076,7 @@
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">與下列名稱的裝置交換資料：<ph name="HOSTNAMES" /></translation>
 <translation id="7096406577040705016">切換全螢幕放大鏡</translation>
+<translation id="7096857570999173890">在登出的狀態下，你可以使用 PIN 碼將裝置解鎖。</translation>
 <translation id="7098389117866926363">USB-C 裝置 (背面左側連接埠)</translation>
 <translation id="7098447629416471489">你所儲存的其他搜尋引擎會顯示在這裡</translation>
 <translation id="7099337801055912064">無法載入大型 PPD。大小上限為 250 KB。</translation>
@@ -4752,6 +4770,8 @@
 <translation id="8117620576188476503">透過狀態匣管理連線、更新和設定。如要使用鍵盤開啟這個畫面，請按下 Alt + Shift + S 鍵。</translation>
 <translation id="8118362518458010043">這個擴充功能可能不安全，因此遭到 Chrome 停用。</translation>
 <translation id="8118860139461251237">管理下載內容</translation>
+<translation id="8123590694679414600">資料已採用你在 <ph name="TIME" /> 設定的同步通關密語
+          進行加密保護。這不包括 Google Pay 的付款方式和地址。</translation>
 <translation id="81238879832906896">黃色和白色花朵</translation>
 <translation id="8124313775439841391">管理化 ONC</translation>
 <translation id="813082847718468539">查看網站資訊</translation>
@@ -5159,6 +5179,7 @@
 <translation id="8758418656925882523">啟用語音輸入 (說話即可輸入)</translation>
 <translation id="8759408218731716181">無法設定多重登入</translation>
 <translation id="8759753423332885148">瞭解詳情</translation>
+<translation id="8762886931014513155">你的 <ph name="DEVICE_TYPE" /> 需要更新</translation>
 <translation id="8767621466733104912">自動為所有使用者更新 Chrome</translation>
 <translation id="8770406935328356739">擴充功能根目錄</translation>
 <translation id="8770507190024617908">管理使用者</translation>

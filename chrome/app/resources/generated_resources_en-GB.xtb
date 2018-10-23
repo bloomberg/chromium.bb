@@ -2039,6 +2039,7 @@
 <translation id="3994878504415702912">&amp;Zoom</translation>
 <translation id="3995138139523574647">USB-C device (right-hand-side back port)</translation>
 <translation id="4002066346123236978">Title</translation>
+<translation id="4002440992267487163">Pin setup</translation>
 <translation id="40027638859996362">Word move</translation>
 <translation id="4005817994523282006">Time zone detection method</translation>
 <translation id="4008291085758151621">Site information is not available in VR</translation>
@@ -3383,7 +3384,6 @@
 <translation id="6043317578411397101"><ph name="APP_NAME" /> is sharing a Chrome tab with <ph name="TAB_NAME" />.</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> is sharing a Chrome tab and audio with <ph name="TAB_NAME" />.</translation>
 <translation id="6045021379489914695">Your Chromebook and Android phone work better together. Connect them so that you can text from your computer, share your Internet connection and unlock your Chromebook with your phone.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Learn more<ph name="LINK_END" /></translation>
-<translation id="6047938872139769630">You can use PIN to unlock your device when signed out</translation>
 <translation id="6049004884579590341">Press and hold |<ph name="ACCELERATOR" />| to exit full screen</translation>
 <translation id="6049065490165456785">Photo from internal camera</translation>
 <translation id="6051354611314852653">Oops!  The system failed to authorise API access for this device.</translation>
@@ -4076,6 +4076,7 @@
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">Exchange data with the devices named: <ph name="HOSTNAMES" /></translation>
 <translation id="7096406577040705016">Toggle Fullscreen Magnifier</translation>
+<translation id="7096857570999173890">You can use your PIN to unlock your device when you are signed out.</translation>
 <translation id="7098389117866926363">USB-C device (left port in the back)</translation>
 <translation id="7098447629416471489">Other saved search engines will appear here</translation>
 <translation id="7099337801055912064">Can’t load large PPD. Maximum size is 250 KB.</translation>

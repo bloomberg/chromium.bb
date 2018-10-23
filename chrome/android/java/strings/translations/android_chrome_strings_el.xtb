@@ -195,7 +195,6 @@
 <translation id="2414672073755873541">Δεν υπάρχει περιεχόμενο εδώ</translation>
 <translation id="2414886740292270097">Σκούρο</translation>
 <translation id="2416359993254398973">Το Chrome χρειάζεται άδεια, για να αποκτήσει πρόσβαση στην κάμερα για αυτόν τον ιστότοπο.</translation>
-<translation id="24241740415720680">Σελίδα Lite από την Google</translation>
 <translation id="2426805022920575512">Επιλογή άλλου λογαριασμού</translation>
 <translation id="2433507940547922241">Εμφάνιση</translation>
 <translation id="2434158240863470628">Η λήψη ολοκληρώθηκε <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -354,7 +353,6 @@
 <translation id="3822502789641063741">Διαγ.αποθ.χώρου ιστότ.;</translation>
 <translation id="385051799172605136">Πίσω</translation>
 <translation id="3859306556332390985">Αναζήτηση προς τα εμπρός</translation>
-<translation id="3860879523841717702">Η σελίδα Lite παρέχεται από την Google. Πατήστε για φόρτωση της αρχικής σελίδας.</translation>
 <translation id="3868004864571585162">Cookie, άδειες πολυμέσων και δεδομένα ιστοτόπων</translation>
 <translation id="3894427358181296146">Προσθήκη φακέλου…</translation>
 <translation id="3895926599014793903">Αναγκαστική ενεργοποίηση εστίασης</translation>
@@ -815,7 +813,6 @@
 <translation id="729975465115245577">Η συσκευή σας δεν διαθέτει κάποια εφαρμογή για την αποθήκευση του αρχείου κωδικών πρόσβασης.</translation>
 <translation id="7302081693174882195">Λεπτομέρειες: Ταξινομήθηκαν βάσει του όγκου των δεδομένων που αποθηκεύτηκαν</translation>
 <translation id="7333031090786104871">Η προσθήκη του προηγούμενου ιστοτόπου δεν έχει ολοκληρωθεί</translation>
-<translation id="7335671571918306053">Η σελίδα Lite παρέχεται από την Google. Πατήστε το κουμπί φόρτωσης αρχικής για φόρτωση της αρχικής σελίδας.</translation>
 <translation id="7352939065658542140">ΒΙΝΤΕΟ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Κοινοποίηση 1 επιλεγμένου στοιχείου}other{Κοινοποίηση # επιλεγμένων στοιχείων}}</translation>
 <translation id="7359002509206457351">Πρόσβαση σε τρόπους πληρωμής</translation>

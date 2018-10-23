@@ -63,7 +63,7 @@
 <translation id="1085697365578766383">ভার্চুয়াল মেশিন চালাতে সমস্যা হচ্ছে। অনুগ্রহ করে আবার চেষ্টা করুন।</translation>
 <translation id="1089439967362294234">পাসওয়ার্ড পরিবর্তন করুন</translation>
 <translation id="1090126737595388931">কোনো পৃষ্ঠভূমি অ্যাপ্লিকেশান চলছে না</translation>
-<translation id="1090918500949388876">আপনার স্ক্রিন চালু থাকাকালীন "Ok Google" বলে যেকোনও সময়ে আপনার অ্যাসিস্ট্যান্ট অ্যাক্সেস করুন</translation>
+<translation id="1090918500949388876">আপনার স্ক্রিন চালু থাকাকালীন "হ্যালো Google" বলে যেকোনও সময়ে আপনার অ্যাসিস্ট্যান্ট ব্যবহার করুন</translation>
 <translation id="1091767800771861448">ছেড়ে যেতে ESCAPE টিপুন (কেবল নন-অফিশিয়াল বিল্ড)৷</translation>
 <translation id="1093457606523402488">দৃশ্যমান নেটওয়ার্কগুলি</translation>
 <translation id="1094607894174825014">এখানে একটি অবৈধ অফসেট সহ পড়া বা লেখার ক্রিয়াকলাপের অনুরোধ করা হয়েছিল:: "<ph name="DEVICE_NAME" />".</translation>
@@ -616,13 +616,13 @@
 <translation id="1865769994591826607">শুধুমাত্র একই-সাইট সংযোগগুলি</translation>
 <translation id="186612162884103683">" <ph name="EXTENSION" /> " নির্দিষ্ট করা অবস্থানে ছবি, ভিডিও, এবং শব্দের ফাইলগুলি পড়তে ও লিখতে পারে৷</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> আপনার ইনস্টেলশন সম্পূর্ণ করার জন্য প্রস্তুত</translation>
-<translation id="1868193363684582383">"Ok Google"</translation>
+<translation id="1868193363684582383">"হ্যালো Google"</translation>
 <translation id="1871615898038944731">আপনার <ph name="DEVICE_TYPE" /> আপ-টু-ডেট আছে</translation>
 <translation id="1875312262568496299">শুরু করুন</translation>
 <translation id="1875387611427697908">এটি কেবলমাত্র <ph name="CHROME_WEB_STORE" /> থেকেই যোগ করা যেতে পারে</translation>
 <translation id="1877520246462554164">প্রমাণীকরণ টোকেন পাওয়া যায়নি। অনুগ্রহ করে সাইন-আউট করে আবার সাইন-ইন করুন, তারপরে আবার চেষ্টা করুন।</translation>
 <translation id="1878302395768190018">আপনি যেকোনও সময়ে Chrome সেটিংসে এটি কাস্টমাইজ করতে পারেন</translation>
-<translation id="1879000426787380528">হিসেবে সাইন-ইন করুন</translation>
+<translation id="1879000426787380528">কোন আইডি দিয়ে সাইন-ইন করবেন</translation>
 <translation id="1880905663253319515">শংসাপত্র মুছবেন "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1886996562706621347">সাইটগুলিকে প্রোটোকলের জন্য ডিফল্ট পরিচালক হতে জিজ্ঞাসা করার অনুমতি দেয় (প্রস্তাবিত)</translation>
 <translation id="1887442540531652736">সাইন-ইন করার সময় সমস্যা হয়েছে</translation>
@@ -2036,6 +2036,7 @@
 <translation id="3994878504415702912">&amp;জুম</translation>
 <translation id="3995138139523574647">USB-C ডিভাইস (ডান দিকের পিছনের পোর্ট)</translation>
 <translation id="4002066346123236978">শিরোনাম</translation>
+<translation id="4002440992267487163">পিন সেট-আপ করুন</translation>
 <translation id="40027638859996362">শব্দ সরানো</translation>
 <translation id="4005817994523282006">টাইম জোন শনাক্তকরণ পদ্ধতি</translation>
 <translation id="4008291085758151621">VR এ সাইটের তথ্য উপলব্ধ নেই</translation>
@@ -3380,7 +3381,6 @@
 <translation id="6043317578411397101"><ph name="APP_NAME" /> <ph name="TAB_NAME" /> এর সাথে একটি Chrome ট্যাব শেয়ার করছে।</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> <ph name="TAB_NAME" /> এর সাথে একটি Chrome ট্যাব এবং অডিও শেয়ার করছে।</translation>
 <translation id="6045021379489914695">আপনার Chromebook ও Android ফোন একসাথে ভাল কাজ করে। আপনার কম্পিউটার থেকে টেক্সট পাঠাতে, ইন্টারনেট কনেকশন শেয়ার করতে এবং ফোনের সাহায্যে Chromebook আনলক করতে তাদের কানেক্ট করুন।<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />আরও জানুন<ph name="LINK_END" /></translation>
-<translation id="6047938872139769630">সাইন-আউট করা থাকলে আপনি আপনার ডিভাইস আনলক করার জন্য পিন ব্যবহার করতে পারেন</translation>
 <translation id="6049004884579590341">সম্পূর্ণ স্ক্রিন মোড থেকে বেরোতে |<ph name="ACCELERATOR" />| টিপে ধরে রাখুন</translation>
 <translation id="6049065490165456785">অভ্যন্তরীণ ক্যামেরা থেকে ফটো</translation>
 <translation id="6051354611314852653">ওহো! সিস্টেমটি এই ডিভাইসের জন্য API অ্যাক্সেস অনুমোদন করতে ব্যর্থ হয়েছে৷</translation>
@@ -4074,6 +4074,7 @@
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921"><ph name="HOSTNAMES" />: নামের্ ডিভাইসসমূহের সাথে ডেটা বিনিময় করুন</translation>
 <translation id="7096406577040705016">ফুলস্ক্রিন ম্যাগনিফায়ার চালু বা বন্ধ করুন</translation>
+<translation id="7096857570999173890">সাইন-আউট করা অবস্থায় আপনি আপনার ডিভাইস আনলক করার জন্য পিন ব্যবহার করতে পারেন।</translation>
 <translation id="7098389117866926363">USB-C ডিভাইস (পিছনের বাঁ পোর্ট)</translation>
 <translation id="7098447629416471489">অন্যান্য সংরক্ষিত সার্চ ইঞ্জিন এখানে দেখা যাবে</translation>
 <translation id="7099337801055912064">বড় PPD লোড করা যাবে না। সর্বাধিক সাইজ ২৫০ কেবি।</translation>

@@ -3365,7 +3365,6 @@
 <translation id="6043317578411397101"><ph name="APP_NAME" /> comparte una pestaña de Chrome con <ph name="TAB_NAME" />.</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> comparte una pestaña de Chrome y audio con <ph name="TAB_NAME" />.</translation>
 <translation id="6045021379489914695">Tu Chromebook y tu teléfono Android trabajan mejor juntos. Conéctalos para poder enviar mensajes de texto desde la computadora, compartir tu conexión de Internet y desbloquear tu Chromebook con el teléfono.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
-<translation id="6047938872139769630">Si no puedes acceder a tu dispositivo, puedes usar el PIN para desbloquearlo</translation>
 <translation id="6049004884579590341">Mantén presionada la tecla |<ph name="ACCELERATOR" />| para salir de la pantalla completa</translation>
 <translation id="6049065490165456785">Foto de la cámara interna</translation>
 <translation id="6051354611314852653">El sistema no pudo autorizar el acceso a la API para este dispositivo.</translation>

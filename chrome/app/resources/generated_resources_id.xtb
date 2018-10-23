@@ -2040,6 +2040,7 @@
 <translation id="3994878504415702912">&amp;Zum</translation>
 <translation id="3995138139523574647">Perangkat USB-C (port belakang sebelah kanan)</translation>
 <translation id="4002066346123236978">Judul</translation>
+<translation id="4002440992267487163">Pasang pin penyiapan</translation>
 <translation id="40027638859996362">Perpindahan kata</translation>
 <translation id="4005817994523282006">Metode deteksi zona waktu</translation>
 <translation id="4008291085758151621">Informasi situs tidak tersedia di VR</translation>
@@ -3384,7 +3385,6 @@
 <translation id="6043317578411397101"><ph name="APP_NAME" /> membagikan tab Chrome dengan <ph name="TAB_NAME" />.</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> membagikan tab Chrome dan audio dengan <ph name="TAB_NAME" />.</translation>
 <translation id="6045021379489914695">Chromebook dan ponsel Android berfungsi lebih baik saat digunakan bersamaan. Hubungkan keduanya sehingga Anda dapat menulis pesan dari komputer, membagikan sambungan internet, dan membuka kunci Chromebook dengan ponsel.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Pelajari lebih lanjut<ph name="LINK_END" /></translation>
-<translation id="6047938872139769630">Anda dapat menggunakan PIN untuk membuka kunci perangkat saat logout</translation>
 <translation id="6049004884579590341">Tekan dan tahan |<ph name="ACCELERATOR" />| untuk keluar dari layar penuh</translation>
 <translation id="6049065490165456785">Foto dari kamera internal</translation>
 <translation id="6051354611314852653">Ups!  Sistem gagal memberi otorisasi akses API untuk perangkat ini.</translation>
@@ -4077,6 +4077,7 @@
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">Menukar data dengan perangkat yang bernama: <ph name="HOSTNAMES" /></translation>
 <translation id="7096406577040705016">Aktifkan Kaca Pembesar Layar Penuh</translation>
+<translation id="7096857570999173890">Anda dapat menggunakan PIN untuk membuka kunci perangkat saat Anda logout.</translation>
 <translation id="7098389117866926363">Perangkat USB-C (port belakang sebelah kiri)</translation>
 <translation id="7098447629416471489">Mesin telusur lain yang disimpan akan muncul di sini</translation>
 <translation id="7099337801055912064">Tidak dapat memuat PPD yang besar. Ukuran maksimumnya adalah 250 kB.</translation>

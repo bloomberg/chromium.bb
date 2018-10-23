@@ -62,9 +62,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Se https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for en liste over variabler som kan brukes.
 
       Hvis denne regelen ikke blir angitt, brukes bufferkatalogen, og brukeren kan overstyre den med kommandolinjeflagget «--disk-cache-dir».</translation>
-<translation id="113521240853905588">Konfigurerer hvilke språk som kan brukes av <ph name="PRODUCT_OS_NAME" /> som foretrukket språk.
-
-      Hvis denne regelen er angitt, kan brukeren kun legge til ett av språkene oppført i denne regelen i listen over foretrukne språk. Hvis regelen ikke er angitt, eller er angitt for en tom liste, kan brukeren bruke hvilket som helst språk. Hvis regelen er angitt for en liste med ugyldige verdier, ignoreres alle ugyldige verdier. Hvis en bruker har lagt til språk regelen ikke tillater, i listen over foretrukne språk, fjernes disse språkene. Hvis brukeren har konfigurert <ph name="PRODUCT_OS_NAME" /> til å vises på ett av språkene som regelen ikke tillater, byttes språket til et språk som er tillatt, neste gang brukeren logger på. Ellers bytter <ph name="PRODUCT_OS_NAME" /> til den første gyldige verdien i regelen, eller til et reservespråk (for øyeblikket amerikansk engelsk) hvis denne regelen bare har ugyldige oppføringer.</translation>
 <translation id="1135264353752122851">Konfigurerer hvilke tastaturoppsett som er tillatt for <ph name="PRODUCT_OS_NAME" />-brukerøkter.
 
       Hvis denne regelen er angitt, kan brukeren kun velge én av inndatametodene som regelen spesifiserer. Hvis denne regelen ikke er angitt, eller hvis den er angitt med en tom liste, kan brukeren velge alle kompatible inndatametoder. Hvis denne regelen ikke tillater den gjeldende inndatametoden, byttes inndatametoden til oppsettet for det fysiske tastaturet (hvis det er tillatt) eller den første gyldige oppføringen i denne listen. Alle inndatametoder i denne listen som er ugyldige eller ikke støttes, ignoreres.</translation>
@@ -601,6 +598,9 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
           Alle nylige versjoner av Samba- og Windows-tjenere støtter NTLMv2. Dette bør bare slås av for bakoverkompatibilitet og reduserer sikkerheten for autentisering.
 
           Når denne regelen ikke er definert, er standardverdien «true» (sann) og NTLMv2 er slått på.</translation>
+<translation id="2598508021807251719">Konfigurerer hvilke lokaliteter <ph name="PRODUCT_OS_NAME" /> kan vises i.
+
+      Hvis denne regelen er angitt, kan brukeren bare konfigurere <ph name="PRODUCT_OS_NAME" /> til å vises i en av lokalitetene som er angitt av denne regelen. Hvis regelen ikke er angitt eller er angitt med en tom liste, kan <ph name="PRODUCT_OS_NAME" /> vises i alle UI-lokalitetene som støttes. Hvis regelen er angitt med en liste med ugyldige verdier, ignoreres alle de ugyldige verdiene. Hvis en bruker tidligere konfigurerte <ph name="PRODUCT_OS_NAME" /> til å bli vist på en lokalitet som ikke tillates av denne regelen, byttes den viste lokaliteten til en tillatt UI-lokalitet neste gang brukeren logger på. Hvis brukeren har konfigurert foretrukne lokaliteter og en av de foretrukne lokalitetene tillates av denne regelen, bytter <ph name="PRODUCT_OS_NAME" /> til denne lokaliteten. Ellers bytter <ph name="PRODUCT_OS_NAME" /> til den første gyldige verdien angitt av denne regelen eller til en reservelokalitet (en-US) hvis denne regelen bare inneholder ugyldige oppføringer.</translation>
 <translation id="2604182581880595781">Konfigurer retningslinjer knyttet til delte nettverksresurser.</translation>
 <translation id="2623014935069176671">Vent på første brukeraktivitet</translation>
 <translation id="262740370354162807">Aktiver sending av dokumenter til <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1066,7 +1066,6 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
           Googles forslagsnettadresse kan spesifiseres slik: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Denne regelen gjelder bare hvis regelen DefaultSearchProviderEnabledpolicy er slått på.</translation>
-<translation id="3864129983143201415">Konfigurer tillatte språk i brukerøkter</translation>
 <translation id="3866249974567520381">Beskrivelse</translation>
 <translation id="3868347814555911633">Denne retningslinjen er aktiv bare i detaljistmodus.
 
@@ -1756,6 +1755,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="5835124959204887277">Spesifiserer nettadresser og domener som det ikke blir vist noen forespørsel for når det blir bedt om attestsertifikater fra sikkerhetsnøkler. I tillegg blir et signal sendt til sikkerhetsnøkkelen. Dette signalet indikerer at enkeltattester kan brukes. Uten dette kommer brukere til å få opp en forespørsel i Chrome v65+ når nettsteder ber om attest for sikkerhetsnøkler.
 
       Nettadresser (for eksempel https://example.com/some/path) samsvarer bare som U2F-app-ID-er. Domener (for eksempel example.com) samsvarer bare som webauthn RP-ID-er. For å dekke både U2F- og webauthn-API-er for et bestemt nettsted må derfor både app-ID-nettadressen og domenet listes opp.</translation>
+<translation id="5835412847081687053">Konfigurer tillatte lokaliteter i brukerøkter</translation>
 <translation id="5836064773277134605">Begrens UDP-portområdet som brukes av fjerntilgangsverten</translation>
 <translation id="5862253018042179045">Angi standard tilstand for tilgjengelighetsfunksjonen for muntlig tilbakemelding på påloggingssiden.
 

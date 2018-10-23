@@ -24,6 +24,12 @@
       Kapag itinakda ang patakarang ito sa false o hindi nakatakda, ililipat ang cookies na itatakda ng IdP sa profile ng user sa unang pag-log in niya lang sa isang device.
 
       Naaapektuhan ng patakarang ito ang mga user na tumutugma ang domain sa domain sa pag-enroll lang ng device. Para sa lahat ng iba pang user, ililipat ang cookies na itatakda ng IdP sa profile ng user sa unang pag-log in lang sa device.</translation>
+<translation id="1035385378988781231">Kinokontrol ng patakarang ito kung gagamit ng NTLM para sa pag-authenticate ang feature na Mga File Share sa Network para sa <ph name="PRODUCT_NAME" />.
+
+      Kapag nakatakda sa True ang patakarang ito, gagamitin ang NTLM para sa pag-authenticate sa mga pagbabahagi ng SMB kung kailangan.
+      Kapag nakatakda sa False ang patakarang ito, idi-disable ang pag-authenticate ng NTLM sa mga pagbabahagi ng SMB.
+
+      Kung hahayaang hindi nakatakda ang patakaran, ang default ay naka-disable para sa mga user na pinapamahalaan ng enterprise at naka-enable para sa mga hindi pinapamahalaang user.</translation>
 <translation id="1040446814317236570">I-enable ang pag-strip ng PAC URL (para sa https://)</translation>
 <translation id="1044878202534415707">Mag-ulat ng mga istatistika ng hardware gaya ng paggamit ng CPU/RAM.
 
@@ -73,9 +79,6 @@
       Tingnan ang https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para sa listahan ng mga variable na maaaring gamitin.
 
       Kung iniwang hindi nakatakda ang patakarang ito, gagamitin ang default na direktoryo ng cache at magagawa itong i-override ng user gamit ang command line flag na '--disk-cache-dir'.</translation>
-<translation id="113521240853905588">Kino-configure ang mga wikang maaaring gamitin bilang mga mas gustong wika ng <ph name="PRODUCT_OS_NAME" />.
-
-      Kung itatakda ang patakarang ito, maaari lang magdagdag ang user ng isa sa mga wikang nakalista sa patakarang ito sa listahan ng mga mas gustong wika. Kung ang wikang ito ay hindi nakatakda o nakatakda sa walang lamang listahan, maaaring tumukoy ang user ng anumang wika, ayon sa mas gusto niya. Kung itatakda ang patakarang ito sa listahang may invalid na value, babalewalain ang lahat ng invalid na value. Kung dati nang nagdagdag ang isang user ng ilang wikang hindi pinapayagan ng patakaran sa listahan ng mga mas gustong wika, aalisin ang mga ito. Kung naunang na-configure ng user ang <ph name="PRODUCT_OS_NAME" /> na maipakita sa isa sa mga wikang hindi pinapayagan ng patakarang ito, ang display na wika ay ililipat sa pinapayagang wika ng UI sa susunod na mag-sign in ang user. Kung hindi, lilipat ang <ph name="PRODUCT_OS_NAME" /> sa unang valid na value na tinukoy ng patakarang ito, o sa isang fallback na wika (kasalukuyang en-US), kung naglalaman lang ang patakarang ito ng mga invalid na entry.</translation>
 <translation id="1135264353752122851">Kino-configure kung aling mga layout ng keyboard ang pinapayagan para sa mga session ng user ng <ph name="PRODUCT_OS_NAME" />.
 
       Kung nakatakda ang patakarang ito, makakapili lang ang user ng isa sa mga pamamaraan ng pag-input na natukoy ng patakarang ito. Kung hindi nakatakda ang patakarang ito o nakatakda ito sa isang walang lamang listahan, mapipili ng user ang lahat ng sinusuportahang pamamaraan ng pag-input. Kung hindi pinapayagan ng patakarang ito ang kasalukuyang pamamaraan ng pag-input, malilipat ang pamamaraan ng pag-input sa layout ng hardware na keyboard (kung pinapayagan) o sa unang valid na entry sa listahang ito. Babalewalain ang lahat ng invalid o hindi sinusuportahang pamamaraan ng pag-input sa listahang ito.</translation>
@@ -105,6 +108,13 @@
       Ang default ay RollbackDisabled.</translation>
 <translation id="1221359380862872747">Mag-load ng mga tinukoy na url sa pag-login sa demo</translation>
 <translation id="1223789468190631420">Status na naka-enable ang Ligtas na Pag-browse para sa mga pinagkakatiwalaang source</translation>
+<translation id="122899932962115297">Isang whitelist na nagkokontrol kung aling mga mabilisang unlock mode ang maaaring i-configure at gamitin ng user para i-unlock ang lock screen.
+
+          Ang value na ito ay isang listahan ng mga string; ang mga valid na entry sa listahan ay: "all", "PIN", "FINGERPRINT." Ang ibig sabihin ng pagdaragdag ng "all" sa listahan ay available para sa user ang bawat mabilisang unlock mode, kabilang ang mga ipapatupad sa hinaharap. Kung hindi man, ang mga mabilisang unlock mode lang na nasa listahan ang magiging available.
+
+          Halimbawa, para payagan ang bawat mabilisang unlock mode, gamitin ang ["all"]. Para ang pag-unlock sa pamamagitan ng PIN lang ang papayagan, gamitin ang ["PIN"]. Para payagan ang PIN at fingerprint, gamitin ang ["PIN", "FINGERPRINT"]. Para i-disable ang lahat ng mabilisang unlock mode, gamitin ang [].
+
+          Bilang default, walang available na mabilisang unlock mode para sa mga pinapamahalaang device.</translation>
 <translation id="123081309365616809">I-enable ang pag-cast ng content sa device</translation>
 <translation id="1243570869342663665">Kontrolin ang pag-filter ng pang-adult na content ng SafeSites.</translation>
 <translation id="1257550411839719984">Itakda ang default na directory sa pag-download</translation>
@@ -616,6 +626,9 @@
           Sinusuportahan ng lahat ng kamakailang bersyon ng mga server ng Samba at Windows ang NTLMv2. Dapat lang itong i-disable para sa backwards compatibility at binabawasan nito ang seguridad ng pag-authenticate.
 
           Kung hindi nakatakda ang patakarang ito, ang default ay true at naka-enable ang NTLMv2.</translation>
+<translation id="2598508021807251719">Kino-configure ang mga lokal kung saan maaaring ipinapakita ang <ph name="PRODUCT_OS_NAME" />.
+
+      Kung itatakda ang patakarang ito, mako-configure lang ng user ang <ph name="PRODUCT_OS_NAME" /> para ipakita sa isa sa mga lokal na tinukoy sa patakarang ito. Kung hindi itatakda ang patakarang ito o itatakda ito sa isang blangkong listahan, maaaring ipakita ang <ph name="PRODUCT_OS_NAME" /> sa lahat ng sinusuportahang lokal ng UI. Kung itatakda ang patakarang ito sa isang listahang may mga invalid na value, babalewalain ang lahat ng invalid na value. Kung na-configure dati ng user ang <ph name="PRODUCT_OS_NAME" /> para ipakita sa isang lokal na hindi pinapayagan ng patakarang ito, ililipat ang lokal ng display sa isang pinapayagang lokal ng UI sa susunod na mag-sign in ang user. Kung na-configure ng user ang mga piniling lokal at ang isa sa mga piniling lokal ay pinapayagan ng patakarang ito, lilipat ang <ph name="PRODUCT_OS_NAME" /> sa lokal na ito. Kung hindi, lilipat ang <ph name="PRODUCT_OS_NAME" /> sa unang valid na value na tinukoy sa patakarang ito, o sa isang fallback na lokal (kasalukuyang en-US), kung naglalaman lang ang patakarang ito ng mga invalid na entry.</translation>
 <translation id="2604182581880595781">I-configure ang mga patakarang nauugnay sa File Share sa Network.</translation>
 <translation id="2623014935069176671">Maghintay sa paunang aktibidad ng user</translation>
 <translation id="262740370354162807">Paganahin ang pagsusumite ng mga dokumento sa <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -650,6 +663,7 @@
 
       Kung hahayaang hindi nakatakda ang patakarang ito, ang default ay hindi pinapayagan para sa mga pinapamahalaang user at pinapayagan para sa mga hindi pinapamahalaang user.</translation>
 <translation id="2660846099862559570">Huwag kailanman gumamit ng proxy</translation>
+<translation id="2672012807430078509">Kinokontrol ang pag-enable ng NTLM bilang protocol ng pag-authenticate para sa mga pag-mount ng SMB</translation>
 <translation id="267596348720209223">Tinutukoy ang mga pag-encode ng character na sinusuportahan ng provider ng paghahanap. Ang mga pag-encode ay mga pangalan ng pahina ng code tulad ng UTF-8, GB2312, at ISO-8859-1. Sinusubukan ang mga ito sa pagkakasunud-sunod na ibinigay.
 
           Opsyonal ang patakarang ito. Kung hindi nakatakda, gagamitin ang default na UTF-8.
@@ -994,6 +1008,11 @@
       Kung idi-disable ang patakaran, walang magaganap na tahasang Pag-isolate ng Site at madi-disable ang mga field trial ng IsolateOrigins at SitePerProcess. Mae-enable pa rin nang manual ng mga user ang IsolateOrigins.
       Kung hindi naka-configure ang patakaran, gagamitin ang mga setting ng platform na default na pag-isolate ng site para sa screen ng pag-sign in.
       </translation>
+<translation id="3748900290998155147">Tumutukoy kung pinapayagan ang mga wake lock. Maaaring humiling ng mga wake lock ang mga extension sa pamamagitan ng power management extension API at sa pamamagitan ng mga ARC app.
+
+          Kung nakatakda sa true o hahayaang hindi nakatakda ang patakarang ito, gagamitin ang mga wake lock para sa pamamahala ng power.
+
+          Kung nakatakda sa false ang patakarang ito, babalewalain ang mga kahilingan sa wake lock.</translation>
 <translation id="3750220015372671395">I-block ang pagbuo ng key sa mga site na ito</translation>
 <translation id="3756011779061588474">I-block ang mode ng developer</translation>
 <translation id="3758089716224084329">Binibigyang-daan kang tukuyin ang proxy server na ginamit ng <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang mga setting ng proxy.
@@ -1027,6 +1046,11 @@
 
           Kung nakatakda sa false ang patakarang "EnableMediaRouter," hindi magkakaroon ng epekto ang value ng patakarang ito, at hindi ipapakita ang icon ng toolbar.</translation>
 <translation id="3788662722837364290">Mga setting ng pamamahala ng power kapag naging idle ang user</translation>
+<translation id="3790085888761753785">Kung naka-enable ang setting na ito, papayagan ang mga user na mag-sign in sa kanilang account gamit ang Smart Lock. Mas pinapahintulutan ito kaysa sa karaniwang gawi ng Smart Lock na pinapayagan lang ang mga user na i-unlock ang kanilang screen.
+
+      Kung naka-disable ang setting na ito, hindi papayagan ang mga user na gamitin ang Pag-sign In Gamit ang Smart Lock.
+
+      Kung hahayaang hindi nakatakda ang patakarang ito, ang default ay hindi pinapayagan para sa mga user na pinapamahalaan ng enterprise at pinapayagan para sa mga hindi pinapamahalaang user.</translation>
 <translation id="379602782757302612">Pinapayagan kang tukuyin kung aling mga extension ang HINDI maaaring i-install ng mga user. Idi-disable ang mga extension na naka-install kung naka-blacklist, nang walang paraan upang ma-enable ng user ang mga ito. Kapag inalis dito ang extension na na-disable dahil sa blacklist, awtomatiko itong muling mae-enable.
 
           Nangangahulugan ang value ng blacklist na '*' na naka-blacklist ang lahat ng extension maliban kung tahasang nakalista ang mga ito sa whitelist.
@@ -1088,7 +1112,6 @@
           Ang suhestyong URL ng Google ay maaaring matukoy bilang: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Kikilalanin lang ang patakaran kung naka-enable ang patakaran na 'DefaultSearchProviderEnabled.'</translation>
-<translation id="3864129983143201415">I-configure ang mga pinapayagang wika sa isang session ng user</translation>
 <translation id="3866249974567520381">Paglalarawan</translation>
 <translation id="3868347814555911633">Sa retail mode lang aktibo ang patakarang ito.
 
@@ -1130,6 +1153,9 @@
 
           Kung hindi nakatakda o nakatakda sa False, makakapaglipat ang mga user ng mga file sa Google Drive.</translation>
 <translation id="3915395663995367577">URL sa proxy na .pac file</translation>
+<translation id="3925020515212192040">Tumutukoy ng listahan ng mga naka-preconfigure na file share sa network.
+
+      Ang bawat item sa listahan ng patakaran ay isang object na may dalawang miyembro: "share_url" at "mode." Ang "share_url" ay ang URL dapat ng pagbabahagi at ang "mode" ay dapat na "drop_down" na nagsasaad na idaragdag ang "share_url" sa drop down ng pagtuklas ng pagbabahagi.</translation>
 <translation id="3939893074578116847">Magpadala ng mga network packet sa server sa pamamahala upang masubaybayan ang online status, upang mabigyang-daan ang
       server na tukuyin kung offline ang device.
 
@@ -1278,6 +1304,7 @@
 <translation id="4377599627073874279">Payagan ang lahat ng mga site na ipakita ang lahat ng mga larawan</translation>
 <translation id="437791893267799639">Hindi nakatakda ang patakaran, huwag payagan ang paglipat ng data at ARC</translation>
 <translation id="4389091865841123886">I-configure ang malayuang pagpapatunay gamit ang mekanismo ng TPM.</translation>
+<translation id="4408428864159735559">Listahan ng mga naka-preconfigure na file share sa network.</translation>
 <translation id="4410236409016356088">I-enable ang pag-throttle sa bandwidth ng network</translation>
 <translation id="441217499641439905">I-disable ang Google Drive sa mga cellular na koneksyon sa app na Mga File ng <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4418726081189202489">Kapag itinakda ang patakarang ito sa false, pipigilan ang <ph name="PRODUCT_NAME" /> na paminsan-minsang magpadala ng mga query sa isang server ng Google upang kumuha ng tumpak na timestamp. Ie-enable ang mga query na ito kung nakatakda sa True ang patakarang ito o kung hindi ito nakatakda.</translation>
@@ -1781,6 +1808,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="5835124959204887277">Tumutukoy ng mga URL at domain kung saan walang ipapakitang prompt kapag humiling ng mga certificate ng pagpapatunay mula sa Mga Security Key. Bukod pa rito, may ipapadalang signal sa Security Key na nagsasaad na maaaring gumamit ng indibidwal na pagpapatunay. Kung wala ito, ipo-prompt ang mga user sa Chrome 65+ kapag humiling ang mga site ng pagpapatunay ng Mga Security Key.
 
       Tutugma lang ang mga URL (tulad ng https://example.com/some/path) bilang mga U2F appID. Tutugma lang ang mga domain (tulad ng example.com) bilang mga webauthn RP ID. Samakatuwid, upang masaklaw ang mga U2F at webauthn API para sa isang partikular na site, kailangang parehong ilista ang appID URL at domain.</translation>
+<translation id="5835412847081687053">I-configure ang mga pinapayagang lokal ng UI sa isang session ng user</translation>
 <translation id="5836064773277134605">Paghigpitan ang saklaw ng UDP port na ginamit ng host ng malayuang pag-access</translation>
 <translation id="5862253018042179045">Itakda ang default na katayuan ng tampok na pagiging naa-access ng sinasalitang feedback sa screen sa pag-login.
 
@@ -2014,6 +2042,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Upang makontrol kung aling mga website ang pinapayagang magpatakbo ng Flash, tingnan ang mga patakarang "DefaultPluginsSetting," "PluginsAllowedForUrls," at "PluginsBlockedForUrls."
 
       Kung naka-disable o hindi nakatakda ang setting na ito, maaaring ma-block ang Flash content mula sa iba pang pinagmulan o maliit na content.</translation>
+<translation id="6532769014584932288">Payagan ang mga wake lock</translation>
 <translation id="653608967792832033">Tinutukoy ang tagal ng oras na walang input ng user na kapag lumipas ay mala-lock ang screen kapag tumatakbo gamit ang power ng baterya.
 
           Kapag nakatakda ang patakarang ito sa halagang mas malaki kaysa sa zero, tinutukoy nito ang tagal ng oras na dapat manatiling idle ang user bago i-lock ng <ph name="PRODUCT_OS_NAME" /> ang screen.
@@ -2319,6 +2348,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7167436895080860385">Pinapayagan ang mga user na ipakita ang mga password sa Password Manager (hindi na ginagamit)</translation>
 <translation id="7173856672248996428">Ephemeral na profile</translation>
 <translation id="717630378807352957">Payagan ang lahat ng printer mula sa file ng configuration.</translation>
+<translation id="7176721759719212761">Tumutukoy kung pinapayagan ang mga wake lock ng screen. Maaaring humiling ng mga wake lock ng screen ang mga extension sa pamamagitan ng power management extension API at sa pamamagitan ng mga ARC app.
+
+          Kung nakatakda sa true o hahayaang hindi nakatakda ang patakarang ito, gagamitin ang mga wake lock ng screen para sa pamamahala ng power, maliban na lang kung nakatakda sa false ang AllowWakeLocks.
+
+          Kung nakatakda sa false ang patakarang ito, ide-demote ang mga kahilingan sa wake lock ng screen sa mga kahilingan sa wake lock ng system.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Mga uri ng koneksyon na pinapayagan para sa mga update</translation>
 <translation id="7194407337890404814">Pangalan ng default na provider ng paghahanap</translation>
@@ -2332,6 +2366,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Pinapayagan lang ang awtomatikong pag-playback para sa mga domain na tahasang nakalista sa patakarang <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Kung gusto mong i-enable ang awtomatikong pag-playback para sa lahat ng site, pag-isipang magdagdag ng http://* at https://* sa listahang ito.
 
           Kung iiwanang hindi nakatakda ang patakarang ito, manual na mababago ng user ang setting na ito.</translation>
+<translation id="7229975860249300121">Naglalaman ng karaniwang expression na ginagamit para tukuyin kung aling Google account ang maaaring itakda bilang mga pangunahing account sa browser sa <ph name="PRODUCT_NAME" /> (ibig sabihin, ang account na napili sa panahon ng proseso ng pag-opt in sa Pag-sync).
+
+      May ipapakitang naaangkop na error kung susubukan ng isang user na magtakda ng pangunahing account sa browser gamit ang isang username na hindi tumutugma sa pattern na ito.
+
+      Kung hahayaang hindi nakatakda o blangko ang patakarang ito, maaaring magtakda ang user ng anumang Google account bilang pangunahing account sa browser sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="723103540848640830">Itakda ang minimum na haba ng PIN ng lock screen</translation>
 <translation id="7232816984286843471">Kung itatakda ang patakaran sa false, hindi papayagan ang mga hindi affiliate na user na gamitin ang Crostini.
 
@@ -2595,6 +2634,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Ang mga kilalang identifier ng uri ng koneksyon ay "ethernet," "wifi," "wimax," "bluetooth" at "cellular."</translation>
 <translation id="7763614521440615342">Ipakita ang mga suhestyon sa content sa page ng Bagong Tab</translation>
+<translation id="7765879851993224640">Payagang gamitin ang Pag-sign in Gamit ang Smart Lock.</translation>
 <translation id="7774768074957326919">Gumamit ng mga setting ng proxy ng system</translation>
 <translation id="7775831859772431793">Maaari mong itakda rito ang URL ng proxy server.
 
@@ -2708,6 +2748,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kapag binago sa False ang patakarang ito, ilalapat ito sa mga nagsisimulang bagong virtual machine ngunit hindi nito isa-shut down ang mga virtual machine na tumatakbo na.
       Kapag hindi nakatakda ang patakaran sa isang pinamamahalaang device, hindi pinapayagan ang device na magpatakbo ng mga virtual machine.
       Pinapayagan ang mga hindi pinapamahalaang device na magpatakbo ng mga virtual machine.</translation>
+<translation id="8001701200415781021">Paghigpitan kung aling Google account ang papayagang itakda bilang mga pangunahing account sa browser sa <ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">I-rotate ang screen nang 0 degrees</translation>
 <translation id="8033913082323846868">Hindi na ginagamit ang patakarang ito sa M70, pakigamit na lang ang AutofillAddressEnabled at AutofillCreditCardEnabled.
 
@@ -2955,6 +2996,25 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
       Kung hindi nakatakda ang patakaran o kung nakatakda ito sa true, papayagan ang lahat ng user na gamitin ang ARC (maliban na lang kung idi-disable ang ARC sa iba pang paraan).
 
       Malalapat lang ang mga pagbabago sa patakaran kapag hindi tumatakbo ang ARC, hal., kapag nagsisimula ang Chrome OS.</translation>
+<translation id="8615400197788843468">Ine-enable ang pinaghihigpitang log ng <ph name="PRODUCT_NAME" /> sa feature sa G Suite at pinipigilan ang mga user na baguhin ang setting na ito.
+
+      Kung tutukuyin mo ang setting na ito, maa-access lang ng user ang Google
+      Apps gamit ang mga account mula sa mga tinukoy na domain (tandaang para mapayagan ang mga
+      gmail.com/googlemail.com account, dapat mong idagdag ang "consumer_accounts"
+      (walang quote) sa listahan ng mga domain).
+
+      Pipigilan ng setting na ito ang user na mag-log in, at magdagdag ng Pangalawang
+      Account, sa isang pinapamahalaang device na nangangailangan ng pag-authenticate ng Google, kung
+      hindi kabilang ang account na iyon sa listahan ng mga pinapayagang domain na binanggit sa itaas.
+
+      Kung hahayaan mong blangko/hindi naka-configure ang setting na ito, maa-access ng user ang G Suite
+      gamit ang anumang account.
+
+      Dahil sa patakarang ito, idaragdag ang X-GoogApps-Allowed-Domains header sa
+      lahat ng kahilingang HTTP at HTTPS sa lahat ng google.com domain, tulad ng inilalarawan sa
+      https://support.google.com/a/answer/1668854.
+
+      Hindi maaaring baguhin o i-override ng mga user ang setting na ito.</translation>
 <translation id="8631434304112909927">hanggang bersyon <ph name="UNTIL_VERSION" /></translation>
 <translation id="863319402127182273">Para sa mga Android app, nakakaapekto lang sa built-in na camera ang patakarang ito. Kapag nakatakda sa true ang patakarang ito, idi-disable ang camera para sa lahat ng Android app, nang walang exception.</translation>
 <translation id="8649763579836720255">Ang mga Chrome OS device ay maaaring gumamit ng malayuang attestation (Verified Access) upang kumuha ng certificate na ibinibigay ng Chrome OS CA na ihinahayag na karapat-dapat ang device na mag-play ng pinoprotektahang nilalaman.  Kabilang sa prosesong ito ang pagpapadala ng impormasyon sa pag-endorso sa hardware sa Chrome OS CA na natatanging tumutukoy sa device.

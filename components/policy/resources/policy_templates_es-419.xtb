@@ -74,9 +74,6 @@
       Consulta https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para obtener una lista de las variables que se pueden usar.
 
       Si no estableces esta política, se usará el directorio de caché predeterminado, y el usuario podrá anularlo con la marca '--disk-cache-dir' en la línea de comandos.</translation>
-<translation id="113521240853905588">Configura los idiomas que <ph name="PRODUCT_OS_NAME" /> puede usar como preferidos.
-
-      Si se establece esta política, el usuario podrá agregar solo uno de los idiomas enumerados en esta política a la lista de idiomas preferidos. Si no se establece esta política o se establece como una lista vacía, el usuario podrá especificar cualquier idioma como preferido. Si se establece esta política como una lista con valores no válidos, se ignorarán todos estos valores. Si un usuario había agregado a la lista de idiomas preferidos alguno que la política no permite, este se quitará. Si el usuario había configurado <ph name="PRODUCT_OS_NAME" /> con un idioma de visualización que esta política no permite, se lo cambiará por uno permitido para la IU la próxima vez que el usuario acceda. De lo contrario, <ph name="PRODUCT_OS_NAME" /> seleccionará el primer valor válido que especifica esta política o la configuración regional de resguardo (actualmente en-US) en caso de que esta política solo contenga entradas no válidas.</translation>
 <translation id="1135264353752122851">Configura cuáles son los diseños de teclado permitidos para las sesiones de usuario de <ph name="PRODUCT_OS_NAME" />.
 
       Si se establece esta política, el usuario solo podrá elegir uno de los métodos de entrada que se especifican aquí. Si no se establece o se establece como una lista vacía, el usuario podrá seleccionar todos los métodos de entrada compatibles. Si la política no permite el método de entrada actual, se cambiará al diseño de teclado del hardware (si se permite) o a la primera entrada válida en esta lista. Se ignorarán todos los métodos de entrada no válidos o no compatibles.</translation>
@@ -596,6 +593,9 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Todas las versiones recientes de servidores de Samba y Windows son compatibles con NTLMv2. Esta política solo debe inhabilitarse para garantizar la compatibilidad con versiones anteriores. Además, reduce la seguridad de la autenticación.
 
           Si no se establece esta política, el valor predeterminado es verdadero y se habilita NTLMv2.</translation>
+<translation id="2598508021807251719">Permite configurar los idiomas en que se puede mostrar <ph name="PRODUCT_OS_NAME" />.
+
+      Si se establece esta política, el usuario solo puede configurar <ph name="PRODUCT_OS_NAME" /> para que se muestre en uno de los idiomas especificados por esta política. Si se establece con una lista vacía o no se establece, <ph name="PRODUCT_OS_NAME" /> se puede mostrar en todos los idiomas de IU compatibles. Si se establece con una lista de valores no válidos, se ignorarán todos estos. Si un usuario configuró anteriormente <ph name="PRODUCT_OS_NAME" /> para que se mostrara en un idioma de IU que no se permite según esta política, el idioma de visualización se cambiará a uno permitido la próxima vez que acceda el usuario. Si este configuró los idiomas preferidos y la política permite uno de ellos, <ph name="PRODUCT_OS_NAME" /> se cambiará a ese idioma. De lo contrario, <ph name="PRODUCT_OS_NAME" /> se cambiará al primer valor válido que especifica esta política o a un idioma alternativo (actualmente en-US) si esta política solo contiene entradas no válidas.</translation>
 <translation id="2604182581880595781">Configura las políticas relacionadas con la función "Network File Shares".</translation>
 <translation id="2623014935069176671">Esperar actividad inicial del usuario</translation>
 <translation id="262740370354162807">Habilitar el envío de documentos a <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1054,7 +1054,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           La URL de sugerencias de Google se puede especificar como: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Esta política se aplica solo si la política "DefaultSearchProviderEnabled" está habilitada.</translation>
-<translation id="3864129983143201415">Configurar los idiomas permitidos en una sesión de usuario</translation>
 <translation id="3866249974567520381">Descripción</translation>
 <translation id="3868347814555911633">Esta política solo se encuentra activa en el modo de venta.
 
@@ -1543,7 +1542,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5323128137188992869">Permite que se transmita contenido al dispositivo que esté usando <ph name="PRODUCT_NAME" />.
 
           Si se establece esta política como falsa, los usuarios no podrán transmitir contenido al dispositivo. Si se establece como verdadera, los usuarios podrán transmitir contenido. Si no se establece, los usuarios no podrán transmitir contenido a dispositivos con Sistema operativo Chrome, pero sí podrán hacerlo a otros dispositivos.</translation>
-<translation id="5329007337159326804">Advertencia: La política de la versión máxima de TLS se quitará por completo de <ph name="PRODUCT_NAME" /> en la versión 75 aproximadamente (alrededor de junio de 2019).
+<translation id="5329007337159326804">Advertencia: La política de la versión máxima de TLS se quitará por completo de <ph name="PRODUCT_NAME" /> en la versión 75, aproximadamente (alrededor de junio de 2019).
 
       Si para ese momento no se configuró la política, <ph name="PRODUCT_NAME" /> usará la versión máxima predeterminada.
 
@@ -1706,6 +1705,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5835124959204887277">Especifica los dominios y URL para los cuales no se mostrarán mensajes cuando se solicitan certificados de atestación de las llaves de seguridad. Además, se enviará una señal a la llave de seguridad para indicar que se puede usar la atestación individual. Sin esto, se mostrará un mensaje a los usuarios con Chrome 65 y versiones posteriores cuando los sitios soliciten atestaciones de llaves de seguridad.
 
       Las URL (como https://ejemplo.com/una/ruta) solo coincidirán como appID de U2F. Los dominios (como ejemplo.com) solo coincidirán como RP ID de webauthn. Por lo tanto, para abarcar las API de U2F y webauthn para un determinado sitio, deben enumerarse el dominio y la URL de appID.</translation>
+<translation id="5835412847081687053">Configurar los idiomas de IU permitidos en una sesión de usuario</translation>
 <translation id="5836064773277134605">Restringir el intervalo de puertos UDP que utiliza el host de acceso remoto</translation>
 <translation id="5862253018042179045">Establece el estado predeterminado de la función de accesibilidad de los comentarios por voz en la pantalla de acceso.
 
@@ -2037,9 +2037,9 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="681446116407619279">Esquemas de autenticación compatibles</translation>
 <translation id="6816212867679667972">Determina el nombre de host del dispositivo que se usa en solicitudes de DHCP.
 
-      Si se establece esta política como una string no vacía, esa string se usará como el nombre de host del dispositivo para la solicitud de DHCP.
+      Si se establece esta política como un string no vacío, ese string se usará como el nombre de host del dispositivo para la solicitud de DHCP.
 
-      La string puede contener las variables ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} o ${MACHINE_NAME}, que se reemplazarán con valores del dispositivo antes de usarse como nombre de host. La sustitución resultante debe ser un nombre de host válido (según RFC 1035, sección 3.1).
+      El string puede contener las variables ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} o ${MACHINE_NAME}, que se reemplazarán con valores del dispositivo antes de usarse como nombre de host. La sustitución resultante debe ser un nombre de host válido (según RFC 1035, sección 3.1).
 
       Si no se establece esta política, o si el valor que se obtiene después de la sustitución no es un nombre de host válido, no se establecerá ningún nombre de host en la solicitud de DHCP. </translation>
 <translation id="6835883744948188639">Mostrar un mensaje recurrente al usuario para indicarle que se recomienda llevar a cabo el reinicio</translation>
@@ -2327,7 +2327,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Esta política permite que los administradores proporcionen
       configuraciones de impresoras para sus usuarios.
 
-      <ph name="PRINTER_DISPLAY_NAME" /> y <ph name="PRINTER_DESCRIPTION" /> son strings con formato libre que pueden personalizarse para facilitar la selección de impresoras. <ph name="PRINTER_MANUFACTURER" /> y <ph name="PRINTER_MODEL" /> sirven para que los usuarios finales puedan identificar las impresoras fácilmente y representan al fabricante y el modelo de la impresora. <ph name="PRINTER_URI" /> debe ser una dirección que se pueda contactar desde la computadora cliente, que incluya <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> y <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> es opcional. Si se proporciona, se usa para ayudar con la anulación de las impresoras <ph name="ZEROCONF_DISCOVERY" /> duplicadas.
+      <ph name="PRINTER_DISPLAY_NAME" /> y <ph name="PRINTER_DESCRIPTION" /> son strings con formato libre que pueden personalizarse para facilitar la selección de impresoras. <ph name="PRINTER_MANUFACTURER" /> y <ph name="PRINTER_MODEL" /> sirven para que los usuarios finales puedan identificar las impresoras fácilmente y representan al fabricante y el modelo de la impresora. <ph name="PRINTER_URI" /> debe ser una dirección que se pueda contactar desde la computadora cliente (que incluya <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> y <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> es opcional). Si se proporciona, se usa para ayudar con la anulación de las impresoras <ph name="ZEROCONF_DISCOVERY" /> duplicadas.
 
       <ph name="PRINTER_EFFECTIVE_MODEL" /> debe coincidir con uno de los strings que representan una impresora compatible con <ph name="PRODUCT_NAME" />. El string se usará para identificar e instalar el PPD correspondiente para la impresora. Para obtener más información, visita https://support.google.com/chrome?p=noncloudprint.
 
@@ -2764,7 +2764,7 @@ en el mismo valor. Si los valores de ambas políticas no coinciden, es posible q
 <translation id="8359734107661430198">Habilitar la API ExampleDeprecatedFeature hasta el 02/09/2008</translation>
 <translation id="8367209241899435947">Habilitar "Limpiar Chrome" en Windows</translation>
 <translation id="8369602308428138533">Demora de pantalla apagada con alimentación de CA</translation>
-<translation id="8371178326720637170">Habilitar las extensiones administradas para usar la API de de plataforma de hardware empresarial</translation>
+<translation id="8371178326720637170">Habilitar las extensiones administradas para usar la API de Enterprise Hardware Platform</translation>
 <translation id="8382184662529825177">Habilita el uso de la atestación remota para la protección de contenido del dispositivo.</translation>
 <translation id="838870586332499308">Activar la itinerancia de datos</translation>
 <translation id="8390049129576938611">Inhabilita la app interna para ver archivos PDF <ph name="PRODUCT_NAME" />. Los considera archivos de descarga y le permite al usuario abrirlos con la aplicación predeterminada.

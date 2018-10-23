@@ -8,7 +8,7 @@
 
       Wenn diese Einstellung deaktiviert ist, prüft <ph name="PRODUCT_NAME" /> nie, ob es der Standardbrowser ist. Außerdem werden alle Nutzersteuerelemente zum Einstellen dieser Option deaktiviert.
 
-      Wenn diese Einstellung nicht festgelegt ist, erlaubt <ph name="PRODUCT_NAME" /> dem Nutzer die Festlegung, ob es als Standardbrowser verwendet werden soll und ob andernfalls entsprechende Benachrichtigungsmeldungen angezeigt werden sollen.
+      Wenn diese Einstellung nicht festgelegt ist, erlaubt <ph name="PRODUCT_NAME" /> dem Nutzer die Festlegung, ob es als Standardbrowser verwendet werden soll und ob, falls es nicht der Standardbrowser ist, eine entsprechende Benachrichtigung angezeigt werden soll.
 
       Hinweis für <ph name="MS_WIN_NAME" />-Administratoren: Diese Einstellung funktioniert nur auf Computern mit Windows 7. Bei Versionen ab Windows 8 müssen Sie eine Datei mit "Standardanwendungsverknüpfungen" angeben, die <ph name="PRODUCT_NAME" /> zum Handler für das <ph name="HHTPS_PROTOCOL" />- und <ph name="HTTP_PROTOCOL" />-Protokoll sowie optional für das <ph name="FTP_PROTOCOL" />-Protokoll und Dateiformate wie <ph name="HTML_EXTENSION" />, <ph name="HTM_EXTENSION" />, <ph name="PDF_EXTENSION" />, <ph name="SVG_EXTENSION" />, <ph name="WEBP_EXTENSION" /> usw. macht. Weitere Informationen finden Sie unter <ph name="SUPPORT_URL" />.</translation>
 <translation id="1017967144265860778">Energieverwaltung auf dem Anmeldebildschirm</translation>
@@ -24,6 +24,12 @@
       Wenn diese Richtlinie auf "false" gesetzt oder nicht konfiguriert wird, werden die vom IdP gesetzten Cookies nur bei der ersten Anmeldung auf einem Gerät an das Nutzerprofil übertragen.
 
       Diese Richtlinie betrifft nur Nutzer, deren Domain der Geräteanmeldedomain entspricht. Bei allen anderen Nutzern werden die vom IdP gesetzten Cookies nur während der ersten Anmeldung auf dem Gerät an das Nutzerprofil gesendet.</translation>
+<translation id="1035385378988781231">Mit dieser Richtlinie wird gesteuert, ob die Funktion "Netzwerkfreigaben" für <ph name="PRODUCT_NAME" /> zur Authentifizierung NTLM nutzt.
+
+Wenn diese Richtlinie auf "true" gesetzt ist, wird NTLM zur Authentifizierung von SMB-Freigaben genutzt, falls notwendig.
+Wenn diese Richtlinie auf "false" gesetzt ist, wird die Authentifizierung von SMB-Freigaben durch NTLM deaktiviert.
+
+Wenn die Richtlinie nicht festgelegt ist, kommt die Standardeinstellung zum Einsatz, bei der die Funktion für vom Unternehmen verwaltete Nutzer deaktiviert und für nicht verwaltete Nutzer aktiviert ist.</translation>
 <translation id="1040446814317236570">Stripping von PAC-URLs für https:// aktivieren</translation>
 <translation id="1044878202534415707">Mit dieser Richtlinie können Hardwarestatistiken wie CPU/RAM-Auslastung abgerufen werden.
 
@@ -73,9 +79,6 @@ Wenn Sie diese Richtlinie festlegen, verwendet <ph name="PRODUCT_NAME" /> das be
 Unter https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables finden Sie eine Liste mit Variablen, die verwendet werden können.
 
 Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cache-Verzeichnis verwendet und der Nutzer kann sie mit der Befehlszeilenmarkierung "--disk-cache-dir" außer Kraft setzen.</translation>
-<translation id="113521240853905588">Konfiguriert die Sprachen, die von <ph name="PRODUCT_OS_NAME" /> als bevorzugte Sprachen verwendet werden können.
-
-      Wenn diese Richtlinie festgelegt ist, kann der Nutzer nur eine der in dieser Richtlinie angegebenen Sprachen zur Liste der bevorzugten Sprachen hinzufügen. Falls die Richtlinie nicht konfiguriert oder auf eine leere Liste festgelegt ist, kann der Nutzer Sprachen nach Belieben angeben. Sollte diese Richtlinie auf eine Liste mit ungültigen Werten verweisen, werden alle ungültigen Werte ignoriert. Hat ein Nutzer zuvor Sprachen, die aufgrund der Richtlinie nicht erlaubt werden, zur Liste bevorzugter Sprachen hinzugefügt, dann werden diese entfernt. Wenn der Nutzer zuvor <ph name="PRODUCT_OS_NAME" /> für die Anzeige in einer nicht erlaubten Sprache konfiguriert hat, wird die Anzeigesprache auf eine zulässige Sprache umgestellt, wenn sich der Nutzer das nächste Mal anmeldet. Andernfalls wechselt <ph name="PRODUCT_OS_NAME" /> zum ersten gültigen Wert, der durch diese Richtlinie angegeben ist, oder – falls diese Richtlinie nur ungültige Einträge enthält – zu einer Ersatzsprache (derzeit en-US).</translation>
 <translation id="1135264353752122851">Mit dieser Richtlinie wird festgelegt, welche Tastaturlayouts in <ph name="PRODUCT_OS_NAME" />-Nutzersitzungen zulässig sind.
 
       Wenn die Richtlinie festgelegt ist, kann der Nutzer nur eine der in der Richtlinie vorgegebenen Eingabemethoden auswählen. Falls die Richtlinie nicht konfiguriert oder auf eine leere Liste festgelegt ist, kann der Nutzer aus allen unterstützten Eingabemethoden wählen. Sollte die aktuelle Eingabemethode durch die Richtlinie nicht zulässig sein, wird die Eingabemethode nach Möglichkeit auf das Hardware-Tastaturlayout oder den ersten gültigen Eintrag in dieser Liste eingestellt. Alle ungültigen oder nicht unterstützten Eingabemethoden in der Liste werden ignoriert.</translation>
@@ -105,6 +108,13 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       Standardwert ist RollbackDisabled.</translation>
 <translation id="1221359380862872747">Bei Demo-Anmeldung angegebene URLs laden</translation>
 <translation id="1223789468190631420">Safe Browsing-Aktivierungsstatus für vertrauenswürdige Quellen</translation>
+<translation id="122899932962115297">Eine weiße Liste, in der festgelegt wird, welche Modi für das schnelle Entsperren des Sperrbildschirms der Nutzer konfigurieren und verwenden kann.
+
+Dieser Wert besteht aus einer Liste von Strings; gültige Listeneinträge sind: "alle", "PIN", "FINGERABDRUCK". Durch das Hinzufügen von "alle" zur Liste stehen dem Nutzer alle Modi für das schnelle Entsperren zur Verfügung, einschließlich zukünftig implementierter Modi. Wird "alle" nicht ausgewählt, stehen nur die in der Liste enthaltenen Modi für das schnelle Entsperren zur Verfügung.
+
+Beispiel: Verwenden Sie ["alle"], wenn Sie alle Modi für das schnelle Entsperren erlauben möchten. Legen Sie ["PIN"] fest, um nur das Entsperren mit der PIN zu erlauben. Damit Nutzer PIN und Fingerabdruck verwenden können, legen Sie ["PIN", "FINGERABDRUCK"] fest. Wenn Sie alle Modi zum schnellen Entsperren deaktivieren möchten, verwenden Sie [].
+
+Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsperren verfügbar.</translation>
 <translation id="123081309365616809">Streamen von Inhalten an das Gerät aktivieren</translation>
 <translation id="1243570869342663665">Filterung von Inhalten nur für Erwachsene durch "SafeSites" konfigurieren.</translation>
 <translation id="1257550411839719984">Standard-Downloadverzeichnis festlegen</translation>
@@ -596,6 +606,9 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
           Alle aktuellen Versionen der Samba- und Windows-Server unterstützen NTLMv2. Eine Deaktivierung sollte nur zum Zweck der Rückwärtskompatibilität erfolgen und verringert die Sicherheit der Authentifizierung.
 
           Wenn diese Richtlinie nicht konfiguriert ist, ist der Standardwert "true" und NTLMv2 ist aktiviert.</translation>
+<translation id="2598508021807251719">Mit dieser Richtlinie werden die Sprachen konfiguriert, in denen <ph name="PRODUCT_OS_NAME" /> angezeigt werden kann.
+
+      Wenn diese Richtlinie festgelegt ist, kann der Nutzer <ph name="PRODUCT_OS_NAME" /> nur in einer der durch diese Richtlinie angegebenen Sprachen anzeigen lassen. Falls diese Richtlinie nicht festgelegt ist oder auf eine leere Liste verweist, kann <ph name="PRODUCT_OS_NAME" /> in allen unterstützten UI-Sprachen angezeigt werden. Sollte diese Richtlinie auf eine Liste mit ungültigen Werten verweisen, werden alle ungültigen Werte ignoriert. Wenn ein Nutzer <ph name="PRODUCT_OS_NAME" /> zuvor so konfiguriert hat, dass das Betriebssystem in einer Sprache angezeigt wird, die nicht durch diese Richtlinie zugelassen ist, wird die UI-Sprache in eine zulässige Sprache geändert, wenn sich der Nutzer das nächste Mal anmeldet. Falls der Nutzer bevorzugte Sprachen konfiguriert hatte und eine der bevorzugten Sprachen durch diese Richtlinie zugelassen ist, wechselt <ph name="PRODUCT_OS_NAME" /> zu dieser Sprache. Andernfalls wechselt <ph name="PRODUCT_OS_NAME" /> zum ersten gültigen Wert, der durch diese Richtlinie angegeben ist, oder – falls diese Richtlinie nur ungültige Einträge enthält – zu einer Ersatzsprache (derzeit en-US).</translation>
 <translation id="2604182581880595781">Richtlinien für Netzwerkfreigaben konfigurieren.</translation>
 <translation id="2623014935069176671">Auf erste Nutzeraktivität warten</translation>
 <translation id="262740370354162807">Senden von Dokumenten an <ph name="CLOUD_PRINT_NAME" /> aktivieren</translation>
@@ -628,6 +641,7 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 
       Falls die Richtlinie nicht konfiguriert ist, kommt die Standardeinstellung zum Einsatz, bei der die Funktion von verwalteten Nutzern nicht verwendet und von nicht verwalteten Nutzern verwendet werden kann.</translation>
 <translation id="2660846099862559570">Nie Proxy verwenden</translation>
+<translation id="2672012807430078509">Steuerung, durch die NTLM als Authentifizierungsprotokoll für SMB-Bereitstellungen aktiviert wird</translation>
 <translation id="267596348720209223">Gibt die vom Suchanbieter unterstützten Zeichencodierungen an. Codierungen sind Codepage-Namen wie UTF-8, GB2312 und ISO-8859-1. Sie werden in der Reihenfolge durchprobiert, in der sie angegeben werden. Diese Richtlinie ist optional. Ist sie nicht konfiguriert, so kommt der Standardwert UTF-8 zum Einsatz. Diese Richtlinie wird nur umgesetzt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
 <translation id="268577405881275241">Funktion für Datenkomprimierungs-Proxy aktivieren</translation>
 <translation id="2693108589792503178">Hiermit wird die URL zur Passwortänderung konfiguriert.</translation>
@@ -698,7 +712,7 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="2873651257716068683">Dadurch wird die standardmäßige Druckseitengröße überschrieben. Wenn die Seitengröße nicht verfügbar ist, wird die Richtlinie ignoriert.</translation>
 <translation id="2874209944580848064">Hinweis für <ph name="PRODUCT_OS_NAME" />-Geräte, die Android-Apps unterstützen:</translation>
 <translation id="2877225735001246144">CNAME-Suche bei der Aushandlung der Kerberos-Authentifizierung deaktivieren</translation>
-<translation id="2890645751406497668">Websites automatisch die Berechtigung erteilen, eine Verbindung zu USB-Geräten mit den angegebenen Hersteller- und Produkt-IDs herzustellen.</translation>
+<translation id="2890645751406497668">Websites automatisch die Berechtigung erteilen, eine Verbindung zu USB-Geräten mit der angegebenen Anbieter-ID und Produkt-ID herzustellen.</translation>
 <translation id="2892414556511568464">Dadurch wird der Duplexdruck eingeschränkt. Ist die Richtlinie nicht konfiguriert, wird keine Einschränkung angewendet.</translation>
 <translation id="2893546967669465276">Systemprotokolle an den Verwaltungsserver senden</translation>
 <translation id="2899002520262095963">Android-Apps können die über diese Richtlinie festgelegten Netzwerkkonfigurationen und CA-Zertifikate verwenden, haben jedoch keinen Zugriff auf bestimmte Konfigurationsoptionen.</translation>
@@ -959,6 +973,10 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
       Wenn die Richtlinie deaktiviert ist, findet keine Website-Isolierung statt und Feldtests von "IsolateOrigins" und "SitePerProcess" werden ebenfalls deaktiviert. Nutzer können aber "IsolateOrigins" weiterhin manuell aktivieren.
       Wenn die Richtlinie nicht konfiguriert ist, werden die standardmäßigen Website-Isolierungseinstellungen der Plattform für die Anmeldeseite verwendet.
       </translation>
+<translation id="3748900290998155147">Gibt an, ob Wakelocks zulässig sind. Wakelocks können von Erweiterungen über die Power Management Extension API oder ARC-Apps angefordert werden.
+
+Falls diese Richtlinie auf "true" gesetzt oder nicht festgelegt wird, werden Wakelocks bei der Energieverwaltung zugelassen.
+Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Wakelocks ignoriert.</translation>
 <translation id="3750220015372671395">Schlüsselgenerierung auf diesen Websites blockieren</translation>
 <translation id="3756011779061588474">Entwicklermodus blockieren</translation>
 <translation id="3758089716224084329">Ermöglicht Ihnen, den von <ph name="PRODUCT_NAME" /> verwendeten Proxy-Server anzugeben, und verhindert, dass Nutzer die Proxy-Einstellungen ändern.
@@ -992,6 +1010,10 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 
           Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt wird, hat der Wert dieser Richtlinie keine Auswirkungen und das Symbol wird nicht auf der Symbolleiste angezeigt.</translation>
 <translation id="3788662722837364290">Einstellungen für die Energieverwaltung bei Inaktivität des Nutzers</translation>
+<translation id="3790085888761753785">Wenn diese Einstellung aktiviert ist, können Nutzer sich mit Smart Lock in Ihren Konten anmelden. Sie haben dann mehr Möglichkeiten als mit den üblichen Smart Lock-Einstellungen, mit denen sie lediglich ihre Bildschirme entsperren können.
+
+Wenn diese Einstellung deaktiviert ist, können Nutzer sich nicht mit Smart Lock anmelden.
+Wenn diese Richtlinie nicht festgelegt ist, kommt die Standardeinstellung zum Einsatz, bei der die Funktion für vom Unternehmen verwaltete Nutzer deaktiviert und für nicht verwaltete Nutzer aktiviert ist.</translation>
 <translation id="379602782757302612">Mit dieser Richtlinie können Sie festlegen, welche Erweiterungen Nutzer NICHT installieren dürfen. Bereits installierte Erweiterungen, die auf die schwarze Liste gesetzt werden, werden entfernt. Der Nutzer hat keine Möglichkeit, diese zu aktivieren. Sollte eine aufgrund der schwarzen Liste deaktivierte Erweiterung aus dieser entfernt werden, wird sie automatisch wieder aktiviert.
 
           Der Wert "*" in der schwarzen Liste gibt an, dass alle Erweiterungen ausgeschlossen werden, sofern diese nicht ausdrücklich auf die weiße Liste gesetzt wurden.
@@ -1048,7 +1070,6 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
           Die Vorschlags-URL von Google kann wie folgt angegeben werden: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Diese Richtlinie wird nur umgesetzt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
-<translation id="3864129983143201415">In einer Nutzersitzung zulässige Sprachen konfigurieren</translation>
 <translation id="3866249974567520381">Beschreibung</translation>
 <translation id="3868347814555911633">Diese Richtlinie ist nur im Händlermodus aktiv.
 
@@ -1090,6 +1111,9 @@ Wenn diese Richtlinie nicht konfiguriert ist, kann der Nutzer selbst entscheiden
 
           Falls die Richtlinie auf "false" gesetzt oder nicht festgelegt wird, können die Nutzer Dateien an Google Drive übertragen.</translation>
 <translation id="3915395663995367577">URL einer PAC-Proxy-Datei</translation>
+<translation id="3925020515212192040">Gibt eine Liste vorkonfigurierter Netzwerkfreigaben an.
+
+Jedes Listenelement der Richtlinie ist ein Objekt mit zwei Teilen: "share_url" und "mode". Bei "share_url" handelt es sich um die URL der Freigabe. "mode" sollte "drop_down" sein, um festzulegen, dass "share_url" dem Drop-Down der Freigabeerkennung hinzugefügt wird.</translation>
 <translation id="3939893074578116847">Es werden Netzwerkpakete zur Überwachung des Onlinestatus an den 
       Verwaltungsserver gesendet, damit er erkennt, wenn das Gerät offline ist.
 
@@ -1238,6 +1262,7 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="4377599627073874279">Anzeige aller Bilder auf allen Websites zulassen</translation>
 <translation id="437791893267799639">Richtlinie nicht konfiguriert, Datenmigration und ARC nicht zulassen</translation>
 <translation id="4389091865841123886">Konfiguriert die Remote-Bestätigung mit TPM-Mechanismus</translation>
+<translation id="4408428864159735559">Liste der vorkonfigurierten Netzwerkfreigaben.</translation>
 <translation id="4410236409016356088">Begrenzung der Netzwerkbandbreite erlauben</translation>
 <translation id="441217499641439905">Synchronisierung zwischen Google Drive und der App "Dateien" von <ph name="PRODUCT_OS_NAME" /> per Mobilfunkverbindung deaktivieren</translation>
 <translation id="4418726081189202489">Beim Festlegen dieser Richtlinien auf "False" wird <ph name="PRODUCT_NAME" /> daran gehindert, gelegentlich Abfragen an einen Google-Server zu senden, um einen korrekten Zeitstempel abzurufen. Diese Abfragen werden aktiviert, sobald für diese Richtlinien "True" oder nichts festgelegt ist.</translation>
@@ -1543,7 +1568,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 
       Wenn diese Richtlinie nicht konfiguriert ist, verwendet <ph name="PRODUCT_NAME" /> die standardmäßige Höchstversion.
 
-      Ansonsten kann sie auf einen der folgenden Werte festgelegt werden: "tls1.2" oder "tls1.3". Wenn festgelegt, verwendet <ph name="PRODUCT_NAME" /> keine SSL- oder TLS-Versionen, die neuer als die festgelegte Version sind. Ein unbekannter Wert wird ignoriert.</translation>
+      Ansonsten kann sie auf einen der folgenden Werte festgelegt werden: "tls1.2" oder "tls1.3". Wenn die Richtlinie konfiguriert ist, verwendet <ph name="PRODUCT_NAME" /> keine SSL- oder TLS-Versionen, die neuer als die festgelegte Version sind. Ein unbekannter Wert wird ignoriert.</translation>
 <translation id="5330684698007383292">Verarbeitung der folgenden Inhaltstypen durch <ph name="PRODUCT_FRAME_NAME" /> zulassen</translation>
 <translation id="5365946944967967336">Startseiten-Schaltfläche auf Symbolleiste anzeigen</translation>
 <translation id="5366745336748853475">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, für die auf dem Anmeldebildschirm im Frame, der den SAML-Flow hostet, automatisch ein Clientzertifikat ausgewählt wird, wenn die Website ein Zertifikat anfordert. Zum Beispiel kann damit ein geräteübergreifendes Zertifikat konfiguriert werden, das dem SAML IdP präsentiert wird.
@@ -1577,9 +1602,9 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 
       Wenn diese Richtlinie nicht oder auf "true" festgelegt ist, kann der Nutzer VPN-Verbindungen wie gewöhnlich trennen oder modifizieren.
 
-      Wenn die VPN-Verbindung innerhalb einer VPN-App erstellt wird, hat diese Richtlinie keine Auswirkungen auf die Benutzeroberfläche der App. So könnte der Nutzer die App auch weiterhin zum Modifizieren der VPN-Verbindung zu verwenden.
+      Wenn die VPN-Verbindung innerhalb einer VPN-App erstellt wird, hat diese Richtlinie keine Auswirkungen auf die Benutzeroberfläche der App. So könnte der Nutzer die App auch weiterhin zum Modifizieren der VPN-Verbindung verwenden.
 
-      Diese Richtlinie soll gemeinsam mit der Funktion "Durchgehend aktives VPN" verwendet werden, mit der der Administrator festlegen kann, ob beim Start eine VPN-Verbindung dargestellt werden soll.</translation>
+      Diese Richtlinie soll gemeinsam mit der Funktion "Durchgehend aktives VPN" verwendet werden, mit der der Administrator festlegen kann, ob beim Start eine VPN-Verbindung hergestellt werden soll.</translation>
 <translation id="5405289061476885481">Konfiguriert, welche Tastaturlayouts auf der <ph name="PRODUCT_OS_NAME" />-Anmeldeseite erlaubt sind.
 
       Ist für diese Richtlinie eine Liste mit IDs für Eingabemethoden festgelegt, werden die entsprechenden Eingabemethoden auf der Anmeldeseite bereitgestellt. Das oberste Listenelement ist vorab ausgewählt. Während bestimmte Nutzerdaten auf der Anmeldeseite markiert sind, wird zusätzlich zu den von dieser Richtlinie bereitgestellten Eingabemethoden auch die vom Nutzer zuletzt verwendete angeboten. Ist diese Richtlinie nicht konfiguriert, werden die Eingabemethoden auf der Anmeldeseite von der Sprache der Anmeldeseite abgeleitet. Werte, die keine gültigen IDs für Eingabemethoden sind, werden ignoriert.</translation>
@@ -1707,6 +1732,7 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 <translation id="5835124959204887277">In der Richtlinie werden URLs und Domains spezifiziert, für die keine Eingabeaufforderung angezeigt werden, wenn Nachweiszertifikate von Sicherheitsschlüsseln angefordert werden. Zusätzlich wird an den Sicherheitsschlüssel ein Signal gesendet, das angibt, dass individuelle Nachweise verwendet werden können. Andernfalls erhalten Nutzer in Chrome 65 und höher eine Eingabeaufforderung, wenn von Websites ein Nachweis für Sicherheitsschlüssel angefordert wird.
 
       URLs, wie z. B. https://example.com/some/path, werden nur durch U2F-AppIDs bestimmt. Domains, wie z. B. example.com, werden nur durch Webauthn-RP-IDs bestimmt. Um sowohl U2F- als auch Webauthn-APIs in eine bestimmte Website einzubeziehen, müssen deshalb sowohl die AppID-URL als auch die Domain aufgeführt werden.</translation>
+<translation id="5835412847081687053">In einer Nutzersitzung zulässige UI-Sprachen konfigurieren</translation>
 <translation id="5836064773277134605">Vom Host für den Remotezugriff verwendeten UDP-Portbereich einschränken</translation>
 <translation id="5862253018042179045">Hiermit wird der Standardstatus der Bedienungshilfefunktion für das gesprochene Feedback auf der Anmeldeseite festgelegt.
 
@@ -1935,6 +1961,7 @@ Ein Teil der Proxyeinstellungen ist für Android-Apps verfügbar und kann auf fr
       Um festzulegen, welche Websites Flash-Inhalte ausführen dürfen, verwenden Sie die Richtlinien "DefaultPluginsSetting", "PluginsAllowedForUrls" und "PluginsBlockedForUrls".
 
       Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, werden Flash-Inhalte aus anderen Quellen oder kleine Inhalte möglicherweise blockiert.</translation>
+<translation id="6532769014584932288">Wakelocks zulassen</translation>
 <translation id="653608967792832033">Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe der Bildschirm im Akkubetrieb gesperrt wird.
 
           Wenn für diese Richtlinie ein höherer Wert als null festgelegt wird, gibt dieser an, wie lange ein Nutzer inaktiv sein muss, bevor <ph name="PRODUCT_OS_NAME" /> den Bildschirm sperrt.
@@ -2225,6 +2252,10 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="7167436895080860385">Anzeige von Passwörtern im Passwortmanager durch Nutzer zulassen (veraltet)</translation>
 <translation id="7173856672248996428">Sitzungsspezifisches Profil</translation>
 <translation id="717630378807352957">Alle Drucker der Konfigurationsdatei zulassen.</translation>
+<translation id="7176721759719212761">Gibt an, ob Bildschirm-Wakelocks zulässig sind. Bildschirm-Wakelocks können von Erweiterungen über die Power Management Extension API oder ARC-Apps angefordert werden.
+
+Falls diese Richtlinie auf "true" gesetzt oder nicht festgelegt wird, werden Bildschirm-Wakelocks bei der Energieverwaltung zugelassen, es sei denn, "AllowWakeLocks" ist auf "false" gesetzt.
+Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-Wakelocks auf den Status von System-Wakelocks zurückgestuft.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Für Updates zugelassene Verbindungstypen</translation>
 <translation id="7194407337890404814">Name der Standardsuchmaschine</translation>
@@ -2238,6 +2269,11 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
           Die automatische Wiedergabe ist nur für Domains erlaubt, die ausdrücklich in der Richtlinie <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> aufgeführt werden. Wenn Sie die automatische Wiedergabe für alle Websites aktivieren möchten, können Sie http://* und https://* dieser Liste hinzufügen.
 
           Wenn diese Richtlinie nicht aktiviert wird, kann der Nutzer diese Einstellung manuell ändern.</translation>
+<translation id="7229975860249300121">Enthält einen regulären Ausdruck, der festlegt, welche Google-Konten in <ph name="PRODUCT_NAME" /> als primäre Browserkonten eingerichtet werden können, zum Beispiel das Konto, das während der Zustimmung zur Synchronisierung ausgewählt wurde.
+
+Wenn ein Nutzer ein primäres Browserkonto mit einem Nutzernamen einrichten will, der diesem Muster nicht entspricht, wird ein entsprechender Fehler ausgegeben.
+
+Wenn diese Richtlinie nicht festgelegt ist oder absichtlich leer gelassen wird, kann der Nutzer in <ph name="PRODUCT_NAME" /> jedes Google-Konto als primäres Browserkonto festlegen.</translation>
 <translation id="723103540848640830">Minimale Länge der Sperrbildschirm-PIN festlegen</translation>
 <translation id="7232816984286843471">Wenn die Richtlinie auf "false" gesetzt ist, dürfen nicht verknüpfte Nutzer Crostini nicht verwenden.
 
@@ -2327,7 +2363,7 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
       Mit dieser Richtlinie können Administratoren den Nutzern
       Druckerkonfigurationen bereitstellen.
 
-      <ph name="PRINTER_DISPLAY_NAME" /> und <ph name="PRINTER_DESCRIPTION" /> sind unformatierte Strings, die zur einfachen Druckerauswahl angepasst werden können. <ph name="PRINTER_MANUFACTURER" /> und <ph name="PRINTER_MODEL" /> dienen der vereinfachten Druckererkennung durch die Nutzer. Sie geben den Hersteller und das Modell des Druckers an. Bei <ph name="PRINTER_URI" /> sollte es sich um eine Adresse, einschließlich <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> und <ph name="URI_QUEUE" />, handeln, auf die über einen Client-Computer zugegriffen werden kann. <ph name="PRINTER_UUID" /> ist optional . Wenn sie angegeben ist, wird sie zum Entfernen von Duplikaten bei <ph name="ZEROCONF_DISCOVERY" />-Druckern verwendet.
+      <ph name="PRINTER_DISPLAY_NAME" /> und <ph name="PRINTER_DESCRIPTION" /> sind beliebig aufgebaute Strings, die zur einfachen Druckerauswahl angepasst werden können. <ph name="PRINTER_MANUFACTURER" /> und <ph name="PRINTER_MODEL" /> dienen der vereinfachten Druckererkennung durch die Nutzer. Sie geben den Hersteller und das Modell des Druckers an. Bei <ph name="PRINTER_URI" /> sollte es sich um eine Adresse, einschließlich <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> und <ph name="URI_QUEUE" />, handeln, auf die über einen Client-Computer zugegriffen werden kann. <ph name="PRINTER_UUID" /> ist optional. Wenn sie angegeben ist, wird sie zum Entfernen von Duplikaten bei <ph name="ZEROCONF_DISCOVERY" />-Druckern verwendet.
 
       <ph name="PRINTER_EFFECTIVE_MODEL" /> muss mit einem der Strings übereinstimmen, die einen von <ph name="PRODUCT_NAME" /> unterstützten Drucker angeben. Mithilfe des Strings wird die passende PPD-Datei für den Drucker gesucht und installiert. Weitere Informationen finden Sie unter https://support.google.com/chrome?p=noncloudprint.
 
@@ -2492,6 +2528,7 @@ Auf <ph name="PRODUCT_OS_NAME" />-Version 70 und höher unterstützt. Bei älte
 
       Zu den erkannten Verbindungstypkennungen gehören "ethernet", "wifi", "wimax", "bluetooth" und "cellular".</translation>
 <translation id="7763614521440615342">Inhaltsvorschläge auf der "Neuer Tab"-Seite anzeigen</translation>
+<translation id="7765879851993224640">Verwendung von Smart Lock zur Anmeldung erlauben.</translation>
 <translation id="7774768074957326919">System-Proxy-Einstellungen verwenden</translation>
 <translation id="7775831859772431793">Hier können Sie die URL des Proxyservers angeben.
 
@@ -2599,6 +2636,7 @@ Alle drei Richtlinien (VirtualMachinesAllowed, CrostiniAllowed und DeviceUnaffil
 Wird diese Richtlinie zu "false" geändert, wirkt sich dies nur auf den Start neuer virtueller Maschinen aus. Virtuelle Maschinen, die bereits laufen, werden dadurch nicht beendet.
 Ist diese Richtlinie auf einem verwalteten Gerät nicht festgelegt, dürfen keine virtuellen Maschinen auf dem Gerät ausgeführt werden.
 Auf nicht verwalteten Geräten dürfen virtuelle Maschinen ausgeführt werden.</translation>
+<translation id="8001701200415781021">Einschränken, welche Google-Konten als primäre Browserkonten in <ph name="PRODUCT_NAME" /> festgelegt werden können</translation>
 <translation id="802147957407376460">Bildschirm um 0 Grad drehen</translation>
 <translation id="8033913082323846868">Diese Richtlinie wurde in M70 eingestellt, bitte verwenden Sie stattdessen "AutofillAddressEnabled" und "AutofillCreditCardEnabled".
 
@@ -2743,7 +2781,7 @@ Diese Richtlinie gilt nicht für den Inkognitomodus.</translation>
 <translation id="8359734107661430198">ExampleDeprecatedFeature API bis zum 02.09.2008 aktivieren</translation>
 <translation id="8367209241899435947">Chrome Cleanup Tool unter Windows aktivieren</translation>
 <translation id="8369602308428138533">Verzögerung für die Bildschirmabschaltung im Netzbetrieb</translation>
-<translation id="8371178326720637170">Aktiviert die Verwendung der Enterprise Hardware Platform API durch verwaltete Erweiterungen</translation>
+<translation id="8371178326720637170">Ermöglicht verwalteten Erweiterungen, die Enterprise Hardware Platform API zu verwenden</translation>
 <translation id="8382184662529825177">Verwendung von Remote-Bescheinigung (Remote Attestation) zum Schutz von Inhalten für das Gerät aktivieren</translation>
 <translation id="838870586332499308">Daten-Roaming aktivieren</translation>
 <translation id="8390049129576938611">Deaktiviert den internen PDF-Viewer in <ph name="PRODUCT_NAME" />. Stattdessen werden PDF-Dateien als Download behandelt und der Nutzer kann sie mit der Standard-Anwendung öffnen.
@@ -2830,6 +2868,17 @@ Ist die Richtlinie auf "false" gesetzt oder nicht konfiguriert, kann der Nutzer 
       Wenn die Richtlinie nicht konfiguriert oder auf "true" festgelegt ist, können alle Nutzer ARC verwenden, es sei denn, ARC wurde anderweitig deaktiviert.
 
        Änderungen an dieser Richtlinie werden nur angewendet, wenn ARC nicht ausgeführt wird, z. B. beim Start von Chrome OS.</translation>
+<translation id="8615400197788843468">Aktiviert die eingeschränkten Anmeldefunktionen von <ph name="PRODUCT_NAME" /> in der G Suite und verhindert, dass Nutzer diese Einstellung ändern.
+
+Wenn Sie diese Einstellung festlegen, können Nutzer nur über Konten der angegebenen Domains auf Apps von Google zugreifen. Sie müssen der Liste mit den Domains "consumer_accounts" (ohne Anführungszeichen) hinzufügen, wenn Sie gmail.com/googlemail.com-Konten zulassen möchten.
+
+Diese Einstellung verhindert, dass Nutzer sich auf einem verwalteten Gerät, für das eine Authentifizierung durch Google notwendig ist, anmelden und ein zweites Konto hinzufügen können, wenn dieses Konto nicht zu einer der Domains in der oben erwähnten Liste gehört.
+
+Wenn Sie diese Einstellung leer lassen bzw. nicht konfigurieren, können Nutzer über beliebige Konten auf die G Suite zugreifen.
+
+Durch diese Richtlinie wird der Header "X-GoogApps-Allowed-Domains", wie unter https://support.google.com/a/answer/1668854 beschrieben, an alle HTTP- und HTTPS-Anforderungen angehängt, die an google.com-Domains gesendet werden.
+
+Nutzer können diese Einstellung weder ändern noch überschreiben.</translation>
 <translation id="8631434304112909927">Bis Version <ph name="UNTIL_VERSION" /></translation>
 <translation id="863319402127182273">Bei Android-Apps betrifft diese Richtlinie nur die eingebaute Kamera. Wenn die Richtlinie auf "true" gesetzt ist, wird die Kamera ohne Ausnahme für alle Android-Apps deaktiviert.</translation>
 <translation id="8649763579836720255">Chrome OS-Geräte können mithilfe einer Remote-Bescheinigung für überprüften Zugriff ein von der Chrome OS-Zertifizierungsstelle herausgegebenes Zertifikat erhalten, das die Berechtigung des Geräts für die Wiedergabe geschützter Medien nachweist. Bei diesem Vorgang werden Informationen zur Bestätigung der Hardware an die Chrome OS-Zertifizierungsstelle gesendet, anhand derer das Gerät eindeutig identifiziert werden kann.
@@ -3002,7 +3051,7 @@ Ist die Richtlinie auf "false" gesetzt oder nicht konfiguriert, kann der Nutzer 
 <translation id="8970205333161758602">Hinweis auf Einstellung von <ph name="PRODUCT_FRAME_NAME" /> unterdrücken</translation>
 <translation id="8976248126101463034">Gnubby-Authentifizierung für Remotezugriff-Hosts zulassen</translation>
 <translation id="8976531594979650914">Standarddrucker des Betriebssystems als Standardeinstellung verwenden</translation>
-<translation id="898520305112996948">Hiermit können Sie eine Liste mit URL-Mustern festlegen, die angeben, welchen Websites automatisch die Berechtigung zum Zugriff auf ein USB-Gerät mit den angegebenen Anbieter- und Produkt-IDs gewährt wird. Jedes Element in der Liste muss sowohl Geräte als auch URL-Muster enthalten, damit die Richtlinie gültig ist. Jedes Geräteelement kann je ein Feld für eine Anbieter- und eine Produkt-ID enthalten. Fehlende IDs werden als Platzhalter betrachtet, wobei als Ausnahme zu berücksichtigen ist, dass eine Produkt-ID nicht ohne zugehörige Anbieter-ID angegeben werden kann, da die Richtlinie ansonsten ungültig ist. Ungültige Richtlinienwerte werden ignoriert.
+<translation id="898520305112996948">Hiermit können Sie eine Liste mit URL-Mustern festlegen, die angeben, welchen Websites automatisch die Berechtigung zum Zugriff auf ein USB-Gerät mit der angegebenen Anbieter- und Produkt-ID gewährt wird. Jedes Element in der Liste muss sowohl Geräte als auch URL-Muster enthalten, damit die Richtlinie gültig ist. Jedes Geräteelement kann je ein Feld für eine Anbieter- und eine Produkt-ID enthalten. Fehlende IDs werden als Platzhalter betrachtet, wobei als Ausnahme zu berücksichtigen ist, dass eine Produkt-ID nicht ohne zugehörige Anbieter-ID angegeben werden kann, da die Richtlinie ansonsten ungültig ist. Ungültige Richtlinienwerte werden ignoriert.
 
         Ist diese Richtlinie nicht konfiguriert, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultWebUsbGuardSetting", sofern konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.
 

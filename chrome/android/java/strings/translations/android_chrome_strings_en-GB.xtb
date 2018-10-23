@@ -195,7 +195,6 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="2414672073755873541">No content here</translation>
 <translation id="2414886740292270097">Dark</translation>
 <translation id="2416359993254398973">Chrome needs permission to access your camera for this site.</translation>
-<translation id="24241740415720680">Lite page delivered by Google</translation>
 <translation id="2426805022920575512">Choose another account</translation>
 <translation id="2433507940547922241">Appearance</translation>
 <translation id="2434158240863470628">Download complete <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -356,7 +355,6 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="3822502789641063741">Clear site storage?</translation>
 <translation id="385051799172605136">Back</translation>
 <translation id="3859306556332390985">Seek forward</translation>
-<translation id="3860879523841717702">Lite page delivered by Google. Tap to load the original.</translation>
 <translation id="3868004864571585162">Cookies, media licences and site data</translation>
 <translation id="3894427358181296146">Add folder</translation>
 <translation id="3895926599014793903">Force enable zoom</translation>
@@ -825,7 +823,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="729975465115245577">Your device doesn’t have an app to store the passwords file.</translation>
 <translation id="7302081693174882195">Details: Sorted by amount of data saved</translation>
 <translation id="7333031090786104871">Still adding previous site</translation>
-<translation id="7335671571918306053">Lite page delivered by Google. Tap the load original button to load the original page.</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Share 1 selected item}other{Share # selected items}}</translation>
 <translation id="7359002509206457351">Access payment methods</translation>

@@ -195,7 +195,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="2414672073755873541">Burada içerik yok</translation>
 <translation id="2414886740292270097">Koyu</translation>
 <translation id="2416359993254398973">Chrome'un bu sitede kameranıza erişmesi için izin gerekiyor.</translation>
-<translation id="24241740415720680">Google tarafından sunulan basit sayfa</translation>
 <translation id="2426805022920575512">Başka hesap seç</translation>
 <translation id="2433507940547922241">Görünüm</translation>
 <translation id="2434158240863470628">İndirme işlemi tamamlandı <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -298,6 +297,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="3295602654194328831">Bilgileri Gizle</translation>
 <translation id="3298243779924642547">Basit</translation>
 <translation id="3303414029551471755">İçeriği indirme işlemine başlansın mı?</translation>
+<translation id="3306398118552023113">Bu uygulama Chrome'da çalışıyor</translation>
 <translation id="3328801116991980348">Site bilgileri</translation>
 <translation id="3341058695485821946">Ne kadar veri tasarrufu sağladığınıza bakın</translation>
 <translation id="3350687908700087792">Tüm gizli sekmeleri kapatın.</translation>
@@ -310,6 +310,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="3398320232533725830">Yer işareti yöneticisini açar</translation>
 <translation id="3414952576877147120">Boyut:</translation>
 <translation id="3443221991560634068">Geçerli sayfayı yeniden yükler</translation>
+<translation id="3445014427084483498">Az Önce</translation>
 <translation id="3452612588551937789">Yer işaretleri, geçmiş, şifreler ve diğer ayarlarınıza tüm cihazlarınızdan erişmek için Google Hesabınızla oturum açın.</translation>
 <translation id="3485359633434254965">{FILES,plural, =1{%1$d dosya indirildi}other{%1$d dosya indirildi}}</translation>
 <translation id="3492207499832628349">Yeni gizli sekme</translation>
@@ -354,7 +355,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="3822502789641063741">Site depo. silinsin mi?</translation>
 <translation id="385051799172605136">Geri</translation>
 <translation id="3859306556332390985">İleriye doğru git</translation>
-<translation id="3860879523841717702">Google tarafından sunulan basit sayfa. Sayfanın orijinalini yüklemek için dokunun.</translation>
 <translation id="3868004864571585162">Çerezler, medya lisansları ve site verileri</translation>
 <translation id="3894427358181296146">Klasör ekleyin</translation>
 <translation id="3895926599014793903">Yakınlaştırmayı etkinleştirmeye zorla</translation>
@@ -364,6 +364,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="3950820424414687140">Oturum açın</translation>
 <translation id="395206256282351086">Arama ve site önerileri devre dışı bırakıldı</translation>
 <translation id="3955193568934677022">Sitelerin korumalı içeriği oynatmasına izin ver (önerilir)</translation>
+<translation id="3963007978381181125">Parola şifreleme, Google Pay'deki adresleri ve ödeme yöntemlerini kapsamaz. Yalnızca parolanızı bilen biri, şifrelenmiş verilerinizi okuyabilir. Parola Google'a gönderilmez veya Google tarafından saklanmaz. Parolanızı unutursanız veya bu ayarı değiştirmek isterseniz senkronizasyonu sıfırlamanız gerekir. <ph name="BEGIN_LINK" />Daha fazla bilgi<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">İndirme tamamlandı</translation>
 <translation id="397583555483684758">Senkronizasyonun çalışması durdu</translation>
 <translation id="3976396876660209797">Bu kısayolu kaldırıp yeniden oluşturun</translation>
@@ -402,7 +403,9 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4195643157523330669">Yeni sekmede aç</translation>
 <translation id="4198423547019359126">Kullanılabilir indirme yeri yok</translation>
 <translation id="4209895695669353772">Google tarafından önerilen kişiselleştirilmiş içeriği almak için senkronizasyonu açın</translation>
+<translation id="4225719675976901337">İçerik bulunamadı</translation>
 <translation id="4226663524361240545">Bildirimler cihazı titretebilir</translation>
+<translation id="423219824432660969"><ph name="TIME" /> itibarıyla, senkronize edilmiş verileri Google şifresiyle şifrele</translation>
 <translation id="4242533952199664413">Ayarları aç</translation>
 <translation id="4243710787042215766">Gizli sekmede aç</translation>
 <translation id="424864128008805179">Chrome oturumu kapatılsın mı?</translation>
@@ -473,6 +476,9 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 indirme işlemi tamamlandı.}other{# indirme işlemi tamamlandı.}}</translation>
 <translation id="4766369052440583386">Veri Tasarrufu açık</translation>
 <translation id="4797039098279997504"><ph name="URL_OF_THE_CURRENT_TAB" /> adresine dönmek için dokunun</translation>
+<translation id="4802417911091824046">Parola şifreleme, Google Pay'deki adresleri ve ödeme yöntemlerini kapsamaz.
+
+Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlayın<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Kartın üzerindeki ad</translation>
 <translation id="4807963036345170158">Veri Tasarrufu kapalı</translation>
 <translation id="4816465935029283692">Veri türleri</translation>
@@ -484,6 +490,7 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="4874967477260347223">Medya Lisansları</translation>
 <translation id="4875775213178255010">İçerik Önerileri</translation>
 <translation id="4878404682131129617">Proxy sunucu üzerinden tünel oluşturulamadı</translation>
+<translation id="4880127995492972015">Çevir...</translation>
 <translation id="4881695831933465202">Aç</translation>
 <translation id="488187801263602086">Dosyayı yeniden adlandırın</translation>
 <translation id="4882831918239250449">Göz atma geçmişinizin Arama, reklamlar ve diğer hizmetleri kişiselleştirmek için nasıl kullanıldığını kontrol edin</translation>
@@ -742,6 +749,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6738867403308150051">İndiriliyor…</translation>
 <translation id="6746124502594467657">Aşağı taşı</translation>
 <translation id="6766622839693428701">Kapatmak için aşağı kaydırın.</translation>
+<translation id="6766758767654711248">Siteye gitmek için dokunun</translation>
 <translation id="6768277682697012280">AR modülü yükleniyor...</translation>
 <translation id="6776813977906306442">İndir düğmesini kullanarak videoları daha sonra izlemek üzere indirin</translation>
 <translation id="6790428901817661496">Oynat</translation>
@@ -815,7 +823,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="729975465115245577">Cihazınızda şifreler dosyasını depolayacak bir uygulama yok.</translation>
 <translation id="7302081693174882195">Ayrıntılar: Tasarruf edilen veri miktarına göre sıralı</translation>
 <translation id="7333031090786104871">Önceki siteyi ekleme işlemi devam ediyor.</translation>
-<translation id="7335671571918306053">Google tarafından sunulan basit sayfa. Sayfanın orijinalini yüklemek için orijinali yükle düğmesine dokunun.</translation>
 <translation id="7352939065658542140">VİDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 seçili öğeyi paylaş}other{# seçili öğeyi paylaş}}</translation>
 <translation id="7359002509206457351">Ödeme yöntemlerine erişme</translation>
@@ -959,6 +966,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="8441146129660941386">Geriye doğru git</translation>
 <translation id="8445448999790540984">Şifreler dışa aktarılamıyor</translation>
 <translation id="8447861592752582886">Cihaz iznini iptal et</translation>
+<translation id="8461694314515752532">Senkronize edilen verileri kendi senkronizasyon parolanızla şifreleyin</translation>
 <translation id="8477071352266846533"><ph name="SYNC_ACCOUNT_USER_NAME" /> için senkronizasyon kapalı</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Çevrimdışı kullanılabilir</translation>
@@ -1009,6 +1017,7 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="8816439037877937734"><ph name="APP_NAME" /> Chrome'da açılacak. Devam ederek Chrome'un <ph name="BEGIN_LINK1" />Hizmet Şartları<ph name="END_LINK1" />'nı, <ph name="BEGIN_LINK2" />Gizlilik Uyarısı<ph name="END_LINK2" />'nı ve <ph name="BEGIN_LINK3" />Family Link ile Yönetilen Google Hesapları için Gizlilik Uyarısı<ph name="END_LINK3" />'nı kabul etmiş olursunuz.</translation>
 <translation id="8820817407110198400">Favoriler</translation>
 <translation id="8823704566850948458">Şifre öner...</translation>
+<translation id="8833831881926404480">Bir site, ekranınızı paylaşıyor</translation>
 <translation id="883806473910249246">İçerik indirilirken bir hata oluştu.</translation>
 <translation id="8840953339110955557">Bu sayfa, web'deki sürümden farklı olabilir.</translation>
 <translation id="8847988622838149491">USB</translation>

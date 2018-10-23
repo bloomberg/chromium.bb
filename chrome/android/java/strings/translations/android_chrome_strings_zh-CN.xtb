@@ -195,7 +195,6 @@
 <translation id="2414672073755873541">此处没有任何内容</translation>
 <translation id="2414886740292270097">深色调</translation>
 <translation id="2416359993254398973">Chrome 需要获得相应权限，才能允许此网站使用您的摄像头。</translation>
-<translation id="24241740415720680">由 Google 提供的精简版网页</translation>
 <translation id="2426805022920575512">选择其他帐号</translation>
 <translation id="2433507940547922241">外观</translation>
 <translation id="2434158240863470628">下载完成 <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -354,7 +353,6 @@
 <translation id="3822502789641063741">要清除网站存储数据吗？</translation>
 <translation id="385051799172605136">后退</translation>
 <translation id="3859306556332390985">前进</translation>
-<translation id="3860879523841717702">由 Google 提供的精简版网页。点按即可加载原始网页。</translation>
 <translation id="3868004864571585162">Cookie、媒体许可和网站数据</translation>
 <translation id="3894427358181296146">添加文件夹</translation>
 <translation id="3895926599014793903">强制启用缩放功能</translation>
@@ -815,7 +813,6 @@
 <translation id="729975465115245577">您的设备上没有可以存储密码文件的应用。</translation>
 <translation id="7302081693174882195">详细信息：按已节省的数据流量排序</translation>
 <translation id="7333031090786104871">仍在添加先前的网站</translation>
-<translation id="7335671571918306053">由 Google 提供的精简版网页。点按“加载原始网站”按钮即可加载原始网页。</translation>
 <translation id="7352939065658542140">视频</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{分享 1 个所选项}other{分享 # 个所选项}}</translation>
 <translation id="7359002509206457351">查询付款方式</translation>
