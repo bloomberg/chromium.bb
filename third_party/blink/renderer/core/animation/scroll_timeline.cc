@@ -126,48 +126,9 @@ double ScrollTimeline::currentTime(bool& is_null) {
   // 2. Otherwise, let current scroll offset be the current scroll offset of
   // scrollSource in the direction specified by orientation.
 
-  // Depending on the writing-mode and direction, the scroll origin shifts and
-  // the scroll offset may be negative. The easiest way to deal with this is to
-  // use only the magnitude of the scroll offset, and compare it to (max-offset
-  // - min_offset).
-  PaintLayerScrollableArea* scrollable_area = layout_box->GetScrollableArea();
-  // Using the absolute value of the scroll offset only makes sense if either
-  // the max or min scroll offset for a given axis is 0. This should be
-  // guaranteed by the scroll origin code, but these DCHECKs ensure that.
-  DCHECK(scrollable_area->MaximumScrollOffset().Height() == 0 ||
-         scrollable_area->MinimumScrollOffset().Height() == 0);
-  DCHECK(scrollable_area->MaximumScrollOffset().Width() == 0 ||
-         scrollable_area->MinimumScrollOffset().Width() == 0);
-  ScrollOffset scroll_offset = scrollable_area->GetScrollOffset();
-  ScrollOffset scroll_dimensions = scrollable_area->MaximumScrollOffset() -
-                                   scrollable_area->MinimumScrollOffset();
-
   double current_offset;
   double max_offset;
-  bool is_horizontal = layout_box->IsHorizontalWritingMode();
-  if (orientation_ == Block) {
-    current_offset =
-        is_horizontal ? scroll_offset.Height() : scroll_offset.Width();
-    max_offset =
-        is_horizontal ? scroll_dimensions.Height() : scroll_dimensions.Width();
-  } else if (orientation_ == Inline) {
-    current_offset =
-        is_horizontal ? scroll_offset.Width() : scroll_offset.Height();
-    max_offset =
-        is_horizontal ? scroll_dimensions.Width() : scroll_dimensions.Height();
-  } else if (orientation_ == Horizontal) {
-    current_offset = scroll_offset.Width();
-    max_offset = scroll_dimensions.Width();
-  } else {
-    DCHECK(orientation_ == Vertical);
-    current_offset = scroll_offset.Height();
-    max_offset = scroll_dimensions.Height();
-  }
-  // When using a rtl direction, current_offset grows correctly from 0 to
-  // max_offset, but is negative. Since our offsets are all just deltas along
-  // the orientation direction, we can just take the absolute current_offset and
-  // use that everywhere.
-  current_offset = std::abs(current_offset);
+  GetCurrentAndMaxOffset(layout_box, current_offset, max_offset);
 
   double resolved_start_scroll_offset = 0;
   double resolved_end_scroll_offset = max_offset;
@@ -211,30 +172,6 @@ double ScrollTimeline::currentTime(bool& is_null) {
          time_range_;
 }
 
-void ScrollTimeline::ResolveScrollStartAndEnd(
-    const LayoutBox* layout_box,
-    double max_offset,
-    double& resolved_start_scroll_offset,
-    double& resolved_end_scroll_offset) {
-  const ComputedStyle& computed_style = layout_box->StyleRef();
-  Document& document = layout_box->GetDocument();
-  const ComputedStyle* root_style =
-      document.documentElement()
-          ? document.documentElement()->GetComputedStyle()
-          : document.GetComputedStyle();
-  CSSToLengthConversionData conversion_data = CSSToLengthConversionData(
-      &computed_style, root_style, document.GetLayoutView(),
-      computed_style.EffectiveZoom());
-  if (start_scroll_offset_) {
-    resolved_start_scroll_offset = FloatValueForLength(
-        start_scroll_offset_->ConvertToLength(conversion_data), max_offset);
-  }
-  if (end_scroll_offset_) {
-    resolved_end_scroll_offset = FloatValueForLength(
-        end_scroll_offset_->ConvertToLength(conversion_data), max_offset);
-  }
-}
-
 Element* ScrollTimeline::scrollSource() {
   return scroll_source_.Get();
 }
@@ -273,6 +210,80 @@ Node* ScrollTimeline::ResolvedScrollSource() const {
   if (scroll_source_ == scroll_source_->GetDocument().scrollingElement())
     return &scroll_source_->GetDocument();
   return scroll_source_;
+}
+
+void ScrollTimeline::GetCurrentAndMaxOffset(const LayoutBox* layout_box,
+                                            double& current_offset,
+                                            double& max_offset) const {
+  DCHECK(layout_box);
+
+  // Depending on the writing-mode and direction, the scroll origin shifts and
+  // the scroll offset may be negative. The easiest way to deal with this is to
+  // use only the magnitude of the scroll offset, and compare it to (max_offset
+  // - min_offset).
+  PaintLayerScrollableArea* scrollable_area = layout_box->GetScrollableArea();
+  if (!scrollable_area)
+    return;
+  // Using the absolute value of the scroll offset only makes sense if either
+  // the max or min scroll offset for a given axis is 0. This should be
+  // guaranteed by the scroll origin code, but these DCHECKs ensure that.
+  DCHECK(scrollable_area->MaximumScrollOffset().Height() == 0 ||
+         scrollable_area->MinimumScrollOffset().Height() == 0);
+  DCHECK(scrollable_area->MaximumScrollOffset().Width() == 0 ||
+         scrollable_area->MinimumScrollOffset().Width() == 0);
+  ScrollOffset scroll_offset = scrollable_area->GetScrollOffset();
+  ScrollOffset scroll_dimensions = scrollable_area->MaximumScrollOffset() -
+                                   scrollable_area->MinimumScrollOffset();
+
+  bool is_horizontal = layout_box->IsHorizontalWritingMode();
+  if (orientation_ == Block) {
+    current_offset =
+        is_horizontal ? scroll_offset.Height() : scroll_offset.Width();
+    max_offset =
+        is_horizontal ? scroll_dimensions.Height() : scroll_dimensions.Width();
+  } else if (orientation_ == Inline) {
+    current_offset =
+        is_horizontal ? scroll_offset.Width() : scroll_offset.Height();
+    max_offset =
+        is_horizontal ? scroll_dimensions.Width() : scroll_dimensions.Height();
+  } else if (orientation_ == Horizontal) {
+    current_offset = scroll_offset.Width();
+    max_offset = scroll_dimensions.Width();
+  } else {
+    DCHECK(orientation_ == Vertical);
+    current_offset = scroll_offset.Height();
+    max_offset = scroll_dimensions.Height();
+  }
+  // When using a rtl direction, current_offset grows correctly from 0 to
+  // max_offset, but is negative. Since our offsets are all just deltas along
+  // the orientation direction, we can just take the absolute current_offset and
+  // use that everywhere.
+  current_offset = std::abs(current_offset);
+}
+
+void ScrollTimeline::ResolveScrollStartAndEnd(
+    const LayoutBox* layout_box,
+    double max_offset,
+    double& resolved_start_scroll_offset,
+    double& resolved_end_scroll_offset) const {
+  DCHECK(layout_box);
+  const ComputedStyle& computed_style = layout_box->StyleRef();
+  Document& document = layout_box->GetDocument();
+  const ComputedStyle* root_style =
+      document.documentElement()
+          ? document.documentElement()->GetComputedStyle()
+          : document.GetComputedStyle();
+  CSSToLengthConversionData conversion_data = CSSToLengthConversionData(
+      &computed_style, root_style, document.GetLayoutView(),
+      computed_style.EffectiveZoom());
+  if (start_scroll_offset_) {
+    resolved_start_scroll_offset = FloatValueForLength(
+        start_scroll_offset_->ConvertToLength(conversion_data), max_offset);
+  }
+  if (end_scroll_offset_) {
+    resolved_end_scroll_offset = FloatValueForLength(
+        end_scroll_offset_->ConvertToLength(conversion_data), max_offset);
+  }
 }
 
 void ScrollTimeline::AttachAnimation() {

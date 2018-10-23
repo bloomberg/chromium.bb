@@ -177,15 +177,33 @@ std::unique_ptr<CompositorScrollTimeline> ToCompositorScrollTimeline(
   DCHECK(time_range.IsDouble());
 
   // TODO(smcgruer): If the scroll source later gets a LayoutBox (e.g. was
-  // display:none and now isn't), we need to update the compositor with the
-  // writing mode to get the correct ScrollDirection conversion.
+  // display:none and now isn't), we need to update the compositor to have the
+  // correct orientation and start/end offset information.
   LayoutBox* box = scroll_source->GetLayoutBox();
+
   CompositorScrollTimeline::ScrollDirection orientation =
       ConvertOrientation(scroll_timeline->GetOrientation(),
                          box ? box->IsHorizontalWritingMode() : true);
 
-  return std::make_unique<CompositorScrollTimeline>(element_id, orientation,
-                                                    time_range.GetAsDouble());
+  base::Optional<double> start_scroll_offset;
+  base::Optional<double> end_scroll_offset;
+  if (box) {
+    double current_offset;
+    double max_offset;
+    scroll_timeline->GetCurrentAndMaxOffset(box, current_offset, max_offset);
+
+    double resolved_start_scroll_offset = 0;
+    double resolved_end_scroll_offset = max_offset;
+    scroll_timeline->ResolveScrollStartAndEnd(box, max_offset,
+                                              resolved_start_scroll_offset,
+                                              resolved_end_scroll_offset);
+    start_scroll_offset = resolved_start_scroll_offset;
+    end_scroll_offset = resolved_end_scroll_offset;
+  }
+
+  return std::make_unique<CompositorScrollTimeline>(
+      element_id, orientation, start_scroll_offset, end_scroll_offset,
+      time_range.GetAsDouble());
 }
 
 void StartEffectOnCompositor(CompositorAnimation* animation,
@@ -523,9 +541,28 @@ void WorkletAnimation::UpdateOnCompositor() {
   }
 
   if (timeline_->IsScrollTimeline()) {
-    Element* scroll_source = ToScrollTimeline(timeline_)->scrollSource();
-    compositor_animation_->UpdateScrollTimelineId(
-        GetCompositorScrollElementId(*scroll_source));
+    Node* scroll_source = ToScrollTimeline(timeline_)->ResolvedScrollSource();
+    LayoutBox* box = scroll_source->GetLayoutBox();
+
+    base::Optional<double> start_scroll_offset;
+    base::Optional<double> end_scroll_offset;
+    if (box) {
+      double current_offset;
+      double max_offset;
+      ToScrollTimeline(timeline_)->GetCurrentAndMaxOffset(box, current_offset,
+                                                          max_offset);
+
+      double resolved_start_scroll_offset = 0;
+      double resolved_end_scroll_offset = max_offset;
+      ToScrollTimeline(timeline_)->ResolveScrollStartAndEnd(
+          box, max_offset, resolved_start_scroll_offset,
+          resolved_end_scroll_offset);
+      start_scroll_offset = resolved_start_scroll_offset;
+      end_scroll_offset = resolved_end_scroll_offset;
+    }
+    compositor_animation_->UpdateScrollTimeline(
+        GetCompositorScrollElementId(*scroll_source), start_scroll_offset,
+        end_scroll_offset);
   }
 }
 
