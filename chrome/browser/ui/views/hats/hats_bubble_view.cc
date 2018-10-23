@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/ui_features.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"

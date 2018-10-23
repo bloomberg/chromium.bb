@@ -6,7 +6,6 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_utils.h"
 
 namespace {

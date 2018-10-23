@@ -5,7 +5,6 @@
 #include "ui/views/style/platform_style.h"
 
 #include "build/build_config.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/shadow_value.h"

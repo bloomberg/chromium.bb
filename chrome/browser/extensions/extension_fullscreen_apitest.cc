@@ -7,7 +7,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
-#include "ui/base/material_design/material_design_controller.h"
 
 namespace extensions {
 

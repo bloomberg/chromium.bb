@@ -14,7 +14,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/views/layout/box_layout.h"
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
