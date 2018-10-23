@@ -25,8 +25,16 @@ class WebAppRegistrar {
 
   WebApp* GetAppById(const AppId& app_id);
 
+  using Registry = std::map<AppId, std::unique_ptr<WebApp>>;
+  const Registry& registry() const { return registry_; }
+
+  bool is_empty() const { return registry_.empty(); }
+
+  // Clears registry.
+  void UnregisterAll();
+
  private:
-  std::map<AppId, std::unique_ptr<WebApp>> registry_;
+  Registry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppRegistrar);
 };

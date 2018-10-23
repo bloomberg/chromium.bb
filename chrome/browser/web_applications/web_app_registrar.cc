@@ -37,4 +37,8 @@ WebApp* WebAppRegistrar::GetAppById(const AppId& app_id) {
   return kv == registry_.end() ? nullptr : kv->second.get();
 }
 
+void WebAppRegistrar::UnregisterAll() {
+  registry_.clear();
+}
+
 }  // namespace web_app
