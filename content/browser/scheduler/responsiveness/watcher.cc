@@ -170,7 +170,7 @@ void Watcher::WillRunTask(const base::PendingTask* task,
 
   // For delayed tasks, record the time right before the task is run.
   if (!task->delayed_run_time.is_null()) {
-    currently_running_metadata->back().delayed_task_start =
+    currently_running_metadata->back().execution_start_time =
         base::TimeTicks::Now();
   }
 }
@@ -191,8 +191,8 @@ void Watcher::DidRunTask(const base::PendingTask* task,
   }
 
   bool caused_reentrancy = currently_running_metadata->back().caused_reentrancy;
-  base::TimeTicks delayed_task_start =
-      currently_running_metadata->back().delayed_task_start;
+  base::TimeTicks execution_start_time =
+      currently_running_metadata->back().execution_start_time;
   currently_running_metadata->pop_back();
 
   // Ignore tasks that caused reentrancy, since their execution latency will
@@ -203,7 +203,7 @@ void Watcher::DidRunTask(const base::PendingTask* task,
   // For delayed tasks, measure the duration of the task itself, rather than the
   // duration from schedule time to finish time.
   base::TimeTicks schedule_time;
-  if (delayed_task_start.is_null()) {
+  if (execution_start_time.is_null()) {
     // Tasks which were posted before the MessageLoopObserver was created will
     // not have a queue_time, and should be ignored. This doesn't affect delayed
     // tasks.
@@ -212,7 +212,7 @@ void Watcher::DidRunTask(const base::PendingTask* task,
 
     schedule_time = task->queue_time.value();
   } else {
-    schedule_time = delayed_task_start;
+    schedule_time = execution_start_time;
   }
 
   std::move(callback).Run(schedule_time, base::TimeTicks::Now());
@@ -226,6 +226,8 @@ void Watcher::WillRunEventOnUIThread(const void* opaque_identifier) {
   }
 
   currently_running_metadata_ui_.emplace_back(opaque_identifier);
+  currently_running_metadata_ui_.back().execution_start_time =
+      base::TimeTicks::Now();
 }
 
 void Watcher::DidRunEventOnUIThread(const void* opaque_identifier,
@@ -246,6 +248,8 @@ void Watcher::DidRunEventOnUIThread(const void* opaque_identifier,
 
   bool caused_reentrancy =
       currently_running_metadata_ui_.back().caused_reentrancy;
+  base::TimeTicks execution_start_time =
+      currently_running_metadata_ui_.back().execution_start_time;
   currently_running_metadata_ui_.pop_back();
 
   // Ignore events that caused reentrancy, since their execution latency will
@@ -253,7 +257,7 @@ void Watcher::DidRunEventOnUIThread(const void* opaque_identifier,
   if (UNLIKELY(caused_reentrancy))
     return;
 
-  calculator_->TaskOrEventFinishedOnUIThread(creation_time,
+  calculator_->TaskOrEventFinishedOnUIThread(execution_start_time,
                                              base::TimeTicks::Now());
 }
 

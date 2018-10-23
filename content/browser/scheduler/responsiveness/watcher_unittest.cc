@@ -167,6 +167,22 @@ TEST_F(ResponsivenessWatcherTest, TaskNesting) {
   EXPECT_EQ(0, watcher_->NumTasksOnIOThread());
 }
 
+// Test that native events use execution time instead of queue + execution time.
+TEST_F(ResponsivenessWatcherTest, NativeEvents) {
+  base::TimeTicks start_time = base::TimeTicks::Now();
+
+  void* opaque_identifier = reinterpret_cast<void*>(0x1234);
+  watcher_->WillRunEventOnUIThread(opaque_identifier);
+  watcher_->DidRunEventOnUIThread(opaque_identifier, base::TimeTicks());
+
+  ASSERT_EQ(1, watcher_->NumTasksOnUIThread());
+
+  // The queue time should be after |start_time|, since we actually measure
+  // execution time rather than queue time + execution time for native events.
+  EXPECT_GE(watcher_->QueueTimesUIThread()[0], start_time);
+  EXPECT_EQ(0, watcher_->NumTasksOnIOThread());
+}
+
 class ResponsivenessWatcherRealIOThreadTest : public testing::Test {
  public:
   ResponsivenessWatcherRealIOThreadTest()
