@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_SETTINGS_SWITCH_ITEM_H_
-#define IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_SETTINGS_SWITCH_ITEM_H_
+#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_LEGACY_LEGACY_SETTINGS_SWITCH_ITEM_H_
+#define IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_LEGACY_LEGACY_SETTINGS_SWITCH_ITEM_H_
 
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
-// SettingsSwitchItem is a model class that uses
-// SettingsSwitchCell.
-@interface SettingsSwitchItem : CollectionViewItem
+// LegacySettingsSwitchItem is a model class that uses
+// LegacySettingsSwitchCell.
+@interface LegacySettingsSwitchItem : CollectionViewItem
 
 // The filename for the leading icon.  If empty, no icon will be shown.
 @property(nonatomic, copy) NSString* iconImageName;
@@ -27,9 +27,9 @@
 
 @end
 
-// SettingsSwitchCell implements a UICollectionViewCell subclass
+// LegacySettingsSwitchCell implements a UICollectionViewCell subclass
 // containing an icon, a text label, and a switch.
-@interface SettingsSwitchCell : MDCCollectionViewCell
+@interface LegacySettingsSwitchCell : MDCCollectionViewCell
 
 // UILabel corresponding to |text| from the item.
 @property(nonatomic, readonly, strong) UILabel* textLabel;
@@ -47,4 +47,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_SETTINGS_SWITCH_ITEM_H_
+#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_LEGACY_LEGACY_SETTINGS_SWITCH_ITEM_H_

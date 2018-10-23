@@ -18,7 +18,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
+#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
@@ -59,7 +59,7 @@ NSString* const kTranslateSettingsCategory = @"ChromeTranslateSettings";
   PrefService* _prefs;  // weak
   PrefBackedBoolean* _translationEnabled;
   // The item related to the switch for the translation setting.
-  SettingsSwitchItem* _translationItem;
+  LegacySettingsSwitchItem* _translationItem;
 }
 
 @end
@@ -98,7 +98,7 @@ NSString* const kTranslateSettingsCategory = @"ChromeTranslateSettings";
   // Translate Section
   [model addSectionWithIdentifier:SectionIdentifierTranslate];
   _translationItem =
-      [[SettingsSwitchItem alloc] initWithType:ItemTypeTranslate];
+      [[LegacySettingsSwitchItem alloc] initWithType:ItemTypeTranslate];
   _translationItem.text = l10n_util::GetNSString(IDS_IOS_TRANSLATE_SETTING);
   _translationItem.on = [_translationEnabled value];
   [model addItem:_translationItem
@@ -135,8 +135,8 @@ NSString* const kTranslateSettingsCategory = @"ChromeTranslateSettings";
 
   switch (itemType) {
     case ItemTypeTranslate: {
-      SettingsSwitchCell* switchCell =
-          base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
+      LegacySettingsSwitchCell* switchCell =
+          base::mac::ObjCCastStrict<LegacySettingsSwitchCell>(cell);
       [switchCell.switchView addTarget:self
                                 action:@selector(translateToggled:)
                       forControlEvents:UIControlEventValueChanged];
@@ -240,11 +240,11 @@ NSString* const kTranslateSettingsCategory = @"ChromeTranslateSettings";
       indexPathForItemType:ItemTypeTranslate
          sectionIdentifier:SectionIdentifierTranslate];
 
-  SettingsSwitchItem* switchItem =
-      base::mac::ObjCCastStrict<SettingsSwitchItem>(
+  LegacySettingsSwitchItem* switchItem =
+      base::mac::ObjCCastStrict<LegacySettingsSwitchItem>(
           [self.collectionViewModel itemAtIndexPath:switchPath]);
-  SettingsSwitchCell* switchCell =
-      base::mac::ObjCCastStrict<SettingsSwitchCell>(
+  LegacySettingsSwitchCell* switchCell =
+      base::mac::ObjCCastStrict<LegacySettingsSwitchCell>(
           [self.collectionView cellForItemAtIndexPath:switchPath]);
 
   DCHECK_EQ(switchCell.switchView, sender);

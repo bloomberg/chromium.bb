@@ -37,11 +37,11 @@
 #import "ios/chrome/browser/ui/settings/cells/encryption_item.h"
 #import "ios/chrome/browser/ui/settings/cells/import_data_multiline_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_detail_item.h"
+#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/passphrase_error_item.h"
 #import "ios/chrome/browser/ui/settings/cells/password_details_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_search_item.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/text_and_error_item.h"
@@ -631,16 +631,16 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
 #pragma mark Private
 
 - (CollectionViewItem*)basicSwitchItem {
-  SettingsSwitchItem* item =
-      [[SettingsSwitchItem alloc] initWithType:ItemTypeSwitchBasic];
+  LegacySettingsSwitchItem* item =
+      [[LegacySettingsSwitchItem alloc] initWithType:ItemTypeSwitchBasic];
   item.text = @"Enable awesomeness.";
   item.on = YES;
   return item;
 }
 
 - (CollectionViewItem*)longTextSwitchItem {
-  SettingsSwitchItem* item =
-      [[SettingsSwitchItem alloc] initWithType:ItemTypeSwitchDynamicHeight];
+  LegacySettingsSwitchItem* item = [[LegacySettingsSwitchItem alloc]
+      initWithType:ItemTypeSwitchDynamicHeight];
   item.text = @"Enable awesomeness. This is a very long text that is intended "
               @"to overflow.";
   item.on = YES;

@@ -34,8 +34,6 @@ source_set("cells") {
     "settings_image_detail_text_item.mm",
     "settings_search_item.h",
     "settings_search_item.mm",
-    "settings_switch_item.h",
-    "settings_switch_item.mm",
     "settings_text_item.h",
     "settings_text_item.mm",
     "sync_switch_item.h",
