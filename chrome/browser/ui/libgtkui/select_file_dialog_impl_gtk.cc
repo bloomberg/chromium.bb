@@ -452,7 +452,18 @@ void SelectFileDialogImplGTK::DestroyDialog(GtkWidget* dialog) {
   }
 
   gtk_widget_destroy(dialog);
-  OnFileChooserDestroy(dialog);
+  OnFileChooserDestroyInternal(dialog);
+}
+
+void SelectFileDialogImplGTK::OnFileChooserDestroyInternal(GtkWidget* dialog) {
+  CHECK(dialog);
+  // |parent| can be nullptr when closing the host window
+  // while opening the file-picker.
+  aura::Window* parent = dialogs_[dialog]->parent;
+  if (parent)
+    parent->RemoveObserver(this);
+  std::move(*dialogs_[dialog]->enable_event_listening).Run();
+  dialogs_.erase(dialog);
 }
 
 void* SelectFileDialogImplGTK::GetParamsForDialog(GtkWidget* dialog) {
@@ -545,14 +556,7 @@ void SelectFileDialogImplGTK::OnSelectMultiFileDialogResponse(GtkWidget* dialog,
 
 void SelectFileDialogImplGTK::OnFileChooserDestroy(GtkWidget* dialog) {
   scoped_refptr<SelectFileDialogImplGTK> keep_alive{this};
-  CHECK(dialog);
-  // |parent| can be nullptr when closing the host window
-  // while opening the file-picker.
-  aura::Window* parent = dialogs_[dialog]->parent;
-  if (parent)
-    parent->RemoveObserver(this);
-  std::move(*dialogs_[dialog]->enable_event_listening).Run();
-  dialogs_.erase(dialog);
+  OnFileChooserDestroyInternal(dialog);
 }
 
 void SelectFileDialogImplGTK::OnUpdatePreview(GtkWidget* chooser) {
