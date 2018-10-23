@@ -92,6 +92,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   size_t written_bytes2 =
       deserialized_op1->Serialize(serialized2.get(), serialized_size,
                                   test_options_provider.serialize_options());
+  CHECK_GT(written_bytes2, 0u);
   CHECK_LE(written_bytes2, serialized_size);
 
   std::unique_ptr<char, base::AlignedFreeDeleter> deserialized2(

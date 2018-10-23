@@ -269,6 +269,12 @@ sk_sp<PaintShader> PaintShader::CreateScaledPaintRecord(
     gfx::SizeF* raster_scale) const {
   DCHECK_EQ(shader_type_, Type::kPaintRecord);
 
+  // If this is already fixed scale, then this is already good to go.
+  if (scaling_behavior_ == ScalingBehavior::kFixedScale) {
+    *raster_scale = gfx::SizeF(1.f, 1.f);
+    return sk_ref_sp<PaintShader>(this);
+  }
+
   // For creating a decoded PaintRecord shader, we need to do the following:
   // 1) Figure out the scale at which the record should be rasterization given
   //    the ctm and local_matrix on the shader.
