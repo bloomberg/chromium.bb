@@ -145,13 +145,17 @@ BackgroundPaintLocation LayoutBoxModelObject::GetBackgroundPaintLocation(
       if (clip == EFillBox::kBorder) {
         if (!has_custom_scrollbars &&
             (StyleRef().BorderTopWidth() == 0 ||
-             !ResolveColor(GetCSSPropertyBorderTopColor()).HasAlpha()) &&
+             (!ResolveColor(GetCSSPropertyBorderTopColor()).HasAlpha() &&
+              StyleRef().BorderTopStyle() == EBorderStyle::kSolid)) &&
             (StyleRef().BorderLeftWidth() == 0 ||
-             !ResolveColor(GetCSSPropertyBorderLeftColor()).HasAlpha()) &&
+             (!ResolveColor(GetCSSPropertyBorderLeftColor()).HasAlpha() &&
+              StyleRef().BorderLeftStyle() == EBorderStyle::kSolid)) &&
             (StyleRef().BorderRightWidth() == 0 ||
-             !ResolveColor(GetCSSPropertyBorderRightColor()).HasAlpha()) &&
+             (!ResolveColor(GetCSSPropertyBorderRightColor()).HasAlpha() &&
+              StyleRef().BorderRightStyle() == EBorderStyle::kSolid)) &&
             (StyleRef().BorderBottomWidth() == 0 ||
-             !ResolveColor(GetCSSPropertyBorderBottomColor()).HasAlpha())) {
+             (!ResolveColor(GetCSSPropertyBorderBottomColor()).HasAlpha() &&
+              StyleRef().BorderBottomStyle() == EBorderStyle::kSolid))) {
           continue;
         }
         // If we have an opaque background color only, we can safely paint it
