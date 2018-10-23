@@ -327,7 +327,7 @@ void TestRunnerBindings::Install(
     base::WeakPtr<TestRunner> test_runner,
     base::WeakPtr<TestRunnerForSpecificView> view_test_runner,
     blink::WebLocalFrame* frame,
-    bool is_wpt_reftest) {
+    bool is_wpt_test) {
   v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = frame->MainWorldScriptContext();
@@ -362,12 +362,14 @@ void TestRunnerBindings::Install(
   // Note that this method may be called multiple times on a frame, so we put
   // the code behind a flag. The flag is safe to be installed on testRunner
   // because WPT reftests never access this object.
-  if (is_wpt_reftest && !frame->Parent()) {
+  if (is_wpt_test && !frame->Parent() && !frame->Opener()) {
     frame->ExecuteScript(blink::WebString(
         R"(if (!window.testRunner._wpt_reftest_setup) {
           window.testRunner._wpt_reftest_setup = true;
 
           window.addEventListener('load', function() {
+            if (window.assert_equals) // In case of a testharness test.
+              return;
             window.testRunner.waitUntilDone();
             const target = document.documentElement;
             if (target != null && target.classList.contains('reftest-wait')) {
@@ -1539,10 +1541,8 @@ void TestRunner::Install(
     blink::WebLocalFrame* frame,
     base::WeakPtr<TestRunnerForSpecificView> view_test_runner) {
   // In WPT, only reftests generate pixel results.
-  bool is_wpt_reftest =
-      is_web_platform_tests_mode() && ShouldGeneratePixelResults();
   TestRunnerBindings::Install(weak_factory_.GetWeakPtr(), view_test_runner,
-                              frame, is_wpt_reftest);
+                              frame, is_web_platform_tests_mode());
   mock_screen_orientation_client_->OverrideAssociatedInterfaceProviderForFrame(
       frame);
 }

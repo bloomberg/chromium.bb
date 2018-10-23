@@ -194,12 +194,8 @@ class MockDRT(object):
         vals = line.strip().split("'")
         uri = vals[0]
         checksum = None
-        should_run_pixel_tests = False
-        if len(vals) == 2 and vals[1] == '--pixel-test':
-            should_run_pixel_tests = True
-        elif len(vals) == 3 and vals[1] == '--pixel-test':
-            should_run_pixel_tests = True
-            checksum = vals[2]
+        if len(vals) == 2:
+            checksum = vals[1]
         elif len(vals) != 1:
             raise NotImplementedError
 
@@ -208,7 +204,7 @@ class MockDRT(object):
         else:
             test_name = self._port.relative_test_filename(uri)
 
-        return DriverInput(test_name, 0, checksum, should_run_pixel_tests, args=[])
+        return DriverInput(test_name, 0, checksum, args=[])
 
     def output_for_test(self, test_input, is_reftest):
         port = self._port
@@ -228,7 +224,7 @@ class MockDRT(object):
                 actual_text = 'not reference text\n'
                 actual_checksum = 'not-mock-checksum'
                 actual_image = 'not blank'
-        elif test_input.should_run_pixel_test and test_input.image_hash:
+        elif test_input.image_hash:
             actual_checksum = port.expected_checksum(test_input.test_name)
             actual_image = port.expected_image(test_input.test_name)
 
@@ -264,7 +260,7 @@ class MockDRT(object):
 
         self._stdout.write('#EOF\n')
 
-        if test_input.should_run_pixel_test and output.image_hash:
+        if output.image_hash:
             self._stdout.write('\n')
             self._stdout.write('ActualHash: %s\n' % output.image_hash)
             self._stdout.write('ExpectedHash: %s\n' % test_input.image_hash)

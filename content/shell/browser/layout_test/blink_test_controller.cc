@@ -61,6 +61,7 @@
 #include "content/shell/browser/layout_test/layout_test_content_browser_client.h"
 #include "content/shell/browser/layout_test/layout_test_devtools_bindings.h"
 #include "content/shell/browser/layout_test/layout_test_first_device_bluetooth_chooser.h"
+#include "content/shell/browser/layout_test/test_info_extractor.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_content_browser_client.h"
@@ -341,6 +342,11 @@ BlinkTestController::BlinkTestController()
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEncodeBinary))
     printer_->set_encode_binary_data(true);
+
+  // Print text only (without binary dumps and headers/footers for run_web_tests
+  // protocol) until we enter the protocol mode (see TestInfo::protocol_mode).
+  printer_->set_capture_text_only(true);
+
   registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_CREATED,
                  NotificationService::AllSources());
   GpuDataManager::GetInstance()->AddObserver(this);
@@ -356,30 +362,30 @@ BlinkTestController::~BlinkTestController() {
   instance_ = nullptr;
 }
 
-bool BlinkTestController::PrepareForLayoutTest(
-    const GURL& test_url,
-    const base::FilePath& current_working_directory,
-    bool enable_pixel_dumping,
-    const std::string& expected_pixel_hash) {
+bool BlinkTestController::PrepareForLayoutTest(const TestInfo& test_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   test_phase_ = DURING_TEST;
-  current_working_directory_ = current_working_directory;
-  enable_pixel_dumping_ = enable_pixel_dumping;
-  expected_pixel_hash_ = expected_pixel_hash;
+  current_working_directory_ = test_info.current_working_directory;
+  expected_pixel_hash_ = test_info.expected_pixel_hash;
   bool is_devtools_js_test = false;
   test_url_ = LayoutTestDevToolsBindings::MapTestURLIfNeeded(
-      test_url, &is_devtools_js_test);
+      test_info.url, &is_devtools_js_test);
   bool is_devtools_protocol_test = false;
   test_url_ = DevToolsProtocolTestBindings::MapTestURLIfNeeded(
       test_url_, &is_devtools_protocol_test);
   did_send_initial_test_configuration_ = false;
+
+  if (test_info.protocol_mode)
+    printer_->set_capture_text_only(false);
   printer_->reset();
+
   frame_to_layout_dump_map_.clear();
   render_process_host_observer_.RemoveAll();
   all_observed_render_process_hosts_.clear();
   main_window_render_process_hosts_.clear();
   accumulated_layout_test_runtime_flags_changes_.Clear();
   layout_test_control_map_.clear();
+
   ShellBrowserContext* browser_context =
       ShellContentBrowserClient::Get()->browser_context();
   is_compositing_test_ =
@@ -517,7 +523,6 @@ bool BlinkTestController::ResetAfterLayoutTest() {
   did_send_initial_test_configuration_ = false;
   test_phase_ = BETWEEN_TESTS;
   is_compositing_test_ = false;
-  enable_pixel_dumping_ = false;
   expected_pixel_hash_.clear();
   test_url_ = GURL();
   prefs_ = WebPreferences();
@@ -940,7 +945,6 @@ void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
     params->current_working_directory = current_working_directory_;
     params->temp_path = temp_path_;
     params->test_url = test_url_;
-    params->enable_pixel_dumping = enable_pixel_dumping_;
     params->allow_external_pages =
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kAllowExternalPages);

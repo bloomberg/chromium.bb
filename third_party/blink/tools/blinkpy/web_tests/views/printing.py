@@ -86,13 +86,7 @@ class Printer(object):
         fs = self._host.filesystem
         fallback_path = [fs.split(x)[1] for x in port.baseline_search_path()]
         self._print_default('Baseline search path: %s -> generic' % ' -> '.join(fallback_path))
-
         self._print_default('Using %s build' % self._options.configuration)
-        if self._options.pixel_tests:
-            self._print_default('Pixel tests enabled')
-        else:
-            self._print_default('Pixel tests disabled')
-
         self._print_default('Regular timeout: %s, slow test timeout: %s' %
                             (self._options.time_out_ms, self._options.slow_time_out_ms))
 

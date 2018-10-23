@@ -838,40 +838,6 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(details.exit_code, 1)
         self.assertIn('Retrying', err.getvalue())
 
-    def test_retrying_force_pixel_tests(self):
-        host = MockHost()
-        details, err, _ = logging_run(['--no-pixel-tests', '--num-retries=3',
-                                       'failures/unexpected/text-image-checksum.html'], tests_included=True, host=host)
-        self.assertEqual(details.exit_code, 1)
-        self.assertIn('Retrying', err.getvalue())
-        self.assertTrue(host.filesystem.exists('/tmp/layout-test-results/failures/unexpected/text-image-checksum-actual.txt'))
-        self.assertFalse(host.filesystem.exists('/tmp/layout-test-results/failures/unexpected/text-image-checksum-actual.png'))
-        self.assertTrue(
-            host.filesystem.exists('/tmp/layout-test-results/retry_1/failures/unexpected/text-image-checksum-actual.txt'))
-        self.assertTrue(
-            host.filesystem.exists('/tmp/layout-test-results/retry_2/failures/unexpected/text-image-checksum-actual.txt'))
-        self.assertTrue(
-            host.filesystem.exists('/tmp/layout-test-results/retry_3/failures/unexpected/text-image-checksum-actual.txt'))
-        self.assertTrue(
-            host.filesystem.exists('/tmp/layout-test-results/retry_1/failures/unexpected/text-image-checksum-actual.png'))
-        self.assertTrue(
-            host.filesystem.exists('/tmp/layout-test-results/retry_2/failures/unexpected/text-image-checksum-actual.png'))
-        self.assertTrue(
-            host.filesystem.exists('/tmp/layout-test-results/retry_3/failures/unexpected/text-image-checksum-actual.png'))
-        json_string = host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json')
-        results = parse_full_results(json_string)
-        self.assertEqual(
-            results['tests']['failures']['unexpected']['text-image-checksum.html'],
-            {
-                'expected': 'PASS',
-                'actual': 'TEXT IMAGE+TEXT IMAGE+TEXT IMAGE+TEXT',
-                'is_regression': True,
-                'is_unexpected': True,
-                'text_mismatch': 'general text mismatch',
-            })
-        self.assertFalse(results['pixel_tests_enabled'])
-        self.assertTrue(details.enabled_pixel_tests_in_retry)
-
     def test_retrying_uses_retry_directories(self):
         host = MockHost()
         details, _, _ = logging_run(['--num-retries=3', 'failures/unexpected/text-image-checksum.html'],
@@ -939,10 +905,6 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_reftest_run(self):
         tests_run = get_tests_run(['passes/reftest.html'])
-        self.assertEqual(['passes/reftest.html'], tests_run)
-
-    def test_reftest_run_reftests_if_pixel_tests_are_disabled(self):
-        tests_run = get_tests_run(['--no-pixel-tests', 'passes/reftest.html'])
         self.assertEqual(['passes/reftest.html'], tests_run)
 
     def test_reftest_expected_html_should_be_ignored(self):

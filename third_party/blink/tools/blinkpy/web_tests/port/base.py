@@ -376,7 +376,7 @@ class Port(object):
         if not self._check_driver_build_up_to_date(self.get_option('configuration')):
             return exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
 
-        if self.get_option('pixel_tests') and not self.check_image_diff():
+        if not self._check_file_exists(self._path_to_image_diff(), 'image_diff'):
             return exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
 
         if self._dump_reader and not self._dump_reader.check_is_functional():
@@ -386,13 +386,6 @@ class Port(object):
             return exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
 
         return exit_codes.OK_EXIT_STATUS
-
-    def _check_driver(self):
-        driver_path = self._path_to_driver()
-        if not self._filesystem.exists(driver_path):
-            _log.error('%s was not found at %s', self.driver_name(), driver_path)
-            return False
-        return True
 
     def check_sys_deps(self, needs_http):
         """Checks whether the system is properly configured.
@@ -404,14 +397,6 @@ class Port(object):
             An exit status code.
         """
         return exit_codes.OK_EXIT_STATUS
-
-    def check_image_diff(self):
-        """Checks whether image_diff binary exists."""
-        image_diff_path = self._path_to_image_diff()
-        if not self._filesystem.exists(image_diff_path):
-            _log.error('image_diff was not found at %s', image_diff_path)
-            return False
-        return True
 
     def check_httpd(self):
         httpd_path = self.path_to_apache()
@@ -1218,19 +1203,6 @@ class Port(object):
     def should_use_wptserve(test):
         return Port.is_wpt_test(test)
 
-    @staticmethod
-    def should_run_in_wpt_mode(test):
-        """Whether content_shell should run a test in the WPT mode.
-
-        Some tests outside external/wpt should also be run in the WPT mode in
-        content_shell, namely: harness-tests/wpt/ (tests for console log
-        filtering).
-        """
-        # Note: match rules in TestInterfaces::ConfigureForTestWithURL in
-        # //src/content/shell/test_runner/test_interfaces.cc.
-        return (Port.is_wpt_test(test) or
-                re.match(r'harness-tests/wpt/', test))
-
     def start_wptserve(self):
         """Starts a WPT web server.
 
@@ -1726,20 +1698,6 @@ class Port(object):
             if test_name.startswith(suite.name):
                 return suite.reference_args
         return []
-
-    def should_run_as_pixel_test(self, test_name):
-        """Whether a test should run as pixel test (when there is no reference).
-
-        This provides the *default* value for whether a test should run as
-        pixel test. When reference files exist (checked by layout_test_runner
-        before calling this method), the test always runs as pixel test
-        regardless of this function.
-        """
-        if not self._options.pixel_tests:
-            return False
-        # WPT should not run as pixel test by default, except reftests
-        # (for which reference files would exist).
-        return not self.should_run_in_wpt_mode(test_name)
 
     def should_run_pixel_test_first(self, test_name):
         """Returns true if the directory of the test (or the base test if the

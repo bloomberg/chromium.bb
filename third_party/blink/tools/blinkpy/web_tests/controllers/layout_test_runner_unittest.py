@@ -144,9 +144,7 @@ class LayoutTestRunnerTests(unittest.TestCase):
             runner._interrupt_if_at_failure_limits(run_results)
 
     def test_update_summary_with_result(self):
-        # Reftests expected to be image mismatch should be respected when pixel_tests=False.
         runner = self._runner()
-        runner._options.pixel_tests = False
         test = 'failures/expected/reftest.html'
         expectations = TestExpectations(runner._port, tests=[test])
         runner._expectations = expectations

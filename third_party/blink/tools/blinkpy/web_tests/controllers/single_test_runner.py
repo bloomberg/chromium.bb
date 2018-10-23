@@ -68,7 +68,6 @@ class SingleTestRunner(object):
         self._timeout_ms = test_input.timeout_ms
         self._worker_name = worker_name
         self._test_name = test_input.test_name
-        self._should_run_pixel_test = test_input.should_run_pixel_test
         self._should_run_pixel_test_first = test_input.should_run_pixel_test_first
         self._reference_files = test_input.reference_files
 
@@ -101,7 +100,7 @@ class SingleTestRunner(object):
                             self._port.expected_audio(self._test_name))
 
     def _should_fetch_expected_checksum(self):
-        return self._should_run_pixel_test and not self._options.reset_results
+        return not self._options.reset_results
 
     def _driver_input(self):
         # The image hash is used to avoid doing an image dump if the
@@ -114,7 +113,7 @@ class SingleTestRunner(object):
 
         args = self._port.args_for_test(self._test_name)
         test_name = self._port.name_for_test(self._test_name)
-        return DriverInput(test_name, self._timeout_ms, image_hash, self._should_run_pixel_test, args)
+        return DriverInput(test_name, self._timeout_ms, image_hash, args)
 
     def run(self):
         if self._options.enable_sanitizer:
@@ -127,7 +126,6 @@ class SingleTestRunner(object):
                     result = TestResult(self._test_name, reftest_type=reftest_type)
                     result.type = test_expectations.SKIP
                     return result
-                self._should_run_pixel_test = False
             return self._run_rebaseline()
         if self._reference_files:
             return self._run_reftest()
@@ -163,6 +161,12 @@ class SingleTestRunner(object):
         If --reset-results, in the returned result we treat baseline mismatch as success."""
         driver_output = self._driver.run_test(self._driver_input())
         expected_driver_output = self._expected_driver_output()
+        if self._reference_files:
+            # Ignore any image differences of a reftest because we don't actually run
+            # the reference and also can't rebaseline the image result.
+            expected_driver_output.image = driver_output.image
+            expected_driver_output.image_hash = driver_output.image_hash
+
         actual_failures = self._compare_output(expected_driver_output, driver_output).failures
         failures = self._handle_error(driver_output) if self._options.reset_results else actual_failures
         test_result_writer.write_test_result(self._filesystem, self._port, self._results_directory,
@@ -303,15 +307,14 @@ class SingleTestRunner(object):
         compare_audio_fn = (self._compare_audio, (expected_driver_output.audio, driver_output.audio))
 
         if self._should_run_pixel_test_first:
-            if driver_output.image_hash and self._should_run_pixel_test:
+            if driver_output.image_hash:
                 compare_functions.append(compare_image_fn)
             elif not is_testharness_test:
                 compare_functions.append(compare_txt_fn)
         else:
             if not is_testharness_test:
                 compare_functions.append(compare_txt_fn)
-            if self._should_run_pixel_test:
-                compare_functions.append(compare_image_fn)
+            compare_functions.append(compare_image_fn)
         compare_functions.append(compare_audio_fn)
 
         for func, args in compare_functions:
@@ -483,7 +486,7 @@ class SingleTestRunner(object):
             reference_test_name = self._port.relative_test_filename(reference_filename)
             reference_test_names.append(reference_test_name)
             driver_input = DriverInput(reference_test_name, self._timeout_ms,
-                                       image_hash=test_output.image_hash, should_run_pixel_test=True, args=args)
+                                       image_hash=test_output.image_hash, args=args)
             expected_output = self._reference_driver.run_test(driver_input)
             total_test_time += expected_output.test_time
             test_result = self._compare_output_with_reference(
