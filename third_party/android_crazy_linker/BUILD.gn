@@ -516,7 +516,7 @@ if (is_android) {
 fuzzer_test("android_crazy_linker_zip_fuzzer") {
   sources = [
     "src/src/crazy_linker_system.cpp",
-    "src/src/crazy_linker_systeml.h",
+    "src/src/crazy_linker_system.h",
     "src/src/crazy_linker_util.cpp",
     "src/src/crazy_linker_util.h",
     "src/src/crazy_linker_zip.cpp",
