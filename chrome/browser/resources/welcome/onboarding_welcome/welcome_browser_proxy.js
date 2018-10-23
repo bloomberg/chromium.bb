@@ -11,9 +11,13 @@ cr.define('welcome', function() {
 
   /** @interface */
   class WelcomeBrowserProxy {
-    /** @param {string=} redirectUrl the URL to go to, after signing in. */
+    /** @param {?string} redirectUrl the URL to go to, after signing in. */
     handleActivateSignIn(redirectUrl) {}
+
     goToNewTabPage() {}
+
+    /** @param {string} url */
+    goToURL(url) {}
   }
 
   /** @implements {welcome.WelcomeBrowserProxy} */
@@ -25,7 +29,12 @@ cr.define('welcome', function() {
 
     /** @override */
     goToNewTabPage() {
-      window.location.replace('chrome://newtab');
+      window.location.assign('chrome://newtab');
+    }
+
+    /** @override */
+    goToURL(url) {
+      window.location.assign(url);
     }
   }
 

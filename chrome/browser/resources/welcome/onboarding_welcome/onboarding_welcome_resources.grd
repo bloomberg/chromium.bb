@@ -12,6 +12,14 @@
   </outputs>
   <release seq="1">
     <structures>
+      <structure name="IDR_WELCOME_ONBOARDING_WELCOME_EMAIL_INTERSTITIAL_HTML"
+                 file="email_interstitial.html"
+                 type="chrome_html"
+                 preprocess="true"/>
+      <structure name="IDR_WELCOME_ONBOARDING_WELCOME_EMAIL_INTERSTITIAL_JS"
+                 file="email_interstitial.js"
+                 type="chrome_html"
+                 preprocess="true"/>
       <structure name="IDR_WELCOME_ONBOARDING_WELCOME_LANDING_VIEW_JS"
                  file="landing_view.js"
                  type="chrome_html"

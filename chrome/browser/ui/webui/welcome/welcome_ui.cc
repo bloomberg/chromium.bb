@@ -123,8 +123,15 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
       html_source->AddResourcePath(kOnboardingWelcomeResources[i].name,
                                    kOnboardingWelcomeResources[i].value);
     }
+
+    // chrome://welcome
     html_source->SetDefaultResource(
         IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_HTML);
+
+    // chrome://welcome/email-interstitial
+    html_source->AddResourcePath(
+        "email-interstitial",
+        IDR_WELCOME_ONBOARDING_WELCOME_EMAIL_INTERSTITIAL_HTML);
 
     html_source->AddResourcePath(
         "images/background_svgs/blue_circle.svg",
