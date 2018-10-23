@@ -9,8 +9,8 @@
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
-#include "third_party/blink/renderer/platform/scheduler/child/webthread_impl_for_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/compositor_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/worker_thread.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -63,15 +63,14 @@ std::unique_ptr<Thread>& GetCompositorThread() {
 }
 
 // TODO(yutak): This should live in a separate header.
-class WebThreadForCompositor
-    : public scheduler::WebThreadImplForWorkerScheduler {
+class WebThreadForCompositor : public scheduler::WorkerThread {
  public:
   explicit WebThreadForCompositor(const ThreadCreationParams& params)
-      : scheduler::WebThreadImplForWorkerScheduler(params) {}
+      : scheduler::WorkerThread(params) {}
   ~WebThreadForCompositor() override = default;
 
  private:
-  // WebThreadImplForWorkerScheduler:
+  // WorkerThread:
   std::unique_ptr<blink::scheduler::NonMainThreadSchedulerImpl>
   CreateNonMainThreadScheduler() override {
     return std::make_unique<scheduler::CompositorThreadScheduler>(
@@ -116,8 +115,7 @@ void Thread::TaskObserverAdapter::DidProcessTask(
 
 std::unique_ptr<Thread> Thread::CreateThread(
     const ThreadCreationParams& params) {
-  auto thread =
-      std::make_unique<scheduler::WebThreadImplForWorkerScheduler>(params);
+  auto thread = std::make_unique<scheduler::WorkerThread>(params);
   thread->Init();
   UpdateThreadTLSAndWait(thread.get());
   return std::move(thread);

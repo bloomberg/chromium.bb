@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/child/webthread_impl_for_worker_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/worker_thread.h"
 
 #include "base/location.h"
 #include "base/macros.h"
@@ -20,7 +20,7 @@ using testing::Invoke;
 
 namespace blink {
 namespace scheduler {
-namespace webthread_impl_for_worker_scheduler_unittest {
+namespace worker_thread_unittest {
 
 class MockTask {
  public:
@@ -62,11 +62,11 @@ void ShutdownOnThread(Thread* thread) {
   thread->Scheduler()->Shutdown();
 }
 
-class WebThreadImplForWorkerSchedulerTest : public testing::Test {
+class WorkerThreadTest : public testing::Test {
  public:
-  WebThreadImplForWorkerSchedulerTest() = default;
+  WorkerThreadTest() = default;
 
-  ~WebThreadImplForWorkerSchedulerTest() override = default;
+  ~WorkerThreadTest() override = default;
 
   void SetUp() override {
     thread_ =
@@ -80,9 +80,8 @@ class WebThreadImplForWorkerSchedulerTest : public testing::Test {
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     thread_->GetTaskRunner()->PostTask(
         from_here,
-        base::BindOnce(
-            &WebThreadImplForWorkerSchedulerTest::RunOnWorkerThreadTask,
-            base::Unretained(this), std::move(task), &completion));
+        base::BindOnce(&WorkerThreadTest::RunOnWorkerThreadTask,
+                       base::Unretained(this), std::move(task), &completion));
     completion.Wait();
   }
 
@@ -95,10 +94,10 @@ class WebThreadImplForWorkerSchedulerTest : public testing::Test {
 
   std::unique_ptr<Thread> thread_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebThreadImplForWorkerSchedulerTest);
+  DISALLOW_COPY_AND_ASSIGN(WorkerThreadTest);
 };
 
-TEST_F(WebThreadImplForWorkerSchedulerTest, TestDefaultTask) {
+TEST_F(WorkerThreadTest, TestDefaultTask) {
   MockTask task;
   base::WaitableEvent completion(
       base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -115,8 +114,7 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestDefaultTask) {
   completion.Wait();
 }
 
-TEST_F(WebThreadImplForWorkerSchedulerTest,
-       TestTaskExecutedBeforeThreadDeletion) {
+TEST_F(WorkerThreadTest, TestTaskExecutedBeforeThreadDeletion) {
   MockTask task;
   base::WaitableEvent completion(
       base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -133,7 +131,7 @@ TEST_F(WebThreadImplForWorkerSchedulerTest,
   thread_.reset();
 }
 
-TEST_F(WebThreadImplForWorkerSchedulerTest, TestTaskObserver) {
+TEST_F(WorkerThreadTest, TestTaskObserver) {
   std::string calls;
   TestObserver observer(&calls);
 
@@ -153,7 +151,7 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestTaskObserver) {
   EXPECT_THAT(calls, testing::HasSubstr("willProcessTask run didProcessTask"));
 }
 
-TEST_F(WebThreadImplForWorkerSchedulerTest, TestShutdown) {
+TEST_F(WorkerThreadTest, TestShutdown) {
   MockTask task;
   MockTask delayed_task;
 
@@ -173,6 +171,6 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestShutdown) {
   thread_.reset();
 }
 
-}  // namespace webthread_impl_for_worker_scheduler_unittest
+}  // namespace worker_thread_unittest
 }  // namespace scheduler
 }  // namespace blink
