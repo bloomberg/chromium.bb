@@ -177,6 +177,22 @@ class CalledProcessError(Exception):
     return 'Command failed: {}\n{}'.format(copyable_command, self.output)
 
 
+def FilterLines(output, filter_string):
+  """Output filter from build_utils.CheckOutput.
+
+  Args:
+    output: Executable output as from build_utils.CheckOutput.
+    filter_string: An RE string that will filter (remove) matching
+        lines from |output|.
+
+  Returns:
+    The filtered output, as a single string.
+  """
+  re_filter = re.compile(filter_string)
+  return '\n'.join(
+      line for line in output.splitlines() if not re_filter.search(line))
+
+
 # This can be used in most cases like subprocess.check_output(). The output,
 # particularly when the command fails, better highlights the command's failure.
 # If the command fails, raises a build_utils.CalledProcessError.

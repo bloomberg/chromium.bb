@@ -171,40 +171,6 @@ def _EnvWithArtLibPath(binary_path):
   return env
 
 
-def _FilterOutput(output, filter_strings):
-  """Output filter from build_utils.CheckOutput.
-
-  Args:
-    output: Executable output as from build_utils.CheckOutput.
-    filter_strings: List of RE strings that will filter (remove) matching
-        lines from |output|.
-
-  Returns:
-    The filtered output, as a single string.
-  """
-  filters = [re.compile(f) for f in filter_strings]
-  filtered_output = []
-  for line in output.splitlines():
-    if any(filter.search(line) for filter in filters):
-      continue
-    else:
-      filtered_output.append(line)
-  return '\n'.join(filtered_output)
-
-
-def _FilterProfmanStderr(output):
-  return _FilterOutput(output, [
-      r'Could not find (method_id|proto_id|name):',
-      r'Could not create type list',
-  ])
-
-
-def _FilterDexlayoutStderr(output):
-  return _FilterOutput(output, [
-      r'Can.t mmap dex file.*please zipalign',
-  ])
-
-
 def _CreateBinaryProfile(text_profile, input_dex, profman_path, temp_dir):
   """Create a binary profile for dexlayout.
 
@@ -226,8 +192,13 @@ def _CreateBinaryProfile(text_profile, input_dex, profman_path, temp_dir):
                  '--dex-location=' + input_dex,
                  '--create-profile-from=' + text_profile,
                  '--reference-profile-file=' + binary_profile]
-  build_utils.CheckOutput(profman_cmd, env=_EnvWithArtLibPath(profman_path),
-                          stderr_filter=_FilterProfmanStderr)
+  build_utils.CheckOutput(
+    profman_cmd,
+    env=_EnvWithArtLibPath(profman_path),
+    stderr_filter=lambda output:
+        build_utils.FilterLines(output, '|'.join(
+            [r'Could not find (method_id|proto_id|name):',
+             r'Could not create type list'])))
   return binary_profile
 
 
@@ -252,8 +223,12 @@ def _LayoutDex(binary_profile, input_dex, dexlayout_path, temp_dir):
                     '-p', binary_profile,
                     '-w', dexlayout_output_dir,
                     input_dex ]
-  build_utils.CheckOutput(dexlayout_cmd, env=_EnvWithArtLibPath(dexlayout_path),
-                          stderr_filter=_FilterDexlayoutStderr)
+  build_utils.CheckOutput(
+      dexlayout_cmd,
+      env=_EnvWithArtLibPath(dexlayout_path),
+      stderr_filter=lambda output:
+          build_utils.FilterLines(output,
+                                  r'Can.t mmap dex file.*please zipalign'))
   output_files = os.listdir(dexlayout_output_dir)
   if not output_files:
     raise Exception('dexlayout unexpectedly produced no output')
