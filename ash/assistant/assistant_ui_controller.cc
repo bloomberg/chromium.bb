@@ -73,8 +73,16 @@ void AssistantUiController::RemoveModelObserver(
 
 void AssistantUiController::OnWidgetActivationChanged(views::Widget* widget,
                                                       bool active) {
-  if (active)
+  if (active) {
     container_view_->RequestFocus();
+  } else {
+    // When the Assistant widget is deactivated we should hide Assistant UI.
+    // We already handle press events happening outside of the UI container but
+    // this will also handle the case where we are deactivated without a press
+    // event occurring. This happens, for example, when launching Chrome OS
+    // feedback using keyboard shortcuts.
+    HideUi(AssistantSource::kUnspecified);
+  }
 }
 
 void AssistantUiController::OnWidgetVisibilityChanged(views::Widget* widget,
