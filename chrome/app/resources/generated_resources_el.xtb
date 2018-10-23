@@ -1051,7 +1051,6 @@
 <translation id="2553340429761841190">Το <ph name="PRODUCT_NAME" /> δεν ήταν δυνατό να συνδεθεί στο <ph name="NETWORK_ID" />. Επιλέξτε άλλο δίκτυο ή δοκιμάστε ξανά.</translation>
 <translation id="2553440850688409052">Απόκρυψη αυτής της προσθήκης</translation>
 <translation id="2554553592469060349">Το επιλεγμένο αρχείο είναι πολύ μεγάλο (μέγ. μέγεθος: 3 mb).</translation>
-<translation id="2557899542277210112">Για γρήγορη πρόσβαση, τοποθετήστε τους σελιδοδείκτες σας εδώ στη γραμμή σελιδοδεικτών.</translation>
 <translation id="2558896001721082624">Πάντα εμφάνιση επιλογών προσβασιμότητας στο μενού συστήματος</translation>
 <translation id="2562685439590298522">Έγγραφα</translation>
 <translation id="2562743677925229011">Δεν είστε συνδεδεμένος στο <ph name="SHORT_PRODUCT_NAME" /></translation>
@@ -4153,6 +4152,7 @@
 <translation id="7243632151880336635">Διαγραφή και αποσύνδεση</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (βέλτιστη)</translation>
 <translation id="7246947237293279874">Διακομιστής μεσολάβησης FTP</translation>
+<translation id="7248671827512403053">Εφαρμογή</translation>
 <translation id="725109152065019550">Λυπούμαστε, ο διαχειριστής σας έχει απενεργοποιήσει τον εξωτερικό χώρο αποθήκευσης στον λογαριασμό σας.</translation>
 <translation id="7253521419891527137">&amp;Μάθετε περισσότερα</translation>
 <translation id="7254554697254365959">Δεν ήταν δυνατή η μετάφραση αυτής της σελίδας.</translation>
@@ -4971,7 +4971,6 @@
 <translation id="8481187309597259238">Επιβεβαίωση άδειας USB</translation>
 <translation id="8483248364096924578">Διεύθυνση IP</translation>
 <translation id="8487678622945914333">Μεγέθυνση</translation>
-<translation id="8487693399751278191">Εισαγωγή σελιδοδεικτών τώρα...</translation>
 <translation id="8487700953926739672">Διαθέσιμο εκτός σύνδεσης</translation>
 <translation id="8490896350101740396">Έχουν ενεργοποιηθεί οι παρακάτω εφαρμογές kiosk "<ph name="UPDATED_APPS" />". Επανεκκινήστε τη συσκευή για να ολοκληρωθεί η διαδικασία ενημέρωσης.</translation>
 <translation id="8493236660459102203">Μικρόφωνο:</translation>
@@ -5205,7 +5204,6 @@
 <translation id="8845001906332463065">Λήψη βοήθειας</translation>
 <translation id="8846132060409673887">Διαβάστε τις πληροφορίες κατασκευαστή και μοντέλου αυτού του υπολογιστή</translation>
 <translation id="8846141544112579928">Αναζήτηση για πληκτρολόγιο…</translation>
-<translation id="8846319957959474018">Εύκολο άνοιγμα εφαρμογών με σελιδοδείκτες</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8848561196844274665">Όταν συνδέετε τις συσκευές σας, συμφωνείτε ότι το Chromebook μπορεί:</translation>
 <translation id="8859057652521303089">Επιλέξτε τη γλώσσα σας:</translation>

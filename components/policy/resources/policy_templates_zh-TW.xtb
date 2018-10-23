@@ -24,6 +24,12 @@
       如果將這項政策設為 false 或不予設定，則只有在使用者首次登入裝置時，系統才會將 IdP 設定的 Cookie 轉移到使用者的設定檔。
 
       這項政策只會影響所屬網域和裝置註冊網域相符的使用者。其他使用者則只有在首次登入裝置時，系統才會將 IdP 設定的 Cookie 轉移到使用者的設定檔。</translation>
+<translation id="1035385378988781231">這項政策可控管是否要為 <ph name="PRODUCT_NAME" /> 的網路檔案共用功能採用 NTLM 驗證機制。
+
+      如果這項政策設為「True」，系統會視需要對 SMB 共用檔案進行 NTLM 驗證。
+      如果這項政策設為「False」，系統將停用 SMB 共用檔案的 NTLM 驗證機制。
+
+      如未設定政策，在預設情況下，系統會為受企業管理的使用者停用驗證，並為未受管理的使用者啟用驗證。</translation>
 <translation id="1040446814317236570">啟用 PAC 網址分解功能 (適用於 https://)</translation>
 <translation id="1044878202534415707">回報硬體統計資料，例如 CPU/RAM 使用量。
 
@@ -91,6 +97,14 @@
       預設值為 RollbackDisabled。</translation>
 <translation id="1221359380862872747">在示範登入時載入指定的網址</translation>
 <translation id="1223789468190631420">信任來源的安全瀏覽功能啟用狀態</translation>
+<translation id="122899932962115297">這是一份許可清單，用於控管使用者可設定及使用的螢幕鎖定快速解鎖模式。
+
+
+          這項政策值為字串清單；有效的清單輸入項包括「all」、「PIN」和「FINGERPRINT」。如果在清單中加入「all」，使用者將可使用所有快速解鎖模式 (包括日後導入的模式)。否則，使用者只能使用清單中列出的快速解鎖模式。
+
+          也就是說，如要開放使用所有快速解鎖模式，請使用 ["all"]。如果只想開放使用 PIN 碼解鎖，請使用 ["PIN"]。如要開放使用 PIN 碼和指紋解鎖，請使用 ["PIN", "FINGERPRINT"]。如要停用所有快速解鎖模式，請使用 []。
+
+          根據預設，系統在受管理的裝置上不會提供任何快速解鎖模式。</translation>
 <translation id="123081309365616809">允許將內容投放至裝置</translation>
 <translation id="1243570869342663665">控制安全網站成人內容篩選設定。</translation>
 <translation id="1257550411839719984">設定預設的下載目錄</translation>
@@ -621,6 +635,7 @@
 
       如未設定這項政策，在預設情況下，受管理的使用者無法使用這項功能，未受管理的使用者則可使用這項功能。</translation>
 <translation id="2660846099862559570">永不使用 Proxy</translation>
+<translation id="2672012807430078509">控管是否要為 SMB 掛接功能啟用 NTLM 驗證通訊協定</translation>
 <translation id="267596348720209223">指定搜尋引擎支援的字元編碼。編碼就是 UTF-8、GB2312 和 ISO-8859-1 等字碼頁名稱。系統會以提供的順序來測試。這項政策是選擇性的，如果未設定，預設會使用的是 UTF-8。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="268577405881275241">啟用資料壓縮 Proxy 功能</translation>
 <translation id="2693108589792503178">設定變更密碼網址。</translation>
@@ -955,6 +970,11 @@
       如果停用這項政策，系統就不會明確隔離任何網站，且 IsolateOrigins 和 SitePerProcess 的實場測試將會停用。使用者還是可以手動啟用 IsolateOrigins。
       如果未設定這項政策，登入畫面就會採用平台的預設網站隔離設定。
       </translation>
+<translation id="3748900290998155147">指定是否允許使用 Wake Lock。擴充功能如要使用 Wake Lock，可以透過電源管理擴充功能 API 以及 ARC 應用程式提出要求。
+
+          如果這項政策設為「True」或未設定，系統的電源管理機制將採用 Wake Lock。
+
+          如果這項政策設為「False」，系統將忽略 Wake Lock 使用要求。</translation>
 <translation id="3750220015372671395">禁止在這些網站上使用金鑰產生功能</translation>
 <translation id="3756011779061588474">封鎖開發人員模式</translation>
 <translation id="3758089716224084329">允許你指定 <ph name="PRODUCT_NAME" /> 使用的 Proxy 伺服器，並禁止使用者變更 Proxy 設定。
@@ -988,6 +1008,11 @@
 
           如果「EnableMediaRouter」政策設為 False，這項政策的值則沒有效用，系統不會顯示工具列圖示。</translation>
 <translation id="3788662722837364290">使用者進入閒置狀態時的電源管理設定</translation>
+<translation id="3790085888761753785">如果啟用這項設定，使用者將可透過 Smart Lock 登入帳戶。一般 Smart Lock 只能讓使用者解鎖螢幕畫面，相較之下這項設定的功能更強大。
+
+      如果停用這項設定，使用者將無法使用 Smart Lock 登入。
+
+      如未設定這項政策，在預設情況下，系統會為受企業管理的使用者停用 Smart Lock 登入，並為未受管理的使用者啟用 Smart Lock 登入。</translation>
 <translation id="379602782757302612">讓你指定使用者不得安裝的擴充功能。如果已安裝的擴充功能在黑名單中，就會遭到停用 (使用者無法啟用)。因列入黑名單而遭到停用的擴充功能一旦從黑名單中移除，就會自動重新啟用。
 
           星號「*」代表一律不允許使用者安裝擴充功能 (特別加入許可清單者除外)。
@@ -1087,6 +1112,9 @@
 
           如果你設為 False 或未設定，使用者即可將檔案傳輸至 Google 雲端硬碟。</translation>
 <translation id="3915395663995367577">Proxy .pac 檔案的網址</translation>
+<translation id="3925020515212192040">指定預先設定的網路檔案共用清單。
+
+      這項政策的每個清單項目都是一個物件，由「share_url」和「mode」組成。「share_url」是共用檔案的網址，「mode」則應設為「drop_down」，表示「share_url」將新增至共用項目搜尋下拉式選單中。</translation>
 <translation id="3939893074578116847">將監控線上狀態所需的網路封包傳送到管理伺服器，
       讓伺服器偵測裝置是否處於離線狀態。
 
@@ -1233,6 +1261,7 @@
 <translation id="4377599627073874279">允許所有網站顯示所有圖片</translation>
 <translation id="437791893267799639">未設定政策，不允許資料遷移和 ARC</translation>
 <translation id="4389091865841123886">使用 TPM 機制設定遠端證明。</translation>
+<translation id="4408428864159735559">預先設定的網路檔案共用清單。</translation>
 <translation id="4410236409016356088">允許節流網路頻寬</translation>
 <translation id="441217499641439905">連上行動網路時，禁止在 <ph name="PRODUCT_OS_NAME" />的「檔案」應用程式中使用 Google 雲端硬碟</translation>
 <translation id="4418726081189202489">將這項政策設為 False 後，<ph name="PRODUCT_NAME" /> 就無法為了擷取精確時間戳記而不定期傳送查詢給 Google 伺服器。如果將這項政策設為 True 或不予設定，則會允許傳送這類查詢。</translation>
@@ -1929,6 +1958,7 @@
       如要控制哪些網站可執行 Flash，請查看「DefaultPluginsSetting」、「PluginsAllowedForUrls」和「PluginsBlockedForUrls」政策。
 
       如果這項設定已停用或尚未設定，系統可能會封鎖來自其他來源的 Flash 內容或檔案較小的內容。</translation>
+<translation id="6532769014584932288">允許使用 Wake Lock</translation>
 <translation id="653608967792832033">指定時間長度，如果系統在電池供電環境下執行且未偵測到使用者輸入行為，就會在這段時間過後鎖定螢幕。
 
           如果你將這項政策設為大於 0 以上的值，表示使用者必須維持該值所指定的時間長度後，<ph name="PRODUCT_OS_NAME" /> 才會鎖定螢幕。
@@ -1946,6 +1976,7 @@
 <translation id="6544897973797372144">如果你將這項政策設為「True」，且並未指定 ChromeOsReleaseChannel 政策，則註冊網域的使用者將可變更裝置的發佈頻道。如果你將這項政策設為「False」，則系統會將裝置鎖定為先前設定的任何頻道。
 
       ChromeOsReleaseChannel 政策會覆寫使用者選取的頻道，但如果政策設定的頻道比裝置原本安裝的頻道更穩定，則系統只會在更穩定的頻道發佈比裝置上安裝的頻道更高的版本時，才會切換至該版本。</translation>
+<translation id="6553143066970470539">螢幕亮度百分比</translation>
 <translation id="6559057113164934677">不允許任何網站使用攝影機和麥克風</translation>
 <translation id="6561396069801924653">在系統匣選單中顯示協助工具選項</translation>
 <translation id="6565312346072273043">設定螢幕小鍵盤這項協助工具功能在登入畫面中的預設狀態。
@@ -2218,6 +2249,11 @@
 <translation id="7167436895080860385">允許使用者在密碼管理員中顯示密碼 (已不適用)</translation>
 <translation id="7173856672248996428">暫時設定檔</translation>
 <translation id="717630378807352957">允許設定檔中的所有印表機。</translation>
+<translation id="7176721759719212761">指定是否允許使用螢幕 Wake Lock。擴充功能如要使用螢幕 Wake Lock，可以透過電源管理擴充功能 API 以及 ARC 應用程式提出要求。
+
+          如果這項政策設為「True」或未設定，系統的電源管理機制將採用螢幕 Wake Lock，但 AllowWakeLocks 設為「False」時除外。
+
+          如果這項政策設為「False」，系統將忽略螢幕 Wake Lock 使用要求。</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">允許進行更新的連線類型</translation>
 <translation id="7194407337890404814">預設搜尋引擎名稱</translation>
@@ -2231,6 +2267,11 @@
           [自動播放] 選項僅適用於 <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> 政策明確列出的網域。如要為所有網站啟用 [自動播放] 選項，可在這份清單中加入 http://* 和 https://*。
 
           如未設定這項政策，使用者可以手動變更這項設定。</translation>
+<translation id="7229975860249300121">這項政策包含一個規則運算式，用來決定哪些 Google 帳戶可以設定為 <ph name="PRODUCT_NAME" /> 中的瀏覽器主要帳戶 (也就是在同步功能啟用流程中所選的帳戶)。
+
+      如果使用者在設定瀏覽器主要帳戶時，試圖使用不符合這個模式的使用者名稱，系統會顯示相關錯誤訊息。
+
+      如未設定這項政策或將其留空，則使用者可以將任何 Google 帳戶設定為 <ph name="PRODUCT_NAME" /> 中的瀏覽器主要帳戶。</translation>
 <translation id="723103540848640830">設定螢幕鎖定 PIN 碼的長度下限</translation>
 <translation id="7232816984286843471">如果將這項政策設為 false，無關聯的使用者就無法使用 Crostini。
 
@@ -2380,6 +2421,10 @@
       </translation>
 <translation id="7511361072385293666">如果這項政策設為 True 或未設定，可在 <ph name="PRODUCT_NAME" /> 中使用 QUIC 通訊協定。
       如果這項政策設為 False，則不可使用 QUIC 通訊協定。</translation>
+<translation id="7517845714620372896">指定螢幕亮度百分比。
+          如果這項政策設定了數值，螢幕初始亮度將調整為該政策值，但使用者之後可進行變更。自動調整亮度功能在這種情況下會停用。
+          如果這項政策未設定數值，則使用者螢幕控制選項和自動調整亮度功能不會受到影響。
+          指定政策值時，需以百分比形式填入 0 至 100 之間的數值。</translation>
 <translation id="7519251620064708155">允許在這些網站上使用金鑰產生功能</translation>
 <translation id="7529100000224450960">允許你設定網址模式清單，指定可以開啟彈出式視窗的網站。如果未設定這項政策，系統會從「DefaultPopupsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="7529144158022474049">自動更新分散係數</translation>
@@ -2484,6 +2529,7 @@
 
       系統可識別的連線類型識別碼包括「ethernet」、「wifi」、「wimax」、「bluetooth」和「cellular」。</translation>
 <translation id="7763614521440615342">在新分頁顯示內容建議</translation>
+<translation id="7765879851993224640">允許使用 Smart Lock 登入功能。</translation>
 <translation id="7774768074957326919">使用系統 Proxy 設定</translation>
 <translation id="7775831859772431793">您可以在這裡指定 Proxy 伺服器的網址。
 
@@ -2592,6 +2638,7 @@
       將這項政策變更為 False 時，系統會啟動新的虛擬機器，而不會關閉執行中的虛擬機器。
       如果未在受管理裝置上設定這項政策，該裝置便無法執行虛擬機器。
       不受管理的裝置則可執行虛擬機器。</translation>
+<translation id="8001701200415781021">限制哪些 Google 帳戶可以設定為 <ph name="PRODUCT_NAME" /> 中的瀏覽器主要帳戶</translation>
 <translation id="802147957407376460">將畫面旋轉 0 度</translation>
 <translation id="8033913082323846868">這項政策自 M70 起已淘汰，請改用 AutofillAddressEnabled 和 AutofillCreditCardEnabled。
 
@@ -2824,6 +2871,25 @@
       如果將這項政策設為 true 或不予設定，所有使用者皆可使用 ARC (除非透過其他方法停用 ARC)。
 
       政策變更只會在 ARC 未執行時套用，例如 Chrome 作業系統啟動時。</translation>
+<translation id="8615400197788843468">啟用 <ph name="PRODUCT_NAME" /> 的 G Suite 受限登入功能，並且禁止使用者變更這項設定。
+
+      如果定義這項設定，使用者只能透過指定網域中的帳戶
+      存取 Google 應用程式 (請注意，如要允許使用 
+      gmail.com/googlemail.com 帳戶，請將「consumer_accounts」
+      (不含引號) 加入網域清單中)。
+
+      在需要通過 Google 驗證的受管理裝置上，
+      這項設定會禁止使用者登入帳戶及新增次要帳戶 
+      (如果該帳戶所屬網域不在上述允許的網域清單上)。
+
+      如果將這項設定留空或不予設定，使用者將可以
+      使用任何帳戶存取 G Suite。
+
+      套用這項政策後，所有向 google.com 網域發送的 HTTP 和 HTTPS 要求
+      都會加上 X-GoogApps-Allowed-Domains 標頭。詳情請見：
+      https://support.google.com/a/answer/1668854。
+
+      使用者無法變更或覆寫這項設定。</translation>
 <translation id="8631434304112909927">到第 <ph name="UNTIL_VERSION" /> 版為止</translation>
 <translation id="863319402127182273">這項政策對 Android 應用程式的影響僅限於內建攝影機。將這項政策設為 true 時，所有 Android 應用程式皆無法使用攝影機，沒有任何例外。</translation>
 <translation id="8649763579836720255">當 Chrome 作業系統 CA 判斷裝置可播放受保護內容，Chrome 作業系統裝置可以使用遠端證明 (已驗證存取權) 取得其所發出的憑證。在此過程中，系統會傳送硬體簽署資訊到識別裝置的 Chrome 作業系統 CA。

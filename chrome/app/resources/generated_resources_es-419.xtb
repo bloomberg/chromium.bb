@@ -1048,7 +1048,6 @@
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> no se pudo conectar a <ph name="NETWORK_ID" />. Selecciona otra red o inténtalo de nuevo.</translation>
 <translation id="2553440850688409052">Ocultar este complemento</translation>
 <translation id="2554553592469060349">El archivo seleccionado es demasiado grande (tamaño máximo: 3 MB).</translation>
-<translation id="2557899542277210112">Para acceder rápidamente, coloca tus favoritos aquí en la barra de favoritos.</translation>
 <translation id="2558896001721082624">Siempre mostrar opciones de accesibilidad en el menú del sistema</translation>
 <translation id="2562685439590298522">Documentos</translation>
 <translation id="2562743677925229011">No accediste a <ph name="SHORT_PRODUCT_NAME" /></translation>
@@ -4149,6 +4148,7 @@
 <translation id="7243632151880336635">Borrar y salir</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> × <ph name="HEIGHT" /> (la mejor resolución)</translation>
 <translation id="7246947237293279874">Proxy FTP</translation>
+<translation id="7248671827512403053">Aplicación</translation>
 <translation id="725109152065019550">Tu administrador inhabilitó el almacenamiento externo en tu cuenta.</translation>
 <translation id="7253521419891527137">&amp;Más información</translation>
 <translation id="7254554697254365959">No se pudo traducir esta página.</translation>
@@ -4968,7 +4968,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8481187309597259238">Confirmar el permiso para USB</translation>
 <translation id="8483248364096924578">Dirección IP</translation>
 <translation id="8487678622945914333">Acercar</translation>
-<translation id="8487693399751278191">Importar favoritos ahora...</translation>
 <translation id="8487700953926739672">Disponible sin conexión</translation>
 <translation id="8490896350101740396">Se actualizaron las siguientes aplicaciones de kiosco "<ph name="UPDATED_APPS" />". Reinicia el dispositivo para completar el proceso de actualización.</translation>
 <translation id="8493236660459102203">Micrófono:</translation>
@@ -5204,7 +5203,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8845001906332463065">Obtener ayuda</translation>
 <translation id="8846132060409673887">Leer el fabricante y el modelo de esta computadora</translation>
 <translation id="8846141544112579928">Buscando teclado…</translation>
-<translation id="8846319957959474018">Abre las apps fácilmente con los favoritos</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8848561196844274665">Cuando conectas tus dispositivos, aceptas que tu Chromebook puede hacer lo siguiente:</translation>
 <translation id="8859057652521303089">Selecciona tu idioma:</translation>

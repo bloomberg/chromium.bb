@@ -1051,7 +1051,6 @@
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> no ha podido establecer conexión con <ph name="NETWORK_ID" />. Selecciona otra red o vuelve a intentarlo.</translation>
 <translation id="2553440850688409052">Ocultar este complemento</translation>
 <translation id="2554553592469060349">El archivo seleccionado es demasiado grande (tamaño máximo: 3 MB).</translation>
-<translation id="2557899542277210112">Para acceder rápido a una página, arrástrala a esta barra de marcadores.</translation>
 <translation id="2558896001721082624">Mostrar siempre opciones de accesibilidad en el menú del sistema</translation>
 <translation id="2562685439590298522">Docs</translation>
 <translation id="2562743677925229011">No has iniciado sesión en <ph name="SHORT_PRODUCT_NAME" />.</translation>
@@ -4149,6 +4148,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7243632151880336635">Borrar y cerrar sesión</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (recomendado)</translation>
 <translation id="7246947237293279874">Proxy de FTP</translation>
+<translation id="7248671827512403053">Aplicación</translation>
 <translation id="725109152065019550">Tu administrador ha inhabilitado el almacenamiento externo en tu cuenta.</translation>
 <translation id="7253521419891527137">&amp;Más información</translation>
 <translation id="7254554697254365959">No se ha podido traducir la página.</translation>
@@ -4967,7 +4967,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8481187309597259238">Confirmar permiso de USB</translation>
 <translation id="8483248364096924578">Dirección IP</translation>
 <translation id="8487678622945914333">Acercar</translation>
-<translation id="8487693399751278191">Importar marcadores ahora...</translation>
 <translation id="8487700953926739672">Disponible sin conexión</translation>
 <translation id="8490896350101740396">Las siguientes aplicaciones de kiosco (<ph name="UPDATED_APPS" />) se han actualizado. Reinicia el dispositivo para completar el proceso de actualización.</translation>
 <translation id="8493236660459102203">Micrófono:</translation>
@@ -5203,7 +5202,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8845001906332463065">Obtener ayuda</translation>
 <translation id="8846132060409673887">Consultar el fabricante y el modelo de este ordenador</translation>
 <translation id="8846141544112579928">Buscando teclado...</translation>
-<translation id="8846319957959474018">Abre aplicaciones fácilmente con los marcadores</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8848561196844274665">Cuando conectas tus dispositivos, aceptas que el Chromebook puede hacer lo siguiente:</translation>
 <translation id="8859057652521303089">Selecciona tu idioma:</translation>

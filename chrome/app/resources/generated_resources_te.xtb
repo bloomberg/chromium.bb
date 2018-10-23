@@ -1051,7 +1051,6 @@
 <translation id="2553340429761841190"><ph name="NETWORK_ID" />కు కనెక్ట్ చెయ్యడానికి <ph name="PRODUCT_NAME" />కి సాధ్యం కాలేదు. దయచేసి మరొక నెట్‌వర్క్‌ని ఎంచుకోండి లేదా మళ్ళీ ప్రయత్నిచండి.</translation>
 <translation id="2553440850688409052">ఈ ప్లగ్ఇన్‌ని దాచిపెట్టు</translation>
 <translation id="2554553592469060349">ఎంచుకోబడిన ఫైల్ చాలా పెద్దదిగా ఉంది (గరిష్ట పరిమాణం: 3mb).</translation>
-<translation id="2557899542277210112">త్వరిత ప్రాప్తి కోసం, మీ బుక్‌మార్క్‌లను బుక్‌మార్క్‌ల బార్‌లో ఉంచండి.</translation>
 <translation id="2558896001721082624">సిస్టమ్ మెనూలో ఎల్లప్పుడూ యాక్సెస్ సామర్థ్యం ఎంపికలను చూపు</translation>
 <translation id="2562685439590298522">డాక్స్</translation>
 <translation id="2562743677925229011"><ph name="SHORT_PRODUCT_NAME" />కు సైన్ ఇన్ చేయలేదు</translation>
@@ -4152,6 +4151,7 @@
 <translation id="7243632151880336635">తీసివేసి, సైన్ అవుట్ చేయి</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (ఉత్తమం)</translation>
 <translation id="7246947237293279874">FTP ప్రాక్సీ</translation>
+<translation id="7248671827512403053">అప్లికేషన్‌</translation>
 <translation id="725109152065019550">క్షమించండి, మీ నిర్వాహకుడు మీ ఖాతాలో బాహ్య నిల్వను నిలిపివేసారు.</translation>
 <translation id="7253521419891527137">&amp;మరింత తెలుసుకోండి</translation>
 <translation id="7254554697254365959">ఈ పేజీని అనువదించడం సాధ్యపడలేదు.</translation>
@@ -4967,7 +4967,6 @@
 <translation id="8481187309597259238">USB అనుమతిని నిర్ధారించండి</translation>
 <translation id="8483248364096924578">IP చిరునామా</translation>
 <translation id="8487678622945914333">దగ్గరికి జూమ్ చేయి</translation>
-<translation id="8487693399751278191">బుక్‌మార్క్‌లను ఇప్పుడు దిగుమతి చెయ్యి...</translation>
 <translation id="8487700953926739672">ఆఫ్‌లైన్‌లో అందుబాటు</translation>
 <translation id="8490896350101740396">క్రింది కియోస్క్ అనువర్తనాలు "<ph name="UPDATED_APPS" />" నవీకరించబడ్డాయి. దయచేసి నవీకరణ ప్రాసెస్‌ను పూర్తి చేయడానికి పరికరాన్ని రీబూట్ చేయండి.</translation>
 <translation id="8493236660459102203">మైక్రోఫోన్:</translation>
@@ -5203,7 +5202,6 @@
 <translation id="8845001906332463065">సహాయం పొందండి</translation>
 <translation id="8846132060409673887">ఈ కంప్యూటర్ తయారీదారు పేరు మరియు మోడల్‌కి సంబంధించిన సమాచారాన్ని చదవగలుగుతుంది</translation>
 <translation id="8846141544112579928">కీబోర్డ్ కోసం శోధిస్తోంది...</translation>
-<translation id="8846319957959474018">బుక్‌మార్క్‌లతో సులభంగా యాప్‌లను తెరవండి</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8848561196844274665">మీరు మీ పరికరాలను కనెక్ట్ చేసినప్పుడు, మీ Chromebook ఈ కింది వాటిని చేయవచ్చని మీరు అంగీకరిస్తున్నారు:</translation>
 <translation id="8859057652521303089">మీ భాషను ఎంచుకోండి:</translation>

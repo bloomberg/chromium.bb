@@ -98,7 +98,6 @@
 <translation id="2529021024822217800">Tümünü Aç</translation>
 <translation id="2572712655377361602">Fotoğraflarınıza erişim bir cihaz politikası tarafından engellendi</translation>
 <translation id="2584132361465095047">Hesap Ekle…</translation>
-<translation id="2593774076813182497">Bu sayfa yazdırılamaz.</translation>
 <translation id="2625189173221582860">Şifre kopyalandı</translation>
 <translation id="2648803196158606475">Okunanları Sil</translation>
 <translation id="2653659639078652383">Gönder</translation>
@@ -226,8 +225,12 @@
 
 Verileriniz senkronizasyon parolanızla şifrelendi. Senkronizasyonu başlatmak için senkronizasyon parolanızı girin.</translation>
 <translation id="473775607612524610">Güncelle</translation>
+<translation id="4747097190499141774">Parola şifreleme, Google Pay'deki adresleri ve ödeme yöntemlerini kapsamaz. Yalnızca parolanızı bilen biri, şifrelenmiş verilerinizi okuyabilir. Parola, Google'a gönderilmez veya Google tarafından saklanmaz. Parolanızı unutursanız veya bu ayarı değiştirmek isterseniz senkronizasyonu sıfırlamanız gerekir. <ph name="BEGIN_LINK" />Daha fazla bilgi<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Sayfada Bul...</translation>
 <translation id="4751645464639803239">Yeni Gizli Sekme</translation>
+<translation id="4802417911091824046">Parola şifreleme, Google Pay'deki adresleri ve ödeme yöntemlerini kapsamaz.
+
+Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlayın<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">1 okunmamış Okuma Listesi makalesi.</translation>
 <translation id="481968316161811770">Çerezler, Site Verileri</translation>
 <translation id="4854345657858711387">Şifre Kodu Ayarlayın</translation>

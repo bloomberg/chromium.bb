@@ -24,6 +24,12 @@
       Quan aquesta política s'estableix en "false" o no s'estableix, les galetes establertes per l'IdP només es transfereixen al perfil de l'usuari durant el seu primer inici de sessió en un dispositiu.
 
       Aquesta política només afecta els usuaris amb dominis que coincideixen amb el domini de registre del dispositiu. Per a la resta d'usuaris, les galetes establertes per l'IdP només es transfereixen al perfil de l'usuari durant el seu primer inici de sessió al dispositiu.</translation>
+<translation id="1035385378988781231">Aquesta política controla si la funció Ús compartit dels fitxers de la xarxa per a <ph name="PRODUCT_NAME" /> farà servir NTLM per a l'autenticació.
+
+      Si aquesta política s'estableix en "true", s'utilitzarà NTLM per a l'autenticació d'usos compartits d'SMB si és necessari.
+      Si s'estableix en "false", es desactivarà l'autenticació amb NTLM d'usos compartits d'SMB.
+
+      Si la política es deixa sense establir, el valor predeterminat es desactivarà per als usuaris gestionats per l'empresa i s'activarà per als usuaris no gestionats.</translation>
 <translation id="1040446814317236570">Activeu la retirada de l'URL de PAC (per a https://)</translation>
 <translation id="1044878202534415707">Informa d'estadístiques del maquinari com ara l'ús de CPU o de RAM.
 
@@ -91,6 +97,13 @@
       L'opció predeterminada és RollbackDisabled.</translation>
 <translation id="1221359380862872747">Carrega URL especificats a l'inici de sessió de demostració</translation>
 <translation id="1223789468190631420">Estat d'activació de Navegació segura per a fonts de confiança</translation>
+<translation id="122899932962115297">Una llista blanca en què es controlen quins modes de desbloqueig ràpid pot configurar l'usuari per desbloquejar la pantalla de bloqueig.
+
+          Aquest valor està format per una llista de cadenes; les entrades vàlides de la llista són: "all", "PIN" i "FINGERPRINT". Si s'afegeix "all" a la llista, significa que l'usuari pot utilitzar tots els modes de desbloqueig ràpid, inclosos els que s'implementin en el futur. En cas contrari, només podrà utilitzar els modes de desbloqueig ràpid que s'incloguin a la llista.
+
+          Per exemple, per permetre tots els modes de desbloqueig ràpid, fes servir ["all"]. Per permetre només el desbloqueig amb PIN, utilitza ["PIN"]. Per permetre el desbloqueig amb PIN i empremta digital, utilitza ["PIN", "FINGERPRINT"]. Per desactivar tots els modes de desbloqueig ràpid, fes servir [].
+
+          De manera predeterminada, no es pot utilitzar cap mode de desbloqueig ràpid als dispositius gestionats.</translation>
 <translation id="123081309365616809">Activa l'emissió de contingut al dispositiu</translation>
 <translation id="1243570869342663665">Controla el filtre SafeSites de contingut per a adults.</translation>
 <translation id="1257550411839719984">Estableix el directori de baixada predeterminat</translation>
@@ -615,6 +628,7 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
 
       Si aquesta política es deixa sense establir, el valor predeterminat no es permetrà als usuaris gestionats i es permetrà als usuaris no gestionats.</translation>
 <translation id="2660846099862559570">No facis servir mai un servidor intermediari</translation>
+<translation id="2672012807430078509">Controla l'activació d'NTLM com a protocol d'autenticació per a SMB</translation>
 <translation id="267596348720209223">Especifica les codificacions de caràcters que admet el proveïdor de cerca. Les codificacions són noms de pàgines de codi com ara UTF-8, GB2312 i ISO-8859-1. Es proven per ordre. Aquesta política és opcional. Si no es defineix, s'utilitzarà el valor predeterminat, que és UTF-8. Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="268577405881275241">Activa la funció del servidor intermediari de compressió de dades</translation>
 <translation id="2693108589792503178">Configura l'URL per canviar la contrasenya.</translation>
@@ -948,6 +962,11 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Si la política es desactiva, no es produirà l'aïllament explícit de cap lloc web i es desactivaran les proves de camp de les polítiques IsolateOrigins i SitePerProcess. Els usuaris podran activar IsolateOrigins manualment.
       Si la política no es configura, a la pantalla d'inici de sessió s'utilitzarà la configuració d'aïllament del lloc web predeterminada a la plataforma.
       </translation>
+<translation id="3748900290998155147">Especifica si es permeten els wake locks. Els poden sol·licitar les aplicacions ARC, així com les extensions a través de l'API de l'extensió de gestió de l'alimentació.
+
+          Si aquesta política s'estableix en "true" o es deixa sense establir, es compliran els wake locks per a la gestió d'alimentació.
+
+          Si s'estableix en "false", les sol·licituds de wake lock s'ignoraran.</translation>
 <translation id="3750220015372671395">Bloqueja la generació de claus en aquests llocs web</translation>
 <translation id="3756011779061588474">Bloquejar el mode de desenvolupador</translation>
 <translation id="3758089716224084329">Et permet especificar el servidor intermediari que <ph name="PRODUCT_NAME" /> utilitza i impedeix que els usuaris en canviïn la configuració.
@@ -981,6 +1000,11 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
           Si la política EnableMediaRouter es defineix com a "false", el valor de la política no tindrà cap efecte i la icona no es mostrarà a la barra d'eines.</translation>
 <translation id="3788662722837364290">Configuració de la gestió de l'energia quan l'usuari està inactiu</translation>
+<translation id="3790085888761753785">Si s'activa aquesta opció, els usuaris podran iniciar la sessió al compte amb Smart Lock. És un comportament de Smart Lock més permissiu del normal que dona l'opció als usuaris de desbloquejar la pantalla.
+
+      Si es desactiva aquesta opció, els usuaris no podran utilitzar l'inici de sessió amb Smart Lock.
+
+      Si aquesta política es deixa sense establir, el valor predeterminat no es permetrà per als usuaris gestionats per l'empresa i es permetrà per als usuaris no gestionats.</translation>
 <translation id="379602782757302612">Permet especificar les extensions que els usuaris NO poden instal·lar. Si les extensions que ja s'han instal·lat s'inclouen a la llista negra, es desactivaran i l'usuari no podrà activar-les de cap manera. Si una extensió s'ha desactivat perquè s'incloïa en aquesta llista, però se'n treu, es tornarà a activar automàticament.
 
           Si la llista negra conté el valor "*", significa que s'hi inclouen totes les extensions tret de les que s'indiquin explícitament a la llista blanca.
@@ -1079,6 +1103,9 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
           Si no s'estableix o s'estableix en False, els usuaris poden transferir els fitxers a Google Drive.</translation>
 <translation id="3915395663995367577">URL d'un fitxer .pac d'un servidor intermediari</translation>
+<translation id="3925020515212192040">Especifica una llista de fitxers compartits de la xarxa configurats prèviament.
+
+      Cada element de la llista de la política és un objecte amb dos membres: "share_url" i "mode". "share_url" ha de ser l'URL del fitxer compartit i "mode" ha de ser "drop_down", que indica que "share_url" s'afegirà a la llista desplegable de detecció de fitxers compartits.</translation>
 <translation id="3939893074578116847">Envia paquets de xarxa al servidor de gestió per supervisar l'estat en línia, de manera que el servidor pugui detectar si el dispositiu no té connexió.
 
       Si aquesta política s'estableix en "true", s'envien paquets de xarxa de supervisió (anomenats <ph name="HEARTBEATS_TERM" />).
@@ -1225,6 +1252,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4377599627073874279">Permet que tots els llocs mostrin totes les imatges</translation>
 <translation id="437791893267799639">La política no està definida; no permetis la migració de dades i ARC</translation>
 <translation id="4389091865841123886">Configura el testimoni remot amb el mecanisme TPM.</translation>
+<translation id="4408428864159735559">Llista de fitxers compartits de la xarxa configurats prèviament.</translation>
 <translation id="4410236409016356088">Activa la limitació de l'amplada de banda de la xarxa</translation>
 <translation id="441217499641439905">Desactiva Google Drive a l'aplicació Fitxers de <ph name="PRODUCT_OS_NAME" /> per a les connexions mòbils</translation>
 <translation id="4418726081189202489">Si aquesta política es defineix en "false", impedeix que <ph name="PRODUCT_NAME" /> enviï de tant en tant consultes a un servidor de Google per recuperar una marca de temps precisa. Aquestes consultes s'activaran si la política es defineix en "true" o si no es defineix.</translation>
@@ -1917,6 +1945,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Per controlar quins llocs web poden executar Flash, consulta les polítiques "DefaultPluginsSetting", "PluginsAllowedForUrls" i "PluginsBlockedForUrls".
 
       Si aquesta opció de configuració està desactivada o no es defineix, és possible que es bloquegi el contingut Flash d'altres orígens o de mida reduïda.</translation>
+<translation id="6532769014584932288">Permet els wake locks</translation>
 <translation id="653608967792832033">Indica el temps sense activitat per part de l'usuari després del qual la pantalla es bloqueja quan el dispositiu funciona amb bateria.
 
           Quan aquesta política es defineix en un valor superior a zero, indica el temps que l'usuari ha de romandre inactiu abans <ph name="PRODUCT_OS_NAME" /> no bloquegi la pantalla.
@@ -1934,6 +1963,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6544897973797372144">Si aquesta política s'estableix com a certa i no s'especifica la política ChromeOsReleaseChannel, els usuaris del domini de vinculació podran canviar el canal de llançament del dispositiu. Si aquesta política s'estableix com a falsa, el dispositiu es bloquejarà a tots els canals on s'hagi establert per darrera vegada.
 
       La política ChromeOsReleaseChannel anul·larà el canal seleccionat per l'usuari, però si el canal de la política és més estable que el que s'ha instal·lat al dispositiu, el canal només canviarà un cop la versió del canal més estable passi a un número de versió superior a l'instal·lat al dispositiu.</translation>
+<translation id="6553143066970470539">Percentatge de brillantor de la pantalla</translation>
 <translation id="6559057113164934677">No permetis que cap lloc accedeixi a la càmera ni al micròfon</translation>
 <translation id="6561396069801924653">Mostra les opcions d'accessibilitat al menú de la safata del sistema</translation>
 <translation id="6565312346072273043">Defineix l'estat predeterminat de la funció d'accessibilitat del teclat en pantalla a la pantalla d'inici de sessió.
@@ -2209,6 +2239,11 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7167436895080860385">Permet que els usuaris mostrin les contrasenyes al gestor de contrasenyes (política obsoleta)</translation>
 <translation id="7173856672248996428">Perfil efímer</translation>
 <translation id="717630378807352957">Permet totes les impressores del fitxer de configuració.</translation>
+<translation id="7176721759719212761">Especifica si es permeten els wake locks de la pantalla. Els poden sol·licitar les aplicacions ARC, així com les extensions a través de l'API de l'extensió de gestió de l'alimentació.
+
+          Si aquesta política s'estableix en "true" o es deixa sense establir, es compliran els wake locks de la pantalla per a la gestió d'alimentació, tret que la política AllowWakeLocks estigui establerta en "false".
+
+          Si s'estableix en "false", les sol·licituds de wake lock de la pantalla passaran a ser sol·licituds de wake lock del sistema.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Tipus de connexions permesos per a actualitzacions</translation>
 <translation id="7194407337890404814">Nom del proveïdor de cerca predeterminat</translation>
@@ -2222,6 +2257,11 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           L'execució automàtica només es permet per als dominis enumerats de manera expressa a la política <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Per permetre-la per a tots els llocs web, us recomanem afegir http://* i https://* a aquesta enumeració.
 
           Si aquesta política no es defineix, l'usuari podrà canviar l'opció de configuració manualment.</translation>
+<translation id="7229975860249300121">Conté una expressió regular que es fa servir per determinar quins comptes de Google es poden definir com a comptes principals del navegador a <ph name="PRODUCT_NAME" /> (és a dir, el compte que es tria durant el flux d'activació de Sincronització).
+
+      Si un usuari prova de definir un compte principal del navegador amb un nom d'usuari que no coincideix amb aquest patró, es mostra un error adient.
+
+      Si aquesta política es deixa sense establir o en blanc, l'usuari pot definir qualsevol compte de Google com a compte principal del navegador a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="723103540848640830">Defineix la longitud mínima del PIN per a la pantalla de bloqueig</translation>
 <translation id="7232816984286843471">Si la política s'estableix en "false", els usuaris no afiliats no tindran permís per fer servir Crostini.
 
@@ -2371,6 +2411,10 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       </translation>
 <translation id="7511361072385293666">Si aquesta política s'estableix en "true" o no es configura, es permet utilitzar el protocol QUIC a <ph name="PRODUCT_NAME" />.
       Si aquesta política s'estableix en "false", no es permet utilitzar el protocol QUIC.</translation>
+<translation id="7517845714620372896">Especifica el percentatge de brillantor de la pantalla.
+          Quan s'estableix aquesta política, la brillantor inicial de la pantalla s'ajusta al valor de la política, però després l'usuari pot canviar-la. Les funcions de brillantor automàtica estan desactivades.
+          Quan aquesta política no està establerta, els controls de la pantalla de l'usuari i les funcions de brillantor automàtica no es veuen afectats.
+          Els valors de la política s'han d'especificar amb percentatges entre 0 i 100.</translation>
 <translation id="7519251620064708155">Permet que aquests llocs utilitzin la generació de claus</translation>
 <translation id="7529100000224450960">Us permet definir una llista de patrons d'URL que especifiquen els llocs en què està permès obrir finestres emergents. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultPopupsSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="7529144158022474049">Actualitza automàticament el factor de dispersió</translation>
@@ -2475,6 +2519,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Els identificadors de tipus de connexió reconeguts són "ethernet", "wifi", "wimax", "bluetooth" i "xarxes mòbils".</translation>
 <translation id="7763614521440615342">Mostra suggeriments de contingut a la pàgina Pestanya nova</translation>
+<translation id="7765879851993224640">Permet utilitzar l'inici de sessió de Smart Lock.</translation>
 <translation id="7774768074957326919">Utilitza la configuració del servidor intermediari del sistema</translation>
 <translation id="7775831859772431793">Permet especificar l'URL del servidor intermediari.
 
@@ -2572,6 +2617,7 @@ NOTA: a Android, l'aïllament de llocs web és experimental. Amb el temps se'n m
 <translation id="7980227303582973781">Sense restriccions especials</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="7992136759457836904">Et permet controlar si es poden executar màquines virtuals a Chrome OS. Si la política s'estableix en "true", el dispositiu podrà executar màquines virtuals. Si s'estableix en "false", el dispositiu no podrà executar màquines virtuals. Totes tres polítiques, VirtualMachinesAllowed, CrostiniAllowed i DeviceUnaffiliatedCrostiniAllowed, s'han d'establir en "true" quan siguin rellevants perquè Crostini tingui permís per executar-se. Quan la política es canvia a "false", afecta l'execució de màquines virtuals noves, però no tanca les que ja s'estan executant. Quan la política no s'estableix en un dispositiu gestionat, el dispositiu no té permís per executar màquines virtuals. Els dispositius no gestionats tenen permís per executar màquines virtuals.</translation>
+<translation id="8001701200415781021">Restringeix quins comptes de Google es permet establir com a comptes principals del navegador a <ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Gira la pantalla 0 graus</translation>
 <translation id="8033913082323846868">Aquesta política es considera obsoleta a M70; substitueix-la per AutofillAddressEnabled i AutofillCreditCardEnabled.
 
@@ -2820,6 +2866,17 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
       Si aquesta política no es defineix o es defineix com "true", tots els usuaris tindran permís per fer servir ARC (tret que ARC es desactivi d'una altra manera).
 
       Els canvis a la política només s'aplicaran mentre ARC no estigui en funcionament (per exemple, mentre s'inicia Chrome OS).</translation>
+<translation id="8615400197788843468">Activa la funció d'inici de sessió restringit de <ph name="PRODUCT_NAME" /> a G Suite i impedeix que els usuaris canviïn aquesta opció.
+
+      Si defineixes aquesta opció, l'usuari només podrà accedir a les aplicacions de Google amb comptes dels dominis especificats. Tingues en compte que, per permetre els comptes de gmail.com/googlemail.com, has d'afegir "consumer_accounts" (sense cometes) a la llista de dominis.
+
+      Aquesta opció impedeix que els usuaris iniciïn la sessió i afegeixin un compte secundari en un dispositiu gestionat que requereixi l'autenticació de Google, si aquest compte no s'ha inclòs a la llista anterior de dominis permesos.
+
+      Si deixes aquesta opció en blanc o sense configurar, els usuaris podran accedir a G Suite amb qualsevol compte.
+
+      Aquesta política provoca que la capçalera X-GoogApps-Allowed-Domains s'afegeixi a totes les sol·licituds HTTP i HTTPS fetes en qualsevol domini de google.com, tal com es descriu a https://support.google.com/a/answer/1668854.
+
+      Els usuaris no poden modificar ni substituir aquesta opció.</translation>
 <translation id="8631434304112909927">fins a la versió <ph name="UNTIL_VERSION" /></translation>
 <translation id="863319402127182273">En el cas de les aplicacions per a Android, aquesta política afecta només la càmera integrada. Quan s'estableix en "true", es desactiva la càmera en totes les aplicacions per a Android, sense cap excepció.</translation>
 <translation id="8649763579836720255">Els dispositius amb Chrome OS poden utilitzar l'autenticació remota (accés verificat) per obtenir un certificat emès per la entitat emissora de certificats (CA) de Chrome OS que afirmi que el dispositiu és apte per reproduir contingut protegit. Aquest procés inclou l'enviament d'informació de ratificació del maquinari a la CA de Chrome OS que identifica el dispositiu de manera única.
