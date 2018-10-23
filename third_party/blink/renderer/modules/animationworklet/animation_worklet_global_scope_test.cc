@@ -21,9 +21,9 @@
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
 #include "third_party/blink/renderer/modules/animationworklet/animation_worklet.h"
 #include "third_party/blink/renderer/modules/animationworklet/animation_worklet_proxy_client.h"
-#include "third_party/blink/renderer/modules/animationworklet/animation_worklet_thread.h"
 #include "third_party/blink/renderer/modules/animationworklet/animator.h"
 #include "third_party/blink/renderer/modules/animationworklet/animator_definition.h"
+#include "third_party/blink/renderer/modules/worklet/animation_and_paint_worklet_thread.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
@@ -64,10 +64,12 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
     reporting_proxy_ = std::make_unique<WorkerReportingProxy>();
   }
 
-  std::unique_ptr<AnimationWorkletThread> CreateAnimationWorkletThread(
+  std::unique_ptr<AnimationAndPaintWorkletThread>
+  CreateAnimationAndPaintWorkletThread(
       AnimationWorkletProxyClient* proxy_client) {
-    std::unique_ptr<AnimationWorkletThread> thread =
-        AnimationWorkletThread::Create(*reporting_proxy_);
+    std::unique_ptr<AnimationAndPaintWorkletThread> thread =
+        AnimationAndPaintWorkletThread::CreateForAnimationWorklet(
+            *reporting_proxy_);
 
     WorkerClients* clients = WorkerClients::Create();
     if (proxy_client)
@@ -94,7 +96,7 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
   // the worklet once the task completion is signaled.
   void RunTestOnWorkletThread(TestCalback callback) {
     std::unique_ptr<WorkerThread> worklet =
-        CreateAnimationWorkletThread(nullptr);
+        CreateAnimationAndPaintWorkletThread(nullptr);
     WaitableEvent waitable_event;
     PostCrossThreadTask(
         *worklet->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
@@ -435,7 +437,7 @@ TEST_F(AnimationWorkletGlobalScopeTest,
   MockAnimationWorkletProxyClient* proxy_client =
       new MockAnimationWorkletProxyClient();
   std::unique_ptr<WorkerThread> worklet =
-      CreateAnimationWorkletThread(proxy_client);
+      CreateAnimationAndPaintWorkletThread(proxy_client);
   // Animation worklet global scope (AWGS) should not register itself upon
   // creation.
   EXPECT_FALSE(proxy_client->did_set_global_scope());

@@ -163,6 +163,7 @@ target("jumbo_" + modules_target_type, "modules") {
     "//third_party/blink/renderer/modules/webshare",
     "//third_party/blink/renderer/modules/websockets",
     "//third_party/blink/renderer/modules/webusb",
+    "//third_party/blink/renderer/modules/worklet",
     "//third_party/blink/renderer/modules/xr",
     "//third_party/icu",
     "//third_party/webrtc/pc:libjingle_peerconnection",
@@ -248,7 +249,6 @@ jumbo_source_set("unit_tests") {
     "accessibility/testing/accessibility_test.cc",
     "accessibility/testing/accessibility_test.h",
     "animationworklet/animation_worklet_global_scope_test.cc",
-    "animationworklet/animation_worklet_thread_test.cc",
     "animationworklet/worklet_animation_test.cc",
     "background_fetch/background_fetch_icon_loader_test.cc",
     "background_fetch/background_fetch_manager_test.cc",
@@ -344,6 +344,7 @@ jumbo_source_set("unit_tests") {
     "webdatabase/quota_tracker_test.cc",
     "websockets/dom_websocket_test.cc",
     "websockets/websocket_channel_impl_test.cc",
+    "worklet/animation_and_paint_worklet_thread_test.cc",
   ]
 
   configs += [
