@@ -1347,7 +1347,7 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, OpacityInOverviewMode) {
       Shell::Get()->window_selector_controller();
   window_selector_controller->ToggleOverview();
   EXPECT_TRUE(window_selector_controller->IsSelecting());
-  ui::Layer* layer = GetAppListView()->app_list_main_view()->layer();
+  ui::Layer* layer = GetAppListView()->GetWidget()->GetNativeWindow()->layer();
   EXPECT_EQ(0.0f, layer->opacity());
 
   // Disable overview mode.
