@@ -311,6 +311,12 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   // Tracked for the purpose of targeting subsequent fling cancel events.
   RenderWidgetHostViewBase* last_fling_start_target_ = nullptr;
 
+  // During scroll bubbling we bubble the GFS to the target view so that its
+  // fling controller takes care of flinging. In this case we should also send
+  // the GFC to the bubbling target so that the fling controller currently in
+  // charge of the fling progress could handle the fling cancellelation as well.
+  RenderWidgetHostViewBase* last_fling_start_bubbled_target_ = nullptr;
+
   // Tracked for the purpose of providing a root_view when dispatching emulated
   // touch/gesture events.
   RenderWidgetHostViewBase* last_emulated_event_root_view_;
