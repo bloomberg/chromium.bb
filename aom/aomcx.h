@@ -300,9 +300,6 @@ enum aome_enc_control_id {
    *             2 = 4 tile columns
    *             .....
    *             n = 2**n tile columns
-   * The requested tile columns will be capped by encoder based on image size
-   * limitation (The minimum width of a tile column is 256 pixel, the maximum
-   * is 4096).
    *
    * By default, the value is 0, i.e. one single column tile for entire image.
    */
