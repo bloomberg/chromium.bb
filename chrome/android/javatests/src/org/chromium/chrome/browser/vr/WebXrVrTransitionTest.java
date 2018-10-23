@@ -182,6 +182,7 @@ public class WebXrVrTransitionTest {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/894796")
     @CommandLineFlags.Remove({"enable-webvr"})
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testWebXrDisabledWithoutFlagSet() throws InterruptedException {
