@@ -6,7 +6,6 @@
 
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/local_card_migration_dialog_factory.h"
 #include "chrome/browser/ui/autofill/local_card_migration_dialog_state.h"
@@ -37,7 +36,6 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
-#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -81,7 +79,6 @@ void LocalCardMigrationDialogView::CloseDialog() {
 }
 
 void LocalCardMigrationDialogView::OnMigrationFinished() {
-  show_close_button_timer_.Stop();
   title_->SetText(GetDialogTitle());
   explanation_text_->SetText(GetDialogInstruction());
   for (int index = 0; index < card_list_view_->child_count(); index++) {
@@ -90,7 +87,6 @@ void LocalCardMigrationDialogView::OnMigrationFinished() {
   }
   separator_->SetVisible(false);
   // TODO(crbug/867194): Add tip value prompt.
-  SetMigrationIsPending(false);
 }
 
 const std::vector<std::string>
@@ -122,13 +118,6 @@ void LocalCardMigrationDialogView::AddedToWidget() {
   GetWidget()->AddObserver(this);
 }
 
-views::View* LocalCardMigrationDialogView::CreateExtraView() {
-  close_migration_dialog_button_ = views::MdTextButton::CreateSecondaryUiButton(
-      this, l10n_util::GetStringUTF16(IDS_CLOSE));
-  close_migration_dialog_button_->SetVisible(false);
-  return close_migration_dialog_button_;
-}
-
 bool LocalCardMigrationDialogView::ShouldShowCloseButton() const {
   return false;
 }
@@ -141,10 +130,6 @@ base::string16 LocalCardMigrationDialogView::GetDialogButtonLabel(
 
 bool LocalCardMigrationDialogView::IsDialogButtonEnabled(
     ui::DialogButton button) const {
-  // The buttons will be disabled when card uploading is in progress.
-  if (migration_pending_)
-    return false;
-
   // If all checkboxes are unchecked, disable the save button.
   if (button == ui::DIALOG_BUTTON_OK)
     return !GetSelectedCardGuids().empty();
@@ -155,10 +140,8 @@ bool LocalCardMigrationDialogView::IsDialogButtonEnabled(
 bool LocalCardMigrationDialogView::Accept() {
   switch (controller_->GetViewState()) {
     case LocalCardMigrationDialogState::kOffered:
-      UpdateDialogToPendingView();
       controller_->OnSaveButtonClicked(GetSelectedCardGuids());
-      return !base::FeatureList::IsEnabled(
-          features::kAutofillLocalCardMigrationShowFeedback);
+      return true;
     case LocalCardMigrationDialogState::kFinished:
     case LocalCardMigrationDialogState::kActionRequired:
       return true;
@@ -185,16 +168,10 @@ void LocalCardMigrationDialogView::OnWidgetClosing(views::Widget* widget) {
 // TODO(crbug/867194): Add button pressed logic for kDeleteCardButtonTag.
 void LocalCardMigrationDialogView::ButtonPressed(views::Button* sender,
                                                  const ui::Event& event) {
-  // If button clicked is the |close_migration_dialog_button_|, close the
-  // dialog.
-  if (sender == close_migration_dialog_button_) {
-    CloseDialog();
-  } else {
-    // Otherwise it is a checkbox just clicked. Enable/disable the save
-    // button if needed.
-    DCHECK_EQ(sender->GetClassName(), views::Checkbox::kViewClassName);
-    DialogModelChanged();
-  }
+  // The button clicked is a checkbox just clicked. Enable/disable the save
+  // button if needed.
+  DCHECK_EQ(sender->GetClassName(), views::Checkbox::kViewClassName);
+  DialogModelChanged();
 }
 
 void LocalCardMigrationDialogView::StyledLabelLinkClicked(
@@ -360,29 +337,6 @@ base::string16 LocalCardMigrationDialogView::GetCancelButtonLabel() const {
       return l10n_util::GetStringUTF16(
           IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_BUTTON_LABEL_VIEW_CARDS);
   }
-}
-
-void LocalCardMigrationDialogView::SetMigrationIsPending(
-    bool migration_pending) {
-  migration_pending_ = migration_pending;
-  DialogModelChanged();
-  GetDialogClientView()->Layout();
-}
-
-void LocalCardMigrationDialogView::ShowCloseButton() {
-  close_migration_dialog_button_->SetVisible(true);
-}
-
-void LocalCardMigrationDialogView::UpdateDialogToPendingView() {
-  for (int index = 0; index < card_list_view_->child_count(); index++) {
-    // Checkboxes will be disabled when card uploading is in progress.
-    AsMigratableCardView(card_list_view_->child_at(index))
-        ->SetCheckboxEnabled(false);
-  }
-  SetMigrationIsPending(true);
-  show_close_button_timer_.Start(
-      FROM_HERE, features::GetTimeoutForMigrationPromptFeedbackCloseButton(),
-      this, &LocalCardMigrationDialogView::ShowCloseButton);
 }
 
 LocalCardMigrationDialog* CreateLocalCardMigrationDialogView(

@@ -298,9 +298,6 @@ const base::Feature kAutomaticPasswordGeneration = {
 const base::Feature kSingleClickAutofill{"SingleClickAutofill",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
-const char kAutofillLocalCardMigrationCloseButtonDelay[] =
-    "show_close_migration_dialog_button_delay";
-
 const char kAutofillCreditCardLocalCardMigrationParameterName[] = "variant";
 
 const char kAutofillCreditCardLocalCardMigrationParameterWithoutSettingsPage[] =
@@ -335,14 +332,6 @@ LocalCardMigrationExperimentalFlag GetLocalCardMigrationExperimentalFlag() {
     return LocalCardMigrationExperimentalFlag::kMigrationWithoutSettingsPage;
   }
   return LocalCardMigrationExperimentalFlag::kMigrationIncludeSettingsPage;
-}
-
-base::TimeDelta GetTimeoutForMigrationPromptFeedbackCloseButton() {
-  constexpr int show_close_button_timeout_in_seconds = 5;
-  return base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
-      kAutofillCreditCardLocalCardMigration,
-      kAutofillLocalCardMigrationCloseButtonDelay,
-      show_close_button_timeout_in_seconds));
 }
 
 bool IsAutofillUpstreamAlwaysRequestCardholderNameExperimentEnabled() {
