@@ -94,3 +94,6 @@
 
 # OobeInteractiveUITest: crbug.com/892263
 -OobeInteractiveUITest.SimpleEndToEnd
+
+# This test is flaky. https://crbug.com/897879
+-ExtensionApiTest.DisplayModeWindowIsInFull
