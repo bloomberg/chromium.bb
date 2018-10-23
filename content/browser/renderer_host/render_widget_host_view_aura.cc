@@ -1260,6 +1260,8 @@ void RenderWidgetHostViewAura::InsertChar(const ui::KeyEvent& event) {
   // Ignore character messages for VKEY_RETURN sent on CTRL+M. crbug.com/315547
   if (event_handler_->accept_return_character() ||
       event.GetCharacter() != ui::VKEY_RETURN) {
+    LOG(ERROR) << "inserting char=" << event.GetCharacter();
+    base::debug::StackTrace().Print();
     // Send a blink::WebInputEvent::Char event to |host_|.
     ForwardKeyboardEventWithLatencyInfo(
         NativeWebKeyboardEvent(event, event.GetCharacter()), *event.latency(),

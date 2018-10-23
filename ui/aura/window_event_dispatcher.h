@@ -75,6 +75,8 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   Window* mouse_moved_handler() { return mouse_moved_handler_; }
   Window* touchpad_pinch_handler() { return touchpad_pinch_handler_; }
 
+  WindowTargeter* event_targeter() { return event_targeter_.get(); }
+
   // Overridden from ui::EventProcessor:
   ui::EventTargeter* GetDefaultEventTargeter() override;
 

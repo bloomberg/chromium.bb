@@ -432,6 +432,7 @@ TEST(WindowTreeTest, SetWindowPointerPropertyWithInvalidValues) {
 
 TEST(WindowTreeTest, OnWindowInputEventAck) {
   WindowServiceTestSetup setup;
+  setup.set_ack_events_immediately(false);
   TestWindowTreeClient* window_tree_client = setup.window_tree_client();
   WindowTreeTestHelper* tree = setup.window_tree_test_helper();
   aura::Window* top_level = tree->NewTopLevelWindow();
@@ -490,19 +491,15 @@ TEST(WindowTreeTest, OnWindowInputEventAck) {
   tree->OnWindowInputEventAck(event6.event_id, ws::mojom::EventResult::HANDLED);
   EXPECT_EQ(2u, tree->in_flight_other_events().size());
 
-  // Send two more key events.
+  // Send a key-press.
   event_generator.PressKey(ui::VKEY_A, ui::EF_NONE);
-  event_generator.ReleaseKey(ui::VKEY_A, ui::EF_NONE);
-  ASSERT_EQ(2u, window_tree_client->input_events().size());
+  ASSERT_EQ(1u, window_tree_client->input_events().size());
   TestWindowTreeClient::InputEvent event7 = window_tree_client->PopInputEvent();
   ASSERT_TRUE(event7.event->IsKeyEvent());
-  TestWindowTreeClient::InputEvent event8 = window_tree_client->PopInputEvent();
-  ASSERT_TRUE(event8.event->IsKeyEvent());
-
-  // The client cannot ack the second key event before the first.
-  EXPECT_EQ(2u, tree->in_flight_key_events().size());
-  tree->OnWindowInputEventAck(event8.event_id, ws::mojom::EventResult::HANDLED);
-  EXPECT_EQ(2u, tree->in_flight_key_events().size());
+  // Acking the wrong event should be ignored.
+  tree->OnWindowInputEventAck(event7.event_id + 11,
+                              ws::mojom::EventResult::HANDLED);
+  EXPECT_EQ(1u, tree->in_flight_key_events().size());
 }
 
 TEST(WindowTreeTest, EventLocation) {
@@ -1583,6 +1580,8 @@ TEST(WindowTreeTest, StackAtTop) {
 TEST(WindowTreeTest, OnUnhandledKeyEvent) {
   // Create a top-level, show it and give it focus.
   WindowServiceTestSetup setup;
+  // This test acks its own events.
+  setup.set_ack_events_immediately(false);
   aura::Window* top_level =
       setup.window_tree_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(top_level);

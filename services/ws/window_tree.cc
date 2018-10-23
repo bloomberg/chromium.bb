@@ -191,7 +191,7 @@ void WindowTree::SendEventToClient(aura::Window* window,
     event_observer_helper_->ClearPendingEvent();
 
   for (WindowServiceObserver& observer : window_service_->observers())
-    observer.OnWillSendEventToClient(client_id_, event_id);
+    observer.OnWillSendEventToClient(client_id_, event_id, event);
 
   std::unique_ptr<ui::Event> event_to_send = ui::Event::Clone(event);
   if (event.IsLocatedEvent()) {
@@ -213,7 +213,8 @@ void WindowTree::SendEventToClient(aura::Window* window,
   }
   DVLOG(4) << "SendEventToClient window="
            << ServerWindow::GetMayBeNull(window)->GetIdForDebugging()
-           << " event_type=" << ui::EventTypeName(event.type());
+           << " event_type=" << ui::EventTypeName(event.type())
+           << " event_id=" << event_id;
   window_tree_client_->OnWindowInputEvent(
       event_id, TransportIdForWindow(window), display_id,
       std::move(event_to_send), matches_event_observer);
@@ -1887,6 +1888,7 @@ void WindowTree::SetEventTargetingPolicy(Id transport_window_id,
 
 void WindowTree::OnWindowInputEventAck(uint32_t event_id,
                                        mojom::EventResult result) {
+  DVLOG(4) << "OnWindowInputEventAck id=" << event_id;
   std::unique_ptr<ui::Event> key_event;
   if (!in_flight_key_events_.empty() &&
       in_flight_key_events_.front()->id == event_id) {
@@ -1901,13 +1903,13 @@ void WindowTree::OnWindowInputEventAck(uint32_t event_id,
     return;
   }
 
-  for (WindowServiceObserver& observer : window_service_->observers())
-    observer.OnClientAckedEvent(client_id_, event_id);
-
   if (key_event && result == mojom::EventResult::UNHANDLED) {
     window_service_->delegate()->OnUnhandledKeyEvent(
         *(key_event->AsKeyEvent()));
   }
+
+  for (WindowServiceObserver& observer : window_service_->observers())
+    observer.OnClientAckedEvent(client_id_, event_id);
 }
 
 void WindowTree::DeactivateWindow(Id transport_window_id) {
