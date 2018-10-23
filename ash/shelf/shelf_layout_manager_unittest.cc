@@ -375,6 +375,19 @@ class ShelfLayoutManagerTest : public AshTestBase {
     timestamp_ += base::TimeDelta::FromMilliseconds(25);
   }
 
+  wm::WorkspaceWindowState GetWorkspaceWindowState() const {
+    const auto* shelf_window = GetShelfWidget()->GetNativeWindow();
+    return RootWindowController::ForWindow(shelf_window)
+        ->GetWorkspaceWindowState();
+  }
+
+  const ui::Layer* GetNonLockScreenContainersContainerLayer() const {
+    const auto* shelf_window = GetShelfWidget()->GetNativeWindow();
+    return shelf_window->GetRootWindow()
+        ->GetChildById(kShellWindowId_NonLockScreenContainersContainer)
+        ->layer();
+  }
+
  private:
   base::TimeTicks timestamp_;
   gfx::Point current_point_;
@@ -1290,6 +1303,8 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfHiddenState) {
   wm::ActivateWindow(window);
   GetAppListTestHelper()->CheckVisibility(false);
   EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
+  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN, GetWorkspaceWindowState());
+  EXPECT_FALSE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
 
   // Show the app list and the shelf should be temporarily visible.
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
@@ -1375,12 +1390,16 @@ TEST_F(ShelfLayoutManagerTest, ShelfWithSystemModalWindowDualDisplay) {
 // toggles visibility when another window is activated.
 TEST_F(ShelfLayoutManagerTest, FullscreenWindowInFrontHidesShelf) {
   Shelf* shelf = GetPrimaryShelf();
+  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_DEFAULT, GetWorkspaceWindowState());
+  EXPECT_TRUE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
 
   // Create a window and make it full screen.
   aura::Window* window1 = CreateTestWindow();
   window1->SetBounds(gfx::Rect(0, 0, 100, 100));
   window1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   window1->Show();
+  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN, GetWorkspaceWindowState());
+  EXPECT_FALSE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
 
   aura::Window* window2 = CreateTestWindow();
   window2->SetBounds(gfx::Rect(0, 0, 100, 100));
@@ -2035,9 +2054,8 @@ TEST_F(ShelfLayoutManagerTest, AutohideShelfForAutohideWhenActiveWindow) {
   widget_two->Maximize();
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
 
-  wm::WorkspaceWindowState window_state =
-      RootWindowController::ForWindow(shelf_window)->GetWorkspaceWindowState();
-  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_MAXIMIZED, window_state);
+  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_MAXIMIZED, GetWorkspaceWindowState());
+  EXPECT_FALSE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
 }
 
 TEST_F(ShelfLayoutManagerTest, ShelfFlickerOnTrayActivation) {
@@ -2115,6 +2133,42 @@ TEST_F(ShelfLayoutManagerTest, BackgroundTypeWhenLockingScreen) {
   EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
 }
 
+TEST_F(ShelfLayoutManagerTest, WorkspaceMask) {
+  std::unique_ptr<aura::Window> w1(CreateTestWindow());
+  w1->Show();
+  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_DEFAULT, GetWorkspaceWindowState());
+  EXPECT_TRUE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
+
+  // Overlaps with shelf.
+  w1->SetBounds(GetShelfLayoutManager()->GetIdealBounds());
+  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF,
+            GetWorkspaceWindowState());
+  EXPECT_TRUE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
+
+  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_MAXIMIZED, GetWorkspaceWindowState());
+  EXPECT_FALSE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
+
+  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
+  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN, GetWorkspaceWindowState());
+  EXPECT_FALSE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
+
+  std::unique_ptr<aura::Window> w2(CreateTestWindow());
+  w2->Show();
+  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF,
+            GetWorkspaceWindowState());
+  EXPECT_TRUE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
+
+  w2.reset();
+  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN, GetWorkspaceWindowState());
+  EXPECT_FALSE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
+
+  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF,
+            GetWorkspaceWindowState());
+  EXPECT_TRUE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
+}
+
 TEST_F(ShelfLayoutManagerTest, ShelfBackgroundColor) {
   EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
 
@@ -2148,10 +2202,8 @@ TEST_F(ShelfLayoutManagerTest, ShelfBackgroundColor) {
   w3->Show();
   wm::ActivateWindow(w3.get());
 
-  wm::WorkspaceWindowState window_state =
-      RootWindowController::ForWindow(GetShelfWidget()->GetNativeWindow())
-          ->GetWorkspaceWindowState();
-  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_MAXIMIZED, window_state);
+  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_MAXIMIZED, GetWorkspaceWindowState());
+  EXPECT_FALSE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
 
   w3.reset();
   w1.reset();
@@ -2181,9 +2233,7 @@ TEST_F(ShelfLayoutManagerTest, TabletModeTransitionWithAppListVisible) {
 
   // |window| should be maximized, and the shelf background should match the
   // maximized state.
-  EXPECT_EQ(
-      wm::WORKSPACE_WINDOW_STATE_MAXIMIZED,
-      RootWindowController::ForWindow(window.get())->GetWorkspaceWindowState());
+  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_MAXIMIZED, GetWorkspaceWindowState());
   EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, GetShelfWidget()->GetBackgroundType());
 }
 
