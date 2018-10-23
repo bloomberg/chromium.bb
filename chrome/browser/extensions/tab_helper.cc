@@ -107,10 +107,13 @@ TabHelper::TabHelper(content::WebContents* web_contents)
   BookmarkManagerPrivateDragEventRouter::CreateForWebContents(web_contents);
 }
 
-void TabHelper::CreateHostedAppFromWebContents(bool shortcut_app_requested) {
+void TabHelper::CreateHostedAppFromWebContents(bool shortcut_app_requested,
+                                               OnceInstallCallback callback) {
   DCHECK(CanCreateBookmarkApp());
   if (pending_web_app_action_ != NONE)
     return;
+
+  install_callback_ = std::move(callback);
 
   // Start fetching web app info for CreateApplicationShortcut dialog and show
   // the dialog when the data is available in OnDidGetWebApplicationInfo.
@@ -198,6 +201,10 @@ void TabHelper::FinishCreateBookmarkApp(
                     blink::kWebDisplayModeStandalone);
   }
   pending_web_app_action_ = NONE;
+
+  const bool success = !!extension;
+  const ExtensionId app_id = extension ? extension->id() : ExtensionId();
+  std::move(install_callback_).Run(app_id, success);
 }
 
 void TabHelper::RenderFrameCreated(content::RenderFrameHost* host) {

@@ -24,7 +24,7 @@ void BookmarkAppInstallManager::InstallWebApp(
     content::WebContents* web_contents,
     bool force_shortcut_app) {
   extensions::TabHelper::FromWebContents(web_contents)
-      ->CreateHostedAppFromWebContents(force_shortcut_app);
+      ->CreateHostedAppFromWebContents(force_shortcut_app, base::DoNothing());
 }
 
 }  // namespace extensions
