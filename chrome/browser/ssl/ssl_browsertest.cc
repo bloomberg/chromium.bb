@@ -2500,6 +2500,30 @@ std::unique_ptr<net::ClientCertStore> CreateCertStore() {
       new ClientCertStoreStub(std::move(cert_identity_list)));
 }
 
+std::unique_ptr<net::ClientCertStore> CreateFailSigningCertStore() {
+  base::FilePath certs_dir = net::GetTestCertsDirectory();
+
+  net::ClientCertIdentityList cert_identity_list;
+
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+
+    std::unique_ptr<net::FakeClientCertIdentity> cert_identity =
+        net::FakeClientCertIdentity::CreateFromCertAndFailSigning(
+            certs_dir, "client_1.pem");
+    EXPECT_TRUE(cert_identity.get());
+    if (cert_identity)
+      cert_identity_list.push_back(std::move(cert_identity));
+  }
+
+  return std::unique_ptr<net::ClientCertStore>(
+      new ClientCertStoreStub(std::move(cert_identity_list)));
+}
+
+std::unique_ptr<net::ClientCertStore> CreateEmptyCertStore() {
+  return std::unique_ptr<net::ClientCertStore>(new ClientCertStoreStub({}));
+}
+
 IN_PROC_BROWSER_TEST_P(SSLUITest, TestBrowserUseClientCertStore) {
   // Make the browser use the ClientCertStoreStub instead of the regular one.
   ProfileIOData::FromResourceContext(browser()->profile()->GetResourceContext())
@@ -2533,6 +2557,69 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestBrowserUseClientCertStore) {
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
                                                             https_url, 1);
   EXPECT_EQ("pass", tab->GetLastCommittedURL().ref());
+}
+
+IN_PROC_BROWSER_TEST_P(SSLUITest, TestClientAuthSigningFails) {
+  // Make the browser use the ClientCertStoreStub instead of the regular one.
+  ProfileIOData::FromResourceContext(browser()->profile()->GetResourceContext())
+      ->set_client_cert_store_factory_for_testing(
+          base::BindRepeating(&CreateFailSigningCertStore));
+
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  net::SSLServerConfig ssl_config;
+  ssl_config.client_cert_type =
+      net::SSLServerConfig::ClientCertType::REQUIRE_CLIENT_CERT;
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
+  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  ASSERT_TRUE(https_server.Start());
+  GURL https_url =
+      https_server.GetURL("/ssl/browser_use_client_cert_store.html");
+
+  // Add an entry into AutoSelectCertificateForUrls policy for automatic client
+  // cert selection.
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
+  DCHECK(profile);
+  std::unique_ptr<base::DictionaryValue> setting =
+      std::make_unique<base::DictionaryValue>();
+  base::Value* filters = setting->SetKey("filters", base::ListValue());
+  filters->GetList().push_back(base::DictionaryValue());
+  HostContentSettingsMapFactory::GetForProfile(profile)
+      ->SetWebsiteSettingDefaultScope(
+          https_url, GURL(), CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
+          std::string(), std::move(setting));
+
+  // Visit a HTTPS page which requires client certs.
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
+                                                            https_url, 1);
+  // Page should not load successfully.
+  EXPECT_EQ("", tab->GetLastCommittedURL().ref());
+}
+
+IN_PROC_BROWSER_TEST_P(SSLUITest, TestClientAuthContinueWithoutCert) {
+  // Make the browser use a ClientCertStoreStub that returns no certs.
+  ProfileIOData::FromResourceContext(browser()->profile()->GetResourceContext())
+      ->set_client_cert_store_factory_for_testing(
+          base::BindRepeating(&CreateEmptyCertStore));
+
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  net::SSLServerConfig ssl_config;
+  ssl_config.client_cert_type =
+      net::SSLServerConfig::ClientCertType::REQUIRE_CLIENT_CERT;
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
+  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  ASSERT_TRUE(https_server.Start());
+  GURL https_url =
+      https_server.GetURL("/ssl/browser_use_client_cert_store.html");
+
+  // Visit a HTTPS page which requires client certs.
+  // The browser should automatically continue to the site without a client
+  // cert, since the ClientCertStore returns no certs.
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
+                                                            https_url, 1);
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  // Page should not load successfully.
+  EXPECT_EQ("", tab->GetLastCommittedURL().ref());
 }
 
 // Open a page with a HTTPS error in a tab with no prior navigation (through a
