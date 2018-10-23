@@ -481,17 +481,14 @@ void V4L2VideoDecodeAccelerator::CreateEGLImageFor(
   }
 
   decoder_thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&V4L2VideoDecodeAccelerator::AssignEGLImage,
-                 base::Unretained(this), buffer_index, picture_buffer_id,
-                 egl_image, base::Passed(&dmabuf_fds)));
+      FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::AssignEGLImage,
+                            base::Unretained(this), buffer_index,
+                            picture_buffer_id, egl_image));
 }
 
-void V4L2VideoDecodeAccelerator::AssignEGLImage(
-    size_t buffer_index,
-    int32_t picture_buffer_id,
-    EGLImageKHR egl_image,
-    std::vector<base::ScopedFD> dmabuf_fds) {
+void V4L2VideoDecodeAccelerator::AssignEGLImage(size_t buffer_index,
+                                                int32_t picture_buffer_id,
+                                                EGLImageKHR egl_image) {
   DVLOGF(3) << "index=" << buffer_index << ", picture_id=" << picture_buffer_id;
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
@@ -521,10 +518,6 @@ void V4L2VideoDecodeAccelerator::AssignEGLImage(
   DCHECK_EQ(output_record.state, kFree);
 
   output_record.egl_image = egl_image;
-  if (output_mode_ == Config::OutputMode::IMPORT) {
-    DCHECK(output_record.output_fds.empty());
-    output_record.output_fds.swap(dmabuf_fds);
-  }
   // Drop our reference so the buffer returns to the queue and can be reused.
   output_wait_map_.erase(picture_buffer_id);
 
@@ -645,7 +638,11 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
     DVLOGF(3) << "Change state to kDecoding";
   }
 
-  size_t index = iter - output_buffer_map_.begin();
+  if (output_mode_ == Config::OutputMode::IMPORT) {
+    DCHECK_EQ(egl_image_planes_count_, dmabuf_fds.size());
+    DCHECK(iter->output_fds.empty());
+    iter->output_fds = DuplicateFDs(dmabuf_fds);
+  }
 
   iter->state = kFree;
   if (iter->texture_id != 0) {
@@ -656,6 +653,7 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
                      egl_display_, iter->egl_image));
     }
 
+    size_t index = iter - output_buffer_map_.begin();
     child_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&V4L2VideoDecodeAccelerator::CreateEGLImageFor,
@@ -664,10 +662,6 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
                        egl_image_size_, egl_image_format_fourcc_));
   } else {
     // No need for an EGLImage, start using this buffer now.
-    DCHECK_EQ(egl_image_planes_count_, dmabuf_fds.size());
-    iter->output_fds.swap(dmabuf_fds);
-    // If this was the first import, release the reference to the buffer
-    // so it can be used.
     output_wait_map_.erase(picture_buffer_id);
     if (decoder_state_ != kChangingResolution) {
       Enqueue();
