@@ -98,7 +98,6 @@
 <translation id="2529021024822217800">Ava kõik</translation>
 <translation id="2572712655377361602">Seadme reegel blokeeris juurdepääsu teie fotodele</translation>
 <translation id="2584132361465095047">Lisa konto …</translation>
-<translation id="2593774076813182497">Lehte ei saa printida.</translation>
 <translation id="2625189173221582860">Parool on kopeeritud</translation>
 <translation id="2648803196158606475">Kustuta loetud</translation>
 <translation id="2653659639078652383">Esita</translation>
@@ -226,8 +225,12 @@
 
 Teie andmed on krüpteeritud teie sünkroonimisparooliga. Sisestage see sünkroonimise alustamiseks.</translation>
 <translation id="473775607612524610">Värskenda</translation>
+<translation id="4747097190499141774">Parooli krüpteerimine ei hõlma Google Pay makseviise ega aadresse. Teie krüpteeritud andmeid saavad lugeda vaid need, kes teavad teie parooli – seda ei saadeta Google'ile ja Google ei talleta seda. Kui unustate parooli või soovite seda seadet muuta, tuleb teil sünkroonimine lähtestada. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Otsi lehelt ...</translation>
 <translation id="4751645464639803239">Uus inkognito vaheleht</translation>
+<translation id="4802417911091824046">Parooli krüpteerimine ei hõlma Google Pay makseviise ja aadresse.
+
+Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">Lugemisloendis on 1 lugemata artikkel.</translation>
 <translation id="481968316161811770">Küpsis., saidi andm.</translation>
 <translation id="4854345657858711387">Pääsukoodi seadistamine</translation>

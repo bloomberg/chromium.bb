@@ -98,7 +98,6 @@
 <translation id="2529021024822217800">Apri tutto</translation>
 <translation id="2572712655377361602">Una norma relativa ai dispositivi ha impedito l'accesso alle tue foto</translation>
 <translation id="2584132361465095047">Aggiungi account…</translation>
-<translation id="2593774076813182497">Impossibile stampare la pagina.</translation>
 <translation id="2625189173221582860">Password copiata</translation>
 <translation id="2648803196158606475">Elimina voci lette</translation>
 <translation id="2653659639078652383">Invia</translation>
@@ -226,8 +225,12 @@
 
 I tuoi dati vengono criptati con la tua passphrase di sincronizzazione. Inseriscila per avviare la sincronizzazione.</translation>
 <translation id="473775607612524610">Aggiorna</translation>
+<translation id="4747097190499141774">La crittografia della passphrase non include metodi di pagamento e indirizzi di Google Pay. Soltanto chi conosce la tua passphrase può leggere i tuoi dati criptati. La passphrase non viene inviata a Google né memorizzata. Se dimentichi la passphrase o vuoi modificare questa impostazione, dovrai reimpostare la sincronizzazione. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Trova nella pagina...</translation>
 <translation id="4751645464639803239">Nuova scheda in incognito</translation>
+<translation id="4802417911091824046">La crittografia della passphrase non include metodi di pagamento e indirizzi di Google Pay.
+
+Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincronizzazione<ph name="END_LINK" />.</translation>
 <translation id="4807020197310989387">1 articolo dell'elenco di lettura da leggere.</translation>
 <translation id="481968316161811770">Cookie, dati dei siti</translation>
 <translation id="4854345657858711387">Imposta un passcode</translation>

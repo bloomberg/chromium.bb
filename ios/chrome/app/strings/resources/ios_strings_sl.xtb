@@ -98,7 +98,6 @@
 <translation id="2529021024822217800">Odpri vse</translation>
 <translation id="2572712655377361602">Pravilnik o napravah je blokiral dostop do fotografij.</translation>
 <translation id="2584132361465095047">Dodajanje računa ...</translation>
-<translation id="2593774076813182497">Te strani ni mogoče natisniti</translation>
 <translation id="2625189173221582860">Geslo kopirano</translation>
 <translation id="2648803196158606475">Izbriši prebrano</translation>
 <translation id="2653659639078652383">Pošlji</translation>
@@ -224,8 +223,12 @@
 
 Podatki so šifrirani z vašim geslom za sinhronizacijo. Vnesite ga, če želite začeti sinhronizacijo.</translation>
 <translation id="473775607612524610">Posodobi</translation>
+<translation id="4747097190499141774">Šifriranje gesla ne vključuje plačilnih sredstev in naslovov iz Googla Pay. Vaše šifrirane podatke lahko bere samo oseba z vašim geslom. Geslo ni poslano Googlu in ni shranjeno v Googlu. Če ga pozabite ali želite spremeniti to nastavitev, boste morali sinhronizacijo ponastaviti. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Poišči na strani</translation>
 <translation id="4751645464639803239">Nov zavihek brez beleženja zgodovine</translation>
+<translation id="4802417911091824046">Šifriranje gesla ne vključuje plačilnih sredstev in naslovov iz Googla Pay.
+
+Če želite spremeniti to nastavitev, <ph name="BEGIN_LINK" />ponastavite sinhronizacijo<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">1 neprebran članek s seznama za branje.</translation>
 <translation id="481968316161811770">Cookies, Site Data</translation>
 <translation id="4854345657858711387">Nastavitev gesla</translation>

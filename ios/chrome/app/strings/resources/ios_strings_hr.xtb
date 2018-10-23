@@ -98,7 +98,6 @@
 <translation id="2529021024822217800">Otvori sve</translation>
 <translation id="2572712655377361602">Pravila za uređaje blokirala su pristup fotografijama</translation>
 <translation id="2584132361465095047">Dodaj račun…</translation>
-<translation id="2593774076813182497">Stranicu nije moguće ispisati.</translation>
 <translation id="2625189173221582860">Zaporka je kopirana</translation>
 <translation id="2648803196158606475">Izbriši pročitano</translation>
 <translation id="2653659639078652383">Pošalji</translation>
@@ -226,8 +225,12 @@
 
 Vaši su podaci šifrirani vašom šifrom za sinkronizaciju. Unesite je da biste pokrenuli sinkronizaciju.</translation>
 <translation id="473775607612524610">Ažuriraj</translation>
+<translation id="4747097190499141774">Enkripcija šifrom ne uključuje podatke o načinima plaćanja i adresama s Google Paya. Samo osoba koja ima vašu šifru može čitati vaše kriptirane podatke. Šifra se ne šalje Googleu niti se na njemu pohranjuje. Ako zaboravite šifru ili želite promijeniti tu postavku, morate poništiti sinkronizaciju. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Traži na stranici...</translation>
 <translation id="4751645464639803239">Nova anonimna kartica</translation>
+<translation id="4802417911091824046">Enkripcija šifrom ne uključuje načine plaćanja i adrese s Google Paya.
+
+Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizaciju<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">Jedan nepročitani članak na popisu za čitanje.</translation>
 <translation id="481968316161811770">Kolačići, podaci web-lokacije</translation>
 <translation id="4854345657858711387">Postavite šifru zaporke</translation>

@@ -1057,7 +1057,6 @@
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> was unable to connect to <ph name="NETWORK_ID" />. Please select another network or try again.</translation>
 <translation id="2553440850688409052">Hide This Plug-in</translation>
 <translation id="2554553592469060349">Selected file is too big (max size: 3mb).</translation>
-<translation id="2557899542277210112">For quick access, place your bookmarks here on the bookmarks bar.</translation>
 <translation id="2558896001721082624">Always show accessibility options in the system menu</translation>
 <translation id="2562685439590298522">Docs</translation>
 <translation id="2562743677925229011">Not signed in to <ph name="SHORT_PRODUCT_NAME" /></translation>
@@ -4172,6 +4171,7 @@
 <translation id="7243632151880336635">Clear and Sign Out</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (Best)</translation>
 <translation id="7246947237293279874">FTP Proxy</translation>
+<translation id="7248671827512403053">Application</translation>
 <translation id="725109152065019550">Sorry, your administrator has disabled external storage on your account.</translation>
 <translation id="7253521419891527137">&amp;Learn More</translation>
 <translation id="7254554697254365959">This Page Could Not Be Translated.</translation>
@@ -4992,7 +4992,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8481187309597259238">Confirm USB Permission</translation>
 <translation id="8483248364096924578">IP address</translation>
 <translation id="8487678622945914333">Zoom In</translation>
-<translation id="8487693399751278191">Import bookmarks now...</translation>
 <translation id="8487700953926739672">Available offline</translation>
 <translation id="8490896350101740396">The following kiosk apps "<ph name="UPDATED_APPS" />" have been updated. Please reboot the device to complete the update process.</translation>
 <translation id="8493236660459102203">Microphone:</translation>
@@ -5229,7 +5228,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8845001906332463065">Get help</translation>
 <translation id="8846132060409673887">Read the manufacturer and model of this computer</translation>
 <translation id="8846141544112579928">Searching for keyboard...</translation>
-<translation id="8846319957959474018">Open apps easily with bookmarks</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8848561196844274665">When you connect your devices, you agree that your Chromebook can:</translation>
 <translation id="8859057652521303089">Select your language:</translation>

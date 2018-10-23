@@ -352,7 +352,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Fortryder og vender tilbage til den gamle opløsning om <ph name="TIMEOUT_SECONDS" /> sekunder.</translation>
 <translation id="7256634071279256947">Mikrofon på bagsiden</translation>
-<translation id="726276584504105859">Træk hertil for at bruge delt skærm</translation>
+<translation id="726276584504105859">Træk hertil for at bruge opdelt skærm</translation>
 <translation id="7303365578352795231">Besvares på en anden enhed</translation>
 <translation id="7348093485538360975">Skærmtastatur</translation>
 <translation id="735745346212279324">VPN afbrudt</translation>
@@ -446,9 +446,9 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8828714802988429505">90°</translation>
 <translation id="8843682306134542540">Slå Lås rotation til eller fra. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Søg+Esc</translation>
-<translation id="8870509716567206129">Appen understøtter ikke delt skærm.</translation>
+<translation id="8870509716567206129">Appen understøtter ikke opdelt skærm.</translation>
 <translation id="8874184842967597500">Ikke tilsluttet</translation>
-<translation id="8877788021141246043">Indstil en påmindelse</translation>
+<translation id="8877788021141246043">Opret en påmindelse</translation>
 <translation id="8878886163241303700">Udvider skærm</translation>
 <translation id="8921624153894383499">Google-assistenten taler ikke dette sprog.</translation>
 <translation id="8938800817013097409">USB-C-enhed (porten bagpå i højre side)</translation>

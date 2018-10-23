@@ -106,7 +106,6 @@
 <translation id="1743802530341753419">允許網站連線至裝置前，必須先詢問你 (建議)</translation>
 <translation id="1749561566933687563">同步處理您的書籤</translation>
 <translation id="17513872634828108">開啟分頁</translation>
-<translation id="1756600373018374892">輕觸這個按鈕即可快速存取分頁。</translation>
 <translation id="1779089405699405702">影像解碼器</translation>
 <translation id="1782483593938241562">結束日期：<ph name="DATE" /></translation>
 <translation id="1792959175193046959">你隨時可以變更預設的下載位置</translation>
@@ -297,6 +296,7 @@
 <translation id="3295602654194328831">隱藏資訊</translation>
 <translation id="3298243779924642547">精簡版本</translation>
 <translation id="3303414029551471755">繼續下載這項內容？</translation>
+<translation id="3306398118552023113">Chrome 正在執行這個應用程式</translation>
 <translation id="3328801116991980348">網站資訊</translation>
 <translation id="3341058695485821946">查看節省的數據用量</translation>
 <translation id="3350687908700087792">關閉所有無痕式分頁</translation>
@@ -309,6 +309,7 @@
 <translation id="3398320232533725830">開啟書籤管理員</translation>
 <translation id="3414952576877147120">空間大小：</translation>
 <translation id="3443221991560634068">重新載入目前網頁</translation>
+<translation id="3445014427084483498">剛剛</translation>
 <translation id="3452612588551937789">只要使用 Google 帳戶登入，您就可以在所有裝置上存取自己的書籤、密碼、歷史記錄、密碼和其他設定。</translation>
 <translation id="3485359633434254965">{FILES,plural, =1{已下載 %1$d 個檔案}other{已下載 %1$d 個檔案}}</translation>
 <translation id="3492207499832628349">新無痕式分頁</translation>
@@ -361,6 +362,7 @@
 <translation id="3950820424414687140">登入</translation>
 <translation id="395206256282351086">已停用搜尋與網站建議</translation>
 <translation id="3955193568934677022">允許網站播放受保護的內容 (建議)</translation>
+<translation id="3963007978381181125">通關密語加密保護的資料不包括 Google Pay 的付款方式和地址。只有知道你通關密語的使用者，才能讀取加密保護的資料。系統不會將通關密語傳送給 Google，Google 也不會儲存通關密語。如果你忘記自己的通關密語，或是想變更這項設定，則必須重設同步功能。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">下載完成</translation>
 <translation id="397583555483684758">同步處理功能已停止運作</translation>
 <translation id="3976396876660209797">移除這個捷徑後再重新建立</translation>
@@ -399,7 +401,9 @@
 <translation id="4195643157523330669">在新分頁中開啟</translation>
 <translation id="4198423547019359126">沒有可用的下載位置</translation>
 <translation id="4209895695669353772">如要取得個人化的 Google 推薦內容，請開啟同步處理功能</translation>
+<translation id="4225719675976901337">找不到內容</translation>
 <translation id="4226663524361240545">收到通知時裝置會震動</translation>
+<translation id="423219824432660969">使用你在 <ph name="TIME" />設定的 Google 密碼，加密保護同步資料</translation>
 <translation id="4242533952199664413">開啟設定</translation>
 <translation id="4243710787042215766">在私密分頁中開啟</translation>
 <translation id="424864128008805179">要登出 Chrome 嗎？</translation>
@@ -469,6 +473,9 @@
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{已完成 1 項下載作業。}other{已完成 # 項下載作業。}}</translation>
 <translation id="4766369052440583386">Data Saver 已開啟</translation>
 <translation id="4797039098279997504">輕觸即可返回 <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
+<translation id="4802417911091824046">通關密語加密保護的資料不包括 Google Pay 的付款方式和地址。
+
+如要變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">持卡人姓名</translation>
 <translation id="4807963036345170158">Data Saver 已關閉</translation>
 <translation id="4816465935029283692">資料類型</translation>
@@ -480,6 +487,7 @@
 <translation id="4874967477260347223">媒體授權</translation>
 <translation id="4875775213178255010">內容建議</translation>
 <translation id="4878404682131129617">無法透過 Proxy 伺服器建立通道</translation>
+<translation id="4880127995492972015">翻譯...</translation>
 <translation id="4881695831933465202">開啟</translation>
 <translation id="488187801263602086">重新命名檔案</translation>
 <translation id="4882831918239250449">控制 Google 使用瀏覽記錄提供個人化搜尋服務、廣告和其他內容的方式</translation>
@@ -737,6 +745,7 @@
 <translation id="6738867403308150051">下載中…</translation>
 <translation id="6746124502594467657">下移</translation>
 <translation id="6766622839693428701">向下滑動即可關閉。</translation>
+<translation id="6766758767654711248">輕觸即可前往網站</translation>
 <translation id="6768277682697012280">正在安裝 AR 模組...</translation>
 <translation id="6776813977906306442">使用 [下載] 按鈕可下載影片以供日後觀看</translation>
 <translation id="6782111308708962316">禁止第三方網站儲存及讀取 Cookie 資料</translation>
@@ -953,6 +962,7 @@
 <translation id="8441146129660941386">倒轉到特定的播放時間點</translation>
 <translation id="8445448999790540984">無法匯出密碼</translation>
 <translation id="8447861592752582886">撤銷裝置權限</translation>
+<translation id="8461694314515752532">使用你自己的同步通關密語，加密保護同步資料</translation>
 <translation id="8477071352266846533"><ph name="SYNC_ACCOUNT_USER_NAME" /> 已停用同步處理</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">可離線使用</translation>
@@ -999,10 +1009,12 @@
 <translation id="8748850008226585750">內容已隱藏</translation>
 <translation id="8751914237388039244">選取圖片</translation>
 <translation id="8788968922598763114">重新開啟最近關閉的分頁</translation>
+<translation id="8801436777607969138">封鎖特定網站的 JavaScript。</translation>
 <translation id="8812260976093120287">在部分網站上，你可以在你的裝置上使用上述支援的付款應用程式付款。</translation>
 <translation id="8816439037877937734">「<ph name="APP_NAME" />」將在 Chrome 中開啟。繼續操作即表示您同意接受 Chrome 的《<ph name="BEGIN_LINK1" />服務條款<ph name="END_LINK1" />》和《<ph name="BEGIN_LINK2" />隱私權聲明<ph name="END_LINK2" />》，以及《<ph name="BEGIN_LINK3" />透過 Family Link 管理的 Google 帳戶所適用的隱私權聲明<ph name="END_LINK3" />》。</translation>
 <translation id="8820817407110198400">書籤</translation>
 <translation id="8823704566850948458">建議密碼...</translation>
+<translation id="8833831881926404480">有網站正在共用你的螢幕畫面</translation>
 <translation id="883806473910249246">下載這項內容時發生錯誤。</translation>
 <translation id="8840953339110955557">這個網頁可能會和線上版本有所不同。</translation>
 <translation id="8847988622838149491">USB</translation>

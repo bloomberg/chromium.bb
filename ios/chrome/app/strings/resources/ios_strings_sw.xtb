@@ -98,7 +98,6 @@
 <translation id="2529021024822217800">Fungua Zote</translation>
 <translation id="2572712655377361602">Sera ya kifaa imezuia idhini ya kufikia picha zako</translation>
 <translation id="2584132361465095047">Ongeza Akaunti...</translation>
-<translation id="2593774076813182497">Ukurasa huu hauwezi kuchapishwa.</translation>
 <translation id="2625189173221582860">Nenosiri limenakiliwa</translation>
 <translation id="2648803196158606475">Futa Zilizosomwa</translation>
 <translation id="2653659639078652383">Wasilisha</translation>
@@ -226,8 +225,12 @@
 
 Data yako imesimbwa kwa njia fiche kwa kauli yako ya siri ya usawazishaji. Iweke ili uanze kusawazisha.</translation>
 <translation id="473775607612524610">Sasisha</translation>
+<translation id="4747097190499141774">Usimbaji fiche wa kauli ya siri haujumuishi njia za kulipa na anwani kutoka Google Pay. Mtu aliye na kauli yako ya siri ndiye tu anayeweza kusoma data yako iliyosimbwa kwa njia fiche. Kauli ya siri haitumwi kwa au kuhifadhiwa na Google. Ukisahau kauli yako ya siri au utake kubadilisha mipangilio hii, utahitaji kuweka upya mipangilio ya kusawazisha. <ph name="BEGIN_LINK" />Pata maelezo zaidi<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Tafuta katika Ukurasa...</translation>
 <translation id="4751645464639803239">Kichupo Fiche Kipya</translation>
+<translation id="4802417911091824046">Usimbaji fiche wa kauli ya siri haujumuishi njia za kulipa na anwani kutoka Google Pay.
+
+Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />weka upya mipangilio ya kusawazisha<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">Hujasoma makala 1 kwenye Orodha ya Kusoma.</translation>
 <translation id="481968316161811770">Data ya Vidakuzi na Tovuti</translation>
 <translation id="4854345657858711387">Weka Nambari ya Siri</translation>

@@ -98,7 +98,6 @@
 <translation id="2529021024822217800">Åbn alle</translation>
 <translation id="2572712655377361602">En enhedspolitik har blokeret adgangen til dine billeder</translation>
 <translation id="2584132361465095047">Tilføj konto...</translation>
-<translation id="2593774076813182497">Denne side kan ikke udskrives.</translation>
 <translation id="2625189173221582860">Adgangskoden er kopieret</translation>
 <translation id="2648803196158606475">Slet læste</translation>
 <translation id="2653659639078652383">Indsend</translation>
@@ -226,8 +225,12 @@
 
 Dine data er krypteret med din adgangssætning til synkronisering. Angiv den for at starte synkroniseringen.</translation>
 <translation id="473775607612524610">Opdater</translation>
+<translation id="4747097190499141774">Kryptering med adgangssætning omfatter ikke betalingsmetoder og adresser fra Google Pay. Det er kun personer med din adgangssætning, der kan læse dine krypterede data. Adgangssætningen sendes ikke til eller gemmes af Google. Hvis du glemmer din adgangssætning eller vil ændre denne indstilling, skal du nulstille synkronisering. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Find på siden...</translation>
 <translation id="4751645464639803239">Ny inkognitofane</translation>
+<translation id="4802417911091824046">Kryptering med adgangssætning omfatter ikke betalingsmetoder og adresser fra Google Pay.
+
+Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille synkronisering<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">1 ulæst artikel på læselisten.</translation>
 <translation id="481968316161811770">Cookies, websitedata</translation>
 <translation id="4854345657858711387">Angiv en adgangskode</translation>
