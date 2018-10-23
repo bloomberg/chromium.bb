@@ -328,6 +328,21 @@ void WaylandBufferManager::OnBufferSwapped(Buffer* buffer) {
       .Run(buffer->swap_result, std::move(buffer->feedback));
 }
 
+void WaylandBufferManager::AddSupportedFourCCFormat(uint32_t fourcc_format) {
+  // Return on not the supported fourcc format.
+  if (!IsValidBufferFormat(fourcc_format))
+    return;
+
+  // It can happen that ::Format or ::Modifiers call can have already added such
+  // a format. Thus, we can ignore that format.
+  gfx::BufferFormat format = GetBufferFormatFromFourCCFormat(fourcc_format);
+  auto it = std::find(supported_buffer_formats_.begin(),
+                      supported_buffer_formats_.end(), format);
+  if (it != supported_buffer_formats_.end())
+    return;
+  supported_buffer_formats_.push_back(format);
+}
+
 // static
 void WaylandBufferManager::Modifiers(
     void* data,
@@ -335,7 +350,9 @@ void WaylandBufferManager::Modifiers(
     uint32_t format,
     uint32_t modifier_hi,
     uint32_t modifier_lo) {
-  NOTIMPLEMENTED();
+  WaylandBufferManager* self = static_cast<WaylandBufferManager*>(data);
+  if (self)
+    self->AddSupportedFourCCFormat(format);
 }
 
 // static
@@ -343,11 +360,8 @@ void WaylandBufferManager::Format(void* data,
                                   struct zwp_linux_dmabuf_v1* zwp_linux_dmabuf,
                                   uint32_t format) {
   WaylandBufferManager* self = static_cast<WaylandBufferManager*>(data);
-  // Return on not the supported ARGB format.
-  if (format == DRM_FORMAT_ARGB2101010)
-    return;
-  self->supported_buffer_formats_.push_back(
-      GetBufferFormatFromFourCCFormat(format));
+  if (self)
+    self->AddSupportedFourCCFormat(format);
 }
 
 // static
