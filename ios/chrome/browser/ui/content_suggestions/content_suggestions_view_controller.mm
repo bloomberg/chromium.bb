@@ -212,6 +212,11 @@ const CGFloat kCardBorderRadius = 11;
     self.collectionView.contentInsetAdjustmentBehavior =
         UIScrollViewContentInsetAdjustmentNever;
   }
+#if !defined(__IPHONE_11_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_11_0
+  else {
+    self.automaticallyAdjustsScrollViewInsets = NO;
+  }
+#endif
   self.collectionView.accessibilityIdentifier =
       [[self class] collectionAccessibilityIdentifier];
   _collectionUpdater.collectionViewController = self;
@@ -220,7 +225,6 @@ const CGFloat kCardBorderRadius = 11;
   self.collectionView.backgroundColor = ntp_home::kNTPBackgroundColor();
   self.styler.cellStyle = MDCCollectionViewCellStyleCard;
   self.styler.cardBorderRadius = kCardBorderRadius;
-  self.automaticallyAdjustsScrollViewInsets = NO;
   self.collectionView.translatesAutoresizingMaskIntoConstraints = NO;
 
   ApplyVisualConstraints(@[ @"V:|[collection]|", @"H:|[collection]|" ],

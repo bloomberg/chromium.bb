@@ -348,13 +348,16 @@ using toolbar_container::HeightRange;
     } else {
       self.additionalStackHeight = self.view.safeAreaInsets.bottom;
     }
-  } else {
+  }
+#if !defined(__IPHONE_11_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_11_0
+  else {
     if (self.orientation == ToolbarContainerOrientation::kTopToBottom) {
       self.additionalStackHeight = self.topLayoutGuide.length;
     } else {
       self.additionalStackHeight = self.bottomLayoutGuide.length;
     }
   }
+#endif
 }
 
 @end

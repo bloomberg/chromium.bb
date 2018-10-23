@@ -478,11 +478,14 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
         self.remoteTabsViewController.tableView.bounds,
         self.remoteTabsViewController.tableView.safeAreaInsets)));
     self.remoteTabsViewController.additionalSafeAreaInsets = additionalSafeArea;
-  } else {
+  }
+#if !defined(__IPHONE_11_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_11_0
+  else {
     // Must manually account for status bar in pre-iOS 11.
     inset.top += self.topLayoutGuide.length;
     self.remoteTabsViewController.tableView.contentInset = inset;
   }
+#endif
 }
 
 // Sets the proper insets for the Grid ViewControllers to accomodate for the
@@ -505,10 +508,13 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     inset.right = self.scrollView.safeAreaInsets.right;
     inset.top += self.scrollView.safeAreaInsets.top;
     inset.bottom += self.scrollView.safeAreaInsets.bottom;
-  } else {
+  }
+#if !defined(__IPHONE_11_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_11_0
+  else {
     // Must manually account for status bar in pre-iOS 11.
     inset.top += self.topLayoutGuide.length;
   }
+#endif
   self.incognitoTabsViewController.gridView.contentInset = inset;
   self.regularTabsViewController.gridView.contentInset = inset;
 }
@@ -761,13 +767,16 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
         constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor
                        constant:topToolbar.intrinsicContentSize.height]
         .active = YES;
-  } else {
+  }
+#if !defined(__IPHONE_11_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_11_0
+  else {
     // Top and bottom layout guides are deprecated starting in iOS 11.
     [topToolbar.bottomAnchor
         constraintEqualToAnchor:self.topLayoutGuide.bottomAnchor
                        constant:topToolbar.intrinsicContentSize.height]
         .active = YES;
   }
+#endif
 }
 
 // Adds the bottom toolbar and sets constraints.
@@ -791,13 +800,16 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
         constraintEqualToAnchor:bottomToolbar.topAnchor
                        constant:bottomToolbar.intrinsicContentSize.height]
         .active = YES;
-  } else {
+  }
+#if !defined(__IPHONE_11_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_11_0
+  else {
     // Top and bottom layout guides are deprecated starting in iOS 11.
     [bottomToolbar.topAnchor
         constraintEqualToAnchor:self.bottomLayoutGuide.topAnchor
                        constant:-bottomToolbar.intrinsicContentSize.height]
         .active = YES;
   }
+#endif
 }
 
 // Adds floating button and constraints.
