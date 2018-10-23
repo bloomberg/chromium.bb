@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/modules/animationworklet/animation_worklet_messaging_proxy.h"
 #include "third_party/blink/renderer/modules/animationworklet/animation_worklet_proxy_client.h"
-#include "third_party/blink/renderer/modules/animationworklet/animation_worklet_thread.h"
 
 base::AtomicSequenceNumber g_next_worklet_id;
 

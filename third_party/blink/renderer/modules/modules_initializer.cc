@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/modules/accessibility/inspector_accessibility_agent.h"
-#include "third_party/blink/renderer/modules/animationworklet/animation_worklet_thread.h"
 #include "third_party/blink/renderer/modules/app_banner/app_banner_controller.h"
 #include "third_party/blink/renderer/modules/audio_output_devices/audio_output_device_client.h"
 #include "third_party/blink/renderer/modules/audio_output_devices/audio_output_device_client_impl.h"
@@ -84,6 +83,7 @@
 #include "third_party/blink/renderer/modules/webdatabase/database_manager.h"
 #include "third_party/blink/renderer/modules/webdatabase/inspector_database_agent.h"
 #include "third_party/blink/renderer/modules/webdatabase/web_database_impl.h"
+#include "third_party/blink/renderer/modules/worklet/animation_and_paint_worklet_thread.h"
 #if defined(SUPPORT_WEBGL2_COMPUTE_CONTEXT)
 #include "third_party/blink/renderer/modules/webgl/webgl2_compute_rendering_context.h"
 #endif
@@ -284,8 +284,8 @@ void ModulesInitializer::ForceNextWebGLContextCreationToFail() const {
   WebGLRenderingContext::ForceNextWebGLContextCreationToFail();
 }
 
-void ModulesInitializer::CollectAllGarbageForAnimationWorklet() const {
-  AnimationWorkletThread::CollectAllGarbage();
+void ModulesInitializer::CollectAllGarbageForAnimationAndPaintWorklet() const {
+  AnimationAndPaintWorkletThread::CollectAllGarbage();
 }
 
 void ModulesInitializer::CloneSessionStorage(

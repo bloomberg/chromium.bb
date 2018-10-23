@@ -28,7 +28,7 @@ scheduling_metrics::ThreadType ConvertBlinkThreadType(
       return scheduling_metrics::ThreadType::kRendererDedicatedWorkerThread;
     case WebThreadType::kServiceWorkerThread:
       return scheduling_metrics::ThreadType::kRendererServiceWorkerThread;
-    case WebThreadType::kAnimationWorkletThread:
+    case WebThreadType::kAnimationAndPaintWorkletThread:
     case WebThreadType::kAudioWorkletThread:
     case WebThreadType::kDatabaseThread:
     case WebThreadType::kFileThread:

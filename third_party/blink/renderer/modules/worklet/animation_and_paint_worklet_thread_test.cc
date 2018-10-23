@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/animationworklet/animation_worklet_thread.h"
+#include "third_party/blink/renderer/modules/worklet/animation_and_paint_worklet_thread.h"
 
 #include <memory>
 #include "testing/gtest/include/gtest/gtest.h"
@@ -46,7 +46,7 @@ class TestAnimationWorkletProxyClient : public AnimationWorkletProxyClient {
 
 }  // namespace
 
-class AnimationWorkletThreadTest : public PageTestBase {
+class AnimationAndPaintWorkletThreadTest : public PageTestBase {
  public:
   void SetUp() override {
     PageTestBase::SetUp(IntSize());
@@ -56,13 +56,15 @@ class AnimationWorkletThreadTest : public PageTestBase {
     reporting_proxy_ = std::make_unique<WorkerReportingProxy>();
   }
 
-  std::unique_ptr<AnimationWorkletThread> CreateAnimationWorkletThread() {
+  std::unique_ptr<AnimationAndPaintWorkletThread>
+  CreateAnimationAndPaintWorkletThread() {
     WorkerClients* clients = WorkerClients::Create();
     ProvideAnimationWorkletProxyClientTo(clients,
                                          new TestAnimationWorkletProxyClient());
 
-    std::unique_ptr<AnimationWorkletThread> thread =
-        AnimationWorkletThread::Create(*reporting_proxy_);
+    std::unique_ptr<AnimationAndPaintWorkletThread> thread =
+        AnimationAndPaintWorkletThread::CreateForAnimationWorklet(
+            *reporting_proxy_);
     Document* document = &GetDocument();
     thread->Start(
         std::make_unique<GlobalScopeCreationParams>(
@@ -84,10 +86,10 @@ class AnimationWorkletThreadTest : public PageTestBase {
         std::make_unique<WaitableEvent>();
     thread->GetWorkerBackingThread().BackingThread().PostTask(
         FROM_HERE,
-        CrossThreadBind(&AnimationWorkletThreadTest::ExecuteScriptInWorklet,
-                        CrossThreadUnretained(this),
-                        CrossThreadUnretained(thread),
-                        CrossThreadUnretained(wait_event.get())));
+        CrossThreadBind(
+            &AnimationAndPaintWorkletThreadTest::ExecuteScriptInWorklet,
+            CrossThreadUnretained(this), CrossThreadUnretained(thread),
+            CrossThreadUnretained(wait_event.get())));
     wait_event->Wait();
   }
 
@@ -113,9 +115,9 @@ class AnimationWorkletThreadTest : public PageTestBase {
   std::unique_ptr<WorkerReportingProxy> reporting_proxy_;
 };
 
-TEST_F(AnimationWorkletThreadTest, Basic) {
-  std::unique_ptr<AnimationWorkletThread> worklet =
-      CreateAnimationWorkletThread();
+TEST_F(AnimationAndPaintWorkletThreadTest, Basic) {
+  std::unique_ptr<AnimationAndPaintWorkletThread> worklet =
+      CreateAnimationAndPaintWorkletThread();
   CheckWorkletCanExecuteScript(worklet.get());
   worklet->Terminate();
   worklet->WaitForShutdownForTesting();
@@ -123,10 +125,10 @@ TEST_F(AnimationWorkletThreadTest, Basic) {
 
 // Tests that the same WebThread is used for new worklets if the WebThread is
 // still alive.
-TEST_F(AnimationWorkletThreadTest, CreateSecondAndTerminateFirst) {
+TEST_F(AnimationAndPaintWorkletThreadTest, CreateSecondAndTerminateFirst) {
   // Create the first worklet and wait until it is initialized.
-  std::unique_ptr<AnimationWorkletThread> first_worklet =
-      CreateAnimationWorkletThread();
+  std::unique_ptr<AnimationAndPaintWorkletThread> first_worklet =
+      CreateAnimationAndPaintWorkletThread();
   WebThreadSupportingGC* first_thread =
       &first_worklet->GetWorkerBackingThread().BackingThread();
   CheckWorkletCanExecuteScript(first_worklet.get());
@@ -134,8 +136,8 @@ TEST_F(AnimationWorkletThreadTest, CreateSecondAndTerminateFirst) {
   ASSERT_TRUE(first_isolate);
 
   // Create the second worklet and immediately destroy the first worklet.
-  std::unique_ptr<AnimationWorkletThread> second_worklet =
-      CreateAnimationWorkletThread();
+  std::unique_ptr<AnimationAndPaintWorkletThread> second_worklet =
+      CreateAnimationAndPaintWorkletThread();
   // We don't use terminateAndWait here to avoid forcible termination.
   first_worklet->Terminate();
   first_worklet->WaitForShutdownForTesting();
@@ -159,10 +161,10 @@ TEST_F(AnimationWorkletThreadTest, CreateSecondAndTerminateFirst) {
 
 // Tests that the WebThread is reused if all existing worklets are terminated
 // before a new worklet is created, as long as the worklets are not destructed.
-TEST_F(AnimationWorkletThreadTest, TerminateFirstAndCreateSecond) {
+TEST_F(AnimationAndPaintWorkletThreadTest, TerminateFirstAndCreateSecond) {
   // Create the first worklet, wait until it is initialized, and terminate it.
-  std::unique_ptr<AnimationWorkletThread> worklet =
-      CreateAnimationWorkletThread();
+  std::unique_ptr<AnimationAndPaintWorkletThread> worklet =
+      CreateAnimationAndPaintWorkletThread();
   WebThreadSupportingGC* first_thread =
       &worklet->GetWorkerBackingThread().BackingThread();
   CheckWorkletCanExecuteScript(worklet.get());
@@ -172,7 +174,7 @@ TEST_F(AnimationWorkletThreadTest, TerminateFirstAndCreateSecond) {
   worklet->WaitForShutdownForTesting();
 
   // Create the second worklet. The backing thread is same.
-  worklet = CreateAnimationWorkletThread();
+  worklet = CreateAnimationAndPaintWorkletThread();
   WebThreadSupportingGC* second_thread =
       &worklet->GetWorkerBackingThread().BackingThread();
   EXPECT_EQ(first_thread, second_thread);
@@ -184,9 +186,10 @@ TEST_F(AnimationWorkletThreadTest, TerminateFirstAndCreateSecond) {
 
 // Tests that v8::Isolate and WebThread are correctly set-up if a worklet is
 // created while another is terminating.
-TEST_F(AnimationWorkletThreadTest, CreatingSecondDuringTerminationOfFirst) {
-  std::unique_ptr<AnimationWorkletThread> first_worklet =
-      CreateAnimationWorkletThread();
+TEST_F(AnimationAndPaintWorkletThreadTest,
+       CreatingSecondDuringTerminationOfFirst) {
+  std::unique_ptr<AnimationAndPaintWorkletThread> first_worklet =
+      CreateAnimationAndPaintWorkletThread();
   CheckWorkletCanExecuteScript(first_worklet.get());
   v8::Isolate* first_isolate = first_worklet->GetIsolate();
   ASSERT_TRUE(first_isolate);
@@ -198,8 +201,8 @@ TEST_F(AnimationWorkletThreadTest, CreatingSecondDuringTerminationOfFirst) {
   // Note: We rely on the assumption that the termination steps don't run
   // on the worklet thread so quickly. This could be a source of flakiness.
 
-  std::unique_ptr<AnimationWorkletThread> second_worklet =
-      CreateAnimationWorkletThread();
+  std::unique_ptr<AnimationAndPaintWorkletThread> second_worklet =
+      CreateAnimationAndPaintWorkletThread();
 
   v8::Isolate* second_isolate = second_worklet->GetIsolate();
   ASSERT_TRUE(second_isolate);
@@ -214,37 +217,42 @@ TEST_F(AnimationWorkletThreadTest, CreatingSecondDuringTerminationOfFirst) {
 
 // Tests that the backing thread is correctly created, torn down, and recreated
 // as AnimationWorkletThreads are created and destroyed.
-TEST_F(AnimationWorkletThreadTest, WorkletThreadHolderIsRefCountedProperly) {
-  EXPECT_FALSE(AnimationWorkletThread::GetWorkletThreadHolderForTesting());
+TEST_F(AnimationAndPaintWorkletThreadTest,
+       WorkletThreadHolderIsRefCountedProperly) {
+  EXPECT_FALSE(
+      AnimationAndPaintWorkletThread::GetWorkletThreadHolderForTesting());
 
-  std::unique_ptr<AnimationWorkletThread> worklet =
-      CreateAnimationWorkletThread();
+  std::unique_ptr<AnimationAndPaintWorkletThread> worklet =
+      CreateAnimationAndPaintWorkletThread();
   ASSERT_TRUE(worklet.get());
-  WorkletThreadHolder<AnimationWorkletThread>* holder =
-      AnimationWorkletThread::GetWorkletThreadHolderForTesting();
+  WorkletThreadHolder<AnimationAndPaintWorkletThread>* holder =
+      AnimationAndPaintWorkletThread::GetWorkletThreadHolderForTesting();
   EXPECT_TRUE(holder);
 
-  std::unique_ptr<AnimationWorkletThread> worklet2 =
-      CreateAnimationWorkletThread();
+  std::unique_ptr<AnimationAndPaintWorkletThread> worklet2 =
+      CreateAnimationAndPaintWorkletThread();
   ASSERT_TRUE(worklet2.get());
-  WorkletThreadHolder<AnimationWorkletThread>* holder2 =
-      AnimationWorkletThread::GetWorkletThreadHolderForTesting();
+  WorkletThreadHolder<AnimationAndPaintWorkletThread>* holder2 =
+      AnimationAndPaintWorkletThread::GetWorkletThreadHolderForTesting();
   EXPECT_EQ(holder, holder2);
 
   worklet->Terminate();
   worklet->WaitForShutdownForTesting();
   worklet.reset();
-  EXPECT_TRUE(AnimationWorkletThread::GetWorkletThreadHolderForTesting());
+  EXPECT_TRUE(
+      AnimationAndPaintWorkletThread::GetWorkletThreadHolderForTesting());
 
   worklet2->Terminate();
   worklet2->WaitForShutdownForTesting();
   worklet2.reset();
-  EXPECT_FALSE(AnimationWorkletThread::GetWorkletThreadHolderForTesting());
+  EXPECT_FALSE(
+      AnimationAndPaintWorkletThread::GetWorkletThreadHolderForTesting());
 
-  std::unique_ptr<AnimationWorkletThread> worklet3 =
-      CreateAnimationWorkletThread();
+  std::unique_ptr<AnimationAndPaintWorkletThread> worklet3 =
+      CreateAnimationAndPaintWorkletThread();
   ASSERT_TRUE(worklet3.get());
-  EXPECT_TRUE(AnimationWorkletThread::GetWorkletThreadHolderForTesting());
+  EXPECT_TRUE(
+      AnimationAndPaintWorkletThread::GetWorkletThreadHolderForTesting());
 
   worklet3->Terminate();
   worklet3->WaitForShutdownForTesting();

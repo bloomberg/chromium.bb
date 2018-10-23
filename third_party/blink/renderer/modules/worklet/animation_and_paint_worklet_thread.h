@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATION_WORKLET_THREAD_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATION_WORKLET_THREAD_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WORKLET_ANIMATION_AND_PAINT_WORKLET_THREAD_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WORKLET_ANIMATION_AND_PAINT_WORKLET_THREAD_H_
 
 #include <memory>
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
@@ -14,13 +14,16 @@ namespace blink {
 
 class WorkerReportingProxy;
 
-// Represents the shared backing thread that is used by all animation worklets
-// and participates in the Blink garbage collection process.
-class MODULES_EXPORT AnimationWorkletThread final : public WorkerThread {
+// Represents the shared backing thread that is used by both animation worklets
+// and off-thread paint worklets. This thread participates in the Blink garbage
+// collection process.
+class MODULES_EXPORT AnimationAndPaintWorkletThread final
+    : public WorkerThread {
  public:
-  static std::unique_ptr<AnimationWorkletThread> Create(
-      WorkerReportingProxy&);
-  ~AnimationWorkletThread() override;
+  static std::unique_ptr<AnimationAndPaintWorkletThread>
+  CreateForAnimationWorklet(WorkerReportingProxy&);
+  // TODO(smcgruer): Add ability to create a PaintWorklet version.
+  ~AnimationAndPaintWorkletThread() override;
 
   WorkerBackingThread& GetWorkerBackingThread() override;
 
@@ -30,11 +33,16 @@ class MODULES_EXPORT AnimationWorkletThread final : public WorkerThread {
   // This may block the main thread.
   static void CollectAllGarbage();
 
-  static WorkletThreadHolder<AnimationWorkletThread>*
+  static WorkletThreadHolder<AnimationAndPaintWorkletThread>*
   GetWorkletThreadHolderForTesting();
 
  private:
-  explicit AnimationWorkletThread(WorkerReportingProxy&);
+  enum class WorkletType {
+    ANIMATION_WORKLET,
+    PAINT_WORKLET,
+  };
+
+  explicit AnimationAndPaintWorkletThread(WorkletType, WorkerReportingProxy&);
 
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams>) final;
@@ -42,13 +50,15 @@ class MODULES_EXPORT AnimationWorkletThread final : public WorkerThread {
   bool IsOwningBackingThread() const override { return false; }
 
   WebThreadType GetThreadType() const override {
-    return WebThreadType::kAnimationWorkletThread;
+    return WebThreadType::kAnimationAndPaintWorkletThread;
   }
 
   void EnsureSharedBackingThread();
   void ClearSharedBackingThread();
+
+  WorkletType worklet_type_;
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATION_WORKLET_THREAD_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WORKLET_ANIMATION_AND_PAINT_WORKLET_THREAD_H_
