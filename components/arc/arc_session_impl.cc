@@ -422,7 +422,6 @@ void ArcSessionImpl::DoUpgrade() {
             << packages_cache_mode_string << ".";
   }
 
-  request.set_is_child(upgrade_params_.is_child);
   request.set_supervision_transition(ToLoginManagerSupervisionTransition(
       upgrade_params_.supervision_transition));
   request.set_locale(upgrade_params_.locale);
