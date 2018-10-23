@@ -65,8 +65,7 @@ Polymer({
 
   /** @private */
   onDestinationSet_: function() {
-    if (this.destination && this.destination.id)
-      this.loadingDestination_ = false;
+    this.loadingDestination_ = !this.destination || !this.destination.id;
   },
 
   /**

@@ -131,6 +131,10 @@ Polymer({
         this.updateDestinations_.bind(this));
     this.tracker_.add(
         destinationStore,
+        print_preview.DestinationStore.EventType.DESTINATIONS_RESET,
+        () => this.destinations_ = []);
+    this.tracker_.add(
+        destinationStore,
         print_preview.DestinationStore.EventType.DESTINATION_SEARCH_DONE,
         this.onDestinationSearchDone_.bind(this));
   },
