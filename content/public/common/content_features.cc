@@ -497,7 +497,7 @@ const base::Feature kWebAuthCable{"WebAuthenticationCable",
 // using pairingless BLE protocol on Windows.
 // https://w3c.github.io/webauthn
 const base::Feature kWebAuthCableWin{"WebAuthenticationCableWin",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether AuthenticatorAttestationResponse contains a getTransports
 // member to return the set of transports supported by an authenticator.
