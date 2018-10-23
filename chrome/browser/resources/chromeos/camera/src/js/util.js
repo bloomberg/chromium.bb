@@ -29,7 +29,8 @@ camera.util.getPhotoOrientation = function(blob) {
         resolve(1);
         return;
       }
-      let length = view.byteLength, offset = 2;
+      let length = view.byteLength;
+      let offset = 2;
       while (offset < length) {
         if (view.getUint16(offset + 2, false) <= 8) {
           break;
@@ -103,7 +104,7 @@ camera.util.orientPhoto = function(blob, onSuccess, onFailure) {
     canvas.width = canvasSquareLength;
     canvas.height = canvasSquareLength;
 
-    let centerX = canvas.width / 2, centerY = canvas.height / 2;
+    let [centerX, centerY] = [canvas.width / 2, canvas.height / 2];
     context.translate(centerX, centerY);
     context.rotate(orientation.rotation * Math.PI / 180);
     if (orientation.flip) {
