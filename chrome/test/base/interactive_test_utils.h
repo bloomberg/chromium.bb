@@ -92,9 +92,6 @@ void ClickOnView(const Browser* browser, ViewID vid);
 // Makes focus shift to the given View without clicking it.
 void FocusView(const Browser* browser, ViewID vid);
 
-// Wait until the view identified by |view_id| in |browser| gets focused.
-void WaitUntilViewFocused(const Browser* browser, ViewID view_id);
-
 // A collection of utilities that are used from interactive_ui_tests. These are
 // separated from ui_test_utils.h to ensure that browser_tests don't use them,
 // since they depend on focus which isn't possible for sharded test.

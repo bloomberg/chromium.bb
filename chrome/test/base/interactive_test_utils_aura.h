@@ -16,9 +16,6 @@ namespace ui_test_utils {
 void HideNativeWindowAura(gfx::NativeWindow window);
 bool ShowAndFocusNativeWindowAura(gfx::NativeWindow window);
 
-// Wait until |window| gets focused.
-void WaitUntilWindowFocused(aura::Window* window);
-
 }  // namespace ui_test_utils
 
 #endif  // CHROME_TEST_BASE_INTERACTIVE_TEST_UTILS_AURA_H_
