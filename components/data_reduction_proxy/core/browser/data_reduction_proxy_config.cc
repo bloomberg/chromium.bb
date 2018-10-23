@@ -182,6 +182,7 @@ namespace data_reduction_proxy {
 
 DataReductionProxyConfig::DataReductionProxyConfig(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     network::NetworkConnectionTracker* network_connection_tracker,
     std::unique_ptr<DataReductionProxyConfigValues> config_values,
     DataReductionProxyConfigurator* configurator)
@@ -189,6 +190,7 @@ DataReductionProxyConfig::DataReductionProxyConfig(
       enabled_by_user_(false),
       config_values_(std::move(config_values)),
       io_task_runner_(io_task_runner),
+      ui_task_runner_(ui_task_runner),
       network_connection_tracker_(network_connection_tracker),
       configurator_(configurator),
       connection_type_(network::mojom::ConnectionType::CONNECTION_UNKNOWN),
@@ -208,6 +210,8 @@ DataReductionProxyConfig::~DataReductionProxyConfig() {
 
 void DataReductionProxyConfig::InitializeOnIOThread(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    WarmupURLFetcher::CreateCustomProxyConfigCallback
+        create_custom_proxy_config_callback,
     NetworkPropertiesManager* manager) {
   DCHECK(thread_checker_.CalledOnValidThread());
   network_properties_manager_ = manager;
@@ -215,12 +219,13 @@ void DataReductionProxyConfig::InitializeOnIOThread(
 
   secure_proxy_checker_.reset(new SecureProxyChecker(url_loader_factory));
   warmup_url_fetcher_.reset(new WarmupURLFetcher(
-      url_loader_factory,
+      url_loader_factory, create_custom_proxy_config_callback,
       base::BindRepeating(
           &DataReductionProxyConfig::HandleWarmupFetcherResponse,
           base::Unretained(this)),
       base::BindRepeating(&DataReductionProxyConfig::GetHttpRttEstimate,
-                          base::Unretained(this))));
+                          base::Unretained(this)),
+      ui_task_runner_));
 
   if (ShouldAddDefaultProxyBypassRules())
     AddDefaultProxyBypassRules();
@@ -443,7 +448,7 @@ void DataReductionProxyConfig::SetNetworkPropertiesManagerForTesting(
   network_properties_manager_ = manager;
 }
 
-base::Optional<std::pair<bool /* is_secure_proxy */, bool /*is_core_proxy */>>
+base::Optional<DataReductionProxyServer>
 DataReductionProxyConfig::GetProxyConnectionToProbe() const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -461,7 +466,7 @@ DataReductionProxyConfig::GetProxyConnectionToProbe() const {
                                                               is_core_proxy) &&
         network_properties_manager_->ShouldFetchWarmupProbeURL(is_secure_proxy,
                                                                is_core_proxy)) {
-      return std::make_pair(is_secure_proxy, is_core_proxy);
+      return proxy_server;
     }
   }
 
@@ -473,7 +478,7 @@ DataReductionProxyConfig::GetProxyConnectionToProbe() const {
     bool is_core_proxy = proxy_server.IsCoreProxy();
     if (network_properties_manager_->ShouldFetchWarmupProbeURL(is_secure_proxy,
                                                                is_core_proxy)) {
-      return std::make_pair(is_secure_proxy, is_core_proxy);
+      return proxy_server;
     }
   }
 
@@ -711,15 +716,15 @@ void DataReductionProxyConfig::FetchWarmupProbeURL() {
     return;
   }
 
-  base::Optional<std::pair<bool /* is_secure_proxy */, bool /*is_core_proxy */>>
-      warmup_config = GetProxyConnectionToProbe();
+  base::Optional<DataReductionProxyServer> warmup_proxy =
+      GetProxyConnectionToProbe();
 
-  if (!warmup_config)
+  if (!warmup_proxy)
     return;
 
   // Refetch the warmup URL when it has failed.
-  warmup_url_fetch_in_flight_secure_proxy_ = warmup_config->first;
-  warmup_url_fetch_in_flight_core_proxy_ = warmup_config->second;
+  warmup_url_fetch_in_flight_secure_proxy_ = warmup_proxy->IsSecureProxy();
+  warmup_url_fetch_in_flight_core_proxy_ = warmup_proxy->IsCoreProxy();
 
   size_t previous_attempt_counts = GetWarmupURLFetchAttemptCounts();
 
@@ -729,7 +734,8 @@ void DataReductionProxyConfig::FetchWarmupProbeURL() {
 
   RecordWarmupURLFetchAttemptEvent(WarmupURLFetchAttemptEvent::kFetchInitiated);
 
-  warmup_url_fetcher_->FetchWarmupURL(previous_attempt_counts);
+  warmup_url_fetcher_->FetchWarmupURL(previous_attempt_counts,
+                                      warmup_proxy.value());
 }
 
 size_t DataReductionProxyConfig::GetWarmupURLFetchAttemptCounts() const {

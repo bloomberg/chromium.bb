@@ -43,6 +43,7 @@ class DataReductionProxyBypassStats;
 class DataReductionProxyConfig;
 class DataReductionProxyConfigServiceClient;
 class DataReductionProxyConfigurator;
+class DataReductionProxyServer;
 class DataReductionProxyService;
 class NetworkPropertiesManager;
 
@@ -239,6 +240,11 @@ class DataReductionProxyIOData {
   // Stores a serialized Data Reduction Proxy configuration in preferences
   // storage.
   void StoreSerializedConfig(const std::string& serialized_config);
+
+  // Creates a config using |proxies_for_http| that can be sent to the
+  // NetworkContext.
+  network::mojom::CustomProxyConfigPtr CreateCustomProxyConfig(
+      const std::vector<DataReductionProxyServer>& proxies_for_http) const;
 
   // The type of Data Reduction Proxy client.
   const Client client_;

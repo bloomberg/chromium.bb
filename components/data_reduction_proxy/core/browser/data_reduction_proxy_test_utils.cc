@@ -472,19 +472,20 @@ DataReductionProxyTestContext::Builder::Build() {
       mutable_config->UpdateValues(proxy_servers_);
     }
     raw_mutable_config = mutable_config.get();
-    config.reset(new TestDataReductionProxyConfig(
-        std::move(mutable_config), task_runner, configurator.get()));
+    config.reset(new TestDataReductionProxyConfig(std::move(mutable_config),
+                                                  task_runner, task_runner,
+                                                  configurator.get()));
   } else if (use_mock_config_) {
     test_context_flags |= USE_MOCK_CONFIG;
     config.reset(new MockDataReductionProxyConfig(
-        std::move(params), task_runner, configurator.get()));
+        std::move(params), task_runner, task_runner, configurator.get()));
   } else {
     test_context_flags ^= USE_MOCK_CONFIG;
     if (!proxy_servers_.empty()) {
       params->SetProxiesForHttp(proxy_servers_);
     }
     config.reset(new TestDataReductionProxyConfig(
-        std::move(params), task_runner, configurator.get()));
+        std::move(params), task_runner, task_runner, configurator.get()));
   }
 
   std::unique_ptr<TestDataReductionProxyRequestOptions> request_options;

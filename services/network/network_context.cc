@@ -1488,8 +1488,10 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
       std::make_unique<NetworkServiceNetworkDelegate>(this);
   builder.set_network_delegate(std::move(network_delegate));
 
-  if (params_->custom_proxy_config_client_request) {
+  if (params_->initial_custom_proxy_config ||
+      params_->custom_proxy_config_client_request) {
     proxy_delegate_ = std::make_unique<NetworkServiceProxyDelegate>(
+        std::move(params_->initial_custom_proxy_config),
         std::move(params_->custom_proxy_config_client_request));
     builder.set_shared_proxy_delegate(proxy_delegate_.get());
   }

@@ -74,8 +74,10 @@ bool IsURLValidForProxy(const GURL& url) {
 }  // namespace
 
 NetworkServiceProxyDelegate::NetworkServiceProxyDelegate(
+    mojom::CustomProxyConfigPtr initial_config,
     mojom::CustomProxyConfigClientRequest config_client_request)
-    : binding_(this, std::move(config_client_request)),
+    : proxy_config_(std::move(initial_config)),
+      binding_(this, std::move(config_client_request)),
       should_use_alternate_proxy_list_cache_(kMaxCacheSize) {}
 
 void NetworkServiceProxyDelegate::OnBeforeStartTransaction(
