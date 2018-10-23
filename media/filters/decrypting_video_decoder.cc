@@ -304,23 +304,8 @@ void DecryptingVideoDecoder::DeliverFrame(
   // If color space is not set, use the color space in the |config_|.
   if (!frame->ColorSpace().IsValid()) {
     DVLOG(3) << "Setting color space using information in the config.";
-    if (config_.color_space_info() != VideoColorSpace()) {
+    if (config_.color_space_info().IsSpecified())
       frame->set_color_space(config_.color_space_info().ToGfxColorSpace());
-    } else {
-      switch (config_.color_space()) {
-        case COLOR_SPACE_UNSPECIFIED:
-          break;
-        case COLOR_SPACE_HD_REC709:
-          frame->set_color_space(gfx::ColorSpace::CreateREC709());
-          break;
-        case COLOR_SPACE_SD_REC601:
-          frame->set_color_space(gfx::ColorSpace::CreateREC601());
-          break;
-        case COLOR_SPACE_JPEG:
-          frame->set_color_space(gfx::ColorSpace::CreateJpeg());
-          break;
-      }
-    }
   }
 
   output_cb_.Run(frame);
