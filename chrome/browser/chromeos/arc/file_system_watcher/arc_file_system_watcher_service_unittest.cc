@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/arc/downloads_watcher/arc_downloads_watcher_service.h"
+#include "chrome/browser/chromeos/arc/file_system_watcher/arc_file_system_watcher_service.h"
 
 #include <string.h>
 
@@ -13,7 +13,7 @@
 
 namespace arc {
 
-TEST(ArcDownloadsWatcherServiceTest, AndroidSupportedMediaExtensionsSorted) {
+TEST(ArcFileSystemWatcherServiceTest, AndroidSupportedMediaExtensionsSorted) {
   const auto less_comparator = [](const char* a, const char* b) {
     return strcmp(a, b) < 0;
   };
@@ -23,7 +23,7 @@ TEST(ArcDownloadsWatcherServiceTest, AndroidSupportedMediaExtensionsSorted) {
       less_comparator));
 }
 
-TEST(ArcDownloadsWatcherServiceTest, HasAndroidSupportedMediaExtension) {
+TEST(ArcFileSystemWatcherServiceTest, HasAndroidSupportedMediaExtension) {
   EXPECT_TRUE(HasAndroidSupportedMediaExtension(
       base::FilePath(FILE_PATH_LITERAL("/tmp/kitten.3g2"))));
   EXPECT_TRUE(HasAndroidSupportedMediaExtension(
