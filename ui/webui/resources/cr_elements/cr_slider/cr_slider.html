@@ -148,28 +148,28 @@
         white-space: nowrap;
       }
 
-      :host([disabled]) {
+      :host([disabled_]) {
         pointer-events: none;
       }
 
-      :host([disabled]) #barContainer {
+      :host([disabled_]) #barContainer {
         background-color: var(--google-grey-600-opacity-24);
       }
 
-      :host([disabled]) #bar {
+      :host([disabled_]) #bar {
         background-color: var(--google-grey-600);
       }
 
-      :host([disabled]) inactive-marker::after,
-      :host([disabled]) #markers::after {
+      :host([disabled_]) inactive-marker::after,
+      :host([disabled_]) #markers::after {
         background-color: rgba(255, 255, 255, 0.54);
       }
 
-      :host([disabled]) #knobContainer {
+      :host([disabled_]) #knobContainer {
         margin-inline-start: 9px;
         top: 9px;
       }
-      :host([disabled]) #knob {
+      :host([disabled_]) #knob {
         background-color: var(--google-grey-600);
         border: 2px solid white;
         box-shadow: unset;

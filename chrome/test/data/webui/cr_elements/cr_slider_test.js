@@ -12,6 +12,13 @@ suite('cr-slider', function() {
     crSlider = document.body.querySelector('cr-slider');
   });
 
+  /** @param {boolean} expected */
+  function checkDisabled(expected) {
+    assertEquals(
+        expected,
+        window.getComputedStyle(crSlider)['pointer-events'] == 'none');
+  }
+
   function pressArrowRight() {
     MockInteractions.pressAndReleaseKeyOn(crSlider, 39, [], 'ArrowRight');
   }
@@ -219,5 +226,61 @@ suite('cr-slider', function() {
     assertEquals('Second', crSlider.getAttribute('aria-valuetext'));
     assertEquals('20', crSlider.getAttribute('aria-valuenow'));
     assertEquals('Second', crSlider.$.label.innerHTML.trim());
+  });
+
+  test('disabled whenever public |disabled| is true', () => {
+    crSlider.disabled = true;
+    crSlider.ticks = [];
+    checkDisabled(true);
+    crSlider.ticks = [1];
+    checkDisabled(true);
+    crSlider.ticks = [1, 2, 3];
+    checkDisabled(true);
+  });
+
+  test('not disabled or snaps when |ticks| is empty', () => {
+    assertFalse(crSlider.disabled);
+    crSlider.ticks = [];
+    checkDisabled(false);
+    assertFalse(crSlider.snaps);
+    assertEquals(0, crSlider.min);
+    assertEquals(100, crSlider.max);
+  });
+
+  test('effectively disabled when only one tick', () => {
+    assertFalse(crSlider.disabled);
+    crSlider.ticks = [1];
+    checkDisabled(true);
+    assertFalse(crSlider.snaps);
+    assertEquals(0, crSlider.min);
+    assertEquals(100, crSlider.max);
+  });
+
+  test('not disabled and |snaps| true when |ticks.length| > 0', () => {
+    assertFalse(crSlider.disabled);
+    crSlider.ticks = [1, 2, 3];
+    checkDisabled(false);
+    assertTrue(crSlider.snaps);
+    assertEquals(0, crSlider.min);
+    assertEquals(2, crSlider.max);
+  });
+
+  test('disabled, max, min and snaps update when ticks is mutated', () => {
+    assertFalse(crSlider.disabled);
+    checkDisabled(false);
+
+    // Single tick is effectively disabled.
+    crSlider.push('ticks', 1);
+    checkDisabled(true);
+    assertFalse(crSlider.snaps);
+    assertEquals(0, crSlider.min);
+    assertEquals(100, crSlider.max);
+
+    // Multiple ticks is enabled.
+    crSlider.push('ticks', 2);
+    checkDisabled(false);
+    assertTrue(crSlider.snaps);
+    assertEquals(0, crSlider.min);
+    assertEquals(1, crSlider.max);
   });
 });
