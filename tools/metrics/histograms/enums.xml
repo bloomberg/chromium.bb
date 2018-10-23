@@ -10710,6 +10710,7 @@ Called by update_net_error_codes.py.-->
   <int value="30" label="Audits finished"/>
   <int value="31" label="Showed third party badges"/>
   <int value="32" label="Audits' view trace clicked"/>
+  <int value="33" label="Network panel film strip started recording"/>
 </enum>
 
 <enum name="DevToolsPanel">
