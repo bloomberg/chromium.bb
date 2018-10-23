@@ -81,7 +81,8 @@
           <div class="destination-throbber-name"></div>
         </div>
         <div class="destination-settings-box" hidden="[[loadingDestination_]]">
-          <iron-icon icon$="[[destination.icon]]"></iron-icon>
+          <iron-icon icon$="[[destination.icon]]" hidden="[[!destination]]">
+          </iron-icon>
           <div class="destination-info-wrapper">
             <div class="destination-name">[[destination.displayName]]</div>
             <div class="destination-location">[[destination.hint]]</div>

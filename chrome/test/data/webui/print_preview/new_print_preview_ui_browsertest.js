@@ -694,6 +694,10 @@ TEST_F(
           destination_dialog_test.TestNames.ShowProvisionalDialog);
     });
 
+TEST_F('PrintPreviewDestinationDialogTest', 'ReloadPrinterList', function() {
+  this.runMochaTest(destination_dialog_test.TestNames.ReloadPrinterList);
+});
+
 PrintPreviewAdvancedDialogTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
