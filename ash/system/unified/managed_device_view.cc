@@ -17,34 +17,23 @@
 namespace ash {
 
 ManagedDeviceView::ManagedDeviceView() : TrayItemView(nullptr) {
-  Shell::Get()->system_tray_model()->enterprise_domain()->AddObserver(this);
   Shell::Get()->session_controller()->AddObserver(this);
   CreateImageView();
-  Update();
+  OnLoginStatusChanged(Shell::Get()->session_controller()->login_status());
 }
 
 ManagedDeviceView::~ManagedDeviceView() {
-  Shell::Get()->system_tray_model()->enterprise_domain()->RemoveObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
 }
 
-void ManagedDeviceView::OnEnterpriseDomainChanged() {
-  EnterpriseDomainModel* model =
-      Shell::Get()->system_tray_model()->enterprise_domain();
-  bool old_value = is_enterprise_;
-  is_enterprise_ = model->active_directory_managed() ||
-                   !model->enterprise_display_domain().empty();
-  if (is_enterprise_ != old_value)
-    Update();
-}
-
-void ManagedDeviceView::Update() {
-  if (is_enterprise_) {
+void ManagedDeviceView::OnLoginStatusChanged(LoginStatus status) {
+  SessionController* session = Shell::Get()->session_controller();
+  if (session->IsUserPublicAccount()) {
     image_view()->SetImage(gfx::CreateVectorIcon(
         kSystemTrayManagedIcon,
         TrayIconColor(Shell::Get()->session_controller()->GetSessionState())));
     SetVisible(true);
-  } else if (is_child_) {
+  } else if (session->IsUserChild()) {
     image_view()->SetImage(gfx::CreateVectorIcon(
         kSystemTrayFamilyLinkIcon,
         TrayIconColor(Shell::Get()->session_controller()->GetSessionState())));
@@ -52,11 +41,6 @@ void ManagedDeviceView::Update() {
   } else {
     SetVisible(false);
   }
-}
-
-void ManagedDeviceView::OnLoginStatusChanged(LoginStatus status) {
-  SessionController* session = Shell::Get()->session_controller();
-  is_child_ = status == LoginStatus::SUPERVISED && session->IsUserChild();
 }
 
 }  // namespace ash
