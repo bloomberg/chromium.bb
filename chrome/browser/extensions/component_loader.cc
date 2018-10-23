@@ -351,13 +351,20 @@ void ComponentLoader::AddNetworkSpeechSynthesisExtension() {
 }
 
 #if defined(OS_CHROMEOS)
-void ComponentLoader::AddChromeOsSpeechSynthesisExtension() {
+void ComponentLoader::AddChromeOsSpeechSynthesisExtensions() {
   AddComponentFromDir(
-      base::FilePath(extension_misc::kSpeechSynthesisExtensionPath),
-      extension_misc::kSpeechSynthesisExtensionId,
-      base::Bind(&ComponentLoader::EnableFileSystemInGuestMode,
-                 weak_factory_.GetWeakPtr(),
-                 extension_misc::kSpeechSynthesisExtensionId));
+      base::FilePath(extension_misc::kGoogleSpeechSynthesisExtensionPath),
+      extension_misc::kGoogleSpeechSynthesisExtensionId,
+      base::BindRepeating(&ComponentLoader::EnableFileSystemInGuestMode,
+                          weak_factory_.GetWeakPtr(),
+                          extension_misc::kGoogleSpeechSynthesisExtensionId));
+
+  if (chromeos::switches::AreExperimentalAccessibilityFeaturesEnabled()) {
+    AddComponentFromDir(
+        base::FilePath(extension_misc::kEspeakSpeechSynthesisExtensionPath),
+        extension_misc::kEspeakSpeechSynthesisExtensionId,
+        base::RepeatingClosure());
+  }
 }
 #endif
 

@@ -31,8 +31,9 @@ bool IsComponentExtensionWhitelisted(const std::string& extension_id) {
 #if defined(OS_CHROMEOS)
     extension_misc::kAssessmentAssistantExtensionId,
     extension_misc::kChromeVoxExtensionId,
+    extension_misc::kEspeakSpeechSynthesisExtensionId,
+    extension_misc::kGoogleSpeechSynthesisExtensionId,
     extension_misc::kSelectToSpeakExtensionId,
-    extension_misc::kSpeechSynthesisExtensionId,
     extension_misc::kSwitchAccessExtensionId,
     extension_misc::kZipArchiverExtensionId,
 #endif
