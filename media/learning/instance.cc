@@ -9,7 +9,7 @@ namespace learning {
 
 Instance::Instance() = default;
 Instance::~Instance() = default;
-Instance::Instance(Instance&& rhs) {
+Instance::Instance(Instance&& rhs) noexcept {
   features = std::move(rhs.features);
 }
 
