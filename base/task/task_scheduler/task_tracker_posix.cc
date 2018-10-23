@@ -23,11 +23,5 @@ void TaskTrackerPosix::RunOrSkipTask(Task task,
   TaskTracker::RunOrSkipTask(std::move(task), sequence, can_run_task);
 }
 
-#if DCHECK_IS_ON()
-bool TaskTrackerPosix::IsPostingBlockShutdownTaskAfterShutdownAllowed() {
-  return service_thread_handle_.is_equal(PlatformThread::CurrentHandle());
-}
-#endif
-
 }  // namespace internal
 }  // namespace base

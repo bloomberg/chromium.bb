@@ -220,13 +220,6 @@ class BASE_EXPORT TaskTracker {
   // perform extra work before and after doing so.
   virtual void RunOrSkipTask(Task task, Sequence* sequence, bool can_run_task);
 
-#if DCHECK_IS_ON()
-  // Returns true if this context should be exempt from blocking shutdown
-  // DCHECKs.
-  // TODO(robliao): Remove when http://crbug.com/698140 is fixed.
-  virtual bool IsPostingBlockShutdownTaskAfterShutdownAllowed();
-#endif
-
   // Returns true if there are undelayed tasks that haven't completed their
   // execution (still queued or in progress). If it returns false: the side-
   // effects of all completed tasks are guaranteed to be visible to the caller.
