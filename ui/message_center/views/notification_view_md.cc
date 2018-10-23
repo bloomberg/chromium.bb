@@ -1004,13 +1004,25 @@ void NotificationViewMD::CreateOrUpdateActionButtonViews(
   const std::vector<ButtonInfo>& buttons = notification.buttons();
   bool new_buttons = action_buttons_.size() != buttons.size();
 
-  if (new_buttons || buttons.size() == 0) {
+  if (new_buttons || buttons.empty()) {
     for (auto* item : action_buttons_)
       delete item;
     action_buttons_.clear();
+    if (buttons.empty())
+      actions_row_->SetVisible(false);
   }
 
   DCHECK_EQ(this, actions_row_->parent());
+
+  // Hide inline reply field if it doesn't exist anymore.
+  if (inline_reply_->visible()) {
+    const size_t index =
+        inline_reply_->textfield()->GetProperty(kTextfieldIndexKey);
+    if (index >= buttons.size() || !buttons[index].placeholder.has_value()) {
+      action_buttons_row_->SetVisible(true);
+      inline_reply_->SetVisible(false);
+    }
+  }
 
   for (size_t i = 0; i < buttons.size(); ++i) {
     ButtonInfo button_info = buttons[i];
@@ -1021,6 +1033,7 @@ void NotificationViewMD::CreateOrUpdateActionButtonViews(
       action_buttons_row_->AddChildView(button);
     } else {
       action_buttons_[i]->SetText(button_info.title);
+      action_buttons_[i]->set_placeholder(button_info.placeholder);
       action_buttons_[i]->SchedulePaint();
       action_buttons_[i]->Layout();
     }
