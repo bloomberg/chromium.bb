@@ -120,18 +120,6 @@ void EmailHandler::HandleGetEmailList(const base::ListValue* args) {
 
 void EmailHandler::AddSources(content::WebUIDataSource* html_source,
                               PrefService* prefs) {
-  // Localized strings.
-  html_source->AddLocalizedString("noThanks", IDS_NO_THANKS);
-  html_source->AddLocalizedString("getStarted", IDS_NUX_EMAIL_GET_STARTED);
-  html_source->AddLocalizedString("welcomeTitle", IDS_NUX_EMAIL_WELCOME_TITLE);
-  html_source->AddLocalizedString("emailPrompt", IDS_NUX_EMAIL_PROMPT);
-  html_source->AddLocalizedString("bookmarkAdded",
-                                  IDS_NUX_EMAIL_BOOKMARK_ADDED);
-  html_source->AddLocalizedString("bookmarkRemoved",
-                                  IDS_NUX_EMAIL_BOOKMARK_REMOVED);
-  html_source->AddLocalizedString("bookmarkReplaced",
-                                  IDS_NUX_EMAIL_BOOKMARK_REPLACED);
-
   // Add icons
   html_source->AddResourcePath("email/aol_1x.png", IDR_NUX_EMAIL_AOL_1X);
   html_source->AddResourcePath("email/aol_2x.png", IDR_NUX_EMAIL_AOL_2X);

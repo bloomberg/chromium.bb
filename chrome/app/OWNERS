@@ -20,6 +20,8 @@ per-file md_extensions_strings.grdp=*
 per-file media_router_strings.grdp*=imcheng@chromium.org
 per-file media_router_strings.grdp*=mfoltz@chromium.org
 
+per-file onboarding_welcome_strings.grdp=file://chrome/browser/ui/webui/welcome/nux/OWNERS
+
 per-file printing_strings.grdp=file://printing/OWNERS
 
 per-file profiles_strings.grdp=file://chrome/browser/profiles/OWNERS
@@ -27,7 +29,6 @@ per-file profiles_strings.grdp=file://chrome/browser/profiles/OWNERS
 per-file settings*strings*=file://chrome/browser/resources/settings/OWNERS
 
 per-file vr_strings.grdp=file://chrome/browser/vr/OWNERS
-per-file nux_strings.grdp=file://chrome/browser/ui/webui/welcome/nux/OWNERS
 
 # Non-GRD rules.
 
