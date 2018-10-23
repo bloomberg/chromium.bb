@@ -1968,19 +1968,19 @@ void AppsGridView::UpdateOpacity() {
     }
   }
 
-  // Updates the opacity of all apps. The opacity of the app starting at 0.f
-  // when the ceterline of the app is |kAllAppsOpacityStartPx| above the bottom
-  // of work area and transitioning to 1.0f by the time the centerline reaches
-  // |kAllAppsOpacityEndPx| above the work area bottom.
-  float centerline_above_work_area = 0.f;
-  const float drag_amount_above_peeking = current_height - peeking_height;
-  const float opacity_factor = drag_amount_above_peeking / shelf_height;
-  for (int i = 0; i < view_model_.view_size(); ++i) {
-    AppListItemView* item_view = GetItemViewAt(i);
-    if (item_view == drag_view_)
-      continue;
+  if (view_structure_.pages().empty())
+    return;
 
-    gfx::Rect view_bounds = view_model_.ideal_bounds(i);
+  // Updates the opacity of the apps in current page. The opacity of the app
+  // starting at 0.f when the ceterline of the app is |kAllAppsOpacityStartPx|
+  // above the bottom of work area and transitioning to 1.0f by the time the
+  // centerline reaches |kAllAppsOpacityEndPx| above the work area bottom.
+  const int selected_page = pagination_model_.selected_page();
+  auto current_page = view_structure_.pages()[selected_page];
+  float centerline_above_work_area = 0.f;
+  for (size_t i = 0; i < current_page.size(); i += cols_) {
+    AppListItemView* item_view = current_page[i];
+    gfx::Rect view_bounds = item_view->bounds();
     views::View::ConvertRectToScreen(this, &view_bounds);
     centerline_above_work_area = std::max<float>(
         app_list_view->GetScreenBottom() - view_bounds.CenterPoint().y(), 0.f);
@@ -1989,21 +1989,16 @@ void AppsGridView::UpdateOpacity() {
                      (kAllAppsOpacityEndPx - kAllAppsOpacityStartPx),
                  0.f),
         1.0f);
+    opacity = should_restore_opacity ? 1.0f : opacity;
 
-    // The first row of apps should be shown gradually if start with dragging up
-    // from PEEKING and should not be shown if start with dragging down from
-    // PEEKING.
-    GridIndex index = GetIndexOfView(item_view);
-    if ((index.page == 0 && index.slot < cols_ &&
-         contents_view_->app_list_view()->drag_started_from_peeking()) &&
-        ((drag_amount_above_peeking >= 0 &&
-          drag_amount_above_peeking <= shelf_height) ||
-         (drag_amount_above_peeking < 0 &&
-          centerline_above_work_area >= kAllAppsOpacityStartPx))) {
-      opacity = std::max(opacity * opacity_factor, 0.f);
+    if (opacity == item_view->layer()->opacity())
+      continue;
+
+    const size_t end_index = std::min(current_page.size() - 1, i + cols_ - 1);
+    for (size_t j = i; j <= end_index; ++j) {
+      if (current_page[j] != drag_view_)
+        current_page[j]->layer()->SetOpacity(opacity);
     }
-
-    item_view->layer()->SetOpacity(should_restore_opacity ? 1.0f : opacity);
   }
 }
 

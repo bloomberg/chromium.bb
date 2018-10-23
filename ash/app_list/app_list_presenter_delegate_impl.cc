@@ -117,11 +117,15 @@ void AppListPresenterDelegateImpl::OnShown(int64_t display_id) {
   controller_->ViewShown(display_id);
 }
 
-void AppListPresenterDelegateImpl::OnDismissed() {
+void AppListPresenterDelegateImpl::OnClosing() {
   DCHECK(is_visible_);
   DCHECK(view_);
   is_visible_ = false;
   controller_->ViewClosing();
+}
+
+void AppListPresenterDelegateImpl::OnClosed() {
+  controller_->ViewClosed();
 }
 
 gfx::Vector2d AppListPresenterDelegateImpl::GetVisibilityAnimationOffset(

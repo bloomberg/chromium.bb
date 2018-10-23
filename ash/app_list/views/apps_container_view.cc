@@ -157,6 +157,11 @@ void AppsContainerView::UpdateControlVisibility(AppListViewState app_list_state,
   apps_grid_view_->UpdateControlVisibility(app_list_state, is_in_drag);
   page_switcher_->SetVisible(
       app_list_state == AppListViewState::FULLSCREEN_ALL_APPS || is_in_drag);
+
+  // Ignore button press during dragging to avoid app list item views' opacity
+  // being set to wrong value.
+  page_switcher_->set_ignore_button_press(is_in_drag);
+
   if (suggestion_chip_container_view_) {
     suggestion_chip_container_view_->SetVisible(
         app_list_state == AppListViewState::FULLSCREEN_ALL_APPS ||

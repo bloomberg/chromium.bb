@@ -161,7 +161,7 @@ void AppListPresenterImpl::Dismiss(base::TimeTicks event_time_stamp) {
   if (view_->GetWidget()->IsActive())
     view_->GetWidget()->Deactivate();
 
-  delegate_->OnDismissed();
+  delegate_->OnClosing();
   ScheduleAnimation();
   NotifyTargetVisibilityChanged(GetTargetVisibility());
   NotifyVisibilityChanged(GetTargetVisibility(), display_id);
@@ -400,6 +400,10 @@ void AppListPresenterImpl::OnWidgetDestroying(views::Widget* widget) {
   if (is_visible_)
     Dismiss(base::TimeTicks());
   ResetView();
+}
+
+void AppListPresenterImpl::OnWidgetDestroyed(views::Widget* widget) {
+  delegate_->OnClosed();
 }
 
 void AppListPresenterImpl::OnWidgetVisibilityChanged(views::Widget* widget,
