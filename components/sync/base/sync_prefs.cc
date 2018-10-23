@@ -81,8 +81,6 @@ SyncPrefs::SyncPrefs(PrefService* pref_service) : pref_service_(pref_service) {
       pref_service_->GetBoolean(prefs::kEnableLocalSyncBackend);
 }
 
-SyncPrefs::SyncPrefs() : pref_service_(nullptr) {}
-
 SyncPrefs::~SyncPrefs() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
@@ -169,8 +167,8 @@ void SyncPrefs::ClearPreferences() {
       prefs::kSyncPassphraseEncryptionTransitionInProgress);
   pref_service_->ClearPref(prefs::kSyncNigoriStateForPassphraseTransition);
 
-  // TODO(nick): The current behavior does not clear
-  // e.g. prefs::kSyncBookmarks.  Is that really what we want?
+  // Note: We do *not* clear prefs which are directly user-controlled such as
+  // the set of preferred data types here.
 }
 
 bool SyncPrefs::IsFirstSetupComplete() const {
@@ -473,10 +471,11 @@ void SyncPrefs::SetDataTypePreferred(ModelType type, bool is_preferred) {
   pref_service_->SetBoolean(pref_name, is_preferred);
 }
 
+// static
 ModelTypeSet SyncPrefs::ResolvePrefGroups(
     ModelTypeSet registered_types,
     ModelTypeSet types,
-    bool user_events_separate_pref_group) const {
+    bool user_events_separate_pref_group) {
   ModelTypeSet types_with_groups = types;
   for (const auto& pref_group :
        ComputePrefGroups(user_events_separate_pref_group)) {

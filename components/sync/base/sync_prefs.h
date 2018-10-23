@@ -32,8 +32,7 @@ namespace syncer {
 
 class SyncPrefObserver {
  public:
-  // Called whenever the pref that controls whether sync is managed
-  // changes.
+  // Called whenever the pref that controls whether sync is managed changes.
   virtual void OnSyncManagedPrefChange(bool is_sync_managed) = 0;
 
  protected:
@@ -68,19 +67,13 @@ class CryptoSyncPrefs {
       sync_pb::NigoriSpecifics* nigori_specifics) const = 0;
 };
 
-// SyncPrefs is a helper class that manages getting, setting, and
-// persisting global sync preferences.  It is not thread-safe, and
-// lives on the UI thread.
+// SyncPrefs is a helper class that manages getting, setting, and persisting
+// global sync preferences. It is not thread-safe, and lives on the UI thread.
 class SyncPrefs : public CryptoSyncPrefs,
                   public base::SupportsWeakPtr<SyncPrefs> {
  public:
-  // |pref_service| may not be null.
-  // Does not take ownership of |pref_service|.
+  // |pref_service| must not be null and must outlive this object.
   explicit SyncPrefs(PrefService* pref_service);
-
-  // For testing.
-  SyncPrefs();
-
   ~SyncPrefs() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -88,7 +81,10 @@ class SyncPrefs : public CryptoSyncPrefs,
   void AddSyncPrefObserver(SyncPrefObserver* sync_pref_observer);
   void RemoveSyncPrefObserver(SyncPrefObserver* sync_pref_observer);
 
-  // Clears important sync preferences.
+  // Clears "bookkeeping" sync preferences, such as the last synced time,
+  // whether the last shutdown was clean, etc. Does *not* clear sync preferences
+  // which are directly user-controlled, such as the set of preferred data
+  // types.
   void ClearPreferences();
 
   // Getters and setters for global sync prefs.
@@ -146,7 +142,9 @@ class SyncPrefs : public CryptoSyncPrefs,
                              ModelTypeSet preferred_types,
                              bool user_events_separate_pref_group);
 
-  // This pref is set outside of sync.
+  // Whether Sync is forced off by enterprise policy. Note that this only covers
+  // one out of two types of policy, "browser" policy. The second kind, "cloud"
+  // policy, is handled directly in ProfileSyncService.
   bool IsManaged() const;
 
   // Use this encryption bootstrap token if we're using an explicit passphrase.
@@ -221,9 +219,10 @@ class SyncPrefs : public CryptoSyncPrefs,
 
   // Returns a ModelTypeSet based on |types| expanded to include pref groups
   // (see |pref_groups_|), but as a subset of |registered_types|.
-  ModelTypeSet ResolvePrefGroups(ModelTypeSet registered_types,
-                                 ModelTypeSet types,
-                                 bool user_events_separate_pref_group) const;
+  // Exposed for testing.
+  static ModelTypeSet ResolvePrefGroups(ModelTypeSet registered_types,
+                                        ModelTypeSet types,
+                                        bool user_events_separate_pref_group);
 
  private:
   static void RegisterDataTypePreferredPref(
@@ -235,7 +234,7 @@ class SyncPrefs : public CryptoSyncPrefs,
 
   void OnSyncManagedPrefChanged();
 
-  // May be null.
+  // Never null.
   PrefService* const pref_service_;
 
   base::ObserverList<SyncPrefObserver>::Unchecked sync_pref_observers_;

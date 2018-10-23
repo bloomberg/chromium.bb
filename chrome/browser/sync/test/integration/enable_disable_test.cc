@@ -38,15 +38,14 @@ const char kSyncedBookmarkURL[] = "http://www.mybookmark.com";
 // affects our tests because we cannot assume that before enabling a multi type
 // it will be disabled, because the other selectable type(s) could already be
 // enabling it. And vice versa for disabling.
-ModelTypeSet MultiGroupTypes(const SyncPrefs& sync_prefs,
-                             const ModelTypeSet& registered_types) {
+ModelTypeSet MultiGroupTypes(const ModelTypeSet& registered_types) {
   const ModelTypeSet selectable_types = UserSelectableTypes();
   ModelTypeSet seen;
   ModelTypeSet multi;
   // TODO(vitaliii): Do not use such short variable names here (and possibly
   // elsewhere in the file).
   for (ModelType st : selectable_types) {
-    const ModelTypeSet grouped_types = sync_prefs.ResolvePrefGroups(
+    const ModelTypeSet grouped_types = SyncPrefs::ResolvePrefGroups(
         registered_types, ModelTypeSet(st),
         unified_consent::IsUnifiedConsentFeatureEnabled());
     for (ModelType gt : grouped_types) {
@@ -116,7 +115,6 @@ class EnableDisableSingleClientTest : public SyncTest {
  protected:
   void SetupTest(bool all_types_enabled) {
     ASSERT_TRUE(SetupClients());
-    sync_prefs_ = std::make_unique<SyncPrefs>(GetProfile(0)->GetPrefs());
     if (all_types_enabled) {
       ASSERT_TRUE(GetClient(0)->SetupSync());
     } else {
@@ -125,11 +123,11 @@ class EnableDisableSingleClientTest : public SyncTest {
 
     registered_types_ = GetSyncService(0)->GetRegisteredDataTypes();
     selectable_types_ = UserSelectableTypes();
-    multi_grouped_types_ = MultiGroupTypes(*sync_prefs_, registered_types_);
+    multi_grouped_types_ = MultiGroupTypes(registered_types_);
   }
 
   ModelTypeSet ResolveGroup(ModelType type) {
-    return Difference(sync_prefs_->ResolvePrefGroups(
+    return Difference(SyncPrefs::ResolvePrefGroups(
                           registered_types_, ModelTypeSet(type),
                           unified_consent::IsUnifiedConsentFeatureEnabled()),
                       ProxyTypes());
@@ -139,13 +137,6 @@ class EnableDisableSingleClientTest : public SyncTest {
     return Difference(input, multi_grouped_types_);
   }
 
-  void TearDownOnMainThread() override {
-    // Has to be done before user prefs are destroyed.
-    sync_prefs_.reset();
-    SyncTest::TearDownOnMainThread();
-  }
-
-  std::unique_ptr<SyncPrefs> sync_prefs_;
   ModelTypeSet registered_types_;
   ModelTypeSet selectable_types_;
   ModelTypeSet multi_grouped_types_;
