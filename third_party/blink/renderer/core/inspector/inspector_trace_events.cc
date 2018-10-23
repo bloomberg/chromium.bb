@@ -399,8 +399,6 @@ const char* NotStreamedReasonString(ScriptStreamer::NotStreamingReason reason) {
       return "already disabled streaming";
     case ScriptStreamer::kSecondScriptResourceUse:
       return "already used streamed data";
-    case ScriptStreamer::kWorkerTopLevelScript:
-      return "worker top-level scripts are not streamable";
     case ScriptStreamer::kAlreadyLoaded:
     case ScriptStreamer::kCount:
     case ScriptStreamer::kInvalid:

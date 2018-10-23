@@ -396,8 +396,9 @@ void WorkerGlobalScope::EvaluateClassicScript(
       source_code.length(),
       cached_meta_data.get() ? cached_meta_data->size() : 0);
   bool success = ScriptController()->Evaluate(
-      ScriptSourceCode(source_code, handler, script_url), access_control_status,
-      nullptr /* error_event */, v8_cache_options_);
+      ScriptSourceCode(source_code, ScriptSourceLocationType::kUnknown, handler,
+                       script_url),
+      access_control_status, nullptr /* error_event */, v8_cache_options_);
   ReportingProxy().DidEvaluateClassicScript(success);
 }
 
