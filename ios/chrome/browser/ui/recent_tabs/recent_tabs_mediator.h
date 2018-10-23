@@ -7,10 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/chrome/browser/sync/synced_sessions_bridge.h"
 #import "ios/chrome/browser/ui/recent_tabs/closed_tabs_observer_bridge.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_image_data_source.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller_delegate.h"
+#import "ios/chrome/browser/ui/recent_tabs/synced_sessions_bridge.h"
 
 namespace ios {
 class ChromeBrowserState;

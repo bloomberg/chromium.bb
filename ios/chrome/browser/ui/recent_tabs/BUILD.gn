@@ -11,6 +11,8 @@ source_set("recent_tabs") {
     "recent_tabs_coordinator.mm",
     "recent_tabs_mediator.h",
     "recent_tabs_mediator.mm",
+    "synced_sessions_bridge.h",
+    "synced_sessions_bridge.mm",
   ]
   deps = [
     ":recent_tabs_ui",
@@ -18,17 +20,20 @@ source_set("recent_tabs") {
     "//base",
     "//components/browser_sync",
     "//components/sessions",
+    "//components/signin/core/browser",
     "//components/sync",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/favicon:favicon",
     "//ios/chrome/browser/sessions",
+    "//ios/chrome/browser/signin",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/ntp",
     "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/util",
+    "//services/identity/public/cpp",
     "//ui/base",
   ]
   public_deps = [
