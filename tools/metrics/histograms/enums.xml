@@ -14210,6 +14210,9 @@ Called by update_net_error_codes.py.-->
   <int value="57" label="License list fetch failed">
     Failed to get available licenses from server.
   </int>
+  <int value="58" label="Consumer account with packaged license">
+    Can't enroll a device with a packaged license to a consumer account.
+  </int>
 </enum>
 
 <enum name="EnterpriseExistingInstallAttributesLockType">
