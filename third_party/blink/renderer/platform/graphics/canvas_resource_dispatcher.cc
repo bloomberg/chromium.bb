@@ -227,9 +227,6 @@ bool CanvasResourceDispatcher::PrepareFrame(
               1.f, SkBlendMode::kSrcOver, 0);
 
   OffscreenCanvasCommitType commit_type;
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      EnumerationHistogram, commit_type_histogram,
-      ("OffscreenCanvas.CommitType", kOffscreenCanvasCommitTypeCount));
   if (canvas_resource->IsAccelerated()) {
     // While |image| is texture backed, it could be generated with "software
     // rendering" aka swiftshader. If the compositor is not also using
@@ -264,8 +261,6 @@ bool CanvasResourceDispatcher::PrepareFrame(
 
   // TODO(crbug.com/869913): add unit testing for this.
   const gfx::Size canvas_resource_size(canvas_resource->Size());
-
-  commit_type_histogram.Count(commit_type);
 
   PostImageToPlaceholderIfNotBlocked(std::move(canvas_resource),
                                      next_resource_id_);

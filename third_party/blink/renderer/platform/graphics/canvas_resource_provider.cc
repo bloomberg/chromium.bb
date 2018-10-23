@@ -34,6 +34,10 @@ namespace blink {
 // * Renders to a texture managed by skia. Mailboxes are straight GL textures.
 // * Layers are not overlay candidates
 
+void CanvasResourceProvider::RecordTypeToUMA(ResourceProviderType type) {
+  UMA_HISTOGRAM_ENUMERATION("Blink.Canvas.ResourceProviderType", type);
+}
+
 class CanvasResourceProviderTexture : public CanvasResourceProvider {
  public:
   CanvasResourceProviderTexture(
@@ -49,7 +53,9 @@ class CanvasResourceProviderTexture : public CanvasResourceProvider {
                                std::move(context_provider_wrapper),
                                std::move(resource_dispatcher)),
         msaa_sample_count_(msaa_sample_count),
-        is_origin_top_left_(is_origin_top_left) {}
+        is_origin_top_left_(is_origin_top_left) {
+    RecordTypeToUMA(kTexture);
+  }
 
   ~CanvasResourceProviderTexture() override = default;
 
@@ -230,7 +236,9 @@ class CanvasResourceProviderBitmap : public CanvasResourceProvider {
       : CanvasResourceProvider(size,
                                color_params,
                                std::move(context_provider_wrapper),
-                               std::move(resource_dispatcher)) {}
+                               std::move(resource_dispatcher)) {
+    RecordTypeToUMA(kBitmap);
+  }
 
   ~CanvasResourceProviderBitmap() override = default;
 
@@ -329,6 +337,7 @@ class CanvasResourceProviderSharedBitmap : public CanvasResourceProviderBitmap {
                                      nullptr,  // context_provider_wrapper
                                      std::move(resource_dispatcher)) {
     DCHECK(ResourceDispatcher());
+    RecordTypeToUMA(kSharedBitmap);
   }
   ~CanvasResourceProviderSharedBitmap() override = default;
   bool SupportsDirectCompositing() const override { return true; }
@@ -498,8 +507,11 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
             size, color_params, context_provider_wrapper, resource_dispatcher);
         break;
     }
-    if (provider && provider->IsValid())
+    if (provider && provider->IsValid()) {
+      UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.ResourceProviderIsAccelerated",
+                            provider->IsAccelerated());
       return provider;
+    }
   }
 
   return nullptr;

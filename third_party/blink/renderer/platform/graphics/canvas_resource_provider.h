@@ -73,6 +73,15 @@ class PLATFORM_EXPORT CanvasResourceProvider
     kAllowImageChromiumPresentationMode  // Use CHROMIUM_image gl extension
   };
 
+  enum ResourceProviderType {
+    kTexture = 0,
+    kBitmap = 1,
+    kSharedBitmap = 2,
+    kMaxValue = kSharedBitmap,
+  };
+
+  void static RecordTypeToUMA(ResourceProviderType type);
+
   static std::unique_ptr<CanvasResourceProvider> Create(
       const IntSize&,
       ResourceUsage,
