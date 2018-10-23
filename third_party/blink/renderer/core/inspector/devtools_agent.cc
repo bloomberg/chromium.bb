@@ -89,7 +89,7 @@ class DevToolsAgent::Session::IOSession : public mojom::blink::DevToolsSession {
   ~IOSession() override {}
 
   void BindInterface(mojom::blink::DevToolsSessionRequest request) {
-    binding_.Bind(std::move(request));
+    binding_.Bind(std::move(request), io_task_runner_);
   }
 
   void DeleteSoon() { io_task_runner_->DeleteSoon(FROM_HERE, this); }
@@ -220,9 +220,10 @@ void DevToolsAgent::Dispose() {
 
 void DevToolsAgent::BindRequest(
     mojom::blink::DevToolsAgentHostAssociatedPtrInfo host_ptr_info,
-    mojom::blink::DevToolsAgentAssociatedRequest request) {
+    mojom::blink::DevToolsAgentAssociatedRequest request,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(!binding_);
-  binding_.Bind(std::move(request));
+  binding_.Bind(std::move(request), std::move(task_runner));
   host_ptr_.Bind(std::move(host_ptr_info));
   host_ptr_.set_connection_error_handler(
       WTF::Bind(&DevToolsAgent::CleanupConnection, WrapWeakPersistent(this)));

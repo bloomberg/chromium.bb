@@ -353,7 +353,9 @@ void WebDevToolsAgentImpl::WillBeDestroyed() {
 void WebDevToolsAgentImpl::BindRequest(
     mojom::blink::DevToolsAgentHostAssociatedPtrInfo host_ptr_info,
     mojom::blink::DevToolsAgentAssociatedRequest request) {
-  agent_->BindRequest(std::move(host_ptr_info), std::move(request));
+  agent_->BindRequest(
+      std::move(host_ptr_info), std::move(request),
+      web_local_frame_impl_->GetTaskRunner(blink::TaskType::kInternalDefault));
 }
 
 void WebDevToolsAgentImpl::DetachSession(InspectorSession* session) {
