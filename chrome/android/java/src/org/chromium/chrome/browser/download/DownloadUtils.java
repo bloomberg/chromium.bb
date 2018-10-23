@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.FileProviderHelper;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.download.home.metrics.FileExtensions;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.download.ui.DownloadFilter;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper;
@@ -388,8 +389,7 @@ public class DownloadUtils {
             if (wrappedItem.getFilterType() == DownloadFilter.Type.OTHER) {
                 RecordHistogram.recordEnumeratedHistogram(
                         "Android.DownloadManager.OtherExtensions.Share",
-                        wrappedItem.getFileExtensionType(),
-                        DownloadHistoryItemWrapper.FileExtension.NUM_ENTRIES);
+                        wrappedItem.getFileExtensionType(), FileExtensions.Type.NUM_ENTRIES);
             }
 
             // If a mime type was not retrieved from the backend or could not be normalized,

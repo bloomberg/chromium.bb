@@ -100,8 +100,7 @@ public class SectionTitleViewHolder extends ListItemViewHolder implements ListMe
             mDeleteAllCallback = ()
                     -> properties.get(ListProperties.CALLBACK_REMOVE_ALL)
                                .onResult(sectionItem.items);
-            mSelectCallback =
-                    () -> properties.get(ListProperties.CALLBACK_SELECTION).onResult(null);
+            mSelectCallback = properties.get(ListProperties.CALLBACK_START_SELECTION);
 
             mMore.setClickable(!properties.get(ListProperties.SELECTION_MODE_ACTIVE));
         }
