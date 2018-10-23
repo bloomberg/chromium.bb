@@ -116,32 +116,77 @@ DocumentLoader::DocumentLoader(
     const ResourceRequest& req,
     const SubstituteData& substitute_data,
     ClientRedirectPolicy client_redirect_policy,
-    const base::UnguessableToken& devtools_navigation_token)
+    const base::UnguessableToken& devtools_navigation_token,
+    WebFrameLoadType load_type,
+    WebNavigationType navigation_type,
+    std::unique_ptr<WebNavigationParams> navigation_params)
     : frame_(frame),
       fetcher_(FrameFetchContext::CreateFetcherFromDocumentLoader(this)),
       original_request_(req),
       substitute_data_(substitute_data),
       request_(req),
-      load_type_(WebFrameLoadType::kStandard),
+      load_type_(load_type),
       is_client_redirect_(client_redirect_policy ==
                           ClientRedirectPolicy::kClientRedirect),
       replaces_current_history_item_(false),
       data_received_(false),
-      navigation_type_(kWebNavigationTypeOther),
+      navigation_type_(navigation_type),
       document_load_timing_(*this),
       application_cache_host_(ApplicationCacheHost::Create(this)),
+      service_worker_network_provider_(
+          navigation_params
+              ? std::move(navigation_params->service_worker_network_provider)
+              : nullptr),
       was_blocked_after_csp_(false),
       state_(kNotStarted),
       committed_data_buffer_(nullptr),
       in_data_received_(false),
       data_buffer_(SharedBuffer::Create()),
       devtools_navigation_token_(devtools_navigation_token),
-      had_sticky_activation_(false),
-      had_transient_activation_(false),
+      had_sticky_activation_(navigation_params &&
+                             navigation_params->is_user_activated),
+      had_transient_activation_(request_.HasUserGesture()),
       use_counter_(frame_->GetChromeClient().IsSVGImageChromeClient()
                        ? UseCounter::kSVGImageContext
                        : UseCounter::kDefaultContext) {
   DCHECK(frame_);
+
+  WebNavigationTimings timings;
+  if (navigation_params)
+    timings = navigation_params->navigation_timings;
+  if (!timings.input_start.is_null())
+    document_load_timing_.SetInputStart(timings.input_start);
+  if (timings.navigation_start.is_null()) {
+    // If we don't have any navigation timings yet, it starts now.
+    document_load_timing_.SetNavigationStart(CurrentTimeTicks());
+  } else {
+    document_load_timing_.SetNavigationStart(timings.navigation_start);
+    if (!timings.redirect_start.is_null()) {
+      document_load_timing_.SetRedirectStart(timings.redirect_start);
+      document_load_timing_.SetRedirectEnd(timings.redirect_end);
+    }
+    if (!timings.fetch_start.is_null()) {
+      // If we started fetching, we should have started the navigation.
+      DCHECK(!timings.navigation_start.is_null());
+      document_load_timing_.SetFetchStart(timings.fetch_start);
+    }
+  }
+
+  if (navigation_params) {
+    WebSourceLocation& location = navigation_params->source_location;
+    source_location_ = SourceLocation::Create(
+        location.url, location.line_number, location.column_number, nullptr);
+  }
+
+  // TODO(japhet): This is needed because the browser process DCHECKs if the
+  // first entry we commit in a new frame has replacement set. It's unclear
+  // whether the DCHECK is right, investigate removing this special case.
+  // TODO(dgozman): we should get rid of this boolean field, and make client
+  // responsible for it's own view of "replaces current item", based on the
+  // frame load type.
+  replaces_current_history_item_ =
+      load_type_ == WebFrameLoadType::kReplaceCurrentItem &&
+      (!frame_->Loader().Opener() || !request_.Url().IsEmpty());
 
   // The document URL needs to be added to the head of the list as that is
   // where the redirects originated.
@@ -253,14 +298,6 @@ Resource* DocumentLoader::StartPreload(ResourceType type,
 void DocumentLoader::SetServiceWorkerNetworkProvider(
     std::unique_ptr<WebServiceWorkerNetworkProvider> provider) {
   service_worker_network_provider_ = std::move(provider);
-}
-
-void DocumentLoader::SetSourceLocation(
-    const WebSourceLocation& source_location) {
-  std::unique_ptr<SourceLocation> location =
-      SourceLocation::Create(source_location.url, source_location.line_number,
-                             source_location.column_number, nullptr);
-  source_location_ = std::move(location);
 }
 
 void DocumentLoader::ResetSourceLocation() {
@@ -464,10 +501,6 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
 
 void DocumentLoader::SetUserActivated() {
   had_sticky_activation_ = true;
-}
-
-void DocumentLoader::SetHadTransientUserActivation() {
-  had_transient_activation_ = true;
 }
 
 const AtomicString& DocumentLoader::RequiredCSP() {
@@ -1268,34 +1301,6 @@ void DocumentLoader::ResumeParser() {
     finished_loading_ = false;
     parser_->Finish();
     parser_.Clear();
-  }
-}
-
-void DocumentLoader::UpdateNavigationTimings(
-    base::TimeTicks navigation_start_time,
-    base::TimeTicks redirect_start_time,
-    base::TimeTicks redirect_end_time,
-    base::TimeTicks fetch_start_time,
-    base::TimeTicks input_start_time) {
-  if (!input_start_time.is_null()) {
-    GetTiming().SetInputStart(input_start_time);
-  }
-
-  // If we don't have any navigation timings yet, just start the navigation.
-  if (navigation_start_time.is_null()) {
-    GetTiming().SetNavigationStart(CurrentTimeTicks());
-    return;
-  }
-
-  GetTiming().SetNavigationStart(navigation_start_time);
-  if (!redirect_start_time.is_null()) {
-    GetTiming().SetRedirectStart(redirect_start_time);
-    GetTiming().SetRedirectEnd(redirect_end_time);
-  }
-  if (!fetch_start_time.is_null()) {
-    // If we started fetching, we should have started the navigation.
-    DCHECK(!navigation_start_time.is_null());
-    GetTiming().SetFetchStart(fetch_start_time);
   }
 }
 
