@@ -295,6 +295,11 @@ static_library("test_support") {
   }
 
   if (enable_extensions) {
+    sources += [
+      "../browser/extensions/extension_browsertest.cc",
+      "../browser/extensions/extension_browsertest.h",
+    ]
+
     public_deps += [
       "//apps:test_support",
       "//chrome/common/extensions/api",
@@ -1343,8 +1348,6 @@ test("browser_tests") {
         "../browser/extensions/extension_apitest.h",
         "../browser/extensions/extension_bindings_apitest.cc",
         "../browser/extensions/extension_bookmarklet_browsertest.cc",
-        "../browser/extensions/extension_browsertest.cc",
-        "../browser/extensions/extension_browsertest.h",
         "../browser/extensions/extension_context_menu_browsertest.cc",
         "../browser/extensions/extension_csp_bypass_browsertest.cc",
         "../browser/extensions/extension_disabled_ui_browsertest.cc",

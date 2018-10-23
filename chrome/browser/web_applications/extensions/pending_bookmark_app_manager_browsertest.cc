@@ -16,7 +16,10 @@
 #include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -115,6 +118,30 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest,
   const extensions::Extension* app =
       extensions::util::GetInstalledPwaForUrl(browser()->profile(), url);
   EXPECT_FALSE(app);
+}
+
+// Test that adding a manifest that points to a chrome:// URL does not actually
+// install a bookmark app that points to a chrome:// URL.
+IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest,
+                       InstallChromeURLFails) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL(
+      "/banners/manifest_test_page.html?manifest=manifest_chrome_url.json"));
+  InstallApp(url);
+  EXPECT_EQ(web_app::InstallResultCode::kSuccess, result_code_.value());
+  base::Optional<std::string> id =
+      web_app::ExtensionIdsMap(browser()->profile()->GetPrefs())
+          .LookupExtensionId(url);
+  ASSERT_TRUE(id.has_value());
+  const Extension* app = ExtensionRegistry::Get(browser()->profile())
+                             ->enabled_extensions()
+                             .GetByID(id.value());
+  ASSERT_TRUE(app);
+
+  // The installer falls back to installing a bookmark app of the original URL.
+  EXPECT_EQ(url, extensions::AppLaunchInfo::GetLaunchWebURL(app));
+  EXPECT_FALSE(extensions::UrlHandlers::CanBookmarkAppHandleUrl(
+      app, GURL("chrome://settings")));
 }
 
 }  // namespace extensions

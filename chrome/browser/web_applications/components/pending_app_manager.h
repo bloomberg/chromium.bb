@@ -62,8 +62,8 @@ class PendingAppManager {
     const bool create_shortcuts;
     const bool override_previous_user_uninstall;
 
-    // This must only be used by pre-installed default apps that are valid PWAs
-    // if loading the real service worker is too costly to verify
+    // This must only be used by pre-installed default or system apps that are
+    // valid PWAs if loading the real service worker is too costly to verify
     // programmatically.
     const bool bypass_service_worker_check;
 

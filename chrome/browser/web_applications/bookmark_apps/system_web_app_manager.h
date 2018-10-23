@@ -29,8 +29,7 @@ class SystemWebAppManager {
 
  protected:
   // Overridden in tests.
-  virtual std::vector<web_app::PendingAppManager::AppInfo>
-  CreateSystemWebApps();
+  virtual std::vector<GURL> CreateSystemWebApps();
 
  private:
   void StartAppInstallation();

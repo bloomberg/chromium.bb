@@ -108,7 +108,7 @@ class BookmarkAppHelper : public content::NotificationObserver {
 
   // If called, the installability check won't test for a service worker.
   void set_bypass_service_worker_check() {
-    DCHECK(is_default_app());
+    DCHECK(is_default_app() || is_system_app());
     bypass_service_worker_check_ = true;
   }
 

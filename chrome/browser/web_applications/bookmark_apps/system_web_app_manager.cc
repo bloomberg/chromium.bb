@@ -25,6 +25,22 @@
 
 namespace web_app {
 
+namespace {
+
+PendingAppManager::AppInfo CreateAppInfoForSystemApp(const GURL& url) {
+  DCHECK_EQ(content::kChromeUIScheme, url.scheme());
+  return {
+      url,
+      LaunchContainer::kWindow,
+      InstallSource::kSystemInstalled,
+      false /* create_shortcuts */,
+      PendingAppManager::AppInfo::kDefaultOverridePreviousUserUninstall,
+      true /* bypass_service_worker_check */,
+  };
+}
+
+}  // namespace
+
 SystemWebAppManager::SystemWebAppManager(Profile* profile,
                                          PendingAppManager* pending_app_manager)
     : profile_(profile), pending_app_manager_(pending_app_manager) {
@@ -49,32 +65,30 @@ bool SystemWebAppManager::ShouldEnableForProfile(Profile* profile) {
 }
 
 void SystemWebAppManager::StartAppInstallation() {
-  std::vector<PendingAppManager::AppInfo> apps_to_install;
-
+  std::vector<GURL> urls_to_install;
   if (ShouldEnableForProfile(profile_)) {
     // Skipping this will uninstall all System Apps currently installed.
-    apps_to_install = CreateSystemWebApps();
+    urls_to_install = CreateSystemWebApps();
   }
+
+  std::vector<PendingAppManager::AppInfo> apps_to_install;
+  for (const auto& url : urls_to_install)
+    apps_to_install.emplace_back(CreateAppInfoForSystemApp(url));
 
   pending_app_manager_->SynchronizeInstalledApps(
       std::move(apps_to_install), InstallSource::kSystemInstalled);
 }
 
-std::vector<PendingAppManager::AppInfo>
-SystemWebAppManager::CreateSystemWebApps() {
-  std::vector<PendingAppManager::AppInfo> app_infos;
+std::vector<GURL> SystemWebAppManager::CreateSystemWebApps() {
+  std::vector<GURL> urls;
 
 // TODO(calamity): Split this into per-platform functions.
 #if defined(OS_CHROMEOS)
-  app_infos.emplace_back(
-      GURL(chrome::kChromeUIDiscoverURL), LaunchContainer::kWindow,
-      InstallSource::kSystemInstalled, false /* create_shortcuts */);
-  app_infos.emplace_back(
-      GURL(chrome::kChromeUISettingsURL), LaunchContainer::kWindow,
-      InstallSource::kSystemInstalled, false /* create_shortcuts */);
+  urls.emplace_back(chrome::kChromeUIDiscoverURL);
+  urls.emplace_back(chrome::kChromeUISettingsURL);
 #endif  // OS_CHROMEOS
 
-  return app_infos;
+  return urls;
 }
 
 }  // namespace web_app

@@ -351,7 +351,25 @@ class HostedAppTest
             : extensions::Extension::NO_FLAGS);
     ASSERT_TRUE(app_);
 
-    // Launch it in a window.
+    LaunchApp();
+  }
+
+  void SetupSystemAppWithURL(const GURL& app_url) {
+    extensions::TestExtensionDir test_app_dir;
+    test_app_dir.WriteManifest(
+        base::StringPrintf(kAppDotComManifest, app_url.spec().c_str()));
+
+    app_ = InstallExtensionWithSourceAndFlags(
+        test_app_dir.UnpackedPath(), 1,
+        extensions::Manifest::EXTERNAL_COMPONENT,
+        extensions::Extension::FROM_BOOKMARK);
+    ASSERT_TRUE(app_);
+
+    LaunchApp();
+  }
+
+  void LaunchApp() {
+    // Launch app in a window.
     app_browser_ = LaunchAppBrowser(app_);
     ASSERT_TRUE(app_browser_);
     ASSERT_TRUE(app_browser_ != browser());
@@ -1424,7 +1442,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
                        ShouldShowLocationBarForSystemApp) {
   const GURL app_url(chrome::kChromeUISettingsURL);
 
-  SetupAppWithURL(app_url);
+  SetupSystemAppWithURL(app_url);
 
   // Navigate to the app's launch page; the location bar should be hidden.
   NavigateAndCheckForLocationBar(app_browser_, app_url, false);
