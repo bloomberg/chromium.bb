@@ -370,11 +370,17 @@ class ComputedStyle : public ComputedStyleBase,
 
 
   // background-image
-  bool HasBackgroundImage() const { return BackgroundInternal().HasImage(); }
-  bool HasFixedBackgroundImage() const {
-    return BackgroundInternal().HasFixedImage();
+  bool HasBackgroundImage() const {
+    return BackgroundInternal().AnyLayerHasImage();
   }
-  bool HasEntirelyFixedBackground() const;
+  bool HasFixedAttachmentBackgroundImage() const {
+    return BackgroundInternal().AnyLayerHasFixedAttachmentImage();
+  }
+  bool HasOnlyFixedAttachmentBackgroundImage() const {
+    return BackgroundInternal().AnyLayerHasFixedAttachmentImage() &&
+           !BackgroundInternal().AnyLayerHasLocalAttachment() &&
+           !BackgroundInternal().AnyLayerHasDefaultAttachment();
+  }
 
   // background-clip
   EFillBox BackgroundClip() const {
@@ -1179,7 +1185,8 @@ class ComputedStyle : public ComputedStyleBase,
 
   // Mask utility functions.
   bool HasMask() const {
-    return MaskInternal().HasImage() || MaskBoxImageInternal().HasImage();
+    return MaskInternal().AnyLayerHasImage() ||
+           MaskBoxImageInternal().HasImage();
   }
   StyleImage* MaskImage() const { return MaskInternal().GetImage(); }
   FillLayer& AccessMaskLayers() { return MutableMaskInternal(); }

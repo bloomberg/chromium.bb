@@ -209,7 +209,7 @@ void AddColorsFromImageStyle(const ComputedStyle& style,
                              bool& found_non_transparent_color,
                              const LayoutObject& layout_object) {
   const FillLayer& background_layers = style.BackgroundLayers();
-  if (!background_layers.HasImage())
+  if (!background_layers.AnyLayerHasImage())
     return;
 
   StyleImage* style_image = background_layers.GetImage();

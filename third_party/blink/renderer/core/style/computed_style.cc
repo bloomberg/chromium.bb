@@ -1278,21 +1278,6 @@ bool ComputedStyle::CanRenderBorderImage() const {
   return border_image && border_image->CanRender() && border_image->IsLoaded();
 }
 
-static bool AllLayersAreFixed(const FillLayer& layer) {
-  for (const FillLayer* curr_layer = &layer; curr_layer;
-       curr_layer = curr_layer->Next()) {
-    if (!curr_layer->GetImage() ||
-        curr_layer->Attachment() != EFillAttachment::kFixed)
-      return false;
-  }
-
-  return true;
-}
-
-bool ComputedStyle::HasEntirelyFixedBackground() const {
-  return AllLayersAreFixed(BackgroundLayers());
-}
-
 const CounterDirectiveMap* ComputedStyle::GetCounterDirectives() const {
   return CounterDirectivesInternal().get();
 }

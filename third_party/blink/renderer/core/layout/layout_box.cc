@@ -394,10 +394,10 @@ void LayoutBox::UpdateBackgroundAttachmentFixedStatusAfterStyleChange() {
   // painting backgrounds.
   bool is_background_attachment_fixed_object =
       !IsDocumentElement() && !BackgroundStolenForBeingBody() &&
-      StyleRef().HasFixedBackgroundImage();
+      StyleRef().HasFixedAttachmentBackgroundImage();
   if (IsLayoutView() &&
       View()->Compositor()->PreferCompositingToLCDTextEnabled() &&
-      StyleRef().HasEntirelyFixedBackground()) {
+      StyleRef().HasOnlyFixedAttachmentBackgroundImage()) {
     is_background_attachment_fixed_object = false;
   }
 
