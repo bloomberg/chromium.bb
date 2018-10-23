@@ -580,11 +580,10 @@ bool FrameSelection::Contains(const LayoutPoint& point) {
   if (!inner_node || !inner_node->GetLayoutObject())
     return false;
 
-  const VisiblePositionInFlatTree& visible_pos =
-      CreateVisiblePosition(FromPositionInDOMTree<EditingInFlatTreeStrategy>(
-          inner_node->GetLayoutObject()->PositionForPoint(
-              result.LocalPoint())));
-  if (visible_pos.IsNull())
+  const PositionInFlatTreeWithAffinity pos_with_affinity =
+      FromPositionInDOMTree<EditingInFlatTreeStrategy>(
+          inner_node->GetLayoutObject()->PositionForPoint(result.LocalPoint()));
+  if (pos_with_affinity.IsNull())
     return false;
 
   const VisiblePositionInFlatTree& visible_start =
@@ -595,7 +594,7 @@ bool FrameSelection::Contains(const LayoutPoint& point) {
 
   const PositionInFlatTree& start = visible_start.DeepEquivalent();
   const PositionInFlatTree& end = visible_end.DeepEquivalent();
-  const PositionInFlatTree& pos = visible_pos.DeepEquivalent();
+  const PositionInFlatTree& pos = pos_with_affinity.GetPosition();
   return start.CompareTo(pos) <= 0 && pos.CompareTo(end) <= 0;
 }
 
