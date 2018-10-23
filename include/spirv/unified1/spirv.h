@@ -789,7 +789,7 @@ typedef enum SpvCapability_ {
     SpvCapabilityInputAttachmentArrayNonUniformIndexingEXT = 5310,
     SpvCapabilityUniformTexelBufferArrayNonUniformIndexingEXT = 5311,
     SpvCapabilityStorageTexelBufferArrayNonUniformIndexingEXT = 5312,
-    SpvCapabilityRaytracingNV = 5340,
+    SpvCapabilityRayTracingNV = 5340,
     SpvCapabilityVulkanMemoryModelKHR = 5345,
     SpvCapabilityVulkanMemoryModelDeviceScopeKHR = 5346,
     SpvCapabilityComputeDerivativeGroupLinearNV = 5350,

@@ -789,7 +789,7 @@ namespace Spv
             InputAttachmentArrayNonUniformIndexingEXT = 5310,
             UniformTexelBufferArrayNonUniformIndexingEXT = 5311,
             StorageTexelBufferArrayNonUniformIndexingEXT = 5312,
-            RaytracingNV = 5340,
+            RayTracingNV = 5340,
             VulkanMemoryModelKHR = 5345,
             VulkanMemoryModelDeviceScopeKHR = 5346,
             ComputeDerivativeGroupLinearNV = 5350,

@@ -785,7 +785,7 @@ enum Capability {
     CapabilityInputAttachmentArrayNonUniformIndexingEXT = 5310,
     CapabilityUniformTexelBufferArrayNonUniformIndexingEXT = 5311,
     CapabilityStorageTexelBufferArrayNonUniformIndexingEXT = 5312,
-    CapabilityRaytracingNV = 5340,
+    CapabilityRayTracingNV = 5340,
     CapabilityVulkanMemoryModelKHR = 5345,
     CapabilityVulkanMemoryModelDeviceScopeKHR = 5346,
     CapabilityComputeDerivativeGroupLinearNV = 5350,
