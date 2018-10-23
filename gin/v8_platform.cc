@@ -249,6 +249,11 @@ class PageAllocator : public v8::PageAllocator {
                                         GetPageConfig(permissions));
     }
   }
+
+  bool DiscardSystemPages(void* address, size_t size) override {
+    base::DiscardSystemPages(address, size);
+    return true;
+  }
 };
 
 base::LazyInstance<PageAllocator>::Leaky g_page_allocator =
