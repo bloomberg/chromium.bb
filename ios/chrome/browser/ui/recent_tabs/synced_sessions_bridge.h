@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_SYNC_SYNCED_SESSIONS_BRIDGE_H_
-#define IOS_CHROME_BROWSER_SYNC_SYNCED_SESSIONS_BRIDGE_H_
+#ifndef IOS_CHROME_BROWSER_UI_RECENT_TABS_SYNCED_SESSIONS_BRIDGE_H_
+#define IOS_CHROME_BROWSER_UI_RECENT_TABS_SYNCED_SESSIONS_BRIDGE_H_
 
 #import <Foundation/Foundation.h>
 
@@ -36,8 +36,6 @@ class SyncedSessionsObserverBridge
                                ios::ChromeBrowserState* browserState);
   ~SyncedSessionsObserverBridge() override;
   // SyncObserverBridge implementation.
-  void OnStateChanged(syncer::SyncService* sync) override;
-  void OnSyncCycleCompleted(syncer::SyncService* sync) override;
   void OnSyncConfigurationCompleted(syncer::SyncService* sync) override;
   void OnForeignSessionUpdated(syncer::SyncService* sync) override;
   // identity::IdentityManager::Observer implementation.
@@ -49,24 +47,13 @@ class SyncedSessionsObserverBridge
   bool IsFirstSyncCycleCompleted();
   // Returns true if user is signed in.
   bool IsSignedIn();
-  // Returns true if it is undergoing the first sync cycle.
-  bool IsSyncing();
-  // Check if the first sync cycle is completed.  This keeps
-  // IsFirstSyncCycleCompleted() and first_sync_cycle_is_completed_ updated.
-  void CheckIfFirstSyncIsCompleted();
 
  private:
   __weak id<SyncedSessionsObserver> owner_ = nil;
   identity::IdentityManager* identity_manager_ = nullptr;
-  syncer::SyncService* sync_service_;
   ios::ChromeBrowserState* browser_state_;
   ScopedObserver<identity::IdentityManager, identity::IdentityManager::Observer>
       identity_manager_observer_;
-  // Stores whether the first sync cycle that contains session information is
-  // completed.
-  bool first_sync_cycle_is_completed_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncedSessionsObserverBridge);
 };
 
 }  // namespace synced_sessions

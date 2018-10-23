@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/sync/synced_sessions_bridge.h"
+#import "ios/chrome/browser/ui/recent_tabs/synced_sessions_bridge.h"
 
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
@@ -30,30 +29,14 @@ SyncedSessionsObserverBridge::SyncedSessionsObserverBridge(
       owner_(owner),
       identity_manager_(
           IdentityManagerFactory::GetForBrowserState(browserState)),
-      sync_service_(
-          ProfileSyncServiceFactory::GetForBrowserState(browserState)),
       browser_state_(browserState),
-      identity_manager_observer_(this),
-      first_sync_cycle_is_completed_(false) {
+      identity_manager_observer_(this) {
   identity_manager_observer_.Add(identity_manager_);
-  CheckIfFirstSyncIsCompleted();
 }
 
 SyncedSessionsObserverBridge::~SyncedSessionsObserverBridge() {}
 
 #pragma mark - SyncObserverBridge
-
-void SyncedSessionsObserverBridge::OnStateChanged(syncer::SyncService* sync) {
-  if (!IsSignedIn())
-    first_sync_cycle_is_completed_ = false;
-  [owner_ onSyncStateChanged];
-}
-
-void SyncedSessionsObserverBridge::OnSyncCycleCompleted(
-    syncer::SyncService* sync) {
-  CheckIfFirstSyncIsCompleted();
-  [owner_ onSyncStateChanged];
-}
 
 void SyncedSessionsObserverBridge::OnSyncConfigurationCompleted(
     syncer::SyncService* sync) {
@@ -66,19 +49,14 @@ void SyncedSessionsObserverBridge::OnForeignSessionUpdated(
 }
 
 bool SyncedSessionsObserverBridge::IsFirstSyncCycleCompleted() {
-  return first_sync_cycle_is_completed_;
-}
-
-void SyncedSessionsObserverBridge::CheckIfFirstSyncIsCompleted() {
-  first_sync_cycle_is_completed_ =
-      sync_service_->GetActiveDataTypes().Has(syncer::SESSIONS);
+  return SyncSetupServiceFactory::GetForBrowserState(browser_state_)
+      ->IsDataTypeActive(syncer::SESSIONS);
 }
 
 #pragma mark - identity::IdentityManager::Observer
 
 void SyncedSessionsObserverBridge::OnPrimaryAccountCleared(
     const AccountInfo& previous_primary_account_info) {
-  first_sync_cycle_is_completed_ = false;
   [owner_ reloadSessions];
 }
 
@@ -86,20 +64,6 @@ void SyncedSessionsObserverBridge::OnPrimaryAccountCleared(
 
 bool SyncedSessionsObserverBridge::IsSignedIn() {
   return identity_manager_->HasPrimaryAccount();
-}
-
-bool SyncedSessionsObserverBridge::IsSyncing() {
-  if (!IsSignedIn())
-    return false;
-
-  SyncSetupService* sync_setup_service =
-      SyncSetupServiceFactory::GetForBrowserState(browser_state_);
-
-  bool sync_enabled = sync_setup_service->IsSyncEnabled();
-  bool no_sync_error = (sync_setup_service->GetSyncServiceState() ==
-                        SyncSetupService::kNoSyncServiceError);
-
-  return sync_enabled && no_sync_error && !IsFirstSyncCycleCompleted();
 }
 
 }  // namespace synced_sessions
