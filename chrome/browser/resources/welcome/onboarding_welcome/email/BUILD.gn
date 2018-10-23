@@ -12,24 +12,25 @@ js_type_check("closure_compile") {
 }
 
 js_library("nux_email") {
-  deps = [
-    "../shared:nux_types",
-  ]
 }
 
 js_library("email_chooser") {
   deps = [
     ":nux_email_proxy",
     "../:navigation_behavior",
+    "../shared:nux_types",
     "//third_party/polymer/v1_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer-extracted",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",
+    "//ui/webui/resources/js:load_time_data",
   ]
 }
 
 js_library("nux_email_proxy") {
   deps = [
+    "../shared:nux_types",
     "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:load_time_data",
   ]
   externs_list = [
     "$externs_path/chrome_extensions.js",

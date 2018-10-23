@@ -15,9 +15,17 @@ group("closure_compile") {
 
 js_type_check("welcome_files") {
   deps = [
+    ":email_interstitial",
     ":landing_view",
     ":signin_view",
     ":welcome_app",
+  ]
+}
+
+js_library("email_interstitial") {
+  deps = [
+    ":welcome_browser_proxy",
+    "./email/:nux_email_proxy",
   ]
 }
 
@@ -32,6 +40,7 @@ js_library("signin_view") {
   deps = [
     ":navigation_behavior",
     ":welcome_browser_proxy",
+    "./email/:nux_email_proxy",
   ]
 }
 

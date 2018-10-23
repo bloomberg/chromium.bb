@@ -7,12 +7,28 @@ Polymer({
 
   behaviors: [welcome.NavigationBehavior],
 
-  /** @private */
+  // TODO(scottchen): read this from a nux onboarding feature param via
+  //     loadTimeData.
+  shouldShowEmailInterstitial_: true,
+
+  /**
+   * When the user clicks sign-in, check whether or not they previously
+   * selected an email provider they prefer to use. If so, direct them back to
+   * the email-interstitial page, otherwise let it direct to NTP.
+   * @private
+   */
   onSignInClick_: function() {
-    // TODO(scottchen): create a feature flag to direct part of the users to
-    //     chrome://welcome/email-interstitial instead of NTP.
-    // TODO(scottchen): implement chrome://welcome/email-interstitial.
-    welcome.WelcomeBrowserProxyImpl.getInstance().handleActivateSignIn();
+    let redirectUrl = null;
+
+    const savedProvider =
+        nux.NuxEmailProxyImpl.getInstance().getSavedProvider();
+    if (savedProvider != undefined && this.shouldShowEmailInterstitial_) {
+      redirectUrl =
+          `chrome://welcome/email-interstitial?provider=${savedProvider}`;
+    }
+
+    welcome.WelcomeBrowserProxyImpl.getInstance().handleActivateSignIn(
+        redirectUrl);
   },
 
   /** @private */

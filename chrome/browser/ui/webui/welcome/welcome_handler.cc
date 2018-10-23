@@ -19,6 +19,7 @@
 #include "ui/base/page_transition_types.h"
 
 const char kWelcomeReturningUserUrl[] = "chrome://welcome/returning-user";
+const char kWelcomeEmailInterstitial[] = "chrome://welcome/email-interstitial";
 
 WelcomeHandler::WelcomeHandler(content::WebUI* web_ui)
     : profile_(Profile::FromWebUI(web_ui)),
@@ -51,8 +52,11 @@ void WelcomeHandler::OnSyncConfirmationUIClosed(
     // chrome://welcome/... after closing sync-confirmation UI. If current URL
     // matches such a case, do not navigate away.
     GURL current_url = web_ui()->GetWebContents()->GetVisibleURL();
-    if (current_url != kWelcomeReturningUserUrl)
+    if (current_url != kWelcomeReturningUserUrl &&
+        current_url.spec().find(kWelcomeEmailInterstitial) ==
+            std::string::npos) {
       GoToNewTabPage();
+    }
   }
 }
 

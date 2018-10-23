@@ -67,6 +67,9 @@ cr.define('nux', function() {
      */
     getEmailList() {}
 
+    /** @return {number} */
+    getSavedProvider() {}
+
     recordPageInitialized() {}
 
     recordClickedOption() {}
@@ -95,6 +98,9 @@ cr.define('nux', function() {
 
       /** @private {string} */
       this.lastPart = '';
+
+      /** @private {number} */
+      this.savedProvider_;
     }
 
     /** @override */
@@ -116,6 +122,11 @@ cr.define('nux', function() {
     /** @override */
     getEmailList() {
       return cr.sendWithPromise('getEmailList');
+    }
+
+    /** @override */
+    getSavedProvider() {
+      return this.savedProvider_;
     }
 
     /** @override */
@@ -147,6 +158,7 @@ cr.define('nux', function() {
 
     /** @override */
     recordProviderSelected(providerId, length) {
+      this.savedProvider_ = providerId;
       // TODO(hcarmona): get enum's max from loadTimeData instead, since length
       //     might not be accurate once we start localizing.
       chrome.metricsPrivate.recordEnumerationValue(
