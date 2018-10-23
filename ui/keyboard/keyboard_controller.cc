@@ -372,27 +372,6 @@ void KeyboardController::RemoveObserver(KeyboardControllerObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-ui::TextInputClient* KeyboardController::GetTextInputClient() {
-  return ui_->GetInputMethod()->GetTextInputClient();
-}
-
-bool KeyboardController::InsertText(const base::string16& text) {
-  if (!ui_)
-    return false;
-
-  ui::InputMethod* input_method = ui_->GetInputMethod();
-  if (!input_method)
-    return false;
-
-  ui::TextInputClient* tic = input_method->GetTextInputClient();
-  if (!tic || tic->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE)
-    return false;
-
-  tic->InsertText(text);
-
-  return true;
-}
-
 bool KeyboardController::UpdateKeyboardConfig(
     const mojom::KeyboardConfig& config) {
   if (config.Equals(keyboard_config_))
@@ -1065,6 +1044,10 @@ bool KeyboardController::IsKeyboardVisible() {
     return true;
   }
   return false;
+}
+
+ui::TextInputClient* KeyboardController::GetTextInputClient() {
+  return ui_->GetInputMethod()->GetTextInputClient();
 }
 
 void KeyboardController::UpdateInputMethodObserver() {
