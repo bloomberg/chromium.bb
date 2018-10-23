@@ -1974,6 +1974,7 @@ jumbo_source_set("unit_tests") {
     "inspector/inspector_session_state_test.cc",
     "inspector/main_thread_debugger_test.cc",
     "inspector/protocol_parser_test.cc",
+    "inspector/protocol_unittest.cc",
     "intersection_observer/intersection_observer_test.cc",
     "layout/api/selection_state_test.cc",
     "layout/collapsed_border_value_test.cc",
