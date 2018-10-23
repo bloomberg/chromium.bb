@@ -123,14 +123,15 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
     int id = files_to_register->GetIDAt(i);
     const auto& region = files_to_register->GetRegionAt(i);
     bool auto_close = files_to_register->OwnsFD(fd);
+    if (auto_close) {
+      ignore_result(files_to_register->ReleaseFD(fd).release());
+    }
+
     ScopedJavaLocalRef<jobject> j_file_info =
         Java_ChildProcessLauncherHelperImpl_makeFdInfo(
             env, id, fd, auto_close, region.offset, region.size);
     PCHECK(j_file_info.obj());
     env->SetObjectArrayElement(j_file_infos.obj(), i, j_file_info.obj());
-    if (auto_close) {
-      ignore_result(files_to_register->ReleaseFD(fd).release());
-    }
   }
 
   java_peer_.Reset(Java_ChildProcessLauncherHelperImpl_createAndStart(
