@@ -135,13 +135,6 @@ class KEYBOARD_EXPORT KeyboardController
   bool HasObserver(KeyboardControllerObserver* observer) const;
   void RemoveObserver(KeyboardControllerObserver* observer);
 
-  // Gets the currently focused text input client.
-  ui::TextInputClient* GetTextInputClient();
-
-  // Insert |text| into the active TextInputClient if there is one. Returns true
-  // if |text| was successfully inserted.
-  bool InsertText(const base::string16& text);
-
   // Updates |keyboard_config_| with |config|. Returns |false| if there is no
   // change, otherwise returns true and notifies observers if this is enabled.
   bool UpdateKeyboardConfig(const mojom::KeyboardConfig& config);
@@ -364,6 +357,9 @@ class KEYBOARD_EXPORT KeyboardController
 
   // Records that keyboard was shown on the currently focused UKM source.
   void RecordUkmKeyboardShown();
+
+  // Gets the currently focused text input client.
+  ui::TextInputClient* GetTextInputClient();
 
   // Ensures that the current IME is observed if it is changed.
   void UpdateInputMethodObserver();

@@ -33,6 +33,9 @@
 #include "services/audio/public/cpp/audio_system_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ime/ime_bridge.h"
+#include "ui/base/ime/input_method.h"
+#include "ui/base/ime/text_input_client.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_switches.h"
@@ -100,7 +103,17 @@ bool ChromeVirtualKeyboardDelegate::HideKeyboard() {
 
 bool ChromeVirtualKeyboardDelegate::InsertText(const base::string16& text) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return keyboard::KeyboardController::Get()->InsertText(text);
+  ui::InputMethod* input_method =
+      ui::IMEBridge::Get()->GetInputContextHandler()->GetInputMethod();
+  if (!input_method)
+    return false;
+
+  ui::TextInputClient* tic = input_method->GetTextInputClient();
+  if (!tic || tic->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE)
+    return false;
+
+  tic->InsertText(text);
+  return true;
 }
 
 bool ChromeVirtualKeyboardDelegate::OnKeyboardLoaded() {
