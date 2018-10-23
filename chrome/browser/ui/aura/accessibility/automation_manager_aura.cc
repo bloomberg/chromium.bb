@@ -93,12 +93,11 @@ void AutomationManagerAura::HandleEvent(views::View* view,
 }
 
 void AutomationManagerAura::HandleEvent(ax::mojom::Event event_type) {
-#if defined(OS_CHROMEOS)
-  aura::Window* root_window = ash::wm::GetActiveWindow();
-  views::Widget* widget = views::Widget::GetWidgetForNativeView(root_window);
-  if (widget)
-    HandleEvent(widget->GetRootView(), event_type);
-#endif
+  views::AXAuraObjWrapper* obj = current_tree_->GetRoot();
+  if (!obj)
+    return;
+
+  AutomationManagerAura::SendEvent(obj, event_type);
 }
 
 void AutomationManagerAura::SendEventOnObjectById(int32_t id,
