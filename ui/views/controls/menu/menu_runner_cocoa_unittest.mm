@@ -257,8 +257,7 @@ class MenuRunnerCocoaTest : public ViewsTestBase,
     // An anchor view should only be added for Native menus.
     if (GetParam() == MenuType::NATIVE) {
       ASSERT_EQ(native_view_subview_count_ + 1, [subviews count]);
-      last_anchor_frame_ =
-          [[subviews objectAtIndex:native_view_subview_count_] frame];
+      last_anchor_frame_ = [subviews[native_view_subview_count_] frame];
     } else {
       EXPECT_EQ(native_view_subview_count_, [subviews count]);
     }

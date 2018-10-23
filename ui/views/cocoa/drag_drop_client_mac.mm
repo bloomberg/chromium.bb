@@ -15,15 +15,15 @@
 #import "ui/views_bridge_mac/bridged_native_widget_impl.h"
 
 @interface CocoaDragDropDataProvider ()
-- (id)initWithData:(const ui::OSExchangeData&)data;
-- (id)initWithPasteboard:(NSPasteboard*)pasteboard;
+- (instancetype)initWithData:(const ui::OSExchangeData&)data;
+- (instancetype)initWithPasteboard:(NSPasteboard*)pasteboard;
 @end
 
 @implementation CocoaDragDropDataProvider {
   std::unique_ptr<ui::OSExchangeData> data_;
 }
 
-- (id)initWithData:(const ui::OSExchangeData&)data {
+- (instancetype)initWithData:(const ui::OSExchangeData&)data {
   if ((self = [super init])) {
     data_.reset(new OSExchangeData(
         std::unique_ptr<OSExchangeData::Provider>(data.provider().Clone())));
@@ -31,7 +31,7 @@
   return self;
 }
 
-- (id)initWithPasteboard:(NSPasteboard*)pasteboard {
+- (instancetype)initWithPasteboard:(NSPasteboard*)pasteboard {
   if ((self = [super init])) {
     data_ = ui::OSExchangeDataProviderMac::CreateDataFromPasteboard(pasteboard);
   }

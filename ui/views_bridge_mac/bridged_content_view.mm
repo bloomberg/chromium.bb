@@ -254,7 +254,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 - (void)insertTextInternal:(id)text;
 
 // Returns the native Widget's drag drop client. Possibly null.
-- (views_bridge_mac::DragDropClient*)dragDropClient;
+- (views_bridge_mac::DragDropClient*)dragDropClient NS_RETURNS_INNER_POINTER;
 
 // Menu action handlers.
 - (void)undo:(id)sender;
@@ -273,8 +273,8 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 @synthesize textInputClient = textInputClient_;
 @synthesize drawMenuBackgroundForBlur = drawMenuBackgroundForBlur_;
 
-- (id)initWithBridge:(views::BridgedNativeWidgetImpl*)bridge
-              bounds:(gfx::Rect)bounds {
+- (instancetype)initWithBridge:(views::BridgedNativeWidgetImpl*)bridge
+                        bounds:(gfx::Rect)bounds {
   // To keep things simple, assume the origin is (0, 0) until there exists a use
   // case for something other than that.
   DCHECK(bounds.origin().IsOrigin());

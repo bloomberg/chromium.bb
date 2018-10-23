@@ -774,8 +774,7 @@ TEST_F(NativeWidgetMacTest, NonWidgetParent) {
   child->Show();
   EXPECT_TRUE(child->IsVisible());
   EXPECT_EQ(1u, [[native_parent childWindows] count]);
-  EXPECT_EQ(child->GetNativeWindow(),
-            [[native_parent childWindows] objectAtIndex:0]);
+  EXPECT_EQ(child->GetNativeWindow(), [native_parent childWindows][0]);
   EXPECT_EQ(native_parent,
             [child->GetNativeWindow().GetNativeNSWindow() parentWindow]);
 

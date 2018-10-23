@@ -54,7 +54,7 @@ constexpr auto kUIPaintTimeout = base::TimeDelta::FromSeconds(5);
 
 @implementation ViewsNSWindowCloseAnimator
 
-- (id)initWithWindow:(NSWindow*)window {
+- (instancetype)initWithWindow:(NSWindow*)window {
   if ((self = [super init])) {
     window_.reset([window retain]);
     animation_.reset(

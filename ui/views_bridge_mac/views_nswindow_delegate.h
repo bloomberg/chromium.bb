@@ -28,7 +28,8 @@ VIEWS_EXPORT
 @property(retain, nonatomic) NSCursor* cursor;
 
 // Initialize with the given |parent|.
-- (id)initWithBridgedNativeWidget:(views::BridgedNativeWidgetImpl*)parent;
+- (instancetype)initWithBridgedNativeWidget:
+    (views::BridgedNativeWidgetImpl*)parent;
 
 // Notify that the window has been reordered in (or removed from) the window
 // server's screen list. This is a substitute for -[NSWindowDelegate

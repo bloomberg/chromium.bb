@@ -56,7 +56,7 @@ using base::ASCIIToUTF16;
 @synthesize draggingFormation;
 @synthesize springLoadingHighlight;
 
-- (id)initWithPasteboard:(NSPasteboard*)pasteboard {
+- (instancetype)initWithPasteboard:(NSPasteboard*)pasteboard {
   if ((self = [super init])) {
     pasteboard_ = pasteboard;
   }

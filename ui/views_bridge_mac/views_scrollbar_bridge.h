@@ -27,7 +27,7 @@ class ViewsScrollbarBridgeDelegate {
 
 // Initializes with the given delegate and registers for notifications on
 // scroller style changes.
-- (id)initWithDelegate:(ViewsScrollbarBridgeDelegate*)delegate;
+- (instancetype)initWithDelegate:(ViewsScrollbarBridgeDelegate*)delegate;
 
 // Sets |delegate_| to nullptr.
 - (void)clearDelegate;

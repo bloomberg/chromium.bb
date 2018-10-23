@@ -15,7 +15,7 @@
 
 @implementation ViewsScrollbarBridge
 
-- (id)initWithDelegate:(ViewsScrollbarBridgeDelegate*)delegate {
+- (instancetype)initWithDelegate:(ViewsScrollbarBridgeDelegate*)delegate {
   if ((self = [super init])) {
     delegate_ = delegate;
     [[NSNotificationCenter defaultCenter]
