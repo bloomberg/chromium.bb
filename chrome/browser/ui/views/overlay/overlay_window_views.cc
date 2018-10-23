@@ -670,7 +670,7 @@ void OverlayWindowViews::OnMouseEvent(ui::MouseEvent* event) {
 
   // If the user interacts with the window using a mouse, stop the timer to
   // automatically hide the controls.
-  hide_controls_timer_.Stop();
+  hide_controls_timer_.Reset();
 
   views::Widget::OnMouseEvent(event);
 }
