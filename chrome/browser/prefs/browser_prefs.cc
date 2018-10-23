@@ -235,6 +235,7 @@
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_mode_detector.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_mode_resources_remover.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/quick_unlock/fingerprint_storage.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_storage_prefs.h"
@@ -482,6 +483,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chromeos::ChromeUserManagerImpl::RegisterPrefs(registry);
   chromeos::DemoModeDetector::RegisterPrefs(registry);
   chromeos::DemoModeResourcesRemover::RegisterLocalStatePrefs(registry);
+  chromeos::DemoSession::RegisterLocalStatePrefs(registry);
   chromeos::DemoSetupController::RegisterLocalStatePrefs(registry);
   chromeos::DeviceOAuth2TokenService::RegisterPrefs(registry);
   chromeos::device_settings_cache::RegisterPrefs(registry);

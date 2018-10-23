@@ -325,9 +325,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("showCrostini",
                           crostini::IsCrostiniUIAllowedForProfile(profile));
 
-  // TODO(crbug.com/868747): Show an explanatory message instead of hiding the
-  // storage management info.
-  html_source->AddBoolean("hideStorageInfo",
+  html_source->AddBoolean("isDemoSession",
                           chromeos::DemoSession::IsDeviceInDemoMode());
 
   // We have 2 variants of Android apps settings. Default case, when the Play

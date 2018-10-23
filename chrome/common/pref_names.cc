@@ -1731,6 +1731,9 @@ const char kVideoCaptureAllowedUrls[] = "hardware.video_capture_allowed_urls";
 // Values are defined by DemoSession::DemoModeConfig enum.
 const char kDemoModeConfig[] = "demo_mode.config";
 
+// A string pref holding the value of the default locale for demo sessions.
+const char kDemoModeDefaultLocale[] = "demo_mode.default_locale";
+
 // Dictionary for transient storage of settings that should go into device
 // settings storage before owner has been assigned.
 const char kDeviceSettingsCache[] = "signed_settings_cache";
