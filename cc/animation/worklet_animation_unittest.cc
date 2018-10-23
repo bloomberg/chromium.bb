@@ -49,7 +49,11 @@ class WorkletAnimationTest : public AnimationTimelinesTest {
 class MockScrollTimeline : public ScrollTimeline {
  public:
   MockScrollTimeline()
-      : ScrollTimeline(ElementId(), ScrollTimeline::Vertical, 0) {}
+      : ScrollTimeline(ElementId(),
+                       ScrollTimeline::Vertical,
+                       base::nullopt,
+                       base::nullopt,
+                       0) {}
   MOCK_CONST_METHOD2(CurrentTime, double(const ScrollTree&, bool));
 };
 

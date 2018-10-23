@@ -166,11 +166,15 @@ bool WorkletAnimation::NeedsUpdate(base::TimeTicks monotonic_time,
   return needs_update;
 }
 
-void WorkletAnimation::SetScrollSourceId(
-    base::Optional<ElementId> scroller_id) {
+void WorkletAnimation::UpdateScrollTimeline(
+    base::Optional<ElementId> scroller_id,
+    base::Optional<double> start_scroll_offset,
+    base::Optional<double> end_scroll_offset) {
   // Calling this method implies that we are a ScrollTimeline based animation,
   // so the below call is done unchecked.
   scroll_timeline_->SetScrollerId(scroller_id);
+  scroll_timeline_->UpdateStartAndEndScrollOffsets(start_scroll_offset,
+                                                   end_scroll_offset);
   SetNeedsPushProperties();
 }
 

@@ -61,7 +61,9 @@ class PLATFORM_EXPORT CompositorAnimation : public cc::AnimationDelegate {
   void PauseKeyframeModel(int keyframe_model_id, double time_offset);
   void AbortKeyframeModel(int keyframe_model_id);
 
-  void UpdateScrollTimelineId(base::Optional<cc::ElementId>);
+  void UpdateScrollTimeline(base::Optional<cc::ElementId>,
+                            base::Optional<double> start_scroll_offset,
+                            base::Optional<double> end_scroll_offset);
 
  private:
   // cc::AnimationDelegate implementation.
