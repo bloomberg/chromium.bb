@@ -70,6 +70,8 @@ class TestBrowserWindow : public BrowserWindow {
                           content::WebContents* new_contents,
                           int index,
                           int reason) override {}
+  void OnTabDetached(content::WebContents* contents, bool was_active) override {
+  }
   void ZoomChangedForActiveTab(bool can_show_bubble) override {}
   gfx::Rect GetRestoredBounds() const override;
   ui::WindowShowState GetRestoredState() const override;

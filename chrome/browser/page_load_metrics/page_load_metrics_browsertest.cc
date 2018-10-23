@@ -710,16 +710,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, MAYBE_AbortClose) {
 
   manager.WaitForNavigationFinished();
 
-// TODO(sangwoo.ko) We are refacoring TabStripModelObserver's API.
-// Expected histogram should be internal::kHistogramAbortCloseBeforeCommit
-// regardless of platform. After applying new API to BrowserView, restore this.
-#if defined(OS_MACOSX)
   histogram_tester_.ExpectTotalCount(internal::kHistogramAbortCloseBeforeCommit,
                                      1);
-#else
-  histogram_tester_.ExpectTotalCount(
-      internal::kHistogramAbortBackgroundBeforeCommit, 1);
-#endif
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, AbortMultiple) {

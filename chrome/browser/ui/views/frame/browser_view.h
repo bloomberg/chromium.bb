@@ -308,6 +308,7 @@ class BrowserView : public BrowserWindow,
                           content::WebContents* new_contents,
                           int index,
                           int reason) override;
+  void OnTabDetached(content::WebContents* contents, bool was_active) override;
   void ZoomChangedForActiveTab(bool can_show_bubble) override;
   gfx::Rect GetRestoredBounds() const override;
   ui::WindowShowState GetRestoredState() const override;
@@ -416,14 +417,10 @@ class BrowserView : public BrowserWindow,
   LocationBarView* GetLocationBarView() const;
 
   // TabStripModelObserver:
-  void TabInsertedAt(TabStripModel* tab_strip_model,
-                     content::WebContents* contents,
-                     int index,
-                     bool foreground) override;
-  void TabDetachedAt(content::WebContents* contents,
-                     int index,
-                     bool was_active) override;
-  void TabDeactivated(content::WebContents* contents) override;
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
   void TabStripEmpty() override;
   void WillCloseAllTabs(TabStripModel* tab_strip_model) override;
   void CloseAllTabsStopped(TabStripModel* tab_strip_model,

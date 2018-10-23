@@ -199,6 +199,12 @@ class BrowserWindow : public ui::BaseWindow {
                                   int index,
                                   int reason) = 0;
 
+  // Called when a tab is detached. Subclasses which implement
+  // TabStripModelObserver should implement this instead of processing this
+  // in OnTabStripModelChanged(); the Browser will call this method.
+  virtual void OnTabDetached(content::WebContents* contents,
+                             bool was_active) = 0;
+
   // Called to force the zoom state to for the active tab to be recalculated.
   // |can_show_bubble| is true when a user presses the zoom up or down keyboard
   // shortcuts and will be false in other cases (e.g. switching tabs, "clicking"

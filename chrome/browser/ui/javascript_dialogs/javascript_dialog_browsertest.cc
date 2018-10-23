@@ -304,13 +304,8 @@ IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest,
       static_cast<base::HistogramBase::Sample>(DismissalCause::kDialogClosed));
   EXPECT_EQ(canceled_count + closed_count, 1);
 #else
-  // TODO(sangwoo.ko) Now we are refactoring TabStripModelObserver's API.
-  // As Browser::OnTabStripModelChanged() is called later than
-  // BrowserView::OnTabDetached(), DismisslCause::kTabHidden is used. So I guess
-  // this can be restored to DismissalCause::kDialogClosed after BrowserView is
-  // refactored too.
   histogram_tester.ExpectUniqueSample("JSDialogs.DismissalCause.Prompt",
-                                      DismissalCause::kTabHidden, 1);
+                                      DismissalCause::kDialogClosed, 1);
 #endif
 }
 
