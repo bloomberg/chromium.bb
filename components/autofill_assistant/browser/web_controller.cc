@@ -337,7 +337,6 @@ void WebController::OnQuerySelectorAll(
     FindElementCallback callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   if (!result || !result->GetResult() || !result->GetResult()->HasObjectId()) {
-    DLOG(ERROR) << "Failed to query selector all.";
     std::move(callback).Run(std::move(element_result));
     return;
   }

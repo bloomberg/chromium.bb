@@ -109,20 +109,20 @@ class BatchElementChecker {
   void OnTryDone(int64_t remaining_attempts,
                  base::RepeatingCallback<void()> try_done,
                  base::OnceCallback<void()> all_done);
-  void RunSequentially(ElementCallbackMap::iterator iter);
+  bool HasMoreChecksToRun();
   void OnElementExists(ElementCallbackMap::iterator iter, bool exists);
   void OnGetFieldValue(ElementCallbackMap::iterator iter,
                        bool exists,
                        const std::string& value);
+  void CheckTryDone();
   void RunElementExistsCallbacks(ElementCallbacks* element, bool result);
   void RunGetFieldValueCallbacks(ElementCallbacks* element,
                                  bool exists,
                                  const std::string& value);
-  bool HasChecksToRun(const ElementCallbacks& element);
-  bool HasMoreChecksToRun();
 
   WebController* const web_controller_;
   ElementCallbackMap element_callback_map_;
+  int pending_preconditions_to_check_count_;
   bool all_found_;
   bool stopped_;
 
