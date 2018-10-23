@@ -203,7 +203,7 @@ static_library("test_support") {
   }
 
   if (is_fuchsia) {
-    deps += [ "//third_party/fuchsia-sdk:zx" ]
+    deps += [ "//third_party/fuchsia-sdk/sdk:zx" ]
   }
 
   if (is_linux) {

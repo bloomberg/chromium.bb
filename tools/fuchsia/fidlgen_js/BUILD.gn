@@ -44,8 +44,8 @@ static_library("runtime") {
   deps = [
     "//base",
     "//gin",
-    "//third_party/fuchsia-sdk:async",
-    "//third_party/fuchsia-sdk:async_default",
+    "//third_party/fuchsia-sdk/sdk:async",
+    "//third_party/fuchsia-sdk/sdk:async_default",
     "//v8",
   ]
 }

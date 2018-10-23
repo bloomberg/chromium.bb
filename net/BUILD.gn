@@ -5396,7 +5396,7 @@ test("net_unittests") {
   if (is_fuchsia) {
     use_test_server = true
     deps += [
-      "//third_party/fuchsia-sdk:fidl_cpp",
+      "//third_party/fuchsia-sdk/sdk:fidl_cpp",
       "//third_party/fuchsia-sdk/sdk:netstack",
     ]
     sources += [ "base/network_change_notifier_fuchsia_unittest.cc" ]
