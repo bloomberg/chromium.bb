@@ -123,8 +123,10 @@ size_t TraceStackWithContext(unw_cursor_t* cursor,
   if (CFIBacktraceAndroid::is_chrome_address(ip)) {
     // Continue unwinding CFI unwinder if we found stack frame from chrome
     // library.
-    return depth +
-           cfi_unwinder->Unwind(ip, sp, out_trace + depth, max_depth - depth);
+    uintptr_t lr = 0;
+    unw_get_reg(cursor, UNW_ARM_LR, &lr);
+    return depth + cfi_unwinder->Unwind(ip, sp, lr, out_trace + depth,
+                                        max_depth - depth);
   } else if (depth == 0) {
     RecordUnwindResult(SamplingProfilerUnwindResult::kFirstFrameUnmapped);
   }
@@ -368,7 +370,7 @@ size_t StackUnwinderAndroid::TraceStack(base::PlatformThreadId tid,
 
   // Do not use libunwind if we stopped at chrome frame.
   if (CFIBacktraceAndroid::is_chrome_address(ip))
-    return cfi_unwinder->Unwind(ip, sp, out_trace, max_depth);
+    return cfi_unwinder->Unwind(ip, sp, 0, out_trace, max_depth);
 
   // Reset the unwind cursor to previous function and continue with libunwind.
   // TODO(ssid): Dynamic allocation functions might require registers to be
