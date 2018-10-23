@@ -348,6 +348,11 @@ class ASH_EXPORT ShelfLayoutManager
   bool ShouldChangeVisibilityAfterDrag(
       const ui::GestureEvent& gesture_in_screen);
 
+  // Updates the mask to limit the content to the non lock screen container.
+  // The mask will be removed if the workspace state is either in fullscreen
+  // or maximized.
+  void UpdateWorkspaceMask(wm::WorkspaceWindowState window_state);
+
   // True when inside UpdateBoundsAndOpacity() method. Used to prevent calling
   // UpdateBoundsAndOpacity() again from SetChildBounds().
   bool updating_bounds_;
