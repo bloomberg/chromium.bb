@@ -1129,6 +1129,15 @@ public class DownloadUtils {
     }
 
     /**
+     * Returns |true| if the offline item is not null and has already been viewed by the user.
+     * @param offlineItem The offline item to check.
+     * @return true if the item is valid has been viewed by the user.
+     */
+    public static boolean isOfflineItemViewed(OfflineItem offlineItem) {
+        return offlineItem != null && offlineItem.lastAccessedTimeMs > offlineItem.completionTimeMs;
+    }
+
+    /**
      * Given two timestamps, calculates if both occur on the same date.
      * @return True if they belong in the same day. False otherwise.
      */

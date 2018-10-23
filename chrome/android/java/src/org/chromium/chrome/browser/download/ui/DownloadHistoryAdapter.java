@@ -36,7 +36,6 @@ import org.chromium.components.download.DownloadState;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
-import org.chromium.components.offline_items_collection.OfflineItemFilter;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.variations.VariationsAssociatedData;
 
@@ -817,17 +816,34 @@ public class DownloadHistoryAdapter
     }
 
     private void recordOfflineItemCountHistograms() {
-        int[] itemCounts = new int[OfflineItemFilter.FILTER_BOUNDARY];
-        for (DownloadHistoryItemWrapper item : mOfflineItems) {
-            OfflineItemWrapper offlineItem = (OfflineItemWrapper) item;
-            if (offlineItem.isOffTheRecord()) continue;
-            itemCounts[offlineItem.getOfflineItemFilter()]++;
+        int offlinePageCount = 0;
+        int viewedOfflinePageCount = 0;
+        int prefetchedOfflinePageCount = 0;
+        int viewedPrefetchedOfflinePageCount = 0;
+
+        for (DownloadHistoryItemWrapper itemWrapper : mOfflineItems) {
+            if (itemWrapper.isOffTheRecord()) continue;
+            OfflineItemWrapper offlineItemWrapper = (OfflineItemWrapper) itemWrapper;
+            boolean hasBeenViewed = DownloadUtils.isOfflineItemViewed(offlineItemWrapper.getItem());
+            if (offlineItemWrapper.isSuggested()) {
+                prefetchedOfflinePageCount++;
+                if (hasBeenViewed) viewedPrefetchedOfflinePageCount++;
+            } else {
+                offlinePageCount++;
+                if (hasBeenViewed) viewedOfflinePageCount++;
+            }
         }
 
-        // TODO(shaktisahu): UMA for initial counts of offline pages, regular downloads and download
-        // file types and file extensions.
-        RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.OfflinePage",
-                itemCounts[OfflineItemFilter.FILTER_PAGE]);
+        RecordHistogram.recordCountHistogram(
+                "Android.DownloadManager.InitialCount.OfflinePage", offlinePageCount);
+        RecordHistogram.recordCountHistogram(
+                "Android.DownloadManager.InitialCount.Viewed.OfflinePage", viewedOfflinePageCount);
+        RecordHistogram.recordCountHistogram(
+                "Android.DownloadManager.InitialCount.PrefetchedOfflinePage",
+                prefetchedOfflinePageCount);
+        RecordHistogram.recordCountHistogram(
+                "Android.DownloadManager.InitialCount.Viewed.PrefetchedOfflinePage",
+                viewedPrefetchedOfflinePageCount);
     }
 
     @Override
