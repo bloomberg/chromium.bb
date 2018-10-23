@@ -3148,6 +3148,11 @@ const char kCrostiniFilesName[] = "Crostini Files";
 const char kCrostiniFilesDescription[] =
     "Enable Crostini file sharing in Files app.";
 
+const char kDisableExplicitDmaFencesName[] = "Disable explicit dma-fences";
+const char kDisableExplicitDmaFencesDescription[] =
+    "Always rely on implicit syncrhonization between GPU and display "
+    "controller instead of using dma-fences explcitily when available.";
+
 const char kDisableLockScreenAppsName[] = "Disable lock screen note taking";
 const char kDisableLockScreenAppsDescription[] =
     "Disable new-note action handler apps on the lock screen. The user will "

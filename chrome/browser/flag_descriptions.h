@@ -1927,6 +1927,9 @@ extern const char kCrosRegionsModeHide[];
 extern const char kCrostiniFilesName[];
 extern const char kCrostiniFilesDescription[];
 
+extern const char kDisableExplicitDmaFencesName[];
+extern const char kDisableExplicitDmaFencesDescription[];
+
 extern const char kDisableLockScreenAppsName[];
 extern const char kDisableLockScreenAppsDescription[];
 
