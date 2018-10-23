@@ -152,6 +152,11 @@ TEST_F(PaintLayerScrollableAreaTest,
         border: 5px solid rgba(0, 0, 0, 0.5);'>
       <div class='spacer'></div>
     </div>
+    <div id='scroller18' class='scroller'
+        style='background: white;
+        border: 5px dashed black;'>
+      <div class='spacer'></div>
+    </div>
   )HTML");
 
   // #scroller1 can paint background into scrolling contents layer even with a
@@ -246,6 +251,13 @@ TEST_F(PaintLayerScrollableAreaTest,
   // be painted in the graphics layer to be under the translucent border.
   EXPECT_EQ(kBackgroundPaintInGraphicsLayer,
             GetBackgroundPaintLocation("scroller17"));
+
+  // #scroller18 can be painted in both layers because the background is a
+  // solid color, it must be because the dashed border reveals the background
+  // underneath it.
+  EXPECT_EQ(
+      kBackgroundPaintInGraphicsLayer | kBackgroundPaintInScrollingContents,
+      GetBackgroundPaintLocation("scroller18"));
 }
 
 TEST_F(PaintLayerScrollableAreaTest, OpaqueContainedLayersPromoted) {
