@@ -1652,8 +1652,8 @@ TEST_F(TypedURLSyncBridgeTest, LocalExpiredTypedUrlDoNotSync) {
 
 // Tests that database error gets reported to processor as model type error.
 TEST_F(TypedURLSyncBridgeTest, DatabaseError) {
-  processor().ExpectError();
   bridge()->OnDatabaseError();
+  EXPECT_TRUE(processor().GetError().has_value());
 }
 
 }  // namespace history

@@ -325,6 +325,10 @@ void ClientTagBasedModelTypeProcessor::ReportError(const ModelError& error) {
     dump_stack_.Run();
   }
 
+  if (IsConnected()) {
+    DisconnectSync();
+  }
+
   if (start_callback_) {
     // Tell sync about the error instead of connecting.
     ConnectIfReady();
@@ -333,6 +337,10 @@ void ClientTagBasedModelTypeProcessor::ReportError(const ModelError& error) {
     // of going through ConnectIfReady().
     activation_request_.error_handler.Run(error);
   }
+}
+
+base::Optional<ModelError> ClientTagBasedModelTypeProcessor::GetError() const {
+  return model_error_;
 }
 
 base::WeakPtr<ModelTypeControllerDelegate>
@@ -523,6 +531,7 @@ void ClientTagBasedModelTypeProcessor::GetLocalChanges(
     GetLocalChangesCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_GT(max_entries, 0U);
+  DCHECK(!model_error_);
 
   std::vector<std::string> entities_requiring_data;
   for (const auto& kv : entities_) {
@@ -552,6 +561,8 @@ void ClientTagBasedModelTypeProcessor::OnCommitCompleted(
     const sync_pb::ModelTypeState& model_type_state,
     const CommitResponseDataList& response_list) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!model_error_);
+
   std::unique_ptr<MetadataChangeList> metadata_change_list =
       bridge_->CreateMetadataChangeList();
   EntityChangeList entity_change_list;
@@ -644,6 +655,7 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
     const UpdateResponseDataList& updates) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(model_ready_to_sync_);
+  DCHECK(!model_error_);
 
   if (!ValidateUpdate(model_type_state, updates)) {
     return;
@@ -1109,6 +1121,7 @@ void ClientTagBasedModelTypeProcessor::ConsumeDataBatch(
 void ClientTagBasedModelTypeProcessor::CommitLocalChanges(
     size_t max_entries,
     GetLocalChangesCallback callback) {
+  DCHECK(!model_error_);
   CommitRequestDataList commit_requests;
   // TODO(rlarocque): Do something smarter than iterate here.
   for (const auto& kv : entities_) {
@@ -1335,7 +1348,6 @@ void ClientTagBasedModelTypeProcessor::ResetState(
     SyncStopMetadataFate metadata_fate) {
   // This should reset all mutable fields (except for |bridge_|).
   worker_.reset();
-  model_error_.reset();
   cached_gc_directive_aged_out_day_ = base::Time::FromDoubleT(0);
 
   switch (metadata_fate) {

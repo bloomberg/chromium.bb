@@ -64,6 +64,10 @@ class ForwardingModelTypeChangeProcessor : public ModelTypeChangeProcessor {
     other_->ReportError(error);
   }
 
+  base::Optional<ModelError> GetError() const override {
+    return other_->GetError();
+  }
+
   base::WeakPtr<ModelTypeControllerDelegate> GetControllerDelegate() override {
     return other_->GetControllerDelegate();
   }
@@ -121,6 +125,8 @@ void MockModelTypeChangeProcessor::DelegateCallsByDefaultTo(
           Invoke(delegate, &ModelTypeChangeProcessor::TrackedAccountId));
   ON_CALL(*this, ReportError(_))
       .WillByDefault(Invoke(delegate, &ModelTypeChangeProcessor::ReportError));
+  ON_CALL(*this, GetError())
+      .WillByDefault(Invoke(delegate, &ModelTypeChangeProcessor::GetError));
   ON_CALL(*this, GetControllerDelegate())
       .WillByDefault(
           Invoke(delegate, &ModelTypeChangeProcessor::GetControllerDelegate));
