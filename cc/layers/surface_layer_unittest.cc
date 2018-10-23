@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "cc/animation/animation_host.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/surface_layer.h"
@@ -55,8 +56,8 @@ class SurfaceLayerTest : public testing::Test {
     animation_host_ = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
     layer_tree_host_ = FakeLayerTreeHost::Create(
         &fake_client_, &task_graph_runner_, animation_host_.get());
-    layer_tree_host_->SetViewportSizeAndScale(gfx::Size(10, 10), 1.f,
-                                              viz::LocalSurfaceId());
+    layer_tree_host_->SetViewportSizeAndScale(
+        gfx::Size(10, 10), 1.f, viz::LocalSurfaceId(), base::TimeTicks());
     host_impl_.CreatePendingTree();
   }
 

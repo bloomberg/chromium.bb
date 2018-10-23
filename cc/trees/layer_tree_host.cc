@@ -1129,8 +1129,10 @@ void LayerTreeHost::SetEventListenerProperties(
 void LayerTreeHost::SetViewportSizeAndScale(
     const gfx::Size& device_viewport_size,
     float device_scale_factor,
-    const viz::LocalSurfaceId& local_surface_id_from_parent) {
-  SetLocalSurfaceIdFromParent(local_surface_id_from_parent);
+    const viz::LocalSurfaceId& local_surface_id_from_parent,
+    base::TimeTicks local_surface_id_allocation_time_from_parent) {
+  SetLocalSurfaceIdFromParent(local_surface_id_from_parent,
+                              local_surface_id_allocation_time_from_parent);
 
   bool changed = false;
   if (device_viewport_size_ != device_viewport_size) {
@@ -1261,7 +1263,8 @@ void LayerTreeHost::SetContentSourceId(uint32_t id) {
 }
 
 void LayerTreeHost::SetLocalSurfaceIdFromParent(
-    const viz::LocalSurfaceId& local_surface_id_from_parent) {
+    const viz::LocalSurfaceId& local_surface_id_from_parent,
+    base::TimeTicks local_surface_id_allocation_time_from_parent) {
   if (local_surface_id_from_parent_.parent_sequence_number() ==
           local_surface_id_from_parent.parent_sequence_number() &&
       local_surface_id_from_parent_.embed_token() ==
@@ -1277,6 +1280,8 @@ void LayerTreeHost::SetLocalSurfaceIdFromParent(
       "SetLocalSurfaceIdFromParent", "local_surface_id",
       local_surface_id_from_parent.ToString());
   local_surface_id_from_parent_ = local_surface_id_from_parent;
+  local_surface_id_allocation_time_from_parent_ =
+      local_surface_id_allocation_time_from_parent;
   has_pushed_local_surface_id_from_parent_ = false;
   UpdateDeferCommitsInternal();
   SetNeedsCommit();
@@ -1495,7 +1500,9 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
   if (TakeNewLocalSurfaceIdRequest())
     tree_impl->RequestNewLocalSurfaceId();
 
-  tree_impl->SetLocalSurfaceIdFromParent(local_surface_id_from_parent_);
+  tree_impl->SetLocalSurfaceIdFromParent(
+      local_surface_id_from_parent_,
+      local_surface_id_allocation_time_from_parent_);
   has_pushed_local_surface_id_from_parent_ = true;
 
   if (pending_page_scale_animation_) {

@@ -21,6 +21,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/animation/animation_events.h"
@@ -1508,7 +1509,7 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_CompositorObservers) {
 // Checks that modifying the hierarchy correctly affects final composite.
 TEST_F(LayerWithRealCompositorTest, ModifyHierarchy) {
   GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(50, 50),
-                                   viz::LocalSurfaceId());
+                                   viz::LocalSurfaceId(), base::TimeTicks());
 
   // l0
   //  +-l11
@@ -1581,7 +1582,8 @@ TEST_F(LayerWithRealCompositorTest, ModifyHierarchy) {
 #if defined(OS_WIN)
 TEST_F(LayerWithRealCompositorTest, CanvasDrawFadedString) {
   gfx::Size size(50, 50);
-  GetCompositor()->SetScaleAndSize(1.0f, size, viz::LocalSurfaceId());
+  GetCompositor()->SetScaleAndSize(1.0f, size, viz::LocalSurfaceId(),
+                                   base::TimeTicks());
   DrawFadedStringLayerDelegate delegate(SK_ColorBLUE, size);
   std::unique_ptr<Layer> layer(
       CreateDrawFadedStringLayerDelegate(gfx::Rect(size), &delegate));
@@ -1616,7 +1618,7 @@ TEST_F(LayerWithRealCompositorTest, CanvasDrawFadedString) {
 // Checks that modifying the hierarchy correctly affects final composite.
 TEST_F(LayerWithRealCompositorTest, Opacity) {
   GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(50, 50),
-                                   viz::LocalSurfaceId());
+                                   viz::LocalSurfaceId(), base::TimeTicks());
 
   // l0
   //  +-l11
@@ -1733,7 +1735,7 @@ TEST_F(LayerWithRealCompositorTest, ScaleUpDown) {
   l1_delegate.set_layer_bounds(l1->bounds());
 
   GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(500, 500),
-                                   viz::LocalSurfaceId());
+                                   viz::LocalSurfaceId(), base::TimeTicks());
   GetCompositor()->SetRootLayer(root.get());
   root->Add(l1.get());
   WaitForDraw();
@@ -1750,7 +1752,7 @@ TEST_F(LayerWithRealCompositorTest, ScaleUpDown) {
 
   // Scale up to 2.0. Changing scale doesn't change the bounds in DIP.
   GetCompositor()->SetScaleAndSize(2.0f, gfx::Size(500, 500),
-                                   viz::LocalSurfaceId());
+                                   viz::LocalSurfaceId(), base::TimeTicks());
   EXPECT_EQ("10,20 200x220", root->bounds().ToString());
   EXPECT_EQ("10,20 140x180", l1->bounds().ToString());
   // CC layer should still match the UI layer bounds.
@@ -1765,7 +1767,7 @@ TEST_F(LayerWithRealCompositorTest, ScaleUpDown) {
 
   // Scale down back to 1.0f.
   GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(500, 500),
-                                   viz::LocalSurfaceId());
+                                   viz::LocalSurfaceId(), base::TimeTicks());
   EXPECT_EQ("10,20 200x220", root->bounds().ToString());
   EXPECT_EQ("10,20 140x180", l1->bounds().ToString());
   // CC layer should still match the UI layer bounds.
@@ -1783,7 +1785,7 @@ TEST_F(LayerWithRealCompositorTest, ScaleUpDown) {
   // Just changing the size shouldn't notify the scale change nor
   // trigger repaint.
   GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(1000, 1000),
-                                   viz::LocalSurfaceId());
+                                   viz::LocalSurfaceId(), base::TimeTicks());
   // No scale change, so no scale notification.
   EXPECT_EQ(0.0f, root_delegate.device_scale_factor());
   EXPECT_EQ(0.0f, l1_delegate.device_scale_factor());
@@ -1800,7 +1802,7 @@ TEST_F(LayerWithRealCompositorTest, ScaleReparent) {
   l1_delegate.set_layer_bounds(l1->bounds());
 
   GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(500, 500),
-                                   viz::LocalSurfaceId());
+                                   viz::LocalSurfaceId(), base::TimeTicks());
   GetCompositor()->SetRootLayer(root.get());
 
   root->Add(l1.get());
@@ -1814,7 +1816,7 @@ TEST_F(LayerWithRealCompositorTest, ScaleReparent) {
   EXPECT_EQ(NULL, l1->parent());
   EXPECT_EQ(NULL, l1->GetCompositor());
   GetCompositor()->SetScaleAndSize(2.0f, gfx::Size(500, 500),
-                                   viz::LocalSurfaceId());
+                                   viz::LocalSurfaceId(), base::TimeTicks());
   // Sanity check on root and l1.
   EXPECT_EQ("10,20 200x220", root->bounds().ToString());
   cc_bounds_size = l1->cc_layer_for_testing()->bounds();
@@ -2252,7 +2254,7 @@ TEST_F(LayerWithRealCompositorTest, SnapLayerToPixels) {
   std::unique_ptr<Layer> c11(CreateLayer(LAYER_TEXTURED));
 
   GetCompositor()->SetScaleAndSize(1.25f, gfx::Size(100, 100),
-                                   viz::LocalSurfaceId());
+                                   viz::LocalSurfaceId(), base::TimeTicks());
   GetCompositor()->SetRootLayer(root.get());
   root->Add(c1.get());
   c1->Add(c11.get());
@@ -2266,7 +2268,7 @@ TEST_F(LayerWithRealCompositorTest, SnapLayerToPixels) {
             Vector2dFTo100thPrecisionString(c11->subpixel_position_offset()));
 
   GetCompositor()->SetScaleAndSize(1.5f, gfx::Size(100, 100),
-                                   viz::LocalSurfaceId());
+                                   viz::LocalSurfaceId(), base::TimeTicks());
   SnapLayerToPhysicalPixelBoundary(root.get(), c11.get());
   // c11 must already be aligned at 1.5 scale.
   EXPECT_EQ("0.00 0.00",
@@ -2287,7 +2289,7 @@ TEST_F(LayerWithRealCompositorTest, SnapLayerToPixelsWithScaleTransform) {
   std::unique_ptr<Layer> c111(CreateLayer(LAYER_TEXTURED));
 
   GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(100, 100),
-                                   viz::LocalSurfaceId());
+                                   viz::LocalSurfaceId(), base::TimeTicks());
   GetCompositor()->SetRootLayer(root.get());
   root->Add(c1.get());
   c1->Add(c11.get());

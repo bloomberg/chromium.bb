@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
+#include "base/time/time.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/selection.h"
@@ -181,6 +182,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   TouchSelectionControllerClientManager*
   GetTouchSelectionControllerClientManager() override;
   const viz::LocalSurfaceId& GetLocalSurfaceId() const override;
+  base::TimeTicks GetLocalSurfaceIdAllocationTime() const override;
   void OnRenderWidgetInit() override;
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
   void OnSynchronizedDisplayPropertiesChanged() override;
@@ -281,7 +283,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   bool SynchronizeVisualProperties(const cc::DeadlinePolicy& deadline_policy,
                                    const base::Optional<viz::LocalSurfaceId>&
-                                       child_allocated_local_surface_id);
+                                       child_allocated_local_surface_id,
+                                   const base::Optional<base::TimeTicks>&
+                                       child_local_surface_id_allocation_time);
 
   bool HasValidFrame() const;
 

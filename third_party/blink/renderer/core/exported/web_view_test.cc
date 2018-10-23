@@ -34,6 +34,7 @@
 #include <memory>
 #include <string>
 
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/trees/layer_tree_host.h"
 #include "gin/handle.h"
@@ -264,7 +265,9 @@ class WebViewTest : public testing::Test {
         web_view_helper_.GetLayerTreeView();
     layer_tree_view->SetViewportSizeAndScale(
         static_cast<gfx::Size>(size), /*device_scale_factor=*/1.f,
-        layer_tree_view->layer_tree_host()->local_surface_id_from_parent());
+        layer_tree_view->layer_tree_host()->local_surface_id_from_parent(),
+        layer_tree_view->layer_tree_host()
+            ->local_surface_id_allocation_time_from_parent());
   }
 
   std::string RegisterMockedHttpURLLoad(const std::string& file_name) {

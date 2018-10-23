@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "components/viz/common/switches.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 #include "content/browser/renderer_host/cursor_manager.h"
@@ -101,11 +102,13 @@ void RenderWidgetHostViewMac::DestroyCompositorForShutdown() {
 }
 
 bool RenderWidgetHostViewMac::SynchronizeVisualProperties(
-    const base::Optional<viz::LocalSurfaceId>&
-        child_allocated_local_surface_id) {
+    const base::Optional<viz::LocalSurfaceId>& child_allocated_local_surface_id,
+    const base::Optional<base::TimeTicks>&
+        child_local_surface_id_allocation_time) {
   if (child_allocated_local_surface_id) {
     browser_compositor_->UpdateRendererLocalSurfaceIdFromChild(
-        *child_allocated_local_surface_id);
+        *child_allocated_local_surface_id,
+        *child_local_surface_id_allocation_time);
   } else {
     browser_compositor_->AllocateNewRendererLocalSurfaceId();
   }
@@ -831,7 +834,7 @@ void RenderWidgetHostViewMac::CopyFromSurface(
 
 void RenderWidgetHostViewMac::EnsureSurfaceSynchronizedForLayoutTest() {
   ++latest_capture_sequence_number_;
-  SynchronizeVisualProperties(base::nullopt);
+  SynchronizeVisualProperties(base::nullopt, base::nullopt);
 }
 
 void RenderWidgetHostViewMac::SetNeedsBeginFrames(bool needs_begin_frames) {
@@ -847,7 +850,9 @@ void RenderWidgetHostViewMac::OnDidUpdateVisualPropertiesComplete(
     const cc::RenderFrameMetadata& metadata) {
   browser_compositor_->SynchronizeVisualProperties(
       metadata.device_scale_factor, metadata.viewport_size_in_pixels,
-      metadata.local_surface_id.value_or(viz::LocalSurfaceId()));
+      metadata.local_surface_id.value_or(viz::LocalSurfaceId()),
+      metadata.local_surface_id_allocation_time_from_child.value_or(
+          base::TimeTicks()));
 }
 
 void RenderWidgetHostViewMac::SetWantsAnimateOnlyBeginFrames() {
@@ -1204,6 +1209,11 @@ RenderWidgetHostViewMac::CreateSyntheticGestureTarget() {
 
 const viz::LocalSurfaceId& RenderWidgetHostViewMac::GetLocalSurfaceId() const {
   return browser_compositor_->GetRendererLocalSurfaceId();
+}
+
+base::TimeTicks RenderWidgetHostViewMac::GetLocalSurfaceIdAllocationTime()
+    const {
+  return browser_compositor_->GetRendererLocalSurfaceIdAllocationTime();
 }
 
 const viz::FrameSinkId& RenderWidgetHostViewMac::GetFrameSinkId() const {

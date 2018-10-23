@@ -1111,6 +1111,10 @@ viz::SurfaceId Window::GetSurfaceId() const {
   return viz::SurfaceId(GetFrameSinkId(), port_->GetLocalSurfaceId());
 }
 
+base::TimeTicks Window::GetLocalSurfaceIdAllocationTime() const {
+  return port_->GetLocalSurfaceIdAllocationTime();
+}
+
 void Window::AllocateLocalSurfaceId() {
   port_->AllocateLocalSurfaceId();
 }
@@ -1129,11 +1133,14 @@ const viz::LocalSurfaceId& Window::GetLocalSurfaceId() const {
 }
 
 void Window::UpdateLocalSurfaceIdFromEmbeddedClient(
-    const base::Optional<viz::LocalSurfaceId>&
-        embedded_client_local_surface_id) {
+    const base::Optional<viz::LocalSurfaceId>& embedded_client_local_surface_id,
+    const base::Optional<base::TimeTicks>&
+        embedded_client_local_surface_id_allocation_time) {
   if (embedded_client_local_surface_id) {
     port_->UpdateLocalSurfaceIdFromEmbeddedClient(
-        *embedded_client_local_surface_id);
+        *embedded_client_local_surface_id,
+        embedded_client_local_surface_id_allocation_time.value_or(
+            base::TimeTicks()));
   } else {
     port_->AllocateLocalSurfaceId();
   }

@@ -22,6 +22,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "components/viz/common/surfaces/child_local_surface_id_allocator.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
@@ -2029,7 +2030,8 @@ TEST_F(RenderWidgetHostViewMacTest, ChildAllocationAcceptedInParent) {
   host_->SetAutoResize(true, gfx::Size(50, 50), gfx::Size(100, 100));
 
   viz::ChildLocalSurfaceIdAllocator child_allocator;
-  child_allocator.UpdateFromParent(local_surface_id1);
+  child_allocator.UpdateFromParent(
+      local_surface_id1, rwhv_mac_->GetLocalSurfaceIdAllocationTime());
   viz::LocalSurfaceId local_surface_id2 = child_allocator.GenerateId();
   cc::RenderFrameMetadata metadata;
   metadata.viewport_size_in_pixels = gfx::Size(75, 75);
@@ -2049,7 +2051,8 @@ TEST_F(RenderWidgetHostViewMacTest, ConflictingAllocationsResolve) {
 
   host_->SetAutoResize(true, gfx::Size(50, 50), gfx::Size(100, 100));
   viz::ChildLocalSurfaceIdAllocator child_allocator;
-  child_allocator.UpdateFromParent(local_surface_id1);
+  child_allocator.UpdateFromParent(
+      local_surface_id1, rwhv_mac_->GetLocalSurfaceIdAllocationTime());
   viz::LocalSurfaceId local_surface_id2 = child_allocator.GenerateId();
   cc::RenderFrameMetadata metadata;
   metadata.viewport_size_in_pixels = gfx::Size(75, 75);

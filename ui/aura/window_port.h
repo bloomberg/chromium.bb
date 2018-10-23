@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "components/viz/common/surfaces/scoped_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "ui/aura/aura_export.h"
@@ -118,12 +119,16 @@ class AURA_EXPORT WindowPort {
       base::OnceCallback<void()> allocation_task) = 0;
 
   virtual void UpdateLocalSurfaceIdFromEmbeddedClient(
-      const viz::LocalSurfaceId& embedded_client_local_surface_id) = 0;
+      const viz::LocalSurfaceId& embedded_client_local_surface_id,
+      base::TimeTicks embedded_client_local_surface_id_allocation_time) = 0;
 
   // Gets the current viz::LocalSurfaceId. The viz::LocalSurfaceId is allocated
   // lazily on call, and will be updated on changes to size or device scale
   // factor.
   virtual const viz::LocalSurfaceId& GetLocalSurfaceId() = 0;
+
+  // Gets the time at which the current viz::LocalSurfaceId was allocated.
+  virtual base::TimeTicks GetLocalSurfaceIdAllocationTime() const = 0;
 
   virtual void OnEventTargetingPolicyChanged() = 0;
 

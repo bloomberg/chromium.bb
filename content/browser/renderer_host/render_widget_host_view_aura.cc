@@ -649,7 +649,7 @@ bool RenderWidgetHostViewAura::IsSurfaceAvailableForCopy() const {
 void RenderWidgetHostViewAura::EnsureSurfaceSynchronizedForLayoutTest() {
   ++latest_capture_sequence_number_;
   SynchronizeVisualProperties(cc::DeadlinePolicy::UseInfiniteDeadline(),
-                              base::nullopt);
+                              base::nullopt, base::nullopt);
 }
 
 bool RenderWidgetHostViewAura::IsShowing() {
@@ -914,7 +914,7 @@ void RenderWidgetHostViewAura::ResetFallbackToFirstNavigationSurface() {
 
 bool RenderWidgetHostViewAura::RequestRepaintForTesting() {
   return SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                                     base::nullopt);
+                                     base::nullopt, base::nullopt);
 }
 
 void RenderWidgetHostViewAura::DidStopFlinging() {
@@ -1593,7 +1593,8 @@ void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
     return;
 
   SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                              window_->GetLocalSurfaceId());
+                              window_->GetLocalSurfaceId(),
+                              window_->GetLocalSurfaceIdAllocationTime());
 
   device_scale_factor_ = new_device_scale_factor;
   const display::Display display =
@@ -2087,11 +2088,13 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
 
 bool RenderWidgetHostViewAura::SynchronizeVisualProperties(
     const cc::DeadlinePolicy& deadline_policy,
-    const base::Optional<viz::LocalSurfaceId>&
-        child_allocated_local_surface_id) {
+    const base::Optional<viz::LocalSurfaceId>& child_allocated_local_surface_id,
+    const base::Optional<base::TimeTicks>&
+        child_local_surface_id_allocation_time) {
   DCHECK(window_);
   window_->UpdateLocalSurfaceIdFromEmbeddedClient(
-      child_allocated_local_surface_id);
+      child_allocated_local_surface_id,
+      child_local_surface_id_allocation_time.value_or(base::TimeTicks()));
   if (IsLocalSurfaceIdAllocationSuppressed())
     return false;
 
@@ -2112,8 +2115,9 @@ void RenderWidgetHostViewAura::OnDidUpdateVisualPropertiesComplete(
         host(), metadata.top_controls_shown_ratio);
   }
 
-  SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                              metadata.local_surface_id);
+  SynchronizeVisualProperties(
+      cc::DeadlinePolicy::UseDefaultDeadline(), metadata.local_surface_id,
+      metadata.local_surface_id_allocation_time_from_child);
 }
 
 ui::InputMethod* RenderWidgetHostViewAura::GetInputMethod() const {
@@ -2235,7 +2239,8 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
     window_->SetBounds(rect);
 
   SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                              window_->GetLocalSurfaceId());
+                              window_->GetLocalSurfaceId(),
+                              window_->GetLocalSurfaceIdAllocationTime());
 
 #if defined(OS_WIN)
   UpdateLegacyWin();
@@ -2404,6 +2409,11 @@ const viz::LocalSurfaceId& RenderWidgetHostViewAura::GetLocalSurfaceId() const {
   return window_->GetLocalSurfaceId();
 }
 
+base::TimeTicks RenderWidgetHostViewAura::GetLocalSurfaceIdAllocationTime()
+    const {
+  return window_->GetLocalSurfaceIdAllocationTime();
+}
+
 void RenderWidgetHostViewAura::OnUpdateTextInputStateCalled(
     TextInputManager* text_input_manager,
     RenderWidgetHostViewBase* updated_view,
@@ -2519,7 +2529,7 @@ void RenderWidgetHostViewAura::ScrollFocusedEditableNodeIntoRect(
 
 void RenderWidgetHostViewAura::OnSynchronizedDisplayPropertiesChanged() {
   SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                              base::nullopt);
+                              base::nullopt, base::nullopt);
 }
 
 viz::ScopedSurfaceIdAllocator
@@ -2541,10 +2551,11 @@ void RenderWidgetHostViewAura::DidNavigate() {
   // use the ID that was already provided.
   if (is_first_navigation_) {
     SynchronizeVisualProperties(cc::DeadlinePolicy::UseExistingDeadline(),
-                                window_->GetLocalSurfaceId());
+                                window_->GetLocalSurfaceId(),
+                                window_->GetLocalSurfaceIdAllocationTime());
   } else {
     SynchronizeVisualProperties(cc::DeadlinePolicy::UseExistingDeadline(),
-                                base::nullopt);
+                                base::nullopt, base::nullopt);
   }
   if (delegated_frame_host_)
     delegated_frame_host_->DidNavigate();
@@ -2583,7 +2594,7 @@ void RenderWidgetHostViewAura::TakeFallbackContentFrom(
 }
 
 void RenderWidgetHostViewAura::WasEvicted() {
-  window_->UpdateLocalSurfaceIdFromEmbeddedClient(base::nullopt);
+  window_->UpdateLocalSurfaceIdFromEmbeddedClient(base::nullopt, base::nullopt);
 }
 
 }  // namespace content

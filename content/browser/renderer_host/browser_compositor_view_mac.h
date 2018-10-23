@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
@@ -35,7 +36,9 @@ class BrowserCompositorMacClient {
   virtual void DestroyCompositorForShutdown() = 0;
   virtual bool SynchronizeVisualProperties(
       const base::Optional<viz::LocalSurfaceId>&
-          child_allocated_local_surface_id) = 0;
+          child_allocated_local_surface_id,
+      const base::Optional<base::TimeTicks>&
+          child_local_surface_id_allocation_time) = 0;
 };
 
 // This class owns a DelegatedFrameHost, and will dynamically attach and
@@ -92,7 +95,8 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
   void SynchronizeVisualProperties(
       float new_device_scale_factor,
       const gfx::Size& new_size_in_pixels,
-      const viz::LocalSurfaceId& child_allocated_local_surface_id);
+      const viz::LocalSurfaceId& child_allocated_local_surface_id,
+      base::TimeTicks child_local_surface_id_allocation_time);
 
   // This is used to ensure that the ui::Compositor be attached to the
   // DelegatedFrameHost while the RWHImpl is visible.
@@ -121,9 +125,11 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
   viz::ScopedSurfaceIdAllocator GetScopedRendererSurfaceIdAllocator(
       base::OnceCallback<void()> allocation_task);
   const viz::LocalSurfaceId& GetRendererLocalSurfaceId();
+  base::TimeTicks GetRendererLocalSurfaceIdAllocationTime() const;
   const viz::LocalSurfaceId& AllocateNewRendererLocalSurfaceId();
   bool UpdateRendererLocalSurfaceIdFromChild(
-      const viz::LocalSurfaceId& child_allocated_local_surface_id);
+      const viz::LocalSurfaceId& child_allocated_local_surface_id,
+      base::TimeTicks child_local_surface_id_allocation_time);
   void TransformPointToRootSurface(gfx::PointF* point);
 
   // Indicate that the recyclable compositor should be destroyed, and no future

@@ -186,6 +186,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void OnDidNavigateMainFrameToNewPage() override;
   const viz::FrameSinkId& GetFrameSinkId() const override;
   const viz::LocalSurfaceId& GetLocalSurfaceId() const override;
+  base::TimeTicks GetLocalSurfaceIdAllocationTime() const override;
   bool TransformPointToLocalCoordSpaceLegacy(
       const gfx::PointF& point,
       const viz::SurfaceId& original_surface,
@@ -468,7 +469,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   bool SynchronizeVisualProperties(const cc::DeadlinePolicy& deadline_policy,
                                    const base::Optional<viz::LocalSurfaceId>&
-                                       child_allocated_local_surface_id);
+                                       child_allocated_local_surface_id,
+                                   const base::Optional<base::TimeTicks>&
+                                       child_local_surface_id_allocation_time);
 
   void OnDidUpdateVisualPropertiesComplete(
       const cc::RenderFrameMetadata& metadata);

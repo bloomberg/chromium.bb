@@ -874,8 +874,11 @@ bool RenderWidgetHostImpl::GetVisualProperties(
     // TODO(ccameron): GetLocalSurfaceId is not synchronized with the device
     // scale factor of the surface. Fix this.
     viz::LocalSurfaceId local_surface_id = view_->GetLocalSurfaceId();
-    if (local_surface_id.is_valid())
+    if (local_surface_id.is_valid()) {
       visual_properties->local_surface_id = local_surface_id;
+      visual_properties->local_surface_id_allocation_time =
+          view_->GetLocalSurfaceIdAllocationTime();
+    }
   }
 
   if (screen_orientation_type_for_testing_) {

@@ -19,6 +19,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "components/viz/common/surfaces/scoped_surface_id_allocator.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/client/window_types.h"
@@ -392,6 +393,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Gets the current viz::SurfaceId.
   viz::SurfaceId GetSurfaceId() const;
 
+  // Get the time at which the current viz::LocalSurfaceId was allocated.
+  base::TimeTicks GetLocalSurfaceIdAllocationTime() const;
+
   // Forces the window to allocate a new viz::LocalSurfaceId for the next
   // CompositorFrame submission in anticipation of a synchronization operation
   // that does not involve a resize or a device scale factor change.
@@ -412,7 +416,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // viz::LocalSurfaceId allocator.
   void UpdateLocalSurfaceIdFromEmbeddedClient(
       const base::Optional<viz::LocalSurfaceId>&
-          embedded_client_local_surface_id);
+          embedded_client_local_surface_id,
+      const base::Optional<base::TimeTicks>&
+          embedded_client_local_surface_id_allocation_time);
 
   // Returns the FrameSinkId. In LOCAL mode, this returns a valid FrameSinkId
   // only if a LayerTreeFrameSink has been created. In MUS mode, this always

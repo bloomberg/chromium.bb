@@ -4,6 +4,7 @@
 
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_platform.h"
 
+#include "base/time/time.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/base/hit_test.h"
@@ -75,7 +76,7 @@ void DesktopWindowTreeHostPlatform::SetBoundsInDIP(
   DCHECK_NE(0, device_scale_factor());
   SetBoundsInPixels(
       gfx::ConvertRectToPixel(device_scale_factor(), bounds_in_dip),
-      viz::LocalSurfaceId());
+      viz::LocalSurfaceId(), base::TimeTicks());
 }
 
 void DesktopWindowTreeHostPlatform::Init(const Widget::InitParams& params) {

@@ -84,7 +84,8 @@ TEST_F(WindowPortMusTest,
   viz::LocalSurfaceId updated_id = parent_allocator->GenerateId();
   ASSERT_TRUE(updated_id.is_valid());
   EXPECT_NE(updated_id, current_id);
-  window.UpdateLocalSurfaceIdFromEmbeddedClient(updated_id);
+  window.UpdateLocalSurfaceIdFromEmbeddedClient(
+      updated_id, parent_allocator->allocation_time());
 
   // Updating the LocalSurfaceId should propagate to the ClientSurfaceEmbedder.
   auto* window_mus = WindowPortMus::Get(&window);

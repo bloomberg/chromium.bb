@@ -20,6 +20,7 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
@@ -193,7 +194,8 @@ class LayerTreeHostImplTest : public testing::Test,
   void DidActivateSyncTree() override {
     // Make sure the active tree always has a valid LocalSurfaceId.
     host_impl_->active_tree()->SetLocalSurfaceIdFromParent(
-        viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)));
+        viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)),
+        base::TimeTicks());
   }
   void WillPrepareTiles() override {}
   void DidPrepareTiles() override {}
@@ -255,7 +257,8 @@ class LayerTreeHostImplTest : public testing::Test,
     host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(10, 10));
     host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
     host_impl_->active_tree()->SetLocalSurfaceIdFromParent(
-        viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)));
+        viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)),
+        base::TimeTicks());
     // Set the viz::BeginFrameArgs so that methods which use it are able to.
     host_impl_->WillBeginImplFrame(viz::CreateBeginFrameArgsForTesting(
         BEGINFRAME_FROM_HERE, 0, 1,
@@ -3578,7 +3581,8 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
     host_impl_->active_tree()->DidBecomeActive();
     host_impl_->active_tree()->HandleScrollbarShowRequestsFromMain();
     host_impl_->active_tree()->SetLocalSurfaceIdFromParent(
-        viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)));
+        viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)),
+        base::TimeTicks());
     DrawFrame();
 
     // SetScrollElementId will initialize the scrollbar which will cause it to
@@ -9299,7 +9303,8 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   layer_tree_host_impl->active_tree()->SetRootLayerForTesting(std::move(root));
   layer_tree_host_impl->active_tree()->BuildPropertyTreesForTesting();
   layer_tree_host_impl->active_tree()->SetLocalSurfaceIdFromParent(
-      viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)));
+      viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)),
+      base::TimeTicks());
 
   TestFrameData frame;
 

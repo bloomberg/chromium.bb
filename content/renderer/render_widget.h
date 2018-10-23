@@ -692,6 +692,7 @@ class CONTENT_EXPORT RenderWidget
 
   void UpdateSurfaceAndScreenInfo(
       const viz::LocalSurfaceId& new_local_surface_id,
+      base::TimeTicks new_allocation_time_,
       const gfx::Size& new_compositor_viewport_pixel_size,
       const ScreenInfo& new_screen_info);
 
@@ -905,6 +906,7 @@ class CONTENT_EXPORT RenderWidget
   std::unique_ptr<MouseLockDispatcher::LockTarget> webwidget_mouse_lock_target_;
 
   viz::LocalSurfaceId local_surface_id_from_parent_;
+  base::TimeTicks allocation_time_from_parent_;
 
   // Indicates whether this widget has focus.
   bool has_focus_;

@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "services/ws/public/mojom/cursor/cursor.mojom.h"
@@ -253,7 +254,9 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   const viz::LocalSurfaceId& GetOrAllocateLocalSurfaceId(
       const gfx::Size& surface_size_in_pixels) override;
   void UpdateLocalSurfaceIdFromEmbeddedClient(
-      const viz::LocalSurfaceId& embedded_client_local_surface_id) override;
+      const viz::LocalSurfaceId& embedded_client_local_surface_id,
+      base::TimeTicks embedded_client_local_surface_id_allocation_time)
+      override;
   void DestroyFromServer() override;
   void AddTransientChildFromServer(WindowMus* child) override;
   void RemoveTransientChildFromServer(WindowMus* child) override;
@@ -291,6 +294,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   viz::ScopedSurfaceIdAllocator GetSurfaceIdAllocator(
       base::OnceCallback<void()> allocation_task) override;
   const viz::LocalSurfaceId& GetLocalSurfaceId() override;
+  base::TimeTicks GetLocalSurfaceIdAllocationTime() const override;
   void OnEventTargetingPolicyChanged() override;
   bool ShouldRestackTransientChildren() override;
   void RegisterFrameSinkId(const viz::FrameSinkId& frame_sink_id) override;

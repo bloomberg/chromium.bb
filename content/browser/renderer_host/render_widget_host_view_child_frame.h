@@ -142,6 +142,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void UnlockMouse() override;
   const viz::FrameSinkId& GetFrameSinkId() const override;
   const viz::LocalSurfaceId& GetLocalSurfaceId() const override;
+  base::TimeTicks GetLocalSurfaceIdAllocationTime() const override;
   void PreProcessTouchEvent(const blink::WebTouchEvent& event) override;
   viz::FrameSinkId GetRootFrameSinkId() override;
   viz::SurfaceId GetCurrentSurfaceId() const override;

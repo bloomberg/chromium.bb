@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "base/process/kill.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/scoped_surface_id_allocator.h"
@@ -337,6 +338,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // Returns the LocalSurfaceId allocated by the parent client for this view.
   // TODO(fsamuel): Return by const ref.
   virtual const viz::LocalSurfaceId& GetLocalSurfaceId() const = 0;
+
+  // Returns the time at which the viz::LocalSurfaceId was allocated by the
+  // parent client for this view.
+  virtual base::TimeTicks GetLocalSurfaceIdAllocationTime() const;
 
   // When there are multiple RenderWidgetHostViews for a single page, input
   // events need to be targeted to the correct one for handling. The following

@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
@@ -182,6 +183,11 @@ class CONTENT_EXPORT CompositorImpl
   // Returns a new surface ID when in surface-synchronization mode. Otherwise
   // returns an empty surface.
   viz::LocalSurfaceId GenerateLocalSurfaceId() const;
+
+  // Returns the time at which the viz::LocalSurfaceId created by
+  // GenerateLocalSurfaceID() was allocated. When not in surface-synchronization
+  // mode this returns the null base::TimeTicks.
+  base::TimeTicks GetLocalSurfaceIdAllocationTime() const;
 
   // Tears down the display for both Viz and non-Viz, unregistering the root
   // frame sink ID in the process.

@@ -212,6 +212,7 @@ void WebMediaPlayerMSCompositor::UpdateSubmissionState(bool state) {
 // submission. Do this along with the VideoFrameSubmitter refactor.
 void WebMediaPlayerMSCompositor::EnableSubmission(
     const viz::SurfaceId& id,
+    base::TimeTicks local_surface_id_allocation_time,
     media::VideoRotation rotation,
     bool force_submit,
     bool is_opaque,
@@ -227,7 +228,8 @@ void WebMediaPlayerMSCompositor::EnableSubmission(
   submitter_->SetRotation(rotation);
   submitter_->SetForceSubmit(force_submit);
   submitter_->SetIsOpaque(is_opaque);
-  submitter_->EnableSubmission(id, std::move(frame_sink_destroyed_callback));
+  submitter_->EnableSubmission(id, local_surface_id_allocation_time,
+                               std::move(frame_sink_destroyed_callback));
   video_frame_provider_client_ = submitter_.get();
 
   if (!stopped_)
