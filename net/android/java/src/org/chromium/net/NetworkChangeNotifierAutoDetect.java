@@ -34,7 +34,6 @@ import android.telephony.TelephonyManager;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BuildConfig;
-import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.compat.ApiHelperForM;
@@ -237,7 +236,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
             if (network != null) {
                 return new NetworkState(true, networkInfo.getType(), networkInfo.getSubtype(),
                         String.valueOf(networkToNetId(network)),
-                        BuildInfo.isAtLeastP()
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
                                 && AndroidNetworkLibrary.isPrivateDnsActive(
                                            mConnectivityManager.getLinkProperties(network)));
             }
@@ -830,7 +829,9 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
             mNetworkCallback = null;
             mNetworkRequest = null;
         }
-        mDefaultNetworkCallback = BuildInfo.isAtLeastP() ? new DefaultNetworkCallback() : null;
+        mDefaultNetworkCallback = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+                ? new DefaultNetworkCallback()
+                : null;
         mNetworkState = getCurrentNetworkState();
         mIntentFilter = new NetworkConnectivityIntentFilter();
         mIgnoreNextBroadcast = false;

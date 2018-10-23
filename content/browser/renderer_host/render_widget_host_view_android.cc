@@ -119,7 +119,8 @@ std::unique_ptr<ui::TouchSelectionController> CreateSelectionController(
   config.hide_active_handle =
       base::FeatureList::IsEnabled(
           content::android::kEnhancedSelectionInsertionHandle) &&
-      base::android::BuildInfo::GetInstance()->is_at_least_p();
+      base::android::BuildInfo::GetInstance()->sdk_int() >=
+          base::android::SDK_VERSION_P;
   return std::make_unique<ui::TouchSelectionController>(client, config);
 }
 
