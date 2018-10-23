@@ -4472,6 +4472,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableIncognitoWindowCounterName,
      flag_descriptions::kEnableIncognitoWindowCounterDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kEnableIncognitoWindowCounter)},
+
+    {"enable-send-tab-to-self", flag_descriptions::kSendTabToSelfName,
+     flag_descriptions::kSendTabToSelfDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kSendTabToSelf)},
 };
 
 class FlagsStateSingleton {

@@ -1604,6 +1604,11 @@ const char kSavePreviousDocumentResourcesUntilOnDOMContentLoaded[] =
 const char kSavePreviousDocumentResourcesUntilOnLoad[] =
     "Save resources until onload completes";
 
+const char kSendTabToSelfName[] = "Send tab to self";
+const char kSendTabToSelfDescription[] =
+    "Allows users to push tabs from Android devices to other synced "
+    "devices, in order to easily transition those tabs to the new device ";
+
 const char kServiceWorkerPaymentAppsName[] = "Service Worker payment apps";
 const char kServiceWorkerPaymentAppsDescription[] =
     "Enable Service Worker applications to integrate as payment apps";
