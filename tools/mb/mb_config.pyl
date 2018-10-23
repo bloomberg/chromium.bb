@@ -1930,7 +1930,10 @@
     },
 
     'goma': {
-      'gn_args': 'use_goma=true',
+      # strip_absolute_paths_from_debug_symbols is on by default on Linux and
+      # Windows, but not elsewhere. Since it helps goma's cache, set this to
+      # help Android builds.
+      'gn_args': 'use_goma=true strip_absolute_paths_from_debug_symbols=true',
     },
 
     'gpu_fyi_tests': {
