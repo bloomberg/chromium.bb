@@ -29,70 +29,28 @@ constexpr char MigratableCardView::kViewClassName[] = "MigratableCardView";
 MigratableCardView::MigratableCardView(
     const MigratableCreditCard& migratable_credit_card,
     views::ButtonListener* listener,
-    int card_index)
+    bool should_show_checkbox)
     : migratable_credit_card_(migratable_credit_card) {
-  Init(migratable_credit_card, listener, card_index);
-}
-
-MigratableCardView::~MigratableCardView() = default;
-
-bool MigratableCardView::IsSelected() {
-  DCHECK(checkbox_);
-  return checkbox_->checked();
-}
-
-std::string MigratableCardView::GetGuid() {
-  return migratable_credit_card_.credit_card().guid();
-}
-
-void MigratableCardView::SetCheckboxEnabled(bool checkbox_enabled) {
-  checkbox_->SetEnabled(checkbox_enabled);
-}
-
-void MigratableCardView::UpdateCardView(
-    LocalCardMigrationDialogState dialog_state) {
-  checkbox_->SetVisible(false);
-  switch (dialog_state) {
-    case LocalCardMigrationDialogState::kFinished:
-      migration_succeeded_image_->SetVisible(true);
-      break;
-    case LocalCardMigrationDialogState::kActionRequired:
-      migration_failed_image_->SetVisible(true);
-      delete_card_from_local_button_->SetVisible(true);
-      break;
-    case LocalCardMigrationDialogState::kOffered:
-      NOTREACHED();
-      break;
-  }
-}
-
-const char* MigratableCardView::GetClassName() const {
-  return kViewClassName;
-}
-
-void MigratableCardView::Init(
-    const MigratableCreditCard& migratable_credit_card,
-    views::ButtonListener* listener,
-    int card_index) {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
-
-  checkbox_ = new views::Checkbox(base::string16(), listener);
-  checkbox_->SetChecked(true);
-  checkbox_->set_tag(card_index);
-  // TODO(crbug/867194): Currently the ink drop animation circle is cut by the
-  // border of scroll bar view. Find a way to adjust the format.
-  checkbox_->SetInkDropMode(views::InkDropHostView::InkDropMode::OFF);
   std::unique_ptr<views::Label> card_description =
       std::make_unique<views::Label>(
           migratable_credit_card.credit_card().NetworkAndLastFourDigits(),
           views::style::CONTEXT_LABEL);
-  checkbox_->SetAssociatedLabel(card_description.get());
-  AddChildView(checkbox_);
+
+  if (should_show_checkbox) {
+    checkbox_ = new views::Checkbox(base::string16(), listener);
+    checkbox_->SetChecked(true);
+    // TODO(crbug/867194): Currently the ink drop animation circle is cut by the
+    // border of scroll bar view. Find a way to adjust the format.
+    checkbox_->SetInkDropMode(views::InkDropHostView::InkDropMode::OFF);
+    checkbox_->SetAssociatedLabel(card_description.get());
+    AddChildView(checkbox_);
+  }
 
   constexpr int kMigrationResultImageSize = 16;
   migration_succeeded_image_ = new views::ImageView();
@@ -139,6 +97,20 @@ void MigratableCardView::Init(
   // delete_card_from_local_button_.
   delete_card_from_local_button_->SetVisible(false);
   AddChildView(delete_card_from_local_button_);
+}
+
+MigratableCardView::~MigratableCardView() = default;
+
+bool MigratableCardView::IsSelected() {
+  return !checkbox_ || checkbox_->checked();
+}
+
+std::string MigratableCardView::GetGuid() {
+  return migratable_credit_card_.credit_card().guid();
+}
+
+const char* MigratableCardView::GetClassName() const {
+  return kViewClassName;
 }
 
 }  // namespace autofill
