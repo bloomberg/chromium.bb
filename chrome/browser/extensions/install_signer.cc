@@ -16,7 +16,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/process/process_info.h"
+#include "base/process/process.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -292,10 +292,10 @@ void LogRequestStartHistograms() {
   // worry about race conditions setting g_last_request_time.
   DCHECK(g_single_thread_checker.Get().CalledOnValidThread());
 
-  // CurrentProcessInfo::CreationTime is only defined on some platforms.
+  // Process::Current().CreationTime is only defined on some platforms.
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
   const base::Time process_creation_time =
-      base::CurrentProcessInfo::CreationTime();
+      base::Process::Current().CreationTime();
   UMA_HISTOGRAM_COUNTS_1M(
       "ExtensionInstallSigner.UptimeAtTimeOfRequest",
       (base::Time::Now() - process_creation_time).InSeconds());

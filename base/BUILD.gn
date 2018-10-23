@@ -598,7 +598,6 @@ jumbo_component("base") {
 
     #"process/process_handle_openbsd.cc",  # Unused in Chromium build.
     "process/process_handle_win.cc",
-    "process/process_info.cc",
     "process/process_info.h",
     "process/process_info_win.cc",
     "process/process_iterator.cc",
@@ -1517,7 +1516,6 @@ jumbo_component("base") {
       "process/kill.h",
       "process/memory.cc",
       "process/memory.h",
-      "process/process_info.cc",
       "process/process_iterator.cc",
       "process/process_iterator.h",
       "process/process_metrics.cc",
@@ -2388,7 +2386,6 @@ test("base_unittests") {
     "process/memory_unittest.cc",
     "process/memory_unittest_mac.h",
     "process/memory_unittest_mac.mm",
-    "process/process_info_unittest.cc",
     "process/process_metrics_unittest.cc",
     "process/process_unittest.cc",
     "process/process_util_unittest.cc",

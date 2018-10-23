@@ -18,7 +18,7 @@
 #include "base/path_service.h"
 #include "base/process/memory.h"
 #include "base/process/process_handle.h"
-#include "base/process/process_info.h"
+#include "base/process/process.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -474,7 +474,7 @@ void RecordMainStartupMetrics(base::TimeTicks exe_entry_point_ticks) {
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
   // Record the startup process creation time on supported platforms.
   startup_metric_utils::RecordStartupProcessCreationTime(
-      base::CurrentProcessInfo::CreationTime());
+      base::Process::Current().CreationTime());
 #endif
 
 // On Android the main entry point time is the time when the Java code starts.
