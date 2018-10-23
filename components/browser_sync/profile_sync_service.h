@@ -357,11 +357,10 @@ class ProfileSyncService : public syncer::SyncService,
 
   // Reconfigures the data type manager with the latest enabled types.
   // Note: Does not initialize the engine if it is not already initialized.
-  // This function needs to be called only after sync has been initialized
-  // (i.e., only for reconfigurations). The reason we don't initialize the
-  // engine is because if we had encountered an unrecoverable error we don't
-  // want to startup once more.
-  void ReconfigureDatatypeManager();
+  // If a Sync setup is currently in progress (i.e. a settings UI is open), then
+  // the reconfiguration will only happen if |bypass_setup_in_progress_check| is
+  // set to true.
+  void ReconfigureDatatypeManager(bool bypass_setup_in_progress_check);
 
   syncer::PassphraseRequiredReason passphrase_required_reason_for_test() const {
     return crypto_.passphrase_required_reason();
@@ -586,7 +585,7 @@ class ProfileSyncService : public syncer::SyncService,
   void OnClearServerDataDone();
 
   // True if setup has been completed at least once and is not in progress.
-  bool CanConfigureDataTypes() const;
+  bool CanConfigureDataTypes(bool bypass_setup_in_progress_check) const;
 
   // Called when a SetupInProgressHandle issued by this instance is destroyed.
   virtual void OnSetupInProgressHandleDestroyed();

@@ -317,7 +317,7 @@ void ProfileSyncService::StartSyncingWithServer() {
   if (base::FeatureList::IsEnabled(
           switches::kSyncClearDataOnPassphraseEncryption) &&
       sync_prefs_.GetPassphraseEncryptionTransitionInProgress()) {
-    DCHECK(CanConfigureDataTypes());
+    DCHECK(CanConfigureDataTypes(/*bypass_setup_in_progress_check=*/false));
     // We are restarting catchup configuration after browser restart.
     UMA_HISTOGRAM_ENUMERATION("Sync.ClearServerDataEvents",
                               syncer::CLEAR_SERVER_DATA_RETRIED,
@@ -795,7 +795,7 @@ syncer::SyncService::TransportState ProfileSyncService::GetTransportState()
   // configure the data types. Also if a later (non-initial) setup happens to be
   // in progress, we won't configure them right now.
   if (data_type_manager_->state() == DataTypeManager::STOPPED) {
-    DCHECK(!CanConfigureDataTypes());
+    DCHECK(!CanConfigureDataTypes(/*bypass_setup_in_progress_check=*/false));
     return TransportState::PENDING_DESIRED_CONFIGURATION;
   }
 
@@ -807,7 +807,8 @@ syncer::SyncService::TransportState ProfileSyncService::GetTransportState()
   // Note that if a setup is started after the data types have been configured,
   // then they'll stay configured even though CanConfigureDataTypes will be
   // false.
-  DCHECK(CanConfigureDataTypes() || IsSetupInProgress());
+  DCHECK(CanConfigureDataTypes(/*bypass_setup_in_progress_check=*/false) ||
+         IsSetupInProgress());
 
   if (data_type_manager_->state() != DataTypeManager::CONFIGURED) {
     return TransportState::CONFIGURING;
@@ -825,7 +826,7 @@ void ProfileSyncService::SetFirstSetupComplete() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_prefs_.SetFirstSetupComplete();
   if (engine_initialized_) {
-    ReconfigureDatatypeManager();
+    ReconfigureDatatypeManager(/*bypass_setup_in_progress_check=*/false);
   }
 }
 
@@ -994,7 +995,7 @@ void ProfileSyncService::OnEngineInitialized(
   if (start_behavior_ == AUTO_START && !IsFirstSetupComplete()) {
     // This will trigger a configure if it completes setup.
     SetFirstSetupComplete();
-  } else if (CanConfigureDataTypes()) {
+  } else if (CanConfigureDataTypes(/*bypass_setup_in_progress_check=*/false)) {
     // Datatype downloads on restart are generally due to newly supported
     // datatypes (although it's also possible we're picking up where a failed
     // previous configuration left off).
@@ -1295,14 +1296,15 @@ const GoogleServiceAuthError& ProfileSyncService::GetAuthError() const {
   return auth_manager_->GetLastAuthError();
 }
 
-bool ProfileSyncService::CanConfigureDataTypes() const {
+bool ProfileSyncService::CanConfigureDataTypes(
+    bool bypass_setup_in_progress_check) const {
   // TODO(crbug.com/856179): Arguably, IsSetupInProgress() shouldn't prevent
   // configuring data types in transport mode, but at least for now, it's
   // easier to keep it like this. Changing this will likely require changes to
   // the setup UI flow.
   return data_type_manager_ &&
          (IsFirstSetupComplete() || IsStandaloneTransportEnabled()) &&
-         !IsSetupInProgress();
+         (bypass_setup_in_progress_check || !IsSetupInProgress());
 }
 
 std::unique_ptr<syncer::SyncSetupInProgressHandle>
@@ -1376,7 +1378,7 @@ void ProfileSyncService::OnUserChoseDatatypes(
                                     user_events_separate_pref_group_);
 
   // Now reconfigure the DTM.
-  ReconfigureDatatypeManager();
+  ReconfigureDatatypeManager(/*bypass_setup_in_progress_check=*/false);
 }
 
 syncer::ModelTypeSet ProfileSyncService::GetActiveDataTypes() const {
@@ -1482,9 +1484,6 @@ void ProfileSyncService::SetSyncAllowedByPlatform(bool allowed) {
 
 void ProfileSyncService::ConfigureDataTypeManager(
     syncer::ConfigureReason reason) {
-  DCHECK(CanConfigureDataTypes() ||
-         reason == syncer::CONFIGURE_REASON_MIGRATION);
-
   syncer::ConfigureContext configure_context;
   configure_context.authenticated_account_id =
       GetAuthenticatedAccountInfo().account_id;
@@ -2020,13 +2019,14 @@ void ProfileSyncService::RequestStart() {
   }
   // If Sync-the-transport was already running, just reconfigure.
   if (IsStandaloneTransportEnabled() && engine_initialized_) {
-    ReconfigureDatatypeManager();
+    ReconfigureDatatypeManager(/*bypass_setup_in_progress_check=*/false);
   } else {
     startup_controller_->TryStart(/*force_immediate=*/true);
   }
 }
 
-void ProfileSyncService::ReconfigureDatatypeManager() {
+void ProfileSyncService::ReconfigureDatatypeManager(
+    bool bypass_setup_in_progress_check) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // If we haven't initialized yet, don't configure the DTM as it could cause
   // association to start before a Directory has even been created.
@@ -2037,7 +2037,7 @@ void ProfileSyncService::ReconfigureDatatypeManager() {
     // start syncing data until the user is done configuring encryption options,
     // etc. ReconfigureDatatypeManager() will get called again once the last
     // SyncSetupInProgressHandle is released.
-    if (CanConfigureDataTypes()) {
+    if (CanConfigureDataTypes(bypass_setup_in_progress_check)) {
       ConfigureDataTypeManager(syncer::CONFIGURE_REASON_RECONFIGURATION);
     } else {
       DVLOG(0) << "ConfigureDataTypeManager not invoked because datatypes "
@@ -2226,19 +2226,21 @@ base::Location ProfileSyncService::unrecoverable_error_location() const {
 void ProfileSyncService::OnSetupInProgressHandleDestroyed() {
   DCHECK_GT(outstanding_setup_in_progress_handles_, 0);
 
-  // Don't re-start Sync until all outstanding handles are destroyed.
-  if (--outstanding_setup_in_progress_handles_ != 0)
-    return;
+  --outstanding_setup_in_progress_handles_;
 
-  if (engine_initialized_)
-    ReconfigureDatatypeManager();
+  if (engine_initialized_) {
+    // The user closed a setup UI, and will expect their changes to actually
+    // take effect now. So we reconfigure here even if another setup UI happens
+    // to be open right now.
+    ReconfigureDatatypeManager(/*bypass_setup_in_progress_check=*/true);
+  }
 
   NotifyObservers();
 }
 
 void ProfileSyncService::ReconfigureDueToPassphrase(
     syncer::ConfigureReason reason) {
-  if (CanConfigureDataTypes()) {
+  if (CanConfigureDataTypes(/*bypass_setup_in_progress_check=*/false)) {
     DCHECK(data_type_manager_->IsNigoriEnabled());
     ConfigureDataTypeManager(reason);
   }

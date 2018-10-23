@@ -723,7 +723,7 @@ void SupervisedUserService::OnForceSessionSyncChanged() {
   includes_sync_sessions_type_ =
       profile_->GetPrefs()->GetBoolean(prefs::kForceSessionSync);
   ProfileSyncServiceFactory::GetForProfile(profile_)
-      ->ReconfigureDatatypeManager();
+      ->ReconfigureDatatypeManager(/*bypass_setup_in_progress_check=*/false);
 }
 
 void SupervisedUserService::Shutdown() {
