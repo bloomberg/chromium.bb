@@ -64,7 +64,8 @@ public class GenericViewHolder extends OfflineItemViewHolder {
             mGenericIconId = iconId;
 
             Drawable drawable = DrawableCompat.wrap(
-                    ApiCompatibilityUtils.getDrawable(itemView.getResources(), iconId));
+                    org.chromium.chrome.browser.download.home.list.view.UiUtils.getDrawable(
+                            itemView.getContext(), iconId));
             DrawableCompat.setTintList(drawable,
                     AppCompatResources.getColorStateList(
                             itemView.getContext(), R.color.dark_mode_tint));
