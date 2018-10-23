@@ -2190,3 +2190,25 @@ CrSettingsFindShortcutBehavior.prototype = {
 TEST_F('CrSettingsFindShortcutBehavior', 'All', function() {
   mocha.run();
 });
+
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsSiteFaviconTest() {}
+
+CrSettingsSiteFaviconTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/site_favicon.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'site_favicon_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsSiteFaviconTest', 'All', function() {
+  mocha.run();
+});
