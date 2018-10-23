@@ -102,6 +102,13 @@ int NativeWidgetMac::SheetPositionY() {
       [view convertPoint:NSMakePoint(0, NSHeight([view frame])) toView:nil].y;
 }
 
+void NativeWidgetMac::GetWindowFrameTitlebarHeight(
+    bool* override_titlebar_height,
+    float* titlebar_height) {
+  *override_titlebar_height = false;
+  *titlebar_height = 0;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetMac, internal::NativeWidgetPrivate implementation:
 
@@ -114,20 +121,23 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   // Determine the factory through which to create the bridge
   BridgeFactoryHost* bridge_factory_host =
       parent_host ? parent_host->bridge_factory_host() : GetBridgeFactoryHost();
-  if (bridge_factory_host) {
-    // Compute the parameters to describe the NSWindow.
-    // TODO(ccameron): This is not yet adequate to capture all NSWindow
-    // sub-classes that may be used. Make the parameter structure more
-    // expressive.
-    auto create_window_params =
-        views_bridge_mac::mojom::CreateWindowParams::New();
-    create_window_params->style_mask = StyleMaskForParams(params);
 
+  // Compute the parameters to describe the NSWindow.
+  auto create_window_params =
+      views_bridge_mac::mojom::CreateWindowParams::New();
+  create_window_params->window_class =
+      views_bridge_mac::mojom::WindowClass::kDefault;
+  create_window_params->style_mask = StyleMaskForParams(params);
+  create_window_params->titlebar_appears_transparent = false;
+  create_window_params->window_title_hidden = false;
+  PopulateCreateWindowParams(params, create_window_params.get());
+
+  if (bridge_factory_host) {
     bridge_host_->CreateRemoteBridge(bridge_factory_host,
                                      std::move(create_window_params));
   } else {
     base::scoped_nsobject<NativeWidgetMacNSWindow> window(
-        [CreateNSWindow(params) retain]);
+        [CreateNSWindow(create_window_params.get()) retain]);
     bridge_host_->CreateLocalBridge(std::move(window));
   }
   bridge_host_->SetParent(parent_host);
@@ -568,8 +578,8 @@ void NativeWidgetMac::EndMoveLoop() {
 }
 
 void NativeWidgetMac::SetVisibilityChangedAnimationsEnabled(bool value) {
-  if (bridge_impl())
-    bridge_impl()->SetAnimationEnabled(value);
+  if (bridge())
+    bridge()->SetAnimationEnabled(value);
 }
 
 void NativeWidgetMac::SetVisibilityAnimationDuration(
@@ -627,12 +637,8 @@ std::string NativeWidgetMac::GetName() const {
 // NativeWidgetMac, protected:
 
 NativeWidgetMacNSWindow* NativeWidgetMac::CreateNSWindow(
-    const Widget::InitParams& params) {
-  return [[[NativeWidgetMacNSWindow alloc]
-      initWithContentRect:ui::kWindowSizeDeterminedLater
-                styleMask:StyleMaskForParams(params)
-                  backing:NSBackingStoreBuffered
-                    defer:NO] autorelease];
+    const views_bridge_mac::mojom::CreateWindowParams* params) {
+  return BridgedNativeWidgetImpl::CreateNSWindow(params).autorelease();
 }
 
 BridgeFactoryHost* NativeWidgetMac::GetBridgeFactoryHost() {

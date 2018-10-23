@@ -2080,8 +2080,6 @@ jumbo_split_static_library("ui") {
       "views/dropdown_bar_host_mac.mm",
       "views/frame/browser_frame_mac.h",
       "views/frame/browser_frame_mac.mm",
-      "views/frame/browser_native_widget_window_mac.h",
-      "views/frame/browser_native_widget_window_mac.mm",
       "views/frame/browser_non_client_frame_view_factory_mac.mm",
       "views/frame/browser_non_client_frame_view_mac.h",
       "views/frame/browser_non_client_frame_view_mac.mm",
@@ -2895,8 +2893,6 @@ jumbo_split_static_library("ui") {
         "views/apps/native_app_window_frame_view_mac.h",
         "views/apps/native_app_window_frame_view_mac.mm",
         "views/chrome_views_delegate_mac.cc",
-        "views/frame/native_widget_mac_frameless_nswindow.h",
-        "views/frame/native_widget_mac_frameless_nswindow.mm",
         "views/policy/enterprise_startup_dialog_mac_util.h",
         "views/policy/enterprise_startup_dialog_mac_util.mm",
       ]

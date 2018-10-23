@@ -29,9 +29,11 @@
 #import "ui/gfx/mac/nswindow_frame_controls.h"
 #import "ui/views_bridge_mac/bridged_content_view.h"
 #import "ui/views_bridge_mac/bridged_native_widget_host_helper.h"
+#import "ui/views_bridge_mac/browser_native_widget_window_mac.h"
 #import "ui/views_bridge_mac/cocoa_mouse_capture.h"
 #import "ui/views_bridge_mac/cocoa_window_move_loop.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
+#import "ui/views_bridge_mac/native_widget_mac_frameless_nswindow.h"
 #import "ui/views_bridge_mac/native_widget_mac_nswindow.h"
 #import "ui/views_bridge_mac/views_nswindow_delegate.h"
 
@@ -230,14 +232,41 @@ BridgedNativeWidgetImpl* BridgedNativeWidgetImpl::GetFromId(
 // static
 base::scoped_nsobject<NativeWidgetMacNSWindow>
 BridgedNativeWidgetImpl::CreateNSWindow(
-    views_bridge_mac::mojom::CreateWindowParams* params) {
-  base::scoped_nsobject<NativeWidgetMacNSWindow> result(
-      [[NativeWidgetMacNSWindow alloc]
+    const views_bridge_mac::mojom::CreateWindowParams* params) {
+  base::scoped_nsobject<NativeWidgetMacNSWindow> ns_window;
+  switch (params->window_class) {
+    case views_bridge_mac::mojom::WindowClass::kDefault:
+      ns_window.reset([[NativeWidgetMacNSWindow alloc]
           initWithContentRect:ui::kWindowSizeDeterminedLater
                     styleMask:params->style_mask
                       backing:NSBackingStoreBuffered
                         defer:NO]);
-  return result;
+      break;
+    case views_bridge_mac::mojom::WindowClass::kBrowser:
+      ns_window.reset([[BrowserNativeWidgetWindow alloc]
+          initWithContentRect:ui::kWindowSizeDeterminedLater
+                    styleMask:params->style_mask
+                      backing:NSBackingStoreBuffered
+                        defer:NO]);
+      break;
+    case views_bridge_mac::mojom::WindowClass::kFrameless:
+      ns_window.reset([[NativeWidgetMacFramelessNSWindow alloc]
+          initWithContentRect:ui::kWindowSizeDeterminedLater
+                    styleMask:params->style_mask
+                      backing:NSBackingStoreBuffered
+                        defer:NO]);
+      break;
+  }
+  if (@available(macOS 10.10, *)) {
+    if (params->titlebar_appears_transparent)
+      [ns_window setTitlebarAppearsTransparent:YES];
+
+    if (params->window_title_hidden)
+      [ns_window setTitleVisibility:NSWindowTitleHidden];
+  }
+  if (params->animation_enabled)
+    [ns_window setAnimationBehavior:NSWindowAnimationBehaviorDocumentWindow];
+  return ns_window;
 }
 
 BridgedNativeWidgetImpl::BridgedNativeWidgetImpl(

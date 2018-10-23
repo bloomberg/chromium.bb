@@ -71,7 +71,7 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
 
   // Create an NSWindow for the specified parameters.
   static base::scoped_nsobject<NativeWidgetMacNSWindow> CreateNSWindow(
-      views_bridge_mac::mojom::CreateWindowParams* params);
+      const views_bridge_mac::mojom::CreateWindowParams* params);
 
   // Creates one side of the bridge. |host| and |parent| must not be NULL.
   BridgedNativeWidgetImpl(uint64_t bridged_native_widget_id,
@@ -165,9 +165,6 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   bool wants_to_be_visible() const { return wants_to_be_visible_; }
   bool in_fullscreen_transition() const { return in_fullscreen_transition_; }
 
-  // Enables or disables all window animations.
-  void SetAnimationEnabled(bool animate);
-
   // Whether to run a custom animation for the provided |transition|.
   bool ShouldRunCustomAnimationFor(
       views_bridge_mac::mojom::VisibilityTransition transition) const;
@@ -203,6 +200,7 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
                         const gfx::Size& minimum_content_size) override;
   void SetVisibilityState(
       views_bridge_mac::mojom::WindowVisibilityState new_state) override;
+  void SetAnimationEnabled(bool animation_enabled) override;
   void SetTransitionsToAnimate(
       views_bridge_mac::mojom::VisibilityTransition transitions) override;
   void SetVisibleOnAllSpaces(bool always_visible) override;

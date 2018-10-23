@@ -127,17 +127,21 @@ class TestWindowNativeWidgetMac : public NativeWidgetMac {
 
  protected:
   // NativeWidgetMac:
-  NativeWidgetMacNSWindow* CreateNSWindow(
-      const Widget::InitParams& params) override {
-    NSUInteger style_mask = NSBorderlessWindowMask;
-    if (params.type == Widget::InitParams::TYPE_WINDOW) {
-      style_mask = NSTexturedBackgroundWindowMask | NSTitledWindowMask |
-                   NSClosableWindowMask | NSMiniaturizableWindowMask |
-                   NSResizableWindowMask;
+  void PopulateCreateWindowParams(
+      const views::Widget::InitParams& widget_params,
+      views_bridge_mac::mojom::CreateWindowParams* params) override {
+    params->style_mask = NSBorderlessWindowMask;
+    if (widget_params.type == Widget::InitParams::TYPE_WINDOW) {
+      params->style_mask = NSTexturedBackgroundWindowMask | NSTitledWindowMask |
+                           NSClosableWindowMask | NSMiniaturizableWindowMask |
+                           NSResizableWindowMask;
     }
+  }
+  NativeWidgetMacNSWindow* CreateNSWindow(
+      const views_bridge_mac::mojom::CreateWindowParams* params) override {
     return [[[NativeWidgetMacTestWindow alloc]
         initWithContentRect:ui::kWindowSizeDeterminedLater
-                  styleMask:style_mask
+                  styleMask:params->style_mask
                     backing:NSBackingStoreBuffered
                       defer:NO] autorelease];
   }

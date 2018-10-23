@@ -4,6 +4,8 @@
 
 #include "ui/views/cocoa/bridged_native_widget_host_impl.h"
 
+#include <utility>
+
 #include "base/mac/foundation_util.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/hit_test.h"
@@ -851,6 +853,18 @@ bool BridgedNativeWidgetHostImpl::GetCanWindowClose(bool* can_window_close) {
   return true;
 }
 
+bool BridgedNativeWidgetHostImpl::GetWindowFrameTitlebarHeight(
+    bool* override_titlebar_height,
+    float* titlebar_height) {
+  native_widget_mac_->GetWindowFrameTitlebarHeight(override_titlebar_height,
+                                                   titlebar_height);
+  return true;
+}
+
+void BridgedNativeWidgetHostImpl::OnFocusWindowToolbar() {
+  native_widget_mac_->OnFocusWindowToolbar();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BridgedNativeWidgetHostImpl,
 // views_bridge_mac::mojom::BridgedNativeWidgetHost synchronous callbacks:
@@ -952,6 +966,14 @@ void BridgedNativeWidgetHostImpl::GetCanWindowClose(
   bool can_window_close = false;
   GetCanWindowClose(&can_window_close);
   std::move(callback).Run(can_window_close);
+}
+
+void BridgedNativeWidgetHostImpl::GetWindowFrameTitlebarHeight(
+    GetWindowFrameTitlebarHeightCallback callback) {
+  bool override_titlebar_height = false;
+  float titlebar_height = 0;
+  GetWindowFrameTitlebarHeight(&override_titlebar_height, &titlebar_height);
+  std::move(callback).Run(override_titlebar_height, titlebar_height);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
