@@ -3,9 +3,6 @@
 
 # Keyboard event related. See crbug.com/889101
 -SitePerProcessTextInputManagerTest.CorrectlyShowVirtualKeyboardIfEnabled
--TextInput_SurroundingTextChangedTest.FocusToTextContainingTextAreaByClickingCase
--TextInput_SurroundingTextChangedTest.SurroundingTextChangedWithComposition
--TextInput_SurroundingTextChangedTest.SurroundingTextChangedWithInsertText
 
 # TODO(sky): this now fails because of differences in timing. In particular,
 # in classic mode an accelerator that moves focus is processed *after* text

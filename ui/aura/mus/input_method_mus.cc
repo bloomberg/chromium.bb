@@ -112,6 +112,8 @@ void InputMethodMus::OnCaretBoundsChanged(const ui::TextInputClient* client) {
 
   if (input_method_)
     input_method_->OnCaretBoundsChanged(client->GetCaretBounds());
+
+  NotifyTextInputCaretBoundsChanged(client);
 }
 
 void InputMethodMus::CancelComposition(const ui::TextInputClient* client) {
