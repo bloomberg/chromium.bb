@@ -108,38 +108,27 @@ Surface* SurfaceManager::CreateSurface(
   DCHECK(surface_info.is_valid());
   DCHECK(surface_client);
 
+  auto it = surface_map_.find(surface_info.id());
+  if (it != surface_map_.end())
+    return nullptr;
+
   // If no surface with this SurfaceId exists, simply create the surface
   // and return.
-  auto it = surface_map_.find(surface_info.id());
-  if (it == surface_map_.end()) {
-    std::unique_ptr<Surface> surface = std::make_unique<Surface>(
-        surface_info, this, surface_client, needs_sync_tokens,
-        block_activation_on_parent);
-    surface->SetDependencyDeadline(std::make_unique<SurfaceDependencyDeadline>(
-        surface.get(), begin_frame_source, tick_clock_));
-    surface_map_[surface_info.id()] = std::move(surface);
-    // We can get into a situation where multiple CompositorFrames arrive for a
-    // FrameSink before the client can add any references for the frame. When
-    // the second frame with a new size arrives, the first will be destroyed in
-    // SurfaceFactory and then if there are no references it will be deleted
-    // during surface GC. A temporary reference, removed when a real reference
-    // is received, is added to prevent this from happening.
-    AddTemporaryReference(surface_info.id());
+  std::unique_ptr<Surface> surface =
+      std::make_unique<Surface>(surface_info, this, surface_client,
+                                needs_sync_tokens, block_activation_on_parent);
+  surface->SetDependencyDeadline(std::make_unique<SurfaceDependencyDeadline>(
+      surface.get(), begin_frame_source, tick_clock_));
+  surface_map_[surface_info.id()] = std::move(surface);
+  // We can get into a situation where multiple CompositorFrames arrive for a
+  // FrameSink before the client can add any references for the frame. When
+  // the second frame with a new size arrives, the first will be destroyed in
+  // SurfaceFactory and then if there are no references it will be deleted
+  // during surface GC. A temporary reference, removed when a real reference
+  // is received, is added to prevent this from happening.
+  AddTemporaryReference(surface_info.id());
 
-    return surface_map_[surface_info.id()].get();
-  }
-
-  // If a surface with this SurfaceId exists, it must be marked as
-  // destroyed. Otherwise, we wouldn't receive a request to reuse the same
-  // SurfaceId. Remove the surface out of the garbage collector's queue and
-  // reuse it.
-  Surface* surface = it->second.get();
-
-  DCHECK(IsMarkedForDestruction(surface_info.id()));
-  surfaces_to_destroy_.erase(surface_info.id());
-  SurfaceDiscarded(surface);
-  surface->Reset(surface_client);
-  return surface;
+  return surface_map_[surface_info.id()].get();
 }
 
 void SurfaceManager::DestroySurface(const SurfaceId& surface_id) {

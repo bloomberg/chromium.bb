@@ -460,6 +460,13 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
                            TRACE_EVENT_SCOPE_THREAD);
       return SubmitResult::ACCEPTED;
     }
+
+    if (!current_surface) {
+      TRACE_EVENT_INSTANT0("viz", "Surface Invariants Violation",
+                           TRACE_EVENT_SCOPE_THREAD);
+      return SubmitResult::SURFACE_INVARIANTS_VIOLATION;
+    }
+
     surface_manager_->SurfaceDamageExpected(current_surface->surface_id(),
                                             last_begin_frame_args_);
   }

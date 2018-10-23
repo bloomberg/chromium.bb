@@ -158,9 +158,6 @@ void InstallDelegatedFrameHostClient(
     RenderWidgetHostViewAura* render_widget_host_view,
     std::unique_ptr<DelegatedFrameHostClient> delegated_frame_host_client);
 
-constexpr uint64_t kFrameIndexStart =
-    viz::CompositorFrameSinkSupport::kFrameIndexStart;
-
 const viz::LocalSurfaceId kArbitraryLocalSurfaceId(
     1,
     base::UnguessableToken::Deserialize(2, 3));
@@ -3343,57 +3340,6 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_Resize) {
     widget_host_->DidUpdateVisualProperties(metadata);
   }
   sink_->ClearMessages();
-}
-
-TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
-  // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
-  // https://crbug.com/844469
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-      features::IsMultiProcessMash()) {
-    return;
-  }
-
-  gfx::Rect view_rect(100, 100);
-  gfx::Size frame_size = view_rect.size();
-
-  view_->InitAsChild(nullptr);
-  aura::client::ParentWindowWithContext(
-      view_->GetNativeView(),
-      parent_view_->GetNativeView()->GetRootWindow(),
-      gfx::Rect());
-  view_->SetSize(view_rect.size());
-
-  // Swap a frame.
-  view_->SubmitCompositorFrame(view_->GetLocalSurfaceId(),
-                               MakeDelegatedFrame(1.f, frame_size, view_rect),
-                               base::nullopt);
-  EXPECT_EQ(kFrameIndexStart + 1, FrameIndexForView(view_));
-  EXPECT_EQ(view_rect, DamageRectForView(view_));
-  view_->RunOnCompositingDidCommit();
-
-  // Signal that a new RendererCompositorFrameSink was created.
-  view_->CreateNewRendererCompositorFrameSink();
-
-  // Submit a frame from the new RendererCompositorFrameSink.
-  view_->SubmitCompositorFrame(view_->GetLocalSurfaceId(),
-                               MakeDelegatedFrame(1.f, frame_size, view_rect),
-                               base::nullopt);
-  EXPECT_EQ(kFrameIndexStart + 1, FrameIndexForView(view_));
-  EXPECT_EQ(view_rect, DamageRectForView(view_));
-  view_->RunOnCompositingDidCommit();
-
-  // Signal that a new RendererCompositorFrameSink was created.
-  view_->CreateNewRendererCompositorFrameSink();
-
-  // Swap another frame, with a different surface id.
-  view_->SynchronizeVisualProperties(cc::DeadlinePolicy::UseInfiniteDeadline(),
-                                     base::nullopt);
-  view_->SubmitCompositorFrame(view_->GetLocalSurfaceId(),
-                               MakeDelegatedFrame(1.f, frame_size, view_rect),
-                               base::nullopt);
-  EXPECT_EQ(kFrameIndexStart + 1, FrameIndexForView(view_));
-  EXPECT_EQ(view_rect, DamageRectForView(view_));
-  view_->RunOnCompositingDidCommit();
 }
 
 // This test verifies that the primary SurfaceId is populated on resize.

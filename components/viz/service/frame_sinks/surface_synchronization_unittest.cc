@@ -1165,74 +1165,34 @@ TEST_F(SurfaceSynchronizationTest, SubmitToDestroyedSurface) {
   EXPECT_TRUE(IsMarkedForDestruction(child_id));
 
   // Child submits another frame to the same local surface id that is marked
-  // destroyed.
+  // destroyed. The frame is immediately rejected.
   {
-    std::vector<ReturnedResource> returned_resources =
-        TransferableResource::ReturnResources({resource});
     EXPECT_CALL(support_client_, ReclaimResources(_)).Times(0);
-    EXPECT_CALL(support_client_,
-                DidReceiveCompositorFrameAck(Eq(returned_resources)));
+    EXPECT_CALL(support_client_, DidReceiveCompositorFrameAck(_));
     surface_observer().Reset();
     child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
                                            MakeDefaultCompositorFrame());
     testing::Mock::VerifyAndClearExpectations(&support_client_);
   }
 
-  // Verify that the surface that was marked destroyed is still marked as
-  // destroyed.
-  Surface* surface2 = GetSurfaceForId(child_id);
-  EXPECT_EQ(surface, surface2);
-  EXPECT_TRUE(IsMarkedForDestruction(child_id));
+  // The parent stops referencing the child surface. This allows the child
+  // surface to be garbage collected.
+  parent_support().SubmitCompositorFrame(parent_id.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+
+  {
+    std::vector<ReturnedResource> returned_resources =
+        TransferableResource::ReturnResources({resource});
+    EXPECT_CALL(support_client_, ReclaimResources(Eq(returned_resources)));
+    frame_sink_manager().surface_manager()->GarbageCollectSurfaces();
+    testing::Mock::VerifyAndClearExpectations(&support_client_);
+  }
 
   // We shouldn't observe an OnFirstSurfaceActivation because we reject the
   // CompositorFrame to the evicted surface.
   EXPECT_EQ(SurfaceId(), surface_observer().last_created_surface_id());
 }
 
-// Verifies that if a surface is marked destroyed and a new frame arrives after
-// a CompositorFrameSink is destroyed and recreated then it will be recovered.
-TEST_F(SurfaceSynchronizationTest, SurfaceResurrectionAfterDestruction) {
-  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 3);
-
-  // Create the child surface by submitting a frame to it.
-  EXPECT_EQ(nullptr, GetSurfaceForId(child_id));
-  child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
-                                         MakeDefaultCompositorFrame());
-
-  // Verify that the child surface is created.
-  Surface* surface = GetSurfaceForId(child_id);
-  EXPECT_NE(nullptr, surface);
-
-  // Add a reference from the parent to the child.
-  parent_support().SubmitCompositorFrame(
-      parent_id.local_surface_id(),
-      MakeCompositorFrame({child_id}, {SurfaceRange(child_id)},
-                          std::vector<TransferableResource>()));
-
-  // Attempt to destroy the child surface. The surface must still exist since
-  // the parent needs it but it will be marked as destroyed.
-  child_support1().EvictSurface(child_id.local_surface_id());
-  surface = GetSurfaceForId(child_id);
-  EXPECT_NE(nullptr, surface);
-  EXPECT_TRUE(IsMarkedForDestruction(child_id));
-
-  // Child submits another frame to the same local surface id that is marked
-  // destroyed.
-  surface_observer().Reset();
-  DestroyFrameSink(child_id.frame_sink_id());
-  CreateFrameSink(child_id.frame_sink_id(), false);
-  child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
-                                         MakeDefaultCompositorFrame());
-
-  // Verify that the surface that was marked destroyed is recovered and is being
-  // used again.
-  Surface* surface2 = GetSurfaceForId(child_id);
-  EXPECT_EQ(surface, surface2);
-  EXPECT_FALSE(IsMarkedForDestruction(child_id));
-  EXPECT_EQ(surface2->client().get(), &child_support1());
-  EXPECT_EQ(child_id, surface_observer().last_created_surface_id());
-}
 // Verifies that if a LocalSurfaceId belonged to a surface that doesn't
 // exist anymore, it can still be reused for new surfaces.
 TEST_F(SurfaceSynchronizationTest, LocalSurfaceIdIsReusable) {
@@ -1541,56 +1501,6 @@ TEST_F(SurfaceSynchronizationTest, MultiLevelLateArrivingDependency) {
   EXPECT_FALSE(child_surface1()->HasPendingFrame());
   EXPECT_TRUE(child_surface1()->HasActiveFrame());
   EXPECT_FALSE(child_surface1()->has_deadline());
-}
-
-// This test verifies that a late arriving CompositorFrame does not activate
-// if its dependent CompositorFrame has been dropped in the intervening time.
-// This test also verifies that there is no crash when the dependent
-// CompositorFrame is evicted and replaced by a new pending CompositorFrame.
-TEST_F(SurfaceSynchronizationTest, MissingActiveFrameWithLateDependencies) {
-  const SurfaceId display_id = MakeSurfaceId(kDisplayFrameSink, 1);
-  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
-  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
-
-  display_support().SubmitCompositorFrame(
-      display_id.local_surface_id(),
-      MakeCompositorFrame({parent_id1}, empty_surface_ranges(),
-                          std::vector<TransferableResource>(),
-                          MakeDefaultDeadline()));
-
-  EXPECT_TRUE(display_surface()->HasPendingFrame());
-  EXPECT_FALSE(display_surface()->HasActiveFrame());
-  EXPECT_TRUE(display_surface()->has_deadline());
-
-  // Advance BeginFrames to trigger a deadline. This activates the
-  // CompositorFrame submitted above.
-  for (int i = 0; i < 3; ++i) {
-    SendNextBeginFrame();
-    EXPECT_TRUE(display_surface()->has_deadline());
-  }
-  SendNextBeginFrame();
-  EXPECT_FALSE(display_surface()->has_deadline());
-  EXPECT_FALSE(display_surface()->HasPendingFrame());
-  EXPECT_TRUE(display_surface()->HasActiveFrame());
-
-  display_support().EvictSurface(display_id.local_surface_id());
-  display_support().SubmitCompositorFrame(
-      display_id.local_surface_id(),
-      MakeCompositorFrame({parent_id2}, empty_surface_ranges(),
-                          std::vector<TransferableResource>(),
-                          MakeDefaultDeadline()));
-
-  // A late arriving CompositorFrame will not activate immediately if the
-  // dependent CompositorFrame has been evicted.
-  parent_support().SubmitCompositorFrame(
-      parent_id1.local_surface_id(),
-      MakeCompositorFrame({child_id1}, empty_surface_ranges(),
-                          std::vector<TransferableResource>(),
-                          MakeDefaultDeadline()));
-  EXPECT_TRUE(parent_surface()->has_deadline());
-  EXPECT_TRUE(parent_surface()->HasPendingFrame());
-  EXPECT_FALSE(parent_surface()->HasActiveFrame());
 }
 
 // This test verifies that CompositorFrames submitted to a surface referenced

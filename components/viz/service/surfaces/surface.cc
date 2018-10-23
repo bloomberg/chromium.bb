@@ -65,17 +65,6 @@ void Surface::SetDependencyDeadline(
   deadline_ = std::move(deadline);
 }
 
-void Surface::Reset(base::WeakPtr<SurfaceClient> client) {
-  seen_first_frame_activation_ = false;
-  if (surface_client_.get() == client.get()) {
-    UnrefFrameResourcesAndRunCallbacks(std::move(pending_frame_data_));
-    UnrefFrameResourcesAndRunCallbacks(std::move(active_frame_data_));
-  }
-  surface_client_ = client;
-  pending_frame_data_.reset();
-  active_frame_data_.reset();
-}
-
 void Surface::InheritActivationDeadlineFrom(Surface* surface) {
   TRACE_EVENT1("viz", "Surface::InheritActivationDeadlineFrom", "FrameSinkId",
                surface_id().frame_sink_id().ToString());
