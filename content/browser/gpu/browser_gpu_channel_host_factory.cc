@@ -351,6 +351,21 @@ BrowserGpuChannelHostFactory::GetGpuMemoryBufferManager() {
   return gpu_memory_buffer_manager_.get();
 }
 
+// Ensures that any pending timeout is cancelled when we are backgrounded.
+// Restarts the timeout when we return to the foreground.
+void BrowserGpuChannelHostFactory::SetApplicationVisible(bool is_visible) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (is_visible_ == is_visible)
+    return;
+
+  is_visible_ = is_visible;
+  if (is_visible_) {
+    RestartTimeout();
+  } else {
+    timeout_.Stop();
+  }
+}
+
 gpu::GpuChannelHost* BrowserGpuChannelHostFactory::GetGpuChannel() {
   if (gpu_channel_.get() && !gpu_channel_->IsLost())
     return gpu_channel_.get();
@@ -377,7 +392,9 @@ void BrowserGpuChannelHostFactory::RestartTimeout() {
     return;
   }
 
-  if (!pending_request_)
+  // Don't restart the timeout if we aren't visible. This function will be
+  // re-called when we become visible again.
+  if (!pending_request_ || !is_visible_)
     return;
 
 #if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) || \
