@@ -214,6 +214,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
                         nativeOnGetPaymentInformation(mUiControllerAndroid,
                                 selectedPaymentInformation.succeed,
                                 selectedPaymentInformation.cardGuid,
+                                selectedPaymentInformation.cardIssuerNetwork,
                                 selectedPaymentInformation.addressGuid,
                                 selectedPaymentInformation.payerName,
                                 selectedPaymentInformation.payerPhone,
@@ -261,6 +262,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     private native void nativeOnAddressSelected(long nativeUiControllerAndroid, String guid);
     private native void nativeOnCardSelected(long nativeUiControllerAndroid, String guid);
     private native void nativeOnGetPaymentInformation(long nativeUiControllerAndroid,
-            boolean succeed, @Nullable String cardGuid, @Nullable String addressGuid,
-            @Nullable String payerName, @Nullable String payerPhone, @Nullable String payerEmail);
+            boolean succeed, @Nullable String cardGuid, @Nullable String cardIssuerNetwork,
+            @Nullable String addressGuid, @Nullable String payerName, @Nullable String payerPhone,
+            @Nullable String payerEmail);
 }

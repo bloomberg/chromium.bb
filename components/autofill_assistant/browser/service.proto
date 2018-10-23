@@ -223,7 +223,11 @@ message ProcessedActionProto {
 
   optional ProcessedActionStatusProto status = 2;
 
-  oneof result_data { string html_source = 12; }
+  oneof result_data {
+    string html_source = 12;
+    // Should be set as a result of GetPaymentInformationAction.
+    string card_issuer_network = 13;
+  }
 }
 
 enum ProcessedActionStatusProto {
