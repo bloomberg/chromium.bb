@@ -199,10 +199,7 @@ class LayoutTestRunner(object):
 
     def _update_summary_with_result(self, test_run_results, result):
         expected = self._expectations.matches_an_expected_result(
-            result.test_name,
-            result.type,
-            self._options.pixel_tests or result.reftest_type,
-            self._options.enable_sanitizer)
+            result.test_name, result.type, self._options.enable_sanitizer)
         expectation_string = self._expectations.get_expectations_string(result.test_name)
         actual_string = self._expectations.expectation_to_string(result.type)
 
@@ -291,11 +288,6 @@ class Worker(object):
         if test_input.reference_files is None:
             # Lazy initialization.
             test_input.reference_files = self._port.reference_files(test_input.test_name)
-        if test_input.reference_files:
-            test_input.should_run_pixel_test = True
-        else:
-            test_input.should_run_pixel_test = self._port.should_run_as_pixel_test(
-                test_input.test_name)
         test_input.should_run_pixel_test_first = (
             self._port.should_run_pixel_test_first(test_input.test_name))
 

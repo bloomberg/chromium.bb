@@ -19,9 +19,6 @@ struct ShellTestConfiguration {
   // The URL of the current layout test.
   url.mojom.Url test_url;
 
-  // True if pixel tests are enabled.
-  bool enable_pixel_dumping = true;
-
   // True if tests can open external URLs.
   bool allow_external_pages;
 

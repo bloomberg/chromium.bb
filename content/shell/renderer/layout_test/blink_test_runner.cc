@@ -514,8 +514,7 @@ bool BlinkTestRunner::CaptureLocalPixelsDump() {
   TRACE_EVENT0("shell", "BlinkTestRunner::CaptureLocalPixelsDump");
   test_runner::WebTestInterfaces* interfaces =
       LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
-  if (!test_config_->enable_pixel_dumping ||
-      !interfaces->TestRunner()->ShouldGeneratePixelResults() ||
+  if (!interfaces->TestRunner()->ShouldGeneratePixelResults() ||
       interfaces->TestRunner()->ShouldDumpAsAudio()) {
     return false;
   }
@@ -796,13 +795,11 @@ void BlinkTestRunner::OnSetupSecondaryRenderer() {
   test_runner::WebTestInterfaces* interfaces =
       LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
   interfaces->SetTestIsRunning(true);
-  interfaces->ConfigureForTestWithURL(GURL(), false, false);
   ForceResizeRenderView(render_view(), WebSize(800, 600));
 }
 
 void BlinkTestRunner::ApplyTestConfiguration(
-    mojom::ShellTestConfigurationPtr params,
-    bool initial_application) {
+    mojom::ShellTestConfigurationPtr params) {
   test_runner::WebTestInterfaces* interfaces =
       LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
 
@@ -812,19 +809,18 @@ void BlinkTestRunner::ApplyTestConfiguration(
   interfaces->SetMainView(render_view()->GetWebView());
 
   interfaces->SetTestIsRunning(true);
-  interfaces->ConfigureForTestWithURL(
-      params->test_url, params->enable_pixel_dumping, initial_application);
+  interfaces->ConfigureForTestWithURL(params->test_url);
 }
 
 void BlinkTestRunner::OnReplicateTestConfiguration(
     mojom::ShellTestConfigurationPtr params) {
-  ApplyTestConfiguration(std::move(params), false /* initial_configuration */);
+  ApplyTestConfiguration(std::move(params));
 }
 
 void BlinkTestRunner::OnSetTestConfiguration(
     mojom::ShellTestConfigurationPtr params) {
   mojom::ShellTestConfigurationPtr local_params = params.Clone();
-  ApplyTestConfiguration(std::move(params), true /* initial_configuration */);
+  ApplyTestConfiguration(std::move(params));
 
   ForceResizeRenderView(render_view(),
                         WebSize(local_params->initial_size.width(),

@@ -45,11 +45,10 @@ DRIVER_START_TIMEOUT_SECS = 30
 
 class DriverInput(object):
 
-    def __init__(self, test_name, timeout, image_hash, should_run_pixel_test, args):
+    def __init__(self, test_name, timeout, image_hash, args):
         self.test_name = test_name
         self.timeout = timeout  # in ms
         self.image_hash = image_hash
-        self.should_run_pixel_test = should_run_pixel_test
         self.args = args
 
 
@@ -436,13 +435,9 @@ class Driver(object):
         else:
             command = self._port.abspath_for_test(driver_input.test_name)
 
-        assert not driver_input.image_hash or driver_input.should_run_pixel_test
-
         # ' is the separator between arguments.
         if self._port.supports_per_test_timeout():
             command += "'--timeout'%s" % driver_input.timeout
-        if driver_input.should_run_pixel_test:
-            command += "'--pixel-test"
         if driver_input.image_hash:
             command += "'" + driver_input.image_hash
         return command + '\n'

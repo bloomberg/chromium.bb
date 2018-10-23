@@ -93,9 +93,7 @@ void TestInterfaces::SetTestIsRunning(bool running) {
   test_runner_->SetTestIsRunning(running);
 }
 
-void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
-                                             bool generate_pixels,
-                                             bool initial_configuration) {
+void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url) {
   std::string spec = GURL(test_url).spec();
   size_t path_start = spec.rfind("LayoutTests/");
   if (path_start != std::string::npos) {
@@ -110,7 +108,6 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
   if (is_devtools_test) {
     test_runner_->SetDumpConsoleMessages(false);
   }
-  test_runner_->setShouldGeneratePixelResults(generate_pixels);
   // For http/tests/loading/, which is served via httpd and becomes /loading/.
   if (spec.find("/loading/") != std::string::npos)
     test_runner_->setShouldDumpFrameLoadCallbacks(true);
@@ -133,10 +130,6 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
 
   const bool should_use_inner_text = ShouldUseInnerTextDump(spec);
   test_runner_->SetShouldUseInnerTextDump(should_use_inner_text);
-
-  // The actions below should only be done *once* per test.
-  if (!initial_configuration)
-    return;
 }
 
 void TestInterfaces::WindowOpened(WebViewTestProxyBase* proxy) {

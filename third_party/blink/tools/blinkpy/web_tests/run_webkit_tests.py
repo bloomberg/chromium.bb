@@ -208,21 +208,6 @@ def parse_args(args):
                 default=True,
                 help="Don't launch a browser with results after the tests are done"),
             optparse.make_option(
-                '-p',
-                '--pixel',
-                '--pixel-tests',
-                dest='pixel_tests',
-                action='store_true',
-                default=True,
-                help='Enable pixel-to-pixel PNG comparisons (enabled by default)'),
-            optparse.make_option(
-                '--no-pixel',
-                '--no-pixel-tests',
-                dest='pixel_tests',
-                action='store_false',
-                default=True,
-                help='Disable pixel-to-pixel PNG comparisons'),
-            optparse.make_option(
                 '--reset-results',
                 action='store_true',
                 default=False,

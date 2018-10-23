@@ -48,6 +48,7 @@ class LayoutTestDevToolsBindings;
 class RenderFrameHost;
 class RenderProcessHost;
 class Shell;
+struct TestInfo;
 
 #if defined(OS_ANDROID)
 // Android uses a nested run loop for running layout tests because the
@@ -131,10 +132,7 @@ class BlinkTestController : public WebContentsObserver,
   ~BlinkTestController() override;
 
   // True if the controller is ready for testing.
-  bool PrepareForLayoutTest(const GURL& test_url,
-                            const base::FilePath& current_working_directory,
-                            bool enable_pixel_dumping,
-                            const std::string& expected_pixel_hash);
+  bool PrepareForLayoutTest(const TestInfo& test_info);
   // True if the controller was reset successfully.
   bool ResetAfterLayoutTest();
 
@@ -295,7 +293,6 @@ class BlinkTestController : public WebContentsObserver,
   bool is_compositing_test_;
 
   // Per test config.
-  bool enable_pixel_dumping_;
   std::string expected_pixel_hash_;
   gfx::Size initial_size_;
   GURL test_url_;

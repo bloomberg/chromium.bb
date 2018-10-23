@@ -48,7 +48,7 @@ class TEST_RUNNER_EXPORT LayoutTestRuntimeFlags {
     dict_.SetString(#name, new_value);                             \
   }
 
-  // If true, the test_shell will generate pixel results in DumpAsText mode.
+  // If true, the test_shell will generate pixel results.
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(generate_pixel_results)
 
   // If true, the test_shell will produce a plain text dump rather than a

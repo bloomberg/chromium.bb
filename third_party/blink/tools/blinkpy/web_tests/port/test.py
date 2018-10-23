@@ -110,14 +110,14 @@ class TestList(object):
 #
 # These numbers may need to be updated whenever we add or delete tests. This includes virtual tests.
 #
-TOTAL_TESTS = 133
+TOTAL_TESTS = 129
 TOTAL_WONTFIX = 3
 TOTAL_SKIPS = 20 + TOTAL_WONTFIX
 TOTAL_CRASHES = 76
 
 UNEXPECTED_PASSES = 1
-UNEXPECTED_NON_VIRTUAL_FAILURES = 21
-UNEXPECTED_FAILURES = 49
+UNEXPECTED_NON_VIRTUAL_FAILURES = 19
+UNEXPECTED_FAILURES = 45
 
 
 def unit_test_list():
@@ -257,14 +257,6 @@ layer at (0,0) size 800x34
     # For testing if perf tests are running in a locked shard.
     tests.add('perf/foo/test.html')
     tests.add('perf/foo/test-ref.html')
-
-    # For testing --pixel-test-directories.
-    tests.add('failures/unexpected/pixeldir/image_in_pixeldir.html',
-              actual_image='image_in_pixeldir-pngtEXtchecksum\x00checksum_fail',
-              expected_image='image_in_pixeldir-pngtEXtchecksum\x00checksum-png')
-    tests.add('failures/unexpected/image_not_in_pixeldir.html',
-              actual_image='image_not_in_pixeldir-pngtEXtchecksum\x00checksum_fail',
-              expected_image='image_not_in_pixeldir-pngtEXtchecksum\x00checksum-png')
 
     # For testing that virtual test suites don't expand names containing themselves
     # See webkit.org/b/97925 and base_unittest.PortTest.test_tests().
