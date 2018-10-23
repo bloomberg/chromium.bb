@@ -442,28 +442,10 @@ class Browser : public TabStripModelObserver,
   content::WebContents* OpenURL(const content::OpenURLParams& params) override;
 
   // Overridden from TabStripModelObserver:
-  void TabInsertedAt(TabStripModel* tab_strip_model,
-                     content::WebContents* contents,
-                     int index,
-                     bool foreground) override;
-  void TabClosingAt(TabStripModel* tab_strip_model,
-                    content::WebContents* contents,
-                    int index) override;
-  void TabDetachedAt(content::WebContents* contents,
-                     int index,
-                     bool was_active) override;
-  void TabDeactivated(content::WebContents* contents) override;
-  void ActiveTabChanged(content::WebContents* old_contents,
-                        content::WebContents* new_contents,
-                        int index,
-                        int reason) override;
-  void TabMoved(content::WebContents* contents,
-                int from_index,
-                int to_index) override;
-  void TabReplacedAt(TabStripModel* tab_strip_model,
-                     content::WebContents* old_contents,
-                     content::WebContents* new_contents,
-                     int index) override;
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
   void TabPinnedStateChanged(TabStripModel* tab_strip_model,
                              content::WebContents* contents,
                              int index) override;
@@ -770,6 +752,20 @@ class Browser : public TabStripModelObserver,
   void OnTranslateEnabledChanged(content::WebContents* source) override;
 
   // Command and state updating ///////////////////////////////////////////////
+
+  // Handle changes to tab strip model.
+  void OnTabInsertedAt(content::WebContents* contents, int index);
+  void OnTabClosing(content::WebContents* contents);
+  void OnTabDetached(content::WebContents* contents, bool was_active);
+  void OnTabDeactivated(content::WebContents* contents);
+  void OnActiveTabChanged(content::WebContents* old_contents,
+                          content::WebContents* new_contents,
+                          int index,
+                          int reason);
+  void OnTabMoved(int from_index, int to_index);
+  void OnTabReplacedAt(content::WebContents* old_contents,
+                       content::WebContents* new_contents,
+                       int index);
 
   // Handle changes to kDevToolsAvailability preference.
   void OnDevToolsAvailabilityChanged();
