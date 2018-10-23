@@ -1,28 +1,17 @@
 # These tests currently fail with SingleProcessMash enabled.
 # Bug: crbug.com/883523
 
-# Keyboard event related. See crbug.com/889101 and crbug.com/891489
--BrowserCommandControllerInteractiveTest.KeyEventsShouldBeConsumedByWebPageInBrowserFullscreen
--BrowserCommandControllerInteractiveTest.KeyEventsShouldBeConsumedByWebPageInJsFullscreenExceptForEsc
--BrowserCommandControllerInteractiveTest.KeyEventsShouldBeConsumedByWebPageInJsFullscreenExceptForF11
--BrowserCommandControllerInteractiveTest.ShortcutsShouldTakeEffectInBrowserFullscreen
--BrowserKeyEventsTest.CtrlKeyEvents
--BrowserKeyEventsTest.NormalKeyEvents
--CommandsApiTest.DontOverwriteSystemShortcuts
--KeyboardLockInteractiveBrowserTest.ActiveWithAllKeysLocked
--KeyboardLockInteractiveBrowserTest.ActiveWithSomeKeysLocked
--KeyboardLockInteractiveBrowserTest.CancelActiveKeyboardLockBeforeFullscreen
--KeyboardLockInteractiveBrowserTest.CancelActiveKeyboardLockInFullscreen
--KeyboardLockInteractiveBrowserTest.RequestedButNotActive
--KeyboardLockInteractiveBrowserTest.SubsequentLockCallSupersedesPreviousCall
+# Keyboard event related. See crbug.com/889101
 -SitePerProcessTextInputManagerTest.CorrectlyShowVirtualKeyboardIfEnabled
 -TextInput_SurroundingTextChangedTest.FocusToTextContainingTextAreaByClickingCase
 -TextInput_SurroundingTextChangedTest.SurroundingTextChangedWithComposition
 -TextInput_SurroundingTextChangedTest.SurroundingTextChangedWithInsertText
 
-# TODO(sky): resolve why this is now failing. I believe it's failing because
-# of timing differences. In classic mode I believe we queue up a bunch of
-# events for the renderer, where as that is no longer the case in mash.
+# TODO(sky): this now fails because of differences in timing. In particular,
+# in classic mode an accelerator that moves focus is processed *after* text
+# is inserted, where as now the accelerator runs first, resulting in text
+# going to the wrong place. The right fix likely entails updating the test for
+# ChromeOS.
 -BrowserKeyEventsTest.AccessKeys
 
 # misc.
