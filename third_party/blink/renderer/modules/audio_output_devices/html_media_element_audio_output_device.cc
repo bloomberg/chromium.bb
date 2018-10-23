@@ -76,7 +76,7 @@ void SetSinkIdResolver::TimerFired(TimerBase* timer) {
     // platform object that takes raw pointers.
     web_media_player->SetSinkId(sink_id_,
                                 callbacks.release());
-  } else {
+  } else if (context) {
     auto& document = *To<Document>(context);
     if (AudioOutputDeviceClient* client =
             AudioOutputDeviceClient::From(document)) {
