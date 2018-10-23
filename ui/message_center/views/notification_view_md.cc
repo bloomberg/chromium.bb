@@ -617,12 +617,6 @@ void NotificationViewMD::OnFocus() {
   ScrollRectToVisible(GetLocalBounds());
 }
 
-void NotificationViewMD::ScrollRectToVisible(const gfx::Rect& rect) {
-  // Notification want to show the whole notification when a part of it (like
-  // a button) gets focused.
-  views::View::ScrollRectToVisible(GetLocalBounds());
-}
-
 bool NotificationViewMD::OnMousePressed(const ui::MouseEvent& event) {
   last_mouse_pressed_timestamp_ = base::TimeTicks(event.time_stamp());
   return true;
