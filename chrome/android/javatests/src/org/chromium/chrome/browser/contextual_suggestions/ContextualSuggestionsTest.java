@@ -157,7 +157,7 @@ public class ContextualSuggestionsTest {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mCoordinator = mActivityTestRule.getActivity()
                                    .getComponent()
-                                   .getContextualSuggestionsCoordinator();
+                                   .resolveContextualSuggestionsCoordinator();
             mMediator = mCoordinator.getMediatorForTesting();
             mModel = mCoordinator.getModelForTesting();
 
@@ -299,7 +299,7 @@ public class ContextualSuggestionsTest {
 
         CallbackHelper allItemsInsertedCallback = new CallbackHelper();
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mCoordinator2 = activity2.getComponent().getContextualSuggestionsCoordinator();
+            mCoordinator2 = activity2.getComponent().resolveContextualSuggestionsCoordinator();
             mMediator2 = mCoordinator2.getMediatorForTesting();
             mModel2 = mCoordinator2.getModelForTesting();
             mBottomSheet2 = activity2.getBottomSheet();

@@ -327,7 +327,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
                     public SnackbarManager getSnackbarManager() {
                         return CustomTabActivity.this.getSnackbarManager();
                     }
-                }, getComponent().getTrustedWebActivityDisclosure(),
+                }, getComponent().resolveTrustedWebActivityDisclosure(),
                 new ClientAppDataRecorder(getPackageManager()));
     }
 

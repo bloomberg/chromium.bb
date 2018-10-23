@@ -16,5 +16,5 @@ import dagger.Subcomponent;
 @Subcomponent(modules = {ChromeActivityCommonsModule.class, ContextualSuggestionsModule.class})
 @ActivityScope
 public interface CustomTabActivityComponent extends ChromeActivityComponent {
-    TrustedWebActivityDisclosure getTrustedWebActivityDisclosure();
+    TrustedWebActivityDisclosure resolveTrustedWebActivityDisclosure();
 }

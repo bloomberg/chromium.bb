@@ -25,5 +25,5 @@ public interface ChromeAppComponent {
 
     // Temporary getters for DI migration process. All of these getters
     // should eventually be replaced with constructor injection.
-    EnabledStateMonitor getContextualSuggestionsEnabledStateMonitor();
+    EnabledStateMonitor resolveContextualSuggestionsEnabledStateMonitor();
 }

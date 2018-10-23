@@ -11,6 +11,8 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
+import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.preferences.ContextualSuggestionsPreference;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -34,7 +36,7 @@ import javax.inject.Inject;
  * They share a {@link ContextualSuggestionsMediator} and {@link ContextualSuggestionsModel}.
  */
 @ActivityScope
-public class ContextualSuggestionsCoordinator {
+public class ContextualSuggestionsCoordinator implements Destroyable {
     private static final String FEEDBACK_CONTEXT = "contextual_suggestions";
 
     private final Profile mProfile = Profile.getLastUsedProfile().getOriginalProfile();
@@ -58,16 +60,19 @@ public class ContextualSuggestionsCoordinator {
     @Inject
     ContextualSuggestionsCoordinator(ChromeActivity activity,
             BottomSheetController bottomSheetController, TabModelSelector tabModelSelector,
-            ContextualSuggestionsModel model, ContextualSuggestionsMediator mediator) {
+            ContextualSuggestionsModel model, ContextualSuggestionsMediator mediator,
+            ActivityLifecycleDispatcher lifecycleDispatcher) {
         mActivity = activity;
         mModel = model;
         mBottomSheetController = bottomSheetController;
         mTabModelSelector = tabModelSelector;
         mMediator = mediator;
         mediator.initialize(this);
+        lifecycleDispatcher.register(this);
     }
 
     /** Called when the containing activity is destroyed. */
+    @Override
     public void destroy() {
         mModel.getClusterList().destroy();
         mMediator.destroy();
