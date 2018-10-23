@@ -45,10 +45,10 @@ _log = logging.getLogger(__name__)
 
 def run_single_test(
         port, options, results_directory, worker_name, primary_driver,
-        secondary_driver, test_input, stop_when_done):
+        secondary_driver, test_input):
     runner = SingleTestRunner(
         port, options, results_directory, worker_name, primary_driver,
-        secondary_driver, test_input, stop_when_done)
+        secondary_driver, test_input)
     try:
         return runner.run()
     except DeviceFailure as error:
@@ -58,7 +58,7 @@ def run_single_test(
 
 class SingleTestRunner(object):
     def __init__(self, port, options, results_directory, worker_name,
-                 primary_driver, secondary_driver, test_input, stop_when_done):
+                 primary_driver, secondary_driver, test_input):
         self._port = port
         self._filesystem = port.host.filesystem
         self._options = options
@@ -71,7 +71,6 @@ class SingleTestRunner(object):
         self._should_run_pixel_test = test_input.should_run_pixel_test
         self._should_run_pixel_test_first = test_input.should_run_pixel_test_first
         self._reference_files = test_input.reference_files
-        self._stop_when_done = stop_when_done
 
         # If this is a virtual test that uses the default flags instead of the
         # virtual flags for it's references, run it on the secondary driver so
@@ -139,7 +138,7 @@ class SingleTestRunner(object):
         # for timeouts and crashes (real or forced by the driver). Most crashes should
         # indicate problems found by a sanitizer (ASAN, LSAN, etc.), but we will report
         # on other crashes and timeouts as well in order to detect at least *some* basic failures.
-        driver_output = self._driver.run_test(self._driver_input(), self._stop_when_done)
+        driver_output = self._driver.run_test(self._driver_input())
         expected_driver_output = self._expected_driver_output()
         failures = self._handle_error(driver_output)
         test_result = TestResult(self._test_name, failures, driver_output.test_time, driver_output.has_stderr(),
@@ -150,7 +149,7 @@ class SingleTestRunner(object):
 
     def _run_compare_test(self):
         """Runs the signle test and returns test result."""
-        driver_output = self._driver.run_test(self._driver_input(), self._stop_when_done)
+        driver_output = self._driver.run_test(self._driver_input())
         expected_driver_output = self._expected_driver_output()
 
         test_result = self._compare_output(expected_driver_output, driver_output)
@@ -162,7 +161,7 @@ class SingleTestRunner(object):
         """Similar to _run_compare_test(), but has the side effect of updating or adding baselines.
         This is called when --reset-results and/or --copy-baselines are specified in the command line.
         If --reset-results, in the returned result we treat baseline mismatch as success."""
-        driver_output = self._driver.run_test(self._driver_input(), self._stop_when_done)
+        driver_output = self._driver.run_test(self._driver_input())
         expected_driver_output = self._expected_driver_output()
         actual_failures = self._compare_output(expected_driver_output, driver_output).failures
         failures = self._handle_error(driver_output) if self._options.reset_results else actual_failures
@@ -450,7 +449,7 @@ class SingleTestRunner(object):
         return failures
 
     def _run_reftest(self):
-        test_output = self._driver.run_test(self._driver_input(), self._stop_when_done)
+        test_output = self._driver.run_test(self._driver_input())
         total_test_time = test_output.test_time
         expected_output = None
         test_result = None
@@ -485,7 +484,7 @@ class SingleTestRunner(object):
             reference_test_names.append(reference_test_name)
             driver_input = DriverInput(reference_test_name, self._timeout_ms,
                                        image_hash=test_output.image_hash, should_run_pixel_test=True, args=args)
-            expected_output = self._reference_driver.run_test(driver_input, self._stop_when_done)
+            expected_output = self._reference_driver.run_test(driver_input)
             total_test_time += expected_output.test_time
             test_result = self._compare_output_with_reference(
                 expected_output, test_output, reference_filename, expectation == '!=')
