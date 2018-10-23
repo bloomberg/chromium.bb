@@ -41,6 +41,7 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
+#include "ios/web/public/features.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -904,11 +905,8 @@ id<GREYMatcher> SearchIconButton() {
       assertWithMatcher:grey_notNil()];
 
   // Verify that the resulting page is an error page.
-  NSString* kError =
-      l10n_util::GetNSString(IDS_ERRORPAGES_HEADING_NOT_AVAILABLE);
-  id<GREYMatcher> messageMatcher = [GREYMatchers matcherForText:kError];
-  [[EarlGrey selectElementWithMatcher:messageMatcher]
-      assertWithMatcher:grey_notNil()];
+  std::string error = net::ErrorToShortString(net::ERR_INVALID_URL);
+  [ChromeEarlGrey waitForWebViewContainingText:error];
 }
 
 #pragma mark - Helpers

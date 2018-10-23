@@ -112,7 +112,6 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFinishNavigation(
   switch (state_) {
     case ErrorRetryState::kLoadingPlaceholder:
       // (1) Placeholder load for initial failure succeeded.
-      DCHECK(!web::GetWebClient()->IsAppSpecificURL(url_));
       DCHECK_EQ(web_view_url,
                 wk_navigation_util::CreatePlaceholderUrlForUrl(url_));
       state_ = ErrorRetryState::kReadyToDisplayErrorForFailedNavigation;
