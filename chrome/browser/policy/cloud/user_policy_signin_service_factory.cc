@@ -11,8 +11,8 @@
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -46,7 +46,7 @@ UserPolicySigninServiceFactory::UserPolicySigninServiceFactory()
         "UserPolicySigninService",
         BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
-  DependsOn(SigninManagerFactory::GetInstance());
+  DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(UserCloudPolicyManagerFactory::GetInstance());
 }
 
@@ -97,7 +97,7 @@ KeyedService* UserPolicySigninServiceFactory::BuildServiceInstanceFor(
   UserPolicySigninService* service = new UserPolicySigninService(
       profile, g_browser_process->local_state(), device_management_service,
       UserCloudPolicyManagerFactory::GetForBrowserContext(context),
-      SigninManagerFactory::GetForProfile(profile),
+      IdentityManagerFactory::GetForProfile(profile),
       std::move(system_url_loader_factory),
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile));
   return service;

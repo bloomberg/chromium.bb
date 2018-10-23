@@ -22,9 +22,9 @@
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace em = enterprise_management;
@@ -47,14 +47,14 @@ UserPolicySigninService::UserPolicySigninService(
     PrefService* local_state,
     DeviceManagementService* device_management_service,
     UserCloudPolicyManager* policy_manager,
-    SigninManager* signin_manager,
+    identity::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory,
     ProfileOAuth2TokenService* token_service)
     : UserPolicySigninServiceBase(profile,
                                   local_state,
                                   device_management_service,
                                   policy_manager,
-                                  signin_manager,
+                                  identity_manager,
                                   system_url_loader_factory),
       oauth2_token_service_(token_service),
       profile_prefs_(profile->GetPrefs()),
@@ -152,7 +152,7 @@ void UserPolicySigninService::RegisterCloudPolicyService() {
   // If the user signed-out while this task was waiting then Shutdown() would
   // have been called, which would have invalidated this task. Since we're here
   // then the user must still be signed-in.
-  DCHECK(signin_manager()->IsAuthenticated());
+  DCHECK(identity_manager()->HasPrimaryAccount());
   DCHECK(!policy_manager()->IsClientRegistered());
   DCHECK(policy_manager()->core()->client());
 
@@ -164,8 +164,7 @@ void UserPolicySigninService::RegisterCloudPolicyService() {
       policy_manager()->core()->client(),
       kCloudPolicyRegistrationType));
   registration_helper_->StartRegistration(
-      oauth2_token_service_,
-      signin_manager()->GetAuthenticatedAccountId(),
+      oauth2_token_service_, identity_manager()->GetPrimaryAccountId(),
       base::Bind(&UserPolicySigninService::OnRegistrationDone,
                  base::Unretained(this)));
 }

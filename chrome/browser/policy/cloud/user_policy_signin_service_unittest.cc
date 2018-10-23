@@ -136,8 +136,8 @@ class UserPolicySigninServiceTest : public testing::Test {
                    base::Unretained(this));
 #if defined(OS_ANDROID)
     GetTokenService()->UpdateCredentials(
-        AccountTrackerService::PickAccountIdForAccount(
-            profile_.get()->GetPrefs(), kTestGaiaId, kTestUser),
+        AccountTrackerServiceFactory::GetForProfile(profile_.get())
+            ->SeedAccountInfo(kTestGaiaId, kTestUser),
         "oauth2_login_refresh_token");
     service->RegisterForPolicyWithAccountId(kTestUser, kTestGaiaId, callback);
     ASSERT_TRUE(IsRequestActive());
