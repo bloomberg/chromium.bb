@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -113,11 +114,13 @@ RTCVideoEncoderFactory::~RTCVideoEncoderFactory() {}
 webrtc::VideoEncoder* RTCVideoEncoderFactory::CreateVideoEncoder(
     const cricket::VideoCodec& codec) {
   for (size_t i = 0; i < supported_codecs_.size(); ++i) {
-    if (!cricket::CodecNamesEq(codec.name, supported_codecs_[i].name))
+    if (!base::EqualsCaseInsensitiveASCII(codec.name,
+                                          supported_codecs_[i].name)) {
       continue;
+    }
     // Check H264 profile.
     using webrtc::H264::ParseSdpProfileLevelId;
-    if (cricket::CodecNamesEq(codec.name.c_str(), cricket::kH264CodecName) &&
+    if (base::EqualsCaseInsensitiveASCII(codec.name, cricket::kH264CodecName) &&
         ParseSdpProfileLevelId(codec.params)->profile !=
             ParseSdpProfileLevelId(supported_codecs_[i].params)->profile) {
       continue;
