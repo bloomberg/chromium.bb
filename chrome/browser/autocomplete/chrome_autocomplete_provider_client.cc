@@ -24,7 +24,7 @@
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -39,7 +39,6 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_pedal_provider.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/unified_consent/unified_consent_service.h"
 #include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
 #include "content/public/browser/navigation_entry.h"
@@ -49,6 +48,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/autocomplete/keyword_extensions_delegate_impl.h"
@@ -290,9 +290,9 @@ bool ChromeAutocompleteProviderClient::IsPersonalizedUrlDataCollectionActive()
 }
 
 bool ChromeAutocompleteProviderClient::IsAuthenticated() const {
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile_);
-  return signin_manager != nullptr && signin_manager->IsAuthenticated();
+  const auto* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile_);
+  return identity_manager && identity_manager->HasPrimaryAccount();
 }
 
 bool ChromeAutocompleteProviderClient::IsUnifiedConsentGiven() const {
