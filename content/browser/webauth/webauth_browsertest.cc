@@ -67,9 +67,9 @@ constexpr char kTimeoutErrorMessage[] =
     "webauth: NotAllowedError: The operation either timed out or was not "
     "allowed. See: https://w3c.github.io/webauthn/#sec-assertion-privacy.";
 
-constexpr char kInvalidStateErrorMessage[] =
-    "webauth: InvalidStateError: The user attempted to use an authenticator "
-    "that recognized none of the provided credentials.";
+constexpr char kResidentCredentialsErrorMessage[] =
+    "webauth: NotSupportedError: Resident credentials or empty "
+    "'allowCredentials' lists are not supported at this time.";
 
 constexpr char kRelyingPartySecurityErrorMessage[] =
     "webauth: SecurityError: The relying party ID 'localhost' is not a "
@@ -735,7 +735,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
         shell()->web_contents()->GetMainFrame(),
         BuildCreateCallWithParameters(parameters), &result));
 
-    ASSERT_EQ(kTimeoutErrorMessage, result);
+    ASSERT_EQ(kResidentCredentialsErrorMessage, result);
   }
 }
 
@@ -806,7 +806,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       shell()->web_contents()->GetMainFrame(),
       BuildGetCallWithParameters(parameters), &result));
-  ASSERT_EQ(kInvalidStateErrorMessage, result);
+  ASSERT_EQ(kResidentCredentialsErrorMessage, result);
 }
 
 // WebAuthBrowserBleDisabledTest

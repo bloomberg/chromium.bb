@@ -568,6 +568,16 @@ void AuthenticatorImpl::MakeCredential(
     return;
   }
 
+  if (options->authenticator_selection &&
+      options->authenticator_selection->require_resident_key) {
+    // Disallow the creation of resident credentials.
+    InvokeCallbackAndCleanup(
+        std::move(callback),
+        blink::mojom::AuthenticatorStatus::RESIDENT_CREDENTIALS_UNSUPPORTED,
+        nullptr, Focus::kDontCheck);
+    return;
+  }
+
   DCHECK(make_credential_response_callback_.is_null());
   make_credential_response_callback_ = std::move(callback);
 
@@ -658,6 +668,15 @@ void AuthenticatorImpl::GetAssertion(
     InvokeCallbackAndCleanup(std::move(callback),
                              blink::mojom::AuthenticatorStatus::INVALID_DOMAIN,
                              nullptr);
+    return;
+  }
+
+  if (options->allow_credentials.empty()) {
+    // Chrome currently does not support any resident keys.
+    InvokeCallbackAndCleanup(
+        std::move(callback),
+        blink::mojom::AuthenticatorStatus::RESIDENT_CREDENTIALS_UNSUPPORTED,
+        nullptr);
     return;
   }
 

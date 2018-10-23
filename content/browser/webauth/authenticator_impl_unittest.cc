@@ -526,8 +526,8 @@ TEST_F(AuthenticatorImplTest, MakeCredentialUserVerification) {
   EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
 }
 
-// Test that MakeCredential request times out with NOT_ALLOWED_ERROR if resident
-// key is requested for U2F devices on create().
+// Test that MakeCredential request returns if resident
+// key is requested on create().
 TEST_F(AuthenticatorImplTest, MakeCredentialResidentKey) {
   SimulateNavigation(GURL(kTestOrigin1));
   device::test::ScopedVirtualFidoDevice scoped_virtual_device;
@@ -546,7 +546,10 @@ TEST_F(AuthenticatorImplTest, MakeCredentialResidentKey) {
   base::RunLoop().RunUntilIdle();
   task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
   callback_receiver.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
+  EXPECT_EQ(AuthenticatorStatus::RESIDENT_CREDENTIALS_UNSUPPORTED,
+            callback_receiver.status());
+
+  // TODO add CTAP device
 }
 
 // Test that MakeCredential request times out with NOT_ALLOWED_ERROR if a
@@ -931,7 +934,7 @@ TEST_F(AuthenticatorImplTest, GetAssertionWithEmptyAllowCredentials) {
   base::RunLoop().RunUntilIdle();
   task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
   callback_receiver.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED,
+  EXPECT_EQ(AuthenticatorStatus::RESIDENT_CREDENTIALS_UNSUPPORTED,
             callback_receiver.status());
 }
 

@@ -241,6 +241,11 @@ DOMException* CredentialManagerErrorToDOMException(
       return DOMException::Create(DOMExceptionCode::kNotAllowedError,
                                   "The operation is not allowed at this time "
                                   "because the page does not have focus.");
+    case CredentialManagerError::RESIDENT_CREDENTIALS_UNSUPPORTED:
+      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                                  "Resident credentials or empty "
+                                  "'allowCredentials' lists are not supported "
+                                  "at this time.");
     case CredentialManagerError::ANDROID_ALGORITHM_UNSUPPORTED:
       return DOMException::Create(DOMExceptionCode::kNotSupportedError,
                                   "None of the algorithms specified in "
