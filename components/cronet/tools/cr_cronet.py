@@ -17,9 +17,13 @@ def run(command, extra_options=''):
   return os.system(command)
 
 
-def build(out_dir, test_target, extra_options=''):
-  return run('ninja -C ' + out_dir + ' ' + test_target,
-             extra_options)
+def gn(out_dir, gn_args, gn_extra=''):
+  return run ('gn gen %s --args=\'%s\' %s' % (out_dir, gn_args, gn_extra))
+
+
+def build(out_dir, build_target, extra_options=''):
+  return run('ninja -C ' + out_dir + ' ' + build_target,
+             get_ninja_jobs_option() + extra_options)
 
 
 def install(out_dir):
@@ -68,7 +72,14 @@ def use_goma():
     return 'use_goma=true '
   return ''
 
-def gn_args_default(target_os, is_release):
+
+def get_ninja_jobs_option():
+  if use_goma():
+    return " -j1000 "
+  return ""
+
+
+def get_default_gn_args(target_os, is_release):
   gn_args = 'target_os="' + target_os + '" enable_websockets=false '+ \
       'disable_file_support=true disable_ftp_support=true '+ \
       'disable_brotli_filter=false ' + \
@@ -81,10 +92,23 @@ def gn_args_default(target_os, is_release):
   return gn_args
 
 
-def gn_args_mac(is_release):
-  return gn_args_default('mac', is_release) + \
+def get_mobile_gn_args(target_os, is_release):
+  return get_default_gn_args(target_os, is_release) + \
+      'use_platform_icu_alternatives=true '
+
+
+def get_ios_gn_args(is_release, target_cpu):
+  return get_mobile_gn_args('ios', is_release) + \
+      'is_cronet_build=true  ' + \
+      'use_xcode_clang=true ' + \
+      'ios_deployment_target="9.0" ' + \
+      'enable_dsyms=true ' + \
+      'target_cpu="%s" ' % target_cpu
+
+
+def get_mac_gn_args(is_release):
+  return get_default_gn_args('mac', is_release) + \
       'disable_histogram_support=true ' + \
-      'use_platform_icu_alternatives=false ' + \
       'enable_dsyms=true '
 
 
@@ -120,26 +144,23 @@ def main():
 
   is_ios = (sys.platform == 'darwin')
   if is_ios:
-    target_os = 'ios'
     test_target = 'cronet_test'
     unit_target = 'cronet_unittests_ios'
-    gn_args = 'is_cronet_build=true enable_reporting=false ' \
-        'use_xcode_clang=true ios_deployment_target="9.0" '
     gn_extra = '--ide=xcode'
     if options.iphoneos:
-      gn_args += 'target_cpu="arm64" '
+      gn_args = get_ios_gn_args(options.release, 'arm64')
       out_dir_suffix = '-iphoneos'
     else:
-      gn_args += 'target_cpu="x64" '
+      gn_args = get_ios_gn_args(options.release, 'x64')
       out_dir_suffix = '-iphonesimulator'
       if options.asan:
-        gn_args += 'is_asan=true use_xcode_clang=true '
+        gn_args += 'is_asan=true '
         out_dir_suffix += '-asan'
   else:
-    target_os = 'android'
     test_target = 'cronet_test_instrumentation_apk'
     unit_target = 'cronet_unittests_android'
-    gn_args = 'use_errorprone_java_compiler=true enable_reporting=true '
+    gn_args = get_mobile_gn_args('android', options.release) + \
+              'use_errorprone_java_compiler=true enable_reporting=true '
     gn_extra = ''
     out_dir_suffix = ''
     if options.x86:
@@ -153,9 +174,6 @@ def main():
       gn_args += 'is_asan=true is_clang=true is_debug=false '
       out_dir_suffix += '-asan'
 
-  gn_args += gn_args_default(target_os, options.release) + \
-      'use_platform_icu_alternatives=true '
-
   extra_options = ' '.join(extra_options_list)
 
   if options.release:
@@ -167,16 +185,16 @@ def main():
     out_dir = options.out_dir
 
   if (options.command=='gn'):
-    return run ('gn gen %s --args=\'%s\' %s' % (out_dir, gn_args, gn_extra))
+    return gn(out_dir, gn_args, gn_extra)
   if (options.command=='sync'):
-    return run ('git pull --rebase && gclient sync')
+    return run('git pull --rebase && gclient sync')
   if (options.command=='build'):
     return build(out_dir, test_target, extra_options)
   if (not is_ios):
     if (options.command=='install'):
       return install(out_dir)
     if (options.command=='proguard'):
-      return run ('ninja -C ' + out_dir + ' cronet_sample_proguard_apk')
+      return build (out_dir, 'cronet_sample_proguard_apk')
     if (options.command=='test'):
       return install(out_dir) or test(out_dir, extra_options)
     if (options.command=='build-test'):
