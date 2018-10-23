@@ -80,10 +80,6 @@
 
 namespace blink {
 
-// Recording of audio audibility stops after the context has been running for
-// this long.  We don't need this information for the lifetime of the context.
-const double kStopRecordingAudibilityTime = 10;
-
 BaseAudioContext* BaseAudioContext::Create(
     Document& document,
     const AudioContextOptions& context_options,
@@ -631,6 +627,16 @@ void BaseAudioContext::SetContextState(AudioContextState new_state) {
 
   context_state_ = new_state;
 
+  // Audibility checks only happen when the context is running so manual
+  // notification is required when the context gets suspended or closed.
+  if (was_audible_ && context_state_ != kRunning) {
+    was_audible_ = false;
+    PostCrossThreadTask(
+        *Platform::Current()->MainThread()->GetTaskRunner(), FROM_HERE,
+        CrossThreadBind(&BaseAudioContext::NotifyAudibleAudioStopped,
+                        WrapCrossThreadPersistent(this)));
+  }
+
   // Notify context that state changed
   if (GetExecutionContext()) {
     GetExecutionContext()
@@ -747,28 +753,23 @@ void BaseAudioContext::HandlePostRenderTasks(const AudioBus* destination_bus) {
     // Detect silence (or not) for MEI
     bool is_audible = IsAudible(destination_bus);
 
-    // We want to keep track of the total audible audio, but we don't need to
-    // record the start and stop of audible audio after
-    // |kStopRecordingAudibilityTime|.
     if (is_audible) {
       ++total_audible_renders_;
     }
 
-    if (currentTime() <= kStopRecordingAudibilityTime) {
-      if (was_audible_ != is_audible) {
-        // Audibility changed in this render, so report the change.
-        was_audible_ = is_audible;
-        if (is_audible) {
-          PostCrossThreadTask(
-              *Platform::Current()->MainThread()->GetTaskRunner(), FROM_HERE,
-              CrossThreadBind(&BaseAudioContext::NotifyAudibleAudioStarted,
-                              WrapCrossThreadPersistent(this)));
-        } else {
-          PostCrossThreadTask(
-              *Platform::Current()->MainThread()->GetTaskRunner(), FROM_HERE,
-              CrossThreadBind(&BaseAudioContext::NotifyAudibleAudioStopped,
-                              WrapCrossThreadPersistent(this)));
-        }
+    if (was_audible_ != is_audible) {
+      // Audibility changed in this render, so report the change.
+      was_audible_ = is_audible;
+      if (is_audible) {
+        PostCrossThreadTask(
+            *Platform::Current()->MainThread()->GetTaskRunner(), FROM_HERE,
+            CrossThreadBind(&BaseAudioContext::NotifyAudibleAudioStarted,
+                            WrapCrossThreadPersistent(this)));
+      } else {
+        PostCrossThreadTask(
+            *Platform::Current()->MainThread()->GetTaskRunner(), FROM_HERE,
+            CrossThreadBind(&BaseAudioContext::NotifyAudibleAudioStopped,
+                            WrapCrossThreadPersistent(this)));
       }
     }
   }
