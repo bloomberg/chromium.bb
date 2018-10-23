@@ -32,8 +32,6 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/modules/accessibility/inspector_accessibility_agent.h"
 #include "third_party/blink/renderer/modules/app_banner/app_banner_controller.h"
-#include "third_party/blink/renderer/modules/audio_output_devices/audio_output_device_client.h"
-#include "third_party/blink/renderer/modules/audio_output_devices/audio_output_device_client_impl.h"
 #include "third_party/blink/renderer/modules/audio_output_devices/html_media_element_audio_output_device.h"
 #include "third_party/blink/renderer/modules/cache_storage/inspector_cache_storage_agent.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d.h"
@@ -184,10 +182,6 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
   ScreenOrientationControllerImpl::ProvideTo(frame);
   if (RuntimeEnabledFeatures::PresentationEnabled())
     PresentationController::ProvideTo(frame);
-  if (RuntimeEnabledFeatures::AudioOutputDevicesEnabled()) {
-    ProvideAudioOutputDeviceClientTo(frame,
-                                     new AudioOutputDeviceClientImpl(frame));
-  }
   InstalledAppController::ProvideTo(frame, client->GetRelatedAppsFetcher());
   ::blink::ProvideSpeechRecognitionTo(frame);
   InspectorAccessibilityAgent::ProvideTo(&frame);
