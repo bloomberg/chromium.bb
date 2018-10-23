@@ -118,13 +118,13 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
         //   - Disambiguate the <li></li> spans for SpanApplier.
         //   - Remove leading whitespace (caused by formatting in the .grdp file)
         //   - Remove the trailing newline after the last bulletpoint.
-        text = text.replaceFirst(" +<li>([^<]*)</li>", "<li1>$1</li1>");
-        text = text.replaceFirst(" +<li>([^<]*)</li>", "<li2>$1</li2>");
-        text = text.replaceFirst(" +<li>([^<]*)</li>\n", "<li3>$1</li3>");
+        text = text.replaceFirst(" *<li>([^<]*)</li>", "<li1>$1</li1>");
+        text = text.replaceFirst(" *<li>([^<]*)</li>", "<li2>$1</li2>");
+        text = text.replaceFirst(" *<li>([^<]*)</li>\n", "<li3>$1</li3>");
 
         // Remove the <ul></ul> tags which serve no purpose here, including the whitespace around
         // them.
-        text = text.replaceAll(" +</?ul>\\n?", "");
+        text = text.replaceAll(" *</?ul>\\n?", "");
 
         view.setText(SpanApplier.applySpans(text,
                 new SpanApplier.SpanInfo("<em>", "</em>",
