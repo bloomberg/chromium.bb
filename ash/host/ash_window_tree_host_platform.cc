@@ -175,8 +175,10 @@ void AshWindowTreeHostPlatform::OnCursorVisibilityChangedNative(bool show) {
 
 void AshWindowTreeHostPlatform::SetBoundsInPixels(
     const gfx::Rect& bounds,
-    const viz::LocalSurfaceId& local_surface_id) {
-  WindowTreeHostPlatform::SetBoundsInPixels(bounds, local_surface_id);
+    const viz::LocalSurfaceId& local_surface_id,
+    base::TimeTicks allocation_time) {
+  WindowTreeHostPlatform::SetBoundsInPixels(bounds, local_surface_id,
+                                            allocation_time);
   ConfineCursorToRootWindow();
 }
 

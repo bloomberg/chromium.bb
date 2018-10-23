@@ -365,7 +365,8 @@ void WindowTreeHost::CreateCompositor(const viz::FrameSinkId& frame_sink_id,
 void WindowTreeHost::InitCompositor() {
   DCHECK(!compositor_->root_layer());
   compositor_->SetScaleAndSize(device_scale_factor_, GetBoundsInPixels().size(),
-                               window()->GetLocalSurfaceId());
+                               window()->GetLocalSurfaceId(),
+                               window()->GetLocalSurfaceIdAllocationTime());
   compositor_->SetRootLayer(window()->layer());
 
   display::Display display =
@@ -390,7 +391,10 @@ void WindowTreeHost::OnHostMovedInPixels(
 
 void WindowTreeHost::OnHostResizedInPixels(
     const gfx::Size& new_size_in_pixels,
-    const viz::LocalSurfaceId& new_local_surface_id) {
+    const viz::LocalSurfaceId& new_local_surface_id,
+    base::TimeTicks new_allocation_time) {
+  // TODO(jonross) Unify all OnHostResizedInPixels to have both
+  // viz::LocalSurfaceId and allocation time as optional parameters.
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window());
   device_scale_factor_ = display.device_scale_factor();
@@ -398,14 +402,16 @@ void WindowTreeHost::OnHostResizedInPixels(
 
   // Allocate a new LocalSurfaceId for the new state.
   auto local_surface_id = new_local_surface_id;
+  auto allocation_time = new_allocation_time;
   if (ShouldAllocateLocalSurfaceId(window()) &&
       !new_local_surface_id.is_valid()) {
     window_->AllocateLocalSurfaceId();
     local_surface_id = window_->GetLocalSurfaceId();
+    allocation_time = window_->GetLocalSurfaceIdAllocationTime();
   }
   ScopedLocalSurfaceIdValidator lsi_validator(window());
   compositor_->SetScaleAndSize(device_scale_factor_, new_size_in_pixels,
-                               local_surface_id);
+                               local_surface_id, allocation_time);
 
   for (WindowTreeHostObserver& observer : observers_)
     observer.OnHostResized(this);

@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/keyframe_effect.h"
@@ -868,7 +869,8 @@ void LayerTreeTest::SetupTree() {
   gfx::Size device_root_bounds =
       gfx::ScaleToCeiledSize(root_bounds, initial_device_scale_factor_);
   layer_tree_host()->SetViewportSizeAndScale(
-      device_root_bounds, initial_device_scale_factor_, viz::LocalSurfaceId());
+      device_root_bounds, initial_device_scale_factor_, viz::LocalSurfaceId(),
+      base::TimeTicks());
   layer_tree_host()->root_layer()->SetIsDrawable(true);
   layer_tree_host()->SetElementIdsForTesting();
 }
@@ -921,7 +923,8 @@ void LayerTreeTest::DispatchSetLocalSurfaceId(
     const viz::LocalSurfaceId& local_surface_id) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (layer_tree_host_)
-    layer_tree_host_->SetLocalSurfaceIdFromParent(local_surface_id);
+    layer_tree_host_->SetLocalSurfaceIdFromParent(local_surface_id,
+                                                  base::TimeTicks());
 }
 
 void LayerTreeTest::DispatchRequestNewLocalSurfaceId() {

@@ -79,6 +79,7 @@ VideoFrameCompositor::~VideoFrameCompositor() {
 
 void VideoFrameCompositor::EnableSubmission(
     const viz::SurfaceId& id,
+    base::TimeTicks local_surface_id_allocation_time,
     media::VideoRotation rotation,
     bool force_submit,
     bool is_opaque,
@@ -92,7 +93,8 @@ void VideoFrameCompositor::EnableSubmission(
   submitter_->SetRotation(rotation);
   submitter_->SetForceSubmit(force_submit);
   submitter_->SetIsOpaque(is_opaque);
-  submitter_->EnableSubmission(id, std::move(frame_sink_destroyed_callback));
+  submitter_->EnableSubmission(id, local_surface_id_allocation_time,
+                               std::move(frame_sink_destroyed_callback));
   client_ = submitter_.get();
   if (rendering_)
     client_->StartRendering();

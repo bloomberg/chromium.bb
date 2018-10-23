@@ -286,8 +286,10 @@ void Compositor::RemoveChildFrameSink(const viz::FrameSinkId& frame_sink_id) {
 }
 
 void Compositor::SetLocalSurfaceId(
-    const viz::LocalSurfaceId& local_surface_id) {
-  host_->SetLocalSurfaceIdFromParent(local_surface_id);
+    const viz::LocalSurfaceId& local_surface_id,
+    base::TimeTicks local_surface_id_allocation_time) {
+  host_->SetLocalSurfaceIdFromParent(local_surface_id,
+                                     local_surface_id_allocation_time);
 }
 
 void Compositor::SetLayerTreeFrameSink(
@@ -367,9 +369,11 @@ void Compositor::SetLatencyInfo(const ui::LatencyInfo& latency_info) {
   host_->QueueSwapPromise(std::move(swap_promise));
 }
 
-void Compositor::SetScaleAndSize(float scale,
-                                 const gfx::Size& size_in_pixel,
-                                 const viz::LocalSurfaceId& local_surface_id) {
+void Compositor::SetScaleAndSize(
+    float scale,
+    const gfx::Size& size_in_pixel,
+    const viz::LocalSurfaceId& local_surface_id,
+    base::TimeTicks local_surface_id_allocation_time) {
   DCHECK_GT(scale, 0);
   bool device_scale_factor_changed = device_scale_factor_ != scale;
   device_scale_factor_ = scale;
@@ -382,7 +386,8 @@ void Compositor::SetScaleAndSize(float scale,
   if (!size_in_pixel.IsEmpty()) {
     bool size_changed = size_ != size_in_pixel;
     size_ = size_in_pixel;
-    host_->SetViewportSizeAndScale(size_in_pixel, scale, local_surface_id);
+    host_->SetViewportSizeAndScale(size_in_pixel, scale, local_surface_id,
+                                   local_surface_id_allocation_time);
     root_web_layer_->SetBounds(size_in_pixel);
     // TODO(fsamuel): Get rid of ContextFactoryPrivate.
     if (context_factory_private_ &&

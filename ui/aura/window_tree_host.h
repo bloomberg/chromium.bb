@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "ui/aura/aura_export.h"
@@ -200,7 +201,8 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // when the size change takes effect.
   virtual void SetBoundsInPixels(
       const gfx::Rect& bounds_in_pixels,
-      const viz::LocalSurfaceId& local_surface_id = viz::LocalSurfaceId()) = 0;
+      const viz::LocalSurfaceId& local_surface_id = viz::LocalSurfaceId(),
+      base::TimeTicks allocation_time = base::TimeTicks()) = 0;
   virtual gfx::Rect GetBoundsInPixels() const = 0;
 
   // Sets the OS capture to the root window.
@@ -256,7 +258,8 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   void OnHostMovedInPixels(const gfx::Point& new_location_in_pixels);
   void OnHostResizedInPixels(
       const gfx::Size& new_size_in_pixels,
-      const viz::LocalSurfaceId& local_surface_id = viz::LocalSurfaceId());
+      const viz::LocalSurfaceId& local_surface_id = viz::LocalSurfaceId(),
+      base::TimeTicks new_allocation_time = base::TimeTicks());
   void OnHostWorkspaceChanged();
   void OnHostDisplayChanged();
   void OnHostCloseRequested();

@@ -727,6 +727,13 @@ const viz::LocalSurfaceId& RenderWidgetHostViewChildFrame::GetLocalSurfaceId()
   return viz::ParentLocalSurfaceIdAllocator::InvalidLocalSurfaceId();
 }
 
+base::TimeTicks
+RenderWidgetHostViewChildFrame::GetLocalSurfaceIdAllocationTime() const {
+  if (frame_connector_)
+    return frame_connector_->local_surface_id_allocation_time();
+  return base::TimeTicks();
+}
+
 void RenderWidgetHostViewChildFrame::PreProcessTouchEvent(
     const blink::WebTouchEvent& event) {
   if (event.GetType() == blink::WebInputEvent::kTouchStart &&

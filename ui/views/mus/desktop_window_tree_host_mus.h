@@ -143,8 +143,10 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   // aura::WindowTreeHostMus:
   void ShowImpl() override;
   void HideImpl() override;
-  void SetBoundsInPixels(const gfx::Rect& bounds_in_pixels,
-                         const viz::LocalSurfaceId& local_surface_id) override;
+  void SetBoundsInPixels(
+      const gfx::Rect& bounds_in_pixels,
+      const viz::LocalSurfaceId& local_surface_id,
+      base::TimeTicks local_surface_id_allocation_time) override;
 
   // views::ViewObserver:
   void OnViewBoundsChanged(views::View* observed_view) override;

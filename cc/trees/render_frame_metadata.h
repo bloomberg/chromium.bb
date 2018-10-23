@@ -6,6 +6,7 @@
 #define CC_TREES_RENDER_FRAME_METADATA_H_
 
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/cc_export.h"
 #include "components/viz/common/quads/selection.h"
@@ -63,6 +64,9 @@ class CC_EXPORT RenderFrameMetadata {
 
   // The last viz::LocalSurfaceId used to submit a CompositorFrame.
   base::Optional<viz::LocalSurfaceId> local_surface_id;
+
+  // The time at which |local_surface_id| was allocated.
+  base::Optional<base::TimeTicks> local_surface_id_allocation_time_from_child;
 
   float page_scale_factor = 1.f;
 

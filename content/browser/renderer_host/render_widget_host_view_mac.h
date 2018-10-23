@@ -183,6 +183,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   const viz::FrameSinkId& GetFrameSinkId() const override;
   const viz::LocalSurfaceId& GetLocalSurfaceId() const override;
+  base::TimeTicks GetLocalSurfaceIdAllocationTime() const override;
   // Returns true when we can do SurfaceHitTesting for the event type.
   bool ShouldRouteEvent(const blink::WebInputEvent& event) const;
   // This method checks |event| to see if a GesturePinch or double tap event
@@ -399,7 +400,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void DestroyCompositorForShutdown() override;
   bool SynchronizeVisualProperties(
       const base::Optional<viz::LocalSurfaceId>&
-          child_allocated_local_surface_id) override;
+          child_allocated_local_surface_id,
+      const base::Optional<base::TimeTicks>&
+          child_local_surface_id_allocation_time) override;
 
   // AcceleratedWidgetMacNSView implementation.
   void AcceleratedWidgetCALayerParamsUpdated() override;

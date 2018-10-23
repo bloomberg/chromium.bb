@@ -111,6 +111,11 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
     return metadata.top_controls_shown_ratio;
   }
 
+  static base::TimeTicks local_surface_id_allocation_time(
+      const viz::CompositorFrameMetadata& metadata) {
+    return metadata.local_surface_id_allocation_time;
+  }
+
 #if defined(OS_ANDROID)
   static float max_page_scale_factor(
       const viz::CompositorFrameMetadata& metadata) {

@@ -2802,7 +2802,8 @@ TEST_F(RenderWidgetHostViewAuraTest, ChildAllocationAcceptedInParent) {
 
   widget_host_->SetAutoResize(true, gfx::Size(50, 50), gfx::Size(100, 100));
   viz::ChildLocalSurfaceIdAllocator child_allocator;
-  child_allocator.UpdateFromParent(local_surface_id1);
+  child_allocator.UpdateFromParent(local_surface_id1,
+                                   view_->GetLocalSurfaceIdAllocationTime());
   viz::LocalSurfaceId local_surface_id2 = child_allocator.GenerateId();
 
   {
@@ -2830,7 +2831,8 @@ TEST_F(RenderWidgetHostViewAuraTest, ConflictingAllocationsResolve) {
 
   widget_host_->SetAutoResize(true, gfx::Size(50, 50), gfx::Size(100, 100));
   viz::ChildLocalSurfaceIdAllocator child_allocator;
-  child_allocator.UpdateFromParent(local_surface_id1);
+  child_allocator.UpdateFromParent(local_surface_id1,
+                                   view_->GetLocalSurfaceIdAllocationTime());
   viz::LocalSurfaceId local_surface_id2 = child_allocator.GenerateId();
 
   {

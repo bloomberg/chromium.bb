@@ -148,4 +148,8 @@ void SurfaceLayerBridge::CreateSurfaceLayer() {
   surface_layer_->SetContentsOpaque(false);
 }
 
+base::TimeTicks SurfaceLayerBridge::GetLocalSurfaceIdAllocationTime() const {
+  return parent_local_surface_id_allocator_.allocation_time();
+}
+
 }  // namespace blink

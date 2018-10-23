@@ -474,9 +474,11 @@ viz::ScopedSurfaceIdAllocator WindowPortMus::GetSurfaceIdAllocator(
 }
 
 void WindowPortMus::UpdateLocalSurfaceIdFromEmbeddedClient(
-    const viz::LocalSurfaceId& embedded_client_local_surface_id) {
+    const viz::LocalSurfaceId& embedded_client_local_surface_id,
+    base::TimeTicks embedded_client_local_surface_id_allocation_time) {
   parent_local_surface_id_allocator_.UpdateFromChild(
-      embedded_client_local_surface_id);
+      embedded_client_local_surface_id,
+      embedded_client_local_surface_id_allocation_time);
   local_surface_id_ =
       parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
   UpdatePrimarySurfaceId();
@@ -489,6 +491,10 @@ void WindowPortMus::UpdateLocalSurfaceIdFromEmbeddedClient(
 
 const viz::LocalSurfaceId& WindowPortMus::GetLocalSurfaceId() {
   return local_surface_id_;
+}
+
+base::TimeTicks WindowPortMus::GetLocalSurfaceIdAllocationTime() const {
+  return parent_local_surface_id_allocator_.allocation_time();
 }
 
 std::unique_ptr<WindowMusChangeData>

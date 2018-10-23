@@ -594,7 +594,9 @@ void RenderFrameProxy::OnBubbleLogicalScroll(
 void RenderFrameProxy::OnDidUpdateVisualProperties(
     const cc::RenderFrameMetadata& metadata) {
   if (!parent_local_surface_id_allocator_.UpdateFromChild(
-          metadata.local_surface_id.value_or(viz::LocalSurfaceId()))) {
+          metadata.local_surface_id.value_or(viz::LocalSurfaceId()),
+          metadata.local_surface_id_allocation_time_from_child.value_or(
+              base::TimeTicks()))) {
     return;
   }
 
@@ -654,8 +656,11 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
           pending_visual_properties_.zoom_level ||
       capture_sequence_number_changed;
 
-  if (synchronized_props_changed)
+  if (synchronized_props_changed) {
     parent_local_surface_id_allocator_.GenerateId();
+    pending_visual_properties_.local_surface_id_allocation_time =
+        parent_local_surface_id_allocator_.allocation_time();
+  }
 
   viz::SurfaceId surface_id(frame_sink_id_, GetLocalSurfaceId());
   if (enable_surface_synchronization_) {

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -99,7 +100,8 @@ void TestCompositorHostOzone::Show() {
   DCHECK_NE(window_delegate_.widget(), gfx::kNullAcceleratedWidget);
 
   compositor_.SetAcceleratedWidget(window_delegate_.widget());
-  compositor_.SetScaleAndSize(1.0f, bounds_.size(), viz::LocalSurfaceId());
+  compositor_.SetScaleAndSize(1.0f, bounds_.size(), viz::LocalSurfaceId(),
+                              base::TimeTicks());
   compositor_.SetVisible(true);
 }
 

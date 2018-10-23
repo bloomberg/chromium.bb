@@ -66,7 +66,8 @@ class ASH_EXPORT AshWindowTreeHostPlatform
       const gfx::Size& host_size_in_pixels) const override;
   void OnCursorVisibilityChangedNative(bool show) override;
   void SetBoundsInPixels(const gfx::Rect& bounds,
-                         const viz::LocalSurfaceId& local_surface_id) override;
+                         const viz::LocalSurfaceId& local_surface_id,
+                         base::TimeTicks allocation_time) override;
   void DispatchEvent(ui::Event* event) override;
   bool ShouldSendKeyEventToIme() override;
 

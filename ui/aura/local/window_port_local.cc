@@ -205,9 +205,11 @@ viz::ScopedSurfaceIdAllocator WindowPortLocal::GetSurfaceIdAllocator(
 }
 
 void WindowPortLocal::UpdateLocalSurfaceIdFromEmbeddedClient(
-    const viz::LocalSurfaceId& embedded_client_local_surface_id) {
+    const viz::LocalSurfaceId& embedded_client_local_surface_id,
+    base::TimeTicks embedded_client_local_surface_id_allocation_time) {
   parent_local_surface_id_allocator_->UpdateFromChild(
-      embedded_client_local_surface_id);
+      embedded_client_local_surface_id,
+      embedded_client_local_surface_id_allocation_time);
   UpdateLocalSurfaceId();
 }
 
@@ -215,6 +217,12 @@ const viz::LocalSurfaceId& WindowPortLocal::GetLocalSurfaceId() {
   if (!parent_local_surface_id_allocator_)
     AllocateLocalSurfaceId();
   return GetCurrentLocalSurfaceId();
+}
+
+base::TimeTicks WindowPortLocal::GetLocalSurfaceIdAllocationTime() const {
+  if (!parent_local_surface_id_allocator_)
+    return base::TimeTicks();
+  return parent_local_surface_id_allocator_->allocation_time();
 }
 
 void WindowPortLocal::OnEventTargetingPolicyChanged() {}

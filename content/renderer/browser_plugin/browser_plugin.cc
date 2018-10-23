@@ -345,7 +345,9 @@ void BrowserPlugin::OnDidUpdateVisualProperties(
     int browser_plugin_instance_id,
     const cc::RenderFrameMetadata& metadata) {
   if (!parent_local_surface_id_allocator_.UpdateFromChild(
-          metadata.local_surface_id.value_or(viz::LocalSurfaceId()))) {
+          metadata.local_surface_id.value_or(viz::LocalSurfaceId()),
+          metadata.local_surface_id_allocation_time_from_child.value_or(
+              base::TimeTicks()))) {
     return;
   }
 

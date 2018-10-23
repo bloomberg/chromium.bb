@@ -99,7 +99,8 @@ bool BrowserCompositorMac::RequestRepaintForTesting() {
   delegated_frame_host_->EmbedSurface(
       new_local_surface_id, dfh_size_dip_,
       cc::DeadlinePolicy::UseExistingDeadline());
-  return client_->SynchronizeVisualProperties(new_local_surface_id);
+  return client_->SynchronizeVisualProperties(
+      new_local_surface_id, dfh_local_surface_id_allocator_.allocation_time());
 }
 
 const gfx::CALayerParams* BrowserCompositorMac::GetLastCALayerParams() const {
@@ -170,9 +171,11 @@ bool BrowserCompositorMac::UpdateNSViewAndDisplay(
 void BrowserCompositorMac::SynchronizeVisualProperties(
     float new_device_scale_factor,
     const gfx::Size& new_size_in_pixels,
-    const viz::LocalSurfaceId& child_allocated_local_surface_id) {
+    const viz::LocalSurfaceId& child_allocated_local_surface_id,
+    base::TimeTicks child_local_surface_id_allocation_time) {
   if (dfh_local_surface_id_allocator_.UpdateFromChild(
-          child_allocated_local_surface_id)) {
+          child_allocated_local_surface_id,
+          child_local_surface_id_allocation_time)) {
     dfh_display_.set_device_scale_factor(new_device_scale_factor);
     dfh_size_dip_ = gfx::ConvertSizeToDIP(dfh_display_.device_scale_factor(),
                                           new_size_in_pixels);
@@ -186,7 +189,8 @@ void BrowserCompositorMac::SynchronizeVisualProperties(
         dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
         dfh_size_dip_, GetDeadlinePolicy(true /* is_resize */));
   }
-  client_->SynchronizeVisualProperties(child_allocated_local_surface_id);
+  client_->SynchronizeVisualProperties(child_allocated_local_surface_id,
+                                       child_local_surface_id_allocation_time);
 }
 
 void BrowserCompositorMac::UpdateVSyncParameters(
@@ -375,7 +379,8 @@ void BrowserCompositorMac::DidNavigate() {
   delegated_frame_host_->EmbedSurface(
       local_surface_id, dfh_size_dip_,
       cc::DeadlinePolicy::UseExistingDeadline());
-  client_->SynchronizeVisualProperties(local_surface_id);
+  client_->SynchronizeVisualProperties(
+      local_surface_id, dfh_local_surface_id_allocator_.allocation_time());
   delegated_frame_host_->DidNavigate();
   is_first_navigation_ = false;
 }
@@ -433,15 +438,21 @@ const viz::LocalSurfaceId& BrowserCompositorMac::GetRendererLocalSurfaceId() {
   return dfh_local_surface_id_allocator_.GenerateId();
 }
 
+base::TimeTicks BrowserCompositorMac::GetRendererLocalSurfaceIdAllocationTime()
+    const {
+  return dfh_local_surface_id_allocator_.allocation_time();
+}
+
 const viz::LocalSurfaceId&
 BrowserCompositorMac::AllocateNewRendererLocalSurfaceId() {
   return dfh_local_surface_id_allocator_.GenerateId();
 }
 
 bool BrowserCompositorMac::UpdateRendererLocalSurfaceIdFromChild(
-    const viz::LocalSurfaceId& child_allocated_local_surface_id) {
+    const viz::LocalSurfaceId& child_allocated_local_surface_id,
+    base::TimeTicks child_local_surface_id_allocation_time) {
   return dfh_local_surface_id_allocator_.UpdateFromChild(
-      child_allocated_local_surface_id);
+      child_allocated_local_surface_id, child_local_surface_id_allocation_time);
 }
 
 void BrowserCompositorMac::TransformPointToRootSurface(gfx::PointF* point) {

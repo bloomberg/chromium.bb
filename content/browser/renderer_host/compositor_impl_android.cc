@@ -860,7 +860,8 @@ void CompositorImpl::SetRootWindow(gfx::NativeWindow root_window) {
   }
   host_->SetRootLayer(root_window_->GetLayer());
   host_->SetViewportSizeAndScale(size_, root_window_->GetDipScale(),
-                                 GenerateLocalSurfaceId());
+                                 GenerateLocalSurfaceId(),
+                                 GetLocalSurfaceIdAllocationTime());
 }
 
 void CompositorImpl::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
@@ -941,7 +942,8 @@ void CompositorImpl::CreateLayerTreeHost() {
   host_ = cc::LayerTreeHost::CreateSingleThreaded(this, std::move(params));
   DCHECK(!host_->IsVisible());
   host_->SetViewportSizeAndScale(size_, root_window_->GetDipScale(),
-                                 GenerateLocalSurfaceId());
+                                 GenerateLocalSurfaceId(),
+                                 GetLocalSurfaceIdAllocationTime());
 
   if (needs_animate_)
     host_->SetNeedsAnimate();
@@ -1019,7 +1021,8 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
   if (host_) {
     // TODO(ccameron): Ensure a valid LocalSurfaceId here.
     host_->SetViewportSizeAndScale(size_, root_window_->GetDipScale(),
-                                   GenerateLocalSurfaceId());
+                                   GenerateLocalSurfaceId(),
+                                   GetLocalSurfaceIdAllocationTime());
   }
   if (display_)
     display_->Resize(size);
@@ -1333,7 +1336,8 @@ void CompositorImpl::OnDisplayMetricsChanged(const display::Display& display,
     // TODO(ccameron): This is transiently incorrect -- |size_| must be
     // recalculated here as well. Is the call in SetWindowBounds sufficient?
     host_->SetViewportSizeAndScale(size_, root_window_->GetDipScale(),
-                                   GenerateLocalSurfaceId());
+                                   GenerateLocalSurfaceId(),
+                                   GetLocalSurfaceIdAllocationTime());
   }
 }
 
@@ -1442,6 +1446,12 @@ viz::LocalSurfaceId CompositorImpl::GenerateLocalSurfaceId() const {
     return CompositorDependencies::Get().surface_id_allocator.GenerateId();
 
   return viz::LocalSurfaceId();
+}
+
+base::TimeTicks CompositorImpl::GetLocalSurfaceIdAllocationTime() const {
+  if (enable_surface_synchronization_)
+    return CompositorDependencies::Get().surface_id_allocator.allocation_time();
+  return base::TimeTicks();
 }
 
 void CompositorImpl::OnFatalOrSurfaceContextCreationFailure(

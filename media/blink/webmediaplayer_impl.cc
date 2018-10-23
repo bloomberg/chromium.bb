@@ -1749,6 +1749,7 @@ void WebMediaPlayerImpl::ActivateSurfaceLayerForVideo() {
       base::BindOnce(
           &VideoFrameCompositor::EnableSubmission,
           base::Unretained(compositor_.get()), bridge_->GetSurfaceId(),
+          bridge_->GetLocalSurfaceIdAllocationTime(),
           pipeline_metadata_.video_decoder_config.video_rotation(),
           IsInPictureInPicture(), opaque_,
           BindToCurrentLoop(base::BindRepeating(

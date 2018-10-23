@@ -1952,6 +1952,9 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
   metadata.top_controls_shown_ratio =
       browser_controls_offset_manager_->TopControlsShownRatio();
 
+  metadata.local_surface_id_allocation_time =
+      child_local_surface_id_allocator_.allocation_time();
+
 #if defined(OS_ANDROID)
   metadata.max_page_scale_factor = active_tree_->max_page_scale_factor();
   metadata.root_layer_size = active_tree_->ScrollableSize();
@@ -2055,6 +2058,8 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
     if (allocate_new_local_surface_id)
       local_surface_id = child_local_surface_id_allocator_.GenerateId();
     metadata.local_surface_id = local_surface_id;
+    metadata.local_surface_id_allocation_time_from_child =
+        child_local_surface_id_allocator_.allocation_time();
   }
 
   return metadata;
@@ -2897,7 +2902,8 @@ void LayerTreeHostImpl::ActivateSyncTree() {
   // Update the child's LocalSurfaceId.
   if (active_tree()->local_surface_id_from_parent().is_valid()) {
     child_local_surface_id_allocator_.UpdateFromParent(
-        active_tree()->local_surface_id_from_parent());
+        active_tree()->local_surface_id_from_parent(),
+        active_tree()->local_surface_id_allocation_time_from_parent());
     if (active_tree()->TakeNewLocalSurfaceIdRequest())
       child_local_surface_id_allocator_.GenerateId();
   }

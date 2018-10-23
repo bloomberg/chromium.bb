@@ -53,7 +53,9 @@ bool StructTraits<viz::mojom::CompositorFrameMetadataDataView,
          data.ReadRootLayerSize(&out->root_layer_size) &&
          data.ReadSelection(&out->selection) &&
 #endif  // defined(OS_ANDROID)
-         data.ReadBeginFrameAck(&out->begin_frame_ack);
+         data.ReadBeginFrameAck(&out->begin_frame_ack) &&
+         data.ReadLocalSurfaceIdAllocationTime(
+             &out->local_surface_id_allocation_time);
 }
 
 }  // namespace mojo

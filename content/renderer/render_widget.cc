@@ -563,9 +563,9 @@ void RenderWidget::ApplyEmulatedScreenMetricsForPopupWidget(
   popup_view_origin_for_emulation_ = emulator->applied_widget_rect().origin();
   popup_screen_origin_for_emulation_ =
       emulator->original_screen_rect().origin();
-  UpdateSurfaceAndScreenInfo(local_surface_id_from_parent_,
-                             compositor_viewport_pixel_size_,
-                             emulator->original_screen_info());
+  UpdateSurfaceAndScreenInfo(
+      local_surface_id_from_parent_, allocation_time_from_parent_,
+      compositor_viewport_pixel_size_, emulator->original_screen_info());
 }
 
 gfx::Rect RenderWidget::AdjustValidationMessageAnchor(const gfx::Rect& anchor) {
@@ -1344,6 +1344,7 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
           : params.compositor_viewport_pixel_size;
   UpdateSurfaceAndScreenInfo(
       params.local_surface_id.value_or(viz::LocalSurfaceId()),
+      params.local_surface_id_allocation_time.value_or(base::TimeTicks()),
       new_compositor_viewport_pixel_size, params.screen_info);
   UpdateCaptureSequenceNumber(params.capture_sequence_number);
   if (layer_tree_view_) {
@@ -1538,6 +1539,7 @@ LayerTreeView* RenderWidget::InitializeLayerTreeView() {
       compositor_deps_->CreateUkmRecorderFactory());
 
   UpdateSurfaceAndScreenInfo(local_surface_id_from_parent_,
+                             allocation_time_from_parent_,
                              compositor_viewport_pixel_size_, screen_info_);
   layer_tree_view_->SetRasterColorSpace(
       screen_info_.color_space.GetRasterColorSpace());
@@ -1864,6 +1866,7 @@ void RenderWidget::OnImeFinishComposingText(bool keep_selection) {
 
 void RenderWidget::UpdateSurfaceAndScreenInfo(
     const viz::LocalSurfaceId& new_local_surface_id,
+    base::TimeTicks new_allocation_time_,
     const gfx::Size& new_compositor_viewport_pixel_size,
     const ScreenInfo& new_screen_info) {
   bool orientation_changed =
@@ -1874,6 +1877,7 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
   ScreenInfo previous_original_screen_info = GetOriginalScreenInfo();
 
   local_surface_id_from_parent_ = new_local_surface_id;
+  allocation_time_from_parent_ = new_allocation_time_;
   compositor_viewport_pixel_size_ = new_compositor_viewport_pixel_size;
   screen_info_ = new_screen_info;
 
@@ -1884,7 +1888,7 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
     layer_tree_view_->SetViewportSizeAndScale(
         compositor_viewport_pixel_size_,
         GetOriginalScreenInfo().device_scale_factor,
-        local_surface_id_from_parent_);
+        local_surface_id_from_parent_, allocation_time_from_parent_);
   }
 
   if (orientation_changed)
@@ -2322,9 +2326,9 @@ void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
       layer_tree_view_->RequestNewLocalSurfaceId();
     gfx::Size new_compositor_viewport_pixel_size =
         gfx::ScaleToCeiledSize(size_, GetWebScreenInfo().device_scale_factor);
-    UpdateSurfaceAndScreenInfo(local_surface_id_from_parent_,
-                               new_compositor_viewport_pixel_size,
-                               screen_info_);
+    UpdateSurfaceAndScreenInfo(
+        local_surface_id_from_parent_, allocation_time_from_parent_,
+        new_compositor_viewport_pixel_size, screen_info_);
   }
 }
 

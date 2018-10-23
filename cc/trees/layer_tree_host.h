@@ -362,7 +362,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void SetViewportSizeAndScale(
       const gfx::Size& device_viewport_size,
       float device_scale_factor,
-      const viz::LocalSurfaceId& local_surface_id_from_parent);
+      const viz::LocalSurfaceId& local_surface_id_from_parent,
+      base::TimeTicks local_surface_id_allocation_time_from_parent);
 
   void SetViewportVisibleRect(const gfx::Rect& visible_rect);
 
@@ -410,9 +411,13 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // If this LayerTreeHost needs a valid viz::LocalSurfaceId then commits will
   // be deferred until a valid viz::LocalSurfaceId is provided.
   void SetLocalSurfaceIdFromParent(
-      const viz::LocalSurfaceId& local_surface_id_from_parent);
+      const viz::LocalSurfaceId& local_surface_id_from_parent,
+      base::TimeTicks local_surface_id_allocation_time_from_parent);
   const viz::LocalSurfaceId& local_surface_id_from_parent() const {
     return local_surface_id_from_parent_;
+  }
+  base::TimeTicks local_surface_id_allocation_time_from_parent() const {
+    return local_surface_id_allocation_time_from_parent_;
   }
 
   // Requests the allocation of a new LocalSurfaceId on the compositor thread.
@@ -727,6 +732,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   bool clear_caches_on_next_commit_ = false;
   uint32_t content_source_id_;
   viz::LocalSurfaceId local_surface_id_from_parent_;
+  base::TimeTicks local_surface_id_allocation_time_from_parent_;
   // Used to detect surface invariant violations.
   bool has_pushed_local_surface_id_from_parent_ = false;
   bool new_local_surface_id_request_ = false;
