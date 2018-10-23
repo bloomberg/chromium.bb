@@ -41,34 +41,6 @@ NGPhysicalFragment::NGBoxType BoxTypeFromLayoutObject(
 
 }  // namespace
 
-NGBoxFragmentBuilder::NGBoxFragmentBuilder(
-    NGLayoutInputNode node,
-    scoped_refptr<const ComputedStyle> style,
-    WritingMode writing_mode,
-    TextDirection direction)
-    : NGContainerFragmentBuilder(std::move(style), writing_mode, direction),
-      node_(node),
-      box_type_(NGPhysicalFragment::NGBoxType::kNormalBox),
-      is_old_layout_root_(false),
-      did_break_(false) {
-  layout_object_ = node.GetLayoutBox();
-}
-
-NGBoxFragmentBuilder::NGBoxFragmentBuilder(
-    LayoutObject* layout_object,
-    scoped_refptr<const ComputedStyle> style,
-    WritingMode writing_mode,
-    TextDirection direction)
-    : NGContainerFragmentBuilder(std::move(style), writing_mode, direction),
-      node_(nullptr),
-      box_type_(NGPhysicalFragment::NGBoxType::kNormalBox),
-      is_old_layout_root_(false),
-      did_break_(false) {
-  layout_object_ = layout_object;
-}
-
-NGBoxFragmentBuilder::~NGBoxFragmentBuilder() = default;
-
 NGContainerFragmentBuilder& NGBoxFragmentBuilder::AddChild(
     scoped_refptr<const NGPhysicalFragment> child,
     const NGLogicalOffset& child_offset) {
@@ -238,26 +210,7 @@ EBreakBetween NGBoxFragmentBuilder::JoinedBreakBetweenValue(
 
 scoped_refptr<NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(
     WritingMode block_or_line_writing_mode) {
-  DCHECK_EQ(offsets_.size(), children_.size());
-
-  NGPhysicalSize physical_size = Size().ConvertToPhysical(GetWritingMode());
-
-  Vector<NGLink> children;
-  children.ReserveInitialCapacity(children_.size());
-
-  DCHECK_EQ(children_.size(), offsets_.size());
-  for (wtf_size_t i = 0; i < children_.size(); i++) {
-    auto& child = children_[i];
-    children.emplace_back(
-        std::move(children_[i]),
-        offsets_[i].ConvertToPhysical(block_or_line_writing_mode, Direction(),
-                                      physical_size, child->Size()));
-  }
-
-  scoped_refptr<NGBreakToken> break_token;
-  bool is_rendered_legend = false;
   if (node_) {
-    is_rendered_legend = node_.IsRenderedLegend();
     if (!inline_break_tokens_.IsEmpty()) {
       if (auto token = inline_break_tokens_.back()) {
         if (!token->IsFinished())
@@ -265,22 +218,16 @@ scoped_refptr<NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(
       }
     }
     if (did_break_) {
-      break_token = NGBlockBreakToken::Create(
+      break_token_ = NGBlockBreakToken::Create(
           node_, used_block_size_, child_break_tokens_, has_last_resort_break_);
     } else {
-      break_token = NGBlockBreakToken::Create(node_, used_block_size_,
-                                              has_last_resort_break_);
+      break_token_ = NGBlockBreakToken::Create(node_, used_block_size_,
+                                               has_last_resort_break_);
     }
   }
 
-  scoped_refptr<const NGPhysicalBoxFragment> fragment =
-      base::AdoptRef(new NGPhysicalBoxFragment(
-          layout_object_, Style(), style_variant_, physical_size, children,
-          borders_.ConvertToPhysical(GetWritingMode(), Direction()),
-          padding_.ConvertToPhysical(GetWritingMode(), Direction()), baselines_,
-          BoxType(), is_fieldset_container_, is_rendered_legend,
-          is_old_layout_root_, border_edges_.ToPhysical(GetWritingMode()),
-          std::move(break_token)));
+  scoped_refptr<const NGPhysicalBoxFragment> fragment = base::AdoptRef(
+      new NGPhysicalBoxFragment(this, block_or_line_writing_mode));
 
   Vector<NGPositionedFloat> positioned_floats;
 

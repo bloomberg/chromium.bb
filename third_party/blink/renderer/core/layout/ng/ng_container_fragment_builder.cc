@@ -12,14 +12,6 @@
 
 namespace blink {
 
-NGContainerFragmentBuilder::NGContainerFragmentBuilder(
-    scoped_refptr<const ComputedStyle> style,
-    WritingMode writing_mode,
-    TextDirection direction)
-    : NGFragmentBuilder(std::move(style), writing_mode, direction) {}
-
-NGContainerFragmentBuilder::~NGContainerFragmentBuilder() = default;
-
 NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
     const NGLayoutResult& child,
     const NGLogicalOffset& child_offset) {

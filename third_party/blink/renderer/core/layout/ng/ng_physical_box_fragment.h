@@ -13,25 +13,14 @@
 
 namespace blink {
 
+class NGBoxFragmentBuilder;
 enum class NGOutlineType;
+
 class CORE_EXPORT NGPhysicalBoxFragment final
     : public NGPhysicalContainerFragment {
  public:
-  // This modifies the passed-in children vector.
-  NGPhysicalBoxFragment(LayoutObject* layout_object,
-                        const ComputedStyle& style,
-                        NGStyleVariant style_variant,
-                        NGPhysicalSize size,
-                        Vector<NGLink>& children,
-                        const NGPhysicalBoxStrut& border,
-                        const NGPhysicalBoxStrut& padding,
-                        Vector<NGBaseline>& baselines,
-                        NGBoxType box_type,
-                        bool is_fieldset_container,
-                        bool is_rendered_legend,
-                        bool is_old_layout_root,
-                        unsigned,  // NGBorderEdges::Physical
-                        scoped_refptr<NGBreakToken> break_token = nullptr);
+  NGPhysicalBoxFragment(NGBoxFragmentBuilder* builder,
+                        WritingMode block_or_line_writing_mode);
 
   const NGBaseline* Baseline(const NGBaselineRequest&) const;
 

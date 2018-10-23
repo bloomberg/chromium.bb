@@ -16,6 +16,7 @@
 namespace blink {
 
 struct NGPhysicalOffsetRect;
+class NGTextFragmentBuilder;
 
 enum class AdjustMidCluster;
 
@@ -57,17 +58,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
     // enough to store.
   };
 
-  NGPhysicalTextFragment(LayoutObject* layout_object,
-                         const ComputedStyle& style,
-                         NGStyleVariant style_variant,
-                         NGTextType text_type,
-                         const String& text,
-                         unsigned start_offset,
-                         unsigned end_offset,
-                         NGPhysicalSize size,
-                         NGLineOrientation line_orientation,
-                         NGTextEndEffect end_effect,
-                         scoped_refptr<const ShapeResult> shape_result);
+  NGPhysicalTextFragment(NGTextFragmentBuilder*);
 
   NGTextType TextType() const { return static_cast<NGTextType>(sub_type_); }
   // True if this is a generated text.
@@ -146,6 +137,19 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
       unsigned end_offset) const;
 
  private:
+  // For use by TrimText only
+  NGPhysicalTextFragment(LayoutObject* layout_object,
+                         const ComputedStyle& style,
+                         NGStyleVariant style_variant,
+                         NGTextType text_type,
+                         const String& text,
+                         unsigned start_offset,
+                         unsigned end_offset,
+                         NGPhysicalSize size,
+                         NGLineOrientation line_orientation,
+                         NGTextEndEffect end_effect,
+                         scoped_refptr<const ShapeResult> shape_result);
+
   LayoutUnit InlinePositionForOffset(unsigned offset,
                                      LayoutUnit (*round)(float),
                                      AdjustMidCluster) const;

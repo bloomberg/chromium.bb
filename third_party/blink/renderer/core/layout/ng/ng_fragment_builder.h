@@ -23,8 +23,6 @@ class CORE_EXPORT NGFragmentBuilder {
   STACK_ALLOCATED();
 
  public:
-  virtual ~NGFragmentBuilder() {}
-
   const ComputedStyle& Style() const {
     DCHECK(style_);
     return *style_;
@@ -69,16 +67,16 @@ class CORE_EXPORT NGFragmentBuilder {
   NGFragmentBuilder(WritingMode writing_mode, TextDirection direction)
       : writing_mode_(writing_mode), direction_(direction) {}
 
- private:
+ protected:
   scoped_refptr<const ComputedStyle> style_;
   WritingMode writing_mode_;
   TextDirection direction_;
-
- protected:
   NGStyleVariant style_variant_;
   NGLogicalSize size_;
   LayoutObject* layout_object_ = nullptr;
   scoped_refptr<NGBreakToken> break_token_;
+
+  friend class NGPhysicalFragment;
 };
 
 }  // namespace blink

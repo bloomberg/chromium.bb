@@ -12,17 +12,12 @@
 
 namespace blink {
 
+class NGLineBoxFragmentBuilder;
+
 class CORE_EXPORT NGPhysicalLineBoxFragment final
     : public NGPhysicalContainerFragment {
  public:
-  // This modifies the passed-in children vector.
-  NGPhysicalLineBoxFragment(const ComputedStyle&,
-                            NGStyleVariant style_variant,
-                            NGPhysicalSize size,
-                            Vector<NGLink>& children,
-                            const NGLineHeightMetrics&,
-                            TextDirection base_direction,
-                            scoped_refptr<NGBreakToken> break_token = nullptr);
+  NGPhysicalLineBoxFragment(NGLineBoxFragmentBuilder* builder);
 
   const NGLineHeightMetrics& Metrics() const { return metrics_; }
 
