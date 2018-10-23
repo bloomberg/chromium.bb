@@ -246,8 +246,7 @@ TEST_F(ShelfBackgroundAnimatorTest, MaximizedBackground) {
   PaintBackground(SHELF_BACKGROUND_MAXIMIZED);
 
   EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, animator_->target_background_type());
-  EXPECT_EQ(kShelfTranslucentMaximizedWindowNewUi,
-            observer_.GetBackgroundAlpha());
+  EXPECT_EQ(kShelfTranslucentMaximizedWindow, observer_.GetBackgroundAlpha());
   EXPECT_EQ(0, observer_.GetItemBackgroundAlpha());
 }
 

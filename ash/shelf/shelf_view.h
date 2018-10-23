@@ -234,7 +234,7 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Enumerates the shelf items that are centered in the new UI and returns
   // the total size they occupy.
-  int GetDimensionOfCenteredShelfItemsInNewUi() const;
+  int GetDimensionOfCenteredShelfItems() const;
 
   // Returns the index of the item after which the separator should be shown,
   // or -1 if no separator is required.

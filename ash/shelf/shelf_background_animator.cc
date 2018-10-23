@@ -71,7 +71,7 @@ std::pair<int, int> GetTargetColorAlphaValues(
       target_item_color_alpha = SK_AlphaTRANSPARENT;
       break;
     case SHELF_BACKGROUND_MAXIMIZED:
-      target_shelf_color_alpha = kShelfTranslucentMaximizedWindowNewUi;
+      target_shelf_color_alpha = kShelfTranslucentMaximizedWindow;
       target_item_color_alpha = SK_AlphaTRANSPARENT;
       break;
     case SHELF_BACKGROUND_APP_LIST:

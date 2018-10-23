@@ -78,7 +78,7 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
   set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
   SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE));
-  SetSize(gfx::Size(kShelfControlSizeNewUi, kShelfControlSizeNewUi));
+  SetSize(gfx::Size(kShelfControlSize, kShelfControlSize));
   SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
   set_notify_action(Button::NOTIFY_ON_PRESS);
 

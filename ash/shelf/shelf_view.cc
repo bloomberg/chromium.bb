@@ -930,7 +930,7 @@ int ShelfView::GetSeparatorIndex() const {
   return -1;
 }
 
-int ShelfView::GetDimensionOfCenteredShelfItemsInNewUi() const {
+int ShelfView::GetDimensionOfCenteredShelfItems() const {
   int size = 0;
   int added_items = 0;
   for (ShelfItem item : model_->items()) {
@@ -977,16 +977,16 @@ void ShelfView::LayoutAppListAndBackButtonHighlight() const {
   const int button_spacing = ShelfConstants::button_spacing();
   // "Secondary" as in "orthogonal to the shelf primary axis".
   const int control_secondary_padding =
-      (ShelfConstants::shelf_size() - kShelfControlSizeNewUi) / 2;
+      (ShelfConstants::shelf_size() - kShelfControlSize) / 2;
   const int back_and_app_list_background_size =
-      kShelfControlSizeNewUi +
-      (IsTabletModeEnabled() ? kShelfControlSizeNewUi + button_spacing : 0);
+      kShelfControlSize +
+      (IsTabletModeEnabled() ? kShelfControlSize + button_spacing : 0);
   back_and_app_list_background_->SetBounds(
       shelf_->PrimaryAxisValue(button_spacing, control_secondary_padding),
       shelf_->PrimaryAxisValue(control_secondary_padding, button_spacing),
       shelf_->PrimaryAxisValue(back_and_app_list_background_size,
-                               kShelfControlSizeNewUi),
-      shelf_->PrimaryAxisValue(kShelfControlSizeNewUi,
+                               kShelfControlSize),
+      shelf_->PrimaryAxisValue(kShelfControlSize,
                                back_and_app_list_background_size));
 }
 
@@ -1023,7 +1023,7 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
       // Start centering after we've laid out the app list button.
       // Center the shelf items on the whole shelf, including the status
       // area widget.
-      int centered_shelf_items_size = GetDimensionOfCenteredShelfItemsInNewUi();
+      int centered_shelf_items_size = GetDimensionOfCenteredShelfItems();
       StatusAreaWidget* status_widget = shelf_widget_->status_area_widget();
       int status_widget_size =
           status_widget ? shelf_->PrimaryAxisValue(
