@@ -15,10 +15,6 @@
 -CompositedScrollingBrowserTest.Scroll3DTransformedScroller
 
 
-# DCHECK(!event->IsPointerEvent()) fail. https://crbug.com/884342
--MouseLatencyBrowserTest.CoalescedMouseWheelsCorrectlyTerminated
-
-
 # InputEventAckWaiter::Wait() times out,
 # or RenderWidgetHostMouseEventMonitor::EventWasReceived fails.
 # https://crbug.com/884360
