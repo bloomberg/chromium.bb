@@ -32,6 +32,7 @@ class MockService : public Service {
                     ResponseCallback& callback));
 
   void GetActions(const std::string& script_path,
+                  const GURL& ignored_url,
                   const std::map<std::string, std::string>& parameters,
                   ResponseCallback callback) override {
     OnGetActions(script_path, parameters, callback);

@@ -45,7 +45,8 @@ void ScriptExecutor::Run(RunScriptCallback callback) {
   DCHECK(delegate_->GetService());
 
   delegate_->GetService()->GetActions(
-      script_path_, delegate_->GetParameters(),
+      script_path_, delegate_->GetWebController()->GetUrl(),
+      delegate_->GetParameters(),
       base::BindOnce(&ScriptExecutor::OnGetActions,
                      weak_ptr_factory_.GetWeakPtr()));
 }

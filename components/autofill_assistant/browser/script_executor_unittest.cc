@@ -26,6 +26,7 @@ using ::testing::DoAll;
 using ::testing::Field;
 using ::testing::NiceMock;
 using ::testing::Pair;
+using ::testing::ReturnRef;
 using ::testing::SaveArg;
 using ::testing::StrEq;
 using ::testing::StrictMock;
@@ -35,6 +36,7 @@ class ScriptExecutorTest : public testing::Test, public ScriptExecutorDelegate {
  public:
   void SetUp() override {
     executor_ = std::make_unique<ScriptExecutor>("script path", this);
+    url_ = GURL("http://example.com/");
 
     // In this test, "tell" actions always succeed and "click" actions always
     // fail. The following makes a click action fail immediately
@@ -42,6 +44,7 @@ class ScriptExecutorTest : public testing::Test, public ScriptExecutorDelegate {
         .WillByDefault(RunOnceCallback<1>(true));
     ON_CALL(mock_web_controller_, OnClickElement(_, _))
         .WillByDefault(RunOnceCallback<1>(false));
+    ON_CALL(mock_web_controller_, GetUrl()).WillByDefault(ReturnRef(url_));
   }
 
  protected:
@@ -85,6 +88,7 @@ class ScriptExecutorTest : public testing::Test, public ScriptExecutorDelegate {
   std::map<std::string, std::string> parameters_;
   StrictMock<base::MockCallback<ScriptExecutor::RunScriptCallback>>
       executor_callback_;
+  GURL url_;
 };
 
 TEST_F(ScriptExecutorTest, GetActionsFails) {
