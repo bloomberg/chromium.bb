@@ -157,6 +157,8 @@ class SyncedBookmarkTracker {
     model_type_state_ = std::move(model_type_state);
   }
 
+  std::vector<const Entity*> GetAllEntities() const;
+
   std::vector<const Entity*> GetEntitiesWithLocalChanges(
       size_t max_entries) const;
 

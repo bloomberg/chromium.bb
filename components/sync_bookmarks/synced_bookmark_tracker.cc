@@ -298,6 +298,16 @@ bool SyncedBookmarkTracker::HasLocalChanges() const {
 }
 
 std::vector<const SyncedBookmarkTracker::Entity*>
+SyncedBookmarkTracker::GetAllEntities() const {
+  std::vector<const SyncedBookmarkTracker::Entity*> entities;
+  for (const std::pair<const std::string, std::unique_ptr<Entity>>& pair :
+       sync_id_to_entities_map_) {
+    entities.push_back(pair.second.get());
+  }
+  return entities;
+}
+
+std::vector<const SyncedBookmarkTracker::Entity*>
 SyncedBookmarkTracker::GetEntitiesWithLocalChanges(size_t max_entries) const {
   std::vector<const SyncedBookmarkTracker::Entity*> entities_with_local_changes;
   // Entities with local non deletions should be sorted such that parent
