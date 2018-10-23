@@ -1091,7 +1091,7 @@ void WindowGrid::InitShieldWidget() {
           ? 1.f
           : 0.f;
   shield_widget_ = CreateBackgroundWidget(
-      root_window_, ui::LAYER_SOLID_COLOR, SK_ColorTRANSPARENT, 0, 0,
+      root_window_, ui::LAYER_NOT_DRAWN, SK_ColorTRANSPARENT, 0, 0,
       SK_ColorTRANSPARENT, initial_opacity, /*parent=*/nullptr,
       /*stack_on_top=*/true);
   aura::Window* widget_window = shield_widget_->GetNativeWindow();
