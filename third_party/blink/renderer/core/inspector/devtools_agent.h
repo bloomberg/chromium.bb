@@ -42,7 +42,8 @@ class CORE_EXPORT DevToolsAgent
   void Dispose();
   void FlushProtocolNotifications();
   void BindRequest(mojom::blink::DevToolsAgentHostAssociatedPtrInfo,
-                   mojom::blink::DevToolsAgentAssociatedRequest);
+                   mojom::blink::DevToolsAgentAssociatedRequest,
+                   scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   virtual void Trace(blink::Visitor*);
 
  private:
