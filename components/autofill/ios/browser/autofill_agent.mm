@@ -65,18 +65,13 @@ using FormDataVector = std::vector<autofill::FormData>;
 // |fetchFormsWithName:minimumRequiredFieldsCount:completionHandler|
 typedef void (^FetchFormsCompletionHandler)(BOOL, const FormDataVector&);
 
-// Gets the first focusable form and field specified by |fieldIdentifier| from
-// |forms|, modifying the returned field so that input elements are also
-// handled.
-void GetFormAndField(autofill::FormData* form,
-                     autofill::FormFieldData* field,
-                     const FormDataVector& forms,
-                     const std::string& fieldIdentifier) {
-  DCHECK_GE(forms.size(), 1U);
-  *form = forms[0];
-  const base::string16 fieldIdentifier16 = base::UTF8ToUTF16(fieldIdentifier);
-  for (const auto& currentField : form->fields) {
-    if (currentField.id == fieldIdentifier16 && currentField.is_focusable) {
+// Gets the field specified by |fieldIdentifier| from |form|, if focusable. Also
+// modifies the field's value for the select elements.
+void GetFormField(autofill::FormFieldData* field,
+                  const autofill::FormData& form,
+                  const base::string16& fieldIdentifier) {
+  for (const auto& currentField : form.fields) {
+    if (currentField.id == fieldIdentifier && currentField.is_focusable) {
       *field = currentField;
       break;
     }
@@ -131,14 +126,13 @@ void GetFormAndField(autofill::FormData* form,
 
 // Sends a request to AutofillManager to retrieve suggestions for the specified
 // form and field.
-- (void)queryAutofillWithForms:(const FormDataVector&)forms
-                     fieldName:(NSString*)fieldName
-               fieldIdentifier:(NSString*)fieldIdentifier
-                          type:(NSString*)type
-                    typedValue:(NSString*)typedValue
-                       frameID:(NSString*)frameID
-                      webState:(web::WebState*)webState
-             completionHandler:(SuggestionsAvailableCompletion)completion;
+- (void)queryAutofillForForm:(const autofill::FormData&)form
+             fieldIdentifier:(NSString*)fieldIdentifier
+                        type:(NSString*)type
+                  typedValue:(NSString*)typedValue
+                     frameID:(NSString*)frameID
+                    webState:(web::WebState*)webState
+           completionHandler:(SuggestionsAvailableCompletion)completion;
 
 // Rearranges and filters the suggestions to move profile or credit card
 // suggestions to the front if the user has selected one recently and remove
@@ -374,14 +368,13 @@ autofillManagerFromWebState:(web::WebState*)webState
 #pragma mark -
 #pragma mark FormSuggestionProvider
 
-- (void)queryAutofillWithForms:(const FormDataVector&)forms
-                     fieldName:(NSString*)fieldName
-               fieldIdentifier:(NSString*)fieldIdentifier
-                          type:(NSString*)type
-                    typedValue:(NSString*)typedValue
-                       frameID:(NSString*)frameID
-                      webState:(web::WebState*)webState
-             completionHandler:(SuggestionsAvailableCompletion)completion {
+- (void)queryAutofillForForm:(const autofill::FormData&)form
+             fieldIdentifier:(NSString*)fieldIdentifier
+                        type:(NSString*)type
+                  typedValue:(NSString*)typedValue
+                     frameID:(NSString*)frameID
+                    webState:(web::WebState*)webState
+           completionHandler:(SuggestionsAvailableCompletion)completion {
   web::WebFrame* frame =
       GetWebFrameWithId(webState, base::SysNSStringToUTF8(frameID));
   autofill::AutofillManager* autofillManager =
@@ -392,11 +385,9 @@ autofillManagerFromWebState:(web::WebState*)webState
   // Passed to delegates; we don't use it so it's set to zero.
   int queryId = 0;
 
-  // Find the right form and field.
+  // Find the right field.
   autofill::FormFieldData field;
-  autofill::FormData form;
-  GetFormAndField(&form, &field, forms,
-                  base::SysNSStringToUTF8(fieldIdentifier));
+  GetFormField(&field, form, base::SysNSStringToUTF16(fieldIdentifier));
 
   // Save the completion and go look for suggestions.
   suggestionsAvailableCompletion_ = [completion copy];
@@ -410,7 +401,6 @@ autofillManagerFromWebState:(web::WebState*)webState
 }
 
 - (void)checkIfSuggestionsAvailableForForm:(NSString*)formName
-                                 fieldName:(NSString*)fieldName
                            fieldIdentifier:(NSString*)fieldIdentifier
                                  fieldType:(NSString*)fieldType
                                       type:(NSString*)type
@@ -446,14 +436,13 @@ autofillManagerFromWebState:(web::WebState*)webState
   __weak AutofillAgent* weakSelf = self;
   id completionHandler = ^(BOOL success, const FormDataVector& forms) {
     if (success && forms.size() == 1) {
-      [weakSelf queryAutofillWithForms:forms
-                             fieldName:fieldName
-                       fieldIdentifier:fieldIdentifier
-                                  type:type
-                            typedValue:typedValue
-                               frameID:frameID
-                              webState:webState
-                     completionHandler:completion];
+      [weakSelf queryAutofillForForm:forms[0]
+                     fieldIdentifier:fieldIdentifier
+                                type:type
+                          typedValue:typedValue
+                             frameID:frameID
+                            webState:webState
+                   completionHandler:completion];
     }
   };
 
@@ -468,7 +457,6 @@ autofillManagerFromWebState:(web::WebState*)webState
 }
 
 - (void)retrieveSuggestionsForForm:(NSString*)formName
-                         fieldName:(NSString*)fieldName
                    fieldIdentifier:(NSString*)fieldIdentifier
                          fieldType:(NSString*)fieldType
                               type:(NSString*)type
@@ -478,17 +466,17 @@ autofillManagerFromWebState:(web::WebState*)webState
                  completionHandler:(SuggestionsReadyCompletion)completion {
   DCHECK(mostRecentSuggestions_)
       << "Requestor should have called "
-      << "|checkIfSuggestionsAvailableForForm:fieldName:fieldIdentifier:type:"
-      << "typedValue:frameID:isMainFrame:completionHandler:| "
-      << "and waited for the result before calling "
-      << "|retrieveSuggestionsForForm:field:type:completionHandler:|.";
+      << "|checkIfSuggestionsAvailableForForm:fieldIdentifier:fieldType:type:"
+      << "typedValue:frameID:isMainFrame:hasUserGesture:webState:"
+      << "completionHandler:| and waited for the result before calling "
+      << "|retrieveSuggestionsForForm:fieldIdentifier:fieldType:type:"
+      << "typedValue:frameID:webState:completionHandler:|.";
   completion(mostRecentSuggestions_, self);
 }
 
 - (void)didSelectSuggestion:(FormSuggestion*)suggestion
-                  fieldName:(NSString*)fieldName
-            fieldIdentifier:(NSString*)fieldIdentifier
                        form:(NSString*)formName
+            fieldIdentifier:(NSString*)fieldIdentifier
                     frameID:(NSString*)frameID
           completionHandler:(SuggestionHandledCompletion)completion {
   [[UIDevice currentDevice] playInputClick];
@@ -723,9 +711,8 @@ autofillManagerFromWebState:(web::WebState*)webState
       return;
 
     autofill::FormFieldData field;
-    autofill::FormData form;
-    GetFormAndField(&form, &field, forms, fieldIdentifier);
-    autofillManager->OnTextFieldDidChange(form, field, gfx::RectF(),
+    GetFormField(&field, forms[0], base::UTF8ToUTF16(fieldIdentifier));
+    autofillManager->OnTextFieldDidChange(forms[0], field, gfx::RectF(),
                                           base::TimeTicks::Now());
   };
 
@@ -799,8 +786,8 @@ autofillManagerFromWebState:(web::WebState*)webState
 #pragma mark -
 #pragma mark AutofillViewClient
 
-// Complete a field named |fieldName| on the form named |formName| in |frame|
-// using |value| then move the cursor.
+// Complete a field identified with |fieldIdentifier| on the form named
+// |formName| in |frame| using |value| then move the cursor.
 // TODO(crbug.com/661621): |dataString| ends up at fillFormField() in
 // autofill_controller.js. fillFormField() expects an AutofillFormFieldData
 // object, which |dataString| is not because 'form' is not a specified member of

@@ -60,7 +60,6 @@ typedef NS_ENUM(NSInteger, CWVPasswordUserDecision);
 // See same method in |CWVAutofillController|. This one only fetches password
 // autofill suggestions.
 - (void)fetchSuggestionsForFormWithName:(NSString*)formName
-                              fieldName:(NSString*)fieldName
                         fieldIdentifier:(NSString*)fieldIdentifier
                               fieldType:(NSString*)fieldType
                                 frameID:(NSString*)frameID

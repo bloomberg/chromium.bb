@@ -1083,7 +1083,6 @@ TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
     __block BOOL block_was_called = NO;
     [passwordController_
         retrieveSuggestionsForForm:form_name
-                         fieldName:username_element
                    fieldIdentifier:username_element
                          fieldType:@"text"
                               type:@"focus"
@@ -1120,9 +1119,8 @@ TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
     };
     [passwordController_
         didSelectSuggestion:suggestion
-                  fieldName:@"u"
-            fieldIdentifier:@"u"
                        form:base::SysUTF8ToNSString(FormName(0))
+            fieldIdentifier:@"u"
                     frameID:base::SysUTF8ToNSString(mainFrameID)
           completionHandler:completion];
     EXPECT_TRUE(
@@ -1381,7 +1379,6 @@ TEST_F(PasswordControllerTest, CheckAsyncSuggestions) {
     std::string mainFrameID = web::GetMainWebFrameId(web_state());
     [passwordController_
         checkIfSuggestionsAvailableForForm:@"dynamic_form"
-                                 fieldName:@"username"
                            fieldIdentifier:@"username"
                                  fieldType:@"text"
                                       type:@"focus"
@@ -1420,7 +1417,6 @@ TEST_F(PasswordControllerTest, CheckNoAsyncSuggestionsOnNonUsernameField) {
   std::string mainFrameID = web::GetMainWebFrameId(web_state());
   [passwordController_
       checkIfSuggestionsAvailableForForm:@"dynamic_form"
-                               fieldName:@"address"
                          fieldIdentifier:@"address"
                                fieldType:@"text"
                                     type:@"focus"
@@ -1453,7 +1449,6 @@ TEST_F(PasswordControllerTest, CheckNoAsyncSuggestionsOnNoPasswordForms) {
   std::string mainFrameID = web::GetMainWebFrameId(web_state());
   [passwordController_
       checkIfSuggestionsAvailableForForm:@"form"
-                               fieldName:@"address"
                          fieldIdentifier:@"address"
                                fieldType:@"text"
                                     type:@"focus"

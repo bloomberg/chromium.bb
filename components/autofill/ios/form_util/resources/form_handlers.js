@@ -101,7 +101,6 @@ var formActivity_ = function(evt) {
   var msg = {
     'command': 'form.activity',
     'formName': __gCrWeb.form.getFormIdentifier(evt.target.form),
-    'fieldName': __gCrWeb.form.getFieldName(target),
     'fieldIdentifier': __gCrWeb.form.getFieldIdentifier(target),
     'fieldType': fieldType,
     'type': evt.type,
@@ -208,7 +207,6 @@ __gCrWeb.formHandlers['trackFormMutations'] = function(delay) {
             var msg = {
               'command': 'form.activity',
               'formName': '',
-              'fieldName': '',
               'fieldIdentifier': '',
               'fieldType': '',
               'type': 'form_changed',

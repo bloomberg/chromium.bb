@@ -75,7 +75,6 @@ TEST_F(ManualFillFormObserverHelperiOSTest, ObservesWebState) {
 
   autofill::FormActivityParams params;
   params.form_name = "form";
-  params.field_name = "field";
   params.field_identifier = "field_id";
   params.field_type = "text";
   params.type = "blur";
@@ -113,7 +112,6 @@ TEST_F(ManualFillFormObserverHelperiOSTest, ObservesMultipleWebStates) {
 
   autofill::FormActivityParams params;
   params.form_name = "form";
-  params.field_name = "field";
   params.field_identifier = "field_id";
   params.field_type = "text";
   params.type = "focus";

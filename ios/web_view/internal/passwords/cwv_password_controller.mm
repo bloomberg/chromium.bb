@@ -340,7 +340,6 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
 #pragma mark - Public
 
 - (void)fetchSuggestionsForFormWithName:(NSString*)formName
-                              fieldName:(NSString*)fieldName
                         fieldIdentifier:(NSString*)fieldIdentifier
                               fieldType:(NSString*)fieldType
                                 frameID:(NSString*)frameID
@@ -383,7 +382,6 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
                                [[CWVAutofillSuggestion alloc]
                                    initWithFormSuggestion:formSuggestion
                                                  formName:formName
-                                                fieldName:fieldName
                                           fieldIdentifier:fieldIdentifier
                                                   frameID:frameID
                                      isPasswordSuggestion:YES];

@@ -335,7 +335,6 @@ TEST_F(AutofillAgentTests, CheckIfSuggestionsAvailable_UserInitiatedActivity1) {
       executeJavaScript:@"__gCrWeb.autofill.extractForms(1, true);"
       completionHandler:[OCMArg any]];
   [autofill_agent_ checkIfSuggestionsAvailableForForm:@"form"
-                                            fieldName:@"address"
                                       fieldIdentifier:@"address"
                                             fieldType:@"text"
                                                  type:@"focus"
@@ -365,7 +364,6 @@ TEST_F(AutofillAgentTests,
       autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
   scoped_feature_list.InitWithFeatures(enabled_features, disabled_features);
   [autofill_agent_ checkIfSuggestionsAvailableForForm:@"form"
-                                            fieldName:@"address"
                                       fieldIdentifier:@"address"
                                             fieldType:@"text"
                                                  type:@"focus"
@@ -399,7 +397,6 @@ TEST_F(AutofillAgentTests, CheckIfSuggestionsAvailable_UserInitiatedActivity2) {
       executeJavaScript:@"__gCrWeb.autofill.extractForms(1, false);"
       completionHandler:[OCMArg any]];
   [autofill_agent_ checkIfSuggestionsAvailableForForm:@"form"
-                                            fieldName:@"address"
                                       fieldIdentifier:@"address"
                                             fieldType:@"text"
                                                  type:@"focus"
@@ -434,7 +431,6 @@ TEST_F(AutofillAgentTests,
       executeJavaScript:@"__gCrWeb.autofill.extractForms(1, false);"
       completionHandler:[OCMArg any]];
   [autofill_agent_ checkIfSuggestionsAvailableForForm:@"form"
-                                            fieldName:@"address"
                                       fieldIdentifier:@"address"
                                             fieldType:@"text"
                                                  type:@"focus"
@@ -458,7 +454,6 @@ TEST_F(AutofillAgentTests,
   __block BOOL completion_handler_called = NO;
 
   [autofill_agent_ checkIfSuggestionsAvailableForForm:@"form"
-                                            fieldName:@"address"
                                       fieldIdentifier:@"address"
                                             fieldType:@"text"
                                                  type:@"focus"
@@ -513,7 +508,6 @@ TEST_F(AutofillAgentTests, onSuggestionsReady_ClearForm) {
     completion_handler_called = YES;
   };
   [autofill_agent_ retrieveSuggestionsForForm:@"form"
-                                    fieldName:@"address"
                               fieldIdentifier:@"address"
                                     fieldType:@"text"
                                          type:@"focus"
@@ -573,7 +567,6 @@ TEST_F(AutofillAgentTests, onSuggestionsReady_ClearFormWithGPay) {
     completion_handler_called = YES;
   };
   [autofill_agent_ retrieveSuggestionsForForm:@"form"
-                                    fieldName:@"address"
                               fieldIdentifier:@"address"
                                     fieldType:@"text"
                                          type:@"focus"

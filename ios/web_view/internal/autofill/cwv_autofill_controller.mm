@@ -48,9 +48,9 @@
                                     FormActivityObserver,
                                     CWVPasswordControllerDelegate>
 
-// For the field named |fieldName|, identified by |fieldIdentifier|, with type
-// |fieldType| in the form named |formName|, fetches non-password suggestions
-// that can be used to autofill.
+// For the field identified by |fieldIdentifier|, with type |fieldType| in the
+// form named |formName|, fetches non-password suggestions that can be used to
+// autofill.
 // No-op if no such form and field can be found in the current page.
 // |fieldIdentifier| identifies the field that had focus. It is passed to
 // CWVAutofillControllerDelegate and forwarded to this method.
@@ -59,7 +59,6 @@
 // |completionHandler| will only be called on success.
 - (void)
 fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
-                                 fieldName:(NSString*)fieldName
                            fieldIdentifier:(NSString*)fieldIdentifier
                                  fieldType:(NSString*)fieldType
                                    frameID:(NSString*)frameID
@@ -182,7 +181,6 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
 }
 
 - (void)fetchSuggestionsForFormWithName:(NSString*)formName
-                              fieldName:(NSString*)fieldName
                         fieldIdentifier:(NSString*)fieldIdentifier
                               fieldType:(NSString*)fieldType
                                 frameID:(NSString*)frameID
@@ -203,7 +201,6 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
   // Fetch password suggestion first.
   [_passwordController
       fetchSuggestionsForFormWithName:formName
-                            fieldName:fieldName
                       fieldIdentifier:fieldIdentifier
                             fieldType:fieldType
                               frameID:frameID
@@ -213,7 +210,6 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
                       resultHandler();
                     }];
   [self fetchNonPasswordSuggestionsForFormWithName:formName
-                                         fieldName:fieldName
                                    fieldIdentifier:fieldIdentifier
                                          fieldType:fieldType
                                            frameID:frameID
@@ -227,7 +223,6 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
 
 - (void)
 fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
-                                 fieldName:(NSString*)fieldName
                            fieldIdentifier:(NSString*)fieldIdentifier
                                  fieldType:(NSString*)fieldType
                                    frameID:(NSString*)frameID
@@ -248,7 +243,6 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
         CWVAutofillSuggestion* autofillSuggestion = [
             [CWVAutofillSuggestion alloc] initWithFormSuggestion:formSuggestion
                                                         formName:formName
-                                                       fieldName:fieldName
                                                  fieldIdentifier:fieldIdentifier
                                                          frameID:frameID
                                             isPasswordSuggestion:NO];
@@ -258,7 +252,6 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
     };
     // Set |typedValue| to " " to bypass the filtering logic in |AutofillAgent|.
     [strongSelf->_autofillAgent retrieveSuggestionsForForm:formName
-                                                 fieldName:fieldName
                                            fieldIdentifier:fieldIdentifier
                                                  fieldType:fieldType
                                                       type:nil
@@ -272,7 +265,6 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
   // while the latter merely returns them.
   // Set |typedValue| to " " to bypass the filtering logic in |AutofillAgent|.
   [_autofillAgent checkIfSuggestionsAvailableForForm:formName
-                                           fieldName:fieldName
                                      fieldIdentifier:fieldIdentifier
                                            fieldType:fieldType
                                                 type:nil
@@ -295,9 +287,8 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
                       }];
   } else {
     [_autofillAgent didSelectSuggestion:suggestion.formSuggestion
-                              fieldName:suggestion.fieldName
-                        fieldIdentifier:suggestion.fieldIdentifier
                                    form:suggestion.formName
+                        fieldIdentifier:suggestion.fieldIdentifier
                                 frameID:suggestion.frameID
                       completionHandler:^{
                         if (completionHandler) {
@@ -308,21 +299,17 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
 }
 
 - (void)removeSuggestion:(CWVAutofillSuggestion*)suggestion {
-  // Identifier is greater than 0 when it is an autofill profile.
+  // Identifier is greater than 0 for Autofill suggestions.
+  DCHECK_LT(0, suggestion.formSuggestion.identifier);
+
   web::WebFrame* frame = web::GetWebFrameWithId(
       _webState, base::SysNSStringToUTF8(suggestion.frameID));
   autofill::AutofillManager* manager = [self autofillManagerForFrame:frame];
   if (!manager) {
     return;
   }
-  if (suggestion.formSuggestion.identifier > 0) {
-    manager->RemoveAutofillProfileOrCreditCard(
-        suggestion.formSuggestion.identifier);
-  } else {
-    manager->RemoveAutocompleteEntry(
-        base::SysNSStringToUTF16(suggestion.fieldName),
-        base::SysNSStringToUTF16(suggestion.value));
-  }
+  manager->RemoveAutofillProfileOrCreditCard(
+      suggestion.formSuggestion.identifier);
 }
 
 - (void)focusPreviousField {
@@ -364,14 +351,15 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
   for (const auto& suggestion : suggestions) {
     NSString* value = nil;
     NSString* displayDescription = nil;
-    if (suggestion.frontend_id >= 0) {
+    // frontend_id is greater than 0 for Autofill suggestions.
+    if (suggestion.frontend_id > 0) {
       value = base::SysUTF16ToNSString(suggestion.value);
       displayDescription = base::SysUTF16ToNSString(suggestion.label);
     }
 
     // Suggestions without values are typically special suggestions such as
-    // clear form or go to autofill settings. They are not supported by
-    // CWVAutofillController.
+    // Autocomplete, clear form, or go to autofill settings. They are not
+    // supported by CWVAutofillController.
     if (!value) {
       continue;
     }
@@ -474,7 +462,6 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
   DCHECK_EQ(_webState, webState);
 
   NSString* nsFormName = base::SysUTF8ToNSString(params.form_name);
-  NSString* nsFieldName = base::SysUTF8ToNSString(params.field_name);
   NSString* nsFieldIdentifier =
       base::SysUTF8ToNSString(params.field_identifier);
   NSString* nsFieldType = base::SysUTF8ToNSString(params.field_type);
@@ -483,40 +470,37 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
   if (params.type == "focus") {
     _lastFocusFormActivityWebFrameID = nsFrameID;
     if ([_delegate respondsToSelector:@selector
-                   (autofillController:didFocusOnFieldWithName:fieldIdentifier
-                                         :fieldType:formName:frameID:value:)]) {
+                   (autofillController:didFocusOnFieldWithIdentifier:fieldType
+                                         :formName:frameID:value:)]) {
       [_delegate autofillController:self
-            didFocusOnFieldWithName:nsFieldName
-                    fieldIdentifier:nsFieldIdentifier
-                          fieldType:nsFieldType
-                           formName:nsFormName
-                            frameID:nsFrameID
-                              value:nsValue];
+          didFocusOnFieldWithIdentifier:nsFieldIdentifier
+                              fieldType:nsFieldType
+                               formName:nsFormName
+                                frameID:nsFrameID
+                                  value:nsValue];
     }
   } else if (params.type == "input") {
     _lastFocusFormActivityWebFrameID = nsFrameID;
     if ([_delegate respondsToSelector:@selector
-                   (autofillController:didInputInFieldWithName:fieldIdentifier
-                                         :fieldType:formName:frameID:value:)]) {
+                   (autofillController:didInputInFieldWithIdentifier:fieldType
+                                         :formName:frameID:value:)]) {
       [_delegate autofillController:self
-            didInputInFieldWithName:nsFieldName
-                    fieldIdentifier:nsFieldIdentifier
-                          fieldType:nsFieldType
-                           formName:nsFormName
-                            frameID:nsFrameID
-                              value:nsValue];
+          didInputInFieldWithIdentifier:nsFieldIdentifier
+                              fieldType:nsFieldType
+                               formName:nsFormName
+                                frameID:nsFrameID
+                                  value:nsValue];
     }
   } else if (params.type == "blur") {
     if ([_delegate respondsToSelector:@selector
-                   (autofillController:didBlurOnFieldWithName:fieldIdentifier
-                                         :fieldType:formName:frameID:value:)]) {
+                   (autofillController:didBlurOnFieldWithIdentifier:fieldType
+                                         :formName:frameID:value:)]) {
       [_delegate autofillController:self
-             didBlurOnFieldWithName:nsFieldName
-                    fieldIdentifier:nsFieldIdentifier
-                          fieldType:nsFieldType
-                           formName:nsFormName
-                            frameID:nsFrameID
-                              value:nsValue];
+          didBlurOnFieldWithIdentifier:nsFieldIdentifier
+                             fieldType:nsFieldType
+                              formName:nsFormName
+                               frameID:nsFrameID
+                                 value:nsValue];
     }
   }
 }
