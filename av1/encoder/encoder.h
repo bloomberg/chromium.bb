@@ -532,6 +532,9 @@ typedef struct ThreadData {
   FRAME_COUNTS *counts;
   PC_TREE *pc_tree;
   PC_TREE *pc_root[MAX_MIB_SIZE_LOG2 - MIN_MIB_SIZE_LOG2 + 1];
+  tran_low_t *tree_coeff_buf[MAX_MB_PLANE];
+  tran_low_t *tree_qcoeff_buf[MAX_MB_PLANE];
+  tran_low_t *tree_dqcoeff_buf[MAX_MB_PLANE];
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
   InterModesInfo *inter_modes_info;
 #endif
