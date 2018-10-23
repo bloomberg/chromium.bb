@@ -81,25 +81,42 @@ void InitSyncableAccountServicesOnDBSequence(
     autofill::AutofillWebDataBackend* autofill_backend) {
   DCHECK(db_task_runner->RunsTasksInCurrentSequence());
 
+  base::RepeatingCallback<void(bool)> wallet_active_callback;
+  if (base::FeatureList::IsEnabled(switches::kSyncUSSAutofillWalletMetadata)) {
+    autofill::AutofillWalletMetadataSyncBridge::
+        CreateForWebDataServiceAndBackend(app_locale, autofill_backend,
+                                          autofill_web_data.get());
+    wallet_active_callback = base::BindRepeating(
+        &autofill::AutofillWalletMetadataSyncBridge::
+            OnWalletDataTrackingStateChanged,
+        autofill::AutofillWalletMetadataSyncBridge::FromWebDataService(
+            autofill_web_data.get())
+            ->GetWeakPtr());
+  } else {
+    autofill::AutofillWalletMetadataSyncableService::
+        CreateForWebDataServiceAndBackend(autofill_web_data.get(),
+                                          autofill_backend, app_locale);
+    wallet_active_callback = base::BindRepeating(
+        &autofill::AutofillWalletMetadataSyncableService::
+            OnWalletDataTrackingStateChanged,
+        autofill::AutofillWalletMetadataSyncableService::FromWebDataService(
+            autofill_web_data.get())
+            ->GetWeakPtr());
+  }
+
   if (base::FeatureList::IsEnabled(switches::kSyncUSSAutofillWalletData)) {
     autofill::AutofillWalletSyncBridge::CreateForWebDataServiceAndBackend(
-        app_locale, is_full_sync, autofill_backend, autofill_web_data.get());
+        app_locale, wallet_active_callback, is_full_sync, autofill_backend,
+        autofill_web_data.get());
   } else {
     autofill::AutofillWalletSyncableService::CreateForWebDataServiceAndBackend(
         autofill_web_data.get(), autofill_backend, app_locale);
     autofill::AutofillWalletSyncableService::FromWebDataService(
         autofill_web_data.get())
         ->InjectStartSyncFlare(sync_flare);
-  }
-
-  if (base::FeatureList::IsEnabled(switches::kSyncUSSAutofillWalletMetadata)) {
-    autofill::AutofillWalletMetadataSyncBridge::
-        CreateForWebDataServiceAndBackend(app_locale, autofill_backend,
-                                          autofill_web_data.get());
-  } else {
-    autofill::AutofillWalletMetadataSyncableService::
-        CreateForWebDataServiceAndBackend(autofill_web_data.get(),
-                                          autofill_backend, app_locale);
+    // For non-USS wallet, the metadata is always checking the existence of
+    // wallet data to add/remove metadata entries.
+    wallet_active_callback.Run(true);
   }
 }
 
