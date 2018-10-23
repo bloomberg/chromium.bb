@@ -131,6 +131,8 @@ source_set("common") {
     "gin_java_bridge_messages.h",
     "in_process_child_thread_params.cc",
     "in_process_child_thread_params.h",
+    "input/actions_parser.cc",
+    "input/actions_parser.h",
     "input/event_with_latency_info.h",
     "input/gesture_event_stream_validator.cc",
     "input/gesture_event_stream_validator.h",

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_GPU_ACTION_PARSER_H_
-#define CONTENT_RENDERER_GPU_ACTION_PARSER_H_
+#ifndef CONTENT_COMMON_INPUT_ACTIONS_PARSER_H_
+#define CONTENT_COMMON_INPUT_ACTIONS_PARSER_H_
 
 #include <cstddef>
 #include <set>
@@ -54,4 +54,4 @@ class CONTENT_EXPORT ActionsParser {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_GPU_ACTION_PARSER_H_
+#endif  // CONTENT_COMMON_INPUT_ACTIONS_PARSER_H_
