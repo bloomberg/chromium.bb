@@ -18,7 +18,7 @@
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
-#include "content/browser/media/session/audio_focus_observer.h"
+#include "content/browser/media/media_internals_audio_focus_helper.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -44,7 +44,6 @@ namespace content {
 // TODO(crbug.com/812557): Remove inheritance from media::AudioLogFactory once
 // the creation of the AudioManager instance moves to the audio service.
 class CONTENT_EXPORT MediaInternals : public media::AudioLogFactory,
-                                      public AudioFocusObserver,
                                       public NotificationObserver {
  public:
   // Called with the update string.
@@ -117,27 +116,14 @@ class CONTENT_EXPORT MediaInternals : public media::AudioLogFactory,
   void OnProcessTerminatedForTesting(int process_id);
 
  private:
+  // Needs access to SendUpdate.
+  friend class MediaInternalsAudioFocusHelper;
+
   class AudioLogImpl;
   // Inner class to handle reporting pipelinestatus to UMA
   class MediaInternalsUMAHandler;
 
   MediaInternals();
-
-  // AudioFocusObserver implementation.
-  void OnFocusGained(media_session::mojom::MediaSessionInfoPtr media_session,
-                     media_session::mojom::AudioFocusType type) override;
-  void OnFocusLost(
-      media_session::mojom::MediaSessionInfoPtr media_session) override;
-
-  // Called when we receive the list of audio focus requests to display.
-  void DidGetAudioFocusRequestList(
-      std::vector<media_session::mojom::AudioFocusRequestStatePtr>);
-
-  // Called when we receive audio focus debug info to display for a single
-  // audio focus request.
-  void DidGetAudioFocusDebugInfo(
-      const std::string& id,
-      media_session::mojom::MediaSessionDebugInfoPtr info);
 
   // Sends |update| to each registered UpdateCallback.  Safe to call from any
   // thread, but will forward to the IO thread.
@@ -165,10 +151,6 @@ class CONTENT_EXPORT MediaInternals : public media::AudioLogFactory,
                                                    int render_process_id,
                                                    int render_frame_id);
 
-  // Holds a pointer to the media session service and it's debug interface.
-  media_session::mojom::AudioFocusManagerPtr audio_focus_ptr_;
-  media_session::mojom::AudioFocusManagerDebugPtr audio_focus_debug_ptr_;
-
   // Must only be accessed on the UI thread.
   std::vector<UpdateCallback> update_callbacks_;
 
@@ -180,8 +162,7 @@ class CONTENT_EXPORT MediaInternals : public media::AudioLogFactory,
 
   NotificationRegistrar registrar_;
 
-  // Must only be accessed on the UI thread.
-  base::DictionaryValue audio_focus_data_;
+  MediaInternalsAudioFocusHelper audio_focus_helper_;
 
   // All variables below must be accessed under |lock_|.
   base::Lock lock_;
