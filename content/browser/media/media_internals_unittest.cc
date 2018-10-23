@@ -352,16 +352,18 @@ class MediaInternalsAudioFocusTest : public testing::Test,
       run_loop_->Quit();
   }
 
-  void ExpectValueAndReset(base::ListValue expected_list) {
+  base::Value GetSessionsFromValueAndReset() {
     base::AutoLock auto_lock(lock_);
 
-    base::DictionaryValue expected_data;
-    expected_data.SetKey("sessions", std::move(expected_list));
-    EXPECT_EQ(expected_data, update_data_);
+    base::Value session =
+        update_data_.FindKeyOfType("sessions", base::Value::Type::LIST)
+            ->Clone();
 
     update_data_.Clear();
     run_loop_ = std::make_unique<base::RunLoop>();
     call_count_ = 0;
+
+    return session;
   }
 
   void Reset() {
@@ -375,12 +377,6 @@ class MediaInternalsAudioFocusTest : public testing::Test,
   std::unique_ptr<TestWebContents> CreateWebContents() {
     return TestWebContents::Create(
         browser_context_.get(), SiteInstance::Create(browser_context_.get()));
-  }
-
-  base::Value GetAddressAsValue(MediaSessionImpl* media_session) {
-    std::stringstream stream;
-    stream << media_session;
-    return base::Value(stream.str());
   }
 
   void RemoveAllPlayersForTest(MediaSessionImpl* session) {
@@ -439,15 +435,14 @@ TEST_F(MediaInternalsAudioFocusTest, AudioFocusStateIsUpdated) {
 
   // Check JSON is what we expect.
   {
-    base::DictionaryValue expected_session;
-    expected_session.SetKey("id", base::Value(request_id1));
-    expected_session.SetKey("name", GetAddressAsValue(media_session1));
-    expected_session.SetKey("owner", base::Value(kTestTitle1));
-    expected_session.SetKey("state", base::Value("Active"));
+    base::Value found_sessions = GetSessionsFromValueAndReset();
+    EXPECT_EQ(1u, found_sessions.GetList().size());
 
-    base::ListValue expected_list;
-    expected_list.GetList().push_back(std::move(expected_session));
-    ExpectValueAndReset(std::move(expected_list));
+    const base::Value& session = found_sessions.GetList()[0];
+    EXPECT_TRUE(base::Value(request_id1).Equals(session.FindKey("id")));
+    EXPECT_TRUE(session.FindKeyOfType("name", base::Value::Type::STRING));
+    EXPECT_TRUE(session.FindKeyOfType("owner", base::Value::Type::STRING));
+    EXPECT_TRUE(session.FindKeyOfType("state", base::Value::Type::STRING));
   }
 
   // Create another media session.
@@ -464,22 +459,20 @@ TEST_F(MediaInternalsAudioFocusTest, AudioFocusStateIsUpdated) {
 
   // Check JSON is what we expect.
   {
-    base::DictionaryValue expected_session1;
-    expected_session1.SetKey("id", base::Value(request_id2));
-    expected_session1.SetKey("name", GetAddressAsValue(media_session2));
-    expected_session1.SetKey("owner", base::Value(kTestTitle2));
-    expected_session1.SetKey("state", base::Value("Active"));
+    base::Value found_sessions = GetSessionsFromValueAndReset();
+    EXPECT_EQ(2u, found_sessions.GetList().size());
 
-    base::DictionaryValue expected_session2;
-    expected_session2.SetKey("id", base::Value(request_id1));
-    expected_session2.SetKey("name", GetAddressAsValue(media_session1));
-    expected_session2.SetKey("owner", base::Value(kTestTitle1));
-    expected_session2.SetKey("state", base::Value("Active Ducked"));
+    const base::Value& session1 = found_sessions.GetList()[0];
+    EXPECT_TRUE(base::Value(request_id2).Equals(session1.FindKey("id")));
+    EXPECT_TRUE(session1.FindKeyOfType("name", base::Value::Type::STRING));
+    EXPECT_TRUE(session1.FindKeyOfType("owner", base::Value::Type::STRING));
+    EXPECT_TRUE(session1.FindKeyOfType("state", base::Value::Type::STRING));
 
-    base::ListValue expected_list;
-    expected_list.GetList().push_back(std::move(expected_session1));
-    expected_list.GetList().push_back(std::move(expected_session2));
-    ExpectValueAndReset(std::move(expected_list));
+    const base::Value& session2 = found_sessions.GetList()[1];
+    EXPECT_TRUE(base::Value(request_id1).Equals(session2.FindKey("id")));
+    EXPECT_TRUE(session2.FindKeyOfType("name", base::Value::Type::STRING));
+    EXPECT_TRUE(session2.FindKeyOfType("owner", base::Value::Type::STRING));
+    EXPECT_TRUE(session2.FindKeyOfType("state", base::Value::Type::STRING));
   }
 
   // Abandon audio focus.
@@ -488,15 +481,14 @@ TEST_F(MediaInternalsAudioFocusTest, AudioFocusStateIsUpdated) {
 
   // Check JSON is what we expect.
   {
-    base::DictionaryValue expected_session;
-    expected_session.SetKey("id", base::Value(request_id1));
-    expected_session.SetKey("name", GetAddressAsValue(media_session1));
-    expected_session.SetKey("owner", base::Value(kTestTitle1));
-    expected_session.SetKey("state", base::Value("Active"));
+    base::Value found_sessions = GetSessionsFromValueAndReset();
+    EXPECT_EQ(1u, found_sessions.GetList().size());
 
-    base::ListValue expected_list;
-    expected_list.GetList().push_back(std::move(expected_session));
-    ExpectValueAndReset(std::move(expected_list));
+    const base::Value& session = found_sessions.GetList()[0];
+    EXPECT_TRUE(base::Value(request_id1).Equals(session.FindKey("id")));
+    EXPECT_TRUE(session.FindKeyOfType("name", base::Value::Type::STRING));
+    EXPECT_TRUE(session.FindKeyOfType("owner", base::Value::Type::STRING));
+    EXPECT_TRUE(session.FindKeyOfType("state", base::Value::Type::STRING));
   }
 
   // Abandon audio focus.
@@ -505,8 +497,8 @@ TEST_F(MediaInternalsAudioFocusTest, AudioFocusStateIsUpdated) {
 
   // Check JSON is what we expect.
   {
-    base::ListValue expected_list;
-    ExpectValueAndReset(std::move(expected_list));
+    base::Value found_sessions = GetSessionsFromValueAndReset();
+    EXPECT_EQ(0u, found_sessions.GetList().size());
   }
 }
 
