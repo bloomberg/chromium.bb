@@ -1381,11 +1381,8 @@ views::View* ProfileChooserView::CreateSupervisedUserDisclaimerView() {
 }
 
 views::View* ProfileChooserView::CreateAutofillHomeView() {
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kAutofillHome) ||
-      browser_->profile()->IsGuestSession()) {
+  if (browser_->profile()->IsGuestSession())
     return nullptr;
-  }
 
   views::View* view = new views::View();
   view->SetLayoutManager(
