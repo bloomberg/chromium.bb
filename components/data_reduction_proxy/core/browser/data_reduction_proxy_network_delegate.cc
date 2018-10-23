@@ -39,6 +39,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/features.h"
 #include "url/gurl.h"
 
 namespace data_reduction_proxy {
@@ -594,6 +595,7 @@ void DataReductionProxyNetworkDelegate::CalculateAndRecordDataUsage(
           ->IsNonContentInitiatedRequest(request)) {
     // Record non-content initiated traffic to the Other bucket for data saver
     // site-breakdown.
+    DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
     data_reduction_proxy_io_data_->UpdateDataUseForHost(
         data_used, original_size, util::GetSiteBreakdownOtherHostName());
   }

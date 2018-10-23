@@ -95,17 +95,24 @@ void ChromeDataUseMeasurement::ReportNetworkServiceDataUse(
   DCHECK_GE(recv_bytes, 0);
   DCHECK_GE(sent_bytes, 0);
 
-  UpdateMetricsUsagePrefs(
-      recv_bytes, IsCurrentNetworkCellular(),
-      IsMetricsServiceRequest(network_traffic_annotation_id_hash));
-  UpdateMetricsUsagePrefs(
-      sent_bytes, IsCurrentNetworkCellular(),
-      IsMetricsServiceRequest(network_traffic_annotation_id_hash));
-  if (!DataUseMeasurement::IsUserRequest(network_traffic_annotation_id_hash)) {
+  bool is_user_request =
+      DataUseMeasurement::IsUserRequest(network_traffic_annotation_id_hash);
+  bool is_metrics_service_request =
+      IsMetricsServiceRequest(network_traffic_annotation_id_hash);
+  UpdateMetricsUsagePrefs(recv_bytes, IsCurrentNetworkCellular(),
+                          is_metrics_service_request);
+  UpdateMetricsUsagePrefs(sent_bytes, IsCurrentNetworkCellular(),
+                          is_metrics_service_request);
+  if (!is_user_request) {
     ReportDataUsageServices(network_traffic_annotation_id_hash, UPSTREAM,
                             CurrentAppState(), sent_bytes);
     ReportDataUsageServices(network_traffic_annotation_id_hash, DOWNSTREAM,
                             CurrentAppState(), recv_bytes);
+  }
+  if (!is_user_request || DataUseMeasurement::IsUserDownloadsRequest(
+                              network_traffic_annotation_id_hash)) {
+    for (auto& observer : services_data_use_observer_list_)
+      observer.OnServicesDataUse(recv_bytes, sent_bytes);
   }
 #if defined(OS_ANDROID)
   MaybeRecordNetworkBytesOS();

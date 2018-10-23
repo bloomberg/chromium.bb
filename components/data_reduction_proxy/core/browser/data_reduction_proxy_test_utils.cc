@@ -244,6 +244,7 @@ MockDataReductionProxyService::MockDataReductionProxyService(
                                 std::make_unique<TestDataStore>(),
                                 nullptr,
                                 test_network_quality_tracker,
+                                nullptr,
                                 task_runner,
                                 task_runner,
                                 task_runner,
@@ -654,8 +655,8 @@ DataReductionProxyTestContext::CreateDataReductionProxyServiceInternal(
   return std::make_unique<DataReductionProxyService>(
       settings, simple_pref_service_.get(), request_context_getter_.get(),
       test_shared_url_loader_factory_, base::WrapUnique(new TestDataStore()),
-      nullptr, test_network_quality_tracker_.get(), task_runner_, task_runner_,
-      task_runner_, base::TimeDelta());
+      nullptr, test_network_quality_tracker_.get(), nullptr, task_runner_,
+      task_runner_, task_runner_, base::TimeDelta());
 }
 
 void DataReductionProxyTestContext::AttachToURLRequestContext(

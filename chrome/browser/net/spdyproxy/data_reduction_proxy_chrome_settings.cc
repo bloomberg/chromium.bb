@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/data_use_measurement/chrome_data_use_measurement.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
@@ -220,7 +221,8 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
           std::make_unique<
               data_reduction_proxy::DataReductionProxyPingbackClientImpl>(
               url_loader_factory, ui_task_runner),
-          g_browser_process->network_quality_tracker(), ui_task_runner,
+          g_browser_process->network_quality_tracker(),
+          g_browser_process->data_use_measurement(), ui_task_runner,
           io_data->io_task_runner(), db_task_runner, commit_delay);
   data_reduction_proxy::DataReductionProxySettings::
       InitDataReductionProxySettings(data_reduction_proxy_enabled_pref_name_,

@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
@@ -43,8 +44,18 @@ class URLRequestClassifier;
 class DataUseMeasurement
     : public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
+  class ServicesDataUseObserver {
+   public:
+    // Called when services data use is reported.
+    virtual void OnServicesDataUse(int64_t recv_bytes, int64_t sent_bytes) = 0;
+  };
+
   // Returns true if the NTA hash is initiated by user traffic.
   static bool IsUserRequest(int32_t network_traffic_annotation_hash_id);
+
+  // Returns true if the NTA hash is one used by Chrome downloads.
+  static bool IsUserDownloadsRequest(
+      int32_t network_traffic_annotation_hash_id);
 
   // Returns true if the NTA hash is one used by metrics (UMA, UKM) component.
   static bool IsMetricsServiceRequest(
@@ -93,6 +104,9 @@ class DataUseMeasurement
                                              bool is_cellular,
                                              bool is_metrics_service_usage) = 0;
 
+  void AddServicesDataUseObserver(ServicesDataUseObserver* observer);
+  void RemoveServicesDataUseObserver(ServicesDataUseObserver* observer);
+
  protected:
   // Specifies that data is received or sent, respectively.
   enum TrafficDirection { DOWNSTREAM, UPSTREAM };
@@ -118,6 +132,9 @@ class DataUseMeasurement
   // reported by the operating system.
   void MaybeRecordNetworkBytesOS();
 #endif
+
+  base::ObserverList<ServicesDataUseObserver>::Unchecked
+      services_data_use_observer_list_;
 
  private:
   friend class DataUseMeasurementTest;

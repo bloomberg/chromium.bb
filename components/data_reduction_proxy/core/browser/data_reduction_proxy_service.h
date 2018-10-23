@@ -19,6 +19,7 @@
 #include "base/sequence_checker.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/db_data_owner.h"
+#include "components/data_use_measurement/core/data_use_measurement.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/nqe/effective_connection_type.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
@@ -48,7 +49,8 @@ class DataReductionProxySettings;
 // Contains and initializes all Data Reduction Proxy objects that have a
 // lifetime based on the UI thread.
 class DataReductionProxyService
-    : public network::NetworkQualityTracker::EffectiveConnectionTypeObserver,
+    : public data_use_measurement::DataUseMeasurement::ServicesDataUseObserver,
+      public network::NetworkQualityTracker::EffectiveConnectionTypeObserver,
       public network::NetworkQualityTracker::RTTAndThroughputEstimatesObserver {
  public:
   // The caller must ensure that |settings|, |prefs|, |request_context|, and
@@ -65,6 +67,7 @@ class DataReductionProxyService
       std::unique_ptr<DataStore> store,
       std::unique_ptr<DataReductionProxyPingbackClient> pingback_client,
       network::NetworkQualityTracker* network_quality_tracker,
+      data_use_measurement::DataUseMeasurement* data_use_measurement,
       const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
@@ -182,6 +185,8 @@ class DataReductionProxyService
   // Loads the Data Reduction Proxy configuration from |prefs_| and applies it.
   void ReadPersistedClientConfig();
 
+  void OnServicesDataUse(int64_t recv_bytes, int64_t sent_bytes) override;
+
   net::URLRequestContextGetter* url_request_context_getter_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
@@ -215,6 +220,10 @@ class DataReductionProxyService
   // Must be accessed on UI thread. Guaranteed to be non-null during the
   // lifetime of |this|.
   network::NetworkQualityTracker* network_quality_tracker_;
+
+  // Must be accessed on UI thread. Guaranteed to be non-null during the
+  // lifetime of |this|.
+  data_use_measurement::DataUseMeasurement* data_use_measurement_;
 
   // Current network quality estimates.
   net::EffectiveConnectionType effective_connection_type_;
