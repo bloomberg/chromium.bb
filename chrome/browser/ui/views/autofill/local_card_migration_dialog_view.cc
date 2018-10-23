@@ -79,14 +79,7 @@ void LocalCardMigrationDialogView::CloseDialog() {
 }
 
 void LocalCardMigrationDialogView::OnMigrationFinished() {
-  title_->SetText(GetDialogTitle());
-  explanation_text_->SetText(GetDialogInstruction());
-  for (int index = 0; index < card_list_view_->child_count(); index++) {
-    AsMigratableCardView(card_list_view_->child_at(index))
-        ->UpdateCardView(controller_->GetViewState());
-  }
-  separator_->SetVisible(false);
-  // TODO(crbug/867194): Add tip value prompt.
+  // TODO(crbug/867194): Add feedback and tip value prompt.
 }
 
 const std::vector<std::string>
@@ -253,8 +246,9 @@ void LocalCardMigrationDialogView::Init() {
   card_list_view_layout_->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   for (size_t index = 0; index < migratable_credit_cards.size(); index++) {
-    card_list_view_->AddChildView(new MigratableCardView(
-        migratable_credit_cards[index], this, static_cast<int>(index)));
+    card_list_view_->AddChildView(
+        new MigratableCardView(migratable_credit_cards[index], this,
+                               migratable_credit_cards.size() != 1));
   }
 
   std::unique_ptr<views::ScrollView> card_list_scroll_bar =
