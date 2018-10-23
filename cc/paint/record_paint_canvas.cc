@@ -315,7 +315,7 @@ SkNoDrawCanvas* RecordPaintCanvas::GetCanvas() {
     return &*canvas_;
 
   // Size the canvas to be large enough to contain the |recording_bounds|, which
-  // may not be positioned at th origin.
+  // may not be positioned at the origin.
   SkIRect enclosing_rect = recording_bounds_.roundOut();
   canvas_.emplace(enclosing_rect.right(), enclosing_rect.bottom());
 

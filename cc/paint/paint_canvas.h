@@ -21,6 +21,19 @@ class PaintOpBuffer;
 
 using PaintRecord = PaintOpBuffer;
 
+// PaintCanvas is the cc/paint wrapper of SkCanvas.  It has a more restricted
+// interface than SkCanvas (trimmed back to only what Chrome uses).  Its reason
+// for existence is so that it can do custom serialization logic into a
+// PaintOpBuffer which (unlike SkPicture) is mutable, handles image replacement,
+// and can be serialized in custom ways (such as using the transfer cache).
+//
+// PaintCanvas is usually implemented by either:
+// (1) SkiaPaintCanvas, which is backed by an SkCanvas, usually for rasterizing.
+// (2) RecordPaintCanvas, which records paint commands into a PaintOpBuffer.
+//
+// SkiaPaintCanvas allows callers to go from PaintCanvas to SkCanvas (or
+// PaintRecord to SkPicture), but this is a one way trip.  There is no way to go
+// from SkCanvas to PaintCanvas or from SkPicture back into PaintRecord.
 class CC_PAINT_EXPORT PaintCanvas {
  public:
   PaintCanvas() {}
