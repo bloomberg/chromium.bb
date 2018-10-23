@@ -366,13 +366,17 @@ bool RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
     return false;
   int process_id = is_navigation ? 0 : rfh->GetProcess()->GetID();
   DCHECK(!is_download || is_navigation);
-  for (auto* network : protocol::NetworkHandler::ForAgentHost(agent_host)) {
-    if (network->MaybeCreateProxyForInterception(
-            frame_token, process_id, is_download, target_factory_request)) {
-      return true;
-    }
+  bool had_interceptors = false;
+  const auto& network_handlers =
+      protocol::NetworkHandler::ForAgentHost(agent_host);
+  for (auto it = network_handlers.rbegin(); it != network_handlers.rend();
+       ++it) {
+    had_interceptors =
+        (*it)->MaybeCreateProxyForInterception(
+            frame_token, process_id, is_download, target_factory_request) ||
+        had_interceptors;
   }
-  return false;
+  return had_interceptors;
 }
 
 // static

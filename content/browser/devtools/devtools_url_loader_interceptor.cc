@@ -206,8 +206,10 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   }
 
   ~InterceptionJob() override {
-    size_t erased = GetInterceptionJobMap().erase(global_req_id_);
-    DCHECK_EQ(1lu, erased);
+    if (registered_in_global_request_map_) {
+      size_t erased = GetInterceptionJobMap().erase(global_req_id_);
+      DCHECK_EQ(1lu, erased);
+    }
   }
 
   Response InnerContinueRequest(std::unique_ptr<Modifications> modifications);
@@ -311,6 +313,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
 
   std::unique_ptr<BodyReader> body_reader_;
   std::unique_ptr<ResponseMetadata> response_metadata_;
+  bool registered_in_global_request_map_;
 
   base::Optional<std::pair<net::RequestPriority, int32_t>> priority_;
   DevToolsURLLoaderInterceptor::HandleAuthRequestCallback
@@ -709,8 +712,10 @@ InterceptionJob::InterceptionJob(
       base::BindOnce(&InterceptionJob::Shutdown, base::Unretained(this)));
 
   auto& job_map = GetInterceptionJobMap();
-  bool inserted = job_map.emplace(global_req_id_, this).second;
-  DCHECK(inserted);
+  // TODO(caseq): for now, all auth requests will go to the top-level job.
+  // Figure out if we need anything smarter here.
+  registered_in_global_request_map_ =
+      job_map.emplace(global_req_id_, this).second;
 
   if (stage_ & InterceptionStage::REQUEST) {
     NotifyClient(BuildRequestInfo(nullptr));
