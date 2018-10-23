@@ -27,7 +27,7 @@ namespace ui {
 
 namespace {
 constexpr uint32_t kMaxCompositorVersion = 4;
-constexpr uint32_t kMaxLinuxDmabufVersion = 1;
+constexpr uint32_t kMaxLinuxDmabufVersion = 3;
 constexpr uint32_t kMaxSeatVersion = 4;
 constexpr uint32_t kMaxShmVersion = 1;
 constexpr uint32_t kMaxXdgShellVersion = 1;
