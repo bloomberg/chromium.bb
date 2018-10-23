@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/animationworklet/animation_worklet_global_scope.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/timer/elapsed_timer.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_parser.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
@@ -80,7 +81,7 @@ Animator* AnimationWorkletGlobalScope::CreateAnimatorFor(
 
 std::unique_ptr<AnimationWorkletOutput> AnimationWorkletGlobalScope::Mutate(
     const AnimationWorkletInput& mutator_input) {
-  base::TimeTicks start_time = CurrentTimeTicks();
+  base::ElapsedTimer timer;
   DCHECK(IsContextThread());
 
   ScriptState* script_state = ScriptController()->GetScriptState();
@@ -135,8 +136,8 @@ std::unique_ptr<AnimationWorkletOutput> AnimationWorkletGlobalScope::Mutate(
   }
 
   UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-      "Animation.AnimationWorklet.GlobalScope.MutateDuration",
-      CurrentTimeTicks() - start_time, base::TimeDelta::FromMicroseconds(1),
+      "Animation.AnimationWorklet.GlobalScope.MutateDuration", timer.Elapsed(),
+      base::TimeDelta::FromMicroseconds(1),
       base::TimeDelta::FromMilliseconds(100), 50);
 
   return result;
