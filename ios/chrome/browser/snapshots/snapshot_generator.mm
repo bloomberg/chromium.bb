@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/task/post_task.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_generator_delegate.h"
@@ -295,14 +296,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
     return snapshot;
 
   [_delegate willUpdateSnapshotForWebState:_webState];
-  UIView* view = nil;
-  if (base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen)) {
-    // The webstate view is getting resized because of fullscreen. Using its
-    // superview ensure that we have a view with a with a consistent size.
-    view = _webState->GetView().superview;
-  } else {
-    view = _webState->GetView();
-  }
+  UIView* view = [_delegate viewForWebState:_webState];
   snapshot =
       [self generateSnapshotForView:view withRect:frame overlays:overlays];
   [_coalescingSnapshotContext setCachedSnapshot:snapshot
@@ -346,14 +340,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
   if (_delegate && ![_delegate canTakeSnapshotForWebState:_webState])
     return CGRectZero;
 
-  UIView* view = nil;
-  if (base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen)) {
-    // The webstate view is getting resized because of fullscreen. Using its
-    // superview ensure that we have a view with a with a consistent size.
-    view = _webState->GetView().superview;
-  } else {
-    view = _webState->GetView();
-  }
+  UIView* view = [_delegate viewForWebState:_webState];
   CGRect frame = [view bounds];
   UIEdgeInsets headerInsets = UIEdgeInsetsZero;
   if (visibleFrameOnly) {
