@@ -162,7 +162,7 @@ const _kTT_String_Nonnull = {
     if (v === null || v === undefined) throw "non-null string required";
     // Both size and data are uint64, but that's awkward in JS, so for now only
     // support a maximum of 32b lengths.
-    var asUtf8 = zx.strToUtf8Array(v);
+    var asUtf8 = $FidlJsStrToUtf8Array(v);
     e.data.setUint32(o, asUtf8.length, $fidl__kLE);
     e.data.setUint32(o + 4, 0, $fidl__kLE);
     e.data.setUint32(o + 8, 0xffffffff, $fidl__kLE);
@@ -174,7 +174,7 @@ const _kTT_String_Nonnull = {
     var pointer = d.data.getUint32(o + 8, $fidl__kLE);
     if (pointer === 0) throw "non-null string required";
     var dataOffset = d.claimMemory(len);
-    return zx.utf8ArrayToStr(new DataView(d.data.buffer, dataOffset, len));
+    return $FidlJsUtf8ArrayToStr(new DataView(d.data.buffer, dataOffset, len));
   }
 };
 

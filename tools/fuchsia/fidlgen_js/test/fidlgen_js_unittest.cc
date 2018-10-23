@@ -127,33 +127,6 @@ class BindingsSetupHelper {
   DISALLOW_COPY_AND_ASSIGN(BindingsSetupHelper);
 };
 
-TEST_F(FidlGenJsTest, CreateChannelPair) {
-  v8::Isolate* isolate = instance_->isolate();
-  BindingsSetupHelper helper(isolate);
-
-  std::string source = R"(
-    var result = zx.channelCreate();
-    this.result_status = result.status;
-    this.result_h1 = result.first;
-    this.result_h2 = result.second;
-    if (result.status == zx.ZX_OK) {
-      zx.handleClose(result.first);
-      zx.handleClose(result.second);
-    }
-  )";
-
-  helper.runner().Run(source, "test.js");
-
-  auto status = helper.Get<zx_status_t>("result_status");
-  EXPECT_EQ(status, ZX_OK);
-
-  auto h1 = helper.Get<zx_handle_t>("result_h1");
-  EXPECT_NE(h1, ZX_HANDLE_INVALID);
-
-  auto h2 = helper.Get<zx_handle_t>("result_h2");
-  EXPECT_NE(h2, ZX_HANDLE_INVALID);
-}
-
 class TestolaImpl : public fidljstest::Testola {
  public:
   TestolaImpl() {

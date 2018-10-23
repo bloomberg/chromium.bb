@@ -335,7 +335,7 @@ function %(name)s() {}
  * @implements %(name)s
  */
 function %(proxy_name)s() {
-  this.channel = zx.ZX_HANDLE_INVALID;
+  this.channel = $ZX_HANDLE_INVALID;
 }
 
 %(proxy_name)s.prototype.$bind = function(channel) {
@@ -356,7 +356,7 @@ function %(proxy_name)s() {
         self.f.write(
             '''\
 %(proxy_name)s.prototype.%(method_name)s = function(%(param_names)s) {
-  if (this.channel === zx.ZX_HANDLE_INVALID) {
+  if (this.channel === $ZX_HANDLE_INVALID) {
     throw "channel closed";
   }
   var $encoder = new $fidl_Encoder(_k%(name)s_%(method_name)s_Ordinal);
@@ -379,11 +379,11 @@ function %(proxy_name)s() {
                   'offset': param.offset
               })
 
-        self.f.write('''  var $writeResult = zx.channelWrite(this.channel,
+        self.f.write('''  var $writeResult = $ZxChannelWrite(this.channel,
                                      $encoder.messageData(),
                                      $encoder.messageHandles());
-  if ($writeResult !== zx.ZX_OK) {
-    throw "zx.channelWrite failed: " + $writeResult;
+  if ($writeResult !== $ZX_OK) {
+    throw "$ZxChannelWrite failed: " + $writeResult;
   }
 ''')
 
@@ -392,11 +392,10 @@ function %(proxy_name)s() {
         for param in method.maybe_response:
           type_tables.append(self._CompileType(param.type))
         self.f.write('''
-  return zx
-      .objectWaitOne(this.channel, zx.ZX_CHANNEL_READABLE, zx.ZX_TIME_INFINITE)
+  return $ZxObjectWaitOne(this.channel, $ZX_CHANNEL_READABLE, $ZX_TIME_INFINITE)
       .then(() => new Promise(res => {
-          var $readResult = zx.channelRead(this.channel);
-          if ($readResult.status !== zx.ZX_OK) {
+          var $readResult = $ZxChannelRead(this.channel);
+          if ($readResult.status !== $ZX_OK) {
             throw "channel read failed";
           }
 

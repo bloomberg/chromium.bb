@@ -189,16 +189,6 @@ v8::Local<v8::Promise> ZxObjectWaitOne(gin::Arguments* args) {
   return v8::Local<v8::Promise>();
 }
 
-v8::Local<v8::Object> ZxChannelCreate(v8::Isolate* isolate) {
-  zx::channel c1, c2;
-  zx_status_t status = zx::channel::create(0, &c1, &c2);
-  return gin::DataObjectBuilder(isolate)
-      .Set("status", status)
-      .Set("first", c1.release())
-      .Set("second", c2.release())
-      .Build();
-}
-
 zx_status_t ZxChannelWrite(gin::Arguments* args) {
   zx_handle_t handle;
   if (!args->GetNext(&handle)) {
@@ -295,19 +285,6 @@ v8::Local<v8::Value> Utf8ArrayToStr(gin::Arguments* args) {
                                          data.num_bytes()));
 }
 
-v8::Local<v8::Object> GetOrCreateZxObject(v8::Isolate* isolate,
-                                          v8::Local<v8::Object> global) {
-  v8::Local<v8::Object> zx;
-  v8::Local<v8::Value> zx_value = global->Get(gin::StringToV8(isolate, "zx"));
-  if (zx_value.IsEmpty() || !zx_value->IsObject()) {
-    zx = v8::Object::New(isolate);
-    global->Set(gin::StringToSymbol(isolate, "zx"), zx);
-  } else {
-    zx = v8::Local<v8::Object>::Cast(zx);
-  }
-  return zx;
-}
-
 }  // namespace
 
 namespace fidljs {
@@ -317,10 +294,9 @@ ZxBindings::ZxBindings(v8::Isolate* isolate, v8::Local<v8::Object> global)
   DCHECK_EQ(isolate->GetData(gin::kEmbedderFuchsia), nullptr);
   isolate->SetData(gin::kEmbedderFuchsia, wait_set_.get());
 
-  v8::Local<v8::Object> zx = GetOrCreateZxObject(isolate, global);
-
-#define SET_CONSTANT(k) \
-  zx->Set(gin::StringToSymbol(isolate, #k), gin::ConvertToV8(isolate, k))
+#define SET_CONSTANT(k)                             \
+  global->Set(gin::StringToSymbol(isolate, "$" #k), \
+              gin::ConvertToV8(isolate, k))
 
   // zx_status_t.
   SET_CONSTANT(ZX_OK);
@@ -371,29 +347,20 @@ ZxBindings::ZxBindings(v8::Isolate* isolate, v8::Local<v8::Object> global)
   SET_CONSTANT(ZX_ERR_CONNECTION_ABORTED);
 
   // Handle APIs.
-  zx->Set(gin::StringToSymbol(isolate, "handleClose"),
-          gin::CreateFunctionTemplate(isolate,
-                                      base::BindRepeating(&zx_handle_close))
-              ->GetFunction());
-  SET_CONSTANT(ZX_HANDLE_INVALID);
-  zx->Set(
-      gin::StringToSymbol(isolate, "objectWaitOne"),
+  global->Set(
+      gin::StringToSymbol(isolate, "$ZxObjectWaitOne"),
       gin::CreateFunctionTemplate(isolate, base::BindRepeating(ZxObjectWaitOne))
           ->GetFunction());
   SET_CONSTANT(ZX_HANDLE_INVALID);
   SET_CONSTANT(ZX_TIME_INFINITE);
 
   // Channel APIs.
-  zx->Set(gin::StringToSymbol(isolate, "channelCreate"),
-          gin::CreateFunctionTemplate(isolate,
-                                      base::BindRepeating(&ZxChannelCreate))
-              ->GetFunction());
-  zx->Set(
-      gin::StringToSymbol(isolate, "channelWrite"),
+  global->Set(
+      gin::StringToSymbol(isolate, "$ZxChannelWrite"),
       gin::CreateFunctionTemplate(isolate, base::BindRepeating(&ZxChannelWrite))
           ->GetFunction());
-  zx->Set(
-      gin::StringToSymbol(isolate, "channelRead"),
+  global->Set(
+      gin::StringToSymbol(isolate, "$ZxChannelRead"),
       gin::CreateFunctionTemplate(isolate, base::BindRepeating(&ZxChannelRead))
           ->GetFunction());
   SET_CONSTANT(ZX_CHANNEL_READABLE);
@@ -405,14 +372,12 @@ ZxBindings::ZxBindings(v8::Isolate* isolate, v8::Local<v8::Object> global)
 
   // Utilities to make string handling easier to convert to/from UCS-2 (JS) <->
   // UTF-8 (FIDL).
-  // TODO(crbug.com/883496): This is not really zx, should move to a generic
-  // runtime helper file if there are more similar C++ helpers required.
-  zx->Set(
-      gin::StringToSymbol(isolate, "strToUtf8Array"),
+  global->Set(
+      gin::StringToSymbol(isolate, "$FidlJsStrToUtf8Array"),
       gin::CreateFunctionTemplate(isolate, base::BindRepeating(&StrToUtf8Array))
           ->GetFunction());
-  zx->Set(
-      gin::StringToSymbol(isolate, "utf8ArrayToStr"),
+  global->Set(
+      gin::StringToSymbol(isolate, "$FidlJsUtf8ArrayToStr"),
       gin::CreateFunctionTemplate(isolate, base::BindRepeating(&Utf8ArrayToStr))
           ->GetFunction());
 
