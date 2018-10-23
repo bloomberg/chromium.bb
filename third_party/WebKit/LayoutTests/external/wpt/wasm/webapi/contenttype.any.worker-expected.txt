@@ -13,5 +13,11 @@ FAIL Response with Content-Type "application/wasm;x": compileStreaming assert_un
 FAIL Response with Content-Type "application/wasm;x": instantiateStreaming assert_unreached: Should have rejected: undefined Reached unreachable code
 FAIL Response with Content-Type "application/wasm;charset=UTF-8": compileStreaming assert_unreached: Should have rejected: undefined Reached unreachable code
 FAIL Response with Content-Type "application/wasm;charset=UTF-8": instantiateStreaming assert_unreached: Should have rejected: undefined Reached unreachable code
+PASS Response with Content-Type "application/wasm": compileStreaming
+PASS Response with Content-Type "application/wasm": instantiateStreaming
+PASS Response with Content-Type "APPLICATION/wasm": compileStreaming
+PASS Response with Content-Type "APPLICATION/wasm": instantiateStreaming
+PASS Response with Content-Type "APPLICATION/WASM": compileStreaming
+PASS Response with Content-Type "APPLICATION/WASM": instantiateStreaming
 Harness: the test ran to completion.
 
