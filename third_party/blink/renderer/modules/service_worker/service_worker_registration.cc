@@ -151,12 +151,16 @@ void ServiceWorkerRegistration::Attach(
     host_.Bind(
         mojom::blink::ServiceWorkerRegistrationObjectHostAssociatedPtrInfo(
             std::move(info.host_ptr_info),
-            mojom::blink::ServiceWorkerRegistrationObjectHost::Version_));
+            mojom::blink::ServiceWorkerRegistrationObjectHost::Version_),
+        GetExecutionContext()->GetTaskRunner(
+            blink::TaskType::kInternalDefault));
   }
   // The host expects us to use |info.request| so bind to it.
   binding_.Close();
-  binding_.Bind(mojom::blink::ServiceWorkerRegistrationObjectAssociatedRequest(
-      std::move(info.request)));
+  binding_.Bind(
+      mojom::blink::ServiceWorkerRegistrationObjectAssociatedRequest(
+          std::move(info.request)),
+      GetExecutionContext()->GetTaskRunner(blink::TaskType::kInternalDefault));
 
   update_via_cache_ = info.update_via_cache;
   installing_ =
