@@ -1473,7 +1473,7 @@ TEST_F(WindowTreeClientTest, SetFocusFailedWithPendingChange) {
   EXPECT_TRUE(child1.HasFocus());
 }
 
-TEST_F(WindowTreeClientTest, FocusOnRemovedWindowWithInFlightFocusChange) {
+TEST_F(WindowTreeClientTest, FocusOnRemovedWindowWithoutInFlightFocusChange) {
   std::unique_ptr<Window> child1(std::make_unique<Window>(nullptr));
   child1->Init(ui::LAYER_NOT_DRAWN);
   root_window()->AddChild(child1.get());
@@ -1482,26 +1482,20 @@ TEST_F(WindowTreeClientTest, FocusOnRemovedWindowWithInFlightFocusChange) {
   root_window()->AddChild(&child2);
 
   child1->Focus();
+  // Acked for the focus change.
+  EXPECT_TRUE(
+      window_tree()->AckSingleChangeOfType(WindowTreeChangeType::FOCUS, true));
 
   // Destroy child1, which should set focus to null.
   child1.reset(nullptr);
   EXPECT_EQ(nullptr, client::GetFocusClient(root_window())->GetFocusedWindow());
+  // The reset of the focus shouldn't be sent to the server.
+  EXPECT_EQ(0u,
+            window_tree()->GetChangeCountForType(WindowTreeChangeType::FOCUS));
 
   // Server changes focus to 2.
   window_tree_client()->OnWindowFocused(server_id(&child2));
-  // Shouldn't take immediately.
-  EXPECT_FALSE(child2.HasFocus());
-
-  // Ack both changes, focus should still be null.
-  ASSERT_TRUE(
-      window_tree()->AckFirstChangeOfType(WindowTreeChangeType::FOCUS, true));
-  EXPECT_EQ(nullptr, client::GetFocusClient(root_window())->GetFocusedWindow());
-  ASSERT_TRUE(
-      window_tree()->AckSingleChangeOfType(WindowTreeChangeType::FOCUS, true));
-  EXPECT_EQ(nullptr, client::GetFocusClient(root_window())->GetFocusedWindow());
-
-  // Change to 2 again, this time it should take.
-  window_tree_client()->OnWindowFocused(server_id(&child2));
+  // Should take effect immediately.
   EXPECT_TRUE(child2.HasFocus());
 }
 
