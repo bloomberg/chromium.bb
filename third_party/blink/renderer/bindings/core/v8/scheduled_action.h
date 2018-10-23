@@ -31,28 +31,29 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCHEDULED_ACTION_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCHEDULED_ACTION_H_
 
-#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
-#include "third_party/blink/renderer/platform/bindings/name_client.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_persistent_value_vector.h"
+#include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 
-class ExecutionContext;
 class LocalFrame;
+class ExecutionContext;
+class ScriptValue;
 class WorkerGlobalScope;
 
-class ScheduledAction final : public GarbageCollectedFinalized<ScheduledAction>,
-                              public NameClient {
+class ScheduledAction final
+    : public GarbageCollectedFinalized<ScheduledAction> {
   WTF_MAKE_NONCOPYABLE(ScheduledAction);
 
  public:
   static ScheduledAction* Create(ScriptState*,
                                  ExecutionContext* target,
-                                 V8Function* handler,
+                                 const ScriptValue& handler,
                                  const Vector<ScriptValue>& arguments);
   static ScheduledAction* Create(ScriptState*,
                                  ExecutionContext* target,
@@ -62,13 +63,12 @@ class ScheduledAction final : public GarbageCollectedFinalized<ScheduledAction>,
   void Dispose();
 
   void Trace(blink::Visitor*);
-  const char* NameInHeapSnapshot() const override { return "ScheduledAction"; }
 
   void Execute(ExecutionContext*);
 
  private:
   ScheduledAction(ScriptState*,
-                  V8Function* handler,
+                  const ScriptValue& handler,
                   const Vector<ScriptValue>& arguments);
   ScheduledAction(ScriptState*, const String& handler);
 
@@ -77,10 +77,11 @@ class ScheduledAction final : public GarbageCollectedFinalized<ScheduledAction>,
 
   void Execute(LocalFrame*);
   void Execute(WorkerGlobalScope*);
+  void CreateLocalHandlesForArgs(Vector<v8::Local<v8::Value>>* handles);
 
   Member<ScriptStateProtectingContext> script_state_;
-  TraceWrapperMember<V8Function> function_;
-  Vector<ScriptValue> arguments_;
+  ScopedPersistent<v8::Function> function_;
+  V8PersistentValueVector<v8::Value> info_;
   String code_;
 };
 

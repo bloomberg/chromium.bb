@@ -32,8 +32,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/frame/pausable_timer.h"
-#include "third_party/blink/renderer/platform/bindings/name_client.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -41,8 +39,7 @@ namespace blink {
 class ExecutionContext;
 
 class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
-                                   public PausableTimer,
-                                   public NameClient {
+                                   public PausableTimer {
   USING_GARBAGE_COLLECTED_MIXIN(DOMTimer);
 
  public:
@@ -65,7 +62,6 @@ class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
   // already have been finalized & must not be accessed.
   EAGERLY_FINALIZE();
   void Trace(blink::Visitor*) override;
-  const char* NameInHeapSnapshot() const override { return "DOMTimer"; }
 
   void Stop() override;
 
@@ -91,7 +87,7 @@ class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
 
   int timeout_id_;
   int nesting_level_;
-  TraceWrapperMember<ScheduledAction> action_;
+  Member<ScheduledAction> action_;
   scoped_refptr<UserGestureToken> user_gesture_token_;
 };
 
