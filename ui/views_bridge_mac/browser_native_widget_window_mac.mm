@@ -2,17 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/views/frame/browser_native_widget_window_mac.h"
+#import "ui/views_bridge_mac/browser_native_widget_window_mac.h"
 
 #import <AppKit/AppKit.h>
 
-#include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
-#include "ui/views/widget/util_mac.h"
-#include "ui/views/widget/widget.h"
+#include "ui/views_bridge_mac/bridged_native_widget_impl.h"
+#include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 
 @interface NSWindow (PrivateBrowserNativeWidgetAPI)
 + (Class)frameViewClassForStyleMask:(NSUInteger)windowStyle;
@@ -33,17 +28,19 @@
 // NSThemeFrame overrides.
 
 - (CGFloat)_titlebarHeight {
-  if (_inFullScreen)
-    return [super _titlebarHeight];
+  bool overrideTitlebarHeight = false;
+  float titlebarHeight = 0;
 
-  if (views::Widget* widget = views::Widget::GetWidgetForNativeView(self)) {
-    if (views::NonClientView* nonClientView = widget->non_client_view()) {
-      auto* frameView = static_cast<const BrowserNonClientFrameView*>(
-          nonClientView->frame_view());
-      BrowserView* browserView = frameView->browser_view();
-      return browserView->GetTabStripHeight() + frameView->GetTopInset(true);
+  if (!_inFullScreen) {
+    auto* window = base::mac::ObjCCast<NativeWidgetMacNSWindow>([self window]);
+    views::BridgedNativeWidgetImpl* bridgeImpl = [window bridgeImpl];
+    if (bridgeImpl) {
+      bridgeImpl->host()->GetWindowFrameTitlebarHeight(&overrideTitlebarHeight,
+                                                       &titlebarHeight);
     }
   }
+  if (overrideTitlebarHeight)
+    return titlebarHeight;
   return [super _titlebarHeight];
 }
 
@@ -94,9 +91,9 @@
 // Keyboard -> Shortcuts -> Keyboard. Usually Ctrl+F5. The argument (|unknown|)
 // tends to just be nil.
 - (void)_handleFocusToolbarHotKey:(id)unknown {
-  Browser* browser = chrome::FindBrowserWithWindow(self);
-  if (browser)
-    chrome::ExecuteCommand(browser, IDC_FOCUS_TOOLBAR);
+  views::BridgedNativeWidgetImpl* bridgeImpl = [self bridgeImpl];
+  if (bridgeImpl)
+    bridgeImpl->host()->OnFocusWindowToolbar();
 }
 
 @end

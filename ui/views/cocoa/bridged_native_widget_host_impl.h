@@ -256,6 +256,9 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   bool GetCanWindowBecomeKey(bool* can_window_become_key) override;
   bool GetAlwaysRenderWindowAsKey(bool* always_render_as_key) override;
   bool GetCanWindowClose(bool* can_window_close) override;
+  bool GetWindowFrameTitlebarHeight(bool* override_titlebar_height,
+                                    float* titlebar_height) override;
+  void OnFocusWindowToolbar() override;
 
   // views_bridge_mac::mojom::BridgedNativeWidgetHost, synchronous callbacks:
   void DispatchKeyEventRemote(std::unique_ptr<ui::Event> event,
@@ -282,6 +285,8 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   void GetAlwaysRenderWindowAsKey(
       GetAlwaysRenderWindowAsKeyCallback callback) override;
   void GetCanWindowClose(GetCanWindowCloseCallback callback) override;
+  void GetWindowFrameTitlebarHeight(
+      GetWindowFrameTitlebarHeightCallback callback) override;
 
   // DialogObserver:
   void OnDialogModelChanged() override;

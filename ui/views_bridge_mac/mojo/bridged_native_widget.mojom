@@ -9,11 +9,36 @@ import "ui/base/mojo/ui_base_types.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/ca_layer_params.mojom";
 
+// The window class (subclass of kNativeWidgetMacNSWindow) to use for a given
+// window.
+enum WindowClass {
+  // NativeWidgetMacNSWindow
+  kDefault,
+  // BrowserNativeWidgetWindow
+  kBrowser,
+  // NativeWidgetMacFramelessNSWindow
+  kFrameless,
+};
+
 // Parameters used to described creation of an NSWindow.
-// TODO(ccameron): Add additional members to support all window sub-classes.
 struct CreateWindowParams {
+  // The subclass of NativeWidgetMacNSWindow to use for this window.
+  WindowClass window_class;
+
   // The NSWindowStyleMask for the window.
   uint64 style_mask;
+
+  // Whether or not the titlebar should be forced to be transparent. If so, then
+  // the window is responsible for drawing its own titlebar. Note that the
+  // traffic lights will be drawn independent of this setting.
+  bool titlebar_appears_transparent;
+
+  // Whether or not to hide the default title drawn by the window. If so, then
+  // the window is responsible for drawing its own title.
+  bool window_title_hidden;
+
+  // Whether or not window animations should be initially enabled.
+  bool animation_enabled;
 };
 
 // Ways of changing the visibility of the bridged NSWindow.
@@ -109,6 +134,9 @@ interface BridgedNativeWidget {
   // Sets the desired visibility of the window and updates the visibility of
   // descendant windows where necessary.
   SetVisibilityState(WindowVisibilityState new_state);
+
+  // Enables or disables all window animations.
+  SetAnimationEnabled(bool animation_enabled);
 
   // Sets which transitions will animate. Currently this only affects non-native
   // animations.

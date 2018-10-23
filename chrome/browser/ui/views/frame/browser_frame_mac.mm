@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/views/frame/browser_frame_mac.h"
 
 #import "base/mac/foundation_util.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -13,11 +14,13 @@
 #import "chrome/browser/ui/cocoa/chrome_command_dispatcher_delegate.h"
 #import "chrome/browser/ui/cocoa/touchbar/browser_window_touch_bar_controller.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
-#import "chrome/browser/ui/views/frame/browser_native_widget_window_mac.h"
+#include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #import "ui/base/cocoa/window_size_constants.h"
+#include "ui/views_bridge_mac/mojo/bridged_native_widget.mojom.h"
+#import "ui/views_bridge_mac/native_widget_mac_nswindow.h"
 #import "ui/views_bridge_mac/window_touch_bar_delegate.h"
 
 namespace {
@@ -110,6 +113,25 @@ int BrowserFrameMac::SheetPositionY() {
   return host_view_y - dialog_host->GetDialogPosition(gfx::Size()).y();
 }
 
+void BrowserFrameMac::GetWindowFrameTitlebarHeight(
+    bool* override_titlebar_height,
+    float* titlebar_height) {
+  if (browser_view_ && browser_view_->frame() &&
+      browser_view_->frame()->GetFrameView()) {
+    *override_titlebar_height = true;
+    *titlebar_height =
+        browser_view_->GetTabStripHeight() +
+        browser_view_->frame()->GetFrameView()->GetTopInset(true);
+  } else {
+    *override_titlebar_height = false;
+    *titlebar_height = 0;
+  }
+}
+
+void BrowserFrameMac::OnFocusWindowToolbar() {
+  chrome::ExecuteCommand(browser_view_->browser(), IDC_FOCUS_TOOLBAR);
+}
+
 void BrowserFrameMac::OnWindowFullscreenStateChange() {
   browser_view_->FullscreenStateChanged();
 }
@@ -121,36 +143,37 @@ void BrowserFrameMac::InitNativeWidget(
   [[GetNativeWindow().GetNativeNSWindow() contentView] setWantsLayer:YES];
 }
 
-NativeWidgetMacNSWindow* BrowserFrameMac::CreateNSWindow(
-    const views::Widget::InitParams& params) {
-  NSUInteger style_mask = NSTitledWindowMask | NSClosableWindowMask |
-                          NSMiniaturizableWindowMask | NSResizableWindowMask;
+void BrowserFrameMac::PopulateCreateWindowParams(
+    const views::Widget::InitParams& widget_params,
+    views_bridge_mac::mojom::CreateWindowParams* params) {
+  params->style_mask = NSTitledWindowMask | NSClosableWindowMask |
+                       NSMiniaturizableWindowMask | NSResizableWindowMask;
 
   base::scoped_nsobject<NativeWidgetMacNSWindow> ns_window;
   if (browser_view_->IsBrowserTypeNormal() ||
       browser_view_->IsBrowserTypeHostedApp()) {
+    params->window_class = views_bridge_mac::mojom::WindowClass::kBrowser;
+
     if (@available(macOS 10.10, *))
-      style_mask |= NSFullSizeContentViewWindowMask;
-    ns_window.reset([[BrowserNativeWidgetWindow alloc]
-        initWithContentRect:ui::kWindowSizeDeterminedLater
-                  styleMask:style_mask
-                    backing:NSBackingStoreBuffered
-                      defer:NO]);
+      params->style_mask |= NSFullSizeContentViewWindowMask;
+
     // Ensure tabstrip/profile button are visible.
-    if (@available(macOS 10.10, *)) {
-      [ns_window setTitlebarAppearsTransparent:YES];
-      // Hosted apps draw their own window title.
-      if (browser_view_->IsBrowserTypeHostedApp())
-        [ns_window setTitleVisibility:NSWindowTitleHidden];
-    }
+    params->titlebar_appears_transparent = true;
+
+    // Hosted apps draw their own window title.
+    if (browser_view_->IsBrowserTypeHostedApp())
+      params->window_title_hidden = true;
   } else {
-    ns_window.reset([[NativeWidgetMacNSWindow alloc]
-        initWithContentRect:ui::kWindowSizeDeterminedLater
-                  styleMask:style_mask
-                    backing:NSBackingStoreBuffered
-                      defer:NO]);
+    params->window_class = views_bridge_mac::mojom::WindowClass::kDefault;
   }
-  [ns_window setAnimationBehavior:NSWindowAnimationBehaviorDocumentWindow];
+  params->animation_enabled = true;
+}
+
+NativeWidgetMacNSWindow* BrowserFrameMac::CreateNSWindow(
+    const views_bridge_mac::mojom::CreateWindowParams* params) {
+  NativeWidgetMacNSWindow* ns_window = NativeWidgetMac::CreateNSWindow(params);
+  // TODO(ccameron): Window-level hotkeys need to be wired up across processes.
+  // https://crbug.com/895168
   [ns_window setCommandDispatcherDelegate:command_dispatcher_delegate_];
   [ns_window setCommandHandler:[[[BrowserWindowCommandHandler alloc] init]
                                    autorelease]];
@@ -162,7 +185,7 @@ NativeWidgetMacNSWindow* BrowserFrameMac::CreateNSWindow(
     [ns_window setWindowTouchBarDelegate:touch_bar_delegate_.get()];
   }
 
-  return ns_window.autorelease();
+  return ns_window;
 }
 
 views::BridgeFactoryHost* BrowserFrameMac::GetBridgeFactoryHost() {

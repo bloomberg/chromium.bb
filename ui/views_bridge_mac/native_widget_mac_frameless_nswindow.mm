@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/views/frame/native_widget_mac_frameless_nswindow.h"
+#import "ui/views_bridge_mac/native_widget_mac_frameless_nswindow.h"
 
 @interface NSWindow (PrivateAPI)
 + (Class)frameViewClassForStyleMask:(NSUInteger)windowStyle;
