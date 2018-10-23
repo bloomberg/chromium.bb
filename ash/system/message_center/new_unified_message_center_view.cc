@@ -193,6 +193,10 @@ void NewUnifiedMessageCenterView::OnDidChangeFocus(views::View* before,
 
 void NewUnifiedMessageCenterView::SetNotificationHeightBelowScroll(
     int height_below_scroll) {
+  // |parent_| may be null on test.
+  if (!parent_)
+    return;
+
   parent_->SetNotificationHeightBelowScroll(height_below_scroll);
 }
 
@@ -201,6 +205,9 @@ void NewUnifiedMessageCenterView::UpdateVisibility() {
   SetVisible(message_list_view_->GetPreferredSize().height() > 0 &&
              session_controller->ShouldShowNotificationTray() &&
              !session_controller->IsScreenLocked());
+
+  NotifyHeightBelowScroll();
+
   // When notification list went invisible, |position_from_bottom_| should be
   // reset.
   if (!visible())
@@ -245,8 +252,11 @@ int NewUnifiedMessageCenterView::GetStackedNotificationCount() const {
 }
 
 void NewUnifiedMessageCenterView::NotifyHeightBelowScroll() {
-  SetNotificationHeightBelowScroll(std::max(
-      0, message_list_view_->height() - scroller_->GetVisibleRect().bottom()));
+  int height_below_scroll =
+      (visible() ? std::max(0, message_list_view_->height() -
+                                   scroller_->GetVisibleRect().bottom())
+                 : 0);
+  SetNotificationHeightBelowScroll(height_below_scroll);
 }
 
 }  // namespace ash
