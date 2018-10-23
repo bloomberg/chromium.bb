@@ -83,6 +83,8 @@ void LockWindowState::OnWMEvent(wm::WindowState* window_state,
     case wm::WM_EVENT_DISPLAY_BOUNDS_CHANGED:
       UpdateBounds(window_state);
       break;
+    case wm::WM_EVENT_SYSTEM_UI_AREA_CHANGED:
+      return;
   }
 }
 

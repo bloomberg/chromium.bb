@@ -214,6 +214,8 @@ void DefaultState::HandleWorkspaceEvents(WindowState* window_state,
         window_state->SetBoundsDirectAnimated(bounds);
       return;
     }
+    case WM_EVENT_SYSTEM_UI_AREA_CHANGED:
+      break;
     default:
       NOTREACHED() << "Unknown event:" << event->type();
   }
