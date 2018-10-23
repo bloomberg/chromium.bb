@@ -128,38 +128,35 @@ void GoogleAppsHandler::HandleGetGoogleAppsList(const base::ListValue* args) {
 
 void GoogleAppsHandler::AddSources(content::WebUIDataSource* html_source,
                                    PrefService* prefs) {
-  // Localized strings.
-  html_source->AddLocalizedString("noThanks", IDS_NO_THANKS);
-  html_source->AddLocalizedString("getStarted",
-                                  IDS_NUX_GOOGLE_APPS_GET_STARTED);
-  html_source->AddLocalizedString("googleAppsDescription",
-                                  IDS_NUX_GOOGLE_APPS_DESCRIPTION);
-
   // Add icons
-  html_source->AddResourcePath("apps/chrome_store_1x.png",
+  html_source->AddResourcePath("google_apps/chrome_store_1x.png",
                                IDR_NUX_GOOGLE_APPS_CHROME_STORE_1X);
-  html_source->AddResourcePath("apps/chrome_store_2x.png",
+  html_source->AddResourcePath("google_apps/chrome_store_2x.png",
                                IDR_NUX_GOOGLE_APPS_CHROME_STORE_2X);
   // TODO: rename and centralize to make it easier to share icons between NUX.
-  html_source->AddResourcePath("apps/gmail_1x.png",
+  html_source->AddResourcePath("google_apps/gmail_1x.png",
                                IDR_NUX_EMAIL_GMAIL_1X);
-  html_source->AddResourcePath("apps/gmail_2x.png",
+  html_source->AddResourcePath("google_apps/gmail_2x.png",
                                IDR_NUX_EMAIL_GMAIL_2X);
-  html_source->AddResourcePath("apps/google_apps_1x.png",
+  html_source->AddResourcePath("google_apps/google_apps_1x.png",
                                IDR_NUX_GOOGLE_APPS_LOGO_1X);
-  html_source->AddResourcePath("apps/google_apps_2x.png",
+  html_source->AddResourcePath("google_apps/google_apps_2x.png",
                                IDR_NUX_GOOGLE_APPS_LOGO_2X);
-  html_source->AddResourcePath("apps/maps_1x.png", IDR_NUX_GOOGLE_APPS_MAPS_1X);
-  html_source->AddResourcePath("apps/maps_2x.png", IDR_NUX_GOOGLE_APPS_MAPS_2X);
-  html_source->AddResourcePath("apps/news_1x.png", IDR_NUX_GOOGLE_APPS_NEWS_1X);
-  html_source->AddResourcePath("apps/news_2x.png", IDR_NUX_GOOGLE_APPS_NEWS_2X);
-  html_source->AddResourcePath("apps/translate_1x.png",
+  html_source->AddResourcePath("google_apps/maps_1x.png",
+                               IDR_NUX_GOOGLE_APPS_MAPS_1X);
+  html_source->AddResourcePath("google_apps/maps_2x.png",
+                               IDR_NUX_GOOGLE_APPS_MAPS_2X);
+  html_source->AddResourcePath("google_apps/news_1x.png",
+                               IDR_NUX_GOOGLE_APPS_NEWS_1X);
+  html_source->AddResourcePath("google_apps/news_2x.png",
+                               IDR_NUX_GOOGLE_APPS_NEWS_2X);
+  html_source->AddResourcePath("google_apps/translate_1x.png",
                                IDR_NUX_GOOGLE_APPS_TRANSLATE_1X);
-  html_source->AddResourcePath("apps/translate_2x.png",
+  html_source->AddResourcePath("google_apps/translate_2x.png",
                                IDR_NUX_GOOGLE_APPS_TRANSLATE_2X);
-  html_source->AddResourcePath("apps/youtube_1x.png",
+  html_source->AddResourcePath("google_apps/youtube_1x.png",
                                IDR_NUX_GOOGLE_APPS_YOUTUBE_1X);
-  html_source->AddResourcePath("apps/youtube_2x.png",
+  html_source->AddResourcePath("google_apps/youtube_2x.png",
                                IDR_NUX_GOOGLE_APPS_YOUTUBE_2X);
 
   // Add constants to loadtime data

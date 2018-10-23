@@ -25,6 +25,7 @@
 #include "chrome/grit/onboarding_welcome_resources.h"
 #include "chrome/grit/onboarding_welcome_resources_map.h"
 #include "components/prefs/pref_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "net/base/url_util.h"
@@ -38,6 +39,54 @@ const bool kIsBranded =
     false;
 #endif
 }  // namespace
+
+// TODO(scottchen): reuse instead of copy from
+// md_settings_localized_strings_provider.cc.
+struct LocalizedString {
+  const char* name;
+  int id;
+};
+
+void AddOnboardingStrings(content::WebUIDataSource* html_source) {
+  static constexpr LocalizedString kLocalizedStrings[] = {
+      // Shared strings.
+      {"headerText", IDS_WELCOME_HEADER},
+      {"acceptText", IDS_WELCOME_ACCEPT_BUTTON},
+      {"noThanks", IDS_NO_THANKS},
+      {"getStarted", IDS_ONBOARDING_WELCOME_GET_STARTED},
+      {"bookmarkAdded", IDS_ONBOARDING_WELCOME_BOOKMARK_ADDED},
+      {"bookmarkRemoved", IDS_ONBOARDING_WELCOME_BOOKMARK_REMOVED},
+      {"bookmarkReplaced", IDS_ONBOARDING_WELCOME_BOOKMARK_REPLACED},
+
+      // Sign-in view strings.
+      {"signInHeader", IDS_ONBOARDING_WELCOME_SIGNIN_VIEW_HEADER},
+      {"signInSubHeader", IDS_ONBOARDING_WELCOME_SIGNIN_VIEW_SUB_HEADER},
+      {"signIn", IDS_ONBOARDING_WELCOME_SIGNIN_VIEW_SIGNIN},
+
+      // Email provider module strings.
+      {"welcomeTitle", IDS_ONBOARDING_WELCOME_NUX_EMAIL_WELCOME_TITLE},
+      {"emailPrompt", IDS_ONBOARDING_WELCOME_NUX_EMAIL_PROMPT},
+
+      // Google apps module strings.
+      {"googleAppsDescription",
+       IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_DESCRIPTION},
+
+      // Set as default module strings.
+      {"setDefaultHeader", IDS_ONBOARDING_WELCOME_NUX_SET_AS_DEFAULT_HEADER},
+      {"setDefaultSubHeader",
+       IDS_ONBOARDING_WELCOME_NUX_SET_AS_DEFAULT_SUB_HEADER},
+      {"setDefaultSkip", IDS_ONBOARDING_WELCOME_NUX_SET_AS_DEFAULT_SKIP},
+      {"setDefaultConfirm",
+       IDS_ONBOARDING_WELCOME_NUX_SET_AS_DEFAULT_SET_AS_DEFAULT},
+  };
+
+  // TODO(scottchen): reuse instead of copy from
+  // md_settings_localized_strings_provider.cc.
+  for (size_t i = 0; i < base::size(kLocalizedStrings); i++) {
+    html_source->AddLocalizedString(kLocalizedStrings[i].name,
+                                    kLocalizedStrings[i].id);
+  }
+}
 
 WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
     : content::WebUIController(web_ui) {
@@ -67,8 +116,7 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
 
   if (nux::IsNuxOnboardingEnabled(profile)) {
     // Add Onboarding welcome strings.
-    html_source->AddLocalizedString("headerText", IDS_WELCOME_HEADER);
-    html_source->AddLocalizedString("acceptText", IDS_WELCOME_ACCEPT_BUTTON);
+    AddOnboardingStrings(html_source);
 
     // Add all Onboarding resources.
     for (size_t i = 0; i < kOnboardingWelcomeResourcesSize; ++i) {

@@ -203,7 +203,7 @@ are declared in tools/grit/grit_rule.gni.
 
       <!-- NUX Welcome onboarding experience strings -->
       <if expr="not chromeos and not is_android">
-        <part file="nux_strings.grdp" />
+        <part file="onboarding_welcome_strings.grdp" />
       </if>
 
       <!-- Printing specific strings -->
