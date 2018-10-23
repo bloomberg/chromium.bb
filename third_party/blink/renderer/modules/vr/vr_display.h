@@ -45,8 +45,13 @@ class SessionClientBinding
     : public GarbageCollectedFinalized<SessionClientBinding>,
       public device::mojom::blink::XRSessionClient {
  public:
+  enum class SessionBindingType {
+    kImmersive = 0,
+    kNonImmersive = 1,
+  };
+
   SessionClientBinding(VRDisplay* display,
-                       bool is_immersive,
+                       SessionBindingType immersive,
                        device::mojom::blink::XRSessionClientRequest request);
   ~SessionClientBinding() override;
   void Close();
