@@ -131,8 +131,8 @@ class FakeDeviceSyncImplFactory
       gcm::GCMDriver* gcm_driver,
       service_manager::Connector* connector,
       const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-      override {
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      std::unique_ptr<base::OneShotTimer> timer) override {
     return std::make_unique<chromeos::device_sync::FakeDeviceSync>();
   }
 };
