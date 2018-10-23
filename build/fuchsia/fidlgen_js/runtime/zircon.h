@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TOOLS_FUCHSIA_FIDLGEN_JS_RUNTIME_ZIRCON_H_
-#define TOOLS_FUCHSIA_FIDLGEN_JS_RUNTIME_ZIRCON_H_
+#ifndef BUILD_FUCHSIA_FIDLGEN_JS_RUNTIME_ZIRCON_H_
+#define BUILD_FUCHSIA_FIDLGEN_JS_RUNTIME_ZIRCON_H_
 
 #include <memory>
 
@@ -55,4 +55,4 @@ class ZxBindings {
 
 }  // namespace fidljs
 
-#endif  // TOOLS_FUCHSIA_FIDLGEN_JS_RUNTIME_ZIRCON_H_
+#endif  // BUILD_FUCHSIA_FIDLGEN_JS_RUNTIME_ZIRCON_H_

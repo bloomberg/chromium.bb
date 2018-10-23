@@ -186,14 +186,14 @@ template("fidl_library") {
       # Depend on the SDK hash, to ensure rebuild if the SDK tools change.
       rebase_path("$fuchsia_sdk/.hash"),
       _json_representation,
-      "//tools/fuchsia/fidlgen_js/fidl.py",  # The schema helper file.
+      "//build/fuchsia/fidlgen_js/fidl.py",  # The schema helper file.
     ]
 
     outputs = [
       _output_js_path,
     ]
 
-    script = "//tools/fuchsia/fidlgen_js/gen.py"
+    script = "//build/fuchsia/fidlgen_js/gen.py"
 
     args = [
       rebase_path(_json_representation),
