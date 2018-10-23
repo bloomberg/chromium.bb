@@ -180,8 +180,9 @@ class DataReductionProxyConfigTest : public testing::Test {
   std::unique_ptr<DataReductionProxyConfig> BuildConfig(
       std::unique_ptr<DataReductionProxyParams> params) {
     return std::make_unique<DataReductionProxyConfig>(
-        task_runner(), network::TestNetworkConnectionTracker::GetInstance(),
-        std::move(params), test_context_->configurator());
+        task_runner(), task_runner(),
+        network::TestNetworkConnectionTracker::GetInstance(), std::move(params),
+        test_context_->configurator());
   }
 
   MockDataReductionProxyConfig* mock_config() {
@@ -420,13 +421,18 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
                                            "Enabled");
 
     base::CommandLine::ForCurrentProcess()->InitFromArgv(0, nullptr);
-    TestDataReductionProxyConfig config(task_runner(), configurator());
+    TestDataReductionProxyConfig config(task_runner(), task_runner(),
+                                        configurator());
 
     NetworkPropertiesManager network_properties_manager(
         base::DefaultClock::GetInstance(), test_context_->pref_service(),
         test_context_->task_runner());
-    config.InitializeOnIOThread(test_context_->url_loader_factory(),
-                                &network_properties_manager);
+    config.InitializeOnIOThread(
+        test_context_->url_loader_factory(),
+        base::BindRepeating([](const std::vector<DataReductionProxyServer>&) {
+          return network::mojom::CustomProxyConfig::New();
+        }),
+        &network_properties_manager);
     RunUntilIdle();
 
     {
@@ -759,8 +765,9 @@ TEST_F(DataReductionProxyConfigTest,
   ASSERT_LT(0U, expected_proxies.size());
 
   DataReductionProxyConfig config(
-      task_runner(), network::TestNetworkConnectionTracker::GetInstance(),
-      std::move(params), configurator());
+      task_runner(), task_runner(),
+      network::TestNetworkConnectionTracker::GetInstance(), std::move(params),
+      configurator());
 
   for (size_t expected_proxy_index = 0U;
        expected_proxy_index < expected_proxies.size(); ++expected_proxy_index) {
@@ -833,7 +840,8 @@ TEST_F(DataReductionProxyConfigTest,
 
   config_values->UpdateValues(proxies_for_http);
   std::unique_ptr<DataReductionProxyConfig> config(new DataReductionProxyConfig(
-      task_runner(), network::TestNetworkConnectionTracker::GetInstance(),
+      task_runner(), task_runner(),
+      network::TestNetworkConnectionTracker::GetInstance(),
       std::move(config_values), configurator()));
   for (const auto& test : tests) {
     base::Optional<DataReductionProxyTypeInfo> proxy_type_info =

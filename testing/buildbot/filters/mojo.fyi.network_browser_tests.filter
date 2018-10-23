@@ -109,9 +109,6 @@
 -DataReductionProxyFallbackBrowsertest.FallbackProxyUsedWhenBlockZeroHeaderSent
 -DataReductionProxyFallbackBrowsertest.FallbackProxyUsedWhenBypassHeaderSent
 -DataReductionProxyFallbackBrowsertest.NoProxyUsedWhenBlockOnceHeaderSent
--DataReductionProxyWarmupURLBrowsertest.WarmupURLsFetchedForEachProxy/0
--DataReductionProxyWarmupURLBrowsertest.WarmupURLsFetchedForEachProxy/1
--DataReductionProxyWarmupURLBrowsertest.WarmupURLsFetchedForEachProxy/3
 
 # NOTE: if adding an exclusion for an existing failure (e.g. additional test for
 # feature X that is already not working), please add it beside the existing

@@ -36,6 +36,7 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 namespace data_reduction_proxy {
 
@@ -68,8 +69,8 @@ DataReductionProxyIOData::DataReductionProxyIOData(
         std::make_unique<DataReductionProxyMutableConfigValues>();
     raw_mutable_config = mutable_config.get();
     config_.reset(new DataReductionProxyConfig(
-        io_task_runner, network_connection_tracker_, std::move(mutable_config),
-        configurator_.get()));
+        io_task_runner, ui_task_runner, network_connection_tracker_,
+        std::move(mutable_config), configurator_.get()));
 
     // It is safe to use base::Unretained here, since it gets executed
     // synchronously on the IO thread, and |this| outlives the caller (since the
@@ -158,8 +159,11 @@ void DataReductionProxyIOData::InitializeOnIOThread() {
   auto url_loader_factory = network::SharedURLLoaderFactory::Create(
       std::move(url_loader_factory_info_));
 
-  config_->InitializeOnIOThread(url_loader_factory,
-                                network_properties_manager_.get());
+  config_->InitializeOnIOThread(
+      url_loader_factory,
+      base::BindRepeating(&DataReductionProxyIOData::CreateCustomProxyConfig,
+                          base::Unretained(this)),
+      network_properties_manager_.get());
   bypass_stats_->InitializeOnIOThread();
   proxy_delegate_->InitializeOnIOThread(this);
   if (config_client_)
@@ -360,12 +364,9 @@ void DataReductionProxyIOData::UpdateProxyRequestHeaders(
   OnProxyConfigUpdated();
 }
 
-void DataReductionProxyIOData::OnProxyConfigUpdated() {
-  if (!proxy_config_client_)
-    return;
-
-  const auto proxies_for_http = config_->GetProxiesForHttp();
-
+network::mojom::CustomProxyConfigPtr
+DataReductionProxyIOData::CreateCustomProxyConfig(
+    const std::vector<DataReductionProxyServer>& proxies_for_http) const {
   auto config = network::mojom::CustomProxyConfig::New();
   config->rules =
       configurator_
@@ -393,7 +394,15 @@ void DataReductionProxyIOData::OnProxyConfigUpdated() {
 
   request_options_->AddRequestHeader(&config->post_cache_headers,
                                      base::nullopt);
-  proxy_config_client_->OnCustomProxyConfigUpdated(std::move(config));
+  return config;
+}
+
+void DataReductionProxyIOData::OnProxyConfigUpdated() {
+  if (!proxy_config_client_)
+    return;
+
+  proxy_config_client_->OnCustomProxyConfigUpdated(
+      CreateCustomProxyConfig(config_->GetProxiesForHttp()));
 }
 
 void DataReductionProxyIOData::OnEffectiveConnectionTypeChanged(

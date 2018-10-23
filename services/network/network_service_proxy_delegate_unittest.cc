@@ -30,7 +30,7 @@ class NetworkServiceProxyDelegateTest : public testing::Test {
   std::unique_ptr<NetworkServiceProxyDelegate> CreateDelegate(
       mojom::CustomProxyConfigPtr config) {
     auto delegate = std::make_unique<NetworkServiceProxyDelegate>(
-        mojo::MakeRequest(&client_));
+        network::mojom::CustomProxyConfig::New(), mojo::MakeRequest(&client_));
     SetConfig(std::move(config));
     return delegate;
   }
@@ -264,7 +264,7 @@ TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxySuccessHttpProxy) {
   expected_proxy_list.AddProxyServer(
       net::ProxyServer::FromPacString("PROXY foo"));
   EXPECT_TRUE(result.proxy_list().Equals(expected_proxy_list));
-  // HTTP proxies are nto used as alternative QUIC proxies.
+  // HTTP proxies are not used as alternative QUIC proxies.
   EXPECT_FALSE(result.alternative_proxy().is_valid());
 }
 
@@ -373,6 +373,24 @@ TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxyDeprioritizesBadProxies) {
   net::ProxyList expected_proxy_list;
   expected_proxy_list.AddProxyServer(
       net::ProxyServer::FromPacString("PROXY bar"));
+  EXPECT_TRUE(result.proxy_list().Equals(expected_proxy_list));
+}
+
+TEST_F(NetworkServiceProxyDelegateTest, InitialConfigUsedForProxy) {
+  auto config = mojom::CustomProxyConfig::New();
+  config->rules.ParseFromString("http=foo");
+  mojom::CustomProxyConfigClientPtr client;
+  auto delegate = std::make_unique<NetworkServiceProxyDelegate>(
+      std::move(config), mojo::MakeRequest(&client));
+
+  net::ProxyInfo result;
+  result.UseDirect();
+  delegate->OnResolveProxy(GURL(kHttpUrl), "GET", net::ProxyRetryInfoMap(),
+                           &result);
+
+  net::ProxyList expected_proxy_list;
+  expected_proxy_list.AddProxyServer(
+      net::ProxyServer::FromPacString("PROXY foo"));
   EXPECT_TRUE(result.proxy_list().Equals(expected_proxy_list));
 }
 

@@ -88,6 +88,7 @@ class DataReductionProxyConfig
   // configuration update.
   DataReductionProxyConfig(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       network::NetworkConnectionTracker* network_connection_tracker,
       std::unique_ptr<DataReductionProxyConfigValues> config_values,
       DataReductionProxyConfigurator* configurator);
@@ -98,6 +99,8 @@ class DataReductionProxyConfig
   // making URL requests. The requests disable the use of proxies.
   void InitializeOnIOThread(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      WarmupURLFetcher::CreateCustomProxyConfigCallback
+          create_custom_proxy_config_callback,
       NetworkPropertiesManager* manager);
 
   // Sets the proxy configs, enabling or disabling the proxy according to
@@ -207,8 +210,7 @@ class DataReductionProxyConfig
 
   // Returns the details of the proxy to which the next warmup URL probe should
   // be sent to.
-  base::Optional<std::pair<bool /* is_secure_proxy */, bool /*is_core_proxy */>>
-  GetProxyConnectionToProbe() const;
+  base::Optional<DataReductionProxyServer> GetProxyConnectionToProbe() const;
 
   // Returns true if a warmup URL probe is in-flight. Virtualized for testing.
   virtual bool IsFetchInFlight() const;
@@ -305,6 +307,7 @@ class DataReductionProxyConfig
   std::unique_ptr<DataReductionProxyConfigValues> config_values_;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
 #if defined(OS_CHROMEOS)
   // Whether the network id should be obtained on a worker thread.

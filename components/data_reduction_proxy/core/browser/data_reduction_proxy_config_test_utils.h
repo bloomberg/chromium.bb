@@ -34,6 +34,7 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
  public:
   TestDataReductionProxyConfig(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       DataReductionProxyConfigurator* configurator);
 
   // Creates a |TestDataReductionProxyConfig| with the provided |config_values|.
@@ -42,6 +43,7 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   TestDataReductionProxyConfig(
       std::unique_ptr<DataReductionProxyConfigValues> config_values,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       DataReductionProxyConfigurator* configurator);
 
   ~TestDataReductionProxyConfig() override;
@@ -134,6 +136,7 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
   MockDataReductionProxyConfig(
       std::unique_ptr<DataReductionProxyConfigValues> config_values,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       DataReductionProxyConfigurator* configurator);
   ~MockDataReductionProxyConfig() override;
 

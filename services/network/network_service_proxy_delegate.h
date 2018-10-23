@@ -29,6 +29,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceProxyDelegate
       public mojom::CustomProxyConfigClient {
  public:
   explicit NetworkServiceProxyDelegate(
+      mojom::CustomProxyConfigPtr initial_config,
       mojom::CustomProxyConfigClientRequest config_client_request);
   ~NetworkServiceProxyDelegate() override;
 
