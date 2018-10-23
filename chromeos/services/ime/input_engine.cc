@@ -17,10 +17,10 @@ namespace ime {
 namespace {
 
 std::string GetIdFromImeSpec(const std::string& ime_spec) {
-  std::string prefix("m17n:");
-  return base::StartsWith(ime_spec, prefix, base::CompareCase::SENSITIVE)
-             ? ime_spec.substr(prefix.length())
-             : base::EmptyString();
+  static const std::string kPrefix("m17n:");
+  return base::StartsWith(ime_spec, kPrefix, base::CompareCase::SENSITIVE)
+             ? ime_spec.substr(kPrefix.length())
+             : std::string();
 }
 
 }  // namespace
@@ -70,14 +70,14 @@ void InputEngine::ProcessMessage(const std::vector<uint8_t>& message,
   NOTIMPLEMENTED();  // Protobuf message is not used in the rulebased engine.
 }
 
-const std::string InputEngine::Process(const std::string& message,
-                                       const InputEngineContext* context) {
+std::string InputEngine::Process(const std::string& message,
+                                 const InputEngineContext* context) {
   std::string ime_spec = context->ime_spec;
   auto& engine = context->engine;
   if (!engine)
-    return base::EmptyString();
+    return std::string();
 
-  const char* false_response = "{\"result\":false}";
+  const char kFalseResponse[] = "{\"result\":false}";
 
   // The request message is in JSON format as:
   // {
@@ -98,11 +98,11 @@ const std::string InputEngine::Process(const std::string& message,
                                            &error_code, &error_string);
   if (!message_value) {
     LOG(ERROR) << "Read message error: " << error_code << "; " << error_string;
-    return false_response;
+    return kFalseResponse;
   }
   base::Value* method = message_value->FindKey("method");
   if (!method)
-    return false_response;
+    return kFalseResponse;
 
   const std::string& method_str = method->GetString();
   if (method_str == "countKey") {
@@ -117,7 +117,7 @@ const std::string InputEngine::Process(const std::string& message,
   if (method_str == "keyEvent") {
     base::Value* type = message_value->FindKey("type");
     if (!type || type->GetString() != "keydown")
-      return false_response;
+      return kFalseResponse;
   }
 
   base::Value* code = message_value->FindKey("code");
@@ -125,7 +125,7 @@ const std::string InputEngine::Process(const std::string& message,
   base::Value* altgr = message_value->FindKey("altgr");
   base::Value* caps = message_value->FindKey("caps");
   if (!code || !shift || !altgr || !caps)
-    return false_response;
+    return kFalseResponse;
 
   uint8_t modifiers = 0;
   if (shift->GetBool())
