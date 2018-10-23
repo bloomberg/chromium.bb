@@ -158,6 +158,8 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
   bool OnBlockedFrame(const QuicBlockedFrame& frame) override;
   bool OnNewConnectionIdFrame(const QuicNewConnectionIdFrame& frame) override;
+  bool OnRetireConnectionIdFrame(
+      const QuicRetireConnectionIdFrame& frame) override;
   bool OnNewTokenFrame(const QuicNewTokenFrame& frame) override;
   bool OnMessageFrame(const QuicMessageFrame& frame) override;
   void OnPacketComplete() override;

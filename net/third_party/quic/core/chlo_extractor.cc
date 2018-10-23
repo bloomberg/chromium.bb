@@ -52,6 +52,8 @@ class ChloFramerVisitor : public QuicFramerVisitorInterface,
   bool OnConnectionCloseFrame(const QuicConnectionCloseFrame& frame) override;
   bool OnApplicationCloseFrame(const QuicApplicationCloseFrame& frame) override;
   bool OnNewConnectionIdFrame(const QuicNewConnectionIdFrame& frame) override;
+  bool OnRetireConnectionIdFrame(
+      const QuicRetireConnectionIdFrame& frame) override;
   bool OnNewTokenFrame(const QuicNewTokenFrame& frame) override;
   bool OnStopSendingFrame(const QuicStopSendingFrame& frame) override;
   bool OnPathChallengeFrame(const QuicPathChallengeFrame& frame) override;
@@ -220,6 +222,11 @@ bool ChloFramerVisitor::OnBlockedFrame(const QuicBlockedFrame& frame) {
 
 bool ChloFramerVisitor::OnNewConnectionIdFrame(
     const QuicNewConnectionIdFrame& frame) {
+  return true;
+}
+
+bool ChloFramerVisitor::OnRetireConnectionIdFrame(
+    const QuicRetireConnectionIdFrame& frame) {
   return true;
 }
 

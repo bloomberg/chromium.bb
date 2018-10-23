@@ -53,6 +53,9 @@ QuicFrame::QuicFrame(QuicApplicationCloseFrame* frame)
 QuicFrame::QuicFrame(QuicNewConnectionIdFrame* frame)
     : type(NEW_CONNECTION_ID_FRAME), new_connection_id_frame(frame) {}
 
+QuicFrame::QuicFrame(QuicRetireConnectionIdFrame* frame)
+    : type(RETIRE_CONNECTION_ID_FRAME), retire_connection_id_frame(frame) {}
+
 QuicFrame::QuicFrame(QuicMaxStreamIdFrame frame) : max_stream_id_frame(frame) {}
 
 QuicFrame::QuicFrame(QuicStreamIdBlockedFrame frame)
@@ -122,6 +125,9 @@ void DeleteFrame(QuicFrame* frame) {
       break;
     case NEW_CONNECTION_ID_FRAME:
       delete frame->new_connection_id_frame;
+      break;
+    case RETIRE_CONNECTION_ID_FRAME:
+      delete frame->retire_connection_id_frame;
       break;
     case PATH_RESPONSE_FRAME:
       delete frame->path_response_frame;
@@ -295,6 +301,10 @@ std::ostream& operator<<(std::ostream& os, const QuicFrame& frame) {
       break;
     case NEW_CONNECTION_ID_FRAME:
       os << "type { NEW_CONNECTION_ID } " << *(frame.new_connection_id_frame);
+      break;
+    case RETIRE_CONNECTION_ID_FRAME:
+      os << "type { RETIRE_CONNECTION_ID } "
+         << *(frame.retire_connection_id_frame);
       break;
     case MAX_STREAM_ID_FRAME:
       os << "type { MAX_STREAM_ID } " << frame.max_stream_id_frame;

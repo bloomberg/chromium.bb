@@ -141,6 +141,17 @@ std::unique_ptr<QuartcSession> QuartcFactory::CreateQuartcSession(
   // The ICE transport provides a unique 5-tuple for each connection. Save
   // overhead by omitting the connection id.
   quic_config.SetBytesForConnectionIdToSend(0);
+
+  // Allow up to 1000 incoming streams at once. Quartc streams typically contain
+  // one audio or video frame and close immediately. However, when a video frame
+  // becomes larger than one packet, there is some delay between the start and
+  // end of each stream. The default maximum of 100 only leaves about 1 second
+  // of headroom (Quartc sends ~30 video frames per second) before QUIC starts
+  // to refuse incoming streams. Back-pressure should clear backlogs of
+  // incomplete streams, but targets 1 second for recovery. Increasing the
+  // number of open streams gives sufficient headroom to recover before QUIC
+  // refuses new streams.
+  quic_config.SetMaxIncomingDynamicStreamsToSend(1000);
   return QuicMakeUnique<QuartcSession>(
       std::move(quic_connection), quic_config, CurrentSupportedVersions(),
       quartc_session_config.unique_remote_server_id, perspective,

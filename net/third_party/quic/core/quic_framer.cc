@@ -465,6 +465,8 @@ size_t QuicFramer::GetRetransmittableControlFrameSize(
                  frame.application_close_frame->error_details);
     case NEW_CONNECTION_ID_FRAME:
       return GetNewConnectionIdFrameSize(*frame.new_connection_id_frame);
+    case RETIRE_CONNECTION_ID_FRAME:
+      return GetRetireConnectionIdFrameSize(*frame.retire_connection_id_frame);
     case NEW_TOKEN_FRAME:
       return GetNewTokenFrameSize(*frame.new_token_frame);
     case MAX_STREAM_ID_FRAME:
@@ -535,6 +537,13 @@ size_t QuicFramer::GetNewConnectionIdFrameSize(
          QuicDataWriter::GetVarInt62Len(frame.sequence_number) +
          kConnectionIdLengthSize + kQuicConnectionIdLength +
          sizeof(frame.stateless_reset_token);
+}
+
+// static
+size_t QuicFramer::GetRetireConnectionIdFrameSize(
+    const QuicRetireConnectionIdFrame& frame) {
+  return kQuicFrameTypeSize +
+         QuicDataWriter::GetVarInt62Len(frame.sequence_number);
 }
 
 // static
@@ -726,6 +735,11 @@ size_t QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
         set_detailed_error(
             "Attempt to append NEW_CONNECTION_ID frame and not in version 99.");
         return RaiseError(QUIC_INTERNAL_ERROR);
+      case RETIRE_CONNECTION_ID_FRAME:
+        set_detailed_error(
+            "Attempt to append RETIRE_CONNECTION_ID frame and not in version "
+            "99.");
+        return RaiseError(QUIC_INTERNAL_ERROR);
       case NEW_TOKEN_FRAME:
         set_detailed_error(
             "Attempt to append NEW_TOKEN_ID frame and not in version 99.");
@@ -884,6 +898,13 @@ size_t QuicFramer::BuildIetfDataPacket(const QuicPacketHeader& header,
         if (!AppendNewConnectionIdFrame(*frame.new_connection_id_frame,
                                         &writer)) {
           QUIC_BUG << "AppendNewConnectionIdFrame failed";
+          return 0;
+        }
+        break;
+      case RETIRE_CONNECTION_ID_FRAME:
+        if (!AppendRetireConnectionIdFrame(*frame.retire_connection_id_frame,
+                                           &writer)) {
+          QUIC_BUG << "AppendRetireConnectionIdFrame failed";
           return 0;
         }
         break;
@@ -2440,6 +2461,18 @@ bool QuicFramer::ProcessIetfFrameData(QuicDataReader* reader,
           }
           break;
         }
+        case IETF_RETIRE_CONNECTION_ID: {
+          QuicRetireConnectionIdFrame frame;
+          if (!ProcessRetireConnectionIdFrame(reader, &frame)) {
+            return RaiseError(QUIC_INVALID_RETIRE_CONNECTION_ID_DATA);
+          }
+          if (!visitor_->OnRetireConnectionIdFrame(frame)) {
+            QUIC_DVLOG(1) << "Visitor asked to stop further processing.";
+            // Returning true since there was no parsing error.
+            return true;
+          }
+          break;
+        }
         case IETF_NEW_TOKEN: {
           QuicNewTokenFrame frame;
           if (!ProcessNewTokenFrame(reader, &frame)) {
@@ -2464,9 +2497,10 @@ bool QuicFramer::ProcessIetfFrameData(QuicDataReader* reader,
           }
           break;
         }
+        case IETF_ACK_ECN:
         case IETF_ACK: {
           QuicAckFrame frame;
-          if (!ProcessIetfAckFrame(reader, &frame)) {
+          if (!ProcessIetfAckFrame(reader, frame_type, &frame)) {
             return RaiseError(QUIC_INVALID_ACK_DATA);
           }
           break;
@@ -2885,6 +2919,7 @@ bool QuicFramer::ProcessTimestampsInAckFrame(uint8_t num_received_packets,
 }
 
 bool QuicFramer::ProcessIetfAckFrame(QuicDataReader* reader,
+                                     uint64_t frame_type,
                                      QuicAckFrame* ack_frame) {
   QuicPacketNumber largest_acked;
   if (!reader->ReadVarInt62(&largest_acked)) {
@@ -2907,7 +2942,26 @@ bool QuicFramer::ProcessIetfAckFrame(QuicDataReader* reader,
     ack_frame->ack_delay_time =
         QuicTime::Delta::FromMicroseconds(ack_delay_time_in_us);
   }
-
+  if (frame_type == IETF_ACK_ECN) {
+    ack_frame->ecn_counters_populated = true;
+    if (!reader->ReadVarInt62(&ack_frame->ect_0_count)) {
+      set_detailed_error("Unable to read ack ect_0_count.");
+      return false;
+    }
+    if (!reader->ReadVarInt62(&ack_frame->ect_1_count)) {
+      set_detailed_error("Unable to read ack ect_1_count.");
+      return false;
+    }
+    if (!reader->ReadVarInt62(&ack_frame->ecn_ce_count)) {
+      set_detailed_error("Unable to read ack ecn_ce_count.");
+      return false;
+    }
+  } else {
+    ack_frame->ecn_counters_populated = false;
+    ack_frame->ect_0_count = 0;
+    ack_frame->ect_1_count = 0;
+    ack_frame->ecn_ce_count = 0;
+  }
   if (!visitor_->OnAckFrameStart(largest_acked, ack_frame->ack_delay_time)) {
     // The visitor suppresses further processing of the packet. Although this is
     // not a parsing error, returns false as this is in middle of processing an
@@ -3375,6 +3429,15 @@ size_t QuicFramer::GetIetfAckFrameSize(const QuicAckFrame& frame) {
   ack_delay_time_us = ack_delay_time_us >> kIetfAckTimestampShift;
   ack_frame_size += QuicDataWriter::GetVarInt62Len(ack_delay_time_us);
 
+  // If |ecn_counters_populated| is true and any of the ecn counters is non-0
+  // then the ecn counters are included...
+  if (frame.ecn_counters_populated &&
+      (frame.ect_0_count || frame.ect_1_count || frame.ecn_ce_count)) {
+    ack_frame_size += QuicDataWriter::GetVarInt62Len(frame.ect_0_count);
+    ack_frame_size += QuicDataWriter::GetVarInt62Len(frame.ect_1_count);
+    ack_frame_size += QuicDataWriter::GetVarInt62Len(frame.ecn_ce_count);
+  }
+
   // The rest (ack_block_count, first_ack_block, and additional ack
   // blocks, if any) depends:
   uint64_t ack_block_count = frame.packets.NumIntervals();
@@ -3546,6 +3609,11 @@ bool QuicFramer::AppendTypeByte(const QuicFrame& frame,
       set_detailed_error(
           "Attempt to append NEW_CONNECTION_ID frame and not in version 99.");
       return RaiseError(QUIC_INTERNAL_ERROR);
+    case RETIRE_CONNECTION_ID_FRAME:
+      set_detailed_error(
+          "Attempt to append RETIRE_CONNECTION_ID frame and not in version "
+          "99.");
+      return RaiseError(QUIC_INTERNAL_ERROR);
     case NEW_TOKEN_FRAME:
       set_detailed_error(
           "Attempt to append NEW_TOKEN frame and not in version 99.");
@@ -3639,6 +3707,9 @@ bool QuicFramer::AppendIetfTypeByte(const QuicFrame& frame,
       break;
     case NEW_CONNECTION_ID_FRAME:
       type_byte = IETF_NEW_CONNECTION_ID;
+      break;
+    case RETIRE_CONNECTION_ID_FRAME:
+      type_byte = IETF_RETIRE_CONNECTION_ID;
       break;
     case NEW_TOKEN_FRAME:
       type_byte = IETF_NEW_TOKEN;
@@ -4171,15 +4242,19 @@ int QuicFramer::CalculateIetfAckBlockCount(const QuicAckFrame& frame,
 
 bool QuicFramer::AppendIetfAckFrameAndTypeByte(const QuicAckFrame& frame,
                                                QuicDataWriter* writer) {
-  if (!writer->WriteUInt8(IETF_ACK)) {
+  // Assume frame is an IETF_ACK frame. If |ecn_counters_populated| is true and
+  // any of the ECN counters is non-0 then turn it into an IETF_ACK+ECN frame.
+  uint8_t type = IETF_ACK;
+  if (frame.ecn_counters_populated &&
+      (frame.ect_0_count || frame.ect_1_count || frame.ecn_ce_count)) {
+    type = IETF_ACK_ECN;
+  }
+
+  if (!writer->WriteUInt8(type)) {
     set_detailed_error("No room for frame-type");
     return false;
   }
-  return AppendIetfAckFrame(frame, writer);
-}
 
-bool QuicFramer::AppendIetfAckFrame(const QuicAckFrame& frame,
-                                    QuicDataWriter* writer) {
   QuicPacketNumber largest_acked = LargestAcked(frame);
   if (!writer->WriteVarInt62(largest_acked)) {
     set_detailed_error("No room for largest-acked in ack frame");
@@ -4197,6 +4272,21 @@ bool QuicFramer::AppendIetfAckFrame(const QuicAckFrame& frame,
   if (!writer->WriteVarInt62(ack_delay_time_us)) {
     set_detailed_error("No room for ack-delay in ack frame");
     return false;
+  }
+  if (type == IETF_ACK_ECN) {
+    // Encode the ACK ECN fields
+    if (!writer->WriteVarInt62(frame.ect_0_count)) {
+      set_detailed_error("No room for ect_0_count in ack frame");
+      return false;
+    }
+    if (!writer->WriteVarInt62(frame.ect_1_count)) {
+      set_detailed_error("No room for ect_1_count in ack frame");
+      return false;
+    }
+    if (!writer->WriteVarInt62(frame.ecn_ce_count)) {
+      set_detailed_error("No room for ecn_ce_count in ack frame");
+      return false;
+    }
   }
 
   uint64_t ack_block_count = frame.packets.NumIntervals();
@@ -4835,6 +4925,27 @@ bool QuicFramer::ProcessNewConnectionIdFrame(QuicDataReader* reader,
   if (!reader->ReadBytes(&frame->stateless_reset_token,
                          sizeof(frame->stateless_reset_token))) {
     set_detailed_error("Can not read new connection ID frame reset token.");
+    return false;
+  }
+  return true;
+}
+
+bool QuicFramer::AppendRetireConnectionIdFrame(
+    const QuicRetireConnectionIdFrame& frame,
+    QuicDataWriter* writer) {
+  if (!writer->WriteVarInt62(frame.sequence_number)) {
+    set_detailed_error("Can not write Retire Connection ID sequence number");
+    return false;
+  }
+  return true;
+}
+
+bool QuicFramer::ProcessRetireConnectionIdFrame(
+    QuicDataReader* reader,
+    QuicRetireConnectionIdFrame* frame) {
+  if (!reader->ReadVarInt62(&frame->sequence_number)) {
+    set_detailed_error(
+        "Unable to read retire connection ID frame sequence number.");
     return false;
   }
   return true;

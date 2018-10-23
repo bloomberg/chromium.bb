@@ -245,6 +245,11 @@ bool NoOpFramerVisitor::OnNewConnectionIdFrame(
   return true;
 }
 
+bool NoOpFramerVisitor::OnRetireConnectionIdFrame(
+    const QuicRetireConnectionIdFrame& frame) {
+  return true;
+}
+
 bool NoOpFramerVisitor::OnNewTokenFrame(const QuicNewTokenFrame& frame) {
   return true;
 }

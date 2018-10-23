@@ -39,7 +39,7 @@ void QuicPacketReader::Initialize() {
 
   for (int i = 0; i < kNumPacketsPerReadMmsgCall; ++i) {
     packets_[i].iov.iov_base = packets_[i].buf;
-    packets_[i].iov.iov_len = kMaxPacketSize;
+    packets_[i].iov.iov_len = sizeof(packets_[i].buf);
     memset(&packets_[i].raw_address, 0, sizeof(packets_[i].raw_address));
     memset(packets_[i].cbuf, 0, sizeof(packets_[i].cbuf));
     memset(packets_[i].buf, 0, sizeof(packets_[i].buf));
@@ -82,7 +82,7 @@ bool QuicPacketReader::ReadAndDispatchManyPackets(
 #if MMSG_MORE
   // Re-set the length fields in case recvmmsg has changed them.
   for (int i = 0; i < kNumPacketsPerReadMmsgCall; ++i) {
-    DCHECK_EQ(kMaxPacketSize, packets_[i].iov.iov_len);
+    DCHECK_LE(kMaxPacketSize, packets_[i].iov.iov_len);
     msghdr* hdr = &mmsg_hdr_[i].msg_hdr;
     hdr->msg_namelen = sizeof(sockaddr_storage);
     DCHECK_EQ(1, hdr->msg_iovlen);
@@ -91,7 +91,7 @@ bool QuicPacketReader::ReadAndDispatchManyPackets(
   }
 
   int packets_read =
-      recvmmsg(fd, mmsg_hdr_, kNumPacketsPerReadMmsgCall, 0, nullptr);
+      recvmmsg(fd, mmsg_hdr_, kNumPacketsPerReadMmsgCall, MSG_TRUNC, nullptr);
 
   if (packets_read <= 0) {
     return false;  // recvmmsg failed.
@@ -107,6 +107,13 @@ bool QuicPacketReader::ReadAndDispatchManyPackets(
       QUIC_BUG << "Incorrectly set control length: "
                << mmsg_hdr_[i].msg_hdr.msg_controllen << ", expected "
                << kCmsgSpaceForReadPacket;
+      continue;
+    }
+
+    if (QUIC_PREDICT_FALSE(mmsg_hdr_[i].msg_hdr.msg_flags & MSG_TRUNC)) {
+      QUIC_LOG_FIRST_N(ERROR, 10)
+          << "Dropping truncated QUIC packet: buffer size:"
+          << packets_[i].iov.iov_len << " packet size:" << mmsg_hdr_[i].msg_len;
       continue;
     }
 
@@ -167,7 +174,7 @@ bool QuicPacketReader::ReadAndDispatchSinglePacket(
     const QuicClock& clock,
     ProcessPacketInterface* processor,
     QuicPacketCount* packets_dropped) {
-  char buf[kMaxPacketSize];
+  char buf[kMaxV4PacketSize];
 
   QuicSocketAddress client_address;
   QuicIpAddress server_ip;

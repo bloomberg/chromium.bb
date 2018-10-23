@@ -17,7 +17,7 @@ class HttpEncoderTest : public QuicTest {
   HttpEncoder encoder_;
 };
 
-TEST_F(HttpEncoderTest, SerializeDataFrame) {
+TEST_F(HttpEncoderTest, SerializeDataFrameHeader) {
   DataFrame data;
   data.data = "Data!";
   std::unique_ptr<char[]> buffer;
@@ -28,6 +28,20 @@ TEST_F(HttpEncoderTest, SerializeDataFrame) {
                    0x00};
   EXPECT_EQ(QUIC_ARRAYSIZE(output), length);
   CompareCharArraysWithHexError("DATA", buffer.get(), length, output,
+                                QUIC_ARRAYSIZE(output));
+}
+
+TEST_F(HttpEncoderTest, SerializeHeadersFrameHeader) {
+  HeadersFrame headers;
+  headers.headers = "Headers";
+  std::unique_ptr<char[]> buffer;
+  uint64_t length = encoder_.SerializeHeadersFrameHeader(headers, &buffer);
+  char output[] = {// length
+                   0x07,
+                   // type (HEADERS)
+                   0x01};
+  EXPECT_EQ(QUIC_ARRAYSIZE(output), length);
+  CompareCharArraysWithHexError("HEADERS", buffer.get(), length, output,
                                 QUIC_ARRAYSIZE(output));
 }
 
@@ -101,6 +115,24 @@ TEST_F(HttpEncoderTest, SerializeSettingsFrame) {
   uint64_t length = encoder_.SerializeSettingsFrame(settings, &buffer);
   EXPECT_EQ(QUIC_ARRAYSIZE(output), length);
   CompareCharArraysWithHexError("SETTINGS", buffer.get(), length, output,
+                                QUIC_ARRAYSIZE(output));
+}
+
+TEST_F(HttpEncoderTest, SerializePushPromiseFrameWithOnlyPushId) {
+  PushPromiseFrame push_promise;
+  push_promise.push_id = 0x01;
+  push_promise.headers = "Headers";
+  char output[] = {// length
+                   0x8,
+                   // type (PUSH_PROMISE)
+                   0x05,
+                   // Push Id
+                   0x01};
+  std::unique_ptr<char[]> buffer;
+  uint64_t length =
+      encoder_.SerializePushPromiseFrameWithOnlyPushId(push_promise, &buffer);
+  EXPECT_EQ(QUIC_ARRAYSIZE(output), length);
+  CompareCharArraysWithHexError("PUSH_PROMISE", buffer.get(), length, output,
                                 QUIC_ARRAYSIZE(output));
 }
 

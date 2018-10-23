@@ -1262,6 +1262,11 @@ bool QuicConnection::OnNewConnectionIdFrame(
   return true;
 }
 
+bool QuicConnection::OnRetireConnectionIdFrame(
+    const QuicRetireConnectionIdFrame& frame) {
+  return true;
+}
+
 bool QuicConnection::OnNewTokenFrame(const QuicNewTokenFrame& frame) {
   return true;
 }

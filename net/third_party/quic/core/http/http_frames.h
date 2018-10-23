@@ -37,7 +37,7 @@ struct DataFrame {
 //   The HEADERS frame (type=0x1) is used to carry a header block,
 //   compressed using QPACK.
 struct HeadersFrame {
-  spdy::SpdyHeaderBlock headers;
+  QuicStringPiece headers;
 };
 
 // 4.2.4.  PRIORITY
@@ -106,7 +106,7 @@ struct SettingsFrame {
 //   set from server to client, as in HTTP/2.
 struct PushPromiseFrame {
   PushId push_id;
-  spdy::SpdyHeaderBlock headers;
+  QuicStringPiece headers;
 
   bool operator==(const PushPromiseFrame& rhs) const {
     return push_id == rhs.push_id && headers == rhs.headers;
