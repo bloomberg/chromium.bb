@@ -3582,6 +3582,15 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
       <message name="IDS_TWA_RUNNING_IN_CHROME" desc="Message on a snackbar indicating that the current Activity may use Chrome data (the rest of the app may not be)." translateable="false">
         Running in Chrome
       </message>
+      <message name="IDS_YOU_HAVE_UNINSTALLED_APP" desc="Notification title saying the user has uninstalled the given app." translateable="false">
+        You have uninstalled <ph name="APP_NAME">%1$s<ex>YouTube</ex></ph>.
+      </message>
+      <message name="IDS_YOU_HAVE_CLEARED_APP" desc="Notification title saying the user has cleared data for the given app." translateable="false">
+        You have cleared data for <ph name="APP_NAME">%1$s<ex>YouTube</ex></ph>.
+      </message>
+      <message name="IDS_CLEAR_RELATED_DATA" desc="Notification text asking if the user wants to clear data for the given url as they have just uninstalled/cleared an app linked to that URL.">
+        Would you like to clear data for <ph name="URL">%1$s<ex>youtube.com</ex></ph>?
+      </message>
 
       <message name="IDS_WEBAPP_TAP_TO_COPY_URL" desc="Message on the notification that indicates that taping it will copy a Web App's URL into the clipboard.">
         Tap to copy the URL for this app
