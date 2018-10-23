@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_INDEXEDDB_INDEXEDDB_STRUCT_TRAITS_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_INDEXEDDB_INDEXEDDB_STRUCT_TRAITS_H_
 
+#include "base/containers/span.h"
 #include "third_party/blink/common/common_export.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
@@ -92,8 +93,43 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::IDBIndexMetadataDataView,
 
 template <>
 struct BLINK_COMMON_EXPORT
+    UnionTraits<blink::mojom::IDBKeyDataDataView, blink::IndexedDBKey> {
+  static blink::mojom::IDBKeyDataDataView::Tag GetTag(
+      const blink::IndexedDBKey& key);
+  static bool Read(blink::mojom::IDBKeyDataDataView data,
+                   blink::IndexedDBKey* out);
+  static const std::vector<blink::IndexedDBKey>& key_array(
+      const blink::IndexedDBKey& key) {
+    return key.array();
+  }
+  static base::span<const uint8_t> binary(const blink::IndexedDBKey& key) {
+    return base::make_span(
+        reinterpret_cast<const uint8_t*>(key.binary().data()),
+        key.binary().size());
+  }
+  static const base::string16& string(const blink::IndexedDBKey& key) {
+    return key.string();
+  }
+  static double date(const blink::IndexedDBKey& key) { return key.date(); }
+  static double number(const blink::IndexedDBKey& key) { return key.number(); }
+  static blink::mojom::IDBDatalessKeyType other(
+      const blink::IndexedDBKey& key) {
+    switch (key.type()) {
+      case blink::kWebIDBKeyTypeInvalid:
+        return blink::mojom::IDBDatalessKeyType::Invalid;
+      case blink::kWebIDBKeyTypeNull:
+        return blink::mojom::IDBDatalessKeyType::Null;
+      default:
+        NOTREACHED();
+        return blink::mojom::IDBDatalessKeyType::Invalid;
+    }
+  }
+};
+
+template <>
+struct BLINK_COMMON_EXPORT
     StructTraits<blink::mojom::IDBKeyDataView, blink::IndexedDBKey> {
-  static blink::mojom::IDBKeyDataPtr data(const blink::IndexedDBKey& key);
+  static const blink::IndexedDBKey& data(const blink::IndexedDBKey& key);
   static bool Read(blink::mojom::IDBKeyDataView data, blink::IndexedDBKey* out);
 };
 

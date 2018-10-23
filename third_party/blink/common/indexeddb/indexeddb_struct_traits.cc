@@ -132,58 +132,46 @@ bool StructTraits<blink::mojom::IDBIndexMetadataDataView,
 }
 
 // static
-blink::mojom::IDBKeyDataPtr
-StructTraits<blink::mojom::IDBKeyDataView, blink::IndexedDBKey>::data(
+blink::mojom::IDBKeyDataDataView::Tag
+UnionTraits<blink::mojom::IDBKeyDataDataView, blink::IndexedDBKey>::GetTag(
     const blink::IndexedDBKey& key) {
-  auto data = blink::mojom::IDBKeyData::New();
   switch (key.type()) {
-    case blink::kWebIDBKeyTypeInvalid:
-      data->set_other(blink::mojom::IDBDatalessKeyType::Invalid);
-      return data;
     case blink::kWebIDBKeyTypeArray:
-      data->set_key_array(key.array());
-      return data;
+      return blink::mojom::IDBKeyDataDataView::Tag::KEY_ARRAY;
     case blink::kWebIDBKeyTypeBinary:
-      data->set_binary(std::vector<uint8_t>(
-          key.binary().data(), key.binary().data() + key.binary().size()));
-      return data;
+      return blink::mojom::IDBKeyDataDataView::Tag::BINARY;
     case blink::kWebIDBKeyTypeString:
-      data->set_string(key.string());
-      return data;
+      return blink::mojom::IDBKeyDataDataView::Tag::STRING;
     case blink::kWebIDBKeyTypeDate:
-      data->set_date(key.date());
-      return data;
+      return blink::mojom::IDBKeyDataDataView::Tag::DATE;
     case blink::kWebIDBKeyTypeNumber:
-      data->set_number(key.number());
-      return data;
+      return blink::mojom::IDBKeyDataDataView::Tag::NUMBER;
+    case blink::kWebIDBKeyTypeInvalid:
     case blink::kWebIDBKeyTypeNull:
-      data->set_other(blink::mojom::IDBDatalessKeyType::Null);
-      return data;
-    case blink::kWebIDBKeyTypeMin:
-      break;
+      return blink::mojom::IDBKeyDataDataView::Tag::OTHER;
+
+    // Not used, fall through to NOTREACHED.
+    case blink::kWebIDBKeyTypeMin:;
   }
   NOTREACHED();
-  return data;
+  return blink::mojom::IDBKeyDataDataView::Tag::OTHER;
 }
 
 // static
-bool StructTraits<blink::mojom::IDBKeyDataView, blink::IndexedDBKey>::Read(
-    blink::mojom::IDBKeyDataView data,
+bool UnionTraits<blink::mojom::IDBKeyDataDataView, blink::IndexedDBKey>::Read(
+    blink::mojom::IDBKeyDataDataView data,
     blink::IndexedDBKey* out) {
-  blink::mojom::IDBKeyDataDataView data_view;
-  data.GetDataDataView(&data_view);
-
-  switch (data_view.tag()) {
+  switch (data.tag()) {
     case blink::mojom::IDBKeyDataDataView::Tag::KEY_ARRAY: {
       std::vector<blink::IndexedDBKey> array;
-      if (!data_view.ReadKeyArray(&array))
+      if (!data.ReadKeyArray(&array))
         return false;
       *out = blink::IndexedDBKey(array);
       return true;
     }
     case blink::mojom::IDBKeyDataDataView::Tag::BINARY: {
       std::vector<uint8_t> binary;
-      if (!data_view.ReadBinary(&binary))
+      if (!data.ReadBinary(&binary))
         return false;
       *out = blink::IndexedDBKey(
           std::string(binary.data(), binary.data() + binary.size()));
@@ -191,20 +179,19 @@ bool StructTraits<blink::mojom::IDBKeyDataView, blink::IndexedDBKey>::Read(
     }
     case blink::mojom::IDBKeyDataDataView::Tag::STRING: {
       base::string16 string;
-      if (!data_view.ReadString(&string))
+      if (!data.ReadString(&string))
         return false;
       *out = blink::IndexedDBKey(string);
       return true;
     }
     case blink::mojom::IDBKeyDataDataView::Tag::DATE:
-      *out = blink::IndexedDBKey(data_view.date(), blink::kWebIDBKeyTypeDate);
+      *out = blink::IndexedDBKey(data.date(), blink::kWebIDBKeyTypeDate);
       return true;
     case blink::mojom::IDBKeyDataDataView::Tag::NUMBER:
-      *out =
-          blink::IndexedDBKey(data_view.number(), blink::kWebIDBKeyTypeNumber);
+      *out = blink::IndexedDBKey(data.number(), blink::kWebIDBKeyTypeNumber);
       return true;
     case blink::mojom::IDBKeyDataDataView::Tag::OTHER:
-      switch (data_view.other()) {
+      switch (data.other()) {
         case blink::mojom::IDBDatalessKeyType::Invalid:
           *out = blink::IndexedDBKey(blink::kWebIDBKeyTypeInvalid);
           return true;
@@ -215,6 +202,20 @@ bool StructTraits<blink::mojom::IDBKeyDataView, blink::IndexedDBKey>::Read(
   }
 
   return false;
+}
+
+// static
+const blink::IndexedDBKey&
+StructTraits<blink::mojom::IDBKeyDataView, blink::IndexedDBKey>::data(
+    const blink::IndexedDBKey& key) {
+  return key;
+}
+
+// static
+bool StructTraits<blink::mojom::IDBKeyDataView, blink::IndexedDBKey>::Read(
+    blink::mojom::IDBKeyDataView data,
+    blink::IndexedDBKey* out) {
+  return data.ReadData(out);
 }
 
 // static
