@@ -40,10 +40,9 @@ public class ClientAppDataRegister {
     /**
      * Saves to Preferences that the app with |uid| has the application name |appName| and when it
      * is removed or cleared, we should consider doing the same with Chrome data relevant to
-     * |domainAndRegistry|.
+     * |domain|.
      */
-    /* package */ void registerPackageForDomainAndRegistry(
-            int uid, String appName, String domainAndRegistry) {
+    /* package */ void registerPackageForDomain(int uid, String appName, String domain) {
         // Store the UID in the main Chrome Preferences.
         Set<String> uids = getUids();
         uids.add(String.valueOf(uid));
@@ -52,12 +51,11 @@ public class ClientAppDataRegister {
         // Store the package name for the UID.
         mPreferences.edit().putString(createAppNameKey(uid), appName).apply();
 
-        // Store the domainAndRegistry for the UID.
-        String key = createDomainAndRegistriesKey(uid);
-        Set<String> domainAndRegistries =
-                new HashSet<>(mPreferences.getStringSet(key, Collections.emptySet()));
-        domainAndRegistries.add(domainAndRegistry);
-        mPreferences.edit().putStringSet(key, domainAndRegistries).apply();
+        // Store the domain for the UID.
+        String key = createDomainKey(uid);
+        Set<String> domains = new HashSet<>(mPreferences.getStringSet(key, Collections.emptySet()));
+        domains.add(domain);
+        mPreferences.edit().putStringSet(key, domains).apply();
     }
 
     private void setUids(Set<String> uids) {
@@ -74,7 +72,7 @@ public class ClientAppDataRegister {
         setUids(uids);
 
         mPreferences.edit().putString(createAppNameKey(uid), null).apply();
-        mPreferences.edit().putStringSet(createDomainAndRegistriesKey(uid), null).apply();
+        mPreferences.edit().putStringSet(createDomainKey(uid), null).apply();
     }
 
     /* package */ boolean chromeHoldsDataForPackage(int uid) {
@@ -89,11 +87,11 @@ public class ClientAppDataRegister {
     }
 
     /**
-     * Gets all the 'domain and registry's that have been registered for the uid.
+     * Gets all the domains that have been registered for the uid.
      * Do not modify the set returned by this method.
      */
-    /* package */ Set<String> getDomainAndRegistriesForRegisteredUid(int uid) {
-        return mPreferences.getStringSet(createDomainAndRegistriesKey(uid), Collections.emptySet());
+    /* package */ Set<String> getDomainsForRegisteredUid(int uid) {
+        return mPreferences.getStringSet(createDomainKey(uid), Collections.emptySet());
     }
 
     /**
@@ -105,10 +103,10 @@ public class ClientAppDataRegister {
     }
 
     /**
-     * Creates the Preferences key to access the set of 'domain and registry's for an app.
+     * Creates the Preferences key to access the set of domains for an app.
      * If you modify this you'll have to migrate old data.
      */
-    private static String createDomainAndRegistriesKey(int uid) {
-        return uid + ".domainAndRegistry";
+    private static String createDomainKey(int uid) {
+        return uid + ".domain";
     }
 }

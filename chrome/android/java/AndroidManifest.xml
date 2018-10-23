@@ -795,14 +795,23 @@ by a child template that "extends" this file.
         </service>
 
         <!-- Components for Trusted Web Activities -->
-        <receiver android:name="org.chromium.chrome.browser.browserservices.ClearDataBroadcastReceiver"
+        <receiver android:name="org.chromium.chrome.browser.browserservices.ClientAppBroadcastReceiver"
             android:exported="true">
             <intent-filter>
                 <data android:scheme="package" />
                 <action android:name="android.intent.action.PACKAGE_FULLY_REMOVED" />
                 <action android:name="android.intent.action.PACKAGE_DATA_CLEARED" />
             </intent-filter>
+            {% if channel in ['default'] %}
+            <intent-filter>
+                <action android:name="org.chromium.chrome.browser.browserservices.ClientAppBroadcastReceiver.DEBUG" />
+            </intent-filter>
+            {% endif %}
         </receiver>
+
+        <service android:name="org.chromium.chrome.browser.browserservices.ClearDataService"
+            android:exported="false">
+        </service>
 
         <!-- Service for decoding images in a sandboxed process. -->
         <service

@@ -46,7 +46,7 @@ public class ClientAppDataRecorderTest {
     private final ClientAppDataRecorder.UrlTransformer mUrlTransformer =
             new ClientAppDataRecorder.UrlTransformer() {
                 @Override
-                String getDomainAndRegistry(Origin origin) {
+                String getDomain(Origin origin) {
                     return transform(origin);
                 }
             };
@@ -80,7 +80,7 @@ public class ClientAppDataRecorderTest {
     @Feature("TrustedWebActivities")
     public void testRegister() {
         mRecorder.register(APP_PACKAGE, ORIGIN);
-        verify(mRegister).registerPackageForDomainAndRegistry(APP_UID, APP_NAME, transform(ORIGIN));
+        verify(mRegister).registerPackageForDomain(APP_UID, APP_NAME, transform(ORIGIN));
     }
 
     @Test
@@ -88,7 +88,7 @@ public class ClientAppDataRecorderTest {
     public void testDeduplicate() {
         mRecorder.register(APP_PACKAGE, ORIGIN);
         mRecorder.register(APP_PACKAGE, ORIGIN);
-        verify(mRegister).registerPackageForDomainAndRegistry(APP_UID, APP_NAME, transform(ORIGIN));
+        verify(mRegister).registerPackageForDomain(APP_UID, APP_NAME, transform(ORIGIN));
     }
 
     @Test
@@ -96,8 +96,8 @@ public class ClientAppDataRecorderTest {
     public void testDifferentOrigins() {
         mRecorder.register(APP_PACKAGE, ORIGIN);
         mRecorder.register(APP_PACKAGE, OTHER_ORIGIN);
-        verify(mRegister).registerPackageForDomainAndRegistry(APP_UID, APP_NAME, transform(ORIGIN));
-        verify(mRegister).registerPackageForDomainAndRegistry(
+        verify(mRegister).registerPackageForDomain(APP_UID, APP_NAME, transform(ORIGIN));
+        verify(mRegister).registerPackageForDomain(
                 APP_UID, APP_NAME, transform(OTHER_ORIGIN));
     }
 
@@ -107,6 +107,6 @@ public class ClientAppDataRecorderTest {
         mRecorder.register(MISSING_PACKAGE, ORIGIN);
         // Implicitly checking we don't throw.
         verify(mRegister, times(0))
-                .registerPackageForDomainAndRegistry(anyInt(), anyString(), any());
+                .registerPackageForDomain(anyInt(), anyString(), any());
     }
 }

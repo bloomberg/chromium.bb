@@ -19,7 +19,7 @@ import java.util.Set;
  * {@link ClientAppDataRegister}. It performs three main duties:
  * - Holds a cache to deduplicate requests (for performance not correctness).
  * - Transforming the package name into a uid and app label.
- * - Transforming the origin into a domain and registry (requires native).
+ * - Transforming the origin into a domain (requires native).
  *
  * Lifecycle: There should be a 1-1 relationship between this class and
  * {@link TrustedWebActivityUi}. Having more instances won't effect correctness, but will limit the
@@ -37,14 +37,14 @@ public class ClientAppDataRecorder {
 
     /**
      * Cache so we don't send the same request multiple times. {@link #register} is called on each
-     * navigation and each call to {@link ClientAppDataRegister#registerPackageForDomainAndRegistry}
+     * navigation and each call to {@link ClientAppDataRegister#registerPackageForDomain}
      * modifies SharedPreferences, so we need to cut down on the number of calls.
      */
     private final Set<String> mCache = new HashSet<>();
 
     /** Class to allow mocking native calls in unit tests. */
     /* package */ static class UrlTransformer {
-        /* package */ String getDomainAndRegistry(Origin origin) {
+        /* package */ String getDomain(Origin origin) {
             return UrlUtilities.getDomainAndRegistry(
                     origin.toString(), true /* includePrivateRegistries */);
         }
@@ -64,9 +64,9 @@ public class ClientAppDataRecorder {
     }
 
     /**
-     * Calls {@link ClientAppDataRegister#registerPackageForDomainAndRegistry}, looking up the uid
-     * and app name for the |packageName|, extracting the domain and registry from the origin and
-     * deduplicating multiple requests with the same parameters.
+     * Calls {@link ClientAppDataRegister#registerPackageForDomain}, looking up the uid
+     * and app name for the |packageName|, extracting the domain from the origin and deduplicating
+     * multiple requests with the same parameters.
      */
     /* package */ void register(String packageName, Origin origin) {
         if (mCache.contains(combine(packageName, origin))) return;
@@ -82,11 +82,10 @@ public class ClientAppDataRecorder {
                 return;
             }
 
-            String domainAndRegistry = mUrlTransformer.getDomainAndRegistry(origin);
+            String domain = mUrlTransformer.getDomain(origin);
 
-            Log.d(TAG, "Registering %d (%s) for %s", ai.uid, appLabel, domainAndRegistry);
-            mClientAppDataRegister.registerPackageForDomainAndRegistry(
-                    ai.uid, appLabel, domainAndRegistry);
+            Log.d(TAG, "Registering %d (%s) for %s", ai.uid, appLabel, domain);
+            mClientAppDataRegister.registerPackageForDomain(ai.uid, appLabel, domain);
         } catch (PackageManager.NameNotFoundException e) {
             Log.e(TAG, "Couldn't find name for client package %s", packageName);
         }

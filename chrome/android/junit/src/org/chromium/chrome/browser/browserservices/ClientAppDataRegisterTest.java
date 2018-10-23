@@ -23,8 +23,8 @@ import java.util.Set;
 public class ClientAppDataRegisterTest {
     private static final int UID = 23;
     private static final String APP_NAME = "Example App";
-    private static final String DOMAIN_AND_REGISTRY = "example.com";
-    private static final String OTHER_DOMAIN_AND_REGISTRY = "otherexample.com";
+    private static final String DOMAIN = "example.com";
+    private static final String OTHER_DOMAIN = "otherexample.com";
 
     private ClientAppDataRegister mRegister;
 
@@ -36,7 +36,7 @@ public class ClientAppDataRegisterTest {
     @Test
     @Feature("TrustedWebActivities")
     public void registration() {
-        mRegister.registerPackageForDomainAndRegistry(UID, APP_NAME, DOMAIN_AND_REGISTRY);
+        mRegister.registerPackageForDomain(UID, APP_NAME, DOMAIN);
 
         Assert.assertTrue(mRegister.chromeHoldsDataForPackage(UID));
         Assert.assertEquals(APP_NAME, mRegister.getAppNameForRegisteredUid(UID));
@@ -45,7 +45,7 @@ public class ClientAppDataRegisterTest {
     @Test
     @Feature("TrustedWebActivities")
     public void deregistration() {
-        mRegister.registerPackageForDomainAndRegistry(UID, APP_NAME, DOMAIN_AND_REGISTRY);
+        mRegister.registerPackageForDomain(UID, APP_NAME, DOMAIN);
         mRegister.removePackage(UID);
 
         Assert.assertFalse(mRegister.chromeHoldsDataForPackage(UID));
@@ -55,30 +55,30 @@ public class ClientAppDataRegisterTest {
     @Test
     @Feature("TrustedWebActivities")
     public void getOrigins() {
-        mRegister.registerPackageForDomainAndRegistry(UID, APP_NAME, DOMAIN_AND_REGISTRY);
-        mRegister.registerPackageForDomainAndRegistry(UID, APP_NAME, OTHER_DOMAIN_AND_REGISTRY);
+        mRegister.registerPackageForDomain(UID, APP_NAME, DOMAIN);
+        mRegister.registerPackageForDomain(UID, APP_NAME, OTHER_DOMAIN);
 
-        Set<String> origins = mRegister.getDomainAndRegistriesForRegisteredUid(UID);
+        Set<String> origins = mRegister.getDomainsForRegisteredUid(UID);
         Assert.assertEquals(2, origins.size());
-        Assert.assertTrue(origins.contains(DOMAIN_AND_REGISTRY));
-        Assert.assertTrue(origins.contains(OTHER_DOMAIN_AND_REGISTRY));
+        Assert.assertTrue(origins.contains(DOMAIN));
+        Assert.assertTrue(origins.contains(OTHER_DOMAIN));
     }
 
     @Test
     @Feature("TrustedWebActivities")
     public void clearOrigins() {
-        mRegister.registerPackageForDomainAndRegistry(UID, APP_NAME, DOMAIN_AND_REGISTRY);
-        mRegister.registerPackageForDomainAndRegistry(UID, APP_NAME, OTHER_DOMAIN_AND_REGISTRY);
+        mRegister.registerPackageForDomain(UID, APP_NAME, DOMAIN);
+        mRegister.registerPackageForDomain(UID, APP_NAME, OTHER_DOMAIN);
         mRegister.removePackage(UID);
 
-        Set<String> origins = mRegister.getDomainAndRegistriesForRegisteredUid(UID);
+        Set<String> origins = mRegister.getDomainsForRegisteredUid(UID);
         Assert.assertTrue(origins.isEmpty());
     }
 
     @Test
     @Feature("TrustedWebActivities")
     public void getAppName() {
-        mRegister.registerPackageForDomainAndRegistry(UID, APP_NAME, DOMAIN_AND_REGISTRY);
+        mRegister.registerPackageForDomain(UID, APP_NAME, DOMAIN);
         Assert.assertEquals(APP_NAME, mRegister.getAppNameForRegisteredUid(UID));
     }
 }
