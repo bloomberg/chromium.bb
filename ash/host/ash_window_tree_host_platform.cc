@@ -11,8 +11,10 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/window_factory.h"
+#include "ash/ws/window_service_owner.h"
 #include "base/feature_list.h"
 #include "base/trace_event/trace_event.h"
+#include "services/ws/host_event_queue.h"
 #include "services/ws/public/cpp/input_devices/input_device_controller_client.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "services/ws/window_service.h"
@@ -50,8 +52,7 @@ AshWindowTreeHostPlatform::AshWindowTreeHostPlatform(
           window_factory::NewWindow(),
           ::features::IsUsingWindowService() ? kTraceEnvironmentName : nullptr),
       transformer_helper_(this) {
-  transformer_helper_.Init();
-  InitInputMethodIfNecessary();
+  CommonInit();
 }
 
 AshWindowTreeHostPlatform::AshWindowTreeHostPlatform()
@@ -63,8 +64,7 @@ AshWindowTreeHostPlatform::AshWindowTreeHostPlatform()
       /* external_begin_frames_enabled */ false,
       /* are_events_in_pixels */ true,
       ::features::IsUsingWindowService() ? kTraceEnvironmentName : nullptr);
-  transformer_helper_.Init();
-  InitInputMethodIfNecessary();
+  CommonInit();
 }
 
 AshWindowTreeHostPlatform::~AshWindowTreeHostPlatform() = default;
@@ -181,19 +181,30 @@ void AshWindowTreeHostPlatform::SetBoundsInPixels(
 }
 
 void AshWindowTreeHostPlatform::DispatchEvent(ui::Event* event) {
-  TRACE_EVENT0("input", "AshWindowTreeHostPlatform::DispatchEvent");
-  if (event->IsLocatedEvent())
-    TranslateLocatedEvent(static_cast<ui::LocatedEvent*>(event));
-  SendEventToSink(event);
+  host_event_queue_->DispatchOrQueueEvent(event);
 }
 
-void AshWindowTreeHostPlatform::InitInputMethodIfNecessary() {
+void AshWindowTreeHostPlatform::CommonInit() {
+  transformer_helper_.Init();
+
+  host_event_queue_ = Shell::Get()
+                          ->window_service_owner()
+                          ->window_service()
+                          ->RegisterHostEventDispatcher(this, this);
+
   if (!base::FeatureList::IsEnabled(features::kMash))
     return;
 
   input_method_ = std::make_unique<aura::InputMethodMus>(this, this);
   input_method_->Init(Shell::Get()->connector());
   SetSharedInputMethod(input_method_.get());
+}
+
+void AshWindowTreeHostPlatform::DispatchEventFromQueue(ui::Event* event) {
+  TRACE_EVENT0("input", "AshWindowTreeHostPlatform::DispatchEvent");
+  if (event->IsLocatedEvent())
+    TranslateLocatedEvent(static_cast<ui::LocatedEvent*>(event));
+  SendEventToSink(event);
 }
 
 void AshWindowTreeHostPlatform::SetTapToClickPaused(bool state) {

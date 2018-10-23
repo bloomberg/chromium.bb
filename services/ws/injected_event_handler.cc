@@ -5,6 +5,7 @@
 #include "services/ws/injected_event_handler.h"
 
 #include "base/memory/ptr_util.h"
+#include "services/ws/event_queue.h"
 #include "services/ws/window_service.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -55,9 +56,8 @@ void InjectedEventHandler::Inject(std::unique_ptr<ui::Event> event,
   auto this_ref = weak_factory_.GetWeakPtr();
   pre_target_register_ = std::make_unique<ScopedPreTargetRegister>(
       window_tree_host_->window(), this);
-  // No need to do anything with the result of sending the event.
-  ignore_result(
-      window_tree_host_->event_sink()->OnEventFromSource(event.get()));
+  EventQueue::DispatchOrQueueEvent(window_service_, window_tree_host_,
+                                   event.get());
   if (!this_ref)
     return;
   // |pre_target_register_| needs to be a member to ensure it's destroyed
@@ -105,7 +105,8 @@ void InjectedEventHandler::OnWindowDestroying(aura::Window* window) {
 }
 
 void InjectedEventHandler::OnWillSendEventToClient(ClientSpecificId client_id,
-                                                   uint32_t event_id) {
+                                                   uint32_t event_id,
+                                                   const ui::Event& event) {
   if (event_id_)
     return;  // Already waiting.
 

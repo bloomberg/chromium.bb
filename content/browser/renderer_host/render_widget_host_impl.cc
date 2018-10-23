@@ -2154,7 +2154,8 @@ void RenderWidgetHostImpl::OnKeyboardEventAck(
   // HandleKeyboardEvent destroys this RenderWidgetHostImpl).
 
   if (result_tracker)
-    result_tracker->OnEventProcessingDone(processed);
+    result_tracker->OnEventProcessingDone(processed ||
+                                          event.event.skip_in_browser);
 }
 
 void RenderWidgetHostImpl::OnRenderProcessGone(int status, int exit_code) {

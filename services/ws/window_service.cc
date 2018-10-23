@@ -12,6 +12,8 @@
 #include "services/ws/common/switches.h"
 #include "services/ws/embedding.h"
 #include "services/ws/event_injector.h"
+#include "services/ws/event_queue.h"
+#include "services/ws/host_event_queue.h"
 #include "services/ws/public/cpp/host/gpu_interface_provider.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "services/ws/remoting_event_injector.h"
@@ -44,7 +46,8 @@ WindowService::WindowService(
       next_client_id_(decrement_client_ids ? kInitialClientIdDecrement
                                            : kInitialClientId),
       decrement_client_ids_(decrement_client_ids),
-      ime_registrar_(&ime_driver_) {
+      ime_registrar_(&ime_driver_),
+      event_queue_(std::make_unique<EventQueue>(this)) {
   DCHECK(focus_client);  // A |focus_client| must be provided.
   // MouseLocationManager is necessary for providing the shared memory with the
   // location of the mouse to clients.
@@ -201,6 +204,13 @@ std::string WindowService::GetIdForDebugging(aura::Window* window) {
   if (!server_window)
     return std::string();
   return server_window->GetIdForDebugging();
+}
+
+std::unique_ptr<HostEventQueue> WindowService::RegisterHostEventDispatcher(
+    aura::WindowTreeHost* window_tree_host,
+    HostEventDispatcher* dispatcher) {
+  return event_queue_->RegisterHostEventDispatcher(window_tree_host,
+                                                   dispatcher);
 }
 
 void WindowService::OnStart() {

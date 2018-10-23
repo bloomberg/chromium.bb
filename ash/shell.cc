@@ -1067,6 +1067,10 @@ void Shell::Init(
 
   screen_position_controller_.reset(new ScreenPositionController);
 
+  // Must be before CreatePrimaryHost().
+  window_service_owner_ =
+      std::make_unique<WindowServiceOwner>(std::move(gpu_interface_provider));
+
   window_tree_host_manager_->Start();
   AshWindowTreeHostInitParams ash_init_params;
   window_tree_host_manager_->CreatePrimaryHost(ash_init_params);
@@ -1085,9 +1089,6 @@ void Shell::Init(
   accelerator_controller_ = std::make_unique<AcceleratorController>();
   voice_interaction_controller_ =
       std::make_unique<VoiceInteractionController>();
-
-  window_service_owner_ =
-      std::make_unique<WindowServiceOwner>(std::move(gpu_interface_provider));
 
   // |app_list_controller_| is put after |tablet_mode_controller_| as the former
   // uses the latter in constructor.
