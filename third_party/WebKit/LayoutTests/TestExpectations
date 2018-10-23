@@ -5457,3 +5457,6 @@ crbug.com/897775 [ Linux Mac Win ] external/wpt/performance-timeline/webtiming-r
 crbug.com/897849 [ Mac10.13 Debug ] accessibility/element-role-mapping-normal.html [ Pass Timeout ]
 crbug.com/897849 [ Mac10.13 Debug ] accessibility/table-header-column-row.html [ Pass Timeout ]
 crbug.com/897075 [ Win10 ] inspector-protocol/css/css-coverage-new-stylesheet.js [ Failure Pass ]
+
+#Sheriff 2018-10-23
+crbug.com/898156 [ Linux Mac Win ] inspector-protocol/runtime/runtime-console-log-handle-navigate.js [ Failure Pass ]
