@@ -33,10 +33,16 @@ function runTestCreateImageData(canvasColorSettings) {
 }
 
 var testScenariosCreateImageData = [
-  ["Test color managed cretateImageData: {srgb, uint8} -> {srgb, uint8}", {colorSpace: "srgb", pixelFormat: "uint8"}],
-  ["Test color managed cretateImageData: {srgb, float16} -> {srgb, float32}", {colorSpace: "srgb", pixelFormat: "float16"}], 
-  ["Test color managed cretateImageData: {rec2020, float16} -> {rec2020, float32}", {colorSpace: "rec2020", pixelFormat: "float16"}],
-  ["Test color managed cretateImageData: {p3, float16} -> {p3, float32}", {colorSpace: "p3", pixelFormat: "float16"}],
+  ["Test color managed cretateImageData: {srgb, uint8} -> {srgb, uint8}",
+      {colorSpace: "srgb", pixelFormat: "uint8"}],
+  ["Test color managed cretateImageData: {srgb, float16} -> {srgb, float32}",
+      {colorSpace: "srgb", pixelFormat: "float16"}],
+  ["Test color managed cretateImageData: {linear-rgb, float16} -> {linear-rgb, float32}",
+      {colorSpace: "linear-rgb", pixelFormat: "float16"}],
+  ["Test color managed cretateImageData: {rec2020, float16} -> {rec2020, float32}",
+      {colorSpace: "rec2020", pixelFormat: "float16"}],
+  ["Test color managed cretateImageData: {p3, float16} -> {p3, float32}",
+      {colorSpace: "p3", pixelFormat: "float16"}],
 ];
 
 generate_tests(runTestCreateImageData, testScenariosCreateImageData);
@@ -52,10 +58,16 @@ function runTestGetImageData(canvasColorSettings) {
 }
 
 var testScenariosGetImageData = [
-  ["Test color managed getImageData: {srgb, uint8} -> {srgb, uint8}", {colorSpace: "srgb", pixelFormat: "uint8"}],
-  ["Test color managed getImageData: {srgb, float16} -> {srgb, float32}", {colorSpace: "srgb", pixelFormat: "float16"}],
-  ["Test color managed getImageData: {rec2020, float16} -> {rec2020, float32}", {colorSpace: "rec2020", pixelFormat: "float16"}],
-  ["Test color managed getImageData: {p3, float16} -> {p3, float32}", {colorSpace: "p3", pixelFormat: "float16"}],
+  ["Test color managed getImageData: {srgb, uint8} -> {srgb, uint8}",
+      {colorSpace: "srgb", pixelFormat: "uint8"}],
+  ["Test color managed getImageData: {srgb, float16} -> {srgb, float32}",
+      {colorSpace: "srgb", pixelFormat: "float16"}],
+  ["Test color managed getImageData: {linear-rgb, float16} -> {srgb, float32}",
+      {colorSpace: "linear-rgb", pixelFormat: "float16"}],
+  ["Test color managed getImageData: {rec2020, float16} -> {rec2020, float32}",
+      {colorSpace: "rec2020", pixelFormat: "float16"}],
+  ["Test color managed getImageData: {p3, float16} -> {p3, float32}",
+      {colorSpace: "p3", pixelFormat: "float16"}],
 ];
 
 generate_tests(runTestGetImageData, testScenariosGetImageData);
@@ -79,7 +91,7 @@ function prepareDataArrays() {
 
 var testScenariosPutImageData = [];
 function prepareTestScenariosPutImageData() {
-  var colorSpaces = ["srgb", "p3", "rec2020"];
+  var colorSpaces = ["srgb", "linear-rgb", "p3", "rec2020"];
   var imageDataStorageFormats = ["uint8", "uint16", "float32"];
   var canvasPixelFormats = ["uint8", "float16"];
 

@@ -14,7 +14,7 @@
 //    draw it to another 2D canvas and read back the pixels.
 //  - Finally, we compare the pixels read from the first 2D canvas with those
 //    read from the final 2D canvas. We expect them to match with some
-//     tolerance.
+//    tolerance.
 
 function testPixels(actualPixels, expectedPixels, testScenario)
 {
@@ -105,14 +105,13 @@ function runAllTests() {
     var colorSpaces = [
         {colorSpace: 'srgb', pixelFormat: 'uint8'},
         {colorSpace: 'srgb', pixelFormat: 'float16'},
+        {colorSpace: 'linear-rgb', pixelFormat: 'float16'},
         {colorSpace: 'rec2020', pixelFormat: 'float16'},
         {colorSpace: 'p3', pixelFormat: 'float16'}
         ];
-    // crbug.com/859102
-//    var alphaValues = [0.5, 1];
-    var alphaValues = [1];
+    var alphaValues = [0.5, 1];
     var colorSpaceConversions = [
-        'none', 'default', 'srgb', 'linear-rgb', 'rec2020', 'p3'];
+        'none', 'default', 'preserve', 'srgb', 'linear-rgb', 'rec2020', 'p3'];
 
     var testScenarios = [];
     for (var i = 0; i < colorSpaces.length; i++)

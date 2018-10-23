@@ -96,7 +96,8 @@ ImageBitmap::ParsedOptions ParseOptions(const ImageBitmapOptions& options,
     parsed_options.color_params.SetCanvasPixelFormat(kF16CanvasPixelFormat);
     if (options.colorSpaceConversion() ==
         kLinearRGBImageBitmapColorSpaceConversion) {
-      parsed_options.color_params.SetCanvasColorSpace(kSRGBCanvasColorSpace);
+      parsed_options.color_params.SetCanvasColorSpace(
+          kLinearRGBCanvasColorSpace);
     } else if (options.colorSpaceConversion() ==
                kP3ImageBitmapColorSpaceConversion) {
       parsed_options.color_params.SetCanvasColorSpace(kP3CanvasColorSpace);

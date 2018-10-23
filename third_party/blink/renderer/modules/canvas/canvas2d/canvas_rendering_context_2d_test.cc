@@ -990,9 +990,10 @@ enum class CanvasColorSpaceSettings : uint8_t {
 void TestPutImageDataOnCanvasWithColorSpaceSettings(
     HTMLCanvasElement& canvas_element,
     CanvasColorSpaceSettings canvas_colorspace_setting) {
-  unsigned num_image_data_color_spaces = 3;
+  unsigned num_image_data_color_spaces = 4;
   CanvasColorSpace image_data_color_spaces[] = {
-      kSRGBCanvasColorSpace, kRec2020CanvasColorSpace, kP3CanvasColorSpace,
+      kSRGBCanvasColorSpace, kLinearRGBCanvasColorSpace,
+      kRec2020CanvasColorSpace, kP3CanvasColorSpace,
   };
 
   unsigned num_image_data_storage_formats = 3;
@@ -1002,22 +1003,25 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
   };
 
   CanvasColorSpace canvas_color_spaces[] = {
-      kSRGBCanvasColorSpace, kSRGBCanvasColorSpace, kRec2020CanvasColorSpace,
+      kSRGBCanvasColorSpace,      kSRGBCanvasColorSpace,
+      kLinearRGBCanvasColorSpace, kRec2020CanvasColorSpace,
       kP3CanvasColorSpace,
   };
 
   String canvas_color_space_names[] = {
       kSRGBCanvasColorSpaceName, kSRGBCanvasColorSpaceName,
-      kRec2020CanvasColorSpaceName, kP3CanvasColorSpaceName};
+      kLinearRGBCanvasColorSpaceName, kRec2020CanvasColorSpaceName,
+      kP3CanvasColorSpaceName};
 
   CanvasPixelFormat canvas_pixel_formats[] = {
       kRGBA8CanvasPixelFormat, kF16CanvasPixelFormat, kF16CanvasPixelFormat,
-      kF16CanvasPixelFormat,
+      kF16CanvasPixelFormat,   kF16CanvasPixelFormat,
   };
 
   String canvas_pixel_format_names[] = {
       kRGBA8CanvasPixelFormatName, kF16CanvasPixelFormatName,
-      kF16CanvasPixelFormatName, kF16CanvasPixelFormatName};
+      kF16CanvasPixelFormatName, kF16CanvasPixelFormatName,
+      kF16CanvasPixelFormatName};
 
   // Source pixels in RGBA32
   uint8_t u8_pixels[] = {255, 0,   0,   255,  // Red
