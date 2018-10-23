@@ -215,10 +215,14 @@ extern const char kConnectivityDiagnosticsPath[];
 extern const char kConnectivityDiagnosticsLauncherPath[];
 // The extension id of the first run dialog application.
 extern const char kFirstRunDialogId[];
-// Path to preinstalled speech synthesis extension.
-extern const char kSpeechSynthesisExtensionPath[];
-// The extension id of the speech synthesis extension.
-extern const char kSpeechSynthesisExtensionId[];
+// Path to preinstalled Google speech synthesis extension.
+extern const char kGoogleSpeechSynthesisExtensionPath[];
+// The extension id of the Google speech synthesis extension.
+extern const char kGoogleSpeechSynthesisExtensionId[];
+// Path to preinstalled eSpeak-NG speech synthesis extension.
+extern const char kEspeakSpeechSynthesisExtensionPath[];
+// The extension id of the eSpeak-NG speech synthesis extension.
+extern const char kEspeakSpeechSynthesisExtensionId[];
 // The extension id of the wallpaper manager application.
 extern const char kWallpaperManagerId[];
 // The extension id of the zip archiver extension.

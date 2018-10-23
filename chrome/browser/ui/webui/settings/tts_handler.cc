@@ -176,7 +176,7 @@ void TtsHandler::WakeTtsEngine(const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
   TtsExtensionEngine::GetInstance()->LoadBuiltInTtsExtension(profile);
   extensions::ProcessManager::Get(profile)->WakeEventPage(
-      extension_misc::kSpeechSynthesisExtensionId,
+      extension_misc::kGoogleSpeechSynthesisExtensionId,
       base::BindOnce(&TtsHandler::OnTtsEngineAwake,
                      weak_factory_.GetWeakPtr()));
 }
