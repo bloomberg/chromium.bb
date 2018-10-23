@@ -37,6 +37,10 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "content/public/test/ppapi_test_utils.h"
+#endif
+
 namespace content {
 
 namespace {
@@ -143,10 +147,18 @@ class NetworkServiceRestartBrowserTest : public ContentBrowserTest {
         network::features::kNetworkService);
   }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+#if BUILDFLAG(ENABLE_PLUGINS)
+    ASSERT_TRUE(ppapi::RegisterCorbTestPlugin(command_line));
+#endif
+    ContentBrowserTest::SetUpCommandLine(command_line);
+  }
+
   void SetUpOnMainThread() override {
     embedded_test_server()->RegisterRequestMonitor(
         base::BindRepeating(&NetworkServiceRestartBrowserTest::MonitorRequest,
                             base::Unretained(this)));
+    host_resolver()->AddRule("*", "127.0.0.1");
     EXPECT_TRUE(embedded_test_server()->Start());
     ContentBrowserTest::SetUpOnMainThread();
   }
@@ -309,6 +321,61 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
   EXPECT_EQ(net::OK, LoadBasicRequest(network_context2.get(), GetTestURL()));
   EXPECT_TRUE(network_context2.is_bound());
   EXPECT_FALSE(network_context2.encountered_error());
+}
+
+void IncrementInt(int* i) {
+  *i = *i + 1;
+}
+
+// This test verifies basic functionality of RegisterNetworkServiceCrashHandler
+// and UnregisterNetworkServiceCrashHandler.
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, CrashHandlers) {
+  network::mojom::NetworkContextPtr network_context = CreateNetworkContext();
+  EXPECT_TRUE(network_context.is_bound());
+
+  // Register 2 crash handlers.
+  int counter1 = 0;
+  int counter2 = 0;
+  NetworkServiceCrashHandlerId handler_id1 = RegisterNetworkServiceCrashHandler(
+      base::BindRepeating(&IncrementInt, base::Unretained(&counter1)));
+  NetworkServiceCrashHandlerId handler_id2 = RegisterNetworkServiceCrashHandler(
+      base::BindRepeating(&IncrementInt, base::Unretained(&counter2)));
+
+  // Crash the NetworkService process.
+  SimulateNetworkServiceCrash();
+  // |network_context| will receive an error notification, but it's not
+  // guaranteed to have arrived at this point. Flush the pointer to make sure
+  // the notification has been received.
+  network_context.FlushForTesting();
+  EXPECT_TRUE(network_context.is_bound());
+  EXPECT_TRUE(network_context.encountered_error());
+
+  // Verify the crash handlers executed.
+  EXPECT_EQ(1, counter1);
+  EXPECT_EQ(1, counter2);
+
+  // Revive the NetworkService process.
+  network_context = CreateNetworkContext();
+  EXPECT_TRUE(network_context.is_bound());
+
+  // Unregister one of the handlers.
+  UnregisterNetworkServiceCrashHandler(handler_id2);
+
+  // Crash the NetworkService process.
+  SimulateNetworkServiceCrash();
+  // |network_context| will receive an error notification, but it's not
+  // guaranteed to have arrived at this point. Flush the pointer to make sure
+  // the notification has been received.
+  network_context.FlushForTesting();
+  EXPECT_TRUE(network_context.is_bound());
+  EXPECT_TRUE(network_context.encountered_error());
+
+  // Verify only the first crash handler executed.
+  EXPECT_EQ(2, counter1);
+  EXPECT_EQ(1, counter2);
+
+  // Test cleanup.
+  UnregisterNetworkServiceCrashHandler(handler_id1);
 }
 
 // Make sure |StoragePartitionImpl::GetNetworkContext()| returns valid interface
@@ -920,7 +987,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
 // Make sure cookie access doesn't hang or fail after a network process crash.
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, Cookies) {
   auto* web_contents = shell()->web_contents();
-  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
   EXPECT_TRUE(ExecuteScript(web_contents, "document.cookie = 'foo=bar';"));
 
   std::string cookie;
@@ -954,5 +1022,69 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, Cookies) {
       &cookie));
   EXPECT_EQ("foo=bar", cookie);
 }
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+// Make sure that "trusted" plugins continue to be able to issue cross-origin
+// requests after a network process crash.
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, Plugin) {
+  auto* web_contents = shell()->web_contents();
+  ASSERT_TRUE(NavigateToURL(web_contents,
+                            embedded_test_server()->GetURL("/title1.html")));
+
+  // Load the test plugin (see ppapi::RegisterFlashTestPlugin and
+  // ppapi/tests/power_saver_test_plugin.cc).
+  const char kLoadingScript[] = R"(
+      var obj = document.createElement('object');
+      obj.id = 'plugin';
+      obj.data = 'test.swf';
+      obj.type = 'application/x-shockwave-flash';
+      obj.width = 400;
+      obj.height = 400;
+
+      document.body.appendChild(obj);
+  )";
+  ASSERT_TRUE(ExecJs(web_contents, kLoadingScript));
+
+  // Ask the plugin to perform a cross-origin, CORB-eligible (i.e.
+  // application/json + nosniff) URL request.  Plugins with universal access
+  // should not be subject to CORS/CORB and so the request should go through.
+  // See also https://crbug.com/874515 and https://crbug.com/846339.
+  GURL cross_origin_url = embedded_test_server()->GetURL(
+      "cross.origin.com", "/site_isolation/nosniff.json");
+  const char kFetchScriptTemplate[] = R"(
+      new Promise(function (resolve, reject) {
+          var obj = document.getElementById('plugin');
+          function callback(event) {
+              // Ignore plugin messages unrelated to requestUrl.
+              if (!event.data.startsWith('requestUrl: '))
+                return;
+
+              obj.removeEventListener('message', callback);
+              resolve('msg-from-plugin: ' + event.data);
+          };
+          obj.addEventListener('message', callback);
+          obj.postMessage('requestUrl: ' + $1);
+      });
+  )";
+  std::string fetch_script = JsReplace(kFetchScriptTemplate, cross_origin_url);
+  ASSERT_EQ(
+      "msg-from-plugin: requestUrl: RESPONSE BODY: "
+      "runMe({ \"name\" : \"chromium\" });\n",
+      EvalJs(web_contents, fetch_script));
+
+  // Crash the Network Service process and wait until host frame's
+  // URLLoaderFactory has been refreshed.
+  SimulateNetworkServiceCrash();
+  main_frame()->FlushNetworkAndNavigationInterfacesForTesting();
+
+  // Try the fetch again - it should still work (i.e. the mechanism for relaxing
+  // CORB for universal-access-plugins should be resilient to network process
+  // crashes).  See also https://crbug.com/891904.
+  ASSERT_EQ(
+      "msg-from-plugin: requestUrl: RESPONSE BODY: "
+      "runMe({ \"name\" : \"chromium\" });\n",
+      EvalJs(web_contents, fetch_script));
+}
+#endif
 
 }  // namespace content
