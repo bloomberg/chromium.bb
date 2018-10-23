@@ -2139,6 +2139,8 @@ void Browser::OnTabDetached(WebContents* contents, bool was_active) {
   }
 
   TabDetachedAtImpl(contents, was_active, DETACH_TYPE_DETACH);
+
+  window_->OnTabDetached(contents, was_active);
 }
 
 void Browser::OnTabDeactivated(WebContents* contents) {

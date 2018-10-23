@@ -839,6 +839,13 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
                                      int reason) {
   DCHECK(new_contents);
 
+  if (old_contents && !old_contents->IsBeingDestroyed()) {
+    // We do not store the focus when closing the tab to work-around bug 4633.
+    // Some reports seem to show that the focus manager and/or focused view can
+    // be garbage at that point, it is not clear why.
+    old_contents->StoreFocus();
+  }
+
   // If |contents_container_| already has the correct WebContents, we can save
   // some work.  This also prevents extra events from being reported by the
   // Visibility API under Windows, as ChangeWebContents will briefly hide
@@ -923,6 +930,19 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
   UpdateTitleBar();
 
   TranslateBubbleView::CloseCurrentBubble();
+}
+
+void BrowserView::OnTabDetached(content::WebContents* contents,
+                                bool was_active) {
+  if (was_active) {
+    // We need to reset the current tab contents to null before it gets
+    // freed. This is because the focus manager performs some operations
+    // on the selected WebContents when it is removed.
+    web_contents_close_handler_->ActiveTabChanged();
+    contents_web_view_->SetWebContents(nullptr);
+    infobar_container_->ChangeInfoBarManager(nullptr);
+    UpdateDevToolsForContents(nullptr, true);
+  }
 }
 
 void BrowserView::ZoomChangedForActiveTab(bool can_show_bubble) {
@@ -1596,46 +1616,31 @@ LocationBarView* BrowserView::GetLocationBarView() const {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, TabStripModelObserver implementation:
 
-void BrowserView::TabInsertedAt(TabStripModel* tab_strip_model,
-                                WebContents* contents,
-                                int index,
-                                bool foreground) {
+void BrowserView::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  if (change.type() != TabStripModelChange::kInserted)
+    return;
+
+  for (size_t i = 0; i < change.deltas().size(); i++) {
 #if defined(USE_AURA)
-  // WebContents inserted in tabs might not have been added to the root
-  // window yet. Per http://crbug/342672 add them now since drawing the
-  // WebContents requires root window specific data - information about
-  // the screen the WebContents is drawn on, for example.
-  if (!contents->GetNativeView()->GetRootWindow()) {
-    aura::Window* window = contents->GetNativeView();
-    aura::Window* root_window = GetNativeWindow()->GetRootWindow();
-    aura::client::ParentWindowWithContext(
-        window, root_window, root_window->GetBoundsInScreen());
-    DCHECK(contents->GetNativeView()->GetRootWindow());
-  }
+    // WebContents inserted in tabs might not have been added to the root
+    // window yet. Per http://crbug/342672 add them now since drawing the
+    // WebContents requires root window specific data - information about
+    // the screen the WebContents is drawn on, for example.
+    const auto& delta = change.deltas()[i];
+    content::WebContents* contents = delta.insert.contents;
+    if (!contents->GetNativeView()->GetRootWindow()) {
+      aura::Window* window = contents->GetNativeView();
+      aura::Window* root_window = GetNativeWindow()->GetRootWindow();
+      aura::client::ParentWindowWithContext(window, root_window,
+                                            root_window->GetBoundsInScreen());
+      DCHECK(contents->GetNativeView()->GetRootWindow());
+    }
 #endif
-  web_contents_close_handler_->TabInserted();
-}
-
-void BrowserView::TabDetachedAt(WebContents* contents,
-                                int index,
-                                bool was_active) {
-  if (was_active) {
-    // We need to reset the current tab contents to null before it gets
-    // freed. This is because the focus manager performs some operations
-    // on the selected WebContents when it is removed.
-    web_contents_close_handler_->ActiveTabChanged();
-    contents_web_view_->SetWebContents(nullptr);
-    infobar_container_->ChangeInfoBarManager(nullptr);
-    UpdateDevToolsForContents(nullptr, true);
+    web_contents_close_handler_->TabInserted();
   }
-}
-
-void BrowserView::TabDeactivated(WebContents* contents) {
-  // We do not store the focus when closing the tab to work-around bug 4633.
-  // Some reports seem to show that the focus manager and/or focused view can
-  // be garbage at that point, it is not clear why.
-  if (!contents->IsBeingDestroyed())
-    contents->StoreFocus();
 }
 
 void BrowserView::TabStripEmpty() {
