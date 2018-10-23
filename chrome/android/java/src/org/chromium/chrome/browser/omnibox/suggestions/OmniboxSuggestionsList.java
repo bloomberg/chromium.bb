@@ -9,18 +9,14 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
-import android.text.TextUtils;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.ListView;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WindowDelegate;
-import org.chromium.chrome.browser.omnibox.suggestions.OmniboxResultsAdapter.OmniboxResultItem;
 import org.chromium.chrome.browser.util.ViewUtils;
 
 import java.util.ArrayList;
@@ -34,16 +30,11 @@ public class OmniboxSuggestionsList extends ListView {
     private static final int OMNIBOX_INCOGNITO_RESULTS_BG_COLOR = 0xFF3C4043;
 
     private final OmniboxSuggestionListEmbedder mEmbedder;
-    private final int mSuggestionHeight;
-    private final int mSuggestionAnswerHeight;
-    private final int mSuggestionDefinitionHeight;
     private final View mAnchorView;
     private final View mAlignmentView;
 
     private final int[] mTempPosition = new int[2];
     private final Rect mTempRect = new Rect();
-
-    private final int mBackgroundVerticalPadding;
 
     private float mMaxRequiredWidth;
     private float mMaxMatchContentsWidth;
@@ -86,22 +77,11 @@ public class OmniboxSuggestionsList extends ListView {
         setFocusable(true);
         setFocusableInTouchMode(true);
 
-        mSuggestionHeight =
-                context.getResources().getDimensionPixelOffset(R.dimen.omnibox_suggestion_height);
-        mSuggestionAnswerHeight = context.getResources().getDimensionPixelOffset(
-                R.dimen.omnibox_suggestion_answer_height);
-        mSuggestionDefinitionHeight = context.getResources().getDimensionPixelOffset(
-                R.dimen.omnibox_suggestion_definition_height);
-
         int paddingBottom = context.getResources().getDimensionPixelOffset(
                 R.dimen.omnibox_suggestion_list_padding_bottom);
         ViewCompat.setPaddingRelative(this, 0, 0, 0, paddingBottom);
 
         refreshPopupBackground();
-        getBackground().getPadding(mTempRect);
-
-        mBackgroundVerticalPadding =
-                mTempRect.top + mTempRect.bottom + getPaddingTop() + getPaddingBottom();
 
         mAnchorView = mEmbedder.getAnchorView();
         mAlignmentView = mEmbedder.getAlignmentView();
@@ -130,7 +110,6 @@ public class OmniboxSuggestionsList extends ListView {
      * Show (and properly size) the suggestions list.
      */
     void show() {
-        updateLayoutParams();
         if (getVisibility() != VISIBLE) {
             setVisibility(VISIBLE);
             if (getSelectedItemPosition() != 0) setSelection(0);
@@ -213,97 +192,20 @@ public class OmniboxSuggestionsList extends ListView {
         return mMaxMatchContentsWidth;
     }
 
-    /**
-     * Update the layout params to ensure the suggestion popup is properly sized.
-     */
-    // TODO(tedchoc): This should likely be done in measure/layout instead of just manipulating
-    //                the layout params.  Investigate converting to that flow.
-    void updateLayoutParams() {
-        // If in the middle of a layout pass, post till it is completed to avoid the layout param
-        // update being ignored.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && isInLayout()) {
-            post(this::updateLayoutParams);
-            return;
-        }
-        boolean updateLayout = false;
-        FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) getLayoutParams();
-        if (layoutParams == null) {
-            layoutParams = new FrameLayout.LayoutParams(0, 0);
-            setLayoutParams(layoutParams);
-        }
-
-        // Compare the relative positions of the anchor view to the list parent view to
-        // determine the offset to apply to the suggestions list.  By using layout positioning,
-        // this avoids issues where getLocationInWindow can be inaccurate on certain devices.
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         View contentView =
                 mEmbedder.getAnchorView().getRootView().findViewById(android.R.id.content);
         ViewUtils.getRelativeLayoutPosition(contentView, mAnchorView, mTempPosition);
-        int anchorX = mTempPosition[0];
         int anchorY = mTempPosition[1];
-
-        ViewUtils.getRelativeLayoutPosition(contentView, (View) getParent(), mTempPosition);
-        int parentY = mTempPosition[1];
-
         int anchorBottomRelativeToContent = anchorY + mAnchorView.getMeasuredHeight();
-        int desiredTopMargin = anchorBottomRelativeToContent - parentY;
-        if (layoutParams.topMargin != desiredTopMargin) {
-            layoutParams.topMargin = desiredTopMargin;
-            updateLayout = true;
-        }
-
-        int contentLeft = contentView.getLeft();
-        int anchorLeftRelativeToContent = anchorX - contentLeft;
-        if (layoutParams.leftMargin != anchorLeftRelativeToContent) {
-            layoutParams.leftMargin = anchorLeftRelativeToContent;
-            updateLayout = true;
-        }
 
         mEmbedder.getWindowDelegate().getWindowVisibleDisplayFrame(mTempRect);
-        int decorHeight = mEmbedder.getWindowDelegate().getDecorViewHeight();
-        int availableViewportHeight = Math.min(mTempRect.height(), decorHeight);
-        int availableListHeight = availableViewportHeight - anchorBottomRelativeToContent;
-        // The suggestions should consume all available space in Modern on phone.
-        int desiredHeight = !mEmbedder.isTablet() ? availableListHeight
-                                                  : Math.min(availableListHeight, getIdealHeight());
-        if (layoutParams.height != desiredHeight) {
-            layoutParams.height = desiredHeight;
-            updateLayout = true;
-        }
-
-        int desiredWidth = getDesiredWidth();
-        if (layoutParams.width != desiredWidth) {
-            layoutParams.width = desiredWidth;
-            updateLayout = true;
-        }
-
-        if (updateLayout) requestLayout();
-    }
-
-    private int getIdealHeight() {
-        int idealListSize = mBackgroundVerticalPadding;
-        for (int i = 0; i < getAdapter().getCount(); i++) {
-            Object obj = getAdapter().getItem(i);
-            if (!(obj instanceof OmniboxResultItem)) {
-                throw new IllegalStateException("Invalid item in omnibox dropdown: " + obj);
-            }
-            OmniboxResultItem item = (OmniboxResultItem) obj;
-            if (!TextUtils.isEmpty(item.getSuggestion().getAnswerContents())) {
-                int num = SuggestionView.parseNumAnswerLines(
-                        item.getSuggestion().getAnswer().getSecondLine().getTextFields());
-                if (num > 1) {
-                    idealListSize += mSuggestionDefinitionHeight;
-                } else {
-                    idealListSize += mSuggestionAnswerHeight;
-                }
-            } else {
-                idealListSize += mSuggestionHeight;
-            }
-        }
-        return idealListSize;
-    }
-
-    private int getDesiredWidth() {
-        return mAnchorView.getWidth();
+        int availableViewportHeight = mTempRect.height() - anchorBottomRelativeToContent;
+        super.onMeasure(
+                MeasureSpec.makeMeasureSpec(mAnchorView.getMeasuredWidth(), MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec(availableViewportHeight,
+                        mEmbedder.isTablet() ? MeasureSpec.AT_MOST : MeasureSpec.EXACTLY));
     }
 
     @Override
