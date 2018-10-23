@@ -82,6 +82,7 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
   transferrable_loader->url_loader = original_loader.PassInterface();
   transferrable_loader->url_loader_client = std::move(original_client);
   transferrable_loader->head = std::move(deep_copied_response->head);
+  transferrable_loader->head.intercepted_by_plugin = true;
 
   bool embedded = resource_type_ != content::RESOURCE_TYPE_MAIN_FRAME;
   base::PostTaskWithTraits(
