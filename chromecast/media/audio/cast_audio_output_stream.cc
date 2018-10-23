@@ -334,7 +334,9 @@ void CastAudioOutputStream::CmaWrapper::OnDecoderError() {
 class CastAudioOutputStream::MixerServiceWrapper
     : public chromecast::media::MixerServiceConnection::Delegate {
  public:
-  MixerServiceWrapper(const ::media::AudioParameters& audio_params);
+  MixerServiceWrapper(
+      const ::media::AudioParameters& audio_params,
+      MixerServiceConnectionFactory* mixer_service_connection_factory);
   ~MixerServiceWrapper() override = default;
 
   void Start(AudioSourceCallback* source_callback);
@@ -356,6 +358,7 @@ class CastAudioOutputStream::MixerServiceWrapper
   void OnEosPlayed() override { NOTREACHED(); }
 
   const ::media::AudioParameters audio_params_;
+  MixerServiceConnectionFactory* mixer_service_connection_factory_;
   std::unique_ptr<::media::AudioBus> audio_bus_;
   AudioSourceCallback* source_callback_;
   std::unique_ptr<media::MixerServiceConnection> mixer_connection_;
@@ -371,11 +374,14 @@ class CastAudioOutputStream::MixerServiceWrapper
 };
 
 CastAudioOutputStream::MixerServiceWrapper::MixerServiceWrapper(
-    const ::media::AudioParameters& audio_params)
+    const ::media::AudioParameters& audio_params,
+    MixerServiceConnectionFactory* mixer_service_connection_factory)
     : audio_params_(audio_params),
+      mixer_service_connection_factory_(mixer_service_connection_factory),
       source_callback_(nullptr),
       volume_(1.0f),
       io_thread_("CastAudioOutputStream IO") {
+  DCHECK(mixer_service_connection_factory_);
   DETACH_FROM_THREAD(io_thread_checker_);
 
   base::Thread::Options options;
@@ -414,7 +420,8 @@ void CastAudioOutputStream::MixerServiceWrapper::Start(
 
   source_callback_ = source_callback;
   mixer_connection_ =
-      std::make_unique<media::MixerServiceConnection>(this, params);
+      mixer_service_connection_factory_->CreateMixerServiceConnection(this,
+                                                                      params);
   mixer_connection_->Connect();
   mixer_connection_->SetVolumeMultiplier(volume_);
 }
@@ -430,7 +437,6 @@ void CastAudioOutputStream::MixerServiceWrapper::Close(
     base::OnceClosure closure) {
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   Stop();
-  io_thread_.Stop();
   std::move(closure).Run();
 }
 
@@ -483,12 +489,14 @@ void CastAudioOutputStream::MixerServiceWrapper::OnConnectionError() {
 CastAudioOutputStream::CastAudioOutputStream(
     CastAudioManager* audio_manager,
     service_manager::Connector* connector,
-    const ::media::AudioParameters& audio_params)
+    const ::media::AudioParameters& audio_params,
+    MixerServiceConnectionFactory* mixer_service_connection_factory)
     : volume_(1.0),
       audio_thread_state_(kClosed),
       audio_manager_(audio_manager),
       connector_(connector),
       audio_params_(audio_params),
+      mixer_service_connection_factory_(mixer_service_connection_factory),
       audio_weak_factory_(this) {
   DCHECK(audio_manager_);
   DCHECK(connector_);
@@ -659,21 +667,22 @@ void CastAudioOutputStream::OnGetMultiroomInfo(
   if (audio_thread_state_ == kPendingClose)
     return;
 
-  // If direct audio is not available, MixerService would use CMA backend.
-  // So no need to use MixerService which adds extra latency in this case.
-  bool use_cma_backend =
-      (audio_params_.effects() & ::media::AudioParameters::MULTIZONE) ||
-      !CastMediaShlib::AddDirectAudioSource;
-
-  if (use_cma_backend) {
+  if (!mixer_service_connection_factory_) {
     cma_wrapper_ = std::make_unique<CmaWrapper>(
         audio_manager_->GetTaskRunner(), audio_params_,
         audio_manager_->cma_backend_factory());
     POST_TO_CMA_WRAPPER(Initialize, application_session_id,
                         std::move(multiroom_info));
   } else {
-    mixer_service_wrapper_ =
-        std::make_unique<MixerServiceWrapper>(audio_params_);
+    // If direct audio is not available, valid
+    // |mixer_service_connection_factory_|
+    // shouldn't has been passed in so the CastAudioOutputStream would use
+    // CmaBackend.
+    DCHECK(!(audio_params_.effects() & ::media::AudioParameters::MULTIZONE) &&
+           CastMediaShlib::AddDirectAudioSource);
+
+    mixer_service_wrapper_ = std::make_unique<MixerServiceWrapper>(
+        audio_params_, mixer_service_connection_factory_);
   }
 
   if (pending_start_)

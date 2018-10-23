@@ -32,11 +32,14 @@ enum AudioOutputState {
 };
 
 class CastAudioManager;
+class MixerServiceConnectionFactory;
 
 // Chromecast implementation of AudioOutputStream.
-// This class forwards to MixerService if Direct Audio is available for
-// a lower latency audio playback (using MixerServiceWrapper), otherwise
-// it forwards to CMA backend (using CmaWrapper).
+// This class forwards to MixerService if valid
+// |mixer_service_connection_factory| is passed in on the construction call,
+// for a lower latency audio playback (using MixerServiceWrapper). Otherwise,
+// when a nullptr is passed in as |mixer_service_connection_factory| it forwards
+// to CMA backend (using CmaWrapper).
 //
 // In either case, involved components live on two threads:
 // 1. Audio thread
@@ -92,11 +95,18 @@ class CastAudioManager;
 // applied to MixerServiceConnection after the MixerServiceConnection is
 // established on the Start() call.
 
+// TODO(b/117980762): CastAudioOutputStream should be refactored
+// to be more unit test friendly. And the unit tests can be improved.
+
 class CastAudioOutputStream : public ::media::AudioOutputStream {
  public:
-  CastAudioOutputStream(CastAudioManager* audio_manager,
-                        service_manager::Connector* connector,
-                        const ::media::AudioParameters& audio_params);
+  // When nullptr is passed as |mixer_service_connection_factory|, CmaWrapper
+  // will be used for audio playback.
+  CastAudioOutputStream(
+      CastAudioManager* audio_manager,
+      service_manager::Connector* connector,
+      const ::media::AudioParameters& audio_params,
+      MixerServiceConnectionFactory* mixer_service_connection_factory);
   ~CastAudioOutputStream() override;
 
   // ::media::AudioOutputStream implementation.
@@ -122,6 +132,7 @@ class CastAudioOutputStream : public ::media::AudioOutputStream {
   CastAudioManager* const audio_manager_;
   service_manager::Connector* connector_;
   const ::media::AudioParameters audio_params_;
+  MixerServiceConnectionFactory* mixer_service_connection_factory_;
   chromecast::mojom::MultiroomManagerPtr multiroom_manager_;
   std::unique_ptr<CmaWrapper> cma_wrapper_;
   std::unique_ptr<MixerServiceWrapper> mixer_service_wrapper_;
