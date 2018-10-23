@@ -228,13 +228,13 @@ HTMLCanvasElement::ContextFactoryVector&
 HTMLCanvasElement::RenderingContextFactories() {
   DCHECK(IsMainThread());
   DEFINE_STATIC_LOCAL(ContextFactoryVector, context_factories,
-                      (CanvasRenderingContext::kContextTypeCount));
+                      (CanvasRenderingContext::kMaxValue));
   return context_factories;
 }
 
 CanvasRenderingContextFactory* HTMLCanvasElement::GetRenderingContextFactory(
     int type) {
-  DCHECK(type < CanvasRenderingContext::kContextTypeCount);
+  DCHECK_LE(type, CanvasRenderingContext::kMaxValue);
   return RenderingContextFactories()[type].get();
 }
 
@@ -242,7 +242,7 @@ void HTMLCanvasElement::RegisterRenderingContextFactory(
     std::unique_ptr<CanvasRenderingContextFactory> rendering_context_factory) {
   CanvasRenderingContext::ContextType type =
       rendering_context_factory->GetContextType();
-  DCHECK(type < CanvasRenderingContext::kContextTypeCount);
+  DCHECK_LE(type, CanvasRenderingContext::kMaxValue);
   DCHECK(!RenderingContextFactories()[type]);
   RenderingContextFactories()[type] = std::move(rendering_context_factory);
 }
@@ -254,7 +254,7 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
       CanvasRenderingContext::ContextTypeFromId(type);
 
   // Unknown type.
-  if (context_type == CanvasRenderingContext::kContextTypeCount ||
+  if (context_type == CanvasRenderingContext::kContextTypeUnknown ||
       (context_type == CanvasRenderingContext::kContextXRPresent &&
        !OriginTrials::WebXREnabled(&GetDocument()))) {
     return nullptr;
@@ -262,10 +262,7 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
 
   // Log the aliased context type used.
   if (!context_) {
-    DEFINE_STATIC_LOCAL(
-        EnumerationHistogram, context_type_histogram,
-        ("Canvas.ContextType", CanvasRenderingContext::kContextTypeCount));
-    context_type_histogram.Count(context_type);
+    UMA_HISTOGRAM_ENUMERATION("Blink.Canvas.ContextType", context_type);
   }
 
   context_type =

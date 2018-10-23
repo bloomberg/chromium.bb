@@ -5418,6 +5418,9 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="webgl"/>
   <int value="4" label="webgl2"/>
   <int value="5" label="bitmaprenderer"/>
+  <int value="6" label="XRP present"/>
+  <int value="7" label="webgl2-compute"/>
+  <int value="8" label="unknown"/>
 </enum>
 
 <enum name="CanvasContextUsage">

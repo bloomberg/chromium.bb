@@ -212,7 +212,7 @@ CanvasRenderingContext* OffscreenCanvas::GetCanvasRenderingContext(
       CanvasRenderingContext::ContextTypeFromId(id);
 
   // Unknown type.
-  if (context_type == CanvasRenderingContext::kContextTypeCount ||
+  if (context_type == CanvasRenderingContext::kContextTypeUnknown ||
       (context_type == CanvasRenderingContext::kContextXRPresent &&
        !OriginTrials::WebXREnabled(execution_context))) {
     return nullptr;
@@ -245,13 +245,13 @@ CanvasRenderingContext* OffscreenCanvas::GetCanvasRenderingContext(
 OffscreenCanvas::ContextFactoryVector&
 OffscreenCanvas::RenderingContextFactories() {
   DEFINE_STATIC_LOCAL(ContextFactoryVector, context_factories,
-                      (CanvasRenderingContext::kContextTypeCount));
+                      (CanvasRenderingContext::kMaxValue));
   return context_factories;
 }
 
 CanvasRenderingContextFactory* OffscreenCanvas::GetRenderingContextFactory(
     int type) {
-  DCHECK_LT(type, CanvasRenderingContext::kContextTypeCount);
+  DCHECK_LE(type, CanvasRenderingContext::kMaxValue);
   return RenderingContextFactories()[type].get();
 }
 
@@ -259,7 +259,7 @@ void OffscreenCanvas::RegisterRenderingContextFactory(
     std::unique_ptr<CanvasRenderingContextFactory> rendering_context_factory) {
   CanvasRenderingContext::ContextType type =
       rendering_context_factory->GetContextType();
-  DCHECK_LT(type, CanvasRenderingContext::kContextTypeCount);
+  DCHECK_LE(type, CanvasRenderingContext::kMaxValue);
   DCHECK(!RenderingContextFactories()[type]);
   RenderingContextFactories()[type] = std::move(rendering_context_factory);
 }
