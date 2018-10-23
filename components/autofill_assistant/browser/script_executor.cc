@@ -50,14 +50,6 @@ void ScriptExecutor::Run(RunScriptCallback callback) {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ScriptExecutor::Stop() {
-  // TODO(crbug.com/806868): Consider distinguish between stop by clicking
-  // overlay and manual fallback when choosing addresses and/or cards.
-  // Note that the script won't stop running immediately, but after finishing
-  // the running action.
-  should_stop_script_ = true;
-}
-
 std::unique_ptr<BatchElementChecker>
 ScriptExecutor::CreateBatchElementChecker() {
   return delegate_->GetWebController()->CreateBatchElementChecker();

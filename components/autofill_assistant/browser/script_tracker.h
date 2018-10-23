@@ -66,11 +66,6 @@ class ScriptTracker {
   void ExecuteScript(const std::string& path,
                      ScriptExecutor::RunScriptCallback callback);
 
-  // Stops the current running script and other scripts can continue with the
-  // current status. Not like ShutDown and Restart by action, which will
-  // shutdown the whole module and clear current status respectively.
-  void StopExecuteScript();
-
   // Clears the set of scripts that could be run.
   //
   // Calling this function will clean the bottom bar.

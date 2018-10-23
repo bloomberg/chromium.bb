@@ -104,12 +104,6 @@ void ScriptTracker::ExecuteScript(const std::string& script_path,
   }
 }
 
-void ScriptTracker::StopExecuteScript() {
-  DCHECK(running());
-
-  executor_->Stop();
-}
-
 void ScriptTracker::ClearRunnableScripts() {
   runnable_scripts_.clear();
   listener_->OnRunnableScriptsChanged(runnable_scripts_);
