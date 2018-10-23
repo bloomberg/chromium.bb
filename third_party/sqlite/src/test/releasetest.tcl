@@ -79,7 +79,6 @@ array set ::Configs [strip_comments {
     -DSQLITE_ENABLE_UNLOCK_NOTIFY
     -DSQLITE_THREADSAFE
     -DSQLITE_TCL_DEFAULT_FULLMUTEX=1
-    -DSQLITE_USER_AUTHENTICATION=1
   }
   "Secure-Delete" {
     -O2
@@ -128,7 +127,6 @@ array set ::Configs [strip_comments {
     -DSQLITE_ENABLE_HIDDEN_COLUMNS
     -DSQLITE_MAX_ATTACHED=125
     -DSQLITE_MUTATION_TEST
-    --enable-fts5 --enable-json1
   }
   "Fast-One" {
     -O6
@@ -269,7 +267,7 @@ array set ::Configs [strip_comments {
 array set ::Platforms [strip_comments {
   Linux-x86_64 {
     "Check-Symbols"           checksymbols
-    "Fast-One"                "fuzztest test"
+    "Fast-One"                fuzztest
     "Debug-One"               "mptest test"
     "Have-Not"                test
     "Secure-Delete"           test

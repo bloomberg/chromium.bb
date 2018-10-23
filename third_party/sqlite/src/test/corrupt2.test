@@ -591,7 +591,7 @@ do_test 14.2 {
 do_execsql_test 14.3 {
   PRAGMA integrity_check;
 } {{*** in database main ***
-Main freelist: size is 3 but should be 2}}
+Main freelist: free-page count in header is too small}}
 
 # Use 2 of the free pages on the free-list.
 #
@@ -603,7 +603,7 @@ do_execsql_test 14.4 {
 do_execsql_test 14.5 {
   PRAGMA integrity_check;
 } {{*** in database main ***
-Main freelist: size is 1 but should be 0}}
+Page 3 is never used}}
 
 
 finish_test

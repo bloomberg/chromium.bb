@@ -133,9 +133,8 @@ struct Testvfs {
 #define TESTVFS_UNLOCK_MASK       0x00020000
 #define TESTVFS_LOCK_MASK         0x00040000
 #define TESTVFS_CKLOCK_MASK       0x00080000
-#define TESTVFS_FCNTL_MASK        0x00100000
 
-#define TESTVFS_ALL_MASK          0x001FFFFF
+#define TESTVFS_ALL_MASK          0x000FFFFF
 
 
 #define TESTVFS_MAX_PAGES 1024
@@ -518,8 +517,7 @@ static int tvfsCheckReservedLock(sqlite3_file *pFile, int *pResOut){
 ** File control method. For custom operations on an tvfs-file.
 */
 static int tvfsFileControl(sqlite3_file *pFile, int op, void *pArg){
-  TestvfsFd *pFd = tvfsGetFd(pFile);
-  Testvfs *p = (Testvfs *)pFd->pVfs->pAppData;
+  TestvfsFd *p = tvfsGetFd(pFile);
   if( op==SQLITE_FCNTL_PRAGMA ){
     char **argv = (char**)pArg;
     if( sqlite3_stricmp(argv[1],"error")==0 ){
@@ -537,34 +535,11 @@ static int tvfsFileControl(sqlite3_file *pFile, int op, void *pArg){
       return rc;
     }
     if( sqlite3_stricmp(argv[1], "filename")==0 ){
-      argv[0] = sqlite3_mprintf("%s", pFd->zFilename);
+      argv[0] = sqlite3_mprintf("%s", p->zFilename);
       return SQLITE_OK;
     }
   }
-  if( p->pScript && (p->mask&TESTVFS_FCNTL_MASK) ){
-    struct Fcntl {
-      int iFnctl;
-      const char *zFnctl;
-    } aF[] = {
-      { SQLITE_FCNTL_BEGIN_ATOMIC_WRITE, "BEGIN_ATOMIC_WRITE" },
-      { SQLITE_FCNTL_COMMIT_ATOMIC_WRITE, "COMMIT_ATOMIC_WRITE" },
-    };
-    int i;
-    for(i=0; i<sizeof(aF)/sizeof(aF[0]); i++){
-      if( op==aF[i].iFnctl ) break;
-    }
-    if( i<sizeof(aF)/sizeof(aF[0]) ){
-      int rc = 0;
-      tvfsExecTcl(p, "xFileControl",
-          Tcl_NewStringObj(pFd->zFilename, -1),
-          Tcl_NewStringObj(aF[i].zFnctl, -1),
-          0, 0
-      );
-      tvfsResultCode(p, &rc);
-      if( rc ) return rc;
-    }
-  }
-  return sqlite3OsFileControl(pFd->pReal, op, pArg);
+  return sqlite3OsFileControl(p->pReal, op, pArg);
 }
 
 /*
@@ -1185,7 +1160,6 @@ static int SQLITE_TCLAPI testvfs_obj_cmd(
         { "xUnlock",            TESTVFS_UNLOCK_MASK },
         { "xLock",              TESTVFS_LOCK_MASK },
         { "xCheckReservedLock", TESTVFS_CKLOCK_MASK },
-        { "xFileControl",       TESTVFS_FCNTL_MASK },
       };
       Tcl_Obj **apElem = 0;
       int nElem = 0;
