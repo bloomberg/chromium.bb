@@ -354,7 +354,7 @@ CreditCard CreateDisusedDeletableTestCreditCard(const std::string& locale) {
 class PersonalDatabaseHelper
     : public AutofillWebDataServiceObserverOnUISequence {
  public:
-  PersonalDatabaseHelper(PersonalDataManager* personal_data_manager)
+  explicit PersonalDatabaseHelper(PersonalDataManager* personal_data_manager)
       : personal_data_manager_(personal_data_manager) {}
 
   void Init(scoped_refptr<AutofillWebDataService> profile_database,
@@ -1104,9 +1104,9 @@ void PersonalDataManager::
     if (credit_card->billing_address_id() == guid) {
       credit_card->set_billing_address_id("");
 
-      if (credit_card->record_type() == CreditCard::LOCAL_CARD)
+      if (credit_card->record_type() == CreditCard::LOCAL_CARD) {
         database_helper_->GetLocalDatabase()->UpdateCreditCard(*credit_card);
-      else {
+      } else {
         DCHECK(database_helper_->GetServerDatabase())
             << "Updating metadata on null server db.";
         database_helper_->GetServerDatabase()->UpdateServerCardMetadata(
@@ -1633,7 +1633,7 @@ void PersonalDataManager::MoveJapanCityToStreetAddress() {
                            ? city
                            : street_address + line_separator + city;
       profile->SetRawInfo(ADDRESS_HOME_STREET_ADDRESS, street_address);
-      profile->SetRawInfo(ADDRESS_HOME_CITY, base::EmptyString16());
+      profile->SetRawInfo(ADDRESS_HOME_CITY, base::string16());
 
       // Make the update.
       database_helper_->GetLocalDatabase()->UpdateAutofillProfile(*profile);

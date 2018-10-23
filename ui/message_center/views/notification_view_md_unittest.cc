@@ -566,7 +566,7 @@ TEST_F(NotificationViewMDTest, TestInlineReply) {
 
   // Nothing should be submitted at this point.
   EXPECT_EQ(-1, delegate_->clicked_button_index());
-  EXPECT_EQ(base::EmptyString16(), delegate_->submitted_reply_string());
+  EXPECT_EQ(base::string16(), delegate_->submitted_reply_string());
 
   // Click the button again and focus on the inline textfield.
   generator.ClickLeftButton();
