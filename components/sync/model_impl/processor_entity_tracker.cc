@@ -138,6 +138,12 @@ void ProcessorEntityTracker::RecordIgnoredUpdate(
   // Either these already matched, acked was just bumped to squash a pending
   // commit and this should follow, or the pending commit needs to be requeued.
   commit_requested_sequence_number_ = metadata_.acked_sequence_number();
+  // If local change was made while server assigned a new id to the entity,
+  // update id in cached commit data.
+  if (HasCommitData() && commit_data_->id != metadata_.server_id()) {
+    DCHECK(commit_data_->id.empty());
+    commit_data_ = commit_data_->UpdateId(metadata_.server_id());
+  }
 }
 
 void ProcessorEntityTracker::RecordAcceptedUpdate(

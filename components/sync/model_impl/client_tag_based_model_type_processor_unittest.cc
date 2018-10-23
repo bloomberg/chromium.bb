@@ -1210,6 +1210,52 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
 }
 
 TEST_F(ClientTagBasedModelTypeProcessorTest,
+       ShouldResolveConflictToLocalUndeletion) {
+  InitializeToReadyState();
+  ASSERT_EQ(0U, worker()->GetNumPendingCommits());
+
+  bridge()->WriteItem(kKey1, kValue1);
+  ASSERT_EQ(1U, worker()->GetNumPendingCommits());
+  ASSERT_TRUE(
+      worker()->GetLatestPendingCommitForHash(kHash1).entity->id.empty());
+
+  // The update from the server should be mostly ignored because local wins, but
+  // the server ID should be updated.
+  bridge()->SetConflictResolution(ConflictResolution::UseLocal());
+  worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue3));
+  // In this test setup, the processor's nudge for commit immediately pulls
+  // updates from the processor and list them as pending commits, so we should
+  // see two commits at this point.
+  EXPECT_EQ(2U, worker()->GetNumPendingCommits());
+
+  // Verify the commit request this operation has triggered.
+  const CommitRequestData& tag1_request_data =
+      worker()->GetLatestPendingCommitForHash(kHash1);
+  const EntityData& tag1_data = tag1_request_data.entity.value();
+
+  EXPECT_EQ(1, tag1_request_data.base_version);
+  EXPECT_FALSE(tag1_data.id.empty());
+  EXPECT_FALSE(tag1_data.creation_time.is_null());
+  EXPECT_FALSE(tag1_data.modification_time.is_null());
+  EXPECT_EQ(kKey1, tag1_data.non_unique_name);
+  EXPECT_FALSE(tag1_data.is_deleted());
+  EXPECT_EQ(kKey1, tag1_data.specifics.preference().name());
+  EXPECT_EQ(kValue1, tag1_data.specifics.preference().value());
+
+  EXPECT_EQ(1U, db().metadata_count());
+  const EntityMetadata metadata = db().GetMetadata(kKey1);
+  EXPECT_TRUE(metadata.has_client_tag_hash());
+  EXPECT_TRUE(metadata.has_server_id());
+  EXPECT_FALSE(metadata.is_deleted());
+  EXPECT_EQ(1, metadata.sequence_number());
+  EXPECT_EQ(0, metadata.acked_sequence_number());
+  EXPECT_EQ(1, metadata.server_version());
+  EXPECT_TRUE(metadata.has_creation_time());
+  EXPECT_TRUE(metadata.has_modification_time());
+  EXPECT_TRUE(metadata.has_specifics_hash());
+}
+
+TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldResolveConflictToRemoteVersion) {
   InitializeToReadyState();
   bridge()->WriteItem(kKey1, kValue1);
