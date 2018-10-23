@@ -103,43 +103,6 @@ class PaintWorkletTest : public PageTestBase {
   Persistent<TestPaintWorklet> test_paint_worklet_;
 };
 
-TEST_F(PaintWorkletTest, GarbageCollectionOfCSSPaintDefinition) {
-  PaintWorkletGlobalScope* global_scope = GetProxy()->global_scope();
-  global_scope->ScriptController()->Evaluate(
-      ScriptSourceCode("registerPaint('foo', class { paint() { } });"),
-      kSharableCrossOrigin);
-
-  CSSPaintDefinition* definition = global_scope->FindDefinition("foo");
-  DCHECK(definition);
-
-  v8::Isolate* isolate =
-      global_scope->ScriptController()->GetScriptState()->GetIsolate();
-  DCHECK(isolate);
-
-  // Set our ScopedPersistent to the paint function, and make weak.
-  ScopedPersistent<v8::Function> handle;
-  {
-    v8::HandleScope handle_scope(isolate);
-    handle.Set(isolate, definition->PaintFunctionForTesting(isolate));
-    handle.SetPhantom();
-  }
-  DCHECK(!handle.IsEmpty());
-  DCHECK(handle.IsWeak());
-
-  // Run a GC, persistent shouldn't have been collected yet.
-  ThreadState::Current()->CollectAllGarbage();
-  V8GCController::CollectAllGarbageForTesting(isolate);
-  DCHECK(!handle.IsEmpty());
-
-  // Delete the page & associated objects.
-  Terminate();
-
-  // Run a GC, the persistent should have been collected.
-  ThreadState::Current()->CollectAllGarbage();
-  V8GCController::CollectAllGarbageForTesting(isolate);
-  DCHECK(handle.IsEmpty());
-}
-
 // This is a crash test for crbug.com/803026. At some point, we shipped the
 // CSSPaintAPI without shipping the CSSPaintAPIArguments, the result of it is
 // that the |paint_arguments| in the CSSPaintDefinition::Paint() becomes

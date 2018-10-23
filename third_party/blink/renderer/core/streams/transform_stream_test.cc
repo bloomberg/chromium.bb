@@ -469,35 +469,6 @@ TEST_F(TransformStreamTest, SurvivesGarbageCollectionWhenTraced) {
                   .value_or(false));
 }
 
-// Verify that JS TransformStream is collected when it is not reachable from V8.
-#if GTEST_HAS_DEATH_TEST
-#define MAYBE_IsGarbageCollectedWhenNotTraced IsGarbageCollectedWhenNotTraced
-#else
-#define MAYBE_IsGarbageCollectedWhenNotTraced \
-  DISABLED_IsGarbageCollectedWhenNotTraced
-#endif
-TEST_F(TransformStreamTest, MAYBE_IsGarbageCollectedWhenNotTraced) {
-  auto page_holder = DummyPageHolder::Create();
-  Persistent<ScriptState> script_state =
-      ToScriptStateForMainWorld(page_holder->GetDocument().GetFrame());
-  {
-    ScriptState::Scope scope(script_state);
-    Init(new IdentityTransformer(), script_state, ASSERT_NO_EXCEPTION);
-  }
-  Persistent<TransformStream> stream = Stream();
-  ClearHolder();
-  Microtask::PerformCheckpoint(script_state->GetIsolate());
-  // Avoid scanning the stack here as it could accidentaly keep state alive.
-  V8GCController::CollectAllGarbageForTesting(
-      script_state->GetIsolate(),
-      v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
-  ScriptState::Scope scope(script_state);
-  // This emits a warning that death tests are unsafe with threads, but it works
-  // anyway. The crash message depends on whether DCHECK is enabled or not, so
-  // the regex it is required to match is empty.
-  EXPECT_DEATH(stream->Readable(script_state, ASSERT_NO_EXCEPTION), "");
-}
-
 }  // namespace
 
 }  // namespace blink
