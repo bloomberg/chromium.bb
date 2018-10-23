@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/browser_action_test_util.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -350,8 +349,6 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageActionOverrideChromeShortcut) {
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_L,
                                               control_is_modifier, false, false,
                                               command_is_modifier));
-
-  ui_test_utils::WaitUntilViewFocused(browser(), VIEW_ID_OMNIBOX);
 
   // Activate the shortcut.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_P,
