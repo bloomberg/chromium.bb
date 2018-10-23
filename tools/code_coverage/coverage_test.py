@@ -66,7 +66,6 @@ class CoverageTest(unittest.TestCase):
                       is_component_build=true
                       is_debug=false
                       proprietary_codecs=true
-                      strip_absolute_paths_from_debug_symbols=true
                       use_libfuzzer=true"""
 
     shutil.rmtree(self.BUILD_DIR, ignore_errors=True)
