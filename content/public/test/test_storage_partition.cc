@@ -130,6 +130,8 @@ void TestStoragePartition::ClearHttpAndMediaCaches(
     const base::Callback<bool(const GURL&)>& url_matcher,
     base::OnceClosure callback) {}
 
+void TestStoragePartition::ClearCodeCaches(base::OnceClosure callback) {}
+
 void TestStoragePartition::Flush() {}
 
 void TestStoragePartition::ResetURLLoaderFactories() {}

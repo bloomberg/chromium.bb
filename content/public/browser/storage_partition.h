@@ -209,6 +209,11 @@ class CONTENT_EXPORT StoragePartition {
       const base::Callback<bool(const GURL&)>& url_matcher,
       base::OnceClosure callback) = 0;
 
+  // Clears code caches associated with this StoragePartition.
+  // TODO(crbug.com/866419): Currently we just clear entire caches.
+  // Change it to conditionally clear entries based on the filters.
+  virtual void ClearCodeCaches(base::OnceClosure callback) = 0;
+
   // Write any unwritten data to disk.
   // Note: this method does not sync the data - it only ensures that any
   // unwritten data has been written out to the filesystem.

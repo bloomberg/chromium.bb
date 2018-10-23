@@ -130,6 +130,7 @@ class CONTENT_EXPORT StoragePartitionImpl
       const base::Time end,
       const base::Callback<bool(const GURL&)>& url_matcher,
       base::OnceClosure callback) override;
+  void ClearCodeCaches(base::OnceClosure callback) override;
   void Flush() override;
   void ResetURLLoaderFactories() override;
   void ClearBluetoothAllowedDevicesMapForTesting() override;

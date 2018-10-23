@@ -678,11 +678,7 @@ void ClearData(content::StoragePartition* partition,
 
 void ClearCodeCache(content::StoragePartition* partition,
                     base::RunLoop* run_loop) {
-  base::Time delete_begin;
-  base::Time delete_end;
-  partition->ClearHttpAndMediaCaches(
-      delete_begin, delete_end, base::RepeatingCallback<bool(const GURL&)>(),
-      run_loop->QuitClosure());
+  partition->ClearCodeCaches(run_loop->QuitClosure());
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)

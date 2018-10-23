@@ -26,6 +26,7 @@
 #include "content/browser/blob_storage/blob_registry_wrapper.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/browsing_data/storage_partition_code_cache_data_remover.h"
 #include "content/browser/browsing_data/storage_partition_http_cache_data_remover.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
@@ -1225,6 +1226,12 @@ void StoragePartitionImpl::ClearHttpAndMediaCaches(
         this, url_matcher, begin, end)
         ->Remove(std::move(callback));
   }
+}
+
+void StoragePartitionImpl::ClearCodeCaches(base::OnceClosure callback) {
+  // StoragePartitionCodeCacheDataRemover deletes itself when it is done.
+  StoragePartitionCodeCacheDataRemover::Create(this)->Remove(
+      std::move(callback));
 }
 
 void StoragePartitionImpl::Flush() {
