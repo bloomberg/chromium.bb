@@ -194,10 +194,6 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   // Whether we registered all notification listeners successfully.
   bool notification_listeners_active_;
 
-  // A queue of tasks for initial metrics gathering. These may be asynchronous
-  // or synchronous.
-  base::circular_deque<base::Closure> initialize_task_queue_;
-
   // Saved callback received from CollectFinalMetricsForLog().
   base::Closure collect_final_metrics_done_callback_;
 
