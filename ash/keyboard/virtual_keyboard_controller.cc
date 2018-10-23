@@ -8,6 +8,7 @@
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/ime/ime_controller.h"
+#include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -50,16 +51,15 @@ void ResetVirtualKeyboard() {
 void MoveKeyboardToDisplayInternal(const display::Display& display) {
   // Remove the keyboard from curent root window controller
   TRACE_EVENT0("vk", "MoveKeyboardToDisplayInternal");
-  RootWindowController::ForWindow(
-      keyboard::KeyboardController::Get()->GetRootWindow())
-      ->DeactivateKeyboard(keyboard::KeyboardController::Get());
+  auto* ash_keyboard_controller = Shell::Get()->ash_keyboard_controller();
+  ash_keyboard_controller->DeactivateKeyboard();
 
   for (RootWindowController* controller :
        Shell::Get()->GetAllRootWindowControllers()) {
     if (display::Screen::GetScreen()
             ->GetDisplayNearestWindow(controller->GetRootWindow())
             .id() == display.id()) {
-      controller->ActivateKeyboard(keyboard::KeyboardController::Get());
+      ash_keyboard_controller->ActivateKeyboardForRoot(controller);
       break;
     }
   }

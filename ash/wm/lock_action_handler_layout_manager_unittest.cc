@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/lock_screen_action/lock_screen_action_background_controller.h"
 #include "ash/lock_screen_action/lock_screen_action_background_controller_stub.h"
 #include "ash/lock_screen_action/test_lock_screen_action_background_controller.h"
@@ -99,8 +100,7 @@ class LockActionHandlerLayoutManagerTest : public AshTestBase {
   }
 
   void TearDown() override {
-    Shell::GetPrimaryRootWindowController()->DeactivateKeyboard(
-        keyboard::KeyboardController::Get());
+    Shell::Get()->ash_keyboard_controller()->DeactivateKeyboard();
     lock_window_.reset();
     AshTestBase::TearDown();
     LockScreenActionBackgroundController::SetFactoryCallbackForTesting(nullptr);
