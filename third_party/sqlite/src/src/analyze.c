@@ -485,7 +485,6 @@ static const FuncDef statInitFuncdef = {
   0,               /* pNext */
   statInit,        /* xSFunc */
   0,               /* xFinalize */
-  0, 0,            /* xValue, xInverse */
   "stat_init",     /* zName */
   {0}
 };
@@ -802,7 +801,6 @@ static const FuncDef statPushFuncdef = {
   0,               /* pNext */
   statPush,        /* xSFunc */
   0,               /* xFinalize */
-  0, 0,            /* xValue, xInverse */
   "stat_push",     /* zName */
   {0}
 };
@@ -954,7 +952,6 @@ static const FuncDef statGetFuncdef = {
   0,               /* pNext */
   statGet,         /* xSFunc */
   0,               /* xFinalize */
-  0, 0,            /* xValue, xInverse */
   "stat_get",      /* zName */
   {0}
 };
@@ -1274,7 +1271,10 @@ static void analyzeOneTable(
       callStatGet(v, regStat4, STAT_GET_NLT, regLt);
       callStatGet(v, regStat4, STAT_GET_NDLT, regDLt);
       sqlite3VdbeAddOp4Int(v, seekOp, iTabCur, addrNext, regSampleRowid, 0);
-      VdbeCoverage(v);
+      /* We know that the regSampleRowid row exists because it was read by
+      ** the previous loop.  Thus the not-found jump of seekOp will never
+      ** be taken */
+      VdbeCoverageNeverTaken(v);
 #ifdef SQLITE_ENABLE_STAT3
       sqlite3ExprCodeLoadIndexColumn(pParse, pIdx, iTabCur, 0, regSample);
 #else
@@ -1914,7 +1914,7 @@ int sqlite3AnalysisLoad(sqlite3 *db, int iDb){
 
   /* Load the statistics from the sqlite_stat4 table. */
 #ifdef SQLITE_ENABLE_STAT3_OR_STAT4
-  if( rc==SQLITE_OK ){
+  if( rc==SQLITE_OK && OptimizationEnabled(db, SQLITE_Stat34) ){
     db->lookaside.bDisable++;
     rc = loadStat4(db, sInfo.zDatabase);
     db->lookaside.bDisable--;

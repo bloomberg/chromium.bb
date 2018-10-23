@@ -521,11 +521,7 @@ static struct unix_syscall {
 #define osLstat      ((int(*)(const char*,struct stat*))aSyscall[27].pCurrent)
 
 #if defined(__linux__) && defined(SQLITE_ENABLE_BATCH_ATOMIC_WRITE)
-# ifdef __ANDROID__
-  { "ioctl", (sqlite3_syscall_ptr)(int(*)(int, int, ...))ioctl, 0 },
-# else
   { "ioctl",         (sqlite3_syscall_ptr)ioctl,          0 },
-# endif
 #else
   { "ioctl",         (sqlite3_syscall_ptr)0,              0 },
 #endif
@@ -706,25 +702,12 @@ static int robust_open(const char *z, int f, mode_t m){
 **   unixEnterMutex()
 **     assert( unixMutexHeld() );
 **   unixEnterLeave()
-**
-** To prevent deadlock, the global unixBigLock must must be acquired
-** before the unixInodeInfo.pLockMutex mutex, if both are held.  It is
-** OK to get the pLockMutex without holding unixBigLock first, but if
-** that happens, the unixBigLock mutex must not be acquired until after
-** pLockMutex is released.
-**
-**      OK:     enter(unixBigLock),  enter(pLockInfo)
-**      OK:     enter(unixBigLock)
-**      OK:     enter(pLockInfo)
-**   ERROR:     enter(pLockInfo), enter(unixBigLock)
 */
 static sqlite3_mutex *unixBigLock = 0;
 static void unixEnterMutex(void){
-  assert( sqlite3_mutex_notheld(unixBigLock) );  /* Not a recursive mutex */
   sqlite3_mutex_enter(unixBigLock);
 }
 static void unixLeaveMutex(void){
-  assert( sqlite3_mutex_held(unixBigLock) );
   sqlite3_mutex_leave(unixBigLock);
 }
 #ifdef SQLITE_DEBUG
@@ -1125,34 +1108,16 @@ struct unixFileId {
 ** A single inode can have multiple file descriptors, so each unixFile
 ** structure contains a pointer to an instance of this object and this
 ** object keeps a count of the number of unixFile pointing to it.
-**
-** Mutex rules:
-**
-**  (1) Only the pLockMutex mutex must be held in order to read or write
-**      any of the locking fields:
-**          nShared, nLock, eFileLock, bProcessLock, pUnused
-**
-**  (2) When nRef>0, then the following fields are unchanging and can
-**      be read (but not written) without holding any mutex:
-**          fileId, pLockMutex
-**
-**  (3) With the exceptions above, all the fields may only be read
-**      or written while holding the global unixBigLock mutex.
-**
-** Deadlock prevention:  The global unixBigLock mutex may not
-** be acquired while holding the pLockMutex mutex.  If both unixBigLock
-** and pLockMutex are needed, then unixBigLock must be acquired first.
 */
 struct unixInodeInfo {
   struct unixFileId fileId;       /* The lookup key */
-  sqlite3_mutex *pLockMutex;      /* Hold this mutex for... */
-  int nShared;                      /* Number of SHARED locks held */
-  int nLock;                        /* Number of outstanding file locks */
-  unsigned char eFileLock;          /* One of SHARED_LOCK, RESERVED_LOCK etc. */
-  unsigned char bProcessLock;       /* An exclusive process lock is held */
-  UnixUnusedFd *pUnused;            /* Unused file descriptors to close */
+  int nShared;                    /* Number of SHARED locks held */
+  unsigned char eFileLock;        /* One of SHARED_LOCK, RESERVED_LOCK etc. */
+  unsigned char bProcessLock;     /* An exclusive process lock is held */
   int nRef;                       /* Number of pointers to this structure */
   unixShmNode *pShmNode;          /* Shared memory associated with this inode */
+  int nLock;                      /* Number of outstanding file locks */
+  UnixUnusedFd *pUnused;          /* Unused file descriptors to close */
   unixInodeInfo *pNext;           /* List of all unixInodeInfo objects */
   unixInodeInfo *pPrev;           /*    .... doubly linked */
 #if SQLITE_ENABLE_LOCKING_STYLE
@@ -1168,21 +1133,7 @@ struct unixInodeInfo {
 ** A lists of all unixInodeInfo objects.
 */
 static unixInodeInfo *inodeList = 0;  /* All unixInodeInfo objects */
-
-#ifdef SQLITE_DEBUG
-/*
-** True if the inode mutex is held, or not.  Used only within assert()
-** to help verify correct mutex usage.
-*/
-int unixFileMutexHeld(unixFile *pFile){
-  assert( pFile->pInode );
-  return sqlite3_mutex_held(pFile->pInode->pLockMutex);
-}
-int unixFileMutexNotheld(unixFile *pFile){
-  assert( pFile->pInode );
-  return sqlite3_mutex_notheld(pFile->pInode->pLockMutex);
-}
-#endif
+static unsigned int nUnusedFd = 0;    /* Total unused file descriptors */
 
 /*
 **
@@ -1288,11 +1239,11 @@ static void closePendingFds(unixFile *pFile){
   unixInodeInfo *pInode = pFile->pInode;
   UnixUnusedFd *p;
   UnixUnusedFd *pNext;
-  assert( unixFileMutexHeld(pFile) );
   for(p=pInode->pUnused; p; p=pNext){
     pNext = p->pNext;
     robust_close(pFile, p->fd, __LINE__);
     sqlite3_free(p);
+    nUnusedFd--;
   }
   pInode->pUnused = 0;
 }
@@ -1306,14 +1257,11 @@ static void closePendingFds(unixFile *pFile){
 static void releaseInodeInfo(unixFile *pFile){
   unixInodeInfo *pInode = pFile->pInode;
   assert( unixMutexHeld() );
-  assert( unixFileMutexNotheld(pFile) );
   if( ALWAYS(pInode) ){
     pInode->nRef--;
     if( pInode->nRef==0 ){
       assert( pInode->pShmNode==0 );
-      sqlite3_mutex_enter(pInode->pLockMutex);
       closePendingFds(pFile);
-      sqlite3_mutex_leave(pInode->pLockMutex);
       if( pInode->pPrev ){
         assert( pInode->pPrev->pNext==pInode );
         pInode->pPrev->pNext = pInode->pNext;
@@ -1325,10 +1273,10 @@ static void releaseInodeInfo(unixFile *pFile){
         assert( pInode->pNext->pPrev==pInode );
         pInode->pNext->pPrev = pInode->pPrev;
       }
-      sqlite3_mutex_free(pInode->pLockMutex);
       sqlite3_free(pInode);
     }
   }
+  assert( inodeList!=0 || nUnusedFd==0 );
 }
 
 /*
@@ -1398,6 +1346,7 @@ static int findInodeInfo(
 #else
   fileId.ino = (u64)statbuf.st_ino;
 #endif
+  assert( inodeList!=0 || nUnusedFd==0 );
   pInode = inodeList;
   while( pInode && memcmp(&fileId, &pInode->fileId, sizeof(fileId)) ){
     pInode = pInode->pNext;
@@ -1409,13 +1358,6 @@ static int findInodeInfo(
     }
     memset(pInode, 0, sizeof(*pInode));
     memcpy(&pInode->fileId, &fileId, sizeof(fileId));
-    if( sqlite3GlobalConfig.bCoreMutex ){
-      pInode->pLockMutex = sqlite3_mutex_alloc(SQLITE_MUTEX_FAST);
-      if( pInode->pLockMutex==0 ){
-        sqlite3_free(pInode);
-        return SQLITE_NOMEM_BKPT;
-      }
-    }
     pInode->nRef = 1;
     pInode->pNext = inodeList;
     pInode->pPrev = 0;
@@ -1500,7 +1442,7 @@ static int unixCheckReservedLock(sqlite3_file *id, int *pResOut){
 
   assert( pFile );
   assert( pFile->eFileLock<=SHARED_LOCK );
-  sqlite3_mutex_enter(pFile->pInode->pLockMutex);
+  unixEnterMutex(); /* Because pFile->pInode is shared across threads */
 
   /* Check if a thread in this process holds such a lock */
   if( pFile->pInode->eFileLock>SHARED_LOCK ){
@@ -1525,7 +1467,7 @@ static int unixCheckReservedLock(sqlite3_file *id, int *pResOut){
   }
 #endif
 
-  sqlite3_mutex_leave(pFile->pInode->pLockMutex);
+  unixLeaveMutex();
   OSTRACE(("TEST WR-LOCK %d %d %d (unix)\n", pFile->h, rc, reserved));
 
   *pResOut = reserved;
@@ -1591,8 +1533,8 @@ static int osSetPosixAdvisoryLock(
 static int unixFileLock(unixFile *pFile, struct flock *pLock){
   int rc;
   unixInodeInfo *pInode = pFile->pInode;
+  assert( unixMutexHeld() );
   assert( pInode!=0 );
-  assert( sqlite3_mutex_held(pInode->pLockMutex) );
   if( (pFile->ctrlFlags & (UNIXFILE_EXCL|UNIXFILE_RDONLY))==UNIXFILE_EXCL ){
     if( pInode->bProcessLock==0 ){
       struct flock lock;
@@ -1711,8 +1653,8 @@ static int unixLock(sqlite3_file *id, int eFileLock){
 
   /* This mutex is needed because pFile->pInode is shared across threads
   */
+  unixEnterMutex();
   pInode = pFile->pInode;
-  sqlite3_mutex_enter(pInode->pLockMutex);
 
   /* If some thread using this PID has a lock via a different unixFile*
   ** handle that precludes the requested lock, return BUSY.
@@ -1855,7 +1797,7 @@ static int unixLock(sqlite3_file *id, int eFileLock){
   }
 
 end_lock:
-  sqlite3_mutex_leave(pInode->pLockMutex);
+  unixLeaveMutex();
   OSTRACE(("LOCK    %d %s %s (unix)\n", pFile->h, azFileLock(eFileLock),
       rc==SQLITE_OK ? "ok" : "failed"));
   return rc;
@@ -1868,11 +1810,11 @@ end_lock:
 static void setPendingFd(unixFile *pFile){
   unixInodeInfo *pInode = pFile->pInode;
   UnixUnusedFd *p = pFile->pPreallocatedUnused;
-  assert( unixFileMutexHeld(pFile) );
   p->pNext = pInode->pUnused;
   pInode->pUnused = p;
   pFile->h = -1;
   pFile->pPreallocatedUnused = 0;
+  nUnusedFd++;
 }
 
 /*
@@ -1903,8 +1845,8 @@ static int posixUnlock(sqlite3_file *id, int eFileLock, int handleNFSUnlock){
   if( pFile->eFileLock<=eFileLock ){
     return SQLITE_OK;
   }
+  unixEnterMutex();
   pInode = pFile->pInode;
-  sqlite3_mutex_enter(pInode->pLockMutex);
   assert( pInode->nShared!=0 );
   if( pFile->eFileLock>SHARED_LOCK ){
     assert( pInode->eFileLock==pFile->eFileLock );
@@ -2030,14 +1972,14 @@ static int posixUnlock(sqlite3_file *id, int eFileLock, int handleNFSUnlock){
     */
     pInode->nLock--;
     assert( pInode->nLock>=0 );
-    if( pInode->nLock==0 ) closePendingFds(pFile);
+    if( pInode->nLock==0 ){
+      closePendingFds(pFile);
+    }
   }
 
 end_unlock:
-  sqlite3_mutex_leave(pInode->pLockMutex);
-  if( rc==SQLITE_OK ){
-    pFile->eFileLock = eFileLock;
-  }
+  unixLeaveMutex();
+  if( rc==SQLITE_OK ) pFile->eFileLock = eFileLock;
   return rc;
 }
 
@@ -2108,20 +2050,15 @@ static int closeUnixFile(sqlite3_file *id){
 static int unixClose(sqlite3_file *id){
   int rc = SQLITE_OK;
   unixFile *pFile = (unixFile *)id;
-  unixInodeInfo *pInode = pFile->pInode;
-
-  assert( pInode!=0 );
   verifyDbFile(pFile);
   unixUnlock(id, NO_LOCK);
-  assert( unixFileMutexNotheld(pFile) );
   unixEnterMutex();
 
   /* unixFile.pInode is always valid here. Otherwise, a different close
   ** routine (e.g. nolockClose()) would be called instead.
   */
   assert( pFile->pInode->nLock>0 || pFile->pInode->bProcessLock==0 );
-  sqlite3_mutex_enter(pInode->pLockMutex);
-  if( pInode->nLock ){
+  if( ALWAYS(pFile->pInode) && pFile->pInode->nLock ){
     /* If there are outstanding locks, do not actually close the file just
     ** yet because that would clear those locks.  Instead, add the file
     ** descriptor to pInode->pUnused list.  It will be automatically closed
@@ -2129,7 +2066,6 @@ static int unixClose(sqlite3_file *id){
     */
     setPendingFd(pFile);
   }
-  sqlite3_mutex_leave(pInode->pLockMutex);
   releaseInodeInfo(pFile);
   rc = closeUnixFile(id);
   unixLeaveMutex();
@@ -2727,7 +2663,6 @@ static int semXClose(sqlite3_file *id) {
     unixFile *pFile = (unixFile*)id;
     semXUnlock(id, NO_LOCK);
     assert( pFile );
-    assert( unixFileMutexNotheld(pFile) );
     unixEnterMutex();
     releaseInodeInfo(pFile);
     unixLeaveMutex();
@@ -2842,7 +2777,8 @@ static int afpCheckReservedLock(sqlite3_file *id, int *pResOut){
     *pResOut = 1;
     return SQLITE_OK;
   }
-  sqlite3_mutex_enter(pFile->pInode->pLockMutex);
+  unixEnterMutex(); /* Because pFile->pInode is shared across threads */
+
   /* Check if a thread in this process holds such a lock */
   if( pFile->pInode->eFileLock>SHARED_LOCK ){
     reserved = 1;
@@ -2866,7 +2802,7 @@ static int afpCheckReservedLock(sqlite3_file *id, int *pResOut){
     }
   }
 
-  sqlite3_mutex_leave(pFile->pInode->pLockMutex);
+  unixLeaveMutex();
   OSTRACE(("TEST WR-LOCK %d %d %d (afp)\n", pFile->h, rc, reserved));
 
   *pResOut = reserved;
@@ -2929,8 +2865,8 @@ static int afpLock(sqlite3_file *id, int eFileLock){
 
   /* This mutex is needed because pFile->pInode is shared across threads
   */
+  unixEnterMutex();
   pInode = pFile->pInode;
-  sqlite3_mutex_enter(pInode->pLockMutex);
 
   /* If some thread using this PID has a lock via a different unixFile*
   ** handle that precludes the requested lock, return BUSY.
@@ -3066,7 +3002,7 @@ static int afpLock(sqlite3_file *id, int eFileLock){
   }
 
 afp_end_lock:
-  sqlite3_mutex_leave(pInode->pLockMutex);
+  unixLeaveMutex();
   OSTRACE(("LOCK    %d %s %s (afp)\n", pFile->h, azFileLock(eFileLock),
          rc==SQLITE_OK ? "ok" : "failed"));
   return rc;
@@ -3098,8 +3034,8 @@ static int afpUnlock(sqlite3_file *id, int eFileLock) {
   if( pFile->eFileLock<=eFileLock ){
     return SQLITE_OK;
   }
+  unixEnterMutex();
   pInode = pFile->pInode;
-  sqlite3_mutex_enter(pInode->pLockMutex);
   assert( pInode->nShared!=0 );
   if( pFile->eFileLock>SHARED_LOCK ){
     assert( pInode->eFileLock==pFile->eFileLock );
@@ -3168,14 +3104,14 @@ static int afpUnlock(sqlite3_file *id, int eFileLock) {
     if( rc==SQLITE_OK ){
       pInode->nLock--;
       assert( pInode->nLock>=0 );
-      if( pInode->nLock==0 ) closePendingFds(pFile);
+      if( pInode->nLock==0 ){
+        closePendingFds(pFile);
+      }
     }
   }
 
-  sqlite3_mutex_leave(pInode->pLockMutex);
-  if( rc==SQLITE_OK ){
-    pFile->eFileLock = eFileLock;
-  }
+  unixLeaveMutex();
+  if( rc==SQLITE_OK ) pFile->eFileLock = eFileLock;
   return rc;
 }
 
@@ -3187,20 +3123,14 @@ static int afpClose(sqlite3_file *id) {
   unixFile *pFile = (unixFile*)id;
   assert( id!=0 );
   afpUnlock(id, NO_LOCK);
-  assert( unixFileMutexNotheld(pFile) );
   unixEnterMutex();
-  if( pFile->pInode ){
-    unixInodeInfo *pInode = pFile->pInode;
-    sqlite3_mutex_enter(pInode->pLockMutex);
-    if( pInode->nLock ){
-      /* If there are outstanding locks, do not actually close the file just
-      ** yet because that would clear those locks.  Instead, add the file
-      ** descriptor to pInode->aPending.  It will be automatically closed when
-      ** the last lock is cleared.
-      */
-      setPendingFd(pFile);
-    }
-    sqlite3_mutex_leave(pInode->pLockMutex);
+  if( pFile->pInode && pFile->pInode->nLock ){
+    /* If there are outstanding locks, do not actually close the file just
+    ** yet because that would clear those locks.  Instead, add the file
+    ** descriptor to pInode->aPending.  It will be automatically closed when
+    ** the last lock is cleared.
+    */
+    setPendingFd(pFile);
   }
   releaseInodeInfo(pFile);
   sqlite3_free(pFile->lockingContext);
@@ -4506,7 +4436,6 @@ static int unixOpenSharedMemory(unixFile *pDbFd){
   /* Check to see if a unixShmNode object already exists. Reuse an existing
   ** one if present. Create a new one if necessary.
   */
-  assert( unixFileMutexNotheld(pDbFd) );
   unixEnterMutex();
   pInode = pDbFd->pInode;
   pShmNode = pInode->pShmNode;
@@ -4889,9 +4818,6 @@ static void unixShmBarrier(
 ){
   UNUSED_PARAMETER(fd);
   sqlite3MemoryBarrier();         /* compiler-defined memory barrier */
-  assert( fd->pMethods->xLock==nolockLock
-       || unixFileMutexNotheld((unixFile*)fd)
-  );
   unixEnterMutex();               /* Also mutex, for redundancy */
   unixLeaveMutex();
 }
@@ -4933,7 +4859,6 @@ static int unixShmUnmap(
 
   /* If pShmNode->nRef has reached 0, then close the underlying
   ** shared-memory file, too */
-  assert( unixFileMutexNotheld(pDbFd) );
   unixEnterMutex();
   assert( pShmNode->nRef>0 );
   pShmNode->nRef--;
@@ -5260,7 +5185,7 @@ IOMETHODS(
 IOMETHODS(
   nolockIoFinder,           /* Finder function name */
   nolockIoMethods,          /* sqlite3_io_methods object name */
-  3,                        /* shared memory and mmap are enabled */
+  3,                        /* shared memory is disabled */
   nolockClose,              /* xClose method */
   nolockLock,               /* xLock method */
   nolockUnlock,             /* xUnlock method */
@@ -5756,7 +5681,7 @@ static UnixUnusedFd *findReusableFd(const char *zPath, int flags){
   **
   ** Even if a subsequent open() call does succeed, the consequences of
   ** not searching for a reusable file descriptor are not dire.  */
-  if( inodeList!=0 && 0==osStat(zPath, &sStat) ){
+  if( nUnusedFd>0 && 0==osStat(zPath, &sStat) ){
     unixInodeInfo *pInode;
 
     pInode = inodeList;
@@ -5766,14 +5691,12 @@ static UnixUnusedFd *findReusableFd(const char *zPath, int flags){
     }
     if( pInode ){
       UnixUnusedFd **pp;
-      assert( sqlite3_mutex_notheld(pInode->pLockMutex) );
-      sqlite3_mutex_enter(pInode->pLockMutex);
       for(pp=&pInode->pUnused; *pp && (*pp)->flags!=flags; pp=&((*pp)->pNext));
       pUnused = *pp;
       if( pUnused ){
+        nUnusedFd--;
         *pp = pUnused->pNext;
       }
-      sqlite3_mutex_leave(pInode->pLockMutex);
     }
   }
   unixLeaveMutex();

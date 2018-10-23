@@ -5261,10 +5261,7 @@ int sqlite3Fts5IndexCharlenToBytelen(
   for(i=0; i<nChar; i++){
     if( n>=nByte ) return 0;      /* Input contains fewer than nChar chars */
     if( (unsigned char)p[n++]>=0xc0 ){
-      while( (p[n] & 0xc0)==0x80 ){
-        n++;
-        if( n>=nByte ) break;
-      }
+      while( (p[n] & 0xc0)==0x80 ) n++;
     }
   }
   return n;

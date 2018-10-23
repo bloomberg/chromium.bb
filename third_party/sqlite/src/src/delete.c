@@ -463,8 +463,9 @@ void sqlite3DeleteFrom(
       }
       iKey = iPk;
     }else{
-      iKey = ++pParse->nMem;
-      sqlite3ExprCodeGetColumnOfTable(v, pTab, iTabCur, -1, iKey);
+      iKey = pParse->nMem + 1;
+      iKey = sqlite3ExprCodeGetColumn(pParse, pTab, -1, iTabCur, iKey, 0);
+      if( iKey>pParse->nMem ) pParse->nMem = iKey;
     }
 
     if( eOnePass!=ONEPASS_OFF ){
@@ -897,6 +898,7 @@ int sqlite3GenerateIndexKey(
     if( pIdx->pPartIdxWhere ){
       *piPartIdxLabel = sqlite3VdbeMakeLabel(v);
       pParse->iSelfTab = iDataCur + 1;
+      sqlite3ExprCachePush(pParse);
       sqlite3ExprIfFalseDup(pParse, pIdx->pPartIdxWhere, *piPartIdxLabel,
                             SQLITE_JUMPIFNULL);
       pParse->iSelfTab = 0;
@@ -943,5 +945,6 @@ int sqlite3GenerateIndexKey(
 void sqlite3ResolvePartIdxLabel(Parse *pParse, int iLabel){
   if( iLabel ){
     sqlite3VdbeResolveLabel(pParse->pVdbe, iLabel);
+    sqlite3ExprCachePop(pParse);
   }
 }

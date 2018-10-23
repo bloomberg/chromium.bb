@@ -105,7 +105,6 @@ const char *sqlite3TestInit(Tcl_Interp *interp){
   extern int Zipvfs_Init(Tcl_Interp*);
 #endif
   extern int TestExpert_Init(Tcl_Interp*);
-  extern int Sqlitetest_window_Init(Tcl_Interp *);
 
   Tcl_CmdInfo cmdInfo;
 
@@ -170,7 +169,6 @@ const char *sqlite3TestInit(Tcl_Interp *interp){
   Sqlitetestfts3_Init(interp);
 #endif
   TestExpert_Init(interp);
-  Sqlitetest_window_Init(interp);
 
   Tcl_CreateObjCommand(
       interp, "load_testfixture_extensions", load_testfixture_extensions,0,0
