@@ -16,6 +16,8 @@
 
 namespace pp {
 class NetAddress;
+class URLLoader;
+class URLRequestInfo;
 }
 
 // Timeout to wait for some action to complete.
@@ -83,6 +85,7 @@ class NestedEvent {
 
   // Reset the NestedEvent so it can be used again.
   void Reset();
+
  private:
   void SignalOnMainThread();
   static void SignalThunk(void* async_event, int32_t result);
@@ -339,9 +342,21 @@ class ScopedArrayBufferSizeSetter {
   ~ScopedArrayBufferSizeSetter() {
     interface_->SetMinimumArrayBufferSizeForShmem(instance_, 0);
   }
+
  private:
   const PPB_Testing_Private* interface_;
   PP_Instance instance_;
 };
+
+// Opens |request| in |loader| and returns the results of the URLRequest.  The
+// caller may provide the optional |response_body| argument to get the contents
+// of the body of the response to the URLRequest.
+//
+// Returns PP_OK upon success.
+int32_t OpenURLRequest(PP_Instance instance,
+                       pp::URLLoader* loader,
+                       const pp::URLRequestInfo& request,
+                       CallbackType callback_type,
+                       std::string* response_body);
 
 #endif  // PPAPI_TESTS_TEST_UTILS_H_
