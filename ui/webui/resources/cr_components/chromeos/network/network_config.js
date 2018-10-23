@@ -717,7 +717,7 @@ Polymer({
     var managedProperties = this.managedProperties;
     var configProperties =
         /** @type {chrome.networkingPrivate.NetworkConfigProperties} */ ({
-          Name: managedProperties.Name || '',
+          Name: CrOnc.getActiveValue(managedProperties.Name) || '',
           Type: managedProperties.Type,
         });
     switch (managedProperties.Type) {
