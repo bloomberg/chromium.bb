@@ -21,6 +21,7 @@ static constexpr base::TimeDelta kCheckPeriod =
 
 BatchElementChecker::BatchElementChecker(WebController* web_controller)
     : web_controller_(web_controller),
+      pending_preconditions_to_check_count_(0),
       all_found_(false),
       stopped_(false),
       weak_ptr_factory_(this) {
@@ -72,7 +73,44 @@ void BatchElementChecker::Try(base::OnceCallback<void()> try_done_callback) {
     return;
   }
   try_done_callback_ = std::move(try_done_callback);
-  RunSequentially(element_callback_map_.begin());
+
+  DCHECK_EQ(pending_preconditions_to_check_count_, 0);
+  pending_preconditions_to_check_count_ = element_callback_map_.size();
+  // Done the check if there is nothing to check.
+  if (!pending_preconditions_to_check_count_) {
+    CheckTryDone();
+    return;
+  }
+
+  size_t total_number_of_loops = pending_preconditions_to_check_count_;
+  for (auto iter = element_callback_map_.begin();
+       iter != element_callback_map_.end(); iter++) {
+    if (!iter->second.get_field_value_callbacks.empty()) {
+      web_controller_->GetFieldValue(
+          iter->first, base::BindOnce(&BatchElementChecker::OnGetFieldValue,
+                                      weak_ptr_factory_.GetWeakPtr(), iter));
+    } else if (!iter->second.element_exists_callbacks.empty()) {
+      web_controller_->ElementExists(
+          iter->first, base::BindOnce(&BatchElementChecker::OnElementExists,
+                                      weak_ptr_factory_.GetWeakPtr(), iter));
+    } else {
+      // Uninteresting entries
+      pending_preconditions_to_check_count_--;
+      CheckTryDone();
+    }
+
+    // This is an ugly workaround for unit tests. 'all_done' callback will be
+    // called synchronously since mocked web_controller is synchronous. And we
+    // can not simply make it asynchronous since a lot of unit tests rely on
+    // synchronous callback. During the callback consumer may destruct this
+    // class which causes crash since 'element_callback_map_' is deleted.
+    //
+    // TODO(crbug.com/806868): make sure 'all_done' callback is called
+    // asynchronously and fix unit tests accordingly.
+    total_number_of_loops--;
+    if (!total_number_of_loops)
+      return;
+  }
 }
 
 void BatchElementChecker::OnTryDone(int64_t remaining_attempts,
@@ -111,54 +149,46 @@ void BatchElementChecker::GiveUp() {
     RunElementExistsCallbacks(callbacks, false);
     RunGetFieldValueCallbacks(callbacks, false, "");
   }
-  element_callback_map_.clear();
-}
-
-void BatchElementChecker::RunSequentially(ElementCallbackMap::iterator iter) {
-  // Skip uninteresting entries
-  while (iter != element_callback_map_.end() && !HasChecksToRun(iter->second)) {
-    ++iter;
-  }
-
-  // Call try_done_callback once there's nothing left.
-  if (iter == element_callback_map_.end()) {
-    DCHECK(try_done_callback_);
-    all_found_ = !HasMoreChecksToRun();
-    std::move(try_done_callback_).Run();
-    return;
-  }
-
-  if (!iter->second.get_field_value_callbacks.empty()) {
-    web_controller_->GetFieldValue(
-        iter->first, base::BindOnce(&BatchElementChecker::OnGetFieldValue,
-                                    weak_ptr_factory_.GetWeakPtr(), iter));
-    return;
-  }
-
-  DCHECK(!iter->second.element_exists_callbacks.empty());
-
-  web_controller_->ElementExists(
-      iter->first, base::BindOnce(&BatchElementChecker::OnElementExists,
-                                  weak_ptr_factory_.GetWeakPtr(), iter));
 }
 
 void BatchElementChecker::OnElementExists(ElementCallbackMap::iterator iter,
                                           bool exists) {
+  pending_preconditions_to_check_count_--;
   if (exists)
     RunElementExistsCallbacks(&iter->second, true);
 
-  RunSequentially(++iter);
+  CheckTryDone();
 }
 
 void BatchElementChecker::OnGetFieldValue(ElementCallbackMap::iterator iter,
                                           bool exists,
                                           const std::string& value) {
+  pending_preconditions_to_check_count_--;
   if (exists) {
     RunElementExistsCallbacks(&iter->second, exists);
     RunGetFieldValueCallbacks(&iter->second, exists, value);
   }
 
-  RunSequentially(++iter);
+  CheckTryDone();
+}
+
+void BatchElementChecker::CheckTryDone() {
+  DCHECK_GE(pending_preconditions_to_check_count_, 0);
+  if (pending_preconditions_to_check_count_ <= 0 && try_done_callback_) {
+    all_found_ = !HasMoreChecksToRun();
+    std::move(try_done_callback_).Run();
+  }
+}
+
+bool BatchElementChecker::HasMoreChecksToRun() {
+  for (const auto& entry : element_callback_map_) {
+    if (!entry.second.element_exists_callbacks.empty())
+      return true;
+
+    if (!entry.second.get_field_value_callbacks.empty())
+      return true;
+  }
+  return false;
 }
 
 void BatchElementChecker::RunElementExistsCallbacks(ElementCallbacks* callbacks,
@@ -176,24 +206,6 @@ void BatchElementChecker::RunGetFieldValueCallbacks(ElementCallbacks* callbacks,
     std::move(callback).Run(exists, value);
   }
   callbacks->get_field_value_callbacks.clear();
-}
-
-bool BatchElementChecker::HasChecksToRun(const ElementCallbacks& element) {
-  if (!element.element_exists_callbacks.empty())
-    return true;
-
-  if (!element.get_field_value_callbacks.empty())
-    return true;
-
-  return false;
-}
-
-bool BatchElementChecker::HasMoreChecksToRun() {
-  for (const auto& entry : element_callback_map_) {
-    if (HasChecksToRun(entry.second))
-      return true;
-  }
-  return false;
 }
 
 }  // namespace autofill_assistant
