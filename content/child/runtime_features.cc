@@ -255,13 +255,11 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kScrollAnchorSerialization))
     WebRuntimeFeatures::EnableScrollAnchorSerialization(true);
 
-  WebRuntimeFeatures::EnableFeatureFromString(
-      "BlinkGenPropertyTrees",
-      command_line.HasSwitch(switches::kEnableBlinkGenPropertyTrees));
+  if (command_line.HasSwitch(switches::kEnableBlinkGenPropertyTrees))
+    WebRuntimeFeatures::EnableFeatureFromString("BlinkGenPropertyTrees", true);
 
-  WebRuntimeFeatures::EnableFeatureFromString(
-      "SlimmingPaintV2",
-      command_line.HasSwitch(switches::kEnableSlimmingPaintV2));
+  if (command_line.HasSwitch(switches::kEnableSlimmingPaintV2))
+    WebRuntimeFeatures::EnableFeatureFromString("SlimmingPaintV2", true);
 
   WebRuntimeFeatures::EnablePassiveDocumentEventListeners(
       base::FeatureList::IsEnabled(features::kPassiveDocumentEventListeners));
