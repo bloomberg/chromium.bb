@@ -36,6 +36,9 @@ Polymer({
     /** @private */
     finalized_: Boolean,
 
+    /** @type {nux.stepIndicatorModel} */
+    indicatorModel: Object,
+
     /** @private {?nuxEmail.EmailProviderModel} */
     selectedEmailProvider_: {
       type: Object,

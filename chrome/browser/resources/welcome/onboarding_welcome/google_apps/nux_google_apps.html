@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../navigation_behavior.html">
+<link rel="import" href="../shared/step_indicator.html">
 <link rel="import" href="apps_chooser.html">
 <link rel="import" href="nux_google_apps_proxy.html">
 
@@ -59,6 +60,7 @@
         <paper-button on-click="onNoThanksClicked_">
           $i18n{noThanks}
         </paper-button>
+        <step-indicator model="[[indicatorModel]]"></step-indicator>
         <paper-button class="action-button" disabled$="[[!hasAppsSelected_]]"
             on-click="onGetStartedClicked_">$i18n{getStarted}</paper-button>
       </div>

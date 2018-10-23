@@ -23,6 +23,7 @@ js_library("nux_google_apps") {
     ":nux_google_apps_proxy",
     "../:navigation_behavior",
     "../shared:nux_types",
+    "../shared:step_indicator",
   ]
 }
 
