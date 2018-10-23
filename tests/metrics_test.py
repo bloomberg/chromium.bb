@@ -12,6 +12,7 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
 import metrics
+import metrics_utils
 import cStringIO
 
 from third_party import mock
@@ -590,6 +591,109 @@ class MetricsCollectorTest(unittest.TestCase):
 
     # Assert that we collected all metrics for fun.
     self.assert_collects_metrics({'fun': [1, 2, 5]})
+
+
+class MetricsUtilsTest(unittest.TestCase):
+
+  def test_extracts_host(self):
+    """Test that we extract the host from the requested URI."""
+    # Regular case
+    http_metrics = metrics_utils.extract_http_metrics(
+        'https://chromium-review.googlesource.com/foo/bar?q=baz', '', 0, 0)
+    self.assertEqual('chromium-review.googlesource.com', http_metrics['host'])
+
+    # Unexpected host
+    http_metrics = metrics_utils.extract_http_metrics(
+        'https://foo-review.googlesource.com/', '', 0, 0)
+    self.assertNotIn('host', http_metrics)
+
+  def test_extracts_path(self):
+    """Test that we extract the matching path from the requested URI."""
+    # Regular case
+    http_metrics = metrics_utils.extract_http_metrics(
+        'https://review.example.com/changes/1234/revisions/deadbeef/commit',
+        '', 0, 0)
+    self.assertEqual('changes/revisions/commit', http_metrics['path'])
+
+    # No matching paths
+    http_metrics = metrics_utils.extract_http_metrics(
+        'https://review.example.com/changes/1234/unexpected/path', '', 0, 0)
+    self.assertNotIn('path', http_metrics)
+
+  def test_extracts_path_changes(self):
+    """Tests that we extract paths for /changes/."""
+    # /changes/<change-id>
+    http_metrics = metrics_utils.extract_http_metrics(
+        'https://review.example.com/changes/proj%2Fsrc%7Emaster%7EI1234abcd',
+        '', 0, 0)
+    self.assertEqual('changes', http_metrics['path'])
+
+    # /changes/?q=<something>
+    http_metrics = metrics_utils.extract_http_metrics(
+        'https://review.example.com/changes/?q=owner:me+OR+cc:me',
+        '', 0, 0)
+    self.assertEqual('changes', http_metrics['path'])
+
+    # /changes/#<something>
+    http_metrics = metrics_utils.extract_http_metrics(
+        'https://review.example.com/changes/#something',
+        '', 0, 0)
+    self.assertEqual('changes', http_metrics['path'])
+
+    # /changes/<change-id>/<anything> does not map to changes.
+    http_metrics = metrics_utils.extract_http_metrics(
+        'https://review.example.com/changes/12345678/message',
+        '', 0, 0)
+    self.assertNotEqual('changes', http_metrics['path'])
+
+  def test_extracts_arguments(self):
+    """Test that we can extract arguments from the requested URI."""
+    # Regular case
+    http_metrics = metrics_utils.extract_http_metrics(
+        'https://review.example.com/?q=123&foo=bar&o=ALL_REVISIONS', '', 0, 0)
+    self.assertEqual(['ALL_REVISIONS'], http_metrics['arguments'])
+
+    # Some unexpected arguments are filtered out.
+    http_metrics = metrics_utils.extract_http_metrics(
+        'https://review.example.com/?o=ALL_REVISIONS&o=LABELS&o=UNEXPECTED',
+        '', 0, 0)
+    self.assertEqual(['ALL_REVISIONS', 'LABELS'], http_metrics['arguments'])
+
+    # No valid arguments, so arguments is not present
+    http_metrics = metrics_utils.extract_http_metrics(
+        'https://review.example.com/?o=bar&baz=1', '', 0, 0)
+    self.assertNotIn('arguments', http_metrics)
+
+    # No valid arguments, so arguments is not present
+    http_metrics = metrics_utils.extract_http_metrics(
+        'https://review.example.com/?foo=bar&baz=1', '', 0, 0)
+    self.assertNotIn('arguments', http_metrics)
+
+  def test_validates_method(self):
+    """Test that we validate the HTTP method used."""
+    # Regular case
+    http_metrics = metrics_utils.extract_http_metrics('', 'POST', 0, 0)
+    self.assertEqual('POST', http_metrics['method'])
+
+    # Unexpected method is not reported
+    http_metrics = metrics_utils.extract_http_metrics('', 'DEMAND', 0, 0)
+    self.assertNotIn('method', http_metrics)
+
+  def test_status(self):
+    """Tests that the response status we passed is returned."""
+    http_metrics = metrics_utils.extract_http_metrics('', '', 123, 0)
+    self.assertEqual(123, http_metrics['status'])
+
+    http_metrics = metrics_utils.extract_http_metrics('', '', 404, 0)
+    self.assertEqual(404, http_metrics['status'])
+
+  def test_response_time(self):
+    """Tests that the response time we passed is returned."""
+    http_metrics = metrics_utils.extract_http_metrics('', '', 0, 0.25)
+    self.assertEqual(0.25, http_metrics['response_time'])
+
+    http_metrics = metrics_utils.extract_http_metrics('', '', 0, 12345.25)
+    self.assertEqual(12345.25, http_metrics['response_time'])
 
 
 if __name__ == '__main__':

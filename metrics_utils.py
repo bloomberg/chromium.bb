@@ -5,9 +5,11 @@
 
 from __future__ import print_function
 
+import re
 import scm
 import subprocess2
 import sys
+import urlparse
 
 from third_party import colorama
 
@@ -68,6 +70,64 @@ KNOWN_PROJECT_URLS = {
   'https://webrtc.googlesource.com/src',
 }
 
+KNOWN_HTTP_HOSTS = {
+  'chrome-internal-review.googlesource.com',
+  'chromium-review.googlesource.com',
+  'dart-review.googlesource.com',
+  'eu1-mirror-chromium-review.googlesource.com',
+  'pdfium-review.googlesource.com',
+  'skia-review.googlesource.com',
+  'us1-mirror-chromium-review.googlesource.com',
+  'us2-mirror-chromium-review.googlesource.com',
+  'us3-mirror-chromium-review.googlesource.com',
+  'webrtc-review.googlesource.com',
+}
+
+KNOWN_HTTP_METHODS = {
+  'DELETE',
+  'GET',
+  'PATCH',
+  'POST',
+  'PUT',
+}
+
+KNOWN_HTTP_PATHS = {
+  'accounts':
+      re.compile(r'(/a)?/accounts/.*'),
+  'changes':
+      re.compile(r'(/a)?/changes/([^/]+)?$'),
+  'changes/abandon':
+      re.compile(r'(/a)?/changes/.*/abandon'),
+  'changes/comments':
+      re.compile(r'(/a)?/changes/.*/comments'),
+  'changes/detail':
+      re.compile(r'(/a)?/changes/.*/detail'),
+  'changes/edit':
+      re.compile(r'(/a)?/changes/.*/edit'),
+  'changes/message':
+      re.compile(r'(/a)?/changes/.*/message'),
+  'changes/restore':
+      re.compile(r'(/a)?/changes/.*/restore'),
+  'changes/reviewers':
+      re.compile(r'(/a)?/changes/.*/reviewers/.*'),
+  'changes/revisions/commit':
+      re.compile(r'(/a)?/changes/.*/revisions/.*/commit'),
+  'changes/revisions/review':
+      re.compile(r'(/a)?/changes/.*/revisions/.*/review'),
+  'changes/submit':
+      re.compile(r'(/a)?/changes/.*/submit'),
+  'projects/branches':
+      re.compile(r'(/a)?/projects/.*/branches/.*'),
+}
+
+KNOWN_HTTP_ARGS = {
+  'ALL_REVISIONS',
+  'CURRENT_COMMIT',
+  'CURRENT_REVISION',
+  'DETAILED_ACCOUNTS',
+  'LABELS',
+}
+
 
 def get_python_version():
   """Return the python version in the major.minor.micro format."""
@@ -90,6 +150,54 @@ def seconds_to_weeks(duration):
   about 6 days.
   """
   return int(duration) >> 19
+
+
+def extract_http_metrics(request_uri, method, status, response_time):
+  """Extract metrics from the request URI.
+
+  Extracts the host, path, and arguments from the request URI, and returns them
+  along with the method, status and response time.
+
+  The host, method, path and arguments must be in the KNOWN_HTTP_* constants
+  defined above.
+
+  Arguments are the values of the o= url parameter. In Gerrit, additional fields
+  can be obtained by adding o parameters, each option requires more database
+  lookups and slows down the query response time to the client, so we make an
+  effort to collect them.
+
+  The regex defined in KNOWN_HTTP_PATH_RES are checked against the path, and
+  those that match will be returned.
+  """
+  http_metrics = {
+    'status': status,
+    'response_time': response_time,
+  }
+
+  if method in KNOWN_HTTP_METHODS:
+    http_metrics['method'] = method
+
+  parsed_url = urlparse.urlparse(request_uri)
+
+  if parsed_url.netloc in KNOWN_HTTP_HOSTS:
+    http_metrics['host'] = parsed_url.netloc
+
+  for name, path_re in KNOWN_HTTP_PATHS.iteritems():
+    if path_re.match(parsed_url.path):
+      http_metrics['path'] = name
+      break
+
+  parsed_query = urlparse.parse_qs(parsed_url.query)
+
+  # Collect o-parameters from the request.
+  args = [
+    arg for arg in parsed_query.get('o', [])
+    if arg in KNOWN_HTTP_ARGS
+  ]
+  if args:
+    http_metrics['arguments'] = args
+
+  return http_metrics
 
 
 def get_repo_timestamp(path_to_repo):
