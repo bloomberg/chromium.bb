@@ -74,7 +74,8 @@ Polymer({
    * @private
    */
   getStatusText_: function() {
-    if (this.destination === undefined)
+    // |destination| can be either undefined, or null here.
+    if (!this.destination)
       return '';
 
     return this.destination.shouldShowInvalidCertificateError ?
