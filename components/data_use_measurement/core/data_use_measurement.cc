@@ -116,6 +116,7 @@ DataUseMeasurement::DataUseMeasurement(
 DataUseMeasurement::~DataUseMeasurement() {
   if (network_connection_tracker_)
     network_connection_tracker_->RemoveNetworkConnectionObserver(this);
+  DCHECK(!services_data_use_observer_list_.might_have_observers());
 }
 
 void DataUseMeasurement::OnBeforeURLRequest(net::URLRequest* request) {
@@ -472,6 +473,24 @@ bool DataUseMeasurement::IsUserRequest(
 }
 
 // static
+bool DataUseMeasurement::IsUserDownloadsRequest(
+    int32_t network_traffic_annotation_hash_id) {
+  static const std::set<int32_t> kUserDownloadsTrafficAnnotations = {
+      COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH("parallel_download_job"),
+      COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH("renderer_initiated_download"),
+      COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH("drag_download_file"),
+      COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH("download_web_contents_frame"),
+      COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH("downloads_api_run_async"),
+      COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH("resumed_downloads"),
+      COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH("download_via_context_menu"),
+      COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH("offline_pages_download_file"),
+  };
+  return kUserDownloadsTrafficAnnotations.find(
+             network_traffic_annotation_hash_id) !=
+         kUserDownloadsTrafficAnnotations.end();
+}
+
+// static
 bool DataUseMeasurement::IsMetricsServiceRequest(
     int32_t network_traffic_annotation_hash_id) {
   static const std::set<int32_t> kMetricsServiceTrafficAnnotations = {
@@ -496,6 +515,16 @@ bool DataUseMeasurement::IsCurrentNetworkCellular() const {
 void DataUseMeasurement::OnConnectionChanged(
     network::mojom::ConnectionType type) {
   connection_type_ = type;
+}
+
+void DataUseMeasurement::AddServicesDataUseObserver(
+    ServicesDataUseObserver* observer) {
+  services_data_use_observer_list_.AddObserver(observer);
+}
+
+void DataUseMeasurement::RemoveServicesDataUseObserver(
+    ServicesDataUseObserver* observer) {
+  services_data_use_observer_list_.RemoveObserver(observer);
 }
 
 }  // namespace data_use_measurement

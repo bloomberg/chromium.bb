@@ -20,12 +20,15 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service_observer.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/core/browser/data_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
+#include "components/data_use_measurement/core/data_use_measurement.h"
 #include "components/prefs/pref_service.h"
+#include "services/network/public/cpp/features.h"
 
 namespace data_reduction_proxy {
 
@@ -37,6 +40,7 @@ DataReductionProxyService::DataReductionProxyService(
     std::unique_ptr<DataStore> store,
     std::unique_ptr<DataReductionProxyPingbackClient> pingback_client,
     network::NetworkQualityTracker* network_quality_tracker,
+    data_use_measurement::DataUseMeasurement* data_use_measurement,
     const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
@@ -51,6 +55,7 @@ DataReductionProxyService::DataReductionProxyService(
       db_task_runner_(db_task_runner),
       initialized_(false),
       network_quality_tracker_(network_quality_tracker),
+      data_use_measurement_(data_use_measurement),
       effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       weak_factory_(this) {
   DCHECK(settings);
@@ -64,6 +69,8 @@ DataReductionProxyService::DataReductionProxyService(
   }
   network_quality_tracker_->AddEffectiveConnectionTypeObserver(this);
   network_quality_tracker_->AddRTTAndThroughputEstimatesObserver(this);
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    data_use_measurement_->AddServicesDataUseObserver(this);
 }
 
 DataReductionProxyService::~DataReductionProxyService() {
@@ -72,6 +79,8 @@ DataReductionProxyService::~DataReductionProxyService() {
   network_quality_tracker_->RemoveRTTAndThroughputEstimatesObserver(this);
   compression_stats_.reset();
   db_task_runner_->DeleteSoon(FROM_HERE, db_data_owner_.release());
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    data_use_measurement_->RemoveServicesDataUseObserver(this);
 }
 
 void DataReductionProxyService::SetIOData(
@@ -336,6 +345,22 @@ base::WeakPtr<DataReductionProxyService>
 DataReductionProxyService::GetWeakPtr() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return weak_factory_.GetWeakPtr();
+}
+
+void DataReductionProxyService::OnServicesDataUse(int64_t recv_bytes,
+                                                  int64_t sent_bytes) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (compression_stats_) {
+    // Record non-content initiated traffic to the Other bucket for data saver
+    // site-breakdown.
+    DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+    compression_stats_->RecordDataUseByHost(
+        util::GetSiteBreakdownOtherHostName(), sent_bytes, sent_bytes,
+        base::Time::Now());
+    compression_stats_->RecordDataUseByHost(
+        util::GetSiteBreakdownOtherHostName(), recv_bytes, recv_bytes,
+        base::Time::Now());
+  }
 }
 
 }  // namespace data_reduction_proxy
