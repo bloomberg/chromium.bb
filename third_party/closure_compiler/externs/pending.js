@@ -81,4 +81,4 @@ class ResizeObserver {
  * @param {...*} args The function arguments.
  * TODO(rbpotter): Remove this once it is added to Closure Compiler itself.
  */
-Polymer.RenderStatus.beforeNextRender = function(element, fn, args) {}
+Polymer.RenderStatus.beforeNextRender = function(element, fn, args) {};

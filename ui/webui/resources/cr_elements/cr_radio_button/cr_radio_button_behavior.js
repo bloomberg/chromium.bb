@@ -20,12 +20,19 @@ var CrRadioButtonBehaviorImpl = {
       type: Boolean,
       value: false,
       reflectToAttribute: true,
+      notify: true,
       observer: 'disabledChanged_',
     },
 
     label: {
       type: String,
       value: '',  // Allows the hidden$= binding to run without being set.
+    },
+
+    name: {
+      type: String,
+      notify: true,
+      reflectToAttribute: true,
     },
   },
 
@@ -41,7 +48,6 @@ var CrRadioButtonBehaviorImpl = {
     'aria-disabled': 'false',
     'aria-checked': 'false',
     role: 'radio',
-    tabindex: 0,
   },
 
   /** @private */
@@ -58,7 +64,8 @@ var CrRadioButtonBehaviorImpl = {
     if (previous === undefined && !this.disabled)
       return;
 
-    this.setAttribute('tabindex', this.disabled ? -1 : 0);
+    if (this.disabled)
+      this.setAttribute('tabindex', '-1');
     this.setAttribute('aria-disabled', this.disabled ? 'true' : 'false');
   },
 

@@ -60,6 +60,7 @@ CrElementsPolicyPrefIndicatorTest.*
 CrElementsProfileAvatarSelectorFocusTest.*
 CrElementsProfileAvatarSelectorTest.*
 CrElementsRadioButtonTest.*
+CrElementsRadioGroupTest.*
 CrElementsScrollableBehaviorTest.*
 CrElementsSearchableDropDownTest.*
 CrElementsSliderTest.*
