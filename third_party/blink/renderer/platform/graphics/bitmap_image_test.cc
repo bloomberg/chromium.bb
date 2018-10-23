@@ -91,6 +91,26 @@ void GenerateBitmapForPaintImage(cc::PaintImage paint_image,
 
 }  // namespace
 
+// Extends TestingPlatformSupportWithMockScheduler to add the ability to set the
+// return value of MaxDecodedImageBytes().
+class TestingPlatformSupportWithMaxDecodedBytes
+    : public TestingPlatformSupportWithMockScheduler {
+  WTF_MAKE_NONCOPYABLE(TestingPlatformSupportWithMaxDecodedBytes);
+
+ public:
+  TestingPlatformSupportWithMaxDecodedBytes() {}
+  ~TestingPlatformSupportWithMaxDecodedBytes() override {}
+
+  void SetMaxDecodedImageBytes(size_t max_decoded_image_bytes) {
+    max_decoded_image_bytes_ = max_decoded_image_bytes;
+  }
+
+  size_t MaxDecodedImageBytes() override { return max_decoded_image_bytes_; }
+
+ private:
+  size_t max_decoded_image_bytes_ = Platform::kNoDecodedImageByteLimit;
+};
+
 class BitmapImageTest : public testing::Test {
  public:
   class FakeImageObserver : public GarbageCollectedFinalized<FakeImageObserver>,
@@ -220,7 +240,7 @@ class BitmapImageTest : public testing::Test {
 
   Persistent<FakeImageObserver> image_observer_;
   scoped_refptr<BitmapImage> image_;
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMaxDecodedBytes>
       platform_;
 };
 
@@ -556,6 +576,40 @@ TEST_F(BitmapImageTest, GIFRepetitionCount) {
   auto paint_image = image_->PaintImageForCurrentFrame();
   EXPECT_EQ(paint_image.repetition_count(), 3);
   EXPECT_EQ(paint_image.FrameCount(), 3u);
+}
+
+TEST_F(BitmapImageTest, DecoderAndCacheMipLevels) {
+  // Here, we want to test that the mip level calculated by the cc matches
+  // exactly a size supported by the decoder. This is to make sure that the
+  // rounding used in cc matches the rounding in the decoder. The image in this
+  // test is 629x473 and uses 4:2:0 sampling. This means that the MCU is 16x16.
+  // Under no memory limits, this image would not be eligible for downscaling by
+  // the JPEG decoder because neither dimension is a multiple of 16 (see
+  // https://crbug.com/890745). However, we can force the JPEG decoder to
+  // support downscaling by limiting the maximum bytes allowed for decoding. If
+  // we limit to 315 * 237 * 4 bytes, we'll be forcing the maximum scale factor
+  // numerator to be 4 (assuming a denominator of 8).
+  platform_->SetMaxDecodedImageBytes(315 * 237 * 4);
+  LoadImage("/images/resources/original-cat-420-629x473.jpg");
+  auto paint_image = image_->PaintImageForCurrentFrame();
+
+  // The size of the PaintImage is based on the maximum bytes allowed for
+  // decoding.
+  ASSERT_EQ(315, paint_image.width());
+  ASSERT_EQ(237, paint_image.height());
+
+  // Level 0 should match the decoder supported size for scale factor 4/8.
+  // Level 1 should match the decoder supported size for scale factor 2/8.
+  // Level 2 should match the decoder supported size for scale factor 1/8.
+  // Higher levels (smaller sizes) are not supported by the JPEG decoder.
+  for (int mip_level = 0; mip_level < 3; ++mip_level) {
+    SCOPED_TRACE(mip_level);
+    SkISize scaled_size = gfx::SizeToSkISize(cc::MipMapUtil::GetSizeForLevel(
+        gfx::Size(paint_image.width(), paint_image.height()), mip_level));
+    SkISize supported_size = paint_image.GetSupportedDecodeSize(scaled_size);
+    EXPECT_EQ(gfx::SkISizeToSize(supported_size),
+              gfx::SkISizeToSize(scaled_size));
+  }
 }
 
 class BitmapImageTestWithMockDecoder : public BitmapImageTest,
