@@ -71,6 +71,8 @@ Supports Android and Linux (although Linux
 1. `** merge strings` symbols are further broken down into individual string
    literal symbols. This is done by reading string literals from `.o` files, and
    then searching for them within the `** merge strings` sections.
+   * For LLD with [ThinLTO](https://clang.llvm.org/docs/ThinLTO.html),
+   `llvm-bcanalyzer` is used to extract string literals.
 1. Symbol aliases:
    * Aliases have the same address and size, but report their `.pss` as
       `.size / .num_aliases`.
@@ -79,9 +81,12 @@ Supports Android and Linux (although Linux
    * Type 2: Same names, different paths. Caused by inline functions defined in
      `.h` files.
      * These are collected by running `nm` on each `.o` file.
+       * For LLD with ThinLTO, `llvm-bcanalyzer` is used to process `.o` files,
+         which are actually LLVM Bitcode files.
      * Normally represented using one alias per path, but are sometimes
        collapsed into a single symbol with a path of `{shared}/$SYMBOL_COUNT`.
-       This collapsing is done only for symbols owned by a large number of paths.
+       This collapsing is done only for symbols owned by a large number of
+       paths.
    * Type 3: String literals that are de-duped at link-time.
      * These are found as part of the string literal extraction process.
 
@@ -222,7 +227,7 @@ tools/binary_size/supersize archive chrome.size --elf-file out/Release/chrome -v
 
 ### Usage: html_report
 
-Creates an `.ndjson` (newline-delimited JSON) file that the 
+Creates an `.ndjson` (newline-delimited JSON) file that the
 [SuperSize viewer](https://storage.googleapis.com/chrome-supersize/viewer.html)
 is able to load.
 
