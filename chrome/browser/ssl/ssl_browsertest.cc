@@ -179,6 +179,7 @@ using namespace ssl_test_util;
 using base::ASCIIToUTF16;
 using chrome_browser_interstitials::SecurityInterstitialIDNTest;
 using content::InterstitialPage;
+using content::InterstitialPageDelegate;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::SSLStatus;
@@ -7440,6 +7441,21 @@ class SSLUIDynamicInterstitialTest : public CertVerifierBrowserTest {
     return filter;
   }
 
+  InterstitialPageDelegate* GetInterstitialDelegate(WebContents* tab) {
+    if (AreCommittedInterstitialsEnabled()) {
+      security_interstitials::SecurityInterstitialTabHelper* helper =
+          security_interstitials::SecurityInterstitialTabHelper::
+              FromWebContents(tab);
+      if (!helper)
+        return nullptr;
+      return helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting();
+    }
+    InterstitialPage* interstitial_page = tab->GetInterstitialPage();
+    if (!interstitial_page)
+      return nullptr;
+    return interstitial_page->GetDelegateForTesting();
+  }
+
  private:
   net::EmbeddedTestServer https_server_;
 
@@ -7471,11 +7487,10 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest, Match) {
     ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
     WaitForInterstitial(tab);
 
-    InterstitialPage* interstitial_page = tab->GetInterstitialPage();
+    InterstitialPageDelegate* interstitial_page = GetInterstitialDelegate(tab);
     ASSERT_TRUE(interstitial_page);
     ASSERT_EQ(CaptivePortalBlockingPage::kTypeForTesting,
-              interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
-    interstitial_page->DontProceed();
+              interstitial_page->GetTypeForTesting());
   }
 }
 
@@ -7505,11 +7520,10 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest, MatchUnknownCertError) {
     ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
     WaitForInterstitial(tab);
 
-    InterstitialPage* interstitial_page = tab->GetInterstitialPage();
+    InterstitialPageDelegate* interstitial_page = GetInterstitialDelegate(tab);
     ASSERT_TRUE(interstitial_page);
     ASSERT_EQ(CaptivePortalBlockingPage::kTypeForTesting,
-              interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
-    interstitial_page->DontProceed();
+              interstitial_page->GetTypeForTesting());
   }
 }
 
@@ -7540,11 +7554,10 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest,
     ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
     WaitForInterstitial(tab);
 
-    InterstitialPage* interstitial_page = tab->GetInterstitialPage();
+    InterstitialPageDelegate* interstitial_page = GetInterstitialDelegate(tab);
     ASSERT_TRUE(interstitial_page);
     ASSERT_EQ(CaptivePortalBlockingPage::kTypeForTesting,
-              interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
-    interstitial_page->DontProceed();
+              interstitial_page->GetTypeForTesting());
   }
 }
 
@@ -7575,11 +7588,10 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest,
     ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
     WaitForInterstitial(tab);
 
-    InterstitialPage* interstitial_page = tab->GetInterstitialPage();
+    InterstitialPageDelegate* interstitial_page = GetInterstitialDelegate(tab);
     ASSERT_TRUE(interstitial_page);
     ASSERT_EQ(CaptivePortalBlockingPage::kTypeForTesting,
-              interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
-    interstitial_page->DontProceed();
+              interstitial_page->GetTypeForTesting());
   }
 }
 
@@ -7611,10 +7623,10 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest, MismatchHash) {
     ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
     WaitForInterstitial(tab);
 
-    InterstitialPage* interstitial_page = tab->GetInterstitialPage();
+    InterstitialPageDelegate* interstitial_page = GetInterstitialDelegate(tab);
     ASSERT_TRUE(interstitial_page);
     EXPECT_NE(CaptivePortalBlockingPage::kTypeForTesting,
-              interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
+              interstitial_page->GetTypeForTesting());
   }
 }
 
@@ -7645,10 +7657,10 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest, MismatchCertError) {
     ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
     WaitForInterstitial(tab);
 
-    InterstitialPage* interstitial_page = tab->GetInterstitialPage();
+    InterstitialPageDelegate* interstitial_page = GetInterstitialDelegate(tab);
     ASSERT_TRUE(interstitial_page);
     EXPECT_NE(CaptivePortalBlockingPage::kTypeForTesting,
-              interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
+              interstitial_page->GetTypeForTesting());
   }
 }
 
@@ -7678,10 +7690,10 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest, MismatchCommonNameRegex) {
     ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
     WaitForInterstitial(tab);
 
-    InterstitialPage* interstitial_page = tab->GetInterstitialPage();
+    InterstitialPageDelegate* interstitial_page = GetInterstitialDelegate(tab);
     ASSERT_TRUE(interstitial_page);
     EXPECT_NE(CaptivePortalBlockingPage::kTypeForTesting,
-              interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
+              interstitial_page->GetTypeForTesting());
   }
 }
 
@@ -7712,10 +7724,10 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest,
     ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
     WaitForInterstitial(tab);
 
-    InterstitialPage* interstitial_page = tab->GetInterstitialPage();
+    InterstitialPageDelegate* interstitial_page = GetInterstitialDelegate(tab);
     ASSERT_TRUE(interstitial_page);
     EXPECT_NE(CaptivePortalBlockingPage::kTypeForTesting,
-              interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
+              interstitial_page->GetTypeForTesting());
   }
 }
 
@@ -7746,10 +7758,10 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest, MismatchWhenOverridable) {
     ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
     WaitForInterstitial(tab);
 
-    InterstitialPage* interstitial_page = tab->GetInterstitialPage();
+    InterstitialPageDelegate* interstitial_page = GetInterstitialDelegate(tab);
     ASSERT_TRUE(interstitial_page);
     EXPECT_NE(CaptivePortalBlockingPage::kTypeForTesting,
-              interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
+              interstitial_page->GetTypeForTesting());
   }
 }
 
