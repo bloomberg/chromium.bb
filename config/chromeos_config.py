@@ -2086,28 +2086,28 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # TODO: Fill in any notable gaps in this table. crbug.com/730076
   # pylint: disable=bad-continuation, bad-whitespace, line-too-long
   _paladin_hwtest_assignments = frozenset([
-    # bvt-inline      bvt-cq           bvt-arc             bvt-tast-cq       family
-    ('link',          None,            None,               None),            # ivybridge
-    (None,            None,            None,               None),            # daisy (Exynos5250)
-    ('wolf',          'peppy',         None,               'peppy'),         # slippy (HSW)
-    ('peach_pit',     None,            None,               None),            # peach (Exynos5420)
-    ('winky',         'kip',           None,               'kip'),           # rambi (BYT)
-    ('nyan_big',      'nyan_kitty',    None,               'nyan_kitty'),    # nyan (K1)
-    ('auron_paine',   'tidus',         'auron_yuna',       'tidus'),         # auron (BDW)
-    ('veyron_mighty', 'veyron_speedy', 'veyron_minnie',    'veyron_speedy'), # pinky (RK3288)
-    ('wizpig',        'edgar',         'cyan',             'edgar'),         # strago (BSW)
-    ('cave',          'sentry',        None,               'sentry'),        # glados (SKL)
-    ('elm',           None,            'hana',             None),            # oak (MTK8173)
-    ('bob',           None,            'kevin',            None),            # gru (RK3399)
-    ('reef',          None,            None,               None),            # reef (APL)
-    ('coral',         None,            None,               None),            # coral (APL)
-    (None,            'eve',           'soraka',           'eve'),           # poppy (KBL)
-    ('nocturne',      None,            None,               'nocturne'),      # Nocturne (KBL)
-    (None,            None,            'kevin-arcnext',    None),            # gru + arcnext
-    (None,            None,            'caroline-arcnext', None),            # arcnext
-    ('nyan_blaze',    None,            None,               None),            # Add for Skylab test
-    ('scarlet'   ,    None,            None,               None),            # scarlet (RK3399 unibuild)
-    ('grunt',         None,            'grunt',            None),            # grunt (AMD unibuild)
+    # bvt-inline      bvt-cq           bvt-arc             bvt-tast-cq          family
+    ('link',          None,            None,               'link'),             # ivybridge
+    (None,            None,            None,               None),               # daisy (Exynos5250)
+    ('wolf',          'peppy',         None,               'wolf'),             # slippy (HSW)
+    ('peach_pit',     None,            None,               'peach_pit'),        # peach (Exynos5420)
+    ('winky',         'kip',           None,               'winky'),            # rambi (BYT)
+    ('nyan_big',      'nyan_kitty',    None,               'nyan_big'),         # nyan (K1)
+    ('auron_paine',   'tidus',         'auron_yuna',       'auron_paine'),      # auron (BDW)
+    ('veyron_mighty', 'veyron_speedy', 'veyron_minnie',    'veyron_mighty'),    # pinky (RK3288)
+    ('wizpig',        'edgar',         'cyan',             'wizpig'),           # strago (BSW)
+    ('cave',          'sentry',        None,               'cave'),             # glados (SKL)
+    ('elm',           None,            'hana',             'elm'),              # oak (MTK8173)
+    ('bob',           None,            'kevin',            'bob'),              # gru (RK3399)
+    ('reef',          None,            None,               'reef'),             # reef (APL)
+    ('coral',         None,            None,               'coral'),            # coral (APL)
+    (None,            'eve',           'soraka',           'eve'),              # poppy (KBL)
+    ('nocturne',      None,            None,               'nocturne'),         # Nocturne (KBL)
+    (None,            None,            'kevin-arcnext',    'kevin-arcnext'),    # gru + arcnext
+    (None,            None,            'caroline-arcnext', 'caroline-arcnext'), # arcnext
+    ('nyan_blaze',    None,            None,               'nyan_blaze'),       # Add for Skylab test
+    ('scarlet'   ,    None,            None,               'scarlet'),          # scarlet (RK3399 unibuild)
+    ('grunt',         None,            'grunt',            'grunt'),            # grunt (AMD unibuild)
   ])
   # pylint: enable=bad-continuation, bad-whitespace, line-too-long
 
