@@ -5,13 +5,13 @@
 #import "ios/chrome/browser/sync/synced_sessions_bridge.h"
 
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -28,14 +28,14 @@ SyncedSessionsObserverBridge::SyncedSessionsObserverBridge(
           owner,
           ProfileSyncServiceFactory::GetForBrowserState(browserState)),
       owner_(owner),
-      signin_manager_(
-          ios::SigninManagerFactory::GetForBrowserState(browserState)),
+      identity_manager_(
+          IdentityManagerFactory::GetForBrowserState(browserState)),
       sync_service_(
           ProfileSyncServiceFactory::GetForBrowserState(browserState)),
       browser_state_(browserState),
-      signin_manager_observer_(this),
+      identity_manager_observer_(this),
       first_sync_cycle_is_completed_(false) {
-  signin_manager_observer_.Add(signin_manager_);
+  identity_manager_observer_.Add(identity_manager_);
   CheckIfFirstSyncIsCompleted();
 }
 
@@ -74,11 +74,10 @@ void SyncedSessionsObserverBridge::CheckIfFirstSyncIsCompleted() {
       sync_service_->GetActiveDataTypes().Has(syncer::SESSIONS);
 }
 
-#pragma mark - SigninManagerBase::Observer
+#pragma mark - identity::IdentityManager::Observer
 
-void SyncedSessionsObserverBridge::GoogleSignedOut(
-    const std::string& account_id,
-    const std::string& username) {
+void SyncedSessionsObserverBridge::OnPrimaryAccountCleared(
+    const AccountInfo& previous_primary_account_info) {
   first_sync_cycle_is_completed_ = false;
   [owner_ reloadSessions];
 }
@@ -86,7 +85,7 @@ void SyncedSessionsObserverBridge::GoogleSignedOut(
 #pragma mark - Signin and syncing status
 
 bool SyncedSessionsObserverBridge::IsSignedIn() {
-  return signin_manager_->IsAuthenticated();
+  return identity_manager_->HasPrimaryAccount();
 }
 
 bool SyncedSessionsObserverBridge::IsSyncing() {

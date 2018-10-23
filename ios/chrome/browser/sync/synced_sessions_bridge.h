@@ -7,14 +7,17 @@
 
 #import <Foundation/Foundation.h>
 
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/sync/driver/sync_service_observer.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace ios {
 class ChromeBrowserState;
 }
-class SigninManager;
+
+namespace identity {
+class IdentityManager;
+}
 
 @protocol SyncedSessionsObserver<SyncObserverModelBridge>
 // Reloads the session data.
@@ -25,8 +28,9 @@ namespace synced_sessions {
 
 // Bridge class that will notify the panel when the remote sessions content
 // change.
-class SyncedSessionsObserverBridge : public SyncObserverBridge,
-                                     public SigninManagerBase::Observer {
+class SyncedSessionsObserverBridge
+    : public SyncObserverBridge,
+      public identity::IdentityManager::Observer {
  public:
   SyncedSessionsObserverBridge(id<SyncedSessionsObserver> owner,
                                ios::ChromeBrowserState* browserState);
@@ -36,9 +40,10 @@ class SyncedSessionsObserverBridge : public SyncObserverBridge,
   void OnSyncCycleCompleted(syncer::SyncService* sync) override;
   void OnSyncConfigurationCompleted(syncer::SyncService* sync) override;
   void OnForeignSessionUpdated(syncer::SyncService* sync) override;
-  // SigninManagerBase::Observer implementation.
-  void GoogleSignedOut(const std::string& account_id,
-                       const std::string& username) override;
+  // identity::IdentityManager::Observer implementation.
+  void OnPrimaryAccountCleared(
+      const AccountInfo& previous_primary_account_info) override;
+
   // Returns true if the first sync cycle that contains session information is
   // completed. Returns false otherwise.
   bool IsFirstSyncCycleCompleted();
@@ -52,14 +57,16 @@ class SyncedSessionsObserverBridge : public SyncObserverBridge,
 
  private:
   __weak id<SyncedSessionsObserver> owner_ = nil;
-  SigninManager* signin_manager_;
+  identity::IdentityManager* identity_manager_ = nullptr;
   syncer::SyncService* sync_service_;
   ios::ChromeBrowserState* browser_state_;
-  ScopedObserver<SigninManagerBase, SigninManagerBase::Observer>
-      signin_manager_observer_;
+  ScopedObserver<identity::IdentityManager, identity::IdentityManager::Observer>
+      identity_manager_observer_;
   // Stores whether the first sync cycle that contains session information is
   // completed.
   bool first_sync_cycle_is_completed_;
+
+  DISALLOW_COPY_AND_ASSIGN(SyncedSessionsObserverBridge);
 };
 
 }  // namespace synced_sessions
