@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_RENDERER_WEBTHREAD_IMPL_FOR_RENDERER_SCHEDULER_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_RENDERER_WEBTHREAD_IMPL_FOR_RENDERER_SCHEDULER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_MAIN_THREAD_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_MAIN_THREAD_H_
 
 #include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_loop.h"
@@ -19,11 +19,10 @@ namespace blink {
 namespace scheduler {
 class MainThreadSchedulerImpl;
 
-class PLATFORM_EXPORT WebThreadImplForRendererScheduler : public Thread {
+class PLATFORM_EXPORT MainThread : public Thread {
  public:
-  explicit WebThreadImplForRendererScheduler(
-      MainThreadSchedulerImpl* scheduler);
-  ~WebThreadImplForRendererScheduler() override;
+  explicit MainThread(MainThreadSchedulerImpl* scheduler);
+  ~MainThread() override;
 
   // Thread implementation.
   void Init() override;
@@ -44,4 +43,4 @@ class PLATFORM_EXPORT WebThreadImplForRendererScheduler : public Thread {
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_RENDERER_WEBTHREAD_IMPL_FOR_RENDERER_SCHEDULER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_MAIN_THREAD_H_
