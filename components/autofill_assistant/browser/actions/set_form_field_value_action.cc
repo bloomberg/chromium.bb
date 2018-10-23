@@ -41,9 +41,12 @@ void SetFormFieldValueAction::OnWaitForElement(ActionDelegate* delegate,
     return;
   }
 
+  // TODO(crbug.com/806868): Add flag to allow simulating key presses to set
+  // field value.
   delegate->SetFieldValue(
       ExtractSelectors(proto_.set_form_value().element().selectors()),
       proto_.set_form_value().value(0).text(),
+      /* simulate_key_presses= */ false,
       base::BindOnce(&SetFormFieldValueAction::OnSetFieldValue,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }

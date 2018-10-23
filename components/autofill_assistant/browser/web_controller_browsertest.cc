@@ -226,11 +226,12 @@ class WebControllerBrowserTest : public content::ContentBrowserTest {
   }
 
   bool SetFieldValue(const std::vector<std::string>& selectors,
-                     const std::string& value) {
+                     const std::string& value,
+                     bool simulate_key_presses) {
     base::RunLoop run_loop;
     bool result;
     web_controller_->SetFieldValue(
-        selectors, value,
+        selectors, value, simulate_key_presses,
         base::BindOnce(&WebControllerBrowserTest::OnSetFieldValue,
                        base::Unretained(this), run_loop.QuitClosure(),
                        &result));
@@ -465,9 +466,20 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {
   expected_values.emplace_back("helloworld1");
   GetFieldsValue(selectors, expected_values);
 
-  EXPECT_TRUE(SetFieldValue(a_selector, "foo"));
+  EXPECT_TRUE(
+      SetFieldValue(a_selector, "foo", /* simulate_key_presses= */ false));
   expected_values.clear();
   expected_values.emplace_back("foo");
+  GetFieldsValue(selectors, expected_values);
+
+  selectors.clear();
+  a_selector.clear();
+  a_selector.emplace_back("#uppercase_input");
+  selectors.emplace_back(a_selector);
+  EXPECT_TRUE(
+      SetFieldValue(a_selector, "baz", /* simulate_key_presses= */ true));
+  expected_values.clear();
+  expected_values.emplace_back("BAZ");
   GetFieldsValue(selectors, expected_values);
 
   selectors.clear();
@@ -478,7 +490,8 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {
   expected_values.emplace_back("");
   GetFieldsValue(selectors, expected_values);
 
-  EXPECT_FALSE(SetFieldValue(a_selector, "foobar"));
+  EXPECT_FALSE(
+      SetFieldValue(a_selector, "foobar", /* simulate_key_presses= */ false));
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ConcurrentGetFieldsValue) {

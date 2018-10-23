@@ -96,9 +96,12 @@ class WebController {
                             base::OnceCallback<void(bool)> callback);
 
   // Set the |value| of field |selectors| and return the result through
-  // |callback|.
+  // |callback|. If |simulate_key_presses| is true, the value will be set by
+  // clicking the field and then simulating key presses, otherwise the `value`
+  // attribute will be set directly.
   virtual void SetFieldValue(const std::vector<std::string>& selectors,
                              const std::string& value,
+                             bool simulate_key_presses,
                              base::OnceCallback<void(bool)> callback);
 
   // Return the outerHTML of |selectors|.
@@ -262,6 +265,14 @@ class WebController {
   void OnGetValueAttribute(
       base::OnceCallback<void(bool, const std::string&)> callback,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
+  void InternalSetFieldValue(const std::vector<std::string>& selectors,
+                             const std::string& value,
+                             base::OnceCallback<void(bool)> callback);
+  void OnClearFieldForDispatchKeyEvent(
+      const std::vector<std::string>& selectors,
+      const std::string& value,
+      base::OnceCallback<void(bool)> callback,
+      bool clear_status);
   void OnFindElementForSetFieldValue(
       const std::string& value,
       base::OnceCallback<void(bool)> callback,
@@ -269,6 +280,19 @@ class WebController {
   void OnSetValueAttribute(
       base::OnceCallback<void(bool)> callback,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
+  void OnClickElementForDispatchKeyEvent(
+      const std::string& value,
+      base::OnceCallback<void(bool)> callback,
+      bool click_status);
+  void DispatchKeyDownEvent(const std::string& value,
+                            size_t index,
+                            base::OnceCallback<void(bool)> callback);
+  void DispatchKeyUpEvent(const std::string& value,
+                          size_t index,
+                          base::OnceCallback<void(bool)> callback);
+  void OnDispatchKeyUpEvent(const std::string& value,
+                            size_t index,
+                            base::OnceCallback<void(bool)> callback);
   void OnFindElementForGetOuterHtml(
       base::OnceCallback<void(bool, const std::string&)> callback,
       std::unique_ptr<FindElementResult> element_result);

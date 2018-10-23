@@ -140,9 +140,10 @@ void ScriptExecutor::HideProgressBar() {
 
 void ScriptExecutor::SetFieldValue(const std::vector<std::string>& selectors,
                                    const std::string& value,
+                                   bool simulate_key_presses,
                                    base::OnceCallback<void(bool)> callback) {
-  delegate_->GetWebController()->SetFieldValue(selectors, value,
-                                               std::move(callback));
+  delegate_->GetWebController()->SetFieldValue(
+      selectors, value, simulate_key_presses, std::move(callback));
 }
 
 void ScriptExecutor::GetOuterHtml(

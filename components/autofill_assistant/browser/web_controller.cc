@@ -748,12 +748,101 @@ void WebController::OnGetValueAttribute(
 
 void WebController::SetFieldValue(const std::vector<std::string>& selectors,
                                   const std::string& value,
+                                  bool simulate_key_presses,
                                   base::OnceCallback<void(bool)> callback) {
+  if (simulate_key_presses) {
+    // We first clear the field value, and then simulate the key presses.
+    // TODO(crbug.com/806868): Disable keyboard during this action and then
+    // reset to previous state.
+    InternalSetFieldValue(
+        selectors, "",
+        base::BindOnce(&WebController::OnClearFieldForDispatchKeyEvent,
+                       weak_ptr_factory_.GetWeakPtr(), selectors, value,
+                       std::move(callback)));
+    return;
+  }
+
+  InternalSetFieldValue(selectors, value, std::move(callback));
+}
+
+void WebController::InternalSetFieldValue(
+    const std::vector<std::string>& selectors,
+    const std::string& value,
+    base::OnceCallback<void(bool)> callback) {
   FindElement(selectors,
               /* strict_mode= */ true,
               base::BindOnce(&WebController::OnFindElementForSetFieldValue,
                              weak_ptr_factory_.GetWeakPtr(), value,
                              std::move(callback)));
+}
+
+void WebController::OnClearFieldForDispatchKeyEvent(
+    const std::vector<std::string>& selectors,
+    const std::string& value,
+    base::OnceCallback<void(bool)> callback,
+    bool clear_status) {
+  if (!clear_status) {
+    OnResult(false, std::move(callback));
+    return;
+  }
+
+  ClickElement(selectors,
+               base::BindOnce(&WebController::OnClickElementForDispatchKeyEvent,
+                              weak_ptr_factory_.GetWeakPtr(), value,
+                              std::move(callback)));
+}
+
+void WebController::OnClickElementForDispatchKeyEvent(
+    const std::string& value,
+    base::OnceCallback<void(bool)> callback,
+    bool click_status) {
+  if (!click_status) {
+    OnResult(false, std::move(callback));
+    return;
+  }
+
+  DispatchKeyDownEvent(value, 0, std::move(callback));
+}
+
+void WebController::DispatchKeyDownEvent(
+    const std::string& value,
+    size_t index,
+    base::OnceCallback<void(bool)> callback) {
+  if (index >= value.size()) {
+    OnResult(true, std::move(callback));
+    return;
+  }
+
+  devtools_client_->GetInput()->DispatchKeyEvent(
+      input::DispatchKeyEventParams::Builder()
+          .SetType(input::DispatchKeyEventType::KEY_DOWN)
+          .SetText(std::string(1, value[index]))
+          .Build(),
+      base::BindOnce(&WebController::DispatchKeyUpEvent,
+                     weak_ptr_factory_.GetWeakPtr(), value, index,
+                     std::move(callback)));
+}
+
+void WebController::DispatchKeyUpEvent(
+    const std::string& value,
+    size_t index,
+    base::OnceCallback<void(bool)> callback) {
+  DCHECK_LT(index, value.size());
+  devtools_client_->GetInput()->DispatchKeyEvent(
+      input::DispatchKeyEventParams::Builder()
+          .SetType(input::DispatchKeyEventType::KEY_UP)
+          .SetText(std::string(1, value[index]))
+          .Build(),
+      base::BindOnce(&WebController::OnDispatchKeyUpEvent,
+                     weak_ptr_factory_.GetWeakPtr(), value, index,
+                     std::move(callback)));
+}
+
+void WebController::OnDispatchKeyUpEvent(
+    const std::string& value,
+    size_t index,
+    base::OnceCallback<void(bool)> callback) {
+  DispatchKeyDownEvent(value, index + 1, std::move(callback));
 }
 
 void WebController::OnFindElementForSetFieldValue(
