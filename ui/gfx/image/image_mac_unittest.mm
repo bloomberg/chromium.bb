@@ -40,7 +40,7 @@ bool NSImageStructureMatches(
     float scale = scales[i];
     bool found_match = false;
     for (size_t j = 0; j < [ns_image representations].count; ++j) {
-      NSImageRep* ns_image_rep = [[ns_image representations] objectAtIndex:j];
+      NSImageRep* ns_image_rep = [ns_image representations][j];
       if (ns_image_rep &&
           [ns_image_rep pixelsWide] == width * scale &&
           [ns_image_rep pixelsHigh] == height * scale) {
