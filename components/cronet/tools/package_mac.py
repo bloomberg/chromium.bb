@@ -17,7 +17,7 @@ import sys
 
 def package_mac(out_dir, gn_args, build_config):
   target_dir = out_dir + '/' + build_config
-  build_dir = "out/build_temp/" + build_config
+  build_dir = "out/build_mac/" + build_config
   print 'Generating Ninja ' + gn_args
   gn_result = cr_cronet.run('gn gen %s --args=\'%s\'' % (build_dir, gn_args))
   if gn_result != 0:
@@ -49,8 +49,8 @@ def main():
     print >>sys.stderr, 'The output directory already exists: ' + out_dir
     return 1
 
-  return package_mac(out_dir, cr_cronet.gn_args_mac(True), "opt") or \
-         package_mac(out_dir, cr_cronet.gn_args_mac(False), "dbg")
+  return package_mac(out_dir, cr_cronet.get_mac_gn_args(True), "opt") or \
+         package_mac(out_dir, cr_cronet.get_mac_gn_args(False), "dbg")
 
 
 if __name__ == '__main__':
