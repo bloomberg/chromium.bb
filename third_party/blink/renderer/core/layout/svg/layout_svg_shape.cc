@@ -309,31 +309,35 @@ void LayoutSVGShape::UpdateLayout() {
   ClearNeedsLayout();
 }
 
-void LayoutSVGShape::UpdateNonScalingStrokeData() {
-  DCHECK(HasNonScalingStroke());
-
+AffineTransform LayoutSVGShape::ComputeNonScalingStrokeTransform() const {
   // Compute the CTM to the SVG root. This should probably be the CTM all the
   // way to the "canvas" of the page ("host" coordinate system), but with our
   // current approach of applying/painting non-scaling-stroke, that can break in
   // unpleasant ways (see crbug.com/747708 for an example.) Maybe it would be
   // better to apply this effect during rasterization?
   const LayoutSVGRoot* svg_root = SVGLayoutSupport::FindTreeRootObject(this);
-  AffineTransform t;
-  t.Scale(1 / StyleRef().EffectiveZoom())
+  AffineTransform host_transform;
+  host_transform.Scale(1 / StyleRef().EffectiveZoom())
       .Multiply(LocalToAncestorTransform(svg_root).ToAffineTransform());
   // Width of non-scaling stroke is independent of translation, so zero it out
   // here.
-  t.SetE(0);
-  t.SetF(0);
+  host_transform.SetE(0);
+  host_transform.SetF(0);
+  return host_transform;
+}
 
+void LayoutSVGShape::UpdateNonScalingStrokeData() {
+  DCHECK(HasNonScalingStroke());
+
+  const AffineTransform transform = ComputeNonScalingStrokeTransform();
   auto& rare_data = EnsureRareData();
-  if (rare_data.non_scaling_stroke_transform_ != t) {
+  if (rare_data.non_scaling_stroke_transform_ != transform) {
     SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kStyle);
-    rare_data.non_scaling_stroke_transform_ = t;
+    rare_data.non_scaling_stroke_transform_ = transform;
   }
 
   rare_data.non_scaling_stroke_path_ = *path_;
-  rare_data.non_scaling_stroke_path_.Transform(t);
+  rare_data.non_scaling_stroke_path_.Transform(transform);
 }
 
 void LayoutSVGShape::Paint(const PaintInfo& paint_info) const {

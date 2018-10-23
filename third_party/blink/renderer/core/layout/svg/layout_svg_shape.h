@@ -97,6 +97,7 @@ class LayoutSVGShape : public LayoutSVGModelObject {
     return rare_data_->non_scaling_stroke_transform_;
   }
 
+  AffineTransform ComputeNonScalingStrokeTransform() const;
   AffineTransform LocalSVGTransform() const final { return local_transform_; }
 
   virtual const Vector<MarkerPosition>* MarkerPositions() const {
