@@ -108,7 +108,6 @@ class ASH_EXPORT ShelfLayoutManager
   // Invoked by the shelf when the auto-hide state may have changed.
   void UpdateAutoHideState();
 
-  // TODO(mash): Add similar event handling support for mash.
   // Updates the auto-hide state for mouse events.
   void UpdateAutoHideForMouseEvent(ui::MouseEvent* event, aura::Window* target);
 

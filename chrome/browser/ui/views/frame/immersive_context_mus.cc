@@ -27,7 +27,8 @@ ImmersiveContextMus::~ImmersiveContextMus() {
 void ImmersiveContextMus::OnEnteringOrExitingImmersive(
     ash::ImmersiveFullscreenController* controller,
     bool entering) {
-  aura::Window* window = controller->widget()->GetNativeWindow();
+  aura::Window* window =
+      controller->widget()->GetNativeWindow()->GetRootWindow();
   // Auto hide the shelf in immersive fullscreen instead of hiding it.
   window->SetProperty(ash::kHideShelfWhenFullscreenKey, !entering);
   // Update the window's immersive mode state for the window manager.
