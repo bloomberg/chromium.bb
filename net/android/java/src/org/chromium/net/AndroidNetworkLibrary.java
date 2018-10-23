@@ -23,7 +23,6 @@ import android.security.NetworkSecurityPolicy;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -290,7 +289,7 @@ class AndroidNetworkLibrary {
      * @returns result of linkProperties.isPrivateDnsActive().
      */
     static boolean isPrivateDnsActive(LinkProperties linkProperties) {
-        if (BuildInfo.isAtLeastP() && linkProperties != null) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && linkProperties != null) {
             // TODO(pauljensen): When Android P SDK is available, remove reflection.
             try {
                 // This could be racy if called on multiple threads, but races will

@@ -446,7 +446,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
 #if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kDisplayCutoutAPI) &&
-      base::android::BuildInfo::GetInstance()->is_at_least_p()) {
+      base::android::BuildInfo::GetInstance()->sdk_int() >=
+          base::android::SDK_VERSION_P) {
     // Display Cutout is limited to Android P+.
     WebRuntimeFeatures::EnableDisplayCutoutAPI(true);
   }
