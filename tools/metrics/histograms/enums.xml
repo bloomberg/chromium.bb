@@ -14204,6 +14204,9 @@ Called by update_net_error_codes.py.-->
   <int value="56" label="Store DM token failed">
     Failed to store DM token into the local state.
   </int>
+  <int value="57" label="License list fetch failed">
+    Failed to get available licenses from server.
+  </int>
 </enum>
 
 <enum name="EnterpriseExistingInstallAttributesLockType">

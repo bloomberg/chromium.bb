@@ -12,6 +12,9 @@ namespace policy {
 
 // Metrics collected for enterprise events.
 
+// When you add new values do not forget to update
+// tools/metrics/histograms/enums.xml
+
 // Events related to fetching, saving and loading DM server tokens.
 // These metrics are collected both for device and user tokens.
 // This enum is used to define the buckets for an enumerated UMA histogram.
