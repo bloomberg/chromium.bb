@@ -342,32 +342,35 @@ void WebRtcLoggingHandlerHost::DumpRtpPacketOnIOThread(
 
 void WebRtcLoggingHandlerHost::OnChannelClosing() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  switch (text_log_handler_->GetState()) {
-    case WebRtcTextLogHandler::STARTING:
-    case WebRtcTextLogHandler::STARTED:
-    case WebRtcTextLogHandler::STOPPING:
-    case WebRtcTextLogHandler::STOPPED:
-      text_log_handler_->ChannelClosing();
-      if (upload_log_on_render_close_) {
-        base::PostTaskAndReplyWithResult(
-            log_uploader_->background_task_runner().get(), FROM_HERE,
-            base::Bind(
-                &WebRtcLoggingHandlerHost::GetLogDirectoryAndEnsureExists,
-                this),
-            base::Bind(&WebRtcLoggingHandlerHost::TriggerUpload, this,
-                       UploadDoneCallback()));
-      } else {
-        log_uploader_->LoggingStoppedDontUpload();
-        text_log_handler_->DiscardLog();
-      }
-      break;
-    case WebRtcTextLogHandler::CLOSED:
-    case WebRtcTextLogHandler::CHANNEL_CLOSING:
-      // Do nothing
-      break;
-    default:
-      NOTREACHED();
+
+  if (!text_log_handler_->GetChannelIsClosing()) {
+    switch (text_log_handler_->GetState()) {
+      case WebRtcTextLogHandler::STARTING:
+      case WebRtcTextLogHandler::STARTED:
+      case WebRtcTextLogHandler::STOPPING:
+      case WebRtcTextLogHandler::STOPPED:
+        text_log_handler_->ChannelClosing();
+        if (upload_log_on_render_close_) {
+          base::PostTaskAndReplyWithResult(
+              log_uploader_->background_task_runner().get(), FROM_HERE,
+              base::BindOnce(
+                  &WebRtcLoggingHandlerHost::GetLogDirectoryAndEnsureExists,
+                  this),
+              base::BindOnce(&WebRtcLoggingHandlerHost::TriggerUpload, this,
+                             UploadDoneCallback()));
+        } else {
+          log_uploader_->LoggingStoppedDontUpload();
+          text_log_handler_->DiscardLog();
+        }
+        break;
+      case WebRtcTextLogHandler::CLOSED:
+        // Do nothing
+        break;
+      default:
+        NOTREACHED();
+    }
   }
+
   content::BrowserMessageFilter::OnChannelClosing();
 }
 
@@ -459,8 +462,15 @@ void WebRtcLoggingHandlerHost::StoreLogInDirectory(
     const base::FilePath& directory) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (text_log_handler_->GetState() != WebRtcTextLogHandler::STOPPED &&
-      text_log_handler_->GetState() != WebRtcTextLogHandler::CHANNEL_CLOSING) {
+  // If channel is not closing, storing is only allowed when in STOPPED state.
+  // If channel is closing, storing is allowed for all states except CLOSED.
+  const WebRtcTextLogHandler::LoggingState text_logging_state =
+      text_log_handler_->GetState();
+  const bool channel_is_closing = text_log_handler_->GetChannelIsClosing();
+  if ((!channel_is_closing &&
+       text_logging_state != WebRtcTextLogHandler::STOPPED) ||
+      (channel_is_closing &&
+       text_log_handler_->GetState() == WebRtcTextLogHandler::CLOSED)) {
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(done_callback, false,
@@ -488,8 +498,15 @@ void WebRtcLoggingHandlerHost::DoUploadLogAndRtpDumps(
     const UploadDoneCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (text_log_handler_->GetState() != WebRtcTextLogHandler::STOPPED &&
-      text_log_handler_->GetState() != WebRtcTextLogHandler::CHANNEL_CLOSING) {
+  // If channel is not closing, upload is only allowed when in STOPPED state.
+  // If channel is closing, uploading is allowed for all states except CLOSED.
+  const WebRtcTextLogHandler::LoggingState text_logging_state =
+      text_log_handler_->GetState();
+  const bool channel_is_closing = text_log_handler_->GetChannelIsClosing();
+  if ((!channel_is_closing &&
+       text_logging_state != WebRtcTextLogHandler::STOPPED) ||
+      (channel_is_closing &&
+       text_log_handler_->GetState() == WebRtcTextLogHandler::CLOSED)) {
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(callback, false, "",
