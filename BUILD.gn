@@ -216,7 +216,7 @@ group("gn_all") {
   } else if (is_fuchsia) {
     deps += [
       ":d8_fuchsia",
-      "tools/fuchsia/fidlgen_js:fidlgen_js_unittests",
+      "build/fuchsia/fidlgen_js:fidlgen_js_unittests",
     ]
   }
 

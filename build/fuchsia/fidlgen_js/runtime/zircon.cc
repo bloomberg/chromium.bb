@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "tools/fuchsia/fidlgen_js/runtime/zircon.h"
+#include "build/fuchsia/fidlgen_js/runtime/zircon.h"
 
 #include <lib/async/default.h>
 #include <lib/async/wait.h>

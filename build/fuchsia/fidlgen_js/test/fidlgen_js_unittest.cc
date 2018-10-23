@@ -13,6 +13,8 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "base/test/test_timeouts.h"
+#include "build/fuchsia/fidlgen_js/fidl/fidljstest/cpp/fidl.h"
+#include "build/fuchsia/fidlgen_js/runtime/zircon.h"
 #include "gin/converter.h"
 #include "gin/modules/console.h"
 #include "gin/object_template_builder.h"
@@ -20,14 +22,12 @@
 #include "gin/shell_runner.h"
 #include "gin/test/v8_test.h"
 #include "gin/try_catch.h"
-#include "tools/fuchsia/fidlgen_js/fidl/fidljstest/cpp/fidl.h"
-#include "tools/fuchsia/fidlgen_js/runtime/zircon.h"
 #include "v8/include/v8.h"
 
 static const char kRuntimeFile[] =
-    "/pkg/tools/fuchsia/fidlgen_js/runtime/fidl.mjs";
+    "/pkg/build/fuchsia/fidlgen_js/runtime/fidl.mjs";
 static const char kTestBindingFile[] =
-    "/pkg/tools/fuchsia/fidlgen_js/fidl/fidljstest/js/fidl.js";
+    "/pkg/build/fuchsia/fidlgen_js/fidl/fidljstest/js/fidl.js";
 
 class FidlGenJsTestShellRunnerDelegate : public gin::ShellRunnerDelegate {
  public:

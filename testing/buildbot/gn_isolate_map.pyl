@@ -587,7 +587,7 @@
     "type": "windowed_test_launcher",
   },
   "fidlgen_js_unittests": {
-    "label": "//tools/fuchsia/fidlgen_js:fidlgen_js_unittests",
+    "label": "//build/fuchsia/fidlgen_js:fidlgen_js_unittests",
     "type": "console_test_launcher",
   },
   "filesystem_service_unittests": {

@@ -229,7 +229,6 @@ function %(name)s(%(param_names)s) {
       element_ttname = self._CompileType(t.element_type)
       ttname = (
           'VEC_' + ('Nullable_' if t.nullable else 'Nonnull_') + element_ttname)
-      throw_if_null = '/* v may be null */'
       pointer_set = '''    if (v === null || v === undefined) {
       e.data.setUint32(o + 8, 0, $fidl__kLE);
       e.data.setUint32(o + 12, 0, $fidl__kLE);
