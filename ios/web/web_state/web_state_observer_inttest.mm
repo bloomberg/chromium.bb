@@ -138,7 +138,12 @@ ACTION_P5(VerifyNewPageFinishedContext,
 // Verifies correctness of |NavigationContext| (|arg1|) for failed navigation
 // passed to |DidFinishNavigation|. Asserts that |NavigationContext| the same as
 // |context|.
-ACTION_P4(VerifyErrorFinishedContext, web_state, url, context, nav_id) {
+ACTION_P5(VerifyErrorFinishedContext,
+          web_state,
+          url,
+          context,
+          nav_id,
+          error_code) {
   ASSERT_EQ(*context, arg1);
   EXPECT_EQ(web_state, arg0);
   ASSERT_TRUE((*context));
@@ -154,8 +159,8 @@ ACTION_P4(VerifyErrorFinishedContext, web_state, url, context, nav_id) {
   EXPECT_FALSE((*context)->IsDownload());
   EXPECT_FALSE((*context)->IsPost());
   // The error code will be different on bots and for local runs. Allow both.
-  NSInteger error_code = (*context)->GetError().code;
-  EXPECT_TRUE(error_code == NSURLErrorNetworkConnectionLost);
+  NSInteger actual_error_code = (*context)->GetError().code;
+  EXPECT_EQ(error_code, actual_error_code);
   EXPECT_FALSE((*context)->IsRendererInitiated());
   EXPECT_FALSE((*context)->GetResponseHeaders());
   ASSERT_TRUE(web_state->IsLoading());
@@ -764,8 +769,41 @@ TEST_P(WebStateObserverTest, FailedNavigation) {
           web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
           &nav_id));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
-      .WillOnce(
-          VerifyErrorFinishedContext(web_state(), url, &context, &nav_id));
+      .WillOnce(VerifyErrorFinishedContext(web_state(), url, &context, &nav_id,
+                                           NSURLErrorNetworkConnectionLost));
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  EXPECT_CALL(observer_,
+              PageLoaded(web_state(), PageLoadCompletionStatus::FAILURE));
+  test::LoadUrl(web_state(), url);
+  ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));
+}
+
+// Tests failed navigation because URL scheme is not supported.
+TEST_P(WebStateObserverTest, UnsupportedSchemeNavigation) {
+  // TODO(crbug.com/851119): temporarily disable this failing test.
+  if (GetParam() == TEST_WK_BASED_NAVIGATION_MANAGER) {
+    return;
+  }
+
+  GURL url(url::SchemeHostPort(kTestAppSpecificScheme, "foo", 0).Serialize());
+
+  // Perform a navigation to url with unsupported scheme, which will fail.
+  NavigationContext* context = nullptr;
+  int32_t nav_id = 0;
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  WebStatePolicyDecider::RequestInfo expected_request_info(
+      ui::PageTransition::PAGE_TRANSITION_TYPED,
+      /*target_main_frame=*/true, /*has_user_gesture=*/false);
+  EXPECT_CALL(*decider_,
+              ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
+      .WillOnce(Return(true));
+  EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
+      .WillOnce(VerifyPageStartedContext(
+          web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
+          &nav_id));
+  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
+      .WillOnce(VerifyErrorFinishedContext(web_state(), url, &context, &nav_id,
+                                           NSURLErrorUnsupportedURL));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::FAILURE));

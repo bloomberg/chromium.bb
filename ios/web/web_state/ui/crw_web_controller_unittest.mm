@@ -287,6 +287,9 @@ TEST_P(CRWWebControllerTest, AbortNativeUrlNavigation) {
       loadRequest:OCMOCK_ANY];
   TestNativeContentProvider* mock_native_provider =
       [[TestNativeContentProvider alloc] init];
+  TestNativeContent* content =
+      [[TestNativeContent alloc] initWithURL:native_url virtualURL:native_url];
+  [mock_native_provider setController:content forURL:native_url];
   [web_controller() setNativeProvider:mock_native_provider];
 
   AddPendingItem(native_url, ui::PAGE_TRANSITION_TYPED);

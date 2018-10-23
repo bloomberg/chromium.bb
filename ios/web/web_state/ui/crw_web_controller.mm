@@ -629,7 +629,7 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // It is nil if currentURL is invalid.
 - (void)didFinishWithURL:(const GURL&)currentURL
              loadSuccess:(BOOL)loadSuccess
-                 context:(nullable const web::NavigationContext*)context;
+                 context:(nullable const web::NavigationContextImpl*)context;
 // Navigates forwards or backwards by |delta| pages. No-op if delta is out of
 // bounds. Reloads if delta is 0.
 // TODO(crbug.com/661316): Move this method to NavigationManager.
@@ -897,9 +897,19 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)cachePOSTDataForRequest:(NSURLRequest*)request
                inNavigationItem:(web::NavigationItemImpl*)item;
 
-// Returns YES if the given |action| should be allowed to continue.
-// If this returns NO, the load should be cancelled.
-- (BOOL)shouldAllowLoadWithNavigationAction:(WKNavigationAction*)action;
+// Returns YES if the given |action| should be allowed to continue for app
+// specific URL. If this returns NO, the navigation should be cancelled.
+// App specific pages have elevated privileges and WKWebView uses the same
+// renderer process for all page frames. With that Chromium does not allow
+// running App specific pages in the same process as a web site from the
+// internet. Allows navigation to app specific URL in the following cases:
+//   - last committed URL is app specific
+//   - navigation not a new navigation (back-forward or reload)
+//   - navigation is typed, generated or bookmark
+//   - navigation is performed in iframe and main frame is app-specific page
+- (BOOL)shouldAllowAppSpecificURLNavigationAction:(WKNavigationAction*)action
+                                       transition:
+                                           (ui::PageTransition)pageTransition;
 // Called when a load ends in an error.
 - (void)handleLoadError:(NSError*)error forNavigation:(WKNavigation*)navigation;
 
@@ -1292,7 +1302,8 @@ GURL URLEscapedForHistory(const GURL& url) {
     _interactionRegisteredSinceLastURLChange = NO;
   }
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled() && context &&
-      !context->IsLoadingHtmlString() && !IsWKInternalUrl(newURL) && _webView) {
+      !context->IsLoadingHtmlString() && !context->IsLoadingErrorPage() &&
+      !IsWKInternalUrl(newURL) && _webView) {
     GURL documentOrigin = newURL.GetOrigin();
     GURL committedOrigin = _webStateImpl->GetLastCommittedURL().GetOrigin();
     DCHECK_EQ(documentOrigin, committedOrigin)
@@ -1973,9 +1984,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   if ([self shouldLoadURLInNativeView:currentURL]) {
     [self loadCurrentURLInNativeView];
   } else if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-             isCurrentURLAppSpecific) {
-    // Handle WebUI separately from regular web page load in new nav manager.
-    DCHECK(_webStateImpl->HasWebUI());
+             isCurrentURLAppSpecific && _webStateImpl->HasWebUI()) {
     [self loadPlaceholderInWebViewForURL:currentURL];
   } else {
     [self loadCurrentURLInWebView];
@@ -2012,7 +2021,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
 - (BOOL)shouldLoadURLInNativeView:(const GURL&)url {
   // App-specific URLs that don't require WebUI are loaded in native views.
   return web::GetWebClient()->IsAppSpecificURL(url) &&
-         !_webStateImpl->HasWebUI();
+         !_webStateImpl->HasWebUI() &&
+         [_nativeProvider hasControllerForURL:url];
 }
 
 - (void)reloadWithRendererInitiatedNavigation:(BOOL)isRendererInitiated {
@@ -2151,7 +2161,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   [self optOutScrollsToTopForSubviews];
 
   // Perform post-load-finished updates.
-  const web::NavigationContext* context =
+  const web::NavigationContextImpl* context =
       [_navigationStates contextForNavigation:navigation];
   [self didFinishWithURL:currentURL loadSuccess:loadSuccess context:context];
 
@@ -2164,7 +2174,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (void)didFinishWithURL:(const GURL&)currentURL
              loadSuccess:(BOOL)loadSuccess
-                 context:(nullable const web::NavigationContext*)context {
+                 context:(nullable const web::NavigationContextImpl*)context {
   DCHECK(_loadPhase == web::PAGE_LOADED);
   // Rather than creating a new WKBackForwardListItem when loading WebUI pages,
   // WKWebView will cache the WebUI HTML in the previous WKBackForwardListItem
@@ -2195,7 +2205,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
   if ((context && !IsWKInternalUrl(context->GetUrl())) ||
       (!context && !IsRestoreSessionUrl(net::GURLWithNSURL(_webView.URL)))) {
     _webStateImpl->SetIsLoading(false);
-    _webStateImpl->OnPageLoaded(currentURL, loadSuccess);
+    if (!context || !context->IsLoadingErrorPage()) {
+      _webStateImpl->OnPageLoaded(currentURL, loadSuccess);
+    }
   }
 }
 
@@ -3009,54 +3021,51 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
 }
 
-- (BOOL)shouldAllowLoadWithNavigationAction:(WKNavigationAction*)action {
+- (BOOL)shouldAllowAppSpecificURLNavigationAction:(WKNavigationAction*)action
+                                       transition:
+                                           (ui::PageTransition)pageTransition {
   GURL requestURL = net::GURLWithNSURL(action.request.URL);
+  DCHECK(web::GetWebClient()->IsAppSpecificURL(requestURL));
+  if (web::GetWebClient()->IsAppSpecificURL(
+          _webStateImpl->GetLastCommittedURL())) {
+    // Last committed page is also app specific and navigation should be
+    // allowed.
+    return YES;
+  }
+
+  if (!ui::PageTransitionIsNewNavigation(pageTransition)) {
+    // Allow reloads and back-forward navigations.
+    return YES;
+  }
+
+  if (ui::PageTransitionTypeIncludingQualifiersIs(pageTransition,
+                                                  ui::PAGE_TRANSITION_TYPED)) {
+    return YES;
+  }
+
+  if (ui::PageTransitionTypeIncludingQualifiersIs(
+          pageTransition, ui::PAGE_TRANSITION_GENERATED)) {
+    return YES;
+  }
+
+  if (ui::PageTransitionTypeIncludingQualifiersIs(
+          pageTransition, ui::PAGE_TRANSITION_AUTO_BOOKMARK)) {
+    return YES;
+  }
+
   GURL mainDocumentURL = net::GURLWithNSURL(action.request.mainDocumentURL);
-  DCHECK(_webView);
-
-  // App specific pages have elevated privileges and WKWebView uses the same
-  // renderer process for all page frames. With that Chromium does not allow
-  // running App specific pages in the same process as a web site from the
-  // internet.
-  if (web::GetWebClient()->IsAppSpecificURL(requestURL) &&
-      !web::GetWebClient()->IsAppSpecificURL(mainDocumentURL)) {
-    return NO;
+  if (web::GetWebClient()->IsAppSpecificURL(mainDocumentURL) &&
+      !action.sourceFrame.mainFrame) {
+    // AppSpecific URLs are allowed inside iframe if the main frame is also
+    // app specific page.
+    return YES;
   }
 
-  // If the URL doesn't look like one that can be shown as a web page, it may
-  // handled by the embedder. In that case, update the web controller to
-  // correctly reflect the current state.
-  if (![CRWWebController webControllerCanShow:requestURL]) {
-    // Stop load if navigation is believed to be happening on the main frame.
-    if ([self isMainFrameNavigationAction:action])
-      [self stopLoading];
-
-    // Purge web view if last committed URL is different from the document URL.
-    // This can happen if external URL was added to the navigation stack and was
-    // loaded using Go Back or Go Forward navigation (in which case document URL
-    // will point to the previous page).  If this is the first load for a
-    // NavigationManager, there will be no last committed item, so check here.
-    // TODO(crbug.com/850760): Check if this code is still needed. The current
-    // implementation doesn't put external apps URLs in the history, so they
-    // shouldn't be accessable by Go Back or Go Forward navigation.
-    web::NavigationItem* lastCommittedItem =
-        self.webState->GetNavigationManager()->GetLastCommittedItem();
-    if (lastCommittedItem) {
-      GURL lastCommittedURL = lastCommittedItem->GetURL();
-      if (lastCommittedURL != _documentURL) {
-        [self requirePageReconstruction];
-        [self setDocumentURL:lastCommittedURL context:nullptr];
-      }
-    }
-  }
-  return YES;
+  return NO;
 }
 
 - (void)handleLoadError:(NSError*)error
           forNavigation:(WKNavigation*)navigation {
-  if (error.code == NSURLErrorUnsupportedURL)
-    return;
-
   if (error.code == NSURLErrorCancelled) {
     [self handleCancelledError:error forNavigation:navigation];
     // NSURLErrorCancelled errors that aren't handled by aborting the load will
@@ -4436,22 +4445,60 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return;
   }
 
-  BOOL userInteractedWithRequestMainFrame =
-      [self userClickedRecently] &&
-      net::GURLWithNSURL(action.request.mainDocumentURL) ==
-          _lastUserInteraction->main_document_url;
-  web::WebStatePolicyDecider::RequestInfo requestInfo(
-      transition, isMainFrameNavigationAction,
-      userInteractedWithRequestMainFrame);
   // First check if the navigation action should be blocked by the controller
   // and make sure to update the controller in the case that the controller
   // can't handle the request URL. Then use the embedders' policyDeciders to
   // either: 1- Handle the URL it self and return false to stop the controller
   // from proceeding with the navigation if needed. or 2- return true to allow
   // the navigation to be proceeded by the web controller.
-  BOOL allowLoad =
-      [self shouldAllowLoadWithNavigationAction:action] &&
-      self.webStateImpl->ShouldAllowRequest(action.request, requestInfo);
+  BOOL allowLoad = YES;
+  if (web::GetWebClient()->IsAppSpecificURL(requestURL)) {
+    allowLoad = [self shouldAllowAppSpecificURLNavigationAction:action
+                                                     transition:transition];
+  }
+
+  if (allowLoad) {
+    // If the URL doesn't look like one that can be shown as a web page, it may
+    // handled by the embedder. In that case, update the web controller to
+    // correctly reflect the current state.
+    if (![CRWWebController webControllerCanShow:requestURL]) {
+      // Stop load if navigation is believed to be happening on the main frame.
+      if ([self isMainFrameNavigationAction:action])
+        [self stopLoading];
+
+      // Purge web view if last committed URL is different from the document
+      // URL. This can happen if external URL was added to the navigation stack
+      // and was loaded using Go Back or Go Forward navigation (in which case
+      // document URL will point to the previous page).  If this is the first
+      // load for a NavigationManager, there will be no last committed item, so
+      // check here.
+      // TODO(crbug.com/850760): Check if this code is still needed. The current
+      // implementation doesn't put external apps URLs in the history, so they
+      // shouldn't be accessable by Go Back or Go Forward navigation.
+      web::NavigationItem* lastCommittedItem =
+          self.webState->GetNavigationManager()->GetLastCommittedItem();
+      if (lastCommittedItem) {
+        GURL lastCommittedURL = lastCommittedItem->GetURL();
+        if (lastCommittedURL != _documentURL) {
+          [self requirePageReconstruction];
+          [self setDocumentURL:lastCommittedURL context:nullptr];
+        }
+      }
+    }
+  }
+
+  if (allowLoad) {
+    BOOL userInteractedWithRequestMainFrame =
+        [self userClickedRecently] &&
+        net::GURLWithNSURL(action.request.mainDocumentURL) ==
+            _lastUserInteraction->main_document_url;
+    web::WebStatePolicyDecider::RequestInfo requestInfo(
+        transition, isMainFrameNavigationAction,
+        userInteractedWithRequestMainFrame);
+
+    allowLoad =
+        self.webStateImpl->ShouldAllowRequest(action.request, requestInfo);
+  }
 
   if (allowLoad) {
     if ([[action.request HTTPMethod] isEqualToString:@"POST"]) {
@@ -4694,6 +4741,11 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // handling their potential errors. Otherwise, handle the error.
   if ([_pendingNavigationInfo cancelled]) {
     [self handleCancelledError:error forNavigation:navigation];
+  } else if (error.code == NSURLErrorUnsupportedURL &&
+             _webStateImpl->HasWebUI()) {
+    // This is a navigation to WebUI page.
+    DCHECK(web::GetWebClient()->IsAppSpecificURL(
+        net::GURLWithNSURL(error.userInfo[NSURLErrorFailingURLErrorKey])));
   } else {
     error = WKWebViewErrorWithSource(error, PROVISIONAL_LOAD);
     if (web::IsWKWebViewSSLCertError(error)) {
@@ -4864,7 +4916,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // This is the point where the document's URL has actually changed.
   [self setDocumentURL:webViewURL context:context];
 
-  if (!committedNavigation && context) {
+  if (!committedNavigation && context && !context->IsLoadingErrorPage()) {
     self.webStateImpl->OnNavigationFinished(context);
   }
 
@@ -4977,14 +5029,14 @@ registerLoadRequestForURL:(const GURL&)requestURL
       item->SetURL(originalURL);
     }
 
-    const bool isWebUIURL =
-        web::GetWebClient()->IsAppSpecificURL(item->GetURL()) &&
-        ![_nativeProvider hasControllerForURL:item->GetURL()];
-    if (isWebUIURL && !_webUIManager) {
+    if (web::GetWebClient()->IsAppSpecificURL(item->GetURL()) &&
+        ![_nativeProvider hasControllerForURL:item->GetURL()] &&
+        !_webUIManager) {
       // WebUIManager is normally created when initiating a new load (in
       // |loadCurrentURL|. If user navigates to a WebUI URL via back/forward
-      // navigation, the WebUI manager would have not been created. Create it
-      // now.
+      // navigation, the WebUI manager would have not been created. Attempt
+      // to create WebUI now. Not all app-specific URLs are WebUI, so WebUI
+      // creation may fail.
       [self createWebUIForURL:item->GetURL()];
     }
 
@@ -4995,8 +5047,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
         [self presentNativeContentForNavigationItem:item];
       }
       [self didLoadNativeContentForNavigationItem:item];
-    } else if (isWebUIURL) {
-      DCHECK(_webUIManager);
+    } else if (_webUIManager) {
       [_webUIManager loadWebUIForURL:item->GetURL()];
     }
   }
