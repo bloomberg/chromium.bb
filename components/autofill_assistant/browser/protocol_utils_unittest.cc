@@ -75,13 +75,14 @@ TEST(ProtocolUtilsTest, CreateInitialScriptActionsRequest) {
   ScriptActionRequestProto request;
   EXPECT_TRUE(
       request.ParseFromString(ProtocolUtils::CreateInitialScriptActionsRequest(
-          "script_path", parameters)));
+          "script_path", GURL("http://example.com/"), parameters)));
 
   EXPECT_THAT(request.client_context().chrome().chrome_version(),
               Not(IsEmpty()));
 
   const InitialScriptActionsRequestProto& initial = request.initial_request();
   EXPECT_THAT(initial.query().script_path(), ElementsAre("script_path"));
+  EXPECT_EQ(initial.query().url(), "http://example.com/");
   ASSERT_EQ(2, initial.script_parameters_size());
   EXPECT_EQ("a", initial.script_parameters(0).name());
   EXPECT_EQ("b", initial.script_parameters(0).value());

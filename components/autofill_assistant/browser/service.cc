@@ -79,16 +79,18 @@ void Service::GetScriptsForUrl(
 }
 
 void Service::GetActions(const std::string& script_path,
+                         const GURL& url,
                          const std::map<std::string, std::string>& parameters,
                          ResponseCallback callback) {
   DCHECK(!script_path.empty());
 
   std::unique_ptr<Loader> loader = std::make_unique<Loader>();
   loader->callback = std::move(callback);
-  loader->loader = CreateAndStartLoader(
-      script_action_server_url_,
-      ProtocolUtils::CreateInitialScriptActionsRequest(script_path, parameters),
-      loader.get());
+  loader->loader =
+      CreateAndStartLoader(script_action_server_url_,
+                           ProtocolUtils::CreateInitialScriptActionsRequest(
+                               script_path, url, parameters),
+                           loader.get());
   loaders_[loader.get()] = std::move(loader);
 }
 

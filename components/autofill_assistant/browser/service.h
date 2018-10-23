@@ -39,6 +39,7 @@ class Service {
 
   // Get actions.
   virtual void GetActions(const std::string& script_path,
+                          const GURL& url,
                           const std::map<std::string, std::string>& parameters,
                           ResponseCallback callback);
 
