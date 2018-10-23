@@ -21,7 +21,11 @@ assert(is_fuchsia)
 # files.
 
 template("fidl_library") {
-  forward_variables_from(invoker, [ "namespace", "languages" ])
+  forward_variables_from(invoker,
+                         [
+                           "languages",
+                           "namespace",
+                         ])
 
   _library_basename = target_name
   if (defined(invoker.library_name)) {
@@ -235,8 +239,8 @@ template("fidl_library") {
     if (!defined(public_deps)) {
       public_deps = []
     }
-    public_deps += [ "//third_party/fuchsia-sdk:fidl" ]
-    public_deps += [ "//third_party/fuchsia-sdk:fidl_cpp" ]
+    public_deps += [ "//third_party/fuchsia-sdk/sdk:fidl" ]
+    public_deps += [ "//third_party/fuchsia-sdk/sdk:fidl_cpp" ]
 
     public_configs = [ ":${invoker.target_name}_config" ]
   }

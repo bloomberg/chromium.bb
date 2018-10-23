@@ -1464,15 +1464,15 @@ jumbo_component("base") {
     # by public //base headers, which requires they be on the include path.
     # TODO(https://crbug.com/841171): Move these back to |deps|.
     public_deps += [
-      "//third_party/fuchsia-sdk:async",
-      "//third_party/fuchsia-sdk:fdio",
-      "//third_party/fuchsia-sdk:zx",
+      "//third_party/fuchsia-sdk/sdk:async",
+      "//third_party/fuchsia-sdk/sdk:fdio",
+      "//third_party/fuchsia-sdk/sdk:zx",
     ]
 
     deps += [
-      "//third_party/fuchsia-sdk:async_default",
-      "//third_party/fuchsia-sdk:fidl",
-      "//third_party/fuchsia-sdk:svc",
+      "//third_party/fuchsia-sdk/sdk:async_default",
+      "//third_party/fuchsia-sdk/sdk:fidl",
+      "//third_party/fuchsia-sdk/sdk:svc",
     ]
   }
 
@@ -2730,9 +2730,9 @@ test("base_unittests") {
 
     deps += [
       ":testfidl",
-      "//third_party/fuchsia-sdk:async",
-      "//third_party/fuchsia-sdk:async_default",
-      "//third_party/fuchsia-sdk:fdio",
+      "//third_party/fuchsia-sdk/sdk:async",
+      "//third_party/fuchsia-sdk/sdk:async_default",
+      "//third_party/fuchsia-sdk/sdk:fdio",
     ]
   }
 
