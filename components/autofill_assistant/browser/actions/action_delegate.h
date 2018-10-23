@@ -37,7 +37,8 @@ class ActionDelegate {
   // Show status message on the bottom bar.
   virtual void ShowStatusMessage(const std::string& message) = 0;
 
-  // Create a helper for checking element existence and field value.
+  // Create a helper for checking for multiple element existence or field
+  // values.
   virtual std::unique_ptr<BatchElementChecker> CreateBatchElementChecker() = 0;
 
   // Wait for a short time for a given selector to appear.

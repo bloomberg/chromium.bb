@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_dom.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_input.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_runtime.h"
@@ -67,12 +68,6 @@ class WebController {
   virtual void ClickElement(const std::vector<std::string>& selectors,
                             base::OnceCallback<void(bool)> callback);
 
-  // Check whether at least one element given by |selectors| exists on the web
-  // page. The element must have a valid BoxModel (i.e. it must be visible and
-  // have a size greater than 0).
-  virtual void ElementExists(const std::vector<std::string>& selectors,
-                             base::OnceCallback<void(bool)> callback);
-
   // Fill the address form given by |selectors| with the given address |guid| in
   // personal data manager.
   virtual void FillAddressForm(const std::string& guid,
@@ -100,13 +95,6 @@ class WebController {
   virtual void FocusElement(const std::vector<std::string>& selectors,
                             base::OnceCallback<void(bool)> callback);
 
-  // Get the value of |selectors| and return the result through |callback|. The
-  // returned value might be false, if the element cannot be found, true and the
-  // empty string in case of error or empty value.
-  virtual void GetFieldValue(
-      const std::vector<std::string>& selectors,
-      base::OnceCallback<void(bool, const std::string&)> callback);
-
   // Set the |value| of field |selectors| and return the result through
   // |callback|.
   virtual void SetFieldValue(const std::vector<std::string>& selectors,
@@ -115,6 +103,29 @@ class WebController {
 
   // Return the outerHTML of |selectors|.
   virtual void GetOuterHtml(
+      const std::vector<std::string>& selectors,
+      base::OnceCallback<void(bool, const std::string&)> callback);
+
+  // Create a helper for checking element existence and field value.
+  virtual std::unique_ptr<BatchElementChecker> CreateBatchElementChecker();
+
+ protected:
+  friend class BatchElementChecker;
+
+  // Check whether at least one element given by |selectors| exists on the web
+  // page. The element must have a valid BoxModel (i.e. it must be visible and
+  // have a size greater than 0).
+  //
+  // Normally done through BatchElementChecker.
+  virtual void ElementExists(const std::vector<std::string>& selectors,
+                             base::OnceCallback<void(bool)> callback);
+
+  // Get the value of |selectors| and return the result through |callback|. The
+  // returned value might be false, if the element cannot be found, true and the
+  // empty string in case of error or empty value.
+  //
+  // Normally done through BatchElementChecker.
+  virtual void GetFieldValue(
       const std::vector<std::string>& selectors,
       base::OnceCallback<void(bool, const std::string&)> callback);
 

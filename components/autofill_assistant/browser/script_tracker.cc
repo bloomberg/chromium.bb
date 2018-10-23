@@ -54,7 +54,7 @@ void ScriptTracker::CheckScripts(const base::TimeDelta& max_duration) {
   DCHECK(pending_runnable_scripts_.empty());
 
   batch_element_checker_ =
-      std::make_unique<BatchElementChecker>(delegate_->GetWebController());
+      delegate_->GetWebController()->CreateBatchElementChecker();
   for (const auto& entry : available_scripts_) {
     Script* script = entry.first;
     script->precondition->Check(

@@ -25,7 +25,8 @@ class WebController;
 // Single check:
 //
 // The simplest way of using a BatchElementChecker is to:
-// - create an instance
+// - create an instance, using WebController::CreateBatchElementChecker or
+//   ActionDelegate::CreateBatchElementChecker
 // - call AddElementExistenceCheck() and AddFieldValueCheck()
 // - call Run() with duration set to 0.
 //
@@ -40,9 +41,6 @@ class WebController;
 // found are reported immediately. Elements that are not found are reported at
 // the end, once the specified deadline has passed, just before giving up and
 // calling the callback passed to Run().
-//
-// TODO(crbug.com/806868): Integrate into WebController and make it the only way
-// of checking elements.
 class BatchElementChecker {
  public:
   explicit BatchElementChecker(WebController* web_controller);
