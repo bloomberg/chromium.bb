@@ -34,6 +34,10 @@ GpuMemoryBufferFactoryAndroidHardwareBuffer::CreateGpuMemoryBuffer(
 
   auto buffer = GpuMemoryBufferImplAndroidHardwareBuffer::Create(
       id, size, format, usage, GpuMemoryBufferImpl::DestructionCallback());
+  if (!buffer) {
+    LOG(ERROR) << "Error creating new GpuMemoryBuffer";
+    return gfx::GpuMemoryBufferHandle();
+  }
   auto handle = buffer->CloneHandle();
   buffer_map_[id] = std::move(buffer);
   return handle;
