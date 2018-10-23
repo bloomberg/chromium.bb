@@ -58,9 +58,8 @@ CanvasRenderingContext::CanvasRenderingContext(
     }
   }
 
-  if (!creation_attributes_.alpha) {
+  if (!creation_attributes_.alpha)
     color_params_.SetOpacityMode(kOpaque);
-  }
 
   if (!OriginTrials::LowLatencyCanvasEnabled(host->GetTopExecutionContext()))
     creation_attributes_.low_latency = false;
@@ -100,9 +99,8 @@ WTF::String CanvasRenderingContext::PixelFormatAsString() const {
 }
 
 void CanvasRenderingContext::Dispose() {
-  if (finalize_frame_scheduled_) {
+  if (finalize_frame_scheduled_)
     Platform::Current()->CurrentThread()->RemoveTaskObserver(this);
-  }
 
   // HTMLCanvasElement and CanvasRenderingContext have a circular reference.
   // When the pair is no longer reachable, their destruction order is non-
@@ -138,9 +136,8 @@ void CanvasRenderingContext::DidProcessTask() {
   finalize_frame_scheduled_ = false;
   // The end of a script task that drew content to the canvas is the point
   // at which the current frame may be considered complete.
-  if (Host()) {
+  if (Host())
     Host()->FinalizeFrame();
-  }
   FinalizeFrame();
 }
 
@@ -176,17 +173,18 @@ bool CanvasRenderingContext::WouldTaintOrigin(
     CanvasImageSource* image_source,
     const SecurityOrigin* destination_security_origin) {
   const KURL& source_url = image_source->SourceURL();
-  bool has_url = (source_url.IsValid() && !source_url.IsAboutBlankURL());
+  const bool has_url = (source_url.IsValid() && !source_url.IsAboutBlankURL());
 
   if (has_url) {
     if (source_url.ProtocolIsData() ||
-        clean_urls_.Contains(source_url.GetString()))
+        clean_urls_.Contains(source_url.GetString())) {
       return false;
+    }
     if (dirty_urls_.Contains(source_url.GetString()))
       return true;
   }
 
-  bool taint_origin =
+  const bool taint_origin =
       image_source->WouldTaintOrigin(destination_security_origin);
   if (has_url) {
     if (taint_origin)
