@@ -571,6 +571,7 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/894796")
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @CommandLineFlags
             .Remove({"enable-webvr"})
@@ -589,6 +590,7 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/894796")
     @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
     @CommandLineFlags
             .Remove({"enable-webvr"})
@@ -606,6 +608,7 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/894796")
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @CommandLineFlags
             .Remove({"enable-webvr"})
@@ -622,6 +625,7 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/894796")
     @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
     @CommandLineFlags
             .Remove({"enable-webvr"})
