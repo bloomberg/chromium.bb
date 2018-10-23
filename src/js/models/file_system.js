@@ -551,7 +551,8 @@ camera.models.FileSystem.getFile_ = function(fs, name, create) {
  * @private
  */
 camera.models.FileSystem.incrementFileName_ = function(name) {
-  var base = '', ext = '', idx = 0;
+  var [base, ext] = ['', ''];
+  var idx = 0;
   var match = name.match(/^([^.]+)(\..+)?$/);
   if (match) {
     base = match[1];
