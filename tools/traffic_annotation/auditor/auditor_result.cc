@@ -175,6 +175,12 @@ std::string AuditorResult::ToText() const {
                                 details_[0].c_str(), details_[1].c_str(),
                                 file_path_.c_str());
 
+    case AuditorResult::Type::ERROR_DEPRECATED_WITH_OS:
+      return base::StringPrintf(
+          "Annotation '%s' has a deprecation date and at least one active OS "
+          "at %s.",
+          details_[0].c_str(), file_path_.c_str());
+
     default:
       return std::string();
   }
