@@ -39,7 +39,7 @@ OffscreenCanvas::OffscreenCanvas(const IntSize& size) : size_(size) {}
 
 void OffscreenCanvas::RecordCanvasSizeToUMA(unsigned width, unsigned height) {
   UMA_HISTOGRAM_CUSTOM_COUNTS("Blink.OffscreenCanvas.SqrtNumberOfPixels",
-                              std::sqrt(width * height), 0, 5000, 100);
+                              std::sqrt(width * height), 1, 5000, 100);
 }
 
 OffscreenCanvas* OffscreenCanvas::Create(unsigned width, unsigned height) {

@@ -75,7 +75,6 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_2d_layer_bridge.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_heuristic_parameters.h"
-#include "third_party/blink/renderer/platform/graphics/canvas_metrics.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_dispatcher.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
@@ -134,7 +133,6 @@ inline HTMLCanvasElement::HTMLCanvasElement(Document& document)
       externally_allocated_memory_(0),
       gpu_readback_invoked_in_current_frame_(false),
       gpu_readback_successive_frames_(0) {
-  CanvasMetrics::CountCanvasContextUsage(CanvasMetrics::kCanvasCreated);
   UseCounter::Count(document, WebFeature::kHTMLCanvasElement);
 }
 
@@ -288,6 +286,8 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
   context_ = factory->Create(this, attributes);
   if (!context_)
     return nullptr;
+
+  UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.IsComposited", context_->IsComposited());
 
   context_creation_was_blocked_ = false;
 
@@ -993,11 +993,8 @@ bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
   // since it costs us GPU memory.
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
       SharedGpuContext::ContextProviderWrapper();
-  if (!context_provider_wrapper) {
-    CanvasMetrics::CountCanvasContextUsage(
-        CanvasMetrics::kAccelerated2DCanvasGPUContextLost);
+  if (!context_provider_wrapper)
     return false;
-  }
 
   return context_provider_wrapper->Utils()->Accelerated2DCanvasFeatureEnabled();
 }
@@ -1012,17 +1009,12 @@ std::unique_ptr<Canvas2DLayerBridge>
 HTMLCanvasElement::CreateAccelerated2dBuffer() {
   auto surface = std::make_unique<Canvas2DLayerBridge>(
       Size(), Canvas2DLayerBridge::kEnableAcceleration, ColorParams());
-  if (!surface->IsValid()) {
-    CanvasMetrics::CountCanvasContextUsage(
-        CanvasMetrics::kGPUAccelerated2DCanvasImageBufferCreationFailed);
+  if (!surface->IsValid())
     return nullptr;
-  }
 
   if (MemoryCoordinator::IsLowEndDevice())
     surface->DisableDeferral(kDisableDeferralReasonLowEndDevice);
 
-  CanvasMetrics::CountCanvasContextUsage(
-      CanvasMetrics::kGPUAccelerated2DCanvasImageBufferCreated);
   return surface;
 }
 
@@ -1030,14 +1022,9 @@ std::unique_ptr<Canvas2DLayerBridge>
 HTMLCanvasElement::CreateUnaccelerated2dBuffer() {
   auto surface = std::make_unique<Canvas2DLayerBridge>(
       Size(), Canvas2DLayerBridge::kDisableAcceleration, ColorParams());
-  if (surface->IsValid()) {
-    CanvasMetrics::CountCanvasContextUsage(
-        CanvasMetrics::kUnaccelerated2DCanvasImageBufferCreated);
+  if (surface->IsValid())
     return surface;
-  }
 
-  CanvasMetrics::CountCanvasContextUsage(
-      CanvasMetrics::kUnaccelerated2DCanvasImageBufferCreationFailed);
   return nullptr;
 }
 

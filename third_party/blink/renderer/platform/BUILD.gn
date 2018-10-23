@@ -823,8 +823,6 @@ jumbo_component("platform") {
     "graphics/canvas_color_params.cc",
     "graphics/canvas_color_params.h",
     "graphics/canvas_heuristic_parameters.h",
-    "graphics/canvas_metrics.cc",
-    "graphics/canvas_metrics.h",
     "graphics/canvas_resource.cc",
     "graphics/canvas_resource.h",
     "graphics/canvas_resource_dispatcher.cc",
