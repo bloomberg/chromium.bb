@@ -209,7 +209,7 @@ std::unique_ptr<views::Widget> CreateBackgroundWidget(aura::Window* root_window,
   wm::GetWindowState(widget_window)->set_ignored_by_shelf(true);
   if (params.layer_type == ui::LAYER_SOLID_COLOR) {
     widget_window->layer()->SetColor(background_color);
-  } else {
+  } else if (params.layer_type == ui::LAYER_TEXTURED) {
     views::View* content_view = new views::View();
     content_view->SetBackground(std::make_unique<BackgroundWith1PxBorder>(
         background_color, border_color, border_thickness, border_radius));
