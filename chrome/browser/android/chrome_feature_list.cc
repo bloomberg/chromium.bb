@@ -16,6 +16,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/feed/feed_feature_list.h"
+#include "components/invalidation/impl/invalidation_switches.h"
 #include "components/language/core/common/language_experiments.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_features.h"
 #include "components/ntp_snippets/features.h"
@@ -73,6 +74,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kWebAuth,
     &features::kWebPayments,
     &feed::kInterestFeedContentSuggestions,
+    &invalidation::switches::kFCMInvalidations,
     &kAdjustWebApkInstallationSpace,
     &kAndroidPayIntegrationV1,
     &kAndroidPayIntegrationV2,
