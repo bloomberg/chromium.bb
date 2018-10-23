@@ -84,7 +84,7 @@ static bool IsAllowed(ScriptState* script_state,
 
 int setTimeout(ScriptState* script_state,
                EventTarget& event_target,
-               const ScriptValue& handler,
+               V8Function* handler,
                int timeout,
                const Vector<ScriptValue>& arguments) {
   ExecutionContext* execution_context = event_target.GetExecutionContext();
@@ -144,7 +144,7 @@ int setTimeoutFromString(ScriptState* script_state,
 
 int setInterval(ScriptState* script_state,
                 EventTarget& event_target,
-                const ScriptValue& handler,
+                V8Function* handler,
                 int timeout,
                 const Vector<ScriptValue>& arguments) {
   ExecutionContext* execution_context = event_target.GetExecutionContext();

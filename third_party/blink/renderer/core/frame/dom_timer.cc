@@ -174,6 +174,9 @@ void DOMTimer::Fired() {
 
   action->Execute(context);
 
+  // Eagerly clear out |action|'s resources.
+  action->Dispose();
+
   // ExecutionContext might be already gone when we executed action->execute().
   ExecutionContext* execution_context = GetExecutionContext();
   if (!execution_context)
@@ -182,8 +185,6 @@ void DOMTimer::Fired() {
   execution_context->Timers()->SetTimerNestingLevel(0);
   // Eagerly unregister as ExecutionContext observer.
   ClearContext();
-  // Eagerly clear out |action|'s resources.
-  action->Dispose();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> DOMTimer::TimerTaskRunner() const {
