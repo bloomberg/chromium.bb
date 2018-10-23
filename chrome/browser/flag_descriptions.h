@@ -975,6 +975,9 @@ extern const char kSavePreviousDocumentResourcesNever[];
 extern const char kSavePreviousDocumentResourcesUntilOnDOMContentLoaded[];
 extern const char kSavePreviousDocumentResourcesUntilOnLoad[];
 
+extern const char kSendTabToSelfName[];
+extern const char kSendTabToSelfDescription[];
+
 extern const char kServiceWorkerPaymentAppsName[];
 extern const char kServiceWorkerPaymentAppsDescription[];
 

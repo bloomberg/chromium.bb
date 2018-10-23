@@ -28865,6 +28865,7 @@ from previous Chrome versions.
   <int value="-1985025593" label="file-manager-enable-new-gallery"/>
   <int value="-1983569861" label="WebXROrientationSensorDevice:disabled"/>
   <int value="-1982700103" label="EnableAppsGridGapFeature:enabled"/>
+  <int value="-1982163497" label="SendTabToSelf:disabled"/>
   <int value="-1980328793" label="trace-upload-url"/>
   <int value="-1977496883" label="ViewPasswords:enabled"/>
   <int value="-1973722176" label="VoiceSearchOnLocalNtp:enabled"/>
@@ -30392,6 +30393,7 @@ from previous Chrome versions.
   <int value="884106779" label="supervised-user-safesites"/>
   <int value="886907524" label="autoplay-policy"/>
   <int value="887011602" label="enable-spelling-auto-correct"/>
+  <int value="892470899" label="SendTabToSelf:enabled"/>
   <int value="892899792" label="MaterialDesignIncognitoNTP:disabled"/>
   <int value="900614020" label="ContentSuggestionsShowSummary:disabled"/>
   <int value="903267263" label="disable-offline-pages"/>
