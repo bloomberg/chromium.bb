@@ -230,14 +230,15 @@ void FrameLoader::Init() {
   initial_request.SetFrameType(
       frame_->IsMainFrame() ? network::mojom::RequestContextFrameType::kTopLevel
                             : network::mojom::RequestContextFrameType::kNested);
+  initial_request.SetHasUserGesture(
+      LocalFrame::HasTransientUserActivation(frame_));
 
-  provisional_document_loader_ = Client()->CreateDocumentLoader(
-      frame_, initial_request, SubstituteData(),
+  provisional_document_loader_ = CreateDocumentLoader(
+      initial_request, SubstituteData(),
       ClientRedirectPolicy::kNotClientRedirect,
-      base::UnguessableToken::Create(), nullptr /* navigation_params */,
+      base::UnguessableToken::Create(), WebFrameLoadType::kStandard,
+      kWebNavigationTypeOther, nullptr /* navigation_params */,
       nullptr /* extra_data */);
-  if (LocalFrame::HasTransientUserActivation(frame_))
-    provisional_document_loader_->SetHadTransientUserActivation();
   provisional_document_loader_->StartLoading();
 
   frame_->GetDocument()->CancelParsing();
@@ -1791,24 +1792,8 @@ DocumentLoader* FrameLoader::CreateDocumentLoader(
       frame_, request,
       substitute_data.IsValid() ? substitute_data
                                 : DefaultSubstituteDataForURL(request.Url()),
-      client_redirect_policy, devtools_navigation_token,
-      std::move(navigation_params), std::move(extra_data));
-
-  loader->SetLoadType(load_type);
-  loader->SetNavigationType(navigation_type);
-  if (request.HasUserGesture())
-    loader->SetHadTransientUserActivation();
-  // TODO(japhet): This is needed because the browser process DCHECKs if the
-  // first entry we commit in a new frame has replacement set. It's unclear
-  // whether the DCHECK is right, investigate removing this special case.
-  bool replace_current_item =
-      load_type == WebFrameLoadType::kReplaceCurrentItem &&
-      (!Opener() || !request.Url().IsEmpty());
-  // TODO(dgozman): we should get rid of this boolean field, and make client
-  // responsible for it's own view of "replaces current item", based on the
-  // frame load type.
-  loader->SetReplacesCurrentHistoryItem(replace_current_item);
-
+      client_redirect_policy, devtools_navigation_token, load_type,
+      navigation_type, std::move(navigation_params), std::move(extra_data));
   probe::lifecycleEvent(frame_, loader, "init", CurrentTimeTicksInSeconds());
   return loader;
 }

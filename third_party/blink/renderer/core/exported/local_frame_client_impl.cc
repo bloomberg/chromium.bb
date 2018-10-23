@@ -159,29 +159,6 @@ void ResetWheelAndTouchEventHandlerProperties(LocalFrame& frame) {
       cc::EventListenerProperties::kNone);
 }
 
-void SetupDocumentLoader(
-    DocumentLoader* document_loader,
-    std::unique_ptr<WebNavigationParams> navigation_params) {
-  if (!navigation_params) {
-    document_loader->GetTiming().SetNavigationStart(CurrentTimeTicks());
-    return;
-  }
-
-  const WebNavigationTimings& navigation_timings =
-      navigation_params->navigation_timings;
-  document_loader->UpdateNavigationTimings(
-      navigation_timings.navigation_start, navigation_timings.redirect_start,
-      navigation_timings.redirect_end, navigation_timings.fetch_start,
-      navigation_timings.input_start);
-
-  document_loader->SetSourceLocation(navigation_params->source_location);
-  if (navigation_params->is_user_activated)
-    document_loader->SetUserActivated();
-
-  document_loader->SetServiceWorkerNetworkProvider(
-      std::move(navigation_params->service_worker_network_provider));
-}
-
 }  // namespace
 
 LocalFrameClientImpl::LocalFrameClientImpl(WebLocalFrameImpl* frame)
@@ -761,13 +738,14 @@ DocumentLoader* LocalFrameClientImpl::CreateDocumentLoader(
     const SubstituteData& data,
     ClientRedirectPolicy client_redirect_policy,
     const base::UnguessableToken& devtools_navigation_token,
+    WebFrameLoadType load_type,
+    WebNavigationType navigation_type,
     std::unique_ptr<WebNavigationParams> navigation_params,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   DCHECK(frame);
-
-  WebDocumentLoaderImpl* document_loader = WebDocumentLoaderImpl::Create(
-      frame, request, data, client_redirect_policy, devtools_navigation_token);
-  SetupDocumentLoader(document_loader, std::move(navigation_params));
+  WebDocumentLoaderImpl* document_loader = new WebDocumentLoaderImpl(
+      frame, request, data, client_redirect_policy, devtools_navigation_token,
+      load_type, navigation_type, std::move(navigation_params));
   document_loader->SetExtraData(std::move(extra_data));
   if (web_frame_->Client())
     web_frame_->Client()->DidCreateDocumentLoader(document_loader);
