@@ -162,6 +162,9 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
 
   ~WebViewGuest() override;
 
+  void ClearCodeCache(base::Time remove_since,
+                      uint32_t removal_mask,
+                      const base::Closure& callback);
   void ClearDataInternal(const base::Time remove_since,
                          uint32_t removal_mask,
                          const base::Closure& callback);

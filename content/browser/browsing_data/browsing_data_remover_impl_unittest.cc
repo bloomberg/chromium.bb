@@ -55,6 +55,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/cookie_manager.h"
+#include "services/network/test/test_network_context.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -112,7 +113,8 @@ struct StoragePartitionRemovalData {
   StoragePartitionRemovalData()
       : remove_mask(0),
         quota_storage_remove_mask(0),
-        cookie_deletion_filter(network::mojom::CookieDeletionFilter::New()) {}
+        cookie_deletion_filter(network::mojom::CookieDeletionFilter::New()),
+        remove_code_cache(false) {}
 
   StoragePartitionRemovalData(const StoragePartitionRemovalData& other)
       : remove_mask(other.remove_mask),
@@ -120,7 +122,8 @@ struct StoragePartitionRemovalData {
         remove_begin(other.remove_begin),
         remove_end(other.remove_end),
         origin_matcher(other.origin_matcher),
-        cookie_deletion_filter(other.cookie_deletion_filter.Clone()) {}
+        cookie_deletion_filter(other.cookie_deletion_filter.Clone()),
+        remove_code_cache(other.remove_code_cache) {}
 
   StoragePartitionRemovalData& operator=(
       const StoragePartitionRemovalData& rhs) {
@@ -130,6 +133,7 @@ struct StoragePartitionRemovalData {
     remove_end = rhs.remove_end;
     origin_matcher = rhs.origin_matcher;
     cookie_deletion_filter = rhs.cookie_deletion_filter.Clone();
+    remove_code_cache = rhs.remove_code_cache;
     return *this;
   }
 
@@ -139,6 +143,7 @@ struct StoragePartitionRemovalData {
   base::Time remove_end;
   StoragePartition::OriginMatcherFunction origin_matcher;
   CookieDeletionFilterPtr cookie_deletion_filter;
+  bool remove_code_cache;
 };
 
 net::CanonicalCookie CreateCookieWithHost(const GURL& source) {
@@ -205,6 +210,10 @@ class StoragePartitionRemovalTestStoragePartition
         base::BindOnce(
             &StoragePartitionRemovalTestStoragePartition::AsyncRunCallback,
             base::Unretained(this), std::move(callback)));
+  }
+
+  void ClearCodeCaches(base::OnceClosure callback) override {
+    storage_partition_removal_data_.remove_code_cache = true;
   }
 
   const StoragePartitionRemovalData& GetStoragePartitionRemovalData() const {
@@ -399,6 +408,8 @@ class BrowsingDataRemoverImplTest : public testing::Test {
                                      int remove_mask,
                                      bool include_protected_origins) {
     StoragePartitionRemovalTestStoragePartition storage_partition;
+    network::TestNetworkContext nop_network_context;
+    storage_partition.set_network_context(&nop_network_context);
     remover_->OverrideStoragePartitionForTesting(&storage_partition);
 
     int origin_type_mask = BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB;
@@ -1390,6 +1401,15 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveDownloadsByOrigin) {
   BlockUntilOriginDataRemoved(base::Time(), base::Time::Max(),
                               BrowsingDataRemover::DATA_TYPE_DOWNLOADS,
                               std::move(builder));
+}
+
+TEST_F(BrowsingDataRemoverImplTest, RemoveCodeCache) {
+  RemoveDownloadsTester tester(GetBrowserContext());
+
+  BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
+                                BrowsingDataRemover::DATA_TYPE_CACHE, false);
+  StoragePartitionRemovalData removal_data = GetStoragePartitionRemovalData();
+  EXPECT_TRUE(removal_data.remove_code_cache);
 }
 
 #if BUILDFLAG(ENABLE_REPORTING)

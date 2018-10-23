@@ -416,6 +416,20 @@ void WebViewGuest::DidInitialize(const base::DictionaryValue& create_params) {
   ApplyAttributes(create_params);
 }
 
+void WebViewGuest::ClearCodeCache(base::Time remove_since,
+                                  uint32_t removal_mask,
+                                  const base::Closure& callback) {
+  content::StoragePartition* partition =
+      content::BrowserContext::GetStoragePartition(
+          web_contents()->GetBrowserContext(),
+          web_contents()->GetSiteInstance());
+  DCHECK(partition);
+  base::OnceClosure code_cache_removal_done_callback = base::BindOnce(
+      &WebViewGuest::ClearDataInternal, weak_ptr_factory_.GetWeakPtr(),
+      remove_since, removal_mask, callback);
+  partition->ClearCodeCaches(std::move(code_cache_removal_done_callback));
+}
+
 void WebViewGuest::ClearDataInternal(base::Time remove_since,
                                      uint32_t removal_mask,
                                      const base::Closure& callback) {
@@ -747,8 +761,8 @@ bool WebViewGuest::ClearData(base::Time remove_since,
     return false;
 
   if (removal_mask & webview::WEB_VIEW_REMOVE_DATA_MASK_CACHE) {
-    // First clear http cache data and then clear the rest in
-    // |ClearDataInternal|.
+    // First clear http cache data and then clear the code cache in
+    // |ClearCodeCache| and the rest is cleared in |ClearDataInternal|.
     int render_process_id =
         web_contents()->GetMainFrame()->GetProcess()->GetID();
     // We need to clear renderer cache separately for our process because
@@ -757,7 +771,7 @@ bool WebViewGuest::ClearData(base::Time remove_since,
         render_process_id);
 
     base::OnceClosure cache_removal_done_callback = base::BindOnce(
-        &WebViewGuest::ClearDataInternal, weak_ptr_factory_.GetWeakPtr(),
+        &WebViewGuest::ClearCodeCache, weak_ptr_factory_.GetWeakPtr(),
         remove_since, removal_mask, callback);
 
     // We cannot use |BrowsingDataRemover| here since it doesn't support
