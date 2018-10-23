@@ -987,208 +987,51 @@ WebContents* Browser::OpenURL(const OpenURLParams& params) {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, TabStripModelObserver implementation:
 
-void Browser::TabInsertedAt(TabStripModel* tab_strip_model,
-                            WebContents* contents,
-                            int index,
-                            bool foreground) {
-  SetAsDelegate(contents, true);
-
-  SessionTabHelper::FromWebContents(contents)->SetWindowID(session_id());
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TAB_PARENTED,
-      content::Source<content::WebContents>(contents),
-      content::NotificationService::NoDetails());
-
-  SyncHistoryWithTabs(index);
-
-  // Make sure the loading state is updated correctly, otherwise the throbber
-  // won't start if the page is loading. Note that we don't want to
-  // ScheduleUIUpdate() because the tab may not have been inserted in the UI
-  // yet if this function is called before TabStripModel::TabInsertedAt().
-  UpdateWindowForLoadingStateChanged(contents, true);
-
-  interstitial_observers_.push_back(new InterstitialObserver(this, contents));
-
-  SessionService* session_service =
-      SessionServiceFactory::GetForProfile(profile_);
-  if (session_service) {
-    session_service->TabInserted(contents);
-    int new_active_index = tab_strip_model_->active_index();
-    if (index < new_active_index)
-      session_service->SetSelectedTabInWindow(session_id(),
-                                              new_active_index);
-  }
-}
-
-void Browser::TabClosingAt(TabStripModel* tab_strip_model,
-                           WebContents* contents,
-                           int index) {
-  // Typically, ModalDialogs are closed when the WebContents is destroyed.
-  // However, when the tab is being closed, we must first close the dialogs [to
-  // give them an opportunity to clean up after themselves] while the state
-  // associated with their tab is still valid.
-  WebContentsModalDialogManager::FromWebContents(contents)->CloseAllDialogs();
-
-  // Page load metrics need to be informed that the WebContents will soon be
-  // destroyed, so that upcoming visiblity changes can be ignored.
-  page_load_metrics::MetricsWebContentsObserver* metrics_observer =
-      page_load_metrics::MetricsWebContentsObserver::FromWebContents(contents);
-  metrics_observer->WebContentsWillSoonBeDestroyed();
-
-  exclusive_access_manager_->OnTabClosing(contents);
-  SessionService* session_service =
-      SessionServiceFactory::GetForProfile(profile_);
-  if (session_service)
-    session_service->TabClosing(contents);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TAB_CLOSING,
-      content::Source<NavigationController>(&contents->GetController()),
-      content::NotificationService::NoDetails());
-}
-
-void Browser::TabDetachedAt(WebContents* contents, int index, bool was_active) {
-  if (!tab_strip_model_->closing_all()) {
-    SessionService* session_service =
-        SessionServiceFactory::GetForProfileIfExisting(profile_);
-    if (session_service) {
-      session_service->SetSelectedTabInWindow(session_id(),
-                                              tab_strip_model_->active_index());
+void Browser::OnTabStripModelChanged(TabStripModel* tab_strip_model,
+                                     const TabStripModelChange& change,
+                                     const TabStripSelectionChange& selection) {
+  switch (change.type()) {
+    case TabStripModelChange::kInserted: {
+      for (const auto& delta : change.deltas())
+        OnTabInsertedAt(delta.insert.contents, delta.insert.index);
+      break;
     }
+    case TabStripModelChange::kRemoved: {
+      for (const auto& delta : change.deltas()) {
+        if (delta.remove.will_be_deleted)
+          OnTabClosing(delta.remove.contents);
+
+        OnTabDetached(delta.remove.contents,
+                      delta.remove.contents == selection.old_contents);
+      }
+      break;
+    }
+    case TabStripModelChange::kMoved: {
+      for (const auto& delta : change.deltas())
+        OnTabMoved(delta.move.from_index, delta.move.to_index);
+      break;
+    }
+    case TabStripModelChange::kReplaced: {
+      for (const auto& delta : change.deltas())
+        OnTabReplacedAt(delta.replace.old_contents, delta.replace.new_contents,
+                        delta.replace.index);
+      break;
+    }
+    case TabStripModelChange::kSelectionOnly:
+      break;
   }
 
-  TabDetachedAtImpl(contents, was_active, DETACH_TYPE_DETACH);
-}
+  if (!selection.active_tab_changed())
+    return;
 
-void Browser::TabDeactivated(WebContents* contents) {
-  exclusive_access_manager_->OnTabDeactivated(contents);
-  SearchTabHelper::FromWebContents(contents)->OnTabDeactivated();
+  if (selection.old_contents)
+    OnTabDeactivated(selection.old_contents);
 
-  // Save what the user's currently typing, so it can be restored when we
-  // switch back to this tab.
-  window_->GetLocationBar()->SaveStateToContents(contents);
-}
+  if (tab_strip_model_->empty())
+    return;
 
-void Browser::ActiveTabChanged(WebContents* old_contents,
-                               WebContents* new_contents,
-                               int index,
-                               int reason) {
-// Mac correctly sets the initial background color of new tabs to the theme
-// background color, so it does not need this block of code. Aura should
-// implement this as well.
-// https://crbug.com/719230
-#if !defined(OS_MACOSX)
-  // Copies the background color from an old WebContents to a new one that
-  // replaces it on the screen. This allows the new WebContents to use the
-  // old one's background color as the starting background color, before having
-  // loaded any contents. As a result, we avoid flashing white when moving to
-  // a new tab. (There is also code in RenderFrameHostManager to do something
-  // similar for intra-tab navigations.)
-  if (old_contents && new_contents) {
-    // While GetMainFrame() is guaranteed to return non-null, GetView() is not,
-    // e.g. between WebContents creation and creation of the
-    // RenderWidgetHostView.
-    RenderWidgetHostView* old_view = old_contents->GetMainFrame()->GetView();
-    RenderWidgetHostView* new_view = new_contents->GetMainFrame()->GetView();
-    if (old_view && new_view && old_view->GetBackgroundColor())
-      new_view->SetBackgroundColor(*old_view->GetBackgroundColor());
-  }
-#endif
-
-  base::RecordAction(UserMetricsAction("ActiveTabChanged"));
-
-  // Update the bookmark state, since the BrowserWindow may query it during
-  // OnActiveTabChanged() below.
-  UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_SWITCH);
-
-  // Let the BrowserWindow do its handling.  On e.g. views this changes the
-  // focused object, which should happen before we update the toolbar below,
-  // since the omnibox expects the correct element to already be focused when it
-  // is updated.
-  window_->OnActiveTabChanged(old_contents, new_contents, index, reason);
-
-  exclusive_access_manager_->OnTabDetachedFromView(old_contents);
-
-  // If we have any update pending, do it now.
-  if (chrome_updater_factory_.HasWeakPtrs() && old_contents)
-    ProcessPendingUIUpdates();
-
-  // Propagate the profile to the location bar.
-  UpdateToolbar((reason & CHANGE_REASON_REPLACED) == 0);
-
-  // Update reload/stop state.
-  command_controller_->LoadingStateChanged(new_contents->IsLoading(), true);
-
-  // Update commands to reflect current state.
-  command_controller_->TabStateChanged();
-
-  // Reset the status bubble.
-  StatusBubble* status_bubble = GetStatusBubble();
-  if (status_bubble) {
-    status_bubble->Hide();
-
-    // Show the loading state (if any).
-    status_bubble->SetStatus(CoreTabHelper::FromWebContents(
-        tab_strip_model_->GetActiveWebContents())->GetStatusText());
-  }
-
-  if (HasFindBarController()) {
-    find_bar_controller_->ChangeWebContents(new_contents);
-    find_bar_controller_->find_bar()->MoveWindowIfNecessary(gfx::Rect());
-  }
-
-  // Update sessions (selected tab index and last active time). Don't force
-  // creation of sessions. If sessions doesn't exist, the change will be picked
-  // up by sessions when created.
-  SessionService* session_service =
-      SessionServiceFactory::GetForProfileIfExisting(profile_);
-  if (session_service && !tab_strip_model_->closing_all()) {
-    session_service->SetSelectedTabInWindow(session_id(),
-                                            tab_strip_model_->active_index());
-    SessionTabHelper* session_tab_helper =
-        SessionTabHelper::FromWebContents(new_contents);
-    session_service->SetLastActiveTime(session_id(),
-                                       session_tab_helper->session_id(),
-                                       base::TimeTicks::Now());
-  }
-
-  SearchTabHelper::FromWebContents(new_contents)->OnTabActivated();
-}
-
-void Browser::TabMoved(WebContents* contents,
-                       int from_index,
-                       int to_index) {
-  DCHECK(from_index >= 0 && to_index >= 0);
-  // Notify the history service.
-  SyncHistoryWithTabs(std::min(from_index, to_index));
-}
-
-void Browser::TabReplacedAt(TabStripModel* tab_strip_model,
-                            WebContents* old_contents,
-                            WebContents* new_contents,
-                            int index) {
-  bool was_active = index == tab_strip_model_->active_index();
-  TabDetachedAtImpl(old_contents, was_active, DETACH_TYPE_REPLACE);
-  exclusive_access_manager_->OnTabClosing(old_contents);
-  SessionService* session_service =
-      SessionServiceFactory::GetForProfile(profile_);
-  if (session_service)
-    session_service->TabClosing(old_contents);
-  TabInsertedAt(tab_strip_model, new_contents, index, was_active);
-
-  if (!new_contents->GetController().IsInitialBlankNavigation()) {
-    // Send out notification so that observers are updated appropriately.
-    int entry_count = new_contents->GetController().GetEntryCount();
-    new_contents->GetController().NotifyEntryChanged(
-        new_contents->GetController().GetEntryAtIndex(entry_count - 1));
-  }
-
-  if (session_service) {
-    // The new_contents may end up with a different navigation stack. Force
-    // the session service to update itself.
-    session_service->TabRestored(new_contents,
-                                 tab_strip_model_->IsTabPinned(index));
-  }
+  OnActiveTabChanged(selection.old_contents, selection.new_contents,
+                     selection.new_model.active(), selection.reason);
 }
 
 void Browser::TabPinnedStateChanged(TabStripModel* tab_strip_model,
@@ -2230,6 +2073,201 @@ void Browser::OnTranslateEnabledChanged(content::WebContents* source) {
 
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, Command and state updating (private):
+
+void Browser::OnTabInsertedAt(WebContents* contents, int index) {
+  SetAsDelegate(contents, true);
+
+  SessionTabHelper::FromWebContents(contents)->SetWindowID(session_id());
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_TAB_PARENTED,
+      content::Source<content::WebContents>(contents),
+      content::NotificationService::NoDetails());
+
+  SyncHistoryWithTabs(index);
+
+  // Make sure the loading state is updated correctly, otherwise the throbber
+  // won't start if the page is loading. Note that we don't want to
+  // ScheduleUIUpdate() because the tab may not have been inserted in the UI
+  // yet if this function is called before TabStripModel::TabInsertedAt().
+  UpdateWindowForLoadingStateChanged(contents, true);
+
+  interstitial_observers_.push_back(new InterstitialObserver(this, contents));
+
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfile(profile_);
+  if (session_service) {
+    session_service->TabInserted(contents);
+    int new_active_index = tab_strip_model_->active_index();
+    if (index < new_active_index)
+      session_service->SetSelectedTabInWindow(session_id(), new_active_index);
+  }
+}
+
+void Browser::OnTabClosing(WebContents* contents) {
+  // Typically, ModalDialogs are closed when the WebContents is destroyed.
+  // However, when the tab is being closed, we must first close the dialogs [to
+  // give them an opportunity to clean up after themselves] while the state
+  // associated with their tab is still valid.
+  WebContentsModalDialogManager::FromWebContents(contents)->CloseAllDialogs();
+
+  // Page load metrics need to be informed that the WebContents will soon be
+  // destroyed, so that upcoming visibility changes can be ignored.
+  page_load_metrics::MetricsWebContentsObserver* metrics_observer =
+      page_load_metrics::MetricsWebContentsObserver::FromWebContents(contents);
+  metrics_observer->WebContentsWillSoonBeDestroyed();
+
+  exclusive_access_manager_->OnTabClosing(contents);
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfile(profile_);
+  if (session_service)
+    session_service->TabClosing(contents);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_TAB_CLOSING,
+      content::Source<NavigationController>(&contents->GetController()),
+      content::NotificationService::NoDetails());
+}
+
+void Browser::OnTabDetached(WebContents* contents, bool was_active) {
+  if (!tab_strip_model_->closing_all()) {
+    SessionService* session_service =
+        SessionServiceFactory::GetForProfileIfExisting(profile_);
+    if (session_service) {
+      session_service->SetSelectedTabInWindow(session_id(),
+                                              tab_strip_model_->active_index());
+    }
+  }
+
+  TabDetachedAtImpl(contents, was_active, DETACH_TYPE_DETACH);
+}
+
+void Browser::OnTabDeactivated(WebContents* contents) {
+  exclusive_access_manager_->OnTabDeactivated(contents);
+  SearchTabHelper::FromWebContents(contents)->OnTabDeactivated();
+
+  // Save what the user's currently typing, so it can be restored when we
+  // switch back to this tab.
+  window_->GetLocationBar()->SaveStateToContents(contents);
+}
+
+void Browser::OnActiveTabChanged(WebContents* old_contents,
+                                 WebContents* new_contents,
+                                 int index,
+                                 int reason) {
+// Mac correctly sets the initial background color of new tabs to the theme
+// background color, so it does not need this block of code. Aura should
+// implement this as well.
+// https://crbug.com/719230
+#if !defined(OS_MACOSX)
+  // Copies the background color from an old WebContents to a new one that
+  // replaces it on the screen. This allows the new WebContents to use the
+  // old one's background color as the starting background color, before having
+  // loaded any contents. As a result, we avoid flashing white when moving to
+  // a new tab. (There is also code in RenderFrameHostManager to do something
+  // similar for intra-tab navigations.)
+  if (old_contents && new_contents) {
+    // While GetMainFrame() is guaranteed to return non-null, GetView() is not,
+    // e.g. between WebContents creation and creation of the
+    // RenderWidgetHostView.
+    RenderWidgetHostView* old_view = old_contents->GetMainFrame()->GetView();
+    RenderWidgetHostView* new_view = new_contents->GetMainFrame()->GetView();
+    if (old_view && new_view && old_view->GetBackgroundColor())
+      new_view->SetBackgroundColor(*old_view->GetBackgroundColor());
+  }
+#endif
+
+  base::RecordAction(UserMetricsAction("ActiveTabChanged"));
+
+  // Update the bookmark state, since the BrowserWindow may query it during
+  // OnActiveTabChanged() below.
+  UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_SWITCH);
+
+  // Let the BrowserWindow do its handling.  On e.g. views this changes the
+  // focused object, which should happen before we update the toolbar below,
+  // since the omnibox expects the correct element to already be focused when it
+  // is updated.
+  window_->OnActiveTabChanged(old_contents, new_contents, index, reason);
+
+  exclusive_access_manager_->OnTabDetachedFromView(old_contents);
+
+  // If we have any update pending, do it now.
+  if (chrome_updater_factory_.HasWeakPtrs() && old_contents)
+    ProcessPendingUIUpdates();
+
+  // Propagate the profile to the location bar.
+  UpdateToolbar((reason & CHANGE_REASON_REPLACED) == 0);
+
+  // Update reload/stop state.
+  command_controller_->LoadingStateChanged(new_contents->IsLoading(), true);
+
+  // Update commands to reflect current state.
+  command_controller_->TabStateChanged();
+
+  // Reset the status bubble.
+  StatusBubble* status_bubble = GetStatusBubble();
+  if (status_bubble) {
+    status_bubble->Hide();
+
+    // Show the loading state (if any).
+    status_bubble->SetStatus(
+        CoreTabHelper::FromWebContents(tab_strip_model_->GetActiveWebContents())
+            ->GetStatusText());
+  }
+
+  if (HasFindBarController()) {
+    find_bar_controller_->ChangeWebContents(new_contents);
+    find_bar_controller_->find_bar()->MoveWindowIfNecessary(gfx::Rect());
+  }
+
+  // Update sessions (selected tab index and last active time). Don't force
+  // creation of sessions. If sessions doesn't exist, the change will be picked
+  // up by sessions when created.
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfileIfExisting(profile_);
+  if (session_service && !tab_strip_model_->closing_all()) {
+    session_service->SetSelectedTabInWindow(session_id(),
+                                            tab_strip_model_->active_index());
+    SessionTabHelper* session_tab_helper =
+        SessionTabHelper::FromWebContents(new_contents);
+    session_service->SetLastActiveTime(
+        session_id(), session_tab_helper->session_id(), base::TimeTicks::Now());
+  }
+
+  SearchTabHelper::FromWebContents(new_contents)->OnTabActivated();
+}
+
+void Browser::OnTabMoved(int from_index, int to_index) {
+  DCHECK(from_index >= 0 && to_index >= 0);
+  // Notify the history service.
+  SyncHistoryWithTabs(std::min(from_index, to_index));
+}
+
+void Browser::OnTabReplacedAt(WebContents* old_contents,
+                              WebContents* new_contents,
+                              int index) {
+  bool was_active = index == tab_strip_model_->active_index();
+  TabDetachedAtImpl(old_contents, was_active, DETACH_TYPE_REPLACE);
+  exclusive_access_manager_->OnTabClosing(old_contents);
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfile(profile_);
+  if (session_service)
+    session_service->TabClosing(old_contents);
+  OnTabInsertedAt(new_contents, index);
+
+  if (!new_contents->GetController().IsInitialBlankNavigation()) {
+    // Send out notification so that observers are updated appropriately.
+    int entry_count = new_contents->GetController().GetEntryCount();
+    new_contents->GetController().NotifyEntryChanged(
+        new_contents->GetController().GetEntryAtIndex(entry_count - 1));
+  }
+
+  if (session_service) {
+    // The new_contents may end up with a different navigation stack. Force
+    // the session service to update itself.
+    session_service->TabRestored(new_contents,
+                                 tab_strip_model_->IsTabPinned(index));
+  }
+}
 
 void Browser::OnDevToolsAvailabilityChanged() {
   using DTPH = policy::DeveloperToolsPolicyHandler;
