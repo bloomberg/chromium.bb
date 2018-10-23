@@ -204,9 +204,11 @@ public class JniProcessor extends AbstractProcessor {
      * Gets method name for methods inside of NativeClass
      */
     String getNativeMethodName(String packageName, String className, String oldMethodName) {
-        // e.g. org_chromium_base_fooclass_bar()
-        String descriptor =
-                packageName.replaceAll("\\.", "_") + "_" + className + "_" + oldMethodName;
+        // e.g. org.chromium.base.Foo_Class.bar
+        // => org_chromium_base_Foo_1Class_bar()
+        String descriptor = String.format("%s.%s.%s", packageName, className, oldMethodName)
+                                    .replaceAll("_", "_1")
+                                    .replaceAll("\\.", "_");
         if (USE_HASH_FOR_METHODS) {
             // Must start with a character.
             byte[] hash = sNativeMethodHashFunction.digest(descriptor.getBytes(Charsets.UTF_8));
