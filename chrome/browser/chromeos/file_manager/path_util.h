@@ -63,9 +63,10 @@ std::vector<std::string> GetCrostiniMountOptions(
     const std::string& container_public_key);
 
 // Convert a cracked url to a path inside the Crostini VM.
-std::string ConvertFileSystemURLToPathInsideCrostini(
+bool ConvertFileSystemURLToPathInsideCrostini(
     Profile* profile,
-    const storage::FileSystemURL& file_system_url);
+    const storage::FileSystemURL& file_system_url,
+    base::FilePath* inside);
 
 // DEPRECATED. Use |ConvertToContentUrls| instead.
 // While this function can convert paths under Downloads, /media/removable
