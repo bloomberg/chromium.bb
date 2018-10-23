@@ -2907,6 +2907,8 @@ crbug.com/893480 external/wpt/infrastructure/testdriver/actions/eventOrder.html 
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/wasm/webapi/abort.any.worker.html [ Timeout ]
+crbug.com/626703 external/wpt/wasm/webapi/abort.any.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-will-change/will-change-abspos-cb-dynamic-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-will-change/will-change-abspos-cb-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-conditional/at-supports-040.html [ Failure ]
