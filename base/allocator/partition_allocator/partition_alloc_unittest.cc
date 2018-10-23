@@ -2211,6 +2211,24 @@ TEST_F(PartitionAllocTest, ZeroFill) {
   }
 }
 
+TEST_F(PartitionAllocTest, Bug_897585) {
+  // Need sizes big enough to be direct mapped and a delta small enough to
+  // allow re-use of the page when cookied. These numbers fall out of the
+  // test case in the indicated bug.
+  size_t kInitialSize = 983040;
+  size_t kDesiredSize = 983100;
+  void* ptr = PartitionAllocGenericFlags(generic_allocator.root(),
+                                         PartitionAllocReturnNull, kInitialSize,
+                                         nullptr);
+  ASSERT_NE(nullptr, ptr);
+  ptr = PartitionReallocGenericFlags(generic_allocator.root(),
+                                     PartitionAllocReturnNull, ptr,
+                                     kDesiredSize, nullptr);
+  ASSERT_NE(nullptr, ptr);
+  memset(ptr, 0xbd, kDesiredSize);
+  PartitionFree(ptr);
+}
+
 }  // namespace internal
 }  // namespace base
 
