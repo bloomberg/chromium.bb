@@ -1249,7 +1249,7 @@ std::vector<int> TabStripModel::GetIndicesForCommand(int index) const {
 }
 
 bool TabStripModel::IsNewTabAtEndOfTabStrip(WebContents* contents) const {
-  const GURL& url = contents->GetURL();
+  const GURL& url = contents->GetLastCommittedURL();
   return url.SchemeIs(content::kChromeUIScheme) &&
          url.host_piece() == chrome::kChromeUINewTabHost &&
          contents == GetWebContentsAtImpl(count() - 1) &&

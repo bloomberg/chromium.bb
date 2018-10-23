@@ -31,19 +31,17 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::SiteInstance;
 using content::WebContents;
-using content::WebContentsTester;
 using extensions::Extension;
 
 namespace {
@@ -444,7 +442,8 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness,
                           public testing::WithParamInterface<bool> {
  public:
   std::unique_ptr<WebContents> CreateWebContents() {
-    return WebContents::Create(WebContents::CreateParams(profile()));
+    return content::WebContentsTester::CreateTestWebContents(profile(),
+                                                             nullptr);
   }
 
   std::unique_ptr<WebContents> CreateWebContentsWithSharedRPH(
@@ -1924,10 +1923,9 @@ TEST_P(TabStripModelTest, NavigationForgetsOpeners) {
   strip.CloseAllTabs();
 }
 
-// A test that the forgetting behavior tested in NavigationForgetsOpeners above
-// doesn't cause the opener relationship for a New Tab opened at the end of the
-// TabStrip to be reset (Test 1 below), unless another any other tab is
-// selected (Test 2 below).
+// A test for the "quick look" use case where the user can open a new tab at the
+// end of the tab strip, do one search, and then close the tab to get back to
+// where they were.
 TEST_P(TabStripModelTest, NavigationForgettingDoesntAffectNewTab) {
   TabStripDummyDelegate delegate;
   TabStripModel strip(&delegate, profile());
@@ -1952,19 +1950,29 @@ TEST_P(TabStripModelTest, NavigationForgettingDoesntAffectNewTab) {
   strip.ActivateTabAt(2, true);
 
   // TEST 1: A tab in the middle of a bunch of tabs is active and the user opens
-  // a new tab at the end of the strip, closing that new tab will select the tab
+  // a new tab at the end of the strip. Closing that new tab will select the tab
   // that they were last on.
 
   // Open a new tab at the end of the TabStrip.
-  strip.AddWebContents(CreateWebContents(), -1, ui::PAGE_TRANSITION_TYPED,
-                       TabStripModel::ADD_ACTIVE);
+  std::unique_ptr<WebContents> new_tab_contents = CreateWebContents();
+  WebContents* raw_new_tab_contents = new_tab_contents.get();
+  content::WebContentsTester::For(raw_new_tab_contents)
+      ->NavigateAndCommit(GURL("chrome://newtab"));
+  strip.AddWebContents(std::move(new_tab_contents), -1,
+                       ui::PAGE_TRANSITION_TYPED, TabStripModel::ADD_ACTIVE);
+
+  // The opener should still be remembered after one navigation.
+  content::NavigationSimulator::CreateBrowserInitiated(
+      GURL("http://example.com"), raw_new_tab_contents)
+      ->Start();
+  strip.TabNavigating(raw_new_tab_contents, ui::PAGE_TRANSITION_TYPED);
 
   // At this point, if we close this tab the last selected one should be
   // re-selected.
   strip.CloseWebContentsAt(strip.count() - 1, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(raw_page_c_contents, strip.GetWebContentsAt(strip.active_index()));
 
-  // TEST 2 As above, but the user selects another tab in the strip and thus
+  // TEST 2: As above, but the user selects another tab in the strip and thus
   // that new tab's opener relationship is forgotten.
 
   // Open a new tab again.
@@ -1978,6 +1986,28 @@ TEST_P(TabStripModelTest, NavigationForgettingDoesntAffectNewTab) {
   strip.ActivateTabAt(strip.count() - 1, true);
 
   // Now close the last tab. The next adjacent should be selected.
+  strip.CloseWebContentsAt(strip.count() - 1, TabStripModel::CLOSE_NONE);
+  EXPECT_EQ(raw_page_d_contents, strip.GetWebContentsAt(strip.active_index()));
+
+  // TEST 3: As above, but the user does multiple navigations and thus the tab's
+  // opener relationship is forgotten.
+  strip.ActivateTabAt(2, true);
+
+  // Open a new tab but navigate away from the new tab page.
+  new_tab_contents = CreateWebContents();
+  raw_new_tab_contents = new_tab_contents.get();
+  strip.AddWebContents(std::move(new_tab_contents), -1,
+                       ui::PAGE_TRANSITION_TYPED, TabStripModel::ADD_ACTIVE);
+  content::WebContentsTester::For(raw_new_tab_contents)
+      ->NavigateAndCommit(GURL("http://example.org"));
+
+  // Do another navigation. The opener should be forgotten.
+  content::NavigationSimulator::CreateBrowserInitiated(
+      GURL("http://example.com"), raw_new_tab_contents)
+      ->Start();
+  strip.TabNavigating(raw_new_tab_contents, ui::PAGE_TRANSITION_TYPED);
+
+  // Close the tab. The next adjacent should be selected.
   strip.CloseWebContentsAt(strip.count() - 1, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(raw_page_d_contents, strip.GetWebContentsAt(strip.active_index()));
 
