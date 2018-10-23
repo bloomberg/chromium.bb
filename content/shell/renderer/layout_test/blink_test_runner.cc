@@ -809,7 +809,7 @@ void BlinkTestRunner::ApplyTestConfiguration(
   interfaces->SetMainView(render_view()->GetWebView());
 
   interfaces->SetTestIsRunning(true);
-  interfaces->ConfigureForTestWithURL(params->test_url);
+  interfaces->ConfigureForTestWithURL(params->test_url, params->protocol_mode);
 }
 
 void BlinkTestRunner::OnReplicateTestConfiguration(

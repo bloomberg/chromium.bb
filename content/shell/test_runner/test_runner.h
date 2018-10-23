@@ -112,6 +112,7 @@ class TestRunner : public WebTestRunner {
   void SetV8CacheDisabled(bool);
   void setShouldDumpAsText(bool);
   void setShouldDumpAsMarkup(bool);
+  void setShouldDumpAsLayout(bool);
   void setCustomTextOutput(const std::string& text);
   void setShouldGeneratePixelResults(bool);
   void setShouldDumpFrameLoadCallbacks(bool);
@@ -306,24 +307,34 @@ class TestRunner : public WebTestRunner {
   // ignores any that may be present.
   void DumpEditingCallbacks();
 
-  // This function sets a flag that tells the test_shell to dump pages as
-  // plain text, rather than as a text representation of the renderer's state.
-  // The pixel results will not be generated for this test.
+  // This function sets a flag that tells the test runner to dump pages as
+  // plain text. The pixel results will not be generated for this test.
+  // It has higher priority than DumpAsMarkup() and DumpAsLayout().
   void DumpAsText();
 
   // This function sets a flag that tells the test runner to dump pages as
   // the DOM contents, rather than as a text representation of the renderer's
-  // state. The pixel results will not be generated for this test.
+  // state. The pixel results will not be generated for this test. It has
+  // higher priority than DumpAsLayout(), but lower than DumpAsText().
   void DumpAsMarkup();
 
-  // This function sets a flag that tells the test_shell to dump pages as
-  // plain text, rather than as a text representation of the renderer's state.
-  // It will also generate a pixel dump for the test.
+  // This function sets a flag that tells the test runner to dump pages as
+  // plain text. It will also generate a pixel dump for the test.
   void DumpAsTextWithPixelResults();
 
+  // This function sets a flag that tells the test runner to dump pages as
+  // text representation of the layout. The pixel results will not be generated
+  // for this test. It has lower priority than DumpAsText() and DumpAsMarkup().
+  void DumpAsLayout();
+
+  // This function sets a flag that tells the test runner to dump pages as
+  // text representation of the layout. It will also generate a pixel dump for
+  // the test.
+  void DumpAsLayoutWithPixelResults();
+
   // This function sets a flag that tells the test runner to recursively dump
-  // all frames as text, markup or layout if DumpAsText, DumpAsMarkup or none
-  // of them is effective.
+  // all frames as text, markup or layout depending on which of DumpAsText,
+  // DumpAsMarkup and DumpAsLayout is effective.
   void DumpChildFrames();
 
   // This function sets a flag that tells the test runner to print out the

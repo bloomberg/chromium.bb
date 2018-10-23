@@ -68,7 +68,6 @@ class SingleTestRunner(object):
         self._timeout_ms = test_input.timeout_ms
         self._worker_name = worker_name
         self._test_name = test_input.test_name
-        self._should_run_pixel_test_first = test_input.should_run_pixel_test_first
         self._reference_files = test_input.reference_files
 
         # If this is a virtual test that uses the default flags instead of the
@@ -184,7 +183,7 @@ class SingleTestRunner(object):
             return
         # We usually don't want to create a new baseline if there isn't one
         # existing (which usually means this baseline isn't necessary, e.g.
-        # an image-first test without text expectation files). However, in the
+        # an image-only test without text expectation files). However, in the
         # following cases, we do:
         # 1. The failure is MISSING; a baseline is apparently needed.
         # 2. A testharness.js test fails assertions: testharness.js tests
@@ -306,15 +305,9 @@ class SingleTestRunner(object):
         compare_txt_fn = (self._compare_text, (expected_driver_output.text, driver_output.text))
         compare_audio_fn = (self._compare_audio, (expected_driver_output.audio, driver_output.audio))
 
-        if self._should_run_pixel_test_first:
-            if driver_output.image_hash:
-                compare_functions.append(compare_image_fn)
-            elif not is_testharness_test:
-                compare_functions.append(compare_txt_fn)
-        else:
-            if not is_testharness_test:
-                compare_functions.append(compare_txt_fn)
-            compare_functions.append(compare_image_fn)
+        if not is_testharness_test:
+            compare_functions.append(compare_txt_fn)
+        compare_functions.append(compare_image_fn)
         compare_functions.append(compare_audio_fn)
 
         for func, args in compare_functions:

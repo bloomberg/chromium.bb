@@ -174,6 +174,8 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void DumpAsMarkup();
   void DumpAsText();
   void DumpAsTextWithPixelResults();
+  void DumpAsLayout();
+  void DumpAsLayoutWithPixelResults();
   void DumpChildFrames();
   void DumpBackForwardList();
   void DumpCreateView();
@@ -431,6 +433,9 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("dumpAsText", &TestRunnerBindings::DumpAsText)
       .SetMethod("dumpAsTextWithPixelResults",
                  &TestRunnerBindings::DumpAsTextWithPixelResults)
+      .SetMethod("dumpAsLayout", &TestRunnerBindings::DumpAsLayout)
+      .SetMethod("dumpAsLayoutWithPixelResults",
+                 &TestRunnerBindings::DumpAsLayoutWithPixelResults)
       .SetMethod("dumpBackForwardList",
                  &TestRunnerBindings::DumpBackForwardList)
       .SetMethod("dumpChildFrames", &TestRunnerBindings::DumpChildFrames)
@@ -1036,6 +1041,16 @@ void TestRunnerBindings::DumpAsTextWithPixelResults() {
     runner_->DumpAsTextWithPixelResults();
 }
 
+void TestRunnerBindings::DumpAsLayout() {
+  if (runner_)
+    runner_->DumpAsLayout();
+}
+
+void TestRunnerBindings::DumpAsLayoutWithPixelResults() {
+  if (runner_)
+    runner_->DumpAsLayoutWithPixelResults();
+}
+
 void TestRunnerBindings::DumpChildFrames() {
   if (runner_)
     runner_->DumpChildFrames();
@@ -1631,6 +1646,11 @@ void TestRunner::setShouldDumpAsText(bool value) {
 
 void TestRunner::setShouldDumpAsMarkup(bool value) {
   layout_test_runtime_flags_.set_dump_as_markup(value);
+  OnLayoutTestRuntimeFlagsChanged();
+}
+
+void TestRunner::setShouldDumpAsLayout(bool value) {
+  layout_test_runtime_flags_.set_dump_as_layout(value);
   OnLayoutTestRuntimeFlagsChanged();
 }
 
@@ -2291,6 +2311,18 @@ void TestRunner::DumpAsText() {
 
 void TestRunner::DumpAsTextWithPixelResults() {
   layout_test_runtime_flags_.set_dump_as_text(true);
+  layout_test_runtime_flags_.set_generate_pixel_results(true);
+  OnLayoutTestRuntimeFlagsChanged();
+}
+
+void TestRunner::DumpAsLayout() {
+  layout_test_runtime_flags_.set_dump_as_layout(true);
+  layout_test_runtime_flags_.set_generate_pixel_results(false);
+  OnLayoutTestRuntimeFlagsChanged();
+}
+
+void TestRunner::DumpAsLayoutWithPixelResults() {
+  layout_test_runtime_flags_.set_dump_as_layout(true);
   layout_test_runtime_flags_.set_generate_pixel_results(true);
   OnLayoutTestRuntimeFlagsChanged();
 }

@@ -176,7 +176,7 @@ layer at (0,0) size 800x34
     tests.add('failures/unexpected/checksum-with-matching-image.html',
               actual_checksum='text-image-checksum_fail-checksum')
     tests.add('failures/unexpected/image-only.html',
-              expected_text=None, actual_text='text',
+              expected_text=None, actual_text=None,
               actual_image='image-only_fail-pngtEXtchecksum\x00checksum_fail',
               actual_checksum='image-only_fail-checksum')
     tests.add('failures/unexpected/skip_pass.html')

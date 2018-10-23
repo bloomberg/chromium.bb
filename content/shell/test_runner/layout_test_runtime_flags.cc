@@ -15,6 +15,7 @@ void LayoutTestRuntimeFlags::Reset() {
 
   set_dump_as_text(false);
   set_dump_as_markup(false);
+  set_dump_as_layout(false);
   set_dump_child_frames(false);
 
   set_is_printing(false);

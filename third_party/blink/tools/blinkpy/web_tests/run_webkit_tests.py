@@ -227,15 +227,6 @@ def parse_args(args):
                 dest='smoke',
                 action='store_false',
                 help='Do not run just the SmokeTests'),
-            optparse.make_option(
-                '--image-first-tests',
-                action='append',
-                default=[],
-                dest='image_first_tests',
-                help=('A directory (or test) where the test result will only be compared with the '
-                      'image baseline if an image baseline is available, and fall back to comparison '
-                      'with the text baseline when image baselines are missing. Specify multiple times '
-                      'to add multiple directories/tests.')),
         ]))
 
     option_group_definitions.append(
@@ -577,12 +568,6 @@ def _set_up_derived_options(port, options, args):
 
     if not options.seed:
         options.seed = port.host.time()
-
-    if not options.image_first_tests:
-        image_first_tests_path = port.host.filesystem.join(port.layout_tests_dir(), 'ImageFirstTests')
-        if port.host.filesystem.exists(image_first_tests_path):
-            contents = port.host.filesystem.read_text_file(image_first_tests_path)
-            options.image_first_tests.extend(line for line in contents.splitlines(False) if line)
 
 
 def run(port, options, args, printer):
