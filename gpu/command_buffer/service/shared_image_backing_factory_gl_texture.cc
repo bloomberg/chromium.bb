@@ -347,7 +347,10 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
 
   gfx::Rect cleared_rect;
   scoped_refptr<gl::GLImage> image;
-  GLuint internal_format = format_info.internal_format;
+  // TODO(piman): We pretend the texture was created in an ES2 context, so that
+  // it can be used in other ES2 contexts, and so we have to pass gl_format as
+  // the internal format in the LevelInfo. https://crbug.com/628064
+  GLuint level_info_internal_format = format_info.gl_format;
   if (use_buffer) {
     bool is_cleared = false;
     image = image_factory_->CreateAnonymousImage(
@@ -361,7 +364,7 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
     }
     if (is_cleared)
       cleared_rect = gfx::Rect(size);
-    internal_format = image->GetInternalFormat();
+    level_info_internal_format = image->GetInternalFormat();
     if (color_space.IsValid())
       image->SetColorSpace(color_space);
   } else if (format_info.use_storage) {
@@ -403,10 +406,7 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
     texture->sampler_state_.mag_filter = GL_LINEAR;
     texture->sampler_state_.wrap_r = GL_CLAMP_TO_EDGE;
     texture->sampler_state_.wrap_s = GL_CLAMP_TO_EDGE;
-    // TODO(piman): We pretend the texture was created in an ES2 context, so
-    // that it can be used in other ES2 contexts, and so we have to pass
-    // gl_format as the internal format. https://crbug.com/628064
-    texture->SetLevelInfo(target, 0, format_info.gl_format, size.width(),
+    texture->SetLevelInfo(target, 0, level_info_internal_format, size.width(),
                           size.height(), 1, 0, format_info.gl_format,
                           format_info.gl_type, cleared_rect);
     if (format_info.swizzle)
