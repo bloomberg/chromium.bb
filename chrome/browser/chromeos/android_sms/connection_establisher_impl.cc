@@ -19,20 +19,25 @@ namespace android_sms {
 const char ConnectionEstablisherImpl::kStartStreamingMessage[] =
     "start_streaming_connection";
 
+const char ConnectionEstablisherImpl::kResumeStreamingMessage[] =
+    "resume_streaming_connection";
+
 ConnectionEstablisherImpl::ConnectionEstablisherImpl() = default;
 ConnectionEstablisherImpl::~ConnectionEstablisherImpl() = default;
 
 void ConnectionEstablisherImpl::EstablishConnection(
-    content::ServiceWorkerContext* service_worker_context) {
+    content::ServiceWorkerContext* service_worker_context,
+    ConnectionMode connection_mode) {
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &ConnectionEstablisherImpl::SendStartStreamingMessageIfNotConnected,
-          base::Unretained(this), service_worker_context));
+          base::Unretained(this), service_worker_context, connection_mode));
 }
 
 void ConnectionEstablisherImpl::SendStartStreamingMessageIfNotConnected(
-    content::ServiceWorkerContext* service_worker_context) {
+    content::ServiceWorkerContext* service_worker_context,
+    ConnectionMode connection_mode) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (is_connected_) {
     PA_LOG(INFO) << "Connection already exists. Skipped sending start "
@@ -41,8 +46,16 @@ void ConnectionEstablisherImpl::SendStartStreamingMessageIfNotConnected(
   }
 
   blink::TransferableMessage msg;
-  msg.owned_encoded_message =
-      blink::EncodeStringMessage(base::UTF8ToUTF16(kStartStreamingMessage));
+  switch (connection_mode) {
+    case ConnectionMode::kStartConnection:
+      msg.owned_encoded_message =
+          blink::EncodeStringMessage(base::UTF8ToUTF16(kStartStreamingMessage));
+      break;
+    case ConnectionMode::kResumeExistingConnection:
+      msg.owned_encoded_message = blink::EncodeStringMessage(
+          base::UTF8ToUTF16(kResumeStreamingMessage));
+      break;
+  }
   msg.encoded_message = msg.owned_encoded_message;
 
   PA_LOG(INFO) << "Dispatching start streaming message to service worker.";
