@@ -222,17 +222,6 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
       .ToConstraintSpace(writing_mode);
 }
 
-LayoutUnit
-NGConstraintSpace::PercentageResolutionInlineSizeForParentWritingMode() const {
-  if (!IsOrthogonalWritingModeRoot())
-    return PercentageResolutionSize().inline_size;
-  if (PercentageResolutionSize().block_size != NGSizeIndefinite)
-    return PercentageResolutionSize().block_size;
-  if (IsHorizontalWritingMode(GetWritingMode()))
-    return InitialContainingBlockSize().height;
-  return InitialContainingBlockSize().width;
-}
-
 bool NGConstraintSpace::operator==(const NGConstraintSpace& other) const {
   return available_size_ == other.available_size_ &&
          percentage_resolution_size_ == other.percentage_resolution_size_ &&
