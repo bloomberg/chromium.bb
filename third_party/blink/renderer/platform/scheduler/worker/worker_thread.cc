@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/child/webthread_impl_for_worker_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/worker_thread.h"
 
 #include <memory>
 #include "base/bind.h"
@@ -18,8 +18,7 @@
 namespace blink {
 namespace scheduler {
 
-WebThreadImplForWorkerScheduler::WebThreadImplForWorkerScheduler(
-    const ThreadCreationParams& params)
+WorkerThread::WorkerThread(const ThreadCreationParams& params)
     : thread_(new base::Thread(params.name ? params.name : std::string())),
       thread_type_(params.thread_type),
       worker_scheduler_proxy_(params.frame_or_worker_scheduler
@@ -31,17 +30,17 @@ WebThreadImplForWorkerScheduler::WebThreadImplForWorkerScheduler(
   thread_task_runner_ = thread_->task_runner();
 }
 
-void WebThreadImplForWorkerScheduler::Init() {
+void WorkerThread::Init() {
   base::WaitableEvent completion(
       base::WaitableEvent::ResetPolicy::AUTOMATIC,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   thread_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&WebThreadImplForWorkerScheduler::InitOnThread,
+      FROM_HERE, base::BindOnce(&WorkerThread::InitOnThread,
                                 base::Unretained(this), &completion));
   completion.Wait();
 }
 
-WebThreadImplForWorkerScheduler::~WebThreadImplForWorkerScheduler() {
+WorkerThread::~WorkerThread() {
   // We want to avoid blocking main thread when the thread was already
   // shut down, but calling ShutdownOnThread twice does not cause any problems.
   if (!was_shutdown_on_thread_.IsSet()) {
@@ -49,16 +48,14 @@ WebThreadImplForWorkerScheduler::~WebThreadImplForWorkerScheduler() {
         base::WaitableEvent::ResetPolicy::AUTOMATIC,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     thread_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&WebThreadImplForWorkerScheduler::ShutdownOnThread,
-                       base::Unretained(this), &completion));
+        FROM_HERE, base::BindOnce(&WorkerThread::ShutdownOnThread,
+                                  base::Unretained(this), &completion));
     completion.Wait();
   }
   thread_->Stop();
 }
 
-void WebThreadImplForWorkerScheduler::InitOnThread(
-    base::WaitableEvent* completion) {
+void WorkerThread::InitOnThread(base::WaitableEvent* completion) {
   // TODO(alexclarke): Do we need to unify virtual time for workers and the
   // main thread?
   non_main_thread_scheduler_ = CreateNonMainThreadScheduler();
@@ -70,8 +67,7 @@ void WebThreadImplForWorkerScheduler::InitOnThread(
   completion->Signal();
 }
 
-void WebThreadImplForWorkerScheduler::ShutdownOnThread(
-    base::WaitableEvent* completion) {
+void WorkerThread::ShutdownOnThread(base::WaitableEvent* completion) {
   was_shutdown_on_thread_.Set();
 
   task_queue_ = nullptr;
@@ -83,25 +79,25 @@ void WebThreadImplForWorkerScheduler::ShutdownOnThread(
 }
 
 std::unique_ptr<NonMainThreadSchedulerImpl>
-WebThreadImplForWorkerScheduler::CreateNonMainThreadScheduler() {
+WorkerThread::CreateNonMainThreadScheduler() {
   return NonMainThreadSchedulerImpl::Create(thread_type_,
                                             worker_scheduler_proxy_.get());
 }
 
-void WebThreadImplForWorkerScheduler::WillDestroyCurrentMessageLoop() {
+void WorkerThread::WillDestroyCurrentMessageLoop() {
   ShutdownOnThread(nullptr);
 }
 
-blink::PlatformThreadId WebThreadImplForWorkerScheduler::ThreadId() const {
+blink::PlatformThreadId WorkerThread::ThreadId() const {
   return thread_->GetThreadId();
 }
 
-blink::ThreadScheduler* WebThreadImplForWorkerScheduler::Scheduler() {
+blink::ThreadScheduler* WorkerThread::Scheduler() {
   return non_main_thread_scheduler_.get();
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-WebThreadImplForWorkerScheduler::GetTaskRunner() const {
+scoped_refptr<base::SingleThreadTaskRunner> WorkerThread::GetTaskRunner()
+    const {
   return task_runner_;
 }
 

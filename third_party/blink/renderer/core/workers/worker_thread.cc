@@ -50,8 +50,8 @@
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/scheduler/child/webthread_impl_for_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/worker_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
@@ -414,13 +414,13 @@ void WorkerThread::InitializeSchedulerOnWorkerThread(
     base::WaitableEvent* waitable_event) {
   DCHECK(IsCurrentThread());
   DCHECK(!worker_scheduler_);
-  scheduler::WebThreadImplForWorkerScheduler& web_thread_for_worker =
-      static_cast<scheduler::WebThreadImplForWorkerScheduler&>(
+  scheduler::WorkerThread& worker_thread =
+      static_cast<scheduler::WorkerThread&>(
           GetWorkerBackingThread().BackingThread().PlatformThread());
   worker_scheduler_ = std::make_unique<scheduler::WorkerScheduler>(
       static_cast<scheduler::WorkerThreadScheduler*>(
-          web_thread_for_worker.GetNonMainThreadScheduler()),
-      web_thread_for_worker.worker_scheduler_proxy());
+          worker_thread.GetNonMainThreadScheduler()),
+      worker_thread.worker_scheduler_proxy());
   waitable_event->Signal();
 }
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_CHILD_WEBTHREAD_IMPL_FOR_WORKER_SCHEDULER_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_CHILD_WEBTHREAD_IMPL_FOR_WORKER_SCHEDULER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_WORKER_WORKER_THREAD_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_WORKER_WORKER_THREAD_H_
 
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
@@ -28,12 +28,18 @@ class NonMainThreadSchedulerImpl;
 class NonMainThreadTaskQueue;
 class WorkerSchedulerProxy;
 
-class PLATFORM_EXPORT WebThreadImplForWorkerScheduler
+// Thread implementation for a thread created by Blink. Although the name says
+// "worker", the thread represented by this class is used not only for Web
+// Workers but for many other use cases, like for WebAudio, Web Database, etc.
+//
+// TODO(yutak): This could be a misnomer, as we already have WorkerThread in
+// core/ (though this is under blink::scheduler namespace).
+class PLATFORM_EXPORT WorkerThread
     : public Thread,
       public base::MessageLoopCurrent::DestructionObserver {
  public:
-  explicit WebThreadImplForWorkerScheduler(const ThreadCreationParams& params);
-  ~WebThreadImplForWorkerScheduler() override;
+  explicit WorkerThread(const ThreadCreationParams& params);
+  ~WorkerThread() override;
 
   // Thread implementation.
   void Init() override;
@@ -79,4 +85,4 @@ class PLATFORM_EXPORT WebThreadImplForWorkerScheduler
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_CHILD_WEBTHREAD_IMPL_FOR_WORKER_SCHEDULER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_WORKER_WORKER_THREAD_H_
