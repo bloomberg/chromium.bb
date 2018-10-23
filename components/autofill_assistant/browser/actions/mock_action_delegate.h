@@ -95,6 +95,7 @@ class MockActionDelegate : public ActionDelegate {
 
   void SetFieldValue(const std::vector<std::string>& selectors,
                      const std::string& value,
+                     bool ignored_simulate_key_presses,
                      base::OnceCallback<void(bool)> callback) {
     OnSetFieldValue(selectors, value, callback);
   }

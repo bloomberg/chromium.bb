@@ -105,9 +105,12 @@ class ActionDelegate {
                                 base::OnceCallback<void(bool)> callback) = 0;
 
   // Set the |value| of field |selectors| and return the result through
-  // |callback|.
+  // |callback|. If |simulate_key_presses| is true, the value will be set by
+  // clicking the field and then simulating key presses, otherwise the `value`
+  // attribute will be set directly.
   virtual void SetFieldValue(const std::vector<std::string>& selectors,
                              const std::string& value,
+                             bool simulate_key_presses,
                              base::OnceCallback<void(bool)> callback) = 0;
 
   // Return the outerHTML of an element given by |selectors|.

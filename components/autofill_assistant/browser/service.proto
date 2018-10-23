@@ -309,6 +309,10 @@ message UseAddressProto {
     optional AddressField address_field = 1;
 
     optional ElementReferenceProto element = 2;
+
+    // Whether we should simulate actual key presses when filling |element| with
+    // its corresponding value.
+    optional bool simulate_key_presses = 3;
   }
 
   // An optional name to allow to handle multiple addresses selection (for

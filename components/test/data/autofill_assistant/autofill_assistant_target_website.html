@@ -64,6 +64,9 @@ found in the LICENSE file.
     <div>
       <input id="input5" type="field" value="helloworld5" />
     </div>
+    <div>
+      <input id="uppercase_input" type="field" value="HELLOWORLD6" />
+    </div>
 
     <div id="testOuterHtml"><span>Span</span><p>Paragraph</p></div>
 
@@ -71,5 +74,12 @@ found in the LICENSE file.
 
     <iframe id="iframe" name="test_iframe" width="100%" height="500" src=
         "autofill_assistant_target_website_iframe_one.html"></iframe>
+
+    <script>
+      let upperCaseInput = document.querySelector("#uppercase_input");
+      document.addEventListener('keyup', () => {
+        upperCaseInput.value = upperCaseInput.value.toUpperCase();
+      });
+    </script>
   </body>
 </html>

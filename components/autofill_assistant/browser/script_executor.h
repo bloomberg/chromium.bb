@@ -79,6 +79,7 @@ class ScriptExecutor : public ActionDelegate {
                     base::OnceCallback<void(bool)> callback) override;
   void SetFieldValue(const std::vector<std::string>& selectors,
                      const std::string& value,
+                     bool simulate_key_presses,
                      base::OnceCallback<void(bool)> callback) override;
   void GetOuterHtml(
       const std::vector<std::string>& selectors,

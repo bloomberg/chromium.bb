@@ -392,6 +392,7 @@ void AutofillAction::SetFallbackFieldValuesSequentially(
       ExtractSelectors(
           required_fields.Get(required_fields_index).element().selectors()),
       fallback_value,
+      required_fields.Get(required_fields_index).simulate_key_presses(),
       base::BindOnce(&AutofillAction::OnSetFallbackFieldValue,
                      weak_ptr_factory_.GetWeakPtr(), guid, delegate,
                      required_fields_index));
