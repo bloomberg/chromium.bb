@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/arc/downloads_watcher/arc_downloads_watcher_service.h"
+#include "chrome/browser/chromeos/arc/file_system_watcher/arc_file_system_watcher_service.h"
 
 #include <string.h>
 
@@ -39,8 +39,21 @@ namespace arc {
 
 namespace {
 
-const base::FilePath::CharType kAndroidDownloadDir[] =
+// The Downloads path inside ARC container. This will be the path that
+// is used in MediaScanner.scanFile request.
+constexpr base::FilePath::CharType kAndroidDownloadDir[] =
     FILE_PATH_LITERAL("/storage/emulated/0/Download");
+
+// The removable media path in ChromeOS. This is the actual directory to be
+// watched.
+constexpr base::FilePath::CharType kCrosRemovableMediaDir[] =
+    FILE_PATH_LITERAL("/media/removable");
+
+// The removable media path inside ARC container. This will be the path that
+// is used in MediaScanner.scanFile request. The /var is mandatory here because
+// it is the ARC container side path name.
+constexpr base::FilePath::CharType kAndroidRemovableMediaDir[] =
+    FILE_PATH_LITERAL("/var/run/arc/media/removable");
 
 // How long to wait for new inotify events before building the updated timestamp
 // map.
@@ -84,24 +97,25 @@ std::vector<base::FilePath> CollectChangedPaths(
   return changed_paths;
 }
 
-// Scans files under |downloads_dir| recursively and builds a map from file
-// paths (in Android filesystem) to last modified timestamps.
-TimestampMap BuildTimestampMap(base::FilePath downloads_dir) {
-  DCHECK(!downloads_dir.EndsWithSeparator());
+// Scans files under |cros_dir| recursively and builds a map from
+// file paths (in Android filesystem) to last modified timestamps.
+TimestampMap BuildTimestampMap(base::FilePath cros_dir,
+                               base::FilePath android_dir) {
+  DCHECK(!cros_dir.EndsWithSeparator());
   TimestampMap timestamp_map;
 
   // Enumerate normal files only; directories and symlinks are skipped.
-  base::FileEnumerator enumerator(downloads_dir, true,
+  base::FileEnumerator enumerator(cros_dir, true,
                                   base::FileEnumerator::FILES);
   for (base::FilePath cros_path = enumerator.Next(); !cros_path.empty();
        cros_path = enumerator.Next()) {
     // Skip non-media files for efficiency.
     if (!HasAndroidSupportedMediaExtension(cros_path))
       continue;
-    // Android file path can be obtained by replacing |downloads_dir| prefix
-    // with |kAndroidDownloadDir|.
-    base::FilePath android_path(kAndroidDownloadDir);
-    downloads_dir.AppendRelativePath(cros_path, &android_path);
+    // Android file path can be obtained by replacing |cros_dir|
+    // prefix with |android_dir|.
+    base::FilePath android_path(android_dir);
+    cros_dir.AppendRelativePath(cros_path, &android_path);
     const base::FileEnumerator::FileInfo& info = enumerator.GetInfo();
     timestamp_map[android_path] = info.GetLastModifiedTime();
   }
@@ -109,32 +123,34 @@ TimestampMap BuildTimestampMap(base::FilePath downloads_dir) {
 }
 
 std::pair<base::TimeTicks, TimestampMap> BuildTimestampMapCallback(
-    base::FilePath downloads_dir) {
+    base::FilePath cros_dir,
+    base::FilePath android_dir) {
   // The TimestampMap may include changes form after snapshot_time.
   // We must take the snapshot_time before we build the TimestampMap since
   // changes that occur while building the map may not be captured.
   base::TimeTicks snapshot_time = base::TimeTicks::Now();
-  TimestampMap current_timestamp_map = BuildTimestampMap(downloads_dir);
+  TimestampMap current_timestamp_map =
+      BuildTimestampMap(cros_dir, android_dir);
   return std::make_pair(snapshot_time, std::move(current_timestamp_map));
 }
 
-// Singleton factory for ArcDownloadsWatcherService.
-class ArcDownloadsWatcherServiceFactory
+// Singleton factory for ArcFileSystemWatcherService.
+class ArcFileSystemWatcherServiceFactory
     : public internal::ArcBrowserContextKeyedServiceFactoryBase<
-          ArcDownloadsWatcherService,
-          ArcDownloadsWatcherServiceFactory> {
+          ArcFileSystemWatcherService,
+          ArcFileSystemWatcherServiceFactory> {
  public:
   // Factory name used by ArcBrowserContextKeyedServiceFactoryBase.
-  static constexpr const char* kName = "ArcDownloadsWatcherServiceFactory";
+  static constexpr const char* kName = "ArcFileSystemWatcherServiceFactory";
 
-  static ArcDownloadsWatcherServiceFactory* GetInstance() {
-    return base::Singleton<ArcDownloadsWatcherServiceFactory>::get();
+  static ArcFileSystemWatcherServiceFactory* GetInstance() {
+    return base::Singleton<ArcFileSystemWatcherServiceFactory>::get();
   }
 
  private:
-  friend base::DefaultSingletonTraits<ArcDownloadsWatcherServiceFactory>;
-  ArcDownloadsWatcherServiceFactory() = default;
-  ~ArcDownloadsWatcherServiceFactory() override = default;
+  friend base::DefaultSingletonTraits<ArcFileSystemWatcherServiceFactory>;
+  ArcFileSystemWatcherServiceFactory() = default;
+  ~ArcFileSystemWatcherServiceFactory() override = default;
 };
 
 }  // namespace
@@ -224,16 +240,19 @@ bool HasAndroidSupportedMediaExtension(const base::FilePath& path) {
       extension.c_str(), less_comparator);
 }
 
-// The core part of ArcDownloadsWatcherService to watch for file changes in
-// Downloads directory.
-class ArcDownloadsWatcherService::DownloadsWatcher {
+// The core part of ArcFileSystemWatcherService to watch for file changes in
+// directory.
+class ArcFileSystemWatcherService::FileSystemWatcher {
  public:
   using Callback = base::Callback<void(const std::vector<std::string>& paths)>;
 
-  DownloadsWatcher(content::BrowserContext* context, const Callback& callback);
-  ~DownloadsWatcher();
+  FileSystemWatcher(content::BrowserContext* context,
+                    const Callback& callback,
+                    base::FilePath cros_dir,
+                    base::FilePath android_dir);
+  ~FileSystemWatcher();
 
-  // Starts watching Downloads directory.
+  // Starts watching directory.
   void Start();
 
  private:
@@ -252,7 +271,8 @@ class ArcDownloadsWatcherService::DownloadsWatcher {
       std::pair<base::TimeTicks, TimestampMap> timestamp_and_map);
 
   Callback callback_;
-  base::FilePath downloads_dir_;
+  base::FilePath cros_dir_;
+  base::FilePath android_dir_;
   std::unique_ptr<base::FilePathWatcher> watcher_;
   TimestampMap last_timestamp_map_;
   // The timestamp of the last OnFilePathChanged callback received.
@@ -264,46 +284,47 @@ class ArcDownloadsWatcherService::DownloadsWatcher {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<DownloadsWatcher> weak_ptr_factory_;
+  base::WeakPtrFactory<FileSystemWatcher> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(DownloadsWatcher);
+  DISALLOW_COPY_AND_ASSIGN(FileSystemWatcher);
 };
 
-ArcDownloadsWatcherService::DownloadsWatcher::DownloadsWatcher(
+ArcFileSystemWatcherService::FileSystemWatcher::FileSystemWatcher(
     content::BrowserContext* context,
-    const Callback& callback)
+    const Callback& callback,
+    base::FilePath cros_dir,
+    base::FilePath android_dir)
     : callback_(callback),
+      cros_dir_(cros_dir),
+      android_dir_(android_dir),
       last_notify_time_(base::TimeTicks()),
       outstanding_task_(false),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DETACH_FROM_SEQUENCE(sequence_checker_);
-
-  downloads_dir_ = DownloadPrefs(Profile::FromBrowserContext(context))
-                       .GetDefaultDownloadDirectoryForProfile()
-                       .StripTrailingSeparators();
 }
 
-ArcDownloadsWatcherService::DownloadsWatcher::~DownloadsWatcher() {
+ArcFileSystemWatcherService::FileSystemWatcher::~FileSystemWatcher() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void ArcDownloadsWatcherService::DownloadsWatcher::Start() {
+void ArcFileSystemWatcherService::FileSystemWatcher::Start() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Initialize with the current timestamp map and avoid initial notification.
   // It is not needed since MediaProvider scans whole storage area on boot.
   last_notify_time_ = base::TimeTicks::Now();
-  last_timestamp_map_ = BuildTimestampMap(downloads_dir_);
+  last_timestamp_map_ =
+      BuildTimestampMap(cros_dir_, android_dir_);
 
   watcher_ = std::make_unique<base::FilePathWatcher>();
   // On Linux, base::FilePathWatcher::Watch() always returns true.
-  watcher_->Watch(downloads_dir_, true,
-                  base::Bind(&DownloadsWatcher::OnFilePathChanged,
+  watcher_->Watch(cros_dir_, true,
+                  base::Bind(&FileSystemWatcher::OnFilePathChanged,
                              weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ArcDownloadsWatcherService::DownloadsWatcher::OnFilePathChanged(
+void ArcFileSystemWatcherService::FileSystemWatcher::OnFilePathChanged(
     const base::FilePath& path,
     bool error) {
   // On Linux, |error| is always false. Also, |path| is always the same path
@@ -313,7 +334,7 @@ void ArcDownloadsWatcherService::DownloadsWatcher::OnFilePathChanged(
     outstanding_task_ = true;
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::BindOnce(&DownloadsWatcher::DelayBuildTimestampMap,
+        base::BindOnce(&FileSystemWatcher::DelayBuildTimestampMap,
                        weak_ptr_factory_.GetWeakPtr()),
         kBuildTimestampMapDelay);
   } else {
@@ -321,17 +342,18 @@ void ArcDownloadsWatcherService::DownloadsWatcher::OnFilePathChanged(
   }
 }
 
-void ArcDownloadsWatcherService::DownloadsWatcher::DelayBuildTimestampMap() {
+void ArcFileSystemWatcherService::FileSystemWatcher::DelayBuildTimestampMap() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(outstanding_task_);
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
-      base::Bind(&BuildTimestampMapCallback, downloads_dir_),
-      base::Bind(&DownloadsWatcher::OnBuildTimestampMap,
+      base::Bind(&BuildTimestampMapCallback, cros_dir_,
+                 android_dir_),
+      base::Bind(&FileSystemWatcher::OnBuildTimestampMap,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ArcDownloadsWatcherService::DownloadsWatcher::OnBuildTimestampMap(
+void ArcFileSystemWatcherService::FileSystemWatcher::OnBuildTimestampMap(
     std::pair<base::TimeTicks, TimestampMap> timestamp_and_map) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(outstanding_task_);
@@ -355,12 +377,12 @@ void ArcDownloadsWatcherService::DownloadsWatcher::OnBuildTimestampMap(
 }
 
 // static
-ArcDownloadsWatcherService* ArcDownloadsWatcherService::GetForBrowserContext(
+ArcFileSystemWatcherService* ArcFileSystemWatcherService::GetForBrowserContext(
     content::BrowserContext* context) {
-  return ArcDownloadsWatcherServiceFactory::GetForBrowserContext(context);
+  return ArcFileSystemWatcherServiceFactory::GetForBrowserContext(context);
 }
 
-ArcDownloadsWatcherService::ArcDownloadsWatcherService(
+ArcFileSystemWatcherService::ArcFileSystemWatcherService(
     content::BrowserContext* context,
     ArcBridgeService* bridge_service)
     : context_(context),
@@ -372,44 +394,64 @@ ArcDownloadsWatcherService::ArcDownloadsWatcherService(
   arc_bridge_service_->file_system()->AddObserver(this);
 }
 
-ArcDownloadsWatcherService::~ArcDownloadsWatcherService() {
+ArcFileSystemWatcherService::~ArcFileSystemWatcherService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  StopWatchingDownloads();
-  DCHECK(!watcher_);
+  StopWatchingFileSystem();
+  DCHECK(!downloads_watcher_);
+  DCHECK(!removable_media_watcher_);
 
   arc_bridge_service_->file_system()->RemoveObserver(this);
 }
 
-void ArcDownloadsWatcherService::OnConnectionReady() {
+void ArcFileSystemWatcherService::OnConnectionReady() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  StartWatchingDownloads();
+  StartWatchingFileSystem();
 }
 
-void ArcDownloadsWatcherService::OnConnectionClosed() {
+void ArcFileSystemWatcherService::OnConnectionClosed() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  StopWatchingDownloads();
+  StopWatchingFileSystem();
 }
 
-void ArcDownloadsWatcherService::StartWatchingDownloads() {
+void ArcFileSystemWatcherService::StartWatchingFileSystem() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  StopWatchingDownloads();
-  DCHECK(!watcher_);
-  watcher_ = std::make_unique<DownloadsWatcher>(
-      context_, base::Bind(&ArcDownloadsWatcherService::OnDownloadsChanged,
-                           weak_ptr_factory_.GetWeakPtr()));
-  file_task_runner_->PostTask(FROM_HERE,
-                              base::BindOnce(&DownloadsWatcher::Start,
-                                             base::Unretained(watcher_.get())));
+  StopWatchingFileSystem();
+  DCHECK(!downloads_watcher_);
+  downloads_watcher_ = std::make_unique<FileSystemWatcher>(
+      context_,
+      base::Bind(&ArcFileSystemWatcherService::OnFileSystemChanged,
+                 weak_ptr_factory_.GetWeakPtr()),
+      DownloadPrefs(Profile::FromBrowserContext(context_))
+          .GetDefaultDownloadDirectoryForProfile()
+          .StripTrailingSeparators(),
+      base::FilePath(kAndroidDownloadDir));
+  file_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&FileSystemWatcher::Start,
+                                base::Unretained(downloads_watcher_.get())));
+  DCHECK(!removable_media_watcher_);
+  removable_media_watcher_ = std::make_unique<FileSystemWatcher>(
+      context_,
+      base::Bind(&ArcFileSystemWatcherService::OnFileSystemChanged,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::FilePath(kCrosRemovableMediaDir),
+      base::FilePath(kAndroidRemovableMediaDir));
+  file_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&FileSystemWatcher::Start,
+                     base::Unretained(removable_media_watcher_.get())));
 }
 
-void ArcDownloadsWatcherService::StopWatchingDownloads() {
+void ArcFileSystemWatcherService::StopWatchingFileSystem() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (watcher_)
-    file_task_runner_->DeleteSoon(FROM_HERE, watcher_.release());
+  if (downloads_watcher_)
+    file_task_runner_->DeleteSoon(FROM_HERE, downloads_watcher_.release());
+  if (removable_media_watcher_)
+    file_task_runner_->DeleteSoon(FROM_HERE,
+                                  removable_media_watcher_.release());
 }
 
-void ArcDownloadsWatcherService::OnDownloadsChanged(
+void ArcFileSystemWatcherService::OnFileSystemChanged(
     const std::vector<std::string>& paths) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
