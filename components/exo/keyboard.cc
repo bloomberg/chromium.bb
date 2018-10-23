@@ -336,8 +336,13 @@ void Keyboard::OnSurfaceFocused(Surface* gained_focus) {
 // keyboard::KeyboardControllerObserver overrides:
 
 void Keyboard::OnKeyboardEnabledChanged(bool enabled) {
-  if (device_configuration_delegate_)
-    device_configuration_delegate_->OnKeyboardTypeChanged(!enabled);
+  if (device_configuration_delegate_) {
+    // Ignore kAndroidDisabled which affects |enabled| and just test for a11y
+    // and touch enabled keyboards. TODO(yhanada): Fix this using an Android
+    // specific KeyboardUI implementation. https://crbug.com/897655.
+    bool is_physical = !IsVirtualKeyboardEnabled();
+    device_configuration_delegate_->OnKeyboardTypeChanged(is_physical);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
