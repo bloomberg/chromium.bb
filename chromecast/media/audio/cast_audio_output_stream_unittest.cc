@@ -63,6 +63,8 @@ int OnMoreData(base::TimeDelta /* delay */,
   return dest->frames();
 }
 
+}  // namespace
+
 class NotifyPushBufferCompleteTask : public chromecast::TaskRunner::Task {
  public:
   explicit NotifyPushBufferCompleteTask(CmaBackend::Decoder::Delegate* delegate)
@@ -270,13 +272,13 @@ class CastAudioOutputStreamTest : public ::testing::Test {
     }
 
     mock_backend_factory_ = std::make_unique<MockCmaBackendFactory>();
-    audio_manager_ = std::make_unique<CastAudioManager>(
+    audio_manager_ = base::WrapUnique(new CastAudioManager(
         std::make_unique<::media::TestAudioThread>(), nullptr,
         base::BindRepeating(&CastAudioOutputStreamTest::GetCmaBackendFactory,
                             base::Unretained(this)),
         scoped_task_environment_.GetMainThreadTaskRunner(),
         scoped_task_environment_.GetMainThreadTaskRunner(), connector_.get(),
-        use_mixer);
+        use_mixer, true /* force_use_cma_backend_for_output*/));
     audio_manager_->SetConnectorForTesting(std::move(connector_));
 
     // A few AudioManager implementations post initialization tasks to
@@ -863,6 +865,5 @@ TEST_F(CastAudioOutputStreamTest, SessionId) {
   stream->Close();
 }
 
-}  // namespace
 }  // namespace media
 }  // namespace chromecast
