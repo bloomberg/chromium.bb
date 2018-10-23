@@ -29,7 +29,6 @@
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "ui/base/device_form_factor.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "url/url_constants.h"
 
 namespace {

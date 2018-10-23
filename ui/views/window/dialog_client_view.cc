@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "build/build_config.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
