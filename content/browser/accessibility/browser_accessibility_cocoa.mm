@@ -838,47 +838,6 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   }
 }
 
-- (BOOL)isColumnHeaderForCurrentCell:(BrowserAccessibility*)header {
-  int cell_first_col = -1;
-  int cell_colspan = -1;
-  owner_->GetIntAttribute(ax::mojom::IntAttribute::kAriaCellColumnIndex,
-                          &cell_first_col);
-  if (cell_first_col < 0) {
-    owner_->GetIntAttribute(ax::mojom::IntAttribute::kTableCellColumnIndex,
-                            &cell_first_col);
-  }
-  if (cell_first_col < 0)
-    return false;
-  owner_->GetIntAttribute(ax::mojom::IntAttribute::kTableCellColumnSpan,
-                          &cell_colspan);
-  if (cell_colspan <= 0)
-    cell_colspan = 1;
-  int cell_last_col = cell_first_col + cell_colspan - 1;
-
-  int header_first_col = -1;
-  int header_colspan = -1;
-  header->GetIntAttribute(ax::mojom::IntAttribute::kAriaCellColumnIndex,
-                          &header_first_col);
-  if (header_first_col < 0) {
-    header->GetIntAttribute(ax::mojom::IntAttribute::kTableCellColumnIndex,
-                            &header_first_col);
-  }
-  if (header_first_col < 0)
-    return false;
-
-  header->GetIntAttribute(ax::mojom::IntAttribute::kTableCellColumnSpan,
-                          &header_colspan);
-  if (header_colspan <= 0)
-    header_colspan = 1;
-  int header_last_col = header_first_col + header_colspan - 1;
-
-  int topmost_col_of_either = std::max(cell_first_col, header_first_col);
-  int bottommost_col_of_either = std::min(cell_last_col, header_last_col);
-  bool has_col_intersection = topmost_col_of_either <= bottommost_col_of_either;
-
-  return has_col_intersection;
-}
-
 - (NSArray*)columnHeaders {
   if (![self instanceActive])
     return nil;
@@ -908,9 +867,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     }
   } else {
     // Otherwise this is a cell, return the column headers for this cell.
-    int column = -1;
-    owner_->GetIntAttribute(ax::mojom::IntAttribute::kTableCellColumnIndex,
-                            &column);
+    int column = owner_->node()->GetTableCellColIndex();
 
     std::vector<int32_t> colHeaderIds = table->GetColHeaderNodeIds(column);
     for (int32_t id : colHeaderIds) {
@@ -929,12 +886,8 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (!ui::IsCellOrTableHeader(owner_->GetRole()))
     return nil;
 
-  int column = -1;
-  int colspan = -1;
-  owner_->GetIntAttribute(ax::mojom::IntAttribute::kTableCellColumnIndex,
-                          &column);
-  owner_->GetIntAttribute(ax::mojom::IntAttribute::kTableCellColumnSpan,
-                          &colspan);
+  int column = owner_->node()->GetTableCellColIndex();
+  int colspan = owner_->node()->GetTableCellColSpan();
   if (column >= 0 && colspan >= 1)
     return [NSValue valueWithRange:NSMakeRange(column, colspan)];
   return nil;
@@ -1813,50 +1766,6 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   return NSAccessibilityRoleDescription(role, nil);
 }
 
-- (BOOL)isRowHeaderForCurrentCell:(BrowserAccessibility*)header {
-  int cell_first_row = -1;
-  int cell_rowspan = -1;
-  owner_->GetIntAttribute(ax::mojom::IntAttribute::kAriaCellRowIndex,
-                          &cell_first_row);
-  if (cell_first_row < 0) {
-    owner_->GetIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex,
-                            &cell_first_row);
-  }
-  if (cell_first_row < 0)
-    return false;
-
-  owner_->GetIntAttribute(ax::mojom::IntAttribute::kTableCellRowSpan,
-                          &cell_rowspan);
-  if (cell_rowspan <= 0)
-    cell_rowspan = 1;
-
-  int cell_last_row = cell_first_row + cell_rowspan - 1;
-
-  int header_first_row = -1;
-  int header_rowspan = -1;
-  header->GetIntAttribute(ax::mojom::IntAttribute::kAriaCellRowIndex,
-                          &header_first_row);
-  if (header_first_row < 0) {
-    header->GetIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex,
-                            &header_first_row);
-  }
-  if (header_first_row < 0)
-    return false;
-
-  header->GetIntAttribute(ax::mojom::IntAttribute::kTableCellRowSpan,
-                          &header_rowspan);
-  if (header_rowspan <= 0)
-    header_rowspan = 1;
-
-  int header_last_row = header_first_row + header_rowspan - 1;
-
-  int topmost_row_of_either = std::max(cell_first_row, header_first_row);
-  int bottommost_row_of_either = std::min(cell_last_row, header_last_row);
-  bool has_row_intersection = topmost_row_of_either <= bottommost_row_of_either;
-
-  return has_row_intersection;
-}
-
 - (NSArray*)rowHeaders {
   if (![self instanceActive])
     return nil;
@@ -1886,10 +1795,8 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     }
   } else {
     // Otherwise this is a cell, return the row headers for this cell.
-    int row = -1;
-    owner_->GetIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex, &row);
-
-    std::vector<int32_t> rowHeaderIds = table->GetRowHeaderNodeIds(row);
+    std::vector<int32_t> rowHeaderIds;
+    owner_->node()->GetTableCellRowHeaderNodeIds(&rowHeaderIds);
     for (int32_t id : rowHeaderIds) {
       BrowserAccessibility* cell = owner_->manager()->GetFromID(id);
       if (cell)
@@ -1906,10 +1813,8 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (!ui::IsCellOrTableHeader(owner_->GetRole()))
     return nil;
 
-  int row = -1;
-  int rowspan = -1;
-  owner_->GetIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex, &row);
-  owner_->GetIntAttribute(ax::mojom::IntAttribute::kTableCellRowSpan, &rowspan);
+  int row = owner_->node()->GetTableCellRowIndex();
+  int rowspan = owner_->node()->GetTableCellRowSpan();
   if (row >= 0 && rowspan >= 1)
     return [NSValue valueWithRange:NSMakeRange(row, rowspan)];
   return nil;
@@ -2495,45 +2400,14 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     NSArray* array = parameter;
     int column = [[array objectAtIndex:0] intValue];
     int row = [[array objectAtIndex:1] intValue];
-    int num_columns =
-        owner_->GetIntAttribute(ax::mojom::IntAttribute::kTableColumnCount);
-    int num_rows =
-        owner_->GetIntAttribute(ax::mojom::IntAttribute::kTableRowCount);
-    if (column < 0 || column >= num_columns ||
-        row < 0 || row >= num_rows) {
+
+    ui::AXNode* cell_node = owner_->node()->GetTableCellFromCoords(row, column);
+    if (!cell_node)
       return nil;
-    }
-    for (size_t i = 0; i < owner_->PlatformChildCount(); ++i) {
-      BrowserAccessibility* child = owner_->PlatformGetChild(i);
-      if (child->GetRole() != ax::mojom::Role::kRow)
-        continue;
-      int rowIndex;
-      if (!child->GetIntAttribute(ax::mojom::IntAttribute::kTableRowIndex,
-                                  &rowIndex)) {
-        continue;
-      }
-      if (rowIndex < row)
-        continue;
-      if (rowIndex > row)
-        break;
-      for (size_t j = 0;
-           j < child->PlatformChildCount();
-           ++j) {
-        BrowserAccessibility* cell = child->PlatformGetChild(j);
-        if (!ui::IsCellOrTableHeader(cell->GetRole()))
-          continue;
-        int colIndex;
-        if (!cell->GetIntAttribute(
-                ax::mojom::IntAttribute::kTableCellColumnIndex, &colIndex)) {
-          continue;
-        }
-        if (colIndex == column)
-          return ToBrowserAccessibilityCocoa(cell);
-        if (colIndex > column)
-          break;
-      }
-    }
-    return nil;
+
+    BrowserAccessibility* cell = owner_->manager()->GetFromID(cell_node->id());
+    if (cell)
+      return ToBrowserAccessibilityCocoa(cell);
   }
 
   if ([attribute isEqualToString:@"AXUIElementForTextMarker"]) {
