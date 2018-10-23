@@ -4419,9 +4419,7 @@ void GLES2Implementation::BindSamplerHelper(GLuint unit, GLuint sampler) {
 
 void GLES2Implementation::BindTextureHelper(GLenum target, GLuint texture) {
   // TODO(gman): See note #1 above.
-  // TODO(gman): Change this to false once we figure out why it's failing
-  //     on daisy.
-  bool changed = true;
+  bool changed = false;
   TextureUnit& unit = texture_units_[active_texture_unit_];
   switch (target) {
     case GL_TEXTURE_2D:
