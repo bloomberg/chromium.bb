@@ -298,12 +298,6 @@ void UiControllerAndroid::Destroy(JNIEnv* env,
   ui_delegate_->OnDestroy();
 }
 
-void UiControllerAndroid::OnClickOverlay(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller) {
-  ui_delegate_->OnClickOverlay();
-}
-
 static jlong JNI_AutofillAssistantUiController_Init(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,

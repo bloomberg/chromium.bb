@@ -144,7 +144,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
 
     @Override
     public void onClickOverlay() {
-        nativeOnClickOverlay(mUiControllerAndroid);
+        // TODO(crbug.com/806868): Notify native side.
     }
 
     @CalledByNative
@@ -257,7 +257,6 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     private native long nativeInit(
             WebContents webContents, String[] parameterNames, String[] parameterValues);
     private native void nativeDestroy(long nativeUiControllerAndroid);
-    private native void nativeOnClickOverlay(long nativeUiControllerAndroid);
     private native void nativeOnScriptSelected(long nativeUiControllerAndroid, String scriptPath);
     private native void nativeOnAddressSelected(long nativeUiControllerAndroid, String guid);
     private native void nativeOnCardSelected(long nativeUiControllerAndroid, String guid);

@@ -47,11 +47,6 @@ class ScriptExecutor : public ActionDelegate {
 
   using RunScriptCallback = base::OnceCallback<void(Result)>;
   void Run(RunScriptCallback callback);
-  // Stop the execution of the current script and notify caller with 'at_end =
-  // |CONTINUE|' as the result, so it can continue. It's different from the
-  // interfaces 'ShutDown' and 'Restart' below, which notify caller with 'at_end
-  // = SHUTDOWN' and 'at_end = RESTART' respectively.
-  void Stop();
 
   // Override ActionDelegate:
   std::unique_ptr<BatchElementChecker> CreateBatchElementChecker() override;

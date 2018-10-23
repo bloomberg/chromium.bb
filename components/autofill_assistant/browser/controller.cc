@@ -222,7 +222,7 @@ void Controller::OnScriptExecuted(const std::string& script_path,
 
 void Controller::OnClickOverlay() {
   GetUiController()->HideOverlay();
-  script_tracker_->StopExecuteScript();
+  // TODO(crbug.com/806868): Stop executing scripts.
 }
 
 void Controller::OnScriptSelected(const std::string& script_path) {
