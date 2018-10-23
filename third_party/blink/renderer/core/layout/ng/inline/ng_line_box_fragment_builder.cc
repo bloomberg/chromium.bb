@@ -14,17 +14,6 @@
 
 namespace blink {
 
-NGLineBoxFragmentBuilder::NGLineBoxFragmentBuilder(
-    NGInlineNode node,
-    scoped_refptr<const ComputedStyle> style,
-    WritingMode writing_mode,
-    TextDirection)
-    : NGContainerFragmentBuilder(style, writing_mode, TextDirection::kLtr),
-      node_(node),
-      base_direction_(TextDirection::kLtr) {}
-
-NGLineBoxFragmentBuilder::~NGLineBoxFragmentBuilder() = default;
-
 void NGLineBoxFragmentBuilder::Reset() {
   children_.resize(0);
   offsets_.resize(0);
@@ -89,28 +78,13 @@ void NGLineBoxFragmentBuilder::AddChildren(ChildList& children) {
 }
 
 scoped_refptr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
-  WritingMode line_writing_mode(ToLineWritingMode(GetWritingMode()));
-  NGPhysicalSize physical_size = Size().ConvertToPhysical(line_writing_mode);
+  writing_mode_ = ToLineWritingMode(writing_mode_);
 
-  Vector<NGLink> children;
-  if (!children_.IsEmpty())
-    children.ReserveInitialCapacity(children_.size());
-
-  DCHECK_EQ(children_.size(), offsets_.size());
-  for (wtf_size_t i = 0; i < children_.size(); i++) {
-    auto& child = children_[i];
-    children.emplace_back(
-        std::move(children_[i]),
-        offsets_[i].ConvertToPhysical(line_writing_mode, Direction(),
-                                      physical_size, child->Size()));
-  }
+  if (!break_token_)
+    break_token_ = NGInlineBreakToken::Create(node_);
 
   scoped_refptr<const NGPhysicalLineBoxFragment> fragment =
-      base::AdoptRef(new NGPhysicalLineBoxFragment(
-          Style(), style_variant_, physical_size, children, metrics_,
-          base_direction_,
-          break_token_ ? std::move(break_token_)
-                       : NGInlineBreakToken::Create(node_)));
+      base::AdoptRef(new NGPhysicalLineBoxFragment(this));
 
   return base::AdoptRef(new NGLayoutResult(
       std::move(fragment), std::move(oof_positioned_descendants_),

@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class NGContainerFragmentBuilder;
 enum class NGOutlineType;
 
 class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
@@ -28,15 +29,11 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
                                     NGOutlineType outline_type) const;
 
  protected:
-  // This modifies the passed-in children vector.
-  NGPhysicalContainerFragment(LayoutObject*,
-                              const ComputedStyle&,
-                              NGStyleVariant,
-                              NGPhysicalSize,
+  // block_or_line_writing_mode is used for converting the child offsets.
+  NGPhysicalContainerFragment(NGContainerFragmentBuilder*,
+                              WritingMode block_or_line_writing_mode,
                               NGFragmentType,
-                              unsigned sub_type,
-                              Vector<NGLink>& children,
-                              scoped_refptr<NGBreakToken> = nullptr);
+                              unsigned sub_type);
 
   Vector<NGLink> children_;
 };

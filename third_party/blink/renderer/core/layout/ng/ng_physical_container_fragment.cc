@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_container_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
@@ -14,23 +15,22 @@
 namespace blink {
 
 NGPhysicalContainerFragment::NGPhysicalContainerFragment(
-    LayoutObject* layout_object,
-    const ComputedStyle& style,
-    NGStyleVariant style_variant,
-    NGPhysicalSize size,
+    NGContainerFragmentBuilder* builder,
+    WritingMode block_or_line_writing_mode,
     NGFragmentType type,
-    unsigned sub_type,
-    Vector<NGLink>& children,
-    scoped_refptr<NGBreakToken> break_token)
-    : NGPhysicalFragment(layout_object,
-                         style,
-                         style_variant,
-                         size,
-                         type,
-                         sub_type,
-                         std::move(break_token)),
-      children_(std::move(children)) {
-  DCHECK(children.IsEmpty());  // Ensure move semantics is used.
+    unsigned sub_type)
+    : NGPhysicalFragment(builder, type, sub_type) {
+  children_.ReserveInitialCapacity(children_.size());
+
+  DCHECK_EQ(builder->children_.size(), builder->offsets_.size());
+  wtf_size_t i = 0;
+  for (auto& child : builder->children_) {
+    children_.emplace_back(std::move(child),
+                           builder->offsets_[i].ConvertToPhysical(
+                               block_or_line_writing_mode, builder->Direction(),
+                               Size(), child->Size()));
+    ++i;
+  }
 }
 
 void NGPhysicalContainerFragment::AddOutlineRectsForNormalChildren(

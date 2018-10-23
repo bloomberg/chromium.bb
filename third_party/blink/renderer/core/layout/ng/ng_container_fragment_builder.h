@@ -16,13 +16,13 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_link.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_positioned_descendant.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
-class ComputedStyle;
 class NGExclusionSpace;
 class NGLayoutResult;
 class NGPhysicalFragment;
@@ -33,8 +33,6 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
  public:
   typedef Vector<scoped_refptr<const NGPhysicalFragment>, 16> ChildrenVector;
   typedef Vector<NGLogicalOffset, 16> OffsetVector;
-
-  ~NGContainerFragmentBuilder() override;
 
   LayoutUnit BfcLineOffset() const { return bfc_line_offset_; }
   NGContainerFragmentBuilder& SetBfcLineOffset(LayoutUnit bfc_line_offset) {
@@ -199,10 +197,10 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
           line_direction(line_direction_arg) {}
   };
 
-  NGContainerFragmentBuilder(scoped_refptr<const ComputedStyle>,
-                             WritingMode,
-                             TextDirection);
-
+  NGContainerFragmentBuilder(scoped_refptr<const ComputedStyle> style,
+                             WritingMode writing_mode,
+                             TextDirection direction)
+      : NGFragmentBuilder(std::move(style), writing_mode, direction) {}
 
   LayoutUnit bfc_line_offset_;
   base::Optional<LayoutUnit> bfc_block_offset_;
@@ -226,6 +224,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   bool has_last_resort_break_ = false;
 
   bool is_pushed_by_floats_ = false;
+
+  friend class NGPhysicalContainerFragment;
 };
 
 }  // namespace blink

@@ -12,42 +12,32 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
 
 namespace blink {
 
 NGPhysicalBoxFragment::NGPhysicalBoxFragment(
-    LayoutObject* layout_object,
-    const ComputedStyle& style,
-    NGStyleVariant style_variant,
-    NGPhysicalSize size,
-    Vector<NGLink>& children,
-    const NGPhysicalBoxStrut& borders,
-    const NGPhysicalBoxStrut& padding,
-    Vector<NGBaseline>& baselines,
-    NGBoxType box_type,
-    bool is_fieldset_container,
-    bool is_rendered_legend,
-    bool is_old_layout_root,
-    unsigned border_edges,  // NGBorderEdges::Physical
-    scoped_refptr<NGBreakToken> break_token)
+    NGBoxFragmentBuilder* builder,
+    WritingMode block_or_line_writing_mode)
     : NGPhysicalContainerFragment(
-          layout_object,
-          style,
-          style_variant,
-          size,
-          is_rendered_legend ? kFragmentRenderedLegend : kFragmentBox,
-          box_type,
-          children,
-          std::move(break_token)),
-      baselines_(std::move(baselines)),
-      borders_(borders),
-      padding_(padding) {
-  DCHECK(baselines.IsEmpty());  // Ensure move semantics is used.
-  is_fieldset_container_ = is_fieldset_container;
-  is_old_layout_root_ = is_old_layout_root;
-  border_edge_ = border_edges;
-  children_inline_ = layout_object && layout_object->ChildrenInline();
+          builder,
+          block_or_line_writing_mode,
+          (builder->node_ && builder->node_.IsRenderedLegend())
+              ? kFragmentRenderedLegend
+              : kFragmentBox,
+          builder->BoxType()),
+      baselines_(std::move(builder->baselines_)),
+      borders_(builder->borders_.ConvertToPhysical(builder->GetWritingMode(),
+                                                   builder->Direction())),
+      padding_(builder->padding_.ConvertToPhysical(builder->GetWritingMode(),
+                                                   builder->Direction())) {
+  DCHECK(builder->baselines_.IsEmpty());  // Ensure move semantics is used.
+  is_fieldset_container_ = builder->is_fieldset_container_;
+  is_old_layout_root_ = builder->is_old_layout_root_;
+  border_edge_ = builder->border_edges_.ToPhysical(builder->GetWritingMode());
+  children_inline_ =
+      builder->layout_object_ && builder->layout_object_->ChildrenInline();
 }
 
 const NGBaseline* NGPhysicalBoxFragment::Baseline(

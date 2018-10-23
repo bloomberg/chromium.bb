@@ -26,11 +26,13 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   STACK_ALLOCATED();
 
  public:
-  NGLineBoxFragmentBuilder(NGInlineNode,
-                           scoped_refptr<const ComputedStyle>,
-                           WritingMode,
-                           TextDirection);
-  ~NGLineBoxFragmentBuilder() override;
+  NGLineBoxFragmentBuilder(NGInlineNode node,
+                           scoped_refptr<const ComputedStyle> style,
+                           WritingMode writing_mode,
+                           TextDirection)
+      : NGContainerFragmentBuilder(style, writing_mode, TextDirection::kLtr),
+        node_(node),
+        base_direction_(TextDirection::kLtr) {}
 
   void Reset();
 
@@ -197,6 +199,8 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   Vector<NGPositionedFloat> positioned_floats_;
 
   TextDirection base_direction_;
+
+  friend class NGPhysicalLineBoxFragment;
 
   DISALLOW_COPY_AND_ASSIGN(NGLineBoxFragmentBuilder);
 };

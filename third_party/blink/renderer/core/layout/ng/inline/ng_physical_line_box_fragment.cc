@@ -5,29 +5,20 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 
 NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
-    const ComputedStyle& style,
-    NGStyleVariant style_variant,
-    NGPhysicalSize size,
-    Vector<NGLink>& children,
-    const NGLineHeightMetrics& metrics,
-    TextDirection base_direction,
-    scoped_refptr<NGBreakToken> break_token)
-    : NGPhysicalContainerFragment(nullptr,
-                                  style,
-                                  style_variant,
-                                  size,
+    NGLineBoxFragmentBuilder* builder)
+    : NGPhysicalContainerFragment(builder,
+                                  builder->GetWritingMode(),
                                   kFragmentLineBox,
-                                  0,
-                                  children,
-                                  std::move(break_token)),
-      metrics_(metrics) {
-  base_direction_ = static_cast<unsigned>(base_direction);
+                                  0),
+      metrics_(builder->metrics_) {
+  base_direction_ = static_cast<unsigned>(builder->base_direction_);
 }
 
 NGLineHeightMetrics NGPhysicalLineBoxFragment::BaselineMetrics(

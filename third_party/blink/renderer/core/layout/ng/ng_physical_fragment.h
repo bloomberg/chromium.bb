@@ -23,6 +23,7 @@ namespace blink {
 class ComputedStyle;
 class LayoutObject;
 class Node;
+class NGFragmentBuilder;
 class NGBreakToken;
 class NGInlineItem;
 struct NGPixelSnappedPhysicalBoxStrut;
@@ -230,6 +231,10 @@ class CORE_EXPORT NGPhysicalFragment
 #endif
 
  protected:
+  NGPhysicalFragment(NGFragmentBuilder*,
+                     NGFragmentType type,
+                     unsigned sub_type);
+
   NGPhysicalFragment(LayoutObject* layout_object,
                      const ComputedStyle& style,
                      NGStyleVariant,

@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -231,6 +232,19 @@ LayoutUnit BorderWidth(unsigned edges, unsigned edge, float border_width) {
 void NGPhysicalFragmentTraits::Destruct(const NGPhysicalFragment* fragment) {
   fragment->Destroy();
 }
+
+NGPhysicalFragment::NGPhysicalFragment(NGFragmentBuilder* builder,
+                                       NGFragmentType type,
+                                       unsigned sub_type)
+    : layout_object_(builder->layout_object_),
+      style_(builder->style_),
+      size_(builder->size_.ConvertToPhysical(builder->GetWritingMode())),
+      break_token_(std::move(builder->break_token_)),
+      type_(type),
+      sub_type_(sub_type),
+      is_fieldset_container_(false),
+      is_old_layout_root_(false),
+      style_variant_((unsigned)builder->style_variant_) {}
 
 NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
                                        const ComputedStyle& style,
