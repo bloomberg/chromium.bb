@@ -18,6 +18,41 @@
 
 namespace blink {
 
+namespace {
+
+enum class EBlockAlignment { kStart, kCenter, kEnd };
+
+inline EBlockAlignment BlockAlignment(const ComputedStyle& style,
+                                      const ComputedStyle& container_style) {
+  bool start_auto = style.MarginStartUsing(container_style).IsAuto();
+  bool end_auto = style.MarginEndUsing(container_style).IsAuto();
+  if (start_auto || end_auto) {
+    if (start_auto)
+      return end_auto ? EBlockAlignment::kCenter : EBlockAlignment::kEnd;
+    return EBlockAlignment::kStart;
+  }
+
+  // If none of the inline margins are auto, look for -webkit- text-align
+  // values (which are really about block alignment). These are typically
+  // mapped from the legacy "align" HTML attribute.
+  switch (container_style.GetTextAlign()) {
+    case ETextAlign::kWebkitLeft:
+      if (container_style.IsLeftToRightDirection())
+        return EBlockAlignment::kStart;
+      return EBlockAlignment::kEnd;
+    case ETextAlign::kWebkitRight:
+      if (container_style.IsLeftToRightDirection())
+        return EBlockAlignment::kEnd;
+      return EBlockAlignment::kStart;
+    case ETextAlign::kWebkitCenter:
+      return EBlockAlignment::kCenter;
+    default:
+      return EBlockAlignment::kStart;
+  }
+}
+
+}  // anonymous namespace
+
 bool NeedMinMaxSize(const NGConstraintSpace& constraint_space,
                     const ComputedStyle& style) {
   // This check is technically too broad (fill-available does not need intrinsic
@@ -264,7 +299,14 @@ LayoutUnit ResolveBlockLength(
 
 LayoutUnit ResolveMarginPaddingLength(const NGConstraintSpace& constraint_space,
                                       const Length& length) {
-  DCHECK_GE(constraint_space.AvailableSize().inline_size, LayoutUnit());
+  LayoutUnit percentage_resolution_size =
+      constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
+  return ResolveMarginPaddingLength(percentage_resolution_size, length);
+}
+
+LayoutUnit ResolveMarginPaddingLength(LayoutUnit percentage_resolution_size,
+                                      const Length& length) {
+  DCHECK_GE(percentage_resolution_size, LayoutUnit());
 
   // Margins and padding always get computed relative to the inline size:
   // https://www.w3.org/TR/CSS2/box.html#value-def-margin-width
@@ -274,11 +316,8 @@ LayoutUnit ResolveMarginPaddingLength(const NGConstraintSpace& constraint_space,
       return LayoutUnit();
     case kPercent:
     case kFixed:
-    case kCalculated: {
-      LayoutUnit percentage_resolution_size =
-          constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
+    case kCalculated:
       return ValueForLength(length, percentage_resolution_size);
-    }
     case kMinContent:
     case kMaxContent:
     case kFillAvailable:
@@ -663,51 +702,70 @@ LayoutUnit ResolveUsedColumnGap(LayoutUnit available_size,
 NGPhysicalBoxStrut ComputePhysicalMargins(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style) {
-  if (style.MarginLeft().IsZero() && style.MarginRight().IsZero() &&
-      style.MarginTop().IsZero() && style.MarginBottom().IsZero()) {
-    return NGPhysicalBoxStrut();
-  }
+  LayoutUnit percentage_resolution_size =
+      constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
+  return ComputePhysicalMargins(style, percentage_resolution_size);
+}
 
-  if (constraint_space.IsAnonymous())
+NGPhysicalBoxStrut ComputePhysicalMargins(
+    const ComputedStyle& style,
+    LayoutUnit percentage_resolution_size) {
+  if (!style.HasMargin())
     return NGPhysicalBoxStrut();
 
   NGPhysicalBoxStrut physical_dim;
-  physical_dim.left =
-      ResolveMarginPaddingLength(constraint_space, style.MarginLeft());
-  physical_dim.right =
-      ResolveMarginPaddingLength(constraint_space, style.MarginRight());
+  physical_dim.left = ResolveMarginPaddingLength(percentage_resolution_size,
+                                                 style.MarginLeft());
+  physical_dim.right = ResolveMarginPaddingLength(percentage_resolution_size,
+                                                  style.MarginRight());
   physical_dim.top =
-      ResolveMarginPaddingLength(constraint_space, style.MarginTop());
-  physical_dim.bottom =
-      ResolveMarginPaddingLength(constraint_space, style.MarginBottom());
+      ResolveMarginPaddingLength(percentage_resolution_size, style.MarginTop());
+  physical_dim.bottom = ResolveMarginPaddingLength(percentage_resolution_size,
+                                                   style.MarginBottom());
   return physical_dim;
 }
 
 NGBoxStrut ComputeMarginsFor(const NGConstraintSpace& constraint_space,
                              const ComputedStyle& style,
                              const NGConstraintSpace& compute_for) {
-  return ComputePhysicalMargins(constraint_space, style)
+  if (constraint_space.IsAnonymous())
+    return NGBoxStrut();
+  LayoutUnit percentage_resolution_size =
+      constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
+  return ComputePhysicalMargins(style, percentage_resolution_size)
       .ConvertToLogical(compute_for.GetWritingMode(), compute_for.Direction());
 }
 
 NGLineBoxStrut ComputeLineMarginsForVisualContainer(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style) {
-  return ComputePhysicalMargins(constraint_space, style)
+  if (constraint_space.IsAnonymous())
+    return NGLineBoxStrut();
+  LayoutUnit percentage_resolution_size =
+      constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
+  return ComputePhysicalMargins(style, percentage_resolution_size)
       .ConvertToLineLogical(constraint_space.GetWritingMode(),
                             TextDirection::kLtr);
 }
 
 NGBoxStrut ComputeMarginsForSelf(const NGConstraintSpace& constraint_space,
                                  const ComputedStyle& style) {
-  return ComputePhysicalMargins(constraint_space, style)
+  if (constraint_space.IsAnonymous())
+    return NGBoxStrut();
+  LayoutUnit percentage_resolution_size =
+      constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
+  return ComputePhysicalMargins(style, percentage_resolution_size)
       .ConvertToLogical(style.GetWritingMode(), style.Direction());
 }
 
 NGLineBoxStrut ComputeLineMarginsForSelf(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style) {
-  return ComputePhysicalMargins(constraint_space, style)
+  if (constraint_space.IsAnonymous())
+    return NGLineBoxStrut();
+  LayoutUnit percentage_resolution_size =
+      constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
+  return ComputePhysicalMargins(style, percentage_resolution_size)
       .ConvertToLineLogical(style.GetWritingMode(), style.Direction());
 }
 
@@ -792,15 +850,17 @@ NGBoxStrut ComputePadding(const NGConstraintSpace& constraint_space,
   if (constraint_space.IsAnonymous())
     return NGBoxStrut();
 
+  LayoutUnit percentage_resolution_size =
+      constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
   NGBoxStrut padding;
-  padding.inline_start =
-      ResolveMarginPaddingLength(constraint_space, style.PaddingStart());
-  padding.inline_end =
-      ResolveMarginPaddingLength(constraint_space, style.PaddingEnd());
-  padding.block_start =
-      ResolveMarginPaddingLength(constraint_space, style.PaddingBefore());
-  padding.block_end =
-      ResolveMarginPaddingLength(constraint_space, style.PaddingAfter());
+  padding.inline_start = ResolveMarginPaddingLength(percentage_resolution_size,
+                                                    style.PaddingStart());
+  padding.inline_end = ResolveMarginPaddingLength(percentage_resolution_size,
+                                                  style.PaddingEnd());
+  padding.block_start = ResolveMarginPaddingLength(percentage_resolution_size,
+                                                   style.PaddingBefore());
+  padding.block_end = ResolveMarginPaddingLength(percentage_resolution_size,
+                                                 style.PaddingAfter());
   return padding;
 }
 
@@ -810,8 +870,18 @@ NGLineBoxStrut ComputeLinePadding(const NGConstraintSpace& constraint_space,
                         style.IsFlippedLinesWritingMode());
 }
 
+bool NeedsInlineSizeToResolveLineLeft(const ComputedStyle& style,
+                                      const ComputedStyle& container_style) {
+  // In RTL, there's no block alignment where we can guarantee that line-left
+  // doesn't depend on the inline size of a fragment.
+  if (IsRtl(container_style.Direction()))
+    return true;
+
+  return BlockAlignment(style, container_style) != EBlockAlignment::kStart;
+}
+
 void ResolveInlineMargins(const ComputedStyle& style,
-                          const ComputedStyle& containing_block_style,
+                          const ComputedStyle& container_style,
                           LayoutUnit available_inline_size,
                           LayoutUnit inline_size,
                           NGBoxStrut* margins) {
@@ -819,36 +889,10 @@ void ResolveInlineMargins(const ComputedStyle& style,
   const LayoutUnit used_space = inline_size + margins->InlineSum();
   const LayoutUnit available_space = available_inline_size - used_space;
   if (available_space > LayoutUnit()) {
-    bool start_auto = style.MarginStartUsing(containing_block_style).IsAuto();
-    bool end_auto = style.MarginEndUsing(containing_block_style).IsAuto();
-    enum EBlockAlignment { kStart, kCenter, kEnd };
-    EBlockAlignment alignment;
-    if (start_auto || end_auto) {
-      alignment = start_auto ? (end_auto ? kCenter : kEnd) : kStart;
-    } else {
-      // If none of the inline margins are auto, look for -webkit- text-align
-      // values (which are really about block alignment). These are typically
-      // mapped from the legacy "align" HTML attribute.
-      switch (containing_block_style.GetTextAlign()) {
-        case ETextAlign::kWebkitLeft:
-          alignment =
-              containing_block_style.IsLeftToRightDirection() ? kStart : kEnd;
-          break;
-        case ETextAlign::kWebkitRight:
-          alignment =
-              containing_block_style.IsLeftToRightDirection() ? kEnd : kStart;
-          break;
-        case ETextAlign::kWebkitCenter:
-          alignment = kCenter;
-          break;
-        default:
-          alignment = kStart;
-          break;
-      }
-    }
-    if (alignment == kCenter)
+    EBlockAlignment alignment = BlockAlignment(style, container_style);
+    if (alignment == EBlockAlignment::kCenter)
       margins->inline_start += available_space / 2;
-    else if (alignment == kEnd)
+    else if (alignment == EBlockAlignment::kEnd)
       margins->inline_start += available_space;
   }
   margins->inline_end =

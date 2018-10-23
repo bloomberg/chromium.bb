@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_size.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
@@ -81,6 +82,8 @@ CORE_EXPORT LayoutUnit ResolveBlockLength(
 // given constraint space.
 CORE_EXPORT LayoutUnit ResolveMarginPaddingLength(const NGConstraintSpace&,
                                                   const Length&);
+LayoutUnit ResolveMarginPaddingLength(LayoutUnit percentage_resolution_size,
+                                      const Length&);
 
 // For the given style and min/max content sizes, computes the min and max
 // content contribution (https://drafts.csswg.org/css-sizing/#contributions).
@@ -161,11 +164,22 @@ CORE_EXPORT LayoutUnit ResolveUsedColumnGap(LayoutUnit available_size,
 // Compute physical margins.
 CORE_EXPORT NGPhysicalBoxStrut ComputePhysicalMargins(const NGConstraintSpace&,
                                                       const ComputedStyle&);
+CORE_EXPORT NGPhysicalBoxStrut
+ComputePhysicalMargins(const ComputedStyle&,
+                       LayoutUnit percentage_resolution_size);
 
 // Compute margins for the specified NGConstraintSpace.
 CORE_EXPORT NGBoxStrut ComputeMarginsFor(const NGConstraintSpace&,
                                          const ComputedStyle&,
                                          const NGConstraintSpace& compute_for);
+
+inline NGBoxStrut ComputeMarginsFor(const ComputedStyle& child_style,
+                                    LayoutUnit percentage_resolution_size,
+                                    WritingMode container_writing_mode,
+                                    TextDirection container_direction) {
+  return ComputePhysicalMargins(child_style, percentage_resolution_size)
+      .ConvertToLogical(container_writing_mode, container_direction);
+}
 
 // Compute margins for the style owner.
 CORE_EXPORT NGBoxStrut ComputeMarginsForSelf(const NGConstraintSpace&,
@@ -205,6 +219,14 @@ CORE_EXPORT NGBoxStrut ComputePadding(const NGConstraintSpace&,
 
 CORE_EXPORT NGLineBoxStrut ComputeLinePadding(const NGConstraintSpace&,
                                               const ComputedStyle&);
+
+// Return true if we need to know the inline size of the fragment in order to
+// calculate its line-left offset. This is the case when we have auto margins,
+// or when block alignment isn't line-left (e.g. with align!=left, and always in
+// RTL mode).
+bool NeedsInlineSizeToResolveLineLeft(
+    const ComputedStyle& style,
+    const ComputedStyle& containing_block_style);
 
 // Convert inline margins from computed to used values. This will resolve 'auto'
 // values and over-constrainedness. This uses the available size from the

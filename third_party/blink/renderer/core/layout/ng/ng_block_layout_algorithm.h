@@ -39,6 +39,7 @@ struct NGInflowChildData {
   NGBfcOffset bfc_offset_estimate;
   NGMarginStrut margin_strut;
   NGBoxStrut margins;
+  bool margins_fully_resolved;
   bool force_clearance;
 };
 
@@ -86,7 +87,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   }
 
   NGBoxStrut CalculateMargins(NGLayoutInputNode child,
-                              const NGBreakToken* child_break_token);
+                              const NGBreakToken* child_break_token,
+                              bool* margins_fully_resolved);
 
   // Creates a new constraint space for the current child.
   NGConstraintSpace CreateConstraintSpaceForChild(

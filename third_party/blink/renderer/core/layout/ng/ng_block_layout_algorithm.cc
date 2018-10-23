@@ -1317,8 +1317,20 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
   if (child.IsBlock())
     container_builder_.PropagateBreak(*layout_result);
 
-  if (child.IsBlock())
+  if (child.IsBlock()) {
+    // We haven't yet resolved margins wrt. overconstrainedness, unless that was
+    // also required to calculate line-left offset (due to block alignment)
+    // before layout. Do so now, so that we store the correct values (which is
+    // required by e.g. getComputedStyle()).
+    if (!child_data.margins_fully_resolved) {
+      ResolveInlineMargins(child.Style(), Style(),
+                           child_available_size_.inline_size,
+                           fragment.InlineSize(), &child_data.margins);
+      child_data.margins_fully_resolved = true;
+    }
+
     ToNGBlockNode(child).StoreMargins(ConstraintSpace(), child_data.margins);
+  }
 
   *previous_inflow_position = ComputeInflowPosition(
       *previous_inflow_position, child, child_data, child_bfc_block_offset,
@@ -1341,7 +1353,9 @@ NGInflowChildData NGBlockLayoutAlgorithm::ComputeChildData(
   DCHECK(!child.IsFloating());
 
   // Calculate margins in parent's writing mode.
-  NGBoxStrut margins = CalculateMargins(child, child_break_token);
+  bool margins_fully_resolved;
+  NGBoxStrut margins =
+      CalculateMargins(child, child_break_token, &margins_fully_resolved);
 
   // Append the current margin strut with child's block start margin.
   // Non empty border/padding, and new FC use cases are handled inside of the
@@ -1367,7 +1381,8 @@ NGInflowChildData NGBlockLayoutAlgorithm::ComputeChildData(
           margins.LineLeft(ConstraintSpace().Direction()),
       BfcBlockOffset() + logical_block_offset};
 
-  return {child_bfc_offset, margin_strut, margins, force_clearance};
+  return {child_bfc_offset, margin_strut, margins, margins_fully_resolved,
+          force_clearance};
 }
 
 NGPreviousInflowPosition NGBlockLayoutAlgorithm::ComputeInflowPosition(
@@ -1798,26 +1813,45 @@ NGBlockLayoutAlgorithm::BreakType NGBlockLayoutAlgorithm::BreakTypeBeforeChild(
 
 NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
     NGLayoutInputNode child,
-    const NGBreakToken* child_break_token) {
+    const NGBreakToken* child_break_token,
+    bool* margins_fully_resolved) {
+  // We need to at least partially resolve margins before creating a constraint
+  // space for layout. Layout needs to know the line-left offset before
+  // starting. If the line-left offset cannot be calculated without fully
+  // resolving the margins (because of block alignment), we have to create a
+  // temporary constraint space now to figure out the inline size first. In all
+  // other cases we'll postpone full resolution until after child layout, when
+  // we actually have a child constraint space to use (and know the inline
+  // size).
+  *margins_fully_resolved = false;
+
   DCHECK(child);
   if (child.IsInline())
     return {};
   const ComputedStyle& child_style = child.Style();
+  bool needs_inline_size =
+      NeedsInlineSizeToResolveLineLeft(child_style, Style());
+  if (!needs_inline_size && !child_style.HasMargin())
+    return {};
 
-  NGConstraintSpace space =
-      NGConstraintSpaceBuilder(ConstraintSpace())
-          .SetAvailableSize(child_available_size_)
-          .SetPercentageResolutionSize(child_percentage_size_)
-          .ToConstraintSpace(child_style.GetWritingMode());
-
-  NGBoxStrut margins = ComputeMarginsFor(space, child_style, ConstraintSpace());
+  NGBoxStrut margins = ComputeMarginsFor(
+      child_style, child_percentage_size_.inline_size,
+      ConstraintSpace().GetWritingMode(), ConstraintSpace().Direction());
   if (ShouldIgnoreBlockStartMargin(ConstraintSpace(), child, child_break_token))
     margins.block_start = LayoutUnit();
 
   // As long as the child isn't establishing a new formatting context, we need
-  // to resolve auto margins before layout, to be able to position child floats
-  // correctly.
-  if (!child.CreatesNewFormattingContext()) {
+  // to know its line-left offset before layout, to be able to position child
+  // floats correctly. If we need to resolve auto margins or other alignment
+  // properties to calculate the line-left offset, we also need to calculate its
+  // inline size first.
+  if (!child.CreatesNewFormattingContext() && needs_inline_size) {
+    NGConstraintSpace space =
+        NGConstraintSpaceBuilder(ConstraintSpace())
+            .SetAvailableSize(child_available_size_)
+            .SetPercentageResolutionSize(child_percentage_size_)
+            .ToConstraintSpace(child_style.GetWritingMode());
+
     NGBoxStrut child_border_padding =
         ComputeBorders(space, child) + ComputePadding(space, child.Style());
     LayoutUnit child_inline_size =
@@ -1826,6 +1860,7 @@ NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
     ResolveInlineMargins(child_style, Style(),
                          space.AvailableSize().inline_size, child_inline_size,
                          &margins);
+    *margins_fully_resolved = true;
   }
   return margins;
 }
