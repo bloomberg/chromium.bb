@@ -49,6 +49,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "base/win/windows_version.h"
 #include "content/browser/tracing/etw_tracing_agent_win.h"
 #endif
 
@@ -189,6 +190,7 @@ TracingControllerImpl::GenerateMetadataDict() const {
   if (soname)
     metadata_dict->SetString("chrome-library-name", soname.value());
 #endif  // defined(OS_ANDROID)
+  metadata_dict->SetInteger("chrome-bitness", 8 * sizeof(uintptr_t));
 
   // OS
 #if defined(OS_CHROMEOS)
@@ -198,6 +200,17 @@ TracingControllerImpl::GenerateMetadataDict() const {
 #endif
   metadata_dict->SetString("os-version",
                            base::SysInfo::OperatingSystemVersion());
+#if defined(OS_WIN)
+  if (base::win::OSInfo::GetInstance()->architecture() ==
+      base::win::OSInfo::X64_ARCHITECTURE) {
+    if (base::win::OSInfo::GetInstance()->wow64_status() ==
+        base::win::OSInfo::WOW64_ENABLED) {
+      metadata_dict->SetString("os-wow64", "enabled");
+    } else {
+      metadata_dict->SetString("os-wow64", "disabled");
+    }
+  }
+#endif
   metadata_dict->SetString("os-arch",
                            base::SysInfo::OperatingSystemArchitecture());
 
