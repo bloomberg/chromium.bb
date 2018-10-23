@@ -54,6 +54,7 @@ class CORE_EXPORT ScriptStreamer final
     kErrorOccurred,
     kStreamingDisabled,
     kSecondScriptResourceUse,
+    kWorkerTopLevelScript,
 
     // Pseudo values that should never be seen in reported metrics
     kCount,
