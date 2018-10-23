@@ -263,7 +263,6 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   void OnHostWorkspaceChanged();
   void OnHostDisplayChanged();
   void OnHostCloseRequested();
-  void OnHostActivated();
   void OnHostLostWindowCapture();
 
   // Sets the currently displayed cursor.

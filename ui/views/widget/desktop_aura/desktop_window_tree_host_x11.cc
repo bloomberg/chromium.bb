@@ -223,7 +223,6 @@ void DesktopWindowTreeHostX11::AfterActivationStateChanged() {
 
   if (!was_active_ && IsActive()) {
     FlashFrame(false);
-    OnHostActivated();
     // TODO(thomasanderson): Remove this window shuffling and use XWindowCache
     // instead.
     open_windows().remove(xwindow_);

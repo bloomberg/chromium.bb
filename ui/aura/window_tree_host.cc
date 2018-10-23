@@ -435,10 +435,6 @@ void WindowTreeHost::OnHostCloseRequested() {
     observer.OnHostCloseRequested(this);
 }
 
-void WindowTreeHost::OnHostActivated() {
-  window()->env()->NotifyHostActivated(this);
-}
-
 void WindowTreeHost::OnHostLostWindowCapture() {
   // It is possible for this function to be called during destruction, after the
   // root window has already been destroyed (e.g. when the ui::PlatformWindow is

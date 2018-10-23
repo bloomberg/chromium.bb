@@ -772,8 +772,6 @@ void DesktopWindowTreeHostWin::HandleActivationChanged(bool active) {
   if (!dispatcher())
     return;
 
-  if (active)
-    OnHostActivated();
   desktop_native_widget_aura_->HandleActivationChanged(active);
 }
 

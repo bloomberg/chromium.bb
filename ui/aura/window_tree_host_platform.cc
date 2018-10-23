@@ -279,8 +279,6 @@ void WindowTreeHostPlatform::OnAcceleratedWidgetDestroyed() {
 }
 
 void WindowTreeHostPlatform::OnActivationChanged(bool active) {
-  if (active)
-    OnHostActivated();
 }
 
 }  // namespace aura
