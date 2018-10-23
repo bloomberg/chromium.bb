@@ -45,6 +45,16 @@ cr_slider.SliderTick;
       disabled: {
         type: Boolean,
         value: false,
+      },
+
+      /**
+       * Internal representation of disabled depending on |disabled| and
+       * |ticks|.
+       * @private
+       */
+      disabled_: {
+        type: Boolean,
+        computed: 'computeDisabled_(disabled, ticks.*)',
         reflectToAttribute: true,
       },
 
@@ -82,7 +92,6 @@ cr_slider.SliderTick;
       ticks: {
         type: Array,
         value: () => [],
-        observer: 'onTicksChanged_',
       },
 
       value: {
@@ -132,6 +141,7 @@ cr_slider.SliderTick;
     },
 
     observers: [
+      'onTicksChanged_(ticks.*)',
       'updateLabelAndAria_(immediateValue_, min, max)',
       'updateKnobAndBar_(immediateValue_, min, max)',
     ],
@@ -164,6 +174,11 @@ cr_slider.SliderTick;
         ['ArrowRight', this.isRtl_ ? -1 : 1],
       ]);
       this.draggingEventTracker_ = new EventTracker();
+    },
+
+    /** @private */
+    computeDisabled_: function() {
+      return this.disabled || this.ticks.length == 1;
     },
 
     /**
@@ -249,7 +264,7 @@ cr_slider.SliderTick;
      * @private
      */
     onKeyDown_: function(event) {
-      if (this.disabled)
+      if (this.disabled_)
         return;
 
       if (event.metaKey || event.shiftKey || event.altKey || event.ctrlKey)
@@ -281,7 +296,7 @@ cr_slider.SliderTick;
      * @private
      */
     onPointerDown_: function(event) {
-      if (this.disabled || event.buttons != 1 && event.pointerType == 'mouse')
+      if (this.disabled_ || event.buttons != 1 && event.pointerType == 'mouse')
         return;
 
       this.dragging = true;
@@ -318,12 +333,8 @@ cr_slider.SliderTick;
     /** @private */
     onTicksChanged_: function() {
       if (this.ticks.length == 0) {
-        this.disabled = false;
         this.snaps = false;
-      } else if (this.ticks.length == 1) {
-        this.disabled = true;
-      } else {
-        this.disabled = false;
+      } else if (this.ticks.length > 1) {
         this.snaps = true;
         this.max = this.ticks.length - 1;
         this.min = 0;
