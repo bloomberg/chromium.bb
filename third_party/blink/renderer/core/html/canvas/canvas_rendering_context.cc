@@ -43,14 +43,16 @@ CanvasRenderingContext::CanvasRenderingContext(
     : host_(host),
       color_params_(kSRGBCanvasColorSpace, kRGBA8CanvasPixelFormat, kNonOpaque),
       creation_attributes_(attrs) {
-  // Supported color spaces: srgb-uint8, srgb-f16, p3-f16, rec2020-f16. For wide
-  // gamut color spaces, user must explicitly request for float16 storage.
-  // Otherwise, we fall back to srgb-uint8. If GPU compositing is not available,
-  // again we fall back to srgb-uint8. Invalid requests also fall back to
-  // srgb-uint8.
+  // Supported color spaces and pixel formats: sRGB in uint8, e-sRGB in f16,
+  // linear sRGB and p3 and rec2020 with linear gamma transfer function in f16.
+  // For wide gamut color spaces, user must explicitly request half float
+  // storage. Otherwise, we fall back to sRGB in uint8. Invalid requests fall
+  // back to sRGB in uint8 too.
   if (SharedGpuContext::IsGpuCompositingEnabled()) {
     if (creation_attributes_.pixel_format == kF16CanvasPixelFormatName) {
       color_params_.SetCanvasPixelFormat(kF16CanvasPixelFormat);
+      if (creation_attributes_.color_space == kLinearRGBCanvasColorSpaceName)
+        color_params_.SetCanvasColorSpace(kLinearRGBCanvasColorSpace);
       if (creation_attributes_.color_space == kRec2020CanvasColorSpaceName)
         color_params_.SetCanvasColorSpace(kRec2020CanvasColorSpace);
       else if (creation_attributes_.color_space == kP3CanvasColorSpaceName)
@@ -74,6 +76,8 @@ WTF::String CanvasRenderingContext::ColorSpaceAsString() const {
   switch (color_params_.ColorSpace()) {
     case kSRGBCanvasColorSpace:
       return kSRGBCanvasColorSpaceName;
+    case kLinearRGBCanvasColorSpace:
+      return kLinearRGBCanvasColorSpaceName;
     case kRec2020CanvasColorSpace:
       return kRec2020CanvasColorSpaceName;
     case kP3CanvasColorSpace:
@@ -87,10 +91,6 @@ WTF::String CanvasRenderingContext::PixelFormatAsString() const {
   switch (color_params_.PixelFormat()) {
     case kRGBA8CanvasPixelFormat:
       return kRGBA8CanvasPixelFormatName;
-    case kRGB10A2CanvasPixelFormat:
-      return kRGB10A2CanvasPixelFormatName;
-    case kRGBA12CanvasPixelFormat:
-      return kRGBA12CanvasPixelFormatName;
     case kF16CanvasPixelFormat:
       return kF16CanvasPixelFormatName;
   };

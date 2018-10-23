@@ -18,10 +18,15 @@ var testImagesPath = "../../../images/resources/png-16bit/";
 
 // Source of pixel comparison error in these tests:
 // - color conversion from different color profiles (sRGB, Adobe RGB, Display P3,
-//   and Rec 2020) to target canvas color space (sRGB, linear P3, linear Rec 2020).
+//   ProPhoto and Rec 2020) to target canvas color space (sRGB, e-sRGB, linear RGB,
+//   linear P3, linear Rec 2020).
+// - e-sRGB source image is not tested here since the color profile attached to
+//   png image by Photoshop is different from what is expected by Skia. Hence,
+//   the pixel results do not match. Still, e-sRGB sources are thoroughly tested
+//   in unit tests.
 // - comparing the result of drawing 8 bit and 16 bit PNGs with each other.
 var defaultColorConversionTolerance = 8;
-var wideGamutColorConversionTolerance = 0.04;
+var wideGamutColorConversionTolerance = 0.05;
 
 function runTest(testScenario) {
     var _8bitImageSrc = testImagesPath + testScenario._8bitImagePath;
@@ -89,6 +94,7 @@ function runAllTests() {
         // We expect the new 16 bit decoding capability to be compatible with
         // the regular 8 bits decoding code path.
         {colorSpace: 'srgb', pixelFormat: 'float16'},
+        {colorSpace: 'linear-rgb', pixelFormat: 'float16'},
         {colorSpace: 'rec2020', pixelFormat: 'float16'},
         {colorSpace: 'p3', pixelFormat: 'float16'}
     ];
