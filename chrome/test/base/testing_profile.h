@@ -345,10 +345,12 @@ class TestingProfile : public Profile {
       const base::FilePath& relative_partition_path) override;
 
 #if defined(OS_CHROMEOS)
-  void ChangeAppLocale(const std::string&, AppLocaleChangedVia) override {}
+  void ChangeAppLocale(const std::string&, AppLocaleChangedVia) override;
   void OnLogin() override {}
   void InitChromeOSPreferences() override {}
   chromeos::ScopedCrosSettingsTestHelper* ScopedCrosSettingsTestHelper();
+
+  base::Optional<std::string> requested_locale() { return requested_locale_; }
 #endif  // defined(OS_CHROMEOS)
 
   // Schedules a task on the history backend and runs a nested loop until the
@@ -458,6 +460,8 @@ class TestingProfile : public Profile {
 #if defined(OS_CHROMEOS)
   std::unique_ptr<chromeos::ScopedCrosSettingsTestHelper>
       scoped_cros_settings_test_helper_;
+
+  base::Optional<std::string> requested_locale_;
 #endif  // defined(OS_CHROMEOS)
 
   std::unique_ptr<policy::PolicyService> policy_service_;

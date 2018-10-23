@@ -32,6 +32,8 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/image_loader_client.h"
 #include "chromeos/settings/install_attributes.h"
+#include "components/language/core/browser/pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
@@ -114,6 +116,46 @@ std::string GetHighlightsAppId() {
   if (GetBoardName() == "nocturne")
     return extension_misc::kHighlightsAlt2AppId;
   return extension_misc::kHighlightsAppId;
+}
+
+// If the current locale is not the default one, ensure it is reverted to the
+// default when demo session restarts (i.e. user-selected locale is only allowed
+// to be used for a single session).
+void RestoreDefaultLocaleForNextSession() {
+  auto* user = user_manager::UserManager::Get()->GetActiveUser();
+  // Tests may not have an active user.
+  if (!user)
+    return;
+  if (!user->is_profile_created()) {
+    user->AddProfileCreatedObserver(
+        base::BindOnce(&RestoreDefaultLocaleForNextSession));
+    return;
+  }
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  DCHECK(profile);
+  const std::string current_locale =
+      profile->GetPrefs()->GetString(language::prefs::kApplicationLocale);
+  if (current_locale.empty()) {
+    LOG(WARNING) << "Current locale read from kApplicationLocale is empty!";
+    return;
+  }
+  const std::string default_locale =
+      g_browser_process->local_state()->GetString(
+          prefs::kDemoModeDefaultLocale);
+  if (default_locale.empty()) {
+    // If the default locale is uninitialized, consider the current locale to be
+    // the default. This is safe because users are not allowed to change the
+    // locale prior to introduction of this code.
+    g_browser_process->local_state()->SetString(prefs::kDemoModeDefaultLocale,
+                                                current_locale);
+    return;
+  }
+  if (current_locale != default_locale) {
+    // If the user has changed the locale, request to change it back (which will
+    // take effect when the session restarts).
+    profile->ChangeAppLocale(default_locale,
+                             Profile::APP_LOCALE_CHANGED_VIA_DEMO_SESSION);
+  }
 }
 
 }  // namespace
@@ -265,6 +307,11 @@ bool DemoSession::ShouldDisplayInAppLauncher(const std::string& app_id) {
   return app_id != GetScreensaverAppId() &&
          app_id != extensions::kWebStoreAppId &&
          app_id != extension_misc::kGeniusAppId;
+}
+
+// static
+void DemoSession::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(prefs::kDemoModeDefaultLocale, std::string());
 }
 
 void DemoSession::EnsureOfflineResourcesLoaded(
@@ -452,6 +499,8 @@ void DemoSession::OnSessionStateChanged() {
       session_manager::SessionState::ACTIVE) {
     return;
   }
+  RestoreDefaultLocaleForNextSession();
+
   if (!offline_enrolled_)
     InstallAppFromUpdateUrl(GetHighlightsAppId());
 

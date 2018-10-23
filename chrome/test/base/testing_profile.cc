@@ -881,6 +881,11 @@ void TestingProfile::set_last_selected_directory(const base::FilePath& path) {
 }
 
 #if defined(OS_CHROMEOS)
+void TestingProfile::ChangeAppLocale(const std::string& locale,
+                                     AppLocaleChangedVia via) {
+  requested_locale_ = locale;
+}
+
 chromeos::ScopedCrosSettingsTestHelper*
 TestingProfile::ScopedCrosSettingsTestHelper() {
   return scoped_cros_settings_test_helper_.get();
