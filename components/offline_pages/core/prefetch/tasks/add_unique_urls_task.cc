@@ -41,10 +41,10 @@ FindExistingPrefetchItemsInNamespaceSync(sql::Database* db,
 
   std::map<std::string, std::pair<int64_t, PrefetchItemState>> result;
   while (statement.Step()) {
-    result.insert(std::make_pair(
+    result.emplace(
         statement.ColumnString(2),
-        std::make_pair(statement.ColumnInt64(0), static_cast<PrefetchItemState>(
-                                                     statement.ColumnInt(1)))));
+        std::make_pair(statement.ColumnInt64(0),
+                       static_cast<PrefetchItemState>(statement.ColumnInt(1))));
   }
 
   return result;
