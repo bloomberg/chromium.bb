@@ -179,7 +179,10 @@ void BookmarkModelTypeProcessor::OnUpdateReceived(
       bookmark_model_, bookmark_undo_service_, bookmark_model_observer_.get());
   BookmarkRemoteUpdatesHandler updates_handler(
       bookmark_model_, favicon_service_, bookmark_tracker_.get());
-  updates_handler.Process(updates);
+  const bool got_new_encryption_requirements =
+      bookmark_tracker_->model_type_state().encryption_key_name() !=
+      model_type_state.encryption_key_name();
+  updates_handler.Process(updates, got_new_encryption_requirements);
   bookmark_tracker_->set_model_type_state(
       std::make_unique<sync_pb::ModelTypeState>(model_type_state));
   // Schedule save just in case one is needed.
