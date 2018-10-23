@@ -13,52 +13,54 @@
     <link rel="import" href="chrome://resources/html/cr.html">
     <link rel="import" href="chrome://resources/html/load_time_data.html">
     <link rel="import" href="chrome://resources/html/util.html">
-    <style is="custom-style" include="signin-dialog-shared paper-button-style">
-      .container {
-        /* The sign-in confirmation dialog uses a width that is larger than
-         * the other sign-in dialogs to fit cases when the user has an email
-         * name that is very large. */
-        width: 512px;
-      }
+    <custom-style>
+      <style is="custom-style" include="signin-dialog-shared paper-button-style">
+        .container {
+          /* The sign-in confirmation dialog uses a width that is larger than
+           * the other sign-in dialogs to fit cases when the user has an email
+           * name that is very large. */
+          width: 512px;
+        }
 
-      .details {
-        line-height: 20px;
-        margin-inline-start: -8px;
-        padding: 8px 24px 0;
-      }
+        .details {
+          line-height: 20px;
+          margin-inline-start: -8px;
+          padding: 8px 24px 0;
+        }
 
-      .radio-button-title-container {
-        font-weight: 500;
-        line-height: 20px;
-      }
+        .radio-button-title-container {
+          font-weight: 500;
+          line-height: 20px;
+        }
 
-      .radio-button-subtitle-container {
-        line-height: 20px;
-      }
+        .radio-button-subtitle-container {
+          line-height: 20px;
+        }
 
-      .top-title-bar {
-        color: #333;
-        height: auto;
+        .top-title-bar {
+          color: #333;
+          height: auto;
 
-        /* The signin email confirmation dialog needs to support cases when the
-         * title extends multiple lines. In that case, the height of the title
-         * bar is equal to padding + height of the text (which is equal to
-         * 2*16px + nb_lines * 22px). */
-        line-height: 22px;
-        padding: 16px 24px;
-      }
+          /* The signin email confirmation dialog needs to support cases when the
+           * title extends multiple lines. In that case, the height of the title
+           * bar is equal to padding + height of the text (which is equal to
+           * 2*16px + nb_lines * 22px). */
+          line-height: 22px;
+          padding: 16px 24px;
+        }
 
-      #closeButton {
-        margin-inline-start: 8px;
-      }
+        #closeButton {
+          margin-inline-start: 8px;
+        }
 
 <if expr="is_macosx or is_linux">
-      #closeButton {
-        margin-inline-end: 8px;
-        margin-inline-start: 0;
-      }
+        #closeButton {
+          margin-inline-end: 8px;
+          margin-inline-start: 0;
+        }
 </if>
-    </style>
+      </style>
+    <custom-style>
   </head>
   <body>
     <div class="container">
