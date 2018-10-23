@@ -19,7 +19,9 @@ bool CalculateShouldShowNotification() {
   SessionController* const session_controller =
       Shell::Get()->session_controller();
 
-  return !session_controller->IsRunningInAppMode();
+  return !session_controller->IsRunningInAppMode() &&
+         (!session_controller->IsScreenLocked() ||
+          AshMessageCenterLockScreenController::IsEnabled());
 }
 
 bool CalculateShouldShowPopup() {
