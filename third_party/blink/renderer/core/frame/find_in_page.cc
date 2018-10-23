@@ -307,7 +307,8 @@ WebPlugin* FindInPage::GetWebPluginForFind() {
 
 void FindInPage::BindToRequest(
     mojom::blink::FindInPageAssociatedRequest request) {
-  binding_.Bind(std::move(request));
+  binding_.Bind(std::move(request),
+                frame_->GetTaskRunner(blink::TaskType::kInternalDefault));
 }
 
 void FindInPage::Dispose() {
