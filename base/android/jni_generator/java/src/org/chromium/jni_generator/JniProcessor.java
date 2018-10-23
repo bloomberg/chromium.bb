@@ -243,6 +243,7 @@ public class JniProcessor extends AbstractProcessor {
                                                  .addModifiers(Modifier.FINAL)
                                                  .addModifiers(Modifier.STATIC)
                                                  .addModifiers(Modifier.NATIVE);
+            builder.addJavadoc(createNativeMethodJavadocString(outerType, m));
 
             copyMethodParamsAndReturnType(builder, m, true);
             if (methodMap.containsKey(oldMethodName)) {
@@ -371,6 +372,35 @@ public class JniProcessor extends AbstractProcessor {
 
     void copyMethodParamsAndReturnType(MethodSpec.Builder builder, ExecutableElement method) {
         copyMethodParamsAndReturnType(builder, method, false);
+    }
+
+    /**
+     * Since some types may decay to objects in the native method
+     * this method returns a javadoc string that contains the
+     * type information from the old method. The fully qualified
+     * descriptor of the method is also included since the name
+     * may be hashed.
+     */
+    String createNativeMethodJavadocString(ClassName outerType, ExecutableElement oldMethod) {
+        ArrayList<String> docLines = new ArrayList<>();
+
+        // Class descriptor.
+        String descriptor = String.format("%s.%s.%s", outerType.packageName(),
+                outerType.simpleName(), oldMethod.getSimpleName().toString());
+        docLines.add(descriptor);
+
+        // Parameters.
+        for (VariableElement param : oldMethod.getParameters()) {
+            TypeName paramType = TypeName.get(param.asType());
+            String paramTypeName = paramType.toString();
+            String name = param.getSimpleName().toString();
+            docLines.add(String.format("@param %s (%s)", name, paramTypeName));
+        }
+
+        // Return type.
+        docLines.add(String.format("@return (%s)", oldMethod.getReturnType().toString()));
+
+        return String.join("\n", docLines) + "\n";
     }
 
     void copyMethodParamsAndReturnType(
