@@ -15,8 +15,16 @@ public class TranslateBridge {
      * Translates the given tab.
      */
     public static void translateTab(Tab tab) {
-        nativeTranslate(tab.getWebContents(), tab.getUrl());
+        nativeTranslate(tab.getWebContents());
     }
 
-    private static native void nativeTranslate(WebContents webContents, String url);
+    /**
+     * Returns true iff the current tab can be manually translated.
+     */
+    public static boolean canManuallyTranslate(Tab tab) {
+        return nativeCanManuallyTranslate(tab.getWebContents());
+    }
+
+    private static native void nativeTranslate(WebContents webContents);
+    private static native boolean nativeCanManuallyTranslate(WebContents webConcents);
 }

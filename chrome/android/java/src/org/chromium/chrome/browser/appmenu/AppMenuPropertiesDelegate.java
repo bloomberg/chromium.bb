@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.webapk.lib.client.WebApkValidator;
@@ -181,7 +182,8 @@ public class AppMenuPropertiesDelegate {
                             && !TextUtils.isEmpty(url) && currentTab.getWebContents() != null
                             && ChromeFeatureList.isInitialized()
                             && ChromeFeatureList.isEnabled(
-                                       ChromeFeatureList.TRANSLATE_ANDROID_MANUAL_TRIGGER));
+                                       ChromeFeatureList.TRANSLATE_ANDROID_MANUAL_TRIGGER)
+                            && TranslateBridge.canManuallyTranslate(currentTab));
 
             // Hide 'Add to homescreen' for the following:
             // * chrome:// pages - Android doesn't know how to direct those URLs.
