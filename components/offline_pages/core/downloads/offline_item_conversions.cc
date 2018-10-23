@@ -50,6 +50,7 @@ OfflineItem OfflineItemConversions::CreateOfflineItem(
   item.filter = OfflineItemFilter::FILTER_PAGE;
   item.state = OfflineItemState::COMPLETE;
   item.total_size_bytes = page.file_size;
+  item.received_bytes = page.file_size;
   item.creation_time = page.creation_time;
   // Completion time is the time when the offline archive was created.
   item.completion_time = page.creation_time;
