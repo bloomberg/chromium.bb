@@ -288,8 +288,6 @@ class Worker(object):
         if test_input.reference_files is None:
             # Lazy initialization.
             test_input.reference_files = self._port.reference_files(test_input.test_name)
-        test_input.should_run_pixel_test_first = (
-            self._port.should_run_pixel_test_first(test_input.test_name))
 
     def _run_test(self, test_input, shard_name, batch_size):
         # If the batch size has been exceeded, kill the drivers.

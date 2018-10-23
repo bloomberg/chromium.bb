@@ -1699,16 +1699,6 @@ class Port(object):
                 return suite.reference_args
         return []
 
-    def should_run_pixel_test_first(self, test_name):
-        """Returns true if the directory of the test (or the base test if the
-           test is virtual) is listed in _options.image_first_tests (which comes
-           from LayoutTests/ImageFirstTests or the command line).
-        """
-        if any(test_name.startswith(directory) for directory in self._options.image_first_tests):
-            return True
-        base = self.lookup_virtual_test_base(test_name)
-        return base and self.should_run_pixel_test_first(base)
-
     def _build_path(self, *comps):
         """Returns a path from the build directory."""
         return self._build_path_with_target(self._options.target, *comps)

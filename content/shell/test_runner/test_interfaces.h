@@ -38,7 +38,8 @@ class TestInterfaces {
   void ResetAll();
   bool TestIsRunning();
   void SetTestIsRunning(bool running);
-  void ConfigureForTestWithURL(const blink::WebURL& test_url);
+  void ConfigureForTestWithURL(const blink::WebURL& test_url,
+                               bool protocol_mode);
 
   void WindowOpened(WebViewTestProxyBase* proxy);
   void WindowClosed(WebViewTestProxyBase* proxy);

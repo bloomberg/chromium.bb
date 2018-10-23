@@ -375,7 +375,8 @@ bool BlinkTestController::PrepareForLayoutTest(const TestInfo& test_info) {
       test_url_, &is_devtools_protocol_test);
   did_send_initial_test_configuration_ = false;
 
-  if (test_info.protocol_mode)
+  protocol_mode_ = test_info.protocol_mode;
+  if (protocol_mode_)
     printer_->set_capture_text_only(false);
   printer_->reset();
 
@@ -950,6 +951,7 @@ void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
             switches::kAllowExternalPages);
     params->expected_pixel_hash = expected_pixel_hash_;
     params->initial_size = initial_size_;
+    params->protocol_mode = protocol_mode_;
 
     if (did_send_initial_test_configuration_) {
       GetLayoutTestControlPtr(frame)->ReplicateTestConfiguration(

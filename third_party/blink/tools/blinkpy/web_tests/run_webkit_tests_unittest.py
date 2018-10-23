@@ -1091,19 +1091,6 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         json_failing_test_results = host.filesystem.read_text_file('/tmp/json_failing_results.json')
         self.assertEqual(json.loads(json_failing_test_results), details.summarized_failing_results)
 
-    def test_image_first_flag_initialized_from_file(self):
-        host = MockHost()
-        image_first_tests_filename = test.LAYOUT_TEST_DIR + '/ImageFirstTests'
-        image_first_folder1 = 'fooFolder1'
-        image_first_folder2 = 'fooFolder2'
-        host.filesystem.write_text_file(image_first_tests_filename, '%s\n%s' % (image_first_folder1, image_first_folder2))
-
-        options, args = parse_args()
-        port_obj = host.port_factory.get(options.platform, options)
-        printer = Printer(host, options, StringIO.StringIO())
-        run_webkit_tests.run(port_obj, options, args, printer)
-        self.assertListEqual(options.image_first_tests, [image_first_folder1, image_first_folder2])
-
 
 class EndToEndTest(unittest.TestCase):
 
@@ -1269,13 +1256,12 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(len(file_list), 6)
         self.assert_baselines(file_list, log_stream, 'failures/unexpected/testharness', ['.txt'])
 
-    def test_reset_results_image_first(self):
-        # Tests that we don't create new text results for an image first test without text result.
+    def test_reset_results_image_only(self):
+        # Tests that we don't create new text results for an image-only test.
         host = MockHost()
         details, log_stream, _ = logging_run(
             [
                 '--reset-results',
-                '--image-first-tests=failures/unexpected',
                 'failures/unexpected/image-only.html',
             ],
             tests_included=True, host=host)

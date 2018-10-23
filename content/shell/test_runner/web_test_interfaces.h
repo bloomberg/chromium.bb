@@ -45,8 +45,10 @@ class TEST_RUNNER_EXPORT WebTestInterfaces {
   bool TestIsRunning();
   void SetTestIsRunning(bool running);
 
-  // Configures the renderer for the test, based on |test_url|.
-  void ConfigureForTestWithURL(const blink::WebURL& test_url);
+  // Configures the renderer for the test, based on |test_url| and
+  // |procotol_mode|.
+  void ConfigureForTestWithURL(const blink::WebURL& test_url,
+                               bool protocol_mode);
 
   WebTestRunner* TestRunner();
   blink::WebThemeEngine* ThemeEngine();

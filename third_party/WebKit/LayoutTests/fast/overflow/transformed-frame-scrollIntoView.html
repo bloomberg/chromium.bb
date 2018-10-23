@@ -26,6 +26,7 @@
 <script>
 if (window.testRunner) {
     testRunner.waitUntilDone();
+    testRunner.dumpAsLayoutWithPixelResults();
     testRunner.dumpChildFrames();
 }
 document.getElementById('frame').contentWindow.addEventListener('load', function() {

@@ -93,7 +93,8 @@ void TestInterfaces::SetTestIsRunning(bool running) {
   test_runner_->SetTestIsRunning(running);
 }
 
-void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url) {
+void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
+                                             bool protocol_mode) {
   std::string spec = GURL(test_url).spec();
   size_t path_start = spec.rfind("LayoutTests/");
   if (path_start != std::string::npos) {
@@ -108,6 +109,17 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url) {
   if (is_devtools_test) {
     test_runner_->SetDumpConsoleMessages(false);
   }
+
+  // In protocol mode (see TestInfo::protocol_mode), we dump layout only when
+  // requested by the test. In non-protocol mode, we dump layout by default
+  // because the layout may be the only interesting thing to the user while
+  // we don't dump non-human-readable binary data. In non-protocol mode, we
+  // still generate pixel results (though don't dump them) to let the renderer
+  // execute the same code regardless of the protocol mode, e.g. for ease of
+  // debugging a layout test issue.
+  if (!protocol_mode)
+    test_runner_->setShouldDumpAsLayout(true);
+
   // For http/tests/loading/, which is served via httpd and becomes /loading/.
   if (spec.find("/loading/") != std::string::npos)
     test_runner_->setShouldDumpFrameLoadCallbacks(true);

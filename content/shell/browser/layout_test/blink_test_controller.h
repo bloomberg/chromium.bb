@@ -296,6 +296,7 @@ class BlinkTestController : public WebContentsObserver,
   std::string expected_pixel_hash_;
   gfx::Size initial_size_;
   GURL test_url_;
+  bool protocol_mode_;
 
   // Stores the default test-adapted WebPreferences which is then used to fully
   // reset the main window's preferences if and when it is reused.
