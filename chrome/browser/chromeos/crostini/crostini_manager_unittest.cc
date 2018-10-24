@@ -387,6 +387,12 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
     }
   }
 
+  void OnContainerSetup(CrostiniResult result) override {
+    if (abort_on_container_setup_) {
+      Abort();
+    }
+  }
+
   void OnSshKeysFetched(CrostiniResult result) override {
     if (abort_on_ssh_keys_fetched_) {
       Abort();
@@ -422,6 +428,7 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
   bool abort_on_vm_started_ = false;
   bool abort_on_container_created_ = false;
   bool abort_on_container_started_ = false;
+  bool abort_on_container_setup_ = false;
   bool abort_on_ssh_keys_fetched_ = false;
   int restart_crostini_callback_count_ = 0;
   chromeos::disks::MockDiskMountManager* disk_mount_manager_mock_;
@@ -533,6 +540,21 @@ TEST_F(CrostiniManagerRestartTest, AbortOnContainerCreatedError) {
 
 TEST_F(CrostiniManagerRestartTest, AbortOnContainerStarted) {
   abort_on_container_started_ = true;
+  // Use termina/penguin names to allow fetch ssh keys.
+  restart_id_ = crostini_manager()->RestartCrostini(
+      kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()),
+      this);
+  run_loop()->Run();
+  EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
+  EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
+  EXPECT_FALSE(fake_concierge_client_->get_container_ssh_keys_called());
+  EXPECT_EQ(0, restart_crostini_callback_count_);
+}
+
+TEST_F(CrostiniManagerRestartTest, AbortOnContainerSetup) {
+  abort_on_container_setup_ = true;
   // Use termina/penguin names to allow fetch ssh keys.
   restart_id_ = crostini_manager()->RestartCrostini(
       kCrostiniDefaultVmName, kCrostiniDefaultContainerName,

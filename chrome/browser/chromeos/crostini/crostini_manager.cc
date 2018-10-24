@@ -248,7 +248,10 @@ class CrostiniManager::CrostiniRestarter
 
   void StartLxdContainerFinished(CrostiniResult result) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    // TODO(timloh): Does this need an observer callback?
+    // Tell observers.
+    for (auto& observer : observer_list_) {
+      observer.OnContainerStarted(result);
+    }
     if (is_aborted_)
       return;
     if (result != CrostiniResult::SUCCESS) {
@@ -266,7 +269,7 @@ class CrostiniManager::CrostiniRestarter
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     // Tell observers.
     for (auto& observer : observer_list_) {
-      observer.OnContainerStarted(result);
+      observer.OnContainerSetup(result);
     }
     if (is_aborted_)
       return;

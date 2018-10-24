@@ -177,6 +177,7 @@ class CrostiniManager : public KeyedService,
     virtual void OnContainerDownloading(int32_t download_percent) = 0;
     virtual void OnContainerCreated(CrostiniResult result) = 0;
     virtual void OnContainerStarted(CrostiniResult result) = 0;
+    virtual void OnContainerSetup(CrostiniResult result) = 0;
     virtual void OnSshKeysFetched(CrostiniResult result) = 0;
   };
 

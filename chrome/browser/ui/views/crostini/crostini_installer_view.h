@@ -48,6 +48,7 @@ class CrostiniInstallerView
     kErrorOffline = 8,
     kErrorFetchingSshKeys = 9,
     kErrorMountingContainer = 10,
+    kErrorSettingUpContainer = 11,
     kCount
   };
 
@@ -73,6 +74,7 @@ class CrostiniInstallerView
   void OnContainerDownloading(int32_t download_percent) override;
   void OnContainerCreated(crostini::CrostiniResult result) override;
   void OnContainerStarted(crostini::CrostiniResult result) override;
+  void OnContainerSetup(crostini::CrostiniResult result) override;
   void OnSshKeysFetched(crostini::CrostiniResult result) override;
 
   static CrostiniInstallerView* GetActiveViewForTesting();
@@ -89,6 +91,7 @@ class CrostiniInstallerView
     START_TERMINA_VM,      // Starting the Termina VM.
     CREATE_CONTAINER,      // Creating the container inside the Termina VM.
     START_CONTAINER,       // Starting the container inside the Termina VM.
+    SETUP_CONTAINER,       // Setting up the container inside the Termina VM.
     FETCH_SSH_KEYS,        // Fetch ssh keys from concierge.
     MOUNT_CONTAINER,       // Do sshfs mount of container.
     SHOW_LOGIN_SHELL,      // Showing a new crosh window.
