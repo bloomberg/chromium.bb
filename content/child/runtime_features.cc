@@ -495,6 +495,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (!base::FeatureList::IsEnabled(features::kBackgroundFetch))
     WebRuntimeFeatures::EnableBackgroundFetch(false);
 
+  WebRuntimeFeatures::EnableBackgroundFetchUploads(
+      base::FeatureList::IsEnabled(features::kBackgroundFetchUploads));
+
   WebRuntimeFeatures::EnableNoHoverAfterLayoutChange(
       base::FeatureList::IsEnabled(features::kNoHoverAfterLayoutChange));
 

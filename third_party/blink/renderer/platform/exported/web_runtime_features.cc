@@ -572,4 +572,8 @@ void WebRuntimeFeatures::EnableBackgroundFetch(bool enable) {
   RuntimeEnabledFeatures::SetBackgroundFetchEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableBackgroundFetchUploads(bool enable) {
+  RuntimeEnabledFeatures::SetBackgroundFetchUploadsEnabled(enable);
+}
+
 }  // namespace blink

@@ -150,8 +150,8 @@ ScriptPromise BackgroundFetchManager::fetch(
   UMA_HISTOGRAM_BOOLEAN("BackgroundFetch.HasRequestsWithBody",
                         has_requests_with_body);
 
-  // TODO(crbug.com/789854): Stop bailing here once we support uploads.
-  if (has_requests_with_body) {
+  if (has_requests_with_body &&
+      !RuntimeEnabledFeatures::BackgroundFetchUploadsEnabled()) {
     return ScriptPromise::Reject(
         script_state, V8ThrowException::CreateTypeError(
                           script_state->GetIsolate(),
