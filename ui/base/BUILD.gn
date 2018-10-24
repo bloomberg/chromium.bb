@@ -707,8 +707,6 @@ jumbo_static_library("test_support") {
       "test/ios/keyboard_appearance_listener.mm",
       "test/ios/ui_image_test_utils.h",
       "test/ios/ui_image_test_utils.mm",
-      "test/ios/ui_view_test_utils.h",
-      "test/ios/ui_view_test_utils.mm",
     ]
   }
 
