@@ -8,20 +8,20 @@
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/notification_source.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace policy {
 
 UserCloudPolicyTokenForwarder::UserCloudPolicyTokenForwarder(
     UserCloudPolicyManagerChromeOS* manager,
-    ProfileOAuth2TokenService* token_service,
-    SigninManagerBase* signin_manager)
+    identity::IdentityManager* identity_manager,
+    ProfileOAuth2TokenService* token_service)
     : OAuth2TokenService::Consumer("policy_token_forwarder"),
       manager_(manager),
-      token_service_(token_service),
-      signin_manager_(signin_manager) {
+      identity_manager_(identity_manager),
+      token_service_(token_service) {
   // Start by waiting for the CloudPolicyService to be initialized, so that
   // we can check if it already has a DMToken or not.
   if (manager_->core()->service()->IsInitializationComplete()) {
@@ -79,8 +79,7 @@ void UserCloudPolicyTokenForwarder::Initialize() {
   // login whitelist is available, there is no reason to fetch the OAuth2 token
   // here if the client is already registered, so check and bail out here.
 
-  if (token_service_->RefreshTokenIsAvailable(
-          signin_manager_->GetAuthenticatedAccountId()))
+  if (identity_manager_->HasPrimaryAccountWithRefreshToken())
     RequestAccessToken();
   else
     token_service_->AddObserver(this);
@@ -91,7 +90,7 @@ void UserCloudPolicyTokenForwarder::RequestAccessToken() {
   scopes.insert(GaiaConstants::kDeviceManagementServiceOAuth);
   scopes.insert(GaiaConstants::kOAuthWrapBridgeUserInfoScope);
   request_ = token_service_->StartRequest(
-      signin_manager_->GetAuthenticatedAccountId(), scopes, this);
+      identity_manager_->GetPrimaryAccountId(), scopes, this);
 }
 
 }  // namespace policy
