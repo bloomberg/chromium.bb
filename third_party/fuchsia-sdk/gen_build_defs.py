@@ -27,23 +27,20 @@ def SerializeListOfStrings(strings):
 
   return '[' + ','.join(['"{}"'.format(s) for s in strings]) + ']'
 
+def ReformatTargetName(dep_name):
+  """Removes the namespace from |target| and substitutes invalid target
+  characters with valid ones (e.g. hyphens become underscores)."""
+
+  return dep_name.split('.')[-1].replace('-','_')
+
 def ConvertCommonFields(json):
   """Extracts fields from JSON manifest data which are used across all
   target types."""
 
-  output = {}
-
-  output['target_name'] = json['name'].replace('-', '_')
-
-  output['public_deps'] = []
-  for package_dep in json['deps']:
-    # If the dep has a namespace prefix, then remove it, and replace any
-    # hyphens with underscores for compatibility with the GN identifier
-    # character set.
-    dep_reformatted = ':' + package_dep.split('.')[-1].replace('-','_')
-    output['public_deps'].extend([dep_reformatted])
-
-  return output
+  return {
+    'target_name': ReformatTargetName(json['name']),
+    'public_deps': [':' + ReformatTargetName(dep) for dep in json['deps']]
+  }
 
 def FormatGNTarget(fields):
   """Returns a GN target definition as a string.
@@ -87,8 +84,9 @@ def ConvertFidlLibrary(json):
   converted['type'] = 'fuchsia_sdk_fidl_pkg'
   converted['sources'] = json['sources']
 
-  # Split "name" into "namespace" and "name" pair.
-  name_parts = converted['target_name'].split('.')
+  # FIDL names require special handling, because the namespace needs to be
+  # extracted and used elsewhere.
+  name_parts = json['name'].split('.')
   converted['target_name'] = name_parts[-1]
   converted['namespace'] = '.'.join(name_parts[:-1])
 
@@ -131,6 +129,8 @@ def ConvertCcSourceLibrary(json):
   converted['sources'] = list(set(converted['sources']))
 
   converted['include_dirs'] = [json['root'] + '/include']
+  converted['public_deps'] += \
+      [':' + ReformatTargetName(dep) for dep in json['fidl_deps']]
 
   return converted
 
