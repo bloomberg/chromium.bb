@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/settings/table_cell_catalog_view_controller.h"
 
 #import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_accessory_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
@@ -12,6 +13,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #include "url/gurl.h"
 
@@ -42,6 +44,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeTextSettingsDetail,
   ItemTypeLinkFooter,
   ItemTypeDetailText,
+  ItemTypeSettingsSwitch,
 };
 }
 
@@ -145,6 +148,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
   settingsDetailItemLong.text = @"Very long text eating the other detail label";
   settingsDetailItemLong.detailText = @"A bit less short";
   [model addItem:settingsDetailItemLong
+      toSectionWithIdentifier:SectionIdentifierSettings];
+
+  SettingsSwitchItem* settingsSwitchItem =
+      [[SettingsSwitchItem alloc] initWithType:ItemTypeSettingsSwitch];
+  settingsSwitchItem.text = @"This is a switch item";
+  [model addItem:settingsSwitchItem
       toSectionWithIdentifier:SectionIdentifierSettings];
 
   TableViewLinkHeaderFooterItem* linkFooter =
