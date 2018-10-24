@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/sync/protocol/model_type_store_schema_descriptor.pb.h"
@@ -29,11 +28,6 @@ const char ModelTypeStoreBackend::kDBSchemaDescriptorRecordId[] =
     "_mts_schema_descriptor";
 const char ModelTypeStoreBackend::kStoreInitResultHistogramName[] =
     "Sync.ModelTypeStoreInitResult";
-
-const base::Feature kModelTypeStoreAvoidReadCache{
-    "kModelTypeStoreAvoidReadCache", base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kModelTypeStoreSmallWriteBufferSize{
-    "kModelTypeStoreSmallWriteBufferSize", base::FEATURE_ENABLED_BY_DEFAULT};
 
 namespace {
 
@@ -138,9 +132,7 @@ leveldb::Status ModelTypeStoreBackend::OpenDatabase(const std::string& path,
   leveldb_env::Options options;
   options.create_if_missing = true;
   options.paranoid_checks = true;
-
-  if (base::FeatureList::IsEnabled(kModelTypeStoreSmallWriteBufferSize))
-    options.write_buffer_size = 512 * 1024;
+  options.write_buffer_size = 512 * 1024;
 
   if (env)
     options.env = env;
@@ -166,8 +158,7 @@ base::Optional<ModelError> ModelTypeStoreBackend::ReadRecordsWithPrefix(
   record_list->reserve(id_list.size());
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;
-  if (base::FeatureList::IsEnabled(kModelTypeStoreAvoidReadCache))
-    read_options.fill_cache = false;
+  read_options.fill_cache = false;
   std::string key;
   std::string value;
   for (const std::string& id : id_list) {
@@ -191,8 +182,7 @@ base::Optional<ModelError> ModelTypeStoreBackend::ReadAllRecordsWithPrefix(
   DCHECK(db_);
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;
-  if (base::FeatureList::IsEnabled(kModelTypeStoreAvoidReadCache))
-    read_options.fill_cache = false;
+  read_options.fill_cache = false;
   std::unique_ptr<leveldb::Iterator> iter(db_->NewIterator(read_options));
   const leveldb::Slice prefix_slice(prefix);
   for (iter->Seek(prefix_slice); iter->Valid(); iter->Next()) {
@@ -225,8 +215,7 @@ ModelTypeStoreBackend::DeleteDataAndMetadataForPrefix(
   DCHECK(db_);
   leveldb::WriteBatch write_batch;
   leveldb::ReadOptions read_options;
-  if (base::FeatureList::IsEnabled(kModelTypeStoreAvoidReadCache))
-    read_options.fill_cache = false;
+  read_options.fill_cache = false;
   std::unique_ptr<leveldb::Iterator> iter(db_->NewIterator(read_options));
   const leveldb::Slice prefix_slice(prefix);
   for (iter->Seek(prefix_slice); iter->Valid(); iter->Next()) {
@@ -255,8 +244,7 @@ int64_t ModelTypeStoreBackend::GetStoreVersion() {
   DCHECK(db_);
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;
-  if (base::FeatureList::IsEnabled(kModelTypeStoreAvoidReadCache))
-    read_options.fill_cache = false;
+  read_options.fill_cache = false;
   std::string value;
   ModelTypeStoreSchemaDescriptor schema_descriptor;
   leveldb::Status status =
