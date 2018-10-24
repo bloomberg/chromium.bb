@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/paint/nine_piece_image_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/core/paint/svg_foreign_object_painter.h"
 #include "third_party/blink/renderer/core/paint/theme_painter.h"
@@ -111,11 +112,10 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
   }
 
   const DisplayItemClient& display_item_client =
-      painting_overflow_contents ? static_cast<const DisplayItemClient&>(
-                                       *layout_box_.Layer()
-                                            ->GetCompositedLayerMapping()
-                                            ->ScrollingContentsLayer())
-                                 : layout_box_;
+      painting_overflow_contents
+          ? layout_box_.GetScrollableArea()
+                ->GetScrollingBackgroundDisplayItemClient()
+          : layout_box_;
   if (DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, display_item_client,
           DisplayItem::kBoxDecorationBackground))

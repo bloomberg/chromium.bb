@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_phase.h"
 #include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
@@ -519,11 +520,10 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
   }
 
   const DisplayItemClient& display_item_client =
-      painting_overflow_contents ? static_cast<const DisplayItemClient&>(
-                                       *layout_box.Layer()
-                                            ->GetCompositedLayerMapping()
-                                            ->ScrollingContentsLayer())
-                                 : box_fragment_;
+      painting_overflow_contents
+          ? layout_box.GetScrollableArea()
+                ->GetScrollingBackgroundDisplayItemClient()
+          : box_fragment_;
   if (DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, display_item_client,
           DisplayItem::kBoxDecorationBackground))

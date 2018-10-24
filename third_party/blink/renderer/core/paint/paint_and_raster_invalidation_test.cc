@@ -312,8 +312,8 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedLayoutViewResize) {
   EXPECT_THAT(
       GetRasterInvalidationTracking()->Invalidations(),
       UnorderedElementsAre(RasterInvalidationInfo{
-          ViewScrollingContentsDisplayItemClient(),
-          ViewScrollingContentsDisplayItemClient()->DebugName(),
+          &ViewScrollingBackgroundClient(),
+          ViewScrollingBackgroundClient().DebugName(),
           IntRect(0, 2000, 800, 1000), PaintInvalidationReason::kIncremental}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
@@ -350,9 +350,9 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedLayoutViewGradientResize) {
   EXPECT_THAT(
       GetRasterInvalidationTracking()->Invalidations(),
       UnorderedElementsAre(RasterInvalidationInfo{
-          ViewScrollingContentsDisplayItemClient(),
-          ViewScrollingContentsDisplayItemClient()->DebugName(),
-          IntRect(0, 0, 800, 3000), PaintInvalidationReason::kBackground}));
+          &ViewScrollingBackgroundClient(),
+          ViewScrollingBackgroundClient().DebugName(), IntRect(0, 0, 800, 3000),
+          PaintInvalidationReason::kBackground}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
   // Resize the viewport. No paint invalidation.
@@ -509,10 +509,11 @@ TEST_P(PaintAndRasterInvalidationTest,
   // No invalidation on the container layer.
   EXPECT_FALSE(container_raster_invalidation_tracking()->HasInvalidations());
   // Incremental invalidation of background on contents layer.
-  const auto* client = target_obj->Layer()->GraphicsLayerBacking();
+  const auto& client = target_obj->GetScrollableArea()
+                           ->GetScrollingBackgroundDisplayItemClient();
   EXPECT_THAT(contents_raster_invalidation_tracking()->Invalidations(),
               UnorderedElementsAre(RasterInvalidationInfo{
-                  client, client->DebugName(), IntRect(0, 500, 500, 500),
+                  &client, client.DebugName(), IntRect(0, 500, 500, 500),
                   PaintInvalidationReason::kIncremental}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
@@ -563,11 +564,12 @@ TEST_P(PaintAndRasterInvalidationTest,
       container_layer->GetRasterInvalidationTracking()->HasInvalidations());
   // Full invalidation of background on contents layer because the gradient
   // background is resized.
-  EXPECT_THAT(
-      contents_layer->GetRasterInvalidationTracking()->Invalidations(),
-      UnorderedElementsAre(RasterInvalidationInfo{
-          contents_layer, contents_layer->DebugName(), IntRect(0, 0, 500, 1000),
-          PaintInvalidationReason::kBackground}));
+  const auto& client = target_obj->GetScrollableArea()
+                           ->GetScrollingBackgroundDisplayItemClient();
+  EXPECT_THAT(contents_layer->GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre(RasterInvalidationInfo{
+                  &client, client.DebugName(), IntRect(0, 0, 500, 1000),
+                  PaintInvalidationReason::kBackground}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
   // Resize the container.
@@ -649,12 +651,13 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedSolidBackgroundResize) {
 
   GraphicsLayer* scrolling_contents_layer =
       target_object->Layer()->GraphicsLayerBacking();
-  EXPECT_THAT(
-      scrolling_contents_layer->GetRasterInvalidationTracking()
-          ->Invalidations(),
-      UnorderedElementsAre(RasterInvalidationInfo{
-          scrolling_contents_layer, scrolling_contents_layer->DebugName(),
-          IntRect(50, 0, 50, 500), PaintInvalidationReason::kIncremental}));
+  const auto& client = target_object->GetScrollableArea()
+                           ->GetScrollingBackgroundDisplayItemClient();
+  EXPECT_THAT(scrolling_contents_layer->GetRasterInvalidationTracking()
+                  ->Invalidations(),
+              UnorderedElementsAre(RasterInvalidationInfo{
+                  &client, client.DebugName(), IntRect(50, 0, 50, 500),
+                  PaintInvalidationReason::kIncremental}));
 
   GraphicsLayer* container_layer =
       target_object->Layer()->GraphicsLayerBacking(target_object);

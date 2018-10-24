@@ -332,7 +332,7 @@ void BoxPaintInvalidator::InvalidateBackground() {
             : PaintInvalidationReason::kIncremental;
     context_.painting_layer->SetNeedsRepaint();
     ObjectPaintInvalidator(box_).InvalidateDisplayItemClient(
-        *box_.Layer()->GetCompositedLayerMapping()->ScrollingContentsLayer(),
+        box_.GetScrollableArea()->GetScrollingBackgroundDisplayItemClient(),
         reason);
   }
 

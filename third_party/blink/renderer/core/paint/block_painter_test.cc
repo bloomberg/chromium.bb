@@ -182,10 +182,10 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectsWithoutPaint) {
 
   // Initially there should be no hit test display items because there is no
   // touch action.
-  auto* scrolling_client = GetLayoutView().Layer()->GraphicsLayerBacking();
+  const auto& scrolling_client = ViewScrollingBackgroundClient();
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 1,
-      TestDisplayItem(*scrolling_client, kDocumentBackgroundType));
+      TestDisplayItem(scrolling_client, kDocumentBackgroundType));
 
   // Add a touch action to parent and ensure that hit test display items are
   // created for both the parent and child.
@@ -197,7 +197,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectsWithoutPaint) {
   auto* childHidden = GetLayoutObjectByElementId("childHidden");
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 4,
-      TestDisplayItem(*scrolling_client, kDocumentBackgroundType),
+      TestDisplayItem(scrolling_client, kDocumentBackgroundType),
       TestDisplayItem(*parent, DisplayItem::kHitTest),
       TestDisplayItem(*childVisible, DisplayItem::kHitTest),
       TestDisplayItem(*childHidden, DisplayItem::kHitTest));
@@ -208,7 +208,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectsWithoutPaint) {
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 1,
-      TestDisplayItem(*scrolling_client, kDocumentBackgroundType));
+      TestDisplayItem(scrolling_client, kDocumentBackgroundType));
 }
 
 TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectPaintCaching) {
@@ -230,14 +230,14 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectPaintCaching) {
     <div id='sibling'></div>
   )HTML");
 
-  auto* scrolling_client = GetLayoutView().Layer()->GraphicsLayerBacking();
+  const auto& scrolling_client = ViewScrollingBackgroundClient();
   auto* touchaction_element = GetElementById("touchaction");
   auto* touchaction = touchaction_element->GetLayoutObject();
   auto* sibling_element = GetElementById("sibling");
   auto* sibling = sibling_element->GetLayoutObject();
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 3,
-      TestDisplayItem(*scrolling_client, kDocumentBackgroundType),
+      TestDisplayItem(scrolling_client, kDocumentBackgroundType),
       TestDisplayItem(*touchaction, DisplayItem::kHitTest),
       TestDisplayItem(*sibling, kBackgroundType));
 
@@ -293,12 +293,12 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectPaintChunkChanges) {
     <div id='touchaction'></div>
   )HTML");
 
-  auto* scrolling_client = GetLayoutView().Layer()->GraphicsLayerBacking();
+  const auto& scrolling_client = ViewScrollingBackgroundClient();
   auto* touchaction_element = GetElementById("touchaction");
   auto* touchaction = touchaction_element->GetLayoutObject();
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 1,
-      TestDisplayItem(*scrolling_client, kDocumentBackgroundType));
+      TestDisplayItem(scrolling_client, kDocumentBackgroundType));
 
   {
     const auto& paint_chunks =
@@ -312,7 +312,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectPaintChunkChanges) {
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 2,
-      TestDisplayItem(*scrolling_client, kDocumentBackgroundType),
+      TestDisplayItem(scrolling_client, kDocumentBackgroundType),
       TestDisplayItem(*touchaction, DisplayItem::kHitTest));
 
   {
@@ -335,7 +335,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectPaintChunkChanges) {
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 1,
-      TestDisplayItem(*scrolling_client, kDocumentBackgroundType));
+      TestDisplayItem(scrolling_client, kDocumentBackgroundType));
   {
     const auto& paint_chunks =
         RootPaintController().GetPaintArtifact().PaintChunks();
@@ -372,10 +372,10 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchHandlerRectsWithoutPaint) {
 
   // Initially there should be no hit test display items because there are no
   // event handlers.
-  auto* scrolling_client = GetLayoutView().Layer()->GraphicsLayerBacking();
+  const auto& scrolling_client = ViewScrollingBackgroundClient();
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 1,
-      TestDisplayItem(*scrolling_client, kDocumentBackgroundType));
+      TestDisplayItem(scrolling_client, kDocumentBackgroundType));
 
   // Add an event listener to parent and ensure that hit test display items are
   // created for both the parent and child.
@@ -387,7 +387,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchHandlerRectsWithoutPaint) {
   auto* child = GetLayoutObjectByElementId("child");
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 3,
-      TestDisplayItem(*scrolling_client, kDocumentBackgroundType),
+      TestDisplayItem(scrolling_client, kDocumentBackgroundType),
       TestDisplayItem(*parent, DisplayItem::kHitTest),
       TestDisplayItem(*child, DisplayItem::kHitTest));
 
@@ -397,7 +397,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchHandlerRectsWithoutPaint) {
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 1,
-      TestDisplayItem(*scrolling_client, kDocumentBackgroundType));
+      TestDisplayItem(scrolling_client, kDocumentBackgroundType));
 }
 
 TEST_F(BlockPainterTestWithPaintTouchAction,
@@ -414,12 +414,12 @@ TEST_F(BlockPainterTestWithPaintTouchAction,
     </div>
   )HTML");
 
-  auto* scrolling_client = GetLayoutView().Layer()->GraphicsLayerBacking();
+  const auto& scrolling_client = ViewScrollingBackgroundClient();
   auto* parent = GetLayoutObjectByElementId("parent");
   auto* child = GetLayoutObjectByElementId("child");
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 3,
-      TestDisplayItem(*scrolling_client, kDocumentBackgroundType),
+      TestDisplayItem(scrolling_client, kDocumentBackgroundType),
       TestDisplayItem(*parent, DisplayItem::kHitTest),
       TestDisplayItem(*child, DisplayItem::kHitTest));
 
@@ -428,7 +428,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction,
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 4,
-      TestDisplayItem(*scrolling_client, kDocumentBackgroundType),
+      TestDisplayItem(scrolling_client, kDocumentBackgroundType),
       TestDisplayItem(*parent, kBackgroundType),
       TestDisplayItem(*parent, DisplayItem::kHitTest),
       TestDisplayItem(*child, DisplayItem::kHitTest));
@@ -456,12 +456,12 @@ TEST_F(BlockPainterTestWithPaintTouchAction, ScrolledHitTestChunkProperties) {
     </div>
   )HTML");
 
-  auto* scrolling_client = GetLayoutView().Layer()->GraphicsLayerBacking();
+  const auto& scrolling_client = ViewScrollingBackgroundClient();
   auto* scroller = GetLayoutObjectByElementId("scroller");
   auto* child = GetLayoutObjectByElementId("child");
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 3,
-      TestDisplayItem(*scrolling_client, kDocumentBackgroundType),
+      TestDisplayItem(scrolling_client, kDocumentBackgroundType),
       TestDisplayItem(*scroller, DisplayItem::kHitTest),
       TestDisplayItem(*child, DisplayItem::kHitTest));
 
