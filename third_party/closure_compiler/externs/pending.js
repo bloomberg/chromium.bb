@@ -82,3 +82,13 @@ class ResizeObserver {
  * TODO(rbpotter): Remove this once it is added to Closure Compiler itself.
  */
 Polymer.RenderStatus.beforeNextRender = function(element, fn, args) {};
+
+/**
+ * @see
+ * https://github.com/tc39/proposal-bigint
+ * This supports wrapping and operating on arbitrarily large integers.
+ *
+ * @param {number} value
+ */
+let BigInt = function(value) {};
+

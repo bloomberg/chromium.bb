@@ -451,12 +451,10 @@ def main():
                                help="Use WTF types as generated types for mojo "
                                "string/array/map.")
   generate_parser.add_argument(
-      "--js_bindings_mode", choices=["new", "both", "old"], default="new",
+      "--js_bindings_mode", choices=["new", "old"], default="old",
       help="This option only affects the JavaScript bindings. The value could "
-      "be: \"new\" - generate only the new-style JS bindings, which use the "
-      "new module loading approach and the core api exposed by Web IDL; "
-      "\"both\" - generate both the old- and new-style bindings; \"old\" - "
-      "generate only the old-style bindings.")
+      "be \"new\" to generate new-style lite JS bindings in addition to the "
+      "old, or \"old\" to only generate old bindings.")
   generate_parser.add_argument(
       "--export_attribute", default="",
       help="Optional attribute to specify on class declaration to export it "

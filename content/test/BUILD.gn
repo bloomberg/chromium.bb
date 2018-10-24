@@ -585,6 +585,7 @@ mojom("web_ui_test_mojo_bindings") {
 mojom("mojo_layouttest_bindings") {
   testonly = true
   sources = [
+    "data/lite_js_test.mojom",
     "data/mojo_layouttest_test.mojom",
   ]
 

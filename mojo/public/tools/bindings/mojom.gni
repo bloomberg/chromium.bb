@@ -1151,6 +1151,8 @@ template("mojom") {
       generator_js_outputs = [
         "{{source_gen_dir}}/{{source_name_part}}.mojom.js",
         "{{source_gen_dir}}/{{source_name_part}}.mojom.externs.js",
+        "{{source_gen_dir}}/{{source_name_part}}.mojom-lite.js",
+        "{{source_gen_dir}}/{{source_name_part}}.mojom-lite.externs.js",
       ]
       action(generator_js_target_name) {
         script = mojom_generator_script
@@ -1171,6 +1173,8 @@ template("mojom") {
           outputs += [
             "$target_gen_dir/$source.js",
             "$target_gen_dir/$source.externs.js",
+            "$target_gen_dir/$source-lite.js",
+            "$target_gen_dir/$source-lite.externs.js",
           ]
         }
 
@@ -1180,6 +1184,7 @@ template("mojom") {
           "--filelist={{response_file_name}}",
           "-g",
           "javascript",
+          "--js_bindings_mode=new",
         ]
 
         if (!defined(invoker.scramble_message_ids) ||
