@@ -141,6 +141,13 @@ crbug.com/680635 external/wpt/offscreen-canvas/text/2d.text.draw.fill.rtl-manual
 crbug.com/680635 external/wpt/offscreen-canvas/text/2d.text.draw.kern.consistent-manual.worker.js [ Skip ]
 crbug.com/680635 external/wpt/offscreen-canvas/text/2d.text.draw.stroke.basic-manual.worker.js [ Skip ]
 
+# Expected temporary breakage due to timing issues
+crbug.com/872076 printing/offscreencanvas-2d-printing.html [ Skip ]
+crbug.com/872076 printing/offscreencanvas-webgl-printing.html  [ Skip ]
+crbug.com/872076 virtual/layout_ng_experimental/printing/offscreencanvas-2d-printing.html  [ Skip ]
+crbug.com/872076 virtual/threaded/printing/offscreencanvas-2d-printing.html  [ Skip ]
+crbug.com/872076 virtual/threaded/printing/offscreencanvas-webgl-printing.html  [ Skip ]
+
 # With removing fling handling logic from renderer Layouttests that are using event sender to send fling events are failing.
 crbug.com/857490 fast/events/touch/gesture/pad-gesture-cancel.html [ Skip ]
 crbug.com/857490 fast/events/touch/gesture/pad-gesture-fling.html [ Skip ]
