@@ -66,11 +66,12 @@ class ChildCallStackProfileCollector {
   friend class ChildCallStackProfileCollectorTest;
 
   // Bundles together a collected serialized profile and the collection state
-  // for storage, pending availability of the parent mojo interface. |profile|
-  // is not const& because it must be passed with std::move.
+  // for storage, pending availability of the parent mojo interface.
   struct ProfileState {
     ProfileState();
     ProfileState(ProfileState&&);
+    // |profile| is not const& because it can be very large and must be passed
+    // with std::move.
     ProfileState(base::TimeTicks start_timestamp, std::string profile);
     ~ProfileState();
 
