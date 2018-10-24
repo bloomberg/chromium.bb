@@ -44,12 +44,9 @@ typedef enum {
   USE_8_TAPS,
 } SUBPEL_SEARCH_TYPE;
 
-// With CONFIG_DUAL_FILTER, pack two InterpFilter's into a uint32_t: since
-// there are at most 10 filters, we can use 16 bits for each and have more than
-// enough space. This reduces argument passing and unifies the operation of
-// setting a (pair of) filters.
-//
-// Without CONFIG_DUAL_FILTER,
+// Pack two InterpFilter's into a uint32_t: since there are at most 10 filters,
+// we can use 16 bits for each and have more than enough space. This reduces
+// argument passing and unifies the operation of setting a (pair of) filters.
 typedef uint32_t InterpFilters;
 static INLINE InterpFilter av1_extract_interp_filter(InterpFilters filters,
                                                      int x_filter) {
