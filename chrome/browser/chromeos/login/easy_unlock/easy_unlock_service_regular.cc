@@ -923,9 +923,6 @@ void EasyUnlockServiceRegular::OnTurnOffEasyUnlockSuccess() {
 
   if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
     remote_device_unlock_keys_before_sync_ = GetUnlockKeys();
-    device_sync_client_->ForceSyncNow(
-        base::BindOnce(&EasyUnlockServiceRegular::OnForceSyncCompleted,
-                       weak_ptr_factory_.GetWeakPtr()));
   } else {
     GetCryptAuthDeviceManager()->ForceSyncNow(
         cryptauth::InvocationReason::INVOCATION_REASON_FEATURE_TOGGLED);
