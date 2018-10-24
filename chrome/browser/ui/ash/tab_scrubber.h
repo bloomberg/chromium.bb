@@ -93,7 +93,7 @@ class TabScrubber : public ui::EventHandler,
   // Timer to control a delayed activation of the |highlighted_tab_|.
   base::RetainingOneShotTimer activate_timer_;
   // True if the default activation delay should be used with |activate_timer_|.
-  // A value of false means the |activate_timer_| gets a zero delay.
+  // A value of false means the |activate_timer_| gets a really long delay.
   bool use_default_activation_delay_ = true;
   // Forces the tabs to be revealed if we are in immersive fullscreen.
   std::unique_ptr<ImmersiveRevealedLock> immersive_reveal_lock_;
