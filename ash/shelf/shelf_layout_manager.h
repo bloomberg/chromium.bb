@@ -237,9 +237,9 @@ class ASH_EXPORT ShelfLayoutManager
 
     float opacity;
     float status_opacity;
-    gfx::Rect shelf_bounds_in_root;
-    gfx::Rect shelf_bounds_in_shelf;
-    gfx::Rect status_bounds_in_shelf;
+    gfx::Rect shelf_bounds;            // Bounds of the shelf within the screen
+    gfx::Rect shelf_bounds_in_shelf;   // Bounds of the shelf minus status area
+    gfx::Rect status_bounds_in_shelf;  // Bounds of status area within shelf
     gfx::Insets work_area_insets;
   };
 
@@ -294,6 +294,11 @@ class ASH_EXPORT ShelfLayoutManager
   // Stops the auto hide timer and clears
   // |mouse_over_shelf_when_auto_hide_timer_started_|.
   void StopAutoHideTimer();
+
+  // Returns the bounds of the shelf on the screen. The returned rect does
+  // not include portions of the shelf that extend beyond its own display,
+  // as those are not visible to the user.
+  gfx::Rect GetVisibleShelfBounds() const;
 
   // Returns the bounds of an additional region which can trigger showing the
   // shelf. This region exists to make it easier to trigger showing the shelf
@@ -434,6 +439,9 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Whether background blur is enabled.
   const bool is_background_blur_enabled_;
+
+  // The display on which this shelf is shown.
+  display::Display display_;
 
   // The current shelf background. Should not be assigned to directly, use
   // MaybeUpdateShelfBackground() instead.

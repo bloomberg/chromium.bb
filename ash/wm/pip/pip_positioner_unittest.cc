@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
@@ -103,7 +103,7 @@ TEST_F(PipPositionerTest, PipMovementAreaIncludesKeyboardIfKeyboardIsShown) {
   keyboard_window->SetBounds(gfx::Rect(0, 300, 400, 100));
 
   gfx::Rect area = PipPositioner::GetMovementArea(window_state()->GetDisplay());
-  EXPECT_EQ(gfx::Rect(8, 8, 384, 284), area);
+  EXPECT_EQ(gfx::Rect(8, 8, 384, 284 - ShelfConstants::shelf_size()), area);
 }
 
 TEST_F(PipPositionerTest, PipRestingPositionSnapsToClosestEdge) {
