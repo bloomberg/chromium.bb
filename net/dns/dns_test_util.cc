@@ -106,7 +106,7 @@ class MockTransaction : public DnsTransaction,
         memcpy(buffer, query.io_buffer()->data(), nbytes);
         dns_protocol::Header* header =
             reinterpret_cast<dns_protocol::Header*>(buffer);
-        header->flags |= dns_protocol::kFlagResponse;
+        header->flags |= base::HostToNet16(dns_protocol::kFlagResponse);
         if (MockDnsClientRule::NODOMAIN == result_.type) {
           header->flags |= base::HostToNet16(dns_protocol::kRcodeNXDOMAIN);
         }
