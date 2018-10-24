@@ -155,12 +155,15 @@ const char* NotificationSwipeControlView::GetClassName() const {
 void NotificationSwipeControlView::ButtonPressed(views::Button* sender,
                                                  const ui::Event& event) {
   DCHECK(sender);
-  message_view_->CloseSwipeControl();
   if (sender == settings_button_)
     message_view_->OnSettingsButtonPressed(event);
   else if (sender == snooze_button_)
     message_view_->OnSnoozeButtonPressed(event);
   HideButtons();
+
+  // Closing the swipe control is done in these button pressed handlers.
+  // Otherwise, handlers might not work.
+  message_view_->CloseSwipeControl();
 }
 
 }  // namespace ash

@@ -40,7 +40,10 @@ class MESSAGE_CENTER_EXPORT SlideOutController
   SlideOutController(ui::EventTarget* target, Delegate* delegate);
   ~SlideOutController() override;
 
-  void set_slide_mode(SlideMode mode) { mode_ = mode; }
+  void set_slide_mode(SlideMode mode) {
+    // TODO(yoshiki): Close the slide when the slide mode sets to NO_SLIDE.
+    mode_ = mode;
+  }
   float gesture_amount() const { return gesture_amount_; }
   SlideMode mode() const { return mode_; }
 
