@@ -21,6 +21,7 @@
 #include "services/ws/public/mojom/window_tree.mojom.h"
 #include "ui/aura/client/capture_client_observer.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_occlusion_tracker.h"
 
 namespace aura {
 class Window;
@@ -116,6 +117,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // Sends the topmost window information to the client. There can be multiple
   // windows, as described for OnTopmostWindowChanged() in window_tree.mojom.
   void SendTopmostWindows(const std::vector<aura::Window*>& topmosts);
+
+  // Notifies the client that the window occlusion state has changed.
+  void SendOcclusionState(aura::Window* window);
 
   WindowService* window_service() { return window_service_; }
 
@@ -485,6 +489,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   void TransferGestureEventsTo(Id current_id,
                                Id new_id,
                                bool should_cancel) override;
+  void TrackOcclusionState(Id transport_window_id) override;
+  void PauseWindowOcclusionTracking() override;
+  void UnpauseWindowOcclusionTracking() override;
 
   WindowService* window_service_;
 
@@ -554,6 +561,14 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
 
   std::vector<std::unique_ptr<WindowManagerInterface>>
       window_manager_interfaces_;
+
+  // Keeps track of outstanding occlusion tracking pauses. A ScopedPause object
+  // is added to the list when the client requests to pause and removed from the
+  // list  when the client no longer wishes to pause. Using a tracking vector so
+  // that outstanding pauses from the client are properly removed in case the
+  // client goes away.
+  std::vector<std::unique_ptr<aura::WindowOcclusionTracker::ScopedPause>>
+      window_occlusion_tracking_pauses_;
 
   base::WeakPtrFactory<WindowTree> weak_factory_{this};
 

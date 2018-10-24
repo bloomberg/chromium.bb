@@ -19,15 +19,18 @@
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "services/ws/server_window.h"
 #include "services/ws/server_window_test_helper.h"
+#include "services/ws/window_delegate_impl.h"
 #include "services/ws/window_service.h"
 #include "services/ws/window_service_test_setup.h"
 #include "services/ws/window_tree_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_window_delegate.h"
+#include "ui/aura/test/window_occlusion_tracker_test_api.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/events/mojo/event_constants.mojom.h"
@@ -2154,6 +2157,152 @@ TEST(WindowTreeTest, AttachFrameSinkId) {
   setup.window_tree_test_helper()->DeleteWindow(child_window);
 
   host_frame_sink_manager->InvalidateFrameSinkId(test_frame_sink_id);
+}
+
+TEST(WindowTreeTest, OcclusionStateChange) {
+  WindowServiceTestSetup setup;
+
+  // WindowDelegateImpl deletes itself when the window is deleted.
+  WindowDelegateImpl* delegate = new WindowDelegateImpl();
+  setup.delegate()->set_delegate_for_next_top_level(delegate);
+
+  // Create |top_level1| and tracks its occlusion state.
+  aura::Window* top_level1 =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  delegate->set_window(top_level1);
+  ASSERT_TRUE(top_level1);
+  top_level1->SetBounds(gfx::Rect(0, 0, 10, 10));
+
+  top_level1->TrackOcclusionState();
+
+  // Gets HIDDEN state since |top_level1| is created hidden.
+  EXPECT_TRUE(ContainsChange(
+      *setup.changes(), "OnOcclusionStateChanged window_id=0,1, state=HIDDEN"));
+
+  // Gets VISIBLE state when |top_level1| is shown.
+  top_level1->Show();
+  EXPECT_TRUE(
+      ContainsChange(*setup.changes(),
+                     "OnOcclusionStateChanged window_id=0,1, state=VISIBLE"));
+
+  // Creates |top_level2| and make it occlude |top_level1|.
+  aura::Window* top_level2 =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level2);
+  top_level2->SetBounds(gfx::Rect(0, 0, 15, 15));
+  top_level2->Show();
+
+  // Gets OCCLUDED state since |top_level2| covers |top_level1|.
+  EXPECT_TRUE(
+      ContainsChange(*setup.changes(),
+                     "OnOcclusionStateChanged window_id=0,1, state=OCCLUDED"));
+}
+
+TEST(WindowTreeTest, OcclusionTrackingPause) {
+  WindowServiceTestSetup setup;
+  aura::test::WindowOcclusionTrackerTestApi tracker_api(
+      setup.service()->env()->GetWindowOcclusionTracker());
+  ASSERT_FALSE(tracker_api.IsPaused());
+
+  // Simple case of one pause.
+  setup.window_tree_test_helper()
+      ->window_tree()
+      ->PauseWindowOcclusionTracking();
+  EXPECT_TRUE(tracker_api.IsPaused());
+  setup.window_tree_test_helper()
+      ->window_tree()
+      ->UnpauseWindowOcclusionTracking();
+  EXPECT_FALSE(tracker_api.IsPaused());
+
+  // Multiple pauses.
+  constexpr int kPauses = 3;
+  for (int i = 0; i < kPauses; ++i) {
+    setup.window_tree_test_helper()
+        ->window_tree()
+        ->PauseWindowOcclusionTracking();
+    EXPECT_TRUE(tracker_api.IsPaused());
+  }
+  for (int i = 0; i < kPauses - 1; ++i) {
+    setup.window_tree_test_helper()
+        ->window_tree()
+        ->UnpauseWindowOcclusionTracking();
+    EXPECT_TRUE(tracker_api.IsPaused());
+  }
+  setup.window_tree_test_helper()
+      ->window_tree()
+      ->UnpauseWindowOcclusionTracking();
+  EXPECT_FALSE(tracker_api.IsPaused());
+}
+
+TEST(WindowTreeTest, OcclusionTrackingPauseInterleaved) {
+  WindowServiceTestSetup setup;
+  aura::test::WindowOcclusionTrackerTestApi tracker_api(
+      setup.service()->env()->GetWindowOcclusionTracker());
+  ASSERT_FALSE(tracker_api.IsPaused());
+
+  // Creates a second WindowTree.
+  TestWindowTreeClient tree_client;
+  std::unique_ptr<WindowTree> tree2 =
+      setup.service()->CreateWindowTree(&tree_client);
+  tree2->InitFromFactory();
+  auto helper2 = std::make_unique<WindowTreeTestHelper>(tree2.get());
+
+  // Tree1 pauses.
+  setup.window_tree_test_helper()
+      ->window_tree()
+      ->PauseWindowOcclusionTracking();
+  EXPECT_TRUE(tracker_api.IsPaused());
+
+  // Tree2 pauses.
+  helper2->window_tree()->PauseWindowOcclusionTracking();
+  EXPECT_TRUE(tracker_api.IsPaused());
+
+  // Tree1 unpauses.
+  setup.window_tree_test_helper()
+      ->window_tree()
+      ->UnpauseWindowOcclusionTracking();
+  EXPECT_TRUE(tracker_api.IsPaused());
+
+  // Tree2 unpauses
+  helper2->window_tree()->UnpauseWindowOcclusionTracking();
+  EXPECT_FALSE(tracker_api.IsPaused());
+}
+
+TEST(WindowTreeTest, OcclusionTrackingPauseGoingAwayTree) {
+  WindowServiceTestSetup setup;
+  aura::test::WindowOcclusionTrackerTestApi tracker_api(
+      setup.service()->env()->GetWindowOcclusionTracker());
+  ASSERT_FALSE(tracker_api.IsPaused());
+
+  // Tree1 pauses.
+  setup.window_tree_test_helper()
+      ->window_tree()
+      ->PauseWindowOcclusionTracking();
+  EXPECT_TRUE(tracker_api.IsPaused());
+
+  // Creates a second WindowTree.
+  TestWindowTreeClient tree_client;
+  std::unique_ptr<WindowTree> tree2 =
+      setup.service()->CreateWindowTree(&tree_client);
+  tree2->InitFromFactory();
+  auto helper2 = std::make_unique<WindowTreeTestHelper>(tree2.get());
+
+  // Tree2 creates an outstanding pause.
+  helper2->window_tree()->PauseWindowOcclusionTracking();
+  EXPECT_TRUE(tracker_api.IsPaused());
+
+  // Tree2 goes away with the outstanding pause.
+  helper2.reset();
+  tree2.reset();
+
+  // Still paused because tree1 still holds a pause.
+  EXPECT_TRUE(tracker_api.IsPaused());
+
+  // Tree1 releases the pause and tracker is unpaused.
+  setup.window_tree_test_helper()
+      ->window_tree()
+      ->UnpauseWindowOcclusionTracking();
+  EXPECT_FALSE(tracker_api.IsPaused());
 }
 
 }  // namespace

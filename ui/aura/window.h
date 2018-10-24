@@ -115,7 +115,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
     // - It's not transparent (transparent()).
     // - It's transform, bounds and opacity aren't animated.
     // - Its combined opacity is 1 (GetCombinedOpacity()).
-    // - The type of its layer is not ui::LAYER_NOT_DRAWN.
+    // - It has content to draw. Either the type of its layer is not
+    //     ui::LAYER_NOT_DRAWN, or it is a server window hosting remote client
+    //     content in Window Service.
     //
     // TODO(fdoray): A window that clips its children shouldn't be VISIBLE just
     // because it has an animated child.
@@ -467,6 +469,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   friend class WindowOcclusionTracker;
   friend class WindowPort;
   friend class WindowPortForShutdown;
+  friend class WindowPortMus;
   friend class WindowTargeter;
   friend class test::WindowTestApi;
 

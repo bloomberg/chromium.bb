@@ -171,6 +171,8 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   void RequestClose(Id window_id) override;
   void GetScreenProviderObserver(
       mojom::ScreenProviderObserverAssociatedRequest observer) override;
+  void OnOcclusionStateChanged(Id window_id,
+                               mojom::OcclusionState occlusion_state) override;
 
  protected:
   TestChangeTracker tracker_;

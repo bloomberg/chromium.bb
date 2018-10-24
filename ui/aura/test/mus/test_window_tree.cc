@@ -8,12 +8,13 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/test/mus/test_window_tree_delegate.h"
 
 namespace aura {
 
-TestWindowTree::TestWindowTree() {}
+TestWindowTree::TestWindowTree() = default;
 
-TestWindowTree::~TestWindowTree() {}
+TestWindowTree::~TestWindowTree() = default;
 
 bool TestWindowTree::WasEventAcked(uint32_t event_id) const {
   for (const AckedEvent& acked_event : acked_events_) {
@@ -408,6 +409,23 @@ void TestWindowTree::TransferGestureEventsTo(ws::Id current_id,
   last_transfer_current_ = current_id;
   last_transfer_new_ = new_id;
   last_transfer_should_cancel_ = should_cancel;
+}
+
+void TestWindowTree::TrackOcclusionState(ws::Id window_id) {
+  DCHECK(delegate_);
+  delegate_->TrackOcclusionState(window_id);
+}
+
+void TestWindowTree::PauseWindowOcclusionTracking() {
+  // |delegate_| could reset during shutdown.
+  if (delegate_)
+    delegate_->PauseWindowOcclusionTracking();
+}
+
+void TestWindowTree::UnpauseWindowOcclusionTracking() {
+  // |delegate_| could reset during shutdown.
+  if (delegate_)
+    delegate_->UnpauseWindowOcclusionTracking();
 }
 
 }  // namespace aura

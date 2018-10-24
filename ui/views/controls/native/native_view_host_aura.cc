@@ -134,8 +134,12 @@ void NativeViewHostAura::AddedToWidget() {
 
 void NativeViewHostAura::RemovedFromWidget() {
   if (host_->native_view()) {
-    host_->native_view()->Hide();
+    // Clear kHostWindowKey before Hide() because it could be accessed during
+    // the call. In MUS aura, the hosting window could be destroyed at this
+    // point.
     host_->native_view()->ClearProperty(aura::client::kHostWindowKey);
+
+    host_->native_view()->Hide();
     if (host_->native_view()->parent())
       host_->native_view()->parent()->RemoveChild(host_->native_view());
     RemoveClippingWindow();

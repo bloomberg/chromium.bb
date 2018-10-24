@@ -1166,7 +1166,7 @@ bool Window::IsEmbeddingClient() const {
 }
 
 void Window::TrackOcclusionState() {
-  env_->GetWindowOcclusionTracker()->Track(this);
+  port_->TrackOcclusionState();
 }
 
 bool Window::RequiresDoubleTapGestureEvents() const {

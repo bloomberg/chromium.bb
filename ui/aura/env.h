@@ -197,8 +197,14 @@ class AURA_EXPORT Env : public ui::EventTarget,
       mojo::InterfacePtr<ws::mojom::WindowTreeClient> client,
       base::OnceCallback<void(const base::UnguessableToken&)> callback);
 
-  // Get WindowOcclusionTracker instance. Create it if it is not yet created.
+  // Get WindowOcclusionTracker instance. Create one if not yet created.
   WindowOcclusionTracker* GetWindowOcclusionTracker();
+
+  // Pause/unpause window occlusion tracking. It hides the detail of where
+  // WindowOcclusionTracker lives. It calls the tracker for LOCAL aura and calls
+  // Window Service to access the tracker there for MUS aura.
+  void PauseWindowOcclusionTracking();
+  void UnpauseWindowOcclusionTracking();
 
   // Add, remove, or notify EventObservers. EventObservers are essentially
   // pre-target EventHandlers that can not modify the events nor alter dispatch.

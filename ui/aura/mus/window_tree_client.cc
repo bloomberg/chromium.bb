@@ -259,6 +259,21 @@ void WindowTreeClient::SetHitTestInsets(WindowMus* window,
   tree_->SetHitTestInsets(window->server_id(), mouse, touch);
 }
 
+void WindowTreeClient::TrackOcclusionState(WindowMus* window) {
+  DCHECK(tree_);
+  tree_->TrackOcclusionState(window->server_id());
+}
+
+void WindowTreeClient::PauseWindowOcclusionTracking() {
+  DCHECK(tree_);
+  tree_->PauseWindowOcclusionTracking();
+}
+
+void WindowTreeClient::UnpauseWindowOcclusionTracking() {
+  DCHECK(tree_);
+  tree_->UnpauseWindowOcclusionTracking();
+}
+
 void WindowTreeClient::RegisterFrameSinkId(
     WindowMus* window,
     const viz::FrameSinkId& frame_sink_id) {
@@ -1473,6 +1488,17 @@ void WindowTreeClient::OnChangeCompleted(uint32_t change_id, bool success) {
 void WindowTreeClient::GetScreenProviderObserver(
     ws::mojom::ScreenProviderObserverAssociatedRequest observer) {
   screen_provider_observer_binding_.Bind(std::move(observer));
+}
+
+void WindowTreeClient::OnOcclusionStateChanged(
+    ws::Id window_id,
+    ws::mojom::OcclusionState occlusion_state) {
+  WindowMus* window = GetWindowByServerId(window_id);
+  if (!window)
+    return;
+
+  WindowPortMus::Get(window->GetWindow())
+      ->SetOcclusionStateFromServer(occlusion_state);
 }
 
 void WindowTreeClient::OnDisplaysChanged(

@@ -6,7 +6,9 @@
 #define UI_AURA_WINDOW_OCCLUSION_TRACKER_H_
 
 #include <memory>
+#include <utility>
 
+#include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
@@ -50,18 +52,26 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   // that could cause window occlusion states to change occurs within the scope
   // of a ScopedPause, window occlusion state computations are delayed until all
   // ScopedPause objects have been destroyed.
+  // TODO(crbug.com/867150): Pause the tracker in Window Service under mus.
   class AURA_EXPORT ScopedPause {
    public:
     explicit ScopedPause(Env* env);
     ~ScopedPause();
 
    private:
-    WindowOcclusionTracker* const tracker_;
+    Env* const env_;
     DISALLOW_COPY_AND_ASSIGN(ScopedPause);
   };
 
   // Start tracking the occlusion state of |window|.
   void Track(Window* window);
+
+  // Set a callback to determine whether a window has content to draw in
+  // addition to layer type check (window layer type != ui::LAYER_NOT_DRAWN).
+  using WindowHasContentCallback = base::RepeatingCallback<bool(const Window*)>;
+  void set_window_has_content_callback(WindowHasContentCallback callback) {
+    window_has_content_callback_ = std::move(callback);
+  }
 
  private:
   friend class test::WindowOcclusionTrackerTestApi;
@@ -95,6 +105,13 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
       const gfx::Transform& parent_transform_relative_to_root,
       const SkIRect* clipped_bounds,
       SkRegion* occluded_region);
+
+  // Returns true if |window| opaquely fills its bounds. |window| must be
+  // visible.
+  bool VisibleWindowIsOpaque(Window* window) const;
+
+  // Returns true if |window| has content.
+  bool WindowHasContent(Window* window) const;
 
   // Removes windows whose bounds and transform are not animated from
   // |animated_windows_|. Marks the root of those windows as dirty.
@@ -167,6 +184,10 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   // Add |this| to the observer list of |window| and its descendants.
   void AddObserverToWindowAndDescendants(Window* window);
 
+  // Pauses/unpauses the occlusion state computation.
+  void Pause();
+  void Unpause();
+
   // ui::LayerAnimationObserver:
   void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override;
   void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override;
@@ -221,6 +242,9 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
 
   // Tracks the observed windows.
   ScopedObserver<Window, WindowObserver> window_observer_{this};
+
+  // Callback to be invoked for additional window has content check.
+  WindowHasContentCallback window_has_content_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowOcclusionTracker);
 };

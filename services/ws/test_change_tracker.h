@@ -12,6 +12,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "services/ws/common/types.h"
 #include "services/ws/public/mojom/window_tree.mojom.h"
 #include "ui/gfx/geometry/mojo/geometry.mojom.h"
@@ -55,6 +56,7 @@ enum ChangeType {
   CHANGE_TYPE_DRAG_DROP_DONE,
   CHANGE_TYPE_TOPMOST_WINDOW_CHANGED,
   CHANGE_TYPE_ON_PERFORM_DRAG_DROP_COMPLETED,
+  CHANGE_TYPE_ON_OCCLUSION_STATE_CHANGED,
 };
 
 // TODO(sky): consider nuking and converting directly to WindowData.
@@ -109,6 +111,7 @@ struct Change {
   gfx::Point location1;
   base::flat_map<std::string, std::vector<uint8_t>> drag_data;
   uint32_t drag_drop_action = 0u;
+  base::Optional<mojom::OcclusionState> occlusion_state;
 };
 
 // The ChangeToDescription related functions convert a Change into a string.
@@ -227,6 +230,8 @@ class TestChangeTracker {
                                   bool success,
                                   uint32_t action_taken);
   void RequestClose(Id window_id);
+  void OnOcclusionStateChanged(Id window_id,
+                               mojom::OcclusionState occlusion_state);
 
  private:
   void AddChange(const Change& change);

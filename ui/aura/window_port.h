@@ -136,6 +136,9 @@ class AURA_EXPORT WindowPort {
   virtual void RegisterFrameSinkId(const viz::FrameSinkId& frame_sink_id) {}
   virtual void UnregisterFrameSinkId(const viz::FrameSinkId& frame_sink_id) {}
 
+  // Called to start occlusion state tracking.
+  virtual void TrackOcclusionState() {}
+
  protected:
   explicit WindowPort(Type type);
 
