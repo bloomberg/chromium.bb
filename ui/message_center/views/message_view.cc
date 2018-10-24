@@ -398,12 +398,10 @@ void MessageView::OnCloseButtonPressed() {
 }
 
 void MessageView::OnSettingsButtonPressed(const ui::Event& event) {
-  slide_out_controller_.CloseSwipeControl();
   MessageCenter::Get()->ClickOnSettingsButton(notification_id_);
 }
 
 void MessageView::OnSnoozeButtonPressed(const ui::Event& event) {
-  slide_out_controller_.CloseSwipeControl();
   // No default implementation for snooze.
 }
 
