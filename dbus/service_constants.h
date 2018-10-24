@@ -771,6 +771,9 @@ const char kUnregisterAdvertisement[] = "UnregisterAdvertisement";
 const char kSetAdvertisingIntervals[] = "SetAdvertisingIntervals";
 const char kResetAdvertising[] = "ResetAdvertising";
 
+// Bluetooth LE Advertising Manager properties.
+const char kIsTXPowerSupportedProperty[] = "IsTXPowerSupported";
+
 // Bluetooth LE Advertising Manager errors.
 const char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
 const char kErrorDoesNotExist[] = "org.bluez.Error.DoesNotExist";
