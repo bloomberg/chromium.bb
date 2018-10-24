@@ -509,6 +509,15 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
   NSLog(@"%@", NSStringFromSelector(_cmd));
 }
 
+- (void)webView:(CWVWebView*)webView
+    didFailNavigationWithSSLError:(NSError*)error
+                      overridable:(BOOL)overridable
+                  decisionHandler:
+                      (void (^)(CWVSSLErrorDecision))decisionHandler {
+  NSLog(@"%@", NSStringFromSelector(_cmd));
+  decisionHandler(CWVSSLErrorDecisionDoNothing);
+}
+
 #pragma mark CWVScriptCommandHandler
 
 - (BOOL)webView:(CWVWebView*)webView
