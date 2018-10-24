@@ -5,7 +5,6 @@
 #include "ash/system/message_center/new_unified_message_center_view.h"
 
 #include "ash/system/message_center/message_center_scroll_bar.h"
-#include "ash/system/message_center/unified_message_center_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_model.h"

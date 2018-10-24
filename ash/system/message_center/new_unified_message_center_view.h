@@ -23,6 +23,22 @@ class StackingNotificationCounterView;
 class UnifiedSystemTrayModel;
 class UnifiedSystemTrayView;
 
+class StackingNotificationCounterView : public views::View {
+ public:
+  StackingNotificationCounterView();
+  ~StackingNotificationCounterView() override;
+
+  void SetCount(int stacking_count);
+
+  // views::View:
+  void OnPaint(gfx::Canvas* canvas) override;
+
+ private:
+  int stacking_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(StackingNotificationCounterView);
+};
+
 // Manages scrolling of notification list.
 // TODO(tetsui): Rename to UnifiedMessageCenterView after old code is removed.
 class ASH_EXPORT NewUnifiedMessageCenterView

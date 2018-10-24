@@ -5,12 +5,10 @@
 #include "ash/system/unified/unified_system_tray_view.h"
 
 #include "ash/public/cpp/app_list/app_list_features.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/system/message_center/new_unified_message_center_view.h"
-#include "ash/system/message_center/unified_message_center_view.h"
 #include "ash/system/tray/interacted_by_tap_recorder.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/feature_pod_button.h"
@@ -226,16 +224,8 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
       system_info_view_(new UnifiedSystemInfoView(controller_)),
       system_tray_container_(new SystemTrayContainer()),
       detailed_view_container_(new DetailedViewContainer()),
-      message_center_view_(features::IsNewMessageListViewEnabled()
-                               ? nullptr
-                               : new UnifiedMessageCenterView(
-                                     controller,
-                                     this,
-                                     message_center::MessageCenter::Get())),
-      new_message_center_view_(
-          features::IsNewMessageListViewEnabled()
-              ? new NewUnifiedMessageCenterView(this, controller->model())
-              : nullptr),
+      message_center_view_(
+          new NewUnifiedMessageCenterView(this, controller->model())),
       focus_search_(std::make_unique<FocusSearch>(this)),
       interacted_by_tap_recorder_(
           std::make_unique<InteractedByTapRecorder>(this)) {
@@ -250,17 +240,8 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
 
   SessionController* session_controller = Shell::Get()->session_controller();
 
-  views::View* message_center_view;
-  if (features::IsNewMessageListViewEnabled()) {
-    message_center_view = new_message_center_view_;
-  } else {
-    message_center_view = message_center_view_;
-    message_center_view->SetVisible(
-        session_controller->ShouldShowNotificationTray() &&
-        !session_controller->IsScreenLocked());
-  }
-  AddChildView(message_center_view);
-  layout->SetFlexForView(message_center_view, 1);
+  AddChildView(message_center_view_);
+  layout->SetFlexForView(message_center_view_, 1);
 
   notification_hidden_view_->SetVisible(
       session_controller->GetUserSession(0) &&
@@ -284,7 +265,7 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
   // Also, SetNextFocusableView does not support loop as mentioned in the doc,
   // we have to set null to |notification_hidden_view_|.
   notification_hidden_view_->SetNextFocusableView(nullptr);
-  detailed_view_container_->SetNextFocusableView(message_center_view);
+  detailed_view_container_->SetNextFocusableView(message_center_view_);
 
   top_shortcuts_view_->SetExpandedAmount(expanded_amount_);
 }
@@ -292,10 +273,7 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
 UnifiedSystemTrayView::~UnifiedSystemTrayView() = default;
 
 void UnifiedSystemTrayView::SetMaxHeight(int max_height) {
-  if (message_center_view_)
-    message_center_view_->SetMaxHeight(max_height);
-  else if (new_message_center_view_)
-    new_message_center_view_->SetMaxHeight(max_height);
+  message_center_view_->SetMaxHeight(max_height);
 }
 
 void UnifiedSystemTrayView::AddFeaturePodButton(FeaturePodButton* button) {
@@ -376,13 +354,7 @@ bool UnifiedSystemTrayView::IsTransformEnabled() const {
   // TODO(tetsui): Support animation by transform even when
   // UnifiedMessageCenterview is visible.
   return expanded_amount_ != 0.0 && expanded_amount_ != 1.0 &&
-         (message_center_view_ ? !message_center_view_->visible()
-                               : !new_message_center_view_->visible());
-}
-
-void UnifiedSystemTrayView::ShowClearAllAnimation() {
-  if (message_center_view_)
-    message_center_view_->ShowClearAllAnimation();
+         !message_center_view_->visible();
 }
 
 void UnifiedSystemTrayView::SetNotificationHeightBelowScroll(

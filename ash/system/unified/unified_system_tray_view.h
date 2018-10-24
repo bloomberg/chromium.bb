@@ -14,7 +14,6 @@ namespace ash {
 class FeaturePodButton;
 class FeaturePodsContainerView;
 class TopShortcutsView;
-class UnifiedMessageCenterView;
 class NewUnifiedMessageCenterView;
 class UnifiedSystemInfoView;
 class UnifiedSystemTrayController;
@@ -91,8 +90,6 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   // call SetTransform() to move this view in order to avoid resizing.
   bool IsTransformEnabled() const;
 
-  void ShowClearAllAnimation();
-
   // Update the top of the SystemTray part to imitate notification list
   // scrolling under SystemTray. |height_below_scroll| should not be negative.
   void SetNotificationHeightBelowScroll(int height_below_scroll);
@@ -127,8 +124,7 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   UnifiedSystemInfoView* const system_info_view_;
   views::View* const system_tray_container_;
   views::View* const detailed_view_container_;
-  UnifiedMessageCenterView* const message_center_view_;
-  NewUnifiedMessageCenterView* const new_message_center_view_;
+  NewUnifiedMessageCenterView* const message_center_view_;
 
   const std::unique_ptr<FocusSearch> focus_search_;
   const std::unique_ptr<ui::EventHandler> interacted_by_tap_recorder_;
