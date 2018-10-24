@@ -222,6 +222,8 @@ void CloudPolicyClient::Register(em::DeviceRegisterRequest::Type type,
       policy_fetch_request_job_->GetRequest()->mutable_register_request();
   if (!client_id.empty())
     request->set_reregister(true);
+  if (requires_reregistration())
+    request->set_reregistration_dm_token(reregistration_dm_token_);
   request->set_type(type);
   if (!machine_id_.empty())
     request->set_machine_id(machine_id_);
@@ -828,16 +830,23 @@ void CloudPolicyClient::OnRegisterCompleted(
     DeviceManagementStatus status,
     int net_error,
     const em::DeviceManagementResponse& response) {
-  if (status == DM_STATUS_SUCCESS &&
-      (!response.has_register_response() ||
-       !response.register_response().has_device_management_token())) {
-    LOG(WARNING) << "Invalid registration response.";
-    status = DM_STATUS_RESPONSE_DECODING_ERROR;
+  if (status == DM_STATUS_SUCCESS) {
+    if (!response.has_register_response() ||
+        !response.register_response().has_device_management_token()) {
+      LOG(WARNING) << "Invalid registration response.";
+      status = DM_STATUS_RESPONSE_DECODING_ERROR;
+    } else if (!reregistration_dm_token_.empty() &&
+               reregistration_dm_token_ !=
+                   response.register_response().device_management_token()) {
+      LOG(WARNING) << "Reregistration DMToken mismatch.";
+      status = DM_STATUS_SERVICE_MANAGEMENT_TOKEN_INVALID;
+    }
   }
 
   status_ = status;
   if (status == DM_STATUS_SUCCESS) {
     dm_token_ = response.register_response().device_management_token();
+    reregistration_dm_token_.clear();
     if (response.register_response().has_configuration_seed()) {
       configuration_seed_ = base::DictionaryValue::From(base::JSONReader::Read(
           response.register_response().configuration_seed(),
@@ -930,6 +939,13 @@ void CloudPolicyClient::OnPolicyFetchCompleted(
     NotifyPolicyFetched();
   } else {
     NotifyClientError();
+
+    if (status == DM_STATUS_SERVICE_DEVICE_NOT_FOUND) {
+      // Mark as unregistered and initialize re-registration flow.
+      reregistration_dm_token_ = dm_token_;
+      dm_token_.clear();
+      NotifyRegistrationStateChanged();
+    }
   }
 }
 

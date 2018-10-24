@@ -145,6 +145,9 @@ message DeviceRegisterRequest {
 
   // The 4-character brand code of the device.
   optional string brand_code = 12;
+
+  // Previous DMToken that should be reused for re-registration.
+  optional string reregistration_dm_token = 13;
 }
 
 // Response from server to device register request.

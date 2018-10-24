@@ -97,6 +97,8 @@ constexpr char kOAuth2AccessTokenData[] = R"(
       "expires_in": 3600
     })";
 
+constexpr char kDMToken[] = "dmtoken123";
+
 class UserCloudPolicyManagerChromeOSTest : public testing::Test {
  public:
   // Note: This method has to be public, so that a pointer to it may be obtained
@@ -178,14 +180,14 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     // Create fake policy blobs to deliver to the client.
     em::DeviceRegisterResponse* register_response =
         register_blob_.mutable_register_response();
-    register_response->set_device_management_token("dmtoken123");
+    register_response->set_device_management_token(kDMToken);
 
     em::CloudPolicySettings policy_proto;
     policy_proto.mutable_homepagelocation()->set_value("http://chromium.org");
     ASSERT_TRUE(
         policy_proto.SerializeToString(policy_data_.mutable_policy_value()));
     policy_data_.set_policy_type(dm_protocol::kChromeUserPolicyType);
-    policy_data_.set_request_token("dmtoken123");
+    policy_data_.set_request_token(kDMToken);
     policy_data_.set_device_id("id987");
     policy_data_.set_username("user@example.com");
     em::PolicyFetchResponse* policy_response =
@@ -810,6 +812,148 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, TestHasAppInstallEventLogUploader) {
   ASSERT_NO_FATAL_FAILURE(MakeManagerWithEmptyStore(
       base::TimeDelta(), PolicyEnforcement::kPolicyRequired));
   EXPECT_TRUE(manager_->GetAppInstallEventLogUploader());
+}
+
+TEST_F(UserCloudPolicyManagerChromeOSTest, Reregistration) {
+  // Tests the initialization of a manager whose Profile is waiting for the
+  // initial fetch, when the policy cache is empty.
+  fatal_error_expected_ = true;
+  ASSERT_NO_FATAL_FAILURE(MakeManagerWithEmptyStore(
+      base::TimeDelta(), PolicyEnforcement::kServerCheckRequired));
+
+  // Initialize the CloudPolicyService without any stored data.
+  EXPECT_FALSE(manager_->core()->service()->IsInitializationComplete());
+  store_->NotifyStoreLoaded();
+  EXPECT_TRUE(manager_->core()->service()->IsInitializationComplete());
+  EXPECT_FALSE(manager_->core()->client()->is_registered());
+
+  // This starts the OAuth2 policy token fetcher using the signin Profile.
+  // The manager will then issue the registration request.
+  MockDeviceManagementJob* register_job = IssueOAuthToken(false);
+  ASSERT_TRUE(register_job);
+
+  // Register.
+  MockDeviceManagementJob* policy_job = NULL;
+  EXPECT_CALL(device_management_service_,
+              CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH, _))
+      .WillRepeatedly(device_management_service_.CreateAsyncJob(&policy_job));
+  register_job->SendResponse(DM_STATUS_SUCCESS, register_blob_);
+
+  // Validate registered state.
+  ASSERT_TRUE(policy_job);
+  EXPECT_TRUE(manager_->core()->service()->IsInitializationComplete());
+  EXPECT_TRUE(manager_->core()->client()->is_registered());
+  EXPECT_FALSE(user_manager_->GetActiveUser()->force_online_signin());
+
+  // Simulate policy fetch fail (error code 410), which should trigger the
+  // re-registration flow (FetchPolicyOAuthToken()).
+  MockDeviceManagementJob* reregister_job = NULL;
+  EXPECT_CALL(device_management_service_,
+              CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION, _))
+      .WillOnce(device_management_service_.CreateAsyncJob(&reregister_job));
+  EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get())).Times(0);
+  policy_job->SendResponse(DM_STATUS_SERVICE_DEVICE_NOT_FOUND,
+                           em::DeviceManagementResponse());
+
+  // Copy register request (used to check correct re-registration parameters are
+  // submitted).
+  em::DeviceManagementRequest register_request;
+  EXPECT_CALL(device_management_service_,
+              StartJob(dm_protocol::kValueRequestRegister, _, _, _, _, _, _))
+      .WillOnce(SaveArg<6>(&register_request));
+
+  // Simulate OAuth token fetch.
+  GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
+  network::URLLoaderCompletionStatus ok_completion_status(net::OK);
+  network::ResourceResponseHead ok_response =
+      network::CreateResourceResponseHead(net::HTTP_OK);
+  EXPECT_TRUE(
+      test_system_url_loader_factory()->SimulateResponseForPendingRequest(
+          gaia_urls->oauth2_token_url(), ok_completion_status, ok_response,
+          kOAuth2AccessTokenData));
+
+  // Validate that re-registration sends the correct parameters.
+  EXPECT_TRUE(register_request.register_request().reregister());
+  EXPECT_EQ(kDMToken,
+            register_request.register_request().reregistration_dm_token());
+
+  // Validate re-registration state.
+  ASSERT_TRUE(reregister_job);
+  EXPECT_TRUE(manager_->core()->service()->IsInitializationComplete());
+  EXPECT_FALSE(manager_->core()->client()->is_registered());
+  EXPECT_FALSE(user_manager_->GetActiveUser()->force_online_signin());
+
+  // Validate successful re-registration.
+  reregister_job->SendResponse(DM_STATUS_SUCCESS, register_blob_);
+  ASSERT_TRUE(policy_job);
+  EXPECT_TRUE(manager_->core()->service()->IsInitializationComplete());
+  EXPECT_TRUE(manager_->core()->client()->is_registered());
+  EXPECT_FALSE(user_manager_->GetActiveUser()->force_online_signin());
+}
+
+TEST_F(UserCloudPolicyManagerChromeOSTest, ReregistrationFails) {
+  // Tests the initialization of a manager whose Profile is waiting for the
+  // initial fetch, when the policy cache is empty.
+  fatal_error_expected_ = true;
+  ASSERT_NO_FATAL_FAILURE(MakeManagerWithEmptyStore(
+      base::TimeDelta(), PolicyEnforcement::kServerCheckRequired));
+
+  // Initialize the CloudPolicyService without any stored data.
+  EXPECT_FALSE(manager_->core()->service()->IsInitializationComplete());
+  store_->NotifyStoreLoaded();
+  EXPECT_TRUE(manager_->core()->service()->IsInitializationComplete());
+  EXPECT_FALSE(manager_->core()->client()->is_registered());
+
+  // This starts the OAuth2 policy token fetcher using the signin Profile.
+  // The manager will then issue the registration request.
+  MockDeviceManagementJob* register_job = IssueOAuthToken(false);
+  ASSERT_TRUE(register_job);
+
+  // Register.
+  MockDeviceManagementJob* policy_job = NULL;
+  EXPECT_CALL(device_management_service_,
+              CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH, _))
+      .WillRepeatedly(device_management_service_.CreateAsyncJob(&policy_job));
+  register_job->SendResponse(DM_STATUS_SUCCESS, register_blob_);
+
+  // Validate registered state.
+  ASSERT_TRUE(policy_job);
+  EXPECT_TRUE(manager_->core()->service()->IsInitializationComplete());
+  EXPECT_TRUE(manager_->core()->client()->is_registered());
+  EXPECT_FALSE(user_manager_->GetActiveUser()->force_online_signin());
+
+  // Simulate policy fetch fail (error code 410), which should trigger the
+  // re-registration flow (FetchPolicyOAuthToken()).
+  MockDeviceManagementJob* reregister_job = NULL;
+  EXPECT_CALL(device_management_service_,
+              CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION, _))
+      .WillOnce(device_management_service_.CreateAsyncJob(&reregister_job));
+  EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get())).Times(0);
+  policy_job->SendResponse(DM_STATUS_SERVICE_DEVICE_NOT_FOUND,
+                           em::DeviceManagementResponse());
+
+  // Simulate OAuth token fetch.
+  GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
+  network::URLLoaderCompletionStatus ok_completion_status(net::OK);
+  network::ResourceResponseHead ok_response =
+      network::CreateResourceResponseHead(net::HTTP_OK);
+  EXPECT_TRUE(
+      test_system_url_loader_factory()->SimulateResponseForPendingRequest(
+          gaia_urls->oauth2_token_url(), ok_completion_status, ok_response,
+          kOAuth2AccessTokenData));
+
+  // Validate re-registration state.
+  ASSERT_TRUE(reregister_job);
+  EXPECT_TRUE(manager_->core()->service()->IsInitializationComplete());
+  EXPECT_FALSE(manager_->core()->client()->is_registered());
+  EXPECT_FALSE(user_manager_->GetActiveUser()->force_online_signin());
+
+  // Validate unsuccessful re-registration.
+  reregister_job->SendResponse(DM_STATUS_TEMPORARY_UNAVAILABLE, register_blob_);
+  ASSERT_TRUE(policy_job);
+  EXPECT_TRUE(manager_->core()->service()->IsInitializationComplete());
+  EXPECT_FALSE(manager_->core()->client()->is_registered());
+  EXPECT_TRUE(user_manager_->GetActiveUser()->force_online_signin());
 }
 
 }  // namespace policy

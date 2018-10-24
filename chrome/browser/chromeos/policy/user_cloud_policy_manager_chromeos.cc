@@ -391,6 +391,22 @@ void UserCloudPolicyManagerChromeOS::OnRegistrationStateChanged(
     CloudPolicyClient* cloud_policy_client) {
   DCHECK_EQ(client(), cloud_policy_client);
 
+  // Trigger re-registration. This happens if the client ID used for policy
+  // fetches is unknown/purged from the DMServer.
+  if (!client()->is_registered() && client()->requires_reregistration()) {
+    is_in_reregistration_state_ = true;
+    if (!access_token_.empty()) {
+      OnOAuth2PolicyTokenFetched(
+          access_token_, GoogleServiceAuthError(GoogleServiceAuthError::NONE));
+    } else {
+      FetchPolicyOAuthToken();
+    }
+    return;
+  }
+  // Reset re-registration state on successful registration.
+  if (client()->is_registered() && is_in_reregistration_state_)
+    is_in_reregistration_state_ = false;
+
   if (waiting_for_policy_fetch_) {
     time_client_registered_ = base::Time::Now();
     if (!time_token_available_.is_null()) {
@@ -435,6 +451,14 @@ void UserCloudPolicyManagerChromeOS::OnClientError(
       // Unexpected error fetching policy.
       CancelWaitForPolicyFetch(false);
       break;
+  }
+  // If we are in re-registration state and re-registration fails, we mark the
+  // user to require an online sign-in on his next sign-in.
+  if (is_in_reregistration_state_) {
+    LOG(ERROR) << "Re-registration failed, requiring the user to perform an "
+                  "online sign-in.";
+    chromeos::ChromeUserManager::Get()->SaveForceOnlineSignin(account_id_,
+                                                              true);
   }
 }
 
@@ -580,14 +604,16 @@ void UserCloudPolicyManagerChromeOS::OnOAuth2PolicyTokenFetched(
         user_manager::UserManager::Get()->IsCurrentUserCryptohomeDataEphemeral()
             ? em::DeviceRegisterRequest::LIFETIME_EPHEMERAL_USER
             : em::DeviceRegisterRequest::LIFETIME_INDEFINITE;
+    std::string client_id;
+    if (client()->requires_reregistration())
+      client_id = client()->client_id();
     client()->Register(em::DeviceRegisterRequest::USER,
                        em::DeviceRegisterRequest::FLAVOR_USER_REGISTRATION,
                        lifetime, em::LicenseType::UNDEFINED,
-                       DMAuth::FromOAuthToken(policy_token), std::string(),
+                       DMAuth::FromOAuthToken(policy_token), client_id,
                        std::string(), std::string());
   } else {
-    UMA_HISTOGRAM_ENUMERATION(kUMAInitialFetchOAuth2Error,
-                              error.state(),
+    UMA_HISTOGRAM_ENUMERATION(kUMAInitialFetchOAuth2Error, error.state(),
                               GoogleServiceAuthError::NUM_STATES);
     if (error.state() == GoogleServiceAuthError::CONNECTION_FAILED) {
       // Network errors are negative in the code, but the histogram data type
