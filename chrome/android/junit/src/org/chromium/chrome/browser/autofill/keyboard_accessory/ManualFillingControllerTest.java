@@ -55,6 +55,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.modelutil.FakeViewProvider;
+import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.lang.ref.WeakReference;
@@ -70,6 +71,8 @@ import java.util.Map;
 public class ManualFillingControllerTest {
     @Mock
     private WindowAndroid mMockWindow;
+    @Mock
+    private KeyboardVisibilityDelegate mMockKeyboard;
     @Mock
     private ChromeActivity mMockActivity;
     @Mock
@@ -99,6 +102,7 @@ public class ManualFillingControllerTest {
         ShadowRecordHistogram.reset();
         MockitoAnnotations.initMocks(this);
         when(mMockWindow.getActivity()).thenReturn(new WeakReference<>(mMockActivity));
+        when(mMockWindow.getKeyboardDelegate()).thenReturn(mMockKeyboard);
         when(mMockActivity.getTabModelSelector()).thenReturn(mMockTabModelSelector);
         ChromeFullscreenManager fullscreenManager = new ChromeFullscreenManager(mMockActivity, 0);
         when(mMockActivity.getFullscreenManager()).thenReturn(fullscreenManager);

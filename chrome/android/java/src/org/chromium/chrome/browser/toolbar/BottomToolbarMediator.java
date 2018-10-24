@@ -22,8 +22,8 @@ import org.chromium.chrome.browser.toolbar.ToolbarButtonSlotData.ToolbarButtonDa
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.WindowAndroid;
-import org.chromium.ui.base.WindowAndroid.KeyboardVisibilityListener;
 import org.chromium.ui.resources.ResourceManager;
 import org.chromium.ui.widget.ViewRectProvider;
 
@@ -32,9 +32,9 @@ import org.chromium.ui.widget.ViewRectProvider;
  * coordinators, running most of the business logic associated with the bottom toolbar, and updating
  * the model accordingly.
  */
-class BottomToolbarMediator implements FullscreenListener, KeyboardVisibilityListener,
-                                       OverlayPanelManagerObserver, OverviewModeObserver,
-                                       SceneChangeObserver {
+class BottomToolbarMediator
+        implements FullscreenListener, KeyboardVisibilityDelegate.KeyboardVisibilityListener,
+                   OverlayPanelManagerObserver, OverviewModeObserver, SceneChangeObserver {
     /** The amount of time to show the Duet help bubble for. */
     private static final int DUET_IPH_BUBBLE_SHOW_DURATION_MS = 6000;
 
@@ -106,7 +106,9 @@ class BottomToolbarMediator implements FullscreenListener, KeyboardVisibilityLis
     void destroy() {
         mFullscreenManager.removeListener(this);
         if (mOverviewModeBehavior != null) mOverviewModeBehavior.removeOverviewModeObserver(this);
-        if (mWindowAndroid != null) mWindowAndroid.removeKeyboardVisibilityListener(this);
+        if (mWindowAndroid != null) {
+            mWindowAndroid.getKeyboardDelegate().removeKeyboardVisibilityListener(this);
+        }
         if (mModel.get(BottomToolbarModel.LAYOUT_MANAGER) != null) {
             LayoutManager manager = mModel.get(BottomToolbarModel.LAYOUT_MANAGER);
             manager.getOverlayPanelManager().removeObserver(this);
@@ -229,7 +231,7 @@ class BottomToolbarMediator implements FullscreenListener, KeyboardVisibilityLis
         assert mWindowAndroid == null : "#setWindowAndroid should only be called once per toolbar.";
         // Watch for keyboard events so we can hide the bottom toolbar when the keyboard is showing.
         mWindowAndroid = windowAndroid;
-        mWindowAndroid.addKeyboardVisibilityListener(this);
+        mWindowAndroid.getKeyboardDelegate().addKeyboardVisibilityListener(this);
     }
 
     void setTabSwitcherButtonData(
