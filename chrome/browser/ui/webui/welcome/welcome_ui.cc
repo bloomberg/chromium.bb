@@ -78,6 +78,18 @@ void AddOnboardingStrings(content::WebUIDataSource* html_source) {
       {"setDefaultSkip", IDS_ONBOARDING_WELCOME_NUX_SET_AS_DEFAULT_SKIP},
       {"setDefaultConfirm",
        IDS_ONBOARDING_WELCOME_NUX_SET_AS_DEFAULT_SET_AS_DEFAULT},
+
+      // Landing view strings.
+      {"landingTitle", IDS_ONBOARDING_WELCOME_LANDING_TITLE},
+      {"landingDescription", IDS_ONBOARDING_WELCOME_LANDING_DESCRIPTION},
+      {"landingNewUser", IDS_ONBOARDING_WELCOME_LANDING_NEW_USER},
+      {"landingExistingUser", IDS_ONBOARDING_WELCOME_LANDING_EXISTING_USER},
+
+      // Email interstitial strings.
+      {"emailInterstitialTitle",
+       IDS_ONBOARDING_WELCOME_EMAIL_INTERSTITIAL_TITLE},
+      {"emailInterstitialContinue",
+       IDS_ONBOARDING_WELCOME_EMAIL_INTERSTITIAL_CONTINUE},
   };
 
   // TODO(scottchen): reuse instead of copy from
