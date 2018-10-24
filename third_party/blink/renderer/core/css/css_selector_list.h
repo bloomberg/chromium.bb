@@ -78,7 +78,7 @@ class CORE_EXPORT CSSSelectorList {
   CSSSelectorList ExpandedFirstPseudoClass() const;
   CSSSelectorList TransformForListExpansion();
   bool HasPseudoMatches() const;
-  bool HasPseudoIS() const;
+  bool HasPseudoWhere() const;
   bool RequiresExpansion() const;
 
   CSSSelectorList& operator=(CSSSelectorList&& o) {

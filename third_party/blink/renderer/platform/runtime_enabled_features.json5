@@ -319,7 +319,7 @@
       status: "experimental",
     },
     {
-      name: "CSSPseudoIS",
+      name: "CSSPseudoWhere",
       status: "experimental",
     },
     {

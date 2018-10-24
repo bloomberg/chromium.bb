@@ -1884,7 +1884,7 @@ enum WebFeature {
   kShapeOutsideMarginBox = 2428,
   kPerformanceTimeline = 2429,
   kUserTiming = 2430,
-  kCSSSelectorPseudoIS = 2431,
+  kCSSSelectorPseudoWhere = 2431,
   kKeyboardApiGetLayoutMap = 2432,
   kPerformanceResourceTimingInitiatorType = 2434,
   kV8ArraySortNoElementsProtector = 2436,

@@ -164,7 +164,7 @@ class CORE_EXPORT CSSSelector {
     kPseudoVisited,
     kPseudoAny,
     kPseudoMatches,
-    kPseudoIS,
+    kPseudoWhere,
     kPseudoAnyLink,
     kPseudoWebkitAnyLink,
     kPseudoAutofill,
@@ -386,7 +386,7 @@ class CORE_EXPORT CSSSelector {
   bool HasDeepCombinatorOrShadowPseudo() const;
   bool NeedsUpdatedDistribution() const;
   bool HasPseudoMatches() const;
-  bool HasPseudoIS() const;
+  bool HasPseudoWhere() const;
 
  private:
   unsigned relation_ : 4;     // enum RelationType

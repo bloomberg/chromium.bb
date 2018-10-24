@@ -168,7 +168,7 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoVideoPersistentAncestor:
       return true;
     case CSSSelector::kPseudoMatches:
-    case CSSSelector::kPseudoIS:
+    case CSSSelector::kPseudoWhere:
     case CSSSelector::kPseudoUnknown:
     case CSSSelector::kPseudoLeftPage:
     case CSSSelector::kPseudoRightPage:

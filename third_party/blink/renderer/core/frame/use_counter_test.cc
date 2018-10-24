@@ -150,15 +150,15 @@ TEST_F(UseCounterTest, SVGImageContextFeatures) {
       kSvgUrl, UseCounter::kSVGImageContext);
 }
 
-TEST_F(UseCounterTest, CSSSelectorPseudoIS) {
+TEST_F(UseCounterTest, CSSSelectorPseudoWhere) {
   std::unique_ptr<DummyPageHolder> dummy_page_holder =
       DummyPageHolder::Create(IntSize(800, 600));
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   Document& document = dummy_page_holder->GetDocument();
-  WebFeature feature = WebFeature::kCSSSelectorPseudoIS;
+  WebFeature feature = WebFeature::kCSSSelectorPseudoWhere;
   EXPECT_FALSE(UseCounter::IsCounted(document, feature));
   document.documentElement()->SetInnerHTMLFromString(
-      "<style>.a+:is(.b, .c+.d) { color: red; }</style>");
+      "<style>.a+:where(.b, .c+.d) { color: red; }</style>");
   EXPECT_TRUE(UseCounter::IsCounted(document, feature));
 }
 
