@@ -32,9 +32,19 @@ namespace quic {
 QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
                                      QuicFramer* framer,
                                      DelegateInterface* delegate)
+    : QuicPacketCreator(connection_id,
+                        framer,
+                        QuicRandom::GetInstance(),
+                        delegate) {}
+
+QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
+                                     QuicFramer* framer,
+                                     QuicRandom* random,
+                                     DelegateInterface* delegate)
     : delegate_(delegate),
       debug_delegate_(nullptr),
       framer_(framer),
+      random_(random),
       send_version_in_packet_(framer->perspective() == Perspective::IS_CLIENT),
       have_diversification_nonce_(false),
       max_packet_length_(0),
@@ -577,8 +587,7 @@ QuicPacketCreator::SerializePathChallengeConnectivityProbingPacket(
 
   std::unique_ptr<char[]> buffer(new char[kMaxPacketSize]);
   size_t length = framer_->BuildPaddedPathChallengePacket(
-      header, buffer.get(), max_plaintext_size_, payload,
-      QuicRandom::GetInstance());
+      header, buffer.get(), max_plaintext_size_, payload, random_);
   DCHECK(length);
 
   const size_t encrypted_length = framer_->EncryptInPlace(

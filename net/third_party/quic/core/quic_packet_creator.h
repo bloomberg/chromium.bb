@@ -55,6 +55,10 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   QuicPacketCreator(QuicConnectionId connection_id,
                     QuicFramer* framer,
                     DelegateInterface* delegate);
+  QuicPacketCreator(QuicConnectionId connection_id,
+                    QuicFramer* framer,
+                    QuicRandom* random,
+                    DelegateInterface* delegate);
   QuicPacketCreator(const QuicPacketCreator&) = delete;
   QuicPacketCreator& operator=(const QuicPacketCreator&) = delete;
 
@@ -311,6 +315,7 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   DelegateInterface* delegate_;
   DebugDelegate* debug_delegate_;
   QuicFramer* framer_;
+  QuicRandom* random_;
 
   // Controls whether version should be included while serializing the packet.
   // send_version_in_packet_ should never be read directly, use

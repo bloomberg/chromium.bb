@@ -11,6 +11,7 @@
 #include "net/quic/quic_http_utils.h"
 #include "net/third_party/quic/core/quic_framer.h"
 #include "net/third_party/quic/core/quic_utils.h"
+#include "net/third_party/quic/test_tools/mock_random.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 
 namespace net {
@@ -74,8 +75,23 @@ QuicTestPacketMaker::MakeConnectivityProbingPacket(quic::QuicPacketNumber num,
   size_t max_plaintext_size =
       framer.GetMaxPlaintextSize(quic::kDefaultMaxPacketSize);
   char buffer[quic::kDefaultMaxPacketSize];
-  size_t length =
-      framer.BuildConnectivityProbingPacket(header, buffer, max_plaintext_size);
+  size_t length;
+  if (version_ != quic::QUIC_VERSION_99) {
+    length = framer.BuildConnectivityProbingPacket(header, buffer,
+                                                   max_plaintext_size);
+  } else if (perspective_ == quic::Perspective::IS_CLIENT) {
+    quic::test::MockRandom rand(0);
+    quic::QuicPathFrameBuffer payload;
+    length = framer.BuildPaddedPathChallengePacket(
+        header, buffer, max_plaintext_size, &payload, &rand);
+  } else {
+    quic::test::MockRandom rand(0);
+    quic::QuicPathFrameBuffer payload;
+    rand.RandBytes(payload.data(), payload.size());
+    quic::QuicDeque<quic::QuicPathFrameBuffer> payloads{payload};
+    length = framer.BuildPathResponsePacket(header, buffer, max_plaintext_size,
+                                            payloads, true);
+  }
   size_t encrypted_size = framer.EncryptInPlace(
       quic::ENCRYPTION_NONE, header.packet_number,
       GetStartOfEncryptedData(framer.transport_version(), header), length,

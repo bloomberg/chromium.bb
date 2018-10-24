@@ -20,7 +20,7 @@ QuicPacketGenerator::QuicPacketGenerator(QuicConnectionId connection_id,
                                          QuicRandom* random_generator,
                                          DelegateInterface* delegate)
     : delegate_(delegate),
-      packet_creator_(connection_id, framer, delegate),
+      packet_creator_(connection_id, framer, random_generator, delegate),
       flusher_attached_(false),
       should_send_ack_(false),
       should_send_stop_waiting_(false),
