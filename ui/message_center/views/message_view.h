@@ -152,11 +152,6 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
   std::string notification_id() const { return notification_id_; }
 
  protected:
-  // Creates and add close button to view hierarchy when necessary. Derived
-  // classes should call this after its view hierarchy is populated to ensure
-  // it is on top of other views.
-  void CreateOrUpdateCloseButtonView(const Notification& notification);
-
   virtual void UpdateControlButtonsVisibility() = 0;
 
   // Changes the background color and schedules a paint.
