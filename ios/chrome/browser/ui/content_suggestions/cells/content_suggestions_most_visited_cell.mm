@@ -8,7 +8,7 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_constants.h"
 #import "ios/chrome/browser/ui/ntp_tile_views/ntp_tile_constants.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
 #import "ios/chrome/common/material_timing.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"

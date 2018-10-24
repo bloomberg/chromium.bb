@@ -10,7 +10,7 @@
 #include "base/numerics/ranges.h"
 #import "ios/chrome/browser/ui/toolbar_container/collapsing_toolbar_height_constraint_delegate.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_collapsing.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

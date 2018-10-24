@@ -11,7 +11,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/snapshots/snapshot_generator.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 
 #import <Accelerate/Accelerate.h>
 #import <Foundation/Foundation.h>
 #import <QuartzCore/QuartzCore.h>
+#import <UIKit/UIKit.h>
 #include <stddef.h>
 #include <stdint.h>
-#import <UIKit/UIKit.h>
 #include <cmath>
 
 #include "base/ios/ios_util.h"
@@ -17,9 +17,9 @@
 #include "base/mac/foundation_util.h"
 #include "base/numerics/math_constants.h"
 #include "ios/chrome/browser/experimental_flags.h"
-#include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/rtl_geometry.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/web/public/web_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -399,11 +399,22 @@ UIImage* BlurImage(UIImage* image,
     }
     if (hasSaturationChange) {
       CGFloat s = saturationDeltaFactor;
-      CGFloat floatingPointSaturationMatrix[] = {
-          0.0722 + 0.9278 * s,  0.0722 - 0.0722 * s,  0.0722 - 0.0722 * s,  0,
-          0.7152 - 0.7152 * s,  0.7152 + 0.2848 * s,  0.7152 - 0.7152 * s,  0,
-          0.2126 - 0.2126 * s,  0.2126 - 0.2126 * s,  0.2126 + 0.7873 * s,  0,
-          0,                    0,                    0,  1 };
+      CGFloat floatingPointSaturationMatrix[] = {0.0722 + 0.9278 * s,
+                                                 0.0722 - 0.0722 * s,
+                                                 0.0722 - 0.0722 * s,
+                                                 0,
+                                                 0.7152 - 0.7152 * s,
+                                                 0.7152 + 0.2848 * s,
+                                                 0.7152 - 0.7152 * s,
+                                                 0,
+                                                 0.2126 - 0.2126 * s,
+                                                 0.2126 - 0.2126 * s,
+                                                 0.2126 + 0.7873 * s,
+                                                 0,
+                                                 0,
+                                                 0,
+                                                 0,
+                                                 1};
       const int32_t divisor = 256;
       NSUInteger matrixSize = sizeof(floatingPointSaturationMatrix) /
                               sizeof(floatingPointSaturationMatrix[0]);

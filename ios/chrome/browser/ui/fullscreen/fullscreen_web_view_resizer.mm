@@ -6,7 +6,7 @@
 
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/web/public/features.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"

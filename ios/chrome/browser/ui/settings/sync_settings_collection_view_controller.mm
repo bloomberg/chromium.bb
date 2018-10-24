@@ -46,7 +46,7 @@
 #import "ios/chrome/browser/ui/settings/sync_encryption_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync_encryption_passphrase_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"

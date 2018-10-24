@@ -55,8 +55,8 @@ source_set("ui") {
   deps = [
     ":toolbar_collapsing",
     "//base",
-    "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/browser/ui/fullscreen:ui",
+    "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/ui_util",
   ]
 }
@@ -75,7 +75,7 @@ source_set("unit_tests") {
     ":toolbar_collapsing",
     ":ui",
     "//base/test:test_support",
-    "//ios/chrome/browser/ui:ui_util",
+    "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/ui_util",
     "//testing/gtest",
   ]

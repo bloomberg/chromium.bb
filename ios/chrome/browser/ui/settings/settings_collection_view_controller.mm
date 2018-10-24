@@ -63,7 +63,7 @@
 #import "ios/chrome/browser/ui/settings/voicesearch_collection_view_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/browser/voice/speech_input_locale_config.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"

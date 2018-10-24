@@ -141,7 +141,7 @@ source_set("content_suggestions_constant") {
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
   deps = [
-    "//ios/chrome/browser/ui:ui_util",
+    "//ios/chrome/browser/ui/util",
   ]
 }
 

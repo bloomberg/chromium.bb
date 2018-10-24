@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 
 #import <UIKit/UIKit.h>
 #include <limits>
@@ -13,7 +13,7 @@
 #include "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/web/public/features.h"
 #include "ui/base/device_form_factor.h"
 #include "ui/gfx/ios/uikit_util.h"

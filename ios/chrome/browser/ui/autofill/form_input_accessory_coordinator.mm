@@ -11,7 +11,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_injection_handler.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_coordinator.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

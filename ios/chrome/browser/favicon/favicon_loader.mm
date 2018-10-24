@@ -14,7 +14,7 @@
 #include "components/favicon/core/large_icon_service.h"
 #include "components/favicon_base/fallback_icon_style.h"
 #include "components/favicon_base/favicon_callback.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/favicon/favicon_attributes.h"
 #include "skia/ext/skia_utils_ios.h"
 #include "url/gurl.h"

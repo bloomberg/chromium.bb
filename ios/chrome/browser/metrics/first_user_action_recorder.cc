@@ -11,7 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/web/public/web_thread.h"
 
 const char* kFirstUserActionNewTaskHistogramName[] = {

@@ -10,7 +10,7 @@
 #import "ios/chrome/browser/ui/material_components/chrome_app_bar_view_controller.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/payments/payment_request_picker_row.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 #include "third_party/libaddressinput/messages.h"
 #include "ui/base/l10n/l10n_util.h"

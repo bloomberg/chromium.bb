@@ -12,7 +12,7 @@
 #import "ios/chrome/browser/autofill/form_input_accessory_view_delegate.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/uicolor_manualfill.h"
 #import "ios/chrome/browser/ui/image_util/image_util.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"

@@ -35,7 +35,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/mediator_util.h"
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
 #include "ios/chrome/browser/ui/ntp/ntp_tile_saver.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/images/branded_image_provider.h"

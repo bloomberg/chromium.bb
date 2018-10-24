@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/image_fetcher/ios/ios_image_decoder_impl.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

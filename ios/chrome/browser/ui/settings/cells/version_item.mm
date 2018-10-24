@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/settings/cells/version_item.h"
 
 #include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"

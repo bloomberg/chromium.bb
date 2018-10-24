@@ -40,7 +40,7 @@
 #import "ios/chrome/browser/ui/page_not_available_controller.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"

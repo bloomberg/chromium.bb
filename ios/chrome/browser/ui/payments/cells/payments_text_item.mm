@@ -6,8 +6,8 @@
 
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/payments/cells/accessibility_util.h"
-#import "ios/chrome/browser/ui/rtl_geometry.h"
-#include "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/rtl_geometry.h"
+#include "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 

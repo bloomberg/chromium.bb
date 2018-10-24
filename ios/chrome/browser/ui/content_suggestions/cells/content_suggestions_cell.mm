@@ -4,9 +4,9 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_cell.h"
 
-#include "ios/chrome/browser/ui/ui_util.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/i18n_string.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"

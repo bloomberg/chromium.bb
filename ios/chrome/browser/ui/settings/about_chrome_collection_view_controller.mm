@@ -16,7 +16,7 @@
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/version_item.h"
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
-#include "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"

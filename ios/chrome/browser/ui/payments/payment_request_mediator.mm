@@ -30,7 +30,7 @@
 #import "ios/chrome/browser/ui/payments/cells/payment_method_item.h"
 #import "ios/chrome/browser/ui/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/ui/payments/cells/price_item.h"
-#include "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 

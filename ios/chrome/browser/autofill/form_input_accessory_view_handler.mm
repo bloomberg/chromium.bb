@@ -9,7 +9,7 @@
 #include "base/mac/foundation_util.h"
 #import "components/autofill/core/browser/keyboard_accessory_metrics_logger.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

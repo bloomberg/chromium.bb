@@ -15,7 +15,7 @@
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/payments/cells/autofill_profile_item.h"
 #import "ios/chrome/browser/ui/payments/cells/payments_text_item.h"
-#include "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
