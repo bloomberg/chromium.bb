@@ -67,6 +67,9 @@ template("webapk_java") {
 }
 
 template("webapk_tmpl") {
+  _manifest_to_upload_target_name = "${target_name}_manifest_to_upload"
+  _manifest_to_upload_output =
+      "${target_gen_dir}/${_manifest_to_upload_target_name}/AndroidManifest.xml"
   _manifest_target_name = "${target_name}_generate_manifest"
   _manifest_output =
       "${target_gen_dir}/${_manifest_target_name}/AndroidManifest.xml"
@@ -78,15 +81,25 @@ template("webapk_tmpl") {
     _use_new_splash = invoker.use_new_splash
   }
 
-  manifest_processor_template(_manifest_target_name) {
-    forward_variables_from(invoker, [ "config_file" ])
-
+  # Generate manifest to upload to WebAPK server. Fills in all of the fields
+  # that the server cannot customize on a per-site basis.
+  manifest_processor_template(_manifest_to_upload_target_name) {
     input = "AndroidManifest.xml"
-    output = _manifest_output
-
+    output = _manifest_to_upload_output
     extra_variables = [
       "shell_apk_version=$current_shell_apk_version",
       "use_new_splash=$_use_new_splash",
+    ]
+  }
+
+  # Generate manifest with test values.
+  manifest_processor_template(_manifest_target_name) {
+    forward_variables_from(invoker, [ "config_file" ])
+
+    input = _manifest_to_upload_output
+    output = _manifest_output
+    deps = [
+      ":$_manifest_to_upload_target_name",
     ]
   }
 

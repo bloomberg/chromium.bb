@@ -3,6 +3,18 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file.
 -->
+
+<!-- AndroidManifest.xml is generated in two mustache generation passes.
+     Pass #1 with square bracket delimiter to generate AndroidManifest.xml to
+             be uploaded to the WebAPK Minting Server. Fields which cannot be
+             customized by the WebAPK server on a per-site basis are filled in.
+     Pass #2 with curly bracket delimiter fills in the remaining fields. The
+             generated AndroidManifest.xml is for the test APK (WebApk.apk,
+             UnboundWebApk.apk ...). These APKs are for local testing and are
+             not uploaded to the WebAPK server.
+-->
+{{=[[ ]]=}}
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="{{{manifest_package}}}"
@@ -35,7 +47,7 @@
             {{{raw_intent_filters}}}
          </activity>
 
-        {{#use_new_splash}}
+        [[#use_new_splash]]
         <activity android:name="org.chromium.webapk.shell_apk.h2o.SplashActivity"
                   android:theme="@style/SplashTheme"
                   android:enabled="false">
@@ -52,8 +64,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        {{/use_new_splash}}
-        {{^use_new_splash}}
+        [[/use_new_splash]]
+        [[^use_new_splash]]
         <activity android:name="org.chromium.webapk.shell_apk.MainActivity"
                   android:theme="@android:style/Theme.Translucent.NoTitleBar"
                   android:excludeFromRecents="true">
@@ -62,7 +74,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        {{/use_new_splash}}
+        [[/use_new_splash]]
 
         {{#share_template}}
         <activity-alias android:name="org.chromium.webapk.shell_apk.ShareActivity{{{index}}}"
@@ -97,7 +109,7 @@
           {{/is_file_upload}}
         </activity-alias>
         {{/share_template}}
-        <meta-data android:name="org.chromium.webapk.shell_apk.shellApkVersion" android:value="{{{shell_apk_version}}}" />
+        <meta-data android:name="org.chromium.webapk.shell_apk.shellApkVersion" android:value="[[{shell_apk_version}]]" />
         {{#bound_webapk}}
         <meta-data android:name="org.chromium.webapk.shell_apk.runtimeHost" android:value="{{{runtime_host}}}" />
         <meta-data android:name="org.chromium.webapk.shell_apk.runtimeHostApplicationName" android:value="{{{runtime_host_application_name}}}" />

@@ -18,9 +18,11 @@ template("manifest_processor_template") {
                              "deps",
                            ])
     sources = [
-      invoker.config_file,
       invoker.input,
     ]
+    if (defined(invoker.config_file)) {
+      sources += [ invoker.config_file ]
+    }
     script = "//chrome/android/webapk/shell_apk/manifest_processor.py"
 
     outputs = [
@@ -30,11 +32,15 @@ template("manifest_processor_template") {
     args = [
       "--template",
       rebase_path(invoker.input, root_build_dir),
-      "--config_file",
-      rebase_path(invoker.config_file, root_build_dir),
       "--output",
       rebase_path(invoker.output, root_build_dir),
     ]
+    if (defined(invoker.config_file)) {
+      args += [
+        "--config_file",
+        rebase_path(invoker.config_file, root_build_dir),
+      ]
+    }
     if (defined(invoker.extra_variables)) {
       extra_variables = invoker.extra_variables
       args += [ "--extra_variables=${extra_variables}" ]

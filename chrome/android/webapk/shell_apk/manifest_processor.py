@@ -36,10 +36,10 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--template', required=True,
                       help='The template file to process.')
-  parser.add_argument('--config_file', required=True,
-                      help='JSON file with values to put into template.')
   parser.add_argument('--output', required=True,
                       help='The output file to generate.')
+  parser.add_argument('--config_file',
+                      help='JSON file with values to put into template.')
   parser.add_argument('--extra_variables', help='Variables to be made '
                       'available in the template processing environment (in '
                       'addition to those specified in config file), as a GN '
@@ -48,8 +48,9 @@ def main():
   options = parser.parse_args()
 
   variables = {}
-  with open(options.config_file, 'r') as f:
-    variables = json.loads(f.read())
+  if options.config_file:
+    with open(options.config_file, 'r') as f:
+      variables = json.loads(f.read())
   variables = _AppendParsedVariables(variables, options.extra_variables,
                                      parser.error)
 
