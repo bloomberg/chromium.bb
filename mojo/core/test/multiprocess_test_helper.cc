@@ -26,7 +26,6 @@
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/platform/platform_channel_server_endpoint.h"
@@ -39,15 +38,20 @@
 #include "base/mac/mach_port_broker.h"
 #endif
 
+#if !defined(OS_FUCHSIA)
+#include "mojo/public/cpp/platform/named_platform_channel.h"
+#endif
+
 namespace mojo {
 namespace core {
 namespace test {
 
 namespace {
 
+#if !defined(OS_FUCHSIA)
 const char kNamedPipeName[] = "named-pipe-name";
+#endif
 const char kRunAsBrokerClient[] = "run-as-broker-client";
-
 const char kTestChildMessagePipeName[] = "test_pipe";
 
 // For use (and only valid) in a test child process:
@@ -106,8 +110,10 @@ ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
       command_line.AppendSwitchNative(entry.first, entry.second);
   }
 
-  mojo::PlatformChannel channel;
-  mojo::NamedPlatformChannel::ServerName server_name;
+#if !defined(OS_FUCHSIA)
+  NamedPlatformChannel::ServerName server_name;
+#endif
+  PlatformChannel channel;
   base::LaunchOptions options;
   switch (launch_type) {
     case LaunchType::CHILD:
@@ -205,14 +211,14 @@ ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
     DCHECK(local_channel_endpoint.is_valid());
     OutgoingInvitation::Send(std::move(child_invitation), test_child_.Handle(),
                              std::move(local_channel_endpoint),
-                             mojo::ProcessErrorCallback());
+                             ProcessErrorCallback());
   }
 #if !defined(OS_FUCHSIA)
   else if (launch_type == LaunchType::NAMED_CHILD) {
     DCHECK(server_endpoint.is_valid());
     OutgoingInvitation::Send(std::move(child_invitation), test_child_.Handle(),
                              std::move(server_endpoint),
-                             mojo::ProcessErrorCallback());
+                             ProcessErrorCallback());
   }
 #endif  //  !defined(OS_FUCHSIA)
 
@@ -239,31 +245,33 @@ void MultiprocessTestHelper::ChildSetup() {
   CHECK(base::CommandLine::InitializedForCurrentProcess());
 
   auto& command_line = *base::CommandLine::ForCurrentProcess();
-  NamedPlatformChannel::ServerName named_pipe(
-      command_line.GetSwitchValueNative(kNamedPipeName));
-  if (command_line.HasSwitch(kRunAsBrokerClient)) {
-    mojo::IncomingInvitation invitation;
+
+  bool run_as_broker_client = command_line.HasSwitch(kRunAsBrokerClient);
 #if defined(OS_MACOSX) && !defined(OS_IOS)
+  if (run_as_broker_client)
     CHECK(base::MachPortBroker::ChildSendTaskPortToParent("mojo_test"));
 #endif
-    if (!named_pipe.empty()) {
-      invitation = mojo::IncomingInvitation::Accept(
-          mojo::NamedPlatformChannel::ConnectToServer(named_pipe));
-    } else {
-      auto endpoint =
-          mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
-              command_line);
-      invitation = IncomingInvitation::Accept(std::move(endpoint));
-    }
+
+  PlatformChannelEndpoint endpoint;
+#if !defined(OS_FUCHSIA)
+  NamedPlatformChannel::ServerName named_pipe(
+      command_line.GetSwitchValueNative(kNamedPipeName));
+  if (!named_pipe.empty()) {
+    endpoint = NamedPlatformChannel::ConnectToServer(named_pipe);
+  } else
+#endif  // !defined(OS_FUCHSIA)
+  {
+    endpoint =
+        PlatformChannel::RecoverPassedEndpointFromCommandLine(command_line);
+  }
+
+  if (run_as_broker_client) {
+    IncomingInvitation invitation =
+        IncomingInvitation::Accept(std::move(endpoint));
     primordial_pipe = invitation.ExtractMessagePipe(kTestChildMessagePipeName);
   } else {
-    if (!named_pipe.empty()) {
-      primordial_pipe = g_child_isolated_connection.Get().Connect(
-          NamedPlatformChannel::ConnectToServer(named_pipe));
-    } else {
-      primordial_pipe = g_child_isolated_connection.Get().Connect(
-          PlatformChannel::RecoverPassedEndpointFromCommandLine(command_line));
-    }
+    primordial_pipe =
+        g_child_isolated_connection.Get().Connect(std::move(endpoint));
   }
 }
 
@@ -290,8 +298,7 @@ int MultiprocessTestHelper::RunClientTestMain(
       true /* pass_pipe_ownership_to_main */);
 }
 
-// static
-mojo::ScopedMessagePipeHandle MultiprocessTestHelper::primordial_pipe;
+ScopedMessagePipeHandle MultiprocessTestHelper::primordial_pipe;
 
 }  // namespace test
 }  // namespace core
