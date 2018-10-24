@@ -2,10 +2,10 @@
 <html>
   <head>
     <!-- Move to external/wpt/css/selectors/invalidation once the selector name is resolved. -->
-    <title>CSS Selectors Invalidation: :is()</title>
+    <title>CSS Selectors Invalidation: :where()</title>
     <link rel="author" title="Victoria Su" href="mailto:victoriaytsu@google.com">
     <link rel="help" href="https://drafts.csswg.org/selectors-4/#zero-matches">
-    <meta name="assert" content="This tests that the :is() selector is effective">
+    <meta name="assert" content="This tests that the :where() selector is effective">
     <script src="../../../resources/testharness.js"></script>
     <script src="../../../resources/testharnessreport.js"></script>
     <style>
@@ -13,25 +13,25 @@
         color: yellow;
       }
       /*Simple selector arguments */
-      :is(.b, .c) {
+      :where(.b, .c) {
         color: red;
       }
       /*Compound selector arguments */
-      .a~:is(.c#d, .e) {
+      .a~:where(.c#d, .e) {
         color: green;
       }
       /* Complex selector arguments */
       .h {
         color: red;
       }
-      :is(.a~.h, .a~.h+.f) {
+      :where(.a~.h, .a~.h+.f) {
         color: yellow;
       }
       /* Nested */
-      :is(.a>:is(.g+.h, .b)~.i) {
+      :where(.a>:where(.g+.h, .b)~.i) {
         color: blue;
       }
-      :is(:matches(.a~.h)) {
+      :where(:matches(.a~.h)) {
         color: yellow;
       }
     </style>
@@ -83,23 +83,23 @@
         a1.className = "a";
         assert_equals(getComputedStyle(b1).color, yellow);
         assert_equals(getComputedStyle(c1).color, red);
-      }, "Invalidate :is() for simple selector arguments.");
+      }, "Invalidate :where() for simple selector arguments.");
 
       test(() => {
         a1.className = "a";
         assert_equals(getComputedStyle(d).color, green);
-      }, "Invalidate :is() for compound selector arguments.");
+      }, "Invalidate :where() for compound selector arguments.");
 
       test(() => {
         a1.className = "a";
         assert_equals(getComputedStyle(h1).color, red);
         assert_equals(getComputedStyle(f1).color, yellow);
-      }, "Invalidate :is() for complex selector arguments.");
+      }, "Invalidate :where() for complex selector arguments.");
 
       test(() => {
         a1.className = "a";
         assert_equals(getComputedStyle(i1).color, blue);
-      }, "Invalidate nested :is().");
+      }, "Invalidate nested :where().");
 
     </script>
   </body>

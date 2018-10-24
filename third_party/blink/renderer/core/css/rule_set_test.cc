@@ -269,10 +269,10 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_PseudoMatches) {
   }
 }
 
-TEST(RuleSetTest, findBestRuleSetAndAdd_PseudoIS) {
+TEST(RuleSetTest, findBestRuleSetAndAdd_PseudoWhere) {
   CSSTestHelper helper;
 
-  helper.AddCSSRules(".a :is(.b+.c, .d>:is(.e, .f)) { }");
+  helper.AddCSSRules(".a :where(.b+.c, .d>:where(.e, .f)) { }");
   RuleSet& rule_set = helper.GetRuleSet();
   {
     AtomicString str("c");
@@ -312,15 +312,15 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_PseudoMatchesTooLarge) {
   ASSERT_EQ(0u, rule_set.RuleCount());
 }
 
-TEST(RuleSetTest, findBestRuleSetAndAdd_PseudoISTooLarge) {
+TEST(RuleSetTest, findBestRuleSetAndAdd_PseudoWhereTooLarge) {
   // RuleData cannot support selectors at index 8192 or beyond so the expansion
   // is limited to this size
   CSSTestHelper helper;
 
   helper.AddCSSRules(
-      ":is(.a#a, .b#b, .c#c, .d#d) + :is(.e#e, .f#f, .g#g, .h#h) + "
-      ":is(.i#i, .j#j, .k#k, .l#l) + :is(.m#m, .n#n, .o#o, .p#p) + "
-      ":is(.q#q, .r#r, .s#s, .t#t) + :is(.u#u, .v#v, .w#w, .x#x) { }",
+      ":where(.a#a, .b#b, .c#c, .d#d) + :where(.e#e, .f#f, .g#g, .h#h) + "
+      ":where(.i#i, .j#j, .k#k, .l#l) + :where(.m#m, .n#n, .o#o, .p#p) + "
+      ":where(.q#q, .r#r, .s#s, .t#t) + :where(.u#u, .v#v, .w#w, .x#x) { }",
       true);
 
   RuleSet& rule_set = helper.GetRuleSet();
