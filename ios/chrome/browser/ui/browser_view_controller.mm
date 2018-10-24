@@ -5502,7 +5502,7 @@ nativeContentHeaderHeightForPreloadController:(PreloadController*)controller
     DCHECK(_ntpCoordinatorsForWebStates[webState]);
     _ntpCoordinatorsForWebStates.erase(webState);
   }
-  if (currentTab.webState == webState) {
+  if (self.active && currentTab.webState == webState) {
     [self displayTab:currentTab];
   }
 }
