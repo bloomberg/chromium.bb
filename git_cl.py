@@ -5408,7 +5408,16 @@ def CMDweb(parser, args):
     print('ERROR No issue to open', file=sys.stderr)
     return 1
 
-  webbrowser.open(issue_url)
+  # Redirect I/O before invoking browser to hide its output. For example, this
+  # allows to hide "Created new window in existing browser session." message
+  # from Chrome. Based on https://stackoverflow.com/a/2323563.
+  saved_stdout = os.dup(1)
+  os.close(1)
+  os.open(os.devnull, os.O_RDWR)
+  try:
+    webbrowser.open(issue_url)
+  finally:
+    os.dup2(saved_stdout, 1)
   return 0
 
 
