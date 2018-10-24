@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/strings/grit/components_strings.h"
 #include "extensions/common/extension_l10n_util.h"
@@ -836,6 +837,8 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
   // TODO(crbug.com/868747): Find a better solution for demo mode.
   dict->SetBoolean("HIDE_SPACE_INFO",
                    chromeos::DemoSession::IsDeviceInDemoMode());
+  dict->SetBoolean("DRIVE_FS_ENABLED",
+                   base::FeatureList::IsEnabled(chromeos::features::kDriveFs));
   dict->SetString("CHROMEOS_RELEASE_BOARD",
                   base::SysInfo::GetLsbReleaseBoard());
   dict->SetString(

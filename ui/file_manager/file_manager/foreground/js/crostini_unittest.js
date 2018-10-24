@@ -6,6 +6,12 @@ window.metrics = {
   recordSmallCount: function() {},
 };
 
+window.loadTimeData = {
+  getBoolean: function() {
+    return true;
+  }
+};
+
 const volumeManagerTest = {
   getLocationInfo: (entry) => {
     return {rootType: 'testroot'};

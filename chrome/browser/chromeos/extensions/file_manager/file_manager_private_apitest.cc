@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/drive/drivefs_test_support.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_misc.h"
 #include "chrome/browser/chromeos/file_manager/file_watcher.h"
@@ -191,6 +192,10 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
     DCHECK(!disk_mount_manager_mock_);
     DCHECK(!testing_profile_);
     DCHECK(!event_router_);
+  }
+
+  bool SetUpUserDataDirectory() override {
+    return drive::SetUpUserDataDirectoryForDriveFsTest();
   }
 
   void SetUpOnMainThread() override {

@@ -92,13 +92,8 @@ TEST(FileManagerPathUtilTest, GetPathDisplayTextForSettings) {
         new FakeDiskMountManager);
     TestingProfile profile2(base::FilePath("/home/chronos/u-0123456789abcdef"));
     chromeos::FakeChromeUserManager user_manager;
-    AccountId account_id =
-        AccountId::FromUserEmailGaiaId(profile2.GetProfileUserName(), "12345");
-    const auto* user = user_manager.AddUser(account_id);
-    chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
-        user, &profile2);
-    chromeos::ProfileHelper::Get()->SetProfileToUserMappingForTesting(
-        const_cast<user_manager::User*>(user));
+    user_manager.AddUser(
+        AccountId::FromUserEmailGaiaId(profile2.GetProfileUserName(), "12345"));
     PrefService* prefs = profile2.GetPrefs();
     prefs->SetString(drive::prefs::kDriveFsProfileSalt, "a");
 
@@ -162,24 +157,38 @@ TEST(FileManagerPathUtilTest, MultiProfileDownloadsFolderMigration) {
 
 TEST(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
   content::TestBrowserThreadBundle thread_bundle;
+  content::TestServiceManagerContext service_manager_context;
 
-  TestingProfile profile;
+  // Setup for DriveFS.
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(chromeos::features::kDriveFs);
+  TestingProfile profile(base::FilePath("/home/chronos/u-0123456789abcdef"));
+  chromeos::FakeChromeUserManager user_manager;
+  user_manager.AddUser(
+      AccountId::FromUserEmailGaiaId(profile.GetProfileUserName(), "12345"));
+  profile.GetPrefs()->SetString(drive::prefs::kDriveFsProfileSalt, "a");
+
+  // Register crostini, downloads, drive.
   storage::ExternalMountPoints* mount_points =
       storage::ExternalMountPoints::GetSystemInstance();
-
-  // Register crostini and downloads.
   mount_points->RegisterFileSystem(
       GetCrostiniMountPointName(&profile), storage::kFileSystemTypeNativeLocal,
       storage::FileSystemMountOption(), GetCrostiniMountDirectory(&profile));
   mount_points->RegisterFileSystem(
       GetDownloadsMountPointName(&profile), storage::kFileSystemTypeNativeLocal,
       storage::FileSystemMountOption(), GetDownloadsFolderForProfile(&profile));
+  drive::DriveIntegrationService* integration_service =
+      drive::DriveIntegrationServiceFactory::GetForProfile(&profile);
+  base::FilePath mount_point_drive = integration_service->GetMountPointPath();
+  mount_points->RegisterFileSystem(
+      mount_point_drive.BaseName().value(), storage::kFileSystemTypeNativeLocal,
+      storage::FileSystemMountOption(), mount_point_drive);
 
   base::FilePath inside;
   EXPECT_TRUE(ConvertFileSystemURLToPathInsideCrostini(
       &profile,
       mount_points->CreateExternalFileSystemURL(
-          GURL(), "crostini_test_termina_penguin",
+          GURL(), "crostini_0123456789abcdef_termina_penguin",
           base::FilePath("path/in/crostini")),
       &inside));
   EXPECT_EQ("/home/testing_profile/path/in/crostini", inside.value());
@@ -187,7 +196,8 @@ TEST(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
   EXPECT_TRUE(ConvertFileSystemURLToPathInsideCrostini(
       &profile,
       mount_points->CreateExternalFileSystemURL(
-          GURL(), "Downloads", base::FilePath("path/in/downloads")),
+          GURL(), "Downloads-testing_profile-hash",
+          base::FilePath("path/in/downloads")),
       &inside));
   EXPECT_EQ("/ChromeOS/Downloads/path/in/downloads", inside.value());
 
@@ -196,6 +206,32 @@ TEST(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
       mount_points->CreateExternalFileSystemURL(
           GURL(), "unknown", base::FilePath("path/in/unknown")),
       &inside));
+
+  EXPECT_TRUE(ConvertFileSystemURLToPathInsideCrostini(
+      &profile,
+      mount_points->CreateExternalFileSystemURL(
+          GURL(), "drivefs-84675c855b63e12f384d45f033826980",
+          base::FilePath("root/path/in/mydrive")),
+      &inside));
+  EXPECT_EQ("/ChromeOS/Google Drive/My Drive/path/in/mydrive", inside.value());
+
+  EXPECT_TRUE(ConvertFileSystemURLToPathInsideCrostini(
+      &profile,
+      mount_points->CreateExternalFileSystemURL(
+          GURL(), "drivefs-84675c855b63e12f384d45f033826980",
+          base::FilePath("team_drives/path/in/teamdrives")),
+      &inside));
+  EXPECT_EQ("/ChromeOS/Google Drive/Team Drives/path/in/teamdrives",
+            inside.value());
+
+  EXPECT_TRUE(ConvertFileSystemURLToPathInsideCrostini(
+      &profile,
+      mount_points->CreateExternalFileSystemURL(
+          GURL(), "drivefs-84675c855b63e12f384d45f033826980",
+          base::FilePath("Computers/path/in/computers")),
+      &inside));
+  EXPECT_EQ("/ChromeOS/Google Drive/Computers/path/in/computers",
+            inside.value());
 }
 
 std::unique_ptr<KeyedService> CreateFileSystemOperationRunnerForTesting(

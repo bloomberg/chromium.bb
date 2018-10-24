@@ -23,6 +23,7 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/chromeos_features.h"
 #include "components/drive/file_system_core_util.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -40,6 +41,8 @@ namespace {
 
 constexpr char kDownloadsFolderName[] = "Downloads";
 constexpr char kGoogleDriveDisplayName[] = "Google Drive";
+constexpr char kMyDriveDisplayName[] = "My Drive";
+constexpr char kTeamDrivesDisplayName[] = "Team Drives";
 constexpr char kRootRelativeToDriveMount[] = "root";
 constexpr char kTeamDrivesRelativeToDriveMount[] = "team_drives";
 constexpr char kComputersRelativeToDriveMount[] = "Computers";
@@ -184,26 +187,50 @@ bool ConvertFileSystemURLToPathInsideCrostini(
     const storage::FileSystemURL& file_system_url,
     base::FilePath* inside) {
   const std::string& id(file_system_url.mount_filesystem_id());
+  base::FilePath path(file_system_url.virtual_path());
   std::string mount_point_name_crostini = GetCrostiniMountPointName(profile);
   std::string mount_point_name_downloads = GetDownloadsMountPointName(profile);
+  // Include drive if using DriveFS.
+  std::string mount_point_name_drive;
+  auto* integration_service =
+      drive::DriveIntegrationServiceFactory::FindForProfile(profile);
+  if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs) &&
+      integration_service) {
+    mount_point_name_drive =
+        integration_service->GetMountPointPath().BaseName().value();
+  }
 
   // Reformat virtual_path() from:
   //   <mount_label>/path/to/file
   // To either:
-  //   /<home-directory>/path/to/file     (path is already in crostini volume)
-  //   /ChromeOS/<volume_id>/path/to/file (path is shared with crostini)
-  base::FilePath folder;
+  //   /<home-directory>/path/to/file   (path is already in crostini volume)
+  //   /ChromeOS/<mapping>/path/to/file (path is shared with crostini)
+  base::FilePath base_to_exclude(id);
   if (id == mount_point_name_crostini) {
-    folder = base::FilePath(mount_point_name_crostini);
     *inside = crostini::ContainerHomeDirectoryForProfile(profile);
   } else if (id == mount_point_name_downloads) {
-    folder = base::FilePath(mount_point_name_downloads);
     *inside =
         crostini::ContainerChromeOSBaseDirectory().Append(kDownloadsFolderName);
+  } else if (id == mount_point_name_drive) {
+    // DriveFS has some more complicated mappings.
+    std::vector<base::FilePath::StringType> components;
+    path.GetComponents(&components);
+    *inside = crostini::ContainerChromeOSBaseDirectory().Append(
+        kGoogleDriveDisplayName);
+    if (components.size() >= 2 && components[1] == kRootRelativeToDriveMount) {
+      // root -> My Drive.
+      base_to_exclude = base_to_exclude.Append(kRootRelativeToDriveMount);
+      *inside = inside->Append(kMyDriveDisplayName);
+    } else if (components.size() >= 2 &&
+               components[1] == kTeamDrivesRelativeToDriveMount) {
+      // team_drives -> Team Drives.
+      base_to_exclude = base_to_exclude.Append(kTeamDrivesRelativeToDriveMount);
+      *inside = inside->Append(kTeamDrivesDisplayName);
+    }
   } else {
     return false;
   }
-  return folder.AppendRelativePath(file_system_url.virtual_path(), inside);
+  return base_to_exclude.AppendRelativePath(path, inside);
 }
 
 bool ConvertPathToArcUrl(const base::FilePath& path, GURL* arc_url_out) {
