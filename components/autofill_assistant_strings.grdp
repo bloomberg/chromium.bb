@@ -4,5 +4,8 @@
     <message name="IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR" desc="Text label that is shown when communication with server fails.">
       Service is not available. Try again later.
     </message>
+    <message name="IDS_AUTOFILL_ASSISTANT_LOADING" desc="Text label that is shown during the loading of the first page, right after being triggered.">
+      Loading <ph name="SITE_NAME">$1<ex>google.com</ex></ph>…
+    </message>
   </if>
 </grit-part>

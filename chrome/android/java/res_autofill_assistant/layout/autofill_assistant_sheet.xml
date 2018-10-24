@@ -150,7 +150,8 @@
                 android:paddingStart="24dp"
                 android:paddingEnd="24dp"
                 android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:visibility="gone">
             </LinearLayout>
         </HorizontalScrollView>
     </LinearLayout>

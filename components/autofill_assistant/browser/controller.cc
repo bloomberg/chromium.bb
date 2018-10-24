@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
@@ -27,6 +28,13 @@ static constexpr base::TimeDelta kPeriodicScriptCheckInterval =
 
 // Number of script checks to run after a call to StartPeriodicScriptChecks.
 static constexpr int kPeriodicScriptCheckCount = 10;
+
+// Maximum number of script checks we should do before failing when trying to
+// autostart.
+static constexpr int kAutostartCheckCountLimit = 5;
+
+// Caller parameter name.
+static const char* const kCallerScriptParameterName = "CALLER";
 
 }  // namespace
 
@@ -88,10 +96,6 @@ Controller::Controller(
                                                       /* listener= */ this)),
       parameters_(std::move(parameters)),
       memory_(std::make_unique<ClientMemory>()),
-      allow_autostart_(true),
-      periodic_script_check_scheduled_(false),
-      periodic_script_check_count_(false),
-      clear_web_contents_delegate_(false),
       weak_ptr_factory_(this) {
   DCHECK(parameters_);
 
@@ -108,6 +112,21 @@ Controller::Controller(
   GetUiController()->SetUiDelegate(this);
   if (!web_contents->IsLoading()) {
     GetOrCheckScripts(web_contents->GetLastCommittedURL());
+  }
+
+  if (allow_autostart_) {
+    auto iter = parameters_->find(kCallerScriptParameterName);
+    // TODO(crbug.com/806868): Put back an explicit AUTOSTART parameter so we
+    // don't need to know who calls us.
+    if (iter != parameters_->end() && iter->second == "1") {
+      should_fail_after_checking_scripts_ = true;
+      GetUiController()->ShowOverlay();
+      // TODO(crbug.com/806868): Find out how to add template string and add
+      // domain in the "Loading..." message.
+      GetUiController()->ShowStatusMessage(l10n_util::GetStringFUTF8(
+          IDS_AUTOFILL_ASSISTANT_LOADING,
+          base::UTF8ToUTF16(web_contents->GetVisibleURL().host())));
+    }
   }
 }
 
@@ -157,6 +176,15 @@ void Controller::OnPeriodicScriptCheck() {
     periodic_script_check_scheduled_ = false;
     return;
   }
+
+  if (should_fail_after_checking_scripts_ &&
+      ++total_script_check_count_ >= kAutostartCheckCountLimit) {
+    should_fail_after_checking_scripts_ = false;
+    GetUiController()->HideOverlay();
+    GetUiController()->ShowStatusMessage(
+        l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR));
+  }
+
   periodic_script_check_count_--;
   script_tracker_->CheckScripts(kPeriodicScriptCheckInterval);
   base::PostDelayedTaskWithTraits(
@@ -269,6 +297,11 @@ void Controller::OnRunnableScriptsChanged(
   // check again and maybe update when the current script has finished.
   if (script_tracker_->running())
     return;
+
+  if (!runnable_scripts.empty()) {
+    should_fail_after_checking_scripts_ = false;
+    GetUiController()->HideOverlay();
+  }
 
   // Under specific conditions, we can directly run a script without first
   // displaying it. This is meant to work only at the very beginning, when no
