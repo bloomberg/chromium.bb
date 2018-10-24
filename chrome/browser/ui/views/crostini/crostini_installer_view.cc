@@ -287,6 +287,23 @@ void CrostiniInstallerView::OnContainerStarted(CrostiniResult result) {
     return;
   }
   VLOG(1) << "Started container successfully";
+  UpdateState(State::SETUP_CONTAINER);
+  StepProgress();
+}
+
+void CrostiniInstallerView::OnContainerSetup(CrostiniResult result) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_EQ(state_, State::SETUP_CONTAINER);
+
+  if (result != CrostiniResult::SUCCESS) {
+    LOG(ERROR) << "Failed to set up container with error code: "
+               << static_cast<int>(result);
+    HandleError(
+        l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_SETUP_CONTAINER_ERROR),
+        SetupResult::kErrorSettingUpContainer);
+    return;
+  }
+  VLOG(1) << "Set up container successfully";
   UpdateState(State::FETCH_SSH_KEYS);
   StepProgress();
 }
@@ -495,10 +512,15 @@ void CrostiniInstallerView::StepProgress() {
       break;
     case State::CREATE_CONTAINER:
       state_start_mark = 0.35;
-      state_end_mark = 0.95;
+      state_end_mark = 0.90;
       state_max_seconds = 180;
       break;
     case State::START_CONTAINER:
+      state_start_mark = 0.90;
+      state_end_mark = 0.95;
+      state_max_seconds = 8;
+      break;
+    case State::SETUP_CONTAINER:
       state_start_mark = 0.95;
       state_end_mark = 0.99;
       state_max_seconds = 8;
@@ -575,6 +597,9 @@ void CrostiniInstallerView::SetMessageLabel() {
       break;
     case State::START_CONTAINER:
       message_id = IDS_CROSTINI_INSTALLER_START_CONTAINER_MESSAGE;
+      break;
+    case State::SETUP_CONTAINER:
+      message_id = IDS_CROSTINI_INSTALLER_SETUP_CONTAINER_MESSAGE;
       break;
     case State::FETCH_SSH_KEYS:
       message_id = IDS_CROSTINI_INSTALLER_FETCH_SSH_KEYS_MESSAGE;
