@@ -7,6 +7,10 @@
 
 #include <string>
 
+namespace identity {
+class IdentityManager;
+}  // namespace identity
+
 namespace autofill {
 class PersonalDataManager;
 }  // namespace autofill
@@ -22,6 +26,10 @@ class Client {
 
   // Returns the API key to be used for requests to the backend.
   virtual std::string GetApiKey() = 0;
+
+  // Gets the identity manager to use to make authenticated calls or nullptr if
+  // no identity is available.
+  virtual identity::IdentityManager* GetIdentityManagerForPrimaryAccount() = 0;
 
   // Returns the current active personal data manager.
   virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;

@@ -8,7 +8,8 @@
 
 namespace autofill_assistant {
 
-MockService::MockService() : Service("api_key", GURL("http://fake"), nullptr) {}
+MockService::MockService()
+    : Service("api_key", GURL("http://fake"), nullptr, nullptr) {}
 MockService::~MockService() {}
 
 }  // namespace autofill_assistant

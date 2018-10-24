@@ -11,22 +11,32 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/service.pb.h"
+#include "google_apis/gaia/google_service_auth_error.h"
+#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 namespace content {
 class BrowserContext;
-}
+}  // namespace content
+
+namespace identity {
+class IdentityManager;
+}  // namespace identity
 
 namespace autofill_assistant {
 // Autofill assistant service to communicate with the server to get scripts and
 // client actions.
 class Service {
  public:
+  // |context| and |identity_manager| must remain valid for the lifetime of the
+  // service instance. |identity_manager| might be nullptr.
   Service(const std::string& api_key,
           const GURL& server_url,
-          content::BrowserContext* context);
+          content::BrowserContext* context,
+          identity::IdentityManager* identity_manager);
   virtual ~Service();
 
   using ResponseCallback =
@@ -56,15 +66,31 @@ class Service {
     Loader();
     ~Loader();
 
+    GURL url;
+    std::string request_body;
     ResponseCallback callback;
     std::unique_ptr<::network::SimpleURLLoader> loader;
+    bool retried_with_fresh_access_token;
   };
-  std::unique_ptr<::network::SimpleURLLoader> CreateAndStartLoader(
-      const GURL& server_url,
-      const std::string& request,
-      Loader* loader);
+
+  void SendRequest(Loader* loader);
+
+  // Creates a loader and adds it to |loaders_|.
+  Loader* AddLoader(const GURL& url,
+                    const std::string& request_body,
+                    ResponseCallback callback);
+
+  // Sends a request with the given loader, using the current auth token, if one
+  // is available.
+  void StartLoader(Loader* loader);
   void OnURLLoaderComplete(Loader* loader,
                            std::unique_ptr<std::string> response_body);
+
+  // Fetches the access token and, once this is done, starts all pending loaders
+  // in |loaders_|.
+  void FetchAccessToken();
+  void OnFetchAccessToken(GoogleServiceAuthError error,
+                          identity::AccessTokenInfo access_token_info);
 
   content::BrowserContext* context_;
   GURL script_server_url_;
@@ -72,6 +98,28 @@ class Service {
 
   // Destroying this object will cancel ongoing requests.
   std::map<Loader*, std::unique_ptr<Loader>> loaders_;
+
+  // API key to add to the URL of unauthenticated requests.
+  std::string api_key_;
+
+  // Pointer must remain valid for the lifetime of the Service instance. Might
+  // be nullptr, if auth_enabled_ is false.
+  identity::IdentityManager* const identity_manager_;
+
+  // Whether requests should be authenticated.
+  bool auth_enabled_;
+
+  // An OAuth 2 token. Empty if not fetched yet or if the token has been
+  // invalidated.
+  std::string access_token_;
+
+  // Account id |access_token_| is for.
+  std::string account_id_;
+
+  // Active OAuth2 token fetcher.
+  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> token_fetcher_;
+
+  base::WeakPtrFactory<Service> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Service);
 };

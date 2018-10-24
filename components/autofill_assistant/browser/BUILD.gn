@@ -88,6 +88,7 @@ jumbo_static_library("browser") {
     "//content/public/browser",
     "//google_apis",
     "//net",
+    "//services/identity/public/cpp:cpp",
     "//third_party/re2",
   ]
 }

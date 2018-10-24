@@ -41,6 +41,9 @@ class FakeClient : public Client {
 
   // Implements Client
   std::string GetApiKey() override { return ""; }
+  identity::IdentityManager* GetIdentityManagerForPrimaryAccount() override {
+    return nullptr;
+  }
   autofill::PersonalDataManager* GetPersonalDataManager() override {
     return nullptr;
   }
