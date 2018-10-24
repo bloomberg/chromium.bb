@@ -144,7 +144,8 @@ class RenderFrameAudioInputStreamFactory::Core final
   const url::Origin origin_;
 
   mojo::Binding<RendererAudioInputStreamFactory> binding_;
-  ForwardingAudioStreamFactory::Core* forwarding_factory_;
+  // Always null-check this weak pointer before dereferencing it.
+  base::WeakPtr<ForwardingAudioStreamFactory::Core> forwarding_factory_;
 
   base::WeakPtrFactory<Core> weak_ptr_factory_;
 
@@ -181,17 +182,20 @@ RenderFrameAudioInputStreamFactory::Core::Core(
       frame_id_(render_frame_host->GetRoutingID()),
       origin_(render_frame_host->GetLastCommittedOrigin()),
       binding_(this),
-      forwarding_factory_(
-          ForwardingAudioStreamFactory::CoreForFrame(render_frame_host)),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!forwarding_factory_) {
-    // The only case when we not have a forwarding factory is when the
-    // frame belongs to an interstitial. Interstitials don't need audio, so it's
-    // fine to drop the request.
+  ForwardingAudioStreamFactory::Core* tmp_factory =
+      ForwardingAudioStreamFactory::CoreForFrame(render_frame_host);
+
+  if (!tmp_factory) {
+    // The only case when we not have a forwarding factory at this point is when
+    // the frame belongs to an interstitial. Interstitials don't need audio, so
+    // it's fine to drop the request.
     return;
   }
+
+  forwarding_factory_ = tmp_factory->AsWeakPtr();
 
   // Unretained is safe since the destruction of |this| is posted to the IO
   // thread.
@@ -218,9 +222,11 @@ void RenderFrameAudioInputStreamFactory::Core::CreateStream(
     uint32_t shared_memory_count,
     audio::mojom::AudioProcessingConfigPtr processing_config) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(forwarding_factory_);
   TRACE_EVENT1("audio", "RenderFrameAudioInputStreamFactory::CreateStream",
                "session id", session_id);
+
+  if (!forwarding_factory_)
+    return;
 
   const MediaStreamDevice* device =
       media_stream_manager_->audio_input_device_manager()->GetOpenedDeviceById(
@@ -274,7 +280,7 @@ void RenderFrameAudioInputStreamFactory::Core::CreateLoopbackStream(
     uint32_t shared_memory_count,
     bool disable_local_echo,
     AudioStreamBroker::LoopbackSource* loopback_source) {
-  if (!loopback_source)
+  if (!loopback_source || !forwarding_factory_)
     return;
 
   forwarding_factory_->CreateLoopbackStream(
@@ -286,7 +292,6 @@ void RenderFrameAudioInputStreamFactory::Core::AssociateInputAndOutputForAec(
     const base::UnguessableToken& input_stream_id,
     const std::string& output_device_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(forwarding_factory_);
   if (!IsValidDeviceId(output_device_id))
     return;
 
@@ -307,9 +312,8 @@ void RenderFrameAudioInputStreamFactory::Core::
         MediaDeviceSaltAndOrigin salt_and_origin,
         bool access_granted) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(forwarding_factory_);
 
-  if (!access_granted)
+  if (!forwarding_factory_ || !access_granted)
     return;
 
   if (media::AudioDeviceDescription::IsDefaultDevice(output_device_id) ||
@@ -333,7 +337,8 @@ void RenderFrameAudioInputStreamFactory::Core::
         const base::UnguessableToken& input_stream_id,
         const std::string& raw_output_device_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(forwarding_factory_);
+  if (!forwarding_factory_)
+    return;
   forwarding_factory_->AssociateInputAndOutputForAec(input_stream_id,
                                                      raw_output_device_id);
 }

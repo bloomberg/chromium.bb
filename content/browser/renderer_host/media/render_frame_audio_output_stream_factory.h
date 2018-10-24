@@ -32,13 +32,8 @@ class RenderFrameHost;
 //      FASF::Core           <--          RFAOSF::Core
 //
 // Both FASF::Core and RFAOSF::Core live on (and are destructed on) the IO
-// thread. ForwardingAudioStreamFactory exists until destruction of its owning
-// WebContentsImpl. Since WebContentsImpl outlives all of its
-// RenderFrameHostImpls, ForwardingAudioStreamFactory will outlive
-// RenderFrameAudioOutputStreamFactory. As a consequence, the destruction of
-// FASF::Core will be posted to the IO thread after the destruction of
-// RFAOSF::Core has been posted, so RFAOSF::Core can safely have a raw pointer
-// to FASF::Core
+// thread. A weak pointer to ForwardingAudioStreamFactory is used since
+// WebContentsImpl is sometimes destructed shortly before RenderFrameHostImpl.
 
 // This class takes care of stream requests from a render frame. It verifies
 // that the stream creation is allowed and then forwards the request to the
