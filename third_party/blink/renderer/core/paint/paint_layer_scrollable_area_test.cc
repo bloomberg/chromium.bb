@@ -45,8 +45,9 @@ class PaintLayerScrollableAreaTest : public RenderingTest {
   }
 
   BackgroundPaintLocation GetBackgroundPaintLocation(const char* element_id) {
-    return ToLayoutBoxModelObject(GetLayoutObjectByElementId(element_id))
-        ->GetBackgroundPaintLocation();
+    PaintLayer* paint_layer =
+        ToLayoutBoxModelObject(GetLayoutObjectByElementId(element_id))->Layer();
+    return paint_layer->GetBackgroundPaintLocation();
   }
 
  private:
