@@ -789,6 +789,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'amd'], bug=642822)
 
     # Mac Intel
+    self.Fail('conformance/rendering/canvas-alpha-bug.html',
+        ['mac', ('intel', 0x0a2e)], bug=886970)
     self.Fail('conformance2/rendering/framebuffer-texture-level1.html',
         ['mac', 'intel'], bug=680278)
     self.Fail('conformance2/textures/misc/angle-stuck-depth-textures.html',
