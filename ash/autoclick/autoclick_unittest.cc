@@ -26,24 +26,33 @@ class MouseEventCapturer : public ui::EventHandler {
   void Reset() { events_.clear(); }
 
   void OnMouseEvent(ui::MouseEvent* event) override {
-    // Only track left and right mouse button events, ensuring that we get
-    // left-click, right-click and double-click.
-    if (!(event->flags() & ui::EF_LEFT_MOUSE_BUTTON) &&
-        (!(event->flags() & ui::EF_RIGHT_MOUSE_BUTTON)))
-      return;
+    bool save_event = false;
+    bool stop_event = false;
     // Filter out extraneous mouse events like mouse entered, exited,
     // capture changed, etc.
     ui::EventType type = event->type();
-    if (type == ui::ET_MOUSE_MOVED || type == ui::ET_MOUSE_PRESSED ||
-        type == ui::ET_MOUSE_RELEASED) {
+    if (type == ui::ET_MOUSE_PRESSED || type == ui::ET_MOUSE_RELEASED) {
+      // Only track left and right mouse button events, ensuring that we get
+      // left-click, right-click and double-click.
+      if (!(event->flags() & ui::EF_LEFT_MOUSE_BUTTON) &&
+          (!(event->flags() & ui::EF_RIGHT_MOUSE_BUTTON)))
+        return;
+      save_event = true;
+      // Stop event propagation so we don't click on random stuff that
+      // might break test assumptions.
+      stop_event = true;
+    } else if (type == ui::ET_MOUSE_DRAGGED) {
+      save_event = true;
+      stop_event = false;
+    }
+    if (save_event) {
       events_.push_back(ui::MouseEvent(event->type(), event->location(),
                                        event->root_location(),
                                        ui::EventTimeForNow(), event->flags(),
                                        event->changed_button_flags()));
-      // Stop event propagation so we don't click on random stuff that
-      // might break test assumptions.
-      event->StopPropagation();
     }
+    if (stop_event)
+      event->StopPropagation();
 
     // If there is a possibility that we're in an infinite loop, we should
     // exit early with a sensible error rather than letting the test time out.
@@ -89,13 +98,19 @@ class AutoclickTest : public AshTestBase {
   }
 
   const std::vector<ui::MouseEvent>& WaitForMouseEvents() {
-    mouse_event_capturer_.Reset();
+    ClearMouseEvents();
     RunAllPendingInMessageLoop();
-    return mouse_event_capturer_.captured_events();
+    return GetMouseEvents();
   }
 
   AutoclickController* GetAutoclickController() {
     return Shell::Get()->autoclick_controller();
+  }
+
+  void ClearMouseEvents() { mouse_event_capturer_.Reset(); }
+
+  const std::vector<ui::MouseEvent>& GetMouseEvents() {
+    return mouse_event_capturer_.captured_events();
   }
 
  private:
@@ -357,6 +372,37 @@ TEST_F(AutoclickTest, AutoclickChangeEventTypes) {
   GetEventGenerator()->MoveMouseTo(120, 120);
   events = WaitForMouseEvents();
   EXPECT_EQ(0u, events.size());
+}
+
+TEST_F(AutoclickTest, AutoclickDragAndDropEvents) {
+  GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->SetAutoclickEventType(
+      mojom::AutoclickEventType::kDragAndDrop);
+  std::vector<ui::MouseEvent> events;
+
+  GetEventGenerator()->MoveMouseTo(30, 30);
+  events = WaitForMouseEvents();
+  ASSERT_EQ(1u, events.size());
+  EXPECT_EQ(ui::ET_MOUSE_PRESSED, events[0].type());
+  EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & events[0].flags());
+
+  ClearMouseEvents();
+  GetEventGenerator()->MoveMouseTo(60, 60);
+  events = GetMouseEvents();
+  ASSERT_EQ(1u, events.size());
+  EXPECT_EQ(ui::ET_MOUSE_DRAGGED, events[0].type());
+
+  // Another move creates a drag
+  ClearMouseEvents();
+  GetEventGenerator()->MoveMouseTo(90, 90);
+  events = GetMouseEvents();
+  ASSERT_EQ(1u, events.size());
+  EXPECT_EQ(ui::ET_MOUSE_DRAGGED, events[0].type());
+
+  // Waiting in place creates the released event.
+  events = WaitForMouseEvents();
+  ASSERT_EQ(1u, events.size());
+  EXPECT_EQ(ui::ET_MOUSE_RELEASED, events[0].type());
 }
 
 }  // namespace ash

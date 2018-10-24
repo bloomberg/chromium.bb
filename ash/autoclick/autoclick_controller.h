@@ -23,6 +23,7 @@ class Widget;
 
 namespace ash {
 
+class AutoclickDragEventRewriter;
 class AutoclickRingHandler;
 
 // Autoclick is one of the accessibility features. If enabled, two circles will
@@ -84,6 +85,7 @@ class ASH_EXPORT AutoclickController : public ui::EventHandler,
   // the distance the mouse has moved.
   gfx::Point anchor_location_;
   std::unique_ptr<AutoclickRingHandler> autoclick_ring_handler_;
+  std::unique_ptr<AutoclickDragEventRewriter> drag_event_rewriter_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoclickController);
 };
