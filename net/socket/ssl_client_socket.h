@@ -73,10 +73,6 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   // once https://crbug.com/458365 is resolved.
   static void SetSSLKeyLogger(std::unique_ptr<SSLKeyLogger> logger);
 
-  // Returns true if |error| is OK or |load_flags| ignores certificate errors
-  // and |error| is a certificate error.
-  static bool IgnoreCertError(int error, int load_flags);
-
   // ClearSessionCache clears the SSL session cache, used to resume SSL
   // sessions.
   static void ClearSessionCache();

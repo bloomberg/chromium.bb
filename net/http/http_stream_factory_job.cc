@@ -1416,11 +1416,10 @@ int HttpStreamFactory::Job::HandleCertificateError(int error) {
   server_ssl_config_.allowed_bad_certs.emplace_back(ssl_info.cert,
                                                     ssl_info.cert_status);
 
-  int load_flags = request_info_.load_flags;
-  if (session_->params().ignore_certificate_errors)
-    load_flags |= LOAD_IGNORE_ALL_CERT_ERRORS;
-  if (SSLClientSocket::IgnoreCertError(error, load_flags))
+  if (session_->params().ignore_certificate_errors &&
+      IsCertificateError(error)) {
     return OK;
+  }
   return error;
 }
 
