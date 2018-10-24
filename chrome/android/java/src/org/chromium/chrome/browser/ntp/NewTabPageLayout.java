@@ -300,8 +300,8 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         ViewRectProvider rectProvider = new ViewRectProvider(homepageView);
 
         TextBubble textBubble = new TextBubble(homepageView.getContext(), homepageView,
-                R.string.iph_homepage_tile_text, R.string.iph_homepage_tile_text, true,
-                rectProvider);
+                R.string.iph_homepage_tile_text, R.string.iph_homepage_tile_accessibility_text,
+                true, rectProvider);
         textBubble.setDismissOnTouchInteraction(true);
         textBubble.addOnDismissListener(
                 () -> tracker.dismissed(FeatureConstants.HOMEPAGE_TILE_FEATURE));
