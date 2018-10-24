@@ -322,7 +322,7 @@ def AddToZipHermetic(zip_file, zip_path, src_path=None, data=None,
     return
 
   if src_path:
-    with file(src_path) as f:
+    with open(src_path, 'rb') as f:
       data = f.read()
 
   # zipfile will deflate even when it makes the file bigger. To avoid
