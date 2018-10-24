@@ -271,7 +271,10 @@ cr.define('accessibility', function() {
     hide.textContent = 'Hide accessibility tree';
     hide.id = id + ':hideTree';
     hide.addEventListener('click', function() {
-      $(id + ':showTree').textContent = 'Show accessibility tree';
+      let show = $(id + ':showTree');
+      show.textContent = 'Show accessibility tree';
+      show.setAttribute('aria-expanded', 'false');
+      show.focus();
       let elements = ['hideTree', 'tree'];
       for (let i = 0; i < elements.length; i++) {
         let elt = $(id + ':' + elements[i]);
@@ -317,6 +320,7 @@ cr.define('accessibility', function() {
 
     row.textContent = '';
     formatRow(row, data);
+    $(id + ':hideTree').focus();
   }
 
   // Called from C++
