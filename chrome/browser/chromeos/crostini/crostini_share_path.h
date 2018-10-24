@@ -15,11 +15,13 @@ class Profile;
 
 namespace crostini {
 
-// Share specified absolute path with vm.
-// Callback receives success bool and failure reason string.
+// Share specified absolute path with vm.  If |persist| is set, the path will be
+// automatically shared at container startup. Callback receives success bool and
+// failure reason string.
 void SharePath(Profile* profile,
                std::string vm_name,
                const base::FilePath& path,
+               bool persist,
                base::OnceCallback<void(bool, std::string)> callback);
 
 // Unshare specified path with vm.

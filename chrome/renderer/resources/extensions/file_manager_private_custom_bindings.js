@@ -218,10 +218,10 @@ binding.registerCustomHook(function(bindingsAPI) {
   });
 
   apiFunctions.setHandleRequest(
-      'sharePathWithCrostini', function(entry, callback) {
+      'sharePathWithCrostini', function(entry, persist, callback) {
         const url = fileManagerPrivateNatives.GetEntryURL(entry);
         fileManagerPrivateInternal.sharePathWithCrostini(
-            url, callback);
+            url, persist, callback);
       });
 
   apiFunctions.setHandleRequest(

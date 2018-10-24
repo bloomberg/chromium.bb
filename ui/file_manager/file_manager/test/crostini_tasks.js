@@ -23,13 +23,16 @@ crostiniTasks.testShareBeforeOpeningDownloadsWithCrostiniApp = (done) => {
     ]);
   };
 
-  // Save old fmp.sharePathWitCrostini.
+  // Save old fmp.sharePathWithCrostini.
   const oldSharePath = chrome.fileManagerPrivate.sharePathWithCrostini;
   let sharePathCalled = false;
-  chrome.fileManagerPrivate.sharePathWithCrostini = (entry, callback) => {
-    sharePathCalled = true;
-    oldSharePath(entry, callback);
-  };
+  let sharePathPersist;
+  chrome.fileManagerPrivate.sharePathWithCrostini =
+      (entry, persist, callback) => {
+        sharePathCalled = true;
+        sharePathPersist = persist;
+        oldSharePath(entry, persist, callback);
+      };
 
   // Save old fmp.executeTask.
   const oldExecuteTask = chrome.fileManagerPrivate.executeTask;
@@ -74,22 +77,6 @@ crostiniTasks.testShareBeforeOpeningDownloadsWithCrostiniApp = (done) => {
         assertEquals('Open with Crostini App', list[0].innerText);
         assertEquals('Open with Text', list[1].innerText);
         assertTrue(test.fakeMouseClick('#default-tasks-list li'));
-        return test.repeatUntil(() => {
-          return document.querySelector('.cr-dialog-title').innerText ===
-              'Share files with Linux' ||
-              test.pending('Waiting for share before open dialog');
-        });
-      })
-      .then(() => {
-        // Validate dialog messages, click 'OK' to share and open.  Ensure
-        // dialog closes.
-        assertEquals(
-            'Let Linux apps open <b>hello.txt</b>.',
-            document.querySelector('.cr-dialog-text').innerHTML);
-        assertTrue(test.fakeMouseClick('button.cr-dialog-ok'));
-        return test.waitForElementLost('.cr-dialog-container');
-      })
-      .then(() => {
         // Ensure fmp.sharePathWithCrostini, fmp.executeTask called.
         return test.repeatUntil(() => {
           return sharePathCalled && executeTaskCalled ||
@@ -97,6 +84,8 @@ crostiniTasks.testShareBeforeOpeningDownloadsWithCrostiniApp = (done) => {
         });
       })
       .then(() => {
+        // Share should not persist as a result of open with crostini app.
+        assertFalse(sharePathPersist);
         // Validate UMAs.
         const lastEnumUma = chrome.metricsPrivate.values_.pop();
         assertEquals(
@@ -107,57 +96,6 @@ crostiniTasks.testShareBeforeOpeningDownloadsWithCrostiniApp = (done) => {
         chrome.fileManagerPrivate.getFileTasks = oldGetFileTasks;
         chrome.fileManagerPrivate.sharePathWithCrostini = oldSharePath;
         chrome.fileManagerPrivate.executeTask = oldExecuteTask;
-        done();
-      });
-};
-
-crostiniTasks.testErrorOpeningDownloadsRootWithDefaultCrostiniApp = (done) => {
-  // Save old fmp.getFileTasks and replace with version that returns
-  // crostini app and chrome Text app.
-  let oldGetFileTasks = chrome.fileManagerPrivate.getFileTasks;
-  chrome.fileManagerPrivate.getFileTasks = (entries, callback) => {
-    setTimeout(callback, 0, [{
-                 taskId: 'crostini-app-id|crostini|open-with',
-                 title: 'Crostini App',
-                 verb: 'open_with',
-                 isDefault: true,
-               }]);
-  };
-
-  test.setupAndWaitUntilReady()
-      .then(() => {
-        // Right click on 'world.ogv' file, wait for dialog with the default
-        // task action.
-        assertTrue(test.fakeMouseRightClick('[file-name="world.ogv"]'));
-        return test.repeatUntil(() => {
-          return document
-                     .querySelector(
-                         'cr-menu-item[command="#default-task"]:not([hidden])')
-                     .label === 'Crostini App' ||
-              test.pending('Waiting for default task menu item');
-        });
-      })
-      .then(() => {
-        // Click 'Open with', wait for picker.
-        assertTrue(
-            test.fakeMouseClick('cr-menu-item[command="#default-task"]'));
-        return test.waitForElement('.cr-dialog-container');
-      })
-      .then(() => {
-        // Validate error messages, click 'OK' to close.  Ensure dialog closes.
-        assertEquals(
-            'Unable to open with Crostini App',
-            document.querySelector('.cr-dialog-title').innerText);
-        assertEquals(
-            'To open files with Crostini App, ' +
-                'first copy to Linux files folder.',
-            document.querySelector('.cr-dialog-text').innerText);
-        assertTrue(test.fakeMouseClick('button.cr-dialog-ok'));
-        return test.waitForElementLost('.cr-dialog-container');
-      })
-      .then(() => {
-        // Restore fmp.getFileTasks.
-        chrome.fileManagerPrivate.getFileTasks = oldGetFileTasks;
         done();
       });
 };

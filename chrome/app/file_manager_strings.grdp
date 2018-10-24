@@ -1066,15 +1066,6 @@
   <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_CROSTINI" desc="Message shown when a user tries to use a crostini app to open a file which cannot be shared with the crostini container (e.g. in Play or USB).  This message will be removed once we support this action.">
     To open files with $1, first copy to Linux files folder.
   </message>
-  <message name="IDS_FILE_BROWSER_SHARE_BEFORE_OPEN_CROSTINI_TITLE" desc="Message title shown when a user tries to use a crostini app to open a file outside the crostini container which can be shared with the container (e.g. in Downloads).">
-    Share files with Linux
-  </message>
-  <message name="IDS_FILE_BROWSER_SHARE_BEFORE_OPEN_CROSTINI_SINGLE" desc="Message shown when a user tries to use a crostini app to open a single file outside the crostini container which can be shared with the container (e.g. in Downloads).">
-    Let Linux apps open $1.
-  </message>
-  <message name="IDS_FILE_BROWSER_SHARE_BEFORE_OPEN_CROSTINI_MULTIPLE" desc="Message shown when a user tries to use a crostini app to multiple files outside the crostini container which can be shared with the container (e.g. in Downloads).">
-    Let Linux apps open $1 files.
-  </message>
 
   <message name="IDS_FILE_BROWSER_FOLDER" desc="Folder entry type">
     Folder

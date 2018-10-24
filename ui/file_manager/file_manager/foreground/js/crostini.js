@@ -106,12 +106,25 @@ Crostini.isCrostiniEntry = function(entry, volumeManager) {
 /**
  * Returns true if entry can be shared with Crostini.
  * @param {!Entry} entry
+ * @param {boolean} persist If path is to be persisted.
  * @param {!VolumeManager} volumeManager
  */
-Crostini.canSharePath = function(entry, volumeManager) {
-  // Do not allow root, or non-directories in root.
-  return Crostini.IS_CROSTINI_FILES_ENABLED && entry.fullPath !== '/' &&
-      (entry.isDirectory || entry.fullPath.split('/').length > 2) &&
-      volumeManager.getLocationInfo(entry).rootType ===
-      VolumeManagerCommon.RootType.DOWNLOADS;
+Crostini.canSharePath = function(entry, persist, volumeManager) {
+  // Check crostini-files flag and valid volume.
+  if (!Crostini.IS_CROSTINI_FILES_ENABLED ||
+      volumeManager.getLocationInfo(entry).rootType !==
+          VolumeManagerCommon.RootType.DOWNLOADS) {
+    return false;
+  }
+
+  // Root of volume not allowed.
+  if (entry.fullPath === '/')
+    return false;
+
+  // Only directories for persistent shares.
+  if (persist && !entry.isDirectory) {
+    return false;
+  }
+
+  return true;
 };

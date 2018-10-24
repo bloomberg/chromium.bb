@@ -697,6 +697,7 @@ FileManagerPrivateInternalSharePathWithCrostiniFunction::Run() {
 
   crostini::SharePath(
       profile, crostini::kCrostiniDefaultVmName, cracked.path(),
+      params->persist,
       base::BindOnce(&FileManagerPrivateInternalSharePathWithCrostiniFunction::
                          SharePathCallback,
                      this));

@@ -39,7 +39,7 @@ void CallSeneschalSharePath(
     Profile* profile,
     std::string vm_name,
     const base::FilePath path,
-    bool save_to_prefs,
+    bool persist,
     base::OnceCallback<void(bool, std::string)> callback) {
   // Verify path is in one of the allowable mount points.
   // This logic is similar to DownloadPrefs::SanitizeDownloadTargetPath().
@@ -57,14 +57,11 @@ void CallSeneschalSharePath(
     return;
   }
 
-  // Path must be a valid directory.
-  if (!base::DirectoryExists(path)) {
-    std::move(callback).Run(false, "Path is not a valid directory");
-    return;
-  }
+  // We will not make a blocking call to verify the path exists since
+  // we don't want to block, and seneschal must verify this regardless.
 
   // Even if VM is not running, save to prefs now.
-  if (save_to_prefs) {
+  if (persist) {
     PrefService* pref_service = profile->GetPrefs();
     ListPrefUpdate update(pref_service, crostini::prefs::kCrostiniSharedPaths);
     base::ListValue* shared_paths = update.Get();
@@ -72,6 +69,7 @@ void CallSeneschalSharePath(
   }
 
   // VM must be running.
+  // TODO(joelhockey): Start VM if not currently running.
   base::Optional<vm_tools::concierge::VmInfo> vm_info =
       crostini::CrostiniManager::GetForProfile(profile)->GetVmInfo(
           std::move(vm_name));
@@ -110,6 +108,7 @@ namespace crostini {
 void SharePath(Profile* profile,
                std::string vm_name,
                const base::FilePath& path,
+               bool persist,
                base::OnceCallback<void(bool, std::string)> callback) {
   DCHECK(profile);
   DCHECK(callback);
@@ -117,7 +116,7 @@ void SharePath(Profile* profile,
           chromeos::switches::kCrostiniFiles)) {
     std::move(callback).Run(false, "Flag crostini-files not enabled");
   }
-  CallSeneschalSharePath(profile, vm_name, path, true, std::move(callback));
+  CallSeneschalSharePath(profile, vm_name, path, persist, std::move(callback));
 }
 
 void UnsharePath(Profile* profile,

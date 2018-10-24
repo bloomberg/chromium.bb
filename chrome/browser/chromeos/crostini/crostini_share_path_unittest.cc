@@ -35,7 +35,7 @@ class CrostiniSharePathTest : public testing::Test {
     EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
     EXPECT_EQ(result, CrostiniResult::SUCCESS);
 
-    SharePath(profile(), "success", share_path_,
+    SharePath(profile(), "success", share_path_, true,
               base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
                              base::Unretained(this), true, true, true, "",
                              run_loop()->QuitClosure()));
@@ -45,13 +45,13 @@ class CrostiniSharePathTest : public testing::Test {
     EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
     EXPECT_EQ(result, CrostiniResult::SUCCESS);
 
-    SharePath(profile(), "error-seneschal", share_path_,
+    SharePath(profile(), "error-seneschal", share_path_, true,
               base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
                              base::Unretained(this), true, true, false,
                              "test failure", run_loop()->QuitClosure()));
   }
 
-  void SharePathCallback(bool expected_path_saved_to_prefs,
+  void SharePathCallback(bool expected_persist,
                          bool expected_seneschal_client_called,
                          bool expected_success,
                          std::string expected_failure_reason,
@@ -60,7 +60,7 @@ class CrostiniSharePathTest : public testing::Test {
                          std::string failure_reason) {
     const base::ListValue* prefs =
         profile()->GetPrefs()->GetList(prefs::kCrostiniSharedPaths);
-    if (expected_path_saved_to_prefs) {
+    if (expected_persist) {
       EXPECT_EQ(prefs->GetSize(), 1U);
       std::string share_path;
       prefs->GetString(0, &share_path);
@@ -164,6 +164,14 @@ TEST_F(CrostiniSharePathTest, Success) {
   run_loop()->Run();
 }
 
+TEST_F(CrostiniSharePathTest, SuccessNoPersist) {
+  SharePath(profile(), "vm-running", share_path_, false,
+            base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+                           base::Unretained(this), false, true, true, "",
+                           run_loop()->QuitClosure()));
+  run_loop()->Run();
+}
+
 TEST_F(CrostiniSharePathTest, SharePathErrorSeneschal) {
   vm_tools::concierge::StartVmResponse start_vm_response;
   start_vm_response.set_status(vm_tools::concierge::VM_STATUS_RUNNING);
@@ -185,7 +193,7 @@ TEST_F(CrostiniSharePathTest, SharePathErrorSeneschal) {
 
 TEST_F(CrostiniSharePathTest, SharePathErrorPathNotAbsolute) {
   const base::FilePath path("not/absolute/dir");
-  SharePath(profile(), "vm-running", path,
+  SharePath(profile(), "vm-running", path, true,
             base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
                            base::Unretained(this), false, false, false,
                            "Path must be absolute", run_loop()->QuitClosure()));
@@ -194,7 +202,7 @@ TEST_F(CrostiniSharePathTest, SharePathErrorPathNotAbsolute) {
 
 TEST_F(CrostiniSharePathTest, SharePathErrorNotUnderDownloads) {
   const base::FilePath path("/not/under/downloads");
-  SharePath(profile(), "vm-running", path,
+  SharePath(profile(), "vm-running", path, true,
             base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
                            base::Unretained(this), false, false, false,
                            "Path must be under Downloads",
@@ -203,20 +211,10 @@ TEST_F(CrostiniSharePathTest, SharePathErrorNotUnderDownloads) {
 }
 
 TEST_F(CrostiniSharePathTest, SharePathErrorVmNotRunning) {
-  SharePath(profile(), "error-vm-not-running", share_path_,
+  SharePath(profile(), "error-vm-not-running", share_path_, true,
             base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
                            base::Unretained(this), true, false, false,
                            "VM not running", run_loop()->QuitClosure()));
-  run_loop()->Run();
-}
-
-TEST_F(CrostiniSharePathTest, SharePathErrorNotValidDirectory) {
-  const base::FilePath path = share_path_.AppendASCII("not-exists");
-  SharePath(profile(), "vm-running", path,
-            base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
-                           base::Unretained(this), false, false, false,
-                           "Path is not a valid directory",
-                           run_loop()->QuitClosure()));
   run_loop()->Run();
 }
 

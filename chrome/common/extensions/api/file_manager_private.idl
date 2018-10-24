@@ -1132,10 +1132,11 @@ interface Functions {
 
   // Shares directory with crostini container.
   // |entry| Entry of the directory to share.
+  // |persist| If true, shares will persist across restarts.
   // |callback|
   [nocompile]
   static void sharePathWithCrostini(
-      [instanceof=DirectoryEntry] object entry, SimpleCallback callback);
+      [instanceof=Entry] object entry, boolean persist, SimpleCallback callback);
 
   // Returns list of paths shared with crostini container.
   [nocompile]

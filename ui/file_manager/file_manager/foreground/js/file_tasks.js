@@ -547,41 +547,35 @@ FileTasks.annotateTasks_ = function(tasks, entries) {
 };
 
 /**
- * Checks if task is a crostini task and all entries are accessible to crostini.
- * If entries can be shared with crostini, share dialog is shown.  Otherwise if
- * entries cannot be shared, the Unable to Open dialog is shown.
+ * Checks if task is a crostini task and all entries are accessible to, or can
+ * be shared with crostini.  Shares files as required if possible and invokes
+ * callback, or shows Unable to Open error dialog and does not invoke callback.
  * @param {!chrome.fileManagerPrivate.FileTask} task Task to run.
- * @return {boolean} True if crostini task and dialog is shown.
+ * @param {function()} callback Callback is called when all files (if any) are
+ *   accessible to crostini, else error dialog is shown.
  * @private
  */
-FileTasks.prototype.maybeShowCrostiniShareDialog_ = function(task) {
+FileTasks.prototype.maybeShareWithCrostiniOrShowDialog_ = function(
+    task, callback) {
   // Check if this is a crostini task.
   if (task.taskId.split('|', 2)[1] !== 'crostini' || this.entries_.length < 1)
-    return false;
+    return callback();
 
   let showUnableToOpen = false;
-  let showShareBeforeOpen = false;
-  let notSharedCount = 0;
-  let firstEntryNotShared;
+  const entriesToShare = [];
+
   for (let i = 0; i < this.entries_.length; i++) {
     const entry = this.entries_[i];
     if (Crostini.isCrostiniEntry(entry, this.volumeManager_) ||
         Crostini.isPathShared(entry, this.volumeManager_)) {
       continue;
     }
-    if (!Crostini.canSharePath(entry, this.volumeManager_)) {
+    if (!Crostini.canSharePath(
+            entry, false /* persist */, this.volumeManager_)) {
       showUnableToOpen = true;
       break;
     }
-    notSharedCount++;
-    // Share before open.  Ensure all entries are in the same directory.
-    showShareBeforeOpen = true;
-    if (!firstEntryNotShared) {
-      firstEntryNotShared = entry;
-    } else if (!util.isSiblingEntry(entry, firstEntryNotShared)) {
-      showUnableToOpen = true;
-      break;
-    }
+    entriesToShare.push(entry);
   }
 
   // Show unable to open alert dialog.
@@ -591,57 +585,40 @@ FileTasks.prototype.maybeShowCrostiniShareDialog_ = function(task) {
         strf('UNABLE_TO_OPEN_CROSTINI', task.title));
     FileTasks.recordCrostiniShareDialogTypeUMA_(
         FileTasks.CrostiniShareDialogType.UnableToOpen);
-    return true;
+    return;
   }
 
-  // Show share before open confirm dialog.
-  if (showShareBeforeOpen) {
-    const parts = firstEntryNotShared.fullPath.split('/');
-    const parentName = parts[parts.length - 2];
-    this.ui_.confirmDialog.showHtml(
-        strf('SHARE_BEFORE_OPEN_CROSTINI_TITLE', task.title),
-        notSharedCount > 1 ?
-            strf('SHARE_BEFORE_OPEN_CROSTINI_MULTIPLE', notSharedCount) :
-            strf(
-                'SHARE_BEFORE_OPEN_CROSTINI_SINGLE',
-                `<b>${firstEntryNotShared.name}</b>`),
-        this.sharePathWithCrostiniAndExecute_.bind(this, task), () => {});
+  // No sharing required.
+  if (entriesToShare.length === 0) {
     FileTasks.recordCrostiniShareDialogTypeUMA_(
-        FileTasks.CrostiniShareDialogType.ShareBeforeOpen);
-    return true;
+        FileTasks.CrostiniShareDialogType.None);
+    return callback();
   }
 
-  // No dialogs.
+  // Share all paths then invoke callback.
   FileTasks.recordCrostiniShareDialogTypeUMA_(
-      FileTasks.CrostiniShareDialogType.None);
-  return false;
-};
+      FileTasks.CrostiniShareDialogType.ShareBeforeOpen);
+  let i = 0;
+  function shareNext() {
+    const entry = entriesToShare[i++];
+    if (!entry)
+      return callback();
 
-/**
- * Share paths from entries and execute task.
- * @param {!chrome.fileManagerPrivate.FileTask} task Task to run.
- */
-FileTasks.prototype.sharePathWithCrostiniAndExecute_ = function(task) {
-  const entry = this.entries_[0];
-  entry.getParent(
-      (/** @type {!DirectoryEntry} */ dir) => {
-        chrome.fileManagerPrivate.sharePathWithCrostini(dir, () => {
+    // Set persist to false when sharing a path to open with a crostini app.
+    chrome.fileManagerPrivate.sharePathWithCrostini(
+        entry, false, () => {
           if (chrome.runtime.lastError) {
             console.error(
                 'Error sharing with linux to execute: ' +
                 chrome.runtime.lastError.message);
           } else {
             // Register path as shared, and now we are ready to execute.
-            Crostini.registerSharedPath(dir, this.volumeManager_);
-            this.executeInternal_(task);
+            Crostini.registerSharedPath(entry, this.volumeManager_);
+            shareNext.call(this);
           }
         });
-      },
-      (fileError) => {
-        console.error(
-            'Error getting parent for ' + entry.fullPath + '.  ' +
-            util.getFileErrorString(fileError.name));
-      });
+  }
+  shareNext.call(this);
 };
 
 /**
@@ -668,8 +645,6 @@ FileTasks.prototype.executeDefaultInternal_ = function(opt_callback) {
   var callback = opt_callback || function(arg1, arg2) {};
 
   if (this.defaultTask_ !== null) {
-    if (this.maybeShowCrostiniShareDialog_(this.defaultTask_))
-      return;
     this.executeInternal_(this.defaultTask_);
     callback(true, this.entries_);
     return;
@@ -791,8 +766,6 @@ FileTasks.prototype.execute = function(task) {
   FileTasks.recordViewingFileTypeUMA_(this.entries_);
   FileTasks.recordViewingRootTypeUMA_(
       this.directoryModel_.getCurrentRootType());
-  if (this.maybeShowCrostiniShareDialog_(task))
-    return;
   this.executeInternal_(task);
 };
 
@@ -803,23 +776,25 @@ FileTasks.prototype.execute = function(task) {
  * @private
  */
 FileTasks.prototype.executeInternal_ = function(task) {
-  this.checkAvailability_(function() {
-    this.taskHistory_.recordTaskExecuted(task.taskId);
-    if (FileTasks.isInternalTask_(task.taskId)) {
-      this.executeInternalTask_(task.taskId);
-    } else {
-      FileTasks.recordZipHandlerUMA_(task.taskId);
-      chrome.fileManagerPrivate.executeTask(
-          task.taskId, this.entries_, function(result) {
-            if (result !== 'message_sent')
-              return;
-            util.isTeleported(window).then(function(teleported) {
-              if (teleported)
-                this.ui_.showOpenInOtherDesktopAlert(this.entries_);
-            }.bind(this));
-          }.bind(this));
-    }
-  }.bind(this));
+  this.checkAvailability_(() => {
+    this.maybeShareWithCrostiniOrShowDialog_(task, () => {
+      this.taskHistory_.recordTaskExecuted(task.taskId);
+      if (FileTasks.isInternalTask_(task.taskId)) {
+        this.executeInternalTask_(task.taskId);
+      } else {
+        FileTasks.recordZipHandlerUMA_(task.taskId);
+        chrome.fileManagerPrivate.executeTask(
+            task.taskId, this.entries_, (result) => {
+              if (result !== 'message_sent')
+                return;
+              util.isTeleported(window).then((teleported) => {
+                if (teleported)
+                  this.ui_.showOpenInOtherDesktopAlert(this.entries_);
+              });
+            });
+      }
+    });
+  });
 };
 
 /**
