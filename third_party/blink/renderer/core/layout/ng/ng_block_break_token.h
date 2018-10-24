@@ -14,23 +14,44 @@
 namespace blink {
 
 // Represents a break token for a block node.
-class CORE_EXPORT NGBlockBreakToken : public NGBreakToken {
+class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
  public:
+  class ChildTokenList {
+   public:
+    ChildTokenList(wtf_size_t count, const NGBreakToken* const* buffer)
+        : count_(count), buffer_(buffer) {}
+
+    wtf_size_t size() const { return count_; }
+    const NGBreakToken* operator[](wtf_size_t idx) const {
+      return buffer_[idx];
+    }
+
+    const NGBreakToken* const* begin() const { return buffer_; }
+    const NGBreakToken* const* end() const { return begin() + count_; }
+
+   private:
+    wtf_size_t count_;
+    const NGBreakToken* const* buffer_;
+  };
+
   // Creates a break token for a node which did fragment, and can potentially
   // produce more fragments.
-  //
-  // The NGBlockBreakToken takes ownership of child_break_tokens, leaving it
-  // empty for the caller.
   //
   // The node is NGBlockNode, or any other NGLayoutInputNode that produces
   // anonymous box.
   static scoped_refptr<NGBlockBreakToken> Create(
       NGLayoutInputNode node,
       LayoutUnit used_block_size,
-      Vector<scoped_refptr<NGBreakToken>>& child_break_tokens,
+      const NGBreakTokenVector& child_break_tokens,
       bool has_last_resort_break = false) {
-    return base::AdoptRef(new NGBlockBreakToken(
-        node, used_block_size, child_break_tokens, has_last_resort_break));
+    NGBlockBreakToken* token =
+        static_cast<NGBlockBreakToken*>(::WTF::Partitions::FastMalloc(
+            sizeof(NGBlockBreakToken) +
+                child_break_tokens.size() * sizeof(NGBreakToken*),
+            ::WTF::GetStringWithTypeName<NGBlockBreakToken>()));
+    new (token) NGBlockBreakToken(node, used_block_size, child_break_tokens,
+                                  has_last_resort_break);
+    return base::AdoptRef(token);
   }
 
   // Creates a break token for a node which cannot produce any more fragments.
@@ -50,6 +71,11 @@ class CORE_EXPORT NGBlockBreakToken : public NGBreakToken {
     auto* token = new NGBlockBreakToken(node);
     token->is_break_before_ = true;
     return base::AdoptRef(token);
+  }
+
+  ~NGBlockBreakToken() override {
+    for (const NGBreakToken* token : ChildBreakTokens())
+      token->Release();
   }
 
   // Represents the amount of block size used in previous fragments.
@@ -75,8 +101,8 @@ class CORE_EXPORT NGBlockBreakToken : public NGBreakToken {
   // this child).
   //
   // A child which we haven't visited yet doesn't have a break token here.
-  const Vector<scoped_refptr<NGBreakToken>>& ChildBreakTokens() const {
-    return child_break_tokens_;
+  const ChildTokenList ChildBreakTokens() const {
+    return ChildTokenList(num_children_, &child_break_tokens_[0]);
   }
 
 #ifndef NDEBUG
@@ -84,9 +110,11 @@ class CORE_EXPORT NGBlockBreakToken : public NGBreakToken {
 #endif
 
  private:
+  // Must only be called from Create(), because it assumes that enough space
+  // has been allocated in the flexible array to store the children.
   NGBlockBreakToken(NGLayoutInputNode node,
                     LayoutUnit used_block_size,
-                    Vector<scoped_refptr<NGBreakToken>>& child_break_tokens,
+                    const NGBreakTokenVector& child_break_tokens,
                     bool has_last_resort_break);
 
   NGBlockBreakToken(NGLayoutInputNode node,
@@ -95,7 +123,6 @@ class CORE_EXPORT NGBlockBreakToken : public NGBreakToken {
 
   explicit NGBlockBreakToken(NGLayoutInputNode node);
 
-  Vector<scoped_refptr<NGBreakToken>> child_break_tokens_;
   LayoutUnit used_block_size_;
 
   bool is_break_before_ = false;
@@ -104,6 +131,10 @@ class CORE_EXPORT NGBlockBreakToken : public NGBreakToken {
   // unavoidable, but we should only break here if we cannot find a better break
   // point further up in the ancestry.
   bool has_last_resort_break_ = false;
+
+  wtf_size_t num_children_;
+  // This must be the last member, because it is a flexible array.
+  NGBreakToken* child_break_tokens_[];
 };
 
 DEFINE_TYPE_CASTS(NGBlockBreakToken,
