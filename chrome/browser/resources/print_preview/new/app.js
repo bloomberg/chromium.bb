@@ -635,6 +635,11 @@ Polymer({
    * @private
    */
   shouldExpandSettings_: function() {
+    if (this.settingsExpandedByUser_ === undefined ||
+        this.shouldShowMoreSettings_ === undefined) {
+      return false;
+    }
+
     // Expand the settings if the user has requested them expanded or if more
     // settings is not displayed (i.e. less than 6 total settings available).
     return this.settingsExpandedByUser_ || !this.shouldShowMoreSettings_;
