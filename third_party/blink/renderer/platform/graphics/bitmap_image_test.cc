@@ -136,7 +136,8 @@ class BitmapImageTest : public testing::Test {
   };
 
   static scoped_refptr<SharedBuffer> ReadFile(const char* file_name) {
-    String file_path = test::PlatformTestDataPath(file_name);
+    String file_path = test::BlinkLayoutTestsDir();
+    file_path.append(file_name);
     return test::ReadFromFile(file_path);
   }
 
@@ -244,7 +245,7 @@ class BitmapImageTest : public testing::Test {
 };
 
 TEST_F(BitmapImageTest, destroyDecodedData) {
-  LoadImage("animated-10color.gif");
+  LoadImage("/images/resources/animated-10color.gif");
   image_->PaintImageForCurrentFrame();
   size_t total_size = DecodedSize();
   EXPECT_GT(total_size, 0u);
@@ -254,12 +255,13 @@ TEST_F(BitmapImageTest, destroyDecodedData) {
 }
 
 TEST_F(BitmapImageTest, maybeAnimated) {
-  LoadImage("gif-loop-count.gif");
+  LoadImage("/images/resources/gif-loop-count.gif");
   EXPECT_TRUE(image_->MaybeAnimated());
 }
 
 TEST_F(BitmapImageTest, isAllDataReceived) {
-  scoped_refptr<SharedBuffer> image_data = ReadFile("green.jpg");
+  scoped_refptr<SharedBuffer> image_data =
+      ReadFile("/images/resources/green.jpg");
   ASSERT_TRUE(image_data.get());
 
   scoped_refptr<BitmapImage> image = BitmapImage::Create();
@@ -279,14 +281,14 @@ TEST_F(BitmapImageTest, isAllDataReceived) {
 }
 
 TEST_F(BitmapImageTest, noColorProfile) {
-  LoadImage("green.jpg");
+  LoadImage("/images/resources/green.jpg");
   image_->PaintImageForCurrentFrame();
   EXPECT_EQ(1024u, DecodedSize());
   EXPECT_FALSE(image_->HasColorProfile());
 }
 
 TEST_F(BitmapImageTest, jpegHasColorProfile) {
-  LoadImage("icc-v2-gbr.jpg");
+  LoadImage("/images/resources/icc-v2-gbr.jpg");
   image_->PaintImageForCurrentFrame();
   EXPECT_EQ(227700u, DecodedSize());
   EXPECT_TRUE(image_->HasColorProfile());
@@ -294,6 +296,7 @@ TEST_F(BitmapImageTest, jpegHasColorProfile) {
 
 TEST_F(BitmapImageTest, pngHasColorProfile) {
   LoadImage(
+      "/images/resources/"
       "palatted-color-png-gamma-one-color-profile.png");
   image_->PaintImageForCurrentFrame();
   EXPECT_EQ(65536u, DecodedSize());
@@ -301,21 +304,21 @@ TEST_F(BitmapImageTest, pngHasColorProfile) {
 }
 
 TEST_F(BitmapImageTest, webpHasColorProfile) {
-  LoadImage("webp-color-profile-lossy.webp");
+  LoadImage("/images/resources/webp-color-profile-lossy.webp");
   image_->PaintImageForCurrentFrame();
   EXPECT_EQ(2560000u, DecodedSize());
   EXPECT_TRUE(image_->HasColorProfile());
 }
 
 TEST_F(BitmapImageTest, icoHasWrongFrameDimensions) {
-  LoadImage("wrong-frame-dimensions.ico");
+  LoadImage("/images/resources/wrong-frame-dimensions.ico");
   // This call would cause crash without fix for 408026
   ImageForDefaultFrame();
 }
 
 TEST_F(BitmapImageTest, correctDecodedDataSize) {
   // Requesting any one frame shouldn't result in decoding any other frames.
-  LoadImage("anim_none.gif");
+  LoadImage("/images/resources/anim_none.gif");
   image_->PaintImageForCurrentFrame();
   int frame_size =
       static_cast<int>(image_->Size().Area() * sizeof(ImageFrame::PixelData));
@@ -323,7 +326,7 @@ TEST_F(BitmapImageTest, correctDecodedDataSize) {
 }
 
 TEST_F(BitmapImageTest, recachingFrameAfterDataChanged) {
-  LoadImage("green.jpg");
+  LoadImage("/images/resources/green.jpg");
   image_->PaintImageForCurrentFrame();
   EXPECT_GT(LastDecodedSizeChange(), 0);
   image_observer_->last_decoded_size_changed_delta_ = 0;
@@ -338,7 +341,8 @@ TEST_F(BitmapImageTest, recachingFrameAfterDataChanged) {
 }
 
 TEST_F(BitmapImageTest, ConstantImageIdForPartiallyLoadedImages) {
-  scoped_refptr<SharedBuffer> image_data = ReadFile("green.jpg");
+  scoped_refptr<SharedBuffer> image_data =
+      ReadFile("/images/resources/green.jpg");
   ASSERT_TRUE(image_data.get());
 
   // Create a new buffer to partially supply the data.
@@ -393,7 +397,7 @@ TEST_F(BitmapImageTest, ConstantImageIdForPartiallyLoadedImages) {
 }
 
 TEST_F(BitmapImageTest, ImageForDefaultFrame_MultiFrame) {
-  LoadImage("anim_none.gif");
+  LoadImage("/images/resources/anim_none.gif");
 
   // Multi-frame images create new StaticBitmapImages for each call.
   auto default_image1 = image_->ImageForDefaultFrame();
@@ -409,39 +413,39 @@ TEST_F(BitmapImageTest, ImageForDefaultFrame_MultiFrame) {
 }
 
 TEST_F(BitmapImageTest, ImageForDefaultFrame_SingleFrame) {
-  LoadImage("green.jpg");
+  LoadImage("/images/resources/green.jpg");
 
   // Default frame images for single-frame cases is the image itself.
   EXPECT_EQ(image_->ImageForDefaultFrame(), image_);
 }
 
 TEST_F(BitmapImageTest, GifDecoderFrame0) {
-  LoadImage("green-red-blue-yellow-animated.gif");
+  LoadImage("/images/resources/green-red-blue-yellow-animated.gif");
   auto bitmap = GenerateBitmap(0u);
   SkColor color = SkColorSetARGB(255, 0, 128, 0);
   VerifyBitmap(bitmap, color);
 }
 
 TEST_F(BitmapImageTest, GifDecoderFrame1) {
-  LoadImage("green-red-blue-yellow-animated.gif");
+  LoadImage("/images/resources/green-red-blue-yellow-animated.gif");
   auto bitmap = GenerateBitmap(1u);
   VerifyBitmap(bitmap, SK_ColorRED);
 }
 
 TEST_F(BitmapImageTest, GifDecoderFrame2) {
-  LoadImage("green-red-blue-yellow-animated.gif");
+  LoadImage("/images/resources/green-red-blue-yellow-animated.gif");
   auto bitmap = GenerateBitmap(2u);
   VerifyBitmap(bitmap, SK_ColorBLUE);
 }
 
 TEST_F(BitmapImageTest, GifDecoderFrame3) {
-  LoadImage("green-red-blue-yellow-animated.gif");
+  LoadImage("/images/resources/green-red-blue-yellow-animated.gif");
   auto bitmap = GenerateBitmap(3u);
   VerifyBitmap(bitmap, SK_ColorYELLOW);
 }
 
 TEST_F(BitmapImageTest, GifDecoderMultiThreaded) {
-  LoadImage("green-red-blue-yellow-animated.gif");
+  LoadImage("/images/resources/green-red-blue-yellow-animated.gif");
   auto paint_image = image_->PaintImageForTesting();
   ASSERT_EQ(paint_image.FrameCount(), 4u);
 
@@ -472,92 +476,103 @@ TEST_F(BitmapImageTest, GifDecoderMultiThreaded) {
 }
 
 TEST_F(BitmapImageTest, APNGDecoder00) {
-  LoadImage("apng00.png");
+  LoadImage("/images/resources/apng00.png");
   auto actual_bitmap = GenerateBitmap(0u);
-  auto expected_bitmap = GenerateBitmapForImage("apng00-ref.png");
+  auto expected_bitmap =
+      GenerateBitmapForImage("/images/resources/apng00-ref.png");
   VerifyBitmap(actual_bitmap, expected_bitmap);
 }
 
 // Jump to the final frame of each image.
 TEST_F(BitmapImageTest, APNGDecoder01) {
-  LoadImage("apng01.png");
+  LoadImage("/images/resources/apng01.png");
   auto actual_bitmap = GenerateBitmap(9u);
-  auto expected_bitmap = GenerateBitmapForImage("apng01-ref.png");
+  auto expected_bitmap =
+      GenerateBitmapForImage("/images/resources/apng01-ref.png");
   VerifyBitmap(actual_bitmap, expected_bitmap);
 }
 
 TEST_F(BitmapImageTest, APNGDecoder02) {
-  LoadImage("apng02.png");
+  LoadImage("/images/resources/apng02.png");
   auto actual_bitmap = GenerateBitmap(9u);
-  auto expected_bitmap = GenerateBitmapForImage("apng02-ref.png");
+  auto expected_bitmap =
+      GenerateBitmapForImage("/images/resources/apng02-ref.png");
   VerifyBitmap(actual_bitmap, expected_bitmap);
 }
 
 TEST_F(BitmapImageTest, APNGDecoder04) {
-  LoadImage("apng04.png");
+  LoadImage("/images/resources/apng04.png");
   auto actual_bitmap = GenerateBitmap(12u);
-  auto expected_bitmap = GenerateBitmapForImage("apng04-ref.png");
+  auto expected_bitmap =
+      GenerateBitmapForImage("/images/resources/apng04-ref.png");
   VerifyBitmap(actual_bitmap, expected_bitmap);
 }
 
 TEST_F(BitmapImageTest, APNGDecoder08) {
-  LoadImage("apng08.png");
+  LoadImage("/images/resources/apng08.png");
   auto actual_bitmap = GenerateBitmap(12u);
-  auto expected_bitmap = GenerateBitmapForImage("apng08-ref.png");
+  auto expected_bitmap =
+      GenerateBitmapForImage("/images/resources/apng08-ref.png");
   VerifyBitmap(actual_bitmap, expected_bitmap);
 }
 
 TEST_F(BitmapImageTest, APNGDecoder10) {
-  LoadImage("apng10.png");
+  LoadImage("/images/resources/apng10.png");
   auto actual_bitmap = GenerateBitmap(3u);
-  auto expected_bitmap = GenerateBitmapForImage("apng10-ref.png");
+  auto expected_bitmap =
+      GenerateBitmapForImage("/images/resources/apng10-ref.png");
   VerifyBitmap(actual_bitmap, expected_bitmap);
 }
 
 TEST_F(BitmapImageTest, APNGDecoder11) {
-  LoadImage("apng11.png");
+  LoadImage("/images/resources/apng11.png");
   auto actual_bitmap = GenerateBitmap(9u);
-  auto expected_bitmap = GenerateBitmapForImage("apng11-ref.png");
+  auto expected_bitmap =
+      GenerateBitmapForImage("/images/resources/apng11-ref.png");
   VerifyBitmap(actual_bitmap, expected_bitmap);
 }
 
 TEST_F(BitmapImageTest, APNGDecoder12) {
-  LoadImage("apng12.png");
+  LoadImage("/images/resources/apng12.png");
   auto actual_bitmap = GenerateBitmap(9u);
-  auto expected_bitmap = GenerateBitmapForImage("apng12-ref.png");
+  auto expected_bitmap =
+      GenerateBitmapForImage("/images/resources/apng12-ref.png");
   VerifyBitmap(actual_bitmap, expected_bitmap);
 }
 
 TEST_F(BitmapImageTest, APNGDecoder14) {
-  LoadImage("apng14.png");
+  LoadImage("/images/resources/apng14.png");
   auto actual_bitmap = GenerateBitmap(12u);
-  auto expected_bitmap = GenerateBitmapForImage("apng14-ref.png");
+  auto expected_bitmap =
+      GenerateBitmapForImage("/images/resources/apng14-ref.png");
   VerifyBitmap(actual_bitmap, expected_bitmap);
 }
 
 TEST_F(BitmapImageTest, APNGDecoder18) {
-  LoadImage("apng18.png");
+  LoadImage("/images/resources/apng18.png");
   auto actual_bitmap = GenerateBitmap(12u);
-  auto expected_bitmap = GenerateBitmapForImage("apng18-ref.png");
+  auto expected_bitmap =
+      GenerateBitmapForImage("/images/resources/apng18-ref.png");
   VerifyBitmap(actual_bitmap, expected_bitmap);
 }
 
 TEST_F(BitmapImageTest, APNGDecoder19) {
-  LoadImage("apng19.png");
+  LoadImage("/images/resources/apng19.png");
   auto actual_bitmap = GenerateBitmap(12u);
-  auto expected_bitmap = GenerateBitmapForImage("apng19-ref.png");
+  auto expected_bitmap =
+      GenerateBitmapForImage("/images/resources/apng19-ref.png");
   VerifyBitmap(actual_bitmap, expected_bitmap);
 }
 
 TEST_F(BitmapImageTest, APNGDecoderDisposePrevious) {
-  LoadImage("crbug722072.png");
+  LoadImage("/images/resources/crbug722072.png");
   auto actual_bitmap = GenerateBitmap(3u);
-  auto expected_bitmap = GenerateBitmapForImage("green.png");
+  auto expected_bitmap = GenerateBitmapForImage("/images/resources/green.png");
   VerifyBitmap(actual_bitmap, expected_bitmap);
 }
 
 TEST_F(BitmapImageTest, GIFRepetitionCount) {
-  LoadImage("three-frames_loop-three-times.gif");
+  LoadImage("/images/resources/three-frames_loop-three-times.gif");
   auto paint_image = image_->PaintImageForCurrentFrame();
   EXPECT_EQ(paint_image.repetition_count(), 3);
   EXPECT_EQ(paint_image.FrameCount(), 3u);
@@ -823,13 +838,17 @@ TEST_P(DecodedImageTypeHistogramTest, ImageType) {
 
 const DecodedImageTypeHistogramTest::ParamType
     kDecodedImageTypeHistogramTestparams[] = {
-        {"green.jpg", BitmapImageMetrics::kImageJPEG},
-        {"palatted-color-png-gamma-one-color-profile.png",
+        {"/images/resources/green.jpg", BitmapImageMetrics::kImageJPEG},
+        {"/images/resources/"
+         "palatted-color-png-gamma-one-color-profile.png",
          BitmapImageMetrics::kImagePNG},
-        {"animated-10color.gif", BitmapImageMetrics::kImageGIF},
-        {"webp-color-profile-lossy.webp", BitmapImageMetrics::kImageWebP},
-        {"wrong-frame-dimensions.ico", BitmapImageMetrics::kImageICO},
-        {"lenna.bmp", BitmapImageMetrics::kImageBMP}};
+        {"/images/resources/animated-10color.gif",
+         BitmapImageMetrics::kImageGIF},
+        {"/images/resources/webp-color-profile-lossy.webp",
+         BitmapImageMetrics::kImageWebP},
+        {"/images/resources/wrong-frame-dimensions.ico",
+         BitmapImageMetrics::kImageICO},
+        {"/images/resources/lenna.bmp", BitmapImageMetrics::kImageBMP}};
 
 INSTANTIATE_TEST_CASE_P(
     DecodedImageTypeHistogramTest,
@@ -845,14 +864,14 @@ TEST_P(DecodedImageOrientationHistogramTest, ImageOrientation) {
 
 const DecodedImageOrientationHistogramTest::ParamType
     kDecodedImageOrientationHistogramTestParams[] = {
-        {"exif-orientation-1-ul.jpg", kOriginTopLeft},
-        {"exif-orientation-2-ur.jpg", kOriginTopRight},
-        {"exif-orientation-3-lr.jpg", kOriginBottomRight},
-        {"exif-orientation-4-lol.jpg", kOriginBottomLeft},
-        {"exif-orientation-5-lu.jpg", kOriginLeftTop},
-        {"exif-orientation-6-ru.jpg", kOriginRightTop},
-        {"exif-orientation-7-rl.jpg", kOriginRightBottom},
-        {"exif-orientation-8-llo.jpg", kOriginLeftBottom}};
+        {"/images/resources/exif-orientation-1-ul.jpg", kOriginTopLeft},
+        {"/images/resources/exif-orientation-2-ur.jpg", kOriginTopRight},
+        {"/images/resources/exif-orientation-3-lr.jpg", kOriginBottomRight},
+        {"/images/resources/exif-orientation-4-lol.jpg", kOriginBottomLeft},
+        {"/images/resources/exif-orientation-5-lu.jpg", kOriginLeftTop},
+        {"/images/resources/exif-orientation-6-ru.jpg", kOriginRightTop},
+        {"/images/resources/exif-orientation-7-rl.jpg", kOriginRightBottom},
+        {"/images/resources/exif-orientation-8-llo.jpg", kOriginLeftBottom}};
 
 INSTANTIATE_TEST_CASE_P(
     DecodedImageOrientationHistogramTest,
@@ -868,14 +887,15 @@ TEST_P(DecodedImageDensityHistogramTest100px, JpegDensity) {
 const DecodedImageDensityHistogramTest100px::ParamType
     kDecodedImageDensityHistogramTest100pxParams[] = {
         // 64x64 too small to report any metric
-        {"rgb-jpeg-red.jpg",
+        {"/images/resources/rgb-jpeg-red.jpg",
          DecodedImageDensityHistogramTest100px::kNoSamplesReported},
         // 439x154, 23220 bytes --> 2.74 bpp
-        {"cropped_mandrill.jpg", 274},
+        {"/images/resources/cropped_mandrill.jpg", 274},
         // 320x320, 74017 bytes --> 5.78
-        {"blue-wheel-srgb-color-profile.jpg", 578},
+        {"/images/resources/blue-wheel-srgb-color-profile.jpg", 578},
         // 632x475 too big for the 100-399px range.
-        {"cat.jpg", DecodedImageDensityHistogramTest100px::kNoSamplesReported}};
+        {"/images/resources/cat.jpg",
+         DecodedImageDensityHistogramTest100px::kNoSamplesReported}};
 
 INSTANTIATE_TEST_CASE_P(
     DecodedImageDensityHistogramTest100px,
@@ -891,13 +911,13 @@ TEST_P(DecodedImageDensityHistogramTest400px, JpegDensity) {
 const DecodedImageDensityHistogramTest400px::ParamType
     kDecodedImageDensityHistogramTest400pxParams[] = {
         // 439x154, only one dimension is big enough.
-        {"cropped_mandrill.jpg",
+        {"/images/resources/cropped_mandrill.jpg",
          DecodedImageDensityHistogramTest400px::kNoSamplesReported},
         // 320x320, not big enough.
-        {"blue-wheel-srgb-color-profile.jpg",
+        {"/images/resources/blue-wheel-srgb-color-profile.jpg",
          DecodedImageDensityHistogramTest400px::kNoSamplesReported},
         // 632x475, 68826 bytes --> 1.83
-        {"cat.jpg", 183}};
+        {"/images/resources/cat.jpg", 183}};
 
 INSTANTIATE_TEST_CASE_P(
     DecodedImageDensityHistogramTest400px,
