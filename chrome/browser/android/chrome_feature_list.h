@@ -60,7 +60,6 @@ extern const base::Feature kImprovedA2HS;
 extern const base::Feature kInflateToolbarOnBackgroundThread;
 extern const base::Feature kJellyBeanSupported;
 extern const base::Feature kLanguagesPreference;
-extern const base::Feature kLongPressBackForHistory;
 extern const base::Feature kModalPermissionDialogView;
 extern const base::Feature kSearchEnginePromoExistingDevice;
 extern const base::Feature kSearchEnginePromoNewDevice;

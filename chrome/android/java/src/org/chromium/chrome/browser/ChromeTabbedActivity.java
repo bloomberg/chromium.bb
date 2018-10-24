@@ -264,7 +264,7 @@ public class ChromeTabbedActivity
 
     private NavigationBarColorController mNavigationBarColorController;
 
-    private boolean mUIInitialized;
+    private boolean mUIWithNativeInitialized;
 
     private Boolean mMergeTabsOnResume;
 
@@ -580,7 +580,7 @@ public class ChromeTabbedActivity
 
             refreshSignIn();
 
-            initializeUI();
+            initializeUIWithNative();
 
             // The dataset has already been created, we need to initialize our state.
             mTabModelSelectorImpl.notifyChanged();
@@ -796,7 +796,7 @@ public class ChromeTabbedActivity
         }
     }
 
-    private void initializeUI() {
+    private void initializeUIWithNative() {
         try {
             TraceEvent.begin("ChromeTabbedActivity.initializeUI");
 
@@ -893,7 +893,7 @@ public class ChromeTabbedActivity
                         getWindow(), getTabModelSelector(), getLayoutManager());
             }
 
-            mUIInitialized = true;
+            mUIWithNativeInitialized = true;
             onAccessibilityTabSwitcherModeChanged();
         } finally {
             TraceEvent.end("ChromeTabbedActivity.initializeUI");
@@ -1146,7 +1146,7 @@ public class ChromeTabbedActivity
     }
 
     private void onAccessibilityTabSwitcherModeChanged() {
-        if (!mUIInitialized) return;
+        if (!mUIWithNativeInitialized) return;
 
         boolean accessibilityTabSwitcherEnabled = DeviceClassManager.enableAccessibilityLayout();
         if (mLayoutManager != null && mLayoutManager.overviewVisible()
@@ -1193,7 +1193,7 @@ public class ChromeTabbedActivity
             switch (tabOpenType) {
                 case TabOpenType.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB:
                     // Used by the bookmarks application.
-                    if (tabModel.getCount() > 0 && mUIInitialized
+                    if (tabModel.getCount() > 0 && mUIWithNativeInitialized
                             && mLayoutManager.overviewVisible()) {
                         mLayoutManager.hideOverview(true);
                     }
@@ -1230,7 +1230,7 @@ public class ChromeTabbedActivity
                         TabModelUtils.setIndex(tabModel, tabIndex);
                     }
 
-                    if (tabModel.getCount() > 0 && mUIInitialized
+                    if (tabModel.getCount() > 0 && mUIWithNativeInitialized
                             && mLayoutManager.overviewVisible()) {
                         mLayoutManager.hideOverview(true);
                     }
@@ -1770,7 +1770,9 @@ public class ChromeTabbedActivity
     @Override
     public boolean handleBackPressed() {
         // BottomSheet can be opened before native is initialized.
-        if (!mUIInitialized) return getBottomSheet() != null && getBottomSheet().handleBackPress();
+        if (!mUIWithNativeInitialized) {
+            return getBottomSheet() != null && getBottomSheet().handleBackPress();
+        }
 
         if (getManualFillingController().handleBackPress()) return true;
 
@@ -1914,7 +1916,7 @@ public class ChromeTabbedActivity
      */
     private Tab launchIntent(String url, String referer, String headers,
             String externalAppId, boolean forceNewTab, Intent intent) {
-        if (mUIInitialized && (getBottomSheet() == null || !NewTabPage.isNTPUrl(url))) {
+        if (mUIWithNativeInitialized && (getBottomSheet() == null || !NewTabPage.isNTPUrl(url))) {
             mLayoutManager.hideOverview(false);
             getToolbarManager().finishAnimations();
         }
@@ -2034,20 +2036,20 @@ public class ChromeTabbedActivity
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        Boolean result = KeyboardShortcuts.dispatchKeyEvent(event, this, mUIInitialized);
+        Boolean result = KeyboardShortcuts.dispatchKeyEvent(event, this, mUIWithNativeInitialized);
         return result != null ? result : super.dispatchKeyEvent(event);
     }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (!mUIWithNativeInitialized) {
+            return super.onKeyDown(keyCode, event);
+        }
         // Detecting a long press of the back button via onLongPress is broken in Android N.
         // To work around this, use a postDelayed, which is supported in all versions.
         if (keyCode == KeyEvent.KEYCODE_BACK && !isTablet()) {
             if (mShowHistoryRunnable == null) mShowHistoryRunnable = this ::showFullHistoryForTab;
             mHandler.postDelayed(mShowHistoryRunnable, ViewConfiguration.getLongPressTimeout());
-            return super.onKeyDown(keyCode, event);
-        }
-        if (!mUIInitialized) {
             return super.onKeyDown(keyCode, event);
         }
         boolean isCurrentTabVisible = !mLayoutManager.overviewVisible()
@@ -2078,11 +2080,6 @@ public class ChromeTabbedActivity
     }
 
     private void showFullHistoryForTab() {
-        if (!ChromeFeatureList.isInitialized()
-                || !ChromeFeatureList.isEnabled(ChromeFeatureList.LONG_PRESS_BACK_FOR_HISTORY)) {
-            return;
-        }
-
         Tab tab = getActivityTab();
         if (tab == null || tab.getWebContents() == null || !tab.isUserInteractable()) return;
 
@@ -2127,7 +2124,7 @@ public class ChromeTabbedActivity
     public boolean shouldShowAppMenu() {
         // The popup menu relies on the model created during the full UI initialization, so do not
         // attempt to show the menu until the UI creation has finished.
-        if (!mUIInitialized) return false;
+        if (!mUIWithNativeInitialized) return false;
 
         // If the current active tab is showing a tab modal dialog, an app menu shouldn't be shown
         // in any cases, e.g. when a hardware menu button is clicked.
@@ -2139,7 +2136,7 @@ public class ChromeTabbedActivity
 
     @Override
     protected void showAppMenuForKeyboardEvent() {
-        if (!mUIInitialized) return;
+        if (!mUIWithNativeInitialized) return;
         super.showAppMenuForKeyboardEvent();
     }
 
