@@ -62,10 +62,10 @@ NGBlockChildIterator::Entry NGBlockChildIterator::NextChild(
       // structure will not be of any help at all, since the break tokens will
       // be associated with nodes that are not siblings.
       while (child_token_idx_ < child_break_tokens.size()) {
-        const auto& token = child_break_tokens[child_token_idx_];
+        const auto* token = child_break_tokens[child_token_idx_];
         child_token_idx_++;
         if (!token->IsFinished())
-          return Entry(token->InputNode(), token.get());
+          return Entry(token->InputNode(), token);
       }
       return Entry(nullptr, nullptr);
     }
@@ -78,7 +78,7 @@ NGBlockChildIterator::Entry NGBlockChildIterator::NextChild(
       // This child break token candidate doesn't match the current node, this
       // node must be unfinished.
       const NGBreakToken* child_break_token_candidate =
-          child_break_tokens[child_token_idx_].get();
+          child_break_tokens[child_token_idx_];
       if (child_break_token_candidate->InputNode() != child_)
         break;
 

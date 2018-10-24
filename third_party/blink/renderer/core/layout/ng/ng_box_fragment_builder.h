@@ -257,8 +257,8 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // The break-after value of the previous in-flow sibling.
   EBreakBetween previous_break_after_ = EBreakBetween::kAuto;
 
-  Vector<scoped_refptr<NGBreakToken>> child_break_tokens_;
-  Vector<scoped_refptr<NGBreakToken>> inline_break_tokens_;
+  NGBreakTokenVector child_break_tokens_;
+  NGBreakTokenVector inline_break_tokens_;
 
   Vector<NGBaseline> baselines_;
 
