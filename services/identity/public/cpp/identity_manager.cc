@@ -5,6 +5,7 @@
 #include "services/identity/public/cpp/identity_manager.h"
 
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "services/identity/public/cpp/primary_account_mutator.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace identity {
@@ -47,11 +48,13 @@ IdentityManager::IdentityManager(
     SigninManagerBase* signin_manager,
     ProfileOAuth2TokenService* token_service,
     AccountTrackerService* account_tracker_service,
-    GaiaCookieManagerService* gaia_cookie_manager_service)
+    GaiaCookieManagerService* gaia_cookie_manager_service,
+    std::unique_ptr<PrimaryAccountMutator> primary_account_mutator)
     : signin_manager_(signin_manager),
       token_service_(token_service),
       account_tracker_service_(account_tracker_service),
-      gaia_cookie_manager_service_(gaia_cookie_manager_service) {
+      gaia_cookie_manager_service_(gaia_cookie_manager_service),
+      primary_account_mutator_(std::move(primary_account_mutator)) {
   signin_manager_->AddObserver(this);
   token_service_->AddDiagnosticsObserver(this);
   token_service_->AddObserver(this);
@@ -183,6 +186,10 @@ void IdentityManager::RemoveAccessTokenFromCache(
   // as well (to maintain ordering in the case where a client removes an access
   // token from the cache and then immediately requests an access token).
   token_service_->InvalidateAccessToken(account_id, scopes, access_token);
+}
+
+PrimaryAccountMutator* IdentityManager::GetPrimaryAccountMutator() {
+  return primary_account_mutator_.get();
 }
 
 void IdentityManager::AddObserver(Observer* observer) {
