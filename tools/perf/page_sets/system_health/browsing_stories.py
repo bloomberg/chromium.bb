@@ -1130,6 +1130,18 @@ class TumblrStory(_InfiniteScrollStory):
   TAGS = [story_tags.INFINITE_SCROLL, story_tags.JAVASCRIPT_HEAVY,
           story_tags.YEAR_2016]
 
+class TumblrStory2018(_InfiniteScrollStory):
+  NAME = 'browse:social:tumblr_infinite_scroll:2018'
+  URL = 'https://techcrunch.tumblr.com/'
+  TAGS = [story_tags.INFINITE_SCROLL, story_tags.JAVASCRIPT_HEAVY,
+          story_tags.YEAR_2018]
+
+  def _Login(self, action_runner):
+    tumblr_login.LoginDesktopAccount(action_runner, 'tumblr')
+    action_runner.Wait(5)
+    # Without this page reload the mobile version does not correctly
+    # go to the https://techcrunch.tumblr.com
+    action_runner.ReloadPage()
 
 class TwitterScrollDesktopStory(_InfiniteScrollStory):
   NAME = 'browse:social:twitter_infinite_scroll'
