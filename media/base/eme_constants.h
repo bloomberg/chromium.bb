@@ -19,7 +19,9 @@ enum class EmeInitDataType { UNKNOWN, WEBM, CENC, KEYIDS, MAX = KEYIDS };
 // Defines bitmask values that specify codecs used in Encrypted Media Extensions
 // (EME). Generally codec profiles are not specified and it is assumed that the
 // profile support for encrypted playback is the same as for clear playback.
-// The only exception is VP9 where we have older CDMs only supporting profile 0.
+// The only exception is VP9 where we have older CDMs only supporting profile 0,
+// while new CDMs could support profile 2. Profile 1 and 3 are not supported by
+// EME, see https://crbug.com/898298.
 enum EmeCodec : uint32_t {
   EME_CODEC_NONE = 0,
   EME_CODEC_OPUS = 1 << 0,
@@ -28,7 +30,7 @@ enum EmeCodec : uint32_t {
   EME_CODEC_VP9_PROFILE0 = 1 << 3,
   EME_CODEC_AAC = 1 << 4,
   EME_CODEC_AVC1 = 1 << 5,
-  EME_CODEC_VP9_PROFILES123 = 1 << 6,  // VP9 profiles 1/2/3
+  EME_CODEC_VP9_PROFILE2 = 1 << 6,  // VP9 profiles 2
   EME_CODEC_HEVC = 1 << 7,
   EME_CODEC_DOLBY_VISION_AVC = 1 << 8,
   EME_CODEC_DOLBY_VISION_HEVC = 1 << 9,
@@ -63,7 +65,7 @@ constexpr SupportedCodecs GetMp4AudioCodecs() {
 constexpr SupportedCodecs GetMp4VideoCodecs() {
   // VP9 codec can be in MP4. Legacy VP9 codec strings ("vp9" and "vp9.0") can
   // not be in "video/mp4" mime type, but that is enforced by media::MimeUtil.
-  SupportedCodecs codecs = EME_CODEC_VP9_PROFILE0 | EME_CODEC_VP9_PROFILES123;
+  SupportedCodecs codecs = EME_CODEC_VP9_PROFILE0 | EME_CODEC_VP9_PROFILE2;
   codecs |= EME_CODEC_AV1;
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
   codecs |= EME_CODEC_AVC1;
@@ -86,7 +88,7 @@ constexpr SupportedCodecs EME_CODEC_WEBM_AUDIO_ALL =
     EME_CODEC_OPUS | EME_CODEC_VORBIS;
 
 constexpr SupportedCodecs EME_CODEC_WEBM_VIDEO_ALL =
-    EME_CODEC_VP8 | EME_CODEC_VP9_PROFILE0 | EME_CODEC_VP9_PROFILES123 |
+    EME_CODEC_VP8 | EME_CODEC_VP9_PROFILE0 | EME_CODEC_VP9_PROFILE2 |
     EME_CODEC_AV1;
 
 constexpr SupportedCodecs EME_CODEC_WEBM_ALL =

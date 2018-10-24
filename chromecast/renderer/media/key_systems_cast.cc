@@ -114,7 +114,7 @@ class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
 SupportedCodecs GetCastEmeSupportedCodecs() {
   SupportedCodecs codecs = ::media::EME_CODEC_AAC | ::media::EME_CODEC_AVC1 |
                            ::media::EME_CODEC_VP9_PROFILE0 |
-                           ::media::EME_CODEC_VP9_PROFILES123 |
+                           ::media::EME_CODEC_VP9_PROFILE2 |
                            ::media::EME_CODEC_VP8;
 
 #if !BUILDFLAG(DISABLE_SECURE_FLAC_OPUS_DECODING)
