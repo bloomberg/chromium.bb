@@ -10,9 +10,6 @@
 
 # misc.
 -DevToolsManagerDelegateTest.ShowMinimizedWindow
--WindowActivityWatcherTest.Basic
--WindowActivityWatcherTest.MultipleWindows
--WindowActivityWatcherTest.WindowActivation
 
 # Broken tests related to accessibility. crbug.com/888750 and crbug.com/889093
 -GuestSpokenFeedbackTest.FocusToolbar
