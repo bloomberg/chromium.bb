@@ -69,12 +69,13 @@ class ScrollerContentsView : public views::View {
 }  // namespace
 
 NewUnifiedMessageCenterView::NewUnifiedMessageCenterView(
-    UnifiedSystemTrayView* parent)
+    UnifiedSystemTrayView* parent,
+    UnifiedSystemTrayModel* model)
     : parent_(parent),
       stacking_counter_(new StackingNotificationCounterView()),
       scroll_bar_(new MessageCenterScrollBar(this)),
       scroller_(new views::ScrollView()),
-      message_list_view_(new UnifiedMessageListView(this)),
+      message_list_view_(new UnifiedMessageListView(this, model)),
       position_from_bottom_(kClearAllButtonRowHeight) {
   message_list_view_->Init();
 

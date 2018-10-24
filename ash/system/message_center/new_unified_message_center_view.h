@@ -20,6 +20,7 @@ namespace ash {
 
 class MessageCenterScrollBar;
 class StackingNotificationCounterView;
+class UnifiedSystemTrayModel;
 class UnifiedSystemTrayView;
 
 // Manages scrolling of notification list.
@@ -30,7 +31,8 @@ class ASH_EXPORT NewUnifiedMessageCenterView
       public views::ButtonListener,
       public views::FocusChangeListener {
  public:
-  explicit NewUnifiedMessageCenterView(UnifiedSystemTrayView* parent);
+  NewUnifiedMessageCenterView(UnifiedSystemTrayView* parent,
+                              UnifiedSystemTrayModel* model);
   ~NewUnifiedMessageCenterView() override;
 
   // Sets the maximum height that the view can take.

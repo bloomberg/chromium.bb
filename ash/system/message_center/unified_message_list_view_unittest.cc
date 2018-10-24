@@ -5,6 +5,7 @@
 #include "ash/system/message_center/unified_message_list_view.h"
 
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/test/ash_test_base.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -46,7 +47,8 @@ class TestNotificationView : public message_center::NotificationViewMD {
 
 class TestUnifiedMessageListView : public UnifiedMessageListView {
  public:
-  TestUnifiedMessageListView() : UnifiedMessageListView(nullptr) {}
+  explicit TestUnifiedMessageListView(UnifiedSystemTrayModel* model)
+      : UnifiedMessageListView(nullptr, model) {}
 
   ~TestUnifiedMessageListView() override = default;
 
@@ -70,8 +72,15 @@ class UnifiedMessageListViewTest : public AshTestBase,
   UnifiedMessageListViewTest() = default;
   ~UnifiedMessageListViewTest() override = default;
 
+  // AshTestBase:
+  void SetUp() override {
+    AshTestBase::SetUp();
+    model_ = std::make_unique<UnifiedSystemTrayModel>();
+  }
+
   void TearDown() override {
     message_list_view_.reset();
+    model_.reset();
     AshTestBase::TearDown();
   }
 
@@ -95,12 +104,15 @@ class UnifiedMessageListViewTest : public AshTestBase,
   }
 
   void CreateMessageListView() {
-    message_list_view_ = std::make_unique<TestUnifiedMessageListView>();
+    message_list_view_ =
+        std::make_unique<TestUnifiedMessageListView>(model_.get());
     message_list_view_->Init();
     message_list_view_->AddObserver(this);
     OnViewPreferredSizeChanged(message_list_view_.get());
     size_changed_count_ = 0;
   }
+
+  void DestroyMessageListView() { message_list_view_.reset(); }
 
   TestNotificationView* GetMessageViewAt(int index) const {
     return static_cast<TestNotificationView*>(
@@ -142,6 +154,7 @@ class UnifiedMessageListViewTest : public AshTestBase,
   int id_ = 0;
   int size_changed_count_ = 0;
 
+  std::unique_ptr<UnifiedSystemTrayModel> model_;
   std::unique_ptr<TestUnifiedMessageListView> message_list_view_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedMessageListViewTest);
@@ -332,6 +345,46 @@ TEST_F(UnifiedMessageListViewTest, ResetAnimation) {
   EXPECT_EQ(2, GetMessageViewCount());
   EXPECT_EQ(id1, GetMessageViewAt(0)->notification_id());
   EXPECT_EQ(id2, GetMessageViewAt(1)->notification_id());
+}
+
+TEST_F(UnifiedMessageListViewTest, KeepManuallyExpanded) {
+  AddNotification();
+  AddNotification();
+  CreateMessageListView();
+
+  EXPECT_FALSE(GetMessageViewAt(0)->IsExpanded());
+  EXPECT_TRUE(GetMessageViewAt(1)->IsExpanded());
+  EXPECT_FALSE(GetMessageViewAt(0)->IsManuallyExpandedOrCollapsed());
+  EXPECT_FALSE(GetMessageViewAt(1)->IsManuallyExpandedOrCollapsed());
+
+  // Manually expand the first notification & manually collapse the second one.
+  GetMessageViewAt(0)->SetExpanded(true);
+  GetMessageViewAt(0)->SetManuallyExpandedOrCollapsed(true);
+  GetMessageViewAt(1)->SetExpanded(false);
+  GetMessageViewAt(1)->SetManuallyExpandedOrCollapsed(true);
+
+  DestroyMessageListView();
+
+  // Reopen and confirm the expanded state & manually expanded flags are kept.
+  CreateMessageListView();
+  EXPECT_TRUE(GetMessageViewAt(0)->IsExpanded());
+  EXPECT_FALSE(GetMessageViewAt(1)->IsExpanded());
+  EXPECT_TRUE(GetMessageViewAt(0)->IsManuallyExpandedOrCollapsed());
+  EXPECT_TRUE(GetMessageViewAt(1)->IsManuallyExpandedOrCollapsed());
+
+  DestroyMessageListView();
+
+  // Add a new notification.
+  AddNotification();
+  CreateMessageListView();
+
+  // Confirm the new notification isn't affected & others are still kept.
+  EXPECT_TRUE(GetMessageViewAt(0)->IsExpanded());
+  EXPECT_FALSE(GetMessageViewAt(1)->IsExpanded());
+  EXPECT_TRUE(GetMessageViewAt(2)->IsExpanded());
+  EXPECT_TRUE(GetMessageViewAt(0)->IsManuallyExpandedOrCollapsed());
+  EXPECT_TRUE(GetMessageViewAt(1)->IsManuallyExpandedOrCollapsed());
+  EXPECT_FALSE(GetMessageViewAt(2)->IsManuallyExpandedOrCollapsed());
 }
 
 }  // namespace ash
