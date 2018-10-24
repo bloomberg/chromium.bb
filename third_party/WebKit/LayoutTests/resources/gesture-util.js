@@ -81,7 +81,16 @@ const GestureSourceType = {
   TOUCH_INPUT: 1,
   MOUSE_INPUT: 2,
   TOUCHPAD_INPUT:2,
-  PEN_INPUT: 3
+  PEN_INPUT: 3,
+  ToString: function(value) {
+    switch(value) {
+      case 0: return "DefaultInput";
+      case 1: return "Touchscreen";
+      case 2: return "MouseWheel/Touchpad";
+      case 3: return "Pen";
+      default: return "Invalid";
+    }
+  }
 };
 
 // Use this for speed to make gestures (effectively) instant. That is, finish
