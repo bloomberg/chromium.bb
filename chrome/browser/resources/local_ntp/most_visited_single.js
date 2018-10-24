@@ -437,8 +437,8 @@ var swapInNewTiles = function() {
         parent.lastChild.querySelectorAll('.' + CLASSES.MD_TITLE));
 
     if (cur.childNodes.length > MD_MAX_TILES_PER_ROW) {
-      cur.style.maxWidth =
-          'calc(var(--md-tile-width) * ' + Math.ceil(cur.childNodes.length / 2);
+      cur.style.maxWidth = 'calc(var(--md-tile-width) * ' +
+          Math.ceil(cur.childNodes.length / 2) + ')';
     }
 
     // Prevent keyboard navigation to tiles that are not visible.
