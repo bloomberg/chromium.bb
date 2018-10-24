@@ -793,15 +793,7 @@ void DevToolsURLInterceptorRequestJob::OnSubRequestAuthRequired(
   waiting_for_user_response_ = WaitingForUserResponse::WAITING_FOR_AUTH_ACK;
 
   std::unique_ptr<InterceptedRequestInfo> request_info = BuildRequestInfo();
-  request_info->auth_challenge =
-      protocol::Network::AuthChallenge::Create()
-          .SetSource(auth_info->is_proxy
-                         ? protocol::Network::AuthChallenge::SourceEnum::Proxy
-                         : protocol::Network::AuthChallenge::SourceEnum::Server)
-          .SetOrigin(auth_info->challenger.Serialize())
-          .SetScheme(auth_info->scheme)
-          .SetRealm(auth_info->realm)
-          .Build();
+  request_info->auth_challenge = auth_info;
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                            base::BindOnce(callback_, std::move(request_info)));
 }
@@ -839,24 +831,12 @@ void DevToolsURLInterceptorRequestJob::OnSubRequestRedirectReceived(
   // Otherwise we will need to ask what to do via DevTools protocol.
   *defer_redirect = true;
 
-  size_t iter = 0;
-  std::string header_name;
-  std::string header_value;
-  std::unique_ptr<protocol::DictionaryValue> headers_dict(
-      protocol::DictionaryValue::create());
-  while (request.response_headers()->EnumerateHeaderLines(&iter, &header_name,
-                                                          &header_value)) {
-    headers_dict->setString(header_name, header_value);
-  }
-
   redirect_.reset(new net::RedirectInfo(redirectinfo));
 
   waiting_for_user_response_ = WaitingForUserResponse::WAITING_FOR_REQUEST_ACK;
 
   std::unique_ptr<InterceptedRequestInfo> request_info = BuildRequestInfo();
-  request_info->response_headers =
-      protocol::Object::fromValue(headers_dict.get(), nullptr);
-  request_info->http_response_status_code = redirectinfo.status_code;
+  request_info->response_headers = request.response_headers();
   request_info->redirect_url = redirectinfo.new_url.spec();
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                            base::BindOnce(callback_, std::move(request_info)));
@@ -879,19 +859,8 @@ void DevToolsURLInterceptorRequestJob::OnInterceptedRequestResponseStarted(
   } else {
     std::unique_ptr<protocol::DictionaryValue> headers_dict(
         protocol::DictionaryValue::create());
-    if (sub_request_->request()->response_headers()) {
-      size_t iter = 0;
-      std::string name;
-      std::string value;
-      while (sub_request_->request()->response_headers()->EnumerateHeaderLines(
-          &iter, &name, &value)) {
-        headers_dict->setString(name, value);
-      }
-    }
-    request_info->http_response_status_code =
-        sub_request_->request()->GetResponseCode();
     request_info->response_headers =
-        protocol::Object::fromValue(headers_dict.get(), nullptr);
+        sub_request_->request()->response_headers();
     request_info->is_download = IsDownload(request(), sub_request_->request());
   }
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},

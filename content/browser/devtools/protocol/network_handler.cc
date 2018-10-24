@@ -1436,22 +1436,29 @@ std::unique_ptr<protocol::Network::SecurityDetails> BuildSecurityDetails(
   return security_details;
 }
 
+std::unique_ptr<protocol::Object> BuildResponseHeaders(
+    scoped_refptr<net::HttpResponseHeaders> headers) {
+  auto headers_dict = DictionaryValue::create();
+  if (!headers)
+    return std::make_unique<protocol::Object>(std::move(headers_dict));
+  size_t iterator = 0;
+  std::string name;
+  std::string value;
+  while (headers->EnumerateHeaderLines(&iterator, &name, &value)) {
+    std::string old_value;
+    bool merge_with_another = headers_dict->getString(name, &old_value);
+    headers_dict->setString(
+        name, merge_with_another ? old_value + '\n' + value : value);
+  }
+  return std::make_unique<protocol::Object>(std::move(headers_dict));
+}
+
 std::unique_ptr<Network::Response> BuildResponse(
     const GURL& url,
     const network::ResourceResponseInfo& info) {
-  std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
   int status = 0;
   std::string status_text;
   if (info.headers) {
-    size_t iterator = 0;
-    std::string name;
-    std::string value;
-    while (info.headers->EnumerateHeaderLines(&iterator, &name, &value)) {
-      std::string old_value;
-      bool merge_with_another = headers_dict->getString(name, &old_value);
-      headers_dict->setString(
-          name, merge_with_another ? old_value + '\n' + value : value);
-    }
     status = info.headers->response_code();
     status_text = info.headers->GetStatusText();
   } else if (url.SchemeIs(url::kDataScheme)) {
@@ -1465,7 +1472,7 @@ std::unique_ptr<Network::Response> BuildResponse(
           .SetUrl(NetworkHandler::ExtractFragment(url, &url_fragment))
           .SetStatus(status)
           .SetStatusText(status_text)
-          .SetHeaders(Object::fromValue(headers_dict.get(), nullptr))
+          .SetHeaders(BuildResponseHeaders(info.headers))
           .SetMimeType(info.mime_type)
           .SetConnectionReused(info.load_timing.socket_reused)
           .SetConnectionId(info.load_timing.socket_log_id)
@@ -2114,13 +2121,34 @@ void NetworkHandler::RequestIntercepted(
   protocol::Maybe<protocol::Network::ErrorReason> error_reason;
   if (info->response_error_code < 0)
     error_reason = NetErrorToString(info->response_error_code);
+
+  Maybe<int> status_code;
+  Maybe<protocol::Network::Headers> response_headers;
+  if (info->response_headers) {
+    status_code = info->response_headers->response_code();
+    response_headers = BuildResponseHeaders(info->response_headers);
+  }
+
+  std::unique_ptr<protocol::Network::AuthChallenge> auth_challenge;
+  if (info->auth_challenge) {
+    auth_challenge =
+        protocol::Network::AuthChallenge::Create()
+            .SetSource(info->auth_challenge->is_proxy
+                           ? Network::AuthChallenge::SourceEnum::Proxy
+                           : Network::AuthChallenge::SourceEnum::Server)
+            .SetOrigin(info->auth_challenge->challenger.Serialize())
+            .SetScheme(info->auth_challenge->scheme)
+            .SetRealm(info->auth_challenge->realm)
+            .Build();
+  }
+
   frontend_->RequestIntercepted(
       info->interception_id, std::move(info->network_request),
       info->frame_id.ToString(), ResourceTypeToString(info->resource_type),
       info->is_navigation, std::move(info->is_download),
-      std::move(info->redirect_url), std::move(info->auth_challenge),
-      std::move(error_reason), std::move(info->http_response_status_code),
-      std::move(info->response_headers));
+      std::move(info->redirect_url), std::move(auth_challenge),
+      std::move(error_reason), std::move(status_code),
+      std::move(response_headers));
 }
 
 void NetworkHandler::SetNetworkConditions(
