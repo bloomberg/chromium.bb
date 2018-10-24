@@ -1589,6 +1589,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/webapps/ChromeWebApkHostSignature.java",
   "java/src/org/chromium/chrome/browser/webapps/GooglePlayWebApkInstallDelegate.java",
   "java/src/org/chromium/chrome/browser/webapps/SplashscreenObserver.java",
+  "java/src/org/chromium/chrome/browser/webapps/TransparentSplashWebApkActivity.java",
   "java/src/org/chromium/chrome/browser/webapps/WebApkActivity.java",
   "java/src/org/chromium/chrome/browser/webapps/WebApkActivity0.java",
   "java/src/org/chromium/chrome/browser/webapps/WebApkActivity1.java",

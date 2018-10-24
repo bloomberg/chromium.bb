@@ -41,15 +41,27 @@ public class HostBrowserLauncher {
             return;
         }
 
+        Intent launchIntent = createLaunchInWebApkModeIntent(context, params);
+        try {
+            context.startActivity(launchIntent);
+        } catch (ActivityNotFoundException e) {
+            Log.w(TAG, "Unable to launch browser in WebAPK mode.");
+            e.printStackTrace();
+        }
+    }
+
+    /** Creates intent to launch host browser in WebAPK mode. */
+    public static Intent createLaunchInWebApkModeIntent(
+            Context context, HostBrowserLauncherParams params) {
         Intent intent = new Intent();
         intent.setAction(ACTION_START_WEBAPK);
         intent.setPackage(params.getHostBrowserPackageName());
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
         Bundle copiedExtras = params.getOriginalIntent().getExtras();
         if (copiedExtras != null) {
             intent.putExtras(copiedExtras);
         }
-
         intent.putExtra(WebApkConstants.EXTRA_URL, params.getStartUrl())
                 .putExtra(WebApkConstants.EXTRA_SOURCE, params.getSource())
                 .putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, context.getPackageName())
@@ -62,13 +74,7 @@ public class HostBrowserLauncher {
         if (!params.wasDialogShown()) {
             intent.putExtra(WebApkConstants.EXTRA_WEBAPK_LAUNCH_TIME, params.getLaunchTimeMs());
         }
-
-        try {
-            context.startActivity(intent);
-        } catch (ActivityNotFoundException e) {
-            Log.w(TAG, "Unable to launch browser in WebAPK mode.");
-            e.printStackTrace();
-        }
+        return intent;
     }
 
     /** Launches a WebAPK in its runtime host browser as a tab. */

@@ -55,14 +55,14 @@ public class SplashActivity extends HostBrowserLauncherActivity {
 
         Context appContext = getApplicationContext();
 
-        // TODO(pkotwicz): Pass parameter to tell Chrome not to show splash screen.
-        HostBrowserLauncher.launch(appContext, params);
-
         if (!H2OLauncher.shouldMainIntentLaunchSplashActivity(params)) {
+            HostBrowserLauncher.launch(appContext, params);
             H2OLauncher.changeEnabledComponentsAndKillShellApk(appContext,
                     new ComponentName(appContext, H2OMainActivity.class), getComponentName());
             finish();
             return;
         }
+
+        H2OLauncher.launch(this, params);
     }
 }
