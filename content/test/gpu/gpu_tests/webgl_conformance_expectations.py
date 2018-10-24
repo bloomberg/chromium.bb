@@ -602,8 +602,11 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     #     ['mac', 'amd', 'release'], bug=735483)
 
     # Mac Intel
+    self.Fail('conformance/rendering/canvas-alpha-bug.html',
+        ['mac', ('intel', 0x0a2e)], bug=886970)
     self.Fail('conformance/rendering/rendering-stencil-large-viewport.html',
         ['mac', 'intel'], bug=782317)
+
 
     # Mac Retina NVidia failures
     self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
