@@ -5,6 +5,7 @@
 #include "chrome/browser/metrics/network_quality_estimator_provider_impl.h"
 
 #include "base/sequenced_task_runner.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -38,6 +39,21 @@ void NetworkQualityEstimatorProviderImpl::PostReplyOnNetworkQualityChanged(
     DCHECK(task_posted);
     return;
   }
+
+#ifdef OS_ANDROID
+  // TODO(tbansal): https://crbug.com/898304: Tasks posted via
+  // content::BrowserThread::PostAfterStartupTask may take up to ~20 seconds to
+  // execute. Figure out a way to call
+  // g_browser_process->network_quality_tracker earlier rather than waiting for
+  // content::BrowserThread::PostAfterStartupTask.
+  content::BrowserThread::PostAfterStartupTask(
+      FROM_HERE, base::SequencedTaskRunnerHandle::Get(),
+      base::BindOnce(&NetworkQualityEstimatorProviderImpl::
+                         AddEffectiveConnectionTypeObserverNow,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  return;
+#endif
+
   bool task_posted = base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&NetworkQualityEstimatorProviderImpl::
