@@ -138,6 +138,7 @@ bool InputMethodMus::IsCandidatePopupOpen() const {
 }
 
 void InputMethodMus::ShowVirtualKeyboardIfEnabled() {
+  InputMethodBase::ShowVirtualKeyboardIfEnabled();
   if (input_method_)
     input_method_->ShowVirtualKeyboardIfEnabled();
 }
