@@ -242,8 +242,7 @@ bool SandboxMac::Enable(SandboxType sandbox_type) {
   if (!compiler.InsertBooleanParam(kSandboxMacOS1013, macos_1013))
     return false;
 
-  if (sandbox_type == service_manager::SANDBOX_TYPE_CDM ||
-      sandbox_type == service_manager::SANDBOX_TYPE_GPU) {
+  if (sandbox_type == service_manager::SANDBOX_TYPE_CDM) {
     base::FilePath bundle_path = SandboxMac::GetCanonicalPath(
         base::mac::FrameworkBundlePath().DirName());
     if (!compiler.InsertStringParam(kSandboxBundleVersionPath,

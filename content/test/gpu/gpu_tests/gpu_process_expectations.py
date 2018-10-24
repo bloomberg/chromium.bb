@@ -12,3 +12,6 @@ class GpuProcessExpectations(GpuTestExpectations):
 
     # Seems to have become flaky on Windows recently.
     self.Flaky('GpuProcess_one_extra_workaround', ['win'], bug=700522)
+
+    self.Fail('GpuProcess_feature_status_under_swiftshader',
+        ['mac'], bug=897914)

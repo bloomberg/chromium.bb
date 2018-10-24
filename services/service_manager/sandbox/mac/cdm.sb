@@ -8,6 +8,7 @@
 (allow file-read* (extension "com.apple.app-sandbox.read"))
 
 ; Allow to read framework and CDM resources files for CDM host verification
+(define bundle-version-path "BUNDLE_VERSION_PATH")
 (allow file-read* (subpath (param bundle-version-path)))
 
 ; mach IPC
