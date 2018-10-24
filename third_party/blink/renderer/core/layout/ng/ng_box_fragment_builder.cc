@@ -220,7 +220,7 @@ scoped_refptr<NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(
     if (did_break_) {
       break_token_ = NGBlockBreakToken::Create(
           node_, used_block_size_, child_break_tokens_, has_last_resort_break_);
-    } else {
+    } else if (needs_finished_break_token_) {
       break_token_ = NGBlockBreakToken::Create(node_, used_block_size_,
                                                has_last_resort_break_);
     }
