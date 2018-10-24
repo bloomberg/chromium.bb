@@ -139,12 +139,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 - (void)goBack;
 - (void)goForward;
 
-// Returns the timestamp of the last time the tab is visited.
-- (double)lastVisitedTimestamp;
-
-// Updates the timestamp of the last time the tab is visited.
-- (void)updateLastVisitedTimestamp;
-
 // Called before capturing a snapshot for Tab.
 - (void)willUpdateSnapshot;
 

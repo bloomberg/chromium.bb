@@ -126,9 +126,6 @@ NSString* const kTabUrlKey = @"url";
 
   OpenInController* _openInController;
 
-  // Last visited timestamp.
-  double _lastVisitedTimestamp;
-
   // The Overscroll controller responsible for displaying the
   // overscrollActionsView above the toolbar.
   OverscrollActionsController* _overscrollActionsController;
@@ -176,8 +173,6 @@ NSString* const kTabUrlKey = @"url";
 
     _browserState =
         ios::ChromeBrowserState::FromBrowserState(webState->GetBrowserState());
-
-    [self updateLastVisitedTimestamp];
   }
   return self;
 }
@@ -345,14 +340,6 @@ NSString* const kTabUrlKey = @"url";
     base::RecordAction(base::UserMetricsAction("Forward"));
     self.navigationManager->GoForward();
   }
-}
-
-- (double)lastVisitedTimestamp {
-  return _lastVisitedTimestamp;
-}
-
-- (void)updateLastVisitedTimestamp {
-  _lastVisitedTimestamp = [[NSDate date] timeIntervalSince1970];
 }
 
 - (void)willUpdateSnapshot {
