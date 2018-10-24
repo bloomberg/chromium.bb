@@ -990,7 +990,7 @@ TEST_F(PersonalDataManagerTest, AddFullCardAsMaskedCard) {
 
 TEST_F(PersonalDataManagerTest, OfferStoreUnmaskedCards) {
 #if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MACOSX) || \
-    defined(OS_IOS) || defined(OS_ANDROID)
+    defined(OS_IOS) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
   bool should_offer = true;
 #elif defined(OS_LINUX)
   bool should_offer = false;
