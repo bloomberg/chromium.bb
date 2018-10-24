@@ -5466,3 +5466,4 @@ crbug.com/898378 [ Mac10.13 ] fast/scroll-behavior/smooth-scroll/keyboard-scroll
 
 # Sheriff 2018-10-24
 crbug.com/898394 [ Linux ] virtual/android/url-bar/bottom-and-top-fixed-sticks-to-top.html [ Failure ]
+crbug.com/898378 [ Mac10.13 ] virtual/scroll_customization/fast/scroll-behavior/smooth-scroll/keyboard-scroll.html [ Timeout ]
