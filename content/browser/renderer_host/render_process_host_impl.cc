@@ -1239,7 +1239,7 @@ std::set<int>& GetCurrentCorbPluginExceptions() {
   return *s_data;
 }
 
-void OnNetworkServiceCrash() {
+void OnNetworkServiceCrashForCorb() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   network::mojom::NetworkService* network_service = GetNetworkService();
   for (int process_id : GetCurrentCorbPluginExceptions())
@@ -1289,7 +1289,7 @@ void AddCorbExceptionForPluginOnUIThread(int process_id) {
     static NetworkServiceCrashHandlerId s_crash_handler_id;
     if (s_crash_handler_id.is_null()) {
       s_crash_handler_id = RegisterNetworkServiceCrashHandler(
-          base::BindRepeating(&OnNetworkServiceCrash));
+          base::BindRepeating(&OnNetworkServiceCrashForCorb));
     }
 
     GetCurrentCorbPluginExceptions().insert(process_id);
