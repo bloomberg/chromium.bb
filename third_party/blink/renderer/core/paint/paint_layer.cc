@@ -2748,25 +2748,6 @@ GraphicsLayer* PaintLayer::GraphicsLayerBacking(const LayoutObject* obj) const {
   }
 }
 
-BackgroundPaintLocation PaintLayer::GetBackgroundPaintLocation(
-    uint32_t* reasons) const {
-  BackgroundPaintLocation location;
-  bool may_have_scrolling_layers_without_scrolling = IsRootLayer();
-  if (!ScrollsOverflow() && !may_have_scrolling_layers_without_scrolling) {
-    location = kBackgroundPaintInGraphicsLayer;
-  } else {
-    // If we care about LCD text, paint root backgrounds into scrolling contents
-    // layer even if style suggests otherwise. (For non-root scrollers, we just
-    // avoid compositing - see PLSA::ComputeNeedsCompositedScrolling.)
-    DCHECK(Compositor());
-    if (IsRootLayer() && !Compositor()->PreferCompositingToLCDTextEnabled())
-      location = kBackgroundPaintInScrollingContents;
-    else
-      location = GetLayoutObject().GetBackgroundPaintLocation(reasons);
-  }
-  return location;
-}
-
 void PaintLayer::EnsureCompositedLayerMapping() {
   if (rare_data_ && rare_data_->composited_layer_mapping)
     return;
