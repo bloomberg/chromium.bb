@@ -174,7 +174,8 @@
       </template>
 
       <template is="dom-if" if="[[easyUnlockAvailable_(
-          multideviceSettingsEnabled_, easyUnlockAllowed_)]]">
+          multideviceSettingsEnabled_, easyUnlockAllowed_,
+          easyUnlockInLegacyHostMode_)]]">
         <div id="easyUnlock" class="settings-box two-line">
           <div class="start">
             <div>$i18n{easyUnlockSectionTitle}</div>
@@ -187,7 +188,9 @@
               </a>
             </div>
           </div>
-          <template is="dom-if" if="[[!multideviceSettingsEnabled_]]">
+          <template is="dom-if" if="[[easyUnlockAvailable_(
+          multideviceSettingsEnabled_, easyUnlockAllowed_,
+          easyUnlockInLegacyHostMode_)]]">
             <div class="separator"></div>
             <template is="dom-if" if="[[!easyUnlockEnabled_]]">
               <paper-button id="easyUnlockSetup" class="secondary-button"

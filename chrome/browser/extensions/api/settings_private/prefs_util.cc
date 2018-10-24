@@ -302,14 +302,12 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)[ash::prefs::kMessageCenterLockScreenMode] =
       settings_api::PrefType::PREF_TYPE_STRING;
 
-  // Only whitelist the Smart Lock 'sign-in enabled' pref in the pre-Multidevice
-  // case. In the Multidevice case, JS access to this pref is restricted.
-  if (!base::FeatureList::IsEnabled(
-          chromeos::features::kEnableUnifiedMultiDeviceSettings)) {
-    (*s_whitelist)
-        [proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled] =
-            settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  }
+  // TODO(crbug.com/894585): After M71, only whitelist the Smart Lock 'sign-in
+  // enabled' pref in the pre-Multidevice case, i.e., when
+  // kEnableUnifiedMultiDeviceSettings is false. In the Multidevice case, JS
+  // access to this pref is restricted.
+  (*s_whitelist)[proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Accessibility.
   (*s_whitelist)[ash::prefs::kAccessibilitySpokenFeedbackEnabled] =
@@ -690,8 +688,9 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetPref(
     pref_object->enforcement = settings_api::Enforcement::ENFORCEMENT_ENFORCED;
     pref_object->extension_id.reset(new std::string(extension->id()));
     pref_object->controlled_by_name.reset(new std::string(extension->name()));
-    bool can_be_disabled = !ExtensionSystem::Get(profile_)->management_policy()
-        ->MustRemainEnabled(extension, nullptr);
+    bool can_be_disabled =
+        !ExtensionSystem::Get(profile_)->management_policy()->MustRemainEnabled(
+            extension, nullptr);
     pref_object->extension_can_be_disabled.reset(new bool(can_be_disabled));
     return pref_object;
   }
