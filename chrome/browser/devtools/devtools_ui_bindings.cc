@@ -226,6 +226,15 @@ std::string SanitizeRevision(const std::string& revision) {
   return revision;
 }
 
+std::string SanitizeRemoteVersion(const std::string& remoteVersion) {
+  for (size_t i = 0; i < remoteVersion.length(); i++) {
+    if (remoteVersion[i] != '.' &&
+        !(remoteVersion[i] >= '0' && remoteVersion[i] <= '9'))
+      return std::string();
+  }
+  return remoteVersion;
+}
+
 std::string SanitizeFrontendPath(const std::string& path) {
   for (size_t i = 0; i < path.length(); i++) {
     if (path[i] != '/' && path[i] != '-' && path[i] != '_'
@@ -303,6 +312,9 @@ std::string SanitizeFrontendQueryParam(
 
   if (key == "remoteFrontendUrl")
     return SanitizeRemoteFrontendURL(value);
+
+  if (key == "remoteVersion")
+    return SanitizeRemoteVersion(value);
 
   return std::string();
 }
