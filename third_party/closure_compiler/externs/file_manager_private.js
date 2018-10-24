@@ -478,8 +478,8 @@ chrome.fileManagerPrivate.cancelDialog = function() {};
  * identifier of task to execute. |entries| Array of file entries |callback|
  * @param {string} taskId
  * @param {!Array<!Entry>} entries
- * @param {function((boolean|undefined))} callback |result| Result of the task
- *     execution.
+ * @param {function(!chrome.fileManagerPrivate.TaskResult)} callback |result|
+ *     Result of the task execution.
  */
 chrome.fileManagerPrivate.executeTask = function(taskId, entries, callback) {};
 
@@ -947,12 +947,13 @@ chrome.fileManagerPrivate.mountCrostini = function(callback) {};
 
 /**
  * Shares directory with crostini container.
- * @param {!DirectoryEntry} entry Entry of the directory to share.
+ * @param {!Entry} entry Entry of the file or directory to share.
+ * @param {boolean} persist If true, share will persist across restarts.
  * @param {function()} callback Callback called after the folder is shared.
  *     chrome.runtime.lastError will be set if there was an error.
  */
 chrome.fileManagerPrivate.sharePathWithCrostini = function(
-    entry, callback) {};
+    entry, persist, callback) {};
 
 /**
  * Returns list of paths shared with the crostini container.

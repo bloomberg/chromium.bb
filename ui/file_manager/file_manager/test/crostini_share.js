@@ -7,12 +7,15 @@ const crostiniShare = {};
 crostiniShare.testSharePathCrostiniSuccess = (done) => {
   const oldSharePath = chrome.fileManagerPrivate.sharePathWithCrostini;
   let sharePathCalled = false;
-  chrome.fileManagerPrivate.sharePathWithCrostini = (entry, callback) => {
-    oldSharePath(entry, () => {
-      sharePathCalled = true;
-      callback();
-    });
-  };
+  let sharePathPersist;
+  chrome.fileManagerPrivate.sharePathWithCrostini =
+      (entry, persist, callback) => {
+        oldSharePath(entry, persist, () => {
+          sharePathCalled = true;
+          sharePathPersist = persist;
+          callback();
+        });
+      };
   chrome.metricsPrivate.smallCounts_ = [];
   chrome.metricsPrivate.values_ = [];
 
@@ -39,6 +42,8 @@ crostiniShare.testSharePathCrostiniSuccess = (done) => {
         });
       })
       .then(() => {
+        // Share should persist when right-click > Share with Linux.
+        assertTrue(sharePathPersist);
         // Validate UMAs.
         assertEquals(1, chrome.metricsPrivate.smallCounts_.length);
         assertArrayEquals(

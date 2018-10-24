@@ -1647,8 +1647,9 @@ CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
     const entry = CommandUtil.getCommandEntry(event.target);
     if (entry && entry.isDirectory) {
       const dir = /** @type {!DirectoryEntry} */ (entry);
+      // Always persist shares via right-click > Share with Linux.
       chrome.fileManagerPrivate.sharePathWithCrostini(
-          dir, () => {
+          dir, true /* persist */, () => {
             if (chrome.runtime.lastError) {
               console.error(
                   'Error sharing with linux: ' +
@@ -1670,7 +1671,8 @@ CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
     const entries = CommandUtil.getCommandEntries(event.target);
     event.canExecute = entries.length === 1 && entries[0].isDirectory &&
         !Crostini.isPathShared(entries[0], fileManager.volumeManager) &&
-        Crostini.canSharePath(entries[0], fileManager.volumeManager);
+        Crostini.canSharePath(
+            entries[0], true /* persist */, fileManager.volumeManager);
     event.command.setHidden(!event.canExecute);
   }
 });

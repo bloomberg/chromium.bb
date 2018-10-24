@@ -23,9 +23,6 @@ loadTimeData.data = {
   NO_TASK_FOR_CRX: 'NO_TASK_FOR_CRX',
   NO_TASK_FOR_CRX_TITLE: 'NO_TASK_FOR_CRX_TITLE',
   OPEN_WITH_BUTTON_LABEL: 'OPEN_WITH_BUTTON_LABEL',
-  SHARE_BEFORE_OPEN_CROSTINI_TITLE: 'SHARE_BEFORE_OPEN_CROSTINI_TITLE',
-  SHARE_BEFORE_OPEN_CROSTINI_SINGLE: 'SHARE_BEFORE_OPEN_CROSTINI_SINGLE',
-  SHARE_BEFORE_OPEN_CROSTINI_MULTIPLE: 'SHARE_BEFORE_OPEN_CROSTINI_MULTIPLE',
   TASK_INSTALL_LINUX_PACKAGE: 'TASK_INSTALL_LINUX_PACKAGE',
   TASK_OPEN: 'TASK_OPEN',
   UNABLE_TO_OPEN_CROSTINI_TITLE: 'UNABLE_TO_OPEN_CROSTINI_TITLE',
@@ -51,9 +48,12 @@ function setUp() {
       },
       executeTask: function(taskId, entries, onViewFiles) {
         onViewFiles('failed');
-      }
+      },
+      sharePathWithCrostini: function(entry, persist, callback) {
+        callback();
+      },
     },
-    runtime: {id: 'test-extension-id'}
+    runtime: {id: 'test-extension-id'},
   };
 }
 
@@ -478,92 +478,90 @@ function testOpenInstallLinuxPackageDialog(callback) {
   reportPromise(promise, callback);
 }
 
-function testMaybeShowCrostiniShareDialog() {
+function testMaybeShareCrostiniOrShowDialog() {
   const volumeManagerDownloads = {
     getLocationInfo: (entry) => {
-      return {rootType: 'downloads'};
+      return {rootType: entry.filesystem.name};
     }
   };
-  const mockFileSystem = new MockFileSystem('downloads');
-  const sharedDir = new MockDirectoryEntry(mockFileSystem, '/shared');
-  const shared = new MockFileEntry(mockFileSystem, '/shared/file');
+  const mockFsDownloads = new MockFileSystem('downloads');
+  const sharedDir = new MockDirectoryEntry(mockFsDownloads, '/shared');
+  const shared = new MockFileEntry(mockFsDownloads, '/shared/file');
   Crostini.registerSharedPath(sharedDir, volumeManagerDownloads);
-  const notShared1 = new MockFileEntry(mockFileSystem, '/notShared/file1');
-  const notShared2 = new MockFileEntry(mockFileSystem, '/notShared/file2');
+  const notShared1 = new MockFileEntry(mockFsDownloads, '/notShared/file1');
+  const notShared2 = new MockFileEntry(mockFsDownloads, '/notShared/file2');
   const otherNotShared =
-      new MockFileEntry(mockFileSystem, '/otherNotShared/file');
+      new MockFileEntry(mockFsDownloads, '/otherNotShared/file');
+  const mockFsUnsharable = new MockFileSystem('unsharable');
+  const unsharable = new MockDirectoryEntry(mockFsUnsharable, '/unsharable');
 
-  const expect =
-      (comment, entries, expectShareDialogShown, expectedTitle,
-       expectedMessage) => {
-        let showHtmlCalled = false;
-        const showHtml = (title, message) => {
-          showHtmlCalled = true;
-          assertEquals(
-              expectedTitle, title, 'crostini share dialog title: ' + comment);
-          assertEquals(
-              expectedMessage, message,
-              'crostini share dialog message: ' + comment);
-        };
-        const fakeFilesTask = {
-          entries_: entries,
-          ui_: {
-            alertDialog: {showHtml: showHtml},
-            confirmDialog: {showHtml: showHtml},
-          },
-          sharePathWithCrostiniAndExecute_: () => {},
-          volumeManager_: volumeManagerDownloads,
-        };
-        const crostiniTask = {taskId: '|crostini|'};
-        const shareDialogShown =
-            FileTasks.prototype.maybeShowCrostiniShareDialog_.call(
-                fakeFilesTask, crostiniTask);
-        assertEquals(
-            expectShareDialogShown, shareDialogShown,
-            'dialog shown: ' + comment);
-        assertEquals(
-            expectShareDialogShown, showHtmlCalled,
-            'showHtml called:' + comment);
-      };
+  function expect(
+      comment, entries, expectSuccess, expectedDialogTitle,
+      expectedDialogMessage) {
+    let showHtmlCalled = false;
+    function showHtml(title, message) {
+      showHtmlCalled = true;
+      assertEquals(
+          expectedDialogTitle, title,
+          'crostini share dialog title: ' + comment);
+      assertEquals(
+          expectedDialogMessage, message,
+          'crostini share dialog message: ' + comment);
+    }
+    const fakeFilesTask = {
+      entries_: entries,
+      ui_: {
+        alertDialog: {showHtml: showHtml},
+        confirmDialog: {showHtml: showHtml},
+      },
+      volumeManager_: volumeManagerDownloads,
+    };
+    const crostiniTask = {taskId: '|crostini|'};
 
+    let success = false;
+    FileTasks.prototype.maybeShareWithCrostiniOrShowDialog_.call(
+        fakeFilesTask, crostiniTask, () => {
+          success = true;
+        });
 
-  expect('No entries', [], false, '', '');
+    assertEquals(expectSuccess, success, 'success: ' + comment);
+    assertEquals(expectSuccess, !showHtmlCalled, 'showHtml called:' + comment);
+  }
+
+  expect('No entries', [], true, '', '');
 
   Crostini.IS_CROSTINI_FILES_ENABLED = false;
   expect(
-      'Single entry, crostini-files not enabled', [notShared1], true,
+      'Single entry, crostini-files not enabled', [notShared1], false,
       'UNABLE_TO_OPEN_CROSTINI_TITLE', 'UNABLE_TO_OPEN_CROSTINI');
 
   Crostini.IS_CROSTINI_FILES_ENABLED = true;
 
-  expect(
-      'Single entry, not shared', [notShared1], true,
-      'SHARE_BEFORE_OPEN_CROSTINI_TITLE', 'SHARE_BEFORE_OPEN_CROSTINI_SINGLE');
+  expect('Single entry, not shared', [notShared1], true, '', '');
 
-  expect('Single entry, shared', [shared], false, '', '');
+  expect('Single entry, shared', [shared], true, '', '');
 
   expect(
-      '2 entries, not shared, same dir', [notShared1, notShared2], true,
-      'SHARE_BEFORE_OPEN_CROSTINI_TITLE',
-      'SHARE_BEFORE_OPEN_CROSTINI_MULTIPLE');
+      '2 entries, not shared, same dir', [notShared1, notShared2], true, '',
+      '');
 
   expect(
       '2 entries, not shared, different dir', [notShared1, otherNotShared],
-      true, 'UNABLE_TO_OPEN_CROSTINI_TITLE', 'UNABLE_TO_OPEN_CROSTINI');
+      true, '', '');
 
   expect(
       '2 entries, 1 not shared, different dir, not shared first',
-      [notShared1, shared], true, 'SHARE_BEFORE_OPEN_CROSTINI_TITLE',
-      'SHARE_BEFORE_OPEN_CROSTINI_SINGLE');
+      [notShared1, shared], true, '', '');
 
   expect(
       '2 entries, 1 not shared, different dir, shared first',
-      [shared, notShared1], true, 'SHARE_BEFORE_OPEN_CROSTINI_TITLE',
-      'SHARE_BEFORE_OPEN_CROSTINI_SINGLE');
+      [shared, notShared1], true, '', '');
 
   expect(
       '3 entries, 2 not shared, different dir',
-      [shared, notShared1, notShared2], true,
-      'SHARE_BEFORE_OPEN_CROSTINI_TITLE',
-      'SHARE_BEFORE_OPEN_CROSTINI_MULTIPLE');
+      [shared, notShared1, notShared2], true, '', '');
+
+  expect(
+      '2 entries, 1 not sharable', [notShared1, unsharable], false,
+      'UNABLE_TO_OPEN_CROSTINI_TITLE', 'UNABLE_TO_OPEN_CROSTINI');
 }
