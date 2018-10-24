@@ -42,12 +42,6 @@ class WebState;
 // The InfoBarContainer View.
 - (UIView*)view;
 
-// Displays an Infobar it was previously hidden.
-- (void)restoreInfobars;
-
-// Hides an Infobar if being shown.
-- (void)suspendInfobars;
-
 // Updates the InfobarContainer according to the positioner information.
 - (void)updateInfobarContainer;
 

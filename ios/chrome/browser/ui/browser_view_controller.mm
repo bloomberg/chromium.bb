@@ -1757,11 +1757,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                                                 completion:completion];
   }
 
-  // Restore hidden infobars.
-  if (IsIPadIdiom()) {
-    [self.infoBarCoordinator restoreInfobars];
-  }
-
   // If the controller is suspended, or has been paged out due to low memory,
   // updating the view will be handled when it's displayed again.
   if (!self.webUsageEnabled || !self.contentArea)
@@ -1781,9 +1776,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   if (activeWebState)
     activeWebState->WasHidden();
   [_bookmarkInteractionController dismissSnackbar];
-  if (IsIPadIdiom()) {
-    [self.infoBarCoordinator suspendInfobars];
-  }
   [super viewWillDisappear:animated];
 }
 

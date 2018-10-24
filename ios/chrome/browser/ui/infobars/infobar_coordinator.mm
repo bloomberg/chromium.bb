@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/ios/block_types.h"
 #include "ios/chrome/browser/infobars/infobar_container_delegate_ios.h"
 #include "ios/chrome/browser/infobars/infobar_container_ios.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
@@ -15,7 +14,7 @@
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/ui/authentication/re_signin_infobar_delegate.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
-#include "ios/chrome/browser/ui/infobars/infobar_container_view.h"
+#include "ios/chrome/browser/ui/infobars/infobar_container_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/infobar_positioner.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
@@ -27,10 +26,9 @@
 #error "This file requires ARC support."
 #endif
 
-@interface InfobarCoordinator ()<InfobarContainerStateDelegate,
-                                 TabModelObserver,
-                                 SigninPresenter,
-                                 UpgradeCenterClient> {
+@interface InfobarCoordinator ()<TabModelObserver,
+                                 UpgradeCenterClient,
+                                 SigninPresenter> {
   // Bridge class to deliver container change notifications.
   std::unique_ptr<InfoBarContainerDelegateIOS> _infoBarContainerDelegate;
 
@@ -41,8 +39,9 @@
 }
 @property(nonatomic, assign) TabModel* tabModel;
 
-// UIView that contains Infobars.
-@property(nonatomic, strong) InfoBarContainerView* containerView;
+// UIViewController that contains Infobars.
+@property(nonatomic, strong)
+    InfobarContainerViewController* containerViewController;
 
 @end
 
@@ -57,23 +56,27 @@
   if (self) {
     _tabModel = tabModel;
     [_tabModel addObserver:self];
-    _containerView = [[InfoBarContainerView alloc] init];
-    [_containerView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
-                                        UIViewAutoresizingFlexibleTopMargin];
-    _infoBarContainerDelegate.reset(new InfoBarContainerDelegateIOS(self));
+    _containerViewController = [[InfobarContainerViewController alloc] init];
+    _infoBarContainerDelegate.reset(
+        new InfoBarContainerDelegateIOS(_containerViewController));
     _infoBarContainer.reset(new InfoBarContainerIOS(
-        _infoBarContainerDelegate.get(), _containerView));
+        _infoBarContainerDelegate.get(), _containerViewController));
   }
   return self;
 }
 
 - (void)start {
-  [self.baseViewController.view insertSubview:self.containerView
+  DCHECK(self.positioner);
+  DCHECK(self.dispatcher);
+
+  [self.baseViewController addChildViewController:self.containerViewController];
+  // TODO(crbug.com/892376): We shouldn't modify the BaseVC hierarchy, BVC needs
+  // to handle this.
+  [self.baseViewController.view insertSubview:self.containerViewController.view
                                  aboveSubview:self.positioner.parentView];
-  CGRect infoBarFrame = self.positioner.parentView.frame;
-  infoBarFrame.origin.y = CGRectGetMaxY(infoBarFrame);
-  infoBarFrame.size.height = 0;
-  [self.containerView setFrame:infoBarFrame];
+  [self.containerViewController
+      didMoveToParentViewController:self.baseViewController];
+  self.containerViewController.positioner = self.positioner;
 
   infobars::InfoBarManager* infoBarManager = nullptr;
   if (self.tabModel.currentTab) {
@@ -95,20 +98,11 @@
 #pragma mark - Public Interface
 
 - (UIView*)view {
-  return self.containerView;
+  return self.containerViewController.view;
 }
-
-- (void)restoreInfobars {
-  [self.containerView animateInfoBarContainerToAlpha:1];
-}
-
-- (void)suspendInfobars {
-  [self.containerView animateInfoBarContainerToAlpha:0];
-}
-
 
 - (void)updateInfobarContainer {
-  [self infoBarContainerStateDidChangeAnimated:NO];
+  [self.containerViewController infoBarContainerStateDidChangeAnimated:NO];
 }
 
 - (BOOL)isInfobarPresentingForWebState:(web::WebState*)webState {
@@ -118,37 +112,6 @@
     return YES;
   }
   return NO;
-}
-
-#pragma mark - InfobarContainerStateDelegate
-
-- (void)infoBarContainerStateDidChangeAnimated:(BOOL)animated {
-  InfoBarContainerView* infoBarContainerView = self.containerView;
-  DCHECK(infoBarContainerView);
-  CGRect containerFrame = infoBarContainerView.frame;
-  CGFloat height = [infoBarContainerView topmostVisibleInfoBarHeight];
-  containerFrame.origin.y =
-      CGRectGetMaxY([self.positioner parentView].frame) - height;
-  containerFrame.size.height = height;
-
-  BOOL isViewVisible = [self.positioner isParentViewVisible];
-  ProceduralBlock frameUpdates = ^{
-    [infoBarContainerView setFrame:containerFrame];
-  };
-  void (^completion)(BOOL) = ^(BOOL finished) {
-    if (!isViewVisible)
-      return;
-    UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
-                                    infoBarContainerView);
-  };
-  if (animated) {
-    [UIView animateWithDuration:0.1
-                     animations:frameUpdates
-                     completion:completion];
-  } else {
-    frameUpdates();
-    completion(YES);
-  }
 }
 
 #pragma mark - TabModelObserver methods
