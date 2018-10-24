@@ -3808,6 +3808,9 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
       <message name="IDS_IPH_HOMEPAGE_TILE_TEXT" desc="The in-product-help message to use first tile in Most Visited as homepage tile.">
         Your favorite pages are here
       </message>
+      <message name="IDS_IPH_HOMEPAGE_TILE_ACCESSIBILITY_TEXT" desc="The in-product-help message to use first tile in Most Visited as homepage tile when accessibility mode is enabled.">
+        Links to your favorite websites can be found on this page
+      </message>
 
       <!-- Password Accessory Strings -->
       <message name="IDS_KEYBOARD_ACCESSORY_SHEET_HIDE" desc="Description for the active icon button that closes an accessory sheet and brings back the keyboard.">
