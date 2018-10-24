@@ -3287,10 +3287,6 @@ const char kEnableNewStyleLauncherDescription[] =
     "Enables new style UI such as suggestion chips, resizable apps grid, etc. "
     "in app launcher.";
 
-const char kEnableNewWallpaperPickerName[] = "Enable new wallpaper picker";
-const char kEnableNewWallpaperPickerDescription[] =
-    "Enable the redesigned wallpaper picker with new wallpaper collections.";
-
 const char kEnableOobeRecommendAppsScreenName[] =
     "Enable OOBE Recommend Apps Screen";
 const char kEnableOobeRecommendAppsScreenDescription[] =

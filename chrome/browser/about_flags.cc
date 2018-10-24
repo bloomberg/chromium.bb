@@ -3880,13 +3880,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kSignedHTTPExchange)},
 
 #if defined(OS_CHROMEOS)
-    {"enable-new-wallpaper-picker",
-     flag_descriptions::kEnableNewWallpaperPickerName,
-     flag_descriptions::kEnableNewWallpaperPickerDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kNewWallpaperPicker)},
-#endif  // OS_CHROMEOS
-
-#if defined(OS_CHROMEOS)
     {"enable-oobe-recommend-apps-screen",
      flag_descriptions::kEnableOobeRecommendAppsScreenName,
      flag_descriptions::kEnableOobeRecommendAppsScreenDescription, kOsCrOS,

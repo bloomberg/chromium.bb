@@ -17,9 +17,6 @@
   <message name="IDS_WALLPAPER_MANAGER_DELETE_COMMAND_LABEL" desc="Wallpaper delete command label.">
     Delete
   </message>
-  <message name="IDS_WALLPAPER_MANAGER_CUSTOM_CATEGORY_LABEL" desc="Wallpaper category label.">
-    Custom
-  </message>
   <message name="IDS_WALLPAPER_MANAGER_MY_IMAGES_CATEGORY_LABEL" desc="Wallpaper category label, the equivalent of the Custom category on the new wallpaper picker.">
     My Images
   </message>
@@ -41,20 +38,11 @@
   <message name="IDS_WALLPAPER_MANAGER_SHOW_CUSTOM_WALLPAPER_ON_START_WARNING" desc="The string displayed to user when set custom wallpaper.">
     Wallpapers appear on the Sign-in Screen.
   </message>
-  <message name="IDS_WALLPAPER_MANAGER_SURPRISE_ME_LABEL" desc="Wallpaper surprise me checkbox label. If the checkbox is checked, Chrome will automatically change wallpaper to either a random one available in wallpaper picker or a google pushed wallpaper (surprise factor).">
-    Surprise Me
-  </message>
   <message name="IDS_WALLPAPER_MANAGER_DAILY_REFRESH_LABEL" desc="Wallpaper daily refresh checkbox label. It is the equivalent of surprise me on the new wallpaper picker.">
     Daily Refresh
   </message>
-  <message name="IDS_WALLPAPER_MANAGER_ACCESS_FAIL" desc="The string displayed to user when access wallpaper server failed.">
-    Chrome cannot access wallpapers. Please connect to a network.
-  </message>
   <message name="IDS_WALLPAPER_MANAGER_NETWORK_ERROR" desc="The string displayed when user can't use wallpaper picker because they're not connected to the internet.">
     The images are currently not available. Please reconnect to the internet to see wallpaper collections.
-  </message>
-  <message name="IDS_WALLPAPER_MANAGER_DOWNLOAD_FAIL" desc="The string displayed to user when downloading the wallpaper failed.">
-    Chrome cannot download this wallpaper.
   </message>
   <message name="IDS_WALLPAPER_MANAGER_IMAGE_ERROR" desc="The string displayed to user when downloading the wallpaper failed on the new wallpaper picker.">
     There's an error. Please try again by choosing other images.

@@ -57,11 +57,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kMediaSessionAccelerators;
 // Enables new message list view. https://crbug.com/769219
 ASH_PUBLIC_EXPORT extern const base::Feature kNewMessageListView;
 
-// Enables the new wallpaper picker.
-// TODO(wzang): Remove this after the feature is fully launched.
-// https://crbug.com/777293.
-ASH_PUBLIC_EXPORT extern const base::Feature kNewWallpaperPicker;
-
 // Enables the Night Light feature.
 ASH_PUBLIC_EXPORT extern const base::Feature kNightLight;
 
@@ -101,8 +96,6 @@ ASH_PUBLIC_EXPORT bool IsLockScreenInlineReplyEnabled();
 ASH_PUBLIC_EXPORT bool IsLockScreenHideSensitiveNotificationsSupported();
 
 ASH_PUBLIC_EXPORT bool IsNewMessageListViewEnabled();
-
-ASH_PUBLIC_EXPORT bool IsNewWallpaperPickerEnabled();
 
 ASH_PUBLIC_EXPORT bool IsNightLightEnabled();
 
