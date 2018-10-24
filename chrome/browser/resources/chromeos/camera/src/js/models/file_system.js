@@ -267,9 +267,7 @@ camera.models.FileSystem.migratePictures = function() {
  * @private
  */
 camera.models.FileSystem.generatePictureName_ = function(isVideo, time) {
-  function pad(n) {
-    return (n < 10 ? '0' : '') + n;
-  }
+  const pad = (n) => (n < 10 ? '0' : '') + n;
 
   // File name base will be formatted as IMG/VID_yyyyMMdd_HHmmss.
   var prefix = isVideo ?
