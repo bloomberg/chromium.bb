@@ -862,6 +862,9 @@ if (is_chromeos) {
         "//media/gpu:video_encode_accelerator_unittest",
       ]
     }
+    if (use_vaapi) {
+      deps += [ "//media/gpu:jpeg_encode_accelerator_unittest" ]
+    }
   }
 }
 
