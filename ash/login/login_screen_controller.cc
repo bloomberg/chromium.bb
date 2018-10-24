@@ -382,6 +382,19 @@ void LoginScreenController::SetPinEnabledForUser(const AccountId& account_id,
     DataDispatcher()->SetPinEnabledForUser(account_id, is_enabled);
 }
 
+void LoginScreenController::SetFingerprintState(const AccountId& account_id,
+                                                mojom::FingerprintState state) {
+  if (DataDispatcher())
+    DataDispatcher()->SetFingerprintState(account_id, state);
+}
+
+void LoginScreenController::NotifyFingerprintAuthResult(
+    const AccountId& account_id,
+    bool successful) {
+  if (DataDispatcher())
+    DataDispatcher()->NotifyFingerprintAuthResult(account_id, successful);
+}
+
 void LoginScreenController::SetAvatarForUser(const AccountId& account_id,
                                              mojom::UserAvatarPtr avatar) {
   for (auto& observer : observers_)
@@ -445,13 +458,6 @@ void LoginScreenController::SetPublicSessionKeyboardLayouts(
     DataDispatcher()->SetPublicSessionKeyboardLayouts(account_id, locale,
                                                       keyboard_layouts);
   }
-}
-
-void LoginScreenController::SetFingerprintUnlockState(
-    const AccountId& account_id,
-    mojom::FingerprintUnlockState state) {
-  if (DataDispatcher())
-    DataDispatcher()->SetFingerprintUnlockState(account_id, state);
 }
 
 void LoginScreenController::SetKioskApps(

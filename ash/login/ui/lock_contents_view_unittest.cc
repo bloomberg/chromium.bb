@@ -50,6 +50,27 @@ using ::testing::Mock;
 
 namespace ash {
 
+namespace {
+
+void PressAndReleasePowerButton() {
+  base::SimpleTestTickClock tick_clock;
+  auto dispatch_power_button_event_after_delay =
+      [&](const base::TimeDelta& delta, bool down) {
+        tick_clock.Advance(delta + base::TimeDelta::FromMilliseconds(1));
+        Shell::Get()->power_button_controller()->OnPowerButtonEvent(
+            down, tick_clock.NowTicks());
+        base::RunLoop().RunUntilIdle();
+      };
+
+  // Press and release the power button to force backlights off.
+  dispatch_power_button_event_after_delay(
+      PowerButtonController::kIgnorePowerButtonAfterResumeDelay, true /*down*/);
+  dispatch_power_button_event_after_delay(
+      PowerButtonController::kIgnoreRepeatedButtonUpDelay, false /*down*/);
+}
+
+}  // namespace
+
 using LockContentsViewUnitTest = LoginTestBase;
 using LockContentsViewKeyboardUnitTest = LoginKeyboardTestBase;
 
@@ -2054,9 +2075,11 @@ TEST_F(LockContentsViewUnitTest, RemoveUserFocusMovesBackToPrimaryUser) {
   EXPECT_TRUE(HasFocusInAnyChildView(test_api.primary_big_view()));
 }
 
-// Verifies that setting fingerprint state makes sure the backlights are not
-// forced off.
-TEST_F(LockContentsViewUnitTest, BacklightIsNotForcedOffAfterFingerprint) {
+// Verifies that setting fingerprint state keeps the backlights forced off. A
+// fingerprint state change is not a user action, excluding too many
+// authentication attempts, which will trigger the auth attempt flow.
+TEST_F(LockContentsViewUnitTest,
+       BacklightRemainsForcedOffAfterFingerprintStateChange) {
   // Enter tablet mode so the power button events force the backlight off.
   Shell::Get()->power_button_controller()->OnTabletModeStarted();
 
@@ -2068,26 +2091,46 @@ TEST_F(LockContentsViewUnitTest, BacklightIsNotForcedOffAfterFingerprint) {
   AddUsers(1);
   SetWidget(CreateWidgetWithContent(lock));
 
-  // Press and release the power button to force backlights off.
-  base::SimpleTestTickClock tick_clock;
-  auto dispatch_power_button_event_after_delay =
-      [&](const base::TimeDelta& delta, bool down) {
-        tick_clock.Advance(delta + base::TimeDelta::FromMilliseconds(1));
-        Shell::Get()->power_button_controller()->OnPowerButtonEvent(
-            down, tick_clock.NowTicks());
-        base::RunLoop().RunUntilIdle();
-      };
-  dispatch_power_button_event_after_delay(
-      PowerButtonController::kIgnorePowerButtonAfterResumeDelay, true /*down*/);
-  dispatch_power_button_event_after_delay(
-      PowerButtonController::kIgnoreRepeatedButtonUpDelay, false /*down*/);
+  // Force the backlights off.
+  PressAndReleasePowerButton();
   EXPECT_TRUE(
       Shell::Get()->backlights_forced_off_setter()->backlights_forced_off());
 
-  // Change fingerprint state, backlight should not be forced off.
-  data_dispatcher()->SetFingerprintUnlockState(
+  // Change fingerprint state; backlights remain forced off.
+  data_dispatcher()->SetFingerprintState(
       users()[0]->basic_user_info->account_id,
-      mojom::FingerprintUnlockState::AUTH_FAILED);
+      mojom::FingerprintState::DISABLED_FROM_ATTEMPTS);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(
+      Shell::Get()->backlights_forced_off_setter()->backlights_forced_off());
+
+  Shell::Get()->power_button_controller()->OnTabletModeEnded();
+}
+
+// Verifies that a fingerprint authentication attempt makes sure the backlights
+// are not forced off.
+TEST_F(LockContentsViewUnitTest,
+       BacklightIsNotForcedOffAfterFingerprintAuthenticationAttempt) {
+  // Enter tablet mode so the power button events force the backlight off.
+  Shell::Get()->power_button_controller()->OnTabletModeStarted();
+
+  // Show lock screen with one normal user.
+  auto* lock = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
+      data_dispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
+  AddUsers(1);
+  SetWidget(CreateWidgetWithContent(lock));
+
+  // Force the backlights off.
+  PressAndReleasePowerButton();
+  EXPECT_TRUE(
+      Shell::Get()->backlights_forced_off_setter()->backlights_forced_off());
+
+  // Validate a fingerprint authentication attempt resets backlights being
+  // forced off.
+  data_dispatcher()->NotifyFingerprintAuthResult(
+      users()[0]->basic_user_info->account_id, false /*successful*/);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(
       Shell::Get()->backlights_forced_off_setter()->backlights_forced_off());

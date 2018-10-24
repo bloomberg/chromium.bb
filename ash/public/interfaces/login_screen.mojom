@@ -114,6 +114,17 @@ interface LoginScreen {
   // |is_enabled|:   True if pin unlock is enabled.
   SetPinEnabledForUser(signin.mojom.AccountId account_id, bool is_enabled);
 
+  // Update the status of fingerprint for |account_id|.
+  SetFingerprintState(signin.mojom.AccountId account_id,
+                      FingerprintState state);
+
+  // Called after a fingerprint authentication attempt has been made. If
+  // |successful| is true, then the fingerprint authentication attempt was
+  // successful and the device should be unlocked. If false, an error message
+  // should be shown to the user.
+  NotifyFingerprintAuthResult(signin.mojom.AccountId account_id,
+                              bool successful);
+
   // Change the user's avatar. Some avatars may take a long time to load and the
   // login screen may already be visible.
   SetAvatarForUser(signin.mojom.AccountId account_id, UserAvatar avatar);
@@ -172,10 +183,6 @@ interface LoginScreen {
   SetPublicSessionKeyboardLayouts(signin.mojom.AccountId account_id,
                                   string locale,
                                   array<InputMethodItem> keyboard_layouts);
-
-  // Set the fingerprint unlock state for user with |account_id|.
-  SetFingerprintUnlockState(signin.mojom.AccountId account_id,
-                            FingerprintUnlockState state);
 
   // Update the kiosk app data for the login screen.
   SetKioskApps(array<KioskAppInfo> kiosk_apps);

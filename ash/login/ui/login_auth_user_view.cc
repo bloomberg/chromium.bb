@@ -156,63 +156,61 @@ void DecorateOnlineSignInMessage(views::LabelButton* label_button) {
 // The label shown below the fingerprint icon.
 class FingerprintLabel : public views::Label {
  public:
-  explicit FingerprintLabel(mojom::FingerprintUnlockState state) {
+  FingerprintLabel() {
     SetSubpixelRenderingEnabled(false);
     SetAutoColorReadabilityEnabled(false);
     SetEnabledColor(login_constants::kAuthMethodsTextColor);
 
-    SetState(state);
+    SetTextBasedOnState(mojom::FingerprintState::AVAILABLE);
   }
 
-  void SetState(mojom::FingerprintUnlockState state) {
-    auto get_label_id = [&]() {
+  void SetTextBasedOnAuthAttempt(bool success) {
+    SetText(l10n_util::GetStringUTF16(
+        success ? IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_AUTH_SUCCESS
+                : IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_AUTH_FAILED));
+    SetAccessibleName(l10n_util::GetStringUTF16(
+        success ? IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_ACCESSIBLE_AUTH_SUCCESS
+                : IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_ACCESSIBLE_AUTH_FAILED));
+  }
+
+  void SetTextBasedOnState(mojom::FingerprintState state) {
+    auto get_displayed_id = [&]() {
       switch (state) {
-        case mojom::FingerprintUnlockState::UNAVAILABLE:
-        case mojom::FingerprintUnlockState::AVAILABLE:
+        case mojom::FingerprintState::UNAVAILABLE:
+        case mojom::FingerprintState::AVAILABLE:
           return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_AVAILABLE;
-        case mojom::FingerprintUnlockState::AUTH_SUCCESS:
-          return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_AUTH_SUCCESS;
-        case mojom::FingerprintUnlockState::AUTH_FAILED:
-          return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_AUTH_FAILED;
-        case mojom::FingerprintUnlockState::AUTH_DISABLED:
+        case mojom::FingerprintState::DISABLED_FROM_ATTEMPTS:
           return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_ATTEMPTS;
-        case mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT:
+        case mojom::FingerprintState::DISABLED_FROM_TIMEOUT:
           return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_TIMEOUT;
       }
       NOTREACHED();
     };
 
-    state_ = state;
-    SetText(l10n_util::GetStringUTF16(get_label_id()));
-    NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged,
-                             true /*send_native_event*/);
+    auto get_accessible_id = [&]() {
+      if (state == mojom::FingerprintState::DISABLED_FROM_ATTEMPTS)
+        return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_ACCESSIBLE_AUTH_DISABLED_FROM_ATTEMPTS;
+      return get_displayed_id();
+    };
+
+    SetText(l10n_util::GetStringUTF16(get_displayed_id()));
+    SetAccessibleName(l10n_util::GetStringUTF16(get_accessible_id()));
   }
 
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    auto get_string_id = [&]() {
-      switch (state_) {
-        case mojom::FingerprintUnlockState::UNAVAILABLE:
-          return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_TIMEOUT;
-        case mojom::FingerprintUnlockState::AVAILABLE:
-          return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_AVAILABLE;
-        case mojom::FingerprintUnlockState::AUTH_SUCCESS:
-          return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_ACCESSIBLE_AUTH_SUCCESS;
-        case mojom::FingerprintUnlockState::AUTH_FAILED:
-          return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_ACCESSIBLE_AUTH_FAILED;
-        case mojom::FingerprintUnlockState::AUTH_DISABLED:
-          return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_ACCESSIBLE_AUTH_DISABLED_FROM_ATTEMPTS;
-        case mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT:
-          return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_TIMEOUT;
-      }
-    };
-
     node_data->role = ax::mojom::Role::kStaticText;
-    node_data->SetName(l10n_util::GetStringUTF16(get_string_id()));
+    node_data->SetName(accessible_name_);
   }
 
  private:
-  mojom::FingerprintUnlockState state_;
+  void SetAccessibleName(const base::string16& name) {
+    accessible_name_ = name;
+    NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged,
+                             true /*send_native_event*/);
+  }
+
+  base::string16 accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(FingerprintLabel);
 };
@@ -240,38 +238,45 @@ class LoginAuthUserView::FingerprintView : public views::View {
         kLockScreenFingerprintIcon, kFingerprintIconSizeDp, SK_ColorWHITE));
     AddChildView(icon_);
 
-    label_ = new FingerprintLabel(mojom::FingerprintUnlockState::AVAILABLE);
+    label_ = new FingerprintLabel();
     AddChildView(label_);
+
+    DisplayCurrentState();
   }
 
   ~FingerprintView() override = default;
 
-  void SetState(mojom::FingerprintUnlockState state) {
+  void SetState(mojom::FingerprintState state) {
     if (state_ == state)
       return;
 
-    state_ = state;
-    SetVisible(state != mojom::FingerprintUnlockState::UNAVAILABLE &&
-               state !=
-                   mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT);
-    SetIcon(state);
-    label_->SetState(state);
-
-    if (ShouldFireChromeVoxAlert(state)) {
-      label_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert,
-                                       true /*send_native_event*/);
-    }
-
-    // Fingerprint icon reset to default sometime after AUTH_FAILED.
     reset_state_.Stop();
-    if (state == mojom::FingerprintUnlockState::AUTH_FAILED) {
+    state_ = state;
+
+    DisplayCurrentState();
+
+    if (ShouldFireChromeVoxAlert(state))
+      FireAlert();
+  }
+
+  void NotifyFingerprintAuthResult(bool success) {
+    reset_state_.Stop();
+    label_->SetTextBasedOnAuthAttempt(success);
+
+    if (success) {
+      icon_->SetImage(gfx::CreateVectorIcon(kLockScreenFingerprintSuccessIcon,
+                                            kFingerprintIconSizeDp,
+                                            gfx::kGoogleGreenDark500));
+    } else {
+      SetIcon(mojom::FingerprintState::DISABLED_FROM_ATTEMPTS);
       // base::Unretained is safe because reset_state_ is owned by |this|.
       reset_state_.Start(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kResetToDefaultIconDelayMs),
-          base::BindRepeating(&FingerprintView::SetState,
-                              base::Unretained(this),
-                              mojom::FingerprintUnlockState::AVAILABLE));
+          base::BindRepeating(&FingerprintView::DisplayCurrentState,
+                              base::Unretained(this)));
+
+      FireAlert();
     }
   }
 
@@ -283,21 +288,27 @@ class LoginAuthUserView::FingerprintView : public views::View {
   }
 
  private:
-  void SetIcon(mojom::FingerprintUnlockState state) {
+  void DisplayCurrentState() {
+    SetVisible(state_ != mojom::FingerprintState::UNAVAILABLE &&
+               state_ != mojom::FingerprintState::DISABLED_FROM_TIMEOUT);
+    SetIcon(state_);
+    label_->SetTextBasedOnState(state_);
+  }
+
+  void FireAlert() {
+    label_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert,
+                                     true /*send_native_event*/);
+  }
+
+  void SetIcon(mojom::FingerprintState state) {
     switch (state) {
-      case mojom::FingerprintUnlockState::UNAVAILABLE:
-      case mojom::FingerprintUnlockState::AVAILABLE:
-      case mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT:
+      case mojom::FingerprintState::UNAVAILABLE:
+      case mojom::FingerprintState::AVAILABLE:
+      case mojom::FingerprintState::DISABLED_FROM_TIMEOUT:
         icon_->SetImage(gfx::CreateVectorIcon(
             kLockScreenFingerprintIcon, kFingerprintIconSizeDp, SK_ColorWHITE));
         break;
-      case mojom::FingerprintUnlockState::AUTH_SUCCESS:
-        icon_->SetImage(gfx::CreateVectorIcon(kLockScreenFingerprintSuccessIcon,
-                                              kFingerprintIconSizeDp,
-                                              gfx::kGoogleGreenDark500));
-        break;
-      case mojom::FingerprintUnlockState::AUTH_FAILED:
-      case mojom::FingerprintUnlockState::AUTH_DISABLED:
+      case mojom::FingerprintState::DISABLED_FROM_ATTEMPTS:
         icon_->SetAnimationDecoder(
             std::make_unique<HorizontalImageSequenceAnimationDecoder>(
                 *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
@@ -310,17 +321,15 @@ class LoginAuthUserView::FingerprintView : public views::View {
     }
   }
 
-  bool ShouldFireChromeVoxAlert(mojom::FingerprintUnlockState state) {
-    return state == mojom::FingerprintUnlockState::AUTH_FAILED ||
-           state == mojom::FingerprintUnlockState::AUTH_DISABLED ||
-           state == mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT;
+  bool ShouldFireChromeVoxAlert(mojom::FingerprintState state) {
+    return state == mojom::FingerprintState::DISABLED_FROM_ATTEMPTS ||
+           state == mojom::FingerprintState::DISABLED_FROM_TIMEOUT;
   }
 
   FingerprintLabel* label_ = nullptr;
   AnimatedRoundedImageView* icon_ = nullptr;
   base::OneShotTimer reset_state_;
-  mojom::FingerprintUnlockState state_ =
-      mojom::FingerprintUnlockState::UNAVAILABLE;
+  mojom::FingerprintState state_ = mojom::FingerprintState::AVAILABLE;
 
   DISALLOW_COPY_AND_ASSIGN(FingerprintView);
 };
@@ -808,9 +817,12 @@ void LoginAuthUserView::UpdateForUser(const mojom::LoginUserInfoPtr& user) {
       base::UTF8ToUTF16(user->basic_user_info->display_name));
 }
 
-void LoginAuthUserView::SetFingerprintState(
-    mojom::FingerprintUnlockState state) {
+void LoginAuthUserView::SetFingerprintState(mojom::FingerprintState state) {
   fingerprint_view_->SetState(state);
+}
+
+void LoginAuthUserView::NotifyFingerprintAuthResult(bool success) {
+  fingerprint_view_->NotifyFingerprintAuthResult(success);
 }
 
 void LoginAuthUserView::SetAuthReenabledTime(

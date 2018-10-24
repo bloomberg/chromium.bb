@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "ash/public/cpp/ash_features.h"
-#include "ash/public/interfaces/login_user_info.mojom.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/i18n/time_formatting.h"
@@ -48,24 +47,6 @@ constexpr char kExternalBinaryEnrollment[] = "external_binary_enrollment";
 constexpr char kWebCameraDeviceContext[] = "WebCamera: WebCamera";
 constexpr base::TimeDelta kExternalBinaryAuthTimeout =
     base::TimeDelta::FromSeconds(2);
-
-ash::mojom::FingerprintUnlockState ConvertFromFingerprintState(
-    ScreenLocker::FingerprintState state) {
-  switch (state) {
-    case ScreenLocker::FingerprintState::kHidden:
-      return ash::mojom::FingerprintUnlockState::UNAVAILABLE;
-    case ScreenLocker::FingerprintState::kDefault:
-      return ash::mojom::FingerprintUnlockState::AVAILABLE;
-    case ScreenLocker::FingerprintState::kSignin:
-      return ash::mojom::FingerprintUnlockState::AUTH_SUCCESS;
-    case ScreenLocker::FingerprintState::kFailed:
-      return ash::mojom::FingerprintUnlockState::AUTH_FAILED;
-    case ScreenLocker::FingerprintState::kRemoved:
-      return ash::mojom::FingerprintUnlockState::AUTH_DISABLED;
-    case ScreenLocker::FingerprintState::kTimeout:
-      return ash::mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT;
-  }
-}
 
 // Starts the graph specified by |configuration| if the current graph
 // is SUSPENDED or if the current configuration is different.
@@ -196,9 +177,15 @@ void ViewsScreenLocker::OnAshLockAnimationFinished() {
 
 void ViewsScreenLocker::SetFingerprintState(
     const AccountId& account_id,
-    ScreenLocker::FingerprintState state) {
-  LoginScreenClient::Get()->login_screen()->SetFingerprintUnlockState(
-      account_id, ConvertFromFingerprintState(state));
+    ash::mojom::FingerprintState state) {
+  LoginScreenClient::Get()->login_screen()->SetFingerprintState(account_id,
+                                                                state);
+}
+
+void ViewsScreenLocker::NotifyFingerprintAuthResult(const AccountId& account_id,
+                                                    bool success) {
+  LoginScreenClient::Get()->login_screen()->NotifyFingerprintAuthResult(
+      account_id, success);
 }
 
 content::WebContents* ViewsScreenLocker::GetWebContents() {

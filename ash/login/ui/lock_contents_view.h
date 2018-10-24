@@ -142,6 +142,10 @@ class ASH_EXPORT LockContentsView
   void OnUsersChanged(
       const std::vector<mojom::LoginUserInfoPtr>& users) override;
   void OnPinEnabledForUserChanged(const AccountId& user, bool enabled) override;
+  void OnFingerprintStateChanged(const AccountId& account_id,
+                                 mojom::FingerprintState state) override;
+  void OnFingerprintAuthResult(const AccountId& account_id,
+                               bool success) override;
   void OnAuthEnabledForUserChanged(
       const AccountId& user,
       bool enabled,
@@ -173,9 +177,6 @@ class ASH_EXPORT LockContentsView
       const std::vector<mojom::InputMethodItemPtr>& keyboard_layouts) override;
   void OnDetachableBasePairingStatusChanged(
       DetachableBasePairingStatus pairing_status) override;
-  void OnFingerprintUnlockStateChanged(
-      const AccountId& account_id,
-      mojom::FingerprintUnlockState state) override;
 
   // SystemTrayFocusObserver:
   void OnFocusLeavingSystemTray(bool reverse) override;
@@ -212,7 +213,7 @@ class ASH_EXPORT LockContentsView
     bool force_online_sign_in = false;
     bool disable_auth = false;
     mojom::EasyUnlockIconOptionsPtr easy_unlock_state;
-    mojom::FingerprintUnlockState fingerprint_state;
+    mojom::FingerprintState fingerprint_state;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(UserState);

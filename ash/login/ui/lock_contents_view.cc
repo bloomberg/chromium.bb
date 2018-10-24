@@ -324,9 +324,7 @@ views::View* LockContentsView::TestApi::main_view() const {
 
 LockContentsView::UserState::UserState(const mojom::LoginUserInfoPtr& user_info)
     : account_id(user_info->basic_user_info->account_id) {
-  fingerprint_state = user_info->allow_fingerprint_unlock
-                          ? mojom::FingerprintUnlockState::AVAILABLE
-                          : mojom::FingerprintUnlockState::UNAVAILABLE;
+  fingerprint_state = user_info->fingerprint_state;
   if (user_info->auth_type == proximity_auth::mojom::AuthType::ONLINE_SIGN_IN)
     force_online_sign_in = true;
 }
@@ -632,6 +630,82 @@ void LockContentsView::OnPinEnabledForUserChanged(const AccountId& user,
     LayoutAuth(big_user, nullptr /*opt_to_hide*/, true /*animate*/);
 }
 
+void LockContentsView::OnFingerprintStateChanged(
+    const AccountId& account_id,
+    mojom::FingerprintState state) {
+  UserState* user_state = FindStateForUser(account_id);
+  if (!user_state)
+    return;
+
+  user_state->fingerprint_state = state;
+  LoginBigUserView* big_view =
+      TryToFindBigUser(account_id, true /*require_auth_active*/);
+  if (!big_view || !big_view->auth_user())
+    return;
+
+  // TODO(crbug.com/893298): Re-enable animation once the error bubble supports
+  // being displayed on the left. This also requires that we dynamically
+  // track/update the position of the bubble, or alternatively we set the bubble
+  // location to the target animation position and not the current position.
+  bool animate = true;
+  if (user_state->fingerprint_state ==
+      mojom::FingerprintState::DISABLED_FROM_TIMEOUT) {
+    animate = false;
+  }
+
+  big_view->auth_user()->SetFingerprintState(user_state->fingerprint_state);
+  LayoutAuth(big_view, nullptr /*opt_to_hide*/, animate);
+
+  if (user_state->fingerprint_state ==
+      mojom::FingerprintState::DISABLED_FROM_TIMEOUT) {
+    base::string16 error_text = l10n_util::GetStringUTF16(
+        IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_TIMEOUT);
+    auto* label = new views::Label(error_text);
+    label->SetAutoColorReadabilityEnabled(false);
+    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    label->SetEnabledColor(SK_ColorWHITE);
+    label->SetSubpixelRenderingEnabled(false);
+    const gfx::FontList& base_font_list = views::Label::GetDefaultFontList();
+    label->SetFontList(base_font_list.Derive(0, gfx::Font::FontStyle::NORMAL,
+                                             gfx::Font::Weight::NORMAL));
+    label->SetMultiLine(true);
+    label->SetAllowCharacterBreak(true);
+    // Make sure to set a maximum label width, otherwise text wrapping will
+    // significantly increase width and layout may not work correctly if
+    // the input string is very long.
+    label->SetMaximumWidth(
+        big_view->auth_user()->password_view()->GetPreferredSize().width());
+
+    auto* container = new NonAccessibleView();
+    container->SetLayoutManager(
+        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+    container->AddChildView(label);
+
+    auth_error_bubble_->ShowErrorBubble(
+        container, big_view->auth_user()->password_view() /*anchor_view*/,
+        LoginBubble::kFlagPersistent);
+  }
+}
+
+void LockContentsView::OnFingerprintAuthResult(const AccountId& account_id,
+                                               bool success) {
+  // Make sure the display backlight is not forced off if there is a fingerprint
+  // authentication attempt. If the display backlight is off, then the device
+  // will authenticate and dismiss the lock screen but it will not be visible to
+  // the user.
+  Shell::Get()->power_button_controller()->StopForcingBacklightsOff();
+
+  // |account_id| comes from IPC, make sure it refers to a valid user. The
+  // fingerprint scan could have also happened while switching users, so the
+  // associated account is no longer a big user.
+  LoginBigUserView* big_view =
+      TryToFindBigUser(account_id, true /*require_auth_active*/);
+  if (!big_view || !big_view->auth_user())
+    return;
+
+  big_view->auth_user()->NotifyFingerprintAuthResult(success);
+}
+
 void LockContentsView::OnAuthEnabledForUserChanged(
     const AccountId& user,
     bool enabled,
@@ -893,69 +967,6 @@ void LockContentsView::OnDetachableBasePairingStatusChanged(
   // the password without seeing the warning about detachable base change.
   if (GetWidget()->IsActive())
     GetWidget()->GetFocusManager()->ClearFocus();
-}
-
-void LockContentsView::OnFingerprintUnlockStateChanged(
-    const AccountId& account_id,
-    mojom::FingerprintUnlockState state) {
-  // Make sure the display backlight is not forced off if there is a fingerprint
-  // authentication attempt. If the display backlight is off, then the device
-  // will authenticate and dismiss the lock screen but it will not be visible to
-  // the user.
-  Shell::Get()->power_button_controller()->StopForcingBacklightsOff();
-
-  UserState* user_state = FindStateForUser(account_id);
-  if (!user_state)
-    return;
-
-  user_state->fingerprint_state = state;
-  LoginBigUserView* big_view =
-      TryToFindBigUser(account_id, true /*require_auth_active*/);
-  if (!big_view || !big_view->auth_user())
-    return;
-
-  // TODO(crbug.com/893298): Re-enable animation once the error bubble supports
-  // being displayed on the left. This also requires that we dynamically
-  // track/update the position of the bubble, or alternatively we set the bubble
-  // location to the target animation position and not the current position.
-  bool animate = true;
-  if (user_state->fingerprint_state ==
-      mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT) {
-    animate = false;
-  }
-
-  big_view->auth_user()->SetFingerprintState(user_state->fingerprint_state);
-  LayoutAuth(big_view, nullptr /*opt_to_hide*/, animate);
-
-  if (user_state->fingerprint_state ==
-      mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT) {
-    base::string16 error_text = l10n_util::GetStringUTF16(
-        IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_TIMEOUT);
-    auto* label = new views::Label(error_text);
-    label->SetAutoColorReadabilityEnabled(false);
-    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    label->SetEnabledColor(SK_ColorWHITE);
-    label->SetSubpixelRenderingEnabled(false);
-    const gfx::FontList& base_font_list = views::Label::GetDefaultFontList();
-    label->SetFontList(base_font_list.Derive(0, gfx::Font::FontStyle::NORMAL,
-                                             gfx::Font::Weight::NORMAL));
-    label->SetMultiLine(true);
-    label->SetAllowCharacterBreak(true);
-    // Make sure to set a maximum label width, otherwise text wrapping will
-    // significantly increase width and layout may not work correctly if
-    // the input string is very long.
-    label->SetMaximumWidth(
-        big_view->auth_user()->password_view()->GetPreferredSize().width());
-
-    auto* container = new NonAccessibleView();
-    container->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
-    container->AddChildView(label);
-
-    auth_error_bubble_->ShowErrorBubble(
-        container, big_view->auth_user()->password_view() /*anchor_view*/,
-        LoginBubble::kFlagPersistent);
-  }
 }
 
 void LockContentsView::SetAvatarForUser(const AccountId& account_id,
@@ -1343,10 +1354,9 @@ void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
           to_update_auth |= LoginAuthUserView::AUTH_PIN;
         if (state->enable_tap_auth)
           to_update_auth |= LoginAuthUserView::AUTH_TAP;
-        if (state->fingerprint_state !=
-                mojom::FingerprintUnlockState::UNAVAILABLE &&
+        if (state->fingerprint_state != mojom::FingerprintState::UNAVAILABLE &&
             state->fingerprint_state !=
-                mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT) {
+                mojom::FingerprintState::DISABLED_FROM_TIMEOUT) {
           to_update_auth |= LoginAuthUserView::AUTH_FINGERPRINT;
         }
 

@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/interfaces/login_user_info.mojom.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -49,15 +50,6 @@ class WebUIScreenLockerTester;
 class ScreenLocker : public AuthStatusConsumer,
                      public device::mojom::FingerprintObserver {
  public:
-  enum class FingerprintState {
-    kHidden,
-    kDefault,
-    kSignin,
-    kFailed,
-    kRemoved,
-    kTimeout,
-  };
-
   // Delegate used to send internal state changes back to the UI.
   class Delegate {
    public:
@@ -93,7 +85,11 @@ class ScreenLocker : public AuthStatusConsumer,
 
     // Called when fingerprint state has changed.
     virtual void SetFingerprintState(const AccountId& account_id,
-                                     FingerprintState state) = 0;
+                                     ash::mojom::FingerprintState state) = 0;
+
+    // Called after a fingerprint authentication attempt.
+    virtual void NotifyFingerprintAuthResult(const AccountId& account_id,
+                                             bool success) = 0;
 
     // Returns the web contents used to back the lock screen.
     // TODO(jdufault): Remove this function when we remove WebUIScreenLocker.
@@ -243,8 +239,11 @@ class ScreenLocker : public AuthStatusConsumer,
   // check has completed.
   void ContinueAuthenticate(const UserContext& user_context);
 
-  void UpdateFingerprintState(const std::string& source,
-                              const AccountId& account_id);
+  // Periodically called to see if PIN and fingerprint are still available for
+  // use. PIN and fingerprint are disabled after a certain period of time (e.g.
+  // 24 hours).
+  void MaybeDisablePinAndFingerprintFromTimeout(const std::string& source,
+                                                const AccountId& account_id);
 
   void OnPinCanAuthenticate(const AccountId& account_id, bool can_authenticate);
 
