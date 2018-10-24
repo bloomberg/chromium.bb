@@ -17,6 +17,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_simple_task_runner.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_token_forwarder.h"
@@ -76,6 +77,9 @@ using testing::SaveArg;
 using testing::_;
 
 namespace {
+
+const char kUMAReregistrationResult[] =
+    "Enterprise.UserPolicyChromeOS.ReregistrationResult";
 
 enum PolicyRequired { POLICY_NOT_REQUIRED, POLICY_REQUIRED };
 
@@ -820,6 +824,7 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, Reregistration) {
   fatal_error_expected_ = true;
   ASSERT_NO_FATAL_FAILURE(MakeManagerWithEmptyStore(
       base::TimeDelta(), PolicyEnforcement::kServerCheckRequired));
+  base::HistogramTester histogram_tester;
 
   // Initialize the CloudPolicyService without any stored data.
   EXPECT_FALSE(manager_->core()->service()->IsInitializationComplete());
@@ -854,6 +859,7 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, Reregistration) {
   EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get())).Times(0);
   policy_job->SendResponse(DM_STATUS_SERVICE_DEVICE_NOT_FOUND,
                            em::DeviceManagementResponse());
+  histogram_tester.ExpectUniqueSample(kUMAReregistrationResult, 0, 1);
 
   // Copy register request (used to check correct re-registration parameters are
   // submitted).
@@ -889,6 +895,10 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, Reregistration) {
   EXPECT_TRUE(manager_->core()->service()->IsInitializationComplete());
   EXPECT_TRUE(manager_->core()->client()->is_registered());
   EXPECT_FALSE(user_manager_->GetActiveUser()->force_online_signin());
+  histogram_tester.ExpectBucketCount(kUMAReregistrationResult, 0, 1);
+  histogram_tester.ExpectBucketCount(kUMAReregistrationResult, 1, 1);
+  histogram_tester.ExpectBucketCount(kUMAReregistrationResult, 2, 0);
+  histogram_tester.ExpectTotalCount(kUMAReregistrationResult, 2);
 }
 
 TEST_F(UserCloudPolicyManagerChromeOSTest, ReregistrationFails) {
@@ -897,6 +907,7 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, ReregistrationFails) {
   fatal_error_expected_ = true;
   ASSERT_NO_FATAL_FAILURE(MakeManagerWithEmptyStore(
       base::TimeDelta(), PolicyEnforcement::kServerCheckRequired));
+  base::HistogramTester histogram_tester;
 
   // Initialize the CloudPolicyService without any stored data.
   EXPECT_FALSE(manager_->core()->service()->IsInitializationComplete());
@@ -931,6 +942,7 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, ReregistrationFails) {
   EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get())).Times(0);
   policy_job->SendResponse(DM_STATUS_SERVICE_DEVICE_NOT_FOUND,
                            em::DeviceManagementResponse());
+  histogram_tester.ExpectUniqueSample(kUMAReregistrationResult, 0, 1);
 
   // Simulate OAuth token fetch.
   GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
@@ -954,6 +966,10 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, ReregistrationFails) {
   EXPECT_TRUE(manager_->core()->service()->IsInitializationComplete());
   EXPECT_FALSE(manager_->core()->client()->is_registered());
   EXPECT_TRUE(user_manager_->GetActiveUser()->force_online_signin());
+  histogram_tester.ExpectBucketCount(kUMAReregistrationResult, 0, 1);
+  histogram_tester.ExpectBucketCount(kUMAReregistrationResult, 1, 0);
+  histogram_tester.ExpectBucketCount(kUMAReregistrationResult, 2, 1);
+  histogram_tester.ExpectTotalCount(kUMAReregistrationResult, 2);
 }
 
 }  // namespace policy

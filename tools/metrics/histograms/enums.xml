@@ -14876,6 +14876,13 @@ Called by update_net_error_codes.py.-->
   <int value="11" label="Request interrupted"/>
 </enum>
 
+<enum name="EnterpriseUserPolicyChromeOSReregistrationResult">
+  <summary>Re-registration results after a failed policy fetch.</summary>
+  <int value="0" label="Re-registration triggered"/>
+  <int value="1" label="Re-registration successful"/>
+  <int value="2" label="Re-registration unsuccessful"/>
+</enum>
+
 <enum name="EnterpriseUserPolicyChromeOSSessionAbortType">
   <int value="0" label="Initialization, Google cloud management">
     Abort of asynchronous user policy initialization when the user is managed
