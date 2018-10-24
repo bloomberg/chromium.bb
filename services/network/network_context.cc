@@ -45,7 +45,6 @@
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/dns/host_cache.h"
-#include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/extras/sqlite/sqlite_channel_id_store.h"
 #include "net/extras/sqlite/sqlite_persistent_cookie_store.h"
@@ -425,7 +424,8 @@ NetworkContext::NetworkContext(
       app_status_listener_(
           std::make_unique<NetworkContextApplicationStatusListener>()),
 #endif
-      binding_(this, std::move(request)) {
+      binding_(this, std::move(request)),
+      host_resolver_factory_(std::make_unique<net::HostResolver::Factory>()) {
   url_request_context_owner_ = MakeURLRequestContext();
   url_request_context_ = url_request_context_owner_.url_request_context.get();
 
@@ -458,7 +458,8 @@ NetworkContext::NetworkContext(
       app_status_listener_(
           std::make_unique<NetworkContextApplicationStatusListener>()),
 #endif
-      binding_(this, std::move(request)) {
+      binding_(this, std::move(request)),
+      host_resolver_factory_(std::make_unique<net::HostResolver::Factory>()) {
   url_request_context_owner_ = ApplyContextParamsToBuilder(builder.get());
   url_request_context_ = url_request_context_owner_.url_request_context.get();
 
@@ -486,7 +487,8 @@ NetworkContext::NetworkContext(NetworkService* network_service,
                                           nullptr)),
       socket_factory_(
           std::make_unique<SocketFactory>(url_request_context_->net_log(),
-                                          url_request_context)) {
+                                          url_request_context)),
+      host_resolver_factory_(std::make_unique<net::HostResolver::Factory>()) {
   // May be nullptr in tests.
   if (network_service_)
     network_service_->RegisterNetworkContext(this);
@@ -618,7 +620,7 @@ size_t NetworkContext::GetNumOutstandingResolveHostRequestsForTesting() const {
   if (internal_host_resolver_)
     sum += internal_host_resolver_->GetNumOutstandingRequestsForTesting();
   for (const auto& host_resolver : host_resolvers_)
-    sum += host_resolver->GetNumOutstandingRequestsForTesting();
+    sum += host_resolver.first->GetNumOutstandingRequestsForTesting();
   return sum;
 }
 
@@ -924,12 +926,40 @@ void NetworkContext::ResolveHost(
                                        std::move(response_client));
 }
 
-void NetworkContext::CreateHostResolver(mojom::HostResolverRequest request) {
-  host_resolvers_.emplace(std::make_unique<HostResolver>(
-      std::move(request),
-      base::BindOnce(&NetworkContext::OnHostResolverShutdown,
-                     base::Unretained(this)),
-      url_request_context_->host_resolver(), url_request_context_->net_log()));
+void NetworkContext::CreateHostResolver(
+    const base::Optional<net::DnsConfigOverrides>& config_overrides,
+    mojom::HostResolverRequest request) {
+  net::HostResolver* internal_resolver = url_request_context_->host_resolver();
+  std::unique_ptr<net::HostResolver> private_internal_resolver;
+
+  if (config_overrides &&
+      config_overrides.value() != net::DnsConfigOverrides()) {
+    // If custom configuration is needed, create a separate internal resolver
+    // with the specified configuration overrides. Because we are using a non-
+    // standard resolver, disable the cache.
+    //
+    // TODO(crbug.com/846423): Consider allowing per-resolve overrides, so the
+    // same net::HostResolver with the same scheduler and cache can be used with
+    // different overrides.  But since this is only used for special cases for
+    // now, much easier to create entirely separate net::HostResolver instances.
+    net::HostResolver::Options options;
+    options.enable_caching = false;
+
+    private_internal_resolver = host_resolver_factory_->CreateResolver(
+        options, url_request_context_->net_log());
+    internal_resolver = private_internal_resolver.get();
+
+    internal_resolver->SetDnsClientEnabled(true);
+    internal_resolver->SetDnsConfigOverrides(config_overrides.value());
+  }
+
+  host_resolvers_.emplace(
+      std::make_unique<HostResolver>(
+          std::move(request),
+          base::BindOnce(&NetworkContext::OnHostResolverShutdown,
+                         base::Unretained(this)),
+          internal_resolver, url_request_context_->net_log()),
+      std::move(private_internal_resolver));
 }
 
 void NetworkContext::VerifyCertForSignedExchange(

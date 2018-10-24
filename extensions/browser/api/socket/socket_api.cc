@@ -187,7 +187,8 @@ bool SocketExtensionWithDnsLookupFunction::PrePrepare() {
     return false;
   content::BrowserContext::GetDefaultStoragePartition(browser_context())
       ->GetNetworkContext()
-      ->CreateHostResolver(mojo::MakeRequest(&host_resolver_info_));
+      ->CreateHostResolver(base::nullopt,
+                           mojo::MakeRequest(&host_resolver_info_));
   return true;
 }
 

@@ -26,6 +26,7 @@ struct NET_EXPORT DnsConfigOverrides {
   DnsConfigOverrides& operator=(const DnsConfigOverrides& other);
 
   bool operator==(const DnsConfigOverrides& other) const;
+  bool operator!=(const DnsConfigOverrides& other) const;
 
   // Creates a new DnsConfig where any field with an overriding value in |this|
   // is replaced with that overriding value. Any field without an overriding

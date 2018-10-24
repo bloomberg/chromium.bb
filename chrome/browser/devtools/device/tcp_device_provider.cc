@@ -166,5 +166,5 @@ void TCPDeviceProvider::InitializeHostResolverOnUI(
     network::mojom::HostResolverRequest request) {
   g_browser_process->system_network_context_manager()
       ->GetContext()
-      ->CreateHostResolver(std::move(request));
+      ->CreateHostResolver(base::nullopt, std::move(request));
 }

@@ -114,6 +114,17 @@ class NET_EXPORT HostResolver {
     bool enable_caching;
   };
 
+  // Factory class. Useful for classes that need to inject and override resolver
+  // creation for tests.
+  class NET_EXPORT Factory {
+   public:
+    virtual ~Factory() = default;
+
+    // See HostResolver::CreateSystemResolver.
+    virtual std::unique_ptr<HostResolver> CreateResolver(const Options& options,
+                                                         NetLog* net_log);
+  };
+
   // The parameters for doing a Resolve(). A hostname and port are
   // required; the rest are optional (and have reasonable defaults).
   //

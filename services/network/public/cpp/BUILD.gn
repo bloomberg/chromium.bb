@@ -166,6 +166,7 @@ source_set("tests") {
     "cors/preflight_result_unittest.cc",
     "cross_thread_shared_url_loader_factory_info_unittest.cc",
     "digitally_signed_mojom_traits_unittest.cc",
+    "host_resolver_mojom_traits_unittest.cc",
     "mutable_network_traffic_annotation_tag_mojom_traits_unittest.cc",
     "mutable_partial_network_traffic_annotation_tag_mojom_traits_unittest.cc",
     "network_connection_tracker_unittest.cc",

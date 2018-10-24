@@ -115,7 +115,9 @@ class TestNetworkContext : public mojom::NetworkContext {
   void ResolveHost(const net::HostPortPair& host,
                    mojom::ResolveHostParametersPtr optional_parameters,
                    mojom::ResolveHostClientPtr response_client) override {}
-  void CreateHostResolver(mojom::HostResolverRequest request) override {}
+  void CreateHostResolver(
+      const base::Optional<net::DnsConfigOverrides>& config_overrides,
+      mojom::HostResolverRequest request) override {}
   void WriteCacheMetadata(const GURL& url,
                           net::RequestPriority priority,
                           base::Time expected_response_time,

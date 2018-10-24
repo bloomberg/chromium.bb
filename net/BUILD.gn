@@ -5263,6 +5263,7 @@ test("net_unittests") {
     "//net/dns:tests",
     "//net/http:transport_security_state_unittest_data",
     "//net/http:transport_security_state_unittest_data_default",
+    "//net/interfaces:tests",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/protobuf:protobuf_lite",

@@ -10,6 +10,7 @@ import "mojo/public/mojom/base/read_only_buffer.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
+import "services/network/public/mojom/host_resolver.mojom";
 import "services/network/public/mojom/net_log.mojom";
 import "services/network/public/mojom/network_change_manager.mojom";
 import "services/network/public/mojom/network_context.mojom";
@@ -145,17 +146,6 @@ interface NetworkServiceClient {
   // identifies the annotation of the request.
   OnDataUseUpdate(int32 network_traffic_annotation_id_hash, int64 recv_bytes,
                   int64 sent_bytes);
-};
-
-// An HTTPS server to send DNS queries to, per the DNS Queries over HTTPS spec.
-// spec:  https://tools.ietf.org/html/draft-ietf-doh-dns-over-https-12
- struct DnsOverHttpsServer {
-  // DNS over HTTPS server URI template. Must be HTTPS.
-  string server_template;
-
-  // Whether to use POST to do DNS lookups. Otherwise, GET is used. See spec
-  // for more details.
-  bool use_post = false;
 };
 
 // Values for configuring HTTP authentication that can only be set once.

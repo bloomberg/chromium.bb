@@ -89,6 +89,12 @@ HostResolver::Options::Options()
       enable_caching(true) {
 }
 
+std::unique_ptr<HostResolver> HostResolver::Factory::CreateResolver(
+    const Options& options,
+    NetLog* net_log) {
+  return CreateSystemResolver(options, net_log);
+}
+
 HostResolver::RequestInfo::RequestInfo(const HostPortPair& host_port_pair)
     : RequestInfo() {
   host_port_pair_ = host_port_pair;
