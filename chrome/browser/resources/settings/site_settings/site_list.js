@@ -27,6 +27,8 @@ Polymer({
       value: false,
     },
 
+    categoryHeader: String,
+
     /**
      * The site serving as the model for the currently open action menu.
      * @private {?SiteException}
