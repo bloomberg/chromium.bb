@@ -232,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTestWithProxy, SetProxyConfig) {
 }
 
 // TODO(crbug.com/867447): Flaky on Windows 10 debug.
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_WebGLSupported DISABLED_WebGLSupported
 #else
 #define MAYBE_WebGLSupported WebGLSupported
