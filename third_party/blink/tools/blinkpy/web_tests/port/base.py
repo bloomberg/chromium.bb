@@ -297,7 +297,7 @@ class Port(object):
             # Relaunching the driver periodically helps keep it under control.
             return 40
         # The default is infinite batch size.
-        return None
+        return 0
 
     def default_child_processes(self):
         """Returns the number of child processes to use for this port."""
