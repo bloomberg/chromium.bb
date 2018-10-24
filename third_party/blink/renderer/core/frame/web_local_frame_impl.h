@@ -424,9 +424,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   // Otherwise creates it and then returns.
   TextFinder& EnsureTextFinder();
 
-  // Returns a hit-tested VisiblePosition for the given point
-  VisiblePosition VisiblePositionForViewportPoint(const WebPoint&);
-
   void SetFrameWidget(WebFrameWidgetBase*);
 
   // TODO(dcheng): Remove this and make |FrameWidget()| always return something
