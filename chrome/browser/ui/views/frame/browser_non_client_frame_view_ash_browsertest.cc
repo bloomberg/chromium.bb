@@ -23,10 +23,8 @@
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"  // mash-ok
-#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
-#include "base/strings/string_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -83,8 +81,8 @@
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
@@ -141,29 +139,19 @@ BrowserNonClientFrameViewAsh* GetFrameViewAsh(BrowserView* browser_view) {
   return frame_view;
 }
 
-// Generates the test names suffixes based on the value of the test param.
-std::string TopChromeMdParamToString(
-    const ::testing::TestParamInfo<const char*>& info) {
-  std::string result;
-  base::ReplaceChars(info.param, "-", "_", &result);
-  return result;
-}
-
 // Template to be used as a base class for touch-optimized UI parameterized test
 // fixtures.
 template <class BaseTest>
-class TopChromeMdParamTest : public BaseTest,
-                             public ::testing::WithParamInterface<const char*> {
+class TopChromeMdParamTest
+    : public BaseTest,
+      public ::testing::WithParamInterface<ui::MaterialDesignController::Mode> {
  public:
-  TopChromeMdParamTest() = default;
+  TopChromeMdParamTest() : test_api_(GetParam()) {}
   ~TopChromeMdParamTest() override = default;
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(switches::kTopChromeMD, GetParam());
-    BaseTest::SetUpCommandLine(command_line);
-  }
-
  private:
+  ui::test::MaterialDesignControllerTestAPI test_api_;
+
   DISALLOW_COPY_AND_ASSIGN(TopChromeMdParamTest);
 };
 
@@ -1455,12 +1443,11 @@ IN_PROC_BROWSER_TEST_P(NonHomeLauncherBrowserNonClientFrameViewAshTest,
   EXPECT_EQ(expected_height, frame_view->frame_header_->GetHeaderHeight());
 }
 
-#define INSTANTIATE_TEST_CASE(name)                                           \
-  INSTANTIATE_TEST_CASE_P(                                                    \
-      , name,                                                                 \
-      ::testing::Values(switches::kTopChromeMDMaterialRefresh,                \
-                        switches::kTopChromeMDMaterialRefreshTouchOptimized), \
-      &TopChromeMdParamToString)
+#define INSTANTIATE_TEST_CASE(name)                                     \
+  INSTANTIATE_TEST_CASE_P(                                              \
+      , name,                                                           \
+      ::testing::Values(ui::MaterialDesignController::MATERIAL_REFRESH, \
+                        ui::MaterialDesignController::MATERIAL_TOUCH_REFRESH))
 
 INSTANTIATE_TEST_CASE(BrowserNonClientFrameViewAshTest);
 INSTANTIATE_TEST_CASE(ImmersiveModeBrowserViewTest);
