@@ -1633,8 +1633,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     switch (key_.host_resolver_source) {
       case HostResolverSource::ANY:
         if (resolver_->HaveDnsConfig() &&
-            !ResemblesMulticastDNSName(key_.hostname) &&
-            !(key_.host_resolver_flags & HOST_RESOLVER_CANONNAME)) {
+            !ResemblesMulticastDNSName(key_.hostname)) {
           StartDnsTask();
         } else {
           StartProcTask();
