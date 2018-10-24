@@ -78,12 +78,18 @@ class UpdateSieve {
   // part of a GetUpdatesResponse. Update internal tracking of max versions as a
   // side effect which will later be used to set response progress markers.
   bool ClientWantsItem(const LoopbackServerEntity& entity) {
-    int64_t version = entity.GetVersion();
     ModelType type = entity.GetModelType();
+    // Return only requested datatypes, which makes sure we don't add new
+    // entries to |response_version_map_|, which would otherwise send
+    // unnecessary (and unrequested) progress markers in the response.
+    auto it = request_version_map_.find(type);
+    if (it == request_version_map_.end())
+      return false;
+    DCHECK_NE(0U, request_version_map_.count(type));
+    int64_t version = entity.GetVersion();
     response_version_map_[type] =
         std::max(response_version_map_[type], version);
-    auto it = request_version_map_.find(type);
-    return it == request_version_map_.end() ? false : it->second < version;
+    return it->second < version;
   }
 
  private:
