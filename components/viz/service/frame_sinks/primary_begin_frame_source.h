@@ -36,7 +36,6 @@ class VIZ_SERVICE_EXPORT PrimaryBeginFrameSource
   void AddObserver(BeginFrameObserver* obs) override;
   void RemoveObserver(BeginFrameObserver* obs) override;
   bool IsThrottled() const override;
-  void OnGpuNoLongerBusy() override;
 
   // ExternalBeginFrameSourceClient implementation.
   void OnNeedsBeginFrames(bool needs_begin_frames) override;

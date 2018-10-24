@@ -39,7 +39,6 @@ class FakeExternalBeginFrameSource : public BeginFrameSource {
   void RemoveObserver(BeginFrameObserver* obs) override;
   void DidFinishFrame(BeginFrameObserver* obs) override;
   bool IsThrottled() const override;
-  void OnGpuNoLongerBusy() override {}
 
   BeginFrameArgs CreateBeginFrameArgs(
       BeginFrameArgs::CreationLocation location);
