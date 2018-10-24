@@ -26,6 +26,7 @@ class TestStrikeDatabase : public StrikeDatabase {
                   const StrikesCallback& outer_callback) override;
   void AddStrike(const std::string key,
                  const StrikesCallback& outer_callback) override;
+  void ClearAllStrikes(const ClearStrikesCallback& outer_callback) override;
   void ClearAllStrikesForKey(
       const std::string& key,
       const ClearStrikesCallback& outer_callback) override;

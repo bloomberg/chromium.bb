@@ -110,6 +110,19 @@ class StrikeDatabaseTest : public ::testing::Test {
     run_loop.Run();
   }
 
+  void OnClearAllStrikes(base::RepeatingClosure run_loop_closure,
+                         bool success) {
+    run_loop_closure.Run();
+  }
+
+  void ClearAllStrikes() {
+    base::RunLoop run_loop;
+    strike_database_.ClearAllStrikes(
+        base::BindRepeating(&StrikeDatabaseTest::OnClearAllStrikesForKey,
+                            base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
  protected:
   base::HistogramTester* GetHistogramTester() { return &histogram_tester_; }
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -202,6 +215,27 @@ TEST_F(StrikeDatabaseTest, ClearStrikesForMultipleNonZeroStrikesEntriesTest) {
   EXPECT_EQ(0, strikes);
   strikes = GetStrikes(key2);
   EXPECT_EQ(5, strikes);
+}
+
+TEST_F(StrikeDatabaseTest, ClearAllStrikesTest) {
+  // Set up database with 3 pre-existing strikes at |key1|, and 5 pre-existing
+  // strikes at |key2|.
+  const std::string key1 = "12345";
+  const std::string key2 = "13579";
+  std::vector<std::pair<std::string, StrikeData>> entries;
+  StrikeData data1;
+  data1.set_num_strikes(3);
+  entries.push_back(std::make_pair(key1, data1));
+  StrikeData data2;
+  data2.set_num_strikes(5);
+  entries.push_back(std::make_pair(key2, data2));
+  AddEntries(entries);
+
+  EXPECT_EQ(3, GetStrikes(key1));
+  EXPECT_EQ(5, GetStrikes(key2));
+  ClearAllStrikes();
+  EXPECT_EQ(0, GetStrikes(key1));
+  EXPECT_EQ(0, GetStrikes(key2));
 }
 
 TEST_F(StrikeDatabaseTest, GetKeyForCreditCardSave) {
