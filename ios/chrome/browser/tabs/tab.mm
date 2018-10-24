@@ -490,12 +490,6 @@ NSString* const kTabUrlKey = @"url";
 
 // TODO(crbug.com/620465): this require the Tab's WebState to be a WebStateImpl,
 // remove this helper once this is no longer true (and fix the unit tests).
-- (web::NavigationManagerImpl*)navigationManagerImpl {
-  return static_cast<web::NavigationManagerImpl*>(self.navigationManager);
-}
-
-// TODO(crbug.com/620465): this require the Tab's WebState to be a WebStateImpl,
-// remove this helper once this is no longer true (and fix the unit tests).
 - (CRWWebController*)webController {
   return _webStateImpl ? _webStateImpl->GetWebController() : nil;
 }
