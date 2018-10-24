@@ -1312,6 +1312,12 @@ jumbo_component("base") {
       "android/statistics_recorder_android.cc",
       "android/sys_utils.cc",
       "android/sys_utils.h",
+      "android/task_scheduler/post_task_android.cc",
+      "android/task_scheduler/post_task_android.h",
+      "android/task_scheduler/sequenced_task_runner_android.cc",
+      "android/task_scheduler/single_thread_task_runner_android.cc",
+      "android/task_scheduler/task_runner_android.cc",
+      "android/task_scheduler/task_runner_android.h",
       "android/time_utils.cc",
       "android/timezone_utils.cc",
       "android/timezone_utils.h",
@@ -2852,6 +2858,10 @@ if (is_android) {
       "android/java/src/org/chromium/base/metrics/RecordUserAction.java",
       "android/java/src/org/chromium/base/metrics/StatisticsRecorderAndroid.java",
       "android/java/src/org/chromium/base/process_launcher/ChildProcessService.java",
+      "android/java/src/org/chromium/base/task/PostTask.java",
+      "android/java/src/org/chromium/base/task/SequencedTaskRunnerImpl.java",
+      "android/java/src/org/chromium/base/task/SingleThreadTaskRunnerImpl.java",
+      "android/java/src/org/chromium/base/task/TaskRunnerImpl.java",
     ]
 
     public_deps = [
@@ -2863,7 +2873,10 @@ if (is_android) {
 
   generate_jar_jni("android_runtime_jni_headers") {
     jni_package = "base"
-    classes = [ "java/lang/Runtime.class" ]
+    classes = [
+      "java/lang/Runnable.class",
+      "java/lang/Runtime.class",
+    ]
   }
 
   java_library("jni_processor_annotations_java") {
@@ -2971,11 +2984,19 @@ if (is_android) {
       "android/java/src/org/chromium/base/memory/MemoryPressureCallback.java",
       "android/java/src/org/chromium/base/memory/MemoryPressureUma.java",
       "android/java/src/org/chromium/base/task/AsyncTask.java",
+      "android/java/src/org/chromium/base/task/DefaultTaskExecutor.java",
       "android/java/src/org/chromium/base/task/ChromeThreadPoolExecutor.java",
+      "android/java/src/org/chromium/base/task/PostTask.java",
+      "android/java/src/org/chromium/base/task/PreNativeSequence.java",
       "android/java/src/org/chromium/base/task/SequencedTaskRunner.java",
+      "android/java/src/org/chromium/base/task/SequencedTaskRunnerImpl.java",
       "android/java/src/org/chromium/base/task/SerialExecutor.java",
       "android/java/src/org/chromium/base/task/SingleThreadTaskRunner.java",
+      "android/java/src/org/chromium/base/task/SingleThreadTaskRunnerImpl.java",
+      "android/java/src/org/chromium/base/task/TaskExecutor.java",
       "android/java/src/org/chromium/base/task/TaskRunner.java",
+      "android/java/src/org/chromium/base/task/TaskRunnerImpl.java",
+      "android/java/src/org/chromium/base/task/TaskTraits.java",
     ]
 
     # New versions of BuildConfig.java and NativeLibraries.java
@@ -3020,6 +3041,10 @@ if (is_android) {
       "android/javatests/src/org/chromium/base/StrictModeContextTest.java",
       "android/javatests/src/org/chromium/base/metrics/RecordHistogramTest.java",
       "android/javatests/src/org/chromium/base/task/AsyncTaskTest.java",
+      "android/javatests/src/org/chromium/base/task/PostTaskTest.java",
+      "android/javatests/src/org/chromium/base/task/SequencedTaskRunnerImplTest.java",
+      "android/javatests/src/org/chromium/base/task/SingleThreadTaskRunnerImplTest.java",
+      "android/javatests/src/org/chromium/base/task/TaskRunnerImplTest.java",
     ]
   }
 
@@ -3062,6 +3087,8 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/base/test/params/ParameterizedRunnerDelegateFactory.java",
       "test/android/javatests/src/org/chromium/base/test/params/ParameterProvider.java",
       "test/android/javatests/src/org/chromium/base/test/params/ParameterSet.java",
+      "test/android/javatests/src/org/chromium/base/test/task/SchedulerTestHelpers.java",
+      "test/android/javatests/src/org/chromium/base/test/task/TaskSchedulerTestHelpers.java",
       "test/android/javatests/src/org/chromium/base/test/util/AdvancedMockContext.java",
       "test/android/javatests/src/org/chromium/base/test/util/AnnotationRule.java",
       "test/android/javatests/src/org/chromium/base/test/util/CallbackHelper.java",
@@ -3165,6 +3192,7 @@ if (is_android) {
       "android/library_loader/library_loader_hooks.h",
       "memory/memory_pressure_listener.h",
       "metrics/histogram_base.h",
+      "task/task_traits.h",
       "trace_event/trace_config.h",
     ]
   }
