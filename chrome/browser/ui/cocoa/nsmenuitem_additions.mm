@@ -163,7 +163,8 @@ void SetIsInputSourceCzechForTesting(bool is_czech) {
   } else {
     // Clear shift key for printable characters, excluding tab.
     if ((eventModifiers & (NSNumericPadKeyMask | NSFunctionKeyMask)) == 0 &&
-        [[self keyEquivalent] characterAtIndex:0] != '\r') {
+        [[self keyEquivalent] characterAtIndex:0] != '\r' &&
+        [[self keyEquivalent] characterAtIndex:0] != '\x9') {
       eventModifiers &= ~NSShiftKeyMask;
     }
   }

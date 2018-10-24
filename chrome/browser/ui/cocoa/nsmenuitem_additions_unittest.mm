@@ -290,6 +290,12 @@ TEST(NSMenuItemAdditionsTest, TestFiresForKeyEvent) {
   ExpectKeyFiresItem(key, MenuItem(@"}", 0x100000), false);
   ExpectKeyDoesntFireItem(key, MenuItem(@"+", 0x100000), false);
 
+  // ctr-shift-tab should trigger correctly.
+  key = KeyEvent(0x60103, @"\x19", @"\x19", 48);
+  ExpectKeyFiresItem(key, MenuItem(@"\x9", NSShiftKeyMask | NSControlKeyMask),
+                     false);
+  ExpectKeyDoesntFireItem(key, MenuItem(@"\x9", NSControlKeyMask), false);
+
   // Change away from Dvorak-QWERTY
   SetIsInputSourceDvorakQwertyForTesting(false);
 
