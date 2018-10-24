@@ -58,6 +58,11 @@ class ExploreSitesServiceImpl : public ExploreSitesService,
   // TaskQueue::Delegate implementation:
   void OnTaskQueueIsIdle() override;
 
+  // Callback that is run when we have the catalog version.
+  void GotVersionToStartFetch(bool is_immediate_fetch,
+                              const std::string& accept_languages,
+                              std::string catalog_version);
+
   // Callback returning from the UpdateCatalogFromNetwork operation.  It
   // passes along the call back to the bridge and eventually back to Java land.
   void OnCatalogFetched(ExploreSitesRequestStatus status,
