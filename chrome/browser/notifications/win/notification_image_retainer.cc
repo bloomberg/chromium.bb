@@ -159,9 +159,10 @@ base::FilePath NotificationImageRetainer::RegisterTemporaryImage(
   return data_write_success ? temp_file : base::FilePath();
 }
 
-base::WeakPtr<NotificationImageRetainer>
-NotificationImageRetainer::AsWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
+base::OnceClosure NotificationImageRetainer::GetCleanupTask() {
+  return base::BindOnce(
+      &NotificationImageRetainer::CleanupFilesFromPrevSessions,
+      weak_ptr_factory_.GetWeakPtr());
 }
 
 void NotificationImageRetainer::DeleteExpiredFiles() {

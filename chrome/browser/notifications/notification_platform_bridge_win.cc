@@ -16,7 +16,6 @@
 #include "base/feature_list.h"
 #include "base/hash.h"
 #include "base/logging.h"
-#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -144,8 +143,7 @@ class NotificationPlatformBridgeWinImpl
     DCHECK(notification_task_runner_);
     content::BrowserThread::PostAfterStartupTask(
         FROM_HERE, notification_task_runner_,
-        base::BindOnce(&NotificationImageRetainer::CleanupFilesFromPrevSessions,
-                       image_retainer_->AsWeakPtr()));
+        image_retainer_->GetCleanupTask());
   }
 
   // Obtain an IToastNotification interface from a given XML (provided by the
@@ -353,8 +351,8 @@ class NotificationPlatformBridgeWinImpl
                                    profile_id, incognito,
                                    notification->origin_url());
     std::unique_ptr<NotificationTemplateBuilder> notification_template =
-        NotificationTemplateBuilder::Build(image_retainer_->AsWeakPtr(),
-                                           launch_id, *notification);
+        NotificationTemplateBuilder::Build(image_retainer_.get(), launch_id,
+                                           *notification);
     mswr::ComPtr<winui::Notifications::IToastNotification> toast =
         GetToastNotification(*notification, *notification_template, profile_id,
                              incognito);
