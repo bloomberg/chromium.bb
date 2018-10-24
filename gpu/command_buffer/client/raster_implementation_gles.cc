@@ -57,10 +57,27 @@ RasterImplementationGLES::Texture* RasterImplementationGLES::GetTexture(
 RasterImplementationGLES::Texture* RasterImplementationGLES::EnsureTextureBound(
     RasterImplementationGLES::Texture* texture) {
   DCHECK(texture);
-  if (bound_texture_ != texture) {
-    bound_texture_ = texture;
-    gl_->BindTexture(texture->target, texture->id);
+  // Reads client side cache of bindings in GLES2Implementation.
+  GLint bound_texture = 0;
+  GLenum pname = 0;
+  switch (texture->target) {
+    case GL_TEXTURE_2D:
+      pname = GL_TEXTURE_BINDING_2D;
+      break;
+    case GL_TEXTURE_RECTANGLE_ARB:
+      pname = GL_TEXTURE_BINDING_RECTANGLE_ARB;
+      break;
+    case GL_TEXTURE_EXTERNAL_OES:
+      pname = GL_TEXTURE_BINDING_EXTERNAL_OES;
+      break;
+    default:
+      NOTREACHED();
   }
+  if (pname != 0)
+    gl_->GetIntegerv(pname, &bound_texture);
+  if (bound_texture != static_cast<GLint>(texture->id))
+    gl_->BindTexture(texture->target, texture->id);
+
   return texture;
 }
 
@@ -170,9 +187,6 @@ void RasterImplementationGLES::DeleteTextures(GLsizei n,
   for (GLsizei i = 0; i < n; i++) {
     auto texture_iter = texture_info_.find(textures[i]);
     DCHECK(texture_iter != texture_info_.end());
-
-    if (bound_texture_ == &texture_iter->second)
-      bound_texture_ = nullptr;
 
     texture_info_.erase(texture_iter);
   }
@@ -334,7 +348,6 @@ void RasterImplementationGLES::EndGpuRaster() {
   gl_->TraceEndCHROMIUM();
 
   // Reset cached raster state.
-  bound_texture_ = nullptr;
   gl_->ActiveTexture(GL_TEXTURE0);
 }
 
