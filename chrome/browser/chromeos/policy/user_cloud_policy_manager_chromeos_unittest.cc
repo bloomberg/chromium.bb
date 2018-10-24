@@ -28,6 +28,7 @@
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_constants.h"
@@ -64,6 +65,7 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -405,11 +407,11 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
       ProfileOAuth2TokenService* token_service =
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
       ASSERT_TRUE(token_service);
-      SigninManagerBase* signin_manager =
-          SigninManagerFactory::GetForProfile(profile_);
-      ASSERT_TRUE(signin_manager);
+      identity::IdentityManager* identity_manager =
+          IdentityManagerFactory::GetForProfile(profile_);
+      ASSERT_TRUE(identity_manager);
       token_forwarder_.reset(new UserCloudPolicyTokenForwarder(
-          manager_.get(), token_service, signin_manager));
+          manager_.get(), identity_manager, token_service));
     }
   }
 
