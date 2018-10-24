@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -652,9 +653,13 @@ static std::pair<blink::Image*, float> BrokenCanvas(float device_scale_factor) {
 SkFilterQuality HTMLCanvasElement::FilterQuality() const {
   if (!isConnected())
     return kLow_SkFilterQuality;
-  HTMLCanvasElement* non_const_this = const_cast<HTMLCanvasElement*>(this);
-  non_const_this->UpdateDistributionForFlatTreeTraversal();
-  const ComputedStyle* style = non_const_this->EnsureComputedStyle();
+
+  const ComputedStyle* style = GetComputedStyle();
+  if (!style) {
+    GetDocument().UpdateStyleAndLayoutTreeForNode(this);
+    HTMLCanvasElement* non_const_this = const_cast<HTMLCanvasElement*>(this);
+    style = non_const_this->EnsureComputedStyle();
+  }
   return (style && style->ImageRendering() == EImageRendering::kPixelated)
              ? kNone_SkFilterQuality
              : kLow_SkFilterQuality;
