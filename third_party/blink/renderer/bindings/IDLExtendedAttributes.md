@@ -530,8 +530,6 @@ void func([TreatNullAs=Emptytring] DOMString str);
 
 Implementation: Given `[TreatNullAs=EmptyString]`, a JavaScript null is converted to a Blink empty string, for which `String::IsEmpty()` returns true, but `String::IsNull()` return false.
 
-**Non-standard:** Blink also supports the `NullString` identifier. Given `[TreatNullAs=NullString]`, a JavaScript null is converted to a Blink null string, for which both `String::IsEmpty()` and `String::IsNull()` return true. This is for performance reasons; see [Strings in Blink](https://docs.google.com/a/google.com/document/d/1kOCUlJdh2WJMJGDf-WoEQhmnjKLaOYRbiHz5TiGJl14/edit) for reference. Unless the spec specifies `[TreatNullAs=EmptyString]`, you should not specify `[TreatNullAs=NullString]` in Blink. Care must be taken to not treat null and empty strings differently, as they would be indistinguishable when using `[TreatNullAs=EmptyString]`.
-
 ### [Unforgeable] _(m,a)_
 
 Standard: [Unforgeable](http://heycam.github.io/webidl/#Unforgeable)

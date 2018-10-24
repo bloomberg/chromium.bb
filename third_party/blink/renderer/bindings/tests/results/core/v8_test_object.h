@@ -339,8 +339,6 @@ class V8TestObject {
   CORE_EXPORT static void setterCallWithExecutionContextStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void treatNullAsEmptyStringStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void treatNullAsEmptyStringStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void treatNullAsNullStringStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void treatNullAsNullStringStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void legacyInterfaceTypeCheckingFloatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void legacyInterfaceTypeCheckingFloatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
@@ -535,7 +533,6 @@ class V8TestObject {
   CORE_EXPORT static void voidMethodDefaultUndefinedStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void voidMethodEnforceRangeLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void voidMethodTreatNullAsEmptyStringStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void voidMethodTreatNullAsNullStringStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void activityLoggingAccessForAllWorldsMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void callWithExecutionContextVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void callWithScriptStateVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);

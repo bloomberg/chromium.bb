@@ -3825,31 +3825,6 @@ static void treatNullAsEmptyStringStringAttributeAttributeSetter(v8::Local<v8::V
   impl->setTreatNullAsEmptyStringStringAttribute(cppValue);
 }
 
-static void treatNullAsNullStringStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Local<v8::Object> holder = info.Holder();
-
-  TestObject* impl = V8TestObject::ToImpl(holder);
-
-  V8SetReturnValueString(info, impl->treatNullAsNullStringStringAttribute(), info.GetIsolate());
-}
-
-static void treatNullAsNullStringStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Isolate* isolate = info.GetIsolate();
-  ALLOW_UNUSED_LOCAL(isolate);
-
-  v8::Local<v8::Object> holder = info.Holder();
-  ALLOW_UNUSED_LOCAL(holder);
-
-  TestObject* impl = V8TestObject::ToImpl(holder);
-
-  // Prepare the value to be set.
-  V8StringResource<kTreatNullAsNullString> cppValue = v8Value;
-  if (!cppValue.Prepare())
-    return;
-
-  impl->setTreatNullAsNullStringStringAttribute(cppValue);
-}
-
 static void legacyInterfaceTypeCheckingFloatAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
@@ -7744,22 +7719,6 @@ static void voidMethodTreatNullAsEmptyStringStringArgMethod(const v8::FunctionCa
   impl->voidMethodTreatNullAsEmptyStringStringArg(treatNullAsEmptyStringStringArg);
 }
 
-static void voidMethodTreatNullAsNullStringStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObject* impl = V8TestObject::ToImpl(info.Holder());
-
-  if (UNLIKELY(info.Length() < 1)) {
-    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodTreatNullAsNullStringStringArg", "TestObject", ExceptionMessages::NotEnoughArguments(1, info.Length())));
-    return;
-  }
-
-  V8StringResource<kTreatNullAsNullString> treatNullAsNullStringStringArg;
-  treatNullAsNullStringStringArg = info[0];
-  if (!treatNullAsNullStringStringArg.Prepare())
-    return;
-
-  impl->voidMethodTreatNullAsNullStringStringArg(treatNullAsNullStringStringArg);
-}
-
 static void activityLoggingAccessForAllWorldsMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
@@ -11197,20 +11156,6 @@ void V8TestObject::treatNullAsEmptyStringStringAttributeAttributeSetterCallback(
   test_object_v8_internal::treatNullAsEmptyStringStringAttributeAttributeSetter(v8Value, info);
 }
 
-void V8TestObject::treatNullAsNullStringStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_treatNullAsNullStringStringAttribute_Getter");
-
-  test_object_v8_internal::treatNullAsNullStringStringAttributeAttributeGetter(info);
-}
-
-void V8TestObject::treatNullAsNullStringStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_treatNullAsNullStringStringAttribute_Setter");
-
-  v8::Local<v8::Value> v8Value = info[0];
-
-  test_object_v8_internal::treatNullAsNullStringStringAttributeAttributeSetter(v8Value, info);
-}
-
 void V8TestObject::legacyInterfaceTypeCheckingFloatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_legacyInterfaceTypeCheckingFloatAttribute_Getter");
 
@@ -12395,12 +12340,6 @@ void V8TestObject::voidMethodTreatNullAsEmptyStringStringArgMethodCallback(const
   test_object_v8_internal::voidMethodTreatNullAsEmptyStringStringArgMethod(info);
 }
 
-void V8TestObject::voidMethodTreatNullAsNullStringStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodTreatNullAsNullStringStringArg");
-
-  test_object_v8_internal::voidMethodTreatNullAsNullStringStringArgMethod(info);
-}
-
 void V8TestObject::activityLoggingAccessForAllWorldsMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_activityLoggingAccessForAllWorldsMethod");
 
@@ -13095,7 +13034,6 @@ static const V8DOMConfiguration::AccessorConfiguration V8TestObjectAccessors[] =
     { "setterCallWithCurrentWindowAndEnteredWindowStringAttribute", V8TestObject::setterCallWithCurrentWindowAndEnteredWindowStringAttributeAttributeGetterCallback, V8TestObject::setterCallWithCurrentWindowAndEnteredWindowStringAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
     { "setterCallWithExecutionContextStringAttribute", V8TestObject::setterCallWithExecutionContextStringAttributeAttributeGetterCallback, V8TestObject::setterCallWithExecutionContextStringAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
     { "treatNullAsEmptyStringStringAttribute", V8TestObject::treatNullAsEmptyStringStringAttributeAttributeGetterCallback, V8TestObject::treatNullAsEmptyStringStringAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
-    { "treatNullAsNullStringStringAttribute", V8TestObject::treatNullAsNullStringStringAttributeAttributeGetterCallback, V8TestObject::treatNullAsNullStringStringAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
     { "legacyInterfaceTypeCheckingFloatAttribute", V8TestObject::legacyInterfaceTypeCheckingFloatAttributeAttributeGetterCallback, V8TestObject::legacyInterfaceTypeCheckingFloatAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
     { "legacyInterfaceTypeCheckingTestInterfaceAttribute", V8TestObject::legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeGetterCallback, V8TestObject::legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
     { "legacyInterfaceTypeCheckingTestInterfaceOrNullAttribute", V8TestObject::legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeGetterCallback, V8TestObject::legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
@@ -13278,7 +13216,6 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"voidMethodDefaultUndefinedStringArg", V8TestObject::voidMethodDefaultUndefinedStringArgMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"voidMethodEnforceRangeLongArg", V8TestObject::voidMethodEnforceRangeLongArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"voidMethodTreatNullAsEmptyStringStringArg", V8TestObject::voidMethodTreatNullAsEmptyStringStringArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
-    {"voidMethodTreatNullAsNullStringStringArg", V8TestObject::voidMethodTreatNullAsNullStringStringArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"activityLoggingAccessForAllWorldsMethod", V8TestObject::activityLoggingAccessForAllWorldsMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"callWithExecutionContextVoidMethod", V8TestObject::callWithExecutionContextVoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"callWithScriptStateVoidMethod", V8TestObject::callWithScriptStateVoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
