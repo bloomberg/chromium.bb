@@ -280,8 +280,9 @@ void WebFrameTestProxy::MarkWebAXObjectDirty(const blink::WebAXObject& object,
 
 void WebFrameTestProxy::CheckIfAudioSinkExistsAndIsAuthorized(
     const blink::WebString& sink_id,
-    blink::WebSetSinkIdCallbacks* web_callbacks) {
-  test_client_->CheckIfAudioSinkExistsAndIsAuthorized(sink_id, web_callbacks);
+    std::unique_ptr<blink::WebSetSinkIdCallbacks> web_callbacks) {
+  test_client_->CheckIfAudioSinkExistsAndIsAuthorized(sink_id,
+                                                      std::move(web_callbacks));
 }
 
 void WebFrameTestProxy::DidClearWindowObject() {

@@ -241,7 +241,7 @@ bool TrackAudioRenderer::IsLocalRenderer() const {
 
 void TrackAudioRenderer::SwitchOutputDevice(
     const std::string& device_id,
-    const media::OutputDeviceStatusCB& callback) {
+    media::OutputDeviceStatusCB callback) {
   DVLOG(1) << "TrackAudioRenderer::SwitchOutputDevice()";
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -259,7 +259,7 @@ void TrackAudioRenderer::SwitchOutputDevice(
       new_sink->GetOutputDeviceInfo().device_status();
   if (new_sink_status != media::OUTPUT_DEVICE_STATUS_OK) {
     new_sink->Stop();
-    callback.Run(new_sink_status);
+    std::move(callback).Run(new_sink_status);
     return;
   }
 
@@ -274,7 +274,7 @@ void TrackAudioRenderer::SwitchOutputDevice(
   if (was_sink_started)
     MaybeStartSink();
 
-  callback.Run(media::OUTPUT_DEVICE_STATUS_OK);
+  std::move(callback).Run(media::OUTPUT_DEVICE_STATUS_OK);
 }
 
 void TrackAudioRenderer::MaybeStartSink() {

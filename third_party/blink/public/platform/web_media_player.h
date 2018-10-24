@@ -180,14 +180,8 @@ class WebMediaPlayer {
   virtual WebTimeRanges Seekable() const = 0;
 
   // Attempts to switch the audio output device.
-  // Implementations of SetSinkId take ownership of the WebSetSinkCallbacks
-  // object.
-  // Note also that SetSinkId implementations must make sure that all
-  // methods of the WebSetSinkCallbacks object, including constructors and
-  // destructors, run in the same thread where the object is created
-  // (i.e., the blink thread).
   virtual void SetSinkId(const WebString& sink_id,
-                         WebSetSinkIdCallbacks*) = 0;
+                         std::unique_ptr<WebSetSinkIdCallbacks>) = 0;
 
   // True if the loaded media has a playable video/audio track.
   virtual bool HasVideo() const = 0;

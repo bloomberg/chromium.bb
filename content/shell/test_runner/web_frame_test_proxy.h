@@ -96,7 +96,7 @@ class TEST_RUNNER_EXPORT WebFrameTestProxy : public content::RenderFrameImpl,
                             bool subtree) override;
   void CheckIfAudioSinkExistsAndIsAuthorized(
       const blink::WebString& sink_id,
-      blink::WebSetSinkIdCallbacks* web_callbacks) override;
+      std::unique_ptr<blink::WebSetSinkIdCallbacks> web_callbacks) override;
   void DidClearWindowObject() override;
   bool RunFileChooser(const blink::WebFileChooserParams& params,
                       blink::WebFileChooserCompletion* completion) override;

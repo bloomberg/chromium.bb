@@ -75,8 +75,7 @@ void SetSinkIdResolver::TimerFired(TimerBase* timer) {
   if (web_media_player) {
     // Using release() to transfer ownership because |webMediaPlayer| is a
     // platform object that takes raw pointers.
-    web_media_player->SetSinkId(sink_id_,
-                                callbacks.release());
+    web_media_player->SetSinkId(sink_id_, std::move(callbacks));
     return;
   }
 
@@ -95,7 +94,7 @@ void SetSinkIdResolver::TimerFired(TimerBase* timer) {
   WebLocalFrameImpl* web_frame =
       WebLocalFrameImpl::FromFrame(document.GetFrame());
   web_frame->Client()->CheckIfAudioSinkExistsAndIsAuthorized(
-      sink_id_, callbacks.release());
+      sink_id_, std::move(callbacks));
 }
 
 void SetSinkIdResolver::Trace(blink::Visitor* visitor) {

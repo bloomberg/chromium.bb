@@ -51,7 +51,7 @@ class MEDIA_EXPORT AudioRendererMixerInput
   void Initialize(const AudioParameters& params,
                   AudioRendererSink::RenderCallback* renderer) override;
   void SwitchOutputDevice(const std::string& device_id,
-                          const OutputDeviceStatusCB& callback) override;
+                          OutputDeviceStatusCB callback) override;
   // This is expected to be called on the audio rendering thread. The caller
   // must ensure that this input has been added to a mixer before calling the
   // function, and that it is not removed from the mixer before this function
