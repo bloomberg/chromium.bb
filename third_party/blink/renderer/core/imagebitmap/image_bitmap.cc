@@ -178,32 +178,10 @@ bool DstBufferSizeHasOverflow(const ImageBitmap::ParsedOptions& options) {
   return false;
 }
 
-SkImageInfo GetSkImageInfo(sk_sp<SkImage> skia_image) {
-  SkColorType color_type = kN32_SkColorType;
-  sk_sp<SkColorSpace> color_space = skia_image->refColorSpace();
-
-  if (skia_image->colorType() == kRGBA_F16_SkColorType ||
-      (skia_image->colorSpace() && skia_image->colorSpace()->gammaIsLinear())) {
-    color_type = kRGBA_F16_SkColorType;
-  }
-
-  if (color_type == kN32_SkColorType && skia_image->colorSpace() &&
-      skia_image->colorSpace()->isSRGB()) {
-    // Skia is in the middle of transitioning this scenario from meaning
-    // linearly blended sRGB uint8 to non-linearly blended sRGB uint8.  While
-    // the transition is happening, we'll strip the color space to force
-    // non-linearly blended sRGB uint8.  (This nullptr will continue to mean
-    // non-linearly blended sRGB uint8 after the transition too,  so there's
-    // really no harm leaving this indefinitely.)
-    color_space.reset(nullptr);
-  }
-  return SkImageInfo::Make(skia_image->width(), skia_image->height(),
-                           color_type, skia_image->alphaType(),
-                           std::move(color_space));
-}
-
-SkImageInfo GetSkImageInfo(const scoped_refptr<StaticBitmapImage>& image) {
-  return GetSkImageInfo(image->PaintImageForCurrentFrame().GetSkImage());
+SkImageInfo GetSkImageInfo(const scoped_refptr<StaticBitmapImage>& input) {
+  auto image = input->PaintImageForCurrentFrame().GetSkImage();
+  return SkImageInfo::Make(image->width(), image->height(), image->colorType(),
+                           image->alphaType(), image->refColorSpace());
 }
 
 // This function results in a readback due to using SkImage::readPixels().
