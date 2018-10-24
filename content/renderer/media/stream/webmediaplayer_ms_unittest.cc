@@ -281,9 +281,8 @@ class MockMediaStreamAudioRenderer : public MediaStreamAudioRenderer {
     return media::OutputDeviceInfo();
   }
 
-  void SwitchOutputDevice(
-      const std::string& device_id,
-      const media::OutputDeviceStatusCB& callback) override {}
+  void SwitchOutputDevice(const std::string& device_id,
+                          media::OutputDeviceStatusCB callback) override {}
   base::TimeDelta GetCurrentRenderTime() const override {
     return base::TimeDelta();
   }

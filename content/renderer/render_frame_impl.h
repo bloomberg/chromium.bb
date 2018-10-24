@@ -769,7 +769,7 @@ class CONTENT_EXPORT RenderFrameImpl
                                  const blink::WebURL& url) override;
   void CheckIfAudioSinkExistsAndIsAuthorized(
       const blink::WebString& sink_id,
-      blink::WebSetSinkIdCallbacks* web_callbacks) override;
+      std::unique_ptr<blink::WebSetSinkIdCallbacks> callbacks) override;
   blink::mojom::PageVisibilityState VisibilityState() const override;
   std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() override;
   void DraggableRegionsChanged() override;

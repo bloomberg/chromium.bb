@@ -7051,13 +7051,11 @@ void RenderFrameImpl::OnHostZoomClientRequest(
 
 void RenderFrameImpl::CheckIfAudioSinkExistsAndIsAuthorized(
     const blink::WebString& sink_id,
-    blink::WebSetSinkIdCallbacks* web_callbacks) {
-  media::OutputDeviceStatusCB callback =
-      media::ConvertToOutputDeviceStatusCB(web_callbacks);
-  std::move(callback).Run(
-      AudioDeviceFactory::GetOutputDeviceInfo(
-          GetRoutingID(), media::AudioSinkParameters(0, sink_id.Utf8()))
-          .device_status());
+    std::unique_ptr<blink::WebSetSinkIdCallbacks> callbacks) {
+  std::move(media::ConvertToOutputDeviceStatusCB(std::move(callbacks)))
+      .Run(AudioDeviceFactory::GetOutputDeviceInfo(
+               GetRoutingID(), media::AudioSinkParameters(0, sink_id.Utf8()))
+               .device_status());
 }
 
 blink::mojom::PageVisibilityState RenderFrameImpl::VisibilityState() const {

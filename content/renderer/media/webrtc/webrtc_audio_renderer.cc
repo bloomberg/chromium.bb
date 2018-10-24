@@ -125,11 +125,10 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
     return delegate_->GetOutputDeviceInfo();
   }
 
-  void SwitchOutputDevice(
-      const std::string& device_id,
-      const media::OutputDeviceStatusCB& callback) override {
+  void SwitchOutputDevice(const std::string& device_id,
+                          media::OutputDeviceStatusCB callback) override {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-    return delegate_->SwitchOutputDevice(device_id, callback);
+    return delegate_->SwitchOutputDevice(device_id, std::move(callback));
   }
 
   base::TimeDelta GetCurrentRenderTime() const override {
@@ -367,11 +366,11 @@ bool WebRtcAudioRenderer::IsLocalRenderer() const {
 
 void WebRtcAudioRenderer::SwitchOutputDevice(
     const std::string& device_id,
-    const media::OutputDeviceStatusCB& callback) {
+    media::OutputDeviceStatusCB callback) {
   DVLOG(1) << "WebRtcAudioRenderer::SwitchOutputDevice()";
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!source_) {
-    callback.Run(media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
+    std::move(callback).Run(media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
     return;
   }
 
@@ -391,7 +390,7 @@ void WebRtcAudioRenderer::SwitchOutputDevice(
       new_sink->GetOutputDeviceInfo().device_status();
   if (status != media::OUTPUT_DEVICE_STATUS_OK) {
     new_sink->Stop();
-    callback.Run(status);
+    std::move(callback).Run(status);
     return;
   }
 
@@ -410,7 +409,7 @@ void WebRtcAudioRenderer::SwitchOutputDevice(
   sink_->Start();
   sink_->Play();  // Not all the sinks play on start.
 
-  callback.Run(media::OUTPUT_DEVICE_STATUS_OK);
+  std::move(callback).Run(media::OUTPUT_DEVICE_STATUS_OK);
 }
 
 int WebRtcAudioRenderer::Render(base::TimeDelta delay,

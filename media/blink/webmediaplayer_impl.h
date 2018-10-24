@@ -142,8 +142,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
       const std::vector<blink::PictureInPictureControlInfo>&) override;
   void RegisterPictureInPictureWindowResizeCallback(
       blink::WebMediaPlayer::PipWindowResizedCallback callback) override;
-  void SetSinkId(const blink::WebString& sink_id,
-                 blink::WebSetSinkIdCallbacks* web_callback) override;
+  void SetSinkId(
+      const blink::WebString& sink_id,
+      std::unique_ptr<blink::WebSetSinkIdCallbacks> web_callback) override;
   void SetPoster(const blink::WebURL& poster) override;
   void SetPreload(blink::WebMediaPlayer::Preload preload) override;
   blink::WebTimeRanges Buffered() const override;

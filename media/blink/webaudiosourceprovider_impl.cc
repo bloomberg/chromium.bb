@@ -277,12 +277,12 @@ bool WebAudioSourceProviderImpl::CurrentThreadIsRenderingThread() {
 
 void WebAudioSourceProviderImpl::SwitchOutputDevice(
     const std::string& device_id,
-    const OutputDeviceStatusCB& callback) {
+    OutputDeviceStatusCB callback) {
   base::AutoLock auto_lock(sink_lock_);
   if (client_ || !sink_)
-    callback.Run(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
+    std::move(callback).Run(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
   else
-    sink_->SwitchOutputDevice(device_id, callback);
+    sink_->SwitchOutputDevice(device_id, std::move(callback));
 }
 
 void WebAudioSourceProviderImpl::SetCopyAudioCallback(CopyAudioCB callback) {

@@ -792,15 +792,11 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Audio Output Devices API --------------------------------------------
 
   // Checks that the given audio sink exists and is authorized. The result is
-  // provided via the callbacks.  This method takes ownership of the callbacks
-  // pointer.
+  // provided via the callbacks.
   virtual void CheckIfAudioSinkExistsAndIsAuthorized(
       const WebString& sink_id,
-      WebSetSinkIdCallbacks* callbacks) {
-    if (callbacks) {
-      callbacks->OnError(WebSetSinkIdError::kNotSupported);
-      delete callbacks;
-    }
+      std::unique_ptr<WebSetSinkIdCallbacks> callbacks) {
+    callbacks->OnError(WebSetSinkIdError::kNotSupported);
   }
 
   // Visibility ----------------------------------------------------------
