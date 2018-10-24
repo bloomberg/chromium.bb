@@ -15,7 +15,9 @@
 #include "base/strings/stringprintf.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/utils/SkParse.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/color_utils.h"
@@ -194,9 +196,51 @@ bool IsIconAtPathSufficientlyVisible(const base::FilePath& path) {
   SkBitmap icon;
   if (!LoadPngFromFile(path, &icon)) {
     return false;
-  } else {
-    return image_util::IsIconSufficientlyVisible(icon);
   }
+  return IsIconSufficientlyVisible(icon);
+}
+
+bool IsRenderedIconSufficientlyVisible(const SkBitmap& icon,
+                                       SkColor background_color) {
+  // If any of a pixel's RGB values is greater than this number, the pixel is
+  // considered visible.
+  constexpr unsigned int kThreshold = 15;
+  // The minimum "percent" of pixels that must be visible for the icon to be
+  // considered OK.
+  constexpr double kMinPercentVisiblePixels = 0.05;
+  const int total_pixels = icon.height() * icon.width();
+
+  // Draw the icon onto a canvas, then draw the background color onto the
+  // resulting bitmap, using SkBlendMode::kDifference. Then, check the RGB
+  // values against the threshold. Any pixel with a value greater than the
+  // threshold is considered visible.
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(icon.width(), icon.height());
+  bitmap.eraseColor(background_color);
+  SkCanvas offscreen(bitmap);
+  offscreen.drawImage(SkImage::MakeFromBitmap(icon), 0, 0);
+  offscreen.drawColor(background_color, SkBlendMode::kDifference);
+  int visible_pixels = 0;
+  for (int x = 0; x < icon.width(); ++x) {
+    for (int y = 0; y < icon.height(); ++y) {
+      SkColor pixel = bitmap.getColor(x, y);
+      if (SkColorGetR(pixel) > kThreshold || SkColorGetB(pixel) > kThreshold ||
+          SkColorGetG(pixel) > kThreshold) {
+        ++visible_pixels;
+      }
+    }
+  }
+  return static_cast<double>(visible_pixels) / total_pixels >=
+         kMinPercentVisiblePixels;
+}
+
+bool IsRenderedIconAtPathSufficientlyVisible(const base::FilePath& path,
+                                             SkColor background_color) {
+  SkBitmap icon;
+  if (!LoadPngFromFile(path, &icon)) {
+    return false;
+  }
+  return IsRenderedIconSufficientlyVisible(icon, background_color);
 }
 
 bool LoadPngFromFile(const base::FilePath& path, SkBitmap* dst) {
