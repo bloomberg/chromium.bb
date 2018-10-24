@@ -760,8 +760,6 @@ component("ash") {
     "system/message_center/session_state_notification_blocker.h",
     "system/message_center/slidable_message_view.cc",
     "system/message_center/slidable_message_view.h",
-    "system/message_center/unified_message_center_view.cc",
-    "system/message_center/unified_message_center_view.h",
     "system/message_center/unified_message_list_view.cc",
     "system/message_center/unified_message_list_view.h",
     "system/model/clock_model.cc",

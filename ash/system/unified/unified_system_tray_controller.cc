@@ -165,20 +165,6 @@ void UnifiedSystemTrayController::ToggleExpanded() {
     animation_->Show();
 }
 
-void UnifiedSystemTrayController::HandleClearAllAction() {
-  base::RecordAction(
-      base::UserMetricsAction("StatusArea_Notifications_ClearAll"));
-
-  // When the animation is finished, OnClearAllAnimationEnded() is called.
-  unified_view_->ShowClearAllAnimation();
-}
-
-void UnifiedSystemTrayController::OnClearAllAnimationEnded() {
-  message_center::MessageCenter::Get()->RemoveAllNotifications(
-      true /* by_user */,
-      message_center::MessageCenter::RemoveType::NON_PINNED);
-}
-
 void UnifiedSystemTrayController::OnMessageCenterVisibilityUpdated() {
   if (bubble_)
     bubble_->UpdateTransform();

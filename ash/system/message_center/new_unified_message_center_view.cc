@@ -8,14 +8,15 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/message_center/message_center_scroll_bar.h"
-#include "ash/system/message_center/unified_message_center_view.h"
 #include "ash/system/message_center/unified_message_list_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/sign_out_button.h"
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/canvas.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
@@ -67,6 +68,45 @@ class ScrollerContentsView : public views::View {
 };
 
 }  // namespace
+
+StackingNotificationCounterView::StackingNotificationCounterView() {
+  SetBorder(views::CreateSolidSidedBorder(
+      0, 0, 1, 0, kStackingNotificationCounterBorderColor));
+}
+
+StackingNotificationCounterView::~StackingNotificationCounterView() = default;
+
+void StackingNotificationCounterView::SetCount(int stacking_count) {
+  stacking_count_ = std::min(stacking_count, kStackingNotificationCounterMax);
+  SetVisible(stacking_count > 0);
+  SchedulePaint();
+}
+
+void StackingNotificationCounterView::OnPaint(gfx::Canvas* canvas) {
+  int x = kStackingNotificationCounterStartX;
+  const int y = kStackingNotificationCounterHeight / 2;
+
+  cc::PaintFlags flags;
+  flags.setColor(message_center::kNotificationBackgroundColor);
+  flags.setStyle(cc::PaintFlags::kFill_Style);
+  flags.setAntiAlias(true);
+
+  SkPath background_path;
+  SkScalar top_radius = SkIntToScalar(kUnifiedTrayCornerRadius);
+  SkScalar radii[8] = {top_radius, top_radius, top_radius, top_radius,
+                       0,          0,          0,          0};
+  background_path.addRoundRect(gfx::RectToSkRect(GetLocalBounds()), radii);
+  canvas->DrawPath(background_path, flags);
+
+  flags.setColor(kStackingNotificationCounterColor);
+  for (int i = 0; i < stacking_count_; ++i) {
+    canvas->DrawCircle(gfx::Point(x, y), kStackingNotificationCounterRadius,
+                       flags);
+    x += kStackingNotificationCounterDistanceX;
+  }
+
+  views::View::OnPaint(canvas);
+}
 
 NewUnifiedMessageCenterView::NewUnifiedMessageCenterView(
     UnifiedSystemTrayView* parent,
