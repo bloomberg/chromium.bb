@@ -160,8 +160,8 @@ Build Chromium (the "chrome" target) with Ninja using the command:
 $ autoninja -C out/Default chrome
 ```
 
-`autoninja` is a wrapper that automatically provides optimal values for the
-arguments passed to `ninja`.
+(`autoninja` is a wrapper that automatically provides optimal values for the
+arguments passed to `ninja`.)
 
 You can get a list of all of the other build targets from GN by running `gn ls
 out/Default` from the command line. To compile one, pass the GN label to Ninja
@@ -233,7 +233,7 @@ slow, but it runs fairly well even **with indexing enabled**.  Most people
 build in the Terminal and write code with a text editor, though.
 
 With hybrid builds, compilation is still handled by Ninja, and can be run from
-the command line (e.g. `ninja -C out/gn chrome`) or by choosing the `chrome`
+the command line (e.g. `autoninja -C out/gn chrome`) or by choosing the `chrome`
 target in the hybrid workspace and choosing Build.
 
 To use Xcode-Ninja Hybrid pass `--ide=xcode` to `gn gen`:
