@@ -163,12 +163,12 @@ zcr_notification_shell_v1_destroy(struct zcr_notification_shell_v1 *zcr_notifica
  * Creates a desktop notification from plain text information.
  */
 static inline struct zcr_notification_shell_notification_v1 *
-zcr_notification_shell_v1_create_notification(struct zcr_notification_shell_v1 *zcr_notification_shell_v1, const char *title, const char *message, const char *display_source, const char *notification_key)
+zcr_notification_shell_v1_create_notification(struct zcr_notification_shell_v1 *zcr_notification_shell_v1, const char *title, const char *message, const char *display_source, const char *notification_key, struct wl_array *buttons)
 {
 	struct wl_proxy *id;
 
 	id = wl_proxy_marshal_constructor((struct wl_proxy *) zcr_notification_shell_v1,
-			 ZCR_NOTIFICATION_SHELL_V1_CREATE_NOTIFICATION, &zcr_notification_shell_notification_v1_interface, NULL, title, message, display_source, notification_key);
+			 ZCR_NOTIFICATION_SHELL_V1_CREATE_NOTIFICATION, &zcr_notification_shell_notification_v1_interface, NULL, title, message, display_source, notification_key, buttons);
 
 	return (struct zcr_notification_shell_notification_v1 *) id;
 }
@@ -264,6 +264,16 @@ struct zcr_notification_shell_notification_v1_listener {
 	void (*closed)(void *data,
 		       struct zcr_notification_shell_notification_v1 *zcr_notification_shell_notification_v1,
 		       uint32_t by_user);
+	/**
+	 * Notification is clicked
+	 *
+	 * Notifies the notification object that the notification or its
+	 * button is clicked.
+	 * @param button_index -1 if the body of the notification is cliked as opposed to a button
+	 */
+	void (*clicked)(void *data,
+			struct zcr_notification_shell_notification_v1 *zcr_notification_shell_notification_v1,
+			int32_t button_index);
 };
 
 /**
@@ -284,6 +294,10 @@ zcr_notification_shell_notification_v1_add_listener(struct zcr_notification_shel
  * @ingroup iface_zcr_notification_shell_notification_v1
  */
 #define ZCR_NOTIFICATION_SHELL_NOTIFICATION_V1_CLOSED_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_notification_shell_notification_v1
+ */
+#define ZCR_NOTIFICATION_SHELL_NOTIFICATION_V1_CLICKED_SINCE_VERSION 1
 
 /**
  * @ingroup iface_zcr_notification_shell_notification_v1

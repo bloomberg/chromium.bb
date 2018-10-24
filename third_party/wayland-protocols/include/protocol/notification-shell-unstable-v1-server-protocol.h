@@ -130,6 +130,7 @@ struct zcr_notification_shell_v1_interface {
 	 *
 	 * Creates a desktop notification from plain text information.
 	 * @param display_source textual representation of who's shown the notification
+	 * @param buttons array of 0-terminated button title names
 	 */
 	void (*create_notification)(struct wl_client *client,
 				    struct wl_resource *resource,
@@ -137,7 +138,8 @@ struct zcr_notification_shell_v1_interface {
 				    const char *title,
 				    const char *message,
 				    const char *display_source,
-				    const char *notification_key);
+				    const char *notification_key,
+				    struct wl_array *buttons);
 	/**
 	 * create a notification surface from a surface
 	 *
@@ -217,11 +219,16 @@ struct zcr_notification_shell_notification_v1_interface {
 };
 
 #define ZCR_NOTIFICATION_SHELL_NOTIFICATION_V1_CLOSED 0
+#define ZCR_NOTIFICATION_SHELL_NOTIFICATION_V1_CLICKED 1
 
 /**
  * @ingroup iface_zcr_notification_shell_notification_v1
  */
 #define ZCR_NOTIFICATION_SHELL_NOTIFICATION_V1_CLOSED_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_notification_shell_notification_v1
+ */
+#define ZCR_NOTIFICATION_SHELL_NOTIFICATION_V1_CLICKED_SINCE_VERSION 1
 
 /**
  * @ingroup iface_zcr_notification_shell_notification_v1
@@ -242,6 +249,18 @@ static inline void
 zcr_notification_shell_notification_v1_send_closed(struct wl_resource *resource_, uint32_t by_user)
 {
 	wl_resource_post_event(resource_, ZCR_NOTIFICATION_SHELL_NOTIFICATION_V1_CLOSED, by_user);
+}
+
+/**
+ * @ingroup iface_zcr_notification_shell_notification_v1
+ * Sends an clicked event to the client owning the resource.
+ * @param resource_ The client's resource
+ * @param button_index -1 if the body of the notification is cliked as opposed to a button
+ */
+static inline void
+zcr_notification_shell_notification_v1_send_clicked(struct wl_resource *resource_, int32_t button_index)
+{
+	wl_resource_post_event(resource_, ZCR_NOTIFICATION_SHELL_NOTIFICATION_V1_CLICKED, button_index);
 }
 
 #ifdef  __cplusplus
