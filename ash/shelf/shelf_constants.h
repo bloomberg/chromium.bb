@@ -34,8 +34,8 @@ constexpr int kWorkspaceAreaVisibleInset = 2;
 // user can drag the shelf out.
 constexpr int kWorkspaceAreaAutoHideInset = 5;
 
-// Size of the shelf when auto-hidden.
-ASH_EXPORT constexpr int kShelfAutoHideSize = 3;
+// Portion of the shelf that's within the screen bounds when auto-hidden.
+ASH_EXPORT constexpr int kHiddenShelfInScreenPortion = 3;
 
 // Animation duration for switching black shelf and dock background on and off.
 ASH_EXPORT constexpr int kTimeToSwitchBackgroundMs = 1000;
