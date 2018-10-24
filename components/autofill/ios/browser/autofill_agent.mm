@@ -733,8 +733,10 @@ autofillManagerFromWebState:(web::WebState*)webState
                            inFrame:(web::WebFrame*)frame {
   if (![self isAutofillEnabled])
     return;
-
+  if (!frame || !frame->CanCallJavaScriptFunction())
+    return;
   FormDataVector forms;
+
   bool success = autofill::ExtractFormsData(
       base::SysUTF8ToNSString(formData), true, base::UTF8ToUTF16(formName),
       webState->GetLastCommittedURL(), frame->GetSecurityOrigin(), &forms);
