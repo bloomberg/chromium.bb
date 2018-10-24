@@ -10,7 +10,7 @@
 
       Hvis denne innstillingen ikke er angitt, lar <ph name="PRODUCT_NAME" /> brukeren kontrollere om den er standardnettleser, og hvorvidt brukervarslinger skal vises når den ikke er det.
 
-      Merknad for administratorer av <ph name="MS_WIN_NAME" />: Det er kun mulig å slå på denne innstillingen for maskiner som har Windows 7. For Windows-versjoner fra og med Windows 8 må du implementere en «standardprogramtilknytninger»-fil som gjør <ph name="PRODUCT_NAME" /> til behandler for <ph name="HHTPS_PROTOCOL" />- og <ph name="HTTP_PROTOCOL" />-protokollene (og eventuelt <ph name="FTP_PROTOCOL" />-protokollen og filformater som <ph name="HTML_EXTENSION" />, <ph name="HTM_EXTENSION" />, <ph name="PDF_EXTENSION" />, <ph name="SVG_EXTENSION" />, <ph name="WEBP_EXTENSION" /> osv.). Se <ph name="SUPPORT_URL" /> for mer informasjon.</translation>
+      Merknad for administratorer av <ph name="MS_WIN_NAME" />: Det er kun mulig å slå på denne innstillingen for maskiner som har Windows 7. For Windows-versjoner fra og med Windows 8 må du implementere en «standardprogramtilknytninger»-fil («default application associations») som gjør <ph name="PRODUCT_NAME" /> til behandler for <ph name="HHTPS_PROTOCOL" />- og <ph name="HTTP_PROTOCOL" />-protokollene (og eventuelt <ph name="FTP_PROTOCOL" />-protokollen og filformater som <ph name="HTML_EXTENSION" />, <ph name="HTM_EXTENSION" />, <ph name="PDF_EXTENSION" />, <ph name="SVG_EXTENSION" />, <ph name="WEBP_EXTENSION" /> osv.). Se <ph name="SUPPORT_URL" /> for mer informasjon.</translation>
 <translation id="1017967144265860778">Strømstyring på påloggingssiden</translation>
 <translation id="1019101089073227242">Angi katalog for brukerdata</translation>
 <translation id="1022361784792428773">Utvidelses-ID-er brukeren skal hindres i å installere (eller * for alle)</translation>
@@ -1612,11 +1612,11 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 
       Hvis denne regelen er angitt som «false» (usann), deaktiveres alle brukergrensesnitt for <ph name="PRODUCT_NAME" /> der en bruker kan koble fra eller endre VPN-tilkoblinger.
 
-      Hvis denne regelen ikke er angitt, eller er angitt som «true» (sann), kan brukere koble fra eller endre VPN-tilkoblinger som normalt.
+      Hvis denne regelen ikke er angitt, eller hvis den er angitt som «true» (sann), kan brukere koble fra eller endre VPN-tilkoblinger som normalt.
 
       Hvis VPN-tilkoblingen opprettes i en VPN-app, påvirkes ikke grensesnittet i appen av denne regelen. Derfor kan brukeren muligens fortsatt bruke appen til å endre VPN-tilkoblingen.
 
-      Denne regelen er ment for å brukes med «Alltid på-VPN»-funksjonen, som lar administratoren etablere en VPN-tilkobling ved oppstart.</translation>
+      Denne regelen er ment å brukes med «Alltid på-VPN»-funksjonen, som lar administratoren etablere en VPN-tilkobling ved oppstart.</translation>
 <translation id="5405289061476885481">Konfigurerer hvilke tastaturoppsett som tillates på påloggingsskjermen i <ph name="PRODUCT_OS_NAME" />.
 
       Hvis denne regelen er angitt til en liste med identifikatorer for inndatametoder, er de angitte inndatametodene tilgjengelige på påloggingsskjermen. Den første angitte inndatametoden blir forhåndsvalgt. Når en brukerkapsel er fokusert på påloggingsskjermen, blir den inndatametoden det er lengst siden brukeren brukte, tilgjengelig – i tillegg til inndatametodene som spesifiseres av denne regelen. Hvis denne regelen ikke er spesifisert, blir inndatametodene på påloggingsskjermen avledet fra lokaliteten påloggingsskjermen vises med. Verdier som ikke er gyldige identifikatorer for inndatametoder, blir ignorert.</translation>
@@ -1704,7 +1704,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="570062449808736508">Når denne regelen er satt til en streng som ikke er tom, leser WebView nettadressebegrensningene fra innholdsleverandøren med det angitte autoritetsnavnet.</translation>
 <translation id="5701714006401683963">Hvis denne regelen er angitt som «false» (usann), fungerer administrerte gjesteøkter som dokumentert i https://support.google.com/chrome/a/answer/3017014 – som vanlige «offentlige økter».
 
-      Hvis denne regelen er angitt som «true» (sann), eller ikke er angitt, fungerer administrerte gjesteøkter som «administrerte økter», noe som fjerner mange av begrensningene som gjelder for vanlige «offentlige økter».
+      Hvis denne regelen er angitt som «true» (sann) eller ikke er angitt, fungerer administrerte gjesteøkter som «administrerte økter», noe som fjerner mange av begrensningene som gjelder for vanlige «offentlige økter».
 
       Hvis denne regelen er angitt, kan ikke brukeren endre eller overstyre den.</translation>
 <translation id="5722934961007828462">Når denne regelen er på, utfører alltid <ph name="PRODUCT_NAME" /> opphevelsessjekker for tjenersertifikater som blir godkjent og er signert av CA-sertifikater som er installert lokalt.
@@ -3078,9 +3078,9 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="8970205333161758602">Ignorer avslagsforespørsel for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8976248126101463034">Tillat gnubby-autentisering for fjerntilgangsverter</translation>
 <translation id="8976531594979650914">Bruk standardskriveren i systemet, som standard</translation>
-<translation id="898520305112996948">Lar deg angi en liste over nettadressemønstre som bestemmer hvilke nettsteder som automatisk får tilgang til en USB-enhet med de oppgitte leverandør- og produkt-ID-ene. Hvert element på listen må ha både enheter og nettadressemønstre for at regelen skal være gyldig. Hvert element i enhetene kan ha et felt for leverandør-ID og et felt for produkt-ID. En ID som utelates, behandles som et jokertegn, med ett unntak. Det unntaket er at en produkt-ID ikke kan bestemmes hvis ikke en leverandør-ID også bestemmes. Ellers er ikke regelen gyldig. Ugyldige verdier i regelen ignoreres.
+<translation id="898520305112996948">Lar deg angi en liste over nettadressemønstre som bestemmer hvilke nettsteder som automatisk får tilgang til en USB-enhet med de oppgitte leverandør- og produkt-ID-ene. Hvert element på listen må ha både enheter og nettadressemønstre for at regelen skal være gyldig. Hvert element i enhetene kan ha et felt for leverandør-ID og et felt for produkt-ID. ID-er som utelates, behandles som jokertegn, med ett unntak: En produkt-ID ikke kan angis uten at en leverandør-ID også angis – da blir regelen ugyldig. Ugyldige verdier i regelen ignoreres.
 
-        Hvis regelen las stå uten å angis som noe, brukes den globale standardverdien for alle nettsteder, enten fra «DefaultWebUsbGuardSetting»-regelen hvis den er angitt, eller så brukes brukerens personlige oppsett.
+        Hvis regelen ikke angis, brukes den globale standardverdien for alle nettsteder – enten fra «DefaultWebUsbGuardSetting»-regelen, hvis den er angitt, ellers brukes brukerens personlige oppsett.
 
         Nettadressemønstre i denne regelen må ikke kollidere med mønstrene som er konfigurert via WebUsbBlockedForUrls. Hvis de kolliderer, har denne regelen forrang over WebUsbBlockedForUrls og WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">Ikke la noen nettsteder vise bilder</translation>

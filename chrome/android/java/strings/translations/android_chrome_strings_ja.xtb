@@ -530,7 +530,6 @@
 <translation id="5161254044473106830">タイトルが必要です</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 件のダウンロードが失敗しました。}other{# 件のダウンロードが失敗しました。}}</translation>
 <translation id="5168917394043976756">操作パネルを開く</translation>
-<translation id="5171365962177408781">タップすると新しいタブの画面が読み込まれ、おすすめの記事が表示されます</translation>
 <translation id="5184329579814168207">Chromeで開く</translation>
 <translation id="5199929503336119739">仕事用プロファイル</translation>
 <translation id="5210286577605176222">前のタブに移動する</translation>
@@ -571,7 +570,6 @@
 <translation id="5466407412363861127">この機能では<ph name="BEGIN_LINK" />同期<ph name="END_LINK" />が使用されます。</translation>
 <translation id="548278423535722844">マップアプリで開く</translation>
 <translation id="5487521232677179737">データを消去</translation>
-<translation id="5487729733663684359">このバージョンの Android では Chrome の更新はサポートされなくなりました。</translation>
 <translation id="5494920125229734069">すべて選択する</translation>
 <translation id="550684401320795253">Chrome を更新しています...</translation>
 <translation id="5512137114520586844">このアカウントは <ph name="PARENT_NAME" /> によって管理されています。</translation>
@@ -1055,7 +1053,6 @@
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB をダウンロードで使用中</translation>
 <translation id="9100505651305367705">記事の簡易表示がサポートされている場合、簡易表示を提案する</translation>
 <translation id="9100610230175265781">パスフレーズを入力してください</translation>
-<translation id="9100939710791843300">新しいタブの画面を読み込んでおすすめの記事を表示するには、ホームボタンをタップします</translation>
 <translation id="9133515669113036225">デバイス認証情報のリセット</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" />（<ph name="ITEM_ID" />）</translation>
 <translation id="9137013805542155359">原文のページを表示</translation>

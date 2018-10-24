@@ -24,6 +24,12 @@
       如果此政策设为 false 或未设置，仅当用户首次在设备上登录时，由 IdP 设置的 Cookie 才会被转移到其个人资料中。
 
       此政策只会影响所在网域与设备注册网域匹配的用户。对于所有其他用户，仅当他们首次在设备上登录时，由 IdP 设置的 Cookie 才会被转移到其个人资料中。</translation>
+<translation id="1035385378988781231">此政策用于控制适用于 <ph name="PRODUCT_NAME" />的网络文件共享功能是否将使用 NTLM 进行身份验证。
+
+      如果此政策设为 True，系统会视需要使用 NTLM 对 SMB 共享文件进行身份验证。
+      如果此政策设为 False，系统将停用对 SMB 共享文件的 NTLM 身份验证机制。
+
+      如果此政策未设置，默认情况下，系统会对受企业管理的用户停用身份验证，并对不受管理的用户启用身份验证。</translation>
 <translation id="1040446814317236570">启用 PAC 网址剔除功能（适用于 https:// 类网址）</translation>
 <translation id="1044878202534415707">报告硬件统计数据，例如 CPU/RAM 使用情况。
 
@@ -90,6 +96,13 @@
       默认值为 RollbackDisabled。</translation>
 <translation id="1221359380862872747">在演示登录时加载指定网址</translation>
 <translation id="1223789468190631420">针对可信来源的安全浏览功能启用状态</translation>
+<translation id="122899932962115297">一种白名单，用于控制用户可以配置和使用哪些快速解锁模式来解锁屏幕。
+
+          该值是一个字符串列表；有效的列表项包括：“all”、“PIN”和“FINGERPRINT”。如果向此列表中添加了“all”，即意味着用户可以使用所有快速解锁模式（包括日后会实施的快速解锁模式）。如果未向此列表中添加“all”，则仅能使用此列表中指定的快速解锁模式。
+
+          例如，要想允许每一个快速解锁模式，请使用 ["all"]。要想仅允许 PIN 码解锁模式，请使用 ["PIN"]。要想允许 PIN 码和指纹，请使用 ["PIN", "FINGERPRINT"]。要想停用所有快速解锁模式，请使用 []。
+
+          默认情况下，用户无法在托管设备上使用任何快速解锁模式。</translation>
 <translation id="123081309365616809">允许向设备投射内容</translation>
 <translation id="1243570869342663665">控制 SafeSites 的成人内容滤除机制。</translation>
 <translation id="1257550411839719984">设置默认下载目录</translation>
@@ -600,6 +613,7 @@
 
       如果此政策未设置，默认情况下，受管理用户将不能使用短信同步功能，不受管理的用户则可以。</translation>
 <translation id="2660846099862559570">从不使用代理</translation>
+<translation id="2672012807430078509">控制是否允许将 NTLM 作为 SMB 装载功能的身份验证协议</translation>
 <translation id="267596348720209223">指定搜索服务提供商支持的字符编码。编码是指类似于 UTF-8、GB2312 和 ISO-8859-1 的代码页名称，并按此顺序进行尝试。此政策是可选的，如果未设置，将使用默认值 UTF-8。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="268577405881275241">启用数据压缩代理功能</translation>
 <translation id="2693108589792503178">配置用于更改密码的网址。</translation>
@@ -929,6 +943,11 @@
       如果停用了此政策，则不会发生明确的网站隔离，IsolateOrigins 和 SitePerProcess 的现场试验也将停用。用户仍可手动启用 IsolateOrigins。
       如果未配置此政策，系统将为登录屏幕使用平台默认的网站隔离设置。
       </translation>
+<translation id="3748900290998155147">指定是否允许使用唤醒锁定。扩展程序可通过 Power Management Extension API 和 ARC 应用请求使用唤醒锁定。
+
+          如果将此政策设为 true 或未进行设置，系统就会允许使用唤醒锁定，以便进行电源管理。
+
+          如果将此政策设为 false，系统就会忽略唤醒锁定请求。</translation>
 <translation id="3750220015372671395">禁止在这些网站上使用密钥生成功能</translation>
 <translation id="3756011779061588474">禁止开发者模式</translation>
 <translation id="3758089716224084329">可让您指定 <ph name="PRODUCT_NAME" /> 使用的代理服务器，并禁止用户更改代理设置。
@@ -961,6 +980,11 @@
 
           如果“EnableMediaRouter”政策设为 false，那么此政策的值将不会发挥任何作用，该工具栏图标将不会显示。</translation>
 <translation id="3788662722837364290">设备闲置时的电源管理设置</translation>
+<translation id="3790085888761753785">如果此设置处于启用状态，用户将能够使用 Smart Lock 登录他们的帐号。一般 Smart Lock 只能让用户解锁屏幕，相较之下这项设置的功能更强大。
+
+      如果此设置处于停用状态，用户将不能使用 Smart Lock 登录功能。
+
+      如果此政策未设置，默认情况下，受企业管理的用户不能使用 Smart Lock，不受管理的用户则能够使用 Smart Lock。</translation>
 <translation id="379602782757302612">可让您指定哪些扩展程序是用户无法安装的。如果已安装的扩展程序被列入黑名单，就会遭到停用，而且用户将无法启用它们。一旦某个因被列入黑名单而遭到停用的扩展程序被移出黑名单，系统即会自动重新启用它。
 
           黑名单中的“*”值表示：除了在白名单中明确列出的扩展程序，其他所有扩展程序均已被列入黑名单。
@@ -1058,6 +1082,9 @@
 
           如果此政策未设置或设为 False，用户可以将文件传输到 Google 云端硬盘。</translation>
 <translation id="3915395663995367577">代理 .pac 文件的网址</translation>
+<translation id="3925020515212192040">指定预先配置的网络文件共享列表。
+
+      此政策的每个列表项都是一个对象，由“share_url”和“mode”组成。“share_url”应该是共享文件的网址，“mode”则应设为“drop_down”，表示“share_url”将会添加到共享文件发现下拉菜单中。</translation>
 <translation id="3939893074578116847">将网络数据包发送到管理服务器以监控联网状态，从而使得服务器能够判断设备有没有联网。
 
       如果此政策设为 true，系统将发送监控网络数据包（所谓的“<ph name="HEARTBEATS_TERM" />”）。
@@ -1203,6 +1230,7 @@
 <translation id="4377599627073874279">允许所有网站显示所有图片</translation>
 <translation id="437791893267799639">政策未设置，禁止数据迁移和 ARC</translation>
 <translation id="4389091865841123886">通过 TPM 机制配置远程认证。</translation>
+<translation id="4408428864159735559">预先配置的网络文件共享列表。</translation>
 <translation id="4410236409016356088">启用网络带宽限制功能</translation>
 <translation id="441217499641439905">在 <ph name="PRODUCT_OS_NAME" />的“文件”应用中，不允许通过移动网络连接到 Google 云端硬盘</translation>
 <translation id="4418726081189202489">如果将此政策设为 False，<ph name="PRODUCT_NAME" /> 将无法不定期向 Google 服务器发出查询来检索准确的时间戳。如果此政策设为 True 或未设置，这样的查询将能够发送到 Google 服务器。</translation>
@@ -1894,6 +1922,7 @@
       要控制哪些网站可以运行 Flash，请参见“DefaultPluginsSetting”、“PluginsAllowedForUrls”和“PluginsBlockedForUrls”政策。
 
       如果停用或未设定此设置，来自其他来源的 Flash 内容或不重要的内容可能会被屏蔽。</translation>
+<translation id="6532769014584932288">允许使用唤醒锁定</translation>
 <translation id="653608967792832033">指定在使用电池供电时用户停止输入后隔多久锁定屏幕。
 
           当此政策的值设置为大于 0 时，只要机器闲置的时间达到此处指定的时长，<ph name="PRODUCT_OS_NAME" />就会锁定屏幕。
@@ -2180,6 +2209,11 @@
 <translation id="7167436895080860385">允许用户在密码管理器中显示密码（已弃用）</translation>
 <translation id="7173856672248996428">临时个人资料</translation>
 <translation id="717630378807352957">允许使用配置文件中的所有打印机。</translation>
+<translation id="7176721759719212761">指定是否允许使用屏幕唤醒锁定。扩展程序可通过 Power Management Extension API 和 ARC 应用请求使用屏幕唤醒锁定。
+
+          如果将此政策设为 true 或未进行设置，系统就会允许使用屏幕唤醒锁定，以便进行电源管理，但 AllowWakeLocks 设为 false 时除外。
+
+          如果将此政策设为 false，屏幕唤醒锁定请求将降级为系统唤醒锁定请求。</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">允许用于更新的连接类型</translation>
 <translation id="7194407337890404814">默认搜索服务提供商名称</translation>
@@ -2193,6 +2227,11 @@
           “自动播放”仅适用于 <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> 政策中明确列出的网域。如果要为所有网站启用“自动播放”，可以将 http://* 和 https://* 添加到此列表。
 
           如果此策略未设置，用户将能够手动更改此项设置。</translation>
+<translation id="7229975860249300121">这项政策包含一个正则表达式，用于决定哪些 Google 帐号可以设定为 <ph name="PRODUCT_NAME" /> 中的浏览器主帐号（也就是在同步功能启用流程中所选的帐号）。
+
+      如果用户尝试使用与此格式不匹配的用户名设置浏览器主帐号，就会显示相应错误。
+
+      如果此政策未设置或为空，则用户可以将任何 Google 帐号设置为 <ph name="PRODUCT_NAME" /> 中的浏览器主帐号。</translation>
 <translation id="723103540848640830">设置锁定屏幕 PIN 码的长度下限</translation>
 <translation id="7232816984286843471">如果此政策设为 false，独立用户将无法使用 Crostini。
 
@@ -2446,6 +2485,7 @@
 
       已识别的连接类型标识符包括“以太网”、“Wi-Fi”、“WiMax”、“蓝牙”和“移动”网络。</translation>
 <translation id="7763614521440615342">在“打开新的标签页”页面上显示内容建议</translation>
+<translation id="7765879851993224640">允许使用 Smart Lock 登录功能。</translation>
 <translation id="7774768074957326919">使用系统代理设置</translation>
 <translation id="7775831859772431793">您可以在此指定代理服务器的网址。
 
@@ -2548,6 +2588,7 @@
       如果此政策改设为 False，则只会导致无法启动新的虚拟机，而不会关闭已在运行的虚拟机。
       如果未在某部受管理设备上设置此政策，该设备将无法运行虚拟机。
       未受管理的设备可以运行虚拟机。</translation>
+<translation id="8001701200415781021">限制哪些 Google 帐号可以设置为 <ph name="PRODUCT_NAME" /> 中的浏览器主帐号</translation>
 <translation id="802147957407376460">将屏幕旋转 0 度</translation>
 <translation id="8033913082323846868">我们在 M70 中弃用了此政策，请改用 AutofillAddressEnabled 和 AutofillCreditCardEnabled。
 
@@ -2779,6 +2820,17 @@
       如果此政策设为 true 或未设置，所有用户都将能够使用 ARC（除非通过其他方式停用了 ARC）。
 
       系统只会在未运行 ARC 时（例如启动 Chrome 操作系统时）应用对此政策做出的更改。</translation>
+<translation id="8615400197788843468">启用 <ph name="PRODUCT_NAME" /> 的 G Suite 受限登录功能，并禁止用户更改此设置。
+
+      如果您定义了此设置，用户将只能使用指定网域中的帐号访问 Google Apps（请注意，要允许使用 gmail.com/googlemail.com 帐号，您应该将“consumer_accounts”（不含引号）添加到网域列表中）。
+
+      在需要通过 Google 身份验证的托管设备上，这项设置会禁止用户登录帐号并添加辅助帐号（如果该帐号不在上述允许的网域列表中）。
+
+      如果您将此设置留空/未配置此设置，用户将能够使用任何帐号访问 G Suite。
+
+      此政策会致使系统将 X-GoogApps-Allowed-Domains 标头附加到向所有 google.com 网域发送的所有 HTTP 和 HTTPS 请求中，如 https://support.google.com/a/answer/1668854 中所述。
+
+      用户无法更改或替换此设置。</translation>
 <translation id="8631434304112909927">到版本 <ph name="UNTIL_VERSION" /> 为止</translation>
 <translation id="863319402127182273">对于 Android 应用，此政策仅会影响内置摄像头。当此政策设为 true 时，系统会针对所有 Android 应用（无一例外）停用摄像头。</translation>
 <translation id="8649763579836720255">Chrome 操作系统设备可使用远程凭证（经验证的访问凭证）来获取由 Chrome OS CA 颁发的证书，以证明该设备符合播放受保护内容的条件。此过程涉及向 Chrome OS CA 发送用于唯一标识设备的硬件背书信息。

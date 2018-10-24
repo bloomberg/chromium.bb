@@ -7,7 +7,7 @@
 <translation id="1115445892567829615">Chromium तुमचा डेटा सिंक करू शकले नाही. कृपया तुमची सिंक पासफ्रेझ अपडेट करा.</translation>
 <translation id="113122355610423240">Chromium तुमचा डीफॉल्ट ब्राउझर आहे</translation>
 <translation id="1170115874949214249">तुमच्या फोनवर Chromium इंस्टॉल करा. आम्ही तुमच्या खाते रिकव्हरी फोन नंबरवर एक SMS पाठवू.</translation>
-<translation id="1174473354587728743">एक कॉंप्युटर सामायिक करायचा? आपल्याला आवडते त्या प्रकारे तुम्ही आता Chromium सेट करू शकता.</translation>
+<translation id="1174473354587728743">एक कॉंप्युटर शेअर करायचा? आपल्याला आवडते त्या प्रकारे तुम्ही आता Chromium सेट करू शकता.</translation>
 <translation id="1185134272377778587">Chromium बद्दल</translation>
 <translation id="1209657686917656928">{0,plural, =0{Chromium आता पुन्हा लाँच होईल}=1{Chromium एका सेकंदाने पुन्हा लाँच होईल}one{Chromium # सेकंदांने पुन्हा लाँच होईल}other{Chromium # सेकंदांनी पुन्हा लाँच होईल}}</translation>
 <translation id="1267419686153937460">{0,plural, =1{एका दिवसामध्ये Chromium पुन्हा लाँच करा}one{# दिवसामध्ये Chromium पुन्हा लाँच करा}other{# दिवसांमध्ये Chromium पुन्हा लाँच करा}}</translation>
@@ -34,7 +34,7 @@
 <translation id="2008474315282236005">हे या डिव्‍हाइस मधून 1 आयटम हटवेल. नंतर तुमचा डेटा पुनर्प्राप्त करण्‍यासाठी, Chromium मध्ये <ph name="USER_EMAIL" /> म्हणून साइन इन करा.</translation>
 <translation id="2117378023188580026">हे अपडेट लागू करण्यासाठी तुमच्या अॅडमिनिस्ट्रेटरने तुम्हाला Chromium पुन्हा लाँच करण्यास सांगितले आहे</translation>
 <translation id="2119636228670142020">&amp;Chromium OS बद्दल</translation>
-<translation id="2241627712206172106">तुम्ही कॉंप्युटर सामायिक केल्यास, मित्र आणि कुटुंब स्वतंत्रपणे ब्राउझ करू शकतात आणि त्यांना पाहिजे तसे Chromium सेट अप करू शकतात.</translation>
+<translation id="2241627712206172106">तुम्ही कॉंप्युटर शेअर केल्यास, मित्र आणि कुटुंब स्वतंत्रपणे ब्राउझ करू शकतात आणि त्यांना पाहिजे तसे Chromium सेट अप करू शकतात.</translation>
 <translation id="2265088490657775772">Chromium तुमच्या iPhone वर मिळवा</translation>
 <translation id="2347108572062610441">तुम्ही Chromium सुरू करता तेव्हा कोणते पृष्ठ दर्शविले जाते हे या विस्ताराने बदलले आहे.</translation>
 <translation id="2396765026452590966">तुम्ही Chromium सुरू करता तेव्हा कोणते पृष्ठ दर्शविले जाते हे "<ph name="EXTENSION_NAME" />" विस्ताराने बदलले आहे.</translation>
@@ -161,7 +161,7 @@
 <translation id="6295779123002464101"><ph name="FILE_NAME" /> धोकादायक असू शकते, त्यामुळे Chromium ने ते अवरोधित केले आहे.</translation>
 <translation id="6309712487085796862">Chromium तुमचा कॅमेरा वापरत आहे.</translation>
 <translation id="6333502561965082103">Chromium वर दुसरे ऑपरेशन प्रगतीपथावर आहे. कृपया नंतर पुन्हा प्रयत्न करा.</translation>
-<translation id="6334986366598267305">आता आपल्या Google खात्यावर आणि सामायिक केलेल्या संगणकांवर Chromium वापरणे अधिक सुलभ आहे.</translation>
+<translation id="6334986366598267305">आता आपल्या Google खात्यावर आणि शेअर केलेल्या संगणकांवर Chromium वापरणे अधिक सुलभ आहे.</translation>
 <translation id="6373523479360886564">आपल्‍याला खात्री आहे की तुम्ही Chromium विस्‍थापित करू इच्‍छिता?</translation>
 <translation id="6394232988457703198">तुम्ही आता Chromium रीस्टार्ट करावे.</translation>
 <translation id="6400072781405947421">Mac OS X 10.9 वर Chromium ला सपोर्ट नसल्यामुळे ते कदाचित नीट चालणार नाही.</translation>

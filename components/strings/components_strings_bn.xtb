@@ -643,7 +643,7 @@
     <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />শুরু করার ধরন<ph name="END_BOLD" /> এর অধীনে <ph name="BEGIN_BOLD" />অক্ষম করুন <ph name="END_BOLD" /> বেছে নিন
     <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />পরিষেবা স্থিতির<ph name="END_BOLD" /> অধীনে <ph name="BEGIN_BOLD" />বন্ধ করুন <ph name="END_BOLD" /> এ ক্লিক করুন
     <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />প্রয়োগ করুন <ph name="END_BOLD" />এ ক্লিক করুন তারপর <ph name="BEGIN_BOLD" />ঠিক আছে<ph name="END_BOLD" /> তে ক্লিক করুন
-    <ph name="LIST_ITEM" />আপনার কম্পিউটার থেকে কিভাবে স্থায়ীভাবে সফ্টওয়্যার সরিয়ে ফেলতে হয় সেটি জানতে <ph name="BEGIN_LEARN_MORE_LINK" />Chrome সহায়তা কেন্দ্রে<ph name="END_LEARN_MORE_LINK" /> দেখুন
+    <ph name="LIST_ITEM" />আপনার কম্পিউটার থেকে কীভাবে স্থায়ীভাবে সফ্টওয়্যার সরিয়ে ফেলতে হয় সেটি জানতে <ph name="BEGIN_LEARN_MORE_LINK" />Chrome সহায়তা কেন্দ্রে<ph name="END_LEARN_MORE_LINK" /> দেখুন
     <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">সেভ করা সমস্ত পাসওয়ার্ড দেখান</translation>
 <translation id="5287240709317226393">কুকিজ দেখান</translation>
