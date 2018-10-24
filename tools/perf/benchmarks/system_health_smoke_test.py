@@ -38,6 +38,7 @@ _DISABLED_TESTS = frozenset({
   # and will later be removed.
   'system_health.memory_mobile/browse:tech:discourse_infinite_scroll',
   'system_health.memory_mobile/browse:social:facebook_infinite_scroll',
+  'system_health.memory_mobile/browse:social:tumblr_infinite_scroll',
   'system_health.memory_mobile/browse:news:cnn',
   'system_health.memory_mobile/load:news:cnn',
   'system_health.memory_mobile/load:tools:stackoverflow',
@@ -46,6 +47,7 @@ _DISABLED_TESTS = frozenset({
   'system_health.memory_desktop/load_accessibility:media:wikipedia',
   'system_health.memory_desktop/browse:tech:discourse_infinite_scroll',
   'system_health.memory_desktop/browse:social:facebook_infinite_scroll',
+  'system_health.memory_desktop/browse:social:tumblr_infinite_scroll',
   'system_health.memory_desktop/browse:news:flipboard',
   'system_health.memory_desktop/browse:search:google',
   'system_health.memory_desktop/browse:news:hackernews',
