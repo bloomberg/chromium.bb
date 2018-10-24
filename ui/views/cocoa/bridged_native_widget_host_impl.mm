@@ -493,7 +493,17 @@ void BridgedNativeWidgetHostImpl::OnBridgeFactoryHostDestroying(
   DCHECK_EQ(host, bridge_factory_host_);
   bridge_factory_host_->RemoveObserver(this);
   bridge_factory_host_ = nullptr;
-  // TODO(ccameron): This should be treated as the window closing.
+
+  // Because the process hosting this window has ended, close the window by
+  // sending the window close messages that the bridge would have sent.
+  OnWindowWillClose();
+  // Explicitly propagate this message to all children (they are also observers,
+  // but may not be destroyed before |this| is destroyed, which would violate
+  // tear-down assumptions). This would have been done by the bridge, had it
+  // shut down cleanly.
+  while (!children_.empty())
+    children_.front()->OnBridgeFactoryHostDestroying(host);
+  OnWindowHasClosed();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
