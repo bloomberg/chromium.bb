@@ -165,4 +165,5 @@ static inline unsigned SkB16ToB32(unsigned b) {
 #define SkPacked16ToG32(c)      SkG16ToG32(SkGetPackedG16(c))
 #define SkPacked16ToB32(c)      SkB16ToB32(SkGetPackedB16(c))
 
+
 #endif

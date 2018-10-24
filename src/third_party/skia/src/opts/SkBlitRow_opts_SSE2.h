@@ -23,4 +23,8 @@ void SkBlitLCD16Row_SSE2(SkPMColor dst[], const uint16_t src[],
 void SkBlitLCD16OpaqueRow_SSE2(SkPMColor dst[], const uint16_t src[],
                                SkColor color, int width, SkPMColor opaqueDst);
 
+void SkBlitLCD16RowOverBackground_SSE2(SkPMColor dst[], const uint16_t src[],
+                         SkColor color, int width, SkPMColor, SkPMColor defaultDst);
+void SkBlitLCD16OpaqueRowOverBackground_SSE2(SkPMColor dst[], const uint16_t src[],
+                               SkColor color, int width, SkPMColor opaqueDst, SkPMColor defaultDst);
 #endif

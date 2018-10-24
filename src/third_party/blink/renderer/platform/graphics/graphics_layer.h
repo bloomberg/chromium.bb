@@ -171,7 +171,11 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   Color BackgroundColor() const { return background_color_; }
   void SetBackgroundColor(const Color&);
 
-  // Opaque means that we know the layer contents have no alpha.
+  // Set the color to blend LCD text with when the layer's background color
+  // would otherwise be transparent.
+  void setDefaultLCDBackgroundColor(const Color&);
+
+  // opaque means that we know the layer contents have no alpha
   bool ContentsOpaque() const { return contents_opaque_; }
   void SetContentsOpaque(bool);
 
