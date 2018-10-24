@@ -9,6 +9,8 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/root_window_finder.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/timer/timer.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
@@ -30,6 +32,30 @@ bool IsModifierKey(const ui::KeyboardCode key_code) {
          key_code == ui::VKEY_CONTROL || key_code == ui::VKEY_LCONTROL ||
          key_code == ui::VKEY_RCONTROL || key_code == ui::VKEY_MENU ||
          key_code == ui::VKEY_LMENU || key_code == ui::VKEY_RMENU;
+}
+
+void RecordUserAction(mojom::AutoclickEventType event_type) {
+  switch (event_type) {
+    case mojom::AutoclickEventType::kLeftClick:
+      base::RecordAction(
+          base::UserMetricsAction("Accessibility.Autoclick.LeftClick"));
+      return;
+    case mojom::AutoclickEventType::kRightClick:
+      base::RecordAction(
+          base::UserMetricsAction("Accessibility.Autoclick.RightClick"));
+      return;
+    case mojom::AutoclickEventType::kDoubleClick:
+      base::RecordAction(
+          base::UserMetricsAction("Accessibility.Autoclick.DoubleClick"));
+      return;
+    case mojom::AutoclickEventType::kDragAndDrop:
+      base::RecordAction(
+          base::UserMetricsAction("Accessibility.Autoclick.DragAndDrop"));
+      return;
+    case mojom::AutoclickEventType::kNoAction:
+      // No action shouldn't have a UserAction, so we return null.
+      return;
+  }
 }
 
 }  // namespace
@@ -85,6 +111,11 @@ bool AutoclickController::IsEnabled() const {
 void AutoclickController::SetAutoclickDelay(base::TimeDelta delay) {
   delay_ = delay;
   InitClickTimer();
+  if (enabled_) {
+    UMA_HISTOGRAM_CUSTOM_TIMES("Accessibility.CrosAutoclickDelay", delay,
+                               base::TimeDelta::FromMilliseconds(1),
+                               base::TimeDelta::FromMilliseconds(3000), 50);
+  }
 }
 
 void AutoclickController::SetAutoclickEventType(
@@ -127,6 +158,8 @@ void AutoclickController::UpdateAutoclickRingWidget(
 }
 
 void AutoclickController::DoAutoclickAction() {
+  RecordUserAction(event_type_);
+
   gfx::Point point_in_screen =
       display::Screen::GetScreen()->GetCursorScreenPoint();
   anchor_location_ = point_in_screen;

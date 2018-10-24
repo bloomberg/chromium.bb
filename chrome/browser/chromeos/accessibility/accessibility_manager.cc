@@ -1155,16 +1155,6 @@ void AccessibilityManager::UpdateChromeOSAccessibilityHistograms() {
     bool autoclick_enabled =
         prefs->GetBoolean(ash::prefs::kAccessibilityAutoclickEnabled);
     UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosAutoclick", autoclick_enabled);
-    if (autoclick_enabled) {
-      // We only want to log the autoclick delay if the user has actually
-      // enabled autoclick.
-      UMA_HISTOGRAM_CUSTOM_TIMES(
-          "Accessibility.CrosAutoclickDelay",
-          base::TimeDelta::FromMilliseconds(
-              prefs->GetInteger(ash::prefs::kAccessibilityAutoclickDelayMs)),
-          base::TimeDelta::FromMilliseconds(1),
-          base::TimeDelta::FromMilliseconds(3000), 50);
-    }
   }
   UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosCaretHighlight",
                         IsCaretHighlightEnabled());

@@ -1158,6 +1158,42 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Accessibility.Autoclick.DoubleClick">
+  <owner>katie@chromium.org</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>dmazzoni@chromium.org</owner>
+  <description>
+    A user has used autoclick to perform a double click action.
+  </description>
+</action>
+
+<action name="Accessibility.Autoclick.DragAndDrop">
+  <owner>katie@chromium.org</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>dmazzoni@chromium.org</owner>
+  <description>
+    A user has used autoclick to perform a drag and drop action.
+  </description>
+</action>
+
+<action name="Accessibility.Autoclick.LeftClick">
+  <owner>katie@chromium.org</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>dmazzoni@chromium.org</owner>
+  <description>
+    A user has used autoclick to perform a left click action.
+  </description>
+</action>
+
+<action name="Accessibility.Autoclick.RightClick">
+  <owner>katie@chromium.org</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>dmazzoni@chromium.org</owner>
+  <description>
+    A user has used autoclick to perform a right click action.
+  </description>
+</action>
+
 <action name="Accessibility.ChromeVox.Jump">
   <owner>dmazzoni@chromium.org</owner>
   <description>
