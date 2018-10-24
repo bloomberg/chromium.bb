@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/debug/alias.h"
 #include "base/files/file.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
@@ -694,6 +695,14 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
     raw_request_headers_ = net::HttpRawRequestHeaders();
     raw_response_headers_ = nullptr;
   }
+
+  // Save some info for debugging. Temporary for https://crbug.com/893971
+  int32_t annotation_hash =
+      url_request_->traffic_annotation().unique_id_hash_code;
+  size_t num_running_requests = url_request_context_->url_requests()->size();
+  base::debug::Alias(&annotation_hash);
+  base::debug::Alias(&num_running_requests);
+  DEBUG_ALIAS_FOR_GURL(url_buf, url_request_->url());
 
   mojo::DataPipe data_pipe(kDefaultAllocationSize);
   response_body_stream_ = std::move(data_pipe.producer_handle);
