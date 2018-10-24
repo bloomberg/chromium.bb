@@ -1161,7 +1161,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/pagination/multicol.html [ 
 crbug.com/591099 virtual/layout_ng_experimental/fast/pagination/paged-x-column-gap.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/pagination/repeating-thead-tfoot-paged-x.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/pagination/repeating-thead-tfoot-paged-y.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/pagination/short-pages-tall-content.html [ Timeout ]
+crbug.com/591099 virtual/layout_ng_experimental/fast/pagination/short-pages-tall-content.html [ Timeout Crash ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/abspos-after-forced-break.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/auto-scrollbar-shrink-to-fit.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/avoid-break-inside-first-child.html [ Failure ]
