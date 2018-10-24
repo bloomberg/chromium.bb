@@ -87,11 +87,10 @@ EmeCodec ToVideoEmeCodec(VideoCodec codec, VideoCodecProfile profile) {
       if (profile == VP9PROFILE_PROFILE0 ||
           profile == VIDEO_CODEC_PROFILE_UNKNOWN) {
         return EME_CODEC_VP9_PROFILE0;
-      } else if (profile == VP9PROFILE_PROFILE1 ||
-                 profile == VP9PROFILE_PROFILE2 ||
-                 profile == VP9PROFILE_PROFILE3) {
-        return EME_CODEC_VP9_PROFILES123;
+      } else if (profile == VP9PROFILE_PROFILE2) {
+        return EME_CODEC_VP9_PROFILE2;
       } else {
+        // Profile 1 and 3 not supported by EME. See https://crbug.com/898298.
         return EME_CODEC_NONE;
       }
     case kCodecHEVC:
