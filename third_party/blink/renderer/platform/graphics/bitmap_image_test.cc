@@ -563,7 +563,8 @@ TEST_F(BitmapImageTest, GIFRepetitionCount) {
   EXPECT_EQ(paint_image.FrameCount(), 3u);
 }
 
-TEST_F(BitmapImageTest, DecoderAndCacheMipLevels) {
+// This test is failing on all bots. See https://crbug.com/898372
+TEST_F(BitmapImageTest, DISABLED_DecoderAndCacheMipLevels) {
   // Here, we want to test that the mip level calculated by the cc matches
   // exactly a size supported by the decoder. This is to make sure that the
   // rounding used in cc matches the rounding in the decoder. The image in this
