@@ -80,21 +80,9 @@ constexpr char kPngFilePattern[] = "*.[pP][nN][gG]";
 constexpr char kJpgFilePattern[] = "*.[jJ][pP][gG]";
 constexpr char kJpegFilePattern[] = "*.[jJ][pP][eE][gG]";
 
-// The url suffix used by the old wallpaper picker.
-constexpr char kHighResolutionSuffix[] = "_high_resolution.jpg";
-
-#if defined(GOOGLE_CHROME_BUILD)
-const char kWallpaperManifestBaseURL[] =
-    "https://storage.googleapis.com/chromeos-wallpaper-public/manifest_";
-#endif
-
 bool IsOEMDefaultWallpaper() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kDefaultWallpaperIsOem);
-}
-
-bool IsUsingNewWallpaperPicker() {
-  return ash::features::IsNewWallpaperPickerEnabled();
 }
 
 // Returns a suffix to be appended to the base url of Backdrop wallpapers.
@@ -213,9 +201,7 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
   SET_STRING("allCategoryLabel", IDS_WALLPAPER_MANAGER_ALL_CATEGORY_LABEL);
   SET_STRING("deleteCommandLabel", IDS_WALLPAPER_MANAGER_DELETE_COMMAND_LABEL);
   SET_STRING("customCategoryLabel",
-             IsUsingNewWallpaperPicker()
-                 ? IDS_WALLPAPER_MANAGER_MY_IMAGES_CATEGORY_LABEL
-                 : IDS_WALLPAPER_MANAGER_CUSTOM_CATEGORY_LABEL);
+             IDS_WALLPAPER_MANAGER_MY_IMAGES_CATEGORY_LABEL);
   SET_STRING("selectCustomLabel",
              IDS_WALLPAPER_MANAGER_SELECT_CUSTOM_LABEL);
   SET_STRING("positionLabel", IDS_WALLPAPER_MANAGER_POSITION_LABEL);
@@ -226,21 +212,15 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
              IDS_WALLPAPER_MANAGER_LAYOUT_CENTER_CROPPED);
   SET_STRING("centerLayout", IDS_WALLPAPER_MANAGER_LAYOUT_CENTER);
   SET_STRING("stretchLayout", IDS_WALLPAPER_MANAGER_LAYOUT_STRETCH);
-  SET_STRING("connectionFailed", IsUsingNewWallpaperPicker()
-                                     ? IDS_WALLPAPER_MANAGER_NETWORK_ERROR
-                                     : IDS_WALLPAPER_MANAGER_ACCESS_FAIL);
-  SET_STRING("downloadFailed", IsUsingNewWallpaperPicker()
-                                   ? IDS_WALLPAPER_MANAGER_IMAGE_ERROR
-                                   : IDS_WALLPAPER_MANAGER_DOWNLOAD_FAIL);
+  SET_STRING("connectionFailed", IDS_WALLPAPER_MANAGER_NETWORK_ERROR);
+  SET_STRING("downloadFailed", IDS_WALLPAPER_MANAGER_IMAGE_ERROR);
   SET_STRING("downloadCanceled", IDS_WALLPAPER_MANAGER_DOWNLOAD_CANCEL);
   SET_STRING("customWallpaperWarning",
              IDS_WALLPAPER_MANAGER_SHOW_CUSTOM_WALLPAPER_ON_START_WARNING);
   SET_STRING("accessFileFailure", IDS_WALLPAPER_MANAGER_ACCESS_FILE_FAILURE);
   SET_STRING("invalidWallpaper", IDS_WALLPAPER_MANAGER_INVALID_WALLPAPER);
   SET_STRING("noImagesAvailable", IDS_WALLPAPER_MANAGER_NO_IMAGES_AVAILABLE);
-  SET_STRING("surpriseMeLabel", IsUsingNewWallpaperPicker()
-                                    ? IDS_WALLPAPER_MANAGER_DAILY_REFRESH_LABEL
-                                    : IDS_WALLPAPER_MANAGER_SURPRISE_ME_LABEL);
+  SET_STRING("surpriseMeLabel", IDS_WALLPAPER_MANAGER_DAILY_REFRESH_LABEL);
   SET_STRING("learnMore", IDS_LEARN_MORE);
   SET_STRING("currentWallpaperSetByMessage",
              IDS_CURRENT_WALLPAPER_SET_BY_MESSAGE);
@@ -254,17 +234,10 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, dict.get());
 
-#if defined(GOOGLE_CHROME_BUILD)
-  dict->SetString("manifestBaseURL", kWallpaperManifestBaseURL);
-#endif
-
   dict->SetBoolean("isOEMDefaultWallpaper", IsOEMDefaultWallpaper());
   dict->SetString("canceledWallpaper",
                   wallpaper_api_util::kCancelWallpaperMessage);
-  dict->SetBoolean("useNewWallpaperPicker", IsUsingNewWallpaperPicker());
-  dict->SetString("highResolutionSuffix", IsUsingNewWallpaperPicker()
-                                              ? GetBackdropWallpaperSuffix()
-                                              : kHighResolutionSuffix);
+  dict->SetString("highResolutionSuffix", GetBackdropWallpaperSuffix());
 
   WallpaperControllerClient::Get()->GetActiveUserWallpaperInfo(base::BindOnce(
       &WallpaperPrivateGetStringsFunction::OnWallpaperInfoReturned, this,

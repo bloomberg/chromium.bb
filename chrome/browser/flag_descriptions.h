@@ -2008,9 +2008,6 @@ extern const char kEnableMediaSessionAshMediaKeysDescription[];
 extern const char kEnableNewStyleLauncherName[];
 extern const char kEnableNewStyleLauncherDescription[];
 
-extern const char kEnableNewWallpaperPickerName[];
-extern const char kEnableNewWallpaperPickerDescription[];
-
 extern const char kEnableOobeRecommendAppsScreenName[];
 extern const char kEnableOobeRecommendAppsScreenDescription[];
 

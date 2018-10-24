@@ -41,9 +41,6 @@ const base::Feature kNewMessageListView{"NewMessageListView",
 const base::Feature kMediaSessionAccelerators{
     "MediaSessionAccelerators", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kNewWallpaperPicker{"NewWallpaperPicker",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kNightLight{"NightLight", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kNotificationScrollBar{"NotificationScrollBar",
@@ -93,12 +90,6 @@ bool IsLockScreenHideSensitiveNotificationsSupported() {
 
 bool IsNewMessageListViewEnabled() {
   return base::FeatureList::IsEnabled(kNewMessageListView);
-}
-
-bool IsNewWallpaperPickerEnabled() {
-  static bool use_new_wallpaper_picker =
-      base::FeatureList::IsEnabled(kNewWallpaperPicker);
-  return use_new_wallpaper_picker;
 }
 
 bool IsNightLightEnabled() {
