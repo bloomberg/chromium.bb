@@ -44,14 +44,13 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
       LayoutUnit used_block_size,
       const NGBreakTokenVector& child_break_tokens,
       bool has_last_resort_break = false) {
-    NGBlockBreakToken* token =
-        static_cast<NGBlockBreakToken*>(::WTF::Partitions::FastMalloc(
-            sizeof(NGBlockBreakToken) +
-                child_break_tokens.size() * sizeof(NGBreakToken*),
-            ::WTF::GetStringWithTypeName<NGBlockBreakToken>()));
+    void* token = ::WTF::Partitions::FastMalloc(
+        sizeof(NGBlockBreakToken) +
+            child_break_tokens.size() * sizeof(NGBreakToken*),
+        ::WTF::GetStringWithTypeName<NGBlockBreakToken>());
     new (token) NGBlockBreakToken(node, used_block_size, child_break_tokens,
                                   has_last_resort_break);
-    return base::AdoptRef(token);
+    return base::AdoptRef(static_cast<NGBlockBreakToken*>(token));
   }
 
   // Creates a break token for a node which cannot produce any more fragments.
