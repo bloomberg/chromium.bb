@@ -45,6 +45,9 @@ class DeviceSyncClientHolder : public KeyedService {
   DeviceSyncClient* device_sync_client() { return device_sync_client_.get(); }
 
  private:
+  // KeyedService:
+  void Shutdown() override { device_sync_client_.reset(); }
+
   std::unique_ptr<DeviceSyncClient> device_sync_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceSyncClientHolder);

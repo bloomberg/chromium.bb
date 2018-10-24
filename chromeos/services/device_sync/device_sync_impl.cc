@@ -108,7 +108,8 @@ DeviceSyncImpl::DeviceSyncImpl(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     base::Clock* clock,
     std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate)
-    : identity_manager_(identity_manager),
+    : DeviceSyncBase(gcm_driver),
+      identity_manager_(identity_manager),
       gcm_driver_(gcm_driver),
       connector_(connector),
       gcm_device_info_provider_(gcm_device_info_provider),
