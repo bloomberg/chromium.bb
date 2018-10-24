@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_select_files_handler.h"
 #include "chrome/browser/chromeos/arc/fileapi/chrome_content_provider_url_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/file_stream_forwarder.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
@@ -106,6 +107,7 @@ ArcFileSystemBridge::ArcFileSystemBridge(content::BrowserContext* context,
                                          ArcBridgeService* bridge_service)
     : profile_(Profile::FromBrowserContext(context)),
       bridge_service_(bridge_service),
+      select_files_handler_(std::make_unique<ArcSelectFilesHandler>(context)),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   bridge_service_->file_system()->SetHost(this);
@@ -223,6 +225,11 @@ void ArcFileSystemBridge::OpenFileToRead(const std::string& url,
       url, base::BindOnce(&ArcFileSystemBridge::OpenFileToReadAfterGetFileSize,
                           weak_ptr_factory_.GetWeakPtr(), url_decoded,
                           std::move(callback)));
+}
+
+void ArcFileSystemBridge::SelectFiles(mojom::SelectFilesRequestPtr request,
+                                      SelectFilesCallback callback) {
+  select_files_handler_->SelectFiles(std::move(request), std::move(callback));
 }
 
 void ArcFileSystemBridge::OpenFileToReadAfterGetFileSize(
