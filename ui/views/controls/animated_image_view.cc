@@ -64,6 +64,9 @@ void AnimatedImageView::Play() {
 }
 
 void AnimatedImageView::Stop() {
+  if (state_ == State::kStopped)
+    return;
+
   DCHECK(animated_image_);
   if (compositor_)
     compositor_->RemoveAnimationObserver(this);
