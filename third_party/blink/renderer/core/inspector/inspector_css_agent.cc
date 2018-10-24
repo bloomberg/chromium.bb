@@ -2356,7 +2356,7 @@ Response InspectorCSSAgent::getBackgroundColors(
   *background_colors = protocol::Array<String>::create();
   for (auto color : colors) {
     background_colors->fromJust()->addItem(
-        color.SerializedAsCSSComponentValue());
+        cssvalue::CSSColorValue::SerializeAsCSSComponentValue(color));
   }
 
   CSSComputedStyleDeclaration* computed_style_info =
