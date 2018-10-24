@@ -363,6 +363,11 @@ public class WebappInfo {
         return mIsIconGenerated;
     }
 
+    /** Returns whether the WebappActivity should be transparent while the page is loading. */
+    public boolean useTransparentSplash() {
+        return false;
+    }
+
     /**
      * Sets extras on an Intent that will launch a WebappActivity.
      * @param intent Intent that will be used to launch a WebappActivity.
