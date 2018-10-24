@@ -9,7 +9,9 @@
 #include <set>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/no_destructor.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "net/base/mime_util.h"
 #include "net/http/http_request_headers.h"
@@ -493,34 +495,35 @@ bool IsForbiddenHeader(const std::string& name) {
   //   `User-Agent`, `Via`
   // or starts with `Proxy-` or `Sec-` (including when it is just `Proxy-` or
   // `Sec-`)."
-  static const base::NoDestructor<std::set<std::string>> forbidden_names(
-      std::set<std::string>{"accept-charset",
-                            "accept-encoding",
-                            "access-control-request-headers",
-                            "access-control-request-method",
-                            "connection",
-                            "content-length",
-                            "cookie",
-                            "cookie2",
-                            "date",
-                            "dnt",
-                            "expect",
-                            "host",
-                            "keep-alive",
-                            "origin",
-                            "referer",
-                            "te",
-                            "trailer",
-                            "transfer-encoding",
-                            "upgrade",
-                            "user-agent",
-                            "via"});
+  static const base::NoDestructor<base::flat_set<base::StringPiece>>
+      kForbiddenNames(
+          base::flat_set<base::StringPiece>{"accept-charset",
+                                            "accept-encoding",
+                                            "access-control-request-headers",
+                                            "access-control-request-method",
+                                            "connection",
+                                            "content-length",
+                                            "cookie",
+                                            "cookie2",
+                                            "date",
+                                            "dnt",
+                                            "expect",
+                                            "host",
+                                            "keep-alive",
+                                            "origin",
+                                            "referer",
+                                            "te",
+                                            "trailer",
+                                            "transfer-encoding",
+                                            "upgrade",
+                                            "user-agent",
+                                            "via"});
   const std::string lower_name = base::ToLowerASCII(name);
   if (StartsWith(lower_name, "proxy-", base::CompareCase::SENSITIVE) ||
       StartsWith(lower_name, "sec-", base::CompareCase::SENSITIVE)) {
     return true;
   }
-  return forbidden_names->find(lower_name) != forbidden_names->end();
+  return kForbiddenNames->contains(lower_name);
 }
 
 bool IsOkStatus(int status) {
