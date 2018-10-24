@@ -311,21 +311,22 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
   };
 
   struct TextureUnit {
-    TextureUnit()
-        : bound_texture_2d(0),
-          bound_texture_cube_map(0),
-          bound_texture_external_oes(0) {}
+    TextureUnit() {}
 
     // texture currently bound to this unit's GL_TEXTURE_2D with glBindTexture
-    GLuint bound_texture_2d;
+    GLuint bound_texture_2d = 0;
 
     // texture currently bound to this unit's GL_TEXTURE_CUBE_MAP with
     // glBindTexture
-    GLuint bound_texture_cube_map;
+    GLuint bound_texture_cube_map = 0;
 
     // texture currently bound to this unit's GL_TEXTURE_EXTERNAL_OES with
     // glBindTexture
-    GLuint bound_texture_external_oes;
+    GLuint bound_texture_external_oes = 0;
+
+    // texture currently bound to this unit's GL_TEXTURE_RECTANGLE_ARB with
+    // glBindTexture
+    GLuint bound_texture_rectangle_arb = 0;
   };
 
   // Prevents problematic reentrancy during error callbacks.

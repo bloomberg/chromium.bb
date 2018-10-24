@@ -151,7 +151,6 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
   bool use_texture_storage_image_;
 
   std::unordered_map<GLuint, Texture> texture_info_;
-  Texture* bound_texture_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(RasterImplementationGLES);
 };

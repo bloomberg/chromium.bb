@@ -724,6 +724,10 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
     case GL_TEXTURE_BINDING_EXTERNAL_OES:
       *params = texture_units_[active_texture_unit_].bound_texture_external_oes;
       return true;
+    case GL_TEXTURE_BINDING_RECTANGLE_ARB:
+      *params =
+          texture_units_[active_texture_unit_].bound_texture_rectangle_arb;
+      return true;
     case GL_PIXEL_PACK_TRANSFER_BUFFER_BINDING_CHROMIUM:
       *params = bound_pixel_pack_transfer_buffer_id_;
       return true;
@@ -4440,6 +4444,12 @@ void GLES2Implementation::BindTextureHelper(GLenum target, GLuint texture) {
         changed = true;
       }
       break;
+    case GL_TEXTURE_RECTANGLE_ARB:
+      if (unit.bound_texture_rectangle_arb != texture) {
+        unit.bound_texture_rectangle_arb = texture;
+        changed = true;
+      }
+      break;
     default:
       changed = true;
       break;
@@ -4614,6 +4624,9 @@ void GLES2Implementation::UnbindTexturesHelper(GLsizei n,
       }
       if (textures[ii] == unit.bound_texture_external_oes) {
         unit.bound_texture_external_oes = 0;
+      }
+      if (textures[ii] == unit.bound_texture_rectangle_arb) {
+        unit.bound_texture_rectangle_arb = 0;
       }
     }
   }
