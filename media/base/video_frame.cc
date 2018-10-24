@@ -930,10 +930,11 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalStorage(
   // TODO(miu): This function should support any pixel format.
   // http://crbug.com/555909
   if (format != PIXEL_FORMAT_I420 && format != PIXEL_FORMAT_Y16 &&
-      format != PIXEL_FORMAT_ARGB) {
-    DLOG(ERROR) << "Only PIXEL_FORMAT_I420, PIXEL_FORMAT_Y16, and "
-                   "PIXEL_FORMAT_ARGB formats are supported: "
-                << VideoPixelFormatToString(format);
+      format != PIXEL_FORMAT_ARGB && format != PIXEL_FORMAT_NV12) {
+    DLOG(ERROR)
+        << "Only PIXEL_FORMAT_I420, PIXEL_FORMAT_Y16, PIXEL_FORMAT_NV12, and "
+           "PIXEL_FORMAT_ARGB formats are supported: "
+        << VideoPixelFormatToString(format);
     return nullptr;
   }
 
@@ -958,6 +959,21 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalStorage(
       frame = new VideoFrame(*layout, storage_type, visible_rect, natural_size,
                              timestamp);
       frame->data_[kYPlane] = data;
+      break;
+    }
+    case 2: {
+      auto layout = VideoFrameLayout::CreateWithStrides(
+          format, coded_size,
+          std::vector<int>{RowBytes(kYPlane, format, coded_size.width()),
+                           RowBytes(kUVPlane, format, coded_size.width())});
+      if (!layout) {
+        DLOG(ERROR) << "Invalid layout.";
+        return nullptr;
+      }
+      frame = new VideoFrame(*layout, storage_type, visible_rect, natural_size,
+                             timestamp);
+      frame->data_[kYPlane] = data;
+      frame->data_[kUVPlane] = data + coded_size.GetArea();
       break;
     }
     case 3: {

@@ -41,6 +41,7 @@
 #define LIBYUV_H420_TO_ARGB libyuv::H420ToARGB
 #define LIBYUV_I010_TO_ARGB libyuv::I010ToARGB
 #define LIBYUV_H010_TO_ARGB libyuv::H010ToARGB
+#define LIBYUV_NV12_TO_ARGB libyuv::NV12ToARGB
 #elif SK_R32_SHIFT == 0 && SK_G32_SHIFT == 8 && SK_B32_SHIFT == 16 && \
     SK_A32_SHIFT == 24
 #define LIBYUV_I420_TO_ARGB libyuv::I420ToABGR
@@ -51,6 +52,7 @@
 #define LIBYUV_H420_TO_ARGB libyuv::H420ToABGR
 #define LIBYUV_I010_TO_ARGB libyuv::I010ToABGR
 #define LIBYUV_H010_TO_ARGB libyuv::H010ToABGR
+#define LIBYUV_NV12_TO_ARGB libyuv::NV12ToABGR
 #else
 #error Unexpected Skia ARGB_8888 layout!
 #endif
@@ -888,6 +890,15 @@ void PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
       break;
 
     case PIXEL_FORMAT_NV12:
+      LIBYUV_NV12_TO_ARGB(video_frame->visible_data(VideoFrame::kYPlane),
+                          video_frame->stride(VideoFrame::kYPlane),
+                          video_frame->visible_data(VideoFrame::kUVPlane),
+                          video_frame->stride(VideoFrame::kUVPlane),
+                          static_cast<uint8_t*>(rgb_pixels), row_bytes,
+                          video_frame->visible_rect().width(),
+                          video_frame->visible_rect().height());
+      break;
+
     case PIXEL_FORMAT_NV21:
     case PIXEL_FORMAT_UYVY:
     case PIXEL_FORMAT_YUY2:
