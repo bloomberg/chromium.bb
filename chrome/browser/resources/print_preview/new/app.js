@@ -273,7 +273,8 @@ Polymer({
       }
     }
 
-    if (e.code == 'Enter' && this.state == print_preview_new.State.READY &&
+    if ((e.code === 'Enter' || e.code === 'NumpadEnter') &&
+        this.state === print_preview_new.State.READY &&
         this.openDialogs_.length === 0) {
       const activeElementTag = e.path[0].tagName;
       if (['PAPER-BUTTON', 'BUTTON', 'SELECT', 'A', 'CR-CHECKBOX'].includes(
