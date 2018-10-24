@@ -54,7 +54,6 @@ import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.download.DownloadState;
-import org.chromium.components.download.ResumeMode;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.offline_items_collection.ContentId;
@@ -948,17 +947,6 @@ public class DownloadUtils {
     }
 
     /**
-     * Get the resume mode based on the current fail state, to distinguish the case where download
-     * cannot be resumed at all or can be resumed in the middle, or should be restarted from the
-     * beginning.
-     * @param failState Why the download failed.
-     * @return The resume mode for the current fail state.
-     */
-    public static @ResumeMode int getResumeMode(@FailState int failState) {
-        return nativeGetResumeMode(failState);
-    }
-
-    /**
      * Query the Download backends about whether a download is paused.
      *
      * The Java-side contains more information about the status of a download than is persisted
@@ -1186,5 +1174,4 @@ public class DownloadUtils {
     }
 
     private static native String nativeGetFailStateMessage(@FailState int failState);
-    private static native int nativeGetResumeMode(@FailState int failState);
 }
