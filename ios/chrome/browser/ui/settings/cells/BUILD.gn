@@ -104,6 +104,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/browsing_data:counters",
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/collection_view/cells:test_support",
+    "//ios/chrome/browser/ui/table_view:styler",
     "//ios/web/public/test:test",
     "//testing/gtest",
     "//ui/base",
