@@ -48,5 +48,4 @@ void InfoBarContainerIOS::PlatformSpecificRemoveInfoBar(
 void InfoBarContainerIOS::PlatformSpecificInfoBarStateChanged(
     bool is_animating) {
   [consumer_ setUserInteractionEnabled:!is_animating];
-  [consumer_ updateLayout];
 }
