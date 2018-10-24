@@ -201,8 +201,10 @@ bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
       base::ScopedFD scoped_fd(fd);
       if (unwrap_result != MOJO_RESULT_OK || !scoped_fd.is_valid())
         return false;
+
       out->android_hardware_buffer = base::android::ScopedHardwareBufferHandle::
           DeserializeFromFileDescriptor(std::move(scoped_fd));
+      return out->android_hardware_buffer.is_valid();
     }
 #endif
   }
