@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/ui/animation_util.h"
+#include "ios/chrome/browser/ui/util/animation_util.h"
 
 #include <algorithm>
 #include <cmath>
 
-#include "ios/chrome/browser/ui/reversed_animation.h"
+#include "ios/chrome/browser/ui/util/reversed_animation.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

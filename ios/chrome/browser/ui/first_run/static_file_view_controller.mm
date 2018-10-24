@@ -10,7 +10,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
-#include "ios/chrome/browser/ui/rtl_geometry.h"
+#include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MDCAppBarViewController.h"
 #import "ios/third_party/material_components_ios/src/components/FlexibleHeader/src/MaterialFlexibleHeader.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"

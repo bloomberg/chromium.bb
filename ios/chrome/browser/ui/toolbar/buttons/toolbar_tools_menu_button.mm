@@ -8,9 +8,9 @@
 #import <QuartzCore/CAMediaTimingFunction.h>
 
 #include "base/logging.h"
-#include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/rtl_geometry.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

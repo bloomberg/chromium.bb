@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/ui_util.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
 
-#include <stddef.h>
 #import <UIKit/UIKit.h>
+#include <stddef.h>
 
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

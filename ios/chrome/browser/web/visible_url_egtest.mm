@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #include "ios/chrome/test/app/navigation_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"

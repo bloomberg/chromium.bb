@@ -19,7 +19,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/incognito_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/web_state/ui/crw_swipe_recognizer_provider.h"

@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/bubble/bubble_util.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
-#include "ios/chrome/browser/ui/ui_util.h"
-#include "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
+#include "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

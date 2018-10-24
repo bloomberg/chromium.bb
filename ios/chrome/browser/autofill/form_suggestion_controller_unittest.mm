@@ -18,7 +18,7 @@
 #import "ios/chrome/browser/autofill/form_input_accessory_consumer.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory_mediator.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"

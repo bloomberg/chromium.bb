@@ -28,8 +28,8 @@
 #import "ios/chrome/browser/snapshots/lru_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_internal.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_observer.h"
-#include "ios/chrome/browser/ui/ui_util.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

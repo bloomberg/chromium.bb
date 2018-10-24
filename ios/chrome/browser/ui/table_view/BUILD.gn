@@ -38,7 +38,7 @@ source_set("styler") {
     "chrome_table_view_styler.mm",
   ]
   public_deps = [
-    "//ios/chrome/browser/ui:ui_util",
+    "//ios/chrome/browser/ui/util",
   ]
 }
 
@@ -53,9 +53,9 @@ source_set("presentation") {
     "table_view_presentation_controller_delegate.h",
   ]
   deps = [
-    "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/browser/ui/image_util",
     "//ios/chrome/browser/ui/resources:menu_shadow",
+    "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/ui_util",
   ]
 }

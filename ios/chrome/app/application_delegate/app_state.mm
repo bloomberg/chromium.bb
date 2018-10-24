@@ -44,7 +44,7 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/main/browser_view_information.h"
 #import "ios/chrome/browser/ui/safe_mode/safe_mode_coordinator.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/net/cookies/cookie_store_ios.h"
 #include "ios/net/cookies/system_cookie_util.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"

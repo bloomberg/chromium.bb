@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/ui/reversed_animation.h"
+#include "ios/chrome/browser/ui/util/reversed_animation.h"
 
 #import <QuartzCore/QuartzCore.h>
 #include <algorithm>

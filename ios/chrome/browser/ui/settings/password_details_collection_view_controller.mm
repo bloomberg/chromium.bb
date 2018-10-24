@@ -24,7 +24,7 @@
 #import "ios/chrome/browser/ui/settings/reauthentication_module.h"
 #import "ios/chrome/browser/ui/settings/save_passwords_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
-#include "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"

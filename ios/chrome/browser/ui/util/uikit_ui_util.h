@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_UIKIT_UI_UTIL_H_
-#define IOS_CHROME_BROWSER_UI_UIKIT_UI_UTIL_H_
+#ifndef IOS_CHROME_BROWSER_UI_UTIL_UIKIT_UI_UTIL_H_
+#define IOS_CHROME_BROWSER_UI_UTIL_UIKIT_UI_UTIL_H_
 
 #include <CoreGraphics/CoreGraphics.h>
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/ui_util.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
 
 // UI Util containing functions that require UIKit.
 
@@ -262,4 +262,4 @@ NSString* TextForTabCount(long count);
 // wrapper around UIContentSizeCategoryIsAccessibilityCategory.
 BOOL ContentSizeCategoryIsAccessibilityCategory(UIContentSizeCategory category);
 
-#endif  // IOS_CHROME_BROWSER_UI_UIKIT_UI_UTIL_H_
+#endif  // IOS_CHROME_BROWSER_UI_UTIL_UIKIT_UI_UTIL_H_

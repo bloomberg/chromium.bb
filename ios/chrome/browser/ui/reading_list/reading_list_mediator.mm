@@ -20,7 +20,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_item_util.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_table_view_item.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_utils.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

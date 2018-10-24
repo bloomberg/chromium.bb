@@ -6,7 +6,7 @@
 
 #include "components/autofill/core/common/autofill_features.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/uicolor_manualfill.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

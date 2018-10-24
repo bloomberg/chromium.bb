@@ -30,7 +30,7 @@
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_highlighting.h"
 #include "ios/chrome/browser/ui/toolbar/public/side_swipe_toolbar_interacting.h"
 #import "ios/chrome/browser/ui/toolbar/public/side_swipe_toolbar_interacting.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"

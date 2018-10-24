@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_REVERSED_ANIMATION_H_
-#define IOS_CHROME_BROWSER_UI_REVERSED_ANIMATION_H_
+#ifndef IOS_CHROME_BROWSER_UI_UTIL_REVERSED_ANIMATION_H_
+#define IOS_CHROME_BROWSER_UI_UTIL_REVERSED_ANIMATION_H_
 
 #import <UIKit/UIKit.h>
 
@@ -15,4 +15,4 @@ CAAnimation* CAAnimationMakeReverse(CAAnimation* animation, CALayer* layer);
 // animation back to the layers under the same key.
 void ReverseAnimationsForKeyForLayers(NSString* key, NSArray* layers);
 
-#endif  // IOS_CHROME_BROWSER_UI_REVERSED_ANIMATION_H_
+#endif  // IOS_CHROME_BROWSER_UI_UTIL_REVERSED_ANIMATION_H_
