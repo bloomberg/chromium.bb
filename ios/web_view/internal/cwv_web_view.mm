@@ -76,6 +76,17 @@ NSDictionary* NSDictionaryFromDictionaryValue(
   DCHECK(ns_dictionary) << "Failed to convert JSON to NSDictionary";
   return ns_dictionary;
 }
+
+// A WebStateUserData to hold a reference to a corresponding CWVWebView.
+class WebViewHolder : public web::WebStateUserData<WebViewHolder> {
+ public:
+  explicit WebViewHolder(web::WebState* web_state) {}
+  CWVWebView* web_view() const { return web_view_; }
+  void set_web_view(CWVWebView* web_view) { web_view_ = web_view; }
+
+ private:
+  __weak CWVWebView* web_view_ = nil;
+};
 }  // namespace
 
 @interface CWVWebView ()<CRWWebStateDelegate, CRWWebStateObserver> {
@@ -175,6 +186,13 @@ static NSString* gUserAgentProduct = nil;
   }
 }
 
++ (CWVWebView*)webViewForWebState:(web::WebState*)webState {
+  WebViewHolder* holder = WebViewHolder::FromWebState(webState);
+  CWVWebView* webView = holder->web_view();
+  DCHECK(webView);
+  return webView;
+}
+
 - (instancetype)initWithFrame:(CGRect)frame
                 configuration:(CWVWebViewConfiguration*)configuration {
   self = [super initWithFrame:frame];
@@ -198,9 +216,12 @@ static NSString* gUserAgentProduct = nil;
 }
 
 - (void)dealloc {
-  if (_webState && _webStateObserver) {
-    _webState->RemoveObserver(_webStateObserver.get());
-    _webStateObserver.reset();
+  if (_webState) {
+    if (_webStateObserver) {
+      _webState->RemoveObserver(_webStateObserver.get());
+      _webStateObserver.reset();
+    }
+    WebViewHolder::RemoveFromWebState(_webState.get());
   }
 }
 
@@ -557,6 +578,7 @@ static NSString* gUserAgentProduct = nil;
     for (const auto& pair : _scriptCommandCallbacks) {
       _webState->RemoveScriptCommandCallback(pair.first);
     }
+    WebViewHolder::RemoveFromWebState(_webState.get());
     if (_webState->GetView().superview == self) {
       // The web view provided by the old |_webState| has been added as a
       // subview. It must be removed and replaced with a new |_webState|'s web
@@ -576,6 +598,9 @@ static NSString* gUserAgentProduct = nil;
   } else {
     _webState = web::WebState::Create(webStateCreateParams);
   }
+
+  WebViewHolder::CreateForWebState(_webState.get());
+  WebViewHolder::FromWebState(_webState.get())->set_web_view(self);
 
   if (!_webStateObserver) {
     _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
