@@ -7,6 +7,8 @@
 #include <memory>
 #include <vector>
 
+#import <UIKit/UIKit.h>
+
 #include "base/guid.h"
 #include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
@@ -47,7 +49,6 @@
 #import "ios/web/public/web_state/web_frames_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "testing/gtest_mac.h"
-#include "ui/base/test/ios/ui_view_test_utils.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -145,6 +146,23 @@ void CheckField(const FormStructure& form,
     }
   }
   FAIL() << "Missing field " << name;
+}
+
+// Forces rendering of a UIView. This is used in tests to make sure that UIKit
+// optimizations don't have the views return the previous values (such as
+// zoomScale).
+void ForceViewRendering(UIView* view) {
+  EXPECT_TRUE(view);
+  CALayer* layer = view.layer;
+  EXPECT_TRUE(layer);
+  const CGFloat kArbitraryNonZeroPositiveValue = 19;
+  const CGSize arbitraryNonEmptyArea = CGSizeMake(
+      kArbitraryNonZeroPositiveValue, kArbitraryNonZeroPositiveValue);
+  UIGraphicsBeginImageContext(arbitraryNonEmptyArea);
+  CGContext* context = UIGraphicsGetCurrentContext();
+  EXPECT_TRUE(context);
+  [layer renderInContext:context];
+  UIGraphicsEndImageContext();
 }
 
 // WebDataServiceConsumer for receiving vectors of strings and making them
@@ -382,7 +400,7 @@ void AutofillControllerTest::SetUpForSuggestions(NSString* data) {
 // test data manager.
 TEST_F(AutofillControllerTest, ProfileSuggestions) {
   SetUpForSuggestions(kProfileFormHtml);
-  ui::test::uiview_utils::ForceViewRendering(web_state()->GetView());
+  ForceViewRendering(web_state()->GetView());
   ExecuteJavaScript(@"document.forms[0].name.focus()");
   WaitForSuggestionRetrieval(/*wait_for_trigger=*/YES);
   ExpectMetric("Autofill.AddressSuggestionsCount", 1);
@@ -397,7 +415,7 @@ TEST_F(AutofillControllerTest, ProfileSuggestions) {
 TEST_F(AutofillControllerTest, ProfileSuggestionsTwoAnonymousForms) {
   SetUpForSuggestions(
       [NSString stringWithFormat:@"%@%@", kProfileFormHtml, kProfileFormHtml]);
-  ui::test::uiview_utils::ForceViewRendering(web_state()->GetView());
+  ForceViewRendering(web_state()->GetView());
   ExecuteJavaScript(@"document.forms[0].name.focus()");
   WaitForSuggestionRetrieval(/*wait_for_trigger=*/YES);
   ExpectMetric("Autofill.AddressSuggestionsCount", 1);
@@ -412,7 +430,7 @@ TEST_F(AutofillControllerTest, ProfileSuggestionsTwoAnonymousForms) {
 // into a test data manager.
 TEST_F(AutofillControllerTest, ProfileSuggestionsFromSelectField) {
   SetUpForSuggestions(kProfileFormHtml);
-  ui::test::uiview_utils::ForceViewRendering(web_state()->GetView());
+  ForceViewRendering(web_state()->GetView());
   ExecuteJavaScript(@"document.forms[0].state.focus()");
   WaitForSuggestionRetrieval(/*wait_for_trigger=*/YES);
   ExpectMetric("Autofill.AddressSuggestionsCount", 1);
@@ -448,7 +466,7 @@ TEST_F(AutofillControllerTest, MultipleProfileSuggestions) {
   LoadHtml(kProfileFormHtml);
   base::TaskScheduler::GetInstance()->FlushForTesting();
   WaitForBackgroundTasks();
-  ui::test::uiview_utils::ForceViewRendering(web_state()->GetView());
+  ForceViewRendering(web_state()->GetView());
   ExecuteJavaScript(@"document.forms[0].name.focus()");
   WaitForSuggestionRetrieval(/*wait_for_trigger=*/YES);
   ExpectMetric("Autofill.AddressSuggestionsCount", 2);
