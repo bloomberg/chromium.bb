@@ -32,10 +32,12 @@ using ::testing::StrEq;
 using ::testing::StrictMock;
 using ::testing::_;
 
-class ScriptExecutorTest : public testing::Test, public ScriptExecutorDelegate {
+class ScriptExecutorTest : public testing::Test,
+                           public ScriptExecutorDelegate,
+                           public ScriptExecutor::Listener {
  public:
   void SetUp() override {
-    executor_ = std::make_unique<ScriptExecutor>("script path", this);
+    executor_ = std::make_unique<ScriptExecutor>("script path", "", this, this);
     url_ = GURL("http://example.com/");
 
     // In this test, "tell" actions always succeed and "click" actions always
@@ -67,6 +69,8 @@ class ScriptExecutorTest : public testing::Test, public ScriptExecutorDelegate {
   autofill::PersonalDataManager* GetPersonalDataManager() override {
     return nullptr;
   }
+
+  void OnServerPayloadChanged(const std::string& server_payload) override {}
 
   content::WebContents* GetWebContents() override { return nullptr; }
 

@@ -43,7 +43,8 @@ class ProtocolUtils {
   static std::string CreateInitialScriptActionsRequest(
       const std::string& script_path,
       const GURL& url,
-      const std::map<std::string, std::string>& parameters);
+      const std::map<std::string, std::string>& parameters,
+      const std::string& server_payload);
 
   // Create request to get next sequence of actions for a script.
   static std::string CreateNextScriptActionsRequest(
