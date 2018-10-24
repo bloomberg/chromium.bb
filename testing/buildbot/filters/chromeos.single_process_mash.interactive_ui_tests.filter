@@ -1,9 +1,6 @@
 # These tests currently fail with SingleProcessMash enabled.
 # Bug: crbug.com/883523
 
-# Keyboard event related. See crbug.com/889101
--SitePerProcessTextInputManagerTest.CorrectlyShowVirtualKeyboardIfEnabled
-
 # TODO(sky): this now fails because of differences in timing. In particular,
 # in classic mode an accelerator that moves focus is processed *after* text
 # is inserted, where as now the accelerator runs first, resulting in text
