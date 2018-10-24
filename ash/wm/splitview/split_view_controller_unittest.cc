@@ -167,6 +167,10 @@ class SplitViewControllerTest : public AshTestBase {
 
   int divider_position() { return split_view_controller()->divider_position(); }
 
+  float divider_closest_ratio() {
+    return split_view_controller()->divider_closest_ratio_;
+  }
+
  protected:
   class SplitViewTestWindowDelegate : public aura::test::TestWindowDelegate {
    public:
@@ -1654,6 +1658,65 @@ TEST_F(SplitViewControllerTest, AdjustTransientChildBounds) {
   // Test that the bubble can't be moved outside of its anchor widget.
   EXPECT_TRUE(window_bounds.Contains(bubble_window->GetBoundsInScreen()));
   EndSplitView();
+}
+
+// Tests the divider closest position ratio if work area is not starts from the
+// top of the display.
+TEST_F(SplitViewControllerTest, DividerClosestRatioOnWorkArea) {
+  UpdateDisplay("1200x800");
+  // Docked magnifier will put a view port window on the top of the display.
+  Shell::Get()->docked_magnifier_controller()->SetEnabled(true);
+
+  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager,
+                                                         display_id);
+  ScreenOrientationControllerTestApi test_api(
+      Shell::Get()->screen_orientation_controller());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  ASSERT_EQ(OrientationLockType::kLandscapePrimary,
+            test_api.GetCurrentOrientation());
+
+  const gfx::Rect bounds(0, 0, 200, 200);
+  std::unique_ptr<aura::Window> window(CreateWindow(bounds));
+  split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
+
+  test_api.SetDisplayRotation(display::Display::ROTATE_90,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_EQ(OrientationLockType::kPortraitSecondary,
+            test_api.GetCurrentOrientation());
+  EXPECT_EQ(divider_closest_ratio(), 0.5f);
+
+  test_api.SetDisplayRotation(display::Display::ROTATE_0,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_EQ(OrientationLockType::kLandscapePrimary,
+            test_api.GetCurrentOrientation());
+  EXPECT_EQ(divider_closest_ratio(), 0.5f);
+  gfx::Rect divider_bounds =
+      split_view_divider()->GetDividerBoundsInScreen(false);
+  gfx::Rect workarea_bounds =
+      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window.get());
+  generator->set_current_location(divider_bounds.CenterPoint());
+  // Drag the divider to one third position of the work area's width.
+  generator->DragMouseTo(
+      gfx::Point(workarea_bounds.width() * 0.33f, workarea_bounds.y()));
+  EXPECT_EQ(divider_closest_ratio(), 0.33f);
+
+  // Divider closest position ratio changed from one third to two thirds if
+  // left/top window changes.
+  test_api.SetDisplayRotation(display::Display::ROTATE_90,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_EQ(OrientationLockType::kPortraitSecondary,
+            test_api.GetCurrentOrientation());
+  EXPECT_EQ(divider_closest_ratio(), 0.67f);
+
+  // Divider closest position ratio is kept as one third if left/top window
+  // doesn't changes.
+  test_api.SetDisplayRotation(display::Display::ROTATE_270,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_EQ(OrientationLockType::kPortraitPrimary,
+            test_api.GetCurrentOrientation());
+  EXPECT_EQ(divider_closest_ratio(), 0.33f);
 }
 
 // Test the tab-dragging related functionalities in tablet mode. Tab(s) can be
