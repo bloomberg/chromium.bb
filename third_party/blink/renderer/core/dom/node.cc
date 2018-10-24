@@ -95,9 +95,17 @@
 #include "third_party/blink/renderer/core/input/input_device_capabilities.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/mathml_names.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/scrolling/root_scroller_util.h"
+#include "third_party/blink/renderer/core/page/scrolling/scroll_customization_callbacks.h"
+#include "third_party/blink/renderer/core/page/scrolling/scroll_state.h"
+#include "third_party/blink/renderer/core/page/scrolling/scroll_state_callback.h"
+#include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
@@ -118,6 +126,20 @@
 namespace blink {
 
 namespace {
+
+// We need to retain the scroll customization callbacks until the element
+// they're associated with is destroyed. It would be simplest if the callbacks
+// could be stored in ElementRareData, but we can't afford the space increase.
+// Instead, keep the scroll customization callbacks here. The other option would
+// be to store these callbacks on the Page or document, but that necessitates a
+// bunch more logic for transferring the callbacks between Pages when elements
+// are moved around.
+ScrollCustomizationCallbacks& GetScrollCustomizationCallbacks() {
+  DEFINE_STATIC_LOCAL(Persistent<ScrollCustomizationCallbacks>,
+                      scroll_customization_callbacks,
+                      (new ScrollCustomizationCallbacks));
+  return *scroll_customization_callbacks;
+}
 
 // TODO(crbug.com/545926): Unsafe hack to avoid triggering the
 // ThreadRestrictionVerifier on StringImpl. This should be fixed completely, and
@@ -439,6 +461,212 @@ Node& Node::TreeRoot() const {
 Node* Node::getRootNode(const GetRootNodeOptions& options) const {
   return (options.hasComposed() && options.composed()) ? &ShadowIncludingRoot()
                                                        : &TreeRoot();
+}
+
+void Node::setDistributeScroll(V8ScrollStateCallback* scroll_state_callback,
+                               const String& native_scroll_behavior) {
+  DCHECK(IsElementNode());
+  GetScrollCustomizationCallbacks().SetDistributeScroll(
+      this, ScrollStateCallbackV8Impl::Create(scroll_state_callback,
+                                              native_scroll_behavior));
+}
+
+void Node::setApplyScroll(V8ScrollStateCallback* scroll_state_callback,
+                          const String& native_scroll_behavior) {
+  DCHECK(IsElementNode());
+  SetApplyScroll(ScrollStateCallbackV8Impl::Create(scroll_state_callback,
+                                                   native_scroll_behavior));
+}
+
+void Node::SetApplyScroll(ScrollStateCallback* scroll_state_callback) {
+  DCHECK(IsElementNode());
+  GetScrollCustomizationCallbacks().SetApplyScroll(this, scroll_state_callback);
+}
+
+void Node::RemoveApplyScroll() {
+  DCHECK(IsElementNode());
+  GetScrollCustomizationCallbacks().RemoveApplyScroll(this);
+}
+
+ScrollStateCallback* Node::GetApplyScroll() {
+  DCHECK(IsElementNode());
+  return GetScrollCustomizationCallbacks().GetApplyScroll(this);
+}
+
+void Node::NativeDistributeScroll(ScrollState& scroll_state) {
+  DCHECK(IsElementNode());
+  if (scroll_state.FullyConsumed())
+    return;
+
+  scroll_state.distributeToScrollChainDescendant();
+
+  // The scroll doesn't propagate, and we're currently scrolling an element
+  // other than this one, prevent the scroll from propagating to this element.
+  if (scroll_state.DeltaConsumedForScrollSequence() &&
+      scroll_state.CurrentNativeScrollingNode() != this) {
+    return;
+  }
+
+  const double delta_x = scroll_state.deltaX();
+  const double delta_y = scroll_state.deltaY();
+
+  CallApplyScroll(scroll_state);
+
+  if (delta_x != scroll_state.deltaX() || delta_y != scroll_state.deltaY())
+    scroll_state.SetCurrentNativeScrollingNode(this);
+}
+
+void Node::NativeApplyScroll(ScrollState& scroll_state) {
+  DCHECK(IsElementNode());
+
+  // All elements in the scroll chain should be boxes.
+  DCHECK(!GetLayoutObject() || GetLayoutObject()->IsBox());
+
+  if (scroll_state.FullyConsumed())
+    return;
+
+  FloatSize delta(scroll_state.deltaX(), scroll_state.deltaY());
+
+  if (delta.IsZero())
+    return;
+
+  // TODO(esprehn): This should use
+  // updateStyleAndLayoutIgnorePendingStylesheetsForNode.
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  LayoutBox* box_to_scroll = nullptr;
+
+  if (this == GetDocument().documentElement())
+    box_to_scroll = GetDocument().GetLayoutView();
+  else if (GetLayoutObject())
+    box_to_scroll = ToLayoutBox(GetLayoutObject());
+
+  if (!box_to_scroll)
+    return;
+
+  ScrollableArea* scrollable_area =
+      box_to_scroll->EnclosingBox()->GetScrollableArea();
+
+  if (!scrollable_area)
+    return;
+
+  ScrollResult result = scrollable_area->UserScroll(
+      ScrollGranularity(static_cast<int>(scroll_state.deltaGranularity())),
+      delta);
+
+  if (!result.DidScroll())
+    return;
+
+  // FIXME: Native scrollers should only consume the scroll they
+  // apply. See crbug.com/457765.
+  scroll_state.ConsumeDeltaNative(delta.Width(), delta.Height());
+
+  // We need to setCurrentNativeScrollingElement in both the
+  // distributeScroll and applyScroll default implementations so
+  // that if JS overrides one of these methods, but not the
+  // other, this bookkeeping remains accurate.
+  scroll_state.SetCurrentNativeScrollingNode(this);
+}
+
+void Node::CallDistributeScroll(ScrollState& scroll_state) {
+  TRACE_EVENT0("input", "Node::CallDistributeScroll");
+  DCHECK(IsElementNode());
+  ScrollStateCallback* callback =
+      GetScrollCustomizationCallbacks().GetDistributeScroll(this);
+
+  // TODO(bokan): Need to add tests before we allow calling custom callbacks
+  // for non-touch modalities. For now, just call into the native callback but
+  // allow the viewport scroll callback so we don't disable overscroll.
+  // crbug.com/623079.
+  bool disable_custom_callbacks = !scroll_state.isDirectManipulation() &&
+                                  !GetDocument()
+                                       .GetPage()
+                                       ->GlobalRootScrollerController()
+                                       .IsViewportScrollCallback(callback);
+
+  disable_custom_callbacks |=
+      !RootScrollerUtil::IsGlobal(this) &&
+      RuntimeEnabledFeatures::ScrollCustomizationEnabled() &&
+      !GetScrollCustomizationCallbacks().InScrollPhase(this);
+
+  if (!callback || disable_custom_callbacks) {
+    NativeDistributeScroll(scroll_state);
+    return;
+  }
+  if (callback->NativeScrollBehavior() !=
+      WebNativeScrollBehavior::kPerformAfterNativeScroll)
+    callback->Invoke(&scroll_state);
+  if (callback->NativeScrollBehavior() !=
+      WebNativeScrollBehavior::kDisableNativeScroll)
+    NativeDistributeScroll(scroll_state);
+  if (callback->NativeScrollBehavior() ==
+      WebNativeScrollBehavior::kPerformAfterNativeScroll)
+    callback->Invoke(&scroll_state);
+}
+
+void Node::CallApplyScroll(ScrollState& scroll_state) {
+  TRACE_EVENT0("input", "Node::CallApplyScroll");
+  DCHECK(IsElementNode());
+  // Hits ASSERTs when trying to determine whether we need to scroll on main
+  // or CC. http://crbug.com/625676.
+  DisableCompositingQueryAsserts disabler;
+
+  if (!GetDocument().GetPage()) {
+    // We should always have a Page if we're scrolling. See
+    // crbug.com/689074 for details.
+    return;
+  }
+
+  ScrollStateCallback* callback =
+      GetScrollCustomizationCallbacks().GetApplyScroll(this);
+
+  // TODO(bokan): Need to add tests before we allow calling custom callbacks
+  // for non-touch modalities. For now, just call into the native callback but
+  // allow the viewport scroll callback so we don't disable overscroll.
+  // crbug.com/623079.
+  bool disable_custom_callbacks = !scroll_state.isDirectManipulation() &&
+                                  !GetDocument()
+                                       .GetPage()
+                                       ->GlobalRootScrollerController()
+                                       .IsViewportScrollCallback(callback);
+  disable_custom_callbacks |=
+      !RootScrollerUtil::IsGlobal(this) &&
+      RuntimeEnabledFeatures::ScrollCustomizationEnabled() &&
+      !GetScrollCustomizationCallbacks().InScrollPhase(this);
+
+  if (!callback || disable_custom_callbacks) {
+    NativeApplyScroll(scroll_state);
+    return;
+  }
+  if (callback->NativeScrollBehavior() !=
+      WebNativeScrollBehavior::kPerformAfterNativeScroll)
+    callback->Invoke(&scroll_state);
+  if (callback->NativeScrollBehavior() !=
+      WebNativeScrollBehavior::kDisableNativeScroll)
+    NativeApplyScroll(scroll_state);
+  if (callback->NativeScrollBehavior() ==
+      WebNativeScrollBehavior::kPerformAfterNativeScroll)
+    callback->Invoke(&scroll_state);
+}
+
+void Node::WillBeginCustomizedScrollPhase(
+    ScrollCustomization::ScrollDirection direction) {
+  DCHECK(IsElementNode());
+  DCHECK(!GetScrollCustomizationCallbacks().InScrollPhase(this));
+  LayoutBox* box = GetLayoutBox();
+  if (!box)
+    return;
+
+  ScrollCustomization::ScrollDirection scroll_customization =
+      box->Style()->ScrollCustomization();
+
+  GetScrollCustomizationCallbacks().SetInScrollPhase(
+      this, direction & scroll_customization);
+}
+
+void Node::DidEndCustomizedScrollPhase() {
+  DCHECK(IsElementNode());
+  GetScrollCustomizationCallbacks().SetInScrollPhase(this, false);
 }
 
 Node* Node::insertBefore(Node* new_child,

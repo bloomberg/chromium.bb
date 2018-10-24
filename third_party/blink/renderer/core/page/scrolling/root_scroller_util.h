@@ -7,7 +7,6 @@
 
 namespace blink {
 
-class Element;
 class LayoutBox;
 class Node;
 class PaintLayer;
@@ -27,7 +26,7 @@ PaintLayer* PaintLayerForRootScroller(const Node*);
 
 bool IsGlobal(const LayoutBox&);
 bool IsGlobal(const PaintLayer&);
-bool IsGlobal(const Element*);
+bool IsGlobal(const Node*);
 
 }  // namespace RootScrollerUtil
 

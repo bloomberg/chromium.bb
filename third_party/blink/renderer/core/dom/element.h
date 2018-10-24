@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/core/html/focus_options.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
-#include "third_party/blink/renderer/core/scroll/scroll_customization.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
@@ -74,8 +73,6 @@ class PseudoStyleRequest;
 class ResizeObservation;
 class ScrollIntoViewOptions;
 class ScrollIntoViewOptionsOrBoolean;
-class ScrollState;
-class ScrollStateCallback;
 class ScrollToOptions;
 class ShadowRoot;
 class ShadowRootInit;
@@ -89,7 +86,6 @@ class StylePropertyMapReadOnly;
 class USVStringOrTrustedURL;
 class V0CustomElementDefinition;
 class V8DisplayLockCallback;
-class V8ScrollStateCallback;
 
 enum SpellcheckAttributeState {
   kSpellcheckAttributeTrue,
@@ -638,20 +634,6 @@ class CORE_EXPORT Element : public ContainerNode {
                                                 const FocusOptions&);
   virtual void blur();
 
-  void setDistributeScroll(V8ScrollStateCallback*,
-                           const String& native_scroll_behavior);
-  void NativeDistributeScroll(ScrollState&);
-  void setApplyScroll(V8ScrollStateCallback*,
-                      const String& native_scroll_behavior);
-  void SetApplyScroll(ScrollStateCallback*);
-  void RemoveApplyScroll();
-  void NativeApplyScroll(ScrollState&);
-
-  void CallDistributeScroll(ScrollState&);
-  void CallApplyScroll(ScrollState&);
-
-  ScrollStateCallback* GetApplyScroll();
-
   // Whether this element can receive focus at all. Most elements are not
   // focusable but some elements, such as form controls and links, are. Unlike
   // layoutObjectIsFocusable(), this method may be called when layout is not up
@@ -904,9 +886,6 @@ class CORE_EXPORT Element : public ContainerNode {
   HeapHashMap<TraceWrapperMember<ResizeObserver>, Member<ResizeObservation>>&
   EnsureResizeObserverData();
   void SetNeedsResizeObserverUpdate();
-
-  void WillBeginCustomizedScrollPhase(ScrollCustomization::ScrollDirection);
-  void DidEndCustomizedScrollPhase();
 
   ScriptPromise acquireDisplayLock(ScriptState*, V8DisplayLockCallback*);
 

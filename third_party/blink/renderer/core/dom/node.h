@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/dom/mutation_observer_options.h"
 #include "third_party/blink/renderer/core/dom/node_rare_data.h"
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
+#include "third_party/blink/renderer/core/scroll/scroll_customization.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
@@ -67,11 +68,14 @@ class NodeRareData;
 class QualifiedName;
 class RegisteredEventListener;
 class SVGQualifiedName;
+class ScrollState;
+class ScrollStateCallback;
 class ShadowRoot;
 template <typename NodeType>
 class StaticNodeTypeList;
 using StaticNodeList = StaticNodeTypeList<Node>;
 class StyleChangeReasonForTracing;
+class V8ScrollStateCallback;
 class WebPluginContainerImpl;
 
 const int kNodeStyleChangeShift = 18;
@@ -190,6 +194,22 @@ class CORE_EXPORT Node : public EventTarget {
   Node* firstChild() const;
   Node* lastChild() const;
   Node* getRootNode(const GetRootNodeOptions&) const;
+
+  // Scroll Customization API. See crbug.com/410974 for details.
+  void setDistributeScroll(V8ScrollStateCallback*,
+                           const String& native_scroll_behavior);
+  void setApplyScroll(V8ScrollStateCallback*,
+                      const String& native_scroll_behavior);
+  void SetApplyScroll(ScrollStateCallback*);
+  void RemoveApplyScroll();
+  ScrollStateCallback* GetApplyScroll();
+  void NativeDistributeScroll(ScrollState&);
+  void NativeApplyScroll(ScrollState&);
+  void CallDistributeScroll(ScrollState&);
+  void CallApplyScroll(ScrollState&);
+  void WillBeginCustomizedScrollPhase(ScrollCustomization::ScrollDirection);
+  void DidEndCustomizedScrollPhase();
+
   Node& TreeRoot() const;
   Node& ShadowIncludingRoot() const;
   // closed-shadow-hidden is defined at
