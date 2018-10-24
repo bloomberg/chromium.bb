@@ -354,13 +354,6 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
     AddChildView(expand_arrow_view_);
   }
 
-  if (!folder_delegate_ && app_list_features::IsBackgroundBlurEnabled()) {
-    // TODO(newcomer): Improve implementation of the mask layer so we can
-    // enable it on all devices https://crbug.com/765292.
-    fadeout_layer_delegate_ = std::make_unique<FadeoutLayerDelegate>();
-    layer()->SetMaskLayer(fadeout_layer_delegate_->layer());
-  }
-
   if (!folder_delegate && is_new_style_launcher_enabled_)
     SetBorder(views::CreateEmptyBorder(gfx::Insets(kFadeoutZoneHeight, 0)));
 
@@ -967,6 +960,21 @@ void AppsGridView::Layout() {
 
 void AppsGridView::UpdateControlVisibility(AppListViewState app_list_state,
                                            bool is_in_drag) {
+  if (!folder_delegate_ && app_list_features::IsBackgroundBlurEnabled()) {
+    if (is_in_drag) {
+      layer()->SetMaskLayer(nullptr);
+    } else {
+      // TODO(newcomer): Improve implementation of the mask layer so we can
+      // enable it on all devices https://crbug.com/765292.
+      if (!fadeout_layer_delegate_)
+        fadeout_layer_delegate_ = std::make_unique<FadeoutLayerDelegate>();
+      if (!layer()->layer_mask_layer()) {
+        layer()->SetMaskLayer(fadeout_layer_delegate_->layer());
+        fadeout_layer_delegate_->layer()->SetBounds(layer()->bounds());
+      }
+    }
+  }
+
   const bool fullscreen_apps_in_drag =
       app_list_state == AppListViewState::FULLSCREEN_ALL_APPS || is_in_drag;
   if (all_apps_indicator_)
