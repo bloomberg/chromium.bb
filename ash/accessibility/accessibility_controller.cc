@@ -257,6 +257,8 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
         prefs::kAccessibilityAutoclickDelayMs,
         static_cast<int>(
             AutoclickController::GetDefaultAutoclickDelay().InMilliseconds()));
+    registry->RegisterIntegerPref(prefs::kAccessibilityAutoclickEventType,
+                                  static_cast<int>(kDefaultAutoclickEventType));
     registry->RegisterBooleanPref(prefs::kAccessibilityCaretHighlightEnabled,
                                   false);
     registry->RegisterBooleanPref(prefs::kAccessibilityCursorHighlightEnabled,
@@ -298,6 +300,7 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
   // TODO(jamescook): Move ownership to ash.
   registry->RegisterForeignPref(prefs::kAccessibilityAutoclickEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityAutoclickDelayMs);
+  registry->RegisterForeignPref(prefs::kAccessibilityAutoclickEventType);
   registry->RegisterForeignPref(prefs::kAccessibilityCaretHighlightEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityCursorHighlightEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityDictationEnabled);
@@ -799,6 +802,11 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
           &AccessibilityController::UpdateAutoclickDelayFromPref,
           base::Unretained(this)));
   pref_change_registrar_->Add(
+      prefs::kAccessibilityAutoclickEventType,
+      base::BindRepeating(
+          &AccessibilityController::UpdateAutoclickEventTypeFromPref,
+          base::Unretained(this)));
+  pref_change_registrar_->Add(
       prefs::kAccessibilityCaretHighlightEnabled,
       base::BindRepeating(
           &AccessibilityController::UpdateCaretHighlightFromPref,
@@ -855,6 +863,7 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
   // Load current state.
   UpdateAutoclickFromPref();
   UpdateAutoclickDelayFromPref();
+  UpdateAutoclickEventTypeFromPref();
   UpdateCaretHighlightFromPref();
   UpdateCursorHighlightFromPref();
   UpdateDictationFromPref();
@@ -893,6 +902,14 @@ void AccessibilityController::UpdateAutoclickDelayFromPref() {
   autoclick_delay_ = autoclick_delay;
 
   Shell::Get()->autoclick_controller()->SetAutoclickDelay(autoclick_delay_);
+}
+
+void AccessibilityController::UpdateAutoclickEventTypeFromPref() {
+  DCHECK(active_user_prefs_);
+  mojom::AutoclickEventType event_type = static_cast<mojom::AutoclickEventType>(
+      active_user_prefs_->GetInteger(prefs::kAccessibilityAutoclickEventType));
+
+  Shell::Get()->autoclick_controller()->SetAutoclickEventType(event_type);
 }
 
 void AccessibilityController::UpdateCaretHighlightFromPref() {

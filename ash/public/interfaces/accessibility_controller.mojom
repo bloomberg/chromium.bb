@@ -76,6 +76,29 @@ enum SelectToSpeakState {
   kSelectToSpeakStateSpeaking,
 };
 
+// The type of mouse event the dwell control feature should perform when
+// dwelling. These values are written to prefs and should not be changed.
+[Extensible]
+enum AutoclickEventType {
+  // Perform a left click.
+  kLeftClick,
+
+  // Perform a right click.
+  kRightClick,
+
+  // Perform a drag and drop, i.e. click down at the first dwell, and up at the
+  // second dwell.
+  kDragAndDrop,
+
+  // Perform a double-click.
+  kDoubleClick,
+
+  // A non-action, i.e. nothing will happen at the end of the dwell time.
+  kNoAction,
+
+  // TODO(katie): Add scroll.
+};
+
 // Allows a client to implement Select-to-Speak.
 // TODO(katie): Consider combining DispatchMouseEvent and DispatchKeyEvent
 // into a single DispatchEvent function.

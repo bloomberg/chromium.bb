@@ -41,6 +41,7 @@ base::TimeDelta AutoclickController::GetDefaultAutoclickDelay() {
 
 AutoclickController::AutoclickController()
     : enabled_(false),
+      event_type_(kDefaultAutoclickEventType),
       tap_down_target_(nullptr),
       delay_(GetDefaultAutoclickDelay()),
       mouse_event_flags_(ui::EF_NONE),
@@ -74,7 +75,7 @@ void AutoclickController::SetEnabled(bool enabled) {
   else
     Shell::Get()->RemovePreTargetHandler(this);
 
-  CancelAutoclick();
+  CancelAutoclickAction();
 }
 
 bool AutoclickController::IsEnabled() const {
@@ -84,6 +85,14 @@ bool AutoclickController::IsEnabled() const {
 void AutoclickController::SetAutoclickDelay(base::TimeDelta delay) {
   delay_ = delay;
   InitClickTimer();
+}
+
+void AutoclickController::SetAutoclickEventType(
+    mojom::AutoclickEventType type) {
+  if (event_type_ == type)
+    return;
+  event_type_ = type;
+  CancelAutoclickAction();
 }
 
 void AutoclickController::CreateAutoclickRingWidget(
@@ -117,7 +126,7 @@ void AutoclickController::UpdateAutoclickRingWidget(
   }
 }
 
-void AutoclickController::DoAutoclick() {
+void AutoclickController::DoAutoclickAction() {
   gfx::Point point_in_screen =
       display::Screen::GetScreen()->GetCursorScreenPoint();
   anchor_location_ = point_in_screen;
@@ -129,31 +138,59 @@ void AutoclickController::DoAutoclick() {
   aura::WindowTreeHost* host = root_window->GetHost();
   host->ConvertDIPToPixels(&location_in_pixels);
 
-  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, location_in_pixels,
-                             location_in_pixels, ui::EventTimeForNow(),
-                             mouse_event_flags_ | ui::EF_LEFT_MOUSE_BUTTON,
-                             ui::EF_LEFT_MOUSE_BUTTON);
-  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, location_in_pixels,
+  // TODO(katie): Implement drag-and-drop.
+  if (event_type_ == mojom::AutoclickEventType::kLeftClick ||
+      event_type_ == mojom::AutoclickEventType::kRightClick ||
+      event_type_ == mojom::AutoclickEventType::kDoubleClick) {
+    int button = event_type_ == mojom::AutoclickEventType::kRightClick
+                     ? ui::EF_RIGHT_MOUSE_BUTTON
+                     : ui::EF_LEFT_MOUSE_BUTTON;
+    ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, location_in_pixels,
                                location_in_pixels, ui::EventTimeForNow(),
-                               mouse_event_flags_ | ui::EF_LEFT_MOUSE_BUTTON,
-                               ui::EF_LEFT_MOUSE_BUTTON);
+                               mouse_event_flags_ | button, button);
+    ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, location_in_pixels,
+                                 location_in_pixels, ui::EventTimeForNow(),
+                                 mouse_event_flags_ | button, button);
 
-  ui::EventDispatchDetails details =
-      host->event_sink()->OnEventFromSource(&press_event);
-  if (!details.dispatcher_destroyed)
+    ui::EventDispatchDetails details =
+        host->event_sink()->OnEventFromSource(&press_event);
+    if (details.dispatcher_destroyed)
+      return;
     details = host->event_sink()->OnEventFromSource(&release_event);
+
+    // Now a single click has been completed.
+    if (event_type_ != mojom::AutoclickEventType::kDoubleClick ||
+        details.dispatcher_destroyed)
+      return;
+
+    ui::MouseEvent double_press_event(
+        ui::ET_MOUSE_PRESSED, location_in_pixels, location_in_pixels,
+        ui::EventTimeForNow(),
+        mouse_event_flags_ | button | ui::EF_IS_DOUBLE_CLICK, button);
+    ui::MouseEvent double_release_event(
+        ui::ET_MOUSE_RELEASED, location_in_pixels, location_in_pixels,
+        ui::EventTimeForNow(),
+        mouse_event_flags_ | button | ui::EF_IS_DOUBLE_CLICK, button);
+    details = host->event_sink()->OnEventFromSource(&double_press_event);
+    if (details.dispatcher_destroyed)
+      return;
+    details = host->event_sink()->OnEventFromSource(&double_release_event);
+  }
 }
 
-void AutoclickController::CancelAutoclick() {
-  autoclick_timer_->Stop();
+void AutoclickController::CancelAutoclickAction() {
+  if (autoclick_timer_) {
+    autoclick_timer_->Stop();
+  }
   autoclick_ring_handler_->StopGesture();
   SetTapDownTarget(nullptr);
 }
 
 void AutoclickController::InitClickTimer() {
+  CancelAutoclickAction();
   autoclick_timer_ = std::make_unique<base::RetainingOneShotTimer>(
       FROM_HERE, delay_,
-      base::BindRepeating(&AutoclickController::DoAutoclick,
+      base::BindRepeating(&AutoclickController::DoAutoclickAction,
                           base::Unretained(this)));
 }
 
@@ -167,6 +204,8 @@ void AutoclickController::UpdateRingWidget(const gfx::Point& point_in_screen) {
 
 void AutoclickController::OnMouseEvent(ui::MouseEvent* event) {
   DCHECK(event->target());
+  if (event_type_ == mojom::AutoclickEventType::kNoAction)
+    return;
   gfx::Point point_in_screen = event->target()->GetScreenLocation(*event);
   if (event->type() == ui::ET_MOUSE_MOVED &&
       !(event->flags() & ui::EF_IS_SYNTHESIZED)) {
@@ -189,7 +228,7 @@ void AutoclickController::OnMouseEvent(ui::MouseEvent* event) {
       autoclick_ring_handler_->SetGestureCenter(point_in_screen, widget_.get());
     }
   } else if (event->type() == ui::ET_MOUSE_PRESSED) {
-    CancelAutoclick();
+    CancelAutoclickAction();
   } else if (event->type() == ui::ET_MOUSEWHEEL &&
              autoclick_timer_->IsRunning()) {
     autoclick_timer_->Reset();
@@ -207,24 +246,24 @@ void AutoclickController::OnKeyEvent(ui::KeyEvent* event) {
   mouse_event_flags_ = (mouse_event_flags_ & ~modifier_mask) | new_modifiers;
 
   if (!IsModifierKey(event->key_code()))
-    CancelAutoclick();
+    CancelAutoclickAction();
 }
 
 void AutoclickController::OnTouchEvent(ui::TouchEvent* event) {
-  CancelAutoclick();
+  CancelAutoclickAction();
 }
 
 void AutoclickController::OnGestureEvent(ui::GestureEvent* event) {
-  CancelAutoclick();
+  CancelAutoclickAction();
 }
 
 void AutoclickController::OnScrollEvent(ui::ScrollEvent* event) {
-  CancelAutoclick();
+  CancelAutoclickAction();
 }
 
 void AutoclickController::OnWindowDestroying(aura::Window* window) {
   DCHECK_EQ(tap_down_target_, window);
-  CancelAutoclick();
+  CancelAutoclickAction();
 }
 
 }  // namespace ash
