@@ -128,7 +128,7 @@ bool AddOriginMetadataToFile(const base::FilePath& file,
   if (!md_item_set_attribute_func)
     return false;
 
-  NSString* file_path = [NSString stringWithUTF8String:file.value().c_str()];
+  NSString* file_path = base::mac::FilePathToNSString(file);
   if (!file_path)
     return false;
 
@@ -144,11 +144,10 @@ bool AddOriginMetadataToFile(const base::FilePath& file,
 
   // Follow Safari's lead: the first item in the list is the source URL of
   // the downloaded file. If the referrer is known, store that, too.
-  NSString* origin_url = [NSString stringWithUTF8String:source.spec().c_str()];
+  NSString* origin_url = base::SysUTF8ToNSString(source.spec());
   if (origin_url)
     [list addObject:origin_url];
-  NSString* referrer_url =
-      [NSString stringWithUTF8String:referrer.spec().c_str()];
+  NSString* referrer_url = base::SysUTF8ToNSString(referrer.spec());
   if (referrer_url)
     [list addObject:referrer_url];
 
@@ -203,16 +202,14 @@ bool AddQuarantineMetadataToFile(const base::FilePath& file,
 
   if (![properties valueForKey:(NSString*)kLSQuarantineOriginURLKey] &&
       referrer.is_valid()) {
-    NSString* referrer_url =
-        [NSString stringWithUTF8String:referrer.spec().c_str()];
+    NSString* referrer_url = base::SysUTF8ToNSString(referrer.spec());
     [properties setValue:referrer_url
                   forKey:(NSString*)kLSQuarantineOriginURLKey];
   }
 
   if (![properties valueForKey:(NSString*)kLSQuarantineDataURLKey] &&
       source.is_valid()) {
-    NSString* origin_url =
-        [NSString stringWithUTF8String:source.spec().c_str()];
+    NSString* origin_url = base::SysUTF8ToNSString(source.spec());
     [properties setValue:origin_url forKey:(NSString*)kLSQuarantineDataURLKey];
   }
 
