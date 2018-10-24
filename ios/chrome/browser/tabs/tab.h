@@ -133,9 +133,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // be populated. Can return null.
 - (web::NavigationManager*)navigationManager;
 
-// Navigate forwards or backwards to |item|.
-- (void)goToItem:(const web::NavigationItem*)item;
-
 // Navigates forwards or backwards.
 // TODO(crbug.com/661664): These are passthroughs to the Tab's WebState's
 // NavigationManager. Convert all callers and remove these methods.

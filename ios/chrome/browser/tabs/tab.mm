@@ -331,13 +331,6 @@ NSString* const kTabUrlKey = @"url";
   return self.webState ? self.webState->GetNavigationManager() : nullptr;
 }
 
-- (void)goToItem:(const web::NavigationItem*)item {
-  DCHECK(item);
-  int index = self.navigationManager->GetIndexOfItem(item);
-  DCHECK_NE(index, -1);
-  self.navigationManager->GoToIndex(index);
-}
-
 - (void)goBack {
   if (self.navigationManager) {
     DCHECK(self.navigationManager->CanGoBack());
