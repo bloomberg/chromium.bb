@@ -5,8 +5,8 @@
 #ifndef NET_THIRD_PARTY_SPDY_CORE_HPACK_HPACK_CONSTANTS_H_
 #define NET_THIRD_PARTY_SPDY_CORE_HPACK_HPACK_CONSTANTS_H_
 
-#include <stddef.h>
-#include <stdint.h>
+#include <cstddef>
+#include <cstdint>
 
 #include <vector>
 

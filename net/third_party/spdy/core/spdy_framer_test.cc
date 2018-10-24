@@ -1611,7 +1611,8 @@ TEST_P(SpdyFramerTest, CreateRstStream) {
       ASSERT_TRUE(framer_.SerializeRstStream(rst_stream, &output_));
       frame = SpdySerializedFrame(output_.Begin(), output_.Size(), false);
     }
-    CompareFrame(kDescription, frame, kH2FrameData, SPDY_ARRAYSIZE(kH2FrameData));
+    CompareFrame(kDescription, frame, kH2FrameData,
+                 SPDY_ARRAYSIZE(kH2FrameData));
   }
 
   {
@@ -1631,7 +1632,8 @@ TEST_P(SpdyFramerTest, CreateRstStream) {
       ASSERT_TRUE(framer_.SerializeRstStream(rst_stream, &output_));
       frame = SpdySerializedFrame(output_.Begin(), output_.Size(), false);
     }
-    CompareFrame(kDescription, frame, kH2FrameData, SPDY_ARRAYSIZE(kH2FrameData));
+    CompareFrame(kDescription, frame, kH2FrameData,
+                 SPDY_ARRAYSIZE(kH2FrameData));
   }
 }
 
@@ -1658,7 +1660,8 @@ TEST_P(SpdyFramerTest, CreateSettings) {
       ASSERT_TRUE(framer_.SerializeSettings(settings_ir, &output_));
       frame = SpdySerializedFrame(output_.Begin(), output_.Size(), false);
     }
-    CompareFrame(kDescription, frame, kH2FrameData, SPDY_ARRAYSIZE(kH2FrameData));
+    CompareFrame(kDescription, frame, kH2FrameData,
+                 SPDY_ARRAYSIZE(kH2FrameData));
   }
 
   {
@@ -1693,7 +1696,8 @@ TEST_P(SpdyFramerTest, CreateSettings) {
       frame = SpdySerializedFrame(output_.Begin(), output_.Size(), false);
     }
 
-    CompareFrame(kDescription, frame, kH2FrameData, SPDY_ARRAYSIZE(kH2FrameData));
+    CompareFrame(kDescription, frame, kH2FrameData,
+                 SPDY_ARRAYSIZE(kH2FrameData));
   }
 
   {
@@ -1712,7 +1716,8 @@ TEST_P(SpdyFramerTest, CreateSettings) {
       frame = SpdySerializedFrame(output_.Begin(), output_.Size(), false);
     }
 
-    CompareFrame(kDescription, frame, kH2FrameData, SPDY_ARRAYSIZE(kH2FrameData));
+    CompareFrame(kDescription, frame, kH2FrameData,
+                 SPDY_ARRAYSIZE(kH2FrameData));
   }
 }
 
@@ -1744,7 +1749,8 @@ TEST_P(SpdyFramerTest, CreatePingFrame) {
       ASSERT_TRUE(framer_.SerializePing(ping_ir, &output_));
       frame = SpdySerializedFrame(output_.Begin(), output_.Size(), false);
     }
-    CompareFrame(kDescription, frame, kH2FrameData, SPDY_ARRAYSIZE(kH2FrameData));
+    CompareFrame(kDescription, frame, kH2FrameData,
+                 SPDY_ARRAYSIZE(kH2FrameData));
 
     // Tests SpdyPingIR when the ping is an ack.
     ping_ir.set_is_ack(true);
@@ -1778,7 +1784,8 @@ TEST_P(SpdyFramerTest, CreateGoAway) {
       ASSERT_TRUE(framer_.SerializeGoAway(goaway_ir, &output_));
       frame = SpdySerializedFrame(output_.Begin(), output_.Size(), false);
     }
-    CompareFrame(kDescription, frame, kH2FrameData, SPDY_ARRAYSIZE(kH2FrameData));
+    CompareFrame(kDescription, frame, kH2FrameData,
+                 SPDY_ARRAYSIZE(kH2FrameData));
   }
 
   {
@@ -1800,7 +1807,8 @@ TEST_P(SpdyFramerTest, CreateGoAway) {
       ASSERT_TRUE(framer_.SerializeGoAway(goaway_ir, &output_));
       frame = SpdySerializedFrame(output_.Begin(), output_.Size(), false);
     }
-    CompareFrame(kDescription, frame, kH2FrameData, SPDY_ARRAYSIZE(kH2FrameData));
+    CompareFrame(kDescription, frame, kH2FrameData,
+                 SPDY_ARRAYSIZE(kH2FrameData));
   }
 }
 
@@ -1834,7 +1842,8 @@ TEST_P(SpdyFramerTest, CreateHeadersUncompressed) {
     headers.SetHeader("foo", "bar");
     SpdySerializedFrame frame(SpdyFramerPeer::SerializeHeaders(
         &framer, headers, use_output_ ? &output_ : nullptr));
-    CompareFrame(kDescription, frame, kH2FrameData, SPDY_ARRAYSIZE(kH2FrameData));
+    CompareFrame(kDescription, frame, kH2FrameData,
+                 SPDY_ARRAYSIZE(kH2FrameData));
   }
 
   {
@@ -1865,7 +1874,8 @@ TEST_P(SpdyFramerTest, CreateHeadersUncompressed) {
     headers.SetHeader("foo", "bar");
     SpdySerializedFrame frame(SpdyFramerPeer::SerializeHeaders(
         &framer, headers, use_output_ ? &output_ : nullptr));
-    CompareFrame(kDescription, frame, kH2FrameData, SPDY_ARRAYSIZE(kH2FrameData));
+    CompareFrame(kDescription, frame, kH2FrameData,
+                 SPDY_ARRAYSIZE(kH2FrameData));
   }
 
   {
@@ -1896,7 +1906,8 @@ TEST_P(SpdyFramerTest, CreateHeadersUncompressed) {
     headers_ir.SetHeader("foo", "");
     SpdySerializedFrame frame(SpdyFramerPeer::SerializeHeaders(
         &framer, headers_ir, use_output_ ? &output_ : nullptr));
-    CompareFrame(kDescription, frame, kH2FrameData, SPDY_ARRAYSIZE(kH2FrameData));
+    CompareFrame(kDescription, frame, kH2FrameData,
+                 SPDY_ARRAYSIZE(kH2FrameData));
   }
 
   {
@@ -1932,7 +1943,8 @@ TEST_P(SpdyFramerTest, CreateHeadersUncompressed) {
     headers_ir.SetHeader("foo", "");
     SpdySerializedFrame frame(SpdyFramerPeer::SerializeHeaders(
         &framer, headers_ir, use_output_ ? &output_ : nullptr));
-    CompareFrame(kDescription, frame, kH2FrameData, SPDY_ARRAYSIZE(kH2FrameData));
+    CompareFrame(kDescription, frame, kH2FrameData,
+                 SPDY_ARRAYSIZE(kH2FrameData));
   }
 
   {
@@ -1971,7 +1983,8 @@ TEST_P(SpdyFramerTest, CreateHeadersUncompressed) {
     headers_ir.SetHeader("foo", "");
     SpdySerializedFrame frame(SpdyFramerPeer::SerializeHeaders(
         &framer, headers_ir, use_output_ ? &output_ : nullptr));
-    CompareFrame(kDescription, frame, kV4FrameData, SPDY_ARRAYSIZE(kV4FrameData));
+    CompareFrame(kDescription, frame, kV4FrameData,
+                 SPDY_ARRAYSIZE(kV4FrameData));
   }
 
   {
@@ -2010,7 +2023,8 @@ TEST_P(SpdyFramerTest, CreateHeadersUncompressed) {
     headers_ir.SetHeader("foo", "");
     SpdySerializedFrame frame(SpdyFramerPeer::SerializeHeaders(
         &framer, headers_ir, use_output_ ? &output_ : nullptr));
-    CompareFrame(kDescription, frame, kV4FrameData, SPDY_ARRAYSIZE(kV4FrameData));
+    CompareFrame(kDescription, frame, kV4FrameData,
+                 SPDY_ARRAYSIZE(kV4FrameData));
   }
 
   {
@@ -2047,7 +2061,8 @@ TEST_P(SpdyFramerTest, CreateHeadersUncompressed) {
     headers_ir.set_padding_len(6);
     SpdySerializedFrame frame(SpdyFramerPeer::SerializeHeaders(
         &framer, headers_ir, use_output_ ? &output_ : nullptr));
-    CompareFrame(kDescription, frame, kH2FrameData, SPDY_ARRAYSIZE(kH2FrameData));
+    CompareFrame(kDescription, frame, kH2FrameData,
+                 SPDY_ARRAYSIZE(kH2FrameData));
   }
 }
 
@@ -2069,7 +2084,8 @@ TEST_P(SpdyFramerTest, CreateWindowUpdate) {
           SpdyWindowUpdateIR(/* stream_id = */ 1, /* delta = */ 1), &output_));
       frame = SpdySerializedFrame(output_.Begin(), output_.Size(), false);
     }
-    CompareFrame(kDescription, frame, kH2FrameData, SPDY_ARRAYSIZE(kH2FrameData));
+    CompareFrame(kDescription, frame, kH2FrameData,
+                 SPDY_ARRAYSIZE(kH2FrameData));
   }
 
   {
@@ -2090,7 +2106,8 @@ TEST_P(SpdyFramerTest, CreateWindowUpdate) {
           &output_));
       frame = SpdySerializedFrame(output_.Begin(), output_.Size(), false);
     }
-    CompareFrame(kDescription, frame, kH2FrameData, SPDY_ARRAYSIZE(kH2FrameData));
+    CompareFrame(kDescription, frame, kH2FrameData,
+                 SPDY_ARRAYSIZE(kH2FrameData));
   }
 
   {
@@ -2111,7 +2128,8 @@ TEST_P(SpdyFramerTest, CreateWindowUpdate) {
           &output_));
       frame = SpdySerializedFrame(output_.Begin(), output_.Size(), false);
     }
-    CompareFrame(kDescription, frame, kH2FrameData, SPDY_ARRAYSIZE(kH2FrameData));
+    CompareFrame(kDescription, frame, kH2FrameData,
+                 SPDY_ARRAYSIZE(kH2FrameData));
   }
 }
 
