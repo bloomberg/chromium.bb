@@ -7,6 +7,7 @@
 #include "ash/system/message_center/new_unified_message_center_view.h"
 #include "ash/system/message_center/notification_swipe_control_view.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/unified/unified_system_tray_model.h"
 #include "base/auto_reset.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/message_center/message_center.h"
@@ -66,6 +67,30 @@ class UnifiedMessageListView::MessageViewContainer
       message_view_->SetExpanded(false);
   }
 
+  // Check if the notification is manually expanded / collapsed before and
+  // restores the state.
+  void LoadExpandedState(UnifiedSystemTrayModel* model, bool is_latest) {
+    base::Optional<bool> manually_expanded =
+        model->GetNotificationExpanded(GetNotificationId());
+    if (manually_expanded.has_value()) {
+      message_view_->SetExpanded(manually_expanded.value());
+      message_view_->SetManuallyExpandedOrCollapsed(true);
+    } else {
+      // Expand the latest notification, and collapse all other notifications.
+      message_view_->SetExpanded(is_latest &&
+                                 message_view_->IsAutoExpandingAllowed());
+    }
+  }
+
+  // Stores if the notification is manually expanded or collapsed so that we can
+  // restore that when UnifiedSystemTray is reopened.
+  void StoreExpandedState(UnifiedSystemTrayModel* model) {
+    if (message_view_->IsManuallyExpandedOrCollapsed()) {
+      model->SetNotificationExpanded(GetNotificationId(),
+                                     message_view_->IsExpanded());
+    }
+  }
+
   std::string GetNotificationId() const {
     return message_view_->notification_id();
   }
@@ -120,8 +145,10 @@ class UnifiedMessageListView::MessageViewContainer
 };
 
 UnifiedMessageListView::UnifiedMessageListView(
-    NewUnifiedMessageCenterView* message_center_view)
+    NewUnifiedMessageCenterView* message_center_view,
+    UnifiedSystemTrayModel* model)
     : message_center_view_(message_center_view),
+      model_(model),
       animation_(std::make_unique<gfx::LinearAnimation>(this)) {
   MessageCenter::Get()->AddObserver(this);
   animation_->SetDuration(kClosingAnimationDuration);
@@ -130,18 +157,21 @@ UnifiedMessageListView::UnifiedMessageListView(
 
 UnifiedMessageListView::~UnifiedMessageListView() {
   MessageCenter::Get()->RemoveObserver(this);
+
+  model_->ClearNotificationChanges();
+  for (int i = 0; i < child_count(); ++i)
+    GetContainer(i)->StoreExpandedState(model_);
 }
 
 void UnifiedMessageListView::Init() {
   bool is_latest = true;
   for (auto* notification : MessageCenter::Get()->GetVisibleNotifications()) {
-    auto* view = CreateMessageView(*notification);
-    // Expand the latest notification, and collapse all other notifications.
-    view->SetExpanded(is_latest && view->IsAutoExpandingAllowed());
-    is_latest = false;
-    AddChildViewAt(new MessageViewContainer(view), 0);
+    auto* view = new MessageViewContainer(CreateMessageView(*notification));
+    view->LoadExpandedState(model_, is_latest);
+    AddChildViewAt(view, 0);
     MessageCenter::Get()->DisplayedNotification(
         notification->id(), message_center::DISPLAY_SOURCE_MESSAGE_CENTER);
+    is_latest = false;
   }
   UpdateBorders();
   UpdateBounds();
@@ -348,8 +378,10 @@ void UnifiedMessageListView::ResetBounds() {
 void UnifiedMessageListView::DeleteRemovedNotifications() {
   for (int i = 0; i < child_count(); ++i) {
     auto* view = GetContainer(i);
-    if (view->is_removed())
+    if (view->is_removed()) {
+      model_->RemoveNotificationExpanded(view->GetNotificationId());
       delete view;
+    }
   }
 }
 

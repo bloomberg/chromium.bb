@@ -8,6 +8,7 @@
 #include "ash/system/message_center/unified_message_center_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
+#include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -34,7 +35,8 @@ class DummyEvent : public ui::Event {
 
 class TestNewUnifiedMessageCenterView : public NewUnifiedMessageCenterView {
  public:
-  TestNewUnifiedMessageCenterView() : NewUnifiedMessageCenterView(nullptr) {}
+  explicit TestNewUnifiedMessageCenterView(UnifiedSystemTrayModel* model)
+      : NewUnifiedMessageCenterView(nullptr, model) {}
 
   ~TestNewUnifiedMessageCenterView() override = default;
 
@@ -59,8 +61,14 @@ class NewUnifiedMessageCenterViewTest : public AshTestBase,
   ~NewUnifiedMessageCenterViewTest() override = default;
 
   // AshTestBase:
+  void SetUp() override {
+    AshTestBase::SetUp();
+    model_ = std::make_unique<UnifiedSystemTrayModel>();
+  }
+
   void TearDown() override {
     message_center_view_.reset();
+    model_.reset();
     AshTestBase::TearDown();
   }
 
@@ -87,7 +95,8 @@ class NewUnifiedMessageCenterViewTest : public AshTestBase,
   }
 
   void CreateMessageCenterView(int max_height = kDefaultMaxHeight) {
-    message_center_view_ = std::make_unique<TestNewUnifiedMessageCenterView>();
+    message_center_view_ =
+        std::make_unique<TestNewUnifiedMessageCenterView>(model_.get());
     message_center_view_->AddObserver(this);
     message_center_view_->SetMaxHeight(max_height);
     OnViewPreferredSizeChanged(message_center_view_.get());
@@ -142,6 +151,7 @@ class NewUnifiedMessageCenterViewTest : public AshTestBase,
   int id_ = 0;
   int size_changed_count_ = 0;
 
+  std::unique_ptr<UnifiedSystemTrayModel> model_;
   std::unique_ptr<TestNewUnifiedMessageCenterView> message_center_view_;
 
   DISALLOW_COPY_AND_ASSIGN(NewUnifiedMessageCenterViewTest);

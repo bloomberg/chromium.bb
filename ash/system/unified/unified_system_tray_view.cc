@@ -232,9 +232,10 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
                                      controller,
                                      this,
                                      message_center::MessageCenter::Get())),
-      new_message_center_view_(features::IsNewMessageListViewEnabled()
-                                   ? new NewUnifiedMessageCenterView(this)
-                                   : nullptr),
+      new_message_center_view_(
+          features::IsNewMessageListViewEnabled()
+              ? new NewUnifiedMessageCenterView(this, controller->model())
+              : nullptr),
       focus_search_(std::make_unique<FocusSearch>(this)),
       interacted_by_tap_recorder_(
           std::make_unique<InteractedByTapRecorder>(this)) {
