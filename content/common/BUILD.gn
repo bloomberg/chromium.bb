@@ -490,11 +490,6 @@ mojom("mojo_bindings") {
   # at some point.
   cpp_only = true
 
-  # imports vs deps check is disabled for this target to work around
-  # windows multiple definitions linker error caused by having
-  # both a direct and an indirect dependency on the same target
-  skip_deps_check = true
-
   disable_variants = true
 
   sources = [
