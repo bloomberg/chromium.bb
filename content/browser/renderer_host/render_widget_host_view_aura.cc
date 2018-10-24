@@ -2092,8 +2092,6 @@ bool RenderWidgetHostViewAura::SynchronizeVisualProperties(
   window_->UpdateLocalSurfaceIdFromEmbeddedClient(
       child_allocated_local_surface_id,
       child_local_surface_id_allocation_time.value_or(base::TimeTicks()));
-  if (IsLocalSurfaceIdAllocationSuppressed())
-    return false;
 
   if (delegated_frame_host_) {
     delegated_frame_host_->EmbedSurface(window_->GetLocalSurfaceId(),
@@ -2536,11 +2534,6 @@ RenderWidgetHostViewAura::DidUpdateVisualProperties(
       &RenderWidgetHostViewAura::OnDidUpdateVisualPropertiesComplete,
       weak_ptr_factory_.GetWeakPtr(), metadata);
   return window_->GetSurfaceIdAllocator(std::move(allocation_task));
-}
-
-bool RenderWidgetHostViewAura::IsLocalSurfaceIdAllocationSuppressed() const {
-  DCHECK(window_);
-  return window_->IsLocalSurfaceIdAllocationSuppressed();
 }
 
 void RenderWidgetHostViewAura::DidNavigate() {

@@ -62,10 +62,6 @@ void WindowPortForShutdown::UpdateLocalSurfaceIdFromEmbeddedClient(
     const viz::LocalSurfaceId& embedded_client_local_surface_id,
     base::TimeTicks embedded_client_local_surface_id_allocation_time) {}
 
-bool WindowPortForShutdown::IsLocalSurfaceIdAllocationSuppressed() const {
-  return false;
-}
-
 viz::ScopedSurfaceIdAllocator WindowPortForShutdown::GetSurfaceIdAllocator(
     base::OnceCallback<void()> allocation_task) {
   return viz::ScopedSurfaceIdAllocator(std::move(allocation_task));

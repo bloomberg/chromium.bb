@@ -401,10 +401,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // that does not involve a resize or a device scale factor change.
   void AllocateLocalSurfaceId();
 
-  // When a child-allocated viz::LocalSurfaceId is being processed, this returns
-  // true.
-  bool IsLocalSurfaceIdAllocationSuppressed() const;
-
   viz::ScopedSurfaceIdAllocator GetSurfaceIdAllocator(
       base::OnceCallback<void()> allocation_task);
 

@@ -208,8 +208,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
       const cc::RenderFrameMetadata& metadata) override;
 
-  bool IsLocalSurfaceIdAllocationSuppressed() const override;
-
   void DidNavigate() override;
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
 

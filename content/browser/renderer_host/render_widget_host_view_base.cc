@@ -555,10 +555,6 @@ RenderWidgetHostViewBase::DidUpdateVisualProperties(
   return viz::ScopedSurfaceIdAllocator(std::move(allocation_task));
 }
 
-bool RenderWidgetHostViewBase::IsLocalSurfaceIdAllocationSuppressed() const {
-  return false;
-}
-
 base::WeakPtr<RenderWidgetHostViewBase> RenderWidgetHostViewBase::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
