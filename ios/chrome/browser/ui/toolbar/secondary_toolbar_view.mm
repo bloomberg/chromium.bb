@@ -111,8 +111,9 @@
   AddSameConstraints(self.blur, self);
 
   UIView* contentView = self;
-  if (UIVisualEffect* vibrancy = [self.buttonFactory.toolbarConfiguration
-          vibrancyEffectForBlurEffect:blurEffect]) {
+  UIVisualEffect* vibrancy = [self.buttonFactory.toolbarConfiguration
+      vibrancyEffectForBlurEffect:blurEffect];
+  if (vibrancy && IconForSearchButton() != ToolbarSearchButtonIconColorful) {
     // Add vibrancy only if we have a vibrancy effect.
     UIVisualEffectView* vibrancyView =
         [[UIVisualEffectView alloc] initWithEffect:vibrancy];

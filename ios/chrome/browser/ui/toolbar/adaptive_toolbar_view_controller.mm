@@ -225,6 +225,10 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
   _isNTP = isNTP;
 }
 
+- (void)setSearchIcon:(UIImage*)searchIcon {
+  [self.view.omniboxButton setImage:searchIcon forState:UIControlStateNormal];
+}
+
 #pragma mark - NewTabPageControllerDelegate
 
 - (void)setScrollProgressForTabletOmnibox:(CGFloat)progress {
