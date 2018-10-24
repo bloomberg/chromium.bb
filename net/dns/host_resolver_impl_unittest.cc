@@ -5474,6 +5474,105 @@ TEST_F(HostResolverImplDnsTest, NotFoundTTL_ResolveHost) {
   EXPECT_THAT(cache_entry->ttl(), base::TimeDelta::FromSeconds(86400));
 }
 
+TEST_F(HostResolverImplDnsTest, NoCanonicalName) {
+  AddDnsRule("alias", dns_protocol::kTypeA,
+             MockDnsClientRule::Result(IPAddress::IPv4Localhost(), "canonical"),
+             false);
+  AddDnsRule("alias", dns_protocol::kTypeAAAA,
+             MockDnsClientRule::Result(IPAddress::IPv6Localhost(), "canonical"),
+             false);
+  CreateResolver();
+  ChangeDnsConfig(CreateValidDnsConfig());
+  set_fallback_to_proctask(false);
+  Request* request = CreateRequest("alias", 80);
+  EXPECT_THAT(request->Resolve(), IsError(ERR_IO_PENDING));
+  ASSERT_THAT(request->WaitForResult(), IsOk());
+
+  EXPECT_TRUE(request->list().canonical_name().empty());
+}
+
+TEST_F(HostResolverImplDnsTest, NoCanonicalName_CreateRequest) {
+  AddDnsRule("alias", dns_protocol::kTypeA,
+             MockDnsClientRule::Result(IPAddress::IPv4Localhost(), "canonical"),
+             false);
+  AddDnsRule("alias", dns_protocol::kTypeAAAA,
+             MockDnsClientRule::Result(IPAddress::IPv6Localhost(), "canonical"),
+             false);
+  CreateResolver();
+  ChangeDnsConfig(CreateValidDnsConfig());
+  set_fallback_to_proctask(false);
+  HostResolver::ResolveHostParameters params;
+  params.source = HostResolverSource::DNS;
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("alias", 80), NetLogWithSource(), params));
+  ASSERT_THAT(response.result_error(), IsOk());
+
+  EXPECT_TRUE(
+      response.request()->GetAddressResults().value().canonical_name().empty());
+}
+
+TEST_F(HostResolverImplDnsTest, CanonicalName_CreateRequest) {
+  AddDnsRule("alias", dns_protocol::kTypeA,
+             MockDnsClientRule::Result(IPAddress::IPv4Localhost(), "canonical"),
+             false);
+  AddDnsRule("alias", dns_protocol::kTypeAAAA,
+             MockDnsClientRule::Result(IPAddress::IPv6Localhost(), "canonical"),
+             false);
+  CreateResolver();
+  ChangeDnsConfig(CreateValidDnsConfig());
+  set_fallback_to_proctask(false);
+  HostResolver::ResolveHostParameters params;
+  params.source = HostResolverSource::DNS;
+  params.include_canonical_name = true;
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("alias", 80), NetLogWithSource(), params));
+  ASSERT_THAT(response.result_error(), IsOk());
+
+  EXPECT_EQ(response.request()->GetAddressResults().value().canonical_name(),
+            "canonical");
+}
+
+TEST_F(HostResolverImplDnsTest, CanonicalName_PreferV6_CreateRequest) {
+  AddDnsRule("alias", dns_protocol::kTypeA,
+             MockDnsClientRule::Result(IPAddress::IPv4Localhost(), "wrong"),
+             false);
+  AddDnsRule("alias", dns_protocol::kTypeAAAA,
+             MockDnsClientRule::Result(IPAddress::IPv6Localhost(), "correct"),
+             true);
+  CreateResolver();
+  ChangeDnsConfig(CreateValidDnsConfig());
+  set_fallback_to_proctask(false);
+  HostResolver::ResolveHostParameters params;
+  params.source = HostResolverSource::DNS;
+  params.include_canonical_name = true;
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("alias", 80), NetLogWithSource(), params));
+  ASSERT_FALSE(response.complete());
+  base::RunLoop().RunUntilIdle();
+  dns_client_->CompleteDelayedTransactions();
+  ASSERT_THAT(response.result_error(), IsOk());
+  EXPECT_EQ(response.request()->GetAddressResults().value().canonical_name(),
+            "correct");
+}
+
+TEST_F(HostResolverImplDnsTest, CanonicalName_V4Only_CreateRequest) {
+  AddDnsRule("alias", dns_protocol::kTypeA,
+             MockDnsClientRule::Result(IPAddress::IPv4Localhost(), "correct"),
+             false);
+  CreateResolver();
+  ChangeDnsConfig(CreateValidDnsConfig());
+  set_fallback_to_proctask(false);
+  HostResolver::ResolveHostParameters params;
+  params.source = HostResolverSource::DNS;
+  params.dns_query_type = HostResolver::DnsQueryType::A;
+  params.include_canonical_name = true;
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("alias", 80), NetLogWithSource(), params));
+  ASSERT_THAT(response.result_error(), IsOk());
+  EXPECT_EQ(response.request()->GetAddressResults().value().canonical_name(),
+            "correct");
+}
+
 TEST_F(HostResolverImplTest, ResolveLocalHostname) {
   AddressList addresses;
 

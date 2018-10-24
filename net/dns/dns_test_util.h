@@ -170,9 +170,12 @@ struct MockDnsClientRule {
   struct Result {
     explicit Result(const IPAddress& ip) : type(OK), ip(ip) {}
     explicit Result(ResultType type) : type(type) {}
+    Result(const IPAddress& ip, const std::string& name)
+        : type(OK), ip(ip), canonical_name(name) {}
 
     ResultType type;
     IPAddress ip;
+    std::string canonical_name;
   };
 
   // If |delay| is true, matching transactions will be delayed until triggered

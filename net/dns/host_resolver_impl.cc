@@ -1247,6 +1247,16 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       addr_list_.insert(addr_list_.begin(), addr_list.begin(), addr_list.end());
     }
 
+    // If requested via HOST_RESOLVER_CANONNAME, store the canonical name from
+    // the response. Prefer the name from the AAAA response. Only look at name
+    // if there is at least one address record.
+    if ((key_.host_resolver_flags & HOST_RESOLVER_CANONNAME) != 0 &&
+        !addr_list.empty() &&
+        (transaction->GetType() == dns_protocol::kTypeAAAA ||
+         addr_list_.canonical_name().empty())) {
+      addr_list_.set_canonical_name(addr_list.canonical_name());
+    }
+
     if (needs_two_transactions() && num_completed_transactions_ == 1) {
       // No need to repeat the suffix search.
       key_.hostname = transaction->GetHostname();
