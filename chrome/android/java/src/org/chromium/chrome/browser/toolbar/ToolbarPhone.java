@@ -1321,12 +1321,26 @@ public class ToolbarPhone extends ToolbarLayout
         // Draw the experimental button if necessary.
         if (mExperimentalButton != null && mExperimentalButton.getVisibility() != View.GONE) {
             canvas.save();
+            Drawable expButton = mExperimentalButton.getDrawable();
+
             translateCanvasToView(mToolbarButtonsContainer, mExperimentalButton, canvas);
 
-            previousAlpha = mExperimentalButton.getAlpha();
-            mExperimentalButton.setAlpha(previousAlpha * floatAlpha);
-            drawChild(canvas, mExperimentalButton, SystemClock.uptimeMillis());
-            mExperimentalButton.setAlpha(previousAlpha);
+            int backgroundWidth = mExperimentalButton.getDrawable().getIntrinsicWidth();
+            int backgroundHeight = mExperimentalButton.getDrawable().getIntrinsicHeight();
+            int backgroundLeft =
+                    (mExperimentalButton.getWidth() - mExperimentalButton.getPaddingLeft()
+                            - mExperimentalButton.getPaddingRight() - backgroundWidth)
+                    / 2;
+            backgroundLeft += mExperimentalButton.getPaddingLeft();
+            int backgroundTop =
+                    (mExperimentalButton.getHeight() - mExperimentalButton.getPaddingTop()
+                            - mExperimentalButton.getPaddingBottom() - backgroundHeight)
+                    / 2;
+            backgroundTop += mExperimentalButton.getPaddingTop();
+            canvas.translate(backgroundLeft, backgroundTop);
+
+            expButton.setAlpha(rgbAlpha);
+            expButton.draw(canvas);
 
             canvas.restore();
         }
@@ -2673,6 +2687,7 @@ public class ToolbarPhone extends ToolbarLayout
         ApiCompatibilityUtils.setImageTintList(
                 mExperimentalButton, mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint);
 
+        mExperimentalButtonLayoutListener = () -> requestLayoutHostUpdateForExperimentalButton();
         if (mTabSwitcherState == STATIC_TAB) {
             if (!mUrlFocusChangeInProgress && !urlHasFocus()) {
                 runShowExperimentalButtonAnimation();
@@ -2681,10 +2696,8 @@ public class ToolbarPhone extends ToolbarLayout
             }
         } else {
             mExperimentalButton.setVisibility(View.INVISIBLE);
+            getViewTreeObserver().addOnGlobalLayoutListener(mExperimentalButtonLayoutListener);
         }
-
-        mExperimentalButtonLayoutListener = () -> requestLayoutHostUpdateForExperimentalButton();
-        getViewTreeObserver().addOnGlobalLayoutListener(mExperimentalButtonLayoutListener);
     }
 
     @Override
@@ -2702,11 +2715,10 @@ public class ToolbarPhone extends ToolbarLayout
             runHideExperimentalButtonsAnimators();
         } else {
             mExperimentalButton.setVisibility(View.GONE);
+            getViewTreeObserver().addOnGlobalLayoutListener(mExperimentalButtonLayoutListener);
         }
 
         mBrowsingModeViews.remove(mExperimentalButton);
-
-        getViewTreeObserver().addOnGlobalLayoutListener(mExperimentalButtonLayoutListener);
     }
 
     /**
@@ -2768,6 +2780,7 @@ public class ToolbarPhone extends ToolbarLayout
                 onExperimentalButtonAnimationEnd();
                 mDisableLocationBarRelayout = false;
                 mExperimentalButtonAnimationRunning = false;
+                getViewTreeObserver().addOnGlobalLayoutListener(mExperimentalButtonLayoutListener);
                 requestLayout();
             }
         });
@@ -2820,6 +2833,7 @@ public class ToolbarPhone extends ToolbarLayout
                 mExperimentalButton.setVisibility(View.GONE);
                 mLayoutLocationBarWithoutExtraButton = false;
                 mExperimentalButtonAnimationRunning = false;
+                getViewTreeObserver().addOnGlobalLayoutListener(mExperimentalButtonLayoutListener);
             }
         });
         mExperimentalButtonAnimator.playTogether(animators);
