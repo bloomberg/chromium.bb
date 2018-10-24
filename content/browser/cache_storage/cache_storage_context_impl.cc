@@ -82,17 +82,19 @@ void CacheStorageContextImpl::SetBlobParametersForCache(
 }
 
 void CacheStorageContextImpl::GetAllOriginsInfo(
-    const CacheStorageContext::GetUsageInfoCallback& callback) {
+    CacheStorageContext::GetUsageInfoCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!cache_manager_) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(callback, std::vector<CacheStorageUsageInfo>()));
+        base::BindOnce(std::move(callback),
+                       std::vector<CacheStorageUsageInfo>()));
     return;
   }
 
-  cache_manager_->GetAllOriginsUsage(CacheStorageOwner::kCacheAPI, callback);
+  cache_manager_->GetAllOriginsUsage(CacheStorageOwner::kCacheAPI,
+                                     std::move(callback));
 }
 
 void CacheStorageContextImpl::DeleteForOrigin(const GURL& origin) {
