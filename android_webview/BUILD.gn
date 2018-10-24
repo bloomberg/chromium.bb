@@ -933,6 +933,7 @@ android_library("android_webview_java") {
     "//content/public/android:content_java",
     "//device/gamepad:java",
     "//net/android:net_java",
+    "//services/network/public/mojom:mojom_java",
     "//third_party/android_deps:android_support_annotations_java",
     "//third_party/blink/public:blink_headers_java",
     "//ui/android:ui_java",
@@ -957,7 +958,9 @@ android_library("android_webview_variations_utils_java") {
   java_files = [ "java/src/org/chromium/android_webview/VariationsUtils.java" ]
   deps = [
     "//android_webview/proto:aw_variations_seed_proto_java",
+    "//base:base_java",
     "//components/variations/android:variations_java",
+    "//third_party/protobuf:protobuf_lite_javalib",
   ]
 }
 
@@ -1070,6 +1073,7 @@ android_library("android_webview_services_java") {
     "//base:base_java",
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
     "//components/minidump_uploader:minidump_uploader_java",
+    "//components/variations/android:variations_java",
     "//components/version_info/android:version_constants_java",
   ]
   srcjar_deps = [
