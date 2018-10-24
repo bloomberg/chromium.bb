@@ -92,12 +92,12 @@ Polymer({
    */
   ready: function() {
     // Lazy-create the drawer the first time it is opened or swiped into view.
-    listenOnce(this.$.drawer, 'open-changed', () => {
+    listenOnce(this.$.drawer, 'cr-drawer-opening', () => {
       this.$.drawerTemplate.if = true;
     });
 
     window.addEventListener('popstate', e => {
-      this.$.drawer.closeDrawer();
+      this.$.drawer.cancel();
     });
 
     CrPolicyStrings = {
@@ -274,7 +274,7 @@ Polymer({
    */
   onIronActivate_: function(event) {
     if (event.detail.item.id != 'advancedSubmenu')
-      this.$.drawer.closeDrawer();
+      this.$.drawer.close();
   },
 
   /** @private */

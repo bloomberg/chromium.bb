@@ -487,7 +487,7 @@ cr.define('extensions', function() {
     onCloseDrawer_: function() {
       const drawer = this.$$('#drawer');
       if (drawer && drawer.open) {
-        drawer.closeDrawer();
+        drawer.close();
       }
     },
 
