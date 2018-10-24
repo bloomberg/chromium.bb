@@ -4,7 +4,6 @@ Tests the element upgrade algorithm.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS host.firstChild instanceof A is true
 PASS element instanceof B is true
 PASS callCount is 1

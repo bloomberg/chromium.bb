@@ -2,7 +2,6 @@ This tests what event handler attributes are available on what objects.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Test Element
 PASS 'onabort' in element is true
 PASS 'onblur' in element is true

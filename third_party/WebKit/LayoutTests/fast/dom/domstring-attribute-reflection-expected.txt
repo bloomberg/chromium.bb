@@ -27,6 +27,7 @@ Setting non-string via the content attribute:
 PASS element.setAttribute("name", 456); element.name is "456"
 PASS element.getAttribute("name") is "456"
 
+
 Reflected DOMString attribute test for fieldset/@name
 Initial value:
 PASS element.name is ""
@@ -55,6 +56,7 @@ PASS element.getAttribute("name") is "123"
 Setting non-string via the content attribute:
 PASS element.setAttribute("name", 456); element.name is "456"
 PASS element.getAttribute("name") is "456"
+
 
 Reflected DOMString attribute test for form/@name
 Initial value:
@@ -85,6 +87,7 @@ Setting non-string via the content attribute:
 PASS element.setAttribute("name", 456); element.name is "456"
 PASS element.getAttribute("name") is "456"
 
+
 Reflected DOMString attribute test for input/@name
 Initial value:
 PASS element.name is ""
@@ -113,6 +116,7 @@ PASS element.getAttribute("name") is "123"
 Setting non-string via the content attribute:
 PASS element.setAttribute("name", 456); element.name is "456"
 PASS element.getAttribute("name") is "456"
+
 
 Reflected DOMString attribute test for input/@step
 Initial value:
@@ -143,6 +147,7 @@ Setting non-string via the content attribute:
 PASS element.setAttribute("step", 456); element.step is "456"
 PASS element.getAttribute("step") is "456"
 
+
 Reflected DOMString attribute test for object/@name
 Initial value:
 PASS element.name is ""
@@ -171,6 +176,7 @@ PASS element.getAttribute("name") is "123"
 Setting non-string via the content attribute:
 PASS element.setAttribute("name", 456); element.name is "456"
 PASS element.getAttribute("name") is "456"
+
 
 Reflected DOMString attribute test for output/@name
 Initial value:
@@ -201,6 +207,7 @@ Setting non-string via the content attribute:
 PASS element.setAttribute("name", 456); element.name is "456"
 PASS element.getAttribute("name") is "456"
 
+
 Reflected DOMString attribute test for select/@name
 Initial value:
 PASS element.name is ""
@@ -229,6 +236,7 @@ PASS element.getAttribute("name") is "123"
 Setting non-string via the content attribute:
 PASS element.setAttribute("name", 456); element.name is "456"
 PASS element.getAttribute("name") is "456"
+
 
 Reflected DOMString attribute test for textarea/@name
 Initial value:
@@ -259,6 +267,7 @@ Setting non-string via the content attribute:
 PASS element.setAttribute("name", 456); element.name is "456"
 PASS element.getAttribute("name") is "456"
 
+
 Reflected DOMString attribute test for frame/@marginheight
 Initial value:
 PASS element.marginHeight is ""
@@ -287,6 +296,7 @@ PASS element.getAttribute("marginheight") is "123"
 Setting non-string via the content attribute:
 PASS element.setAttribute("marginheight", 456); element.marginHeight is "456"
 PASS element.getAttribute("marginheight") is "456"
+
 
 Reflected DOMString attribute test for frame/@marginwidth
 Initial value:
@@ -317,6 +327,7 @@ Setting non-string via the content attribute:
 PASS element.setAttribute("marginwidth", 456); element.marginWidth is "456"
 PASS element.getAttribute("marginwidth") is "456"
 
+
 Reflected DOMString attribute test for iframe/@marginheight
 Initial value:
 PASS element.marginHeight is ""
@@ -345,6 +356,7 @@ PASS element.getAttribute("marginheight") is "123"
 Setting non-string via the content attribute:
 PASS element.setAttribute("marginheight", 456); element.marginHeight is "456"
 PASS element.getAttribute("marginheight") is "456"
+
 
 Reflected DOMString attribute test for iframe/@marginwidth
 Initial value:
@@ -375,6 +387,7 @@ Setting non-string via the content attribute:
 PASS element.setAttribute("marginwidth", 456); element.marginWidth is "456"
 PASS element.getAttribute("marginwidth") is "456"
 
+
 Reflected DOMString attribute test for body/@text
 Initial value:
 PASS element.text is ""
@@ -403,6 +416,7 @@ PASS element.getAttribute("text") is "123"
 Setting non-string via the content attribute:
 PASS element.setAttribute("text", 456); element.text is "456"
 PASS element.getAttribute("text") is "456"
+
 
 Reflected DOMString attribute test for body/@link
 Initial value:
@@ -433,6 +447,7 @@ Setting non-string via the content attribute:
 PASS element.setAttribute("link", 456); element.link is "456"
 PASS element.getAttribute("link") is "456"
 
+
 Reflected DOMString attribute test for body/@alink
 Initial value:
 PASS element.aLink is ""
@@ -461,6 +476,7 @@ PASS element.getAttribute("alink") is "123"
 Setting non-string via the content attribute:
 PASS element.setAttribute("alink", 456); element.aLink is "456"
 PASS element.getAttribute("alink") is "456"
+
 
 Reflected DOMString attribute test for body/@vlink
 Initial value:
@@ -491,6 +507,7 @@ Setting non-string via the content attribute:
 PASS element.setAttribute("vlink", 456); element.vLink is "456"
 PASS element.getAttribute("vlink") is "456"
 
+
 Reflected DOMString attribute test for body/@bgcolor
 Initial value:
 PASS element.bgColor is ""
@@ -519,6 +536,7 @@ PASS element.getAttribute("bgcolor") is "123"
 Setting non-string via the content attribute:
 PASS element.setAttribute("bgcolor", 456); element.bgColor is "456"
 PASS element.getAttribute("bgcolor") is "456"
+
 
 Reflected DOMString attribute test for font/@color
 Initial value:
@@ -549,6 +567,7 @@ Setting non-string via the content attribute:
 PASS element.setAttribute("color", 456); element.color is "456"
 PASS element.getAttribute("color") is "456"
 
+
 Reflected DOMString attribute test for img/@border
 Initial value:
 PASS element.border is ""
@@ -577,6 +596,7 @@ PASS element.getAttribute("border") is "123"
 Setting non-string via the content attribute:
 PASS element.setAttribute("border", 456); element.border is "456"
 PASS element.getAttribute("border") is "456"
+
 
 Reflected DOMString attribute test for object/@border
 Initial value:
@@ -607,6 +627,7 @@ Setting non-string via the content attribute:
 PASS element.setAttribute("border", 456); element.border is "456"
 PASS element.getAttribute("border") is "456"
 
+
 Reflected DOMString attribute test for table/@bgcolor
 Initial value:
 PASS element.bgColor is ""
@@ -635,6 +656,7 @@ PASS element.getAttribute("bgcolor") is "123"
 Setting non-string via the content attribute:
 PASS element.setAttribute("bgcolor", 456); element.bgColor is "456"
 PASS element.getAttribute("bgcolor") is "456"
+
 
 Reflected DOMString attribute test for table/@cellpadding
 Initial value:
@@ -665,6 +687,7 @@ Setting non-string via the content attribute:
 PASS element.setAttribute("cellpadding", 456); element.cellPadding is "456"
 PASS element.getAttribute("cellpadding") is "456"
 
+
 Reflected DOMString attribute test for table/@cellspacing
 Initial value:
 PASS element.cellSpacing is ""
@@ -693,6 +716,7 @@ PASS element.getAttribute("cellspacing") is "123"
 Setting non-string via the content attribute:
 PASS element.setAttribute("cellspacing", 456); element.cellSpacing is "456"
 PASS element.getAttribute("cellspacing") is "456"
+
 
 Reflected DOMString attribute test for td/@bgcolor
 Initial value:
@@ -723,6 +747,7 @@ Setting non-string via the content attribute:
 PASS element.setAttribute("bgcolor", 456); element.bgColor is "456"
 PASS element.getAttribute("bgcolor") is "456"
 
+
 Reflected DOMString attribute test for th/@bgcolor
 Initial value:
 PASS element.bgColor is ""
@@ -752,6 +777,7 @@ Setting non-string via the content attribute:
 PASS element.setAttribute("bgcolor", 456); element.bgColor is "456"
 PASS element.getAttribute("bgcolor") is "456"
 
+
 Reflected DOMString attribute test for tr/@bgcolor
 Initial value:
 PASS element.bgColor is ""
@@ -780,6 +806,7 @@ PASS element.getAttribute("bgcolor") is "123"
 Setting non-string via the content attribute:
 PASS element.setAttribute("bgcolor", 456); element.bgColor is "456"
 PASS element.getAttribute("bgcolor") is "456"
+
 
 PASS successfullyParsed is true
 
