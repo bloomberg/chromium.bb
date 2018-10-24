@@ -45,9 +45,10 @@ TEST_F(WebAppInstallManagerTest, InstallFromWebContents) {
 
   base::RunLoop run_loop;
   bool callback_called = false;
+  const bool force_shortcut_app = false;
 
-  manager->InstallWebAppForTesting(
-      web_contents(),
+  manager->InstallWebApp(
+      web_contents(), force_shortcut_app,
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
             EXPECT_EQ(InstallResultCode::kSuccess, code);
@@ -79,9 +80,10 @@ TEST_F(WebAppInstallManagerTest, GetWebApplicationInfoFailed) {
 
   base::RunLoop run_loop;
   bool callback_called = false;
+  const bool force_shortcut_app = false;
 
-  manager->InstallWebAppForTesting(
-      web_contents(),
+  manager->InstallWebApp(
+      web_contents(), force_shortcut_app,
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
             EXPECT_EQ(InstallResultCode::kGetWebApplicationInfoFailed, code);

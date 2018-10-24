@@ -35,25 +35,10 @@ bool WebAppInstallManager::CanInstallWebApp(
 }
 
 void WebAppInstallManager::InstallWebApp(content::WebContents* web_contents,
-                                         bool force_shortcut_app) {
+                                         bool force_shortcut_app,
+                                         OnceInstallCallback install_callback) {
   // TODO(loyso): Use force_shortcut_app flag during installation.
-  InstallFromWebContents(web_contents, base::DoNothing());
-}
 
-void WebAppInstallManager::SetDataRetrieverForTesting(
-    std::unique_ptr<WebAppDataRetriever> data_retriever) {
-  data_retriever_ = std::move(data_retriever);
-}
-
-void WebAppInstallManager::InstallWebAppForTesting(
-    content::WebContents* web_contents,
-    OnceInstallCallback callback) {
-  InstallFromWebContents(web_contents, std::move(callback));
-}
-
-void WebAppInstallManager::InstallFromWebContents(
-    content::WebContents* web_contents,
-    OnceInstallCallback install_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   data_retriever_->GetWebApplicationInfo(
@@ -61,6 +46,11 @@ void WebAppInstallManager::InstallFromWebContents(
       base::BindOnce(&WebAppInstallManager::OnGetWebApplicationInfo,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(install_callback)));
+}
+
+void WebAppInstallManager::SetDataRetrieverForTesting(
+    std::unique_ptr<WebAppDataRetriever> data_retriever) {
+  data_retriever_ = std::move(data_retriever);
 }
 
 void WebAppInstallManager::OnGetWebApplicationInfo(

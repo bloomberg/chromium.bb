@@ -18,7 +18,8 @@ class BookmarkAppInstallManager final : public web_app::InstallManager {
   // InstallManager interface implementation.
   bool CanInstallWebApp(const content::WebContents* web_contents) override;
   void InstallWebApp(content::WebContents* web_contents,
-                     bool force_shortcut_app) override;
+                     bool force_shortcut_app,
+                     OnceInstallCallback callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppInstallManager);
