@@ -3062,6 +3062,35 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   EXPECT_FALSE(interceptor->Capturing());
 }
 
+// Verify that when a divider within a frameset is clicked, mouse capture is
+// initiated.
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
+                       MouseCaptureOnFramesetResize) {
+  GURL main_url(embedded_test_server()->GetURL("/page_with_frameset.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  RenderWidgetHost* widget_host =
+      root->current_frame_host()->GetRenderWidgetHost();
+  RenderWidgetHostViewBase* rwhv_root =
+      static_cast<RenderWidgetHostViewBase*>(widget_host->GetView());
+
+  scoped_refptr<SetMouseCaptureInterceptor> interceptor =
+      new SetMouseCaptureInterceptor(
+          static_cast<RenderWidgetHostImpl*>(widget_host));
+
+  gfx::PointF click_point =
+      gfx::PointF(rwhv_root->GetViewBounds().width() / 2, 20);
+
+  // Click on the divider bar that initiates resize.
+  DispatchMouseEventAndWaitUntilDispatch(web_contents(), rwhv_root, click_point,
+                                         rwhv_root, click_point);
+
+  // Wait for the mouse capture message.
+  interceptor->Wait();
+  EXPECT_TRUE(interceptor->Capturing());
+}
+
 // There are no cursors on Android.
 #if !defined(OS_ANDROID)
 class CursorMessageFilter : public content::BrowserMessageFilter {
