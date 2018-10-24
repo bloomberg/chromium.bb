@@ -160,9 +160,6 @@ class FakeNetstack : public fuchsia::netstack::Netstack {
                            SetDhcpClientStatusCallback callback) override {}
   void BridgeInterfaces(::fidl::VectorPtr<uint32_t> nicids,
                         BridgeInterfacesCallback callback) override {}
-  void SetFilterStatus(bool enabled,
-                       SetFilterStatusCallback callback) override {}
-  void GetFilterStatus(GetFilterStatusCallback callback) override {}
   void SetNameServers(
       ::fidl::VectorPtr<::fuchsia::netstack::NetAddress> servers) override {}
   void AddEthernetDevice(
