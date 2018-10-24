@@ -11,48 +11,40 @@
     <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
     <link rel="import" href="welcome_browser_proxy.html">
     <link rel="import" href="email/nux_email_proxy.html">
+    <link rel="import" href="shared/action_link_style_css.html">
+    <link rel="import" href="shared/onboarding_background.html">
+    <link rel="import" href="shared/splash_pages_shared_css.html">
 
     <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
+    <style>
+      body {
+        margin: 0;
+      }
+    </style>
+
     <dom-module id="email-interstitial">
       <template>
-        <style include="paper-button-style">
-          #container {
+        <style include="paper-button-style action-link-style splash-pages-shared-css">
+          :host {
             align-items: center;
             display: flex;
-            flex-direction: column;
-            height: 100%;
+            height: 100vh;
             justify-content: center;
-            margin: auto;
-            width: 800px;
           }
 
           h1 {
-            font-size: 4rem;
-            margin-bottom: 20px;
-          }
-
-          h2 {
-            color: darkgrey;
-            font-size: 1.5rem;
-          }
-
-          paper-button {
-            font-size: 1rem;
-            height: 2.5rem;
-            text-align: center;
-            white-space: nowrap;
-            width: 220px;
+            margin-top: 0;
           }
         </style>
-        <!-- TODO(scottchen): localize -->
+        <onboarding-background></onboarding-background>
         <div id="container">
-          <h1>TODO Continue to your email?</h1>
+          <h1>$i18n{emailInterstitialTitle}</h1>
           <paper-button class="action-button" on-click="onContinueClick_">
-            Continue
+            $i18n{emailInterstitialContinue}
           </paper-button>
-          <paper-button on-click="onNoThanksClick_">
-            No thanks
-          </paper-button>
+          <button class="action-link" on-click="onNoThanksClick_">
+            $i18n{noThanks}
+          </button>
         </div>
       </template>
       <script src="email_interstitial.js"></script>
