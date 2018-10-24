@@ -211,6 +211,7 @@ feed_lib_java_sources = [
   "src/src/main/java/com/google/android/libraries/feed/piet/HostProviders.java",
   "src/src/main/java/com/google/android/libraries/feed/piet/ImageElementAdapter.java",
   "src/src/main/java/com/google/android/libraries/feed/piet/KeyedRecyclerPool.java",
+  "src/src/main/java/com/google/android/libraries/feed/piet/LoadImageCallback.java",
   "src/src/main/java/com/google/android/libraries/feed/piet/MediaQueryHelper.java",
   "src/src/main/java/com/google/android/libraries/feed/piet/NoKeyOverwriteHashMap.java",
   "src/src/main/java/com/google/android/libraries/feed/piet/ParameterizedTextElementAdapter.java",
