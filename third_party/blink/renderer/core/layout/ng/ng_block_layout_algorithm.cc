@@ -404,6 +404,8 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
       ComputeIntrinsicPadding(ConstraintSpace(), Node());
   border_scrollbar_padding_ += intrinsic_padding;
 
+  if (ConstraintSpace().HasBlockFragmentation())
+    container_builder_.SetNeedsFinishedBreakToken();
   container_builder_.SetInlineSize(border_box_size.inline_size);
   container_builder_.SetBfcLineOffset(
       ConstraintSpace().BfcOffset().line_offset);

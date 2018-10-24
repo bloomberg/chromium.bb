@@ -105,6 +105,11 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     return *this;
   }
 
+  NGBoxFragmentBuilder& SetNeedsFinishedBreakToken() {
+    needs_finished_break_token_ = true;
+    return *this;
+  }
+
   // Specify that we broke.
   //
   // This will result in a fragment which has an unfinished break token.
@@ -238,6 +243,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   NGPhysicalFragment::NGBoxType box_type_;
   bool is_fieldset_container_ = false;
   bool is_old_layout_root_;
+  bool needs_finished_break_token_ = false;
   bool did_break_;
   bool has_forced_break_ = false;
   LayoutUnit used_block_size_;

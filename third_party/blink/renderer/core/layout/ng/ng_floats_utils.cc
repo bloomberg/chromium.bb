@@ -216,7 +216,7 @@ LayoutUnit ComputeMarginBoxInlineSizeForUnpositionedFloat(
 
   const auto& fragment = unpositioned_float->layout_result->PhysicalFragment();
   DCHECK(fragment);
-  DCHECK(fragment->BreakToken()->IsFinished());
+  DCHECK(!fragment->BreakToken() || fragment->BreakToken()->IsFinished());
 
   return (NGFragment(parent_space.GetWritingMode(), *fragment).InlineSize() +
           unpositioned_float->margins.InlineSum())
@@ -266,8 +266,11 @@ NGPositionedFloat PositionFloat(
     if (ShouldIgnoreBlockStartMargin(parent_space, unpositioned_float->node,
                                      unpositioned_float->token.get()))
       fragment_margins.block_start = LayoutUnit();
-    if (!layout_result->PhysicalFragment()->BreakToken()->IsFinished())
-      fragment_margins.block_end = LayoutUnit();
+    if (const NGBreakToken* break_token =
+            layout_result->PhysicalFragment()->BreakToken()) {
+      if (!break_token->IsFinished())
+        fragment_margins.block_end = LayoutUnit();
+    }
   }
 
   DCHECK(layout_result->PhysicalFragment());
