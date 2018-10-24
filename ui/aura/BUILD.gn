@@ -254,6 +254,7 @@ jumbo_static_library("test_support") {
     "test/mus/test_window_tree_client_delegate.h",
     "test/mus/test_window_tree_client_setup.cc",
     "test/mus/test_window_tree_client_setup.h",
+    "test/mus/test_window_tree_delegate.h",
     "test/mus/window_port_mus_test_helper.cc",
     "test/mus/window_port_mus_test_helper.h",
     "test/mus/window_tree_client_private.cc",

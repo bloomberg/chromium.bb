@@ -285,4 +285,10 @@ void TestWindowTreeClient::GetScreenProviderObserver(
   screen_provider_observer_binding_.Bind(std::move(observer));
 }
 
+void TestWindowTreeClient::OnOcclusionStateChanged(
+    Id window_id,
+    mojom::OcclusionState occlusion_state) {
+  tracker_.OnOcclusionStateChanged(window_id, occlusion_state);
+}
+
 }  // namespace ws

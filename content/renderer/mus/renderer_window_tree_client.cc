@@ -377,4 +377,8 @@ void RendererWindowTreeClient::RequestClose(ws::Id window_id) {}
 void RendererWindowTreeClient::GetScreenProviderObserver(
     ws::mojom::ScreenProviderObserverAssociatedRequest observer) {}
 
+void RendererWindowTreeClient::OnOcclusionStateChanged(
+    ws::Id window_id,
+    ws::mojom::OcclusionState occlusion_state) {}
+
 }  // namespace content

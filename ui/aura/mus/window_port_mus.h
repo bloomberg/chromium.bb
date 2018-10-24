@@ -23,6 +23,7 @@
 #include "ui/aura/aura_export.h"
 #include "ui/aura/mus/mus_types.h"
 #include "ui/aura/mus/window_mus.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_port.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/platform_window/mojo/text_input_state.mojom.h"
@@ -45,7 +46,6 @@ namespace aura {
 
 class ClientSurfaceEmbedder;
 class PropertyConverter;
-class Window;
 class WindowTreeClient;
 class WindowTreeClientPrivate;
 class WindowTreeHostMus;
@@ -205,6 +205,11 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
     std::unique_ptr<ScopedServerChange> change;
   };
 
+  // Derived from WindowObserver to update local occlusion state. Not using
+  // OnVisibilityChanged because occlusion state is based on Window::IsVisible
+  // and needs to consider ancestors' visibility as well.
+  class VisibilityTracker;
+
   // Creates and adds a ServerChange to |server_changes_|. Returns the id
   // assigned to the ServerChange.
   ServerChangeIdType ScheduleChange(const ServerChangeType type,
@@ -298,8 +303,20 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   bool ShouldRestackTransientChildren() override;
   void RegisterFrameSinkId(const viz::FrameSinkId& frame_sink_id) override;
   void UnregisterFrameSinkId(const viz::FrameSinkId& frame_sink_id) override;
+  void TrackOcclusionState() override;
 
   void UpdatePrimarySurfaceId();
+
+  // Called by WindowTreeClient to update window occlusion state.
+  void SetOcclusionStateFromServer(ws::mojom::OcclusionState occlusion_state);
+
+  // Updates |window_| occlusion state to |new_state|.
+  void UpdateOcclusionState(Window::OcclusionState new_state);
+
+  // Update the local occlusion state after visibility of |window_| is changed.
+  // This is called from VisibilityTracker when window_->IsVisible changes to
+  // capture the visibility change from |window_| and its ancestors.
+  void UpdateOcclusionStateAfterVisiblityChange(bool visible);
 
   WindowTreeClient* window_tree_client_;
 
@@ -335,6 +352,15 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   // for a local aura::Window, we need keep a weak ptr of it, so we can update
   // the local surface id when necessary.
   base::WeakPtr<cc::LayerTreeFrameSink> local_layer_tree_frame_sink_;
+
+  // Tracks |window_->IsVisible()| change and update local occlusion state.
+  std::unique_ptr<VisibilityTracker> visibility_tracker_;
+
+  // The occlusion state that is not UNKNOWN before changing to HIDDEN. If the
+  // value is set, it will be used when |window_| becomes visible again. This
+  // allows synchronous occlusion state change when making |window_| visible.
+  // Window Service will send back the real occlusion state later.
+  base::Optional<Window::OcclusionState> occlusion_state_before_hidden_;
 
   base::WeakPtrFactory<WindowPortMus> weak_ptr_factory_;
 

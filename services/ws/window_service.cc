@@ -26,6 +26,7 @@
 #include "services/ws/window_tree.h"
 #include "services/ws/window_tree_factory.h"
 #include "ui/aura/env.h"
+#include "ui/aura/window_occlusion_tracker.h"
 #include "ui/base/mojo/clipboard_host.h"
 #include "ui/wm/core/shadow_types.h"
 
@@ -61,6 +62,11 @@ WindowService::WindowService(
       ::wm::kShadowElevationKey,
       mojom::WindowManager::kShadowElevation_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
+
+  // Extends WindowOcclusionTracker to treat windows with remote client as
+  // has-content.
+  env_->GetWindowOcclusionTracker()->set_window_has_content_callback(
+      base::BindRepeating(&WindowService::HasRemoteClient));
 }
 
 WindowService::~WindowService() {

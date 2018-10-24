@@ -236,14 +236,41 @@ void Env::ScheduleEmbed(
 }
 
 WindowOcclusionTracker* Env::GetWindowOcclusionTracker() {
-  // TODO(https://crbug.com/867150): DCHECK to ensure LOCAL aura after mus
-  //     code path is wired up.
+  DCHECK_EQ(Mode::LOCAL, mode_);
   if (!window_occlusion_tracker_) {
     // Use base::WrapUnique + new because of the constructor is private.
     window_occlusion_tracker_ = base::WrapUnique(new WindowOcclusionTracker());
   }
 
   return window_occlusion_tracker_.get();
+}
+
+void Env::PauseWindowOcclusionTracking() {
+  switch (mode_) {
+    case Mode::LOCAL:
+      GetWindowOcclusionTracker()->Pause();
+      break;
+    case Mode::MUS:
+      // |window_tree_client_| could be null in tests.
+      // e.g. WindowTreeClientDestructionTest.*
+      if (window_tree_client_)
+        window_tree_client_->PauseWindowOcclusionTracking();
+      break;
+  }
+}
+
+void Env::UnpauseWindowOcclusionTracking() {
+  switch (mode_) {
+    case Mode::LOCAL:
+      GetWindowOcclusionTracker()->Unpause();
+      break;
+    case Mode::MUS:
+      // |window_tree_client_| could be null in tests.
+      // e.g. WindowTreeClientDestructionTest.*
+      if (window_tree_client_)
+        window_tree_client_->UnpauseWindowOcclusionTracking();
+      break;
+  }
 }
 
 void Env::AddEventObserver(ui::EventObserver* observer,

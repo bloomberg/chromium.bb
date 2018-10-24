@@ -41,17 +41,6 @@ bool WindowOrParentHasShape(Window* window) {
   return false;
 }
 
-// Returns true if |window| opaquely fills its bounds. |window| must be visible.
-bool VisibleWindowIsOpaque(Window* window) {
-  DCHECK(window->IsVisible());
-  DCHECK(window->layer());
-  return !window->transparent() &&
-         window->layer()->type() != ui::LAYER_NOT_DRAWN &&
-         window->layer()->GetCombinedOpacity() == 1.0f &&
-         // For simplicity, a shaped window is not considered opaque.
-         !WindowOrParentHasShape(window);
-}
-
 // Returns the transform of |window| relative to its root.
 // |parent_transform_relative_to_root| is the transform of |window->parent()|
 // relative to its root.
@@ -109,15 +98,12 @@ bool OcclusionStatesMatch(
 
 }  // namespace
 
-WindowOcclusionTracker::ScopedPause::ScopedPause(Env* env)
-    : tracker_(env->GetWindowOcclusionTracker()) {
-  ++tracker_->num_pause_occlusion_tracking_;
+WindowOcclusionTracker::ScopedPause::ScopedPause(Env* env) : env_(env) {
+  env_->PauseWindowOcclusionTracking();
 }
 
 WindowOcclusionTracker::ScopedPause::~ScopedPause() {
-  --tracker_->num_pause_occlusion_tracking_;
-  DCHECK_GE(tracker_->num_pause_occlusion_tracking_, 0);
-  tracker_->MaybeComputeOcclusion();
+  env_->UnpauseWindowOcclusionTracking();
 }
 
 void WindowOcclusionTracker::Track(Window* window) {
@@ -264,6 +250,25 @@ bool WindowOcclusionTracker::RecomputeOcclusionImpl(
   return true;
 }
 
+bool WindowOcclusionTracker::VisibleWindowIsOpaque(Window* window) const {
+  DCHECK(window->IsVisible());
+  DCHECK(window->layer());
+  return !window->transparent() && WindowHasContent(window) &&
+         window->layer()->GetCombinedOpacity() == 1.0f &&
+         // For simplicity, a shaped window is not considered opaque.
+         !WindowOrParentHasShape(window);
+}
+
+bool WindowOcclusionTracker::WindowHasContent(Window* window) const {
+  if (window->layer()->type() != ui::LAYER_NOT_DRAWN)
+    return true;
+
+  if (window_has_content_callback_)
+    return window_has_content_callback_.Run(window);
+
+  return false;
+}
+
 void WindowOcclusionTracker::CleanupAnimatedWindows() {
   base::EraseIf(animated_windows_, [=](Window* window) {
     ui::LayerAnimator* const animator = window->layer()->GetAnimator();
@@ -395,7 +400,7 @@ bool WindowOcclusionTracker::WindowOrDescendantIsOpaque(
       WindowIsAnimated(window)) {
     return false;
   }
-  if (!window->transparent() && window->layer()->type() != ui::LAYER_NOT_DRAWN)
+  if (!window->transparent() && WindowHasContent(window))
     return true;
   for (Window* child_window : window->children()) {
     if (WindowOrDescendantIsOpaque(child_window, true))
@@ -466,6 +471,16 @@ void WindowOcclusionTracker::AddObserverToWindowAndDescendants(Window* window) {
   }
   for (Window* child_window : window->children())
     AddObserverToWindowAndDescendants(child_window);
+}
+
+void WindowOcclusionTracker::Pause() {
+  ++num_pause_occlusion_tracking_;
+}
+
+void WindowOcclusionTracker::Unpause() {
+  --num_pause_occlusion_tracking_;
+  DCHECK_GE(num_pause_occlusion_tracking_, 0);
+  MaybeComputeOcclusion();
 }
 
 void WindowOcclusionTracker::OnLayerAnimationEnded(

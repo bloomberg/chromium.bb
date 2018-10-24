@@ -16,6 +16,8 @@
 
 namespace aura {
 
+class TestWindowTreeDelegate;
+
 enum class WindowTreeChangeType {
   ADD_TRANSIENT,
   BOUNDS,
@@ -49,6 +51,8 @@ class TestWindowTree : public ws::mojom::WindowTree {
   ~TestWindowTree() override;
 
   void set_client(ws::mojom::WindowTreeClient* client) { client_ = client; }
+
+  void set_delegate(TestWindowTreeDelegate* delegate) { delegate_ = delegate; }
 
   uint32_t window_id() const { return window_id_; }
 
@@ -262,6 +266,9 @@ class TestWindowTree : public ws::mojom::WindowTree {
   void TransferGestureEventsTo(ws::Id current_id,
                                ws::Id new_id,
                                bool should_cancel) override;
+  void TrackOcclusionState(ws::Id window_id) override;
+  void PauseWindowOcclusionTracking() override;
+  void UnpauseWindowOcclusionTracking() override;
 
   struct AckedEvent {
     uint32_t event_id;
@@ -274,7 +281,7 @@ class TestWindowTree : public ws::mojom::WindowTree {
 
   std::vector<Change> changes_;
 
-  ws::mojom::WindowTreeClient* client_;
+  ws::mojom::WindowTreeClient* client_ = nullptr;
 
   base::Optional<base::flat_map<std::string, std::vector<uint8_t>>>
       last_new_window_properties_;
@@ -298,6 +305,8 @@ class TestWindowTree : public ws::mojom::WindowTree {
 
   // Support only one scheduled embed in test.
   base::UnguessableToken scheduled_embed_;
+
+  TestWindowTreeDelegate* delegate_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowTree);
 };

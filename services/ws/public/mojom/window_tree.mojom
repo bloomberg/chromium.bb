@@ -396,6 +396,21 @@ interface WindowTree {
   // |new_id| need to be valid window ID created by the client. This operation
   // is not allowed for embedded clients.
   TransferGestureEventsTo(uint64 current_id, uint64 new_id, bool should_cancel);
+
+  // Called by the client to start occlusion tracking for a window.
+  TrackOcclusionState(uint64 window_id);
+
+  // Called by the client to pause occlusion states computation when there are
+  // massive window changes (such as a hierarchy change, or multiple window
+  // visibility change) to avoid unnecessary occlusion state updates. Server
+  // will re-compute the occlusion state after a balancing
+  // UnpauseWindowOcclusionTracking call.
+  PauseWindowOcclusionTracking();
+
+  // Called by the client the resume occlusion states computation. When
+  // all outstanding pause requests are cleared, server will re-compute
+  // occlusion states for the tracked windows and send back updates.
+  UnpauseWindowOcclusionTracking();
 };
 
 // Changes to windows are not sent to the connection that originated the
@@ -612,6 +627,10 @@ interface WindowTreeClient {
   // Requests the ScreenProviderObserver from the client. See
   // ScreenProviderObserver for details.
   GetScreenProviderObserver(associated ScreenProviderObserver& observer);
+
+  // Called when the occlusion state changes for a window. See also
+  // TrackOcclusionState on WindowTree.
+  OnOcclusionStateChanged(uint64 window_id, OcclusionState occlusion_state);
 };
 
 // Mus provides this interface as a way for clients to connect and obtain a

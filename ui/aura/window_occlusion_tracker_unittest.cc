@@ -4,13 +4,14 @@
 
 #include "ui/aura/window_occlusion_tracker.h"
 
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_base.h"
-#include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/test/window_occlusion_tracker_test_api.h"
@@ -88,8 +89,6 @@ class WindowOcclusionTrackerTest : public test::AuraTestBase {
   }
 
  private:
-  test::EnvTestHelper env_test_helper_;
-
   DISALLOW_COPY_AND_ASSIGN(WindowOcclusionTrackerTest);
 };
 
@@ -861,6 +860,43 @@ TEST_F(WindowOcclusionTrackerTest, RemoveUntrackedWindow) {
   delete window_b;
 }
 
+// Verify that occlusion tracking with customized WindowHasContent callback.
+TEST_F(WindowOcclusionTrackerTest, CustomizedWindowHasContent) {
+  // Create window a. Expect it to be non-occluded.
+  MockWindowDelegate* delegate_a = new MockWindowDelegate();
+  delegate_a->set_expectation(Window::OcclusionState::VISIBLE);
+  CreateTrackedWindow(delegate_a, gfx::Rect(0, 0, 10, 10));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  // Create window b with layer type LAYER_NOT_DRAWN. Occlusion state of a is
+  // not changed.
+  MockWindowDelegate* delegate_b = new MockWindowDelegate();
+  Window* window_b = new Window(delegate_b);
+  delegate_b->set_window(window_b);
+  window_b->Init(ui::LAYER_NOT_DRAWN);
+  window_b->SetBounds(gfx::Rect(0, 0, 10, 10));
+  root_window()->AddChild(window_b);
+  delegate_b->set_expectation(Window::OcclusionState::HIDDEN);
+  window_b->TrackOcclusionState();
+  EXPECT_FALSE(delegate_b->is_expecting_call());
+
+  // Use customized WindowHasContent callback to mark b as opaque.
+  window_b->env()->GetWindowOcclusionTracker()->set_window_has_content_callback(
+      base::BindLambdaForTesting([window_b](const Window* window) -> bool {
+        return window == window_b;
+      }));
+
+  // Show window b to trigger a occlusion compute and window a is occluded.
+  delegate_a->set_expectation(Window::OcclusionState::OCCLUDED);
+  delegate_b->set_expectation(Window::OcclusionState::VISIBLE);
+  window_b->Show();
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+  EXPECT_FALSE(delegate_b->is_expecting_call());
+
+  window_b->env()->GetWindowOcclusionTracker()->set_window_has_content_callback(
+      base::NullCallback());
+}
+
 // Verify that when a tracked window is removed and re-added to a root,
 // occlusion states are still tracked.
 TEST_F(WindowOcclusionTrackerTest, RemoveAndAddTrackedToRoot) {
@@ -1450,7 +1486,8 @@ class WindowDelegateChangingWindowVisibility : public MockWindowDelegate {
 // Verify that if a window changes its visibility every time it is notified that
 // its occlusion state changed, a DCHECK occurs.
 TEST_F(WindowOcclusionTrackerTest, OcclusionStatesDontBecomeStable) {
-  test::WindowOcclusionTrackerTestApi test_api(root_window()->env());
+  test::WindowOcclusionTrackerTestApi test_api(
+      root_window()->env()->GetWindowOcclusionTracker());
 
   // Create 2 superposed tracked windows.
   MockWindowDelegate* delegate_a = new MockWindowDelegate();
@@ -1650,7 +1687,8 @@ class WindowDelegateAddingAndHidingChild : public MockWindowDelegate {
 // to be recomputed.
 TEST_F(WindowOcclusionTrackerTest,
        HideWindowWithHiddenParentOnOcclusionChange) {
-  test::WindowOcclusionTrackerTestApi test_api(root_window()->env());
+  test::WindowOcclusionTrackerTestApi test_api(
+      root_window()->env()->GetWindowOcclusionTracker());
 
   auto* delegate_a = new WindowDelegateAddingAndHidingChild(this);
   delegate_a->set_expectation(Window::OcclusionState::VISIBLE);

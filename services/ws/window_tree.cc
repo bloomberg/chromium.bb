@@ -731,6 +731,14 @@ void WindowTree::SendTopmostWindows(
   window_tree_client_->OnTopmostWindowChanged(topmost_ids);
 }
 
+void WindowTree::SendOcclusionState(aura::Window* window) {
+  DCHECK(IsWindowKnown(window));
+
+  window_tree_client_->OnOcclusionStateChanged(
+      TransportIdForWindow(window),
+      aura::WindowOcclusionStateToMojom(window->occlusion_state()));
+}
+
 bool WindowTree::NewWindowImpl(
     const ClientWindowId& client_window_id,
     const std::map<std::string, std::vector<uint8_t>>& properties) {
@@ -2146,6 +2154,35 @@ void WindowTree::TransferGestureEventsTo(Id current_id,
       current_window, new_window,
       should_cancel ? ui::TransferTouchesBehavior::kCancel
                     : ui::TransferTouchesBehavior::kDontCancel);
+}
+
+void WindowTree::TrackOcclusionState(Id transport_window_id) {
+  aura::Window* window = GetWindowByTransportId(transport_window_id);
+  if (!window) {
+    DVLOG(1) << "TrackOcclusionState failed (no window)";
+    return;
+  }
+  if (!IsClientCreatedWindow(window)) {
+    DVLOG(1) << "TrackOcclusionState failed (access denied)";
+    return;
+  }
+
+  window->TrackOcclusionState();
+}
+
+void WindowTree::PauseWindowOcclusionTracking() {
+  window_occlusion_tracking_pauses_.emplace_back(
+      std::make_unique<aura::WindowOcclusionTracker::ScopedPause>(
+          window_service_->env()));
+}
+
+void WindowTree::UnpauseWindowOcclusionTracking() {
+  if (window_occlusion_tracking_pauses_.empty()) {
+    DVLOG(1) << "Unbalanced UnpauseWindowOcclusionTracking call.";
+    return;
+  }
+
+  window_occlusion_tracking_pauses_.pop_back();
 }
 
 }  // namespace ws

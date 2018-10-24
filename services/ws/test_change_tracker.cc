@@ -30,6 +30,28 @@ std::string DirectionToString(mojom::OrderDirection direction) {
   return direction == mojom::OrderDirection::ABOVE ? "above" : "below";
 }
 
+std::string OcclusionStateToString(
+    const base::Optional<mojom::OcclusionState>& occlusion_state) {
+  if (!occlusion_state.has_value()) {
+    NOTREACHED();
+    return "(null)";
+  }
+
+  switch (occlusion_state.value()) {
+    case mojom::OcclusionState::kUnknown:
+      return "UNKNOWN";
+    case mojom::OcclusionState::kVisible:
+      return "VISIBLE";
+    case mojom::OcclusionState::kOccluded:
+      return "OCCLUDED";
+    case mojom::OcclusionState::kHidden:
+      return "HIDDEN";
+  }
+
+  NOTREACHED();
+  return "UNKNOWN";
+}
+
 enum class ChangeDescriptionType { ONE, TWO };
 
 std::string ChangeToDescription(const Change& change,
@@ -186,6 +208,11 @@ std::string ChangeToDescription(const Change& change,
           "OnPerformDragDropCompleted id=%d success=%s action=%d",
           change.change_id, change.bool_value ? "true" : "false",
           change.drag_drop_action);
+    case CHANGE_TYPE_ON_OCCLUSION_STATE_CHANGED:
+      return base::StringPrintf(
+          "OnOcclusionStateChanged window_id=%s, state=%s",
+          WindowIdToString(change.window_id).c_str(),
+          OcclusionStateToString(change.occlusion_state).c_str());
   }
   return std::string();
 }
@@ -576,6 +603,16 @@ void TestChangeTracker::RequestClose(Id window_id) {
   Change change;
   change.type = CHANGE_TYPE_REQUEST_CLOSE;
   change.window_id = window_id;
+  AddChange(change);
+}
+
+void TestChangeTracker::OnOcclusionStateChanged(
+    Id window_id,
+    mojom::OcclusionState occlusion_state) {
+  Change change;
+  change.type = CHANGE_TYPE_ON_OCCLUSION_STATE_CHANGED;
+  change.window_id = window_id;
+  change.occlusion_state = occlusion_state;
   AddChange(change);
 }
 

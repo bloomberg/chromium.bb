@@ -15,6 +15,7 @@
 #include "ui/aura/hit_test_data_provider_aura.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/aura/window_occlusion_tracker.h"
 #include "ui/base/layout.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -224,6 +225,10 @@ void WindowPortLocal::OnEventTargetingPolicyChanged() {}
 
 bool WindowPortLocal::ShouldRestackTransientChildren() {
   return true;
+}
+
+void WindowPortLocal::TrackOcclusionState() {
+  window_->env()->GetWindowOcclusionTracker()->Track(window_);
 }
 
 void WindowPortLocal::OnFirstSurfaceActivation(

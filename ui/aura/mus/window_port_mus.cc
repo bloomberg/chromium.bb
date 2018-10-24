@@ -4,7 +4,11 @@
 
 #include "ui/aura/mus/window_port_mus.h"
 
+#include <utility>
+
 #include "base/auto_reset.h"
+#include "base/bind.h"
+#include "base/callback.h"
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "components/viz/client/hit_test_data_provider_draw_quad.h"
 #include "components/viz/client/local_surface_id_provider.h"
@@ -15,9 +19,9 @@
 #include "ui/aura/env.h"
 #include "ui/aura/mus/client_surface_embedder.h"
 #include "ui/aura/mus/property_converter.h"
+#include "ui/aura/mus/property_utils.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
-#include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/class_property.h"
@@ -36,6 +40,46 @@ static const char* kMus = "Mus";
 WindowPortMus::WindowMusChangeDataImpl::WindowMusChangeDataImpl() = default;
 
 WindowPortMus::WindowMusChangeDataImpl::~WindowMusChangeDataImpl() = default;
+
+class WindowPortMus::VisibilityTracker : public WindowObserver {
+ public:
+  using Callback = base::RepeatingCallback<void(bool visible)>;
+  VisibilityTracker(Window* target, Callback callback)
+      : target_(target),
+        callback_(std::move(callback)),
+        last_visible_(target->IsVisible()) {
+    target_->AddObserver(this);
+  }
+
+  ~VisibilityTracker() override {
+    if (target_)
+      target_->RemoveObserver(this);
+  }
+
+ private:
+  // WindowObserver:
+  void OnWindowVisibilityChanged(Window* window, bool visible) override {
+    // Checking visibility change here instead of in OnVisibilityChanged to
+    // capture the change from window ancestors in addition to the window
+    // itself.
+    bool new_visible = target_->IsVisible();
+    if (new_visible == last_visible_)
+      return;
+
+    last_visible_ = new_visible;
+    callback_.Run(new_visible);
+  }
+  void OnWindowDestroyed(Window* window) override {
+    DCHECK_EQ(target_, window);
+    target_ = nullptr;
+  }
+
+  Window* target_;
+  Callback callback_;
+  bool last_visible_;
+
+  DISALLOW_COPY_AND_ASSIGN(VisibilityTracker);
+};
 
 // static
 WindowMus* WindowMus::Get(Window* window) {
@@ -674,6 +718,15 @@ void WindowPortMus::UnregisterFrameSinkId(
   window_tree_client_->UnregisterFrameSinkId(this);
 }
 
+void WindowPortMus::TrackOcclusionState() {
+  // base::Unretained because |this| owns |visibility_tracker_|.
+  visibility_tracker_ = std::make_unique<VisibilityTracker>(
+      window_, base::BindRepeating(
+                   &WindowPortMus::UpdateOcclusionStateAfterVisiblityChange,
+                   base::Unretained(this)));
+  window_tree_client_->TrackOcclusionState(this);
+}
+
 void WindowPortMus::UpdatePrimarySurfaceId() {
   if (window_mus_type() != WindowMusType::LOCAL)
     return;
@@ -691,6 +744,66 @@ void WindowPortMus::UpdatePrimarySurfaceId() {
 
   client_surface_embedder_->SetPrimarySurfaceId(primary_surface_id_);
   client_surface_embedder_->UpdateSizeAndGutters();
+}
+
+void WindowPortMus::SetOcclusionStateFromServer(
+    ws::mojom::OcclusionState occlusion_state) {
+  const Window::OcclusionState new_state =
+      WindowOcclusionStateFromMojom(occlusion_state);
+  const Window::OcclusionState old_state = window_->occlusion_state();
+
+  if (old_state == new_state)
+    return;
+
+  // Filter HIDDEN/VISIBLE state that does not match window target visibility.
+  // This happens when the client makes visibility changes without waiting for
+  // server's occlusion state update. The stale occlusion state is still
+  // received and should be dropped to avoid unnecessary state change.
+  // e.g.
+  //   CLIENT: Hide()
+  //   CLIENT: Show()
+  //   SERVER: Receives Hide() and sends back HIDDEN
+  //   SERVER: Receives Show() and sends back VISIBLE
+  //   CLIENT: Receives HIDDEN and drops it because local state is visible.
+  //   CLIENT: Receives VISIBLE and accepts it.
+  const bool visible = window_->IsVisible();
+  if ((visible && new_state == Window::OcclusionState::HIDDEN) ||
+      (!visible && new_state == Window::OcclusionState::VISIBLE)) {
+    return;
+  }
+
+  UpdateOcclusionState(new_state);
+}
+
+void WindowPortMus::UpdateOcclusionState(Window::OcclusionState new_state) {
+  const Window::OcclusionState old_state = window_->occlusion_state();
+
+  if (new_state == Window::OcclusionState::HIDDEN &&
+      old_state != Window::OcclusionState::UNKNOWN) {
+    occlusion_state_before_hidden_ = old_state;
+  } else {
+    occlusion_state_before_hidden_.reset();
+  }
+
+  window_->SetOcclusionState(new_state);
+}
+
+void WindowPortMus::UpdateOcclusionStateAfterVisiblityChange(bool visible) {
+  DCHECK_EQ(visible, window_->IsVisible());
+
+  // No occlusion state update if |window_| is not added a root window.
+  if (!window_->GetRootWindow())
+    return;
+
+  if (!visible) {
+    // Set HIDDEN early when |window_| becomes hidden.
+    UpdateOcclusionState(Window::OcclusionState::HIDDEN);
+  } else {
+    // Restore to before-hidden state or VISIBLE when |window_| becomes visible.
+    UpdateOcclusionState(occlusion_state_before_hidden_
+                             ? occlusion_state_before_hidden_.value()
+                             : Window::OcclusionState::VISIBLE);
+  }
 }
 
 }  // namespace aura

@@ -141,6 +141,9 @@ class AURA_EXPORT WindowTreeClient
   void SetHitTestInsets(WindowMus* window,
                         const gfx::Insets& mouse,
                         const gfx::Insets& touch);
+  void TrackOcclusionState(WindowMus* window);
+  void PauseWindowOcclusionTracking();
+  void UnpauseWindowOcclusionTracking();
 
   // See WindowPort for details on these.
   void RegisterFrameSinkId(WindowMus* window,
@@ -450,6 +453,9 @@ class AURA_EXPORT WindowTreeClient
   void RequestClose(ws::Id window_id) override;
   void GetScreenProviderObserver(
       ws::mojom::ScreenProviderObserverAssociatedRequest observer) override;
+  void OnOcclusionStateChanged(
+      ws::Id window_id,
+      ws::mojom::OcclusionState occlusion_state) override;
 
   // ws::mojom::ScreenProviderObserver:
   void OnDisplaysChanged(std::vector<ws::mojom::WsDisplayPtr> ws_displays,

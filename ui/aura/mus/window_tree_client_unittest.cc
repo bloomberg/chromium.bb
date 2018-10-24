@@ -2607,4 +2607,54 @@ TEST_F(WindowTreeClientTest, PerformWindowMoveDoneAfterDelete) {
   EXPECT_TRUE(last_result);
 }
 
+// Verifies occlusion state from server is applied to underlying window.
+TEST_F(WindowTreeClientTest, OcclusionStateFromServer) {
+  struct {
+    const char* name;
+    bool window_is_visible;
+    ws::mojom::OcclusionState changed_state_from_server;
+    Window::OcclusionState expected_state;
+  } kTestCases[] = {
+      // VISIBLE is set when window is visible.
+      {"visible-set", true, ws::mojom::OcclusionState::kVisible,
+       Window::OcclusionState::VISIBLE},
+      // VISIBLE is not set when window hidden.
+      {"visible-not-set", false, ws::mojom::OcclusionState::kVisible,
+       Window::OcclusionState::HIDDEN},
+
+      // OCCLUDED is always set.
+      {"occluded-with-visible", true, ws::mojom::OcclusionState::kOccluded,
+       Window::OcclusionState::OCCLUDED},
+      {"occluded-with-invisible", false, ws::mojom::OcclusionState::kOccluded,
+       Window::OcclusionState::OCCLUDED},
+
+      // HIDDEN is set when window target visibility is false.
+      {"hidden-set", false, ws::mojom::OcclusionState::kHidden,
+       Window::OcclusionState::HIDDEN},
+      // HIDDEN is not set when window target visibility is true.
+      {"hidden-not-set", true, ws::mojom::OcclusionState::kHidden,
+       Window::OcclusionState::VISIBLE},
+  };
+
+  for (const auto& test : kTestCases) {
+    Window window(nullptr);
+    window.Init(ui::LAYER_NOT_DRAWN);
+    window.set_owned_by_parent(false);
+    root_window()->AddChild(&window);
+
+    window.TrackOcclusionState();
+    ASSERT_EQ(Window::OcclusionState::HIDDEN, window.occlusion_state());
+
+    if (test.window_is_visible && !window.IsVisible()) {
+      window.Show();
+    } else if (!test.window_is_visible && window.IsVisible()) {
+      window.Hide();
+    }
+
+    window_tree_client()->OnOcclusionStateChanged(
+        server_id(&window), test.changed_state_from_server);
+    EXPECT_EQ(test.expected_state, window.occlusion_state()) << test.name;
+  }
+}
+
 }  // namespace aura

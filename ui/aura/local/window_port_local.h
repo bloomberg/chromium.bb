@@ -59,6 +59,7 @@ class AURA_EXPORT WindowPortLocal : public WindowPort,
   base::TimeTicks GetLocalSurfaceIdAllocationTime() const override;
   void OnEventTargetingPolicyChanged() override;
   bool ShouldRestackTransientChildren() override;
+  void TrackOcclusionState() override;
 
   // viz::HostFrameSinkClient:
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
