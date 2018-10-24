@@ -1090,8 +1090,8 @@ bool AppCacheDatabase::LazyOpen(bool create_if_needed) {
 
   AppCacheHistograms::CountInitResult(AppCacheHistograms::INIT_OK);
   was_corruption_detected_ = false;
-  db_->set_error_callback(
-      base::Bind(&AppCacheDatabase::OnDatabaseError, base::Unretained(this)));
+  db_->set_error_callback(base::BindRepeating(
+      &AppCacheDatabase::OnDatabaseError, base::Unretained(this)));
   return true;
 }
 

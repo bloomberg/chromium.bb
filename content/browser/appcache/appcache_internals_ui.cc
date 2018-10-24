@@ -364,8 +364,8 @@ AppCacheInternalsUI::AppCacheInternalsUI(WebUI* web_ui)
 
   WebUIDataSource::Add(browser_context(), source);
 
-  BrowserContext::StoragePartitionCallback callback =
-      base::Bind(&AppCacheInternalsUI::CreateProxyForPartition, AsWeakPtr());
+  BrowserContext::StoragePartitionCallback callback = base::BindRepeating(
+      &AppCacheInternalsUI::CreateProxyForPartition, AsWeakPtr());
   BrowserContext::ForEachStoragePartition(browser_context(), callback);
 }
 
