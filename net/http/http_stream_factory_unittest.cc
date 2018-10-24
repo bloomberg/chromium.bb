@@ -2157,9 +2157,9 @@ TEST_F(HttpStreamFactoryTest, NewSpdySessionCloseIdleH2Sockets) {
     TestCompletionCallback callback;
 
     SSLConfig ssl_config;
-    scoped_refptr<SSLSocketParams> ssl_params(
-        new SSLSocketParams(transport_params, nullptr, nullptr, host_port_pair,
-                            ssl_config, PRIVACY_MODE_DISABLED, 0));
+    scoped_refptr<SSLSocketParams> ssl_params(new SSLSocketParams(
+        transport_params, nullptr, nullptr, host_port_pair, ssl_config,
+        PRIVACY_MODE_DISABLED, false /* ignore_certificate_errors */));
     std::string group_name = "ssl/" + host_port_pair.ToString();
     int rv = connection->Init(
         group_name, ssl_params, MEDIUM, SocketTag(),

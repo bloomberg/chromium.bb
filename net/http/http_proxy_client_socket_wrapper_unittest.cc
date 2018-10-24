@@ -275,9 +275,9 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxy) {
           proxy_host_port_, false, OnHostResolutionCallback(),
           TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT);
 
-  scoped_refptr<SSLSocketParams> ssl_params =
-      new SSLSocketParams(transport_params, nullptr, nullptr, proxy_host_port_,
-                          SSLConfig(), privacy_mode_, 0);
+  scoped_refptr<SSLSocketParams> ssl_params = new SSLSocketParams(
+      transport_params, nullptr, nullptr, proxy_host_port_, SSLConfig(),
+      privacy_mode_, false /* ignore_certificate_errors */);
   transport_params = nullptr;
 
   client_socket_wrapper_.reset(new HttpProxyClientSocketWrapper(
@@ -328,9 +328,9 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxySocketTag) {
           proxy_host_port_, false, OnHostResolutionCallback(),
           TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT);
 
-  scoped_refptr<SSLSocketParams> ssl_params =
-      new SSLSocketParams(transport_params, nullptr, nullptr, proxy_host_port_,
-                          SSLConfig(), privacy_mode_, 0);
+  scoped_refptr<SSLSocketParams> ssl_params = new SSLSocketParams(
+      transport_params, nullptr, nullptr, proxy_host_port_, SSLConfig(),
+      privacy_mode_, false /* ignore_certificate_errors */);
   transport_params = nullptr;
   SocketTag tag(getuid(), 0x87654321);
 
