@@ -1581,6 +1581,14 @@
           'gtest_tests': 'goma_gtests',
         },
       },
+      'Chromium Mac Goma RBE Staging (clobber)': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'gtest_tests': 'goma_gtests',
+        },
+      },
       'Chromium Mac Goma Staging': {
         'additional_compile_targets': [
           'all',
