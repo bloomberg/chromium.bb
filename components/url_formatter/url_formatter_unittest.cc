@@ -594,6 +594,11 @@ const IDNTestCase idn_cases[] = {
      L"12\u0993"
      L"4567890.com",
      false},
+    // 12ਤ4567890.com
+    {"xn--124567890-hfu.com",
+     L"12\u0a24"
+     L"4567890.com",
+     false},
     // 12ဒ4567890.com
     {"xn--124567890-6s6a.com",
      L"12\x1012"
