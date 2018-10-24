@@ -241,11 +241,11 @@ class ObserverList {
 
   const_iterator end() const { return const_iterator(); }
 
-  ObserverList() {
+  explicit ObserverList(ObserverListPolicy policy = ObserverListPolicy::ALL)
+      : policy_(policy) {
     // Sequence checks only apply when iterators are live.
     DETACH_FROM_SEQUENCE(iteration_sequence_checker_);
   }
-  explicit ObserverList(ObserverListPolicy policy) : policy_(policy) {}
 
   ~ObserverList() {
     // If there are live iterators, ensure destruction is thread-safe.
@@ -333,7 +333,7 @@ class ObserverList {
 
   base::LinkedList<internal::WeakLinkNode<ObserverList>> live_iterators_;
 
-  const ObserverListPolicy policy_ = ObserverListPolicy::ALL;
+  const ObserverListPolicy policy_;
 
   SEQUENCE_CHECKER(iteration_sequence_checker_);
 
