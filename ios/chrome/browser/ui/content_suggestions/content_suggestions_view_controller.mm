@@ -23,6 +23,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/web/public/features.h"
@@ -276,6 +277,14 @@ const CGFloat kCardBorderRadius = 11;
 
 - (void)viewDidLayoutSubviews {
   [super viewDidLayoutSubviews];
+  if (!base::FeatureList::IsEnabled(kBrowserContainerContainsNTP) &&
+      CGSizeEqualToSize(self.collectionView.bounds.size, CGSizeZero) &&
+      !CGSizeEqualToSize(self.view.bounds.size, CGSizeZero)) {
+    // When started after a cold start, the frame of the collection view isn't
+    // set to the bounds of the view. In that case, the constraints for the
+    // cells are broken.
+    self.collectionView.frame = self.view.bounds;
+  }
   [self applyContentOffset];
 }
 
