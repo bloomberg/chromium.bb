@@ -78,8 +78,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // The current title of the tab.
 @property(nonatomic, readonly) NSString* title;
 
-@property(nonatomic, readonly) NSString* urlDisplayString;
-
 // ID associated with this tab.
 @property(nonatomic, readonly) NSString* tabId;
 

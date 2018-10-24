@@ -209,13 +209,6 @@ NSString* const kTabUrlKey = @"url";
   return base::SysUTF16ToNSString(title);
 }
 
-- (NSString*)urlDisplayString {
-  base::string16 urlText = url_formatter::FormatUrl(
-      self.webState->GetVisibleURL(), url_formatter::kFormatUrlOmitNothing,
-      net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
-  return base::SysUTF16ToNSString(urlText);
-}
-
 - (NSString*)tabId {
   if (!self.webState) {
     // Tab can outlive WebState, in which case Tab is not valid anymore and
