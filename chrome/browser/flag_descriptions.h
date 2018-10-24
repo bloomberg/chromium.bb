@@ -1852,6 +1852,9 @@ extern const char kArcBootCompletedDescription[];
 extern const char kArcCupsApiName[];
 extern const char kArcCupsApiDescription[];
 
+extern const char kArcFilePickerExperimentName[];
+extern const char kArcFilePickerExperimentDescription[];
+
 extern const char kArcInputMethodName[];
 extern const char kArcInputMethodDescription[];
 

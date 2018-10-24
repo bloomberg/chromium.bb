@@ -28814,6 +28814,7 @@ from previous Chrome versions.
   <int value="-2117621241" label="ExperimentalProductivityFeatures:enabled"/>
   <int value="-2117201726" label="disable-gpu-rasterization"/>
   <int value="-2114831248" label="disable-new-ntp"/>
+  <int value="-2113783491" label="ArcFilePickerExperiment:enabled"/>
   <int value="-2113705745"
       label="CrossOriginMediaPlaybackRequiresUserGesture:enabled"/>
   <int value="-2108564200" label="AutofillUpstream:disabled"/>
@@ -30760,6 +30761,7 @@ from previous Chrome versions.
   <int value="1510659184" label="MacMDDownloadShelf:enabled"/>
   <int value="1511140997" label="OfflinePagesAsyncDownload:disabled"/>
   <int value="1511161758" label="BackgroundLoader:enabled"/>
+  <int value="1511961044" label="ArcFilePickerExperiment:disabled"/>
   <int value="1514036945"
       label="OmniboxUIExperimentElideSuggestionUrlAfterHost:disabled"/>
   <int value="1514066770" label="DisplayCutoutAPI:enabled"/>
