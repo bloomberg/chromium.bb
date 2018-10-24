@@ -67,7 +67,8 @@ void MessagePopupCollection::Update() {
 
   if (state_ != State::IDLE) {
     // If not in IDLE state, start animation.
-    animation_->SetDuration(state_ == State::MOVE_DOWN
+    animation_->SetDuration(state_ == State::MOVE_DOWN ||
+                                    state_ == State::MOVE_UP_FOR_INVERSE
                                 ? kMoveDownDuration
                                 : kFadeInFadeOutDuration);
     animation_->Start();
@@ -216,16 +217,22 @@ void MessagePopupCollection::TransitionFromAnimation() {
     // If the animation is finished, transition to IDLE.
     state_ = State::IDLE;
   } else if (state_ == State::FADE_OUT && !popup_items_.empty()) {
-    // If FADE_OUT animation is finished and we still have remaining popups,
-    // we have to MOVE_DOWN them.
-    state_ = State::MOVE_DOWN;
-
-    // If we're going to add a new popup after this MOVE_DOWN, do the collapse
-    // animation at the same time. Otherwise it will take another MOVE_DOWN.
-    if (HasAddedPopup())
-      CollapseAllPopups();
-
-    MoveDownPopups();
+    if ((HasAddedPopup() && CollapseAllPopups()) || !inverse_) {
+      // If FADE_OUT animation is finished and we still have remaining popups,
+      // we have to MOVE_DOWN them.
+      // If we're going to add a new popup after this MOVE_DOWN, do the collapse
+      // animation at the same time. Otherwise it will take another MOVE_DOWN.
+      state_ = State::MOVE_DOWN;
+      MoveDownPopups();
+    } else {
+      // If there's no collapsable popups and |inverse_| is on, there's nothing
+      // to do after FADE_OUT.
+      state_ = State::IDLE;
+    }
+  } else if (state_ == State::MOVE_UP_FOR_INVERSE) {
+    for (auto& item : popup_items_)
+      item.is_animating = item.will_fade_in;
+    state_ = State::FADE_IN;
   }
 }
 
@@ -257,8 +264,16 @@ void MessagePopupCollection::TransitionToAnimation() {
       MoveDownPopups();
       return;
     } else if (AddPopup()) {
-      // If a popup is actually added, show FADE_IN animation.
-      state_ = State::FADE_IN;
+      // A popup is actually added.
+      if (inverse_ && popup_items_.size() > 1) {
+        // If |inverse_| is on and there are existing notifications that have to
+        // be moved up (existing ones + new one, so > 1), transition to
+        // MOVE_UP_FOR_INVERSE.
+        state_ = State::MOVE_UP_FOR_INVERSE;
+      } else {
+        // Show FADE_IN animation.
+        state_ = State::FADE_IN;
+      }
       return;
     }
   }
@@ -300,7 +315,7 @@ void MessagePopupCollection::CalculateBounds() {
   for (size_t i = 0; i < popup_items_.size(); ++i) {
     gfx::Size preferred_size(
         kNotificationWidth,
-        popup_items_[i].popup->GetHeightForWidth(kNotificationWidth));
+        GetPopupItem(i)->popup->GetHeightForWidth(kNotificationWidth));
 
     // Align the top of i-th popup to |hot_top_|.
     if (is_hot_ && hot_index_ == i) {
@@ -316,8 +331,8 @@ void MessagePopupCollection::CalculateBounds() {
     if (!alignment_delegate_->IsTopDown())
       origin_y -= preferred_size.height();
 
-    popup_items_[i].start_bounds = popup_items_[i].bounds;
-    popup_items_[i].bounds =
+    GetPopupItem(i)->start_bounds = GetPopupItem(i)->bounds;
+    GetPopupItem(i)->bounds =
         gfx::Rect(gfx::Point(origin_x, origin_y), preferred_size);
 
     const int delta = preferred_size.height() + kMarginBetweenPopups;
@@ -344,7 +359,8 @@ void MessagePopupCollection::UpdateByAnimation() {
     else if (state_ == State::FADE_OUT)
       item.popup->SetOpacity(gfx::Tween::FloatValueBetween(value, 1.0f, 0.0f));
 
-    if (state_ == State::FADE_IN || state_ == State::MOVE_DOWN) {
+    if (state_ == State::FADE_IN || state_ == State::MOVE_DOWN ||
+        state_ == State::MOVE_UP_FOR_INVERSE) {
       item.popup->SetPopupBounds(
           gfx::Tween::RectValueBetween(value, item.start_bounds, item.bounds));
     }
@@ -379,9 +395,11 @@ bool MessagePopupCollection::AddPopup() {
   if (!new_notification)
     return false;
 
-  // Reset animation flag of existing popups.
-  for (auto& item : popup_items_)
+  // Reset animation flags of existing popups.
+  for (auto& item : popup_items_) {
     item.is_animating = false;
+    item.will_fade_in = false;
+  }
 
   {
     PopupItem item;
@@ -396,6 +414,15 @@ bool MessagePopupCollection::AddPopup() {
 
     item.popup->Show();
     popup_items_.push_back(item);
+  }
+
+  // There are existing notifications that have to be moved up (existing ones +
+  // new one, so > 1).
+  if (inverse_ && popup_items_.size() > 1) {
+    for (auto& item : popup_items_) {
+      item.will_fade_in = item.is_animating;
+      item.is_animating = !item.is_animating;
+    }
   }
 
   MessageCenter::Get()->DisplayedNotification(new_notification->id(),
@@ -453,10 +480,10 @@ bool MessagePopupCollection::IsNextEdgeOutsideWorkArea(
 
 void MessagePopupCollection::StartHotMode() {
   for (size_t i = 0; i < popup_items_.size(); ++i) {
-    if (popup_items_[i].is_animating && popup_items_[i].popup->is_hovered()) {
+    if (GetPopupItem(i)->is_animating && GetPopupItem(i)->popup->is_hovered()) {
       is_hot_ = true;
       hot_index_ = i;
-      hot_top_ = popup_items_[i].bounds.y();
+      hot_top_ = GetPopupItem(i)->bounds.y();
       break;
     }
   }
@@ -570,6 +597,13 @@ bool MessagePopupCollection::IsAnyPopupActive() const {
       return true;
   }
   return false;
+}
+
+MessagePopupCollection::PopupItem* MessagePopupCollection::GetPopupItem(
+    size_t index_from_top) {
+  DCHECK_LT(index_from_top, popup_items_.size());
+  return &popup_items_[inverse_ ? popup_items_.size() - index_from_top - 1
+                                : index_from_top];
 }
 
 }  // namespace message_center

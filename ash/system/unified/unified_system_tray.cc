@@ -74,6 +74,7 @@ UnifiedSystemTray::UiDelegate::UiDelegate(UnifiedSystemTray* owner)
   message_popup_collection_ =
       std::make_unique<message_center::MessagePopupCollection>(
           popup_alignment_delegate_.get());
+  message_popup_collection_->set_inverse();
   display::Screen* screen = display::Screen::GetScreen();
   popup_alignment_delegate_->StartObserving(
       screen, screen->GetDisplayNearestWindow(

@@ -56,6 +56,8 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;
 
+  void set_inverse() { inverse_ = true; }
+
  protected:
   // TODO(tetsui): Merge PopupAlignmentDelegate into MessagePopupCollection and
   // make subclasses e.g. DesktopMessagePopupCollection and
@@ -87,7 +89,11 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
 
     // Moving down notifications. Notification collapsing and resizing are also
     // done in MOVE_DOWN.
-    MOVE_DOWN
+    MOVE_DOWN,
+
+    // Moving up notifications in order to show new one by FADE_IN. This is only
+    // used when |inverse_| is true.
+    MOVE_UP_FOR_INVERSE
   };
 
   // Stores animation related state of a popup.
@@ -102,6 +108,11 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
 
     // The final bounds of the popup.
     gfx::Rect bounds;
+
+    // The popup is waiting for MOVE_UP_FOR_INVERSE animation so that it can
+    // FADE_IN after that. The value is only used when the animation type is
+    // MOVE_UP_FOR_INVERSE.
+    bool will_fade_in = false;
 
     // If the popup is animating.
     bool is_animating = false;
@@ -173,6 +184,10 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   // Return true if any popup is activated.
   bool IsAnyPopupActive() const;
 
+  // Returns the popup which is visually |index_from_top|-th from the top.
+  // When |inverse_| is false, it's same as popup_items_[i].
+  PopupItem* GetPopupItem(size_t index_from_top);
+
   // Animation state. See the comment of State.
   State state_ = State::IDLE;
 
@@ -210,6 +225,16 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   // CalculateBounds() always lays out popups in a way the top of the popup at
   // |hot_index_| is aligned to |hot_top_|. Only valid if |is_hot_| is true.
   int hot_top_ = 0;
+
+  // Invert ordering of notification popups i.e. showing the latest notification
+  // at the top. It changes the state transition like this:
+  // Normal:
+  //   * a new notification comes in: FADE_IN
+  //   * a notification comes out: FADE_OUT -> MOVE_DOWN
+  // Inverted:
+  //   * a new notification comes in: MOVE_UP_FOR_INVERSE -> FADE_IN
+  //   * a notification comes out: FADE_OUT
+  bool inverse_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePopupCollection);
 };
