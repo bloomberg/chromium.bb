@@ -3,7 +3,6 @@ Tests to ensure that shadow element cannot be created in elements having dynamic
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 DIV
 PASS element.createShadowRoot() is not null
 SPAN

@@ -3,7 +3,6 @@ Tests property access on a cached DOMWindow after the associated frame is remove
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS childWindow.closed is true
 PASS childWindow.defaultStatus is ''
 PASS childWindow.defaultstatus is ''
@@ -188,4 +187,5 @@ PASS childWindow.visualViewport.width is 0
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

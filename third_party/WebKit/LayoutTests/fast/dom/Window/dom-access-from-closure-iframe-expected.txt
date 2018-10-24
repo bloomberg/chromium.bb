@@ -3,3 +3,4 @@ window.document.URL: fast/dom/Window/resources/notify-parent-done.html
 name: child
 window.name: child
 
+

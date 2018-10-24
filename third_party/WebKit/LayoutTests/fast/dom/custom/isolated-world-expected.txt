@@ -3,7 +3,6 @@ Tests that accessing custom elements from an isolated world does not cause world
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS window.testRunner is non-null.
 PASS did not crash
 PASS successfullyParsed is true
