@@ -107,17 +107,22 @@ class Controller : public ScriptExecutorDelegate,
   // Domain of the last URL the controller requested scripts from.
   std::string script_domain_;
   std::unique_ptr<ClientMemory> memory_;
-  bool allow_autostart_;
+  bool allow_autostart_ = true;
 
   // Whether a task for periodic checks is scheduled.
-  bool periodic_script_check_scheduled_;
+  bool periodic_script_check_scheduled_ = false;
 
   // Number of remaining periodic checks.
-  int periodic_script_check_count_;
+  int periodic_script_check_count_ = 0;
+  int total_script_check_count_ = 0;
 
   // Whether to clear the web_contents delegate when the controller is
   // destroyed.
-  bool clear_web_contents_delegate_;
+  bool clear_web_contents_delegate_ = false;
+
+  // Whether we should hide the overlay and show an error message after a first
+  // unsuccessful round of preconditions checking.
+  bool should_fail_after_checking_scripts_ = false;
 
   base::WeakPtrFactory<Controller> weak_ptr_factory_;
 
