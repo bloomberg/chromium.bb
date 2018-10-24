@@ -87,10 +87,6 @@ class WebRtcImageCaptureBrowserTestBase
     ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kUseFakeDeviceForMediaStream));
 
-    // "GetUserMedia": enables navigator.mediaDevices.getUserMedia();
-    // TODO(mcasas): remove GetUserMedia after https://crbug.com/503227.
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kEnableBlinkFeatures, "GetUserMedia");
   }
 
   void SetUp() override {
