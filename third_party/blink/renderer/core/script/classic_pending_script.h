@@ -59,8 +59,6 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
     return blink::ScriptType::kClassic;
   }
 
-  void WatchForLoad(PendingScriptClient*) override;
-
   ClassicScript* GetSource(const KURL& document_url) const override;
   bool IsReady() const override;
   bool IsExternal() const override { return is_external_; }
@@ -77,10 +75,12 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
  private:
   // See AdvanceReadyState implementation for valid state transitions.
   enum ReadyState {
-    // This state is considered "not ready".
+    // These states are considered "not ready".
     kWaitingForResource,
+    kWaitingForStreaming,
     // These states are considered "ready".
     kReady,
+    kReadyStreaming,
     kErrorOccurred,
   };
 
@@ -95,11 +95,16 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
   // appropriate.
   void AdvanceReadyState(ReadyState);
 
+  // Handle the end of streaming.
+  void FinishWaitingForStreaming();
+  void FinishReadyStreaming();
+  void CancelStreaming();
   void CheckState() const override;
 
   // ResourceClient
   void NotifyFinished(Resource*) override;
   String DebugName() const override { return "PendingScript"; }
+  void DataReceived(Resource*, const char*, size_t) override;
 
   static void RecordStreamingHistogram(
       ScriptSchedulingType type,
@@ -129,6 +134,7 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
   // The request is intervened by document.write() intervention.
   bool intervened_ = false;
 
+  Member<ScriptStreamer> streamer_;
   base::OnceClosure streamer_done_;
 
   // This flag tracks whether streamer_ is currently streaming. It is used
