@@ -5,7 +5,6 @@
 from telemetry.page import legacy_page_test
 from telemetry.timeline import model as model_module
 from telemetry.value import trace
-from telemetry.web_perf.metrics import smoothness
 from telemetry.web_perf import smooth_gesture_util
 from telemetry.web_perf import timeline_interaction_record as tir_module
 from telemetry.timeline import tracing_config
@@ -78,9 +77,6 @@ class Rendering(legacy_page_test.LegacyPageTest):
     model = model_module.TimelineModel(trace_result)
     renderer_thread = model.GetFirstRendererThread(tab.id)
     records = _CollectRecordsFromRendererThreads(model, renderer_thread)
-
-    smoothness_metric = smoothness.SmoothnessMetric()
-    smoothness_metric.AddResults(model, renderer_thread, records, results)
 
     thread_times_metric = timeline.ThreadTimesTimelineMetric()
     thread_times_metric.AddResults(model, renderer_thread, records, results)
