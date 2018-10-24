@@ -75,6 +75,14 @@ class CrostiniSharePathTest : public testing::Test {
     std::move(closure).Run();
   }
 
+  void SharePersistedPathsCallback(bool success, std::string failure_reason) {
+    EXPECT_TRUE(success);
+    EXPECT_EQ(
+        profile()->GetPrefs()->GetList(prefs::kCrostiniSharedPaths)->GetSize(),
+        2U);
+    run_loop()->QuitClosure().Run();
+  }
+
   void SharePathErrorVmNotRunningCallback(base::OnceClosure closure,
                                           bool success,
                                           std::string failure_reason) {
@@ -218,7 +226,7 @@ TEST_F(CrostiniSharePathTest, SharePathErrorVmNotRunning) {
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, ShareAllPaths) {
+TEST_F(CrostiniSharePathTest, SharePersistedPaths) {
   base::FilePath share_path2_ = downloads_.AppendASCII("path");
   ASSERT_TRUE(base::CreateDirectory(share_path2_));
   vm_tools::concierge::VmInfo vm_info;
@@ -228,7 +236,10 @@ TEST_F(CrostiniSharePathTest, ShareAllPaths) {
   shared_paths.GetList().push_back(base::Value(share_path_.value()));
   shared_paths.GetList().push_back(base::Value(share_path2_.value()));
   profile()->GetPrefs()->Set(prefs::kCrostiniSharedPaths, shared_paths);
-  ShareAllPaths(profile(), run_loop()->QuitClosure());
+  SharePersistedPaths(
+      profile(),
+      base::BindOnce(&CrostiniSharePathTest::SharePersistedPathsCallback,
+                     base::Unretained(this)));
   run_loop()->Run();
 }
 

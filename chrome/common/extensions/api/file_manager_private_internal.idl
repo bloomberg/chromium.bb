@@ -103,7 +103,7 @@ namespace fileManagerPrivateInternal {
                                  GetDirectorySizeCallback callback);
     static void getRecentFiles(fileManagerPrivate.SourceRestriction restriction,
                                GetRecentFilesCallback callback);
-    static void sharePathWithCrostini(DOMString url, boolean persist,
+    static void sharePathsWithCrostini(DOMString[] urls, boolean persist,
                                       SimpleCallback callback);
     static void getCrostiniSharedPaths(
         GetCrostiniSharedPathsCallback callback);

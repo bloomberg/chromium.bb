@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/crostini/crostini_share_path.h"
 
-#include "base/barrier_closure.h"
+#include "base/atomic_ref_count.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/optional.h"
@@ -90,16 +90,38 @@ void CallSeneschalSharePath(
                               std::move(callback)));
 }
 
-void SharePathLogErrorCallback(std::string path,
-                               base::RepeatingClosure barrier,
-                               bool success,
-                               std::string failure_reason) {
-  barrier.Run();
-  if (!success) {
-    LOG(ERROR) << "Error SharePath=" << path
-               << ", FailureReason=" << failure_reason;
+// Barrier Closure that captures the first instance of error.
+class ErrorCapture {
+ public:
+  ErrorCapture(int num_callbacks_left,
+               base::OnceCallback<void(bool, std::string)> callback)
+      : num_callbacks_left_(num_callbacks_left),
+        callback_(std::move(callback)) {
+    DCHECK_GE(num_callbacks_left, 0);
+    if (num_callbacks_left == 0)
+      std::move(callback_).Run(true, "");
   }
-}
+
+  void Run(base::FilePath path, bool success, std::string failure_reason) {
+    if (!success) {
+      LOG(ERROR) << "Error SharePath=" << path.value()
+                 << ", FailureReason=" << failure_reason;
+      if (success_) {
+        success_ = false;
+        first_failure_reason_ = failure_reason;
+      }
+    }
+
+    if (!num_callbacks_left_.Decrement())
+      std::move(callback_).Run(success_, first_failure_reason_);
+  }
+
+ private:
+  base::AtomicRefCount num_callbacks_left_;
+  base::OnceCallback<void(bool, std::string)> callback_;
+  bool success_ = true;
+  std::string first_failure_reason_;
+};  // class
 
 }  // namespace
 
@@ -119,6 +141,23 @@ void SharePath(Profile* profile,
   CallSeneschalSharePath(profile, vm_name, path, persist, std::move(callback));
 }
 
+void SharePaths(Profile* profile,
+                std::string vm_name,
+                std::vector<base::FilePath> paths,
+                bool persist,
+                base::OnceCallback<void(bool, std::string)> callback) {
+  DCHECK(profile);
+
+  base::RepeatingCallback<void(base::FilePath, bool, std::string)> barrier =
+      base::BindRepeating(
+          &ErrorCapture::Run,
+          base::Owned(new ErrorCapture(paths.size(), std::move(callback))));
+  for (const auto& path : paths) {
+    CallSeneschalSharePath(profile, kCrostiniDefaultVmName, path, persist,
+                           base::BindOnce(barrier, std::move(path)));
+  }
+}
+
 void UnsharePath(Profile* profile,
                  std::string vm_name,
                  const base::FilePath& path,
@@ -132,9 +171,9 @@ void UnsharePath(Profile* profile,
   std::move(callback).Run(true, "");
 }
 
-std::vector<std::string> GetSharedPaths(Profile* profile) {
+std::vector<base::FilePath> GetPersistedSharedPaths(Profile* profile) {
   DCHECK(profile);
-  std::vector<std::string> result;
+  std::vector<base::FilePath> result;
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kCrostiniFiles)) {
     return result;
@@ -142,21 +181,15 @@ std::vector<std::string> GetSharedPaths(Profile* profile) {
   const base::ListValue* shared_paths =
       profile->GetPrefs()->GetList(prefs::kCrostiniSharedPaths);
   for (const auto& path : *shared_paths) {
-    result.emplace_back(path.GetString());
+    result.emplace_back(base::FilePath(path.GetString()));
   }
   return result;
 }
 
-void ShareAllPaths(Profile* profile, base::OnceCallback<void()> callback) {
-  DCHECK(profile);
-  std::vector<std::string> paths = GetSharedPaths(profile);
-  base::RepeatingClosure barrier =
-      base::BarrierClosure(paths.size(), std::move(callback));
-  for (const auto& path : paths) {
-    CallSeneschalSharePath(
-        profile, kCrostiniDefaultVmName, base::FilePath(path), false,
-        base::BindOnce(&SharePathLogErrorCallback, std::move(path), barrier));
-  }
+void SharePersistedPaths(Profile* profile,
+                         base::OnceCallback<void(bool, std::string)> callback) {
+  SharePaths(profile, kCrostiniDefaultVmName, GetPersistedSharedPaths(profile),
+             false /* persist */, std::move(callback));
 }
 
 }  // namespace crostini

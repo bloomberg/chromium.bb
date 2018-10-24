@@ -682,8 +682,8 @@ void FileManagerPrivateMountCrostiniFunction::RestartCallback(
 }
 
 ExtensionFunction::ResponseAction
-FileManagerPrivateInternalSharePathWithCrostiniFunction::Run() {
-  using extensions::api::file_manager_private_internal::SharePathWithCrostini::
+FileManagerPrivateInternalSharePathsWithCrostiniFunction::Run() {
+  using extensions::api::file_manager_private_internal::SharePathsWithCrostini::
       Params;
   const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -692,22 +692,25 @@ FileManagerPrivateInternalSharePathWithCrostiniFunction::Run() {
   const scoped_refptr<storage::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderFrameHost(
           profile, render_frame_host());
-  storage::FileSystemURL cracked =
-      file_system_context->CrackURL(GURL(params->url));
+  std::vector<base::FilePath> paths;
+  for (size_t i = 0; i < params->urls.size(); ++i) {
+    storage::FileSystemURL cracked =
+        file_system_context->CrackURL(GURL(params->urls[i]));
+    paths.emplace_back(cracked.path());
+  }
 
-  crostini::SharePath(
-      profile, crostini::kCrostiniDefaultVmName, cracked.path(),
+  crostini::SharePaths(
+      profile, crostini::kCrostiniDefaultVmName, std::move(paths),
       params->persist,
-      base::BindOnce(&FileManagerPrivateInternalSharePathWithCrostiniFunction::
-                         SharePathCallback,
+      base::BindOnce(&FileManagerPrivateInternalSharePathsWithCrostiniFunction::
+                         SharePathsCallback,
                      this));
 
   return RespondLater();
 }
 
-void FileManagerPrivateInternalSharePathWithCrostiniFunction::SharePathCallback(
-    bool success,
-    std::string failure_reason) {
+void FileManagerPrivateInternalSharePathsWithCrostiniFunction::
+    SharePathsCallback(bool success, std::string failure_reason) {
   Respond(success ? NoArguments() : Error(failure_reason));
 }
 
@@ -715,8 +718,8 @@ ExtensionFunction::ResponseAction
 FileManagerPrivateInternalGetCrostiniSharedPathsFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
   file_manager::util::FileDefinitionList file_definition_list;
-  auto shared_paths = crostini::GetSharedPaths(profile);
-  for (const std::string& path : shared_paths) {
+  auto shared_paths = crostini::GetPersistedSharedPaths(profile);
+  for (const base::FilePath& path : shared_paths) {
     file_manager::util::FileDefinition file_definition;
     // All shared paths should be directories.  Even if this is not true, it
     // is fine for foreground/js/crostini.js class to think so.
@@ -724,8 +727,7 @@ FileManagerPrivateInternalGetCrostiniSharedPathsFunction::Run() {
     // seneschal/9p in CrostiniSharePath::CallSeneschalSharePath().
     file_definition.is_directory = true;
     if (file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
-            profile, extension_id(), base::FilePath(path),
-            &file_definition.virtual_path)) {
+            profile, extension_id(), path, &file_definition.virtual_path)) {
       file_definition_list.emplace_back(std::move(file_definition));
     }
   }

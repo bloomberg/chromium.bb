@@ -4,15 +4,15 @@
 
 const crostiniShare = {};
 
-crostiniShare.testSharePathCrostiniSuccess = (done) => {
-  const oldSharePath = chrome.fileManagerPrivate.sharePathWithCrostini;
-  let sharePathCalled = false;
-  let sharePathPersist;
-  chrome.fileManagerPrivate.sharePathWithCrostini =
+crostiniShare.testSharePathsCrostiniSuccess = (done) => {
+  const oldSharePaths = chrome.fileManagerPrivate.sharePathsWithCrostini;
+  let sharePathsCalled = false;
+  let sharePathsPersist;
+  chrome.fileManagerPrivate.sharePathsWithCrostini =
       (entry, persist, callback) => {
-        oldSharePath(entry, persist, () => {
-          sharePathCalled = true;
-          sharePathPersist = persist;
+        oldSharePaths(entry, persist, () => {
+          sharePathsCalled = true;
+          sharePathsPersist = persist;
           callback();
         });
       };
@@ -36,14 +36,14 @@ crostiniShare.testSharePathCrostiniSuccess = (done) => {
             test.fakeMouseClick(
                 '#file-context-menu [command="#share-with-linux"]'),
             'Share with Linux');
-        // Check sharePathWithCrostini is called.
+        // Check sharePathsWithCrostini is called.
         return test.repeatUntil(() => {
-          return sharePathCalled || test.pending('wait for sharePathCalled');
+          return sharePathsCalled || test.pending('wait for sharePathsCalled');
         });
       })
       .then(() => {
         // Share should persist when right-click > Share with Linux.
-        assertTrue(sharePathPersist);
+        assertTrue(sharePathsPersist);
         // Validate UMAs.
         assertEquals(1, chrome.metricsPrivate.smallCounts_.length);
         assertArrayEquals(
@@ -54,7 +54,7 @@ crostiniShare.testSharePathCrostiniSuccess = (done) => {
         assertEquals(12 /* Share with Linux */, lastEnumUma[1]);
 
         // Restore fmp.*.
-        chrome.fileManagerPrivate.sharePathWithCrostini = oldSharePath;
+        chrome.fileManagerPrivate.sharePathsWithCrostini = oldSharePaths;
         done();
       });
 };
