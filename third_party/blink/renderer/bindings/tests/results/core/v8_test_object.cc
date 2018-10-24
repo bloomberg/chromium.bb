@@ -3686,7 +3686,8 @@ static void replaceableReadonlyLongAttributeAttributeSetter(v8::Local<v8::Value>
   // Prepare the value to be set.
 
   v8::Local<v8::String> propertyName = V8AtomicString(isolate, "replaceableReadonlyLongAttribute");
-  V8CallBoolean(info.Holder()->CreateDataProperty(info.GetIsolate()->GetCurrentContext(), propertyName, v8Value));
+  if (info.Holder()->CreateDataProperty(info.GetIsolate()->GetCurrentContext(), propertyName, v8Value).IsNothing())
+    return;
 }
 
 static void locationPutForwardsAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {

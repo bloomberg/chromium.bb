@@ -434,9 +434,13 @@ def setter_context(interface, attribute, interfaces, context):
         return
 
     if ('Replaceable' in attribute.extended_attributes):
+        # Create the property, and early-return if an exception is thrown.
+        # Subsequent cleanup code may not be prepared to handle a pending
+        # exception.
         context['cpp_setter'] = (
-            'V8CallBoolean(info.Holder()->CreateDataProperty(' +
-            'info.GetIsolate()->GetCurrentContext(), propertyName, v8Value))')
+            'if (info.Holder()->CreateDataProperty(' +
+            'info.GetIsolate()->GetCurrentContext(), propertyName, v8Value).IsNothing())' +
+            '\n  return')
         return
 
     extended_attributes = attribute.extended_attributes
