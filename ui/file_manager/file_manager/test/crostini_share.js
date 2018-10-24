@@ -47,7 +47,7 @@ crostiniShare.testSharePathsCrostiniSuccess = (done) => {
         // Validate UMAs.
         assertEquals(1, chrome.metricsPrivate.smallCounts_.length);
         assertArrayEquals(
-            ['FileBrowser.CrostiniSharedPaths.Depth.downloads', 1],
+            ['FileBrowser.CrostiniSharedPaths.Depth.Downloads', 1],
             chrome.metricsPrivate.smallCounts_[0]);
         const lastEnumUma = chrome.metricsPrivate.values_.pop();
         assertEquals('FileBrowser.MenuItemSelected', lastEnumUma[0].metricName);
@@ -60,17 +60,21 @@ crostiniShare.testSharePathsCrostiniSuccess = (done) => {
 };
 
 // Verify right-click menu with 'Share with Linux' is not shown for:
-// * Files (not directory)
-// * Any folder already shared
-// * Root Downloads folder
-// * Any folder outside of downloads (e.g. crostini or orive)
-crostiniShare.testSharePathNotShown = (done) => {
+// * Files (not directory).
+// * Any folder already shared.
+// * Root Downloads folder.
+// * Any folder outside of downloads (e.g. crostini or drive).
+// * Is shown for drive if DriveFS is enabled.
+crostiniShare.testSharePathShown = (done) => {
   const myFiles = '#directory-tree .tree-item [root-type-icon="my_files"]';
   const downloads = '#file-list li [file-type-icon="downloads"]';
   const linuxFiles = '#directory-tree .tree-item [root-type-icon="crostini"]';
   const googleDrive = '#directory-tree .tree-item [volume-type-icon="drive"]';
+  const menuHidden = '#file-context-menu[hidden]';
   const menuNoShareWithLinux = '#file-context-menu:not([hidden]) ' +
       '[command="#share-with-linux"][hidden][disabled="disabled"]';
+  const menuShareWithLinux = '#file-context-menu:not([hidden]) ' +
+      '[command="#share-with-linux"]:not([hidden]):not([disabled])';
   let alreadySharedPhotosDir;
 
   test.setupAndWaitUntilReady()
@@ -140,12 +144,28 @@ crostiniShare.testSharePathNotShown = (done) => {
         return test.waitForElement(menuNoShareWithLinux);
       })
       .then(() => {
+        // Close menu by clicking file-list.
+        assertTrue(test.fakeMouseClick('#file-list'));
+        return test.waitForElement(menuHidden);
+      })
+      .then(() => {
+        // Set DRIVE_FS_ENABLED, and check that 'Share with Linux' is shown.
+        loadTimeData.data_['DRIVE_FS_ENABLED'] = true;
+        // Check 'Share with Linux' is not shown in menu.
+        assertTrue(
+            test.fakeMouseRightClick('#file-list [file-name="photos"]'),
+            'right-click photos');
+        return test.waitForElement(menuShareWithLinux);
+      })
+      .then(() => {
         // Reset Linux files back to unmounted.
         chrome.fileManagerPrivate.removeMount('crostini');
         return test.waitForElement(
             '#directory-tree .tree-item [root-type-icon="crostini"]');
       })
       .then(() => {
+        // Unset DRIVE_FS_ENABLED.
+        loadTimeData.data_['DRIVE_FS_ENABLED'] = false;
         // Clear Crostini shared folders.
         Crostini.unregisterSharedPath(
             alreadySharedPhotosDir, mockVolumeManager);

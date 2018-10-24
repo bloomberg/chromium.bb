@@ -13,15 +13,17 @@ Crostini.IS_CROSTINI_FILES_ENABLED = false;
 /**
  * Keep in sync with histograms.xml:FileBrowserCrostiniSharedPathsDepth
  * histogram_suffix.
- * @private {!Array<VolumeManagerCommon.RootType>}
+ * @private {!Map<VolumeManagerCommon.RootType, string>}
  */
-Crostini.UMA_VALID_ROOT_TYPES = [
-  VolumeManagerCommon.RootType.DOWNLOADS,
-  VolumeManagerCommon.RootType.DRIVE,
-];
+Crostini.VALID_ROOT_TYPES_FOR_SHARE = new Map([
+  [VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT, 'DriveComputers'],
+  [VolumeManagerCommon.RootType.DOWNLOADS, 'Downloads'],
+  [VolumeManagerCommon.RootType.DRIVE, 'MyDrive'],
+  [VolumeManagerCommon.RootType.TEAM_DRIVE, 'TeamDrive'],
+]);
 
 /** @private {string} */
-Crostini.UMA_ROOT_TYPE_OTHER = 'other';
+Crostini.UMA_ROOT_TYPE_OTHER = 'Other';
 
 /**
  * Maintains a list of paths shared with the crostini container.
@@ -48,9 +50,8 @@ Crostini.registerSharedPath = function(entry, volumeManager) {
   paths[entry.fullPath] = true;
 
   // Record UMA.
-  let suffix = info.rootType;
-  if (!Crostini.UMA_VALID_ROOT_TYPES.includes(info.rootType))
-    suffix = Crostini.UMA_ROOT_TYPE_OTHER;
+  let suffix = Crostini.VALID_ROOT_TYPES_FOR_SHARE.get(info.rootType) ||
+      Crostini.UMA_ROOT_TYPE_OTHER;
   metrics.recordSmallCount(
       'CrostiniSharedPaths.Depth.' + suffix,
       entry.fullPath.split('/').length - 1);
@@ -110,21 +111,22 @@ Crostini.isCrostiniEntry = function(entry, volumeManager) {
  * @param {!VolumeManager} volumeManager
  */
 Crostini.canSharePath = function(entry, persist, volumeManager) {
+
   // Check crostini-files flag and valid volume.
-  if (!Crostini.IS_CROSTINI_FILES_ENABLED ||
-      volumeManager.getLocationInfo(entry).rootType !==
-          VolumeManagerCommon.RootType.DOWNLOADS) {
+  if (!Crostini.IS_CROSTINI_FILES_ENABLED)
     return false;
-  }
 
   // Root of volume not allowed.
   if (entry.fullPath === '/')
     return false;
 
   // Only directories for persistent shares.
-  if (persist && !entry.isDirectory) {
+  if (persist && !entry.isDirectory)
     return false;
-  }
 
-  return true;
+  // Allow Downloads, and Drive if DriveFS is enabled.
+  const rootType = volumeManager.getLocationInfo(entry).rootType;
+  return rootType === VolumeManagerCommon.RootType.DOWNLOADS ||
+      (loadTimeData.getBoolean('DRIVE_FS_ENABLED') &&
+       Crostini.VALID_ROOT_TYPES_FOR_SHARE.has(rootType));
 };

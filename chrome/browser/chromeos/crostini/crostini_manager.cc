@@ -363,6 +363,9 @@ class CrostiniManager::CrostiniRestarter
       return;
 
     // Share folders from Downloads, etc with container.
+    // TODO(joelhockey): SharePersistedPaths is getting called on every Restart,
+    // even if the VM is already running.  Only call SharePersistedPaths when
+    // VM starts for the first time.
     SharePersistedPaths(
         profile_,
         base::BindOnce(&CrostiniRestarter::OnPersistedPathsShared, this));

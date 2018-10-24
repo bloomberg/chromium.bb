@@ -11,8 +11,10 @@
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/concierge/service.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -43,17 +45,70 @@ void CallSeneschalSharePath(
     base::OnceCallback<void(bool, std::string)> callback) {
   // Verify path is in one of the allowable mount points.
   // This logic is similar to DownloadPrefs::SanitizeDownloadTargetPath().
-  // TODO(joelhockey):  Seneschal currently only support sharing directories
-  // under Downloads.
-  if (!path.IsAbsolute()) {
+  if (!path.IsAbsolute() || path.ReferencesParent()) {
     std::move(callback).Run(false, "Path must be absolute");
     return;
   }
+
+  vm_tools::seneschal::SharePathRequest request;
+  base::FilePath drivefs_path;
+  base::FilePath relative_path;
+  drive::DriveIntegrationService* integration_service =
+      drive::DriveIntegrationServiceFactory::GetForProfile(profile);
+  base::FilePath drivefs_mount_point_path;
+  base::FilePath drivefs_mount_name;
+
+  // Allow download directory and subdirs.
+  bool allowed_path = false;
   base::FilePath downloads =
       file_manager::util::GetDownloadsFolderForProfile(profile);
-  base::FilePath relative_path;
-  if (!downloads.AppendRelativePath(path, &relative_path)) {
-    std::move(callback).Run(false, "Path must be under Downloads");
+  if (downloads == path || downloads.AppendRelativePath(path, &relative_path)) {
+    allowed_path = true;
+    request.set_storage_location(
+        vm_tools::seneschal::SharePathRequest::DOWNLOADS);
+    request.set_owner_id(crostini::CryptohomeIdForProfile(profile));
+  } else if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs) &&
+             integration_service &&
+             (drivefs_mount_point_path =
+                  integration_service->GetMountPointPath())
+                 .AppendRelativePath(path, &drivefs_path) &&
+             base::FilePath("/media/fuse")
+                 .AppendRelativePath(drivefs_mount_point_path,
+                                     &drivefs_mount_name)) {
+    // Allow subdirs of DriveFS.
+    request.set_drivefs_mount_name(drivefs_mount_name.value());
+    base::FilePath root("root");
+    base::FilePath team_drives("team_drives");
+    base::FilePath computers("Computers");
+    if (root == drivefs_path ||
+        root.AppendRelativePath(drivefs_path, &relative_path)) {
+      // My Drive and subdirs.
+      allowed_path = true;
+      request.set_storage_location(
+          vm_tools::seneschal::SharePathRequest::DRIVEFS_MY_DRIVE);
+    } else if (team_drives == drivefs_path ||
+               team_drives.AppendRelativePath(drivefs_path, &relative_path)) {
+      // Team Drives and subdirs.
+      allowed_path = true;
+      request.set_storage_location(
+          vm_tools::seneschal::SharePathRequest::DRIVEFS_TEAM_DRIVES);
+    } else if (computers == drivefs_path ||
+               computers.AppendRelativePath(drivefs_path, &relative_path)) {
+      // Computers and subdirs.
+      allowed_path = true;
+      request.set_storage_location(
+          vm_tools::seneschal::SharePathRequest::DRIVEFS_COMPUTERS);
+    }
+  } else if (base::FilePath("/media/removable")
+                 .AppendRelativePath(path, &relative_path)) {
+    // Allow subdirs of /media/removable.
+    allowed_path = true;
+    request.set_storage_location(
+        vm_tools::seneschal::SharePathRequest::REMOVABLE);
+  }
+
+  if (!allowed_path) {
+    std::move(callback).Run(false, "Path is not allowed");
     return;
   }
 
@@ -78,13 +133,9 @@ void CallSeneschalSharePath(
     return;
   }
 
-  vm_tools::seneschal::SharePathRequest request;
   request.set_handle(vm_info->seneschal_server_handle());
   request.mutable_shared_path()->set_path(relative_path.value());
   request.mutable_shared_path()->set_writable(true);
-  request.set_storage_location(
-      vm_tools::seneschal::SharePathRequest::DOWNLOADS);
-  request.set_owner_id(crostini::CryptohomeIdForProfile(profile));
   chromeos::DBusThreadManager::Get()->GetSeneschalClient()->SharePath(
       request, base::BindOnce(&OnSeneschalSharePathResponse, std::move(path),
                               std::move(callback)));
