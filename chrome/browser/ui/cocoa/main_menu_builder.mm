@@ -126,14 +126,6 @@ base::scoped_nsobject<NSMenuItem> BuildFileMenu(
           })
           .Build();
 
-  // Wire up some legacy IBOutlets.
-  if (!is_pwa) {
-    [app_delegate setValue:[[item submenu] itemWithTag:IDC_CLOSE_TAB]
-                    forKey:@"closeTabMenuItem_"];
-    [app_delegate setValue:[[item submenu] itemWithTag:IDC_CLOSE_WINDOW]
-                    forKey:@"closeWindowMenuItem_"];
-  }
-
   return item;
 }
 
