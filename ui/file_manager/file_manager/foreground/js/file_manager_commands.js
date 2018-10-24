@@ -1648,8 +1648,8 @@ CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
     if (entry && entry.isDirectory) {
       const dir = /** @type {!DirectoryEntry} */ (entry);
       // Always persist shares via right-click > Share with Linux.
-      chrome.fileManagerPrivate.sharePathWithCrostini(
-          dir, true /* persist */, () => {
+      chrome.fileManagerPrivate.sharePathsWithCrostini(
+          [dir], true /* persist */, () => {
             if (chrome.runtime.lastError) {
               console.error(
                   'Error sharing with linux: ' +

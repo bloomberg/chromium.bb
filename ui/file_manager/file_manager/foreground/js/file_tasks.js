@@ -595,30 +595,26 @@ FileTasks.prototype.maybeShareWithCrostiniOrShowDialog_ = function(
     return callback();
   }
 
-  // Share all paths then invoke callback.
+  // Share then invoke callback.
   FileTasks.recordCrostiniShareDialogTypeUMA_(
       FileTasks.CrostiniShareDialogType.ShareBeforeOpen);
-  let i = 0;
-  function shareNext() {
-    const entry = entriesToShare[i++];
-    if (!entry)
-      return callback();
-
-    // Set persist to false when sharing a path to open with a crostini app.
-    chrome.fileManagerPrivate.sharePathWithCrostini(
-        entry, false, () => {
-          if (chrome.runtime.lastError) {
-            console.error(
-                'Error sharing with linux to execute: ' +
-                chrome.runtime.lastError.message);
-          } else {
-            // Register path as shared, and now we are ready to execute.
-            Crostini.registerSharedPath(entry, this.volumeManager_);
-            shareNext.call(this);
-          }
+  // Set persist to false when sharing paths to open with a crostini app.
+  chrome.fileManagerPrivate.sharePathsWithCrostini(
+      entriesToShare, false /* persist */, () => {
+        // It is unexpected to get an error sharing any files since we have
+        // already validated that all selected files can be shared.
+        // But if it happens, log error, and do not execute callback.
+        if (chrome.runtime.lastError) {
+          return console.error(
+              'Error sharing with linux to execute: ' +
+              chrome.runtime.lastError.message);
+        }
+        // Register paths as shared, and now we are ready to execute.
+        entriesToShare.forEach((entry) => {
+          Crostini.registerSharedPath(entry, this.volumeManager_);
         });
-  }
-  shareNext.call(this);
+        callback();
+      });
 };
 
 /**

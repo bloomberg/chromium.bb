@@ -23,15 +23,15 @@ crostiniTasks.testShareBeforeOpeningDownloadsWithCrostiniApp = (done) => {
     ]);
   };
 
-  // Save old fmp.sharePathWithCrostini.
-  const oldSharePath = chrome.fileManagerPrivate.sharePathWithCrostini;
-  let sharePathCalled = false;
-  let sharePathPersist;
-  chrome.fileManagerPrivate.sharePathWithCrostini =
+  // Save old fmp.sharePathsWithCrostini.
+  const oldSharePaths = chrome.fileManagerPrivate.sharePathsWithCrostini;
+  let sharePathsCalled = false;
+  let sharePathsPersist;
+  chrome.fileManagerPrivate.sharePathsWithCrostini =
       (entry, persist, callback) => {
-        sharePathCalled = true;
-        sharePathPersist = persist;
-        oldSharePath(entry, persist, callback);
+        sharePathsCalled = true;
+        sharePathsPersist = persist;
+        oldSharePaths(entry, persist, callback);
       };
 
   // Save old fmp.executeTask.
@@ -77,15 +77,15 @@ crostiniTasks.testShareBeforeOpeningDownloadsWithCrostiniApp = (done) => {
         assertEquals('Open with Crostini App', list[0].innerText);
         assertEquals('Open with Text', list[1].innerText);
         assertTrue(test.fakeMouseClick('#default-tasks-list li'));
-        // Ensure fmp.sharePathWithCrostini, fmp.executeTask called.
+        // Ensure fmp.sharePathsWithCrostini, fmp.executeTask called.
         return test.repeatUntil(() => {
-          return sharePathCalled && executeTaskCalled ||
+          return sharePathsCalled && executeTaskCalled ||
               test.pending('Waiting to share and open');
         });
       })
       .then(() => {
         // Share should not persist as a result of open with crostini app.
-        assertFalse(sharePathPersist);
+        assertFalse(sharePathsPersist);
         // Validate UMAs.
         const lastEnumUma = chrome.metricsPrivate.values_.pop();
         assertEquals(
@@ -94,7 +94,7 @@ crostiniTasks.testShareBeforeOpeningDownloadsWithCrostiniApp = (done) => {
 
         // Restore fmp.*.
         chrome.fileManagerPrivate.getFileTasks = oldGetFileTasks;
-        chrome.fileManagerPrivate.sharePathWithCrostini = oldSharePath;
+        chrome.fileManagerPrivate.sharePathsWithCrostini = oldSharePaths;
         chrome.fileManagerPrivate.executeTask = oldExecuteTask;
         done();
       });

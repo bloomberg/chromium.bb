@@ -947,13 +947,13 @@ chrome.fileManagerPrivate.mountCrostini = function(callback) {};
 
 /**
  * Shares directory with crostini container.
- * @param {!Entry} entry Entry of the file or directory to share.
+ * @param {!Array<!Entry>} entries Entries of the files and directories to share.
  * @param {boolean} persist If true, share will persist across restarts.
  * @param {function()} callback Callback called after the folder is shared.
  *     chrome.runtime.lastError will be set if there was an error.
  */
-chrome.fileManagerPrivate.sharePathWithCrostini = function(
-    entry, persist, callback) {};
+chrome.fileManagerPrivate.sharePathsWithCrostini = function(
+    entries, persist, callback) {};
 
 /**
  * Returns list of paths shared with the crostini container.

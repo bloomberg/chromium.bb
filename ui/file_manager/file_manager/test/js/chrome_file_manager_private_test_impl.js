@@ -187,7 +187,7 @@ chrome.fileManagerPrivate = {
     // highlightedBaseName: string }
     setTimeout(callback, 0, []);
   },
-  sharePathWithCrostini: (entry, persist, callback) => {
+  sharePathsWithCrostini: (entries, persist, callback) => {
     setTimeout(callback, 0);
   },
   nextCopyId_: 0,

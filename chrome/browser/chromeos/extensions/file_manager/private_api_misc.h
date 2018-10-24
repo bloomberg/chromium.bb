@@ -303,23 +303,25 @@ class FileManagerPrivateMountCrostiniFunction
   DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateMountCrostiniFunction);
 };
 
-// Implements the chrome.fileManagerPrivate.sharePathWithCrostini
-// method.  Shares specified path.
-class FileManagerPrivateInternalSharePathWithCrostiniFunction
+// Implements the chrome.fileManagerPrivate.sharePathsWithCrostini
+// method.  Shares specified paths.
+class FileManagerPrivateInternalSharePathsWithCrostiniFunction
     : public UIThreadExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.sharePathWithCrostini",
-                             FILEMANAGERPRIVATEINTERNAL_SHAREPATHWITHCROSTINI)
-  FileManagerPrivateInternalSharePathWithCrostiniFunction() = default;
+  DECLARE_EXTENSION_FUNCTION(
+      "fileManagerPrivateInternal.sharePathsWithCrostini",
+      FILEMANAGERPRIVATEINTERNAL_SHAREPATHSWITHCROSTINI)
+  FileManagerPrivateInternalSharePathsWithCrostiniFunction() = default;
 
  protected:
-  ~FileManagerPrivateInternalSharePathWithCrostiniFunction() override = default;
+  ~FileManagerPrivateInternalSharePathsWithCrostiniFunction() override =
+      default;
 
  private:
   ResponseAction Run() override;
-  void SharePathCallback(bool success, std::string failure_reason);
+  void SharePathsCallback(bool success, std::string failure_reason);
   DISALLOW_COPY_AND_ASSIGN(
-      FileManagerPrivateInternalSharePathWithCrostiniFunction);
+      FileManagerPrivateInternalSharePathsWithCrostiniFunction);
 };
 
 // Implements the chrome.fileManagerPrivate.getCrostiniSharedPaths

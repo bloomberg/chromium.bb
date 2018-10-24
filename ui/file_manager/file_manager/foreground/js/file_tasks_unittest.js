@@ -49,7 +49,7 @@ function setUp() {
       executeTask: function(taskId, entries, onViewFiles) {
         onViewFiles('failed');
       },
-      sharePathWithCrostini: function(entry, persist, callback) {
+      sharePathsWithCrostini: function(entries, persist, callback) {
         callback();
       },
     },

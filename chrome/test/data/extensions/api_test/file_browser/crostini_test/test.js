@@ -38,16 +38,16 @@ chrome.test.runTests([
     chrome.fileManagerPrivate.mountCrostini(
         chrome.test.callbackPass());
   },
-  function testSharePathWithCrostiniSuccess() {
+  function testSharePathsWithCrostiniSuccess() {
     getEntry('downloads', 'share_dir').then((entry) => {
-      chrome.fileManagerPrivate.sharePathWithCrostini(
-          entry, true, chrome.test.callbackPass());
+      chrome.fileManagerPrivate.sharePathsWithCrostini(
+          [entry], true, chrome.test.callbackPass());
     });
   },
-  function testSharePathWithCrostiniNotDownloads() {
+  function testSharePathsWithCrostiniNotDownloads() {
     getEntry('testing', 'test_dir').then((entry) => {
-      chrome.fileManagerPrivate.sharePathWithCrostini(
-          entry, true,
+      chrome.fileManagerPrivate.sharePathsWithCrostini(
+          [entry], true,
           chrome.test.callbackFail('Path must be under Downloads'));
     });
   },

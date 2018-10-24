@@ -218,10 +218,12 @@ binding.registerCustomHook(function(bindingsAPI) {
   });
 
   apiFunctions.setHandleRequest(
-      'sharePathWithCrostini', function(entry, persist, callback) {
-        const url = fileManagerPrivateNatives.GetEntryURL(entry);
-        fileManagerPrivateInternal.sharePathWithCrostini(
-            url, persist, callback);
+      'sharePathsWithCrostini', function(entries, persist, callback) {
+        const urls = entries.map((entry) => {
+          return fileManagerPrivateNatives.GetEntryURL(entry);
+        });
+        fileManagerPrivateInternal.sharePathsWithCrostini(
+            urls, persist, callback);
       });
 
   apiFunctions.setHandleRequest(

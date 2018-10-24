@@ -363,8 +363,15 @@ class CrostiniManager::CrostiniRestarter
       return;
 
     // Share folders from Downloads, etc with container.
-    ShareAllPaths(profile_, base::BindOnce(&CrostiniRestarter::FinishRestart,
-                                           this, CrostiniResult::SUCCESS));
+    SharePersistedPaths(
+        profile_,
+        base::BindOnce(&CrostiniRestarter::OnPersistedPathsShared, this));
+  }
+
+  void OnPersistedPathsShared(bool success, std::string failure_reason) {
+    // Sharing paths is not critical, FinishRestart(SUCCESS) regardless.
+    // Errors will be logged.
+    FinishRestart(CrostiniResult::SUCCESS);
   }
 
   Profile* profile_;

@@ -15,7 +15,7 @@ class Profile;
 
 namespace crostini {
 
-// Share specified absolute path with vm.  If |persist| is set, the path will be
+// Share specified absolute path with vm. If |persist| is set, the path will be
 // automatically shared at container startup. Callback receives success bool and
 // failure reason string.
 void SharePath(Profile* profile,
@@ -23,6 +23,15 @@ void SharePath(Profile* profile,
                const base::FilePath& path,
                bool persist,
                base::OnceCallback<void(bool, std::string)> callback);
+
+// Share specified absolute paths with vm. If persist is set, the paths will be
+// automatically shared at container startup. Callback receives success bool and
+// failure reason string of the first error.
+void SharePaths(Profile* profile,
+                std::string vm_name,
+                std::vector<base::FilePath> paths,
+                bool persist,
+                base::OnceCallback<void(bool, std::string)> callback);
 
 // Unshare specified path with vm.
 // Callback receives success bool and failure reason string.
@@ -32,11 +41,12 @@ void UnsharePath(Profile* profile,
                  base::OnceCallback<void(bool, std::string)> callback);
 
 // Get list of all shared paths for the default crostini container.
-std::vector<std::string> GetSharedPaths(Profile* profile);
+std::vector<base::FilePath> GetPersistedSharedPaths(Profile* profile);
 
 // Share all paths configured in prefs for the default crostini container.
 // Called at container startup.  Callback is invoked once complete.
-void ShareAllPaths(Profile* profile, base::OnceCallback<void()> callback);
+void SharePersistedPaths(Profile* profile,
+                         base::OnceCallback<void(bool, std::string)> callback);
 
 }  // namespace crostini
 
