@@ -562,13 +562,13 @@ WebInputEventResult ScrollManager::HandleGestureScrollUpdate(
     // native scrolling element is, so that for an
     // inertial scroll that shouldn't propagate, only the
     // currently scrolling element responds.
-    scroll_state->SetCurrentNativeScrollingElement(
+    scroll_state->SetCurrentNativeScrollingNode(
         previous_gesture_scrolled_element_);
   }
 
   CustomizedScroll(*scroll_state);
   previous_gesture_scrolled_element_ =
-      scroll_state->CurrentNativeScrollingElement();
+      ToElement(scroll_state->CurrentNativeScrollingNode());
   delta_consumed_for_scroll_sequence_ =
       scroll_state->DeltaConsumedForScrollSequence();
 
@@ -681,7 +681,7 @@ gfx::Vector2dF ScrollManager::ScrollByForSnapFling(
   scroll_state_data->delta_consumed_for_scroll_sequence =
       delta_consumed_for_scroll_sequence_;
   ScrollState* scroll_state = ScrollState::Create(std::move(scroll_state_data));
-  scroll_state->SetCurrentNativeScrollingElement(
+  scroll_state->SetCurrentNativeScrollingNode(
       previous_gesture_scrolled_element_);
 
   CustomizedScroll(*scroll_state);

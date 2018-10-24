@@ -90,11 +90,11 @@ bool IsGlobal(const PaintLayer& layer) {
   return &layer == root_scroller_layer;
 }
 
-bool IsGlobal(const Element* element) {
-  return element->GetDocument()
+bool IsGlobal(const Node* node) {
+  return node->GetDocument()
              .GetPage()
              ->GlobalRootScrollerController()
-             .GlobalRootScroller() == element;
+             .GlobalRootScroller() == node;
 }
 
 }  // namespace RootScrollerUtil
