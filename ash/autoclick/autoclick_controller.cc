@@ -4,6 +4,7 @@
 
 #include "ash/autoclick/autoclick_controller.h"
 
+#include "ash/autoclick/autoclick_drag_event_rewriter.h"
 #include "ash/autoclick/autoclick_ring_handler.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -72,12 +73,19 @@ AutoclickController::AutoclickController()
       delay_(GetDefaultAutoclickDelay()),
       mouse_event_flags_(ui::EF_NONE),
       anchor_location_(-kMovementThreshold, -kMovementThreshold),
-      autoclick_ring_handler_(std::make_unique<AutoclickRingHandler>()) {
+      autoclick_ring_handler_(std::make_unique<AutoclickRingHandler>()),
+      drag_event_rewriter_(std::make_unique<AutoclickDragEventRewriter>()) {
+  Shell::GetPrimaryRootWindow()->GetHost()->GetEventSource()->AddEventRewriter(
+      drag_event_rewriter_.get());
   InitClickTimer();
 }
 
 AutoclickController::~AutoclickController() {
   SetTapDownTarget(nullptr);
+  Shell::GetPrimaryRootWindow()
+      ->GetHost()
+      ->GetEventSource()
+      ->RemoveEventRewriter(drag_event_rewriter_.get());
 }
 
 void AutoclickController::SetTapDownTarget(aura::Window* target) {
@@ -171,24 +179,39 @@ void AutoclickController::DoAutoclickAction() {
   aura::WindowTreeHost* host = root_window->GetHost();
   host->ConvertDIPToPixels(&location_in_pixels);
 
-  // TODO(katie): Implement drag-and-drop.
+  bool drag_start = event_type_ == mojom::AutoclickEventType::kDragAndDrop &&
+                    !drag_event_rewriter_->IsEnabled();
+  bool drag_stop = event_type_ == mojom::AutoclickEventType::kDragAndDrop &&
+                   drag_event_rewriter_->IsEnabled();
+
   if (event_type_ == mojom::AutoclickEventType::kLeftClick ||
       event_type_ == mojom::AutoclickEventType::kRightClick ||
-      event_type_ == mojom::AutoclickEventType::kDoubleClick) {
+      event_type_ == mojom::AutoclickEventType::kDoubleClick || drag_start ||
+      drag_stop) {
     int button = event_type_ == mojom::AutoclickEventType::kRightClick
                      ? ui::EF_RIGHT_MOUSE_BUTTON
                      : ui::EF_LEFT_MOUSE_BUTTON;
-    ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, location_in_pixels,
-                               location_in_pixels, ui::EventTimeForNow(),
-                               mouse_event_flags_ | button, button);
+
+    ui::EventDispatchDetails details;
+    if (!drag_stop) {
+      // Left click, right click, double click, and beginning of a drag have
+      // a pressed event next.
+      ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, location_in_pixels,
+                                 location_in_pixels, ui::EventTimeForNow(),
+                                 mouse_event_flags_ | button, button);
+      details = host->event_sink()->OnEventFromSource(&press_event);
+      if (drag_start) {
+        drag_event_rewriter_->SetEnabled(true);
+        return;
+      }
+      if (details.dispatcher_destroyed)
+        return;
+    }
+    if (drag_stop)
+      drag_event_rewriter_->SetEnabled(false);
     ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, location_in_pixels,
                                  location_in_pixels, ui::EventTimeForNow(),
                                  mouse_event_flags_ | button, button);
-
-    ui::EventDispatchDetails details =
-        host->event_sink()->OnEventFromSource(&press_event);
-    if (details.dispatcher_destroyed)
-      return;
     details = host->event_sink()->OnEventFromSource(&release_event);
 
     // Now a single click has been completed.
@@ -216,6 +239,7 @@ void AutoclickController::CancelAutoclickAction() {
     autoclick_timer_->Stop();
   }
   autoclick_ring_handler_->StopGesture();
+  drag_event_rewriter_->SetEnabled(false);
   SetTapDownTarget(nullptr);
 }
 
@@ -240,8 +264,10 @@ void AutoclickController::OnMouseEvent(ui::MouseEvent* event) {
   if (event_type_ == mojom::AutoclickEventType::kNoAction)
     return;
   gfx::Point point_in_screen = event->target()->GetScreenLocation(*event);
-  if (event->type() == ui::ET_MOUSE_MOVED &&
-      !(event->flags() & ui::EF_IS_SYNTHESIZED)) {
+  if (!(event->flags() & ui::EF_IS_SYNTHESIZED) &&
+      (event->type() == ui::ET_MOUSE_MOVED ||
+       (event->type() == ui::ET_MOUSE_DRAGGED &&
+        drag_event_rewriter_->IsEnabled()))) {
     mouse_event_flags_ = event->flags();
     UpdateRingWidget(point_in_screen);
 
@@ -260,7 +286,8 @@ void AutoclickController::OnMouseEvent(ui::MouseEvent* event) {
     } else if (autoclick_timer_->IsRunning()) {
       autoclick_ring_handler_->SetGestureCenter(point_in_screen, widget_.get());
     }
-  } else if (event->type() == ui::ET_MOUSE_PRESSED) {
+  } else if (event->type() == ui::ET_MOUSE_PRESSED ||
+             event->type() == ui::ET_MOUSE_RELEASED) {
     CancelAutoclickAction();
   } else if (event->type() == ui::ET_MOUSEWHEEL &&
              autoclick_timer_->IsRunning()) {
