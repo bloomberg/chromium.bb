@@ -122,7 +122,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kInflateToolbarOnBackgroundThread,
     &kJellyBeanSupported,
     &kLanguagesPreference,
-    &kLongPressBackForHistory,
     &kModalPermissionDialogView,
     &kNewContactsPicker,
     &kNewPhotoPicker,
@@ -340,9 +339,6 @@ const base::Feature kJellyBeanSupported{"JellyBeanSupported",
 
 const base::Feature kLanguagesPreference{"LanguagesPreference",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kLongPressBackForHistory{"LongPressBackForHistory",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kModalPermissionDialogView{
     "ModalPermissionDialogView", base::FEATURE_DISABLED_BY_DEFAULT};

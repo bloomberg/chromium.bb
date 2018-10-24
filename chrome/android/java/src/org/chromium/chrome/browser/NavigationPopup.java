@@ -13,14 +13,12 @@ import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnAttachStateChangeListener;
 import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListPopupWindow;
-import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
@@ -130,7 +128,6 @@ public class NavigationPopup implements AdapterView.OnItemClickListener {
                     centerPopupOverAnchorViewAndShow();
                 }
             };
-            mAdapter.reverseOrder();
         } else {
             mAnchorViewLayoutChangeListener = null;
         }
@@ -163,7 +160,6 @@ public class NavigationPopup implements AdapterView.OnItemClickListener {
         } else {
             mPopup.show();
         }
-        if (mAdapter.mInReverseOrder) scrollToBottom();
     }
 
     /**
@@ -196,20 +192,6 @@ public class NavigationPopup implements AdapterView.OnItemClickListener {
             mPopup.getAnchorView().removeOnLayoutChangeListener(mAnchorViewLayoutChangeListener);
         }
         if (mOnDismissCallback != null) mOnDismissCallback.run();
-    }
-
-    private void scrollToBottom() {
-        mPopup.getListView().addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
-            @Override
-            public void onViewDetachedFromWindow(View v) {
-                if (v != null) v.removeOnAttachStateChangeListener(this);
-            }
-
-            @Override
-            public void onViewAttachedToWindow(View v) {
-                ((ListView) v).smoothScrollToPosition(mHistory.getEntryCount() - 1);
-            }
-        });
     }
 
     private void initialize() {
@@ -259,10 +241,8 @@ public class NavigationPopup implements AdapterView.OnItemClickListener {
             ChromeActivity activity = (ChromeActivity) mContext;
             HistoryManagerUtils.showHistoryManager(activity, activity.getActivityTab());
         } else {
-            int originalPosition =
-                    mAdapter.mInReverseOrder ? mAdapter.getCount() - position - 1 : position;
             // 1-based index to keep in line with Desktop implementation.
-            RecordUserAction.record(buildComputedAction("HistoryClick" + (originalPosition + 1)));
+            RecordUserAction.record(buildComputedAction("HistoryClick" + (position + 1)));
             mNavigationController.goToNavigationIndex(entry.getIndex());
         }
 
@@ -271,11 +251,6 @@ public class NavigationPopup implements AdapterView.OnItemClickListener {
 
     private class NavigationAdapter extends BaseAdapter {
         private Integer mTopPadding;
-        boolean mInReverseOrder;
-
-        public void reverseOrder() {
-            mInReverseOrder = true;
-        }
 
         @Override
         public int getCount() {
@@ -284,7 +259,6 @@ public class NavigationPopup implements AdapterView.OnItemClickListener {
 
         @Override
         public Object getItem(int position) {
-            position = mInReverseOrder ? getCount() - position - 1 : position;
             return mHistory.getEntryAtIndex(position);
         }
 
@@ -312,7 +286,7 @@ public class NavigationPopup implements AdapterView.OnItemClickListener {
             setViewText(entry, viewHolder.mTextView);
             viewHolder.mImageView.setImageBitmap(entry.getFavicon());
 
-            if (mInReverseOrder) {
+            if (mType == Type.ANDROID_SYSTEM_BACK) {
                 View container = viewHolder.mContainer;
                 if (mTopPadding == null) {
                     mTopPadding = container.getResources().getDimensionPixelSize(

@@ -4303,13 +4303,6 @@ const FeatureEntry kFeatureEntries[] = {
          kLookalikeUrlNavigationSuggestionsVariants,
          "LookalikeUrlNavigationSuggestions")},
 
-#if defined(OS_ANDROID)
-    {"long-press-back-for-history",
-     flag_descriptions::kLongPressBackForHistoryName,
-     flag_descriptions::kLongPressBackForHistoryDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kLongPressBackForHistory)},
-#endif
-
     {"sync-standalone-transport",
      flag_descriptions::kSyncStandaloneTransportName,
      flag_descriptions::kSyncStandaloneTransportDescription, kOsAll,
