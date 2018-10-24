@@ -265,15 +265,6 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
       }
     }
   }
-  if (use_swiftshader) {
-    AdjustInfoToSwiftShader();
-  }
-
-  if (kGpuFeatureStatusEnabled !=
-      gpu_feature_info_
-          .status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE]) {
-    gpu_preferences_.disable_accelerated_video_decode = true;
-  }
 
   if (!gl_disabled) {
     if (!gpu_feature_info_.disabled_extensions.empty()) {
@@ -290,6 +281,40 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
       VLOG(1) << "gl::init::CreateOffscreenGLSurface failed";
       return false;
     }
+  }
+
+#if defined(OS_LINUX)
+  // Driver may create a compatibility profile context when collect graphics
+  // information on Linux platform. Try to collect graphics information
+  // based on core profile context after disabling platform extensions.
+  if (!gl_disabled && !use_swiftshader) {
+    if (!CollectGraphicsInfo(&gpu_info_, gpu_preferences_))
+      return false;
+    gpu::SetKeysForCrashLogging(gpu_info_);
+    gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(gpu_info_, gpu_preferences_,
+                                                   command_line, nullptr);
+    use_swiftshader = EnableSwiftShaderIfNeeded(
+        command_line, gpu_feature_info_,
+        gpu_preferences_.disable_software_rasterizer, false);
+    if (use_swiftshader) {
+      gl::init::ShutdownGL(true);
+      if (!gl::init::InitializeGLNoExtensionsOneOff()) {
+        VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff with SwiftShader "
+                << "failed";
+        return false;
+      }
+    }
+  }
+#endif  // defined(OS_LINUX)
+
+  if (use_swiftshader) {
+    AdjustInfoToSwiftShader();
+  }
+
+  if (kGpuFeatureStatusEnabled !=
+      gpu_feature_info_
+          .status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE]) {
+    gpu_preferences_.disable_accelerated_video_decode = true;
   }
 
   base::TimeDelta initialize_one_off_time =
@@ -419,9 +444,6 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
       }
     }
   }
-  if (use_swiftshader) {
-    AdjustInfoToSwiftShader();
-  }
 
   if (!gl_disabled) {
     if (!gpu_feature_info_.disabled_extensions.empty()) {
@@ -436,6 +458,32 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
     if (!default_offscreen_surface_) {
       VLOG(1) << "gl::init::CreateOffscreenGLSurface failed";
     }
+  }
+
+#if defined(OS_LINUX)
+  // Driver may create a compatibility profile context when collect graphics
+  // information on Linux platform. Try to collect graphics information
+  // based on core profile context after disabling platform extensions.
+  if (!gl_disabled && !use_swiftshader) {
+    CollectContextGraphicsInfo(&gpu_info_, gpu_preferences_);
+    gpu_feature_info_ = ComputeGpuFeatureInfo(gpu_info_, gpu_preferences_,
+                                              command_line, nullptr);
+    use_swiftshader = EnableSwiftShaderIfNeeded(
+        command_line, gpu_feature_info_,
+        gpu_preferences_.disable_software_rasterizer, false);
+    if (use_swiftshader) {
+      gl::init::ShutdownGL(true);
+      if (!gl::init::InitializeGLNoExtensionsOneOff()) {
+        VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff failed "
+                << "with SwiftShader";
+        return;
+      }
+    }
+  }
+#endif  // defined(OS_LINUX)
+
+  if (use_swiftshader) {
+    AdjustInfoToSwiftShader();
   }
 }
 #endif  // OS_ANDROID
