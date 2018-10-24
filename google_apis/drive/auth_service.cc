@@ -32,15 +32,14 @@ const int kSuccessRatioHistogramTemporaryFailure = 3;
 const int kSuccessRatioHistogramMaxValue = 4;  // The max value is exclusive.
 
 void RecordAuthResultHistogram(int value) {
-  UMA_HISTOGRAM_ENUMERATION("GData.AuthSuccess",
-                            value,
+  UMA_HISTOGRAM_ENUMERATION("GData.AuthSuccess", value,
                             kSuccessRatioHistogramMaxValue);
 }
 
 // OAuth2 authorization token retrieval request.
 class AuthRequest {
  public:
-  AuthRequest(OAuth2TokenService* oauth2_token_service,
+  AuthRequest(identity::IdentityManager* identity_manager,
               const std::string& account_id,
               scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
               const AuthStatusCallback& callback,
@@ -59,16 +58,17 @@ class AuthRequest {
 };
 
 AuthRequest::AuthRequest(
-    OAuth2TokenService* oauth2_token_service,
+    identity::IdentityManager* identity_manager,
     const std::string& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const AuthStatusCallback& callback,
     const std::vector<std::string>& scopes)
     : callback_(callback) {
+  DCHECK(identity_manager);
   DCHECK(!callback_.is_null());
 
-  access_token_fetcher_ = std::make_unique<identity::AccessTokenFetcher>(
-      account_id, "auth_service", oauth2_token_service, url_loader_factory,
+  access_token_fetcher_ = identity_manager->CreateAccessTokenFetcherForAccount(
+      account_id, "auth_service", url_loader_factory,
       OAuth2TokenService::ScopeSet(scopes.begin(), scopes.end()),
       base::BindOnce(&AuthRequest::OnAccessTokenFetchComplete,
                      base::Unretained(this)),
@@ -111,25 +111,24 @@ void AuthRequest::OnAccessTokenFetchComplete(
 }  // namespace
 
 AuthService::AuthService(
-    OAuth2TokenService* oauth2_token_service,
+    identity::IdentityManager* identity_manager,
     const std::string& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::vector<std::string>& scopes)
-    : oauth2_token_service_(oauth2_token_service),
+    : identity_manager_(identity_manager),
       account_id_(account_id),
       url_loader_factory_(url_loader_factory),
       scopes_(scopes),
       weak_ptr_factory_(this) {
-  DCHECK(oauth2_token_service);
+  DCHECK(identity_manager_);
 
-  // Get OAuth2 refresh token (if we have any) and register for its updates.
-  oauth2_token_service_->AddObserver(this);
-  has_refresh_token_ = oauth2_token_service_->RefreshTokenIsAvailable(
-      account_id_);
+  identity_manager_->AddObserver(this);
+  has_refresh_token_ =
+      identity_manager_->HasAccountWithRefreshToken(account_id_);
 }
 
 AuthService::~AuthService() {
-  oauth2_token_service_->RemoveObserver(this);
+  identity_manager_->RemoveObserver(this);
 }
 
 void AuthService::StartAuthentication(const AuthStatusCallback& callback) {
@@ -141,7 +140,7 @@ void AuthService::StartAuthentication(const AuthStatusCallback& callback) {
         FROM_HERE, base::Bind(callback, HTTP_SUCCESS, access_token_));
   } else if (HasRefreshToken()) {
     // We have refresh token, let's get an access token.
-    new AuthRequest(oauth2_token_service_, account_id_, url_loader_factory_,
+    new AuthRequest(identity_manager_, account_id_, url_loader_factory_,
                     base::Bind(&AuthService::OnAuthCompleted,
                                weak_ptr_factory_.GetWeakPtr(), callback),
                     scopes_);
@@ -201,12 +200,15 @@ void AuthService::RemoveObserver(AuthServiceObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void AuthService::OnRefreshTokenAvailable(const std::string& account_id) {
-  if (account_id == account_id_)
+void AuthService::OnRefreshTokenUpdatedForAccount(
+    const AccountInfo& account_info,
+    bool is_valid) {
+  if (account_info.account_id == account_id_)
     OnHandleRefreshToken(true);
 }
 
-void AuthService::OnRefreshTokenRevoked(const std::string& account_id) {
+void AuthService::OnRefreshTokenRemovedForAccount(
+    const std::string& account_id) {
   if (account_id == account_id_)
     OnHandleRefreshToken(false);
 }

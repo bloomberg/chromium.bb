@@ -41,8 +41,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -55,8 +54,6 @@
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/event_logger.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "components/zoom/page_zoom.h"
 #include "content/public/browser/web_contents.h"
@@ -67,6 +64,7 @@
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "google_apis/drive/auth_service.h"
 #include "net/base/hex_utils.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -358,24 +356,22 @@ bool FileManagerPrivateRequestWebStoreAccessTokenFunction::RunAsync() {
   std::vector<std::string> scopes;
   scopes.emplace_back(kCWSScope);
 
-  ProfileOAuth2TokenService* oauth_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(GetProfile());
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(GetProfile());
 
-  if (!oauth_service) {
+  if (!identity_manager) {
     drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
     if (logger) {
       logger->Log(logging::LOG_ERROR,
-                  "CWS OAuth token fetch failed. OAuth2TokenService can't "
+                  "CWS Access token fetch failed. IdentityManager can't "
                   "be retrieved.");
     }
     SetResult(std::make_unique<base::Value>());
     return false;
   }
 
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(GetProfile());
   auth_service_ = std::make_unique<google_apis::AuthService>(
-      oauth_service, signin_manager->GetAuthenticatedAccountId(),
+      identity_manager, identity_manager->GetPrimaryAccountId(),
       g_browser_process->system_network_context_manager()
           ->GetSharedURLLoaderFactory(),
       scopes);
