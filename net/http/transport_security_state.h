@@ -406,13 +406,6 @@ class NET_EXPORT TransportSecurityState {
   void AddOrUpdateEnabledSTSHosts(const std::string& hashed_host,
                                   const STSState& state);
 
-  // Inserts |state| into |enabled_pkp_hosts_| under the key |hashed_host|.
-  // |hashed_host| is already in the internal representation.
-  // Note: This is only used for serializing/deserializing the
-  // TransportSecurityState.
-  void AddOrUpdateEnabledPKPHosts(const std::string& hashed_host,
-                                  const PKPState& state);
-
   // Inserts |state| into |enabled_expect_ct_hosts_| under the key
   // |hashed_host|. |hashed_host| is already in the internal representation.
   // Note: This is only used for serializing/deserializing the

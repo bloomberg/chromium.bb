@@ -1301,14 +1301,6 @@ void TransportSecurityState::AddOrUpdateEnabledSTSHosts(
   enabled_sts_hosts_[hashed_host] = state;
 }
 
-void TransportSecurityState::AddOrUpdateEnabledPKPHosts(
-    const std::string& hashed_host,
-    const PKPState& state) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(state.HasPublicKeyPins());
-  enabled_pkp_hosts_[hashed_host] = state;
-}
-
 void TransportSecurityState::AddOrUpdateEnabledExpectCTHosts(
     const std::string& hashed_host,
     const ExpectCTState& state) {
