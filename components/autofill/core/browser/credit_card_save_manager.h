@@ -76,6 +76,8 @@ class CreditCardSaveManager {
     virtual void OnDecideToRequestUploadSave() = 0;
     virtual void OnReceivedGetUploadDetailsResponse() = 0;
     virtual void OnSentUploadCardRequest() = 0;
+    virtual void OnReceivedUploadCardResponse() = 0;
+    virtual void OnCCSMStrikeChangeComplete() = 0;
   };
 
   // The parameters should outlive the CreditCardSaveManager.
@@ -178,6 +180,10 @@ class CreditCardSaveManager {
 
   // Finalizes the upload request and calls PaymentsClient::UploadCard().
   void SendUploadCardRequest();
+
+  // Used for browsertests. Gives the |observer_for_testing_| a notification
+  // a strike change has been made.
+  void OnStrikeChangeComplete(const int num_strikes);
 
   // Returns metric relevant to the CVC field based on values in
   // |found_cvc_field_|, |found_value_in_cvc_field_| and

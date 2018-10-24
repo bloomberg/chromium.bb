@@ -76,7 +76,9 @@ class StrikeDatabase : public KeyedService {
       const ClearStrikesCallback& outer_callback);
 
   // Returns concatenation of prefix + |card_last_four_digits| to be used as key
-  // for credit card save.
+  // for credit card save. Expiration date is not included for privacy reasons,
+  // as conflicting last-four should be a rare event, and it's not a huge issue
+  // if we stop showing save bubbles a little earlier than usual in rare cases.
   std::string GetKeyForCreditCardSave(const std::string& card_last_four_digits);
 
  protected:

@@ -8,12 +8,15 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
+#include "chrome/browser/ui/autofill/popup_constants.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views_browsertest_base.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
+#include "components/autofill/core/browser/test_autofill_clock.h"
+#include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "content/public/test/browser_test_utils.h"
@@ -148,7 +151,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // show.
   AddEventObserverToController();
   ReduceAnimationTime();
-  ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
+  ResetEventWaiterForSequence(
+      {DialogEvent::BUBBLE_CLOSED, DialogEvent::BUBBLE_SHOWN});
 
   // Click [Save] should close the offer-to-save bubble
   // and pop up the sign-in promo.
@@ -228,7 +232,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // show.
   AddEventObserverToController();
   ReduceAnimationTime();
-  ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
+  ResetEventWaiterForSequence(
+      {DialogEvent::BUBBLE_CLOSED, DialogEvent::BUBBLE_SHOWN});
 
   // Click [Save] should close the offer-to-save bubble
   // and pop up the sign-in promo.
@@ -268,7 +273,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // show.
   AddEventObserverToController();
   ReduceAnimationTime();
-  ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
+  ResetEventWaiterForSequence(
+      {DialogEvent::BUBBLE_CLOSED, DialogEvent::BUBBLE_SHOWN});
 
   // Click [Save] should close the offer-to-save bubble
   // and pop up the sign-in promo.
@@ -316,7 +322,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   ReduceAnimationTime();
 
 #if !defined(OS_CHROMEOS)
-  ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
+  ResetEventWaiterForSequence(
+      {DialogEvent::BUBBLE_CLOSED, DialogEvent::BUBBLE_SHOWN});
 #endif
 
   // Click [Save] should close the offer-to-save bubble and show "Card saved"
@@ -368,7 +375,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   ReduceAnimationTime();
 
 #if !defined(OS_CHROMEOS)
-  ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
+  ResetEventWaiterForSequence(
+      {DialogEvent::BUBBLE_CLOSED, DialogEvent::BUBBLE_SHOWN});
 #endif
 
   // Click [Save] should close the offer-to-save bubble and show "Card saved"
@@ -434,7 +442,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   ReduceAnimationTime();
 
 #if !defined(OS_CHROMEOS)
-  ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
+  ResetEventWaiterForSequence(
+      {DialogEvent::BUBBLE_CLOSED, DialogEvent::BUBBLE_SHOWN});
 #endif
 
   // Click [Save] should close the offer-to-save bubble and show "Card saved"
@@ -490,7 +499,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // show.
   AddEventObserverToController();
   ReduceAnimationTime();
-  ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
+  ResetEventWaiterForSequence(
+      {DialogEvent::BUBBLE_CLOSED, DialogEvent::BUBBLE_SHOWN});
 
   // Click [Save] should close the offer-to-save bubble
   // and pop up the sign-in promo.
@@ -538,7 +548,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // show.
   AddEventObserverToController();
   ReduceAnimationTime();
-  ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
+  ResetEventWaiterForSequence(
+      {DialogEvent::BUBBLE_CLOSED, DialogEvent::BUBBLE_SHOWN});
 
   // Click [Save] should close the offer-to-save bubble
   // and pop up the sign-in promo.
@@ -700,7 +711,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
 
   // Clicking the [X] close button should dismiss the bubble.
-  base::HistogramTester histogram_tester;
   ClickOnCloseButton();
 }
 

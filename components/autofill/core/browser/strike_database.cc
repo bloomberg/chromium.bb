@@ -134,11 +134,11 @@ void StrikeDatabase::OnAddStrikeComplete(StrikesCallback callback,
                                          std::string key,
                                          bool success) {
   if (success) {
-    callback.Run(num_strikes);
     if (GetPrefixFromKey(key) == kKeyPrefixForCreditCardSave) {
       base::UmaHistogramCounts1000(
           "Autofill.StrikeDatabase.NthStrikeAdded.CreditCardSave", num_strikes);
     }
+    callback.Run(num_strikes);
   } else {
     callback.Run(0);
   }

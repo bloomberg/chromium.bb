@@ -59,6 +59,8 @@ const char kResponseGetUploadDetailsSuccess[] =
 const char kResponseGetUploadDetailsFailure[] =
     "{\"error\":{\"code\":\"FAILED_PRECONDITION\",\"user_error_message\":\"An "
     "unexpected error has occurred. Please try again later.\"}}";
+const char kURLUploadCardRequest[] =
+    "https://payments.google.com/payments/apis/chromepaymentsservice/savecard";
 
 const double kFakeGeolocationLatitude = 1.23;
 const double kFakeGeolocationLongitude = 4.56;
@@ -140,9 +142,29 @@ void SaveCardBubbleViewsBrowserTestBase::OnSentUploadCardRequest() {
     event_waiter_->OnEvent(DialogEvent::SENT_UPLOAD_CARD_REQUEST);
 }
 
+void SaveCardBubbleViewsBrowserTestBase::OnReceivedUploadCardResponse() {
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::RECEIVED_UPLOAD_CARD_RESPONSE);
+}
+
+void SaveCardBubbleViewsBrowserTestBase::OnCCSMStrikeChangeComplete() {
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::STRIKE_CHANGE_COMPLETE);
+}
+
 void SaveCardBubbleViewsBrowserTestBase::OnBubbleShown() {
   if (event_waiter_)
     event_waiter_->OnEvent(DialogEvent::BUBBLE_SHOWN);
+}
+
+void SaveCardBubbleViewsBrowserTestBase::OnBubbleClosed() {
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::BUBBLE_CLOSED);
+}
+
+void SaveCardBubbleViewsBrowserTestBase::OnSCBCStrikeChangeComplete() {
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::STRIKE_CHANGE_COMPLETE);
 }
 
 void SaveCardBubbleViewsBrowserTestBase::SetUpInProcessBrowserTestFixture() {
@@ -348,6 +370,11 @@ void SaveCardBubbleViewsBrowserTestBase::SetUploadDetailsRpcServerError() {
                                          net::HTTP_INTERNAL_SERVER_ERROR);
 }
 
+void SaveCardBubbleViewsBrowserTestBase::SetUploadCardRpcPaymentsFails() {
+  test_url_loader_factory()->AddResponse(kURLUploadCardRequest,
+                                         kResponseGetUploadDetailsFailure);
+}
+
 void SaveCardBubbleViewsBrowserTestBase::ClickOnView(views::View* view) {
   DCHECK(view);
   ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
@@ -425,8 +452,10 @@ views::View* SaveCardBubbleViewsBrowserTestBase::FindViewInBubbleById(
 void SaveCardBubbleViewsBrowserTestBase::ClickOnCloseButton() {
   SaveCardBubbleViews* save_card_bubble_views = GetSaveCardBubbleViews();
   DCHECK(save_card_bubble_views);
+  ResetEventWaiterForSequence({DialogEvent::BUBBLE_CLOSED});
   ClickOnDialogViewAndWait(
       save_card_bubble_views->GetBubbleFrameView()->GetCloseButtonForTest());
+  DCHECK(!GetSaveCardBubbleViews());
 }
 
 SaveCardBubbleViews*
@@ -475,6 +504,10 @@ void SaveCardBubbleViewsBrowserTestBase::ResetEventWaiterForSequence(
 
 void SaveCardBubbleViewsBrowserTestBase::WaitForObservedEvent() {
   event_waiter_->Wait();
+}
+
+void SaveCardBubbleViewsBrowserTestBase::ReturnToInitialPage() {
+  NavigateTo(test_file_path_);
 }
 
 network::TestURLLoaderFactory*
