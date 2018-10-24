@@ -536,6 +536,7 @@ source_set("blink_headers") {
     "//third_party/blink/public/common",
     "//third_party/webrtc/api:libjingle_peerconnection_api",
     "//third_party/webrtc/rtc_base:rtc_base",
+    "//ui/accessibility:ax_enums_mojo",
     "//url",
   ]
 
