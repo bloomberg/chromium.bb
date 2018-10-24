@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -53,7 +54,9 @@ class NotificationImageRetainer {
   // FilePath if file creation fails.
   virtual base::FilePath RegisterTemporaryImage(const gfx::Image& image);
 
-  base::WeakPtr<NotificationImageRetainer> AsWeakPtr();
+  // Returns a closure that, when run, performs cleanup operations. This closure
+  // must be run on the notification sequence.
+  base::OnceClosure GetCleanupTask();
 
   const base::FilePath& image_dir() { return image_dir_; }
 

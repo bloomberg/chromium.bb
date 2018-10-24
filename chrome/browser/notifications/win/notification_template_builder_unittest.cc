@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -83,10 +82,10 @@ class NotificationTemplateBuilderTest : public ::testing::Test {
   // must be wrapped in ASSERT_NO_FATAL_FAILURE().
   void VerifyXml(const message_center::Notification& notification,
                  const base::string16& xml_template) {
-    auto image_retainer = std::make_unique<MockNotificationImageRetainer>();
+    MockNotificationImageRetainer image_retainer;
     NotificationLaunchId launch_id(kEncodedId);
-    template_ = NotificationTemplateBuilder::Build(image_retainer->AsWeakPtr(),
-                                                   launch_id, notification);
+    template_ = NotificationTemplateBuilder::Build(&image_retainer, launch_id,
+                                                   notification);
 
     ASSERT_TRUE(template_);
 

@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/notifications/notification_common.h"
 
@@ -47,7 +46,7 @@ class NotificationTemplateBuilder {
  public:
   // Builds the notification template for the given |notification|.
   static std::unique_ptr<NotificationTemplateBuilder> Build(
-      base::WeakPtr<NotificationImageRetainer> notification_image_retainer,
+      NotificationImageRetainer* image_retainer,
       const NotificationLaunchId& launch_id,
       const message_center::Notification& notification);
 
@@ -64,8 +63,7 @@ class NotificationTemplateBuilder {
   // The different types of text nodes to output.
   enum class TextType { NORMAL, ATTRIBUTION };
 
-  NotificationTemplateBuilder(
-      base::WeakPtr<NotificationImageRetainer> notification_image_retainer);
+  NotificationTemplateBuilder();
 
   // Formats the |origin| for display in the notification template.
   std::string FormatOrigin(const GURL& origin) const;
@@ -93,14 +91,17 @@ class NotificationTemplateBuilder {
   void WriteItems(const std::vector<message_center::NotificationItem>& items);
 
   // Writes the <image> element for the notification icon.
-  void WriteIconElement(const message_center::Notification& notification);
+  void WriteIconElement(NotificationImageRetainer* image_retainer,
+                        const message_center::Notification& notification);
 
   // Writes the <image> element for showing a large image within the
   // notification body.
-  void WriteLargeImageElement(const message_center::Notification& notification);
+  void WriteLargeImageElement(NotificationImageRetainer* image_retainer,
+                              const message_center::Notification& notification);
 
   // A helper for constructing image xml.
-  void WriteImageElement(const gfx::Image& image,
+  void WriteImageElement(NotificationImageRetainer* image_retainer,
+                         const gfx::Image& image,
                          const std::string& placement,
                          const std::string& hint_crop);
 
@@ -116,9 +117,11 @@ class NotificationTemplateBuilder {
 
   // Fills in the details for the actions (the buttons the notification
   // contains).
-  void AddActions(const message_center::Notification& notification,
+  void AddActions(NotificationImageRetainer* image_retainer,
+                  const message_center::Notification& notification,
                   const NotificationLaunchId& launch_id);
-  void WriteActionElement(const message_center::ButtonInfo& button,
+  void WriteActionElement(NotificationImageRetainer* image_retainer,
+                          const message_center::ButtonInfo& button,
                           int index,
                           NotificationLaunchId copied_launch_id);
 
@@ -139,9 +142,6 @@ class NotificationTemplateBuilder {
 
   // The XML writer to which the template will be written.
   std::unique_ptr<XmlWriter> xml_writer_;
-
-  // The image retainer.
-  base::WeakPtr<NotificationImageRetainer> image_retainer_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationTemplateBuilder);
 };
