@@ -619,9 +619,7 @@ void NGBoxFragmentPainter::PaintBackground(
     BackgroundBleedAvoidance bleed_avoidance) {
   const LayoutObject& layout_object = *box_fragment_.GetLayoutObject();
   const LayoutBox& layout_box = ToLayoutBox(layout_object);
-  if (layout_box.IsDocumentElement())
-    return;
-  if (layout_box.BackgroundStolenForBeingBody())
+  if (layout_box.BackgroundTransfersToView())
     return;
   if (layout_box.BackgroundIsKnownToBeObscured())
     return;

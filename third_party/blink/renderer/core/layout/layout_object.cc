@@ -2318,7 +2318,7 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
     if (ResolveColor(*old_style, GetCSSPropertyBackgroundColor()) !=
             ResolveColor(GetCSSPropertyBackgroundColor()) ||
         old_style->BackgroundLayers() != StyleRef().BackgroundLayers())
-      SetBackgroundChangedSinceLastPaintInvalidation();
+      SetBackgroundNeedsFullPaintInvalidation();
   }
 
   if (old_style && old_style->StyleType() == kPseudoIdNone)
@@ -3948,8 +3948,10 @@ void LayoutObject::ClearPaintInvalidationFlags() {
   DCHECK(!ShouldCheckForPaintInvalidation() || PaintInvalidationStateIsDirty());
 #endif
   fragment_.SetPartialInvalidationLocalRect(LayoutRect());
-  if (!ShouldDelayFullPaintInvalidation())
+  if (!ShouldDelayFullPaintInvalidation()) {
     full_paint_invalidation_reason_ = PaintInvalidationReason::kNone;
+    bitfields_.SetBackgroundNeedsFullPaintInvalidation(false);
+  }
   bitfields_.SetShouldCheckForPaintInvalidation(false);
   bitfields_.SetSubtreeShouldCheckForPaintInvalidation(false);
   bitfields_.SetSubtreeShouldDoFullPaintInvalidation(false);
@@ -3957,12 +3959,11 @@ void LayoutObject::ClearPaintInvalidationFlags() {
   bitfields_.SetNeedsPaintOffsetAndVisualRectUpdate(false);
   bitfields_.SetDescendantNeedsPaintOffsetAndVisualRectUpdate(false);
   bitfields_.SetShouldInvalidateSelection(false);
-  bitfields_.SetBackgroundChangedSinceLastPaintInvalidation(false);
 }
 
 #if DCHECK_IS_ON()
 bool LayoutObject::PaintInvalidationStateIsDirty() const {
-  return BackgroundChangedSinceLastPaintInvalidation() ||
+  return BackgroundNeedsFullPaintInvalidation() ||
          ShouldCheckForPaintInvalidation() || ShouldInvalidateSelection() ||
          NeedsPaintOffsetAndVisualRectUpdate() ||
          DescendantNeedsPaintOffsetAndVisualRectUpdate() ||

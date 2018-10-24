@@ -327,8 +327,8 @@ TEST_F(LayoutObjectTest, MutableForPaintingClearPaintFlags) {
   EXPECT_TRUE(object->MayNeedPaintInvalidationAnimatedBackgroundImage());
   object->SetShouldInvalidateSelection();
   EXPECT_TRUE(object->ShouldInvalidateSelection());
-  object->SetBackgroundChangedSinceLastPaintInvalidation();
-  EXPECT_TRUE(object->BackgroundChangedSinceLastPaintInvalidation());
+  object->SetBackgroundNeedsFullPaintInvalidation();
+  EXPECT_TRUE(object->BackgroundNeedsFullPaintInvalidation());
   object->SetNeedsPaintPropertyUpdate();
   EXPECT_TRUE(object->NeedsPaintPropertyUpdate());
   EXPECT_TRUE(object->Parent()->DescendantNeedsPaintPropertyUpdate());
@@ -343,7 +343,7 @@ TEST_F(LayoutObjectTest, MutableForPaintingClearPaintFlags) {
   EXPECT_FALSE(object->SubtreeShouldCheckForPaintInvalidation());
   EXPECT_FALSE(object->MayNeedPaintInvalidationAnimatedBackgroundImage());
   EXPECT_FALSE(object->ShouldInvalidateSelection());
-  EXPECT_FALSE(object->BackgroundChangedSinceLastPaintInvalidation());
+  EXPECT_FALSE(object->BackgroundNeedsFullPaintInvalidation());
   EXPECT_FALSE(object->NeedsPaintPropertyUpdate());
   EXPECT_FALSE(object->DescendantNeedsPaintPropertyUpdate());
 }

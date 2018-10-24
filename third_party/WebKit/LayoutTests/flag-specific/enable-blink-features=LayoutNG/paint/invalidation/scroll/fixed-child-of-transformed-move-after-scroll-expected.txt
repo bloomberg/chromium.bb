@@ -20,7 +20,7 @@
         {
           "object": "LayoutNGBlockFlow (positioned) DIV id='toMove'",
           "rect": [158, 278, 100, 100],
-          "reason": "style change"
+          "reason": "background"
         },
         {
           "object": "LayoutNGBlockFlow (positioned) DIV",
@@ -30,7 +30,7 @@
         {
           "object": "LayoutNGBlockFlow (positioned) DIV id='toMove'",
           "rect": [18, 278, 100, 100],
-          "reason": "style change"
+          "reason": "background"
         }
       ],
       "transform": 1

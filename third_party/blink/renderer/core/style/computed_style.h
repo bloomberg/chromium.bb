@@ -378,7 +378,7 @@ class ComputedStyle : public ComputedStyleBase,
   }
   bool HasOnlyFixedAttachmentBackgroundImage() const {
     return BackgroundInternal().AnyLayerHasFixedAttachmentImage() &&
-           !BackgroundInternal().AnyLayerHasLocalAttachment() &&
+           !BackgroundInternal().AnyLayerHasLocalAttachmentImage() &&
            !BackgroundInternal().AnyLayerHasDefaultAttachment();
   }
 

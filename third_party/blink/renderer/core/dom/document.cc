@@ -2019,7 +2019,7 @@ void Document::PropagateStyleToViewport() {
   // http://www.w3.org/TR/css3-background/#body-background
   // <html> root element with no background steals background from its first
   // <body> child.
-  // Also see LayoutBoxModelObject::BackgroundStolenForBeingBody()
+  // Also see LayoutBoxModelObject::BackgroundTransfersToView()
   if (IsHTMLHtmlElement(documentElement()) &&
       document_element_style->Display() != EDisplay::kNone &&
       IsHTMLBodyElement(body) && !background_style->HasBackground()) {

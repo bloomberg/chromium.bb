@@ -36,7 +36,7 @@
         {
           "object": "LayoutNGBlockFlow (positioned) SPAN class='child embiggen'",
           "rect": [0, 0, 50, 50],
-          "reason": "style change"
+          "reason": "background"
         },
         {
           "object": "LayoutNGBlockFlow (positioned) SPAN class='child'",

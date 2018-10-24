@@ -243,29 +243,6 @@ void LayoutView::CheckLayoutState() {
 }
 #endif
 
-void LayoutView::SetShouldDoFullPaintInvalidationOnResizeIfNeeded(
-    bool width_changed,
-    bool height_changed) {
-  // When background-attachment is 'fixed', we treat the viewport (instead of
-  // the 'root' i.e. html or body) as the background positioning area, and we
-  // should fully invalidate on viewport resize if the background image is not
-  // composited and needs full paint invalidation on background positioning area
-  // resize.
-  if (StyleRef().HasFixedAttachmentBackgroundImage()) {
-    if ((width_changed && MustInvalidateFillLayersPaintOnWidthChange(
-                              StyleRef().BackgroundLayers())) ||
-        (height_changed && MustInvalidateFillLayersPaintOnHeightChange(
-                               StyleRef().BackgroundLayers()))) {
-      SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kBackground);
-      // In case that the background will be painted on the scrolling contents
-      // layer, we need this to invalidate the background.
-      // TODO(wangxianzhu): Clean up and fix other such cases about invalidation
-      // of background painted on the scrolling contents layer.
-      SetBackgroundChangedSinceLastPaintInvalidation();
-    }
-  }
-}
-
 bool LayoutView::ShouldPlaceBlockDirectionScrollbarOnLogicalLeft() const {
   LocalFrame& frame = GetFrameView()->GetFrame();
   // See crbug.com/249860
@@ -321,11 +298,6 @@ void LayoutView::UpdateBlockLayout(bool relayout_children) {
 void LayoutView::UpdateLayout() {
   if (!GetDocument().Printing())
     SetPageLogicalHeight(LayoutUnit());
-
-  // TODO(wangxianzhu): Move this into ViewPaintInvalidator.
-  SetShouldDoFullPaintInvalidationOnResizeIfNeeded(
-      OffsetWidth() != GetLayoutSize(kIncludeScrollbars).Width(),
-      OffsetHeight() != GetLayoutSize(kIncludeScrollbars).Height());
 
   if (PageLogicalHeight() && ShouldUsePrintingLayout()) {
     min_preferred_logical_width_ = max_preferred_logical_width_ =
@@ -626,15 +598,20 @@ LayoutRect LayoutView::OverflowClipRect(
     const LayoutPoint& location,
     OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior) const {
   LayoutRect rect = ViewRect();
-  if (rect.IsEmpty())
+  if (rect.IsEmpty()) {
     return LayoutBox::OverflowClipRect(location,
                                        overlay_scrollbar_clip_behavior);
+  }
 
   rect.SetLocation(location);
   if (HasOverflowClip())
     ExcludeScrollbars(rect, overlay_scrollbar_clip_behavior);
 
   return rect;
+}
+
+LayoutRect LayoutView::FixedBackgroundPositioningArea() const {
+  return OverflowClipRect(LayoutPoint());
 }
 
 void LayoutView::SetAutosizeScrollbarModes(ScrollbarMode h_mode,

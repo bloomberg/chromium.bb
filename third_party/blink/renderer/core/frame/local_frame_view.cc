@@ -1218,7 +1218,8 @@ void LocalFrameView::ViewportSizeChanged(bool width_changed,
       frame_->GetDocument()->Lifecycle().LifecyclePostponed())
     return;
 
-  if (LayoutView* layout_view = this->GetLayoutView()) {
+  auto* layout_view = GetLayoutView();
+  if (layout_view) {
     // If this is the main frame, we might have got here by hiding/showing the
     // top controls.  In that case, layout won't be triggered, so we need to
     // clamp the scroll offset here.
@@ -1236,26 +1237,11 @@ void LocalFrameView::ViewportSizeChanged(bool width_changed,
   if (GetFrame().GetDocument())
     GetFrame().GetDocument()->GetRootScrollerController().DidResizeFrameView();
 
-  if (GetLayoutView() && frame_->IsMainFrame() &&
-      frame_->GetPage()->GetBrowserControls().TotalHeight()) {
-    if (GetLayoutView()->StyleRef().HasFixedAttachmentBackgroundImage()) {
-      // We've already issued a full invalidation above.
-      GetLayoutView()->SetShouldDoFullPaintInvalidationOnResizeIfNeeded(
-          width_changed, height_changed);
-    } else if (height_changed) {
-      // If the document rect doesn't fill the full view height, hiding the
-      // URL bar will expose area outside the current LayoutView so we need to
-      // paint additional background. If RLS is on, we've already invalidated
-      // above.
-      auto* layout_view = GetLayoutView();
-      DCHECK(layout_view);
-      if (layout_view->DocumentRect().Height() <
-          layout_view->ViewRect().Height()) {
-        layout_view->SetShouldDoFullPaintInvalidation(
-            PaintInvalidationReason::kGeometry);
-      }
-    }
-  }
+  // Change of viewport size after browser controls showing/hiding may affect
+  // painting of the background.
+  if (layout_view && frame_->IsMainFrame() &&
+      frame_->GetPage()->GetBrowserControls().TotalHeight())
+    layout_view->SetShouldCheckForPaintInvalidation();
 
   if (GetFrame().GetDocument() && !IsInPerformLayout())
     MarkViewportConstrainedObjectsForLayout(width_changed, height_changed);
@@ -1311,26 +1297,7 @@ void LocalFrameView::InvalidateBackgroundAttachmentFixedDescendants(
   for (auto* const layout_object : background_attachment_fixed_objects_) {
     if (object != GetLayoutView() && !layout_object->IsDescendantOf(&object))
       continue;
-
-    bool needs_scrolling_contents_layer_invalidation = false;
-    if (layout_object->HasLayer()) {
-      PaintLayer* layer = ToLayoutBoxModelObject(layout_object)->Layer();
-      if (layer->GetBackgroundPaintLocation() ==
-          kBackgroundPaintInScrollingContents) {
-        needs_scrolling_contents_layer_invalidation = true;
-      }
-    }
-    if (needs_scrolling_contents_layer_invalidation) {
-      // BoxPaintInvalidator doesn't want to invalidate scrolling contents layer
-      // whenever the LayoutObject is marked ShouldDoFullPaintInvalidation() -
-      // see crrev.com/433093.  (LayoutObject doesn't track full-invalidation
-      // reasons independently, so it's not safe for BoxPaintInvalidator to have
-      // special handling of kBackground.)
-      layout_object->SetBackgroundChangedSinceLastPaintInvalidation();
-    } else {
-      layout_object->SetShouldDoFullPaintInvalidation(
-          PaintInvalidationReason::kBackground);
-    }
+    layout_object->SetBackgroundNeedsFullPaintInvalidation();
   }
 }
 

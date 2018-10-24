@@ -393,7 +393,7 @@ void LayoutBox::UpdateBackgroundAttachmentFixedStatusAfterStyleChange() {
   // element (and the body element if html element has no background) skips
   // painting backgrounds.
   bool is_background_attachment_fixed_object =
-      !IsDocumentElement() && !BackgroundStolenForBeingBody() &&
+      !BackgroundTransfersToView() &&
       StyleRef().HasFixedAttachmentBackgroundImage();
   if (IsLayoutView() &&
       View()->Compositor()->PreferCompositingToLCDTextEnabled() &&
@@ -1728,7 +1728,9 @@ bool LayoutBox::GetBackgroundPaintedExtent(LayoutRect& painted_extent) const {
 
 bool LayoutBox::BackgroundIsKnownToBeOpaqueInRect(
     const LayoutRect& local_rect) const {
-  if (IsDocumentElement() || BackgroundStolenForBeingBody())
+  // If the background transfers to view, the used background of this object
+  // is transparent.
+  if (BackgroundTransfersToView())
     return false;
 
   // If the element has appearance, it might be painted by theme.
@@ -1872,7 +1874,7 @@ void LayoutBox::ImageChanged(WrappedImagePtr image,
     }
   }
 
-  if (!IsDocumentElement() && !BackgroundStolenForBeingBody()) {
+  if (!BackgroundTransfersToView()) {
     for (const FillLayer* layer = &StyleRef().BackgroundLayers(); layer;
          layer = layer->Next()) {
       if (layer->GetImage() && image == layer->GetImage()->Data()) {
@@ -1881,13 +1883,10 @@ void LayoutBox::ImageChanged(WrappedImagePtr image,
             layer->GetImage()->CachedImage() &&
             layer->GetImage()->CachedImage()->GetImage() &&
             layer->GetImage()->CachedImage()->GetImage()->MaybeAnimated();
-        if (defer == CanDeferInvalidation::kYes && maybe_animated) {
+        if (defer == CanDeferInvalidation::kYes && maybe_animated)
           SetMayNeedPaintInvalidationAnimatedBackgroundImage();
-        } else {
-          SetShouldDoFullPaintInvalidationWithoutGeometryChange(
-              PaintInvalidationReason::kImage);
-          SetBackgroundChangedSinceLastPaintInvalidation();
-        }
+        else
+          SetBackgroundNeedsFullPaintInvalidation();
         break;
       }
     }
@@ -1966,8 +1965,7 @@ void LayoutBox::EnsureIsReadyForPaintInvalidation() {
 
   if (MayNeedPaintInvalidationAnimatedBackgroundImage() &&
       !BackgroundIsKnownToBeObscured()) {
-    SetShouldDoFullPaintInvalidationWithoutGeometryChange(
-        PaintInvalidationReason::kBackground);
+    SetBackgroundNeedsFullPaintInvalidation();
     SetShouldDelayFullPaintInvalidation();
   }
 
@@ -1975,9 +1973,9 @@ void LayoutBox::EnsureIsReadyForPaintInvalidation() {
     return;
 
   // Do regular full paint invalidation if the object with delayed paint
-  // invalidation is onscreen. Conservatively assume the delayed paint
-  // invalidation was caused by background image change.
-  SetBackgroundChangedSinceLastPaintInvalidation();
+  // invalidation is onscreen. This will clear
+  // ShouldDelayFullPaintInvalidation() flag and enable previous
+  // BackgroundNeedsFullPaintInvalidaiton() if it's set.
   SetShouldDoFullPaintInvalidationWithoutGeometryChange(
       FullPaintInvalidationReason());
 }
@@ -5770,129 +5768,6 @@ void LayoutBox::LogicalExtentAfterUpdatingLogicalWidth(
   SetLogicalLeft(old_logical_left);
   SetMarginLeft(old_margin_left);
   SetMarginRight(old_margin_right);
-}
-
-bool LayoutBox::MustInvalidateFillLayersPaintOnHeightChange(
-    const FillLayer& layer) {
-  // Nobody will use multiple layers without wanting fancy positioning.
-  if (layer.Next())
-    return true;
-
-  // Make sure we have a valid image.
-  StyleImage* img = layer.GetImage();
-  if (!img || !img->CanRender())
-    return false;
-
-  if (layer.RepeatY() != EFillRepeat::kRepeatFill &&
-      layer.RepeatY() != EFillRepeat::kNoRepeatFill)
-    return true;
-
-  // TODO(alancutter): Make this work correctly for calc lengths.
-  if (layer.PositionY().IsPercentOrCalc() && !layer.PositionY().IsZero())
-    return true;
-
-  if (layer.BackgroundYOrigin() != BackgroundEdgeOrigin::kTop)
-    return true;
-
-  EFillSizeType size_type = layer.SizeType();
-
-  if (size_type == EFillSizeType::kContain ||
-      size_type == EFillSizeType::kCover)
-    return true;
-
-  if (size_type == EFillSizeType::kSizeLength) {
-    // TODO(alancutter): Make this work correctly for calc lengths.
-    if (layer.SizeLength().Height().IsPercentOrCalc() &&
-        !layer.SizeLength().Height().IsZero())
-      return true;
-    if (img->IsGeneratedImage() && layer.SizeLength().Height().IsAuto())
-      return true;
-  } else if (img->UsesImageContainerSize()) {
-    return true;
-  }
-
-  return false;
-}
-
-bool LayoutBox::MustInvalidateFillLayersPaintOnWidthChange(
-    const FillLayer& layer) {
-  // Nobody will use multiple layers without wanting fancy positioning.
-  if (layer.Next())
-    return true;
-
-  // Make sure we have a valid image.
-  StyleImage* img = layer.GetImage();
-  if (!img || !img->CanRender())
-    return false;
-
-  if (layer.RepeatX() != EFillRepeat::kRepeatFill &&
-      layer.RepeatX() != EFillRepeat::kNoRepeatFill)
-    return true;
-
-  // TODO(alancutter): Make this work correctly for calc lengths.
-  if (layer.PositionX().IsPercentOrCalc() && !layer.PositionX().IsZero())
-    return true;
-
-  if (layer.BackgroundXOrigin() != BackgroundEdgeOrigin::kLeft)
-    return true;
-
-  EFillSizeType size_type = layer.SizeType();
-
-  if (size_type == EFillSizeType::kContain ||
-      size_type == EFillSizeType::kCover)
-    return true;
-
-  if (size_type == EFillSizeType::kSizeLength) {
-    // TODO(alancutter): Make this work correctly for calc lengths.
-    if (layer.SizeLength().Width().IsPercentOrCalc() &&
-        !layer.SizeLength().Width().IsZero())
-      return true;
-    if (img->IsGeneratedImage() && layer.SizeLength().Width().IsAuto())
-      return true;
-  } else if (img->UsesImageContainerSize()) {
-    return true;
-  }
-
-  return false;
-}
-
-bool LayoutBox::MustInvalidateBackgroundOrBorderPaintOnWidthChange() const {
-  if (HasMask() &&
-      MustInvalidateFillLayersPaintOnWidthChange(StyleRef().MaskLayers()))
-    return true;
-
-  // If we don't have a background/border/mask, then nothing to do.
-  if (!HasBoxDecorationBackground())
-    return false;
-
-  if (MustInvalidateFillLayersPaintOnWidthChange(StyleRef().BackgroundLayers()))
-    return true;
-
-  // Our fill layers are ok. Let's check border.
-  if (StyleRef().CanRenderBorderImage())
-    return true;
-
-  return false;
-}
-
-bool LayoutBox::MustInvalidateBackgroundOrBorderPaintOnHeightChange() const {
-  if (HasMask() &&
-      MustInvalidateFillLayersPaintOnHeightChange(StyleRef().MaskLayers()))
-    return true;
-
-  // If we don't have a background/border/mask, then nothing to do.
-  if (!HasBoxDecorationBackground())
-    return false;
-
-  if (MustInvalidateFillLayersPaintOnHeightChange(
-          StyleRef().BackgroundLayers()))
-    return true;
-
-  // Our fill layers are ok.  Let's check border.
-  if (StyleRef().CanRenderBorderImage())
-    return true;
-
-  return false;
 }
 
 ShapeOutsideInfo* LayoutBox::GetShapeOutsideInfo() const {

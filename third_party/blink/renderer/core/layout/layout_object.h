@@ -1817,6 +1817,16 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     }
     return false;
   }
+  // Indicates that the paint of the object should be fully invalidated.
+  // We will repaint the object, and reraster the area on the composited layer
+  // where the object shows. Note that this function doesn't automatically
+  // cause invalidation of background painted on the scrolling contents layer
+  // because we don't want to invalidate the whole scrolling contents layer on
+  // non-background changes. It's also not safe to specially handle
+  // PaintInvalidationReason::kBackground in paint invalidator because we don't
+  // track paint invalidation reasons separately. To indicate that the
+  // background needs full invalidation, use
+  // SetBackgroundNeedsFullPaintInvalidation().
   void SetShouldDoFullPaintInvalidation(
       PaintInvalidationReason = PaintInvalidationReason::kFull);
   void SetShouldDoFullPaintInvalidationWithoutGeometryChange(
@@ -1967,8 +1977,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       layout_object_.SetShouldDoFullPaintInvalidationWithoutGeometryChange(
           reason);
     }
-    void SetBackgroundChangedSinceLastPaintInvalidation() {
-      layout_object_.SetBackgroundChangedSinceLastPaintInvalidation();
+    void SetBackgroundNeedsFullPaintInvalidation() {
+      layout_object_.SetBackgroundNeedsFullPaintInvalidation();
     }
     void SetShouldDelayFullPaintInvalidation() {
       layout_object_.SetShouldDelayFullPaintInvalidation();
@@ -2111,11 +2121,14 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return bitfields_.IsBackgroundAttachmentFixedObject();
   }
 
-  bool BackgroundChangedSinceLastPaintInvalidation() const {
-    return bitfields_.BackgroundChangedSinceLastPaintInvalidation();
+  bool BackgroundNeedsFullPaintInvalidation() const {
+    return !ShouldDelayFullPaintInvalidation() &&
+           bitfields_.BackgroundNeedsFullPaintInvalidation();
   }
-  void SetBackgroundChangedSinceLastPaintInvalidation() {
-    bitfields_.SetBackgroundChangedSinceLastPaintInvalidation(true);
+  void SetBackgroundNeedsFullPaintInvalidation() {
+    SetShouldDoFullPaintInvalidationWithoutGeometryChange(
+        PaintInvalidationReason::kBackground);
+    bitfields_.SetBackgroundNeedsFullPaintInvalidation(true);
   }
 
   bool OutlineMayBeAffectedByDescendants() const {
@@ -2515,7 +2528,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           is_scroll_anchor_object_(false),
           scroll_anchor_disabling_style_changed_(false),
           has_box_decoration_background_(false),
-          background_changed_since_last_paint_invalidation_(true),
+          background_needs_full_paint_invalidation_(true),
           outline_may_be_affected_by_descendants_(false),
           previous_outline_may_be_affected_by_descendants_(false),
           is_truncated_(false),
@@ -2727,8 +2740,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     ADD_BOOLEAN_BITFIELD(has_box_decoration_background_,
                          HasBoxDecorationBackground);
 
-    ADD_BOOLEAN_BITFIELD(background_changed_since_last_paint_invalidation_,
-                         BackgroundChangedSinceLastPaintInvalidation);
+    ADD_BOOLEAN_BITFIELD(background_needs_full_paint_invalidation_,
+                         BackgroundNeedsFullPaintInvalidation);
 
     // Whether shape of outline may be affected by any descendants. This is
     // updated before paint invalidation, checked during paint invalidation.

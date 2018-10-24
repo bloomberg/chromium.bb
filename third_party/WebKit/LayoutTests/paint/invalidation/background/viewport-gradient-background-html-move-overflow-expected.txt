@@ -20,7 +20,7 @@
         {
           "object": "Scrolling Contents Layer",
           "rect": [0, 0, 800, 600],
-          "reason": "background on scrolling contents layer"
+          "reason": "background"
         },
         {
           "object": "LayoutBlockFlow HTML",

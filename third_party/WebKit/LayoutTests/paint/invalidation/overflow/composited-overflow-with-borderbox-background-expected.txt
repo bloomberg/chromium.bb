@@ -27,7 +27,7 @@
         {
           "object": "LayoutBlockFlow DIV id='scroller'",
           "rect": [0, 0, 220, 220],
-          "reason": "style change"
+          "reason": "background"
         }
       ]
     },
@@ -47,7 +47,7 @@
         {
           "object": "Scrolling Contents Layer",
           "rect": [0, 0, 185, 300],
-          "reason": "background on scrolling contents layer"
+          "reason": "background"
         }
       ]
     },

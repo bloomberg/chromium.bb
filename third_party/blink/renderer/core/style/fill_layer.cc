@@ -82,7 +82,7 @@ FillLayer::FillLayer(EFillLayerType type, bool use_initial_values)
       layers_clip_max_(0),
       any_layer_uses_content_box_(false),
       any_layer_has_image_(false),
-      any_layer_has_local_attachment_(false),
+      any_layer_has_local_attachment_image_(false),
       any_layer_has_fixed_attachment_image_(false),
       any_layer_has_default_attachment_(false),
       cached_properties_computed_(false) {}
@@ -121,7 +121,7 @@ FillLayer::FillLayer(const FillLayer& o)
       layers_clip_max_(0),
       any_layer_uses_content_box_(false),
       any_layer_has_image_(false),
-      any_layer_has_local_attachment_(false),
+      any_layer_has_local_attachment_image_(false),
       any_layer_has_fixed_attachment_image_(false),
       any_layer_has_default_attachment_(false),
       cached_properties_computed_(false) {}
@@ -354,10 +354,11 @@ void FillLayer::ComputeCachedProperties() const {
   any_layer_uses_content_box_ =
       Clip() == EFillBox::kContent || Origin() == EFillBox::kContent;
   any_layer_has_image_ = !!GetImage();
-  any_layer_has_local_attachment_ = Attachment() == EFillAttachment::kLocal;
+  any_layer_has_local_attachment_image_ =
+      any_layer_has_image_ && Attachment() == EFillAttachment::kLocal;
   any_layer_has_fixed_attachment_image_ =
       any_layer_has_image_ && Attachment() == EFillAttachment::kFixed;
-  any_layer_has_default_attachment_ = !any_layer_has_local_attachment_ &&
+  any_layer_has_default_attachment_ = !any_layer_has_local_attachment_image_ &&
                                       !any_layer_has_fixed_attachment_image_;
   cached_properties_computed_ = true;
 
@@ -367,7 +368,8 @@ void FillLayer::ComputeCachedProperties() const {
         EnclosingFillBox(LayersClipMax(), next_->LayersClipMax()));
     any_layer_uses_content_box_ |= next_->any_layer_uses_content_box_;
     any_layer_has_image_ |= next_->any_layer_has_image_;
-    any_layer_has_local_attachment_ |= next_->any_layer_has_local_attachment_;
+    any_layer_has_local_attachment_image_ |=
+        next_->any_layer_has_local_attachment_image_;
     any_layer_has_fixed_attachment_image_ |=
         next_->any_layer_has_fixed_attachment_image_;
     any_layer_has_default_attachment_ |=

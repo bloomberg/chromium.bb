@@ -50,8 +50,7 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
   GraphicsContext& context = paint_info.context;
 
   // The background rect always includes at least the visible content size.
-  IntRect background_rect(
-      PixelSnappedIntRect(layout_view_.OverflowClipRect(LayoutPoint())));
+  IntRect background_rect(PixelSnappedIntRect(layout_view_.BackgroundRect()));
 
   // When printing, paint the entire unclipped scrolling content area.
   if (paint_info.IsPrinting())

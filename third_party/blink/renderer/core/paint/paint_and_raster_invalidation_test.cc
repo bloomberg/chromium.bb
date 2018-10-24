@@ -6,6 +6,7 @@
 
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 
 namespace blink {
 
@@ -298,6 +299,11 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedLayoutViewResize) {
   target->setAttribute(HTMLNames::classAttr, "");
   target->setAttribute(HTMLNames::styleAttr, "height: 2000px");
   GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(kBackgroundPaintInScrollingContents,
+            GetLayoutView().Layer()->GetBackgroundPaintLocation());
+  const auto* mapping = GetLayoutView().Layer()->GetCompositedLayerMapping();
+  EXPECT_TRUE(mapping->BackgroundPaintsOntoScrollingContentsLayer());
+  EXPECT_FALSE(mapping->BackgroundPaintsOntoGraphicsLayer());
 
   // Resize the content.
   GetDocument().View()->SetTracksPaintInvalidations(true);
@@ -330,6 +336,11 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedLayoutViewGradientResize) {
   target->setAttribute(HTMLNames::classAttr, "");
   target->setAttribute(HTMLNames::styleAttr, "height: 2000px");
   GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(kBackgroundPaintInScrollingContents,
+            GetLayoutView().Layer()->GetBackgroundPaintLocation());
+  const auto* mapping = GetLayoutView().Layer()->GetCompositedLayerMapping();
+  EXPECT_TRUE(mapping->BackgroundPaintsOntoScrollingContentsLayer());
+  EXPECT_FALSE(mapping->BackgroundPaintsOntoGraphicsLayer());
 
   // Resize the content.
   GetDocument().View()->SetTracksPaintInvalidations(true);
@@ -341,8 +352,7 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedLayoutViewGradientResize) {
       UnorderedElementsAre(RasterInvalidationInfo{
           ViewScrollingContentsDisplayItemClient(),
           ViewScrollingContentsDisplayItemClient()->DebugName(),
-          IntRect(0, 0, 800, 3000),
-          PaintInvalidationReason::kBackgroundOnScrollingContentsLayer}));
+          IntRect(0, 0, 800, 3000), PaintInvalidationReason::kBackground}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
   // Resize the viewport. No paint invalidation.
@@ -373,6 +383,11 @@ TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewResize) {
   Element* content = ChildDocument().getElementById("content");
   EXPECT_EQ(GetLayoutView(),
             content->GetLayoutObject()->ContainerForPaintInvalidation());
+  EXPECT_EQ(kBackgroundPaintInScrollingContents,
+            content->GetLayoutObject()
+                ->View()
+                ->Layer()
+                ->GetBackgroundPaintLocation());
 
   // Resize the content.
   GetDocument().View()->SetTracksPaintInvalidations(true);
@@ -444,7 +459,7 @@ TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewGradientResize) {
       GetRasterInvalidationTracking()->Invalidations(),
       UnorderedElementsAre(RasterInvalidationInfo{
           frame_layout_view, frame_layout_view->DebugName(),
-          IntRect(0, 0, 100, 200), PaintInvalidationReason::kGeometry}));
+          IntRect(0, 100, 100, 100), PaintInvalidationReason::kIncremental}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
@@ -465,6 +480,12 @@ TEST_P(PaintAndRasterInvalidationTest,
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   auto* target_obj = ToLayoutBoxModelObject(target->GetLayoutObject());
+  EXPECT_EQ(kBackgroundPaintInScrollingContents,
+            target_obj->Layer()->GetBackgroundPaintLocation());
+  const auto* mapping = target_obj->Layer()->GetCompositedLayerMapping();
+  EXPECT_TRUE(mapping->BackgroundPaintsOntoScrollingContentsLayer());
+  EXPECT_FALSE(mapping->BackgroundPaintsOntoGraphicsLayer());
+
   auto container_raster_invalidation_tracking =
       [&]() -> const RasterInvalidationTracking* {
     if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
@@ -529,8 +550,14 @@ TEST_P(PaintAndRasterInvalidationTest,
   GetDocument().View()->UpdateAllLifecyclePhases();
   LayoutBoxModelObject* target_obj =
       ToLayoutBoxModelObject(target->GetLayoutObject());
+  EXPECT_EQ(kBackgroundPaintInScrollingContents,
+            target_obj->Layer()->GetBackgroundPaintLocation());
+  const auto* mapping = target_obj->Layer()->GetCompositedLayerMapping();
+  EXPECT_TRUE(mapping->BackgroundPaintsOntoScrollingContentsLayer());
+  EXPECT_FALSE(mapping->BackgroundPaintsOntoGraphicsLayer());
   GraphicsLayer* container_layer =
       target_obj->Layer()->GraphicsLayerBacking(target_obj);
+
   GraphicsLayer* contents_layer = target_obj->Layer()->GraphicsLayerBacking();
   // No invalidation on the container layer.
   EXPECT_FALSE(
@@ -541,7 +568,7 @@ TEST_P(PaintAndRasterInvalidationTest,
       contents_layer->GetRasterInvalidationTracking()->Invalidations(),
       UnorderedElementsAre(RasterInvalidationInfo{
           contents_layer, contents_layer->DebugName(), IntRect(0, 0, 500, 1000),
-          PaintInvalidationReason::kBackgroundOnScrollingContentsLayer}));
+          PaintInvalidationReason::kBackground}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
   // Resize the container.
@@ -568,8 +595,10 @@ TEST_P(PaintAndRasterInvalidationTest,
       ASSERT_NO_EXCEPTION);
   Element* child = GetDocument().getElementById("child");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(&GetLayoutView(),
-            &target->GetLayoutObject()->ContainerForPaintInvalidation());
+  EXPECT_EQ(&GetLayoutView(), object->ContainerForPaintInvalidation());
+  EXPECT_EQ(
+      kBackgroundPaintInScrollingContents,
+      ToLayoutBoxModelObject(object)->Layer()->GetBackgroundPaintLocation());
 
   // Resize the content.
   GetDocument().View()->SetTracksPaintInvalidations(true);
@@ -594,6 +623,11 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedSolidBackgroundResize) {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
+  // To trigger background painting on both container and contents layer.
+  // Note that the test may need update when we change the background paint
+  // location rules.
+  SetPreferCompositingToLCDText(false);
+
   SetUpHTML(*this);
   Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::classAttr, "solid-composited-scroller");
@@ -608,6 +642,13 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedSolidBackgroundResize) {
 
   LayoutBoxModelObject* target_object =
       ToLayoutBoxModelObject(target->GetLayoutObject());
+  EXPECT_EQ(
+      kBackgroundPaintInScrollingContents | kBackgroundPaintInGraphicsLayer,
+      target_object->Layer()->GetBackgroundPaintLocation());
+  const auto* mapping = target_object->Layer()->GetCompositedLayerMapping();
+  EXPECT_TRUE(mapping->BackgroundPaintsOntoScrollingContentsLayer());
+  EXPECT_TRUE(mapping->BackgroundPaintsOntoGraphicsLayer());
+
   GraphicsLayer* scrolling_contents_layer =
       target_object->Layer()->GraphicsLayerBacking();
   EXPECT_THAT(
@@ -616,6 +657,15 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedSolidBackgroundResize) {
       UnorderedElementsAre(RasterInvalidationInfo{
           scrolling_contents_layer, scrolling_contents_layer->DebugName(),
           IntRect(50, 0, 50, 500), PaintInvalidationReason::kIncremental}));
+
+  GraphicsLayer* container_layer =
+      target_object->Layer()->GraphicsLayerBacking(target_object);
+  EXPECT_THAT(
+      container_layer->GetRasterInvalidationTracking()->Invalidations(),
+      UnorderedElementsAre(RasterInvalidationInfo{
+          target_object, target_object->DebugName(), IntRect(50, 0, 50, 100),
+          PaintInvalidationReason::kIncremental}));
+
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 

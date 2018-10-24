@@ -59,6 +59,7 @@
 using testing::_;
 using testing::PrintToString;
 using testing::Mock;
+using testing::UnorderedElementsAre;
 using blink::url_test_helpers::ToKURL;
 
 namespace blink {
@@ -140,6 +141,58 @@ class VisualViewportTest : public testing::Test,
     settings->SetViewportMetaEnabled(true);
     settings->SetShrinksViewportContentToFit(true);
     settings->SetMainFrameResizesAreOrientationChanges(true);
+  }
+
+  const GraphicsLayer* MainGraphicsLayer(const Document* document) {
+    const auto* layer = document->GetLayoutView()->Layer();
+    return layer->GetCompositedLayerMapping()
+               ? layer->GetCompositedLayerMapping()->MainGraphicsLayer()
+               : nullptr;
+  }
+
+  const GraphicsLayer* ScrollingContentsLayer(const Document* document) {
+    const auto* layer = document->GetLayoutView()->Layer();
+    return layer->GetCompositedLayerMapping()
+               ? layer->GetCompositedLayerMapping()->ScrollingContentsLayer()
+               : nullptr;
+  }
+
+  const RasterInvalidationTracking* MainGraphicsLayerRasterInvalidationTracking(
+      const Document* document) {
+    const auto* layer = MainGraphicsLayer(document);
+    return layer ? layer->GetRasterInvalidationTracking() : nullptr;
+  }
+
+  const RasterInvalidationTracking*
+  ScrollingContentsLayerRasterInvalidationTracking(const Document* document) {
+    const auto* layer = ScrollingContentsLayer(document);
+    return layer ? layer->GetRasterInvalidationTracking() : nullptr;
+  }
+
+  bool MainGraphicsLayerHasRasterInvalidations(const Document* document) {
+    const auto* tracking =
+        MainGraphicsLayerRasterInvalidationTracking(document);
+    return tracking && tracking->HasInvalidations();
+  }
+
+  bool ScrollingContentsLayerHasRasterInvalidations(const Document* document) {
+    const auto* tracking =
+        ScrollingContentsLayerRasterInvalidationTracking(document);
+    return tracking && tracking->HasInvalidations();
+  }
+
+  const Vector<RasterInvalidationInfo>& MainGraphicsLayerRasterInvalidations(
+      const Document* document) {
+    DCHECK(MainGraphicsLayerHasRasterInvalidations(document));
+    return MainGraphicsLayerRasterInvalidationTracking(document)
+        ->Invalidations();
+  }
+
+  const Vector<RasterInvalidationInfo>&
+  ScrollingContentsLayerRasterInvalidations(const Document* document) {
+    DCHECK(ScrollingContentsLayerHasRasterInvalidations(document));
+    return ScrollingContentsLayerRasterInvalidationTracking(document)
+        ->Invalidations();
   }
 
  protected:
@@ -2155,41 +2208,31 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
   ASSERT_EQ(page_width, document->View()->GetLayoutSize().Width());
   ASSERT_EQ(smallest_height, document->View()->GetLayoutSize().Height());
 
-  const RasterInvalidationTracking* invalidation_tracking =
-      document->GetLayoutView()
-          ->Layer()
-          ->GraphicsLayerBacking(document->GetLayoutView())
-          ->GetRasterInvalidationTracking();
-  // If no invalidations occured, this will be a nullptr.
-  ASSERT_TRUE(invalidation_tracking);
-
-  const auto* raster_invalidations = &invalidation_tracking->Invalidations();
-  // No raster invalidation is needed because of no change within the root
-  // scrolling layer.
-  EXPECT_EQ(0u, raster_invalidations->size());
+  // Fixed-attachment background is affected by viewport size.
+  EXPECT_FALSE(MainGraphicsLayerHasRasterInvalidations(document));
+  ASSERT_TRUE(ScrollingContentsLayerHasRasterInvalidations(document));
+  EXPECT_THAT(
+      ScrollingContentsLayerRasterInvalidations(document),
+      UnorderedElementsAre(RasterInvalidationInfo{
+          ScrollingContentsLayer(document),
+          ScrollingContentsLayer(document)->DebugName(),
+          IntRect(0, 0, 640, 1000), PaintInvalidationReason::kBackground}));
 
   document->View()->SetTracksPaintInvalidations(false);
-
-  invalidation_tracking = document->GetLayoutView()
-                              ->Layer()
-                              ->GraphicsLayerBacking(document->GetLayoutView())
-                              ->GetRasterInvalidationTracking();
-  ASSERT_FALSE(invalidation_tracking);
 
   document->View()->SetTracksPaintInvalidations(true);
   web_view_impl->ResizeWithBrowserControls(WebSize(page_width, page_height),
                                            browser_controls_height, 0, true);
 
-  invalidation_tracking = document->GetLayoutView()
-                              ->Layer()
-                              ->GraphicsLayerBacking(document->GetLayoutView())
-                              ->GetRasterInvalidationTracking();
-  ASSERT_TRUE(invalidation_tracking);
-  raster_invalidations = &invalidation_tracking->Invalidations();
-
-  // No raster invalidation is needed because of no change within the root
-  // scrolling layer.
-  EXPECT_EQ(0u, raster_invalidations->size());
+  // Fixed-attachment background is affected by viewport size.
+  EXPECT_FALSE(MainGraphicsLayerHasRasterInvalidations(document));
+  ASSERT_TRUE(ScrollingContentsLayerHasRasterInvalidations(document));
+  EXPECT_THAT(
+      ScrollingContentsLayerRasterInvalidations(document),
+      UnorderedElementsAre(RasterInvalidationInfo{
+          ScrollingContentsLayer(document),
+          ScrollingContentsLayer(document)->DebugName(),
+          IntRect(0, 0, 640, 1000), PaintInvalidationReason::kBackground}));
 
   document->View()->SetTracksPaintInvalidations(false);
 }
@@ -2253,14 +2296,10 @@ TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
   ASSERT_EQ(smallest_height, document->View()->GetLayoutSize().Height());
 
   if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    const RasterInvalidationTracking* invalidation_tracking =
-        document->GetLayoutView()
-            ->Layer()
-            ->GraphicsLayerBacking(document->GetLayoutView())
-            ->GetRasterInvalidationTracking();
-
-    // No invalidations should have occured.
-    EXPECT_FALSE(invalidation_tracking->HasInvalidations());
+    // No invalidations should have occurred on either main layer or scrolling
+    // contents layer.
+    EXPECT_FALSE(MainGraphicsLayerHasRasterInvalidations(document));
+    EXPECT_FALSE(ScrollingContentsLayerHasRasterInvalidations(document));
   }
 
   document->View()->SetTracksPaintInvalidations(false);
@@ -2295,16 +2334,30 @@ TEST_P(VisualViewportTest, InvalidateLayoutViewWhenDocumentSmallerThanView) {
   ASSERT_EQ(page_height, document->View()->GetLayoutSize().Height());
 
   if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    const RasterInvalidationTracking* invalidation_tracking =
-        document->GetLayoutView()
-            ->Layer()
-            ->GraphicsLayerBacking(document->GetLayoutView())
-            ->GetRasterInvalidationTracking();
-    ASSERT_TRUE(invalidation_tracking);
-    const auto* raster_invalidations = &invalidation_tracking->Invalidations();
+    // Incremental raster invalidation is needed because the resize exposes
+    // unpainted area of background.
+    EXPECT_FALSE(MainGraphicsLayerHasRasterInvalidations(document));
+    ASSERT_TRUE(ScrollingContentsLayerHasRasterInvalidations(document));
+    EXPECT_THAT(
+        ScrollingContentsLayerRasterInvalidations(document),
+        UnorderedElementsAre(RasterInvalidationInfo{
+            ScrollingContentsLayer(document),
+            ScrollingContentsLayer(document)->DebugName(),
+            IntRect(0, 590, 320, 50), PaintInvalidationReason::kIncremental}));
+  }
+
+  document->View()->SetTracksPaintInvalidations(false);
+
+  // Resize back to the original size.
+  document->View()->SetTracksPaintInvalidations(true);
+  web_view_impl->ResizeWithBrowserControls(WebSize(page_width, page_height),
+                                           browser_controls_height, 0, false);
+
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     // No raster invalidation is needed because of no change within the root
     // scrolling layer.
-    EXPECT_EQ(0u, raster_invalidations->size());
+    EXPECT_FALSE(MainGraphicsLayerHasRasterInvalidations(document));
+    EXPECT_FALSE(ScrollingContentsLayerHasRasterInvalidations(document));
   }
 
   document->View()->SetTracksPaintInvalidations(false);

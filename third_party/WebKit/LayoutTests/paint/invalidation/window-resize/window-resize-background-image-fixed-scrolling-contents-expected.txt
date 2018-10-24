@@ -20,7 +20,7 @@
         {
           "object": "Scrolling Contents Layer",
           "rect": [0, 0, 585, 3016],
-          "reason": "background on scrolling contents layer"
+          "reason": "background"
         }
       ]
     }
@@ -48,7 +48,7 @@
         {
           "object": "Scrolling Contents Layer",
           "rect": [0, 0, 385, 3016],
-          "reason": "background on scrolling contents layer"
+          "reason": "background"
         }
       ]
     }
@@ -76,7 +76,7 @@
         {
           "object": "Scrolling Contents Layer",
           "rect": [0, 0, 385, 3016],
-          "reason": "background on scrolling contents layer"
+          "reason": "background"
         }
       ]
     }
@@ -104,7 +104,7 @@
         {
           "object": "Scrolling Contents Layer",
           "rect": [0, 0, 785, 3016],
-          "reason": "background on scrolling contents layer"
+          "reason": "background"
         }
       ]
     }

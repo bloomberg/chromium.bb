@@ -1436,12 +1436,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   bool HitTestClippedOutByBorder(const HitTestLocation& location_in_container,
                                  const LayoutPoint& border_box_location) const;
 
-  static bool MustInvalidateFillLayersPaintOnWidthChange(const FillLayer&);
-  static bool MustInvalidateFillLayersPaintOnHeightChange(const FillLayer&);
-
-  bool MustInvalidateBackgroundOrBorderPaintOnHeightChange() const;
-  bool MustInvalidateBackgroundOrBorderPaintOnWidthChange() const;
-
   // Returns true if the box intersects the viewport visible to the user.
   bool IntersectsVisibleViewport() const;
 
