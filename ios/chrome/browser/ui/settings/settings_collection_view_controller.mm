@@ -42,7 +42,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/settings_main_page_commands.h"
-#import "ios/chrome/browser/ui/settings/about_chrome_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/about_chrome_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill_credit_card_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill_profile_collection_view_controller.h"
@@ -887,7 +887,7 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
           initWithBrowserState:_browserState];
       break;
     case ItemTypeAboutChrome:
-      controller = [[AboutChromeCollectionViewController alloc] init];
+      controller = [[AboutChromeTableViewController alloc] init];
       break;
     case ItemTypeMemoryDebugging:
     case ItemTypeViewSource:
