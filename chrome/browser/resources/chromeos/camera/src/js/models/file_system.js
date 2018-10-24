@@ -561,6 +561,5 @@ camera.models.FileSystem.incrementFileName_ = function(name) {
       idx = parseInt(match[1], 10);
     }
   }
-  var parts = [base, ext, idx];
-  return parts[0] + ' (' + (parts[2] + 1) + ')' + parts[1];
+  return base + ' (' + (idx + 1) + ')' + ext;
 };
