@@ -205,8 +205,8 @@ void AppCacheURLLoaderJob::OnResponseInfoLoaded(
     // Wait for the data pipe to be ready to accept data.
     writable_handle_watcher_.Watch(
         response_body_stream_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
-        base::Bind(&AppCacheURLLoaderJob::OnResponseBodyStreamReady,
-                   GetDerivedWeakPtr()));
+        base::BindRepeating(&AppCacheURLLoaderJob::OnResponseBodyStreamReady,
+                            GetDerivedWeakPtr()));
 
     SendResponseInfo();
     ReadMore();

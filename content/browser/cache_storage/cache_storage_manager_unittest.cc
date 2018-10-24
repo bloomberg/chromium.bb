@@ -23,6 +23,7 @@
 #include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/cache_storage/cache_storage.h"
@@ -570,17 +571,13 @@ class CacheStorageManagerTest : public testing::Test {
       CacheStorageOwner owner = CacheStorageOwner::kCacheAPI) {
     base::RunLoop loop;
     cache_manager_->GetAllOriginsUsage(
-        owner, base::Bind(&CacheStorageManagerTest::AllOriginsUsageCallback,
-                          base::Unretained(this), base::Unretained(&loop)));
+        owner, base::BindLambdaForTesting(
+                   [&](const std::vector<CacheStorageUsageInfo>& usage) {
+                     callback_all_origins_usage_ = usage;
+                     loop.Quit();
+                   }));
     loop.Run();
     return callback_all_origins_usage_;
-  }
-
-  void AllOriginsUsageCallback(
-      base::RunLoop* run_loop,
-      const std::vector<CacheStorageUsageInfo>& usage) {
-    callback_all_origins_usage_ = usage;
-    run_loop->Quit();
   }
 
   int64_t GetSizeThenCloseAllCaches(const url::Origin& origin) {
