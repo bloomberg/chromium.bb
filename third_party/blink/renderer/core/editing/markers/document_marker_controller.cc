@@ -407,7 +407,13 @@ DocumentMarker* DocumentMarkerController::FirstMarkerAroundPosition(
   const PositionInFlatTree end =
       end_of_word_or_null.IsNotNull() ? end_of_word_or_null : position;
 
-  DCHECK_LE(start, end) << "|start| should be before |end|.";
+  if (start > end) {
+    // TODO(crbug.com/778507): We shouldn't reach here, but currently do due to
+    // legacy implementation of StartOfWord(). Rewriting StartOfWord() with
+    // TextOffsetMapping should fix it.
+    NOTREACHED() << "|start| should be before |end|.";
+    return nullptr;
+  }
 
   const Node* const start_node = start.ComputeContainerNode();
   const unsigned start_offset = start.ComputeOffsetInContainerNode();
