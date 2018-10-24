@@ -88,9 +88,13 @@ void ChildProcessLauncherHelper::StartLaunchOnClientThread() {
 
   BeforeLaunchOnClientThread();
 
+#if defined(OS_FUCHSIA)
+  mojo_channel_.emplace();
+#else   // !defined(OS_FUCHSIA)
   mojo_named_channel_ = CreateNamedPlatformChannelOnClientThread();
   if (!mojo_named_channel_)
     mojo_channel_.emplace();
+#endif  //  !defined(OS_FUCHSIA)
 
   GetProcessLauncherTaskRunner()->PostTask(
       FROM_HERE,
@@ -138,17 +142,21 @@ void ChildProcessLauncherHelper::PostLaunchOnLauncherThread(
   // we go out of scope regardless of the outcome below.
   mojo::OutgoingInvitation invitation = std::move(mojo_invitation_);
   if (process.process.IsValid()) {
+#if !defined(OS_FUCHSIA)
+    if (mojo_named_channel_) {
+      DCHECK(!mojo_channel_);
+      mojo::OutgoingInvitation::Send(
+          std::move(invitation), process.process.Handle(),
+          mojo_named_channel_->TakeServerEndpoint(), process_error_callback_);
+    } else
+#endif
     // Set up Mojo IPC to the new process.
-    if (mojo_channel_) {
+    {
+      DCHECK(mojo_channel_);
       DCHECK(mojo_channel_->local_endpoint().is_valid());
       mojo::OutgoingInvitation::Send(
           std::move(invitation), process.process.Handle(),
           mojo_channel_->TakeLocalEndpoint(), process_error_callback_);
-    } else {
-      DCHECK(mojo_named_channel_);
-      mojo::OutgoingInvitation::Send(
-          std::move(invitation), process.process.Handle(),
-          mojo_named_channel_->TakeServerEndpoint(), process_error_callback_);
     }
   }
 
