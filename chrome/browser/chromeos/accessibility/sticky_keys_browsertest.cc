@@ -28,19 +28,11 @@
 #include "components/prefs/pref_service.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/events/test/event_generator.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace chromeos {
 
 class StickyKeysBrowserTest : public InProcessBrowserTest {
- public:
-  void SetUpOnMainThread() override {
-    content::BrowserTestBase::SetUpOnMainThread();
-    event_generator_.reset(
-        new ui::test::EventGenerator(browser()->window()->GetNativeWindow()));
-  }
-
  protected:
   StickyKeysBrowserTest() = default;
   ~StickyKeysBrowserTest() override = default;
@@ -74,14 +66,11 @@ class StickyKeysBrowserTest : public InProcessBrowserTest {
   }
 
   void SendKeyPress(ui::KeyboardCode key) {
-    event_generator_->PressKey(key, ui::EF_NONE);
-    content::RunAllPendingInMessageLoop();
-    event_generator_->ReleaseKey(key, ui::EF_NONE);
-    content::RunAllPendingInMessageLoop();
+    EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), key, false, false,
+                                                false, false));
   }
 
   content::NotificationRegistrar registrar_;
-  std::unique_ptr<ui::test::EventGenerator> event_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(StickyKeysBrowserTest);
 };
