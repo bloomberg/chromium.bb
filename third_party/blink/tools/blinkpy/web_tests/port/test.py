@@ -189,12 +189,12 @@ layer at (0,0) size 800x34
     tests.add('http/tests/ssl/text.html')
     tests.add('passes/args.html')
     tests.add('passes/error.html', error='stuff going to stderr')
-    tests.add('passes/image.html')
+    tests.add('passes/image.html', actual_text=None, expected_text=None)
     tests.add('passes/audio.html',
               actual_audio=base64.b64encode('audio-wav'), expected_audio='audio-wav',
               actual_text=None, expected_text=None,
               actual_image=None, expected_image=None,
-              actual_checksum=None)
+              actual_checksum=None, expected_checksum=None)
     tests.add('passes/platform_image.html')
     tests.add('passes/checksum_in_image.html',
               expected_image='tEXtchecksum\x00checksum_in_image-checksum')
@@ -229,24 +229,24 @@ layer at (0,0) size 800x34
     tests.add_reftest('failures/unexpected/mismatch.html', 'failures/unexpected/mismatch-expected-mismatch.html', same_image=True)
     tests.add('failures/unexpected/reftest-nopixel.html', actual_checksum=None, actual_image=None, is_reftest=True)
     tests.add('failures/unexpected/reftest-nopixel-expected.html', actual_checksum=None, actual_image=None, is_reftest=True)
-    tests.add('reftests/foo/test.html')
-    tests.add('reftests/foo/test-ref.html')
+    tests.add('reftests/foo/test.html', is_reftest=True)
+    tests.add('reftests/foo/test-ref.html', is_reftest=True)
 
-    tests.add('reftests/foo/multiple-match-success.html', actual_checksum='abc', actual_image='abc')
-    tests.add('reftests/foo/multiple-match-failure.html', actual_checksum='abc', actual_image='abc')
-    tests.add('reftests/foo/multiple-mismatch-success.html', actual_checksum='abc', actual_image='abc')
-    tests.add('reftests/foo/multiple-mismatch-failure.html', actual_checksum='abc', actual_image='abc')
-    tests.add('reftests/foo/multiple-both-success.html', actual_checksum='abc', actual_image='abc')
-    tests.add('reftests/foo/multiple-both-failure.html', actual_checksum='abc', actual_image='abc')
+    tests.add('reftests/foo/multiple-match-success.html', actual_checksum='abc', actual_image='abc', is_reftest=True)
+    tests.add('reftests/foo/multiple-match-failure.html', actual_checksum='abc', actual_image='abc', is_reftest=True)
+    tests.add('reftests/foo/multiple-mismatch-success.html', actual_checksum='abc', actual_image='abc', is_reftest=True)
+    tests.add('reftests/foo/multiple-mismatch-failure.html', actual_checksum='abc', actual_image='abc', is_reftest=True)
+    tests.add('reftests/foo/multiple-both-success.html', actual_checksum='abc', actual_image='abc', is_reftest=True)
+    tests.add('reftests/foo/multiple-both-failure.html', actual_checksum='abc', actual_image='abc', is_reftest=True)
 
-    tests.add('reftests/foo/matching-ref.html', actual_checksum='abc', actual_image='abc')
-    tests.add('reftests/foo/mismatching-ref.html', actual_checksum='def', actual_image='def')
-    tests.add('reftests/foo/second-mismatching-ref.html', actual_checksum='ghi', actual_image='ghi')
+    tests.add('reftests/foo/matching-ref.html', actual_checksum='abc', actual_image='abc', is_reftest=True)
+    tests.add('reftests/foo/mismatching-ref.html', actual_checksum='def', actual_image='def', is_reftest=True)
+    tests.add('reftests/foo/second-mismatching-ref.html', actual_checksum='ghi', actual_image='ghi', is_reftest=True)
 
     # The following files shouldn't be treated as reftests
     tests.add_reftest('reftests/foo/unlistedtest.html', 'reftests/foo/unlistedtest-expected.html', same_image=True)
-    tests.add('reftests/foo/reference/bar/common.html')
-    tests.add('reftests/foo/reftest/bar/shared.html')
+    tests.add('reftests/foo/reference/bar/common.html', is_reftest=True)
+    tests.add('reftests/foo/reftest/bar/shared.html', is_reftest=True)
 
     tests.add('websocket/tests/passes/text.html')
 
@@ -268,13 +268,15 @@ layer at (0,0) size 800x34
     tests.add('passes/testharness.html',
               actual_text='This is a testharness.js-based test.\nPASS: bah\n'
                           'Harness: the test ran to completion.',
-              actual_image=None,
-              expected_text=None)
+              expected_text=None,
+              actual_checksum=None, actual_image=None,
+              expected_checksum=None, expected_image=None)
     tests.add('failures/unexpected/testharness.html',
               actual_text='This is a testharness.js-based test.\nFAIL: bah\n'
                           'Harness: the test ran to completion.',
-              actual_image=None,
-              expected_text=None)
+              expected_text=None,
+              actual_checksum=None, actual_image=None,
+              expected_checksum=None, expected_image=None)
 
     return tests
 

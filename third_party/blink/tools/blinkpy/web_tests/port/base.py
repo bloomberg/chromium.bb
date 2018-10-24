@@ -602,7 +602,8 @@ class Port(object):
         Returns:
             An absolute path to its expected results, or None if not found.
         """
-        # FIXME: The [0] here is very mysterious, as is the destructured return.
+        # The [0] means the first expected baseline (which is the one to be
+        # used) in the fallback paths.
         platform_dir, baseline_filename = self.expected_baselines(test_name, extension, match=match)[0]
         if platform_dir:
             return self._filesystem.join(platform_dir, baseline_filename)
@@ -614,6 +615,25 @@ class Port(object):
 
         if return_default:
             return self._filesystem.join(self.layout_tests_dir(), baseline_filename)
+        return None
+
+    def fallback_expected_filename(self, test_name, extension):
+        """Given a test name, returns an absolute path to its next fallback baseline.
+        Args:
+            same as expected_filename()
+        Returns:
+            An absolute path to the next fallback baseline, or None if not found.
+        """
+        baselines = self.expected_baselines(test_name, extension, all_baselines=True)
+        if len(baselines) < 2:
+            actual_test_name = self.lookup_virtual_test_base(test_name)
+            if actual_test_name:
+                return self.fallback_expected_filename(actual_test_name, extension)
+            return None
+
+        platform_dir, baseline_filename = baselines[1]
+        if platform_dir:
+            return self._filesystem.join(platform_dir, baseline_filename)
         return None
 
     def expected_checksum(self, test_name):
