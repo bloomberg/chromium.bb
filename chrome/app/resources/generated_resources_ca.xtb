@@ -419,7 +419,6 @@
 <translation id="1598233202702788831">El vostre administrador ha desactivat les actualitzacions.</translation>
 <translation id="1600857548979126453">Accedir al servidor de depuració de pàgina</translation>
 <translation id="1601560923496285236">Aplica</translation>
-<translation id="1603300902586586390">Permet que les aplicacions per a Linux obrin els fitxers $1.</translation>
 <translation id="1603914832182249871">(Incògnit)</translation>
 <translation id="1607139524282324606">Esborra l'entrada</translation>
 <translation id="1608626060424371292">Suprimeix aquest usuari</translation>
@@ -744,7 +743,6 @@
 <translation id="2080070583977670716">Més opcions de configuració</translation>
 <translation id="2084108471225856927">Configuració del dispositiu</translation>
 <translation id="2085470240340828803">El nom de fitxer "<ph name="FILENAME" />" ja existeix. Què voleu fer?</translation>
-<translation id="208586643495776849">Torna-ho a provar</translation>
 <translation id="2087822576218954668">Impressió: <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">Navega de manera segura amb Google Chrome</translation>
 <translation id="2089795179672254991">Pregunta'm quan un lloc web vulgui veure el text i les imatges copiats al porta-retalls (opció recomanada)</translation>
@@ -1473,7 +1471,6 @@
 <translation id="3182749001423093222">Corrector ortogràfic</translation>
 <translation id="3183139917765991655">Importador de perfils</translation>
 <translation id="3184560914950696195">No es pot desar a $1. Les imatges modificades es desaran a la carpeta Baixades.</translation>
-<translation id="3186202398303525187">Permet que les aplicacions per a Linux obrin $1.</translation>
 <translation id="3188257591659621405">Els meus fitxers</translation>
 <translation id="3188465121994729530">Mitjana variable</translation>
 <translation id="3190558889382726167">S'ha desat la contrasenya</translation>
@@ -2718,7 +2715,6 @@
 <translation id="5108967062857032718">Configuració: suprimeix les aplicacions per a Android</translation>
 <translation id="5109044022078737958">Atleta</translation>
 <translation id="5111692334209731439">&amp;Gestor d'adreces d'interès</translation>
-<translation id="5112009661904384591">Comparteix fitxers amb Linux</translation>
 <translation id="5112577000029535889">&amp;Eines per a desenvolupadors</translation>
 <translation id="5113739826273394829">Si feu clic en aquesta icona, bloquejareu aquest dispositiu <ph name="DEVICE_TYPE" />. La propera vegada, haureu d'escriure la contrasenya per accedir-hi.</translation>
 <translation id="5115309401544567011">Endolla el dispositiu <ph name="DEVICE_TYPE" /> a una font d'alimentació.</translation>
@@ -3979,6 +3975,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6970480684834282392">Tipus d'inici</translation>
 <translation id="6970856801391541997">Imprimeix pàgines específiques</translation>
 <translation id="6972180789171089114">Àudio/Vídeo</translation>
+<translation id="6972754398087986839">Comença</translation>
 <translation id="6973630695168034713">Carpetes</translation>
 <translation id="6974609594866392343">Mode de demostració sense connexió</translation>
 <translation id="6976108581241006975">Consola JavaScript</translation>

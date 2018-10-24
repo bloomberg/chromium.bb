@@ -419,7 +419,6 @@
 <translation id="1598233202702788831">Адміністратор вимкнув оновлення.</translation>
 <translation id="1600857548979126453">Отримувати доступ до серверної частини налагоджувача сторінки</translation>
 <translation id="1601560923496285236">Застосувати</translation>
-<translation id="1603300902586586390">Дозвольте додаткам Linux відкривати файли $1.</translation>
 <translation id="1603914832182249871">(Анонімний перегляд)</translation>
 <translation id="1607139524282324606">Очистити введені дані</translation>
 <translation id="1608626060424371292">Вилучити цього користувача</translation>
@@ -744,7 +743,6 @@
 <translation id="2080070583977670716">Більше налаштувань</translation>
 <translation id="2084108471225856927">Налаштування пристрою</translation>
 <translation id="2085470240340828803">Файл із назвою "<ph name="FILENAME" />" уже існує. Що робити?</translation>
-<translation id="208586643495776849">Повторіть спробу</translation>
 <translation id="2087822576218954668">Друк: <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">Безпечний перегляд сайтів у Google Chrome</translation>
 <translation id="2089795179672254991">Запитувати, коли сайт хоче переглядати тексти й зображення в буфері обміну (рекомендується)</translation>
@@ -1475,7 +1473,6 @@
 <translation id="3182749001423093222">Перевірка правопису</translation>
 <translation id="3183139917765991655">Засіб імпортування профілів</translation>
 <translation id="3184560914950696195">Неможливо зберегти в $1. Редаговані зображення буде збережено в папці "Завантаження".</translation>
-<translation id="3186202398303525187">Дозвольте додаткам Linux відкривати файл $1.</translation>
 <translation id="3188257591659621405">Мої файли</translation>
 <translation id="3188465121994729530">Середня швидкість переміщення курсора</translation>
 <translation id="3190558889382726167">Пароль збережено</translation>
@@ -2721,7 +2718,6 @@
 <translation id="5108967062857032718">Налаштування – Видалення додатків Android</translation>
 <translation id="5109044022078737958">Краля</translation>
 <translation id="5111692334209731439">&amp;Диспетчер закладок</translation>
-<translation id="5112009661904384591">Діліться файлами з Linux</translation>
 <translation id="5112577000029535889">&amp;Інструменти розробника</translation>
 <translation id="5113739826273394829">Натиснувши цей значок, ви вручну заблокуєте цей пристрій <ph name="DEVICE_TYPE" />. Під час наступного входу потрібно буде ввести пароль.</translation>
 <translation id="5115309401544567011">Підключіть пристрій <ph name="DEVICE_TYPE" /> до джерела живлення.</translation>
@@ -3980,6 +3976,7 @@
 <translation id="6970480684834282392">Тип запуску</translation>
 <translation id="6970856801391541997">Друкувати певні сторінки</translation>
 <translation id="6972180789171089114">Звук і відео</translation>
+<translation id="6972754398087986839">Почати</translation>
 <translation id="6973630695168034713">Папки</translation>
 <translation id="6974609594866392343">Демо-режим офлайн</translation>
 <translation id="6976108581241006975">Консоль JavaScript</translation>

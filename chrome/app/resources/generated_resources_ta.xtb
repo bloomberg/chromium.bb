@@ -419,7 +419,6 @@
 <translation id="1598233202702788831">உங்கள் நிர்வாகியால் புதுப்பிப்புகள் முடக்கப்பட்டுள்ளன.</translation>
 <translation id="1600857548979126453">பக்கப் பிழைத் திருத்தியின் பின்தளத்தை அணுகலாம்</translation>
 <translation id="1601560923496285236">பயன்படுத்து</translation>
-<translation id="1603300902586586390">$1 கோப்புகளை Linux ஆப்ஸ் திறக்க அனுமதிக்கவும்.</translation>
 <translation id="1603914832182249871">(மறைநிலை)</translation>
 <translation id="1607139524282324606">உள்ளீட்டை அழி</translation>
 <translation id="1608626060424371292">இவரை அகற்று</translation>
@@ -744,7 +743,6 @@
 <translation id="2080070583977670716">மேலும் அமைப்புகள்</translation>
 <translation id="2084108471225856927">சாதன அமைப்புகள்</translation>
 <translation id="2085470240340828803">"<ph name="FILENAME" />" எனப் பெயரிடப்பட்ட கோப்பானது ஏற்கனவே உள்ளது. என்ன செய்ய விரும்புகிறீர்கள்?</translation>
-<translation id="208586643495776849">மீண்டும் முயலவும்</translation>
 <translation id="2087822576218954668">அச்சிடு: <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">Google Chromeஐப் பயன்படுத்தி, பாதுகாப்பாக உலாவவும்</translation>
 <translation id="2089795179672254991">கிளிப்போர்டுக்கு நகலெடுத்த உரையையும் படங்களையும் பார்ப்பதற்குத் தளம் விரும்பும் போது, கேள் (பரிந்துரைக்கப்படுவது)</translation>
@@ -1476,7 +1474,6 @@
 <translation id="3182749001423093222">எழுத்துப் பிழை சரிபார்ப்பான்</translation>
 <translation id="3183139917765991655">புரோஃபைல் இம்போர்ட்டர்</translation>
 <translation id="3184560914950696195">$1 இல் சேமிக்க முடியவில்லை. திருத்தப்பட்ட படங்கள், பதிவிறக்கங்கள் கோப்புறையில் சேமிக்கப்படும்.</translation>
-<translation id="3186202398303525187">$1 கோப்பைத் திறக்க Linux ஆப்ஸை அனுமதிக்கவும்.</translation>
 <translation id="3188257591659621405">எனது கோப்புகள்</translation>
 <translation id="3188465121994729530">நகரும் சராசரி</translation>
 <translation id="3190558889382726167">கடவுச்சொல் சேமிக்கப்பட்டது</translation>
@@ -2721,7 +2718,6 @@
 <translation id="5108967062857032718">அமைப்புகள் - Android பயன்பாடுகளை அகற்றவும்</translation>
 <translation id="5109044022078737958">மியா</translation>
 <translation id="5111692334209731439">&amp;புக்மார்க் மேனேஜர்</translation>
-<translation id="5112009661904384591">Linuxஸுடன் கோப்புகளைப் பகிரவும்</translation>
 <translation id="5112577000029535889">&amp;டெவலப்பர் கருவிகள்</translation>
 <translation id="5113739826273394829">இந்த ஐகானைக் கிளிக் செய்தால், இந்த <ph name="DEVICE_TYPE" />ஐக் கைமுறையாகப் பூட்ட வேண்டும். அடுத்த முறை, திறப்பதற்கு உங்கள் கடவுச்சொல்லை உள்ளிட வேண்டும்.</translation>
 <translation id="5115309401544567011"><ph name="DEVICE_TYPE" /> சாதனத்தைச் சார்ஜ் செய்யவும்.</translation>
@@ -3981,6 +3977,7 @@
 <translation id="6970480684834282392">தொடங்கப்படும் வகை</translation>
 <translation id="6970856801391541997">குறிப்பிட்ட பக்கங்களை அச்சிடு</translation>
 <translation id="6972180789171089114">ஆடியோ/வீடியோ</translation>
+<translation id="6972754398087986839">தொடங்குக</translation>
 <translation id="6973630695168034713">கோப்புறைகள்</translation>
 <translation id="6974609594866392343">ஆஃப்லைன் டெமோ பயன்முறை</translation>
 <translation id="6976108581241006975">JavaScript கன்சோல்</translation>

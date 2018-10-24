@@ -416,7 +416,6 @@
 <translation id="1598233202702788831">Актуализациите са деактивирани от администратора ви.</translation>
 <translation id="1600857548979126453">Достъп до задния слой на инструмента за откриване и отстраняване на грешки в страниците</translation>
 <translation id="1601560923496285236">Прилагане</translation>
-<translation id="1603300902586586390">Позволяване на приложенията за Linux да отварят файлове от $1.</translation>
 <translation id="1603914832182249871">(„Инкогнито“)</translation>
 <translation id="1607139524282324606">Изчистване на записа</translation>
 <translation id="1608626060424371292">Премахване на този потребител</translation>
@@ -741,7 +740,6 @@
 <translation id="2080070583977670716">Още настройки</translation>
 <translation id="2084108471225856927">Настройки на устройството</translation>
 <translation id="2085470240340828803">Вече съществува файл с име „<ph name="FILENAME" />“. Какво искате да направите?</translation>
-<translation id="208586643495776849">Моля, опитайте отново</translation>
 <translation id="2087822576218954668">Отпечатване: <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">Сърфирайте безопасно с Google Chrome</translation>
 <translation id="2089795179672254991">Извеждане на запитване, когато сайт иска да преглежда текста и изображенията, копирани в буферната памет (препоръчително)</translation>
@@ -1472,7 +1470,6 @@
 <translation id="3182749001423093222">Проверка на правописа</translation>
 <translation id="3183139917765991655">Импортиране на потребителски профили</translation>
 <translation id="3184560914950696195">Запазването в/ъв „$1“ е невъзможно. Редактираните изображения ще бъдат запазени в папката за изтегляния.</translation>
-<translation id="3186202398303525187">Позволяване на приложенията за Linux да отварят $1.</translation>
 <translation id="3188257591659621405">Моите файлове</translation>
 <translation id="3188465121994729530">Пълзяща средна стойност</translation>
 <translation id="3190558889382726167">Паролата бе запазена</translation>
@@ -2720,7 +2717,6 @@
 <translation id="5108967062857032718">Настройки – Премахване на приложенията за Android</translation>
 <translation id="5109044022078737958">Мия</translation>
 <translation id="5111692334209731439">&amp;Диспечер на отметките</translation>
-<translation id="5112009661904384591">Споделяне на файлове с Linux</translation>
 <translation id="5112577000029535889">&amp;Инструменти за програмисти</translation>
 <translation id="5113739826273394829">Ако кликнете върху тази икона, ще заключите ръчно този <ph name="DEVICE_TYPE" />. За да влезете след това, ще трябва да въведете паролата си.</translation>
 <translation id="5115309401544567011">Моля, включете устройството си <ph name="DEVICE_TYPE" /> в източник на захранване.</translation>
@@ -3980,6 +3976,7 @@
 <translation id="6970480684834282392">Тип стартиране</translation>
 <translation id="6970856801391541997">Отпечатване на конкретни страници</translation>
 <translation id="6972180789171089114">Аудио/видео</translation>
+<translation id="6972754398087986839">Първи стъпки</translation>
 <translation id="6973630695168034713">Папки</translation>
 <translation id="6974609594866392343">Офлайн демонстрационен режим</translation>
 <translation id="6976108581241006975">Конзола на JavaScript</translation>

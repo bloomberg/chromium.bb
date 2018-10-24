@@ -517,7 +517,6 @@
 <translation id="4277028893293644418">পাসওয়ার্ড রিসেট করুন</translation>
 <translation id="4280429058323657511">, মেয়াদ শেষ <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">পাল্টান</translation>
-<translation id="4308131620840579419">আপনার সমস্ত কার্ড এক জায়গায় সেভ করবেন?</translation>
 <translation id="4312866146174492540">অবরুদ্ধ করুন (ডিফল্ট)</translation>
 <translation id="4325863107915753736">নিবন্ধ খুঁজে পেতে ব্যর্থ হয়েছে</translation>
 <translation id="4326324639298822553">আপনার মেয়াদ শেষের তারিখ পরীক্ষা করে আবার চেষ্টা করুন</translation>
@@ -644,7 +643,7 @@
     <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />শুরু করার ধরন<ph name="END_BOLD" /> এর অধীনে <ph name="BEGIN_BOLD" />অক্ষম করুন <ph name="END_BOLD" /> বেছে নিন
     <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />পরিষেবা স্থিতির<ph name="END_BOLD" /> অধীনে <ph name="BEGIN_BOLD" />বন্ধ করুন <ph name="END_BOLD" /> এ ক্লিক করুন
     <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />প্রয়োগ করুন <ph name="END_BOLD" />এ ক্লিক করুন তারপর <ph name="BEGIN_BOLD" />ঠিক আছে<ph name="END_BOLD" /> তে ক্লিক করুন
-    <ph name="LIST_ITEM" />আপনার কম্পিউটার থেকে কিভাবে স্থায়ীভাবে সফ্টওয়্যার সরিয়ে ফেলতে হয় সেটি জানতে <ph name="BEGIN_LEARN_MORE_LINK" />Chrome সহায়তা কেন্দ্রে<ph name="END_LEARN_MORE_LINK" /> দেখুন
+    <ph name="LIST_ITEM" />আপনার কম্পিউটার থেকে কীভাবে স্থায়ীভাবে সফ্টওয়্যার সরিয়ে ফেলতে হয় সেটি জানতে <ph name="BEGIN_LEARN_MORE_LINK" />Chrome সহায়তা কেন্দ্রে<ph name="END_LEARN_MORE_LINK" /> দেখুন
     <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">সেভ করা সমস্ত পাসওয়ার্ড দেখান</translation>
 <translation id="5287240709317226393">কুকিজ দেখান</translation>

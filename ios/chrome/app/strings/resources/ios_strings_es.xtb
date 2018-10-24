@@ -225,8 +225,12 @@
 
 Tus datos se han cifrado con tu frase de contraseña de sincronización. Introdúcela para iniciar la sincronización.</translation>
 <translation id="473775607612524610">Actualizar</translation>
+<translation id="4747097190499141774">El cifrado mediante frase de contraseña no incluye los métodos de pago ni las direcciones de Google Pay. Solo alguien que tenga tu frase de contraseña puede leer tus datos cifrados. La frase de contraseña no se envía a Google, que tampoco la guarda. Si la olvidas o quieres cambiar esta opción, debes restablecer la sincronización. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Buscar en la página...</translation>
 <translation id="4751645464639803239">Nueva pestaña de incógnito</translation>
+<translation id="4802417911091824046">El cifrado mediante frase de contraseña no incluye los métodos de pago ni las direcciones de Google Pay.
+
+Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" />.</translation>
 <translation id="4807020197310989387">1 artículo de la lista de lectura no leído.</translation>
 <translation id="481968316161811770">Cookies y datos de sitios web</translation>
 <translation id="4854345657858711387">Establecer una contraseña</translation>
