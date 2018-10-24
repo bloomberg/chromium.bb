@@ -152,7 +152,8 @@ ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
 
   // Create the handler even for insecure HTTP since it's used in the
   // case of redirect to HTTPS.
-  if (!url.SchemeIsHTTPOrHTTPS() && !OriginCanAccessServiceWorkers(url)) {
+  if (!url.SchemeIsHTTPOrHTTPS() && !OriginCanAccessServiceWorkers(url) &&
+      !SchemeMaySupportRedirectingToHTTPS(url)) {
     return nullptr;
   }
 
