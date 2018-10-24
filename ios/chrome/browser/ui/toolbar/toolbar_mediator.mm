@@ -9,12 +9,14 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/search_engines/search_engine_observer_bridge.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_consumer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/images/branded_image_provider.h"
 #import "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_client.h"
@@ -27,6 +29,7 @@
 
 @interface ToolbarMediator ()<BookmarkModelBridgeObserver,
                               CRWWebStateObserver,
+                              SearchEngineObserving,
                               WebStateListObserving>
 
 // The current web state associated with the toolbar.
@@ -39,6 +42,8 @@
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
   // Bridge to register for bookmark changes.
   std::unique_ptr<bookmarks::BookmarkModelBridge> _bookmarkModelBridge;
+  // Listen for default search engine changes.
+  std::unique_ptr<SearchEngineObserverBridge> _searchEngineObserver;
 }
 
 @synthesize bookmarkModel = _bookmarkModel;
@@ -80,6 +85,7 @@
     _webState = nullptr;
   }
   _bookmarkModelBridge.reset();
+  _searchEngineObserver.reset();
 }
 
 #pragma mark - CRWWebStateObserver
@@ -167,6 +173,16 @@
 }
 
 #pragma mark - Setters
+
+- (void)setTemplateURLService:(TemplateURLService*)templateURLService {
+  _templateURLService = templateURLService;
+  if (templateURLService) {
+    // Listen for default search engine changes.
+    _searchEngineObserver =
+        std::make_unique<SearchEngineObserverBridge>(self, templateURLService);
+    templateURLService->Load();
+  }
+}
 
 - (void)setWebState:(web::WebState*)webState {
   if (_webState) {
@@ -299,6 +315,23 @@
 - (void)bookmarkNodeDeleted:(const bookmarks::BookmarkNode*)node
                  fromFolder:(const bookmarks::BookmarkNode*)folder {
   // No-op -- required by BookmarkModelBridgeObserver but not used.
+}
+
+#pragma mark - SearchEngineObserving
+
+- (void)searchEngineChanged {
+  SearchEngineIcon searchEngineIcon = SEARCH_ENGINE_ICON_OTHER;
+  if (self.templateURLService &&
+      self.templateURLService->GetDefaultSearchProvider() &&
+      self.templateURLService->GetDefaultSearchProvider()->GetEngineType(
+          self.templateURLService->search_terms_data()) ==
+          SEARCH_ENGINE_GOOGLE) {
+    searchEngineIcon = SEARCH_ENGINE_ICON_GOOGLE_SEARCH;
+  }
+  UIImage* searchIcon = ios::GetChromeBrowserProvider()
+                            ->GetBrandedImageProvider()
+                            ->GetToolbarSearchIcon(searchEngineIcon);
+  [self.consumer setSearchIcon:searchIcon];
 }
 
 @end

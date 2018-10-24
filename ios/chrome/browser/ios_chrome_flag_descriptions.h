@@ -207,6 +207,10 @@ extern const char kPhysicalWebDescription[];
 extern const char kIgnoresViewportScaleLimitsName[];
 extern const char kIgnoresViewportScaleLimitsDescription[];
 
+// Title and description for the flag to toggle the flag of the search button.
+extern const char kSearchIconToggleName[];
+extern const char kSearchIconToggleDescription[];
+
 // Title and description for the flag to enable WKBackForwardList based
 // navigation manager.
 extern const char kSlimNavigationManagerName[];

@@ -6,6 +6,7 @@
 
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_coordinator+subclassing.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_view_controller.h"
@@ -53,6 +54,8 @@
   self.viewController.longPressDelegate = self.longPressDelegate;
 
   self.mediator = [[ToolbarMediator alloc] init];
+  self.mediator.templateURLService =
+      ios::TemplateURLServiceFactory::GetForBrowserState(self.browserState);
   self.mediator.consumer = self.viewController;
   self.mediator.webStateList = self.webStateList;
   self.mediator.bookmarkModel =

@@ -132,6 +132,24 @@ const FeatureEntry::Choice kAutofillIOSDelayBetweenFieldsChoices[] = {
     {"1000", autofill::switches::kAutofillIOSDelayBetweenFields, "1000"},
 };
 
+const FeatureEntry::FeatureParam kIconForSearchButtonGrey[] = {
+    {kIconForSearchButtonFeatureParameterName,
+     kIconForSearchButtonParameterGrey}};
+const FeatureEntry::FeatureParam kIconForSearchButtonColorful[] = {
+    {kIconForSearchButtonFeatureParameterName,
+     kIconForSearchButtonParameterColorful}};
+const FeatureEntry::FeatureParam kIconForSearchButtonMagnifying[] = {
+    {kIconForSearchButtonFeatureParameterName,
+     kIconForSearchButtonParameterMagnifying}};
+
+const FeatureEntry::FeatureVariation kIconForSearchButtonVariations[] = {
+    {"Grey search engine logo", kIconForSearchButtonGrey,
+     base::size(kIconForSearchButtonGrey), nullptr},
+    {"Colorful search engine logo", kIconForSearchButtonColorful,
+     base::size(kIconForSearchButtonColorful), nullptr},
+    {"Magnifying glass", kIconForSearchButtonMagnifying,
+     base::size(kIconForSearchButtonMagnifying), nullptr}};
+
 // To add a new entry, add to the end of kFeatureEntries. There are four
 // distinct types of entries:
 // . ENABLE_DISABLE_VALUE: entry is either enabled, disabled, or uses the
@@ -391,6 +409,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBrowserContainerContainsNTPName,
      flag_descriptions::kBrowserContainerContainsNTPDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kBrowserContainerContainsNTP)},
+    {"search-icon-toggle", flag_descriptions::kSearchIconToggleName,
+     flag_descriptions::kSearchIconToggleDescription, flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kIconForSearchButtonFeature,
+                                    kIconForSearchButtonVariations,
+                                    "ToggleSearchButtonIcon")},
 };
 
 // Add all switches from experimental flags to |command_line|.

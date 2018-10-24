@@ -250,6 +250,10 @@ const char kIgnoresViewportScaleLimitsName[] = "Ignore Viewport Scale Limits";
 const char kIgnoresViewportScaleLimitsDescription[] =
     "When enabled the page can always be scaled, regardless of author intent.";
 
+const char kSearchIconToggleName[] = "Change the icon for the search button";
+const char kSearchIconToggleDescription[] =
+    "Different icons for the search button.";
+
 const char kSlimNavigationManagerName[] = "Use Slim Navigation Manager";
 const char kSlimNavigationManagerDescription[] =
     "When enabled, uses the experimental slim navigation manager that provides "
