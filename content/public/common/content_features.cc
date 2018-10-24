@@ -53,6 +53,10 @@ const base::Feature kAwaitOptimization{"AwaitOptimization",
 const base::Feature kBackgroundFetch{"BackgroundFetch",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables using uploads in a Background Fetch.
+const base::Feature kBackgroundFetchUploads{"BackgroundFetchUploads",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable incremental marking for Blink's heap managed by the Oilpan garbage
 // collector.
 const base::Feature kBlinkHeapIncrementalMarking{
