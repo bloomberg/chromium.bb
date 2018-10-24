@@ -17,6 +17,7 @@
 #include "google_apis/google_api_keys.h"
 #include "ios/web/public/favicon_url.h"
 #include "ios/web/public/load_committed_details.h"
+#import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/reload_type.h"
@@ -36,6 +37,7 @@
 #import "ios/web_view/internal/cwv_navigation_action_internal.h"
 #import "ios/web_view/internal/cwv_script_command_internal.h"
 #import "ios/web_view/internal/cwv_scroll_view_internal.h"
+#import "ios/web_view/internal/cwv_ssl_status_internal.h"
 #import "ios/web_view/internal/cwv_web_view_configuration_internal.h"
 #import "ios/web_view/internal/translate/cwv_translation_controller_internal.h"
 #import "ios/web_view/internal/translate/web_view_translate_client.h"
@@ -113,6 +115,7 @@ class WebViewHolder : public web::WebStateUserData<WebViewHolder> {
 @property(nonatomic, readwrite) BOOL loading;
 @property(nonatomic, readwrite, copy) NSString* title;
 @property(nonatomic, readwrite) NSURL* visibleURL;
+@property(nonatomic, readwrite) CWVSSLStatus* visibleSSLStatus;
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 @property(nonatomic, readonly) CWVAutofillController* autofillController;
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
@@ -154,6 +157,7 @@ static NSString* gUserAgentProduct = nil;
 @synthesize UIDelegate = _UIDelegate;
 @synthesize scrollView = _scrollView;
 @synthesize visibleURL = _visibleURL;
+@synthesize visibleSSLStatus = _visibleSSLStatus;
 
 + (void)initialize {
   if (self != [CWVWebView class]) {
@@ -321,6 +325,9 @@ static NSString* gUserAgentProduct = nil;
   [self updateNavigationAvailability];
   [self updateCurrentURLs];
 
+  // TODO(crbug.com/898357): Remove this once crbug.com/898357 is fixed.
+  [self updateVisibleSSLStatus];
+
   NSError* error = navigation->GetError();
   SEL selector = @selector(webView:didFailNavigationWithError:);
   if (error && [_navigationDelegate respondsToSelector:selector]) {
@@ -355,6 +362,10 @@ static NSString* gUserAgentProduct = nil;
 
 - (void)webStateDidChangeTitle:(web::WebState*)webState {
   [self updateTitle];
+}
+
+- (void)webStateDidChangeVisibleSecurityState:(web::WebState*)webState {
+  [self updateVisibleSSLStatus];
 }
 
 - (void)renderProcessGoneForWebState:(web::WebState*)webState {
@@ -650,6 +661,7 @@ static NSString* gUserAgentProduct = nil;
   [self updateNavigationAvailability];
   [self updateCurrentURLs];
   [self updateTitle];
+  [self updateVisibleSSLStatus];
   self.loading = NO;
   self.estimatedProgress = 0.0;
 }
@@ -679,6 +691,17 @@ static NSString* gUserAgentProduct = nil;
 
 - (void)updateTitle {
   self.title = base::SysUTF16ToNSString(_webState->GetTitle());
+}
+
+- (void)updateVisibleSSLStatus {
+  web::NavigationItem* visibleItem =
+      _webState->GetNavigationManager()->GetVisibleItem();
+  if (visibleItem) {
+    self.visibleSSLStatus =
+        [[CWVSSLStatus alloc] initWithInternalStatus:visibleItem->GetSSL()];
+  } else {
+    self.visibleSSLStatus = nil;
+  }
 }
 
 #pragma mark - Internal Methods
