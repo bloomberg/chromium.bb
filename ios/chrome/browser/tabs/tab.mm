@@ -139,8 +139,6 @@ NSString* const kTabUrlKey = @"url";
   // Universal Second Factor (U2F) call controller.
   U2FController* _secondFactorController;
 
-  // View displayed upon PagePlaceholderTabHelperDelegate request.
-  UIImageView* _pagePlaceholder;
 }
 
 // Returns the OpenInController for this tab.
