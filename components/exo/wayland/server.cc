@@ -5693,12 +5693,15 @@ class WaylandNotificationShellNotification {
                                        const std::string& message,
                                        const std::string& display_source,
                                        const std::string& notification_id,
+                                       const std::vector<std::string>& buttons,
                                        wl_resource* resource)
       : resource_(resource), weak_ptr_factory_(this) {
     notification_ = std::make_unique<Notification>(
         title, message, display_source, notification_id,
-        kNotificationShellNotifierId,
+        kNotificationShellNotifierId, buttons,
         base::BindRepeating(&WaylandNotificationShellNotification::OnClose,
+                            weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&WaylandNotificationShellNotification::OnClick,
                             weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -5707,6 +5710,12 @@ class WaylandNotificationShellNotification {
  private:
   void OnClose(bool by_user) {
     zcr_notification_shell_notification_v1_send_closed(resource_, by_user);
+    wl_client_flush(wl_resource_get_client(resource_));
+  }
+
+  void OnClick(const base::Optional<int>& button_index) {
+    int32_t index = button_index ? *button_index : -1;
+    zcr_notification_shell_notification_v1_send_clicked(resource_, index);
     wl_client_flush(wl_resource_get_client(resource_));
   }
 
@@ -5745,12 +5754,14 @@ class WaylandNotificationShell {
       const std::string& message,
       const std::string& display_source,
       const std::string& notification_key,
+      const std::vector<std::string>& buttons,
       wl_resource* notification_resource) {
     auto notification_id = base::StringPrintf(
         kNotificationShellNotificationIdFormat, id_, notification_key.c_str());
 
     return std::make_unique<WaylandNotificationShellNotification>(
-        title, message, display_source, notification_id, notification_resource);
+        title, message, display_source, notification_id, buttons,
+        notification_resource);
   }
 
  private:
@@ -5766,14 +5777,27 @@ void notification_shell_create_notification(wl_client* client,
                                             const char* title,
                                             const char* message,
                                             const char* display_source,
-                                            const char* notification_key) {
+                                            const char* notification_key,
+                                            wl_array* buttons) {
   wl_resource* notification_resource = wl_resource_create(
       client, &zcr_notification_shell_notification_v1_interface,
       wl_resource_get_version(resource), id);
 
+  // Converts wl_array of strings into std::vector<std::string>. All elements
+  // are 0-terminated so we use it as the mark of the element's end.
+  std::vector<std::string> button_strings;
+  const char* data = static_cast<const char*>(buttons->data);
+  int len = 0;
+  for (const char *pos = data; pos < data + buttons->size; ++pos, ++len) {
+    if (*pos == '\0') {
+      button_strings.emplace_back(std::string(pos - len, len));
+      len = 0;
+    }
+  }
+
   std::unique_ptr<WaylandNotificationShellNotification> notification =
       GetUserDataAs<WaylandNotificationShell>(resource)->CreateNotification(
-          title, message, display_source, notification_key,
+          title, message, display_source, notification_key, button_strings,
           notification_resource);
 
   SetImplementation(notification_resource, &notification_implementation,
