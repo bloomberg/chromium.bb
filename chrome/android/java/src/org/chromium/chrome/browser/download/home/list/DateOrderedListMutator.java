@@ -12,7 +12,6 @@ import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterObserve
 import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterSource;
 import org.chromium.chrome.browser.download.home.list.ListItem.OfflineItemListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.SectionHeaderListItem;
-import org.chromium.chrome.browser.download.home.list.ListItem.SeparatorViewListItem;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
@@ -148,9 +147,8 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
     }
 
     // Flattens out the hierarchical data and adds items to the model in the order they should be
-    // displayed. Date header, section header, date separator and section separators are added
-    // wherever necessary. The existing items in the model are replaced by the new set of items
-    // computed.
+    // displayed. Date headers and section headers are added wherever necessary. The existing items
+    // in the model are replaced by the new set of items computed.
     private void pushItemsToModel() {
         List<ListItem> listItems = new ArrayList<>();
         int dateIndex = 0;
@@ -164,8 +162,10 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
 
                 // Add a section header.
                 if (!mHideAllHeaders) {
-                    SectionHeaderListItem sectionHeaderItem = new SectionHeaderListItem(
-                            filter, date.getTime(), sectionIndex == 0, date.equals(JUST_NOW_DATE));
+                    SectionHeaderListItem sectionHeaderItem = new SectionHeaderListItem(filter,
+                            date.getTime(), sectionIndex == 0 /* showDate */,
+                            date.equals(JUST_NOW_DATE) /* isJustNow */,
+                            sectionIndex == 0 && dateIndex > 0 /* showDivider */);
                     sectionHeaderItem.showTitle = !mHideSectionHeaders;
                     sectionHeaderItem.showMenu = filter == OfflineItemFilter.FILTER_IMAGE;
                     sectionHeaderItem.items = new ArrayList<>(section.items.values());
@@ -182,17 +182,9 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
                     listItems.add(item);
                 }
 
-                // Add a section separator if needed.
-                if (!mHideAllHeaders && sectionIndex < dateGroup.sections.size() - 1) {
-                    listItems.add(new SeparatorViewListItem(date.getTime(), filter));
-                }
                 sectionIndex++;
             }
 
-            // Add a date separator if needed.
-            if (!mHideAllHeaders && dateIndex < mDateGroups.size() - 1) {
-                listItems.add(new SeparatorViewListItem(date.getTime()));
-            }
             dateIndex++;
         }
 

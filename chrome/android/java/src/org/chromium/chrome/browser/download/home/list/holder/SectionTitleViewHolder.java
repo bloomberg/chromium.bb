@@ -30,6 +30,7 @@ import java.util.List;
  * A {@link ViewHolder} specifically meant to display a section header.
  */
 public class SectionTitleViewHolder extends ListItemViewHolder implements ListMenuButton.Delegate {
+    private final View mDivider;
     private final TextView mDate;
     private final TextView mTitle;
     private final ListMenuButton mMore;
@@ -54,6 +55,7 @@ public class SectionTitleViewHolder extends ListItemViewHolder implements ListMe
 
     private SectionTitleViewHolder(View view) {
         super(view);
+        mDivider = view.findViewById(R.id.divider);
         mDate = (TextView) view.findViewById(R.id.date);
         mTitle = (TextView) view.findViewById(R.id.title);
         mMore = (ListMenuButton) view.findViewById(R.id.more);
@@ -75,6 +77,7 @@ public class SectionTitleViewHolder extends ListItemViewHolder implements ListMe
         }
 
         updateTopBottomSpacing(sectionItem.showMenu);
+        mDivider.setVisibility(sectionItem.showDivider ? ViewGroup.VISIBLE : ViewGroup.GONE);
         mDate.setVisibility(sectionItem.showDate ? View.VISIBLE : View.GONE);
         mTitle.setVisibility((sectionItem.showTitle ? View.VISIBLE : View.GONE));
         if (mMore != null) mMore.setVisibility(sectionItem.showMenu ? View.VISIBLE : View.GONE);

@@ -26,8 +26,7 @@ public class ListUtils {
     /** The potential types of list items that could be displayed. */
     @IntDef({ViewType.DATE, ViewType.IN_PROGRESS, ViewType.GENERIC, ViewType.VIDEO, ViewType.IMAGE,
             ViewType.CUSTOM_VIEW, ViewType.PREFETCH, ViewType.SECTION_HEADER,
-            ViewType.SEPARATOR_DATE, ViewType.SEPARATOR_SECTION, ViewType.IN_PROGRESS_VIDEO,
-            ViewType.IN_PROGRESS_IMAGE})
+            ViewType.IN_PROGRESS_VIDEO, ViewType.IN_PROGRESS_IMAGE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ViewType {
         int DATE = 0;
@@ -38,10 +37,8 @@ public class ListUtils {
         int CUSTOM_VIEW = 5;
         int PREFETCH = 6;
         int SECTION_HEADER = 7;
-        int SEPARATOR_DATE = 8;
-        int SEPARATOR_SECTION = 9;
-        int IN_PROGRESS_VIDEO = 10;
-        int IN_PROGRESS_IMAGE = 11;
+        int IN_PROGRESS_VIDEO = 8;
+        int IN_PROGRESS_IMAGE = 9;
     }
 
     /** Converts a given list of {@link ListItem}s to a list of {@link OfflineItem}s. */
@@ -66,10 +63,6 @@ public class ListUtils {
     public static @ViewType int getViewTypeForItem(ListItem item, DownloadManagerUiConfig config) {
         if (item instanceof ViewListItem) return ViewType.CUSTOM_VIEW;
         if (item instanceof ListItem.SectionHeaderListItem) return ViewType.SECTION_HEADER;
-        if (item instanceof ListItem.SeparatorViewListItem) {
-            ListItem.SeparatorViewListItem separator = (ListItem.SeparatorViewListItem) item;
-            return separator.isDateDivider() ? ViewType.SEPARATOR_DATE : ViewType.SEPARATOR_SECTION;
-        }
 
         if (item instanceof OfflineItemListItem) {
             OfflineItemListItem offlineItem = (OfflineItemListItem) item;
