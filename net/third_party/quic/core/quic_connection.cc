@@ -1167,6 +1167,7 @@ bool QuicConnection::OnPathChallengeFrame(const QuicPathChallengeFrame& frame) {
   // PING, so as a stopgap, tell the FSM that determines whether we have a
   // Padded PING or not that we received a PING.
   UpdatePacketContent(FIRST_FRAME_IS_PING);
+  should_last_packet_instigate_acks_ = true;
   return true;
 }
 
@@ -1176,6 +1177,7 @@ bool QuicConnection::OnPathResponseFrame(const QuicPathResponseFrame& frame) {
     return true;
   }
   UpdatePacketContent(FIRST_FRAME_IS_PING);
+  should_last_packet_instigate_acks_ = true;
   return true;
 }
 
