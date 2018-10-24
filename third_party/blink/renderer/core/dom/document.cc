@@ -701,7 +701,9 @@ Document::Document(const DocumentInit& initializer,
 #endif
       needs_to_record_ukm_outlive_time_(false),
       viewport_data_(new ViewportData(*this)),
-      agent_cluster_id_(base::UnguessableToken::Create()) {
+      agent_cluster_id_(base::UnguessableToken::Create()),
+      parsed_feature_policies_(
+          static_cast<int>(mojom::FeaturePolicyFeature::kMaxValue) + 1) {
   if (frame_) {
     DCHECK(frame_->GetPage());
     ProvideContextFeaturesToDocumentFrom(*this, *frame_->GetPage());

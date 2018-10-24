@@ -35,6 +35,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-blink.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
@@ -68,6 +69,7 @@
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/bit_vector.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
@@ -1507,6 +1509,14 @@ class CORE_EXPORT Document : public ContainerNode,
       mojom::FeaturePolicyFeature,
       const String& message = g_empty_string) const override;
 
+  bool IsParsedFeaturePolicy(mojom::FeaturePolicyFeature feature) const {
+    return parsed_feature_policies_.QuickGet(static_cast<int>(feature));
+  }
+
+  void SetParsedFeaturePolicy(mojom::FeaturePolicyFeature feature) {
+    parsed_feature_policies_.QuickSet(static_cast<int>(feature));
+  }
+
  protected:
   Document(const DocumentInit&, DocumentClassFlags = kDefaultDocumentClass);
 
@@ -1948,6 +1958,10 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // https://tc39.github.io/ecma262/#sec-agent-clusters
   const base::UnguessableToken agent_cluster_id_;
+
+  // Tracks which feature policies have already been parsed, so as not to count
+  // them multiple times.
+  BitVector parsed_feature_policies_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

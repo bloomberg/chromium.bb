@@ -6,6 +6,9 @@
 #include <algorithm>
 
 #include "base/metrics/histogram_macros.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/platform/json/json_values.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/bit_vector.h"
@@ -26,9 +29,10 @@ ParsedFeaturePolicy ParseFeaturePolicyAttribute(
     const String& policy,
     scoped_refptr<const SecurityOrigin> self_origin,
     scoped_refptr<const SecurityOrigin> src_origin,
-    Vector<String>* messages) {
+    Vector<String>* messages,
+    Document* document) {
   return ParseFeaturePolicy(policy, self_origin, src_origin, messages,
-                            GetDefaultFeatureNameMap());
+                            GetDefaultFeatureNameMap(), document);
 }
 
 ParsedFeaturePolicy ParseFeaturePolicy(
@@ -36,7 +40,8 @@ ParsedFeaturePolicy ParseFeaturePolicy(
     scoped_refptr<const SecurityOrigin> self_origin,
     scoped_refptr<const SecurityOrigin> src_origin,
     Vector<String>* messages,
-    const FeatureNameMap& feature_names) {
+    const FeatureNameMap& feature_names,
+    Document* document) {
   ParsedFeaturePolicy allowlists;
   BitVector features_specified(
       static_cast<int>(mojom::FeaturePolicyFeature::kMaxValue));
@@ -72,7 +77,15 @@ ParsedFeaturePolicy ParseFeaturePolicy(
         continue;
 
       // Count the use of this feature policy.
-      if (!src_origin) {
+      if (src_origin) {
+        if (!document || !document->IsParsedFeaturePolicy(feature)) {
+          UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.FeaturePolicy.Allow",
+                                    feature);
+          if (document) {
+            document->SetParsedFeaturePolicy(feature);
+          }
+        }
+      } else {
         UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.FeaturePolicy.Header",
                                   feature);
       }

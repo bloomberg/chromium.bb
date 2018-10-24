@@ -239,8 +239,8 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
   scoped_refptr<const SecurityOrigin> src_origin = GetOriginForFeaturePolicy();
   scoped_refptr<const SecurityOrigin> self_origin =
       GetDocument().GetSecurityOrigin();
-  ParsedFeaturePolicy container_policy =
-      ParseFeaturePolicyAttribute(allow_, self_origin, src_origin, messages);
+  ParsedFeaturePolicy container_policy = ParseFeaturePolicyAttribute(
+      allow_, self_origin, src_origin, messages, &GetDocument());
 
   // If allowfullscreen attribute is present and no fullscreen policy is set,
   // enable the feature for all origins.
