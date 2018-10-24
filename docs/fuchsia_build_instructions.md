@@ -140,8 +140,8 @@ example:
 $ autoninja -C out/fuchsia base_unittests
 ```
 
-`autoninja` is a wrapper that automatically provides optimal values for the
-arguments passed to `ninja`.
+(`autoninja` is a wrapper that automatically provides optimal values for the
+arguments passed to `ninja`.)
 
 ## Run
 
