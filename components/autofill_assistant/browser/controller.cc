@@ -36,14 +36,14 @@ void Controller::CreateAndStartForWebContents(
     std::unique_ptr<Client> client,
     std::unique_ptr<std::map<std::string, std::string>> parameters) {
   // Get the key early since |client| will be invalidated when moved below.
-  const std::string api_key = client->GetApiKey();
   GURL server_url(client->GetServerUrl());
   DCHECK(server_url.is_valid());
+  std::unique_ptr<Service> service = std::make_unique<Service>(
+      client->GetApiKey(), server_url, web_contents->GetBrowserContext(),
+      client->GetIdentityManagerForPrimaryAccount());
   new Controller(web_contents, std::move(client),
                  WebController::CreateForWebContents(web_contents),
-                 std::make_unique<Service>(api_key, server_url,
-                                           web_contents->GetBrowserContext()),
-                 std::move(parameters));
+                 std::move(service), std::move(parameters));
 }
 
 Service* Controller::GetService() {
