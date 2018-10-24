@@ -400,6 +400,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableModernMediaControls(
       base::FeatureList::IsEnabled(media::kUseModernMediaControls));
 
+  WebRuntimeFeatures::EnableWorkStealingInScriptRunner(
+      base::FeatureList::IsEnabled(features::kWorkStealingInScriptRunner));
+
   WebRuntimeFeatures::EnableScheduledScriptStreaming(
       base::FeatureList::IsEnabled(features::kScheduledScriptStreaming));
 

@@ -96,7 +96,8 @@ class CORE_EXPORT PendingScript
   virtual bool WasCanceled() const = 0;
 
   // Support for script streaming.
-  virtual void StartStreamingIfPossible() = 0;
+  virtual bool StartStreamingIfPossible(base::OnceClosure) = 0;
+  virtual bool IsCurrentlyStreaming() const = 0;
 
   // Used only for tracing, and can return a null URL.
   // TODO(hiroshige): It's preferable to return the base URL consistently

@@ -498,16 +498,14 @@ TEST_F(ScriptStreamingTest, ResourceSetRevalidatingRequest) {
   ProcessTasksUntilStreamingComplete();
 
   // Second start streaming should fail.
-  GetResource()->StartStreaming(loading_task_runner_);
-  EXPECT_FALSE(GetResource()->HasRunningStreamer());
+  EXPECT_FALSE(GetResource()->StartStreaming(loading_task_runner_));
 
   ResourceRequest request(GetResource()->Url());
   GetResource()->SetRevalidatingRequest(request);
 
   // The next streaming should still fail, but the reason should be
   // "kRevalidate".
-  GetResource()->StartStreaming(loading_task_runner_);
-  EXPECT_FALSE(GetResource()->HasRunningStreamer());
+  EXPECT_FALSE(GetResource()->StartStreaming(loading_task_runner_));
   EXPECT_EQ(GetResource()->NoStreamerReason(), ScriptStreamer::kRevalidate);
 }
 
