@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.squareup.javapoet.AnnotationSpec;
+import com.squareup.javapoet.ArrayTypeName;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
@@ -39,6 +40,9 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 
 /**
@@ -75,6 +79,11 @@ public class JniProcessor extends AbstractProcessor {
     // of the method descriptor used as name of the generated
     // native method in GEN_JNI (prefixed with "M")
     private static final int MAX_CHARS_FOR_HASHED_NATIVE_METHODS = 8;
+
+    // Types that are non-primitives and should not be
+    // casted to objects in native method declarations.
+    static final ImmutableSet JNI_OBJECT_TYPE_EXCEPTIONS =
+            ImmutableSet.of("java.lang.String", "void");
 
     static String getNameOfWrapperClass(String containingClassName) {
         return containingClassName + NATIVE_WRAPPER_CLASS_POSTFIX;
@@ -376,6 +385,25 @@ public class JniProcessor extends AbstractProcessor {
         copyMethodParamsAndReturnType(builder, method, false);
     }
 
+    boolean shouldDowncastToObjectForJni(TypeName t) {
+        if (t.isPrimitive()) {
+            return false;
+        }
+        // There are some non-primitives that should not be downcasted.
+        return !JNI_OBJECT_TYPE_EXCEPTIONS.contains(t.toString());
+    }
+
+    TypeName toTypeName(TypeMirror t, boolean useJni) {
+        if (t.getKind() == TypeKind.ARRAY) {
+            return ArrayTypeName.of(toTypeName(((ArrayType) t).getComponentType(), useJni));
+        }
+        TypeName typeName = TypeName.get(t);
+        if (useJni && shouldDowncastToObjectForJni(typeName)) {
+            return TypeName.OBJECT;
+        }
+        return typeName;
+    }
+
     /**
      * Since some types may decay to objects in the native method
      * this method returns a javadoc string that contains the
@@ -406,22 +434,18 @@ public class JniProcessor extends AbstractProcessor {
     }
 
     void copyMethodParamsAndReturnType(
-            MethodSpec.Builder builder, ExecutableElement method, boolean useObjects) {
+            MethodSpec.Builder builder, ExecutableElement method, boolean useJniTypes) {
         for (VariableElement param : method.getParameters()) {
-            builder.addParameter(createParamSpec(param, useObjects));
+            builder.addParameter(createParamSpec(param, useJniTypes));
         }
-        TypeName returnType = TypeName.get(method.getReturnType());
-        if (useObjects && !returnType.isPrimitive()) {
-            returnType = TypeName.OBJECT;
-        }
+        TypeMirror givenReturnType = method.getReturnType();
+        TypeName returnType = toTypeName(givenReturnType, useJniTypes);
+
         builder.returns(returnType);
     }
 
-    ParameterSpec createParamSpec(VariableElement param, boolean useObject) {
-        TypeName paramType = TypeName.get(param.asType());
-        if (useObject && !paramType.isPrimitive()) {
-            paramType = TypeName.OBJECT;
-        }
+    ParameterSpec createParamSpec(VariableElement param, boolean useJniObjects) {
+        TypeName paramType = toTypeName(param.asType(), useJniObjects);
         return ParameterSpec.builder(paramType, param.getSimpleName().toString())
                 .addModifiers(param.getModifiers())
                 .build();
