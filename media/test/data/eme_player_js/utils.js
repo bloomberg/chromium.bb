@@ -275,11 +275,19 @@ Utils.timeLog = function(/**/) {
 
 // Convert an event into a promise. When |event| is fired on |object|,
 // call |func| to handle the event and either resolve or reject the promise.
+// If |func| is not specified, the promise will simply be resolved with the
+// event when the event happens.
 Utils.waitForEvent = function(object, event, func) {
   return new Promise(function(resolve, reject) {
     object.addEventListener(event, function listener(e) {
       object.removeEventListener(event, listener);
-      func(e, resolve, reject);
+      if (func) {
+        func(e, resolve, reject);
+      } else {
+        // No |func| is specified, so simply resolve the promise passing
+        // |event| in case the caller is interested in it.
+        resolve(event);
+      }
     });
   });
 };
