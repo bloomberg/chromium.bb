@@ -259,7 +259,7 @@ static void set_offsets_without_segment_id(const AV1_COMP *const cpi,
                  cm->mi_cols);
 
   // Set up source buffers.
-  av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes);
+  av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes, bsize);
 
   // R/D setup.
   x->rdmult = cpi->rd.RDMULT;
@@ -479,7 +479,8 @@ static void update_state(const AV1_COMP *const cpi,
 }
 
 void av1_setup_src_planes(MACROBLOCK *x, const YV12_BUFFER_CONFIG *src,
-                          int mi_row, int mi_col, const int num_planes) {
+                          int mi_row, int mi_col, const int num_planes,
+                          BLOCK_SIZE bsize) {
   // Set current frame pointer.
   x->e_mbd.cur_buf = src;
 
@@ -487,11 +488,10 @@ void av1_setup_src_planes(MACROBLOCK *x, const YV12_BUFFER_CONFIG *src,
   // the static analysis warnings.
   for (int i = 0; i < AOMMIN(num_planes, MAX_MB_PLANE); i++) {
     const int is_uv = i > 0;
-    setup_pred_plane(&x->plane[i].src, x->e_mbd.mi[0]->sb_type, src->buffers[i],
-                     src->crop_widths[is_uv], src->crop_heights[is_uv],
-                     src->strides[is_uv], mi_row, mi_col, NULL,
-                     x->e_mbd.plane[i].subsampling_x,
-                     x->e_mbd.plane[i].subsampling_y);
+    setup_pred_plane(
+        &x->plane[i].src, bsize, src->buffers[i], src->crop_widths[is_uv],
+        src->crop_heights[is_uv], src->strides[is_uv], mi_row, mi_col, NULL,
+        x->e_mbd.plane[i].subsampling_x, x->e_mbd.plane[i].subsampling_y);
   }
 }
 
@@ -3046,7 +3046,7 @@ static void ml_prune_4_partition(const AV1_COMP *const cpi, MACROBLOCK *const x,
     BLOCK_SIZE horz_4_bs = get_partition_subsize(bsize, PARTITION_HORZ_4);
     BLOCK_SIZE vert_4_bs = get_partition_subsize(bsize, PARTITION_VERT_4);
     av1_setup_src_planes(x, cpi->source, mi_row, mi_col,
-                         av1_num_planes(&cpi->common));
+                         av1_num_planes(&cpi->common), bsize);
     const int src_stride = x->plane[0].src.stride;
     const uint8_t *src = x->plane[0].src.buf;
     const MACROBLOCKD *const xd = &x->e_mbd;
@@ -3784,7 +3784,7 @@ BEGIN_PARTITION_SEARCH:
   int prune_vert = 0;
   if (cpi->sf.ml_prune_rect_partition && !frame_is_intra_only(cm) &&
       (partition_horz_allowed || partition_vert_allowed)) {
-    av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes);
+    av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes, bsize);
     ml_prune_rect_partition(cpi, x, bsize, best_rdc.rdcost, cur_none_rd,
                             split_rd, &prune_horz, &prune_vert);
   }
@@ -3937,7 +3937,7 @@ BEGIN_PARTITION_SEARCH:
   }
 
   if (pb_source_variance == UINT_MAX) {
-    av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes);
+    av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes, bsize);
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
       pb_source_variance = av1_high_get_sby_perpixel_variance(
           cpi, &x->plane[0].src, bsize, xd->bd);
@@ -4508,7 +4508,7 @@ static void setup_delta_q(AV1_COMP *const cpi, MACROBLOCK *const x,
   const int mib_size = cm->seq_params.mib_size;
 
   // Delta-q modulation based on variance
-  av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes);
+  av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes, sb_size);
 
   int offset_qindex;
   if (DELTAQ_MODULATION == 1) {
@@ -4796,7 +4796,8 @@ static void init_encode_frame_mb_context(AV1_COMP *cpi) {
   MACROBLOCKD *const xd = &x->e_mbd;
 
   // Copy data over into macro block data structures.
-  av1_setup_src_planes(x, cpi->source, 0, 0, num_planes);
+  av1_setup_src_planes(x, cpi->source, 0, 0, num_planes,
+                       cm->seq_params.sb_size);
 
   av1_setup_block_planes(xd, cm->seq_params.subsampling_x,
                          cm->seq_params.subsampling_y, num_planes);

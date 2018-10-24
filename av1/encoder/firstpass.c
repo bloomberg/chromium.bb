@@ -562,7 +562,8 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
   av1_setup_block_planes(&x->e_mbd, seq_params->subsampling_x,
                          seq_params->subsampling_y, num_planes);
 
-  av1_setup_src_planes(x, cpi->source, 0, 0, num_planes);
+  av1_setup_src_planes(x, cpi->source, 0, 0, num_planes,
+                       x->e_mbd.mi[0]->sb_type);
   av1_setup_dst_planes(xd->plane, seq_params->sb_size, new_yv12, 0, 0, 0,
                        num_planes);
 
