@@ -49,7 +49,9 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   void OnHeaderBarVisible() override;
   void OnAshLockAnimationFinished() override;
   void SetFingerprintState(const AccountId& account_id,
-                           ScreenLocker::FingerprintState state) override;
+                           ash::mojom::FingerprintState state) override;
+  void NotifyFingerprintAuthResult(const AccountId& account_id,
+                                   bool success) override;
   content::WebContents* GetWebContents() override;
 
   // LoginScreenClient::Delegate

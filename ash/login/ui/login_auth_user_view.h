@@ -115,7 +115,11 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
   // Update the displayed name, icon, etc to that of |user|.
   void UpdateForUser(const mojom::LoginUserInfoPtr& user);
 
-  void SetFingerprintState(mojom::FingerprintUnlockState state);
+  // Update the current fingerprint state.
+  void SetFingerprintState(mojom::FingerprintState state);
+
+  // Called to show a fingerprint authentication attempt result.
+  void NotifyFingerprintAuthResult(bool success);
 
   // Set the time when auth will be reenabled. It will be included in the
   // message shown to user when auth method is |AUTH_DISABLED|.

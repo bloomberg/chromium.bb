@@ -121,6 +121,10 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   void SetUserList(std::vector<mojom::LoginUserInfoPtr> users) override;
   void SetPinEnabledForUser(const AccountId& account_id,
                             bool is_enabled) override;
+  void SetFingerprintState(const AccountId& account_id,
+                           mojom::FingerprintState state) override;
+  void NotifyFingerprintAuthResult(const AccountId& account_id,
+                                   bool successful) override;
   void SetAvatarForUser(const AccountId& account_id,
                         mojom::UserAvatarPtr avatar) override;
   void SetAuthEnabledForUser(
@@ -143,8 +147,6 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
       const AccountId& account_id,
       const std::string& locale,
       std::vector<mojom::InputMethodItemPtr> keyboard_layouts) override;
-  void SetFingerprintUnlockState(const AccountId& account_id,
-                                 mojom::FingerprintUnlockState state) override;
   void SetKioskApps(std::vector<mojom::KioskAppInfoPtr> kiosk_apps) override;
   void ShowKioskAppError(const std::string& message) override;
   void NotifyOobeDialogState(mojom::OobeDialogState state) override;
