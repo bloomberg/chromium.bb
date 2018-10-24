@@ -153,8 +153,9 @@ bool ThreadControllerWithMessagePumpImpl::DoWork() {
   DCHECK_GE(do_work_delay, TimeDelta());
   // Schedule a continuation.
   if (do_work_delay.is_zero()) {
-    // Need to run new work immediately.
-    pump_->ScheduleWork();
+    // Need to run new work immediately, but due to the contract of DoWork we
+    // only need to return true to ensure that happens.
+    return true;
   } else if (do_work_delay != TimeDelta::Max()) {
     // Cancels any previously scheduled delayed wake-ups.
     pump_->ScheduleDelayedWork(lazy_now.Now() + do_work_delay);
