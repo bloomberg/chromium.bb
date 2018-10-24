@@ -48,10 +48,6 @@
 -PDFExtensionTest.*
 -PDFExtensionHitTestTest.*
 
-# ash::Shell::display_manager() to update displays.
-# http://crbug.com/831826
--PolicyDisplayRotationDefault/DisplayRotationDefaultTest.*
-
 # JS failure: hasAccessToCurrentWindow: FAIL (no message)
 -LockScreenNoteTakingTest.*
 
