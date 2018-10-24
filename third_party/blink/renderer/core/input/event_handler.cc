@@ -1013,6 +1013,7 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
   mouse_event_manager_->HandleSvgPanIfNeeded(true);
 
   if (frame_set_being_resized_) {
+    CaptureMouseEventsToWidget(false);
     return mouse_event_manager_->SetMousePositionAndDispatchMouseEvent(
         EffectiveMouseEventTargetNode(frame_set_being_resized_.Get()), String(),
         EventTypeNames::mouseup, mouse_event);
@@ -2034,6 +2035,7 @@ void EventHandler::MayUpdateHoverAfterScroll(
 }
 
 void EventHandler::SetResizingFrameSet(HTMLFrameSetElement* frame_set) {
+  CaptureMouseEventsToWidget(true);
   frame_set_being_resized_ = frame_set;
 }
 
