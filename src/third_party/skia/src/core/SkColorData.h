@@ -943,4 +943,38 @@ static inline void SkBlitLCD16OpaqueRow(SkPMColor dst[], const uint16_t mask[],
     }
 }
 
+static inline void SkBlitLCD16RowOverBackground(SkPMColor dst[], const uint16_t mask[],
+                                                SkColor src, int width, SkPMColor, SkPMColor defaultDst) {
+    int srcA = SkColorGetA(src);
+    int srcR = SkColorGetR(src);
+    int srcG = SkColorGetG(src);
+    int srcB = SkColorGetB(src);
+
+    srcA = SkAlpha255To256(srcA);
+
+    for (int i = 0; i < width; i++) {
+        SkPMColor currentDst = dst[i];
+        bool isDstNotTransparent = SkColorGetA(currentDst) != 0x00;
+        dst[i] = SkBlendLCD16(srcA, srcR, srcG, srcB,
+            isDstNotTransparent? currentDst : defaultDst,
+            mask[i]);
+    }
+}
+
+static inline void SkBlitLCD16OpaqueRowOverBackground(SkPMColor dst[], const uint16_t mask[],
+                                                      SkColor src, int width,
+                                                      SkPMColor opaqueDst, SkPMColor defaultDst) {
+    int srcR = SkColorGetR(src);
+    int srcG = SkColorGetG(src);
+    int srcB = SkColorGetB(src);
+
+    for (int i = 0; i < width; i++) {
+        SkPMColor currentDst = dst[i];
+        bool isDstNotTransparent = SkColorGetA(currentDst) != 0x00;
+        dst[i] = SkBlendLCD16Opaque(srcR, srcG, srcB,
+            isDstNotTransparent? currentDst : defaultDst,
+            mask[i], opaqueDst);
+    }
+}
+
 #endif

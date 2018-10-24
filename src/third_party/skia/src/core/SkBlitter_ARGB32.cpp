@@ -52,6 +52,8 @@ SkARGB32_Blitter::SkARGB32_Blitter(const SkPixmap& device, const SkPaint& paint)
     fSrcB = SkAlphaMul(SkColorGetB(color), scale);
 
     fPMColor = SkPackARGB32(fSrcA, fSrcR, fSrcG, fSrcB);
+
+    fLCDBackgroundColor = device.defaultLCDBackgroundColor();
 }
 
 const SkPixmap* SkARGB32_Blitter::justAnOpaqueColor(uint32_t* value) {
@@ -170,7 +172,8 @@ void SkARGB32_Blitter::blitMask(const SkMask& mask, const SkIRect& clip) {
         return;
     }
 
-    if (SkBlitMask::BlitColor(fDevice, mask, clip, fColor)) {
+    if (SkBlitMask::BlitColor(fDevice, mask, clip, fColor,
+                              fLCDBackgroundColor)) {
         return;
     }
 
@@ -190,7 +193,8 @@ void SkARGB32_Opaque_Blitter::blitMask(const SkMask& mask,
                                        const SkIRect& clip) {
     SkASSERT(mask.fBounds.contains(clip));
 
-    if (SkBlitMask::BlitColor(fDevice, mask, clip, fColor)) {
+    if (SkBlitMask::BlitColor(fDevice, mask, clip, fColor,
+                              fLCDBackgroundColor)) {
         return;
     }
 

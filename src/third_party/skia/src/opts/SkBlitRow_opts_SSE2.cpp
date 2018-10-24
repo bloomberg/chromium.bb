@@ -441,3 +441,188 @@ void SkBlitLCD16OpaqueRow_SSE2(SkPMColor dst[], const uint16_t mask[],
         width--;
     }
 }
+
+void SkBlitLCD16RowOverBackground_SSE2(SkPMColor dst[], const uint16_t mask[],
+                         SkColor src, int width, SkPMColor, SkPMColor defaultDst) {
+    if (width <= 0) {
+        return;
+    }
+
+    int srcA = SkColorGetA(src);
+    int srcR = SkColorGetR(src);
+    int srcG = SkColorGetG(src);
+    int srcB = SkColorGetB(src);
+
+    srcA = SkAlpha255To256(srcA);
+
+    __m128i defaultDst_sse = _mm_set1_epi32(defaultDst);
+
+    if (width >= 4) {
+        SkASSERT(((size_t)dst & 0x03) == 0);
+        while (((size_t)dst & 0x0F) != 0) {
+            SkPMColor currentDst = *dst;
+            bool isDstNotTransparent = SkColorGetA(currentDst) != 0x00;
+
+            *dst = SkBlendLCD16(srcA, srcR, srcG, srcB, isDstNotTransparent? currentDst : defaultDst, *mask);
+            mask++;
+            dst++;
+            width--;
+        }
+
+        __m128i *d = reinterpret_cast<__m128i*>(dst);
+        // Set alpha to 0xFF and replicate source four times in SSE register.
+        __m128i src_sse = _mm_set1_epi32(SkPackARGB32(0xFF, srcR, srcG, srcB));
+        // Interleave with zeros to get two sets of four 16-bit values.
+        src_sse = _mm_unpacklo_epi8(src_sse, _mm_setzero_si128());
+        // Set srcA_sse to contain eight copies of srcA, padded with zero.
+        // src_sse=(0xFF, 0, sR, 0, sG, 0, sB, 0, 0xFF, 0, sR, 0, sG, 0, sB, 0)
+        __m128i srcA_sse = _mm_set1_epi16(srcA);
+        while (width >= 4) {
+            // Load four destination pixels into dst_sse.
+            __m128i dst_sse = _mm_load_si128(d);
+            // Load four 16-bit masks into lower half of mask_sse.
+            __m128i mask_sse = _mm_loadl_epi64(
+                                   reinterpret_cast<const __m128i*>(mask));
+
+            // Check whether masks are equal to 0 and get the highest bit
+            // of each byte of result, if masks are all zero, we will get
+            // pack_cmp to 0xFFFF
+            int pack_cmp = _mm_movemask_epi8(_mm_cmpeq_epi16(mask_sse,
+                                             _mm_setzero_si128()));
+
+            // if mask pixels are not all zero, we will blend the dst pixels
+            if (pack_cmp != 0xFFFF) {
+                // Each pixel that has a non-opaque alpha will use defaultDst_sse:
+                //
+                // First obtain destination alpha values:
+                __m128i dst_alpha_sse = _mm_and_si128(dst_sse,
+                                               _mm_set1_epi32(0xFF000000));
+
+                // Which pixels are opaque?
+                __m128i dst_isOpaque_sse = _mm_cmpeq_epi32(dst_alpha_sse,
+                                               _mm_set1_epi32(0x00000000));
+
+                // Opaque pixels from from dst, non-opaque pixels from defaultDst:
+                dst_sse = _mm_or_si128(_mm_andnot_si128(dst_isOpaque_sse, dst_sse),
+                                       _mm_and_si128(dst_isOpaque_sse, defaultDst_sse));
+
+                // Unpack 4 16bit mask pixels to
+                // mask_sse = (m0RGBLo, m0RGBHi, 0, 0, m1RGBLo, m1RGBHi, 0, 0,
+                //             m2RGBLo, m2RGBHi, 0, 0, m3RGBLo, m3RGBHi, 0, 0)
+                mask_sse = _mm_unpacklo_epi16(mask_sse,
+                                              _mm_setzero_si128());
+
+                // Process 4 32bit dst pixels
+                __m128i result = SkBlendLCD16_SSE2(src_sse, dst_sse,
+                                                   mask_sse, srcA_sse);
+                _mm_store_si128(d, result);
+            }
+
+            d++;
+            mask += 4;
+            width -= 4;
+        }
+
+        dst = reinterpret_cast<SkPMColor*>(d);
+    }
+
+    while (width > 0) {
+        SkPMColor currentDst = *dst;
+        bool isDstNotTransparent = SkColorGetA(currentDst) != 0x00;
+
+        *dst = SkBlendLCD16(srcA, srcR, srcG, srcB, isDstNotTransparent? currentDst : defaultDst, *mask);
+        mask++;
+        dst++;
+        width--;
+    }
+}
+
+void SkBlitLCD16OpaqueRowOverBackground_SSE2(SkPMColor dst[], const uint16_t mask[],
+                               SkColor src, int width, SkPMColor opaqueDst, SkPMColor defaultDst) {
+    if (width <= 0) {
+        return;
+    }
+
+    int srcR = SkColorGetR(src);
+    int srcG = SkColorGetG(src);
+    int srcB = SkColorGetB(src);
+
+    __m128i defaultDst_sse = _mm_set1_epi32(defaultDst);
+
+    if (width >= 4) {
+        SkASSERT(((size_t)dst & 0x03) == 0);
+        while (((size_t)dst & 0x0F) != 0) {
+            SkPMColor currentDst = *dst;
+            bool isDstNotTransparent = SkColorGetA(currentDst) != 0x00;
+
+            *dst = SkBlendLCD16Opaque(srcR, srcG, srcB, isDstNotTransparent? currentDst : defaultDst, *mask, opaqueDst);
+            mask++;
+            dst++;
+            width--;
+        }
+
+        __m128i *d = reinterpret_cast<__m128i*>(dst);
+        // Set alpha to 0xFF and replicate source four times in SSE register.
+        __m128i src_sse = _mm_set1_epi32(SkPackARGB32(0xFF, srcR, srcG, srcB));
+        // Set srcA_sse to contain eight copies of srcA, padded with zero.
+        // src_sse=(0xFF, 0, sR, 0, sG, 0, sB, 0, 0xFF, 0, sR, 0, sG, 0, sB, 0)
+        src_sse = _mm_unpacklo_epi8(src_sse, _mm_setzero_si128());
+        while (width >= 4) {
+            // Load four destination pixels into dst_sse.
+            __m128i dst_sse = _mm_load_si128(d);
+            // Load four 16-bit masks into lower half of mask_sse.
+            __m128i mask_sse = _mm_loadl_epi64(
+                                   reinterpret_cast<const __m128i*>(mask));
+
+            // Check whether masks are equal to 0 and get the highest bit
+            // of each byte of result, if masks are all zero, we will get
+            // pack_cmp to 0xFFFF
+            int pack_cmp = _mm_movemask_epi8(_mm_cmpeq_epi16(mask_sse,
+                                             _mm_setzero_si128()));
+
+            // if mask pixels are not all zero, we will blend the dst pixels
+            if (pack_cmp != 0xFFFF) {
+                // Each pixel that has a non-opaque alpha will use defaultDst_sse:
+                //
+                // First obtain destination alpha values:
+                __m128i dst_alpha_sse = _mm_and_si128(dst_sse,
+                                               _mm_set1_epi32(0xFF000000));
+
+                // Which pixels are opaque?
+                __m128i dst_isOpaque_sse = _mm_cmpeq_epi32(dst_alpha_sse,
+                                               _mm_set1_epi32(0x00000000));
+
+                // Opaque pixels from from dst, non-opaque pixels from defaultDst:
+                dst_sse = _mm_or_si128(_mm_andnot_si128(dst_isOpaque_sse, dst_sse),
+                                       _mm_and_si128(dst_isOpaque_sse, defaultDst_sse));
+
+                // Unpack 4 16bit mask pixels to
+                // mask_sse = (m0RGBLo, m0RGBHi, 0, 0, m1RGBLo, m1RGBHi, 0, 0,
+                //             m2RGBLo, m2RGBHi, 0, 0, m3RGBLo, m3RGBHi, 0, 0)
+                mask_sse = _mm_unpacklo_epi16(mask_sse,
+                                              _mm_setzero_si128());
+
+                // Process 4 32bit dst pixels
+                __m128i result = SkBlendLCD16Opaque_SSE2(src_sse, dst_sse,
+                                                         mask_sse);
+                _mm_store_si128(d, result);
+            }
+
+            d++;
+            mask += 4;
+            width -= 4;
+        }
+
+        dst = reinterpret_cast<SkPMColor*>(d);
+    }
+
+    while (width > 0) {
+        SkPMColor currentDst = *dst;
+        bool isDstNotTransparent = SkColorGetA(currentDst) != 0x00;
+
+        *dst = SkBlendLCD16Opaque(srcR, srcG, srcB, isDstNotTransparent? currentDst : defaultDst, *mask, opaqueDst);
+        mask++;
+        dst++;
+        width--;
+    }
+}

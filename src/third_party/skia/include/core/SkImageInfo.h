@@ -22,6 +22,7 @@
 #include "SkMath.h"
 #include "SkRect.h"
 #include "SkSize.h"
+#include "SkColor.h"
 
 #include "../private/SkTFitsIn.h"
 #include "../private/SkTo.h"
@@ -202,6 +203,7 @@ public:
         , fDimensions{0, 0}
         , fColorType(kUnknown_SkColorType)
         , fAlphaType(kUnknown_SkAlphaType)
+        , fDefaultLCDBackgroundColor(SK_ColorTRANSPARENT)
     {}
 
     /** Creates SkImageInfo from integral dimensions width and height, SkColorType ct,
@@ -227,8 +229,9 @@ public:
         @return        created SkImageInfo
     */
     static SkImageInfo Make(int width, int height, SkColorType ct, SkAlphaType at,
-                            sk_sp<SkColorSpace> cs = nullptr) {
-        return SkImageInfo(width, height, ct, at, std::move(cs));
+                            sk_sp<SkColorSpace> cs = nullptr,
+                            SkColor lcdbc = SK_ColorTRANSPARENT) {
+        return SkImageInfo(width, height, ct, at, std::move(cs), lcdbc);
     }
 
     /** Creates SkImageInfo from integral dimensions width and height, kN32_SkColorType,
@@ -250,8 +253,9 @@ public:
         @return        created SkImageInfo
     */
     static SkImageInfo MakeN32(int width, int height, SkAlphaType at,
-                               sk_sp<SkColorSpace> cs = nullptr) {
-        return Make(width, height, kN32_SkColorType, at, std::move(cs));
+                               sk_sp<SkColorSpace> cs = nullptr,
+                               SkColor lcdbc = SK_ColorTRANSPARENT) {
+        return Make(width, height, kN32_SkColorType, at, std::move(cs), lcdbc);
     }
 
     /** Creates SkImageInfo from integral dimensions width and height, kN32_SkColorType,
@@ -283,8 +287,8 @@ public:
         @param cs      range of colors; may be nullptr
         @return        created SkImageInfo
     */
-    static SkImageInfo MakeN32Premul(int width, int height, sk_sp<SkColorSpace> cs = nullptr) {
-        return Make(width, height, kN32_SkColorType, kPremul_SkAlphaType, std::move(cs));
+    static SkImageInfo MakeN32Premul(int width, int height, sk_sp<SkColorSpace> cs = nullptr, SkColor lcdbc = SK_ColorTRANSPARENT) {
+        return Make(width, height, kN32_SkColorType, kPremul_SkAlphaType, std::move(cs), lcdbc);
     }
 
     /** Creates SkImageInfo from integral dimensions width and height, kN32_SkColorType,
@@ -299,10 +303,10 @@ public:
         @param size  width and height, each must be zero or greater
         @return      created SkImageInfo
     */
-    static SkImageInfo MakeN32Premul(const SkISize& size) {
-        return MakeN32Premul(size.width(), size.height());
+    static SkImageInfo MakeN32Premul(const SkISize& size,
+                                     SkColor lcdbc = SK_ColorTRANSPARENT) {
+        return MakeN32Premul(size.width(), size.height(), nullptr, lcdbc);
     }
-
     /** Creates SkImageInfo from integral dimensions width and height, kAlpha_8_SkColorType,
         kPremul_SkAlphaType, with SkColorSpace set to nullptr.
 
@@ -310,8 +314,10 @@ public:
         @param height  pixel row count; must be zero or greater
         @return        created SkImageInfo
     */
+
     static SkImageInfo MakeA8(int width, int height) {
-        return Make(width, height, kAlpha_8_SkColorType, kPremul_SkAlphaType, nullptr);
+        return Make(width, height, kAlpha_8_SkColorType, kPremul_SkAlphaType, nullptr,
+                    SK_ColorTRANSPARENT);
     }
 
     /** Creates SkImageInfo from integral dimensions width and height, kUnknown_SkColorType,
@@ -325,7 +331,8 @@ public:
         @return        created SkImageInfo
     */
     static SkImageInfo MakeUnknown(int width, int height) {
-        return Make(width, height, kUnknown_SkColorType, kUnknown_SkAlphaType, nullptr);
+        return Make(width, height, kUnknown_SkColorType, kUnknown_SkAlphaType, nullptr,
+                    SK_ColorTRANSPARENT);
     }
 
     /** Creates SkImageInfo from integral dimensions width and height set to zero,
@@ -437,7 +444,9 @@ public:
         @return           created SkImageInfo
     */
     SkImageInfo makeWH(int newWidth, int newHeight) const {
-        return Make(newWidth, newHeight, fColorType, fAlphaType, fColorSpace);
+
+        return Make(newWidth, newHeight, fColorType, fAlphaType, fColorSpace, fDefaultLCDBackgroundColor);
+
     }
 
     /** Creates SkImageInfo with same SkColorType, SkColorSpace, width, and height,
@@ -452,7 +461,7 @@ public:
         @return              created SkImageInfo
     */
     SkImageInfo makeAlphaType(SkAlphaType newAlphaType) const {
-        return Make(this->width(), this->height(), fColorType, newAlphaType, fColorSpace);
+        return Make(this->width(), this->height(), fColorType, newAlphaType, fColorSpace, fDefaultLCDBackgroundColor);
     }
 
     /** Creates SkImageInfo with same SkAlphaType, SkColorSpace, width, and height,
@@ -466,7 +475,7 @@ public:
         @return              created SkImageInfo
     */
     SkImageInfo makeColorType(SkColorType newColorType) const {
-        return Make(this->width(), this->height(), newColorType, fAlphaType, fColorSpace);
+        return Make(this->width(), this->height(), newColorType, fAlphaType, fColorSpace, fDefaultLCDBackgroundColor);
     }
 
     /** Creates SkImageInfo with same SkAlphaType, SkColorType, width, and height,
@@ -476,7 +485,7 @@ public:
         @return    created SkImageInfo
     */
     SkImageInfo makeColorSpace(sk_sp<SkColorSpace> cs) const {
-        return Make(this->width(), this->height(), fColorType, fAlphaType, std::move(cs));
+        return Make(this->width(), this->height(), fColorType, fAlphaType, std::move(cs), fDefaultLCDBackgroundColor);
     }
 
     /** Returns number of bytes per pixel required by SkColorType.
@@ -599,11 +608,14 @@ public:
         fDimensions = {0, 0};
         fColorType = kUnknown_SkColorType;
         fAlphaType = kUnknown_SkAlphaType;
+        fDefaultLCDBackgroundColor = SK_ColorTRANSPARENT;
     }
 
     /** Asserts if internal values are illegal or inconsistent. Only available if
         SK_DEBUG is defined at compile time.
     */
+    SkColor defaultLCDBackgroundColor() const { return fDefaultLCDBackgroundColor; }
+
     SkDEBUGCODE(void validate() const;)
 
 private:
@@ -611,12 +623,14 @@ private:
     SkISize             fDimensions;
     SkColorType         fColorType;
     SkAlphaType         fAlphaType;
+    SkColor             fDefaultLCDBackgroundColor;
 
-    SkImageInfo(int width, int height, SkColorType ct, SkAlphaType at, sk_sp<SkColorSpace> cs)
+    SkImageInfo(int width, int height, SkColorType ct, SkAlphaType at, sk_sp<SkColorSpace> cs, SkColor defaultLCDBackgroundColor)
         : fColorSpace(std::move(cs))
         , fDimensions{width, height}
         , fColorType(ct)
         , fAlphaType(at)
+        , fDefaultLCDBackgroundColor(defaultLCDBackgroundColor)
     {}
 };
 
