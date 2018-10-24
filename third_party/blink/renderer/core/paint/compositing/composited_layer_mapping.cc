@@ -409,7 +409,7 @@ void CompositedLayerMapping::UpdateBackgroundPaintsOntoScrollingContentsLayer(
   // it would be visually correct and we are using composited scrolling meaning
   // we have a scrolling contents layer to paint it into.
   BackgroundPaintLocation paint_location =
-      GetLayoutObject().GetBackgroundPaintLocation();
+      owning_layer_.GetBackgroundPaintLocation();
   bool should_paint_onto_scrolling_contents_layer =
       paint_location & kBackgroundPaintInScrollingContents &&
       owning_layer_.GetScrollableArea()->UsesCompositedScrolling();
@@ -473,7 +473,7 @@ void CompositedLayerMapping::UpdateContentsOpaque() {
           owning_layer_.BackgroundIsKnownToBeOpaqueInRect(
               ToLayoutBox(GetLayoutObject()).PhysicalPaddingBoxRect()));
 
-      if (GetLayoutObject().GetBackgroundPaintLocation() &
+      if (owning_layer_.GetBackgroundPaintLocation() &
           kBackgroundPaintInGraphicsLayer) {
         graphics_layer_->SetContentsOpaque(
             owning_layer_.BackgroundIsKnownToBeOpaqueInRect(

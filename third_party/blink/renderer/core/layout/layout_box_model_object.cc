@@ -98,30 +98,18 @@ bool LayoutBoxModelObject::UsesCompositedScrolling() const {
 }
 
 BackgroundPaintLocation LayoutBoxModelObject::GetBackgroundPaintLocation(
-    uint32_t* main_thread_scrolling_reasons) const {
-  bool may_have_scrolling_layers_without_scrolling = IsLayoutView();
-  const auto* scrollable_area = GetScrollableArea();
-  bool scrolls_overflow = scrollable_area && scrollable_area->ScrollsOverflow();
-  if (!scrolls_overflow && !may_have_scrolling_layers_without_scrolling)
-    return kBackgroundPaintInGraphicsLayer;
-
-  // If we care about LCD text, paint root backgrounds into scrolling contents
-  // layer even if style suggests otherwise. (For non-root scrollers, we just
-  // avoid compositing - see PLSA::ComputeNeedsCompositedScrolling.)
-  if (IsLayoutView()) {
-    DCHECK(Layer()->Compositor());
-    if (!Layer()->Compositor()->PreferCompositingToLCDTextEnabled())
-      return kBackgroundPaintInScrollingContents;
-  }
-
+    uint32_t* reasons) const {
+  bool has_custom_scrollbars = false;
   // TODO(flackr): Detect opaque custom scrollbars which would cover up a
   // border-box background.
-  bool has_custom_scrollbars =
-      scrollable_area &&
-      ((scrollable_area->HorizontalScrollbar() &&
-        scrollable_area->HorizontalScrollbar()->IsCustomScrollbar()) ||
-       (scrollable_area->VerticalScrollbar() &&
-        scrollable_area->VerticalScrollbar()->IsCustomScrollbar()));
+  if (PaintLayerScrollableArea* scrollable_area = GetScrollableArea()) {
+    if ((scrollable_area->HorizontalScrollbar() &&
+         scrollable_area->HorizontalScrollbar()->IsCustomScrollbar()) ||
+        (scrollable_area->VerticalScrollbar() &&
+         scrollable_area->VerticalScrollbar()->IsCustomScrollbar())) {
+      has_custom_scrollbars = true;
+    }
+  }
 
   // TODO(flackr): When we correctly clip the scrolling contents layer we can
   // paint locally equivalent backgrounds into it. https://crbug.com/645957
@@ -132,10 +120,8 @@ BackgroundPaintLocation LayoutBoxModelObject::GetBackgroundPaintLocation(
   // painting into the composited scrolling contents layer.
   // https://crbug.com/646464
   if (StyleRef().BoxShadow()) {
-    if (main_thread_scrolling_reasons) {
-      *main_thread_scrolling_reasons |=
-          MainThreadScrollingReason::kHasBoxShadowFromNonRootLayer;
-    }
+    if (reasons)
+      *reasons |= MainThreadScrollingReason::kHasBoxShadowFromNonRootLayer;
     return kBackgroundPaintInGraphicsLayer;
   }
 
