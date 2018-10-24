@@ -1309,6 +1309,10 @@ void OfflinePageURLLoaderBuilder::InterceptRequestOnIO(
   network::ResourceRequest request =
       CreateResourceRequest(url, method, extra_headers, is_main_frame);
 
+  request.previews_state = test_base_->allow_preview()
+                               ? content::OFFLINE_PAGE_ON
+                               : content::PREVIEWS_OFF;
+
   url_loader_ = OfflinePageURLLoader::Create(
       navigation_ui_data_.get(),
       test_base_->web_contents()->GetMainFrame()->GetFrameTreeNodeId(), request,
@@ -1320,9 +1324,6 @@ void OfflinePageURLLoaderBuilder::InterceptRequestOnIO(
     return;
 
   url_loader_->SetTabIdGetterForTesting(base::BindRepeating(&GetTabId, kTabId));
-  url_loader_->SetShouldAllowPreviewCallbackForTesting(
-      base::BindRepeating(&OfflinePageRequestHandlerTestBase::allow_preview,
-                          base::Unretained(test_base_)));
 }
 
 void OfflinePageURLLoaderBuilder::InterceptRequest(
