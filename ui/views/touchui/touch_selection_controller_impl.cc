@@ -4,6 +4,8 @@
 
 #include "ui/views/touchui/touch_selection_controller_impl.h"
 
+#include <set>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "ui/aura/client/cursor_client.h"
