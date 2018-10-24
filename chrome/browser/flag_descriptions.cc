@@ -3039,6 +3039,11 @@ const char kArcCupsApiName[] = "ARC CUPS API";
 const char kArcCupsApiDescription[] =
     "Enables support of libcups APIs from ARC";
 
+const char kArcFilePickerExperimentName[] =
+    "Enable file picker experiment for ARC";
+const char kArcFilePickerExperimentDescription[] =
+    "Enables using Chrome OS file picker in ARC.";
+
 const char kArcInputMethodName[] = "Enable ARC input methods.";
 const char kArcInputMethodDescription[] = "Enable ARC input methods.";
 

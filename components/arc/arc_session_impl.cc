@@ -315,6 +315,8 @@ void ArcSessionImpl::OnLcdDensity(int32_t lcd_density) {
   login_manager::StartArcMiniContainerRequest request;
   request.set_native_bridge_experiment(
       base::FeatureList::IsEnabled(arc::kNativeBridgeExperimentFeature));
+  request.set_arc_file_picker_experiment(
+      base::FeatureList::IsEnabled(arc::kFilePickerExperimentFeature));
   request.set_lcd_density(lcd_density);
 
   VLOG(1) << "Starting ARC mini instance with lcd_density="

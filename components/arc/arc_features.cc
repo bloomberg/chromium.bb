@@ -39,6 +39,10 @@ const base::Feature kEnableRegularToChildTransitionFeature{
 const base::Feature kEnableUnifiedAudioFocusFeature{
     "ArcEnableUnifiedAudioFocus", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls experimental file picker feature for ARC.
+const base::Feature kFilePickerExperimentFeature{
+    "ArcFilePickerExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls experimental native bridge feature for ARC.
 const base::Feature kNativeBridgeExperimentFeature {
     "ArcNativeBridgeExperiment", base::FEATURE_ENABLED_BY_DEFAULT
