@@ -95,6 +95,8 @@
 - (void)loadView {
   DCHECK(self.buttonFactory);
 
+  self.previousFullscreenProgress = 1;
+
   self.view =
       [[PrimaryToolbarView alloc] initWithButtonFactory:self.buttonFactory];
 
