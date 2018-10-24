@@ -28,6 +28,13 @@ Polymer({
      * @type {settings.Route|undefined}
      */
     subpageRoute: Object,
+
+    /**
+     * URLSearchParams for subpage route. No param is provided if it is
+     * undefined.
+     * @type {URLSearchParams|undefined}
+     */
+    subpageRouteUrlSearchParams: Object,
   },
 
   /**
@@ -49,6 +56,6 @@ Polymer({
       return;
     }
 
-    settings.navigateTo(this.subpageRoute);
+    settings.navigateTo(this.subpageRoute, this.subpageRouteUrlSearchParams);
   },
 });
