@@ -13,13 +13,13 @@ PASS createImageBitmap with a bitmap HTMLImageElement source and sh set to 0
 PASS createImageBitmap with a bitmap HTMLImageElement source and oversized (unallocatable) crop region
 PASS createImageBitmap with a vector HTMLImageElement source and sw set to 0
 PASS createImageBitmap with a vector HTMLImageElement source and sh set to 0
-FAIL createImageBitmap with a vector HTMLImageElement source and oversized (unallocatable) crop region assert_throws: function "function() { throw e }" threw null, not an object
+FAIL createImageBitmap with a vector HTMLImageElement source and oversized (unallocatable) crop region assert_throws: InvalidStateError function "function() { throw e }" threw null, not an object
 PASS createImageBitmap with a bitmap SVGImageElement source and sw set to 0
 PASS createImageBitmap with a bitmap SVGImageElement source and sh set to 0
 PASS createImageBitmap with a bitmap SVGImageElement source and oversized (unallocatable) crop region
 PASS createImageBitmap with a vector SVGImageElement source and sw set to 0
 PASS createImageBitmap with a vector SVGImageElement source and sh set to 0
-FAIL createImageBitmap with a vector SVGImageElement source and oversized (unallocatable) crop region assert_throws: function "function() { throw e }" threw null, not an object
+FAIL createImageBitmap with a vector SVGImageElement source and oversized (unallocatable) crop region assert_throws: InvalidStateError function "function() { throw e }" threw null, not an object
 PASS createImageBitmap with an OffscreenCanvas source and sw set to 0
 PASS createImageBitmap with an OffscreenCanvas source and sh set to 0
 PASS createImageBitmap with an OffscreenCanvas source and oversized (unallocatable) crop region
