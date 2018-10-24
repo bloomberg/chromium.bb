@@ -49,7 +49,8 @@ PreresolveJob::PreresolveJob(const GURL& url,
     : url(url),
       num_sockets(num_sockets),
       allow_credentials(allow_credentials),
-      info(info) {
+      info(info),
+      success(false) {
   DCHECK_GE(num_sockets, 0);
 }
 
@@ -243,7 +244,8 @@ void PreconnectManager::OnPreresolveFinished(PreresolveJobId job_id,
     observer_->OnPreresolveFinished(job->url, success);
 
   job->resolve_host_client = nullptr;
-  FinishPreresolveJob(job_id, success);
+  job->success = job->success || success;
+  FinishPreresolveJob(job_id);
 }
 
 void PreconnectManager::OnProxyLookupFinished(PreresolveJobId job_id,
@@ -256,21 +258,27 @@ void PreconnectManager::OnProxyLookupFinished(PreresolveJobId job_id,
     observer_->OnProxyLookupFinished(job->url, success);
 
   job->proxy_lookup_client = nullptr;
-  FinishPreresolveJob(job_id, success);
+  job->success = job->success || success;
+  if (job->success && job->resolve_host_client)
+    job->resolve_host_client->Cancel();
+  FinishPreresolveJob(job_id);
 }
 
-void PreconnectManager::FinishPreresolveJob(PreresolveJobId job_id,
-                                            bool success) {
+void PreconnectManager::FinishPreresolveJob(PreresolveJobId job_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   PreresolveJob* job = preresolve_jobs_.Lookup(job_id);
   DCHECK(job);
 
-  // In case one of the clients failed, wait for the second one, because it may
-  // be successful.
-  if (!success && (job->resolve_host_client || job->proxy_lookup_client))
+  // Always wait for the host resolution to be complete.
+  if (job->resolve_host_client)
     return;
 
-  bool need_preconnect = success && job->need_preconnect();
+  // Proxy lookup still may return success, wait for it before finishing the
+  // job.
+  if (!job->success && job->proxy_lookup_client)
+    return;
+
+  bool need_preconnect = job->success && job->need_preconnect();
   if (need_preconnect)
     PreconnectUrl(job->url, job->num_sockets, job->allow_credentials);
 
