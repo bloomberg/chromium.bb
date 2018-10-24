@@ -372,8 +372,9 @@ FileType.types = [
     subtype: 'Word',
     pattern: /\.(doc|docx)$/i,
     mimePattern: new RegExp(
-        '/application\\/(msword|vnd\\.openxmlformats\\-' +
-        'officedocument\\./wordprocessingml\\.document)/i')
+        'application/(msword|vnd\\.' +
+            'openxmlformats-officedocument\\.wordprocessingml\\.document)',
+        'i')
   },
   {
     type: 'document',
@@ -382,8 +383,9 @@ FileType.types = [
     subtype: 'PPT',
     pattern: /\.(ppt|pptx)$/i,
     mimePattern: new RegExp(
-        '/application\\/(vnd\\.ms-powerpoint|\\.' +
-        'openxmlformats\\-/officedocument\\.wordprocessingml\\.presentation)/i')
+        'application/vnd\\.(ms-powerpoint|' +
+            'openxmlformats-officedocument\\.presentationml\\.presentation)',
+        'i')
   },
   {
     type: 'document',
@@ -392,8 +394,9 @@ FileType.types = [
     subtype: 'Excel',
     pattern: /\.(xls|xlsx)$/i,
     mimePattern: new RegExp(
-        '/application\\/(vnd\\.ms-excel|\\.' +
-        'openxmlformats\\-/officedocument\\.wordprocessingml\\.sheet)/i')
+        'application/vnd\\.(ms-excel|' +
+            'openxmlformats-officedocument\\.spreadsheetml\\.sheet)',
+        'i')
   }
 ];
 
