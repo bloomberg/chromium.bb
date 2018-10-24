@@ -41,6 +41,7 @@ bool IsValidAppUrl(const GURL& app_url) {
 
   // If the url is a direct FIDO U2F x-callback call, consider it as invalid, to
   // prevent pages from spoofing requests with different origins.
+  // See https://crbug.com/897329#c2 for details on how U2F works.
   if (app_url.SchemeIs("u2f-x-callback"))
     return false;
 
@@ -189,6 +190,9 @@ bool AppLauncherTabHelper::ShouldAllowRequest(
   if (request_status == ExternalURLRequestStatus::kSubFrameRequestBlocked)
     return false;
 
+  if (!IsValidAppUrl(request_url))
+    return false;
+
   Tab* tab = LegacyTabHelper::GetTabForWebState(web_state_);
 
   // If this is a Universal 2nd Factor (U2F) call, the origin needs to be
@@ -200,6 +204,9 @@ bool AppLauncherTabHelper::ShouldAllowRequest(
                       ->GetURL()
                       .GetOrigin();
     request_url = [tab XCallbackFromRequestURL:request_url originURL:origin];
+    // If the URL was rejected by the U2F handler, |request_url| will be empty.
+    if (!request_url.is_valid())
+      return false;
   }
 
   GURL last_committed_url = web_state_->GetLastCommittedURL();
@@ -220,14 +227,13 @@ bool AppLauncherTabHelper::ShouldAllowRequest(
       if (model && model->loaded())
         model->SetReadStatus(original_pending_url, true);
     }
-    if (IsValidAppUrl(request_url) && last_committed_url.is_valid()) {
+    if (last_committed_url.is_valid()) {
       RequestToLaunchApp(request_url, last_committed_url, is_link_transition);
     }
     return false;
   }
 
-  if (IsValidAppUrl(request_url) &&
-      RequestToLaunchApp(request_url, last_committed_url, is_link_transition)) {
+  if (RequestToLaunchApp(request_url, last_committed_url, is_link_transition)) {
     // Clears pending navigation history after successfully launching the
     // external app.
     web_state_->GetNavigationManager()->DiscardNonCommittedItems();
