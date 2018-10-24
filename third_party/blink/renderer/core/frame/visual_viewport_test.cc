@@ -157,6 +157,12 @@ class VisualViewportTest : public testing::Test,
                : nullptr;
   }
 
+  const DisplayItemClient& ScrollingBackgroundClient(const Document* document) {
+    return document->GetLayoutView()
+        ->GetScrollableArea()
+        ->GetScrollingBackgroundDisplayItemClient();
+  }
+
   const RasterInvalidationTracking* MainGraphicsLayerRasterInvalidationTracking(
       const Document* document) {
     const auto* layer = MainGraphicsLayer(document);
@@ -2214,8 +2220,8 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
   EXPECT_THAT(
       ScrollingContentsLayerRasterInvalidations(document),
       UnorderedElementsAre(RasterInvalidationInfo{
-          ScrollingContentsLayer(document),
-          ScrollingContentsLayer(document)->DebugName(),
+          &ScrollingBackgroundClient(document),
+          ScrollingBackgroundClient(document).DebugName(),
           IntRect(0, 0, 640, 1000), PaintInvalidationReason::kBackground}));
 
   document->View()->SetTracksPaintInvalidations(false);
@@ -2230,8 +2236,8 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
   EXPECT_THAT(
       ScrollingContentsLayerRasterInvalidations(document),
       UnorderedElementsAre(RasterInvalidationInfo{
-          ScrollingContentsLayer(document),
-          ScrollingContentsLayer(document)->DebugName(),
+          &ScrollingBackgroundClient(document),
+          ScrollingBackgroundClient(document).DebugName(),
           IntRect(0, 0, 640, 1000), PaintInvalidationReason::kBackground}));
 
   document->View()->SetTracksPaintInvalidations(false);
@@ -2341,8 +2347,8 @@ TEST_P(VisualViewportTest, InvalidateLayoutViewWhenDocumentSmallerThanView) {
     EXPECT_THAT(
         ScrollingContentsLayerRasterInvalidations(document),
         UnorderedElementsAre(RasterInvalidationInfo{
-            ScrollingContentsLayer(document),
-            ScrollingContentsLayer(document)->DebugName(),
+            &ScrollingBackgroundClient(document),
+            ScrollingBackgroundClient(document).DebugName(),
             IntRect(0, 590, 320, 50), PaintInvalidationReason::kIncremental}));
   }
 

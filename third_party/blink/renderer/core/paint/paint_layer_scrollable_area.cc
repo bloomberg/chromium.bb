@@ -143,7 +143,8 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
       scroll_anchor_(this),
       non_composited_main_thread_scrolling_reasons_(0),
       horizontal_scrollbar_previously_was_overlay_(false),
-      vertical_scrollbar_previously_was_overlay_(false) {
+      vertical_scrollbar_previously_was_overlay_(false),
+      scrolling_background_display_item_client_(*this) {
   Node* node = GetLayoutBox()->GetNode();
   if (node && node->IsElementNode()) {
     // We save and restore only the scrollOffset as the other scroll values are
@@ -231,6 +232,7 @@ bool PaintLayerScrollableArea::HasBeenDisposed() const {
 void PaintLayerScrollableArea::Trace(blink::Visitor* visitor) {
   visitor->Trace(scrollbar_manager_);
   visitor->Trace(scroll_anchor_);
+  visitor->Trace(scrolling_background_display_item_client_);
   ScrollableArea::Trace(visitor);
 }
 
@@ -2843,6 +2845,32 @@ void PaintLayerScrollableArea::DidScrollWithScrollbar(
 CompositorElementId PaintLayerScrollableArea::GetCompositorElementId() const {
   return CompositorElementIdFromUniqueObjectId(
       GetLayoutBox()->UniqueId(), CompositorElementIdNamespace::kScroll);
+}
+
+LayoutRect
+PaintLayerScrollableArea::ScrollingBackgroundDisplayItemClient::VisualRect()
+    const {
+  const auto* box = scrollable_area_->GetLayoutBox();
+  auto overflow_clip_rect = box->OverflowClipRect(LayoutPoint());
+  auto scroll_size = scrollable_area_->overflow_rect_.Size();
+  // Ensure scrolling contents are at least as large as the scroll clip
+  scroll_size = scroll_size.ExpandedTo(overflow_clip_rect.Size());
+  return LayoutRect(
+      box->FirstFragment().PaintOffset() + overflow_clip_rect.Location(),
+      scroll_size);
+}
+
+String
+PaintLayerScrollableArea::ScrollingBackgroundDisplayItemClient::DebugName()
+    const {
+  return "Scrolling background of " +
+         scrollable_area_->GetLayoutBox()->DebugName();
+}
+
+bool PaintLayerScrollableArea::ScrollingBackgroundDisplayItemClient::
+    PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
+  return scrollable_area_->GetLayoutBox()
+      ->PaintedOutputOfObjectHasNoEffectRegardlessOfSize();
 }
 
 }  // namespace blink

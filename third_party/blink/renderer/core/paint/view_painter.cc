@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -69,7 +70,8 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
     // object_paint_properties.h for details.
     document_rect.MoveBy(layout_view_.ScrollOrigin());
     background_rect.Unite(document_rect);
-    display_item_client = layout_view_.Layer()->GraphicsLayerBacking();
+    display_item_client = &layout_view_.GetScrollableArea()
+                               ->GetScrollingBackgroundDisplayItemClient();
     scoped_scroll_property.emplace(
         paint_info.context.GetPaintController(),
         layout_view_.FirstFragment().ContentsProperties(), *display_item_client,

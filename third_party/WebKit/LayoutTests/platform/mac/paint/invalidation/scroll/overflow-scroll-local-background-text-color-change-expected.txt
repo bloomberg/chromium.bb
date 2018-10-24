@@ -37,7 +37,7 @@
       "backgroundColor": "#0000FF",
       "paintInvalidations": [
         {
-          "object": "Scrolling Contents Layer",
+          "object": "Scrolling background of LayoutBlockFlow DIV id='scroller'",
           "rect": [0, 0, 185, 550],
           "reason": "background"
         }

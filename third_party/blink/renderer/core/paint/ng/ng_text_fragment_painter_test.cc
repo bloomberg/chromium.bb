@@ -54,10 +54,10 @@ TEST_P(NGTextFragmentPainterTest, TestTextStyle) {
   EXPECT_EQ(1u, line_box_fragment.Children().size());
   const NGPaintFragment& text_fragment = *line_box_fragment.FirstChild();
 
-  EXPECT_DISPLAY_LIST(
-      RootPaintController().GetDisplayItemList(), 2,
-      TestDisplayItem(ViewBackgroundClient(), DisplayItem::kDocumentBackground),
-      TestDisplayItem(text_fragment, kForegroundType));
+  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 2,
+                      TestDisplayItem(ViewScrollingBackgroundClient(),
+                                      DisplayItem::kDocumentBackground),
+                      TestDisplayItem(text_fragment, kForegroundType));
 }
 
 }  // namespace blink
