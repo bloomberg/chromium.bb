@@ -12,7 +12,6 @@
 #include "base/compiler_specific.h"
 #include "base/debug/crash_logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/task/sequence_manager/real_time_domain.h"
 #include "base/task/sequence_manager/task_time_observer.h"
@@ -400,9 +399,6 @@ Optional<PendingTask> SequenceManagerImpl::TakeTaskImpl() {
     main_thread_only().task_execution_stack.emplace_back(
         work_queue->TakeTaskFromWorkQueue(), work_queue->task_queue(),
         InitializeTaskTiming(work_queue->task_queue()));
-
-    UMA_HISTOGRAM_COUNTS_1000("TaskQueueManager.ActiveQueuesCount",
-                              main_thread_only().active_queues.size());
 
     ExecutingTask& executing_task =
         *main_thread_only().task_execution_stack.rbegin();
