@@ -735,10 +735,12 @@ BOOL ContentSizeCategoryIsAccessibilityCategory(
   if (@available(iOS 11.0, *)) {
     return UIContentSizeCategoryIsAccessibilityCategory(category);
   } else {
-    return category == UIContentSizeCategoryAccessibilityExtraExtraExtraLarge ||
-           category == UIContentSizeCategoryAccessibilityExtraExtraLarge ||
-           category == UIContentSizeCategoryAccessibilityExtraLarge ||
-           category == UIContentSizeCategoryAccessibilityLarge ||
-           category == UIContentSizeCategoryAccessibilityMedium;
+    return
+        [category
+            isEqual:UIContentSizeCategoryAccessibilityExtraExtraExtraLarge] ||
+        [category isEqual:UIContentSizeCategoryAccessibilityExtraExtraLarge] ||
+        [category isEqual:UIContentSizeCategoryAccessibilityExtraLarge] ||
+        [category isEqual:UIContentSizeCategoryAccessibilityLarge] ||
+        [category isEqual:UIContentSizeCategoryAccessibilityMedium];
   }
 }
