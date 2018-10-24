@@ -97,8 +97,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/extensions/oes-vertex-array-object.html', bug=739604)
 
     # Need to add detection of feedback loops with multiple render targets.
-    self.Fail('conformance/extensions/webgl-draw-buffers-feedback-loop.html',
-        ['no_passthrough'], bug=1619) # angle bug ID
+    self.Fail('conformance/rendering/rendering-sampling-feedback-loop.html',
+        bug=660844)
 
     # Need to implement new error semantics
     # https://github.com/KhronosGroup/WebGL/pull/2607

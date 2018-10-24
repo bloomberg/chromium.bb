@@ -115,7 +115,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('conformance2/rendering/depth-stencil-feedback-loop.html',
         bug=660844) # WebGL 2.0.1
-    self.Fail('conformance2/rendering/rendering-sampling-feedback-loop.html',
+    self.Fail('conformance/rendering/rendering-sampling-feedback-loop.html',
         bug=660844) # WebGL 2.0.1
     self.Fail('conformance2/textures/misc/' +
         'integer-cubemap-specification-order-bug.html',
@@ -125,6 +125,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Need to implement new lifetime/deletion semantics.
     self.Fail('conformance2/vertex_arrays/vertex-array-object.html', bug=739604)
+    self.Fail('deqp/functional/gles3/lifetime.html', bug=898350)
+
+    # Need to forbid generation of mipmaps for zero-sized textures.
+    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html', bug=898351)
 
     # The following actually passes on gl_passthrough and also Mac Intel with
     # command buffer.
@@ -328,8 +332,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Seems to cause the harness to fail immediately afterward
     self.Skip('conformance2/textures/video/tex-2d-rgba16f-rgba-half_float.html',
         ['win', 'intel', 'd3d11'], bug=648337)
-    self.Flaky('deqp/functional/gles3/lifetime.html',
-        ['win', 'intel', 'd3d11'], bug=620379)
+    # TODO(kbr): re-enable after fix for http://crbug.com/898350
+    # self.Flaky('deqp/functional/gles3/lifetime.html',
+    #     ['win', 'intel', 'd3d11'], bug=620379)
     self.Flaky('deqp/functional/gles3/textureformat/unsized_3d.html',
         ['win', 'intel', 'd3d11'], bug=614418)
 
@@ -438,7 +443,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance/textures/image_bitmap_from_video/' +
         'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
         ['linux', 'passthrough', 'opengl', 'nvidia'], bug=766918)
-    self.Fail('deqp/functional/gles3/shaderoperator/common_functions.html',
+    self.Flaky('conformance2/textures/image_bitmap_from_video/' +
+        'tex-2d-rgb565-rgb-unsigned_short_5_6_5.html',
+        ['linux', 'passthrough', 'opengl', 'nvidia'], bug=766918)
+    self.Fail('deqp/functional/gles3/shaderoperator/common_functions_*.html',
         ['linux', 'passthrough', 'opengl', 'nvidia'], bug=793055)
 
     # Passthrough command decoder / Linux / OpenGL / Intel
@@ -450,18 +458,21 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/renderbuffers/' +
         'multisampled-stencil-renderbuffer-initialization.html',
         ['linux', 'passthrough', 'opengl', 'intel'], bug=2760) # ANGLE bug
-    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
-        ['linux', 'passthrough', 'opengl', 'intel'], bug=2761) # ANGLE bug
+    # TODO(kbr): re-enable after crbug.com/898351 is fixed
+    # self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
+    #     ['linux', 'passthrough', 'opengl', 'intel'], bug=2761) # ANGLE bug
 
     # Regressions in 10.12.4.
     self.Fail('conformance2/textures/misc/tex-base-level-bug.html',
         ['sierra', 'intel'], bug=705865)
-    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
-        ['sierra', 'intel'], bug=705865)
+    # TODO(kbr): re-enable after crbug.com/898351 is fixed
+    # self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
+    #     ['sierra', 'intel'], bug=705865)
     self.Fail('conformance2/textures/misc/tex-base-level-bug.html',
         ['sierra', 'amd'], bug=870856)
-    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
-        ['sierra', 'amd'], bug=870856)
+    # TODO(kbr): re-enable after crbug.com/898351 is fixed
+    # self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
+    #     ['sierra', 'amd'], bug=870856)
 
     # Regressions in 10.13
     self.Fail('deqp/functional/gles3/fbocolorbuffer/tex2d_00.html',
@@ -678,11 +689,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # OpenGL driver on 10.13.6 specifically. Unfortunately when the
     # tests fail, they fail three times in a row, so we must mark them
     # failing rather than flaky.
-    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
-        ['highsierra', 'amd'], bug=870856)
+    # TODO(kbr): re-enable after crbug.com/898351 is fixed
+    # self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
+    #     ['highsierra', 'amd'], bug=870856)
     self.Fail('conformance2/textures/misc/tex-base-level-bug.html',
         ['highsierra', 'amd'], bug=870856)
-    self.Fail('deqp/functional/gles3/shaderoperator/common_functions.html',
+    self.Fail('deqp/functional/gles3/shaderoperator/common_functions_*.html',
         ['mac', 'amd'], bug=820225)
     self.Fail('deqp/functional/gles3/transformfeedback/' +
         'array_interleaved_lines.html',
@@ -783,7 +795,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'no_passthrough', 'intel'], bug=679692)
     self.Fail('deqp/functional/gles3/fbomultisample*',
         ['mac', 'intel'], bug=641209)
-    self.Fail('deqp/functional/gles3/shaderoperator/common_functions.html',
+    self.Fail('deqp/functional/gles3/shaderoperator/common_functions_*.html',
         ['mac', 'intel'], bug=820225)
     self.Fail('deqp/functional/gles3/texturefiltering/2d_combinations_01.html',
         ['mac', 'intel'], bug=606074)
@@ -1109,8 +1121,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=662644) # WebGL 2.0.1
     self.Fail('conformance2/renderbuffers/framebuffer-texture-layer.html',
         ['linux', 'amd'], bug=295792)
-    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
-        ['linux', 'amd'], bug=483282)
+    # TODO(kbr): re-enable after crbug.com/898351 is fixed
+    # self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
+    #     ['linux', 'amd'], bug=483282)
     self.Fail('conformance2/textures/misc/copy-texture-image-luma-format.html',
         ['linux', 'amd'], bug=483282)
 
