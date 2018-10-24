@@ -105,7 +105,8 @@ void WebAppProvider::InstallWebApp(content::WebContents* web_contents,
   auto* provider = WebAppProvider::GetForWebContents(web_contents);
   if (!provider || !provider->install_manager_)
     return;
-  provider->install_manager_->InstallWebApp(web_contents, force_shortcut_app);
+  provider->install_manager_->InstallWebApp(web_contents, force_shortcut_app,
+                                            base::DoNothing());
 }
 
 void WebAppProvider::Reset() {
