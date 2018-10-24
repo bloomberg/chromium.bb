@@ -90,6 +90,6 @@ TEST_F(TableViewDetailTextItemTest, ItemPropertiesDefaultColor) {
   EXPECT_NSEQ(detailText, cell.detailTextLabel.text);
   EXPECT_NSEQ(UIColorFromRGB(kTableViewTextLabelColorLightGrey),
               cell.textLabel.textColor);
-  EXPECT_NSEQ(UIColorFromRGB(kSecondaryLabelLightGrayTextColor),
+  EXPECT_NSEQ(UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor),
               cell.detailTextLabel.textColor);
 }

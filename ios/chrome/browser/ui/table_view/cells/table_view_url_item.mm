@@ -164,12 +164,13 @@ const char kDefaultSupplementalURLTextDelimiter[] = "•";
     _titleLabel.adjustsFontForContentSizeCategory = YES;
     _URLLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
     _URLLabel.adjustsFontForContentSizeCategory = YES;
-    _URLLabel.textColor = UIColorFromRGB(kSecondaryLabelLightGrayTextColor);
+    _URLLabel.textColor =
+        UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
     _URLLabel.hidden = YES;
     _metadataLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
     _metadataLabel.textColor =
-        UIColorFromRGB(kSecondaryLabelLightGrayTextColor);
+        UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
     _metadataLabel.adjustsFontForContentSizeCategory = YES;
     _metadataLabel.hidden = YES;
 

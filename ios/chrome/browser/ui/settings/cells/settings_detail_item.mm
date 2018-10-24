@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -28,8 +29,6 @@ const CGFloat kVerticalPadding = 16;
 
 // Size of the icon image.
 const CGFloat kIconImageSize = 28;
-
-const int kDetailTextColor = 0x767676;
 
 // Minimum proportion of the available width to guarantee to the main and detail
 // labels.
@@ -129,7 +128,7 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
     _detailTextLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
     _detailTextLabel.adjustsFontForContentSizeCategory = YES;
-    _detailTextLabel.textColor = UIColorFromRGB(kDetailTextColor);
+    _detailTextLabel.textColor = UIColorFromRGB(kSettingsCellsDetailTextColor);
     _detailTextLabel.backgroundColor = [UIColor clearColor];
     [contentView addSubview:_detailTextLabel];
 

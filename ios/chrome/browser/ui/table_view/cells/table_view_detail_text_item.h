@@ -27,7 +27,7 @@
 @property(nonatomic, strong) NSString* text;
 
 // UIColor for the cell's detailTextLabel. Default is
-// kSecondaryLabelLightGrayTextColor.
+// kTableViewSecondaryLabelLightGrayTextColor.
 @property(nonatomic, assign) UIColor* detailTextColor;
 // Detail text to be displayed.
 @property(nonatomic, strong) NSString* detailText;

@@ -62,7 +62,7 @@ const CGFloat kMinimalHeight = 48;
     cell.detailTextLabel.textColor = self.detailTextColor;
   } else {
     cell.detailTextLabel.textColor =
-        UIColorFromRGB(kSecondaryLabelLightGrayTextColor);
+        UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
   }
   cell.textLabel.textAlignment =
       self.textAlignment ? self.textAlignment : NSTextAlignmentNatural;
