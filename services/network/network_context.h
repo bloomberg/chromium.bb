@@ -7,9 +7,11 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -18,12 +20,15 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/files/file.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
+#include "net/dns/dns_config_overrides.h"
+#include "net/dns/host_resolver.h"
 #include "services/network/http_cache_data_counter.h"
 #include "services/network/http_cache_data_remover.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
@@ -229,7 +234,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void ResolveHost(const net::HostPortPair& host,
                    mojom::ResolveHostParametersPtr optional_parameters,
                    mojom::ResolveHostClientPtr response_client) override;
-  void CreateHostResolver(mojom::HostResolverRequest request) override;
+  void CreateHostResolver(
+      const base::Optional<net::DnsConfigOverrides>& config_overrides,
+      mojom::HostResolverRequest request) override;
   void WriteCacheMetadata(const GURL& url,
                           net::RequestPriority priority,
                           base::Time expected_response_time,
@@ -284,6 +291,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   NetworkServiceProxyDelegate* proxy_delegate() const {
     return proxy_delegate_.get();
+  }
+
+  void set_host_resolver_factory_for_testing(
+      std::unique_ptr<net::HostResolver::Factory> factory) {
+    host_resolver_factory_ = std::move(factory);
   }
 
  private:
@@ -398,8 +410,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   // Created on-demand. Null if unused.
   std::unique_ptr<HostResolver> internal_host_resolver_;
-  std::set<std::unique_ptr<HostResolver>, base::UniquePtrComparator>
+  // Map values set to non-null only if that HostResolver has its own private
+  // internal net::HostResolver.
+  std::map<std::unique_ptr<HostResolver>,
+           std::unique_ptr<net::HostResolver>,
+           base::UniquePtrComparator>
       host_resolvers_;
+  // Factory used to create any needed private internal net::HostResolvers.
+  std::unique_ptr<net::HostResolver::Factory> host_resolver_factory_;
 
   std::unique_ptr<NetworkServiceProxyDelegate> proxy_delegate_;
 

@@ -194,6 +194,8 @@ class NET_EXPORT HostResolverImpl
       std::unique_ptr<MDnsSocketFactory> socket_factory);
   void SetMdnsClientForTesting(std::unique_ptr<MDnsClient> client);
 
+  void SetBaseDnsConfigForTesting(const DnsConfig& base_config);
+
  protected:
   // Callback from HaveOnlyLoopbackAddresses probe.
   void SetHaveOnlyLoopbackAddresses(bool result);
@@ -343,6 +345,7 @@ class NET_EXPORT HostResolverImpl
   void OnDNSChanged() override;
   void OnInitialDNSConfigRead() override;
 
+  DnsConfig GetBaseDnsConfig() const;
   void UpdateDNSConfig(bool config_changed);
 
   // True if have a DnsClient with a valid DnsConfig.
@@ -389,6 +392,11 @@ class NET_EXPORT HostResolverImpl
   // True if received valid config from |dns_config_service_|. Temporary, used
   // to measure performance of DnsConfigService: http://crbug.com/125599
   bool received_dns_config_;
+
+  // If set, used instead of getting DNS configuration from
+  // NetworkChangeNotifier. Changes sent from NetworkChangeNotifier will also be
+  // ignored and not cancel any pending requests.
+  base::Optional<DnsConfig> test_base_config_;
 
   // Overrides or adds to DNS configuration read from the system for DnsClient
   // resolution.

@@ -27,7 +27,11 @@ constexpr base::TimeDelta kDnsDefaultTimeout = base::TimeDelta::FromSeconds(1);
 struct NET_EXPORT DnsConfig {
   DnsConfig();
   DnsConfig(const DnsConfig& other);
+  DnsConfig(DnsConfig&& other);
   ~DnsConfig();
+
+  DnsConfig& operator=(const DnsConfig& other);
+  DnsConfig& operator=(DnsConfig&& other);
 
   bool Equals(const DnsConfig& d) const;
 

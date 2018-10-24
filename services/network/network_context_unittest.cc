@@ -46,6 +46,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_change_notifier.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/mock_cert_verifier.h"
@@ -53,6 +54,9 @@
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
 #include "net/disk_cache/disk_cache.h"
+#include "net/dns/dns_test_util.h"
+#include "net/dns/host_resolver_impl.h"
+#include "net/dns/host_resolver_source.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_auth.h"
 #include "net/http/http_cache.h"
@@ -2911,12 +2915,48 @@ TEST_F(NetworkContextTest, ResolveHost_CloseClient) {
             network_context->GetNumOutstandingResolveHostRequestsForTesting());
 }
 
+// Test factory of net::HostResolvers. Creates standard net::HostResolverImpl.
+// Keeps pointers to all created resolvers.
+class TestResolverFactory : public net::HostResolver::Factory {
+ public:
+  static TestResolverFactory* CreateAndSetFactory(NetworkContext* context) {
+    auto factory = std::make_unique<TestResolverFactory>();
+    auto* factory_ptr = factory.get();
+    context->set_host_resolver_factory_for_testing(std::move(factory));
+    return factory_ptr;
+  }
+
+  std::unique_ptr<net::HostResolver> CreateResolver(
+      const net::HostResolver::Options& options,
+      net::NetLog* net_log) override {
+    std::unique_ptr<net::HostResolverImpl> resolver =
+        net::HostResolver::CreateSystemResolverImpl(options, net_log);
+    resolvers_.push_back(resolver.get());
+    return resolver;
+  }
+
+  const std::vector<net::HostResolverImpl*>& resolvers() const {
+    return resolvers_;
+  }
+
+ private:
+  std::vector<net::HostResolverImpl*> resolvers_;
+};
+
 TEST_F(NetworkContextTest, CreateHostResolver) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
 
+  // Inject a factory to control and capture created net::HostResolvers.
+  TestResolverFactory* factory =
+      TestResolverFactory::CreateAndSetFactory(network_context.get());
+
   mojom::HostResolverPtr resolver;
-  network_context->CreateHostResolver(mojo::MakeRequest(&resolver));
+  network_context->CreateHostResolver(base::nullopt,
+                                      mojo::MakeRequest(&resolver));
+
+  // Expected to use shared internal HostResolver.
+  EXPECT_TRUE(factory->resolvers().empty());
 
   base::RunLoop run_loop;
   mojom::ResolveHostClientPtr response_client_ptr;
@@ -2946,7 +2986,8 @@ TEST_F(NetworkContextTest, CreateHostResolver_CloseResolver) {
       internal_resolver.get());
 
   mojom::HostResolverPtr resolver;
-  network_context->CreateHostResolver(mojo::MakeRequest(&resolver));
+  network_context->CreateHostResolver(base::nullopt,
+                                      mojo::MakeRequest(&resolver));
 
   ASSERT_EQ(0, internal_resolver->num_cancellations());
 
@@ -2988,7 +3029,8 @@ TEST_F(NetworkContextTest, CreateHostResolver_CloseContext) {
       internal_resolver.get());
 
   mojom::HostResolverPtr resolver;
-  network_context->CreateHostResolver(mojo::MakeRequest(&resolver));
+  network_context->CreateHostResolver(base::nullopt,
+                                      mojo::MakeRequest(&resolver));
 
   ASSERT_EQ(0, internal_resolver->num_cancellations());
 
@@ -3027,6 +3069,74 @@ TEST_F(NetworkContextTest, CreateHostResolver_CloseContext) {
   EXPECT_EQ(1, internal_resolver->num_cancellations());
   EXPECT_TRUE(control_handle_closed);
   EXPECT_TRUE(resolver_closed);
+}
+
+TEST_F(NetworkContextTest, CreateHostResolverWithConfigOverrides) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  // Inject a factory to control and capture created net::HostResolvers.
+  TestResolverFactory* factory =
+      TestResolverFactory::CreateAndSetFactory(network_context.get());
+
+  net::DnsConfigOverrides overrides;
+  overrides.nameservers = std::vector<net::IPEndPoint>{
+      CreateExpectedEndPoint("100.100.100.100", 22)};
+
+  mojom::HostResolverPtr resolver;
+  network_context->CreateHostResolver(overrides, mojo::MakeRequest(&resolver));
+
+  // Should create 1 private resolver with a DnsClient (if DnsClient is
+  // enablable for the build config).
+  ASSERT_EQ(1u, factory->resolvers().size());
+  net::HostResolverImpl* internal_resolver = factory->resolvers().front();
+#if defined(ENABLE_BUILT_IN_DNS)
+  EXPECT_TRUE(internal_resolver->GetDnsConfigAsValue());
+#endif
+
+  // Override DnsClient with a basic mock.
+  const std::string kQueryHostname = "example.com";
+  const std::string kResult = "1.2.3.4";
+  net::IPAddress result;
+  CHECK(result.AssignFromIPLiteral(kResult));
+  net::MockDnsClientRuleList rules{
+      net::MockDnsClientRule(kQueryHostname, net::dns_protocol::kTypeA,
+                             net::MockDnsClientRule::Result(result), false),
+      net::MockDnsClientRule(kQueryHostname, net::dns_protocol::kTypeAAAA,
+                             net::MockDnsClientRule::Result(
+                                 net::MockDnsClientRule::ResultType::EMPTY),
+                             false)};
+  auto mock_dns_client =
+      std::make_unique<net::MockDnsClient>(net::DnsConfig(), rules);
+  auto* mock_dns_client_ptr = mock_dns_client.get();
+  internal_resolver->SetDnsClient(std::move(mock_dns_client));
+
+  // Force the base configuration to ensure consistent overriding.
+  net::DnsConfig base_configuration;
+  base_configuration.nameservers = {CreateExpectedEndPoint("12.12.12.12", 53)};
+  internal_resolver->SetBaseDnsConfigForTesting(base_configuration);
+
+  // Test that the DnsClient is getting the overridden configuration.
+  EXPECT_TRUE(overrides.ApplyOverrides(base_configuration)
+                  .Equals(*mock_dns_client_ptr->GetConfig()));
+
+  // Ensure we are using the private resolver by testing that we get results
+  // from the overridden DnsClient.
+  base::RunLoop run_loop;
+  mojom::ResolveHostParametersPtr optional_parameters =
+      mojom::ResolveHostParameters::New();
+  optional_parameters->dns_query_type = net::HostResolver::DnsQueryType::A;
+  optional_parameters->source = net::HostResolverSource::DNS;
+  mojom::ResolveHostClientPtr response_client_ptr;
+  TestResolveHostClient response_client(&response_client_ptr, &run_loop);
+  resolver->ResolveHost(net::HostPortPair(kQueryHostname, 80),
+                        std::move(optional_parameters),
+                        std::move(response_client_ptr));
+  run_loop.Run();
+
+  EXPECT_EQ(net::OK, response_client.result_error());
+  EXPECT_THAT(response_client.result_addresses().value().endpoints(),
+              testing::ElementsAre(CreateExpectedEndPoint(kResult, 80)));
 }
 
 TEST_F(NetworkContextTest, PrivacyModeDisabledByDefault) {

@@ -26,6 +26,10 @@ bool DnsConfigOverrides::operator==(const DnsConfigOverrides& other) const {
          dns_over_https_servers == other.dns_over_https_servers;
 }
 
+bool DnsConfigOverrides::operator!=(const DnsConfigOverrides& other) const {
+  return !(*this == other);
+}
+
 DnsConfig DnsConfigOverrides::ApplyOverrides(const DnsConfig& config) const {
   DnsConfig overridden(config);
 

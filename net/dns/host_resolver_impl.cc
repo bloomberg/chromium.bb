@@ -2159,8 +2159,7 @@ HostResolverImpl::HostResolverImpl(const Options& options, NetLog* net_log)
   OnConnectionTypeChanged(NetworkChangeNotifier::GetConnectionType());
 
   {
-    DnsConfig dns_config;
-    NetworkChangeNotifier::GetDnsConfig(&dns_config);
+    DnsConfig dns_config = GetBaseDnsConfig();
     received_dns_config_ = dns_config.IsValid();
     // Conservatively assume local IPv6 is needed when DnsConfig is not valid.
     use_local_ipv6_ = !dns_config.IsValid() || dns_config.use_local_ipv6;
@@ -2188,8 +2187,7 @@ void HostResolverImpl::SetDnsClient(std::unique_ptr<DnsClient> dns_client) {
   dns_client_ = std::move(dns_client);
   if (dns_client_ && !dns_client_->GetConfig() &&
       num_dns_failures_ < kMaximumDnsFailures) {
-    DnsConfig dns_config;
-    NetworkChangeNotifier::GetDnsConfig(&dns_config);
+    DnsConfig dns_config = GetBaseDnsConfig();
     DnsConfig overridden_config =
         dns_config_overrides_.ApplyOverrides(dns_config);
     dns_client_->SetConfig(overridden_config);
@@ -2396,6 +2394,12 @@ void HostResolverImpl::SetMdnsSocketFactoryForTesting(
 void HostResolverImpl::SetMdnsClientForTesting(
     std::unique_ptr<MDnsClient> client) {
   mdns_client_ = std::move(client);
+}
+
+void HostResolverImpl::SetBaseDnsConfigForTesting(
+    const DnsConfig& base_config) {
+  test_base_config_ = base_config;
+  UpdateDNSConfig(true);
 }
 
 void HostResolverImpl::SetTaskRunnerForTesting(
@@ -2872,12 +2876,24 @@ void HostResolverImpl::OnInitialDNSConfigRead() {
 }
 
 void HostResolverImpl::OnDNSChanged() {
+  // Ignore changes if we're using a test config.
+  if (test_base_config_)
+    return;
+
   UpdateDNSConfig(true);
 }
 
-void HostResolverImpl::UpdateDNSConfig(bool config_changed) {
+DnsConfig HostResolverImpl::GetBaseDnsConfig() const {
   DnsConfig dns_config;
-  NetworkChangeNotifier::GetDnsConfig(&dns_config);
+  if (test_base_config_)
+    dns_config = test_base_config_.value();
+  else
+    NetworkChangeNotifier::GetDnsConfig(&dns_config);
+  return dns_config;
+}
+
+void HostResolverImpl::UpdateDNSConfig(bool config_changed) {
+  DnsConfig dns_config = GetBaseDnsConfig();
 
   if (net_log_) {
     net_log_->AddGlobalEntry(NetLogEventType::DNS_CONFIG_CHANGED,

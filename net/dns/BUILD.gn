@@ -230,6 +230,7 @@ source_set("host_resolver_impl") {
     "//chromeos/network",
     "//components/cronet/*",
     "//net/*",
+    "//services/network:tests",
   ]
 
   sources = []
