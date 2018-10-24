@@ -97,10 +97,6 @@ class PLATFORM_EXPORT Color {
   // http://www.whatwg.org/specs/web-apps/current-work/#serialization-of-a-color
   String Serialized() const;
 
-  // Returns the color serialized according to CSSOM:
-  // https://drafts.csswg.org/cssom/#serialize-a-css-component-value
-  String SerializedAsCSSComponentValue() const;
-
   // Returns the color serialized as either #RRGGBB or #RRGGBBAA. The latter
   // format is not a valid CSS color, and should only be seen in DRT dumps.
   String NameForLayoutTreeAsText() const;
