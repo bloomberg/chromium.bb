@@ -231,7 +231,7 @@ class VM(object):
 
     # Check SDK cache.
     if not self.qemu_path:
-      qemu_dir = self._CachePathForKey(cros_chrome_sdk.SDKFetcher.QEMU_BIN_KEY)
+      qemu_dir = self._CachePathForKey(cros_chrome_sdk.SDKFetcher.QEMU_BIN_PATH)
       if qemu_dir:
         qemu_path = os.path.join(qemu_dir, qemu_exe_path)
         if os.path.isfile(qemu_path):
