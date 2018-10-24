@@ -383,7 +383,7 @@ public class ManualFillingIntegrationTest {
     @Test
     @SmallTest
     public void testInfobarStaysHiddenWhenOpeningSheet()
-            throws InterruptedException, TimeoutException {
+            throws InterruptedException, TimeoutException, ExecutionException {
         mHelper.loadTestPage(false);
 
         InfoBarTestAnimationListener listener = new InfoBarTestAnimationListener();
@@ -413,7 +413,11 @@ public class ManualFillingIntegrationTest {
         // Reopen the keyboard, then close it.
         whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
         mHelper.waitForKeyboard();
-        mActivityTestRule.getKeyboardDelegate().hideKeyboard(null);
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mActivityTestRule.getKeyboardDelegate().hideKeyboard(
+                    mActivityTestRule.getActivity().getCurrentFocus());
+            mActivityTestRule.getInfoBarContainer().requestLayout();
+        });
 
         mHelper.waitToBeHidden(withId(R.id.keyboard_accessory_sheet));
         mHelper.waitToBeHidden(withId(R.id.keyboard_accessory));
