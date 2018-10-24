@@ -23,6 +23,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentOptions;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -235,8 +236,10 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
             int day, int hour, int minute, int second) {
         Date date = null;
         if (year > 0 && month > 0 && day > 0 && hour >= 0 && minute >= 0 && second >= 0) {
+            Calendar calendar = Calendar.getInstance();
             // Month in Java Date is 0-based, but the one we receive from the server is 1-based.
-            date = new Date(year, month - 1, day, hour, minute, second);
+            calendar.set(year, month - 1, day, hour, minute, second);
+            date = calendar.getTime();
         }
 
         mUiDelegate.showDetails(
