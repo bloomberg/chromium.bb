@@ -19,7 +19,13 @@ WebViewFrameWidget::WebViewFrameWidget(WebWidgetClient& client,
 WebViewFrameWidget::~WebViewFrameWidget() = default;
 
 void WebViewFrameWidget::Close() {
+  // Note: it's important to use the captured main frame pointer here. During
+  // a frame swap, the swapped frame is detached *after* the frame tree is
+  // updated. If the main frame is being swapped, then
+  // m_webView()->mainFrameImpl() will no longer point to the original frame.
+  web_view_->SetCompositorVisibility(false);
   web_view_ = nullptr;
+
   WebFrameWidgetBase::Close();
 
   // Note: this intentionally does not forward to WebView::close(), to make it
@@ -175,7 +181,9 @@ bool WebViewFrameWidget::ScrollFocusedEditableElementIntoView() {
   return web_view_->ScrollFocusedEditableElementIntoView();
 }
 
-void WebViewFrameWidget::Initialize() {}
+void WebViewFrameWidget::Initialize() {
+  web_view_->SetCompositorVisibility(true);
+}
 
 void WebViewFrameWidget::SetLayerTreeView(WebLayerTreeView*) {
   // The WebViewImpl already has its LayerTreeView, the WebWidgetClient
