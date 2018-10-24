@@ -171,7 +171,7 @@ class DateOrderedListView {
                     break;
             }
 
-            if (isFullWidthMedia) {
+            if (isFullWidthMedia && mView.getWidth() > mWideScreenThreshold) {
                 outRect.right += Math.max(mView.getWidth() - mMaxWidthImageItemPx, 0);
             }
         }
