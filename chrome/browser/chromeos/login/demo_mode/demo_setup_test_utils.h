@@ -12,6 +12,8 @@
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper_mock.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
+#include "chromeos/settings/install_attributes.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,8 +42,9 @@ EnterpriseEnrollmentHelper* MockDemoModeOnlineEnrollmentHelperCreator(
         } else {
           // TODO(agawronska): Test different error types.
           mock->status_consumer()->OnEnrollmentError(
-              policy::EnrollmentStatus::ForStatus(
-                  policy::EnrollmentStatus::REGISTRATION_FAILED));
+              policy::EnrollmentStatus::ForRegistrationError(
+                  policy::DeviceManagementStatus::
+                      DM_STATUS_TEMPORARY_UNAVAILABLE));
         }
       }));
   return mock;
@@ -66,8 +69,8 @@ EnterpriseEnrollmentHelper* MockDemoModeOfflineEnrollmentHelperCreator(
         } else {
           // TODO(agawronska): Test different error types.
           mock->status_consumer()->OnEnrollmentError(
-              policy::EnrollmentStatus::ForStatus(
-                  policy::EnrollmentStatus::Status::LOCK_ERROR));
+              policy::EnrollmentStatus::ForLockError(
+                  chromeos::InstallAttributes::LOCK_READBACK_ERROR));
         }
       }));
   return mock;
