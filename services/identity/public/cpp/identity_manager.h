@@ -44,6 +44,8 @@ class MultiProfileDownloadNotificationTest;
 
 namespace identity {
 
+class PrimaryAccountMutator;
+
 // Gives access to information about the user's Google identities. See
 // ./README.md for detailed documentation.
 class IdentityManager : public SigninManagerBase::Observer,
@@ -127,10 +129,12 @@ class IdentityManager : public SigninManagerBase::Observer,
         const OAuth2TokenService::ScopeSet& scopes) {}
   };
 
-  IdentityManager(SigninManagerBase* signin_manager,
-                  ProfileOAuth2TokenService* token_service,
-                  AccountTrackerService* account_tracker_service,
-                  GaiaCookieManagerService* gaia_cookie_manager_service);
+  IdentityManager(
+      SigninManagerBase* signin_manager,
+      ProfileOAuth2TokenService* token_service,
+      AccountTrackerService* account_tracker_service,
+      GaiaCookieManagerService* gaia_cookie_manager_service,
+      std::unique_ptr<PrimaryAccountMutator> primary_account_mutator);
   ~IdentityManager() override;
 
   // Provides access to the extended information of the user's primary account.
@@ -246,6 +250,11 @@ class IdentityManager : public SigninManagerBase::Observer,
                                   const OAuth2TokenService::ScopeSet& scopes,
                                   const std::string& access_token);
 
+  // Returns pointer to the object used to change the signed-in state of the
+  // primary account, if supported on the current platform. Otherwise, returns
+  // null.
+  PrimaryAccountMutator* GetPrimaryAccountMutator();
+
   // Methods to register or remove observers.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -319,6 +328,10 @@ class IdentityManager : public SigninManagerBase::Observer,
   ProfileOAuth2TokenService* token_service_;
   AccountTrackerService* account_tracker_service_;
   GaiaCookieManagerService* gaia_cookie_manager_service_;
+
+  // PrimaryAccountMutator instance. May be null if mutation of the primary
+  // account state is not supported on the current platform.
+  std::unique_ptr<PrimaryAccountMutator> primary_account_mutator_;
 
   // Lists of observers.
   // Makes sure lists are empty on destruction.
