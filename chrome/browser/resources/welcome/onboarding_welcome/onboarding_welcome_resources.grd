@@ -54,6 +54,10 @@
                  file="welcome.html"
                  type="chrome_html"
                  preprocess="true"/>
+      <structure name="IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_JS"
+                 file="welcome.js"
+                 type="chrome_html"
+                 preprocess="true"/>
       <structure name="IDR_WELCOME_ONBOARDING_WELCOME_LANDING_VIEW_HTML"
                  file="landing_view.html"
                  type="chrome_html"
