@@ -20,6 +20,7 @@
 #include "components/drive/service/fake_drive_service.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 
@@ -36,7 +37,7 @@ class FakeDriveServiceFactory
   ~FakeDriveServiceFactory() override {}
 
   std::unique_ptr<drive::DriveServiceInterface> CreateDriveService(
-      OAuth2TokenService* oauth2_token_service,
+      identity::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       base::SequencedTaskRunner* blocking_task_runner) override {
     std::unique_ptr<drive::FakeDriveService> drive_service(
@@ -89,7 +90,7 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
         nullptr,  // notification_manager
         extension_service,
         fake_signin_manager_.get(),  // signin_manager
-        nullptr,                     // token_service
+        nullptr,                     // identity_manager
         nullptr,                     // url_loader_factory
         std::move(drive_service_factory), in_memory_env_.get());
     remote_service_->SetSyncEnabled(true);
