@@ -270,11 +270,8 @@ void ProfileSyncService::Initialize() {
 
   sync_prefs_.AddSyncPrefObserver(this);
 
-  int disable_reasons = GetDisableReasons();
-  RecordSyncInitialState(disable_reasons, IsFirstSetupComplete());
-
   // If sync is disallowed by policy, clean up.
-  if (disable_reasons & DISABLE_REASON_ENTERPRISE_POLICY) {
+  if (HasDisableReason(DISABLE_REASON_ENTERPRISE_POLICY)) {
     // Note that this won't actually clear data, since neither |engine_| nor
     // |sync_thread_| exist at this point. Bug or feature?
     StopImpl(CLEAR_DATA);
@@ -292,6 +289,11 @@ void ProfileSyncService::Initialize() {
       StopImpl(CLEAR_DATA);
     }
   }
+
+  // Note: We need to record the initial state *after* calling
+  // RegisterForAuthNotifications(), because before that the authenticated
+  // account isn't initialized.
+  RecordSyncInitialState(GetDisableReasons(), IsFirstSetupComplete());
 
 #if defined(OS_CHROMEOS)
   std::string bootstrap_token = sync_prefs_.GetEncryptionBootstrapToken();
