@@ -46,7 +46,7 @@ class DemoSetupControllerTestHelper {
       : run_loop_(std::make_unique<base::RunLoop>()) {}
   virtual ~DemoSetupControllerTestHelper() = default;
 
-  void OnSetupError(DemoSetupController::DemoSetupError error) {
+  void OnSetupError(const DemoSetupController::DemoSetupError& error) {
     EXPECT_FALSE(succeeded_.has_value());
     succeeded_ = false;
     error_ = error;
@@ -67,9 +67,11 @@ class DemoSetupControllerTestHelper {
     return succeeded_.has_value() && succeeded_.value() == expected;
   }
 
-  // Returns true if it receives a fatal error.
-  bool IsErrorFatal() const {
-    return error_ == DemoSetupController::DemoSetupError::kFatal;
+  // Returns true if powerwash is required to recover from the error.
+  bool RequiresPowerwash() const {
+    return error_.has_value() &&
+           error_->recovery_method() ==
+               DemoSetupController::DemoSetupError::RecoveryMethod::kPowerwash;
   }
 
   void Reset() {
@@ -79,8 +81,7 @@ class DemoSetupControllerTestHelper {
 
  private:
   base::Optional<bool> succeeded_;
-  DemoSetupController::DemoSetupError error_ =
-      DemoSetupController::DemoSetupError::kRecoverable;
+  base::Optional<DemoSetupController::DemoSetupError> error_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoSetupControllerTestHelper);
@@ -177,7 +178,7 @@ TEST_F(DemoSetupControllerTest, OfflineDeviceLocalAccountPolicyLoadFailure) {
                      base::Unretained(helper_.get())));
 
   EXPECT_TRUE(helper_->WaitResult(false));
-  EXPECT_FALSE(helper_->IsErrorFatal());
+  EXPECT_FALSE(helper_->RequiresPowerwash());
   EXPECT_EQ("", GetDeviceRequisition());
 }
 
@@ -203,7 +204,7 @@ TEST_F(DemoSetupControllerTest, OfflineDeviceLocalAccountPolicyStoreFailed) {
                      base::Unretained(helper_.get())));
 
   EXPECT_TRUE(helper_->WaitResult(false));
-  EXPECT_TRUE(helper_->IsErrorFatal());
+  EXPECT_TRUE(helper_->RequiresPowerwash());
   EXPECT_EQ("", GetDeviceRequisition());
 }
 
@@ -224,7 +225,7 @@ TEST_F(DemoSetupControllerTest, OfflineInvalidDeviceLocalAccountPolicyBlob) {
                      base::Unretained(helper_.get())));
 
   EXPECT_TRUE(helper_->WaitResult(false));
-  EXPECT_TRUE(helper_->IsErrorFatal());
+  EXPECT_TRUE(helper_->RequiresPowerwash());
   EXPECT_EQ("", GetDeviceRequisition());
 }
 
@@ -248,7 +249,7 @@ TEST_F(DemoSetupControllerTest, OfflineError) {
                      base::Unretained(helper_.get())));
 
   EXPECT_TRUE(helper_->WaitResult(false));
-  EXPECT_FALSE(helper_->IsErrorFatal());
+  EXPECT_TRUE(helper_->RequiresPowerwash());
   EXPECT_EQ("", GetDeviceRequisition());
 }
 
@@ -279,7 +280,7 @@ TEST_F(DemoSetupControllerTest, OnlineError) {
                      base::Unretained(helper_.get())));
 
   EXPECT_TRUE(helper_->WaitResult(false));
-  EXPECT_FALSE(helper_->IsErrorFatal());
+  EXPECT_FALSE(helper_->RequiresPowerwash());
   EXPECT_EQ("", GetDeviceRequisition());
 }
 
@@ -298,7 +299,7 @@ TEST_F(DemoSetupControllerTest, OnlineComponentError) {
                      base::Unretained(helper_.get())));
 
   EXPECT_TRUE(helper_->WaitResult(false));
-  EXPECT_FALSE(helper_->IsErrorFatal());
+  EXPECT_FALSE(helper_->RequiresPowerwash());
   EXPECT_EQ("", GetDeviceRequisition());
 }
 
@@ -314,7 +315,7 @@ TEST_F(DemoSetupControllerTest, EnrollTwice) {
                      base::Unretained(helper_.get())));
 
   EXPECT_TRUE(helper_->WaitResult(false));
-  EXPECT_FALSE(helper_->IsErrorFatal());
+  EXPECT_FALSE(helper_->RequiresPowerwash());
   EXPECT_EQ("", GetDeviceRequisition());
 
   helper_->Reset();

@@ -243,6 +243,22 @@ class DemoSetupTest : public LoginManagerTest {
     return js_checker().GetBool(query);
   }
 
+  // Returns whether error message is shown on demo setup error screen and
+  // contains text consisting of strings identified by |error_message_id| and
+  // |recovery_message_id|.
+  bool IsErrorMessageShown(int error_message_id, int recovery_message_id) {
+    const std::string element_selector =
+        base::StrCat({ScreenToContentQuery(OobeScreen::SCREEN_OOBE_DEMO_SETUP),
+                      ".$.", DialogToStringId(DemoSetupDialog::kError),
+                      ".querySelector('div[slot=subtitle]')"});
+    const std::string query = base::StrCat(
+        {"!!", element_selector, " && ", element_selector, ".innerHTML == '",
+         l10n_util::GetStringUTF8(error_message_id), " ",
+         l10n_util::GetStringUTF8(recovery_message_id), "' && !",
+         element_selector, ".hidden"});
+    return js_checker().GetBool(query);
+  }
+
   void SetPlayStoreTermsForTesting() {
     EXPECT_TRUE(
         JSExecute("login.ArcTermsOfServiceScreen.setTosForTesting('Test "
@@ -624,6 +640,9 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowError) {
   // needed to be able to check it reliably.
   WaitForScreenDialog(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
                       DemoSetupDialog::kError);
+  // Default error returned by MockDemoModeOnlineEnrollmentHelperCreator.
+  EXPECT_TRUE(IsErrorMessageShown(IDS_DEMO_SETUP_TEMPORARY_ERROR,
+                                  IDS_DEMO_SETUP_RECOVERY_RETRY));
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
 }
@@ -680,6 +699,8 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowCrosComponentFailure) {
   // needed to be able to check it reliably.
   WaitForScreenDialog(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
                       DemoSetupDialog::kError);
+  EXPECT_TRUE(IsErrorMessageShown(IDS_DEMO_SETUP_COMPONENT_ERROR,
+                                  IDS_DEMO_SETUP_RECOVERY_CHECK_NETWORK));
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
 }
@@ -787,6 +808,9 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowError) {
   // needed to be able to check it reliably.
   WaitForScreenDialog(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
                       DemoSetupDialog::kError);
+  // Default error returned by MockDemoModeOfflineEnrollmentHelperCreator.
+  EXPECT_TRUE(IsErrorMessageShown(IDS_DEMO_SETUP_LOCK_ERROR,
+                                  IDS_DEMO_SETUP_RECOVERY_POWERWASH));
 
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
