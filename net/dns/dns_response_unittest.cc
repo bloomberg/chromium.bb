@@ -248,6 +248,54 @@ TEST(DnsResponseTest, InitParse) {
   EXPECT_FALSE(parser.ReadRecord(&record));
 }
 
+TEST(DnsResponseTest, InitParseInvalidFlags) {
+  // This includes \0 at the end.
+  const char qname_data[] =
+      "\x0A"
+      "codereview"
+      "\x08"
+      "chromium"
+      "\x03"
+      "org";
+  const base::StringPiece qname(qname_data, sizeof(qname_data));
+  // Compilers want to copy when binding temporary to const &, so must use heap.
+  std::unique_ptr<DnsQuery> query(
+      new DnsQuery(0xcafe, qname, dns_protocol::kTypeA));
+
+  const uint8_t response_data[] = {
+      // Header
+      0xca, 0xfe,  // ID
+      0x01, 0x80,  // RA, no error. Note the absence of the required QR bit.
+      0x00, 0x01,  // 1 question
+      0x00, 0x01,  // 1 RRs (answers)
+      0x00, 0x00,  // 0 authority RRs
+      0x00, 0x00,  // 0 additional RRs
+
+      // Question
+      // This part is echoed back from the respective query.
+      0x0a, 'c', 'o', 'd', 'e', 'r', 'e', 'v', 'i', 'e', 'w', 0x08, 'c', 'h',
+      'r', 'o', 'm', 'i', 'u', 'm', 0x03, 'o', 'r', 'g', 0x00, 0x00,
+      0x01,        // TYPE is A.
+      0x00, 0x01,  // CLASS is IN.
+
+      // Answer 1
+      0xc0, 0x0c,  // NAME is a pointer to name in Question section.
+      0x00, 0x05,  // TYPE is CNAME.
+      0x00, 0x01,  // CLASS is IN.
+      0x00, 0x01,  // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
+      0x24, 0x74, 0x00, 0x12,  // RDLENGTH is 18 bytes.
+      // ghs.l.google.com in DNS format.
+      0x03, 'g', 'h', 's', 0x01, 'l', 0x06, 'g', 'o', 'o', 'g', 'l', 'e', 0x03,
+      'c', 'o', 'm', 0x00,
+  };
+
+  DnsResponse resp;
+  memcpy(resp.io_buffer()->data(), response_data, sizeof(response_data));
+
+  EXPECT_FALSE(resp.InitParse(sizeof(response_data), *query));
+  EXPECT_FALSE(resp.IsValid());
+}
+
 TEST(DnsResponseTest, InitParseWithoutQuery) {
   DnsResponse resp;
   memcpy(resp.io_buffer()->data(), kT0ResponseDatagram,
@@ -318,6 +366,33 @@ TEST(DnsResponseTest, InitParseWithoutQueryNoQuestions) {
 
   EXPECT_TRUE(parser.AtEnd());
   EXPECT_FALSE(parser.ReadRecord(&record));
+}
+
+TEST(DnsResponseTest, InitParseWithoutQueryInvalidFlags) {
+  const uint8_t response_data[] = {
+      // Header
+      0xca, 0xfe,  // ID
+      0x01, 0x80,  // RA, no error. Note the absence of the required QR bit.
+      0x00, 0x00,  // No question
+      0x00, 0x01,  // 2 RRs (answers)
+      0x00, 0x00,  // 0 authority RRs
+      0x00, 0x00,  // 0 additional RRs
+
+      // Answer 1
+      0x0a, 'c', 'o', 'd', 'e', 'r', 'e', 'v', 'i', 'e', 'w', 0x08, 'c', 'h',
+      'r', 'o', 'm', 'i', 'u', 'm', 0x03, 'o', 'r', 'g', 0x00, 0x00,
+      0x01,                    // TYPE is A.
+      0x00, 0x01,              // CLASS is IN.
+      0x00, 0x00,              // TTL (4 bytes) is 53 seconds.
+      0x00, 0x35, 0x00, 0x04,  // RDLENGTH is 4 bytes.
+      0x4a, 0x7d,              // RDATA is the IP: 74.125.95.121
+      0x5f, 0x79,
+  };
+
+  DnsResponse resp;
+  memcpy(resp.io_buffer()->data(), response_data, sizeof(response_data));
+
+  EXPECT_FALSE(resp.InitParseWithoutQuery(sizeof(response_data)));
 }
 
 TEST(DnsResponseTest, InitParseWithoutQueryTwoQuestions) {

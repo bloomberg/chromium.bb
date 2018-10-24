@@ -271,6 +271,10 @@ bool DnsResponse::InitParse(size_t nbytes, const DnsQuery& query) {
   if (base::NetToHost16(header()->id) != query.id())
     return false;
 
+  // Not a response?
+  if ((base::NetToHost16(header()->flags) & dns_protocol::kFlagResponse) == 0)
+    return false;
+
   // Match question count.
   if (base::NetToHost16(header()->qdcount) != 1)
     return false;
@@ -294,6 +298,10 @@ bool DnsResponse::InitParseWithoutQuery(size_t nbytes) {
   }
 
   parser_ = DnsRecordParser(io_buffer_->data(), nbytes, kHeaderSize);
+
+  // Not a response?
+  if ((base::NetToHost16(header()->flags) & dns_protocol::kFlagResponse) == 0)
+    return false;
 
   unsigned qdcount = base::NetToHost16(header()->qdcount);
   for (unsigned i = 0; i < qdcount; ++i) {
