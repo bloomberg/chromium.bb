@@ -419,7 +419,6 @@
 <translation id="1598233202702788831">ዝማኔዎች በእርስዎ አስተዳዳሪ ተሰናክሏል።</translation>
 <translation id="1600857548979126453">የገጽ አራሚ ደጀኑን ይደርስበታል</translation>
 <translation id="1601560923496285236">ተግብር</translation>
-<translation id="1603300902586586390">የLinux መተግበሪያዎች $1 ፋይሎችን ይክፈት።</translation>
 <translation id="1603914832182249871">(ስውር)</translation>
 <translation id="1607139524282324606">ግቤትን አጽዳ</translation>
 <translation id="1608626060424371292">ይህን ተጠቃሚ አስወግድ</translation>
@@ -744,7 +743,6 @@
 <translation id="2080070583977670716">ተጨማሪ ቅንብሮች</translation>
 <translation id="2084108471225856927">የመሣሪያ ቅንብሮች</translation>
 <translation id="2085470240340828803">«<ph name="FILENAME" />» የሚባል ፋይል አስቀድሞ አለ። ምን ማድረግ ይፈልጋሉ?</translation>
-<translation id="208586643495776849">እባክዎ እንደገና ይሞክሩ</translation>
 <translation id="2087822576218954668">አትም፦ <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">ከGoogle Chrome ጋር ደህንነቱ በተጠበቀ ሁኔታ ያስሱ</translation>
 <translation id="2089795179672254991">አንድ ጣቢያ እርስዎ ወደ ቅንጥብ ሰሌዳ የቀዱትን ጽሑፍ እና ምስሎች መመልከት ሲፈልግ ይጠይቅ (የሚመከር)</translation>
@@ -1474,7 +1472,6 @@
 <translation id="3182749001423093222">ፊደል አራሚ</translation>
 <translation id="3183139917765991655">የመገለጫ አስመጪ</translation>
 <translation id="3184560914950696195">ወደ $1 ማስቀመጥ አልተቻለም። አርትዖት የተደረጉ ምስሎች በውርዶች አቃፊው ውስጥ ይቀመጣሉ።</translation>
-<translation id="3186202398303525187">የLinux መተግበሪያዎች $1ን ይክፈቱ።</translation>
 <translation id="3188257591659621405">የእኔ ፋይሎች</translation>
 <translation id="3188465121994729530">አማካኝ በመውሰድ ላይ</translation>
 <translation id="3190558889382726167">የይለፍ ቃል ተቀምጧል</translation>
@@ -2718,7 +2715,6 @@
 <translation id="5108967062857032718">ቅንብሮች - የAndroid መተግበሪያዎችን አስወግድ</translation>
 <translation id="5109044022078737958">ሚያ</translation>
 <translation id="5111692334209731439">&amp;ዕልባት አቀናባሪ</translation>
-<translation id="5112009661904384591">ፋይሎችን በLinux ያጋሩ</translation>
 <translation id="5112577000029535889">&amp;የገንቢ መሳሪያዎች</translation>
 <translation id="5113739826273394829">ይህን አዶ ጠቅ ካደረጉት ይህን <ph name="DEVICE_TYPE" /> እራስዎ ይቆልፉታል። በሚቀጥለው ጊዜ ለመግባት የይለፍ ቃልዎን መተየብ ይኖርብዎታል።</translation>
 <translation id="5115309401544567011">እባክዎ የእርስዎን <ph name="DEVICE_TYPE" /> ወደ የኃይል ምንጭ ይሰኩት።</translation>
@@ -3976,6 +3972,7 @@
 <translation id="6970480684834282392">የጀማሪ አይነት</translation>
 <translation id="6970856801391541997">የተወሰኑ ገጾችን አትም</translation>
 <translation id="6972180789171089114">ኦዲዮ/ቪዲዮ</translation>
+<translation id="6972754398087986839">አስጀማሪ መመሪያ</translation>
 <translation id="6973630695168034713">አቃፊዎች</translation>
 <translation id="6974609594866392343">የመስመር ውጭ ማሳያ ሁነታ</translation>
 <translation id="6976108581241006975">የጃቫስክሪፕት ኮንሶል</translation>

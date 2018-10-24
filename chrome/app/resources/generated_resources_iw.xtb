@@ -416,7 +416,6 @@
 <translation id="1598233202702788831">מנהל המערכת השבית את העדכונים.</translation>
 <translation id="1600857548979126453">להיכנס לניפוי הבאגים העורפי של הדף</translation>
 <translation id="1601560923496285236">החל</translation>
-<translation id="1603300902586586390">‏מתן הרשאה לאפליקציות Linux לפתוח קובצי $1.</translation>
 <translation id="1603914832182249871">(גלישה בסתר)</translation>
 <translation id="1607139524282324606">ניקוי רשומה</translation>
 <translation id="1608626060424371292">הסר את המשתמש הזה</translation>
@@ -741,7 +740,6 @@
 <translation id="2080070583977670716">הגדרות נוספות</translation>
 <translation id="2084108471225856927">הגדרות המכשיר</translation>
 <translation id="2085470240340828803">כבר קיים קובץ בשם "<ph name="FILENAME" />". מה ברצונך לעשות?</translation>
-<translation id="208586643495776849">יש לנסות שוב</translation>
 <translation id="2087822576218954668">הדפס: <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">‏גלישה בטוחה עם Google Chrome</translation>
 <translation id="2089795179672254991">יש לשאול כשאתר רוצה גישה אל טקסט ותמונות שהועתקו אל הלוח (מומלץ)</translation>
@@ -1472,7 +1470,6 @@
 <translation id="3182749001423093222">בדיקת איות</translation>
 <translation id="3183139917765991655">מייבא פרופילים</translation>
 <translation id="3184560914950696195">לא ניתן לשמור ב-$1. תמונות ערוכות יישמרו בתיקיית ההורדות.</translation>
-<translation id="3186202398303525187">‏מתן הרשאה לאפליקציות Linux לפתוח את $1.</translation>
 <translation id="3188257591659621405">הקבצים שלי</translation>
 <translation id="3188465121994729530">ממוצע נע</translation>
 <translation id="3190558889382726167">הסיסמה נשמרה</translation>
@@ -2718,7 +2715,6 @@
 <translation id="5108967062857032718">‏הגדרות - הסר אפליקציות Android</translation>
 <translation id="5109044022078737958">מיה</translation>
 <translation id="5111692334209731439">&amp;מנהל הסימניות</translation>
-<translation id="5112009661904384591">‏שיתוף קבצים עם Linux</translation>
 <translation id="5112577000029535889">&amp;כלים עבור מפתחים</translation>
 <translation id="5113739826273394829">אם תלחץ על סמל זה, תנעל ידנית את <ph name="DEVICE_TYPE" /> זה. בפעם הבאה, תצטרך להקליד את הסיסמה כדי להיכנס.</translation>
 <translation id="5115309401544567011">חבר את ה-<ph name="DEVICE_TYPE" /> למקור חשמל.</translation>
@@ -3978,6 +3974,7 @@
 <translation id="6970480684834282392">סוג הפעלה</translation>
 <translation id="6970856801391541997">הדפסת דפים ספציפיים</translation>
 <translation id="6972180789171089114">אודיו/וידאו</translation>
+<translation id="6972754398087986839">תחילת העבודה</translation>
 <translation id="6973630695168034713">תיקיות</translation>
 <translation id="6974609594866392343">מצב הדגמה לא מקוון</translation>
 <translation id="6976108581241006975">‏לוח JavaScript</translation>

@@ -419,7 +419,6 @@
 <translation id="1598233202702788831">您的管理員停用了更新功能。</translation>
 <translation id="1600857548979126453">存取網頁偵錯工具後端</translation>
 <translation id="1601560923496285236">套用</translation>
-<translation id="1603300902586586390">允許 Linux 應用程式開啟 $1 個檔案。</translation>
 <translation id="1603914832182249871">(無痕模式)</translation>
 <translation id="1607139524282324606">清除項目</translation>
 <translation id="1608626060424371292">移除這位使用者</translation>
@@ -744,7 +743,6 @@
 <translation id="2080070583977670716">顯示更多設定</translation>
 <translation id="2084108471225856927">裝置設定</translation>
 <translation id="2085470240340828803">名稱為「<ph name="FILENAME" />」的檔案已經存在，你想要怎麼做？</translation>
-<translation id="208586643495776849">請再試一次</translation>
 <translation id="2087822576218954668">列印：<ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">使用 Google Chrome 安全瀏覽網路</translation>
 <translation id="2089795179672254991">當網站要讀取已複製到剪貼簿的文字和圖片時，必須先詢問你 (建議使用)</translation>
@@ -1475,7 +1473,6 @@
 <translation id="3182749001423093222">拼字檢查</translation>
 <translation id="3183139917765991655">設定檔匯入工具</translation>
 <translation id="3184560914950696195">無法儲存到 $1，系統會將編輯過的圖片儲存在「下載」資料夾。</translation>
-<translation id="3186202398303525187">允許 Linux 應用程式開啟 $1 個檔案。</translation>
 <translation id="3188257591659621405">我的檔案</translation>
 <translation id="3188465121994729530">移動平均</translation>
 <translation id="3190558889382726167">密碼已儲存</translation>
@@ -2720,7 +2717,6 @@
 <translation id="5108967062857032718">設定 - 移除 Android 應用程式</translation>
 <translation id="5109044022078737958">咪咪</translation>
 <translation id="5111692334209731439">書籤管理員(&amp;B)</translation>
-<translation id="5112009661904384591">透過 Linux 分享檔案</translation>
 <translation id="5112577000029535889">開發人員工具(&amp;D)</translation>
 <translation id="5113739826273394829">點選這個圖示後，即會人工鎖定這台 <ph name="DEVICE_TYPE" />。這樣一來，下次必須輸入密碼才能解鎖。</translation>
 <translation id="5115309401544567011">請將 <ph name="DEVICE_TYPE" /> 接上電源。</translation>
@@ -3979,6 +3975,7 @@
 <translation id="6970480684834282392">啟動類型</translation>
 <translation id="6970856801391541997">列印特定網頁</translation>
 <translation id="6972180789171089114">音效/影片</translation>
+<translation id="6972754398087986839">開始使用</translation>
 <translation id="6973630695168034713">資料夾</translation>
 <translation id="6974609594866392343">離線示範模式</translation>
 <translation id="6976108581241006975">JavaScript 控制台</translation>

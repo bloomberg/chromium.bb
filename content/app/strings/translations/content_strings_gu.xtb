@@ -4,7 +4,7 @@
 <translation id="1018939186200882850">મેનૂ આઇટમ</translation>
 <translation id="10623998915015855">ટોગલ બટન</translation>
 <translation id="1088086359088493902">સેકંડ</translation>
-<translation id="1171774979989969504">કૃપા કરી કોઈ ઇમેઇલ સરનામું દાખલ કરો.</translation>
+<translation id="1171774979989969504">કૃપા કરી કોઈ ઇમેઇલ ઍડ્રેસ દાખલ કરો.</translation>
 <translation id="1178581264944972037">થોભો</translation>
 <translation id="1188858454923323853">પૂરક</translation>
 <translation id="1206619573307042055">માર્કી</translation>
@@ -19,7 +19,7 @@
 <translation id="1591562245178063882">આ મહિને</translation>
 <translation id="1637811476055996098">ફાઇલો પસંદ કરો</translation>
 <translation id="1650423536718072820">પુલક્વોટ</translation>
-<translation id="1729654308190250600">કૃપા કરીને એક બિન-ખાલી ઇમેઇલ સરનામું દાખલ કરો.</translation>
+<translation id="1729654308190250600">કૃપા કરીને ખાલી ન હોય એવું ઇમેઇલ ઍડ્રેસ દાખલ કરો.</translation>
 <translation id="1758486001363313524">અન્ય...</translation>
 <translation id="1806710327868736751">ચેતવણી_સંવાદ</translation>
 <translation id="1821985195704844674">ટ્રી ગ્રિડ</translation>
@@ -191,7 +191,7 @@
 <translation id="7750228210027921155">ચિત્રમાં ચિત્ર</translation>
 <translation id="7789962463072032349">થોભો</translation>
 <translation id="7802800022689234070">પ્રકટીકરણ ત્રિકોણ</translation>
-<translation id="7888071071722539607">કૃપા કરીને ઇમેઇલ સરનામાંમાં '<ph name="ATSIGN" />' શામેલ કરો. '<ph name="INVALIDADDRESS" />' માં '<ph name="ATSIGN" />' ખૂટી રહ્યું છે.</translation>
+<translation id="7888071071722539607">કૃપા કરીને ઇમેઇલ સરનામાંમાં '<ph name="ATSIGN" />' શામેલ કરો. '<ph name="INVALIDADDRESS" />'માં '<ph name="ATSIGN" />' ખૂટે છે.</translation>
 <translation id="7891486169920085145">વિભાજનકર્તા</translation>
 <translation id="795667975304826397">કોઈ ફાઇલ પસંદ કરેલી નથી</translation>
 <translation id="8053789581856978548">ટેક્સ્ટ ફીલ્ડ શોધો</translation>

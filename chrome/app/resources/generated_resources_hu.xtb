@@ -419,7 +419,6 @@
 <translation id="1598233202702788831">A frissítéseket a rendszergazda letiltotta.</translation>
 <translation id="1600857548979126453">Hozzáférés az oldal háttérben történő hibakereséséhez</translation>
 <translation id="1601560923496285236">Alkalmaz</translation>
-<translation id="1603300902586586390">Engedélyezze, hogy a Linux-alkalmazások megnyithassanak $1 fájlt.</translation>
 <translation id="1603914832182249871">(Inkognitómód)</translation>
 <translation id="1607139524282324606">Bejegyzés törlése</translation>
 <translation id="1608626060424371292">Felhasználó eltávolítása</translation>
@@ -744,7 +743,6 @@
 <translation id="2080070583977670716">További beállítások</translation>
 <translation id="2084108471225856927">Eszközbeállítások</translation>
 <translation id="2085470240340828803">Már létezik „<ph name="FILENAME" />” nevű fájl. Mit szeretne tenni?</translation>
-<translation id="208586643495776849">Próbálkozzon újra</translation>
 <translation id="2087822576218954668">Nyomtatás: <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">Biztonságos böngészés a Google Chrome-mal</translation>
 <translation id="2089795179672254991">Kérdezzen meg, amikor az adott webhely szeretné megtekinteni a vágólapra másolt szövegeket és képeket (ajánlott)</translation>
@@ -1476,7 +1474,6 @@
 <translation id="3182749001423093222">Helyesírás-ellenőrzés</translation>
 <translation id="3183139917765991655">Profilimportáló</translation>
 <translation id="3184560914950696195">Nem lehet menteni a következő helyre: $1. A módosított képek a Letöltések mappába lesznek mentve.</translation>
-<translation id="3186202398303525187">Engedélyezze, hogy a Linux-alkalmazások megnyithassák a következőt: $1.</translation>
 <translation id="3188257591659621405">Saját fájlok</translation>
 <translation id="3188465121994729530">Mozgás átlaga</translation>
 <translation id="3190558889382726167">A jelszó mentése megtörtént</translation>
@@ -2333,7 +2330,7 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="452039078290142656"><ph name="VENDOR_NAME" /> szolgáltatótól származó ismeretlen eszközök</translation>
 <translation id="4522570452068850558">Részletek</translation>
 <translation id="4522600456902129422">Annak engedélyezése, hogy a webhely továbbra is megtekinthesse a vágólapot</translation>
-<translation id="4525382759303819021">Kérem a legújabb híreket és ajánlásokat a Play Áruház alkalmazásaival kapcsolatban</translation>
+<translation id="4525382759303819021">Szeretném megkapni a legújabb híreket és ajánlásokat a Play Áruház alkalmazásaival kapcsolatban</translation>
 <translation id="4530494379350999373">Eredet</translation>
 <translation id="4533985347672295764">Processzoridő</translation>
 <translation id="4534661889221639075">Próbálja újra.</translation>
@@ -2721,7 +2718,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="5108967062857032718">Beállítások – Android-alkalmazások eltávolítása</translation>
 <translation id="5109044022078737958">Sport</translation>
 <translation id="5111692334209731439">&amp;Könyvjelzőkezelő</translation>
-<translation id="5112009661904384591">Ossza meg a fájlokat a Linuxszal</translation>
 <translation id="5112577000029535889">Fejlesz&amp;tői eszközök</translation>
 <translation id="5113739826273394829">Ha rákattint erre az ikonra, akkor manuálisan zárolja ezt a(z) <ph name="DEVICE_TYPE" /> eszközt. Legközelebb be kell írnia a jelszót a belépéshez.</translation>
 <translation id="5115309401544567011">Csatlakoztassa <ph name="DEVICE_TYPE" /> eszközét áramforráshoz.</translation>
@@ -3982,6 +3978,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6970480684834282392">Kezdési típus</translation>
 <translation id="6970856801391541997">Adott oldalak nyomtatása</translation>
 <translation id="6972180789171089114">Hanganyag/videó</translation>
+<translation id="6972754398087986839">Első lépések</translation>
 <translation id="6973630695168034713">Mappák</translation>
 <translation id="6974609594866392343">Offline demó mód</translation>
 <translation id="6976108581241006975">JavaScript-konzol</translation>

@@ -419,7 +419,6 @@
 <translation id="1598233202702788831">Kemas kini dilumpuhkan oleh pentadbir anda</translation>
 <translation id="1600857548979126453">Akses bahagian belakang penyahpepijat halaman</translation>
 <translation id="1601560923496285236">Gunakan</translation>
-<translation id="1603300902586586390">Benarkan apl Linux membuka $1 fail.</translation>
 <translation id="1603914832182249871">(Inkognito)</translation>
 <translation id="1607139524282324606">Kosongkan masukan</translation>
 <translation id="1608626060424371292">Alih keluar pengguna ini</translation>
@@ -744,7 +743,6 @@
 <translation id="2080070583977670716">Lagi tetapan</translation>
 <translation id="2084108471225856927">Tetapan peranti</translation>
 <translation id="2085470240340828803">Fail bernama "<ph name="FILENAME" />" sudah ada. Apa yang anda mahu lakukan?</translation>
-<translation id="208586643495776849">Sila cuba lagi</translation>
 <translation id="2087822576218954668">Cetak: <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">Semak imbas dengan selamat menggunakan Google Chrome</translation>
 <translation id="2089795179672254991">Tanya apabila tapak ingin melihat teks dan imej yang disalin ke papan keratan (disyorkan)</translation>
@@ -1476,7 +1474,6 @@
 <translation id="3182749001423093222">Semakan ejaan</translation>
 <translation id="3183139917765991655">Pengimport Profil</translation>
 <translation id="3184560914950696195">Tidak boleh disimpan pada $1. Imej yang diedit akan disimpan dalam folder Muat Turun.</translation>
-<translation id="3186202398303525187">Benarkan apl Linux membuka $1.</translation>
 <translation id="3188257591659621405">Fail saya</translation>
 <translation id="3188465121994729530">Purata Pergerakan</translation>
 <translation id="3190558889382726167">Kata laluan yang disimpan</translation>
@@ -2722,7 +2719,6 @@
 <translation id="5108967062857032718">Tetapan - Alih keluar apl Android</translation>
 <translation id="5109044022078737958">Mia</translation>
 <translation id="5111692334209731439">&amp;Pengurus Penanda Halaman</translation>
-<translation id="5112009661904384591">Kongsi fail dengan Linux</translation>
 <translation id="5112577000029535889">&amp;Alat Pembangun</translation>
 <translation id="5113739826273394829">Jika anda mengklik ikon ini, anda akan mengunci <ph name="DEVICE_TYPE" /> ini secara manual. Lain kali, anda perlu menaip kata laluan untuk masuk.</translation>
 <translation id="5115309401544567011">Sila palamkan <ph name="DEVICE_TYPE" /> anda pada sumber kuasa.</translation>
@@ -3981,6 +3977,7 @@
 <translation id="6970480684834282392">Jenis pemula</translation>
 <translation id="6970856801391541997">Cetak Halaman Tertentu</translation>
 <translation id="6972180789171089114">Audio/Video</translation>
+<translation id="6972754398087986839">Bermula</translation>
 <translation id="6973630695168034713">Folder</translation>
 <translation id="6974609594866392343">Mod tunjuk cara luar talian</translation>
 <translation id="6976108581241006975">Konsol JavaScript</translation>

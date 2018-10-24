@@ -419,7 +419,6 @@
 <translation id="1598233202702788831">관리자가 업데이트를 사용 중지했습니다.</translation>
 <translation id="1600857548979126453">페이지 디버거 백엔드에 액세스</translation>
 <translation id="1601560923496285236">적용</translation>
-<translation id="1603300902586586390">Linux 앱에서 $1개의 파일을 열 수 있도록 허용합니다.</translation>
 <translation id="1603914832182249871">(시크릿 모드)</translation>
 <translation id="1607139524282324606">항목 삭제</translation>
 <translation id="1608626060424371292">이 사용자 삭제</translation>
@@ -744,7 +743,6 @@
 <translation id="2080070583977670716">설정 더보기</translation>
 <translation id="2084108471225856927">기기 설정</translation>
 <translation id="2085470240340828803">이름이 '<ph name="FILENAME" />'인 파일이 이미 존재합니다. 원하는 작업을 선택하세요.</translation>
-<translation id="208586643495776849">다시 시도해 주세요.</translation>
 <translation id="2087822576218954668">인쇄: <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">Chrome으로 안전하게 탐색</translation>
 <translation id="2089795179672254991">사이트에서 클립보드에 복사된 텍스트 및 이미지를 보려는 경우 확인(권장)</translation>
@@ -1475,7 +1473,6 @@
 <translation id="3182749001423093222">맞춤법 검사</translation>
 <translation id="3183139917765991655">프로필 가져오기 도구</translation>
 <translation id="3184560914950696195">$1에 저장할 수 없습니다. 편집한 이미지는 다운로드 폴더에 저장됩니다.</translation>
-<translation id="3186202398303525187">Linux 앱에서 $1을(를) 열 수 있도록 허용합니다.</translation>
 <translation id="3188257591659621405">내 파일</translation>
 <translation id="3188465121994729530">이동 평균</translation>
 <translation id="3190558889382726167">비밀번호 저장됨</translation>
@@ -2719,7 +2716,6 @@
 <translation id="5108967062857032718">설정 - Android 앱 삭제</translation>
 <translation id="5109044022078737958">미미</translation>
 <translation id="5111692334209731439">북마크 관리자(&amp;B)</translation>
-<translation id="5112009661904384591">Linux와 파일 공유</translation>
 <translation id="5112577000029535889">개발자 도구(&amp;D)</translation>
 <translation id="5113739826273394829">이 아이콘을 클릭하면 이 <ph name="DEVICE_TYPE" />이(가) 수동으로 잠깁니다. 다음 번에 기기를 잠금 해제하려면 비밀번호를 입력해야 합니다.</translation>
 <translation id="5115309401544567011"><ph name="DEVICE_TYPE" />을(를) 전원에 연결하세요.</translation>
@@ -3978,6 +3974,7 @@
 <translation id="6970480684834282392">시작 유형</translation>
 <translation id="6970856801391541997">특정 페이지 인쇄</translation>
 <translation id="6972180789171089114">오디오/비디오</translation>
+<translation id="6972754398087986839">시작하기</translation>
 <translation id="6973630695168034713">폴더</translation>
 <translation id="6974609594866392343">오프라인 데모 모드</translation>
 <translation id="6976108581241006975">자바스크립트 콘솔</translation>

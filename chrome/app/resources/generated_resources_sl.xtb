@@ -419,7 +419,6 @@
 <translation id="1598233202702788831">Skrbnik je onemogočil posodobitve.</translation>
 <translation id="1600857548979126453">Dostopajte do podsistema iskalnika napak na strani</translation>
 <translation id="1601560923496285236">Uporabi</translation>
-<translation id="1603300902586586390">Dovolite, da aplikacije za Linux odpirajo datoteke $1.</translation>
 <translation id="1603914832182249871">(Način brez beleženja zgodovine)</translation>
 <translation id="1607139524282324606">Izbris vnosa</translation>
 <translation id="1608626060424371292">Odstrani tega uporabnika</translation>
@@ -744,7 +743,6 @@
 <translation id="2080070583977670716">Več nastavitev</translation>
 <translation id="2084108471225856927">Nastavitve naprave</translation>
 <translation id="2085470240340828803">Datoteka z imenom »<ph name="FILENAME" />« že obstaja. Kaj želite storiti?</translation>
-<translation id="208586643495776849">Poskusite znova</translation>
 <translation id="2087822576218954668">Tiskanje: <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">Varno brskanje z Google Chromom</translation>
 <translation id="2089795179672254991">Vprašaj, ko želi spletno mesto videti besedilo in slike, kopirane v odložišče (priporočljivo)</translation>
@@ -1475,7 +1473,6 @@
 <translation id="3182749001423093222">Preverjanje črkovanja</translation>
 <translation id="3183139917765991655">Uvoznik profilov</translation>
 <translation id="3184560914950696195">V $1 ni mogoče shranjevati. Spremenjene slike bodo shranjene v mapo »Prenosi«.</translation>
-<translation id="3186202398303525187">Dovolite, da aplikacije za Linux odpirajo $1.</translation>
 <translation id="3188257591659621405">Moje datoteke</translation>
 <translation id="3188465121994729530">Drseče povprečje</translation>
 <translation id="3190558889382726167">Geslo je shranjeno</translation>
@@ -2721,7 +2718,6 @@
 <translation id="5108967062857032718">Nastavitve – odstranitev aplikacij za Android</translation>
 <translation id="5109044022078737958">Mia</translation>
 <translation id="5111692334209731439">&amp;Upravitelj zaznamkov</translation>
-<translation id="5112009661904384591">Deljenje datotek z Linuxom</translation>
 <translation id="5112577000029535889">&amp;Orodja za razvijalce</translation>
 <translation id="5113739826273394829">Če kliknete to ikono, boste ročno zaklenili to napravo: <ph name="DEVICE_TYPE" />. Naslednjič boste morali za odklenitev vnesti geslo.</translation>
 <translation id="5115309401544567011">Priključite napravo <ph name="DEVICE_TYPE" /> v vir napajanja.</translation>
@@ -3981,6 +3977,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6970480684834282392">Vrsta zagona</translation>
 <translation id="6970856801391541997">Natisni določene strani</translation>
 <translation id="6972180789171089114">Zvok/video</translation>
+<translation id="6972754398087986839">Začnite</translation>
 <translation id="6973630695168034713">Mape</translation>
 <translation id="6974609594866392343">Predstavitveni način brez povezave</translation>
 <translation id="6976108581241006975">Konzola JavaScript</translation>

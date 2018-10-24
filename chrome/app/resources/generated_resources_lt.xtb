@@ -419,7 +419,6 @@
 <translation id="1598233202702788831">Administratorius išjungė naujinius</translation>
 <translation id="1600857548979126453">Pasiekti puslapio derintuvės vidinę pusę</translation>
 <translation id="1601560923496285236">Taikyti</translation>
-<translation id="1603300902586586390">Leisti „Linux“ programoms atidaryti $1 failus.</translation>
 <translation id="1603914832182249871">(Inkognito)</translation>
 <translation id="1607139524282324606">Išvalyti įrašą</translation>
 <translation id="1608626060424371292">Pašalinti šį naudotoją</translation>
@@ -744,7 +743,6 @@
 <translation id="2080070583977670716">Daugiau nustatymų</translation>
 <translation id="2084108471225856927">Įrenginio nustatymai</translation>
 <translation id="2085470240340828803">Failas pavadinimu „<ph name="FILENAME" />“ jau yra. Ką norite daryti?</translation>
-<translation id="208586643495776849">Bandykite dar kartą</translation>
 <translation id="2087822576218954668">Spausdinti: <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">Saugiai naršykite naudodami „Google Chrome“</translation>
 <translation id="2089795179672254991">Paklausti, kai svetainė nori matyti tekstą ir vaizdus, nukopijuotus į iškarpinę (rekomenduojama)</translation>
@@ -1475,7 +1473,6 @@
 <translation id="3182749001423093222">Rašybos tikrinimas</translation>
 <translation id="3183139917765991655">Profilio importavimo priemonė</translation>
 <translation id="3184560914950696195">Nepavyko išsaugoti aplanke „$1“. Redaguoti vaizdai bus išsaugoti atsisiuntimų aplanke.</translation>
-<translation id="3186202398303525187">Leisti „Linux“ programoms atidaryti $1.</translation>
 <translation id="3188257591659621405">Mano failai</translation>
 <translation id="3188465121994729530">Slankusis vidurkis</translation>
 <translation id="3190558889382726167">Slaptažodis išsaugotas</translation>
@@ -2721,7 +2718,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5108967062857032718">Nustatymai – „Android“ programų pašalinimas</translation>
 <translation id="5109044022078737958">Austra</translation>
 <translation id="5111692334209731439">&amp;Žymių tvarkytuvė</translation>
-<translation id="5112009661904384591">Bendrinti failus su „Linux“</translation>
 <translation id="5112577000029535889">&amp;Kūrėjo įrankiai</translation>
 <translation id="5113739826273394829">Spustelėję šią piktogramą, neautomatiškai užrakinsite šį „<ph name="DEVICE_TYPE" />“. Kitą kartą norėdami įeiti turėsite įvesti slaptažodį.</translation>
 <translation id="5115309401544567011">Prijunkite „<ph name="DEVICE_TYPE" />“ prie maitinimo šaltinio.</translation>
@@ -3981,6 +3977,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6970480684834282392">Paleisties tipas</translation>
 <translation id="6970856801391541997">Spausdinti konkrečius puslapius</translation>
 <translation id="6972180789171089114">Garso / vaizdo įrašai</translation>
+<translation id="6972754398087986839">Darbo pradžia</translation>
 <translation id="6973630695168034713">Aplankai</translation>
 <translation id="6974609594866392343">Demonstracinis režimas neprisijungus</translation>
 <translation id="6976108581241006975">„JavaScript“ pultas</translation>

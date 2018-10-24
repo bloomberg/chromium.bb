@@ -526,7 +526,6 @@
 <translation id="5161254044473106830">Введите название</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{Не удалось скачать 1 файл.}one{Не удалось скачать # файл.}few{Не удалось скачать # файла.}many{Не удалось скачать # файлов.}other{Не удалось скачать # файла.}}</translation>
 <translation id="5168917394043976756">Открыть панель навигации</translation>
-<translation id="5171365962177408781">Нажмите, чтобы открыть страницу быстрого доступа и посмотреть рекомендуемые статьи.</translation>
 <translation id="5184329579814168207">Открыть в Chrome</translation>
 <translation id="5199929503336119739">Рабочий профиль</translation>
 <translation id="5210286577605176222">Перейти к предыдущей вкладке</translation>
@@ -1052,7 +1051,6 @@
 <translation id="9099018167121903954">Скачанные файлы: <ph name="KILOBYTES" /> КБ</translation>
 <translation id="9100505651305367705">Предлагать упрощенный просмотр статей, если он поддерживается</translation>
 <translation id="9100610230175265781">Необходима кодовая фраза</translation>
-<translation id="9100939710791843300">Нажмите кнопку главного экрана, чтобы открыть страницу быстрого доступа и посмотреть рекомендуемые статьи.</translation>
 <translation id="9133515669113036225">Сбросить учетные данные</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Показать оригинал</translation>

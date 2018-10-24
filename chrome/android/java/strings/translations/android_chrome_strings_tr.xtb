@@ -526,7 +526,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5161254044473106830">Başlık gerekiyor</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 indirme işlemi başarısız oldu.}other{# indirme işlemi başarısız oldu.}}</translation>
 <translation id="5168917394043976756">Gezinme çekmecesini aç</translation>
-<translation id="5171365962177408781">Yeni sekme sayfasını yüklemek ve önerilen makaleleri görüntülemek için dokunun</translation>
 <translation id="5184329579814168207">Chrome'da aç</translation>
 <translation id="5199929503336119739">İş profili</translation>
 <translation id="5210286577605176222">Önceki sekmeye gider</translation>
@@ -1052,7 +1051,6 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="9099018167121903954">İndirilenler <ph name="KILOBYTES" /> KB</translation>
 <translation id="9100505651305367705">Desteklendiğinde makaleleri basitleştirilmiş görünümde göstermeyi öner</translation>
 <translation id="9100610230175265781">Parola gerekli</translation>
-<translation id="9100939710791843300">Yeni sekme sayfasını yüklemek ve önerilen makaleleri görüntülemek için ana ekran düğmesine dokunun</translation>
 <translation id="9133515669113036225">Cihazın kimlik bilgilerini sıfırla</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Orijinali göster</translation>

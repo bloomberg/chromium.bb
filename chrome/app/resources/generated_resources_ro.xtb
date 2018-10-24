@@ -419,7 +419,6 @@
 <translation id="1598233202702788831">Actualizările sunt dezactivate de administrator.</translation>
 <translation id="1600857548979126453">Accesează procesul de fundal al depanatorului de pagină</translation>
 <translation id="1601560923496285236">Aplicați</translation>
-<translation id="1603300902586586390">Permite aplicațiilor Linux să deschidă fișiere $1.</translation>
 <translation id="1603914832182249871">(Incognito)</translation>
 <translation id="1607139524282324606">Șterge intrarea</translation>
 <translation id="1608626060424371292">Eliminați acest utilizator</translation>
@@ -744,7 +743,6 @@
 <translation id="2080070583977670716">Mai multe setări</translation>
 <translation id="2084108471225856927">Setările dispozitivului</translation>
 <translation id="2085470240340828803">Există deja un fișier numit „<ph name="FILENAME" />”. Ce doriți să faceți?</translation>
-<translation id="208586643495776849">Încearcă din nou</translation>
 <translation id="2087822576218954668">Printați: <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">Navighează în siguranță folosind Google Chrome</translation>
 <translation id="2089795179672254991">Întreabă-mă când un site dorește să vadă textul și imaginile copiate în clipboard (recomandat)</translation>
@@ -1475,7 +1473,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3182749001423093222">Verificarea ortografiei</translation>
 <translation id="3183139917765991655">Instrument de import al profilurilor</translation>
 <translation id="3184560914950696195">Fișierele nu pot fi salvate în $1. Imaginile editate vor fi salvate în dosarul Descărcări.</translation>
-<translation id="3186202398303525187">Permite aplicațiilor Linux să deschidă $1.</translation>
 <translation id="3188257591659621405">Fișierele mele</translation>
 <translation id="3188465121994729530">Medie mobilă</translation>
 <translation id="3190558889382726167">Parola a fost salvată</translation>
@@ -2721,7 +2718,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5108967062857032718">Setări – Elimină aplicațiile Android</translation>
 <translation id="5109044022078737958">Mia</translation>
 <translation id="5111692334209731439">&amp;Manager de marcaje</translation>
-<translation id="5112009661904384591">Distribuie fișiere cu Linux</translation>
 <translation id="5112577000029535889">&amp;Instrumente pentru dezvoltatori</translation>
 <translation id="5113739826273394829">Dacă dai clic pe această pictogramă, vei bloca manual acest <ph name="DEVICE_TYPE" />. Pentru acces, data viitoare va trebui să introduci parola.</translation>
 <translation id="5115309401544567011">Conectează dispozitivul <ph name="DEVICE_TYPE" /> la o sursă de alimentare.</translation>
@@ -3980,6 +3976,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6970480684834282392">Tip de pornire</translation>
 <translation id="6970856801391541997">Printează anumite pagini</translation>
 <translation id="6972180789171089114">Audio/Video</translation>
+<translation id="6972754398087986839">Începe</translation>
 <translation id="6973630695168034713">Dosare</translation>
 <translation id="6974609594866392343">Modul demo offline</translation>
 <translation id="6976108581241006975">Consolă pentru JavaScript</translation>

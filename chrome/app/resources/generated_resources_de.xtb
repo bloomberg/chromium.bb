@@ -416,7 +416,6 @@
 <translation id="1598233202702788831">Updates sind durch Ihren Administrator deaktiviert.</translation>
 <translation id="1600857548979126453">Auf das Back-End für Seiten-Debugger zugreifen</translation>
 <translation id="1601560923496285236">Übernehmen</translation>
-<translation id="1603300902586586390">Zulassen, dass Linux Apps $1-Dateien öffnen.</translation>
 <translation id="1603914832182249871">(Anonym)</translation>
 <translation id="1607139524282324606">Eintrag löschen</translation>
 <translation id="1608626060424371292">Diesen Nutzer entfernen</translation>
@@ -741,7 +740,6 @@
 <translation id="2080070583977670716">Weitere Einstellungen</translation>
 <translation id="2084108471225856927">Geräteeinstellungen</translation>
 <translation id="2085470240340828803">Eine Datei mit dem Namen "<ph name="FILENAME" />" existiert bereits. Was möchten Sie tun?</translation>
-<translation id="208586643495776849">Versuchen Sie es bitte noch einmal</translation>
 <translation id="2087822576218954668">Drucken: <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">Sicher surfen mit Google Chrome</translation>
 <translation id="2089795179672254991">Nachfragen, wenn eine Website Texte und Bilder aus der Zwischenablage abrufen möchte (empfohlen)</translation>
@@ -1470,7 +1468,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3182749001423093222">Rechtschreibprüfung</translation>
 <translation id="3183139917765991655">Profilimport</translation>
 <translation id="3184560914950696195">Fehler beim Speichern unter $1. Bearbeitete Bilder werden im Ordner "Downloads" gespeichert.</translation>
-<translation id="3186202398303525187">Zulassen, dass Linux Apps $1-Dateien öffnen.</translation>
 <translation id="3188257591659621405">Meine Dateien</translation>
 <translation id="3188465121994729530">Gleitender Durchschnitt</translation>
 <translation id="3190558889382726167">Passwort gespeichert</translation>
@@ -2716,7 +2713,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5108967062857032718">Einstellungen – Android-Apps entfernen</translation>
 <translation id="5109044022078737958">Mia</translation>
 <translation id="5111692334209731439">&amp;Lesezeichen-Manager</translation>
-<translation id="5112009661904384591">Dateien mit Linux teilen</translation>
 <translation id="5112577000029535889">E&amp;ntwicklertools</translation>
 <translation id="5113739826273394829">Wenn Sie auf dieses Symbol klicken, wird Ihr <ph name="DEVICE_TYPE" /> manuell gesperrt. Beim nächsten Mal müssen Sie dann Ihr Passwort eingeben, um das Gerät zu verwenden.</translation>
 <translation id="5115309401544567011">Bitte schließen Sie Ihr <ph name="DEVICE_TYPE" /> an eine Stromquelle an.</translation>
@@ -3975,6 +3971,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6970480684834282392">Starttyp</translation>
 <translation id="6970856801391541997">Bestimmte Seiten drucken</translation>
 <translation id="6972180789171089114">Audio/Video</translation>
+<translation id="6972754398087986839">Erste Schritte</translation>
 <translation id="6973630695168034713">Ordner</translation>
 <translation id="6974609594866392343">Offline-Demomodus</translation>
 <translation id="6976108581241006975">JavaScript-Konsole</translation>

@@ -232,7 +232,7 @@
 <translation id="131461803491198646">Матична мрежа, није у ромингу</translation>
 <translation id="1316136264406804862">Претраживање...</translation>
 <translation id="1316495628809031177">Синхронизација је паузирана</translation>
-<translation id="1322046419516468189">Прегледајте сачуване лозинке и управљајте њима на <ph name="SAVED_PASSWORDS_STORE" /></translation>
+<translation id="1322046419516468189">Прегледајте сачуване лозинке и управљајте њима са <ph name="SAVED_PASSWORDS_STORE" /></translation>
 <translation id="1326317727527857210">Да би вам картице биле доступне на другим уређајима, пријавите се у Chrome.</translation>
 <translation id="1327074568633507428">Штампач у Google Cloud штампању</translation>
 <translation id="1327977588028644528">Мрежни пролаз</translation>
@@ -416,7 +416,6 @@
 <translation id="1598233202702788831">Администратор је онемогућио ажурирања.</translation>
 <translation id="1600857548979126453">Приступ позадинском механизму програма за отклањање грешака на страници</translation>
 <translation id="1601560923496285236">Примени</translation>
-<translation id="1603300902586586390">Дозволите Linux апликацијама да отварају датотеке ($1).</translation>
 <translation id="1603914832182249871">(Без архивирања)</translation>
 <translation id="1607139524282324606">Обриши унос</translation>
 <translation id="1608626060424371292">Уклони овог корисника</translation>
@@ -741,7 +740,6 @@
 <translation id="2080070583977670716">Више подешавања</translation>
 <translation id="2084108471225856927">Подешавања уређаја</translation>
 <translation id="2085470240340828803">Датотека са називом „<ph name="FILENAME" />“ већ постоји. Шта желите да урадите?</translation>
-<translation id="208586643495776849">Пробајте поново</translation>
 <translation id="2087822576218954668">Штампање: <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">Прегледајте безбедно уз Google Chrome</translation>
 <translation id="2089795179672254991">Питај када сајт жели да види текст и слике који су копирани у привремену меморију (препоручено)</translation>
@@ -1471,7 +1469,6 @@
 <translation id="3182749001423093222">Провера правописа</translation>
 <translation id="3183139917765991655">Увоз профила</translation>
 <translation id="3184560914950696195">Чување у директоријум $1 није могуће. Измењене слике ће бити сачуване у директоријуму Преузимања.</translation>
-<translation id="3186202398303525187">Дозволите Linux апликацијама да отварају $1.</translation>
 <translation id="3188257591659621405">Моје датотеке</translation>
 <translation id="3188465121994729530">Покретни просек</translation>
 <translation id="3190558889382726167">Лозинка је сачувана</translation>
@@ -2717,7 +2714,6 @@
 <translation id="5108967062857032718">Подешавања – Уклони Android апликације</translation>
 <translation id="5109044022078737958">Мија</translation>
 <translation id="5111692334209731439">&amp;Менаџер обележивача</translation>
-<translation id="5112009661904384591">Делите датотеке помоћу Linux-а</translation>
 <translation id="5112577000029535889">&amp;Алатке за програмере</translation>
 <translation id="5113739826273394829">Ако кликнете на ову икону, ручно ћете закључати овај <ph name="DEVICE_TYPE" />. Следећи пут ћете морати да унесете лозинку да бисте приступили.</translation>
 <translation id="5115309401544567011">Укључите <ph name="DEVICE_TYPE" /> у извор напајања.</translation>
@@ -2845,7 +2841,7 @@
 <translation id="52912272896845572">Датотека приватног кључа је неважећа.</translation>
 <translation id="529175790091471945">Форматирај овај уређај</translation>
 <translation id="5293170712604732402">Вратите подешавања на првобитне подразумеване вредности</translation>
-<translation id="5297082477358294722">Лозинка је сачувана. Прегледајте сачуване лозинке и управљајте њима на <ph name="SAVED_PASSWORDS_STORE" />.</translation>
+<translation id="5297082477358294722">Лозинка је сачувана. Прегледајте сачуване лозинке и управљајте њима са <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">Тему је направио/ла</translation>
 <translation id="5299109548848736476">Не прати</translation>
 <translation id="5300287940468717207">Желите ли да ресетујете дозволе за сајт?</translation>
@@ -3978,6 +3974,7 @@
 <translation id="6970480684834282392">Тип покретања</translation>
 <translation id="6970856801391541997">Штампање посебних страница</translation>
 <translation id="6972180789171089114">Аудио/видео</translation>
+<translation id="6972754398087986839">Започнимо</translation>
 <translation id="6973630695168034713">Директоријуми</translation>
 <translation id="6974609594866392343">Офлајн режим демонстрације</translation>
 <translation id="6976108581241006975">JavaScript конзола</translation>

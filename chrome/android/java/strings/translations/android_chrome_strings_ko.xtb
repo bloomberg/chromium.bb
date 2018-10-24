@@ -526,7 +526,6 @@
 <translation id="5161254044473106830">제목이 필요합니다.</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{다운로드 1개 실패}other{다운로드 #개 실패}}</translation>
 <translation id="5168917394043976756">탐색 창 열기</translation>
-<translation id="5171365962177408781">탭하여 새 탭 페이지를 로드하고 추천 기사를 확인하세요.</translation>
 <translation id="5184329579814168207">Chrome에서 열기</translation>
 <translation id="5199929503336119739">직장용 프로필</translation>
 <translation id="5210286577605176222">이전 탭으로 이동</translation>
@@ -1052,7 +1051,6 @@
 <translation id="9099018167121903954"><ph name="KILOBYTES" />KB가 다운로드됨</translation>
 <translation id="9100505651305367705">지원되는 경우 간단히 보기로 기사를 표시하는 기능 제공</translation>
 <translation id="9100610230175265781">암호를 입력해야 합니다.</translation>
-<translation id="9100939710791843300">홈 버튼을 탭하여 새 탭 페이지를 로드하고 추천 기사를 확인하세요.</translation>
 <translation id="9133515669113036225">기기 사용자 인증 정보 재설정</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" />(<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">원본 보기</translation>

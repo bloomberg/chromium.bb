@@ -419,7 +419,6 @@
 <translation id="1598233202702788831">更新は管理者によって無効になっています。</translation>
 <translation id="1600857548979126453">ページ デバッガ バックエンドにアクセスする</translation>
 <translation id="1601560923496285236">適用</translation>
-<translation id="1603300902586586390">Linux アプリで $1 件のファイルを開きます。</translation>
 <translation id="1603914832182249871">（シークレット モード）</translation>
 <translation id="1607139524282324606">エラー項目を消去</translation>
 <translation id="1608626060424371292">このユーザーを削除</translation>
@@ -744,7 +743,6 @@
 <translation id="2080070583977670716">詳細設定</translation>
 <translation id="2084108471225856927">デバイス設定</translation>
 <translation id="2085470240340828803">「<ph name="FILENAME" />」という名前のファイルは既に存在します。どのように処理しますか？</translation>
-<translation id="208586643495776849">もう一度お試しください</translation>
 <translation id="2087822576218954668">印刷: <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">Google Chrome で安全にブラウジング</translation>
 <translation id="2089795179672254991">クリップボードにコピーされているテキストや画像にサイトがアクセスする際に確認する（推奨）</translation>
@@ -1475,7 +1473,6 @@
 <translation id="3182749001423093222">スペルチェック</translation>
 <translation id="3183139917765991655">プロフィール インポーター</translation>
 <translation id="3184560914950696195">$1 に保存することができません。編集した画像はダウンロード フォルダに保存されます。</translation>
-<translation id="3186202398303525187">Linux アプリで $1 を開きます。</translation>
 <translation id="3188257591659621405">マイファイル</translation>
 <translation id="3188465121994729530">移動平均</translation>
 <translation id="3190558889382726167">パスワードを保存しました</translation>
@@ -2721,7 +2718,6 @@
 <translation id="5108967062857032718">設定 - Android アプリの削除</translation>
 <translation id="5109044022078737958">ミア</translation>
 <translation id="5111692334209731439">ブックマーク マネージャ(&amp;B)</translation>
-<translation id="5112009661904384591">Linux とファイルを共有します</translation>
 <translation id="5112577000029535889">デベロッパー ツール(&amp;D)</translation>
 <translation id="5113739826273394829">このアイコンをクリックすると、この <ph name="DEVICE_TYPE" /> は手動でロックされます。次回ログインするにはパスワードを入力する必要があります。</translation>
 <translation id="5115309401544567011"><ph name="DEVICE_TYPE" /> を電源に接続してください。</translation>
@@ -3980,6 +3976,7 @@
 <translation id="6970480684834282392">起動タイプ</translation>
 <translation id="6970856801391541997">指定したページを印刷</translation>
 <translation id="6972180789171089114">音声または動画</translation>
+<translation id="6972754398087986839">開始する</translation>
 <translation id="6973630695168034713">フォルダ</translation>
 <translation id="6974609594866392343">オフライン デモモード</translation>
 <translation id="6976108581241006975">JavaScript コンソール</translation>

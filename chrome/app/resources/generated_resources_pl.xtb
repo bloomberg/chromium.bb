@@ -419,7 +419,6 @@
 <translation id="1598233202702788831">Aktualizacje zostały wyłączone przez administratora.</translation>
 <translation id="1600857548979126453">Dostęp do backendu debugera stron</translation>
 <translation id="1601560923496285236">Zastosuj</translation>
-<translation id="1603300902586586390">Otwórz pliki ($1) w aplikacjach na Linuksa.</translation>
 <translation id="1603914832182249871">(Incognito)</translation>
 <translation id="1607139524282324606">Wyczyść wpis</translation>
 <translation id="1608626060424371292">Usuń tego użytkownika</translation>
@@ -744,7 +743,6 @@
 <translation id="2080070583977670716">Więcej ustawień</translation>
 <translation id="2084108471225856927">Ustawienia urządzenia</translation>
 <translation id="2085470240340828803">Plik o nazwie „<ph name="FILENAME" />” już istnieje. Co chcesz zrobić?</translation>
-<translation id="208586643495776849">Spróbuj ponownie</translation>
 <translation id="2087822576218954668">Drukuj: <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">Przeglądaj bezpiecznie w Google Chrome</translation>
 <translation id="2089795179672254991">Pytaj, gdy strona chce uzyskać dostęp do tekstu i obrazów skopiowanych do schowka (zalecane)</translation>
@@ -1475,7 +1473,6 @@
 <translation id="3182749001423093222">Sprawdzanie pisowni</translation>
 <translation id="3183139917765991655">Importer profilów</translation>
 <translation id="3184560914950696195">Nie można zapisać w katalogu $1. Edytowane obrazy będą zapisywane w folderze Pobrane.</translation>
-<translation id="3186202398303525187">Otwórz plik $1 w aplikacji na Linuksa.</translation>
 <translation id="3188257591659621405">Moje pliki</translation>
 <translation id="3188465121994729530">Średnia krocząca</translation>
 <translation id="3190558889382726167">Hasło zostało zapisane</translation>
@@ -2721,7 +2718,6 @@
 <translation id="5108967062857032718">Ustawienia – Usuń aplikacje na Androida</translation>
 <translation id="5109044022078737958">Mia</translation>
 <translation id="5111692334209731439">&amp;Menedżer zakładek</translation>
-<translation id="5112009661904384591">Udostępnij pliki Linuksowi</translation>
 <translation id="5112577000029535889">&amp;Narzędzia dla programistów</translation>
 <translation id="5113739826273394829">Jeśli klikniesz tę ikonę, <ph name="DEVICE_TYPE" /> zostanie zablokowany ręcznie. Następnym razem trzeba będzie wpisać hasło, by go odblokować.</translation>
 <translation id="5115309401544567011">Podłącz urządzenie <ph name="DEVICE_TYPE" /> do źródła zasilania.</translation>
@@ -3980,6 +3976,7 @@
 <translation id="6970480684834282392">Typ uruchamiania</translation>
 <translation id="6970856801391541997">Drukuj wybrane strony</translation>
 <translation id="6972180789171089114">Audio/wideo</translation>
+<translation id="6972754398087986839">Rozpocznij</translation>
 <translation id="6973630695168034713">Foldery</translation>
 <translation id="6974609594866392343">Tryb demo offline</translation>
 <translation id="6976108581241006975">Konsola JavaScript</translation>

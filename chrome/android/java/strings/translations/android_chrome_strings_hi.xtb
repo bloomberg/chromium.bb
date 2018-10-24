@@ -526,7 +526,6 @@
 <translation id="5161254044473106830">शीर्षक आवश्‍यक</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 डाउनलोड नहीं हो सका.}one{# डाउनलोड नहीं हो सके.}other{# डाउनलोड नहीं हो सके.}}</translation>
 <translation id="5168917394043976756">मार्गदर्शक ड्रॉवर खोलें</translation>
-<translation id="5171365962177408781">'नया टैब' पेज लोड करने और सुझाए गए लेख देखने के लिए टैप करें</translation>
 <translation id="5184329579814168207">Chrome में खोलें</translation>
 <translation id="5199929503336119739">कार्य प्रोफ़ाइल</translation>
 <translation id="5210286577605176222">सीधे पिछले टैब पर जाएं</translation>
@@ -1052,7 +1051,6 @@
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> केबी डाउलनोड किया गया</translation>
 <translation id="9100505651305367705">अगर सुविधा उपलब्ध है, तो लेखों को सरल बनाए गए व्यू में दिखाना ऑफ़र करें</translation>
 <translation id="9100610230175265781">पासफ़्रेज़ आवश्यक</translation>
-<translation id="9100939710791843300">'नया टैब' पेज लोड करने और सुझाए गए लेख देखने के लिए 'होम' बटन पर टैप करें</translation>
 <translation id="9133515669113036225">डिवाइस प्रमाणिकता रीसेट करें</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">मूल दिखाएं</translation>

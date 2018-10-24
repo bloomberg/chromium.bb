@@ -419,7 +419,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="1598233202702788831">Administrátor aktualizace zakázal.</translation>
 <translation id="1600857548979126453">Získat přístup k ladicímu programu stránky na serveru</translation>
 <translation id="1601560923496285236">Použít</translation>
-<translation id="1603300902586586390">Nechat aplikace Linux otevřít tyto soubory (celkem $1).</translation>
 <translation id="1603914832182249871">(Anonymní režim)</translation>
 <translation id="1607139524282324606">Vymazat položku</translation>
 <translation id="1608626060424371292">Odebrat tohoto uživatele</translation>
@@ -744,7 +743,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="2080070583977670716">Další nastavení</translation>
 <translation id="2084108471225856927">Nastavení zařízení</translation>
 <translation id="2085470240340828803">Soubor s názvem <ph name="FILENAME" /> již existuje. Co chcete udělat?</translation>
-<translation id="208586643495776849">Zkuste to znovu</translation>
 <translation id="2087822576218954668">Tisk: <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">Pohybujte se na internetu bezpečně pomocí prohlížeče Google Chrome</translation>
 <translation id="2089795179672254991">Zeptat se, když chce web získat přístup k textu a obrázkům zkopírovaným do schránky (doporučeno)</translation>
@@ -1474,7 +1472,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3182749001423093222">Kontrola pravopisu</translation>
 <translation id="3183139917765991655">Nástroj na import profilů</translation>
 <translation id="3184560914950696195">Do složky $1 nelze ukládat. Upravené obrázky se uloží do složky Stažené soubory.</translation>
-<translation id="3186202398303525187">Nechat aplikace Linux otevřít soubor $1.</translation>
 <translation id="3188257591659621405">Moje soubory</translation>
 <translation id="3188465121994729530">Plovoucí průměr</translation>
 <translation id="3190558889382726167">Heslo uloženo</translation>
@@ -2717,7 +2714,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="5108967062857032718">Nastavení – odstranit aplikace Android</translation>
 <translation id="5109044022078737958">Mia</translation>
 <translation id="5111692334209731439">&amp;Správce záložek</translation>
-<translation id="5112009661904384591">Sdílet soubory se systémem Linux</translation>
 <translation id="5112577000029535889">&amp;Nástroje pro vývojáře</translation>
 <translation id="5113739826273394829">Pokud kliknete na tuto ikonu, ručně toto zařízení <ph name="DEVICE_TYPE" /> zamknete. Při příštím přístupu budete muset zadat heslo.</translation>
 <translation id="5115309401544567011">Zapojte <ph name="DEVICE_TYPE" /> do zdroje napájení.</translation>
@@ -3975,6 +3971,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="6970480684834282392">Typ spouštění</translation>
 <translation id="6970856801391541997">Tisknout konkrétní stránky</translation>
 <translation id="6972180789171089114">Zvuk/video</translation>
+<translation id="6972754398087986839">Začínáme</translation>
 <translation id="6973630695168034713">Složky</translation>
 <translation id="6974609594866392343">Ukázkový režim offline</translation>
 <translation id="6976108581241006975">Konzole JavaScriptu</translation>

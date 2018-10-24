@@ -122,7 +122,7 @@
 <translation id="2898963176829412617">नवीन फोल्डर...</translation>
 <translation id="2916171785467530738">ऑटोकंप्लीट शोध आणि URL</translation>
 <translation id="291754862089661335">QR कोड किंवा बारकोडची या फ्रेममध्‍ये स्थिती निर्धारित करा</translation>
-<translation id="2921219216347069551">पृष्ठ सामायिक करू शकत नाही</translation>
+<translation id="2921219216347069551">पृष्ठ शेअर करू शकत नाही</translation>
 <translation id="2923448633003185837">पेस्ट करा आणि जा</translation>
 <translation id="292639812446257861">न वाचलेले चिन्हांकित करा</translation>
 <translation id="2933759065870693102">टॉर्च</translation>
@@ -240,7 +240,7 @@
 <translation id="4882831918239250449">तुम्ही ब्राउझ करत असलेला इतिहास पर्सनलाइझ शोध, जाहिराती आणि बरेच काही करण्यासाठी कसा वापरला जातो ते नियंत्रित करा</translation>
 <translation id="4904877109095351937">वाचले चिन्हांकित करा</translation>
 <translation id="4930268273022498155">विद्यमान डेटा हटवा. <ph name="USER_EMAIL1" /> वर परत स्विच करून तुम्ही तो पुनर्प्राप्त करू शकता.</translation>
-<translation id="4941089862236492464">क्षमस्व, तुमचा आयटम सामायिक करताना समस्या आली.</translation>
+<translation id="4941089862236492464">क्षमस्व, तुमचा आयटम शेअर करताना समस्या आली.</translation>
 <translation id="4979397965658815378">आपल्या सर्व डिव्हाइसेसवर आपले बुकमार्क, पासवर्ड, इतिहास आणि अन्य सेटिंग्ज प्राप्त करण्यासाठी आपल्या Google खात्यासह साइन इन करा</translation>
 <translation id="5004416275253351869">Google अॅक्टिव्हिटी नियंत्रणे</translation>
 <translation id="5005498671520578047">पासवर्ड कॉपी करा</translation>
@@ -314,7 +314,7 @@
 <translation id="6187302354554850004">अखेरचे संंकालित: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">न वाचलेले</translation>
 <translation id="6196207969502475924">व्हॉइस शोध</translation>
-<translation id="6254066287920239840">ब्राउझर ऐवजी अॅपमध्ये दुवे उघडा.</translation>
+<translation id="6254066287920239840">ब्राउझर ऐवजी अॅपमध्ये लिंक उघडा.</translation>
 <translation id="6255097610484507482">क्रेडिट कार्ड संपादित करा</translation>
 <translation id="6308436439357671616">हे आपल्याला फोटो घेऊ आणि अपलोड करू देते.</translation>
 <translation id="6324528485781869530">संकालन खाते स्विच करा</translation>

@@ -225,8 +225,12 @@
 
 您的数据已使用您的同步密码加密。输入该密码即可开始同步。</translation>
 <translation id="473775607612524610">更新</translation>
+<translation id="4747097190499141774">密码加密方式不包括 Google Pay 中的付款方式和地址。只有知道您密码的人才能读取您的已加密数据。系统不会将该密码发送给 Google，Google 也不会存储该密码。如果您忘记了密码或想更改此设置，则需重置同步设置。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">在网页中查找…</translation>
 <translation id="4751645464639803239">打开新的无痕式标签页</translation>
+<translation id="4802417911091824046">密码加密方式不包括 Google Pay 中的付款方式和地址。
+
+要更改此设置，请<ph name="BEGIN_LINK" />重置同步设置<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">阅读清单中有 1 篇未读文章。</translation>
 <translation id="481968316161811770">Cookie 和网站数据</translation>
 <translation id="4854345657858711387">设置密码</translation>

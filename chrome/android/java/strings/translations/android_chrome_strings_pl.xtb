@@ -526,7 +526,6 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5161254044473106830">Tytuł jest wymagany</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{Nie udało się pobrać 1 pliku.}few{Nie udało się pobrać # plików.}many{Nie udało się pobrać # plików.}other{Nie udało się pobrać # pliku.}}</translation>
 <translation id="5168917394043976756">Otwórz panel nawigacji</translation>
-<translation id="5171365962177408781">Dotknij, by załadować stronę nowej karty i wyświetlić sugerowane artykuły</translation>
 <translation id="5184329579814168207">Otwórz w Chrome</translation>
 <translation id="5199929503336119739">Profil służbowy</translation>
 <translation id="5210286577605176222">Przejdź do poprzedniej karty</translation>
@@ -1052,7 +1051,6 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB pobranych plików</translation>
 <translation id="9100505651305367705">Proponuj wyświetlanie artykułów w widoku uproszczonym, gdy jest obsługiwany</translation>
 <translation id="9100610230175265781">Wymagane jest hasło</translation>
-<translation id="9100939710791843300">Dotknij przycisku ekranu głównego, by załadować stronę nowej karty i wyświetlić sugerowane artykuły</translation>
 <translation id="9133515669113036225">Zresetuj dane logowania na urządzeniu</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Pokaż tekst oryginalny</translation>

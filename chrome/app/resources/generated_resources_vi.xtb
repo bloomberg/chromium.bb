@@ -380,7 +380,7 @@
 <translation id="15373452373711364">Con trỏ chuột lớn</translation>
 <translation id="1538729222189715449">Đang mở tệp Linux...</translation>
 <translation id="1540605929960647700">Bật chế độ minh họa</translation>
-<translation id="1543284117603151572">Được nhập từ Edge</translation>
+<translation id="1543284117603151572">Đã nhập từ Edge</translation>
 <translation id="1545177026077493356">Chế độ kiosk tự động</translation>
 <translation id="1545775234664667895">Đã cài đặt chủ đề "<ph name="THEME_NAME" />"</translation>
 <translation id="1545786162090505744">URL có %s thay thế truy vấn</translation>
@@ -419,7 +419,6 @@
 <translation id="1598233202702788831">Quản trị viên của bạn đã tắt bản cập nhật.</translation>
 <translation id="1600857548979126453">Truy cập chương trình phụ trợ trình gỡ lỗi trang</translation>
 <translation id="1601560923496285236">Áp dụng</translation>
-<translation id="1603300902586586390">Cho phép các ứng dụng Linux mở $1 tệp.</translation>
 <translation id="1603914832182249871">(Ẩn danh)</translation>
 <translation id="1607139524282324606">Xóa mục nhập</translation>
 <translation id="1608626060424371292">Xóa người dùng này</translation>
@@ -744,7 +743,6 @@
 <translation id="2080070583977670716">Cài đặt khác</translation>
 <translation id="2084108471225856927">Cài đặt thiết bị</translation>
 <translation id="2085470240340828803">Tệp có tên "<ph name="FILENAME" />" đã tồn tại. Bạn muốn làm gì?</translation>
-<translation id="208586643495776849">Vui lòng thử lại</translation>
 <translation id="2087822576218954668">Bản in: <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">Duyệt web an toàn bằng Google Chrome</translation>
 <translation id="2089795179672254991">Hỏi khi có một trang web muốn xem văn bản và hình ảnh đã sao chép sang khay nhớ tạm (được đề xuất)</translation>
@@ -1475,7 +1473,6 @@
 <translation id="3182749001423093222">Kiểm tra chính tả</translation>
 <translation id="3183139917765991655">Trình nhập hồ sơ</translation>
 <translation id="3184560914950696195">Không thể lưu vào $1. Ảnh đã chỉnh sửa sẽ được lưu vào thư mục Tải xuống.</translation>
-<translation id="3186202398303525187">Cho phép các ứng dụng Linux mở $1.</translation>
 <translation id="3188257591659621405">Tệp của tôi</translation>
 <translation id="3188465121994729530">Trung bình động</translation>
 <translation id="3190558889382726167">Đã lưu mật khẩu</translation>
@@ -2005,7 +2002,7 @@
 <translation id="3948116654032448504">&amp;Tìm kiếm hình ảnh trên <ph name="SEARCH_ENGINE" /></translation>
 <translation id="3949371968208420848">Chào mừng bạn đến với Hangouts Meet!</translation>
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
-<translation id="394984172568887996">Được Nhập từ IE</translation>
+<translation id="394984172568887996">Đã nhập từ IE</translation>
 <translation id="3950820424414687140">Đăng nhập</translation>
 <translation id="3954354850384043518">Đang diễn ra</translation>
 <translation id="3954469006674843813"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> Hertz)</translation>
@@ -2721,7 +2718,6 @@
 <translation id="5108967062857032718">Cài đặt - Xóa ứng dụng Android</translation>
 <translation id="5109044022078737958">Nữ cầu thủ Mia</translation>
 <translation id="5111692334209731439">&amp;Trình quản lý Dấu trang</translation>
-<translation id="5112009661904384591">Chia sẻ tệp bằng Linux</translation>
 <translation id="5112577000029535889">&amp;Công cụ dành cho Nhà phát triển</translation>
 <translation id="5113739826273394829">Nếu nhấp vào biểu tượng này, bạn sẽ khóa <ph name="DEVICE_TYPE" /> này theo cách thủ công. Vào lần tới, bạn cần phải nhập mật khẩu của mình để truy cập.</translation>
 <translation id="5115309401544567011">Hãy cắm <ph name="DEVICE_TYPE" /> của bạn vào nguồn điện.</translation>
@@ -3000,7 +2996,7 @@
 <translation id="5496587651328244253">Tổ chức</translation>
 <translation id="549673810209994709">Không thể dịch trang này.</translation>
 <translation id="5499313591153584299">Tệp này có thể có hại cho máy tính của bạn.</translation>
-<translation id="5502500733115278303">Nhập Từ Firefox</translation>
+<translation id="5502500733115278303">Đã nhập từ Firefox</translation>
 <translation id="5505095961735225576">Hangouts Meet cần biết mình thuộc miền nào. Điều này yêu cầu bạn đăng nhập vào tài khoản của mình.</translation>
 <translation id="5507756662695126555">Không tuân thủ</translation>
 <translation id="5509693895992845810">Lưu &amp;Dưới dạng...</translation>
@@ -3980,6 +3976,7 @@
 <translation id="6970480684834282392">Kiểu khởi động</translation>
 <translation id="6970856801391541997">In các trang cụ thể</translation>
 <translation id="6972180789171089114">Âm thanh/video</translation>
+<translation id="6972754398087986839">Bắt đầu</translation>
 <translation id="6973630695168034713">Thư mục</translation>
 <translation id="6974609594866392343">Chế độ minh họa ngoại tuyến</translation>
 <translation id="6976108581241006975">Bảng điều khiển JavaScript</translation>

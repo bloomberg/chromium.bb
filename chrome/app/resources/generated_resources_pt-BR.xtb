@@ -419,7 +419,6 @@
 <translation id="1598233202702788831">As atualizações foram desativadas pelo seu administrador.</translation>
 <translation id="1600857548979126453">Acessar back-end do depurador de página</translation>
 <translation id="1601560923496285236">Aplicar</translation>
-<translation id="1603300902586586390">Permita que apps do Linux abram $1 arquivos.</translation>
 <translation id="1603914832182249871">(Modo anônimo)</translation>
 <translation id="1607139524282324606">Limpar entrada</translation>
 <translation id="1608626060424371292">Remover este usuário</translation>
@@ -744,7 +743,6 @@
 <translation id="2080070583977670716">Mais definições</translation>
 <translation id="2084108471225856927">Configurações do dispositivo</translation>
 <translation id="2085470240340828803">Já existe um arquivo chamado "<ph name="FILENAME" />". O que você quer fazer?</translation>
-<translation id="208586643495776849">Tente novamente</translation>
 <translation id="2087822576218954668">Imprimir: <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">Navegue com segurança com o Google Chrome</translation>
 <translation id="2089795179672254991">Perguntar quando um site quiser ver os textos e imagens copiados para a área de transferência (recomendado)</translation>
@@ -1475,7 +1473,6 @@
 <translation id="3182749001423093222">Verificação ortográfica</translation>
 <translation id="3183139917765991655">Importador de perfil</translation>
 <translation id="3184560914950696195">Não é possível salvar em $1. As imagens editadas serão salvas na pasta Downloads.</translation>
-<translation id="3186202398303525187">Permita que apps do Linux abram $1.</translation>
 <translation id="3188257591659621405">Meus arquivos</translation>
 <translation id="3188465121994729530">Média móvel</translation>
 <translation id="3190558889382726167">Senha salva</translation>
@@ -1649,7 +1646,7 @@
 <translation id="3459697287128633276">Para ativar sua conta para acessar a Google Play Store, autentique com seu Provedor de identidade.</translation>
 <translation id="3459774175445953971">Última modificação:</translation>
 <translation id="3461266716147554923"><ph name="URL" /> quer ver os textos e imagens copiados para a área de transferência</translation>
-<translation id="3462311546193741693">Desconecta você da maioria dos sites. Você permanecerá conectado à sua Conta do Google, então seus dados sincronizados poderão ser excluídos.</translation>
+<translation id="3462311546193741693">Desconecta você da maioria dos sites. Você permanecerá conectado à sua Conta do Google para que seus dados sincronizados possam ser excluídos.</translation>
 <translation id="3462413494201477527">Cancelar a configuração da conta?</translation>
 <translation id="3464012987031883895">Um site está acessando a entrada de áudio</translation>
 <translation id="346431825526753">Esta é uma conta para as crianças gerenciada por <ph name="CUSTODIAN_EMAIL" />.</translation>
@@ -2721,7 +2718,6 @@
 <translation id="5108967062857032718">Configurações - Remover apps Android</translation>
 <translation id="5109044022078737958">Ju</translation>
 <translation id="5111692334209731439">&amp;Gerenciador de favoritos</translation>
-<translation id="5112009661904384591">Compartilhar arquivos com o Linux</translation>
 <translation id="5112577000029535889">Ferramentas do &amp;desenvolvedor</translation>
 <translation id="5113739826273394829">Se você clicar neste ícone, este <ph name="DEVICE_TYPE" /> será bloqueado manualmente. Na próxima vez, será necessário digitar sua senha para entrar.</translation>
 <translation id="5115309401544567011">Conecte seu <ph name="DEVICE_TYPE" /> a uma fonte de energia.</translation>
@@ -3982,6 +3978,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6970480684834282392">Tipo de inicialização</translation>
 <translation id="6970856801391541997">Imprimir páginas específicas</translation>
 <translation id="6972180789171089114">Áudio/vídeo</translation>
+<translation id="6972754398087986839">Primeiros passos</translation>
 <translation id="6973630695168034713">Pastas</translation>
 <translation id="6974609594866392343">Modo de demonstração off-line</translation>
 <translation id="6976108581241006975">Console JavaScript</translation>

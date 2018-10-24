@@ -416,7 +416,6 @@
 <translation id="1598233202702788831">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದಾರೆ.</translation>
 <translation id="1600857548979126453">ಡೀಬಗರ್ ಅನ್ನು ಹಿಂತೆಗೆದುಕೊಳ್ಳುವ ಪುಟವನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="1601560923496285236">ಅನ್ವಯಿಸು</translation>
-<translation id="1603300902586586390">Linux ಆ್ಯಪ್‌ಗಳಿಗೆ $1 ಫೈಲ್‌ಗಳನ್ನು ತೆರೆಯಲು ಅನುಮತಿ ನೀಡಿ.</translation>
 <translation id="1603914832182249871">(ಅದೃಶ್ಯ)</translation>
 <translation id="1607139524282324606">ಪ್ರವೇಶವನ್ನು ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="1608626060424371292">ಈ ಬಳಕೆದಾರರನ್ನು ತೆಗೆದುಹಾಕಿ</translation>
@@ -741,7 +740,6 @@
 <translation id="2080070583977670716">ಇನ್ನಷ್ಟು ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="2084108471225856927">ಸಾಧನ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="2085470240340828803">"<ph name="FILENAME" />" ಹೆಸರಿನ ಫೈಲ್ ಈಗಾಗಲೇ ಅಸ್ತಿತ್ವದಲ್ಲಿದೆ. ನೀವು ಏನು ಮಾಡಬೇಕೆಂದು ಬಯಸುವಿರಿ?</translation>
-<translation id="208586643495776849">ಪುನಃ ಪ್ರಯತ್ನಿಸಿ</translation>
 <translation id="2087822576218954668">ಮುದ್ರಿಸು: <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">Google Chrome ಮೂಲಕ ಸುರಕ್ಷಿತವಾಗಿ ಬ್ರೌಸ್ ಮಾಡಿ</translation>
 <translation id="2089795179672254991">ಕ್ಲಿಪ್‌ಬೋರ್ಡ್‌ಗೆ ನಕಲಿಸಿರುವ ಪಠ್ಯ ಮತ್ತು ಚಿತ್ರಗಳನ್ನು ನೋಡಲು ಸೈಟ್ ಬಯಸಿದರೆ, ಅನುಮತಿ ಕೇಳಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
@@ -1472,7 +1470,6 @@
 <translation id="3182749001423093222">ಕಾಗುಣಿತ ಪರಿಶೀಲನೆ</translation>
 <translation id="3183139917765991655">ಪ್ರೊಫೈಲ್ ಆಮದುದಾರ</translation>
 <translation id="3184560914950696195">$1 ಗೆ ಉಳಿಸಬೇಡಿ. ಸಂಪಾದಿಸಲಾದ ಚಿತ್ರಗಳನ್ನು ಡೌನ್‌ಲೋಡ್‌ಗಳ ಫೋಲ್ಡರ್‌ನಲ್ಲಿ ಉಳಿಸಲಾಗುತ್ತದೆ.</translation>
-<translation id="3186202398303525187">Linux ಆ್ಯಪ್‌ಗಳಿಗೆ $1 ತೆರೆಯಲು ಅನುಮತಿ ನೀಡಿ.</translation>
 <translation id="3188257591659621405">ನನ್ನ ಫೈಲ್‌ಗಳು</translation>
 <translation id="3188465121994729530">ಸರಿಸುವಿಕೆ ಸರಾಸರಿ</translation>
 <translation id="3190558889382726167">ಪಾಸ್‌ವರ್ಡ್ ಉಳಿಸಲಾಗಿದೆ</translation>
@@ -2719,7 +2716,6 @@
 <translation id="5108967062857032718">ಸೆಟ್ಟಿಂಗ್‌ಗಳು - Android ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ತೆಗೆದುಹಾಕಿ</translation>
 <translation id="5109044022078737958">ಮಿಯಾ</translation>
 <translation id="5111692334209731439">&amp;ಬುಕ್‌ಮಾರ್ಕ್ ವ್ಯವಸ್ಥಾಪಕ</translation>
-<translation id="5112009661904384591">Linux ಬಳಸಿಕೊಂಡು ಫೈಲ್‌ಗಳನ್ನು ಹಂಚಿಕೊಳ್ಳಿ</translation>
 <translation id="5112577000029535889">&amp;ಡೆವಲಪರ್ ಟೂಲ್ಸ್</translation>
 <translation id="5113739826273394829">ಈ ಐಕಾನ್ ಅನ್ನು ನೀವು ಕ್ಲಿಕ್ ಮಾಡಿದರೆ, ನೀವು ಹಸ್ತಚಾಲಿತವಾಗಿ ಈ <ph name="DEVICE_TYPE" /> ಸಾಧನವನ್ನು ಲಾಕ್ ಮಾಡುತ್ತೀರಿ. ಮುಂದಿನ ಬಾರಿ, ಪ್ರವೇಶಿಸಲು ನೀವು ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಟೈಪ್ ಮಾಡಬೇಕಾಗುತ್ತದೆ.</translation>
 <translation id="5115309401544567011">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಅನ್ನು ವಿದ್ಯುತ್ ಸಂಪರ್ಕಕ್ಕೆ ಪ್ಲಗ್ ಮಾಡಿ.</translation>
@@ -3978,6 +3974,7 @@
 <translation id="6970480684834282392">ಸ್ಟಾರ್ಟ್ಅಪ್ ಪ್ರಕಾರ</translation>
 <translation id="6970856801391541997">ನಿರ್ದಿಷ್ಟ ಪುಟಗಳನ್ನು ಮುದ್ರಿಸಿ</translation>
 <translation id="6972180789171089114">ಆಡಿಯೋ/ವೀಡಿಯೊ</translation>
+<translation id="6972754398087986839">ಪ್ರಾರಂಭಗೊಂಡಿದೆ</translation>
 <translation id="6973630695168034713">ಫೋಲ್ಡರ್‌ಗಳು</translation>
 <translation id="6974609594866392343">ಆಫ್‌ಲೈನ್ ಡೆಮೊ ಮೋಡ್</translation>
 <translation id="6976108581241006975">JavaScript ಕನ್ಸೋಲ್</translation>

@@ -526,7 +526,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5161254044473106830">Nimike vaaditaan</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 lataus epäonnistui}other{# latausta epäonnistui}}</translation>
 <translation id="5168917394043976756">Avaa navigoinnin vetopaneeli</translation>
-<translation id="5171365962177408781">Napauta ladataksesi uusi välilehti ‑sivu ja nähdäksesi ehdotettuja artikkeleita</translation>
 <translation id="5184329579814168207">Avaa Chromessa</translation>
 <translation id="5199929503336119739">Työprofiili</translation>
 <translation id="5210286577605176222">Siirry edelliselle välilehdelle</translation>
@@ -1052,7 +1051,6 @@ Hanki uudet käyttöoik. muodostam. verkkoyhteys ja toistamalla ladattu sisält�
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> Kt ladattu</translation>
 <translation id="9100505651305367705">Tarjoa yksinkertaistettua näkymää, jos artikkeli tukee sitä</translation>
 <translation id="9100610230175265781">Tunnuslause tarvitaan</translation>
-<translation id="9100939710791843300">Napauta aloitusnäyttöpainiketta ladataksesi uusi välilehti ‑sivun ja nähdäksesi ehdotettuja artikkeleita</translation>
 <translation id="9133515669113036225">Nollaa laitteen kirjautumistiedot</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Näytä alkuperäinen</translation>

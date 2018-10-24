@@ -419,7 +419,6 @@
 <translation id="1598233202702788831">أوقف المشرف التحديثات.</translation>
 <translation id="1600857548979126453">الدخول إلى الواجهة الخلفية لبرنامج تصحيح خلل الصفحة</translation>
 <translation id="1601560923496285236">تطبيق</translation>
-<translation id="1603300902586586390">‏السماح لتطبيقات Linux بفتح ملفات $1.</translation>
 <translation id="1603914832182249871">(التصفح المتخفي)</translation>
 <translation id="1607139524282324606">محو الإدخال</translation>
 <translation id="1608626060424371292">إزالة هذا المستخدم</translation>
@@ -744,7 +743,6 @@
 <translation id="2080070583977670716">مزيد من الإعدادات</translation>
 <translation id="2084108471225856927">إعدادات الجهاز</translation>
 <translation id="2085470240340828803">هناك ملف بالاسم "<ph name="FILENAME" />" موجود فعلاً. ما الإجراء الذي تريد تنفيذه؟</translation>
-<translation id="208586643495776849">يُرجى إعادة المحاولة</translation>
 <translation id="2087822576218954668">الطباعة: <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">‏التصفح بأمان باستخدام Google Chrome</translation>
 <translation id="2089795179672254991">طلب الإذن عند محاولة أحد المواقع الاطلاع على النصوص والصور التي تم نسخها إلى الحافظة (موصى به)</translation>
@@ -1474,7 +1472,6 @@
 <translation id="3182749001423093222">التدقيق الإملائي</translation>
 <translation id="3183139917765991655">مستورد الملف الشخصي</translation>
 <translation id="3184560914950696195">تعذر الحفظ في $1. سيتم حفظ الصورة التي تم تعديلها في مجلد التنزيلات.</translation>
-<translation id="3186202398303525187">‏السماح لتطبيقات Linux بفتح ملف $1.</translation>
 <translation id="3188257591659621405">ملفاتي</translation>
 <translation id="3188465121994729530">معدل الانتقال</translation>
 <translation id="3190558889382726167">تم حفظ كلمة المرور</translation>
@@ -2716,7 +2713,6 @@
 <translation id="5108967062857032718">‏الإعدادات - إزالة تطبيقات Android</translation>
 <translation id="5109044022078737958">Mia</translation>
 <translation id="5111692334209731439">&amp;مدير الإشارات</translation>
-<translation id="5112009661904384591">‏مشاركة الملفات مع نظام التشغيل Linux</translation>
 <translation id="5112577000029535889">&amp;أدوات المطورين</translation>
 <translation id="5113739826273394829">إذا نقرت على هذا الرمز، فستقوم بقفل جهاز <ph name="DEVICE_TYPE" /> هذا يدويًا. في المرة القادمة، ستحتاج إلى كتابة كلمة مرورك للدخول.</translation>
 <translation id="5115309401544567011">يُرجى توصيل جهاز <ph name="DEVICE_TYPE" /> بمصدر طاقة.</translation>
@@ -3976,6 +3972,7 @@
 <translation id="6970480684834282392">نوع التشغيل</translation>
 <translation id="6970856801391541997">طباعة صفحات محددة</translation>
 <translation id="6972180789171089114">صوت/فيديو</translation>
+<translation id="6972754398087986839">البدء</translation>
 <translation id="6973630695168034713">المجلدات</translation>
 <translation id="6974609594866392343">وضع تجريبي بلا اتصال بالإنترنت</translation>
 <translation id="6976108581241006975">وحدة تحكم جافا سكريبت</translation>

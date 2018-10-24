@@ -419,7 +419,6 @@
 <translation id="1598233202702788831">Järjestelmänvalvoja on estänyt päivitykset.</translation>
 <translation id="1600857548979126453">Käyttää sivun viankorjausta</translation>
 <translation id="1601560923496285236">Käytä</translation>
-<translation id="1603300902586586390">Anna Linux-sovellusten avata $1-tiedostot.</translation>
 <translation id="1603914832182249871">(Incognito)</translation>
 <translation id="1607139524282324606">Tyhjennä merkintä</translation>
 <translation id="1608626060424371292">Poista tämä käyttäjä</translation>
@@ -744,7 +743,6 @@
 <translation id="2080070583977670716">Lisää asetuksia</translation>
 <translation id="2084108471225856927">Laiteasetukset</translation>
 <translation id="2085470240340828803">Tiedosto <ph name="FILENAME" /> on jo olemassa. Mitä haluat tehdä?</translation>
-<translation id="208586643495776849">Yritä uudelleen</translation>
 <translation id="2087822576218954668">Tulosta: <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">Selaa turvallisesti Google Chromella.</translation>
 <translation id="2089795179672254991">Kysy, kun sivusto haluaa nähdä leikepöydälle kopioidun tekstin ja kuvat (suositus)</translation>
@@ -1476,7 +1474,6 @@
 <translation id="3182749001423093222">Oikeinkirjoituksen tarkistus</translation>
 <translation id="3183139917765991655">Profiilien tuoja</translation>
 <translation id="3184560914950696195">Kohteeseen $1 ei voi tallentaa. Muokatut kuvat tallennetaan Lataukset-kansioon.</translation>
-<translation id="3186202398303525187">Anna Linux-sovellusten avata $1.</translation>
 <translation id="3188257591659621405">Omat tiedostot</translation>
 <translation id="3188465121994729530">Liukuva keskiarvo</translation>
 <translation id="3190558889382726167">Salasana on tallennettu</translation>
@@ -2719,7 +2716,6 @@
 <translation id="5108967062857032718">Asetukset – Poista Android-sovellukset</translation>
 <translation id="5109044022078737958">Mia</translation>
 <translation id="5111692334209731439">&amp;Kirjanmerkkien hallinta</translation>
-<translation id="5112009661904384591">Jaa tiedostoja Linuxilla</translation>
 <translation id="5112577000029535889">&amp;Kehittäjän työkalut</translation>
 <translation id="5113739826273394829">Jos klikkaat tätä kuvaketta, <ph name="DEVICE_TYPE" /> lukitaan manuaalisesti. Seuraavan kerran sinun on kirjoitettava salasana, jotta voit käyttää laitetta.</translation>
 <translation id="5115309401544567011">Liitä <ph name="DEVICE_TYPE" /> virtalähteeseen.</translation>
@@ -3980,6 +3976,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6970480684834282392">Käynnistystyyppi</translation>
 <translation id="6970856801391541997">Tulosta tietyt sivut</translation>
 <translation id="6972180789171089114">Ääni- ja videotiedostot</translation>
+<translation id="6972754398087986839">Aloitusopas</translation>
 <translation id="6973630695168034713">Kansiot</translation>
 <translation id="6974609594866392343">Offline-esittelytila</translation>
 <translation id="6976108581241006975">JavaScript-konsoli</translation>
