@@ -291,6 +291,10 @@ void PaintOpWriter::Write(const sk_sp<SkTextBlob>& blob) {
   if (!valid_)
     return;
 
+  AlignMemory(4);
+  uint32_t blob_id = blob->uniqueID();
+  Write(blob_id);
+
   uint64_t* size_memory = WriteSize(0u);
   if (!valid_)
     return;

@@ -15,6 +15,7 @@
 #include "cc/paint/paint_shader.h"
 #include "cc/paint/path_transfer_cache_entry.h"
 #include "cc/paint/shader_transfer_cache_entry.h"
+#include "cc/paint/textblob_transfer_cache_entry.h"
 #include "cc/paint/transfer_cache_deserialize_helper.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRRect.h"
@@ -376,12 +377,27 @@ void PaintOpReader::Read(sk_sp<SkColorSpace>* color_space) {
 
 void PaintOpReader::Read(sk_sp<SkTextBlob>* blob) {
   AlignMemory(4);
+  uint32_t blob_id = 0u;
+  Read(&blob_id);
+  if (!valid_)
+    return;
+
   size_t data_bytes = 0u;
   ReadSize(&data_bytes);
   if (remaining_bytes_ < data_bytes || data_bytes == 0u)
     SetInvalid();
   if (!valid_)
     return;
+
+  auto* entry =
+      options_.transfer_cache->GetEntryAs<ServiceTextBlobTransferCacheEntry>(
+          blob_id);
+  if (entry) {
+    *blob = entry->blob();
+    memory_ += data_bytes;
+    remaining_bytes_ -= data_bytes;
+    return;
+  }
 
   DCHECK(options_.strike_client);
   SkDeserialProcs procs;
@@ -394,6 +410,9 @@ void PaintOpReader::Read(sk_sp<SkTextBlob>* blob) {
     SetInvalid();
     return;
   }
+  options_.transfer_cache->CreateLocalEntry(
+      blob_id, std::make_unique<ServiceTextBlobTransferCacheEntry>(
+                   deserialized_blob, data_bytes));
 
   *blob = std::move(deserialized_blob);
   memory_ += data_bytes;
