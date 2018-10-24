@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol CWVNavigationDelegate;
 @protocol CWVScriptCommandHandler;
 @protocol CWVUIDelegate;
+@class CWVSSLStatus;
 
 // A web view component (like WKWebView) which uses iOS Chromium's web view
 // implementation.
@@ -74,6 +75,10 @@ CWV_EXPORT
 // See the comment of |visibleURL| above for the difference between |visibleURL|
 // and |lastCommittedURL|.
 @property(nonatomic, readonly) NSURL* lastCommittedURL;
+
+// The SSL status displayed in the URL bar. KVO compliant.
+// It is nil when no page is loaded on the web view.
+@property(nonatomic, readonly, nullable) CWVSSLStatus* visibleSSLStatus;
 
 // The current page title. KVO compliant.
 @property(nonatomic, readonly, copy) NSString* title;
