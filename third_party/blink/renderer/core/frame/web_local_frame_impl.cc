@@ -1457,12 +1457,6 @@ void WebLocalFrameImpl::SetCaretVisible(bool visible) {
   GetFrame()->Selection().SetCaretVisible(visible);
 }
 
-VisiblePosition WebLocalFrameImpl::VisiblePositionForViewportPoint(
-    const WebPoint& point_in_viewport) {
-  return VisiblePositionForContentsPoint(
-      GetFrame()->View()->ViewportToFrame(point_in_viewport), GetFrame());
-}
-
 WebPlugin* WebLocalFrameImpl::FocusedPluginIfInputMethodSupported() {
   WebPluginContainerImpl* container = GetFrame()->GetWebPluginContainer();
   if (container && container->SupportsInputMethod())
