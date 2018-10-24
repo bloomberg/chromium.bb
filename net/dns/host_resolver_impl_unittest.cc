@@ -5501,10 +5501,8 @@ TEST_F(HostResolverImplDnsTest, NoCanonicalName_CreateRequest) {
   CreateResolver();
   ChangeDnsConfig(CreateValidDnsConfig());
   set_fallback_to_proctask(false);
-  HostResolver::ResolveHostParameters params;
-  params.source = HostResolverSource::DNS;
   ResolveHostResponseHelper response(resolver_->CreateRequest(
-      HostPortPair("alias", 80), NetLogWithSource(), params));
+      HostPortPair("alias", 80), NetLogWithSource(), base::nullopt));
   ASSERT_THAT(response.result_error(), IsOk());
 
   EXPECT_TRUE(
@@ -5522,7 +5520,6 @@ TEST_F(HostResolverImplDnsTest, CanonicalName_CreateRequest) {
   ChangeDnsConfig(CreateValidDnsConfig());
   set_fallback_to_proctask(false);
   HostResolver::ResolveHostParameters params;
-  params.source = HostResolverSource::DNS;
   params.include_canonical_name = true;
   ResolveHostResponseHelper response(resolver_->CreateRequest(
       HostPortPair("alias", 80), NetLogWithSource(), params));
@@ -5543,7 +5540,6 @@ TEST_F(HostResolverImplDnsTest, CanonicalName_PreferV6_CreateRequest) {
   ChangeDnsConfig(CreateValidDnsConfig());
   set_fallback_to_proctask(false);
   HostResolver::ResolveHostParameters params;
-  params.source = HostResolverSource::DNS;
   params.include_canonical_name = true;
   ResolveHostResponseHelper response(resolver_->CreateRequest(
       HostPortPair("alias", 80), NetLogWithSource(), params));
@@ -5563,7 +5559,6 @@ TEST_F(HostResolverImplDnsTest, CanonicalName_V4Only_CreateRequest) {
   ChangeDnsConfig(CreateValidDnsConfig());
   set_fallback_to_proctask(false);
   HostResolver::ResolveHostParameters params;
-  params.source = HostResolverSource::DNS;
   params.dns_query_type = HostResolver::DnsQueryType::A;
   params.include_canonical_name = true;
   ResolveHostResponseHelper response(resolver_->CreateRequest(
