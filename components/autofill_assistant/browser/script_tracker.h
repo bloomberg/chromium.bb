@@ -26,7 +26,7 @@ class ScriptExecutorDelegate;
 //
 // User of this class is responsible for retrieving and passing scripts to the
 // tracker and letting the tracker know about changes to the DOM.
-class ScriptTracker {
+class ScriptTracker : public ScriptExecutor::Listener {
  public:
   // Listens to changes on the ScriptTracker state.
   class Listener {
@@ -44,7 +44,7 @@ class ScriptTracker {
   ScriptTracker(ScriptExecutorDelegate* delegate,
                 ScriptTracker::Listener* listener);
 
-  ~ScriptTracker();
+  ~ScriptTracker() override;
 
   // Updates the set of available |scripts|. This interrupts any pending checks,
   // but don't start a new one.'
@@ -83,6 +83,9 @@ class ScriptTracker {
                    ScriptExecutor::Result result);
   void UpdateRunnableScriptsIfNecessary();
   void OnCheckDone();
+
+  // Overrides ScriptExecutor::Listener.
+  void OnServerPayloadChanged(const std::string& server_payload) override;
 
   // Cleans up any state use by pending checks. Stops running pending checks.
   void TerminatePendingChecks();
@@ -128,6 +131,8 @@ class ScriptTracker {
   // The callback of the pending run script. |executor_| must not be nullptr if
   // |pending_run_script_callback_| is not nullptr.
   ScriptExecutor::RunScriptCallback pending_run_script_callback_;
+
+  std::string last_server_payload_;
 
   base::WeakPtrFactory<ScriptTracker> weak_ptr_factory_;
 

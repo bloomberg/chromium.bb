@@ -105,7 +105,8 @@ bool ProtocolUtils::ParseScripts(
 std::string ProtocolUtils::CreateInitialScriptActionsRequest(
     const std::string& script_path,
     const GURL& url,
-    const std::map<std::string, std::string>& parameters) {
+    const std::map<std::string, std::string>& parameters,
+    const std::string& server_payload) {
   ScriptActionRequestProto request_proto;
   InitialScriptActionsRequestProto* initial_request_proto =
       request_proto.mutable_initial_request();
@@ -118,6 +119,10 @@ std::string ProtocolUtils::CreateInitialScriptActionsRequest(
       parameters, initial_request_proto->mutable_script_parameters());
   request_proto.mutable_client_context()->mutable_chrome()->set_chrome_version(
       version_info::GetProductNameAndVersionForUserAgent());
+
+  if (!server_payload.empty()) {
+    request_proto.set_server_payload(server_payload);
+  }
 
   std::string serialized_initial_request_proto;
   bool success =

@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
+#include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
 #include "components/autofill_assistant/browser/service.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
@@ -29,8 +30,12 @@ constexpr base::TimeDelta kWaitForSelectorDeadline =
 }  // namespace
 
 ScriptExecutor::ScriptExecutor(const std::string& script_path,
+                               const std::string& server_payload,
+                               ScriptExecutor::Listener* listener,
                                ScriptExecutorDelegate* delegate)
     : script_path_(script_path),
+      last_server_payload_(server_payload),
+      listener_(listener),
       delegate_(delegate),
       at_end_(CONTINUE),
       should_stop_script_(false),
@@ -46,7 +51,7 @@ void ScriptExecutor::Run(RunScriptCallback callback) {
 
   delegate_->GetService()->GetActions(
       script_path_, delegate_->GetWebController()->GetUrl(),
-      delegate_->GetParameters(),
+      delegate_->GetParameters(), last_server_payload_,
       base::BindOnce(&ScriptExecutor::OnGetActions,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -201,6 +206,9 @@ void ScriptExecutor::OnGetActions(bool result, const std::string& response) {
 
   bool parse_result =
       ProtocolUtils::ParseActions(response, &last_server_payload_, &actions_);
+  if (listener_) {
+    listener_->OnServerPayloadChanged(last_server_payload_);
+  }
   if (!parse_result) {
     RunCallback(false);
     return;

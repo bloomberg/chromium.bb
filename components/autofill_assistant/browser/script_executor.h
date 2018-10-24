@@ -22,8 +22,22 @@ namespace autofill_assistant {
 // Class to execute an assistant script.
 class ScriptExecutor : public ActionDelegate {
  public:
-  // |delegate| should outlive this object and should not be nullptr.
+  // Listens to events on ScriptExecutor.
+  // TODO(b/806868): Make server_payload a part of callback instead of the
+  // listener.
+  class Listener {
+   public:
+    virtual ~Listener() = default;
+
+    // Called when new server_payload is available.
+    virtual void OnServerPayloadChanged(const std::string& server_payload) = 0;
+  };
+
+  // |delegate| and |listener| should outlive this object and should not be
+  // nullptr.
   ScriptExecutor(const std::string& script_path,
+                 const std::string& server_payload,
+                 ScriptExecutor::Listener* listener,
                  ScriptExecutorDelegate* delegate);
   ~ScriptExecutor() override;
 
@@ -105,12 +119,13 @@ class ScriptExecutor : public ActionDelegate {
   void OnProcessedAction(std::unique_ptr<ProcessedActionProto> action);
 
   std::string script_path_;
+  std::string last_server_payload_;
+  ScriptExecutor::Listener* const listener_;
   ScriptExecutorDelegate* delegate_;
   RunScriptCallback callback_;
 
   std::vector<std::unique_ptr<Action>> actions_;
   std::vector<ProcessedActionProto> processed_actions_;
-  std::string last_server_payload_;
   AtEnd at_end_;
   bool should_stop_script_;
   bool should_clean_contextual_ui_on_finish_;

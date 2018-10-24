@@ -96,12 +96,13 @@ void Service::GetScriptsForUrl(
 void Service::GetActions(const std::string& script_path,
                          const GURL& url,
                          const std::map<std::string, std::string>& parameters,
+                         const std::string& server_payload,
                          ResponseCallback callback) {
   DCHECK(!script_path.empty());
 
   SendRequest(AddLoader(script_action_server_url_,
                         ProtocolUtils::CreateInitialScriptActionsRequest(
-                            script_path, url, parameters),
+                            script_path, url, parameters, server_payload),
                         std::move(callback)));
 }
 

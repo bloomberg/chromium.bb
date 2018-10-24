@@ -86,7 +86,8 @@ void ScriptTracker::ExecuteScript(const std::string& script_path,
   }
 
   executed_scripts_[script_path] = SCRIPT_STATUS_RUNNING;
-  executor_ = std::make_unique<ScriptExecutor>(script_path, delegate_);
+  executor_ = std::make_unique<ScriptExecutor>(
+      script_path, last_server_payload_, this, delegate_);
   ScriptExecutor::RunScriptCallback run_script_callback = base::BindOnce(
       &ScriptTracker::OnScriptRun, weak_ptr_factory_.GetWeakPtr(), script_path,
       std::move(callback));
@@ -188,6 +189,10 @@ void ScriptTracker::ClearAvailableScripts() {
   // Clearing available_scripts_ has cancelled any pending precondition checks,
   // ending them.
   TerminatePendingChecks();
+}
+
+void ScriptTracker::OnServerPayloadChanged(const std::string& server_payload) {
+  last_server_payload_ = server_payload;
 }
 
 }  // namespace autofill_assistant
