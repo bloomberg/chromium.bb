@@ -28,25 +28,27 @@ class ThreadConditionTest : public testing::Test {
   ThreadConditionTest() : condition_(mutex_) {}
 
   void RunOtherThreadInfiniteWait() {
-    base::internal::SetBlockingObserverForCurrentThread(&observer_);
     MutexLocker lock(mutex_);
     ready_.Signal();
+
+    base::internal::SetBlockingObserverForCurrentThread(&observer_);
+    EXPECT_CALL(observer_, BlockingStarted(base::BlockingType::MAY_BLOCK));
+    EXPECT_CALL(observer_, BlockingEnded());
     condition_.Wait();
+    testing::Mock::VerifyAndClear(&observer_);
   }
 
  protected:
+  // Used to make sure that the other thread gets to wait before the main thread
+  // signals it. Otherwise it may wait forever.
   base::WaitableEvent ready_;
+
   testing::StrictMock<MockBlockingObserver> observer_;
   Mutex mutex_;
   ThreadCondition condition_;
 };
 
-// TODO(https://crbug.com/897550): Test often flakes on its first run, only
-// passing when retried by the TestLauncher.
-TEST_F(ThreadConditionTest, DISABLED_WaitReportsBlockingCall) {
-  EXPECT_CALL(observer_, BlockingStarted(base::BlockingType::MAY_BLOCK));
-  EXPECT_CALL(observer_, BlockingEnded());
-
+TEST_F(ThreadConditionTest, WaitReportsBlockingCall) {
   base::Thread other_thread("other thread");
   other_thread.StartAndWaitForTesting();
   other_thread.task_runner()->PostTask(
