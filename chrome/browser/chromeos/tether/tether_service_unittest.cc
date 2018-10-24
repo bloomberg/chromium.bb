@@ -1327,7 +1327,69 @@ TEST_F(TetherServiceTest, TestEnabled) {
       chromeos::tether::TetherComponent::ShutdownReason::PREF_DISABLED);
 }
 
-TEST_F(TetherServiceTest, TestEnabled_MultiDeviceFlags) {
+TEST_F(TetherServiceTest, TestUserPrefChangesViaFeatureStateChange) {
+  // Start with the feature disabled.
+  initial_feature_state_ =
+      chromeos::multidevice_setup::mojom::FeatureState::kDisabledByUser;
+  profile_->GetPrefs()->SetBoolean(
+      chromeos::multidevice_setup::kInstantTetheringEnabledPrefName, false);
+  CreateTetherService(true /* enable_multidevice_apis */);
+
+  // Enable the feature.
+  profile_->GetPrefs()->SetBoolean(
+      chromeos::multidevice_setup::kInstantTetheringEnabledPrefName, true);
+  fake_multidevice_setup_client_->SetFeatureState(
+      chromeos::multidevice_setup::mojom::Feature::kInstantTethering,
+      chromeos::multidevice_setup::mojom::FeatureState::kEnabledByUser);
+  EXPECT_EQ(chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED,
+            network_state_handler()->GetTechnologyState(
+                chromeos::NetworkTypePattern::Tether()));
+  VerifyTetherActiveStatus(true /* expected_active */);
+  VerifyTetherFeatureStateRecorded(TetherService::TetherFeatureState::ENABLED,
+                                   1 /* expected_count */);
+  histogram_tester_.ExpectBucketCount(
+      "InstantTethering.UserPreference.OnToggle", true,
+      1u /* expected_count */);
+
+  // Disable the feature.
+  profile_->GetPrefs()->SetBoolean(
+      chromeos::multidevice_setup::kInstantTetheringEnabledPrefName, false);
+  fake_multidevice_setup_client_->SetFeatureState(
+      chromeos::multidevice_setup::mojom::Feature::kInstantTethering,
+      chromeos::multidevice_setup::mojom::FeatureState::kDisabledByUser);
+  EXPECT_EQ(
+      chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_AVAILABLE,
+      network_state_handler()->GetTechnologyState(
+          chromeos::NetworkTypePattern::Tether()));
+  VerifyTetherActiveStatus(false /* expected_active */);
+  VerifyTetherFeatureStateRecorded(
+      TetherService::TetherFeatureState::USER_PREFERENCE_DISABLED,
+      2 /* expected_count */);
+  histogram_tester_.ExpectBucketCount(
+      "InstantTethering.UserPreference.OnToggle", false,
+      1u /* expected_count */);
+
+  // Enable the feature.
+  profile_->GetPrefs()->SetBoolean(
+      chromeos::multidevice_setup::kInstantTetheringEnabledPrefName, true);
+  fake_multidevice_setup_client_->SetFeatureState(
+      chromeos::multidevice_setup::mojom::Feature::kInstantTethering,
+      chromeos::multidevice_setup::mojom::FeatureState::kEnabledByUser);
+  EXPECT_EQ(chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED,
+            network_state_handler()->GetTechnologyState(
+                chromeos::NetworkTypePattern::Tether()));
+  VerifyTetherActiveStatus(true /* expected_active */);
+  VerifyTetherFeatureStateRecorded(TetherService::TetherFeatureState::ENABLED,
+                                   2 /* expected_count */);
+  histogram_tester_.ExpectBucketCount(
+      "InstantTethering.UserPreference.OnToggle", true,
+      2u /* expected_count */);
+
+  VerifyLastShutdownReason(
+      chromeos::tether::TetherComponent::ShutdownReason::PREF_DISABLED);
+}
+
+TEST_F(TetherServiceTest, TestUserPrefChangesViaTechnologyStateChange) {
   CreateTetherService(true /* enable_multidevice_apis */);
 
   EXPECT_EQ(chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED,

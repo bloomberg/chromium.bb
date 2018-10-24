@@ -98,6 +98,8 @@ js_library("multidevice_subpage") {
 
 js_library("multidevice_tether_item") {
   deps = [
+    ":multidevice_feature_behavior",
+    "..:route",
     "//ui/webui/resources/cr_elements/chromeos/network:cr_onc_types",
   ]
   externs_list = [ "$externs_path/networking_private.js" ]
