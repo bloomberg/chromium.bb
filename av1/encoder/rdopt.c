@@ -10463,7 +10463,7 @@ static void rd_pick_skip_mode(RD_STATS *rd_cost,
 
     search_state->best_rd = rd_cost->rdcost;
     search_state->best_skip2 = 1;
-    search_state->best_mode_skippable = (skip_mode_rd_stats.sse == 0);
+    search_state->best_mode_skippable = 1;
 
     x->skip = 1;
   }
