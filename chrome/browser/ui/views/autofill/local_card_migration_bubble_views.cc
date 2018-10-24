@@ -128,10 +128,22 @@ void LocalCardMigrationBubbleViews::WindowClosing() {
 LocalCardMigrationBubbleViews::~LocalCardMigrationBubbleViews() {}
 
 void LocalCardMigrationBubbleViews::Init() {
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
-  views::Label* explanatory_message = new views::Label(
-      controller_->GetBubbleMessage(), CONTEXT_BODY_TEXT_LARGE);
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(),
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          DISTANCE_RELATED_CONTROL_VERTICAL_SMALL)));
+
+  auto* title = new views::Label(
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_TITLE),
+      views::style::CONTEXT_DIALOG_TITLE);
+  title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  title->SetMultiLine(true);
+  AddChildView(title);
+
+  auto* explanatory_message = new views::Label(
+      l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_BODY_TEXT),
+      CONTEXT_BODY_TEXT_LARGE, ChromeTextStyle::STYLE_SECONDARY);
   explanatory_message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   explanatory_message->SetMultiLine(true);
   AddChildView(explanatory_message);
