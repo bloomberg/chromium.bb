@@ -246,6 +246,7 @@ void ModelTypeController::Stop(ShutdownReason shutdown_reason,
       // Nothing to stop. |metadata_fate| might require CLEAR_METADATA,
       // which could lead to leaking sync metadata, but it doesn't seem a
       // realistic scenario (disable sync during shutdown?).
+      std::move(callback).Run();
       return;
 
     case STOPPING:
