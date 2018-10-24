@@ -46,9 +46,13 @@ const char kAccessibilityMonoAudioEnabled[] = "settings.a11y.mono_audio";
 // A boolean pref which determines whether autoclick is enabled.
 const char kAccessibilityAutoclickEnabled[] = "settings.a11y.autoclick";
 // An integer pref which determines time in ms between when the mouse cursor
-// stops and when an autoclick is triggered.
+// stops and when an autoclick event is triggered.
 const char kAccessibilityAutoclickDelayMs[] =
     "settings.a11y.autoclick_delay_ms";
+// An integer pref which determines the event type for an autoclick event. This
+// maps to mojom::AccessibilityController::AutoclickEventType.
+const char kAccessibilityAutoclickEventType[] =
+    "settings.a11y.autoclick_event_type";
 // A boolean pref which determines whether caret highlighting is enabled.
 const char kAccessibilityCaretHighlightEnabled[] =
     "settings.a11y.caret_highlight";

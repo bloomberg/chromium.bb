@@ -6,6 +6,7 @@
 #define ASH_AUTOCLICK_AUTOCLICK_CONTROLLER_H
 
 #include "ash/ash_export.h"
+#include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/aura/window_observer.h"
@@ -25,8 +26,9 @@ namespace ash {
 class AutoclickRingHandler;
 
 // Autoclick is one of the accessibility features. If enabled, two circles will
-// animate at the mouse event location and an automatic click event will happen
-// after a certain amount of time at that location.
+// animate at the mouse event location and an automatic mouse event event will
+// happen after a certain amount of time at that location. The event type is
+// determined by SetAutoclickEventType.
 class ASH_EXPORT AutoclickController : public ui::EventHandler,
                                        public aura::WindowObserver {
  public:
@@ -46,13 +48,16 @@ class ASH_EXPORT AutoclickController : public ui::EventHandler,
   // Gets the default wait time as a base::TimeDelta object.
   static base::TimeDelta GetDefaultAutoclickDelay();
 
+  // Sets the event type.
+  void SetAutoclickEventType(mojom::AutoclickEventType type);
+
  private:
   void SetTapDownTarget(aura::Window* target);
   void CreateAutoclickRingWidget(const gfx::Point& point_in_screen);
   void UpdateAutoclickRingWidget(views::Widget* widget,
                                  const gfx::Point& point_in_screen);
-  void DoAutoclick();
-  void CancelAutoclick();
+  void DoAutoclickAction();
+  void CancelAutoclickAction();
   void InitClickTimer();
   void UpdateRingWidget(const gfx::Point& mouse_location);
 
@@ -67,6 +72,7 @@ class ASH_EXPORT AutoclickController : public ui::EventHandler,
   void OnWindowDestroying(aura::Window* window) override;
 
   bool enabled_;
+  mojom::AutoclickEventType event_type_;
   // The target window is observed by AutoclickController for the duration
   // of a autoclick gesture.
   aura::Window* tap_down_target_;
