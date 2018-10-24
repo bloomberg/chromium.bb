@@ -353,7 +353,7 @@ static const int rd_frame_type_factor[FRAME_UPDATE_TYPES] = {
   128   // INTNL_ARF_UPDATE
 };
 
-int av1_compute_rd_mult(const AV1_COMP *cpi, int qindex) {
+int64_t av1_compute_rd_mult_based_on_qindex(const AV1_COMP *cpi, int qindex) {
   const int64_t q =
       av1_dc_quant_Q3(qindex, 0, cpi->common.seq_params.bit_depth);
   int64_t rdmult = 0;
@@ -365,6 +365,11 @@ int av1_compute_rd_mult(const AV1_COMP *cpi, int qindex) {
       assert(0 && "bit_depth should be AOM_BITS_8, AOM_BITS_10 or AOM_BITS_12");
       return -1;
   }
+  return rdmult;
+}
+
+int av1_compute_rd_mult(const AV1_COMP *cpi, int qindex) {
+  int64_t rdmult = av1_compute_rd_mult_based_on_qindex(cpi, qindex);
   if (cpi->oxcf.pass == 2 && (cpi->common.frame_type != KEY_FRAME)) {
     const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
     const FRAME_UPDATE_TYPE frame_type = gf_group->update_type[gf_group->index];
@@ -543,6 +548,18 @@ void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc,
   }
 }
 
+void av1_initialize_cost_tables(const AV1_COMMON *const cm, MACROBLOCK *x) {
+  if (cm->cur_frame_force_integer_mv) {
+    av1_build_nmv_cost_table(x->nmv_vec_cost, x->nmvcost, &cm->fc->nmvc,
+                             MV_SUBPEL_NONE);
+  } else {
+    av1_build_nmv_cost_table(
+        x->nmv_vec_cost,
+        cm->allow_high_precision_mv ? x->nmvcost_hp : x->nmvcost, &cm->fc->nmvc,
+        cm->allow_high_precision_mv);
+  }
+}
+
 void av1_initialize_rd_consts(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCK *const x = &cpi->td.mb;
@@ -556,15 +573,7 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
 
   set_block_thresholds(cm, rd);
 
-  if (cm->cur_frame_force_integer_mv) {
-    av1_build_nmv_cost_table(x->nmv_vec_cost, x->nmvcost, &cm->fc->nmvc,
-                             MV_SUBPEL_NONE);
-  } else {
-    av1_build_nmv_cost_table(
-        x->nmv_vec_cost,
-        cm->allow_high_precision_mv ? x->nmvcost_hp : x->nmvcost, &cm->fc->nmvc,
-        cm->allow_high_precision_mv);
-  }
+  av1_initialize_cost_tables(cm, x);
 
   x->mvcost = x->mv_cost_stack;
   x->nmvjointcost = x->nmv_vec_cost;

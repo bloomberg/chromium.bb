@@ -16,6 +16,8 @@
 extern "C" {
 #endif
 
+#define ARNR_FILT_QINDEX 128
+
 void av1_temporal_filter(AV1_COMP *cpi, int distance);
 
 #ifdef __cplusplus

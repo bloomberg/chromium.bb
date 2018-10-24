@@ -643,9 +643,14 @@ struct TileDataEnc;
 struct AV1_COMP;
 struct macroblock;
 
+int64_t av1_compute_rd_mult_based_on_qindex(const struct AV1_COMP *cpi,
+                                            int qindex);
+
 int av1_compute_rd_mult(const struct AV1_COMP *cpi, int qindex);
 
 void av1_initialize_rd_consts(struct AV1_COMP *cpi);
+
+void av1_initialize_cost_tables(const AV1_COMMON *const cm, MACROBLOCK *x);
 
 void av1_initialize_me_consts(const struct AV1_COMP *cpi, MACROBLOCK *x,
                               int qindex);

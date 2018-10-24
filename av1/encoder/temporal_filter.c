@@ -664,6 +664,7 @@ void av1_temporal_filter(AV1_COMP *cpi, int distance) {
   struct scale_factors sf;
   YV12_BUFFER_CONFIG *frames[MAX_LAG_BUFFERS] = { NULL };
   const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
+  int rdmult = 0;
 
   // Apply context specific adjustments to the arnr filter parameters.
   if (gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE) {
@@ -707,6 +708,13 @@ void av1_temporal_filter(AV1_COMP *cpi, int distance) {
         &sf, frames[0]->y_crop_width, frames[0]->y_crop_height,
         frames[0]->y_crop_width, frames[0]->y_crop_height);
   }
+
+  // Initialize errorperbit, sadperbit16 and sadperbit4.
+  rdmult = (int)av1_compute_rd_mult_based_on_qindex(cpi, ARNR_FILT_QINDEX);
+  if (rdmult < 1) rdmult = 1;
+  set_error_per_bit(&cpi->td.mb, rdmult);
+  av1_initialize_me_consts(cpi, &cpi->td.mb, ARNR_FILT_QINDEX);
+  av1_initialize_cost_tables(&cpi->common, &cpi->td.mb);
 
   temporal_filter_iterate_c(cpi, frames, frames_to_blur,
                             frames_to_blur_backward, strength, &sf);
