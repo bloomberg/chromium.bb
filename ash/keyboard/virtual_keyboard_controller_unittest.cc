@@ -24,6 +24,7 @@
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/touchscreen_device.h"
 #include "ui/keyboard/keyboard_switches.h"
+#include "ui/keyboard/test/keyboard_test_util.h"
 
 using keyboard::mojom::KeyboardEnableFlag;
 
@@ -579,6 +580,23 @@ TEST_F(VirtualKeyboardControllerAlwaysEnabledTest,
   // Move to secondary display.
   GetVirtualKeyboardController()->MoveKeyboardToDisplay(GetSecondaryDisplay());
   EXPECT_EQ(GetSecondaryRootWindow(), keyboard_controller_->GetRootWindow());
+}
+
+// Test for https://crbug.com/897007.
+TEST_F(VirtualKeyboardControllerAlwaysEnabledTest,
+       ShowKeyboardInSecondaryDisplay) {
+  UpdateDisplay("500x500,500x500");
+
+  // Load in the primary display.
+  keyboard_controller_->LoadKeyboardWindowInBackground();
+  keyboard_controller_->GetKeyboardWindow()->SetBounds(gfx::Rect(0, 0, 10, 10));
+  keyboard_controller_->NotifyKeyboardWindowLoaded();
+
+  // Show in secondary display.
+  keyboard_controller_->ShowKeyboardInDisplay(GetSecondaryDisplay());
+  EXPECT_EQ(GetSecondaryRootWindow(), keyboard_controller_->GetRootWindow());
+  ASSERT_TRUE(keyboard::WaitUntilShown());
+  EXPECT_TRUE(!keyboard_controller_->GetKeyboardWindow()->bounds().IsEmpty());
 }
 
 }  // namespace ash
