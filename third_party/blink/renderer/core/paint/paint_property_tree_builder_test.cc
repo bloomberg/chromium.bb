@@ -4389,12 +4389,6 @@ TEST_P(PaintPropertyTreeBuilderTest,
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, CompositedUnderMultiColumn) {
-  // TODO(crbug.com/796768): Currently this test crashes for SPv2 when mapping
-  // layer clip rects from one fragment to another. May need to adjust fragment
-  // clip hierarchy to fix the crash.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <style>body { margin: 0; }</style>
     <div id='multicol' style='columns:3; column-fill:auto; column-gap: 0;
@@ -4433,31 +4427,32 @@ TEST_P(PaintPropertyTreeBuilderTest, CompositedUnderMultiColumn) {
     EXPECT_EQ(LayoutPoint(100, 100), FragmentAt(composited, 0).PaintOffset());
     EXPECT_EQ(LayoutPoint(100, -200),
               FragmentAt(composited, 0).PaginationOffset());
-    EXPECT_EQ(LayoutUnit(), FragmentAt(composited, 0).LogicalTopInFlowThread());
+    EXPECT_EQ(LayoutUnit(200),
+              FragmentAt(composited, 0).LogicalTopInFlowThread());
     EXPECT_EQ(LayoutPoint(200, -100), FragmentAt(composited, 1).PaintOffset());
     EXPECT_EQ(LayoutPoint(200, -400),
               FragmentAt(composited, 1).PaginationOffset());
-    EXPECT_EQ(LayoutUnit(200),
+    EXPECT_EQ(LayoutUnit(400),
               FragmentAt(composited, 1).LogicalTopInFlowThread());
     EXPECT_EQ(2u, NumFragments(non_composited_child));
     EXPECT_EQ(LayoutPoint(100, 100),
               FragmentAt(non_composited_child, 0).PaintOffset());
     EXPECT_EQ(LayoutPoint(100, -200),
               FragmentAt(non_composited_child, 0).PaginationOffset());
-    EXPECT_EQ(LayoutUnit(),
+    EXPECT_EQ(LayoutUnit(200),
               FragmentAt(non_composited_child, 0).LogicalTopInFlowThread());
     EXPECT_EQ(LayoutPoint(200, -100),
               FragmentAt(non_composited_child, 1).PaintOffset());
     EXPECT_EQ(LayoutPoint(200, -400),
               FragmentAt(non_composited_child, 1).PaginationOffset());
-    EXPECT_EQ(LayoutUnit(200),
+    EXPECT_EQ(LayoutUnit(400),
               FragmentAt(non_composited_child, 1).LogicalTopInFlowThread());
     EXPECT_EQ(1u, NumFragments(composited_child));
     EXPECT_EQ(LayoutPoint(200, 50),
               FragmentAt(composited_child, 0).PaintOffset());
     EXPECT_EQ(LayoutPoint(200, -400),
               FragmentAt(composited_child, 0).PaginationOffset());
-    EXPECT_EQ(LayoutUnit(),
+    EXPECT_EQ(LayoutUnit(400),
               FragmentAt(composited_child, 0).LogicalTopInFlowThread());
   } else {
     // SPv1 forces single fragment for composited layers.
@@ -4485,12 +4480,6 @@ TEST_P(PaintPropertyTreeBuilderTest, CompositedUnderMultiColumn) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, FragmentsInPagedY) {
-  // TODO(crbug.com/796768): Currently this test crashes for SPv2 when mapping
-  // layer clip rects from one fragment to another. May need to adjust fragment
-  // clip hierarchy to fix the crash.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <div id='paged' style='overflow: -webkit-paged-y; column-gap: 0;
         width: 100px; height: 100px'>
@@ -4512,12 +4501,6 @@ TEST_P(PaintPropertyTreeBuilderTest, FragmentsInPagedY) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, FragmentsInPagedYWithGap) {
-  // TODO(crbug.com/796768): Currently this test crashes for SPv2 when mapping
-  // layer clip rects from one fragment to another. May need to adjust fragment
-  // clip hierarchy to fix the crash.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <div id='paged' style='overflow: -webkit-paged-y; column-gap: 10px;
         width: 100px; height: 100px'>
@@ -4539,12 +4522,6 @@ TEST_P(PaintPropertyTreeBuilderTest, FragmentsInPagedYWithGap) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, FragmentsInPagedX) {
-  // TODO(crbug.com/796768): Currently this test crashes for SPv2 when mapping
-  // layer clip rects from one fragment to another. May need to adjust fragment
-  // clip hierarchy to fix the crash.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <div id='paged' style='overflow: -webkit-paged-x; column-gap: 0;
         width: 100px; height: 100px'>
@@ -4566,12 +4543,6 @@ TEST_P(PaintPropertyTreeBuilderTest, FragmentsInPagedX) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, FragmentsInPagedYVerticalRL) {
-  // TODO(crbug.com/796768): Currently this test crashes for SPv2 when mapping
-  // layer clip rects from one fragment to another. May need to adjust fragment
-  // clip hierarchy to fix the crash.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <div id='paged' style='overflow: -webkit-paged-y; column-gap: 0;
         width: 100px; height: 100px; writing-mode: vertical-rl'>
@@ -4645,12 +4616,6 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameUnderMulticol) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, CompositedMulticolFrameUnderMulticol) {
-  // TODO(crbug.com/796768): Currently this test crashes for SPv2 when mapping
-  // layer clip rects from one fragment to another. May need to adjust fragment
-  // clip hierarchy to fix the crash.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <style>body { margin: 0 }</style>
     <div style='columns: 3; column-gap: 0; column-fill: auto;
