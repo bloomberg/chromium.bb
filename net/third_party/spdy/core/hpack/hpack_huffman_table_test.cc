@@ -4,12 +4,8 @@
 
 #include "net/third_party/spdy/core/hpack/hpack_huffman_table.h"
 
-#include <stdint.h>
-
-#include <bitset>
 #include <utility>
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "net/third_party/http2/hpack/huffman/hpack_huffman_decoder.h"
 #include "net/third_party/spdy/core/hpack/hpack_constants.h"
@@ -32,10 +28,7 @@ class HpackHuffmanTablePeer {
   const std::vector<uint8_t>& length_by_id() const {
     return table_.length_by_id_;
   }
-  char pad_bits() const {
-    // Cast to match signed-ness of bits8().
-    return static_cast<char>(table_.pad_bits_);
-  }
+  uint8_t pad_bits() const { return table_.pad_bits_; }
   uint16_t failed_symbol_id() const { return table_.failed_symbol_id_; }
 
  private:
@@ -65,60 +58,51 @@ class GenericHuffmanTableTest : public ::testing::Test {
   HpackHuffmanTablePeer peer_;
 };
 
-uint32_t bits32(const SpdyString& bitstring) {
-  return std::bitset<32>(bitstring).to_ulong();
-}
-char bits8(const SpdyString& bitstring) {
-  return static_cast<char>(std::bitset<8>(bitstring).to_ulong());
-}
-
 TEST_F(GenericHuffmanTableTest, InitializeEdgeCases) {
   {
     // Verify eight symbols can be encoded with 3 bits per symbol.
-    HpackHuffmanSymbol code[] = {
-        {bits32("00000000000000000000000000000000"), 3, 0},
-        {bits32("00100000000000000000000000000000"), 3, 1},
-        {bits32("01000000000000000000000000000000"), 3, 2},
-        {bits32("01100000000000000000000000000000"), 3, 3},
-        {bits32("10000000000000000000000000000000"), 3, 4},
-        {bits32("10100000000000000000000000000000"), 3, 5},
-        {bits32("11000000000000000000000000000000"), 3, 6},
-        {bits32("11100000000000000000000000000000"), 8, 7}};
+    HpackHuffmanSymbol code[] = {{0b00000000000000000000000000000000, 3, 0},
+                                 {0b00100000000000000000000000000000, 3, 1},
+                                 {0b01000000000000000000000000000000, 3, 2},
+                                 {0b01100000000000000000000000000000, 3, 3},
+                                 {0b10000000000000000000000000000000, 3, 4},
+                                 {0b10100000000000000000000000000000, 3, 5},
+                                 {0b11000000000000000000000000000000, 3, 6},
+                                 {0b11100000000000000000000000000000, 8, 7}};
     HpackHuffmanTable table;
     EXPECT_TRUE(table.Initialize(code, SPDY_ARRAYSIZE(code)));
   }
   {
     // But using 2 bits with one symbol overflows the code.
     HpackHuffmanSymbol code[] = {
-        {bits32("01000000000000000000000000000000"), 3, 0},
-        {bits32("01100000000000000000000000000000"), 3, 1},
-        {bits32("00000000000000000000000000000000"), 2, 2},
-        {bits32("10000000000000000000000000000000"), 3, 3},
-        {bits32("10100000000000000000000000000000"), 3, 4},
-        {bits32("11000000000000000000000000000000"), 3, 5},
-        {bits32("11100000000000000000000000000000"), 3, 6},
-        {bits32("00000000000000000000000000000000"), 8, 7}};  // Overflow.
+        {0b01000000000000000000000000000000, 3, 0},
+        {0b01100000000000000000000000000000, 3, 1},
+        {0b00000000000000000000000000000000, 2, 2},
+        {0b10000000000000000000000000000000, 3, 3},
+        {0b10100000000000000000000000000000, 3, 4},
+        {0b11000000000000000000000000000000, 3, 5},
+        {0b11100000000000000000000000000000, 3, 6},
+        {0b00000000000000000000000000000000, 8, 7}};  // Overflow.
     HpackHuffmanTable table;
     EXPECT_FALSE(table.Initialize(code, SPDY_ARRAYSIZE(code)));
     EXPECT_EQ(7, HpackHuffmanTablePeer(table).failed_symbol_id());
   }
   {
     // Verify four symbols can be encoded with incremental bits per symbol.
-    HpackHuffmanSymbol code[] = {
-        {bits32("00000000000000000000000000000000"), 1, 0},
-        {bits32("10000000000000000000000000000000"), 2, 1},
-        {bits32("11000000000000000000000000000000"), 3, 2},
-        {bits32("11100000000000000000000000000000"), 8, 3}};
+    HpackHuffmanSymbol code[] = {{0b00000000000000000000000000000000, 1, 0},
+                                 {0b10000000000000000000000000000000, 2, 1},
+                                 {0b11000000000000000000000000000000, 3, 2},
+                                 {0b11100000000000000000000000000000, 8, 3}};
     HpackHuffmanTable table;
     EXPECT_TRUE(table.Initialize(code, SPDY_ARRAYSIZE(code)));
   }
   {
     // But repeating a length overflows the code.
     HpackHuffmanSymbol code[] = {
-        {bits32("00000000000000000000000000000000"), 1, 0},
-        {bits32("10000000000000000000000000000000"), 2, 1},
-        {bits32("11000000000000000000000000000000"), 2, 2},
-        {bits32("00000000000000000000000000000000"), 8, 3}};  // Overflow.
+        {0b00000000000000000000000000000000, 1, 0},
+        {0b10000000000000000000000000000000, 2, 1},
+        {0b11000000000000000000000000000000, 2, 2},
+        {0b00000000000000000000000000000000, 8, 3}};  // Overflow.
     HpackHuffmanTable table;
     EXPECT_FALSE(table.Initialize(code, SPDY_ARRAYSIZE(code)));
     EXPECT_EQ(3, HpackHuffmanTablePeer(table).failed_symbol_id());
@@ -126,21 +110,20 @@ TEST_F(GenericHuffmanTableTest, InitializeEdgeCases) {
   {
     // Symbol IDs must be assigned sequentially with no gaps.
     HpackHuffmanSymbol code[] = {
-        {bits32("00000000000000000000000000000000"), 1, 0},
-        {bits32("10000000000000000000000000000000"), 2, 1},
-        {bits32("11000000000000000000000000000000"), 3, 1},  // Repeat.
-        {bits32("11100000000000000000000000000000"), 8, 3}};
+        {0b00000000000000000000000000000000, 1, 0},
+        {0b10000000000000000000000000000000, 2, 1},
+        {0b11000000000000000000000000000000, 3, 1},  // Repeat.
+        {0b11100000000000000000000000000000, 8, 3}};
     HpackHuffmanTable table;
     EXPECT_FALSE(table.Initialize(code, SPDY_ARRAYSIZE(code)));
     EXPECT_EQ(2, HpackHuffmanTablePeer(table).failed_symbol_id());
   }
   {
     // Canonical codes must begin with zero.
-    HpackHuffmanSymbol code[] = {
-        {bits32("10000000000000000000000000000000"), 4, 0},
-        {bits32("10010000000000000000000000000000"), 4, 1},
-        {bits32("10100000000000000000000000000000"), 4, 2},
-        {bits32("10110000000000000000000000000000"), 8, 3}};
+    HpackHuffmanSymbol code[] = {{0b10000000000000000000000000000000, 4, 0},
+                                 {0b10010000000000000000000000000000, 4, 1},
+                                 {0b10100000000000000000000000000000, 4, 2},
+                                 {0b10110000000000000000000000000000, 8, 3}};
     HpackHuffmanTable table;
     EXPECT_FALSE(table.Initialize(code, SPDY_ARRAYSIZE(code)));
     EXPECT_EQ(0, HpackHuffmanTablePeer(table).failed_symbol_id());
@@ -148,21 +131,20 @@ TEST_F(GenericHuffmanTableTest, InitializeEdgeCases) {
   {
     // Codes must match the expected canonical sequence.
     HpackHuffmanSymbol code[] = {
-        {bits32("00000000000000000000000000000000"), 2, 0},
-        {bits32("01000000000000000000000000000000"), 2, 1},
-        {bits32("11000000000000000000000000000000"), 2, 2},  // Not canonical.
-        {bits32("10000000000000000000000000000000"), 8, 3}};
+        {0b00000000000000000000000000000000, 2, 0},
+        {0b01000000000000000000000000000000, 2, 1},
+        {0b11000000000000000000000000000000, 2, 2},  // Code not canonical.
+        {0b10000000000000000000000000000000, 8, 3}};
     HpackHuffmanTable table;
     EXPECT_FALSE(table.Initialize(code, SPDY_ARRAYSIZE(code)));
     EXPECT_EQ(2, HpackHuffmanTablePeer(table).failed_symbol_id());
   }
   {
     // At least one code must have a length of 8 bits (to ensure pad-ability).
-    HpackHuffmanSymbol code[] = {
-        {bits32("00000000000000000000000000000000"), 1, 0},
-        {bits32("10000000000000000000000000000000"), 2, 1},
-        {bits32("11000000000000000000000000000000"), 3, 2},
-        {bits32("11100000000000000000000000000000"), 7, 3}};
+    HpackHuffmanSymbol code[] = {{0b00000000000000000000000000000000, 1, 0},
+                                 {0b10000000000000000000000000000000, 2, 1},
+                                 {0b11000000000000000000000000000000, 3, 2},
+                                 {0b11100000000000000000000000000000, 7, 3}};
     HpackHuffmanTable table;
     EXPECT_FALSE(table.Initialize(code, SPDY_ARRAYSIZE(code)));
   }
@@ -170,15 +152,16 @@ TEST_F(GenericHuffmanTableTest, InitializeEdgeCases) {
 
 TEST_F(GenericHuffmanTableTest, ValidateInternalsWithSmallCode) {
   HpackHuffmanSymbol code[] = {
-      {bits32("01100000000000000000000000000000"), 4, 0},  // 3rd.
-      {bits32("01110000000000000000000000000000"), 4, 1},  // 4th.
-      {bits32("00000000000000000000000000000000"), 2, 2},  // 1st assigned code.
-      {bits32("01000000000000000000000000000000"), 3, 3},  // 2nd.
-      {bits32("10000000000000000000000000000000"), 5, 4},  // 5th.
-      {bits32("10001000000000000000000000000000"), 5, 5},  // 6th.
-      {bits32("10011000000000000000000000000000"), 8, 6},  // 8th.
-      {bits32("10010000000000000000000000000000"), 5, 7}};  // 7th.
+      {0b01100000000000000000000000000000, 4, 0},   // 3rd.
+      {0b01110000000000000000000000000000, 4, 1},   // 4th.
+      {0b00000000000000000000000000000000, 2, 2},   // 1st assigned code.
+      {0b01000000000000000000000000000000, 3, 3},   // 2nd.
+      {0b10000000000000000000000000000000, 5, 4},   // 5th.
+      {0b10001000000000000000000000000000, 5, 5},   // 6th.
+      {0b10011000000000000000000000000000, 8, 6},   // 8th.
+      {0b10010000000000000000000000000000, 5, 7}};  // 7th.
   EXPECT_TRUE(table_.Initialize(code, SPDY_ARRAYSIZE(code)));
+
   ASSERT_EQ(SPDY_ARRAYSIZE(code), peer_.code_by_id().size());
   ASSERT_EQ(SPDY_ARRAYSIZE(code), peer_.length_by_id().size());
   for (size_t i = 0; i < SPDY_ARRAYSIZE(code); ++i) {
@@ -186,13 +169,12 @@ TEST_F(GenericHuffmanTableTest, ValidateInternalsWithSmallCode) {
     EXPECT_EQ(code[i].length, peer_.length_by_id()[i]);
   }
 
-  EXPECT_EQ(bits8("10011000"), peer_.pad_bits());
+  EXPECT_EQ(0b10011000, peer_.pad_bits());
 
   char input_storage[] = {2, 3, 2, 7, 4};
   SpdyStringPiece input(input_storage, SPDY_ARRAYSIZE(input_storage));
   // By symbol: (2) 00 (3) 010 (2) 00 (7) 10010 (4) 10000 (6 as pad) 1001100.
-  char expect_storage[] = {bits8("00010001"), bits8("00101000"),
-                           bits8("01001100")};
+  char expect_storage[] = {0b00010001, 0b00101000, 0b01001100};
   SpdyStringPiece expect(expect_storage, SPDY_ARRAYSIZE(expect_storage));
   EXPECT_EQ(expect, EncodeString(input));
 }
@@ -216,7 +198,7 @@ class HpackHuffmanTableTest : public GenericHuffmanTableTest {
 };
 
 TEST_F(HpackHuffmanTableTest, InitializeHpackCode) {
-  EXPECT_EQ(peer_.pad_bits(), '\xFF');  // First 8 bits of EOS.
+  EXPECT_EQ(peer_.pad_bits(), 0b11111111);  // First 8 bits of EOS.
 }
 
 TEST_F(HpackHuffmanTableTest, SpecRequestExamples) {
@@ -290,7 +272,6 @@ TEST_F(HpackHuffmanTableTest, RoundTripSymbolSequence) {
     storage[511 - i] = static_cast<char>(i);
   }
   SpdyStringPiece input(storage, SPDY_ARRAYSIZE(storage));
-
   SpdyString buffer_in = EncodeString(input);
   SpdyString buffer_out;
   DecodeString(buffer_in, &buffer_out);
