@@ -475,9 +475,7 @@ class NET_EXPORT TransportSecurityState {
                bool include_subdomains);
 
   // Adds explicitly-specified data as if it was processed from an HPKP header.
-  // Note: This method will persist the HPKP if a Delegate is present. Make sure
-  //       that the delegate is nullptr if the persistence is not desired.
-  //       See |SetDelegate| method for more details.
+  // Note: dynamic PKP data is not persisted.
   void AddHPKP(const std::string& host,
                const base::Time& expiry,
                bool include_subdomains,
