@@ -1165,22 +1165,8 @@ std::unique_ptr<InterceptedRequestInfo> InterceptionJob::BuildRequestInfo(
   result->is_navigation = resource_type == RESOURCE_TYPE_MAIN_FRAME ||
                           resource_type == RESOURCE_TYPE_SUB_FRAME;
 
-  // TODO(caseq): merge with NetworkHandler::BuildResponse()
-  if (head && head->headers) {
-    result->http_response_status_code = head->headers->response_code();
-    auto headers_dict = protocol::DictionaryValue::create();
-    size_t iter = 0;
-    std::string name;
-    std::string value;
-    while (head->headers->EnumerateHeaderLines(&iter, &name, &value)) {
-      std::string old_value;
-      bool merge_with_another = headers_dict->getString(name, &old_value);
-      headers_dict->setString(
-          name, merge_with_another ? old_value + '\n' + value : value);
-    }
-    result->response_headers =
-        protocol::Object::fromValue(headers_dict.get(), nullptr);
-  }
+  if (head && head->headers)
+    result->response_headers = head->headers;
   return result;
 }
 
@@ -1389,7 +1375,6 @@ void InterceptionJob::OnReceiveRedirect(
 
   std::unique_ptr<InterceptedRequestInfo> request_info =
       BuildRequestInfo(&head);
-  request_info->http_response_status_code = redirect_info.status_code;
   request_info->redirect_url = redirect_info.new_url.spec();
   NotifyClient(std::move(request_info));
 }
@@ -1468,15 +1453,7 @@ void InterceptionJob::OnAuthRequest(
   }
   state_ = State::kAuthRequired;
   auto request_info = BuildRequestInfo(nullptr);
-  request_info->auth_challenge =
-      protocol::Network::AuthChallenge::Create()
-          .SetSource(auth_info->is_proxy
-                         ? protocol::Network::AuthChallenge::SourceEnum::Proxy
-                         : protocol::Network::AuthChallenge::SourceEnum::Server)
-          .SetOrigin(auth_info->challenger.Serialize())
-          .SetScheme(auth_info->scheme)
-          .SetRealm(auth_info->realm)
-          .Build();
+  request_info->auth_challenge = auth_info;
   pending_auth_callback_ = std::move(callback);
   NotifyClient(std::move(request_info));
 }

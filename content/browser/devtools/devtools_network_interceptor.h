@@ -14,6 +14,11 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/net_errors.h"
 
+namespace net {
+class AuthChallengeInfo;
+class HttpResponseHeaders;
+}  // namespace net
+
 namespace content {
 
 struct InterceptedRequestInfo {
@@ -21,18 +26,15 @@ struct InterceptedRequestInfo {
   ~InterceptedRequestInfo();
 
   std::string interception_id;
-  std::unique_ptr<protocol::Network::Request> network_request;
   base::UnguessableToken frame_id;
   ResourceType resource_type;
   bool is_navigation;
-  protocol::Maybe<bool> is_download;
-  protocol::Maybe<protocol::Object> redirect_headers;
-  protocol::Maybe<int> redirect_status_code;
-  protocol::Maybe<protocol::String> redirect_url;
-  protocol::Maybe<protocol::Network::AuthChallenge> auth_challenge;
   int response_error_code;
-  protocol::Maybe<int> http_response_status_code;
-  protocol::Maybe<protocol::Object> response_headers;
+  std::unique_ptr<protocol::Network::Request> network_request;
+  scoped_refptr<net::AuthChallengeInfo> auth_challenge;
+  scoped_refptr<net::HttpResponseHeaders> response_headers;
+  protocol::Maybe<bool> is_download;
+  protocol::Maybe<protocol::String> redirect_url;
 };
 
 class DevToolsNetworkInterceptor {
