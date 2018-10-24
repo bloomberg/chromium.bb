@@ -1559,4 +1559,103 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                                           "isPaused();", &is_paused));
   EXPECT_FALSE(is_paused);
 }
+
+// Tests that the close and resize icons move properly as the window changes
+// quadrants.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       MovingQuadrantsMovesResizeControl) {
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(
+          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(active_web_contents);
+
+  SetUpWindowController(active_web_contents);
+  ASSERT_TRUE(window_controller());
+
+  content::OverlayWindow* overlay_window =
+      window_controller()->GetWindowForTesting();
+  ASSERT_TRUE(overlay_window);
+  ASSERT_FALSE(overlay_window->IsVisible());
+
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "enterPictureInPicture();", &result));
+  ASSERT_TRUE(result);
+
+  OverlayWindowViews* overlay_window_views =
+      static_cast<OverlayWindowViews*>(overlay_window);
+
+  // The PiP window starts in the bottom-right quadrant of the screen.
+  gfx::Rect bottom_right_bounds = overlay_window_views->GetBounds();
+  // The relative center point of the window.
+  gfx::Point center(bottom_right_bounds.width() / 2,
+                    bottom_right_bounds.height() / 2);
+  gfx::Point close_button_position =
+      overlay_window_views->close_image_position_for_testing();
+  gfx::Point resize_button_position =
+      overlay_window_views->resize_handle_position_for_testing();
+
+  // The close button should be in the top right corner.
+  EXPECT_LT(center.x(), close_button_position.x());
+  EXPECT_GT(center.y(), close_button_position.y());
+  // The resize button should be in the top left corner.
+  EXPECT_GT(center.x(), resize_button_position.x());
+  EXPECT_GT(center.y(), resize_button_position.y());
+
+  // Move the window to the bottom left corner.
+  gfx::Rect bottom_left_bounds(0, bottom_right_bounds.y(),
+                               bottom_right_bounds.width(),
+                               bottom_right_bounds.height());
+  overlay_window_views->SetBounds(bottom_left_bounds);
+  close_button_position =
+      overlay_window_views->close_image_position_for_testing();
+  resize_button_position =
+      overlay_window_views->resize_handle_position_for_testing();
+
+  // The close button should be in the top left corner.
+  EXPECT_GT(center.x(), close_button_position.x());
+  EXPECT_GT(center.y(), close_button_position.y());
+  // The resize button should be in the top right corner.
+  EXPECT_LT(center.x(), resize_button_position.x());
+  EXPECT_GT(center.y(), resize_button_position.y());
+
+  // Move the window to the top right corner.
+  gfx::Rect top_right_bounds(bottom_right_bounds.x(), 0,
+                             bottom_right_bounds.width(),
+                             bottom_right_bounds.height());
+  overlay_window_views->SetBounds(top_right_bounds);
+  close_button_position =
+      overlay_window_views->close_image_position_for_testing();
+  resize_button_position =
+      overlay_window_views->resize_handle_position_for_testing();
+
+  // The close button should be in the top right corner.
+  EXPECT_LT(center.x(), close_button_position.x());
+  EXPECT_GT(center.y(), close_button_position.y());
+  // The resize button should be in the bottom left corner.
+  EXPECT_GT(center.x(), resize_button_position.x());
+  EXPECT_LT(center.y(), resize_button_position.y());
+
+  // Move the window to the top left corner.
+  gfx::Rect top_left_bounds(0, 0, bottom_right_bounds.width(),
+                            bottom_right_bounds.height());
+  overlay_window_views->SetBounds(top_left_bounds);
+  close_button_position =
+      overlay_window_views->close_image_position_for_testing();
+  resize_button_position =
+      overlay_window_views->resize_handle_position_for_testing();
+
+  // The close button should be in the top right corner.
+  EXPECT_LT(center.x(), close_button_position.x());
+  EXPECT_GT(center.y(), close_button_position.y());
+  // The resize button should be in the bottom right corner.
+  EXPECT_LT(center.x(), resize_button_position.x());
+  EXPECT_LT(center.y(), resize_button_position.y());
+}
+
 #endif  // defined(OS_CHROMEOS)

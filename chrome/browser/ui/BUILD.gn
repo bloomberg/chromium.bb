@@ -2641,6 +2641,8 @@ jumbo_split_static_library("ui") {
       "views/overlay/control_image_button.h",
       "views/overlay/overlay_window_views.cc",
       "views/overlay/overlay_window_views.h",
+      "views/overlay/resize_handle_button.cc",
+      "views/overlay/resize_handle_button.h",
       "views/page_action/page_action_icon_container_view.cc",
       "views/page_action/page_action_icon_container_view.h",
       "views/page_action/page_action_icon_view.cc",

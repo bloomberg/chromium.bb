@@ -14,6 +14,7 @@
 namespace views {
 class ControlImageButton;
 class CloseImageButton;
+class ResizeHandleButton;
 class ToggleImageButton;
 }  // namespace views
 
@@ -26,6 +27,8 @@ class OverlayWindowViews : public content::OverlayWindow,
   explicit OverlayWindowViews(
       content::PictureInPictureWindowController* controller);
   ~OverlayWindowViews() override;
+
+  enum class WindowQuadrant { kBottomLeft, kBottomRight, kTopLeft, kTopRight };
 
   // OverlayWindow:
   bool IsActive() const override;
@@ -67,6 +70,8 @@ class OverlayWindowViews : public content::OverlayWindow,
   gfx::Rect GetSecondCustomControlsBounds();
 
   views::ToggleImageButton* play_pause_controls_view_for_testing() const;
+  gfx::Point close_image_position_for_testing() const;
+  gfx::Point resize_handle_position_for_testing() const;
   views::View* controls_parent_view_for_testing() const;
   OverlayWindowViews::PlaybackState playback_state_for_testing() const;
 
@@ -118,6 +123,7 @@ class OverlayWindowViews : public content::OverlayWindow,
 
   ui::Layer* GetControlsScrimLayer();
   ui::Layer* GetCloseControlsLayer();
+  ui::Layer* GetResizeHandleLayer();
   ui::Layer* GetControlsParentLayer();
 
   // Toggles the play/pause control through the |controller_| and updates the
@@ -174,6 +180,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   // the close view.
   std::unique_ptr<views::View> controls_parent_view_;
   std::unique_ptr<views::CloseImageButton> close_controls_view_;
+  std::unique_ptr<views::ResizeHandleButton> resize_handle_view_;
   std::unique_ptr<views::ToggleImageButton> play_pause_controls_view_;
   std::unique_ptr<views::ControlImageButton> first_custom_controls_view_;
   std::unique_ptr<views::ControlImageButton> second_custom_controls_view_;

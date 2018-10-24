@@ -68,7 +68,17 @@ void CloseImageButton::OnBlur() {
   SetBackgroundImage(kCloseBgColor, nullptr, nullptr);
 }
 
-void CloseImageButton::SetPosition(const gfx::Size& size) {
+void CloseImageButton::SetPosition(
+    const gfx::Size& size,
+    OverlayWindowViews::WindowQuadrant quadrant) {
+#if defined(OS_CHROMEOS)
+  if (quadrant == OverlayWindowViews::WindowQuadrant::kBottomLeft) {
+    ImageButton::SetPosition(
+        gfx::Point(kCloseButtonMargin, kCloseButtonMargin));
+    return;
+  }
+#endif
+
   ImageButton::SetPosition(
       gfx::Point(size.width() - kCloseButtonSize - kCloseButtonMargin,
                  kCloseButtonMargin));
