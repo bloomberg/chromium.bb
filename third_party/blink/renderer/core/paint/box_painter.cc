@@ -200,9 +200,7 @@ void BoxPainter::PaintBackground(const PaintInfo& paint_info,
                                  const LayoutRect& paint_rect,
                                  const Color& background_color,
                                  BackgroundBleedAvoidance bleed_avoidance) {
-  if (layout_box_.IsDocumentElement())
-    return;
-  if (layout_box_.BackgroundStolenForBeingBody())
+  if (layout_box_.BackgroundTransfersToView())
     return;
   if (layout_box_.BackgroundIsKnownToBeObscured())
     return;

@@ -240,9 +240,9 @@ class CORE_EXPORT FillLayer {
     ComputeCachedPropertiesIfNeeded();
     return any_layer_has_image_;
   }
-  bool AnyLayerHasLocalAttachment() const {
+  bool AnyLayerHasLocalAttachmentImage() const {
     ComputeCachedPropertiesIfNeeded();
-    return any_layer_has_local_attachment_;
+    return any_layer_has_local_attachment_image_;
   }
   bool AnyLayerHasFixedAttachmentImage() const {
     ComputeCachedPropertiesIfNeeded();
@@ -351,8 +351,8 @@ class CORE_EXPORT FillLayer {
   mutable unsigned any_layer_uses_content_box_ : 1;
   // True if any of this or subsequent layers has image.
   mutable unsigned any_layer_has_image_ : 1;
-  // True if any of this or subsequent layers has local attachment.
-  mutable unsigned any_layer_has_local_attachment_ : 1;
+  // True if any of this or subsequent layers has local attachment image.
+  mutable unsigned any_layer_has_local_attachment_image_ : 1;
   // True if any of this or subsequent layers has fixed attachment image.
   mutable unsigned any_layer_has_fixed_attachment_image_ : 1;
   // True if any of this or subsequent layers has default attachment (including

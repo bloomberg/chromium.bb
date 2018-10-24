@@ -354,22 +354,21 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
   }
 
   // The used style for body background may change due to computed style change
-  // on the document element because of background stealing.
-  // Refer to backgroundStolenForBeingBody() and
-  // http://www.w3.org/TR/css3-background/#body-background for more info.
+  // on the document element because of change of BackgroundTransfersToView()
+  // which depends on the document element style.
   if (IsDocumentElement()) {
-    HTMLBodyElement* body = GetDocument().FirstBodyElement();
-    LayoutObject* body_layout = body ? body->GetLayoutObject() : nullptr;
-    if (body_layout && body_layout->IsBoxModelObject()) {
-      bool new_stole_body_background =
-          ToLayoutBoxModelObject(body_layout)
-              ->BackgroundStolenForBeingBody(Style());
-      bool old_stole_body_background =
-          old_style && ToLayoutBoxModelObject(body_layout)
-                           ->BackgroundStolenForBeingBody(old_style);
-      if (new_stole_body_background != old_stole_body_background &&
-          body_layout->Style() && body_layout->StyleRef().HasBackground()) {
-        body_layout->SetShouldDoFullPaintInvalidation();
+    if (HTMLBodyElement* body = GetDocument().FirstBodyElement()) {
+      if (auto* body_object = body->GetLayoutObject()) {
+        if (body_object->IsBoxModelObject()) {
+          auto* body_box_model = ToLayoutBoxModelObject(body_object);
+          bool new_body_background_transfers =
+              body_box_model->BackgroundTransfersToView(Style());
+          bool old_body_background_transfers =
+              old_style && body_box_model->BackgroundTransfersToView(old_style);
+          if (new_body_background_transfers != old_body_background_transfers &&
+              body_object->Style() && body_object->StyleRef().HasBackground())
+            body_object->SetBackgroundNeedsFullPaintInvalidation();
+        }
       }
     }
   }
@@ -1458,22 +1457,27 @@ void LayoutBoxModelObject::MoveChildrenTo(
   }
 }
 
-bool LayoutBoxModelObject::BackgroundStolenForBeingBody(
-    const ComputedStyle* root_element_style) const {
+bool LayoutBoxModelObject::BackgroundTransfersToView(
+    const ComputedStyle* document_element_style) const {
+  // In our painter implementation, ViewPainter instead of the painter of the
+  // layout object of the document element paints the view background.
+  if (IsDocumentElement())
+    return true;
+
   // http://www.w3.org/TR/css3-background/#body-background
-  // If the root element is <html> with no background, and a <body> child
-  // element exists, the root element steals the first <body> child element's
-  // background.
+  // If the document element is <html> with no background, and a <body> child
+  // element exists, the <body> element's background transfers to the document
+  // element which in turn transfers to the view in our painter implementation.
   if (!IsBody())
     return false;
 
-  Element* root_element = GetDocument().documentElement();
-  if (!IsHTMLHtmlElement(root_element))
+  Element* document_element = GetDocument().documentElement();
+  if (!IsHTMLHtmlElement(document_element))
     return false;
 
-  if (!root_element_style)
-    root_element_style = root_element->GetComputedStyle();
-  if (!root_element_style || root_element_style->HasBackground())
+  if (!document_element_style)
+    document_element_style = document_element->GetComputedStyle();
+  if (!document_element_style || document_element_style->HasBackground())
     return false;
 
   if (GetNode() != GetDocument().FirstBodyElement())

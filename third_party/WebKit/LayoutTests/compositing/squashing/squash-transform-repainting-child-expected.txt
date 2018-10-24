@@ -88,7 +88,7 @@ CASE 2, hovering over the outer div
         {
           "object": "LayoutBlockFlow (positioned) DIV class='box middle'",
           "rect": [0, 0, 142, 142],
-          "reason": "style change"
+          "reason": "background"
         }
       ]
     }
@@ -146,12 +146,12 @@ CASE 3, hovering over the inner div
         {
           "object": "LayoutBlockFlow (positioned) DIV class='box middle'",
           "rect": [0, 0, 142, 142],
-          "reason": "style change"
+          "reason": "background"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV class='smallbox'",
           "rect": [32, 32, 71, 71],
-          "reason": "style change"
+          "reason": "background"
         }
       ]
     }

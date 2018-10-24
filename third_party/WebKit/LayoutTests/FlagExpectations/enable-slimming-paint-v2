@@ -752,6 +752,7 @@ Bug(none) paint/invalidation/video-paint-invalidation.html [ Failure ]
 
 # Raster invalidation for background on scrolling contents layer.
 crbug.com/732611 paint/invalidation/scroll/overflow-scroll-local-background-text-color-change.html [ Failure ]
+crbug.com/732611 paint/invalidation/background/composited-background-on-both-layers.html [ Failure ]
 
 # Mask does not work correctly
 crbug.com/707444 paint/invalidation/svg/mask-clip-target-transform.svg [ Failure ]

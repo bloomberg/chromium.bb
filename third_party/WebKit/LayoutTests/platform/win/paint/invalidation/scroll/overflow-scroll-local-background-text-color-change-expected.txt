@@ -39,7 +39,7 @@
         {
           "object": "Scrolling Contents Layer",
           "rect": [0, 0, 185, 552],
-          "reason": "background on scrolling contents layer"
+          "reason": "background"
         }
       ],
       "transform": 1

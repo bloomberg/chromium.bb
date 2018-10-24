@@ -300,11 +300,18 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   // the background can scroll with the content). When the background is also
   // opaque this allows us to composite the scroller even on low DPI as we can
   // draw with subpixel anti-aliasing.
-  bool BackgroundPaintsOntoScrollingContentsLayer() {
+  bool BackgroundPaintsOntoScrollingContentsLayer() const {
     return background_paints_onto_scrolling_contents_layer_;
   }
 
-  bool DrawsBackgroundOntoContentLayer() {
+  // Returns true if the background paints onto the main graphics layer.
+  // In some situations, we may paint background on both the main graphics layer
+  // and the scrolling contents layer.
+  bool BackgroundPaintsOntoGraphicsLayer() const {
+    return background_paints_onto_graphics_layer_;
+  }
+
+  bool DrawsBackgroundOntoContentLayer() const {
     return draws_background_onto_content_layer_;
   }
 

@@ -41,7 +41,7 @@ void TableCellPainter::PaintContainerBackgroundBehindCell(
 void TableCellPainter::PaintBackground(const PaintInfo& paint_info,
                                        const LayoutRect& paint_rect,
                                        const LayoutObject& background_object) {
-  if (layout_table_cell_.BackgroundStolenForBeingBody())
+  if (layout_table_cell_.BackgroundTransfersToView())
     return;
 
   Color c = background_object.ResolveColor(GetCSSPropertyBackgroundColor());
