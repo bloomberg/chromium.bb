@@ -866,6 +866,15 @@ TEST_P(CRWWebControllerPolicyDeciderTest,
       app_url_request, WKNavigationActionPolicyCancel));
 }
 
+// Tests that blob URL navigation is allowed.
+TEST_P(CRWWebControllerPolicyDeciderTest, BlobUrl) {
+  NSURL* blob_url = [NSURL URLWithString:@"blob://aslfkh-asdkjh"];
+  NSMutableURLRequest* blob_url_request =
+      [NSMutableURLRequest requestWithURL:blob_url];
+  EXPECT_TRUE(VerifyDecidePolicyForNavigationAction(
+      blob_url_request, WKNavigationActionPolicyAllow));
+}
+
 INSTANTIATE_TEST_CASES(CRWWebControllerPolicyDeciderTest);
 
 // Test fixture for testing CRWWebController presenting native content.

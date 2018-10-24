@@ -2966,7 +2966,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
 + (BOOL)webControllerCanShow:(const GURL&)url {
   return web::UrlHasWebScheme(url) ||
          web::GetWebClient()->IsAppSpecificURL(url) ||
-         url.SchemeIs(url::kFileScheme) || url.SchemeIs(url::kAboutScheme);
+         url.SchemeIs(url::kFileScheme) || url.SchemeIs(url::kAboutScheme) ||
+         url.SchemeIs(url::kBlobScheme);
 }
 
 - (void)setUserInteractionRegistered:(BOOL)flag {
