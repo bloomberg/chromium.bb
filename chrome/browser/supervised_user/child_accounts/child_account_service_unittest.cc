@@ -31,9 +31,10 @@ class ChildAccountServiceTest : public ::testing::Test {
   void SetUp() override {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(ChromeSigninClientFactory::GetInstance(),
-                              BuildTestSigninClient);
-    builder.AddTestingFactory(GaiaCookieManagerServiceFactory::GetInstance(),
-                              BuildFakeGaiaCookieManagerService);
+                              base::BindRepeating(&BuildTestSigninClient));
+    builder.AddTestingFactory(
+        GaiaCookieManagerServiceFactory::GetInstance(),
+        base::BindRepeating(&BuildFakeGaiaCookieManagerService));
     profile_ = builder.Build();
     gaia_cookie_manager_service_ = static_cast<FakeGaiaCookieManagerService*>(
         GaiaCookieManagerServiceFactory::GetForProfile(profile_.get()));
