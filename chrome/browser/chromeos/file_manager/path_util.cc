@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root_map.h"
 #include "chrome/browser/chromeos/arc/fileapi/chrome_content_provider_url_util.h"
@@ -44,9 +45,6 @@ constexpr char kTeamDrivesRelativeToDriveMount[] = "team_drives";
 constexpr char kComputersRelativeToDriveMount[] = "Computers";
 constexpr char kAndroidFilesMountPointName[] = "android_files";
 
-// Sync with the file provider in ARC++ side.
-constexpr char kArcFileProviderUrl[] =
-    "content://org.chromium.arc.intent_helper.fileprovider/";
 // Sync with the root name defined with the file provider in ARC++ side.
 constexpr base::FilePath::CharType kArcDownloadRoot[] =
     FILE_PATH_LITERAL("/download");
@@ -222,7 +220,9 @@ bool ConvertPathToArcUrl(const base::FilePath& path, GURL* arc_url_out) {
       GetDownloadsFolderForProfile(primary_profile);
   base::FilePath result_path(kArcDownloadRoot);
   if (primary_downloads.AppendRelativePath(path, &result_path)) {
-    *arc_url_out = GURL(kArcFileProviderUrl)
+    // TODO(niwa): Switch to using kFileSystemFileproviderUrl once we completely
+    // move FileProvider to arc.file_system (b/111816608).
+    *arc_url_out = GURL(arc::kIntentHelperFileproviderUrl)
                        .Resolve(net::EscapePath(result_path.AsUTF8Unsafe()));
     return true;
   }
@@ -231,7 +231,8 @@ bool ConvertPathToArcUrl(const base::FilePath& path, GURL* arc_url_out) {
   result_path = base::FilePath(kArcExternalFilesRoot);
   if (base::FilePath(kAndroidFilesPath)
           .AppendRelativePath(path, &result_path)) {
-    *arc_url_out = GURL(kArcFileProviderUrl)
+    // TODO(niwa): Switch to using kFileSystemFileproviderUrl.
+    *arc_url_out = GURL(arc::kIntentHelperFileproviderUrl)
                        .Resolve(net::EscapePath(result_path.AsUTF8Unsafe()));
     return true;
   }
