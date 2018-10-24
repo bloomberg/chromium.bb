@@ -299,10 +299,46 @@ TEST_F(AppLauncherTabHelperTest, InsecureUrls) {
   EXPECT_FALSE(TestShouldAllowRequest(@"app-settings://",
                                       /*target_frame_is_main=*/true,
                                       /*has_user_gesture=*/false));
-  EXPECT_FALSE(TestShouldAllowRequest(@"u2f-x-callback://test",
+  EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
+}
+
+// Tests that URLs with U2F schemes are handled correctly.
+// This test is using https://chromeiostesting-dot-u2fdemo.appspot.com URL which
+// is a whitelisted URL for the purpose of testing, but the test doesn't send
+// any request to the server.
+TEST_F(AppLauncherTabHelperTest, U2FUrls) {
+  // Add required tab helpers for the U2F check.
+  TabIdTabHelper::CreateForWebState(&web_state_);
+  LegacyTabHelper::CreateForWebState(&web_state_);
+  std::unique_ptr<web::NavigationItem> item = web::NavigationItem::Create();
+
+  // "u2f-x-callback" scheme should only be created by the browser. External
+  // URLs with that scheme should be blocked to prevent malicious sites from
+  // bypassing the browser origin/security check for u2f schemes.
+  item->SetURL(GURL("https://chromeiostesting-dot-u2fdemo.appspot.com"));
+  navigation_manager_->SetLastCommittedItem(item.get());
+  EXPECT_FALSE(TestShouldAllowRequest(@"u2f-x-callback://chromium.test",
                                       /*target_frame_is_main=*/true,
                                       /*has_user_gesture=*/false));
   EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
+
+  // Source URL is not trusted, so u2f scheme should not be allowed.
+  item->SetURL(GURL("https://chromium.test"));
+  navigation_manager_->SetLastCommittedItem(item.get());
+  EXPECT_FALSE(TestShouldAllowRequest(@"u2f://chromium.test",
+                                      /*target_frame_is_main=*/true,
+                                      /*has_user_gesture=*/false));
+  EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
+
+  // Source URL is trusted, so u2f scheme should be allowed and an external app
+  // is launched via URL with u2f-x-callback scheme.
+  item->SetURL(GURL("https://chromeiostesting-dot-u2fdemo.appspot.com"));
+  navigation_manager_->SetLastCommittedItem(item.get());
+  EXPECT_FALSE(TestShouldAllowRequest(@"u2f://chromium.test",
+                                      /*target_frame_is_main=*/true,
+                                      /*has_user_gesture=*/false));
+  EXPECT_EQ(1U, delegate_.countOfAppsLaunched);
+  EXPECT_TRUE(delegate_.lastLaunchedAppURL.SchemeIs("u2f-x-callback"));
 }
 
 // Tests that URLs with Chrome Bundle schemes are blocked on iframes.
