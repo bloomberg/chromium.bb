@@ -73,7 +73,8 @@
             if="[[isFeatureSupported(
                 MultiDeviceFeature.INSTANT_TETHERING, pageContentData)]]"
             restamp>
-          <settings-multidevice-tether-item id="instantTetheringItem">
+          <settings-multidevice-tether-item id="instantTetheringItem"
+              page-content-data="[[pageContentData]]">
           </settings-multidevice-tether-item>
         </template>
         <template is="dom-if"

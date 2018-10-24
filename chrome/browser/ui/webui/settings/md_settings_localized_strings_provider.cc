@@ -2722,6 +2722,8 @@ void AddMultideviceStrings(content::WebUIDataSource* html_source) {
       {"multideviceSmartLockItemTitle", IDS_SETTINGS_EASY_UNLOCK_SECTION_TITLE},
       {"multideviceInstantTetheringItemTitle",
        IDS_SETTINGS_MULTIDEVICE_INSTANT_TETHERING},
+      {"multideviceInstantTetheringItemSummary",
+       IDS_SETTINGS_MULTIDEVICE_INSTANT_TETHERING_SUMMARY},
       {"multideviceAndroidMessagesItemTitle",
        IDS_SETTINGS_MULTIDEVICE_ANDROID_MESSAGES},
       {"multideviceForgetDevice", IDS_SETTINGS_MULTIDEVICE_FORGET_THIS_DEVICE},
