@@ -67,6 +67,7 @@ class AssistantInteractionController
   // AssistantInteractionModelObserver:
   void OnInteractionStateChanged(InteractionState interaction_state) override;
   void OnInputModalityChanged(InputModality input_modality) override;
+  void OnMicStateChanged(MicState mic_state) override;
 
   // AssistantResponseObserver:
   void OnResponseDestroying(AssistantResponse& response) override;

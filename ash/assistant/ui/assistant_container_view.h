@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/assistant/model/assistant_ui_model_observer.h"
+#include "ash/assistant/ui/assistant_container_view_focus_traversable.h"
 #include "base/macros.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
@@ -37,8 +38,12 @@ class AssistantContainerView : public views::BubbleDialogDelegateView,
   // views::BubbleDialogDelegateView:
   const char* GetClassName() const override;
   void AddedToWidget() override;
+  ax::mojom::Role GetAccessibleWindowRole() const override;
   int GetDialogButtons() const override;
+  views::FocusTraversable* GetFocusTraversable() override;
   void ChildPreferredSizeChanged(views::View* child) override;
+  void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) override;
   void SizeToContents() override;
   void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
                                 views::Widget* widget) const override;
@@ -48,6 +53,9 @@ class AssistantContainerView : public views::BubbleDialogDelegateView,
   // AssistantUiModelObserver:
   void OnUiModeChanged(AssistantUiMode ui_mode) override;
   void OnUsableWorkAreaChanged(const gfx::Rect& usable_work_area) override;
+
+  // Returns the first focusable view or nullptr to defer to views::FocusSearch.
+  views::View* FindFirstFocusableView();
 
   // Returns background color.
   SkColor GetBackgroundColor() const;
@@ -70,6 +78,7 @@ class AssistantContainerView : public views::BubbleDialogDelegateView,
   AssistantWebView* assistant_web_view_;    // Owned by view hierarchy.
 
   std::unique_ptr<AssistantContainerViewAnimator> animator_;
+  AssistantContainerViewFocusTraversable focus_traversable_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantContainerView);
 };

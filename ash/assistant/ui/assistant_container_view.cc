@@ -147,7 +147,8 @@ AssistantContainerView::AssistantContainerView(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
       animator_(
-          AssistantContainerViewAnimator::Create(assistant_controller_, this)) {
+          AssistantContainerViewAnimator::Create(assistant_controller_, this)),
+      focus_traversable_(this) {
   UpdateAnchor();
 
   set_accept_events(true);
@@ -197,12 +198,27 @@ void AssistantContainerView::AddedToWidget() {
       std::make_unique<AssistantContainerEventTargeter>());
 }
 
+ax::mojom::Role AssistantContainerView::GetAccessibleWindowRole() const {
+  return ax::mojom::Role::kWindow;
+}
+
 int AssistantContainerView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
+views::FocusTraversable* AssistantContainerView::GetFocusTraversable() {
+  return &focus_traversable_;
+}
+
 void AssistantContainerView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
+}
+
+void AssistantContainerView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  // Do nothing. We override this method to prevent a super class implementation
+  // from taking effect which would otherwise cause ChromeVox to read the entire
+  // Assistant view hierarchy.
 }
 
 void AssistantContainerView::SizeToContents() {
@@ -302,6 +318,24 @@ void AssistantContainerView::OnUsableWorkAreaChanged(
   // Call PreferredSizeChanged() to update animation params to avoid undesired
   // effects (e.g. resize animation of Assistant UI when zooming in/out screen).
   PreferredSizeChanged();
+}
+
+views::View* AssistantContainerView::FindFirstFocusableView() {
+  if (!GetWidget() || !GetWidget()->IsActive())
+    return nullptr;
+
+  switch (assistant_controller_->ui_controller()->model()->ui_mode()) {
+    case AssistantUiMode::kMainUi:
+      // AssistantMainView will sometimes explicitly specify a view to be
+      // focused first. Other times it may defer to views::FocusSearch.
+      return assistant_main_view_
+                 ? assistant_main_view_->FindFirstFocusableView()
+                 : nullptr;
+    case AssistantUiMode::kMiniUi:
+    case AssistantUiMode::kWebUi:
+      // Default views::FocusSearch behavior is acceptable.
+      return nullptr;
+  }
 }
 
 SkColor AssistantContainerView::GetBackgroundColor() const {
