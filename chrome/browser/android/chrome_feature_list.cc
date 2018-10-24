@@ -117,6 +117,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kHorizontalTabSwitcherAndroid,
     &kImprovedA2HS,
     &kInflateToolbarOnBackgroundThread,
+    &kJellyBeanSupported,
     &kLanguagesPreference,
     &kLongPressBackForHistory,
     &kModalPermissionDialogView,
@@ -331,6 +332,9 @@ const base::Feature kImprovedA2HS{"ImprovedA2HS",
 
 const base::Feature kInflateToolbarOnBackgroundThread{
     "BackgroundToolbarInflation", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kJellyBeanSupported{"JellyBeanSupported",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kLanguagesPreference{"LanguagesPreference",
                                          base::FEATURE_ENABLED_BY_DEFAULT};

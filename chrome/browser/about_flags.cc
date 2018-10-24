@@ -432,6 +432,16 @@ const FeatureEntry::Choice kChromeHomeSwipeLogicChoices[] = {
      switches::kChromeHomeSwipeLogicType, "velocity"},
 };
 
+const FeatureEntry::Choice kForceUpdateMenuTypeChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {flag_descriptions::kUpdateMenuTypeNone, switches::kForceUpdateMenuType,
+     "none"},
+    {flag_descriptions::kUpdateMenuTypeUpdateAvailable,
+     switches::kForceUpdateMenuType, "update_available"},
+    {flag_descriptions::kUpdateMenuTypeUnsupportedOSVersion,
+     switches::kForceUpdateMenuType, "unsupported_os_version"},
+};
+
 const FeatureEntry::FeatureParam kCCTModuleCache_ZeroMinutes[] = {
     {"cct_module_cache_time_limit_ms", "0"}};
 const FeatureEntry::FeatureParam kCCTModuleCache_OneMinute[] = {
@@ -2623,9 +2633,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableImageCaptureAPIDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kImageCaptureAPI)},
 #if defined(OS_ANDROID)
-    {"force-show-update-menu-item", flag_descriptions::kUpdateMenuItemName,
-     flag_descriptions::kUpdateMenuItemDescription, kOsAndroid,
-     SINGLE_VALUE_TYPE(switches::kForceShowUpdateMenuItem)},
+    {"force-update-menu-type", flag_descriptions::kUpdateMenuTypeName,
+     flag_descriptions::kUpdateMenuTypeDescription, kOsAndroid,
+     MULTI_VALUE_TYPE(kForceUpdateMenuTypeChoices)},
     {"update-menu-item-custom-summary",
      flag_descriptions::kUpdateMenuItemCustomSummaryName,
      flag_descriptions::kUpdateMenuItemCustomSummaryDescription, kOsAndroid,

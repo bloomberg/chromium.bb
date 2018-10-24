@@ -1631,8 +1631,11 @@ extern const char kUpdateMenuBadgeDescription[];
 extern const char kUpdateMenuItemCustomSummaryDescription[];
 extern const char kUpdateMenuItemCustomSummaryName[];
 
-extern const char kUpdateMenuItemName[];
-extern const char kUpdateMenuItemDescription[];
+extern const char kUpdateMenuTypeName[];
+extern const char kUpdateMenuTypeDescription[];
+extern const char kUpdateMenuTypeNone[];
+extern const char kUpdateMenuTypeUpdateAvailable[];
+extern const char kUpdateMenuTypeUnsupportedOSVersion[];
 
 extern const char kVrBrowsingTabsViewName[];
 extern const char kVrBrowsingTabsViewDescription[];

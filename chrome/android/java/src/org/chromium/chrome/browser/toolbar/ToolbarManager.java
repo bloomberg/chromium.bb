@@ -63,6 +63,7 @@ import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.QueryInOmnibox;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
@@ -639,12 +640,24 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             public void onOverviewModeStartedShowing(boolean showToolbar) {
                 mToolbar.setTabSwitcherMode(true, showToolbar, false);
                 updateButtonStatus();
+
+                // For top toolbar we depend on animations instead.
+                if (mBottomToolbarCoordinator == null) return;
+                MenuButton menuButton = mBottomToolbarCoordinator.getMenuButtonWrapper();
+                if (menuButton == null) return;
+                menuButton.setUpdateBadgeVisibilityIfValidState(false);
             }
 
             @Override
             public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {
                 mToolbar.setTabSwitcherMode(false, showToolbar, delayAnimation);
                 updateButtonStatus();
+
+                // For top toolbar we depend on animations instead.
+                if (mBottomToolbarCoordinator == null) return;
+                MenuButton menuButton = mBottomToolbarCoordinator.getMenuButtonWrapper();
+                if (menuButton == null) return;
+                menuButton.setUpdateBadgeVisibilityIfValidState(true);
             }
 
             @Override
@@ -1049,7 +1062,9 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      * @return The view containing the pop up menu button.
      */
     public View getMenuButton() {
-        if (mBottomToolbarCoordinator != null) return mBottomToolbarCoordinator.getMenuButton();
+        if (mBottomToolbarCoordinator != null) {
+            return mBottomToolbarCoordinator.getMenuButtonWrapper().getImageButton();
+        }
         if (mToolbar != null) return mToolbar.getMenuButton();
         return null;
     }
@@ -1233,14 +1248,20 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                     setUrlBarFocus(false);
                 }
 
-                if (mControlsVisibilityDelegate == null) return;
-                if (isVisible) {
-                    mFullscreenMenuToken =
-                            mControlsVisibilityDelegate.showControlsPersistentAndClearOldToken(
-                                    mFullscreenMenuToken);
-                } else {
-                    mControlsVisibilityDelegate.hideControlsPersistent(mFullscreenMenuToken);
-                    mFullscreenMenuToken = FullscreenManager.INVALID_TOKEN;
+                if (mControlsVisibilityDelegate != null) {
+                    if (isVisible) {
+                        mFullscreenMenuToken =
+                                mControlsVisibilityDelegate.showControlsPersistentAndClearOldToken(
+                                        mFullscreenMenuToken);
+                    } else {
+                        mControlsVisibilityDelegate.hideControlsPersistent(mFullscreenMenuToken);
+                        mFullscreenMenuToken = FullscreenManager.INVALID_TOKEN;
+                    }
+                }
+
+                MenuButton menuButton = getMenuButtonWrapper();
+                if (isVisible && menuButton != null && menuButton.isShowingAppMenuUpdateBadge()) {
+                    UpdateMenuItemHelper.getInstance().onMenuButtonClicked();
                 }
             }
 
@@ -1271,6 +1292,18 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                 tracker.notifyEvent(EventConstants.OVERFLOW_OPENED_WITH_DATA_SAVER_SHOWN);
             }
         });
+    }
+
+    @Nullable
+    private MenuButton getMenuButtonWrapper() {
+        if (mBottomToolbarCoordinator != null) {
+            return mBottomToolbarCoordinator.getMenuButtonWrapper();
+        }
+
+        if (mToolbar == null) return null;
+        View menuButtonWrapper = mToolbar.getMenuButtonWrapper();
+        if (menuButtonWrapper instanceof MenuButton) return (MenuButton) menuButtonWrapper;
+        return null;
     }
 
     /**
