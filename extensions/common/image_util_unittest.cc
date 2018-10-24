@@ -190,6 +190,8 @@ TEST(ImageUtilTest, IsIconSufficientlyVisible) {
     SkBitmap transparent_icon;
     ASSERT_TRUE(image_util::LoadPngFromFile(icon_path, &transparent_icon));
     EXPECT_FALSE(image_util::IsIconSufficientlyVisible(transparent_icon));
+    EXPECT_FALSE(image_util::IsRenderedIconSufficientlyVisible(transparent_icon,
+                                                               SK_ColorWHITE));
   }
   {
     // Test with an icon that has one opaque pixel.
@@ -197,6 +199,8 @@ TEST(ImageUtilTest, IsIconSufficientlyVisible) {
     SkBitmap visible_icon;
     ASSERT_TRUE(image_util::LoadPngFromFile(icon_path, &visible_icon));
     EXPECT_FALSE(image_util::IsIconSufficientlyVisible(visible_icon));
+    EXPECT_FALSE(image_util::IsRenderedIconSufficientlyVisible(visible_icon,
+                                                               SK_ColorWHITE));
   }
   {
     // Test with an icon that has one transparent pixel.
@@ -204,6 +208,8 @@ TEST(ImageUtilTest, IsIconSufficientlyVisible) {
     SkBitmap visible_icon;
     ASSERT_TRUE(image_util::LoadPngFromFile(icon_path, &visible_icon));
     EXPECT_TRUE(image_util::IsIconSufficientlyVisible(visible_icon));
+    EXPECT_TRUE(image_util::IsRenderedIconSufficientlyVisible(visible_icon,
+                                                              SK_ColorWHITE));
   }
   {
     // Test with an icon that is completely opaque.
@@ -211,6 +217,8 @@ TEST(ImageUtilTest, IsIconSufficientlyVisible) {
     SkBitmap visible_icon;
     ASSERT_TRUE(image_util::LoadPngFromFile(icon_path, &visible_icon));
     EXPECT_TRUE(image_util::IsIconSufficientlyVisible(visible_icon));
+    EXPECT_TRUE(image_util::IsRenderedIconSufficientlyVisible(visible_icon,
+                                                              SK_ColorWHITE));
   }
   {
     // Test with an icon that is rectangular.
@@ -218,6 +226,30 @@ TEST(ImageUtilTest, IsIconSufficientlyVisible) {
     SkBitmap visible_icon;
     ASSERT_TRUE(image_util::LoadPngFromFile(icon_path, &visible_icon));
     EXPECT_TRUE(image_util::IsIconSufficientlyVisible(visible_icon));
+    EXPECT_TRUE(image_util::IsRenderedIconSufficientlyVisible(visible_icon,
+                                                              SK_ColorWHITE));
+  }
+  {
+    // Test with a solid color icon that is completely opaque. Use the icon's
+    // color as the background color in the call to analyze its visibility.
+    // It should be invisible in this case.
+    icon_path = test_dir.AppendASCII("grey_21x21.png");
+    SkBitmap solid_icon;
+    ASSERT_TRUE(image_util::LoadPngFromFile(icon_path, &solid_icon));
+    const SkColor pixel_color = solid_icon.getColor(0, 0);
+    EXPECT_FALSE(
+        image_util::IsRenderedIconSufficientlyVisible(solid_icon, pixel_color));
+  }
+  {
+    // Test with a two-color icon that is completely opaque. Use one of the
+    // icon's colors as the background color in the call to analyze its
+    // visibility. It should be visible in this case.
+    icon_path = test_dir.AppendASCII("two_color_21x21.png");
+    SkBitmap two_color_icon;
+    ASSERT_TRUE(image_util::LoadPngFromFile(icon_path, &two_color_icon));
+    const SkColor pixel_color = two_color_icon.getColor(0, 0);
+    EXPECT_TRUE(image_util::IsRenderedIconSufficientlyVisible(two_color_icon,
+                                                              pixel_color));
   }
 }
 
