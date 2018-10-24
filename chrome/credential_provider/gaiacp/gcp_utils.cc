@@ -13,7 +13,11 @@
 #include <ntsecapi.h>         // For LsaLookupAuthenticationPackage()
 #include <sddl.h>             // For ConvertSidToStringSid()
 #include <security.h>         // For NEGOSSP_NAME_A
+#include <wbemidl.h>
 
+#include <atlbase.h>
+#include <atlcom.h>
+#include <atlcomcli.h>
 #include <atlconv.h>
 
 #include <malloc.h>
@@ -23,8 +27,10 @@
 #include <iomanip>
 #include <memory>
 
+#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
@@ -43,7 +49,7 @@ namespace {
 
 HRESULT RegisterWithGoogleDeviceManagement(const base::string16& mdm_url,
                                            const base::string16& email,
-                                           const base::string16& token) {
+                                           const std::string& data) {
   base::ScopedNativeLibrary library(
       base::FilePath(FILE_PATH_LITERAL("MDMRegistration.dll")));
   if (!library.is_valid()) {
@@ -62,8 +68,10 @@ HRESULT RegisterWithGoogleDeviceManagement(const base::string16& mdm_url,
     return E_NOTIMPL;
   }
 
+  std::string data_encoded;
+  base::Base64Encode(data, &data_encoded);
   return register_device_with_management_function(
-      email.c_str(), mdm_url.c_str(), token.c_str());
+      email.c_str(), mdm_url.c_str(), base::UTF8ToWide(data_encoded).c_str());
 }
 
 }  // namespace
@@ -442,6 +450,74 @@ HRESULT GetCommandLineForEntrypoint(HINSTANCE hDll,
   return wcsicmp(wcsrchr(path, L'.'), L".dll") == 0 ? S_OK : S_FALSE;
 }
 
+// Gets the serial number of the machine based on the recipe found at
+// https://docs.microsoft.com/en-us/windows/desktop/WmiSdk/example-creating-a-wmi-application
+HRESULT GetMachineSerialNumber(base::string16* serial_number) {
+  USES_CONVERSION;
+  DCHECK(serial_number);
+
+  serial_number->clear();
+
+  // Make sure COM is initialized.
+  HRESULT hr = ::CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "CoInitializeEx hr=" << putHR(hr);
+    return hr;
+  }
+
+  hr = ::CoInitializeSecurity(
+      nullptr, -1, nullptr, nullptr, RPC_C_AUTHN_LEVEL_DEFAULT,
+      RPC_C_IMP_LEVEL_IMPERSONATE, nullptr, EOAC_NONE, nullptr);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "CoInitializeSecurity hr=" << putHR(hr);
+    return hr;
+  }
+
+  CComPtr<IWbemLocator> locator;
+  hr = locator.CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "CoCreateInstance(CLSID_WbemLocator) hr=" << putHR(hr);
+    return hr;
+  }
+
+  CComPtr<IWbemServices> services;
+  hr = locator->ConnectServer(CComBSTR(W2COLE(L"ROOT\\CIMV2")), nullptr,
+                              nullptr, nullptr, 0, nullptr, nullptr, &services);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "locator->ConnectServer hr=" << putHR(hr);
+    return hr;
+  }
+
+  CComPtr<IEnumWbemClassObject> enum_wbem;
+  hr = services->ExecQuery(CComBSTR(W2COLE(L"WQL")),
+                           CComBSTR(W2COLE(L"select * from Win32_Bios")),
+                           WBEM_FLAG_FORWARD_ONLY, nullptr, &enum_wbem);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "services->ExecQuery hr=" << putHR(hr);
+    return hr;
+  }
+
+  while (SUCCEEDED(hr) && serial_number->empty()) {
+    CComPtr<IWbemClassObject> class_obj;
+    ULONG count = 1;
+    hr = enum_wbem->Next(WBEM_INFINITE, 1, &class_obj, &count);
+    if (count == 0)
+      break;
+
+    VARIANT var;
+    hr = class_obj->Get(L"SerialNumber", 0, &var, 0, 0);
+    if (SUCCEEDED(hr) && var.vt == VT_BSTR)
+      serial_number->assign(OLE2CW(var.bstrVal));
+
+    VariantClear(&var);
+  }
+
+  LOGFN(INFO) << "GetMachineSerialNumber sn=" << *serial_number
+              << " hr=" << putHR(hr);
+
+  return hr;
+}
+
 HRESULT EnrollToGoogleMdmIfNeeded(const base::DictionaryValue& properties) {
   USES_CONVERSION;
   LOGFN(INFO);
@@ -475,7 +551,25 @@ HRESULT EnrollToGoogleMdmIfNeeded(const base::DictionaryValue& properties) {
     LOGFN(INFO) << "MDM_URL=" << mdm_url
                 << " token=" << base::string16(token.c_str(), 10);
 
-    hr = RegisterWithGoogleDeviceManagement(mdm_url, email, token);
+    // Build the json data needed by the server.
+    base::DictionaryValue registration_data;
+    base::string16 serial_number;
+    hr = GetMachineSerialNumber(&serial_number);
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "GetMachineSerialNumber hr=" << putHR(hr);
+      return hr;
+    }
+
+    registration_data.SetString("serial_number", serial_number);
+    registration_data.SetString("access_token", token);
+    std::string registration_data_str;
+    if (!base::JSONWriter::Write(registration_data, &registration_data_str)) {
+      LOGFN(ERROR) << "JSONWriter::Write(registration_data)";
+      return E_FAIL;
+    }
+
+    hr = RegisterWithGoogleDeviceManagement(mdm_url, email,
+                                            registration_data_str);
     LOGFN(INFO) << "RegisterWithGoogleDeviceManagement hr=" << putHR(hr);
   }
 
