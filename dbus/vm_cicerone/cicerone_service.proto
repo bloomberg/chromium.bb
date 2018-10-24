@@ -215,9 +215,15 @@ message LaunchVshdRequest {
 // Response sent back by vm_cicerone when it receives a LaunchVshd
 // call.
 message LaunchVshdResponse {
+  // True if vshd was successfully spawned in the VM.
   bool success = 1;
 
+  // The reason vshd could not be started, if |success| is false.
   string failure_reason = 2;
+
+  // The cid the LaunchVshd request was sent to. Only valid if |success|
+  // is true.
+  uint32 cid = 3;
 }
 
 // Request to get information about a Linux package file in the container.
