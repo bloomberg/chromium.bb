@@ -106,10 +106,6 @@ class AURA_EXPORT WindowPort {
   // that does not involve a resize or a device scale factor change.
   virtual void AllocateLocalSurfaceId() = 0;
 
-  // When a child-allocated viz::LocalSurfaceId is being processed, this returns
-  // true.
-  virtual bool IsLocalSurfaceIdAllocationSuppressed() const = 0;
-
   // When a ScopedSurfaceIdAllocator is alive, it prevents the
   // allocator from actually allocating. Instead, it triggers its
   // |allocation_task| upon destruction. This allows us to issue only one

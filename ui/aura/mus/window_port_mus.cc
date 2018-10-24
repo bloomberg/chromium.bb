@@ -463,10 +463,6 @@ void WindowPortMus::AllocateLocalSurfaceId() {
     local_layer_tree_frame_sink_->SetLocalSurfaceId(local_surface_id_);
 }
 
-bool WindowPortMus::IsLocalSurfaceIdAllocationSuppressed() const {
-  return parent_local_surface_id_allocator_.is_allocation_suppressed();
-}
-
 viz::ScopedSurfaceIdAllocator WindowPortMus::GetSurfaceIdAllocator(
     base::OnceCallback<void()> allocation_task) {
   return viz::ScopedSurfaceIdAllocator(&parent_local_surface_id_allocator_,
