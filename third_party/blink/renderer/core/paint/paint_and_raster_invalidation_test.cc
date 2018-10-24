@@ -300,7 +300,7 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedLayoutViewResize) {
   target->setAttribute(HTMLNames::styleAttr, "height: 2000px");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
-            GetLayoutView().Layer()->GetBackgroundPaintLocation());
+            GetLayoutView().GetBackgroundPaintLocation());
   const auto* mapping = GetLayoutView().Layer()->GetCompositedLayerMapping();
   EXPECT_TRUE(mapping->BackgroundPaintsOntoScrollingContentsLayer());
   EXPECT_FALSE(mapping->BackgroundPaintsOntoGraphicsLayer());
@@ -337,7 +337,7 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedLayoutViewGradientResize) {
   target->setAttribute(HTMLNames::styleAttr, "height: 2000px");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
-            GetLayoutView().Layer()->GetBackgroundPaintLocation());
+            GetLayoutView().GetBackgroundPaintLocation());
   const auto* mapping = GetLayoutView().Layer()->GetCompositedLayerMapping();
   EXPECT_TRUE(mapping->BackgroundPaintsOntoScrollingContentsLayer());
   EXPECT_FALSE(mapping->BackgroundPaintsOntoGraphicsLayer());
@@ -386,7 +386,6 @@ TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewResize) {
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
             content->GetLayoutObject()
                 ->View()
-                ->Layer()
                 ->GetBackgroundPaintLocation());
 
   // Resize the content.
@@ -481,7 +480,7 @@ TEST_P(PaintAndRasterInvalidationTest,
 
   auto* target_obj = ToLayoutBoxModelObject(target->GetLayoutObject());
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
-            target_obj->Layer()->GetBackgroundPaintLocation());
+            target_obj->GetBackgroundPaintLocation());
   const auto* mapping = target_obj->Layer()->GetCompositedLayerMapping();
   EXPECT_TRUE(mapping->BackgroundPaintsOntoScrollingContentsLayer());
   EXPECT_FALSE(mapping->BackgroundPaintsOntoGraphicsLayer());
@@ -551,7 +550,7 @@ TEST_P(PaintAndRasterInvalidationTest,
   LayoutBoxModelObject* target_obj =
       ToLayoutBoxModelObject(target->GetLayoutObject());
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
-            target_obj->Layer()->GetBackgroundPaintLocation());
+            target_obj->GetBackgroundPaintLocation());
   const auto* mapping = target_obj->Layer()->GetCompositedLayerMapping();
   EXPECT_TRUE(mapping->BackgroundPaintsOntoScrollingContentsLayer());
   EXPECT_FALSE(mapping->BackgroundPaintsOntoGraphicsLayer());
@@ -596,9 +595,8 @@ TEST_P(PaintAndRasterInvalidationTest,
   Element* child = GetDocument().getElementById("child");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(&GetLayoutView(), object->ContainerForPaintInvalidation());
-  EXPECT_EQ(
-      kBackgroundPaintInScrollingContents,
-      ToLayoutBoxModelObject(object)->Layer()->GetBackgroundPaintLocation());
+  EXPECT_EQ(kBackgroundPaintInScrollingContents,
+            ToLayoutBoxModelObject(object)->GetBackgroundPaintLocation());
 
   // Resize the content.
   GetDocument().View()->SetTracksPaintInvalidations(true);
@@ -644,7 +642,7 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedSolidBackgroundResize) {
       ToLayoutBoxModelObject(target->GetLayoutObject());
   EXPECT_EQ(
       kBackgroundPaintInScrollingContents | kBackgroundPaintInGraphicsLayer,
-      target_object->Layer()->GetBackgroundPaintLocation());
+      target_object->GetBackgroundPaintLocation());
   const auto* mapping = target_object->Layer()->GetCompositedLayerMapping();
   EXPECT_TRUE(mapping->BackgroundPaintsOntoScrollingContentsLayer());
   EXPECT_TRUE(mapping->BackgroundPaintsOntoGraphicsLayer());
