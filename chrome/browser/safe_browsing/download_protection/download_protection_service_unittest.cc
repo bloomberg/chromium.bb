@@ -266,7 +266,9 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
     // |test_event_router_| is owned by KeyedServiceFactory.
     test_event_router_ = extensions::CreateAndUseTestEventRouter(profile());
     extensions::SafeBrowsingPrivateEventRouterFactory::GetInstance()
-        ->SetTestingFactory(profile(), BuildSafeBrowsingPrivateEventRouter);
+        ->SetTestingFactory(
+            profile(),
+            base::BindRepeating(&BuildSafeBrowsingPrivateEventRouter));
   }
 
   void TearDown() override {
