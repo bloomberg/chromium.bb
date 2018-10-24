@@ -76,6 +76,8 @@ class ImmersiveRevealEndedWaiter : public ImmersiveModeController::Observer {
   DISALLOW_COPY_AND_ASSIGN(ImmersiveRevealEndedWaiter);
 };
 
+}  // namespace
+
 class TabScrubberTest : public InProcessBrowserTest,
                         public TabStripModelObserver {
  public:
@@ -86,7 +88,7 @@ class TabScrubberTest : public InProcessBrowserTest,
   }
 
   void SetUpOnMainThread() override {
-    TabScrubber::GetInstance()->set_activation_delay(0);
+    TabScrubber::GetInstance()->use_default_activation_delay_ = false;
 
     // Disable external monitor scaling of coordinates.
     ash::Shell* shell = ash::Shell::Get();
@@ -266,8 +268,6 @@ class TabScrubberTest : public InProcessBrowserTest,
 
   DISALLOW_COPY_AND_ASSIGN(TabScrubberTest);
 };
-
-}  // namespace
 
 // Swipe a single tab in each direction.
 IN_PROC_BROWSER_TEST_F(TabScrubberTest, Single) {

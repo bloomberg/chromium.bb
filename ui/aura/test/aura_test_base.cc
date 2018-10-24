@@ -75,7 +75,6 @@ void AuraTestBase::SetUp() {
   gesture_config->set_semi_long_press_time_in_ms(400);
   gesture_config->set_show_press_delay_in_ms(5);
   gesture_config->set_swipe_enabled(true);
-  gesture_config->set_tab_scrub_activation_delay_in_ms(200);
   gesture_config->set_two_finger_tap_enabled(true);
   gesture_config->set_velocity_tracker_strategy(
       ui::VelocityTracker::Strategy::LSQ2_RESTRICTED);
