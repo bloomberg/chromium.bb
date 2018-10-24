@@ -94,7 +94,12 @@ class CORE_EXPORT ScriptResource final : public TextResource {
 
   void SetSerializedCachedMetadata(const char*, size_t) override;
 
-  void StartStreaming(
+  // Returns true if streaming was successfully started (or if an active
+  // streamer is already running)
+  //
+  // TODO(leszeks): This value is only used for work stealing, so make this
+  // function return void if work stealing is removed.
+  bool StartStreaming(
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner);
 
   // State that a client of the script resource will no longer try to start
@@ -138,7 +143,6 @@ class CORE_EXPORT ScriptResource final : public TextResource {
 
   // Used in DCHECKs
   bool HasStreamer() { return !!streamer_; }
-  bool HasRunningStreamer() { return streamer_ && !streamer_->IsFinished(); }
   bool HasFinishedStreamer() { return streamer_ && streamer_->IsFinished(); }
 
   // Visible for tests.
