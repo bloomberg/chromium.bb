@@ -74,13 +74,14 @@ class LayoutTestRunner(object):
         self._current_run_results = None
 
     def run_tests(self, expectations, test_inputs, tests_to_skip, num_workers, retry_attempt):
+        batch_size = self._options.derived_batch_size
+
         # If we're retrying a test, then it's because we think it might be flaky
         # and rerunning it might provide a different result. We must restart
         # content shell to get a valid result, as otherwise state can leak
         # from previous tests. To do so, we set a batch size of 1, as that
         # prevents content shell reuse.
-        batch_size = self._options.batch_size or 0
-        if retry_attempt >= 1:
+        if not self._options.must_use_derived_batch_size and retry_attempt >= 1:
             batch_size = 1
 
         self._expectations = expectations

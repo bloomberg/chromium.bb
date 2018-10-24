@@ -336,13 +336,24 @@ def parse_args(args):
                 action='store',
                 help='Output per-test profile information, using the specified profiler.'),
             optparse.make_option(
-                '--reset-shell-between-tests',
+                '--restart-shell-between-tests',
                 action='store_true',
                 default=False,
-                help='Resetting the shell between tests causes the tests to '
+                help='Restarting the shell between tests causes the tests to '
                      'take twice as long to run on average, but provides more '
                      'consistent results. This is automatically enabled if '
-                     '--repeat-each or --gtest_repeat is specified'),
+                     '--repeat-each or --gtest_repeat is specified with '
+                     'iterations > 1. This is equivalent to setting '
+                     '--batch-size=1'),
+            optparse.make_option(
+                '--reuse-shell-between-tests',
+                action='store_true',
+                default=False,
+                help='Reusing the shell between tests causes tests to run more '
+                     'quickly but has less consistent results. This is '
+                     'primarily useful for debugging flakiness that only '
+                     'occurs when content shell is reused. This is equivalent '
+                     'to setting --batch-size=0.'),
             optparse.make_option(
                 '--repeat-each',
                 type='int',
@@ -513,8 +524,36 @@ def parse_args(args):
 
 def _set_up_derived_options(port, options, args):
     """Sets the options values that depend on other options values."""
-    if options.batch_size is None:
-        options.batch_size = port.default_batch_size()
+    if options.restart_shell_between_tests:
+        # --restart-shell-between-tests is identical to setting --batch-size=1.
+        assert not options.reuse_shell_between_tests, (
+            '--restart-shell-between-tests is not compatible with '
+            '--reuse-shell-between-tests.')
+        assert options.batch_size is None, (
+            '--restart-shell-between-tests is not compatible with --batch-size')
+        options.derived_batch_size = 1
+        options.must_use_derived_batch_size = True
+    elif options.reuse_shell_between_tests:
+        # --reuse-shell-between-tests is identical to setting --batch-size=0
+        assert options.batch_size is None, (
+            '--reuse-shell-between-tests is not compatible with --batch-size')
+        options.derived_batch_size = 0
+        options.must_use_derived_batch_size = True
+    elif options.batch_size is not None:
+        options.derived_batch_size = options.batch_size
+        options.must_use_derived_batch_size = True
+    else:
+        # No flag has explicitly set the batch size.
+        # If 'repeat_each' or 'iterations' has been set, then implicitly set the
+        # batch size to 1. If we're already repeating the tests more than once,
+        # then we're not particularly concerned with speed. Restarting content
+        # shell provides more consistent results.
+        if options.repeat_each > 1 or options.iterations > 1:
+            options.derived_batch_size = 1
+            options.must_use_derived_batch_size = True
+        else:
+            options.derived_batch_size = port.default_batch_size()
+            options.must_use_derived_batch_size = False
 
     if not options.child_processes:
         options.child_processes = port.host.environ.get(
