@@ -903,19 +903,22 @@ void DesktopWindowTreeHostMus::ShowImpl() {
 }
 
 void DesktopWindowTreeHostMus::HideImpl() {
+  native_widget_delegate_->OnNativeWidgetVisibilityChanging(false);
+  WindowTreeHostMus::HideImpl();
+  native_widget_delegate_->OnNativeWidgetVisibilityChanged(false);
+
   // When hiding we can't possibly be active any more. Reset the FocusClient,
   // which effectively triggers giving up focus (and activation). Mus will
-  // eventually generate a focus event, but that's async.
+  // eventually generate a focus event, but that's async. This should be done
+  // after the window gets hidden actually, since some code (like
+  // WindowActivityWatcher) assumes closing window is already invisible when the
+  // focus is lost. See https://crbug.com/896080.
   if (IsFocusClientInstalledOnFocusSynchronizer()) {
     MusClient::Get()
         ->window_tree_client()
         ->focus_synchronizer()
         ->SetActiveFocusClient(nullptr, nullptr);
   }
-
-  native_widget_delegate_->OnNativeWidgetVisibilityChanging(false);
-  WindowTreeHostMus::HideImpl();
-  native_widget_delegate_->OnNativeWidgetVisibilityChanged(false);
 }
 
 void DesktopWindowTreeHostMus::SetBoundsInPixels(
