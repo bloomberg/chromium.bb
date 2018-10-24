@@ -12,24 +12,32 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.ColorRes;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.IntDef;
 import android.support.annotation.VisibleForTesting;
 import android.support.v4.view.ViewCompat;
+import android.support.v7.content.res.AppCompatResources;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextPaint;
 import android.text.TextUtils;
 import android.text.style.StyleSpan;
+import android.util.Pair;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.TextView.BufferType;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.modelutil.PropertyKey;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.chrome.browser.modelutil.PropertyModel.WritableBooleanPropertyKey;
+import org.chromium.chrome.browser.modelutil.PropertyModel.WritableIntPropertyKey;
+import org.chromium.chrome.browser.modelutil.PropertyModel.WritableObjectPropertyKey;
+import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxResultsAdapter.OmniboxResultItem;
@@ -75,6 +83,7 @@ public class SuggestionView extends ViewGroup {
     private OmniboxResultItem mSuggestionItem;
     private OmniboxSuggestion mSuggestion;
     private OmniboxSuggestionDelegate mSuggestionDelegate;
+    // TODO(tedchoc): Remove the need for this.
     private Boolean mUseDarkColors;
     private int mPosition;
     private int mRefineViewOffsetPx;
@@ -89,6 +98,69 @@ public class SuggestionView extends ViewGroup {
     // Pre-computed offsets in px.
     private final int mSuggestionStartOffsetPx;
     private final int mSuggestionIconWidthPx;
+
+    private static class SuggestionViewProperties {
+        /** Whether dark colors should be applied to text, icons */
+        public static final WritableBooleanPropertyKey USE_DARK_COLORS =
+                new WritableBooleanPropertyKey();
+
+        /** Whether an answer image will be shown. */
+        public static final WritableBooleanPropertyKey HAS_ANSWER_IMAGE =
+                new WritableBooleanPropertyKey();
+        /** The answer image to be shown. */
+        public static final WritableObjectPropertyKey<Bitmap> ANSWER_IMAGE =
+                new WritableObjectPropertyKey<>();
+
+        /** Whether the suggestion supports refinement. */
+        public static final WritableBooleanPropertyKey REFINABLE = new WritableBooleanPropertyKey();
+
+        /** The suggestion icon type shown. */
+        public static final WritableIntPropertyKey SUGGESTION_ICON_TYPE =
+                new WritableIntPropertyKey();
+
+        /**
+         * The sizing information for the first line of text.
+         *
+         * The first item is the unit of size (e.g. TypedValue.COMPLEX_UNIT_PX), and the second item
+         * is the size itself.
+         */
+        public static final WritableObjectPropertyKey<Pair<Integer, Float>> TEXT_LINE_1_SIZING =
+                new WritableObjectPropertyKey<>();
+        /** The actual text content for the first line of text. */
+        public static final WritableObjectPropertyKey<Spannable> TEXT_LINE_1_TEXT =
+                new WritableObjectPropertyKey<>();
+
+        /**
+         * The sizing information for the second line of text.
+         *
+         * The first item is the unit of size (e.g. TypedValue.COMPLEX_UNIT_PX), and the second item
+         * is the size itself.
+         */
+        public static final WritableObjectPropertyKey<Pair<Integer, Float>> TEXT_LINE_2_SIZING =
+                new WritableObjectPropertyKey<>();
+        /** The truncation policy for the second line of text. */
+        public static final WritableObjectPropertyKey<TextUtils.TruncateAt> TEXT_LINE_2_TRUNCATION =
+                new WritableObjectPropertyKey<>();
+        /** The maximum number of lines to be shown for the second line of text. */
+        public static final WritableIntPropertyKey TEXT_LINE_2_MAX_LINES =
+                new WritableIntPropertyKey();
+        /** The color to be applied to the second line of text. */
+        public static final WritableIntPropertyKey TEXT_LINE_2_TEXT_COLOR =
+                new WritableIntPropertyKey();
+        /** The direction the text should be laid out for the second line of text. */
+        public static final WritableIntPropertyKey TEXT_LINE_2_TEXT_DIRECTION =
+                new WritableIntPropertyKey();
+        /** The actual text content for the second line of text. */
+        public static final WritableObjectPropertyKey<Spannable> TEXT_LINE_2_TEXT =
+                new WritableObjectPropertyKey<>();
+
+        public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {USE_DARK_COLORS,
+                HAS_ANSWER_IMAGE, ANSWER_IMAGE, REFINABLE, SUGGESTION_ICON_TYPE, TEXT_LINE_1_SIZING,
+                TEXT_LINE_1_TEXT, TEXT_LINE_2_SIZING, TEXT_LINE_2_TRUNCATION, TEXT_LINE_2_MAX_LINES,
+                TEXT_LINE_2_TEXT_COLOR, TEXT_LINE_2_TEXT_DIRECTION, TEXT_LINE_2_TEXT};
+    }
+
+    private PropertyModel mModel;
 
     /**
      * Constructs a new omnibox suggestion view.
@@ -179,6 +251,91 @@ public class SuggestionView extends ViewGroup {
                 getResources().getDimensionPixelOffset(R.dimen.omnibox_suggestion_start_offset);
         mSuggestionIconWidthPx =
                 getResources().getDimensionPixelSize(R.dimen.location_bar_icon_width);
+
+        mModel = new PropertyModel(SuggestionViewProperties.ALL_KEYS);
+        PropertyModelChangeProcessor.create(mModel, this, SuggestionView::bind);
+        mModel.set(SuggestionViewProperties.SUGGESTION_ICON_TYPE, SuggestionIcon.UNDEFINED);
+    }
+
+    private static void bind(PropertyModel model, SuggestionView view, PropertyKey propertyKey) {
+        if (SuggestionViewProperties.USE_DARK_COLORS.equals(propertyKey)) {
+            boolean useDarkColors = model.get(SuggestionViewProperties.USE_DARK_COLORS);
+            view.mUseDarkColors = useDarkColors;
+            view.updateRefineIconTint(useDarkColors);
+            view.mContentsView.updateSuggestionIconTint(useDarkColors);
+            view.mContentsView.mTextLine1.setTextColor(view.getStandardFontColor());
+        } else if (SuggestionViewProperties.HAS_ANSWER_IMAGE.equals(propertyKey)) {
+            int visibility = model.get(SuggestionViewProperties.HAS_ANSWER_IMAGE) ? VISIBLE : GONE;
+            view.mContentsView.mAnswerImage.setVisibility(visibility);
+        } else if (SuggestionViewProperties.ANSWER_IMAGE.equals(propertyKey)) {
+            view.updateAnswerImage(model.get(SuggestionViewProperties.ANSWER_IMAGE));
+        } else if (SuggestionViewProperties.REFINABLE.equals(propertyKey)) {
+            boolean refinable = model.get(SuggestionViewProperties.REFINABLE);
+            view.setRefinable(refinable);
+            if (refinable) view.initRefineIcon(model.get(SuggestionViewProperties.USE_DARK_COLORS));
+        } else if (SuggestionViewProperties.SUGGESTION_ICON_TYPE.equals(propertyKey)) {
+            if (!DeviceFormFactor.isNonMultiDisplayContextOnTablet(view.getContext())) return;
+
+            @SuggestionIcon
+            int type = model.get(SuggestionViewProperties.SUGGESTION_ICON_TYPE);
+
+            if (type == SuggestionIcon.UNDEFINED) return;
+
+            int drawableId = R.drawable.ic_omnibox_page;
+            switch (type) {
+                case SuggestionIcon.BOOKMARK:
+                    drawableId = R.drawable.btn_star;
+                    break;
+                case SuggestionIcon.MAGNIFIER:
+                    drawableId = R.drawable.ic_suggestion_magnifier;
+                    break;
+                case SuggestionIcon.HISTORY:
+                    drawableId = R.drawable.ic_suggestion_history;
+                    break;
+                case SuggestionIcon.VOICE:
+                    drawableId = R.drawable.btn_mic;
+                    break;
+                default:
+                    break;
+            }
+            view.mContentsView.setSuggestionIconDrawable(
+                    drawableId, model.get(SuggestionViewProperties.USE_DARK_COLORS));
+        } else if (SuggestionViewProperties.TEXT_LINE_1_SIZING.equals(propertyKey)) {
+            Pair<Integer, Float> sizing = model.get(SuggestionViewProperties.TEXT_LINE_1_SIZING);
+            view.mContentsView.mTextLine1.setTextSize(sizing.first, sizing.second);
+        } else if (SuggestionViewProperties.TEXT_LINE_1_TEXT.equals(propertyKey)) {
+            view.mContentsView.mTextLine1.setText(
+                    model.get(SuggestionViewProperties.TEXT_LINE_1_TEXT));
+        } else if (SuggestionViewProperties.TEXT_LINE_2_SIZING.equals(propertyKey)) {
+            Pair<Integer, Float> sizing = model.get(SuggestionViewProperties.TEXT_LINE_2_SIZING);
+            view.mContentsView.mTextLine2.setTextSize(sizing.first, sizing.second);
+        } else if (SuggestionViewProperties.TEXT_LINE_2_TRUNCATION.equals(propertyKey)) {
+        } else if (SuggestionViewProperties.TEXT_LINE_2_MAX_LINES.equals(propertyKey)) {
+            int numberLines = model.get(SuggestionViewProperties.TEXT_LINE_2_MAX_LINES);
+            if (numberLines == 1) {
+                view.mContentsView.mTextLine2.setEllipsize(null);
+                view.mContentsView.mTextLine2.setSingleLine();
+            } else {
+                view.mContentsView.mTextLine2.setSingleLine(false);
+                view.mContentsView.mTextLine2.setEllipsize(TextUtils.TruncateAt.END);
+                view.mContentsView.mTextLine2.setMaxLines(numberLines);
+            }
+        } else if (SuggestionViewProperties.TEXT_LINE_2_TEXT_COLOR.equals(propertyKey)) {
+            view.mContentsView.mTextLine2.setTextColor(
+                    model.get(SuggestionViewProperties.TEXT_LINE_2_TEXT_COLOR));
+        } else if (SuggestionViewProperties.TEXT_LINE_2_TEXT_DIRECTION.equals(propertyKey)) {
+            ApiCompatibilityUtils.setTextDirection(view.mContentsView.mTextLine2,
+                    model.get(SuggestionViewProperties.TEXT_LINE_2_TEXT_DIRECTION));
+        } else if (SuggestionViewProperties.TEXT_LINE_2_TEXT.equals(propertyKey)) {
+            Spannable line2Text = model.get(SuggestionViewProperties.TEXT_LINE_2_TEXT);
+            if (TextUtils.isEmpty(line2Text)) {
+                view.mContentsView.mTextLine2.setVisibility(View.INVISIBLE);
+            } else {
+                view.mContentsView.mTextLine2.setVisibility(View.VISIBLE);
+                view.mContentsView.mTextLine2.setText(
+                        model.get(SuggestionViewProperties.TEXT_LINE_2_TEXT));
+            }
+        }
     }
 
     @Override
@@ -266,87 +423,22 @@ public class SuggestionView extends ViewGroup {
         // Update the position unconditionally.
         mPosition = position;
         jumpDrawablesToCurrentState();
-        boolean colorsChanged = mUseDarkColors == null || mUseDarkColors != useDarkColors;
-        if (suggestionItem.equals(mSuggestionItem) && !colorsChanged) {
-            // Answer images can be lazily loaded, so update that icon regardless.
-            if (suggestionItem.getAnswerImage() != null) {
-                updateAnswerImage(suggestionItem.getAnswerImage());
-            }
-            return;
-        }
         mUseDarkColors = useDarkColors;
-        if (colorsChanged) {
-            mContentsView.mTextLine1.setTextColor(getStandardFontColor());
-            setRefineIcon(true);
-        }
+        mModel.set(SuggestionViewProperties.USE_DARK_COLORS, mUseDarkColors);
 
         mSuggestionItem = suggestionItem;
         mSuggestion = suggestionItem.getSuggestion();
         mSuggestionDelegate = suggestionDelegate;
         // Reset old computations.
         mContentsView.resetTextWidths();
-        mContentsView.mAnswerImage.setVisibility(GONE);
-        mContentsView.mAnswerImage.setImageDrawable(null);
-        mContentsView.mTextLine1.setTextSize(TypedValue.COMPLEX_UNIT_PX,
-                getResources().getDimension(R.dimen.omnibox_suggestion_first_line_text_size));
-        mContentsView.mTextLine2.setTextSize(TypedValue.COMPLEX_UNIT_PX,
-                getResources().getDimension(R.dimen.omnibox_suggestion_second_line_text_size));
-
         mRefineViewOffsetPx = mRefineViewModernEndPadding;
 
         // Suggestions with attached answers are rendered with rich results regardless of which
         // suggestion type they are.
         if (mSuggestion.hasAnswer()) {
-            setAnswer(mSuggestion.getAnswer(), suggestionItem.getAnswerImage());
-            mContentsView.setSuggestionIcon(SuggestionIcon.MAGNIFIER, colorsChanged);
-            mContentsView.mTextLine2.setVisibility(VISIBLE);
-            setRefinable(true);
-            return;
+            setStateForAnswerSuggestion(mSuggestion.getAnswer(), suggestionItem.getAnswerImage());
         } else {
-            mNumAnswerLines = 1;
-            mContentsView.mTextLine2.setEllipsize(null);
-            mContentsView.mTextLine2.setSingleLine();
-        }
-
-        boolean sameAsTyped = suggestionItem.getMatchedQuery().trim().equalsIgnoreCase(
-                mSuggestion.getDisplayText());
-        int suggestionType = mSuggestion.getType();
-        if (mSuggestion.isUrlSuggestion()) {
-            if (mSuggestion.isStarred()) {
-                mContentsView.setSuggestionIcon(SuggestionIcon.BOOKMARK, colorsChanged);
-            } else if (suggestionType == OmniboxSuggestionType.HISTORY_URL) {
-                mContentsView.setSuggestionIcon(SuggestionIcon.HISTORY, colorsChanged);
-            } else {
-                mContentsView.setSuggestionIcon(SuggestionIcon.GLOBE, colorsChanged);
-            }
-            boolean urlShown = !TextUtils.isEmpty(mSuggestion.getUrl());
-            boolean urlHighlighted = false;
-            if (urlShown) {
-                urlHighlighted = setUrlText(suggestionItem);
-            } else {
-                mContentsView.mTextLine2.setVisibility(INVISIBLE);
-            }
-            setSuggestedQuery(suggestionItem, true, urlShown, urlHighlighted);
-            setRefinable(!sameAsTyped);
-        } else {
-            @SuggestionIcon
-            int suggestionIcon = SuggestionIcon.MAGNIFIER;
-            if (suggestionType == OmniboxSuggestionType.VOICE_SUGGEST) {
-                suggestionIcon = SuggestionIcon.VOICE;
-            } else if ((suggestionType == OmniboxSuggestionType.SEARCH_SUGGEST_PERSONALIZED)
-                    || (suggestionType == OmniboxSuggestionType.SEARCH_HISTORY)) {
-                // Show history icon for suggestions based on user queries.
-                suggestionIcon = SuggestionIcon.HISTORY;
-            }
-            mContentsView.setSuggestionIcon(suggestionIcon, colorsChanged);
-            setRefinable(!sameAsTyped);
-            setSuggestedQuery(suggestionItem, false, false, false);
-            if ((suggestionType == OmniboxSuggestionType.SEARCH_SUGGEST_ENTITY)
-                    || (suggestionType == OmniboxSuggestionType.SEARCH_SUGGEST_PROFILE)) {
-                showDescriptionLine(SpannableString.valueOf(mSuggestion.getDescription()), false);
-            } else {
-                mContentsView.mTextLine2.setVisibility(INVISIBLE);
-            }
+            setStateForTextSuggestion(suggestionItem);
         }
     }
 
@@ -386,11 +478,10 @@ public class SuggestionView extends ViewGroup {
         }
     }
 
-    private void setRefineIcon(boolean invalidateIcon) {
-        if (!invalidateIcon && mRefineIcon != null) return;
-
+    private void initRefineIcon(boolean useDarkColors) {
+        if (mRefineIcon != null) return;
         @ColorRes
-        int tintId = mUseDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint;
+        int tintId = useDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint;
         mRefineIcon = TintedDrawable.constructTintedDrawable(
                 getContext(), R.drawable.btn_suggestion_refine, tintId);
         mRefineIcon.setBounds(
@@ -399,19 +490,12 @@ public class SuggestionView extends ViewGroup {
         mRefineView.postInvalidateOnAnimation();
     }
 
-    /**
-     * Sets (and highlights) the URL text of the second line of the omnibox suggestion.
-     *
-     * @param result The suggestion containing the URL.
-     * @return Whether the URL was highlighted based on the user query.
-     */
-    private boolean setUrlText(OmniboxResultItem result) {
-        OmniboxSuggestion suggestion = result.getSuggestion();
-        Spannable str = SpannableString.valueOf(suggestion.getDisplayText());
-        boolean hasMatch =
-                applyHighlightToMatchRegions(str, suggestion.getDisplayTextClassifications());
-        showDescriptionLine(str, true);
-        return hasMatch;
+    private void updateRefineIconTint(boolean useDarkColors) {
+        if (mRefineIcon == null) return;
+        @ColorRes
+        int tintId = useDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint;
+        mRefineIcon.setTint(AppCompatResources.getColorStateList(getContext(), tintId));
+        mRefineView.postInvalidateOnAnimation();
     }
 
     private boolean applyHighlightToMatchRegions(
@@ -441,39 +525,15 @@ public class SuggestionView extends ViewGroup {
     }
 
     /**
-     * Sets a description line for the omnibox suggestion.
-     *
-     * @param str The description text.
-     * @param isUrl Whether this text is a URL (as opposed to a normal string).
-     */
-    private void showDescriptionLine(Spannable str, boolean isUrl) {
-        TextView textLine = mContentsView.mTextLine2;
-        if (textLine.getVisibility() != VISIBLE) {
-            textLine.setVisibility(VISIBLE);
-        }
-        textLine.setText(str, BufferType.SPANNABLE);
-
-        // Force left-to-right rendering for URLs. See UrlBar constructor for details.
-        if (isUrl) {
-            textLine.setTextColor(getStandardUrlColor());
-            ApiCompatibilityUtils.setTextDirection(textLine, TEXT_DIRECTION_LTR);
-        } else {
-            textLine.setTextColor(getStandardFontColor());
-            ApiCompatibilityUtils.setTextDirection(textLine, TEXT_DIRECTION_INHERIT);
-        }
-    }
-
-    /**
-     * Sets the text of the first line of the omnibox suggestion.
-     *
+     * Get the first line for a text based omnibox suggestion.
      * @param suggestionItem The item containing the suggestion data.
      * @param showDescriptionIfPresent Whether to show the description text of the suggestion if
      *                                 the item contains valid data.
-     * @param isUrlQuery Whether this suggestion is showing an URL.
-     * @param isUrlHighlighted Whether the URL contains any highlighted matching sections.
+     * @param shouldHighlight Whether the query should be highlighted.
+     * @return The first line of text.
      */
-    private void setSuggestedQuery(OmniboxResultItem suggestionItem,
-            boolean showDescriptionIfPresent, boolean isUrlQuery, boolean isUrlHighlighted) {
+    private Spannable getSuggestedQuery(OmniboxResultItem suggestionItem,
+            boolean showDescriptionIfPresent, boolean shouldHighlight) {
         String userQuery = suggestionItem.getMatchedQuery();
         String suggestedQuery = null;
         List<MatchClassification> classifications;
@@ -527,8 +587,83 @@ public class SuggestionView extends ViewGroup {
         }
 
         Spannable str = SpannableString.valueOf(suggestedQuery);
-        if (!isUrlHighlighted) applyHighlightToMatchRegions(str, classifications);
-        mContentsView.mTextLine1.setText(str, BufferType.SPANNABLE);
+        if (shouldHighlight) applyHighlightToMatchRegions(str, classifications);
+        return str;
+    }
+
+    private void setStateForTextSuggestion(OmniboxResultItem suggestionItem) {
+        int suggestionType = mSuggestion.getType();
+        @SuggestionIcon
+        int suggestionIcon;
+        Spannable textLine1;
+
+        Spannable textLine2;
+        int textLine2Color = 0;
+        int textLine2Direction = TEXT_DIRECTION_INHERIT;
+        if (mSuggestion.isUrlSuggestion()) {
+            suggestionIcon = SuggestionIcon.GLOBE;
+            if (mSuggestion.isStarred()) {
+                suggestionIcon = SuggestionIcon.BOOKMARK;
+            } else if (suggestionType == OmniboxSuggestionType.HISTORY_URL) {
+                suggestionIcon = SuggestionIcon.HISTORY;
+            }
+            boolean urlHighlighted = false;
+            if (!TextUtils.isEmpty(mSuggestion.getUrl())) {
+                OmniboxSuggestion suggestion = suggestionItem.getSuggestion();
+                Spannable str = SpannableString.valueOf(suggestion.getDisplayText());
+                urlHighlighted = applyHighlightToMatchRegions(
+                        str, suggestion.getDisplayTextClassifications());
+                textLine2 = str;
+                textLine2Color = getStandardUrlColor();
+                textLine2Direction = TEXT_DIRECTION_LTR;
+            } else {
+                textLine2 = null;
+            }
+            textLine1 = getSuggestedQuery(suggestionItem, true, !urlHighlighted);
+        } else {
+            suggestionIcon = SuggestionIcon.MAGNIFIER;
+            if (suggestionType == OmniboxSuggestionType.VOICE_SUGGEST) {
+                suggestionIcon = SuggestionIcon.VOICE;
+            } else if ((suggestionType == OmniboxSuggestionType.SEARCH_SUGGEST_PERSONALIZED)
+                    || (suggestionType == OmniboxSuggestionType.SEARCH_HISTORY)) {
+                // Show history icon for suggestions based on user queries.
+                suggestionIcon = SuggestionIcon.HISTORY;
+            }
+            textLine1 = getSuggestedQuery(suggestionItem, false, true);
+            if ((suggestionType == OmniboxSuggestionType.SEARCH_SUGGEST_ENTITY)
+                    || (suggestionType == OmniboxSuggestionType.SEARCH_SUGGEST_PROFILE)) {
+                textLine2 = SpannableString.valueOf(mSuggestion.getDescription());
+                textLine2Color = getStandardFontColor();
+                textLine2Direction = TEXT_DIRECTION_INHERIT;
+            } else {
+                textLine2 = null;
+            }
+        }
+        mNumAnswerLines = 1;
+
+        mModel.set(SuggestionViewProperties.HAS_ANSWER_IMAGE, false);
+        mModel.set(SuggestionViewProperties.ANSWER_IMAGE, null);
+
+        mModel.set(SuggestionViewProperties.TEXT_LINE_1_TEXT, textLine1);
+        mModel.set(SuggestionViewProperties.TEXT_LINE_1_SIZING,
+                Pair.create(TypedValue.COMPLEX_UNIT_PX,
+                        getResources().getDimension(
+                                R.dimen.omnibox_suggestion_first_line_text_size)));
+
+        mModel.set(SuggestionViewProperties.TEXT_LINE_2_TEXT, textLine2);
+        mModel.set(SuggestionViewProperties.TEXT_LINE_2_TEXT_COLOR, textLine2Color);
+        mModel.set(SuggestionViewProperties.TEXT_LINE_2_TEXT_DIRECTION, textLine2Direction);
+        mModel.set(SuggestionViewProperties.TEXT_LINE_2_SIZING,
+                Pair.create(TypedValue.COMPLEX_UNIT_PX,
+                        getResources().getDimension(
+                                R.dimen.omnibox_suggestion_second_line_text_size)));
+        mModel.set(SuggestionViewProperties.TEXT_LINE_2_MAX_LINES, 1);
+
+        boolean sameAsTyped = suggestionItem.getMatchedQuery().trim().equalsIgnoreCase(
+                mSuggestion.getDisplayText());
+        mModel.set(SuggestionViewProperties.REFINABLE, !sameAsTyped);
+
+        mModel.set(SuggestionViewProperties.SUGGESTION_ICON_TYPE, suggestionIcon);
     }
 
     static int parseNumAnswerLines(List<SuggestionAnswer.TextField> textFields) {
@@ -546,40 +681,38 @@ public class SuggestionView extends ViewGroup {
      * @param answer The answer to be displayed.
      * @param answerImage The image associated with the answer.
      */
-    private void setAnswer(SuggestionAnswer answer, Bitmap answerImage) {
+    private void setStateForAnswerSuggestion(SuggestionAnswer answer, Bitmap answerImage) {
         float density = getResources().getDisplayMetrics().density;
-
         SuggestionAnswer.ImageLine firstLine = answer.getFirstLine();
-        mContentsView.mTextLine1.setTextSize(AnswerTextBuilder.getMaxTextHeightSp(firstLine));
-        Spannable firstLineText = AnswerTextBuilder.buildSpannable(
-                firstLine, mContentsView.mTextLine1.getPaint().getFontMetrics(), density);
-        mContentsView.mTextLine1.setText(firstLineText);
-
         SuggestionAnswer.ImageLine secondLine = answer.getSecondLine();
-        mContentsView.mTextLine2.setTextSize(AnswerTextBuilder.getMaxTextHeightSp(secondLine));
-        Spannable secondLineText = AnswerTextBuilder.buildSpannable(
-                secondLine, mContentsView.mTextLine2.getPaint().getFontMetrics(), density);
-        mContentsView.mTextLine2.setText(secondLineText);
         mNumAnswerLines = parseNumAnswerLines(secondLine.getTextFields());
         if (mNumAnswerLines == -1) mNumAnswerLines = 1;
-        if (mNumAnswerLines == 1) {
-            mContentsView.mTextLine2.setEllipsize(null);
-            mContentsView.mTextLine2.setSingleLine();
-        } else {
-            mContentsView.mTextLine2.setSingleLine(false);
-            mContentsView.mTextLine2.setEllipsize(TextUtils.TruncateAt.END);
-            mContentsView.mTextLine2.setMaxLines(mNumAnswerLines);
-        }
 
-        if (secondLine.hasImage()) {
-            mContentsView.mAnswerImage.setVisibility(VISIBLE);
-            updateAnswerImage(answerImage);
-        }
+        mModel.set(SuggestionViewProperties.TEXT_LINE_1_SIZING,
+                Pair.create(TypedValue.COMPLEX_UNIT_SP,
+                        (float) AnswerTextBuilder.getMaxTextHeightSp(firstLine)));
+        mModel.set(SuggestionViewProperties.TEXT_LINE_1_TEXT,
+                AnswerTextBuilder.buildSpannable(
+                        firstLine, mContentsView.mTextLine1.getPaint().getFontMetrics(), density));
+
+        mModel.set(SuggestionViewProperties.TEXT_LINE_2_SIZING,
+                Pair.create(TypedValue.COMPLEX_UNIT_SP,
+                        (float) AnswerTextBuilder.getMaxTextHeightSp(secondLine)));
+        mModel.set(SuggestionViewProperties.TEXT_LINE_2_TEXT,
+                AnswerTextBuilder.buildSpannable(
+                        secondLine, mContentsView.mTextLine2.getPaint().getFontMetrics(), density));
+        mModel.set(SuggestionViewProperties.TEXT_LINE_2_MAX_LINES, mNumAnswerLines);
+        mModel.set(SuggestionViewProperties.TEXT_LINE_2_TEXT_COLOR, getStandardFontColor());
+        mModel.set(SuggestionViewProperties.TEXT_LINE_2_TEXT_DIRECTION, TEXT_DIRECTION_INHERIT);
+
+        mModel.set(SuggestionViewProperties.HAS_ANSWER_IMAGE, secondLine.hasImage());
+        mModel.set(SuggestionViewProperties.ANSWER_IMAGE, answerImage);
+
+        mModel.set(SuggestionViewProperties.REFINABLE, true);
+        mModel.set(SuggestionViewProperties.SUGGESTION_ICON_TYPE, SuggestionIcon.MAGNIFIER);
     }
 
     private void updateAnswerImage(Bitmap bitmap) {
-        if (bitmap == null) return;
-        if (mContentsView.mAnswerImage.getDrawable() != null) return;
         mContentsView.mAnswerImage.setImageBitmap(bitmap);
     }
 
@@ -609,9 +742,7 @@ public class SuggestionView extends ViewGroup {
      */
     private class SuggestionContentsContainer extends ViewGroup {
         private int mTextStart = Integer.MIN_VALUE;
-        private Drawable mSuggestionIcon;
-        @SuggestionIcon
-        private int mSuggestionIconType = SuggestionIcon.UNDEFINED;
+        private TintedDrawable mSuggestionIcon;
 
         private final TextView mTextLine1;
         private final TextView mTextLine2;
@@ -653,7 +784,6 @@ public class SuggestionView extends ViewGroup {
             mTextLine1.setLayoutParams(
                     new LayoutParams(LayoutParams.WRAP_CONTENT, mSuggestionHeight));
             mTextLine1.setSingleLine();
-            mTextLine1.setTextColor(getStandardFontColor());
             ApiCompatibilityUtils.setTextAlignment(mTextLine1, TEXT_ALIGNMENT_VIEW_START);
             addView(mTextLine1);
 
@@ -680,7 +810,7 @@ public class SuggestionView extends ViewGroup {
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
 
-            if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())) {
+            if (mSuggestionIcon != null) {
                 canvas.save();
                 float suggestionIconLeft =
                         (mSuggestionIconWidthPx - mSuggestionIcon.getIntrinsicWidth()) / 2f;
@@ -711,11 +841,14 @@ public class SuggestionView extends ViewGroup {
                         mTextLine1.getPaddingTop(), 0, mTextLine1.getPaddingBottom());
             }
 
-            int imageWidth = mAnswerImage.getMeasuredWidth();
+            int imageWidth = 0;
             int imageSpacing = 0;
-            if (mAnswerImage.getVisibility() == VISIBLE && imageWidth > 0) {
-                imageSpacing = getResources().getDimensionPixelOffset(
-                        R.dimen.omnibox_suggestion_answer_image_horizontal_spacing);
+            if (mAnswerImage.getVisibility() == VISIBLE) {
+                imageWidth = mAnswerImage.getMeasuredWidth();
+                if (imageWidth > 0) {
+                    imageSpacing = getResources().getDimensionPixelOffset(
+                            R.dimen.omnibox_suggestion_answer_image_horizontal_spacing);
+                }
             }
 
             final int height = getMeasuredHeight();
@@ -834,34 +967,18 @@ public class SuggestionView extends ViewGroup {
             return drawableState;
         }
 
-        // TODO(crbug.com/635567): Fix this properly.
-        @SuppressLint("SwitchIntDef")
-        private void setSuggestionIcon(@SuggestionIcon int type, boolean invalidateCurrentIcon) {
-            if (mSuggestionIconType == type && !invalidateCurrentIcon) return;
-            assert type != SuggestionIcon.UNDEFINED;
-
-            int drawableId = R.drawable.ic_omnibox_page;
-            switch (type) {
-                case SuggestionIcon.BOOKMARK:
-                    drawableId = R.drawable.btn_star;
-                    break;
-                case SuggestionIcon.MAGNIFIER:
-                    drawableId = R.drawable.ic_suggestion_magnifier;
-                    break;
-                case SuggestionIcon.HISTORY:
-                    drawableId = R.drawable.ic_suggestion_history;
-                    break;
-                case SuggestionIcon.VOICE:
-                    drawableId = R.drawable.btn_mic;
-                    break;
-                default:
-                    break;
-            }
-            mSuggestionIcon = TintedDrawable.constructTintedDrawable(getContext(), drawableId,
-                    mUseDarkColors ? R.color.dark_mode_tint : R.color.white_mode_tint);
+        private void setSuggestionIconDrawable(@DrawableRes int resId, boolean useDarkTint) {
+            mSuggestionIcon = TintedDrawable.constructTintedDrawable(getContext(), resId,
+                    useDarkTint ? R.color.dark_mode_tint : R.color.white_mode_tint);
             mSuggestionIcon.setBounds(0, 0, mSuggestionIcon.getIntrinsicWidth(),
                     mSuggestionIcon.getIntrinsicHeight());
-            mSuggestionIconType = type;
+            invalidate();
+        }
+
+        private void updateSuggestionIconTint(boolean useDarkTint) {
+            if (mSuggestionIcon == null) return;
+            mSuggestionIcon.setTint(AppCompatResources.getColorStateList(
+                    getContext(), useDarkTint ? R.color.dark_mode_tint : R.color.white_mode_tint));
             invalidate();
         }
     }
