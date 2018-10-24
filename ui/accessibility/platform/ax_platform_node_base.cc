@@ -28,7 +28,7 @@ void AXPlatformNodeBase::Init(AXPlatformNodeDelegate* delegate) {
 }
 
 const AXNodeData& AXPlatformNodeBase::GetData() const {
-  static base::NoDestructor<AXNodeData> empty_data;
+  static const base::NoDestructor<AXNodeData> empty_data;
   if (delegate_)
     return delegate_->GetData();
   return *empty_data;
@@ -190,9 +190,8 @@ bool AXPlatformNodeBase::HasStringAttribute(
 
 const std::string& AXPlatformNodeBase::GetStringAttribute(
     ax::mojom::StringAttribute attribute) const {
-  static base::NoDestructor<std::string> empty_data;
   if (!delegate_)
-    return *empty_data;
+    return base::EmptyString();
   return GetData().GetStringAttribute(attribute);
 }
 
@@ -228,7 +227,7 @@ bool AXPlatformNodeBase::HasIntListAttribute(
 
 const std::vector<int32_t>& AXPlatformNodeBase::GetIntListAttribute(
     ax::mojom::IntListAttribute attribute) const {
-  static base::NoDestructor<std::vector<int32_t>> empty_data;
+  static const base::NoDestructor<std::vector<int32_t>> empty_data;
   if (!delegate_)
     return *empty_data;
   return GetData().GetIntListAttribute(attribute);

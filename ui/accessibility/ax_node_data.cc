@@ -311,9 +311,8 @@ bool AXNodeData::HasStringAttribute(
 
 const std::string& AXNodeData::GetStringAttribute(
     ax::mojom::StringAttribute attribute) const {
-  static base::NoDestructor<std::string> empty_string;
   auto iter = FindInVectorOfPairs(attribute, string_attributes);
-  return iter != string_attributes.end() ? iter->second : *empty_string;
+  return iter != string_attributes.end() ? iter->second : base::EmptyString();
 }
 
 bool AXNodeData::GetStringAttribute(ax::mojom::StringAttribute attribute,
@@ -352,7 +351,7 @@ bool AXNodeData::HasIntListAttribute(
 
 const std::vector<int32_t>& AXNodeData::GetIntListAttribute(
     ax::mojom::IntListAttribute attribute) const {
-  static base::NoDestructor<std::vector<int32_t>> empty_vector;
+  static const base::NoDestructor<std::vector<int32_t>> empty_vector;
   auto iter = FindInVectorOfPairs(attribute, intlist_attributes);
   if (iter != intlist_attributes.end())
     return iter->second;
@@ -378,7 +377,7 @@ bool AXNodeData::HasStringListAttribute(
 
 const std::vector<std::string>& AXNodeData::GetStringListAttribute(
     ax::mojom::StringListAttribute attribute) const {
-  static base::NoDestructor<std::vector<std::string>> empty_vector;
+  static const base::NoDestructor<std::vector<std::string>> empty_vector;
   auto iter = FindInVectorOfPairs(attribute, stringlist_attributes);
   if (iter != stringlist_attributes.end())
     return iter->second;
