@@ -383,6 +383,7 @@ metaZones.res
 metadata.res
 numberingSystems.res
 plurals.res
+pluralRanges.res
 supplementalData.res
 timezoneTypes.res
 windowsZones.res

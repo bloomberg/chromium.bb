@@ -21,7 +21,7 @@ index 8096579b..bc112038 100644
                  }
                  yMd{
 diff --git a/source/data/zone/ko.txt b/source/data/zone/ko.txt
-index 7b90e34d..75d754b8 100644
+index a7a205e4..b57389c0 100644
 --- a/source/data/zone/ko.txt
 +++ b/source/data/zone/ko.txt
 @@ -1327,24 +1327,24 @@ ko{
@@ -61,16 +61,8 @@ index 7b90e34d..75d754b8 100644
          }
          "meta:Anadyr"{
              ld{"아나디리 하계 표준시"}
-@@ -1387,29 +1387,29 @@ ko{
-             ls{"아르메니아 표준시"}
-         }
-         "meta:Atlantic"{
--            ld{"미 대서양 하계 표준시"}
--            lg{"대서양 시간"}
--            ls{"대서양 표준시"}
-+            ld{"북미 대서양 하계 표준시"}
-+            lg{"북미 대서양 시간"}
-+            ls{"북미 대서양 표준시"}
+@@ -1392,24 +1392,24 @@ ko{
+             ls{"대서양 표준시"}
          }
          "meta:Australia_Central"{
 -            ld{"오스트레일리아 중부 하계 표준시"}

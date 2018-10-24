@@ -13,7 +13,7 @@ then
 fi
 
 version="$1"
-repoprefix="http://source.icu-project.org/repos/icu/tags/release-"
+repoprefix="https://github.com/unicode-org/icu/tags/release-"
 repo="${repoprefix}${version}/icu4c"
 treeroot="$(dirname "$0")/.."
 

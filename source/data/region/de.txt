@@ -31,6 +31,7 @@ de{
         151{"Osteuropa"}
         154{"Nordeuropa"}
         155{"Westeuropa"}
+        202{"Subsahara-Afrika"}
         419{"Lateinamerika"}
         AC{"Ascension"}
         AD{"Andorra"}
@@ -306,5 +307,5 @@ de{
         CZ{"Tschechische Republik"}
         TL{"Osttimor"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.44.91"}
 }

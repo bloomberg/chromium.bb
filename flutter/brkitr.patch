@@ -1,47 +1,31 @@
 diff --git a/source/data/brkitr/brklocal.mk b/source/data/brkitr/brklocal.mk
-index ea12e27f..462a2551 100644
+index 0855139b..716a03cc 100644
 --- a/source/data/brkitr/brklocal.mk
 +++ b/source/data/brkitr/brklocal.mk
-@@ -39,14 +39,11 @@ BRK_DICT_SOURCE = burmesedict.txt khmerdict.txt laodict.txt\
+@@ -39,13 +39,9 @@ BRK_DICT_SOURCE = burmesedict.txt khmerdict.txt laodict.txt\
  
  
  # List of break iterator files (brk).
--BRK_SOURCE = char.txt line.txt\
-- line_normal.txt line_normal_cj.txt line_normal_fi.txt\
-- line_loose_cj.txt\
-- sent.txt sent_el.txt title.txt word.txt word_ja.txt
-+BRK_SOURCE = char.txt\
-+ line_normal.txt line_normal_fi.txt\
-+ word.txt word_ja.txt
+-BRK_SOURCE = char.txt line.txt line_loose.txt line_loose_cj.txt\
+- line_normal.txt line_normal_cj.txt sent.txt sent_el.txt title.txt\
++BRK_SOURCE = char.txt line_normal.txt line_normal_cj.txt\
+  word.txt word_ja.txt
  
  
  # Ordinary resources
 -BRK_RES_SOURCE = de.txt el.txt en.txt en_US.txt\
-- es.txt fi.txt fr.txt it.txt ja.txt\
+- es.txt fr.txt it.txt ja.txt\
 - pt.txt ru.txt zh.txt zh_Hant.txt
-+BRK_RES_SOURCE =fi.txt ja.txt
- 
-diff --git a/source/data/brkitr/fi.txt b/source/data/brkitr/fi.txt
-index 72029ee4..633862a7 100644
---- a/source/data/brkitr/fi.txt
-+++ b/source/data/brkitr/fi.txt
-@@ -4,8 +4,5 @@ fi{
-     Version{"2.1.19.14"}
-     boundaries{
-         line:process(dependency){"line_normal_fi.brk"}
--        line_loose:process(dependency){"line_normal_fi.brk"}
--        line_normal:process(dependency){"line_normal_fi.brk"}
--        line_strict:process(dependency){"line_normal_fi.brk"}
-     }
- }
+-
++BRK_RES_SOURCE = ja.txt
 diff --git a/source/data/brkitr/ja.txt b/source/data/brkitr/ja.txt
-index cb732a76..73ebc6f8 100644
+index 52d49942..9c3df43e 100644
 --- a/source/data/brkitr/ja.txt
 +++ b/source/data/brkitr/ja.txt
 @@ -4,9 +4,6 @@ ja{
-     Version{"2.1.29.25"}
+     Version{"2.1.44.56"}
      boundaries{
-         line:process(dependency){"line_normal.brk"}
+         line:process(dependency){"line_normal_cj.brk"}
 -        line_loose:process(dependency){"line_loose_cj.brk"}
 -        line_normal:process(dependency){"line_normal_cj.brk"}
 -        line_strict:process(dependency){"line.brk"}
@@ -49,14 +33,14 @@ index cb732a76..73ebc6f8 100644
      }
  }
 diff --git a/source/data/brkitr/root.txt b/source/data/brkitr/root.txt
-index f1fa4e08..4071947a 100644
+index ef60ab6f..91697a40 100644
 --- a/source/data/brkitr/root.txt
 +++ b/source/data/brkitr/root.txt
 @@ -5,11 +5,6 @@ root{
      boundaries{
          grapheme:process(dependency){"char.brk"}
          line:process(dependency){"line_normal.brk"}
--        line_loose:process(dependency){"line_normal.brk"}
+-        line_loose:process(dependency){"line_loose.brk"}
 -        line_normal:process(dependency){"line_normal.brk"}
 -        line_strict:process(dependency){"line.brk"}
 -        sentence:process(dependency){"sent.brk"}

@@ -184,7 +184,7 @@ to{
         MH{"ʻOtumotu Māsolo"}
         MK{"Masetōnia (FYROM)"}
         ML{"Māli"}
-        MM{"Pema"}
+        MM{"Mianimā (Pema)"}
         MN{"Mongokōlia"}
         MO{"Makau"}
         MP{"ʻOtumotu Maliana tokelau"}
@@ -303,5 +303,5 @@ to{
         CG{"Kongo (Lepupelika)"}
         CZ{"Lepupelika Seki"}
     }
-    Version{"2.1.38.39"}
+    Version{"2.1.44.88"}
 }

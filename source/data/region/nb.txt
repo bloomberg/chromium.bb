@@ -220,7 +220,7 @@ nb{
         PK{"Pakistan"}
         PL{"Polen"}
         PM{"Saint-Pierre-et-Miquelon"}
-        PN{"Pitcairn"}
+        PN{"Pitcairnøyene"}
         PR{"Puerto Rico"}
         PS{"Palestina"}
         PT{"Portugal"}
@@ -304,5 +304,5 @@ nb{
         CD{"Den demokratiske republikken Kongo"}
         CG{"Republikken Kongo"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.44.2"}
 }
