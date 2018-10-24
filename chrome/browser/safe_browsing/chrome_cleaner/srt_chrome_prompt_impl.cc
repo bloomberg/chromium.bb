@@ -5,16 +5,18 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_chrome_prompt_impl.h"
 
 #include <algorithm>
+#include <string>
 #include <utility>
 
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/disable_reason.h"
+#include "extensions/browser/uninstall_reason.h"
 
 namespace safe_browsing {
 
@@ -59,6 +61,9 @@ void ChromePromptImpl::PromptUser(
         extension_ids
             ? ExtensionCollection(extension_ids->begin(), extension_ids->end())
             : ExtensionCollection());
+    if (extension_ids.has_value()) {
+      extension_ids_ = extension_ids;
+    }
     std::move(on_prompt_user_)
         .Run(std::move(scanner_results), std::move(callback));
   }
@@ -67,25 +72,40 @@ void ChromePromptImpl::PromptUser(
 void ChromePromptImpl::DisableExtensions(
     const std::vector<base::string16>& extension_ids,
     ChromePrompt::DisableExtensionsCallback callback) {
-  if (extension_service_ == nullptr) {
+  if (extension_service_ == nullptr || !extension_ids_.has_value()) {
     std::move(callback).Run(false);
     return;
   }
+  // Clear the stored extension_ids by moving it onto this stack frame,
+  // so subsequent calls will fail.
+  base::Optional<std::vector<base::string16>> optional_verified_extension_ids{};
+  extension_ids_.swap(optional_verified_extension_ids);
+  std::vector<base::string16> verified_extension_ids =
+      optional_verified_extension_ids.value();
   bool ids_are_valid = std::all_of(
-      extension_ids.begin(), extension_ids.end(), [](const base::string16& id) {
-        return crx_file::id_util::IdIsValid(base::UTF16ToUTF8(id));
+      extension_ids.begin(), extension_ids.end(),
+      [this, &verified_extension_ids](const base::string16& id) {
+        std::string id_utf8 = base::UTF16ToUTF8(id);
+        return crx_file::id_util::IdIsValid(id_utf8) &&
+               base::ContainsValue(verified_extension_ids, id) &&
+               extension_service_->GetInstalledExtension(id_utf8) != nullptr;
       });
   if (!ids_are_valid) {
     std::move(callback).Run(false);
     return;
   }
 
-  int reason = extensions::disable_reason::DISABLE_EXTERNAL_EXTENSION;
+  // This only uninstalls extensions that have been displayed to the user on
+  // the cleanup page.
+  extensions::UninstallReason reason =
+      extensions::UNINSTALL_REASON_USER_INITIATED;
+  bool result = true;
   for (const base::string16& extension_id : extension_ids) {
-    extension_service_->DisableExtension(base::UTF16ToUTF8(extension_id),
-                                         reason);
+    result = extension_service_->UninstallExtension(
+                 base::UTF16ToUTF8(extension_id), reason, nullptr) &&
+             result;
   }
-  std::move(callback).Run(true);
+  std::move(callback).Run(result);
 }
 
 }  // namespace safe_browsing
