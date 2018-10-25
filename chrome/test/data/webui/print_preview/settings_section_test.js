@@ -430,6 +430,19 @@ cr.define('settings_sections_tests', function() {
       assertFalse(optionsElement.hidden);
       assertTrue(isSectionHidden(duplex));
 
+      // Set a duplex capability with only 1 type, no duplex.
+      capabilities =
+          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
+      delete capabilities.printer.duplex;
+      capabilities.printer.duplex = {
+        option:
+            [{type: print_preview_new.DuplexType.NO_DUPLEX, is_default: true}]
+      };
+      page.set('destination_.capabilities', capabilities);
+      Polymer.dom.flush();
+      assertFalse(optionsElement.hidden);
+      assertTrue(isSectionHidden(duplex));
+
       // PDF
       initDocumentInfo(true, false);
       Polymer.dom.flush();
@@ -1023,7 +1036,9 @@ cr.define('settings_sections_tests', function() {
 
       return testOptionCheckbox('headerFooter', true)
           .then(function() {
-            return testOptionCheckbox('duplex', true);
+            // Duplex defaults to false, since the printer sets no duplex as the
+            // default in the CDD (see print_preview_test_utils.js).
+            return testOptionCheckbox('duplex', false);
           })
           .then(function() {
             return testOptionCheckbox('cssBackground', false);
