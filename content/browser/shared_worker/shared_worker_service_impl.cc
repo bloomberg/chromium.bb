@@ -214,9 +214,8 @@ void CreateScriptLoaderOnIO(
 
     SharedWorkerScriptFetcher::CreateAndStart(
         std::make_unique<SharedWorkerScriptLoaderFactory>(
-            process_id, context.get(), host,
-            std::move(appcache_host), context->resource_context(),
-            std::move(url_loader_factory)),
+            process_id, host, std::move(appcache_host),
+            context->resource_context(), std::move(url_loader_factory)),
         std::move(throttles), std::move(resource_request),
         base::BindOnce(DidCreateScriptLoaderOnIO, std::move(callback),
                        std::move(provider_info),
@@ -229,9 +228,8 @@ void CreateScriptLoaderOnIO(
   network::mojom::URLLoaderFactoryAssociatedPtrInfo main_script_loader_factory;
   mojo::MakeStrongAssociatedBinding(
       std::make_unique<SharedWorkerScriptLoaderFactory>(
-          process_id, context.get(), host->AsWeakPtr(),
-          std::move(appcache_host), context->resource_context(),
-          std::move(url_loader_factory)),
+          process_id, host->AsWeakPtr(), std::move(appcache_host),
+          context->resource_context(), std::move(url_loader_factory)),
       mojo::MakeRequest(&main_script_loader_factory));
 
   DidCreateScriptLoaderOnIO(std::move(callback), std::move(provider_info),
