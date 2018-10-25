@@ -178,11 +178,6 @@ void PropertyTreeManager::SetCurrentEffectHasRenderSurface() {
 
 int PropertyTreeManager::EnsureCompositorTransformNode(
     const TransformPaintPropertyNode* transform_node) {
-  DCHECK(transform_node);
-  // TODO(crbug.com/645615): Remove the failsafe here.
-  if (!transform_node)
-    return kSecondaryRootNodeId;
-
   transform_node = transform_node->Unalias();
   auto it = transform_node_map_.find(transform_node);
   if (it != transform_node_map_.end())
@@ -312,11 +307,6 @@ void PropertyTreeManager::EnsureCompositorPageScaleTransformNode(
 
 int PropertyTreeManager::EnsureCompositorClipNode(
     const ClipPaintPropertyNode* clip_node) {
-  DCHECK(clip_node);
-  // TODO(crbug.com/645615): Remove the failsafe here.
-  if (!clip_node)
-    return kSecondaryRootNodeId;
-
   clip_node = clip_node->Unalias();
   auto it = clip_node_map_.find(clip_node);
   if (it != clip_node_map_.end())
