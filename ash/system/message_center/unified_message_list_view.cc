@@ -4,8 +4,8 @@
 
 #include "ash/system/message_center/unified_message_list_view.h"
 
-#include "ash/system/message_center/new_unified_message_center_view.h"
 #include "ash/system/message_center/notification_swipe_control_view.h"
+#include "ash/system/message_center/unified_message_center_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "base/auto_reset.h"
@@ -145,7 +145,7 @@ class UnifiedMessageListView::MessageViewContainer
 };
 
 UnifiedMessageListView::UnifiedMessageListView(
-    NewUnifiedMessageCenterView* message_center_view,
+    UnifiedMessageCenterView* message_center_view,
     UnifiedSystemTrayModel* model)
     : message_center_view_(message_center_view),
       model_(model),

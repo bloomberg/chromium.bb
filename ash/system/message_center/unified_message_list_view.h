@@ -22,11 +22,11 @@ class Notification;
 
 namespace ash {
 
-class NewUnifiedMessageCenterView;
+class UnifiedMessageCenterView;
 class UnifiedSystemTrayModel;
 
 // Manages list of notifications. The class doesn't know about the ScrollView
-// it's enclosed. This class is used only from NewUnifiedMessageCenterView.
+// it's enclosed. This class is used only from UnifiedMessageCenterView.
 class ASH_EXPORT UnifiedMessageListView
     : public views::View,
       public message_center::MessageCenterObserver,
@@ -34,7 +34,7 @@ class ASH_EXPORT UnifiedMessageListView
       public gfx::AnimationDelegate {
  public:
   // |message_center_view| can be null in unit tests.
-  UnifiedMessageListView(NewUnifiedMessageCenterView* message_center_view,
+  UnifiedMessageListView(UnifiedMessageCenterView* message_center_view,
                          UnifiedSystemTrayModel* model);
   ~UnifiedMessageListView() override;
 
@@ -79,7 +79,7 @@ class ASH_EXPORT UnifiedMessageListView
       const message_center::Notification& notification);
 
  private:
-  friend class NewUnifiedMessageCenterViewTest;
+  friend class UnifiedMessageCenterViewTest;
   friend class UnifiedMessageListViewTest;
   class MessageViewContainer;
 
@@ -123,7 +123,7 @@ class ASH_EXPORT UnifiedMessageListView
   // Deletes all the MessageViewContainer marked as |is_removed|.
   void DeleteRemovedNotifications();
 
-  NewUnifiedMessageCenterView* const message_center_view_;
+  UnifiedMessageCenterView* const message_center_view_;
   UnifiedSystemTrayModel* const model_;
 
   // If true, ChildPreferredSizeChanged() will be ignored. This is used in

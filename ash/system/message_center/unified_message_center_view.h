@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_MESSAGE_CENTER_NEW_UNIFIED_MESSAGE_CENTER_VIEW_H_
-#define ASH_SYSTEM_MESSAGE_CENTER_NEW_UNIFIED_MESSAGE_CENTER_VIEW_H_
+#ifndef ASH_SYSTEM_MESSAGE_CENTER_UNIFIED_MESSAGE_CENTER_VIEW_H_
+#define ASH_SYSTEM_MESSAGE_CENTER_UNIFIED_MESSAGE_CENTER_VIEW_H_
 
 #include "ash/ash_export.h"
 #include "ash/system/message_center/message_center_scroll_bar.h"
@@ -41,15 +41,15 @@ class StackingNotificationCounterView : public views::View {
 
 // Manages scrolling of notification list.
 // TODO(tetsui): Rename to UnifiedMessageCenterView after old code is removed.
-class ASH_EXPORT NewUnifiedMessageCenterView
+class ASH_EXPORT UnifiedMessageCenterView
     : public views::View,
       public MessageCenterScrollBar::Observer,
       public views::ButtonListener,
       public views::FocusChangeListener {
  public:
-  NewUnifiedMessageCenterView(UnifiedSystemTrayView* parent,
-                              UnifiedSystemTrayModel* model);
-  ~NewUnifiedMessageCenterView() override;
+  UnifiedMessageCenterView(UnifiedSystemTrayView* parent,
+                           UnifiedSystemTrayModel* model);
+  ~UnifiedMessageCenterView() override;
 
   // Sets the maximum height that the view can take.
   void SetMaxHeight(int max_height);
@@ -82,7 +82,7 @@ class ASH_EXPORT NewUnifiedMessageCenterView
   virtual void SetNotificationHeightBelowScroll(int height_below_scroll);
 
  private:
-  friend class NewUnifiedMessageCenterViewTest;
+  friend class UnifiedMessageCenterViewTest;
 
   void UpdateVisibility();
 
@@ -107,9 +107,9 @@ class ASH_EXPORT NewUnifiedMessageCenterView
 
   views::FocusManager* focus_manager_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(NewUnifiedMessageCenterView);
+  DISALLOW_COPY_AND_ASSIGN(UnifiedMessageCenterView);
 };
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_MESSAGE_CENTER_NEW_UNIFIED_MESSAGE_CENTER_VIEW_H_
+#endif  // ASH_SYSTEM_MESSAGE_CENTER_UNIFIED_MESSAGE_CENTER_VIEW_H_

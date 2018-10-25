@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/message_center/new_unified_message_center_view.h"
+#include "ash/system/message_center/unified_message_center_view.h"
 
 #include "ash/system/message_center/message_center_scroll_bar.h"
 #include "ash/system/tray/tray_constants.h"
@@ -32,12 +32,12 @@ class DummyEvent : public ui::Event {
   ~DummyEvent() override = default;
 };
 
-class TestNewUnifiedMessageCenterView : public NewUnifiedMessageCenterView {
+class TestUnifiedMessageCenterView : public UnifiedMessageCenterView {
  public:
-  explicit TestNewUnifiedMessageCenterView(UnifiedSystemTrayModel* model)
-      : NewUnifiedMessageCenterView(nullptr, model) {}
+  explicit TestUnifiedMessageCenterView(UnifiedSystemTrayModel* model)
+      : UnifiedMessageCenterView(nullptr, model) {}
 
-  ~TestNewUnifiedMessageCenterView() override = default;
+  ~TestUnifiedMessageCenterView() override = default;
 
   void SetNotificationHeightBelowScroll(int height_below_scroll) override {
     height_below_scroll_ = height_below_scroll;
@@ -48,16 +48,16 @@ class TestNewUnifiedMessageCenterView : public NewUnifiedMessageCenterView {
  private:
   int height_below_scroll_ = -1;
 
-  DISALLOW_COPY_AND_ASSIGN(TestNewUnifiedMessageCenterView);
+  DISALLOW_COPY_AND_ASSIGN(TestUnifiedMessageCenterView);
 };
 
 }  // namespace
 
-class NewUnifiedMessageCenterViewTest : public AshTestBase,
-                                        public views::ViewObserver {
+class UnifiedMessageCenterViewTest : public AshTestBase,
+                                     public views::ViewObserver {
  public:
-  NewUnifiedMessageCenterViewTest() = default;
-  ~NewUnifiedMessageCenterViewTest() override = default;
+  UnifiedMessageCenterViewTest() = default;
+  ~UnifiedMessageCenterViewTest() override = default;
 
   // AshTestBase:
   void SetUp() override {
@@ -95,7 +95,7 @@ class NewUnifiedMessageCenterViewTest : public AshTestBase,
 
   void CreateMessageCenterView(int max_height = kDefaultMaxHeight) {
     message_center_view_ =
-        std::make_unique<TestNewUnifiedMessageCenterView>(model_.get());
+        std::make_unique<TestUnifiedMessageCenterView>(model_.get());
     message_center_view_->AddObserver(this);
     message_center_view_->SetMaxHeight(max_height);
     OnViewPreferredSizeChanged(message_center_view_.get());
@@ -140,7 +140,7 @@ class NewUnifiedMessageCenterViewTest : public AshTestBase,
     return message_center_view()->stacking_counter_;
   }
 
-  TestNewUnifiedMessageCenterView* message_center_view() {
+  TestUnifiedMessageCenterView* message_center_view() {
     return message_center_view_.get();
   }
 
@@ -151,12 +151,12 @@ class NewUnifiedMessageCenterViewTest : public AshTestBase,
   int size_changed_count_ = 0;
 
   std::unique_ptr<UnifiedSystemTrayModel> model_;
-  std::unique_ptr<TestNewUnifiedMessageCenterView> message_center_view_;
+  std::unique_ptr<TestUnifiedMessageCenterView> message_center_view_;
 
-  DISALLOW_COPY_AND_ASSIGN(NewUnifiedMessageCenterViewTest);
+  DISALLOW_COPY_AND_ASSIGN(UnifiedMessageCenterViewTest);
 };
 
-TEST_F(NewUnifiedMessageCenterViewTest, AddAndRemoveNotification) {
+TEST_F(UnifiedMessageCenterViewTest, AddAndRemoveNotification) {
   CreateMessageCenterView();
   EXPECT_FALSE(message_center_view()->visible());
 
@@ -174,7 +174,7 @@ TEST_F(NewUnifiedMessageCenterViewTest, AddAndRemoveNotification) {
   EXPECT_FALSE(message_center_view()->visible());
 }
 
-TEST_F(NewUnifiedMessageCenterViewTest, ContentsRelayout) {
+TEST_F(UnifiedMessageCenterViewTest, ContentsRelayout) {
   std::vector<std::string> ids;
   for (size_t i = 0; i < 10; ++i)
     ids.push_back(AddNotification());
@@ -193,7 +193,7 @@ TEST_F(NewUnifiedMessageCenterViewTest, ContentsRelayout) {
   EXPECT_GT(previous_list_height, GetMessageListView()->height());
 }
 
-TEST_F(NewUnifiedMessageCenterViewTest, NotVisibleWhenLocked) {
+TEST_F(UnifiedMessageCenterViewTest, NotVisibleWhenLocked) {
   AddNotification();
   AddNotification();
 
@@ -203,7 +203,7 @@ TEST_F(NewUnifiedMessageCenterViewTest, NotVisibleWhenLocked) {
   EXPECT_FALSE(message_center_view()->visible());
 }
 
-TEST_F(NewUnifiedMessageCenterViewTest, ClearAllPressed) {
+TEST_F(UnifiedMessageCenterViewTest, ClearAllPressed) {
   AddNotification();
   AddNotification();
   CreateMessageCenterView();
@@ -232,7 +232,7 @@ TEST_F(NewUnifiedMessageCenterViewTest, ClearAllPressed) {
   EXPECT_FALSE(message_center_view()->visible());
 }
 
-TEST_F(NewUnifiedMessageCenterViewTest, InitialPosition) {
+TEST_F(UnifiedMessageCenterViewTest, InitialPosition) {
   AddNotification();
   AddNotification();
   CreateMessageCenterView();
@@ -247,7 +247,7 @@ TEST_F(NewUnifiedMessageCenterViewTest, InitialPosition) {
                 GetMessageViewVisibleBounds(1).bottom());
 }
 
-TEST_F(NewUnifiedMessageCenterViewTest, InitialPositionMaxOut) {
+TEST_F(UnifiedMessageCenterViewTest, InitialPositionMaxOut) {
   for (size_t i = 0; i < 6; ++i)
     AddNotification();
   CreateMessageCenterView();
@@ -262,7 +262,7 @@ TEST_F(NewUnifiedMessageCenterViewTest, InitialPositionMaxOut) {
                 GetMessageViewVisibleBounds(5).bottom());
 }
 
-TEST_F(NewUnifiedMessageCenterViewTest, InitialPositionWithLargeNotification) {
+TEST_F(UnifiedMessageCenterViewTest, InitialPositionWithLargeNotification) {
   AddNotification();
   AddNotification();
   CreateMessageCenterView(100 /* max_height */);
@@ -277,7 +277,7 @@ TEST_F(NewUnifiedMessageCenterViewTest, InitialPositionWithLargeNotification) {
   EXPECT_EQ(0, message_view_bounds.y());
 }
 
-TEST_F(NewUnifiedMessageCenterViewTest, ScrollPositionWhenResized) {
+TEST_F(UnifiedMessageCenterViewTest, ScrollPositionWhenResized) {
   for (size_t i = 0; i < 6; ++i)
     AddNotification();
   CreateMessageCenterView();
@@ -308,7 +308,7 @@ TEST_F(NewUnifiedMessageCenterViewTest, ScrollPositionWhenResized) {
             GetScroller()->GetVisibleRect().bottom());
 }
 
-TEST_F(NewUnifiedMessageCenterViewTest, StackingCounterLayout) {
+TEST_F(UnifiedMessageCenterViewTest, StackingCounterLayout) {
   for (size_t i = 0; i < 6; ++i)
     AddNotification();
   CreateMessageCenterView();
@@ -331,7 +331,7 @@ TEST_F(NewUnifiedMessageCenterViewTest, StackingCounterLayout) {
   EXPECT_EQ(0, GetScroller()->bounds().y());
 }
 
-TEST_F(NewUnifiedMessageCenterViewTest,
+TEST_F(UnifiedMessageCenterViewTest,
        StackingCounterNotAffectingMessageViewBounds) {
   for (size_t i = 0; i < 6; ++i)
     AddNotification();
@@ -364,8 +364,7 @@ TEST_F(NewUnifiedMessageCenterViewTest,
   EXPECT_FALSE(GetStackingCounter()->visible());
 }
 
-TEST_F(NewUnifiedMessageCenterViewTest,
-       StackingCounterRemovedWithNotifications) {
+TEST_F(UnifiedMessageCenterViewTest, StackingCounterRemovedWithNotifications) {
   std::vector<std::string> ids;
   for (size_t i = 0; i < 6; ++i)
     ids.push_back(AddNotification());
@@ -384,7 +383,7 @@ TEST_F(NewUnifiedMessageCenterViewTest,
   EXPECT_FALSE(GetStackingCounter()->visible());
 }
 
-TEST_F(NewUnifiedMessageCenterViewTest, HeightBelowScroll) {
+TEST_F(UnifiedMessageCenterViewTest, HeightBelowScroll) {
   for (size_t i = 0; i < 6; ++i)
     AddNotification();
   CreateMessageCenterView();
