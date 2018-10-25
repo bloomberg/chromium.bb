@@ -1517,7 +1517,7 @@ TEST_F(DeviceStatusCollectorTest, TpmStatusReporting) {
   EXPECT_EQ(kFakeTpmStatus.enabled, device_status_.tpm_status_info().enabled());
   EXPECT_EQ(kFakeTpmStatus.owned, device_status_.tpm_status_info().owned());
   EXPECT_EQ(kFakeTpmStatus.initialized,
-            device_status_.tpm_status_info().initialized());
+            device_status_.tpm_status_info().tpm_initialized());
   EXPECT_EQ(kFakeTpmStatus.attestation_prepared,
             device_status_.tpm_status_info().attestation_prepared());
   EXPECT_EQ(kFakeTpmStatus.attestation_enrolled,
