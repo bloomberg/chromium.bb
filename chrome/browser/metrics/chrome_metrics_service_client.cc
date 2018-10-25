@@ -41,6 +41,7 @@
 #include "chrome/browser/metrics/https_engagement_metrics_provider.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/metrics/network_quality_estimator_provider_impl.h"
+#include "chrome/browser/metrics/persistent_histograms.h"
 #include "chrome/browser/metrics/process_memory_metrics_emitter.h"
 #include "chrome/browser/metrics/sampling_metrics_provider.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
@@ -186,8 +187,7 @@ base::LazyInstance<std::string>::Leaky g_environment_for_crash_reporter;
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 void RegisterFileMetricsPreferences(PrefRegistrySimple* registry) {
-  metrics::FileMetricsProvider::RegisterPrefs(
-      registry, ChromeMetricsServiceClient::kBrowserMetricsName);
+  metrics::FileMetricsProvider::RegisterPrefs(registry, kBrowserMetricsName);
 
   metrics::FileMetricsProvider::RegisterPrefs(registry,
                                               kCrashpadHistogramAllocatorName);
@@ -250,14 +250,14 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
             ASSOCIATE_INTERNAL_PROFILE_OR_PREVIOUS_RUN,
         file_metrics_provider.get());
 
-    base::FilePath browser_metrics_upload_dir = user_data_dir.AppendASCII(
-        ChromeMetricsServiceClient::kBrowserMetricsName);
+    base::FilePath browser_metrics_upload_dir =
+        user_data_dir.AppendASCII(kBrowserMetricsName);
     if (metrics_reporting_enabled) {
       metrics::FileMetricsProvider::Params browser_metrics_params(
           browser_metrics_upload_dir,
           metrics::FileMetricsProvider::SOURCE_HISTOGRAMS_ATOMIC_DIR,
           metrics::FileMetricsProvider::ASSOCIATE_INTERNAL_PROFILE,
-          ChromeMetricsServiceClient::kBrowserMetricsName);
+          kBrowserMetricsName);
       browser_metrics_params.max_dir_kib = kMaxHistogramStorageKiB;
       browser_metrics_params.filter = base::BindRepeating(
           &ChromeMetricsServiceClient::FilterBrowserMetricsFiles);
@@ -396,8 +396,6 @@ bool IsProcessRunning(base::ProcessId pid) {
 }
 
 }  // namespace
-
-const char ChromeMetricsServiceClient::kBrowserMetricsName[] = "BrowserMetrics";
 
 // UKM suffix for field trial recording.
 const char kUKMFieldTrialSuffix[] = "UKM";
