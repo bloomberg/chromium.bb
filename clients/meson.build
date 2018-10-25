@@ -49,6 +49,25 @@ simple_clients = [
 		'dep_objs': [ dep_wayland_client, dep_libshared ]
 	},
 	{
+		'name': 'dmabuf-egl',
+		'sources': [
+			'simple-dmabuf-egl.c',
+			linux_dmabuf_unstable_v1_client_protocol_h,
+			linux_dmabuf_unstable_v1_protocol_c,
+			xdg_shell_unstable_v6_client_protocol_h,
+			xdg_shell_unstable_v6_protocol_c,
+			fullscreen_shell_unstable_v1_client_protocol_h,
+			fullscreen_shell_unstable_v1_protocol_c,
+		],
+		'dep_objs': [
+			dep_wayland_client,
+			dep_libdrm_headers,
+			dep_gbm,
+			dep_egl,
+			dep_glesv2
+		]
+	},
+	{
 		'name': 'dmabuf-v4l',
 		'sources': [
 			'simple-dmabuf-v4l.c',

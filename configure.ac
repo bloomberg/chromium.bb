@@ -451,6 +451,21 @@ if ! test "x$enable_simple_dmabuf_v4l_client" = "xno"; then
 fi
 AM_CONDITIONAL(BUILD_SIMPLE_DMABUF_V4L_CLIENT, test "x$enable_simple_dmabuf_v4l_client" = "xyes")
 
+AC_ARG_ENABLE(simple-dmabuf-egl-client,
+              AS_HELP_STRING([--disable-simple-dmabuf-egl-client],
+                             [do not build the simple dmabuf egl client]),,
+              enable_simple_dmabuf_egl_client="auto")
+if ! test "x$enable_simple_dmabuf_egl_client" = "xno"; then
+  PKG_CHECK_MODULES(SIMPLE_DMABUF_EGL_CLIENT, [wayland-client libdrm gbm egl glesv2],
+		    [have_simple_dmabuf_egl_client=yes], [have_simple_dmabuf_egl_client=no])
+
+  if test "x$have_simple_dmabuf_egl_client" = "xno" -a "x$enable_simple_dmabuf_egl_client" = "xyes"; then
+    AC_MSG_ERROR([EGL dmabuf client explicitly enabled, but libdrm/egl/glev2 couldn't be found])
+  fi
+  enable_simple_dmabuf_egl_client="$have_simple_dmabuf_egl_client"
+fi
+AM_CONDITIONAL(BUILD_SIMPLE_DMABUF_EGL_CLIENT, test "x$enable_simple_dmabuf_egl_client" = "xyes")
+
 AC_ARG_ENABLE(clients, [  --enable-clients],, enable_clients=yes)
 AM_CONDITIONAL(BUILD_CLIENTS, test x$enable_clients = xyes)
 have_cairo_egl=no
