@@ -117,7 +117,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
         base::StringPiece old_authenticator_id,
         std::string new_authenticator_id) = 0;
     virtual void FidoAuthenticatorPairingModeChanged(
-        base::StringPiece authenticator_id) = 0;
+        base::StringPiece authenticator_id,
+        bool is_in_pairing_mode) = 0;
   };
 
   // TODO(https://crbug.com/769631): Remove the dependency on Connector once
@@ -205,7 +206,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
                               const std::string& previous_id,
                               std::string new_id) final;
   void AuthenticatorPairingModeChanged(FidoDiscoveryBase* discovery,
-                                       const std::string& device_id) final;
+                                       const std::string& device_id,
+                                       bool is_in_pairing_mode) final;
 
   void AddAuthenticator(FidoAuthenticator* authenticator);
   void NotifyObserverTransportAvailability();

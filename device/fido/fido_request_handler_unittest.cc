@@ -104,8 +104,8 @@ class TestTransportAvailabilityObserver
     authenticator_id_change_notification_receiver_.callback().Run(
         std::move(new_authenticator_id));
   }
-  void FidoAuthenticatorPairingModeChanged(
-      base::StringPiece authenticator_id) override {}
+  void FidoAuthenticatorPairingModeChanged(base::StringPiece authenticator_id,
+                                           bool is_in_pairing_mode) override {}
 
  private:
   TransportAvailabilityNotificationReceiver

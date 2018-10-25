@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/time/time.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
@@ -15,6 +16,7 @@
 #include "device/fido/ble/fido_ble_device.h"
 #include "device/fido/ble/fido_ble_uuids.h"
 #include "device/fido/fido_authenticator.h"
+#include "device/fido/fido_constants.h"
 #include "device/fido/fido_device_authenticator.h"
 
 namespace device {
@@ -38,9 +40,11 @@ void FidoBleDiscovery::OnSetPowered() {
   for (BluetoothDevice* device : adapter()->GetDevices()) {
     if (!CheckForExcludedDeviceAndCacheAddress(device) &&
         base::ContainsKey(device->GetUUIDs(), FidoServiceUUID())) {
-      VLOG(2) << "U2F BLE device: " << device->GetAddress();
-      AddDevice(
-          std::make_unique<FidoBleDevice>(adapter(), device->GetAddress()));
+      const auto& device_address = device->GetAddress();
+      VLOG(2) << "FIDO BLE device: " << device_address;
+      AddDevice(std::make_unique<FidoBleDevice>(adapter(), device_address));
+      CheckAndRecordDevicePairingModeOnDiscovery(
+          FidoBleDevice::GetId(device_address));
     }
   }
 
@@ -62,8 +66,11 @@ void FidoBleDiscovery::DeviceAdded(BluetoothAdapter* adapter,
                                    BluetoothDevice* device) {
   if (!CheckForExcludedDeviceAndCacheAddress(device) &&
       base::ContainsKey(device->GetUUIDs(), FidoServiceUUID())) {
-    VLOG(2) << "Discovered U2F BLE device: " << device->GetAddress();
-    AddDevice(std::make_unique<FidoBleDevice>(adapter, device->GetAddress()));
+    const auto& device_address = device->GetAddress();
+    VLOG(2) << "Discovered FIDO BLE device: " << device_address;
+    AddDevice(std::make_unique<FidoBleDevice>(adapter, device_address));
+    CheckAndRecordDevicePairingModeOnDiscovery(
+        FidoBleDevice::GetId(device_address));
   }
 }
 
@@ -74,29 +81,29 @@ void FidoBleDiscovery::DeviceChanged(BluetoothAdapter* adapter,
     return;
   }
 
-  const auto device_id = FidoBleDevice::GetId(device->GetAddress());
-  auto* authenticator = GetAuthenticator(device_id);
+  auto authenticator_id = FidoBleDevice::GetId(device->GetAddress());
+  auto* authenticator = GetAuthenticator(authenticator_id);
   if (!authenticator) {
-    VLOG(2) << "Discovered U2F service on existing BLE device: "
+    VLOG(2) << "Discovered FIDO service on existing BLE device: "
             << device->GetAddress();
     AddDevice(std::make_unique<FidoBleDevice>(adapter, device->GetAddress()));
+    CheckAndRecordDevicePairingModeOnDiscovery(std::move(authenticator_id));
     return;
   }
 
-  // Our model of FIDO BLE security key assumes that if BLE device is in pairing
-  // mode long enough time without pairing attempt, the device stops advertising
-  // and BluetoothAdapter::DeviceRemoved() is invoked instead of returning back
-  // to regular "non-pairing" mode. As so, we only notify observer when
-  // |fido_device| goes into pairing mode.
-  if (observer() && authenticator->device()->IsInPairingMode())
-    observer()->AuthenticatorPairingModeChanged(this, device_id);
+  if (authenticator->device()->IsInPairingMode()) {
+    RecordDevicePairingStatus(std::move(authenticator_id),
+                              PairingModeChangeType::kUnobserved);
+  }
 }
 
 void FidoBleDiscovery::DeviceRemoved(BluetoothAdapter* adapter,
                                      BluetoothDevice* device) {
   if (base::ContainsKey(device->GetUUIDs(), FidoServiceUUID())) {
-    VLOG(2) << "U2F BLE device removed: " << device->GetAddress();
-    RemoveDevice(FidoBleDevice::GetId(device->GetAddress()));
+    VLOG(2) << "FIDO BLE device removed: " << device->GetAddress();
+    auto device_id = FidoBleDevice::GetId(device->GetAddress());
+    RemoveDevice(device_id);
+    RemoveDeviceFromPairingTracker(device_id);
   }
 }
 
@@ -120,8 +127,17 @@ void FidoBleDiscovery::DeviceAddressChanged(BluetoothAdapter* adapter,
 
   VLOG(2) << "Discovered FIDO BLE device address change from old address : "
           << old_address << " to new address : " << device->GetAddress();
-  authenticators_.emplace(new_device_id, std::move(it->second));
-  authenticators_.erase(it);
+
+  auto change_map_keys = [&](auto* map) {
+    auto it = map->find(previous_device_id);
+    if (it != map->end()) {
+      map->emplace(new_device_id, std::move(it->second));
+      map->erase(it);
+    }
+  };
+
+  change_map_keys(&authenticators_);
+  change_map_keys(&pairing_mode_device_tracker_);
 
   if (observer()) {
     observer()->AuthenticatorIdChanged(this, previous_device_id,
@@ -149,6 +165,48 @@ bool FidoBleDiscovery::CheckForExcludedDeviceAndCacheAddress(
   }
 
   return false;
+}
+
+void FidoBleDiscovery::CheckAndRecordDevicePairingModeOnDiscovery(
+    std::string authenticator_id) {
+  auto* authenticator = GetAuthenticator(authenticator_id);
+  DCHECK(authenticator);
+  if (authenticator->device()->IsInPairingMode()) {
+    RecordDevicePairingStatus(std::move(authenticator_id),
+                              PairingModeChangeType::kObserved);
+  }
+}
+
+void FidoBleDiscovery::RecordDevicePairingStatus(std::string device_id,
+                                                 PairingModeChangeType type) {
+  auto it = pairing_mode_device_tracker_.find(device_id);
+  if (it != pairing_mode_device_tracker_.end()) {
+    it->second->Reset();
+    return;
+  }
+
+  if (observer() && type == PairingModeChangeType::kUnobserved) {
+    observer()->AuthenticatorPairingModeChanged(this, device_id,
+                                                true /* is_in_pairing_mode */);
+  }
+
+  auto pairing_mode_timer = std::make_unique<base::OneShotTimer>();
+  pairing_mode_timer->Start(
+      FROM_HERE, kBleDevicePairingModeWaitingInterval,
+      base::BindOnce(&FidoBleDiscovery::RemoveDeviceFromPairingTracker,
+                     weak_factory_.GetWeakPtr(), device_id));
+  pairing_mode_device_tracker_.emplace(std::move(device_id),
+                                       std::move(pairing_mode_timer));
+}
+
+void FidoBleDiscovery::RemoveDeviceFromPairingTracker(
+    const std::string& device_id) {
+  // Destroying the timer stops the timer scheduled task.
+  pairing_mode_device_tracker_.erase(device_id);
+  if (observer()) {
+    observer()->AuthenticatorPairingModeChanged(this, device_id,
+                                                false /* is_in_pairing_mode */);
+  }
 }
 
 }  // namespace device
