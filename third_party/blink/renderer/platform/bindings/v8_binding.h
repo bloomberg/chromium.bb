@@ -360,8 +360,10 @@ static void IndexedPropertyEnumerator(
   v8::Local<v8::Context> context = info.GetIsolate()->GetCurrentContext();
   for (int i = 0; i < length; ++i) {
     v8::Local<v8::Integer> integer = v8::Integer::New(info.GetIsolate(), i);
-    if (!V8CallBoolean(properties->CreateDataProperty(context, i, integer)))
+    bool created;
+    if (!properties->CreateDataProperty(context, i, integer).To(&created))
       return;
+    DCHECK(created);
   }
   V8SetReturnValue(info, properties);
 }
