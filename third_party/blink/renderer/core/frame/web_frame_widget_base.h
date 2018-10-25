@@ -44,6 +44,10 @@ class CORE_EXPORT WebFrameWidgetBase
   WebWidgetClient* Client() const { return client_; }
   WebLocalFrameImpl* LocalRootImpl() const { return local_root_; }
 
+  // Returns the bounding box of the block type node touched by the WebPoint.
+  WebRect ComputeBlockBound(const WebPoint& point_in_root_frame,
+                            bool ignore_clipping) const;
+
   void BindLocalRoot(WebLocalFrame&);
 
   // Called once the local root is bound via |BindLocalRoot()|.

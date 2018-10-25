@@ -359,7 +359,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void EnableTapHighlightAtPoint(
       const GestureEventWithHitTestResults& targeted_tap_event);
   void EnableTapHighlights(HeapVector<Member<Node>>&);
-  void AnimateDoubleTapZoom(const IntPoint&);
+  void AnimateDoubleTapZoom(const IntPoint&, const WebRect& block_bounds);
 
   void EnableFakePageScaleAnimationForTesting(bool);
   bool FakeDoubleTapAnimationPendingForTesting() const {
@@ -387,9 +387,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   bool HasVerticalScrollbar();
 
   WebSettingsImpl* SettingsImpl();
-
-  // Returns the bounding box of the block type node touched by the WebPoint.
-  WebRect ComputeBlockBound(const WebPoint&, bool ignore_clipping);
 
   WebLayerTreeView* LayerTreeView() const { return layer_tree_view_; }
   CompositorAnimationHost* AnimationHost() const {
