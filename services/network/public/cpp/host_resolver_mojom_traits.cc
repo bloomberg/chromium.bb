@@ -120,7 +120,7 @@ StructTraits<DnsConfigOverridesDataView, net::DnsConfigOverrides>::hosts(
     out_hosts.push_back(DnsHost::New(host.first.first, host.second));
   }
 
-  return out_hosts;
+  return base::make_optional(std::move(out_hosts));
 }
 
 // static
@@ -165,7 +165,7 @@ StructTraits<DnsConfigOverridesDataView, net::DnsConfigOverrides>::
         DnsOverHttpsServer::New(server.server_template, server.use_post));
   }
 
-  return out_servers;
+  return base::make_optional(std::move(out_servers));
 }
 
 // static
