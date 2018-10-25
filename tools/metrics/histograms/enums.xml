@@ -9295,6 +9295,18 @@ Called by update_net_error_codes.py.-->
   <int value="5" label="Failed to query dictionary attack counter"/>
 </enum>
 
+<enum name="CryptAuthSoftwareFeature">
+  <int value="0" label="UNKNOWN_FEATURE"/>
+  <int value="1" label="BETTER_TOGETHER_HOST"/>
+  <int value="2" label="BETTER_TOGETHER_CLIENT"/>
+  <int value="3" label="EASY_UNLOCK_HOST"/>
+  <int value="4" label="EASY_UNLOCK_CLIENT"/>
+  <int value="5" label="MAGIC_TETHER_HOST"/>
+  <int value="6" label="MAGIC_TETHER_CLIENT"/>
+  <int value="7" label="SMS_CONNECT_HOST"/>
+  <int value="8" label="SMS_CONNECT_CLIENT"/>
+</enum>
+
 <enum name="CryptohomeChecksumStatus">
   <int value="0" label="Checksum OK"/>
   <int value="1" label="Checksum does not exist"/>

@@ -102,8 +102,15 @@ std::unique_ptr<base::ListValue> BeaconSeedsToListValue(
   return list;
 }
 
-void RecordDeviceSyncSoftwareFeaturesResult(bool success) {
+void RecordDeviceSyncSoftwareFeaturesResult(
+    bool success,
+    cryptauth::SoftwareFeature software_feature) {
   UMA_HISTOGRAM_BOOLEAN("CryptAuth.DeviceSyncSoftwareFeaturesResult", success);
+  if (!success) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "CryptAuth.DeviceSyncSoftwareFeaturesResult.Failures", software_feature,
+        cryptauth::SoftwareFeature_ARRAYSIZE);
+  }
 }
 
 // Converts supported and enabled SoftwareFeature protos to a single dictionary
@@ -126,6 +133,8 @@ SupportedAndEnabledSoftwareFeaturesToDictionaryValue(
 
   for (const auto& enabled_software_feature : enabled_software_features) {
     std::string software_feature_key = enabled_software_feature;
+    cryptauth::SoftwareFeature software_feature =
+        SoftwareFeatureStringToEnum(software_feature_key);
 
     int software_feature_state;
     if (!dictionary->GetInteger(software_feature_key,
@@ -134,11 +143,13 @@ SupportedAndEnabledSoftwareFeaturesToDictionaryValue(
             SoftwareFeatureState::kSupported) {
       PA_LOG(ERROR) << "A feature is marked as enabled but not as supported: "
                     << software_feature_key;
-      RecordDeviceSyncSoftwareFeaturesResult(false /* success */);
+      RecordDeviceSyncSoftwareFeaturesResult(false /* success */,
+                                             software_feature);
 
       continue;
     } else {
-      RecordDeviceSyncSoftwareFeaturesResult(true /* success */);
+      RecordDeviceSyncSoftwareFeaturesResult(true /* success */,
+                                             software_feature);
     }
 
     dictionary->SetInteger(software_feature_key,
