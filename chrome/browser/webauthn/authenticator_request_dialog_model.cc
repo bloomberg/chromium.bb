@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 
 namespace {
@@ -68,7 +69,8 @@ base::Optional<device::FidoTransportProtocol> SelectMostLikelyTransport(
 
 }  // namespace
 
-AuthenticatorRequestDialogModel::AuthenticatorRequestDialogModel() {}
+AuthenticatorRequestDialogModel::AuthenticatorRequestDialogModel()
+    : weak_factory_(this) {}
 
 AuthenticatorRequestDialogModel::~AuthenticatorRequestDialogModel() {
   for (auto& observer : observers_)
@@ -183,13 +185,49 @@ void AuthenticatorRequestDialogModel::StartBleDiscovery() {
 }
 
 void AuthenticatorRequestDialogModel::InitiatePairingDevice(
-    const std::string& device_address) {
+    const std::string& authenticator_id) {
   DCHECK_EQ(current_step(), Step::kBleDeviceSelection);
+  CHECK(GetAuthenticator(authenticator_id));
+  selected_authenticator_id_ = authenticator_id;
+  SetCurrentStep(Step::kBlePinEntry);
 }
 
 void AuthenticatorRequestDialogModel::FinishPairingWithPin(
     const base::string16& pin) {
   DCHECK_EQ(current_step(), Step::kBlePinEntry);
+  const auto* selected_authenticator =
+      GetAuthenticator(selected_authenticator_id_);
+  if (!selected_authenticator) {
+    // TODO(hongjunchoi): Implement an error screen for error encountered when
+    // pairing.
+    SetCurrentStep(Step::kBleDeviceSelection);
+    return;
+  }
+
+  DCHECK_EQ(device::FidoTransportProtocol::kBluetoothLowEnergy,
+            selected_authenticator->transport());
+  ble_pairing_callback_.Run(
+      selected_authenticator_id_, base::UTF16ToUTF8(pin),
+      base::BindOnce(&AuthenticatorRequestDialogModel::OnPairingSuccess,
+                     weak_factory_.GetWeakPtr(), selected_authenticator_id_),
+      base::BindOnce(&AuthenticatorRequestDialogModel::OnPairingFailure,
+                     weak_factory_.GetWeakPtr()));
+  SetCurrentStep(Step::kBleVerifying);
+}
+
+void AuthenticatorRequestDialogModel::OnPairingSuccess(
+    base::StringPiece authenticator_id) {
+  DCHECK_EQ(current_step(), Step::kBleVerifying);
+  auto* authenticator = GetAuthenticator(authenticator_id);
+  if (authenticator)
+    return;
+
+  DispatchRequestAsync(authenticator, base::TimeDelta());
+}
+
+void AuthenticatorRequestDialogModel::OnPairingFailure() {
+  DCHECK_EQ(current_step(), Step::kBleVerifying);
+  SetCurrentStep(Step::kBleDeviceSelection);
 }
 
 void AuthenticatorRequestDialogModel::TryUsbDevice() {
@@ -289,6 +327,11 @@ void AuthenticatorRequestDialogModel::SetRequestCallback(
   request_callback_ = request_callback;
 }
 
+void AuthenticatorRequestDialogModel::SetBlePairingCallback(
+    BlePairingCallback ble_pairing_callback) {
+  ble_pairing_callback_ = ble_pairing_callback;
+}
+
 void AuthenticatorRequestDialogModel::SetBluetoothAdapterPowerOnCallback(
     base::RepeatingClosure bluetooth_adapter_power_on_callback) {
   bluetooth_adapter_power_on_callback_ = bluetooth_adapter_power_on_callback;
@@ -352,6 +395,21 @@ void AuthenticatorRequestDialogModel::UpdateAuthenticatorReferencePairingMode(
 }
 
 void AuthenticatorRequestDialogModel::SetSelectedAuthenticatorForTesting(
-    AuthenticatorReference* authenticator) {
-  selected_authenticator_ = authenticator;
+    std::unique_ptr<AuthenticatorReference> test_authenticator) {
+  selected_authenticator_id_ = test_authenticator->authenticator_id();
+  saved_authenticators_.emplace_back(std::move(test_authenticator));
+}
+
+AuthenticatorReference* AuthenticatorRequestDialogModel::GetAuthenticator(
+    base::StringPiece authenticator_id) const {
+  auto authenticator = std::find_if(
+      saved_authenticators_.begin(), saved_authenticators_.end(),
+      [authenticator_id](const auto& authenticator) {
+        return authenticator->authenticator_id() == authenticator_id;
+      });
+
+  if (authenticator == saved_authenticators_.end())
+    return nullptr;
+
+  return authenticator->get();
 }
