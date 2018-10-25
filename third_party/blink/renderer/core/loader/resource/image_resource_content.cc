@@ -509,9 +509,10 @@ bool ImageResourceContent::IsAcceptableCompressionRatio() {
   uint64_t pixels = IntrinsicSize(kDoNotRespectImageOrientation).Area();
   if (!pixels)
     return true;
-  long long resource_length = GetResponse().DecodedBodyLength();
+  DCHECK(image_);
+  double resource_length = image_->Data() ? image_->Data()->size() : 0;
   // Allow no more than 10 bits per compressed pixel
-  return (double)resource_length / pixels <= 1.25;
+  return resource_length / pixels <= 1.25;
 }
 
 void ImageResourceContent::DecodedSizeChangedTo(const blink::Image* image,
