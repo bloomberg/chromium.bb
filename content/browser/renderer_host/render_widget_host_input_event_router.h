@@ -326,6 +326,11 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   // Tracked for the purpose of providing a root_view when dispatching emulated
   // touch/gesture events.
   RenderWidgetHostViewBase* last_emulated_event_root_view_;
+
+  // Used to send a GSE with proper source device to terminate scroll bubbling
+  // whenever needed.
+  blink::WebGestureDevice bubbling_gesture_scroll_source_device_;
+
   float last_device_scale_factor_;
 
   int active_touches_;

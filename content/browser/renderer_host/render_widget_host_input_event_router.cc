@@ -42,9 +42,13 @@ void TransformEventTouchPositions(blink::WebTouchEvent* event,
   }
 }
 
-blink::WebGestureEvent DummyGestureScrollUpdate(base::TimeTicks time_stamp) {
+blink::WebGestureEvent DummyGestureScrollUpdate(
+    base::TimeTicks time_stamp,
+    blink::WebGestureDevice source_device =
+        blink::kWebGestureDeviceUninitialized) {
   return blink::WebGestureEvent(blink::WebInputEvent::kGestureScrollUpdate,
-                                blink::WebInputEvent::kNoModifiers, time_stamp);
+                                blink::WebInputEvent::kNoModifiers, time_stamp,
+                                source_device);
 }
 
 gfx::PointF ComputePointInRootInPixels(
@@ -596,8 +600,8 @@ void RenderWidgetHostInputEventRouter::DispatchMouseWheelEvent(
         // the wheel target view is destroyed and the wheel end event won't get
         // processed.
         blink::WebGestureEvent fake_scroll_update =
-            DummyGestureScrollUpdate(mouse_wheel_event.TimeStamp());
-        fake_scroll_update.SetSourceDevice(blink::kWebGestureDeviceTouchpad);
+            DummyGestureScrollUpdate(mouse_wheel_event.TimeStamp(),
+                                     bubbling_gesture_scroll_source_device_);
         SendGestureScrollEnd(bubbling_gesture_scroll_target_.target,
                              fake_scroll_update);
         bubbling_gesture_scroll_target_.target = nullptr;
@@ -788,8 +792,10 @@ void RenderWidgetHostInputEventRouter::DispatchTouchEvent(
 
   if (is_sequence_start) {
     if (touch_target_.target == bubbling_gesture_scroll_target_.target) {
-      SendGestureScrollEnd(bubbling_gesture_scroll_target_.target,
-                           DummyGestureScrollUpdate(touch_event.TimeStamp()));
+      SendGestureScrollEnd(
+          bubbling_gesture_scroll_target_.target,
+          DummyGestureScrollUpdate(touch_event.TimeStamp(),
+                                   bubbling_gesture_scroll_source_device_));
       CancelScrollBubbling(bubbling_gesture_scroll_target_.target);
     }
   }
@@ -1035,6 +1041,7 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
     }
 
     bubbling_gesture_scroll_target_.target = target_view;
+    bubbling_gesture_scroll_source_device_ = event.SourceDevice();
   } else if (event.GetType() == blink::WebInputEvent::kGestureFlingCancel) {
     // TODO(828422): Remove once this issue no longer occurs.
     if (resending_view == last_fling_start_bubbled_target_) {
@@ -1080,6 +1087,8 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
     ReportBubblingScrollToSameView(event, resending_view);
     first_bubbling_scroll_target_.target = nullptr;
     bubbling_gesture_scroll_target_.target = nullptr;
+    bubbling_gesture_scroll_source_device_ =
+        blink::kWebGestureDeviceUninitialized;
     return;
   }
 
@@ -1096,6 +1105,8 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
       event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
     first_bubbling_scroll_target_.target = nullptr;
     bubbling_gesture_scroll_target_.target = nullptr;
+    bubbling_gesture_scroll_source_device_ =
+        blink::kWebGestureDeviceUninitialized;
   }
 }
 
@@ -1166,6 +1177,8 @@ void RenderWidgetHostInputEventRouter::CancelScrollBubbling(
   if (target_view == first_bubbling_scroll_target_.target) {
     first_bubbling_scroll_target_.target = nullptr;
     bubbling_gesture_scroll_target_.target = nullptr;
+    bubbling_gesture_scroll_source_device_ =
+        blink::kWebGestureDeviceUninitialized;
   }
 }
 
@@ -1399,8 +1412,10 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     if (touchscreen_gesture_target_.target &&
         touchscreen_gesture_target_.target ==
             bubbling_gesture_scroll_target_.target) {
-      SendGestureScrollEnd(bubbling_gesture_scroll_target_.target,
-                           DummyGestureScrollUpdate(gesture_event.TimeStamp()));
+      SendGestureScrollEnd(
+          bubbling_gesture_scroll_target_.target,
+          DummyGestureScrollUpdate(gesture_event.TimeStamp(),
+                                   bubbling_gesture_scroll_source_device_));
       CancelScrollBubbling(bubbling_gesture_scroll_target_.target);
     }
   }
@@ -1518,7 +1533,8 @@ void RenderWidgetHostInputEventRouter::DispatchTouchpadGestureEvent(
             bubbling_gesture_scroll_target_.target) {
       SendGestureScrollEnd(
           bubbling_gesture_scroll_target_.target,
-          DummyGestureScrollUpdate(touchpad_gesture_event.TimeStamp()));
+          DummyGestureScrollUpdate(touchpad_gesture_event.TimeStamp(),
+                                   bubbling_gesture_scroll_source_device_));
       CancelScrollBubbling(bubbling_gesture_scroll_target_.target);
     }
   }
