@@ -54,6 +54,11 @@ ASH_PUBLIC_EXPORT extern const base::Feature
 // TODO(beccahughes): Remove after launch. (https://crbug.com/894255)
 ASH_PUBLIC_EXPORT extern const base::Feature kMediaSessionAccelerators;
 
+// Enables the media session notification. If this is enabled, we will show
+// a notification that shows the currently playing media with controls.
+// TODO(beccahughes): Remove after launch. (https://crbug.com/897836)
+ASH_PUBLIC_EXPORT extern const base::Feature kMediaSessionNotification;
+
 // Enables the Night Light feature.
 ASH_PUBLIC_EXPORT extern const base::Feature kNightLight;
 

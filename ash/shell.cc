@@ -62,6 +62,7 @@
 #include "ash/magnifier/docked_magnifier_controller.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
+#include "ash/media/media_notification_controller.h"
 #include "ash/media_controller.h"
 #include "ash/metrics/time_to_first_present_recorder.h"
 #include "ash/multi_device_setup/multi_device_notification_presenter.h"
@@ -939,6 +940,10 @@ Shell::~Shell() {
   // before it.
   detachable_base_handler_.reset();
 
+  // MediaNotificationController depends on MessageCenter and must be destructed
+  // before it.
+  media_notification_controller_.reset();
+
   // Destroys the MessageCenter singleton, so must happen late.
   message_center_controller_.reset();
 
@@ -1266,6 +1271,11 @@ void Shell::Init(
   if (!::features::IsMultiProcessMash()) {
     ime_focus_handler_ = std::make_unique<ImeFocusHandler>(
         focus_controller(), window_tree_host_manager_->input_method());
+  }
+
+  if (base::FeatureList::IsEnabled(features::kMediaSessionNotification)) {
+    media_notification_controller_ =
+        std::make_unique<MediaNotificationController>(connector_);
   }
 
   for (auto& observer : shell_observers_)
