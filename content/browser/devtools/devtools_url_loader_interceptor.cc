@@ -43,7 +43,6 @@ using TakeResponseBodyPipeCallback =
 using Modifications = DevToolsNetworkInterceptor::Modifications;
 using InterceptionStage = DevToolsNetworkInterceptor::InterceptionStage;
 using protocol::Response;
-using protocol::Network::AuthChallengeResponse;
 using GlobalRequestId = std::tuple<int32_t, int32_t, int32_t>;
 
 struct CreateLoaderParameters {
@@ -214,7 +213,9 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   }
 
   Response InnerContinueRequest(std::unique_ptr<Modifications> modifications);
-  Response ProcessAuthResponse(AuthChallengeResponse* auth_challenge_response);
+  void ProcessAuthResponse(
+      const DevToolsNetworkInterceptor::AuthChallengeResponse&
+          auth_challenge_response);
   Response ProcessResponseOverride(std::string response);
   void ProcessRedirectByClient(const GURL& redirect_url);
   void ProcessSetCookies(const net::HttpResponseHeaders& response_headers,
@@ -802,12 +803,12 @@ Response InterceptionJob::InnerContinueRequest(
   waiting_for_resolution_ = false;
 
   if (state_ == State::kAuthRequired) {
-    if (!modifications->auth_challenge_response.isJust())
+    if (!modifications->auth_challenge_response)
       return Response::InvalidParams("authChallengeResponse required.");
-    return ProcessAuthResponse(
-        modifications->auth_challenge_response.fromJust());
+    ProcessAuthResponse(*modifications->auth_challenge_response);
+    return Response::OK();
   }
-  if (modifications->auth_challenge_response.isJust())
+  if (modifications->auth_challenge_response)
     return Response::InvalidParams("authChallengeResponse not expected.");
 
   if (modifications->error_reason) {
@@ -910,45 +911,33 @@ void InterceptionJob::ApplyModificationsToRequest(
         post_data.data(), post_data.size());
   }
 
-  if (modifications->modified_headers.isJust()) {
+  if (modifications->modified_headers) {
     request->headers.Clear();
-    std::unique_ptr<protocol::DictionaryValue> headers =
-        modifications->modified_headers.fromJust()->toValue();
-    for (size_t i = 0; i < headers->size(); i++) {
-      protocol::DictionaryValue::Entry entry = headers->at(i);
-      std::string value;
-      if (!entry.second->asString(&value))
-        continue;
+    for (const auto& entry : *modifications->modified_headers) {
       if (base::EqualsCaseInsensitiveASCII(entry.first,
                                            net::HttpRequestHeaders::kReferer)) {
-        request->referrer = GURL(value);
+        request->referrer = GURL(entry.second);
         request->referrer_policy = net::URLRequest::NEVER_CLEAR_REFERRER;
       } else {
-        request->headers.SetHeader(entry.first, value);
+        request->headers.SetHeader(entry.first, entry.second);
       }
     }
   }
 }
 
-Response InterceptionJob::ProcessAuthResponse(
-    AuthChallengeResponse* auth_challenge_response) {
-  std::string response = auth_challenge_response->GetResponse();
-  state_ = State::kRequestSent;
-  if (response == AuthChallengeResponse::ResponseEnum::Default) {
-    std::move(pending_auth_callback_).Run(true, base::nullopt);
-  } else if (response == AuthChallengeResponse::ResponseEnum::CancelAuth) {
-    std::move(pending_auth_callback_).Run(false, base::nullopt);
-  } else if (response ==
-             AuthChallengeResponse::ResponseEnum::ProvideCredentials) {
-    net::AuthCredentials credentials(
-        base::UTF8ToUTF16(auth_challenge_response->GetUsername("")),
-        base::UTF8ToUTF16(auth_challenge_response->GetPassword("")));
-    std::move(pending_auth_callback_).Run(false, std::move(credentials));
-  } else {
-    return Response::InvalidParams("Unrecognized authChallengeResponse.");
+void InterceptionJob::ProcessAuthResponse(
+    const DevToolsNetworkInterceptor::AuthChallengeResponse& response) {
+  switch (response.response_type) {
+    case DevToolsNetworkInterceptor::AuthChallengeResponse::kDefault:
+      std::move(pending_auth_callback_).Run(true, base::nullopt);
+      break;
+    case DevToolsNetworkInterceptor::AuthChallengeResponse::kCancelAuth:
+      std::move(pending_auth_callback_).Run(false, base::nullopt);
+      break;
+    case DevToolsNetworkInterceptor::AuthChallengeResponse::kProvideCredentials:
+      std::move(pending_auth_callback_).Run(false, response.credentials);
+      break;
   }
-
-  return Response::OK();
 }
 
 Response InterceptionJob::ProcessResponseOverride(std::string response) {

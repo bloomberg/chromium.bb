@@ -1858,7 +1858,7 @@ void NetworkHandler::ContinueInterceptedRequest(
     Maybe<std::string> url,
     Maybe<std::string> method,
     Maybe<std::string> post_data,
-    Maybe<protocol::Network::Headers> headers,
+    Maybe<protocol::Network::Headers> opt_headers,
     Maybe<protocol::Network::AuthChallengeResponse> auth_challenge_response,
     std::unique_ptr<ContinueInterceptedRequestCallback> callback) {
   base::Optional<std::string> raw_response;
@@ -1881,11 +1881,54 @@ void NetworkHandler::ContinueInterceptedRequest(
     }
   }
 
+  std::unique_ptr<DevToolsNetworkInterceptor::Modifications::HeadersVector>
+      override_headers;
+  if (opt_headers.isJust()) {
+    std::unique_ptr<protocol::DictionaryValue> headers =
+        opt_headers.fromJust()->toValue();
+    override_headers = std::make_unique<
+        DevToolsNetworkInterceptor::Modifications::HeadersVector>();
+    for (size_t i = 0; i < headers->size(); ++i) {
+      const protocol::DictionaryValue::Entry& entry = headers->at(i);
+      std::string value;
+      if (!entry.second->asString(&value)) {
+        callback->sendFailure(Response::InvalidParams("Invalid header value"));
+        return;
+      }
+      override_headers->emplace_back(entry.first, value);
+    }
+  }
+  using AuthChallengeResponse =
+      DevToolsNetworkInterceptor::AuthChallengeResponse;
+  std::unique_ptr<AuthChallengeResponse> override_auth;
+  if (auth_challenge_response.isJust()) {
+    std::string type = auth_challenge_response.fromJust()->GetResponse();
+    if (type == Network::AuthChallengeResponse::ResponseEnum::Default) {
+      override_auth = std::make_unique<AuthChallengeResponse>(
+          AuthChallengeResponse::kDefault);
+    } else if (type ==
+               Network::AuthChallengeResponse::ResponseEnum::CancelAuth) {
+      override_auth = std::make_unique<AuthChallengeResponse>(
+          AuthChallengeResponse::kCancelAuth);
+    } else if (type == Network::AuthChallengeResponse::ResponseEnum::
+                           ProvideCredentials) {
+      override_auth = std::make_unique<AuthChallengeResponse>(
+          base::UTF8ToUTF16(
+              auth_challenge_response.fromJust()->GetUsername("")),
+          base::UTF8ToUTF16(
+              auth_challenge_response.fromJust()->GetPassword("")));
+    } else {
+      callback->sendFailure(
+          Response::InvalidParams("Unrecognized authChallengeResponse."));
+      return;
+    }
+  }
+
   auto modifications =
       std::make_unique<DevToolsNetworkInterceptor::Modifications>(
           std::move(error), std::move(raw_response), std::move(url),
-          std::move(method), std::move(post_data), std::move(headers),
-          std::move(auth_challenge_response));
+          std::move(method), std::move(post_data), std::move(override_headers),
+          std::move(override_auth));
 
   if (url_loader_interceptor_) {
     url_loader_interceptor_->ContinueInterceptedRequest(
