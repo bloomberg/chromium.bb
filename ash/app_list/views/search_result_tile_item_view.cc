@@ -250,7 +250,12 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
   if (!item->icon().isNull())
     OnMetadataChanged();
 
-  base::string16 accessible_name = title_->text();
+  base::string16 accessible_name;
+  if (!item_->accessible_name().empty())
+    accessible_name = item_->accessible_name();
+  else
+    accessible_name = title_->text();
+
   if (rating_ && rating_->visible()) {
     accessible_name +=
         base::UTF8ToUTF16(", ") +

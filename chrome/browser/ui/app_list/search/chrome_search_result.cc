@@ -65,6 +65,13 @@ void ChromeSearchResult::SetDetailsTags(const Tags& tags) {
     updater->SetSearchResultMetadata(id(), CloneMetadata());
 }
 
+void ChromeSearchResult::SetAccessibleName(const base::string16& name) {
+  metadata_->accessible_name = name;
+  AppListModelUpdater* updater = model_updater();
+  if (updater)
+    updater->SetSearchResultMetadata(id(), CloneMetadata());
+}
+
 void ChromeSearchResult::SetRating(float rating) {
   metadata_->rating = rating;
   AppListModelUpdater* updater = model_updater();

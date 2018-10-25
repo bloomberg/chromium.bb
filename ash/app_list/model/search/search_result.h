@@ -65,6 +65,13 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   const Tags& details_tags() const { return metadata_->details_tags; }
   void set_details_tags(const Tags& tags) { metadata_->details_tags = tags; }
 
+  const base::string16& accessible_name() const {
+    return metadata_->accessible_name;
+  }
+  void set_accessible_name(const base::string16& name) {
+    metadata_->accessible_name = name;
+  }
+
   float rating() const { return metadata_->rating; }
   void SetRating(float rating);
 
