@@ -320,6 +320,9 @@ class MEDIA_BLINK_EXPORT UrlIndex {
   ResourceFetchContext* fetch_context() const { return fetch_context_; }
   int block_shift() const { return block_shift_; }
 
+  // Returns true kMaxParallelPreload or more urls are loading at the same time.
+  bool HasReachedMaxParallelPreload() const;
+
   // Protected rather than private for testing.
  protected:
   friend class UrlData;

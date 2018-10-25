@@ -360,6 +360,10 @@ void UrlIndex::RemoveLoading(UrlData* url_data) {
   }
 }
 
+bool UrlIndex::HasReachedMaxParallelPreload() const {
+  return loading_.size() >= kMaxParallelPreload;
+}
+
 UrlIndex::UrlIndex(ResourceFetchContext* fetch_context)
     : UrlIndex(fetch_context, kBlockSizeShift) {}
 
