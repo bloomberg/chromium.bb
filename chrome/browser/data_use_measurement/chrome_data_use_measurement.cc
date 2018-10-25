@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
@@ -72,12 +73,15 @@ ChromeDataUseMeasurement::ChromeDataUseMeasurement(
     network::NetworkConnectionTracker* network_connection_tracker)
     : DataUseMeasurement(std::move(url_request_classifier),
                          ascriber,
-                         network_connection_tracker) {}
+                         network_connection_tracker) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 void ChromeDataUseMeasurement::UpdateDataUseToMetricsService(
     int64_t total_bytes,
     bool is_cellular,
     bool is_metrics_service_usage) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Update data use of user traffic and services distinguishing cellular and
   // metrics services data use.
   UpdateMetricsUsagePrefsOnUIThread(total_bytes, is_cellular,
@@ -88,6 +92,7 @@ void ChromeDataUseMeasurement::ReportNetworkServiceDataUse(
     int32_t network_traffic_annotation_id_hash,
     int64_t recv_bytes,
     int64_t sent_bytes) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   // Negative byte numbres is not a critical problem (i.e. should have no security implications) but
@@ -114,7 +119,10 @@ void ChromeDataUseMeasurement::ReportNetworkServiceDataUse(
     for (auto& observer : services_data_use_observer_list_)
       observer.OnServicesDataUse(recv_bytes, sent_bytes);
   }
+  UMA_HISTOGRAM_COUNTS_1M("DataUse.BytesReceived.Delegate", recv_bytes);
+  UMA_HISTOGRAM_COUNTS_1M("DataUse.BytesSent.Delegate", sent_bytes);
 #if defined(OS_ANDROID)
+  bytes_transferred_since_last_traffic_stats_query_ += recv_bytes + sent_bytes;
   MaybeRecordNetworkBytesOS();
 #endif
 }

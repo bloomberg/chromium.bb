@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
@@ -131,10 +132,17 @@ class DataUseMeasurement
   // Records the count of bytes received and sent by Chrome on the network as
   // reported by the operating system.
   void MaybeRecordNetworkBytesOS();
+
+  // Number of bytes received and sent by Chromium as reported by the network
+  // delegate since the operating system was last queried for traffic
+  // statistics.
+  int64_t bytes_transferred_since_last_traffic_stats_query_ = 0;
 #endif
 
   base::ObserverList<ServicesDataUseObserver>::Unchecked
       services_data_use_observer_list_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
  private:
   friend class DataUseMeasurementTest;
@@ -222,11 +230,6 @@ class DataUseMeasurement
   // operating system was never queried.
   int64_t rx_bytes_os_;
   int64_t tx_bytes_os_;
-
-  // Number of bytes received and sent by Chromium as reported by the network
-  // delegate since the operating system was last queried for traffic
-  // statistics.
-  int64_t bytes_transferred_since_last_traffic_stats_query_;
 
   // The time at which Chromium app state changed to background. Can be null if
   // app is not in background.
