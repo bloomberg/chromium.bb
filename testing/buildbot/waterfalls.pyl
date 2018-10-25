@@ -3448,9 +3448,7 @@
         'os_type': 'win',
         'browser_config': 'release',
         'mixins': [
-          # TODO(kbr): cut this bot over to Win10, coordinating with
-          # V8 team.
-          'win7_nvidia_quadro_p400',
+          'win10_nvidia_quadro_p400_stable',
         ],
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_v8_desktop_telemetry_tests',
