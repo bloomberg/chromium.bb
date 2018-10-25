@@ -12,6 +12,7 @@
 #include "content/browser/devtools/protocol/network.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "net/base/auth.h"
 #include "net/base/net_errors.h"
 
 namespace net {
@@ -52,16 +53,35 @@ class DevToolsNetworkInterceptor {
                               mojo::ScopedDataPipeConsumerHandle,
                               const std::string& mime_type)>;
 
+  struct AuthChallengeResponse {
+    enum ResponseType {
+      kDefault,
+      kCancelAuth,
+      kProvideCredentials,
+    };
+
+    explicit AuthChallengeResponse(ResponseType response_type);
+    AuthChallengeResponse(const base::string16& username,
+                          const base::string16& password);
+
+    const ResponseType response_type;
+    const net::AuthCredentials credentials;
+
+    DISALLOW_COPY_AND_ASSIGN(AuthChallengeResponse);
+  };
+
   struct Modifications {
+    using HeadersVector = std::vector<std::pair<std::string, std::string>>;
+
     Modifications();
-    Modifications(base::Optional<net::Error> error_reason,
-                  base::Optional<std::string> raw_response,
-                  protocol::Maybe<std::string> modified_url,
-                  protocol::Maybe<std::string> modified_method,
-                  protocol::Maybe<std::string> modified_post_data,
-                  protocol::Maybe<protocol::Network::Headers> modified_headers,
-                  protocol::Maybe<protocol::Network::AuthChallengeResponse>
-                      auth_challenge_response);
+    Modifications(
+        base::Optional<net::Error> error_reason,
+        base::Optional<std::string> raw_response,
+        protocol::Maybe<std::string> modified_url,
+        protocol::Maybe<std::string> modified_method,
+        protocol::Maybe<std::string> modified_post_data,
+        std::unique_ptr<HeadersVector> modified_headers,
+        std::unique_ptr<AuthChallengeResponse> auth_challenge_response);
     ~Modifications();
 
     // If none of the following are set then the request will be allowed to
@@ -73,11 +93,9 @@ class DevToolsNetworkInterceptor {
     protocol::Maybe<std::string> modified_url;
     protocol::Maybe<std::string> modified_method;
     protocol::Maybe<std::string> modified_post_data;
-    protocol::Maybe<protocol::Network::Headers> modified_headers;
-
+    std::unique_ptr<HeadersVector> modified_headers;
     // AuthChallengeResponse is mutually exclusive with the above.
-    protocol::Maybe<protocol::Network::AuthChallengeResponse>
-        auth_challenge_response;
+    std::unique_ptr<AuthChallengeResponse> auth_challenge_response;
   };
 
   enum InterceptionStage {
