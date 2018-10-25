@@ -1944,6 +1944,26 @@ be describing additional metrics about the same event.
   <metric name="AudioVideo.SRC"/>
 </event>
 
+<event name="Media.WebAudio.AudioContext.AudibleTime">
+  <owner>hongchan@chromium.org</owner>
+  <owner>rtoy@chromium.org</owner>
+  <owner>webaudio-dev@chromium.org</owner>
+  <summary>
+    Records the AudioContext audible time information.
+  </summary>
+  <metric name="AudibleTime">
+    <summary>
+      The number of seconds of audio that were audible during the entire
+      lifetime of the AudioContext.
+    </summary>
+  </metric>
+  <metric name="IsMainFrame">
+    <summary>
+      Indicates whether the event is fired from main frame.
+    </summary>
+  </metric>
+</event>
+
 <event name="Media.WebMediaPlayerState">
   <owner>dalecurtis@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
