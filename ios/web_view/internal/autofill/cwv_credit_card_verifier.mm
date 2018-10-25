@@ -91,6 +91,8 @@ class WebViewCardUnmaskPromptView : public autofill::CardUnmaskPromptView {
   __weak id<CWVCreditCardVerifierDataSource> _dataSource;
   // Delegate to receive callbacks.
   __weak id<CWVCreditCardVerifierDelegate> _delegate;
+  // The callback to invoke for returning risk data.
+  base::OnceCallback<void(const std::string&)> _riskDataCallback;
 }
 
 @synthesize creditCard = _creditCard;
@@ -166,6 +168,16 @@ class WebViewCardUnmaskPromptView : public autofill::CardUnmaskPromptView {
                  (nullable __weak id<CWVCreditCardVerifierDelegate>)delegate {
   _dataSource = dataSource;
   _delegate = delegate;
+
+  // It is possible for |_riskDataCallback| to be null when a failed
+  // verification attempt is retried.
+  if (!_riskDataCallback.is_null()) {
+    [_dataSource creditCardVerifier:self
+        getRiskDataWithCompletionHandler:^(NSString* _Nonnull riskData) {
+          std::move(_riskDataCallback).Run(base::SysNSStringToUTF8(riskData));
+        }];
+  }
+
   _unmaskingController->OnUnmaskResponse(
       base::SysNSStringToUTF16(CVC), base::SysNSStringToUTF16(expirationMonth),
       base::SysNSStringToUTF16(expirationYear), storeLocally);
@@ -212,12 +224,7 @@ class WebViewCardUnmaskPromptView : public autofill::CardUnmaskPromptView {
 }
 
 - (void)loadRiskData:(base::OnceCallback<void(const std::string&)>)callback {
-  __block base::OnceCallback<void(const std::string&)> blockCallback =
-      std::move(callback);
-  [_dataSource creditCardVerifier:self
-      getRiskDataWithCompletionHandler:^(NSString* _Nonnull riskData) {
-        std::move(blockCallback).Run(base::SysNSStringToUTF8(riskData));
-      }];
+  _riskDataCallback = std::move(callback);
 }
 
 @end
