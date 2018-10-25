@@ -21,9 +21,8 @@ void TabletModeControllerTestApi::EnterTabletMode() {
   tablet_mode_controller_->AttemptEnterTabletMode();
 }
 
-void TabletModeControllerTestApi::LeaveTabletMode(
-    bool called_by_device_update) {
-  tablet_mode_controller_->AttemptLeaveTabletMode(called_by_device_update);
+void TabletModeControllerTestApi::LeaveTabletMode() {
+  tablet_mode_controller_->AttemptLeaveTabletMode();
 }
 
 void TabletModeControllerTestApi::AttachExternalMouse() {

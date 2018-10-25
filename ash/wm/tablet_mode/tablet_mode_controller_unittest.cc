@@ -783,6 +783,119 @@ TEST_F(TabletModeControllerTest, ExternalMouseInLaptopMode) {
   EXPECT_FALSE(AreEventsBlocked());
 }
 
+// Test that the ui mode and input event blocker should be both correctly
+// updated when there is a change in external mouse and lid angle.
+TEST_F(TabletModeControllerTest, ExternalMouseWithLidAngleTest) {
+  // Set the current list of devices to empty so that they don't interfere
+  // with the test.
+  base::RunLoop().RunUntilIdle();
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
+  base::RunLoop().RunUntilIdle();
+
+  // Start in laptop mode.
+  OpenLidToAngle(30.0f);
+  EXPECT_FALSE(IsTabletModeStarted());
+  EXPECT_FALSE(AreEventsBlocked());
+
+  // Attach external mouse doesn't change the mode.
+  ws::InputDeviceClientTestApi().SetMouseDevices(
+      {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(IsTabletModeStarted());
+  EXPECT_FALSE(AreEventsBlocked());
+
+  // Now flip the device to tablet mode angle. The device should stay in
+  // clamshell mode because of the external mouse. But the internal input events
+  // should be blocked.
+  OpenLidToAngle(300.0f);
+  EXPECT_FALSE(IsTabletModeStarted());
+  EXPECT_TRUE(AreEventsBlocked());
+
+  // Remove the external mouse should enter tablet mode now. The internal input
+  // events should still be blocked.
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(IsTabletModeStarted());
+  EXPECT_TRUE(AreEventsBlocked());
+
+  // Attach the mouse again should enter clamshell mode again.
+  ws::InputDeviceClientTestApi().SetMouseDevices(
+      {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(IsTabletModeStarted());
+  EXPECT_TRUE(AreEventsBlocked());
+
+  // Flip the device back to clamshell angle. The device should stay in
+  // clamshell mode and the internal input events should not be blocked.
+  OpenLidToAngle(30.0f);
+  EXPECT_FALSE(IsTabletModeStarted());
+  EXPECT_FALSE(AreEventsBlocked());
+
+  // Now remove the mouse. The device should stay in clamshell mode and the
+  // internal events should not be blocked.
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(IsTabletModeStarted());
+  EXPECT_FALSE(AreEventsBlocked());
+}
+
+// Test that the ui mode and input event blocker should be both correctly
+// updated when there is a change in external mouse and tablet mode switch
+// value.
+TEST_F(TabletModeControllerTest, ExternalMouseWithTabletModeSwithTest) {
+  // Set the current list of devices to empty so that they don't interfere
+  // with the test.
+  base::RunLoop().RunUntilIdle();
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
+  base::RunLoop().RunUntilIdle();
+
+  // Start in laptop mode.
+  SetTabletMode(false);
+  EXPECT_FALSE(IsTabletModeStarted());
+  EXPECT_FALSE(AreEventsBlocked());
+
+  // Attach external mouse doesn't change the mode.
+  ws::InputDeviceClientTestApi().SetMouseDevices(
+      {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(IsTabletModeStarted());
+  EXPECT_FALSE(AreEventsBlocked());
+
+  // Now set tablet mode switch value to true. The device should stay in
+  // clamshell mode because of the external mouse. But the internal input events
+  // should be blocked.
+  SetTabletMode(true);
+  EXPECT_FALSE(IsTabletModeStarted());
+  EXPECT_TRUE(AreEventsBlocked());
+
+  // Remove the external mouse should enter tablet mode now. The internal input
+  // events should still be blocked.
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(IsTabletModeStarted());
+  EXPECT_TRUE(AreEventsBlocked());
+
+  // Attach the mouse again should enter clamshell mode again.
+  ws::InputDeviceClientTestApi().SetMouseDevices(
+      {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(IsTabletModeStarted());
+  EXPECT_TRUE(AreEventsBlocked());
+
+  // Set tablet mode switch value to false. The device should stay in
+  // clamshell mode and the internal input events should not be blocked.
+  SetTabletMode(false);
+  EXPECT_FALSE(IsTabletModeStarted());
+  EXPECT_FALSE(AreEventsBlocked());
+
+  // Now remove the mouse. The device should stay in clamshell mode and the
+  // internal events should not be blocked.
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(IsTabletModeStarted());
+  EXPECT_FALSE(AreEventsBlocked());
+}
+
 class TabletModeControllerForceTabletModeTest
     : public TabletModeControllerTest {
  public:

@@ -204,6 +204,8 @@ void TabletModeController::EnableTabletModeWindowManager(bool should_enable) {
     if (client_)  // Null at startup and in tests.
       client_->OnTabletModeToggled(false);
   }
+
+  UpdateInternalMouseAndKeyboardEventBlocker();
 }
 
 bool TabletModeController::IsTabletModeWindowManagerEnabled() const {
@@ -265,7 +267,7 @@ void TabletModeController::OnDisplayConfigurationChanged() {
   if (!display::Display::HasInternalDisplay() ||
       !Shell::Get()->display_manager()->IsActiveDisplayId(
           display::Display::InternalDisplayId())) {
-    AttemptLeaveTabletMode(false);
+    AttemptLeaveTabletMode();
   } else if (tablet_mode_switch_is_on_ && !IsTabletModeWindowManagerEnabled()) {
     // The internal display has returned, as we are exiting docked mode.
     // The device is still in tablet mode, so trigger tablet mode, as this
@@ -345,7 +347,7 @@ void TabletModeController::LidEventReceived(
   lid_is_closed_ = !open;
 
   if (!tablet_mode_switch_is_on_)
-    AttemptLeaveTabletMode(false);
+    AttemptLeaveTabletMode();
 }
 
 void TabletModeController::TabletModeEventReceived(
@@ -369,8 +371,13 @@ void TabletModeController::TabletModeEventReceived(
     AttemptEnterTabletMode();
   } else if (!on && IsTabletModeWindowManagerEnabled() &&
              !can_detect_lid_angle_) {
-    AttemptLeaveTabletMode(false);
+    AttemptLeaveTabletMode();
   }
+
+  // Even if we do not change its ui mode, we should update its input device
+  // blocker as tablet mode events may come in because of the lid angle/or folio
+  // keyboard state changes but ui mode might still stay the same.
+  UpdateInternalMouseAndKeyboardEventBlocker();
 }
 
 void TabletModeController::SuspendImminent(
@@ -454,7 +461,7 @@ void TabletModeController::HandleHingeRotation(
 
   // Toggle tablet mode on or off when corresponding thresholds are passed.
   if (is_angle_stable && lid_angle_ <= kExitTabletModeAngle) {
-    AttemptLeaveTabletMode(false);
+    AttemptLeaveTabletMode();
   } else if (!lid_is_closed_ && lid_angle_ >= kEnterTabletModeAngle &&
              (is_angle_stable || CanUseUnstableLidAngle())) {
     AttemptEnterTabletMode();
@@ -494,37 +501,19 @@ bool TabletModeController::CanEnterTabletMode() {
 }
 
 void TabletModeController::AttemptEnterTabletMode() {
-  event_blocker_.reset();
-  event_blocker_ = CreateScopedDisableInternalMouseAndKeyboard();
-  for (auto& observer : tablet_mode_observers_)
-    observer.OnTabletModeEventsBlockingChanged();
-
-  if (IsTabletModeWindowManagerEnabled())
+  if (IsTabletModeWindowManagerEnabled() || has_external_mouse_) {
+    UpdateInternalMouseAndKeyboardEventBlocker();
     return;
-
-  should_enter_tablet_mode_ = true;
-
-  if (has_external_mouse_)
-    return;
+  }
 
   EnableTabletModeWindowManager(true);
 }
 
-void TabletModeController::AttemptLeaveTabletMode(
-    bool called_by_device_update) {
-  // Do not unlock internal keyboard if we enter clamshell by plugging in an
-  // external mouse.
-  if (!called_by_device_update) {
-    event_blocker_.reset();
-    for (auto& observer : tablet_mode_observers_)
-      observer.OnTabletModeEventsBlockingChanged();
-  }
-
-  if (!IsTabletModeWindowManagerEnabled())
+void TabletModeController::AttemptLeaveTabletMode() {
+  if (!IsTabletModeWindowManagerEnabled()) {
+    UpdateInternalMouseAndKeyboardEventBlocker();
     return;
-
-  if (!called_by_device_update)
-    should_enter_tablet_mode_ = false;
+  }
 
   EnableTabletModeWindowManager(false);
 }
@@ -594,17 +583,18 @@ void TabletModeController::HandleMouseAddedOrRemoved() {
 
   has_external_mouse_ = has_external_mouse;
 
-  // Try to tablet mode if we are already in tablet mode and
-  // |has_external_mouse| is true.
+  // Enter clamshell mode whenever an external mouse is attached.
   if (has_external_mouse) {
-    AttemptLeaveTabletMode(true);
-    return;
-  }
-
-  // Try to enter tablet mode if |has_external_mouse| is false and we
-  // are in an orientation that should be tablet mode.
-  if (should_enter_tablet_mode_)
+    AttemptLeaveTabletMode();
+  } else if (LidAngleIsInTabletModeRange() || tablet_mode_switch_is_on_) {
+    // If there is no external mouse, only enter tablet mode if 1) the lid angle
+    // can be detected and is in tablet mode angle range. or 2) if the lid angle
+    // can't be detected (e.g., tablet device or clamshell device) and
+    // |tablet_mode_switch_is_on_| is true (it can only happen for tablet device
+    // as |tablet_mode_switch_is_on_| should never be true for a clamshell
+    // device).
     AttemptEnterTabletMode();
+  }
 }
 
 void TabletModeController::UpdateBluetoothDevice(
@@ -620,6 +610,36 @@ void TabletModeController::UpdateBluetoothDevice(
   }
 
   HandleMouseAddedOrRemoved();
+}
+
+void TabletModeController::UpdateInternalMouseAndKeyboardEventBlocker() {
+  bool should_block_internal_events = false;
+  if (IsTabletModeWindowManagerEnabled()) {
+    // If we are currently in tablet mode, the internal input events should
+    // always be blocked.
+    should_block_internal_events = true;
+  } else if (LidAngleIsInTabletModeRange() || tablet_mode_switch_is_on_) {
+    // If we are currently in clamshell mode, the intenral input events should
+    // only be blocked if the current lid angle belongs to tablet mode angle
+    // or |tablet_mode_switch_is_on_| is true.
+    should_block_internal_events = true;
+  }
+
+  if (should_block_internal_events == AreInternalInputDeviceEventsBlocked())
+    return;
+
+  if (should_block_internal_events)
+    event_blocker_ = CreateScopedDisableInternalMouseAndKeyboard();
+  else
+    event_blocker_.reset();
+
+  for (auto& observer : tablet_mode_observers_)
+    observer.OnTabletModeEventsBlockingChanged();
+}
+
+bool TabletModeController::LidAngleIsInTabletModeRange() {
+  return can_detect_lid_angle_ && !lid_is_closed_ &&
+         lid_angle_ >= kEnterTabletModeAngle;
 }
 
 }  // namespace ash
