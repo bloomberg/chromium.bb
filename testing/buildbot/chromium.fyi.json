@@ -1444,7 +1444,7 @@
       },
       {
         "args": [
-          "--enable-features=NetworkService",
+          "--enable-features=NetworkService,NetworkServiceInProcess",
           "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_webview_instrumentation_test_apk.filter",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
@@ -3031,7 +3031,7 @@
       },
       {
         "args": [
-          "--enable-features=NetworkService",
+          "--enable-features=NetworkService,NetworkServiceInProcess",
           "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_webview_instrumentation_test_apk.filter",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
