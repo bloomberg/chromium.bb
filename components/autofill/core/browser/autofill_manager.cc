@@ -1100,9 +1100,11 @@ void AutofillManager::Reset() {
       new AutofillMetrics::FormInteractionsUkmLogger(
           client_->GetUkmRecorder()));
   address_form_event_logger_.reset(new AutofillMetrics::FormEventLogger(
-      /*is_for_credit_card=*/false, form_interactions_ukm_logger_.get()));
+      /*is_for_credit_card=*/false, driver()->IsInMainFrame(),
+      form_interactions_ukm_logger_.get()));
   credit_card_form_event_logger_.reset(new AutofillMetrics::FormEventLogger(
-      /*is_for_credit_card=*/true, form_interactions_ukm_logger_.get()));
+      /*is_for_credit_card=*/true, driver()->IsInMainFrame(),
+      form_interactions_ukm_logger_.get()));
 #if defined(OS_ANDROID) || defined(OS_IOS)
   autofill_assistant_.Reset();
 #endif
@@ -1153,10 +1155,12 @@ AutofillManager::AutofillManager(
       address_form_event_logger_(
           std::make_unique<AutofillMetrics::FormEventLogger>(
               /*is_for_credit_card=*/false,
+              driver->IsInMainFrame(),
               form_interactions_ukm_logger_.get())),
       credit_card_form_event_logger_(
           std::make_unique<AutofillMetrics::FormEventLogger>(
               /*is_for_credit_card=*/true,
+              driver->IsInMainFrame(),
               form_interactions_ukm_logger_.get())),
 #if defined(OS_ANDROID) || defined(OS_IOS)
       autofill_assistant_(this),

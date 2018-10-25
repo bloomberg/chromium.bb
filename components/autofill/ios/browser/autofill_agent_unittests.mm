@@ -624,6 +624,9 @@ TEST_F(AutofillAgentTests, FrameInitializationOrder) {
   autofill::AutofillDriverIOS* main_frame_driver =
       autofill::AutofillDriverIOS::FromWebStateAndWebFrame(&test_web_state_,
                                                            main_frame);
+  // autofill::AutofillDriver is created with a null web::WebFrame instance when
+  // frame messaging is disabled. IsInMainFrame() is expected to return true.
+  EXPECT_TRUE(main_frame_driver->IsInMainFrame());
   test_web_state_.SetLoading(true);
   test_web_state_.AddWebFrame(std::move(main_frame_unique));
   EXPECT_FALSE(main_frame_driver->is_processed());
@@ -649,6 +652,9 @@ TEST_F(AutofillAgentTests, FrameInitializationOrder) {
   main_frame = main_frame_unique.get();
   main_frame_driver = autofill::AutofillDriverIOS::FromWebStateAndWebFrame(
       &test_web_state_, main_frame);
+  // autofill::AutofillDriver is created with a null web::WebFrame instance when
+  // frame messaging is disabled. IsInMainFrame() is expected to return true.
+  EXPECT_TRUE(main_frame_driver->IsInMainFrame());
   test_web_state_.SetLoading(false);
   test_web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
   EXPECT_FALSE(main_frame_driver->is_processed());
@@ -691,6 +697,7 @@ TEST_F(AutofillAgentTests, FrameInitializationOrderFrames) {
   autofill::AutofillDriverIOS* main_frame_driver =
       autofill::AutofillDriverIOS::FromWebStateAndWebFrame(&test_web_state_,
                                                            main_frame);
+  EXPECT_TRUE(main_frame_driver->IsInMainFrame());
   auto iframe_unique = std::make_unique<FakeWebFrameCallback>(
       "iframe", false, GURL(), [main_frame_driver]() {
         EXPECT_TRUE(main_frame_driver->is_processed());
@@ -699,6 +706,7 @@ TEST_F(AutofillAgentTests, FrameInitializationOrderFrames) {
   autofill::AutofillDriverIOS* iframe_driver =
       autofill::AutofillDriverIOS::FromWebStateAndWebFrame(&test_web_state_,
                                                            iframe);
+  EXPECT_FALSE(iframe_driver->IsInMainFrame());
   test_web_state_.SetLoading(true);
   test_web_state_.AddWebFrame(std::move(main_frame_unique));
   test_web_state_.AddWebFrame(std::move(iframe_unique));

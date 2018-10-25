@@ -632,11 +632,15 @@ class AutofillManager : public AutofillHandler,
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AddressSuggestionsCount);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AutofillFormSubmittedState);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AutofillIsEnabledAtPageLoad);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, CreditCardSelectedFormEvents);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, CreditCardFilledFormEvents);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsIFrameTest,
+                           CreditCardSelectedFormEvents);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsIFrameTest,
+                           CreditCardFilledFormEvents);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, CreditCardGetRealPanDuration);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, CreditCardWillSubmitFormEvents);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, CreditCardSubmittedFormEvents);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsIFrameTest,
+                           CreditCardWillSubmitFormEvents);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsIFrameTest,
+                           CreditCardSubmittedFormEvents);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
                            CreditCardCheckoutFlowUserActions);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
@@ -656,7 +660,7 @@ class AutofillManager : public AutofillHandler,
       AutofillMetricsTest,
       CreditCardSubmittedWithoutSelectingSuggestionsKnownCard);
   FRIEND_TEST_ALL_PREFIXES(
-      AutofillMetricsTest,
+      AutofillMetricsIFrameTest,
       ShouldNotLogSubmitWithoutSelectingSuggestionsIfSuggestionFilled);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, ProfileCheckoutFlowUserActions);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, DeveloperEngagement);
