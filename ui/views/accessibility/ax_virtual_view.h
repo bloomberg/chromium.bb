@@ -73,10 +73,10 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   const AXVirtualView* child_at(int index) const;
   AXVirtualView* child_at(int index);
 
-  // Returns the parent view if the parent is a real View and not an
-  // AXVirtualView. Returns nullptr otherwise.
-  const View* parent_view() const { return parent_view_; }
-  View* parent_view() { return parent_view_; }
+  // Returns the ViewAccessibility parent if the parent is a real View and not
+  // an AXVirtualView. Returns nullptr otherwise.
+  const ViewAccessibility* parent_view() const { return parent_view_; }
+  ViewAccessibility* parent_view() { return parent_view_; }
 
   // Returns the parent view if the parent is an AXVirtualView and not a real
   // View. Returns nullptr otherwise.
@@ -107,6 +107,8 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   void OverrideDescription(const std::string& description);
   void OverrideDescription(const base::string16& description);
   void OverrideBoundsRect(const gfx::RectF& location);
+  // Allows clients to modify the AXNodeData for this virtual view.
+  ui::AXNodeData& GetData();
 
   // ui::AXPlatformNodeDelegate
   const ui::AXNodeData& GetData() const override;
@@ -127,9 +129,9 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
  private:
   // Sets the parent view if the parent is a real View and not an AXVirtualView.
   // It is invalid to set both |parent_view_| and |virtual_parent_view_|.
-  void set_parent_view(View* view) {
+  void set_parent_view(ViewAccessibility* view_accessibility) {
     DCHECK(!virtual_parent_view_);
-    parent_view_ = view;
+    parent_view_ = view_accessibility;
   }
 
   bool IsParentVisible() const;
@@ -140,7 +142,7 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
 
   // Weak. Owns us if not nullptr.
   // Either |parent_view_| or |virtual_parent_view_| should be set but not both.
-  View* parent_view_;
+  ViewAccessibility* parent_view_;
 
   // Weak. Owns us if not nullptr.
   // Either |parent_view_| or |virtual_parent_view_| should be set but not both.

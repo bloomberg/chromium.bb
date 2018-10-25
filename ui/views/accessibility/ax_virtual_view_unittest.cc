@@ -46,8 +46,8 @@ class AXVirtualViewTest : public ViewsTestBase {
     button_->SetSize(gfx::Size(20, 20));
     widget_->GetContentsView()->AddChildView(button_);
     virtual_label_ = new AXVirtualView;
-    virtual_label_->OverrideRole(ax::mojom::Role::kStaticText);
-    virtual_label_->OverrideName("Label");
+    virtual_label_->GetData().role = ax::mojom::Role::kStaticText;
+    virtual_label_->GetData().SetName("Label");
     button_->GetViewAccessibility().AddVirtualChildView(
         base::WrapUnique(virtual_label_));
     widget_->Show();
