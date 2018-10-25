@@ -123,7 +123,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
           'num_shards': 7
         }
       ],
-      'platform': 'android',
+      'platform': 'android-chrome',
       'dimension': {
         'pool': 'chrome.tests.perf-fyi',
         'os': 'Android',
@@ -878,6 +878,8 @@ def generate_telemetry_args(tester_config):
     browser_name = 'reference'
   elif tester_config['platform'] == 'android':
     browser_name = 'android-chromium'
+  elif tester_config['platform'] == 'android-chrome':
+    browser_name = 'android-chrome'
   elif tester_config['platform'] == 'android-webview':
     browser_name = 'android-webview'
   elif (tester_config['platform'] == 'win'

@@ -134,9 +134,9 @@
       {
         "args": [
           "-v",
+          "--browser=android-chrome",
           "--upload-results",
           "--output-format=histograms",
-          "--browser=android-chromium",
           "--test-shard-map-filename=android_nexus5x_fyi_4_shard_map.json"
         ],
         "isolate_name": "performance_test_suite",
@@ -179,7 +179,7 @@
       {
         "args": [
           "-v",
-          "--browser=android-chromium",
+          "--browser=android-chrome",
           "--upload-results",
           "--run-ref-build",
           "--test-shard-map-filename=android_pixel2_shard_map.json"
