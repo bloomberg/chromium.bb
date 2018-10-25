@@ -1964,7 +1964,6 @@ test("browser_tests") {
 
         # TODO(crbug/845389): Re-Enable the following, which were temporarily
         # omitted from the build, but are still in use.
-        # "../browser/ui/cocoa/constrained_window/constrained_window_mac_browsertest.mm",
         # "../browser/ui/cocoa/page_info/page_info_bubble_views_mac_browsertest.mm",
       ]
       sources -= [
@@ -4127,7 +4126,6 @@ test("unit_tests") {
       "../browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller_unittest.mm",
       "../browser/ui/cocoa/color_panel_cocoa_unittest.mm",
       "../browser/ui/cocoa/confirm_quit_panel_controller_unittest.mm",
-      "../browser/ui/cocoa/constrained_window/constrained_window_sheet_controller_unittest.mm",
       "../browser/ui/cocoa/find_pasteboard_unittest.mm",
       "../browser/ui/cocoa/first_run_dialog_controller_unittest.mm",
       "../browser/ui/cocoa/history_menu_bridge_unittest.mm",
