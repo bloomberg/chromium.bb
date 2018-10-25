@@ -1804,7 +1804,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
   Init(USE_SECURE_PROXY, true /* enable_brotli_globally */);
 
   net::HttpRequestHeaders request_headers;
-  request_headers.AddHeaderFromString("Accept-Encoding: gzip, deflate, br");
+  request_headers.SetHeader("Accept-Encoding", "gzip, deflate, br");
 
   std::string response_headers =
       "HTTP/1.1 200 OK\r\n"
@@ -1828,7 +1828,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
   Init(USE_SECURE_PROXY, true /* enable_brotli_globally */);
 
   net::HttpRequestHeaders request_headers;
-  request_headers.AddHeaderFromString("Accept-Encoding:");
+  request_headers.SetHeader("Accept-Encoding", "");
 
   std::string response_headers =
       "HTTP/1.1 200 OK\r\n"
