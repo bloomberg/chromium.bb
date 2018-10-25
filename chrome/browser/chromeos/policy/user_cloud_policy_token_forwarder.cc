@@ -10,7 +10,6 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "content/public/browser/notification_source.h"
 #include "google_apis/gaia/gaia_constants.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 namespace policy {
 
@@ -35,12 +34,13 @@ UserCloudPolicyTokenForwarder::~UserCloudPolicyTokenForwarder() {}
 
 void UserCloudPolicyTokenForwarder::Shutdown() {
   request_.reset();
-  token_service_->RemoveObserver(this);
+  identity_manager_->RemoveObserver(this);
   manager_->core()->service()->RemoveObserver(this);
 }
 
-void UserCloudPolicyTokenForwarder::OnRefreshTokenAvailable(
-    const std::string& account_id) {
+void UserCloudPolicyTokenForwarder::OnRefreshTokenUpdatedForAccount(
+    const AccountInfo& account_info,
+    bool is_valid) {
   RequestAccessToken();
 }
 
@@ -82,7 +82,7 @@ void UserCloudPolicyTokenForwarder::Initialize() {
   if (identity_manager_->HasPrimaryAccountWithRefreshToken())
     RequestAccessToken();
   else
-    token_service_->AddObserver(this);
+    identity_manager_->AddObserver(this);
 }
 
 void UserCloudPolicyTokenForwarder::RequestAccessToken() {
