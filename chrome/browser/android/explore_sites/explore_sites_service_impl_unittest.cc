@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "chrome/browser/android/chrome_feature_list.h"
@@ -18,12 +19,16 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-const char kCategoryName[] = "Technology";
+const char kTechnologyCategoryName[] = "Technology";
+const char kScienceCategoryName[] = "Science";
+const char kBooksCategoryName[] = "Books";
 const char kSite1UrlNoTrailingSlash[] = "https://example.com";
 const char kSite1Url[] = "https://example.com/";
 const char kSite2Url[] = "https://sample.com/";
+const char kSite4Url[] = "https://exemplar.com/";
 const char kSite1Name[] = "example";
 const char kSite2Name[] = "sample";
+const char kSite3Name[] = "exemplar";
 const char kAcceptLanguages[] = "en-US,en;q=0.5";
 }  // namespace
 
@@ -47,6 +52,9 @@ class ExploreSitesServiceImplTest : public testing::Test {
         std::move(history_stats_reporter));
     success_ = false;
     test_data_ = CreateTestDataProto();
+    mostly_valid_test_data_ = CreateMostlyValidTestDataProto();
+    bad_test_data_ = CreateBadTestDataProto();
+    histogram_tester_ = std::make_unique<base::HistogramTester>();
   }
 
   void UpdateCatalogDoneCallback(bool success) {
@@ -75,11 +83,21 @@ class ExploreSitesServiceImplTest : public testing::Test {
 
   std::string test_data() { return test_data_; }
 
+  std::string mostly_valid_test_data() { return mostly_valid_test_data_; }
+
+  std::string bad_test_data() { return bad_test_data_; }
+
   void PumpLoop() { task_runner_->RunUntilIdle(); }
 
   std::string CreateTestDataProto();
+  std::string CreateMostlyValidTestDataProto();
+  std::string CreateBadTestDataProto();
 
   void SimulateFetcherData(const std::string& response_data);
+
+  const base::HistogramTester* histograms() const {
+    return histogram_tester_.get();
+  }
 
   network::TestURLLoaderFactory::PendingRequest* GetLastPendingRequest();
 
@@ -92,10 +110,13 @@ class ExploreSitesServiceImplTest : public testing::Test {
   GetCatalogStatus database_status_;
   std::unique_ptr<std::vector<ExploreSitesCategory>> database_categories_;
   std::string test_data_;
+  std::string mostly_valid_test_data_;
+  std::string bad_test_data_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory>
       test_shared_url_loader_factory_;
   network::ResourceRequest last_resource_request_;
+  std::unique_ptr<base::HistogramTester> histogram_tester_;
   base::MessageLoopForIO message_loop_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
 
@@ -139,7 +160,7 @@ void ExploreSitesServiceImplTest::ValidateTestCatalog() {
 
   const ExploreSitesCategory& database_category = database_categories()->at(0);
   EXPECT_EQ(Category_CategoryType_TECHNOLOGY, database_category.category_type);
-  EXPECT_EQ(std::string(kCategoryName), database_category.label);
+  EXPECT_EQ(std::string(kTechnologyCategoryName), database_category.label);
   EXPECT_EQ(2U, database_category.sites.size());
 
   // Since the site name and url might come back in a different order than we
@@ -177,13 +198,114 @@ std::string ExploreSitesServiceImplTest::CreateTestDataProto() {
 
   // Create one category, technology.
   category->set_type(Category_CategoryType_TECHNOLOGY);
-  category->set_localized_title(kCategoryName);
+  category->set_localized_title(kTechnologyCategoryName);
 
-  // Serialize it into a string.
+  // Serialize the catalog into a string.
   catalog_response.SerializeToString(&serialized_protobuf);
 
   // Print out the string
   DVLOG(1) << "test data proto '" << serialized_protobuf << "'";
+
+  return serialized_protobuf;
+}
+
+// This is a helper to generate testing data to use in tests.
+std::string ExploreSitesServiceImplTest::CreateMostlyValidTestDataProto() {
+  std::string serialized_protobuf;
+  explore_sites::GetCatalogResponse catalog_response;
+  catalog_response.set_version_token("abcd");
+  explore_sites::Catalog* catalog = catalog_response.mutable_catalog();
+  explore_sites::Category* category = catalog->add_categories();
+  explore_sites::Site* site1 = category->add_sites();
+  explore_sites::Site* site2 = category->add_sites();
+  explore_sites::Site* site3 = category->add_sites();
+  explore_sites::Site* site4 = category->add_sites();
+
+  // Fill in fields we need to add to the EoS database.
+
+  // Create some sites.  The first two are valid, the third is missing a URL,
+  // the fourth is missing a title.
+  site1->set_site_url(kSite1UrlNoTrailingSlash);
+  site1->set_title(kSite1Name);
+  site2->set_site_url(kSite2Url);
+  site2->set_title(kSite2Name);
+  site3->set_title(kSite3Name);
+  site4->set_site_url(kSite4Url);
+
+  // Create one category, technology.
+  category->set_type(Category_CategoryType_TECHNOLOGY);
+  category->set_localized_title(kTechnologyCategoryName);
+
+  // Serialize the catalog into a string.
+  catalog_response.SerializeToString(&serialized_protobuf);
+
+  return serialized_protobuf;
+}
+
+// This is a helper to generate testing data to use in tests.  We intentionally
+// create catalogs and sites with problems to make the code emit histograms. We
+// create categories and sites with the following intentional defects:
+// A category with a type outside the known range.
+// A category with no sites.
+// A category with no title.
+// A category with only one site, which is invalid and gets removed.
+// A site with a malformed url.
+// A site with a missing title, as the only site in one category.
+std::string ExploreSitesServiceImplTest::CreateBadTestDataProto() {
+  std::string serialized_protobuf;
+  explore_sites::GetCatalogResponse catalog_response;
+  catalog_response.set_version_token("abcd");
+  explore_sites::Catalog* catalog = catalog_response.mutable_catalog();
+  explore_sites::Category* technology = catalog->add_categories();
+  explore_sites::Category* anime = catalog->add_categories();
+  explore_sites::Category* food = catalog->add_categories();
+  explore_sites::Category* books = catalog->add_categories();
+  explore_sites::Category* science = catalog->add_categories();
+  explore_sites::Site* site1 = technology->add_sites();
+  explore_sites::Site* site2 = technology->add_sites();
+  explore_sites::Site* site3 = books->add_sites();
+
+  // Site 1 will be a totally valid site.
+  site1->set_site_url(kSite1Url);
+  site1->set_title(kSite1Name);
+
+  // Site 2 will be missing a title.
+  site2->set_site_url(kSite2Url);
+  site2->set_title("");
+
+  // Site 3 will have a malformed URL.
+  site3->set_site_url("123456");
+  site3->set_title(kSite3Name);
+
+  // Fill out the technology category with valid data.
+  // It will get one good website, and one with a missing title.
+  // It should be left intact by validation, but with only one site.
+  technology->set_type(Category_CategoryType_TECHNOLOGY);
+  technology->set_localized_title(kTechnologyCategoryName);
+
+  // Fill out the anime category with a bad type value.
+  anime->set_type(static_cast<Category_CategoryType>(1000));
+  anime->set_localized_title("Anime");
+
+  // Don't add a title to the food category.
+  food->set_type(Category_CategoryType_FOOD);
+  food->set_localized_title("");
+
+  // The science category is valid, but has no web sites, so it should be
+  // removed by validation.
+  science->set_type(Category_CategoryType_SCIENCE);
+  science->set_localized_title(kScienceCategoryName);
+
+  // Fill out the books category.  It will get a website with a bad URL, and it
+  // should end up getting removed since all its sites are invalid.
+  books->set_type(Category_CategoryType_BOOKS);
+  books->set_localized_title(kBooksCategoryName);
+
+  // Serialize the catalog into a string.
+  catalog_response.SerializeToString(&serialized_protobuf);
+
+  // Print out the string
+  DVLOG(1) << "bad test data proto '" << serialized_protobuf << "'";
 
   return serialized_protobuf;
 }
@@ -211,7 +333,6 @@ TEST_F(ExploreSitesServiceImplTest, UpdateCatalogFromNetwork) {
   // never been called before in this session, it won't return anything, it will
   // just start the update process.  For our test, we've already put data into
   // the catalog, but GetCatalog doesn't know that.
-  // TODO(petewil): Fix get catalog so it always returns data if it has some.
   service()->GetCatalog(base::BindOnce(
       &ExploreSitesServiceImplTest::CatalogCallback, base::Unretained(this)));
   PumpLoop();
@@ -292,6 +413,83 @@ TEST_F(ExploreSitesServiceImplTest, GetCachedCatalogFromNetwork) {
   PumpLoop();
 
   ValidateTestCatalog();
+}
+
+TEST_F(ExploreSitesServiceImplTest, BadCatalogHistograms) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(chrome::android::kExploreSites);
+
+  service()->UpdateCatalogFromNetwork(
+      true /*is_immediate_fetch*/, kAcceptLanguages,
+      base::BindOnce(&ExploreSitesServiceImplTest::UpdateCatalogDoneCallback,
+                     base::Unretained(this)));
+
+  // Simulate fetching using the test loader factory and test data.
+  SimulateFetcherData(bad_test_data());
+
+  // Wait for callback to get called.
+  PumpLoop();
+
+  // Expect that we detected flaws in the data and reported the following
+  // histograms.
+  histograms()->ExpectTotalCount("ExploreSites.CatalogError", 7);
+  histograms()->ExpectBucketCount(
+      "ExploreSites.CatalogError",
+      ExploreSitesCatalogError::kCategoryMissingTitle, 1);
+  histograms()->ExpectBucketCount(
+      "ExploreSites.CatalogError",
+      ExploreSitesCatalogError::kCategoryWithUnknownType, 1);
+  histograms()->ExpectBucketCount(
+      "ExploreSites.CatalogError",
+      ExploreSitesCatalogError::kCategoryWithNoSites, 2);
+  histograms()->ExpectBucketCount("ExploreSites.CatalogError",
+                                  ExploreSitesCatalogError::kSiteWithBadUrl, 1);
+  histograms()->ExpectBucketCount("ExploreSites.CatalogError",
+                                  ExploreSitesCatalogError::kSiteMissingTitle,
+                                  1);
+}
+
+TEST_F(ExploreSitesServiceImplTest, MostlyValidCatalogHistograms) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(chrome::android::kExploreSites);
+
+  service()->UpdateCatalogFromNetwork(
+      true /*is_immediate_fetch*/, kAcceptLanguages,
+      base::BindOnce(&ExploreSitesServiceImplTest::UpdateCatalogDoneCallback,
+                     base::Unretained(this)));
+
+  // Simulate fetching using the test loader factory and test data.
+  SimulateFetcherData(mostly_valid_test_data());
+
+  // Wait for callback to get called.
+  PumpLoop();
+
+  // Expect that we detected flaws in the data and reported the following
+  // histograms.
+  histograms()->ExpectBucketCount("ExploreSites.CatalogError",
+                                  ExploreSitesCatalogError::kSiteWithBadUrl, 1);
+  histograms()->ExpectBucketCount("ExploreSites.CatalogError",
+                                  ExploreSitesCatalogError::kSiteMissingTitle,
+                                  1);
+}
+
+TEST_F(ExploreSitesServiceImplTest, UnparseableCatalogHistograms) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(chrome::android::kExploreSites);
+
+  service()->UpdateCatalogFromNetwork(
+      true /*is_immediate_fetch*/, kAcceptLanguages,
+      base::BindOnce(&ExploreSitesServiceImplTest::UpdateCatalogDoneCallback,
+                     base::Unretained(this)));
+
+  // Simulate fetching using a URL where the code expects a serialized protobuf.
+  SimulateFetcherData(kSite1Url);
+
+  // Wait for callback to get called.
+  PumpLoop();
+
+  histograms()->ExpectBucketCount("ExploreSites.CatalogError",
+                                  ExploreSitesCatalogError::kParseFailure, 1);
 }
 
 }  // namespace explore_sites
