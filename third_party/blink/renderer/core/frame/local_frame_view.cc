@@ -3553,7 +3553,7 @@ bool LocalFrameView::VisualViewportSuppliesScrollbars() {
   if (!LayoutViewport())
     return false;
 
-  return RootScrollerUtil::ScrollableAreaForRootScroller(
+  return root_scroller_util::ScrollableAreaForRootScroller(
              controller.GlobalRootScroller()) == LayoutViewport();
 }
 

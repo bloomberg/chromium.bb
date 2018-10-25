@@ -282,7 +282,7 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
     ScrollableArea* scrollable_area = nullptr;
 
     // The global root scroller must be scrolled by the RootFrameViewport.
-    if (RootScrollerUtil::IsGlobal(*box)) {
+    if (root_scroller_util::IsGlobal(*box)) {
       LocalFrame& main_frame = frame_->LocalFrameRoot();
       // The local root must be the main frame if we have the global root
       // scroller since it can't yet be set on OOPIFs.
