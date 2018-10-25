@@ -46,8 +46,8 @@ class ArCoreGl {
   explicit ArCoreGl(std::unique_ptr<ArImageTransport> ar_image_transport);
   ~ArCoreGl();
 
-  void Initialize(std::unique_ptr<vr::ArCoreInstallUtils> install_utils,
-                  std::unique_ptr<ArCoreFactory> arcore_factory,
+  void Initialize(vr::ArCoreInstallUtils* install_utils,
+                  ArCoreFactory* arcore_factory,
                   base::OnceCallback<void(bool)> callback);
 
   void ProduceFrame(const gfx::Size& frame_size,

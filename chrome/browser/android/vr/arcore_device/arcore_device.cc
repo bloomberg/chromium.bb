@@ -97,7 +97,15 @@ ArCoreDevice::ArCoreDevice()
                    std::make_unique<vr::ArCoreJavaUtils>(this),
                    std::make_unique<ArCorePermissionHelper>()) {}
 
-ArCoreDevice::~ArCoreDevice() {}
+ArCoreDevice::~ArCoreDevice() {
+  // The GL thread must be terminated since it uses our members. For example,
+  // there might still be a posted Initialize() call in flight that uses
+  // arcore_install_utils_ and arcore_factory_. Ensure that the thread is
+  // stopped before other members get destructed. Don't call Stop() here,
+  // destruction calls Stop() and doing so twice is illegal (null pointer
+  // dereference).
+  arcore_gl_thread_ = nullptr;
+}
 
 void ArCoreDevice::PauseTracking() {
   DCHECK(IsOnMainThread());
@@ -338,13 +346,13 @@ void ArCoreDevice::RequestArCoreGlInitialization() {
   }
 
   if (!is_arcore_gl_initialized_) {
-    // This won't happen twice because this method is called from the
-    // end of the permission sequence, which only happens once. We
-    // set is_arcore_gl_initialized in the callback so we don't
-    // allow operations that require its readiness to happen.
+    // We will only try to initialize ArCoreGl once, at the end of the
+    // permission sequence, and will resolve pending requests that have queued
+    // up once that initialization completes. We set is_arcore_gl_initialized_
+    // in the callback to block operations that require it to be ready.
     PostTaskToGlThread(base::BindOnce(
         &ArCoreGl::Initialize, arcore_gl_thread_->GetArCoreGl()->GetWeakPtr(),
-        std::move(arcore_install_utils_), std::move(arcore_factory_),
+        arcore_install_utils_.get(), arcore_factory_.get(),
         CreateMainThreadCallback(base::BindOnce(
             &ArCoreDevice::OnArCoreGlInitializationComplete, GetWeakPtr()))));
     return;
