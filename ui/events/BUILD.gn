@@ -613,6 +613,7 @@ if (!is_ios) {
 
     if (is_fuchsia) {
       sources += [ "fuchsia/input_event_dispatcher_unittest.cc" ]
+      deps += [ "//third_party/fuchsia-sdk/sdk:input" ]
     }
   }
 }
