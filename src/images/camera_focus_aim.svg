@@ -1,4 +1,4 @@
-<svg id="inner_circle_focus" xmlns="http://www.w3.org/2000/svg" width="120px" height="120px" >
+<svg id="inner_circle_focus" xmlns="http://www.w3.org/2000/svg" width="120px" height="120px" transform="scale(0.6)" >
     <g id="outer_circle_focus_outlines_position" transform="translate(60,60)" >
         <g id="outer_circle_focus_outlines_rotation" transform="rotate(0)" >
             <g id="outer_circle_focus_outlines_scale_x" transform="scale(1.42353, 1)" >
