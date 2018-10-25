@@ -3177,10 +3177,6 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(
          chromeos::switches::kShowAndroidFilesInFilesApp,
          chromeos::switches::kHideAndroidFilesInFilesApp)},
-    {"disable-my-files-navigation",
-     flag_descriptions::kFilesAppDisableMyFilesNavigationName,
-     flag_descriptions::kFilesAppDisableMyFilesNavigationDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kFilesAppDisableMyFilesNavigation)},
     {"crostini-files", flag_descriptions::kCrostiniFilesName,
      flag_descriptions::kCrostiniFilesDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kCrostiniFiles)},
