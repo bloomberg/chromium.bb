@@ -7,8 +7,10 @@
 #include <set>
 #include <string>
 
+#include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
+#include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "content/common/url_schemes.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -112,8 +114,8 @@ bool IsRendererDebugURL(const GURL& url) {
 }
 
 bool IsSafeRedirectTarget(const GURL& from_url, const GURL& to_url) {
-  static base::NoDestructor<std::set<std::string>> kUnsafeSchemes(
-      std::set<std::string>({
+  static const base::NoDestructor<base::flat_set<base::StringPiece>>
+      kUnsafeSchemes(base::flat_set<base::StringPiece>({
         url::kAboutScheme, url::kDataScheme, url::kFileScheme,
             url::kFileSystemScheme, url::kBlobScheme,
 #if defined(OS_ANDROID)
@@ -122,7 +124,7 @@ bool IsSafeRedirectTarget(const GURL& from_url, const GURL& to_url) {
       }));
   if (HasWebUIScheme(to_url))
     return false;
-  if (kUnsafeSchemes->find(to_url.scheme()) == kUnsafeSchemes->end())
+  if (!kUnsafeSchemes->contains(to_url.scheme_piece()))
     return true;
   if (from_url.is_empty())
     return false;
