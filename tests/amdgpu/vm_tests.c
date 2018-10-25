@@ -33,6 +33,7 @@ static  uint32_t  minor_version;
 
 static void amdgpu_vmid_reserve_test(void);
 static void amdgpu_vm_unaligned_map(void);
+static void amdgpu_vm_mapping_test(void);
 
 CU_BOOL suite_vm_tests_enable(void)
 {
@@ -85,6 +86,7 @@ int suite_vm_tests_clean(void)
 CU_TestInfo vm_tests[] = {
 	{ "resere vmid test",  amdgpu_vmid_reserve_test },
 	{ "unaligned map",  amdgpu_vm_unaligned_map },
+	{ "vm mapping test",  amdgpu_vm_mapping_test },
 	CU_TEST_INFO_NULL,
 };
 
@@ -208,5 +210,46 @@ static void amdgpu_vm_unaligned_map(void)
 
 error_va_alloc:
 	amdgpu_bo_free(buf_handle);
+}
 
+static void amdgpu_vm_mapping_test(void)
+{
+	struct amdgpu_bo_alloc_request req = {0};
+	struct drm_amdgpu_info_device dev_info;
+	const uint64_t size = 4096;
+	amdgpu_bo_handle buf;
+	uint64_t addr;
+	int r;
+
+	req.alloc_size = size;
+	req.phys_alignment = 0;
+	req.preferred_heap = AMDGPU_GEM_DOMAIN_GTT;
+	req.flags = 0;
+
+	r = amdgpu_bo_alloc(device_handle, &req, &buf);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_query_info(device_handle, AMDGPU_INFO_DEV_INFO,
+			      sizeof(dev_info), &dev_info);
+	CU_ASSERT_EQUAL(r, 0);
+
+	addr = dev_info.virtual_address_offset;
+	r = amdgpu_bo_va_op(buf, 0, size, addr, 0, AMDGPU_VA_OP_MAP);
+	CU_ASSERT_EQUAL(r, 0);
+
+	addr = dev_info.virtual_address_max - size;
+	r = amdgpu_bo_va_op(buf, 0, size, addr, 0, AMDGPU_VA_OP_MAP);
+	CU_ASSERT_EQUAL(r, 0);
+
+	if (dev_info.high_va_offset) {
+		addr = dev_info.high_va_offset;
+		r = amdgpu_bo_va_op(buf, 0, size, addr, 0, AMDGPU_VA_OP_MAP);
+		CU_ASSERT_EQUAL(r, 0);
+
+		addr = dev_info.high_va_max - size;
+		r = amdgpu_bo_va_op(buf, 0, size, addr, 0, AMDGPU_VA_OP_MAP);
+		CU_ASSERT_EQUAL(r, 0);
+	}
+
+	amdgpu_bo_free(buf);
 }
