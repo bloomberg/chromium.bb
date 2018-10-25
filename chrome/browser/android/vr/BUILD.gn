@@ -51,6 +51,7 @@ static_library("vr_android") {
     "vr_input_connection.cc",
     "vr_input_connection.h",
     "vr_module_provider.cc",
+    "vr_module_provider.h",
     "vr_shell.cc",
     "vr_shell.h",
     "vr_shell_delegate.cc",

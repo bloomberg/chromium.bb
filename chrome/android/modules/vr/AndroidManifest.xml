@@ -7,15 +7,13 @@
     xmlns:dist="http://schemas.android.com/apk/distribution"
     package="{{manifest_package}}">
 
-    <!-- Chrome VR is only supported on Android L+. -->
+    <!-- The VR module is only supported on Android L+. -->
     <uses-sdk
         android:minSdkVersion="21"
         android:targetSdkVersion="{{target_sdk_version}}" />
 
-    <!-- TODO(crbug.com/862689): Set dist:onDemand="true" once we can on-demand
-         install modules. -->
     <dist:module
-        dist:onDemand="false"
+        dist:onDemand="true"
         dist:title="@string/vr_module_title">
         <dist:fusing dist:include="false" />
     </dist:module>
