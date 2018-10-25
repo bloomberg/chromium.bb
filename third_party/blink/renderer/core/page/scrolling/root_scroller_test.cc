@@ -1281,6 +1281,21 @@ TEST_F(RootScrollerSimTest, SetCausesNeedsBeginFrame) {
             GetDocument().GetRootScrollerController().EffectiveRootScroller());
 }
 
+// Test that the cached IsEffectiveRootScroller bit on LayoutObject is set
+// correctly when the Document is the effective root scroller. It becomes the
+// root scroller before Document has a LayoutView.
+TEST_F(RootScrollerSimTest, DocumentEffectiveSetsCachedBit) {
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+          <!DOCTYPE html>
+      )HTML");
+  Compositor().BeginFrame();
+
+  EXPECT_TRUE(GetDocument().GetLayoutView()->IsEffectiveRootScroller());
+}
+
 // Test that layout from outside a lifecycle wont select a new effective root
 // scroller.
 TEST_F(RootScrollerSimTest, NonLifecycleLayoutDoesntCauseReselection) {

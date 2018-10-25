@@ -601,7 +601,7 @@ class CORE_EXPORT Document : public ContainerNode,
     NOTREACHED();
   }
 
-  // If you have a Document, use layoutView() instead which is faster.
+  // If you have a Document, use GetLayoutView() instead which is faster.
   void GetLayoutObject() const = delete;
 
   LayoutView* GetLayoutView() const { return layout_view_; }

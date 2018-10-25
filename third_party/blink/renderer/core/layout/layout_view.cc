@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/layout/view_fragmentation_context.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/scrolling/root_scroller_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator_context.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -111,6 +112,13 @@ LayoutView::LayoutView(Document* document)
   SetPreferredLogicalWidthsDirty(kMarkOnlyThis);
 
   SetPositionState(EPosition::kAbsolute);  // to 0,0 :)
+
+  // Update the cached bit here since the Document is made the effective root
+  // scroller before we've created the layout tree.
+  if (GetDocument().GetRootScrollerController().EffectiveRootScroller() ==
+      GetDocument()) {
+    SetIsEffectiveRootScroller(true);
+  }
 }
 
 LayoutView::~LayoutView() = default;
