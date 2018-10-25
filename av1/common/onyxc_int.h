@@ -603,8 +603,10 @@ static INLINE int get_free_fb(AV1_COMMON *cm) {
 static INLINE void ref_cnt_fb(RefCntBuffer *bufs, int *idx, int new_idx) {
   const int ref_index = *idx;
 
-  if (ref_index >= 0 && bufs[ref_index].ref_count > 0)
+  if (ref_index >= 0) {
+    assert(bufs[ref_index].ref_count > 0);
     bufs[ref_index].ref_count--;
+  }
 
   *idx = new_idx;
 
