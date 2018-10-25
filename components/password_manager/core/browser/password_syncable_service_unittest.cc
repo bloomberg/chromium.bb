@@ -496,6 +496,10 @@ TEST_F(PasswordSyncableServiceTest, FailedReadFromPasswordStore) {
                           syncer::PASSWORDS);
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(Return(false));
+  if (base::FeatureList::IsEnabled(features::kRecoverPasswordsForSyncUsers)) {
+    EXPECT_CALL(*password_store(), DeleteUndecryptableLogins())
+        .WillOnce(Return(DatabaseCleanupResult::kDatabaseUnavailable));
+  }
   EXPECT_CALL(*error_factory, CreateAndUploadError(_, _))
       .WillOnce(Return(error));
   // ActOnPasswordStoreChanges() below shouldn't generate any changes for Sync.
