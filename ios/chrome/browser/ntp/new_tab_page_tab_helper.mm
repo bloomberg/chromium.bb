@@ -66,7 +66,7 @@ void NewTabPageTabHelper::WebStateDestroyed(web::WebState* web_state) {
   SetActive(false);
 }
 
-void NewTabPageTabHelper::DidStartNavigation(
+void NewTabPageTabHelper::DidFinishNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
   if (navigation_context->IsSameDocument()) {
