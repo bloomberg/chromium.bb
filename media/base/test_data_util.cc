@@ -20,35 +20,35 @@ namespace {
 
 // Mime types for test files. Sorted in the ASCII code order of the variable
 // names.
-const char kAacAdtsAudioOnly[] = "audio/aac";
+const char kAacAdtsAudio[] = "audio/aac";
 const char kMp2AudioSBR[] = "video/mp2t; codecs=\"avc1.4D4041,mp4a.40.5\"";
 const char kMp2tAudioVideo[] = "video/mp2t; codecs=\"mp4a.40.2, avc1.42E01E\"";
-const char kMp3AudioOnly[] = "audio/mpeg";
+const char kMp3Audio[] = "audio/mpeg";
 // MP4
-const char kMp4AacAudioOnly[] = "audio/mp4; codecs=\"mp4a.40.2\"";
-const char kMp4Av110bitVideoOnly[] = "video/mp4; codecs=\"av01.0.04M.10\"";
-const char kMp4Av1VideoOnly[] = "video/mp4; codecs=\"av01.0.04M.08\"";
-const char kMp4Avc1VideoOnly[] = "video/mp4; codecs=\"avc1.64001E\"";
+const char kMp4AacAudio[] = "audio/mp4; codecs=\"mp4a.40.2\"";
+const char kMp4Av110bitVideo[] = "video/mp4; codecs=\"av01.0.04M.10\"";
+const char kMp4Av1Video[] = "video/mp4; codecs=\"av01.0.04M.08\"";
+const char kMp4Avc1Video[] = "video/mp4; codecs=\"avc1.64001E\"";
 const char kMp4AacAudioAvc1Video[] =
     "video/mp4; codecs=\"mp4a.40.2, avc1.64001E\"";
-const char kMp4Avc3VideoOnly[] = "video/mp4; codecs=\"avc3.64001f\"";
-const char kMp4FlacAudioOnly[] = "audio/mp4; codecs=\"flac\"";
-const char kMp4OpusAudioOnly[] = "audio/mp4; codecs=\"opus\"";
-const char kMp4Vp9Profile2VideoOnly[] =
+const char kMp4Avc3Video[] = "video/mp4; codecs=\"avc3.64001f\"";
+const char kMp4FlacAudio[] = "audio/mp4; codecs=\"flac\"";
+const char kMp4OpusAudio[] = "audio/mp4; codecs=\"opus\"";
+const char kMp4Vp9Profile2Video[] =
     "video/mp4; codecs=\"vp09.02.10.10.01.02.02.02.00\"";
-const char kMp4Vp9VideoOnly[] =
+const char kMp4Vp9Video[] =
     "video/mp4; codecs=\"vp09.00.10.08.01.02.02.02.00\"";
 // WebM
-const char kWebMAv110bitVideoOnly[] = "video/webm; codecs=\"av01.0.04M.10\"";
-const char kWebMAv1VideoOnly[] = "video/webm; codecs=\"av01.0.04M.08\"";
-const char kWebMOpusAudioOnly[] = "audio/webm; codecs=\"opus\"";
+const char kWebMAv110bitVideo[] = "video/webm; codecs=\"av01.0.04M.10\"";
+const char kWebMAv1Video[] = "video/webm; codecs=\"av01.0.04M.08\"";
+const char kWebMOpusAudio[] = "audio/webm; codecs=\"opus\"";
 const char kWebMOpusAudioVp9Video[] = "video/webm; codecs=\"opus, vp9\"";
-const char kWebMVorbisAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
+const char kWebMVorbisAudio[] = "audio/webm; codecs=\"vorbis\"";
 const char kWebMVorbisAudioVp8Video[] = "video/webm; codecs=\"vorbis, vp8\"";
-const char kWebMVp8VideoOnly[] = "video/webm; codecs=\"vp8\"";
-const char kWebMVp9Profile2VideoOnly[] =
+const char kWebMVp8Video[] = "video/webm; codecs=\"vp8\"";
+const char kWebMVp9Profile2Video[] =
     "video/webm; codecs=\"vp09.02.10.10.01.02.02.02.00\"";
-const char kWebMVp9VideoOnly[] = "video/webm; codecs=\"vp9\"";
+const char kWebMVp9Video[] = "video/webm; codecs=\"vp9\"";
 
 // A map from a test file name to its mime type. The file is located at
 // media/test/data.
@@ -59,89 +59,89 @@ using FileToMimeTypeMap = base::flat_map<std::string, std::string>;
 // Note: Some files are old and the codec string in the mime type may not be
 // accurate.
 // Warning: When adding new files, make sure the codec string is accurate. For
-// example kMp4Avc1VideoOnly is for H264 high profile. If you add a file that
-// uses main profile, a new mime type should be added.
+// example kMp4Avc1Video is for H264 high profile. If you add a file that uses
+// main profile, a new mime type should be added.
 const FileToMimeTypeMap& GetFileToMimeTypeMap() {
   static const base::NoDestructor<FileToMimeTypeMap> kFileToMimeTypeMap({
-      {"bear-1280x720-a_frag-cenc-key_rotation.mp4", kMp4AacAudioOnly},
-      {"bear-1280x720-a_frag-cenc.mp4", kMp4AacAudioOnly},
-      {"bear-1280x720-a_frag-cenc_clear-all.mp4", kMp4AacAudioOnly},
+      {"bear-1280x720-a_frag-cenc-key_rotation.mp4", kMp4AacAudio},
+      {"bear-1280x720-a_frag-cenc.mp4", kMp4AacAudio},
+      {"bear-1280x720-a_frag-cenc_clear-all.mp4", kMp4AacAudio},
       {"bear-1280x720-aac_he.ts", kMp2AudioSBR},
-      {"bear-1280x720-v_frag-avc3.mp4", kMp4Avc3VideoOnly},
-      {"bear-1280x720-v_frag-cenc-key_rotation.mp4", kMp4Avc1VideoOnly},
-      {"bear-1280x720-v_frag-cenc.mp4", kMp4Avc1VideoOnly},
-      {"bear-1280x720-v_frag-cenc_clear-all.mp4", kMp4Avc1VideoOnly},
+      {"bear-1280x720-v_frag-avc3.mp4", kMp4Avc3Video},
+      {"bear-1280x720-v_frag-cenc-key_rotation.mp4", kMp4Avc1Video},
+      {"bear-1280x720-v_frag-cenc.mp4", kMp4Avc1Video},
+      {"bear-1280x720-v_frag-cenc_clear-all.mp4", kMp4Avc1Video},
       {"bear-1280x720.ts", kMp2tAudioVideo},
       {"bear-320x240-16x9-aspect-av_enc-av.webm", kWebMVorbisAudioVp8Video},
       {"bear-320x240-16x9-aspect.webm", kWebMVorbisAudioVp8Video},
-      {"bear-320x240-audio-only.webm", kWebMVorbisAudioOnly},
+      {"bear-320x240-audio-only.webm", kWebMVorbisAudio},
       {"bear-320x240-av_enc-a.webm", kWebMVorbisAudioVp8Video},
       {"bear-320x240-av_enc-av.webm", kWebMVorbisAudioVp8Video},
       {"bear-320x240-av_enc-av_clear-1s.webm", kWebMVorbisAudioVp8Video},
       {"bear-320x240-av_enc-av_clear-all.webm", kWebMVorbisAudioVp8Video},
       {"bear-320x240-av_enc-v.webm", kWebMVorbisAudioVp8Video},
       {"bear-320x240-live.webm", kWebMVorbisAudioVp8Video},
-      {"bear-320x240-opus-a_enc-a.webm", kWebMOpusAudioOnly},
+      {"bear-320x240-opus-a_enc-a.webm", kWebMOpusAudio},
       {"bear-320x240-opus-av_enc-av.webm", kWebMOpusAudioVp9Video},
       {"bear-320x240-opus-av_enc-v.webm", kWebMOpusAudioVp9Video},
-      {"bear-320x240-v-vp9_fullsample_enc-v.webm", kWebMVp9VideoOnly},
+      {"bear-320x240-v-vp9_fullsample_enc-v.webm", kWebMVp9Video},
       {"bear-320x240-v-vp9_profile2_subsample_cenc-v.mp4",
-       kMp4Vp9Profile2VideoOnly},
+       kMp4Vp9Profile2Video},
       {"bear-320x240-v-vp9_profile2_subsample_cenc-v.webm",
-       kWebMVp9Profile2VideoOnly},
-      {"bear-320x240-v-vp9_subsample_enc-v.webm", kWebMVp9VideoOnly},
-      {"bear-320x240-v_enc-v.webm", kWebMVp8VideoOnly},
-      {"bear-320x240-v_frag-vp9-cenc.mp4", kMp4Vp9VideoOnly},
-      {"bear-320x240-v_frag-vp9.mp4", kMp4Vp9VideoOnly},
-      {"bear-320x240-video-only.webm", kWebMVp8VideoOnly},
+       kWebMVp9Profile2Video},
+      {"bear-320x240-v-vp9_subsample_enc-v.webm", kWebMVp9Video},
+      {"bear-320x240-v_enc-v.webm", kWebMVp8Video},
+      {"bear-320x240-v_frag-vp9-cenc.mp4", kMp4Vp9Video},
+      {"bear-320x240-v_frag-vp9.mp4", kMp4Vp9Video},
+      {"bear-320x240-video-only.webm", kWebMVp8Video},
       {"bear-320x240.webm", kWebMVorbisAudioVp8Video},
       {"bear-320x240_corrupted_after_init_segment.webm",
        kWebMVorbisAudioVp8Video},
-      {"bear-640x360-a_frag-cbcs.mp4", kMp4AacAudioOnly},
-      {"bear-640x360-a_frag-cenc.mp4", kMp4AacAudioOnly},
-      {"bear-640x360-a_frag.mp4", kMp4AacAudioOnly},
+      {"bear-640x360-a_frag-cbcs.mp4", kMp4AacAudio},
+      {"bear-640x360-a_frag-cenc.mp4", kMp4AacAudio},
+      {"bear-640x360-a_frag.mp4", kMp4AacAudio},
       {"bear-640x360-av_frag.mp4", kMp4AacAudioAvc1Video},
-      {"bear-640x360-v_frag-cbc1.mp4", kMp4Avc1VideoOnly},
-      {"bear-640x360-v_frag-cbcs.mp4", kMp4Avc1VideoOnly},
-      {"bear-640x360-v_frag-cenc-key_rotation.mp4", kMp4Avc1VideoOnly},
-      {"bear-640x360-v_frag-cenc-mdat.mp4", kMp4Avc1VideoOnly},
-      {"bear-640x360-v_frag-cenc-senc-no-saiz-saio.mp4", kMp4Avc1VideoOnly},
-      {"bear-640x360-v_frag-cenc-senc.mp4", kMp4Avc1VideoOnly},
-      {"bear-640x360-v_frag-cenc.mp4", kMp4Avc1VideoOnly},
-      {"bear-640x360-v_frag-cens.mp4", kMp4Avc1VideoOnly},
-      {"bear-640x360-v_frag.mp4", kMp4Avc1VideoOnly},
-      {"bear-a_enc-a.webm", kWebMVorbisAudioOnly},
-      {"bear-audio-implicit-he-aac-v1.aac", kAacAdtsAudioOnly},
-      {"bear-audio-implicit-he-aac-v2.aac", kAacAdtsAudioOnly},
-      {"bear-audio-lc-aac.aac", kAacAdtsAudioOnly},
-      {"bear-audio-main-aac.aac", kAacAdtsAudioOnly},
+      {"bear-640x360-v_frag-cbc1.mp4", kMp4Avc1Video},
+      {"bear-640x360-v_frag-cbcs.mp4", kMp4Avc1Video},
+      {"bear-640x360-v_frag-cenc-key_rotation.mp4", kMp4Avc1Video},
+      {"bear-640x360-v_frag-cenc-mdat.mp4", kMp4Avc1Video},
+      {"bear-640x360-v_frag-cenc-senc-no-saiz-saio.mp4", kMp4Avc1Video},
+      {"bear-640x360-v_frag-cenc-senc.mp4", kMp4Avc1Video},
+      {"bear-640x360-v_frag-cenc.mp4", kMp4Avc1Video},
+      {"bear-640x360-v_frag-cens.mp4", kMp4Avc1Video},
+      {"bear-640x360-v_frag.mp4", kMp4Avc1Video},
+      {"bear-a_enc-a.webm", kWebMVorbisAudio},
+      {"bear-audio-implicit-he-aac-v1.aac", kAacAdtsAudio},
+      {"bear-audio-implicit-he-aac-v2.aac", kAacAdtsAudio},
+      {"bear-audio-lc-aac.aac", kAacAdtsAudio},
+      {"bear-audio-main-aac.aac", kAacAdtsAudio},
       {"bear-audio-mp4a.69.ts", "video/mp2t; codecs=\"mp4a.69\""},
       {"bear-audio-mp4a.6B.ts", "video/mp2t; codecs=\"mp4a.6B\""},
-      {"bear-av1-320x180-10bit-cenc.mp4", kMp4Av110bitVideoOnly},
-      {"bear-av1-320x180-10bit-cenc.webm", kWebMAv110bitVideoOnly},
-      {"bear-av1-320x180-10bit.mp4", kMp4Av110bitVideoOnly},
-      {"bear-av1-320x180-10bit.webm", kWebMAv110bitVideoOnly},
-      {"bear-av1-480x360.webm", kWebMAv1VideoOnly},
-      {"bear-av1-cenc.mp4", kMp4Av1VideoOnly},
-      {"bear-av1-cenc.webm", kWebMAv1VideoOnly},
-      {"bear-av1.mp4", kMp4Av1VideoOnly},
-      {"bear-av1.webm", kWebMAv1VideoOnly},
-      {"bear-flac-cenc.mp4", kMp4FlacAudioOnly},
-      {"bear-flac_frag.mp4", kMp4FlacAudioOnly},
-      {"bear-opus.mp4", kMp4OpusAudioOnly},
-      {"bear-opus.webm", kWebMOpusAudioOnly},
-      {"bear-vp8a.webm", kWebMVp8VideoOnly},
-      {"bear-vp9-blockgroup.webm", kWebMVp9VideoOnly},
-      {"bear-vp9.webm", kWebMVp9VideoOnly},
+      {"bear-av1-320x180-10bit-cenc.mp4", kMp4Av110bitVideo},
+      {"bear-av1-320x180-10bit-cenc.webm", kWebMAv110bitVideo},
+      {"bear-av1-320x180-10bit.mp4", kMp4Av110bitVideo},
+      {"bear-av1-320x180-10bit.webm", kWebMAv110bitVideo},
+      {"bear-av1-480x360.webm", kWebMAv1Video},
+      {"bear-av1-cenc.mp4", kMp4Av1Video},
+      {"bear-av1-cenc.webm", kWebMAv1Video},
+      {"bear-av1.mp4", kMp4Av1Video},
+      {"bear-av1.webm", kWebMAv1Video},
+      {"bear-flac-cenc.mp4", kMp4FlacAudio},
+      {"bear-flac_frag.mp4", kMp4FlacAudio},
+      {"bear-opus.mp4", kMp4OpusAudio},
+      {"bear-opus.webm", kWebMOpusAudio},
+      {"bear-vp8a.webm", kWebMVp8Video},
+      {"bear-vp9-blockgroup.webm", kWebMVp9Video},
+      {"bear-vp9.webm", kWebMVp9Video},
       {"frame_size_change-av_enc-v.webm", kWebMVorbisAudioVp8Video},
-      {"icy_sfx.mp3", kMp3AudioOnly},
-      {"opus-trimming-test.mp4", kMp4OpusAudioOnly},
-      {"opus-trimming-test.webm", kWebMOpusAudioOnly},
-      {"sfx-flac_frag.mp4", kMp4FlacAudioOnly},
-      {"sfx-opus-441.webm", kWebMOpusAudioOnly},
-      {"sfx-opus_frag.mp4", kMp4OpusAudioOnly},
-      {"sfx.adts", kAacAdtsAudioOnly},
-      {"sfx.mp3", kMp3AudioOnly},
+      {"icy_sfx.mp3", kMp3Audio},
+      {"opus-trimming-test.mp4", kMp4OpusAudio},
+      {"opus-trimming-test.webm", kWebMOpusAudio},
+      {"sfx-flac_frag.mp4", kMp4FlacAudio},
+      {"sfx-opus-441.webm", kWebMOpusAudio},
+      {"sfx-opus_frag.mp4", kMp4OpusAudio},
+      {"sfx.adts", kAacAdtsAudio},
+      {"sfx.mp3", kMp3Audio},
   });
 
   return *kFileToMimeTypeMap;
