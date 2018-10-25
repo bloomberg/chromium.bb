@@ -21,3 +21,15 @@ nux.BookmarkListItem;
  * }}
  */
 nux.stepIndicatorModel;
+
+/**
+ * TODO(scottchen): somehow reuse from
+ * chrome/browser/resources/settings/default_browser_page/default_browser_browser_proxy.js
+ * @typedef {{
+ *   canBeDefault: boolean,
+ *   isDefault: boolean,
+ *   isDisabledByPolicy: boolean,
+ *   isUnknownError: boolean,
+ * }};
+ */
+nux.DefaultBrowserInfo;
