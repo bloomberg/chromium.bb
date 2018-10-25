@@ -14,8 +14,6 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/compositor/paint_recorder.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/render_text.h"
@@ -491,6 +489,10 @@ void OverlayAgentAura::ShowDistancesInHighlightOverlay(int pinned_id,
 }
 
 Response OverlayAgentAura::HighlightNode(int node_id, bool show_size) {
+  UIElement* element = dom_agent()->GetElementFromNodeId(node_id);
+  if (!element)
+    return Response::Error("No node found with that id");
+
   if (!layer_for_highlighting_) {
     layer_for_highlighting_.reset(new ui::Layer(ui::LayerType::LAYER_TEXTURED));
     layer_for_highlighting_->set_name("HighlightingLayer");
@@ -498,18 +500,9 @@ Response OverlayAgentAura::HighlightNode(int node_id, bool show_size) {
     layer_for_highlighting_->SetFillsBoundsOpaquely(false);
   }
 
-  UIElement* element = dom_agent()->GetElementFromNodeId(node_id);
-  std::pair<gfx::NativeWindow, gfx::Rect> window_and_bounds =
-      element
-          ? element->GetNodeWindowAndBounds()
-          : std::make_pair<gfx::NativeWindow, gfx::Rect>(nullptr, gfx::Rect());
-
-  if (!window_and_bounds.first)
-    return Response::Error("No node found with that id");
-
   highlight_rect_config_ = HighlightRectsConfiguration::NO_DRAW;
   show_size_on_canvas_ = show_size;
-  UpdateHighlight(window_and_bounds);
+  UpdateHighlight(element->GetNodeWindowAndBounds());
 
   if (!layer_for_highlighting_->visible())
     layer_for_highlighting_->SetVisible(true);
@@ -519,9 +512,6 @@ Response OverlayAgentAura::HighlightNode(int node_id, bool show_size) {
 
 void OverlayAgentAura::UpdateHighlight(
     const std::pair<gfx::NativeWindow, gfx::Rect>& window_and_bounds) {
-  display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(
-          window_and_bounds.first);
   gfx::NativeWindow root = window_and_bounds.first->GetRootWindow();
   layer_for_highlighting_->SetBounds(root->bounds());
   layer_for_highlighting_->SchedulePaint(root->bounds());
