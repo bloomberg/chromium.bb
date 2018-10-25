@@ -88,7 +88,9 @@ public class CustomTabTabPersistencePolicyTest {
         for (int i = 0; i < activities.size(); i++) {
             Activity activity = activities.get(i).get();
             if (activity == null) continue;
-            ApplicationStatus.onStateChangeForTesting(activity, ActivityState.DESTROYED);
+            ThreadUtils.runOnUiThreadBlocking(
+                    () -> ApplicationStatus.onStateChangeForTesting(
+                            activity, ActivityState.DESTROYED));
         }
     }
 
