@@ -856,7 +856,7 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
 }
 
 void LayerTreeHost::ApplyViewportChanges(const ScrollAndScaleSet& info) {
-  gfx::Vector2dF inner_viewport_scroll_delta;
+  gfx::ScrollOffset inner_viewport_scroll_delta;
   if (info.inner_viewport_scroll.element_id)
     inner_viewport_scroll_delta = info.inner_viewport_scroll.scroll_delta;
 
@@ -871,9 +871,8 @@ void LayerTreeHost::ApplyViewportChanges(const ScrollAndScaleSet& info) {
   // value, then the layer can early out without needing a full commit.
   if (viewport_layers_.inner_viewport_scroll) {
     viewport_layers_.inner_viewport_scroll->SetScrollOffsetFromImplSide(
-        gfx::ScrollOffsetWithDelta(
-            viewport_layers_.inner_viewport_scroll->CurrentScrollOffset(),
-            inner_viewport_scroll_delta));
+        viewport_layers_.inner_viewport_scroll->CurrentScrollOffset() +
+        inner_viewport_scroll_delta);
   }
 
   ApplyPageScaleDeltaFromImplSide(info.page_scale_delta);
@@ -914,8 +913,8 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
       Layer* layer = LayerByElementId(info->scrolls[i].element_id);
       if (!layer)
         continue;
-      layer->SetScrollOffsetFromImplSide(gfx::ScrollOffsetWithDelta(
-          layer->CurrentScrollOffset(), info->scrolls[i].scroll_delta));
+      layer->SetScrollOffsetFromImplSide(layer->CurrentScrollOffset() +
+                                         info->scrolls[i].scroll_delta);
       SetNeedsUpdateLayers();
     }
     for (size_t i = 0; i < info->scrollbars.size(); ++i) {

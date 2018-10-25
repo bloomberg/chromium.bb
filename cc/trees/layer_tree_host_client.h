@@ -10,11 +10,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "cc/input/browser_controls_state.h"
+#include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace gfx {
 struct PresentationFeedback;
-class Vector2dF;
 }
 
 namespace viz {
@@ -25,7 +25,7 @@ namespace cc {
 
 struct ApplyViewportChangesArgs {
   // Scroll offset delta of the inner (visual) viewport.
-  gfx::Vector2dF inner_delta;
+  gfx::ScrollOffset inner_delta;
 
   // Elastic overscroll effect offset delta. This is used only on Mac. a.k.a
   // "rubber-banding" overscroll.
