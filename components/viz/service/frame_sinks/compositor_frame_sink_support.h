@@ -168,6 +168,12 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // string.
   static const char* GetSubmitResultAsString(SubmitResult result);
 
+  const std::vector<
+      std::pair<LocalSurfaceId, std::unique_ptr<CopyOutputRequest>>>&
+  copy_output_requests_for_testing() const {
+    return copy_output_requests_;
+  }
+
  private:
   friend class FrameSinkManagerTest;
 

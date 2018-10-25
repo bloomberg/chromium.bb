@@ -162,24 +162,17 @@ void DelegatedFrameHostAndroid::CopyFromCompositingSurface(
 
   if (!src_subrect.IsEmpty())
     request->set_area(src_subrect);
-  if (!output_size.IsEmpty())
+  if (!output_size.IsEmpty()) {
+    // The CopyOutputRequest API does not allow fixing the output size. Instead
+    // we have the set area and scale in such a way that it would result in the
+    // desired output size.
+    if (!request->has_area())
+      request->set_area(gfx::Rect(surface_size_in_pixels_));
     request->set_result_selection(gfx::Rect(output_size));
-
-  if (!request->has_area())
-    request->set_area(gfx::Rect(surface_size_in_pixels_));
-
-  if (request->has_result_selection()) {
     const gfx::Rect& area = request->area();
-    const gfx::Rect& result_selection = request->result_selection();
-    if (area.IsEmpty() || result_selection.IsEmpty()) {
-      // Viz would normally return an empty result for an empty selection.
-      // However, this guard here is still necessary to protect against setting
-      // an illegal scaling ratio.
-      return;
-    }
     request->SetScaleRatio(
         gfx::Vector2d(area.width(), area.height()),
-        gfx::Vector2d(result_selection.width(), result_selection.height()));
+        gfx::Vector2d(output_size.width(), output_size.height()));
   }
 
   host_frame_sink_manager_->RequestCopyOfOutput(
@@ -187,8 +180,7 @@ void DelegatedFrameHostAndroid::CopyFromCompositingSurface(
 }
 
 bool DelegatedFrameHostAndroid::CanCopyFromCompositingSurface() const {
-  return local_surface_id_.is_valid() && view_->GetWindowAndroid() &&
-         view_->GetWindowAndroid()->GetCompositor();
+  return local_surface_id_.is_valid();
 }
 
 void DelegatedFrameHostAndroid::EvictDelegatedFrame() {
