@@ -7,7 +7,6 @@
 
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "base/strings/string16.h"
@@ -46,7 +45,7 @@ class MigratableCreditCard {
     FAILURE_ON_UPLOAD,
   };
 
-  explicit MigratableCreditCard(const CreditCard& credit_card);
+  MigratableCreditCard(const CreditCard& credit_card);
   ~MigratableCreditCard();
 
   CreditCard credit_card() const { return credit_card_; }
@@ -69,16 +68,6 @@ class MigratableCreditCard {
 // Owned by FormDataImporter.
 class LocalCardMigrationManager {
  public:
-  // An observer class used by browsertests that gets notified whenever
-  // particular actions occur.
-  class ObserverForTest {
-   public:
-    virtual void OnDecideToRequestLocalCardMigration() = 0;
-    virtual void OnReceivedGetUploadDetailsResponse() = 0;
-    virtual void OnSentMigrateLocalCardsRequest() = 0;
-    virtual void OnRecievedMigrateCardsResponse() = 0;
-  };
-
   // The parameters should outlive the LocalCardMigrationManager.
   LocalCardMigrationManager(AutofillClient* client,
                             payments::PaymentsClient* payments_client,
@@ -109,6 +98,10 @@ class LocalCardMigrationManager {
   // once risk data is available. Exposed for testing.
   virtual void OnUserAcceptedMainMigrationDialog(
       const std::vector<std::string>& selected_card_guids);
+
+  // Check that the user is signed in, syncing, and the proper experiment
+  // flags are enabled. Override in the test class.
+  virtual bool IsCreditCardMigrationEnabled();
 
   // Determines what detected_values metadata to send (generally, cardholder
   // name if it exists on all cards, and existence of Payments customer).
@@ -144,7 +137,6 @@ class LocalCardMigrationManager {
   payments::PaymentsClient* payments_client_;
 
  private:
-  friend class LocalCardMigrationBrowserTestBase;
   FRIEND_TEST_ALL_PREFIXES(LocalCardMigrationManagerTest,
                            MigrateCreditCard_MigrationPermanentFailure);
   FRIEND_TEST_ALL_PREFIXES(LocalCardMigrationManagerTest,
@@ -153,10 +145,6 @@ class LocalCardMigrationManager {
                            MigrateCreditCard_MigrationSuccess);
   FRIEND_TEST_ALL_PREFIXES(LocalCardMigrationManagerTest,
                            MigrateCreditCard_ToggleIsChosen);
-
-  // Check that the user is signed in, syncing, and the proper experiment
-  // flags are enabled. Override in the test class.
-  virtual bool IsCreditCardMigrationEnabled();
 
   // Pops up a larger, modal dialog showing the local cards to be uploaded.
   void ShowMainMigrationDialog();
@@ -168,11 +156,6 @@ class LocalCardMigrationManager {
 
   // Finalizes the migration request and calls PaymentsClient.
   void SendMigrateLocalCardsRequest();
-
-  // For testing.
-  void SetEventObserverForTesting(ObserverForTest* observer) {
-    observer_for_testing_ = observer;
-  }
 
   std::unique_ptr<base::DictionaryValue> legal_message_;
 
@@ -199,9 +182,6 @@ class LocalCardMigrationManager {
 
   // Record the triggering source of the local card migration.
   AutofillMetrics::LocalCardMigrationOrigin local_card_migration_origin_;
-
-  // Initialized only during tests.
-  ObserverForTest* observer_for_testing_ = nullptr;
 
   base::WeakPtrFactory<LocalCardMigrationManager> weak_ptr_factory_;
 

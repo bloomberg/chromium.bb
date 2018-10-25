@@ -46,8 +46,6 @@ class LocalCardMigrationBubbleViews : public LocalCardMigrationBubble,
   void WindowClosing() override;
 
  private:
-  friend class LocalCardMigrationBrowserTestBase;
-
   ~LocalCardMigrationBubbleViews() override;
 
   // views::BubbleDialogDelegateView:

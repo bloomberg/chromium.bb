@@ -7,7 +7,6 @@
 
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -609,7 +608,6 @@ class AutofillManager : public AutofillHandler,
   friend class AutofillManagerTest;
   friend class FormStructureBrowserTest;
   friend class GetMatchingTypesTest;
-  friend class LocalCardMigrationBrowserTestBase;
   friend class SaveCardBubbleViewsBrowserTestBase;
   friend class SaveCardInfobarEGTestHelper;
   FRIEND_TEST_ALL_PREFIXES(ProfileMatchingTypesTest,
