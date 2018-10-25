@@ -5353,7 +5353,6 @@ if (!is_android && !is_fuchsia) {
       "../browser/sync/test/integration/migration_test.cc",
       "../browser/sync/test/integration/single_client_app_list_sync_test.cc",
       "../browser/sync/test/integration/single_client_apps_sync_test.cc",
-      "../browser/sync/test/integration/single_client_arc_package_sync_test.cc",
       "../browser/sync/test/integration/single_client_bookmarks_sync_test.cc",
       "../browser/sync/test/integration/single_client_custom_passphrase_sync_test.cc",
       "../browser/sync/test/integration/single_client_dictionary_sync_test.cc",
@@ -5363,7 +5362,6 @@ if (!is_android && !is_fuchsia) {
       "../browser/sync/test/integration/single_client_passwords_sync_test.cc",
       "../browser/sync/test/integration/single_client_polling_sync_test.cc",
       "../browser/sync/test/integration/single_client_preferences_sync_test.cc",
-      "../browser/sync/test/integration/single_client_printers_sync_test.cc",
       "../browser/sync/test/integration/single_client_search_engines_sync_test.cc",
       "../browser/sync/test/integration/single_client_secondary_account_sync_test.cc",
       "../browser/sync/test/integration/single_client_sessions_sync_test.cc",
@@ -5373,13 +5371,11 @@ if (!is_android && !is_fuchsia) {
       "../browser/sync/test/integration/single_client_user_consents_sync_test.cc",
       "../browser/sync/test/integration/single_client_user_events_sync_test.cc",
       "../browser/sync/test/integration/single_client_wallet_sync_test.cc",
-      "../browser/sync/test/integration/single_client_wifi_credentials_sync_test.cc",
       "../browser/sync/test/integration/sync_auth_test.cc",
       "../browser/sync/test/integration/sync_errors_test.cc",
       "../browser/sync/test/integration/sync_exponential_backoff_test.cc",
       "../browser/sync/test/integration/two_client_app_list_sync_test.cc",
       "../browser/sync/test/integration/two_client_apps_sync_test.cc",
-      "../browser/sync/test/integration/two_client_arc_package_sync_test.cc",
       "../browser/sync/test/integration/two_client_autocomplete_sync_test.cc",
       "../browser/sync/test/integration/two_client_autofill_sync_test.cc",
       "../browser/sync/test/integration/two_client_bookmarks_sync_test.cc",
@@ -5390,13 +5386,11 @@ if (!is_android && !is_fuchsia) {
       "../browser/sync/test/integration/two_client_passwords_sync_test.cc",
       "../browser/sync/test/integration/two_client_polling_sync_test.cc",
       "../browser/sync/test/integration/two_client_preferences_sync_test.cc",
-      "../browser/sync/test/integration/two_client_printers_sync_test.cc",
       "../browser/sync/test/integration/two_client_search_engines_sync_test.cc",
       "../browser/sync/test/integration/two_client_sessions_sync_test.cc",
       "../browser/sync/test/integration/two_client_themes_sync_test.cc",
       "../browser/sync/test/integration/two_client_typed_urls_sync_test.cc",
       "../browser/sync/test/integration/two_client_uss_sync_test.cc",
-      "../browser/sync/test/integration/two_client_wifi_credentials_sync_test.cc",
       "data/resource.rc",
     ]
 
@@ -5473,8 +5467,8 @@ if (!is_android && !is_fuchsia) {
     } else {
       sources -= [ "../app/chrome_version.rc.version" ]
     }
-    if (!is_chromeos) {
-      sources -= [
+    if (is_chromeos) {
+      sources += [
         "../browser/sync/test/integration/single_client_arc_package_sync_test.cc",
         "../browser/sync/test/integration/single_client_printers_sync_test.cc",
         "../browser/sync/test/integration/single_client_wifi_credentials_sync_test.cc",
@@ -5482,6 +5476,7 @@ if (!is_android && !is_fuchsia) {
         "../browser/sync/test/integration/two_client_printers_sync_test.cc",
         "../browser/sync/test/integration/two_client_wifi_credentials_sync_test.cc",
       ]
+      deps += [ "//components/sync_wifi" ]
     }
 
     if (toolkit_views) {
