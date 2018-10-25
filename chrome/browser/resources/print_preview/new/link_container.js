@@ -79,4 +79,9 @@ Polymer({
     this.fire('open-pdf-in-preview');
   },
   // </if>
+
+  /** @return {boolean} Whether the system dialog link is available. */
+  systemDialogLinkAvailable: function() {
+    return this.shouldShowSystemDialogLink_ && !this.systemDialogLinkDisabled_;
+  },
 });

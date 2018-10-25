@@ -263,6 +263,13 @@ Polymer({
     if (e.code == 'KeyP') {
       if ((cr.isMac && e.metaKey && e.altKey && !e.shiftKey && !e.ctrlKey) ||
           (!cr.isMac && e.shiftKey && e.ctrlKey && !e.altKey && !e.metaKey)) {
+        // Don't use system dialog if the link isn't available.
+        const linkContainer = this.$$('print-preview-link-container');
+        if (!linkContainer || !linkContainer.systemDialogLinkAvailable()) {
+          e.preventDefault();
+          return;
+        }
+
         // Don't try to print with system dialog on Windows if the document is
         // not ready, because we send the preview document to the printer on
         // Windows.

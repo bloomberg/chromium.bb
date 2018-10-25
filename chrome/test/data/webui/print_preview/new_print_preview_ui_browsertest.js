@@ -1057,3 +1057,65 @@ TEST_F('PrintPreviewPrintButtonTest', 'LocalPrintHidePreview', function() {
 TEST_F('PrintPreviewPrintButtonTest', 'PDFPrintVisiblePreview', function() {
   this.runMochaTest(print_button_test.TestNames.PDFPrintVisiblePreview);
 });
+
+PrintPreviewKeyEventTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/app.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../settings/test_util.js',
+      '../test_browser_proxy.js',
+      'native_layer_stub.js',
+      'plugin_stub.js',
+      'print_preview_test_utils.js',
+      'key_event_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return key_event_test.suiteName;
+  }
+};
+
+TEST_F('PrintPreviewKeyEventTest', 'EnterTriggersPrint', function() {
+  this.runMochaTest(key_event_test.TestNames.EnterTriggersPrint);
+});
+
+TEST_F('PrintPreviewKeyEventTest', 'NumpadEnterTriggersPrint', function() {
+  this.runMochaTest(key_event_test.TestNames.NumpadEnterTriggersPrint);
+});
+
+TEST_F('PrintPreviewKeyEventTest', 'EnterOnInputTriggersPrint', function() {
+  this.runMochaTest(key_event_test.TestNames.EnterOnInputTriggersPrint);
+});
+
+TEST_F('PrintPreviewKeyEventTest', 'EnterOnDropdownDoesNotPrint', function() {
+  this.runMochaTest(key_event_test.TestNames.EnterOnDropdownDoesNotPrint);
+});
+
+TEST_F('PrintPreviewKeyEventTest', 'EnterOnButtonDoesNotPrint', function() {
+  this.runMochaTest(key_event_test.TestNames.EnterOnButtonDoesNotPrint);
+});
+
+TEST_F('PrintPreviewKeyEventTest', 'EnterOnCheckboxDoesNotPrint', function() {
+  this.runMochaTest(key_event_test.TestNames.EnterOnCheckboxDoesNotPrint);
+});
+
+TEST_F('PrintPreviewKeyEventTest', 'EscapeClosesDialogOnMacOnly', function() {
+  this.runMochaTest(key_event_test.TestNames.EscapeClosesDialogOnMacOnly);
+});
+
+TEST_F(
+    'PrintPreviewKeyEventTest', 'CmdPeriodClosesDialogOnMacOnly', function() {
+      this.runMochaTest(
+          key_event_test.TestNames.CmdPeriodClosesDialogOnMacOnly);
+    });
+
+TEST_F('PrintPreviewKeyEventTest', 'CtrlShiftPOpensSystemDialog', function() {
+  this.runMochaTest(key_event_test.TestNames.CtrlShiftPOpensSystemDialog);
+});
