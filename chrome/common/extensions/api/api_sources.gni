@@ -72,7 +72,6 @@ schema_sources_ = [
   "webrtc_logging_private.idl",
 
   "webstore_private.json",
-  "webstore_widget_private.idl",
   "windows.json",
 ]
 

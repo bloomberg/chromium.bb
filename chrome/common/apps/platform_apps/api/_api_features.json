@@ -26,5 +26,9 @@
   "syncFileSystem": {
     "dependencies": ["permission:syncFileSystem"],
     "contexts": ["blessed_extension"]
+  },
+  "webstoreWidgetPrivate": {
+    "dependencies": ["permission:webstoreWidgetPrivate"],
+    "contexts": ["blessed_extension"]
   }
 }

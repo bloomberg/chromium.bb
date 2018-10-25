@@ -67,6 +67,10 @@ source_set("api") {
       "easy_unlock_private/easy_unlock_private_connection.h",
       "easy_unlock_private/easy_unlock_private_connection_manager.cc",
       "easy_unlock_private/easy_unlock_private_connection_manager.h",
+      "webstore_widget_private/app_installer.cc",
+      "webstore_widget_private/app_installer.h",
+      "webstore_widget_private/webstore_widget_private_api.cc",
+      "webstore_widget_private/webstore_widget_private_api.h",
     ]
 
     deps += [

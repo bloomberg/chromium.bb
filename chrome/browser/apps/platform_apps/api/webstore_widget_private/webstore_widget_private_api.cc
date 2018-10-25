@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/webstore_widget_private/webstore_widget_private_api.h"
+#include "chrome/browser/apps/platform_apps/api/webstore_widget_private/webstore_widget_private_api.h"
 
 #include <memory>
 #include <utility>
 
+#include "chrome/browser/apps/platform_apps/api/webstore_widget_private/app_installer.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
-#include "chrome/browser/extensions/api/webstore_widget_private/app_installer.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/api/webstore_widget_private.h"
+#include "chrome/common/apps/platform_apps/api/webstore_widget_private.h"
 #include "extensions/browser/extension_function_constants.h"
 
-namespace extensions {
+namespace chrome_apps {
 namespace api {
 
 namespace {
@@ -23,12 +23,10 @@ const char kGoogleCastApiExtensionId[] = "mafeflapfdfljijmlienjedomfjfmhpd";
 }  // namespace
 
 WebstoreWidgetPrivateInstallWebstoreItemFunction::
-    WebstoreWidgetPrivateInstallWebstoreItemFunction() {
-}
+    WebstoreWidgetPrivateInstallWebstoreItemFunction() {}
 
 WebstoreWidgetPrivateInstallWebstoreItemFunction::
-    ~WebstoreWidgetPrivateInstallWebstoreItemFunction() {
-}
+    ~WebstoreWidgetPrivateInstallWebstoreItemFunction() {}
 
 ExtensionFunction::ResponseAction
 WebstoreWidgetPrivateInstallWebstoreItemFunction::Run() {
@@ -53,7 +51,7 @@ WebstoreWidgetPrivateInstallWebstoreItemFunction::Run() {
   content::WebContents* web_contents = GetSenderWebContents();
   if (!web_contents) {
     return RespondNow(
-        Error(function_constants::kCouldNotFindSenderWebContents));
+        Error(extensions::function_constants::kCouldNotFindSenderWebContents));
   }
   scoped_refptr<webstore_widget::AppInstaller> installer(
       new webstore_widget::AppInstaller(
@@ -74,4 +72,4 @@ void WebstoreWidgetPrivateInstallWebstoreItemFunction::OnInstallComplete(
 }
 
 }  // namespace api
-}  // namespace extensions
+}  // namespace chrome_apps
