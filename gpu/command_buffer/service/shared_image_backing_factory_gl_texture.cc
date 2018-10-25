@@ -404,8 +404,8 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
     texture->SetTarget(target, 1);
     texture->sampler_state_.min_filter = GL_LINEAR;
     texture->sampler_state_.mag_filter = GL_LINEAR;
-    texture->sampler_state_.wrap_r = GL_CLAMP_TO_EDGE;
     texture->sampler_state_.wrap_s = GL_CLAMP_TO_EDGE;
+    texture->sampler_state_.wrap_t = GL_CLAMP_TO_EDGE;
     texture->SetLevelInfo(target, 0, level_info_internal_format, size.width(),
                           size.height(), 1, 0, format_info.gl_format,
                           format_info.gl_type, cleared_rect);
