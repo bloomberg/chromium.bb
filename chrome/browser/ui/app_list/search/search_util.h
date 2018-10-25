@@ -20,8 +20,8 @@ enum SearchResultType {
   SEARCH_WEBSTORE_SEARCH_RESULT_DEPRECATED,
   // A result that opens a people search (Deprecated).
   SEARCH_PEOPLE_SEARCH_RESULT_DEPRECATED,
-  // A result that opens a suggestion.
-  SUGGESTIONS_SEARCH_RESULT,
+  // A result that opens a suggestion (Deprecated).
+  SUGGESTIONS_SEARCH_RESULT_DEPRECATED,
   // A result that is provided by the custom launcher search provider.
   LAUNCHER_SEARCH_PROVIDER_RESULT,
   // A result that is an uninstalled app from a Play Store app search.
