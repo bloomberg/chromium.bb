@@ -111,9 +111,7 @@ RootScrollerController* RootScrollerController::Create(Document& document) {
 }
 
 RootScrollerController::RootScrollerController(Document& document)
-    : document_(&document),
-      effective_root_scroller_(&document),
-      document_has_document_element_(false) {}
+    : document_(&document), effective_root_scroller_(&document) {}
 
 void RootScrollerController::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_);
@@ -189,49 +187,37 @@ void RootScrollerController::RecomputeEffectiveRootScroller() {
       new_effective_root_scroller = implicit_root_scroller_;
   }
 
-  // TODO(bokan): This is a terrible hack but required because the viewport
-  // apply scroll works on Elements rather than Nodes. If we're going from
-  // !documentElement to documentElement, we can't early out even if the root
-  // scroller didn't change since the global root scroller didn't have an
-  // Element previously to put it's ViewportScrollCallback onto. We need this
-  // to kick the global root scroller to recompute itself. We can remove this
-  // if ScrollCustomization is moved to the Node rather than Element.
-  bool old_has_document_element = document_has_document_element_;
-  document_has_document_element_ = document_->documentElement();
-
-  if (old_has_document_element || !document_has_document_element_) {
-    if (effective_root_scroller_ == new_effective_root_scroller)
-      return;
-  }
+  if (effective_root_scroller_ == new_effective_root_scroller)
+    return;
 
   Node* old_effective_root_scroller = effective_root_scroller_;
   effective_root_scroller_ = new_effective_root_scroller;
 
-  if (new_effective_root_scroller != old_effective_root_scroller) {
-    if (LayoutBoxModelObject* new_obj =
-            new_effective_root_scroller->GetLayoutBoxModelObject()) {
-      if (new_obj->Layer()) {
-        new_effective_root_scroller->GetLayoutBoxModelObject()
-            ->Layer()
-            ->SetNeedsCompositingInputsUpdate();
-      }
+  DCHECK(new_effective_root_scroller);
+  if (LayoutBoxModelObject* new_obj =
+          new_effective_root_scroller->GetLayoutBoxModelObject()) {
+    if (new_obj->Layer()) {
+      new_effective_root_scroller->GetLayoutBoxModelObject()
+          ->Layer()
+          ->SetNeedsCompositingInputsUpdate();
     }
-    if (old_effective_root_scroller) {
-      if (LayoutBoxModelObject* old_obj =
-              old_effective_root_scroller->GetLayoutBoxModelObject()) {
-        if (old_obj->Layer()) {
-          old_effective_root_scroller->GetLayoutBoxModelObject()
-              ->Layer()
-              ->SetNeedsCompositingInputsUpdate();
-        }
-      }
-    }
-    if (auto* object = old_effective_root_scroller->GetLayoutObject())
-      object->SetIsEffectiveRootScroller(false);
-
-    if (auto* object = new_effective_root_scroller->GetLayoutObject())
-      object->SetIsEffectiveRootScroller(true);
   }
+
+  DCHECK(old_effective_root_scroller);
+  if (LayoutBoxModelObject* old_obj =
+          old_effective_root_scroller->GetLayoutBoxModelObject()) {
+    if (old_obj->Layer()) {
+      old_effective_root_scroller->GetLayoutBoxModelObject()
+          ->Layer()
+          ->SetNeedsCompositingInputsUpdate();
+    }
+  }
+
+  if (auto* object = old_effective_root_scroller->GetLayoutObject())
+    object->SetIsEffectiveRootScroller(false);
+
+  if (auto* object = new_effective_root_scroller->GetLayoutObject())
+    object->SetIsEffectiveRootScroller(true);
 
   ApplyRootScrollerProperties(*old_effective_root_scroller);
   ApplyRootScrollerProperties(*effective_root_scroller_);
@@ -417,13 +403,6 @@ void RootScrollerController::ProcessImplicitCandidates() {
 PaintLayer* RootScrollerController::RootScrollerPaintLayer() const {
   return root_scroller_util::PaintLayerForRootScroller(
       effective_root_scroller_);
-}
-
-bool RootScrollerController::ScrollsViewport(const Element& element) const {
-  if (effective_root_scroller_->IsDocumentNode())
-    return element == document_->documentElement();
-
-  return element == effective_root_scroller_.Get();
 }
 
 void RootScrollerController::ElementRemoved(const Element& element) {
