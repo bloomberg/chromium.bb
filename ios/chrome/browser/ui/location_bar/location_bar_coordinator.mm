@@ -260,7 +260,7 @@ const int kLocationAuthorizationStatusCount = 4;
 
 - (void)focusOmnibox {
   // When the NTP and fakebox are visible, make the fakebox animates into place
-  // before focusing the omnibox.
+  // before focusing the omnibox.webState
   if (IsVisibleUrlNewTabPage([self webState]) &&
       !self.browserState->IsOffTheRecord()) {
     [self.viewController.dispatcher focusFakebox];

@@ -8,6 +8,8 @@
 #include "components/ntp_tiles/ntp_tile.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "ios/chrome/browser/ntp_tiles/most_visited_sites_observer_bridge.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes_provider.h"
 #import "ios/chrome/browser/ui/omnibox/popup/shortcuts/shortcuts_consumer.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
@@ -95,6 +97,24 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
   web::NavigationManager::WebLoadParams params(item.URL);
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
   [self.dispatcher loadURLWithParams:params];
+  [self.dispatcher cancelOmniboxEdit];
+}
+
+- (void)openBookmarks {
+  [self.dispatcher showBookmarksManager];
+  [self.dispatcher cancelOmniboxEdit];
+}
+
+- (void)openReadingList {
+  [self.dispatcher showReadingList];
+  [self.dispatcher cancelOmniboxEdit];
+}
+- (void)openRecentTabs {
+  [self.dispatcher showRecentTabs];
+  [self.dispatcher cancelOmniboxEdit];
+}
+- (void)openHistory {
+  [self.dispatcher showHistory];
   [self.dispatcher cancelOmniboxEdit];
 }
 
