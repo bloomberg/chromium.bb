@@ -52,12 +52,20 @@ TEST_F(ScanDirForExternalWebAppsTest, GoodJson) {
           GURL("https://www.chromestatus.com/features"),
           web_app::LaunchContainer::kTab,
           web_app::InstallSource::kExternalDefault,
-          /* create_shortcuts */ true),
+          /* create_shortcuts */ true,
+          web_app::PendingAppManager::AppInfo::
+              kDefaultOverridePreviousUserUninstall,
+          web_app::PendingAppManager::AppInfo::kDefaultBypassServiceWorkerCheck,
+          /* require_manifest */ true),
       web_app::PendingAppManager::AppInfo(
           GURL("https://events.google.com/io2016/?utm_source=web_app_manifest"),
           web_app::LaunchContainer::kWindow,
           web_app::InstallSource::kExternalDefault,
-          /* create_shortcuts */ false),
+          /* create_shortcuts */ false,
+          web_app::PendingAppManager::AppInfo::
+              kDefaultOverridePreviousUserUninstall,
+          web_app::PendingAppManager::AppInfo::kDefaultBypassServiceWorkerCheck,
+          /* require_manifest */ true),
   };
   for (const auto& app_info : test_app_infos) {
     EXPECT_TRUE(base::ContainsValue(app_infos, app_info));
