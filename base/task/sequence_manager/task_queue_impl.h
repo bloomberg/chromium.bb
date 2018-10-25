@@ -124,6 +124,7 @@ class BASE_EXPORT TaskQueueImpl {
   void RemoveFence();
   bool HasActiveFence();
   bool BlockedByFence() const;
+
   // Implementation of TaskQueue::SetObserver.
   void SetOnNextWakeUpChangedCallback(OnNextWakeUpChangedCallback callback);
 
@@ -229,8 +230,6 @@ class BASE_EXPORT TaskQueueImpl {
   SequenceManagerImpl* sequence_manager() {
     return main_thread_only().sequence_manager;
   }
-
-  scoped_refptr<GracefulQueueShutdownHelper> GetGracefulQueueShutdownHelper();
 
   // Returns true if this queue is unregistered or task queue manager is deleted
   // and this queue can be safely deleted on any thread.

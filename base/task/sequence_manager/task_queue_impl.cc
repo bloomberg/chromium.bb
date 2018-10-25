@@ -995,10 +995,6 @@ WeakPtr<SequenceManagerImpl> TaskQueueImpl::GetSequenceManagerWeakPtr() {
   return main_thread_only().sequence_manager->GetWeakPtr();
 }
 
-scoped_refptr<GracefulQueueShutdownHelper>
-TaskQueueImpl::GetGracefulQueueShutdownHelper() {
-  return main_thread_only().sequence_manager->GetGracefulQueueShutdownHelper();
-}
 
 void TaskQueueImpl::SetQueueEnabledForTest(bool enabled) {
   main_thread_only().is_enabled_for_test = enabled;

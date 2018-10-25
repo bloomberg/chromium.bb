@@ -72,7 +72,6 @@ SequenceManager::MetricRecordingSettings InitializeMetricRecordingSettings() {
 SequenceManagerImpl::SequenceManagerImpl(
     std::unique_ptr<internal::ThreadController> controller)
     : associated_thread_(controller->GetAssociatedThread()),
-      graceful_shutdown_helper_(new internal::GracefulQueueShutdownHelper()),
       controller_(std::move(controller)),
       metric_recording_settings_(InitializeMetricRecordingSettings()),
       memory_corruption_sentinel_(kMemoryCorruptionSentinelValue),
@@ -110,9 +109,6 @@ SequenceManagerImpl::~SequenceManagerImpl() {
 
   main_thread_only().active_queues.clear();
   main_thread_only().queues_to_gracefully_shutdown.clear();
-
-  graceful_shutdown_helper_->OnSequenceManagerDeleted();
-
   main_thread_only().selector.SetTaskQueueSelectorObserver(nullptr);
 
   // In some tests a NestingObserver may not have been registered.
@@ -229,6 +225,12 @@ void SequenceManagerImpl::RemoveFromIncomingImmediateWorkList(
 
   task_queue->immediate_work_list_storage()->next = nullptr;
   task_queue->immediate_work_list_storage()->queue = nullptr;
+}
+
+void SequenceManagerImpl::ShutdownTaskQueueGracefully(
+    std::unique_ptr<internal::TaskQueueImpl> task_queue) {
+  main_thread_only().queues_to_gracefully_shutdown[task_queue.get()] =
+      std::move(task_queue);
 }
 
 void SequenceManagerImpl::UnregisterTaskQueueImpl(
@@ -696,18 +698,7 @@ void SequenceManagerImpl::SweepCanceledDelayedTasks() {
     SweepCanceledDelayedTasksInQueue(pair.first, &time_domain_now);
 }
 
-void SequenceManagerImpl::TakeQueuesToGracefullyShutdownFromHelper() {
-  std::vector<std::unique_ptr<internal::TaskQueueImpl>> queues =
-      graceful_shutdown_helper_->TakeQueues();
-  for (std::unique_ptr<internal::TaskQueueImpl>& queue : queues) {
-    main_thread_only().queues_to_gracefully_shutdown[queue.get()] =
-        std::move(queue);
-  }
-}
-
 void SequenceManagerImpl::CleanUpQueues() {
-  TakeQueuesToGracefullyShutdownFromHelper();
-
   for (auto it = main_thread_only().queues_to_gracefully_shutdown.begin();
        it != main_thread_only().queues_to_gracefully_shutdown.end();) {
     if (it->first->IsEmpty()) {
@@ -719,11 +710,6 @@ void SequenceManagerImpl::CleanUpQueues() {
     }
   }
   main_thread_only().queues_to_delete.clear();
-}
-
-scoped_refptr<internal::GracefulQueueShutdownHelper>
-SequenceManagerImpl::GetGracefulQueueShutdownHelper() const {
-  return graceful_shutdown_helper_;
 }
 
 WeakPtr<SequenceManagerImpl> SequenceManagerImpl::GetWeakPtr() {

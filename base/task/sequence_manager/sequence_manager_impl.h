@@ -28,7 +28,6 @@
 #include "base/synchronization/lock.h"
 #include "base/task/sequence_manager/associated_thread_id.h"
 #include "base/task/sequence_manager/enqueue_order.h"
-#include "base/task/sequence_manager/graceful_queue_shutdown_helper.h"
 #include "base/task/sequence_manager/moveable_auto_lock.h"
 #include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
@@ -151,8 +150,9 @@ class BASE_EXPORT SequenceManagerImpl
   void UnregisterTaskQueueImpl(
       std::unique_ptr<internal::TaskQueueImpl> task_queue);
 
-  scoped_refptr<internal::GracefulQueueShutdownHelper>
-  GetGracefulQueueShutdownHelper() const;
+  // Schedule a call to UnregisterTaskQueueImpl as soon as it's safe to do so.
+  void ShutdownTaskQueueGracefully(
+      std::unique_ptr<internal::TaskQueueImpl> task_queue);
 
   const scoped_refptr<AssociatedThreadId>& associated_thread() const {
     return associated_thread_;
@@ -310,8 +310,6 @@ class BASE_EXPORT SequenceManagerImpl
   std::unique_ptr<internal::TaskQueueImpl> CreateTaskQueueImpl(
       const TaskQueue::Spec& spec) override;
 
-  void TakeQueuesToGracefullyShutdownFromHelper();
-
   // Deletes queues marked for deletion and empty queues marked for shutdown.
   void CleanUpQueues();
 
@@ -327,9 +325,6 @@ class BASE_EXPORT SequenceManagerImpl
       internal::TaskQueueImpl* task_queue);
 
   scoped_refptr<AssociatedThreadId> associated_thread_;
-
-  const scoped_refptr<internal::GracefulQueueShutdownHelper>
-      graceful_shutdown_helper_;
 
   internal::EnqueueOrder::Generator enqueue_order_generator_;
 

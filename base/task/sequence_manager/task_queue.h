@@ -29,7 +29,6 @@ namespace sequence_manager {
 
 namespace internal {
 struct AssociatedThreadId;
-class GracefulQueueShutdownHelper;
 class SequenceManagerImpl;
 class TaskQueueImpl;
 }  // namespace internal
@@ -336,9 +335,6 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
   std::unique_ptr<internal::TaskQueueImpl> impl_;
 
   const WeakPtr<internal::SequenceManagerImpl> sequence_manager_;
-
-  const scoped_refptr<internal::GracefulQueueShutdownHelper>
-      graceful_queue_shutdown_helper_;
 
   scoped_refptr<internal::AssociatedThreadId> associated_thread_;
   scoped_refptr<SingleThreadTaskRunner> default_task_runner_;
