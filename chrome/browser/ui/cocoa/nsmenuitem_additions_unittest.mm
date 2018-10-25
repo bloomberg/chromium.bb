@@ -357,6 +357,17 @@ TEST(NSMenuItemAdditionsTest, TestFiresForKeyEvent) {
   key = KeyEvent(0x100108, @"4", @"", 21);
   ExpectKeyFiresItem(key, MenuItem(@"4", NSCommandKeyMask),
                      /*compareCocoa=*/false);
+
+  // On French AZERTY layout, cmd + '&' [vkeycode = 18] should instead trigger
+  // cmd + '1'. Ditto for other number keys.
+  SetIsInputSourceAbcAzertyForTesting(true);
+  key = KeyEvent(0x100108, @"&", @"&", 18);
+  ExpectKeyFiresItem(key, MenuItem(@"1", NSCommandKeyMask),
+                     /*compareCocoa=*/false);
+  key = KeyEvent(0x100108, @"é", @"é", 19);
+  ExpectKeyFiresItem(key, MenuItem(@"2", NSCommandKeyMask),
+                     /*compareCocoa=*/false);
+  SetIsInputSourceAbcAzertyForTesting(false);
 }
 
 NSString* keyCodeToCharacter(NSUInteger keyCode,
