@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/platform/heap/heap_compact.h"
 #include "third_party/blink/renderer/platform/heap/heap_terminated_array.h"
 #include "third_party/blink/renderer/platform/heap/heap_terminated_array_builder.h"
+#include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
@@ -85,6 +86,10 @@ class IncrementalMarkingScopeBase {
  public:
   explicit IncrementalMarkingScopeBase(ThreadState* thread_state)
       : thread_state_(thread_state), heap_(thread_state_->Heap()) {
+    if (thread_state_->IsMarkingInProgress() ||
+        thread_state_->IsSweepingInProgress()) {
+      PreciselyCollectGarbage();
+    }
     heap_.CommitCallbackStacks();
   }
 
