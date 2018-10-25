@@ -152,7 +152,10 @@ std::unique_ptr<std::vector<extensions::TtsVoice>> GetVoicesInternal(
 
   // Fall back on the extension manifest.
   auto* manifest_voices = extensions::TtsVoices::GetTtsVoices(extension);
-  return std::make_unique<std::vector<extensions::TtsVoice>>(*manifest_voices);
+  if (manifest_voices)
+    return std::make_unique<std::vector<extensions::TtsVoice>>(
+        *manifest_voices);
+  return std::make_unique<std::vector<extensions::TtsVoice>>();
 }
 
 }  // namespace
