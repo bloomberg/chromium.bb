@@ -139,11 +139,24 @@ void TextPaintTimingDetector::OnPrePaintFinished() {
 }
 
 void TextPaintTimingDetector::NotifyNodeRemoved(DOMNodeId node_id) {
-  if (recorded_text_node_ids_.find(node_id) != recorded_text_node_ids_.end()) {
-    // We assume that the removed node's id wouldn't be recycled, so we don't
-    // bother to remove these records from largest_text_heap_ or
-    // latest_text_heap_, to reduce computation.
-    recorded_text_node_ids_.erase(node_id);
+  if (recorded_text_node_ids_.find(node_id) == recorded_text_node_ids_.end())
+    return;
+  // We assume that removed nodes' id would not be recycled, and it's expensive
+  // to remove records from largest_text_heap_ and latest_text_heap_, so we
+  // intentionally keep the records of removed nodes in largest_text_heap_ and
+  // latest_text_heap_.
+  recorded_text_node_ids_.erase(node_id);
+  if (recorded_text_node_ids_.size() == 0) {
+    const bool largest_text_paint_invalidated =
+        largest_text_paint_ != base::TimeTicks();
+    const bool last_text_paint_invalidated =
+        last_text_paint_ != base::TimeTicks();
+    if (largest_text_paint_invalidated)
+      largest_text_paint_ = base::TimeTicks();
+    if (last_text_paint_invalidated)
+      last_text_paint_ = base::TimeTicks();
+    if (largest_text_paint_invalidated || last_text_paint_invalidated)
+      frame_view_->GetPaintTracker().DidChangePerformanceTiming();
   }
 }
 
