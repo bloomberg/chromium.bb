@@ -65,7 +65,7 @@ gfx::Insets UnifiedSystemTrayBubble::GetAdjustedAnchorInsets(
     UnifiedSystemTray* tray,
     TrayBubbleView* bubble_view) {
   gfx::Insets anchor_insets =
-      tray->shelf()->GetSystemTrayAnchor()->GetBubbleAnchorInsets();
+      tray->shelf()->GetSystemTrayAnchorView()->GetBubbleAnchorInsets();
   gfx::Insets bubble_insets = bubble_view->GetBorderInsets();
   if (tray->shelf()->IsHorizontalAlignment()) {
     anchor_insets -=
@@ -92,8 +92,9 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
   init_params.max_width = kTrayMenuWidth;
   init_params.delegate = tray;
   init_params.parent_window = tray->GetBubbleWindowContainer();
-  init_params.anchor_view =
-      tray->shelf()->GetSystemTrayAnchor()->GetBubbleAnchor();
+  init_params.anchor_view = nullptr;
+  init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
+  init_params.anchor_rect = tray->shelf()->GetSystemTrayAnchorRect();
   init_params.corner_radius = kUnifiedTrayCornerRadius;
   init_params.has_shadow = false;
   init_params.show_by_click = show_by_click;
@@ -240,7 +241,7 @@ views::Widget* UnifiedSystemTrayBubble::GetBubbleWidget() const {
 
 int UnifiedSystemTrayBubble::CalculateMaxHeight() const {
   gfx::Rect anchor_bounds =
-      tray_->shelf()->GetSystemTrayAnchor()->GetBoundsInScreen();
+      tray_->shelf()->GetSystemTrayAnchorView()->GetBoundsInScreen();
   int bottom = tray_->shelf()->IsHorizontalAlignment() ? anchor_bounds.y()
                                                        : anchor_bounds.bottom();
   int free_space_height_above_anchor =
@@ -301,22 +302,8 @@ void UnifiedSystemTrayBubble::UpdateBubbleBounds() {
   int max_height = CalculateMaxHeight();
   unified_view_->SetMaxHeight(max_height);
   bubble_view_->SetMaxHeight(max_height);
-  // If the bubble is open while switching to and from tablet mode, change the
-  // bubble anchor if needed. The new anchor view may also have a translation
-  // applied to it so shift the bubble bounds so that it appears in the correct
-  // location.
-  bubble_view_->ChangeAnchorView(
-      tray_->shelf()->GetSystemTrayAnchor()->GetBubbleAnchor());
-  gfx::Rect bounds =
-      bubble_view_->GetWidget()->GetNativeWindow()->GetBoundsInScreen();
-  const gfx::Vector2dF translation = tray_->shelf()
-                                         ->GetSystemTrayAnchor()
-                                         ->layer()
-                                         ->transform()
-                                         .To2dTranslation();
-  bounds.set_x(bounds.x() - translation.x());
-  bounds.set_y(bounds.y() - translation.y());
-  bubble_view_->GetWidget()->GetNativeWindow()->SetBounds(bounds);
+  bubble_view_->ChangeAnchorAlignment(tray_->GetAnchorAlignment());
+  bubble_view_->ChangeAnchorRect(tray_->shelf()->GetSystemTrayAnchorRect());
 }
 
 void UnifiedSystemTrayBubble::CreateBlurLayerForAnimation() {
