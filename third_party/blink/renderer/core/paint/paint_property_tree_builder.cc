@@ -986,14 +986,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateLinkHighlightEffect() {
 
 static bool NeedsFilter(const LayoutObject& object) {
   // TODO(trchen): SVG caches filters in SVGResources. Implement it.
-  if (object.IsBoxModelObject() && ToLayoutBoxModelObject(object).Layer() &&
-      (object.StyleRef().HasFilter() || object.HasReflection() ||
-       CompositingReasonFinder::RequiresCompositingForFilterAnimation(
-           object.StyleRef())))
-    return true;
-  if (object.IsLayoutImage() && ToLayoutImage(object).ShouldInvertColor())
-    return true;
-  return false;
+  return (object.IsBoxModelObject() && ToLayoutBoxModelObject(object).Layer() &&
+          (object.StyleRef().HasFilter() || object.HasReflection() ||
+           CompositingReasonFinder::RequiresCompositingForFilterAnimation(
+               object.StyleRef())));
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
@@ -1006,23 +1002,13 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
       state.local_transform_space = context_.current.transform;
       state.filters_origin = FloatPoint(context_.current.paint_offset);
 
-      auto* layer = ToLayoutBoxModelObject(object_).Layer();
-      if (layer) {
+      if (auto* layer = ToLayoutBoxModelObject(object_).Layer()) {
         // Try to use the cached filter.
         if (properties_->Filter())
           state.filter = properties_->Filter()->Filter();
 
-        if (object_.IsLayoutImage() &&
-            ToLayoutImage(object_).ShouldInvertColor())
-          state.filter.AppendInvertFilter(1.0f);
-
         layer->UpdateCompositorFilterOperationsForFilter(state.filter);
         layer->ClearFilterOnEffectNodeDirty();
-      } else {
-        DCHECK(object_.IsLayoutImage() &&
-               ToLayoutImage(object_).ShouldInvertColor());
-        state.filter = CompositorFilterOperations();
-        state.filter.AppendInvertFilter(1.0f);
       }
 
       // The CSS filter spec didn't specify how filters interact with overflow

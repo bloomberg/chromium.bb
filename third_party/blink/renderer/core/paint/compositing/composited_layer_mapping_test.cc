@@ -2721,42 +2721,4 @@ transform'></div>
             squashed->GraphicsLayerBacking()->GetPosition());
 }
 
-TEST_F(CompositedLayerMappingTest, ImageWithInvertFilterLayer) {
-  SetBodyInnerHTML("<img id='image' style='will-change: transform;' src='x'>");
-  ToLayoutImage(GetLayoutObjectByElementId("image"))
-      ->UpdateShouldInvertColorForTest(true);
-  GetDocument().View()->UpdateAllLifecyclePhases();
-  cc::FilterOperations filters;
-  filters.Append(cc::FilterOperation::CreateInvertFilter(1.0f));
-  EXPECT_EQ(filters, ToLayoutBoxModelObject(GetLayoutObjectByElementId("image"))
-                         ->Layer()
-                         ->GraphicsLayerBacking()
-                         ->CcLayer()
-                         ->filters());
-}
-
-TEST_F(CompositedLayerMappingTest, ImageWithInvertFilterLayerUpdated) {
-  SetBodyInnerHTML("<img id='image' style='will-change: transform;' src='x'>");
-  ToLayoutImage(GetLayoutObjectByElementId("image"))
-      ->UpdateShouldInvertColorForTest(true);
-  GetDocument().View()->UpdateAllLifecyclePhases();
-  cc::FilterOperations filters0, filters1;
-  filters0.Append(cc::FilterOperation::CreateInvertFilter(1.0f));
-  EXPECT_EQ(filters0,
-            ToLayoutBoxModelObject(GetLayoutObjectByElementId("image"))
-                ->Layer()
-                ->GraphicsLayerBacking()
-                ->CcLayer()
-                ->filters());
-  ToLayoutImage(GetLayoutObjectByElementId("image"))
-      ->UpdateShouldInvertColorForTest(false);
-  GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(filters1,
-            ToLayoutBoxModelObject(GetLayoutObjectByElementId("image"))
-                ->Layer()
-                ->GraphicsLayerBacking()
-                ->CcLayer()
-                ->filters());
-}
-
 }  // namespace blink

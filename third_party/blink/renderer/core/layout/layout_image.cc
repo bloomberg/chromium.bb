@@ -273,7 +273,6 @@ void LayoutImage::ImageNotifyFinished(ImageResourceContent* new_image) {
 
   // Check for optimized image policies.
   if (View() && View()->GetFrameView()) {
-    bool old_flag = ShouldInvertColor();
     const LocalFrame& frame = View()->GetFrameView()->GetFrame();
     is_legacy_format_or_compressed_image_ =
         CheckForOptimizedImagePolicy(frame, this, new_image);
@@ -281,8 +280,6 @@ void LayoutImage::ImageNotifyFinished(ImageResourceContent* new_image) {
       is_downscaled_image_ =
           CheckForMaxDownscalingImagePolicy(frame, new_image, this);
     }
-    if (old_flag != ShouldInvertColor())
-      UpdateShouldInvertColor();
   }
 
   if (new_image == image_resource_->CachedImage()) {
@@ -483,21 +480,8 @@ SVGImage* LayoutImage::EmbeddedSVGImage() const {
   return ToSVGImageOrNull(cached_image->GetImage());
 }
 
-bool LayoutImage::ShouldInvertColor() const {
+bool LayoutImage::IsImagePolicyViolated() const {
   return is_downscaled_image_ || is_legacy_format_or_compressed_image_;
-}
-
-void LayoutImage::UpdateShouldInvertColor() {
-  SetNeedsPaintPropertyUpdate();
-  // If composited image, update compositing layer.
-  if (Layer())
-    Layer()->SetNeedsCompositingInputsUpdate();
-}
-
-void LayoutImage::UpdateShouldInvertColorForTest(bool value) {
-  is_downscaled_image_ = value;
-  is_legacy_format_or_compressed_image_ = value;
-  UpdateShouldInvertColor();
 }
 
 void LayoutImage::UpdateAfterLayout() {
@@ -509,11 +493,8 @@ void LayoutImage::UpdateAfterLayout() {
 
       if (image_resource_ && image_resource_->CachedImage()) {
         // Check for optimized image policies.
-        bool old_flag = ShouldInvertColor();
         is_downscaled_image_ = CheckForMaxDownscalingImagePolicy(
             frame, image_resource_->CachedImage(), this);
-        if (old_flag != ShouldInvertColor())
-          UpdateShouldInvertColor();
       }
     }
 
