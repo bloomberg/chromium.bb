@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
+import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
@@ -340,7 +341,10 @@ public class PageInfoController
             viewParams.connectionMessageShown = false;
 
             viewParams.previewShowOriginalClickCallback = () -> {
-                runAfterDismiss(() -> { bridge.loadOriginal(mTab.getWebContents()); });
+                runAfterDismiss(() -> {
+                    PreviewsUma.recordOptOut(bridge.getPreviewsType(mTab.getWebContents()));
+                    bridge.loadOriginal(mTab.getWebContents());
+                });
             };
             final String previewOriginalHost = bridge.getOriginalHost(mTab.getWebContents());
             final String loadOriginalText = mContext.getString(
@@ -558,11 +562,13 @@ public class PageInfoController
 
         @PreviewPageState
         int previewPageState = PreviewPageState.NOT_PREVIEW;
-        if (PreviewsAndroidBridge.getInstance().shouldShowPreviewUI(tab.getWebContents())) {
+        final PreviewsAndroidBridge bridge = PreviewsAndroidBridge.getInstance();
+        if (bridge.shouldShowPreviewUI(tab.getWebContents())) {
             previewPageState = securityLevel == ConnectionSecurityLevel.SECURE
                     ? PreviewPageState.SECURE_PAGE_PREVIEW
                     : PreviewPageState.INSECURE_PAGE_PREVIEW;
 
+            PreviewsUma.recordPageInfoOpened(bridge.getPreviewsType(tab.getWebContents()));
             Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
             tracker.notifyEvent(EventConstants.PREVIEWS_VERBOSE_STATUS_OPENED);
         }

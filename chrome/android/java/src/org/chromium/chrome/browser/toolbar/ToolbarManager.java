@@ -70,6 +70,8 @@ import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager.HomepageStateListener;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
+import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrl;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
@@ -415,6 +417,9 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                     // also update the verbose status view to make sure the "Lite" badge is
                     // displayed.
                     mLocationBar.updateSecurityIcon();
+                    PreviewsUma.recordLitePageAtLoadFinish(
+                            PreviewsAndroidBridge.getInstance().getPreviewsType(
+                                    tab.getWebContents()));
                 }
 
                 handleIPHForSuccessfulPageLoad(tab);
@@ -557,6 +562,10 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                     // is a preview, update the security icon which will also update the verbose
                     // status view to make sure the "Lite" badge is displayed.
                     mLocationBar.updateSecurityIcon();
+                    PreviewsUma.recordLitePageAtCommit(
+                            PreviewsAndroidBridge.getInstance().getPreviewsType(
+                                    tab.getWebContents()),
+                            isInMainFrame);
                 }
 
                 // If the load failed due to a different navigation, there is no need to reset the
