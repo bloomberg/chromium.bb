@@ -2,18 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("crx_file") {
-  sources = [
-    "crx_file.cc",
-    "crx_file.h",
-  ]
-
-  deps = [
-    "//base",
-    "//components/chrome_cleaner/public/constants:constants",
-  ]
-}
-
 source_set("components") {
   sources = [
     "component_api.h",
@@ -30,7 +18,6 @@ source_set("components") {
   ]
 
   deps = [
-    ":crx_file",
     "//base:base",
     "//chrome/chrome_cleaner/chrome_utils:chrome_util_lib",
     "//chrome/chrome_cleaner/chrome_utils:extensions_util_lib",
@@ -46,6 +33,7 @@ source_set("components") {
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/pup_data:pup_data_base",
     "//components/chrome_cleaner/public/constants:constants",
+    "//components/crx_file",
     "//crypto:crypto",
     "//third_party/zlib/google:zip",
     "//url:url",
