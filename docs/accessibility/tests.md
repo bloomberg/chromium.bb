@@ -99,12 +99,13 @@ out/release/accessibility_unittests
 
 ## ChromeVox tests
 
-You must build with ```target_os = "chromeos"``` in your GN args.
+ChromeVox tests are part of the browser_tests suite. You must build with
+```target_os = "chromeos"``` in your GN args.
 
 To run all tests:
 ```
-autoninja -C out/release chromevox_tests
-out/release/chromevox_tests --test-launcher-jobs=10
+autoninja -C out/release browser_tests
+out/release/browser_tests --test-launcher-jobs=20 --gtest_filter=ChromeVox*
 ```
 
 ### Select-To-Speak tests

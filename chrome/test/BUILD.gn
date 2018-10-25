@@ -261,6 +261,12 @@ static_library("test_support") {
       "base/browser_process_platform_part_test_api_chromeos.h",
       "base/default_ash_event_generator_delegate.cc",
       "base/default_ash_event_generator_delegate.h",
+
+      # Only used for Chromevox tests, so only included on Chrome OS.
+      "base/extension_js_browser_test.cc",
+      "base/extension_js_browser_test.h",
+      "base/extension_load_waiter_one_shot.cc",
+      "base/extension_load_waiter_one_shot.h",
     ]
     public_deps += [
       "//ash",
@@ -1850,6 +1856,7 @@ test("browser_tests") {
         "//ash:test_support_with_content",
         "//ash/public/interfaces:test_interfaces",
         "//chrome/browser/chromeos:arc_test_support",
+        "//chrome/browser/resources/chromeos/chromevox:browser_tests",
         "//chrome/services/file_util/public/cpp:browser_tests",
         "//chromeos/components/drivefs:test_support",
         "//components/arc:arc_test_support",

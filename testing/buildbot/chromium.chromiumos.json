@@ -515,7 +515,7 @@
       {
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 20
+          "shards": 21
         },
         "test": "browser_tests"
       },
@@ -618,12 +618,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "chromeos_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "chromevox_tests"
       },
       {
         "swarming": {
@@ -1336,12 +1330,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "chromeos_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "chromevox_tests"
       },
       {
         "swarming": {
