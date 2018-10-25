@@ -73,7 +73,7 @@ bool V0CustomElement::IsValidName(const AtomicString& name) {
     DEFINE_STATIC_LOCAL(Vector<AtomicString>, reserved_names, ());
     if (reserved_names.IsEmpty()) {
       // FIXME(crbug.com/426605): We should be able to remove this.
-      reserved_names.push_back(MathMLNames::annotation_xmlTag.LocalName());
+      reserved_names.push_back(mathml_names::kAnnotationXmlTag.LocalName());
     }
 
     if (kNotFound == reserved_names.Find(name))

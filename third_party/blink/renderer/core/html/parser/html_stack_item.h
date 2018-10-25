@@ -116,10 +116,10 @@ class HTMLStackItem : public GarbageCollectedFinalized<HTMLStackItem> {
 
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#special
   bool IsSpecialNode() const {
-    if (HasTagName(MathMLNames::miTag) || HasTagName(MathMLNames::moTag) ||
-        HasTagName(MathMLNames::mnTag) || HasTagName(MathMLNames::msTag) ||
-        HasTagName(MathMLNames::mtextTag) ||
-        HasTagName(MathMLNames::annotation_xmlTag) ||
+    if (HasTagName(mathml_names::kMiTag) || HasTagName(mathml_names::kMoTag) ||
+        HasTagName(mathml_names::kMnTag) || HasTagName(mathml_names::kMsTag) ||
+        HasTagName(mathml_names::kMtextTag) ||
+        HasTagName(mathml_names::kAnnotationXmlTag) ||
         HasTagName(SVGNames::foreignObjectTag) ||
         HasTagName(SVGNames::descTag) || HasTagName(SVGNames::titleTag))
       return true;

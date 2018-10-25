@@ -115,7 +115,8 @@ bool IsEditable(const Node& node) {
     return true;
   if (IsSVGSVGElement(node))
     return true;
-  if (node.IsElementNode() && ToElement(node).HasTagName(MathMLNames::mathTag))
+  if (node.IsElementNode() &&
+      ToElement(node).HasTagName(mathml_names::kMathTag))
     return true;
   return !node.IsElementNode() && node.parentNode()->IsHTMLElement();
 }

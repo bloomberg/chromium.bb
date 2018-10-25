@@ -48,12 +48,12 @@ inline bool IsScopeMarker(HTMLStackItem* item) {
   return item->HasTagName(appletTag) || item->HasTagName(captionTag) ||
          item->HasTagName(marqueeTag) || item->HasTagName(objectTag) ||
          item->HasTagName(tableTag) || item->HasTagName(tdTag) ||
-         item->HasTagName(thTag) || item->HasTagName(MathMLNames::miTag) ||
-         item->HasTagName(MathMLNames::moTag) ||
-         item->HasTagName(MathMLNames::mnTag) ||
-         item->HasTagName(MathMLNames::msTag) ||
-         item->HasTagName(MathMLNames::mtextTag) ||
-         item->HasTagName(MathMLNames::annotation_xmlTag) ||
+         item->HasTagName(thTag) || item->HasTagName(mathml_names::kMiTag) ||
+         item->HasTagName(mathml_names::kMoTag) ||
+         item->HasTagName(mathml_names::kMnTag) ||
+         item->HasTagName(mathml_names::kMsTag) ||
+         item->HasTagName(mathml_names::kMtextTag) ||
+         item->HasTagName(mathml_names::kAnnotationXmlTag) ||
          item->HasTagName(SVGNames::foreignObjectTag) ||
          item->HasTagName(SVGNames::descTag) ||
          item->HasTagName(SVGNames::titleTag) ||
@@ -229,20 +229,20 @@ void HTMLElementStack::PopUntilTableRowScopeMarker() {
 bool HTMLElementStack::IsMathMLTextIntegrationPoint(HTMLStackItem* item) {
   if (!item->IsElementNode())
     return false;
-  return item->HasTagName(MathMLNames::miTag) ||
-         item->HasTagName(MathMLNames::moTag) ||
-         item->HasTagName(MathMLNames::mnTag) ||
-         item->HasTagName(MathMLNames::msTag) ||
-         item->HasTagName(MathMLNames::mtextTag);
+  return item->HasTagName(mathml_names::kMiTag) ||
+         item->HasTagName(mathml_names::kMoTag) ||
+         item->HasTagName(mathml_names::kMnTag) ||
+         item->HasTagName(mathml_names::kMsTag) ||
+         item->HasTagName(mathml_names::kMtextTag);
 }
 
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/tree-construction.html#html-integration-point
 bool HTMLElementStack::IsHTMLIntegrationPoint(HTMLStackItem* item) {
   if (!item->IsElementNode())
     return false;
-  if (item->HasTagName(MathMLNames::annotation_xmlTag)) {
+  if (item->HasTagName(mathml_names::kAnnotationXmlTag)) {
     Attribute* encoding_attr =
-        item->GetAttributeItem(MathMLNames::encodingAttr);
+        item->GetAttributeItem(mathml_names::kEncodingAttr);
     if (encoding_attr) {
       const String& encoding = encoding_attr->Value();
       return DeprecatedEqualIgnoringCase(encoding, "text/html") ||

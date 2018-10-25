@@ -496,7 +496,7 @@ static void AdjustSVGAttributes(AtomicHTMLToken* token) {
 
 // https://html.spec.whatwg.org/multipage/parsing.html#adjust-mathml-attributes
 static void AdjustMathMLAttributes(AtomicHTMLToken* token) {
-  AdjustAttributes<MathMLNames::GetAttrs, MathMLNames::kAttrsCount>(token);
+  AdjustAttributes<mathml_names::GetAttrs, mathml_names::kAttrsCount>(token);
 }
 
 static void AddNamesWithPrefix(PrefixedNameToQualifiedNameMap* map,
@@ -823,11 +823,11 @@ void HTMLTreeBuilder::ProcessStartTagForInBody(AtomicHTMLToken* token) {
     tree_.InsertHTMLElement(token);
     return;
   }
-  if (token->GetName() == MathMLNames::mathTag.LocalName()) {
+  if (token->GetName() == mathml_names::kMathTag.LocalName()) {
     tree_.ReconstructTheActiveFormattingElements();
     AdjustMathMLAttributes(token);
     AdjustForeignAttributes(token);
-    tree_.InsertForeignElement(token, MathMLNames::mathmlNamespaceURI);
+    tree_.InsertForeignElement(token, mathml_names::kNamespaceURI);
     return;
   }
   if (token->GetName() == SVGNames::svgTag.LocalName()) {
@@ -2591,13 +2591,13 @@ bool HTMLTreeBuilder::ShouldProcessTokenInForeignContent(
     return false;
   if (HTMLElementStack::IsMathMLTextIntegrationPoint(adjusted_current_node)) {
     if (token->GetType() == HTMLToken::kStartTag &&
-        token->GetName() != MathMLNames::mglyphTag &&
-        token->GetName() != MathMLNames::malignmarkTag)
+        token->GetName() != mathml_names::kMglyphTag &&
+        token->GetName() != mathml_names::kMalignmarkTag)
       return false;
     if (token->GetType() == HTMLToken::kCharacter)
       return false;
   }
-  if (adjusted_current_node->HasTagName(MathMLNames::annotation_xmlTag) &&
+  if (adjusted_current_node->HasTagName(mathml_names::kAnnotationXmlTag) &&
       token->GetType() == HTMLToken::kStartTag &&
       token->GetName() == SVGNames::svgTag)
     return false;
@@ -2666,7 +2666,7 @@ void HTMLTreeBuilder::ProcessTokenInForeignContent(AtomicHTMLToken* token) {
       }
       const AtomicString& current_namespace =
           adjusted_current_node->NamespaceURI();
-      if (current_namespace == MathMLNames::mathmlNamespaceURI)
+      if (current_namespace == mathml_names::kNamespaceURI)
         AdjustMathMLAttributes(token);
       if (current_namespace == SVGNames::svgNamespaceURI) {
         AdjustSVGTagNameCase(token);

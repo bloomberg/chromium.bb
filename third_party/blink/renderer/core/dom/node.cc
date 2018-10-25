@@ -1436,7 +1436,7 @@ bool Node::CanStartSelection() const {
 bool Node::IsStyledElement() const {
   return IsHTMLElement() || IsSVGElement() ||
          (IsElementNode() &&
-          ToElement(this)->namespaceURI() == MathMLNames::mathmlNamespaceURI);
+          ToElement(this)->namespaceURI() == mathml_names::kNamespaceURI);
 }
 
 bool Node::CanParticipateInFlatTree() const {
