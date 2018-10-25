@@ -13,7 +13,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/ssl/ssl_client_auth_observer.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_certificate_delegate.h"
