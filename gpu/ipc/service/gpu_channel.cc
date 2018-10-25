@@ -692,11 +692,11 @@ void GpuChannel::RemoveFilter(IPC::MessageFilter* filter) {
 
 uint64_t GpuChannel::GetMemoryUsage() const {
   // Collect the unique memory trackers in use by the |stubs_|.
-  base::flat_set<gles2::MemoryTracker*> unique_memory_trackers;
+  base::flat_set<MemoryTracker*> unique_memory_trackers;
   unique_memory_trackers.reserve(stubs_.size());
   uint64_t size = 0;
   for (const auto& kv : stubs_) {
-    gles2::MemoryTracker* tracker = kv.second->GetMemoryTracker();
+    MemoryTracker* tracker = kv.second->GetMemoryTracker();
     if (!unique_memory_trackers.insert(tracker).second) {
       // We already counted that tracker.
       continue;

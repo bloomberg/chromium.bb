@@ -282,11 +282,11 @@ SharedImageBackingFactoryGLTexture::SharedImageBackingFactoryGLTexture(
     const GpuDriverBugWorkarounds& workarounds,
     const GpuFeatureInfo& gpu_feature_info,
     ImageFactory* image_factory,
-    gles2::MemoryTracker* tracker)
+    MemoryTracker* tracker)
     : use_passthrough_(gpu_preferences.use_passthrough_cmd_decoder &&
                        gles2::PassthroughCommandDecoderSupported()),
       image_factory_(image_factory),
-      memory_tracker_(std::make_unique<gles2::MemoryTypeTracker>(tracker)) {
+      memory_tracker_(std::make_unique<MemoryTypeTracker>(tracker)) {
   gl::GLApi* api = gl::g_current_gl_context;
   api->glGetIntegervFn(GL_MAX_TEXTURE_SIZE, &max_texture_size_);
   if (workarounds.max_texture_size) {

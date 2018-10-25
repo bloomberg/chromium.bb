@@ -33,7 +33,7 @@ SharedImageFactory::SharedImageFactory(
     MailboxManager* mailbox_manager,
     SharedImageManager* shared_image_manager,
     ImageFactory* image_factory,
-    gles2::MemoryTracker* tracker)
+    MemoryTracker* tracker)
     : mailbox_manager_(mailbox_manager),
       shared_image_manager_(shared_image_manager),
       backing_factory_(

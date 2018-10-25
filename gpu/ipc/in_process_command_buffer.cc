@@ -398,7 +398,7 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
   if (params.share_command_buffer) {
     context_group_ = params.share_command_buffer->context_group_;
   } else {
-    std::unique_ptr<gles2::MemoryTracker> memory_tracker;
+    std::unique_ptr<MemoryTracker> memory_tracker;
     // Android WebView won't have a memory tracker.
     if (task_executor_->ShouldCreateMemoryTracker()) {
       const uint64_t client_tracing_id =

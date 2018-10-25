@@ -24,10 +24,7 @@ class MailboxManager;
 class SharedImageBackingFactory;
 struct GpuFeatureInfo;
 struct GpuPreferences;
-
-namespace gles2 {
 class MemoryTracker;
-};  // namespace gles2
 
 namespace raster {
 class WrappedSkImageFactory;
@@ -43,7 +40,7 @@ class GPU_GLES2_EXPORT SharedImageFactory {
                      MailboxManager* mailbox_manager,
                      SharedImageManager* manager,
                      ImageFactory* image_factory,
-                     gles2::MemoryTracker* tracker);
+                     MemoryTracker* tracker);
   ~SharedImageFactory();
 
   bool CreateSharedImage(const Mailbox& mailbox,
