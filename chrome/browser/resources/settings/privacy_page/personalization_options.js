@@ -83,18 +83,6 @@ Polymer({
     // </if>
   },
 
-  /**
-   * TODO(crbug.com/855945): Use this function for the spell check error hint
-   * @param {!Event} e
-   * @private
-   */
-  onLanguageLinkBoxClick_: function(e) {
-    if (e.target.tagName === 'A') {
-      e.preventDefault();
-      settings.navigateTo(settings.routes.LANGUAGES);
-    }
-  },
-
   // <if expr="_google_chrome and not chromeos">
   /** @private */
   onMetricsReportingChange_: function() {
@@ -138,5 +126,15 @@ Polymer({
     settings.LifetimeBrowserProxyImpl.getInstance().restart();
   },
   // </if>
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  showSpellCheckControl_: function() {
+    return !!this.prefs.spellcheck &&
+        /** @type {!Array<string>} */
+        (this.prefs.spellcheck.dictionaries.value).length > 0;
+  },
 });
 })();

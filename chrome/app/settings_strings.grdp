@@ -2491,12 +2491,6 @@
   <message name="IDS_SETTINGS_SPELLING_PREF_UNIFIED_CONSENT" desc="The documentation string of the 'Use Spelling' preference">
     Enhanced spell check
   </message>
-  <message name="IDS_SETTINGS_SPELLING_TURN_ON_HINT_UNIFIED_CONSENT" desc="Informs user how to change their settings to be able to turn on spell check.">
-    To turn this on, first turn on spell check in <ph name="BEGIN_LINK">&lt;a href="$1" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$1" target=&quot;_blank&quot;&gt;</ex></ph>Languages and input<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
-  </message>
-  <message name="IDS_SETTINGS_SPELLING_TURN_ON_HINT_UNIFIED_CONSENT_MAC" desc="Informs user how to change their settings on Mac to be able to turn on spell check.">
-    To turn this on, first select Check Spelling While Typing in the Edit menu
-  </message>
   <message name="IDS_SETTINGS_ENABLE_LOGGING" desc="The label of the checkbox to enable/disable crash and user metrics logging">
     Automatically send usage statistics and crash reports to Google
   </message>
