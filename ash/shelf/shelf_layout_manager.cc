@@ -261,6 +261,9 @@ void ShelfLayoutManager::UpdateVisibilityState() {
   if (in_shutdown_ || !shelf_window)
     return;
 
+  wm::WorkspaceWindowState window_state(
+      RootWindowController::ForWindow(shelf_window)->GetWorkspaceWindowState());
+
   if (shelf_->ShouldHideOnSecondaryDisplay(state_.session_state)) {
     // Needed to hide system tray on secondary display.
     SetState(SHELF_HIDDEN);
@@ -272,10 +275,6 @@ void ShelfLayoutManager::UpdateVisibilityState() {
   } else {
     // TODO(zelidrag): Verify shelf drag animation still shows on the device
     // when we are in SHELF_AUTO_HIDE_ALWAYS_HIDDEN.
-    wm::WorkspaceWindowState window_state(
-        RootWindowController::ForWindow(shelf_window)
-            ->GetWorkspaceWindowState());
-
     switch (window_state) {
       case wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN:
         if (IsShelfAutoHideForFullscreenMaximized()) {
@@ -301,6 +300,8 @@ void ShelfLayoutManager::UpdateVisibilityState() {
         break;
     }
   }
+
+  UpdateWorkspaceMask(window_state);
 }
 
 void ShelfLayoutManager::UpdateAutoHideState() {
@@ -1446,6 +1447,28 @@ bool ShelfLayoutManager::ShouldChangeVisibilityAfterDrag(
     return IsSwipingCorrectDirection();
 
   return false;
+}
+
+void ShelfLayoutManager::UpdateWorkspaceMask(
+    wm::WorkspaceWindowState window_state) {
+  // Disable the mask on NonLockScreenContainer if maximized/fullscreen window
+  // is on top.
+  // TODO(oshima): Investigate if we can remove SetMasksToBounds calls
+  // crbug.com/898236.
+  auto* root_window_controller =
+      RootWindowController::ForWindow(shelf_widget_->GetNativeWindow());
+  auto* container = root_window_controller->GetContainer(
+      kShellWindowId_NonLockScreenContainersContainer);
+  switch (window_state) {
+    case wm::WORKSPACE_WINDOW_STATE_MAXIMIZED:
+    case wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN:
+      container->layer()->SetMasksToBounds(false);
+      break;
+    case wm::WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF:
+    case wm::WORKSPACE_WINDOW_STATE_DEFAULT:
+      container->layer()->SetMasksToBounds(true);
+      break;
+  }
 }
 
 }  // namespace ash
