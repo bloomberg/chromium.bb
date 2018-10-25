@@ -216,13 +216,7 @@ class ResponsivenessWatcherRealIOThreadTest : public testing::Test {
   scoped_refptr<FakeWatcher> watcher_;
 };
 
-// Flaky on Linux TSAN. https://crbug.com/876561
-#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
-#define MAYBE_MessageLoopObserver DISABLED_MessageLoopObserver
-#else
-#define MAYBE_MessageLoopObserver MessageLoopObserver
-#endif
-TEST_F(ResponsivenessWatcherRealIOThreadTest, MAYBE_MessageLoopObserver) {
+TEST_F(ResponsivenessWatcherRealIOThreadTest, MessageLoopObserver) {
   // Post a do-nothing task onto the UI thread.
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
                            base::BindOnce([]() {}));
