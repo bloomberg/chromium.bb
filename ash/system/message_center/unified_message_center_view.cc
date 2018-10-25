@@ -4,6 +4,7 @@
 
 #include "ash/system/message_center/unified_message_center_view.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -241,7 +242,8 @@ void UnifiedMessageCenterView::UpdateVisibility() {
   SessionController* session_controller = Shell::Get()->session_controller();
   SetVisible(message_list_view_->GetPreferredSize().height() > 0 &&
              session_controller->ShouldShowNotificationTray() &&
-             !session_controller->IsScreenLocked());
+             (!session_controller->IsScreenLocked() ||
+              features::IsLockScreenNotificationsEnabled()));
   // When notification list went invisible, |position_from_bottom_| should be
   // reset.
   if (!visible())
