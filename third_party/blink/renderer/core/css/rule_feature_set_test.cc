@@ -51,8 +51,9 @@ class RuleFeatureSetTest : public testing::Test {
     RuleFeatureSet::SelectorPreMatch result =
         RuleFeatureSet::SelectorPreMatch::kSelectorNeverMatches;
     for (unsigned i = 0; i < indices.size(); ++i) {
-      RuleData* rule_data =
-          new RuleData(style_rule, indices[i], 0, kRuleHasNoSpecialState);
+      RuleData* rule_data = RuleData::MaybeCreate(style_rule, indices[i], 0,
+                                                  kRuleHasNoSpecialState);
+      DCHECK(rule_data);
       if (rule_feature_set_.CollectFeaturesFromRuleData(rule_data))
         result = RuleFeatureSet::SelectorPreMatch::kSelectorMayMatch;
     }

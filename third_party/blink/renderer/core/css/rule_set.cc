@@ -63,6 +63,20 @@ static inline PropertyWhitelistType DeterminePropertyWhitelistType(
   return kPropertyWhitelistNone;
 }
 
+RuleData* RuleData::MaybeCreate(StyleRule* rule,
+                                unsigned selector_index,
+                                unsigned position,
+                                AddRuleFlags add_rule_flags) {
+  // The selector index field in RuleData is only 13 bits so we can't support
+  // selectors at index 8192 or beyond.
+  // See https://crbug.com/804179
+  if (selector_index >= (1 << RuleData::kSelectorIndexBits))
+    return nullptr;
+  if (position >= (1 << RuleData::kPositionBits))
+    return nullptr;
+  return new RuleData(rule, selector_index, position, add_rule_flags);
+}
+
 RuleData::RuleData(StyleRule* rule,
                    unsigned selector_index,
                    unsigned position,
@@ -228,13 +242,13 @@ bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
 void RuleSet::AddRule(StyleRule* rule,
                       unsigned selector_index,
                       AddRuleFlags add_rule_flags) {
-  // The selector index field in RuleData is only 13 bits so we can't support
-  // selectors at index 8192 or beyond.
-  // See https://crbug.com/804179
-  if (selector_index >= 8192)
-    return;
   RuleData* rule_data =
-      new RuleData(rule, selector_index, rule_count_++, add_rule_flags);
+      RuleData::MaybeCreate(rule, selector_index, rule_count_, add_rule_flags);
+  if (!rule_data) {
+    // This can happen if selector_index or position is out of range.
+    return;
+  }
+  ++rule_count_;
   if (features_.CollectFeaturesFromRuleData(rule_data) ==
       RuleFeatureSet::kSelectorNeverMatches)
     return;
