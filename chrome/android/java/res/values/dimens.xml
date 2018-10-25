@@ -38,6 +38,8 @@
     <dimen name="toolbar_swipe_commit_distance">90dp</dimen>
     <!-- TabSwitcher - Maximum amount to slide the tabs down or right in over scroll. -->
     <dimen name="over_scroll_slide">10dp</dimen>
+     <!-- TabSwitcher - The size of the close button on each tab. -->
+    <dimen name="tab_switcher_close_button_size">20dp</dimen>
 
     <!-- TabSwitcher -->
     <dimen name="tabswitcher_border_frame_padding_left">6dp</dimen>
