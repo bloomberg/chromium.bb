@@ -328,6 +328,9 @@ GetStaticSiteCharacteristicsDatabaseParams();
 // Gets parameters for the infinite session restore feature.
 InfiniteSessionRestoreParams GetInfiniteSessionRestoreParams();
 
+// Gets number of oldest tab that should be scored by TabRanker.
+int GetNumOldestTabsToScoreWithTabRanker();
+
 }  // namespace resource_coordinator
 
 #endif  // CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_MANAGER_FEATURES_H_

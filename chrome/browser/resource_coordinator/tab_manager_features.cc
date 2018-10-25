@@ -289,4 +289,10 @@ InfiniteSessionRestoreParams GetInfiniteSessionRestoreParams() {
   return params;
 }
 
+int GetNumOldestTabsToScoreWithTabRanker() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      features::kTabRanker, "number_of_oldest_tabs_to_score_with_TabRanker",
+      std::numeric_limits<int>::max());
+}
+
 }  // namespace resource_coordinator
