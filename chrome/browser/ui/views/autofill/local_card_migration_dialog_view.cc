@@ -4,12 +4,17 @@
 
 #include "chrome/browser/ui/views/autofill/local_card_migration_dialog_view.h"
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/local_card_migration_dialog_factory.h"
 #include "chrome/browser/ui/autofill/local_card_migration_dialog_state.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/views/autofill/dialog_view_ids.h"
 #include "chrome/browser/ui/views/autofill/migratable_card_view.h"
 #include "chrome/browser/ui/views/autofill/view_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -192,6 +197,8 @@ void LocalCardMigrationDialogView::Init() {
   constexpr int kMainContainerChildSpacing = 24;
   main_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(), kMainContainerChildSpacing));
+  main_container->set_id(
+      DialogViewId::MAIN_CONTENT_VIEW_MIGRATION_OFFER_DIALOG);
 
   std::unique_ptr<views::View> image_container =
       std::make_unique<views::View>();

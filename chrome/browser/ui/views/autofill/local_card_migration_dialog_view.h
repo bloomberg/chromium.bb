@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_VIEW_H_
 
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/autofill/local_card_migration_dialog.h"
@@ -67,6 +70,8 @@ class LocalCardMigrationDialogView : public LocalCardMigrationDialog,
                               int event_flags) override;
 
  private:
+  friend class LocalCardMigrationBrowserTestBase;
+
   void Init();
   base::string16 GetDialogTitle() const;
   base::string16 GetDialogInstruction() const;

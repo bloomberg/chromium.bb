@@ -119,6 +119,7 @@ class CreditCardSaveManager {
  private:
   friend class CreditCardSaveManagerTest;
   friend class CreditCardSaveManagerTestObserverBridge;
+  friend class LocalCardMigrationBrowserTestBase;
   friend class SaveCardBubbleViewsBrowserTestBase;
 
   // Sets |show_save_prompt| and moves forward with offering credit card local

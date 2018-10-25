@@ -7,6 +7,8 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -87,6 +89,8 @@ void LocalCardMigrationManager::AttemptToOfferLocalCardMigration(
     return;
   migration_request_ = payments::PaymentsClient::MigrationRequestDetails();
 
+  if (observer_for_testing_)
+    observer_for_testing_->OnDecideToRequestLocalCardMigration();
   payments_client_->GetUploadDetails(
       std::vector<AutofillProfile>(), GetDetectedValues(),
       /*active_experiments=*/std::vector<const char*>(), app_locale_,
@@ -135,12 +139,19 @@ bool LocalCardMigrationManager::IsCreditCardMigrationEnabled() {
   bool migration_experiment_enabled =
       features::GetLocalCardMigrationExperimentalFlag() !=
       features::LocalCardMigrationExperimentalFlag::kMigrationDisabled;
-  bool credit_card_upload_enabled = ::autofill::IsCreditCardUploadEnabled(
-      client_->GetPrefs(), client_->GetSyncService(),
-      client_->GetIdentityManager()->GetPrimaryAccountInfo().email);
+  // If |observer_for_testing_| is set, assume we are in a browsertest and
+  // credit card upload should be enabled by default. Cannot get around this as
+  // Chrome OS testing requires an unsupported email domain (i.e.
+  // stub-user@example.com).
+  bool credit_card_upload_enabled =
+      observer_for_testing_ ||
+      ::autofill::IsCreditCardUploadEnabled(
+          client_->GetPrefs(), client_->GetSyncService(),
+          client_->GetIdentityManager()->GetPrimaryAccountInfo().email);
   bool has_google_payments_account =
       (payments::GetBillingCustomerId(personal_data_manager_,
                                       payments_client_->GetPrefService()) != 0);
+
   return migration_experiment_enabled && credit_card_upload_enabled &&
          has_google_payments_account;
 }
@@ -150,6 +161,8 @@ void LocalCardMigrationManager::OnDidGetUploadDetails(
     AutofillClient::PaymentsRpcResult result,
     const base::string16& context_token,
     std::unique_ptr<base::DictionaryValue> legal_message) {
+  if (observer_for_testing_)
+    observer_for_testing_->OnReceivedGetUploadDetailsResponse();
   if (result == AutofillClient::SUCCESS) {
     migration_request_.context_token = context_token;
     legal_message_ = std::move(legal_message);
@@ -183,6 +196,8 @@ void LocalCardMigrationManager::OnDidMigrateLocalCards(
     AutofillClient::PaymentsRpcResult result,
     std::unique_ptr<std::unordered_map<std::string, std::string>> save_result,
     const std::string& display_text) {
+  if (observer_for_testing_)
+    observer_for_testing_->OnRecievedMigrateCardsResponse();
   if (!save_result)
     return;
 
@@ -230,6 +245,8 @@ void LocalCardMigrationManager::OnDidGetMigrationRiskData(
 // Send the migration request. Will call payments_client to create a new
 // PaymentsRequest. Also create a new callback function OnDidMigrateLocalCards.
 void LocalCardMigrationManager::SendMigrateLocalCardsRequest() {
+  if (observer_for_testing_)
+    observer_for_testing_->OnSentMigrateLocalCardsRequest();
   migration_request_.app_locale = app_locale_;
   migration_request_.billing_customer_number = payments::GetBillingCustomerId(
       personal_data_manager_, payments_client_->GetPrefService());
