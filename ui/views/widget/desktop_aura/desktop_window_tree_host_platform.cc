@@ -5,7 +5,6 @@
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_platform.h"
 
 #include "base/time/time.h"
-#include "build/build_config.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/base/hit_test.h"
@@ -17,13 +16,10 @@
 #include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
+#include "ui/views/widget/desktop_aura/window_event_filter.h"
 #include "ui/views/widget/widget_aura_utils.h"
 #include "ui/views/window/native_frame_view.h"
 #include "ui/wm/core/window_util.h"
-
-#if defined(OS_LINUX)
-#include "ui/views/widget/desktop_aura/window_event_filter.h"
-#endif
 
 namespace views {
 
@@ -100,7 +96,6 @@ void DesktopWindowTreeHostPlatform::OnNativeWidgetCreated(
     const Widget::InitParams& params) {
   native_widget_delegate_->OnNativeWidgetCreated(true);
 
-#if defined(OS_LINUX)
   // Setup a non_client_window_event_filter, which handles resize/move, double
   // click and other events.
   DCHECK(!non_client_window_event_filter_);
@@ -113,7 +108,6 @@ void DesktopWindowTreeHostPlatform::OnNativeWidgetCreated(
 
   non_client_window_event_filter_ = std::move(window_event_filter);
   window()->AddPreTargetHandler(non_client_window_event_filter_.get());
-#endif
 }
 
 void DesktopWindowTreeHostPlatform::OnWidgetInitDone() {}
