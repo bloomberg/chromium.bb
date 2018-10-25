@@ -15,6 +15,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
+#include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios.h"
@@ -460,8 +461,13 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   // Configure and add a TableViewSigninPromoItem to the model.
   TableViewSigninPromoItem* signinPromoItem = [[TableViewSigninPromoItem alloc]
       initWithType:ItemTypeOtherDevicesSigninPromo];
-  signinPromoItem.text =
-      l10n_util::GetNSString(IDS_IOS_SIGNIN_PROMO_RECENT_TABS);
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    signinPromoItem.text =
+        l10n_util::GetNSString(IDS_IOS_SIGNIN_PROMO_RECENT_TABS_WITH_UNITY);
+  } else {
+    signinPromoItem.text =
+        l10n_util::GetNSString(IDS_IOS_SIGNIN_PROMO_RECENT_TABS);
+  }
   signinPromoItem.delegate = self.signinPromoViewMediator;
   signinPromoItem.configurator =
       [self.signinPromoViewMediator createConfigurator];
