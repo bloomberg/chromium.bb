@@ -71,7 +71,7 @@ class Cronet_UrlRequestImpl : public Cronet_UrlRequest {
   void PostTaskToExecutor(base::OnceClosure task);
 
   // Helper methods to invoke application |callback_|.
-  void InvokeCallbackOnRedirectReceived();
+  void InvokeCallbackOnRedirectReceived(const std::string& new_location);
   void InvokeCallbackOnResponseStarted();
   void InvokeCallbackOnReadCompleted(
       std::unique_ptr<Cronet_Buffer> cronet_buffer,
