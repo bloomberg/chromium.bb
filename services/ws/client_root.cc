@@ -11,6 +11,7 @@
 #include "services/ws/server_window.h"
 #include "services/ws/window_service.h"
 #include "services/ws/window_tree.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/client_surface_embedder.h"
 #include "ui/aura/mus/property_converter.h"
@@ -19,6 +20,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/property_change_reason.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ws {
 
@@ -96,8 +98,11 @@ void ClientRoot::UpdateLocalSurfaceIdIfNecessary() {
 }
 
 void ClientRoot::OnLocalSurfaceIdChanged() {
-  if (!ShouldAssignLocalSurfaceId())
-    HandleBoundsOrScaleFactorChange(window_->bounds());
+  if (ShouldAssignLocalSurfaceId())
+    return;
+
+  HandleBoundsOrScaleFactorChange(is_top_level_ ? window_->GetBoundsInScreen()
+                                                : window_->bounds());
 }
 
 void ClientRoot::AttachChildFrameSinkId(ServerWindow* server_window) {
@@ -213,7 +218,21 @@ void ClientRoot::OnWindowBoundsChanged(aura::Window* window,
                                        const gfx::Rect& old_bounds,
                                        const gfx::Rect& new_bounds,
                                        ui::PropertyChangeReason reason) {
-  HandleBoundsOrScaleFactorChange(old_bounds);
+  if (!is_top_level_) {
+    HandleBoundsOrScaleFactorChange(old_bounds);
+    return;
+  }
+  gfx::Rect old_bounds_in_screen = old_bounds;
+  aura::Window* root = window->GetRootWindow();
+  if (root && aura::client::GetScreenPositionClient(root))
+    ::wm::ConvertRectToScreen(window->parent(), &old_bounds_in_screen);
+  if (is_moving_across_displays_) {
+    if (!scheduled_change_old_bounds_)
+      scheduled_change_old_bounds_ = old_bounds_in_screen;
+    return;
+  }
+  DCHECK(!scheduled_change_old_bounds_);
+  HandleBoundsOrScaleFactorChange(old_bounds_in_screen);
 }
 
 void ClientRoot::OnWindowAddedToRootWindow(aura::Window* window) {
@@ -221,9 +240,6 @@ void ClientRoot::OnWindowAddedToRootWindow(aura::Window* window) {
   DCHECK(window->GetHost());
   window->GetHost()->AddObserver(this);
   CheckForScaleFactorChange();
-  window_tree_->window_tree_client_->OnWindowDisplayChanged(
-      window_tree_->TransportIdForWindow(window),
-      window->GetHost()->GetDisplayId());
 }
 
 void ClientRoot::OnWindowRemovingFromRootWindow(aura::Window* window,
@@ -231,6 +247,24 @@ void ClientRoot::OnWindowRemovingFromRootWindow(aura::Window* window,
   DCHECK_EQ(window, window_);
   DCHECK(window->GetHost());
   window->GetHost()->RemoveObserver(this);
+}
+
+void ClientRoot::OnWillMoveWindowToDisplay(aura::Window* window,
+                                           int64_t new_display_id) {
+  DCHECK(!is_moving_across_displays_);
+  is_moving_across_displays_ = true;
+}
+
+void ClientRoot::OnDidMoveWindowToDisplay(aura::Window* window) {
+  DCHECK(is_moving_across_displays_);
+  is_moving_across_displays_ = false;
+  window_tree_->window_tree_client_->OnWindowDisplayChanged(
+      window_tree_->TransportIdForWindow(window),
+      window->GetHost()->GetDisplayId());
+  if (scheduled_change_old_bounds_) {
+    HandleBoundsOrScaleFactorChange(scheduled_change_old_bounds_.value());
+    scheduled_change_old_bounds_.reset();
+  }
 }
 
 void ClientRoot::OnHostResized(aura::WindowTreeHost* host) {

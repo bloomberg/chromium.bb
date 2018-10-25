@@ -146,6 +146,8 @@ void WindowDatasToTestWindows(const std::vector<mojom::WindowDataPtr>& data,
                               std::vector<TestWindow>* test_windows);
 
 // Returns true if |changes| contains a Change matching |change_description|.
+// |change_description| is a pattern which should be compared with
+// base::MatchPattern (see base/strings/pattern.h for the details).
 bool ContainsChange(const std::vector<Change>& changes,
                     const std::string& change_description);
 
