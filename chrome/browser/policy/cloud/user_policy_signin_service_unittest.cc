@@ -151,12 +151,12 @@ class UserPolicySigninServiceTest : public testing::Test {
   void SetUp() override {
     UserPolicySigninServiceFactory::SetDeviceManagementServiceForTesting(
         &device_management_service_);
-    UserPolicySigninServiceFactory::SetSystemURLLoaderFactoryForTesting(
-        test_system_shared_loader_factory_);
 
     local_state_.reset(new TestingPrefServiceSimple);
     RegisterLocalState(local_state_->registry());
     TestingBrowserProcess::GetGlobal()->SetLocalState(local_state_.get());
+    TestingBrowserProcess::GetGlobal()->SetSharedURLLoaderFactory(
+        test_system_shared_loader_factory_);
 
     g_browser_process->browser_policy_connector()->Init(
         local_state_.get(), test_system_shared_loader_factory_);
