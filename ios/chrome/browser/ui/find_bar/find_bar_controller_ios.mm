@@ -64,14 +64,12 @@ const NSTimeInterval kSearchShortDelay = 0.100;
                                animated:(BOOL)animated;
 // Animate find bar over iPhone toolbar.
 - (void)showIPhoneFindBarViewInParentView:(UIView*)parentView
+                         usingToolbarView:(UIView*)toolbarView
                                selectText:(BOOL)selectText
                                  animated:(BOOL)animated;
 // Responds to touches that make editing changes on the text field, triggering
 // find-in-page searches for the field's current value.
 - (void)editingChanged;
-// Return the expected find bar height. This will include the status bar height
-// when running iOS7 on an iPhone.
-- (CGFloat)findBarHeight;
 // Selects text in such way that selection menu does not appear and
 // a11y label is read. When -[UITextField selectAll:] is used, iOS
 // will read "Select All" instead of a11y label.
@@ -89,10 +87,7 @@ const NSTimeInterval kSearchShortDelay = 0.100;
 @property(nonatomic, assign) BOOL isIncognito;
 @end
 
-@implementation FindBarControllerIOS {
-  // This var is only useful for iPhone in iOS 10.
-  NSLayoutConstraint* _heightConstraint;
-}
+@implementation FindBarControllerIOS
 
 @synthesize view = _view;
 @synthesize findBarView = _findBarView;
@@ -112,10 +107,13 @@ const NSTimeInterval kSearchShortDelay = 0.100;
 
 #pragma mark View Setup & Teardown
 
-- (UIView*)constructFindBarView {
+// Returns the findBar view with a |width|. The elements inside the view are
+// already positioned correctly for this width. This is needed to start the
+// animation with the elements already positioned.
+- (UIView*)constructFindBarViewWithWidth:(CGFloat)width {
   UIView* findBarBackground = nil;
 
-  findBarBackground = [[UIView alloc] initWithFrame:CGRectZero];
+  findBarBackground = [[UIView alloc] initWithFrame:CGRectMake(0, 0, width, 1)];
   findBarBackground.backgroundColor =
       self.isIncognito ? UIColorFromRGB(kIncognitoToolbarBackgroundColor)
                        : UIColorFromRGB(kToolbarBackgroundColor);
@@ -125,22 +123,20 @@ const NSTimeInterval kSearchShortDelay = 0.100;
   [findBarBackground addSubview:self.findBarView];
   self.findBarView.translatesAutoresizingMaskIntoConstraints = NO;
 
-  CGFloat findBarHeight = kAdaptiveToolbarHeight;
-
-  NSMutableArray* constraints = [[NSMutableArray alloc] init];
-  [constraints addObjectsFromArray:@[
+  [NSLayoutConstraint activateConstraints:@[
     [self.findBarView.trailingAnchor
         constraintEqualToAnchor:findBarBackground.trailingAnchor],
     [self.findBarView.leadingAnchor
         constraintEqualToAnchor:findBarBackground.leadingAnchor],
-    [self.findBarView.heightAnchor constraintEqualToConstant:findBarHeight]
+    [self.findBarView.heightAnchor
+        constraintEqualToConstant:kAdaptiveToolbarHeight],
+    [self.findBarView.bottomAnchor
+        constraintEqualToAnchor:findBarBackground.bottomAnchor],
   ]];
 
-  [constraints
-      addObject:[self.findBarView.bottomAnchor
-                    constraintEqualToAnchor:findBarBackground.bottomAnchor]];
-
-  [NSLayoutConstraint activateConstraints:constraints];
+  // Make sure that the findBarView is correctly laid out for the width.
+  [findBarBackground setNeedsLayout];
+  [findBarBackground layoutIfNeeded];
 
   self.findBarView.inputField.delegate = self;
   [self.findBarView.inputField addTarget:self
@@ -239,15 +235,12 @@ const NSTimeInterval kSearchShortDelay = 0.100;
   // If already showing find bar, update the height constraint only for iOS 10
   // because the safe area anchor is not available.
   if (self.view) {
-    if (@available(iOS 11, *)) {
-    } else if (ShouldShowCompactToolbar()) {
-      _heightConstraint.constant = [self findBarHeight];
-    }
     return;
   }
 
   if (ShouldShowCompactToolbar()) {
     [self showIPhoneFindBarViewInParentView:parentView
+                           usingToolbarView:toolbarView
                                  selectText:selectText
                                    animated:animated];
   } else {
@@ -269,17 +262,27 @@ const NSTimeInterval kSearchShortDelay = 0.100;
   self.delayTimer = nil;
 
   if (animate) {
-    CGRect oldFrame = self.view.frame;
-    self.view.layer.anchorPoint = CGPointMake(0.5, 0);
-    self.view.frame = oldFrame;
+    void (^animation)();
+    if (ShouldShowCompactToolbar()) {
+      CGRect oldFrame = self.view.frame;
+      self.view.layer.anchorPoint = CGPointMake(0.5, 0);
+      self.view.frame = oldFrame;
+      animation = ^{
+        self.view.transform = CGAffineTransformMakeScale(1, 0.05);
+        self.view.alpha = 0;
+      };
+    } else {
+      CGFloat rtlModifier = base::i18n::IsRTL() ? -1 : 1;
+      animation = ^{
+        self.view.transform = CGAffineTransformMakeTranslation(
+            rtlModifier * self.view.bounds.size.width, 0);
+      };
+    }
     [UIView animateWithDuration:kAnimationDuration
-        animations:^{
-          self.view.transform = CGAffineTransformMakeScale(1, 0.05);
-          self.view.alpha = 0;
-        }
-        completion:^(BOOL finished) {
-          [self teardownView];
-        }];
+                     animations:animation
+                     completion:^(BOOL finished) {
+                       [self teardownView];
+                     }];
   } else {
     [self teardownView];
   }
@@ -304,7 +307,10 @@ const NSTimeInterval kSearchShortDelay = 0.100;
                              selectText:(BOOL)selectText
                                animated:(BOOL)animated {
   DCHECK(IsIPadIdiom());
-  self.view = [self constructFindBarView];
+  CGFloat parentWidth = CGRectGetWidth(parentView.bounds);
+  CGFloat width = MIN(parentWidth - 2 * kRegularRegularHorizontalMargin,
+                      kFindBarWidthRegularRegular);
+  self.view = [self constructFindBarViewWithWidth:width];
   self.view.accessibilityIdentifier = kFindInPageContainerViewId;
 
   self.view.translatesAutoresizingMaskIntoConstraints = NO;
@@ -316,9 +322,6 @@ const NSTimeInterval kSearchShortDelay = 0.100;
   shadow.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:shadow];
 
-  CGFloat parentWidth = CGRectGetWidth(parentView.bounds);
-  CGFloat width = MIN(parentWidth - 2 * kRegularRegularHorizontalMargin,
-                      kFindBarWidthRegularRegular);
   [NSLayoutConstraint activateConstraints:@[
     // Anchors findbar below |toolbarView|.
     [self.view.topAnchor constraintEqualToAnchor:toolbarView.bottomAnchor],
@@ -336,13 +339,23 @@ const NSTimeInterval kSearchShortDelay = 0.100;
           LayoutSides::kTrailing,
       {-kShadowMargin, -kShadowMargin, -kShadowMargin, -kShadowMargin});
 
-  self.view.alpha = 0;
-  self.view.transform = CGAffineTransformMakeScale(1, 0.05);
+  // Layout the view so the shadow is correctly positioned when the animation
+  // starts. Otherwise, when the shadow constraints are activated, the view is
+  // moved.
+  [self.view layoutIfNeeded];
+
+  // Position the frame of the view before animating it, so the animation looks
+  // correct (sliding in from the trailing edge).
+  CGRect toolbarFrameInParentView =
+      [toolbarView convertRect:toolbarView.bounds toView:parentView];
+  CGFloat originX = base::i18n::IsRTL() ? -width : parentWidth;
+  self.view.frame = CGRectMake(originX, CGRectGetMaxY(toolbarFrameInParentView),
+                               width, kAdaptiveToolbarHeight);
+
   CGFloat duration = animated ? kAnimationDuration : 0;
   [UIView animateWithDuration:duration
       animations:^() {
-        self.view.alpha = 1;
-        self.view.transform = CGAffineTransformIdentity;
+        [self.view layoutIfNeeded];
       }
       completion:^(BOOL finished) {
         if (selectText)
@@ -352,41 +365,27 @@ const NSTimeInterval kSearchShortDelay = 0.100;
 
 // Animate find bar over iPhone toolbar.
 - (void)showIPhoneFindBarViewInParentView:(UIView*)parentView
+                         usingToolbarView:(UIView*)toolbarView
                                selectText:(BOOL)selectText
                                  animated:(BOOL)animated {
-  self.view = [self constructFindBarView];
+  self.view =
+      [self constructFindBarViewWithWidth:toolbarView.bounds.size.width];
   self.view.translatesAutoresizingMaskIntoConstraints = NO;
   [parentView addSubview:self.view];
   self.view.accessibilityIdentifier = kFindInPageContainerViewId;
 
-  NSLayoutConstraint* leadingConstraint = [self.view.leadingAnchor
-      constraintEqualToAnchor:parentView.leadingAnchor];
-  NSLayoutConstraint* trailingConstraint = [self.view.trailingAnchor
-      constraintEqualToAnchor:parentView.trailingAnchor];
-  // Under iOS 10 SafeArea anchor is not available, so findbar is anchored to
-  // the top of screen and the height of statusbar should be considered.
-  NSLayoutConstraint* topConstraint = [self.view.topAnchor
-      constraintEqualToAnchor:SafeAreaLayoutGuideForView(parentView).topAnchor];
-
-  CGFloat height;
-  if (@available(iOS 11, *)) {
-    height = kAdaptiveToolbarHeight;
-  } else {
-    // Portrait:  height = findbar + statusbar.
-    // Landscape: height = findbar
-    // The height constraint should be updated when iOS 10 device rotates.
-    height = [self findBarHeight];
-  }
-  _heightConstraint = [self.view.heightAnchor constraintEqualToConstant:height];
   [NSLayoutConstraint activateConstraints:@[
-    leadingConstraint, trailingConstraint, topConstraint, _heightConstraint
+    [self.view.leadingAnchor constraintEqualToAnchor:parentView.leadingAnchor],
+    [self.view.trailingAnchor
+        constraintEqualToAnchor:parentView.trailingAnchor],
+    [self.view.topAnchor constraintEqualToAnchor:parentView.topAnchor],
+    [self.view.bottomAnchor constraintEqualToAnchor:toolbarView.bottomAnchor],
   ]];
 
-  [self.view setTransform:CGAffineTransformMakeTranslation(0, -height)];
   CGFloat duration = animated ? kAnimationDuration : 0;
   [UIView animateWithDuration:duration
       animations:^() {
-        [self.view setTransform:CGAffineTransformIdentity];
+        [self.view layoutIfNeeded];
       }
       completion:^(BOOL finished) {
         if (selectText)
@@ -413,12 +412,6 @@ const NSTimeInterval kSearchShortDelay = 0.100;
                                      selector:@selector(searchFindInPage)
                                      userInfo:nil
                                       repeats:NO];
-}
-
-- (CGFloat)findBarHeight {
-  if (IsRegularXRegularSizeClass())
-    return kAdaptiveToolbarHeight;
-  return StatusBarHeight() + kAdaptiveToolbarHeight;
 }
 
 #pragma mark - UITextFieldDelegate
