@@ -18,15 +18,10 @@ enum class CachedImageFetcherEvent {
   kCacheMiss = 2,
   kCacheDecodingError = 3,
   kTranscodingError = 4,
-  kFailure = 5,
-  kMaxValue = kFailure,
-};
-
-// Tracks the various forms of timing events.
-enum class LoadTimeType {
-  kLoadFromCache = 0,
-  kLoadFromNetwork = 1,
-  kLoadFromNetworkAfterCacheHit = 2
+  kTotalFailure = 5,
+  kCacheStartupEvictionStarted = 6,
+  kCacheStartupEvictionFinished = 7,
+  kMaxValue = kCacheStartupEvictionFinished,
 };
 
 class CachedImageFetcherMetricsReporter {
@@ -35,7 +30,10 @@ class CachedImageFetcherMetricsReporter {
   static void ReportEvent(CachedImageFetcherEvent event);
 
   // Report timing for various Cache events related to CachedImageFetcher.
-  static void ReportLoadTime(LoadTimeType type, base::Time start_time);
+  static void ReportImageLoadFromCacheTime(base::Time start_time);
+  static void ReportImageLoadFromNetworkTime(base::Time start_time);
+  static void ReportImageLoadFromNetworkAfterCacheHit(base::Time start_time);
+  static void ReportTimeSinceLastCacheLRUEviction(base::Time start_time);
 };
 
 }  // namespace image_fetcher

@@ -9,9 +9,11 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/image_fetcher/core/cache/cached_image_fetcher_metrics_reporter.h"
 #include "components/image_fetcher/core/cache/image_data_store_disk.h"
 #include "components/image_fetcher/core/cache/image_metadata_store_leveldb.h"
 #include "components/image_fetcher/core/cache/proto/cached_image_metadata.pb.h"
@@ -27,6 +29,10 @@ namespace image_fetcher {
 
 namespace {
 
+constexpr char kPrefLastStartupEviction[] =
+    "cached_image_fetcher_last_startup_eviction_time";
+constexpr char kCachedImageFetcherEventHistogramName[] =
+    "CachedImageFetcher.Events";
 constexpr char kImageUrl[] = "http://gstatic.img.com/foo.jpg";
 constexpr char kImageUrlHashed[] = "3H7UODDH3WKDWK6FQ3IZT3LQMVBPYJ4M";
 constexpr char kImageData[] = "data";
@@ -83,8 +89,9 @@ class ImageCacheTest : public testing::Test {
     image_cache()->RunEvictionOnStartup();
 
     if (success) {
-      db_->LoadCallback(true);
-      db_->UpdateCallback(true);
+      db()->LoadCallback(true);
+      db()->UpdateCallback(true);
+      db()->LoadKeysCallback(true);
     }
 
     RunUntilIdle();
@@ -137,6 +144,7 @@ class ImageCacheTest : public testing::Test {
   ImageDataStoreDisk* data_store() { return data_store_; }
   ImageMetadataStoreLevelDB* metadata_store() { return metadata_store_; }
   FakeDB<CachedImageMetadataProto>* db() { return db_; }
+  base::HistogramTester& histogram_tester() { return histogram_tester_; }
 
   MOCK_METHOD1(DataCallback, void(std::string));
 
@@ -152,6 +160,7 @@ class ImageCacheTest : public testing::Test {
   std::map<std::string, CachedImageMetadataProto> db_store_;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageCacheTest);
 };
@@ -261,12 +270,20 @@ TEST_F(ImageCacheTest, Eviction) {
 
   clock()->SetNow(clock()->Now() + base::TimeDelta::FromDays(7));
   RunEvictionOnStartup(/* success */ true);
+  ASSERT_EQ(clock()->Now(), prefs()->GetTime(kPrefLastStartupEviction));
 
   EXPECT_CALL(*this, DataCallback(std::string()));
   image_cache()->LoadImage(
       false, kImageUrl,
       base::BindOnce(&ImageCacheTest::DataCallback, base::Unretained(this)));
   RunUntilIdle();
+
+  histogram_tester().ExpectBucketCount(
+      kCachedImageFetcherEventHistogramName,
+      CachedImageFetcherEvent::kCacheStartupEvictionStarted, 1);
+  histogram_tester().ExpectBucketCount(
+      kCachedImageFetcherEventHistogramName,
+      CachedImageFetcherEvent::kCacheStartupEvictionFinished, 1);
 }
 
 TEST_F(ImageCacheTest, EvictionTooSoon) {
@@ -285,7 +302,8 @@ TEST_F(ImageCacheTest, EvictionTooSoon) {
 TEST_F(ImageCacheTest, EvictionWhenEvictionAlreadyPerformed) {
   PrepareImageCache();
 
-  prefs()->SetTime("cached_image_fetcher_last_eviction_time", clock()->Now());
+  prefs()->SetTime("cached_image_fetcher_last_startup_eviction_time",
+                   clock()->Now());
   clock()->SetNow(clock()->Now() + base::TimeDelta::FromHours(23));
   RunEvictionOnStartup(/* success */ false);
 

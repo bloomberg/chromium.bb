@@ -15,6 +15,7 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/base32/base32.h"
+#include "components/image_fetcher/core/cache/cached_image_fetcher_metrics_reporter.h"
 #include "components/image_fetcher/core/cache/image_data_store.h"
 #include "components/image_fetcher/core/cache/image_metadata_store.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -22,8 +23,11 @@
 
 namespace {
 
-constexpr char kPrefLastEvictionKey[] =
-    "cached_image_fetcher_last_eviction_time";
+constexpr char kPrefLastStartupEviction[] =
+    "cached_image_fetcher_last_startup_eviction_time";
+
+constexpr char kPrefLastLRUEviction[] =
+    "cached_image_fetcher_last_lru_eviction_time";
 
 // TODO(wylieb): Control these parameters server-side.
 constexpr int kCacheMaxSize = 64 * 1024 * 1024;         // 64mb.
@@ -45,7 +49,8 @@ namespace image_fetcher {
 
 // static
 void ImageCache::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterTimePref(kPrefLastEvictionKey, base::Time());
+  registry->RegisterTimePref(kPrefLastStartupEviction, base::Time());
+  registry->RegisterTimePref(kPrefLastLRUEviction, base::Time());
 }
 
 ImageCache::ImageCache(std::unique_ptr<ImageDataStore> data_store,
@@ -130,8 +135,9 @@ void ImageCache::OnDependencyInitialized() {
 
   // TODO(wylieb): Consider delaying eviction as new requests come in via
   // separate weak pointers.
-  // TODO(wylieb): Log UMA data about starting GC eviction here, then again
-  // when it's finished.
+  CachedImageFetcherMetricsReporter::ReportEvent(
+      CachedImageFetcherEvent::kCacheStartupEvictionStarted);
+
   // Once all the queued requests are taken care of, run eviction.
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {base::TaskPriority::BEST_EFFORT},
@@ -170,13 +176,17 @@ void ImageCache::DeleteImageImpl(const std::string& url) {
 }
 
 void ImageCache::RunEvictionOnStartup() {
-  base::Time last_eviction_time = pref_service_->GetTime(kPrefLastEvictionKey);
+  base::Time last_eviction_time =
+      pref_service_->GetTime(kPrefLastStartupEviction);
   // If we've already garbage collected in the past interval, bail out.
   if (last_eviction_time >
       clock_->Now() -
           base::TimeDelta::FromHours(kImageCacheEvictionIntervalHours)) {
     return;
   }
+
+  // Update the time we did startup eviction so it can used for reporting.
+  pref_service_->SetTime(kPrefLastStartupEviction, clock_->Now());
 
   RunEviction(kCacheMaxSize, base::BindOnce(&ImageCache::RunReconciliation,
                                             weak_ptr_factory_.GetWeakPtr()));
@@ -188,15 +198,25 @@ void ImageCache::RunEvictionWhenFull() {
     return;
   }
 
+  // Report the time since the last LRU eviction. This allows us to gauge if the
+  // cache is properly sized.
+  base::Time last_eviction_time = pref_service_->GetTime(kPrefLastLRUEviction);
+  // Only report for non-null times.
+  if (last_eviction_time != base::Time()) {
+    CachedImageFetcherMetricsReporter::ReportTimeSinceLastCacheLRUEviction(
+        last_eviction_time);
+  }
+
+  // Update the time we did LRU eviction so it can used for reporting.
+  pref_service_->SetTime(kPrefLastLRUEviction, clock_->Now());
+
   RunEviction(kCacheResizeWhenFull, base::OnceClosure());
 }
 
 void ImageCache::RunEviction(size_t bytes_left,
                              base::OnceClosure on_completion) {
-  base::Time eviction_time = clock_->Now();
-  pref_service_->SetTime(kPrefLastEvictionKey, eviction_time);
   metadata_store_->EvictImageMetadata(
-      eviction_time - base::TimeDelta::FromDays(kCacheItemsTimeToLiveDays),
+      clock_->Now() - base::TimeDelta::FromDays(kCacheItemsTimeToLiveDays),
       bytes_left,
       base::BindOnce(&ImageCache::OnKeysEvicted, weak_ptr_factory_.GetWeakPtr(),
                      std::move(on_completion)));
@@ -244,6 +264,9 @@ void ImageCache::ReconcileDataKeys(std::vector<std::string> metadata_keys,
   for (const std::string& key : diff) {
     data_store_->DeleteImage(key);
   }
+
+  CachedImageFetcherMetricsReporter::ReportEvent(
+      CachedImageFetcherEvent::kCacheStartupEvictionFinished);
 }
 
 }  // namespace image_fetcher

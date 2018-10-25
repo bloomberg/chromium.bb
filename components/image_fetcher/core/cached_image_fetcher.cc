@@ -159,8 +159,7 @@ void CachedImageFetcher::OnImageDecodedFromCache(
   } else {
     ImageCallbackIfPresent(std::move(image_callback), id, image,
                            RequestMetadata());
-    CachedImageFetcherMetricsReporter::ReportLoadTime(
-        LoadTimeType::kLoadFromCache, start_time);
+    CachedImageFetcherMetricsReporter::ReportImageLoadFromCacheTime(start_time);
   }
 }
 
@@ -201,14 +200,17 @@ void CachedImageFetcher::OnImageFetchedFromNetwork(
   // Report failure if the image is empty.
   if (image.IsEmpty()) {
     CachedImageFetcherMetricsReporter::ReportEvent(
-        CachedImageFetcherEvent::kFailure);
+        CachedImageFetcherEvent::kTotalFailure);
   }
 
   // Report to different histograms depending upon if there was a cache hit.
-  CachedImageFetcherMetricsReporter::ReportLoadTime(
-      cache_hit ? LoadTimeType::kLoadFromNetworkAfterCacheHit
-                : LoadTimeType::kLoadFromNetwork,
-      start_time);
+  if (cache_hit) {
+    CachedImageFetcherMetricsReporter::ReportImageLoadFromNetworkAfterCacheHit(
+        start_time);
+  } else {
+    CachedImageFetcherMetricsReporter::ReportImageLoadFromNetworkTime(
+        start_time);
+  }
 }
 
 void CachedImageFetcher::DecodeDataForCaching(

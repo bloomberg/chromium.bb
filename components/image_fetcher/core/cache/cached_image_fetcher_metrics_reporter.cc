@@ -15,23 +15,34 @@ void CachedImageFetcherMetricsReporter::ReportEvent(
 }
 
 // static
-void CachedImageFetcherMetricsReporter::ReportLoadTime(LoadTimeType type,
-                                                       base::Time start_time) {
+void CachedImageFetcherMetricsReporter::ReportImageLoadFromCacheTime(
+    base::Time start_time) {
   base::TimeDelta time_delta = base::Time::Now() - start_time;
-  switch (type) {
-    case LoadTimeType::kLoadFromCache:
-      UMA_HISTOGRAM_TIMES("CachedImageFetcher.ImageLoadFromCacheTime",
-                          time_delta);
-      break;
-    case LoadTimeType::kLoadFromNetwork:
-      UMA_HISTOGRAM_TIMES("CachedImageFetcher.ImageLoadFromNetworkTime",
-                          time_delta);
-      break;
-    case LoadTimeType::kLoadFromNetworkAfterCacheHit:
-      UMA_HISTOGRAM_TIMES(
-          "CachedImageFetcher.ImageLoadFromNetworkAfterCacheHit", time_delta);
-      break;
-  }
+  UMA_HISTOGRAM_TIMES("CachedImageFetcher.ImageLoadFromCacheTime", time_delta);
+}
+
+// static
+void CachedImageFetcherMetricsReporter::ReportImageLoadFromNetworkTime(
+    base::Time start_time) {
+  base::TimeDelta time_delta = base::Time::Now() - start_time;
+  UMA_HISTOGRAM_TIMES("CachedImageFetcher.ImageLoadFromNetworkTime",
+                      time_delta);
+}
+
+// static
+void CachedImageFetcherMetricsReporter::ReportImageLoadFromNetworkAfterCacheHit(
+    base::Time start_time) {
+  base::TimeDelta time_delta = base::Time::Now() - start_time;
+  UMA_HISTOGRAM_TIMES("CachedImageFetcher.ImageLoadFromNetworkAfterCacheHit",
+                      time_delta);
+}
+
+// static
+void CachedImageFetcherMetricsReporter::ReportTimeSinceLastCacheLRUEviction(
+    base::Time start_time) {
+  base::TimeDelta time_delta = base::Time::Now() - start_time;
+  UMA_HISTOGRAM_TIMES("CachedImageFetcher.TimeSinceLastCacheLRUEviction",
+                      time_delta);
 }
 
 }  // namespace image_fetcher
