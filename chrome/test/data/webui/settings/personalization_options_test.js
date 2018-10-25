@@ -34,5 +34,16 @@ cr.define('settings_personalization_options', function() {
           8,
           testElement.root.querySelectorAll('settings-toggle-button').length);
     });
+
+    test('hide spellcheck toggle when there is no dictionary', function() {
+      testElement.unifiedConsentEnabled = true;
+      testElement.prefs = {spellcheck: {dictionaries: {value: ['en-US']}}};
+      Polymer.dom.flush();
+      assertFalse(testElement.$.spellCheckControl.hidden);
+
+      testElement.prefs = {spellcheck: {dictionaries: {value: []}}};
+      Polymer.dom.flush();
+      assertTrue(testElement.$.spellCheckControl.hidden);
+    });
   });
 });
