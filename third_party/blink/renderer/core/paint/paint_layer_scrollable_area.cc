@@ -291,17 +291,6 @@ GraphicsLayer* PaintLayerScrollableArea::LayerForScrollCorner() const {
              : nullptr;
 }
 
-bool PaintLayerScrollableArea::ShouldUseIntegerScrollOffset() const {
-  if (!HasBeenDisposed()) {
-    Frame* frame = GetLayoutBox()->GetFrame();
-    if (frame->GetSettings() &&
-        !frame->GetSettings()->GetPreferCompositingToLCDTextEnabled())
-      return true;
-  }
-
-  return ScrollableArea::ShouldUseIntegerScrollOffset();
-}
-
 bool PaintLayerScrollableArea::IsActive() const {
   Page* page = GetLayoutBox()->GetFrame()->GetPage();
   return page && page->GetFocusController().IsActive();
