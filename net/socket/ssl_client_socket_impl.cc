@@ -665,6 +665,8 @@ bool SSLClientSocketImpl::GetSSLInfo(SSLInfo* ssl_info) {
   ssl_info->security_bits = SSL_CIPHER_get_bits(cipher, NULL);
   // Historically, the "group" was known as "curve".
   ssl_info->key_exchange_group = SSL_get_curve_id(ssl_.get());
+  ssl_info->peer_signature_algorithm =
+      SSL_get_peer_signature_algorithm(ssl_.get());
 
   SSLConnectionStatusSetCipherSuite(
       static_cast<uint16_t>(SSL_CIPHER_get_id(cipher)),

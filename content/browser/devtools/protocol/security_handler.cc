@@ -86,6 +86,12 @@ void AddExplanations(
       }
     }
 
+    std::unique_ptr<protocol::Array<String>> recommendations =
+        protocol::Array<String>::create();
+    for (const auto& recommendation : it.recommendations) {
+      recommendations->addItem(recommendation);
+    }
+
     explanations->addItem(
         Security::SecurityStateExplanation::Create()
             .SetSecurityState(security_style)
@@ -95,6 +101,7 @@ void AddExplanations(
             .SetCertificate(std::move(certificate))
             .SetMixedContentType(MixedContentTypeToProtocolMixedContentType(
                 it.mixed_content_type))
+            .SetRecommendations(std::move(recommendations))
             .Build());
   }
 }

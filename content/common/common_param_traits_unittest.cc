@@ -168,6 +168,7 @@ TEST(IPCMessageTest, SSLInfo) {
   in.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
   in.security_bits = 0x100;
   in.key_exchange_group = 1024;
+  in.peer_signature_algorithm = 0x0804;
   in.connection_status = 0x300039;  // TLS_DHE_RSA_WITH_AES_256_CBC_SHA
   in.is_issued_by_known_root = true;
   in.pkp_bypassed = true;
@@ -211,6 +212,7 @@ TEST(IPCMessageTest, SSLInfo) {
       in.unverified_cert->EqualsIncludingChain(out.unverified_cert.get()));
   ASSERT_EQ(in.security_bits, out.security_bits);
   ASSERT_EQ(in.key_exchange_group, out.key_exchange_group);
+  ASSERT_EQ(in.peer_signature_algorithm, out.peer_signature_algorithm);
   ASSERT_EQ(in.connection_status, out.connection_status);
   ASSERT_EQ(in.is_issued_by_known_root, out.is_issued_by_known_root);
   ASSERT_EQ(in.pkp_bypassed, out.pkp_bypassed);

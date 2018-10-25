@@ -357,6 +357,7 @@ bool ComparePreAndPostInterstitialSSLStatuses(const content::SSLStatus& one,
          one.cert_status == two.cert_status &&
          one.security_bits == two.security_bits &&
          one.key_exchange_group == two.key_exchange_group &&
+         one.peer_signature_algorithm == two.peer_signature_algorithm &&
          one.connection_status == two.connection_status &&
          one.pkp_bypassed == two.pkp_bypassed;
 }
