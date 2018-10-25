@@ -535,7 +535,6 @@ void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
                                          const GURL& site_for_cookies,
                                          const std::string& cookie_line,
                                          SetCookieCallback callback) {
-  std::move(callback).Run();
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   if (!policy->CanAccessDataForOrigin(render_process_id_, url)) {
@@ -544,18 +543,22 @@ void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
     SYSLOG(WARNING) << "Killing renderer: illegal cookie write. Reason: "
                     << reason;
     bad_message::ReceivedBadMessage(this, reason);
+    std::move(callback).Run();
     return;
   }
 
   net::CookieOptions options;
   std::unique_ptr<net::CanonicalCookie> cookie = net::CanonicalCookie::Create(
       url, cookie_line, base::Time::Now(), options);
-  if (!cookie)
+  if (!cookie) {
+    std::move(callback).Run();
     return;
+  }
 
   if (!GetContentClient()->browser()->AllowSetCookie(
           url, site_for_cookies, *cookie, resource_context_, render_process_id_,
           render_frame_id)) {
+    std::move(callback).Run();
     return;
   }
 
@@ -567,6 +570,7 @@ void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
           url, resource_context_);
   if (cookie_store ||
       !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    std::move(callback).Run();
     if (!cookie_store)
       cookie_store = request_context_->GetURLRequestContext()->cookie_store();
 
@@ -577,10 +581,14 @@ void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
     return;
   }
 
+  net::CookieStore::SetCookiesCallback net_callback =
+      base::BindOnce([](SetCookieCallback callback,
+                        bool success) { std::move(callback).Run(); },
+                     std::move(callback));
   (*GetCookieManager())
       ->SetCanonicalCookie(*cookie, url.SchemeIsCryptographic(),
                            !options.exclude_httponly(),
-                           net::CookieStore::SetCookiesCallback());
+                           std::move(net_callback));
 }
 
 void RenderFrameMessageFilter::GetCookies(int render_frame_id,
