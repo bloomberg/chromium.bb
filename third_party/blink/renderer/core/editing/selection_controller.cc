@@ -1158,13 +1158,13 @@ static bool HitTestResultIsMisspelled(const HitTestResult& result) {
   Node* inner_node = result.InnerNode();
   if (!inner_node || !inner_node->GetLayoutObject())
     return false;
-  VisiblePosition pos = CreateVisiblePosition(
-      inner_node->GetLayoutObject()->PositionForPoint(result.LocalPoint()));
-  if (pos.IsNull())
+  PositionWithAffinity pos_with_affinity =
+      inner_node->GetLayoutObject()->PositionForPoint(result.LocalPoint());
+  if (pos_with_affinity.IsNull())
     return false;
   // TODO(xiaochengh): Don't use |ParentAnchoredEquivalent()|.
   const Position marker_position =
-      pos.DeepEquivalent().ParentAnchoredEquivalent();
+      pos_with_affinity.GetPosition().ParentAnchoredEquivalent();
   if (!SpellChecker::IsSpellCheckingEnabledAt(marker_position))
     return false;
   return SpellCheckMarkerAtPosition(inner_node->GetDocument().Markers(),
