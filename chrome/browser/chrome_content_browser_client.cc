@@ -264,6 +264,7 @@
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "content/public/browser/vpn_service_proxy.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_ui_url_loader_factory.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_descriptors.h"
@@ -4966,6 +4967,16 @@ content::PreviewsState ChromeContentBrowserClient::DetermineAllowedPreviews(
     content::PreviewsState initial_state,
     content::NavigationHandle* navigation_handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // TODO(ryansturm): Support re-evaluation of PreviewsState for redirects.
+  // https://crbug.com/892253.
+  content::WebContents* web_contents = navigation_handle->GetWebContents();
+  content::WebContentsDelegate* delegate = web_contents->GetDelegate();
+
+  if (delegate) {
+    delegate->AdjustPreviewsStateForNavigation(web_contents, &initial_state);
+  }
+
   // If the embedder does not want previews, do not provide any.
   if (initial_state & content::PREVIEWS_OFF ||
       initial_state & content::PREVIEWS_NO_TRANSFORM) {
@@ -4979,8 +4990,7 @@ content::PreviewsState ChromeContentBrowserClient::DetermineAllowedPreviews(
     return initial_state;
   }
 
-  auto* browser_context =
-      navigation_handle->GetWebContents()->GetBrowserContext();
+  auto* browser_context = web_contents->GetBrowserContext();
 
   PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
       Profile::FromBrowserContext(browser_context));
@@ -4995,7 +5005,7 @@ content::PreviewsState ChromeContentBrowserClient::DetermineAllowedPreviews(
   }
 
   PreviewsUITabHelper* ui_tab_helper =
-      PreviewsUITabHelper::FromWebContents(navigation_handle->GetWebContents());
+      PreviewsUITabHelper::FromWebContents(web_contents);
   // If this tab does not have a PreviewsUITabHelper, no preview should be
   // served.
   if (!ui_tab_helper)
