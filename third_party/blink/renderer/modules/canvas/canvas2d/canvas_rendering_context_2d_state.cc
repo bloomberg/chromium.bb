@@ -308,7 +308,7 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilterForOffscreenCanvas(
   if (last_effect) {
     // TODO(chrishtr): Taint the origin if needed. crbug.com/792506.
     resolved_filter_ =
-        PaintFilterBuilder::Build(last_effect, kInterpolationSpaceSRGB);
+        paint_filter_builder::Build(last_effect, kInterpolationSpaceSRGB);
   }
 
   return resolved_filter_;
@@ -362,7 +362,7 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilter(
     if (FilterEffect* last_effect = filter_effect_builder.BuildFilterEffect(
             filter_style->Filter(), !context->OriginClean())) {
       resolved_filter_ =
-          PaintFilterBuilder::Build(last_effect, kInterpolationSpaceSRGB);
+          paint_filter_builder::Build(last_effect, kInterpolationSpaceSRGB);
       if (resolved_filter_) {
         context->UpdateFilterReferences(filter_style->Filter());
         if (last_effect->OriginTainted())

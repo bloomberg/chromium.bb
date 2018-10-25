@@ -40,7 +40,7 @@
 #include "third_party/skia/include/effects/SkXfermodeImageFilter.h"
 
 namespace blink {
-namespace PaintFilterBuilder {
+namespace paint_filter_builder {
 
 void PopulateSourceGraphicImageFilters(
     FilterEffect* source_graphic,
@@ -184,5 +184,5 @@ sk_sp<PaintFilter> BuildBoxReflectFilter(const BoxReflection& reflection,
                                          std::move(input), nullptr);
 }
 
-}  // namespace PaintFilterBuilder
+}  // namespace paint_filter_builder
 }  // namespace blink
