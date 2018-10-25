@@ -14,18 +14,6 @@
       ]
     },
     {
-      "name": "amd64-generic-goofy",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
-          "board_group": "",
-          "arch": "UNKNOWN"
-        }
-      ]
-    },
-    {
       "name": "arkham",
       "configs": [
         {

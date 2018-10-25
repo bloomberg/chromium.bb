@@ -50,7 +50,6 @@ amd64-generic-goofy-no-vmtest-pre-cq (gce_beefy)
 amd64-generic-goofy-paladin-tryjob (gce_beefy)
 amd64-generic-goofy-payloads-tryjob (gce_beefy)
 amd64-generic-goofy-pre-cq (gce_beefy)
-amd64-generic-goofy-release (gce_beefy)
 amd64-generic-goofy-release-afdo-generate-tryjob (gce_beefy)
 [amd64-generic-goofy-release-afdo-tryjob] (gce_beefy)
   amd64-generic-goofy-release-afdo-generate
