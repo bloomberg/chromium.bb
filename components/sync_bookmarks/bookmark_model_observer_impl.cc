@@ -283,43 +283,51 @@ syncer::UniquePosition BookmarkModelObserverImpl::ComputePosition(
   const std::string& suffix = syncer::GenerateSyncableBookmarkHash(
       bookmark_tracker_->model_type_state().cache_guid(), sync_id);
   DCHECK_NE(0, parent.child_count());
+  const SyncedBookmarkTracker::Entity* predecessor_entity = nullptr;
+  const SyncedBookmarkTracker::Entity* successor_entity = nullptr;
 
-  if (parent.child_count() == 1) {
-    // No siblings, the parent has no other children.
+  // Look for the first tracked predecessor.
+  for (int i = index - 1; i >= 0; i--) {
+    const bookmarks::BookmarkNode* predecessor_node = parent.GetChild(i);
+    predecessor_entity =
+        bookmark_tracker_->GetEntityForBookmarkNode(predecessor_node);
+    if (predecessor_entity) {
+      break;
+    }
+  }
+
+  // Look for the first tracked successor.
+  for (int i = index + 1; i < parent.child_count(); i++) {
+    const bookmarks::BookmarkNode* successor_node = parent.GetChild(i);
+    successor_entity =
+        bookmark_tracker_->GetEntityForBookmarkNode(successor_node);
+    if (successor_entity) {
+      break;
+    }
+  }
+
+  if (!predecessor_entity && !successor_entity) {
+    // No tracked siblings.
     return syncer::UniquePosition::InitialPosition(suffix);
   }
-  if (index == 0) {
-    const bookmarks::BookmarkNode* successor_node = parent.GetChild(1);
-    const SyncedBookmarkTracker::Entity* successor_entity =
-        bookmark_tracker_->GetEntityForBookmarkNode(successor_node);
-    DCHECK(successor_entity);
-    // Insert at the beginning.
+
+  if (!predecessor_entity && successor_entity) {
+    // No predecessor, insert before the successor.
     return syncer::UniquePosition::Before(
         syncer::UniquePosition::FromProto(
             successor_entity->metadata()->unique_position()),
         suffix);
   }
-  if (index == parent.child_count() - 1) {
-    // Insert at the end.
-    const bookmarks::BookmarkNode* predecessor_node =
-        parent.GetChild(index - 1);
-    const SyncedBookmarkTracker::Entity* predecessor_entity =
-        bookmark_tracker_->GetEntityForBookmarkNode(predecessor_node);
-    DCHECK(predecessor_entity);
+
+  if (predecessor_entity && !successor_entity) {
+    // No successor, insert after the predecessor
     return syncer::UniquePosition::After(
         syncer::UniquePosition::FromProto(
             predecessor_entity->metadata()->unique_position()),
         suffix);
   }
-  // Insert in the middle.
-  const bookmarks::BookmarkNode* successor_node = parent.GetChild(index + 1);
-  const SyncedBookmarkTracker::Entity* successor_entity =
-      bookmark_tracker_->GetEntityForBookmarkNode(successor_node);
-  DCHECK(successor_entity);
-  const bookmarks::BookmarkNode* predecessor_node = parent.GetChild(index - 1);
-  const SyncedBookmarkTracker::Entity* predecessor_entity =
-      bookmark_tracker_->GetEntityForBookmarkNode(predecessor_node);
-  DCHECK(predecessor_entity);
+
+  // Both predecessor and successor, insert in the middle.
   return syncer::UniquePosition::Between(
       syncer::UniquePosition::FromProto(
           predecessor_entity->metadata()->unique_position()),
