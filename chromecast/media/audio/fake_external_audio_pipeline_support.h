@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_MEDIA_AUDIO_FAKE_EXTERNAL_AUDIO_PIPELINE_SUPPORT_H
 #define CHROMECAST_MEDIA_AUDIO_FAKE_EXTERNAL_AUDIO_PIPELINE_SUPPORT_H
 
+#include "chromecast/public/media/external_audio_pipeline_shlib.h"
+
 namespace chromecast {
 namespace media {
 namespace testing {
@@ -21,6 +23,8 @@ class FakeExternalAudioPipelineSupport {
   // Request for change values.
   virtual void OnVolumeChangeRequest(float level) = 0;
   virtual void OnMuteChangeRequest(bool muted) = 0;
+  virtual void UpdateExternalMediaMetadata(
+      const ExternalAudioPipelineShlib::ExternalMediaMetadata& metadata) = 0;
 
   virtual ~FakeExternalAudioPipelineSupport() {}
 };
