@@ -252,8 +252,6 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
       IDR_WEBRTC_DESKTOP_CAPTURE_PRIVATE_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("webrtcLoggingPrivate",
                              IDR_WEBRTC_LOGGING_PRIVATE_CUSTOM_BINDINGS_JS);
-  source_map->RegisterSource("webstore", IDR_WEBSTORE_CUSTOM_BINDINGS_JS);
-
 
   // Platform app sources that are not API-specific..
   source_map->RegisterSource("chromeWebViewInternal",
