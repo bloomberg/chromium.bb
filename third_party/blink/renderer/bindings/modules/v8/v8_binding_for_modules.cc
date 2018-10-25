@@ -84,7 +84,7 @@ v8::Local<v8::Value> ToV8(const IDBKey* key,
     // values as undefined, rather than the more typical (for DOM) null.
     // This appears on the |upper| and |lower| attributes of IDBKeyRange.
     // Spec: http://www.w3.org/TR/IndexedDB/#idl-def-IDBKeyRange
-    return V8Undefined();
+    return v8::Local<v8::Value>();
   }
 
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
@@ -93,7 +93,7 @@ v8::Local<v8::Value> ToV8(const IDBKey* key,
     case IDBKey::kInvalidType:
     case IDBKey::kTypeEnumMax:
       NOTREACHED();
-      return V8Undefined();
+      return v8::Local<v8::Value>();
     case IDBKey::kNumberType:
       return v8::Number::New(isolate, key->Number());
     case IDBKey::kStringType:
@@ -112,14 +112,14 @@ v8::Local<v8::Value> ToV8(const IDBKey* key,
         if (value.IsEmpty())
           value = v8::Undefined(isolate);
         if (!V8CallBoolean(array->CreateDataProperty(context, i, value)))
-          return V8Undefined();
+          return v8::Local<v8::Value>();
       }
       return array;
     }
   }
 
   NOTREACHED();
-  return V8Undefined();
+  return v8::Local<v8::Value>();
 }
 
 // IDBAny is a variant type used to hold the values produced by the |result|
@@ -448,7 +448,7 @@ static v8::Local<v8::Value> DeserializeIDBValueArray(
     if (v8_value.IsEmpty())
       v8_value = v8::Undefined(isolate);
     if (!V8CallBoolean(array->CreateDataProperty(context, i, v8_value)))
-      return V8Undefined();
+      return v8::Local<v8::Value>();
   }
 
   return array;

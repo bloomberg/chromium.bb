@@ -1038,7 +1038,6 @@ CPP_VALUE_TO_V8_VALUE = {
     'unrestricted float': 'v8::Number::New({isolate}, {cpp_value})',
     'double': 'v8::Number::New({isolate}, {cpp_value})',
     'unrestricted double': 'v8::Number::New({isolate}, {cpp_value})',
-    'void': 'v8Undefined()',
     'StringOrNull': '{cpp_value}.IsNull() ? v8::Local<v8::Value>(v8::Null({isolate})) : V8String({isolate}, {cpp_value})',
     # Special cases
     'Dictionary': '{cpp_value}.V8Value()',

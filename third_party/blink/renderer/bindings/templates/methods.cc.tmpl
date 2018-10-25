@@ -535,7 +535,7 @@ static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::Prop
   v8::Local<v8::FunctionTemplate> interfaceTemplate = data->FindInterfaceTemplate(world, &{{v8_class}}::wrapperTypeInfo);
   v8::Local<v8::Signature> signature = v8::Signature::New(info.GetIsolate(), interfaceTemplate);
 
-  v8::Local<v8::FunctionTemplate> methodTemplate = data->FindOrCreateOperationTemplate(world, &domTemplateKey, {{v8_class_or_partial}}::{{method.name}}MethodCallback{{world_suffix}}, V8Undefined(), signature, {{method.length}});
+  v8::Local<v8::FunctionTemplate> methodTemplate = data->FindOrCreateOperationTemplate(world, &domTemplateKey, {{v8_class_or_partial}}::{{method.name}}MethodCallback{{world_suffix}}, v8::Local<v8::Value>(), signature, {{method.length}});
   // Return the function by default, unless the user script has overwritten it.
   V8SetReturnValue(info, methodTemplate->GetFunction(info.GetIsolate()->GetCurrentContext()).ToLocalChecked());
 
