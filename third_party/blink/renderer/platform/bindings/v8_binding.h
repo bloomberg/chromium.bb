@@ -328,15 +328,6 @@ inline v8::Local<v8::String> V8AtomicString(v8::Isolate* isolate,
       .ToLocalChecked();
 }
 
-inline v8::Local<v8::String> V8StringFromUtf8(v8::Isolate* isolate,
-                                              const char* bytes,
-                                              int length) {
-  DCHECK(isolate);
-  return v8::String::NewFromUtf8(isolate, bytes, v8::NewStringType::kNormal,
-                                 length)
-      .ToLocalChecked();
-}
-
 inline v8::MaybeLocal<v8::Value> V8DateOrNaN(v8::Isolate* isolate,
                                              double value) {
   DCHECK(isolate);
