@@ -500,17 +500,6 @@ DirectoryItem.prototype.handleClick = function(e) {
 };
 
 /**
- * Default sorting for DirectoryItem sub-dirrectories.
- * @param {!Array<!Entry>} entries Entries to be sorted.
- * @returns {!Array<!Entry>}
- */
-DirectoryItem.prototype.sortEntries = function(entries) {
-  entries.sort(util.compareName);
-  const filter = this.fileFilter_.filter.bind(this.fileFilter_);
-  return entries.filter(filter);
-};
-
-/**
  * Retrieves the latest subdirectories and update them on the tree.
  * @param {boolean} recursive True if the update is recursively.
  * @param {function()=} opt_successCallback Callback called on success.
@@ -518,34 +507,40 @@ DirectoryItem.prototype.sortEntries = function(entries) {
  */
 DirectoryItem.prototype.updateSubDirectories = function(
     recursive, opt_successCallback, opt_errorCallback) {
-  if (!this.entry || this.entry.createReader === undefined) {
-    opt_errorCallback && opt_errorCallback();
+  if (!this.entry || util.isFakeEntry(this.entry)) {
+    if (opt_errorCallback)
+      opt_errorCallback();
     return;
   }
 
-  const onSuccess = (entries) => {
+  var sortEntries = function(fileFilter, entries) {
+    entries.sort(util.compareName);
+    return entries.filter(fileFilter.filter.bind(fileFilter));
+  };
+
+  var onSuccess = function(entries) {
     this.entries_ = entries;
     this.updateSubElementsFromList(recursive);
     opt_successCallback && opt_successCallback();
-  };
+  }.bind(this);
 
-  const reader = this.entry.createReader();
-  const entries = [];
-  const readEntry = () => {
-    reader.readEntries((results) => {
+  var reader = this.entry.createReader();
+  var entries = [];
+  var readEntry = function() {
+    reader.readEntries(function(results) {
       if (!results.length) {
-        onSuccess(this.sortEntries(entries));
+        onSuccess(sortEntries(this.fileFilter_, entries));
         return;
       }
 
-      for (let i = 0; i < results.length; i++) {
-        const entry = results[i];
+      for (var i = 0; i < results.length; i++) {
+        var entry = results[i];
         if (entry.isDirectory)
           entries.push(entry);
       }
       readEntry();
-    });
-  };
+    }.bind(this));
+  }.bind(this);
   readEntry();
 };
 
@@ -766,42 +761,26 @@ EntryListItem.prototype = {
  */
 EntryListItem.prototype.updateSubDirectories = function(
     recursive, opt_successCallback, opt_errorCallback) {
-  if (!this.entry || this.entry.createReader === undefined) {
+  if (!this.entry) {
     opt_errorCallback && opt_errorCallback();
     return;
   }
   this.entries_ = [];
-
-  const onSuccess = (entries) => {
-    this.entries_ = entries;
-    this.updateSubElementsFromList(recursive);
-    opt_successCallback && opt_successCallback();
-  };
-
-  const reader = this.entry.createReader();
-  const entries = [];
-  const readEntry = () => {
-    reader.readEntries((results) => {
-      if (!results.length) {
-        onSuccess(this.sortEntries(entries));
-        return;
+  if (this.entry && this.entry.children) {
+    for (let childEntry of this.entry.children) {
+      if (childEntry instanceof VolumeEntry) {
+        // For VolumeEntry we want to display its root.
+        this.entries_.push(childEntry.rootEntry);
+      } else {
+        this.entries_.push(childEntry);
       }
-
-      for (let i = 0; i < results.length; i++) {
-        const entry = results[i];
-        if (entry.isDirectory) {
-          // For VolumeEntry we want to display its root.
-          if (entry instanceof VolumeEntry) {
-            entries.push(entry.rootEntry);
-          } else {
-            entries.push(entry);
-          }
-        }
-      }
-      readEntry();
-    });
-  };
-  readEntry();
+    }
+  }
+  if (this.entries_.length > 0) {
+    this.expanded = true;
+  }
+  this.updateSubElementsFromList(recursive);
+  opt_successCallback && opt_successCallback();
 };
 
 ////////////////////////////////////////////////////////////////////////////////
