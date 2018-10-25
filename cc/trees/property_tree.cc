@@ -1503,18 +1503,17 @@ void ScrollTree::CollectScrollDeltas(
     gfx::ScrollOffset scroll_delta =
         PullDeltaForMainThread(map_entry.second.get());
 
-    gfx::Vector2d scroll_delta_vector(scroll_delta.x(), scroll_delta.y());
     ElementId id = map_entry.first;
 
     if (!scroll_delta.IsZero()) {
       if (id == inner_viewport_scroll_element_id) {
         // Inner (visual) viewport is stored separately.
         scroll_info->inner_viewport_scroll.element_id = id;
-        scroll_info->inner_viewport_scroll.scroll_delta = scroll_delta_vector;
+        scroll_info->inner_viewport_scroll.scroll_delta = scroll_delta;
       } else {
         LayerTreeHostCommon::ScrollUpdateInfo scroll;
         scroll.element_id = id;
-        scroll.scroll_delta = scroll_delta_vector;
+        scroll.scroll_delta = scroll_delta;
         scroll_info->scrolls.push_back(scroll);
       }
     }

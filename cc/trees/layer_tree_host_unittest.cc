@@ -3239,8 +3239,7 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
 
   void ApplyViewportChanges(const ApplyViewportChangesArgs& args) override {
     gfx::ScrollOffset offset = scroll_layer_->CurrentScrollOffset();
-    scroll_layer_->SetScrollOffset(
-        ScrollOffsetWithDelta(offset, args.inner_delta));
+    scroll_layer_->SetScrollOffset(offset + args.inner_delta);
     layer_tree_host()->SetPageScaleFactorAndLimits(args.page_scale_delta, 0.5f,
                                                    2.f);
   }
@@ -3326,7 +3325,7 @@ class ViewportDeltasAppliedDuringPinch : public LayerTreeHostTest {
 
   void ApplyViewportChanges(const ApplyViewportChangesArgs& args) override {
     EXPECT_TRUE(sent_gesture_);
-    EXPECT_EQ(gfx::Vector2dF(50, 50), args.inner_delta);
+    EXPECT_EQ(gfx::ScrollOffset(50, 50), args.inner_delta);
     EXPECT_EQ(2, args.page_scale_delta);
 
     auto* scroll_layer = layer_tree_host()->inner_viewport_scroll_layer();

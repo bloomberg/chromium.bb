@@ -742,7 +742,7 @@ TEST(WebInputEventConversionTest, ElasticOverscroll) {
 
   gfx::Vector2dF elastic_overscroll(10, -20);
   web_view->ApplyViewportChanges(
-      {gfx::Vector2dF(), elastic_overscroll, 1.0f, 0.0f});
+      {gfx::ScrollOffset(), elastic_overscroll, 1.0f, 0.0f});
 
   // Just elastic overscroll.
   {
@@ -815,7 +815,7 @@ TEST(WebInputEventConversionTest, ElasticOverscrollWithPageReload) {
 
   gfx::Vector2dF elastic_overscroll(10, -20);
   web_view->ApplyViewportChanges(
-      {gfx::Vector2dF(), elastic_overscroll, 1.0f, 0.0f});
+      {gfx::ScrollOffset(), elastic_overscroll, 1.0f, 0.0f});
   frame_test_helpers::ReloadFrame(
       web_view_helper.GetWebView()->MainFrameImpl());
   LocalFrameView* view = ToLocalFrame(web_view->GetPage()->MainFrame())->View();

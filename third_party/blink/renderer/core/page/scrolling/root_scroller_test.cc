@@ -2563,8 +2563,8 @@ class RootScrollerHitTest : public RootScrollerSimTest {
     // Do a scroll gesture that hides the top controls and scrolls all the way
     // to the bottom.
     ASSERT_EQ(1, GetBrowserControls().ShownRatio());
-    WebView().ApplyViewportChanges({gfx::Vector2dF(), gfx::Vector2dF(), 1, -1,
-                                    cc::BrowserControlsState::kBoth});
+    WebView().ApplyViewportChanges({gfx::ScrollOffset(), gfx::Vector2dF(), 1,
+                                    -1, cc::BrowserControlsState::kBoth});
     ASSERT_EQ(0, GetBrowserControls().ShownRatio());
 
     Element* scroller = GetDocument()

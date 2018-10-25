@@ -135,9 +135,7 @@ class CC_EXPORT LayerTreeHostCommon {
 
   struct CC_EXPORT ScrollUpdateInfo {
     ElementId element_id;
-    // TODO(miletus): Use ScrollOffset once LayerTreeHost/Blink fully supports
-    // fractional scroll offset.
-    gfx::Vector2d scroll_delta;
+    gfx::ScrollOffset scroll_delta;
 
     bool operator==(const ScrollUpdateInfo& other) const;
   };
