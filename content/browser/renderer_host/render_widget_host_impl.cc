@@ -1278,6 +1278,10 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
   if (IsIgnoringInputEvents())
     return;
 
+  // The gesture events must have a known source.
+  DCHECK_NE(gesture_event.SourceDevice(),
+            blink::WebGestureDevice::kWebGestureDeviceUninitialized);
+
   bool scroll_update_needs_wrapping = false;
   if (gesture_event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
     // When a user starts scrolling while a fling is active, the GSB will arrive
