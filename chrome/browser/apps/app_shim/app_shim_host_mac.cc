@@ -25,7 +25,9 @@ uint64_t g_next_host_id = 1000;
 }  // namespace
 
 AppShimHost::AppShimHost()
-    : host_binding_(this), initial_launch_finished_(false) {}
+    : host_bootstrap_binding_(this),
+      host_binding_(this),
+      app_shim_request_(mojo::MakeRequest(&app_shim_)) {}
 
 AppShimHost::~AppShimHost() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -37,15 +39,22 @@ AppShimHost::~AppShimHost() {
 void AppShimHost::ServeChannel(mojo::PlatformChannelEndpoint endpoint) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   mojo::ScopedMessagePipeHandle message_pipe =
-      mojo_connection_.Connect(std::move(endpoint));
-  BindToRequest(chrome::mojom::AppShimHostRequest(std::move(message_pipe)));
+      bootstrap_mojo_connection_.Connect(std::move(endpoint));
+  host_bootstrap_binding_.Bind(
+      chrome::mojom::AppShimHostBootstrapRequest(std::move(message_pipe)));
+  host_bootstrap_binding_.set_connection_error_with_reason_handler(
+      base::BindOnce(&AppShimHost::BootstrapChannelError,
+                     base::Unretained(this)));
 }
 
-void AppShimHost::BindToRequest(
-    chrome::mojom::AppShimHostRequest host_request) {
-  host_binding_.Bind(std::move(host_request));
-  host_binding_.set_connection_error_with_reason_handler(
-      base::BindOnce(&AppShimHost::ChannelError, base::Unretained(this)));
+void AppShimHost::BootstrapChannelError(uint32_t custom_reason,
+                                        const std::string& description) {
+  // The bootstrap channel is expected to close after sending LaunchApp.
+  if (has_received_launch_app_)
+    return;
+  LOG(ERROR) << "Channel error custom_reason:" << custom_reason
+             << " description: " << description;
+  Close();
 }
 
 void AppShimHost::ChannelError(uint32_t custom_reason,
@@ -63,18 +72,28 @@ void AppShimHost::Close() {
 ////////////////////////////////////////////////////////////////////////////////
 // AppShimHost, chrome::mojom::AppShimHost
 
-void AppShimHost::LaunchApp(chrome::mojom::AppShimPtr app_shim_ptr,
-                            const base::FilePath& profile_dir,
-                            const std::string& app_id,
-                            apps::AppShimLaunchType launch_type,
-                            const std::vector<base::FilePath>& files) {
+void AppShimHost::LaunchApp(
+    chrome::mojom::AppShimHostRequest app_shim_host_request,
+    const base::FilePath& profile_dir,
+    const std::string& app_id,
+    apps::AppShimLaunchType launch_type,
+    const std::vector<base::FilePath>& files,
+    LaunchAppCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(profile_path_.empty());
+  DCHECK(!has_received_launch_app_);
   // Only one app launch message per channel.
-  if (!profile_path_.empty())
+  if (has_received_launch_app_)
     return;
+  has_received_launch_app_ = true;
 
-  app_shim_ = std::move(app_shim_ptr);
+  bootstrap_launch_app_callback_ = std::move(callback);
+  host_binding_.Bind(std::move(app_shim_host_request));
+  host_binding_.set_connection_error_with_reason_handler(
+      base::BindOnce(&AppShimHost::ChannelError, base::Unretained(this)));
+
+  // Create the interfaces used to host windows, so that browser windows may be
+  // created before the host process finishes launching.
+  // TODO(ccameron): Move earlier in initialization.
   if (features::HostWindowsInAppShimProcess()) {
     uint64_t host_id = g_next_host_id++;
 
@@ -133,9 +152,10 @@ void AppShimHost::QuitApp() {
 // AppShimHost, apps::AppShimHandler::Host
 
 void AppShimHost::OnAppLaunchComplete(apps::AppShimLaunchResult result) {
-  if (!initial_launch_finished_) {
-    app_shim_->LaunchAppDone(result);
-    initial_launch_finished_ = true;
+  if (!has_sent_on_launch_complete_) {
+    std::move(bootstrap_launch_app_callback_)
+        .Run(result, std::move(app_shim_request_));
+    has_sent_on_launch_complete_ = true;
   }
 }
 

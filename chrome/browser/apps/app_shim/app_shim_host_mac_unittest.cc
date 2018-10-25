@@ -21,18 +21,15 @@ namespace {
 
 class TestingAppShim : public chrome::mojom::AppShim {
  public:
-  TestingAppShim() : app_shim_binding_(this) {}
+  TestingAppShim() {}
 
-  chrome::mojom::AppShimPtr GetMojoPtr() {
-    chrome::mojom::AppShimPtr app_shim_ptr;
-    chrome::mojom::AppShimRequest app_shim_request =
-        mojo::MakeRequest(&app_shim_ptr);
-    app_shim_binding_.Bind(std::move(app_shim_request));
-    return app_shim_ptr;
+  chrome::mojom::AppShimHostBootstrap::LaunchAppCallback
+  GetLaunchAppCallback() {
+    return base::BindOnce(&TestingAppShim::LaunchAppDone,
+                          base::Unretained(this));
   }
-
-  chrome::mojom::AppShimHostRequest GetHostRequest() {
-    return mojo::MakeRequest(&host_ptr_);
+  chrome::mojom::AppShimHostBootstrapRequest GetHostBootstrapRequest() {
+    return mojo::MakeRequest(&host_bootstrap_ptr_);
   }
 
   apps::AppShimLaunchResult GetLaunchResult() const {
@@ -41,11 +38,13 @@ class TestingAppShim : public chrome::mojom::AppShim {
   }
 
  private:
-  // chrome::mojom::AppShim implementation.
-  void LaunchAppDone(apps::AppShimLaunchResult result) override {
+  void LaunchAppDone(apps::AppShimLaunchResult result,
+                     chrome::mojom::AppShimRequest app_shim_request) {
     received_launch_done_result_ = true;
     launch_done_result_ = result;
   }
+
+  // chrome::mojom::AppShim implementation.
   void CreateViewsBridgeFactory(
       views_bridge_mac::mojom::BridgeFactoryAssociatedRequest request)
       override {}
@@ -58,19 +57,18 @@ class TestingAppShim : public chrome::mojom::AppShim {
   bool received_launch_done_result_ = false;
   apps::AppShimLaunchResult launch_done_result_ = apps::APP_SHIM_LAUNCH_SUCCESS;
 
-  chrome::mojom::AppShimHostPtr host_ptr_;
-  mojo::Binding<chrome::mojom::AppShim> app_shim_binding_;
-
+  chrome::mojom::AppShimHostBootstrapPtr host_bootstrap_ptr_;
   DISALLOW_COPY_AND_ASSIGN(TestingAppShim);
 };
 
 class TestingAppShimHost : public AppShimHost {
  public:
-  explicit TestingAppShimHost(chrome::mojom::AppShimHostRequest host_request)
+  explicit TestingAppShimHost(
+      chrome::mojom::AppShimHostBootstrapRequest host_request)
       : test_weak_factory_(this) {
     // AppShimHost will bind to the request from ServeChannel. For testing
     // purposes, have this request passed in at creation.
-    BindToRequest(std::move(host_request));
+    host_bootstrap_binding_.Bind(std::move(host_request));
   }
 
   base::WeakPtr<TestingAppShimHost> GetWeakPtr() {
@@ -101,12 +99,16 @@ class AppShimHostTest : public testing::Test,
     return task_runner_;
   }
   TestingAppShimHost* host() { return host_.get(); }
-  chrome::mojom::AppShimHost* GetMojoHost() { return host_.get(); }
+  chrome::mojom::AppShimHostBootstrap* GetBootstrapMojoHost() {
+    return host_.get();
+  }
+  chrome::mojom::AppShimHost* GetMojoHost() { return host_ptr_.get(); }
 
   void LaunchApp(apps::AppShimLaunchType launch_type) {
-    GetMojoHost()->LaunchApp(shim_->GetMojoPtr(),
-                             base::FilePath(kTestProfileDir), kTestAppId,
-                             launch_type, std::vector<base::FilePath>());
+    GetBootstrapMojoHost()->LaunchApp(
+        mojo::MakeRequest(&host_ptr_), base::FilePath(kTestProfileDir),
+        kTestAppId, launch_type, std::vector<base::FilePath>(),
+        shim_->GetLaunchAppCallback());
   }
 
   apps::AppShimLaunchResult GetLaunchResult() {
@@ -114,7 +116,7 @@ class AppShimHostTest : public testing::Test,
     return shim_->GetLaunchResult();
   }
 
-  void SimulateDisconnect() { shim_.reset(); }
+  void SimulateDisconnect() { host_ptr_.reset(); }
 
  protected:
   void OnShimLaunch(Host* host,
@@ -149,7 +151,8 @@ class AppShimHostTest : public testing::Test,
   void SetUp() override {
     testing::Test::SetUp();
     shim_.reset(new TestingAppShim());
-    TestingAppShimHost* host = new TestingAppShimHost(shim_->GetHostRequest());
+    TestingAppShimHost* host =
+        new TestingAppShimHost(shim_->GetHostBootstrapRequest());
     host_ = host->GetWeakPtr();
   }
 
@@ -161,6 +164,7 @@ class AppShimHostTest : public testing::Test,
   // AppShimHost will destroy itself in AppShimHost::Close, so use a weak
   // pointer here to avoid lifetime issues.
   base::WeakPtr<TestingAppShimHost> host_;
+  chrome::mojom::AppShimHostPtr host_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimHostTest);
 };

@@ -31,7 +31,7 @@ class AppShimController : public chrome::mojom::AppShim {
   void OnPingChromeTimeout();
 
   // Connects to Chrome and sends a LaunchApp message.
-  void Init();
+  void InitBootstrapPipe();
 
   chrome::mojom::AppShimHost* host() const { return host_.get(); }
 
@@ -47,9 +47,12 @@ class AppShimController : public chrome::mojom::AppShim {
   // Builds main menu bar items.
   void SetUpMenu();
   void ChannelError(uint32_t custom_reason, const std::string& description);
+  void BootstrapChannelError(uint32_t custom_reason,
+                             const std::string& description);
+  void LaunchAppDone(apps::AppShimLaunchResult result,
+                     chrome::mojom::AppShimRequest app_shim_request);
 
   // chrome::mojom::AppShim implementation.
-  void LaunchAppDone(apps::AppShimLaunchResult result) override;
   void CreateViewsBridgeFactory(
       views_bridge_mac::mojom::BridgeFactoryAssociatedRequest request) override;
   void CreateContentNSViewBridgeFactory(
@@ -62,10 +65,14 @@ class AppShimController : public chrome::mojom::AppShim {
   void Close();
 
   const app_mode::ChromeAppModeInfo* const app_mode_info_;
-  base::FilePath user_data_dir_;
-  mojo::IsolatedConnection mojo_connection_;
+
+  mojo::IsolatedConnection bootstrap_mojo_connection_;
+  chrome::mojom::AppShimHostBootstrapPtr host_bootstrap_;
+
   mojo::Binding<chrome::mojom::AppShim> shim_binding_;
   chrome::mojom::AppShimHostPtr host_;
+  chrome::mojom::AppShimHostRequest host_request_;
+
   base::scoped_nsobject<AppShimDelegate> delegate_;
   bool launch_app_done_;
   bool ping_chrome_reply_received_;
