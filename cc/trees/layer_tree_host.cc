@@ -748,8 +748,6 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
   // and SlimmingPaintV2.
   if (!IsUsingLayerLists()) {
     TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::BuildPropertyTrees");
-    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
-                 "LayerTreeHostCommon::ComputeVisibleRectsWithPropertyTrees");
     Layer* root_scroll =
         PropertyTreeBuilder::FindFirstScrollableLayer(root_layer);
     Layer* page_scale_layer = viewport_layers_.page_scale.get();
