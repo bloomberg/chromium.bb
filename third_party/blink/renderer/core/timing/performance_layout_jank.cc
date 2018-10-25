@@ -21,7 +21,7 @@ PerformanceLayoutJank::PerformanceLayoutJank(double fraction)
 PerformanceLayoutJank::~PerformanceLayoutJank() = default;
 
 AtomicString PerformanceLayoutJank::entryType() const {
-  return PerformanceEntryNames::layoutJank;
+  return performance_entry_names::kLayoutJank;
 }
 
 PerformanceEntryType PerformanceLayoutJank::EntryTypeEnum() const {
