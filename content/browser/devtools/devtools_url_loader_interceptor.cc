@@ -216,13 +216,12 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   void ProcessAuthResponse(
       const DevToolsNetworkInterceptor::AuthChallengeResponse&
           auth_challenge_response);
-  Response ProcessResponseOverride(std::string response);
+  Response ProcessResponseOverride(
+      scoped_refptr<net::HttpResponseHeaders> headers,
+      std::unique_ptr<std::string> body);
   void ProcessRedirectByClient(const GURL& redirect_url);
   void ProcessSetCookies(const net::HttpResponseHeaders& response_headers,
                          base::OnceClosure callback);
-  void SendResponseAfterCookiesSet(const std::string& response,
-                                   int header_size,
-                                   size_t body_size);
   void SendResponse(const base::StringPiece& body);
   void ApplyModificationsToRequest(
       std::unique_ptr<Modifications> modifications);
@@ -828,8 +827,9 @@ Response InterceptionJob::InnerContinueRequest(
     return Response::OK();
   }
 
-  if (modifications->raw_response)
-    return ProcessResponseOverride(std::move(*modifications->raw_response));
+  if (modifications->response_headers || modifications->response_body)
+    return ProcessResponseOverride(std::move(modifications->response_headers),
+                                   std::move(modifications->response_body));
 
   if (state_ == State::kFollowRedirect) {
     if (modifications->modified_url.isJust()) {
@@ -940,21 +940,13 @@ void InterceptionJob::ProcessAuthResponse(
   }
 }
 
-Response InterceptionJob::ProcessResponseOverride(std::string response) {
+Response InterceptionJob::ProcessResponseOverride(
+    scoped_refptr<net::HttpResponseHeaders> headers,
+    std::unique_ptr<std::string> maybe_body) {
   CancelRequest();
 
-  std::string raw_headers;
-  int header_size =
-      net::HttpUtil::LocateEndOfHeaders(response.c_str(), response.size());
-  if (header_size == -1) {
-    LOG(WARNING) << "Can't find headers in result";
-    header_size = 0;
-  } else {
-    raw_headers =
-        net::HttpUtil::AssembleRawHeaders(response.c_str(), header_size);
-  }
-  CHECK_LE(static_cast<size_t>(header_size), response.size());
-  size_t body_size = response.size() - header_size;
+  std::string body = maybe_body ? std::move(*maybe_body) : "";
+  size_t body_size = body.size();
 
   response_metadata_ = std::make_unique<ResponseMetadata>();
   network::ResourceResponseHead* head = &response_metadata_->head;
@@ -969,19 +961,27 @@ Response InterceptionJob::ProcessResponseOverride(std::string response) {
   head->load_timing.request_start = start_ticks_;
   head->load_timing.receive_headers_end = now_ticks;
 
-  head->headers = new net::HttpResponseHeaders(std::move(raw_headers));
+  static const char kDummyHeaders[] = "HTTP/1.1 200 OK\0\0";
+  head->headers = std::move(headers);
+  if (!head->headers) {
+    head->headers =
+        base::MakeRefCounted<net::HttpResponseHeaders>(kDummyHeaders);
+  }
   head->headers->GetMimeTypeAndCharset(&head->mime_type, &head->charset);
   if (head->mime_type.empty()) {
     size_t bytes_to_sniff =
         std::min(body_size, static_cast<size_t>(net::kMaxBytesToSniff));
-    net::SniffMimeType(response.data() + header_size, bytes_to_sniff,
-                       create_loader_params_->request.url, "",
-                       net::ForceSniffFileUrlsForHtml::kDisabled,
-                       &head->mime_type);
+    net::SniffMimeType(
+        body.data(), bytes_to_sniff, create_loader_params_->request.url, "",
+        net::ForceSniffFileUrlsForHtml::kDisabled, &head->mime_type);
     head->did_mime_sniff = true;
   }
+  // TODO(caseq): we're cheating here a bit, raw_headers() have \0's
+  // where real headers would have \r\n, but the sizes here
+  // probably don't have to be exact.
+  size_t headers_size = head->headers->raw_headers().size();
   head->content_length = body_size;
-  head->encoded_data_length = header_size;
+  head->encoded_data_length = headers_size;
   head->encoded_body_length = 0;
   head->request_start = start_ticks_;
   head->response_start = now_ticks;
@@ -989,7 +989,7 @@ Response InterceptionJob::ProcessResponseOverride(std::string response) {
   response_metadata_->transfer_size = body_size;
 
   response_metadata_->status.completion_time = base::TimeTicks::Now();
-  response_metadata_->status.encoded_data_length = response.size();
+  response_metadata_->status.encoded_data_length = headers_size + body_size;
   response_metadata_->status.encoded_body_length = body_size;
   response_metadata_->status.decoded_body_length = body_size;
 
@@ -1004,19 +1004,13 @@ Response InterceptionJob::ProcessResponseOverride(std::string response) {
     }
   }
   if (!continue_after_cookies_set) {
-    continue_after_cookies_set = base::BindOnce(
-        &InterceptionJob::SendResponseAfterCookiesSet, base::Unretained(this),
-        std::move(response), header_size, body_size);
+    continue_after_cookies_set =
+        base::BindOnce(&InterceptionJob::SendResponse, base::Unretained(this),
+                       std::move(body));
   }
   ProcessSetCookies(*head->headers, std::move(continue_after_cookies_set));
 
   return Response::OK();
-}
-
-void InterceptionJob::SendResponseAfterCookiesSet(const std::string& response,
-                                                  int header_size,
-                                                  size_t body_size) {
-  SendResponse(base::StringPiece(response.data() + header_size, body_size));
 }
 
 void InterceptionJob::ProcessSetCookies(const net::HttpResponseHeaders& headers,

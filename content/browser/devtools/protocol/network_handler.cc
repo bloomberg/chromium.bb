@@ -1861,14 +1861,30 @@ void NetworkHandler::ContinueInterceptedRequest(
     Maybe<protocol::Network::Headers> opt_headers,
     Maybe<protocol::Network::AuthChallengeResponse> auth_challenge_response,
     std::unique_ptr<ContinueInterceptedRequestCallback> callback) {
-  base::Optional<std::string> raw_response;
+  scoped_refptr<net::HttpResponseHeaders> response_headers;
+  std::unique_ptr<std::string> response_body;
+
   if (base64_raw_response.isJust()) {
     std::string decoded;
     if (!base::Base64Decode(base64_raw_response.fromJust(), &decoded)) {
       callback->sendFailure(Response::InvalidParams("Invalid rawResponse."));
       return;
     }
-    raw_response = decoded;
+
+    std::string raw_headers;
+    int header_size =
+        net::HttpUtil::LocateEndOfHeaders(decoded.c_str(), decoded.size());
+    if (header_size == -1) {
+      LOG(WARNING) << "Can't find headers in raw response";
+      header_size = 0;
+    } else {
+      raw_headers =
+          net::HttpUtil::AssembleRawHeaders(decoded.c_str(), header_size);
+    }
+    CHECK_LE(static_cast<size_t>(header_size), decoded.size());
+    response_headers =
+        base::MakeRefCounted<net::HttpResponseHeaders>(std::move(raw_headers));
+    response_body = std::make_unique<std::string>(decoded.substr(header_size));
   }
 
   base::Optional<net::Error> error;
@@ -1926,8 +1942,9 @@ void NetworkHandler::ContinueInterceptedRequest(
 
   auto modifications =
       std::make_unique<DevToolsNetworkInterceptor::Modifications>(
-          std::move(error), std::move(raw_response), std::move(url),
-          std::move(method), std::move(post_data), std::move(override_headers),
+          std::move(error), std::move(response_headers),
+          std::move(response_body), std::move(url), std::move(method),
+          std::move(post_data), std::move(override_headers),
           std::move(override_auth));
 
   if (url_loader_interceptor_) {
