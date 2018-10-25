@@ -620,6 +620,15 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     }
 
     /**
+     * Update default text on the pay button to the given text.
+     *
+     * @param textResId The resource id of the text to be shown on the button.
+     */
+    public void updatePayButtonText(int textResId) {
+        mPayButton.setText(textResId);
+    }
+
+    /**
      * Updates the line items in response to a changed shipping address or option.
      *
      * @param cart The shopping cart, including the line items and the total.
