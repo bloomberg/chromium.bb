@@ -699,6 +699,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
         constants.CANARY_TYPE,
         constants.PFQ_TYPE,
         constants.PALADIN_TYPE,
+        constants.POSTSUBMIT_TYPE,
         constants.TOOLCHAIN_TYPE,
         constants.CHROME_PFQ_TYPE,
         constants.ANDROID_PFQ_TYPE,

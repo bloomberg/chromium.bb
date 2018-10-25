@@ -2141,6 +2141,57 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   )
 
 
+def PostSubmitBuilders(site_config, boards_dict, ge_build_config):
+  """Create all incremental build configs.
+
+  Args:
+    site_config: config_lib.SiteConfig to be modified by adding templates
+                 and configs.
+    boards_dict: A dict mapping board types to board name collections.
+    ge_build_config: Dictionary containing the decoded GE configuration file.
+  """
+  board_configs = CreateInternalBoardConfigs(
+      site_config, boards_dict, ge_build_config)
+
+  postsubmit_boards = frozenset([
+      'samus',
+      'grunt',
+  ])
+
+  site_config.AddTemplate(
+      'postsubmit',
+      site_config.templates.internal,
+      display_label=config_lib.DISPLAY_LABEL_POSTSUBMIT,
+      build_type=constants.POSTSUBMIT_TYPE,
+      chroot_replace=True,
+      uprev=False,
+      overlays=constants.BOTH_OVERLAYS,
+      description='Postsubmit Builds',
+      doc='TBD',
+  )
+
+  master_config = site_config.Add(
+      'master-postsubmit',
+      site_config.templates.postsubmit,
+      boards=[],
+      master=True,
+      manifest_version=True,
+      slave_configs=[],
+      active_waterfall=waterfall.WATERFALL_SWARMING,
+      schedule='with 2m interval',
+  )
+
+  master_config.AddSlaves(
+      site_config.AddForBoards(
+          'postsubmit',
+          postsubmit_boards,
+          board_configs,
+          site_config.templates.postsubmit,
+          active_waterfall=waterfall.WATERFALL_SWARMING,
+      )
+  )
+
+
 def IncrementalBuilders(site_config, boards_dict, ge_build_config):
   """Create all incremental build configs.
 
@@ -3690,6 +3741,8 @@ def GetConfig():
   PreCqBuilders(site_config, boards_dict, ge_build_config)
 
   CqBuilders(site_config, boards_dict, ge_build_config)
+
+  PostSubmitBuilders(site_config, boards_dict, ge_build_config)
 
   IncrementalBuilders(site_config, boards_dict, ge_build_config)
 
