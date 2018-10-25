@@ -45,7 +45,7 @@ base::FilePath DetermineImageDirectory() {
 // excluding those present in |registered_names|.
 std::vector<base::FilePath> GetFilesFromPrevSessions(
     const base::FilePath& dir,
-    const std::set<base::string16>& registered_names) {
+    const std::set<base::FilePath>& registered_names) {
   // |dir| may have sub-dirs, created by the old implementation.
   base::FileEnumerator file_enumerator(
       dir, /*recursive=*/false,
@@ -56,7 +56,7 @@ std::vector<base::FilePath> GetFilesFromPrevSessions(
   for (base::FilePath current = file_enumerator.Next(); !current.empty();
        current = file_enumerator.Next()) {
     // Exclude any new file created in this session.
-    if (!base::ContainsKey(registered_names, current.BaseName().value()))
+    if (!base::ContainsKey(registered_names, current.BaseName()))
       files.push_back(std::move(current));
   }
 
@@ -103,7 +103,7 @@ void NotificationImageRetainer::CleanupFilesFromPrevSessions() {
 
   // Store all file names from registered_images in an ordered set for quick
   // search.
-  std::set<base::string16> registered_names;
+  std::set<base::FilePath> registered_names;
   for (const auto& pair : registered_images_)
     registered_names.insert(pair.first);
 
@@ -138,7 +138,7 @@ base::FilePath NotificationImageRetainer::RegisterTemporaryImage(
 
   const base::TimeTicks now = tick_clock_->NowTicks();
   DCHECK(registered_images_.empty() || now >= registered_images_.back().second);
-  registered_images_.emplace_back(temp_file.BaseName().value(), now);
+  registered_images_.emplace_back(temp_file.BaseName(), now);
 
   // At this point, a temp file is already created. We need to clean it up even
   // if it fails to write the image data to this file.
@@ -173,7 +173,7 @@ void NotificationImageRetainer::DeleteExpiredFiles() {
   const base::TimeTicks then = tick_clock_->NowTicks() - kDeletionDelay;
   const auto end =
       std::upper_bound(registered_images_.begin(), registered_images_.end(),
-                       std::make_pair(base::string16(), then),
+                       std::make_pair(base::FilePath(), then),
                        [](const NameAndTime& a, const NameAndTime& b) {
                          return a.second < b.second;
                        });
