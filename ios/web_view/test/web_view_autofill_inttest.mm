@@ -270,7 +270,8 @@ TEST_F(WebViewAutofillTest, TestSuggestionFetchFillClear) {
 }
 
 // Tests that CWVAutofillController can remove a suggestion.
-TEST_F(WebViewAutofillTest, TestSuggestionFetchRemoveFetch) {
+TEST_F(WebViewAutofillTest, DISABLED_TestSuggestionFetchRemoveFetch) {
+  // TODO(crbug.com/898990): Needs to be reenabled.
   ASSERT_TRUE(test_server_->Start());
   ASSERT_TRUE(LoadTestPage());
   ASSERT_TRUE(SetFormFieldValue(kTestNameFieldID, kTestNameFieldValue));
