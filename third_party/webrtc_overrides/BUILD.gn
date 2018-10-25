@@ -29,10 +29,6 @@ source_set("webrtc") {
     "//third_party/webrtc/p2p:rtc_p2p",
   ]
 
-  if (is_win) {
-    cflags = [ "/wd4005" ]
-  }
-
   # When Chromium is built for NACL or Chromecast, WebRTC provides a
   # field_trial implementation so there is no need to depend on
   # ":field_trial".
