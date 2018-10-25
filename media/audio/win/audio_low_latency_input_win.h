@@ -189,14 +189,14 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   // Contains the desired output audio format which is set up at construction,
   // that is the audio format this class should output data to the sink in, that
   // is the format after the converter.
-  WAVEFORMATEX output_format_;
+  WAVEFORMATEXTENSIBLE output_format_;
 
   // Contains the audio format we get data from the audio engine in. Set to
   // |output_format_| at construction and might be changed to a close match if
   // the audio engine doesn't support the originally set format. Note that this
   // is also the format after the fifo, i.e. the input format to the converter
   // if any.
-  WAVEFORMATEX input_format_;
+  WAVEFORMATEXTENSIBLE input_format_;
 
   bool opened_ = false;
   bool started_ = false;

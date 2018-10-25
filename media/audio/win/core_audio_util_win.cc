@@ -132,6 +132,15 @@ ChannelLayout ChannelConfigToChannelLayout(ChannelConfig config) {
     case KSAUDIO_SPEAKER_7POINT1_SURROUND:
       DVLOG(2) << "KSAUDIO_SPEAKER_7POINT1_SURROUND=>CHANNEL_LAYOUT_7_1";
       return CHANNEL_LAYOUT_7_1;
+    case KSAUDIO_SPEAKER_DIRECTOUT:
+      // When specifying the wave format for a direct-out stream, an application
+      // should set the dwChannelMask member of the WAVEFORMATEXTENSIBLE
+      // structure to the value KSAUDIO_SPEAKER_DIRECTOUT, which is zero.
+      // A channel mask of zero indicates that no speaker positions are defined.
+      // As always, the number of channels in the stream is specified in the
+      // Format.nChannels member.
+      DVLOG(2) << "KSAUDIO_SPEAKER_DIRECTOUT=>CHANNEL_LAYOUT_DISCRETE";
+      return CHANNEL_LAYOUT_DISCRETE;
     default:
       DVLOG(2) << "Unsupported channel configuration: " << config;
       return CHANNEL_LAYOUT_UNSUPPORTED;
@@ -141,6 +150,9 @@ ChannelLayout ChannelConfigToChannelLayout(ChannelConfig config) {
 // TODO(henrika): add mapping for all types in the ChannelLayout enumerator.
 ChannelConfig ChannelLayoutToChannelConfig(ChannelLayout layout) {
   switch (layout) {
+    case CHANNEL_LAYOUT_DISCRETE:
+      DVLOG(2) << "CHANNEL_LAYOUT_DISCRETE=>KSAUDIO_SPEAKER_DIRECTOUT";
+      return KSAUDIO_SPEAKER_DIRECTOUT;
     case CHANNEL_LAYOUT_MONO:
       DVLOG(2) << "CHANNEL_LAYOUT_MONO=>KSAUDIO_SPEAKER_MONO";
       return KSAUDIO_SPEAKER_MONO;
@@ -169,19 +181,6 @@ ChannelConfig ChannelLayoutToChannelConfig(ChannelLayout layout) {
       DVLOG(2) << "Unsupported channel layout: " << layout;
       return KSAUDIO_SPEAKER_UNSUPPORTED;
   }
-}
-
-std::ostream& operator<<(std::ostream& os, const WAVEFORMATPCMEX& format) {
-  os << "wFormatTag: 0x" << std::hex << format.Format.wFormatTag
-     << ", nChannels: " << std::dec << format.Format.nChannels
-     << ", nSamplesPerSec: " << format.Format.nSamplesPerSec
-     << ", nAvgBytesPerSec: " << format.Format.nAvgBytesPerSec
-     << ", nBlockAlign: " << format.Format.nBlockAlign
-     << ", wBitsPerSample: " << format.Format.wBitsPerSample
-     << ", cbSize: " << format.Format.cbSize
-     << ", wValidBitsPerSample: " << format.Samples.wValidBitsPerSample
-     << ", dwChannelMask: 0x" << std::hex << format.dwChannelMask;
-  return os;
 }
 
 std::string GetDeviceID(IMMDevice* device) {
@@ -257,7 +256,7 @@ ChannelLayout GetChannelLayout(const WAVEFORMATPCMEX& mix_format) {
   // for more details.
   ChannelConfig channel_config = mix_format.dwChannelMask;
 
-  // Convert Microsoft's channel configuration to genric ChannelLayout.
+  // Convert Microsoft's channel configuration to generic ChannelLayout.
   ChannelLayout channel_layout = ChannelConfigToChannelLayout(channel_config);
 
   // Some devices don't appear to set a valid channel layout, so guess based
@@ -268,6 +267,7 @@ ChannelLayout GetChannelLayout(const WAVEFORMATPCMEX& mix_format) {
              << mix_format.Format.nChannels;
     channel_layout = GuessChannelLayout(mix_format.Format.nChannels);
   }
+  DVLOG(1) << "channel layout: " << ChannelLayoutToString(channel_layout);
 
   return channel_layout;
 }
@@ -368,6 +368,7 @@ ComPtr<IAudioClient> CreateClientInternal(IMMDevice* audio_device,
 }
 
 HRESULT GetPreferredAudioParametersInternal(IAudioClient* client,
+                                            bool is_output_device,
                                             AudioParameters* params,
                                             const UMALogCallback& uma_log_cb) {
   WAVEFORMATPCMEX mix_format;
@@ -428,6 +429,19 @@ HRESULT GetPreferredAudioParametersInternal(IAudioClient* client,
       frames_per_buffer,
       AudioParameters::HardwareCapabilities(min_frames_per_buffer,
                                             max_frames_per_buffer));
+  // Set the number of channels explicitly to two for input devices if
+  // the channel layout is discrete to ensure that the parameters are valid
+  // and that clients does not have to support multi-channel input cases.
+  // Any required down-mixing from N (N > 2) to 2 must be performed by the
+  // input stream implementation instead.
+  // See https://crbug/868026 for examples where this approach is needed.
+  if (!is_output_device &&
+      audio_params.channel_layout() == CHANNEL_LAYOUT_DISCRETE) {
+    DLOG(WARNING)
+        << "Forcing number of channels to 2 for CHANNEL_LAYOUT_DISCRETE";
+    audio_params.set_channels_for_discrete(2);
+  }
+  DCHECK(audio_params.IsValid());
   *params = audio_params;
   DVLOG(1) << params->AsHumanReadableString();
 
@@ -439,6 +453,30 @@ HRESULT GetPreferredAudioParametersInternal(IAudioClient* client,
 bool CoreAudioUtil::IsSupported() {
   static bool g_is_supported = IsSupportedInternal();
   return g_is_supported;
+}
+
+std::string CoreAudioUtil::WaveFormatExToString(
+    const WAVEFORMATEXTENSIBLE* format) {
+  DCHECK_EQ(format->Format.wFormatTag, WAVE_FORMAT_EXTENSIBLE);
+  DCHECK_GE(format->Format.cbSize, 22);
+  std::string wave_format = base::StringPrintf(
+      "wFormatTag: WAVE_FORMAT_EXTENSIBLE, nChannels: %d, nSamplesPerSec: %lu"
+      ", nAvgBytesPerSec: %lu, nBlockAlign: %d, wBitsPerSample: %d, cbSize: %d"
+      ", wValidBitsPerSample: %d, dwChannelMask: 0x%lX",
+      format->Format.nChannels, format->Format.nSamplesPerSec,
+      format->Format.nAvgBytesPerSec, format->Format.nBlockAlign,
+      format->Format.wBitsPerSample, format->Format.cbSize,
+      format->Samples.wValidBitsPerSample, format->dwChannelMask);
+  if (format->SubFormat == KSDATAFORMAT_SUBTYPE_PCM) {
+    base::StringAppendF(&wave_format, "%s",
+                        ", SubFormat: KSDATAFORMAT_SUBTYPE_PCM");
+  } else if (format->SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT) {
+    base::StringAppendF(&wave_format, "%s",
+                        ", SubFormat: KSDATAFORMAT_SUBTYPE_IEEE_FLOAT");
+  } else {
+    base::StringAppendF(&wave_format, "%s", ", SubFormat: NOT_SUPPORTED");
+  }
+  return wave_format;
 }
 
 base::TimeDelta CoreAudioUtil::ReferenceTimeToTimeDelta(REFERENCE_TIME time) {
@@ -671,6 +709,7 @@ ComPtr<IAudioClient> CoreAudioUtil::CreateClient(const std::string& device_id,
 
 HRESULT CoreAudioUtil::GetSharedModeMixFormat(
     IAudioClient* client, WAVEFORMATPCMEX* format) {
+  VLOG(1) << __FUNCTION__;
   ScopedCoMem<WAVEFORMATPCMEX> format_pcmex;
   HRESULT hr = client->GetMixFormat(
       reinterpret_cast<WAVEFORMATEX**>(&format_pcmex));
@@ -682,7 +721,7 @@ HRESULT CoreAudioUtil::GetSharedModeMixFormat(
       << "Format tag: 0x" << std::hex << format_pcmex->Format.wFormatTag;
 
   memcpy(format, format_pcmex, bytes);
-  DVLOG(2) << *format;
+  DVLOG(2) << CoreAudioUtil::WaveFormatExToString(format);
 
   return hr;
 }
@@ -701,7 +740,7 @@ bool CoreAudioUtil::IsFormatSupported(IAudioClient* client,
   // This log can be triggered both for shared and exclusive modes.
   DLOG_IF(ERROR, hr == AUDCLNT_E_UNSUPPORTED_FORMAT) << "Unsupported format.";
   if (hr == S_FALSE) {
-    DVLOG(2) << *closest_match;
+    DVLOG(2) << CoreAudioUtil::WaveFormatExToString(closest_match);
   }
 
   return (hr == S_OK);
@@ -740,7 +779,7 @@ bool CoreAudioUtil::IsChannelLayoutSupported(const std::string& device_id,
     format.Format.nAvgBytesPerSec = format.Format.nSamplesPerSec *
                                     format.Format.nBlockAlign;
   }
-  DVLOG(2) << format;
+  DVLOG(2) << CoreAudioUtil::WaveFormatExToString(&format);
 
   // Some devices can initialize a shared-mode stream with a format that is
   // not identical to the mix format obtained from the GetMixFormat() method.
@@ -775,6 +814,7 @@ HRESULT CoreAudioUtil::GetDevicePeriod(IAudioClient* client,
 HRESULT CoreAudioUtil::GetPreferredAudioParameters(const std::string& device_id,
                                                    bool is_output_device,
                                                    AudioParameters* params) {
+  DVLOG(1) << __FUNCTION__;
   UMALogCallback uma_log_cb(
       is_output_device ? base::BindRepeating(&LogUMAPreferredOutputParams)
                        : base::BindRepeating(&LogUMAEmptyCb));
@@ -787,17 +827,21 @@ HRESULT CoreAudioUtil::GetPreferredAudioParameters(const std::string& device_id,
   if (!client.Get())
     return E_FAIL;
 
-  HRESULT hr =
-      GetPreferredAudioParametersInternal(client.Get(), params, uma_log_cb);
-  if (FAILED(hr) || is_output_device || !params->IsValid())
+  HRESULT hr = GetPreferredAudioParametersInternal(
+      client.Get(), is_output_device, params, uma_log_cb);
+  if (FAILED(hr) || is_output_device || !params->IsValid()) {
     return hr;
+  }
 
   // The following functionality is only for input devices.
   DCHECK(!is_output_device);
 
   // TODO(dalecurtis): Old code rewrote != 1 channels to stereo, do we still
   // need to do the same thing?
-  if (params->channels() != 1) {
+  if (params->channels() != 1 &&
+      params->channel_layout() != CHANNEL_LAYOUT_DISCRETE) {
+    DLOG(WARNING)
+        << "Replacing existing audio parameter with predefined version";
     params->Reset(params->format(), CHANNEL_LAYOUT_STEREO,
                   params->sample_rate(), params->frames_per_buffer());
   }

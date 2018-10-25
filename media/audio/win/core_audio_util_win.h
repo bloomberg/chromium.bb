@@ -40,6 +40,8 @@ class MEDIA_EXPORT CoreAudioUtil {
   // it is safe to call from other threads.
   static bool IsSupported();
 
+  static std::string WaveFormatExToString(const WAVEFORMATEXTENSIBLE* format);
+
   // Converts between reference time to base::TimeDelta.
   // One reference-time unit is 100 nanoseconds.
   // Example: double s = RefererenceTimeToTimeDelta(t).InMillisecondsF();
