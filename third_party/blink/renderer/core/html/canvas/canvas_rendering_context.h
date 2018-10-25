@@ -138,8 +138,8 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   void NeedsFinalizeFrame();
 
   // Thread::TaskObserver implementation
-  void DidProcessTask() override;
-  void WillProcessTask() final {}
+  void DidProcessTask(const base::PendingTask&) override;
+  void WillProcessTask(const base::PendingTask&) final {}
 
   // Canvas2D-specific interface
   virtual bool Is2d() const { return false; }

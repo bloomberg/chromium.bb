@@ -38,9 +38,13 @@ class TestObserver : public Thread::TaskObserver {
 
   ~TestObserver() override = default;
 
-  void WillProcessTask() override { calls_->append(" willProcessTask"); }
+  void WillProcessTask(const base::PendingTask&) override {
+    calls_->append(" willProcessTask");
+  }
 
-  void DidProcessTask() override { calls_->append(" didProcessTask"); }
+  void DidProcessTask(const base::PendingTask&) override {
+    calls_->append(" didProcessTask");
+  }
 
  private:
   std::string* calls_;  // NOT OWNED

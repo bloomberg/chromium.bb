@@ -32,7 +32,6 @@
 #include "base/threading/thread.h"
 #include "third_party/blink/public/platform/web_thread_type.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -78,13 +77,8 @@ class PLATFORM_EXPORT Thread {
   // An IdleTask is expected to complete before the deadline it is passed.
   using IdleTask = base::OnceCallback<void(base::TimeTicks deadline)>;
 
-  // TODO(yutak): Migrate to base::MessageLoop::TaskObserver.
-  class PLATFORM_EXPORT TaskObserver {
-   public:
-    virtual ~TaskObserver() = default;
-    virtual void WillProcessTask() = 0;
-    virtual void DidProcessTask() = 0;
-  };
+  // TaskObserver is an observer fired before and after a task is executed.
+  using TaskObserver = base::MessageLoop::TaskObserver;
 
   // Creates a new thread. This may be called from a non-main thread (e.g.
   // nested Web workers).
@@ -148,20 +142,6 @@ class PLATFORM_EXPORT Thread {
   virtual ThreadScheduler* Scheduler() = 0;
 
  private:
-  class TaskObserverAdapter : public base::MessageLoop::TaskObserver {
-   public:
-    explicit TaskObserverAdapter(Thread::TaskObserver*);
-    ~TaskObserverAdapter() override = default;
-    void WillProcessTask(const base::PendingTask&) override;
-    void DidProcessTask(const base::PendingTask&) override;
-
-   private:
-    Thread::TaskObserver* task_observer_;
-  };
-
-  using TaskObserverMap =
-      WTF::HashMap<TaskObserver*, std::unique_ptr<TaskObserverAdapter>>;
-
   // For Platform and ScopedMainThreadOverrider. Return the thread object
   // previously set (if any).
   //
@@ -172,8 +152,6 @@ class PLATFORM_EXPORT Thread {
   // This is used to identify the actual Thread instance. This should be
   // used only in Platform, and other users should ignore this.
   virtual bool IsSimpleMainThread() const { return false; }
-
-  TaskObserverMap task_observer_map_;
 
   DISALLOW_COPY_AND_ASSIGN(Thread);
 };

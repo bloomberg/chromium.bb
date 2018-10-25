@@ -67,8 +67,10 @@ namespace {
 
 class EndOfTaskRunner : public Thread::TaskObserver {
  public:
-  void WillProcessTask() override { AnimationClock::NotifyTaskStart(); }
-  void DidProcessTask() override {
+  void WillProcessTask(const base::PendingTask&) override {
+    AnimationClock::NotifyTaskStart();
+  }
+  void DidProcessTask(const base::PendingTask&) override {
     Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
     V8Initializer::ReportRejectedPromisesOnMainThread();
   }

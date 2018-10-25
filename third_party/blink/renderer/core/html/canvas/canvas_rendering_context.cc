@@ -106,7 +106,7 @@ void CanvasRenderingContext::Dispose() {
   // When the pair is no longer reachable, their destruction order is non-
   // deterministic, so the first of the two to be destroyed needs to notify
   // the other in order to break the circular reference.  This is to avoid
-  // an error when CanvasRenderingContext::didProcessTask() is invoked
+  // an error when CanvasRenderingContext::DidProcessTask() is invoked
   // after the HTMLCanvasElement is destroyed.
   if (Host()) {
     Host()->DetachContext();
@@ -131,7 +131,8 @@ void CanvasRenderingContext::NeedsFinalizeFrame() {
   }
 }
 
-void CanvasRenderingContext::DidProcessTask() {
+void CanvasRenderingContext::DidProcessTask(
+    const base::PendingTask& pending_task) {
   Platform::Current()->CurrentThread()->RemoveTaskObserver(this);
   finalize_frame_scheduled_ = false;
   // The end of a script task that drew content to the canvas is the point

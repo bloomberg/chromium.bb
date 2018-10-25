@@ -557,8 +557,9 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
   ModifiableState().SetUnparsedFont(new_font_safe_copy);
 }
 
-void CanvasRenderingContext2D::DidProcessTask() {
-  CanvasRenderingContext::DidProcessTask();
+void CanvasRenderingContext2D::DidProcessTask(
+    const base::PendingTask& pending_task) {
+  CanvasRenderingContext::DidProcessTask(pending_task);
   // This should be the only place where canvas() needs to be checked for
   // nullness because the circular refence with HTMLCanvasElement means the
   // canvas and the context keep each other alive. As long as the pair is

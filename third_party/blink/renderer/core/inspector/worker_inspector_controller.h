@@ -82,8 +82,8 @@ class WorkerInspectorController final
       mojom::blink::DevToolsSessionStatePtr updates) override;
 
   // Thread::TaskObserver implementation.
-  void WillProcessTask() override;
-  void DidProcessTask() override;
+  void WillProcessTask(const base::PendingTask&) override;
+  void DidProcessTask(const base::PendingTask&) override;
 
   // blink::TraceEvent::EnabledStateObserver implementation:
   void OnTraceLogEnabled() override;

@@ -141,7 +141,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   void RestoreCanvasMatrixClipStack(cc::PaintCanvas*) const override;
 
   // TaskObserver implementation
-  void DidProcessTask() final;
+  void DidProcessTask(const base::PendingTask&) final;
 
   void StyleDidChange(const ComputedStyle* old_style,
                       const ComputedStyle& new_style) override;

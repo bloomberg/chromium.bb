@@ -27,6 +27,8 @@ namespace main_thread_unittest {
 
 const int kWorkBatchSize = 2;
 
+using ::testing::_;
+
 class MockTask {
  public:
   MOCK_METHOD0(Run, void());
@@ -34,8 +36,8 @@ class MockTask {
 
 class MockTaskObserver : public Thread::TaskObserver {
  public:
-  MOCK_METHOD0(WillProcessTask, void());
-  MOCK_METHOD0(DidProcessTask, void());
+  MOCK_METHOD1(WillProcessTask, void(const base::PendingTask&));
+  MOCK_METHOD1(DidProcessTask, void(const base::PendingTask&));
 };
 
 class MainThreadTest : public testing::Test {
@@ -79,9 +81,9 @@ TEST_F(MainThreadTest, TestTaskObserver) {
 
   {
     testing::InSequence sequence;
-    EXPECT_CALL(observer, WillProcessTask());
+    EXPECT_CALL(observer, WillProcessTask(_));
     EXPECT_CALL(task, Run());
-    EXPECT_CALL(observer, DidProcessTask());
+    EXPECT_CALL(observer, DidProcessTask(_));
   }
 
   message_loop_.task_runner()->PostTask(
@@ -98,9 +100,9 @@ TEST_F(MainThreadTest, TestWorkBatchWithOneTask) {
   SetWorkBatchSizeForTesting(kWorkBatchSize);
   {
     testing::InSequence sequence;
-    EXPECT_CALL(observer, WillProcessTask());
+    EXPECT_CALL(observer, WillProcessTask(_));
     EXPECT_CALL(task, Run());
-    EXPECT_CALL(observer, DidProcessTask());
+    EXPECT_CALL(observer, DidProcessTask(_));
   }
 
   message_loop_.task_runner()->PostTask(
@@ -118,13 +120,13 @@ TEST_F(MainThreadTest, TestWorkBatchWithTwoTasks) {
   SetWorkBatchSizeForTesting(kWorkBatchSize);
   {
     testing::InSequence sequence;
-    EXPECT_CALL(observer, WillProcessTask());
+    EXPECT_CALL(observer, WillProcessTask(_));
     EXPECT_CALL(task1, Run());
-    EXPECT_CALL(observer, DidProcessTask());
+    EXPECT_CALL(observer, DidProcessTask(_));
 
-    EXPECT_CALL(observer, WillProcessTask());
+    EXPECT_CALL(observer, WillProcessTask(_));
     EXPECT_CALL(task2, Run());
-    EXPECT_CALL(observer, DidProcessTask());
+    EXPECT_CALL(observer, DidProcessTask(_));
   }
 
   message_loop_.task_runner()->PostTask(
@@ -145,17 +147,17 @@ TEST_F(MainThreadTest, TestWorkBatchWithThreeTasks) {
   SetWorkBatchSizeForTesting(kWorkBatchSize);
   {
     testing::InSequence sequence;
-    EXPECT_CALL(observer, WillProcessTask());
+    EXPECT_CALL(observer, WillProcessTask(_));
     EXPECT_CALL(task1, Run());
-    EXPECT_CALL(observer, DidProcessTask());
+    EXPECT_CALL(observer, DidProcessTask(_));
 
-    EXPECT_CALL(observer, WillProcessTask());
+    EXPECT_CALL(observer, WillProcessTask(_));
     EXPECT_CALL(task2, Run());
-    EXPECT_CALL(observer, DidProcessTask());
+    EXPECT_CALL(observer, DidProcessTask(_));
 
-    EXPECT_CALL(observer, WillProcessTask());
+    EXPECT_CALL(observer, WillProcessTask(_));
     EXPECT_CALL(task3, Run());
-    EXPECT_CALL(observer, DidProcessTask());
+    EXPECT_CALL(observer, DidProcessTask(_));
   }
 
   message_loop_.task_runner()->PostTask(
@@ -186,14 +188,14 @@ TEST_F(MainThreadTest, TestNestedRunLoop) {
     testing::InSequence sequence;
 
     // One callback for EnterRunLoop.
-    EXPECT_CALL(observer, WillProcessTask());
+    EXPECT_CALL(observer, WillProcessTask(_));
 
     // A pair for ExitRunLoopTask.
-    EXPECT_CALL(observer, WillProcessTask());
-    EXPECT_CALL(observer, DidProcessTask());
+    EXPECT_CALL(observer, WillProcessTask(_));
+    EXPECT_CALL(observer, DidProcessTask(_));
 
     // A final callback for EnterRunLoop.
-    EXPECT_CALL(observer, DidProcessTask());
+    EXPECT_CALL(observer, DidProcessTask(_));
   }
 
   message_loop_.task_runner()->PostTask(
