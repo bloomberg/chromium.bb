@@ -2721,8 +2721,6 @@ test("unit_tests") {
     "../browser/ui/sync/profile_signin_confirmation_helper_unittest.cc",
     "../browser/ui/sync/sync_promo_ui_unittest.cc",
     "../browser/ui/sync/tab_contents_synced_tab_delegate_unittest.cc",
-    "../browser/ui/tests/ui_gfx_image_unittest.cc",
-    "../browser/ui/tests/ui_gfx_image_unittest.mm",
     "../browser/ui/webui/fileicon_source_unittest.cc",
     "../browser/ui/webui/interventions_internals/interventions_internals_page_handler_unittest.cc",
     "../browser/ui/webui/local_state/local_state_ui_unittest.cc",
@@ -4114,7 +4112,6 @@ test("unit_tests") {
       # This tests the function GetSpellCheckLanguages which is not used on
       # Mac.
       "../browser/spellchecker/spellcheck_service_unittest.cc",
-      "../browser/ui/tests/ui_gfx_image_unittest.cc",
 
       # This tests Chrome's spellchecker which Mac doesn't use.
       "../tools/convert_dict/convert_dict_unittest.cc",
@@ -4122,48 +4119,36 @@ test("unit_tests") {
 
     # The test fetches resources which means Mac need the app bundle to exist
     # on disk so it can pull from it.
-    deps += [
-      "//third_party/google_toolbox_for_mac",
-      "//third_party/ocmock",
+    deps += [ "//third_party/ocmock" ]
+
+    sources += [
+      "../browser/ui/cocoa/applescript/apple_event_util_unittest.mm",
+      "../browser/ui/cocoa/bookmarks/bookmark_menu_bridge_unittest.mm",
+      "../browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller_unittest.mm",
+      "../browser/ui/cocoa/color_panel_cocoa_unittest.mm",
+      "../browser/ui/cocoa/confirm_quit_panel_controller_unittest.mm",
+      "../browser/ui/cocoa/constrained_window/constrained_window_sheet_controller_unittest.mm",
+      "../browser/ui/cocoa/find_pasteboard_unittest.mm",
+      "../browser/ui/cocoa/first_run_dialog_controller_unittest.mm",
+      "../browser/ui/cocoa/history_menu_bridge_unittest.mm",
+      "../browser/ui/cocoa/history_menu_cocoa_controller_unittest.mm",
+      "../browser/ui/cocoa/history_overlay_controller_unittest.mm",
+      "../browser/ui/cocoa/main_menu_builder_unittest.mm",
+      "../browser/ui/cocoa/media_picker/desktop_media_picker_controller_unittest.mm",
+      "../browser/ui/cocoa/notifications/notification_builder_mac_unittest.mm",
+      "../browser/ui/cocoa/notifications/notification_response_builder_mac_unittest.mm",
+      "../browser/ui/cocoa/nsmenuitem_additions_unittest.mm",
+      "../browser/ui/cocoa/profiles/profile_menu_controller_unittest.mm",
+      "../browser/ui/cocoa/scoped_menu_bar_lock_unittest.mm",
+      "../browser/ui/cocoa/status_icons/status_icon_mac_unittest.mm",
+      "../browser/ui/cocoa/test/cocoa_profile_test.h",
+      "../browser/ui/cocoa/test/cocoa_profile_test.mm",
+      "../browser/ui/cocoa/test/run_loop_testing_unittest.mm",
+      "../browser/ui/cocoa/touchbar/browser_window_default_touch_bar_unittest.mm",
+      "../browser/ui/cocoa/touchbar/credit_card_autofill_touch_bar_controller_unittest.mm",
+      "../browser/ui/cocoa/touchbar/text_suggestions_touch_bar_controller_unittest.mm",
+      "../browser/ui/cocoa/window_size_autosaver_unittest.mm",
     ]
-
-    sources +=
-        [ "../browser/ui/cocoa/applescript/apple_event_util_unittest.mm" ]
-
-    # TODO(ellyjones): remove this needless if (true). These files are
-    # test sources for the cocoa code; this block should be moved back inline at
-    # the place this variable is used below.
-    if (true) {
-      cocoa_test_sources = [
-        "../browser/ui/cocoa/bookmarks/bookmark_menu_bridge_unittest.mm",
-        "../browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller_unittest.mm",
-        "../browser/ui/cocoa/color_panel_cocoa_unittest.mm",
-        "../browser/ui/cocoa/confirm_quit_panel_controller_unittest.mm",
-        "../browser/ui/cocoa/constrained_window/constrained_window_sheet_controller_unittest.mm",
-        "../browser/ui/cocoa/find_pasteboard_unittest.mm",
-        "../browser/ui/cocoa/first_run_dialog_controller_unittest.mm",
-        "../browser/ui/cocoa/history_menu_bridge_unittest.mm",
-        "../browser/ui/cocoa/history_menu_cocoa_controller_unittest.mm",
-        "../browser/ui/cocoa/history_overlay_controller_unittest.mm",
-        "../browser/ui/cocoa/main_menu_builder_unittest.mm",
-        "../browser/ui/cocoa/media_picker/desktop_media_picker_controller_unittest.mm",
-        "../browser/ui/cocoa/notifications/notification_builder_mac_unittest.mm",
-        "../browser/ui/cocoa/notifications/notification_response_builder_mac_unittest.mm",
-        "../browser/ui/cocoa/nsmenuitem_additions_unittest.mm",
-        "../browser/ui/cocoa/profiles/profile_menu_controller_unittest.mm",
-        "../browser/ui/cocoa/scoped_menu_bar_lock_unittest.mm",
-        "../browser/ui/cocoa/status_icons/status_icon_mac_unittest.mm",
-        "../browser/ui/cocoa/test/cocoa_profile_test.h",
-        "../browser/ui/cocoa/test/cocoa_profile_test.mm",
-        "../browser/ui/cocoa/test/run_loop_testing_unittest.mm",
-        "../browser/ui/cocoa/touchbar/browser_window_default_touch_bar_unittest.mm",
-        "../browser/ui/cocoa/touchbar/credit_card_autofill_touch_bar_controller_unittest.mm",
-        "../browser/ui/cocoa/touchbar/text_suggestions_touch_bar_controller_unittest.mm",
-        "../browser/ui/cocoa/window_size_autosaver_unittest.mm",
-      ]
-    }
-
-    sources += cocoa_test_sources
 
     # TODO(mark): We really want this for all non-static library targets,
     # but when we tried to pull it up to the common.gypi level, it broke
