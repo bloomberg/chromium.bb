@@ -19,8 +19,6 @@
 #include "ui/gfx/text_utils.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
-#include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/style/typography.h"
 
@@ -39,56 +37,8 @@ const int kEllipsesButtonTag = -1;
 
 }  // namespace
 
-// A bubble that contains actions available for the selected text. An object of
-// this type, as a BubbleDialogDelegateView, manages its own lifetime.
-class TouchSelectionMenuRunnerViews::Menu : public BubbleDialogDelegateView,
-                                            public ButtonListener {
- public:
-  Menu(TouchSelectionMenuRunnerViews* owner,
-       ui::TouchSelectionMenuClient* client,
-       const gfx::Rect& anchor_rect,
-       const gfx::Size& handle_image_size,
-       aura::Window* context);
-
-  // Checks whether there is any command available to show in the menu.
-  static bool IsMenuAvailable(const ui::TouchSelectionMenuClient* client);
-
-  // Closes the menu. This will eventually self-destroy the object.
-  void CloseMenu();
-
- private:
-  friend class TouchSelectionMenuRunnerViews::TestApi;
-
-  ~Menu() override;
-
-  // Queries the |client_| for what commands to show in the menu and sizes the
-  // menu appropriately.
-  void CreateButtons();
-
-  // Helper method to create a single button.
-  Button* CreateButton(const base::string16& title, int tag);
-
-  // Helper to disconnect this menu object from its owning menu runner.
-  void DisconnectOwner();
-
-  // BubbleDialogDelegateView:
-  void OnPaint(gfx::Canvas* canvas) override;
-  void WindowClosing() override;
-  int GetDialogButtons() const override;
-
-  // ButtonListener:
-  void ButtonPressed(Button* sender, const ui::Event& event) override;
-
-  TouchSelectionMenuRunnerViews* owner_;
-  ui::TouchSelectionMenuClient* const client_;
-
-  DISALLOW_COPY_AND_ASSIGN(Menu);
-};
-
 TouchSelectionMenuRunnerViews::Menu::Menu(TouchSelectionMenuRunnerViews* owner,
                                           ui::TouchSelectionMenuClient* client,
-                                          const gfx::Rect& anchor_rect,
-                                          const gfx::Size& handle_image_size,
                                           aura::Window* context)
     : BubbleDialogDelegateView(nullptr, BubbleBorder::BOTTOM_CENTER),
       owner_(owner),
@@ -105,6 +55,11 @@ TouchSelectionMenuRunnerViews::Menu::Menu(TouchSelectionMenuRunnerViews* owner,
 
   SetLayoutManager(std::make_unique<BoxLayout>(
       BoxLayout::kHorizontal, gfx::Insets(), kSpacingBetweenButtons));
+}
+
+void TouchSelectionMenuRunnerViews::Menu::ShowMenu(
+    const gfx::Rect& anchor_rect,
+    const gfx::Size& handle_image_size) {
   CreateButtons();
 
   // After buttons are created, check if there is enough room between handles to
@@ -170,7 +125,7 @@ void TouchSelectionMenuRunnerViews::Menu::CreateButtons() {
   Layout();
 }
 
-Button* TouchSelectionMenuRunnerViews::Menu::CreateButton(
+LabelButton* TouchSelectionMenuRunnerViews::Menu::CreateButton(
     const base::string16& title,
     int tag) {
   base::string16 label =
@@ -243,9 +198,9 @@ gfx::Rect TouchSelectionMenuRunnerViews::TestApi::GetAnchorRect() const {
   return menu ? menu->GetAnchorRect() : gfx::Rect();
 }
 
-Button* TouchSelectionMenuRunnerViews::TestApi::GetFirstButton() const {
+LabelButton* TouchSelectionMenuRunnerViews::TestApi::GetFirstButton() const {
   TouchSelectionMenuRunnerViews::Menu* menu = menu_runner_->menu_;
-  return menu ? static_cast<Button*>(menu->child_at(0)) : nullptr;
+  return menu ? static_cast<LabelButton*>(menu->child_at(0)) : nullptr;
 }
 
 Widget* TouchSelectionMenuRunnerViews::TestApi::GetWidget() const {
@@ -260,6 +215,14 @@ TouchSelectionMenuRunnerViews::~TouchSelectionMenuRunnerViews() {
   CloseMenu();
 }
 
+void TouchSelectionMenuRunnerViews::ShowMenu(
+    Menu* menu,
+    const gfx::Rect& anchor_rect,
+    const gfx::Size& handle_image_size) {
+  menu_ = menu;
+  menu_->ShowMenu(anchor_rect, handle_image_size);
+}
+
 bool TouchSelectionMenuRunnerViews::IsMenuAvailable(
     const ui::TouchSelectionMenuClient* client) const {
   return TouchSelectionMenuRunnerViews::Menu::IsMenuAvailable(client);
@@ -272,8 +235,11 @@ void TouchSelectionMenuRunnerViews::OpenMenu(
     aura::Window* context) {
   CloseMenu();
 
-  if (TouchSelectionMenuRunnerViews::Menu::IsMenuAvailable(client))
-    menu_ = new Menu(this, client, anchor_rect, handle_image_size, context);
+  if (!TouchSelectionMenuRunnerViews::Menu::IsMenuAvailable(client))
+    return;
+
+  menu_ = new Menu(this, client, context);
+  menu_->ShowMenu(anchor_rect, handle_image_size);
 }
 
 void TouchSelectionMenuRunnerViews::CloseMenu() {

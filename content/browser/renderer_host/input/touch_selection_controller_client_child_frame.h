@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCH_SELECTION_CONTROLLER_CLIENT_CHILD_FRAME_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCH_SELECTION_CONTROLLER_CLIENT_CHILD_FRAME_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "components/viz/common/quads/selection.h"
 #include "content/common/content_export.h"
@@ -55,6 +57,8 @@ class CONTENT_EXPORT TouchSelectionControllerClientChildFrame
   bool IsCommandIdEnabled(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
   void RunContextMenu() override;
+  bool ShouldShowQuickMenu() override;
+  base::string16 GetSelectedText() override;
 
   gfx::Point ConvertFromRoot(const gfx::PointF& point) const;
 

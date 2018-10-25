@@ -282,12 +282,8 @@ void TouchSelectionControllerClientAura::UpdateQuickMenu() {
   else
     quick_menu_timer_.Stop();
 
-  bool should_show_menu = quick_menu_requested_ && !touch_down_ &&
-                          !scroll_in_progress_ && !handle_drag_in_progress_ &&
-                          IsQuickMenuAvailable();
-
   // Start timer to show quick menu if necessary.
-  if (should_show_menu) {
+  if (ShouldShowQuickMenu()) {
     if (show_quick_menu_immediately_for_test_)
       ShowQuickMenu();
     else
@@ -490,6 +486,19 @@ void TouchSelectionControllerClientAura::RunContextMenu() {
   // selection controller; otherwise, rect would be empty and the above
   // calculations would be invalid.
   rwhva_->selection_controller()->HideAndDisallowShowingAutomatically();
+}
+
+bool TouchSelectionControllerClientAura::ShouldShowQuickMenu() {
+  return quick_menu_requested_ && !touch_down_ && !scroll_in_progress_ &&
+         !handle_drag_in_progress_ && IsQuickMenuAvailable();
+}
+
+base::string16 TouchSelectionControllerClientAura::GetSelectedText() {
+  gfx::Range selection_range;
+  rwhva_->GetSelectionRange(&selection_range);
+  base::string16 selection_text;
+  rwhva_->GetTextFromRange(selection_range, &selection_text);
+  return selection_text;
 }
 
 }  // namespace content
