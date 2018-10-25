@@ -22,9 +22,5 @@
 -SitePerProcessHitTestBrowserTest.SubframeGestureEventRouting*
 
 
-# https://crbug.com/888156
--NavigationControllerBrowserTest.UtilizationOfSpareRenderProcessHost
-
-
 # Flaky. https://crbug.com/889878
 -SyntheticKeyEventTest.KeyboardEventAck

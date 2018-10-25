@@ -8004,7 +8004,12 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // Perform a cross-site omnibox navigation.
   prev_host = curr_host;
   prev_spare = curr_spare;
+  RenderProcessHostWatcher prev_host_watcher(
+      prev_host, RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
   EXPECT_TRUE(NavigateToURL(shell(), second_url));
+  // Wait until the |prev_host| goes away - this ensures that the spare will be
+  // picked up by subsequent back navigation below.
+  prev_host_watcher.Wait();
   curr_spare = RenderProcessHostImpl::GetSpareRenderProcessHostForTesting();
   curr_host = shell()->web_contents()->GetMainFrame()->GetProcess();
   // The cross-site omnibox navigation should swap processes.
