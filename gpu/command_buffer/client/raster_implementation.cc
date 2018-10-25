@@ -384,6 +384,11 @@ void RasterImplementation::SetAggressivelyFreeResources(
   } else {
     ShallowFlushCHROMIUM();
   }
+
+  if (aggressively_free_resources_) {
+    temp_raster_offsets_.clear();
+    temp_raster_offsets_.shrink_to_fit();
+  }
 }
 
 void RasterImplementation::Swap(
@@ -1259,8 +1264,8 @@ void RasterImplementation::RasterCHROMIUM(const cc::DisplayItemList* list,
 
   gfx::Rect query_rect =
       gfx::ScaleToEnclosingRect(playback_rect, 1.f / post_scale);
-  std::vector<size_t> offsets = list->rtree_.Search(query_rect);
-  if (offsets.empty())
+  list->rtree_.Search(query_rect, &temp_raster_offsets_);
+  if (temp_raster_offsets_.empty())
     return;
 
   DCHECK(!inside_raster_);
@@ -1301,7 +1306,8 @@ void RasterImplementation::RasterCHROMIUM(const cc::DisplayItemList* list,
       capabilities().max_texture_size,
       capabilities().glyph_cache_max_texture_bytes);
   DCHECK(inside_raster_);
-  serializer.Serialize(&list->paint_op_buffer_, &offsets, preamble);
+  serializer.Serialize(&list->paint_op_buffer_, &temp_raster_offsets_,
+                       preamble);
   // TODO(piman): raise error if !serializer.valid()?
   op_serializer.SendSerializedData();
 
