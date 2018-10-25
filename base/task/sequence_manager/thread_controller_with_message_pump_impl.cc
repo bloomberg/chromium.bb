@@ -121,6 +121,17 @@ ThreadControllerWithMessagePumpImpl::GetAssociatedThread() const {
 }
 
 bool ThreadControllerWithMessagePumpImpl::DoWork() {
+  base::TimeTicks next_run_time;
+  return DoWorkImpl(&next_run_time);
+}
+
+bool ThreadControllerWithMessagePumpImpl::DoDelayedWork(
+    TimeTicks* next_run_time) {
+  return DoWorkImpl(next_run_time);
+}
+
+bool ThreadControllerWithMessagePumpImpl::DoWorkImpl(
+    base::TimeTicks* next_run_time) {
   DCHECK(main_thread_only().task_source);
   bool task_ran = false;
 
@@ -153,22 +164,23 @@ bool ThreadControllerWithMessagePumpImpl::DoWork() {
       main_thread_only().task_source->DelayTillNextTask(&lazy_now);
   DCHECK_GE(do_work_delay, TimeDelta());
   // Schedule a continuation.
+  // TODO(altimin, gab): Make this more efficient by merging DoWork
+  // and DoDelayedWork and allowing returing base::TimeTicks() when we have
+  // immediate work.
   if (do_work_delay.is_zero()) {
     // Need to run new work immediately, but due to the contract of DoWork we
     // only need to return true to ensure that happens.
+    *next_run_time = lazy_now.Now();
     return true;
   } else if (do_work_delay != TimeDelta::Max()) {
+    *next_run_time = lazy_now.Now() + do_work_delay;
     // Cancels any previously scheduled delayed wake-ups.
-    pump_->ScheduleDelayedWork(lazy_now.Now() + do_work_delay);
+    pump_->ScheduleDelayedWork(*next_run_time);
+  } else {
+    *next_run_time = base::TimeTicks::Max();
   }
 
   return task_ran;
-}
-
-bool ThreadControllerWithMessagePumpImpl::DoDelayedWork(
-    TimeTicks* next_run_time) {
-  // Delayed work is getting processed in DoWork().
-  return false;
 }
 
 bool ThreadControllerWithMessagePumpImpl::DoIdleWork() {
