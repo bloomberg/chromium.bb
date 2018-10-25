@@ -156,9 +156,11 @@ void WorkerInspectorController::SendProtocolNotification(
                                                                 message);
 }
 
-void WorkerInspectorController::WillProcessTask() {}
+void WorkerInspectorController::WillProcessTask(
+    const base::PendingTask& pending_task) {}
 
-void WorkerInspectorController::DidProcessTask() {
+void WorkerInspectorController::DidProcessTask(
+    const base::PendingTask& pending_task) {
   for (auto& it : sessions_)
     it.value->flushProtocolNotifications();
 }

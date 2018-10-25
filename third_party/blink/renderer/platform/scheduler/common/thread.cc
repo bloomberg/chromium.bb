@@ -99,20 +99,6 @@ ThreadCreationParams& ThreadCreationParams::SetFrameOrWorkerScheduler(
   return *this;
 }
 
-Thread::TaskObserverAdapter::TaskObserverAdapter(
-    Thread::TaskObserver* task_observer)
-    : task_observer_(task_observer) {}
-
-void Thread::TaskObserverAdapter::WillProcessTask(
-    const base::PendingTask& pending_task) {
-  task_observer_->WillProcessTask();
-}
-
-void Thread::TaskObserverAdapter::DidProcessTask(
-    const base::PendingTask& pending_task) {
-  task_observer_->DidProcessTask();
-}
-
 std::unique_ptr<Thread> Thread::CreateThread(
     const ThreadCreationParams& params) {
   auto thread = std::make_unique<scheduler::WorkerThread>(params);
@@ -166,9 +152,7 @@ std::unique_ptr<Thread> Thread::SetMainThread(
 
 Thread::Thread() = default;
 
-Thread::~Thread() {
-  DCHECK(task_observer_map_.IsEmpty());
-}
+Thread::~Thread() = default;
 
 bool Thread::IsCurrentThread() const {
   return ThreadTLSSlot() == this;
@@ -176,21 +160,12 @@ bool Thread::IsCurrentThread() const {
 
 void Thread::AddTaskObserver(TaskObserver* task_observer) {
   CHECK(IsCurrentThread());
-  auto add_result = task_observer_map_.insert(task_observer, nullptr);
-  if (!add_result.stored_value->value) {
-    add_result.stored_value->value =
-        std::make_unique<TaskObserverAdapter>(task_observer);
-  }
-  Scheduler()->AddTaskObserver(add_result.stored_value->value.get());
+  Scheduler()->AddTaskObserver(task_observer);
 }
 
 void Thread::RemoveTaskObserver(TaskObserver* task_observer) {
   CHECK(IsCurrentThread());
-  auto iterator = task_observer_map_.find(task_observer);
-  if (iterator == task_observer_map_.end())
-    return;
-  Scheduler()->RemoveTaskObserver(iterator->value.get());
-  task_observer_map_.erase(iterator);
+  Scheduler()->RemoveTaskObserver(task_observer);
 }
 
 #if defined(OS_WIN)

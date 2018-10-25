@@ -476,13 +476,15 @@ void WebDevToolsAgentImpl::FlushProtocolNotifications() {
   agent_->FlushProtocolNotifications();
 }
 
-void WebDevToolsAgentImpl::WillProcessTask() {
+void WebDevToolsAgentImpl::WillProcessTask(
+    const base::PendingTask& pending_task) {
   if (sessions_.IsEmpty())
     return;
   ThreadDebugger::IdleFinished(V8PerIsolateData::MainThreadIsolate());
 }
 
-void WebDevToolsAgentImpl::DidProcessTask() {
+void WebDevToolsAgentImpl::DidProcessTask(
+    const base::PendingTask& pending_task) {
   if (sessions_.IsEmpty())
     return;
   ThreadDebugger::IdleStarted(V8PerIsolateData::MainThreadIsolate());

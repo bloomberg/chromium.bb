@@ -159,6 +159,9 @@ _CONFIG = [
             # PartitionAlloc
             'base::PartitionFree',
 
+            # For MessageLoop::TaskObserver.
+            'base::PendingTask',
+
             # cc painting types.
             'cc::PaintCanvas',
             'cc::PaintFlags',

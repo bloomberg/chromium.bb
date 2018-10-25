@@ -44,8 +44,8 @@ class CORE_EXPORT CanvasFontCache final
   bool GetFontUsingDefaultStyle(const String&, Font&);
 
   // TaskObserver implementation
-  void DidProcessTask() override;
-  void WillProcessTask() override {}
+  void DidProcessTask(const base::PendingTask&) override;
+  void WillProcessTask(const base::PendingTask&) override {}
 
   // For testing
   bool IsInCache(const String&);

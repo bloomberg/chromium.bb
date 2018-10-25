@@ -55,11 +55,9 @@ class MockScriptedIdleTaskControllerScheduler final : public ThreadScheduler {
     return base::TimeTicks();
   }
 
-  void AddTaskObserver(
-      base::MessageLoop::TaskObserver* task_observer) override {}
+  void AddTaskObserver(Thread::TaskObserver* task_observer) override {}
 
-  void RemoveTaskObserver(
-      base::MessageLoop::TaskObserver* task_observer) override {}
+  void RemoveTaskObserver(Thread::TaskObserver* task_observer) override {}
 
   void AddRAILModeObserver(scheduler::WebRAILModeObserver*) override {}
 

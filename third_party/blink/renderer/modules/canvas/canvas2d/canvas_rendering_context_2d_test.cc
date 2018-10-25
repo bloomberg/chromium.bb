@@ -644,7 +644,8 @@ TEST_F(CanvasRenderingContext2DTest, CanvasDisposedBeforeContext) {
 
   // This is the only method that is callable after DetachHost
   // Test passes by not crashing.
-  Context2d()->DidProcessTask();
+  base::PendingTask dummy_pending_task(FROM_HERE, base::Closure());
+  Context2d()->DidProcessTask(dummy_pending_task);
 
   // Test passes by not crashing during teardown
 }

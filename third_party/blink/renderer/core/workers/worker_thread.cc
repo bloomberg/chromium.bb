@@ -243,14 +243,14 @@ void WorkerThread::TerminateAllWorkersForTesting() {
     thread->ClearWorkerBackingThread();
 }
 
-void WorkerThread::WillProcessTask() {
+void WorkerThread::WillProcessTask(const base::PendingTask& pending_task) {
   DCHECK(IsCurrentThread());
 
   // No tasks should get executed after we have closed.
   DCHECK(!GlobalScope()->IsClosing());
 }
 
-void WorkerThread::DidProcessTask() {
+void WorkerThread::DidProcessTask(const base::PendingTask& pending_task) {
   DCHECK(IsCurrentThread());
   Microtask::PerformCheckpoint(GetIsolate());
   GlobalScope()->ScriptController()->GetRejectedPromises()->ProcessQueue();
