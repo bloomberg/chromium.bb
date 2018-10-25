@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -287,7 +288,7 @@ void WindowDatasToTestWindows(const std::vector<mojom::WindowDataPtr>& data,
 bool ContainsChange(const std::vector<Change>& changes,
                     const std::string& change_description) {
   for (auto& change : changes) {
-    if (change_description == ChangeToDescription(change))
+    if (base::MatchPattern(ChangeToDescription(change), change_description))
       return true;
   }
   return false;

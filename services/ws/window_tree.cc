@@ -30,7 +30,6 @@
 #include "services/ws/window_service_delegate.h"
 #include "services/ws/window_service_observer.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/os_exchange_data_provider_mus.h"
@@ -1178,12 +1177,10 @@ bool WindowTree::SetWindowBoundsImpl(
   if (IsLocalSurfaceIdAssignedByClient(window))
     server_window->set_local_surface_id(local_surface_id);
 
-  aura::client::ScreenPositionClient* screen_position_client =
-      aura::client::GetScreenPositionClient(window->GetRootWindow());
-  if (IsTopLevel(window) && screen_position_client) {
+  if (IsTopLevel(window)) {
     display::Display dst_display =
         display::Screen::GetScreen()->GetDisplayMatching(bounds);
-    screen_position_client->SetBounds(window, bounds, dst_display);
+    window->SetBoundsInScreen(bounds, dst_display);
   } else {
     window->SetBounds(bounds);
   }

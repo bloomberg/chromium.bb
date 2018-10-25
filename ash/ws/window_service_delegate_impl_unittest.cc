@@ -115,6 +115,46 @@ TEST_F(WindowServiceDelegateImplTest, RunWindowMoveLoop) {
   EXPECT_EQ(gfx::Point(105, 106), top_level_->bounds().origin());
 }
 
+TEST_F(WindowServiceDelegateImplTest, RunWindowMoveWithMultipleDisplays) {
+  UpdateDisplay("500x500,500x500");
+  GetWindowTreeTestHelper()->window_tree()->PerformWindowMove(
+      21, GetTopLevelWindowId(), ws::mojom::MoveLoopSource::MOUSE,
+      top_level_->GetBoundsInScreen().origin());
+  GetEventGenerator()->MoveMouseTo(gfx::Point(501, 1));
+  GetWindowTreeClientChanges()->clear();
+  GetEventGenerator()->ReleaseLeftButton();
+
+  EXPECT_EQ(Shell::GetRootWindowForDisplayId(GetSecondaryDisplay().id()),
+            top_level_->GetRootWindow());
+  EXPECT_TRUE(
+      ContainsChange(*GetWindowTreeClientChanges(),
+                     "DisplayChanged window_id=0,1 display_id=2200000001"));
+  EXPECT_TRUE(ContainsChange(
+      *GetWindowTreeClientChanges(),
+      std::string("BoundsChanged window=0,1 old_bounds=500,0 104x100 "
+                  "new_bounds=500,0 104x100 local_surface_id=*")));
+}
+
+TEST_F(WindowServiceDelegateImplTest, SetWindowBoundsToDifferentDisplay) {
+  UpdateDisplay("500x500,500x500");
+  EXPECT_EQ(gfx::Point(100, 100), top_level_->GetBoundsInScreen().origin());
+
+  GetWindowTreeClientChanges()->clear();
+  GetWindowTreeTestHelper()->window_tree()->SetWindowBounds(
+      21, GetTopLevelWindowId(), gfx::Rect(600, 100, 100, 100),
+      base::Optional<viz::LocalSurfaceId>());
+  EXPECT_EQ(gfx::Point(600, 100), top_level_->GetBoundsInScreen().origin());
+  EXPECT_EQ(Shell::GetRootWindowForDisplayId(GetSecondaryDisplay().id()),
+            top_level_->GetRootWindow());
+  EXPECT_TRUE(
+      ContainsChange(*GetWindowTreeClientChanges(),
+                     "DisplayChanged window_id=0,1 display_id=2200000001"));
+  EXPECT_TRUE(ContainsChange(
+      *GetWindowTreeClientChanges(),
+      std::string("BoundsChanged window=0,1 old_bounds=100,100 100x100 "
+                  "new_bounds=600,100 104x100 local_surface_id=*")));
+}
+
 TEST_F(WindowServiceDelegateImplTest, DeleteWindowWithInProgressRunLoop) {
   GetWindowTreeTestHelper()->window_tree()->PerformWindowMove(
       29, GetTopLevelWindowId(), ws::mojom::MoveLoopSource::MOUSE,
