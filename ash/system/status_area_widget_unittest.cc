@@ -340,12 +340,55 @@ class StatusAreaWidgetVirtualKeyboardTest : public AshTestBase {
     // only case where both the virtual keyboard and the shelf are visible.
     keyboard_controller()->SetContainerType(keyboard::ContainerType::FLOATING,
                                             base::nullopt, base::DoNothing());
+    keyboard_controller()->GetKeyboardWindow()->SetBounds(
+        gfx::Rect(0, 0, 10, 10));
   }
 
   keyboard::KeyboardController* keyboard_controller() {
     return keyboard::KeyboardController::Get();
   }
 };
+
+// See https://crbug.com/897672.
+TEST_F(StatusAreaWidgetVirtualKeyboardTest,
+       ClickingVirtualKeyboardTrayHidesShownKeyboard) {
+  // Set up the virtual keyboard tray icon along with some other tray icons.
+  StatusAreaWidget* status = StatusAreaWidgetTestHelper::GetStatusAreaWidget();
+  status->virtual_keyboard_tray_for_testing()->SetVisible(true);
+  status->ime_menu_tray()->SetVisible(true);
+
+  keyboard_controller()->ShowKeyboard(false /* locked */);
+  keyboard_controller()->NotifyKeyboardWindowLoaded();
+  ASSERT_TRUE(keyboard::WaitUntilShown());
+
+  // The keyboard should hide when clicked.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->set_current_location(status->virtual_keyboard_tray_for_testing()
+                                      ->GetBoundsInScreen()
+                                      .CenterPoint());
+  generator->ClickLeftButton();
+  ASSERT_TRUE(keyboard::WaitUntilHidden());
+}
+
+// See https://crbug.com/897672.
+TEST_F(StatusAreaWidgetVirtualKeyboardTest,
+       TappingVirtualKeyboardTrayHidesShownKeyboard) {
+  // Set up the virtual keyboard tray icon along with some other tray icons.
+  StatusAreaWidget* status = StatusAreaWidgetTestHelper::GetStatusAreaWidget();
+  status->virtual_keyboard_tray_for_testing()->SetVisible(true);
+  status->ime_menu_tray()->SetVisible(true);
+
+  keyboard_controller()->ShowKeyboard(false /* locked */);
+  keyboard_controller()->NotifyKeyboardWindowLoaded();
+  ASSERT_TRUE(keyboard::WaitUntilShown());
+
+  // The keyboard should hide when tapped.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->GestureTapAt(status->virtual_keyboard_tray_for_testing()
+                              ->GetBoundsInScreen()
+                              .CenterPoint());
+  ASSERT_TRUE(keyboard::WaitUntilHidden());
+}
 
 TEST_F(StatusAreaWidgetVirtualKeyboardTest, ClickingHidesVirtualKeyboard) {
   keyboard_controller()->ShowKeyboard(false /* locked */);

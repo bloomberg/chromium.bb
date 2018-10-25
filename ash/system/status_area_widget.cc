@@ -270,14 +270,26 @@ void StatusAreaWidget::UpdateShelfItemBackground(SkColor color) {
 }
 
 void StatusAreaWidget::OnMouseEvent(ui::MouseEvent* event) {
-  if (event->type() == ui::ET_MOUSE_PRESSED)
+  // Clicking anywhere except the virtual keyboard tray icon should hide the
+  // virtual keyboard.
+  gfx::Point location = event->location();
+  views::View::ConvertPointFromWidget(virtual_keyboard_tray_.get(), &location);
+  if (event->type() == ui::ET_MOUSE_PRESSED &&
+      !virtual_keyboard_tray_->HitTestPoint(location)) {
     keyboard::KeyboardController::Get()->HideKeyboardImplicitlyByUser();
+  }
   views::Widget::OnMouseEvent(event);
 }
 
 void StatusAreaWidget::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_TAP_DOWN)
+  // Tapping anywhere except the virtual keyboard tray icon should hide the
+  // virtual keyboard.
+  gfx::Point location = event->location();
+  views::View::ConvertPointFromWidget(virtual_keyboard_tray_.get(), &location);
+  if (event->type() == ui::ET_GESTURE_TAP_DOWN &&
+      !virtual_keyboard_tray_->HitTestPoint(location)) {
     keyboard::KeyboardController::Get()->HideKeyboardImplicitlyByUser();
+  }
   views::Widget::OnGestureEvent(event);
 }
 
