@@ -931,6 +931,13 @@ TEST_F(FocusManagerTest, NavigateIntoAnchoredDialog) {
   GetWidget()->GetRootView()->AddChildView(parent3);
   GetWidget()->GetRootView()->AddChildView(parent4);
 
+  // Add an unfocusable child view to the dialog anchor view. This is a
+  // regression test that makes sure focus is able to navigate past unfocusable
+  // children and try to go into the anchored dialog. |kAnchoredDialogKey| was
+  // previously not checked if a recursive search to find a focusable child view
+  // was attempted (and failed), so the dialog would previously be skipped.
+  parent3->AddChildView(new View());
+
   BubbleDialogDelegateView* bubble_delegate =
       new TestBubbleDialogDelegateView(parent3);
   test::WidgetTest::WidgetAutoclosePtr bubble_widget(

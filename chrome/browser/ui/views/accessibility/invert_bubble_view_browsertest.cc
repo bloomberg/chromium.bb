@@ -19,12 +19,10 @@ class InvertBubbleViewBrowserTest : public DialogBrowserTest {
     // Bubble dialogs' bounds may exceed the display's work area.
     // https://crbug.com/893292.
     set_should_verify_dialog_bounds(false);
-    ShowInvertBubbleView(browser(), &anchor_);
+    ShowInvertBubbleView(browser(), nullptr);
   }
 
  private:
-  views::View anchor_;
-
   DISALLOW_COPY_AND_ASSIGN(InvertBubbleViewBrowserTest);
 };
 
