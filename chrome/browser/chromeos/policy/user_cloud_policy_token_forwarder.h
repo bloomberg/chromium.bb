@@ -4,36 +4,38 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_USER_CLOUD_POLICY_TOKEN_FORWARDER_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_USER_CLOUD_POLICY_TOKEN_FORWARDER_H_
+#include <memory>
 
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
-#include "google_apis/gaia/oauth2_token_service.h"
+#include "google_apis/gaia/google_service_auth_error.h"
+#include "services/identity/public/cpp/access_token_info.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
-class ProfileOAuth2TokenService;
+namespace identity {
+class AccessTokenFetcher;
+}
 
 namespace policy {
 
 class UserCloudPolicyManagerChromeOS;
 
-// A PKS that observes a ProfileOAuth2TokenService and mints the policy access
+// A PKS that observes a IdentityManager and mints the policy access
 // token for the UserCloudPolicyManagerChromeOS, when the token service becomes
 // ready. This service decouples the UserCloudPolicyManagerChromeOS from
-// depending directly on the ProfileOAuth2TokenService, since it is initialized
+// depending directly on the IdentityManager, since it is initialized
 // much earlier.
 class UserCloudPolicyTokenForwarder
     : public KeyedService,
       public identity::IdentityManager::Observer,
-      public OAuth2TokenService::Consumer,
       public CloudPolicyService::Observer {
  public:
   // The factory of this PKS depends on the factories of these two arguments,
   // so this object will be Shutdown() first and these pointers can be used
   // until that point.
   UserCloudPolicyTokenForwarder(UserCloudPolicyManagerChromeOS* manager,
-                                identity::IdentityManager* identity_manager,
-                                ProfileOAuth2TokenService* token_service);
+                                identity::IdentityManager* identity_manager);
   ~UserCloudPolicyTokenForwarder() override;
 
   // KeyedService:
@@ -43,13 +45,6 @@ class UserCloudPolicyTokenForwarder
   void OnRefreshTokenUpdatedForAccount(const AccountInfo& account_info,
                                        bool is_valid) override;
 
-  // OAuth2TokenService::Consumer:
-  void OnGetTokenSuccess(
-      const OAuth2TokenService::Request* request,
-      const OAuth2AccessTokenConsumer::TokenResponse& token_response) override;
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                         const GoogleServiceAuthError& error) override;
-
   // CloudPolicyService::Observer:
   void OnInitializationCompleted(CloudPolicyService* service) override;
 
@@ -57,11 +52,12 @@ class UserCloudPolicyTokenForwarder
   void Initialize();
 
   void RequestAccessToken();
+  void OnAccessTokenFetchCompleted(GoogleServiceAuthError error,
+                                   identity::AccessTokenInfo token_info);
 
   UserCloudPolicyManagerChromeOS* manager_;
   identity::IdentityManager* identity_manager_;
-  ProfileOAuth2TokenService* token_service_;
-  std::unique_ptr<OAuth2TokenService::Request> request_;
+  std::unique_ptr<identity::AccessTokenFetcher> access_token_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyTokenForwarder);
 };

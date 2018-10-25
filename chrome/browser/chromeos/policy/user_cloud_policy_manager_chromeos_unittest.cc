@@ -401,17 +401,14 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
                       /*system_url_loader_factory=*/nullptr);
     if (should_create_token_forwarder_) {
       // Create the UserCloudPolicyTokenForwarder, which fetches the access
-      // token using the OAuth2PolicyFetcher and forwards it to the
+      // token using the IdentityManager and forwards it to the
       // UserCloudPolicyManagerChromeOS. This service is automatically created
       // for regular Profiles but not for testing Profiles.
-      ProfileOAuth2TokenService* token_service =
-          ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-      ASSERT_TRUE(token_service);
       identity::IdentityManager* identity_manager =
           IdentityManagerFactory::GetForProfile(profile_);
       ASSERT_TRUE(identity_manager);
-      token_forwarder_.reset(new UserCloudPolicyTokenForwarder(
-          manager_.get(), identity_manager, token_service));
+      token_forwarder_ = std::make_unique<UserCloudPolicyTokenForwarder>(
+          manager_.get(), identity_manager);
     }
   }
 

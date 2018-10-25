@@ -9,9 +9,7 @@
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
 namespace policy {
@@ -27,7 +25,6 @@ UserCloudPolicyTokenForwarderFactory::UserCloudPolicyTokenForwarderFactory()
         "UserCloudPolicyTokenForwarder",
         BrowserContextDependencyManager::GetInstance()) {
   DependsOn(IdentityManagerFactory::GetInstance());
-  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
   DependsOn(UserPolicyManagerFactoryChromeOS::GetInstance());
 }
 
@@ -41,12 +38,9 @@ KeyedService* UserCloudPolicyTokenForwarderFactory::BuildServiceInstanceFor(
           profile);
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  if (!token_service || !manager || !identity_manager)
+  if (!manager || !identity_manager)
     return nullptr;
-  return new UserCloudPolicyTokenForwarder(manager, identity_manager,
-                                           token_service);
+  return new UserCloudPolicyTokenForwarder(manager, identity_manager);
 }
 
 bool UserCloudPolicyTokenForwarderFactory::
