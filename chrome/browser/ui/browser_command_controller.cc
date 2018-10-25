@@ -821,8 +821,11 @@ class BrowserCommandController::InterstitialObserver
 };
 
 bool BrowserCommandController::IsShowingMainUI() {
-  bool should_hide_ui = window() && window()->ShouldHideUIForFullscreen();
-  return browser_->is_type_tabbed() && !should_hide_ui;
+  return browser_->SupportsWindowFeature(Browser::FEATURE_TABSTRIP);
+}
+
+bool BrowserCommandController::IsShowingLocationBar() {
+  return browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
 }
 
 void BrowserCommandController::InitCommandState() {
@@ -1155,6 +1158,8 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
 
   const bool is_fullscreen = window() && window()->IsFullscreen();
   const bool show_main_ui = IsShowingMainUI();
+  const bool show_location_bar = IsShowingLocationBar();
+
   const bool main_not_fullscreen = show_main_ui && !is_fullscreen;
 
   // Navigation commands
@@ -1167,7 +1172,7 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
 
   // Focus various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_FOCUS_TOOLBAR, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_FOCUS_LOCATION, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_FOCUS_LOCATION, show_location_bar);
   command_updater_.UpdateCommandEnabled(IDC_FOCUS_SEARCH, show_main_ui);
   command_updater_.UpdateCommandEnabled(
       IDC_FOCUS_MENU_BAR, main_not_fullscreen);
