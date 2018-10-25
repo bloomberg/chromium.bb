@@ -96,8 +96,8 @@ ArCoreGl::ArCoreGl(std::unique_ptr<ArImageTransport> ar_image_transport)
 
 ArCoreGl::~ArCoreGl() {}
 
-void ArCoreGl::Initialize(std::unique_ptr<vr::ArCoreInstallUtils> install_utils,
-                          std::unique_ptr<ArCoreFactory> arcore_factory,
+void ArCoreGl::Initialize(vr::ArCoreInstallUtils* install_utils,
+                          ArCoreFactory* arcore_factory,
                           base::OnceCallback<void(bool)> callback) {
   DCHECK(IsOnGlThread());
 
