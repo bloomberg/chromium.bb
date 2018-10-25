@@ -1,4 +1,8 @@
 <!DOCTYPE html>
+<title>Test that AW inside frames with different origin causes new global scopes</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+
 <style>
 .redbox {
   width: 100px;
@@ -6,55 +10,46 @@
   background-color: #ff0000;
 }
 </style>
+
+<div id="target" class="redbox"></div>
+
 <script id="main_worklet" type="text/worklet">
-function CreateLoggingAnimator(name, localTime) {
-  return class {
-    constructor() {
-        console.log(name + " constructor called.");
-    }
-    animate(currentTime, effect) {
-      if (this.animated)
-        return;
-      this.animated = true;
-
-      console.log(name + " animate called.");
-      effect.localTime = localTime;
-    }
+registerAnimator("duplicate_animator", class {
+  animate(currentTime, effect) {
+    effect.localTime = 500;
   }
-}
-
-registerAnimator("duplicate_animator", CreateLoggingAnimator("mainframe/duplicate_animator", 1000));
+});
 </script>
 
 <script src="resources/animation-worklet-tests.js"></script>
 <script>
-if (window.testRunner) {
-  testRunner.waitUntilDone();
-  testRunner.dumpAsText();
-}
+async_test(t => {
+  // Wait for iframe to load and start its animations.
+  window.onmessage = function(msg) {
+    window.requestAnimationFrame( _ => {
+      run_test(msg.data);
+    });
+  };
 
-// Wait for iframe to load and start its animations.
-window.onmessage = function(msg) {
-  waitTwoAnimationFrames(run_test);
-};
+  // Create and load the iframe to avoid racy cases.
+  var iframe = document.createElement('iframe');
+  iframe.src = 'resources/animator-iframe.html';
+  document.body.appendChild(iframe);
 
-function run_test() {
-  runInAnimationWorklet(
-    document.getElementById('main_worklet').textContent
-  ).then(_ => {
-    // Create an animation for duplicate animator.
-    const animation = new WorkletAnimation('duplicate_animator', new KeyframeEffect(document.getElementById("target"), [{ opacity: 0 }], { duration: 1000 }));
-    animation.play();
+  function run_test(data) {
+    runInAnimationWorklet(
+      document.getElementById('main_worklet').textContent
+    ).then(_ => {
+      // Create an animation for duplicate animator.
+      const target = document.getElementById('target');
+      const animation = new WorkletAnimation('duplicate_animator', new KeyframeEffect(target, [{ opacity: 0 }], { duration: 1000 }));
+      animation.play();
 
-    if (window.testRunner) {
-      waitTwoAnimationFrames( _ => {
-        testRunner.notifyDone();
-      });
-    }
-  });
-}
+      assert_equals(data, '0.4');
+      waitTwoAnimationFrames(t.step_func_done(() => {
+        assert_equals(getComputedStyle(target).opacity, '0.5');
+      }));
+    });
+  }
+}, 'Both main frame and iframe should update the opacity of their target');
 </script>
-
-<div id="target" class="redbox"></div>
-<iframe src="resources/animator-iframe.html"></iframe>
-
