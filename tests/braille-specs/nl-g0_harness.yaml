@@ -1,3 +1,40 @@
+#
+#  Copyright (C) 2010-2011 by DocArch <http://www.docarch.be>
+#  Copyright (C) 2014-2015 by Bert Frees
+#  Copyright (C) 2014 by CBB <http://www.cbb.nl>
+#  Copyright (C) 2015, 2016, 2018 by Dedicon <http://www.dedicon.nl>
+#
+#  This file is part of liblouis.
+#
+#  liblouis is free software: you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as
+#  published by the Free Software Foundation, either version 3 of the
+#  License, or (at your option) any later version.
+#
+#  liblouis is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with liblouis. If not, see
+#  <http://www.gnu.org/licenses/>.
+#
+# -------------------------------------------------------------------------------
+#
+#  Dutch Braille based on the braille standard of 2017
+#
+#     Created by Bert Frees <bertfrees@gmail.com>
+#     Modified by Henri Apperloo <h.apperloo@cbb.nl>
+#     Modified by Davy Kager <DavyKager@dedicon.nl>
+#
+#     See also: « Braillestandaard voor algemeen gebruik in het Nederlandse taalgebied,
+#                Van toepassing vanaf 19 april 2018 »
+#              (Braille Autoriteit, 2018)
+#               [https://github.com/liblouis/braille-specs/tree/master/dutch][1]
+#
+# ----------------------------------------------------------------------------------------------
+
 display: unicode.dis
 table:
   locale: nl
@@ -44,21 +81,38 @@ tests:
   - - u accent
     - ü û ù
     - ⠳ ⠱ ⠾
+  # §2.19 Punt
   - [beletselteken ..., ⠃⠑⠇⠑⠞⠎⠑⠇⠞⠑⠅⠑⠝ ⠲⠲⠲]
   - ['Vul in ei of ij: p..n, r..s.', ⠨⠧⠥⠇ ⠊⠝ ⠑⠊ ⠕⠋ ⠊⠚⠒ ⠏⠲⠲⠝⠂ ⠗⠲⠲⠎⠲]
+  # §2.1 Aanhalingstekens
+  # §2.5 Apostrof/weglatingsteken
   - ['''enkele aanhalingstekens''', ⠄⠑⠝⠅⠑⠇⠑ ⠁⠁⠝⠓⠁⠇⠊⠝⠛⠎⠞⠑⠅⠑⠝⠎⠄]
   - ['"dubbele aanhalingstekens"', ⠶⠙⠥⠃⠃⠑⠇⠑ ⠁⠁⠝⠓⠁⠇⠊⠝⠛⠎⠞⠑⠅⠑⠝⠎⠶]
   - [“dubbele aanhalingstekens”, ⠶⠙⠥⠃⠃⠑⠇⠑ ⠁⠁⠝⠓⠁⠇⠊⠝⠛⠎⠞⠑⠅⠑⠝⠎⠶]
+  - [SMS'je, ⠘⠎⠍⠎⠄⠠⠚⠑]
+  - [SMS’je, ⠘⠎⠍⠎⠄⠠⠚⠑]
+  # §2.10 Haakjes
   - [(ronde haakjes), ⠦⠗⠕⠝⠙⠑ ⠓⠁⠁⠅⠚⠑⠎⠴]
   - ['[vierkante haakjes]', ⠷⠧⠊⠑⠗⠅⠁⠝⠞⠑ ⠓⠁⠁⠅⠚⠑⠎⠾]
+  # §2.23 Zeldzaam voorkomende tekens
   - [copyright ©, ⠉⠕⠏⠽⠗⠊⠛⠓⠞ ⠐⠉]
+  - [paragraaf §, ⠏⠁⠗⠁⠛⠗⠁⠁⠋ ⠬]
+  - [registered ®, ⠗⠑⠛⠊⠎⠞⠑⠗⠑⠙ ⠐⠗]
+  - [trademark ™, ⠞⠗⠁⠙⠑⠍⠁⠗⠅ ⠐⠞⠍]
+  # §2.17 Muntsymbolen/valutatekens
   - [dollar $, ⠙⠕⠇⠇⠁⠗ ⠙]
   - [euro €, ⠑⠥⠗⠕ ⠑]
   - [pond £, ⠏⠕⠝⠙ ⠏]
   - [yen ¥, ⠽⠑⠝ ⠽]
-  - [paragraaf §, ⠏⠁⠗⠁⠛⠗⠁⠁⠋ ⠬]
-  - [registered ®, ⠗⠑⠛⠊⠎⠞⠑⠗⠑⠙ ⠐⠗]
-  - [trademark ™, ⠞⠗⠁⠙⠑⠍⠁⠗⠅ ⠐⠞⠍]
+  - ['€ 12,35', ⠑⠼⠁⠃⠂⠉⠑]
+  - ['€12,35', ⠑⠼⠁⠃⠂⠉⠑]
+  - ['$ 10,00', ⠙⠼⠁⠚⠂⠚⠚]
+  - ['$10,00', ⠙⠼⠁⠚⠂⠚⠚]
+  - ['£ 65,47', ⠏⠼⠋⠑⠂⠙⠛]
+  - ['£65,47', ⠏⠼⠋⠑⠂⠙⠛]
+  - [¥ 100.000, ⠽⠼⠁⠚⠚⠲⠚⠚⠚]
+  - [¥100.000, ⠽⠼⠁⠚⠚⠲⠚⠚⠚]
+  # §3.1 Het cijferteken
   - ['1.234.567,89', ⠼⠁⠲⠃⠉⠙⠲⠑⠋⠛⠂⠓⠊]
   - [050-12 34 56, ⠼⠚⠑⠚⠤⠼⠁⠃ ⠼⠉⠙ ⠼⠑⠋]
   - [050/78 90 12, ⠼⠚⠑⠚⠌⠼⠛⠓ ⠼⠊⠚ ⠼⠁⠃]
@@ -75,6 +129,13 @@ tests:
   - ['15e, 27ste', ⠼⠁⠑⠠⠑⠂ ⠼⠃⠛⠎⠞⠑]
   - ['10a, 10A', ⠼⠁⠚⠠⠁⠂ ⠼⠁⠚⠨⠁]
   - [12.b, ⠼⠁⠃⠲⠠⠃]
+  - [31-07-2010, ⠼⠉⠁⠤⠼⠚⠛⠤⠼⠃⠚⠁⠚]
+  - [31/07/2010, ⠼⠉⠁⠌⠼⠚⠛⠌⠼⠃⠚⠁⠚]
+  - [16.30 tot 21.30 uur, ⠼⠁⠋⠲⠉⠚ ⠞⠕⠞ ⠼⠃⠁⠲⠉⠚ ⠥⠥⠗]
+  - ['16:30 tot 21:30 uur', ⠼⠁⠋⠒⠉⠚ ⠞⠕⠞ ⠼⠃⠁⠒⠉⠚ ⠥⠥⠗]
+  - [x_1 = 0, ⠭⠸⠼⠁ ⠶ ⠼⠚]
+  - ['x,1', ⠭⠂⠼⠁]
+  # §3.2 De basisrekentekens
   - [1 + 2 = 3, ⠼⠁ ⠖ ⠼⠃ ⠶ ⠼⠉]
   - [9 - 5 = 4, ⠼⠊ ⠤ ⠼⠑ ⠶ ⠼⠙]
   - [3 x 3 = 9, ⠼⠉ ⠭ ⠼⠉ ⠶ ⠼⠊]
@@ -85,20 +146,28 @@ tests:
   - [8 / 4 = 2, ⠼⠓ ⠌ ⠼⠙ ⠶ ⠼⠃]
   - [8 ÷ 4 = 2, ⠼⠓ ⠲ ⠼⠙ ⠶ ⠼⠃]
   - [65+-kaart, ⠼⠋⠑⠐⠖⠤⠅⠁⠁⠗⠞]
+  - [65+'er, ⠼⠋⠑⠐⠖⠄⠑⠗]
   - [40-jarige, ⠼⠙⠚⠤⠚⠁⠗⠊⠛⠑]
+  # §2.18 Procent- en promilleteken
+  # §3.4 Procent- en promilleteken
   - ['79,5 %', ⠼⠛⠊⠂⠑ ⠿]
   - [15%, ⠼⠁⠑ ⠿]
   - ['79,5 ‰', ⠼⠛⠊⠂⠑ ⠿⠿]
   - [15‰, ⠼⠁⠑ ⠿⠿]
+  # §3.6 Graad-, minuut- en secondeteken
   - ['37,8° C', ⠼⠉⠛⠂⠓⠈⠴ ⠨⠉]
+  - [Een hoek van 27° 30'., ⠨⠑⠑⠝ ⠓⠕⠑⠅ ⠧⠁⠝ ⠼⠃⠛⠈⠴ ⠼⠉⠚⠈⠔⠲]
+  - [Het record is 3' 5''., ⠨⠓⠑⠞ ⠗⠑⠉⠕⠗⠙ ⠊⠎ ⠼⠉⠈⠔ ⠼⠑⠈⠔⠔⠲]
+  - [57° 38' noorderbreedte, ⠼⠑⠛⠈⠴ ⠼⠉⠓⠈⠔ ⠝⠕⠕⠗⠙⠑⠗⠃⠗⠑⠑⠙⠞⠑]
+  # §3.5 Oppervlakte- en inhoudsmaten
   - [65 m², ⠼⠋⠑ ⠍⠬⠼⠃]
   - [65 m^2, ⠼⠋⠑ ⠍⠬⠼⠃]
   - [1.000 cm³, ⠼⠁⠲⠚⠚⠚ ⠉⠍⠬⠼⠉]
   - [1.000 cm^3, ⠼⠁⠲⠚⠚⠚ ⠉⠍⠬⠼⠉]
+  # §3.3 Breuken
   - [½ kg - 1/2 kg, ⠼⠁⠌⠼⠃ ⠅⠛ ⠤ ⠼⠁⠌⠼⠃ ⠅⠛]
   - [¼ l - 1/4 l, ⠼⠁⠌⠼⠙ ⠇ ⠤ ⠼⠁⠌⠼⠙ ⠇]
-  - [SMS'je, ⠘⠎⠍⠎⠄⠠⠚⠑]
-  - [SMS’je, ⠘⠎⠍⠎⠄⠠⠚⠑]
+  # §2.12 Hoofdletters
   - [Winston Churchill, ⠨⠺⠊⠝⠎⠞⠕⠝ ⠨⠉⠓⠥⠗⠉⠓⠊⠇⠇]
   - [MacLean, ⠨⠍⠁⠉⠨⠇⠑⠁⠝]
   - [AMSTERDAM en BRUSSEL, ⠘⠁⠍⠎⠞⠑⠗⠙⠁⠍ ⠑⠝ ⠘⠃⠗⠥⠎⠎⠑⠇]
@@ -134,9 +203,15 @@ tests:
   - [W.F. Hermans, ⠘⠺⠲⠋⠲ ⠨⠓⠑⠗⠍⠁⠝⠎]
   - [FAQ's, ⠘⠋⠁⠟⠄⠠⠎]
   - [VTM'er, ⠘⠧⠞⠍⠄⠠⠑⠗]
-  - [65+'er, ⠼⠋⠑⠐⠖⠄⠑⠗]
   - ['SLAAT DE VLAM IN DE PAN, DEK DE VUURHAARD DAN AF MET EEN BRANDWERENDE DEKEN OF
       EEN VOCHTIGE DOEK.', ⠘⠘⠎⠇⠁⠁⠞ ⠙⠑ ⠧⠇⠁⠍ ⠊⠝ ⠙⠑ ⠏⠁⠝⠂ ⠙⠑⠅ ⠙⠑ ⠧⠥⠥⠗⠓⠁⠁⠗⠙ ⠙⠁⠝ ⠁⠋ ⠍⠑⠞ ⠑⠑⠝ ⠃⠗⠁⠝⠙⠺⠑⠗⠑⠝⠙⠑ ⠙⠑⠅⠑⠝ ⠕⠋ ⠑⠑⠝ ⠧⠕⠉⠓⠞⠊⠛⠑ ⠘⠙⠕⠑⠅⠲]
+  - [Eén, ⠨⠑⠿⠝]
+    # This test was previously:
+    # [Eén, ⠨⠿⠿⠝]
+    # However, there is nothing in the braille standard
+    # to suggest that this replacement (E to É) should occur.
+  - [É-U, ⠨⠿⠤⠨⠥]
+  # §2.13 Internettekens
   - [lisa_dirk@yahoo.com, ⠇⠊⠎⠁⠸⠙⠊⠗⠅⠜⠽⠁⠓⠕⠕⠲⠉⠕⠍]
   - ['http://www.avh.asso.fr/', ⠓⠞⠞⠏⠒⠌⠌⠺⠺⠺⠲⠁⠧⠓⠲⠁⠎⠎⠕⠲⠋⠗⠌]
   - ['C:\\Documents and Settings', ⠨⠉⠒⠐⠡⠨⠙⠕⠉⠥⠍⠑⠝⠞⠎ ⠁⠝⠙ ⠨⠎⠑⠞⠞⠊⠝⠛⠎]
@@ -145,44 +220,27 @@ tests:
   - ['ja |nee', ⠚⠁ ⠹ ⠝⠑⠑]
   - ['ja| nee', ⠚⠁ ⠹ ⠝⠑⠑]
   - ['ja|nee', ⠚⠁ ⠹ ⠝⠑⠑]
-  - ['€ 12,35', ⠑⠼⠁⠃⠂⠉⠑]
-  - ['€12,35', ⠑⠼⠁⠃⠂⠉⠑]
-  - ['$ 10,00', ⠙⠼⠁⠚⠂⠚⠚]
-  - ['$10,00', ⠙⠼⠁⠚⠂⠚⠚]
-  - ['£ 65,47', ⠏⠼⠋⠑⠂⠙⠛]
-  - ['£65,47', ⠏⠼⠋⠑⠂⠙⠛]
-  - [¥ 100.000, ⠽⠼⠁⠚⠚⠲⠚⠚⠚]
-  - [¥100.000, ⠽⠼⠁⠚⠚⠲⠚⠚⠚]
-  - [Eén, ⠨⠑⠿⠝]
-    # This test was previously:
-    # [Eén, ⠨⠿⠿⠝]
-    # However, there is nothing in the braille standard
-    # to suggest that this replacement (E to É) should occur.
-  - [É-U, ⠨⠿⠤⠨⠥]
+  - [no_reply@skynet.be, ⠝⠕⠸⠗⠑⠏⠇⠽⠜⠎⠅⠽⠝⠑⠞⠲⠃⠑]
+  # §2.2 Alfabetwisselingsteken
   - [cañon, ⠉⠁⠻⠕⠝]
   - [α β γ, ⠰⠁ ⠰⠃ ⠰⠛] # Some Greek lowercase
-  - [31-07-2010, ⠼⠉⠁⠤⠼⠚⠛⠤⠼⠃⠚⠁⠚]
-  - [31/07/2010, ⠼⠉⠁⠌⠼⠚⠛⠌⠼⠃⠚⠁⠚]
-  - [16.30 tot 21.30 uur, ⠼⠁⠋⠲⠉⠚ ⠞⠕⠞ ⠼⠃⠁⠲⠉⠚ ⠥⠥⠗]
-  - ['16:30 tot 21:30 uur', ⠼⠁⠋⠒⠉⠚ ⠞⠕⠞ ⠼⠃⠁⠒⠉⠚ ⠥⠥⠗]
-  - [Een hoek van 27° 30'., ⠨⠑⠑⠝ ⠓⠕⠑⠅ ⠧⠁⠝ ⠼⠃⠛⠈⠴ ⠼⠉⠚⠈⠔⠲]
-  - [Het record is 3' 5''., ⠨⠓⠑⠞ ⠗⠑⠉⠕⠗⠙ ⠊⠎ ⠼⠉⠈⠔ ⠼⠑⠈⠔⠔⠲]
-  - [57° 38' noorderbreedte, ⠼⠑⠛⠈⠴ ⠼⠉⠓⠈⠔ ⠝⠕⠕⠗⠙⠑⠗⠃⠗⠑⠑⠙⠞⠑]
-  - [no_reply@skynet.be, ⠝⠕⠸⠗⠑⠏⠇⠽⠜⠎⠅⠽⠝⠑⠞⠲⠃⠑]
-  - [x_1 = 0, ⠭⠸⠼⠁ ⠶ ⠼⠚]
-  - ['x,1', ⠭⠂⠼⠁]
+  # §2.1 Aanhalingstekens
   - - '''s morgens, baby''s, Alex'' boeken, de jaren ''90'
     - ⠄⠎ ⠍⠕⠗⠛⠑⠝⠎⠂ ⠃⠁⠃⠽⠄⠎⠂ ⠨⠁⠇⠑⠭⠄ ⠃⠕⠑⠅⠑⠝⠂ ⠙⠑ ⠚⠁⠗⠑⠝ ⠄⠼⠊⠚
+  # §2.10 Haakjes
   - - Een typist(e) moet heel precies werken.
     - ⠨⠑⠑⠝ ⠞⠽⠏⠊⠎⠞⠦⠑⠴ ⠍⠕⠑⠞ ⠓⠑⠑⠇ ⠏⠗⠑⠉⠊⠑⠎ ⠺⠑⠗⠅⠑⠝⠲
+  # §3.2 De basisrekentekens
   - - 'Deze wandkaart heeft een schaal van 1 : 7.500.'
     - ⠨⠙⠑⠵⠑ ⠺⠁⠝⠙⠅⠁⠁⠗⠞ ⠓⠑⠑⠋⠞ ⠑⠑⠝ ⠎⠉⠓⠁⠁⠇ ⠧⠁⠝ ⠼⠁ ⠒ ⠼⠛⠲⠑⠚⠚⠲
+  - - Op zijn laatste rapport stond voor wiskunde een 6+.
+    - ⠨⠕⠏ ⠵⠊⠚⠝ ⠇⠁⠁⠞⠎⠞⠑ ⠗⠁⠏⠏⠕⠗⠞ ⠎⠞⠕⠝⠙ ⠧⠕⠕⠗ ⠺⠊⠎⠅⠥⠝⠙⠑ ⠑⠑⠝ ⠼⠋⠐⠖⠲
+  # §2.16 Liggend streepje
   - - Hij vertelde – zonder het te beseffen – een goede mop.
     - ⠨⠓⠊⠚ ⠧⠑⠗⠞⠑⠇⠙⠑ ⠤ ⠵⠕⠝⠙⠑⠗ ⠓⠑⠞ ⠞⠑ ⠃⠑⠎⠑⠋⠋⠑⠝ ⠤ ⠑⠑⠝ ⠛⠕⠑⠙⠑ ⠍⠕⠏⠲
   - - groente- en fruithandel
     - ⠛⠗⠕⠑⠝⠞⠑⠤ ⠑⠝ ⠋⠗⠥⠊⠞⠓⠁⠝⠙⠑⠇
-  - - Op zijn laatste rapport stond voor wiskunde een 6+.
-    - ⠨⠕⠏ ⠵⠊⠚⠝ ⠇⠁⠁⠞⠎⠞⠑ ⠗⠁⠏⠏⠕⠗⠞ ⠎⠞⠕⠝⠙ ⠧⠕⠕⠗ ⠺⠊⠎⠅⠥⠝⠙⠑ ⠑⠑⠝ ⠼⠋⠐⠖⠲
+  # §2.8 Drukwijzigingsteken
   - - Landt je vader op Schiphol?
     - ⠨⠇⠁⠝⠙⠸⠞ ⠚⠑ ⠧⠁⠙⠑⠗ ⠕⠏ ⠨⠎⠉⠓⠊⠏⠓⠕⠇⠢
     - typeform:
@@ -237,6 +295,7 @@ tests:
     - ⠸⠧⠑⠞⠛⠑⠙⠗⠥⠅⠞
     - typeform:
         bold: '++++++++++'
+  # Misc
   - - Not part of the braille standard
     - 'CO₂-uitstoot: 158 g CO₂/km'
     - ⠘⠉⠕⠡⠆⠤⠥⠊⠞⠎⠞⠕⠕⠞⠒ ⠼⠁⠑⠓ ⠛ ⠘⠉⠕⠡⠆⠌⠅⠍
