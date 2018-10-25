@@ -49,47 +49,47 @@ namespace {
 
 // The HTML DOM ID used in Javascript.
 constexpr char kPreviewsAllowedHtmlId[] = "previews-allowed-status";
-constexpr char kClientLoFiPreviewsHtmlId[] = "client-lofi-preview-status";
-constexpr char kNoScriptPreviewsHtmlId[] = "noscript-preview-status";
-constexpr char kResourceLoadingHintsHtmlId[] = "resource-loading-hints-status";
 constexpr char kOfflinePreviewsHtmlId[] = "offline-preview-status";
+constexpr char kResourceLoadingHintsHtmlId[] = "resource-loading-hints-status";
+constexpr char kNoScriptPreviewsHtmlId[] = "noscript-preview-status";
+constexpr char kClientLoFiPreviewsHtmlId[] = "client-lofi-preview-status";
 
 // Descriptions for previews.
 constexpr char kPreviewsAllowedDescription[] = "Previews Allowed";
-constexpr char kClientLoFiDescription[] = "Client LoFi Previews";
-constexpr char kNoScriptDescription[] = "NoScript Previews";
+constexpr char kOfflineDesciption[] = "Offline Previews";
 constexpr char kResourceLoadingHintsDescription[] =
     "ResourceLoadingHints Previews";
-constexpr char kOfflineDesciption[] = "Offline Previews";
+constexpr char kNoScriptDescription[] = "NoScript Previews";
+constexpr char kClientLoFiDescription[] = "Client LoFi Previews";
 
 // The HTML DOM ID used in Javascript.
+constexpr char kOfflinePageFlagHtmlId[] = "offline-page-flag";
+constexpr char kResourceLoadingHintsFlagHtmlId[] =
+    "resource-loading-hints-flag";
+constexpr char kNoScriptFlagHtmlId[] = "noscript-flag";
 constexpr char kEctFlagHtmlId[] = "ect-flag";
 constexpr char kIgnorePreviewsBlacklistFlagHtmlId[] =
     "ignore-previews-blacklist";
-constexpr char kNoScriptFlagHtmlId[] = "noscript-flag";
-constexpr char kResourceLoadingHintsFlagHtmlId[] =
-    "resource-loading-hints-flag";
-constexpr char kOfflinePageFlagHtmlId[] = "offline-page-flag";
 constexpr char kDataSaverAltConfigHtmlId[] =
     "data-reduction-proxy-server-experiment";
 
 // Links to flags in chrome://flags.
-constexpr char kNoScriptFlagLink[] = "chrome://flags/#enable-noscript-previews";
+constexpr char kOfflinePageFlagLink[] =
+    "chrome://flags/#enable-offline-previews";
 constexpr char kResourceLoadingHintsFlagLink[] =
     "chrome://flags/#enable-resource-loading-hints";
+constexpr char kNoScriptFlagLink[] = "chrome://flags/#enable-noscript-previews";
 constexpr char kEctFlagLink[] =
     "chrome://flags/#force-effective-connection-type";
 constexpr char kIgnorePreviewsBlacklistLink[] =
     "chrome://flags/#ignore-previews-blacklist";
-constexpr char kOfflinePageFlagLink[] =
-    "chrome://flags/#enable-offline-previews";
 constexpr char kDataSaverAltConfigLink[] =
     "chrome://flags/#enable-data-reduction-proxy-server-experiment";
 
 // Flag features names.
-constexpr char kNoScriptFeatureName[] = "NoScriptPreviews";
-constexpr char kResourceLoadingHintsFeatureName[] = "ResourceLoadingHints";
 constexpr char kOfflinePageFeatureName[] = "OfflinePreviews";
+constexpr char kResourceLoadingHintsFeatureName[] = "ResourceLoadingHints";
+constexpr char kNoScriptFeatureName[] = "NoScriptPreviews";
 
 constexpr char kDefaultFlagValue[] = "Default";
 constexpr char kEnabledFlagValue[] = "Enabled";
