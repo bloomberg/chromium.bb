@@ -328,11 +328,10 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
       is_new_style_launcher_enabled_(
           app_list_features::IsNewStyleLauncherEnabled()) {
   DCHECK(contents_view_);
-  SetPaintToLayer();
+  SetPaintToLayer(ui::LAYER_NOT_DRAWN);
   // Clip any icons that are outside the grid view's bounds. These icons would
   // otherwise be visible to the user when the grid view is off screen.
   layer()->SetMasksToBounds(true);
-  layer()->SetFillsBoundsOpaquely(false);
 
   // In new style launcher, suggestions container is replaced with suggestion
   // chips container, all apps indicator is removed and expand arrow is moved
@@ -792,8 +791,6 @@ void AppsGridView::InitiateDragFromReparentItemInRootLevelGridView(
                           false /* is_in_folder */);
   AddChildView(view);
   drag_view_ = view;
-  drag_view_->SetPaintToLayer();
-  drag_view_->layer()->SetFillsBoundsOpaquely(false);
   drag_view_->SetBoundsRect(drag_view_rect);
   drag_view_->SetDragUIState();  // Hide the title of the drag_view_.
 
@@ -1162,8 +1159,6 @@ AppListItemView* AppsGridView::CreateViewForItemAtIndex(size_t index) {
   AppListItemView* view = new AppListItemView(
       this, item_list_->item_at(index),
       contents_view_->GetAppListMainView()->view_delegate());
-  view->SetPaintToLayer();
-  view->layer()->SetFillsBoundsOpaquely(false);
   return view;
 }
 
