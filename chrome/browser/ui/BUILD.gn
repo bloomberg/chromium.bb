@@ -2053,8 +2053,6 @@ jumbo_split_static_library("ui") {
       "cocoa/simple_message_box_cocoa.mm",
       "cocoa/single_web_contents_dialog_manager_cocoa.h",
       "cocoa/single_web_contents_dialog_manager_cocoa.mm",
-      "cocoa/ssl_client_certificate_selector_cocoa.h",
-      "cocoa/ssl_client_certificate_selector_cocoa.mm",
       "cocoa/status_icons/status_icon_mac.h",
       "cocoa/status_icons/status_icon_mac.mm",
       "cocoa/status_icons/status_tray_mac.h",
@@ -2741,8 +2739,6 @@ jumbo_split_static_library("ui") {
       "views/session_crashed_bubble_view.h",
       "views/simple_message_box_views.cc",
       "views/simple_message_box_views.h",
-      "views/ssl_client_certificate_selector.cc",
-      "views/ssl_client_certificate_selector.h",
       "views/status_bubble_views.cc",
       "views/status_bubble_views.h",
       "views/subtle_notification_view.cc",
@@ -2907,11 +2903,15 @@ jumbo_split_static_library("ui") {
         "views/chrome_views_delegate_mac.cc",
         "views/policy/enterprise_startup_dialog_mac_util.h",
         "views/policy/enterprise_startup_dialog_mac_util.mm",
+        "views/ssl_client_certificate_selector_mac.h",
+        "views/ssl_client_certificate_selector_mac.mm",
       ]
     } else {
       sources += [
         "views/create_application_shortcut_view.cc",
         "views/create_application_shortcut_view.h",
+        "views/ssl_client_certificate_selector.cc",
+        "views/ssl_client_certificate_selector.h",
 
         # TODO(ellyjones): Mus is not supported on Mac (there is no ui::Window
         # apart from aura::Window, which is also not supported).

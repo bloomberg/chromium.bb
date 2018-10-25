@@ -1956,11 +1956,11 @@ test("browser_tests") {
         "../browser/ui/cocoa/permission_bubble/permission_bubble_views_cocoa_browsertest.mm",
         "../browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac_cocoa_browsertest.mm",
         "../browser/ui/cocoa/share_menu_controller_browsertest.mm",
-        "../browser/ui/cocoa/ssl_client_certificate_selector_cocoa_browsertest.mm",
         "../browser/ui/cocoa/task_manager_mac_browsertest.mm",
         "../browser/ui/cocoa/touchbar/browser_window_touch_bar_controller_browsertest.mm",
         "../browser/ui/cocoa/touchbar/text_suggestions_touch_bar_controller_browsertest.mm",
         "../browser/ui/views/certificate_viewer_mac_browsertest.mm",
+        "../browser/ui/views/ssl_client_certificate_selector_mac_browsertest.mm",
 
         # TODO(crbug/845389): Re-Enable the following, which were temporarily
         # omitted from the build, but are still in use.
@@ -4840,7 +4840,6 @@ if (!is_android) {
         "../browser/ui/views/passwords/manage_passwords_icon_view_interactive_uitest.cc",
         "../browser/ui/views/passwords/password_bubble_interactive_uitest.cc",
         "../browser/ui/views/sad_tab_view_interactive_uitest.cc",
-        "../browser/ui/views/ssl_client_certificate_selector_browsertest.cc",
         "../browser/ui/views/status_icons/status_tray_state_changer_interactive_uitest_win.cc",
         "../browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc",
         "../browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h",
@@ -4878,6 +4877,10 @@ if (!is_android) {
       }
       if (is_mac) {
         deps += [ "//content/test:browsertest_support" ]
+      } else {
+        sources += [
+          "../browser/ui/views/ssl_client_certificate_selector_browsertest.cc",
+        ]
       }
     }
 
