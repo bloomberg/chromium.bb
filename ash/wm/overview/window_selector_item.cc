@@ -96,6 +96,11 @@ constexpr float kPreCloseScale = 0.02f;
 // title.
 constexpr gfx::Size kIconSize{24, 24};
 
+// The amount we need to offset the close button so that the icon, which is
+// smaller than the actual button is lined up with the right side of the window
+// preview.
+constexpr int kCloseButtonOffsetDp = 8;
+
 constexpr int kCloseButtonInkDropInsetDp = 2;
 
 // Close button color.
@@ -325,7 +330,7 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
       header_view_->AddChildView(image_view_);
     header_view_->AddChildView(title_label_);
     AddChildWithLayer(header_view_, close_button_);
-    AddChildWithLayer(this, header_view_);
+    AddChildWithLayer(listener_button_, header_view_);
     layout->SetFlexForView(title_label_, 1);
   }
 
@@ -417,11 +422,11 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
       cannot_snap_container_->SetBoundsRect(cannot_snap_bounds);
     }
 
-    // Position the header at the top. The left should be indented to match
-    // the transformed window, but not the right because the close button hit
-    // radius should extend past the transformed window's rightmost bounds.
+    // Position the header at the top. The right side of the header should be
+    // positioned so that the rightmost of the close icon matches the right side
+    // of the window preview.
     gfx::Rect header_bounds = GetLocalBounds();
-    header_bounds.Inset(kWindowSelectorMargin, kWindowSelectorMargin, 0, 0);
+    header_bounds.Inset(0, 0, kCloseButtonOffsetDp, 0);
     header_bounds.set_height(visible_height);
     header_view_->SetBoundsRect(header_bounds);
   }
