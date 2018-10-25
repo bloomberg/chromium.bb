@@ -186,9 +186,6 @@ const char kNTPHelpURL[] =
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
   DCHECK_EQ(_webState, webState);
-  if (!success)
-    return;
-
   [self setContentOffsetForWebState:webState];
 }
 

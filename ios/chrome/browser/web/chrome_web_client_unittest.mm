@@ -14,6 +14,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/passwords/credential_manager_features.h"
 #import "ios/chrome/browser/web/error_page_util.h"
 #import "ios/web/public/test/error_test_util.h"
@@ -219,4 +220,21 @@ TEST_F(ChromeWebClientTest, PrepareErrorPagePostOtr) {
                               /*is_off_the_record=*/true, &page);
   EXPECT_NSEQ(GetErrorPage(error, /*is_post=*/true, /*is_off_the_record=*/true),
               page);
+}
+
+// Tests PrepareErrorPage wth NTP and an empty string.
+TEST_F(ChromeWebClientTest, PrepareErrorPageNTP) {
+  ChromeWebClient web_client;
+  NSString* ntp_url = base::SysUTF8ToNSString(kChromeUINewTabURL);
+  NSDictionary* info = @{
+    NSURLErrorFailingURLStringErrorKey : ntp_url,
+  };
+  NSError* error = web::testing::CreateTestNetError([NSError
+      errorWithDomain:NSURLErrorDomain
+                 code:NSURLErrorNetworkConnectionLost
+             userInfo:info]);
+  NSString* page = nil;
+  web_client.PrepareErrorPage(error, /*is_post=*/false,
+                              /*is_off_the_record=*/false, &page);
+  EXPECT_NSEQ(@"", page);
 }
