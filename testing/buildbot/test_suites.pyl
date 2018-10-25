@@ -1708,7 +1708,6 @@
       'aura_unittests': {},
       'chromeos_components_unittests': {},
       'chromeos_unittests': {},
-      'chromevox_tests': {},
       'exo_unittests': {},
       'gl_unittests_ozone': {},
       'keyboard_unittests': {},

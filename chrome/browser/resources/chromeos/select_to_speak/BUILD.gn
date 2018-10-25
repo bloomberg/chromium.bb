@@ -98,6 +98,7 @@ manifest("select_to_speak_guest_manifest") {
   is_guest_manifest = true
 }
 
+# TODO(jamescook): Fold this into browser_tests.
 test("select_to_speak_extension_tests") {
   sources = [
     "//chrome/browser/extensions/browsertest_util.cc",
@@ -169,6 +170,15 @@ js2gtest("select_to_speak_extjs_tests") {
   extra_js_files = [
     "//chrome/test/data/webui/settings/fake_settings_private.js",
     "//chrome/test/data/webui/fake_chrome_event.js",
+  ]
+
+  # The test base classes generate C++ code with these deps.
+  deps = [
+    "//ash",
+    "//base",
+    "//chrome/browser/chromeos",
+    "//chrome/common",
+    "//ui/keyboard",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 }

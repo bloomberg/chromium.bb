@@ -85,7 +85,7 @@
       # chromium.chromiumos
       'linux-chromeos-dbg': {
         'swarming': {
-          'shards': 20,
+          'shards': 21,
         },
       },
       # chromium.clang
@@ -182,14 +182,14 @@
         # These are very slow on the Chrome OS MSAN trybot for some reason.
         # crbug.com/865455
         'swarming': {
-          'shards': 20,
+          'shards': 25,
         },
       },
       'Linux Chromium OS ASan LSan Tests (1)': {
         # These are very slow on the ASAN trybot for some reason.
         # crbug.com/794372
         'swarming': {
-          'shards': 30,
+          'shards': 31,
         },
       },
       # client.v8.chromium
@@ -329,17 +329,6 @@
       'KitKat Phone Tester (dbg)': {
         'swarming': {
           'shards': 2,
-        },
-      },
-    },
-  },
-  'chromevox_tests': {
-    'modifications': {
-      'Linux ChromiumOS MSan Tests': {
-        # These are very slow on the Chrome OS MSAN trybot for some reason.
-        # crbug.com/865455
-        'swarming': {
-          'shards': 6,
         },
       },
     },
