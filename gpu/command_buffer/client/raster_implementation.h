@@ -298,6 +298,11 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
 
   bool inside_raster_ = false;
 
+  // To avoid repeated allocations when searching the rtrees, hold onto this
+  // vector between RasterCHROMIUM calls.  It is not valid outside of that
+  // function.
+  std::vector<size_t> temp_raster_offsets_;
+
   struct RasterProperties {
     RasterProperties(SkColor background_color,
                      bool can_use_lcd_text,

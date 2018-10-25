@@ -452,7 +452,7 @@ DiscardableImageMap::TakeDecodingModeMap() {
 void DiscardableImageMap::GetDiscardableImagesInRect(
     const gfx::Rect& rect,
     std::vector<const DrawImage*>* images) const {
-  *images = images_rtree_.SearchRefs(rect);
+  images_rtree_.SearchRefs(rect, images);
 }
 
 const DiscardableImageMap::Rects& DiscardableImageMap::GetRectsForImage(
