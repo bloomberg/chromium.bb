@@ -410,7 +410,10 @@ TEST_P(ExtensionActionViewControllerGrayscaleTest,
 INSTANTIATE_TEST_CASE_P(
     ,
     ExtensionActionViewControllerGrayscaleTest,
-    testing::Values(ui::MaterialDesignController::MATERIAL_REFRESH,
+    testing::Values(ui::MaterialDesignController::MATERIAL_NORMAL,
+                    ui::MaterialDesignController::MATERIAL_HYBRID,
+                    ui::MaterialDesignController::MATERIAL_TOUCH_OPTIMIZED,
+                    ui::MaterialDesignController::MATERIAL_REFRESH,
                     ui::MaterialDesignController::MATERIAL_TOUCH_REFRESH));
 
 TEST_P(ToolbarActionsBarUnitTest, RuntimeHostsTooltip) {
