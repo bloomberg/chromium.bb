@@ -33,30 +33,40 @@ namespace ui {
 bool MaterialDesignController::is_mode_initialized_ = false;
 
 MaterialDesignController::Mode MaterialDesignController::mode_ =
-    MaterialDesignController::MATERIAL_REFRESH;
+    MaterialDesignController::MATERIAL_NORMAL;
 
 bool MaterialDesignController::is_refresh_dynamic_ui_ = false;
 
 // static
 void MaterialDesignController::Initialize() {
   TRACE_EVENT0("startup", "MaterialDesignController::InitializeMode");
-  DCHECK(!is_mode_initialized_);
+  CHECK(!is_mode_initialized_);
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   const std::string switch_value =
       command_line->GetSwitchValueASCII(switches::kTopChromeMD);
-  const bool touch =
-      switch_value == switches::kTopChromeMDMaterialRefreshTouchOptimized;
-  SetMode(touch ? MATERIAL_TOUCH_REFRESH : MATERIAL_REFRESH);
 
-  // ChromeOS switches modes dynamically unless the mode is explicitly forced.
-  // Other platforms only switch dynamically if explicitly requested.
-  is_refresh_dynamic_ui_ =
+  if (switch_value == switches::kTopChromeMDMaterialRefresh) {
+    SetMode(MATERIAL_REFRESH);
+  } else if (switch_value ==
+             switches::kTopChromeMDMaterialRefreshTouchOptimized) {
+    SetMode(MATERIAL_TOUCH_REFRESH);
+  } else if (switch_value == switches::kTopChromeMDMaterialRefreshDynamic) {
+    is_refresh_dynamic_ui_ = true;
+
+    // TabletModeClient's default state is in non-tablet mode.
+    SetMode(MATERIAL_REFRESH);
+  } else {
+    if (!switch_value.empty()) {
+      LOG(ERROR) << "Invalid value='" << switch_value
+                 << "' for command line switch '" << switches::kTopChromeMD
+                 << "'.";
+    }
 #if defined(OS_CHROMEOS)
-      !touch && (switch_value != switches::kTopChromeMDMaterialRefresh);
-#else
-      switch_value == switches::kTopChromeMDMaterialRefreshDynamic;
+    is_refresh_dynamic_ui_ = true;
 #endif
+    SetMode(MATERIAL_REFRESH);
+  }
 
   // Ideally, there would be a more general, "initialize random stuff here"
   // function into which these things and a call to this function can be placed.
@@ -72,9 +82,15 @@ void MaterialDesignController::Initialize() {
 }
 
 // static
+MaterialDesignController::Mode MaterialDesignController::GetMode() {
+  CHECK(is_mode_initialized_);
+  return mode_;
+}
+
+// static
 bool MaterialDesignController::IsTouchOptimizedUiEnabled() {
-  DCHECK(is_mode_initialized_);
-  return mode_ == MATERIAL_TOUCH_REFRESH;
+  return GetMode() == MATERIAL_TOUCH_OPTIMIZED ||
+         GetMode() == MATERIAL_TOUCH_REFRESH;
 }
 
 // static

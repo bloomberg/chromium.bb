@@ -1855,10 +1855,12 @@ const char kTintGlCompositedContentDescription[] =
 
 const char kTopChromeMd[] = "UI Layout for the browser's top chrome";
 const char kTopChromeMdDescription[] =
-    "Toggles between normal, touch-optimized, and dynamically switching UI.";
-const char kTopChromeMdMaterialRefresh[] = "Normal";
-const char kTopChromeMdMaterialRefreshTouchOptimized[] = "Touch-optimized";
-const char kTopChromeMdMaterialRefreshDynamic[] = "Dynamically switching";
+    "Toggles between 1) Material Design refresh, 2) Touchable Material Design "
+    "refresh and 3) Switching automatically between Touchable and "
+    "non-Touchable modes.";
+const char kTopChromeMdMaterialRefresh[] = "Refresh";
+const char kTopChromeMdMaterialRefreshTouchOptimized[] = "Touchable Refresh";
+const char kTopChromeMdMaterialRefreshDynamic[] = "Dynamic Refresh";
 
 const char kThreadedScrollingName[] = "Threaded scrolling";
 const char kThreadedScrollingDescription[] =
