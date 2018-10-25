@@ -7,7 +7,6 @@
 #include <memory>
 #include "base/feature_list.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
-#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/shared_worker/shared_worker_script_loader.h"
@@ -23,7 +22,6 @@ namespace content {
 
 SharedWorkerScriptLoaderFactory::SharedWorkerScriptLoaderFactory(
     int process_id,
-    ServiceWorkerContextWrapper* context,
     base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host,
     base::WeakPtr<AppCacheHost> appcache_host,
     ResourceContext* resource_context,
