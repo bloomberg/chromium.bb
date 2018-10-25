@@ -452,6 +452,8 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     // when recovering from debugger JavaScript statetment.
     case TaskType::kInternalTest:
       return UnpausableTaskQueueTraits();
+    case TaskType::kInternalTranslation:
+      return ForegroundOnlyTaskQueueTraits();
     case TaskType::kDeprecatedNone:
     case TaskType::kMainThreadTaskQueueV8:
     case TaskType::kMainThreadTaskQueueCompositor:
@@ -704,7 +706,8 @@ void FrameSchedulerImpl::UpdateQueuePolicy(
   if (!voter)
     return;
   DCHECK(parent_page_scheduler_);
-  bool queue_paused = frame_paused_ && queue->CanBePaused();
+  bool queue_disabled = false;
+  queue_disabled |= frame_paused_ && queue->CanBePaused();
   // Per-frame freezable task queues will be frozen after 5 mins in background
   // on Android, and if the browser freezes the page in the background. They
   // will be resumed when the page is visible.
@@ -713,7 +716,12 @@ void FrameSchedulerImpl::UpdateQueuePolicy(
   // Override freezing if keep-active is true.
   if (queue_frozen && !queue->FreezeWhenKeepActive())
     queue_frozen = !parent_page_scheduler_->KeepActive();
-  voter->SetQueueEnabled(!queue_paused && !queue_frozen);
+  queue_disabled |= queue_frozen;
+  // Per-frame freezable queues of tasks which are specified as getting frozen
+  // immediately when their frame becomes invisible get frozen. They will be
+  // resumed when the frame becomes visible again.
+  queue_disabled |= !frame_visible_ && !queue->CanRunInBackground();
+  voter->SetQueueEnabled(!queue_disabled);
 }
 
 SchedulingLifecycleState FrameSchedulerImpl::CalculateLifecycleState(
@@ -977,6 +985,11 @@ MainThreadTaskQueue::QueueTraits FrameSchedulerImpl::PausableTaskQueueTraits() {
 MainThreadTaskQueue::QueueTraits
 FrameSchedulerImpl::UnpausableTaskQueueTraits() {
   return QueueTraits();
+}
+
+MainThreadTaskQueue::QueueTraits
+FrameSchedulerImpl::ForegroundOnlyTaskQueueTraits() {
+  return ThrottleableTaskQueueTraits().SetCanRunInBackground(false);
 }
 
 }  // namespace scheduler

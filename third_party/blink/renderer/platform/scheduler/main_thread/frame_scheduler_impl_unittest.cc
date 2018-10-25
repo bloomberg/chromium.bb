@@ -115,6 +115,11 @@ class FrameSchedulerImplTest : public testing::Test {
     return NonLoadingTaskQueue(FrameSchedulerImpl::UnpausableTaskQueueTraits());
   }
 
+  scoped_refptr<TaskQueue> ForegroundOnlyTaskQueue() {
+    return NonLoadingTaskQueue(
+        FrameSchedulerImpl::ForegroundOnlyTaskQueueTraits());
+  }
+
   scoped_refptr<MainThreadTaskQueue> GetTaskQueue(TaskType type) {
     return frame_scheduler_->GetTaskQueue(type);
   }
@@ -369,6 +374,24 @@ TEST_F(FrameSchedulerImplTest, PauseAndResume) {
   EXPECT_EQ(5, counter);
 }
 
+TEST_F(FrameSchedulerImplTest, FreezeForegroundOnlyTasks) {
+  int counter = 0;
+  ForegroundOnlyTaskQueue()->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+
+  page_scheduler_->SetPageVisible(false);
+
+  EXPECT_EQ(0, counter);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, counter);
+
+  page_scheduler_->SetPageVisible(true);
+
+  EXPECT_EQ(0, counter);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, counter);
+}
+
 TEST_F(FrameSchedulerImplStopNonTimersInBackgroundEnabledTest,
        PageFreezeAndUnfreezeFlagEnabled) {
   int counter = 0;
@@ -394,7 +417,7 @@ TEST_F(FrameSchedulerImplStopNonTimersInBackgroundEnabledTest,
   page_scheduler_->SetPageFrozen(false);
 
   EXPECT_EQ(1, counter);
-  // Same as RunUntilIdle but also advances the cock if necessary.
+  // Same as RunUntilIdle but also advances the clock if necessary.
   task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(5, counter);
 }
@@ -1581,6 +1604,8 @@ TEST_F(FrameSchedulerImplTest, TaskTypeToTaskQueueMapping) {
   EXPECT_EQ(GetTaskQueue(TaskType::kNetworking), LoadingTaskQueue());
   EXPECT_EQ(GetTaskQueue(TaskType::kNetworkingControl),
             LoadingControlTaskQueue());
+  EXPECT_EQ(GetTaskQueue(TaskType::kInternalTranslation),
+            ForegroundOnlyTaskQueue());
 }
 
 class ThrottleAndFreezeTaskTypesExperimentTest : public FrameSchedulerImplTest {

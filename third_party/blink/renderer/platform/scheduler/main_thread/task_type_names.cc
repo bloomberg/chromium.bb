@@ -117,6 +117,8 @@ const char* TaskTypeNames::TaskTypeToString(TaskType task_type) {
       return "WorkerThreadTaskQueueCompositor";
     case TaskType::kWorkerAnimation:
       return "WorkerAnimation";
+    case TaskType::kInternalTranslation:
+      return "InternalTranslation";
     case TaskType::kCount:
       return "Count";
   }
