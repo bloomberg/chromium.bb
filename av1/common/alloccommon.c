@@ -92,6 +92,9 @@ void av1_free_ref_frame_buffers(BufferPool *pool) {
     if (pool->frame_bufs[i].ref_count > 0 &&
         pool->frame_bufs[i].raw_frame_buffer.data != NULL) {
       pool->release_fb_cb(pool->cb_priv, &pool->frame_bufs[i].raw_frame_buffer);
+      pool->frame_bufs[i].raw_frame_buffer.data = NULL;
+      pool->frame_bufs[i].raw_frame_buffer.size = 0;
+      pool->frame_bufs[i].raw_frame_buffer.priv = NULL;
       pool->frame_bufs[i].ref_count = 0;
     }
     aom_free(pool->frame_bufs[i].mvs);
