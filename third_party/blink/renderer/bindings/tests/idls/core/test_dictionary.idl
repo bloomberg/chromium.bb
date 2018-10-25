@@ -7,7 +7,7 @@ dictionary TestDictionary {
     long longMember = 1;
     DOMString stringMember;
     TestInterface testInterfaceMember;
-    [TreatNullAs=EmptyString] ByteString byteStringMember;
+    [TreatNullAs=EmptyString] DOMString domStringTreatNullAsEmptyStringMember;
     USVString? usvStringOrNullMember = null;
     double? doubleOrNullMember = null;
     double restrictedDoubleMember = 3.14;

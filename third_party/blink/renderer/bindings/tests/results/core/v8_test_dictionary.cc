@@ -40,11 +40,11 @@ static const v8::Eternal<v8::Name>* eternalV8TestDictionaryKeys(v8::Isolate* iso
     "applicableToTypeLongMember",
     "applicableToTypeStringMember",
     "booleanMember",
-    "byteStringMember",
     "callbackFunctionMember",
     "create",
     "deprecatedCreateMember",
     "dictionaryMember",
+    "domStringTreatNullAsEmptyStringMember",
     "doubleOrNullMember",
     "doubleOrNullOrDoubleOrNullSequenceMember",
     "doubleOrNullRecordMember",
@@ -185,22 +185,8 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     impl.setBooleanMember(boolean_member_cpp_value);
   }
 
-  v8::Local<v8::Value> byte_string_member_value;
-  if (!v8Object->Get(context, keys[5].Get(isolate)).ToLocal(&byte_string_member_value)) {
-    exceptionState.RethrowV8Exception(block.Exception());
-    return;
-  }
-  if (byte_string_member_value.IsEmpty() || byte_string_member_value->IsUndefined()) {
-    // Do nothing.
-  } else {
-    V8StringResource<kTreatNullAsEmptyString> byte_string_member_cpp_value = NativeValueTraits<IDLByteStringBase<kTreatNullAsEmptyString>>::NativeValue(isolate, byte_string_member_value, exceptionState);
-    if (exceptionState.HadException())
-      return;
-    impl.setByteStringMember(byte_string_member_cpp_value);
-  }
-
   v8::Local<v8::Value> callback_function_member_value;
-  if (!v8Object->Get(context, keys[6].Get(isolate)).ToLocal(&callback_function_member_value)) {
+  if (!v8Object->Get(context, keys[5].Get(isolate)).ToLocal(&callback_function_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -212,7 +198,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> create_value;
-  if (!v8Object->Get(context, keys[7].Get(isolate)).ToLocal(&create_value)) {
+  if (!v8Object->Get(context, keys[6].Get(isolate)).ToLocal(&create_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -226,7 +212,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> deprecated_create_member_value;
-  if (!v8Object->Get(context, keys[8].Get(isolate)).ToLocal(&deprecated_create_member_value)) {
+  if (!v8Object->Get(context, keys[7].Get(isolate)).ToLocal(&deprecated_create_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -241,7 +227,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> dictionary_member_value;
-  if (!v8Object->Get(context, keys[9].Get(isolate)).ToLocal(&dictionary_member_value)) {
+  if (!v8Object->Get(context, keys[8].Get(isolate)).ToLocal(&dictionary_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -256,6 +242,20 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
       return;
     }
     impl.setDictionaryMember(dictionary_member_cpp_value);
+  }
+
+  v8::Local<v8::Value> dom_string_treat_null_as_empty_string_member_value;
+  if (!v8Object->Get(context, keys[9].Get(isolate)).ToLocal(&dom_string_treat_null_as_empty_string_member_value)) {
+    exceptionState.RethrowV8Exception(block.Exception());
+    return;
+  }
+  if (dom_string_treat_null_as_empty_string_member_value.IsEmpty() || dom_string_treat_null_as_empty_string_member_value->IsUndefined()) {
+    // Do nothing.
+  } else {
+    V8StringResource<kTreatNullAsEmptyString> dom_string_treat_null_as_empty_string_member_cpp_value = dom_string_treat_null_as_empty_string_member_value;
+    if (!dom_string_treat_null_as_empty_string_member_cpp_value.Prepare(exceptionState))
+      return;
+    impl.setDomStringTreatNullAsEmptyStringMember(dom_string_treat_null_as_empty_string_member_cpp_value);
   }
 
   v8::Local<v8::Value> double_or_null_member_value;
@@ -1104,17 +1104,6 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     return false;
   }
 
-  v8::Local<v8::Value> byte_string_member_value;
-  bool byte_string_member_has_value_or_default = false;
-  if (impl.hasByteStringMember()) {
-    byte_string_member_value = V8String(isolate, impl.byteStringMember());
-    byte_string_member_has_value_or_default = true;
-  }
-  if (byte_string_member_has_value_or_default &&
-      !create_property(5, byte_string_member_value)) {
-    return false;
-  }
-
   v8::Local<v8::Value> callback_function_member_value;
   bool callback_function_member_has_value_or_default = false;
   if (impl.hasCallbackFunctionMember()) {
@@ -1122,7 +1111,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     callback_function_member_has_value_or_default = true;
   }
   if (callback_function_member_has_value_or_default &&
-      !create_property(6, callback_function_member_value)) {
+      !create_property(5, callback_function_member_value)) {
     return false;
   }
 
@@ -1133,7 +1122,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     create_has_value_or_default = true;
   }
   if (create_has_value_or_default &&
-      !create_property(7, create_value)) {
+      !create_property(6, create_value)) {
     return false;
   }
 
@@ -1144,7 +1133,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     deprecated_create_member_has_value_or_default = true;
   }
   if (deprecated_create_member_has_value_or_default &&
-      !create_property(8, deprecated_create_member_value)) {
+      !create_property(7, deprecated_create_member_value)) {
     return false;
   }
 
@@ -1156,7 +1145,18 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     dictionary_member_has_value_or_default = true;
   }
   if (dictionary_member_has_value_or_default &&
-      !create_property(9, dictionary_member_value)) {
+      !create_property(8, dictionary_member_value)) {
+    return false;
+  }
+
+  v8::Local<v8::Value> dom_string_treat_null_as_empty_string_member_value;
+  bool dom_string_treat_null_as_empty_string_member_has_value_or_default = false;
+  if (impl.hasDomStringTreatNullAsEmptyStringMember()) {
+    dom_string_treat_null_as_empty_string_member_value = V8String(isolate, impl.domStringTreatNullAsEmptyStringMember());
+    dom_string_treat_null_as_empty_string_member_has_value_or_default = true;
+  }
+  if (dom_string_treat_null_as_empty_string_member_has_value_or_default &&
+      !create_property(9, dom_string_treat_null_as_empty_string_member_value)) {
     return false;
   }
 
