@@ -30,6 +30,7 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.build.BuildHooks;
 import org.chromium.build.BuildHooksAndroid;
 import org.chromium.build.BuildHooksConfig;
+import org.chromium.chrome.browser.crash.ApplicationStatusTracker;
 import org.chromium.chrome.browser.crash.PureJavaExceptionHandler;
 import org.chromium.chrome.browser.crash.PureJavaExceptionReporter;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
@@ -91,6 +92,10 @@ public class ChromeApplication extends Application {
             // created and is needed only by processes that use the ApplicationStatus api (which for
             // Chrome is just the browser process).
             ApplicationStatus.initialize(this);
+
+            // Register application status listener for crashes, this needs to be done as early as
+            // possible so that this value is set before any crashes are reported.
+            ApplicationStatusTracker.getInstance().registerListener();
 
             // Only browser process requires custom resources.
             BuildHooksAndroid.initCustomResources(this);
