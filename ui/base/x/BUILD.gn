@@ -13,6 +13,8 @@ jumbo_component("x") {
 
   sources = [
     "ui_base_x_export.h",
+    "x11_display_util.cc",
+    "x11_display_util.h",
     "x11_menu_list.cc",
     "x11_menu_list.h",
     "x11_pointer_grab.cc",
@@ -24,7 +26,10 @@ jumbo_component("x") {
     "x11_window_event_manager.h",
   ]
 
-  configs += [ "//build/config/linux:x11" ]
+  configs += [
+    "//build/config/linux:x11",
+    "//build/config/linux:xrandr",
+  ]
 
   defines = [ "UI_BASE_X_IMPLEMENTATION" ]
 
@@ -32,6 +37,7 @@ jumbo_component("x") {
     "//base",
     "//base:i18n",
     "//skia",
+    "//ui/display/util",
     "//ui/events",
     "//ui/events/devices/x11",
     "//ui/events/keycodes:x11",
