@@ -89,10 +89,10 @@ void CoreInitializer::Initialize() {
   // TODO(mikhail.pozdnyakov@intel.com): We should generate static strings
   // initialization code.
   const unsigned kQualifiedNamesCount =
-      HTMLNames::kTagsCount + HTMLNames::kAttrsCount + MathMLNames::kTagsCount +
-      MathMLNames::kAttrsCount + SVGNames::kTagsCount + SVGNames::kAttrsCount +
-      xlink_names::kAttrsCount + xml_names::kAttrsCount +
-      xmlns_names::kAttrsCount;
+      HTMLNames::kTagsCount + HTMLNames::kAttrsCount +
+      mathml_names::kTagsCount + mathml_names::kAttrsCount +
+      SVGNames::kTagsCount + SVGNames::kAttrsCount + xlink_names::kAttrsCount +
+      xml_names::kAttrsCount + xmlns_names::kAttrsCount;
 
   const unsigned kCoreStaticStringsCount =
       kQualifiedNamesCount + EventNames::kNamesCount +
@@ -111,7 +111,7 @@ void CoreInitializer::Initialize() {
 
   HTMLNames::init();
   SVGNames::init();
-  MathMLNames::init();
+  mathml_names::init();
   xlink_names::init();
   xml_names::init();
   xmlns_names::init();
