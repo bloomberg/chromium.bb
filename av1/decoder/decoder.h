@@ -297,11 +297,11 @@ static INLINE void decrease_ref_count(int idx, RefCntBuffer *const frame_bufs,
     // there is a bug in our reference count management.
     assert(frame_bufs[idx].ref_count >= 0);
     // A worker may only get a free framebuffer index when calling get_free_fb.
-    // But the private buffer is not set up until finish decoding header.
-    // So any error happens during decoding header, the frame_bufs will not
-    // have valid priv buffer.
+    // But the raw frame buffer is not set up until we finish decoding header.
+    // So if any error happens during decoding header, frame_bufs[idx] will not
+    // have a valid raw frame buffer.
     if (frame_bufs[idx].ref_count == 0 &&
-        frame_bufs[idx].raw_frame_buffer.priv) {
+        frame_bufs[idx].raw_frame_buffer.data) {
       pool->release_fb_cb(pool->cb_priv, &frame_bufs[idx].raw_frame_buffer);
       frame_bufs[idx].raw_frame_buffer.data = NULL;
       frame_bufs[idx].raw_frame_buffer.size = 0;
