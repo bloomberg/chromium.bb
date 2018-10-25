@@ -348,6 +348,14 @@ void WebURLRequest::SetExtraData(std::unique_ptr<ExtraData> extra_data) {
   resource_request_->SetExtraData(std::move(extra_data));
 }
 
+bool WebURLRequest::IsDownloadToNetworkCacheOnly() const {
+  return resource_request_->IsDownloadToNetworkCacheOnly();
+}
+
+void WebURLRequest::SetDownloadToNetworkCacheOnly(bool download_to_cache_only) {
+  resource_request_->SetDownloadToNetworkCacheOnly(download_to_cache_only);
+}
+
 ResourceRequest& WebURLRequest::ToMutableResourceRequest() {
   DCHECK(resource_request_);
   return *resource_request_;

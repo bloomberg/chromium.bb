@@ -260,6 +260,12 @@ class PLATFORM_EXPORT ResourceRequest final {
     }
   }
 
+  bool IsDownloadToNetworkCacheOnly() const { return download_to_cache_only_; }
+
+  void SetDownloadToNetworkCacheOnly(bool download_to_cache_only) {
+    download_to_cache_only_ = download_to_cache_only;
+  }
+
   mojom::RequestContextType GetRequestContext() const {
     return request_context_;
   }
@@ -421,6 +427,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool allow_stale_response_ : 1;
   mojom::FetchCacheMode cache_mode_;
   bool skip_service_worker_ : 1;
+  bool download_to_cache_only_ : 1;
   ResourceLoadPriority priority_;
   int intra_priority_value_;
   int requestor_id_;

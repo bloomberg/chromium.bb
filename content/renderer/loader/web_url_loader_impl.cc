@@ -740,7 +740,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   extra_data->CopyToResourceRequest(resource_request.get());
 
   std::unique_ptr<RequestPeer> peer;
-  if (extra_data->download_to_network_cache_only()) {
+  if (request.IsDownloadToNetworkCacheOnly()) {
     peer = std::make_unique<SinkPeer>(this);
   } else {
     const bool discard_body =
