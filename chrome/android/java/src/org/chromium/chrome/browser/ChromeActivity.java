@@ -2154,6 +2154,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             RecordUserAction.record("MobileMenuHistory");
             HistoryManagerUtils.showHistoryManager(this, currentTab);
         } else if (id == R.id.translate_id) {
+            RecordUserAction.record("MobileMenuTranslate");
             TranslateBridge.translateTab(getActivityTab());
         } else if (id == R.id.share_menu_id || id == R.id.direct_share_menu_id) {
             onShareMenuItemSelected(id == R.id.direct_share_menu_id,
