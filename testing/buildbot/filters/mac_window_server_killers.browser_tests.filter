@@ -2,7 +2,7 @@
 
 # Suites implicated in window_server deaths.
 -ConstrainedWebDialogBrowserTest.*
--SSLClientCertificateSelectorCocoaTest.*
+-SSLClientCertificateSelectorMacTest.*
 
 # Investigation, round 2.
 -All/PasswordManagerBrowserTestWithViewsFeature.*

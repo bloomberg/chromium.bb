@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/ssl_client_certificate_selector_cocoa.h"
+#include "chrome/browser/ui/views/ssl_client_certificate_selector_mac.h"
 
 #import <SecurityInterface/SFChooseIdentityPanel.h>
+
+#include <utility>
 
 #include "base/bind.h"
 #import "base/mac/mac_util.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector_test.h"
 #include "chrome/browser/ui/browser.h"
@@ -30,14 +31,6 @@
 #include "ui/base/cocoa/window_size_constants.h"
 
 using web_modal::WebContentsModalDialogManager;
-
-@interface SFChooseIdentityPanel (SystemPrivate)
-// A system-private interface that dismisses a panel whose sheet was started by
-// -beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:identities:message:
-// as though the user clicked the button identified by returnCode. Verified
-// present in 10.5 through 10.12.
-- (void)_dismissWithCode:(NSInteger)code;
-@end
 
 namespace {
 
@@ -77,10 +70,10 @@ class TestClientCertificateDelegate
 
 }  // namespace
 
-class SSLClientCertificateSelectorCocoaTest
+class SSLClientCertificateSelectorMacTest
     : public SSLClientCertificateSelectorTestBase {
  public:
-  ~SSLClientCertificateSelectorCocoaTest() override;
+  ~SSLClientCertificateSelectorMacTest() override;
 
   // InProcessBrowserTest:
   void SetUpInProcessBrowserTestFixture() override;
@@ -97,10 +90,10 @@ class SSLClientCertificateSelectorCocoaTest
   base::ScopedCFTypeRef<SecIdentityRef> sec_identity2_;
 };
 
-SSLClientCertificateSelectorCocoaTest::
-    ~SSLClientCertificateSelectorCocoaTest() = default;
+SSLClientCertificateSelectorMacTest::~SSLClientCertificateSelectorMacTest() =
+    default;
 
-void SSLClientCertificateSelectorCocoaTest::SetUpInProcessBrowserTestFixture() {
+void SSLClientCertificateSelectorMacTest::SetUpInProcessBrowserTestFixture() {
   SSLClientCertificateSelectorTestBase::SetUpInProcessBrowserTestFixture();
 
   base::FilePath certs_dir = net::GetTestCertsDirectory();
@@ -126,7 +119,7 @@ void SSLClientCertificateSelectorCocoaTest::SetUpInProcessBrowserTestFixture() {
 }
 
 net::ClientCertIdentityList
-SSLClientCertificateSelectorCocoaTest::GetTestCertificateList() {
+SSLClientCertificateSelectorMacTest::GetTestCertificateList() {
   net::ClientCertIdentityList client_cert_list;
   client_cert_list.push_back(std::make_unique<net::ClientCertIdentityMac>(
       client_cert1_, base::ScopedCFTypeRef<SecIdentityRef>(sec_identity1_)));
@@ -135,7 +128,7 @@ SSLClientCertificateSelectorCocoaTest::GetTestCertificateList() {
   return client_cert_list;
 }
 
-IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, Basic) {
+IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest, Basic) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
@@ -143,29 +136,24 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, Basic) {
   EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
 
   TestClientCertificateDelegateResults results;
-  SSLClientCertificateSelectorCocoa* selector = [
-      [SSLClientCertificateSelectorCocoa alloc]
-      initWithBrowserContext:web_contents->GetBrowserContext()
-             certRequestInfo:auth_requestor_->cert_request_info_.get()
-                    delegate:base::WrapUnique(
-                                 new TestClientCertificateDelegate(&results))];
-  [selector displayForWebContents:web_contents
-                      clientCerts:GetTestCertificateList()];
-  content::RunAllPendingInMessageLoop();
-  EXPECT_TRUE([selector panel]);
+  chrome::ShowSSLClientCertificateSelector(
+      web_contents, auth_requestor_->cert_request_info_.get(),
+      GetTestCertificateList(),
+      std::make_unique<TestClientCertificateDelegate>(&results));
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
 
   WebContentsModalDialogManager::TestApi test_api(
       web_contents_modal_dialog_manager);
   test_api.CloseAllDialogs();
-  content::RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
 
   EXPECT_TRUE(results.destroyed);
   EXPECT_FALSE(results.continue_with_certificate_called);
 }
 
-IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, Cancel) {
+IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest, Cancel) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
@@ -173,21 +161,17 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, Cancel) {
   EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
 
   TestClientCertificateDelegateResults results;
-  SSLClientCertificateSelectorCocoa* selector = [
-      [SSLClientCertificateSelectorCocoa alloc]
-      initWithBrowserContext:web_contents->GetBrowserContext()
-             certRequestInfo:auth_requestor_->cert_request_info_.get()
-                    delegate:base::WrapUnique(
-                                 new TestClientCertificateDelegate(&results))];
-  [selector displayForWebContents:web_contents
-                      clientCerts:GetTestCertificateList()];
-  content::RunAllPendingInMessageLoop();
-  EXPECT_TRUE([selector panel]);
+  chrome::OkAndCancelableForTesting* ok_and_cancelable =
+      chrome::ShowSSLClientCertificateSelectorMacForTesting(
+          web_contents, auth_requestor_->cert_request_info_.get(),
+          GetTestCertificateList(),
+          std::make_unique<TestClientCertificateDelegate>(&results),
+          base::DoNothing());
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
 
-  // Cancel the selector. Dunno if there is a better way to do this.
-  [[selector panel] _dismissWithCode:NSFileHandlingPanelCancelButton];
-  content::RunAllPendingInMessageLoop();
+  ok_and_cancelable->ClickCancelButton();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
 
   // ContinueWithCertificate(nullptr, nullptr) should have been called.
@@ -197,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, Cancel) {
   EXPECT_FALSE(results.key);
 }
 
-IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, Accept) {
+IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest, Accept) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
@@ -205,21 +189,17 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, Accept) {
   EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
 
   TestClientCertificateDelegateResults results;
-  SSLClientCertificateSelectorCocoa* selector = [
-      [SSLClientCertificateSelectorCocoa alloc]
-      initWithBrowserContext:web_contents->GetBrowserContext()
-             certRequestInfo:auth_requestor_->cert_request_info_.get()
-                    delegate:base::WrapUnique(
-                                 new TestClientCertificateDelegate(&results))];
-  [selector displayForWebContents:web_contents
-                      clientCerts:GetTestCertificateList()];
-  content::RunAllPendingInMessageLoop();
-  EXPECT_TRUE([selector panel]);
+  chrome::OkAndCancelableForTesting* ok_and_cancelable =
+      chrome::ShowSSLClientCertificateSelectorMacForTesting(
+          web_contents, auth_requestor_->cert_request_info_.get(),
+          GetTestCertificateList(),
+          std::make_unique<TestClientCertificateDelegate>(&results),
+          base::DoNothing());
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
 
-  // Accept the selection. Dunno if there is a better way to do this.
-  [[selector panel] _dismissWithCode:NSFileHandlingPanelOKButton];
-  content::RunAllPendingInMessageLoop();
+  ok_and_cancelable->ClickOkButton();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
 
   // The first cert in the list should have been selected.
@@ -236,34 +216,45 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, Accept) {
 }
 
 // Test that switching to another tab correctly hides the sheet.
-IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, HideShow) {
+IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest, HideShow) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  TestClientCertificateDelegateResults results;
-  SSLClientCertificateSelectorCocoa* selector = [
-      [SSLClientCertificateSelectorCocoa alloc]
-      initWithBrowserContext:web_contents->GetBrowserContext()
-             certRequestInfo:auth_requestor_->cert_request_info_.get()
-                    delegate:base::WrapUnique(
-                                 new TestClientCertificateDelegate(&results))];
-  [selector displayForWebContents:web_contents
-                      clientCerts:GetTestCertificateList()];
-  content::RunAllPendingInMessageLoop();
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents);
+  EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
 
-  NSWindow* sheetWindow = [[selector overlayWindow] attachedSheet];
-  EXPECT_EQ(1.0, [sheetWindow alphaValue]);
+  // Account for any child windows that might be present before the certificate
+  // viewer is open.
+  NSWindow* window =
+      web_contents->GetTopLevelNativeWindow().GetNativeNSWindow();
+  NSUInteger num_child_windows = [[window childWindows] count];
+
+  TestClientCertificateDelegateResults results;
+  chrome::ShowSSLClientCertificateSelector(
+      web_contents, auth_requestor_->cert_request_info_.get(),
+      GetTestCertificateList(),
+      std::make_unique<TestClientCertificateDelegate>(&results));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
+
+  EXPECT_EQ(num_child_windows + 1, [[window childWindows] count]);
+  // Assume the last child is the overlay window that was added.
+  NSWindow* overlay_window = [[window childWindows] lastObject];
+
+  NSWindow* sheet_window = [overlay_window attachedSheet];
+  EXPECT_EQ(1.0, [sheet_window alphaValue]);
 
   // Switch to another tab and verify that the sheet is hidden. Interaction with
   // the tab underneath should not be blocked.
   AddBlankTabAndShow(browser());
-  EXPECT_EQ(0.0, [sheetWindow alphaValue]);
-  EXPECT_TRUE([[selector overlayWindow] ignoresMouseEvents]);
+  EXPECT_EQ(0.0, [sheet_window alphaValue]);
+  EXPECT_TRUE([overlay_window ignoresMouseEvents]);
 
   // Switch back and verify that the sheet is shown. Interaction with the tab
   // underneath should be blocked while the sheet is showing.
   chrome::SelectNumberedTab(browser(), 0);
-  EXPECT_EQ(1.0, [sheetWindow alphaValue]);
-  EXPECT_FALSE([[selector overlayWindow] ignoresMouseEvents]);
+  EXPECT_EQ(1.0, [sheet_window alphaValue]);
+  EXPECT_FALSE([overlay_window ignoresMouseEvents]);
 
   EXPECT_FALSE(results.destroyed);
   EXPECT_FALSE(results.continue_with_certificate_called);
@@ -274,48 +265,28 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, HideShow) {
   EXPECT_FALSE(results.continue_with_certificate_called);
 }
 
-@interface DeallocTrackingSSLClientCertificateSelectorCocoa
-    : SSLClientCertificateSelectorCocoa
-@property(nonatomic) BOOL* wasDeallocated;
-@end
-
-@implementation DeallocTrackingSSLClientCertificateSelectorCocoa
-@synthesize wasDeallocated = wasDeallocated_;
-
-- (void)dealloc {
-  *wasDeallocated_ = true;
-  [super dealloc];
-}
-
-@end
-
 // Test that we can't trigger the crash from https://crbug.com/653093
-// Disabled due to flakiness. http://crbug.com/810909
-IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest,
-                       DISABLED_WorkaroundCrashySierra) {
-  BOOL selector_was_deallocated = false;
+IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest,
+                       WorkaroundTableViewCrash) {
+  base::RunLoop run_loop;
 
   @autoreleasepool {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    DeallocTrackingSSLClientCertificateSelectorCocoa* selector =
-        [[DeallocTrackingSSLClientCertificateSelectorCocoa alloc]
-            initWithBrowserContext:web_contents->GetBrowserContext()
-                   certRequestInfo:auth_requestor_->cert_request_info_.get()
-                          delegate:nil];
-    [selector displayForWebContents:web_contents
-                        clientCerts:GetTestCertificateList()];
-    content::RunAllPendingInMessageLoop();
+    chrome::OkAndCancelableForTesting* ok_and_cancelable =
+        chrome::ShowSSLClientCertificateSelectorMacForTesting(
+            web_contents, auth_requestor_->cert_request_info_.get(),
+            GetTestCertificateList(), nullptr, run_loop.QuitClosure());
+    base::RunLoop().RunUntilIdle();
 
-    selector.wasDeallocated = &selector_was_deallocated;
-
-    [selector.overlayWindow endSheet:selector.overlayWindow.attachedSheet];
-    content::RunAllPendingInMessageLoop();
+    ok_and_cancelable->ClickOkButton();
+    base::RunLoop().RunUntilIdle();
   }
 
-  EXPECT_TRUE(selector_was_deallocated);
+  // Wait until the deallocation lambda fires.
+  run_loop.Run();
 
-  // Without the workaround, this will crash on Sierra.
+  // Without the workaround, this will crash on just about anything 10.11+.
   [[NSNotificationCenter defaultCenter]
       postNotificationName:NSPreferredScrollerStyleDidChangeNotification
                     object:nil
