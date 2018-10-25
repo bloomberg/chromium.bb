@@ -41092,6 +41092,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Path suffix"/>
   <int value="1" label="Navigation to Previews Domain"/>
   <int value="2" label="Navigation to Private Domain"/>
+  <int value="3" label="The requested host was blacklisted by the server"/>
 </enum>
 
 <enum name="PreviewsServerLitePageIneligibleReason">

@@ -43,7 +43,8 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
     kPathSuffixBlacklisted = 0,
     kNavigationToPreviewsDomain = 1,
     kNavigationToPrivateDomain = 2,
-    kMaxValue = kNavigationToPrivateDomain,
+    kHostBlacklisted = 3,
+    kMaxValue = kHostBlacklisted,
   };
 
   // Reasons that a navigation is not eligible for this preview. This enum must

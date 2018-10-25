@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle_manager.h"
@@ -35,6 +36,63 @@ class PreviewsLitePageDeciderTest : public testing::Test {
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
+
+TEST_F(PreviewsLitePageDeciderTest, TestHostBlacklist) {
+  const int kBlacklistDurationDays = 30;
+  const std::string kHost = "google.com";
+  const std::string kOtherHost = "chromium.org";
+  const base::TimeDelta kYesterday = base::TimeDelta::FromDays(-1);
+  const base::TimeDelta kOneDay = base::TimeDelta::FromDays(1);
+
+  std::unique_ptr<PreviewsLitePageDecider> decider =
+      std::make_unique<PreviewsLitePageDecider>(nullptr);
+  PreviewsLitePageNavigationThrottleManager* manager = decider.get();
+
+  // Simple happy case.
+  manager->BlacklistHost(kHost, kOneDay);
+  EXPECT_TRUE(manager->HostBlacklisted(kHost));
+  decider->ClearStateForTesting();
+
+  // Old entries are deleted.
+  manager->BlacklistHost(kHost, kYesterday);
+  EXPECT_FALSE(manager->HostBlacklisted(kHost));
+  decider->ClearStateForTesting();
+
+  // Oldest entry is thrown out.
+  manager->BlacklistHost(kHost, kOneDay);
+  EXPECT_TRUE(manager->HostBlacklisted(kHost));
+  for (int i = 1; i <= kBlacklistDurationDays; i++) {
+    manager->BlacklistHost(kHost + base::IntToString(i),
+                           kOneDay + base::TimeDelta::FromSeconds(i));
+  }
+  EXPECT_FALSE(manager->HostBlacklisted(kHost));
+  decider->ClearStateForTesting();
+
+  // Oldest entry is not thrown out if there was a stale entry to remove.
+  manager->BlacklistHost(kHost, kOneDay);
+  EXPECT_TRUE(manager->HostBlacklisted(kHost));
+  for (int i = 1; i <= kBlacklistDurationDays - 1; i++) {
+    manager->BlacklistHost(kHost + base::IntToString(i),
+                           kOneDay + base::TimeDelta::FromSeconds(i));
+  }
+  manager->BlacklistHost(kOtherHost, kYesterday);
+  EXPECT_TRUE(manager->HostBlacklisted(kHost));
+  decider->ClearStateForTesting();
+}
+
+TEST_F(PreviewsLitePageDeciderTest, TestClearBlacklist) {
+  const std::string kHost = "1.chromium.org";
+
+  std::unique_ptr<PreviewsLitePageDecider> decider =
+      std::make_unique<PreviewsLitePageDecider>(nullptr);
+  PreviewsLitePageNavigationThrottleManager* manager = decider.get();
+
+  manager->BlacklistHost(kHost, base::TimeDelta::FromMinutes(1));
+  EXPECT_TRUE(manager->HostBlacklisted(kHost));
+
+  decider->ClearBlacklist();
+  EXPECT_FALSE(manager->HostBlacklisted(kHost));
+}
 
 TEST_F(PreviewsLitePageDeciderTest, TestServerUnavailable) {
   struct TestCase {

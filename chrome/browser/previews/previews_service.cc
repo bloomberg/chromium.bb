@@ -143,3 +143,12 @@ void PreviewsService::Initialize(
 void PreviewsService::Shutdown() {
   previews_lite_page_decider_->Shutdown();
 }
+
+void PreviewsService::ClearBlackList(base::Time begin_time,
+                                     base::Time end_time) {
+  if (previews_ui_service_)
+    previews_ui_service_->ClearBlackList(begin_time, end_time);
+
+  if (previews_lite_page_decider_)
+    previews_lite_page_decider_->ClearBlacklist();
+}

@@ -51,6 +51,10 @@ class PreviewsService : public KeyedService {
   // classes.
   void Shutdown() override;
 
+  // Clears the history of the black lists in |previews_ui_service_| and
+  // |previews_lite_page_decider_| between |begin_time| and |end_time|.
+  void ClearBlackList(base::Time begin_time, base::Time end_time);
+
   // The previews UI thread service.
   previews::PreviewsUIService* previews_ui_service() {
     return previews_ui_service_.get();
