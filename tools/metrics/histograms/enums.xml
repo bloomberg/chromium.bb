@@ -20579,6 +20579,7 @@ Called by update_net_error_codes.py.-->
   <int value="2609" label="V8AttemptOverrideReadOnlyOnPrototypeSloppy"/>
   <int value="2610" label="V8AttemptOverrideReadOnlyOnPrototypeStrict"/>
   <int value="2611" label="HTMLCanvasElementLowLatency"/>
+  <int value="2612" label="V8OptimizedFunctionWithOneShotBytecode"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
