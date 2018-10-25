@@ -34,6 +34,9 @@ Opus Audio only WebM file.
 #### bear-vp8-webvtt.webm
 WebM VP8 video with WebVTT subtitle track.
 
+#### bear-1280x720.mp4
+AAC audio and H264 high profile video.
+
 #### bear-1280x720-avt_subt_frag.mp4
 Fragmented bear_1280x720.mp4 with text track containing srt from
 bear-vp8-webvtt.webm as a 'subt' handler type.
@@ -378,6 +381,9 @@ bear-vp9-opus.webm with video track encrypted using key ID [1] and key [2].
 #### bear-640x360-a_frag-cenc.mp4
 A fragmented MP4 version of the audio track of bear-640x360.mp4 encrypted (ISO
 CENC) using key ID [1] and key [2].
+
+**Note**: bear-640x360.mp4 file does not exist any more. Files encrypted from
+it has AAC audio and H264 high profile video (if applicable).
 
 #### bear-640x360-a_frag-cenc-key_rotation.mp4
 A fragmented MP4 version of the audio track of bear-640x360.mp4 encrypted (ISO

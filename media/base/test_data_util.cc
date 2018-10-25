@@ -18,21 +18,27 @@ namespace media {
 
 namespace {
 
-// Mime types for test files. Sorted in alphabetical order.
+// Mime types for test files. Sorted in the ASCII code order of the variable
+// names.
 const char kAacAdtsAudioOnly[] = "audio/aac";
+const char kMp2AudioSBR[] = "video/mp2t; codecs=\"avc1.4D4041,mp4a.40.5\"";
 const char kMp2tAudioVideo[] = "video/mp2t; codecs=\"mp4a.40.2, avc1.42E01E\"";
+const char kMp3AudioOnly[] = "audio/mpeg";
+// MP4
 const char kMp4AacAudioOnly[] = "audio/mp4; codecs=\"mp4a.40.2\"";
-const char kMp4AudioOnly[] = "audio/mp4; codecs=\"mp4a.40.2\"'";
 const char kMp4Av110bitVideoOnly[] = "video/mp4; codecs=\"av01.0.04M.10\"";
 const char kMp4Av1VideoOnly[] = "video/mp4; codecs=\"av01.0.04M.08\"";
 const char kMp4Avc1VideoOnly[] = "video/mp4; codecs=\"avc1.64001E\"";
+const char kMp4AacAudioAvc1Video[] =
+    "video/mp4; codecs=\"mp4a.40.2, avc1.64001E\"";
+const char kMp4Avc3VideoOnly[] = "video/mp4; codecs=\"avc3.64001f\"";
 const char kMp4FlacAudioOnly[] = "audio/mp4; codecs=\"flac\"";
-const char kMp4VideoOnly[] = "video/mp4; codecs=\"avc1.4D4041\"'";
+const char kMp4OpusAudioOnly[] = "audio/mp4; codecs=\"opus\"";
 const char kMp4Vp9Profile2VideoOnly[] =
     "video/mp4; codecs=\"vp09.02.10.10.01.02.02.02.00\"";
 const char kMp4Vp9VideoOnly[] =
     "video/mp4; codecs=\"vp09.00.10.08.01.02.02.02.00\"";
-const char kWebMAudioVideo[] = "video/webm; codecs=\"vorbis, vp8\"";
+// WebM
 const char kWebMAv110bitVideoOnly[] = "video/webm; codecs=\"av01.0.04M.10\"";
 const char kWebMAv1VideoOnly[] = "video/webm; codecs=\"av01.0.04M.08\"";
 const char kWebMOpusAudioOnly[] = "audio/webm; codecs=\"opus\"";
@@ -48,15 +54,33 @@ const char kWebMVp9VideoOnly[] = "video/webm; codecs=\"vp9\"";
 // media/test/data.
 using FileToMimeTypeMap = base::flat_map<std::string, std::string>;
 
-// Wrapped to avoid static initializer startup cost. The list is sorted in
-// alphabetical order.
+// Wrapped to avoid static initializer startup cost. The list is sorted in the
+// the ASCII code order of file names.
+// Note: Some files are old and the codec string in the mime type may not be
+// accurate.
+// Warning: When adding new files, make sure the codec string is accurate. For
+// example kMp4Avc1VideoOnly is for H264 high profile. If you add a file that
+// uses main profile, a new mime type should be added.
 const FileToMimeTypeMap& GetFileToMimeTypeMap() {
   static const base::NoDestructor<FileToMimeTypeMap> kFileToMimeTypeMap({
+      {"bear-1280x720-a_frag-cenc-key_rotation.mp4", kMp4AacAudioOnly},
+      {"bear-1280x720-a_frag-cenc.mp4", kMp4AacAudioOnly},
+      {"bear-1280x720-a_frag-cenc_clear-all.mp4", kMp4AacAudioOnly},
+      {"bear-1280x720-aac_he.ts", kMp2AudioSBR},
+      {"bear-1280x720-v_frag-avc3.mp4", kMp4Avc3VideoOnly},
+      {"bear-1280x720-v_frag-cenc-key_rotation.mp4", kMp4Avc1VideoOnly},
+      {"bear-1280x720-v_frag-cenc.mp4", kMp4Avc1VideoOnly},
+      {"bear-1280x720-v_frag-cenc_clear-all.mp4", kMp4Avc1VideoOnly},
       {"bear-1280x720.ts", kMp2tAudioVideo},
+      {"bear-320x240-16x9-aspect-av_enc-av.webm", kWebMVorbisAudioVp8Video},
+      {"bear-320x240-16x9-aspect.webm", kWebMVorbisAudioVp8Video},
       {"bear-320x240-audio-only.webm", kWebMVorbisAudioOnly},
       {"bear-320x240-av_enc-a.webm", kWebMVorbisAudioVp8Video},
       {"bear-320x240-av_enc-av.webm", kWebMVorbisAudioVp8Video},
+      {"bear-320x240-av_enc-av_clear-1s.webm", kWebMVorbisAudioVp8Video},
+      {"bear-320x240-av_enc-av_clear-all.webm", kWebMVorbisAudioVp8Video},
       {"bear-320x240-av_enc-v.webm", kWebMVorbisAudioVp8Video},
+      {"bear-320x240-live.webm", kWebMVorbisAudioVp8Video},
       {"bear-320x240-opus-a_enc-a.webm", kWebMOpusAudioOnly},
       {"bear-320x240-opus-av_enc-av.webm", kWebMOpusAudioVp9Video},
       {"bear-320x240-opus-av_enc-v.webm", kWebMOpusAudioVp9Video},
@@ -68,27 +92,56 @@ const FileToMimeTypeMap& GetFileToMimeTypeMap() {
       {"bear-320x240-v-vp9_subsample_enc-v.webm", kWebMVp9VideoOnly},
       {"bear-320x240-v_enc-v.webm", kWebMVp8VideoOnly},
       {"bear-320x240-v_frag-vp9-cenc.mp4", kMp4Vp9VideoOnly},
+      {"bear-320x240-v_frag-vp9.mp4", kMp4Vp9VideoOnly},
       {"bear-320x240-video-only.webm", kWebMVp8VideoOnly},
-      {"bear-320x240.webm", kWebMAudioVideo},
+      {"bear-320x240.webm", kWebMVorbisAudioVp8Video},
+      {"bear-320x240_corrupted_after_init_segment.webm",
+       kWebMVorbisAudioVp8Video},
       {"bear-640x360-a_frag-cbcs.mp4", kMp4AacAudioOnly},
       {"bear-640x360-a_frag-cenc.mp4", kMp4AacAudioOnly},
-      {"bear-640x360-a_frag.mp4", kMp4AudioOnly},
+      {"bear-640x360-a_frag.mp4", kMp4AacAudioOnly},
+      {"bear-640x360-av_frag.mp4", kMp4AacAudioAvc1Video},
       {"bear-640x360-v_frag-cbc1.mp4", kMp4Avc1VideoOnly},
       {"bear-640x360-v_frag-cbcs.mp4", kMp4Avc1VideoOnly},
+      {"bear-640x360-v_frag-cenc-key_rotation.mp4", kMp4Avc1VideoOnly},
       {"bear-640x360-v_frag-cenc-mdat.mp4", kMp4Avc1VideoOnly},
+      {"bear-640x360-v_frag-cenc-senc-no-saiz-saio.mp4", kMp4Avc1VideoOnly},
+      {"bear-640x360-v_frag-cenc-senc.mp4", kMp4Avc1VideoOnly},
       {"bear-640x360-v_frag-cenc.mp4", kMp4Avc1VideoOnly},
       {"bear-640x360-v_frag-cens.mp4", kMp4Avc1VideoOnly},
-      {"bear-640x360-v_frag.mp4", kMp4VideoOnly},
+      {"bear-640x360-v_frag.mp4", kMp4Avc1VideoOnly},
       {"bear-a_enc-a.webm", kWebMVorbisAudioOnly},
+      {"bear-audio-implicit-he-aac-v1.aac", kAacAdtsAudioOnly},
+      {"bear-audio-implicit-he-aac-v2.aac", kAacAdtsAudioOnly},
+      {"bear-audio-lc-aac.aac", kAacAdtsAudioOnly},
+      {"bear-audio-main-aac.aac", kAacAdtsAudioOnly},
+      {"bear-audio-mp4a.69.ts", "video/mp2t; codecs=\"mp4a.69\""},
+      {"bear-audio-mp4a.6B.ts", "video/mp2t; codecs=\"mp4a.6B\""},
       {"bear-av1-320x180-10bit-cenc.mp4", kMp4Av110bitVideoOnly},
       {"bear-av1-320x180-10bit-cenc.webm", kWebMAv110bitVideoOnly},
+      {"bear-av1-320x180-10bit.mp4", kMp4Av110bitVideoOnly},
+      {"bear-av1-320x180-10bit.webm", kWebMAv110bitVideoOnly},
+      {"bear-av1-480x360.webm", kWebMAv1VideoOnly},
       {"bear-av1-cenc.mp4", kMp4Av1VideoOnly},
       {"bear-av1-cenc.webm", kWebMAv1VideoOnly},
+      {"bear-av1.mp4", kMp4Av1VideoOnly},
+      {"bear-av1.webm", kWebMAv1VideoOnly},
       {"bear-flac-cenc.mp4", kMp4FlacAudioOnly},
       {"bear-flac_frag.mp4", kMp4FlacAudioOnly},
+      {"bear-opus.mp4", kMp4OpusAudioOnly},
       {"bear-opus.webm", kWebMOpusAudioOnly},
+      {"bear-vp8a.webm", kWebMVp8VideoOnly},
+      {"bear-vp9-blockgroup.webm", kWebMVp9VideoOnly},
+      {"bear-vp9.webm", kWebMVp9VideoOnly},
       {"frame_size_change-av_enc-v.webm", kWebMVorbisAudioVp8Video},
+      {"icy_sfx.mp3", kMp3AudioOnly},
+      {"opus-trimming-test.mp4", kMp4OpusAudioOnly},
+      {"opus-trimming-test.webm", kWebMOpusAudioOnly},
+      {"sfx-flac_frag.mp4", kMp4FlacAudioOnly},
+      {"sfx-opus-441.webm", kWebMOpusAudioOnly},
+      {"sfx-opus_frag.mp4", kMp4OpusAudioOnly},
       {"sfx.adts", kAacAdtsAudioOnly},
+      {"sfx.mp3", kMp3AudioOnly},
   });
 
   return *kFileToMimeTypeMap;
