@@ -97,6 +97,7 @@ Bug(none) virtual/without-smil/ [ Skip ]
 
 crbug.com/778875 virtual/threaded/animations/animationworklet/ [ Skip ]
 crbug.com/841567 virtual/threaded/fast/scrolling [ Skip ]
+crbug.com/841567 virtual/fractional_scrolling_threaded/fast/scrolling [ Skip ]
 
 # Fail on SPv1, but succeed on SPv2
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ Pass ]
@@ -1266,6 +1267,15 @@ Bug(none) paint/invalidation/clip/clip-path-in-mask-layer.html [ Failure ]
 Bug(none) paint/invalidation/reflection/scroll-fixed-layer-with-reflection.html [ Failure ]
 Bug(none) paint/invalidation/reflection/scroll-fixed-reflected-layer.html [ Failure ]
 Bug(none) svg/transforms/text-with-mask-with-svg-transform.svg [ Failure ]
+
+Bug(none) fast/scrolling/fractional-scroll-offset-document.html [ Crash ]
+Bug(none) virtual/fractional_scrolling/fast/scrolling/editor-command-scroll-page-scale.html [ Crash ]
+Bug(none) virtual/fractional_scrolling/fast/scrolling/fractional-scroll-offset-document.html [ Crash ]
+Bug(none) virtual/fractional_scrolling/fast/scrolling/keyboard-scroll-page-scale.html [ Crash ]
+Bug(none) virtual/fractional_scrolling/fast/scrolling/overflow-clip-with-page-scale.html [ Crash ]
+Bug(none) virtual/fractional_scrolling/fast/scrolling/same-page-navigate.html [ Crash ]
+Bug(none) virtual/fractional_scrolling/fast/scrolling/scroll-without-document-element-renderer.html [ Crash ]
+Bug(none) virtual/fractional_scrolling/fast/scrolling/scroll-without-document-element.html [ Crash ]
 
 crbug.com/833083 paint/invalidation/compositing/composited-layers-move-in-subpixels.html [ Failure ]
 

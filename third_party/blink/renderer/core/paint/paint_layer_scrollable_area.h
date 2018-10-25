@@ -284,7 +284,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   GraphicsLayer* LayerForScrollCorner() const override;
 
   bool ShouldScrollOnMainThread() const override;
-  bool ShouldUseIntegerScrollOffset() const override;
   bool IsActive() const override;
   bool IsScrollCornerVisible() const override;
   IntRect ScrollCornerRect() const override;
