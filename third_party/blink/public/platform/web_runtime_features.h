@@ -64,6 +64,8 @@ class WebRuntimeFeatures {
 
   BLINK_PLATFORM_EXPORT static bool IsBlinkGenPropertyTreesEnabled();
 
+  BLINK_PLATFORM_EXPORT static bool IsFractionalScrollOffsetsEnabled();
+
   BLINK_PLATFORM_EXPORT static void EnableCompositedSelectionUpdate(bool);
   BLINK_PLATFORM_EXPORT static bool IsCompositedSelectionUpdateEnabled();
 

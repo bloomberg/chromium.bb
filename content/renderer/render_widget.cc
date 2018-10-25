@@ -2605,6 +2605,12 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
       blink::WebRuntimeFeatures::IsBlinkGenPropertyTreesEnabled() ||
       blink::WebRuntimeFeatures::IsSlimmingPaintV2Enabled();
 
+  // Blink currently doesn't support setting fractional scroll offsets so CC
+  // must send integer values. We plan to eventually make Blink use fractional
+  // offsets internally: https://crbug.com/414283.
+  settings.commit_fractional_scroll_deltas =
+      blink::WebRuntimeFeatures::IsFractionalScrollOffsetsEnabled();
+
   // The means the renderer compositor has 2 possible modes:
   // - Threaded compositing with a scheduler.
   // - Single threaded compositing without a scheduler (for layout tests only).

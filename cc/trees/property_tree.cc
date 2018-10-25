@@ -1472,10 +1472,17 @@ const gfx::ScrollOffset ScrollTree::GetPixelSnappedScrollOffset(
 }
 
 gfx::ScrollOffset ScrollTree::PullDeltaForMainThread(
-    SyncedScrollOffset* scroll_offset) {
+    SyncedScrollOffset* scroll_offset,
+    bool use_fractional_deltas) {
   DCHECK(property_trees()->is_active);
+
+  // Once this setting is enabled, all the complicated rounding logic below can
+  // go away.
+  if (use_fractional_deltas)
+    return scroll_offset->PullDeltaForMainThread();
+
   // TODO(flackr): We should pass the fractional scroll deltas when Blink fully
-  // supports fractional scrolls.
+  // supports fractional scrolls. crbug.com/414283.
   // TODO(flackr): We should ideally round the fractional scrolls in the same
   // direction as the scroll will be snapped but for common cases this is
   // equivalent to rounding to the nearest integer offset.
@@ -1495,13 +1502,13 @@ gfx::ScrollOffset ScrollTree::PullDeltaForMainThread(
   return delta;
 }
 
-void ScrollTree::CollectScrollDeltas(
-    ScrollAndScaleSet* scroll_info,
-    ElementId inner_viewport_scroll_element_id) {
+void ScrollTree::CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
+                                     ElementId inner_viewport_scroll_element_id,
+                                     bool use_fractional_deltas) {
   DCHECK(!property_trees()->is_main_thread);
   for (auto map_entry : synced_scroll_offset_map_) {
     gfx::ScrollOffset scroll_delta =
-        PullDeltaForMainThread(map_entry.second.get());
+        PullDeltaForMainThread(map_entry.second.get(), use_fractional_deltas);
 
     ElementId id = map_entry.first;
 
@@ -1521,8 +1528,11 @@ void ScrollTree::CollectScrollDeltas(
 }
 
 void ScrollTree::CollectScrollDeltasForTesting() {
+  LayerTreeSettings settings;
+  bool use_fractional_deltas = settings.commit_fractional_scroll_deltas;
+
   for (auto map_entry : synced_scroll_offset_map_) {
-    PullDeltaForMainThread(map_entry.second.get());
+    PullDeltaForMainThread(map_entry.second.get(), use_fractional_deltas);
   }
 }
 
