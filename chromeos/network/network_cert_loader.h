@@ -68,6 +68,13 @@ class CHROMEOS_EXPORT NetworkCertLoader
   static std::string GetPkcs11IdAndSlotForCert(CERTCertificate* cert,
                                                int* slot_id);
 
+  // When this is called, |NetworkCertLoader| stops sending out updates to its
+  // observers. This is a workaround for https://crbug.com/894867, where a crash
+  // is suspected to happen due to updates sent out during the shutdown
+  // procedure. TODO(https://crbug.com/894867): Remove this when the root cause
+  // is found.
+  void set_is_shutting_down() { is_shutting_down_ = true; }
+
   // Sets the NSS cert database which NetworkCertLoader should use to access
   // system slot certificates. The NetworkCertLoader will _not_ take ownership
   // of the database - see comment on SetUserNSSDB. NetworkCertLoader supports
@@ -171,6 +178,10 @@ class CHROMEOS_EXPORT NetworkCertLoader
   void OnPolicyProvidedCertsChanged(
       const net::CertificateList& all_server_and_authority_certs,
       const net::CertificateList& trust_anchors) override;
+
+  // If this is true, |NetworkCertLoader| does not send out notifications to its
+  // observers anymore.
+  bool is_shutting_down_ = false;
 
   base::ObserverList<Observer>::Unchecked observers_;
 

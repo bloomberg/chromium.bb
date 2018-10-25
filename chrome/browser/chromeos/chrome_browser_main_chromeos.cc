@@ -1085,6 +1085,12 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   chromeos::DemoSession::ShutDownIfInitialized();
 
+  // Inform |NetworkCertLoader| that it should not notify observers anymore.
+  // TODO(https://crbug.com/894867): Remove this when the root cause of the
+  // crash is found.
+  if (NetworkCertLoader::IsInitialized())
+    NetworkCertLoader::Get()->set_is_shutting_down();
+
   // Let the UserManager unregister itself as an observer of the CrosSettings
   // singleton before it is destroyed. This also ensures that the UserManager
   // has no URLRequest pending (see http://crbug.com/276659).
