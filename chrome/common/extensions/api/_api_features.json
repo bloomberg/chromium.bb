@@ -791,10 +791,6 @@
     // given the blessed_extension denomination. Confusing.
     "contexts": ["blessed_extension"]
   },
-  "webstoreWidgetPrivate": {
-    "dependencies": ["permission:webstoreWidgetPrivate"],
-    "contexts": ["blessed_extension"]
-  },
   "webviewTag": {
     "internal": true,
     "channel": "stable",

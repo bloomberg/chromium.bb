@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_WEBSTORE_WIDGET_PRIVATE_WEBSTORE_WIDGET_PRIVATE_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_WEBSTORE_WIDGET_PRIVATE_WEBSTORE_WIDGET_PRIVATE_API_H_
+#ifndef CHROME_BROWSER_APPS_PLATFORM_APPS_API_WEBSTORE_WIDGET_PRIVATE_WEBSTORE_WIDGET_PRIVATE_API_H_
+#define CHROME_BROWSER_APPS_PLATFORM_APPS_API_WEBSTORE_WIDGET_PRIVATE_WEBSTORE_WIDGET_PRIVATE_API_H_
 
 #include <string>
 
@@ -11,7 +11,7 @@
 #include "chrome/common/extensions/webstore_install_result.h"
 #include "extensions/browser/extension_function.h"
 
-namespace extensions {
+namespace chrome_apps {
 namespace api {
 
 class WebstoreWidgetPrivateInstallWebstoreItemFunction
@@ -37,6 +37,6 @@ class WebstoreWidgetPrivateInstallWebstoreItemFunction
 };
 
 }  // namespace api
-}  // namespace extensions
+}  // namespace chrome_apps
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_WEBSTORE_WIDGET_PRIVATE_WEBSTORE_WIDGET_PRIVATE_API_H_
+#endif  // CHROME_BROWSER_APPS_PLATFORM_APPS_API_WEBSTORE_WIDGET_PRIVATE_WEBSTORE_WIDGET_PRIVATE_API_H_

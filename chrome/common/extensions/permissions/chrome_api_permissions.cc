@@ -166,8 +166,6 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
      APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kAutofillPrivate, "autofillPrivate",
      APIPermissionInfo::kFlagCannotBeOptional},
-    {APIPermission::kWebstoreWidgetPrivate, "webstoreWidgetPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kPasswordsPrivate, "passwordsPrivate",
      APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kUsersPrivate, "usersPrivate",

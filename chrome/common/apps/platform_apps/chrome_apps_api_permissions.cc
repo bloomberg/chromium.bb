@@ -27,6 +27,8 @@ constexpr extensions::APIPermissionInfo::InitInfo permissions_to_register[] = {
      extensions::APIPermissionInfo::kFlagNone,
      &CreateAPIPermission<chrome_apps::MediaGalleriesPermission>},
     {extensions::APIPermission::kSyncFileSystem, "syncFileSystem"},
+    {extensions::APIPermission::kWebstoreWidgetPrivate, "webstoreWidgetPrivate",
+     extensions::APIPermissionInfo::kFlagCannotBeOptional},
 };
 
 }  // namespace

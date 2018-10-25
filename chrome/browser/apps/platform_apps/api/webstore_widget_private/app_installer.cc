@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/webstore_widget_private/app_installer.h"
+#include "chrome/browser/apps/platform_apps/api/webstore_widget_private/app_installer.h"
 
 #include "base/macros.h"
 #include "chrome/common/extensions/webstore_install_result.h"
@@ -45,8 +45,7 @@ AppInstaller::AppInstaller(content::WebContents* web_contents,
   DCHECK(web_contents_);
 }
 
-AppInstaller::~AppInstaller() {
-}
+AppInstaller::~AppInstaller() {}
 
 bool AppInstaller::CheckRequestorAlive() const {
   // The tab may have gone away - cancel installation in that case.
