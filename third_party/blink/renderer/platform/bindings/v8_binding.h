@@ -337,10 +337,6 @@ inline v8::Local<v8::String> V8StringFromUtf8(v8::Isolate* isolate,
       .ToLocalChecked();
 }
 
-inline v8::Local<v8::Value> V8Undefined() {
-  return v8::Local<v8::Value>();
-}
-
 inline v8::MaybeLocal<v8::Value> V8DateOrNaN(v8::Isolate* isolate,
                                              double value) {
   DCHECK(isolate);

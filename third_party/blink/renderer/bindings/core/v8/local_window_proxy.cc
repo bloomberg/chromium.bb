@@ -458,11 +458,11 @@ static v8::Local<v8::Value> GetNamedProperty(
     v8::Local<v8::Object> creation_context,
     v8::Isolate* isolate) {
   if (!html_document->HasNamedItem(key))
-    return V8Undefined();
+    return v8::Local<v8::Value>();
 
   DocumentNameCollection* items = html_document->DocumentNamedItems(key);
   if (items->IsEmpty())
-    return V8Undefined();
+    return v8::Local<v8::Value>();
 
   if (items->HasExactlyOneItem()) {
     HTMLElement* element = items->Item(0);
