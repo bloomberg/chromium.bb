@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_bridge.h"
 #include "chrome/browser/chromeos/arc/input_method_manager/input_connection_impl.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
@@ -67,6 +68,11 @@ class ArcInputMethodManagerService
                           Profile* profile,
                           bool show_message) override;
 
+  // Called when a11y keyboard option changed and disables ARC IME while a11y
+  // keyboard option is enabled.
+  void OnAccessibilityStatusChanged(
+      const chromeos::AccessibilityStatusEventDetails& event_details);
+
   InputConnectionImpl* GetInputConnectionForTesting();
 
  private:
@@ -90,8 +96,12 @@ class ArcInputMethodManagerService
   void RemoveArcIMEFromPrefs();
   void RemoveArcIMEFromPref(const char* pref_name);
 
-  // Calls InputMethodManager.SetAllowedInputMethods according to the argument.
-  void SetArcIMEAllowed(bool allowed);
+  // Calls InputMethodManager.SetAllowedInputMethods according to the return
+  // value of ShouldArcImeAllowed().
+  void UpdateArcIMEAllowed();
+  // Returns whether ARC IMEs should be allowed now or not.
+  // It depends on tablet mode state and a11y keyboard option.
+  bool ShouldArcIMEAllowed() const;
 
   // Notifies InputMethodManager's observers of possible ARC IME state changes.
   void NotifyInputMethodManagerObservers(bool is_tablet_mode);
@@ -121,6 +131,9 @@ class ArcInputMethodManagerService
   std::unique_ptr<TabletModeObserver> tablet_mode_observer_;
 
   std::unique_ptr<InputMethodObserver> input_method_observer_;
+
+  std::unique_ptr<chromeos::AccessibilityStatusSubscription>
+      accessibility_status_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcInputMethodManagerService);
 };

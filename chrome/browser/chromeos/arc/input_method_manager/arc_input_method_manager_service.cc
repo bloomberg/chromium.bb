@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
@@ -193,7 +194,7 @@ class ArcInputMethodManagerService::TabletModeObserver
   ~TabletModeObserver() override = default;
 
   void OnTabletModeToggled(bool enabled) override {
-    owner_->SetArcIMEAllowed(enabled);
+    owner_->UpdateArcIMEAllowed();
     owner_->NotifyInputMethodManagerObservers(enabled);
   }
 
@@ -243,6 +244,18 @@ ArcInputMethodManagerService::ArcInputMethodManagerService(
   // PreProfileInit() and this service is created in PostProfileInit().
   DCHECK(TabletModeClient::Get());
   TabletModeClient::Get()->AddObserver(tablet_mode_observer_.get());
+
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  if (accessibility_manager) {
+    // accessibility_status_subscription_ ensures the callback is removed when
+    // ArcInputMethodManagerService is destroyed, so it's safe to use
+    // base::Unretained(this) here.
+    accessibility_status_subscription_ =
+        accessibility_manager->RegisterCallback(base::BindRepeating(
+            &ArcInputMethodManagerService::OnAccessibilityStatusChanged,
+            base::Unretained(this)));
+  }
 }
 
 ArcInputMethodManagerService::~ArcInputMethodManagerService() {
@@ -339,7 +352,7 @@ void ArcInputMethodManagerService::OnImeInfoChanged(
                                   base::JoinString(active_ime_list, ","));
 
   // Refresh allowed IME list.
-  SetArcIMEAllowed(TabletModeClient::Get()->tablet_mode_enabled());
+  UpdateArcIMEAllowed();
 }
 
 void ArcInputMethodManagerService::OnConnectionClosed() {
@@ -425,6 +438,18 @@ void ArcInputMethodManagerService::InputMethodChanged(
     // Stop overriding virtual keyboard availability.
     SetKeyboardDisabled(false);
   }
+}
+
+void ArcInputMethodManagerService::OnAccessibilityStatusChanged(
+    const chromeos::AccessibilityStatusEventDetails& event_details) {
+  if (event_details.notification_type !=
+      chromeos::ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD) {
+    // This class is not interested in a11y events except toggling virtual
+    // keyboard event.
+    return;
+  }
+
+  UpdateArcIMEAllowed();
 }
 
 InputConnectionImpl*
@@ -533,7 +558,9 @@ void ArcInputMethodManagerService::RemoveArcIMEFromPref(const char* pref_name) {
                                   base::JoinString(ime_id_list, ","));
 }
 
-void ArcInputMethodManagerService::SetArcIMEAllowed(bool allowed) {
+void ArcInputMethodManagerService::UpdateArcIMEAllowed() {
+  const bool allowed = ShouldArcIMEAllowed();
+
   auto* manager = chromeos::input_method::InputMethodManager::Get();
   std::set<std::string> allowed_method_ids_set;
   {
@@ -602,6 +629,12 @@ void ArcInputMethodManagerService::SetArcIMEAllowed(bool allowed) {
   // IME that is disallowed always fails.
   for (const auto& id : ime_ids_to_enable)
     manager->GetActiveIMEState()->EnableInputMethod(id);
+}
+
+bool ArcInputMethodManagerService::ShouldArcIMEAllowed() const {
+  return !profile_->GetPrefs()->GetBoolean(
+             ash::prefs::kAccessibilityVirtualKeyboardEnabled) &&
+         TabletModeClient::Get()->tablet_mode_enabled();
 }
 
 void ArcInputMethodManagerService::NotifyInputMethodManagerObservers(
