@@ -17,6 +17,7 @@
 #include "extensions/common/extension_messages.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/keyboard/keyboard_switches.h"
 
 namespace virtual_keyboard_private = extensions::api::virtual_keyboard_private;
 
@@ -94,6 +95,17 @@ void ChromeKeyboardControllerClient::ClearEnableFlag(
 
 void ChromeKeyboardControllerClient::ReloadKeyboard() {
   keyboard_controller_ptr_->ReloadKeyboard();
+}
+
+bool ChromeKeyboardControllerClient::IsKeyboardOverscrollEnabled() {
+  DCHECK(cached_keyboard_config_);
+  if (cached_keyboard_config_->overscroll_behavior !=
+      keyboard::mojom::KeyboardOverscrollBehavior::kDefault) {
+    return cached_keyboard_config_->overscroll_behavior ==
+           keyboard::mojom::KeyboardOverscrollBehavior::kEnabled;
+  }
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      keyboard::switches::kDisableVirtualKeyboardOverscroll);
 }
 
 void ChromeKeyboardControllerClient::FlushForTesting() {

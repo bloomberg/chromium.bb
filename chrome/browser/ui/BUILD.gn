@@ -1307,6 +1307,8 @@ jumbo_split_static_library("ui") {
       "ash/chrome_accessibility_delegate.h",
       "ash/chrome_browser_main_extra_parts_ash.cc",
       "ash/chrome_browser_main_extra_parts_ash.h",
+      "ash/chrome_keyboard_bounds_observer.cc",
+      "ash/chrome_keyboard_bounds_observer.h",
       "ash/chrome_keyboard_controller_client.cc",
       "ash/chrome_keyboard_controller_client.h",
       "ash/chrome_keyboard_ui.cc",

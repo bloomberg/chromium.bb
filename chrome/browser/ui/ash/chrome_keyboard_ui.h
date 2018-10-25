@@ -61,27 +61,9 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
                              aura::Window* parent) override;
 
  private:
-  class WindowBoundsChangeObserver;
-
-  // Called when a window being observed changes bounds, to update its insets.
-  void UpdateInsetsForWindow(aura::Window* window);
-
   // Gets the virtual keyboard URL, either the default keyboard URL or the IME
   // override URL.
   GURL GetVirtualKeyboardUrl();
-
-  // Determines whether a particular window should have insets for overscroll.
-  bool ShouldEnableInsets(aura::Window* window);
-
-  // Whether this window should do an overscroll to avoid occlusion by the
-  // virtual keyboard. IME windows and virtual keyboard windows should always
-  // avoid overscroll.
-  bool ShouldWindowOverscroll(aura::Window* window);
-
-  // Adds an observer for tracking changes to a window size or
-  // position while the keyboard is displayed. Any window repositioning
-  // invalidates insets for overscrolling.
-  void AddBoundsChangedObserver(aura::Window* window);
 
   // Sets shadow around the keyboard. If shadow has not been created yet,
   // this method creates it.
@@ -93,7 +75,6 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
 
   std::unique_ptr<ChromeKeyboardWebContents> keyboard_contents_;
   std::unique_ptr<ui::Shadow> shadow_;
-  std::unique_ptr<WindowBoundsChangeObserver> window_bounds_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeKeyboardUI);
 };

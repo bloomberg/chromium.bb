@@ -28,9 +28,12 @@ specific_include_rules = {
   "chrome_browser_main_extra_parts_ash\.cc": [
     "+ash/shell.h",
   ],
+  # Only for !features::IsUsingWindowService().
+  "chrome_keyboard_bounds_observer\.cc": [
+    "+ash/root_window_controller.h",
+  ],
   # https://crbug.com/843332
   "chrome_keyboard_ui\.cc": [
-    "+ash/root_window_controller.h",
     "+ash/shell.h",
   ],
   # https://crbug.com/124222

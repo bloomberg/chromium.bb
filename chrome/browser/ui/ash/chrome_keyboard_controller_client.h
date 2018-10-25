@@ -61,10 +61,12 @@ class ChromeKeyboardControllerClient
   // Reloads the virtual keyboard if enabled.
   void ReloadKeyboard();
 
-  void FlushForTesting();
+  // Returns true if overscroll is enabled by the config or command line.
+  bool IsKeyboardOverscrollEnabled();
 
   bool is_keyboard_enabled() { return is_keyboard_enabled_; }
 
+  void FlushForTesting();
   void set_profile_for_test(Profile* profile) { profile_for_test_ = profile; }
 
  private:
