@@ -21,6 +21,7 @@ js_library("email_chooser") {
   deps = [
     ":nux_email_proxy",
     "../:navigation_behavior",
+    "../shared:bookmark_proxy",
     "../shared:nux_types",
     "//third_party/polymer/v1_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer-extracted",
     "//ui/webui/resources/js:cr",

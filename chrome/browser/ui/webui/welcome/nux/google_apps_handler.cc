@@ -11,11 +11,9 @@
 #include "chrome/browser/ui/webui/welcome/nux/bookmark_item.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/grit/components_resources.h"
 #include "components/grit/components_scaled_resources.h"
-#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -56,9 +54,8 @@ const BookmarkItem kGoogleApps[] = {
 
 constexpr const int kGoogleAppIconSize = 48;  // Pixels.
 
-GoogleAppsHandler::GoogleAppsHandler(PrefService* prefs,
-                                     favicon::FaviconService* favicon_service)
-    : prefs_(prefs), favicon_service_(favicon_service) {}
+GoogleAppsHandler::GoogleAppsHandler(favicon::FaviconService* favicon_service)
+    : favicon_service_(favicon_service) {}
 
 GoogleAppsHandler::~GoogleAppsHandler() {}
 
@@ -108,9 +105,6 @@ void GoogleAppsHandler::HandleAddGoogleApps(const base::ListValue* args) {
     }
   }
 
-  // Enable bookmark bar.
-  prefs_->SetBoolean(bookmarks::prefs::kShowBookmarkBar, true);
-
   UMA_HISTOGRAM_ENUMERATION(kGoogleAppsInteractionHistogram,
                             GoogleAppsInteraction::kGetStarted,
                             GoogleAppsInteraction::kCount);
@@ -126,8 +120,7 @@ void GoogleAppsHandler::HandleGetGoogleAppsList(const base::ListValue* args) {
       bookmarkItemsToListValue(kGoogleApps, base::size(kGoogleApps)));
 }
 
-void GoogleAppsHandler::AddSources(content::WebUIDataSource* html_source,
-                                   PrefService* prefs) {
+void GoogleAppsHandler::AddSources(content::WebUIDataSource* html_source) {
   // Add icons
   html_source->AddResourcePath("google_apps/chrome_store_1x.png",
                                IDR_NUX_GOOGLE_APPS_CHROME_STORE_1X);
@@ -158,12 +151,6 @@ void GoogleAppsHandler::AddSources(content::WebUIDataSource* html_source,
                                IDR_NUX_GOOGLE_APPS_YOUTUBE_1X);
   html_source->AddResourcePath("google_apps/youtube_2x.png",
                                IDR_NUX_GOOGLE_APPS_YOUTUBE_2X);
-
-  // Add constants to loadtime data
-  html_source->AddBoolean(
-      "bookmark_bar_shown",
-      prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar));
-  html_source->SetJsonPath("strings.js");
 }
 
 }  // namespace nux

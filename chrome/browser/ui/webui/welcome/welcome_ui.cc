@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
+#include "chrome/browser/ui/webui/welcome/nux/bookmark_handler.h"
 #include "chrome/browser/ui/webui/welcome/nux/constants.h"
 #include "chrome/browser/ui/webui/welcome/nux/email_handler.h"
 #include "chrome/browser/ui/webui/welcome/nux/google_apps_handler.h"
@@ -167,17 +168,22 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
         "images/background_svgs/yellow_semicircle.svg",
         IDR_WELCOME_ONBOARDING_WELCOME_IMAGES_BACKGROUND_SVGS_YELLOW_SEMICIRCLE_SVG);
 
+    // Add the shared bookmark handler for onboarding modules.
+    web_ui->AddMessageHandler(
+        std::make_unique<nux::BookmarkHandler>(profile->GetPrefs()));
+    nux::BookmarkHandler::AddSources(html_source, profile->GetPrefs());
+
     // Add email provider bookmarking onboarding module.
     web_ui->AddMessageHandler(std::make_unique<nux::EmailHandler>(
-        profile->GetPrefs(), FaviconServiceFactory::GetForProfile(
-                                 profile, ServiceAccessType::EXPLICIT_ACCESS)));
-    nux::EmailHandler::AddSources(html_source, profile->GetPrefs());
+        FaviconServiceFactory::GetForProfile(
+            profile, ServiceAccessType::EXPLICIT_ACCESS)));
+    nux::EmailHandler::AddSources(html_source);
 
     // Add google apps bookmarking onboarding module.
     web_ui->AddMessageHandler(std::make_unique<nux::GoogleAppsHandler>(
-        profile->GetPrefs(), FaviconServiceFactory::GetForProfile(
-                                 profile, ServiceAccessType::EXPLICIT_ACCESS)));
-    nux::GoogleAppsHandler::AddSources(html_source, profile->GetPrefs());
+        FaviconServiceFactory::GetForProfile(
+            profile, ServiceAccessType::EXPLICIT_ACCESS)));
+    nux::GoogleAppsHandler::AddSources(html_source);
 
     // Add set-as-default onboarding module.
     web_ui->AddMessageHandler(std::make_unique<nux::SetAsDefaultHandler>());
