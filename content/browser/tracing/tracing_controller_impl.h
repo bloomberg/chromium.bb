@@ -50,7 +50,7 @@ class TracingControllerImpl : public TracingController,
   CONTENT_EXPORT static TracingControllerImpl* GetInstance();
 
   // Should be called on the UI thread.
-  TracingControllerImpl();
+  CONTENT_EXPORT TracingControllerImpl();
 
   // TracingController implementation.
   bool GetCategories(GetCategoriesDoneCallback callback) override;
