@@ -85,8 +85,9 @@ CWV_EXPORT
 // |storeLocally| Whether or not to save |creditCard| locally. If YES, user will
 // not be asked again to verify this card. Ignored if |canSaveLocally| is NO.
 // |dataSource| will be asked to return risk data needed for verification.
-// |delegate| will be passed the verification result. Must wait for |delegate|
-// methods before attempting to verify again.
+// |delegate| will be passed the verification result.
+// If |delegate| is passed an error object indicating retry is not allowed,
+// additional verifications will be ignored.
 - (void)verifyWithCVC:(NSString*)CVC
       expirationMonth:(nullable NSString*)expirationMonth
        expirationYear:(nullable NSString*)expirationYear

@@ -9,6 +9,7 @@
 
 #include "base/base_paths.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
@@ -179,6 +180,7 @@ TEST_F(CWVCreditCardVerifierTest, VerifyCard) {
       OCMProtocolMock(@protocol(CWVCreditCardVerifierDataSource));
   NSString* cvc = @"123";
   BOOL store_locally = YES;
+  [credit_card_verifier_ loadRiskData:std::move(base::DoNothing())];
   [credit_card_verifier_
         verifyWithCVC:cvc
       expirationMonth:@""  // Expiration dates are ignored here because
@@ -199,6 +201,7 @@ TEST_F(CWVCreditCardVerifierTest, DelegateCallbacks) {
   id unused_data_source =
       OCMProtocolMock(@protocol(CWVCreditCardVerifierDataSource));
   id delegate = OCMProtocolMock(@protocol(CWVCreditCardVerifierDelegate));
+  [credit_card_verifier_ loadRiskData:std::move(base::DoNothing())];
   [credit_card_verifier_ verifyWithCVC:@"123"
                        expirationMonth:@""
                         expirationYear:@""
@@ -225,13 +228,6 @@ TEST_F(CWVCreditCardVerifierTest, DelegateCallbacks) {
 // Tests CWVCreditCardVerifier properly invokes its data source.
 TEST_F(CWVCreditCardVerifierTest, DataSourceCallbacks) {
   id data_source = OCMProtocolMock(@protocol(CWVCreditCardVerifierDataSource));
-  [credit_card_verifier_ verifyWithCVC:@"123"
-                       expirationMonth:@""
-                        expirationYear:@""
-                          storeLocally:NO
-                            dataSource:data_source
-                              delegate:nil];
-
   [[data_source expect]
                     creditCardVerifier:credit_card_verifier_
       getRiskDataWithCompletionHandler:[OCMArg checkWithBlock:^BOOL(id arg) {
@@ -239,6 +235,7 @@ TEST_F(CWVCreditCardVerifierTest, DataSourceCallbacks) {
         completionHandler(@"dummy-risk-data");
         return YES;
       }]];
+
   __block bool callback_called = false;
   base::OnceCallback<void(const std::string&)> callback = base::BindOnce(
       [](bool* callback_called, const std::string& risk_data) -> void {
@@ -247,6 +244,12 @@ TEST_F(CWVCreditCardVerifierTest, DataSourceCallbacks) {
       },
       &callback_called);
   [credit_card_verifier_ loadRiskData:std::move(callback)];
+  [credit_card_verifier_ verifyWithCVC:@"123"
+                       expirationMonth:@""
+                        expirationYear:@""
+                          storeLocally:NO
+                            dataSource:data_source
+                              delegate:nil];
 
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool {
     base::RunLoop().RunUntilIdle();
