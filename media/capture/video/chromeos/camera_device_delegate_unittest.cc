@@ -149,6 +149,7 @@ class CameraDeviceDelegateTest : public ::testing::Test {
     camera_device_delegate_ = std::make_unique<CameraDeviceDelegate>(
         descriptor, camera_hal_delegate_,
         device_delegate_thread_.task_runner());
+    num_streams_ = 0;
   }
 
   void GetFakeCameraInfo(uint32_t camera_id,
@@ -242,11 +243,13 @@ class CameraDeviceDelegateTest : public ::testing::Test {
       base::OnceCallback<void(int32_t,
                               cros::mojom::Camera3StreamConfigurationPtr)>&
           callback) {
-    ASSERT_EQ(2u, config->streams.size());
+    ASSERT_GE(2u, config->streams.size());
+    ASSERT_LT(0u, config->streams.size());
     for (size_t i = 0; i < config->streams.size(); ++i) {
       config->streams[i]->usage = 0;
       config->streams[i]->max_buffers = 1;
     }
+    num_streams_ = config->streams.size();
     std::move(callback).Run(0, std::move(config));
   }
 
@@ -332,14 +335,16 @@ class CameraDeviceDelegateTest : public ::testing::Test {
         .Times(1)
         .WillOnce(Invoke(&unittest_internal::MockGpuMemoryBufferManager::
                              CreateFakeGpuMemoryBuffer));
-    EXPECT_CALL(
-        mock_gpu_memory_buffer_manager_,
-        CreateGpuMemoryBuffer(_, gfx::BufferFormat::R_8,
-                              gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
-                              gpu::kNullSurfaceHandle))
-        .Times(1)
-        .WillOnce(Invoke(&unittest_internal::MockGpuMemoryBufferManager::
-                             CreateFakeGpuMemoryBuffer));
+    if (num_streams_ == 2) {
+      EXPECT_CALL(
+          mock_gpu_memory_buffer_manager_,
+          CreateGpuMemoryBuffer(_, gfx::BufferFormat::R_8,
+                                gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
+                                gpu::kNullSurfaceHandle))
+          .Times(1)
+          .WillOnce(Invoke(&unittest_internal::MockGpuMemoryBufferManager::
+                               CreateFakeGpuMemoryBuffer));
+    }
     EXPECT_CALL(
         mock_gpu_memory_buffer_manager_,
         CreateGpuMemoryBuffer(gfx::Size(kDefaultWidth, kDefaultHeight),
@@ -349,14 +354,16 @@ class CameraDeviceDelegateTest : public ::testing::Test {
         .Times(1)
         .WillOnce(Invoke(&unittest_internal::MockGpuMemoryBufferManager::
                              CreateFakeGpuMemoryBuffer));
-    EXPECT_CALL(mock_gpu_memory_buffer_manager_,
-                CreateGpuMemoryBuffer(
-                    gfx::Size(kJpegMaxBufferSize, 1), gfx::BufferFormat::R_8,
-                    gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
-                    gpu::kNullSurfaceHandle))
-        .Times(1)
-        .WillOnce(Invoke(&unittest_internal::MockGpuMemoryBufferManager::
-                             CreateFakeGpuMemoryBuffer));
+    if (num_streams_ == 2) {
+      EXPECT_CALL(mock_gpu_memory_buffer_manager_,
+                  CreateGpuMemoryBuffer(
+                      gfx::Size(kJpegMaxBufferSize, 1), gfx::BufferFormat::R_8,
+                      gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
+                      gpu::kNullSurfaceHandle))
+          .Times(1)
+          .WillOnce(Invoke(&unittest_internal::MockGpuMemoryBufferManager::
+                               CreateFakeGpuMemoryBuffer));
+    }
   }
 
   void SetUpExpectationUntilCapturing(
@@ -422,6 +429,7 @@ class CameraDeviceDelegateTest : public ::testing::Test {
     ASSERT_TRUE(camera_device_delegate_);
     device_delegate_thread_.Stop();
     camera_device_delegate_.reset();
+    num_streams_ = 0;
   }
 
   void DoLoop() {
@@ -460,6 +468,8 @@ class CameraDeviceDelegateTest : public ::testing::Test {
   base::Thread device_delegate_thread_;
 
   std::unique_ptr<CameraDeviceContext> device_context_;
+
+  size_t num_streams_;
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -603,7 +613,7 @@ TEST_F(CameraDeviceDelegateTest, FailToOpenDevice) {
   };
   EXPECT_CALL(*mock_client, OnError(_, _, _))
       .Times(AtLeast(1))
-      .WillOnce(InvokeWithoutArgs(stop_on_error));
+      .WillRepeatedly(InvokeWithoutArgs(stop_on_error));
 
   EXPECT_CALL(mock_camera_module_, DoGetCameraInfo(0, _))
       .Times(1)

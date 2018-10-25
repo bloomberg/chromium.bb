@@ -205,7 +205,8 @@ enum VideoCaptureError {
   kMacDeckLinkCouldNotStartCapturing,
   kMacDeckLinkUnsupportedPixelFormat,
   kMacAvFoundationReceivedAVCaptureSessionRuntimeErrorNotification,
-  kAndroidApi2ErrorConfiguringCamera
+  kAndroidApi2ErrorConfiguringCamera,
+  kCrosHalV3DeviceDelegateFailedToFlush
 };
 
 enum VideoCaptureFrameDropReason {

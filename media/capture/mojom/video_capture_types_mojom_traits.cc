@@ -658,6 +658,9 @@ EnumTraits<media::mojom::VideoCaptureError, media::VideoCaptureError>::ToMojom(
     case media::VideoCaptureError::kAndroidApi2ErrorConfiguringCamera:
       return media::mojom::VideoCaptureError::
           kAndroidApi2ErrorConfiguringCamera;
+    case media::VideoCaptureError::kCrosHalV3DeviceDelegateFailedToFlush:
+      return media::mojom::VideoCaptureError::
+          kCrosHalV3DeviceDelegateFailedToFlush;
   }
   NOTREACHED();
   return media::mojom::VideoCaptureError::kNone;
@@ -1175,6 +1178,9 @@ bool EnumTraits<media::mojom::VideoCaptureError, media::VideoCaptureError>::
       return true;
     case media::mojom::VideoCaptureError::kAndroidApi2ErrorConfiguringCamera:
       *output = media::VideoCaptureError::kAndroidApi2ErrorConfiguringCamera;
+      return true;
+    case media::mojom::VideoCaptureError::kCrosHalV3DeviceDelegateFailedToFlush:
+      *output = media::VideoCaptureError::kCrosHalV3DeviceDelegateFailedToFlush;
       return true;
   }
   NOTREACHED();
