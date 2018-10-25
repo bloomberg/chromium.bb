@@ -48,12 +48,6 @@ class CONTENT_EXPORT TouchActionFilter {
   // action.
   void ReportAndResetTouchAction();
 
-  // Must be called at least once between when the last gesture events for the
-  // previous touch sequence have passed through the touch action filter and the
-  // time the touch start for the next touch sequence has reached the
-  // renderer. It may be called multiple times during this interval.
-  void ResetTouchAction();
-
   // Called when a set-white-listed-touch-action message is received from the
   // renderer for a touch start event that is currently in flight.
   void OnSetWhiteListedTouchAction(cc::TouchAction white_listed_touch_action);
@@ -78,11 +72,13 @@ class CONTENT_EXPORT TouchActionFilter {
   friend class InputRouterImplTest;
   friend class MockRenderWidgetHost;
   friend class TouchActionFilterTest;
+  friend class TouchActionFilterPinchTest;
   friend class SitePerProcessBrowserTouchActionTest;
 
   bool ShouldSuppressManipulation(const blink::WebGestureEvent&);
   bool FilterManipulationEventAndResetState();
   void ReportTouchAction();
+  void ResetTouchAction();
   void SetTouchAction(cc::TouchAction touch_action);
 
   // Whether scroll and pinch gestures should be discarded due to touch-action.
