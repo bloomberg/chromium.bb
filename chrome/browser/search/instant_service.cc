@@ -322,8 +322,7 @@ bool InstantService::UpdateCustomLink(const GURL& url,
                                       const std::string& new_title) {
   if (most_visited_sites_) {
     return most_visited_sites_->UpdateCustomLink(url, new_url,
-                                                 base::UTF8ToUTF16(new_title),
-                                                 /*is_user_action=*/true);
+                                                 base::UTF8ToUTF16(new_title));
   }
   return false;
 }
@@ -490,14 +489,11 @@ void InstantService::OnDoesUrlResolveComplete(
     // already timed out.
     if (duration >
         base::TimeDelta::FromSeconds(kCustomLinkDialogTimeoutSeconds)) {
+      GURL::Replacements replacements;
+      replacements.SetSchemeStr(url::kHttpScheme);
+      GURL new_url = url.ReplaceComponents(replacements);
+      UpdateCustomLink(url, new_url, /*new_title=*/std::string());
       timeout = true;
-      if (most_visited_sites_) {
-        GURL::Replacements replacements;
-        replacements.SetSchemeStr(url::kHttpScheme);
-        GURL new_url = url.ReplaceComponents(replacements);
-        most_visited_sites_->UpdateCustomLink(url, new_url, base::string16(),
-                                              /*is_user_action=*/false);
-      }
     }
   }
   std::move(callback).Run(resolves, timeout);
