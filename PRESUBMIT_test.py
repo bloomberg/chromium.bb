@@ -1611,6 +1611,125 @@ class NewHeaderWithoutGnChangeTest(unittest.TestCase):
     self.assertTrue('base/another.h' in warnings[0].items)
 
 
+class CorrectProductNameInMessagesTest(unittest.TestCase):
+  def testProductNameInDesc(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('chrome/app/google_chrome_strings.grd', [
+        '<message name="Foo" desc="Welcome to Chrome">',
+        '  Welcome to Chrome!',
+        '</message>',
+      ]),
+      MockAffectedFile('chrome/app/chromium_strings.grd', [
+        '<message name="Bar" desc="Welcome to Chrome">',
+        '  Welcome to Chromium!',
+        '</message>',
+      ]),
+    ]
+    warnings = PRESUBMIT._CheckCorrectProductNameInMessages(
+        mock_input_api, MockOutputApi())
+    self.assertEqual(0, len(warnings))
+
+  def testChromeInChromium(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('chrome/app/google_chrome_strings.grd', [
+        '<message name="Foo" desc="Welcome to Chrome">',
+        '  Welcome to Chrome!',
+        '</message>',
+      ]),
+      MockAffectedFile('chrome/app/chromium_strings.grd', [
+        '<message name="Bar" desc="Welcome to Chrome">',
+        '  Welcome to Chrome!',
+        '</message>',
+      ]),
+    ]
+    warnings = PRESUBMIT._CheckCorrectProductNameInMessages(
+        mock_input_api, MockOutputApi())
+    self.assertEqual(1, len(warnings))
+    self.assertTrue('chrome/app/chromium_strings.grd' in warnings[0].items[0])
+
+  def testChromiumInChrome(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('chrome/app/google_chrome_strings.grd', [
+        '<message name="Foo" desc="Welcome to Chrome">',
+        '  Welcome to Chromium!',
+        '</message>',
+      ]),
+      MockAffectedFile('chrome/app/chromium_strings.grd', [
+        '<message name="Bar" desc="Welcome to Chrome">',
+        '  Welcome to Chromium!',
+        '</message>',
+      ]),
+    ]
+    warnings = PRESUBMIT._CheckCorrectProductNameInMessages(
+        mock_input_api, MockOutputApi())
+    self.assertEqual(1, len(warnings))
+    self.assertTrue(
+        'chrome/app/google_chrome_strings.grd:2' in warnings[0].items[0])
+
+  def testMultipleInstances(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('chrome/app/chromium_strings.grd', [
+        '<message name="Bar" desc="Welcome to Chrome">',
+        '  Welcome to Chrome!',
+        '</message>',
+        '<message name="Baz" desc="A correct message">',
+        '  Chromium is the software you are using.',
+        '</message>',
+        '<message name="Bat" desc="An incorrect message">',
+        '  Google Chrome is the software you are using.',
+        '</message>',
+      ]),
+    ]
+    warnings = PRESUBMIT._CheckCorrectProductNameInMessages(
+        mock_input_api, MockOutputApi())
+    self.assertEqual(1, len(warnings))
+    self.assertTrue(
+        'chrome/app/chromium_strings.grd:2' in warnings[0].items[0])
+    self.assertTrue(
+        'chrome/app/chromium_strings.grd:8' in warnings[0].items[1])
+
+  def testMultipleWarnings(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('chrome/app/chromium_strings.grd', [
+        '<message name="Bar" desc="Welcome to Chrome">',
+        '  Welcome to Chrome!',
+        '</message>',
+        '<message name="Baz" desc="A correct message">',
+        '  Chromium is the software you are using.',
+        '</message>',
+        '<message name="Bat" desc="An incorrect message">',
+        '  Google Chrome is the software you are using.',
+        '</message>',
+      ]),
+      MockAffectedFile('components/components_google_chrome_strings.grd', [
+        '<message name="Bar" desc="Welcome to Chrome">',
+        '  Welcome to Chrome!',
+        '</message>',
+        '<message name="Baz" desc="A correct message">',
+        '  Chromium is the software you are using.',
+        '</message>',
+        '<message name="Bat" desc="An incorrect message">',
+        '  Google Chrome is the software you are using.',
+        '</message>',
+      ]),
+    ]
+    warnings = PRESUBMIT._CheckCorrectProductNameInMessages(
+        mock_input_api, MockOutputApi())
+    self.assertEqual(2, len(warnings))
+    self.assertTrue(
+        'components/components_google_chrome_strings.grd:5'
+             in warnings[0].items[0])
+    self.assertTrue(
+        'chrome/app/chromium_strings.grd:2' in warnings[1].items[0])
+    self.assertTrue(
+        'chrome/app/chromium_strings.grd:8' in warnings[1].items[1])
+
+
 class MojoManifestOwnerTest(unittest.TestCase):
   def testMojoManifestChangeNeedsSecurityOwner(self):
     mock_input_api = MockInputApi()

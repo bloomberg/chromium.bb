@@ -2991,6 +2991,50 @@ def _CheckNewHeaderWithoutGnChange(input_api, output_api):
   return []
 
 
+def _CheckCorrectProductNameInMessages(input_api, output_api):
+  """Check that Chromium-branded strings don't include "Chrome" or vice versa.
+
+  This assumes we won't intentionally reference one product from the other
+  product.
+  """
+  all_problems = []
+  test_cases = [{
+    "filename_postfix": "google_chrome_strings.grd",
+    "correct_name": "Chrome",
+    "incorrect_name": "Chromium",
+  }, {
+    "filename_postfix": "chromium_strings.grd",
+    "correct_name": "Chromium",
+    "incorrect_name": "Chrome",
+  }]
+
+  for test_case in test_cases:
+    problems = []
+    filename_filter = lambda x: x.LocalPath().endswith(
+        test_case["filename_postfix"])
+
+    # Check each new line. Can yield false positives in multiline comments, but
+    # easier than trying to parse the XML because messages can have nested
+    # children, and associating message elements with affected lines is hard.
+    for f in input_api.AffectedSourceFiles(filename_filter):
+      for line_num, line in f.ChangedContents():
+        if "<message" in line or "<!--" in line or "-->" in line:
+          continue
+        if test_case["incorrect_name"] in line:
+          problems.append(
+              "Incorrect product name in %s:%d" % (f.LocalPath(), line_num))
+
+    if problems:
+      message = (
+        "Strings in %s-branded string files should reference \"%s\", not \"%s\""
+            % (test_case["correct_name"], test_case["correct_name"],
+               test_case["incorrect_name"]))
+      all_problems.append(
+          output_api.PresubmitPromptWarning(message, items=problems))
+
+  return all_problems
+
+
 def _AndroidSpecificOnUploadChecks(input_api, output_api):
   """Groups checks that target android code."""
   results = []
@@ -3068,6 +3112,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(input_api.RunTests(
     input_api.canned_checks.CheckVPythonSpec(input_api, output_api)))
   results.extend(_CheckTranslationScreenshots(input_api, output_api))
+  results.extend(_CheckCorrectProductNameInMessages(input_api, output_api))
 
   for f in input_api.AffectedFiles():
     path, name = input_api.os_path.split(f.LocalPath())
