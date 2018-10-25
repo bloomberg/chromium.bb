@@ -1106,7 +1106,10 @@ test("content_browsertests") {
 
   if (is_linux) {
     sources += [ "../zygote/zygote_browsertest.cc" ]
-    deps += [ "//ui/gfx:test_support" ]
+    deps += [
+      "//services/service_manager/zygote",
+      "//ui/gfx:test_support",
+    ]
   }
 
   if (is_android) {
