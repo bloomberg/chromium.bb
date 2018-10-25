@@ -4746,7 +4746,8 @@ void LayerTreeHostImpl::CollectScrollDeltas(
                                 : ElementId();
 
   active_tree_->property_trees()->scroll_tree.CollectScrollDeltas(
-      scroll_info, inner_viewport_scroll_element_id);
+      scroll_info, inner_viewport_scroll_element_id,
+      active_tree_->settings().commit_fractional_scroll_deltas);
 }
 
 void LayerTreeHostImpl::CollectScrollbarUpdates(

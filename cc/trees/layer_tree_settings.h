@@ -165,6 +165,12 @@ class CC_EXPORT LayerTreeSettings {
   // DidReceiveCompositorFrameAck, used by the Compositor but not the
   // LayerTreeView.
   bool send_compositor_frame_ack = true;
+
+  // When false, scroll deltas accumulated on the impl thread are rounded to
+  // integer values when sent to Blink on commit. This flag should eventually
+  // go away and CC should send Blink fractional values:
+  // https://crbug.com/414283.
+  bool commit_fractional_scroll_deltas = false;
 };
 
 }  // namespace cc

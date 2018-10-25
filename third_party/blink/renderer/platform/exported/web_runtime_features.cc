@@ -72,6 +72,10 @@ bool WebRuntimeFeatures::IsBlinkGenPropertyTreesEnabled() {
   return RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled();
 }
 
+bool WebRuntimeFeatures::IsFractionalScrollOffsetsEnabled() {
+  return RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled();
+}
+
 void WebRuntimeFeatures::EnableTestOnlyFeatures(bool enable) {
   RuntimeEnabledFeatures::SetTestFeaturesEnabled(enable);
 }
