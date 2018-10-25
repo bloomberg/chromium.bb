@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/accelerators/accelerator_commands.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
@@ -100,6 +101,11 @@ void ShellTestApi::SnapWindowInSplitView(const std::string& client_name,
   shell_->split_view_controller()->SnapWindow(window,
                                               ash::SplitViewController::LEFT);
   shell_->split_view_controller()->FlushForTesting();
+  std::move(cb).Run();
+}
+
+void ShellTestApi::ToggleFullscreen(ToggleFullscreenCallback cb) {
+  ash::accelerators::ToggleFullscreen();
   std::move(cb).Run();
 }
 
