@@ -305,9 +305,13 @@ void TrackAudioRenderer::MaybeStartSink() {
       source_params_.sample_rate(),
       media::AudioLatency::GetRtcBufferSize(
           source_params_.sample_rate(), hardware_params.frames_per_buffer()));
+  if (sink_params.channel_layout() == media::CHANNEL_LAYOUT_DISCRETE) {
+    DCHECK_LE(source_params_.channels(), 2);
+    sink_params.set_channels_for_discrete(source_params_.channels());
+  }
   DVLOG(1) << ("TrackAudioRenderer::MaybeStartSink() -- Starting sink.  "
-               "source_params_={")
-           << source_params_.AsHumanReadableString() << "}, hardware_params_={"
+               "source_params={")
+           << source_params_.AsHumanReadableString() << "}, hardware_params={"
            << hardware_params.AsHumanReadableString() << "}, sink parameters={"
            << sink_params.AsHumanReadableString() << '}';
 

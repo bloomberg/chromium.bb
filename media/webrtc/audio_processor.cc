@@ -30,6 +30,10 @@ webrtc::AudioProcessing::ChannelLayout MediaLayoutToWebRtcLayout(
     case CHANNEL_LAYOUT_MONO:
       return webrtc::AudioProcessing::kMono;
     case CHANNEL_LAYOUT_STEREO:
+    case CHANNEL_LAYOUT_DISCRETE:
+      // TODO(https://crbug.com/868026): currently mapping all discrete channel
+      // layouts to two channels assuming that any required channel remix takes
+      // place in the native audio layer.
       return webrtc::AudioProcessing::kStereo;
     case CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC:
       return webrtc::AudioProcessing::kStereoAndKeyboard;
