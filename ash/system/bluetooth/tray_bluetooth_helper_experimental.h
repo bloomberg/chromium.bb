@@ -41,6 +41,8 @@ class TrayBluetoothHelperExperimental
 
   // device::mojom::BluetoothSystemClient
   void OnStateChanged(device::mojom::BluetoothSystem::State state) override;
+  void OnScanStateChanged(
+      device::mojom::BluetoothSystem::ScanState state) override;
 
  private:
   service_manager::Connector* connector_;

@@ -5,6 +5,7 @@
 #include "services/device/bluetooth/bluetooth_system.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -80,6 +81,8 @@ void BluetoothSystem::AdapterPropertyChanged(
 
   if (properties->powered.name() == property_name)
     UpdateStateAndNotifyIfNecessary();
+  else if (properties->discovering.name() == property_name)
+    client_ptr_->OnScanStateChanged(GetScanStateFromActiveAdapter());
 }
 
 void BluetoothSystem::GetState(GetStateCallback callback) {
@@ -134,11 +137,7 @@ void BluetoothSystem::GetScanState(GetScanStateCallback callback) {
       break;
   }
 
-  bool discovering = GetBluetoothAdapterClient()
-                         ->GetProperties(active_adapter_.value())
-                         ->discovering.value();
-  std::move(callback).Run(discovering ? ScanState::kScanning
-                                      : ScanState::kNotScanning);
+  std::move(callback).Run(GetScanStateFromActiveAdapter());
 }
 
 bluez::BluetoothAdapterClient* BluetoothSystem::GetBluetoothAdapterClient() {
@@ -160,6 +159,13 @@ void BluetoothSystem::UpdateStateAndNotifyIfNecessary() {
 
   if (old_state != state_)
     client_ptr_->OnStateChanged(state_);
+}
+
+BluetoothSystem::ScanState BluetoothSystem::GetScanStateFromActiveAdapter() {
+  bool discovering = GetBluetoothAdapterClient()
+                         ->GetProperties(active_adapter_.value())
+                         ->discovering.value();
+  return discovering ? ScanState::kScanning : ScanState::kNotScanning;
 }
 
 void BluetoothSystem::OnSetPoweredFinished(SetPoweredCallback callback,

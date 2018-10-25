@@ -76,4 +76,5 @@ interface BluetoothSystem {
 // like Bluetooth State changes.
 interface BluetoothSystemClient {
   OnStateChanged(BluetoothSystem.State new_state);
+  OnScanStateChanged(BluetoothSystem.ScanState new_state);
 };

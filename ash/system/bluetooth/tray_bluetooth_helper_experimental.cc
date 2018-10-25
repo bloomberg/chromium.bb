@@ -82,4 +82,9 @@ void TrayBluetoothHelperExperimental::OnStateChanged(
   Shell::Get()->system_tray_notifier()->NotifyRefreshBluetooth();
 }
 
+void TrayBluetoothHelperExperimental::OnScanStateChanged(
+    device::mojom::BluetoothSystem::ScanState state) {
+  Shell::Get()->system_tray_notifier()->NotifyBluetoothDiscoveringChanged();
+}
+
 }  // namespace ash
