@@ -134,9 +134,6 @@
 # JS failure: hasAccessToCurrentWindow: FAIL (no message)
 -LockScreenNoteTakingTest.*
 
-# desktop_window_tree_host_mus.cc(796) Check failed: !window->GetRootWindow() || this->window() == window->GetRootWindow().
--LoginFeedbackTest.*
-
 # Missing magnification manager and also RefCounted check failed:
 # CalledOnValidSequence() from SchedulerWorkerDelegate::OnMainExit
 -LoginScreenDefaultPolicyInSessionBrowsertest.*

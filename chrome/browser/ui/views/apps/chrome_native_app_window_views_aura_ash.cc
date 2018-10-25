@@ -28,6 +28,8 @@
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
+#include "components/session_manager/core/session_manager.h"
+#include "extensions/common/constants.h"
 #include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "ui/aura/client/aura_constants.h"
@@ -53,6 +55,22 @@
 
 using extensions::AppWindow;
 
+namespace {
+
+// The feedback dialog is modal during OOBE and login because it must stay above
+// the views login UI and the webui GAIA login dialog.
+bool IsLoginFeedbackModalDialog(const AppWindow* app_window) {
+  if (app_window->extension_id() != extension_misc::kFeedbackExtensionId)
+    return false;
+
+  using session_manager::SessionState;
+  SessionState state = session_manager::SessionManager::Get()->session_state();
+  return state == SessionState::OOBE || state == SessionState::LOGIN_PRIMARY ||
+         state == SessionState::LOGIN_SECONDARY;
+}
+
+}  // namespace
+
 ChromeNativeAppWindowViewsAuraAsh::ChromeNativeAppWindowViewsAuraAsh()
     : exclusive_access_manager_(
           std::make_unique<ExclusiveAccessManager>(this)) {
@@ -60,7 +78,10 @@ ChromeNativeAppWindowViewsAuraAsh::ChromeNativeAppWindowViewsAuraAsh()
     TabletModeClient::Get()->AddObserver(this);
 
   if (features::IsSingleProcessMash()) {
-    MultiUserWindowManager::GetInstance()->AddObserver(this);
+    // There is no MultiUserWindowManager at the login screen, but users can
+    // open the feedback app.
+    if (MultiUserWindowManager::GetInstance())
+      MultiUserWindowManager::GetInstance()->AddObserver(this);
 
     ash_window_manager_ =
         views::MusClient::Get()
@@ -73,7 +94,7 @@ ChromeNativeAppWindowViewsAuraAsh::~ChromeNativeAppWindowViewsAuraAsh() {
   if (TabletModeClient::Get())
     TabletModeClient::Get()->RemoveObserver(this);
 
-  if (features::IsSingleProcessMash())
+  if (features::IsSingleProcessMash() && MultiUserWindowManager::GetInstance())
     MultiUserWindowManager::GetInstance()->RemoveObserver(this);
 }
 
@@ -106,14 +127,19 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
     views::Widget* widget) {
   ChromeNativeAppWindowViewsAura::OnBeforeWidgetInit(create_params, init_params,
                                                      widget);
-  if (create_params.is_ime_window || create_params.show_on_lock_screen) {
-    // Put ime windows and lock screen windows into their respective window
-    // containers on the primary display.
-    int container_id = create_params.is_ime_window
-                           ? ash::kShellWindowId_ImeWindowParentContainer
-                           : ash::kShellWindowId_LockActionHandlerContainer;
-    ash_util::SetupWidgetInitParamsForContainer(init_params, container_id);
-  }
+  // Some windows need to be placed in special containers, for example to make
+  // them visible at the login or lock screen.
+  base::Optional<int> container_id;
+  if (IsLoginFeedbackModalDialog(app_window()))
+    container_id = ash::kShellWindowId_LockSystemModalContainer;
+  else if (create_params.is_ime_window)
+    container_id = ash::kShellWindowId_ImeWindowParentContainer;
+  else if (create_params.show_on_lock_screen)
+    container_id = ash::kShellWindowId_LockActionHandlerContainer;
+
+  if (container_id.has_value())
+    ash_util::SetupWidgetInitParamsForContainer(init_params, *container_id);
+
   if (HasFrameColor()) {
     init_params
         ->mus_properties[ws::mojom::WindowManager::kFrameActiveColor_Property] =
@@ -145,6 +171,12 @@ ChromeNativeAppWindowViewsAuraAsh::CreateNonStandardAppFrame() {
                         ash::kResizeOutsideBoundsSize,
                         ash::kResizeAreaCornerSize);
   return frame;
+}
+
+ui::ModalType ChromeNativeAppWindowViewsAuraAsh::GetModalType() const {
+  if (IsLoginFeedbackModalDialog(app_window()))
+    return ui::MODAL_TYPE_SYSTEM;
+  return ChromeNativeAppWindowViewsAura::GetModalType();
 }
 
 bool ChromeNativeAppWindowViewsAuraAsh::ShouldRemoveStandardFrame() {

@@ -78,6 +78,7 @@ class ChromeNativeAppWindowViewsAuraAsh
   // WidgetDelegate:
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override;
+  ui::ModalType GetModalType() const override;
 
   // NativeAppWindow:
   void SetFullscreen(int fullscreen_types) override;
