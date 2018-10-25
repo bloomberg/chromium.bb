@@ -121,17 +121,6 @@ void MessageView::SetIsNested() {
 
   SetBorder(views::CreateRoundedRectBorder(
       kNotificationBorderThickness, kNotificationCornerRadius, kBorderColor));
-
-  auto* control_buttons_view = GetControlButtonsView();
-  if (control_buttons_view) {
-    int control_button_count =
-        (control_buttons_view->settings_button() ? 1 : 0) +
-        (control_buttons_view->snooze_button() ? 1 : 0);
-    if (control_button_count)
-      slide_out_controller_.EnableSwipeControl(control_button_count);
-    // TODO(crbug.com/1177464): support updating the swipe control when
-    // should_show_setting_buttons is changed after notification creation.
-  }
 }
 
 void MessageView::CloseSwipeControl() {
@@ -390,6 +379,10 @@ void MessageView::SetSettingMode(bool setting_mode) {
 void MessageView::DisableSlideForcibly(bool disable) {
   disable_slide_ = disable;
   slide_out_controller_.set_slide_mode(CalculateSlideMode());
+}
+
+void MessageView::SetSlideButtonWidth(int control_button_width) {
+  slide_out_controller_.SetSwipeControlWidth(control_button_width);
 }
 
 void MessageView::OnCloseButtonPressed() {

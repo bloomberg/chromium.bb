@@ -77,6 +77,14 @@ void NotificationSwipeControlView::UpdateButtonsVisibility() {
   bool has_settings_button = buttons->settings_button();
   bool has_snooze_button = buttons->snooze_button();
   ShowButtons(button_position, has_settings_button, has_snooze_button);
+
+  int control_button_count =
+      (has_settings_button ? 1 : 0) + (has_snooze_button ? 1 : 0);
+  int control_button_width =
+      message_center::kSwipeControlButtonSize * control_button_count +
+      message_center::kSwipeControlButtonHorizontalMargin *
+          (control_button_count + 1);
+  message_view_->SetSlideButtonWidth(control_button_width);
 }
 
 void NotificationSwipeControlView::UpdateCornerRadius(int top_radius,

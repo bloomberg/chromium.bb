@@ -163,12 +163,9 @@ void SlideOutController::OnImplicitAnimationsCompleted() {
   delegate_->OnSlideOut();
 }
 
-void SlideOutController::EnableSwipeControl(int button_count) {
-  DCHECK(button_count > 0);
-  swipe_control_width_ =
-      kSwipeControlButtonSize * button_count +
-      kSwipeControlButtonHorizontalMargin * (button_count + 1);
-  has_swipe_control_ = true;
+void SlideOutController::SetSwipeControlWidth(int swipe_control_width) {
+  swipe_control_width_ = swipe_control_width;
+  has_swipe_control_ = (swipe_control_width != 0);
 }
 
 void SlideOutController::CloseSwipeControl() {
