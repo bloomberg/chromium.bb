@@ -91,6 +91,8 @@ const char kHistogramFirstMeaningfulPaint[] =
     "PageLoad.Experimental.PaintTiming.NavigationToFirstMeaningfulPaint";
 const char kHistogramLargestImagePaint[] =
     "PageLoad.Experimental.PaintTiming.NavigationToLargestImagePaint";
+const char kHistogramLastImagePaint[] =
+    "PageLoad.Experimental.PaintTiming.NavigationToLastImagePaint";
 const char kHistogramTimeToInteractive[] =
     "PageLoad.Experimental.NavigationToInteractive";
 const char kHistogramInteractiveToInteractiveDetection[] =
@@ -530,6 +532,18 @@ void CorePageLoadMetricsObserver::OnLargestImagePaintInMainFrameDocument(
                                                       info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestImagePaint,
                         largest_image_paint.value());
+  }
+}
+
+void CorePageLoadMetricsObserver::OnLastImagePaintInMainFrameDocument(
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  base::Optional<base::TimeDelta>& last_image_paint =
+      timing.paint_timing->last_image_paint;
+  if (last_image_paint.has_value() &&
+      WasStartedInForegroundOptionalEventInForeground(last_image_paint, info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramLastImagePaint,
+                        last_image_paint.value());
   }
 }
 

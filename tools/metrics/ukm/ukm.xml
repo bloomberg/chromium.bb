@@ -3064,7 +3064,16 @@ be describing additional metrics about the same event.
     <summary>
       Measures the time in milliseconds from navigation timing's navigation
       start to the time when the page first paints the largest image within
-      viewport after the image finishes loading.
+      viewport after the image finishes loading. See http://bit.ly/fcp_plus_plus
+      for more details.
+    </summary>
+  </metric>
+  <metric name="Experimental.PaintTiming.NavigationToLastImagePaint">
+    <summary>
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time when the page first paints the last image within
+      viewport after the image finishes loading. See http://bit.ly/fcp_plus_plus
+      for more details.
     </summary>
   </metric>
   <metric name="InteractiveTiming.FirstInputDelay">

@@ -38,6 +38,9 @@ struct PaintTiming {
 
   // (Experimental) Time when the page's largest image is painted.
   mojo_base.mojom.TimeDelta? largest_image_paint;
+
+  // (Experimental) Time when the page's last image is painted.
+  mojo_base.mojom.TimeDelta? last_image_paint;
 };
 
 // TimeDeltas below represent durations of time during the page load.

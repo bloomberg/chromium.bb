@@ -171,6 +171,12 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
     builder.SetExperimental_PaintTiming_NavigationToLargestImagePaint(
         timing.paint_timing->largest_image_paint.value().InMilliseconds());
   }
+  if (timing.paint_timing->last_image_paint.has_value() &&
+      WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->last_image_paint, info)) {
+    builder.SetExperimental_PaintTiming_NavigationToLastImagePaint(
+        timing.paint_timing->last_image_paint.value().InMilliseconds());
+  }
   if (timing.interactive_timing->interactive) {
     base::TimeDelta time_to_interactive =
         timing.interactive_timing->interactive.value();
