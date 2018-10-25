@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/time/tick_clock.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 
 namespace base {
 namespace sequence_manager {
@@ -174,6 +175,18 @@ bool ThreadControllerWithMessagePumpImpl::DoIdleWork() {
   // RunLoop::Delegate knows whether we called Run() or RunUntilIdle().
   if (ShouldQuitWhenIdle())
     Quit();
+#if defined(OS_WIN)
+  bool need_high_res_mode =
+      main_thread_only().task_source->HasPendingHighResolutionTasks();
+  if (main_thread_only().in_high_res_mode != need_high_res_mode) {
+    // On Windows we activate the high resolution timer so that the wait
+    // _if_ triggered by the timer happens with good resolution. If we don't
+    // do this the default resolution is 15ms which might not be acceptable
+    // for some tasks.
+    main_thread_only().in_high_res_mode = need_high_res_mode;
+    Time::ActivateHighResolutionTimer(need_high_res_mode);
+  }
+#endif  // defined(OS_WIN)
   return false;
 }
 

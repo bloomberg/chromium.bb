@@ -118,6 +118,11 @@ class IntrusiveHeap {
     }
   }
 
+  const T& at(HeapHandle handle) const {
+    DCHECK(handle.IsValid());
+    return nodes_[handle.index_];
+  }
+
   // Caution mutating the heap invalidates the iterators.
   const T* begin() const { return &nodes_[1u]; }
   const T* end() const { return begin() + size_; }

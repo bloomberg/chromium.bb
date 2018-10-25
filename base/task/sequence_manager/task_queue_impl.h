@@ -149,6 +149,11 @@ class BASE_EXPORT TaskQueueImpl {
   // Used to check if we need to generate notifications about delayed work.
   bool HasPendingImmediateWork();
 
+  bool has_pending_high_resolution_tasks() const {
+    return main_thread_only()
+        .delayed_incoming_queue.has_pending_high_resolution_tasks();
+  }
+
   WorkQueue* delayed_work_queue() {
     return main_thread_only().delayed_work_queue.get();
   }
@@ -259,6 +264,34 @@ class BASE_EXPORT TaskQueueImpl {
     OnNextWakeUpChangedCallback on_next_wake_up_changed_callback;
   };
 
+  // A queue for holding delayed tasks before their delay has expired.
+  struct DelayedIncomingQueue {
+   public:
+    DelayedIncomingQueue();
+    ~DelayedIncomingQueue();
+
+    void push(Task&& task);
+    void pop();
+    bool empty() const { return queue_.empty(); }
+    size_t size() const { return queue_.size(); }
+    const Task& top() const { return queue_.top(); }
+
+    bool has_pending_high_resolution_tasks() const {
+      return pending_high_res_tasks_;
+    }
+
+    void SweepCancelledTasks(const SequenceManagerImpl*);
+    std::priority_queue<Task> TakeTasks() { return std::move(queue_); }
+    void AsValueInto(TimeTicks now, trace_event::TracedValue* state) const;
+
+   private:
+    std::priority_queue<Task> queue_;
+    // Number of pending tasks in that need high resolution timing.
+    int pending_high_res_tasks_ = 0;
+
+    DISALLOW_COPY_AND_ASSIGN(DelayedIncomingQueue);
+  };
+
   struct MainThreadOnly {
     MainThreadOnly(SequenceManagerImpl* sequence_manager,
                    TaskQueueImpl* task_queue,
@@ -275,7 +308,7 @@ class BASE_EXPORT TaskQueueImpl {
 
     std::unique_ptr<WorkQueue> delayed_work_queue;
     std::unique_ptr<WorkQueue> immediate_work_queue;
-    std::priority_queue<Task> delayed_incoming_queue;
+    DelayedIncomingQueue delayed_incoming_queue;
     ObserverList<MessageLoop::TaskObserver>::Unchecked task_observers;
     size_t set_index;
     HeapHandle heap_handle;
