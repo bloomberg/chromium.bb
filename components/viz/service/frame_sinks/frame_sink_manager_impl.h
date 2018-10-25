@@ -71,7 +71,9 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
                         mojom::FrameSinkManagerClientPtr client);
 
   // Sets up a direction connection to |client| without using Mojo.
-  void SetLocalClient(mojom::FrameSinkManagerClient* client);
+  void SetLocalClient(
+      mojom::FrameSinkManagerClient* client,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner = nullptr);
 
   // mojom::FrameSinkManager implementation:
   void RegisterFrameSinkId(const FrameSinkId& frame_sink_id,
@@ -162,6 +164,9 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   VideoDetector* CreateVideoDetectorForTesting(
       const base::TickClock* tick_clock,
       scoped_refptr<base::SequencedTaskRunner> task_runner);
+
+  void OnFrameTokenChangedDirect(const FrameSinkId& frame_sink_id,
+                                 uint32_t frame_token);
 
   // Called when |frame_token| is changed on a submitted CompositorFrame.
   void OnFrameTokenChanged(const FrameSinkId& frame_sink_id,
@@ -287,10 +292,20 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   // platforms that don't need video detection.
   std::unique_ptr<VideoDetector> video_detector_;
 
-  // This will point to |client_ptr_| if using Mojo or a provided client if
-  // directly connected. Use this to make function calls.
+  // There are three states this can be in:
+  //  1. Mojo client: |client_| will point to |client_ptr_|, the Mojo client,
+  //     and |ui_task_runner_| will not be used. Calls to OnFrameTokenChanged()
+  //     will go through Mojo. This is the normal state.
+  //  2. Local (directly connected) client, *with* task runner: |client_| will
+  //     point to the client, |client_ptr_| will be nullptr, and calls to
+  //     OnFrameTokenChanged() will be PostTasked using |ui_task_runner_|. Used
+  //     mostly for layout tests.
+  //  3. Local (directly connected) client, *without* task runner: |client_|
+  //     will point to the client, |client_ptr_| and |ui_task_runner_| will be
+  //     nullptr, and calls to OnFrameTokenChanged() will be directly called
+  //     (without PostTask) on |client_|. Used for some unit tests.
   mojom::FrameSinkManagerClient* client_ = nullptr;
-
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_ = nullptr;
   mojom::FrameSinkManagerClientPtr client_ptr_;
   mojo::Binding<mojom::FrameSinkManager> binding_;
 

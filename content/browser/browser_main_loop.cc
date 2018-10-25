@@ -1273,7 +1273,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
           switches::GetDeadlineToSynchronizeSurfaces());
 
       surface_utils::ConnectWithLocalFrameSinkManager(
-          host_frame_sink_manager_.get(), frame_sink_manager_impl_.get());
+          host_frame_sink_manager_.get(), frame_sink_manager_impl_.get(),
+          base::ThreadTaskRunnerHandle::Get());
 
       ImageTransportFactory::SetFactory(
           std::make_unique<GpuProcessTransportFactory>(
