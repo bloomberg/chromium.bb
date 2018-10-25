@@ -19,4 +19,8 @@ interface ShellTestApi {
   // Tells the SplitViewController to snap the given window to the left.
   // The client name is used to find the client's WindowTree.
   SnapWindowInSplitView(string client_name, uint64 window_id) => ();
+
+  // Fullscreens the active window, as if the user had pressed the hardware
+  // fullscreen button.
+  ToggleFullscreen() => ();
 };

@@ -58,6 +58,7 @@ class ShellTestApi : public mojom::ShellTestApi {
   void SnapWindowInSplitView(const std::string& client_name,
                              ws::Id window_id,
                              SnapWindowInSplitViewCallback cb) override;
+  void ToggleFullscreen(ToggleFullscreenCallback cb) override;
 
  private:
   Shell* shell_;  // not owned
