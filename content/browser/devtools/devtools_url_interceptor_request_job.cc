@@ -385,14 +385,8 @@ void DevToolsURLInterceptorRequestJob::InterceptedRequest::ReadIntoBuffer() {
 
 class DevToolsURLInterceptorRequestJob::MockResponseDetails {
  public:
-  MockResponseDetails(std::string response_bytes,
-                      base::TimeTicks response_time);
-
-  MockResponseDetails(
-      const scoped_refptr<net::HttpResponseHeaders>& response_headers,
-      std::string response_bytes,
-      size_t read_offset,
-      base::TimeTicks response_time);
+  MockResponseDetails(scoped_refptr<net::HttpResponseHeaders> response_headers,
+                      std::unique_ptr<std::string> response_bytes);
 
   ~MockResponseDetails();
 
@@ -412,35 +406,18 @@ class DevToolsURLInterceptorRequestJob::MockResponseDetails {
 };
 
 DevToolsURLInterceptorRequestJob::MockResponseDetails::MockResponseDetails(
-    std::string response_bytes,
-    base::TimeTicks response_time)
-    : response_bytes_(std::move(response_bytes)),
+    scoped_refptr<net::HttpResponseHeaders> response_headers,
+    std::unique_ptr<std::string> response_bytes)
+    : response_headers_(std::move(response_headers)),
+      response_bytes_(response_bytes ? std::move(*response_bytes) : ""),
       read_offset_(0),
-      response_time_(response_time) {
-  int header_size = net::HttpUtil::LocateEndOfHeaders(response_bytes_.c_str(),
-                                                      response_bytes_.size());
-  if (header_size == -1) {
-    LOG(WARNING) << "Can't find headers in result";
-    response_headers_ = new net::HttpResponseHeaders("");
-  } else {
-    response_headers_ =
-        new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
-            response_bytes_.c_str(), header_size));
-    read_offset_ = header_size;
+      response_time_(base::TimeTicks::Now()) {
+  if (!response_headers) {
+    static const char kDummyHeaders[] = "HTTP/1.1 200 OK\0\0";
+    response_headers =
+        base::MakeRefCounted<net::HttpResponseHeaders>(kDummyHeaders);
   }
-
-  CHECK_LE(read_offset_, response_bytes_.size());
 }
-
-DevToolsURLInterceptorRequestJob::MockResponseDetails::MockResponseDetails(
-    const scoped_refptr<net::HttpResponseHeaders>& response_headers,
-    std::string response_bytes,
-    size_t read_offset,
-    base::TimeTicks response_time)
-    : response_headers_(response_headers),
-      response_bytes_(std::move(response_bytes)),
-      read_offset_(read_offset),
-      response_time_(response_time) {}
 
 DevToolsURLInterceptorRequestJob::MockResponseDetails::~MockResponseDetails() {}
 
@@ -914,10 +891,7 @@ void DevToolsURLInterceptorRequestJob::StopIntercepting() {
     // Fallthough.
     case WaitingForUserResponse::WAITING_FOR_REQUEST_ACK:
       ProcessInterceptionResponse(
-          std::make_unique<DevToolsNetworkInterceptor::Modifications>(
-              base::nullopt, base::nullopt, protocol::Maybe<std::string>(),
-              protocol::Maybe<std::string>(), protocol::Maybe<std::string>(),
-              nullptr, nullptr));
+          std::make_unique<DevToolsNetworkInterceptor::Modifications>());
       return;
     case WaitingForUserResponse::WAITING_FOR_AUTH_ACK:
       ProcessAuthResponse(DevToolsNetworkInterceptor::AuthChallengeResponse(
@@ -996,9 +970,8 @@ void DevToolsURLInterceptorRequestJob::ProcessRedirect(
   raw_headers.append("Location: ");
   raw_headers.append(new_url);
   raw_headers.append(2, '\0');
-  mock_response_details_.reset(new MockResponseDetails(
-      base::MakeRefCounted<net::HttpResponseHeaders>(raw_headers), "", 0,
-      base::TimeTicks::Now()));
+  mock_response_details_ = std::make_unique<MockResponseDetails>(
+      base::MakeRefCounted<net::HttpResponseHeaders>(raw_headers), nullptr);
 
   NotifyHeadersComplete();
 }
@@ -1071,9 +1044,10 @@ void DevToolsURLInterceptorRequestJob::ProcessInterceptionResponse(
     return;
   }
 
-  if (modifications->raw_response) {
-    mock_response_details_.reset(new MockResponseDetails(
-        std::move(*modifications->raw_response), base::TimeTicks::Now()));
+  if (modifications->response_headers || modifications->response_body) {
+    mock_response_details_ = std::make_unique<MockResponseDetails>(
+        std::move(modifications->response_headers),
+        std::move(modifications->response_body));
 
     // Set cookies in the network stack.
     net::CookieOptions options;

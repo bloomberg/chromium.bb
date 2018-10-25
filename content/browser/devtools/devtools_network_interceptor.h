@@ -76,7 +76,8 @@ class DevToolsNetworkInterceptor {
     Modifications();
     Modifications(
         base::Optional<net::Error> error_reason,
-        base::Optional<std::string> raw_response,
+        scoped_refptr<net::HttpResponseHeaders> response_headers,
+        std::unique_ptr<std::string> response_body,
         protocol::Maybe<std::string> modified_url,
         protocol::Maybe<std::string> modified_method,
         protocol::Maybe<std::string> modified_post_data,
@@ -87,7 +88,10 @@ class DevToolsNetworkInterceptor {
     // If none of the following are set then the request will be allowed to
     // continue unchanged.
     base::Optional<net::Error> error_reason;   // Finish with error.
-    base::Optional<std::string> raw_response;  // Finish with mock response.
+    // If either of the below fields is set, complete the request by
+    // responding with the provided headers and body.
+    scoped_refptr<net::HttpResponseHeaders> response_headers;
+    std::unique_ptr<std::string> response_body;
 
     // Optionally modify before sending to network.
     protocol::Maybe<std::string> modified_url;
