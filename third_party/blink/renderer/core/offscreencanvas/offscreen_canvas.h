@@ -45,9 +45,6 @@ class CORE_EXPORT OffscreenCanvas final
   USING_GARBAGE_COLLECTED_MIXIN(OffscreenCanvas);
   USING_PRE_FINALIZER(OffscreenCanvas, Dispose);
 
- private:
-  void static RecordCanvasSizeToUMA(unsigned width, unsigned height);
-
  public:
   static OffscreenCanvas* Create(unsigned width, unsigned height);
   ~OffscreenCanvas() override;

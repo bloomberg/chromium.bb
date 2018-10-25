@@ -1517,6 +1517,8 @@ class CORE_EXPORT Document : public ContainerNode,
     parsed_feature_policies_.QuickSet(static_cast<int>(feature));
   }
 
+  void IncrementNumberOfCanvases();
+
  protected:
   Document(const DocumentInit&, DocumentClassFlags = kDefaultDocumentClass);
 
@@ -1947,6 +1949,9 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // This is set through feature policy 'vertical-scroll'.
   bool is_vertical_scroll_enforced_ = false;
+
+  // The number of canvas elements on the document
+  int num_canvases_ = 0;
 
   // A list of all the navigation_initiator bindings owned by this document.
   // Used to report CSP violations that result from CSP blocking

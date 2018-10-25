@@ -37,14 +37,9 @@ namespace blink {
 
 OffscreenCanvas::OffscreenCanvas(const IntSize& size) : size_(size) {}
 
-void OffscreenCanvas::RecordCanvasSizeToUMA(unsigned width, unsigned height) {
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Blink.OffscreenCanvas.SqrtNumberOfPixels",
-                              std::sqrt(width * height), 1, 5000, 100);
-}
-
 OffscreenCanvas* OffscreenCanvas::Create(unsigned width, unsigned height) {
   UMA_HISTOGRAM_BOOLEAN("Blink.OffscreenCanvas.NewOffscreenCanvas", true);
-  RecordCanvasSizeToUMA(width, height);
+  CanvasRenderingContextHost::RecordCanvasSizeToUMA(width, height, true);
   return new OffscreenCanvas(
       IntSize(clampTo<int>(width), clampTo<int>(height)));
 }
@@ -116,7 +111,8 @@ void OffscreenCanvas::SetSize(const IntSize& size) {
     }
   }
   if (size != size_) {
-    RecordCanvasSizeToUMA(size.Width(), size.Height());
+    CanvasRenderingContextHost::RecordCanvasSizeToUMA(size.Width(),
+                                                      size.Height(), true);
   }
   size_ = size;
   if (frame_dispatcher_)
