@@ -82,7 +82,6 @@ void GpuArcVideoEncodeAccelerator::GetSupportedProfiles(
 
 void GpuArcVideoEncodeAccelerator::Initialize(
     const media::VideoEncodeAccelerator::Config& config,
-    VideoEncodeAccelerator::StorageType input_storage,
     VideoEncodeClientPtr client,
     InitializeCallback callback) {
   DVLOGF(2) << config.AsHumanReadableString();
@@ -98,6 +97,15 @@ void GpuArcVideoEncodeAccelerator::Initialize(
   }
   client_ = std::move(client);
   std::move(callback).Run(true);
+}
+
+void GpuArcVideoEncodeAccelerator::InitializeDeprecated(
+    const media::VideoEncodeAccelerator::Config& config,
+    VideoEncodeAccelerator::StorageTypeDeprecated input_storage,
+    VideoEncodeClientPtr client,
+    InitializeCallback callback) {
+  // Intentionally ignore input_storage. It has never been used since now.
+  Initialize(config, std::move(client), std::move(callback));
 }
 
 static void DropShareMemoryAndVideoFrameDoneNotifier(
