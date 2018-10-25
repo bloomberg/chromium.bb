@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/safe_browsing/download_protection_util.h"
+#include "chrome/common/safe_browsing/download_type_util.h"
 
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -10,7 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace safe_browsing {
-namespace download_protection_util {
+namespace download_type_util {
 
 TEST(DownloadProtectionUtilTest, KnownValues) {
   EXPECT_EQ(ClientDownloadRequest::WIN_EXECUTABLE,
@@ -29,6 +29,5 @@ TEST(DownloadProtectionUtilTest, KnownValues) {
             GetDownloadType(base::FilePath(FILE_PATH_LITERAL("foo.apk"))));
 }
 
-} // namespace download_protection_util
-} // namespace safe_browsing
-
+}  // namespace download_type_util
+}  // namespace safe_browsing
