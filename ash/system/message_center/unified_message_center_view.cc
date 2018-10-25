@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/message_center/new_unified_message_center_view.h"
+#include "ash/system/message_center/unified_message_center_view.h"
 
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -108,7 +108,7 @@ void StackingNotificationCounterView::OnPaint(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
 }
 
-NewUnifiedMessageCenterView::NewUnifiedMessageCenterView(
+UnifiedMessageCenterView::UnifiedMessageCenterView(
     UnifiedSystemTrayView* parent,
     UnifiedSystemTrayModel* model)
     : parent_(parent),
@@ -132,15 +132,15 @@ NewUnifiedMessageCenterView::NewUnifiedMessageCenterView(
   UpdateVisibility();
 }
 
-NewUnifiedMessageCenterView::~NewUnifiedMessageCenterView() {
+UnifiedMessageCenterView::~UnifiedMessageCenterView() {
   RemovedFromWidget();
 }
 
-void NewUnifiedMessageCenterView::SetMaxHeight(int max_height) {
+void UnifiedMessageCenterView::SetMaxHeight(int max_height) {
   scroller_->ClipHeightTo(0, max_height);
 }
 
-void NewUnifiedMessageCenterView::ListPreferredSizeChanged() {
+void UnifiedMessageCenterView::ListPreferredSizeChanged() {
   UpdateVisibility();
   PreferredSizeChanged();
   ScrollToPositionFromBottom();
@@ -150,25 +150,25 @@ void NewUnifiedMessageCenterView::ListPreferredSizeChanged() {
     GetWidget()->SynthesizeMouseMoveEvent();
 }
 
-void NewUnifiedMessageCenterView::ConfigureMessageView(
+void UnifiedMessageCenterView::ConfigureMessageView(
     message_center::MessageView* message_view) {
   message_view->set_scroller(scroller_);
 }
 
-void NewUnifiedMessageCenterView::AddedToWidget() {
+void UnifiedMessageCenterView::AddedToWidget() {
   focus_manager_ = GetFocusManager();
   if (focus_manager_)
     focus_manager_->AddFocusChangeListener(this);
 }
 
-void NewUnifiedMessageCenterView::RemovedFromWidget() {
+void UnifiedMessageCenterView::RemovedFromWidget() {
   if (!focus_manager_)
     return;
   focus_manager_->RemoveFocusChangeListener(this);
   focus_manager_ = nullptr;
 }
 
-void NewUnifiedMessageCenterView::Layout() {
+void UnifiedMessageCenterView::Layout() {
   stacking_counter_->SetCount(GetStackedNotificationCount());
   if (stacking_counter_->visible()) {
     gfx::Rect counter_bounds(GetContentsBounds());
@@ -187,14 +187,14 @@ void NewUnifiedMessageCenterView::Layout() {
   NotifyHeightBelowScroll();
 }
 
-gfx::Size NewUnifiedMessageCenterView::CalculatePreferredSize() const {
+gfx::Size UnifiedMessageCenterView::CalculatePreferredSize() const {
   gfx::Size preferred_size = scroller_->GetPreferredSize();
   // Hide Clear All button at the buttom from initial viewport.
   preferred_size.set_height(preferred_size.height() - kClearAllButtonRowHeight);
   return preferred_size;
 }
 
-void NewUnifiedMessageCenterView::OnMessageCenterScrolled() {
+void UnifiedMessageCenterView::OnMessageCenterScrolled() {
   position_from_bottom_ =
       scroll_bar_->GetMaxPosition() - scroller_->GetVisibleRect().y();
 
@@ -211,8 +211,8 @@ void NewUnifiedMessageCenterView::OnMessageCenterScrolled() {
   NotifyHeightBelowScroll();
 }
 
-void NewUnifiedMessageCenterView::ButtonPressed(views::Button* sender,
-                                                const ui::Event& event) {
+void UnifiedMessageCenterView::ButtonPressed(views::Button* sender,
+                                             const ui::Event& event) {
   base::RecordAction(
       base::UserMetricsAction("StatusArea_Notifications_ClearAll"));
 
@@ -224,20 +224,20 @@ void NewUnifiedMessageCenterView::ButtonPressed(views::Button* sender,
   message_list_view_->set_enable_animation(true);
 }
 
-void NewUnifiedMessageCenterView::OnWillChangeFocus(views::View* before,
-                                                    views::View* now) {}
+void UnifiedMessageCenterView::OnWillChangeFocus(views::View* before,
+                                                 views::View* now) {}
 
-void NewUnifiedMessageCenterView::OnDidChangeFocus(views::View* before,
-                                                   views::View* now) {
+void UnifiedMessageCenterView::OnDidChangeFocus(views::View* before,
+                                                views::View* now) {
   OnMessageCenterScrolled();
 }
 
-void NewUnifiedMessageCenterView::SetNotificationHeightBelowScroll(
+void UnifiedMessageCenterView::SetNotificationHeightBelowScroll(
     int height_below_scroll) {
   parent_->SetNotificationHeightBelowScroll(height_below_scroll);
 }
 
-void NewUnifiedMessageCenterView::UpdateVisibility() {
+void UnifiedMessageCenterView::UpdateVisibility() {
   SessionController* session_controller = Shell::Get()->session_controller();
   SetVisible(message_list_view_->GetPreferredSize().height() > 0 &&
              session_controller->ShouldShowNotificationTray() &&
@@ -248,7 +248,7 @@ void NewUnifiedMessageCenterView::UpdateVisibility() {
     position_from_bottom_ = kClearAllButtonRowHeight;
 }
 
-void NewUnifiedMessageCenterView::ScrollToPositionFromBottom() {
+void UnifiedMessageCenterView::ScrollToPositionFromBottom() {
   // Following logic doesn't work when the view is invisible, because it uses
   // the height of |scroller_|.
   if (!visible())
@@ -271,21 +271,21 @@ void NewUnifiedMessageCenterView::ScrollToPositionFromBottom() {
       scroll_bar_, scroll_bar_->GetMaxPosition() - position_from_bottom_);
 }
 
-int NewUnifiedMessageCenterView::GetStackedNotificationCount() const {
+int UnifiedMessageCenterView::GetStackedNotificationCount() const {
   // CountNotificationsAboveY() only works after SetBoundsRect() is called at
   // least once.
   if (scroller_->bounds().IsEmpty())
     scroller_->SetBoundsRect(GetContentsBounds());
 
   // Consistently use the y offset absolutely kStackingNotificationCounterHeight
-  // below the top of NewUnifiedMessageCenterView to count number of hidden
+  // below the top of UnifiedMessageCenterView to count number of hidden
   // notifications.
   const int y_offset = scroller_->GetVisibleRect().y() - scroller_->y() +
                        kStackingNotificationCounterHeight;
   return message_list_view_->CountNotificationsAboveY(y_offset);
 }
 
-void NewUnifiedMessageCenterView::NotifyHeightBelowScroll() {
+void UnifiedMessageCenterView::NotifyHeightBelowScroll() {
   SetNotificationHeightBelowScroll(std::max(
       0, message_list_view_->height() - scroller_->GetVisibleRect().bottom()));
 }

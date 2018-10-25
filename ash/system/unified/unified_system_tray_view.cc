@@ -8,7 +8,7 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
-#include "ash/system/message_center/new_unified_message_center_view.h"
+#include "ash/system/message_center/unified_message_center_view.h"
 #include "ash/system/tray/interacted_by_tap_recorder.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/feature_pod_button.h"
@@ -225,7 +225,7 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
       system_tray_container_(new SystemTrayContainer()),
       detailed_view_container_(new DetailedViewContainer()),
       message_center_view_(
-          new NewUnifiedMessageCenterView(this, controller->model())),
+          new UnifiedMessageCenterView(this, controller->model())),
       focus_search_(std::make_unique<FocusSearch>(this)),
       interacted_by_tap_recorder_(
           std::make_unique<InteractedByTapRecorder>(this)) {
