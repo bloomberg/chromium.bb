@@ -19,7 +19,6 @@ import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.Log;
-import org.chromium.base.Supplier;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.MainDex;
@@ -72,17 +71,10 @@ public class ChromeApplication extends Application {
             }
             checkAppBeingReplaced();
 
-            // Renderers and GPU process have command line passed to them via IPC
+            // Renderer and GPU processes have command line passed to them via IPC
             // (see ChildProcessService.java).
-            Supplier<Boolean> shouldUseDebugFlags = new Supplier<Boolean>() {
-                @Override
-                public Boolean get() {
-                    ChromePreferenceManager manager = ChromePreferenceManager.getInstance();
-                    return manager.readBoolean(
-                            ChromePreferenceManager.COMMAND_LINE_ON_NON_ROOTED_ENABLED_KEY, false);
-                }
-            };
-            CommandLineInitUtil.initCommandLine(COMMAND_LINE_FILE, shouldUseDebugFlags);
+            CommandLineInitUtil.initCommandLine(
+                    COMMAND_LINE_FILE, ChromeApplication::shouldUseDebugFlags);
 
             // Requires command-line flags.
             TraceEvent.maybeEnableEarlyTracing();
@@ -101,13 +93,8 @@ public class ChromeApplication extends Application {
             BuildHooksAndroid.initCustomResources(this);
 
             // Disable MemoryPressureMonitor polling when Chrome goes to the background.
-            ApplicationStatus.registerApplicationStateListener(newState -> {
-                if (newState == ApplicationState.HAS_RUNNING_ACTIVITIES) {
-                    MemoryPressureMonitor.INSTANCE.enablePolling();
-                } else if (newState == ApplicationState.HAS_STOPPED_ACTIVITIES) {
-                    MemoryPressureMonitor.INSTANCE.disablePolling();
-                }
-            });
+            ApplicationStatus.registerApplicationStateListener(
+                    ChromeApplication::updateMemoryPressurePolling);
 
             // Not losing much to not cover the below conditional since it just has simple setters.
             TraceEvent.end("ChromeApplication.attachBaseContext");
@@ -125,6 +112,19 @@ public class ChromeApplication extends Application {
             }
         }
         AsyncTask.takeOverAndroidThreadPool();
+    }
+
+    private static Boolean shouldUseDebugFlags() {
+        return ChromePreferenceManager.getInstance().readBoolean(
+                ChromePreferenceManager.COMMAND_LINE_ON_NON_ROOTED_ENABLED_KEY, false);
+    }
+
+    private static void updateMemoryPressurePolling(@ApplicationState int newState) {
+        if (newState == ApplicationState.HAS_RUNNING_ACTIVITIES) {
+            MemoryPressureMonitor.INSTANCE.enablePolling();
+        } else if (newState == ApplicationState.HAS_STOPPED_ACTIVITIES) {
+            MemoryPressureMonitor.INSTANCE.disablePolling();
+        }
     }
 
     /** Ensure this application object is not out-of-date. */
