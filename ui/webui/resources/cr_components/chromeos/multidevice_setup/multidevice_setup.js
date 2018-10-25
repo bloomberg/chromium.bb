@@ -41,7 +41,7 @@ cr.define('multidevice_setup', function() {
       forwardButtonDisabled: {
         type: Boolean,
         computed: 'shouldForwardButtonBeDisabled_(' +
-            'passwordPageForwardButtonDisabled_, visiblePageName_)',
+            'passwordPageForwardButtonDisabled_, visiblePageName)',
         notify: true
       },
 
@@ -68,12 +68,12 @@ cr.define('multidevice_setup', function() {
       /**
        * Element name of the currently visible page.
        *
-       * @private {!multidevice_setup.PageName}
+       * @type {!multidevice_setup.PageName}
        */
-      visiblePageName_: {
+      visiblePageName: {
         type: String,
         value: PageName.START,
-        notify: true,  // For testing purposes only.
+        notify: true,
       },
 
       /**
@@ -167,10 +167,10 @@ cr.define('multidevice_setup', function() {
     /** @private */
     onBackwardNavigationRequested_: function() {
       // The back button is only visible on the password page.
-      assert(this.visiblePageName_ == PageName.PASSWORD);
+      assert(this.visiblePageName == PageName.PASSWORD);
 
       this.$$('password-page').clearPasswordTextInput();
-      this.visiblePageName_ = PageName.START;
+      this.visiblePageName = PageName.START;
     },
 
     /** @private */
@@ -187,9 +187,9 @@ cr.define('multidevice_setup', function() {
 
     /** @private */
     navigateForward_: function() {
-      switch (this.visiblePageName_) {
+      switch (this.visiblePageName) {
         case PageName.FAILURE:
-          this.visiblePageName_ = PageName.START;
+          this.visiblePageName = PageName.START;
           return;
         case PageName.PASSWORD:
           this.$$('password-page').clearPasswordTextInput();
@@ -200,7 +200,7 @@ cr.define('multidevice_setup', function() {
           return;
         case PageName.START:
           if (this.delegate.isPasswordRequiredToSetHost())
-            this.visiblePageName_ = PageName.PASSWORD;
+            this.visiblePageName = PageName.PASSWORD;
           else
             this.setHostDevice_();
           return;
@@ -225,7 +225,7 @@ cr.define('multidevice_setup', function() {
               return;
             }
 
-            this.visiblePageName_ = PageName.SUCCESS;
+            this.visiblePageName = PageName.SUCCESS;
             this.fire('forward-button-focus-requested');
           })
           .catch((error) => {
@@ -254,7 +254,7 @@ cr.define('multidevice_setup', function() {
      * @private
      */
     shouldForwardButtonBeDisabled_: function() {
-      return (this.visiblePageName_ == PageName.PASSWORD) &&
+      return (this.visiblePageName == PageName.PASSWORD) &&
           this.passwordPageForwardButtonDisabled_;
     },
 

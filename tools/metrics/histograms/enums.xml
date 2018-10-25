@@ -33707,6 +33707,13 @@ Called by update_use_counter_css.py.-->
   <int value="2" label="SUCCESS">All operations succeeded.</int>
 </enum>
 
+<enum name="MultiDevice_PostOOBESetupFlow_Page">
+  <int value="0" label="Unknown page"/>
+  <int value="1" label="Start page"/>
+  <int value="2" label="Password page"/>
+  <int value="3" label="Success page"/>
+</enum>
+
 <enum name="MultiDeviceSetupNotification">
   <int value="0" label="New user, potential host exists"/>
   <int value="1" label="Existing user, host switched"/>
