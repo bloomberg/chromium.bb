@@ -214,6 +214,9 @@ void UseCounterCallback(v8::Isolate* isolate,
     case v8::Isolate::kAttemptOverrideReadOnlyOnPrototypeStrict:
       blink_feature = WebFeature::kV8AttemptOverrideReadOnlyOnPrototypeStrict;
       break;
+    case v8::Isolate::kOptimizedFunctionWithOneShotBytecode:
+      blink_feature = WebFeature::kV8OptimizedFunctionWithOneShotBytecode;
+      break;
     default:
       // This can happen if V8 has added counters that this version of Blink
       // does not know about. It's harmless.
