@@ -38,13 +38,13 @@ Polymer({
 
   /**
    * Automatically navigate to the next onboarding step once default changed.
-   * @param {boolean} isDefault
+   * @param {!nux.DefaultBrowserInfo} status
    * @private
    */
-  onDefaultBrowserChange_: function(isDefault) {
+  onDefaultBrowserChange_: function(status) {
     // TODO(scottchen): Add UMA collection here.
 
-    if (isDefault)
+    if (status.isDefault)
       this.finished_();
   },
 

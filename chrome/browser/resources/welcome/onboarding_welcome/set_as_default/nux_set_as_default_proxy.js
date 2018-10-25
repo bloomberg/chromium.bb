@@ -5,11 +5,17 @@
 cr.define('nux', function() {
   /** @interface */
   class NuxSetAsDefaultProxy {
+    requestDefaultBrowserState() {}
     setAsDefault() {}
   }
 
   /** @implements {nux.NuxSetAsDefaultProxy} */
   class NuxSetAsDefaultProxyImpl {
+    /** @override */
+    requestDefaultBrowserState() {
+      chrome.send('requestDefaultBrowserState');
+    }
+
     /** @override */
     setAsDefault() {
       chrome.send('setAsDefaultBrowser');
