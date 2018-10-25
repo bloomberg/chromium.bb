@@ -6,12 +6,9 @@
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_VIEW_H_
 
 #include "base/macros.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/ui/autofill/local_card_migration_dialog.h"
 #include "chrome/browser/ui/views/autofill/dialog_view_ids.h"
-#include "chrome/browser/ui/views/autofill/view_util.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -20,19 +17,13 @@ namespace content {
 class WebContents;
 }  // namespace content
 
-namespace views {
-class Label;
-class Separator;
-}  // namespace views
-
 namespace autofill {
 
 class LocalCardMigrationDialogController;
-class MigratableCardView;
+class LocalCardMigrationOfferView;
 
 class LocalCardMigrationDialogView : public LocalCardMigrationDialog,
                                      public views::ButtonListener,
-                                     public views::StyledLabelListener,
                                      public views::DialogDelegateView,
                                      public views::WidgetObserver {
  public:
@@ -61,37 +52,18 @@ class LocalCardMigrationDialogView : public LocalCardMigrationDialog,
   // views::ButtonListener
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // views::StyledLabelListener:
-  void StyledLabelLinkClicked(views::StyledLabel* label,
-                              const gfx::Range& range,
-                              int event_flags) override;
-
  private:
   void Init();
-  base::string16 GetDialogTitle() const;
-  base::string16 GetDialogInstruction() const;
-  int GetHeaderImageId() const;
   base::string16 GetOkButtonLabel() const;
   base::string16 GetCancelButtonLabel() const;
-  const std::vector<std::string> GetSelectedCardGuids() const;
 
   LocalCardMigrationDialogController* controller_;
 
   content::WebContents* web_contents_;
 
-  views::Label* title_ = nullptr;
-
-  views::Label* explanation_text_ = nullptr;
-
-  // A list of MigratableCardView.
-  views::View* card_list_view_ = nullptr;
-
-  // Separates the card scroll bar view and the legal message.
-  views::Separator* separator_ = nullptr;
-
-  // The view that contains legal message and handles legal message links
-  // clicking.
-  LegalMessageView* legal_message_container_ = nullptr;
+  // Pointer points to the LocalCardMigrationOfferView. Can be null when the
+  // dialog is not in the 'offer' state.
+  LocalCardMigrationOfferView* offer_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(LocalCardMigrationDialogView);
 };
