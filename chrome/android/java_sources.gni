@@ -2240,6 +2240,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/browserservices/ClientAppDataRecorderTest.java",
   "junit/src/org/chromium/chrome/browser/browserservices/ClientAppDataRegisterTest.java",
   "junit/src/org/chromium/chrome/browser/browserservices/OriginTest.java",
+  "junit/src/org/chromium/chrome/browser/browserservices/TrustedWebActivityClientTest.java",
   "junit/src/org/chromium/chrome/browser/browserservices/TrustedWebActivityDisclosureTest.java",
   "junit/src/org/chromium/chrome/browser/compositor/animation/CompositorAnimatorTest.java",
   "junit/src/org/chromium/chrome/browser/compositor/overlays/strip/StripLayoutHelperTest.java",
