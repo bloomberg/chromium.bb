@@ -1391,6 +1391,27 @@ bool DeviceStatusCollector::GetBootMode(em::DeviceStatusReportRequest* status) {
   return anything_reported;
 }
 
+bool DeviceStatusCollector::GetWriteProtectSwitch(
+    em::DeviceStatusReportRequest* status) {
+  std::string firmware_write_protect;
+  if (!statistics_provider_->GetMachineStatistic(
+          chromeos::system::kFirmwareWriteProtectBootKey,
+          &firmware_write_protect)) {
+    return false;
+  }
+
+  if (firmware_write_protect ==
+      chromeos::system::kFirmwareWriteProtectBootValueOff) {
+    status->set_write_protect_switch(false);
+  } else if (firmware_write_protect ==
+             chromeos::system::kFirmwareWriteProtectBootValueOn) {
+    status->set_write_protect_switch(true);
+  } else {
+    return false;
+  }
+  return true;
+}
+
 bool DeviceStatusCollector::GetNetworkInterfaces(
     em::DeviceStatusReportRequest* status) {
   // Maps shill device type strings to proto enum constants.
@@ -1704,8 +1725,10 @@ void DeviceStatusCollector::GetDeviceStatus(
   if (report_users_)
     anything_reported |= GetUsers(status);
 
-  if (report_hardware_status_)
+  if (report_hardware_status_) {
     anything_reported |= GetHardwareStatus(status, state);
+    anything_reported |= GetWriteProtectSwitch(status);
+  }
 
   if (report_os_update_status_)
     anything_reported |= GetOsUpdateStatus(status);
