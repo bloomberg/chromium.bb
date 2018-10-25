@@ -4841,6 +4841,14 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                            "Buffer %d does not contain a decoded frame",
                            frame_to_show);
       }
+      // cm->new_fb_idx should be the return value of the get_free_fb() call
+      // in av1_receive_compressed_data(), and generate_next_ref_frame_map()
+      // has not been called, so ref_count should still be 1.
+      assert(frame_bufs[cm->new_fb_idx].ref_count == 1);
+      // ref_cnt_fb() decrements ref_count directly rather than call
+      // decrease_ref_count(). If frame_bufs[cm->new_fb_idx].raw_frame_buffer
+      // has already been allocated, it will not be released by ref_cnt_fb()!
+      assert(!frame_bufs[cm->new_fb_idx].raw_frame_buffer.data);
       ref_cnt_fb(frame_bufs, &cm->new_fb_idx, frame_to_show);
       cm->reset_decoder_state =
           frame_bufs[frame_to_show].frame_type == KEY_FRAME;
