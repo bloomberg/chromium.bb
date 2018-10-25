@@ -397,7 +397,10 @@ void XMLDocumentParser::end() {
   if (parser_paused_)
     return;
 
-  if (saw_error_)
+  // StopParsing() calls InsertErrorMessageBlock() if there was a parsing
+  // error. Avoid showing the error message block twice.
+  // TODO(crbug.com/898775): Rationalize this.
+  if (saw_error_ && !IsStopped())
     InsertErrorMessageBlock();
   else
     UpdateLeafTextNode();
@@ -1580,6 +1583,9 @@ TextPosition XMLDocumentParser::GetTextPosition() const {
 }
 
 void XMLDocumentParser::StopParsing() {
+  // See comment before InsertErrorMessageBlock() in XMLDocumentParser::end.
+  if (saw_error_)
+    InsertErrorMessageBlock();
   DocumentParser::StopParsing();
   if (Context())
     xmlStopParser(Context());
