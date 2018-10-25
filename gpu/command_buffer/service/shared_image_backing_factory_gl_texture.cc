@@ -314,8 +314,8 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
     texture->SetTarget(target, 1);
     texture->sampler_state_.min_filter = GL_LINEAR;
     texture->sampler_state_.mag_filter = GL_LINEAR;
-    texture->sampler_state_.wrap_r = GL_CLAMP_TO_EDGE;
     texture->sampler_state_.wrap_s = GL_CLAMP_TO_EDGE;
+    texture->sampler_state_.wrap_t = GL_CLAMP_TO_EDGE;
     // TODO(piman): We pretend the texture was created in an ES2 context, so
     // that it can be used in other ES2 contexts, and so we have to pass
     // gl_format as the internal format. https://crbug.com/628064
