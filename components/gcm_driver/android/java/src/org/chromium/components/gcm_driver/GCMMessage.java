@@ -183,6 +183,28 @@ public class GCMMessage {
     }
 
     /**
+     * Returns the collapse key of GCMMessage encoded as a JSONObject. Returns null if non exists.
+     * Assumes that the JSONObject has previously been created through
+     * {@link #toJSON}.
+     * @param jsonObject The JSONObject encoding the GCMMessage
+     * @return The collapse key. Null if non-exists.
+     */
+    public static String peekCollapseKey(JSONObject jsonObject) {
+        return jsonObject.optString(KEY_COLLAPSE_KEY, null);
+    }
+
+    /**
+     * Returns the sender id of GCMMessage encoded as a JSONObject. Returns null if non exists.
+     * Assumes that the JSONObject has previously been created through
+     * {@link #toJSON}.
+     * @param jsonObject The JSONObject encoding the GCMMessage
+     * @return The collapse key. Null if non-exists.
+     */
+    public static String peekSenderId(JSONObject jsonObject) {
+        return jsonObject.optString(KEY_SENDER_ID, null);
+    }
+
+    /**
      * Serializes the contents of this GCM Message to a new bundle that can be stored, for example
      * for purposes of scheduling a job. Only methods available in BaseBundle may be used here,
      * as it may have to be converted to a PersistableBundle.
@@ -196,7 +218,7 @@ public class GCMMessage {
      * Serializes the contents of this GCM Message to a JSONObject such that it
      * could be stored as a String.
      */
-    public JSONObject toJSON() throws JSONException {
+    public JSONObject toJSON() {
         return serialize(new JSONWriter());
     }
 

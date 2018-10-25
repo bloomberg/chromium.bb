@@ -27,7 +27,7 @@ import java.util.concurrent.ExecutionException;
 @JNINamespace("instance_id")
 public class InstanceIDBridge {
     private static final String FCM_LAZY_SUBSCRIPTIONS = "fcm_lazy_subscriptions";
-    private static final String PREF_PACKAGE = "org.chromium.components.gcm_driver.instance_id";
+    public static final String PREF_PACKAGE = "org.chromium.components.gcm_driver.instance_id";
     private final String mSubtype;
     private long mNativeInstanceIDAndroid;
     /**
