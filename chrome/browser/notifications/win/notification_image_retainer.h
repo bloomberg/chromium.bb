@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "base/strings/string16.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -61,18 +60,19 @@ class NotificationImageRetainer {
   const base::FilePath& image_dir() { return image_dir_; }
 
  private:
-  using NameAndTime = std::pair<base::string16, base::TimeTicks>;
+  using NameAndTime = std::pair<base::FilePath, base::TimeTicks>;
   using NamesAndTimes = std::vector<NameAndTime>;
 
   // Deletes expired (older than a pre-defined threshold) files.
   void DeleteExpiredFiles();
 
-  // A collection of names to registered image files in image_dir_, each of
-  // which must stay valid for a short time while the Notification Center
-  // processes them. Each file has a corresponding registration timestamp. Files
-  // in this collection that have outlived the required minimum lifespan are
-  // scheduled for deletion periodically by |deletion_timer_|. The items in this
-  // collection are sorted by increasing registration time.
+  // A collection of names (note: not full paths) to registered image files
+  // in image_dir_, each of which must stay valid for a short time while the
+  // Notification Center processes them. Each file has a corresponding
+  // registration timestamp. Files in this collection that have outlived the
+  // required minimum lifespan are scheduled for deletion periodically by
+  // |deletion_timer_|. The items in this collection are sorted by increasing
+  // registration time.
   NamesAndTimes registered_images_;
 
   // The task runner used to handle file deletion.
