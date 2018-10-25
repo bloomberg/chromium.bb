@@ -2748,10 +2748,6 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
                          ->last_navigation_previews_state();
   }
 
-  // Give the delegate an opportunity to adjust the previews state.
-  if (delegate_)
-    delegate_->AdjustPreviewsStateForNavigation(&previews_state);
-
   // This will be used to set the Navigation Timing API navigationStart
   // parameter for browser navigations in new tabs (intents, tabs opened through
   // "Open link in new tab"). If the navigation must wait on the current
@@ -2847,13 +2843,6 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
                          ->current_frame_host()
                          ->last_navigation_previews_state();
   }
-
-  // Give the delegate an opportunity to adjust the previews state.
-  // TODO(ryansturm): move this into ContentBrowserClient
-  // DetermineEnabledPreviews, so redirects can be evaluated.
-  // https://crbug.com/892253.
-  if (delegate_)
-    delegate_->AdjustPreviewsStateForNavigation(&previews_state);
 
   // This will be used to set the Navigation Timing API navigationStart
   // parameter for browser navigations in new tabs (intents, tabs opened through
