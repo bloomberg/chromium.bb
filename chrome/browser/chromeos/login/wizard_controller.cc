@@ -1069,7 +1069,12 @@ void WizardController::OnTermsOfServiceAccepted() {
 }
 
 void WizardController::OnSyncConsentFinished() {
-  ShowDiscoverScreen();
+  if (chromeos::quick_unlock::IsFingerprintEnabled(
+          ProfileManager::GetActiveUserProfile())) {
+    ShowFingerprintSetupScreen();
+  } else {
+    ShowDiscoverScreen();
+  }
 }
 
 void WizardController::OnDiscoverScreenFinished() {
@@ -1077,16 +1082,11 @@ void WizardController::OnDiscoverScreenFinished() {
 }
 
 void WizardController::OnMarketingOptInFinished() {
-  if (chromeos::quick_unlock::IsFingerprintEnabled(
-          ProfileManager::GetActiveUserProfile())) {
-    ShowFingerprintSetupScreen();
-  } else {
-    ShowArcTermsOfServiceScreen();
-  }
+  ShowArcTermsOfServiceScreen();
 }
 
 void WizardController::OnFingerprintSetupFinished() {
-  ShowArcTermsOfServiceScreen();
+  ShowDiscoverScreen();
 }
 
 void WizardController::OnArcTermsOfServiceSkipped() {
