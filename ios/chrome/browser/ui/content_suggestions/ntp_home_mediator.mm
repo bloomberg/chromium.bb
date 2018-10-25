@@ -237,20 +237,20 @@ const char kNTPHelpURL[] =
     ContentSuggestionsMostVisitedActionItem* mostVisitedItem =
         base::mac::ObjCCastStrict<ContentSuggestionsMostVisitedActionItem>(
             item);
-    switch (mostVisitedItem.action) {
-      case ContentSuggestionsMostVisitedActionBookmark:
+    switch (mostVisitedItem.collectionShortcutType) {
+      case NTPCollectionShortcutTypeBookmark:
         [self.dispatcher showBookmarksManager];
         base::RecordAction(base::UserMetricsAction("MobileNTPShowBookmarks"));
         break;
-      case ContentSuggestionsMostVisitedActionReadingList:
+      case NTPCollectionShortcutTypeReadingList:
         [self.dispatcher showReadingList];
         base::RecordAction(base::UserMetricsAction("MobileNTPShowReadingList"));
         break;
-      case ContentSuggestionsMostVisitedActionRecentTabs:
+      case NTPCollectionShortcutTypeRecentTabs:
         [self.dispatcher showRecentTabs];
         base::RecordAction(base::UserMetricsAction("MobileNTPShowRecentTabs"));
         break;
-      case ContentSuggestionsMostVisitedActionHistory:
+      case NTPCollectionShortcutTypeHistory:
         [self.dispatcher showHistory];
         base::RecordAction(base::UserMetricsAction("MobileNTPShowHistory"));
         break;
