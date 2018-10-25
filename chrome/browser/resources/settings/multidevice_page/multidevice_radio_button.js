@@ -9,28 +9,6 @@ Polymer({
     CrRadioButtonBehavior,
   ],
 
-  properties: {
-    disabled: {
-      type: Boolean,
-      reflectToAttribute: true,
-      observer: 'disabledChanged_',
-    },
-
-    name: {
-      type: String,
-      notify: true,
-    },
-  },
-
-  /**
-   * Updates attributes of the control to reflect its disabled state.
-   * @private
-   */
-  disabledChanged_: function() {
-    this.setAttribute('tabindex', this.disabled ? -1 : 0);
-    this.setAttribute('aria-disabled', this.disabled ? 'true' : 'false');
-  },
-
   /**
    * Prevents on-click handles on the control from being activated when the
    * indicator is clicked.
