@@ -83,13 +83,14 @@
         android:orientation="horizontal"
         android:padding="16dp">
 
-        <Button
+        <org.chromium.ui.widget.ButtonCompat
             android:id="@+id/back_button"
             android:layout_width="wrap_content"
             android:layout_height="36dp"
             android:paddingStart="@dimen/fre_button_padding"
             android:paddingEnd="@dimen/fre_button_padding"
-            android:text="@string/back"/>
+            android:text="@string/back"
+            style="@style/TextButton" />
         <View
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -102,8 +103,6 @@
             android:paddingStart="@dimen/fre_button_padding"
             android:paddingEnd="@dimen/fre_button_padding"
             android:text="@string/ok"
-            android:textAppearance="@style/WhiteButtonText"
-            app:buttonColor="@color/light_active_color"
-            app:buttonRaised="false"/>
+            style="@style/FilledButton.Flat" />
     </LinearLayout>
 </LinearLayout>
