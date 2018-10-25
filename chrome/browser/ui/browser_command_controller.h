@@ -110,6 +110,10 @@ class BrowserCommandController : public CommandUpdater,
   // functionality anywhere else.
   bool IsShowingMainUI();
 
+  // Returns true if the location bar is shown or is currently hidden, but can
+  // be shown. Used for updating window command states only.
+  bool IsShowingLocationBar();
+
   // Initialize state for all browser commands.
   void InitCommandState();
 
