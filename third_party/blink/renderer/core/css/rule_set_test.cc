@@ -35,6 +35,19 @@
 
 namespace blink {
 
+namespace {
+
+StyleRule* CreateDummyStyleRule() {
+  CSSTestHelper helper;
+  helper.AddCSSRules("#id { color: tomato; }");
+  const RuleSet& rule_set = helper.GetRuleSet();
+  const HeapVector<Member<const RuleData>>* rules = rule_set.IdRules("id");
+  DCHECK_EQ(1u, rules->size());
+  return rules->at(0)->Rule();
+}
+
+}  // namespace
+
 TEST(RuleSetTest, findBestRuleSetAndAdd_CustomPseudoElements) {
   CSSTestHelper helper;
 
@@ -328,6 +341,13 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_PseudoWhereTooLarge) {
 }
 
 TEST(RuleSetTest, SelectorIndexLimit) {
+  // It's not feasible to run this test for a large number of bits. If the
+  // number of bits have increased to a large number, consider removing this
+  // test and making do with RuleSetTest.RuleDataSelectorIndexLimit.
+  static_assert(
+      RuleData::kSelectorIndexBits == 13,
+      "Please manually consider whether this test should be removed.");
+
   StringBuilder builder;
 
   // We use 13 bits to storing the selector start index in RuleData. This is a
@@ -345,6 +365,44 @@ TEST(RuleSetTest, SelectorIndexLimit) {
   ASSERT_EQ(1u, rules->size());
   EXPECT_EQ("b", rules->at(0)->Selector().TagQName().LocalName());
   EXPECT_FALSE(rule_set.TagRules("span"));
+}
+
+TEST(RuleSetTest, RuleDataSelectorIndexLimit) {
+  StyleRule* rule = CreateDummyStyleRule();
+  AddRuleFlags flags = kRuleHasNoSpecialState;
+  const unsigned position = 0;
+  EXPECT_TRUE(RuleData::MaybeCreate(rule, 0, position, flags));
+  EXPECT_FALSE(RuleData::MaybeCreate(rule, (1 << RuleData::kSelectorIndexBits),
+                                     position, flags));
+  EXPECT_FALSE(RuleData::MaybeCreate(
+      rule, (1 << RuleData::kSelectorIndexBits) + 1, position, flags));
+}
+
+TEST(RuleSetTest, RuleDataPositionLimit) {
+  StyleRule* rule = CreateDummyStyleRule();
+  AddRuleFlags flags = kRuleHasNoSpecialState;
+  const unsigned selector_index = 0;
+  EXPECT_TRUE(RuleData::MaybeCreate(rule, selector_index, 0, flags));
+  EXPECT_FALSE(RuleData::MaybeCreate(rule, selector_index,
+                                     (1 << RuleData::kPositionBits), flags));
+  EXPECT_FALSE(RuleData::MaybeCreate(
+      rule, selector_index, (1 << RuleData::kPositionBits) + 1, flags));
+}
+
+TEST(RuleSetTest, RuleCountNotIncreasedByInvalidRuleData) {
+  RuleSet* rule_set = RuleSet::Create();
+  EXPECT_EQ(0u, rule_set->RuleCount());
+
+  AddRuleFlags flags = kRuleHasNoSpecialState;
+  StyleRule* rule = CreateDummyStyleRule();
+
+  // Add with valid selector_index=0.
+  rule_set->AddRule(rule, 0, flags);
+  EXPECT_EQ(1u, rule_set->RuleCount());
+
+  // Adding with invalid selector_index should not lead to a change in count.
+  rule_set->AddRule(rule, 1 << RuleData::kSelectorIndexBits, flags);
+  EXPECT_EQ(1u, rule_set->RuleCount());
 }
 
 }  // namespace blink

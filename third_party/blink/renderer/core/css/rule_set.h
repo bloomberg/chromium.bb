@@ -79,10 +79,10 @@ namespace blink {
 // and makes it accessible cheaply.
 class CORE_EXPORT RuleData : public GarbageCollected<RuleData> {
  public:
-  RuleData(StyleRule*,
-           unsigned selector_index,
-           unsigned position,
-           AddRuleFlags);
+  static RuleData* MaybeCreate(StyleRule*,
+                               unsigned selector_index,
+                               unsigned position,
+                               AddRuleFlags);
 
   unsigned GetPosition() const { return position_; }
   StyleRule* Rule() const { return rule_; }
@@ -114,16 +114,25 @@ class CORE_EXPORT RuleData : public GarbageCollected<RuleData> {
 
   void Trace(blink::Visitor*);
 
- private:
-  Member<StyleRule> rule_;
   // This number is picked fairly arbitrary. If lowered, be aware that there
   // might be sites and extensions using style rules with selector lists
   // exceeding the number of simple selectors to fit in this bitfield.
   // See https://crbug.com/312913 and https://crbug.com/704562
-  unsigned selector_index_ : 13;
+  static constexpr size_t kSelectorIndexBits = 13;
+
   // This number was picked fairly arbitrarily. We can probably lower it if we
   // need to. Some simple testing showed <100,000 RuleData's on large sites.
-  unsigned position_ : 18;
+  static constexpr size_t kPositionBits = 18;
+
+ private:
+  RuleData(StyleRule*,
+           unsigned selector_index,
+           unsigned position,
+           AddRuleFlags);
+
+  Member<StyleRule> rule_;
+  unsigned selector_index_ : kSelectorIndexBits;
+  unsigned position_ : kPositionBits;
   unsigned contains_uncommon_attribute_selector_ : 1;
   // 32 bits above
   unsigned specificity_ : 24;
