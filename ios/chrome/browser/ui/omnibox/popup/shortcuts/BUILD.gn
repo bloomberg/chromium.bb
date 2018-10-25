@@ -4,6 +4,10 @@
 
 source_set("shortcuts") {
   sources = [
+    "collection_shortcut_cell.h",
+    "collection_shortcut_cell.mm",
+    "most_visited_shortcut_cell.h",
+    "most_visited_shortcut_cell.mm",
     "shortcuts_coordinator.h",
     "shortcuts_coordinator.mm",
     "shortcuts_view_controller.h",
@@ -41,6 +45,7 @@ source_set("shortcuts_internal") {
     "//components/reading_list/core",
     "//ios/chrome/browser/ntp_tiles",
     "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/commands:commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/favicon",
     "//ios/chrome/browser/ui/toolbar/public",

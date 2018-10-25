@@ -6,7 +6,10 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/ntp_tile_views/ntp_most_visited_tile_view.h"
+#import "ios/chrome/browser/ui/ntp_tile_views/ntp_shortcut_tile_view.h"
 #import "ios/chrome/browser/ui/ntp_tile_views/ntp_tile_constants.h"
+#import "ios/chrome/browser/ui/omnibox/popup/shortcuts/collection_shortcut_cell.h"
+#import "ios/chrome/browser/ui/omnibox/popup/shortcuts/most_visited_shortcut_cell.h"
 #import "ios/chrome/browser/ui/omnibox/popup/shortcuts/shortcuts_view_controller_delegate.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -20,39 +23,11 @@ const NSInteger kNumberOfItemsPerRow = 4;
 const CGFloat kLineSpacing = 30;
 const CGFloat kItemSpacing = 10;
 const CGFloat kTopInset = 10;
+
+const NSInteger kMostVisitedSection = 0;
+const NSInteger kCollectionShortcutSection = 1;
+
 }  // namespace
-
-#pragma mark - ShortcutCell
-
-// A collection view subclass that contains a most visited tile.
-@interface ShortcutCell : UICollectionViewCell
-
-// The tile contained in the cell.
-@property(nonatomic, strong) NTPMostVisitedTileView* tile;
-
-@end
-
-@implementation ShortcutCell
-
-- (instancetype)initWithFrame:(CGRect)frame {
-  self = [super initWithFrame:frame];
-  if (self) {
-    _tile = [[NTPMostVisitedTileView alloc] init];
-    _tile.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.contentView addSubview:_tile];
-    AddSameConstraints(self.contentView, _tile);
-  }
-  return self;
-}
-
-- (void)prepareForReuse {
-  [super prepareForReuse];
-  self.tile.titleLabel.text = nil;
-}
-
-@end
-
-#pragma mark - ShortcutsViewController
 
 @interface ShortcutsViewController ()<UICollectionViewDelegate,
                                       UICollectionViewDataSource>
@@ -99,8 +74,12 @@ const CGFloat kTopInset = 10;
   _collectionView.delegate = self;
   _collectionView.dataSource = self;
   _collectionView.backgroundColor = [UIColor clearColor];
-  [_collectionView registerClass:[ShortcutCell class]
-      forCellWithReuseIdentifier:NSStringFromClass([ShortcutCell class])];
+  [_collectionView registerClass:[MostVisitedShortcutCell class]
+      forCellWithReuseIdentifier:NSStringFromClass(
+                                     [MostVisitedShortcutCell class])];
+  [_collectionView registerClass:[CollectionShortcutCell class]
+      forCellWithReuseIdentifier:NSStringFromClass(
+                                     [CollectionShortcutCell class])];
 
   return _collectionView;
 }
@@ -144,6 +123,11 @@ const CGFloat kTopInset = 10;
 
 #pragma mark - UICollectionViewDataSource
 
+- (NSInteger)numberOfSectionsInCollectionView:
+    (UICollectionView*)collectionView {
+  return 2;
+}
+
 - (NSInteger)collectionView:(UICollectionView*)collectionView
      numberOfItemsInSection:(NSInteger)section {
   return kNumberOfItemsPerRow;
@@ -153,23 +137,70 @@ const CGFloat kTopInset = 10;
 // -dequeueReusableCellWithReuseIdentifier:forIndexPath:
 - (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
                  cellForItemAtIndexPath:(NSIndexPath*)indexPath {
-  ShortcutCell* cell = [self.collectionView
-      dequeueReusableCellWithReuseIdentifier:NSStringFromClass(
-                                                 [ShortcutCell class])
-                                forIndexPath:indexPath];
-  ShortcutsMostVisitedItem* item = self.mostVisitedItems[indexPath.item];
+  if (indexPath.section == kMostVisitedSection) {
+    MostVisitedShortcutCell* cell = [self.collectionView
+        dequeueReusableCellWithReuseIdentifier:
+            NSStringFromClass([MostVisitedShortcutCell class])
+                                  forIndexPath:indexPath];
+    ShortcutsMostVisitedItem* item = self.mostVisitedItems[indexPath.item];
+    [self configureMostVisitedCell:cell withItem:item];
+    return cell;
+  }
+
+  if (indexPath.section == kCollectionShortcutSection) {
+    CollectionShortcutCell* cell = [self.collectionView
+        dequeueReusableCellWithReuseIdentifier:
+            NSStringFromClass([CollectionShortcutCell class])
+                                  forIndexPath:indexPath];
+    DCHECK(indexPath.item < 4) << "Only four collection shortcuts described in "
+                                  "NTPCollectionShortcutType are supported";
+    NTPCollectionShortcutType type = (NTPCollectionShortcutType)indexPath.item;
+    [self configureCollectionShortcutCell:cell withCollection:type];
+    return cell;
+  }
+
+  return nil;
+}
+
+- (void)configureMostVisitedCell:(MostVisitedShortcutCell*)cell
+                        withItem:(ShortcutsMostVisitedItem*)item {
   [cell.tile.faviconView configureWithAttributes:item.attributes];
   cell.tile.titleLabel.text = item.title;
-  return cell;
+}
+
+- (void)configureCollectionShortcutCell:(CollectionShortcutCell*)cell
+                         withCollection:(NTPCollectionShortcutType)type {
+  cell.tile.titleLabel.text = TitleForCollectionShortcutType(type);
+  cell.tile.iconView.image = ImageForCollectionShortcutType(type);
 }
 
 #pragma mark - UICollectionViewDelegate
 
 - (void)collectionView:(UICollectionView*)collectionView
     didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
-  ShortcutsMostVisitedItem* item = self.mostVisitedItems[indexPath.item];
-  DCHECK(item);
-  [self.commandHandler openMostVisitedItem:item];
+  if (indexPath.section == kMostVisitedSection) {
+    ShortcutsMostVisitedItem* item = self.mostVisitedItems[indexPath.item];
+    DCHECK(item);
+    [self.commandHandler openMostVisitedItem:item];
+  }
+
+  if (indexPath.section == kCollectionShortcutSection) {
+    NTPCollectionShortcutType type = (NTPCollectionShortcutType)indexPath.item;
+    switch (type) {
+      case NTPCollectionShortcutTypeBookmark:
+        [self.commandHandler openBookmarks];
+        break;
+      case NTPCollectionShortcutTypeRecentTabs:
+        [self.commandHandler openRecentTabs];
+        break;
+      case NTPCollectionShortcutTypeReadingList:
+        [self.commandHandler openReadingList];
+        break;
+      case NTPCollectionShortcutTypeHistory:
+        [self.commandHandler openHistory];
+        break;
+    }
+  }
 }
 
 @end

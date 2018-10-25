@@ -13,6 +13,14 @@
 
 // Called when a most visited shortcut is selected by the user.
 - (void)openMostVisitedItem:(ShortcutsMostVisitedItem*)item;
+// Opens the bookmarks screen and defocuses the omnibox.
+- (void)openBookmarks;
+// Opens the reading list screen and defocuses the omnibox.
+- (void)openReadingList;
+// Opens the recent tabs screen and defocuses the omnibox.
+- (void)openRecentTabs;
+// Opens the history screen and defocuses the omnibox.
+- (void)openHistory;
 
 @end
 
