@@ -11,6 +11,7 @@
 
 @class CommandDispatcher;
 @protocol OmniboxPopupPositioner;
+@protocol OmniboxFocuser;
 class OmniboxPopupViewIOS;
 
 namespace ios {

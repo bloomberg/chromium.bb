@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/ntp_tile_views/ntp_most_visited_tile_view.h"
 #import "ios/chrome/browser/ui/ntp_tile_views/ntp_tile_constants.h"
+#import "ios/chrome/browser/ui/omnibox/popup/shortcuts/shortcut_commands.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
@@ -131,7 +132,9 @@ const CGFloat kTopInset = 10;
     return;
   }
   NSUInteger i = [self.mostVisitedItems indexOfObject:item];
-  DCHECK(i != NSNotFound);
+  if (i == NSNotFound) {
+    return;
+  }
   [self.collectionView
       reloadItemsAtIndexPaths:@[ [NSIndexPath indexPathWithIndex:i] ]];
 }
@@ -158,6 +161,15 @@ const CGFloat kTopInset = 10;
   [cell.tile.faviconView configureWithAttributes:item.attributes];
   cell.tile.titleLabel.text = item.title;
   return cell;
+}
+
+#pragma mark - UICollectionViewDelegate
+
+- (void)collectionView:(UICollectionView*)collectionView
+    didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
+  ShortcutsMostVisitedItem* item = self.mostVisitedItems[indexPath.item];
+  DCHECK(item);
+  [self.commandHandler openMostVisitedItem:item];
 }
 
 @end

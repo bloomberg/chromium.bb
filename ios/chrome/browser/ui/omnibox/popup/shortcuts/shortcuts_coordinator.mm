@@ -48,6 +48,8 @@
       [[ShortcutsViewController alloc] init];
   self.viewController = shortcutsViewController;
   self.mediator.consumer = shortcutsViewController;
+  self.mediator.dispatcher = self.dispatcher;
+  shortcutsViewController.commandHandler = self.mediator;
 }
 
 - (void)stop {

@@ -27,6 +27,7 @@ source_set("shortcuts") {
 
 source_set("shortcuts_internal") {
   sources = [
+    "shortcut_commands.h",
     "shortcuts_consumer.h",
     "shortcuts_mediator.h",
     "shortcuts_mediator.mm",
@@ -39,8 +40,11 @@ source_set("shortcuts_internal") {
     "//components/ntp_tiles",
     "//components/reading_list/core",
     "//ios/chrome/browser/ntp_tiles",
+    "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/favicon",
+    "//ios/chrome/browser/ui/toolbar/public",
+    "//ios/web/public",
   ]
 }
 
