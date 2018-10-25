@@ -7,7 +7,7 @@
 #include <lib/fidl/cpp/internal/weak_stub_controller.h>
 
 #include "base/bind.h"
-#include "base/fuchsia/async_dispatcher.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/launcher/unit_test_launcher.h"
@@ -154,8 +154,12 @@ class TestolaImpl : public fidljstest::Testola {
     various_stuff_ = stuff_as_vec;
   }
 
-  void WithResponse(int32_t a, int32_t b, WithResponseCallback sum) override {
-    sum(a + b);
+  void WithResponse(int32_t a,
+                    int32_t b,
+                    WithResponseCallback callback) override {
+    response_callbacks_.push_back(base::BindOnce(
+        [](WithResponseCallback callback, int32_t result) { callback(result); },
+        std::move(callback), a + b));
   }
 
   void SendAStruct(fidljstest::BasicStruct basic_struct) override {
@@ -196,6 +200,13 @@ class TestolaImpl : public fidljstest::Testola {
 
   fidljstest::BasicStruct GetReceivedStruct() const { return basic_struct_; }
 
+  void CallResponseCallbacks() {
+    for (auto& cb : response_callbacks_) {
+      std::move(cb).Run();
+    }
+    response_callbacks_.clear();
+  }
+
  private:
   bool was_do_something_called_ = false;
   int32_t received_int_ = -1;
@@ -204,6 +215,7 @@ class TestolaImpl : public fidljstest::Testola {
   std::string various_msg_;
   std::vector<uint32_t> various_stuff_;
   fidljstest::BasicStruct basic_struct_;
+  std::vector<base::OnceClosure> response_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(TestolaImpl);
 };
@@ -341,14 +353,12 @@ TEST_F(FidlGenJsTest, RawReceiveFidlMessageWithMultipleArgs) {
 }
 
 TEST_F(FidlGenJsTest, RawWithResponse) {
-  base::AsyncDispatcher dispatcher;
-
   v8::Isolate* isolate = instance_->isolate();
   BindingsSetupHelper helper(isolate);
 
   TestolaImpl testola_impl;
   fidl::Binding<fidljstest::Testola> binding(&testola_impl);
-  binding.Bind(std::move(helper.server()), &dispatcher);
+  binding.Bind(std::move(helper.server()));
 
   // Send the data from the JS side into the channel.
   std::string source = R"(
@@ -363,12 +373,11 @@ TEST_F(FidlGenJsTest, RawWithResponse) {
     )";
   helper.runner().Run(source, "test.js");
 
-  // Run the dispatcher until the response or timeout.
-  while (helper.Get<int>("sum_result") == -1) {
-    ASSERT_EQ(dispatcher.DispatchOrWaitUntil(zx_deadline_after(
-                  ZX_MSEC(TestTimeouts::action_timeout().InMilliseconds()))),
-              ZX_OK);
-  }
+  base::RunLoop().RunUntilIdle();
+
+  testola_impl.CallResponseCallbacks();
+
+  base::RunLoop().RunUntilIdle();
 
   // Confirm that the response was received with the correct value.
   auto sum_result = helper.Get<int>("sum_result");
@@ -376,15 +385,13 @@ TEST_F(FidlGenJsTest, RawWithResponse) {
 }
 
 TEST_F(FidlGenJsTest, NoResponseBeforeTearDown) {
-  base::AsyncDispatcher dispatcher;
-
   v8::Isolate* isolate = instance_->isolate();
 
   BindingsSetupHelper helper(isolate);
 
   TestolaImpl testola_impl;
   fidl::Binding<fidljstest::Testola> binding(&testola_impl);
-  binding.Bind(std::move(helper.server()), &dispatcher);
+  binding.Bind(std::move(helper.server()));
 
   // Send the data from the JS side into the channel.
   std::string source = R"(
@@ -406,8 +413,9 @@ TEST_F(FidlGenJsTest, NoResponseBeforeTearDown) {
     )";
   helper.runner().Run(source, "test.js");
 
-  // Run the dispatcher, to read and queue the response.
-  EXPECT_EQ(dispatcher.DispatchOrWaitUntil(ZX_TIME_INFINITE), ZX_OK);
+  // Run the message loop to read and queue the request, but don't send the
+  // response.
+  base::RunLoop().RunUntilIdle();
 
   // This causes outstanding waits to be canceled.
   helper.DestroyBindingsForTesting();
@@ -418,14 +426,12 @@ TEST_F(FidlGenJsTest, NoResponseBeforeTearDown) {
 }
 
 TEST_F(FidlGenJsTest, RawReceiveFidlStructMessage) {
-  base::AsyncDispatcher dispatcher;
-
   v8::Isolate* isolate = instance_->isolate();
   BindingsSetupHelper helper(isolate);
 
   TestolaImpl testola_impl;
   fidl::Binding<fidljstest::Testola> binding(&testola_impl);
-  binding.Bind(std::move(helper.server()), &dispatcher);
+  binding.Bind(std::move(helper.server()));
 
   // Send the data from the JS side into the channel.
   std::string source = R"(
@@ -438,9 +444,7 @@ TEST_F(FidlGenJsTest, RawReceiveFidlStructMessage) {
   helper.runner().Run(source, "test.js");
 
   // Run the dispatcher to read and dispatch the response.
-  ASSERT_EQ(dispatcher.DispatchOrWaitUntil(zx_deadline_after(
-                ZX_MSEC(TestTimeouts::action_timeout().InMilliseconds()))),
-            ZX_OK);
+  base::RunLoop().RunUntilIdle();
 
   fidljstest::BasicStruct received_struct = testola_impl.GetReceivedStruct();
   EXPECT_EQ(received_struct.b, true);
@@ -454,14 +458,12 @@ TEST_F(FidlGenJsTest, RawReceiveFidlStructMessage) {
 }
 
 TEST_F(FidlGenJsTest, RawReceiveFidlNestedStructsAndRespond) {
-  base::AsyncDispatcher dispatcher;
-
   v8::Isolate* isolate = instance_->isolate();
   BindingsSetupHelper helper(isolate);
 
   TestolaImpl testola_impl;
   fidl::Binding<fidljstest::Testola> binding(&testola_impl);
-  binding.Bind(std::move(helper.server()), &dispatcher);
+  binding.Bind(std::move(helper.server()));
 
   // Send the data from the JS side into the channel.
   std::string source = R"(
@@ -486,11 +488,8 @@ TEST_F(FidlGenJsTest, RawReceiveFidlNestedStructsAndRespond) {
     )";
   helper.runner().Run(source, "test.js");
 
-  // Run the dispatcher to read the request.
-  EXPECT_EQ(dispatcher.DispatchOrWaitUntil(ZX_TIME_INFINITE), ZX_OK);
-
-  // Run the dispatcher again to write the response.
-  EXPECT_EQ(dispatcher.DispatchOrWaitUntil(ZX_TIME_INFINITE), ZX_OK);
+  // Run the message loop to read the request and write the response.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(helper.Get<int>("result_count"), 123);
   EXPECT_EQ(helper.Get<std::string>("result_id"), "here is my id");
