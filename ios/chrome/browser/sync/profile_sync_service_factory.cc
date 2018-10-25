@@ -17,6 +17,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/sync/driver/startup_controller.h"
 #include "components/sync/driver/sync_util.h"
+#include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -155,6 +156,8 @@ ProfileSyncServiceFactory::BuildServiceInstanceFor(
       GetApplicationContext()->GetNetworkConnectionTracker();
   init_params.debug_identifier = browser_state->GetDebugName();
   init_params.channel = ::GetChannel();
+  init_params.user_events_separate_pref_group =
+      unified_consent::IsUnifiedConsentFeatureEnabled();
 
   auto pss = std::make_unique<ProfileSyncService>(std::move(init_params));
   pss->Initialize();
