@@ -106,7 +106,7 @@ def GenerateResultsDict(test_run_results, global_tags=None):
           'status': status_as_string(r.GetType()),
           'elapsed_time_ms': r.GetDuration(),
           'output_snippet': unicode(r.GetLog(), errors='replace'),
-          'losless_snippet': '',
+          'losless_snippet': True,
           'output_snippet_base64': '',
           'links': r.GetLinks(),
       }
