@@ -21,8 +21,7 @@ test(function() {
     canvas = document.createElement('canvas');
     var ctx_3d = canvas.getContext('webgl', {lowLatency : true});
     assert_true(ctx_3d instanceof WebGLRenderingContext);
-    // TODO(mcasas): Check ctx_3d.getContextAttributes().lowLatency after
-    // https://github.com/whatwg/html/issues/4087.
+    assert_true(ctx_3d.getContextAttributes().lowLatency);
 
     var ctx_3d_second = canvas.getContext('webgl', {lowLatency : true});
     assert_equals(ctx_3d, ctx_3d_second);
