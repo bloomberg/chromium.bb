@@ -115,6 +115,10 @@ class DataReductionProxyConfig
   base::Optional<DataReductionProxyTypeInfo> FindConfiguredDataReductionProxy(
       const net::ProxyServer& proxy_server) const;
 
+  // Gets a list of all the configured proxies. These are the same proxies that
+  // will be used if FindConfiguredDataReductionProxy() is called.
+  net::ProxyList GetAllConfiguredProxies() const;
+
   // Returns true if this request would be bypassed by the Data Reduction Proxy
   // based on applying the |data_reduction_proxy_config| param rules to the
   // request URL.

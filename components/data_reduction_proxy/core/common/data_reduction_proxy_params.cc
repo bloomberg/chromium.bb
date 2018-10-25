@@ -494,6 +494,9 @@ DataReductionProxyParams::FindConfiguredDataReductionProxy(
   return params::FindConfiguredProxyInVector(proxies_for_http(), proxy_server);
 }
 
-
+net::ProxyList DataReductionProxyParams::GetAllConfiguredProxies() const {
+  NOTREACHED();
+  return net::ProxyList();
+}
 
 }  // namespace data_reduction_proxy

@@ -271,6 +271,11 @@ DataReductionProxyConfig::FindConfiguredDataReductionProxy(
   return config_values_->FindConfiguredDataReductionProxy(proxy_server);
 }
 
+net::ProxyList DataReductionProxyConfig::GetAllConfiguredProxies() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return config_values_->GetAllConfiguredProxies();
+}
+
 bool DataReductionProxyConfig::IsBypassedByDataReductionProxyLocalRules(
     const net::URLRequest& request,
     const net::ProxyConfig& data_reduction_proxy_config) const {

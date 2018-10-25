@@ -156,6 +156,8 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   // Sets the headers to use for requests to the compression server.
   void SetProxyRequestHeaders(const net::HttpRequestHeaders& headers);
 
+  void SetConfiguredProxies(const net::ProxyList& proxies);
+
   // Returns headers to use for requests to the compression server.
   const net::HttpRequestHeaders& GetProxyRequestHeaders() const;
 
@@ -204,6 +206,10 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   // enabled or disabled at startup.
   virtual void RecordStartupState(
       data_reduction_proxy::ProxyStartupState state) const;
+
+  // Checks whether |proxy_server| is a valid configured proxy.
+  bool IsConfiguredDataReductionProxy(
+      const net::ProxyServer& proxy_server) const;
 
  private:
   friend class DataReductionProxySettingsTestBase;
@@ -316,6 +322,8 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
 
   // The headers to use for requests to the proxy server.
   net::HttpRequestHeaders proxy_request_headers_;
+
+  net::ProxyList configured_proxies_;
 
   network::mojom::CustomProxyConfigClientPtrInfo proxy_config_client_;
 

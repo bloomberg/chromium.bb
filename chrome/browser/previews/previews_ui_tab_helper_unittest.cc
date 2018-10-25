@@ -106,7 +106,8 @@ class PreviewsUITabHelperUnitTest : public ChromeRenderViewHostTestHarness {
     std::string headers("HTTP/1.1 200 OK\n\n");
     test_handle_->CallWillProcessResponseForTesting(
         main_rfh(),
-        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()),
+        false, net::ProxyServer::Direct());
     SimulateCommit();
   }
 
