@@ -635,7 +635,8 @@ void BackgroundTracingManagerImpl::AbortScenario() {
   config_.reset();
   tracing_timer_.reset();
 
-  content::TracingControllerImpl::GetInstance()->StopTracing(nullptr);
+  if (is_tracing_)
+    content::TracingControllerImpl::GetInstance()->StopTracing(nullptr);
 
   for (auto* observer : background_tracing_observers_)
     observer->OnScenarioAborted();
