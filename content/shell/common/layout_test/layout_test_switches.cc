@@ -46,10 +46,6 @@ const char kEnableLeakDetection[] = "enable-leak-detection";
 // Encode binary layout test results (images, audio) using base64.
 const char kEncodeBinary[] = "encode-binary";
 
-// Request Content Shell between tests. This causes tests to run twice as
-// slowly, but provides more consistent results.
-const char kResetShellBetweenTests[] = "reset-shell-between-tests";
-
 // Request the render trees of pages to be dumped as text once they have
 // finished loading.
 const char kRunWebTests[] = "run-web-tests";

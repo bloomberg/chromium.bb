@@ -540,28 +540,11 @@ bool BlinkTestController::ResetAfterLayoutTest() {
   composite_all_frames_node_queue_ = std::queue<Node*>();
   weak_factory_.InvalidateWeakPtrs();
 
-  bool discard_main_window = false;
-  bool discard_secondary_window = false;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kResetShellBetweenTests)) {
-    discard_main_window = true;
-    discard_secondary_window = true;
-  }
-
 #if defined(OS_ANDROID)
   // Re-using the shell's main window on Android causes issues with networking
   // requests never succeeding. See http://crbug.com/277652.
-  discard_main_window = true;
+  DiscardMainWindow();
 #endif
-
-  if (discard_main_window) {
-    DiscardMainWindow();
-    devtools_window_ = nullptr;
-  }
-  if (discard_secondary_window && secondary_window_) {
-    secondary_window_->Close();
-    secondary_window_ = nullptr;
-  }
 
   return true;
 }
