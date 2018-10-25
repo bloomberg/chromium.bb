@@ -244,6 +244,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   static MainThreadTaskQueue::QueueTraits DeferrableTaskQueueTraits();
   static MainThreadTaskQueue::QueueTraits PausableTaskQueueTraits();
   static MainThreadTaskQueue::QueueTraits UnpausableTaskQueueTraits();
+  static MainThreadTaskQueue::QueueTraits ForegroundOnlyTaskQueueTraits();
 
   const FrameScheduler::FrameType frame_type_;
 

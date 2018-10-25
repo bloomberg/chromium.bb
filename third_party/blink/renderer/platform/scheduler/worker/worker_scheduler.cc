@@ -147,6 +147,7 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
     case TaskType::kWorkerThreadTaskQueueCompositor:
     case TaskType::kExperimentalWebSchedulingUserInteraction:
     case TaskType::kExperimentalWebSchedulingBestEffort:
+    case TaskType::kInternalTranslation:
     case TaskType::kCount:
       NOTREACHED();
       break;
