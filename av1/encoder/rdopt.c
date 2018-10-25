@@ -9682,8 +9682,6 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       continue;
     }
 
-    int64_t best_rd2 = INT64_MAX;
-
     const RD_STATS backup_rd_stats = *rd_stats;
     // If !search_jnt_comp, we need to force mbmi->compound_idx = 1.
     for (comp_idx = 1; comp_idx >= !search_jnt_comp; --comp_idx) {
@@ -9961,10 +9959,6 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
           best_xskip = x->skip;
           memcpy(best_blk_skip, x->blk_skip,
                  sizeof(best_blk_skip[0]) * xd->n4_h * xd->n4_w);
-        }
-
-        if (tmp_rd < best_rd2) {
-          best_rd2 = tmp_rd;
         }
 
         if (tmp_rd < ref_best_rd) {
