@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_base.h"
 
-class ProfileOAuth2TokenService;
 class Profile;
 
 namespace identity {
@@ -41,8 +40,7 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
       DeviceManagementService* device_management_service,
       UserCloudPolicyManager* policy_manager,
       identity::IdentityManager* identity_manager,
-      scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory,
-      ProfileOAuth2TokenService* token_service);
+      scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory);
   ~UserPolicySigninService() override;
 
   // Registers a CloudPolicyClient for fetching policy for |username|.
@@ -85,10 +83,6 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
   void OnRegistrationDone();
 
   std::unique_ptr<CloudPolicyClientRegistrationHelper> registration_helper_;
-
-  // Weak pointer to the token service used to authenticate the
-  // CloudPolicyClient during registration.
-  ProfileOAuth2TokenService* oauth2_token_service_;
 
   // The PrefService associated with the profile.
   PrefService* profile_prefs_;

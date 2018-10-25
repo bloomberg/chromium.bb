@@ -127,20 +127,17 @@ class FakeUserPolicySigninService : public policy::UserPolicySigninService {
   static std::unique_ptr<KeyedService> Build(content::BrowserContext* context) {
     Profile* profile = Profile::FromBrowserContext(context);
     return std::make_unique<FakeUserPolicySigninService>(
-        profile, IdentityManagerFactory::GetForProfile(profile),
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile));
+        profile, IdentityManagerFactory::GetForProfile(profile));
   }
 
   FakeUserPolicySigninService(Profile* profile,
-                              identity::IdentityManager* identity_manager,
-                              ProfileOAuth2TokenService* oauth2_token_service)
+                              identity::IdentityManager* identity_manager)
       : UserPolicySigninService(profile,
                                 nullptr,
                                 nullptr,
                                 nullptr,
                                 identity_manager,
-                                nullptr,
-                                oauth2_token_service) {}
+                                nullptr) {}
 
   void set_dm_token(const std::string& dm_token) { dm_token_ = dm_token; }
   void set_client_id(const std::string& client_id) { client_id_ = client_id; }

@@ -13,13 +13,11 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/cloud_policy_client_registration_helper.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/storage_partition.h"
@@ -34,21 +32,18 @@ UserPolicySigninService::UserPolicySigninService(
     DeviceManagementService* device_management_service,
     UserCloudPolicyManager* policy_manager,
     identity::IdentityManager* identity_manager,
-    scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory,
-    ProfileOAuth2TokenService* token_service)
+    scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory)
     : UserPolicySigninServiceBase(profile,
                                   local_state,
                                   device_management_service,
                                   policy_manager,
                                   identity_manager,
                                   system_url_loader_factory),
-      profile_(profile),
-      oauth2_token_service_(token_service) {
-  // ProfileOAuth2TokenService should not yet have loaded its tokens since this
+      profile_(profile) {
+  // IdentityManager should not yet have loaded its tokens since this
   // happens in the background after PKS initialization - so this service
   // should always be created before the oauth token is available.
-  DCHECK(!oauth2_token_service_->RefreshTokenIsAvailable(
-      identity_manager->GetPrimaryAccountId()));
+  DCHECK(!identity_manager->HasPrimaryAccountWithRefreshToken());
 }
 
 UserPolicySigninService::~UserPolicySigninService() {
@@ -116,7 +111,7 @@ void UserPolicySigninService::RegisterForPolicyWithAccountId(
       policy_client.get(),
       enterprise_management::DeviceRegisterRequest::BROWSER);
   registration_helper_->StartRegistration(
-      oauth2_token_service_, account_id,
+      identity_manager(), account_id,
       base::Bind(&UserPolicySigninService::CallPolicyRegistrationCallback,
                  base::Unretained(this), base::Passed(&policy_client),
                  callback));
@@ -131,7 +126,7 @@ void UserPolicySigninService::CallPolicyRegistrationCallback(
 
 void UserPolicySigninService::OnPrimaryAccountSet(
     const AccountInfo& account_info) {
-  if (!oauth2_token_service_->RefreshTokenIsAvailable(account_info.account_id))
+  if (!identity_manager()->HasAccountWithRefreshToken(account_info.account_id))
     return;
 
   // ProfileOAuth2TokenService now has a refresh token for the primary account
@@ -142,7 +137,7 @@ void UserPolicySigninService::OnPrimaryAccountSet(
 void UserPolicySigninService::OnRefreshTokenUpdatedForAccount(
     const AccountInfo& account_info,
     bool is_valid) {
-  // Ignore invalid OAuth tokens or those for any account but the primary one.
+  // Ignore OAuth tokens or those for any account but the primary one.
   if (account_info.account_id != identity_manager()->GetPrimaryAccountId())
     return;
 
@@ -195,9 +190,8 @@ void UserPolicySigninService::OnInitializationCompleted(
   DVLOG_IF(1, manager->IsClientRegistered())
       << "Client already registered - not fetching DMToken";
   if (!manager->IsClientRegistered()) {
-    if (!oauth2_token_service_->RefreshTokenIsAvailable(
-            identity_manager()->GetPrimaryAccountId())) {
-      // No token yet - this class listens for OnRefreshTokenAvailable()
+    if (!identity_manager()->HasPrimaryAccountWithRefreshToken()) {
+      // No token yet - this class listens for OnRefreshTokenUpdatedForAccount()
       // and will re-attempt registration once the token is available.
       DLOG(WARNING) << "No OAuth Refresh Token - delaying policy download";
       return;
@@ -221,7 +215,7 @@ void UserPolicySigninService::RegisterCloudPolicyService() {
       policy_manager()->core()->client(),
       enterprise_management::DeviceRegisterRequest::BROWSER));
   registration_helper_->StartRegistration(
-      oauth2_token_service_, identity_manager()->GetPrimaryAccountId(),
+      identity_manager(), identity_manager()->GetPrimaryAccountId(),
       base::Bind(&UserPolicySigninService::OnRegistrationComplete,
                  base::Unretained(this)));
 }
