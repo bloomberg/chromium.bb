@@ -540,7 +540,8 @@ base::Optional<RouteParameters> MediaRouterUIBase::GetRouteParameters(
                      weak_factory_.GetWeakPtr(), cast_mode));
 
   // There are 3 cases. In cases (1) and (3) the MediaRouterUIBase will need to
-  // be notified. In case (2) the dialog will be closed.
+  // be notified via OnRouteResponseReceived(). In case (2) the dialog will be
+  // closed before that via HandleCreateSessionRequestRouteResponse().
   // (1) Non-presentation route request (e.g., mirroring). No additional
   //     notification necessary.
   // (2) Presentation route request for a PresentationRequest.start() call.
@@ -550,12 +551,11 @@ base::Optional<RouteParameters> MediaRouterUIBase::GetRouteParameters(
   //     PresentationServiceDelegateImpl will have to be notified. Note that we
   //     treat subsequent route requests from a Presentation API-initiated
   //     dialogs as browser-initiated.
-  if (!for_presentation_source || !start_presentation_context_) {
-    params.route_result_callbacks.push_back(base::BindOnce(
-        &MediaRouterUIBase::OnRouteResponseReceived, weak_factory_.GetWeakPtr(),
-        current_route_request_->id, sink_id, cast_mode,
-        base::UTF8ToUTF16(GetTruncatedPresentationRequestSourceName())));
-  }
+  // TODO(https://crbug.com/868186): Close the Views dialog in case (2).
+  params.route_result_callbacks.push_back(base::BindOnce(
+      &MediaRouterUIBase::OnRouteResponseReceived, weak_factory_.GetWeakPtr(),
+      current_route_request_->id, sink_id, cast_mode,
+      base::UTF8ToUTF16(GetTruncatedPresentationRequestSourceName())));
   if (for_presentation_source) {
     if (start_presentation_context_) {
       // |start_presentation_context_| will be nullptr after this call, as the
