@@ -727,6 +727,7 @@ TEST_P(UrlRequestTest, MultiRedirect) {
   EXPECT_EQ(2, callback->redirect_count_);
   EXPECT_EQ(200, callback->response_info_->http_status_code);
   EXPECT_EQ(2ul, callback->redirect_response_info_list_.size());
+  EXPECT_EQ(2ul, callback->redirect_url_list_.size());
 
   // Check first redirect (multiredirect.html -> redirect.html).
   TestUrlRequestCallback::UrlResponseInfo first_expected_response_info(
@@ -736,6 +737,8 @@ TEST_P(UrlRequestTest, MultiRedirect) {
            "redirect-header0", "header-value"}));
   ExpectResponseInfoEquals(first_expected_response_info,
                            *callback->redirect_response_info_list_.front());
+  EXPECT_EQ(cronet::TestServer::GetRedirectURL(),
+            callback->redirect_url_list_.front());
 
   // Check second redirect (redirect.html -> success.txt).
   TestUrlRequestCallback::UrlResponseInfo second_expected_response_info(
@@ -747,6 +750,9 @@ TEST_P(UrlRequestTest, MultiRedirect) {
            "redirect-header", "header-value"}));
   ExpectResponseInfoEquals(second_expected_response_info,
                            *callback->redirect_response_info_list_.back());
+  EXPECT_EQ(cronet::TestServer::GetSuccessURL(),
+            callback->redirect_url_list_.back());
+
   // Check final response (success.txt).
   TestUrlRequestCallback::UrlResponseInfo final_expected_response_info(
       std::vector<std::string>({cronet::TestServer::GetMultiRedirectURL(),
