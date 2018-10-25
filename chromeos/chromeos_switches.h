@@ -152,7 +152,6 @@ CHROMEOS_EXPORT extern const char kProfileRequiresPolicy[];
 CHROMEOS_EXPORT extern const char kRlzPingDelay[];
 CHROMEOS_EXPORT extern const char kShelfHoverPreviews[];
 CHROMEOS_EXPORT extern const char kShowAndroidFilesInFilesApp[];
-CHROMEOS_EXPORT extern const char kFilesAppDisableMyFilesNavigation[];
 CHROMEOS_EXPORT extern const char kShowLoginDevOverlay[];
 CHROMEOS_EXPORT extern const char kShowPlayInDemoMode[];
 CHROMEOS_EXPORT extern const char kStubCrosSettings[];

@@ -1395,21 +1395,6 @@ util.isTouchModeEnabled = function() {
 };
 
 /**
- * Returns if the My Files navigation should be disabled.
- * @return {!Promise<boolean>} Resolves with true if flag
- * "disable-my-files-navigation" is set to true.
- */
-util.isMyFilesNavigationDisabled = function() {
-  return new Promise(resolve => {
-    chrome.commandLinePrivate.hasSwitch(
-        'disable-my-files-navigation', isDisabled => {
-          resolve(isDisabled);
-        });
-  });
-};
-
-
-/**
  * Retrieves all entries inside the given |rootEntry|.
  * @param {!DirectoryEntry} rootEntry
  * @param {function(!Array<!Entry>)} entriesCallback Called when some chunk of
