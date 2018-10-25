@@ -38,7 +38,8 @@ void EventTiming::WillDispatchEvent(const Event& event) {
   if ((performance_->ShouldBufferEventTiming() &&
        !performance_->IsEventTimingBufferFull()) ||
       performance_->HasObserverFor(PerformanceEntry::kEvent)
-      || performance_->HasObserverFor(PerformanceEntry::kFirstInput)) {
+      || (performance_->HasObserverFor(PerformanceEntry::kFirstInput)
+         && !performance_->FirstInputDetected())) {
     processing_start_ = CurrentTimeTicks();
     finished_will_dispatch_event_ = true;
   }

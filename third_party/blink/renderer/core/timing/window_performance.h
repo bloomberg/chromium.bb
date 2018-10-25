@@ -69,6 +69,8 @@ class CORE_EXPORT WindowPerformance final : public Performance,
 
   bool ShouldBufferEventTiming();
 
+  bool FirstInputDetected() const { return first_input_detected_; }
+
   // This method creates a PerformanceEventTiming and if needed creates a swap
   // promise to calculate the |duration| attribute when such promise is
   // resolved.
