@@ -125,6 +125,7 @@ void TabLayer::SetProperties(int id,
                              float saturation,
                              float brightness,
                              float close_btn_width,
+                             float close_btn_asset_size,
                              float static_to_view_blend,
                              float content_width,
                              float content_height,
@@ -327,10 +328,9 @@ void TabLayer::SetProperties(int id,
   // Center Specific Assets in the Rects
   //----------------------------------------------------------------------------
   close_button_position.Offset(
-      (close_button_size.width() - close_btn_resource->size().width()) / 2.f,
-      (close_button_size.height() - close_btn_resource->size().height()) / 2.f);
-  close_button_size.SetSize(close_btn_resource->size().width(),
-                            close_btn_resource->size().height());
+      (close_button_size.width() - close_btn_asset_size) / 2.f,
+      (close_button_size.height() - close_btn_asset_size) / 2.f);
+  close_button_size.SetSize(close_btn_asset_size, close_btn_asset_size);
 
   //----------------------------------------------------------------------------
   // Handle Insetting the Top Border Component
