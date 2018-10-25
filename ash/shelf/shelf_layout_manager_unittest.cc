@@ -111,15 +111,10 @@ class ShelfAnimationWaiter : views::WidgetObserver {
   }
 
  private:
-  // Returns true if shelf has finished animating to the target size.
+  // Returns true if shelf has finished animating to the target position.
   bool IsDoneAnimating() const {
-    ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
     gfx::Rect current_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
-    int size = layout_manager->PrimaryAxisValue(current_bounds.height(),
-                                                current_bounds.width());
-    int desired_size = layout_manager->PrimaryAxisValue(target_bounds_.height(),
-                                                        target_bounds_.width());
-    return (size == desired_size);
+    return current_bounds.origin() == target_bounds_.origin();
   }
 
   // views::WidgetObserver override.
@@ -144,12 +139,12 @@ class ShelfAnimationWaiter : views::WidgetObserver {
 
 class ShelfDragCallback {
  public:
-  ShelfDragCallback(const gfx::Rect& not_visible, const gfx::Rect& visible)
-      : auto_hidden_shelf_widget_bounds_(not_visible),
-        shelf_widget_bounds_(visible),
+  ShelfDragCallback(const gfx::Rect& auto_hidden_shelf_bounds,
+                    const gfx::Rect& visible_shelf_bounds)
+      : auto_hidden_shelf_bounds_(auto_hidden_shelf_bounds),
+        visible_shelf_bounds_(visible_shelf_bounds),
         was_visible_on_drag_start_(false) {
-    EXPECT_EQ(auto_hidden_shelf_widget_bounds_.bottom(),
-              shelf_widget_bounds_.bottom());
+    EXPECT_EQ(auto_hidden_shelf_bounds_.size(), visible_shelf_bounds_.size());
   }
 
   virtual ~ShelfDragCallback() = default;
@@ -173,61 +168,79 @@ class ShelfDragCallback {
 
     Shelf* shelf = AshTestBase::GetPrimaryShelf();
     gfx::Rect shelf_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
-    if (shelf->IsHorizontalAlignment()) {
-      EXPECT_EQ(auto_hidden_shelf_widget_bounds_.bottom(),
-                shelf_bounds.bottom());
-      EXPECT_EQ(shelf_widget_bounds_.bottom(), shelf_bounds.bottom());
-    } else if (SHELF_ALIGNMENT_RIGHT == shelf->alignment()) {
-      EXPECT_EQ(auto_hidden_shelf_widget_bounds_.right(), shelf_bounds.right());
-      EXPECT_EQ(shelf_widget_bounds_.right(), shelf_bounds.right());
-    } else if (SHELF_ALIGNMENT_LEFT == shelf->alignment()) {
-      EXPECT_EQ(auto_hidden_shelf_widget_bounds_.x(), shelf_bounds.x());
-      EXPECT_EQ(shelf_widget_bounds_.x(), shelf_bounds.x());
-    }
 
     float scroll_delta =
         GetShelfLayoutManager()->PrimaryAxisValue(scroll_.y(), scroll_.x());
     bool increasing_drag =
         GetShelfLayoutManager()->SelectValueForShelfAlignment(
             scroll_delta<0, scroll_delta> 0, scroll_delta < 0);
-    int shelf_size = GetShelfLayoutManager()->PrimaryAxisValue(
+    const int shelf_size = GetShelfLayoutManager()->PrimaryAxisValue(
         shelf_bounds.height(), shelf_bounds.width());
-    int visible_bounds_size = GetShelfLayoutManager()->PrimaryAxisValue(
-        shelf_widget_bounds_.height(), shelf_widget_bounds_.width());
-    int not_visible_bounds_size = GetShelfLayoutManager()->PrimaryAxisValue(
-        auto_hidden_shelf_widget_bounds_.height(),
-        auto_hidden_shelf_widget_bounds_.width());
     if (was_visible_on_drag_start_) {
       if (increasing_drag) {
         // If dragging inwards from the visible state, then the shelf should
-        // increase in size, but not more than the scroll delta.
-        EXPECT_LE(visible_bounds_size, shelf_size);
-        EXPECT_LE(std::abs(shelf_size - visible_bounds_size),
-                  std::abs(scroll_delta));
+        // 'overshoot', but not by more than the scroll delta.
+        const int bounds_delta =
+            GetShelfLayoutManager()->SelectValueForShelfAlignment(
+                visible_shelf_bounds_.y() - shelf_bounds.y(),
+                shelf_bounds.x() - visible_shelf_bounds_.x(),
+                visible_shelf_bounds_.x() - shelf_bounds.x());
+        EXPECT_GE(bounds_delta, 0);
+        EXPECT_LE(bounds_delta, std::abs(scroll_delta));
       } else {
-        if (shelf_size > not_visible_bounds_size) {
-          // If dragging outwards from the visible state, then the shelf
-          // should decrease in size, until it reaches the minimum size.
-          EXPECT_EQ(shelf_size, visible_bounds_size - std::abs(scroll_delta));
-        }
+        // If dragging outwards from the visible state, then the shelf should
+        // move out.
+        if (SHELF_ALIGNMENT_BOTTOM == shelf->alignment())
+          EXPECT_LE(visible_shelf_bounds_.y(), shelf_bounds.y());
+        else if (SHELF_ALIGNMENT_LEFT == shelf->alignment())
+          EXPECT_LE(shelf_bounds.x(), visible_shelf_bounds_.x());
+        else if (SHELF_ALIGNMENT_RIGHT == shelf->alignment())
+          EXPECT_LE(visible_shelf_bounds_.x(), shelf_bounds.x());
       }
     } else {
-      if (std::abs(scroll_delta) <
-          visible_bounds_size - not_visible_bounds_size) {
-        // Tests that the shelf sticks with the touch point during the drag
-        // until the shelf is completely visible.
-        EXPECT_EQ(shelf_size, not_visible_bounds_size + std::abs(scroll_delta));
-      } else {
-        // Tests that after the shelf is completely visible, the shelf starts
-        // resisting the drag.
-        EXPECT_LT(shelf_size, not_visible_bounds_size + std::abs(scroll_delta));
+      // The shelf is invisible at the start of the drag.
+      if (increasing_drag) {
+        // Moving the shelf into the screen.
+        if (std::abs(scroll_delta) < shelf_size) {
+          // Tests that the shelf sticks with the touch point during the drag
+          // until the shelf is completely visible.
+          if (SHELF_ALIGNMENT_BOTTOM == shelf->alignment()) {
+            EXPECT_EQ(shelf_bounds.y(), auto_hidden_shelf_bounds_.y() +
+                                            kHiddenShelfInScreenPortion -
+                                            std::abs(scroll_delta));
+          } else if (SHELF_ALIGNMENT_LEFT == shelf->alignment()) {
+            EXPECT_EQ(shelf_bounds.x(), auto_hidden_shelf_bounds_.x() -
+                                            kHiddenShelfInScreenPortion +
+                                            std::abs(scroll_delta));
+          } else if (SHELF_ALIGNMENT_RIGHT == shelf->alignment()) {
+            EXPECT_EQ(shelf_bounds.x(), auto_hidden_shelf_bounds_.x() +
+                                            kHiddenShelfInScreenPortion -
+                                            std::abs(scroll_delta));
+          }
+        } else {
+          // Tests that after the shelf is completely visible, the shelf starts
+          // resisting the drag.
+          if (SHELF_ALIGNMENT_BOTTOM == shelf->alignment()) {
+            EXPECT_GT(shelf_bounds.y(), auto_hidden_shelf_bounds_.y() +
+                                            kHiddenShelfInScreenPortion -
+                                            std::abs(scroll_delta));
+          } else if (SHELF_ALIGNMENT_LEFT == shelf->alignment()) {
+            EXPECT_LT(shelf_bounds.x(), auto_hidden_shelf_bounds_.x() -
+                                            kHiddenShelfInScreenPortion +
+                                            std::abs(scroll_delta));
+          } else if (SHELF_ALIGNMENT_RIGHT == shelf->alignment()) {
+            EXPECT_GT(shelf_bounds.x(), auto_hidden_shelf_bounds_.x() +
+                                            kHiddenShelfInScreenPortion -
+                                            std::abs(scroll_delta));
+          }
+        }
       }
     }
   }
 
  private:
-  const gfx::Rect auto_hidden_shelf_widget_bounds_;
-  const gfx::Rect shelf_widget_bounds_;
+  const gfx::Rect auto_hidden_shelf_bounds_;
+  const gfx::Rect visible_shelf_bounds_;
   gfx::Vector2dF scroll_;
   bool was_visible_on_drag_start_;
 
@@ -868,7 +881,7 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
 
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
   const int display_bottom = display.bounds().bottom();
-  EXPECT_EQ(display_bottom - kShelfAutoHideSize,
+  EXPECT_EQ(display_bottom - kHiddenShelfInScreenPortion,
             GetShelfWidget()->GetWindowBoundsInScreen().y());
   EXPECT_EQ(display_bottom, display.work_area().bottom());
 
@@ -900,7 +913,7 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
   SetState(layout_manager, SHELF_AUTO_HIDE);
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
   layout_manager->LayoutShelf();
-  EXPECT_EQ(display_bottom - kShelfAutoHideSize,
+  EXPECT_EQ(display_bottom - kHiddenShelfInScreenPortion,
             GetShelfWidget()->GetWindowBoundsInScreen().y());
 
   // Drag mouse to bottom of screen.
@@ -1053,7 +1066,7 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
   // shelf should go off the screen.
   layout_manager->LayoutShelf();
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
-  EXPECT_EQ(display.bounds().bottom() - kShelfAutoHideSize,
+  EXPECT_EQ(display.bounds().bottom() - kHiddenShelfInScreenPortion,
             GetShelfWidget()->GetWindowBoundsInScreen().y());
 
   std::unique_ptr<views::Widget> lock_widget(AshTestBase::CreateTestWidget(
@@ -1084,7 +1097,7 @@ TEST_F(ShelfLayoutManagerTest, VisibleInOverview) {
   // shelf should go off the screen.
   GetShelfLayoutManager()->LayoutShelf();
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
-  EXPECT_EQ(display.bounds().bottom() - kShelfAutoHideSize,
+  EXPECT_EQ(display.bounds().bottom() - kHiddenShelfInScreenPortion,
             GetShelfWidget()->GetWindowBoundsInScreen().y());
 
   WindowSelectorController* window_selector_controller =
@@ -1913,11 +1926,10 @@ TEST_F(ShelfLayoutManagerTest, WindowVisibilityDisablesAutoHide) {
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 }
 
-// Test that the shelf animates back to its normal position upon a user
-// completing a gesture drag.
-TEST_F(ShelfLayoutManagerTest, ShelfAnimatesWhenGestureComplete) {
-  // Test the shelf animates back to its original visible bounds when it is
-  // dragged when there are no visible windows.
+// Tests the shelf animates back to its original visible bounds when it is
+// dragged down but there are no visible windows.
+TEST_F(ShelfLayoutManagerTest,
+       ShelfAnimatesWhenGestureCompleteNoVisibleWindow) {
   Shelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
@@ -1943,14 +1955,23 @@ TEST_F(ShelfLayoutManagerTest, ShelfAnimatesWhenGestureComplete) {
     waiter.WaitTillDoneAnimating();
     EXPECT_TRUE(waiter.WasValidAnimation());
   }
+}
 
-  // Create a visible window so auto-hide behavior is enforced.
+// Tests that the shelf animates to the visible bounds after a swipe up on
+// the auto hidden shelf.
+TEST_F(ShelfLayoutManagerTest, ShelfAnimatesToVisibleWhenGestureInComplete) {
+  Shelf* shelf = GetPrimaryShelf();
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+  gfx::Rect visible_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
+
+  // Create a visible window, otherwise the shelf will not hide.
   CreateTestWidget();
 
   // Get the bounds of the shelf when it is hidden.
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
-  gfx::Rect auto_hidden_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
 
   {
     // Enable the animations so that we can make sure they do occur.
@@ -1962,21 +1983,52 @@ TEST_F(ShelfLayoutManagerTest, ShelfAnimatesWhenGestureComplete) {
     gfx::Point end(start.x(), start.y() - 100);
     ui::test::EventGenerator* generator = GetEventGenerator();
 
-    // Test that the shelf animates to the visible bounds after a swipe up on
-    // the auto hidden shelf.
     generator->GestureScrollSequence(start, end,
                                      base::TimeDelta::FromMilliseconds(10), 1);
     EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+    ShelfAnimationWaiter waiter(visible_bounds);
+    waiter.WaitTillDoneAnimating();
+    EXPECT_TRUE(waiter.WasValidAnimation());
+  }
+}
+
+// Tests that the shelf animates to the auto hidden bounds after a swipe down
+// on the visible shelf.
+TEST_F(ShelfLayoutManagerTest, ShelfAnimatesToHiddenWhenGestureOutComplete) {
+  Shelf* shelf = GetPrimaryShelf();
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+  gfx::Rect visible_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
+
+  // Create a visible window, otherwise the shelf will not hide.
+  CreateTestWidget();
+
+  gfx::Rect auto_hidden_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
+
+  {
+    // Enable the animations so that we can make sure they do occur.
+    ui::ScopedAnimationDurationScaleMode regular_animations(
+        ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+    ui::test::EventGenerator* generator = GetEventGenerator();
+
+    // Show the shelf first.
+    display::Display display =
+        display::Screen::GetScreen()->GetPrimaryDisplay();
+    const int half_width = display.bounds().width() / 2;
+    const int bottom_edge = display.bounds().bottom();
+    generator->MoveMouseTo(half_width,
+                           bottom_edge - kHiddenShelfInScreenPortion / 2);
     ShelfAnimationWaiter waiter1(visible_bounds);
     waiter1.WaitTillDoneAnimating();
-    EXPECT_TRUE(waiter1.WasValidAnimation());
-
-    // Test that the shelf animates to the auto hidden bounds after a swipe down
-    // on the visible shelf.
-    end = gfx::Point(start.x(), start.y() + 100);
-    EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+    // Now swipe down.
+    gfx::Point start =
+        GetShelfWidget()->GetWindowBoundsInScreen().CenterPoint();
+    gfx::Point end = gfx::Point(start.x(), start.y() + 100);
     generator->GestureScrollSequence(start, end,
                                      base::TimeDelta::FromMilliseconds(10), 1);
     EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
