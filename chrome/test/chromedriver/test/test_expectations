@@ -26,6 +26,10 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
     'SlowLoadingPageTest.testRefreshShouldBlockUntilPageLoads',
     'PageLoadingTest.testShouldTimeoutIfAPageTakesTooLongToRefresh',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2629
+    'FrameSwitchingTest.testShouldBeAbleToClickInASubFrame',
+    'GetLogsTest.differentLogsShouldNotContainTheSameLogEntries',
 ]
 
 _OS_NEGATIVE_FILTER = {}
