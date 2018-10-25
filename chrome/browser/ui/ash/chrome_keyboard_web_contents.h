@@ -17,6 +17,8 @@ namespace content {
 class WebContents;
 }
 
+class ChromeKeyboardBoundsObserver;
+
 // WebContents manager for the virtual keyboard. This observes the web
 // contents, manages the content::HostZoomMap, and informs the virtual
 // keyboard controller when the contents have loaded. It also provides a
@@ -40,6 +42,10 @@ class ChromeKeyboardWebContents : public content::WebContentsObserver {
   // once host window ownership is moved to ash.
   content::WebContents* web_contents() { return web_contents_.get(); }
 
+  ChromeKeyboardBoundsObserver* window_bounds_observer() {
+    return window_bounds_observer_.get();
+  }
+
  private:
   // content::WebContentsObserver overrides
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
@@ -50,6 +56,7 @@ class ChromeKeyboardWebContents : public content::WebContentsObserver {
   void LoadContents(const GURL& url);
 
   std::unique_ptr<content::WebContents> web_contents_;
+  std::unique_ptr<ChromeKeyboardBoundsObserver> window_bounds_observer_;
   LoadCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeKeyboardWebContents);

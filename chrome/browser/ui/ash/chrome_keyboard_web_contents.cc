@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
+#include "chrome/browser/ui/ash/chrome_keyboard_bounds_observer.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -165,6 +166,9 @@ ChromeKeyboardWebContents::ChromeKeyboardWebContents(
   // be disabled.
   keyboard_window->layer()->SetMasksToBounds(false);
   keyboard_window->SetProperty(ui::kAXRoleOverride, ax::mojom::Role::kKeyboard);
+
+  window_bounds_observer_ =
+      std::make_unique<ChromeKeyboardBoundsObserver>(keyboard_window);
 }
 
 ChromeKeyboardWebContents::~ChromeKeyboardWebContents() = default;
