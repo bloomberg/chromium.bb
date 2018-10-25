@@ -108,10 +108,16 @@ class _InstallPackageScanner(object):
   # Python snippet for dumping vartree info on the target. Instantiate using
   # _GetVartreeSnippet().
   _GET_VARTREE = """
-import portage
 import json
-trees = portage.create_trees(target_root='%(root)s', config_root='/')
-vartree = trees['%(root)s']['vartree']
+import os
+import portage
+
+# Normalize the path to match what portage will index.
+target_root = os.path.normpath('%(root)s')
+if not target_root.endswith('/'):
+  target_root += '/'
+trees = portage.create_trees(target_root=target_root, config_root='/')
+vartree = trees[target_root]['vartree']
 pkg_info = []
 for cpv in vartree.dbapi.cpv_all():
   slot, rdep_raw, build_time = vartree.dbapi.aux_get(
