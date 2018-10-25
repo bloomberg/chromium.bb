@@ -76,12 +76,6 @@ LocalCardMigrationBubbleControllerImpl::local_card_migration_bubble_view()
   return local_card_migration_bubble_;
 }
 
-base::string16 LocalCardMigrationBubbleControllerImpl::GetBubbleMessage()
-    const {
-  return l10n_util::GetStringUTF16(
-      IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_TITLE);
-}
-
 void LocalCardMigrationBubbleControllerImpl::OnConfirmButtonClicked() {
   DCHECK(local_card_migration_bubble_closure_);
   std::move(local_card_migration_bubble_closure_).Run();

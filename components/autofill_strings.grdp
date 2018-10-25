@@ -250,10 +250,13 @@
       Google Pay logo
     </message>
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_TITLE" desc="The title text for a bubble that offers users to start the process of migrating local cards to cloud.">
-      Save all your cards in one place?
+      Save your cards to Google?
     </message>
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_BUTTON_LABEL" desc="The text in the OK button of a bubble that offers users to start the process of migration local cards to cloud.">
       Continue
+    </message>
+    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_BODY_TEXT" desc="The body text for a bubble that offers users to start the process of migrating local cards to cloud.">
+      In the next step, you can choose which cards to save to your Google Account.
     </message>
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_TITLE_OFFER" desc="The title text for a dialog that offers to migrate local cards into the cloud.">
       All your cards in one place
