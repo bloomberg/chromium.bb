@@ -391,7 +391,7 @@ void HTMLCanvasElement::FinalizeFrame() {
   if (canvas2d_bridge_) {
     // Compute to determine whether disable accleration is needed
     if (IsAccelerated() &&
-        CanvasHeuristicParameters::kGPUReadbackForcesNoAcceleration &&
+        canvas_heuristic_parameters::kGPUReadbackForcesNoAcceleration &&
         !RuntimeEnabledFeatures::Canvas2dFixedRenderingModeEnabled()) {
       if (gpu_readback_invoked_in_current_frame_) {
         gpu_readback_successive_frames_++;
@@ -401,7 +401,7 @@ void HTMLCanvasElement::FinalizeFrame() {
       }
 
       if (gpu_readback_successive_frames_ >=
-          CanvasHeuristicParameters::kGPUReadbackMinSuccessiveFrames) {
+          canvas_heuristic_parameters::kGPUReadbackMinSuccessiveFrames) {
         DisableAcceleration();
       }
     }
@@ -1147,7 +1147,7 @@ void HTMLCanvasElement::DidMoveToNewDocument(Document& old_document) {
 }
 
 void HTMLCanvasElement::WillDrawImageTo2DContext(CanvasImageSource* source) {
-  if (CanvasHeuristicParameters::kEnableAccelerationToAvoidReadbacks &&
+  if (canvas_heuristic_parameters::kEnableAccelerationToAvoidReadbacks &&
       SharedGpuContext::AllowSoftwareToAcceleratedCanvasUpgrade() &&
       source->IsAccelerated() && GetOrCreateCanvas2DLayerBridge() &&
       !canvas2d_bridge_->IsAccelerated() &&
@@ -1207,7 +1207,7 @@ scoped_refptr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
     else
       image = CreateTransparentImage(Size());
   } else {
-    if (CanvasHeuristicParameters::kDisableAccelerationToAvoidReadbacks &&
+    if (canvas_heuristic_parameters::kDisableAccelerationToAvoidReadbacks &&
         !RuntimeEnabledFeatures::Canvas2dFixedRenderingModeEnabled() &&
         hint == kPreferNoAcceleration && canvas2d_bridge_ &&
         canvas2d_bridge_->IsAccelerated()) {
