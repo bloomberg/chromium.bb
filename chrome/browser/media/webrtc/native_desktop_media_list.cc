@@ -291,6 +291,17 @@ void NativeDesktopMediaList::RefreshForAuraWindows(
 
   UpdateSourcesList(sources);
 
+  if (thumbnail_size_.IsEmpty()) {
+#if defined(USE_AURA)
+    pending_native_thumbnail_capture_ = true;
+#endif
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&NativeDesktopMediaList::UpdateNativeThumbnailsFinished,
+                       weak_factory_.GetWeakPtr()));
+    return;
+  }
+
   // OnAuraThumbnailCaptured() and UpdateNativeThumbnailsFinished() are
   // guaranteed to be excuted after RefreshForAuraWindows() and
   // CaptureAuraWindowThumbnail() in the browser UI thread.
