@@ -89,7 +89,7 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
                         }];
 }
 
-#pragma mark - ShortcutCommands
+#pragma mark - ShortcutsViewControllerDelegate
 
 - (void)openMostVisitedItem:(ShortcutsMostVisitedItem*)item {
   web::NavigationManager::WebLoadParams params(item.URL);

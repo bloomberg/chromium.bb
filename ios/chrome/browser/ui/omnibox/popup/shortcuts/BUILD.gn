@@ -27,12 +27,12 @@ source_set("shortcuts") {
 
 source_set("shortcuts_internal") {
   sources = [
-    "shortcut_commands.h",
     "shortcuts_consumer.h",
     "shortcuts_mediator.h",
     "shortcuts_mediator.mm",
     "shortcuts_most_visited_item.h",
     "shortcuts_most_visited_item.mm",
+    "shortcuts_view_controller_delegate.h",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 

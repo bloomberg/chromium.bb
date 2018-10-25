@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/ntp_tile_views/ntp_most_visited_tile_view.h"
 #import "ios/chrome/browser/ui/ntp_tile_views/ntp_tile_constants.h"
-#import "ios/chrome/browser/ui/omnibox/popup/shortcuts/shortcut_commands.h"
+#import "ios/chrome/browser/ui/omnibox/popup/shortcuts/shortcuts_view_controller_delegate.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 

@@ -30,4 +30,9 @@ source_set("constants") {
     "ntp_tile_constants.h",
     "ntp_tile_constants.mm",
   ]
+
+  deps = [
+    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ui/base:base",
+  ]
 }

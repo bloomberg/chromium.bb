@@ -9,12 +9,12 @@
 
 #import "ios/chrome/browser/ui/omnibox/popup/shortcuts/shortcuts_consumer.h"
 
-@protocol ShortcutCommands;
+@protocol ShortcutsViewControllerDelegate;
 
 // The view controller displaying the omnibox shortcuts in the zero state.
 @interface ShortcutsViewController : UIViewController<ShortcutsConsumer>
 
-@property(nonatomic, weak) id<ShortcutCommands> commandHandler;
+@property(nonatomic, weak) id<ShortcutsViewControllerDelegate> commandHandler;
 
 @end
 

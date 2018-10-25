@@ -8,7 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #include <memory>
-#import "ios/chrome/browser/ui/omnibox/popup/shortcuts/shortcut_commands.h"
+#import "ios/chrome/browser/ui/omnibox/popup/shortcuts/shortcuts_view_controller_delegate.h"
 
 namespace favicon {
 class LargeIconService;
@@ -26,7 +26,7 @@ class ReadingListModel;
 @protocol UrlLoader;
 
 // Coordinator for the Omnibox Popup Shortcuts.
-@interface ShortcutsMediator : NSObject<ShortcutCommands>
+@interface ShortcutsMediator : NSObject<ShortcutsViewControllerDelegate>
 
 - (instancetype)
 initWithLargeIconService:(favicon::LargeIconService*)largeIconService
