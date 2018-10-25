@@ -734,6 +734,7 @@ ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRefInternal(
     DecodeTaskType task_type) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::GetTaskForImageAndRef");
+
   if (SkipImage(draw_image))
     return TaskResult(false);
 
@@ -791,10 +792,12 @@ ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRefInternal(
     // Ref image and create a upload and decode tasks. We will release this ref
     // in UploadTaskCompleted.
     RefImage(draw_image, cache_key);
+    auto decode_task =
+        image_data->is_bitmap_backed
+            ? nullptr
+            : GetImageDecodeTaskAndRef(draw_image, tracing_info, task_type);
     task = base::MakeRefCounted<ImageUploadTaskImpl>(
-        this, draw_image,
-        GetImageDecodeTaskAndRef(draw_image, tracing_info, task_type),
-        tracing_info);
+        this, draw_image, std::move(decode_task), tracing_info);
     image_data->upload.task = task;
   } else {
     task = GetImageDecodeTaskAndRef(draw_image, tracing_info, task_type);
@@ -1114,10 +1117,16 @@ void GpuImageDecodeCache::UploadImageInTask(const DrawImage& draw_image) {
     gr_context_access.emplace(context_);
   base::AutoLock lock(lock_);
 
-  ImageData* image_data = GetImageDataForDrawImage(
-      draw_image, InUseCacheKey::FromDrawImage(draw_image));
+  auto cache_key = InUseCacheKey::FromDrawImage(draw_image);
+  ImageData* image_data = GetImageDataForDrawImage(draw_image, cache_key);
   DCHECK(image_data);
   DCHECK(image_data->is_budgeted) << "Must budget an image for pre-decoding";
+
+  if (image_data->is_bitmap_backed) {
+    RefImageDecode(draw_image, cache_key);
+    DecodeImageIfNecessary(draw_image, image_data, TaskType::kInRaster);
+  }
+
   UploadImageIfNecessary(draw_image, image_data);
 }
 
@@ -1183,6 +1192,7 @@ scoped_refptr<TileTask> GpuImageDecodeCache::GetImageDecodeTaskAndRef(
 
   ImageData* image_data = GetImageDataForDrawImage(draw_image, cache_key);
   DCHECK(image_data);
+  DCHECK(!image_data->is_bitmap_backed);
   if (image_data->decode.is_locked()) {
     // We should never be creating a decode task for a not budgeted image.
     DCHECK(image_data->is_budgeted);
