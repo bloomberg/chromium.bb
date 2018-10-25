@@ -32,8 +32,6 @@
     'ppapi_nacl_tests_pnacl_newlib_x64.nexe',
     'zucchini_apply_fuzzer_seed_corpus.zip',
 
-    'browser_tests.isolated',
-
     'mr_extension',
     'mr_extension/release',
   ],
@@ -173,9 +171,6 @@
     'webkit_unit_tests',
     'wtf_unittests',
 
-    # TODO(tikuta): Remove this when crbug.com/870611 is fixed.
-    'remoting-webapp.v2.zip',
-
     # TODO(thakis): Given we list most executables above, we should probably
     # also list most isolated files here.
     'angle_unittests.isolated',
@@ -190,25 +185,19 @@
 
   # https://crbug.com/330260
   'win': [
-    # TODO(thakis): Figure out what's up with these three.
+    # TODO(thakis): Figure out what's up with these three (and their isolate).
     'mini_installer.exe',
     'mini_installer.exe.pdb',
     'previous_version_mini_installer.exe',
+    'mini_installer_tests.isolated',
 
     # These probably have mtimes in the zip headers and the scripts creating
     # them probably should use build_utils.ZipDir() instead.
     'mini_installer_tests.zip',
     'policy_templates.zip',
 
-    # TODO(tikuta): Remove this when crbug.com/870611 is fixed.
-    'remoting-me2me-host-win.zip',
-    'remoting-webapp.v2.zip',
-
     # TODO(thakis): Figure out what's up with these two.
     'ppapi_nacl_tests_pnacl_newlib_x32.nexe',
     'ppapi_nacl_tests_pnacl_newlib_x64.nexe',
-
-    'browser_tests.isolated',
-    'mini_installer_tests.isolated',
   ],
 }
