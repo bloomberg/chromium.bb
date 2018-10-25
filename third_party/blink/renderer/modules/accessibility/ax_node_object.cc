@@ -1976,24 +1976,17 @@ String AXNodeObject::TextFromDescendants(AXObjectSet& visited,
     children.push_back(owned_child);
 
   for (AXObject* child : children) {
-    // If a child is a continuation, we should ignore attributes like
-    // hidden and presentational. See LAYOUT TREE WALKING ALGORITHM in
-    // ax_layout_object.cc for more information on continuations.
-    bool is_continuation = child->GetLayoutObject() &&
-                           child->GetLayoutObject()->IsElementContinuation();
-
     // Don't recurse into children that are explicitly marked as aria-hidden.
     // Note that we don't call isInertOrAriaHidden because that would return
     // true if any ancestor is hidden, but we need to be able to compute the
     // accessible name of object inside hidden subtrees (for example, if
     // aria-labelledby points to an object that's hidden).
-    if (!is_continuation &&
-        child->AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kHidden))
+    if (child->AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kHidden))
       continue;
 
     ax::mojom::NameFrom child_name_from = ax::mojom::NameFrom::kUninitialized;
     String result;
-    if (!is_continuation && child->IsPresentational()) {
+    if (child->IsPresentational()) {
       result = child->TextFromDescendants(visited, true);
     } else {
       result =
