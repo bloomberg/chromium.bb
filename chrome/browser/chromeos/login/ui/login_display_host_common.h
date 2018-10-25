@@ -97,6 +97,9 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   // still in the process of cleaning up after login (http://crbug.com/134463).
   bool shutting_down_ = false;
 
+  // Used to make sure Finalize() is not called twice.
+  bool is_finalizing_ = false;
+
   // Make sure chrome won't exit while we are at login/oobe screen.
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
 
