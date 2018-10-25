@@ -29,30 +29,27 @@ void MediaController::Resume() {
 void MediaController::ToggleSuspendResume() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  switch (state_) {
-    case mojom::MediaSessionInfo::SessionState::kInactive:
-    case mojom::MediaSessionInfo::SessionState::kSuspended:
-      Resume();
-      break;
-    case mojom::MediaSessionInfo::SessionState::kDucking:
-    case mojom::MediaSessionInfo::SessionState::kActive:
+  switch (playback_state_) {
+    case mojom::MediaPlaybackState::kPlaying:
       Suspend();
+      break;
+    case mojom::MediaPlaybackState::kPaused:
+      Resume();
       break;
   }
 }
 
-void MediaController::SetMediaSession(
-    mojom::MediaSession* session,
-    mojom::MediaSessionInfo::SessionState state) {
+void MediaController::SetMediaSession(mojom::MediaSession* session,
+                                      mojom::MediaPlaybackState state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   session_ = session;
-  state_ = state;
+  playback_state_ = state;
 }
 
 void MediaController::ClearMediaSession() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   session_ = nullptr;
-  state_ = mojom::MediaSessionInfo::SessionState::kInactive;
+  playback_state_ = mojom::MediaPlaybackState::kPaused;
 }
 
 void MediaController::BindToInterface(mojom::MediaControllerRequest request) {

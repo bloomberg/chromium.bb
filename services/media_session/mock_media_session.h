@@ -30,10 +30,12 @@ class MockMediaSessionMojoObserver : public mojom::MediaSessionObserver {
   void MediaSessionInfoChanged(mojom::MediaSessionInfoPtr session) override;
 
   void WaitForState(mojom::MediaSessionInfo::SessionState wanted_state);
+  void WaitForPlaybackState(mojom::MediaPlaybackState wanted_state);
 
  private:
   mojom::MediaSessionInfoPtr session_info_;
   base::Optional<mojom::MediaSessionInfo::SessionState> wanted_state_;
+  base::Optional<mojom::MediaPlaybackState> wanted_playback_state_;
   base::RunLoop run_loop_;
 
   mojo::Binding<mojom::MediaSessionObserver> binding_;

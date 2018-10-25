@@ -357,9 +357,9 @@ void AudioFocusManager::DidChangeFocus() {
   if (audio_focus_stack_.empty()) {
     active_media_controller_.ClearMediaSession();
   } else {
-    active_media_controller_.SetMediaSession(
-        audio_focus_stack_.back()->session(),
-        audio_focus_stack_.back()->info()->state);
+    StackRow* row = audio_focus_stack_.back().get();
+    active_media_controller_.SetMediaSession(row->session(),
+                                             row->info()->playback_state);
   }
 }
 

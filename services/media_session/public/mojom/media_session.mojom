@@ -4,7 +4,13 @@
 
 module media_session.mojom;
 
-// Next MinVersion: 1
+// Next MinVersion: 2
+
+[Extensible]
+enum MediaPlaybackState {
+  kPaused,
+  kPlaying,
+};
 
 // Contains state information about a MediaSession.
 struct MediaSessionInfo {
@@ -23,11 +29,16 @@ struct MediaSessionInfo {
     kInactive,
   };
 
-  // The current state of the MediaSession.
+  // The current audio focus state of the MediaSession.
   SessionState state;
 
   // If true then we will always duck this MediaSession instead of suspending.
   bool force_duck;
+
+  // The playback state tells the client whether the audio is playing. This is
+  // different from the audio focus state as it is common for a media session
+  // to hold audio focus sometimes even though it is not actually playing.
+  [MinVersion=1] MediaPlaybackState playback_state;
 };
 
 // Contains debugging information about a MediaSession. This will be displayed

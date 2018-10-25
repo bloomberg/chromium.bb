@@ -25,8 +25,10 @@ void MockMediaSessionMojoObserver::MediaSessionInfoChanged(
     mojom::MediaSessionInfoPtr session) {
   session_info_ = std::move(session);
 
-  if (wanted_state_ == session_info_->state)
+  if (wanted_state_ == session_info_->state ||
+      session_info_->playback_state == wanted_playback_state_) {
     run_loop_.Quit();
+  }
 }
 
 void MockMediaSessionMojoObserver::WaitForState(
@@ -35,6 +37,15 @@ void MockMediaSessionMojoObserver::WaitForState(
     return;
 
   wanted_state_ = wanted_state;
+  run_loop_.Run();
+}
+
+void MockMediaSessionMojoObserver::WaitForPlaybackState(
+    mojom::MediaPlaybackState wanted_state) {
+  if (session_info_ && session_info_->playback_state == wanted_state)
+    return;
+
+  wanted_playback_state_ = wanted_state;
   run_loop_.Run();
 }
 
@@ -170,6 +181,11 @@ mojom::MediaSessionInfoPtr MockMediaSession::GetMediaSessionInfoSync() const {
   info->state = state_;
   if (is_ducking_)
     info->state = mojom::MediaSessionInfo::SessionState::kDucking;
+
+  info->playback_state = mojom::MediaPlaybackState::kPaused;
+  if (state_ == mojom::MediaSessionInfo::SessionState::kActive)
+    info->playback_state = mojom::MediaPlaybackState::kPlaying;
+
   return info;
 }
 
