@@ -17,7 +17,6 @@
 #include "extensions/common/extension_messages.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/keyboard/keyboard_controller.h"
 
 namespace virtual_keyboard_private = extensions::api::virtual_keyboard_private;
 

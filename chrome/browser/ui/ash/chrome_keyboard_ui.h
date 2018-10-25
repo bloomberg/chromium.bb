@@ -18,18 +18,13 @@ namespace aura {
 class Window;
 }
 
-namespace gfx {
-class Rect;
-}
-
 namespace content {
 class BrowserContext;
 }
 
 namespace ui {
-class InputMethod;
 class Shadow;
-}  // namespace ui
+}
 
 // Subclass of KeyboardUI. It is used by KeyboardController to get
 // access to the virtual keyboard window and setup Chrome extension functions.
@@ -48,10 +43,7 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
   explicit ChromeKeyboardUI(content::BrowserContext* context);
   ~ChromeKeyboardUI() override;
 
-  // Called when a window being observed changes bounds, to update its insets.
-  void UpdateInsetsForWindow(aura::Window* window);
-
-  // Overridden from KeyboardUI:
+  // keyboard::KeyboardUI:
   aura::Window* LoadKeyboardWindow(LoadCallback callback) override;
   aura::Window* GetKeyboardWindow() const override;
   ui::InputMethod* GetInputMethod() override;
@@ -59,7 +51,7 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
   void InitInsets(const gfx::Rect& new_bounds) override;
   void ResetInsets() override;
 
-  // aura::WindowObserver overrides:
+  // aura::WindowObserver:
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds,
@@ -70,6 +62,9 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
 
  private:
   class WindowBoundsChangeObserver;
+
+  // Called when a window being observed changes bounds, to update its insets.
+  void UpdateInsetsForWindow(aura::Window* window);
 
   // Gets the virtual keyboard URL, either the default keyboard URL or the IME
   // override URL.
