@@ -27,7 +27,6 @@
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom.h"
 #include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_factory.h"
 #include "third_party/blink/public/platform/modules/webdatabase/web_database.mojom.h"
 
 #if defined(OS_LINUX)
@@ -125,7 +124,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   viz::FrameSinkId GenerateFrameSinkId() override;
   bool IsLockedToSite() const override;
 
-  std::unique_ptr<blink::WebIDBFactory> CreateIdbFactory() override;
   blink::WebString FileSystemCreateOriginIdentifier(
       const blink::WebSecurityOrigin& origin) override;
 

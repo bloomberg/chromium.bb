@@ -125,7 +125,6 @@ class CategorizedWorkerPool;
 class DomStorageDispatcher;
 class FrameSwapMessageQueue;
 class GpuVideoAcceleratorFactoriesImpl;
-class IndexedDBDispatcher;
 class LowMemoryModeController;
 class MidiMessageFilter;
 class P2PSocketDispatcher;
@@ -589,7 +588,6 @@ class CONTENT_EXPORT RenderThreadImpl
   // These objects live solely on the render thread.
   std::unique_ptr<AppCacheDispatcher> appcache_dispatcher_;
   std::unique_ptr<DomStorageDispatcher> dom_storage_dispatcher_;
-  std::unique_ptr<IndexedDBDispatcher> main_thread_indexed_db_dispatcher_;
   std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler_;
   std::unique_ptr<RendererBlinkPlatformImpl> blink_platform_impl_;
   std::unique_ptr<ResourceDispatcher> resource_dispatcher_;

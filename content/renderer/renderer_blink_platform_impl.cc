@@ -46,7 +46,6 @@
 #include "content/renderer/dom_storage/session_web_storage_namespace_impl.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/image_capture/image_capture_frame_grabber.h"
-#include "content/renderer/indexed_db/webidbfactory_impl.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/code_cache_loader_impl.h"
 #include "content/renderer/loader/resource_dispatcher.h"
@@ -141,7 +140,6 @@ using blink::WebAudioLatencyHint;
 using blink::WebBlobRegistry;
 using blink::WebCanvasCaptureHandler;
 using blink::WebDatabaseObserver;
-using blink::WebIDBFactory;
 using blink::WebImageCaptureFrameGrabber;
 using blink::WebMediaPlayer;
 using blink::WebMediaRecorderHandler;
@@ -560,17 +558,6 @@ void RendererBlinkPlatformImpl::CloneSessionStorageNamespace(
   }
   local_storage_cached_areas_->CloneNamespace(source_namespace,
                                               destination_namespace);
-}
-
-//------------------------------------------------------------------------------
-
-std::unique_ptr<blink::WebIDBFactory>
-RendererBlinkPlatformImpl::CreateIdbFactory() {
-  blink::mojom::IDBFactoryPtrInfo web_idb_factory_host_info;
-  GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&web_idb_factory_host_info));
-  return std::make_unique<WebIDBFactoryImpl>(
-      std::move(web_idb_factory_host_info));
 }
 
 //------------------------------------------------------------------------------
