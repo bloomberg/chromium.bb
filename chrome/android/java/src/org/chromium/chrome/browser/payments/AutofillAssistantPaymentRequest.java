@@ -127,7 +127,8 @@ public class AutofillAssistantPaymentRequest implements PaymentRequestUI.Client 
 
         mPaymentMethodsSection = new SectionInformation(PaymentRequestUI.DataType.PAYMENT_METHODS,
                 SectionInformation.NO_SELECTION,
-                (new AutofillPaymentApp(mWebContents)).getInstruments(mMethodData));
+                (new AutofillPaymentApp(mWebContents))
+                        .getInstruments(mMethodData, /*forceReturnServerCards=*/true));
         if (!mPaymentMethodsSection.isEmpty() && mPaymentMethodsSection.getItem(0).isComplete()) {
             mPaymentMethodsSection.setSelectedItemIndex(0);
         }
