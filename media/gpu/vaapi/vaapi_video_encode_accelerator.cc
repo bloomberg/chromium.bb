@@ -226,10 +226,13 @@ bool VaapiVideoEncodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
-  if (config.input_format != PIXEL_FORMAT_I420) {
-    VLOGF(1) << "Unsupported input format: "
-             << VideoPixelFormatToString(config.input_format);
-    return false;
+  switch (config.input_format) {
+    case PIXEL_FORMAT_I420:
+    case PIXEL_FORMAT_NV12:
+      break;
+    default:
+      VLOGF(1) << "Unsupported input format: " << config.input_format;
+      return false;
   }
 
   const SupportedProfiles& profiles = GetSupportedProfiles();
@@ -349,6 +352,7 @@ void VaapiVideoEncodeAccelerator::ExecuteEncode(VASurfaceID va_surface_id) {
 void VaapiVideoEncodeAccelerator::UploadFrame(scoped_refptr<VideoFrame> frame,
                                               VASurfaceID va_surface_id) {
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
+  DVLOGF(4) << "frame is uploading: " << va_surface_id;
   if (!vaapi_wrapper_->UploadVideoFrameToSurface(frame, va_surface_id))
     NOTIFY_ERROR(kPlatformFailureError, "Failed to upload frame");
 }
