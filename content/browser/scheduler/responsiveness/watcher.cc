@@ -230,8 +230,7 @@ void Watcher::WillRunEventOnUIThread(const void* opaque_identifier) {
       base::TimeTicks::Now();
 }
 
-void Watcher::DidRunEventOnUIThread(const void* opaque_identifier,
-                                    base::TimeTicks creation_time) {
+void Watcher::DidRunEventOnUIThread(const void* opaque_identifier) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Calls to DidRunEventOnUIThread should always be paired with

@@ -173,7 +173,7 @@ TEST_F(ResponsivenessWatcherTest, NativeEvents) {
 
   void* opaque_identifier = reinterpret_cast<void*>(0x1234);
   watcher_->WillRunEventOnUIThread(opaque_identifier);
-  watcher_->DidRunEventOnUIThread(opaque_identifier, base::TimeTicks());
+  watcher_->DidRunEventOnUIThread(opaque_identifier);
 
   ASSERT_EQ(1, watcher_->NumTasksOnUIThread());
 

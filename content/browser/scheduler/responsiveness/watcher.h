@@ -117,8 +117,7 @@ class CONTENT_EXPORT Watcher : public base::RefCounted<Watcher> {
   // These methods are called by the NativeEventObserver of the UI thread to
   // allow Watcher to collect metadata about the events being run.
   void WillRunEventOnUIThread(const void* opaque_identifier);
-  void DidRunEventOnUIThread(const void* opaque_identifier,
-                             base::TimeTicks creation_time);
+  void DidRunEventOnUIThread(const void* opaque_identifier);
 
   // The following members are all affine to the UI thread.
   std::unique_ptr<Calculator> calculator_;
