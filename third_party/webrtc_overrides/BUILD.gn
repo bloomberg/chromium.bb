@@ -10,16 +10,6 @@ group("webrtc_overrides") {
   ]
 }
 
-config("jingle_unexported_configs") {
-  include_dirs = [
-    "../../third_party/webrtc_overrides",
-    "../../testing/gtest/include",
-    "../../third_party/libyuv/include",
-    "../../third_party/usrsctp/usrsctplib",
-    "../../third_party/webrtc",
-  ]
-}
-
 config("jingle_public_configs") {
   include_dirs = [
     "../../third_party/webrtc_overrides",
@@ -61,7 +51,6 @@ source_set("webrtc") {
   }
 
   configs += [
-    ":jingle_unexported_configs",
     "//third_party/webrtc:common_config",
   ]
   public_configs = [
@@ -76,7 +65,6 @@ static_library("init_webrtc") {
     "init_webrtc.h",
   ]
   configs += [
-    ":jingle_unexported_configs",
     "//third_party/webrtc:common_config",
   ]
   public_configs = [
@@ -115,7 +103,6 @@ static_library("field_trial") {
 
 source_set("libjingle_webrtc_common") {
   configs += [
-    ":jingle_unexported_configs",
     "//third_party/webrtc:common_config",
   ]
   public_configs = [
