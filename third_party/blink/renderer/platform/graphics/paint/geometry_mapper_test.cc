@@ -743,7 +743,7 @@ TEST_P(GeometryMapperTest, FilterWithClipsAndTransformsWithAlias) {
 
 TEST_P(GeometryMapperTest, ReflectionWithPaintOffset) {
   CompositorFilterOperations filters;
-  filters.AppendReferenceFilter(PaintFilterBuilder::BuildBoxReflectFilter(
+  filters.AppendReferenceFilter(paint_filter_builder::BuildBoxReflectFilter(
       BoxReflection(BoxReflection::kHorizontalReflection, 0), nullptr));
   auto effect = CreateFilterEffect(e0(), filters, FloatPoint(100, 100));
   local_state.SetEffect(effect.get());
