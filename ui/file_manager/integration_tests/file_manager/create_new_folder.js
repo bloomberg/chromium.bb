@@ -210,7 +210,7 @@ testcase.createFolderNestedDownloads = function() {
           })
           .then(function() {
             return remoteCall.navigateWithDirectoryTree(
-                appId, '/photos', 'Downloads');
+                appId, '/photos', 'My files/Downloads');
           })
           .then(function() {
             return remoteCall.waitForFiles(

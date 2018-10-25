@@ -451,17 +451,14 @@ RemoteCallFilesApp.prototype.checkNextTabFocus =
 RemoteCallFilesApp.prototype.waitUntilCurrentDirectoryIsChanged = function(
     windowId, expectedPath) {
   var caller = getCaller();
-  return repeatUntil(function () {
-    return this.callRemoteTestUtil('getBreadcrumbPath', windowId, []).then(
-      function(path) {
-        // TODO(lucmult): Remove this once MyFiles flag is removed.
-        // https://crbug.com/850348.
-        const myFilesExpectedPath = '/My files' + expectedPath;
-        if(!(path === expectedPath || path === myFilesExpectedPath)) {
-          return pending(
-              caller, 'Expected path is %s got %s', expectedPath, path);
-        }
-      });
+  return repeatUntil(function() {
+    return this.callRemoteTestUtil('getBreadcrumbPath', windowId, [])
+        .then(function(path) {
+          if (path !== expectedPath) {
+            return pending(
+                caller, 'Expected path is %s got %s', expectedPath, path);
+          }
+        });
   }.bind(this));
 };
 
