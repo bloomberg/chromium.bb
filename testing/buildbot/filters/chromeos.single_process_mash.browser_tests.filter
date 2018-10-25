@@ -182,12 +182,5 @@
 # Flaky tests. crbug.com/833144
 -GetAuthTokenFunctionPublicSessionTest.NonWhitelisted
 
-# WakeEventPageTest.NoBackgroundPage is flaky. crbug.com/895068
--WakeEventPageTest.NoBackgroundPage
-
-# ContentScriptApiTests are flaky: crbug.com/895110 and crbug.com/895070
--ContentScriptApiTest.ContentScriptExtensionAPIs
--ContentScriptApiTest.ContentScriptBlockingScriptsDontRunTwice
-
 # Test hangs in single process mash crbug.com/897012
 -SelectFileDialogExtensionBrowserTest.SelectFileVirtualKeyboard_TabletMode
