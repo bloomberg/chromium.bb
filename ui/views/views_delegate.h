@@ -203,6 +203,11 @@ class VIEWS_EXPORT ViewsDelegate {
  protected:
   ViewsDelegate();
 
+#if defined(USE_AURA)
+  void SetTouchSelectionMenuRunner(
+      std::unique_ptr<TouchSelectionMenuRunnerViews> menu_runner);
+#endif
+
  private:
   std::unique_ptr<ui::TouchEditingControllerFactory>
       editing_controller_factory_;

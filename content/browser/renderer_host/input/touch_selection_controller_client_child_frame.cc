@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/input/touch_selection_controller_client_child_frame.h"
 
+#include "base/logging.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
@@ -197,6 +198,16 @@ void TouchSelectionControllerClientChildFrame::RunContextMenu() {
   // calculations would be invalid.
   manager_->GetTouchSelectionController()
       ->HideAndDisallowShowingAutomatically();
+}
+
+bool TouchSelectionControllerClientChildFrame::ShouldShowQuickMenu() {
+  NOTREACHED();
+  return false;
+}
+
+base::string16 TouchSelectionControllerClientChildFrame::GetSelectedText() {
+  NOTREACHED();
+  return base::string16();
 }
 
 }  // namespace content

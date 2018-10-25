@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "ui/aura/client/cursor_client.h"
@@ -118,7 +119,7 @@ gfx::Image* GetRightHandleImage() {
 
 // Return the appropriate handle image based on the bound's type
 gfx::Image* GetHandleImage(gfx::SelectionBound::Type bound_type) {
-  switch(bound_type) {
+  switch (bound_type) {
     case gfx::SelectionBound::LEFT:
       return GetLeftHandleImage();
     case gfx::SelectionBound::CENTER:
@@ -128,7 +129,7 @@ gfx::Image* GetHandleImage(gfx::SelectionBound::Type bound_type) {
     default:
       NOTREACHED() << "Invalid touch handle bound type: " << bound_type;
       return nullptr;
-  };
+  }
 }
 
 // Calculates the bounds of the widget containing the selection handle based
@@ -157,7 +158,7 @@ gfx::Rect GetSelectionWidgetBounds(const gfx::SelectionBound& bound) {
     default:
       NOTREACHED() << "Undefined bound type.";
       break;
-  };
+  }
   return gfx::Rect(
       widget_left, bound.edge_top_rounded().y(), widget_width, widget_height);
 }
@@ -614,6 +615,16 @@ void TouchSelectionControllerImpl::RunContextMenu() {
   const gfx::Rect rect = GetQuickMenuAnchorRect();
   const gfx::Point anchor(rect.CenterPoint().x(), rect.y());
   client_view_->OpenContextMenu(anchor);
+}
+
+bool TouchSelectionControllerImpl::ShouldShowQuickMenu() {
+  NOTREACHED();
+  return false;
+}
+
+base::string16 TouchSelectionControllerImpl::GetSelectedText() {
+  NOTREACHED();
+  return base::string16();
 }
 
 void TouchSelectionControllerImpl::OnWidgetClosing(Widget* widget) {

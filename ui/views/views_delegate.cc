@@ -4,6 +4,8 @@
 
 #include "ui/views/views_delegate.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "ui/views/views_touch_selection_controller_factory.h"
@@ -132,5 +134,12 @@ int ViewsDelegate::GetAppbarAutohideEdges(HMONITOR monitor,
 bool ViewsDelegate::ShouldMirrorArrowsInRTL() const {
   return true;
 }
+
+#if defined(USE_AURA)
+void ViewsDelegate::SetTouchSelectionMenuRunner(
+    std::unique_ptr<TouchSelectionMenuRunnerViews> menu_runner) {
+  touch_selection_menu_runner_ = std::move(menu_runner);
+}
+#endif
 
 }  // namespace views

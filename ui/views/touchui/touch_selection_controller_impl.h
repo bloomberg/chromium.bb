@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_TOUCHUI_TOUCH_SELECTION_CONTROLLER_IMPL_H_
 #define UI_VIEWS_TOUCHUI_TOUCH_SELECTION_CONTROLLER_IMPL_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "ui/base/touch/touch_editing_controller.h"
@@ -73,6 +75,8 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   bool IsCommandIdEnabled(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
   void RunContextMenu() override;
+  bool ShouldShowQuickMenu() override;
+  base::string16 GetSelectedText() override;
 
   // WidgetObserver:
   void OnWidgetClosing(Widget* widget) override;
