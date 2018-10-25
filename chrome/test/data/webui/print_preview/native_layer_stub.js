@@ -18,6 +18,7 @@ cr.define('print_preview', function() {
         'print',
         'saveAppState',
         'setupPrinter',
+        'showSystemDialog',
       ]);
 
       /**
@@ -162,6 +163,11 @@ cr.define('print_preview', function() {
     /** @override */
     hidePreview() {
       this.methodCalled('hidePreview');
+    }
+
+    /** @override */
+    showSystemDialog() {
+      this.methodCalled('showSystemDialog');
     }
 
     /** @override */
