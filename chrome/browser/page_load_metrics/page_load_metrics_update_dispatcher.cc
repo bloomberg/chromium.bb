@@ -433,6 +433,13 @@ void PageLoadMetricsUpdateDispatcher::ShutDown() {
     largest_image_paint_.reset();
     should_dispatch = true;
   }
+  if (last_image_paint_) {
+    pending_merged_page_timing_->paint_timing->last_image_paint.swap(
+        last_image_paint_);
+    // Reset it so multiple shutdowns will have only one dispatch.
+    last_image_paint_.reset();
+    should_dispatch = true;
+  }
 
   if (should_dispatch) {
     DispatchTimingUpdates();
@@ -559,11 +566,13 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameTiming(
   mojom::InteractiveTimingPtr last_interactive_timing =
       std::move(pending_merged_page_timing_->interactive_timing);
 
-  // Buffer the latest candidate in largest_image_paint_. We will dispatch the
-  // last candidate at the page load end. Because we don't want to dispatch the
-  // non-last candidate here, we clear it from |new_timing|.
+  // Update the latest candidate to the corresponding buffers. We will dispatch
+  // the last candidate at the page load end. Because we don't want to dispatch
+  // the non-last candidate here, we clear it from |new_timing|.
   largest_image_paint_.swap(new_timing.paint_timing->largest_image_paint);
   new_timing.paint_timing->largest_image_paint.reset();
+  last_image_paint_.swap(new_timing.paint_timing->last_image_paint);
+  new_timing.paint_timing->last_image_paint.reset();
 
   // Update the pending_merged_page_timing_, making sure to merge the previously
   // observed |paint_timing| and |interactive_timing|, which are tracked across
