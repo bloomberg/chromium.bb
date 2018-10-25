@@ -362,18 +362,6 @@ class CrostiniManager::CrostiniRestarter
     if (is_aborted_)
       return;
 
-    // Share folders from Downloads, etc with container.
-    // TODO(joelhockey): SharePersistedPaths is getting called on every Restart,
-    // even if the VM is already running.  Only call SharePersistedPaths when
-    // VM starts for the first time.
-    SharePersistedPaths(
-        profile_,
-        base::BindOnce(&CrostiniRestarter::OnPersistedPathsShared, this));
-  }
-
-  void OnPersistedPathsShared(bool success, std::string failure_reason) {
-    // Sharing paths is not critical, FinishRestart(SUCCESS) regardless.
-    // Errors will be logged.
     FinishRestart(CrostiniResult::SUCCESS);
   }
 
@@ -1295,6 +1283,11 @@ void CrostiniManager::OnStartTerminaVm(
       vm_name, base::BindOnce(&CrostiniManager::OnStartTremplin,
                               weak_ptr_factory_.GetWeakPtr(), vm_name,
                               std::move(callback), CrostiniResult::SUCCESS));
+
+  // Share folders from Downloads, etc with default VM.
+  if (vm_name == kCrostiniDefaultVmName) {
+    SharePersistedPaths(profile_, base::DoNothing());
+  }
 }
 
 void CrostiniManager::OnStartTremplin(std::string vm_name,
