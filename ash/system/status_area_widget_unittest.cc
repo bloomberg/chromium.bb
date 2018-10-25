@@ -23,7 +23,6 @@
 #include "ash/system/virtual_keyboard/virtual_keyboard_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
-#include "base/test/scoped_feature_list.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
 #include "components/prefs/testing_pref_service.h"
@@ -299,8 +298,6 @@ class UnifiedStatusAreaWidgetTest : public AshTestBase {
 
   // AshTestBase:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kSystemTrayUnified);
-
     chromeos::DBusThreadManager::Initialize();
     // Initializing NetworkHandler before ash is more like production.
     chromeos::NetworkHandler::Initialize();
@@ -320,8 +317,6 @@ class UnifiedStatusAreaWidgetTest : public AshTestBase {
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   TestingPrefServiceSimple profile_prefs_;
   TestingPrefServiceSimple local_state_;
 

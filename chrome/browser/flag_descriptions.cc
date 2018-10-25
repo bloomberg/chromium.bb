@@ -77,10 +77,6 @@ const char kEnableBloatedRendererDetectionName[] = "Bloated renderer detection";
 const char kEnableBloatedRendererDetectionDescription[] =
     "Enable bloated renderer detection";
 
-const char kSystemTrayUnifiedName[] = "New system menu";
-const char kSystemTrayUnifiedDescription[] =
-    "Enable the experimental system menu.";
-
 const char kAsyncImageDecodingName[] = "AsyncImageDecoding";
 const char kAsyncImageDecodingDescription[] =
     "Enables asynchronous decoding of images from raster for web content";
