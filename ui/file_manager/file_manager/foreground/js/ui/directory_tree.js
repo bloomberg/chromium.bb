@@ -1235,10 +1235,6 @@ DriveVolumeItem.prototype.updateSubDirectories = function(recursive) {
       item.updateSubDirectories(false);
     }
   }
-  // When My files is disabled Drive should be expanded by default.
-  // TODO(crbug.com/850348): Remove this once flag is removed.
-  if (this.parentTree_.dataModel.disableMyFilesNavigation)
-    this.expanded = true;
 };
 
 /**

@@ -517,11 +517,8 @@ FileManager.prototype = /** @struct */ {
     return Promise
         .all([
           this.appStateController_.loadInitialViewOptions(),
-          util.isMyFilesNavigationDisabled(),
         ])
         .then(values => {
-          this.commandLineFlags_['disable-my-files-navigation'] =
-              /** @type {boolean} */ (values[1]);
           metrics.recordInterval('Load.InitSettings');
         });
   };
@@ -1209,8 +1206,7 @@ FileManager.prototype = /** @struct */ {
                     str('RECENT_ROOT_LABEL'),
                     VolumeManagerCommon.RootType.RECENT,
                     this.getSourceRestriction_())) :
-            null,
-        this.commandLineFlags_['disable-my-files-navigation']);
+            null);
     this.setupCrostini_();
     this.ui_.initDirectoryTree(directoryTree);
   };

@@ -664,7 +664,7 @@ testcase.driveRecoverDirtyFiles = function() {
     function() {
       return remoteCall
           .navigateWithDirectoryTree(
-              appId, '/Recovered files from Google Drive', 'Downloads')
+              appId, '/Recovered files from Google Drive', 'My files/Downloads')
           .then(this.next);
     },
     // Ensure it contains never-sync.txt and never-sync (1).txt.
