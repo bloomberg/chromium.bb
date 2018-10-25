@@ -105,6 +105,8 @@ std::string GetPlatformString() {
   return "chromeos";
 #elif defined(OS_ANDROID)
   return "android";
+#elif defined(OS_FUCHSIA)
+  return "fuchsia";
 #elif defined(OS_LINUX) || defined(OS_BSD) || defined(OS_SOLARIS)
   // Default BSD and SOLARIS to Linux to not break those builds, although these
   // platforms are not officially supported by Chrome.
