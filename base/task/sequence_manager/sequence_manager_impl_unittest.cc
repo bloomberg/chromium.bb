@@ -34,6 +34,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/blame_context.h"
+#include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::AnyNumber;
@@ -3410,6 +3411,33 @@ TEST_P(SequenceManagerTestWithCustomInitialization,
        CreateUnboundSequenceManagerWhichIsNeverBound) {
   // This should not crash.
   CreateUnboundSequenceManager(nullptr);
+}
+
+TEST_P(SequenceManagerTest, HasPendingHighResolutionTasks) {
+  CreateTaskQueues(1u);
+  bool supports_high_res = false;
+#if defined(OS_WIN)
+  supports_high_res = true;
+#endif
+
+  // Only the third task needs high resolution timing.
+  EXPECT_FALSE(manager_->HasPendingHighResolutionTasks());
+  runners_[0]->PostTask(FROM_HERE, BindOnce(&NopTask));
+  EXPECT_FALSE(manager_->HasPendingHighResolutionTasks());
+  runners_[0]->PostDelayedTask(FROM_HERE, BindOnce(&NopTask),
+                               TimeDelta::FromMilliseconds(100));
+  EXPECT_FALSE(manager_->HasPendingHighResolutionTasks());
+  runners_[0]->PostDelayedTask(FROM_HERE, BindOnce(&NopTask),
+                               TimeDelta::FromMilliseconds(10));
+  EXPECT_EQ(manager_->HasPendingHighResolutionTasks(), supports_high_res);
+
+  // Running immediate tasks doesn't affect pending high resolution tasks.
+  RunLoop().RunUntilIdle();
+  EXPECT_EQ(manager_->HasPendingHighResolutionTasks(), supports_high_res);
+
+  test_task_runner_->AdvanceMockTickClock(TimeDelta::FromMilliseconds(100));
+  RunLoop().RunUntilIdle();
+  EXPECT_FALSE(manager_->HasPendingHighResolutionTasks());
 }
 
 }  // namespace sequence_manager_impl_unittest

@@ -91,7 +91,6 @@ TEST_F(IntrusiveHeapTest, Min) {
 
 TEST_F(IntrusiveHeapTest, InsertAscending) {
   IntrusiveHeap<TestElement> heap;
-  HeapHandle index1;
 
   for (int i = 0; i < 50; i++)
     heap.insert({i, nullptr});
@@ -371,6 +370,19 @@ TEST_F(IntrusiveHeapTest, CompareNodes) {
 
   EXPECT_FALSE(IntrusiveHeapTest::CompareNodes(five, six));
   EXPECT_TRUE(IntrusiveHeapTest::CompareNodes(six, five));
+}
+
+TEST_F(IntrusiveHeapTest, At) {
+  HeapHandle index[10];
+  IntrusiveHeap<TestElement> heap;
+
+  for (int i = 0; i < 10; i++)
+    heap.insert({static_cast<int>(i ^ (i + 1)), &index[i]});
+
+  for (int i = 0; i < 10; i++) {
+    EXPECT_EQ(heap.at(index[i]).key, i ^ (i + 1));
+    EXPECT_EQ(heap.at(index[i]).handle, &index[i]);
+  }
 }
 
 }  // namespace internal

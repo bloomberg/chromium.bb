@@ -125,6 +125,7 @@ class BASE_EXPORT SequenceManagerImpl
   Optional<PendingTask> TakeTask() override;
   void DidRunTask() override;
   TimeDelta DelayTillNextTask(LazyNow* lazy_now) override;
+  bool HasPendingHighResolutionTasks() override;
 
   // Requests that a task to process work is posted on the main task runner.
   // These tasks are de-duplicated in two buckets: main-thread and all other

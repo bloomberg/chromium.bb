@@ -318,5 +318,58 @@ TEST_F(TimeDomainTest, CancelDelayedWork_TwoQueues) {
   task_queue2->UnregisterTaskQueue();
 }
 
+TEST_F(TimeDomainTest, HighResolutionWakeUps) {
+  TimeTicks now = time_domain_->Now();
+  LazyNow lazy_now(now);
+  TimeTicks run_time1 = now + TimeDelta::FromMilliseconds(20);
+  TimeTicks run_time2 = now + TimeDelta::FromMilliseconds(40);
+  TaskQueueImplForTest q1(nullptr, time_domain_.get(), TaskQueue::Spec("test"));
+  TaskQueueImplForTest q2(nullptr, time_domain_.get(), TaskQueue::Spec("test"));
+
+  // Add two high resolution wake-ups.
+  EXPECT_FALSE(time_domain_->HasPendingHighResolutionTasks());
+  time_domain_->SetNextWakeUpForQueue(
+      &q1, internal::DelayedWakeUp{run_time1, 0},
+      internal::WakeUpResolution::kHigh, &lazy_now);
+  EXPECT_TRUE(time_domain_->HasPendingHighResolutionTasks());
+  time_domain_->SetNextWakeUpForQueue(
+      &q2, internal::DelayedWakeUp{run_time2, 0},
+      internal::WakeUpResolution::kHigh, &lazy_now);
+  EXPECT_TRUE(time_domain_->HasPendingHighResolutionTasks());
+
+  // Remove one of the wake-ups.
+  time_domain_->SetNextWakeUpForQueue(
+      &q1, nullopt, internal::WakeUpResolution::kLow, &lazy_now);
+  EXPECT_TRUE(time_domain_->HasPendingHighResolutionTasks());
+
+  // Remove the second one too.
+  time_domain_->SetNextWakeUpForQueue(
+      &q2, nullopt, internal::WakeUpResolution::kLow, &lazy_now);
+  EXPECT_FALSE(time_domain_->HasPendingHighResolutionTasks());
+
+  // Change a low resolution wake-up to a high resolution one.
+  time_domain_->SetNextWakeUpForQueue(
+      &q1, internal::DelayedWakeUp{run_time1, 0},
+      internal::WakeUpResolution::kLow, &lazy_now);
+  EXPECT_FALSE(time_domain_->HasPendingHighResolutionTasks());
+  time_domain_->SetNextWakeUpForQueue(
+      &q1, internal::DelayedWakeUp{run_time1, 0},
+      internal::WakeUpResolution::kHigh, &lazy_now);
+  EXPECT_TRUE(time_domain_->HasPendingHighResolutionTasks());
+
+  // Move a high resolution wake-up in time.
+  time_domain_->SetNextWakeUpForQueue(
+      &q1, internal::DelayedWakeUp{run_time2, 0},
+      internal::WakeUpResolution::kHigh, &lazy_now);
+  EXPECT_TRUE(time_domain_->HasPendingHighResolutionTasks());
+
+  // Cancel the wake-up twice.
+  time_domain_->SetNextWakeUpForQueue(
+      &q1, nullopt, internal::WakeUpResolution::kLow, &lazy_now);
+  time_domain_->SetNextWakeUpForQueue(
+      &q1, nullopt, internal::WakeUpResolution::kLow, &lazy_now);
+  EXPECT_FALSE(time_domain_->HasPendingHighResolutionTasks());
+}
+
 }  // namespace sequence_manager
 }  // namespace base

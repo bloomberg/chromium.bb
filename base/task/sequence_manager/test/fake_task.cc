@@ -16,7 +16,9 @@ FakeTask::FakeTask(int task_type)
                                 Nestable::kNestable,
                                 task_type),
            TimeTicks(),
-           internal::EnqueueOrder()) {}
+           internal::EnqueueOrder(),
+           internal::EnqueueOrder(),
+           internal::WakeUpResolution::kLow) {}
 
 FakeTaskTiming::FakeTaskTiming()
     : TaskTiming(false /* has_wall_time */, false /* has_thread_time */) {}

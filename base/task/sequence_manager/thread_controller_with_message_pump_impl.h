@@ -83,6 +83,9 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
     // Number of DoWork running, but only the inner-most one can take tasks.
     // Must be equal to |run_depth| or |run_depth - 1|.
     int do_work_depth = 0;
+
+    // Whether high resolution timing is enabled or not.
+    bool in_high_res_mode = false;
   };
 
   MainThreadOnly& main_thread_only() {

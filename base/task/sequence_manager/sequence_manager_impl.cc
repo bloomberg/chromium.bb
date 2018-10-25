@@ -458,6 +458,14 @@ TimeDelta SequenceManagerImpl::DelayTillNextTask(LazyNow* lazy_now) {
   return delay_till_next_task;
 }
 
+bool SequenceManagerImpl::HasPendingHighResolutionTasks() {
+  for (TimeDomain* time_domain : main_thread_only().time_domains) {
+    if (time_domain->HasPendingHighResolutionTasks())
+      return true;
+  }
+  return false;
+}
+
 void SequenceManagerImpl::WillQueueTask(Task* pending_task) {
   controller_->WillQueueTask(pending_task);
 }
