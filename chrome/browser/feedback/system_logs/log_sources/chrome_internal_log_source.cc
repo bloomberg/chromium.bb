@@ -32,6 +32,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/public/interfaces/constants.mojom.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/system/statistics_provider.h"
@@ -63,6 +64,7 @@ constexpr char kLocalStateSettingsResponseKey[] = "Local State: settings";
 constexpr char kArcStatusKey[] = "CHROMEOS_ARC_STATUS";
 constexpr char kMonitorInfoKey[] = "monitor_info";
 constexpr char kAccountTypeKey[] = "account_type";
+constexpr char kDemoModeConfigKey[] = "demo_mode_config";
 #else
 constexpr char kOsVersionTag[] = "OS VERSION";
 #endif
@@ -239,6 +241,9 @@ void ChromeInternalLogSource::Fetch(SysLogsSourceCallback callback) {
                                        ? "enabled"
                                        : "disabled");
   response->emplace(kAccountTypeKey, GetPrimaryAccountTypeString());
+  response->emplace(kDemoModeConfigKey,
+                    chromeos::DemoSession::DemoConfigToString(
+                        chromeos::DemoSession::GetDemoConfig()));
   PopulateLocalStateSettings(response.get());
 
   // Chain asynchronous fetchers: PopulateMonitorInfoAsync, PopulateEntriesAsync
