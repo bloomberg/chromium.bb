@@ -26,9 +26,7 @@ source_set("webrtc") {
   # ":field_trial".
   # This configuration happens here:
   # https://cs.chromium.org/chromium/src/third_party/webrtc/webrtc.gni?l=44-51&rcl=95c56eebe0a2b31ad5752138d15b431124e17d36
-  if (is_nacl) {
-    deps += [ "//native_client_sdk/src/libraries/nacl_io" ]
-  } else if (!is_chromecast) {
+  if (!is_chromecast && !is_nacl) {
     # When Chromium doesn't build for NaCL or Chromecast, WebRTC doesn't
     # provide an implementation for field_trial and a custom one (that uses
     # base/metrics/field_trial.h is provided).
