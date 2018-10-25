@@ -170,7 +170,6 @@ static const char kOpusMonoOutputHash[] = "-2.36,-1.64,0.84,1.55,1.51,-0.90,";
 #endif  // !defined(MOJO_RENDERER)
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-const int k640IsoFileDurationMs = 2737;
 const int k640IsoCencFileDurationMsByDts = 2736;
 const int k640IsoCencFileDurationMsByPts = 2769;
 const int k1280IsoFileDurationMs = 2736;
@@ -180,7 +179,7 @@ const int k1280IsoAVC3FileDurationMs = 2736;
 
 // Return a timeline offset for bear-320x240-live.webm.
 static base::Time kLiveTimelineOffset() {
-  // The file contians the following UTC timeline offset:
+  // The file contains the following UTC timeline offset:
   // 2012-11-10 12:34:56.789123456
   // Since base::Time only has a resolution of microseconds,
   // construct a base::Time for 2012-11-10 12:34:56.789123.
@@ -2283,11 +2282,9 @@ MAYBE_EME_TEST_P(
   Stop();
 }
 
-// Config changes from clear to encrypted are not currently supported.
-// TODO(ddorwin): Figure out why this CHECKs in AppendAtTime().
 TEST_P(MSEPipelineIntegrationTest,
-       DISABLED_ConfigChange_ClearThenEncrypted_MP4_CENC) {
-  MockMediaSource source("bear-640x360-av_frag.mp4", kAppendWholeFile);
+       MAYBE_EME(ConfigChange_ClearThenEncrypted_MP4_CENC)) {
+  MockMediaSource source("bear-640x360-v_frag.mp4", kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
             StartPipelineWithEncryptedMedia(&source, &encrypted_media));
@@ -2301,19 +2298,19 @@ TEST_P(MSEPipelineIntegrationTest,
 
   source.EndOfStream();
 
-  base::RunLoop().Run();
-  EXPECT_EQ(CHUNK_DEMUXER_ERROR_APPEND_FAILED, pipeline_status_);
+  if (buffering_api_ == BufferingApi::kLegacyByDts)
+    EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  else
+    EXPECT_EQ(33, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
 
-  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
-  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
-  // The second video was not added, so its time has not been added.
-  EXPECT_EQ(k640IsoFileDurationMs,
+  EXPECT_EQ(kAppendTimeMs + k1280IsoFileDurationMs,
             pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
 
   Play();
 
-  EXPECT_EQ(CHUNK_DEMUXER_ERROR_APPEND_FAILED, WaitUntilEndedOrError());
+  ASSERT_TRUE(WaitUntilOnEnded());
   source.Shutdown();
+  Stop();
 }
 
 // Config changes from encrypted to clear are not currently supported.
