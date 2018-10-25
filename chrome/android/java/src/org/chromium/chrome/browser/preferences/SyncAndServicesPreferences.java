@@ -319,7 +319,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_id_targeted_help) {
             HelpAndFeedback.getInstance(getActivity())
-                    .show(getActivity(), getString(R.string.help_context_privacy),
+                    .show(getActivity(), getString(R.string.help_context_sync_and_services),
                             Profile.getLastUsedProfile(), null);
             return true;
         }
