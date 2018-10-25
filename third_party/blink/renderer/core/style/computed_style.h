@@ -1340,7 +1340,7 @@ class ComputedStyle : public ComputedStyleBase,
   bool HasWillChangeOpacityHint() const {
     return WillChangeProperties().Contains(CSSPropertyOpacity);
   }
-  bool HasWillChangeTransformHint() const;
+  CORE_EXPORT bool HasWillChangeTransformHint() const;
 
   // Hyphen utility functions.
   Hyphenation* GetHyphenation() const;
@@ -2072,9 +2072,10 @@ class ComputedStyle : public ComputedStyleBase,
   // will-change:transform should result in the same rendering behavior as
   // having a transform, including the creation of a containing block for fixed
   // position descendants.
-  bool HasTransformRelatedProperty() const {
+  CORE_EXPORT bool HasTransformRelatedProperty() const {
     return HasTransform() || Preserves3D() || HasPerspective() ||
-           HasWillChangeTransformHint();
+           HasWillChangeTransformHint() ||
+           HasTransformAnimationWithForwardsOrBothFillMode();
   }
 
   // Paint utility functions.
