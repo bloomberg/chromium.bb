@@ -223,6 +223,13 @@
             disabled="[[!prefs.settings.a11y.autoclick.value]]">
         </settings-dropdown-menu>
       </div>
+      <div class="sub-item">
+        <settings-toggle-button class="continuation sub-item"
+          hidden$="[[!prefs.settings.a11y.autoclick.value]]"
+          pref="{{prefs.settings.a11y.autoclick_revert_to_left_click}}"
+          label="$i18n{autoclickReverToLeftClick}">
+        </settings-toggle-button>
+      </div>
     </template>
     <settings-toggle-button
         pref="{{prefs.settings.a11y.large_cursor_enabled}}"

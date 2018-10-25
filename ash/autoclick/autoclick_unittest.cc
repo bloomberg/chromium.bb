@@ -313,6 +313,7 @@ TEST_F(AutoclickTest, SynthesizedMouseMovesIgnored) {
 
 TEST_F(AutoclickTest, AutoclickChangeEventTypes) {
   GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->set_revert_to_left_click(false);
   GetAutoclickController()->SetAutoclickEventType(
       mojom::AutoclickEventType::kRightClick);
   std::vector<ui::MouseEvent> events;
@@ -376,6 +377,7 @@ TEST_F(AutoclickTest, AutoclickChangeEventTypes) {
 
 TEST_F(AutoclickTest, AutoclickDragAndDropEvents) {
   GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->set_revert_to_left_click(false);
   GetAutoclickController()->SetAutoclickEventType(
       mojom::AutoclickEventType::kDragAndDrop);
   std::vector<ui::MouseEvent> events;
@@ -403,6 +405,65 @@ TEST_F(AutoclickTest, AutoclickDragAndDropEvents) {
   events = WaitForMouseEvents();
   ASSERT_EQ(1u, events.size());
   EXPECT_EQ(ui::ET_MOUSE_RELEASED, events[0].type());
+}
+
+TEST_F(AutoclickTest, AutoclickRevertsToLeftClick) {
+  GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->set_revert_to_left_click(true);
+  GetAutoclickController()->SetAutoclickEventType(
+      mojom::AutoclickEventType::kRightClick);
+  std::vector<ui::MouseEvent> events;
+
+  GetEventGenerator()->MoveMouseTo(30, 30);
+  events = WaitForMouseEvents();
+  ASSERT_EQ(2u, events.size());
+  EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & events[0].flags());
+  EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & events[1].flags());
+
+  // Another event is now left-click; we've reverted to left click.
+  GetEventGenerator()->MoveMouseTo(90, 90);
+  GetAutoclickController()->SetAutoclickEventType(
+      mojom::AutoclickEventType::kLeftClick);
+  events = WaitForMouseEvents();
+  ASSERT_EQ(2u, events.size());
+  EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & events[0].flags());
+  EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & events[1].flags());
+
+  // The next event is also a left click.
+  GetEventGenerator()->MoveMouseTo(120, 120);
+  GetAutoclickController()->SetAutoclickEventType(
+      mojom::AutoclickEventType::kLeftClick);
+  events = WaitForMouseEvents();
+  ASSERT_EQ(2u, events.size());
+  EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & events[0].flags());
+  EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & events[1].flags());
+
+  // Changing revert to false doesn't change that we are on left click at
+  // present.
+  GetAutoclickController()->set_revert_to_left_click(false);
+  GetEventGenerator()->MoveMouseTo(150, 150);
+  GetAutoclickController()->SetAutoclickEventType(
+      mojom::AutoclickEventType::kLeftClick);
+  events = WaitForMouseEvents();
+  ASSERT_EQ(2u, events.size());
+  EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & events[0].flags());
+  EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & events[1].flags());
+
+  // But we should no longer revert to left click if the type is something else.
+  GetAutoclickController()->SetAutoclickEventType(
+      mojom::AutoclickEventType::kRightClick);
+  GetEventGenerator()->MoveMouseTo(180, 180);
+  events = WaitForMouseEvents();
+  ASSERT_EQ(2u, events.size());
+  EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & events[0].flags());
+  EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & events[1].flags());
+
+  // Should still be right click.
+  GetEventGenerator()->MoveMouseTo(210, 210);
+  events = WaitForMouseEvents();
+  ASSERT_EQ(2u, events.size());
+  EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & events[0].flags());
+  EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & events[1].flags());
 }
 
 }  // namespace ash

@@ -4,6 +4,7 @@
 
 #include "ash/autoclick/autoclick_controller.h"
 
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/autoclick/autoclick_drag_event_rewriter.h"
 #include "ash/autoclick/autoclick_ring_handler.h"
 #include "ash/public/cpp/ash_constants.h"
@@ -69,6 +70,7 @@ base::TimeDelta AutoclickController::GetDefaultAutoclickDelay() {
 AutoclickController::AutoclickController()
     : enabled_(false),
       event_type_(kDefaultAutoclickEventType),
+      revert_to_left_click_(true),
       tap_down_target_(nullptr),
       delay_(GetDefaultAutoclickDelay()),
       mouse_event_flags_(ui::EF_NONE),
@@ -204,8 +206,10 @@ void AutoclickController::DoAutoclickAction() {
         drag_event_rewriter_->SetEnabled(true);
         return;
       }
-      if (details.dispatcher_destroyed)
+      if (details.dispatcher_destroyed) {
+        OnActionCompleted();
         return;
+      }
     }
     if (drag_stop)
       drag_event_rewriter_->SetEnabled(false);
@@ -214,10 +218,12 @@ void AutoclickController::DoAutoclickAction() {
                                  mouse_event_flags_ | button, button);
     details = host->event_sink()->OnEventFromSource(&release_event);
 
-    // Now a single click has been completed.
+    // Now a single click, or half the drag & drop, has been completed.
     if (event_type_ != mojom::AutoclickEventType::kDoubleClick ||
-        details.dispatcher_destroyed)
+        details.dispatcher_destroyed) {
+      OnActionCompleted();
       return;
+    }
 
     ui::MouseEvent double_press_event(
         ui::ET_MOUSE_PRESSED, location_in_pixels, location_in_pixels,
@@ -228,9 +234,12 @@ void AutoclickController::DoAutoclickAction() {
         ui::EventTimeForNow(),
         mouse_event_flags_ | button | ui::EF_IS_DOUBLE_CLICK, button);
     details = host->event_sink()->OnEventFromSource(&double_press_event);
-    if (details.dispatcher_destroyed)
+    if (details.dispatcher_destroyed) {
+      OnActionCompleted();
       return;
+    }
     details = host->event_sink()->OnEventFromSource(&double_release_event);
+    OnActionCompleted();
   }
 }
 
@@ -241,6 +250,16 @@ void AutoclickController::CancelAutoclickAction() {
   autoclick_ring_handler_->StopGesture();
   drag_event_rewriter_->SetEnabled(false);
   SetTapDownTarget(nullptr);
+}
+
+void AutoclickController::OnActionCompleted() {
+  if (!revert_to_left_click_ ||
+      event_type_ == mojom::AutoclickEventType::kLeftClick)
+    return;
+  // Change the preference, but set it locally so we do not reset any state when
+  // AutoclickController::SetAutoclickEventType is called.
+  event_type_ = mojom::AutoclickEventType::kLeftClick;
+  Shell::Get()->accessibility_controller()->SetAutoclickEventType(event_type_);
 }
 
 void AutoclickController::InitClickTimer() {
