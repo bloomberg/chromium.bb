@@ -16,6 +16,8 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/search/search_util.h"
+#include "chrome/grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace app_list {
 
@@ -33,6 +35,7 @@ ArcAppShortcutSearchResult::ArcAppShortcutSearchResult(
   SetTitle(base::UTF8ToUTF16(data_->short_label));
   set_id(kAppShortcutSearchPrefix + GetAppId() + "/" + data_->shortcut_id);
   SetDisplayType(ash::SearchResultDisplayType::kTile);
+  SetAccessibleName(ComputeAccessibleName());
 
   const int icon_dimension =
       app_list::AppListConfig::instance().search_tile_icon_dimension();
@@ -69,6 +72,19 @@ std::string ArcAppShortcutSearchResult::GetAppId() const {
   const ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile_);
   DCHECK(arc_prefs);
   return arc_prefs->GetAppIdByPackageName(data_->package_name.value());
+}
+
+base::string16 ArcAppShortcutSearchResult::ComputeAccessibleName() const {
+  const ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile_);
+  DCHECK(arc_prefs);
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      arc_prefs->GetApp(GetAppId());
+  if (!app_info.get())
+    return base::string16();
+
+  return l10n_util::GetStringFUTF16(IDS_APP_ACTION_SHORTCUT_ACCESSIBILITY_NAME,
+                                    base::UTF8ToUTF16(data_->short_label),
+                                    base::UTF8ToUTF16(app_info->name));
 }
 
 }  // namespace app_list
