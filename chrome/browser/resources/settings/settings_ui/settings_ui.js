@@ -70,6 +70,9 @@ Polymer({
     autofillHomeEnabled_: Boolean,
 
     /** @private */
+    enableScrollAnimator_: Boolean,
+
+    /** @private */
     lastSearchQuery_: {
       type: String,
       value: '',
@@ -156,6 +159,8 @@ Polymer({
     this.autofillHomeEnabled_ =
         loadTimeData.valueExists('autofillHomeEnabled') &&
         loadTimeData.getBoolean('autofillHomeEnabled');
+    this.enableScrollAnimator_ =
+        loadTimeData.getBoolean('enableScrollAnimator');
 
     this.addEventListener('show-container', () => {
       this.$.container.style.visibility = 'visible';
@@ -180,8 +185,9 @@ Polymer({
     document.fonts.load('bold 12px Roboto');
     settings.setGlobalScrollTarget(this.$.container);
 
+    const scrollBehavior = this.enableScrollAnimator_ ? 'smooth' : 'auto';
     const scrollToTop = top => new Promise(resolve => {
-      this.$.container.scrollTo({top, behavior: 'smooth'});
+      this.$.container.scrollTo({top, behavior: scrollBehavior});
       const onScroll = () => {
         this.debounce('scrollEnd', () => {
           this.$.container.removeEventListener('scroll', onScroll);
