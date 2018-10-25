@@ -130,4 +130,15 @@ gfx::Rect PipPositioner::GetDismissedPosition(const display::Display& display,
   return work_area.Intersects(dismissed_bounds) ? bounds : dismissed_bounds;
 }
 
+gfx::Rect PipPositioner::GetPositionAfterMovementAreaChange(
+    wm::WindowState* window_state) {
+  // Restore to previous bounds if we have them. This lets us move the PIP
+  // window back to its original bounds after transient movement area changes,
+  // like the keyboard popping up and pushing the PIP window up.
+  const gfx::Rect bounds = window_state->HasRestoreBounds()
+                               ? window_state->GetRestoreBoundsInScreen()
+                               : window_state->window()->GetBoundsInScreen();
+  return GetRestingPosition(window_state->GetDisplay(), bounds);
+}
+
 }  // namespace ash

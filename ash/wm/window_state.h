@@ -418,6 +418,11 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // state change.
   void UpdatePipState();
 
+  // Update the PIP bounds if necessary. This may need to happen when the
+  // display work area changes, or if system ui regions like the virtual
+  // keyboard position changes.
+  void UpdatePipBounds();
+
   // aura::WindowObserver:
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,

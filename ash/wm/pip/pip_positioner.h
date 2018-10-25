@@ -13,6 +13,10 @@
 
 namespace ash {
 
+namespace wm {
+class WindowState;
+}  // namespace wm
+
 class PipPositionerTest;
 
 class ASH_EXPORT PipPositioner {
@@ -44,6 +48,12 @@ class ASH_EXPORT PipPositioner {
   // animating the PIP window off-screen would travel too far.
   static gfx::Rect GetDismissedPosition(const display::Display& display,
                                         const gfx::Rect& bounds);
+
+  // Gets the position the PIP window should be moved to after a movement area
+  // change. For example, if the shelf is changed from auto-hidden to always
+  // shown, the PIP window should move up to not intersect it.
+  static gfx::Rect GetPositionAfterMovementAreaChange(
+      wm::WindowState* window_state);
 
  private:
   friend class PipPositionerTest;
