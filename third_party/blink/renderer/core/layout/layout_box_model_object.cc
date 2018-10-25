@@ -1491,7 +1491,8 @@ bool LayoutBoxModelObject::BackgroundTransfersToView(
 
   if (!document_element_style)
     document_element_style = document_element->GetComputedStyle();
-  if (!document_element_style || document_element_style->HasBackground())
+  DCHECK(document_element_style);
+  if (document_element_style->HasBackground())
     return false;
 
   if (GetNode() != GetDocument().FirstBodyElement())

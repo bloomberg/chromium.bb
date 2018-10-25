@@ -1999,7 +1999,8 @@ void Document::SetupFontBuilder(ComputedStyle& document_style) {
 
 void Document::PropagateStyleToViewport() {
   DCHECK(InStyleRecalc());
-  DCHECK(documentElement());
+  if (!documentElement())
+    return;
 
   HTMLElement* body = this->body();
 
@@ -2348,7 +2349,6 @@ void Document::UpdateStyle() {
         ViewportDefiningElementDidChange();
     }
     GetStyleEngine().MarkForWhitespaceReattachment();
-    PropagateStyleToViewport();
     if (document_element->NeedsReattachLayoutTree() ||
         document_element->ChildNeedsReattachLayoutTree()) {
       TRACE_EVENT0("blink,blink_style", "Document::rebuildLayoutTree");
@@ -2359,12 +2359,12 @@ void Document::UpdateStyle() {
     }
   }
   GetStyleEngine().ClearWhitespaceReattachSet();
-
-  View()->UpdateCountersAfterStyleChange();
-  GetLayoutView()->RecalcOverflow();
-
   ClearChildNeedsStyleRecalc();
   ClearChildNeedsReattachLayoutTree();
+
+  PropagateStyleToViewport();
+  View()->UpdateCountersAfterStyleChange();
+  GetLayoutView()->RecalcOverflow();
 
   DCHECK(!NeedsStyleRecalc());
   DCHECK(!ChildNeedsStyleRecalc());

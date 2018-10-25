@@ -3714,6 +3714,16 @@ const ComputedStyle* Element::EnsureComputedStyle(
     return nullptr;
   }
 
+  // EnsureComputedStyle is expected to be called to forcibly compute style for
+  // elements in display:none subtrees on otherwise style-clean documents. If
+  // you hit this DCHECK, consider if you really need ComputedStyle for
+  // display:none elements. If not, use GetComputedStyle() instead.
+  // Regardlessly, you need to UpdateStyleAndLayoutTree() before calling
+  // EnsureComputedStyle. In some cases you might be fine using GetComputedStyle
+  // without updating the style, but in most cases you want a clean tree for
+  // that as well.
+  DCHECK(!GetDocument().NeedsLayoutTreeUpdateForNode(*this));
+
   // FIXME: Find and use the layoutObject from the pseudo element instead of the
   // actual element so that the 'length' properties, which are only known by the
   // layoutObject because it did the layout, will be correct and so that the
