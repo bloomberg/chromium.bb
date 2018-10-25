@@ -768,13 +768,8 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
       DCHECK(origin);
       if (!origin->CanRequest(params.Url())) {
         params.MutableOptions().cors_flag = true;
-        // Cross-origin requests are only allowed certain registered schemes.
-        if (!SchemeRegistry::ShouldTreatURLSchemeAsCORSEnabled(
-                url.Protocol())) {
-          // This won't create a CORS related console error.
-          // TODO(yhirano): Fix this.
-          return ResourceRequestBlockedReason::kOther;
-        }
+        // TODO(yhirano): Reject requests for non CORS-enabled schemes.
+        // See https://crrev.com/c/1298828.
       }
     }
     bool allow_stored_credentials = false;
