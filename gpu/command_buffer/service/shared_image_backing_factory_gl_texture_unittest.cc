@@ -8,6 +8,7 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
+#include "gpu/command_buffer/service/raster_decoder_context_state.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
@@ -18,6 +19,8 @@
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -45,15 +48,24 @@ class SharedImageBackingFactoryGLTextureTest
     workarounds.max_texture_size = INT_MAX - 1;
     backing_factory_ = std::make_unique<SharedImageBackingFactoryGLTexture>(
         preferences, workarounds, GpuFeatureInfo(), &image_factory_, nullptr);
+
+    scoped_refptr<gl::GLShareGroup> share_group = new gl::GLShareGroup();
+    context_state_ = new raster::RasterDecoderContextState(
+        std::move(share_group), surface_, context_,
+        false /* use_virtualized_gl_contexts */);
+    context_state_->InitializeGrContext(workarounds, nullptr);
   }
 
   bool use_passthrough() {
     return GetParam() && gles2::PassthroughCommandDecoderSupported();
   }
 
+  GrContext* gr_context() { return context_state_->gr_context.get(); }
+
  protected:
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
+  scoped_refptr<raster::RasterDecoderContextState> context_state_;
   TextureImageFactory image_factory_;
   std::unique_ptr<SharedImageBackingFactoryGLTexture> backing_factory_;
   gles2::MailboxManagerImpl mailbox_manager_;
@@ -107,7 +119,7 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
     gl_representation.reset();
   }
 
-  // Finally, validate a SharedImageRepresentationGLTexturePassthrough.
+  // Next, validate a SharedImageRepresentationGLTexturePassthrough.
   if (use_passthrough()) {
     auto gl_representation =
         shared_image_manager_.ProduceGLTexturePassthrough(mailbox);
@@ -121,6 +133,25 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
     EXPECT_EQ(usage, gl_representation->usage());
     gl_representation.reset();
   }
+
+  // Finally, validate a SharedImageRepresentationSkia.
+  auto skia_representation = shared_image_manager_.ProduceSkia(mailbox);
+  EXPECT_TRUE(skia_representation);
+  auto surface = skia_representation->BeginWriteAccess(
+      gr_context(), 0, kRGBA_8888_SkColorType,
+      SkSurfaceProps(0, kUnknown_SkPixelGeometry));
+  EXPECT_TRUE(surface);
+  EXPECT_EQ(size.width(), surface->width());
+  EXPECT_EQ(size.height(), surface->height());
+  skia_representation->EndWriteAccess(std::move(surface));
+  GrBackendTexture backend_texture;
+  EXPECT_TRUE(skia_representation->BeginReadAccess(
+
+      kRGBA_8888_SkColorType, &backend_texture));
+  EXPECT_EQ(size.width(), backend_texture.width());
+  EXPECT_EQ(size.width(), backend_texture.width());
+  skia_representation->EndReadAccess();
+  skia_representation.reset();
 
   shared_image_manager_.Unregister(mailbox);
   EXPECT_FALSE(mailbox_manager_.ConsumeTexture(mailbox));
@@ -171,7 +202,7 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
     gl_representation.reset();
   }
 
-  // Finally, validate a SharedImageRepresentationGLTexturePassthrough.
+  // Next, validate a SharedImageRepresentationGLTexturePassthrough.
   if (use_passthrough()) {
     auto gl_representation =
         shared_image_manager_.ProduceGLTexturePassthrough(mailbox);
@@ -183,6 +214,25 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
     EXPECT_EQ(usage, gl_representation->usage());
     gl_representation.reset();
   }
+
+  // Finally, validate a SharedImageRepresentationSkia.
+  auto skia_representation = shared_image_manager_.ProduceSkia(mailbox);
+  EXPECT_TRUE(skia_representation);
+  auto surface = skia_representation->BeginWriteAccess(
+      gr_context(), 0, kRGBA_8888_SkColorType,
+      SkSurfaceProps(0, kUnknown_SkPixelGeometry));
+  EXPECT_TRUE(surface);
+  EXPECT_EQ(size.width(), surface->width());
+  EXPECT_EQ(size.height(), surface->height());
+  skia_representation->EndWriteAccess(std::move(surface));
+  GrBackendTexture backend_texture;
+  EXPECT_TRUE(skia_representation->BeginReadAccess(
+
+      kRGBA_8888_SkColorType, &backend_texture));
+  EXPECT_EQ(size.width(), backend_texture.width());
+  EXPECT_EQ(size.width(), backend_texture.width());
+  skia_representation->EndReadAccess();
+  skia_representation.reset();
 
   shared_image_manager_.Unregister(mailbox);
   EXPECT_FALSE(mailbox_manager_.ConsumeTexture(mailbox));

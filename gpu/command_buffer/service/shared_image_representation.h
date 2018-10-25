@@ -10,8 +10,11 @@
 #include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/gpu_gles2_export.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
+
+class GrContext;
 
 namespace gpu {
 namespace gles2 {
@@ -38,6 +41,9 @@ class GPU_GLES2_EXPORT SharedImageRepresentation {
   // backing should be treated as destroyed.
   void OnContextLost() { backing_->OnContextLost(); }
 
+ protected:
+  SharedImageBacking* backing() { return backing_; }
+
  private:
   SharedImageManager* manager_;
   SharedImageBacking* backing_;
@@ -61,6 +67,23 @@ class SharedImageRepresentationGLTexturePassthrough
 
   virtual const scoped_refptr<gles2::TexturePassthrough>&
   GetTexturePassthrough() = 0;
+};
+
+class SharedImageRepresentationSkia : public SharedImageRepresentation {
+ public:
+  SharedImageRepresentationSkia(SharedImageManager* manager,
+                                SharedImageBacking* backing)
+      : SharedImageRepresentation(manager, backing) {}
+
+  virtual sk_sp<SkSurface> BeginWriteAccess(
+      GrContext* gr_context,
+      int final_msaa_count,
+      SkColorType color_type,
+      const SkSurfaceProps& surface_props) = 0;
+  virtual void EndWriteAccess(sk_sp<SkSurface> surface) = 0;
+  virtual bool BeginReadAccess(SkColorType color_type,
+                               GrBackendTexture* backend_texture_out) = 0;
+  virtual void EndReadAccess() = 0;
 };
 
 }  // namespace gpu

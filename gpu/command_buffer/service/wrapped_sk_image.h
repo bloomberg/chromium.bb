@@ -15,9 +15,6 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "ui/gfx/geometry/size.h"
 
-class GrBackendTexture;
-class SkSurfaceProps;
-
 namespace gpu {
 namespace raster {
 
@@ -41,42 +38,6 @@ class GPU_GLES2_EXPORT WrappedSkImageFactory
   RasterDecoderContextState* const context_state_;
 
   DISALLOW_COPY_AND_ASSIGN(WrappedSkImageFactory);
-};
-
-class GPU_GLES2_EXPORT WrappedSkImage : public TextureBase {
- public:
-  ~WrappedSkImage() override;
-  bool Initialize(const gfx::Size& size, viz::ResourceFormat format);
-
-  // TextureBase implementation:
-  TextureBase::Type GetType() const override;
-  uint64_t GetTracingId() const override;
-
-  static WrappedSkImage* CheckedCast(TextureBase* texture);
-
-  sk_sp<SkSurface> GetSkSurface(int final_msaa_count,
-                                SkColorType color_type,
-                                const SkSurfaceProps& surface_props);
-  bool GetGrBackendTexture(GrBackendTexture* gr_texture) const;
-
-  uint32_t estimated_size() const { return estimated_size_; }
-  bool cleared() const { return cleared_; }
-  void SetCleared() { cleared_ = true; }
-
- private:
-  friend class WrappedSkImageFactory;
-
-  explicit WrappedSkImage(raster::RasterDecoderContextState* context_state);
-
-  RasterDecoderContextState* const context_state_;
-
-  sk_sp<SkImage> image_;
-  uint32_t estimated_size_ = 0;
-  bool cleared_ = false;
-
-  uint64_t tracing_id_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(WrappedSkImage);
 };
 
 }  // namespace raster

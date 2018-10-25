@@ -35,4 +35,9 @@ SharedImageBacking::ProduceGLTexturePassthrough(SharedImageManager* manager) {
   return nullptr;
 }
 
+std::unique_ptr<SharedImageRepresentationSkia> SharedImageBacking::ProduceSkia(
+    SharedImageManager* manager) {
+  return nullptr;
+}
+
 }  // namespace gpu

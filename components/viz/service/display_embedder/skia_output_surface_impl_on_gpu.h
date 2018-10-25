@@ -31,6 +31,7 @@ class GLSurface;
 
 namespace gpu {
 class SyncPointClientState;
+class SharedImageRepresentationSkia;
 
 #if BUILDFLAG(ENABLE_VULKAN)
 class VulkanSurface;
@@ -86,11 +87,17 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
                   std::unique_ptr<CopyOutputRequest> request);
 
   // Fulfill callback for promise SkImage created from a resource.
-  void FulfillPromiseTexture(const ResourceMetadata& metadata,
-                             GrBackendTexture* backend_texture);
+  void FulfillPromiseTexture(
+      const ResourceMetadata& metadata,
+      std::unique_ptr<gpu::SharedImageRepresentationSkia>* shared_image_out,
+      GrBackendTexture* backend_texture);
   // Fulfill callback for promise SkImage created from a render pass.
-  void FulfillPromiseTexture(const RenderPassId id,
-                             GrBackendTexture* backend_texture);
+  // |shared_image_out| is ignored for render passes, as these aren't based on
+  // SharedImage.
+  void FulfillPromiseTexture(
+      const RenderPassId id,
+      std::unique_ptr<gpu::SharedImageRepresentationSkia>* shared_image_out,
+      GrBackendTexture* backend_texture);
 
   sk_sp<GrContextThreadSafeProxy> GetGrContextThreadSafeProxy();
   const gl::GLVersionInfo* gl_version_info() const { return gl_version_info_; }

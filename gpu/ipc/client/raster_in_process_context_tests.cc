@@ -10,7 +10,9 @@
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/raster_implementation.h"
+#include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "gpu/ipc/raster_in_process_context.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
@@ -176,22 +178,22 @@ TEST_F(RasterInProcessCommandBufferTest,
     return;
   }
 
-  // Create texture and allocate storage.
-  GLuint texture_id =
-      ri_->CreateTexture(/*use_buffer=*/false, kBufferUsage, kResourceFormat);
-  ri_->TexStorage2D(texture_id, kBufferSize.width(), kBufferSize.height());
-  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), ri_->GetError());
-
-  gpu::Mailbox mailbox;
-  ri_->ProduceTextureDirect(texture_id, mailbox.name);
+  // Create shared image and allocate storage.
+  auto* sii = context_->GetSharedImageInterface();
+  gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
+  uint32_t flags = gpu::SHARED_IMAGE_USAGE_RASTER |
+                   gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
+  gpu::Mailbox mailbox =
+      sii->CreateSharedImage(kResourceFormat, kBufferSize, color_space, flags);
+  ri_->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
 
   // Call BeginRasterCHROMIUM.
-  cc::RasterColorSpace color_space(gfx::ColorSpace::CreateSRGB(), 0);
+  cc::RasterColorSpace raster_color_space(color_space, 0);
   ri_->BeginRasterCHROMIUM(/*sk_color=*/0, /*msaa_sample_count=*/0,
                            /*can_use_lcd_text=*/false,
                            viz::ResourceFormatToClosestSkColorType(
                                /*gpu_compositing=*/true, kResourceFormat),
-                           color_space, mailbox.name);
+                           raster_color_space, mailbox.name);
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), ri_->GetError());
 
   // Should flag an error this command is not allowed between a Begin and

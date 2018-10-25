@@ -37,8 +37,4 @@ TextureBase::Type TextureBase::GetType() const {
   return TextureBase::Type::kNone;
 }
 
-uint64_t TextureBase::GetTracingId() const {
-  return service_id_;
-}
-
 }  // namespace gpu

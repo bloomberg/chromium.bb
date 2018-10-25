@@ -18,8 +18,10 @@
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
+#include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_preferences.h"
+#include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
@@ -65,6 +67,73 @@ class SharedImageRepresentationGLTexturePassthroughImpl
   scoped_refptr<gles2::TexturePassthrough> texture_passthrough_;
 };
 
+class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
+ public:
+  SharedImageRepresentationSkiaImpl(SharedImageManager* manager,
+                                    SharedImageBacking* backing,
+                                    GLenum target,
+                                    GLenum internal_format,
+                                    GLenum driver_internal_format,
+                                    GLuint service_id)
+      : SharedImageRepresentationSkia(manager, backing),
+        target_(target),
+        internal_format_(internal_format),
+        driver_internal_format_(driver_internal_format),
+        service_id_(service_id) {}
+
+  ~SharedImageRepresentationSkiaImpl() override { DCHECK(!write_surface_); }
+
+  sk_sp<SkSurface> BeginWriteAccess(
+      GrContext* gr_context,
+      int final_msaa_count,
+      SkColorType color_type,
+      const SkSurfaceProps& surface_props) override {
+    if (write_surface_)
+      return nullptr;
+
+    GrBackendTexture backend_texture;
+    if (!GetGrBackendTexture(target_, size(), internal_format_,
+                             driver_internal_format_, service_id_, color_type,
+                             &backend_texture)) {
+      return nullptr;
+    }
+    auto surface = SkSurface::MakeFromBackendTextureAsRenderTarget(
+        gr_context, backend_texture, kTopLeft_GrSurfaceOrigin, final_msaa_count,
+        color_type, nullptr, &surface_props);
+    write_surface_ = surface.get();
+    return surface;
+  }
+
+  void EndWriteAccess(sk_sp<SkSurface> surface) override {
+    DCHECK_EQ(surface.get(), write_surface_);
+    DCHECK(surface->unique());
+    // TODO(ericrk): Keep the surface around for re-use.
+    write_surface_ = nullptr;
+  }
+
+  bool BeginReadAccess(SkColorType color_type,
+                       GrBackendTexture* backend_texture) override {
+    if (!GetGrBackendTexture(target_, size(), internal_format_,
+                             driver_internal_format_, service_id_, color_type,
+                             backend_texture)) {
+      return false;
+    }
+    return true;
+  }
+
+  void EndReadAccess() override {
+    // TODO(ericrk): Handle begin/end correctness checks.
+  }
+
+ private:
+  GLenum target_;
+  GLenum internal_format_ = 0;
+  GLenum driver_internal_format_ = 0;
+  GLuint service_id_;
+
+  SkSurface* write_surface_ = nullptr;
+};
+
 // Implementation of SharedImageBacking that creates a GL Texture and stores it
 // as a gles2::Texture. Can be used with the legacy mailbox implementation.
 class SharedImageBackingGLTexture : public SharedImageBacking {
@@ -74,9 +143,13 @@ class SharedImageBackingGLTexture : public SharedImageBacking {
                               const gfx::Size& size,
                               const gfx::ColorSpace& color_space,
                               uint32_t usage,
-                              gles2::Texture* texture)
+                              gles2::Texture* texture,
+                              GLenum internal_format,
+                              GLenum driver_internal_format)
       : SharedImageBacking(mailbox, format, size, color_space, usage),
-        texture_(texture) {
+        texture_(texture),
+        internal_format_(internal_format),
+        driver_internal_format_(driver_internal_format) {
     DCHECK(texture_);
   }
 
@@ -130,13 +203,21 @@ class SharedImageBackingGLTexture : public SharedImageBacking {
     return std::make_unique<SharedImageRepresentationGLTextureImpl>(
         manager, this, texture_);
   }
+  std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
+      SharedImageManager* manager) override {
+    return std::make_unique<SharedImageRepresentationSkiaImpl>(
+        manager, this, texture_->target(), internal_format_,
+        driver_internal_format_, texture_->service_id());
+  }
 
  private:
   gles2::Texture* texture_ = nullptr;
+  GLenum internal_format_ = 0;
+  GLenum driver_internal_format_ = 0;
 };
 
 // Implementation of SharedImageBacking that creates a GL Texture and stores it
-// as a gles2::PassthroughTexture. Can be used with the legacy mailbox
+// as a gles2::TexturePassthrough. Can be used with the legacy mailbox
 // implementation.
 class SharedImageBackingPassthroughGLTexture : public SharedImageBacking {
  public:
@@ -146,9 +227,13 @@ class SharedImageBackingPassthroughGLTexture : public SharedImageBacking {
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       uint32_t usage,
-      scoped_refptr<gles2::TexturePassthrough> passthrough_texture)
+      scoped_refptr<gles2::TexturePassthrough> passthrough_texture,
+      GLenum internal_format,
+      GLenum driver_internal_format)
       : SharedImageBacking(mailbox, format, size, color_space, usage),
-        passthrough_texture_(std::move(passthrough_texture)) {
+        passthrough_texture_(std::move(passthrough_texture)),
+        internal_format_(internal_format),
+        driver_internal_format_(driver_internal_format) {
     DCHECK(passthrough_texture_);
   }
 
@@ -178,9 +263,17 @@ class SharedImageBackingPassthroughGLTexture : public SharedImageBacking {
     return std::make_unique<SharedImageRepresentationGLTexturePassthroughImpl>(
         manager, this, passthrough_texture_);
   }
+  std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
+      SharedImageManager* manager) override {
+    return std::make_unique<SharedImageRepresentationSkiaImpl>(
+        manager, this, passthrough_texture_->target(), internal_format_,
+        driver_internal_format_, passthrough_texture_->service_id());
+  }
 
  private:
   scoped_refptr<gles2::TexturePassthrough> passthrough_texture_;
+  GLenum internal_format_ = 0;
+  GLenum driver_internal_format_ = 0;
   bool is_cleared_ = false;
 };
 
@@ -389,6 +482,12 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
       api->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, bound_pixel_unpack_buffer);
   }
 
+  // Calculate |driver_internal_format| here rather than caching on
+  // format_info, as we need to use the |level_info_internal_format| which may
+  // depend on the generated |image|.
+  GLenum driver_internal_format =
+      gl::GetInternalFormat(gl::GLContext::GetCurrent()->GetVersionInfo(),
+                            level_info_internal_format);
   std::unique_ptr<SharedImageBacking> backing;
   if (use_passthrough_) {
     scoped_refptr<gles2::TexturePassthrough> passthrough_texture =
@@ -397,7 +496,8 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
       passthrough_texture->SetLevelImage(target, 0, image.get());
     backing = std::make_unique<SharedImageBackingPassthroughGLTexture>(
         mailbox, format, size, color_space, usage,
-        std::move(passthrough_texture));
+        std::move(passthrough_texture), level_info_internal_format,
+        driver_internal_format);
   } else {
     gles2::Texture* texture = new gles2::Texture(service_id);
     texture->SetLightweightRef(memory_tracker_.get());
@@ -415,7 +515,8 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
       texture->SetLevelImage(target, 0, image.get(), gles2::Texture::BOUND);
     texture->SetImmutable(true);
     backing = std::make_unique<SharedImageBackingGLTexture>(
-        mailbox, format, size, color_space, usage, texture);
+        mailbox, format, size, color_space, usage, texture,
+        level_info_internal_format, driver_internal_format);
   }
 
   api->glBindTextureFn(target, old_texture_binding);
