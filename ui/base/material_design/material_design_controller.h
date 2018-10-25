@@ -25,26 +25,16 @@ class MaterialDesignControllerTestAPI;
 // Central controller to handle material design modes.
 class UI_BASE_EXPORT MaterialDesignController {
  public:
-  // The different material design modes. The order cannot be changed without
-  // updating references as these are used as array indices.
+  // The different material design modes.
   enum Mode {
-    // Basic material design.
-    MATERIAL_NORMAL = 0,
-    // Material design targeted at mouse/touch hybrid devices.
-    MATERIAL_HYBRID = 1,
-    // Material design that is more optimized for touch devices.
-    MATERIAL_TOUCH_OPTIMIZED = 2,
     // Material Refresh design targeted at mouse devices.
-    MATERIAL_REFRESH = 3,
+    MATERIAL_REFRESH,
     // Material Refresh design optimized for touch devices.
-    MATERIAL_TOUCH_REFRESH = 4,
+    MATERIAL_TOUCH_REFRESH,
   };
 
   // Initializes |mode_|. Must be called before checking |mode_|.
   static void Initialize();
-
-  // Get the current Mode that should be used by the system.
-  static Mode GetMode();
 
   // Returns true if the touch-optimized UI material design mode is enabled.
   static bool IsTouchOptimizedUiEnabled();
@@ -65,7 +55,6 @@ class UI_BASE_EXPORT MaterialDesignController {
   friend class test::MaterialDesignControllerTestAPI;
 
   MaterialDesignController();
-
   ~MaterialDesignController() = delete;
 
   // Resets the initialization state to uninitialized. To be used by tests to
