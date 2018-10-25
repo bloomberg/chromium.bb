@@ -86,6 +86,9 @@
     self.shortcutsCoordinator = [[ShortcutsCoordinator alloc]
         initWithBaseViewController:self.popupViewController
                       browserState:self.browserState];
+    self.shortcutsCoordinator.dispatcher =
+        (id<ApplicationCommands, BrowserCommands, UrlLoader,
+            OmniboxFocuser>)(self.dispatcher);
     [self.shortcutsCoordinator start];
     self.popupViewController.shortcutsViewController =
         self.shortcutsCoordinator.viewController;
