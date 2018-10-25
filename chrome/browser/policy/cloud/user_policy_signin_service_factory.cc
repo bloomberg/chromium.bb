@@ -36,11 +36,6 @@ DeviceManagementService* g_device_management_service = NULL;
 
 }  // namespace
 
-// static
-base::LazyInstance<scoped_refptr<network::SharedURLLoaderFactory>>::Leaky
-    UserPolicySigninServiceFactory::system_url_loader_factory_for_tests_ =
-        LAZY_INSTANCE_INITIALIZER;
-
 UserPolicySigninServiceFactory::UserPolicySigninServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "UserPolicySigninService",
@@ -70,12 +65,6 @@ void UserPolicySigninServiceFactory::SetDeviceManagementServiceForTesting(
   g_device_management_service = device_management_service;
 }
 
-// static
-void UserPolicySigninServiceFactory::SetSystemURLLoaderFactoryForTesting(
-    scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory) {
-  system_url_loader_factory_for_tests_.Get() = system_url_loader_factory;
-}
-
 KeyedService* UserPolicySigninServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
@@ -85,20 +74,11 @@ KeyedService* UserPolicySigninServiceFactory::BuildServiceInstanceFor(
       g_device_management_service ? g_device_management_service
                                   : connector->device_management_service();
 
-  scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory =
-      system_url_loader_factory_for_tests_.Get();
-  if (!system_url_loader_factory &&
-      g_browser_process->system_network_context_manager()) {
-    system_url_loader_factory =
-        g_browser_process->system_network_context_manager()
-            ->GetSharedURLLoaderFactory();
-  }
-
   UserPolicySigninService* service = new UserPolicySigninService(
       profile, g_browser_process->local_state(), device_management_service,
       UserCloudPolicyManagerFactory::GetForBrowserContext(context),
       IdentityManagerFactory::GetForProfile(profile),
-      std::move(system_url_loader_factory),
+      g_browser_process->shared_url_loader_factory(),
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile));
   return service;
 }
