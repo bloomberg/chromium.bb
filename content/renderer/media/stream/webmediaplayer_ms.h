@@ -240,6 +240,8 @@ class CONTENT_EXPORT WebMediaPlayerMS
   void TrackRemoved(const blink::WebMediaStreamTrack& track) override;
   void ActiveStateChanged(bool is_active) override;
 
+  void OnDisplayTypeChanged(WebMediaPlayer::DisplayType) override;
+
  private:
   friend class WebMediaPlayerMSTest;
 
