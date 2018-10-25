@@ -5462,7 +5462,6 @@ crbug.com/898378 [ Mac10.13 ] fast/scroll-behavior/smooth-scroll/keyboard-scroll
 # Sheriff 2018-10-24
 crbug.com/898394 [ Linux ] virtual/android/url-bar/bottom-and-top-fixed-sticks-to-top.html [ Failure ]
 crbug.com/898378 [ Mac10.13 ] virtual/scroll_customization/fast/scroll-behavior/smooth-scroll/keyboard-scroll.html [ Timeout ]
-crbug.com/898485 [ Mac ] paint/invalidation/table/cached-69296.html [ Failure Pass ]
 
 # Sheriff 2018-10-24
 crbug.com/889185 [ Win10 ] http/tests/images/feature-policy-image-compression.html [ Failure ]
