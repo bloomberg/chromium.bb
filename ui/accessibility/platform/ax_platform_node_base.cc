@@ -34,12 +34,6 @@ const AXNodeData& AXPlatformNodeBase::GetData() const {
   return *empty_data;
 }
 
-gfx::NativeViewAccessible AXPlatformNodeBase::GetFocus() {
-  if (delegate_)
-    return delegate_->GetFocus();
-  return nullptr;
-}
-
 gfx::NativeViewAccessible AXPlatformNodeBase::GetParent() {
   if (delegate_)
     return delegate_->GetParent();
