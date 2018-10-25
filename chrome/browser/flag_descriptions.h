@@ -73,9 +73,6 @@ extern const char kEnableBlinkHeapUnifiedGarbageCollectionDescription[];
 extern const char kEnableBloatedRendererDetectionName[];
 extern const char kEnableBloatedRendererDetectionDescription[];
 
-extern const char kSystemTrayUnifiedName[];
-extern const char kSystemTrayUnifiedDescription[];
-
 extern const char kAsyncImageDecodingName[];
 extern const char kAsyncImageDecodingDescription[];
 

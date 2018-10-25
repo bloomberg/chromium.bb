@@ -2160,9 +2160,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // ENABLE_EXTENSIONS
 #if !defined(OS_ANDROID)
 #if defined(OS_CHROMEOS)
-    {"enable-system-tray-unified", flag_descriptions::kSystemTrayUnifiedName,
-     flag_descriptions::kSystemTrayUnifiedDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kSystemTrayUnified)},
     {"enable-lock-screen-notification",
      flag_descriptions::kLockScreenNotificationName,
      flag_descriptions::kLockScreenNotificationDescription, kOsCrOS,

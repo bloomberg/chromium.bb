@@ -49,9 +49,6 @@ const base::Feature kNotificationScrollBar{"NotificationScrollBar",
 const base::Feature kOverviewSwipeToClose{"OverviewSwipeToClose",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kSystemTrayUnified{"SystemTrayUnified",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kTrilinearFiltering{"TrilinearFiltering",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -101,7 +98,7 @@ bool IsNotificationScrollBarEnabled() {
 }
 
 bool IsSystemTrayUnifiedEnabled() {
-  return base::FeatureList::IsEnabled(kSystemTrayUnified);
+  return true;
 }
 
 bool IsTrilinearFilteringEnabled() {

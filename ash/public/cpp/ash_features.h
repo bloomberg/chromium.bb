@@ -68,9 +68,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kNotificationScrollBar;
 // https://crbug.com/828646.
 ASH_PUBLIC_EXPORT extern const base::Feature kOverviewSwipeToClose;
 
-// Enables new system menu.
-ASH_PUBLIC_EXPORT extern const base::Feature kSystemTrayUnified;
-
 // Enables trilinear filtering.
 ASH_PUBLIC_EXPORT extern const base::Feature kTrilinearFiltering;
 
