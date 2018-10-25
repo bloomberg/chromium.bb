@@ -105,10 +105,10 @@ public class WebApkServiceClient {
     private void fallbackToWebApkIconIfNecessary(NotificationBuilderBase builder,
             String webApkPackage, int iconId) {
         if (!builder.hasSmallIconForContent()) {
-            builder.setContentSmallIconForRemoteApp(iconId, webApkPackage);
+            builder.setContentSmallIconForTrustedRemoteApp(iconId, webApkPackage);
         }
         if (!builder.hasStatusBarIconBitmap()) {
-            builder.setStatusBarIconForRemoteApp(iconId, webApkPackage);
+            builder.setStatusBarIconForTrustedRemoteApp(iconId, webApkPackage);
         }
     }
 

@@ -10,9 +10,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.RemoteException;
 import android.support.annotation.Nullable;
+import android.support.customtabs.trusted.TrustedWebActivityService;
 import android.support.customtabs.trusted.TrustedWebActivityServiceConnectionManager;
 import android.support.customtabs.trusted.TrustedWebActivityServiceWrapper;
 
@@ -36,9 +38,8 @@ public class TrustedWebActivityClient {
     /**
      * Creates a TrustedWebActivityService.
      */
-    public TrustedWebActivityClient() {
-        mConnection = new TrustedWebActivityServiceConnectionManager(
-                ContextUtils.getApplicationContext());
+    public TrustedWebActivityClient(TrustedWebActivityServiceConnectionManager connection) {
+        mConnection = connection;
     }
 
     /**
@@ -85,18 +86,17 @@ public class TrustedWebActivityClient {
             return;
         }
 
-        int smallIconId = service.getSmallIconId();
-        if (smallIconId == -1) {
+        int id = service.getSmallIconId();
+        if (id == TrustedWebActivityService.NO_ID) {
             return;
         }
 
-        String packageName = service.getComponentName().getPackageName();
-
+        Bitmap bitmap = service.getSmallIconBitmap();
         if (!builder.hasStatusBarIconBitmap()) {
-            builder.setStatusBarIconForRemoteApp(smallIconId, packageName);
+            builder.setStatusBarIconForUntrustedRemoteApp(id, bitmap);
         }
         if (!builder.hasSmallIconForContent()) {
-            builder.setContentSmallIconForRemoteApp(smallIconId, packageName);
+            builder.setContentSmallIconForUntrustedRemoteApp(bitmap);
         }
     }
 
