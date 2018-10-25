@@ -43,6 +43,8 @@ ASH_PUBLIC_EXPORT extern const char
     kScreenMagnifierAcceleratorDialogHasBeenAccepted[];
 ASH_PUBLIC_EXPORT extern const char
     kDictationAcceleratorDialogHasBeenAccepted[];
+ASH_PUBLIC_EXPORT extern const char
+    kDisplayRotationAcceleratorDialogHasBeenAccepted[];
 
 ASH_PUBLIC_EXPORT extern const char kDisplayMixedMirrorModeParams[];
 ASH_PUBLIC_EXPORT extern const char kDisplayPowerState[];

@@ -65,6 +65,8 @@ class ASH_EXPORT AccessibilityController
   bool HasDockedMagnifierAcceleratorDialogBeenAccepted() const;
   void SetDictationAcceleratorDialogAccepted();
   bool HasDictationAcceleratorDialogBeenAccepted() const;
+  void SetDisplayRotationAcceleratorDialogBeenAccepted();
+  bool HasDisplayRotationAcceleratorDialogBeenAccepted() const;
 
   void SetAutoclickEnabled(bool enabled);
   bool IsAutoclickEnabled() const;

@@ -87,6 +87,7 @@ constexpr const char* const kCopiedOnSigninAccessibilityPrefs[]{
     prefs::kScreenMagnifierAcceleratorDialogHasBeenAccepted,
     prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted,
     prefs::kDictationAcceleratorDialogHasBeenAccepted,
+    prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted,
 };
 
 // Returns true if |pref_service| is the one used for the signin screen.
@@ -295,6 +296,8 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
         prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted, false);
     registry->RegisterBooleanPref(
         prefs::kDictationAcceleratorDialogHasBeenAccepted, false);
+    registry->RegisterBooleanPref(
+        prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted, false);
     return;
   }
 
@@ -327,6 +330,8 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
       prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted);
   registry->RegisterForeignPref(
       prefs::kDictationAcceleratorDialogHasBeenAccepted);
+  registry->RegisterForeignPref(
+      prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted);
 }
 
 void AccessibilityController::SetHighContrastAcceleratorDialogAccepted() {
@@ -364,6 +369,22 @@ void AccessibilityController::SetDockedMagnifierAcceleratorDialogAccepted() {
     return;
   active_user_prefs_->SetBoolean(
       prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted, true);
+  active_user_prefs_->CommitPendingWrite();
+}
+
+bool AccessibilityController::HasDisplayRotationAcceleratorDialogBeenAccepted()
+    const {
+  return active_user_prefs_ &&
+         active_user_prefs_->GetBoolean(
+             prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted);
+}
+
+void AccessibilityController::
+    SetDisplayRotationAcceleratorDialogBeenAccepted() {
+  if (!active_user_prefs_)
+    return;
+  active_user_prefs_->SetBoolean(
+      prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted, true);
   active_user_prefs_->CommitPendingWrite();
 }
 
