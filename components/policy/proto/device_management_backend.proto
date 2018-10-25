@@ -844,6 +844,9 @@ message DeviceStatusReportRequest {
 
   // TPM status information.
   optional TpmStatusInfo tpm_status_info = 23;
+
+  // Whether hardware write protect switch is on.
+  optional bool write_protect_switch = 24;
 }
 
 message OsUpdateStatus {

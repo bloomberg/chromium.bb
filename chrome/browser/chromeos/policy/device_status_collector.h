@@ -253,6 +253,8 @@ class DeviceStatusCollector : public session_manager::SessionManagerObserver,
       enterprise_management::DeviceStatusReportRequest* status);
   bool GetVersionInfo(enterprise_management::DeviceStatusReportRequest* status);
   bool GetBootMode(enterprise_management::DeviceStatusReportRequest* status);
+  bool GetWriteProtectSwitch(
+      enterprise_management::DeviceStatusReportRequest* status);
   bool GetNetworkInterfaces(
       enterprise_management::DeviceStatusReportRequest* status);
   bool GetUsers(enterprise_management::DeviceStatusReportRequest* status);
