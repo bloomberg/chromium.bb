@@ -457,9 +457,14 @@ static inline bool LayerShouldBeSkippedInternal(
     LayerType* layer,
     const TransformTree& transform_tree,
     const EffectTree& effect_tree) {
+  // TODO(enne): remove temporary CHECKs once http://crbug.com/898668 is fixed.
+  CHECK_NE(layer->transform_tree_index(), TransformTree::kInvalidNodeId);
   const TransformNode* transform_node =
       transform_tree.Node(layer->transform_tree_index());
+  CHECK(transform_node);
+  CHECK_NE(layer->effect_tree_index(), EffectTree::kInvalidNodeId);
   const EffectNode* effect_node = effect_tree.Node(layer->effect_tree_index());
+  CHECK(effect_node);
 
   if (effect_node->has_render_surface && effect_node->subtree_has_copy_request)
     return false;
@@ -725,6 +730,9 @@ bool LayerShouldBeSkippedForDrawPropertiesComputation(
     LayerImpl* layer,
     const TransformTree& transform_tree,
     const EffectTree& effect_tree) {
+  // TODO(enne): remove temporary CHECKs once http://crbug.com/898668 is fixed.
+  CHECK(layer);
+  CHECK(layer->layer_tree_impl());
   return LayerShouldBeSkippedInternal(layer, transform_tree, effect_tree);
 }
 
@@ -732,6 +740,11 @@ bool LayerShouldBeSkippedForDrawPropertiesComputation(
     Layer* layer,
     const TransformTree& transform_tree,
     const EffectTree& effect_tree) {
+  // TODO(enne): remove temporary CHECKs once http://crbug.com/898668 is fixed.
+  CHECK(layer);
+  CHECK(layer->layer_tree_host());
+  CHECK_EQ(layer->layer_tree_host()->property_trees()->sequence_number,
+           layer->property_tree_sequence_number());
   return LayerShouldBeSkippedInternal(layer, transform_tree, effect_tree);
 }
 
