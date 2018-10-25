@@ -376,12 +376,16 @@ void UnifiedMessageListView::ResetBounds() {
 }
 
 void UnifiedMessageListView::DeleteRemovedNotifications() {
+  std::vector<MessageViewContainer*> removed_views;
   for (int i = 0; i < child_count(); ++i) {
     auto* view = GetContainer(i);
-    if (view->is_removed()) {
-      model_->RemoveNotificationExpanded(view->GetNotificationId());
-      delete view;
-    }
+    if (view->is_removed())
+      removed_views.push_back(view);
+  }
+
+  for (auto* view : removed_views) {
+    model_->RemoveNotificationExpanded(view->GetNotificationId());
+    delete view;
   }
 }
 
