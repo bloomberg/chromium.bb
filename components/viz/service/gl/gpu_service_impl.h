@@ -117,6 +117,10 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
     return gpu_channel_manager_->mailbox_manager();
   }
 
+  gpu::SharedImageManager* shared_image_manager() {
+    return gpu_channel_manager_->shared_image_manager();
+  }
+
   gl::GLShareGroup* share_group() {
     return gpu_channel_manager_->share_group();
   }

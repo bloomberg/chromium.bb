@@ -62,8 +62,9 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
   }
 
   std::unique_ptr<SharedImageBacking> backing;
-  if (wrapped_sk_image_factory_ &&
-      (usage & SHARED_IMAGE_USAGE_OOP_RASTERIZATION)) {
+  bool using_wrapped_sk_image = wrapped_sk_image_factory_ &&
+                                (usage & SHARED_IMAGE_USAGE_OOP_RASTERIZATION);
+  if (using_wrapped_sk_image) {
     backing = wrapped_sk_image_factory_->CreateSharedImage(
         mailbox, format, size, color_space, usage);
   } else {
@@ -77,7 +78,8 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
   }
 
   // TODO(ericrk): Handle the non-legacy case.
-  if (!backing->ProduceLegacyMailbox(mailbox_manager_)) {
+  if (!using_wrapped_sk_image &&
+      !backing->ProduceLegacyMailbox(mailbox_manager_)) {
     LOG(ERROR)
         << "CreateSharedImage: could not convert backing to legacy mailbox.";
     backing->Destroy();

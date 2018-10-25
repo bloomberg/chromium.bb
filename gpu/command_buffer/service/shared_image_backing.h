@@ -23,6 +23,7 @@ class MailboxManager;
 class SharedImageManager;
 class SharedImageRepresentationGLTexture;
 class SharedImageRepresentationGLTexturePassthrough;
+class SharedImageRepresentationSkia;
 
 // Represents the actual storage (GL texture, VkImage, GMB) for a SharedImage.
 // Should not be accessed direclty, instead is accessed through a
@@ -77,6 +78,8 @@ class GPU_GLES2_EXPORT SharedImageBacking {
       SharedImageManager* manager);
   virtual std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
   ProduceGLTexturePassthrough(SharedImageManager* manager);
+  virtual std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
+      SharedImageManager* manager);
 
   // Used by subclasses in Destroy.
   bool have_context() const { return have_context_; }

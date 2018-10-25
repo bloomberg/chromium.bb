@@ -28,6 +28,10 @@ class GPU_GLES2_EXPORT SharedImageManager {
   // Marks the backing associated with a mailbox as context lost.
   void OnContextLost(const Mailbox& mailbox);
 
+  // Indicates whether a mailbox is associated with a SharedImage.
+  // TODO: Remove this once all mailboxes are SharedImages.
+  bool IsSharedImage(const Mailbox& mailbox);
+
   // Accessors which return a SharedImageRepresentation. Representations also
   // take a ref on the mailbox, releasing it when the representation is
   // destroyed.
@@ -35,6 +39,8 @@ class GPU_GLES2_EXPORT SharedImageManager {
       const Mailbox& mailbox);
   std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
   ProduceGLTexturePassthrough(const Mailbox& mailbox);
+  std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
+      const Mailbox& mailbox);
 
   // Called by SharedImageRepresentation in the destructor.
   void OnRepresentationDestroyed(const Mailbox& mailbox);

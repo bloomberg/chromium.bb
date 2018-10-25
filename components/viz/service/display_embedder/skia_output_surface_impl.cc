@@ -17,6 +17,7 @@
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/scheduler.h"
+#include "gpu/command_buffer/service/shared_image_representation.h"
 #include "third_party/skia/include/core/SkYUVAIndex.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gl/gl_bindings.h"
@@ -89,11 +90,18 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
     // or SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass, so impl_on_gpu_
     // should be always valid.
     DCHECK(helper->impl_on_gpu_);
-    helper->impl_on_gpu_->FulfillPromiseTexture(helper->context_,
-                                                backend_texture);
+    helper->impl_on_gpu_->FulfillPromiseTexture(
+        helper->context_, &helper->shared_image_, backend_texture);
   }
 
-  static void Release(void* texture_context) { DCHECK(texture_context); }
+  static void Release(void* texture_context) {
+    DCHECK(texture_context);
+    auto* helper = static_cast<HelperType*>(texture_context);
+    if (helper->shared_image_) {
+      helper->shared_image_->EndReadAccess();
+      helper->shared_image_.reset();
+    }
+  }
 
   static void Done(void* texture_context) {
     DCHECK(texture_context);
@@ -105,6 +113,10 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
 
   // The data for calling the fulfill methods in SkiaOutputSurfaceImpl.
   FulfillContextType context_;
+
+  // If non-null, an outstanding SharedImageRepresentation that must be freed on
+  // Release. Only written / read from GPU thread.
+  std::unique_ptr<gpu::SharedImageRepresentationSkia> shared_image_;
 
   DISALLOW_COPY_AND_ASSIGN(PromiseTextureHelper);
 };

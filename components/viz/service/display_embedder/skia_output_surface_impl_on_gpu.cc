@@ -13,6 +13,7 @@
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/scheduler.h"
+#include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/texture_base.h"
@@ -299,8 +300,26 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
 
 void SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
     const ResourceMetadata& metadata,
+    std::unique_ptr<gpu::SharedImageRepresentationSkia>* shared_image_out,
     GrBackendTexture* backend_texture) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(!*shared_image_out);
+  auto* shared_image_manager = gpu_service_->shared_image_manager();
+  if (shared_image_manager->IsSharedImage(metadata.mailbox)) {
+    std::unique_ptr<gpu::SharedImageRepresentationSkia> shared_image =
+        shared_image_manager->ProduceSkia(metadata.mailbox);
+    DCHECK(shared_image);
+    if (!shared_image->BeginReadAccess(metadata.color_type, backend_texture)) {
+      DLOG(ERROR)
+          << "Failed to begin read access for SharedImageRepresentationSkia";
+      return;
+    }
+    *shared_image_out = std::move(shared_image);
+    return;
+  }
+
+  // Legacy mailbox path. TODO: Remove this once everything goes through
+  // SharedImages.
   if (gpu_service_->is_using_vulkan()) {
     // TODO(https://crbug.com/838899): Use SkSurface as raster decoder target.
     // NOTIMPLEMENTED();
@@ -313,15 +332,15 @@ void SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
     return;
   }
   BindOrCopyTextureIfNecessary(texture_base);
-  GetGrBackendTexture(*gl_version_info(),
-                      /*function_name=*/nullptr,
-                      /*error_state=*/nullptr, *texture_base,
-                      metadata.color_type, backend_texture);
+  GetGrBackendTexture(*gl_version_info(), *texture_base, metadata.color_type,
+                      backend_texture);
 }
 
 void SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
     const RenderPassId id,
+    std::unique_ptr<gpu::SharedImageRepresentationSkia>* shared_image_out,
     GrBackendTexture* backend_texture) {
+  DCHECK(!*shared_image_out);
   auto it = offscreen_surfaces_.find(id);
   DCHECK(it != offscreen_surfaces_.end());
   sk_sp<SkSurface>& surface = it->second;

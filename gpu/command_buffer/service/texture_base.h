@@ -30,10 +30,8 @@ class GPU_EXPORT TextureBase {
   MailboxManager* mailbox_manager() const { return mailbox_manager_; }
 
   // An identifier for subclasses. Necessary for safe downcasting.
-  enum class Type { kNone, kValidated, kPassthrough, kSkImage };
+  enum class Type { kNone, kValidated, kPassthrough };
   virtual Type GetType() const;
-
-  virtual uint64_t GetTracingId() const;
 
  protected:
   // The id of the texture.

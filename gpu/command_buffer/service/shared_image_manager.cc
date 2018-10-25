@@ -75,6 +75,11 @@ void SharedImageManager::OnContextLost(const Mailbox& mailbox) {
   found->backing->OnContextLost();
 }
 
+bool SharedImageManager::IsSharedImage(const Mailbox& mailbox) {
+  auto found = images_.find(mailbox);
+  return found != images_.end();
+}
+
 std::unique_ptr<SharedImageRepresentationGLTexture>
 SharedImageManager::ProduceGLTexture(const Mailbox& mailbox) {
   auto found = images_.find(mailbox);
@@ -109,6 +114,27 @@ SharedImageManager::ProduceGLTexturePassthrough(const Mailbox& mailbox) {
   if (!representation) {
     LOG(ERROR) << "SharedImageManager::ProduceGLTexturePassthrough: Trying to "
                   "produce a representation from an incompatible mailbox.";
+    return nullptr;
+  }
+
+  // Take a ref. This is released when we destroy the generated representation.
+  found->ref_count++;
+  return representation;
+}
+
+std::unique_ptr<SharedImageRepresentationSkia> SharedImageManager::ProduceSkia(
+    const Mailbox& mailbox) {
+  auto found = images_.find(mailbox);
+  if (found == images_.end()) {
+    LOG(ERROR) << "SharedImageManager::ProduceSkia: Trying to Produce a "
+                  "Skia representation from a non-existent mailbox.";
+    return nullptr;
+  }
+
+  auto representation = found->backing->ProduceSkia(this);
+  if (!representation) {
+    LOG(ERROR) << "SharedImageManager::ProduceSkia: Trying to produce a "
+                  "Skia representation from an incompatible mailbox.";
     return nullptr;
   }
 

@@ -23,8 +23,10 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/raster_implementation.h"
 #include "gpu/command_buffer/client/raster_implementation_gles.h"
+#include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/gr_shader_cache.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/ipc/gl_in_process_context.h"
@@ -163,24 +165,20 @@ class OopPixelTest : public testing::Test,
     int width = options.resource_size.width();
     int height = options.resource_size.height();
 
-    // Create and allocate a texture on the raster interface.
-    GLuint raster_texture_id;
-
+    // Create and allocate a shared image on the raster interface.
     auto* raster_implementation = raster_context_provider_->RasterInterface();
-    raster_texture_id = raster_implementation->CreateTexture(
-        false, gfx::BufferUsage::GPU_READ, viz::ResourceFormat::RGBA_8888);
-    raster_implementation->TexStorage2D(raster_texture_id, width, height);
-    raster_implementation->TexParameteri(raster_texture_id,
-                                         GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-    EXPECT_EQ(raster_implementation->GetError(),
-              static_cast<unsigned>(GL_NO_ERROR));
+    auto* sii = raster_context_provider_->SharedImageInterface();
+    uint32_t flags = gpu::SHARED_IMAGE_USAGE_RASTER |
+                     gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
+    gpu::Mailbox mailbox = sii->CreateSharedImage(
+        viz::ResourceFormat::RGBA_8888, gfx::Size(width, height),
+        options.color_space, flags);
+    EXPECT_TRUE(mailbox.Verify());
+    raster_implementation->WaitSyncTokenCHROMIUM(
+        sii->GenUnverifiedSyncToken().GetConstData());
 
     RasterColorSpace color_space(options.color_space, ++color_space_id_);
 
-    gpu::Mailbox mailbox;
-    raster_implementation->ProduceTextureDirect(raster_texture_id,
-                                                mailbox.name);
     if (options.preclear) {
       raster_implementation->BeginRasterCHROMIUM(
           options.preclear_color, options.msaa_sample_count,
@@ -225,8 +223,9 @@ class OopPixelTest : public testing::Test,
     gl->DeleteTextures(1, &gl_texture_id);
     gl->DeleteFramebuffers(1, &fbo_id);
 
-    gl->OrderingBarrierCHROMIUM();
-    raster_implementation->DeleteTextures(1, &raster_texture_id);
+    gpu::SyncToken sync_token;
+    gl->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
+    sii->DestroySharedImage(sync_token, mailbox);
 
     // Swizzle rgba->bgra if needed.
     std::vector<SkPMColor> colors;

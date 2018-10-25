@@ -3609,7 +3609,7 @@ void TextureManager::DumpTextureRef(base::trace_event::ProcessMemoryDump* pmd,
   // Add a |service_guid| which expresses shared ownership between the various
   // |client_guid|s.
   auto service_guid =
-      gl::GetGLTextureServiceGUIDForTracing(ref->texture()->GetTracingId());
+      gl::GetGLTextureServiceGUIDForTracing(ref->texture()->service_id());
   pmd->CreateSharedGlobalAllocatorDump(service_guid);
 
   int importance = 0;  // Default importance.
