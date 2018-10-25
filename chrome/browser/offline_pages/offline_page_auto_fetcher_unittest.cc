@@ -4,6 +4,7 @@
 
 #include "chrome/browser/offline_pages/offline_page_auto_fetcher.h"
 
+#include "base/bind.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
@@ -25,7 +26,7 @@ class OfflinePageAutoFetcherTest : public testing::Test {
   void SetUp() override {
     RequestCoordinator* coordinator = static_cast<RequestCoordinator*>(
         RequestCoordinatorFactory::GetInstance()->SetTestingFactoryAndUse(
-            &profile_, BuildTestRequestCoordinator));
+            &profile_, base::BindRepeating(&BuildTestRequestCoordinator)));
     queue_store_ = static_cast<TestRequestQueueStore*>(
         coordinator->queue_for_testing()->GetStoreForTesting());
   }
