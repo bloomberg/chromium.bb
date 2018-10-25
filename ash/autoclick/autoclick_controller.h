@@ -52,6 +52,11 @@ class ASH_EXPORT AutoclickController : public ui::EventHandler,
   // Sets the event type.
   void SetAutoclickEventType(mojom::AutoclickEventType type);
 
+  // Sets whether to revert to a left click after any other event type.
+  void set_revert_to_left_click(bool revert_to_left_click) {
+    revert_to_left_click_ = revert_to_left_click;
+  }
+
  private:
   void SetTapDownTarget(aura::Window* target);
   void CreateAutoclickRingWidget(const gfx::Point& point_in_screen);
@@ -59,6 +64,7 @@ class ASH_EXPORT AutoclickController : public ui::EventHandler,
                                  const gfx::Point& point_in_screen);
   void DoAutoclickAction();
   void CancelAutoclickAction();
+  void OnActionCompleted();
   void InitClickTimer();
   void UpdateRingWidget(const gfx::Point& mouse_location);
 
@@ -74,6 +80,7 @@ class ASH_EXPORT AutoclickController : public ui::EventHandler,
 
   bool enabled_;
   mojom::AutoclickEventType event_type_;
+  bool revert_to_left_click_;
   // The target window is observed by AutoclickController for the duration
   // of a autoclick gesture.
   aura::Window* tap_down_target_;

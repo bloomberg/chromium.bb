@@ -259,6 +259,8 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
             AutoclickController::GetDefaultAutoclickDelay().InMilliseconds()));
     registry->RegisterIntegerPref(prefs::kAccessibilityAutoclickEventType,
                                   static_cast<int>(kDefaultAutoclickEventType));
+    registry->RegisterBooleanPref(
+        prefs::kAccessibilityAutoclickRevertToLeftClick, true);
     registry->RegisterBooleanPref(prefs::kAccessibilityCaretHighlightEnabled,
                                   false);
     registry->RegisterBooleanPref(prefs::kAccessibilityCursorHighlightEnabled,
@@ -301,6 +303,8 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
   registry->RegisterForeignPref(prefs::kAccessibilityAutoclickEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityAutoclickDelayMs);
   registry->RegisterForeignPref(prefs::kAccessibilityAutoclickEventType);
+  registry->RegisterForeignPref(
+      prefs::kAccessibilityAutoclickRevertToLeftClick);
   registry->RegisterForeignPref(prefs::kAccessibilityCaretHighlightEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityCursorHighlightEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityDictationEnabled);
@@ -807,6 +811,11 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
           &AccessibilityController::UpdateAutoclickEventTypeFromPref,
           base::Unretained(this)));
   pref_change_registrar_->Add(
+      prefs::kAccessibilityAutoclickRevertToLeftClick,
+      base::BindRepeating(
+          &AccessibilityController::UpdateAutoclickRevertToLeftClickFromPref,
+          base::Unretained(this)));
+  pref_change_registrar_->Add(
       prefs::kAccessibilityCaretHighlightEnabled,
       base::BindRepeating(
           &AccessibilityController::UpdateCaretHighlightFromPref,
@@ -864,6 +873,7 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
   UpdateAutoclickFromPref();
   UpdateAutoclickDelayFromPref();
   UpdateAutoclickEventTypeFromPref();
+  UpdateAutoclickRevertToLeftClickFromPref();
   UpdateCaretHighlightFromPref();
   UpdateCursorHighlightFromPref();
   UpdateDictationFromPref();
@@ -910,6 +920,24 @@ void AccessibilityController::UpdateAutoclickEventTypeFromPref() {
       active_user_prefs_->GetInteger(prefs::kAccessibilityAutoclickEventType));
 
   Shell::Get()->autoclick_controller()->SetAutoclickEventType(event_type);
+}
+
+void AccessibilityController::SetAutoclickEventType(
+    mojom::AutoclickEventType event_type) {
+  if (!active_user_prefs_)
+    return;
+  active_user_prefs_->SetInteger(prefs::kAccessibilityAutoclickEventType,
+                                 static_cast<int>(event_type));
+  active_user_prefs_->CommitPendingWrite();
+}
+
+void AccessibilityController::UpdateAutoclickRevertToLeftClickFromPref() {
+  DCHECK(active_user_prefs_);
+  bool revert_to_left_click = active_user_prefs_->GetBoolean(
+      prefs::kAccessibilityAutoclickRevertToLeftClick);
+
+  Shell::Get()->autoclick_controller()->set_revert_to_left_click(
+      revert_to_left_click);
 }
 
 void AccessibilityController::UpdateCaretHighlightFromPref() {

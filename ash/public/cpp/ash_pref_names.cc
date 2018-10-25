@@ -53,6 +53,10 @@ const char kAccessibilityAutoclickDelayMs[] =
 // maps to mojom::AccessibilityController::AutoclickEventType.
 const char kAccessibilityAutoclickEventType[] =
     "settings.a11y.autoclick_event_type";
+// Whether Autoclick should immediately return to left click after performing
+// another event type action, or whether it should stay as the other event type.
+const char kAccessibilityAutoclickRevertToLeftClick[] =
+    "settings.a11y.autoclick_revert_to_left_click";
 // A boolean pref which determines whether caret highlighting is enabled.
 const char kAccessibilityCaretHighlightEnabled[] =
     "settings.a11y.caret_highlight";

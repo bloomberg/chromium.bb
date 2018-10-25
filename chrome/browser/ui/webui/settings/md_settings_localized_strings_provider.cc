@@ -219,6 +219,7 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
     {"autoclickEventTypeDoubleClick",
      IDS_SETTINGS_AUTOCLICK_EVENT_TYPE_DOUBLE_CLICK},
     {"autoclickEventTypeNoAction", IDS_SETTINGS_AUTOCLICK_EVENT_TYPE_NO_ACTION},
+    {"autoclickReverToLeftClick", IDS_SETTINGS_AUTOCLICK_REVERT_TO_LEFT_CLICK},
     {"dictationDescription", IDS_SETTINGS_ACCESSIBILITY_DICTATION_DESCRIPTION},
     {"dictationLabel", IDS_SETTINGS_ACCESSIBILITY_DICTATION_LABEL},
     {"onScreenKeyboardLabel", IDS_SETTINGS_ON_SCREEN_KEYBOARD_LABEL},
