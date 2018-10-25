@@ -377,6 +377,8 @@ constexpr uint8_t kU2fConditionNotSatisfiedApduResponse[] = {0x69, 0x85};
 
 constexpr uint8_t kU2fWrongDataApduResponse[] = {0x6A, 0x80};
 
+constexpr uint8_t kU2fKeyHandleSizeApduResponse[] = {0x00, 0x01};
+
 constexpr uint8_t kApduEncodedNoErrorRegisterResponse[] = {
     // Reserved byte
     0x05,
