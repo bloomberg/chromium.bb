@@ -13,6 +13,7 @@ js_type_check("closure_compile") {
 
 js_library("apps_chooser") {
   deps = [
+    "../shared:bookmark_proxy",
     "//ui/webui/resources/js:cr",
   ]
 }

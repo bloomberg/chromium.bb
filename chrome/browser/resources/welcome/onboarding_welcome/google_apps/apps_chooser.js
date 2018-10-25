@@ -10,6 +10,7 @@ cr.exportPath('nuxGoogleApps');
  *   name: string,
  *   icon: string,
  *   url: string,
+ *   bookmarkId: ?string,
  *   selected: boolean,
  * }}
  */
@@ -25,6 +26,7 @@ nuxGoogleApps.AppItemModel;
 
 Polymer({
   is: 'apps-chooser',
+
   properties: {
     /**
      * @type {!Array<!nuxGoogleApps.AppItem>}
@@ -36,17 +38,33 @@ Polymer({
       type: Boolean,
       notify: true,
       value: true,
-    }
+    },
   },
+
+  /** @private {nux.NuxGoogleAppsProxy} */
+  appProxy_: null,
+
+  /** @private {nux.BookmarkProxy} */
+  bookmarkProxy_: null,
 
   /** @override */
   ready() {
-    nux.NuxGoogleAppsProxyImpl.getInstance().getGoogleAppsList().then(list => {
-      this.appList_ = list.map(app => {
-        app.selected = true;  // default all items selected.
-        return app;
+    this.appProxy_ = nux.NuxGoogleAppsProxyImpl.getInstance();
+    this.bookmarkProxy_ = nux.BookmarkProxyImpl.getInstance();
+  },
+
+  /** Called when bookmarks should be created for all selected apps. */
+  populateAllBookmarks() {
+    if (!this.appList_) {
+      this.appProxy_.getGoogleAppsList().then(list => {
+        this.appList_ = list;
+        this.appList_.forEach(app => {
+          // Default select all items.
+          app.selected = true;
+          this.updateBookmark(app);
+        });
       });
-    });
+    }
   },
 
   /**
@@ -54,7 +72,32 @@ Polymer({
    * @return {!Array<boolean>}
    */
   getSelectedAppList() {
-    return this.appList_.map(a => a.selected);
+    if (this.appList_)
+      return this.appList_.map(a => a.selected);
+    else
+      return [];
+  },
+
+  /**
+   * @param {!nuxGoogleApps.AppItem} item
+   * @private
+   */
+  updateBookmark(item) {
+    if (item.selected && !item.bookmarkId) {
+      this.bookmarkProxy_.toggleBookmarkBar(true);
+      this.bookmarkProxy_.addBookmark(
+          {
+            title: item.name,
+            url: item.url,
+            parentId: '1',
+          },
+          result => {
+            item.bookmarkId = result.id;
+          });
+    } else if (!item.selected && item.bookmarkId) {
+      this.bookmarkProxy_.removeBookmark(item.bookmarkId);
+      item.bookmarkId = null;
+    }
   },
 
   /**
@@ -63,7 +106,9 @@ Polymer({
    * @private
    */
   onAppClick_: function(e) {
-    e.model.set('item.selected', !e.model.item.selected);
+    let item = e.model.item;
+    e.model.set('item.selected', !item.selected);
+    this.updateBookmark(item);
     this.hasAppsSelected = this.computeHasAppsSelected_();
   },
 
@@ -88,6 +133,6 @@ Polymer({
    * @private
    */
   computeHasAppsSelected_: function() {
-    return this.appList_.some(a => a.selected);
+    return this.appList_ && this.appList_.some(a => a.selected);
   },
 });

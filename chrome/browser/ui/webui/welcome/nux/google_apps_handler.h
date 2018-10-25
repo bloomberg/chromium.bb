@@ -9,8 +9,6 @@
 #include "base/values.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
-class PrefService;
-
 namespace content {
 class WebUIDataSource;
 }  // namespace content
@@ -34,8 +32,7 @@ enum class GoogleAppsInteraction {
 
 class GoogleAppsHandler : public content::WebUIMessageHandler {
  public:
-  GoogleAppsHandler(PrefService* prefs,
-                    favicon::FaviconService* favicon_service);
+  explicit GoogleAppsHandler(favicon::FaviconService* favicon_service);
   ~GoogleAppsHandler() override;
 
   // WebUIMessageHandler:
@@ -47,13 +44,9 @@ class GoogleAppsHandler : public content::WebUIMessageHandler {
   void HandleGetGoogleAppsList(const base::ListValue* args);
 
   // Adds webui sources.
-  static void AddSources(content::WebUIDataSource* html_source,
-                         PrefService* prefs);
+  static void AddSources(content::WebUIDataSource* html_source);
 
  private:
-  // Weak reference.
-  PrefService* prefs_;
-
   // Weak reference.
   favicon::FaviconService* favicon_service_;
 

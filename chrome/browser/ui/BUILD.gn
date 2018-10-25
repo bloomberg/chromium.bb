@@ -1869,6 +1869,7 @@ jumbo_split_static_library("ui") {
     ]
 
     deps += [
+      "//chrome/browser/ui/webui/welcome/nux:bookmark_handler",
       "//chrome/browser/ui/webui/welcome/nux:constants",
       "//chrome/browser/ui/webui/welcome/nux:email_feature",
       "//chrome/browser/ui/webui/welcome/nux:google_apps_feature",

@@ -114,8 +114,12 @@ cr.define('welcome', function() {
       assert(routeObservers.delete(this));
     },
 
-    /** Elements can override onRouteChange to handle route changes. */
-    onRouteChange: function() {},
+    /**
+     * Elements can override onRouteChange to handle route changes.
+     * @param {!welcome.Routes} route
+     * @param {number} step
+     */
+    onRouteChange: function(route, step) {},
   };
 
   return {

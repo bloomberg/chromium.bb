@@ -48,7 +48,10 @@ Polymer({
   },
 
   /** @private {nux.NuxEmailProxy} */
-  browserProxy_: null,
+  emailProxy_: null,
+
+  /** @private {nux.BookmarkProxy} */
+  bookmarkProxy_: null,
 
   /** @override */
   attached: function() {
@@ -59,10 +62,12 @@ Polymer({
 
   /** @override */
   ready: function() {
-    this.browserProxy_ = nux.NuxEmailProxyImpl.getInstance();
-    this.browserProxy_.recordPageInitialized();
+    this.emailProxy_ = nux.NuxEmailProxyImpl.getInstance();
+    this.bookmarkProxy_ = nux.BookmarkProxyImpl.getInstance();
 
-    this.browserProxy_.getEmailList().then(list => {
+    this.emailProxy_.recordPageInitialized();
+
+    this.emailProxy_.getEmailList().then(list => {
       this.emailList_ = list;
     });
 
@@ -72,11 +77,11 @@ Polymer({
         return;
 
       if (this.selectedEmailProvider_) {
-        this.browserProxy_.recordProviderSelected(
+        this.emailProxy_.recordProviderSelected(
             this.selectedEmailProvider_.id, this.emailList_.length);
       }
 
-      this.browserProxy_.recordFinalize();
+      this.emailProxy_.recordFinalize();
     });
   },
 
@@ -91,7 +96,7 @@ Polymer({
     else
       this.selectedEmailProvider_ = e.model.item;
 
-    this.browserProxy_.recordClickedOption();
+    this.emailProxy_.recordClickedOption();
   },
 
   /**
@@ -110,7 +115,12 @@ Polymer({
     e.currentTarget.classList.add('keyboard-focused');
   },
 
-  /** @private */
+  /**
+   * Returns whether |item| is selected or not.
+   * @param {!nuxEmail.EmailProviderModel} item
+   * @return boolean
+   * @private
+   */
   getSelected_: function(item) {
     return this.selectedEmailProvider_ &&
         item.name === this.selectedEmailProvider_.name;
@@ -124,7 +134,7 @@ Polymer({
     let emailProvider = opt_emailProvider || this.selectedEmailProvider_;
 
     if (emailProvider && emailProvider.bookmarkId)
-      this.browserProxy_.removeBookmark(emailProvider.bookmarkId);
+      this.bookmarkProxy_.removeBookmark(emailProvider.bookmarkId);
   },
 
   /**
@@ -133,7 +143,7 @@ Polymer({
    * @private
    */
   onSelectedEmailProviderChange_: function(newEmail, prevEmail) {
-    if (!this.browserProxy_)
+    if (!this.emailProxy_ || !this.bookmarkProxy_)
       return;
 
     if (prevEmail) {
@@ -143,18 +153,19 @@ Polymer({
     }
 
     if (newEmail) {
-      this.browserProxy_.toggleBookmarkBar(true);
-      this.browserProxy_.addBookmark(
+      this.emailProxy_.cacheBookmarkIcon(newEmail.id);
+      this.bookmarkProxy_.toggleBookmarkBar(true);
+      this.bookmarkProxy_.addBookmark(
           {
             title: newEmail.name,
             url: newEmail.url,
             parentId: '1',
           },
-          newEmail.id, results => {
+          results => {
             this.selectedEmailProvider_.bookmarkId = results.id;
           });
     } else {
-      this.browserProxy_.toggleBookmarkBar(this.bookmarkBarWasShown_);
+      this.bookmarkProxy_.toggleBookmarkBar(this.bookmarkBarWasShown_);
     }
 
     // Announcements are mutually exclusive, so keeping separate.
@@ -171,17 +182,17 @@ Polymer({
   onNoThanksClicked_: function() {
     this.finalized_ = true;
     this.revertBookmark_();
-    this.browserProxy_.toggleBookmarkBar(this.bookmarkBarWasShown_);
-    this.browserProxy_.recordNoThanks();
+    this.bookmarkProxy_.toggleBookmarkBar(this.bookmarkBarWasShown_);
+    this.emailProxy_.recordNoThanks();
     welcome.navigateToNextStep();
   },
 
   /** @private */
   onGetStartedClicked_: function() {
     this.finalized_ = true;
-    this.browserProxy_.recordProviderSelected(
+    this.emailProxy_.recordProviderSelected(
         this.selectedEmailProvider_.id, this.emailList_.length);
-    this.browserProxy_.recordGetStarted();
+    this.emailProxy_.recordGetStarted();
     // TODO(scottchen): store the selected email provider URL somewhere to
     //     redirect to at the end.
     welcome.navigateToNextStep();
@@ -190,6 +201,6 @@ Polymer({
   /** @private */
   onActionButtonClicked_: function() {
     if (this.$$('.action-button').disabled)
-      this.browserProxy_.recordClickedDisabledButton();
+      this.emailProxy_.recordClickedDisabledButton();
   },
 });

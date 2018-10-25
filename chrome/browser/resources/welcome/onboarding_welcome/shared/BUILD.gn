@@ -6,8 +6,19 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
   deps = [
+    ":bookmark_proxy",
     ":nux_types",
     ":step_indicator",
+  ]
+}
+
+js_library("bookmark_proxy") {
+  deps = [
+    "//ui/webui/resources/js:cr",
+  ]
+  externs_list = [
+    "$externs_path/chrome_extensions.js",
+    "$externs_path/chrome_send.js",
   ]
 }
 

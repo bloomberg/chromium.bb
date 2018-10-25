@@ -37,29 +37,14 @@ cr.define('nux', function() {
   const INTERACTION_METRIC_COUNT =
       Object.keys(NuxEmailProvidersInteractions).length;
 
-  /**
-   * @typedef {{
-   *    parentId: string,
-   *    title: string,
-   *    url: string,
-   * }}
-   */
-  let bookmarkData;
-
   /** @interface */
   class NuxEmailProxy {
-    /** @param {string} id ID provided by callback when bookmark was added. */
-    removeBookmark(id) {}
-
     /**
-     * @param {!bookmarkData} data
+     * Email provider IDs are local to the list of email providers, so their
+     * icon must be cached by the handler that provided the IDs.
      * @param {number} emailProviderId
-     * @param {!Function} callback
      */
-    addBookmark(data, emailProviderId, callback) {}
-
-    /** @param {boolean} show */
-    toggleBookmarkBar(show) {}
+    cacheBookmarkIcon(emailProviderId) {}
 
     /**
      * Returns a promise for an array of email providers.
@@ -104,19 +89,8 @@ cr.define('nux', function() {
     }
 
     /** @override */
-    removeBookmark(id) {
-      chrome.bookmarks.remove(id);
-    }
-
-    /** @override */
-    addBookmark(data, emailProviderId, callback) {
-      chrome.bookmarks.create(data, callback);
+    cacheBookmarkIcon(emailProviderId) {
       chrome.send('cacheEmailIcon', [emailProviderId]);
-    }
-
-    /** @override */
-    toggleBookmarkBar(show) {
-      chrome.send('toggleBookmarkBar', [show]);
     }
 
     /** @override */

@@ -9,8 +9,6 @@
 #include "base/values.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
-class PrefService;
-
 namespace content {
 class WebUIDataSource;
 }  // namespace content
@@ -34,7 +32,7 @@ enum class EmailInteraction {
 
 class EmailHandler : public content::WebUIMessageHandler {
  public:
-  EmailHandler(PrefService* prefs, favicon::FaviconService* favicon_service);
+  explicit EmailHandler(favicon::FaviconService* favicon_service);
   ~EmailHandler() override;
 
   // WebUIMessageHandler:
@@ -42,17 +40,12 @@ class EmailHandler : public content::WebUIMessageHandler {
 
   // Callbacks for JS APIs.
   void HandleCacheEmailIcon(const base::ListValue* args);
-  void HandleToggleBookmarkBar(const base::ListValue* args);
   void HandleGetEmailList(const base::ListValue* args);
 
   // Adds webui sources.
-  static void AddSources(content::WebUIDataSource* html_source,
-                         PrefService* prefs);
+  static void AddSources(content::WebUIDataSource* html_source);
 
  private:
-  // Weak reference.
-  PrefService* prefs_;
-
   // Weak reference.
   favicon::FaviconService* favicon_service_;
 

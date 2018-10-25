@@ -12,11 +12,9 @@
 #include "chrome/browser/ui/webui/welcome/nux/bookmark_item.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/grit/components_resources.h"
 #include "components/grit/components_scaled_resources.h"
-#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -59,9 +57,8 @@ constexpr const int kEmailIconSize = 48;  // Pixels.
 static_assert(base::size(kEmail) == (size_t)EmailProviders::kCount,
               "names and histograms must match");
 
-EmailHandler::EmailHandler(PrefService* prefs,
-                           favicon::FaviconService* favicon_service)
-    : prefs_(prefs), favicon_service_(favicon_service) {}
+EmailHandler::EmailHandler(favicon::FaviconService* favicon_service)
+    : favicon_service_(favicon_service) {}
 
 EmailHandler::~EmailHandler() {}
 
@@ -70,10 +67,6 @@ void EmailHandler::RegisterMessages() {
       "cacheEmailIcon", base::BindRepeating(&EmailHandler::HandleCacheEmailIcon,
                                             base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
-      "toggleBookmarkBar",
-      base::BindRepeating(&EmailHandler::HandleToggleBookmarkBar,
-                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getEmailList", base::BindRepeating(&EmailHandler::HandleGetEmailList,
                                           base::Unretained(this)));
@@ -103,12 +96,6 @@ void EmailHandler::HandleCacheEmailIcon(const base::ListValue* args) {
       gfx::Size(kEmailIconSize, kEmailIconSize));
 }
 
-void EmailHandler::HandleToggleBookmarkBar(const base::ListValue* args) {
-  bool show = false;
-  CHECK(args->GetBoolean(0, &show));
-  prefs_->SetBoolean(bookmarks::prefs::kShowBookmarkBar, show);
-}
-
 void EmailHandler::HandleGetEmailList(const base::ListValue* args) {
   AllowJavascript();
   CHECK_EQ(1U, args->GetSize());
@@ -118,8 +105,7 @@ void EmailHandler::HandleGetEmailList(const base::ListValue* args) {
       *callback_id, bookmarkItemsToListValue(kEmail, base::size(kEmail)));
 }
 
-void EmailHandler::AddSources(content::WebUIDataSource* html_source,
-                              PrefService* prefs) {
+void EmailHandler::AddSources(content::WebUIDataSource* html_source) {
   // Add icons
   html_source->AddResourcePath("email/aol_1x.png", IDR_NUX_EMAIL_AOL_1X);
   html_source->AddResourcePath("email/aol_2x.png", IDR_NUX_EMAIL_AOL_2X);
@@ -133,12 +119,6 @@ void EmailHandler::AddSources(content::WebUIDataSource* html_source,
                                IDR_NUX_EMAIL_OUTLOOK_2X);
   html_source->AddResourcePath("email/yahoo_1x.png", IDR_NUX_EMAIL_YAHOO_1X);
   html_source->AddResourcePath("email/yahoo_2x.png", IDR_NUX_EMAIL_YAHOO_2X);
-
-  // Add constants to loadtime data
-  html_source->AddBoolean(
-      "bookmark_bar_shown",
-      prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar));
-  html_source->SetJsonPath("strings.js");
 }
 
 }  // namespace nux
