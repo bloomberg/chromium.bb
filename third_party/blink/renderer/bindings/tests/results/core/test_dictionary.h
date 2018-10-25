@@ -81,12 +81,6 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   }
   inline void setBooleanMember(bool);
 
-  bool hasByteStringMember() const { return !byte_string_member_.IsNull(); }
-  const String& byteStringMember() const {
-    return byte_string_member_;
-  }
-  inline void setByteStringMember(const String&);
-
   bool hasCallbackFunctionMember() const { return callback_function_member_; }
   V8VoidCallbackFunction* callbackFunctionMember() const {
     return callback_function_member_;
@@ -105,6 +99,12 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
     return dictionary_member_;
   }
   void setDictionaryMember(Dictionary);
+
+  bool hasDomStringTreatNullAsEmptyStringMember() const { return !dom_string_treat_null_as_empty_string_member_.IsNull(); }
+  const String& domStringTreatNullAsEmptyStringMember() const {
+    return dom_string_treat_null_as_empty_string_member_;
+  }
+  inline void setDomStringTreatNullAsEmptyStringMember(const String&);
 
   bool hasDoubleOrNullMember() const { return has_double_or_null_member_; }
   double doubleOrNullMember() const {
@@ -485,10 +485,10 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   int32_t applicable_to_type_long_member_;
   String applicable_to_type_string_member_;
   bool boolean_member_;
-  String byte_string_member_;
   TraceWrapperMember<V8VoidCallbackFunction> callback_function_member_;
   bool create_member_;
   Dictionary dictionary_member_;
+  String dom_string_treat_null_as_empty_string_member_;
   double double_or_null_member_;
   DoubleOrDoubleOrNullSequence double_or_null_or_double_or_null_sequence_member_;
   Vector<std::pair<String, base::Optional<double>>> double_or_null_record_member_;
@@ -557,13 +557,13 @@ void TestDictionary::setBooleanMember(bool value) {
   has_boolean_member_ = true;
 }
 
-void TestDictionary::setByteStringMember(const String& value) {
-  byte_string_member_ = value;
-}
-
 void TestDictionary::setCreateMember(bool value) {
   create_member_ = value;
   has_create_member_ = true;
+}
+
+void TestDictionary::setDomStringTreatNullAsEmptyStringMember(const String& value) {
+  dom_string_treat_null_as_empty_string_member_ = value;
 }
 
 void TestDictionary::setDoubleOrNullMember(double value) {
