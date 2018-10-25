@@ -5,6 +5,8 @@
 #ifndef SERVICES_DEVICE_BLUETOOTH_BLUETOOTH_SYSTEM_H_
 #define SERVICES_DEVICE_BLUETOOTH_BLUETOOTH_SYSTEM_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -42,6 +44,8 @@ class BluetoothSystem : public mojom::BluetoothSystem,
   bluez::BluetoothAdapterClient* GetBluetoothAdapterClient();
 
   void UpdateStateAndNotifyIfNecessary();
+
+  ScanState GetScanStateFromActiveAdapter();
 
   void OnSetPoweredFinished(SetPoweredCallback callback, bool succeeded);
 
