@@ -161,6 +161,9 @@ public class AutofillAssistantPaymentRequest implements PaymentRequestUI.Client 
                 UrlFormatter.formatUrlForSecurityDisplay(mWebContents.getLastCommittedUrl()),
                 SecurityStateModel.getSecurityLevelForWebContents(mWebContents),
                 new ShippingStrings(mPaymentOptions.shippingType));
+        // This payment request is embedded in another flow, so update the 'Pay' button text to
+        // 'Confirm'.
+        mUI.updatePayButtonText(R.string.autofill_assistant_payment_info_confirm);
 
         final FaviconHelper faviconHelper = new FaviconHelper();
         faviconHelper.getLocalFaviconImageForURL(Profile.getLastUsedProfile(),
