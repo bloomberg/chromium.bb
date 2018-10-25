@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/top_controls_slide_controller_chromeos.h"
 
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
@@ -88,6 +89,12 @@ content::BrowserControlsState GetBrowserControlsStateConstraints(
       break;
   }
 
+  // Keep top-chrome visible while a permission bubble is visible.
+  auto* permission_manager =
+      PermissionRequestManager::FromWebContents(contents);
+  if (permission_manager && permission_manager->IsBubbleVisible())
+    return content::BROWSER_CONTROLS_STATE_SHOWN;
+
   return content::BROWSER_CONTROLS_STATE_BOTH;
 }
 
@@ -146,7 +153,8 @@ void SynchronizeVisualProperties(content::WebContents* contents) {
 // when certain events happen on the webcontents. It also keeps track of the
 // current top controls shown ratio for this tab so that it stays in sync with
 // the corresponding value that the tab's renderer has.
-class TopControlsSlideTabObserver : public content::WebContentsObserver {
+class TopControlsSlideTabObserver : public content::WebContentsObserver,
+                                    public PermissionRequestManager::Observer {
  public:
   TopControlsSlideTabObserver(content::WebContents* web_contents,
                               TopControlsSlideControllerChromeOS* owner)
@@ -156,9 +164,18 @@ class TopControlsSlideTabObserver : public content::WebContentsObserver {
     // |web_contents|. Updating the visual properties will now sync the correct
     // top chrome height in the renderer.
     SynchronizeVisualProperties(web_contents);
+    auto* permission_manager =
+        PermissionRequestManager::FromWebContents(web_contents);
+    if (permission_manager)
+      permission_manager->AddObserver(this);
   }
 
-  ~TopControlsSlideTabObserver() override = default;
+  ~TopControlsSlideTabObserver() override {
+    auto* permission_manager =
+        PermissionRequestManager::FromWebContents(web_contents());
+    if (permission_manager)
+      permission_manager->RemoveObserver(this);
+  }
 
   float shown_ratio() const { return shown_ratio_; }
   bool shrink_renderer_size() const { return shrink_renderer_size_; }
@@ -216,6 +233,16 @@ class TopControlsSlideTabObserver : public content::WebContentsObserver {
 
   void DidDetachInterstitialPage() override {
     UpdateBrowserControlsStateShown(true /* animate */);
+  }
+
+  // PermissionRequestManager::Observer:
+  void OnBubbleAdded() override {
+    UpdateBrowserControlsStateShown(true /* animate */);
+  }
+
+  void OnBubbleRemoved() override {
+    // This will update the shown constraints.
+    UpdateBrowserControlsStateShown(false /* animate */);
   }
 
  private:

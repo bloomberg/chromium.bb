@@ -18,6 +18,8 @@
 #include "base/strings/safe_sprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "cc/base/math_util.h"
+#include "chrome/browser/permissions/permission_request_impl.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
@@ -27,6 +29,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/browser_test_utils.h"
 #include "ipc/ipc_message_macros.h"
@@ -1006,6 +1009,68 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
   waiter.WaitForRatio(1.f);
   EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 1.f);
   CheckBrowserLayout(browser_view(), TopChromeShownState::kFullyShown);
+}
+
+IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestPermissionBubble) {
+  ToggleTabletMode();
+  ASSERT_TRUE(GetTabletModeEnabled());
+  EXPECT_TRUE(top_controls_slide_controller()->IsEnabled());
+  EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 1.f);
+
+  const GURL url(embedded_test_server()->GetURL("/top_controls_scroll.html"));
+  OpenUrlAtIndex(url, 0);
+  content::WebContents* active_contents =
+      browser_view()->GetActiveWebContents();
+  PageStateUpdateWaiter page_state_update_waiter(active_contents);
+  page_state_update_waiter.Wait();
+  EXPECT_TRUE(
+      browser_view()->DoBrowserControlsShrinkRendererSize(active_contents));
+
+  // Hide top chrome.
+  aura::Window* browser_window = browser()->window()->GetNativeWindow();
+  ui::test::EventGenerator event_generator(browser_window->GetRootWindow(),
+                                           browser_window);
+  const gfx::Point start_point = event_generator.current_location();
+  const gfx::Point end_point = start_point + gfx::Vector2d(0, -100);
+  GenerateGestureFlingScrollSequence(&event_generator, start_point, end_point);
+  TopControlsShownRatioWaiter waiter(top_controls_slide_controller());
+  waiter.WaitForRatio(0.f);
+  EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 0);
+  CheckBrowserLayout(browser_view(), TopChromeShownState::kFullyHidden);
+
+  // Fire a geolocation permission request, which should show a permission
+  // request bubble resulting in top chrome unhiding.
+  auto decided = [](ContentSetting) {};
+  PermissionRequestImpl permission_request(
+      url, CONTENT_SETTINGS_TYPE_GEOLOCATION, true /* user_gesture */,
+      base::BindRepeating(decided), base::DoNothing() /* delete_callback */);
+  auto* permission_manager =
+      PermissionRequestManager::FromWebContents(active_contents);
+  permission_manager->AddRequest(&permission_request);
+  waiter.WaitForRatio(1.f);
+  EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 1.f);
+  CheckBrowserLayout(browser_view(), TopChromeShownState::kFullyShown);
+  EXPECT_TRUE(permission_manager->IsBubbleVisible());
+
+  // It shouldn't be possible to hide top-chrome as long as the bubble is
+  // visible.
+  GenerateGestureFlingScrollSequence(&event_generator, start_point, end_point);
+  waiter.WaitForRatio(1.f);
+  EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 1.f);
+  CheckBrowserLayout(browser_view(), TopChromeShownState::kFullyShown);
+  EXPECT_TRUE(permission_manager->IsBubbleVisible());
+
+  // Dismiss the bubble.
+  EXPECT_TRUE(permission_manager->GetBubbleWindow());
+  views::Widget::GetWidgetForNativeView(permission_manager->GetBubbleWindow())
+      ->CloseNow();
+  EXPECT_FALSE(permission_manager->IsBubbleVisible());
+
+  // Now it is possible to hide top-chrome again.
+  GenerateGestureFlingScrollSequence(&event_generator, start_point, end_point);
+  waiter.WaitForRatio(0.f);
+  EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 0);
+  CheckBrowserLayout(browser_view(), TopChromeShownState::kFullyHidden);
 }
 
 }  // namespace

@@ -66,14 +66,6 @@ bool ShouldGroupRequests(PermissionRequest* a, PermissionRequest* b) {
 
 }  // namespace
 
-// PermissionRequestManager::Observer ------------------------------------------
-
-PermissionRequestManager::Observer::~Observer() {
-}
-
-void PermissionRequestManager::Observer::OnBubbleAdded() {
-}
-
 // PermissionRequestManager ----------------------------------------------------
 
 PermissionRequestManager::PermissionRequestManager(
@@ -347,6 +339,7 @@ void PermissionRequestManager::ShowBubble(bool is_reshow) {
 void PermissionRequestManager::DeleteBubble() {
   DCHECK(view_);
   view_.reset();
+  NotifyBubbleRemoved();
 }
 
 void PermissionRequestManager::FinalizeBubble(
@@ -478,6 +471,11 @@ void PermissionRequestManager::RemoveObserver(Observer* observer) {
 void PermissionRequestManager::NotifyBubbleAdded() {
   for (Observer& observer : observer_list_)
     observer.OnBubbleAdded();
+}
+
+void PermissionRequestManager::NotifyBubbleRemoved() {
+  for (Observer& observer : observer_list_)
+    observer.OnBubbleRemoved();
 }
 
 void PermissionRequestManager::DoAutoResponseForTesting() {

@@ -2252,6 +2252,17 @@ void BrowserView::Layout() {
   toolbar_->location_bar()->omnibox_view()->SetFocusBehavior(
       IsToolbarVisible() ? FocusBehavior::ALWAYS : FocusBehavior::NEVER);
   frame()->GetFrameView()->UpdateMinimumSize();
+
+  // Some of the situations when the BrowserView is laid out are:
+  // - Enter/exit immersive fullscreen mode.
+  // - Enter/exit tablet mode.
+  // - At the beginning/end of the top controls slide behavior in tablet mode.
+  // The above may result in a change in the location bar's position, to which a
+  // permission bubble may be anchored. For that we must update its anchor
+  // position.
+  WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
+  if (contents && PermissionRequestManager::FromWebContents(contents))
+    PermissionRequestManager::FromWebContents(contents)->UpdateAnchorPosition();
 }
 
 void BrowserView::OnGestureEvent(ui::GestureEvent* event) {
@@ -2723,10 +2734,6 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   // Undo our anti-jankiness hacks and force a re-layout.
   in_process_fullscreen_ = false;
   ToolbarSizeChanged(false);
-
-  WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
-  if (contents && PermissionRequestManager::FromWebContents(contents))
-    PermissionRequestManager::FromWebContents(contents)->UpdateAnchorPosition();
 }
 
 bool BrowserView::ShouldUseImmersiveFullscreenForUrl(const GURL& url) const {
