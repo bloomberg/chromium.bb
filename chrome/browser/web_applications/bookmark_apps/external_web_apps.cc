@@ -93,7 +93,6 @@ std::vector<web_app::PendingAppManager::AppInfo> ScanDir(base::FilePath dir) {
 
   for (base::FilePath file = json_files.Next(); !file.empty();
        file = json_files.Next()) {
-    LOG(ERROR) << "Processing " << file;
     if (!file.MatchesExtension(extension)) {
       continue;
     }
@@ -116,9 +115,9 @@ std::vector<web_app::PendingAppManager::AppInfo> ScanDir(base::FilePath dir) {
 
     std::string feature_name;
     if (dict_value->GetString(kFeatureName, &feature_name)) {
-      LOG(ERROR) << file.value() << " checking feature " << feature_name;
+      VLOG(1) << file.value() << " checking feature " << feature_name;
       if (!IsFeatureEnabled(feature_name)) {
-        LOG(ERROR) << file.value() << " feature not enabled";
+        VLOG(1) << file.value() << " feature not enabled";
         continue;
       }
     }
@@ -133,8 +132,6 @@ std::vector<web_app::PendingAppManager::AppInfo> ScanDir(base::FilePath dir) {
       LOG(ERROR) << file.value() << " had an invalid " << kAppUrl;
       continue;
     }
-
-    LOG(ERROR) << "Launch URL is " << app_url.spec();
 
     bool create_shortcuts = false;
     if (dict_value->HasKey(kCreateShortcuts) &&
@@ -177,7 +174,6 @@ base::FilePath DetermineScanDir(Profile* profile) {
   // chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS is only defined for OS_LINUX,
   // which includes OS_CHROMEOS.
 
-  LOG(ERROR) << "Determining directory";
   if (chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
     // For manual testing, you can change s/STANDALONE/USER/, as writing to
     // "$HOME/.config/chromium/test-user/.config/chromium/External
@@ -208,7 +204,6 @@ void ScanForExternalWebApps(Profile* profile,
                             ScanForExternalWebAppsCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::FilePath dir = DetermineScanDir(profile);
-  LOG(ERROR) << "Scanning " << dir;
   if (dir.empty()) {
     std::move(callback).Run(std::vector<web_app::PendingAppManager::AppInfo>());
     return;
