@@ -20,7 +20,7 @@
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/safe_browsing/download_protection/ppapi_download_request.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
-#include "chrome/common/safe_browsing/download_protection_util.h"
+#include "chrome/common/safe_browsing/download_type_util.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/safe_browsing/common/utils.h"
@@ -316,7 +316,7 @@ bool CheckClientDownloadRequest::IsSupportedDownload(
     *reason = REASON_NOT_BINARY_FILE;
     return false;
   }
-  *type = download_protection_util::GetDownloadType(target_path);
+  *type = download_type_util::GetDownloadType(target_path);
   return true;
 }
 

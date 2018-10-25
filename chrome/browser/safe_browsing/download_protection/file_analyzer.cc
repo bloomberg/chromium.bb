@@ -10,7 +10,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
-#include "chrome/common/safe_browsing/download_protection_util.h"
+#include "chrome/common/safe_browsing/download_type_util.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/safe_browsing/features.h"
 #include "content/public/browser/browser_thread.h"
@@ -90,7 +90,7 @@ void FileAnalyzer::Start(const base::FilePath& target_path,
   tmp_path_ = tmp_path;
   callback_ = std::move(callback);
 
-  results_.type = download_protection_util::GetDownloadType(target_path_);
+  results_.type = download_type_util::GetDownloadType(target_path_);
 
   if (target_path_.MatchesExtension(FILE_PATH_LITERAL(".zip"))) {
     StartExtractZipFeatures();
@@ -147,7 +147,7 @@ void FileAnalyzer::StartExtractFileFeatures() {
 }
 
 void FileAnalyzer::OnFileAnalysisFinished(FileAnalyzer::Results results) {
-  results.type = download_protection_util::GetDownloadType(target_path_);
+  results.type = download_type_util::GetDownloadType(target_path_);
   results.archive_is_valid = ArchiveValid::UNSET;
   std::move(callback_).Run(results);
 }

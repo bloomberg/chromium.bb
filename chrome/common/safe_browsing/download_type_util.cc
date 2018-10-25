@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/safe_browsing/download_protection_util.h"
+#include "chrome/common/safe_browsing/download_type_util.h"
 
 #include <algorithm>
 
@@ -14,7 +14,7 @@
 #include "components/safe_browsing/features.h"
 
 namespace safe_browsing {
-namespace download_protection_util {
+namespace download_type_util {
 
 ClientDownloadRequest::DownloadType GetDownloadType(
     const base::FilePath& file) {
@@ -61,5 +61,5 @@ ClientDownloadRequest::DownloadType GetDownloadType(
   return ClientDownloadRequest::WIN_EXECUTABLE;
 }
 
-}  // namespace download_protection_util
+}  // namespace download_type_util
 }  // namespace safe_browsing
