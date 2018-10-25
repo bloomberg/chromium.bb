@@ -1092,12 +1092,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints;
 
-    // Currently only plugin handlers may intercept the response. Don't treat
-    // the response as download if it has been handled by plugins.
-    bool response_intercepted = false;
     if (url_loader_) {
       url_loader_client_endpoints = url_loader_->Unbind();
-      response_intercepted = url_loader_->response_intercepted();
     } else {
       url_loader_client_endpoints =
           network::mojom::URLLoaderClientEndpoints::New(
@@ -1127,19 +1123,21 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           url_, head.headers.get(), head.mime_type);
       bool known_mime_type = blink::IsSupportedMimeType(head.mime_type);
 
-      bool is_download_if_not_handled_by_plugin =
-          !response_intercepted && (must_download || !known_mime_type);
-
 #if BUILDFLAG(ENABLE_PLUGINS)
-      if (!response_intercepted && !must_download && !known_mime_type) {
+      if (!head.intercepted_by_plugin && !must_download && !known_mime_type) {
+        // No plugin throttles intercepted the response. Ask if the plugin
+        // registered to PluginService wants to handle the request.
         CheckPluginAndContinueOnReceiveResponse(
             head, std::move(url_loader_client_endpoints),
-            is_download_if_not_handled_by_plugin, std::vector<WebPluginInfo>());
+            true /* is_download_if_not_handled_by_plugin */,
+            std::vector<WebPluginInfo>());
         return;
       }
 #endif
 
-      is_download = is_download_if_not_handled_by_plugin;
+      // When a plugin intercepted the response, we don't want to download it.
+      is_download =
+          !head.intercepted_by_plugin && (must_download || !known_mime_type);
       is_stream = false;
 
       // If NetworkService is on, or an interceptor handled the request, the
@@ -1164,7 +1162,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     if (url_request) {
       ResourceRequestInfoImpl* info =
           ResourceRequestInfoImpl::ForRequest(url_request);
-      is_download = !response_intercepted && info->IsDownload();
+      is_download = !head.intercepted_by_plugin && info->IsDownload();
       is_stream = info->is_stream();
       previews_state = info->GetPreviewsState();
       if (rdh->delegate()) {
