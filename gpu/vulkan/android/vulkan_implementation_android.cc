@@ -30,7 +30,7 @@ bool VulkanImplementationAndroid::InitializeVulkanInstance() {
   if (!vulkan_function_pointers->vulkan_loader_library_)
     return false;
 
-  if (!vulkan_instance_.Initialize(required_extensions)) {
+  if (!vulkan_instance_.Initialize(required_extensions, {})) {
     vulkan_instance_.Destroy();
     return false;
   }
