@@ -101,7 +101,7 @@ void CoreInitializer::Initialize() {
       HTMLTokenizerNames::kNamesCount + HTTPNames::kNamesCount +
       InputModeNames::kNamesCount + InputTypeNames::kNamesCount +
       MediaFeatureNames::kNamesCount + MediaTypeNames::kNamesCount +
-      PerformanceEntryNames::kNamesCount;
+      performance_entry_names::kNamesCount;
 
   StringImpl::ReserveStaticStringsCapacityForSize(
       kCoreStaticStringsCount + StringImpl::AllStaticStrings().size());
@@ -127,7 +127,7 @@ void CoreInitializer::Initialize() {
   InputTypeNames::init();
   MediaFeatureNames::init();
   MediaTypeNames::init();
-  PerformanceEntryNames::init();
+  performance_entry_names::init();
 
   MediaQueryEvaluator::Init();
   CSSParserTokenRange::InitStaticEOFToken();
