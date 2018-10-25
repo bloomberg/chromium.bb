@@ -70,6 +70,8 @@ public class AutocompleteCoordinator
     private boolean mSuggestionsShown;
     private boolean mSuggestionModalShown;
     private ViewGroup mOmniboxResultsContainer;
+    private float mMaxRequiredWidth;
+    private float mMaxMatchContentsWidth;
 
     // The timestamp (using SystemClock.elapsedRealtime()) at the point when the user started
     // modifying the omnibox with new input.
@@ -397,19 +399,30 @@ public class AutocompleteCoordinator
 
             @Override
             public void onTextWidthsUpdated(float requiredWidth, float matchContentsWidth) {
-                mSuggestionList.updateMaxTextWidths(requiredWidth, matchContentsWidth);
+                mMaxRequiredWidth = Math.max(mMaxRequiredWidth, requiredWidth);
+                mMaxMatchContentsWidth = Math.max(mMaxMatchContentsWidth, matchContentsWidth);
             }
 
             @Override
             public float getMaxRequiredWidth() {
-                return mSuggestionList.getMaxRequiredWidth();
+                return mMaxRequiredWidth;
             }
 
             @Override
             public float getMaxMatchContentsWidth() {
-                return mSuggestionList.getMaxMatchContentsWidth();
+                return mMaxMatchContentsWidth;
             }
         });
+    }
+
+    /**
+     * Updates the maximum widths required to render the suggestions.
+     * This is needed for infinite suggestions where we try to vertically align the leading
+     * ellipsis.
+     */
+    private void resetMaxTextWidths() {
+        mMaxRequiredWidth = 0;
+        mMaxMatchContentsWidth = 0;
     }
 
     /**
@@ -763,7 +776,7 @@ public class AutocompleteCoordinator
 
         // Show the suggestion list.
         initSuggestionList(); // It may not have been initialized yet.
-        mSuggestionList.resetMaxTextWidths();
+        resetMaxTextWidths();
 
         if (itemsChanged) mSuggestionListAdapter.notifySuggestionsChanged();
 

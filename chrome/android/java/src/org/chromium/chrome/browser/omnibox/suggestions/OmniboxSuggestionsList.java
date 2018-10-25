@@ -36,9 +36,6 @@ public class OmniboxSuggestionsList extends ListView {
     private final int[] mTempPosition = new int[2];
     private final Rect mTempRect = new Rect();
 
-    private float mMaxRequiredWidth;
-    private float mMaxMatchContentsWidth;
-
     /**
      * Provides the capabilities required to embed the omnibox suggestion list into the UI.
      */
@@ -156,40 +153,6 @@ public class OmniboxSuggestionsList extends ListView {
                 getChildAt(i).postInvalidateOnAnimation();
             }
         }
-    }
-
-    /**
-     * Updates the maximum widths required to render the suggestions.
-     * This is needed for infinite suggestions where we try to vertically align the leading
-     * ellipsis.
-     */
-    void resetMaxTextWidths() {
-        mMaxRequiredWidth = 0;
-        mMaxMatchContentsWidth = 0;
-    }
-
-    /**
-     * Updates the max text width values for the suggestions.
-     * @param requiredWidth a new required width.
-     * @param matchContentsWidth a new match contents width.
-     */
-    void updateMaxTextWidths(float requiredWidth, float matchContentsWidth) {
-        mMaxRequiredWidth = Math.max(mMaxRequiredWidth, requiredWidth);
-        mMaxMatchContentsWidth = Math.max(mMaxMatchContentsWidth, matchContentsWidth);
-    }
-
-    /**
-     * @return max required width for the suggestions.
-     */
-    float getMaxRequiredWidth() {
-        return mMaxRequiredWidth;
-    }
-
-    /**
-     * @return max match contents width for the suggestions.
-     */
-    float getMaxMatchContentsWidth() {
-        return mMaxMatchContentsWidth;
     }
 
     @Override
