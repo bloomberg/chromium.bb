@@ -694,8 +694,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     #     ['highsierra', 'amd'], bug=870856)
     self.Fail('conformance2/textures/misc/tex-base-level-bug.html',
         ['highsierra', 'amd'], bug=870856)
-    self.Fail('deqp/functional/gles3/shaderoperator/common_functions_*.html',
-        ['mac', 'amd'], bug=820225)
     self.Fail('deqp/functional/gles3/transformfeedback/' +
         'array_interleaved_lines.html',
         ['sierra', 'amd'], bug=483282)
@@ -797,8 +795,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'no_passthrough', 'intel'], bug=679692)
     self.Fail('deqp/functional/gles3/fbomultisample*',
         ['mac', 'intel'], bug=641209)
-    self.Fail('deqp/functional/gles3/shaderoperator/common_functions_*.html',
-        ['mac', 'intel'], bug=820225)
     self.Fail('deqp/functional/gles3/texturefiltering/2d_combinations_01.html',
         ['mac', 'intel'], bug=606074)
     self.Fail('deqp/functional/gles3/texturefiltering/' +
