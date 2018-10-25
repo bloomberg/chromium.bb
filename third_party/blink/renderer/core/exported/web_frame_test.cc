@@ -3442,10 +3442,21 @@ void SimulatePageScale(WebViewImpl* web_view_impl, float& scale) {
   scale = web_view_impl->PageScaleFactor();
 }
 
+WebRect ComputeBlockBoundHelper(WebViewImpl* web_view_impl,
+                                WebPoint point,
+                                bool ignore_clipping) {
+  DCHECK(web_view_impl->MainFrameImpl());
+  WebFrameWidgetBase* widget =
+      web_view_impl->MainFrameImpl()->FrameWidgetImpl();
+  DCHECK(widget);
+  return widget->ComputeBlockBound(point, ignore_clipping);
+}
+
 void SimulateDoubleTap(WebViewImpl* web_view_impl,
                        WebPoint& point,
                        float& scale) {
-  web_view_impl->AnimateDoubleTapZoom(point);
+  web_view_impl->AnimateDoubleTapZoom(
+      point, ComputeBlockBoundHelper(web_view_impl, point, false));
   EXPECT_TRUE(web_view_impl->FakeDoubleTapAnimationPendingForTesting());
   SimulatePageScale(web_view_impl, scale);
 }
@@ -3478,8 +3489,8 @@ TEST_F(WebFrameTest, DivAutoZoomParamsTest) {
       double_tap_zoom_already_legible_ratio;
 
   // Test double-tap zooming into wide div.
-  WebRect wide_block_bound = web_view_helper.GetWebView()->ComputeBlockBound(
-      double_tap_point_wide, false);
+  WebRect wide_block_bound = ComputeBlockBoundHelper(
+      web_view_helper.GetWebView(), double_tap_point_wide, false);
   web_view_helper.GetWebView()->ComputeScaleAndScrollForBlockRect(
       WebPoint(double_tap_point_wide.x, double_tap_point_wide.y),
       wide_block_bound, kTouchPointPadding,
@@ -3493,8 +3504,8 @@ TEST_F(WebFrameTest, DivAutoZoomParamsTest) {
   SetScaleAndScrollAndLayout(web_view_helper.GetWebView(), scroll, scale);
 
   // Test zoom out back to minimum scale.
-  wide_block_bound = web_view_helper.GetWebView()->ComputeBlockBound(
-      double_tap_point_wide, false);
+  wide_block_bound = ComputeBlockBoundHelper(web_view_helper.GetWebView(),
+                                             double_tap_point_wide, false);
   web_view_helper.GetWebView()->ComputeScaleAndScrollForBlockRect(
       WebPoint(double_tap_point_wide.x, double_tap_point_wide.y),
       wide_block_bound, kTouchPointPadding,
@@ -3506,8 +3517,8 @@ TEST_F(WebFrameTest, DivAutoZoomParamsTest) {
                              scale);
 
   // Test double-tap zooming into tall div.
-  WebRect tall_block_bound = web_view_helper.GetWebView()->ComputeBlockBound(
-      double_tap_point_tall, false);
+  WebRect tall_block_bound = ComputeBlockBoundHelper(
+      web_view_helper.GetWebView(), double_tap_point_tall, false);
   web_view_helper.GetWebView()->ComputeScaleAndScrollForBlockRect(
       WebPoint(double_tap_point_tall.x, double_tap_point_tall.y),
       tall_block_bound, kTouchPointPadding,
@@ -3578,7 +3589,7 @@ TEST_F(WebFrameTest, DivAutoZoomVeryTallTest) {
   WebPoint scroll;
 
   WebRect block_bound =
-      web_view_helper.GetWebView()->ComputeBlockBound(point, true);
+      ComputeBlockBoundHelper(web_view_helper.GetWebView(), point, true);
   web_view_helper.GetWebView()->ComputeScaleAndScrollForBlockRect(
       point, block_bound, 0, 1.0f, scale, scroll);
   EXPECT_EQ(scale, 1.0f);
@@ -3641,7 +3652,10 @@ TEST_F(WebFrameTest, DivAutoZoomMultipleDivsTest) {
   web_view_helper.GetWebView()->ApplyViewportChanges(
       {gfx::ScrollOffset(), gfx::Vector2dF(), 1.1f, 0,
        cc::BrowserControlsState::kBoth});
-  web_view_helper.GetWebView()->AnimateDoubleTapZoom(top_point);
+
+  WebRect block_bounds =
+      ComputeBlockBoundHelper(web_view_helper.GetWebView(), top_point, false);
+  web_view_helper.GetWebView()->AnimateDoubleTapZoom(top_point, block_bounds);
   EXPECT_TRUE(
       web_view_helper.GetWebView()->FakeDoubleTapAnimationPendingForTesting());
   SimulateDoubleTap(web_view_helper.GetWebView(), bottom_point, scale);
@@ -3984,32 +3998,32 @@ TEST_F(WebFrameTest, BlockBoundTest) {
   IntRect rect_right_bottom = IntRect(110, 110, 80, 80);
   IntRect block_bound;
 
-  block_bound = IntRect(
-      web_view_helper.GetWebView()->ComputeBlockBound(WebPoint(9, 9), true));
+  block_bound = IntRect(ComputeBlockBoundHelper(web_view_helper.GetWebView(),
+                                                WebPoint(9, 9), true));
   EXPECT_EQ(rect_back, block_bound);
 
-  block_bound = IntRect(
-      web_view_helper.GetWebView()->ComputeBlockBound(WebPoint(10, 10), true));
+  block_bound = IntRect(ComputeBlockBoundHelper(web_view_helper.GetWebView(),
+                                                WebPoint(10, 10), true));
   EXPECT_EQ(rect_left_top, block_bound);
 
-  block_bound = IntRect(
-      web_view_helper.GetWebView()->ComputeBlockBound(WebPoint(50, 50), true));
+  block_bound = IntRect(ComputeBlockBoundHelper(web_view_helper.GetWebView(),
+                                                WebPoint(50, 50), true));
   EXPECT_EQ(rect_left_top, block_bound);
 
-  block_bound = IntRect(
-      web_view_helper.GetWebView()->ComputeBlockBound(WebPoint(89, 89), true));
+  block_bound = IntRect(ComputeBlockBoundHelper(web_view_helper.GetWebView(),
+                                                WebPoint(89, 89), true));
   EXPECT_EQ(rect_left_top, block_bound);
 
-  block_bound = IntRect(
-      web_view_helper.GetWebView()->ComputeBlockBound(WebPoint(90, 90), true));
+  block_bound = IntRect(ComputeBlockBoundHelper(web_view_helper.GetWebView(),
+                                                WebPoint(90, 90), true));
   EXPECT_EQ(rect_back, block_bound);
 
-  block_bound = IntRect(web_view_helper.GetWebView()->ComputeBlockBound(
-      WebPoint(109, 109), true));
+  block_bound = IntRect(ComputeBlockBoundHelper(web_view_helper.GetWebView(),
+                                                WebPoint(109, 109), true));
   EXPECT_EQ(rect_back, block_bound);
 
-  block_bound = IntRect(web_view_helper.GetWebView()->ComputeBlockBound(
-      WebPoint(110, 110), true));
+  block_bound = IntRect(ComputeBlockBoundHelper(web_view_helper.GetWebView(),
+                                                WebPoint(110, 110), true));
   EXPECT_EQ(rect_right_bottom, block_bound);
 }
 
@@ -11839,7 +11853,9 @@ TEST_F(WebFrameSimTest, DoubleTapZoomWhileScrolled) {
   // Double-tap on the target. Expect that we zoom in and the target is
   // contained in the visual viewport.
   {
-    WebView().AnimateDoubleTapZoom(WebPoint(445, 455));
+    WebPoint point(445, 455);
+    WebRect block_bounds = ComputeBlockBoundHelper(&WebView(), point, false);
+    WebView().AnimateDoubleTapZoom(point, block_bounds);
     EXPECT_TRUE(WebView().FakeDoubleTapAnimationPendingForTesting());
     ScrollOffset new_offset = ToScrollOffset(
         FloatPoint(WebView().FakePageScaleAnimationTargetPositionForTesting()));
@@ -11859,7 +11875,9 @@ TEST_F(WebFrameSimTest, DoubleTapZoomWhileScrolled) {
   // Double-tap on the target again. We should zoom out and the target should
   // remain on screen.
   {
-    WebView().AnimateDoubleTapZoom(WebPoint(445, 455));
+    WebPoint point(445, 455);
+    WebRect block_bounds = ComputeBlockBoundHelper(&WebView(), point, false);
+    WebView().AnimateDoubleTapZoom(point, block_bounds);
     EXPECT_TRUE(WebView().FakeDoubleTapAnimationPendingForTesting());
     FloatPoint target_offset(
         WebView().FakePageScaleAnimationTargetPositionForTesting());

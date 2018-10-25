@@ -542,8 +542,14 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
     case WebInputEvent::kGestureDoubleTap:
       if (web_settings_->DoubleTapToZoomEnabled() &&
           MinimumPageScaleFactor() != MaximumPageScaleFactor()) {
-        AnimateDoubleTapZoom(
-            FlooredIntPoint(scaled_event.PositionInRootFrame()));
+        if (auto* main_frame = MainFrameImpl()) {
+          IntPoint pos_in_root_frame =
+              FlooredIntPoint(scaled_event.PositionInRootFrame());
+          WebRect block_bounds =
+              main_frame->FrameWidgetImpl()->ComputeBlockBound(
+                  pos_in_root_frame, false);
+          AnimateDoubleTapZoom(pos_in_root_frame, block_bounds);
+        }
       }
       event_result = WebInputEventResult::kHandledSystem;
       WidgetClient()->DidHandleGestureEvent(event, event_cancelled);
@@ -881,43 +887,6 @@ WebInputEventResult WebViewImpl::HandleCharEvent(
   return WebInputEventResult::kNotHandled;
 }
 
-WebRect WebViewImpl::ComputeBlockBound(const WebPoint& point_in_root_frame,
-                                       bool ignore_clipping) {
-  if (!MainFrameImpl())
-    return WebRect();
-
-  // Use the point-based hit test to find the node.
-  HitTestLocation location(
-      MainFrameImpl()->GetFrameView()->ConvertFromRootFrame(
-          LayoutPoint(point_in_root_frame)));
-  HitTestRequest::HitTestRequestType hit_type =
-      HitTestRequest::kReadOnly | HitTestRequest::kActive |
-      (ignore_clipping ? HitTestRequest::kIgnoreClipping : 0);
-  HitTestResult result =
-      MainFrameImpl()->GetFrame()->GetEventHandler().HitTestResultAtLocation(
-          location, hit_type);
-  result.SetToShadowHostIfInRestrictedShadowRoot();
-
-  Node* node = result.InnerNodeOrImageMapImage();
-  if (!node)
-    return WebRect();
-
-  // Find the block type node based on the hit node.
-  // FIXME: This wants to walk flat tree with
-  // LayoutTreeBuilderTraversal::parent().
-  while (node &&
-         (!node->GetLayoutObject() || node->GetLayoutObject()->IsInline()))
-    node = LayoutTreeBuilderTraversal::Parent(*node);
-
-  // Return the bounding box in the root frame's coordinate space.
-  if (node) {
-    IntRect absolute_rect = node->GetLayoutObject()->AbsoluteBoundingBoxRect();
-    LocalFrame* frame = node->GetDocument().GetFrame();
-    return frame->View()->ConvertToRootFrame(absolute_rect);
-  }
-  return WebRect();
-}
-
 WebRect WebViewImpl::WidenRectWithinPageBounds(const WebRect& source,
                                                int target_margin,
                                                int minimum_margin) {
@@ -1127,12 +1096,10 @@ void WebViewImpl::EnableTapHighlights(
   UpdateAllLifecyclePhases();
 }
 
-void WebViewImpl::AnimateDoubleTapZoom(const IntPoint& point_in_root_frame) {
-  // TODO(lukasza): https://crbug.com/734209: Add OOPIF support.
-  if (!MainFrameImpl())
-    return;
+void WebViewImpl::AnimateDoubleTapZoom(const IntPoint& point_in_root_frame,
+                                       const WebRect& block_bounds) {
+  DCHECK(MainFrameImpl());
 
-  WebRect block_bounds = ComputeBlockBound(point_in_root_frame, false);
   float scale;
   WebPoint scroll;
 
@@ -1179,7 +1146,7 @@ void WebViewImpl::ZoomToFindInPageRect(const WebRect& rect_in_root_frame) {
   if (!MainFrameImpl())
     return;
 
-  WebRect block_bounds = ComputeBlockBound(
+  WebRect block_bounds = MainFrameImpl()->FrameWidgetImpl()->ComputeBlockBound(
       WebPoint(rect_in_root_frame.x + rect_in_root_frame.width / 2,
                rect_in_root_frame.y + rect_in_root_frame.height / 2),
       true);

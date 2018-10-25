@@ -12,6 +12,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
 #include "third_party/blink/renderer/core/events/wheel_event.h"
@@ -21,6 +22,9 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/input/context_menu_allowed_scope.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/layout/hit_test_location.h"
+#include "third_party/blink/renderer/core/layout/hit_test_request.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
 #include "third_party/blink/renderer/core/page/drag_actions.h"
 #include "third_party/blink/renderer/core/page/drag_controller.h"
@@ -65,6 +69,39 @@ void WebFrameWidgetBase::Close() {
 
 WebLocalFrame* WebFrameWidgetBase::LocalRoot() const {
   return local_root_;
+}
+
+WebRect WebFrameWidgetBase::ComputeBlockBound(
+    const WebPoint& point_in_root_frame,
+    bool ignore_clipping) const {
+  HitTestLocation location(local_root_->GetFrameView()->ConvertFromRootFrame(
+      LayoutPoint(point_in_root_frame)));
+  HitTestRequest::HitTestRequestType hit_type =
+      HitTestRequest::kReadOnly | HitTestRequest::kActive |
+      (ignore_clipping ? HitTestRequest::kIgnoreClipping : 0);
+  HitTestResult result =
+      local_root_->GetFrame()->GetEventHandler().HitTestResultAtLocation(
+          location, hit_type);
+  result.SetToShadowHostIfInRestrictedShadowRoot();
+
+  Node* node = result.InnerNodeOrImageMapImage();
+  if (!node)
+    return WebRect();
+
+  // Find the block type node based on the hit node.
+  // FIXME: This wants to walk flat tree with
+  // LayoutTreeBuilderTraversal::parent().
+  while (node &&
+         (!node->GetLayoutObject() || node->GetLayoutObject()->IsInline()))
+    node = LayoutTreeBuilderTraversal::Parent(*node);
+
+  // Return the bounding box in the root frame's coordinate space.
+  if (node) {
+    IntRect absolute_rect = node->GetLayoutObject()->AbsoluteBoundingBoxRect();
+    LocalFrame* frame = node->GetDocument().GetFrame();
+    return frame->View()->ConvertToRootFrame(absolute_rect);
+  }
+  return WebRect();
 }
 
 void WebFrameWidgetBase::UpdateAllLifecyclePhasesAndCompositeForTesting(
