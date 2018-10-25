@@ -8,6 +8,7 @@ cr.define('settings_sections_tests', function() {
     Copies: 'copies',
     Layout: 'layout',
     Color: 'color',
+    ColorSaveToDrive: 'color save to drive',
     MediaSize: 'media size',
     MediaSizeCustomNames: 'media size custom names',
     Margins: 'margins',
@@ -259,6 +260,27 @@ cr.define('settings_sections_tests', function() {
         assertFalse(colorElement.$$('print-preview-settings-section').managed);
         assertFalse(selectElement.disabled);
       });
+    });
+
+    test(assert(TestNames.ColorSaveToDrive), function() {
+      // Check that the Save to Google Drive printer does not show the color
+      // capability, but sets the value as true by default.
+      const colorElement = page.$$('print-preview-color-settings');
+      const googleDrivePrinter = new print_preview.Destination(
+          print_preview.Destination.GooglePromotedId.DOCS,
+          print_preview.DestinationType.GOOGLE,
+          print_preview.DestinationOrigin.COOKIES,
+          print_preview.Destination.GooglePromotedId.DOCS, true /* isRecent */,
+          print_preview.DestinationConnectionStatus.ONLINE, {});
+      page.set('destination_', googleDrivePrinter);
+      const capabilities =
+          print_preview_test_utils
+              .getCddTemplate(print_preview.Destination.GooglePromotedId.DOCS)
+              .capabilities;
+      delete capabilities.printer.color;
+      page.set('destination_.capabilities', capabilities);
+      assertTrue(colorElement.hidden);
+      assertEquals(true, page.getSettingValue('color'));
     });
 
     test(assert(TestNames.MediaSize), function() {

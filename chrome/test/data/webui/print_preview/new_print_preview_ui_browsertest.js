@@ -77,6 +77,10 @@ TEST_F('PrintPreviewSettingsSectionsTest', 'Color', function() {
   this.runMochaTest(settings_sections_tests.TestNames.Color);
 });
 
+TEST_F('PrintPreviewSettingsSectionsTest', 'ColorSaveToDrive', function() {
+  this.runMochaTest(settings_sections_tests.TestNames.ColorSaveToDrive);
+});
+
 TEST_F('PrintPreviewSettingsSectionsTest', 'MediaSize', function() {
   this.runMochaTest(settings_sections_tests.TestNames.MediaSize);
 });
