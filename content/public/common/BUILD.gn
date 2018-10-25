@@ -366,7 +366,9 @@ mojom("interfaces") {
 
   public_deps = [
     ":resource_type_bindings",
+    "//mojo/public/mojom/base:base",
     "//services/network/public/mojom",
+    "//services/network/public/mojom:websocket_mojom",
     "//third_party/blink/public:mojo_bindings",
     "//ui/accessibility:ax_enums_mojo",
     "//url/mojom:url_mojom_gurl",

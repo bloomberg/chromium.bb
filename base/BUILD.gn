@@ -3022,6 +3022,7 @@ if (is_android) {
       ":base_java",
       ":base_java_test_support",
       "//third_party/android_support_test_runner:runner_java",
+      "//third_party/hamcrest:hamcrest_java",
       "//third_party/junit:junit",
     ]
     java_files = [
@@ -3148,6 +3149,8 @@ if (is_android) {
       ":base_java",
       "//testing/android/junit:junit_test_support",
       "//third_party/android_support_test_runner:runner_java",
+      "//third_party/hamcrest:hamcrest_java",
+      "//third_party/junit:junit",
       "//third_party/robolectric:robolectric_all_java",
     ]
   }
