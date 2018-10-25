@@ -86,11 +86,11 @@ DataUseMeasurement::DataUseMeasurement(
                               base::Unretained(this)))),
       rx_bytes_os_(0),
       tx_bytes_os_(0),
-      bytes_transferred_since_last_traffic_stats_query_(0),
       no_reads_since_background_(false),
 #endif
       network_connection_tracker_(network_connection_tracker),
       connection_type_(network::mojom::ConnectionType::CONNECTION_UNKNOWN) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(ascriber_ ||
          base::FeatureList::IsEnabled(network::features::kNetworkService));
   DCHECK(url_request_classifier_ ||
@@ -114,12 +114,14 @@ DataUseMeasurement::DataUseMeasurement(
 }
 
 DataUseMeasurement::~DataUseMeasurement() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (network_connection_tracker_)
     network_connection_tracker_->RemoveNetworkConnectionObserver(this);
   DCHECK(!services_data_use_observer_list_.might_have_observers());
 }
 
 void DataUseMeasurement::OnBeforeURLRequest(net::URLRequest* request) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DataUseUserData* data_use_user_data = reinterpret_cast<DataUseUserData*>(
       request->GetUserData(DataUseUserData::kUserDataKey));
   if (!data_use_user_data) {
@@ -133,6 +135,7 @@ void DataUseMeasurement::OnBeforeURLRequest(net::URLRequest* request) {
 
 void DataUseMeasurement::OnBeforeRedirect(const net::URLRequest& request,
                                           const GURL& new_location) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Recording data use of request on redirects.
   // TODO(rajendrant): May not be needed when http://crbug/651957 is fixed.
   UpdateDataUseToMetricsService(
@@ -148,6 +151,7 @@ void DataUseMeasurement::OnBeforeRedirect(const net::URLRequest& request,
 void DataUseMeasurement::OnHeadersReceived(
     net::URLRequest* request,
     const net::HttpResponseHeaders* response_headers) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DataUseUserData* data_use_user_data = reinterpret_cast<DataUseUserData*>(
       request->GetUserData(DataUseUserData::kUserDataKey));
   if (data_use_user_data) {
@@ -158,6 +162,7 @@ void DataUseMeasurement::OnHeadersReceived(
 
 void DataUseMeasurement::OnNetworkBytesReceived(const net::URLRequest& request,
                                                 int64_t bytes_received) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   UMA_HISTOGRAM_COUNTS_1M("DataUse.BytesReceived.Delegate", bytes_received);
   ReportDataUseUMA(request, DOWNSTREAM, bytes_received);
 #if defined(OS_ANDROID)
@@ -167,6 +172,7 @@ void DataUseMeasurement::OnNetworkBytesReceived(const net::URLRequest& request,
 
 void DataUseMeasurement::OnNetworkBytesSent(const net::URLRequest& request,
                                             int64_t bytes_sent) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   UMA_HISTOGRAM_COUNTS_1M("DataUse.BytesSent.Delegate", bytes_sent);
   ReportDataUseUMA(request, UPSTREAM, bytes_sent);
 #if defined(OS_ANDROID)
@@ -176,6 +182,7 @@ void DataUseMeasurement::OnNetworkBytesSent(const net::URLRequest& request,
 
 void DataUseMeasurement::OnCompleted(const net::URLRequest& request,
                                      bool started) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // TODO(amohammadkhan): Verify that there is no double recording in data use
   // of redirected requests.
   UpdateDataUseToMetricsService(
@@ -310,6 +317,7 @@ std::string DataUseMeasurement::GetHistogramName(
 #if defined(OS_ANDROID)
 void DataUseMeasurement::OnApplicationStateChange(
     base::android::ApplicationState application_state) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   app_state_ = application_state;
   if (app_state_ != base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES) {
     last_app_background_time_ = base::TimeTicks::Now();
@@ -326,6 +334,7 @@ void DataUseMeasurement::MaybeRecordNetworkBytesOS() {
   // background). This reduces the overhead of repeatedly calling the API.
   static const int64_t kMinDelegateBytes = 25000;
 
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (bytes_transferred_since_last_traffic_stats_query_ < kMinDelegateBytes &&
       CurrentAppState() == DataUseUserData::FOREGROUND) {
     return;
@@ -514,6 +523,7 @@ bool DataUseMeasurement::IsCurrentNetworkCellular() const {
 
 void DataUseMeasurement::OnConnectionChanged(
     network::mojom::ConnectionType type) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   connection_type_ = type;
 }
 
