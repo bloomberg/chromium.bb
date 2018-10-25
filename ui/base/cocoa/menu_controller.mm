@@ -16,7 +16,6 @@
 #import "ui/events/event_utils.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/text_elider.h"
 #include "ui/strings/grit/ui_strings.h"
 
 namespace {
@@ -95,13 +94,6 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
 @synthesize model = model_;
 @synthesize useWithPopUpButtonCell = useWithPopUpButtonCell_;
 @synthesize postItemSelectedAsTask = postItemSelectedAsTask_;
-
-+ (base::string16)elideMenuTitle:(const base::string16&)title
-                         toWidth:(int)width {
-  NSFont* nsfont = [NSFont menuBarFontOfSize:0];  // 0 means "default"
-  return gfx::ElideText(title, gfx::FontList(gfx::Font(nsfont)), width,
-                        gfx::ELIDE_TAIL, gfx::Typesetter::NATIVE);
-}
 
 - (instancetype)init {
   self = [super init];

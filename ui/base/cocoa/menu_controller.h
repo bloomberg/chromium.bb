@@ -38,9 +38,6 @@ UI_BASE_EXPORT
 // |-initWithModel:useWithPopUpButtonCell:| or after the first call to |-menu|.
 @property(nonatomic, assign) BOOL useWithPopUpButtonCell;
 
-+ (base::string16)elideMenuTitle:(const base::string16&)title
-                         toWidth:(int)width;
-
 // NIB-based initializer. This does not create a menu. Clients can set the
 // properties of the object and the menu will be created upon the first call to
 // |-menu|. Note that the menu will be immutable after creation.
