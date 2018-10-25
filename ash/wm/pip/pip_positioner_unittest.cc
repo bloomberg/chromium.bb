@@ -91,7 +91,7 @@ class PipPositionerTest : public AshTestBase {
 
 TEST_F(PipPositionerTest, PipMovementAreaIsInset) {
   gfx::Rect area = PipPositioner::GetMovementArea(window_state()->GetDisplay());
-  EXPECT_EQ("8,8 384x384", area.ToString());
+  EXPECT_EQ(gfx::Rect(8, 8, 384, 384), area);
 }
 
 TEST_F(PipPositionerTest, PipMovementAreaIncludesKeyboardIfKeyboardIsShown) {
@@ -110,72 +110,83 @@ TEST_F(PipPositionerTest, PipRestingPositionSnapsToClosestEdge) {
   auto display = window_state()->GetDisplay();
 
   // Snap near top edge to top.
-  EXPECT_EQ("100,8 100x100", PipPositioner::GetRestingPosition(
-                                 display, gfx::Rect(100, 50, 100, 100))
-                                 .ToString());
+  EXPECT_EQ(
+      gfx::Rect(100, 8, 100, 100),
+      PipPositioner::GetRestingPosition(display, gfx::Rect(100, 50, 100, 100)));
 
   // Snap near bottom edge to bottom.
-  EXPECT_EQ("100,292 100x100", PipPositioner::GetRestingPosition(
-                                   display, gfx::Rect(100, 250, 100, 100))
-                                   .ToString());
+  EXPECT_EQ(gfx::Rect(100, 292, 100, 100),
+            PipPositioner::GetRestingPosition(display,
+                                              gfx::Rect(100, 250, 100, 100)));
 
   // Snap near left edge to left.
-  EXPECT_EQ("8,100 100x100", PipPositioner::GetRestingPosition(
-                                 display, gfx::Rect(50, 100, 100, 100))
-                                 .ToString());
+  EXPECT_EQ(
+      gfx::Rect(8, 100, 100, 100),
+      PipPositioner::GetRestingPosition(display, gfx::Rect(50, 100, 100, 100)));
 
   // Snap near right edge to right.
-  EXPECT_EQ("292,100 100x100", PipPositioner::GetRestingPosition(
-                                   display, gfx::Rect(250, 100, 100, 100))
-                                   .ToString());
+  EXPECT_EQ(gfx::Rect(292, 100, 100, 100),
+            PipPositioner::GetRestingPosition(display,
+                                              gfx::Rect(250, 100, 100, 100)));
 }
 
 TEST_F(PipPositionerTest, PipRestingPositionSnapsInsideDisplay) {
   auto display = window_state()->GetDisplay();
 
   // Snap near top edge outside movement area to top.
-  EXPECT_EQ("100,8 100x100", PipPositioner::GetRestingPosition(
-                                 display, gfx::Rect(100, -50, 100, 100))
-                                 .ToString());
+  EXPECT_EQ(gfx::Rect(100, 8, 100, 100),
+            PipPositioner::GetRestingPosition(display,
+                                              gfx::Rect(100, -50, 100, 100)));
 
   // Snap near bottom edge outside movement area to bottom.
-  EXPECT_EQ("100,292 100x100", PipPositioner::GetRestingPosition(
-                                   display, gfx::Rect(100, 450, 100, 100))
-                                   .ToString());
+  EXPECT_EQ(gfx::Rect(100, 292, 100, 100),
+            PipPositioner::GetRestingPosition(display,
+                                              gfx::Rect(100, 450, 100, 100)));
 
   // Snap near left edge outside movement area to left.
-  EXPECT_EQ("8,100 100x100", PipPositioner::GetRestingPosition(
-                                 display, gfx::Rect(-50, 100, 100, 100))
-                                 .ToString());
+  EXPECT_EQ(gfx::Rect(8, 100, 100, 100),
+            PipPositioner::GetRestingPosition(display,
+                                              gfx::Rect(-50, 100, 100, 100)));
 
   // Snap near right edge outside movement area to right.
-  EXPECT_EQ("292,100 100x100", PipPositioner::GetRestingPosition(
-                                   display, gfx::Rect(450, 100, 100, 100))
-                                   .ToString());
+  EXPECT_EQ(gfx::Rect(292, 100, 100, 100),
+            PipPositioner::GetRestingPosition(display,
+                                              gfx::Rect(450, 100, 100, 100)));
+}
+
+TEST_F(PipPositionerTest,
+       PipRestingPositionSnapsInDisplayWithLargeAspectRatio) {
+  UpdateDisplay("1600x400");
+  auto display = window_state()->GetDisplay();
+
+  // Snap to the top edge instead of the far left edge.
+  EXPECT_EQ(gfx::Rect(500, 8, 100, 100),
+            PipPositioner::GetRestingPosition(display,
+                                              gfx::Rect(500, 100, 100, 100)));
 }
 
 TEST_F(PipPositionerTest, PipAdjustPositionForDragClampsToMovementArea) {
   auto display = window_state()->GetDisplay();
 
   // Adjust near top edge outside movement area.
-  EXPECT_EQ("100,8 100x100", PipPositioner::GetBoundsForDrag(
-                                 display, gfx::Rect(100, -50, 100, 100))
-                                 .ToString());
+  EXPECT_EQ(
+      gfx::Rect(100, 8, 100, 100),
+      PipPositioner::GetBoundsForDrag(display, gfx::Rect(100, -50, 100, 100)));
 
   // Adjust near bottom edge outside movement area.
-  EXPECT_EQ("100,292 100x100", PipPositioner::GetBoundsForDrag(
-                                   display, gfx::Rect(100, 450, 100, 100))
-                                   .ToString());
+  EXPECT_EQ(
+      gfx::Rect(100, 292, 100, 100),
+      PipPositioner::GetBoundsForDrag(display, gfx::Rect(100, 450, 100, 100)));
 
   // Adjust near left edge outside movement area.
-  EXPECT_EQ("8,100 100x100", PipPositioner::GetBoundsForDrag(
-                                 display, gfx::Rect(-50, 100, 100, 100))
-                                 .ToString());
+  EXPECT_EQ(
+      gfx::Rect(8, 100, 100, 100),
+      PipPositioner::GetBoundsForDrag(display, gfx::Rect(-50, 100, 100, 100)));
 
   // Adjust near right edge outside movement area.
-  EXPECT_EQ("292,100 100x100", PipPositioner::GetBoundsForDrag(
-                                   display, gfx::Rect(450, 100, 100, 100))
-                                   .ToString());
+  EXPECT_EQ(
+      gfx::Rect(292, 100, 100, 100),
+      PipPositioner::GetBoundsForDrag(display, gfx::Rect(450, 100, 100, 100)));
 }
 
 TEST_F(PipPositionerTest, PipRestingPositionWorksIfKeyboardIsDisabled) {
@@ -183,9 +194,67 @@ TEST_F(PipPositionerTest, PipRestingPositionWorksIfKeyboardIsDisabled) {
   auto display = window_state()->GetDisplay();
 
   // Snap near top edge to top.
-  EXPECT_EQ("100,8 100x100", PipPositioner::GetRestingPosition(
-                                 display, gfx::Rect(100, 50, 100, 100))
-                                 .ToString());
+  EXPECT_EQ(
+      gfx::Rect(100, 8, 100, 100),
+      PipPositioner::GetRestingPosition(display, gfx::Rect(100, 50, 100, 100)));
+}
+
+TEST_F(PipPositionerTest, PipDismissedPositionDoesNotMoveAnExcessiveDistance) {
+  auto display = window_state()->GetDisplay();
+
+  EXPECT_EQ(gfx::Rect(100, 100, 100, 100),
+            PipPositioner::GetDismissedPosition(display,
+                                                gfx::Rect(100, 100, 100, 100)));
+}
+
+TEST_F(PipPositionerTest, PipDismissedPositionChosesClosestEdge) {
+  auto display = window_state()->GetDisplay();
+
+  // Dismiss near top edge outside movement area towards top.
+  EXPECT_EQ(gfx::Rect(100, -100, 100, 100),
+            PipPositioner::GetDismissedPosition(display,
+                                                gfx::Rect(100, 50, 100, 100)));
+
+  // Dismiss near bottom edge outside movement area towards bottom.
+  EXPECT_EQ(gfx::Rect(100, 400, 100, 100),
+            PipPositioner::GetDismissedPosition(display,
+                                                gfx::Rect(100, 250, 100, 100)));
+
+  // Dismiss near left edge outside movement area towards left.
+  EXPECT_EQ(gfx::Rect(-100, 100, 100, 100),
+            PipPositioner::GetDismissedPosition(display,
+                                                gfx::Rect(50, 100, 100, 100)));
+
+  // Dismiss near right edge outside movement area towards right.
+  EXPECT_EQ(gfx::Rect(400, 100, 100, 100),
+            PipPositioner::GetDismissedPosition(display,
+                                                gfx::Rect(250, 100, 100, 100)));
+}
+
+// Verify that if two edges are equally close, the PIP window prefers dismissing
+// out horizontally.
+TEST_F(PipPositionerTest, PipDismissedPositionPrefersHorizontal) {
+  auto display = window_state()->GetDisplay();
+
+  // Top left corner.
+  EXPECT_EQ(
+      gfx::Rect(-150, 0, 100, 100),
+      PipPositioner::GetDismissedPosition(display, gfx::Rect(0, 0, 100, 100)));
+
+  // Top right corner.
+  EXPECT_EQ(gfx::Rect(450, 0, 100, 100),
+            PipPositioner::GetDismissedPosition(display,
+                                                gfx::Rect(300, 0, 100, 100)));
+
+  // Bottom left corner.
+  EXPECT_EQ(gfx::Rect(-150, 300, 100, 100),
+            PipPositioner::GetDismissedPosition(display,
+                                                gfx::Rect(0, 300, 100, 100)));
+
+  // Bottom right corner.
+  EXPECT_EQ(gfx::Rect(450, 300, 100, 100),
+            PipPositioner::GetDismissedPosition(display,
+                                                gfx::Rect(300, 300, 100, 100)));
 }
 
 }  // namespace ash

@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/window_animation_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
@@ -517,6 +518,7 @@ WindowState::WindowState(aura::Window* window)
       ignore_property_change_(false),
       current_state_(new DefaultState(ToWindowStateType(GetShowState()))) {
   window_->AddObserver(this);
+  UpdatePipState();
 }
 
 bool WindowState::GetAlwaysOnTop() const {
@@ -689,6 +691,12 @@ void WindowState::UpdatePipRoundedCorners() {
     layer->SetFillsBoundsOpaquely(false);
     layer->SetMaskLayer(pip_mask_->layer());
   }
+}
+
+void WindowState::UpdatePipState() {
+  ::wm::SetWindowVisibilityAnimationType(
+      window(), IsPip() ? WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_OUT
+                        : ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
 }
 
 WindowState* GetActiveWindowState() {

@@ -20,6 +20,7 @@ namespace ash {
 
 namespace {
 const int kPipWorkAreaInsetsDp = 8;
+const float kPipDismissMovementProportion = 1.5f;
 
 enum { GRAVITY_LEFT, GRAVITY_RIGHT, GRAVITY_TOP, GRAVITY_BOTTOM };
 
@@ -43,6 +44,38 @@ gfx::Rect GetAdjustedBoundsByGravity(const gfx::Rect& bounds,
       NOTREACHED();
   }
   return bounds;
+}
+
+// Returns the gravity that would make |bounds| fall to the closest edge of
+// |region|. If |bounds| is outside of |region| then it will return the gravity
+// as if |bounds| had fallen outside of |region|. See the below diagram for what
+// the gravity regions look like for a point.
+//  \  TOP /
+//   \____/ R
+// L |\  /| I
+// E | \/ | G
+// F | /\ | H
+// T |/__\| T
+//   /    \
+//  /BOTTOM
+int GetGravityToClosestEdge(const gfx::Rect& bounds, const gfx::Rect& region) {
+  const int left_edge_dist = bounds.x() - region.x();
+  const int right_edge_dist = region.right() - bounds.right();
+  const int top_edge_dist = bounds.y() - region.y();
+  const int bottom_edge_dist = region.bottom() - bounds.bottom();
+  int minimum_edge_dist = std::min(left_edge_dist, right_edge_dist);
+  minimum_edge_dist = std::min(minimum_edge_dist, top_edge_dist);
+  minimum_edge_dist = std::min(minimum_edge_dist, bottom_edge_dist);
+
+  if (left_edge_dist == minimum_edge_dist) {
+    return GRAVITY_LEFT;
+  } else if (right_edge_dist == minimum_edge_dist) {
+    return GRAVITY_RIGHT;
+  } else if (top_edge_dist == minimum_edge_dist) {
+    return GRAVITY_TOP;
+  } else {
+    return GRAVITY_BOTTOM;
+  }
 }
 
 }  // namespace
@@ -75,17 +108,26 @@ gfx::Rect PipPositioner::GetRestingPosition(const display::Display& display,
   gfx::Rect resting_bounds = bounds;
   gfx::Rect area = GetMovementArea(display);
   resting_bounds.AdjustToFit(area);
-  gfx::Point pip_center = resting_bounds.CenterPoint();
-  gfx::Point area_center = area.CenterPoint();
 
-  gfx::Vector2d direction = pip_center - area_center;
-  int gravity = 0;
-  if (std::abs(direction.x()) > std::abs(direction.y())) {
-    gravity = direction.x() < 0 ? GRAVITY_LEFT : GRAVITY_RIGHT;
-  } else {
-    gravity = direction.y() < 0 ? GRAVITY_TOP : GRAVITY_BOTTOM;
-  }
+  const int gravity = GetGravityToClosestEdge(resting_bounds, area);
   return GetAdjustedBoundsByGravity(resting_bounds, area, gravity);
+}
+
+gfx::Rect PipPositioner::GetDismissedPosition(const display::Display& display,
+                                              const gfx::Rect& bounds) {
+  gfx::Rect work_area = GetMovementArea(display);
+  const int gravity = GetGravityToClosestEdge(bounds, work_area);
+  // Allow the bounds to move at most |kPipDismissMovementProportion| of the
+  // length of the bounds in the direction of movement.
+  gfx::Rect bounds_movement_area = bounds;
+  bounds_movement_area.Inset(-bounds.width() * kPipDismissMovementProportion,
+                             -bounds.height() * kPipDismissMovementProportion);
+  gfx::Rect dismissed_bounds =
+      GetAdjustedBoundsByGravity(bounds, bounds_movement_area, gravity);
+
+  // If the PIP window isn't close enough to the edge of the screen, don't slide
+  // it out.
+  return work_area.Intersects(dismissed_bounds) ? bounds : dismissed_bounds;
 }
 
 }  // namespace ash
