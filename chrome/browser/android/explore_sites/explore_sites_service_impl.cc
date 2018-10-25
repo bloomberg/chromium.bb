@@ -23,6 +23,12 @@
 using chrome::android::explore_sites::ExploreSitesVariation;
 using chrome::android::explore_sites::GetExploreSitesVariation;
 
+namespace {
+void ReportCatalogError(explore_sites::ExploreSitesCatalogError error) {
+  UMA_HISTOGRAM_ENUMERATION("ExploreSites.CatalogError", error);
+}
+}  // namespace
+
 namespace explore_sites {
 
 ExploreSitesServiceImpl::ExploreSitesServiceImpl(
@@ -111,16 +117,83 @@ void ExploreSitesServiceImpl::BlacklistSite(const std::string& url) {
 }
 
 // Validate the catalog.  Note this does not take ownership of the pointer.
-void ValidateCatalog(Catalog* catalog) {
-  // TODO(https://crbug.com/895541): Validate that the category type is in the
-  // valid range.  Also make sure the site has a title, else remove it.
+// Since we can't modify the collection while iterating over it, we instead copy
+// the valid contents into a new validated catalog.
+std::unique_ptr<Catalog> ValidateCatalog(std::unique_ptr<Catalog> catalog) {
+  std::unique_ptr<Catalog> validated_catalog = std::make_unique<Catalog>();
 
-  // Convert the URLs to a standard format.
+  if (catalog == nullptr)
+    return validated_catalog;
+
+  // Check each category.
   for (auto& category : *catalog->mutable_categories()) {
-    for (auto& site : *category.mutable_sites()) {
-      site.set_site_url(GURL(site.site_url()).spec());
+    bool remove_category = false;
+    // Validate that the category type is within the known range.
+    if (!Category::CategoryType_IsValid(category.type())) {
+      remove_category = true;
+      ReportCatalogError(ExploreSitesCatalogError::kCategoryWithUnknownType);
     }
+    // Validate that the category has a title.
+    if (category.localized_title().empty()) {
+      remove_category = true;
+      ReportCatalogError(ExploreSitesCatalogError::kCategoryMissingTitle);
+    }
+
+    if (remove_category)
+      continue;
+
+    Category* new_category = nullptr;
+
+    // Check the individual sites in this category.
+    for (auto& site : *category.mutable_sites()) {
+      // Ensure the URL parses and is in a valid format.
+      GURL url(site.site_url());
+      if (!url.is_valid()) {
+        ReportCatalogError(ExploreSitesCatalogError::kSiteWithBadUrl);
+        continue;
+      }
+      if (site.title().empty()) {
+        ReportCatalogError(ExploreSitesCatalogError::kSiteMissingTitle);
+        continue;
+      }
+      if (site.icon().empty()) {
+        // We should report missing icons, but we will still include the site if
+        // only the icon is missing.
+        ReportCatalogError(ExploreSitesCatalogError::kSiteMissingIcon);
+      }
+
+      // If we have at least one valid site, we can safely create a category.
+      if (new_category == nullptr) {
+        // Create a new (empty) category.  We will fill it if we find at least
+        // one good site.
+        new_category = validated_catalog->add_categories();
+      }
+
+      // Add the site into the category we are working on.
+      Site* new_site = new_category->add_sites();
+      new_site->Swap(&site);
+    }
+
+    // Collect UMA if the last site was removed from the category, or there were
+    // none to start with.
+    if (new_category == nullptr) {
+      ReportCatalogError(ExploreSitesCatalogError::kCategoryWithNoSites);
+      continue;
+    }
+
+    // Now that sites have been copied in, copy over the other fields from the
+    // original category.
+    category.clear_sites();
+    new_category->MergeFrom(category);
   }
+
+  return validated_catalog;
+}
+
+void ExploreSitesServiceImpl::OnCatalogFetchedForTest(
+    ExploreSitesRequestStatus status,
+    std::unique_ptr<std::string> serialized_protobuf) {
+  OnCatalogFetched(status, std::move(serialized_protobuf));
 }
 
 void ExploreSitesServiceImpl::GotVersionToStartFetch(
@@ -156,31 +229,31 @@ void ExploreSitesServiceImpl::OnCatalogFetched(
   }
 
   // Convert the protobuf into a catalog object.
-  std::unique_ptr<explore_sites::GetCatalogResponse> catalog_response =
-      std::make_unique<explore_sites::GetCatalogResponse>();
-  if (!catalog_response->ParseFromString(*serialized_protobuf.get())) {
+  explore_sites::GetCatalogResponse catalog_response;
+  if (!catalog_response.ParseFromString(*serialized_protobuf.get())) {
     DVLOG(1) << "Failed to parse catalog";
     NotifyCatalogUpdated(std::move(update_catalog_callbacks_), false);
     update_catalog_callbacks_.clear();
+    ReportCatalogError(ExploreSitesCatalogError::kParseFailure);
     return;
   }
-  std::string catalog_version = catalog_response->version_token();
-  std::unique_ptr<Catalog> catalog(catalog_response->release_catalog());
+  std::string catalog_version = catalog_response.version_token();
 
   // Check the catalog, canonicalizing any URLs in it.
-  if (catalog) {
-    ValidateCatalog(catalog.get());
+  if (catalog_response.has_catalog()) {
+    std::unique_ptr<Catalog> validated_catalog = ValidateCatalog(
+        base::WrapUnique<Catalog>(catalog_response.release_catalog()));
 
     // Add the catalog to our internal database.
     task_queue_.AddTask(std::make_unique<ImportCatalogTask>(
-        explore_sites_store_.get(), catalog_version, std::move(catalog),
+        explore_sites_store_.get(), catalog_version,
+        std::move(validated_catalog),
         base::BindOnce(&ExploreSitesServiceImpl::NotifyCatalogUpdated,
                        weak_ptr_factory_.GetWeakPtr(),
                        std::move(update_catalog_callbacks_))));
   } else {
     NotifyCatalogUpdated(std::move(update_catalog_callbacks_), true);
   }
-  update_catalog_callbacks_.clear();
 }
 
 void ExploreSitesServiceImpl::ComposeSiteImage(BitmapCallback callback,
