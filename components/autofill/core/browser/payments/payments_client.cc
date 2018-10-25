@@ -905,9 +905,8 @@ void PaymentsClient::StartTokenFetch(bool invalidate_old) {
 
 void PaymentsClient::SetOAuth2TokenAndStartRequest() {
   DCHECK(resource_request_);
-  resource_request_->headers.AddHeaderFromString(
-      net::HttpRequestHeaders::kAuthorization + std::string(": Bearer ") +
-      access_token_);
+  resource_request_->headers.SetHeader(net::HttpRequestHeaders::kAuthorization,
+                                       std::string("Bearer ") + access_token_);
   StartRequest();
 }
 
