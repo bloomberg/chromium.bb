@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/at_exit.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -32,6 +33,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
+#include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -230,9 +232,10 @@ int ChromeAppModeStart_v4(const app_mode::ChromeAppModeInfo* info) {
       pid = [[existing_chrome objectAtIndex:0] processIdentifier];
   }
 
-  AppShimController controller(info);
   base::MessageLoopForUI main_message_loop;
+  ui::WindowResizeHelperMac::Get()->Init(main_message_loop.task_runner());
   base::PlatformThread::SetName("CrAppShimMain");
+  AppShimController controller(info);
 
   // In tests, launching Chrome does nothing, and we won't get a ping response,
   // so just assume the socket exists.
@@ -275,8 +278,8 @@ int ChromeAppModeStart_v4(const app_mode::ChromeAppModeInfo* info) {
     // which is preferable to waiting for the Apple Event to timeout after one
     // minute.
     main_message_loop.task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&AppShimController::Init, base::Unretained(&controller)));
+        FROM_HERE, base::BindOnce(&AppShimController::InitBootstrapPipe,
+                                  base::Unretained(&controller)));
   }
 
   base::RunLoop().Run();
