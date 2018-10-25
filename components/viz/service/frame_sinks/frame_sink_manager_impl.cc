@@ -76,15 +76,16 @@ void FrameSinkManagerImpl::BindAndSetClient(
   DCHECK(!binding_.is_bound());
   binding_.Bind(std::move(request), std::move(task_runner));
   client_ptr_ = std::move(client);
-
   client_ = client_ptr_.get();
 }
 
 void FrameSinkManagerImpl::SetLocalClient(
-    mojom::FrameSinkManagerClient* client) {
+    mojom::FrameSinkManagerClient* client,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   DCHECK(!client_ptr_);
-
+  DCHECK(!ui_task_runner_);
   client_ = client;
+  ui_task_runner_ = ui_task_runner;
 }
 
 void FrameSinkManagerImpl::ForceShutdown() {
@@ -497,10 +498,26 @@ void FrameSinkManagerImpl::SubmitHitTestRegionList(
                                             std::move(hit_test_region_list));
 }
 
-void FrameSinkManagerImpl::OnFrameTokenChanged(const FrameSinkId& frame_sink_id,
-                                               uint32_t frame_token) {
+void FrameSinkManagerImpl::OnFrameTokenChangedDirect(
+    const FrameSinkId& frame_sink_id,
+    uint32_t frame_token) {
   if (client_)
     client_->OnFrameTokenChanged(frame_sink_id, frame_token);
+}
+
+void FrameSinkManagerImpl::OnFrameTokenChanged(const FrameSinkId& frame_sink_id,
+                                               uint32_t frame_token) {
+  if (client_ptr_ || !ui_task_runner_) {
+    // This is a Mojo client or a locally-connected client *without* a task
+    // runner. In this case, call directly.
+    OnFrameTokenChangedDirect(frame_sink_id, frame_token);
+  } else {
+    // This is a locally-connected client *with* a task runner - post task.
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&FrameSinkManagerImpl::OnFrameTokenChangedDirect,
+                       base::Unretained(this), frame_sink_id, frame_token));
+  }
 }
 
 VideoDetector* FrameSinkManagerImpl::CreateVideoDetectorForTesting(
