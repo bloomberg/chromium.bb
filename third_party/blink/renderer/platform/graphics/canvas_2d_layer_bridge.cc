@@ -632,7 +632,7 @@ void Canvas2DLayerBridge::DidDraw(const FloatRect& rect) {
     }
     base::CheckedNumeric<int> threshold_size = size_.Width();
     threshold_size *= size_.Height();
-    threshold_size *= CanvasHeuristicParameters::kExpensiveOverdrawThreshold;
+    threshold_size *= canvas_heuristic_parameters::kExpensiveOverdrawThreshold;
     if (!threshold_size.IsValid()) {
       DisableDeferral(kDisableDeferralReasonExpensiveOverdrawHeuristic);
       return;

@@ -682,7 +682,7 @@ TEST_F(CanvasRenderingContext2DTest, MAYBE_GetImageDataDisablesAcceleration) {
 
   DummyExceptionStateForTesting exception_state;
   for (int i = 0;
-       i < CanvasHeuristicParameters::kGPUReadbackMinSuccessiveFrames - 1;
+       i < canvas_heuristic_parameters::kGPUReadbackMinSuccessiveFrames - 1;
        i++) {
     Context2d()->getImageData(0, 0, 1, 1, exception_state);
     CanvasElement().FinalizeFrame();
@@ -697,7 +697,7 @@ TEST_F(CanvasRenderingContext2DTest, MAYBE_GetImageDataDisablesAcceleration) {
   CanvasElement().FinalizeFrame();
 
   EXPECT_FALSE(exception_state.HadException());
-  if (CanvasHeuristicParameters::kGPUReadbackForcesNoAcceleration) {
+  if (canvas_heuristic_parameters::kGPUReadbackForcesNoAcceleration) {
     EXPECT_FALSE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
     EXPECT_EQ(0u, GetGlobalAcceleratedContextCount());
     EXPECT_EQ(0, GetGlobalGPUMemoryUsage());

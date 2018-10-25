@@ -646,9 +646,9 @@ cc::PaintCanvas* CanvasResourceProvider::Canvas() {
              ->GetGpuFeatureInfo()
              .IsWorkaroundEnabled(gpu::DISABLE_2D_CANVAS_AUTO_FLUSH)) {
       context_flushes.enable =
-          CanvasHeuristicParameters::kEnableGrContextFlushes;
+          canvas_heuristic_parameters::kEnableGrContextFlushes;
       context_flushes.max_draws_before_flush =
-          CanvasHeuristicParameters::kMaxDrawsBeforeContextFlush;
+          canvas_heuristic_parameters::kMaxDrawsBeforeContextFlush;
     }
     if (ColorParams().NeedsSkColorSpaceXformCanvas()) {
       canvas_ = std::make_unique<cc::SkiaPaintCanvas>(

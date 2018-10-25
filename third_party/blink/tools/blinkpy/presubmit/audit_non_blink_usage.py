@@ -217,6 +217,7 @@ _CONFIG = [
             'url::.+',
 
             # Nested namespaces under the blink namespace
+            'canvas_heuristic_parameters::.+',
             'cssvalue::.+',
             'encoding::.+',
             'event_handling_util::.+',

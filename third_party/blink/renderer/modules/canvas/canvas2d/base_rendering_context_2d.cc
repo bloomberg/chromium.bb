@@ -1312,21 +1312,21 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
 
   // Heuristic for disabling acceleration based on anticipated texture upload
   // overhead.
-  // See comments in CanvasHeuristicParameters.h for explanation.
+  // See comments in canvas_heuristic_parameters.h for explanation.
   if (CanCreateCanvas2dResourceProvider() && IsAccelerated() &&
       !image_source->IsAccelerated()) {
     float src_area = src_rect.Width() * src_rect.Height();
     if (src_area >
-        CanvasHeuristicParameters::kDrawImageTextureUploadHardSizeLimit) {
+        canvas_heuristic_parameters::kDrawImageTextureUploadHardSizeLimit) {
       this->DisableAcceleration();
-    } else if (src_area > CanvasHeuristicParameters::
+    } else if (src_area > canvas_heuristic_parameters::
                               kDrawImageTextureUploadSoftSizeLimit) {
       SkRect bounds = dst_rect;
       SkMatrix ctm = DrawingCanvas()->getTotalMatrix();
       ctm.mapRect(&bounds);
       float dst_area = dst_rect.Width() * dst_rect.Height();
       if (src_area >
-          dst_area * CanvasHeuristicParameters::
+          dst_area * canvas_heuristic_parameters::
                          kDrawImageTextureUploadSoftSizeLimitScaleThreshold) {
         this->DisableAcceleration();
       }
