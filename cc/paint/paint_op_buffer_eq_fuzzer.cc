@@ -40,6 +40,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   SkNoDrawCanvas canvas(100, 100);
   cc::TestOptionsProvider test_options_provider;
 
+  // This test is trying to verify that serializing and deserializing doesn't
+  // change the results.  Scaling paint shaders and changed them to a fixed
+  // scale when serializing defeats this purpose, so turn that off.
+  test_options_provider.mutable_serialize_options().scale_paint_record_shaders =
+      false;
+
   // Need 4 bytes to be able to read the type/skip.
   if (size < 4)
     return 0;
