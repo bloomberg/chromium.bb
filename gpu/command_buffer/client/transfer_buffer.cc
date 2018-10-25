@@ -251,6 +251,16 @@ unsigned int TransferBuffer::GetMaxAllocation() const {
   return HaveBuffer() ? max_buffer_size_ - result_size_ : 0;
 }
 
+ScopedTransferBufferPtr::ScopedTransferBufferPtr(
+    ScopedTransferBufferPtr&& other)
+    : buffer_(other.buffer_),
+      size_(other.size_),
+      helper_(other.helper_),
+      transfer_buffer_(other.transfer_buffer_) {
+  other.buffer_ = nullptr;
+  other.size_ = 0u;
+}
+
 void ScopedTransferBufferPtr::Release() {
   if (buffer_) {
     transfer_buffer_->FreePendingToken(buffer_, helper_->InsertToken());
@@ -282,6 +292,14 @@ void ScopedTransferBufferPtr::Shrink(unsigned int new_size) {
     return;
   transfer_buffer_->ShrinkLastBlock(new_size);
   size_ = new_size;
+}
+
+bool ScopedTransferBufferPtr::BelongsToBuffer(char* memory) const {
+  if (!buffer_)
+    return false;
+  char* start = reinterpret_cast<char*>(buffer_);
+  char* end = start + size_;
+  return memory >= start && memory <= end;
 }
 
 }  // namespace gpu

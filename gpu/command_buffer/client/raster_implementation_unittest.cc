@@ -15,6 +15,8 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "cc/paint/raw_memory_transfer_cache_entry.h"
+#include "cc/paint/transfer_cache_serialize_helper.h"
 #include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/client/mock_transfer_buffer.h"
 #include "gpu/command_buffer/client/query_tracker.h"
@@ -203,7 +205,7 @@ class RasterImplementationTest : public testing::Test {
     return gl_->MapRasterCHROMIUM(size);
   }
   void UnmapRasterCHROMIUM(GLsizeiptr written_size) {
-    gl_->UnmapRasterCHROMIUM(written_size);
+    gl_->UnmapRasterCHROMIUM(written_size, written_size);
   }
 
   struct ContextInitOptions {
@@ -902,6 +904,29 @@ TEST_F(RasterImplementationManualInitTest, FailInitOnTransferBufferFail) {
   ContextInitOptions init_options;
   init_options.transfer_buffer_initialize_fail = true;
   EXPECT_FALSE(Initialize(init_options));
+}
+
+TEST_F(RasterImplementationTest, TransferCacheSerialization) {
+  gl_->set_max_inlined_entry_size_for_testing(768u);
+  size_t buffer_size = transfer_buffer_->MaxTransferBufferSize();
+  ScopedTransferBufferPtr buffer(buffer_size, helper_, transfer_buffer_);
+  ASSERT_EQ(buffer.size(), buffer_size);
+
+  char* buffer_start = reinterpret_cast<char*>(buffer.address());
+  memset(buffer_start, 0, buffer_size);
+  gl_->SetRasterMappedBufferForTesting(std::move(buffer));
+  auto transfer_cache = gl_->CreateTransferCacheHelperForTesting();
+
+  std::vector<uint8_t> data(buffer_size - 16u);
+  char* memory = buffer_start + 8u;
+  cc::ClientRawMemoryTransferCacheEntry inlined_entry(data);
+  EXPECT_EQ(transfer_cache->CreateEntry(inlined_entry, memory), data.size());
+  EXPECT_EQ(memcmp(data.data(), memory, data.size()), 0);
+
+  data.resize(buffer_size + 16u);
+  memory = buffer_start + 8u;
+  cc::ClientRawMemoryTransferCacheEntry non_inlined_entry(data);
+  EXPECT_EQ(transfer_cache->CreateEntry(non_inlined_entry, memory), 0u);
 }
 
 #include "base/macros.h"

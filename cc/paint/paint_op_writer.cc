@@ -164,13 +164,28 @@ void PaintOpWriter::Write(const SkRRect& rect) {
 
 void PaintOpWriter::Write(const SkPath& path) {
   auto id = path.getGenerationID();
+  Write(id);
+
+  uint64_t* bytes_to_skip = WriteSize(0u);
+  if (!valid_)
+    return;
+
   auto locked =
       options_.transfer_cache->LockEntry(TransferCacheEntryType::kPath, id);
+  uint64_t bytes_written = 0u;
   if (!locked) {
-    options_.transfer_cache->CreateEntry(ClientPathTransferCacheEntry(path));
+    // Note that it is not necessary to pass the remaining size for |memory_|
+    // here because the transfer cache implementation (in RasterImplementation)
+    // should have this information about the memory being written to here.
+    bytes_written = options_.transfer_cache->CreateEntry(
+        ClientPathTransferCacheEntry(path), memory_);
     options_.transfer_cache->AssertLocked(TransferCacheEntryType::kPath, id);
   }
-  Write(id);
+
+  DCHECK_LE(bytes_written, remaining_bytes_);
+  *bytes_to_skip = bytes_written;
+  memory_ += bytes_written;
+  remaining_bytes_ -= bytes_written;
 }
 
 void PaintOpWriter::Write(const PaintFlags& flags) {

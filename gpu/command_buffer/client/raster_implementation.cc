@@ -88,90 +88,100 @@ namespace {
 
 const size_t kMaxTransferCacheEntrySizeForTransferBuffer = 1024;
 
+}  // namespace
+
 // Helper to copy data to the GPU service over the transfer cache.
-class TransferCacheSerializeHelperImpl
+class RasterImplementation::TransferCacheSerializeHelperImpl
     : public cc::TransferCacheSerializeHelper {
  public:
-  explicit TransferCacheSerializeHelperImpl(ContextSupport* support)
-      : support_(support) {}
+  explicit TransferCacheSerializeHelperImpl(RasterImplementation* ri)
+      : ri_(ri) {}
   ~TransferCacheSerializeHelperImpl() final = default;
 
-  void SubmitDeferredEntries() final {
-    for (auto& entry : deferred_entries_) {
-      void* data = support_->MapTransferCacheEntry(entry.size);
-      memcpy(data, entry.data.get(), entry.size);
-      support_->UnmapAndCreateTransferCacheEntry(entry.type, entry.id);
-    }
-    deferred_entries_.clear();
+  size_t take_end_offset_of_last_inlined_entry() {
+    auto offset = end_offset_of_last_inlined_entry_;
+    end_offset_of_last_inlined_entry_ = 0u;
+    return offset;
   }
 
  private:
   bool LockEntryInternal(const EntryKey& key) final {
-    return support_->ThreadsafeLockTransferCacheEntry(
+    return ri_->ThreadsafeLockTransferCacheEntry(
         static_cast<uint32_t>(key.first), key.second);
   }
 
-  void CreateEntryInternal(const cc::ClientTransferCacheEntry& entry) final {
+  size_t CreateEntryInternal(const cc::ClientTransferCacheEntry& entry,
+                             char* memory) final {
     size_t size = entry.SerializedSize();
-    // As an optimization, don't defer entries that are too large, as we will
-    // always choose mapped memory for them in MapTransferCacheEntry below.
-    // If we defer but then use mapped memory, it's an unneeded copy.
-    if (size <= kMaxTransferCacheEntrySizeForTransferBuffer) {
-      DeferEntry(entry);
-      return;
+    // Cap the entries inlined to a specific size.
+    if (size <= ri_->max_inlined_entry_size_ && ri_->raster_mapped_buffer_) {
+      size_t written = InlineEntry(entry, memory);
+      if (written > 0u)
+        return written;
     }
 
-    void* data = support_->MapTransferCacheEntry(size);
+    void* data = ri_->MapTransferCacheEntry(size);
     if (!data)
-      return;
+      return 0u;
 
     bool succeeded = entry.Serialize(
         base::make_span(reinterpret_cast<uint8_t*>(data), size));
     DCHECK(succeeded);
-    support_->UnmapAndCreateTransferCacheEntry(entry.UnsafeType(), entry.Id());
+    ri_->UnmapAndCreateTransferCacheEntry(entry.UnsafeType(), entry.Id());
+    return 0u;
   }
 
   void FlushEntriesInternal(std::set<EntryKey> entries) final {
-    DCHECK(deferred_entries_.empty());
-
     std::vector<std::pair<uint32_t, uint32_t>> transformed;
     transformed.reserve(entries.size());
     for (const auto& e : entries)
       transformed.emplace_back(static_cast<uint32_t>(e.first), e.second);
-    support_->UnlockTransferCacheEntries(transformed);
+    ri_->UnlockTransferCacheEntries(transformed);
   }
 
-  void DeferEntry(const cc::ClientTransferCacheEntry& entry) {
-    // Because lifetime of the transfer cache entry is transient, we need
-    // to serialize on the heap, instead of holding onto the entry.
-    size_t size = entry.SerializedSize();
-    std::unique_ptr<uint8_t[]> mem(new uint8_t[size]);
-    bool succeeded = entry.Serialize(base::make_span(mem.get(), size));
+  // Writes the entry into |memory| if there is enough space. Returns the number
+  // of bytes written on success or 0u on failure due to insufficient size.
+  size_t InlineEntry(const cc::ClientTransferCacheEntry& entry, char* memory) {
+    DCHECK(memory);
+    DCHECK(SkIsAlign4(reinterpret_cast<uintptr_t>(memory)));
+
+    // The memory passed from the PaintOpWriter for inlining the transfer cache
+    // entry must be from the transfer buffer mapped during RasterCHROMIUM.
+    const auto& buffer = ri_->raster_mapped_buffer_;
+    DCHECK(buffer->BelongsToBuffer(memory));
+
+    size_t memory_offset = memory - static_cast<char*>(buffer->address());
+    size_t bytes_to_write = entry.SerializedSize();
+    size_t bytes_remaining = buffer->size() - memory_offset;
+    DCHECK_GT(bytes_to_write, 0u);
+
+    if (bytes_to_write > bytes_remaining)
+      return 0u;
+
+    bool succeeded = entry.Serialize(
+        base::make_span(reinterpret_cast<uint8_t*>(memory), bytes_remaining));
     DCHECK(succeeded);
-    deferred_entries_.push_back(
-        {size, entry.UnsafeType(), entry.Id(), std::move(mem)});
+    ri_->transfer_cache_.AddTransferCacheEntry(
+        entry.UnsafeType(), entry.Id(), buffer->shm_id(),
+        buffer->offset() + memory_offset, bytes_to_write);
+
+    end_offset_of_last_inlined_entry_ = memory_offset + bytes_to_write;
+    return bytes_to_write;
   }
 
-  ContextSupport* const support_;
-
-  struct DeferredEntry {
-    size_t size;
-    uint32_t type;
-    uint32_t id;
-    std::unique_ptr<uint8_t[]> data;
-  };
-  std::vector<DeferredEntry> deferred_entries_;
+  RasterImplementation* const ri_;
+  size_t end_offset_of_last_inlined_entry_ = 0u;
 
   DISALLOW_COPY_AND_ASSIGN(TransferCacheSerializeHelperImpl);
 };
 
 // Helper to copy PaintOps to the GPU service over the transfer buffer.
-class PaintOpSerializer {
+class RasterImplementation::PaintOpSerializer {
  public:
   PaintOpSerializer(size_t initial_size,
                     RasterImplementation* ri,
                     cc::DecodeStashingImageProvider* stashing_image_provider,
-                    cc::TransferCacheSerializeHelper* transfer_cache_helper,
+                    TransferCacheSerializeHelperImpl* transfer_cache_helper,
                     ClientFontManager* font_manager)
       : ri_(ri),
         buffer_(static_cast<char*>(ri_->MapRasterCHROMIUM(initial_size))),
@@ -214,16 +224,16 @@ class PaintOpSerializer {
     // Serialize fonts before sending raster commands.
     font_manager_->Serialize();
 
-    // Shrink the transfer buffer down to what was written during raster.
-    ri_->FinalizeRasterCHROMIUM(written_bytes_);
-
-    // Create and submit any transfer cache entries that were waiting on raster
-    // to finish to be written into the transfer buffer.
-    transfer_cache_helper_->SubmitDeferredEntries();
+    // Check the address of the last inlined entry to figured out whether
+    // transfer cache entries were written past the last successfully serialized
+    // op.
+    size_t total_written_size = std::max(
+        written_bytes_,
+        transfer_cache_helper_->take_end_offset_of_last_inlined_entry());
 
     // Send the raster command itself now that the commands for its
     // dependencies have been sent.
-    ri_->UnmapRasterCHROMIUM(written_bytes_);
+    ri_->UnmapRasterCHROMIUM(written_bytes_, total_written_size);
 
     // Now that we've issued the RasterCHROMIUM referencing the stashed
     // images, Reset the |stashing_image_provider_|, causing us to issue
@@ -243,7 +253,7 @@ class PaintOpSerializer {
   RasterImplementation* const ri_;
   char* buffer_;
   cc::DecodeStashingImageProvider* const stashing_image_provider_;
-  cc::TransferCacheSerializeHelper* const transfer_cache_helper_;
+  TransferCacheSerializeHelperImpl* const transfer_cache_helper_;
   ClientFontManager* font_manager_;
 
   size_t written_bytes_ = 0;
@@ -251,8 +261,6 @@ class PaintOpSerializer {
 
   DISALLOW_COPY_AND_ASSIGN(PaintOpSerializer);
 };
-
-}  // namespace
 
 RasterImplementation::SingleThreadChecker::SingleThreadChecker(
     RasterImplementation* raster_implementation)
@@ -282,6 +290,7 @@ RasterImplementation::RasterImplementation(
       aggressively_free_resources_(false),
       font_manager_(this, helper->command_buffer()),
       lost_(false),
+      max_inlined_entry_size_(kMaxTransferCacheEntrySizeForTransferBuffer),
       transfer_cache_(this) {
   DCHECK(helper);
   DCHECK(transfer_buffer);
@@ -460,15 +469,9 @@ bool RasterImplementation::ThreadsafeDiscardableTextureIsDeletedForTracing(
 }
 
 void* RasterImplementation::MapTransferCacheEntry(size_t serialized_size) {
-  // Putting small entries in the transfer buffer is an optimization.  To avoid
-  // the case of one client exhausting the entire transfer buffer with transfer
-  // cache entries, only use this path if this fits without waiting and fall
-  // back to mapped memory otherwise.  Additionally, if we are inside raster,
-  // then we must use mapped memory because rasterizing requests
-  // GetTransferBufferFreeSize as the initial size and shrink later during
-  // FinalizeRasterCHROMIUM.
-  if (inside_raster_ ||
-      serialized_size > kMaxTransferCacheEntrySizeForTransferBuffer ||
+  // Prefer to use transfer buffer when possible, since transfer buffer
+  // allocations are much cheaper.
+  if (raster_mapped_buffer_ ||
       transfer_buffer_->GetFreeSize() < serialized_size) {
     return transfer_cache_.MapEntry(mapped_memory_.get(), serialized_size);
   }
@@ -1075,7 +1078,6 @@ void* RasterImplementation::MapRasterCHROMIUM(GLsizeiptr size) {
     return nullptr;
   }
 
-  inside_raster_ = true;
   return raster_mapped_buffer_->address();
 }
 
@@ -1109,12 +1111,11 @@ void* RasterImplementation::MapFontBuffer(size_t size) {
   return font_mapped_buffer_->address();
 }
 
-void RasterImplementation::FinalizeRasterCHROMIUM(GLsizeiptr written_size) {
-  if (written_size < 0) {
+void RasterImplementation::UnmapRasterCHROMIUM(GLsizeiptr raster_written_size,
+                                               GLsizeiptr total_written_size) {
+  if (total_written_size < 0) {
     SetGLError(GL_INVALID_VALUE, "glUnmapRasterCHROMIUM",
                "negative written_size");
-    raster_mapped_buffer_->Discard();
-    raster_mapped_buffer_ = base::nullopt;
     return;
   }
   if (!raster_mapped_buffer_) {
@@ -1122,21 +1123,12 @@ void RasterImplementation::FinalizeRasterCHROMIUM(GLsizeiptr written_size) {
     return;
   }
   DCHECK(raster_mapped_buffer_->valid());
-  if (written_size == 0) {
+  if (total_written_size == 0) {
     raster_mapped_buffer_->Discard();
     raster_mapped_buffer_ = base::nullopt;
     return;
   }
-  raster_mapped_buffer_->Shrink(written_size);
-  inside_raster_ = false;
-}
-
-void RasterImplementation::UnmapRasterCHROMIUM(GLsizeiptr written_size) {
-  if (!raster_mapped_buffer_)
-    return;
-  DCHECK_EQ(static_cast<uint32_t>(raster_mapped_buffer_->size()),
-            static_cast<uint32_t>(written_size))
-      << "Call FinalizeRasterCHROMIUM first";
+  raster_mapped_buffer_->Shrink(total_written_size);
 
   GLuint font_shm_id = 0u;
   GLuint font_shm_offset = 0u;
@@ -1146,9 +1138,13 @@ void RasterImplementation::UnmapRasterCHROMIUM(GLsizeiptr written_size) {
     font_shm_offset = font_mapped_buffer_->offset();
     font_shm_size = font_mapped_buffer_->size();
   }
-  helper_->RasterCHROMIUM(raster_mapped_buffer_->shm_id(),
-                          raster_mapped_buffer_->offset(), written_size,
-                          font_shm_id, font_shm_offset, font_shm_size);
+
+  if (raster_written_size != 0u) {
+    helper_->RasterCHROMIUM(
+        raster_mapped_buffer_->shm_id(), raster_mapped_buffer_->offset(),
+        raster_written_size, font_shm_id, font_shm_offset, font_shm_size);
+  }
+
   raster_mapped_buffer_ = base::nullopt;
   font_mapped_buffer_ = base::nullopt;
   CheckGLError();
@@ -1230,14 +1226,11 @@ void RasterImplementation::BeginRasterCHROMIUM(
           cc::TransferCacheEntryType::kColorSpace,
           raster_color_space.color_space_id)) {
     transfer_cache_serialize_helper.CreateEntry(
-        cc::ClientColorSpaceTransferCacheEntry(raster_color_space));
+        cc::ClientColorSpaceTransferCacheEntry(raster_color_space), nullptr);
   }
   transfer_cache_serialize_helper.AssertLocked(
       cc::TransferCacheEntryType::kColorSpace,
       raster_color_space.color_space_id);
-  // Creating this entry could have been deferred, so submit it so that
-  // BeginRasterCHROMIUM can depend on it.
-  transfer_cache_serialize_helper.SubmitDeferredEntries();
 
   helper_->BeginRasterCHROMIUMImmediate(
       sk_color, msaa_sample_count, can_use_lcd_text, color_type,
@@ -1267,8 +1260,6 @@ void RasterImplementation::RasterCHROMIUM(const cc::DisplayItemList* list,
   list->rtree_.Search(query_rect, &temp_raster_offsets_);
   if (temp_raster_offsets_.empty())
     return;
-
-  DCHECK(!inside_raster_);
 
   // TODO(enne): Tune these numbers
   // TODO(enne): Convert these types here and in transfer buffer to be size_t.
@@ -1305,13 +1296,10 @@ void RasterImplementation::RasterCHROMIUM(const cc::DisplayItemList* list,
       capabilities().context_supports_distance_field_text,
       capabilities().max_texture_size,
       capabilities().glyph_cache_max_texture_bytes);
-  DCHECK(inside_raster_);
   serializer.Serialize(&list->paint_op_buffer_, &temp_raster_offsets_,
                        preamble);
   // TODO(piman): raise error if !serializer.valid()?
   op_serializer.SendSerializedData();
-
-  DCHECK(!inside_raster_);
 }
 
 void RasterImplementation::EndRasterCHROMIUM() {
@@ -1377,6 +1365,16 @@ void RasterImplementation::ResetActiveURLCHROMIUM() {
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glResetActiveURLCHROMIUM("
                      << ")");
   helper_->ResetActiveURLCHROMIUM();
+}
+
+std::unique_ptr<cc::TransferCacheSerializeHelper>
+RasterImplementation::CreateTransferCacheHelperForTesting() {
+  return std::make_unique<TransferCacheSerializeHelperImpl>(this);
+}
+
+void RasterImplementation::SetRasterMappedBufferForTesting(
+    ScopedTransferBufferPtr buffer) {
+  raster_mapped_buffer_.emplace(std::move(buffer));
 }
 
 RasterImplementation::RasterProperties::RasterProperties(
