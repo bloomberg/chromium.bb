@@ -88,7 +88,7 @@ struct CddlGroup {
 struct CddlSymbolTable {
   std::vector<std::unique_ptr<CddlType>> types;
   std::vector<std::unique_ptr<CddlGroup>> groups;
-  std::string one_rule_to_ring_them_all;
+  std::string root_rule;
   std::map<std::string, CddlType*> type_map;
   std::map<std::string, CddlGroup*> group_map;
 };
@@ -159,6 +159,7 @@ struct CppType {
 struct CppSymbolTable {
   std::vector<std::unique_ptr<CppType>> cpp_types;
   std::map<std::string, CppType*> cpp_type_map;
+  std::string root_rule;
 };
 
 std::pair<bool, CddlSymbolTable> BuildSymbolTable(const AstNode& rules);

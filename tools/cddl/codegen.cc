@@ -255,6 +255,14 @@ bool WriteTypeDefinitions(int fd, const CppSymbolTable& table) {
     if (!EnsureDependentTypeDefinitionsWritten(fd, *type, &defs))
       return false;
   }
+
+  dprintf(fd, "\nenum class Type {\n");
+  CppType* root_type = table.cpp_type_map.find(table.root_rule)->second;
+  for (const auto* type : root_type->discriminated_union.members) {
+    dprintf(fd, "    k%s,\n",
+            ToCamelCase(type->tagged_type.real_type->name).c_str());
+  }
+  dprintf(fd, "};\n");
   return true;
 }
 

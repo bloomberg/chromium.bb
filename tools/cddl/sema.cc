@@ -332,7 +332,7 @@ std::pair<bool, CddlSymbolTable> BuildSymbolTable(const AstNode& rules) {
     return result;
   }
   bool is_type = node->type == AstNode::Type::kTypename;
-  table.one_rule_to_ring_them_all = node->text;
+  table.root_rule = node->text;
 
   node = node->sibling;
   if (node->type != AstNode::Type::kAssign)
@@ -343,13 +343,13 @@ std::pair<bool, CddlSymbolTable> BuildSymbolTable(const AstNode& rules) {
     CddlType* type = AnalyzeType(&table, *node);
     if (!type)
       return result;
-    table.type_map.emplace(table.one_rule_to_ring_them_all, type);
+    table.type_map.emplace(table.root_rule, type);
   } else {
     table.groups.emplace_back(new CddlGroup);
     CddlGroup* group = table.groups.back().get();
     group->entries.emplace_back(new CddlGroup::Entry);
     AnalyzeGroupEntry(&table, *node, group->entries.back().get());
-    table.group_map.emplace(table.one_rule_to_ring_them_all, group);
+    table.group_map.emplace(table.root_rule, group);
   }
 
   const AstNode* rule = rules.sibling;
@@ -474,8 +474,10 @@ bool AddMembersToStruct(
             MakeCppType(table, cddl_table,
                         cpp_type->name + std::string("_") + x->type.opt_key,
                         *x->type.value);
-        if (!member_type) return false;
-        if (member_type->name.empty()) member_type->name = x->type.opt_key;
+        if (!member_type)
+          return false;
+        if (member_type->name.empty())
+          member_type->name = x->type.opt_key;
         if (x->opt_occurrence == "?") {
           table->cpp_types.emplace_back(new CppType);
           CppType* optional_type = table->cpp_types.back().get();
@@ -579,14 +581,26 @@ std::pair<bool, CppSymbolTable> BuildCppTypes(
   std::pair<bool, CppSymbolTable> result;
   result.first = false;
   auto& table = result.second;
+  table.root_rule = cddl_table.root_rule;
   for (const auto& type_entry : cddl_table.type_map) {
-    if (type_entry.first == cddl_table.one_rule_to_ring_them_all)
-      continue;
     if (!MakeCppType(&table, cddl_table, type_entry.first,
                      *type_entry.second)) {
       return result;
     }
   }
+  auto root_rule_entry = table.cpp_type_map.find(table.root_rule);
+  if (root_rule_entry == table.cpp_type_map.end())
+    return result;
+  CppType* root_rule = root_rule_entry->second;
+  if (root_rule->which != CppType::Which::kDiscriminatedUnion)
+    return result;
+  for (const auto* choice : root_rule->discriminated_union.members) {
+    if (choice->which != CppType::Which::kTaggedType)
+      return result;
+    if (choice->tagged_type.real_type->name.empty())
+      return result;
+  }
+
   result.first = true;
   return result;
 }
