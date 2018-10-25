@@ -361,7 +361,15 @@ void DataReductionProxyIOData::UpdateProxyRequestHeaders(
       FROM_HERE,
       base::BindOnce(&DataReductionProxyService::SetProxyRequestHeadersOnUI,
                      service_, std::move(headers)));
-  OnProxyConfigUpdated();
+  UpdateCustomProxyConfig();
+}
+
+void DataReductionProxyIOData::OnProxyConfigUpdated() {
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&DataReductionProxyService::SetConfiguredProxiesOnUI,
+                     service_, config_->GetAllConfiguredProxies()));
+  UpdateCustomProxyConfig();
 }
 
 network::mojom::CustomProxyConfigPtr
@@ -397,7 +405,7 @@ DataReductionProxyIOData::CreateCustomProxyConfig(
   return config;
 }
 
-void DataReductionProxyIOData::OnProxyConfigUpdated() {
+void DataReductionProxyIOData::UpdateCustomProxyConfig() {
   if (!proxy_config_client_)
     return;
 
@@ -409,7 +417,7 @@ void DataReductionProxyIOData::OnEffectiveConnectionTypeChanged(
     net::EffectiveConnectionType type) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   effective_connection_type_ = type;
-  OnProxyConfigUpdated();
+  UpdateCustomProxyConfig();
 }
 
 void DataReductionProxyIOData::OnRTTOrThroughputEstimatesComputed(
@@ -427,7 +435,7 @@ DataReductionProxyIOData::GetEffectiveConnectionType() const {
 void DataReductionProxyIOData::SetCustomProxyConfigClient(
     network::mojom::CustomProxyConfigClientPtrInfo config_client_info) {
   proxy_config_client_.Bind(std::move(config_client_info));
-  OnProxyConfigUpdated();
+  UpdateCustomProxyConfig();
 }
 
 }  // namespace data_reduction_proxy

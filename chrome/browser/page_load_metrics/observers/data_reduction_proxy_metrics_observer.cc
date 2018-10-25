@@ -167,18 +167,19 @@ DataReductionProxyMetricsObserver::OnCommit(
   // ResourceDispatcherHostDelegate::GetNavigationData during commit.
   // Because ChromeResourceDispatcherHostDelegate always returns a
   // ChromeNavigationData, it is safe to static_cast here.
-  ChromeNavigationData* chrome_navigation_data =
-      static_cast<ChromeNavigationData*>(
-          navigation_handle->GetNavigationData());
-  if (!chrome_navigation_data)
-    return STOP_OBSERVING;
-  data_reduction_proxy::DataReductionProxyData* data =
-      chrome_navigation_data->GetDataReductionProxyData();
+  std::unique_ptr<DataReductionProxyData> data;
+  auto* settings =
+      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+          browser_context_);
+  if (settings) {
+    data = settings->CreateDataFromNavigationHandle(
+        navigation_handle, navigation_handle->GetResponseHeaders());
+  }
   if (!data || !(data->used_data_reduction_proxy() ||
                  data->was_cached_data_reduction_proxy_response())) {
     return STOP_OBSERVING;
   }
-  data_ = data->DeepCopy();
+  data_ = std::move(data);
 
   PreviewsUITabHelper* ui_tab_helper =
       PreviewsUITabHelper::FromWebContents(navigation_handle->GetWebContents());

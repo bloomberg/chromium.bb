@@ -56,6 +56,20 @@ DataReductionProxyMutableConfigValues::FindConfiguredDataReductionProxy(
   return base::nullopt;
 }
 
+net::ProxyList DataReductionProxyMutableConfigValues::GetAllConfiguredProxies()
+    const {
+  net::ProxyList proxies;
+  for (const auto& proxy : proxies_for_http())
+    proxies.AddProxyServer(proxy.proxy_server());
+
+  for (const auto& recent_proxies : recently_configured_proxy_lists_) {
+    for (const auto& proxy : recent_proxies)
+      proxies.AddProxyServer(proxy.proxy_server());
+  }
+
+  return proxies;
+}
+
 void DataReductionProxyMutableConfigValues::UpdateValues(
     const std::vector<DataReductionProxyServer>& new_proxies_for_http) {
   DCHECK(thread_checker_.CalledOnValidThread());

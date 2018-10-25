@@ -1013,6 +1013,9 @@ void NavigationRequest::OnResponseStarted(
   if (navigation_data)
     navigation_handle_->set_navigation_data(std::move(navigation_data));
 
+  // This must be set before DetermineCommittedPreviews is called.
+  navigation_handle_->set_proxy_server(response->head.proxy_server);
+
   // Update the previews state of the request.
   common_params_.previews_state =
       GetContentClient()->browser()->DetermineCommittedPreviews(
@@ -1099,6 +1102,7 @@ void NavigationRequest::OnResponseStarted(
       response->head.connection_info, response->head.socket_address, ssl_info_,
       request_id, common_params_.should_replace_current_entry, is_download,
       is_stream, response->head.is_signed_exchange_inner_response,
+      response->head.was_fetched_via_cache,
       base::Bind(&NavigationRequest::OnWillProcessResponseChecksComplete,
                  base::Unretained(this)));
 }

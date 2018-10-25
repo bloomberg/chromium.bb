@@ -5151,17 +5151,20 @@ content::PreviewsState ChromeContentBrowserClient::DetermineCommittedPreviews(
       previews_service->previews_ui_service()->previews_decider_impl();
   DCHECK(previews_decider_impl);
 
-  // ChromeNavigationData should be null after network s13n is turned on.
-  data_reduction_proxy::DataReductionProxyData* drp_data = nullptr;
-  ChromeNavigationData* chrome_navigation_data =
-      static_cast<ChromeNavigationData*>(
-          navigation_handle->GetNavigationData());
-  if (chrome_navigation_data)
-    drp_data = chrome_navigation_data->GetDataReductionProxyData();
+  std::unique_ptr<data_reduction_proxy::DataReductionProxyData> drp_data;
+  auto* settings =
+      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+          navigation_handle->GetWebContents()->GetBrowserContext());
+  if (settings) {
+    // TODO(898326): |drp_data| may be incomplete because |navigation_handle|
+    // does not yet have all the response information.
+    drp_data = settings->CreateDataFromNavigationHandle(navigation_handle,
+                                                        response_headers);
+  }
 
   // Determine effective PreviewsState for this committed main frame response.
   content::PreviewsState committed_state = DetermineCommittedPreviewsForURL(
-      navigation_handle->GetURL(), drp_data, previews_user_data,
+      navigation_handle->GetURL(), drp_data.get(), previews_user_data,
       previews_decider_impl, initial_state);
 
   // Double check that we never serve a preview when we have a

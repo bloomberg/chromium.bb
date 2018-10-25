@@ -359,6 +359,9 @@ class DataReductionProxyTestContext {
     Builder& WithProxiesForHttp(
         const std::vector<DataReductionProxyServer>& proxy_servers);
 
+    // Specifies a settings object to use.
+    Builder& WithSettings(std::unique_ptr<DataReductionProxySettings> settings);
+
     // Creates a |DataReductionProxyTestContext|. Owned by the caller.
     std::unique_ptr<DataReductionProxyTestContext> Build();
 
@@ -375,6 +378,7 @@ class DataReductionProxyTestContext {
     bool use_test_config_client_;
     bool skip_settings_initialization_;
     std::vector<DataReductionProxyServer> proxy_servers_;
+    std::unique_ptr<DataReductionProxySettings> settings_;
   };
 
   virtual ~DataReductionProxyTestContext();

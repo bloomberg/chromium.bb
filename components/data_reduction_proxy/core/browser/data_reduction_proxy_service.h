@@ -22,6 +22,7 @@
 #include "components/data_use_measurement/core/data_use_measurement.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/nqe/effective_connection_type.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -51,7 +52,8 @@ class DataReductionProxySettings;
 class DataReductionProxyService
     : public data_use_measurement::DataUseMeasurement::ServicesDataUseObserver,
       public network::NetworkQualityTracker::EffectiveConnectionTypeObserver,
-      public network::NetworkQualityTracker::RTTAndThroughputEstimatesObserver {
+      public network::NetworkQualityTracker::RTTAndThroughputEstimatesObserver,
+      public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   // The caller must ensure that |settings|, |prefs|, |request_context|, and
   // |io_task_runner| remain alive for the lifetime of the
@@ -67,6 +69,7 @@ class DataReductionProxyService
       std::unique_ptr<DataStore> store,
       std::unique_ptr<DataReductionProxyPingbackClient> pingback_client,
       network::NetworkQualityTracker* network_quality_tracker,
+      network::NetworkConnectionTracker* network_connection_tracker,
       data_use_measurement::DataUseMeasurement* data_use_measurement,
       const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
@@ -142,8 +145,13 @@ class DataReductionProxyService
   net::EffectiveConnectionType GetEffectiveConnectionType() const;
   base::Optional<base::TimeDelta> GetHttpRttEstimate() const;
 
+  network::mojom::ConnectionType GetConnectionType() const;
+
   // Sends the given |headers| to |DataReductionProxySettings|.
   void SetProxyRequestHeadersOnUI(const net::HttpRequestHeaders& headers);
+
+  // Sends the given |proxies| to |DataReductionProxySettings|.
+  void SetConfiguredProxiesOnUI(const net::ProxyList& proxies);
 
   // Sets a config client that can be used to update Data Reduction Proxy
   // settings when the network service is enabled.
@@ -187,6 +195,9 @@ class DataReductionProxyService
 
   void OnServicesDataUse(int64_t recv_bytes, int64_t sent_bytes) override;
 
+  // NetworkConnectionTracker::NetworkConnectionObserver
+  void OnConnectionChanged(network::mojom::ConnectionType type) override;
+
   net::URLRequestContextGetter* url_request_context_getter_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
@@ -220,6 +231,7 @@ class DataReductionProxyService
   // Must be accessed on UI thread. Guaranteed to be non-null during the
   // lifetime of |this|.
   network::NetworkQualityTracker* network_quality_tracker_;
+  network::NetworkConnectionTracker* network_connection_tracker_;
 
   // Must be accessed on UI thread. Guaranteed to be non-null during the
   // lifetime of |this|.
@@ -228,6 +240,9 @@ class DataReductionProxyService
   // Current network quality estimates.
   net::EffectiveConnectionType effective_connection_type_;
   base::Optional<base::TimeDelta> http_rtt_;
+
+  network::mojom::ConnectionType connection_type_ =
+      network::mojom::ConnectionType::CONNECTION_UNKNOWN;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

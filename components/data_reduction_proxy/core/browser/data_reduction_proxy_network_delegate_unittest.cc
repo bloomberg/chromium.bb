@@ -328,12 +328,12 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     mock_socket_factory_.reset(new net::MockClientSocketFactory());
 
     DataReductionProxyTestContext::Builder builder;
-    builder = builder.WithClient(kClient)
-                  .WithMockClientSocketFactory(mock_socket_factory_.get())
-                  .WithURLRequestContext(context_.get());
+    builder.WithClient(kClient)
+        .WithMockClientSocketFactory(mock_socket_factory_.get())
+        .WithURLRequestContext(context_.get());
 
     if (proxy_config != BYPASS_PROXY) {
-      builder = builder.WithProxiesForHttp({DataReductionProxyServer(
+      builder.WithProxiesForHttp({DataReductionProxyServer(
           proxy_server, ProxyServer::UNSPECIFIED_TYPE)});
     }
 

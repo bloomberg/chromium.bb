@@ -930,7 +930,8 @@ TEST_F(ChromePasswordProtectionServiceTest,
             test_handle->CallWillProcessResponseForTesting(
                 main_rfh(),
                 net::HttpUtil::AssembleRawHeaders(
-                    kBasicResponseHeaders, strlen(kBasicResponseHeaders))));
+                    kBasicResponseHeaders, strlen(kBasicResponseHeaders)),
+                false, net::ProxyServer::Direct()));
   test_handle->CallDidCommitNavigationForTesting(redirect_url);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(test_handle->HasCommitted());

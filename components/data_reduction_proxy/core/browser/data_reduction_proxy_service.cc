@@ -40,6 +40,7 @@ DataReductionProxyService::DataReductionProxyService(
     std::unique_ptr<DataStore> store,
     std::unique_ptr<DataReductionProxyPingbackClient> pingback_client,
     network::NetworkQualityTracker* network_quality_tracker,
+    network::NetworkConnectionTracker* network_connection_tracker,
     data_use_measurement::DataUseMeasurement* data_use_measurement,
     const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
@@ -55,11 +56,13 @@ DataReductionProxyService::DataReductionProxyService(
       db_task_runner_(db_task_runner),
       initialized_(false),
       network_quality_tracker_(network_quality_tracker),
+      network_connection_tracker_(network_connection_tracker),
       data_use_measurement_(data_use_measurement),
       effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       weak_factory_(this) {
   DCHECK(settings);
   DCHECK(network_quality_tracker_);
+  DCHECK(network_connection_tracker_);
   db_task_runner_->PostTask(FROM_HERE,
                             base::BindOnce(&DBDataOwner::InitializeOnDBThread,
                                            db_data_owner_->GetWeakPtr()));
@@ -71,12 +74,20 @@ DataReductionProxyService::DataReductionProxyService(
   network_quality_tracker_->AddRTTAndThroughputEstimatesObserver(this);
   if (base::FeatureList::IsEnabled(network::features::kNetworkService))
     data_use_measurement_->AddServicesDataUseObserver(this);
+
+  // TODO(rajendrant): Combine uses of NetworkConnectionTracker within DRP.
+  network_connection_tracker_->AddNetworkConnectionObserver(this);
+  network_connection_tracker_->GetConnectionType(
+      &connection_type_,
+      base::BindOnce(&DataReductionProxyService::OnConnectionChanged,
+                     GetWeakPtr()));
 }
 
 DataReductionProxyService::~DataReductionProxyService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   network_quality_tracker_->RemoveEffectiveConnectionTypeObserver(this);
   network_quality_tracker_->RemoveRTTAndThroughputEstimatesObserver(this);
+  network_connection_tracker_->RemoveNetworkConnectionObserver(this);
   compression_stats_.reset();
   db_task_runner_->DeleteSoon(FROM_HERE, db_data_owner_.release());
   if (base::FeatureList::IsEnabled(network::features::kNetworkService))
@@ -136,6 +147,12 @@ void DataReductionProxyService::ReadPersistedClientConfig() {
       base::BindOnce(
           &DataReductionProxyIOData::SetDataReductionProxyConfiguration,
           io_data_, config_value));
+}
+
+void DataReductionProxyService::OnConnectionChanged(
+    network::mojom::ConnectionType type) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  connection_type_ = type;
 }
 
 void DataReductionProxyService::OnEffectiveConnectionTypeChanged(
@@ -246,6 +263,12 @@ DataReductionProxyService::GetEffectiveConnectionType() const {
   return effective_connection_type_;
 }
 
+network::mojom::ConnectionType DataReductionProxyService::GetConnectionType()
+    const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return connection_type_;
+}
+
 base::Optional<base::TimeDelta> DataReductionProxyService::GetHttpRttEstimate()
     const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -256,6 +279,12 @@ void DataReductionProxyService::SetProxyRequestHeadersOnUI(
     const net::HttpRequestHeaders& headers) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   settings_->SetProxyRequestHeaders(headers);
+}
+
+void DataReductionProxyService::SetConfiguredProxiesOnUI(
+    const net::ProxyList& proxies) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  settings_->SetConfiguredProxies(proxies);
 }
 
 void DataReductionProxyService::SetIgnoreLongTermBlackListRules(

@@ -21,6 +21,10 @@ class SequencedTaskRunner;
 class SingleThreadTaskRunner;
 }
 
+namespace content {
+class NavigationHandle;
+}
+
 namespace data_reduction_proxy {
 class DataReductionProxyIOData;
 class DataStore;
@@ -94,6 +98,12 @@ class DataReductionProxyChromeSettings
 
   void SetIgnoreLongTermBlackListRules(
       bool ignore_long_term_black_list_rules) override;
+
+  // Builds an instance of DataReductionProxyData from the given |handle| and
+  // |headers|.
+  std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
+  CreateDataFromNavigationHandle(content::NavigationHandle* handle,
+                                 const net::HttpResponseHeaders* headers);
 
  private:
   // Helper method for migrating the Data Reduction Proxy away from using the

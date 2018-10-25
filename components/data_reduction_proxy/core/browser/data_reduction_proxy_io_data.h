@@ -135,8 +135,6 @@ class DataReductionProxyIOData {
   // Forwards proxy authentication headers to the UI thread.
   void UpdateProxyRequestHeaders(const net::HttpRequestHeaders& headers);
 
-  void OnProxyConfigUpdated();
-
   // Notifies |this| that there there is a change in the effective connection
   // type.
   void OnEffectiveConnectionTypeChanged(net::EffectiveConnectionType type);
@@ -245,6 +243,13 @@ class DataReductionProxyIOData {
   // NetworkContext.
   network::mojom::CustomProxyConfigPtr CreateCustomProxyConfig(
       const std::vector<DataReductionProxyServer>& proxies_for_http) const;
+
+  // Called when the list of proxies changes.
+  void OnProxyConfigUpdated();
+
+  // Should be called whenever there is a possible change to the custom proxy
+  // config.
+  void UpdateCustomProxyConfig();
 
   // The type of Data Reduction Proxy client.
   const Client client_;

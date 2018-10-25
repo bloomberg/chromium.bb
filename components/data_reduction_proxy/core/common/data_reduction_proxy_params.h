@@ -195,6 +195,7 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
   // if any exist.
   base::Optional<DataReductionProxyTypeInfo> FindConfiguredDataReductionProxy(
       const net::ProxyServer& proxy_server) const override;
+  net::ProxyList GetAllConfiguredProxies() const override;
 
  private:
   std::vector<DataReductionProxyServer> proxies_for_http_;
