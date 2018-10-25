@@ -392,6 +392,13 @@ void ResourceLoader::Start() {
   if (request.IsAutomaticUpgrade()) {
     LogMixedAutoupgradeStatus(MixedContentAutoupgradeStatus::kStarted);
   }
+  if (resource_->GetResourceRequest().IsDownloadToNetworkCacheOnly()) {
+    // The download-to-cache requests are throttled in net/, they are fire-and
+    // forget, and cannot unregister properly from the scheduler once they are
+    // finished.
+    throttle_option =
+        ResourceLoadScheduler::ThrottleOption::kCanNotBeStoppedOrThrottled;
+  }
   scheduler_->Request(this, throttle_option, request.Priority(),
                       request.IntraPriorityValue(), &scheduler_client_id_);
 }

@@ -60,6 +60,7 @@ ResourceRequest::ResourceRequest(const KURL& url)
       allow_stale_response_(false),
       cache_mode_(mojom::FetchCacheMode::kDefault),
       skip_service_worker_(false),
+      download_to_cache_only_(false),
       priority_(ResourceLoadPriority::kLowest),
       intra_priority_value_(0),
       requestor_id_(0),

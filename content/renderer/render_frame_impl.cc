@@ -4970,11 +4970,12 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
   bool is_for_no_state_prefetch =
       GetContentClient()->renderer()->IsPrefetchOnly(this, request);
   extra_data->set_is_for_no_state_prefetch(is_for_no_state_prefetch);
-  extra_data->set_download_to_network_cache_only(
-      is_for_no_state_prefetch && resource_type != RESOURCE_TYPE_MAIN_FRAME);
   extra_data->set_initiated_in_secure_context(frame_document.IsSecureContext());
   extra_data->set_attach_same_site_cookies(attach_same_site_cookies);
   extra_data->set_frame_request_blocker(frame_request_blocker_);
+
+  request.SetDownloadToNetworkCacheOnly(
+      is_for_no_state_prefetch && resource_type != RESOURCE_TYPE_MAIN_FRAME);
 
   // The RenderThreadImpl or its URLLoaderThrottleProvider member may not be
   // valid in some tests.

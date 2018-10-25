@@ -270,6 +270,11 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT ExtraData* GetExtraData() const;
   BLINK_PLATFORM_EXPORT void SetExtraData(std::unique_ptr<ExtraData>);
 
+  // The request is downloaded to the network cache, but not rendered or
+  // executed.
+  BLINK_PLATFORM_EXPORT bool IsDownloadToNetworkCacheOnly() const;
+  BLINK_PLATFORM_EXPORT void SetDownloadToNetworkCacheOnly(bool);
+
   BLINK_PLATFORM_EXPORT Priority GetPriority() const;
   BLINK_PLATFORM_EXPORT void SetPriority(Priority);
 
