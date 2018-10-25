@@ -1286,10 +1286,9 @@ void InspectorPageAgent::ConsumeCompilationCache(
   auto it = compilation_cache_.find(source.Url().GetString());
   if (it == compilation_cache_.end())
     return;
-  const Vector<char>& data = it->value;
+  const protocol::Binary& data = it->value;
   *cached_data = new v8::ScriptCompiler::CachedData(
-      reinterpret_cast<const uint8_t*>(data.data()), data.size(),
-      v8::ScriptCompiler::CachedData::BufferNotOwned);
+      data.data(), data.size(), v8::ScriptCompiler::CachedData::BufferNotOwned);
 }
 
 void InspectorPageAgent::ProduceCompilationCache(const ScriptSourceCode& source,
@@ -1313,9 +1312,11 @@ void InspectorPageAgent::ProduceCompilationCache(const ScriptSourceCode& source,
   std::unique_ptr<v8::ScriptCompiler::CachedData> cached_data(
       v8::ScriptCompiler::CreateCodeCache(script->GetUnboundScript()));
   if (cached_data) {
-    String base64data = Base64Encode(
-        reinterpret_cast<const char*>(cached_data->data), cached_data->length);
-    GetFrontend()->compilationCacheProduced(url_string, base64data);
+    // CachedData produced by CreateCodeCache always owns its buffer.
+    CHECK_EQ(cached_data->buffer_policy,
+             v8::ScriptCompiler::CachedData::BufferOwned);
+    GetFrontend()->compilationCacheProduced(
+        url_string, protocol::Binary::fromCachedData(std::move(cached_data)));
   }
 }
 
@@ -1325,11 +1326,8 @@ Response InspectorPageAgent::setProduceCompilationCache(bool enabled) {
 }
 
 Response InspectorPageAgent::addCompilationCache(const String& url,
-                                                 const String& base64data) {
-  Vector<char> data;
-  if (!Base64Decode(base64data, data))
-    return Response::Error("data should be base64-encoded");
-  compilation_cache_.Set(url, std::move(data));
+                                                 const protocol::Binary& data) {
+  compilation_cache_.Set(url, data);
   return Response::OK();
 }
 
