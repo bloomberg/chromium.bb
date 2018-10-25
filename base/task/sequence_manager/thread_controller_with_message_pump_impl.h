@@ -49,19 +49,22 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   void RemoveNestingObserver(RunLoop::NestingObserver* observer) override;
   const scoped_refptr<AssociatedThreadId>& GetAssociatedThread() const override;
 
- private:
-  friend class DoWorkScope;
-  friend class RunScope;
-
+ protected:
   // MessagePump::Delegate implementation.
   bool DoWork() override;
   bool DoDelayedWork(TimeTicks* next_run_time) override;
   bool DoIdleWork() override;
 
+ private:
+  friend class DoWorkScope;
+  friend class RunScope;
+
   // RunLoop::Delegate implementation.
   void Run(bool application_tasks_allowed) override;
   void Quit() override;
   void EnsureWorkScheduled() override;
+
+  bool DoWorkImpl(base::TimeTicks* next_run_time);
 
   struct MainThreadOnly {
     MainThreadOnly();
