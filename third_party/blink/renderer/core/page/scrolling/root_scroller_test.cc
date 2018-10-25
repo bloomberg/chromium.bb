@@ -2567,10 +2567,10 @@ class RootScrollerHitTest : public RootScrollerSimTest {
                                     -1, cc::BrowserControlsState::kBoth});
     ASSERT_EQ(0, GetBrowserControls().ShownRatio());
 
-    Element* scroller = GetDocument()
-                            .GetPage()
-                            ->GlobalRootScrollerController()
-                            .GlobalRootScroller();
+    Node* scroller = GetDocument()
+                         .GetPage()
+                         ->GlobalRootScrollerController()
+                         .GlobalRootScroller();
     ScrollableArea* scrollable_area =
         ToLayoutBox(scroller->GetLayoutObject())->GetScrollableArea();
     scrollable_area->DidScroll(FloatPoint(0, 100000));
