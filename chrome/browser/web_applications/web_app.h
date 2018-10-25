@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_H_
 
+#include <iosfwd>
 #include <string>
 
 #include "base/macros.h"
@@ -36,6 +37,9 @@ class WebApp {
 
   DISALLOW_COPY_AND_ASSIGN(WebApp);
 };
+
+// For logging and debug purposes.
+std::ostream& operator<<(std::ostream& out, const WebApp& app);
 
 }  // namespace web_app
 
