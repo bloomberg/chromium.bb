@@ -408,7 +408,12 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'd3d9', 'passthrough'], bug=2192) # ANGLE bug ID
 
     # Vulkan / Win / Passthough command decoder
+    self.Fail('conformance/attribs/' +
+        'gl-vertex-attrib-unconsumed-out-of-bounds.html',
+        ['win', 'passthrough', 'vulkan'], bug=2708) # ANGLE bug ID
     self.Fail('conformance/canvas/canvas-test.html',
+        ['win', 'passthrough', 'vulkan'], bug=2929) # ANGLE bug ID
+    self.Fail('conformance/canvas/canvas-zero-size.html',
         ['win', 'passthrough', 'vulkan'], bug=2918) # ANGLE bug ID
     self.Fail('conformance/context/' +
         'context-attribute-preserve-drawing-buffer.html',
@@ -561,14 +566,20 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'vulkan', 'nvidia'], bug=2922) # ANGLE bug ID
     self.Fail('conformance/textures/misc/texture-size.html',
         ['win', 'passthrough', 'vulkan', 'nvidia'], bug=2915) # ANGLE bug ID
+    self.Fail('conformance/textures/misc/texture-size-cube-maps.html',
+        ['win', 'passthrough', 'vulkan', 'nvidia'], bug=2930) # ANGLE bug ID
     self.Fail('conformance/limits/gl-max-texture-dimensions.html',
         ['win', 'passthrough', 'vulkan', 'nvidia'], bug=2915) # ANGLE bug ID
+    self.Fail('deqp/data/gles2/shaders/conversions.html',
+        ['win', 'passthrough', 'vulkan', 'nvidia'], bug=2926) # ANGLE bug ID
 
     # Vulkan / Win / Intel / Passthough command decoder
     self.Fail('conformance/rendering/clipping-wide-points.html',
         ['win', 'passthrough', 'vulkan', 'intel'], bug=2722) # ANGLE bug ID
 
     # Vulkan / Win / AMD / Passthough command decoder
+    self.Fail('conformance/buffers/buffer-data-dynamic-delay.html',
+        ['win', 'passthrough', 'vulkan', 'amd'], bug=2931) # ANGLE bug ID
     self.Fail('conformance/canvas/to-data-url-test.html',
         ['win', 'passthrough', 'vulkan', 'amd'], bug=2918) # ANGLE bug ID
     self.Fail('conformance/context/premultiplyalpha-test.html',
