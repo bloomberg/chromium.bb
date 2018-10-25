@@ -8,6 +8,7 @@
     android:id="@+id/autofill_assistant"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:paddingTop="@dimen/control_container_height"
     android:visibility="invisible"
     android:gravity="bottom">
 
