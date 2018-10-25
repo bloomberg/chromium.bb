@@ -7,11 +7,16 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "build/build_config.h"
 #include "ui/base/ui_base_export.h"
 
 namespace base {
 template <typename T>
 class NoDestructor;
+}
+
+namespace gfx {
+class SingletonHwndObserver;
 }
 
 namespace ui {
@@ -76,6 +81,11 @@ class UI_BASE_EXPORT MaterialDesignController {
   // used by tests to directly set the mode.
   static void SetMode(Mode mode);
 
+  // Sets |is_refresh_dynamic_ui_| to true and initializes the |mode_|. If the
+  // platform does not support tablet mode switching, |mode_| will be set to
+  // MATERIAL_REFRESH and |is_refresh_dynamic_ui_| will be left untouched.
+  static void MaybeSetDynamicRefreshMode();
+
   // Tracks whether |mode_| has been initialized. This is necessary to avoid
   // checking the |mode_| early in initialization before a call to Initialize().
   // Tests can use it to reset the state back to a clean state during tear down.
@@ -87,6 +97,10 @@ class UI_BASE_EXPORT MaterialDesignController {
   // Whether |mode_| should toggle between MATERIAL_REFRESH and
   // MATERIAL_TOUCH_REFRESH depending on the tablet state.
   static bool is_refresh_dynamic_ui_;
+
+#if defined(OS_WIN)
+  std::unique_ptr<gfx::SingletonHwndObserver> singleton_hwnd_observer_;
+#endif
 
   base::ObserverList<MaterialDesignControllerObserver> observers_;
 
