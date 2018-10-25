@@ -60,6 +60,9 @@
         "browse:search:google_india": {
             "DEFAULT": "system_health_desktop_039.wprgo"
         },
+        "browse:search:google_india:2018": {
+            "DEFAULT": "system_health_desktop_b576da862c.wprgo"
+        },
         "browse:social:facebook_infinite_scroll": {
             "DEFAULT": "system_health_desktop_055.wprgo"
         },
