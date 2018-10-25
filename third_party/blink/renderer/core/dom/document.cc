@@ -2783,6 +2783,8 @@ void Document::Initialize() {
 }
 
 void Document::Shutdown() {
+  if (num_canvases_ > 0)
+    UMA_HISTOGRAM_COUNTS_100("Blink.Canvas.NumCanvasesPerPage", num_canvases_);
   TRACE_EVENT0("blink", "Document::shutdown");
   CHECK(!frame_ || frame_->Tree().ChildCount() == 0);
   if (!IsActive())
@@ -7715,6 +7717,10 @@ void Document::ReportFeaturePolicyViolation(mojom::FeaturePolicyFeature feature,
       (message.IsEmpty() ? ("Feature policy violation: " + feature_name +
                             " is not allowed in this document.")
                          : message)));
+}
+
+void Document::IncrementNumberOfCanvases() {
+  num_canvases_++;
 }
 
 void Document::SendViolationReport(
