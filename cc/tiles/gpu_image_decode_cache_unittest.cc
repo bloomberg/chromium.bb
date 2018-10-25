@@ -2251,7 +2251,7 @@ TEST_P(GpuImageDecodeCacheTest, NonLazyImageUploadNoScale) {
   EXPECT_FALSE(cache->GetSWImageDecodeForTesting(draw_image));
 }
 
-TEST_P(GpuImageDecodeCacheTest, NonLazyImageUploadNoScaleTask) {
+TEST_P(GpuImageDecodeCacheTest, NonLazyImageUploadTaskHasNoDeps) {
   auto cache = CreateCache();
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
@@ -2265,7 +2265,7 @@ TEST_P(GpuImageDecodeCacheTest, NonLazyImageUploadNoScaleTask) {
       cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
   EXPECT_TRUE(result.need_unref);
   EXPECT_TRUE(result.task);
-  TestTileTaskRunner::ProcessTask(result.task->dependencies()[0].get());
+  EXPECT_TRUE(result.task->dependencies().empty());
   TestTileTaskRunner::ProcessTask(result.task.get());
 
   cache->UnrefImage(draw_image);
