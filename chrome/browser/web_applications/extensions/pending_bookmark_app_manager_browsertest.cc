@@ -28,7 +28,9 @@ namespace extensions {
 
 class PendingBookmarkAppManagerBrowserTest : public InProcessBrowserTest {
  protected:
-  void InstallApp(const GURL& url, bool bypass_service_worker_check = false) {
+  void InstallApp(const GURL& url,
+                  bool bypass_service_worker_check = false,
+                  bool require_manifest = false) {
     base::RunLoop run_loop;
     web_app::WebAppProvider::Get(browser()->profile())
         ->pending_app_manager()
@@ -39,7 +41,7 @@ class PendingBookmarkAppManagerBrowserTest : public InProcessBrowserTest {
                                                     // shortcuts in tests.
                      web_app::PendingAppManager::AppInfo::
                          kDefaultOverridePreviousUserUninstall,
-                     bypass_service_worker_check),
+                     bypass_service_worker_check, require_manifest),
                  base::BindLambdaForTesting(
                      [this, &run_loop](const GURL& provided_url,
                                        web_app::InstallResultCode code) {
@@ -142,6 +144,23 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest,
   EXPECT_EQ(url, extensions::AppLaunchInfo::GetLaunchWebURL(app));
   EXPECT_FALSE(extensions::UrlHandlers::CanBookmarkAppHandleUrl(
       app, GURL("chrome://settings")));
+}
+
+// Test that adding a web app without a manifest while using the
+// |require_manifest| flag fails.
+IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest,
+                       RequireManifestFailsIfNoManifest) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(
+      embedded_test_server()->GetURL("/banners/no_manifest_test_page.html"));
+  InstallApp(url, false /* bypass_service_worker_check */,
+             true /* require_manifest */);
+  EXPECT_EQ(web_app::InstallResultCode::kFailedUnknownReason,
+            result_code_.value());
+  base::Optional<std::string> id =
+      web_app::ExtensionIdsMap(browser()->profile()->GetPrefs())
+          .LookupExtensionId(url);
+  ASSERT_FALSE(id.has_value());
 }
 
 }  // namespace extensions
