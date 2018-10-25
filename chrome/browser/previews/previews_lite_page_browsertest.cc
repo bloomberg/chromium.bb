@@ -71,6 +71,10 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
 
     // Previews server will respond with HTTP 403.
     kAuthFailure = 4,
+
+    // Previews server will respond with HTTP 307 to a non-preview page and set
+    // the host-blacklist header value.
+    kHostBlacklist = 5,
   };
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
@@ -353,14 +357,14 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
     return base_https_lite_page_url().ReplaceComponents(replacements);
   }
 
-  void ClearSingleBypass() const {
+  void ClearDeciderState() const {
     PreviewsService* previews_service =
         PreviewsServiceFactory::GetForProfile(browser()->profile());
     ASSERT_TRUE(previews_service);
     PreviewsLitePageDecider* decider =
         previews_service->previews_lite_page_decider();
     ASSERT_TRUE(decider);
-    decider->ClearSingleBypassForTesting();
+    decider->ClearStateForTesting();
   }
 
   virtual GURL previews_server() const { return previews_server_->base_url(); }
@@ -473,6 +477,15 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
         // test server will respond with HTTP 400.
         response->AddCustomHeader("Location", HttpsLitePageURL(kBypass).spec());
         break;
+      case kHostBlacklist:
+        response->set_code(net::HTTP_TEMPORARY_REDIRECT);
+        // This will not cause a redirect loop because on following this
+        // redirect, the URL will no longer be a preview URL and the embedded
+        // test server will respond with HTTP 400.
+        response->AddCustomHeader("Location",
+                                  HttpsLitePageURL(kHostBlacklist).spec());
+        response->AddCustomHeader("chrome-proxy", "host-blacklisted");
+        break;
       case kAuthFailure:
         response->set_code(net::HTTP_FORBIDDEN);
         break;
@@ -533,7 +546,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), HttpLitePageURL(kSuccess));
     VerifyPreviewNotLoaded();
-    ClearSingleBypass();
+    ClearDeciderState();
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.IneligibleReasons",
         PreviewsLitePageNavigationThrottle::IneligibleReason::kNonHttpsScheme,
@@ -556,7 +569,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), https_media_url());
     VerifyPreviewNotLoaded();
-    ClearSingleBypass();
+    ClearDeciderState();
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.BlacklistReasons",
         PreviewsLitePageNavigationThrottle::BlacklistReason::
@@ -579,7 +592,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
         post_data.data(), post_data.size());
     ui_test_utils::NavigateToURL(&params);
     VerifyPreviewNotLoaded();
-    ClearSingleBypass();
+    ClearDeciderState();
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.IneligibleReasons",
         PreviewsLitePageNavigationThrottle::IneligibleReason::kHttpPost, 1);
@@ -667,7 +680,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     ui_test_utils::NavigateToURL(browser(), HttpLitePageURL(kSuccess));
 
     VerifyPreviewNotLoaded();
-    ClearSingleBypass();
+    ClearDeciderState();
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.IneligibleReasons",
         PreviewsLitePageNavigationThrottle::IneligibleReason::kNetworkNotSlow,
@@ -739,7 +752,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kRedirect));
     VerifyPreviewNotLoaded();
-    ClearSingleBypass();
+    ClearDeciderState();
     histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
                                        true, 1);
     histogram_tester.ExpectBucketCount(
@@ -764,7 +777,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kBypass));
     VerifyPreviewNotLoaded();
-    ClearSingleBypass();
+    ClearDeciderState();
     histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
                                        true, 1);
     histogram_tester.ExpectTotalCount(
@@ -773,6 +786,38 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
         "Previews.ServerLitePage.ServerResponse",
         PreviewsLitePageNavigationThrottle::ServerResponse::kPreviewUnavailable,
         1);
+    histogram_tester.ExpectBucketCount(
+        "Previews.ServerLitePage.HostBlacklistedOnBypass", false, 1);
+  }
+
+  {
+    // Verify the preview is not triggered when the server responds with bypass
+    // 307 and host-blacklist.
+    base::HistogramTester histogram_tester;
+    ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kHostBlacklist));
+    VerifyPreviewNotLoaded();
+
+    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
+                                       true, 1);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.HttpOnlyFallbackPenalty", 1);
+    histogram_tester.ExpectBucketCount(
+        "Previews.ServerLitePage.ServerResponse",
+        PreviewsLitePageNavigationThrottle::ServerResponse::kPreviewUnavailable,
+        1);
+    histogram_tester.ExpectBucketCount(
+        "Previews.ServerLitePage.HostBlacklistedOnBypass", true, 1);
+
+    ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+    VerifyPreviewNotLoaded();
+    histogram_tester.ExpectBucketCount(
+        "Previews.ServerLitePage.BlacklistReasons",
+        PreviewsLitePageNavigationThrottle::BlacklistReason::kHostBlacklisted,
+        1);
+    ClearDeciderState();
+
+    ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+    VerifyPreviewLoaded();
   }
 
   {
@@ -780,7 +825,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kAuthFailure));
     VerifyPreviewNotLoaded();
-    ClearSingleBypass();
+    ClearDeciderState();
     histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
                                        true, 1);
     histogram_tester.ExpectTotalCount(
@@ -795,7 +840,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kLoadshed));
     VerifyPreviewNotLoaded();
-    ClearSingleBypass();
+    ClearDeciderState();
     histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
                                        true, 1);
     histogram_tester.ExpectTotalCount(
@@ -832,12 +877,12 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   // duration [1 min, 5 mins).
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kLoadshed));
   VerifyPreviewNotLoaded();
-  ClearSingleBypass();
+  ClearDeciderState();
 
   clock->Advance(base::TimeDelta::FromMinutes(1));
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
-  ClearSingleBypass();
+  ClearDeciderState();
 
   clock->Advance(base::TimeDelta::FromMinutes(4));
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
@@ -849,11 +894,11 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   ui_test_utils::NavigateToURL(browser(),
                                HttpsLitePageURL(kLoadshed, &headers));
   VerifyPreviewNotLoaded();
-  ClearSingleBypass();
+  ClearDeciderState();
 
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
-  ClearSingleBypass();
+  ClearDeciderState();
 
   clock->Advance(base::TimeDelta::FromSeconds(31));
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
@@ -902,7 +947,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   // Go to a new page that doesn't Preview.
   ui_test_utils::NavigateToURL(browser(), http_url());
   VerifyPreviewNotLoaded();
-  ClearSingleBypass();
+  ClearDeciderState();
 
   // Note: |VerifyPreviewLoaded| calls |content::WaitForLoadStop()| so these are
   // safe.
@@ -914,7 +959,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   // Navigate forward.
   GetWebContents()->GetController().GoForward();
   VerifyPreviewNotLoaded();
-  ClearSingleBypass();
+  ClearDeciderState();
 
   // Navigate back again.
   GetWebContents()->GetController().GoBack();
@@ -952,7 +997,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerTimeoutBrowserTest,
     ui_test_utils::NavigateToURL(browser(),
                                  HttpsLitePageURL(kSuccess, nullptr, -1));
     VerifyPreviewNotLoaded();
-    ClearSingleBypass();
+    ClearDeciderState();
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.ServerResponse",
         PreviewsLitePageNavigationThrottle::ServerResponse::kTimeout, 1);
@@ -963,7 +1008,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerTimeoutBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), slow_http_url());
     VerifyPreviewNotLoaded();
-    ClearSingleBypass();
+    ClearDeciderState();
     histogram_tester.ExpectTotalCount("Previews.ServerLitePage.ServerResponse",
                                       0);
   }
@@ -1004,7 +1049,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBadServerBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
     VerifyPreviewNotLoaded();
-    ClearSingleBypass();
+    ClearDeciderState();
 
     histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
                                        true, 1);
@@ -1045,7 +1090,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerDataSaverBrowserTest,
   // Verify the preview is not triggered on HTTPS pageloads without DataSaver.
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
-  ClearSingleBypass();
+  ClearDeciderState();
 }
 
 class PreviewsLitePageServerNoDataSaverHeaderBrowserTest
@@ -1082,7 +1127,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerNoDataSaverHeaderBrowserTest,
   // Verify the preview is not triggered on HTTPS pageloads without data saver.
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
-  ClearSingleBypass();
+  ClearDeciderState();
 }
 
 class PreviewsLitePageNotificationDSEnabledBrowserTest
@@ -1125,7 +1170,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageNotificationDSEnabledBrowserTest,
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
 
   VerifyPreviewNotLoaded();
-  ClearSingleBypass();
+  ClearDeciderState();
   EXPECT_EQ(1U, GetInfoBarService()->infobar_count());
   histogram_tester.ExpectBucketCount(
       "Previews.ServerLitePage.IneligibleReasons",
@@ -1182,6 +1227,6 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageNotificationDSDisabledBrowserTest,
                        MAYBE_LitePagePreviewsInfoBarNonDataSaverUser) {
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
-  ClearSingleBypass();
+  ClearDeciderState();
   EXPECT_EQ(0U, GetInfoBarService()->infobar_count());
 }

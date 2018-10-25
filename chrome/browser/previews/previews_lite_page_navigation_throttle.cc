@@ -49,6 +49,8 @@ namespace {
 
 constexpr char kChromeProxyHeader[] = "chrome-proxy";
 
+const base::TimeDelta kBlacklistDuration = base::TimeDelta::FromDays(30);
+
 bool IsPreviewsDomain(const GURL& url) {
   GURL previews_host = previews::params::GetLitePagePreviewsDomainURL();
   return url.DomainIs(previews_host.host()) &&
@@ -234,6 +236,9 @@ bool PreviewsLitePageNavigationThrottle::IsEligibleForPreview() const {
       break;
     }
   }
+
+  if (manager_->HostBlacklisted(url.host()))
+    blacklist_reasons.push_back(BlacklistReason::kHostBlacklisted);
 
   // Record UMA
   for (BlacklistReason reason : blacklist_reasons) {
@@ -460,6 +465,25 @@ PreviewsLitePageNavigationThrottle::WillRedirectRequest() {
       UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
                                 ServerResponse::kRedirect);
     }
+
+    // Check if the original host should be blacklisted, as directed by the
+    // server.
+    const net::HttpResponseHeaders* response_headers =
+        navigation_handle()->GetResponseHeaders();
+
+    std::string chrome_proxy_header;
+    bool blacklist_host =
+        response_headers &&
+        response_headers->EnumerateHeader(nullptr, kChromeProxyHeader,
+                                          &chrome_proxy_header) &&
+        chrome_proxy_header.find("host-blacklisted") != std::string::npos;
+
+    if (blacklist_host)
+      manager_->BlacklistHost(GURL(original_url).host(), kBlacklistDuration);
+
+    UMA_HISTOGRAM_BOOLEAN("Previews.ServerLitePage.HostBlacklistedOnBypass",
+                          blacklist_host);
+
     return content::NavigationThrottle::PROCEED;
   }
 

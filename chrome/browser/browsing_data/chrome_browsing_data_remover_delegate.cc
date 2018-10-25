@@ -574,10 +574,8 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     // |previews_service| is null if |profile_| is off the record.
     PreviewsService* previews_service =
         PreviewsServiceFactory::GetForProfile(profile_);
-    if (previews_service && previews_service->previews_ui_service()) {
-      previews_service->previews_ui_service()->ClearBlackList(delete_begin_,
-                                                              delete_end_);
-    }
+    if (previews_service)
+      previews_service->ClearBlackList(delete_begin_, delete_end_);
 
     // |previews_service| is null if |profile_| is off the record.
     PageLoadCappingService* page_load_capping_service =
