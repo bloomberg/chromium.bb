@@ -753,13 +753,8 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
     DCHECK(!options.cors_flag);
     params.MutableOptions().cors_flag = CORS::CalculateCORSFlag(
         params.Url(), origin.get(), resource_request.GetFetchRequestMode());
-    // Cross-origin requests are only allowed certain registered schemes.
-    if (options.cors_flag && !SchemeRegistry::ShouldTreatURLSchemeAsCORSEnabled(
-                                 params.Url().Protocol())) {
-      // This won't create a CORS related console error.
-      // TODO(yhirano): Fix this.
-      return ResourceRequestBlockedReason::kOther;
-    }
+    // TODO(yhirano): Reject requests for non CORS-enabled schemes.
+    // See https://crrev.com/c/1298828.
     resource_request.SetAllowStoredCredentials(CORS::CalculateCredentialsFlag(
         resource_request.GetFetchCredentialsMode(),
         CORS::CalculateResponseTainting(
