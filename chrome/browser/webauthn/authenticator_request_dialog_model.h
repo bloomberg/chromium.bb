@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
@@ -28,6 +29,7 @@
 class AuthenticatorRequestDialogModel {
  public:
   using RequestCallback = device::FidoRequestHandlerBase::RequestCallback;
+  using BlePairingCallback = device::FidoRequestHandlerBase::BlePairingCallback;
   using TransportAvailabilityInfo =
       device::FidoRequestHandlerBase::TransportAvailabilityInfo;
 
@@ -125,9 +127,9 @@ class AuthenticatorRequestDialogModel {
     return transport_availability()->is_ble_powered;
   }
 
-  const AuthenticatorReference* selected_authenticator() const {
+  const std::string& selected_authenticator_id() const {
     DCHECK_EQ(Step::kBlePinEntry, current_step());
-    return selected_authenticator_;
+    return selected_authenticator_id_;
   }
 
   // Starts the UX flow, by either showing the welcome screen, the transport
@@ -184,13 +186,23 @@ class AuthenticatorRequestDialogModel {
   // Initiates pairing of the device that the user has chosen.
   //
   // Valid action when at step: kBleDeviceSelection.
-  void InitiatePairingDevice(const std::string& device_address);
+  void InitiatePairingDevice(const std::string& authenticator_id);
 
   // Finishes pairing of the previously chosen device with the |pin| code
   // entered.
   //
   // Valid action when at step: kBlePinEntry.
   void FinishPairingWithPin(const base::string16& pin);
+
+  // Dispatches WebAuthN request to successfully paired Bluetooth authenticator.
+  //
+  // Valid action when at step: kBleVerifying.
+  void OnPairingSuccess(base::StringPiece authenticator_id);
+
+  // Returns to Bluetooth device selection modal.
+  //
+  // Valid action when at step: kBleVerifying.
+  void OnPairingFailure();
 
   // Tries if a USB device is present -- the user claims they plugged it in.
   //
@@ -241,6 +253,8 @@ class AuthenticatorRequestDialogModel {
 
   void SetRequestCallback(RequestCallback request_callback);
 
+  void SetBlePairingCallback(BlePairingCallback ble_pairing_callback);
+
   void SetBluetoothAdapterPowerOnCallback(
       base::RepeatingClosure bluetooth_adapter_power_on_callback);
 
@@ -253,7 +267,10 @@ class AuthenticatorRequestDialogModel {
       base::StringPiece authenticator_id);
 
   void SetSelectedAuthenticatorForTesting(
-      AuthenticatorReference* authenticator);
+      std::unique_ptr<AuthenticatorReference> authenticator);
+
+  AuthenticatorReference* GetAuthenticator(
+      base::StringPiece authenticator_id) const;
 
   std::vector<std::unique_ptr<AuthenticatorReference>>& saved_authenticators() {
     return saved_authenticators_;
@@ -287,11 +304,14 @@ class AuthenticatorRequestDialogModel {
   // dispatched lazily after the user interacts with the UI element.
   std::vector<std::unique_ptr<AuthenticatorReference>> saved_authenticators_;
 
-  // Represents the Bluetooth authenticator that the user is trying to connect
-  // to or conduct WebAuthN request to via the WebAuthN UI.
-  AuthenticatorReference* selected_authenticator_ = nullptr;
+  // Represents the id of the Bluetooth authenticator that the user is trying to
+  // connect to or conduct WebAuthN request to via the WebAuthN UI.
+  std::string selected_authenticator_id_;
   RequestCallback request_callback_;
+  BlePairingCallback ble_pairing_callback_;
   base::RepeatingClosure bluetooth_adapter_power_on_callback_;
+
+  base::WeakPtrFactory<AuthenticatorRequestDialogModel> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorRequestDialogModel);
 };
