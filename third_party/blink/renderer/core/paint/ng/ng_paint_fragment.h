@@ -232,7 +232,8 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   }
 
   // Returns true when associated fragment of |layout_object| has line box.
-  static bool TryMarkLineBoxDirtyFor(const LayoutObject& layout_object);
+  static bool TryMarkFirstLineBoxDirtyFor(const LayoutObject& layout_object);
+  static bool TryMarkLastLineBoxDirtyFor(const LayoutObject& layout_object);
 
   // A range of fragments for |FragmentsFor()|.
   class CORE_EXPORT FragmentRange {
@@ -307,8 +308,14 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // for a LayoutObject.
   static FragmentRange InlineFragmentsFor(const LayoutObject*);
 
+  NGPaintFragment* LastForSameLayoutObject();
+
   // Called when lines containing |child| is dirty.
   static void DirtyLinesFromChangedChild(LayoutObject* child);
+
+  // Mark this line box was changed, in order to re-use part of an inline
+  // formatting context.
+  void MarkLineBoxDirty();
 
   // Computes LocalVisualRect for an inline LayoutObject in the
   // LayoutObject::LocalVisualRect semantics; i.e., physical coordinates with
@@ -342,10 +349,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
 
   // Dirty line boxes containing |layout_object|.
   static void MarkLineBoxesDirtyFor(const LayoutObject& layout_object);
-
-  // Mark this line box was changed, in order to re-use part of an inline
-  // formatting context.
-  void MarkLineBoxDirty();
 
   //
   // Following fields are computed in the layout phase.

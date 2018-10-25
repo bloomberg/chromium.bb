@@ -580,6 +580,28 @@ TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByTextSetData) {
   EXPECT_FALSE(ToList(container.Children())[2]->IsDirty());
 }
 
+TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyWrappedLine) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    #container {
+      font-size: 10px;
+      width: 10ch;
+    }
+    </style>
+    <div id=container>
+      1234567
+      123456<span id="target">7</span>
+    </div>)HTML");
+  Element& target = *GetDocument().getElementById("target");
+  target.remove();
+
+  const NGPaintFragment& container = *GetPaintFragmentByElementId("container");
+  const NGPaintFragment& line0 = *container.FirstChild();
+  const NGPaintFragment& line1 = *line0.NextSibling();
+  EXPECT_FALSE(line0.IsDirty());
+  EXPECT_TRUE(line1.IsDirty());
+}
+
 TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyInsideInlineBlock) {
   SetBodyInnerHTML(R"HTML(
     <div id=container>
