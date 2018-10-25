@@ -670,10 +670,6 @@ const char kEnableNotificationScrollBarName[] =
 const char kEnableNotificationScrollBarDescription[] =
     "Enable the scroll bar of the notification list in Unified System Tray.";
 
-const char kEnableNewMessageListViewName[] = "Enable new message list view";
-const char kEnableNewMessageListViewDescription[] =
-    "Enable new implementation of message list view.";
-
 const char kEnableNupPrintingName[] = "Enable N-up printing";
 const char kEnableNupPrintingDescription[] =
     "Enable N-up printing in the print preview panel.";
@@ -1637,9 +1633,6 @@ const char kShelfHoverPreviewsName[] =
 const char kShelfHoverPreviewsDescription[] =
     "Shows previews of the open windows for a given running app when hovering "
     "over the shelf.";
-
-const char kShelfNewUiName[] = "Newest shelf redesign.";
-const char kShelfNewUiDescription[] = "Enables the newest shelf appearance.";
 
 const char kShowAndroidFilesInFilesAppName[] =
     "Show Android files in Files app";
