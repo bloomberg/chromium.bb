@@ -306,8 +306,8 @@ def _DuHelper(device, path_spec, run_as=None):
         run as root.
 
   Returns:
-    A dict of path->size in kb containing all paths in |path_spec| that exist on
-    device. Paths that do not exist are silently ignored.
+    A dict of path->size in KiB containing all paths in |path_spec| that exist
+    on device. Paths that do not exist are silently ignored.
   """
   # Example output for: du -s -k /data/data/org.chromium.chrome/{*,.*}
   # 144     /data/data/org.chromium.chrome/cache
@@ -341,7 +341,7 @@ def _DuHelper(device, path_spec, run_as=None):
     raise
 
 
-def _RunDiskUsage(devices, package_name, verbose):
+def _RunDiskUsage(devices, package_name):
   # Measuring dex size is a bit complicated:
   # https://source.android.com/devices/tech/dalvik/jit-compiler
   #
@@ -463,10 +463,9 @@ def _RunDiskUsage(devices, package_name, verbose):
             compilation_filter)
 
   def print_sizes(desc, sizes):
-    print '%s: %dkb' % (desc, sum(sizes.itervalues()))
-    if verbose:
-      for path, size in sorted(sizes.iteritems()):
-        print '    %s: %skb' % (path, size)
+    print '%s: %d KiB' % (desc, sum(sizes.itervalues()))
+    for path, size in sorted(sizes.iteritems()):
+      print '    %s: %s KiB' % (path, size)
 
   parallel_devices = device_utils.DeviceUtils.parallel(devices)
   all_results = parallel_devices.pMap(disk_usage_helper).pGet(None)
@@ -489,7 +488,7 @@ def _RunDiskUsage(devices, package_name, verbose):
     if show_warning:
       logging.warning('For a more realistic odex size, run:')
       logging.warning('    %s compile-dex [speed|speed-profile]', sys.argv[0])
-    print 'Total: %skb (%.1fmb)' % (total, total / 1024.0)
+    print 'Total: %s KiB (%.1f MiB)' % (total, total / 1024.0)
 
 
 class _LogcatProcessor(object):
@@ -1186,8 +1185,7 @@ class _DiskUsageCommand(_Command):
   all_devices_by_default = True
 
   def Run(self):
-    _RunDiskUsage(self.devices, self.args.package_name,
-                  bool(self.args.verbose_count))
+    _RunDiskUsage(self.devices, self.args.package_name)
 
 
 class _MemUsageCommand(_Command):
