@@ -27,8 +27,7 @@ class MediaController : public mojom::MediaController {
   void Resume() override;
   void ToggleSuspendResume() override;
 
-  void SetMediaSession(mojom::MediaSession*,
-                       mojom::MediaSessionInfo::SessionState);
+  void SetMediaSession(mojom::MediaSession*, mojom::MediaPlaybackState);
   void ClearMediaSession();
 
   void BindToInterface(mojom::MediaControllerRequest);
@@ -38,9 +37,9 @@ class MediaController : public mojom::MediaController {
   // Holds mojo bindings for mojom::MediaController.
   mojo::BindingSet<mojom::MediaController> bindings_;
 
-  // The current state of the |session_|.
-  mojom::MediaSessionInfo::SessionState state_ =
-      mojom::MediaSessionInfo::SessionState::kInactive;
+  // The current playback state of the |session_|.
+  mojom::MediaPlaybackState playback_state_ =
+      mojom::MediaPlaybackState::kPaused;
 
   // Raw pointer to the local proxy. This is used for sending control events to
   // the underlying MediaSession.

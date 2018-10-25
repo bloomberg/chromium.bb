@@ -64,13 +64,13 @@ TEST_F(MediaControllerTest, ActiveController_Suspend) {
   {
     test::MockMediaSessionMojoObserver observer(media_session);
     RequestAudioFocus(media_session);
-    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
   }
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
     controller()->Suspend();
-    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kSuspended);
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPaused);
   }
 }
 
@@ -80,7 +80,7 @@ TEST_F(MediaControllerTest, ActiveController_Suspend_Multiple) {
   {
     test::MockMediaSessionMojoObserver observer(media_session_1);
     RequestAudioFocus(media_session_1);
-    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
   }
 
   test::MockMediaSession media_session_2;
@@ -91,26 +91,26 @@ TEST_F(MediaControllerTest, ActiveController_Suspend_Multiple) {
 
     RequestAudioFocus(media_session_2);
 
-    observer_1.WaitForState(mojom::MediaSessionInfo::SessionState::kSuspended);
-    observer_2.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+    observer_1.WaitForPlaybackState(mojom::MediaPlaybackState::kPaused);
+    observer_2.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
   }
 
   {
     test::MockMediaSessionMojoObserver observer(media_session_2);
     controller()->Suspend();
-    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kSuspended);
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPaused);
   }
 
   {
     test::MockMediaSessionMojoObserver observer(media_session_1);
     media_session_2.AbandonAudioFocusFromClient();
-    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
   }
 
   {
     test::MockMediaSessionMojoObserver observer(media_session_1);
     controller()->Suspend();
-    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kSuspended);
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPaused);
   }
 }
 
@@ -124,7 +124,7 @@ TEST_F(MediaControllerTest, ActiveController_Suspend_Noop_Abandoned) {
   {
     test::MockMediaSessionMojoObserver observer(media_session);
     RequestAudioFocus(media_session);
-    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
   }
 
   media_session.AbandonAudioFocusFromClient();
@@ -134,7 +134,7 @@ TEST_F(MediaControllerTest, ActiveController_Suspend_Noop_Abandoned) {
   {
     test::MockMediaSessionMojoObserver observer(media_session);
     RequestAudioFocus(media_session);
-    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
   }
 }
 
@@ -144,35 +144,35 @@ TEST_F(MediaControllerTest, ActiveController_SuspendResume) {
   {
     test::MockMediaSessionMojoObserver observer(media_session);
     RequestAudioFocus(media_session);
-    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
   }
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
     controller()->Suspend();
-    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kSuspended);
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPaused);
   }
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
     controller()->Resume();
-    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
   }
 }
 
-TEST_F(MediaControllerTest, ActiveController_ToggleSuspendResume_Active) {
+TEST_F(MediaControllerTest, ActiveController_ToggleSuspendResume_Playing) {
   test::MockMediaSession media_session;
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
     RequestAudioFocus(media_session);
-    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
   }
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
     controller()->ToggleSuspendResume();
-    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kSuspended);
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPaused);
   }
 }
 
@@ -182,6 +182,11 @@ TEST_F(MediaControllerTest, ActiveController_ToggleSuspendResume_Ducked) {
   {
     test::MockMediaSessionMojoObserver observer(media_session);
     RequestAudioFocus(media_session);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
     media_session.StartDucking();
     observer.WaitForState(mojom::MediaSessionInfo::SessionState::kDucking);
   }
@@ -189,13 +194,7 @@ TEST_F(MediaControllerTest, ActiveController_ToggleSuspendResume_Ducked) {
   {
     test::MockMediaSessionMojoObserver observer(media_session);
     controller()->ToggleSuspendResume();
-    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kDucking);
-  }
-
-  {
-    test::MockMediaSessionMojoObserver observer(media_session);
-    media_session.StopDucking();
-    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kSuspended);
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPaused);
   }
 }
 
@@ -212,29 +211,29 @@ TEST_F(MediaControllerTest, ActiveController_ToggleSuspendResume_Inactive) {
   {
     test::MockMediaSessionMojoObserver observer(media_session);
     controller()->ToggleSuspendResume();
-    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
   }
 }
 
-TEST_F(MediaControllerTest, ActiveController_ToggleSuspendResume_Suspended) {
+TEST_F(MediaControllerTest, ActiveController_ToggleSuspendResume_Paused) {
   test::MockMediaSession media_session;
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
     RequestAudioFocus(media_session);
-    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
   }
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
     controller()->Suspend();
-    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kSuspended);
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPaused);
   }
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
     controller()->ToggleSuspendResume();
-    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
   }
 }
 
