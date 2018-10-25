@@ -3169,9 +3169,11 @@ TEST_P(SequenceManagerTest, CanceledTasksInQueueCantMakeOtherTasksSkipAhead) {
   EXPECT_THAT(run_order, ElementsAre(1u, 2u));
 }
 
-TEST_P(SequenceManagerTest, TaskQueueDeletedOnAnotherThread) {
+TEST_P(SequenceManagerTest, TaskRunnerDeletedOnAnotherThread) {
   std::vector<TimeTicks> run_times;
   scoped_refptr<TestTaskQueue> main_tq = CreateTaskQueue();
+  scoped_refptr<TaskRunner> task_runner =
+      main_tq->CreateTaskRunner(kTaskTypeNone);
 
   int start_counter = 0;
   int complete_counter = 0;
@@ -3182,7 +3184,7 @@ TEST_P(SequenceManagerTest, TaskQueueDeletedOnAnotherThread) {
   EXPECT_EQ(0u, manager_->QueuesToDeleteCount());
 
   for (int i = 1; i <= 5; ++i) {
-    main_tq->PostDelayedTask(
+    task_runner->PostDelayedTask(
         FROM_HERE, BindOnce(&RecordTimeTask, &run_times, GetTickClock()),
         TimeDelta::FromMilliseconds(i * 100));
   }
@@ -3191,6 +3193,9 @@ TEST_P(SequenceManagerTest, TaskQueueDeletedOnAnotherThread) {
   // task handlers.
   UnsetOnTaskHandlers(main_tq);
 
+  // Make |task_runner| the only reference to |main_tq|.
+  main_tq = nullptr;
+
   WaitableEvent task_queue_deleted(WaitableEvent::ResetPolicy::MANUAL,
                                    WaitableEvent::InitialState::NOT_SIGNALED);
   std::unique_ptr<Thread> thread = std::make_unique<Thread>("test thread");
@@ -3198,12 +3203,12 @@ TEST_P(SequenceManagerTest, TaskQueueDeletedOnAnotherThread) {
 
   thread->task_runner()->PostTask(
       FROM_HERE, BindOnce(
-                     [](scoped_refptr<TestTaskQueue> task_queue,
+                     [](scoped_refptr<TaskRunner> task_runner,
                         WaitableEvent* task_queue_deleted) {
-                       task_queue = nullptr;
+                       task_runner = nullptr;
                        task_queue_deleted->Signal();
                      },
-                     std::move(main_tq), &task_queue_deleted));
+                     std::move(task_runner), &task_queue_deleted));
   task_queue_deleted.Wait();
 
   EXPECT_EQ(1u, manager_->ActiveQueuesCount());
@@ -3353,6 +3358,9 @@ class ThreadForOffThreadInitializationTest : public Thread {
     // Run the posted task.
     Thread::Run(run_loop);
     EXPECT_TRUE(did_run_task_);
+
+    // The |queue_| should be destructed on the creating thread.
+    queue_ = nullptr;
   }
 
   scoped_refptr<SingleThreadTaskRunner> original_task_runner_;
