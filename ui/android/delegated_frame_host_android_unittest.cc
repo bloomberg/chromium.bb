@@ -321,5 +321,31 @@ TEST_F(DelegatedFrameHostAndroidSurfaceSynchronizationTest, EmbedWhileHidden) {
   EXPECT_TRUE(frame_host_->HasSavedFrame());
 }
 
+// Verify that when a source rect or output size is not provided to
+// CopyFromCompositingSurface, the corresponding values in CopyOutputRequest
+// are also not initialized.
+TEST_F(DelegatedFrameHostAndroidSurfaceSynchronizationTest,
+       FullSurfaceCapture) {
+  // First embed a surface to make sure we have something to copy from.
+  viz::LocalSurfaceId id = allocator_.GenerateId();
+  gfx::Size size(100, 100);
+  frame_host_->EmbedSurface(id, size, cc::DeadlinePolicy::UseDefaultDeadline());
+
+  // Request readback without source rect or output size specified.
+  frame_host_->CopyFromCompositingSurface(gfx::Rect(), gfx::Size(),
+                                          base::DoNothing());
+
+  // Make sure the resulting CopyOutputRequest does not have its area or result
+  // selection set.
+  const std::vector<
+      std::pair<viz::LocalSurfaceId, std::unique_ptr<viz::CopyOutputRequest>>>&
+      requests = frame_sink_manager_impl_.GetFrameSinkForId(frame_sink_id_)
+                     ->copy_output_requests_for_testing();
+  ASSERT_EQ(1u, requests.size());
+  viz::CopyOutputRequest* request = requests[0].second.get();
+  EXPECT_FALSE(request->has_area());
+  EXPECT_FALSE(request->has_result_selection());
+}
+
 }  // namespace
 }  // namespace ui
