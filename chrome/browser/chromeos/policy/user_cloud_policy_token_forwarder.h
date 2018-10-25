@@ -9,12 +9,9 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
 #include "google_apis/gaia/oauth2_token_service.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 class ProfileOAuth2TokenService;
-
-namespace identity {
-class IdentityManager;
-}
 
 namespace policy {
 
@@ -25,10 +22,11 @@ class UserCloudPolicyManagerChromeOS;
 // ready. This service decouples the UserCloudPolicyManagerChromeOS from
 // depending directly on the ProfileOAuth2TokenService, since it is initialized
 // much earlier.
-class UserCloudPolicyTokenForwarder : public KeyedService,
-                                      public OAuth2TokenService::Observer,
-                                      public OAuth2TokenService::Consumer,
-                                      public CloudPolicyService::Observer {
+class UserCloudPolicyTokenForwarder
+    : public KeyedService,
+      public identity::IdentityManager::Observer,
+      public OAuth2TokenService::Consumer,
+      public CloudPolicyService::Observer {
  public:
   // The factory of this PKS depends on the factories of these two arguments,
   // so this object will be Shutdown() first and these pointers can be used
@@ -41,8 +39,9 @@ class UserCloudPolicyTokenForwarder : public KeyedService,
   // KeyedService:
   void Shutdown() override;
 
-  // OAuth2TokenService::Observer:
-  void OnRefreshTokenAvailable(const std::string& account_id) override;
+  // IdentityManager::Observer:
+  void OnRefreshTokenUpdatedForAccount(const AccountInfo& account_info,
+                                       bool is_valid) override;
 
   // OAuth2TokenService::Consumer:
   void OnGetTokenSuccess(
