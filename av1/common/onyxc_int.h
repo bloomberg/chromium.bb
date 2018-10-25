@@ -473,14 +473,6 @@ typedef struct AV1Common {
   int skip_loop_filter;
   int skip_film_grain;
 
-  // Private data associated with the frame buffer callbacks.
-  void *cb_priv;
-  aom_get_frame_buffer_cb_fn_t get_fb_cb;
-  aom_release_frame_buffer_cb_fn_t release_fb_cb;
-
-  // Handles memory for the codec.
-  InternalFrameBufferList int_frame_buffers;
-
   // External BufferPool passed from outside.
   BufferPool *buffer_pool;
 
