@@ -88,11 +88,9 @@ class CORE_EXPORT LayoutImage : public LayoutReplaced {
   const char* GetName() const override { return "LayoutImage"; }
 
   // When an image element violates feature policy optimized image policies, it
-  // should be rendered with inverted color.
+  // should be rendered with a placeholder image.
   // https://github.com/WICG/feature-policy/blob/master/policies/optimized-images.md
-  bool ShouldInvertColor() const;
-  void UpdateShouldInvertColor();
-  void UpdateShouldInvertColorForTest(bool);
+  bool IsImagePolicyViolated() const;
 
   void UpdateAfterLayout() override;
 

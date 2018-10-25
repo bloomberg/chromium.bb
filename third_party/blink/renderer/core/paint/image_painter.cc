@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
+#include "third_party/blink/renderer/platform/graphics/placeholder_image.h"
 #include "third_party/blink/renderer/platform/graphics/scoped_interpolation_quality.h"
 
 namespace blink {
@@ -186,6 +187,11 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
           ? ToHTMLImageElement(node)->GetDecodingModeForPainting(
                 image->paint_image_id())
           : Image::kUnspecifiedDecode;
+  if (layout_image_.IsImagePolicyViolated()) {
+    // Does not an observer for the placeholder image, setting it to null.
+    image = PlaceholderImage::Create(nullptr, image->Size(),
+                                     image->Data() ? image->Data()->size() : 0);
+  }
   context.DrawImage(
       image.get(), decode_mode, FloatRect(pixel_snapped_dest_rect), &src_rect,
       SkBlendMode::kSrcOver,

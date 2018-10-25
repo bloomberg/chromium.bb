@@ -65,14 +65,6 @@ ScopedReplacedContentPaintState::ScopedReplacedContentPaintState(
     property_changed = true;
   }
 
-  // Check filter for optimized image policy violation highlights, which
-  // may be applied locally.
-  if (paint_properties->Filter() &&
-      (!replaced.HasLayer() || !replaced.Layer()->IsSelfPaintingLayer())) {
-    new_properties.SetEffect(paint_properties->Filter());
-    property_changed = true;
-  }
-
   if (property_changed) {
     chunk_properties_.emplace(input_paint_info_.context.GetPaintController(),
                               new_properties, replaced,
