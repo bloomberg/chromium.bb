@@ -32,17 +32,24 @@
 #endif
 
 #if BUILDFLAG(FIREBASE_ENABLED)
+// This always returns positively that a user is a legacy user (i.e. installed
+// Chrome before Chrome supports Firebase).
 class LegacyUserAppDistributionProvider : public TestAppDistributionProvider {
  public:
   bool IsPreFirebaseLegacyUser(int64_t install_date) override { return true; }
 };
 
-class FakeChromeBrowserProvider : public ios::TestChromeBrowserProvider {
+// LegacyUserChromeBrowserProvider is a fake ChromeBrowserProvider that
+// always returns positively that user is a legacy user. This is intended for
+// testing the case of legacy users.
+// NOTE: The default TestChromeBrowserProvider for unit tests always treats
+// a user as a new user.
+class LegacyUserChromeBrowserProvider : public ios::TestChromeBrowserProvider {
  public:
-  FakeChromeBrowserProvider()
+  LegacyUserChromeBrowserProvider()
       : app_distribution_provider_(
             std::make_unique<LegacyUserAppDistributionProvider>()) {}
-  ~FakeChromeBrowserProvider() override {}
+  ~LegacyUserChromeBrowserProvider() override {}
 
   AppDistributionProvider* GetAppDistributionProvider() const override {
     return app_distribution_provider_.get();
@@ -50,7 +57,7 @@ class FakeChromeBrowserProvider : public ios::TestChromeBrowserProvider {
 
  private:
   std::unique_ptr<LegacyUserAppDistributionProvider> app_distribution_provider_;
-  DISALLOW_COPY_AND_ASSIGN(FakeChromeBrowserProvider);
+  DISALLOW_COPY_AND_ASSIGN(LegacyUserChromeBrowserProvider);
 };
 #endif  // BUILDFLAG(FIREBASE_ENABLED)
 
@@ -124,11 +131,9 @@ TEST_F(FirebaseUtilsTest, DisabledInitializedOutsideWindow) {
 TEST_F(FirebaseUtilsTest, DisabledLegacyInstallation) {
   // Sets up the ChromeProviderEnvironment with a fake provider that responds
   // positively that user is a legacy user predating Firebase integration.
-  IOSChromeScopedTestingChromeBrowserProvider provider_(
-      std::make_unique<FakeChromeBrowserProvider>());
-  // Set an app install date that is at least a year ago.
-  int64_t a_year_ago = base::TimeDelta::FromDays(365).InSeconds();
-  SetInstallDate(base::Time::Now().ToTimeT() - a_year_ago);
+  // Installation date is irrelevant in this case.
+  IOSChromeScopedTestingChromeBrowserProvider provider(
+      std::make_unique<LegacyUserChromeBrowserProvider>());
   // Expects Firebase SDK initialization to be not called.
   [[firapp_ reject] configure];
   InitializeFirebase(/*is_first_run=*/true);
