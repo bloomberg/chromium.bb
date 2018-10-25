@@ -49,6 +49,7 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   static Widget* CreateBubble(BubbleDialogDelegateView* bubble_delegate);
 
   // DialogDelegateView:
+  void AddedToWidget() override;
   BubbleDialogDelegateView* AsBubbleDialogDelegate() override;
   bool ShouldShowCloseButton() const override;
   ClientView* CreateClientView(Widget* widget) override;
