@@ -202,6 +202,7 @@ public abstract class ChromeFeatureList {
             "ContextualSuggestionsIPHReverseScroll";
     public static final String CUSTOM_CONTEXT_MENU = "CustomContextMenu";
     public static final String CUSTOM_FEEDBACK_UI = "CustomFeedbackUi";
+    public static final String DEVELOPER_PREFERENCES = "DeveloperPreferences";
     // Enables the Data Reduction Proxy menu item in the main menu rather than under Settings on
     // Android.
     public static final String DATA_REDUCTION_MAIN_MENU = "DataReductionProxyMainMenu";

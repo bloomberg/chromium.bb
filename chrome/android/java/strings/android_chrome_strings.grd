@@ -1399,6 +1399,11 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Download occurs only on Wi-Fi
       </message>
 
+      <!-- Developer preferences -->
+      <message name="IDS_PREFS_DEVELOPER" desc="Title for the Developer preferences page in Chrome settings, which is hidden for regular uses and shows settings and tools aimed at Chrome and web developers. [CHAR-LIMIT=32]">
+        Developer options
+      </message>
+
       <!-- About Chrome preferences -->
       <message name="IDS_PREFS_ABOUT_CHROME" desc="Title for the About Chrome page. [CHAR-LIMIT=32]">
         About Chrome
