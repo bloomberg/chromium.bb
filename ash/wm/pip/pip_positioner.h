@@ -17,6 +17,8 @@ class PipPositionerTest;
 
 class ASH_EXPORT PipPositioner {
  public:
+  static const int kPipDismissTimeMs = 300;
+
   PipPositioner() = delete;
   ~PipPositioner() = delete;
 
@@ -35,6 +37,13 @@ class ASH_EXPORT PipPositioner {
   // |bounds| is in screen coordinates.
   static gfx::Rect GetBoundsForDrag(const display::Display& display,
                                     const gfx::Rect& bounds);
+
+  // Based on the current PIP window position, finds a final location of where
+  // the PIP window should be animated to to show a dismissal off the side
+  // of the screen. Note that this may return somewhere not off-screen if
+  // animating the PIP window off-screen would travel too far.
+  static gfx::Rect GetDismissedPosition(const display::Display& display,
+                                        const gfx::Rect& bounds);
 
  private:
   friend class PipPositionerTest;

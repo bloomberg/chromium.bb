@@ -11,6 +11,7 @@
 -SystemModalContainerLayoutManagerTest.SystemModalDialogGetPushedFromKeyboard
 -VirtualKeyboardControllerTest.ForceToShowKeyboardWithKeysetWhenKeyboardIsDisabled
 -VirtualKeyboardRootWindowControllerTest.ClickWithActiveModalDialog
+-WindowAnimationsTest.SlideOutAnimation
 -WorkspaceLayoutManagerSystemUiAreaTest.*
 
 # These tests crash. https://crbug.com/646565

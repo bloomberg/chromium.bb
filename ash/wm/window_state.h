@@ -414,6 +414,10 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // for non-PIP window states.
   void UpdatePipRoundedCorners();
 
+  // Update PIP related state, such as next window animation type, upon
+  // state change.
+  void UpdatePipState();
+
   // aura::WindowObserver:
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,

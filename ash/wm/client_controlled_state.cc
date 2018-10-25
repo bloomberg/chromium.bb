@@ -259,6 +259,9 @@ bool ClientControlledState::EnterNextState(
     Shell::Get()->screen_pinning_controller()->SetPinnedWindow(
         window_state->window());
   }
+
+  window_state->UpdatePipState();
+
   return true;
 }
 

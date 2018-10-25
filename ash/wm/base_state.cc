@@ -149,8 +149,13 @@ void BaseState::UpdateMinimizedState(
       window->SetProperty(aura::client::kPreMinimizedShowStateKey,
                           ToWindowShowState(previous_state_type));
     }
+    // Count minimizing a PIP window as dismissing it. Android apps in PIP mode
+    // don't exit when they are dismissed, they just go back to being a regular
+    // app, but minimized.
     ::wm::SetWindowVisibilityAnimationType(
-        window, WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
+        window, previous_state_type == mojom::WindowStateType::PIP
+                    ? WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_OUT
+                    : WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
 
     window->Hide();
     if (window_state->IsActive())

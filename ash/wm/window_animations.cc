@@ -15,6 +15,7 @@
 #include "ash/public/cpp/window_animation_types.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/i18n/rtl.h"
@@ -263,6 +264,29 @@ bool AnimateHideWindow_SlideDown(aura::Window* window) {
   return false;
 }
 
+void AnimateHideWindow_SlideOut(aura::Window* window) {
+  base::TimeDelta duration =
+      base::TimeDelta::FromMilliseconds(PipPositioner::kPipDismissTimeMs);
+
+  ::wm::ScopedHidingAnimationSettings settings(window);
+  settings.layer_animation_settings()->SetTransitionDuration(duration);
+  window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
+  window->layer()->SetVisible(false);
+
+  gfx::Rect bounds = window->GetBoundsInScreen();
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window);
+  gfx::Rect dismissed_bounds =
+      PipPositioner::GetDismissedPosition(display, bounds);
+  window->layer()->SetBounds(dismissed_bounds);
+
+  // For Android PIP windows, they become minimized app windows after
+  // dismissal, so make sure to reset their animation type back to
+  // default.
+  ::wm::SetWindowVisibilityAnimationType(
+      window, ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
+}
+
 bool AnimateShowWindow(aura::Window* window) {
   if (!::wm::HasWindowVisibilityAnimationTransition(window,
                                                     ::wm::ANIMATE_SHOW)) {
@@ -278,6 +302,10 @@ bool AnimateShowWindow(aura::Window* window) {
       return true;
     case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_DOWN:
       return AnimateShowWindow_SlideDown(window);
+      return true;
+    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_OUT:
+      // Slide out is exclusively a hide animation.
+      return false;
     default:
       NOTREACHED();
       return false;
@@ -299,6 +327,9 @@ bool AnimateHideWindow(aura::Window* window) {
       return true;
     case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_DOWN:
       return AnimateHideWindow_SlideDown(window);
+    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_OUT:
+      AnimateHideWindow_SlideOut(window);
+      return true;
     default:
       NOTREACHED();
       return false;
