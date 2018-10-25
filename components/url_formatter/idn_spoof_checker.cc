@@ -37,6 +37,7 @@ class TopDomainPreloadDecoder : public net::extras::PreloadDecoder {
 
     if (is_same_skeleton) {
       *out_found = true;
+      result_ = search;
       return true;
     }
 

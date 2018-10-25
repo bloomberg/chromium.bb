@@ -1009,7 +1009,11 @@ const IDNTestCase idn_cases[] = {
     // The skeleton of Extended Arabic-Indic Digit Zero (۰) is a dot. Check that
     // this is handled correctly (crbug/877045).
     {"xn--dmb", L"\x06f0", true},
-};
+
+    // Test that top domains whose skeletons are the same as the domain name are
+    // handled properly. In this case, tést.net should match test.net top
+    // domain.
+    {"xn--tst-bma.net", L"t\x00e9st.net", false}};
 
 struct AdjustOffsetCase {
   size_t input_offset;
