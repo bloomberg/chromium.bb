@@ -281,10 +281,12 @@ void InitializeZygoteSandboxForBrowserProcess(
   // zygote are both disabled. It initializes the sandboxed process socket.
   SandboxHostLinux::GetInstance()->Init();
 
-  if (parsed_command_line.HasSwitch(switches::kNoZygote) &&
-      !parsed_command_line.HasSwitch(service_manager::switches::kNoSandbox)) {
-    LOG(ERROR) << "--no-sandbox should be used together with --no--zygote";
-    exit(EXIT_FAILURE);
+  if (parsed_command_line.HasSwitch(switches::kNoZygote)) {
+    if (!parsed_command_line.HasSwitch(service_manager::switches::kNoSandbox)) {
+      LOG(ERROR) << "--no-sandbox should be used together with --no--zygote";
+      exit(EXIT_FAILURE);
+    }
+    return;
   }
 
   // Tickle the zygote host so it forks now.
