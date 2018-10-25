@@ -257,4 +257,31 @@ TEST_F(PipPositionerTest, PipDismissedPositionPrefersHorizontal) {
                                                 gfx::Rect(300, 300, 100, 100)));
 }
 
+TEST_F(PipPositionerTest,
+       PipRestoresToPreviousBoundsOnMovementAreaChangeIfTheyExist) {
+  // Position the PIP window on the side of the screen where it will be next
+  // to an edge and therefore in a resting position for the whole test.
+  const gfx::Rect bounds = gfx::Rect(292, 200, 100, 100);
+  // Set restore position to where the window currently is.
+  window()->SetBounds(bounds);
+  window_state()->SetRestoreBoundsInScreen(bounds);
+  EXPECT_TRUE(window_state()->HasRestoreBounds());
+
+  // Update the work area so that the PIP window should be pushed upward.
+  UpdateWorkArea("400x200");
+
+  // Set PIP to the updated constrained bounds.
+  const gfx::Rect constrained_bounds =
+      PipPositioner::GetPositionAfterMovementAreaChange(window_state());
+  EXPECT_EQ(gfx::Rect(292, 92, 100, 100), constrained_bounds);
+  window()->SetBounds(constrained_bounds);
+
+  // Restore the original work area.
+  UpdateWorkArea("400x400");
+
+  // Expect that the PIP window is put back to where it was before.
+  EXPECT_EQ(gfx::Rect(292, 200, 100, 100),
+            PipPositioner::GetPositionAfterMovementAreaChange(window_state()));
+}
+
 }  // namespace ash

@@ -15,6 +15,7 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/default_state.h"
+#include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_positioning_utils.h"
@@ -697,6 +698,16 @@ void WindowState::UpdatePipState() {
   ::wm::SetWindowVisibilityAnimationType(
       window(), IsPip() ? WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_OUT
                         : ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
+}
+
+void WindowState::UpdatePipBounds() {
+  gfx::Rect new_bounds =
+      PipPositioner::GetPositionAfterMovementAreaChange(this);
+  if (window()->GetBoundsInScreen() != new_bounds) {
+    wm::SetBoundsEvent event(wm::WM_EVENT_SET_BOUNDS, new_bounds,
+                             /*animate=*/true);
+    OnWMEvent(&event);
+  }
 }
 
 WindowState* GetActiveWindowState() {

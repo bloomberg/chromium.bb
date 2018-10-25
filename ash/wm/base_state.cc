@@ -24,6 +24,8 @@ BaseState::~BaseState() = default;
 void BaseState::OnWMEvent(WindowState* window_state, const WMEvent* event) {
   if (event->IsWorkspaceEvent()) {
     HandleWorkspaceEvents(window_state, event);
+    if (window_state->IsPip())
+      window_state->UpdatePipBounds();
     return;
   }
   if ((window_state->IsTrustedPinned() || window_state->IsPinned()) &&
