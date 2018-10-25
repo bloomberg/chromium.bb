@@ -255,6 +255,9 @@ void Preferences::RegisterProfilePrefs(
       ash::prefs::kDictationAcceleratorDialogHasBeenAccepted, false,
       PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(
+      ash::prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted, false,
+      PrefRegistry::PUBLIC);
+  registry->RegisterBooleanPref(
       ash::prefs::kAccessibilityScreenMagnifierEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(

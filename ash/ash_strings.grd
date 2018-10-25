@@ -1284,6 +1284,12 @@ This file contains the strings for ash.
       <message name="IDS_ASH_SCREEN_MAGNIFIER_BODY" desc="The text for the screen magnifier dialog.">
        You pressed the shortcut for the full-screen magnifier. Do you want to turn it on?
       </message>
+      <message name="IDS_ASH_ROTATE_SCREEN_TITLE" desc="Dialog title for when the screen has been rotated.">
+        Rotate Screen
+      </message>
+      <message name="IDS_ASH_ROTATE_SCREEN_BODY" desc="The text for the screen rotation dialog.">
+        You pressed the shortcut for screen rotation. Do you want to rotate the screen?
+      </message>
       <message name="IDS_ASH_CONTINUE_BUTTON" desc="The text for continue button on accessibility confirmation dialogs.">
         Continue
       </message>

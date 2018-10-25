@@ -99,6 +99,10 @@ const char kScreenMagnifierAcceleratorDialogHasBeenAccepted[] =
 // ever been shown.
 const char kDictationAcceleratorDialogHasBeenAccepted[] =
     "settings.a11y.dictation_accelerator_dialog_has_been_accepted";
+// A boolean pref which indicates whether the display rotation confirmation
+// dialog has ever been shown.
+const char kDisplayRotationAcceleratorDialogHasBeenAccepted[] =
+    "settings.a11y.display_rotation_accelerator_dialog_has_been_accepted";
 
 // A dictionary pref that stores the mixed mirror mode parameters.
 const char kDisplayMixedMirrorModeParams[] =

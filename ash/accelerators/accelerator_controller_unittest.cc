@@ -512,14 +512,45 @@ TEST_F(AcceleratorControllerTest, RotateScreen) {
   display::Display::Rotation initial_rotation =
       GetActiveDisplayRotation(display.id());
   ui::test::EventGenerator* generator = GetEventGenerator();
+  AccessibilityController* accessibility_controller =
+      Shell::Get()->accessibility_controller();
+
+  EXPECT_FALSE(accessibility_controller
+                   ->HasDisplayRotationAcceleratorDialogBeenAccepted());
   generator->PressKey(ui::VKEY_BROWSER_REFRESH,
                       ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
   generator->ReleaseKey(ui::VKEY_BROWSER_REFRESH,
                         ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
-  display::Display::Rotation new_rotation =
+  // Dialog should be open.
+  EXPECT_TRUE(IsConfirmationDialogOpen());
+  // Cancel on the dialog should have no effect.
+  CancelConfirmationDialog();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(accessibility_controller
+                   ->HasDisplayRotationAcceleratorDialogBeenAccepted());
+
+  display::Display::Rotation rotation_after_cancel =
+      GetActiveDisplayRotation(display.id());
+  // Screen rotation should not have been triggered.
+  EXPECT_EQ(initial_rotation, rotation_after_cancel);
+
+  // Use short cut again.
+  generator->PressKey(ui::VKEY_BROWSER_REFRESH,
+                      ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+  generator->ReleaseKey(ui::VKEY_BROWSER_REFRESH,
+                        ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+  EXPECT_TRUE(IsConfirmationDialogOpen());
+  AcceptConfirmationDialog();
+  base::RunLoop().RunUntilIdle();
+
+  // Dialog should be closed.
+  EXPECT_FALSE(IsConfirmationDialogOpen());
+  EXPECT_TRUE(accessibility_controller
+                  ->HasDisplayRotationAcceleratorDialogBeenAccepted());
+  display::Display::Rotation rotation_after_accept =
       GetActiveDisplayRotation(display.id());
   // |new_rotation| is determined by the AcceleratorController.
-  EXPECT_NE(initial_rotation, new_rotation);
+  EXPECT_NE(initial_rotation, rotation_after_accept);
 }
 
 TEST_F(AcceleratorControllerTest, AutoRepeat) {
