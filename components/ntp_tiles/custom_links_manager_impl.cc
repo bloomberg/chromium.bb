@@ -94,8 +94,7 @@ bool CustomLinksManagerImpl::AddLink(const GURL& url,
 
 bool CustomLinksManagerImpl::UpdateLink(const GURL& url,
                                         const GURL& new_url,
-                                        const base::string16& new_title,
-                                        bool is_user_action) {
+                                        const base::string16& new_title) {
   if (!IsInitialized() || !url.is_valid() ||
       (new_url.is_empty() && new_title.empty())) {
     return false;
@@ -113,10 +112,7 @@ bool CustomLinksManagerImpl::UpdateLink(const GURL& url,
     return false;
 
   // At this point, we will be modifying at least one of the values.
-  if (is_user_action) {
-    // Save the previous state since this was a user update.
-    previous_links_ = current_links_;
-  }
+  previous_links_ = current_links_;
 
   if (!new_url.is_empty())
     it->url = new_url;
