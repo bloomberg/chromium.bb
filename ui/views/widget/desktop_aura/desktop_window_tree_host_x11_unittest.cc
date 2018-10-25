@@ -189,8 +189,9 @@ class DesktopWindowTreeHostX11Test : public ViewsTestBase {
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostX11Test);
 };
 
+// https://crbug.com/898742: Test is flaky.
 // Tests that the shape is properly set on the x window.
-TEST_F(DesktopWindowTreeHostX11Test, Shape) {
+TEST_F(DISABLED_DesktopWindowTreeHostX11Test, Shape) {
   if (!ui::IsShapeExtensionAvailable())
     return;
 
