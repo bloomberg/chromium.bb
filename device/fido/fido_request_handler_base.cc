@@ -238,14 +238,16 @@ void FidoRequestHandlerBase::AuthenticatorIdChanged(
 
 void FidoRequestHandlerBase::AuthenticatorPairingModeChanged(
     FidoDiscoveryBase* discovery,
-    const std::string& device_id) {
+    const std::string& device_id,
+    bool is_in_pairing_mode) {
   DCHECK_EQ(FidoTransportProtocol::kBluetoothLowEnergy, discovery->transport());
   auto it = active_authenticators_.find(device_id);
   if (it == active_authenticators_.end())
     return;
 
   if (observer_)
-    observer_->FidoAuthenticatorPairingModeChanged(device_id);
+    observer_->FidoAuthenticatorPairingModeChanged(device_id,
+                                                   is_in_pairing_mode);
 }
 
 void FidoRequestHandlerBase::AddAuthenticator(

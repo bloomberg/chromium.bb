@@ -324,11 +324,13 @@ void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorIdChanged(
 }
 
 void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorPairingModeChanged(
-    base::StringPiece authenticator_id) {
+    base::StringPiece authenticator_id,
+    bool is_in_pairing_mode) {
   if (!weak_dialog_model_)
     return;
 
-  weak_dialog_model_->UpdateAuthenticatorReferencePairingMode(authenticator_id);
+  weak_dialog_model_->UpdateAuthenticatorReferencePairingMode(
+      authenticator_id, is_in_pairing_mode);
 }
 
 void ChromeAuthenticatorRequestDelegate::BluetoothAdapterPowerChanged(

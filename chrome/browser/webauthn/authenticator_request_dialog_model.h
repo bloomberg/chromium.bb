@@ -264,7 +264,8 @@ class AuthenticatorRequestDialogModel {
   void RemoveAuthenticator(base::StringPiece authenticator_id);
 
   void UpdateAuthenticatorReferencePairingMode(
-      base::StringPiece authenticator_id);
+      base::StringPiece authenticator_id,
+      bool is_in_pairing_mode);
 
   void SetSelectedAuthenticatorForTesting(
       std::unique_ptr<AuthenticatorReference> authenticator);

@@ -384,14 +384,15 @@ void AuthenticatorRequestDialogModel::DispatchRequestAsync(
 }
 
 void AuthenticatorRequestDialogModel::UpdateAuthenticatorReferencePairingMode(
-    base::StringPiece authenticator_id) {
+    base::StringPiece authenticator_id,
+    bool is_in_pairing_mode) {
   auto it = std::find_if(
       saved_authenticators_.begin(), saved_authenticators_.end(),
       [authenticator_id](const auto& authenticator) {
         return authenticator->authenticator_id() == authenticator_id;
       });
   if (it != saved_authenticators_.end())
-    (*it)->SetIsInPairingMode(true /* is_in_pairing_mode */);
+    (*it)->SetIsInPairingMode(is_in_pairing_mode);
 }
 
 void AuthenticatorRequestDialogModel::SetSelectedAuthenticatorForTesting(
