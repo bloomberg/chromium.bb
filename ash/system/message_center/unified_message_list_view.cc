@@ -390,7 +390,9 @@ void UnifiedMessageListView::DeleteRemovedNotifications() {
 }
 
 double UnifiedMessageListView::GetCurrentValue() const {
-  return gfx::Tween::CalculateValue(gfx::Tween::EASE_OUT,
+  return gfx::Tween::CalculateValue(state_ == State::SLIDE_OUT
+                                        ? gfx::Tween::EASE_IN
+                                        : gfx::Tween::FAST_OUT_SLOW_IN,
                                     animation_->GetCurrentValue());
 }
 
