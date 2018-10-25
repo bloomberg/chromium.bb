@@ -1463,45 +1463,10 @@ void LocalFrame::DeprecatedReportFeaturePolicyViolation(
   GetSecurityContext()->ReportFeaturePolicyViolation(feature);
 }
 
-namespace {
-
-LocalFrame* user_activation_notifier_frame_ = nullptr;
-
-enum UserActivationFrameResultEnum {
-  kNullFailure = 0,
-  kNullSuccess = 1,
-  kSelfFailure = 2,
-  kSelfSuccess = 3,
-  kAncestorFailure = 4,
-  kAncestorSuccess = 5,
-  kDescendantFailure = 6,
-  kDescendantSuccess = 7,
-  kOtherFailure = 8,
-  kOtherSuccess = 9,
-  kMaxValue = kOtherSuccess
-};
-
-UserActivationFrameResultEnum determineFrameResultEnum(
-    const LocalFrame* const caller_frame,
-    const bool call_succeeded) {
-  if (!caller_frame || !user_activation_notifier_frame_)
-    return call_succeeded ? kNullSuccess : kNullFailure;
-  if (caller_frame == user_activation_notifier_frame_)
-    return call_succeeded ? kSelfSuccess : kSelfFailure;
-  if (user_activation_notifier_frame_->Tree().IsDescendantOf(caller_frame))
-    return call_succeeded ? kAncestorSuccess : kAncestorFailure;
-  if (caller_frame->Tree().IsDescendantOf(user_activation_notifier_frame_))
-    return call_succeeded ? kDescendantSuccess : kDescendantFailure;
-  return call_succeeded ? kOtherSuccess : kOtherFailure;
-}
-
-}  // namespace
-
 // static
 std::unique_ptr<UserGestureIndicator> LocalFrame::NotifyUserActivation(
     LocalFrame* frame,
     UserGestureToken::Status status) {
-  user_activation_notifier_frame_ = frame;
   if (frame)
     frame->NotifyUserActivation();
   return std::make_unique<UserGestureIndicator>(status);
@@ -1512,7 +1477,6 @@ std::unique_ptr<UserGestureIndicator> LocalFrame::NotifyUserActivation(
     LocalFrame* frame,
     UserGestureToken* token) {
   DCHECK(!RuntimeEnabledFeatures::UserActivationV2Enabled());
-  user_activation_notifier_frame_ = frame;
   if (frame)
     frame->NotifyUserActivation();
   return std::make_unique<UserGestureIndicator>(token);
@@ -1521,19 +1485,13 @@ std::unique_ptr<UserGestureIndicator> LocalFrame::NotifyUserActivation(
 // static
 bool LocalFrame::HasTransientUserActivation(LocalFrame* frame,
                                             bool check_if_main_thread) {
-  bool available;
-
   if (RuntimeEnabledFeatures::UserActivationV2Enabled()) {
-    available = frame ? frame->HasTransientUserActivation() : false;
-  } else {
-    available = check_if_main_thread
-                    ? UserGestureIndicator::ProcessingUserGestureThreadSafe()
-                    : UserGestureIndicator::ProcessingUserGesture();
+    return frame ? frame->HasTransientUserActivation() : false;
   }
 
-  UMA_HISTOGRAM_ENUMERATION("UserActivation.AvailabilityCheck.FrameResult",
-                            determineFrameResultEnum(frame, available));
-  return available;
+  return check_if_main_thread
+             ? UserGestureIndicator::ProcessingUserGestureThreadSafe()
+             : UserGestureIndicator::ProcessingUserGesture();
 }
 
 // static
@@ -1541,21 +1499,13 @@ bool LocalFrame::ConsumeTransientUserActivation(
     LocalFrame* frame,
     bool check_if_main_thread,
     UserActivationUpdateSource update_source) {
-  bool consumed;
-
   if (RuntimeEnabledFeatures::UserActivationV2Enabled()) {
-    consumed =
-        frame ? frame->ConsumeTransientUserActivation(update_source) : false;
-  } else {
-    consumed = check_if_main_thread
-                   ? UserGestureIndicator::ConsumeUserGestureThreadSafe()
-                   : UserGestureIndicator::ConsumeUserGesture();
+    return frame ? frame->ConsumeTransientUserActivation(update_source) : false;
   }
 
-  UMA_HISTOGRAM_ENUMERATION("UserActivation.Consumption.FrameResult",
-                            determineFrameResultEnum(frame, consumed));
-  user_activation_notifier_frame_ = nullptr;
-  return consumed;
+  return check_if_main_thread
+             ? UserGestureIndicator::ConsumeUserGestureThreadSafe()
+             : UserGestureIndicator::ConsumeUserGesture();
 }
 
 void LocalFrame::NotifyUserActivation() {
