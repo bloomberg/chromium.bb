@@ -37,24 +37,12 @@ void* ClientTransferCache::MapTransferBufferEntry(
 }
 
 void ClientTransferCache::UnmapAndCreateEntry(uint32_t type, uint32_t id) {
-  DCHECK(mapped_ptr_ || transfer_buffer_ptr_);
   EntryKey key(type, id);
 
   base::AutoLock hold(lock_);
-  ClientDiscardableHandle::Id discardable_handle_id =
-      discardable_manager_.CreateHandle(client_->command_buffer());
-  if (discardable_handle_id.is_null())
+  auto handle = CreateDiscardableHandle(key);
+  if (!handle.IsValid())
     return;
-
-  // We must have a valid handle here, since the id was generated above and
-  // should be in locked state.
-  ClientDiscardableHandle handle =
-      discardable_manager_.GetHandle(discardable_handle_id);
-
-  // Store the mapping from the given namespace/discardable_handle_id to the
-  // transfer cache discardable_handle_id.
-  DCHECK(FindDiscardableHandleId(key).is_null());
-  discardable_handle_id_map_.emplace(key, discardable_handle_id);
 
   if (mapped_ptr_) {
     DCHECK(!transfer_buffer_ptr_);
@@ -70,6 +58,45 @@ void ClientTransferCache::UnmapAndCreateEntry(uint32_t type, uint32_t id) {
         transfer_buffer_ptr_->size());
     transfer_buffer_ptr_ = base::nullopt;
   }
+}
+
+void ClientTransferCache::AddTransferCacheEntry(uint32_t type,
+                                                uint32_t id,
+                                                uint32_t shm_id,
+                                                uint32_t shm_offset,
+                                                size_t size) {
+  DCHECK(!mapped_ptr_);
+  EntryKey key(type, id);
+
+  base::AutoLock hold(lock_);
+  auto handle = CreateDiscardableHandle(key);
+  if (!handle.IsValid())
+    return;
+
+  client_->IssueCreateTransferCacheEntry(type, id, handle.shm_id(),
+                                         handle.byte_offset(), shm_id,
+                                         shm_offset, size);
+}
+
+ClientDiscardableHandle ClientTransferCache::CreateDiscardableHandle(
+    const EntryKey& key) {
+  lock_.AssertAcquired();
+
+  ClientDiscardableHandle::Id discardable_handle_id =
+      discardable_manager_.CreateHandle(client_->command_buffer());
+  if (discardable_handle_id.is_null())
+    return ClientDiscardableHandle();
+
+  // We must have a valid handle here, since the id was generated above and
+  // should be in locked state.
+  ClientDiscardableHandle handle =
+      discardable_manager_.GetHandle(discardable_handle_id);
+
+  // Store the mapping from the given namespace/discardable_handle_id to the
+  // transfer cache discardable_handle_id.
+  DCHECK(FindDiscardableHandleId(key).is_null());
+  discardable_handle_id_map_.emplace(key, discardable_handle_id);
+  return handle;
 }
 
 bool ClientTransferCache::LockEntry(uint32_t type, uint32_t id) {

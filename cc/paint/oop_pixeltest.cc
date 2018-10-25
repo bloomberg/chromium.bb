@@ -21,6 +21,7 @@
 #include "cc/tiles/gpu_image_decode_cache.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/raster_implementation.h"
 #include "gpu/command_buffer/client/raster_implementation_gles.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
@@ -1605,10 +1606,53 @@ TEST_F(OopPixelTest, DrawTextBlobPersistentShaderCache) {
   ExpectEquals(actual, expected);
 }
 
+class OopPathPixelTest : public OopPixelTest,
+                         public ::testing::WithParamInterface<bool> {
+ public:
+  bool AllowInlining() const { return GetParam(); }
+  void RunTest() {
+    auto* ri = static_cast<gpu::raster::RasterImplementation*>(
+        raster_context_provider_->RasterInterface());
+    size_t max_inlined_entry_size =
+        AllowInlining() ? std::numeric_limits<size_t>::max() : 0u;
+    ri->set_max_inlined_entry_size_for_testing(max_inlined_entry_size);
+
+    RasterOptions options;
+    options.resource_size = gfx::Size(100, 100);
+    options.content_size = options.resource_size;
+    options.full_raster_rect = gfx::Rect(options.content_size);
+    options.playback_rect = options.full_raster_rect;
+    options.color_space = gfx::ColorSpace::CreateSRGB();
+
+    auto display_item_list = base::MakeRefCounted<DisplayItemList>();
+    display_item_list->StartPaint();
+    display_item_list->push<DrawColorOp>(SK_ColorWHITE, SkBlendMode::kSrc);
+    PaintFlags flags;
+    flags.setStyle(PaintFlags::kFill_Style);
+    flags.setColor(SK_ColorGREEN);
+    SkPath path;
+    path.addCircle(20, 20, 10);
+    display_item_list->push<DrawPathOp>(path, flags);
+    flags.setColor(SK_ColorBLUE);
+    display_item_list->push<DrawRectOp>(SkRect::MakeWH(10, 10), flags);
+    display_item_list->EndPaintOfUnpaired(options.full_raster_rect);
+    display_item_list->Finalize();
+
+    auto expected = RasterExpectedBitmap(display_item_list, options);
+    auto actual = Raster(display_item_list, options);
+    ExpectEquals(actual, expected);
+  }
+};
+
+TEST_P(OopPathPixelTest, Basic) {
+  RunTest();
+}
+
 INSTANTIATE_TEST_CASE_P(P, OopImagePixelTest, ::testing::Bool());
 INSTANTIATE_TEST_CASE_P(P, OopClearPixelTest, ::testing::Bool());
 INSTANTIATE_TEST_CASE_P(P, OopRecordShaderPixelTest, ::testing::Bool());
 INSTANTIATE_TEST_CASE_P(P, OopRecordFilterPixelTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(P, OopPathPixelTest, ::testing::Bool());
 
 }  // namespace
 }  // namespace cc

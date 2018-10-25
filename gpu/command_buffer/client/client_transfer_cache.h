@@ -60,6 +60,13 @@ class GLES2_IMPL_EXPORT ClientTransferCache {
   explicit ClientTransferCache(Client* client);
   ~ClientTransferCache();
 
+  // Adds a transfer cache entry with previously written memory.
+  void AddTransferCacheEntry(uint32_t type,
+                             uint32_t id,
+                             uint32_t shm_id,
+                             uint32_t shm_offset,
+                             size_t size);
+
   // Map(of either type) must always be followed by an Unmap.
   void* MapEntry(MappedMemoryManager* mapped_memory, size_t size);
   void* MapTransferBufferEntry(TransferBufferInterface* transfer_buffer,
@@ -72,6 +79,7 @@ class GLES2_IMPL_EXPORT ClientTransferCache {
  private:
   using EntryKey = std::pair<uint32_t, uint32_t>;
   ClientDiscardableHandle::Id FindDiscardableHandleId(const EntryKey& key);
+  ClientDiscardableHandle CreateDiscardableHandle(const EntryKey& key);
 
   Client* const client_;  // not owned --- client_ outlives this
 

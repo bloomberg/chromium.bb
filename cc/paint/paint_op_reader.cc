@@ -207,6 +207,18 @@ void PaintOpReader::Read(SkPath* path) {
   } else {
     valid_ = false;
   }
+
+  size_t bytes_to_skip = 0u;
+  ReadSize(&bytes_to_skip);
+  if (!valid_)
+    return;
+
+  if (bytes_to_skip > remaining_bytes_) {
+    valid_ = false;
+    return;
+  }
+  memory_ += bytes_to_skip;
+  remaining_bytes_ -= bytes_to_skip;
 }
 
 void PaintOpReader::Read(PaintFlags* flags) {
