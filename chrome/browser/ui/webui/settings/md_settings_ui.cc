@@ -46,12 +46,10 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/unified_consent/feature.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/web_preferences.h"
 #include "printing/buildflags/buildflags.h"
 
 #if defined(OS_WIN)
@@ -367,11 +365,6 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("showImportPasswords",
                           base::FeatureList::IsEnabled(
                               password_manager::features::kPasswordImport));
-
-  html_source->AddBoolean("enableScrollAnimator", web_ui->GetWebContents()
-                                                      ->GetRenderViewHost()
-                                                      ->GetWebkitPreferences()
-                                                      .enable_scroll_animator);
 
   AddSettingsPageUIHandler(
       base::WrapUnique(AboutHandler::Create(html_source, profile)));
