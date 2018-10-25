@@ -1148,6 +1148,27 @@ bool QuicChromiumClientSession::GetSSLInfo(SSLInfo* ssl_info) const {
       return false;
   }
 
+  // QUIC-Crypto always uses RSA-PSS or ECDSA with SHA-256.
+  //
+  // TODO(nharper): This will no longer be true in TLS 1.3. This logic, and
+  // likely the rest of this logic, will want some adjustments for QUIC with TLS
+  // 1.3.
+  size_t unused;
+  X509Certificate::PublicKeyType key_type;
+  X509Certificate::GetPublicKeyInfo(ssl_info->cert->cert_buffer(), &unused,
+                                    &key_type);
+  switch (key_type) {
+    case X509Certificate::kPublicKeyTypeRSA:
+      ssl_info->peer_signature_algorithm = SSL_SIGN_RSA_PSS_RSAE_SHA256;
+      break;
+    case X509Certificate::kPublicKeyTypeECDSA:
+      ssl_info->peer_signature_algorithm = SSL_SIGN_ECDSA_SECP256R1_SHA256;
+      break;
+    default:
+      NOTREACHED();
+      return false;
+  }
+
   ssl_info->public_key_hashes = cert_verify_result_->public_key_hashes;
   ssl_info->is_issued_by_known_root =
       cert_verify_result_->is_issued_by_known_root;

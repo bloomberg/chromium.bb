@@ -360,35 +360,27 @@ void CheckSecureConnectionExplanation(
   int ssl_version =
       net::SSLConnectionStatusToVersion(security_info.connection_status);
   net::SSLVersionToString(&protocol, ssl_version);
-  EXPECT_EQ(l10n_util::GetStringFUTF8(IDS_STRONG_SSL_SUMMARY,
-                                      base::ASCIIToUTF16(protocol)),
-            explanation.summary);
-
   bool is_aead, is_tls13;
   uint16_t cipher_suite =
       net::SSLConnectionStatusToCipherSuite(security_info.connection_status);
   net::SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead,
                                &is_tls13, cipher_suite);
+  // Modern configurations are always AEADs and specify groups.
   EXPECT_TRUE(is_aead);
-  EXPECT_EQ(nullptr, mac);  // The default secure cipher does not have a MAC.
-  EXPECT_FALSE(is_tls13);   // The default secure cipher is not TLS 1.3.
+  EXPECT_EQ(nullptr, mac);
+  ASSERT_NE(0, security_info.key_exchange_group);
+  const char* key_exchange_group =
+      SSL_get_curve_name(security_info.key_exchange_group);
 
-  base::string16 key_exchange_name = base::ASCIIToUTF16(key_exchange);
-  if (security_info.key_exchange_group != 0) {
-    key_exchange_name = l10n_util::GetStringFUTF16(
-        IDS_SSL_KEY_EXCHANGE_WITH_GROUP, key_exchange_name,
-        base::ASCIIToUTF16(
-            SSL_get_curve_name(security_info.key_exchange_group)));
-  }
+  // The description should summarize the settings.
+  EXPECT_NE(std::string::npos, explanation.description.find(protocol));
+  EXPECT_NE(std::string::npos, explanation.description.find(key_exchange));
+  EXPECT_NE(std::string::npos,
+            explanation.description.find(key_exchange_group));
+  EXPECT_NE(std::string::npos, explanation.description.find(cipher));
 
-  std::vector<base::string16> description_replacements;
-  description_replacements.push_back(base::ASCIIToUTF16(protocol));
-  description_replacements.push_back(key_exchange_name);
-  description_replacements.push_back(base::ASCIIToUTF16(cipher));
-  base::string16 secure_description = l10n_util::GetStringFUTF16(
-      IDS_STRONG_SSL_DESCRIPTION, description_replacements, nullptr);
-
-  EXPECT_EQ(secure_description, base::ASCIIToUTF16(explanation.description));
+  // There should be no recommendations to provide.
+  EXPECT_EQ(0u, explanation.recommendations.size());
 }
 
 // Checks that the given |explanation| contains an appropriate
@@ -2577,37 +2569,24 @@ IN_PROC_BROWSER_TEST_F(
   security_state::SecurityInfo security_info;
   SecurityStateTabHelper::FromWebContents(web_contents)
       ->GetSecurityInfo(&security_info);
-  const char* protocol;
-  int ssl_version =
-      net::SSLConnectionStatusToVersion(security_info.connection_status);
-  net::SSLVersionToString(&protocol, ssl_version);
   for (const auto& explanation :
        observer.latest_explanations().secure_explanations) {
-    EXPECT_NE(l10n_util::GetStringFUTF8(IDS_STRONG_SSL_SUMMARY,
-                                        base::ASCIIToUTF16(protocol)),
+    EXPECT_NE(l10n_util::GetStringUTF8(IDS_SECURE_SSL_SUMMARY),
               explanation.summary);
   }
 
-  // Populate description string replacement with values corresponding
-  // to test constants.
-  std::vector<base::string16> description_replacements;
-  description_replacements.push_back(base::ASCIIToUTF16("TLS 1.1"));
-  description_replacements.push_back(
-      l10n_util::GetStringUTF16(IDS_SSL_AN_OBSOLETE_PROTOCOL));
-  description_replacements.push_back(base::ASCIIToUTF16("ECDHE_RSA"));
-  description_replacements.push_back(
-      l10n_util::GetStringUTF16(IDS_SSL_A_STRONG_KEY_EXCHANGE));
-  description_replacements.push_back(
-      base::ASCIIToUTF16("AES_128_CBC with HMAC-SHA1"));
-  description_replacements.push_back(
-      l10n_util::GetStringUTF16(IDS_SSL_AN_OBSOLETE_CIPHER));
-  base::string16 obsolete_description = l10n_util::GetStringFUTF16(
-      IDS_OBSOLETE_SSL_DESCRIPTION, description_replacements, nullptr);
+  // The description string should include the connection properties.
+  const content::SecurityStyleExplanation& explanation =
+      observer.latest_explanations().info_explanations[0];
+  EXPECT_NE(std::string::npos, explanation.description.find("TLS 1.1"));
+  EXPECT_NE(std::string::npos, explanation.description.find("ECDHE_RSA"));
+  EXPECT_NE(std::string::npos, explanation.description.find("AES_128_CBC"));
+  EXPECT_NE(std::string::npos, explanation.description.find("HMAC-SHA1"));
 
-  EXPECT_EQ(
-      obsolete_description,
-      base::ASCIIToUTF16(
-          observer.latest_explanations().info_explanations[0].description));
+  // There should be recommendations to fix the issues.
+  ASSERT_EQ(2u, explanation.recommendations.size());
+  EXPECT_NE(std::string::npos, explanation.recommendations[0].find("TLS 1.2"));
+  EXPECT_NE(std::string::npos, explanation.recommendations[1].find("GCM"));
 }
 
 // Tests that the Not Secure chip does not show for error pages on http:// URLs.
