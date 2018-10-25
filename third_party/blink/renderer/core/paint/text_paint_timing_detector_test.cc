@@ -169,13 +169,47 @@ TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_IgnoreRemovedText) {
     </div>
   )HTML");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  GetDocument().getElementById("parent")->RemoveChild(
-      GetDocument().getElementById("earlyLargeText"));
-  UpdateAllLifecyclePhasesAndSimulateSwapTime();
   TextRecord* record = GetPaintTracker()
                            .GetTextPaintTimingDetector()
                            .FindLargestPaintCandidate();
+  EXPECT_TRUE(record);
+  EXPECT_EQ(record->text,
+            "(large text)(large text)(large text)(large text)(large "
+            "text)(large text)");
+
+  GetDocument().getElementById("parent")->RemoveChild(
+      GetDocument().getElementById("earlyLargeText"));
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  record = GetPaintTracker()
+               .GetTextPaintTimingDetector()
+               .FindLargestPaintCandidate();
   EXPECT_EQ(record->text, "small text");
+}
+
+TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_ReportLastNullCandidate) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='parent'>
+      <div id='remove'>text</div>
+    </div>
+  )HTML");
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  SimulateAnalyze();
+  TextRecord* record = GetPaintTracker()
+                           .GetTextPaintTimingDetector()
+                           .FindLargestPaintCandidate();
+  EXPECT_TRUE(record);
+  EXPECT_EQ(record->text, "text");
+  EXPECT_NE(LargestPaintStoredResult(), base::TimeTicks());
+
+  GetDocument().getElementById("parent")->RemoveChild(
+      GetDocument().getElementById("remove"));
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  SimulateAnalyze();
+  record = GetPaintTracker()
+               .GetTextPaintTimingDetector()
+               .FindLargestPaintCandidate();
+  EXPECT_FALSE(record);
+  EXPECT_EQ(LargestPaintStoredResult(), base::TimeTicks());
 }
 
 TEST_F(TextPaintTimingDetectorTest,
@@ -334,6 +368,32 @@ TEST_F(TextPaintTimingDetectorTest, LastTextPaint_StopRecordingOverNodeLimit) {
   record =
       GetPaintTracker().GetTextPaintTimingDetector().FindLastPaintCandidate();
   EXPECT_EQ(record->text, "5000");
+}
+
+TEST_F(TextPaintTimingDetectorTest, LastTextPaint_ReportLastNullCandidate) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='parent'>
+      <div id='remove'>text</div>
+    </div>
+  )HTML");
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  SimulateAnalyze();
+  TextRecord* record = GetPaintTracker()
+                           .GetTextPaintTimingDetector()
+                           .FindLargestPaintCandidate();
+  EXPECT_TRUE(record);
+  EXPECT_EQ(record->text, "text");
+  EXPECT_NE(LastPaintStoredResult(), base::TimeTicks());
+
+  GetDocument().getElementById("parent")->RemoveChild(
+      GetDocument().getElementById("remove"));
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  SimulateAnalyze();
+  record = GetPaintTracker()
+               .GetTextPaintTimingDetector()
+               .FindLargestPaintCandidate();
+  EXPECT_FALSE(record);
+  EXPECT_EQ(LastPaintStoredResult(), base::TimeTicks());
 }
 
 }  // namespace blink

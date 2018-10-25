@@ -62,8 +62,8 @@ class CORE_EXPORT TextPaintTimingDetector final
   void OnPrePaintFinished();
   void NotifyNodeRemoved(DOMNodeId);
   void Dispose() { timer_.Stop(); }
-  base::TimeTicks LargestTextPaint() { return largest_text_paint_; }
-  base::TimeTicks LastTextPaint() { return last_text_paint_; }
+  base::TimeTicks LargestTextPaint() const { return largest_text_paint_; }
+  base::TimeTicks LastTextPaint() const { return last_text_paint_; }
   void Trace(blink::Visitor*);
 
  private:
