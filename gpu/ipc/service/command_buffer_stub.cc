@@ -791,7 +791,7 @@ void CommandBufferStub::RemoveDestructionObserver(
   destruction_observers_.RemoveObserver(observer);
 }
 
-std::unique_ptr<gles2::MemoryTracker> CommandBufferStub::CreateMemoryTracker(
+std::unique_ptr<MemoryTracker> CommandBufferStub::CreateMemoryTracker(
     const GPUCreateCommandBufferConfig init_params) const {
   return std::make_unique<GpuCommandBufferMemoryTracker>(
       channel_->client_id(), channel_->client_tracing_id(),
@@ -799,7 +799,7 @@ std::unique_ptr<gles2::MemoryTracker> CommandBufferStub::CreateMemoryTracker(
       channel_->task_runner());
 }
 
-gles2::MemoryTracker* CommandBufferStub::GetMemoryTracker() const {
+MemoryTracker* CommandBufferStub::GetMemoryTracker() const {
   return context_group_->memory_tracker();
 }
 

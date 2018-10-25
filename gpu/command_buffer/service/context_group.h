@@ -38,6 +38,7 @@ class SharedImageManager;
 class ServiceDiscardableManager;
 class PassthroughDiscardableManager;
 class DecoderContext;
+class MemoryTracker;
 
 namespace gles2 {
 
@@ -50,7 +51,6 @@ class ProgramManager;
 class SamplerManager;
 class ShaderManager;
 class TextureManager;
-class MemoryTracker;
 struct DisallowedFeatures;
 struct PassthroughResources;
 

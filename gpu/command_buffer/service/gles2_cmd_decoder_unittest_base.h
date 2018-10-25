@@ -46,9 +46,9 @@
 #include "ui/gl/gl_version_info.h"
 
 namespace gpu {
-namespace gles2 {
-
 class MemoryTracker;
+
+namespace gles2 {
 class MockCopyTextureResourceManager;
 
 class GLES2DecoderTestBase : public ::testing::TestWithParam<bool>,

@@ -516,7 +516,7 @@ class RasterDecoderImpl final : public RasterDecoder,
     return feature_info_->gl_version_info();
   }
 
-  gles2::MemoryTracker* memory_tracker() { return group_->memory_tracker(); }
+  MemoryTracker* memory_tracker() { return group_->memory_tracker(); }
 
   gles2::VertexArrayManager* vertex_array_manager() {
     return vertex_array_manager_.get();
