@@ -6814,9 +6814,7 @@ TEST(HeapTest, PromptlyFreeStackAllocatedHeapLinkedHashSet) {
   EXPECT_NE(after, before);
 }
 
-// TODO(https://crbug.com/897400): Leaks |gc_phase_| state, potentially
-// crashing later tests run in the same process.
-TEST(HeapTest, DISABLED_ShrinkVector) {
+TEST(HeapTest, ShrinkVector) {
   // Regression test: https://crbug.com/823289
 
   HeapVector<Member<IntWrapper>> vector;
