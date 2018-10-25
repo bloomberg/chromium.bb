@@ -428,9 +428,6 @@ extern const char kEnableNightLightDescription[];
 extern const char kEnableNotificationScrollBarName[];
 extern const char kEnableNotificationScrollBarDescription[];
 
-extern const char kEnableNewMessageListViewName[];
-extern const char kEnableNewMessageListViewDescription[];
-
 extern const char kEnableNupPrintingName[];
 extern const char kEnableNupPrintingDescription[];
 
@@ -992,9 +989,6 @@ extern const char kSettingsWindowDescription[];
 
 extern const char kShelfHoverPreviewsName[];
 extern const char kShelfHoverPreviewsDescription[];
-
-extern const char kShelfNewUiName[];
-extern const char kShelfNewUiDescription[];
 
 extern const char kShowAndroidFilesInFilesAppName[];
 extern const char kShowAndroidFilesInFilesAppDescription[];
