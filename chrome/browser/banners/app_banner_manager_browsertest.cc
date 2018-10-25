@@ -251,9 +251,10 @@ class AppBannerManagerBrowserTest : public AppBannerManagerBrowserTestBase {
     // with Bind.
     TriggerBannerFlow(
         browser, manager,
-        base::BindOnce(&ui_test_utils::NavigateToURLWithDisposition, browser,
-                       url, WindowOpenDisposition::CURRENT_TAB,
-                       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION),
+        base::BindOnce(
+            base::IgnoreResult(&ui_test_utils::NavigateToURLWithDisposition),
+            browser, url, WindowOpenDisposition::CURRENT_TAB,
+            ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION),
         expected_will_show, expected_state);
   }
 
