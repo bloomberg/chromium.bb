@@ -2325,7 +2325,7 @@ bool PaintLayerScrollableArea::VisualViewportSuppliesScrollbars() const {
   const TopDocumentRootScrollerController& controller =
       GetLayoutBox()->GetDocument().GetPage()->GlobalRootScrollerController();
 
-  return RootScrollerUtil::ScrollableAreaForRootScroller(
+  return root_scroller_util::ScrollableAreaForRootScroller(
              controller.GlobalRootScroller()) == this;
 }
 
