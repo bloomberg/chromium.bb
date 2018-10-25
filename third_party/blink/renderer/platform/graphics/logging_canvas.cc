@@ -373,20 +373,6 @@ String FilterQualityName(SkFilterQuality filter_quality) {
   };
 }
 
-String TextAlignName(SkPaint::Align align) {
-  switch (align) {
-    case SkPaint::kLeft_Align:
-      return "Left";
-    case SkPaint::kCenter_Align:
-      return "Center";
-    case SkPaint::kRight_Align:
-      return "Right";
-    default:
-      NOTREACHED();
-      return "?";
-  };
-}
-
 String StrokeCapName(SkPaint::Cap cap) {
   switch (cap) {
     case SkPaint::kButt_Cap:
@@ -474,7 +460,6 @@ std::unique_ptr<JSONObject> ObjectForSkPaint(const SkPaint& paint) {
   paint_item->SetString("flags", StringForSkPaintFlags(paint));
   paint_item->SetString("filterLevel",
                         FilterQualityName(paint.getFilterQuality()));
-  paint_item->SetString("textAlign", TextAlignName(paint.getTextAlign()));
   paint_item->SetString("strokeCap", StrokeCapName(paint.getStrokeCap()));
   paint_item->SetString("strokeJoin", StrokeJoinName(paint.getStrokeJoin()));
   paint_item->SetString("styleName", StyleName(paint.getStyle()));

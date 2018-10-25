@@ -511,8 +511,17 @@ void HeadsUpDisplayLayerImpl::DrawText(SkCanvas* canvas,
   paint->setAntiAlias(true);
 
   paint->setTextSize(size);
-  paint->setTextAlign(align);
   paint->setTypeface(typeface_);
+
+  if (align != SkPaint::kLeft_Align) {
+    SkScalar width = paint->measureText(text.c_str(), text.length(), nullptr);
+    if (align == SkPaint::kCenter_Align) {
+      x -= width * 0.5f;
+    } else {
+      DCHECK_EQ(align, SkPaint::kRight_Align);
+      x -= width;
+    }
+  }
   canvas->drawText(text.c_str(), text.length(), x, y, *paint);
 
   paint->setAntiAlias(anti_alias);
