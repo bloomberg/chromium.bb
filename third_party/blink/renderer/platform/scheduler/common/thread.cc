@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/compositor_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/compositor_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
@@ -62,24 +63,6 @@ std::unique_ptr<Thread>& GetCompositorThread() {
   return compositor_thread;
 }
 
-// TODO(yutak): This should live in a separate header.
-class WebThreadForCompositor : public scheduler::WorkerThread {
- public:
-  explicit WebThreadForCompositor(const ThreadCreationParams& params)
-      : scheduler::WorkerThread(params) {}
-  ~WebThreadForCompositor() override = default;
-
- private:
-  // WorkerThread:
-  std::unique_ptr<blink::scheduler::NonMainThreadSchedulerImpl>
-  CreateNonMainThreadScheduler() override {
-    return std::make_unique<scheduler::CompositorThreadScheduler>(
-        base::sequence_manager::CreateSequenceManagerOnCurrentThread());
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(WebThreadForCompositor);
-};
-
 }  // namespace
 
 ThreadCreationParams::ThreadCreationParams(WebThreadType thread_type)
@@ -123,7 +106,8 @@ void Thread::CreateAndSetCompositorThread() {
 #if defined(OS_ANDROID)
   params.thread_options.priority = base::ThreadPriority::DISPLAY;
 #endif
-  auto compositor_thread = std::make_unique<WebThreadForCompositor>(params);
+  auto compositor_thread =
+      std::make_unique<scheduler::CompositorThread>(params);
   compositor_thread->Init();
   UpdateThreadTLSAndWait(compositor_thread.get());
   GetCompositorThread() = std::move(compositor_thread);

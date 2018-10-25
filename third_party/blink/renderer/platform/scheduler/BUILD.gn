@@ -112,6 +112,8 @@ blink_platform_sources("scheduler") {
     "util/tracing_helper.h",
     "worker/compositor_metrics_helper.cc",
     "worker/compositor_metrics_helper.h",
+    "worker/compositor_thread.cc",
+    "worker/compositor_thread.h",
     "worker/compositor_thread_scheduler.cc",
     "worker/compositor_thread_scheduler.h",
     "worker/non_main_thread_scheduler_helper.cc",
