@@ -53,9 +53,10 @@ class MESSAGE_CENTER_EXPORT SlideOutController
   // ui::ImplicitAnimationObserver
   void OnImplicitAnimationsCompleted() override;
 
-  // Enables the swipe control. Buttons will appea behind the view as user
-  // slides it partially and it's kept open after the gesture.
-  void EnableSwipeControl(int button_count);
+  // Enables the swipe control with specifying the width of buttons. Buttons
+  // will appear behind the view as user slides it partially and it's kept open
+  // after the gesture.
+  void SetSwipeControlWidth(int swipe_control_width);
   float GetGestureAmount() const { return gesture_amount_; }
 
   // Moves slide back to the center position to closes the swipe control.

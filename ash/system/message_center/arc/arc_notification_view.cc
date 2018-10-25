@@ -162,6 +162,7 @@ void ArcNotificationView::OnContainerAnimationEnded() {
 }
 
 void ArcNotificationView::OnSlideChanged() {
+  MessageView::OnSlideChanged();
   content_view_->OnSlideChanged();
 }
 
