@@ -1919,8 +1919,7 @@ TEST_F(NetworkQualityEstimatorTest, TestGlobalSocketWatcherThrottle) {
 
 // TestTCPSocketRTT requires kernel support for tcp_info struct, and so it is
 // enabled only on certain platforms.
-#if defined(TCP_INFO) || (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || \
-    defined(OS_ANDROID)
+#if defined(TCP_INFO) || defined(OS_LINUX) || defined(OS_ANDROID)
 #define MAYBE_TestTCPSocketRTT TestTCPSocketRTT
 #else
 #define MAYBE_TestTCPSocketRTT DISABLED_TestTCPSocketRTT
