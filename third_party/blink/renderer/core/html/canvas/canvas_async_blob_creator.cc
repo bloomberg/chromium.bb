@@ -340,7 +340,7 @@ void CanvasAsyncBlobCreator::ScheduleAsyncBlobCreation(const double& quality) {
                         WrapPersistent(this)));
 
     } else {
-      BackgroundScheduler::PostOnBackgroundThread(
+      background_scheduler::PostOnBackgroundThread(
           FROM_HERE,
           CrossThreadBind(&CanvasAsyncBlobCreator::EncodeImageOnEncoderThread,
                           WrapCrossThreadPersistent(this), quality));

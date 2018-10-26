@@ -162,7 +162,7 @@ void BackgroundFetchIconLoader::DidFinishLoading(
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       Platform::Current()->CurrentThread()->GetTaskRunner();
 
-  BackgroundScheduler::PostOnBackgroundThread(
+  background_scheduler::PostOnBackgroundThread(
       FROM_HERE,
       CrossThreadBind(
           &BackgroundFetchIconLoader::DecodeAndResizeImageOnBackgroundThread,
