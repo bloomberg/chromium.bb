@@ -330,6 +330,7 @@ ImageRequest.prototype.createVideoThumbnailUrl_ = function(url) {
           video.currentTime = ImageRequest.VIDEO_THUMBNAIL_POSITION;
           video.preload = 'auto';
           video.src = url;
+          video.load();
         }),
         new Promise((resolve) => {
           setTimeout(resolve, ImageRequest.MAX_MILLISECONDS_TO_LOAD_VIDEO);
