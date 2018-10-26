@@ -249,7 +249,7 @@ int LaunchUnitTestsInternal(RunTestSuiteCallback run_test_suite,
 
   MessageLoopForIO message_loop;
 #if defined(OS_POSIX)
-  FileDescriptorWatcher file_descriptor_watcher(message_loop.task_runner());
+  FileDescriptorWatcher file_descriptor_watcher(&message_loop);
 #endif
 
   DefaultUnitTestPlatformDelegate platform_delegate;

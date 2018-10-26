@@ -7,9 +7,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,15 +20,14 @@ namespace media {
 
 TEST(UserInputMonitorTest, CreatePlatformSpecific) {
 #if defined(OS_LINUX)
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::MessageLoopForIO message_loop;
+  base::FileDescriptorWatcher file_descriptor_watcher(&message_loop);
 #else
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::UI);
+  base::MessageLoopForUI message_loop;
 #endif  // defined(OS_LINUX)
 
   std::unique_ptr<UserInputMonitor> monitor = UserInputMonitor::Create(
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get());
+      message_loop.task_runner(), message_loop.task_runner());
 
   if (!monitor)
     return;
@@ -43,15 +41,14 @@ TEST(UserInputMonitorTest, CreatePlatformSpecific) {
 
 TEST(UserInputMonitorTest, CreatePlatformSpecificWithMapping) {
 #if defined(OS_LINUX)
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::MessageLoopForIO message_loop;
+  base::FileDescriptorWatcher file_descriptor_watcher(&message_loop);
 #else
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::UI);
+  base::MessageLoopForUI message_loop;
 #endif  // defined(OS_LINUX)
 
   std::unique_ptr<UserInputMonitor> monitor = UserInputMonitor::Create(
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get());
+      message_loop.task_runner(), message_loop.task_runner());
 
   if (!monitor)
     return;

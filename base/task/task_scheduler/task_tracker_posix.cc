@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/files/file_descriptor_watcher_posix.h"
-#include "base/message_loop/message_loop.h"
 
 namespace base {
 namespace internal {
@@ -20,7 +19,7 @@ void TaskTrackerPosix::RunOrSkipTask(Task task,
                                      bool can_run_task) {
   DCHECK(watch_file_descriptor_message_loop_);
   FileDescriptorWatcher file_descriptor_watcher(
-      watch_file_descriptor_message_loop_->task_runner());
+      watch_file_descriptor_message_loop_);
   TaskTracker::RunOrSkipTask(std::move(task), sequence, can_run_task);
 }
 

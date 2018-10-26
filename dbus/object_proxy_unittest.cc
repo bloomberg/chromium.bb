@@ -4,9 +4,10 @@
 
 #include "dbus/object_proxy.h"
 #include "base/bind.h"
+#include "base/files/file_descriptor_watcher_posix.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
 #include "dbus/bus.h"
 #include "dbus/test_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,7 +17,7 @@ namespace {
 
 class ObjectProxyTest : public testing::Test {
  protected:
-  ObjectProxyTest() {}
+  ObjectProxyTest() : file_descriptor_watcher_(&message_loop_) {}
 
   void SetUp() override {
     Bus::Options bus_options;
@@ -27,8 +28,10 @@ class ObjectProxyTest : public testing::Test {
 
   void TearDown() override { bus_->ShutdownAndBlock(); }
 
-  base::test::ScopedTaskEnvironment task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::MessageLoopForIO message_loop_;
+
+  // This enables FileDescriptorWatcher, which is required by dbus::Watch.
+  base::FileDescriptorWatcher file_descriptor_watcher_;
 
   scoped_refptr<Bus> bus_;
 };
