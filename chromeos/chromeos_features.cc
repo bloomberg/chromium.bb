@@ -23,6 +23,11 @@ const base::Feature kChromeVoxArcSupport{"ChromeVoxArcSupport",
 // If enabled, DriveFS will be used for Drive sync.
 const base::Feature kDriveFs{"DriveFS", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, MyFiles will be a root/volume and user can create other
+// sub-folders and files in addition to the Downloads folder inside MyFiles.
+const base::Feature kMyFilesVolume{"MyFilesVolume",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, the Chrome OS Settings UI will include a menu for the unified
 // MultiDevice settings.
 const base::Feature kEnableUnifiedMultiDeviceSettings{

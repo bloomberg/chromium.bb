@@ -27,6 +27,9 @@ extern const base::FilePath::CharType kAndroidFilesPath[];
 // Gets the absolute path for the 'Downloads' folder for the |profile|.
 base::FilePath GetDownloadsFolderForProfile(Profile* profile);
 
+// Gets the absolute path for the 'MyFiles' folder for the |profile|.
+base::FilePath GetMyFilesFolderForProfile(Profile* profile);
+
 // Converts |old_path| to |new_path| and returns true, if the old path points
 // to an old location of user folders (in "Downloads" or "Google Drive").
 // The |profile| argument is used for determining the location of the
