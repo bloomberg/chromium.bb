@@ -146,7 +146,7 @@ BackToBackBeginFrameSource::~BackToBackBeginFrameSource() = default;
 
 void BackToBackBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
   DCHECK(obs);
-  DCHECK(observers_.find(obs) == observers_.end());
+  DCHECK(!base::ContainsKey(observers_, obs));
   observers_.insert(obs);
   pending_begin_frame_observers_.insert(obs);
   obs->OnBeginFrameSourcePausedChanged(false);
@@ -155,7 +155,7 @@ void BackToBackBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
 
 void BackToBackBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
   DCHECK(obs);
-  DCHECK(observers_.find(obs) != observers_.end());
+  DCHECK(base::ContainsKey(observers_, obs));
   observers_.erase(obs);
   pending_begin_frame_observers_.erase(obs);
   if (pending_begin_frame_observers_.empty())
@@ -163,7 +163,7 @@ void BackToBackBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
 }
 
 void BackToBackBeginFrameSource::DidFinishFrame(BeginFrameObserver* obs) {
-  if (observers_.find(obs) != observers_.end()) {
+  if (base::ContainsKey(observers_, obs)) {
     pending_begin_frame_observers_.insert(obs);
     time_source_->SetActive(true);
   }
@@ -190,7 +190,7 @@ void BackToBackBeginFrameSource::OnTimerTick() {
   // This must happen after getting the LastTickTime() from the time source.
   time_source_->SetActive(false);
 
-  std::unordered_set<BeginFrameObserver*> pending_observers;
+  base::flat_set<BeginFrameObserver*> pending_observers;
   pending_observers.swap(pending_begin_frame_observers_);
   DCHECK(!pending_observers.empty());
   for (BeginFrameObserver* obs : pending_observers)
@@ -232,7 +232,7 @@ BeginFrameArgs DelayBasedBeginFrameSource::CreateBeginFrameArgs(
 
 void DelayBasedBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
   DCHECK(obs);
-  DCHECK(observers_.find(obs) == observers_.end());
+  DCHECK(!base::ContainsKey(observers_, obs));
 
   observers_.insert(obs);
   obs->OnBeginFrameSourcePausedChanged(false);
@@ -259,7 +259,7 @@ void DelayBasedBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
 
 void DelayBasedBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
   DCHECK(obs);
-  DCHECK(observers_.find(obs) != observers_.end());
+  DCHECK(base::ContainsKey(observers_, obs));
 
   observers_.erase(obs);
   if (observers_.empty())
@@ -278,7 +278,7 @@ void DelayBasedBeginFrameSource::OnTimerTick() {
   if (RequestCallbackOnGpuAvailable())
     return;
   last_begin_frame_args_ = CreateBeginFrameArgs(time_source_->LastTickTime());
-  std::unordered_set<BeginFrameObserver*> observers(observers_);
+  base::flat_set<BeginFrameObserver*> observers(observers_);
   for (auto* obs : observers)
     IssueBeginFrameToObserver(obs, last_begin_frame_args_);
 }
@@ -326,7 +326,7 @@ void ExternalBeginFrameSource::AsValueInto(
 
 void ExternalBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
   DCHECK(obs);
-  DCHECK(observers_.find(obs) == observers_.end());
+  DCHECK(!base::ContainsKey(observers_, obs));
 
   bool observers_was_empty = observers_.empty();
   observers_.insert(obs);
@@ -344,7 +344,7 @@ void ExternalBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
 
 void ExternalBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
   DCHECK(obs);
-  DCHECK(observers_.find(obs) != observers_.end());
+  DCHECK(base::ContainsKey(observers_, obs));
 
   observers_.erase(obs);
   if (observers_.empty())
@@ -364,7 +364,7 @@ void ExternalBeginFrameSource::OnSetBeginFrameSourcePaused(bool paused) {
   if (paused_ == paused)
     return;
   paused_ = paused;
-  std::unordered_set<BeginFrameObserver*> observers(observers_);
+  base::flat_set<BeginFrameObserver*> observers(observers_);
   for (auto* obs : observers)
     obs->OnBeginFrameSourcePausedChanged(paused_);
 }
@@ -384,7 +384,7 @@ void ExternalBeginFrameSource::OnBeginFrame(const BeginFrameArgs& args) {
   }
 
   last_begin_frame_args_ = args;
-  std::unordered_set<BeginFrameObserver*> observers(observers_);
+  base::flat_set<BeginFrameObserver*> observers(observers_);
   for (auto* obs : observers) {
     // It is possible that the source in which |args| originate changes, or that
     // our hookup to this source changes, so we have to check for continuity.
