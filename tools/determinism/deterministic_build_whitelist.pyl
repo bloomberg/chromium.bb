@@ -11,8 +11,6 @@
 # List of files that are known to be _not_ deterministic. This is a "temporary"
 # workaround to find regression on the deterministic builders.
 #
-# PNaCl general bug: https://crbug.com/429358
-#
 # TODO(sebmarchand): Remove this once all the files are deterministic.
 {
   # https://crbug.com/383340
@@ -29,7 +27,6 @@
 
   # https://crbug.com/330263
   'linux': [
-    'ppapi_nacl_tests_pnacl_newlib_x64.nexe',
     'zucchini_apply_fuzzer_seed_corpus.zip',
 
     'mr_extension',
@@ -195,9 +192,5 @@
     # them probably should use build_utils.ZipDir() instead.
     'mini_installer_tests.zip',
     'policy_templates.zip',
-
-    # TODO(thakis): Figure out what's up with these two.
-    'ppapi_nacl_tests_pnacl_newlib_x32.nexe',
-    'ppapi_nacl_tests_pnacl_newlib_x64.nexe',
   ],
 }
