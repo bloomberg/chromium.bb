@@ -140,21 +140,24 @@ void ChromeTableViewControllerTest::CheckDetailItemTextWithIds(
               [item detailText]);
 }
 
-void ChromeTableViewControllerTest::CheckSwitchCellStateAndTitle(
+void ChromeTableViewControllerTest::CheckSwitchCellStateAndText(
     BOOL expected_state,
     NSString* expected_title,
     int section,
     int item) {
-  // TODO(crbug.com/894791): Implement this.
-  NOTREACHED();
+  id switch_item = GetTableViewItem(section, item);
+  EXPECT_TRUE([switch_item respondsToSelector:@selector(text)]);
+  EXPECT_NSEQ(expected_title, [switch_item text]);
+  EXPECT_TRUE([switch_item respondsToSelector:@selector(isOn)]);
+  EXPECT_EQ(expected_state, [switch_item isOn]);
 }
 
-void ChromeTableViewControllerTest::CheckSwitchCellStateAndTitleWithId(
+void ChromeTableViewControllerTest::CheckSwitchCellStateAndTextWithId(
     BOOL expected_state,
     int expected_title_id,
     int section,
     int item) {
-  CheckSwitchCellStateAndTitle(
+  CheckSwitchCellStateAndText(
       expected_state, l10n_util::GetNSString(expected_title_id), section, item);
 }
 

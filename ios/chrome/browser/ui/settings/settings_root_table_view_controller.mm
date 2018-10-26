@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -26,6 +27,10 @@
   self.styler.tableViewSectionHeaderBlurEffect = nil;
   [super viewDidLoad];
   self.styler.cellBackgroundColor = [UIColor whiteColor];
+  self.styler.cellTitleColor = [UIColor blackColor];
+  self.tableView.estimatedRowHeight = kSettingsCellDefaultHeight;
+  // Do not set the estimated height of the footer/header as if there is no
+  // header/footer, there is an empty space.
 }
 
 - (void)viewWillAppear:(BOOL)animated {

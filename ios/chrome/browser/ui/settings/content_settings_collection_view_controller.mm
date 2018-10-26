@@ -22,7 +22,7 @@
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/compose_email_handler_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
-#import "ios/chrome/browser/ui/settings/translate_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/translate_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/content_setting_backed_boolean.h"
 #import "ios/chrome/browser/web/mailto_handler_manager.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -225,8 +225,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       break;
     }
     case ItemTypeSettingsTranslate: {
-      TranslateCollectionViewController* controller =
-          [[TranslateCollectionViewController alloc]
+      TranslateTableViewController* controller =
+          [[TranslateTableViewController alloc]
               initWithPrefs:browserState_->GetPrefs()];
       controller.dispatcher = self.dispatcher;
       [self.navigationController pushViewController:controller animated:YES];

@@ -153,9 +153,7 @@ const CGFloat kIconImageSize = 28;
                          constant:-kTableViewHorizontalSpacing],
 
       [_iconImageView.centerYAnchor
-          constraintEqualToAnchor:self.contentView.centerYAnchor],
-      [_textLabel.centerYAnchor
-          constraintEqualToAnchor:self.contentView.centerYAnchor],
+          constraintEqualToAnchor:_textLabel.centerYAnchor],
 
       _iconHiddenConstraint,
     ]];

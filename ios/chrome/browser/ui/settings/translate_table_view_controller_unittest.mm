@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/translate_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/translate_table_view_controller.h"
 
 #include <memory>
 
@@ -19,7 +19,7 @@
 #include "components/translate/core/browser/translate_prefs.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -39,20 +39,19 @@ const char kBlacklistedSite[] = "http://blacklistedsite.com";
 const char kLanguage1[] = "klingon";
 const char kLanguage2[] = "pirate";
 
-class TranslateCollectionViewControllerTest
-    : public CollectionViewControllerTest {
+class TranslateTableViewControllerTest : public ChromeTableViewControllerTest {
  protected:
-  TranslateCollectionViewControllerTest()
+  TranslateTableViewControllerTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
-    CollectionViewControllerTest::SetUp();
+    ChromeTableViewControllerTest::SetUp();
     pref_service_ = CreateLocalState();
   }
 
-  CollectionViewController* InstantiateController() override {
-    return [[TranslateCollectionViewController alloc]
+  ChromeTableViewController* InstantiateController() override {
+    return [[TranslateTableViewController alloc]
         initWithPrefs:pref_service_.get()];
   }
 
@@ -64,7 +63,7 @@ class TranslateCollectionViewControllerTest
     registry->RegisterStringPref(
         prefs::kAcceptLanguages,
         l10n_util::GetStringUTF8(IDS_ACCEPT_LANGUAGES));
-    base::FilePath path("TranslateCollectionViewControllerTest.pref");
+    base::FilePath path("TranslateTableViewControllerTest.pref");
     sync_preferences::PrefServiceMockFactory factory;
     factory.SetUserPrefsFile(path, base::ThreadTaskRunnerHandle::Get().get());
     return factory.Create(registry.get());
@@ -74,27 +73,27 @@ class TranslateCollectionViewControllerTest
   std::unique_ptr<PrefService> pref_service_;
 };
 
-TEST_F(TranslateCollectionViewControllerTest, TestModelTranslateOff) {
+TEST_F(TranslateTableViewControllerTest, TestModelTranslateOff) {
   CreateController();
   CheckController();
-  EXPECT_EQ(2, NumberOfSections());
+  EXPECT_EQ(1, NumberOfSections());
   EXPECT_EQ(2, NumberOfItemsInSection(0));
-  CheckSwitchCellStateAndTitleWithId(NO, IDS_IOS_TRANSLATE_SETTING, 0, 0);
-  CheckTextCellTitleWithId(IDS_IOS_TRANSLATE_SETTING_RESET, 0, 1);
+  CheckSwitchCellStateAndTextWithId(NO, IDS_IOS_TRANSLATE_SETTING, 0, 0);
+  CheckTextCellTextWithId(IDS_IOS_TRANSLATE_SETTING_RESET, 0, 1);
 }
 
-TEST_F(TranslateCollectionViewControllerTest, TestModelTranslateOn) {
+TEST_F(TranslateTableViewControllerTest, TestModelTranslateOn) {
   BooleanPrefMember translateEnabled;
   translateEnabled.Init(prefs::kOfferTranslateEnabled, pref_service_.get());
   translateEnabled.SetValue(true);
   CreateController();
-  EXPECT_EQ(2, NumberOfSections());
+  EXPECT_EQ(1, NumberOfSections());
   EXPECT_EQ(2, NumberOfItemsInSection(0));
-  CheckSwitchCellStateAndTitleWithId(YES, IDS_IOS_TRANSLATE_SETTING, 0, 0);
-  CheckTextCellTitleWithId(IDS_IOS_TRANSLATE_SETTING_RESET, 0, 1);
+  CheckSwitchCellStateAndTextWithId(YES, IDS_IOS_TRANSLATE_SETTING, 0, 0);
+  CheckTextCellTextWithId(IDS_IOS_TRANSLATE_SETTING_RESET, 0, 1);
 }
 
-TEST_F(TranslateCollectionViewControllerTest, TestClearPreferences) {
+TEST_F(TranslateTableViewControllerTest, TestClearPreferences) {
   // Set some preferences.
   std::unique_ptr<translate::TranslatePrefs> translate_prefs(
       ChromeIOSTranslateClient::CreateTranslatePrefs(pref_service_.get()));
@@ -107,11 +106,11 @@ TEST_F(TranslateCollectionViewControllerTest, TestClearPreferences) {
       translate_prefs->IsLanguagePairWhitelisted(kLanguage1, kLanguage2));
   // Reset the preferences through the UI.
   CreateController();
-  TranslateCollectionViewController* controller =
-      static_cast<TranslateCollectionViewController*>(this->controller());
+  TranslateTableViewController* controller =
+      static_cast<TranslateTableViewController*>(this->controller());
   // Simulate a tap on the "reset" item.
-  [controller collectionView:[controller collectionView]
-      didSelectItemAtIndexPath:[NSIndexPath indexPathForItem:1 inSection:0]];
+  [controller tableView:controller.tableView
+      didSelectRowAtIndexPath:[NSIndexPath indexPathForItem:1 inSection:0]];
   // Check that preferences are gone.
   EXPECT_FALSE(translate_prefs->IsSiteBlacklisted(kBlacklistedSite));
   EXPECT_FALSE(translate_prefs->IsBlockedLanguage(kLanguage1));
