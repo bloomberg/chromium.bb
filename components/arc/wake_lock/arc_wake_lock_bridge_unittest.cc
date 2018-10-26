@@ -9,8 +9,6 @@
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/power.mojom.h"
 #include "components/arc/test/connection_holder_util.h"
@@ -26,9 +24,7 @@ using device::mojom::WakeLockType;
 
 class ArcWakeLockBridgeTest : public testing::Test {
  public:
-  ArcWakeLockBridgeTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {
+  ArcWakeLockBridgeTest() {
     auto wake_lock_provider_ptr =
         std::make_unique<device::TestWakeLockProvider>();
     wake_lock_provider_ = wake_lock_provider_ptr.get();
@@ -37,10 +33,6 @@ class ArcWakeLockBridgeTest : public testing::Test {
         service_manager::TestConnectorFactory::CreateForUniqueService(
             std::move(wake_lock_provider_ptr));
     connector_ = connector_factory_->CreateConnector();
-
-    fake_power_manager_client_ = new chromeos::FakePowerManagerClient;
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
-        base::WrapUnique(fake_power_manager_client_));
 
     bridge_service_ = std::make_unique<ArcBridgeService>();
     wake_lock_bridge_ =
@@ -52,6 +44,28 @@ class ArcWakeLockBridgeTest : public testing::Test {
   ~ArcWakeLockBridgeTest() override { DestroyWakeLockInstance(); }
 
  protected:
+  // Returns true iff there is no failure acquiring a system wake lock.
+  bool AcquirePartialWakeLock() {
+    base::RunLoop loop;
+    bool result = false;
+    wake_lock_bridge_->AcquirePartialWakeLock(base::BindOnce(
+        [](bool* result_out, bool result) { *result_out = result; }, &result));
+    loop.RunUntilIdle();
+    wake_lock_bridge_->FlushWakeLocksForTesting();
+    return result;
+  }
+
+  // Returns true iff there is no failure releasing a system wake lock.
+  bool ReleasePartialWakeLock() {
+    base::RunLoop loop;
+    bool result = false;
+    wake_lock_bridge_->ReleasePartialWakeLock(base::BindOnce(
+        [](bool* result_out, bool result) { *result_out = result; }, &result));
+    loop.RunUntilIdle();
+    wake_lock_bridge_->FlushWakeLocksForTesting();
+    return result;
+  }
+
   // Creates a FakeWakeLockInstance for |bridge_service_|. This results in
   // ArcWakeLockBridge::OnInstanceReady() being called.
   void CreateWakeLockInstance() {
@@ -69,18 +83,13 @@ class ArcWakeLockBridgeTest : public testing::Test {
     instance_.reset();
   }
 
-  ArcWakeLockBridge* GetWakeLockBridge() { return wake_lock_bridge_.get(); }
-
   device::TestWakeLockProvider* GetWakeLockProvider() {
     return wake_lock_provider_;
   }
 
+ private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
-  // Owned by chromeos::DBusThreadManager.
-  chromeos::FakePowerManagerClient* fake_power_manager_client_;
-
- private:
   std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
   std::unique_ptr<service_manager::Connector> connector_;
   device::TestWakeLockProvider* wake_lock_provider_;
@@ -92,83 +101,40 @@ class ArcWakeLockBridgeTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ArcWakeLockBridgeTest);
 };
 
-namespace {
-
-// Returns true iff there is no failure acquiring a system wake lock.
-bool AcquirePartialWakeLock(ArcWakeLockBridge* wake_lock_bridge) {
-  base::RunLoop loop;
-  bool result = false;
-  wake_lock_bridge->AcquirePartialWakeLock(base::BindOnce(
-      [](bool* result_out, bool result) { *result_out = result; }, &result));
-  loop.RunUntilIdle();
-  wake_lock_bridge->FlushWakeLocksForTesting();
-  return result;
-}
-
-// Returns true iff there is no failure releasing a system wake lock.
-bool ReleasePartialWakeLock(ArcWakeLockBridge* wake_lock_bridge) {
-  base::RunLoop loop;
-  bool result = false;
-  wake_lock_bridge->ReleasePartialWakeLock(base::BindOnce(
-      [](bool* result_out, bool result) { *result_out = result; }, &result));
-  loop.RunUntilIdle();
-  wake_lock_bridge->FlushWakeLocksForTesting();
-  return result;
-}
-
-// Return true iff all dark resume related state is set i.e the suspend
-// readiness callback is set and wake lock release event has observers.
-bool IsDarkResumeStateSet(ArcWakeLockBridge* wake_lock_bridge) {
-  return wake_lock_bridge->IsSuspendReadinessStateSetForTesting() &&
-         wake_lock_bridge->WakeLockHasObserversForTesting(
-             WakeLockType::kPreventAppSuspension);
-}
-
-// Return true iff all dark resume related state is reset. This should be true
-// when device exits dark resume either by re-suspending or transitioning to
-// full resume.
-bool IsDarkResumeStateReset(ArcWakeLockBridge* wake_lock_bridge) {
-  return !wake_lock_bridge->WakeLockHasObserversForTesting(
-             WakeLockType::kPreventAppSuspension) &&
-         !wake_lock_bridge->IsSuspendReadinessStateSetForTesting();
-}
-
-}  // namespace
-
 TEST_F(ArcWakeLockBridgeTest, AcquireAndReleaseSinglePartialWakeLock) {
-  EXPECT_TRUE(AcquirePartialWakeLock(GetWakeLockBridge()));
+  EXPECT_TRUE(AcquirePartialWakeLock());
   EXPECT_EQ(1, GetWakeLockProvider()->GetActiveWakeLocksOfType(
                    WakeLockType::kPreventAppSuspension));
 
-  EXPECT_TRUE(ReleasePartialWakeLock(GetWakeLockBridge()));
+  EXPECT_TRUE(ReleasePartialWakeLock());
   EXPECT_EQ(0, GetWakeLockProvider()->GetActiveWakeLocksOfType(
                    WakeLockType::kPreventAppSuspension));
 }
 
 TEST_F(ArcWakeLockBridgeTest, AcquireAndReleaseMultiplePartialWakeLocks) {
   // Taking multiple wake locks should result in only one active wake lock.
-  EXPECT_TRUE(AcquirePartialWakeLock(GetWakeLockBridge()));
-  EXPECT_TRUE(AcquirePartialWakeLock(GetWakeLockBridge()));
-  EXPECT_TRUE(AcquirePartialWakeLock(GetWakeLockBridge()));
+  EXPECT_TRUE(AcquirePartialWakeLock());
+  EXPECT_TRUE(AcquirePartialWakeLock());
+  EXPECT_TRUE(AcquirePartialWakeLock());
   EXPECT_EQ(1, GetWakeLockProvider()->GetActiveWakeLocksOfType(
                    WakeLockType::kPreventAppSuspension));
 
   // Releasing two wake locks after acquiring three should not result in
   // releasing a wake lock.
-  EXPECT_TRUE(ReleasePartialWakeLock(GetWakeLockBridge()));
-  EXPECT_TRUE(ReleasePartialWakeLock(GetWakeLockBridge()));
+  EXPECT_TRUE(ReleasePartialWakeLock());
+  EXPECT_TRUE(ReleasePartialWakeLock());
   EXPECT_EQ(1, GetWakeLockProvider()->GetActiveWakeLocksOfType(
                    WakeLockType::kPreventAppSuspension));
 
   // Releasing the remaining wake lock should result in the release of the wake
   // lock.
-  EXPECT_TRUE(ReleasePartialWakeLock(GetWakeLockBridge()));
+  EXPECT_TRUE(ReleasePartialWakeLock());
   EXPECT_EQ(0, GetWakeLockProvider()->GetActiveWakeLocksOfType(
                    WakeLockType::kPreventAppSuspension));
 }
 
 TEST_F(ArcWakeLockBridgeTest, ReleaseWakeLockOnInstanceClosed) {
-  EXPECT_TRUE(AcquirePartialWakeLock(GetWakeLockBridge()));
+  EXPECT_TRUE(AcquirePartialWakeLock());
   ASSERT_EQ(1, GetWakeLockProvider()->GetActiveWakeLocksOfType(
                    WakeLockType::kPreventAppSuspension));
 
@@ -184,99 +150,9 @@ TEST_F(ArcWakeLockBridgeTest, ReleaseWakeLockOnInstanceClosed) {
   // Check that wake locks can be requested after the instance becomes ready
   // again.
   CreateWakeLockInstance();
-  EXPECT_TRUE(AcquirePartialWakeLock(GetWakeLockBridge()));
+  EXPECT_TRUE(AcquirePartialWakeLock());
   EXPECT_EQ(1, GetWakeLockProvider()->GetActiveWakeLocksOfType(
                    WakeLockType::kPreventAppSuspension));
-}
-
-TEST_F(ArcWakeLockBridgeTest, CheckSuspendAfterDarkResumeNoWakeLocksHeld) {
-  // Trigger a dark resume event, move time forward to trigger a wake lock check
-  // and check if a re-suspend happened if no wake locks were acquired.
-  fake_power_manager_client_->SendDarkSuspendImminent();
-  scoped_task_environment_.FastForwardBy(
-      ArcWakeLockBridge::kDarkResumeWakeLockCheckTimeout);
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
-  EXPECT_TRUE(IsDarkResumeStateReset(GetWakeLockBridge()));
-
-  // Trigger a dark resume event, acquire and release a wake lock and move time
-  // forward to trigger a wake lock check. The device should re-suspend in this
-  // case since no wake locks were held at the time of the wake lock check.
-  fake_power_manager_client_->SendDarkSuspendImminent();
-  EXPECT_TRUE(AcquirePartialWakeLock(GetWakeLockBridge()));
-  EXPECT_TRUE(ReleasePartialWakeLock(GetWakeLockBridge()));
-  scoped_task_environment_.FastForwardBy(
-      ArcWakeLockBridge::kDarkResumeWakeLockCheckTimeout);
-  base::RunLoop run_loop2;
-  run_loop2.RunUntilIdle();
-  EXPECT_TRUE(IsDarkResumeStateReset(GetWakeLockBridge()));
-}
-
-TEST_F(ArcWakeLockBridgeTest, CheckSuspendAfterDarkResumeWakeLocksHeld) {
-  // Trigger a dark resume event, acquire a wake lock and move time forward to a
-  // wake lock check. At this point the system shouldn't re-suspend i.e. the
-  // suspend readiness callback should be set and wake lock release should have
-  // observers.
-  fake_power_manager_client_->SendDarkSuspendImminent();
-  EXPECT_TRUE(AcquirePartialWakeLock(GetWakeLockBridge()));
-  scoped_task_environment_.FastForwardBy(
-      ArcWakeLockBridge::kDarkResumeWakeLockCheckTimeout);
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
-  EXPECT_TRUE(IsDarkResumeStateSet(GetWakeLockBridge()));
-
-  // Move time forward by < |kDarkResumeHardTimeout| and release the
-  // partial wake lock.This should instantaneously re-suspend the device.
-  scoped_task_environment_.FastForwardBy(
-      ArcWakeLockBridge::kDarkResumeHardTimeout -
-      base::TimeDelta::FromSeconds(1));
-  EXPECT_TRUE(ReleasePartialWakeLock(GetWakeLockBridge()));
-  base::RunLoop run_loop2;
-  run_loop2.RunUntilIdle();
-  EXPECT_TRUE(IsDarkResumeStateReset(GetWakeLockBridge()));
-}
-
-TEST_F(ArcWakeLockBridgeTest, CheckSuspendAfterDarkResumeHardTimeout) {
-  // Trigger a dark resume event, acquire a wake lock and move time forward to a
-  // wake lock check. At this point the system shouldn't re-suspend i.e. the
-  // suspend readiness callback should be set and wake lock release should have
-  // observers.
-  fake_power_manager_client_->SendDarkSuspendImminent();
-  EXPECT_TRUE(AcquirePartialWakeLock(GetWakeLockBridge()));
-  scoped_task_environment_.FastForwardBy(
-      ArcWakeLockBridge::kDarkResumeWakeLockCheckTimeout);
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
-  EXPECT_TRUE(IsDarkResumeStateSet(GetWakeLockBridge()));
-
-  // Move time forward by |kDarkResumeHardTimeout|. At this point the
-  // device should re-suspend even though the wake lock is acquired.
-  scoped_task_environment_.FastForwardBy(
-      ArcWakeLockBridge::kDarkResumeHardTimeout);
-  EXPECT_EQ(1, GetWakeLockProvider()->GetActiveWakeLocksOfType(
-                   WakeLockType::kPreventAppSuspension));
-  base::RunLoop run_loop2;
-  run_loop2.RunUntilIdle();
-  EXPECT_TRUE(IsDarkResumeStateReset(GetWakeLockBridge()));
-}
-
-TEST_F(ArcWakeLockBridgeTest, CheckStateResetAfterSuspendDone) {
-  // Trigger a dark resume event, acquire a wake lock and move time forward to a
-  // wake lock check. At this point the system shouldn't re-suspend i.e. the
-  // suspend readiness callback should be set and wake lock release should have
-  // observers.
-  fake_power_manager_client_->SendDarkSuspendImminent();
-  EXPECT_TRUE(AcquirePartialWakeLock(GetWakeLockBridge()));
-  scoped_task_environment_.FastForwardBy(
-      ArcWakeLockBridge::kDarkResumeWakeLockCheckTimeout);
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
-  EXPECT_TRUE(IsDarkResumeStateSet(GetWakeLockBridge()));
-
-  // Trigger suspend done event. Check if state is reset as dark resume would be
-  // exited.
-  fake_power_manager_client_->SendSuspendDone();
-  EXPECT_TRUE(IsDarkResumeStateReset(GetWakeLockBridge()));
 }
 
 }  // namespace arc
