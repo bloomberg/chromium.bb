@@ -325,6 +325,10 @@ bool WindowSelectorController::ToggleOverview(
     // Clear any animations that may be running from last overview end.
     for (const auto& animation : delayed_animations_)
       animation->Shutdown();
+    if (!delayed_animations_.empty()) {
+      Shell::Get()->NotifyOverviewModeStartingAnimationComplete(
+          /*canceled=*/true);
+    }
     delayed_animations_.clear();
 
     window_selector_ = std::make_unique<WindowSelector>(this);
@@ -475,6 +479,12 @@ WindowSelectorController::GetWindowsListInOverviewGridsForTesting() {
 void WindowSelectorController::OnSelectionEnded() {
   if (is_shutting_down_)
     return;
+
+  if (!start_animations_.empty()) {
+    Shell::Get()->NotifyOverviewModeEndingAnimationComplete(
+        /*canceled=*/true);
+  }
+  start_animations_.clear();
   is_shutting_down_ = true;
   Shell::Get()->NotifyOverviewModeEnding();
   auto* window_selector = window_selector_.release();
@@ -508,7 +518,24 @@ void WindowSelectorController::RemoveAndDestroyAnimationObserver(
   if (!window_selector_ && !previous_empty && delayed_animations_.empty()) {
     if (IsBlurAllowed())
       overview_blur_controller_->Unblur();
-    Shell::Get()->NotifyOverviewModeEndingAnimationComplete();
+    Shell::Get()->NotifyOverviewModeEndingAnimationComplete(/*canceled=*/false);
+  }
+}
+
+void WindowSelectorController::AddStartAnimationObserver(
+    std::unique_ptr<DelayedAnimationObserver> animation_observer) {
+  animation_observer->SetOwner(this);
+  start_animations_.push_back(std::move(animation_observer));
+}
+
+void WindowSelectorController::RemoveAndDestroyStartAnimationObserver(
+    DelayedAnimationObserver* animation_observer) {
+  const bool previous_empty = start_animations_.empty();
+  base::EraseIf(start_animations_, base::MatchesUniquePtr(animation_observer));
+
+  if (!previous_empty && start_animations_.empty()) {
+    Shell::Get()->NotifyOverviewModeStartingAnimationComplete(
+        /*canceled=*/false);
   }
 }
 
