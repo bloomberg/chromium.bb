@@ -727,6 +727,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidObserveNewFeatureUsage(blink::mojom::WebFeature feature) override;
   void DidObserveNewCssPropertyUsage(int css_property,
                                      bool is_animated) override;
+  void DidObserveLayoutJank(double jank_fraction) override;
   bool ShouldTrackUseCounter(const blink::WebURL& url) override;
   void DidCreateScriptContext(v8::Local<v8::Context> context,
                               int world_id) override;

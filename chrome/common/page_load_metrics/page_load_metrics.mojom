@@ -200,6 +200,12 @@ struct ResourceDataUpdate {
   string mime_type;
 };
 
+// Metrics about how the page rendered during the browsing session.
+struct PageRenderData {
+  // How much visible elements in the frame shifted (bit.ly/lsm-explainer).
+  float layout_jank_score;
+};
+
 // Sent from renderer to browser process when the PageLoadTiming for the
 // associated frame changed.
 interface PageLoadMetrics {

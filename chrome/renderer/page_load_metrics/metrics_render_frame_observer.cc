@@ -38,12 +38,13 @@ class MojoPageTimingSender : public PageTimingSender {
         &page_load_metrics_);
   }
   ~MojoPageTimingSender() override {}
-  void SendTiming(
-      const mojom::PageLoadTimingPtr& timing,
-      const mojom::PageLoadMetadataPtr& metadata,
-      mojom::PageLoadFeaturesPtr new_features,
-      std::vector<mojom::ResourceDataUpdatePtr> resources) override {
+  void SendTiming(const mojom::PageLoadTimingPtr& timing,
+                  const mojom::PageLoadMetadataPtr& metadata,
+                  mojom::PageLoadFeaturesPtr new_features,
+                  std::vector<mojom::ResourceDataUpdatePtr> resources,
+                  const mojom::PageRenderData& render_data) override {
     DCHECK(page_load_metrics_);
+    // TODO: Include render_data in IPC.
     page_load_metrics_->UpdateTiming(timing->Clone(), metadata->Clone(),
                                      std::move(new_features),
                                      std::move(resources));
@@ -87,6 +88,11 @@ void MetricsRenderFrameObserver::DidObserveNewCssPropertyUsage(
     page_timing_metrics_sender_->DidObserveNewCssPropertyUsage(css_property,
                                                                is_animated);
   }
+}
+
+void MetricsRenderFrameObserver::DidObserveLayoutJank(double jank_fraction) {
+  if (page_timing_metrics_sender_)
+    page_timing_metrics_sender_->DidObserveLayoutJank(jank_fraction);
 }
 
 void MetricsRenderFrameObserver::DidStartResponse(
