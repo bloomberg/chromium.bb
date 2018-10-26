@@ -16,6 +16,7 @@
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/gl_in_process_context.h"
+#include "gpu/ipc/in_process_gpu_thread_holder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -36,13 +37,11 @@ class ContextTestBase : public testing::Test {
 
     auto context = std::make_unique<gpu::GLInProcessContext>();
     auto result = context->Initialize(
-        nullptr,                 /* service */
-        nullptr,                 /* surface */
-        true,                    /* offscreen */
-        gpu::kNullSurfaceHandle, /* window */
-        attributes, gpu::SharedMemoryLimits(), gpu_memory_buffer_manager_.get(),
-        nullptr, /* image_factory */
-        base::ThreadTaskRunnerHandle::Get());
+        gpu_thread_holder_.GetTaskExecutor(),
+        /*surface=*/nullptr, /*offscreen=*/true,
+        /*window=*/gpu::kNullSurfaceHandle, attributes,
+        gpu::SharedMemoryLimits(), gpu_memory_buffer_manager_.get(),
+        /*image_factory=*/nullptr, base::ThreadTaskRunnerHandle::Get());
     DCHECK_EQ(result, gpu::ContextResult::kSuccess);
     return context;
   }
@@ -66,6 +65,7 @@ class ContextTestBase : public testing::Test {
   std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
 
  private:
+  gpu::InProcessGpuThreadHolder gpu_thread_holder_;
   std::unique_ptr<gpu::GLInProcessContext> context_;
 };
 
@@ -77,9 +77,7 @@ class ContextTestBase : public testing::Test {
 
 using GLInProcessCommandBufferTest = ContextTestBase;
 
-// TODO(https://crbug.com/897456): Test leaks state, causing the
-// WebGPUInProcessCommandBufferTest suite to fail if run in the same process.
-TEST_F(GLInProcessCommandBufferTest, DISABLED_CreateImage) {
+TEST_F(GLInProcessCommandBufferTest, CreateImage) {
   constexpr gfx::BufferFormat kBufferFormat = gfx::BufferFormat::RGBA_8888;
   constexpr gfx::BufferUsage kBufferUsage = gfx::BufferUsage::SCANOUT;
   constexpr gfx::Size kBufferSize(100, 100);
