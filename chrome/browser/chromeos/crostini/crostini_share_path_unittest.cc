@@ -271,6 +271,16 @@ TEST_F(CrostiniSharePathTest, SuccessDriveFsComputers) {
   run_loop()->Run();
 }
 
+TEST_F(CrostiniSharePathTest, FailDriveFsTrash) {
+  SharePath(
+      profile(), "vm-running", drivefs_.Append(".Trash").Append("in-the-trash"),
+      false,
+      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+                     base::Unretained(this), false, false, nullptr, "", false,
+                     "Path is not allowed", run_loop()->QuitClosure()));
+  run_loop()->Run();
+}
+
 TEST_F(CrostiniSharePathTest, SuccessRemovable) {
   SharePath(profile(), "vm-running", base::FilePath("/media/removable/MyUSB"),
             false,
