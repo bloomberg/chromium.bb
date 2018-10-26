@@ -479,38 +479,45 @@ WebContentsImpl::WebContentsTreeNode::WebContentsTreeNode(
           FrameTreeNode::kFrameTreeNodeInvalidId),
       focused_web_contents_(current_web_contents) {}
 
-WebContentsImpl::WebContentsTreeNode::~WebContentsTreeNode() {
-  if (OuterContentsFrameTreeNode())
-    OuterContentsFrameTreeNode()->RemoveObserver(this);
-
-  if (outer_web_contents_)
-    outer_web_contents_->node_.DetachInnerWebContents(current_web_contents_);
-}
+WebContentsImpl::WebContentsTreeNode::~WebContentsTreeNode() {}
 
 void WebContentsImpl::WebContentsTreeNode::ConnectToOuterWebContents(
-    WebContentsImpl* outer_web_contents,
+    std::unique_ptr<WebContents> current_web_contents,
     RenderFrameHostImpl* outer_contents_frame) {
+  DCHECK_EQ(current_web_contents.get(), current_web_contents_);
+  auto* outer_web_contents =
+      static_cast<WebContentsImpl*>(FromRenderFrameHost(outer_contents_frame));
+
   focused_web_contents_ = nullptr;
   outer_web_contents_ = outer_web_contents;
   outer_contents_frame_tree_node_id_ =
       outer_contents_frame->frame_tree_node()->frame_tree_node_id();
 
-  outer_web_contents_->node_.AttachInnerWebContents(current_web_contents_);
+  outer_web_contents_->node_.AttachInnerWebContents(
+      std::move(current_web_contents));
   outer_contents_frame->frame_tree_node()->AddObserver(this);
 }
 
 void WebContentsImpl::WebContentsTreeNode::AttachInnerWebContents(
-    WebContentsImpl* inner_web_contents) {
-  inner_web_contents_.push_back(inner_web_contents);
+    std::unique_ptr<WebContents> inner_web_contents) {
+  inner_web_contents_.push_back(std::move(inner_web_contents));
 }
 
-void WebContentsImpl::WebContentsTreeNode::DetachInnerWebContents(
+std::unique_ptr<WebContents>
+WebContentsImpl::WebContentsTreeNode::DetachInnerWebContents(
     WebContentsImpl* inner_web_contents) {
-  DCHECK(base::ContainsValue(inner_web_contents_, inner_web_contents));
-  inner_web_contents_.erase(
-      std::remove(inner_web_contents_.begin(), inner_web_contents_.end(),
-                  inner_web_contents),
-      inner_web_contents_.end());
+  std::unique_ptr<WebContents> detached_contents;
+  for (std::unique_ptr<WebContents>& web_contents : inner_web_contents_) {
+    if (web_contents.get() == inner_web_contents) {
+      detached_contents = std::move(web_contents);
+      std::swap(web_contents, inner_web_contents_.back());
+      inner_web_contents_.pop_back();
+      return detached_contents;
+    }
+  }
+
+  NOTREACHED();
+  return nullptr;
 }
 
 FrameTreeNode*
@@ -523,7 +530,9 @@ void WebContentsImpl::WebContentsTreeNode::OnFrameTreeNodeDestroyed(
   DCHECK_EQ(outer_contents_frame_tree_node_id_, node->frame_tree_node_id())
       << "WebContentsTreeNode should only receive notifications for the "
          "FrameTreeNode in its outer WebContents that hosts it.";
-  delete current_web_contents_;  // deletes |this| too.
+
+  // Deletes |this| too.
+  outer_web_contents_->node_.DetachInnerWebContents(current_web_contents_);
 }
 
 void WebContentsImpl::WebContentsTreeNode::SetFocusedWebContents(
@@ -537,17 +546,22 @@ WebContentsImpl*
 WebContentsImpl::WebContentsTreeNode::GetInnerWebContentsInFrame(
     const FrameTreeNode* frame) {
   auto ftn_id = frame->frame_tree_node_id();
-  for (WebContentsImpl* contents : inner_web_contents_) {
-    if (contents->node_.outer_contents_frame_tree_node_id() == ftn_id) {
-      return contents;
+  for (auto& contents : inner_web_contents_) {
+    WebContentsImpl* impl = static_cast<WebContentsImpl*>(contents.get());
+    if (impl->node_.outer_contents_frame_tree_node_id() == ftn_id) {
+      return impl;
     }
   }
   return nullptr;
 }
 
-const std::vector<WebContentsImpl*>&
-WebContentsImpl::WebContentsTreeNode::inner_web_contents() const {
-  return inner_web_contents_;
+std::vector<WebContentsImpl*>
+WebContentsImpl::WebContentsTreeNode::GetInnerWebContents() const {
+  std::vector<WebContentsImpl*> inner_web_contents;
+  for (auto& contents : inner_web_contents_)
+    inner_web_contents.push_back(static_cast<WebContentsImpl*>(contents.get()));
+
+  return inner_web_contents;
 }
 
 // WebContentsImpl -------------------------------------------------------------
@@ -1248,7 +1262,7 @@ std::vector<WebContentsImpl*> WebContentsImpl::GetInnerWebContents() {
     return inner_contents;
   }
 
-  return node_.inner_web_contents();
+  return node_.GetInnerWebContents();
 }
 
 std::vector<WebContentsImpl*> WebContentsImpl::GetWebContentsAndAllInner() {
@@ -1779,9 +1793,10 @@ void WebContentsImpl::DispatchBeforeUnload(bool auto_cancel) {
 }
 
 void WebContentsImpl::AttachToOuterWebContentsFrame(
-    WebContents* outer_web_contents,
+    std::unique_ptr<WebContents> current_web_contents,
     RenderFrameHost* outer_contents_frame) {
   DCHECK(!node_.outer_web_contents());
+  DCHECK_EQ(current_web_contents.get(), this);
 
   RenderFrameHostManager* render_manager = GetRenderManager();
 
@@ -1802,15 +1817,11 @@ void WebContentsImpl::AttachToOuterWebContentsFrame(
   if (!render_manager->GetRenderWidgetHostView())
     CreateRenderWidgetHostViewForRenderManager(GetRenderViewHost());
 
-  auto* outer_web_contents_impl =
-      static_cast<WebContentsImpl*>(outer_web_contents);
   auto* outer_contents_frame_impl =
       static_cast<RenderFrameHostImpl*>(outer_contents_frame);
   // Create a link to our outer WebContents.
-  node_.ConnectToOuterWebContents(outer_web_contents_impl,
+  node_.ConnectToOuterWebContents(std::move(current_web_contents),
                                   outer_contents_frame_impl);
-
-  DCHECK(outer_contents_frame);
 
   // Create a proxy in top-level RenderFrameHostManager, pointing to the
   // SiteInstance of the outer WebContents. The proxy will be used to send
@@ -1820,7 +1831,7 @@ void WebContentsImpl::AttachToOuterWebContentsFrame(
 
   ReattachToOuterWebContentsFrame();
 
-  if (outer_web_contents_impl->frame_tree_.GetFocusedFrame() ==
+  if (node_.outer_web_contents()->frame_tree_.GetFocusedFrame() ==
       outer_contents_frame_impl->frame_tree_node()) {
     SetFocusedFrame(frame_tree_.root(),
                     outer_contents_frame->GetSiteInstance());

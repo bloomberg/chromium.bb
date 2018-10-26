@@ -527,10 +527,10 @@ class WebContents : public PageNavigator,
   // potential discard without causing the dialog to appear.
   virtual void DispatchBeforeUnload(bool auto_cancel) = 0;
 
-  // Attaches this inner WebContents to its container frame
-  // |outer_contents_frame| in |outer_web_contents|.
+  // Attaches |current_web_contents| to its container frame
+  // |outer_contents_frame|.
   virtual void AttachToOuterWebContentsFrame(
-      WebContents* outer_web_contents,
+      std::unique_ptr<WebContents> current_web_contents,
       RenderFrameHost* outer_contents_frame) = 0;
 
   // Returns the outer WebContents of this WebContents if any.
