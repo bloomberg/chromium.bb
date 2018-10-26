@@ -67,7 +67,6 @@
 #include "ui/gfx/x/x11_types.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/shell_dialogs/select_file_policy.h"
-#include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/linux_ui/device_scale_factor_observer.h"
@@ -604,54 +603,41 @@ std::unique_ptr<views::Border> GtkUi::CreateNativeBorder(
 
   static struct {
     const char* idr;
-    const char* idr_blue;
     bool focus;
     views::Button::ButtonState state;
   } const paintstate[] = {
       {
-          "IDR_BUTTON_NORMAL", "IDR_BLUE_BUTTON_NORMAL", false,
-          views::Button::STATE_NORMAL,
+          "IDR_BUTTON_NORMAL", false, views::Button::STATE_NORMAL,
       },
       {
-          "IDR_BUTTON_HOVER", "IDR_BLUE_BUTTON_HOVER", false,
-          views::Button::STATE_HOVERED,
+          "IDR_BUTTON_HOVER", false, views::Button::STATE_HOVERED,
       },
       {
-          "IDR_BUTTON_PRESSED", "IDR_BLUE_BUTTON_PRESSED", false,
-          views::Button::STATE_PRESSED,
+          "IDR_BUTTON_PRESSED", false, views::Button::STATE_PRESSED,
       },
       {
-          "IDR_BUTTON_DISABLED", "IDR_BLUE_BUTTON_DISABLED", false,
-          views::Button::STATE_DISABLED,
+          "IDR_BUTTON_DISABLED", false, views::Button::STATE_DISABLED,
       },
 
       {
-          "IDR_BUTTON_FOCUSED_NORMAL", "IDR_BLUE_BUTTON_FOCUSED_NORMAL", true,
-          views::Button::STATE_NORMAL,
+          "IDR_BUTTON_FOCUSED_NORMAL", true, views::Button::STATE_NORMAL,
       },
       {
-          "IDR_BUTTON_FOCUSED_HOVER", "IDR_BLUE_BUTTON_FOCUSED_HOVER", true,
-          views::Button::STATE_HOVERED,
+          "IDR_BUTTON_FOCUSED_HOVER", true, views::Button::STATE_HOVERED,
       },
       {
-          "IDR_BUTTON_FOCUSED_PRESSED", "IDR_BLUE_BUTTON_FOCUSED_PRESSED", true,
-          views::Button::STATE_PRESSED,
+          "IDR_BUTTON_FOCUSED_PRESSED", true, views::Button::STATE_PRESSED,
       },
       {
-          "IDR_BUTTON_DISABLED", "IDR_BLUE_BUTTON_DISABLED", true,
-          views::Button::STATE_DISABLED,
+          "IDR_BUTTON_DISABLED", true, views::Button::STATE_DISABLED,
       },
   };
 
-  bool is_blue =
-      owning_button->GetClassName() == views::BlueButton::kViewClassName;
-
   for (unsigned i = 0; i < arraysize(paintstate); i++) {
-    std::string idr = is_blue ? paintstate[i].idr_blue : paintstate[i].idr;
     gtk_border->SetPainter(
         paintstate[i].focus, paintstate[i].state,
         border->PaintsButtonState(paintstate[i].focus, paintstate[i].state)
-            ? std::make_unique<GtkButtonPainter>(idr)
+            ? std::make_unique<GtkButtonPainter>(paintstate[i].idr)
             : nullptr);
   }
 

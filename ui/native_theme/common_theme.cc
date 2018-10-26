@@ -90,14 +90,6 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_ButtonEnabledColor:
     case NativeTheme::kColorId_ButtonHoverColor:
       return kButtonEnabledColor;
-    // TODO(estade): remove the BlueButton colors.
-    case NativeTheme::kColorId_BlueButtonEnabledColor:
-    case NativeTheme::kColorId_BlueButtonDisabledColor:
-    case NativeTheme::kColorId_BlueButtonPressedColor:
-    case NativeTheme::kColorId_BlueButtonHoverColor:
-      return SK_ColorWHITE;
-    case NativeTheme::kColorId_BlueButtonShadowColor:
-      return SkColorSetRGB(0x53, 0x8C, 0xEA);
     case NativeTheme::kColorId_ProminentButtonColor:
       return gfx::kGoogleBlue500;
     case NativeTheme::kColorId_TextOnProminentButtonColor:

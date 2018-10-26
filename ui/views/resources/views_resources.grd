@@ -22,13 +22,6 @@
       <structure type="chrome_scaled_image" name="IDR_BUTTON_HOVER" file="common/button_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_BUTTON_NORMAL" file="common/button.png" />
       <structure type="chrome_scaled_image" name="IDR_BUTTON_PRESSED" file="common/button_pressed.png" />
-      <structure type="chrome_scaled_image" name="IDR_BLUE_BUTTON_DISABLED" file="common/blue_button_inactive.png" />
-      <structure type="chrome_scaled_image" name="IDR_BLUE_BUTTON_FOCUSED_HOVER" file="common/blue_button_focused_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_BLUE_BUTTON_FOCUSED_NORMAL" file="common/blue_button_focused.png" />
-      <structure type="chrome_scaled_image" name="IDR_BLUE_BUTTON_FOCUSED_PRESSED" file="common/blue_button_focused_pressed.png" />
-      <structure type="chrome_scaled_image" name="IDR_BLUE_BUTTON_HOVER" file="common/blue_button_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_BLUE_BUTTON_NORMAL" file="common/blue_button.png" />
-      <structure type="chrome_scaled_image" name="IDR_BLUE_BUTTON_PRESSED" file="common/blue_button_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_CHECKBOX" file="common/checkbox.png" />
       <structure type="chrome_scaled_image" name="IDR_CHECKBOX_CHECKED" file="common/checkbox_checked.png" />
       <structure type="chrome_scaled_image" name="IDR_CHECKBOX_CHECKED_DISABLED" file="common/checkbox_checked_inactive.png" />
