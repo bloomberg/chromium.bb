@@ -17,7 +17,7 @@
 
 namespace blink {
 
-namespace MediaElementParserHelpers {
+namespace media_element_parser_helpers {
 
 bool IsMediaElement(const Element* element) {
   if ((IsHTMLImageElement(element) || IsSVGImageElement(element)) &&
@@ -82,6 +82,6 @@ void ReportUnsizedMediaViolation(const LayoutObject* layout_object) {
   }
 }
 
-}  // namespace MediaElementParserHelpers
+}  // namespace media_element_parser_helpers
 
 }  // namespace blink
