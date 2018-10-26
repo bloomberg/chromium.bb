@@ -50,32 +50,17 @@ void ComboboxExample::CreateExampleView(View* container) {
   disabled_combobox_->SetSelectedIndex(4);
   disabled_combobox_->SetEnabled(false);
 
-  action_combobox_ = new Combobox(std::make_unique<ComboboxModelExample>(),
-                                  Combobox::STYLE_ACTION);
-  action_combobox_->set_listener(this);
-  // Note: STYLE_ACTION comboboxes always have the first item selected by
-  // default.
-
   container->SetLayoutManager(
       std::make_unique<BoxLayout>(BoxLayout::kVertical, gfx::Insets(10, 0), 5));
   container->AddChildView(combobox_);
   container->AddChildView(disabled_combobox_);
-  container->AddChildView(action_combobox_);
 }
 
 void ComboboxExample::OnPerformAction(Combobox* combobox) {
-  if (combobox == combobox_) {
-    PrintStatus("Selected: %s",
-                base::UTF16ToUTF8(
-                    combobox->model()->GetItemAt(combobox->selected_index()))
-                    .c_str());
-  } else if (combobox == action_combobox_) {
-    PrintStatus("Action: %s", base::UTF16ToUTF8(combobox->model()->GetItemAt(
+  DCHECK_EQ(combobox, combobox_);
+  PrintStatus("Selected: %s", base::UTF16ToUTF8(combobox->model()->GetItemAt(
                                                     combobox->selected_index()))
                                   .c_str());
-  } else {
-    NOTREACHED() << "Surprising combobox.";
-  }
 }
 
 }  // namespace examples

@@ -32,9 +32,12 @@
 #include "ui/views/window/dialog_delegate.h"
 
 namespace views {
+namespace {
+// The length of the hover fade animation.
+constexpr int kHoverAnimationDurationMs = 170;
+}  // namespace
 
 // static
-const int LabelButton::kHoverAnimationDurationMs = 170;
 const char LabelButton::kViewClassName[] = "LabelButton";
 
 LabelButton::LabelButton(ButtonListener* listener,

@@ -16,6 +16,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #import "ui/accessibility/platform/ax_platform_node_mac.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/base/models/combobox_model.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/combobox/combobox.h"
