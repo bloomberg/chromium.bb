@@ -2934,6 +2934,28 @@ def FactoryBuilders(site_config, boards_dict, ge_build_config):
         board_configs[board],
     )
 
+  # Requires that you set boards, and workspace_branch.
+  site_config.AddTemplate(
+      'factorybranch',
+      site_config.templates.factory,
+      sign_types=['factory'],
+      build_type=constants.GENERIC_TYPE,
+      uprev=True,
+      overlays=constants.BOTH_OVERLAYS,
+      push_overlays=constants.BOTH_OVERLAYS,
+      builder_class_name='workspace_builders.FactoryBranchBuilder',
+      build_timeout=6*60 * 60,
+      description='TOT builder to build a firmware branch.',
+      doc='https://goto.google.com/tot-for-firmware-branches',
+  )
+
+  site_config.Add(
+      'prototype-factorybranch',
+      site_config.templates.factorybranch,
+      boards=['nami'],
+      workspace_branch='factory-nami-10715.B',
+  )
+
 
 def ReleaseBuilders(site_config, boards_dict, ge_build_config):
   """Create all release builders.
