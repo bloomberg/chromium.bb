@@ -2407,6 +2407,13 @@
 
 	The physical size can be set to zero if it doesn't make sense for this
 	output (e.g. for projectors or virtual outputs).
+
+	Note: wl_output only advertises partial information about the output
+	position and identification. Some compositors, for instance those not
+	implementing a desktop-style output layout or those exposing virtual
+	outputs, might fake this information. Instead of using x and y, clients
+	should use xdg_output.logical_position. Instead of using make and model,
+	clients should use xdg_output.name and xdg_output.description.
       </description>
       <arg name="x" type="int"
 	   summary="x position within the global compositor space"/>
@@ -2451,7 +2458,17 @@
 	the output device. This is not necessarily the same as
 	the output size in the global compositor space. For instance,
 	the output may be scaled, as described in wl_output.scale,
-	or transformed, as described in wl_output.transform.
+	or transformed, as described in wl_output.transform. Clients
+	willing to retrieve the output size in the global compositor
+	space should use xdg_output.logical_size instead.
+
+	Clients should not use the refresh rate to schedule frames. Instead,
+	they should use the wl_surface.frame event or the presentation-time
+	protocol.
+
+	Note: this information is not always meaningful for all outputs. Some
+	compositors, such as those exposing virtual outputs, might fake the
+	refresh rate or the size.
       </description>
       <arg name="flags" type="uint" enum="mode" summary="bitfield of mode flags"/>
       <arg name="width" type="int" summary="width of the mode in hardware units"/>
