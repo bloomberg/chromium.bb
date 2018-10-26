@@ -20,17 +20,6 @@
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
-using blink::IndexedDBKey;
-using blink::WebBlobInfo;
-using blink::WebData;
-using blink::WebIDBCallbacks;
-using blink::WebIDBKey;
-using blink::kWebIDBKeyTypeNumber;
-using blink::WebIDBValue;
-using blink::WebString;
-using blink::WebVector;
-using testing::StrictMock;
-
 namespace blink {
 
 namespace {
@@ -90,7 +79,7 @@ class MockCursorImpl : public mojom::blink::IDBCursor {
   mojo::AssociatedBinding<IDBCursor> binding_;
 };
 
-class MockContinueCallbacks : public StrictMock<MockWebIDBCallbacks> {
+class MockContinueCallbacks : public testing::StrictMock<MockWebIDBCallbacks> {
  public:
   MockContinueCallbacks(IndexedDBKey* key = nullptr,
                         WebVector<WebBlobInfo>* blobs = nullptr)
