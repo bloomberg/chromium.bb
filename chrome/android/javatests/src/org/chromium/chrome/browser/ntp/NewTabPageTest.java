@@ -6,9 +6,13 @@ package org.chromium.chrome.browser.ntp;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.instanceOf;
+
+import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
 import android.content.ComponentCallbacks2;
 import android.graphics.Canvas;
@@ -231,7 +235,6 @@ public class NewTabPageTest {
         mRenderTestRule.render(mNtp.getSignInPromoViewForTesting(), "sign_in_promo");
     }
 
-    @DisabledTest(message = "https://crbug.com/898165")
     @Test
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage", "RenderTest"})
@@ -239,15 +242,14 @@ public class NewTabPageTest {
     public void testRender_ArticleSectionHeader(boolean interestFeedEnabled) throws Exception {
         // Scroll to the article section header in case it is not visible.
         onView(instanceOf(RecyclerView.class)).perform(RecyclerViewActions.scrollToPosition(2));
-        if (!interestFeedEnabled) {
-            RecyclerViewTestUtils.waitForStableRecyclerView(
-                    mNtp.getNewTabPageView().getRecyclerView());
-        }
+        waitForView((ViewGroup) mNtp.getView(), allOf(withId(R.id.header_title), isDisplayed()));
         View view = mNtp.getSectionHeaderViewForTesting();
-
         // Check header is expanded.
         mRenderTestRule.render(view, "expandable_header_expanded");
+
         // Toggle header on the current tab.
+        onView(instanceOf(RecyclerView.class)).perform(RecyclerViewActions.scrollToPosition(2));
+        waitForView((ViewGroup) mNtp.getView(), allOf(withId(R.id.header_title), isDisplayed()));
         onView(withId(R.id.header_title)).perform(click());
         // Check header is collapsed.
         mRenderTestRule.render(view, "expandable_header_collapsed");
