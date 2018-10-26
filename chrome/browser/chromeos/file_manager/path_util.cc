@@ -40,6 +40,7 @@ namespace util {
 namespace {
 
 constexpr char kDownloadsFolderName[] = "Downloads";
+constexpr char kMyFilesFolderName[] = "MyFiles";
 constexpr char kGoogleDriveDisplayName[] = "Google Drive";
 constexpr char kMyDriveDisplayName[] = "My Drive";
 constexpr char kTeamDrivesDisplayName[] = "Team Drives";
@@ -82,6 +83,22 @@ void OnAllContentUrlsResolved(ConvertToContentUrlsCallback callback,
   std::move(callback).Run(*urls);
 }
 
+// On non-ChromeOS system (test+development), the primary profile uses
+// $HOME/Downloads for ease access to local files for debugging.
+bool ShouldMountPrimaryUserDownloads(Profile* profile) {
+  if (!base::SysInfo::IsRunningOnChromeOS() &&
+      user_manager::UserManager::IsInitialized()) {
+    const user_manager::User* const user =
+        chromeos::ProfileHelper::Get()->GetUserByProfile(
+            profile->GetOriginalProfile());
+    const user_manager::User* const primary_user =
+        user_manager::UserManager::Get()->GetPrimaryUser();
+    return user == primary_user;
+  }
+
+  return false;
+}
+
 }  // namespace
 
 const base::FilePath::CharType kRemovableMediaPath[] =
@@ -100,21 +117,42 @@ base::FilePath GetDownloadsFolderForProfile(Profile* profile) {
   if (mount_points->GetRegisteredPath(mount_point_name, &path))
     return path;
 
-  // On non-ChromeOS system (test+development), the primary profile uses
-  // $HOME/Downloads for ease for accessing local files for debugging.
-  if (!base::SysInfo::IsRunningOnChromeOS() &&
-      user_manager::UserManager::IsInitialized()) {
-    const user_manager::User* const user =
-        chromeos::ProfileHelper::Get()->GetUserByProfile(
-            profile->GetOriginalProfile());
-    const user_manager::User* const primary_user =
-        user_manager::UserManager::Get()->GetPrimaryUser();
-    if (user == primary_user)
-      return DownloadPrefs::GetDefaultDownloadDirectory();
+  // Return $HOME/Downloads as Download folder.
+  if (ShouldMountPrimaryUserDownloads(profile))
+    return DownloadPrefs::GetDefaultDownloadDirectory();
+
+  // Return <cryptohome>/MyFiles/Downloads if it feature is enabled.
+  if (base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume)) {
+    return profile->GetPath()
+        .AppendASCII(kMyFilesFolderName)
+        .AppendASCII(kDownloadsFolderName);
   }
 
   // Return <cryptohome>/Downloads.
   return profile->GetPath().AppendASCII(kDownloadsFolderName);
+}
+
+base::FilePath GetMyFilesFolderForProfile(Profile* profile) {
+  // When MyFilesVolume feature is disabled this should behave just like
+  // GetDownloadsFolderForProfile.
+  if (!base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume))
+    return GetDownloadsFolderForProfile(profile);
+
+  // Check if FilesApp has a registered path already. This happens for tests.
+  const std::string mount_point_name =
+      util::GetDownloadsMountPointName(profile);
+  storage::ExternalMountPoints* const mount_points =
+      storage::ExternalMountPoints::GetSystemInstance();
+  base::FilePath path;
+  if (mount_points->GetRegisteredPath(mount_point_name, &path))
+    return path;
+
+  // Return $HOME/Downloads as MyFiles folder.
+  if (ShouldMountPrimaryUserDownloads(profile))
+    return DownloadPrefs::GetDefaultDownloadDirectory();
+
+  // Return <cryptohome>/MyFiles.
+  return profile->GetPath().AppendASCII(kMyFilesFolderName);
 }
 
 bool MigratePathFromOldFormat(Profile* profile,
@@ -365,6 +403,15 @@ std::string GetPathDisplayTextForSettings(Profile* profile,
                            "/home/chronos/" +
                                profile->GetPath().BaseName().value() +
                                "/Downloads",
+                           kDownloadsFolderName)) {
+  } else if (ReplacePrefix(&result,
+                           std::string("/home/chronos/user/") +
+                               kMyFilesFolderName + "/" + kDownloadsFolderName,
+                           kDownloadsFolderName)) {
+  } else if (ReplacePrefix(&result,
+                           "/home/chronos/" +
+                               profile->GetPath().BaseName().value() + "/" +
+                               kMyFilesFolderName + "/" + kDownloadsFolderName,
                            kDownloadsFolderName)) {
   } else if (drive_integration_service &&
              ReplacePrefix(&result,

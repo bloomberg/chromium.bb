@@ -47,6 +47,66 @@ const char kLsbRelease[] =
     "CHROMEOS_RELEASE_NAME=Chrome OS\n"
     "CHROMEOS_RELEASE_VERSION=1.2.3.4\n";
 
+TEST(FileManagerPathUtilTest, GetDownloadsFolderForProfile) {
+  content::TestBrowserThreadBundle thread_bundle;
+  TestingProfile profile(base::FilePath("/home/chronos/u-0123456789abcdef"));
+  std::string mount_point_name = GetDownloadsMountPointName(&profile);
+  EXPECT_EQ("Downloads", mount_point_name);
+}
+
+TEST(FileManagerPathUtilTest, GetMyFilesFolderForProfile) {
+  content::TestBrowserThreadBundle thread_bundle;
+
+  base::FilePath profile_path =
+      base::FilePath("/home/chronos/u-0123456789abcdef");
+  TestingProfile profile(profile_path);
+
+  // When running outside ChromeOS, it should return $HOME/Downloads for both
+  // MyFiles and Downloads.
+  EXPECT_EQ(DownloadPrefs::GetDefaultDownloadDirectory(),
+            GetMyFilesFolderForProfile(&profile));
+  EXPECT_EQ(DownloadPrefs::GetDefaultDownloadDirectory(),
+            GetDownloadsFolderForProfile(&profile));
+
+  // When running inside ChromeOS, it should return /home/u-{hash}/MyFiles.
+  chromeos::ScopedSetRunningOnChromeOSForTesting fake_release(kLsbRelease,
+                                                              base::Time());
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(chromeos::features::kMyFilesVolume);
+    // When MyFilesVolume feature is disabled it will return the same as
+    // Downloads.
+    EXPECT_EQ(GetDownloadsFolderForProfile(&profile),
+              GetMyFilesFolderForProfile(&profile));
+    EXPECT_EQ("/home/chronos/u-0123456789abcdef/Downloads",
+              GetDownloadsFolderForProfile(&profile).value());
+  }
+  {
+    // When MyFilesVolume feature is enabled Downloads path is inside MyFiles.
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(chromeos::features::kMyFilesVolume);
+
+    base::FilePath myfiles_path = profile_path.AppendASCII("MyFiles");
+    base::FilePath myfiles_downloads_path =
+        myfiles_path.AppendASCII("Downloads");
+
+    EXPECT_EQ("/home/chronos/u-0123456789abcdef/MyFiles",
+              GetMyFilesFolderForProfile(&profile).value());
+    EXPECT_EQ("/home/chronos/u-0123456789abcdef/MyFiles/Downloads",
+              GetDownloadsFolderForProfile(&profile).value());
+
+    // Mount the volume to test the return from mount_points.
+    storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
+        GetDownloadsMountPointName(&profile),
+        storage::kFileSystemTypeNativeLocal, storage::FileSystemMountOption(),
+        profile_path.Append("MyFiles"));
+
+    // Still the same: /home/u-{hash}/MyFiles.
+    EXPECT_EQ("/home/chronos/u-0123456789abcdef/MyFiles",
+              GetMyFilesFolderForProfile(&profile).value());
+  }
+}
+
 TEST(FileManagerPathUtilTest, GetPathDisplayTextForSettings) {
   content::TestBrowserThreadBundle thread_bundle;
   content::TestServiceManagerContext service_manager_context;
@@ -58,6 +118,14 @@ TEST(FileManagerPathUtilTest, GetPathDisplayTextForSettings) {
   EXPECT_EQ("Downloads",
             GetPathDisplayTextForSettings(
                 &profile, "/home/chronos/u-0123456789abcdef/Downloads"));
+
+  EXPECT_EQ("Downloads", GetPathDisplayTextForSettings(
+                             &profile, "/home/chronos/user/MyFiles/Downloads"));
+  EXPECT_EQ(
+      "Downloads",
+      GetPathDisplayTextForSettings(
+          &profile, "/home/chronos/u-0123456789abcdef/MyFiles/Downloads"));
+
   EXPECT_EQ("Play files \u203a foo \u203a bar",
             GetPathDisplayTextForSettings(
                 &profile, "/run/arc/sdcard/write/emulated/0/foo/bar"));
