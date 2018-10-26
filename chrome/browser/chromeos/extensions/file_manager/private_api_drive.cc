@@ -862,11 +862,17 @@ void UmaEmitSearchOutcome(
       infix = "OfflineSearchTime";
       break;
   }
-  base::UmaHistogramTimes(
-      base::StrCat(
-          {remote ? "DriveCommon.RemoteSearch." : "DriveCommon.LocalSearch.",
-           infix, success ? ".SuccessTime" : ".FailTime"}),
-      base::TimeTicks::Now() - time_started);
+  if (remote) {
+    base::UmaHistogramMediumTimes(
+        base::StrCat({"DriveCommon.RemoteSearch.", infix,
+                      success ? ".SuccessTime" : ".FailTime"}),
+        base::TimeTicks::Now() - time_started);
+  } else {
+    base::UmaHistogramMediumTimes(
+        base::StrCat({"DriveCommon.LocalSearch.", infix,
+                      success ? ".SuccessTime" : ".FailTime"}),
+        base::TimeTicks::Now() - time_started);
+  }
 }
 
 }  // namespace
