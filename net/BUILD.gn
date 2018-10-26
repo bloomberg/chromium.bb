@@ -2186,7 +2186,10 @@ source_set("net_deps") {
     }
 
     if (is_fuchsia) {
-      public_deps += [ "//third_party/fuchsia-sdk/sdk:netstack" ]
+      public_deps += [
+        "//third_party/fuchsia-sdk/sdk:ethernet",
+        "//third_party/fuchsia-sdk/sdk:netstack",
+      ]
     }
 
     if (use_platform_icu_alternatives) {
