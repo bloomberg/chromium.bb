@@ -13344,7 +13344,7 @@
       'id': 468,
       'caption': '''Configure list of force-installed Web Apps''',
       'tags': [],
-      'desc': '''Specifies a list of websites that are installed silentl<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>y, without user interaction, and which cannot be uninstalled nor disabled by the user.
+      'desc': '''Specifies a list of websites that are installed silently, without user interaction, and which cannot be uninstalled nor disabled by the user.
 
       Each list item of the policy is an object with two members: "url" and "launch_container". "url" should be the URL of the web app to install and "launch_container" should be either "window" or "tab" to indicate how the Web App will be opened once installed. If "launch_container" is omitted, the app will launch in a window if Chrome considers it a Progressive Web App and in a tab otherwise.''',
       'label': '''URLs for Web Apps to be silently installed.''',
