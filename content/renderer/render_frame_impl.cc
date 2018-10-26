@@ -5230,6 +5230,11 @@ void RenderFrameImpl::DidObserveNewCssPropertyUsage(int css_property,
     observer.DidObserveNewCssPropertyUsage(css_property, is_animated);
 }
 
+void RenderFrameImpl::DidObserveLayoutJank(double jank_fraction) {
+  for (auto& observer : observers_)
+    observer.DidObserveLayoutJank(jank_fraction);
+}
+
 bool RenderFrameImpl::ShouldTrackUseCounter(const blink::WebURL& url) {
   return GetContentClient()->renderer()->ShouldTrackUseCounter(url);
 }
