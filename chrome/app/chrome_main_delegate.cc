@@ -57,6 +57,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "extensions/common/constants.h"
+#include "net/url_request/url_request.h"
 #include "pdf/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
@@ -507,6 +508,11 @@ ChromeMainDelegate::~ChromeMainDelegate() {
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
 void ChromeMainDelegate::PostEarlyInitialization(bool is_running_tests) {
+  // Chrome disallows cookies by default. All code paths that want to use
+  // cookies need to go through one of Chrome's URLRequestContexts which have
+  // a ChromeNetworkDelegate attached that selectively allows cookies again.
+  net::URLRequest::SetDefaultCookiePolicyToBlock();
+
   DCHECK(chrome_feature_list_creator_);
   chrome_feature_list_creator_->CreateFeatureList();
 
