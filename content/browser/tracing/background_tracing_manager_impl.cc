@@ -676,7 +676,6 @@ TraceConfig BackgroundTracingManagerImpl::GetConfigForCategoryPreset(
       auto config = TraceConfig(
           "benchmark,toplevel,ipc,base,browser,navigation,omnibox,ui,shutdown,"
           "safe_browsing,task_scheduler,"
-          "disabled-by-default-task_scheduler_diagnostics,"
           "disabled-by-default-system_stats,disabled-by-default-cpu_profiler",
           record_mode);
       // Filter only browser process events.
@@ -692,7 +691,6 @@ TraceConfig BackgroundTracingManagerImpl::GetConfigForCategoryPreset(
           "disabled-by-default-v8.gc,"
           "disabled-by-default-blink_gc,"
           "disabled-by-default-renderer.scheduler,"
-          "disabled-by-default-task_scheduler_diagnostics,"
           "disabled-by-default-system_stats,disabled-by-default-cpu_profiler",
           record_mode);
     case BackgroundTracingConfigImpl::CategoryPreset::BLINK_STYLE:
