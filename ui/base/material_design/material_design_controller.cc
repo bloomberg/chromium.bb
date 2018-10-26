@@ -52,15 +52,11 @@ void TabletModeWatcherWinProc(HWND hwnd,
 }  // namespace
 #endif  // defined(OS_WIN)
 
-bool MaterialDesignController::initialized_ = false;
 bool MaterialDesignController::touch_ui_ = false;
 bool MaterialDesignController::automatic_touch_ui_ = false;
 
 // static
 void MaterialDesignController::Initialize() {
-  if (initialized_)
-    return;
-
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   const std::string switch_value =
       command_line->GetSwitchValueASCII(switches::kTopChromeTouchUi);
@@ -78,8 +74,9 @@ void MaterialDesignController::Initialize() {
       // Win 10+ uses dynamic mode by default and checks the current tablet mode
       // state to determine whether to start in touch mode.
       automatic_touch_ui_ = true;
-      if (base::MessageLoopForUI::IsCurrent()) {
-        MaterialDesignController::GetInstance()->singleton_hwnd_observer_ =
+      if (base::MessageLoopForUI::IsCurrent() &&
+          !GetInstance()->singleton_hwnd_observer_) {
+        GetInstance()->singleton_hwnd_observer_ =
             std::make_unique<gfx::SingletonHwndObserver>(
                 base::BindRepeating(TabletModeWatcherWinProc));
         touch = IsTabletMode();
@@ -127,17 +124,11 @@ void MaterialDesignController::RemoveObserver(
 MaterialDesignController::MaterialDesignController() = default;
 
 // static
-void MaterialDesignController::Uninitialize() {
-  initialized_ = false;
-}
-
-// static
 void MaterialDesignController::SetTouchUi(bool touch_ui) {
-  if (!initialized_ || touch_ui_ != touch_ui) {
-    initialized_ = true;
+  if (touch_ui_ != touch_ui) {
     touch_ui_ = touch_ui;
     for (auto& observer : GetInstance()->observers_)
-      observer.OnMdModeChanged();
+      observer.OnTouchUiChanged();
   }
 }
 

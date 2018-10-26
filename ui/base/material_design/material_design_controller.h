@@ -50,16 +50,8 @@ class UI_BASE_EXPORT MaterialDesignController {
   MaterialDesignController();
   ~MaterialDesignController() = delete;
 
-  // Resets the initialization state to uninitialized. To be used by tests to
-  // allow calling Initialize() more than once.
-  static void Uninitialize();
-
   // Sets the touch UI state and notifies observers of the state change.
   static void SetTouchUi(bool touch_ui);
-
-  // Tracks whether |touch_ui_| has been initialized.
-  // Tests can use it to reset the state back to a clean state during tear down.
-  static bool initialized_;
 
   // Whether the UI layout should be touch-optimized.
   static bool touch_ui_;

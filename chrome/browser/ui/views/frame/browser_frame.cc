@@ -253,7 +253,7 @@ void BrowserFrame::OnMenuClosed() {
   menu_runner_.reset();
 }
 
-void BrowserFrame::OnMdModeChanged() {
+void BrowserFrame::OnTouchUiChanged() {
   client_view()->InvalidateLayout();
   non_client_view()->InvalidateLayout();
   GetRootView()->Layout();

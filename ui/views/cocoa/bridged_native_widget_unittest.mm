@@ -23,7 +23,6 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/material_design/material_design_controller.h"
 #import "ui/base/test/cocoa_helper.h"
-#include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #import "ui/views/cocoa/bridged_native_widget_host_impl.h"
@@ -373,9 +372,6 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
   void SetUp() override {
     ui::CocoaTest::SetUp();
 
-    // MaterialDesignController leaks state across tests. See
-    // http://crbug.com/656871.
-    ui::test::MaterialDesignControllerTestAPI::Uninitialize();
     ui::MaterialDesignController::Initialize();
 
     init_params_.native_widget = native_widget_mac_;
@@ -402,7 +398,6 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
     // be sure to destroy the widget (which will destroy its NSWindow)
     // beforehand.
     widget_.reset();
-    ui::test::MaterialDesignControllerTestAPI::Uninitialize();
     ui::CocoaTest::TearDown();
   }
 

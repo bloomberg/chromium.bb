@@ -154,7 +154,7 @@ class IconLabelBubbleView : public views::InkDropObserver,
   void AnimationCanceled(const gfx::Animation* animation) override;
 
   // ui::MaterialDesignControllerObserver:
-  void OnMdModeChanged() override;
+  void OnTouchUiChanged() override;
 
   const gfx::FontList& font_list() const { return label_->font_list(); }
 

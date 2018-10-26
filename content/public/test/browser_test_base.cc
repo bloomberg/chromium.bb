@@ -51,7 +51,6 @@
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/platform_window_defaults.h"
-#include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/display/display_switches.h"
 #include "ui/gl/gl_implementation.h"
@@ -167,10 +166,6 @@ BrowserTestBase::~BrowserTestBase() {
 
 void BrowserTestBase::SetUp() {
   set_up_called_ = true;
-  // ContentTestSuiteBase might have already initialized
-  // MaterialDesignController in browser_tests suite.
-  // Uninitialize here to let the browser process do it.
-  ui::test::MaterialDesignControllerTestAPI::Uninitialize();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 

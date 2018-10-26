@@ -8,18 +8,12 @@ namespace ui {
 namespace test {
 
 MaterialDesignControllerTestAPI::MaterialDesignControllerTestAPI(bool touch_ui)
-    : previous_initialized_(MaterialDesignController::initialized_),
-      previous_touch_ui_(MaterialDesignController::touch_ui_) {
+    : previous_touch_ui_(MaterialDesignController::touch_ui_) {
   MaterialDesignController::SetTouchUi(touch_ui);
 }
 
 MaterialDesignControllerTestAPI::~MaterialDesignControllerTestAPI() {
-  MaterialDesignController::initialized_ = previous_initialized_;
   MaterialDesignController::touch_ui_ = previous_touch_ui_;
-}
-
-void MaterialDesignControllerTestAPI::Uninitialize() {
-  MaterialDesignController::Uninitialize();
 }
 
 }  // namespace test

@@ -74,7 +74,7 @@ class BrowserAppMenuButton : public AppMenuButton,
 
  protected:
   // ui::MaterialDesignControllerObserver:
-  void OnMdModeChanged() override;
+  void OnTouchUiChanged() override;
 
  private:
   // Animates the icon if possible. The icon will not animate if the severity

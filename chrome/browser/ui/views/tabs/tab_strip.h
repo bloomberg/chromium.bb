@@ -580,7 +580,7 @@ class TabStrip : public views::AccessiblePaneView,
   views::View* TargetForRect(views::View* root, const gfx::Rect& rect) override;
 
   // ui::MaterialDesignControllerObserver:
-  void OnMdModeChanged() override;
+  void OnTouchUiChanged() override;
 
   // -- Member Variables ------------------------------------------------------
 

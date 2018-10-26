@@ -409,7 +409,7 @@ void IconLabelBubbleView::AnimationCanceled(const gfx::Animation* animation) {
   AnimationEnded(animation);
 }
 
-void IconLabelBubbleView::OnMdModeChanged() {
+void IconLabelBubbleView::OnTouchUiChanged() {
   UpdateBorder();
 
   // PreferredSizeChanged() incurs an expensive layout of the location bar, so
