@@ -194,6 +194,10 @@ void TestDictionary::setUnionOrNullSequenceMember(const HeapVector<DoubleOrStrin
   has_union_or_null_sequence_member_ = true;
 }
 
+void TestDictionary::setUnionWithAnnotatedTypeMember(const StringTreatNullAsEmptyStringOrLong& value) {
+  union_with_annotated_type_member_ = value;
+}
+
 void TestDictionary::setUnionWithTypedefs(const FloatOrBoolean& value) {
   union_with_typedefs_ = value;
 }
@@ -224,6 +228,7 @@ void TestDictionary::Trace(blink::Visitor* visitor) {
   visitor->Trace(union_member_with_sequence_default_);
   visitor->Trace(union_or_null_record_member_);
   visitor->Trace(union_or_null_sequence_member_);
+  visitor->Trace(union_with_annotated_type_member_);
   visitor->Trace(union_with_typedefs_);
   IDLDictionaryBase::Trace(visitor);
 }

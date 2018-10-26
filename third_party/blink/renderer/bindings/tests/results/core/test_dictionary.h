@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/idl_dictionary_base.h"
 #include "third_party/blink/renderer/bindings/core/v8/long_or_boolean.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_treat_null_as_empty_string_or_long.h"
 #include "third_party/blink/renderer/bindings/core/v8/test_enum_or_test_enum_or_null_sequence.h"
 #include "third_party/blink/renderer/bindings/core/v8/test_enum_or_test_enum_sequence.h"
 #include "third_party/blink/renderer/bindings/core/v8/test_interface_2_or_uint8_array.h"
@@ -421,6 +422,12 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   }
   void setUnionOrNullSequenceMember(const HeapVector<DoubleOrString>&);
 
+  bool hasUnionWithAnnotatedTypeMember() const { return !union_with_annotated_type_member_.IsNull(); }
+  const StringTreatNullAsEmptyStringOrLong& unionWithAnnotatedTypeMember() const {
+    return union_with_annotated_type_member_;
+  }
+  void setUnionWithAnnotatedTypeMember(const StringTreatNullAsEmptyStringOrLong&);
+
   bool hasUnionWithTypedefs() const { return !union_with_typedefs_.IsNull(); }
   const FloatOrBoolean& unionWithTypedefs() const {
     return union_with_typedefs_;
@@ -536,6 +543,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   DoubleOrDoubleSequence union_member_with_sequence_default_;
   HeapVector<std::pair<String, DoubleOrString>> union_or_null_record_member_;
   HeapVector<DoubleOrString> union_or_null_sequence_member_;
+  StringTreatNullAsEmptyStringOrLong union_with_annotated_type_member_;
   FloatOrBoolean union_with_typedefs_;
   double unrestricted_double_member_;
   String usv_string_or_null_member_;
