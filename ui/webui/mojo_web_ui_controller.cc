@@ -24,11 +24,8 @@ void MojoWebUIController::OnInterfaceRequestFromFrame(
     content::RenderFrameHost* render_frame_host,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle* interface_pipe) {
-  if (!registry_.CanBindInterface(interface_name)) {
-    LOG(WARNING) << "Cannot bind request to " << interface_name << "; ignoring "
-                 << "request.";
+  if (!registry_.CanBindInterface(interface_name))
     return;
-  }
 
   // Right now, this is expected to be called only for main frames.
   if (render_frame_host->GetParent()) {
