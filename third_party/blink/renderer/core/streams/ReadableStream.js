@@ -77,6 +77,8 @@
     CallOrNoop1,
     CreateAlgorithmFromUnderlyingMethod,
     CreateAlgorithmFromUnderlyingMethodPassingController,
+    CreateCrossRealmTransformReadable,
+    CreateCrossRealmTransformWritable,
     DequeueValue,
     EnqueueValueWithSize,
     MakeSizeAlgorithmFromSizeFunction,
@@ -129,6 +131,7 @@
   const errPipeThroughUndefinedReadable =
         'Failed to execute \'pipeThrough\' on \'ReadableStream\': parameter ' +
         '1\'s \'readable\' property is undefined.';
+  const errCannotTransferLockedStream = 'Cannot transfer a locked stream';
 
   let useCounted = false;
 
@@ -1127,6 +1130,41 @@
   }
 
   //
+  // Functions for transferable streams.
+  //
+
+  function ReadableStreamSerialize(readable) {
+    // assert(IsReadableStream(readable),
+    //        `! IsReadableStream(_readable_) is true`);
+    if (IsReadableStreamLocked(readable)) {
+      throw new TypeError(errCannotTransferLockedStream);
+    }
+
+    // TODO(ricea): Protect against changes to MessageChannel on the global
+    // object.
+    const mc = new MessageChannel();
+    const MessageChannel_port1_getter =
+          v8.uncurryThis(
+              Object.getOwnPropertyDescriptor(
+                  MessageChannel.prototype, 'port1').get);
+    const MessageChannel_port2_getter =
+          v8.uncurryThis(
+              Object.getOwnPropertyDescriptor(
+                  MessageChannel.prototype, 'port2').get);
+    const writable =
+          CreateCrossRealmTransformWritable(MessageChannel_port2_getter(mc));
+    // Failure behaviour here is not ideal.
+    const promise =
+          ReadableStreamPipeTo(readable, writable, false, false, false);
+    markPromiseAsHandled(promise);
+    return MessageChannel_port1_getter(mc);
+  }
+
+  function ReadableStreamDeserialize(port) {
+    return CreateCrossRealmTransformReadable(port);
+  }
+
+  //
   // Internal functions. Not part of the standard.
   //
 
@@ -1220,6 +1258,8 @@
     IsReadableStreamDefaultReader,
     ReadableStreamDefaultReaderRead,
     ReadableStreamTee,
+    ReadableStreamSerialize,
+    ReadableStreamDeserialize,
 
     //
     // Controller exports to Blink C++
