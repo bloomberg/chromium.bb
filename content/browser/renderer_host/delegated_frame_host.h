@@ -208,9 +208,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   // TODO(ccameron): The meaning of "current" should be made more clear here.
   gfx::Size current_frame_size_in_dip_;
 
-  // This is the last root background color from a swapped frame.
-  SkColor background_color_;
-
   viz::HostFrameSinkManager* const host_frame_sink_manager_;
 
   // State for rendering into a Surface.
