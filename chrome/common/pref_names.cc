@@ -231,7 +231,7 @@ const char kApplicationLocaleBackup[] = "intl.app_locale_backup";
 
 // List of locales the UI is allowed to be displayed in by policy. The list is
 // empty if no restriction is being enforced.
-const char kAllowedUILocales[] = "intl.allowed_ui_locales";
+const char kAllowedLanguages[] = "intl.allowed_languages";
 #endif
 
 // The default character encoding to assume for a web page in the
