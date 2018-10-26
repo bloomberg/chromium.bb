@@ -3443,6 +3443,12 @@ TEST_P(SequenceManagerTest, HasPendingHighResolutionTasks) {
   RunLoop().RunUntilIdle();
   EXPECT_EQ(manager_->HasPendingHighResolutionTasks(), supports_high_res);
 
+  // Advancing to just before a pending low resolution task doesn't mean that we
+  // have pending high resolution work.
+  test_task_runner_->AdvanceMockTickClock(TimeDelta::FromMilliseconds(99));
+  RunLoop().RunUntilIdle();
+  EXPECT_FALSE(manager_->HasPendingHighResolutionTasks());
+
   test_task_runner_->AdvanceMockTickClock(TimeDelta::FromMilliseconds(100));
   RunLoop().RunUntilIdle();
   EXPECT_FALSE(manager_->HasPendingHighResolutionTasks());
