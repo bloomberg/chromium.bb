@@ -188,7 +188,6 @@
 #include "net/url_request/url_request.h"
 #include "printing/buildflags/buildflags.h"
 #include "rlz/buildflags/buildflags.h"
-#include "services/service_manager/embedder/main_delegate.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/common/experiments/memory_ablation_experiment.h"
 #include "third_party/widevine/cdm/buildflags.h"
@@ -683,8 +682,7 @@ bool IsWebDriverOverridingPolicy(PrefService* local_state) {
 // Initializes the shared instance of ResourceBundle and returns the locale. An
 // empty |actual_locale| value indicates failure.
 ApplicationLocaleResult InitResourceBundleAndDetermineLocale(
-    const content::MainFunctionParams& params,
-    std::unique_ptr<ui::DataPack> data_pack) {
+    const content::MainFunctionParams& params) {
 #if defined(OS_MACOSX)
   // TODO(markusheintz): Read preference pref::kApplicationLocale in order
   // to enforce the application locale.
@@ -702,11 +700,22 @@ ApplicationLocaleResult InitResourceBundleAndDetermineLocale(
   std::string actual_locale = ui::ResourceBundle::InitSharedInstanceWithLocale(
       preferred_locale, nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
 
-  if (data_pack) {
-    ui::ResourceBundle::GetSharedInstance().AddDataPack(std::move(data_pack));
-  } else {
-    LOG(ERROR) << "Failed to load resources.pak\n"
-               << "Some features may not be available.";
+  if (actual_locale.empty())
+    return {actual_locale, preferred_locale};
+
+  // First run prefs needs data from the ResourceBundle, so load it now.
+  {
+    TRACE_EVENT0("startup",
+                 "ChromeBrowserMainParts::InitResourceBundleAndDetermineLocale:"
+                 ":AddDataPack");
+    base::FilePath resources_pack_path;
+    base::PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
+#if defined(OS_ANDROID)
+    ui::LoadMainAndroidPackFile("assets/resources.pak", resources_pack_path);
+#else
+    ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+        resources_pack_path, ui::SCALE_FACTOR_NONE);
+#endif  // defined(OS_ANDROID)
   }
 
   return {actual_locale, preferred_locale};
@@ -782,7 +791,6 @@ const char kMissingLocaleDataMessage[] =
 
 ChromeBrowserMainParts::ChromeBrowserMainParts(
     const content::MainFunctionParams& parameters,
-    std::unique_ptr<ui::DataPack> data_pack,
     ChromeFeatureListCreator* chrome_feature_list_creator)
     : parameters_(parameters),
       parsed_command_line_(parameters.command_line),
@@ -793,7 +801,6 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
           !parameters.ui_task),
       profile_(NULL),
       run_message_loop_(true),
-      service_manifest_data_pack_(std::move(data_pack)),
       chrome_feature_list_creator_(chrome_feature_list_creator) {
   DCHECK(chrome_feature_list_creator_);
   // If we're running tests (ui_task is non-null).
@@ -1057,8 +1064,8 @@ int ChromeBrowserMainParts::LoadLocalState(
 
   // First run prefs may use the ResourceBundle (and get data from it), so this
   // needs to be before ApplyFirstRunPrefs().
-  ApplicationLocaleResult locale_result = InitResourceBundleAndDetermineLocale(
-      parameters(), std::move(service_manifest_data_pack_));
+  ApplicationLocaleResult locale_result =
+      InitResourceBundleAndDetermineLocale(parameters());
 
   if (locale_result.actual_locale.empty()) {
     *failed_to_load_resource_bundle = true;

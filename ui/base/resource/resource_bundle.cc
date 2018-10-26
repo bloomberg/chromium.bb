@@ -247,18 +247,6 @@ bool ResourceBundle::LocaleDataPakExists(const std::string& locale) {
 }
 #endif  // !defined(OS_ANDROID)
 
-void ResourceBundle::AddDataPack(std::unique_ptr<DataPack> data_pack) {
-#if DCHECK_IS_ON()
-  data_pack->CheckForDuplicateResources(data_packs_);
-#endif
-
-  if (GetScaleForScaleFactor(data_pack->GetScaleFactor()) >
-      GetScaleForScaleFactor(max_scale_factor_))
-    max_scale_factor_ = data_pack->GetScaleFactor();
-
-  data_packs_.push_back(std::move(data_pack));
-}
-
 void ResourceBundle::AddDataPackFromPath(const base::FilePath& path,
                                          ScaleFactor scale_factor) {
   AddDataPackFromPathInternal(path, scale_factor, false);
@@ -776,6 +764,18 @@ void ResourceBundle::AddDataPackFromPathInternal(
     LOG(ERROR) << "Failed to load " << pack_path.value()
                << "\nSome features may not be available.";
   }
+}
+
+void ResourceBundle::AddDataPack(std::unique_ptr<DataPack> data_pack) {
+#if DCHECK_IS_ON()
+  data_pack->CheckForDuplicateResources(data_packs_);
+#endif
+
+  if (GetScaleForScaleFactor(data_pack->GetScaleFactor()) >
+      GetScaleForScaleFactor(max_scale_factor_))
+    max_scale_factor_ = data_pack->GetScaleFactor();
+
+  data_packs_.push_back(std::move(data_pack));
 }
 
 void ResourceBundle::InitDefaultFontList() {
