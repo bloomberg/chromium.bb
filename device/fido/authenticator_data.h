@@ -43,7 +43,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorData {
       uint8_t flags,
       base::span<const uint8_t, kSignCounterLength> counter,
       base::Optional<AttestedCredentialData> data,
-      base::Optional<cbor::CBORValue> extensions = base::nullopt);
+      base::Optional<cbor::Value> extensions = base::nullopt);
 
   // Moveable.
   AuthenticatorData(AuthenticatorData&& other);
@@ -72,9 +72,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorData {
 
   // If a value is returned then the result of calling |is_map()| on it can be
   // assumed to be true.
-  const base::Optional<cbor::CBORValue>& extensions() const {
-    return extensions_;
-  }
+  const base::Optional<cbor::Value>& extensions() const { return extensions_; }
 
   const std::array<uint8_t, kRpIdHashLength>& application_parameter() const {
     return application_parameter_;
@@ -117,7 +115,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorData {
   std::array<uint8_t, kSignCounterLength> counter_;
   base::Optional<AttestedCredentialData> attested_data_;
   // If |extensions_| has a value, then it will be a CBOR map.
-  base::Optional<cbor::CBORValue> extensions_;
+  base::Optional<cbor::Value> extensions_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorData);
 };

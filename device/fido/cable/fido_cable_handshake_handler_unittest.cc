@@ -208,13 +208,13 @@ class FakeCableAuthenticator {
       return false;
     }
 
-    const auto& client_hello_cbor = cbor::CBORReader::Read(client_hello);
+    const auto& client_hello_cbor = cbor::Reader::Read(client_hello);
     if (!client_hello_cbor)
       return false;
 
     const auto& message_map = client_hello_cbor->GetMap();
-    auto hello_message_it = message_map.find(cbor::CBORValue(0));
-    auto client_random_nonce_it = message_map.find(cbor::CBORValue(1));
+    auto hello_message_it = message_map.find(cbor::Value(0));
+    auto client_random_nonce_it = message_map.find(cbor::Value(1));
     if (hello_message_it == message_map.end() ||
         client_random_nonce_it == message_map.end())
       return false;

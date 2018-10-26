@@ -45,7 +45,7 @@ AttestedCredentialData::ConsumeFromCtapResponse(
   // CBOR parser needs to be invoked to find its length, even though the result
   // is discarded.
   size_t bytes_read;
-  if (!cbor::CBORReader::Read(buffer, &bytes_read)) {
+  if (!cbor::Reader::Read(buffer, &bytes_read)) {
     return base::nullopt;
   }
   auto credential_public_key_data =

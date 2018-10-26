@@ -41,9 +41,9 @@ base::Optional<AuthenticatorData> AuthenticatorData::DecodeAuthenticatorData(
     std::tie(attested_credential_data, auth_data) = std::move(*maybe_result);
   }
 
-  base::Optional<cbor::CBORValue> extensions;
+  base::Optional<cbor::Value> extensions;
   if (flag_byte & static_cast<uint8_t>(Flag::kExtensionDataIncluded)) {
-    extensions = cbor::CBORReader::Read(auth_data);
+    extensions = cbor::Reader::Read(auth_data);
     if (!extensions || !extensions->is_map()) {
       return base::nullopt;
     }
@@ -61,7 +61,7 @@ AuthenticatorData::AuthenticatorData(
     uint8_t flags,
     base::span<const uint8_t, kSignCounterLength> counter,
     base::Optional<AttestedCredentialData> data,
-    base::Optional<cbor::CBORValue> extensions)
+    base::Optional<cbor::Value> extensions)
     : application_parameter_(
           fido_parsing_utils::Materialize(application_parameter)),
       flags_(flags),
@@ -102,7 +102,7 @@ std::vector<uint8_t> AuthenticatorData::SerializeToByteArray() const {
   }
 
   if (extensions_) {
-    const auto maybe_extensions = cbor::CBORWriter::Write(*extensions_);
+    const auto maybe_extensions = cbor::Writer::Write(*extensions_);
     if (maybe_extensions) {
       fido_parsing_utils::Append(&authenticator_data, *maybe_extensions);
     }

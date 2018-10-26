@@ -112,12 +112,12 @@ std::vector<uint8_t> ConstructMakeCredentialResponse(
     const base::Optional<std::vector<uint8_t>> attestation_certificate,
     base::span<const uint8_t> signature,
     AuthenticatorData authenticator_data) {
-  cbor::CBORValue::MapValue attestation_map;
+  cbor::Value::MapValue attestation_map;
   attestation_map.emplace("alg", -7);
   attestation_map.emplace("sig", fido_parsing_utils::Materialize(signature));
 
   if (attestation_certificate) {
-    cbor::CBORValue::ArrayValue certificate_chain;
+    cbor::Value::ArrayValue certificate_chain;
     certificate_chain.emplace_back(std::move(*attestation_certificate));
     attestation_map.emplace("x5c", std::move(certificate_chain));
   }
@@ -127,7 +127,7 @@ std::vector<uint8_t> ConstructMakeCredentialResponse(
       AttestationObject(
           std::move(authenticator_data),
           std::make_unique<OpaqueAttestationStatement>(
-              "packed", cbor::CBORValue(std::move(attestation_map)))));
+              "packed", cbor::Value(std::move(attestation_map)))));
   return GetSerializedCtapDeviceResponse(make_credential_response);
 }
 
@@ -267,12 +267,12 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
   AttestedCredentialData attested_credential_data(
       aaguid, sha256_length, key_handle, ConstructECPublicKey(public_key));
 
-  base::Optional<cbor::CBORValue> extensions;
+  base::Optional<cbor::Value> extensions;
   if (request->hmac_secret()) {
-    cbor::CBORValue::MapValue extensions_map;
-    extensions_map.emplace(cbor::CBORValue(kExtensionHmacSecret),
-                           cbor::CBORValue(true));
-    extensions = cbor::CBORValue(std::move(extensions_map));
+    cbor::Value::MapValue extensions_map;
+    extensions_map.emplace(cbor::Value(kExtensionHmacSecret),
+                           cbor::Value(true));
+    extensions = cbor::Value(std::move(extensions_map));
   }
 
   auto authenticator_data = ConstructAuthenticatorData(
@@ -377,7 +377,7 @@ AuthenticatorData VirtualCtap2Device::ConstructAuthenticatorData(
     base::span<const uint8_t, kRpIdHashLength> rp_id_hash,
     uint32_t current_signature_count,
     base::Optional<AttestedCredentialData> attested_credential_data,
-    base::Optional<cbor::CBORValue> extensions) {
+    base::Optional<cbor::Value> extensions) {
   uint8_t flag =
       base::strict_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserPresence);
   std::array<uint8_t, kSignCounterLength> signature_counter;

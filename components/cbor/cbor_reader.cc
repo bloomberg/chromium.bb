@@ -22,8 +22,8 @@ const char kUnsupportedMajorType[] = "Unsupported major type.";
 
 namespace {
 
-CBORValue::Type GetMajorType(uint8_t initial_data_byte) {
-  return static_cast<CBORValue::Type>(
+Value::Type GetMajorType(uint8_t initial_data_byte) {
+  return static_cast<Value::Type>(
       (initial_data_byte & constants::kMajorTypeMask) >>
       constants::kMajorTypeBitShift);
 }
@@ -61,14 +61,14 @@ const char kUnknownError[] = "An unknown error occured.";
 
 }  // namespace
 
-CBORReader::CBORReader(base::span<const uint8_t> data)
+Reader::Reader(base::span<const uint8_t> data)
     : rest_(data), error_code_(DecoderError::CBOR_NO_ERROR) {}
-CBORReader::~CBORReader() {}
+Reader::~Reader() {}
 
 // static
-base::Optional<CBORValue> CBORReader::Read(base::span<uint8_t const> data,
-                                           DecoderError* error_code_out,
-                                           int max_nesting_level) {
+base::Optional<Value> Reader::Read(base::span<uint8_t const> data,
+                                   DecoderError* error_code_out,
+                                   int max_nesting_level) {
   size_t num_bytes_consumed;
   auto value =
       Read(data, &num_bytes_consumed, error_code_out, max_nesting_level);
@@ -84,12 +84,12 @@ base::Optional<CBORValue> CBORReader::Read(base::span<uint8_t const> data,
 }
 
 // static
-base::Optional<CBORValue> CBORReader::Read(base::span<uint8_t const> data,
-                                           size_t* num_bytes_consumed,
-                                           DecoderError* error_code_out,
-                                           int max_nesting_level) {
-  CBORReader reader(data);
-  base::Optional<CBORValue> value =
+base::Optional<Value> Reader::Read(base::span<uint8_t const> data,
+                                   size_t* num_bytes_consumed,
+                                   DecoderError* error_code_out,
+                                   int max_nesting_level) {
+  Reader reader(data);
+  base::Optional<Value> value =
       reader.DecodeCompleteDataItem(max_nesting_level);
 
   auto error = reader.GetErrorCode();
@@ -105,8 +105,7 @@ base::Optional<CBORValue> CBORReader::Read(base::span<uint8_t const> data,
   return value;
 }
 
-base::Optional<CBORValue> CBORReader::DecodeCompleteDataItem(
-    int max_nesting_level) {
+base::Optional<Value> Reader::DecodeCompleteDataItem(int max_nesting_level) {
   if (max_nesting_level < 0 || max_nesting_level > kCBORMaxDepth) {
     error_code_ = DecoderError::TOO_MUCH_NESTING;
     return base::nullopt;
@@ -118,22 +117,22 @@ base::Optional<CBORValue> CBORReader::DecodeCompleteDataItem(
   }
 
   switch (header->type) {
-    case CBORValue::Type::UNSIGNED:
+    case Value::Type::UNSIGNED:
       return DecodeValueToUnsigned(header->value);
-    case CBORValue::Type::NEGATIVE:
+    case Value::Type::NEGATIVE:
       return DecodeValueToNegative(header->value);
-    case CBORValue::Type::BYTE_STRING:
+    case Value::Type::BYTE_STRING:
       return ReadByteStringContent(*header);
-    case CBORValue::Type::STRING:
+    case Value::Type::STRING:
       return ReadStringContent(*header);
-    case CBORValue::Type::ARRAY:
+    case Value::Type::ARRAY:
       return ReadArrayContent(*header, max_nesting_level);
-    case CBORValue::Type::MAP:
+    case Value::Type::MAP:
       return ReadMapContent(*header, max_nesting_level);
-    case CBORValue::Type::SIMPLE_VALUE:
+    case Value::Type::SIMPLE_VALUE:
       return DecodeToSimpleValue(*header);
-    case CBORValue::Type::TAG:  // We explicitly don't support TAG.
-    case CBORValue::Type::NONE:
+    case Value::Type::TAG:  // We explicitly don't support TAG.
+    case Value::Type::NONE:
       break;
   }
 
@@ -141,7 +140,7 @@ base::Optional<CBORValue> CBORReader::DecodeCompleteDataItem(
   return base::nullopt;
 }
 
-base::Optional<CBORReader::DataItemHeader> CBORReader::DecodeDataItemHeader() {
+base::Optional<Reader::DataItemHeader> Reader::DecodeDataItemHeader() {
   const base::Optional<uint8_t> initial_byte = ReadByte();
   if (!initial_byte) {
     return base::nullopt;
@@ -156,7 +155,7 @@ base::Optional<CBORReader::DataItemHeader> CBORReader::DecodeDataItemHeader() {
                : base::nullopt;
 }
 
-base::Optional<uint64_t> CBORReader::ReadVariadicLengthInteger(
+base::Optional<uint64_t> Reader::ReadVariadicLengthInteger(
     uint8_t additional_info) {
   uint8_t additional_bytes = 0;
   if (additional_info < 24) {
@@ -191,25 +190,25 @@ base::Optional<uint64_t> CBORReader::ReadVariadicLengthInteger(
              : base::nullopt;
 }
 
-base::Optional<CBORValue> CBORReader::DecodeValueToNegative(uint64_t value) {
+base::Optional<Value> Reader::DecodeValueToNegative(uint64_t value) {
   auto negative_value = -base::CheckedNumeric<int64_t>(value) - 1;
   if (!negative_value.IsValid()) {
     error_code_ = DecoderError::OUT_OF_RANGE_INTEGER_VALUE;
     return base::nullopt;
   }
-  return CBORValue(negative_value.ValueOrDie());
+  return Value(negative_value.ValueOrDie());
 }
 
-base::Optional<CBORValue> CBORReader::DecodeValueToUnsigned(uint64_t value) {
+base::Optional<Value> Reader::DecodeValueToUnsigned(uint64_t value) {
   auto unsigned_value = base::CheckedNumeric<int64_t>(value);
   if (!unsigned_value.IsValid()) {
     error_code_ = DecoderError::OUT_OF_RANGE_INTEGER_VALUE;
     return base::nullopt;
   }
-  return CBORValue(unsigned_value.ValueOrDie());
+  return Value(unsigned_value.ValueOrDie());
 }
 
-base::Optional<CBORValue> CBORReader::DecodeToSimpleValue(
+base::Optional<Value> Reader::DecodeToSimpleValue(
     const DataItemHeader& header) {
   // ReadVariadicLengthInteger provides this bound.
   CHECK_LE(header.additional_info, 27);
@@ -224,22 +223,22 @@ base::Optional<CBORValue> CBORReader::DecodeToSimpleValue(
   CHECK_LE(header.value, 255u);
   // |SimpleValue| is an enum class and so the underlying type is specified to
   // be |int|. So this cast is safe.
-  CBORValue::SimpleValue possibly_unsupported_simple_value =
-      static_cast<CBORValue::SimpleValue>(static_cast<int>(header.value));
+  Value::SimpleValue possibly_unsupported_simple_value =
+      static_cast<Value::SimpleValue>(static_cast<int>(header.value));
   switch (possibly_unsupported_simple_value) {
-    case CBORValue::SimpleValue::FALSE_VALUE:
-    case CBORValue::SimpleValue::TRUE_VALUE:
-    case CBORValue::SimpleValue::NULL_VALUE:
-    case CBORValue::SimpleValue::UNDEFINED:
-      return CBORValue(possibly_unsupported_simple_value);
+    case Value::SimpleValue::FALSE_VALUE:
+    case Value::SimpleValue::TRUE_VALUE:
+    case Value::SimpleValue::NULL_VALUE:
+    case Value::SimpleValue::UNDEFINED:
+      return Value(possibly_unsupported_simple_value);
   }
 
   error_code_ = DecoderError::UNSUPPORTED_SIMPLE_VALUE;
   return base::nullopt;
 }
 
-base::Optional<CBORValue> CBORReader::ReadStringContent(
-    const CBORReader::DataItemHeader& header) {
+base::Optional<Value> Reader::ReadStringContent(
+    const Reader::DataItemHeader& header) {
   uint64_t num_bytes = header.value;
   const base::Optional<base::span<const uint8_t>> bytes = ReadBytes(num_bytes);
   if (!bytes) {
@@ -249,12 +248,12 @@ base::Optional<CBORValue> CBORReader::ReadStringContent(
   std::string cbor_string(bytes->begin(), bytes->end());
 
   return HasValidUTF8Format(cbor_string)
-             ? base::make_optional<CBORValue>(CBORValue(std::move(cbor_string)))
+             ? base::make_optional<Value>(Value(std::move(cbor_string)))
              : base::nullopt;
 }
 
-base::Optional<CBORValue> CBORReader::ReadByteStringContent(
-    const CBORReader::DataItemHeader& header) {
+base::Optional<Value> Reader::ReadByteStringContent(
+    const Reader::DataItemHeader& header) {
   uint64_t num_bytes = header.value;
   const base::Optional<base::span<const uint8_t>> bytes = ReadBytes(num_bytes);
   if (!bytes) {
@@ -262,46 +261,44 @@ base::Optional<CBORValue> CBORReader::ReadByteStringContent(
   }
 
   std::vector<uint8_t> cbor_byte_string(bytes->begin(), bytes->end());
-  return CBORValue(std::move(cbor_byte_string));
+  return Value(std::move(cbor_byte_string));
 }
 
-base::Optional<CBORValue> CBORReader::ReadArrayContent(
-    const CBORReader::DataItemHeader& header,
+base::Optional<Value> Reader::ReadArrayContent(
+    const Reader::DataItemHeader& header,
     int max_nesting_level) {
   const uint64_t length = header.value;
 
-  CBORValue::ArrayValue cbor_array;
+  Value::ArrayValue cbor_array;
   for (uint64_t i = 0; i < length; ++i) {
-    base::Optional<CBORValue> cbor_element =
+    base::Optional<Value> cbor_element =
         DecodeCompleteDataItem(max_nesting_level - 1);
     if (!cbor_element.has_value()) {
       return base::nullopt;
     }
     cbor_array.push_back(std::move(cbor_element.value()));
   }
-  return CBORValue(std::move(cbor_array));
+  return Value(std::move(cbor_array));
 }
 
-base::Optional<CBORValue> CBORReader::ReadMapContent(
-    const CBORReader::DataItemHeader& header,
+base::Optional<Value> Reader::ReadMapContent(
+    const Reader::DataItemHeader& header,
     int max_nesting_level) {
   const uint64_t length = header.value;
 
-  CBORValue::MapValue cbor_map;
+  Value::MapValue cbor_map;
   for (uint64_t i = 0; i < length; ++i) {
-    base::Optional<CBORValue> key =
-        DecodeCompleteDataItem(max_nesting_level - 1);
-    base::Optional<CBORValue> value =
-        DecodeCompleteDataItem(max_nesting_level - 1);
+    base::Optional<Value> key = DecodeCompleteDataItem(max_nesting_level - 1);
+    base::Optional<Value> value = DecodeCompleteDataItem(max_nesting_level - 1);
     if (!key.has_value() || !value.has_value()) {
       return base::nullopt;
     }
 
     switch (key.value().type()) {
-      case CBORValue::Type::UNSIGNED:
-      case CBORValue::Type::NEGATIVE:
-      case CBORValue::Type::STRING:
-      case CBORValue::Type::BYTE_STRING:
+      case Value::Type::UNSIGNED:
+      case Value::Type::NEGATIVE:
+      case Value::Type::STRING:
+      case Value::Type::BYTE_STRING:
         break;
       default:
         error_code_ = DecoderError::INCORRECT_MAP_KEY_TYPE;
@@ -313,15 +310,15 @@ base::Optional<CBORValue> CBORReader::ReadMapContent(
 
     cbor_map.insert_or_assign(std::move(key.value()), std::move(value.value()));
   }
-  return CBORValue(std::move(cbor_map));
+  return Value(std::move(cbor_map));
 }
 
-base::Optional<uint8_t> CBORReader::ReadByte() {
+base::Optional<uint8_t> Reader::ReadByte() {
   const base::Optional<base::span<const uint8_t>> bytes = ReadBytes(1);
   return bytes ? base::make_optional(bytes.value()[0]) : base::nullopt;
 }
 
-base::Optional<base::span<const uint8_t>> CBORReader::ReadBytes(
+base::Optional<base::span<const uint8_t>> Reader::ReadBytes(
     uint64_t num_bytes) {
   if (base::strict_cast<uint64_t>(rest_.size()) < num_bytes) {
     error_code_ = DecoderError::INCOMPLETE_CBOR_DATA;
@@ -332,8 +329,7 @@ base::Optional<base::span<const uint8_t>> CBORReader::ReadBytes(
   return ret;
 }
 
-bool CBORReader::IsEncodingMinimal(uint8_t additional_bytes,
-                                   uint64_t uint_data) {
+bool Reader::IsEncodingMinimal(uint8_t additional_bytes, uint64_t uint_data) {
   if ((additional_bytes == 1 && uint_data < 24) ||
       uint_data <= (1ULL << 8 * (additional_bytes >> 1)) - 1) {
     error_code_ = DecoderError::NON_MINIMAL_CBOR_ENCODING;
@@ -342,7 +338,7 @@ bool CBORReader::IsEncodingMinimal(uint8_t additional_bytes,
   return true;
 }
 
-bool CBORReader::HasValidUTF8Format(const std::string& string_data) {
+bool Reader::HasValidUTF8Format(const std::string& string_data) {
   if (!base::IsStringUTF8(string_data)) {
     error_code_ = DecoderError::INVALID_UTF8;
     return false;
@@ -350,8 +346,7 @@ bool CBORReader::HasValidUTF8Format(const std::string& string_data) {
   return true;
 }
 
-bool CBORReader::IsKeyInOrder(const CBORValue& new_key,
-                              CBORValue::MapValue* map) {
+bool Reader::IsKeyInOrder(const Value& new_key, Value::MapValue* map) {
   if (map->empty()) {
     return true;
   }
@@ -366,7 +361,7 @@ bool CBORReader::IsKeyInOrder(const CBORValue& new_key,
 }
 
 // static
-const char* CBORReader::ErrorCodeToString(DecoderError error) {
+const char* Reader::ErrorCodeToString(DecoderError error) {
   switch (error) {
     case DecoderError::CBOR_NO_ERROR:
       return kNoError;

@@ -71,8 +71,8 @@ using blink::mojom::PublicKeyCredentialType;
 using blink::mojom::PublicKeyCredentialUserEntity;
 using blink::mojom::PublicKeyCredentialUserEntityPtr;
 using blink::mojom::AuthenticatorTransport;
-using cbor::CBORValue;
-using cbor::CBORReader;
+using cbor::Value;
+using cbor::Reader;
 
 namespace {
 
@@ -1257,8 +1257,8 @@ class AuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
         continue;
       }
 
-      base::Optional<CBORValue> attestation_value =
-          CBORReader::Read(callback_receiver.value()->attestation_object);
+      base::Optional<Value> attestation_value =
+          Reader::Read(callback_receiver.value()->attestation_object);
       ASSERT_TRUE(attestation_value);
       ASSERT_TRUE(attestation_value->is_map());
       const auto& attestation = attestation_value->GetMap();
@@ -1287,19 +1287,19 @@ class AuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
 
           // A self-attestation should not include an X.509 chain nor ECDAA key.
           const auto attestation_statement_it =
-              attestation.find(CBORValue("attStmt"));
+              attestation.find(Value("attStmt"));
           ASSERT_TRUE(attestation_statement_it != attestation.end());
           ASSERT_TRUE(attestation_statement_it->second.is_map());
           const auto& attestation_statement =
               attestation_statement_it->second.GetMap();
 
-          ASSERT_TRUE(attestation_statement.find(CBORValue("x5c")) ==
+          ASSERT_TRUE(attestation_statement.find(Value("x5c")) ==
                       attestation_statement.end());
-          ASSERT_TRUE(attestation_statement.find(CBORValue("ecdaaKeyId")) ==
+          ASSERT_TRUE(attestation_statement.find(Value("ecdaaKeyId")) ==
                       attestation_statement.end());
 
           // The AAGUID should be all zero.
-          const auto auth_data_it = attestation.find(CBORValue("authData"));
+          const auto auth_data_it = attestation.find(Value("authData"));
           ASSERT_TRUE(auth_data_it != attestation.end());
           ASSERT_TRUE(auth_data_it->second.is_bytestring());
           const std::vector<uint8_t>& auth_data =
@@ -1340,10 +1340,10 @@ class AuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
 
   // Expects that |map| contains the given key with a string-value equal to
   // |expected|.
-  static void ExpectMapHasKeyWithStringValue(const CBORValue::MapValue& map,
+  static void ExpectMapHasKeyWithStringValue(const Value::MapValue& map,
                                              const char* key,
                                              const char* expected) {
-    const auto it = map.find(CBORValue(key));
+    const auto it = map.find(Value(key));
     ASSERT_TRUE(it != map.end()) << "No such key '" << key << "'";
     const auto& value = it->second;
     EXPECT_TRUE(value.is_string())
@@ -1357,15 +1357,14 @@ class AuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
   // Asserts that the webauthn attestation CBOR map in
   // |attestation| contains a single X.509 certificate containing |substring|.
   static void ExpectCertificateContainingSubstring(
-      const CBORValue::MapValue& attestation,
+      const Value::MapValue& attestation,
       const std::string& substring) {
-    const auto& attestation_statement_it =
-        attestation.find(CBORValue("attStmt"));
+    const auto& attestation_statement_it = attestation.find(Value("attStmt"));
     ASSERT_TRUE(attestation_statement_it != attestation.end());
     ASSERT_TRUE(attestation_statement_it->second.is_map());
     const auto& attestation_statement =
         attestation_statement_it->second.GetMap();
-    const auto& x5c_it = attestation_statement.find(CBORValue("x5c"));
+    const auto& x5c_it = attestation_statement.find(Value("x5c"));
     ASSERT_TRUE(x5c_it != attestation_statement.end());
     ASSERT_TRUE(x5c_it->second.is_array());
     const auto& x5c = x5c_it->second.GetArray();
@@ -2065,13 +2064,13 @@ TEST_F(AuthenticatorImplTest, ExtensionHMACSecret) {
     callback_receiver.WaitForCallback();
     EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
 
-    base::Optional<CBORValue> attestation_value =
-        CBORReader::Read(callback_receiver.value()->attestation_object);
+    base::Optional<Value> attestation_value =
+        Reader::Read(callback_receiver.value()->attestation_object);
     ASSERT_TRUE(attestation_value);
     ASSERT_TRUE(attestation_value->is_map());
     const auto& attestation = attestation_value->GetMap();
 
-    const auto auth_data_it = attestation.find(CBORValue(device::kAuthDataKey));
+    const auto auth_data_it = attestation.find(Value(device::kAuthDataKey));
     ASSERT_TRUE(auth_data_it != attestation.end());
     ASSERT_TRUE(auth_data_it->second.is_bytestring());
     const std::vector<uint8_t>& auth_data =
@@ -2087,9 +2086,9 @@ TEST_F(AuthenticatorImplTest, ExtensionHMACSecret) {
     const auto& extensions = parsed_auth_data->extensions();
     if (extensions) {
       CHECK(extensions->is_map());
-      const cbor::CBORValue::MapValue& extensions_map = extensions->GetMap();
+      const cbor::Value::MapValue& extensions_map = extensions->GetMap();
       const auto hmac_secret_it =
-          extensions_map.find(cbor::CBORValue(device::kExtensionHmacSecret));
+          extensions_map.find(cbor::Value(device::kExtensionHmacSecret));
       if (hmac_secret_it != extensions_map.end()) {
         ASSERT_TRUE(hmac_secret_it->second.is_bool());
         EXPECT_TRUE(hmac_secret_it->second.GetBool());
