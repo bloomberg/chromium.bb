@@ -29,6 +29,8 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.snackbar.Snackbar;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.widget.MaterialProgressBar;
 
 import java.io.InputStream;
@@ -192,7 +194,8 @@ class AutofillAssistantUiDelegate {
         mOverlay = mFullContainer.findViewById(R.id.overlay);
         mOverlay.setOnClickListener(unusedView -> mClient.onClickOverlay());
         mBottomBar = mFullContainer.findViewById(R.id.bottombar);
-        mBottomBar.findViewById(R.id.close_button).setOnClickListener(unusedView -> shutdown());
+        mBottomBar.findViewById(R.id.close_button)
+                .setOnClickListener(unusedView -> mClient.onDismiss());
         mBottomBar.findViewById(R.id.feedback_button)
                 .setOnClickListener(unusedView
                         -> HelpAndFeedback.getInstance(mActivity).showFeedback(mActivity,
@@ -227,7 +230,7 @@ class AutofillAssistantUiDelegate {
     }
 
     private void ensureFullContainerIsShown() {
-        if (!mFullContainer.isShown()) mFullContainer.setVisibility(View.VISIBLE);
+        if (!mFullContainer.isShown()) show();
     }
 
     /**
@@ -286,6 +289,27 @@ class AutofillAssistantUiDelegate {
                 R.layout.autofill_assistant_chip, mChipsViewContainer, false));
         chipView.setText(text);
         return chipView;
+    }
+
+    public void show() {
+        mFullContainer.setVisibility(View.VISIBLE);
+    }
+
+    public void hide() {
+        mFullContainer.setVisibility(View.GONE);
+    }
+
+    public void showAutofillAssistantStoppedSnackbar(
+            SnackbarManager.SnackbarController controller) {
+        int durationMs = SnackbarManager.DEFAULT_SNACKBAR_DURATION_MS;
+        Snackbar snackBar =
+                Snackbar.make(mActivity.getString(
+                                      R.string.autofill_assistant_stopped, durationMs / 1_000),
+                                controller, Snackbar.TYPE_ACTION,
+                                Snackbar.UMA_AUTOFILL_ASSISTANT_STOP_UNDO)
+                        .setAction(mActivity.getString(R.string.undo), /* actionData= */ null);
+        snackBar.setDuration(durationMs);
+        mActivity.getSnackbarManager().showSnackbar(snackBar);
     }
 
     /** Called to show overlay. */
@@ -365,14 +389,6 @@ class AutofillAssistantUiDelegate {
 
     public void hideProgressBar() {
         mProgressBar.setVisibility(View.INVISIBLE);
-    }
-
-    /**
-     * Shuts down the Autofill Assistant. The UI disappears and any associated state goes away.
-     */
-    public void shutdown() {
-        mFullContainer.setVisibility(View.GONE);
-        mClient.onDismiss();
     }
 
     /**
