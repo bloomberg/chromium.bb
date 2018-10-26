@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 
 #include <stdint.h>
 
@@ -39,10 +39,18 @@ const bool kStackTypeArray = true;
 #define DEBUG_PUSH_CONTAINER(x) nesting_stack_.push_back(x)
 #define DEBUG_POP_CONTAINER() nesting_stack_.pop_back()
 #else
-#define DCHECK_CURRENT_CONTAINER_IS(x) do {} while (0)
-#define DCHECK_CONTAINER_STACK_DEPTH_EQ(x) do {} while (0)
-#define DEBUG_PUSH_CONTAINER(x) do {} while (0)
-#define DEBUG_POP_CONTAINER() do {} while (0)
+#define DCHECK_CURRENT_CONTAINER_IS(x) \
+  do {                                 \
+  } while (0)
+#define DCHECK_CONTAINER_STACK_DEPTH_EQ(x) \
+  do {                                     \
+  } while (0)
+#define DEBUG_PUSH_CONTAINER(x) \
+  do {                          \
+  } while (0)
+#define DEBUG_POP_CONTAINER() \
+  do {                        \
+  } while (0)
 #endif
 
 inline void WriteKeyNameAsRawPtr(Pickle& pickle, const char* ptr) {
@@ -71,8 +79,7 @@ std::string ReadKeyName(PickleIterator& pickle_iterator) {
 }
 }  // namespace
 
-TracedValue::TracedValue() : TracedValue(0) {
-}
+TracedValue::TracedValue() : TracedValue(0) {}
 
 TracedValue::TracedValue(size_t capacity) {
   DEBUG_PUSH_CONTAINER(kStackTypeDict);
@@ -122,8 +129,7 @@ void TracedValue::SetBoolean(const char* name, bool value) {
   WriteKeyNameAsRawPtr(pickle_, name);
 }
 
-void TracedValue::SetBooleanWithCopiedName(base::StringPiece name,
-                                           bool value) {
+void TracedValue::SetBooleanWithCopiedName(base::StringPiece name, bool value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
   pickle_.WriteBytes(&kTypeBool, 1);
   pickle_.WriteBool(value);
