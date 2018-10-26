@@ -27,9 +27,19 @@ source_set("common") {
   ]
   deps = [
     ":version",
-    "//chrome/installer/util:with_no_strings",
     "../gaiacp:common",
+    "//chrome/installer/util:with_no_strings",
   ]
+}
+
+# Builds a self extracting 7-zip binary using the 7-zip SFX sources but with
+# the credential provider's version resources.
+executable("gcp_sfx") {
+  deps = [
+    ":version",
+    "//third_party/lzma_sdk/Util/SfxSetup:7zS2_source",
+  ]
+  configs += [ "//build/config/win:windowed" ]
 }
 
 executable("gcp_setup") {
@@ -38,11 +48,9 @@ executable("gcp_setup") {
   ]
   deps = [
     ":common",
-    "//chrome/common:version_header",
     "../eventlog:gcp_eventlog_messages",
     "../gaiacp:common",
+    "//chrome/common:version_header",
   ]
-  configs += [
-    "//build/config/win:windowed",
-  ]
+  configs += [ "//build/config/win:windowed" ]
 }

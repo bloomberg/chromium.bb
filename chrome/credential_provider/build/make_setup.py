@@ -75,7 +75,7 @@ def main():
   gcp_7z_fn = os.path.join(args.root_build_path, 'gcp.7z')
 
   sz_fn = os.path.join(args.src_path, r'third_party\lzma_sdk\7zr.exe')
-  sfx_fn = os.path.join(args.root_build_path, '7zS2.exe')
+  sfx_fn = os.path.join(args.root_build_path, 'gcp_sfx.exe')
 
   # Build the command line for updating files in the GCP 7z archive.
   cmd = [
