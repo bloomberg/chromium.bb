@@ -101,10 +101,8 @@ class CONTENT_EXPORT Binary {
 
   static Binary fromBase64(const String& base64, bool* success);
   static Binary fromRefCounted(scoped_refptr<base::RefCountedMemory> memory);
-  static Binary fromVector(std::vector<uint8_t>&& data);
-  static Binary fromVector(const std::vector<uint8_t>& data);
-  static Binary fromString(std::string&& data);
-  static Binary fromString(const std::string& data);
+  static Binary fromVector(std::vector<uint8_t> data);
+  static Binary fromString(std::string data);
 
  private:
   explicit Binary(scoped_refptr<base::RefCountedMemory> bytes);

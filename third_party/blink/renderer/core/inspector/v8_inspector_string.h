@@ -97,8 +97,7 @@ class CORE_EXPORT Binary {
   String toBase64() const;
   static Binary fromBase64(const String& base64, bool* success);
   static Binary fromSharedBuffer(scoped_refptr<SharedBuffer> buffer);
-  static Binary fromVector(Vector<uint8_t>&& in);
-  static Binary fromVector(const Vector<uint8_t>& in);
+  static Binary fromVector(Vector<uint8_t> in);
 
   // Note: |data.buffer_policy| must be
   // ScriptCompiler::ScriptCompiler::CachedData::BufferOwned.

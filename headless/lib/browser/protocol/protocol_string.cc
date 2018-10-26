@@ -190,25 +190,13 @@ Binary Binary::fromRefCounted(scoped_refptr<base::RefCountedMemory> memory) {
 }
 
 // static
-Binary Binary::fromVector(std::vector<uint8_t>&& data) {
+Binary Binary::fromVector(std::vector<uint8_t> data) {
   return Binary(base::RefCountedBytes::TakeVector(&data));
 }
 
 // static
-Binary Binary::fromVector(const std::vector<uint8_t>& data) {
-  std::vector<uint8_t> copied_data(data);
-  return Binary(base::RefCountedBytes::TakeVector(&copied_data));
-}
-
-// static
-Binary Binary::fromString(std::string&& data) {
+Binary Binary::fromString(std::string data) {
   return Binary(base::RefCountedString::TakeString(&data));
-}
-
-// static
-Binary Binary::fromString(const std::string& data) {
-  std::string copied_data(data);
-  return Binary(base::RefCountedString::TakeString(&copied_data));
 }
 }  // namespace protocol
 }  // namespace headless
