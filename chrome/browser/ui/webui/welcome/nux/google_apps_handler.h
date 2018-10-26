@@ -39,8 +39,7 @@ class GoogleAppsHandler : public content::WebUIMessageHandler {
   void RegisterMessages() override;
 
   // Callbacks for JS APIs.
-  void HandleRejectGoogleApps(const base::ListValue* args);
-  void HandleAddGoogleApps(const base::ListValue* args);
+  void HandleCacheGoogleAppIcon(const base::ListValue* args);
   void HandleGetGoogleAppsList(const base::ListValue* args);
 
   // Adds webui sources.

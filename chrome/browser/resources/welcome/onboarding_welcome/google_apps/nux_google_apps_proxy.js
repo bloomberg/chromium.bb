@@ -6,10 +6,11 @@ cr.define('nux', function() {
   /** @interface */
   class NuxGoogleAppsProxy {
     /**
-     * Adds the selected apps to the bookmark bar.
-     * @param {!Array<boolean>} selectedApps
+     * Google app IDs are local to the list of Google apps, so their icon must
+     * be cached by the handler that provided the IDs.
+     * @param {number} appId
      */
-    addGoogleApps(selectedApps) {}
+    cacheBookmarkIcon(appId) {}
 
     /**
      * Returns a promise for an array of Google apps.
@@ -21,8 +22,8 @@ cr.define('nux', function() {
   /** @implements {nux.NuxGoogleAppsProxy} */
   class NuxGoogleAppsProxyImpl {
     /** @override */
-    addGoogleApps(selectedApps) {
-      chrome.send('addGoogleApps', selectedApps);
+    cacheBookmarkIcon(appId) {
+      chrome.send('cacheGoogleAppIcon', [appId]);
     }
 
     /** @override */

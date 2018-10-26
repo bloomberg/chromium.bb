@@ -28,14 +28,13 @@ Polymer({
 
   /** @private */
   onNoThanksClicked_: function() {
-    chrome.send('rejectGoogleApps');
+    // TODO(hcarmona): Add metrics.
     welcome.navigateToNextStep();
   },
 
   /** @private */
   onGetStartedClicked_: function() {
-    let selectedApps = this.$.appChooser.getSelectedAppList();
-    nux.NuxGoogleAppsProxyImpl.getInstance().addGoogleApps(selectedApps);
+    // TODO(hcarmona): Add metrics.
     welcome.navigateToNextStep();
   },
 });
