@@ -66,7 +66,7 @@ public class MediaViewerUtils {
         builder.setCloseButtonIcon(closeIcon);
         builder.setShowTitle(true);
 
-        if (allowExternalAppHandlers) {
+        if (allowExternalAppHandlers && !willExposeFileUri(contentUri)) {
             // Create a PendingIntent that can be used to view the file externally.
             // TODO(https://crbug.com/795968): Check if this is problematic in multi-window mode,
             //                                 where two different viewers could be visible at the
@@ -83,8 +83,7 @@ public class MediaViewerUtils {
         // Create a PendingIntent that shares the file with external apps.
         // If the URI is a file URI and the Android version is N or later, this will throw a
         // FileUriExposedException. In this case, we just don't add the share button.
-        if (!contentUri.getScheme().equals(ContentResolver.SCHEME_FILE)
-                || Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+        if (!willExposeFileUri(contentUri)) {
             PendingIntent pendingShareIntent = PendingIntent.getActivity(context, 0,
                     createShareIntent(contentUri, mimeType), PendingIntent.FLAG_CANCEL_CURRENT);
             builder.setActionButton(
@@ -255,5 +254,11 @@ public class MediaViewerUtils {
         if (pieces.length != 2) return false;
 
         return MIMETYPE_IMAGE.equals(pieces[0]);
+    }
+
+    private static boolean willExposeFileUri(Uri uri) {
+        // On Android N and later, an Exception is thrown if we try to expose a file:// URI.
+        return uri.getScheme().equals(ContentResolver.SCHEME_FILE)
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
     }
 }
