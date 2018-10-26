@@ -348,7 +348,7 @@ scoped_refptr<StaticBitmapImage> ScaleImage(
           sk_image.get(),
           SkRect::MakeWH(parsed_options.resize_width,
                          parsed_options.resize_height),
-          &paint, SkCanvas::SrcRectConstraint::kStrict_SrcRectConstraint);
+          &paint);
       resized_sk_image = surface->makeImageSnapshot();
     }
   }
