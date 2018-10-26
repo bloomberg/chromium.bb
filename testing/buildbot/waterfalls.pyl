@@ -1272,7 +1272,7 @@
       },
       'fuchsia-fyi-arm64-rel': {
         'additional_compile_targets': [
-          'gn_all',
+          'all',
         ],
         'test_suites': {
           'gtest_tests': 'fuchsia_gtests',
@@ -1280,7 +1280,7 @@
       },
       'fuchsia-fyi-x64-dbg': {
         'additional_compile_targets': [
-          'gn_all',
+          'all',
         ],
         'swarming': {
           'dimension_sets': [
@@ -1295,7 +1295,7 @@
       },
       'fuchsia-fyi-x64-rel': {
         'additional_compile_targets': [
-          'gn_all',
+          'all',
         ],
         'swarming': {
           'dimension_sets': [
@@ -2554,7 +2554,7 @@
       },
       'Fuchsia ARM64': {
         'additional_compile_targets': [
-          'gn_all',
+          'all',
         ],
       },
       'Fuchsia ARM64 Cast Audio': {
@@ -2565,7 +2565,7 @@
       },
       'Fuchsia x64': {
         'additional_compile_targets': [
-          'gn_all',
+          'all',
         ],
         'swarming': {
           'dimension_sets': [

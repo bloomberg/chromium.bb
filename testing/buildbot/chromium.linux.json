@@ -635,7 +635,7 @@
   },
   "Fuchsia ARM64": {
     "additional_compile_targets": [
-      "gn_all"
+      "all"
     ]
   },
   "Fuchsia ARM64 Cast Audio": {
@@ -646,7 +646,7 @@
   },
   "Fuchsia x64": {
     "additional_compile_targets": [
-      "gn_all"
+      "all"
     ],
     "gtest_tests": [
       {
