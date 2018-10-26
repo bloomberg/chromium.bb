@@ -63,8 +63,8 @@ dependencies.
 $ fetch chromium
 ```
 
-If you don't want the full repo history, you can save a lot of time by
-adding the `--no-history` flag to `fetch`.
+If you don't need the full repo history, you can save time by using
+`fetch --no-history chromium`.
 
 Expect the command to take 30 minutes on even a fast connection, and many
 hours on slower ones.
