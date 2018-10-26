@@ -586,6 +586,15 @@ update_prop(struct ivi_layout_view *ivi_view)
 	weston_view_schedule_repaint(ivi_view->view);
 }
 
+static bool
+ivi_view_is_mapped(struct ivi_layout_view *ivi_view)
+{
+	return (!wl_list_empty(&ivi_view->order_link) &&
+		ivi_view->on_layer->on_screen &&
+		ivi_view->on_layer->prop.visibility &&
+		ivi_view->ivisurf->prop.visibility);
+}
+
 static void
 commit_changes(struct ivi_layout *layout)
 {
@@ -815,6 +824,14 @@ build_view_list(struct ivi_layout *layout)
 	struct ivi_layout_screen  *iviscrn;
 	struct ivi_layout_layer   *ivilayer;
 	struct ivi_layout_view   *ivi_view;
+
+	/* If ivi_view is not part of the scenegrapgh, we have to unmap
+	 * weston_views
+	 */
+	wl_list_for_each(ivi_view, &layout->view_list, link) {
+		if (!ivi_view_is_mapped(ivi_view))
+			weston_view_unmap(ivi_view->view);
+	}
 
 	/* Clear view list of layout ivi_layer */
 	wl_list_init(&layout->layout_layer.view_list.link);
