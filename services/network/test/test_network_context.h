@@ -81,9 +81,6 @@ class TestNetworkContext : public mojom::NetworkContext {
       const std::vector<std::string>& excluded_hosts,
       const std::vector<std::string>& excluded_spkis,
       const std::vector<std::string>& excluded_legacy_spkis) override {}
-#if defined(OS_CHROMEOS)
-  void UpdateTrustAnchors(const net::CertificateList& trust_anchors) override {}
-#endif
   void AddExpectCT(const std::string& domain,
                    base::Time expiry,
                    bool enforce,
@@ -159,11 +156,6 @@ class TestNetworkContext : public mojom::NetworkContext {
   void SetFailingHttpTransactionForTesting(
       int32_t rv,
       SetFailingHttpTransactionForTestingCallback callback) override {}
-  void VerifyCertificateForTesting(
-      const scoped_refptr<net::X509Certificate>& certificate,
-      const std::string& hostname,
-      const std::string& ocsp_response,
-      VerifyCertificateForTestingCallback callback) override {}
   void PreconnectSockets(uint32_t num_streams,
                          const GURL& url,
                          int32_t load_flags,

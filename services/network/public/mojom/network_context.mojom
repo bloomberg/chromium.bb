@@ -224,19 +224,6 @@ struct NetworkContextParams {
   // unrecognized.
   array<CTLogInfo> ct_logs;
 
-  // Specifies the path to the directory where NSS will store its database.
-  [EnableIf=is_chromeos]
-  mojo_base.mojom.FilePath? nss_path;
-
-  // This is used in combination with nss_path, to ensure that the NSS database
-  // isn't opened multiple times for NetworkContexts in the same profie.
-  [EnableIf=is_chromeos]
-  string username_hash;
-
-  // Initial list of additional trust anchors.
-  [EnableIf=is_chromeos]
-  array<X509Certificate> initial_trust_anchors;
-
   // Parameters for constructing the cookie manager.
   CookieManagerParams? cookie_manager_params;
 
@@ -486,10 +473,6 @@ interface NetworkContext {
               array<string> excluded_spkis,
               array<string> excluded_legacy_spkis);
 
-  // Updates the additional trust anchors for certificate verification.
-  [EnableIf=is_chromeos]
-  UpdateTrustAnchors(array<X509Certificate> trust_anchors);
-
   // Adds explicitly-specified data as if it was processed from an Expect-CT
   // header.
   AddExpectCT(string host, mojo_base.mojom.Time expiry,
@@ -706,10 +689,4 @@ interface NetworkContext {
   [Sync]
   // Will force the transaction to fail with the given error code.
   SetFailingHttpTransactionForTesting(int32 rv) => ();
-
-  [Sync]
-  // Verifies the given certificate using the context's CertVerifier.
-  VerifyCertificateForTesting(X509Certificate certificate,
-                              string hostname,
-                              string ocsp_response) => (int32 error_code);
 };

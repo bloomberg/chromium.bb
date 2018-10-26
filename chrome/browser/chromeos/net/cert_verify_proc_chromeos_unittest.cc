@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/cert_verify_proc_chromeos.h"
+#include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
 
 #include <stddef.h>
 
@@ -18,7 +18,7 @@
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace network {
+namespace chromeos {
 
 namespace {
 
@@ -157,8 +157,8 @@ TEST_F(CertVerifyProcChromeOSTest, TestChainVerify) {
 
   // Import and trust the D root for user 1.
   net::NSSCertDatabase::ImportCertFailureList failed;
-  EXPECT_TRUE(db_1_->ImportCACerts(root_1_, net::NSSCertDatabase::TRUSTED_SSL,
-                                   &failed));
+  EXPECT_TRUE(db_1_->ImportCACerts(
+      root_1_, net::NSSCertDatabase::TRUSTED_SSL, &failed));
   EXPECT_EQ(0U, failed.size());
 
   // Imported CA certs are not trusted by default verifier.
@@ -173,8 +173,8 @@ TEST_F(CertVerifyProcChromeOSTest, TestChainVerify) {
 
   // Import and trust the E root for user 2.
   failed.clear();
-  EXPECT_TRUE(db_2_->ImportCACerts(root_2_, net::NSSCertDatabase::TRUSTED_SSL,
-                                   &failed));
+  EXPECT_TRUE(db_2_->ImportCACerts(
+      root_2_, net::NSSCertDatabase::TRUSTED_SSL, &failed));
   EXPECT_EQ(0U, failed.size());
 
   // Imported CA certs are not trusted by default verifier.
@@ -323,8 +323,8 @@ TEST_P(CertVerifyProcChromeOSOrderingTest, DISABLED_TrustThenVerify) {
     expected_user1_result = net::OK;
     // Import and trust the D root for user 1.
     net::NSSCertDatabase::ImportCertFailureList failed;
-    EXPECT_TRUE(db_1_->ImportCACerts(root_1_, net::NSSCertDatabase::TRUSTED_SSL,
-                                     &failed));
+    EXPECT_TRUE(db_1_->ImportCACerts(
+        root_1_, net::NSSCertDatabase::TRUSTED_SSL, &failed));
     EXPECT_EQ(0U, failed.size());
     for (size_t i = 0; i < failed.size(); ++i) {
       LOG(ERROR) << "import fail " << failed[i].net_error << " for "
@@ -336,8 +336,8 @@ TEST_P(CertVerifyProcChromeOSOrderingTest, DISABLED_TrustThenVerify) {
     expected_user2_result = net::OK;
     // Import and trust the E root for user 2.
     net::NSSCertDatabase::ImportCertFailureList failed;
-    EXPECT_TRUE(db_2_->ImportCACerts(root_2_, net::NSSCertDatabase::TRUSTED_SSL,
-                                     &failed));
+    EXPECT_TRUE(db_2_->ImportCACerts(
+        root_2_, net::NSSCertDatabase::TRUSTED_SSL, &failed));
     EXPECT_EQ(0U, failed.size());
     for (size_t i = 0; i < failed.size(); ++i) {
       LOG(ERROR) << "import fail " << failed[i].net_error << " for "
@@ -349,7 +349,8 @@ TEST_P(CertVerifyProcChromeOSOrderingTest, DISABLED_TrustThenVerify) {
   for (int i = 0; i < 2; ++i) {
     SCOPED_TRACE(i);
     for (std::string::const_iterator j = test_order.begin();
-         j != test_order.end(); ++j) {
+         j != test_order.end();
+         ++j) {
       switch (*j) {
         case 'd':
           // Default verifier should always fail.
@@ -384,4 +385,4 @@ INSTANTIATE_TEST_CASE_P(
         ::testing::Range(0, 1 << 2),
         ::testing::Values("d12", "d21", "1d2", "12d", "2d1", "21d")));
 
-}  // namespace network
+}  // namespace chromeos

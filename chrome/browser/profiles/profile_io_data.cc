@@ -130,10 +130,12 @@
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/chromeos/fileapi/external_file_protocol_handler.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
 #include "chrome/browser/chromeos/net/client_cert_filter_chromeos.h"
 #include "chrome/browser/chromeos/net/client_cert_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
+#include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/net/nss_context.h"
@@ -146,8 +148,6 @@
 #include "components/user_manager/user_manager.h"
 #include "crypto/nss_util.h"
 #include "crypto/nss_util_internal.h"
-#include "services/network/cert_verifier_with_trust_anchors.h"
-#include "services/network/cert_verify_proc_chromeos.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(USE_NSS_CERTS)
@@ -1031,7 +1031,7 @@ void ProfileIOData::Init(
       // The private slot won't be ready by this point. It shouldn't be
       // necessary for cert trust purposes anyway.
       scoped_refptr<net::CertVerifyProc> verify_proc(
-          new network::CertVerifyProcChromeOS(std::move(public_slot)));
+          new chromeos::CertVerifyProcChromeOS(std::move(public_slot)));
       if (profile_params_->policy_cert_verifier) {
         profile_params_->policy_cert_verifier->InitializeOnIOThread(
             verify_proc);

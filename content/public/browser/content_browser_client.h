@@ -632,11 +632,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual net::CookieStore* OverrideCookieStoreForURL(const GURL& url,
                                                       ResourceContext* context);
 
-#if defined(OS_CHROMEOS)
-  // Notification that a trust anchor was used by the given user.
-  virtual void OnUsedTrustAnchor(const std::string& username_hash) {}
-#endif
-
   // Allows the embedder to override the LocationProvider implementation.
   // Return nullptr to indicate the default one for the platform should be
   // created.
