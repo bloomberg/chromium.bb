@@ -118,6 +118,9 @@ message SharePathRequest {
     DRIVEFS_TEAM_DRIVES = 2;
     // DriveFS directory /media/fuse/<drivefs_mount_name>/Computers.
     DRIVEFS_COMPUTERS = 3;
+    // Note: DriveFs .Trash directory must not ever be shared since it would
+    // allow linux apps to make permanent deletes to Drive.
+
     // Removable media mount directory /media/removable.
     REMOVABLE = 4;
   }
