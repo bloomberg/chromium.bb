@@ -374,8 +374,7 @@ DirectoryItem.prototype.searchAndSelectByEntry = function(entry) {
  * @param {boolean=} opt_unused Unused.
  * @override
  */
-DirectoryItem.prototype.scrollIntoViewIfNeeded = function(opt_unused) {
-};
+DirectoryItem.prototype.scrollIntoViewIfNeeded = function(opt_unused) {};
 
 /**
  * Removes the child node, but without selecting the parent item, to avoid
@@ -414,16 +413,16 @@ DirectoryItem.prototype.onExpand_ = function(e) {
   }
   this.updateSubDirectories(
       true /* recursive */,
-      function() {
+      () => {
         if (!this.insideDrive)
           return;
         this.parentTree_.metadataModel_.get(
             this.entries_,
             constants.LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES);
-      }.bind(this),
-      function() {
+      },
+      () => {
         this.expanded = false;
-      }.bind(this));
+      });
 
   e.stopPropagation();
 };
@@ -433,7 +432,7 @@ DirectoryItem.prototype.onExpand_ = function(e) {
  * @param {DirectoryItem} parentItem The parent item to start searching from.
  * @return {!Array<Entry>}
  */
-let getVisibleChildEntries = function(parentItem) {
+let getVisibleChildEntries = (parentItem) => {
   if (parentItem.expanded == false) {
     return [parentItem.entry];
   }
@@ -513,34 +512,34 @@ DirectoryItem.prototype.updateSubDirectories = function(
     return;
   }
 
-  var sortEntries = function(fileFilter, entries) {
+  const sortEntries = (fileFilter, entries) => {
     entries.sort(util.compareName);
     return entries.filter(fileFilter.filter.bind(fileFilter));
   };
 
-  var onSuccess = function(entries) {
+  const onSuccess = (entries) => {
     this.entries_ = entries;
     this.updateSubElementsFromList(recursive);
     opt_successCallback && opt_successCallback();
-  }.bind(this);
+  };
 
-  var reader = this.entry.createReader();
-  var entries = [];
-  var readEntry = function() {
-    reader.readEntries(function(results) {
+  const reader = this.entry.createReader();
+  const entries = [];
+  const readEntry = () => {
+    reader.readEntries((results) => {
       if (!results.length) {
         onSuccess(sortEntries(this.fileFilter_, entries));
         return;
       }
 
-      for (var i = 0; i < results.length; i++) {
-        var entry = results[i];
+      for (let i = 0; i < results.length; i++) {
+        const entry = results[i];
         if (entry.isDirectory)
           entries.push(entry);
       }
       readEntry();
-    }.bind(this));
-  }.bind(this);
+    });
+  };
   readEntry();
 };
 
@@ -573,8 +572,7 @@ DirectoryItem.prototype.updateItemByEntry = function(changedDirectoryEntry) {
 /**
  * Update the icon based on whether the folder is shared on Drive.
  */
-DirectoryItem.prototype.updateSharedStatusIcon = function() {
-};
+DirectoryItem.prototype.updateSharedStatusIcon = function() {};
 
 /**
  * Select the item corresponding to the given {@code entry}.
@@ -833,7 +831,7 @@ function VolumeItem(modelItem, tree) {
     item.setContextMenu_(tree.contextMenuForRootItems);
 
   // Populate children of this volume using resolved display root.
-  item.volumeInfo_.resolveDisplayRoot(function(displayRoot) {
+  item.volumeInfo_.resolveDisplayRoot((displayRoot) => {
     item.updateSubDirectories(false /* recursive */);
   });
 
@@ -895,7 +893,7 @@ VolumeItem.prototype.updateSubDirectories = function(
  */
 VolumeItem.prototype.activate = function() {
   var directoryModel = this.parentTree_.directoryModel;
-  var onEntryResolved = function(entry) {
+  var onEntryResolved = (entry) => {
     // Changes directory to the model item's root directory if needed.
     if (!util.isSameEntry(directoryModel.getCurrentDirEntry(), entry)) {
       metrics.recordUserAction('FolderShortcut.Navigate');
@@ -904,14 +902,14 @@ VolumeItem.prototype.activate = function() {
     // In case of failure in resolveDisplayRoot() in the volume's constructor,
     // update the volume's children here.
     this.updateSubDirectories(false);
-  }.bind(this);
+  };
 
   this.volumeInfo_.resolveDisplayRoot(
       onEntryResolved,
-      function() {
+      () => {
         // Error, the display root is not available. It may happen on Drive.
         this.parentTree_.dataModel.onItemNotFoundError(this.modelItem);
-      }.bind(this));
+      });
 };
 
 /**
@@ -949,23 +947,23 @@ VolumeItem.prototype.setupIcon_ = function(icon, volumeInfo) {
 VolumeItem.prototype.setupEjectButton_ = function(rowElement) {
   var ejectButton = cr.doc.createElement('button');
   // Block other mouse handlers.
-  ejectButton.addEventListener('mouseup', function(event) {
+  ejectButton.addEventListener('mouseup', (event) => {
     event.stopPropagation();
   });
-  ejectButton.addEventListener('mousedown', function(event) {
+  ejectButton.addEventListener('mousedown', (event) => {
     event.stopPropagation();
   });
   ejectButton.className = 'root-eject';
   ejectButton.setAttribute('aria-label', str('UNMOUNT_DEVICE_BUTTON_LABEL'));
   ejectButton.setAttribute('tabindex', '0');
-  ejectButton.addEventListener('click', function(event) {
+  ejectButton.addEventListener('click', (event) => {
     event.stopPropagation();
     var unmountCommand = cr.doc.querySelector('command#unmount');
     // Let's make sure 'canExecute' state of the command is properly set for
     // the root before executing it.
     unmountCommand.canExecuteChange(this);
     unmountCommand.execute(this);
-  }.bind(this));
+  });
   rowElement.appendChild(ejectButton);
 
   // Add paper-ripple effect on the eject button.
@@ -1038,9 +1036,9 @@ DriveVolumeItem.prototype.handleClick = function(e) {
   if (!e.target.classList.contains('expand-icon')) {
     // If the Drive volume is clicked, select one of the children instead of
     // this item itself.
-    this.volumeInfo_.resolveDisplayRoot(function(displayRoot) {
+    this.volumeInfo_.resolveDisplayRoot((displayRoot) => {
       this.searchAndSelectByEntry(displayRoot);
-    }.bind(this));
+    });
   }
 
   DirectoryItemTreeBaseMethods.recordUMASelectedEntry.call(
@@ -1061,7 +1059,7 @@ DriveVolumeItem.prototype.handleClick = function(e) {
  * @private
  */
 DriveVolumeItem.prototype.createTeamDrivesGrandRoot_ = function() {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     const teamDriveGrandRoot = this.volumeInfo_.teamDriveDisplayRoot;
     if (!teamDriveGrandRoot) {
       // Team Drive is disabled.
@@ -1079,7 +1077,7 @@ DriveVolumeItem.prototype.createTeamDrivesGrandRoot_ = function() {
     }
 
     const reader = teamDriveGrandRoot.createReader();
-    reader.readEntries(results => {
+    reader.readEntries((results) => {
       metrics.recordSmallCount('TeamDrivesCount', results.length);
       // Only create grand root if there is at least 1 child/result.
       if (results.length) {
@@ -1127,7 +1125,7 @@ DriveVolumeItem.prototype.createTeamDrivesGrandRoot_ = function() {
  * @private
  */
 DriveVolumeItem.prototype.createComputersGrandRoot_ = function() {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     const computerGrandRoot = this.volumeInfo_.computersDisplayRoot;
     if (!computerGrandRoot) {
       // Computer is disabled.
@@ -1210,7 +1208,7 @@ DriveVolumeItem.prototype.updateSubDirectories = function(recursive) {
     for (var key in this.volumeInfo_.fakeEntries)
       fakeEntries.push(this.volumeInfo_.fakeEntries[key]);
     // This list is sorted by URL on purpose.
-    fakeEntries.sort(function(a, b) {
+    fakeEntries.sort((a, b) => {
       if (a.toURL() === b.toURL())
         return 0;
       return b.toURL() > a.toURL() ? 1 : -1;
@@ -1251,7 +1249,7 @@ DriveVolumeItem.prototype.updateItemByEntry = function(changedDirectoryEntry) {
   // If Team Drive grand root has been removed and we receive an update for an
   // team drive, we need to create the Team Drive grand root.
   if (isTeamDriveChild) {
-    this.createTeamDrivesGrandRoot_().then(teamDriveGrandRootItem => {
+    this.createTeamDrivesGrandRoot_().then((teamDriveGrandRootItem) => {
       if (teamDriveGrandRootItem)
         teamDriveGrandRootItem.updateItemByEntry(changedDirectoryEntry);
     });
@@ -1262,7 +1260,7 @@ DriveVolumeItem.prototype.updateItemByEntry = function(changedDirectoryEntry) {
   // If Computers grand root has been removed and we receive an update for an
   // computer, we need to create the Computers grand root.
   if (isComputersChild) {
-    this.createComputersGrandRoot_().then(computersGrandRootItem => {
+    this.createComputersGrandRoot_().then((computersGrandRootItem) => {
       if (computersGrandRootItem)
         computersGrandRootItem.updateItemByEntry(changedDirectoryEntry);
     });
@@ -1420,25 +1418,25 @@ ShortcutItem.prototype.setContextMenu_ = function(menu) {
  */
 ShortcutItem.prototype.activate = function() {
   var directoryModel = this.parentTree_.directoryModel;
-  var onEntryResolved = function(entry) {
+  var onEntryResolved = (entry) => {
     // Changes directory to the model item's root directory if needed.
     if (!util.isSameEntry(directoryModel.getCurrentDirEntry(), entry)) {
       metrics.recordUserAction('FolderShortcut.Navigate');
       directoryModel.changeDirectoryEntry(entry);
     }
-  }.bind(this);
+  };
 
   // For shortcuts we already have an Entry, but it has to be resolved again
   // in case, it points to a non-existing directory.
   window.webkitResolveLocalFileSystemURL(
       this.entry.toURL(),
       onEntryResolved,
-      function() {
+      () => {
         // Error, the entry can't be re-resolved. It may happen for shortcuts
         // which targets got removed after resolving the Entry during
         // initialization.
         this.parentTree_.dataModel.onItemNotFoundError(this.modelItem);
-      }.bind(this));
+      });
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1882,10 +1880,10 @@ DirectoryTree.prototype.onEntriesChanged_ = function(event) {
       Promise.all(
           directories.map((directory) =>
             new Promise(directory.getParent.bind(directory))))
-          .then(function(parentDirectories) {
+          .then((parentDirectories) => {
         parentDirectories.forEach((parentDirectory) =>
             this.updateTreeByEntry_(parentDirectory));
-      }.bind(this));
+      });
       break;
     case util.EntryChangedKind.DELETED:
       directories.forEach((directory) => this.updateTreeByEntry_(directory));
@@ -1912,12 +1910,12 @@ DirectoryTree.prototype.selectByEntry = function(entry) {
   var volumeInfo = this.volumeManager_.getVolumeInfo(entry);
   if (!volumeInfo)
     return;
-  volumeInfo.resolveDisplayRoot(function() {
+  volumeInfo.resolveDisplayRoot(() => {
     if (this.sequence_ !== currentSequence)
       return;
     if (!this.searchAndSelectByEntry(entry))
       this.selectedItem = null;
-  }.bind(this));
+  });
 };
 
 /**
@@ -1989,7 +1987,7 @@ DirectoryTree.prototype.onDirectoryContentChanged_ = function(event) {
  */
 DirectoryTree.prototype.updateTreeByEntry_ = function(entry) {
   entry.getDirectory(entry.fullPath, {create: false},
-      function() {
+      () => {
         // If entry exists.
         // e.g. /a/b is deleted while watching /a.
         for (var i = 0; i < this.items.length; i++) {
@@ -1997,15 +1995,15 @@ DirectoryTree.prototype.updateTreeByEntry_ = function(entry) {
               this.items[i] instanceof EntryListItem)
             this.items[i].updateItemByEntry(entry);
         }
-      }.bind(this),
-      function() {
+      },
+      () => {
         // If entry does not exist, try to get parent and update the subtree by
         // it.
         // e.g. /a/b is deleted while watching /a/b. Try to update /a in this
         //     case.
-        entry.getParent(function(parentEntry) {
+        entry.getParent((parentEntry) => {
           this.updateTreeByEntry_(parentEntry);
-        }.bind(this), function(error) {
+        }, (error) => {
           // If it fails to get parent, update the subtree by volume.
           // e.g. /a/b is deleted while watching /a/b/c. getParent of /a/b/c
           //     fails in this case. We falls back to volume update.
@@ -2022,8 +2020,8 @@ DirectoryTree.prototype.updateTreeByEntry_ = function(entry) {
               this.items[i].updateSubDirectories(true /* recursive */);
             }
           }
-        }.bind(this));
-      }.bind(this));
+        });
+      });
 };
 
 /**
@@ -2040,7 +2038,7 @@ DirectoryTree.prototype.onCurrentDirectoryChanged_ = function(event) {
  * @private
  */
 DirectoryTree.prototype.onListContentChanged_ = function() {
-  this.updateSubDirectories(false, function() {
+  this.updateSubDirectories(false, () => {
     // If no item is selected now, try to select the item corresponding to
     // current directory because the current directory might have been populated
     // in this tree in previous updateSubDirectories().
@@ -2049,7 +2047,7 @@ DirectoryTree.prototype.onListContentChanged_ = function() {
       if (currentDir)
         this.selectByEntry(currentDir);
     }
-  }.bind(this));
+  });
 };
 
 /**
