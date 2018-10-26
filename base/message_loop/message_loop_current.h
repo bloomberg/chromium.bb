@@ -12,6 +12,7 @@
 #include "base/message_loop/message_pump_for_ui.h"
 #include "base/pending_task.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/task_observer.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -98,21 +99,9 @@ class BASE_EXPORT MessageLoopCurrent {
   // instance should replace its TaskRunner.
   void SetTaskRunner(scoped_refptr<SingleThreadTaskRunner> task_runner);
 
-  // A TaskObserver is an object that receives task notifications from the
-  // MessageLoop.
-  //
-  // NOTE: A TaskObserver implementation should be extremely fast!
-  class BASE_EXPORT TaskObserver {
-   public:
-    // This method is called before processing a task.
-    virtual void WillProcessTask(const PendingTask& pending_task) = 0;
-
-    // This method is called after processing a task.
-    virtual void DidProcessTask(const PendingTask& pending_task) = 0;
-
-   protected:
-    virtual ~TaskObserver() = default;
-  };
+  // This alias is deprecated. Use base::TaskObserver instead.
+  // TODO(yutak): Replace all the use sites with base::TaskObserver.
+  using TaskObserver = base::TaskObserver;
 
   // Forwards to MessageLoop::(Add|Remove)TaskObserver.
   // DEPRECATED(https://crbug.com/825327): only owners of the MessageLoop

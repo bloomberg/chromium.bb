@@ -175,6 +175,9 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
 
   // TODO(https://crbug.com/825327): Remove users of TaskObservers through
   // MessageLoop::current() and migrate the type back here.
+  //
+  // This alias is deprecated. Use base::TaskObserver instead.
+  // TODO(yutak): Replace all the use sites with base::TaskObserver.
   using TaskObserver = MessageLoopCurrent::TaskObserver;
 
   // These functions can only be called on the same thread that |this| is
