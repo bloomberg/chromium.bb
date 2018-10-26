@@ -57,7 +57,7 @@
 
 namespace cbor {
 
-class CBOR_EXPORT CBORReader {
+class CBOR_EXPORT Reader {
  public:
   enum class DecoderError {
     CBOR_NO_ERROR = 0,
@@ -79,9 +79,9 @@ class CBOR_EXPORT CBORReader {
   // CBOR nested depth sufficient for most use cases.
   static const int kCBORMaxDepth = 16;
 
-  ~CBORReader();
+  ~Reader();
 
-  // Reads and parses |input_data| into a CBORValue. Returns an empty Optional
+  // Reads and parses |input_data| into a Value. Returns an empty Optional
   // if the input violates any one of the syntax requirements (including unknown
   // additional info and incomplete CBOR data).
   //
@@ -93,29 +93,29 @@ class CBOR_EXPORT CBORReader {
   //
   // Returns an empty Optional if not all the data was consumed, and sets
   // |error_code_out| to EXTRANEOUS_DATA in this case.
-  static base::Optional<CBORValue> Read(base::span<const uint8_t> input_data,
-                                        DecoderError* error_code_out = nullptr,
-                                        int max_nesting_level = kCBORMaxDepth);
+  static base::Optional<Value> Read(base::span<const uint8_t> input_data,
+                                    DecoderError* error_code_out = nullptr,
+                                    int max_nesting_level = kCBORMaxDepth);
 
   // Never fails with EXTRANEOUS_DATA, but informs the caller of how many bytes
   // were consumed through |num_bytes_consumed|.
-  static base::Optional<CBORValue> Read(base::span<const uint8_t> input_data,
-                                        size_t* num_bytes_consumed,
-                                        DecoderError* error_code_out = nullptr,
-                                        int max_nesting_level = kCBORMaxDepth);
+  static base::Optional<Value> Read(base::span<const uint8_t> input_data,
+                                    size_t* num_bytes_consumed,
+                                    DecoderError* error_code_out = nullptr,
+                                    int max_nesting_level = kCBORMaxDepth);
 
   // Translates errors to human-readable error messages.
   static const char* ErrorCodeToString(DecoderError error_code);
 
  private:
-  explicit CBORReader(base::span<const uint8_t> data);
+  explicit Reader(base::span<const uint8_t> data);
 
   // Encapsulates information extracted from the header of a CBOR data item,
   // which consists of the initial byte, and a variable-length-encoded integer
   // (if any).
   struct DataItemHeader {
     // The major type decoded from the initial byte.
-    CBORValue::Type type;
+    Value::Type type;
 
     // The raw 5-bit additional information from the initial byte.
     uint8_t additional_info;
@@ -126,24 +126,24 @@ class CBOR_EXPORT CBORReader {
   };
 
   base::Optional<DataItemHeader> DecodeDataItemHeader();
-  base::Optional<CBORValue> DecodeCompleteDataItem(int max_nesting_level);
-  base::Optional<CBORValue> DecodeValueToNegative(uint64_t value);
-  base::Optional<CBORValue> DecodeValueToUnsigned(uint64_t value);
-  base::Optional<CBORValue> DecodeToSimpleValue(const DataItemHeader& header);
+  base::Optional<Value> DecodeCompleteDataItem(int max_nesting_level);
+  base::Optional<Value> DecodeValueToNegative(uint64_t value);
+  base::Optional<Value> DecodeValueToUnsigned(uint64_t value);
+  base::Optional<Value> DecodeToSimpleValue(const DataItemHeader& header);
   base::Optional<uint64_t> ReadVariadicLengthInteger(uint8_t additional_info);
-  base::Optional<CBORValue> ReadByteStringContent(const DataItemHeader& header);
-  base::Optional<CBORValue> ReadStringContent(const DataItemHeader& header);
-  base::Optional<CBORValue> ReadArrayContent(const DataItemHeader& header,
-                                             int max_nesting_level);
-  base::Optional<CBORValue> ReadMapContent(const DataItemHeader& header,
-                                           int max_nesting_level);
+  base::Optional<Value> ReadByteStringContent(const DataItemHeader& header);
+  base::Optional<Value> ReadStringContent(const DataItemHeader& header);
+  base::Optional<Value> ReadArrayContent(const DataItemHeader& header,
+                                         int max_nesting_level);
+  base::Optional<Value> ReadMapContent(const DataItemHeader& header,
+                                       int max_nesting_level);
   base::Optional<uint8_t> ReadByte();
   base::Optional<base::span<const uint8_t>> ReadBytes(uint64_t num_bytes);
   // TODO(crbug/879237): This function's only caller has to make a copy of a
   // `span<uint8_t>` to satisfy this function's interface. Maybe we can make
   // this function take a `const span<const uint8_t>` and avoid copying?
   bool HasValidUTF8Format(const std::string& string_data);
-  bool IsKeyInOrder(const CBORValue& new_key, CBORValue::MapValue* map);
+  bool IsKeyInOrder(const Value& new_key, Value::MapValue* map);
   bool IsEncodingMinimal(uint8_t additional_bytes, uint64_t uint_data);
 
   DecoderError GetErrorCode() { return error_code_; }
@@ -153,7 +153,7 @@ class CBOR_EXPORT CBORReader {
   base::span<const uint8_t> rest_;
   DecoderError error_code_;
 
-  DISALLOW_COPY_AND_ASSIGN(CBORReader);
+  DISALLOW_COPY_AND_ASSIGN(Reader);
 };
 
 }  // namespace cbor

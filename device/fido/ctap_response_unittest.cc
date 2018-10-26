@@ -318,43 +318,43 @@ TEST(CTAPResponseTest, TestReadMakeCredentialResponse) {
       FidoTransportProtocol::kUsbHumanInterfaceDevice,
       test_data::kTestMakeCredentialResponse);
   ASSERT_TRUE(make_credential_response);
-  auto cbor_attestation_object = cbor::CBORReader::Read(
+  auto cbor_attestation_object = cbor::Reader::Read(
       make_credential_response->GetCBOREncodedAttestationObject());
   ASSERT_TRUE(cbor_attestation_object);
   ASSERT_TRUE(cbor_attestation_object->is_map());
 
   const auto& attestation_object_map = cbor_attestation_object->GetMap();
-  auto it = attestation_object_map.find(cbor::CBORValue(kFormatKey));
+  auto it = attestation_object_map.find(cbor::Value(kFormatKey));
   ASSERT_TRUE(it != attestation_object_map.end());
   ASSERT_TRUE(it->second.is_string());
   EXPECT_EQ(it->second.GetString(), "packed");
 
-  it = attestation_object_map.find(cbor::CBORValue(kAuthDataKey));
+  it = attestation_object_map.find(cbor::Value(kAuthDataKey));
   ASSERT_TRUE(it != attestation_object_map.end());
   ASSERT_TRUE(it->second.is_bytestring());
   EXPECT_THAT(
       it->second.GetBytestring(),
       ::testing::ElementsAreArray(test_data::kCtap2MakeCredentialAuthData));
 
-  it = attestation_object_map.find(cbor::CBORValue(kAttestationStatementKey));
+  it = attestation_object_map.find(cbor::Value(kAttestationStatementKey));
   ASSERT_TRUE(it != attestation_object_map.end());
   ASSERT_TRUE(it->second.is_map());
 
   const auto& attestation_statement_map = it->second.GetMap();
-  auto attStmt_it = attestation_statement_map.find(cbor::CBORValue("alg"));
+  auto attStmt_it = attestation_statement_map.find(cbor::Value("alg"));
 
   ASSERT_TRUE(attStmt_it != attestation_statement_map.end());
   ASSERT_TRUE(attStmt_it->second.is_integer());
   EXPECT_EQ(attStmt_it->second.GetInteger(), -7);
 
-  attStmt_it = attestation_statement_map.find(cbor::CBORValue("sig"));
+  attStmt_it = attestation_statement_map.find(cbor::Value("sig"));
   ASSERT_TRUE(attStmt_it != attestation_statement_map.end());
   ASSERT_TRUE(attStmt_it->second.is_bytestring());
   EXPECT_THAT(
       attStmt_it->second.GetBytestring(),
       ::testing::ElementsAreArray(test_data::kCtap2MakeCredentialSignature));
 
-  attStmt_it = attestation_statement_map.find(cbor::CBORValue("x5c"));
+  attStmt_it = attestation_statement_map.find(cbor::Value("x5c"));
   ASSERT_TRUE(attStmt_it != attestation_statement_map.end());
   const auto& certificate = attStmt_it->second;
   ASSERT_TRUE(certificate.is_array());
@@ -425,8 +425,8 @@ TEST(CTAPResponseTest, TestParseU2fAttestationStatementCBOR) {
       FidoAttestationStatement::CreateFromU2fRegisterResponse(
           test_data::kTestU2fRegisterResponse);
   ASSERT_TRUE(fido_attestation_statement);
-  auto cbor = cbor::CBORWriter::Write(
-      cbor::CBORValue(fido_attestation_statement->GetAsCBORMap()));
+  auto cbor = cbor::Writer::Write(
+      cbor::Value(fido_attestation_statement->GetAsCBORMap()));
   ASSERT_TRUE(cbor);
   EXPECT_THAT(*cbor, ::testing::ElementsAreArray(
                          test_data::kU2fAttestationStatementCBOR));
@@ -642,11 +642,11 @@ TEST(CTAPResponseTest, TestSerializeMakeCredentialResponse) {
                                        signature_counter,
                                        std::move(attested_credential_data));
 
-  cbor::CBORValue::MapValue attestation_map;
+  cbor::Value::MapValue attestation_map;
   attestation_map.emplace("alg", -7);
   attestation_map.emplace("sig", fido_parsing_utils::Materialize(
                                      test_data::kCtap2MakeCredentialSignature));
-  cbor::CBORValue::ArrayValue certificate_chain;
+  cbor::Value::ArrayValue certificate_chain;
   certificate_chain.emplace_back(fido_parsing_utils::Materialize(
       test_data::kCtap2MakeCredentialCertificate));
   attestation_map.emplace("x5c", std::move(certificate_chain));
@@ -655,7 +655,7 @@ TEST(CTAPResponseTest, TestSerializeMakeCredentialResponse) {
       AttestationObject(
           std::move(authenticator_data),
           std::make_unique<OpaqueAttestationStatement>(
-              "packed", cbor::CBORValue(std::move(attestation_map)))));
+              "packed", cbor::Value(std::move(attestation_map)))));
   EXPECT_THAT(
       GetSerializedCtapDeviceResponse(response),
       ::testing::ElementsAreArray(

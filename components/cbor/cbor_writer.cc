@@ -12,58 +12,57 @@
 
 namespace cbor {
 
-CBORWriter::~CBORWriter() {}
+Writer::~Writer() {}
 
 // static
-base::Optional<std::vector<uint8_t>> CBORWriter::Write(
-    const CBORValue& node,
-    size_t max_nesting_level) {
+base::Optional<std::vector<uint8_t>> Writer::Write(const Value& node,
+                                                   size_t max_nesting_level) {
   std::vector<uint8_t> cbor;
-  CBORWriter writer(&cbor);
+  Writer writer(&cbor);
   if (writer.EncodeCBOR(node, base::checked_cast<int>(max_nesting_level)))
     return cbor;
   return base::nullopt;
 }
 
-CBORWriter::CBORWriter(std::vector<uint8_t>* cbor) : encoded_cbor_(cbor) {}
+Writer::Writer(std::vector<uint8_t>* cbor) : encoded_cbor_(cbor) {}
 
-bool CBORWriter::EncodeCBOR(const CBORValue& node, int max_nesting_level) {
+bool Writer::EncodeCBOR(const Value& node, int max_nesting_level) {
   if (max_nesting_level < 0)
     return false;
 
   switch (node.type()) {
-    case CBORValue::Type::NONE: {
-      StartItem(CBORValue::Type::BYTE_STRING, 0);
+    case Value::Type::NONE: {
+      StartItem(Value::Type::BYTE_STRING, 0);
       return true;
     }
 
     // Represents unsigned integers.
-    case CBORValue::Type::UNSIGNED: {
+    case Value::Type::UNSIGNED: {
       int64_t value = node.GetUnsigned();
-      StartItem(CBORValue::Type::UNSIGNED, static_cast<uint64_t>(value));
+      StartItem(Value::Type::UNSIGNED, static_cast<uint64_t>(value));
       return true;
     }
 
     // Represents negative integers.
-    case CBORValue::Type::NEGATIVE: {
+    case Value::Type::NEGATIVE: {
       int64_t value = node.GetNegative();
-      StartItem(CBORValue::Type::NEGATIVE, static_cast<uint64_t>(-(value + 1)));
+      StartItem(Value::Type::NEGATIVE, static_cast<uint64_t>(-(value + 1)));
       return true;
     }
 
     // Represents a byte string.
-    case CBORValue::Type::BYTE_STRING: {
-      const CBORValue::BinaryValue& bytes = node.GetBytestring();
-      StartItem(CBORValue::Type::BYTE_STRING,
+    case Value::Type::BYTE_STRING: {
+      const Value::BinaryValue& bytes = node.GetBytestring();
+      StartItem(Value::Type::BYTE_STRING,
                 base::strict_cast<uint64_t>(bytes.size()));
       // Add the bytes.
       encoded_cbor_->insert(encoded_cbor_->end(), bytes.begin(), bytes.end());
       return true;
     }
 
-    case CBORValue::Type::STRING: {
+    case Value::Type::STRING: {
       base::StringPiece string = node.GetString();
-      StartItem(CBORValue::Type::STRING,
+      StartItem(Value::Type::STRING,
                 base::strict_cast<uint64_t>(string.size()));
 
       // Add the characters.
@@ -72,9 +71,9 @@ bool CBORWriter::EncodeCBOR(const CBORValue& node, int max_nesting_level) {
     }
 
     // Represents an array.
-    case CBORValue::Type::ARRAY: {
-      const CBORValue::ArrayValue& array = node.GetArray();
-      StartItem(CBORValue::Type::ARRAY, array.size());
+    case Value::Type::ARRAY: {
+      const Value::ArrayValue& array = node.GetArray();
+      StartItem(Value::Type::ARRAY, array.size());
       for (const auto& value : array) {
         if (!EncodeCBOR(value, max_nesting_level - 1))
           return false;
@@ -83,9 +82,9 @@ bool CBORWriter::EncodeCBOR(const CBORValue& node, int max_nesting_level) {
     }
 
     // Represents a map.
-    case CBORValue::Type::MAP: {
-      const CBORValue::MapValue& map = node.GetMap();
-      StartItem(CBORValue::Type::MAP, map.size());
+    case Value::Type::MAP: {
+      const Value::MapValue& map = node.GetMap();
+      StartItem(Value::Type::MAP, map.size());
 
       for (const auto& value : map) {
         if (!EncodeCBOR(value.first, max_nesting_level - 1))
@@ -96,14 +95,14 @@ bool CBORWriter::EncodeCBOR(const CBORValue& node, int max_nesting_level) {
       return true;
     }
 
-    case CBORValue::Type::TAG:
+    case Value::Type::TAG:
       NOTREACHED() << constants::kUnsupportedMajorType;
       return false;
 
     // Represents a simple value.
-    case CBORValue::Type::SIMPLE_VALUE: {
-      const CBORValue::SimpleValue simple_value = node.GetSimpleValue();
-      StartItem(CBORValue::Type::SIMPLE_VALUE,
+    case Value::Type::SIMPLE_VALUE: {
+      const Value::SimpleValue simple_value = node.GetSimpleValue();
+      StartItem(Value::Type::SIMPLE_VALUE,
                 base::checked_cast<uint64_t>(simple_value));
       return true;
     }
@@ -115,13 +114,13 @@ bool CBORWriter::EncodeCBOR(const CBORValue& node, int max_nesting_level) {
   return false;
 }
 
-void CBORWriter::StartItem(CBORValue::Type type, uint64_t size) {
+void Writer::StartItem(Value::Type type, uint64_t size) {
   encoded_cbor_->push_back(base::checked_cast<uint8_t>(
       static_cast<unsigned>(type) << constants::kMajorTypeBitShift));
   SetUint(size);
 }
 
-void CBORWriter::SetAdditionalInformation(uint8_t additional_information) {
+void Writer::SetAdditionalInformation(uint8_t additional_information) {
   DCHECK(!encoded_cbor_->empty());
   DCHECK_EQ(additional_information & constants::kAdditionalInformationMask,
             additional_information);
@@ -129,7 +128,7 @@ void CBORWriter::SetAdditionalInformation(uint8_t additional_information) {
       (additional_information & constants::kAdditionalInformationMask);
 }
 
-void CBORWriter::SetUint(uint64_t value) {
+void Writer::SetUint(uint64_t value) {
   size_t count = GetNumUintBytes(value);
   int shift = -1;
   // Values under 24 are encoded directly in the initial byte.
@@ -164,7 +163,7 @@ void CBORWriter::SetUint(uint64_t value) {
   }
 }
 
-size_t CBORWriter::GetNumUintBytes(uint64_t value) {
+size_t Writer::GetNumUintBytes(uint64_t value) {
   if (value < 24) {
     return 0;
   } else if (value <= 0xFF) {

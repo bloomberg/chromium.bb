@@ -23,7 +23,7 @@ namespace device {
 class COMPONENT_EXPORT(DEVICE_FIDO) PublicKeyCredentialUserEntity {
  public:
   static base::Optional<PublicKeyCredentialUserEntity> CreateFromCBORValue(
-      const cbor::CBORValue& cbor);
+      const cbor::Value& cbor);
 
   explicit PublicKeyCredentialUserEntity(std::vector<uint8_t> user_id);
   PublicKeyCredentialUserEntity(const PublicKeyCredentialUserEntity& other);
@@ -34,7 +34,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) PublicKeyCredentialUserEntity {
       PublicKeyCredentialUserEntity&& other);
   ~PublicKeyCredentialUserEntity();
 
-  cbor::CBORValue ConvertToCBOR() const;
+  cbor::Value ConvertToCBOR() const;
   PublicKeyCredentialUserEntity& SetUserName(std::string user_name);
   PublicKeyCredentialUserEntity& SetDisplayName(std::string display_name);
   PublicKeyCredentialUserEntity& SetIconUrl(GURL icon_url);

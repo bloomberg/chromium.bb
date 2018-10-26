@@ -23,14 +23,14 @@ namespace cbor {
 // This does not support:
 //  * Floating-point numbers.
 //  * Indefinite-length encodings.
-class CBOR_EXPORT CBORValue {
+class CBOR_EXPORT Value {
  public:
   struct Less {
     // Comparison predicate to order keys in a dictionary as required by the
     // canonical CBOR order defined in
     // https://tools.ietf.org/html/rfc7049#section-3.9
     // TODO(808022): Clarify where this stands.
-    bool operator()(const CBORValue& a, const CBORValue& b) const {
+    bool operator()(const Value& a, const Value& b) const {
       // The current implementation only supports integer, text string,
       // and byte string keys.
       DCHECK((a.is_integer() || a.is_string() || a.is_bytestring()) &&
@@ -81,8 +81,8 @@ class CBOR_EXPORT CBORValue {
   };
 
   using BinaryValue = std::vector<uint8_t>;
-  using ArrayValue = std::vector<CBORValue>;
-  using MapValue = base::flat_map<CBORValue, CBORValue, Less>;
+  using ArrayValue = std::vector<Value>;
+  using MapValue = base::flat_map<Value, Value, Less>;
 
   enum class Type {
     UNSIGNED = 0,
@@ -103,39 +103,38 @@ class CBOR_EXPORT CBORValue {
     UNDEFINED = 23,
   };
 
-  CBORValue(CBORValue&& that) noexcept;
-  CBORValue() noexcept;  // A NONE value.
+  Value(Value&& that) noexcept;
+  Value() noexcept;  // A NONE value.
 
-  explicit CBORValue(Type type);
+  explicit Value(Type type);
 
-  explicit CBORValue(SimpleValue in_simple);
-  explicit CBORValue(bool boolean_value);
+  explicit Value(SimpleValue in_simple);
+  explicit Value(bool boolean_value);
 
-  explicit CBORValue(int integer_value);
-  explicit CBORValue(int64_t integer_value);
-  explicit CBORValue(uint64_t integer_value) = delete;
+  explicit Value(int integer_value);
+  explicit Value(int64_t integer_value);
+  explicit Value(uint64_t integer_value) = delete;
 
-  explicit CBORValue(base::span<const uint8_t> in_bytes);
-  explicit CBORValue(BinaryValue&& in_bytes) noexcept;
+  explicit Value(base::span<const uint8_t> in_bytes);
+  explicit Value(BinaryValue&& in_bytes) noexcept;
 
-  explicit CBORValue(const char* in_string, Type type = Type::STRING);
-  explicit CBORValue(std::string&& in_string,
-                     Type type = Type::STRING) noexcept;
-  explicit CBORValue(base::StringPiece in_string, Type type = Type::STRING);
+  explicit Value(const char* in_string, Type type = Type::STRING);
+  explicit Value(std::string&& in_string, Type type = Type::STRING) noexcept;
+  explicit Value(base::StringPiece in_string, Type type = Type::STRING);
 
-  explicit CBORValue(const ArrayValue& in_array);
-  explicit CBORValue(ArrayValue&& in_array) noexcept;
+  explicit Value(const ArrayValue& in_array);
+  explicit Value(ArrayValue&& in_array) noexcept;
 
-  explicit CBORValue(const MapValue& in_map);
-  explicit CBORValue(MapValue&& in_map) noexcept;
+  explicit Value(const MapValue& in_map);
+  explicit Value(MapValue&& in_map) noexcept;
 
-  CBORValue& operator=(CBORValue&& that) noexcept;
+  Value& operator=(Value&& that) noexcept;
 
-  ~CBORValue();
+  ~Value();
 
-  // CBORValue's copy constructor and copy assignment operator are deleted.
+  // Value's copy constructor and copy assignment operator are deleted.
   // Use this to obtain a deep copy explicitly.
-  CBORValue Clone() const;
+  Value Clone() const;
 
   // Returns the type of the value stored by the current Value object.
   Type type() const { return type_; }
@@ -181,10 +180,10 @@ class CBOR_EXPORT CBORValue {
     MapValue map_value_;
   };
 
-  void InternalMoveConstructFrom(CBORValue&& that);
+  void InternalMoveConstructFrom(Value&& that);
   void InternalCleanup();
 
-  DISALLOW_COPY_AND_ASSIGN(CBORValue);
+  DISALLOW_COPY_AND_ASSIGN(Value);
 };
 }  // namespace cbor
 

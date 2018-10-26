@@ -47,37 +47,37 @@
 //  3) Indefinite length items must be converted to definite length items.
 //  4) All maps must not have duplicate keys.
 //
-// Current implementation of CBORWriter encoder meets all the requirements of
+// Current implementation of Writer encoder meets all the requirements of
 // canonical CBOR.
 
 namespace cbor {
 
-class CBOR_EXPORT CBORWriter {
+class CBOR_EXPORT Writer {
  public:
   // Default that should be sufficiently large for most use cases.
   static constexpr size_t kDefaultMaxNestingDepth = 16;
 
-  ~CBORWriter();
+  ~Writer();
 
   // Returns the CBOR byte string representation of |node|, unless its nesting
   // depth is greater than |max_nesting_depth|, in which case an empty optional
   // value is returned. The nesting depth of |node| is defined as the number of
-  // arrays/maps that has to be traversed to reach the most nested CBORValue
+  // arrays/maps that has to be traversed to reach the most nested Value
   // contained in |node|. Primitive values and empty containers have nesting
   // depths of 0.
   static base::Optional<std::vector<uint8_t>> Write(
-      const CBORValue& node,
+      const Value& node,
       size_t max_nesting_level = kDefaultMaxNestingDepth);
 
  private:
-  explicit CBORWriter(std::vector<uint8_t>* cbor);
+  explicit Writer(std::vector<uint8_t>* cbor);
 
   // Called recursively to build the CBOR bytestring. When completed,
   // |encoded_cbor_| will contain the CBOR.
-  bool EncodeCBOR(const CBORValue& node, int max_nesting_level);
+  bool EncodeCBOR(const Value& node, int max_nesting_level);
 
   // Encodes the type and size of the data being added.
-  void StartItem(CBORValue::Type type, uint64_t size);
+  void StartItem(Value::Type type, uint64_t size);
 
   // Encodes the additional information for the data.
   void SetAdditionalInformation(uint8_t additional_information);
@@ -92,7 +92,7 @@ class CBOR_EXPORT CBORWriter {
   // Holds the encoded CBOR data.
   std::vector<uint8_t>* encoded_cbor_;
 
-  DISALLOW_COPY_AND_ASSIGN(CBORWriter);
+  DISALLOW_COPY_AND_ASSIGN(Writer);
 };
 
 }  // namespace cbor

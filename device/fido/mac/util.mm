@@ -28,8 +28,8 @@ namespace mac {
 
 using base::ScopedCFTypeRef;
 using base::scoped_nsobject;
-using cbor::CBORWriter;
-using cbor::CBORValue;
+using cbor::Writer;
+using cbor::Value;
 
 // WebAuthn requires an all-zero AAGUID for authenticators using
 // self-attestation.

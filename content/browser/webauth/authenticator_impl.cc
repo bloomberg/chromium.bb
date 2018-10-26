@@ -377,13 +377,13 @@ CreateMakeCredentialResponse(
         mojo::ConvertTo<blink::mojom::AuthenticatorTransport>(transport));
   }
 
-  const base::Optional<cbor::CBORValue>& maybe_extensions =
+  const base::Optional<cbor::Value>& maybe_extensions =
       response_data.attestation_object().authenticator_data().extensions();
   if (maybe_extensions) {
     DCHECK(maybe_extensions->is_map());
-    const cbor::CBORValue::MapValue& extensions = maybe_extensions->GetMap();
+    const cbor::Value::MapValue& extensions = maybe_extensions->GetMap();
     const auto hmac_secret_it =
-        extensions.find(cbor::CBORValue(device::kExtensionHmacSecret));
+        extensions.find(cbor::Value(device::kExtensionHmacSecret));
     if (hmac_secret_it != extensions.end() &&
         hmac_secret_it->second.is_bool()) {
       response->echo_hmac_create_secret = true;

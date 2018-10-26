@@ -29,8 +29,8 @@ const char kSignatureString[] =
     " cert-sha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI=*;"
     " date=1511128380; expires=1511733180";
 
-cbor::CBORValue CBORByteString(const char* str) {
-  return cbor::CBORValue(str, cbor::CBORValue::Type::BYTE_STRING);
+cbor::Value CBORByteString(const char* str) {
+  return cbor::Value(str, cbor::Value::Type::BYTE_STRING);
 }
 
 base::Optional<SignedExchangeEnvelope> GenerateHeaderAndParse(
@@ -38,18 +38,18 @@ base::Optional<SignedExchangeEnvelope> GenerateHeaderAndParse(
     base::StringPiece signature,
     const std::map<const char*, const char*>& request_map,
     const std::map<const char*, const char*>& response_map) {
-  cbor::CBORValue::MapValue request_cbor_map;
-  cbor::CBORValue::MapValue response_cbor_map;
+  cbor::Value::MapValue request_cbor_map;
+  cbor::Value::MapValue response_cbor_map;
   for (auto& pair : request_map)
     request_cbor_map[CBORByteString(pair.first)] = CBORByteString(pair.second);
   for (auto& pair : response_map)
     response_cbor_map[CBORByteString(pair.first)] = CBORByteString(pair.second);
 
-  cbor::CBORValue::ArrayValue array;
-  array.push_back(cbor::CBORValue(std::move(request_cbor_map)));
-  array.push_back(cbor::CBORValue(std::move(response_cbor_map)));
+  cbor::Value::ArrayValue array;
+  array.push_back(cbor::Value(std::move(request_cbor_map)));
+  array.push_back(cbor::Value(std::move(response_cbor_map)));
 
-  auto serialized = cbor::CBORWriter::Write(cbor::CBORValue(std::move(array)));
+  auto serialized = cbor::Writer::Write(cbor::Value(std::move(array)));
   return SignedExchangeEnvelope::Parse(
       fallback_url, signature,
       base::make_span(serialized->data(), serialized->size()),
