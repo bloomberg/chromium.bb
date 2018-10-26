@@ -8,6 +8,7 @@
 async_test(t => {
   var captions = ["Caption"];
   var video = document.querySelector("video");
+  enableTestMode(video);
 
   video.oncanplaythrough = t.step_func(_ => {
     var track1 = video.addTextTrack("captions");

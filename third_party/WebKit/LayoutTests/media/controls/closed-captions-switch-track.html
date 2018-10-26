@@ -11,6 +11,8 @@ async_test(t => {
   var trackLanguages = ['en', 'ru', 'fr', 'jp', 'de'];
   var trackCueText = ['English', 'Russian', 'French', 'Japanese', 'German'];
 
+  enableTestMode(video);
+
   video.oncanplaythrough = t.step_func(_ => {
     for (var i = 0; i < trackLanguages.length; i++) {
       var track = video.addTextTrack('captions', trackCueText[i], trackLanguages[i]);

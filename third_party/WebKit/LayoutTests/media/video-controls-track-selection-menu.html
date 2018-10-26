@@ -11,6 +11,7 @@
 <script>
 async_test(function(t) {
     var video = document.querySelector("video");
+    enableTestMode(video);
 
     var trackElements = document.querySelectorAll("track");
     var textTracks = video.textTracks;
