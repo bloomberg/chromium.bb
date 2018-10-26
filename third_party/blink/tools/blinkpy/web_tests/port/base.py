@@ -223,7 +223,6 @@ class Port(object):
         if not hasattr(options, 'target') or not options.target:
             self.set_option_default('target', self._options.configuration)
         self._test_configuration = None
-        self._reftest_list = {}
         self._results_directory = None
         self._virtual_test_suites = None
 
@@ -676,42 +675,8 @@ class Port(object):
         text = self._filesystem.read_binary_file(baseline_path)
         return text.replace('\r\n', '\n')
 
-    def _get_reftest_list(self, test_name):
-        dirname = self._filesystem.join(self.layout_tests_dir(), self._filesystem.dirname(test_name))
-        if dirname not in self._reftest_list:
-            self._reftest_list[dirname] = Port._parse_reftest_list(self._filesystem, dirname)
-        return self._reftest_list[dirname]
-
-    @staticmethod
-    def _parse_reftest_list(filesystem, test_dirpath):
-        reftest_list_path = filesystem.join(test_dirpath, 'reftest.list')
-        if not filesystem.isfile(reftest_list_path):
-            return None
-        reftest_list_file = filesystem.read_text_file(reftest_list_path)
-
-        parsed_list = {}
-        for line in reftest_list_file.split('\n'):
-            line = re.sub('#.+$', '', line)
-            split_line = line.split()
-            if len(split_line) == 4:
-                # FIXME: Probably one of mozilla's extensions in the
-                # reftest.list format. Do we need to support this?
-                _log.warning("unsupported reftest.list line '%s' in %s", line, reftest_list_path)
-                continue
-            if len(split_line) < 3:
-                continue
-            expectation_type, test_file, ref_file = split_line
-            parsed_list.setdefault(filesystem.join(test_dirpath, test_file), []).append(
-                (expectation_type, filesystem.join(test_dirpath, ref_file)))
-        return parsed_list
-
     def reference_files(self, test_name):
         """Returns a list of expectation (== or !=) and filename pairs"""
-
-        # Try to extract information from reftest.list.
-        reftest_list = self._get_reftest_list(test_name)
-        if reftest_list:
-            return reftest_list.get(self._filesystem.join(self.layout_tests_dir(), test_name), [])
 
         # Try to find -expected.* or -expected-mismatch.* in the same directory.
         reftest_list = []

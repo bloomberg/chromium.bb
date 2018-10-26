@@ -635,25 +635,6 @@ class PortTest(LoggingTestCase):
         self.assertFalse(port.is_slow_wpt_test('/dom/ranges/Range-attributes.html'))
         self.assertFalse(port.is_slow_wpt_test('/dom/ranges/Range-attributes-slow.html'))
 
-    def test_parse_reftest_list(self):
-        port = self.make_port(with_tests=True)
-        port.host.filesystem.files['bar/reftest.list'] = '\n'.join(['== test.html test-ref.html',
-                                                                    '',
-                                                                    '# some comment',
-                                                                    '!= test-2.html test-notref.html # more comments',
-                                                                    '== test-3.html test-ref.html',
-                                                                    '== test-3.html test-ref2.html',
-                                                                    '!= test-3.html test-notref.html',
-                                                                    'fuzzy(80,500) == test-3 test-ref.html'])
-
-        # Note that we don't support the syntax in the last line; the code should ignore it, rather than crashing.
-
-        reftest_list = Port._parse_reftest_list(port.host.filesystem, 'bar')
-        self.assertEqual(reftest_list, {
-            'bar/test.html': [('==', 'bar/test-ref.html')],
-            'bar/test-2.html': [('!=', 'bar/test-notref.html')],
-            'bar/test-3.html': [('==', 'bar/test-ref.html'), ('==', 'bar/test-ref2.html'), ('!=', 'bar/test-notref.html')]})
-
     def test_reference_files(self):
         port = self.make_port(with_tests=True)
         self.assertEqual(port.reference_files('passes/svgreftest.svg'),
