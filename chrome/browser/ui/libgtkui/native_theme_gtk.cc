@@ -191,25 +191,6 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_ButtonPressedShade:
       return SK_ColorTRANSPARENT;
 
-    // BlueButton
-    case ui::NativeTheme::kColorId_BlueButtonEnabledColor:
-      return GetFgColor(
-          "GtkButton#button.text-button.default.suggested-action GtkLabel");
-    case ui::NativeTheme::kColorId_BlueButtonDisabledColor:
-      return GetFgColor(
-          "GtkButton#button.text-button.default.suggested-action:disabled "
-          "GtkLabel");
-    case ui::NativeTheme::kColorId_BlueButtonHoverColor:
-      return GetFgColor(
-          "GtkButton#button.text-button.default.suggested-action:hover "
-          "GtkLabel");
-    case ui::NativeTheme::kColorId_BlueButtonPressedColor:
-      return GetFgColor(
-          "GtkButton#button.text-button.default.suggested-action:hover:active "
-          "GtkLabel");
-    case ui::NativeTheme::kColorId_BlueButtonShadowColor:
-      return SK_ColorTRANSPARENT;
-
     // ProminentButton
     case ui::NativeTheme::kColorId_ProminentButtonColor:
       return GetBgColor(
