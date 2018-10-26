@@ -278,7 +278,7 @@ bool ContentBrowserClient::AllowServiceWorker(
     const GURL& scope,
     const GURL& first_party,
     ResourceContext* context,
-    const base::Callback<WebContents*(void)>& wc_getter) {
+    base::RepeatingCallback<WebContents*()> wc_getter) {
   return true;
 }
 

@@ -195,7 +195,7 @@ base::WeakPtr<ServiceWorkerProviderHost>
 ServiceWorkerProviderHost::PreCreateNavigationHost(
     base::WeakPtr<ServiceWorkerContextCore> context,
     bool are_ancestors_secure,
-    const WebContentsGetter& web_contents_getter) {
+    WebContentsGetter web_contents_getter) {
   DCHECK(context);
   auto host = base::WrapUnique(new ServiceWorkerProviderHost(
       ChildProcessHost::kInvalidUniqueID,
@@ -205,7 +205,7 @@ ServiceWorkerProviderHost::PreCreateNavigationHost(
           are_ancestors_secure, nullptr /* host_request */,
           nullptr /* client_ptr_info */),
       context));
-  host->web_contents_getter_ = web_contents_getter;
+  host->web_contents_getter_ = std::move(web_contents_getter);
 
   auto weak_ptr = host->AsWeakPtr();
   context->AddProviderHost(std::move(host));
@@ -616,8 +616,8 @@ bool ServiceWorkerProviderHost::AllowServiceWorker(const GURL& scope) {
   return GetContentClient()->browser()->AllowServiceWorker(
       scope, IsProviderForClient() ? topmost_frame_url() : document_url(),
       context_->wrapper()->resource_context(),
-      base::Bind(&WebContentsImpl::FromRenderFrameHostID, render_process_id_,
-                 frame_id()));
+      base::BindRepeating(&WebContentsImpl::FromRenderFrameHostID,
+                          render_process_id_, frame_id()));
 }
 
 void ServiceWorkerProviderHost::NotifyControllerLost() {

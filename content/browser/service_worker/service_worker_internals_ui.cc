@@ -46,9 +46,9 @@ namespace content {
 namespace {
 
 using GetRegistrationsCallback =
-    base::Callback<void(const std::vector<ServiceWorkerRegistrationInfo>&,
-                        const std::vector<ServiceWorkerVersionInfo>&,
-                        const std::vector<ServiceWorkerRegistrationInfo>&)>;
+    base::OnceCallback<void(const std::vector<ServiceWorkerRegistrationInfo>&,
+                            const std::vector<ServiceWorkerVersionInfo>&,
+                            const std::vector<ServiceWorkerRegistrationInfo>&)>;
 
 void OperationCompleteCallback(WeakPtr<ServiceWorkerInternalsUI> internals,
                                int callback_id,
@@ -201,22 +201,22 @@ std::unique_ptr<ListValue> GetVersionListValue(
 
 void DidGetStoredRegistrationsOnIOThread(
     scoped_refptr<ServiceWorkerContextWrapper> context,
-    const GetRegistrationsCallback& callback,
+    GetRegistrationsCallback callback,
     blink::ServiceWorkerStatusCode status,
     const std::vector<ServiceWorkerRegistrationInfo>& stored_registrations) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(callback, context->GetAllLiveRegistrationInfo(),
+      base::BindOnce(std::move(callback), context->GetAllLiveRegistrationInfo(),
                      context->GetAllLiveVersionInfo(), stored_registrations));
 }
 
 void GetRegistrationsOnIOThread(
     scoped_refptr<ServiceWorkerContextWrapper> context,
-    const GetRegistrationsCallback& callback) {
+    GetRegistrationsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  context->GetAllRegistrations(
-      base::BindOnce(DidGetStoredRegistrationsOnIOThread, context, callback));
+  context->GetAllRegistrations(base::BindOnce(
+      DidGetStoredRegistrationsOnIOThread, context, std::move(callback)));
 }
 
 void DidGetRegistrations(
@@ -362,8 +362,9 @@ ServiceWorkerInternalsUI::~ServiceWorkerInternalsUI() {
   // Safe to use base::Unretained(this) because
   // ForEachStoragePartition is synchronous.
   BrowserContext::StoragePartitionCallback remove_observer_cb =
-      base::Bind(&ServiceWorkerInternalsUI::RemoveObserverFromStoragePartition,
-                 base::Unretained(this));
+      base::BindRepeating(
+          &ServiceWorkerInternalsUI::RemoveObserverFromStoragePartition,
+          base::Unretained(this));
   BrowserContext::ForEachStoragePartition(browser_context,
                                           std::move(remove_observer_cb));
 }
@@ -393,9 +394,9 @@ void ServiceWorkerInternalsUI::GetAllRegistrations(const ListValue* args) {
       web_ui()->GetWebContents()->GetBrowserContext();
   // Safe to use base::Unretained(this) because
   // ForEachStoragePartition is synchronous.
-  BrowserContext::StoragePartitionCallback add_context_cb =
-      base::Bind(&ServiceWorkerInternalsUI::AddContextFromStoragePartition,
-                 base::Unretained(this));
+  BrowserContext::StoragePartitionCallback add_context_cb = base::BindRepeating(
+      &ServiceWorkerInternalsUI::AddContextFromStoragePartition,
+      base::Unretained(this));
   BrowserContext::ForEachStoragePartition(browser_context,
                                           std::move(add_context_cb));
 }
@@ -422,9 +423,9 @@ void ServiceWorkerInternalsUI::AddContextFromStoragePartition(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           GetRegistrationsOnIOThread, context,
-          base::Bind(DidGetRegistrations, AsWeakPtr(), partition_id,
-                     context->is_incognito() ? base::FilePath()
-                                             : partition->GetPath())));
+          base::BindOnce(DidGetRegistrations, AsWeakPtr(), partition_id,
+                         context->is_incognito() ? base::FilePath()
+                                                 : partition->GetPath())));
 }
 
 void ServiceWorkerInternalsUI::RemoveObserverFromStoragePartition(
@@ -457,10 +458,9 @@ bool ServiceWorkerInternalsUI::GetServiceWorkerContext(
       web_ui()->GetWebContents()->GetBrowserContext();
   StoragePartition* result_partition(nullptr);
   BrowserContext::StoragePartitionCallback find_context_cb =
-      base::Bind(&ServiceWorkerInternalsUI::FindContext,
-                 base::Unretained(this),
-                 partition_id,
-                 &result_partition);
+      base::BindRepeating(&ServiceWorkerInternalsUI::FindContext,
+                          base::Unretained(this), partition_id,
+                          &result_partition);
   BrowserContext::ForEachStoragePartition(browser_context,
                                           std::move(find_context_cb));
   if (!result_partition)

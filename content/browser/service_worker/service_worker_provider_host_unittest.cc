@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
@@ -61,7 +62,7 @@ class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
       const GURL& scope,
       const GURL& first_party,
       content::ResourceContext* context,
-      const base::Callback<WebContents*(void)>& wc_getter) override {
+      base::RepeatingCallback<WebContents*()> wc_getter) override {
     logs_.emplace_back(scope, first_party);
     return false;
   }
@@ -301,8 +302,7 @@ class ServiceWorkerProviderHostTest : public testing::TestWithParam<bool> {
       ServiceWorkerRemoteProviderEndpoint* remote_endpoint) {
     base::WeakPtr<ServiceWorkerProviderHost> host =
         ServiceWorkerProviderHost::PreCreateNavigationHost(
-            helper_->context()->AsWeakPtr(), true,
-            base::Callback<WebContents*(void)>());
+            helper_->context()->AsWeakPtr(), true, base::NullCallback());
     mojom::ServiceWorkerProviderHostInfoPtr info =
         CreateProviderHostInfoForWindow(host->provider_id(), 1 /* route_id */);
     remote_endpoint->BindWithProviderHostInfo(&info);
@@ -448,7 +448,7 @@ TEST_P(ServiceWorkerProviderHostTest, Controller) {
   base::WeakPtr<ServiceWorkerProviderHost> host =
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           helper_->context()->AsWeakPtr(), true /* are_ancestors_secure */,
-          base::Callback<WebContents*(void)>());
+          base::NullCallback());
   mojom::ServiceWorkerProviderHostInfoPtr info =
       CreateProviderHostInfoForWindow(host->provider_id(), 1 /* route_id */);
   remote_endpoints_.emplace_back();
@@ -484,7 +484,7 @@ TEST_P(ServiceWorkerProviderHostTest, UncontrolledWithMatchingRegistration) {
   base::WeakPtr<ServiceWorkerProviderHost> host =
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           helper_->context()->AsWeakPtr(), true /* are_ancestors_secure */,
-          base::Callback<WebContents*(void)>());
+          base::NullCallback());
   mojom::ServiceWorkerProviderHostInfoPtr info =
       CreateProviderHostInfoForWindow(host->provider_id(), 1 /* route_id */);
   remote_endpoints_.emplace_back();

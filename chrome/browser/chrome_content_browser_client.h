@@ -209,7 +209,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const GURL& scope,
       const GURL& first_party,
       content::ResourceContext* context,
-      const base::Callback<content::WebContents*(void)>& wc_getter) override;
+      base::RepeatingCallback<content::WebContents*()> wc_getter) override;
   bool AllowSharedWorker(const GURL& worker_url,
                          const GURL& main_frame_url,
                          const std::string& name,

@@ -96,7 +96,7 @@ class WorkerTest : public ContentBrowserTest {
     RunTest(shell(), url, expect_failure);
   }
 
-  static void QuitUIMessageLoop(base::Callback<void()> callback) {
+  static void QuitUIMessageLoop(base::OnceClosure callback) {
     base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                              std::move(callback));
   }

@@ -30,13 +30,13 @@ bool IsStoppedAndRedundant(const ServiceWorkerVersionInfo& version_info) {
 
 ServiceWorkerContextWatcher::ServiceWorkerContextWatcher(
     scoped_refptr<ServiceWorkerContextWrapper> context,
-    const WorkerRegistrationUpdatedCallback& registration_callback,
-    const WorkerVersionUpdatedCallback& version_callback,
-    const WorkerErrorReportedCallback& error_callback)
+    WorkerRegistrationUpdatedCallback registration_callback,
+    WorkerVersionUpdatedCallback version_callback,
+    WorkerErrorReportedCallback error_callback)
     : context_(context),
-      registration_callback_(registration_callback),
-      version_callback_(version_callback),
-      error_callback_(error_callback) {
+      registration_callback_(std::move(registration_callback)),
+      version_callback_(std::move(version_callback)),
+      error_callback_(std::move(error_callback)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 

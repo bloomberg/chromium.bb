@@ -245,8 +245,8 @@ bool ServiceWorkerContextCore::ProviderHostIterator::IsAtEnd() {
 
 ServiceWorkerContextCore::ProviderHostIterator::ProviderHostIterator(
     ProcessToProviderMap* map,
-    const ProviderHostPredicate& predicate)
-    : map_(map), predicate_(predicate) {
+    ProviderHostPredicate predicate)
+    : map_(map), predicate_(std::move(predicate)) {
   DCHECK(map);
   Initialize();
 }

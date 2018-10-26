@@ -29,20 +29,20 @@ class CONTENT_EXPORT ServiceWorkerContextWatcher
     : public ServiceWorkerContextCoreObserver,
       public base::RefCountedThreadSafe<ServiceWorkerContextWatcher> {
  public:
-  typedef base::Callback<void(
-      const std::vector<ServiceWorkerRegistrationInfo>&)>
-      WorkerRegistrationUpdatedCallback;
-  typedef base::Callback<void(const std::vector<ServiceWorkerVersionInfo>&)>
-      WorkerVersionUpdatedCallback;
-  typedef base::Callback<void(int64_t /* registration_id */,
-                              int64_t /* version_id */,
-                              const ErrorInfo&)> WorkerErrorReportedCallback;
+  using WorkerRegistrationUpdatedCallback = base::RepeatingCallback<void(
+      const std::vector<ServiceWorkerRegistrationInfo>&)>;
+  using WorkerVersionUpdatedCallback = base::RepeatingCallback<void(
+      const std::vector<ServiceWorkerVersionInfo>&)>;
+  using WorkerErrorReportedCallback =
+      base::RepeatingCallback<void(int64_t /* registration_id */,
+                                   int64_t /* version_id */,
+                                   const ErrorInfo&)>;
 
   ServiceWorkerContextWatcher(
       scoped_refptr<ServiceWorkerContextWrapper> context,
-      const WorkerRegistrationUpdatedCallback& registration_callback,
-      const WorkerVersionUpdatedCallback& version_callback,
-      const WorkerErrorReportedCallback& error_callback);
+      WorkerRegistrationUpdatedCallback registration_callback,
+      WorkerVersionUpdatedCallback version_callback,
+      WorkerErrorReportedCallback error_callback);
   void Start();
   void Stop();
 
