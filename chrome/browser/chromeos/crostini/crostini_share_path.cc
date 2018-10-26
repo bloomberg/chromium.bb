@@ -75,11 +75,12 @@ void CallSeneschalSharePath(
              base::FilePath("/media/fuse")
                  .AppendRelativePath(drivefs_mount_point_path,
                                      &drivefs_mount_name)) {
-    // Allow subdirs of DriveFS.
+    // Allow subdirs of DriveFS except .Trash.
     request.set_drivefs_mount_name(drivefs_mount_name.value());
     base::FilePath root("root");
     base::FilePath team_drives("team_drives");
     base::FilePath computers("Computers");
+    base::FilePath trash(".Trash");  // Not to be shared!
     if (root == drivefs_path ||
         root.AppendRelativePath(drivefs_path, &relative_path)) {
       // My Drive and subdirs.
@@ -98,6 +99,11 @@ void CallSeneschalSharePath(
       allowed_path = true;
       request.set_storage_location(
           vm_tools::seneschal::SharePathRequest::DRIVEFS_COMPUTERS);
+    } else if (trash == drivefs_path || trash.IsParent(drivefs_path)) {
+      // Note: Do not expose .Trash which would allow linux apps to make
+      // permanent deletes from Drive.  This branch is not especially required,
+      // but is included to make it explicit that .Trash should not be shared.
+      allowed_path = false;
     }
   } else if (base::FilePath("/media/removable")
                  .AppendRelativePath(path, &relative_path)) {
