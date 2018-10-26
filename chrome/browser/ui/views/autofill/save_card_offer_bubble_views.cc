@@ -49,8 +49,8 @@ SaveCardOfferBubbleViews::SaveCardOfferBubbleViews(
     const gfx::Point& anchor_point,
     content::WebContents* web_contents,
     SaveCardBubbleController* controller)
-    : SaveCardBubbleViews(anchor_view, anchor_point, web_contents, controller),
-      web_contents_(web_contents) {}
+    : SaveCardBubbleViews(anchor_view, anchor_point, web_contents, controller) {
+}
 
 views::View* SaveCardOfferBubbleViews::CreateFootnoteView() {
   if (controller()->GetLegalMessageLines().empty())
@@ -100,7 +100,8 @@ void SaveCardOfferBubbleViews::StyledLabelLinkClicked(views::StyledLabel* label,
   if (!controller())
     return;
 
-  legal_message_view_->OnLinkClicked(label, range, web_contents_);
+  controller()->OnLegalMessageLinkClicked(
+      legal_message_view_->GetUrlForLink(label, range));
 }
 
 void SaveCardOfferBubbleViews::ContentsChanged(

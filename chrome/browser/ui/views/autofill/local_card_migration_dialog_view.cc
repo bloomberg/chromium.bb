@@ -128,8 +128,7 @@ void LocalCardMigrationDialogView::Init() {
     return;
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
-  offer_view_ =
-      new LocalCardMigrationOfferView(controller_, this, web_contents_);
+  offer_view_ = new LocalCardMigrationOfferView(controller_, this);
   AddChildView(offer_view_);
 }
 

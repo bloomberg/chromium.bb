@@ -20,9 +20,6 @@
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/web_modal/web_contents_modal_dialog_host.h"
-#include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -57,9 +54,8 @@ MigratableCardView* AsMigratableCardView(views::View* view) {
 
 LocalCardMigrationOfferView::LocalCardMigrationOfferView(
     LocalCardMigrationDialogController* controller,
-    views::ButtonListener* listener,
-    content::WebContents* web_contents)
-    : controller_(controller), web_contents_(web_contents) {
+    views::ButtonListener* listener)
+    : controller_(controller) {
   Init(listener);
 }
 
@@ -72,10 +68,8 @@ void LocalCardMigrationOfferView::StyledLabelLinkClicked(
   if (!controller_)
     return;
 
-  controller_->OnLegalMessageLinkClicked();
-  // TODO(crbug.com/867194): Should be controller's responsibility to open
-  // links.
-  legal_message_container_->OnLinkClicked(label, range, web_contents_);
+  controller_->OnLegalMessageLinkClicked(
+      legal_message_container_->GetUrlForLink(label, range));
 }
 
 void LocalCardMigrationOfferView::Init(views::ButtonListener* listener) {
