@@ -64,9 +64,7 @@ function testCanSharePath() {
   assertFalse(Crostini.canSharePath(fooFolder, true, volumeManager));
   assertFalse(Crostini.canSharePath(fooFolder, false, volumeManager));
 
-  for (type of
-           ['downloads', 'drive', 'team_drive', 'computers_grand_root',
-            'removable']) {
+  for (type in Crostini.VALID_ROOT_TYPES_FOR_SHARE) {
     volumeManagerRootType = type;
     assertFalse(Crostini.canSharePath(root, true, volumeManager));
     assertFalse(Crostini.canSharePath(root, false, volumeManager));
