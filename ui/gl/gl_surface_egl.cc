@@ -598,8 +598,13 @@ void GetEGLInitDisplays(bool supports_angle_d3d,
 
   if (supports_angle_opengl) {
     if (use_angle_default && !supports_angle_d3d) {
+#if defined(OS_ANDROID)
+      // Don't request desktopGL on android
+      AddInitDisplay(init_displays, ANGLE_OPENGLES);
+#else
       AddInitDisplay(init_displays, ANGLE_OPENGL);
       AddInitDisplay(init_displays, ANGLE_OPENGLES);
+#endif
     } else {
       if (requested_renderer == kANGLEImplementationOpenGLName) {
         AddInitDisplay(init_displays, ANGLE_OPENGL);
