@@ -26,6 +26,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -55,8 +56,8 @@ constexpr int kSearchPriceTextSizeDelta = 1;
 
 constexpr int kIconSelectedSize = 56;
 constexpr int kIconSelectedCornerRadius = 4;
-// Icon selected color, #000 8%.
-constexpr int kIconSelectedColor = SkColorSetARGB(0x14, 0x00, 0x00, 0x00);
+// Icon selected color, Google Grey 900 8%.
+constexpr int kIconSelectedColor = SkColorSetA(gfx::kGoogleGrey900, 0x14);
 
 constexpr SkColor kSearchTitleColor = SkColorSetARGB(0xDF, 0x00, 0x00, 0x00);
 constexpr SkColor kSearchAppRatingColor =

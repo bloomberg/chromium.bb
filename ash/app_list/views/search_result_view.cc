@@ -17,6 +17,7 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/render_text.h"
@@ -42,8 +43,8 @@ constexpr SkColor kMatchedTextColor = SkColorSetARGB(0xDE, 0x00, 0x00, 0x00);
 constexpr SkColor kDefaultTextColor = SkColorSetARGB(0x8A, 0x00, 0x00, 0x00);
 // URL color.
 constexpr SkColor kUrlColor = SkColorSetARGB(0xFF, 0x33, 0x67, 0xD6);
-// Row selected color, #000 8%.
-constexpr SkColor kRowHighlightedColor = SkColorSetARGB(0x14, 0x00, 0x00, 0x00);
+// Row selected color, Google Grey 8%.
+constexpr SkColor kRowHighlightedColor = SkColorSetA(gfx::kGoogleGrey900, 0x14);
 // Search result border color.
 constexpr SkColor kResultBorderColor = SkColorSetARGB(0xFF, 0xE5, 0xE5, 0xE5);
 
