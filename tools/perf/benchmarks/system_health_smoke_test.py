@@ -97,6 +97,9 @@ _DISABLED_TESTS = frozenset({
 
   # crbug.com/885320
   'system_health.memory_desktop/browse:search:google:2018',
+
+  # crbug.com/893615
+  'system_health.memory_desktop/multitab:misc:typical24:2018',
 })
 
 
