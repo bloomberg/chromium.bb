@@ -418,6 +418,12 @@ void NetworkServiceClient::OnSSLCertificateError(
       std::move(web_contents_getter), ssl_info, fatal);
 }
 
+#if defined(OS_CHROMEOS)
+void NetworkServiceClient::OnUsedTrustAnchor(const std::string& username_hash) {
+  GetContentClient()->browser()->OnUsedTrustAnchor(username_hash);
+}
+#endif
+
 void NetworkServiceClient::OnFileUploadRequested(
     uint32_t process_id,
     bool async,

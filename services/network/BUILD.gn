@@ -170,6 +170,15 @@ jumbo_component("network_service") {
     ]
   }
 
+  if (is_chromeos) {
+    sources += [
+      "cert_verifier_with_trust_anchors.cc",
+      "cert_verifier_with_trust_anchors.h",
+      "cert_verify_proc_chromeos.cc",
+      "cert_verify_proc_chromeos.h",
+    ]
+  }
+
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   deps = [
@@ -299,12 +308,20 @@ source_set("tests") {
     ]
   }
 
+  if (is_chromeos) {
+    sources += [
+      "cert_verifier_with_trust_anchors_unittest.cc",
+      "cert_verify_proc_chromeos_unittest.cc",
+    ]
+  }
+
   deps = [
     ":network_service",
     ":test_support",
     "//base",
     "//components/certificate_transparency",
     "//components/network_session_configurator/browser",
+    "//crypto:test_support",
     "//jingle:jingle_fake_socket",
     "//mojo/core/embedder",
     "//mojo/public/cpp/bindings",

@@ -94,10 +94,10 @@
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chromeos/network/dhcp_pac_file_fetcher_factory_chromeos.h"
 #include "chromeos/network/host_resolver_impl_chromeos.h"
+#include "services/network/cert_verify_proc_chromeos.h"
 #endif
 
 using content::BrowserThread;
@@ -394,7 +394,7 @@ void IOThread::ConstructSystemRequestContext() {
       // Creates a CertVerifyProc that doesn't allow any profile-provided certs.
       cert_verifier = std::make_unique<net::CachingCertVerifier>(
           std::make_unique<net::MultiThreadedCertVerifier>(
-              base::MakeRefCounted<chromeos::CertVerifyProcChromeOS>()));
+              base::MakeRefCounted<network::CertVerifyProcChromeOS>()));
 #else
       cert_verifier = std::make_unique<net::CachingCertVerifier>(
           std::make_unique<net::MultiThreadedCertVerifier>(

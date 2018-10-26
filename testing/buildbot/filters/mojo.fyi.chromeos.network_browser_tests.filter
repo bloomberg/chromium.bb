@@ -45,11 +45,6 @@
 # Flaky with error: `picture_in_picture_window_controller_impl.cc(167)] Check failed: media_player_id_.has_value()`.
 -PictureInPictureWindowControllerBrowserTest.TabIconUpdated
 
-# Relies on net::CertVerifier.
-# https://crbug.com/862043
--PolicyProvidedTrustAnchorsRegularUserTest.AllowedForRegularUser
--PolicyProvidedTrustAnchorsOnUserSessionInitTest.TrustAnchorsAvailableImmediatelyAfterSessionStart
-
 # NOTE: if adding an exclusion for an existing failure (e.g. additional test for
 # feature X that is already not working), please add it beside the existing
 # failures. Otherwise please reach out to network-service-dev@.
