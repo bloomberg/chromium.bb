@@ -55,9 +55,11 @@ async_test(t => {
   assert_equals(video.textTracks.length, 2);
 
   document.body.appendChild(video);
+  enableTestMode(video);
 
   video.addEventListener('loadedmetadata', t.step_func(() => {
     assert_true(isVisible(overflowButton(video)));
+
     openOverflowAndClickButton(video, captionsOverflowItem(video), t.step_func(() => {
       const menu = textTrackMenu(video);
       assert_true(isVisible(menu));
