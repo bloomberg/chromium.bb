@@ -19,7 +19,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
