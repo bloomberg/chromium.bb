@@ -228,6 +228,6 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
         // TODO(petewil): Should I get the number of sites in this category from the model instead
         // of using MAX_TILE_COUNT?
         RecordHistogram.recordLinearCountHistogram("ExploreSites.SiteTilesClickIndex",
-                cardIndex * MAX_TILE_COUNT + tileIndex, 0, 100, 100);
+                cardIndex * MAX_TILE_COUNT + tileIndex, 1, 100, 100);
     }
 }
