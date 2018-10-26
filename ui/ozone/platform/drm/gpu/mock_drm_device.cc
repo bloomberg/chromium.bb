@@ -197,6 +197,7 @@ bool MockDrmDevice::SetCrtc(uint32_t crtc_id,
                             uint32_t framebuffer,
                             std::vector<uint32_t> connectors,
                             drmModeModeInfo* mode) {
+  crtc_fb_[crtc_id] = framebuffer;
   current_framebuffer_ = framebuffer;
   set_crtc_call_count_++;
   return set_crtc_expectation_;
@@ -228,11 +229,24 @@ bool MockDrmDevice::AddFramebuffer2(uint32_t width,
                                     uint32_t flags) {
   add_framebuffer_call_count_++;
   *framebuffer = add_framebuffer_call_count_;
+  framebuffer_ids_.insert(*framebuffer);
   return add_framebuffer_expectation_;
 }
 
 bool MockDrmDevice::RemoveFramebuffer(uint32_t framebuffer) {
+  {
+    auto it = framebuffer_ids_.find(framebuffer);
+    CHECK(it != framebuffer_ids_.end());
+    framebuffer_ids_.erase(it);
+  }
   remove_framebuffer_call_count_++;
+  std::vector<uint32_t> crtcs_to_clear;
+  for (auto crtc_fb : crtc_fb_) {
+    if (crtc_fb.second == framebuffer)
+      crtcs_to_clear.push_back(crtc_fb.first);
+  }
+  for (auto crtc : crtcs_to_clear)
+    crtc_fb_[crtc] = 0;
   return true;
 }
 
@@ -245,6 +259,7 @@ bool MockDrmDevice::PageFlip(uint32_t crtc_id,
                              scoped_refptr<PageFlipRequest> page_flip_request) {
   page_flip_call_count_++;
   DCHECK(page_flip_request);
+  crtc_fb_[crtc_id] = framebuffer;
   current_framebuffer_ = framebuffer;
   if (page_flip_expectation_)
     callbacks_.push(page_flip_request->AddPageFlip());
@@ -420,6 +435,11 @@ bool MockDrmDevice::SetGammaRamp(
 
 bool MockDrmDevice::SetCapability(uint64_t capability, uint64_t value) {
   return true;
+}
+
+uint32_t MockDrmDevice::GetFramebufferForCrtc(uint32_t crtc_id) const {
+  auto it = crtc_fb_.find(crtc_id);
+  return it != crtc_fb_.end() ? it->second : 0u;
 }
 
 void MockDrmDevice::RunCallbacks() {
