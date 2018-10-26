@@ -44,15 +44,19 @@ import java.util.Set;
 public class OmniboxResultsAdapter extends BaseAdapter {
     private final List<OmniboxResultItem> mSuggestionItems;
     private final Context mContext;
+    private final AnswersImageFetcher mImageFetcher;
+
     private ToolbarDataProvider mDataProvider;
     private OmniboxSuggestionDelegate mSuggestionDelegate;
     private boolean mUseDarkColors = true;
     private Set<String> mPendingAnswerRequestUrls = new HashSet<>();
     private int mLayoutDirection;
 
-    public OmniboxResultsAdapter(Context context, List<OmniboxResultItem> suggestionItems) {
+    public OmniboxResultsAdapter(Context context, List<OmniboxResultItem> suggestionItems,
+            AnswersImageFetcher answersImageFetcher) {
         mContext = context;
         mSuggestionItems = suggestionItems;
+        mImageFetcher = answersImageFetcher;
     }
 
     public void notifySuggestionsChanged() {
@@ -367,8 +371,8 @@ public class OmniboxResultsAdapter extends BaseAdapter {
         if (mPendingAnswerRequestUrls.contains(url)) return;
 
         mPendingAnswerRequestUrls.add(url);
-        AnswersImage.requestAnswersImage(
-                mDataProvider.getProfile(), url, new AnswersImage.AnswersImageObserver() {
+        mImageFetcher.requestAnswersImage(
+                mDataProvider.getProfile(), url, new AnswersImageFetcher.AnswersImageObserver() {
                     @Override
                     public void onAnswersImageChanged(Bitmap bitmap) {
                         ThreadUtils.assertOnUiThread();

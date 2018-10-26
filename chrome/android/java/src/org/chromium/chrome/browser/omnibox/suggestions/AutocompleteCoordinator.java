@@ -60,6 +60,7 @@ public class AutocompleteCoordinator
     private final UrlBarEditingTextStateProvider mUrlBarEditingTextProvider;
 
     private final OmniboxResultsAdapter mSuggestionListAdapter;
+    private final AnswersImageFetcher mAnswersImageFetcher;
     private final List<OmniboxResultItem> mSuggestionItems;
     private final List<Runnable> mDeferredNativeRunnables = new ArrayList<Runnable>();
 
@@ -171,7 +172,9 @@ public class AutocompleteCoordinator
         mUrlBarEditingTextProvider = urlBarEditingTextProvider;
 
         mSuggestionItems = new ArrayList<OmniboxResultItem>();
-        mSuggestionListAdapter = new OmniboxResultsAdapter(mContext, mSuggestionItems);
+        mAnswersImageFetcher = new AnswersImageFetcher();
+        mSuggestionListAdapter =
+                new OmniboxResultsAdapter(mContext, mSuggestionItems, mAnswersImageFetcher);
         mAutocomplete = new AutocompleteController(this);
     }
 
@@ -970,6 +973,7 @@ public class AutocompleteCoordinator
             mHasStartedNewOmniboxEditSession = false;
             mNewOmniboxEditSessionTimestamp = -1;
             hideSuggestions();
+            mAnswersImageFetcher.clearCache();
         }
 
         if (mNativeInitialized) {
