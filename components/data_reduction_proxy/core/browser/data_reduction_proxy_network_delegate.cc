@@ -419,8 +419,6 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
   }
 
   DCHECK(data);
-  data->set_lofi_requested(
-      lofi_decider ? lofi_decider->ShouldRecordLoFiUMA(*request) : false);
   MaybeAddBrotliToAcceptEncodingHeader(proxy_info, headers, *request);
 
   data_reduction_proxy_request_options_->AddRequestHeader(headers, page_id);
