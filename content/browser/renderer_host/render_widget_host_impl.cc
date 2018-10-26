@@ -1293,12 +1293,16 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
     // GSB and GSU events instead of sending them to the renderer and continues
     // to progress the fling. So, the renderer doesn't receive two GSB events
     // without any GSE in between.
-    DCHECK(!is_in_gesture_scroll_[gesture_event.SourceDevice()] ||
-           FlingCancellationIsDeferred());
+    // TODO(wjmaclean/mcnee): Restore the DCHECK below.
+    // https://crbug.com/897216
+    // DCHECK(!is_in_gesture_scroll_[gesture_event.SourceDevice()] ||
+    //        FlingCancellationIsDeferred());
     is_in_gesture_scroll_[gesture_event.SourceDevice()] = true;
   } else if (gesture_event.GetType() ==
              blink::WebInputEvent::kGestureScrollEnd) {
-    DCHECK(is_in_gesture_scroll_[gesture_event.SourceDevice()]);
+    // TODO(wjmaclean/mcnee): Restore the DCHECK below.
+    // https://crbug.com/897216
+    // DCHECK(is_in_gesture_scroll_[gesture_event.SourceDevice()]);
     is_in_gesture_scroll_[gesture_event.SourceDevice()] = false;
     is_in_touchpad_gesture_fling_ = false;
     if (view_)
