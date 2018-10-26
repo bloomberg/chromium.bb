@@ -780,10 +780,6 @@ commit_screen_list(struct ivi_layout *layout)
 	struct ivi_layout_screen  *iviscrn  = NULL;
 	struct ivi_layout_layer   *ivilayer = NULL;
 	struct ivi_layout_layer   *next     = NULL;
-	struct ivi_layout_view *ivi_view = NULL;
-
-	/* Clear view list of layout ivi_layer */
-	wl_list_init(&layout->layout_layer.view_list.link);
 
 	wl_list_for_each(iviscrn, &layout->screen_list, link) {
 		if (iviscrn->order.dirty) {
@@ -810,7 +806,20 @@ commit_screen_list(struct ivi_layout *layout)
 
 			iviscrn->order.dirty = 0;
 		}
+	}
+}
 
+static void
+build_view_list(struct ivi_layout *layout)
+{
+	struct ivi_layout_screen  *iviscrn;
+	struct ivi_layout_layer   *ivilayer;
+	struct ivi_layout_view   *ivi_view;
+
+	/* Clear view list of layout ivi_layer */
+	wl_list_init(&layout->layout_layer.view_list.link);
+
+	wl_list_for_each(iviscrn, &layout->screen_list, link) {
 		wl_list_for_each(ivilayer, &iviscrn->order.layer_list, order.link) {
 			if (ivilayer->prop.visibility == false)
 				continue;
@@ -1751,6 +1760,7 @@ ivi_layout_commit_changes(void)
 	commit_surface_list(layout);
 	commit_layer_list(layout);
 	commit_screen_list(layout);
+	build_view_list(layout);
 
 	commit_transition(layout);
 
