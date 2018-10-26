@@ -37,6 +37,7 @@ TEST(BrowserMainLoopTest, CreateThreadsInSingleProcess) {
     browser_main_loop.MainMessageLoopStart();
     browser_main_loop.Init();
     browser_main_loop.CreateThreads();
+    browser_main_loop.InitializeMojo();
     EXPECT_GE(base::TaskScheduler::GetInstance()
                   ->GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
                       {base::TaskPriority::USER_VISIBLE}),
