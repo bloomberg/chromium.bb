@@ -202,8 +202,6 @@ extern const char kChromeUIIntenetConfigDialogURL[];
 extern const char kChromeUIIntenetDetailDialogURL[];
 extern const char kChromeUIInternetConfigDialogHost[];
 extern const char kChromeUIInternetDetailDialogHost[];
-extern const char kChromeUIKeyboardOverlayHost[];
-extern const char kChromeUIKeyboardOverlayURL[];
 extern const char kChromeUILinuxCreditsHost[];
 extern const char kChromeUILinuxCreditsURL[];
 extern const char kChromeUIMobileSetupHost[];

@@ -1499,8 +1499,6 @@ jumbo_split_static_library("ui") {
       "webui/chromeos/internet_config_dialog.h",
       "webui/chromeos/internet_detail_dialog.cc",
       "webui/chromeos/internet_detail_dialog.h",
-      "webui/chromeos/keyboard_overlay_ui.cc",
-      "webui/chromeos/keyboard_overlay_ui.h",
       "webui/chromeos/login/active_directory_password_change_screen_handler.cc",
       "webui/chromeos/login/active_directory_password_change_screen_handler.h",
       "webui/chromeos/login/app_downloading_screen_handler.cc",
@@ -1707,7 +1705,6 @@ jumbo_split_static_library("ui") {
     ]
     deps += [
       "//ash",
-      "//ash:ash_with_content",
       "//ash/components/shortcut_viewer:lib",
       "//ash/components/shortcut_viewer/public/mojom",
       "//ash/public/cpp",

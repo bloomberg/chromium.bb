@@ -157,10 +157,6 @@ This file contains the strings for ash.
         Shelf
       </message>
 
-      <message name="IDS_ASH_KEYBOARD_OVERLAY_TITLE" desc="The title of the keyboard overlay.">
-        Keyboard overlay
-      </message>
-
       <message name="IDS_ASH_LEARN_MORE" desc="Text of Learn more links.">
         Learn more
       </message>

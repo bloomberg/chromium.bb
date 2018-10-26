@@ -3713,11 +3713,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(blink::features::kStopInBackground)},
 
 #if defined(OS_CHROMEOS)
-    {"ash-enable-keyboard-shortcut-viewer",
-     flag_descriptions::kAshEnableKeyboardShortcutViewerName,
-     flag_descriptions::kAshEnableKeyboardShortcutViewerDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kKeyboardShortcutViewer)},
-
     {"ash-keyboard-shortcut-viewer-app",
      flag_descriptions::kAshKeyboardShortcutViewerAppName,
      flag_descriptions::kAshKeyboardShortcutViewerAppDescription, kOsCrOS,

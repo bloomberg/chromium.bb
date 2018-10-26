@@ -143,9 +143,9 @@ Polymer({
     this.showAppleCommandKey_ = keyboardParams['showAppleCommandKey'];
   },
 
-  onShowKeyboardShortcutsOverlayTap_: function() {
+  onShowKeyboardShortcutViewerTap_: function() {
     settings.DevicePageBrowserProxyImpl.getInstance()
-        .showKeyboardShortcutsOverlay();
+        .showKeyboardShortcutViewer();
   },
 
   onShowLanguageInputTap_: function() {

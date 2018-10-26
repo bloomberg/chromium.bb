@@ -207,8 +207,6 @@ const char kChromeUIIntenetDetailDialogURL[] =
     "chrome://internet-detail-dialog/";
 const char kChromeUIInternetConfigDialogHost[] = "internet-config-dialog";
 const char kChromeUIInternetDetailDialogHost[] = "internet-detail-dialog";
-const char kChromeUIKeyboardOverlayHost[] = "keyboardoverlay";
-const char kChromeUIKeyboardOverlayURL[] = "chrome://keyboardoverlay/";
 const char kChromeUILinuxCreditsHost[] = "linux-credits";
 const char kChromeUILinuxCreditsURL[] = "chrome://linux-credits/";
 const char kChromeUIMobileSetupHost[] = "mobilesetup";
@@ -401,7 +399,6 @@ const char* const kChromeHostURLs[] = {
     kChromeUICryptohomeHost,
     kChromeUIDriveInternalsHost,
     kChromeUIFirstRunHost,
-    kChromeUIKeyboardOverlayHost,
     kChromeUILinuxCreditsHost,
     kChromeUINetworkHost,
     kChromeUIOobeHost,
