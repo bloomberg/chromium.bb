@@ -1228,12 +1228,6 @@ void CopyFeatureSwitch(const base::CommandLine& src,
     dest->AppendSwitchASCII(switch_name, base::JoinString(features, ","));
 }
 
-void GetNetworkChangeManager(
-    network::mojom::NetworkChangeManagerRequest request) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  GetNetworkService()->GetNetworkChangeManager(std::move(request));
-}
-
 std::set<int>& GetCurrentCorbPluginExceptions() {
   static base::NoDestructor<std::set<int>> s_data;
   return *s_data;
@@ -2289,9 +2283,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   registry->AddInterface(base::BindRepeating(&KeySystemSupportImpl::Create));
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
-
-  AddUIThreadInterface(registry.get(),
-                       base::BindRepeating(&GetNetworkChangeManager));
 
   AddUIThreadInterface(
       registry.get(),
