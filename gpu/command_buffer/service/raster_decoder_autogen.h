@@ -482,11 +482,4 @@ error::Error RasterDecoderImpl::HandleTraceEndCHROMIUM(
   return error::kNoError;
 }
 
-error::Error RasterDecoderImpl::HandleResetActiveURLCHROMIUM(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  DoResetActiveURLCHROMIUM();
-  return error::kNoError;
-}
-
 #endif  // GPU_COMMAND_BUFFER_SERVICE_RASTER_DECODER_AUTOGEN_H_

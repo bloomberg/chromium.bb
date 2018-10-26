@@ -103,6 +103,4 @@ void TraceEndCHROMIUM() override;
 
 void SetActiveURLCHROMIUM(const char* url) override;
 
-void ResetActiveURLCHROMIUM() override;
-
 #endif  // GPU_COMMAND_BUFFER_CLIENT_RASTER_IMPLEMENTATION_AUTOGEN_H_

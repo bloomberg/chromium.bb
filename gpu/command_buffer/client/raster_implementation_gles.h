@@ -125,8 +125,7 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
                           const char* trace_name) override;
   void TraceEndCHROMIUM() override;
 
-  void SetActiveURLCHROMIUM(const char* url) override {}
-  void ResetActiveURLCHROMIUM() override {}
+  void SetActiveURLCHROMIUM(const char* url) override;
 
  private:
   struct Texture {

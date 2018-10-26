@@ -1062,6 +1062,7 @@ void GLES2InterfaceStub::ScheduleDCLayerCHROMIUM(
     const GLfloat* /* bounds_rect */,
     GLuint /* filter */,
     bool /* is_protected_video */) {}
+void GLES2InterfaceStub::SetActiveURLCHROMIUM(const char* /* url */) {}
 void GLES2InterfaceStub::MatrixLoadfCHROMIUM(GLenum /* matrixMode */,
                                              const GLfloat* /* m */) {}
 void GLES2InterfaceStub::MatrixLoadIdentityCHROMIUM(GLenum /* matrixMode */) {}

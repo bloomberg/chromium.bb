@@ -4767,6 +4767,16 @@ TEST_F(GLES2FormatTest, ScheduleDCLayerCHROMIUM) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, SetActiveURLCHROMIUM) {
+  cmds::SetActiveURLCHROMIUM& cmd = *GetBufferAs<cmds::SetActiveURLCHROMIUM>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::SetActiveURLCHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.url_bucket_id);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, MatrixLoadfCHROMIUMImmediate) {
   const int kSomeBaseValueToTestWith = 51;
   static GLfloat data[] = {

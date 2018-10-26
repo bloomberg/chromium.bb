@@ -310,12 +310,4 @@ void SetActiveURLCHROMIUM(GLuint url_bucket_id) {
   }
 }
 
-void ResetActiveURLCHROMIUM() {
-  raster::cmds::ResetActiveURLCHROMIUM* c =
-      GetCmdSpace<raster::cmds::ResetActiveURLCHROMIUM>();
-  if (c) {
-    c->Init();
-  }
-}
-
 #endif  // GPU_COMMAND_BUFFER_CLIENT_RASTER_CMD_HELPER_AUTOGEN_H_

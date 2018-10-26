@@ -1561,6 +1561,9 @@ GLES2ScheduleDCLayerCHROMIUM(GLsizei num_textures,
       num_textures, contents_texture_ids, contents_rect, background_color,
       edge_aa_mask, bounds_rect, filter, is_protected_video);
 }
+void GL_APIENTRY GLES2SetActiveURLCHROMIUM(const char* url) {
+  gles2::GetGLContext()->SetActiveURLCHROMIUM(url);
+}
 void GL_APIENTRY GLES2MatrixLoadfCHROMIUM(GLenum matrixMode, const GLfloat* m) {
   gles2::GetGLContext()->MatrixLoadfCHROMIUM(matrixMode, m);
 }
@@ -3010,6 +3013,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glScheduleDCLayerCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glScheduleDCLayerCHROMIUM),
+    },
+    {
+        "glSetActiveURLCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(glSetActiveURLCHROMIUM),
     },
     {
         "glMatrixLoadfCHROMIUM",

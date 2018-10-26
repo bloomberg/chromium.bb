@@ -299,7 +299,6 @@ bool PermitsInconsistentContextState(CommandId command) {
     case kGetError:
     case kInsertFenceSyncCHROMIUM:
     case kRasterCHROMIUM:
-    case kResetActiveURLCHROMIUM:
     case kSetActiveURLCHROMIUM:
     case kUnlockTransferCacheEntryINTERNAL:
     case kWaitSyncTokenCHROMIUM:
@@ -619,7 +618,6 @@ class RasterDecoderImpl final : public RasterDecoder,
   void DoTexParameteri(GLuint texture_id, GLenum pname, GLint param);
   void DoBindTexImage2DCHROMIUM(GLuint texture_id, GLint image_id);
   void DoTraceEndCHROMIUM();
-  void DoResetActiveURLCHROMIUM();
   void DoProduceTextureDirect(GLuint texture, const volatile GLbyte* key);
   void DoReleaseTexImage2DCHROMIUM(GLuint texture_id, GLint image_id);
   bool TexStorage2DImage(gles2::TextureRef* texture_ref,
@@ -2351,11 +2349,11 @@ error::Error RasterDecoderImpl::HandleSetActiveURLCHROMIUM(
   Bucket* url_bucket = GetBucket(c.url_bucket_id);
   static constexpr size_t kMaxStrLen = 1024;
   if (!url_bucket || url_bucket->size() == 0 ||
-      url_bucket->size() > kMaxStrLen + 1) {
+      url_bucket->size() > kMaxStrLen) {
     return error::kInvalidArguments;
   }
 
-  size_t size = url_bucket->size() - 1;
+  size_t size = url_bucket->size();
   const char* url_str = url_bucket->GetDataAs<const char*>(0, size);
   if (!url_str)
     return error::kInvalidArguments;
@@ -2363,10 +2361,6 @@ error::Error RasterDecoderImpl::HandleSetActiveURLCHROMIUM(
   GURL url(base::StringPiece(url_str, size));
   client_->SetActiveURL(std::move(url));
   return error::kNoError;
-}
-
-void RasterDecoderImpl::DoResetActiveURLCHROMIUM() {
-  client_->ResetActiveURL();
 }
 
 void RasterDecoderImpl::DoProduceTextureDirect(GLuint client_id,

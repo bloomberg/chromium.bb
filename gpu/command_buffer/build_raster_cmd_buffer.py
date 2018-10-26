@@ -338,12 +338,6 @@ _FUNCTION_INFO = {
     'client_test': False,
     'cmd_args': 'GLuint url_bucket_id',
   },
-  'ResetActiveURLCHROMIUM': {
-    'impl_func': False,
-    'client_test': False,
-    'decoder_func': 'DoResetActiveURLCHROMIUM',
-    'unit_test': False,
-  },
   'InsertFenceSyncCHROMIUM': {
     'type': 'Custom',
     'internal': True,
