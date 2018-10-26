@@ -18,38 +18,6 @@
 
 namespace {
 
-// Name of the Scout Transition UMA metric.
-const char kScoutTransitionMetricName[] = "SafeBrowsing.Pref.Scout.Transition";
-
-// Reasons that a state transition for Scout was performed.
-// These values are written to logs.  New enum values can be added, but
-// existing enums must never be renumbered or deleted and reused.
-enum ScoutTransitionReason {
-  // Flag forced Scout Group to true
-  FORCE_SCOUT_FLAG_TRUE = 0,
-  // Flag forced Scout Group to false
-  FORCE_SCOUT_FLAG_FALSE = 1,
-  // User in OnlyShowScout group, enters Scout Group
-  ONLY_SHOW_SCOUT_OPT_IN = 2,
-  // User in CanShowScout group, enters Scout Group immediately
-  CAN_SHOW_SCOUT_OPT_IN_SCOUT_GROUP_ON = 3,
-  // User in CanShowScout group, waiting for interstitial to enter Scout Group
-  CAN_SHOW_SCOUT_OPT_IN_WAIT_FOR_INTERSTITIAL = 4,
-  // User in CanShowScout group saw the first interstitial and entered the Scout
-  // Group
-  CAN_SHOW_SCOUT_OPT_IN_SAW_FIRST_INTERSTITIAL = 5,
-  // User in Control group
-  CONTROL = 6,
-  // Rollback: SBER2 on on implies SBER1 can turn on
-  ROLLBACK_SBER2_IMPLIES_SBER1 = 7,
-  // Rollback: SBER2 off so SBER1 must be turned off
-  ROLLBACK_NO_SBER2_SET_SBER1_FALSE = 8,
-  // Rollback: SBER2 absent so SBER1 must be cleared
-  ROLLBACK_NO_SBER2_CLEAR_SBER1 = 9,
-  // New reasons must be added BEFORE MAX_REASONS
-  MAX_REASONS
-};
-
 // The Extended Reporting pref that is currently active, used for UMA metrics.
 // These values are written to logs.  New enum values can be added, but
 // existing enums must never be renumbered or deleted and reused.
@@ -59,25 +27,6 @@ enum ActiveExtendedReportingPref {
   // New prefs must be added before MAX_SBER_PREF
   MAX_SBER_PREF
 };
-
-// A histogram for tracking a nullable boolean, which can be false, true or
-// null. These values are written to logs. New enum values can be added, but
-// existing enums must never be renumbered or deleted and reused.
-enum NullableBoolean {
-  NULLABLE_BOOLEAN_FALSE = 0,
-  NULLABLE_BOOLEAN_TRUE = 1,
-  NULLABLE_BOOLEAN_NULL = 2,
-  MAX_NULLABLE_BOOLEAN
-};
-
-NullableBoolean GetPrefValueOrNull(const PrefService& prefs,
-                                   const std::string& pref_name) {
-  if (!prefs.HasPrefPath(pref_name)) {
-    return NULLABLE_BOOLEAN_NULL;
-  }
-  return prefs.GetBoolean(pref_name) ? NULLABLE_BOOLEAN_TRUE
-                                     : NULLABLE_BOOLEAN_FALSE;
-}
 
 // Update the correct UMA metric based on which pref was changed and which UI
 // the change was made on.
@@ -137,12 +86,8 @@ const char kSafeBrowsingExtendedReportingOptInAllowed[] =
 const char kSafeBrowsingIncidentsSent[] = "safebrowsing.incidents_sent";
 const char kSafeBrowsingProceedAnywayDisabled[] =
     "safebrowsing.proceed_anyway_disabled";
-const char kSafeBrowsingSawInterstitialExtendedReporting[] =
-    "safebrowsing.saw_interstitial_sber1";
 const char kSafeBrowsingSawInterstitialScoutReporting[] =
     "safebrowsing.saw_interstitial_sber2";
-const char kSafeBrowsingScoutGroupSelected[] =
-    "safebrowsing.scout_group_selected";
 const char kSafeBrowsingScoutReportingEnabled[] =
     "safebrowsing.scout_reporting_enabled";
 const char kSafeBrowsingTriggerEventTimestamps[] =
@@ -164,9 +109,6 @@ const char kAdvancedProtectionLastRefreshInUs[] =
 }  // namespace prefs
 
 namespace safe_browsing {
-
-const base::Feature kCanShowScoutOptIn{"CanShowScoutOptIn",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool ExtendedReportingPrefExists(const PrefService& prefs) {
   return prefs.HasPrefPath(prefs::kSafeBrowsingScoutReportingEnabled);
@@ -197,35 +139,13 @@ void RecordExtendedReportingMetrics(const PrefService& prefs) {
 
   // Track whether this user has ever seen a security interstitial.
   UMA_HISTOGRAM_BOOLEAN(
-      "SafeBrowsing.Pref.SawInterstitial.SBER1Pref",
-      prefs.GetBoolean(prefs::kSafeBrowsingSawInterstitialExtendedReporting));
-  UMA_HISTOGRAM_BOOLEAN(
       "SafeBrowsing.Pref.SawInterstitial.SBER2Pref",
       prefs.GetBoolean(prefs::kSafeBrowsingSawInterstitialScoutReporting));
-
-  // These metrics track the Scout transition.
-  if (prefs.GetBoolean(prefs::kSafeBrowsingScoutGroupSelected)) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "SafeBrowsing.Pref.Scout.ScoutGroup.SBER2Pref",
-        GetPrefValueOrNull(prefs, prefs::kSafeBrowsingScoutReportingEnabled),
-        MAX_NULLABLE_BOOLEAN);
-  } else {
-    // The following metric is a corner case. User was previously in the
-    // Scout group and was able to opt-in to the Scout pref, but was since
-    // removed from the Scout group (eg: by rolling back a Scout experiment).
-    UMA_HISTOGRAM_ENUMERATION(
-        "SafeBrowsing.Pref.Scout.NoScoutGroup.SBER2Pref",
-        GetPrefValueOrNull(prefs, prefs::kSafeBrowsingScoutReportingEnabled),
-        MAX_NULLABLE_BOOLEAN);
-  }
 }
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kSafeBrowsingScoutReportingEnabled,
                                 false);
-  registry->RegisterBooleanPref(prefs::kSafeBrowsingScoutGroupSelected, false);
-  registry->RegisterBooleanPref(
-      prefs::kSafeBrowsingSawInterstitialExtendedReporting, false);
   registry->RegisterBooleanPref(
       prefs::kSafeBrowsingSawInterstitialScoutReporting, false);
   registry->RegisterBooleanPref(
@@ -327,17 +247,7 @@ void UpdateMetricsAfterSecurityInterstitial(const PrefService& prefs,
 }
 
 void UpdatePrefsBeforeSecurityInterstitial(PrefService* prefs) {
-  // Move the user into the Scout Group if the CanShowScoutOptIn experiment is
-  // enabled and they're not in the group already.
-  if (base::FeatureList::IsEnabled(kCanShowScoutOptIn) &&
-      !prefs->GetBoolean(prefs::kSafeBrowsingScoutGroupSelected)) {
-    prefs->SetBoolean(prefs::kSafeBrowsingScoutGroupSelected, true);
-    UMA_HISTOGRAM_ENUMERATION(kScoutTransitionMetricName,
-                              CAN_SHOW_SCOUT_OPT_IN_SAW_FIRST_INTERSTITIAL,
-                              MAX_REASONS);
-  }
-
-  // Remember that this user saw an interstitial with the current opt-in text.
+  // Remember that this user saw an interstitial.
   prefs->SetBoolean(prefs::kSafeBrowsingSawInterstitialScoutReporting, true);
 }
 
