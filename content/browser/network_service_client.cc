@@ -22,13 +22,24 @@
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/ssl/client_cert_store.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
 namespace content {
 namespace {
+
+// TODO(jam): get rid of duplicates of this method
+bool IsOutOfProcessNetworkService() {
+  return base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+         !base::FeatureList::IsEnabled(features::kNetworkServiceInProcess) &&
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kSingleProcess);
+}
 
 class SSLErrorDelegate : public SSLErrorHandler::Delegate {
  public:
@@ -319,9 +330,14 @@ NetworkServiceClient::NetworkServiceClient(
                               base::Unretained(this))))
 #endif
 {
+  if (IsOutOfProcessNetworkService())
+    net::CertDatabase::GetInstance()->AddObserver(this);
 }
 
-NetworkServiceClient::~NetworkServiceClient() = default;
+NetworkServiceClient::~NetworkServiceClient() {
+  if (IsOutOfProcessNetworkService())
+    net::CertDatabase::GetInstance()->RemoveObserver(this);
+}
 
 void NetworkServiceClient::OnAuthRequired(
     uint32_t process_id,
@@ -486,6 +502,10 @@ void NetworkServiceClient::OnClearSiteData(int process_id,
   ClearSiteDataHandler::HandleHeader(std::move(web_contents_getter), url,
                                      header_value, load_flags,
                                      std::move(callback));
+}
+
+void NetworkServiceClient::OnCertDBChanged() {
+  GetNetworkService()->OnCertDBChanged();
 }
 
 #if defined(OS_ANDROID)

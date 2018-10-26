@@ -348,6 +348,7 @@ bool UtilityProcessHost::StartProcess() {
 #if defined(OS_MACOSX)
       service_manager::switches::kEnableSandboxLogging,
 #endif
+      switches::kDisableTestCerts,
       switches::kEnableLogging,
       switches::kForceTextDirection,
       switches::kForceUIDirection,
