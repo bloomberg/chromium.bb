@@ -46,7 +46,6 @@ crbug.com/859640 http/tests/devtools/tracing/timeline-style/timeline-style-recal
 # detached, which means leaks reported by the leak detector are by design.
 # Ignore them.
 crbug.com/755625 external/wpt/beacon/beacon-error.window.html [ Leak ]
-crbug.com/762353 external/wpt/beacon/headers/header-referrer-no-referrer.html [ Leak ]
 crbug.com/651742 external/wpt/content-security-policy/connect-src/connect-src-beacon-allowed.sub.html [ Leak ]
 
 # -----------------------------------------------------------------
