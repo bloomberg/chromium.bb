@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
+#include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/common/mac/app_shim_param_traits.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,9 +62,9 @@ class TestingAppShim : public chrome::mojom::AppShim {
   DISALLOW_COPY_AND_ASSIGN(TestingAppShim);
 };
 
-class TestingAppShimHost : public AppShimHost {
+class TestingAppShimHostBootstrap : public AppShimHostBootstrap {
  public:
-  explicit TestingAppShimHost(
+  explicit TestingAppShimHostBootstrap(
       chrome::mojom::AppShimHostBootstrapRequest host_request)
       : test_weak_factory_(this) {
     // AppShimHost will bind to the request from ServeChannel. For testing
@@ -71,13 +72,13 @@ class TestingAppShimHost : public AppShimHost {
     host_bootstrap_binding_.Bind(std::move(host_request));
   }
 
-  base::WeakPtr<TestingAppShimHost> GetWeakPtr() {
+  base::WeakPtr<TestingAppShimHostBootstrap> GetWeakPtr() {
     return test_weak_factory_.GetWeakPtr();
   }
 
  private:
-  base::WeakPtrFactory<TestingAppShimHost> test_weak_factory_;
-  DISALLOW_COPY_AND_ASSIGN(TestingAppShimHost);
+  base::WeakPtrFactory<TestingAppShimHostBootstrap> test_weak_factory_;
+  DISALLOW_COPY_AND_ASSIGN(TestingAppShimHostBootstrap);
 };
 
 const char kTestAppId[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
@@ -98,7 +99,7 @@ class AppShimHostTest : public testing::Test,
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
     return task_runner_;
   }
-  TestingAppShimHost* host() { return host_.get(); }
+  TestingAppShimHostBootstrap* host() { return host_.get(); }
   chrome::mojom::AppShimHostBootstrap* GetBootstrapMojoHost() {
     return host_.get();
   }
@@ -151,8 +152,8 @@ class AppShimHostTest : public testing::Test,
   void SetUp() override {
     testing::Test::SetUp();
     shim_.reset(new TestingAppShim());
-    TestingAppShimHost* host =
-        new TestingAppShimHost(shim_->GetHostBootstrapRequest());
+    TestingAppShimHostBootstrap* host =
+        new TestingAppShimHostBootstrap(shim_->GetHostBootstrapRequest());
     host_ = host->GetWeakPtr();
   }
 
@@ -163,7 +164,7 @@ class AppShimHostTest : public testing::Test,
 
   // AppShimHost will destroy itself in AppShimHost::Close, so use a weak
   // pointer here to avoid lifetime issues.
-  base::WeakPtr<TestingAppShimHost> host_;
+  base::WeakPtr<TestingAppShimHostBootstrap> host_;
   chrome::mojom::AppShimHostPtr host_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimHostTest);
@@ -175,8 +176,7 @@ class AppShimHostTest : public testing::Test,
 TEST_F(AppShimHostTest, TestLaunchAppWithHandler) {
   apps::AppShimHandler::RegisterHandler(kTestAppId, this);
   LaunchApp(apps::APP_SHIM_LAUNCH_NORMAL);
-  EXPECT_EQ(kTestAppId,
-            static_cast<apps::AppShimHandler::Host*>(host())->GetAppId());
+  EXPECT_EQ(kTestAppId, host()->GetHostForTesting()->GetAppId());
   EXPECT_EQ(apps::APP_SHIM_LAUNCH_SUCCESS, GetLaunchResult());
   EXPECT_EQ(1, launch_count_);
   EXPECT_EQ(1, launch_now_count_);
@@ -184,8 +184,8 @@ TEST_F(AppShimHostTest, TestLaunchAppWithHandler) {
   EXPECT_EQ(0, close_count_);
 
   // A second OnAppLaunchComplete is ignored.
-  static_cast<apps::AppShimHandler::Host*>(host())
-      ->OnAppLaunchComplete(apps::APP_SHIM_LAUNCH_APP_NOT_FOUND);
+  host()->GetHostForTesting()->OnAppLaunchComplete(
+      apps::APP_SHIM_LAUNCH_APP_NOT_FOUND);
   EXPECT_EQ(apps::APP_SHIM_LAUNCH_SUCCESS, GetLaunchResult());
 
   GetMojoHost()->FocusApp(apps::APP_SHIM_FOCUS_NORMAL,
@@ -207,8 +207,7 @@ TEST_F(AppShimHostTest, TestLaunchAppWithHandler) {
 TEST_F(AppShimHostTest, TestNoLaunchNow) {
   apps::AppShimHandler::RegisterHandler(kTestAppId, this);
   LaunchApp(apps::APP_SHIM_LAUNCH_REGISTER_ONLY);
-  EXPECT_EQ(kTestAppId,
-            static_cast<apps::AppShimHandler::Host*>(host())->GetAppId());
+  EXPECT_EQ(kTestAppId, host()->GetHostForTesting()->GetAppId());
   EXPECT_EQ(apps::APP_SHIM_LAUNCH_SUCCESS, GetLaunchResult());
   EXPECT_EQ(1, launch_count_);
   EXPECT_EQ(0, launch_now_count_);
