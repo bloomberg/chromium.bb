@@ -598,40 +598,15 @@ ivi_view_is_mapped(struct ivi_layout_view *ivi_view)
 static void
 commit_changes(struct ivi_layout *layout)
 {
-	struct ivi_layout_screen *iviscrn = NULL;
-	struct ivi_layout_layer *ivilayer = NULL;
-	struct ivi_layout_surface *ivisurf = NULL;
 	struct ivi_layout_view *ivi_view  = NULL;
 
 	wl_list_for_each(ivi_view, &layout->view_list, link) {
-		ivisurf = ivi_view->ivisurf;
-		ivilayer = ivi_view->on_layer;
-		iviscrn = ivilayer->on_screen;
-
 		/*
 		 * If the view is not on the currently rendered scenegraph,
 		 * we do not need to update its properties.
 		 */
-		if (wl_list_empty(&ivi_view->order_link) || !iviscrn)
+		if (!ivi_view_is_mapped(ivi_view))
 			continue;
-
-		/*
-		 * If the view's layer or surface is invisible, we do not need
-		 * to update its properties.
-		 */
-		if (!ivilayer->prop.visibility || !ivisurf->prop.visibility) {
-			/*
-			* If ivilayer or ivisurf of ivi_view is made invisible
-			* in this commit_changes call, we have to damage
-			* the weston_view below this ivi_view. Otherwise content
-			* of this ivi_view will stay visible.
-			*/
-			if ((ivilayer->prop.event_mask | ivisurf->prop.event_mask) &
-			    IVI_NOTIFICATION_VISIBILITY)
-				weston_view_damage_below(ivi_view->view);
-
-			continue;
-		}
 
 		update_prop(ivi_view);
 	}
