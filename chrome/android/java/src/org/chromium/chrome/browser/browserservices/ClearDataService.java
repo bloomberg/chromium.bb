@@ -4,22 +4,25 @@
 
 package org.chromium.chrome.browser.browserservices;
 
-import android.app.IntentService;
 import android.app.PendingIntent;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.IBinder;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.preferences.website.SiteDataCleaner;
+import org.chromium.chrome.browser.preferences.website.WebsitePermissionsFetcher;
 
 /**
  * A background service that clears browsing data.
  *
  * Lifecycle: This is a Service, so it will be created by the Android Framework.
- * Thread safety: As an {@link IntentService}, {@link #onHandleIntent} is called on a background
- * thread.
+ * Thread safety: handles intents on the main thread.
  */
-public class ClearDataService extends IntentService {
+public class ClearDataService extends Service {
     private static final String TAG = "ClearDataService";
 
     /* package */ static final String ACTION_CLEAR_DATA =
@@ -29,59 +32,77 @@ public class ClearDataService extends IntentService {
 
     /* package */ static final String EXTRA_NOTIFICATION_ID =
             "org.chromium.chrome.browser.browserservices.ClearDataService.NOTIFICATION_ID";
-    /* package */ static final String EXTRA_URL =
-            "org.chromium.chrome.browser.browserservices.ClearDataService.URL";
+    /* package */ static final String EXTRA_DOMAIN =
+            "org.chromium.chrome.browser.browserservices.ClearDataService.DOMAIN";
 
     private final ClearDataNotificationPublisher mNotificationManager;
+    private final DomainDataCleaner mCleaner;
 
     /** Constructor required by Android with default dependencies. */
     public ClearDataService() {
-        this(new ClearDataNotificationPublisher());
+        this(new ClearDataNotificationPublisher(),
+                new DomainDataCleaner(ChromeBrowserInitializer.getInstance(),
+                        new SiteDataCleaner(), new WebsitePermissionsFetcher()));
     }
 
     /** Constructor with dependency injection for testing. */
-    public ClearDataService(ClearDataNotificationPublisher notificationManager) {
-        super(TAG);
+    public ClearDataService(ClearDataNotificationPublisher notificationManager,
+            DomainDataCleaner cleaner) {
+        super();
         mNotificationManager = notificationManager;
+        mCleaner = cleaner;
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
     }
 
     @Override
-    protected void onHandleIntent(@Nullable Intent intent) {
-        if (intent == null) return;
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        if (intent == null) {
+            stopSelf();
+            return START_NOT_STICKY;
+        }
         // ClearDataService is not exported, so as long as we don't let PendingIntents pointing to
         // this class leak to other Android applications, we can trust that this code can only be
         // called from Chrome (or a Notification that Chrome created).
 
         if (!intent.hasExtra(EXTRA_NOTIFICATION_ID)) {
             Log.w(TAG, "Got Intent without Notification Id");
-            return;
+            stopSelf();
+            return START_NOT_STICKY;
         }
         int notificationId = intent.getIntExtra(EXTRA_NOTIFICATION_ID, 0);
 
         if (ACTION_CLEAR_DATA.equals(intent.getAction())) {
-            String url = intent.getStringExtra(EXTRA_URL);
-            if (url == null) {
-                Log.w(TAG, "Got Clear Data Intent without URL.");
-                return;
+            String domain = intent.getStringExtra(EXTRA_DOMAIN);
+            if (domain == null) {
+                Log.w(TAG, "Got Clear Data Intent without EXTRA_DOMAIN.");
+                stopSelf();
+                return START_NOT_STICKY;
             }
-            // TODO(peconn): Clear the data!
-            Log.d(TAG, "Pretending to clear data for %s.", url);
+            mCleaner.clearData(domain, this::stopSelf);
+
             mNotificationManager.dismissClearDataNotification(this, notificationId);
         } else if (ACTION_DISMISS.equals(intent.getAction())) {
             mNotificationManager.dismissClearDataNotification(this, notificationId);
         }
+
+        return START_REDELIVER_INTENT;
     }
 
     /**
-     * Creates a PendingIntent to clear data for the given |url| and cancel the notification with
+     * Creates a PendingIntent to clear data for the given |domain| and cancel the notification with
      * the given |id|.
      */
-    public static PendingIntent getClearDataIntent(Context context, String url, int id) {
+    public static PendingIntent getClearDataIntent(Context context, String domain, int id) {
         Intent intent = new Intent(context, ClearDataService.class);
         intent.setAction(ACTION_CLEAR_DATA);
         intent.putExtra(EXTRA_NOTIFICATION_ID, id);
         // TODO(peconn): Consider putting this in data instead.
-        intent.putExtra(EXTRA_URL, url);
+        intent.putExtra(EXTRA_DOMAIN, domain);
         // See similar code in {@link getDismissIntent}.
         return PendingIntent.getService(context, id, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }

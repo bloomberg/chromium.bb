@@ -127,9 +127,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
             return;
         }
 
-        WebsitePermissionsFetcher fetcher =
-                new WebsitePermissionsFetcher(new ResultsPopulator(), false);
-        fetcher.fetchPreferencesForCategory(mCategory);
+        WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher(false);
+        fetcher.fetchPreferencesForCategory(mCategory, new ResultsPopulator());
     }
 
     private class ResultsPopulator implements WebsitePermissionsFetcher.WebsitePermissionsCallback {
