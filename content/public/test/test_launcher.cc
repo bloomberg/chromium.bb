@@ -661,8 +661,7 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
 
   base::MessageLoopForIO message_loop;
 #if defined(OS_POSIX)
-  base::FileDescriptorWatcher file_descriptor_watcher(
-      message_loop->task_runner());
+  base::FileDescriptorWatcher file_descriptor_watcher(&message_loop);
 #endif
 
   launcher_delegate->PreSharding();
