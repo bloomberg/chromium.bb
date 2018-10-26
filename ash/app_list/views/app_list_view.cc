@@ -89,6 +89,9 @@ constexpr float kAppListAnimationDurationTestMs = 0;
 constexpr float kAppListAnimationDurationMs = 200;
 constexpr float kAppListAnimationDurationFromFullscreenMs = 250;
 
+// The app list opacity when the tablet mode is enabled.
+constexpr float kAppListOpacityInTabletMode = 0.4;
+
 // The background corner radius in peeking and fullscreen state.
 constexpr int kAppListBackgroundRadius = 28;
 
@@ -1111,7 +1114,8 @@ void AppListView::OnTabletModeChanged(bool started) {
       parent_window->AddChild(window);
 
     // Update background opacity.
-    app_list_background_shield_->layer()->SetOpacity(0.f);
+    app_list_background_shield_->layer()->SetOpacity(
+        kAppListOpacityInTabletMode);
 
     // Update background blur.
     if (is_background_blur_enabled_)
