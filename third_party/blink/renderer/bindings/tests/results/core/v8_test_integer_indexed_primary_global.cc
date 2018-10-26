@@ -85,7 +85,7 @@ static void lengthAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Functi
   ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestIntegerIndexedPrimaryGlobal", "length");
 
   // Prepare the value to be set.
-  int8_t cppValue = NativeValueTraits<IDLByte>::NativeValue(info.GetIsolate(), v8Value, exceptionState, kNormalConversion);
+  int8_t cppValue = NativeValueTraits<IDLByte>::NativeValue(info.GetIsolate(), v8Value, exceptionState);
   if (exceptionState.HadException())
     return;
 

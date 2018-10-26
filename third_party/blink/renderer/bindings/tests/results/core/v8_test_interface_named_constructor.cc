@@ -148,7 +148,7 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
   if (exceptionState.HadException())
     return;
 
-  defaultUndefinedOptionalLongArg = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), info[2], exceptionState, kNormalConversion);
+  defaultUndefinedOptionalLongArg = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), info[2], exceptionState);
   if (exceptionState.HadException())
     return;
 

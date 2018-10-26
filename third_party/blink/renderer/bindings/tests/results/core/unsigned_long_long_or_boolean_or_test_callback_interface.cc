@@ -98,7 +98,7 @@ void V8UnsignedLongLongOrBooleanOrTestCallbackInterface::ToImpl(v8::Isolate* iso
   }
 
   if (v8Value->IsNumber()) {
-    uint64_t cppValue = NativeValueTraits<IDLUnsignedLongLong>::NativeValue(isolate, v8Value, exceptionState, kNormalConversion);
+    uint64_t cppValue = NativeValueTraits<IDLUnsignedLongLong>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
     impl.SetUnsignedLongLong(cppValue);
@@ -106,7 +106,7 @@ void V8UnsignedLongLongOrBooleanOrTestCallbackInterface::ToImpl(v8::Isolate* iso
   }
 
   {
-    uint64_t cppValue = NativeValueTraits<IDLUnsignedLongLong>::NativeValue(isolate, v8Value, exceptionState, kNormalConversion);
+    uint64_t cppValue = NativeValueTraits<IDLUnsignedLongLong>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
     impl.SetUnsignedLongLong(cppValue);

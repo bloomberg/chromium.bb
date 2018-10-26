@@ -87,7 +87,7 @@ void V8LongOrTestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v
   }
 
   if (v8Value->IsNumber()) {
-    int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(isolate, v8Value, exceptionState, kNormalConversion);
+    int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
     impl.SetLong(cppValue);
@@ -95,7 +95,7 @@ void V8LongOrTestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v
   }
 
   {
-    int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(isolate, v8Value, exceptionState, kNormalConversion);
+    int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
     impl.SetLong(cppValue);

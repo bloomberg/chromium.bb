@@ -161,7 +161,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
     V8SetReturnValue(info, wrapper);
     return;
   }
-  optionalUSVStringArg = NativeValueTraits<IDLUSVStringBase<kTreatNullAndUndefinedAsNullString>>::NativeValue(info.GetIsolate(), info[7], exceptionState);
+  optionalUSVStringArg = NativeValueTraits<IDLUSVStringOrNull>::NativeValue(info.GetIsolate(), info[7], exceptionState);
   if (exceptionState.HadException())
     return;
 
