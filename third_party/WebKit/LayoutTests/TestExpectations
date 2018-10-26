@@ -5408,7 +5408,6 @@ crbug.com/886566 http/tests/csspaint/invalidation-border-image.html [ Pass Timeo
 crbug.com/886566 http/tests/csspaint/invalidation-content-image.html [ Pass Timeout ]
 
 # Enable AnimationWorklet tests for mainthread
-crbug.com/887659 animations/animationworklet/worklet-animation-currentTime.html [ Failure ]
 crbug.com/887659 animations/animationworklet/worklet-animation-local-time-after-duration.html [ Failure ]
 
 # Sheriff 2018-09-25
