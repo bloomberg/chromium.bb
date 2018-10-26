@@ -24,11 +24,17 @@
   "share_template": [{
 	  "index": "0",
 	  "title": "Share All",
-	  "url_template": "https://pwa.rocks/share_public?title={title}&amp;text={text}&amp;url={url}"
+	  "action": "https://pwa.rocks/share.html",
+	  "param_title": "title",
+	  "param_text": "text",
+	  "param_url": "url"
   },
   {
 	  "index": "1",
 	  "title": "Share Title",
-	  "url_template": "https://pwa.rocks/share_private?title={title}"
+	  "action": "https://pwa.rocks/share_title.html",
+	  "param_title": "title",
+	  "param_text": "text",
+	  "param_url": "url"
   }]
 }
