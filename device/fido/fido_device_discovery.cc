@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "device/fido/ble/fido_ble_discovery.h"
 #include "device/fido/cable/fido_cable_discovery.h"
@@ -90,10 +91,12 @@ FidoDeviceDiscovery::~FidoDeviceDiscovery() = default;
 void FidoDeviceDiscovery::Start() {
   DCHECK_EQ(state_, State::kIdle);
   state_ = State::kStarting;
-  // TODO(hongjunchoi): Fix so that NotifiyStarted() is never called
-  // synchronously after StartInternal().
-  // See: https://crbug.com/823686
-  StartInternal();
+
+  // To ensure that that NotifiyStarted() is never invoked synchronously,
+  // post task asynchronously.
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&FidoDeviceDiscovery::StartInternal,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void FidoDeviceDiscovery::NotifyDiscoveryStarted(bool success) {
