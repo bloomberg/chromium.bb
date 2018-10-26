@@ -29,14 +29,13 @@ using blink::kWebIDBKeyTypeNumber;
 using blink::WebIDBValue;
 using blink::WebString;
 using blink::WebVector;
-using blink::mojom::blink::IDBCursor;
 using testing::StrictMock;
 
 namespace blink {
 
 namespace {
 
-class MockCursorImpl : public IDBCursor {
+class MockCursorImpl : public mojom::blink::IDBCursor {
  public:
   explicit MockCursorImpl(mojom::blink::IDBCursorAssociatedRequest request)
       : binding_(this, std::move(request)) {
