@@ -16,6 +16,7 @@
 #include "base/strings/string_piece.h"
 #include "chrome/browser/webauthn/authenticator_reference.h"
 #include "chrome/browser/webauthn/authenticator_transport.h"
+#include "chrome/browser/webauthn/observable_authenticator_list.h"
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
 
@@ -186,7 +187,7 @@ class AuthenticatorRequestDialogModel {
   // Initiates pairing of the device that the user has chosen.
   //
   // Valid action when at step: kBleDeviceSelection.
-  void InitiatePairingDevice(const std::string& authenticator_id);
+  void InitiatePairingDevice(base::StringPiece authenticator_id);
 
   // Finishes pairing of the previously chosen device with the |pin| code
   // entered.
@@ -267,13 +268,9 @@ class AuthenticatorRequestDialogModel {
       base::StringPiece authenticator_id,
       bool is_in_pairing_mode);
 
-  void SetSelectedAuthenticatorForTesting(
-      std::unique_ptr<AuthenticatorReference> authenticator);
+  void SetSelectedAuthenticatorForTesting(AuthenticatorReference authenticator);
 
-  AuthenticatorReference* GetAuthenticator(
-      base::StringPiece authenticator_id) const;
-
-  std::vector<std::unique_ptr<AuthenticatorReference>>& saved_authenticators() {
+  ObservableAuthenticatorList& saved_authenticators() {
     return saved_authenticators_;
   }
 
@@ -303,11 +300,12 @@ class AuthenticatorRequestDialogModel {
   // Transport type and id of Mac TouchId and BLE authenticators are cached so
   // that the WebAuthN request for the corresponding authenticators can be
   // dispatched lazily after the user interacts with the UI element.
-  std::vector<std::unique_ptr<AuthenticatorReference>> saved_authenticators_;
+  ObservableAuthenticatorList saved_authenticators_;
 
   // Represents the id of the Bluetooth authenticator that the user is trying to
   // connect to or conduct WebAuthN request to via the WebAuthN UI.
   std::string selected_authenticator_id_;
+
   RequestCallback request_callback_;
   BlePairingCallback ble_pairing_callback_;
   base::RepeatingClosure bluetooth_adapter_power_on_callback_;

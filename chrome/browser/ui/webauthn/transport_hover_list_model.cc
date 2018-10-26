@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "chrome/browser/ui/webauthn/transport_utils.h"
+#include "ui/gfx/paint_vector_icon.h"
 
 TransportHoverListModel::TransportHoverListModel(
     std::vector<AuthenticatorTransport> transport_list,
@@ -23,16 +24,16 @@ base::string16 TransportHoverListModel::GetPlaceholderText() const {
   return base::string16();
 }
 
-const gfx::VectorIcon* TransportHoverListModel::GetPlaceholderIcon() const {
-  return nullptr;
+const gfx::VectorIcon& TransportHoverListModel::GetPlaceholderIcon() const {
+  return gfx::kNoneIcon;
 }
 
-size_t TransportHoverListModel::GetItemCount() const {
-  return transport_list_.size();
-}
-
-bool TransportHoverListModel::ShouldShowItemInView(int item_tag) const {
-  return true;
+std::vector<int> TransportHoverListModel::GetItemTags() const {
+  std::vector<int> tag_list(transport_list_.size());
+  std::transform(
+      transport_list_.begin(), transport_list_.end(), tag_list.begin(),
+      [](const auto& transport) { return base::strict_cast<int>(transport); });
+  return tag_list;
 }
 
 base::string16 TransportHoverListModel::GetItemText(int item_tag) const {
@@ -41,14 +42,9 @@ base::string16 TransportHoverListModel::GetItemText(int item_tag) const {
       TransportSelectionContext::kTransportSelectionSheet);
 }
 
-const gfx::VectorIcon* TransportHoverListModel::GetItemIcon(
+const gfx::VectorIcon& TransportHoverListModel::GetItemIcon(
     int item_tag) const {
-  return &GetTransportVectorIcon(static_cast<AuthenticatorTransport>(item_tag));
-}
-
-int TransportHoverListModel::GetItemTag(size_t item_index) const {
-  DCHECK_GT(transport_list_.size(), item_index);
-  return base::strict_cast<int>(transport_list_.at(item_index));
+  return GetTransportVectorIcon(static_cast<AuthenticatorTransport>(item_tag));
 }
 
 void TransportHoverListModel::OnListItemSelected(int item_tag) {
