@@ -38,7 +38,6 @@ source_set("wayland") {
   defines = [ "EXO_IMPLEMENTATION" ]
 
   deps = [
-    "//ash/public/cpp",
     "//base",
     "//components/exo",
     "//components/exo/wayland/public:aura_shell_protocol",
@@ -80,7 +79,10 @@ source_set("wayland") {
     ]
 
     if (is_chromeos) {
-      deps += [ "//ui/events/ozone:events_ozone_layout" ]
+      deps += [
+        "//ash/public/cpp",
+        "//ui/events/ozone:events_ozone_layout",
+      ]
     }
   }
 
@@ -320,8 +322,6 @@ executable("wayland_info_client") {
 
 test("wayland_client_perftests") {
   sources = [
-    "../../../ash/test/ash_test_suite.cc",
-    "../../../ash/test/ash_test_suite.h",
     "clients/perftests.cc",
     "clients/test/run_all_client_perftests.cc",
     "clients/test/wayland_client_test.cc",
@@ -333,9 +333,6 @@ test("wayland_client_perftests") {
     ":client_support",
     ":simple",
     ":wayland",
-    "//ash",
-    "//ash:test_support_without_content",
-    "//ash/public/cpp",
     "//base",
     "//base/test:test_support",
     "//cc:test_support",
@@ -352,11 +349,26 @@ test("wayland_client_perftests") {
     "//ui/wm",
   ]
 
-  data_deps = [
-    "//ash/strings:ash_test_strings",
-    "//ash/resources:ash_test_resources_100_percent",
-    "//ash/resources:ash_test_resources_200_percent",
-  ]
+  data_deps = []
+
+  if (is_chromeos) {
+    sources += [
+      "../../../ash/test/ash_test_suite.cc",
+      "../../../ash/test/ash_test_suite.h",
+    ]
+
+    data_deps += [
+      "//ash/strings:ash_test_strings",
+      "//ash/resources:ash_test_resources_100_percent",
+      "//ash/resources:ash_test_resources_200_percent",
+    ]
+
+    deps += [
+      "//ash",
+      "//ash:test_support_without_content",
+      "//ash/public/cpp",
+    ]
+  }
 }
 
 if (ozone_platform_gbm) {
