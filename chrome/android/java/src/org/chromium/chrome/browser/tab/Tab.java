@@ -400,16 +400,12 @@ public class Tab
 
     // TODO(dtrainor): Port more methods to the observer.
     private final TabObserver mTabObserver = new EmptyTabObserver() {
-        /** A runnable to delay the enabling of fullscreen mode if necessary. */
-        private Runnable mEnterFullscreenRunnable;
-
         @Override
         public void onSSLStateUpdated(Tab tab) {
             PolicyAuditor auditor = AppHooks.get().getPolicyAuditor();
             auditor.notifyCertificateFailure(
                     PolicyAuditor.nativeGetCertificateFailure(getWebContents()),
                     getApplicationContext());
-            updateFullscreenEnabledState();
             updateThemeColorIfNeeded(false);
         }
 
@@ -431,61 +427,9 @@ public class Tab
                 didFinishPageLoad();
             }
         }
-
-        @Override
-        public void onInteractabilityChanged(boolean interactable) {
-            if (interactable && mEnterFullscreenRunnable != null) mEnterFullscreenRunnable.run();
-        }
-
-        @Override
-        public void onEnterFullscreenMode(Tab tab, final FullscreenOptions options) {
-            if (!isUserInteractable()) {
-                mEnterFullscreenRunnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        enterFullscreenInternal(options);
-                        mEnterFullscreenRunnable = null;
-                    }
-                };
-                return;
-            }
-
-            enterFullscreenInternal(options);
-        }
-
-        @Override
-        public void onExitFullscreenMode(Tab tab) {
-            if (mEnterFullscreenRunnable != null) {
-                mEnterFullscreenRunnable = null;
-                return;
-            }
-
-            if (mFullscreenManager != null) {
-                mFullscreenManager.exitPersistentFullscreenMode();
-            }
-        }
-
-        /**
-         * Do the actual enter of fullscreen mode.
-         * @param options Options adjust fullscreen mode.
-         */
-        private void enterFullscreenInternal(FullscreenOptions options) {
-            if (mFullscreenManager != null) {
-                mFullscreenManager.enterPersistentFullscreenMode(options);
-            }
-
-            if (getWebContents() != null) {
-                SelectionPopupController controller =
-                        SelectionPopupController.fromWebContents(getWebContents());
-                controller.destroySelectActionMode();
-            }
-
-            // We want to remove any cached thumbnail of the Tab.
-            if (mNativeTabAndroid != 0) {
-                nativeClearThumbnailPlaceholder(mNativeTabAndroid);
-            }
-        }
     };
+
+    private final TabObserver mFullscreenHandler = new TabFullscreenHandler();
 
     private TabDelegateFactory mDelegateFactory;
 
@@ -567,6 +511,7 @@ public class Tab
         }
 
         addObserver(mTabObserver);
+        addObserver(mFullscreenHandler);
 
         if (incognito) {
             CipherFactory.getInstance().triggerKeyGeneration();
@@ -1545,6 +1490,10 @@ public class Tab
     public void attachTabContentManager(TabContentManager tabContentManager) {
         if (mNativeTabAndroid == 0) return;
         nativeAttachToTabContentManager(mNativeTabAndroid, tabContentManager);
+    }
+
+    void clearThumbnailPlaceholder() {
+        if (mNativeTabAndroid != 0) nativeClearThumbnailPlaceholder(mNativeTabAndroid);
     }
 
     /**
@@ -3025,13 +2974,7 @@ public class Tab
     void handleRendererResponsiveStateChanged(boolean isResponsive) {
         mIsRendererUnresponsive = !isResponsive;
         for (TabObserver observer : mObservers) {
-            observer.onRendererResponsiveStateChanged(isResponsive);
-        }
-        if (mFullscreenManager == null) return;
-        if (isResponsive) {
-            updateFullscreenEnabledState();
-        } else {
-            updateBrowserControlsState(BrowserControlsState.SHOWN, false);
+            observer.onRendererResponsiveStateChanged(this, isResponsive);
         }
     }
 

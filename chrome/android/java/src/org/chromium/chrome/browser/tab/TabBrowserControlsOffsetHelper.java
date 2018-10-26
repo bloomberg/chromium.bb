@@ -81,7 +81,7 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
                 if (SadTab.isShowing(tab)) showAndroidControls(false);
             }
             @Override
-            public void onRendererResponsiveStateChanged(boolean isResponsive) {
+            public void onRendererResponsiveStateChanged(Tab tab, boolean isResponsive) {
                 if (!isResponsive) showAndroidControls(false);
             }
         };
