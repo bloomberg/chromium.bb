@@ -69,12 +69,10 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kBleDeviceSelection);
     } else if (name == "ble_pin_entry") {
-      model->SetSelectedAuthenticatorForTesting(
-          std::make_unique<AuthenticatorReference>(
-              "test_authenticator_id" /* authenticator_id */,
-              base::string16() /* authenticator_display_name */,
-              AuthenticatorTransport::kInternal,
-              false /* is_in_pairing_mode */));
+      model->SetSelectedAuthenticatorForTesting(AuthenticatorReference(
+          "test_authenticator_id" /* authenticator_id */,
+          base::string16() /* authenticator_display_name */,
+          AuthenticatorTransport::kInternal, false /* is_in_pairing_mode */));
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kBlePinEntry);
     } else if (name == "ble_verifying") {

@@ -472,11 +472,10 @@ TEST_F(AuthenticatorRequestDialogModelTest,
   model.SetRequestCallback(base::BindRepeating(
       [](int* i, const std::string& authenticator_id) { ++(*i); },
       &num_called));
-  model.saved_authenticators().emplace_back(
-      std::make_unique<AuthenticatorReference>(
-          "authenticator" /* authenticator_id */,
-          base::string16() /* authenticator_display_name */,
-          AuthenticatorTransport::kInternal, false /* is_in_pairing_mode */));
+  model.saved_authenticators().AddAuthenticator(AuthenticatorReference(
+      "authenticator" /* authenticator_id */,
+      base::string16() /* authenticator_display_name */,
+      AuthenticatorTransport::kInternal, false /* is_in_pairing_mode */));
 
   model.StartFlow(std::move(transports_info), base::nullopt);
   EXPECT_EQ(AuthenticatorRequestDialogModel::Step::kTransportSelection,

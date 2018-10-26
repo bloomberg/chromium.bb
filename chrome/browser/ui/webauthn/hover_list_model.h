@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 
+#include <vector>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -28,20 +30,18 @@ class HoverListModel {
 
   virtual bool ShouldShowPlaceholderForEmptyList() const = 0;
   virtual base::string16 GetPlaceholderText() const = 0;
-  virtual const gfx::VectorIcon* GetPlaceholderIcon() const = 0;
-
-  virtual size_t GetItemCount() const = 0;
-  virtual bool ShouldShowItemInView(int item_tag) const = 0;
+  virtual const gfx::VectorIcon& GetPlaceholderIcon() const = 0;
+  virtual std::vector<int> GetItemTags() const = 0;
   virtual base::string16 GetItemText(int item_tag) const = 0;
-  virtual const gfx::VectorIcon* GetItemIcon(int item_tag) const = 0;
-  virtual int GetItemTag(size_t index) const = 0;
+  virtual const gfx::VectorIcon& GetItemIcon(int item_tag) const = 0;
   virtual void OnListItemSelected(int item_tag) = 0;
 
   void SetObserver(Observer* observer) {
     DCHECK(!observer_);
     observer_ = observer;
   }
-  void RemoveObserver(Observer* observer) { observer_ = nullptr; }
+
+  void RemoveObserver() { observer_ = nullptr; }
 
  protected:
   Observer* observer() { return observer_; }

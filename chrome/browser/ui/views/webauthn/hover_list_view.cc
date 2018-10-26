@@ -103,12 +103,9 @@ HoverListView::HoverListView(std::unique_ptr<HoverListModel> model)
       views::BoxLayout::kVertical, gfx::Insets(), 0));
   AddSeparatorAsChild(this);
 
-  for (size_t index = 0; index < model_->GetItemCount(); ++index) {
-    int item_tag = model_->GetItemTag(index);
-    if (model_->ShouldShowItemInView(item_tag)) {
-      AppendListItemView(*model_->GetItemIcon(item_tag),
-                         model_->GetItemText(item_tag), item_tag);
-    }
+  for (const auto item_tag : model_->GetItemTags()) {
+    AppendListItemView(model_->GetItemIcon(item_tag),
+                       model_->GetItemText(item_tag), item_tag);
   }
 
   if (tags_to_list_item_views_.empty() &&
@@ -119,7 +116,7 @@ HoverListView::HoverListView(std::unique_ptr<HoverListModel> model)
 }
 
 HoverListView::~HoverListView() {
-  model_->RemoveObserver(this);
+  model_->RemoveObserver();
 }
 
 void HoverListView::AppendListItemView(const gfx::VectorIcon& icon,
@@ -139,11 +136,9 @@ void HoverListView::AppendListItemView(const gfx::VectorIcon& icon,
 }
 
 void HoverListView::CreateAndAppendPlaceholderItem() {
-  const auto* placeholder_item_icon = model_->GetPlaceholderIcon();
-  DCHECK(placeholder_item_icon);
   auto placeholder_item = CreateHoverButtonForListItem(
-      kPlaceHolderItemTag, *placeholder_item_icon, model_->GetPlaceholderText(),
-      nullptr, true /* is_placeholder_item */);
+      kPlaceHolderItemTag, model_->GetPlaceholderIcon(),
+      model_->GetPlaceholderText(), nullptr, true /* is_placeholder_item */);
   AddChildView(placeholder_item.get());
   auto* separator = AddSeparatorAsChild(this);
   placeholder_list_item_view_.emplace(
@@ -170,7 +165,7 @@ void HoverListView::OnListItemAdded(int item_tag) {
     placeholder_list_item_view_.emplace();
   }
 
-  AppendListItemView(*model_->GetItemIcon(item_tag),
+  AppendListItemView(model_->GetItemIcon(item_tag),
                      model_->GetItemText(item_tag), item_tag);
 
   // TODO(hongjunchoi): The enclosing dialog may also need to be resized,
