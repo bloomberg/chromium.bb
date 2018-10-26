@@ -1834,12 +1834,9 @@ const char kTintGlCompositedContentDescription[] =
     "Tint contents composited using GL with a shade of red to help debug and "
     "study overlay support.";
 
-const char kTopChromeMd[] = "UI Layout for the browser's top chrome";
-const char kTopChromeMdDescription[] =
-    "Toggles between normal, touch-optimized, and dynamically switching UI.";
-const char kTopChromeMdMaterialRefresh[] = "Normal";
-const char kTopChromeMdMaterialRefreshTouchOptimized[] = "Touch-optimized";
-const char kTopChromeMdMaterialRefreshDynamic[] = "Dynamically switching";
+const char kTopChromeTouchUiName[] = "Touch UI Layout";
+const char kTopChromeTouchUiDescription[] =
+    "Enables touch UI layout in the browser's top chrome.";
 
 const char kThreadedScrollingName[] = "Threaded scrolling";
 const char kThreadedScrollingDescription[] =

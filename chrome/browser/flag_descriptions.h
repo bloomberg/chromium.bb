@@ -1111,11 +1111,8 @@ extern const char kTcpFastOpenDescription[];
 extern const char kTintGlCompositedContentName[];
 extern const char kTintGlCompositedContentDescription[];
 
-extern const char kTopChromeMd[];
-extern const char kTopChromeMdDescription[];
-extern const char kTopChromeMdMaterialRefresh[];
-extern const char kTopChromeMdMaterialRefreshTouchOptimized[];
-extern const char kTopChromeMdMaterialRefreshDynamic[];
+extern const char kTopChromeTouchUiName[];
+extern const char kTopChromeTouchUiDescription[];
 
 extern const char kThreadedScrollingName[];
 extern const char kThreadedScrollingDescription[];

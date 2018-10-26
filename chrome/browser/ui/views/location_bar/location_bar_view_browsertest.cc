@@ -126,11 +126,10 @@ IN_PROC_BROWSER_TEST_F(LocationBarViewBrowserTest, BubblesCloseOnHide) {
 
 class TouchLocationBarViewBrowserTest : public LocationBarViewBrowserTest {
  public:
-  TouchLocationBarViewBrowserTest()
-      : md_mode_(ui::MaterialDesignController::Mode::MATERIAL_TOUCH_REFRESH) {}
+  TouchLocationBarViewBrowserTest() : test_api_(true) {}
 
  private:
-  ui::test::MaterialDesignControllerTestAPI md_mode_;
+  ui::test::MaterialDesignControllerTestAPI test_api_;
   DISALLOW_COPY_AND_ASSIGN(TouchLocationBarViewBrowserTest);
 };
 
