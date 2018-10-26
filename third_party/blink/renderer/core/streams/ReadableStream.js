@@ -132,6 +132,8 @@
         'Failed to execute \'pipeThrough\' on \'ReadableStream\': parameter ' +
         '1\'s \'readable\' property is undefined.';
   const errCannotTransferLockedStream = 'Cannot transfer a locked stream';
+  const errCannotTransferUnsupportedContext =
+        'Cannot transfer from this context';
 
   let useCounted = false;
 
@@ -1140,24 +1142,17 @@
       throw new TypeError(errCannotTransferLockedStream);
     }
 
-    // TODO(ricea): Protect against changes to MessageChannel on the global
-    // object.
-    const mc = new MessageChannel();
-    const MessageChannel_port1_getter =
-          v8.uncurryThis(
-              Object.getOwnPropertyDescriptor(
-                  MessageChannel.prototype, 'port1').get);
-    const MessageChannel_port2_getter =
-          v8.uncurryThis(
-              Object.getOwnPropertyDescriptor(
-                  MessageChannel.prototype, 'port2').get);
-    const writable =
-          CreateCrossRealmTransformWritable(MessageChannel_port2_getter(mc));
-    // Failure behaviour here is not ideal.
+    if (!binding.MessageChannel) {
+      throw new TypeError(errCannotTransferUnsupportedContext);
+    }
+
+    const mc = new binding.MessageChannel();
+    const writable = CreateCrossRealmTransformWritable(
+        callFunction(binding.MessageChannel_port1_get, mc));
     const promise =
           ReadableStreamPipeTo(readable, writable, false, false, false);
     markPromiseAsHandled(promise);
-    return MessageChannel_port1_getter(mc);
+    return callFunction(binding.MessageChannel_port2_get, mc);
   }
 
   function ReadableStreamDeserialize(port) {
@@ -1225,8 +1220,8 @@
 
   // TODO(ricea): Remove this once the C++ code switches to calling
   // CreateReadableStream().
-  function createReadableStreamWithExternalController(underlyingSource,
-                                                      strategy) {
+  function createReadableStreamWithExternalController(
+      underlyingSource, strategy) {
     return new ReadableStream(
         underlyingSource, strategy, createWithExternalControllerSentinel);
   }

@@ -176,8 +176,6 @@ bool WorkerOrWorkletScriptController::InitializeContextIfNeeded(
 
   ScriptState::Scope scope(script_state_);
 
-  InitializeV8ExtrasBinding(script_state_);
-
   // Associate the global proxy object, the global object and the worker
   // instance (C++ object) as follows.
   //
@@ -245,6 +243,10 @@ bool WorkerOrWorkletScriptController::InitializeContextIfNeeded(
         V8String(isolate_, disable_eval_pending_));
     disable_eval_pending_ = String();
   }
+
+  // This can only be called after the global object is fully initialised, as it
+  // reads values from it.
+  InitializeV8ExtrasBinding(script_state_);
 
   return true;
 }
