@@ -1730,7 +1730,6 @@
       },
       'ozone_unittests': {},
       'ozone_x11_unittests': {},
-      'select_to_speak_extension_tests': {},
       'single_process_mash_ash_unittests': {
         'test': 'ash_unittests',
         'args': [

@@ -111,8 +111,9 @@ out/release/browser_tests --test-launcher-jobs=20 --gtest_filter=ChromeVox*
 ### Select-To-Speak tests
 
 ```
-autoninja -C out/release unit_tests
-out/release/unit_tests --gtest_filter="*SelectToSpeak*"
+autoninja -C out/release unit_tests browser_tests
+out/release/unit_tests --gtest_filter=*SelectToSpeak*
+out/release/browser_tests --gtest_filter=*SelectToSpeak*
 ```
 
 ## Performance tests
