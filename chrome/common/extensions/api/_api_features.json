@@ -253,7 +253,8 @@
       "chrome://chrome-signin/*",
       "chrome://media-router/*",
       "chrome://mobilesetup/*",
-      "chrome://oobe/*"
+      "chrome://oobe/*",
+      "chrome://assistant-optin/*"
     ]
   }],
   "cloudPrintPrivate": {
