@@ -75,6 +75,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/leveldatabase/env_chromium.h"
+#include "third_party/leveldatabase/leveldb_features.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
 
@@ -282,6 +283,7 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
   BrowsingDataRemoverBrowserTest() {
     feature_list_.InitWithFeatures(
         {browsing_data::features::kRemoveNavigationHistory,
+         leveldb::kLevelDBRewriteFeature,
          // Ensure that kOnionSoupDOMStorage is enabled because the old
          // SessionStorage implementation causes flaky tests.
          blink::features::kOnionSoupDOMStorage},
@@ -1070,7 +1072,6 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, StorageRemovedFromDisk) {
   static const std::vector<std::string> whitelist = {
     // TODO(crbug.com/823071): LevelDB logs are not deleted immediately.
     "File System/Origins/[0-9]*.log",
-    "Local Storage/leveldb/[0-9]*.log",
     "Service Worker/Database/[0-9]*.log",
     "Session Storage/[0-9]*.log",
 

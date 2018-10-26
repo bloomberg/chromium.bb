@@ -53,8 +53,7 @@ void ClearStoragePartition(content::StoragePartition* storage_partition,
   storage_partition->ClearData(
       content::StoragePartition::REMOVE_DATA_MASK_ALL,
       content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL, GURL(),
-      content::StoragePartition::OriginMatcherFunction(), base::Time(),
-      base::Time::Max(), std::move(partition_data_cleared));
+      base::Time(), base::Time::Max(), std::move(partition_data_cleared));
 }
 
 net::URLRequestContextGetter* GetSystemURLRequestContextGetter() {

@@ -482,8 +482,7 @@ void StoragePartitionImplMap::AsyncObliterate(
           // All except shader cache.
           ~StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE,
           StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL, GURL(),
-          StoragePartition::OriginMatcherFunction(), base::Time(),
-          base::Time::Max(), base::DoNothing());
+          base::Time(), base::Time::Max(), base::DoNothing());
       if (!config.in_memory) {
         paths_to_keep.push_back(it->second->GetPath());
       }

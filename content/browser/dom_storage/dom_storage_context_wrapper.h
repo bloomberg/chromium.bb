@@ -60,6 +60,7 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   void GetSessionStorageUsage(GetSessionStorageUsageCallback callback) override;
   void DeleteLocalStorage(const GURL& origin,
                           base::OnceClosure callback) override;
+  void PerformLocalStorageCleanup(base::OnceClosure callback) override;
   void DeleteSessionStorage(const SessionStorageUsageInfo& usage_info) override;
   void SetSaveSessionStorageOnDisk() override;
   scoped_refptr<SessionStorageNamespace> RecreateSessionStorage(

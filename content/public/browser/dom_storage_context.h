@@ -42,6 +42,9 @@ class DOMStorageContext {
   virtual void DeleteLocalStorage(const GURL& origin_url,
                                   base::OnceClosure callback) = 0;
 
+  // Removes traces of deleted data from the local storage backend.
+  virtual void PerformLocalStorageCleanup(base::OnceClosure callback) = 0;
+
   // Deletes the session storage data identified by |usage_info|.
   virtual void DeleteSessionStorage(
       const SessionStorageUsageInfo& usage_info) = 0;

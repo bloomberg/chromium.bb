@@ -280,8 +280,7 @@ void BackgroundSyncBrowserTest::ClearStoragePartitionData() {
   base::RunLoop run_loop;
 
   storage->ClearData(storage_partition_mask, quota_storage_mask, delete_origin,
-                     StoragePartition::OriginMatcherFunction(), delete_begin,
-                     delete_end, run_loop.QuitClosure());
+                     delete_begin, delete_end, run_loop.QuitClosure());
 
   run_loop.Run();
 }
