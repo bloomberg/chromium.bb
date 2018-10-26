@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -3665,8 +3666,8 @@ TEST_F(ViewTest, GetViewByID) {
   View::Views views;
   v1.GetViewsInGroup(kGroup, &views);
   EXPECT_EQ(2U, views.size());
-  EXPECT_NE(views.cend(), std::find(views.cbegin(), views.cend(), &v3));
-  EXPECT_NE(views.cend(), std::find(views.cbegin(), views.cend(), &v4));
+  EXPECT_TRUE(base::ContainsValue(views, &v3));
+  EXPECT_TRUE(base::ContainsValue(views, &v4));
 }
 
 TEST_F(ViewTest, AddExistingChild) {
