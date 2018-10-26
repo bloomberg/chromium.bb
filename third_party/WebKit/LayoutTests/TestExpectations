@@ -13,6 +13,227 @@ Bug(intentional) external/wpt/infrastructure/expected-fail/timeout.html [ Timeou
 
 crbug.com/807686 crbug.com/24182 jquery/manipulation.html [ Timeout Pass ]
 
+
+# See crbug.com/891427. These tests either fail or become flaky on one or more
+# platforms when --enable-display-compositor-pixel-dump is turned on. They need
+# triage. Note that these overlap with several existing entries in this
+# TestExpectations file. All of those have been commented out with a pointer back
+# up to this section. So if you close one of these, you should search for the
+# same test elsewhere, to see if perhaps you need to uncomment the old line.
+### These fail on all platforms:
+## Next 18 can be viewed in this run, by clicking on "Did not pass 11183":
+## https://test-results.appspot.com/data/layout_results/linux-blink-rel/1237/webkit_layout_tests%20%28with%20patch%29/layout-test-results/results.html
+crbug.com/891427 http/tests/devtools/tracing/frame-model-instrumentation.js [ Failure ]
+crbug.com/891427 rootscroller/rootscroller-during-fullscreen.html [ Failure ]
+crbug.com/891427 virtual/threaded/animations/responsive/viewport-unit-transform-responsive.html [ Timeout ]
+crbug.com/891427 virtual/threaded/animations/responsive/viewport-unit-translate-responsive.html [ Timeout ]
+crbug.com/891427 virtual/threaded/http/tests/devtools/tracing/frame-model-instrumentation.js [ Failure ]
+crbug.com/891427 fast/scrolling/editor-command-scroll-page-scale.html [ Failure ]
+crbug.com/891427 virtual/scroll_customization/fast/scrolling/editor-command-scroll-page-scale.html [ Failure ]
+crbug.com/891427 virtual/threaded/fast/scrolling/editor-command-scroll-page-scale.html [ Failure ]
+crbug.com/891427 fast/replaced/replaced-breaking.html [ Failure ]
+crbug.com/891427 http/tests/devtools/tracing/decode-resize.js [ Failure ]
+crbug.com/891427 virtual/threaded/http/tests/devtools/tracing/decode-resize.js [ Failure ]
+crbug.com/891427 media/picture-in-picture/mediastream.html [ Crash ]
+crbug.com/891427 virtual/android/fullscreen/rendering/backdrop-video.html [ Failure ]
+crbug.com/891427 virtual/android/rootscroller/set-root-scroller.html [ Failure ]
+crbug.com/891427 virtual/android/rootscroller/set-rootscroller-before-load.html [ Failure ]
+crbug.com/891427 virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundary-events.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/android/url-bar/bottom-and-top-fixed-sticks-to-top.html [ Failure ]
+crbug.com/891427 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-desktop.html [ Pass Failure Timeout Crash ]
+## Next 4 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_chromium_rel_ng/216317
+crbug.com/891427 virtual/threaded/animations/timing/animation-duration-infinite.html [ Failure ]
+crbug.com/891427 editing/selection/drag-in-iframe.html [ Failure ]
+crbug.com/891427 fast/overflow/scrollRevealButton.html [ Crash ]
+crbug.com/891427 fast/overflow/transformed-frame-scrollIntoView.html [ Crash ]
+## Next 1 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win7_chromium_rel_ng/114099
+crbug.com/891427 [ Win ] external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-all.https.sub.html [ Timeout ]
+
+### Flaky on trybots:
+### Note: this list includes anything that flaked even once during my (many)
+### test runs with the flag enabled. It is very possible that some of these
+### were random flakes, or were already flaky before the flag was turned on.
+# Next 3 here: https://ci.chromium.org/buildbot/tryserver.blink/linux-blink-rel/1215
+crbug.com/891427 animations/responsive/viewport-unit-transform-responsive.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 animations/responsive/viewport-unit-translate-responsive.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/android/rootscroller/rootscroller-during-fullscreen.html [ Pass Failure Timeout Crash ]
+# Next 5 here: https://ci.chromium.org/buildbot/tryserver.blink/mac10.10-blink-rel/1162
+crbug.com/891427 fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
+# Next 2 here: https://ci.chromium.org/buildbot/tryserver.blink/win7-blink-rel/1183
+crbug.com/891427 external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 fast/canvas/canvas-drawImage-live-video.html [ Pass Failure Timeout Crash ]
+# Next 2 here: https://ci.chromium.org/buildbot/tryserver.blink/mac10.13-blink-rel/1144
+crbug.com/891427 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-image.js [ Pass Failure Timeout Crash ]
+crbug.com/891427 http/tests/devtools/tracing/timeline-paint/timeline-paint-image.js [ Pass Failure Timeout Crash ]
+# Next 1 here: https://ci.chromium.org/buildbot/tryserver.blink/win7-blink-rel/1180
+crbug.com/891427 editing/pasteboard/drop-text-without-selection.html [ Pass Failure Timeout Crash ]
+# Next 5 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel/1541
+crbug.com/891427 http/tests/devtools/sources/debugger-breakpoints/picture-in-picture-event-listener-breakpoints.js [ Skip ]
+crbug.com/891427 virtual/android/rootscroller/gesture-scroll-document-not-root-scroller.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/threaded/fast/events/pinch/pinch-zoom-pan-within-zoomed-viewport.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.js [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.html [ Pass Failure Timeout Crash ]
+# Next 3 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/mac10.13_retina-blink-rel/996
+crbug.com/891427 virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Pass Failure Timeout Crash ]
+# Next 4 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel/1547
+crbug.com/891427 virtual/threaded/external/wpt/css/css-scroll-snap/snap-at-user-scroll-end-manual.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/threaded/fast/events/pinch/gesture-pinch-fake-mouse-wheel.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/threaded/fast/events/pinch/gesture-pinch-zoom-prevent-in-handler.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/threaded/fast/events/pinch/pinch-zoom-pan-position-fixed.html [ Pass Failure Timeout Crash ]
+# Next 1 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win7_chromium_rel_ng/114846
+crbug.com/891427 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchpad.html [ Pass Failure Timeout Crash ]
+# Next 1 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win7-blink-rel/1504
+crbug.com/891427 tables/mozilla_expected_failures/marvin/table_overflow_dirty_reflow_tbody.html [ Pass Failure Timeout Crash ]
+# Next 1 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win10-blink-rel/1510
+crbug.com/891427 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.js [ Pass Failure Timeout Crash ]
+# Next 1 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel/1548
+crbug.com/891427 virtual/threaded/fast/scrolling/scroll-non-composited-scroller.html [ Pass Failure Timeout Crash ]
+# Next 6 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel/1590
+crbug.com/891427 virtual/fractional_scrolling_threaded/fast/scrolling/editor-command-scroll-page-scale.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/fractional_scrolling_threaded/fast/scrolling/fractional-scroll-offset-document.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/fractional_scrolling_threaded/fast/scrolling/scroll-non-composited-scroller.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/threaded/fast/scrolling/fractional-scroll-offset-document.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/threaded/synthetic_gestures/animated-wheel-tiny-delta.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/threaded/synthetic_gestures/smooth-scroll-tiny-delta.html [ Pass Failure Timeout Crash ]
+# Next 1 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/mac10.12-blink-rel/1427
+crbug.com/891427 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchpad-zoom-out-slow.html [ Pass Failure Timeout Crash ]
+
+
+# Remove these when --enable-display-compositor-pixel-dump becomes the
+# "default" setting. These will all need to be re-baselined at that point.
+# All differences should be related to the overflow menu being (now
+# expectedly) present in the new output.
+crbug.com/881040 http/tests/media/controls/video-controls-overflow-menu-correct-ordering.html [ Failure ]
+crbug.com/881040 http/tests/media/controls/video-controls-overflow-menu-updates-appropriately.html [ Failure ]
+crbug.com/881040 media/controls-after-reload.html [ Failure ]
+crbug.com/881040 media/controls-strict.html [ Failure ]
+crbug.com/881040 media/controls-styling-strict.html [ Failure ]
+crbug.com/881040 media/controls-styling.html [ Failure ]
+crbug.com/881040 media/controls-without-preload.html [ Failure ]
+crbug.com/881040 media/video-controls-rendering.html [ Failure ]
+crbug.com/881040 media/video-display-toggle.html [ Failure ]
+crbug.com/881040 media/video-no-audio.html [ Failure ]
+crbug.com/881040 [ Mac Win10 Linux Android ] media/video-zoom-controls.html [ Failure ]
+crbug.com/881040 media/controls/lazy-loaded-style.html [ Failure ]
+crbug.com/881040 media/controls/paint-controls-webkit-appearance-none-custom-bg.html [ Failure ]
+crbug.com/881040 media/controls/paint-controls-webkit-appearance-none.html [ Failure ]
+crbug.com/881040 virtual/android/fullscreen/full-screen-iframe-allowed-video.html [ Failure ]
+crbug.com/881040 virtual/android/fullscreen/video-controls-timeline.html [ Failure ]
+crbug.com/881040 virtual/android/fullscreen/video-scrolled-iframe.html [ Failure ]
+crbug.com/881040 virtual/new-remote-playback-pipeline/http/tests/media/controls/video-controls-overflow-menu-correct-ordering.html [ Failure ]
+crbug.com/881040 virtual/new-remote-playback-pipeline/http/tests/media/controls/video-controls-overflow-menu-updates-appropriately.html [ Failure ]
+crbug.com/881040 virtual/new-remote-playback-pipeline/media/controls/lazy-loaded-style.html [ Failure ]
+crbug.com/881040 virtual/new-remote-playback-pipeline/media/controls/paint-controls-webkit-appearance-none-custom-bg.html [ Failure ]
+crbug.com/881040 virtual/new-remote-playback-pipeline/media/controls/paint-controls-webkit-appearance-none.html [ Failure ]
+crbug.com/881040 external/wpt/picture-in-picture/idlharness.window.html [ Failure ]
+crbug.com/881040 media/video-layer-crash.html [ Failure ]
+
+# Remove these when --enable-display-compositor-pixel-dump becomes the
+# "default" setting, and after re-baselining these tests. I went through each
+# of these tests by hand and inspected the differences. All of the
+# tests listed below had extremely subtle differences, mostly just a handful
+# of edge pixels, mostly with colors that are off by 1 in R, G, or B.
+crbug.com/667551 animations/rotate-transform-equivalent.html [ Failure ]
+crbug.com/667551 compositing/3d-corners.html [ Failure ]
+crbug.com/667551 compositing/direct-image-compositing.html [ Failure ]
+crbug.com/667551 compositing/flat-with-transformed-child.html [ Failure ]
+crbug.com/667551 compositing/lots-of-img-layers-with-opacity.html [ Failure ]
+crbug.com/667551 compositing/lots-of-img-layers.html [ Failure ]
+crbug.com/667551 compositing/perpendicular-layer-sorting.html [ Failure ]
+crbug.com/667551 compositing/perspective-interest-rect.html [ Failure ]
+crbug.com/667551 compositing/video-frame-size-change.html [ Failure ]
+crbug.com/667551 compositing/geometry/fixed-position-transform-composited-page-scale-down.html [ Failure ]
+crbug.com/667551 compositing/geometry/fixed-position-transform-composited-page-scale.html [ Failure ]
+crbug.com/667551 compositing/geometry/layer-due-to-layer-children-deep.html [ Failure ]
+crbug.com/667551 compositing/geometry/layer-due-to-layer-children.html [ Failure ]
+crbug.com/667551 compositing/geometry/vertical-scroll-composited.html [ Failure ]
+crbug.com/667551 compositing/masks/mask-with-removed-filters.html [ Failure ]
+crbug.com/667551 compositing/overflow/border-radius-styles-with-composited-child.html [ Failure ]
+crbug.com/667551 compositing/overflow/mask-with-filter.html [ Failure ]
+crbug.com/667551 compositing/overflow/nested-render-surfaces-with-rotation.html [ Failure ]
+crbug.com/667551 compositing/overflow/scaled-overflow.html [ Failure ]
+crbug.com/667551 compositing/overflow/tiled-mask.html [ Failure ]
+crbug.com/667551 compositing/reflections/nested-reflection-anchor-point.html [ Failure ]
+crbug.com/667551 css3/blending/background-blend-mode-overlapping-accelerated-elements.html [ Failure ]
+crbug.com/667551 fast/borders/border-radius-mask-canvas-border.html [ Failure ]
+crbug.com/667551 fast/borders/border-radius-mask-canvas-with-mask.html [ Failure ]
+crbug.com/667551 fast/borders/border-radius-mask-canvas.html [ Failure ]
+crbug.com/667551 fast/borders/border-radius-mask-video.html [ Failure ]
+crbug.com/667551 fast/borders/border-radius-with-composited-child.html [ Failure ]
+crbug.com/667551 fast/clip/overflow-border-radius-composited-parent.html [ Failure ]
+crbug.com/667551 fast/clip/overflow-border-radius-composited.html [ Failure ]
+crbug.com/667551 [ Mac Linux Android ] paint/invalidation/scroll/scrollbar-damage-and-full-viewport-repaint.html [ Failure ]
+crbug.com/667551 transforms/3d/general/perspective-units.html [ Failure ]
+crbug.com/667551 transforms/3d/general/transform-origin-z-change.html [ Failure ]
+crbug.com/667551 transforms/3d/point-mapping/3d-point-mapping-2.html [ Failure ]
+crbug.com/667551 transforms/3d/point-mapping/3d-point-mapping-3.html [ Failure ]
+crbug.com/667551 transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
+crbug.com/667551 transforms/3d/point-mapping/3d-point-mapping-origins.html [ Failure ]
+crbug.com/667551 transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
+crbug.com/667551 transforms/3d/point-mapping/3d-point-mapping.html [ Failure ]
+crbug.com/667551 virtual/prefer_compositing_to_lcd_text/compositing/overflow/border-radius-styles-with-composited-child.html [ Failure ]
+crbug.com/667551 virtual/prefer_compositing_to_lcd_text/compositing/overflow/mask-with-filter.html [ Failure ]
+crbug.com/667551 virtual/prefer_compositing_to_lcd_text/compositing/overflow/nested-render-surfaces-with-rotation.html [ Failure ]
+crbug.com/667551 virtual/prefer_compositing_to_lcd_text/compositing/overflow/scaled-overflow.html [ Failure ]
+crbug.com/667551 virtual/prefer_compositing_to_lcd_text/compositing/overflow/tiled-mask.html [ Failure ]
+crbug.com/667551 compositing/overflow/rotate-clip.html [ Failure ]
+crbug.com/667551 compositing/overflow/rotate-then-clip-effect-interleave.html [ Failure ]
+crbug.com/667551 compositing/overflow/rotate-then-clip-z-order-interleave.html [ Failure ]
+crbug.com/667551 compositing/overflow/rotate-then-clip.html [ Failure ]
+crbug.com/667551 virtual/prefer_compositing_to_lcd_text/compositing/overflow/rotate-clip.html [ Failure ]
+crbug.com/667551 virtual/prefer_compositing_to_lcd_text/compositing/overflow/rotate-then-clip-effect-interleave.html [ Failure ]
+crbug.com/667551 virtual/prefer_compositing_to_lcd_text/compositing/overflow/rotate-then-clip-z-order-interleave.html [ Failure ]
+crbug.com/667551 virtual/prefer_compositing_to_lcd_text/compositing/overflow/rotate-then-clip.html [ Failure ]
+crbug.com/667551 [ Mac ] css3/filters/effect-contrast-hw.html [ Failure ]
+crbug.com/667551 [ Mac ] fast/borders/border-radius-mask-video-ratio.html [ Failure ]
+crbug.com/667551 [ Mac ] fast/borders/border-radius-mask-video-shadow.html [ Failure ]
+crbug.com/667551 [ Mac ] fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ Failure ]
+crbug.com/667551 [ Mac ] overflow/overflow-transform-perspective.html [ Failure ]
+crbug.com/667551 [ Mac ] virtual/layout_ng/overflow/overflow-transform-perspective.html [ Failure ]
+crbug.com/667551 [ Win ] compositing/reflections/nested-reflection-animated.html [ Failure ]
+
+# Remove these when --enable-display-compositor-pixel-dump becomes the
+# "default" setting. These will all need to be re-baselined at that point, or
+# debugged. All of these tests (roughly) doubled their canvas size after this
+# CL landed: https://crrev.com/5c236080c772cacebe27f3b83781adc6abe17066
+# These failures only happen on Windows and Linux.
+# These can be debugged, or just rebaselined. In all cases, there are no
+# material differences in the output, except for the size of the image.
+# Failures can be seen here: https://test-results.appspot.com/data/layout_results/linux-blink-rel/1236/webkit_layout_tests%20%28with%20patch%29/layout-test-results/results.html
+crbug.com/895556 [ Linux Win ] fast/backgrounds/gradient-background-leakage-hidpi.html [ Failure ]
+crbug.com/895556 [ Linux Win ] fast/canvas/canvas-hidpi-blurry.html [ Failure ]
+crbug.com/895556 [ Linux Win ] fast/hidpi/broken-image-icon-hidpi.html [ Failure ]
+crbug.com/895556 [ Linux Win ] fast/hidpi/broken-image-with-size-hidpi.html [ Failure ]
+crbug.com/895556 [ Linux Win ] fast/hidpi/clip-text-in-hidpi.html [ Failure ]
+crbug.com/895556 [ Linux Win ] fast/hidpi/device-scale-factor-paint.html [ Failure ]
+crbug.com/895556 [ Linux Win ] fast/hidpi/focus-rings.html [ Failure ]
+crbug.com/895556 [ Linux Win ] fast/hidpi/gradient-with-scaled-ancestor.html [ Failure ]
+crbug.com/895556 [ Linux Win ] fast/hidpi/resize-corner-hidpi.html [ Failure ]
+crbug.com/895556 [ Linux Win ] fast/hidpi/scrollbar-appearance-increase-device-scale-factor.html [ Failure ]
+crbug.com/895556 [ Linux Win ] fast/sub-pixel/shadows-hidpi.html [ Failure ]
+crbug.com/895556 [ Linux Win ] paint/markers/grammar-markers-hidpi.html [ Failure ]
+crbug.com/895556 [ Linux Win ] paint/markers/inline-spelling-markers-hidpi-composited.html [ Failure ]
+crbug.com/895556 [ Linux Win ] paint/markers/inline-spelling-markers-hidpi.html [ Failure ]
+crbug.com/895556 [ Linux Win ] scrollbars/resize-scales-with-dpi-150.html [ Failure ]
+crbug.com/895556 [ Linux Win ] svg/as-image/image-respects-deviceScaleFactor.html [ Failure ]
+crbug.com/895556 [ Linux Win ] svg/custom/masking-clipping-hidpi.svg [ Failure ]
+crbug.com/895556 [ Linux Win ] virtual/gpu/fast/canvas/canvas-hidpi-blurry.html [ Failure ]
+crbug.com/895556 [ Linux Win ] virtual/prefer_compositing_to_lcd_text/scrollbars/resize-scales-with-dpi-150.html [ Failure ]
+
+
+# With --enable-display-compositor-pixel-dump enabled by default, these three
+# tests fail. See crbug.com/887140 for more info.
+crbug.com/887140 hdr/color-jpeg-with-color-profile.html [ Failure ]
+crbug.com/887140 hdr/color-profile-video.html [ Failure ]
+crbug.com/887140 hdr/video-canvas-alpha.html [ Failure ]
+
+
 # ====== Oilpan-only failures from here ======
 # Most of these actually cause the tests to report success, rather than
 # failure. Expected outputs will be adjusted for the better once Oilpan
@@ -1858,14 +2079,17 @@ crbug.com/862806 [ Mac ] css3/filters/effect-drop-shadow-hw.html [ Failure Pass 
 # gpuBenchmarking.pinchBy is busted on desktops for touchscreen pinch
 crbug.com/787615 [ Win Linux Fuchsia ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow.html [ Failure Pass ]
 crbug.com/787615 [ Win Linux Fuchsia ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-out-slow.html [ Failure Pass ]
-crbug.com/787615 [ Win Linux Fuchsia ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.html [ Failure Pass ]
+### See crbug.com/891427 comment near the top of this file:
+####crbug.com/787615 [ Win Linux Fuchsia ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.html [ Failure Pass ]
 # gpuBenchmarking.pinchBy is not implemented on Mac for touchscreen pinch
 crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-out-slow.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.html [ Skip ]
+### See crbug.com/891427 comment near the top of this file:
+####crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow-desktop.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-out-slow-desktop.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-desktop.html [ Skip ]
+### See crbug.com/891427 comment near the top of this file:
+####crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-desktop.html [ Skip ]
 
 # This test are currently flaky.
 crbug.com/877361 virtual/threaded/fast/events/pinch/gesture-pinch-zoom-scroll-bubble.html [ Timeout Pass ]
@@ -2373,7 +2597,6 @@ crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-div.html
 crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-iframe-editable.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-iframe.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Skip ]
-crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-page-past-extent.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-page-zoomed.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-page.html [ Skip ]
@@ -2392,7 +2615,6 @@ crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture
 crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-iframe-editable.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-iframe.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-page-past-extent.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-page-zoomed.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-page.html [ Skip ]
@@ -2410,8 +2632,6 @@ crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-div.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-iframe-editable.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-iframe.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-page-past-extent.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-page-zoomed.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-page.html [ Skip ]
@@ -2429,8 +2649,6 @@ crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/to
 crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-div.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-iframe-editable.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-iframe.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-page-past-extent.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-page-zoomed.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-page.html [ Skip ]
@@ -2446,11 +2664,18 @@ crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gestu
 crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-scroll-div.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-scroll-iframe-editable.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-scroll-iframe.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-scroll-page-past-extent.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-scroll-page-zoomed.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-scroll-page.html [ Skip ]
+### See crbug.com/891427 comment near the top of this file:
+####crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Skip ]
+####crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Skip ]
+####crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Skip ]
+####crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Skip ]
+####crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Skip ]
+####crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Skip ]
+####crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Skip ]
+####crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Skip ]
 
 crbug.com/802067 [ Mac ] external/wpt/pointerlock/movementX_Y_basic-manual.html [ Failure ]
 crbug.com/802067 [ Mac ] external/wpt/pointerevents/pointerlock/pointerevent_movementxy-manual.html [ Failure ]
@@ -3039,7 +3264,8 @@ crbug.com/626703 external/wpt/wasm/webapi/abort.any.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-will-change/will-change-abspos-cb-dynamic-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-will-change/will-change-abspos-cb-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-conditional/at-supports-040.html [ Failure ]
-crbug.com/626703 [ Win7 ] external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
+### See crbug.com/891427 comment near the top of this file:
+###crbug.com/626703 [ Win7 ] external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/update-not-allowed.https.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/service-workers/service-worker/update-not-allowed.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/text-transform-full-size-kana-001.html [ Failure ]
@@ -4212,7 +4438,7 @@ crbug.com/181374 external/wpt/css/css-display/display-contents-dynamic-table-001
 # ====== End of display: contents tests ======
 
 crbug.com/676229 [ Win Linux Mac ] plugins/mouse-click-plugin-clears-selection.html [ Failure Pass ]
-crbug.com/736333 [ Win7 Linux ] plugins/iframe-plugin-bgcolor.html [ Failure Pass ]
+crbug.com/736333 [ Win Linux ] plugins/iframe-plugin-bgcolor.html [ Failure Pass ]
 crbug.com/742670 [ Mac ] plugins/iframe-plugin-bgcolor.html [ Failure Pass ]
 
 crbug.com/780398 [ Mac ] plugins/mouse-capture-inside-shadow.html [ Failure Pass ]
@@ -4559,7 +4785,8 @@ crbug.com/694855 media/video-src-suspend-after-have-metadata.html [ Skip ]
 crbug.com/694855 virtual/video-surface-layer/media/audio-src-suspend-after-have-metadata.html [ Skip ]
 crbug.com/694855 virtual/video-surface-layer/media/video-src-suspend-after-have-metadata.html [ Skip ]
 
-crbug.com/849979 media/video-layer-crash.html [ Pass Timeout ]
+### See crbug.com/891427 comment near the top of this file:
+###crbug.com/849979 media/video-layer-crash.html [ Pass Timeout ]
 
 crbug.com/851812 editing/selection/paint-hyphen.html [ Failure ]
 crbug.com/770232 [ Win10 ] fast/text/hyphenate-character.html [ Failure ]
@@ -4826,12 +5053,14 @@ crbug.com/806249 external/wpt/feature-policy/picture-in-picture-allowed-by-featu
 crbug.com/806249 external/wpt/feature-policy/picture-in-picture-allowed-by-feature-policy.https.sub.html [ Failure ]
 crbug.com/806249 external/wpt/feature-policy/picture-in-picture-default-feature-policy.https.sub.html [ Failure ]
 crbug.com/806249 external/wpt/feature-policy/reporting/picture-in-picture-reporting.html [ Failure ]
-crbug.com/806249 http/tests/devtools/sources/debugger-breakpoints/picture-in-picture-event-listener-breakpoints.js [ Timeout ]
+### See crbug.com/891427 comment near the top of this file:
+####crbug.com/806249 http/tests/devtools/sources/debugger-breakpoints/picture-in-picture-event-listener-breakpoints.js [ Timeout ]
 crbug.com/806249 media/picture-in-picture/controls/picture-in-picture-button.html [ Failure ]
 crbug.com/806249 media/picture-in-picture/controls/picture-in-picture-video-with-audio-only-button.html [ Failure ]
 crbug.com/806249 media/picture-in-picture/picture-in-picture-enabled.html [ Failure ]
 crbug.com/811977 media/picture-in-picture/picture-in-picture-interstitial.html [ Failure ]
-crbug.com/811977 media/picture-in-picture/mediastream.html [ Failure ]
+### See crbug.com/891427 comment near the top of this file:
+###crbug.com/811977 media/picture-in-picture/mediastream.html [ Failure ]
 crbug.com/806249 virtual/unified-autoplay/external/wpt/feature-policy/picture-in-picture-allowed-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Failure ]
 crbug.com/806249 virtual/unified-autoplay/external/wpt/feature-policy/picture-in-picture-allowed-by-feature-policy-attribute.https.sub.html [ Failure ]
 crbug.com/806249 virtual/unified-autoplay/external/wpt/feature-policy/picture-in-picture-allowed-by-feature-policy.https.sub.html [ Failure ]
@@ -4841,7 +5070,8 @@ crbug.com/806249 virtual/video-surface-layer/external/wpt/html/semantics/embedde
 crbug.com/806249 virtual/video-surface-layer/external/wpt/html/semantics/embedded-content/media-elements/autoplay-default-feature-policy.https.sub.html [ Skip ]
 crbug.com/806249 virtual/video-surface-layer/external/wpt/html/semantics/embedded-content/media-elements/autoplay-disabled-by-feature-policy.https.sub.html [ Skip ]
 
-crbug.com/816914 [ Mac ] fast/canvas/canvas-drawImage-live-video.html [ Failure Pass ]
+### See crbug.com/891427 comment near the top of this file:
+###crbug.com/816914 [ Mac ] fast/canvas/canvas-drawImage-live-video.html [ Failure Pass ]
 crbug.com/817167 http/tests/devtools/oopif/oopif-cookies-refresh.js [ Failure Timeout Pass ]
 
 # Sheriff 2018-03-02
@@ -4983,8 +5213,9 @@ crbug.com/849284 [ Mac ] http/tests/devtools/editor/text-editor-ctrl-d-2.js [ Ti
 crbug.com/846982 http/tests/devtools/editor/text-editor-formatter.js [ Timeout Pass ]
 crbug.com/847094 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/modern/tap-to-hide-controls.html [ Skip ]
 crbug.com/846981 fast/webgl/texImage-imageBitmap-from-imageData-resize.html [ Pass Timeout ]
-crbug.com/847114 [ Linux ] http/tests/devtools/tracing/decode-resize.js [ Pass Failure ]
-crbug.com/847114 [ Linux ] virtual/threaded/http/tests/devtools/tracing/decode-resize.js [ Pass Failure ]
+### See crbug.com/891427 comment near the top of this file:
+###crbug.com/847114 [ Linux ] http/tests/devtools/tracing/decode-resize.js [ Pass Failure ]
+###crbug.com/847114 [ Linux ] virtual/threaded/http/tests/devtools/tracing/decode-resize.js [ Pass Failure ]
 
 crbug.com/843135 virtual/gpu/fast/canvas/canvas-arc-circumference-fill.html [ Pass Failure ]
 
@@ -5140,7 +5371,8 @@ crbug.com/824539 [ Android ] css3/selectors3/xml/css3-modsel-61.xml [ Failure ]
 crbug.com/824539 [ Android ] device_orientation/motion/add-listener-from-callback.html [ Failure ]
 crbug.com/824539 [ Android ] editing/execCommand/5190926.html [ Failure ]
 crbug.com/824539 [ Android ] editing/inserting/5156401-2.html [ Failure ]
-crbug.com/824539 [ Android ] editing/pasteboard/drop-text-without-selection.html [ Failure ]
+### See crbug.com/891427 comment near the top of this file:
+###crbug.com/824539 [ Android ] editing/pasteboard/drop-text-without-selection.html [ Failure ]
 crbug.com/824539 [ Android ] editing/pasteboard/paste-line-endings-001.html [ Failure ]
 crbug.com/824539 [ Android ] editing/pasteboard/paste-line-endings-002.html [ Failure ]
 crbug.com/824539 [ Android ] editing/pasteboard/paste-line-endings-003.html [ Failure ]
@@ -5260,7 +5492,8 @@ crbug.com/862806 [ Linux ] css3/filters/effect-drop-shadow-hw.html [ Pass Timeou
 # Sheriff 2018-08-06
 crbug.com/871139 [ Android ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow.html [ Failure ]
 crbug.com/871139 [ Android ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-out-slow.html [ Failure ]
-crbug.com/871139 [ Android ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.html [ Failure ]
+### See crbug.com/891427 comment near the top of this file:
+####crbug.com/871139 [ Android ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.html [ Failure ]
 
 # Sheriff 2018-08-08
 crbug.com/871105 [ Linux ] svg/dom/remove-use-target-element-indirectly.html [ Pass Crash ]
@@ -5454,7 +5687,8 @@ crbug.com/898050 [ Mac Win ] fast/workers/taskqueue/basic.html [ Pass Timeout ]
 crbug.com/898378 [ Mac10.13 ] fast/scroll-behavior/smooth-scroll/keyboard-scroll.html [ Timeout ]
 
 # Sheriff 2018-10-24
-crbug.com/898394 [ Linux ] virtual/android/url-bar/bottom-and-top-fixed-sticks-to-top.html [ Failure ]
+### See crbug.com/891427 comment near the top of this file:
+####crbug.com/898394 [ Linux ] virtual/android/url-bar/bottom-and-top-fixed-sticks-to-top.html [ Failure ]
 crbug.com/898378 [ Mac10.13 ] virtual/scroll_customization/fast/scroll-behavior/smooth-scroll/keyboard-scroll.html [ Timeout ]
 
 # Sheriff 2018-10-24
@@ -5481,5 +5715,6 @@ crbug.com/889185 [ Win10 ] virtual/gpu-rasterization/images/feature-policy-max-d
 crbug.com/874576 http/tests/images/feature-policy-image-compression-cached-image.html [ Skip ]
 
 # Sheriff 2018-10-26
-crbug.com/899087 [ Linux ] virtual/android/fullscreen/full-screen-iframe-allowed-video.html [ Failure Pass ]
+### See crbug.com/891427 comment near the top of this file:
+####crbug.com/899087 [ Linux ] virtual/android/fullscreen/full-screen-iframe-allowed-video.html [ Failure Pass ]
 crbug.com/899232 [ Linux ] virtual/user-activation-v2/fast/events/touch/gesture/gesture-scrollbar-touchpad-fling.html [ Failure Pass ]
