@@ -15,7 +15,6 @@
 #include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/login_delegate.h"
-#include "content/public/browser/memory_coordinator_delegate.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/page_navigator.h"
@@ -669,11 +668,6 @@ ContentBrowserClient::GetExtraServiceManifests() {
 std::vector<service_manager::Identity>
 ContentBrowserClient::GetStartupServices() {
   return std::vector<service_manager::Identity>();
-}
-
-std::unique_ptr<MemoryCoordinatorDelegate>
-ContentBrowserClient::GetMemoryCoordinatorDelegate() {
-  return std::unique_ptr<MemoryCoordinatorDelegate>();
 }
 
 ::rappor::RapporService* ContentBrowserClient::GetRapporService() {

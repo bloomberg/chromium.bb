@@ -172,8 +172,6 @@ jumbo_source_set("browser_sources") {
     "media_session.h",
     "media_session_observer.cc",
     "media_session_observer.h",
-    "memory_coordinator.h",
-    "memory_coordinator_delegate.h",
     "message_port_provider.h",
     "mhtml_extra_parts.h",
     "native_event_processor_mac.h",

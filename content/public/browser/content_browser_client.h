@@ -161,7 +161,6 @@ class ControllerPresentationServiceDelegate;
 class DevToolsManagerDelegate;
 class LoginDelegate;
 class MediaObserver;
-class MemoryCoordinatorDelegate;
 class NavigationHandle;
 class NavigationUIData;
 class PlatformNotificationService;
@@ -1087,10 +1086,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual base::string16 GetAppContainerSidForSandboxType(
       int sandbox_type) const;
 #endif
-
-  // Returns an instance of MemoryCoordinatorDelegate.
-  virtual std::unique_ptr<MemoryCoordinatorDelegate>
-  GetMemoryCoordinatorDelegate();
 
   // Binds a new media remoter service to |request|, if supported by the
   // embedder, for the |source| that lives in the render frame represented

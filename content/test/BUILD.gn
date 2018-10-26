@@ -1479,7 +1479,6 @@ test("content_unittests") {
     "../browser/media/session/media_session_impl_unittest.cc",
     "../browser/media/session/media_session_uma_helper_unittest.cc",
     "../browser/media/webaudio/audio_context_manager_impl_unittest.cc",
-    "../browser/memory/memory_coordinator_impl_unittest.cc",
     "../browser/memory/memory_monitor_android_unittest.cc",
     "../browser/memory/memory_monitor_win_unittest.cc",
     "../browser/memory/swap_metrics_driver_impl_unittest.cc",
