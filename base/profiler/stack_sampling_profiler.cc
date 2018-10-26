@@ -24,6 +24,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/elapsed_timer.h"
+#include "base/trace_event/trace_event.h"
 
 namespace base {
 
@@ -443,6 +444,9 @@ void StackSamplingProfiler::SamplingThread::ScheduleShutdownIfIdle() {
   if (!active_collections_.empty())
     return;
 
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
+               "StackSamplingProfiler::SamplingThread::ScheduleShutdownIfIdle");
+
   int add_events;
   {
     AutoLock lock(thread_execution_state_lock_);
@@ -559,6 +563,9 @@ void StackSamplingProfiler::SamplingThread::ShutdownTask(int add_events) {
   if (thread_execution_state_add_events_ != add_events)
     return;
 
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
+               "StackSamplingProfiler::SamplingThread::ShutdownTask");
+
   // There can be no new AddCollectionTasks at this point because creating
   // those always increments "add events". There may be other requests, like
   // Remove, but it's okay to schedule the thread to stop once they've been
@@ -650,10 +657,15 @@ StackSamplingProfiler::StackSamplingProfiler(
       profiling_inactive_(kResetPolicy, WaitableEvent::InitialState::SIGNALED),
       profiler_id_(kNullProfilerId),
       test_delegate_(test_delegate) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
+               "StackSamplingProfiler::StackSamplingProfiler");
   DCHECK(profile_builder_);
 }
 
 StackSamplingProfiler::~StackSamplingProfiler() {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
+               "StackSamplingProfiler::~StackSamplingProfiler");
+
   // Stop returns immediately but the shutdown runs asynchronously. There is a
   // non-zero probability that one more sample will be taken after this call
   // returns.
@@ -673,6 +685,9 @@ StackSamplingProfiler::~StackSamplingProfiler() {
 }
 
 void StackSamplingProfiler::Start() {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
+               "StackSamplingProfiler::Start");
+
   // Multiple calls to Start() for a single StackSamplingProfiler object is not
   // allowed. If profile_builder_ is nullptr, then Start() has been called
   // already.
@@ -702,9 +717,15 @@ void StackSamplingProfiler::Start() {
           thread_id_, params_, &profiling_inactive_, std::move(native_sampler_),
           std::move(profile_builder_)));
   DCHECK_NE(kNullProfilerId, profiler_id_);
+
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
+               "StackSamplingProfiler::Started", "profiler_id", profiler_id_);
 }
 
 void StackSamplingProfiler::Stop() {
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
+               "StackSamplingProfiler::Stop", "profiler_id", profiler_id_);
+
   SamplingThread::GetInstance()->Remove(profiler_id_);
   profiler_id_ = kNullProfilerId;
 }
