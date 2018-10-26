@@ -269,12 +269,11 @@ Polymer({
   },
 
   /**
-   * @param {!Event} event
+   * Called when a section is selected.
    * @private
    */
-  onIronActivate_: function(event) {
-    if (event.detail.item.id != 'advancedSubmenu')
-      this.$.drawer.close();
+  onIronActivate_: function() {
+    this.$.drawer.close();
   },
 
   /** @private */
@@ -282,14 +281,25 @@ Polymer({
     this.$.drawer.toggle();
   },
 
-  /** @private */
-  onMenuClosed_: function() {
-    // Add tab index so that the container can be focused.
-    this.$.container.setAttribute('tabindex', '-1');
-    this.$.container.focus();
+  /**
+   * When this is called, The drawer animation is finished, and the dialog no
+   * longer has focus. The selected section will gain focus if one was selected.
+   * Otherwise, the drawer was closed due being canceled, and the main settings
+   * container is given focus. That way the arrow keys can be used to scroll
+   * the container, and pressing tab focuses a component in settings.
+   * @private
+   */
+  onMenuClose_: function() {
+    if (this.$.drawer.wasCanceled()) {
+      // Add tab index so that the container can be focused.
+      this.$.container.setAttribute('tabindex', '-1');
+      this.$.container.focus();
 
-    listenOnce(this.$.container, ['blur', 'pointerdown'], () => {
-      this.$.container.removeAttribute('tabindex');
-    });
+      listenOnce(this.$.container, ['blur', 'pointerdown'], () => {
+        this.$.container.removeAttribute('tabindex');
+      });
+    } else {
+      this.$.main.focusSection();
+    }
   },
 });
