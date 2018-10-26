@@ -4,9 +4,6 @@
 
 # These tests currently fail when run with --enable-features=NetworkService
 
-# Uncategorized timeouts or test failures.
--org.chromium.chrome.browser.externalnav.UrlOverridingTest.testNavigationFromUserGestureInSubFrame
-
 # Fail because they expect to have no features enabled when run.
 -org.chromium.chrome.browser.FeaturesAnnotationsTest.testFeaturesAddToExistingFlags
 -org.chromium.chrome.browser.FeaturesAnnotationsTest.testFeaturesDoNotRemoveExistingFlags
