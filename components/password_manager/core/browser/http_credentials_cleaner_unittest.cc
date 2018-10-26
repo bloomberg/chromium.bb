@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/http_credentials_cleaner.h"
 
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
@@ -176,9 +177,11 @@ TEST_P(HttpCredentialCleanerTest, ReportHttpMigrationMetrics) {
       request_context->GetURLRequestContext());
 
   if (test.is_hsts_enabled) {
-    network_context->AddHSTSForTesting(
-        http_form.origin.host(), base::Time::Max(),
-        false /*include_subdomains*/, base::DoNothing());
+    base::RunLoop run_loop;
+    network_context->AddHSTS(http_form.origin.host(), base::Time::Max(),
+                             false /*include_subdomains*/,
+                             run_loop.QuitClosure());
+    run_loop.Run();
   }
   scoped_task_environment.RunUntilIdle();
 
