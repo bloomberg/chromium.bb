@@ -27,6 +27,8 @@
 #include "ash/system/unified/unified_slider_bubble_controller.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/system/unified/unified_system_tray_model.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chromeos/network/network_handler.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
@@ -64,6 +66,9 @@ class UnifiedSystemTray::UiDelegate : public MessageCenterUiDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(UiDelegate);
 };
+
+const base::TimeDelta UnifiedSystemTray::kNotificationCountUpdateDelay =
+    base::TimeDelta::FromMilliseconds(100);
 
 UnifiedSystemTray::UiDelegate::UiDelegate(UnifiedSystemTray* owner)
     : owner_(owner) {
@@ -327,6 +332,16 @@ void UnifiedSystemTray::HideBubbleInternal() {
 }
 
 void UnifiedSystemTray::UpdateNotificationInternal() {
+  // Limit update frequency in order to avoid flashing when 2 updates are
+  // incoming in a very short period of time. It happens when ARC++ apps
+  // creating bundled notifications.
+  if (!timer_.IsRunning()) {
+    timer_.Start(FROM_HERE, kNotificationCountUpdateDelay, this,
+                 &UnifiedSystemTray::UpdateNotificationAfterDelay);
+  }
+}
+
+void UnifiedSystemTray::UpdateNotificationAfterDelay() {
   notification_counter_item_->Update();
   quiet_mode_view_->Update();
 }
