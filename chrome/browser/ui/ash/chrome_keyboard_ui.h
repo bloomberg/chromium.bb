@@ -12,7 +12,6 @@
 #include "ui/keyboard/keyboard_ui.h"
 
 class ChromeKeyboardWebContents;
-class GURL;
 
 namespace aura {
 class Window;
@@ -31,15 +30,6 @@ class Shadow;
 class ChromeKeyboardUI : public keyboard::KeyboardUI,
                          public aura::WindowObserver {
  public:
-  class TestApi {
-   public:
-    // Use an empty |url| to clear the override.
-    static void SetOverrideVirtualKeyboardUrl(const GURL& url);
-
-   private:
-    DISALLOW_IMPLICIT_CONSTRUCTORS(TestApi);
-  };
-
   explicit ChromeKeyboardUI(content::BrowserContext* context);
   ~ChromeKeyboardUI() override;
 
@@ -61,10 +51,6 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
                              aura::Window* parent) override;
 
  private:
-  // Gets the virtual keyboard URL, either the default keyboard URL or the IME
-  // override URL.
-  GURL GetVirtualKeyboardUrl();
-
   // Sets shadow around the keyboard. If shadow has not been created yet,
   // this method creates it.
   void SetShadowAroundKeyboard();

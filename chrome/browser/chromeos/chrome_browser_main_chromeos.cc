@@ -683,6 +683,12 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // AccessibilityManager and SystemKeyEventListener use InputMethodManager.
   input_method::Initialize();
 
+  // keyboard::KeyboardController initializes ChromeKeyboardUI which depends
+  // on ChromeKeyboardControllerClient.
+  chrome_keyboard_controller_client_ =
+      std::make_unique<ChromeKeyboardControllerClient>(
+          content::ServiceManagerConnection::GetForProcess()->GetConnector());
+
   // ProfileHelper has to be initialized after UserManager instance is created.
   ProfileHelper::Get()->Initialize();
 
@@ -755,9 +761,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // Initialize the keyboard before any session state changes (i.e. before
   // loading the default profile).
   keyboard::InitializeKeyboardResources();
-  chrome_keyboard_controller_client_ =
-      std::make_unique<ChromeKeyboardControllerClient>(
-          content::ServiceManagerConnection::GetForProcess()->GetConnector());
 
   if (lock_screen_apps::StateController::IsEnabled()) {
     lock_screen_apps_state_controller_ =
