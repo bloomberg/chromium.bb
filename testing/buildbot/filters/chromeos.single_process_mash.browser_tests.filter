@@ -27,8 +27,9 @@
 -AutomationApiTestWithDeviceScaleFactor.*
 -AutomationManagerAuraBrowserTest.*
 
-# ChromeVox not yet supported. https://crbug.com/594887
+# ChromeVox and Select-to-Speak not yet supported. https://crbug.com/594887
 -ChromeVox*
+-SelectToSpeak*
 
 # Touch gestures don't work in webcontents. https://crbug.com/866991.
 -TopControlsSlideControllerTest.DisplayRotation
