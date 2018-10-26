@@ -45,8 +45,6 @@ class TransitionAnimationObserver;
 
 // AppListView is the top-level view and controller of app list UI. It creates
 // and hosts a AppsGridView and passes AppListModel to it for display.
-// TODO(newcomer|weidongg): Organize the cc file to match the order of
-// definitions in this header.
 class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
  public:
   class TestApi {
@@ -136,14 +134,13 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   // WidgetDelegate:
   ax::mojom::Role GetAccessibleWindowRole() const override;
 
+  views::View* GetAppListBackgroundShieldForTest();
+
   // ui::EventHandler:
-  void OnKeyEvent(ui::KeyEvent* event) override;
   void OnScrollEvent(ui::ScrollEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-
-  // Called when tablet mode starts and ends.
-  void OnTabletModeChanged(bool started);
+  void OnKeyEvent(ui::KeyEvent* event) override;
 
   // Called when the wallpaper colors change.
   void OnWallpaperColorsChanged();
@@ -180,12 +177,12 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   // Called when on-screen keyboard's visibility is changed.
   void OnScreenKeyboardShown(bool shown);
 
-  // Called when parent window's bounds is changed.
-  void OnParentWindowBoundsChanged();
-
   // If the on-screen keyboard is shown, hide it. Return whether keyboard was
   // hidden
   bool CloseKeyboardIfVisible();
+
+  // Called when parent window's bounds is changed.
+  void OnParentWindowBoundsChanged();
 
   // Sets |is_in_drag_| and updates the visibility of app list items.
   void SetIsInDrag(bool is_in_drag);
@@ -210,6 +207,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
 
   // Returns the height of app list in fullscreen state.
   int GetFullscreenStateHeight() const;
+
+  // Called when tablet mode starts and ends.
+  void OnTabletModeChanged(bool started);
 
   views::Widget* get_fullscreen_widget_for_test() const {
     return fullscreen_widget_;
@@ -248,15 +248,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   // Returns true if the home_launcher feature is enabled.
   bool is_home_launcher_enabled() const { return is_home_launcher_enabled_; }
 
-  views::View* GetAppListBackgroundShieldForTest();
-
  private:
-  // A widget observer that is responsible for keeping the AppListView state up
-  // to date on closing.
-  // TODO(newcomer): Merge this class into AppListView once the old app list
-  // view code is removed.
-  class FullscreenWidgetObserver;
-
   void InitContents(int initial_apps_page);
 
   void InitChildWidgets();
@@ -388,10 +380,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   const bool is_background_blur_enabled_;
   // The state of the app list, controlled via SetState().
   AppListViewState app_list_state_ = AppListViewState::PEEKING;
-
-  // A widget observer that sets the AppListView state when the widget is
-  // closed.
-  std::unique_ptr<FullscreenWidgetObserver> widget_observer_;
 
   std::unique_ptr<HideViewAnimationObserver> hide_view_animation_observer_;
 
