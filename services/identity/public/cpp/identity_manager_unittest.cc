@@ -255,6 +255,12 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
     return google_signin_failed_error_;
   }
 
+  // Each element represents all the changes from an individual batch that has
+  // occurred, with the elements ordered from oldest to newest batch occurrence.
+  const std::vector<std::vector<std::string>>& batch_change_records() const {
+    return batch_change_records_;
+  }
+
  private:
   // IdentityManager::Observer:
   void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override {
@@ -276,12 +282,16 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   }
   void OnRefreshTokenUpdatedForAccount(const AccountInfo& account_info,
                                        bool is_valid) override {
+    EXPECT_TRUE(is_inside_batch_);
+    batch_change_records_.rbegin()->emplace_back(account_info.account_id);
     account_from_refresh_token_updated_callback_ = account_info;
     validity_from_refresh_token_updated_callback_ = is_valid;
     if (on_refresh_token_updated_callback_)
       std::move(on_refresh_token_updated_callback_).Run();
   }
   void OnRefreshTokenRemovedForAccount(const std::string& account_id) override {
+    EXPECT_TRUE(is_inside_batch_);
+    batch_change_records_.rbegin()->emplace_back(account_id);
     account_from_refresh_token_removed_callback_ = account_id;
     if (on_refresh_token_removed_callback_)
       on_refresh_token_removed_callback_.Run(account_id);
@@ -295,6 +305,17 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
     accounts_from_cookie_change_callback_ = accounts;
     if (on_accounts_in_cookie_updated_callback_)
       std::move(on_accounts_in_cookie_updated_callback_).Run();
+  }
+  void OnStartBatchOfRefreshTokenStateChanges() override {
+    EXPECT_FALSE(is_inside_batch_);
+    is_inside_batch_ = true;
+
+    // Start a new batch.
+    batch_change_records_.emplace_back(std::vector<std::string>());
+  }
+  void OnEndBatchOfRefreshTokenStateChanges() override {
+    EXPECT_TRUE(is_inside_batch_);
+    is_inside_batch_ = false;
   }
 
   IdentityManager* identity_manager_;
@@ -313,6 +334,8 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   std::string account_from_refresh_token_removed_callback_;
   std::vector<AccountInfo> accounts_from_cookie_change_callback_;
   GoogleServiceAuthError google_signin_failed_error_;
+  bool is_inside_batch_ = false;
+  std::vector<std::vector<std::string>> batch_change_records_;
 };
 
 class TestIdentityManagerDiagnosticsObserver
@@ -1980,6 +2003,19 @@ TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithTwoAccounts) {
       account_info2.account_id);
   EXPECT_EQ(kTestGaiaId2, account_info2.gaia);
   EXPECT_EQ(kTestEmail2, account_info2.email);
+}
+
+TEST_F(IdentityManagerTest,
+       BatchChangeObserversAreNotifiedOnCredentialsUpdate) {
+  signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
+  std::string account_id = signin_manager()->GetAuthenticatedAccountId();
+  token_service()->UpdateCredentials(account_id, "refresh_token");
+
+  EXPECT_EQ(1ul, identity_manager_observer()->batch_change_records().size());
+  EXPECT_EQ(1ul,
+            identity_manager_observer()->batch_change_records().at(0).size());
+  EXPECT_EQ(account_id,
+            identity_manager_observer()->batch_change_records().at(0).at(0));
 }
 
 }  // namespace identity
