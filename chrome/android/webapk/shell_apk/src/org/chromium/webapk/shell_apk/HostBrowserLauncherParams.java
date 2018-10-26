@@ -36,8 +36,7 @@ public class HostBrowserLauncherParams {
      * Constructs a HostBrowserLauncherParams object from the passed in Intent and from <meta-data>
      * in the Android Manifest.
      */
-    public static HostBrowserLauncherParams createForIntent(Context context,
-            ComponentName callingActivityComponentName, Intent intent,
+    public static HostBrowserLauncherParams createForIntent(Context context, Intent intent,
             String hostBrowserPackageName, boolean dialogShown, long launchTimeMs) {
         Bundle metadata = WebApkUtils.readMetaData(context);
         if (metadata == null) return null;
@@ -50,8 +49,7 @@ public class HostBrowserLauncherParams {
 
         if (Intent.ACTION_SEND.equals(intent.getAction())
                 || Intent.ACTION_SEND_MULTIPLE.equals(intent.getAction())) {
-            Bundle shareTargetMetaData =
-                    fetchActivityMetaData(context, callingActivityComponentName);
+            Bundle shareTargetMetaData = fetchActivityMetaData(context, intent.getComponent());
             startUrl = computeStartUrlForShareTarget(shareTargetMetaData, intent);
             source = WebApkConstants.SHORTCUT_SOURCE_SHARE;
             forceNavigation = true;
@@ -75,7 +73,7 @@ public class HostBrowserLauncherParams {
 
         return new HostBrowserLauncherParams(hostBrowserPackageName,
                 hostBrowserMajorChromiumVersion, dialogShown, intent, startUrl, source,
-                forceNavigation, launchTimeMs, callingActivityComponentName.getClassName());
+                forceNavigation, launchTimeMs, intent.getComponent().getClassName());
     }
 
     private static Bundle fetchActivityMetaData(
