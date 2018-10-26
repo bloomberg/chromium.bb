@@ -4,6 +4,10 @@
 
 #include "third_party/blink/renderer/modules/canvas/canvas2d/base_rendering_context_2d.h"
 
+#include <algorithm>
+#include <cmath>
+#include <memory>
+
 #include "base/numerics/checked_math.h"
 #include "third_party/blink/renderer/core/css/cssom/css_url_image_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
@@ -650,8 +654,8 @@ void BaseRenderingContext2D::DrawPathInternal(
 
   SkPath sk_path = path.GetSkPath();
   FloatRect bounds = path.BoundingRect();
-  if (isnan(bounds.X()) || isnan(bounds.Y()) || isnan(bounds.Width()) ||
-      isnan(bounds.Height()))
+  if (std::isnan(bounds.X()) || std::isnan(bounds.Y()) ||
+      std::isnan(bounds.Width()) || std::isnan(bounds.Height()))
     return;
   sk_path.setFillType(fill_type);
 
