@@ -260,6 +260,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(ZipCase("zipFileOpenDownloads").InGuestMode(),
                       ZipCase("zipFileOpenDownloads"),
                       ZipCase("zipFileOpenDownloadsShiftJIS"),
+                      ZipCase("zipFileOpenDownloadsWithAbsolutePaths"),
                       ZipCase("zipFileOpenDrive").DisableDriveFs(),
                       ZipCase("zipFileOpenDrive").EnableDriveFs(),
                       ZipCase("zipFileOpenUsb"),

@@ -351,13 +351,23 @@ void Volume::ReadMetadataCallback(int32_t /*result*/,
       display_name = Cp437ToUtf8(path_name);
     }
 
-    ConstructMetadata(index, display_name.c_str(), path_name, size,
-                      is_directory, modification_time, is_encoded_in_utf8,
-                      &root_metadata);
+    // If the path is absolute, which is technically a violation of the ZIP
+    // spec, strip the leading '/' and treat the path as relative.
+    // TODO(amistry): Handle other cases of ill-formed paths such as "//", ".",
+    // and ".."
+    if (display_name[0] == '/') {
+      display_name = display_name.substr(1);
+    }
 
-    index_to_pathname_[index] = path_name;
-
-    ++index;
+    if (!display_name.empty()) {
+      // Some archives have a "/" entry, which turns into the empty string when
+      // the leading '/' is stripped.
+      ConstructMetadata(index, display_name.c_str(), path_name, size,
+                        is_directory, modification_time, is_encoded_in_utf8,
+                        &root_metadata);
+      index_to_pathname_[index] = path_name;
+      ++index;
+    }
 
     int return_value = volume_archive_->GoToNextFile();
     if (return_value == VolumeArchive::RESULT_FAIL) {
