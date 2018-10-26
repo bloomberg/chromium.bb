@@ -135,6 +135,7 @@ source_set("client_support") {
   public_deps = [
     "//skia",
     "//third_party/wayland:wayland_client",
+    "//third_party/wayland-protocols:fullscreen_shell_protocol",
     "//third_party/wayland-protocols:input_timestamps_protocol",
     "//third_party/wayland-protocols:linux_dmabuf_protocol",
     "//third_party/wayland-protocols:presentation_time_protocol",
@@ -205,6 +206,29 @@ source_set("simple") {
   }
 }
 
+source_set("fullscreen_shell") {
+  sources = [
+    "clients/fullscreen_shell.cc",
+    "clients/fullscreen_shell.h",
+  ]
+
+  deps = [
+    ":client_support",
+    "//base",
+    "//build/config/linux/libdrm",
+    "//skia",
+    "//third_party/wayland:wayland_client",
+    "//third_party/wayland-protocols:linux_dmabuf_protocol",
+    "//third_party/wayland-protocols:presentation_time_protocol",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+  ]
+
+  if (ozone_platform_gbm) {
+    configs += [ "//ui/gl:gl_config" ]
+  }
+}
+
 executable("wayland_simple_client") {
   sources = [
     "clients/simple_main.cc",
@@ -212,6 +236,17 @@ executable("wayland_simple_client") {
   deps = [
     ":client_support",
     ":simple",
+    "//base",
+  ]
+}
+
+executable("wayland_fullscreen_client") {
+  sources = [
+    "clients/fullscreen_shell_main.cc",
+  ]
+  deps = [
+    ":client_support",
+    ":fullscreen_shell",
     "//base",
   ]
 }
