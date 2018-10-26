@@ -3963,6 +3963,58 @@ TEST_F(GLRendererPixelTestWithOverdrawFeedback, TranslucentRectangles) {
       cc::ExactPixelComparator(true)));
 }
 
+class SkiaRendererPixelTestWithOverdrawFeedback : public SkiaRendererPixelTest {
+ protected:
+  void SetUp() override {
+    renderer_settings_.show_overdraw_feedback = true;
+    SkiaRendererPixelTest::SetUp();
+  }
+};
+
+TEST_F(SkiaRendererPixelTestWithOverdrawFeedback, TranslucentRectangles) {
+  gfx::Rect rect(this->device_viewport_size_);
+
+  int id = 1;
+  gfx::Transform transform_to_root;
+  std::unique_ptr<RenderPass> pass =
+      CreateTestRenderPass(id, rect, transform_to_root);
+
+  gfx::Transform dark_gray_quad_to_target_transform;
+  dark_gray_quad_to_target_transform.Translate(50, 50);
+  dark_gray_quad_to_target_transform.Scale(
+      0.5f + 1.0f / (rect.width() * 2.0f),
+      0.5f + 1.0f / (rect.height() * 2.0f));
+  SharedQuadState* dark_gray_shared_state = CreateTestSharedQuadState(
+      dark_gray_quad_to_target_transform, rect, pass.get());
+
+  auto* dark_gray = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  dark_gray->SetNew(dark_gray_shared_state, rect, rect, 0x10444444, false);
+
+  gfx::Transform light_gray_quad_to_target_transform;
+  light_gray_quad_to_target_transform.Translate(25.5f, 25.5f);
+  light_gray_quad_to_target_transform.Scale(0.5f, 0.5f);
+  SharedQuadState* light_gray_shared_state = CreateTestSharedQuadState(
+      light_gray_quad_to_target_transform, rect, pass.get());
+
+  auto* light_gray = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  light_gray->SetNew(light_gray_shared_state, rect, rect, 0x10CCCCCC, false);
+
+  gfx::Transform bg_quad_to_target_transform;
+  SharedQuadState* bg_shared_state =
+      CreateTestSharedQuadState(bg_quad_to_target_transform, rect, pass.get());
+
+  auto* bg = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  bg->SetNew(bg_shared_state, rect, rect, SK_ColorBLACK, false);
+
+  RenderPassList pass_list;
+  pass_list.push_back(std::move(pass));
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      base::FilePath(FILE_PATH_LITERAL("skia_translucent_rectangles.png")),
+      cc::ExactPixelComparator(true)));
+}
+
 using ColorSpacePair = std::tuple<gfx::ColorSpace, gfx::ColorSpace, bool>;
 
 class ColorTransformPixelTest
