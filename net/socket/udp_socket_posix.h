@@ -81,7 +81,7 @@ const int kWriteAsyncCallbackBuffersThreshold = kWriteAsyncMaxBuffersThreshold;
 class NET_EXPORT UDPSocketPosixSender
     : public base::RefCountedThreadSafe<UDPSocketPosixSender> {
  public:
-  explicit UDPSocketPosixSender();
+  UDPSocketPosixSender();
 
   SendResult SendBuffers(int fd, DatagramBuffers buffers);
 
@@ -290,6 +290,19 @@ class NET_EXPORT UDPSocketPosix {
   // Returns a net error code.
   int SetBroadcast(bool broadcast);
 
+  // Sets socket options to allow the socket to share the local address to which
+  // the socket will be bound with other processes and attempt to allow all such
+  // sockets to receive the same multicast messages. Returns a net error code.
+  //
+  // Ability and requirements for different sockets to receive the same messages
+  // varies between POSIX platforms.  For best results in allowing the messages
+  // to be shared, all sockets sharing the same address should join the same
+  // multicast group and interface. Also, the socket should listen to the
+  // specific multicast address rather than a wildcard address (e.g. 0.0.0.0).
+  //
+  // Should be called between Open() and Bind().
+  int AllowAddressSharingForMulticast();
+
   // Joins the multicast group.
   // |group_address| is the group address to join, could be either
   // an IPv4 or IPv6 address.
@@ -371,7 +384,7 @@ class NET_EXPORT UDPSocketPosix {
   void enable_experimental_recv_optimization() {
     DCHECK_EQ(kInvalidSocket, socket_);
     experimental_recv_optimization_enabled_ = true;
-  };
+  }
 
  protected:
   // WriteAsync batching etc. are to improve throughput of large high

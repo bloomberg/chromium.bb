@@ -70,7 +70,7 @@ int MDnsConnection::SocketHandler::Start() {
     return rv;
   DCHECK(end_point.GetFamily() == ADDRESS_FAMILY_IPV4 ||
          end_point.GetFamily() == ADDRESS_FAMILY_IPV6);
-  multicast_addr_ = GetMDnsIPEndPoint(end_point.GetFamily());
+  multicast_addr_ = GetMDnsGroupEndPoint(end_point.GetFamily());
   return DoLoop(0);
 }
 
