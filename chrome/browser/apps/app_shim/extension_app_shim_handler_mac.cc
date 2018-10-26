@@ -747,8 +747,7 @@ void ExtensionAppShimHandler::OnAppStop(content::BrowserContext* context,
 // chrome::NOTIFICATION_BROWSER_OPENED and then call OnAppActivated.
 // If this notification is removed, check that OnBrowserAdded is called after
 // the BrowserWindow is ready.
-void ExtensionAppShimHandler::OnBrowserAdded(Browser* browser) {
-}
+void ExtensionAppShimHandler::OnBrowserAdded(Browser* browser) {}
 
 void ExtensionAppShimHandler::OnBrowserRemoved(Browser* browser) {
   const Extension* extension = MaybeGetAppForBrowser(browser);
