@@ -157,7 +157,7 @@ Tab::Tab(TabbedPane* tabbed_pane, const base::string16& title, View* contents)
 
   // Use leaf so that name is spoken by screen reader without exposing the
   // children.
-  GetViewAccessibility().OverrideIsLeaf();
+  GetViewAccessibility().OverrideIsLeaf(true);
 }
 
 Tab::~Tab() {}
