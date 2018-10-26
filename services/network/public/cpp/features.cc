@@ -42,5 +42,13 @@ const base::Feature kThrottleDelayable{"ThrottleDelayable",
 const base::Feature kDelayRequestsOnMultiplexedConnections{
     "DelayRequestsOnMultiplexedConnections", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When kUnthrottleRequestsAfterLongQueuingDelay is enabled, an upper bound
+// is placed on how long the resource scheduler can queue any given request.
+// Once a request is queued for more than the specified duration, the request
+// is dispatched to the network.
+const base::Feature kUnthrottleRequestsAfterLongQueuingDelay{
+    "UnthrottleRequestsAfterLongQueuingDelay",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace network

@@ -11,6 +11,7 @@
 #include <map>
 
 #include "base/component_export.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "net/nqe/effective_connection_type.h"
 
@@ -27,7 +28,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceSchedulerParamsManager {
 
     ParamsForNetworkQuality(size_t max_delayable_requests,
                             double non_delayable_weight,
-                            bool delay_requests_on_multiplexed_connections);
+                            bool delay_requests_on_multiplexed_connections,
+                            base::Optional<base::TimeDelta> max_queuing_time);
+
+    ParamsForNetworkQuality(const ParamsForNetworkQuality& other);
 
     // The maximum number of delayable requests allowed.
     size_t max_delayable_requests;
@@ -39,6 +43,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceSchedulerParamsManager {
     // True if requests to servers that support prioritization (e.g.,
     // H2/SPDY/QUIC) should be delayed similar to other HTTP 1.1 requests.
     bool delay_requests_on_multiplexed_connections;
+
+    // The maximum duration for which a request is queued after after which the
+    // request is dispatched to the network.
+    base::Optional<base::TimeDelta> max_queuing_time;
   };
 
   ResourceSchedulerParamsManager();
