@@ -593,7 +593,10 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       },
 
       'amd64-generic-paladin': site_config.templates.tast_vm_paladin_tests,
+      'betty-arc64-paladin': site_config.templates.tast_vm_paladin_tests,
       'betty-paladin': site_config.templates.tast_vm_paladin_tests,
+
+      'betty-arc64-release': site_config.templates.tast_vm_canary_tests,
       'betty-release': site_config.templates.tast_vm_canary_tests,
   }
 
