@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
+#include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -98,23 +99,26 @@ class PreEventDispatchHandler : public ui::EventHandler {
  private:
   // ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override {
-    CHECK_EQ(ui::EP_PRETARGET, event->phase());
-    WindowSelectorController* controller =
-        Shell::Get()->window_selector_controller();
-    if (event->type() == ui::ET_MOUSE_RELEASED && controller->IsSelecting()) {
-      controller->ToggleOverview();
-      event->StopPropagation();
-    }
+    if (event->type() == ui::ET_MOUSE_RELEASED)
+      HandleClickOrTap(event);
   }
 
   void OnGestureEvent(ui::GestureEvent* event) override {
+    if (event->type() == ui::ET_GESTURE_TAP)
+      HandleClickOrTap(event);
+  }
+
+  void HandleClickOrTap(ui::Event* event) {
     CHECK_EQ(ui::EP_PRETARGET, event->phase());
     WindowSelectorController* controller =
         Shell::Get()->window_selector_controller();
-    if (event->type() == ui::ET_GESTURE_TAP && controller->IsSelecting()) {
+    if (!controller->IsSelecting())
+      return;
+    // Events that happen while app list is sliding out during overview should
+    // be ignored to prevent overview from disappearing out from under the user.
+    if (!IsSlidingOutOverviewFromShelf())
       controller->ToggleOverview();
-      event->StopPropagation();
-    }
+    event->StopPropagation();
   }
 
   DISALLOW_COPY_AND_ASSIGN(PreEventDispatchHandler);

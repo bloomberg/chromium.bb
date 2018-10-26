@@ -212,8 +212,6 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
     // To display shadow for icon while not affecting the icon's bounds, icon
     // shadow is behind the icon.
     icon_shadow_ = new views::ImageView;
-    icon_shadow_->SetPaintToLayer();
-    icon_shadow_->layer()->SetFillsBoundsOpaquely(false);
     icon_shadow_->set_can_process_events_within_subtree(false);
     icon_shadow_->SetVerticalAlignment(views::ImageView::LEADING);
     AddChildView(icon_shadow_);

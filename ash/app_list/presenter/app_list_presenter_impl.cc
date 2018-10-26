@@ -233,20 +233,16 @@ void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
                                    static_cast<float>(y_position_in_screen));
   // We want to animate the expand arrow, suggestion chips and apps grid in
   // app_list_main_view, and the search box.
-  std::vector<ui::Layer*> animation_layers = {
-      view_->app_list_main_view()->layer(),
-      view_->search_box_widget()->GetNativeWindow()->layer()};
-  for (auto* layer : animation_layers) {
-    layer->GetAnimator()->StopAnimating();
-    std::unique_ptr<ui::ScopedLayerAnimationSettings> settings;
-    if (!callback.is_null()) {
-      settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
-          layer->GetAnimator());
-      callback.Run(settings.get(), /*observe=*/false);
-    }
-    layer->SetOpacity(opacity);
-    layer->SetTransform(translation);
+  ui::Layer* layer = view_->GetWidget()->GetNativeWindow()->layer();
+  layer->GetAnimator()->StopAnimating();
+  std::unique_ptr<ui::ScopedLayerAnimationSettings> settings;
+  if (!callback.is_null()) {
+    settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
+        layer->GetAnimator());
+    callback.Run(settings.get(), /*observe=*/false);
   }
+  layer->SetOpacity(opacity);
+  layer->SetTransform(translation);
 }
 
 void AppListPresenterImpl::ScheduleOverviewModeAnimation(bool start,
