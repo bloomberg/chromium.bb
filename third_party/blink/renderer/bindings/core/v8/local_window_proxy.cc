@@ -182,6 +182,9 @@ void LocalWindowProxy::Initialize() {
 
   InstallConditionalFeatures();
 
+  // This needs to go after everything else since it accesses the window object.
+  InitializeV8ExtrasBinding(script_state_);
+
   if (World().IsMainWorld()) {
     GetFrame()->Loader().DispatchDidClearWindowObjectInMainWorld();
   }
@@ -235,8 +238,6 @@ void LocalWindowProxy::CreateContext() {
 #endif
 
   script_state_ = ScriptState::Create(context, world_);
-
-  InitializeV8ExtrasBinding(script_state_);
 
   DCHECK(lifecycle_ == Lifecycle::kContextIsUninitialized ||
          lifecycle_ == Lifecycle::kGlobalObjectIsDetached);
