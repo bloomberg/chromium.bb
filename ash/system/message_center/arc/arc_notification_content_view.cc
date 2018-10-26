@@ -185,12 +185,9 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(EventForwarder);
 };
 
-class ArcNotificationContentView::SlideHelper
-    : public ui::LayerAnimationObserver {
+class ArcNotificationContentView::SlideHelper {
  public:
   explicit SlideHelper(ArcNotificationContentView* owner) : owner_(owner) {
-    GetSlideOutLayer()->GetAnimator()->AddObserver(this);
-
     // Reset opacity to 1 to handle to case when the surface is sliding before
     // getting managed by this class, e.g. sliding in a popup before showing
     // in a message center view.
@@ -199,25 +196,25 @@ class ArcNotificationContentView::SlideHelper
       owner_->surface_->GetWindow()->layer()->SetOpacity(1.0f);
     }
   }
-  ~SlideHelper() override {
-    if (GetSlideOutLayer())
-      GetSlideOutLayer()->GetAnimator()->RemoveObserver(this);
-  }
+  virtual ~SlideHelper() = default;
 
-  void Update() {
+  void Update(base::Optional<bool> slide_in_progress) {
+    if (slide_in_progress.has_value())
+      slide_in_progress_ = slide_in_progress.value();
+
     const bool has_animation =
         GetSlideOutLayer()->GetAnimator()->is_animating();
     const bool has_transform = !GetSlideOutLayer()->transform().IsIdentity();
-    const bool sliding = has_transform || has_animation;
-    if (sliding_ == sliding)
+    const bool moving = (slide_in_progress_ && has_transform) || has_animation;
+
+    if (moving_ == moving)
       return;
+    moving_ = moving;
 
-    sliding_ = sliding;
-
-    if (sliding_)
-      OnSlideStart();
+    if (moving_)
+      owner_->ShowCopiedSurface();
     else
-      OnSlideEnd();
+      owner_->HideCopiedSurface();
   }
 
  private:
@@ -227,21 +224,9 @@ class ArcNotificationContentView::SlideHelper
     return layer ? layer : owner_->GetWidget()->GetLayer();
   }
 
-  void OnSlideStart() { owner_->ShowCopiedSurface(); }
-
-  void OnSlideEnd() { owner_->HideCopiedSurface(); }
-
-  // ui::LayerAnimationObserver
-  void OnLayerAnimationEnded(ui::LayerAnimationSequence* seq) override {
-    Update();
-  }
-  void OnLayerAnimationAborted(ui::LayerAnimationSequence* seq) override {
-    Update();
-  }
-  void OnLayerAnimationScheduled(ui::LayerAnimationSequence* seq) override {}
-
   ArcNotificationContentView* const owner_;
-  bool sliding_ = false;
+  bool slide_in_progress_ = false;
+  bool moving_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SlideHelper);
 };
@@ -368,9 +353,9 @@ void ArcNotificationContentView::UpdateCornerRadius(int top_radius,
     UpdateMask();
 }
 
-void ArcNotificationContentView::OnSlideChanged() {
+void ArcNotificationContentView::OnSlideChanged(bool in_progress) {
   if (slide_helper_)
-    slide_helper_->Update();
+    slide_helper_->Update(in_progress);
 }
 
 void ArcNotificationContentView::OnContainerAnimationStarted() {
@@ -508,7 +493,7 @@ void ArcNotificationContentView::AttachSurface() {
   slide_helper_.reset(new SlideHelper(this));
 
   // Invokes Update() in case surface is attached during a slide.
-  slide_helper_->Update();
+  slide_helper_->Update(base::nullopt);
 
   // (Re-)create the floating buttons after |surface_| is attached to a widget.
   MaybeCreateFloatingControlButtons();

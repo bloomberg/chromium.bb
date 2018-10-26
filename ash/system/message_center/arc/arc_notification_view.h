@@ -56,8 +56,8 @@ class ArcNotificationView : public message_center::MessageView,
   void OnSnoozeButtonPressed(const ui::Event& event) override;
   void UpdateCornerRadius(int top_radius, int bottom_radius) override;
 
-  // views::SlideOutController::Delegate:
-  void OnSlideChanged() override;
+  // message_center::SlideOutController::Delegate:
+  void OnSlideChanged(bool in_progress) override;
 
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override;
