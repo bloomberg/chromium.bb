@@ -1148,7 +1148,7 @@ void LocalFrameView::AdjustMediaTypeForPrinting(bool printing) {
 
   frame_->GetDocument()->SetNeedsStyleRecalc(
       kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                               StyleChangeReason::kStyleSheetChange));
+                               style_change_reason::kStyleSheetChange));
 }
 
 void LocalFrameView::AddBackgroundAttachmentFixedObject(LayoutObject* object) {

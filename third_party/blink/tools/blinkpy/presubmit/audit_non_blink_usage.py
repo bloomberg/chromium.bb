@@ -231,6 +231,7 @@ _CONFIG = [
             'paint_filter_builder::.+',
             'root_scroller_util::.+',
             'scheduler::.+',
+            'style_change_reason::.+',
             'touch_action_util::.+',
             'vector_math::.+',
             'xpath::.+',

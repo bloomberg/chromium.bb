@@ -206,7 +206,7 @@ void ScopedStyleResolver::KeyframesRulesAdded(const TreeScope& tree_scope) {
     InvalidationRootForTreeScope(tree_scope)
         .SetNeedsStyleRecalc(kSubtreeStyleChange,
                              StyleChangeReasonForTracing::Create(
-                                 StyleChangeReason::kStyleSheetChange));
+                                 style_change_reason::kStyleSheetChange));
     return;
   }
 

@@ -1506,7 +1506,7 @@ void Document::SetContentLanguage(const AtomicString& language) {
 
   // Document's style depends on the content language.
   SetNeedsStyleRecalc(kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                                               StyleChangeReason::kLanguage));
+                                               style_change_reason::kLanguage));
 }
 
 void Document::setXMLVersion(const String& version,
@@ -2582,7 +2582,7 @@ void Document::UpdateStyleAndLayoutTreeIgnorePendingStylesheets() {
       // but here we need up-to-date style immediately.
       SetNeedsStyleRecalc(kSubtreeStyleChange,
                           StyleChangeReasonForTracing::Create(
-                              StyleChangeReason::kCleanupPlaceholderStyles));
+                              style_change_reason::kCleanupPlaceholderStyles));
     }
   }
   UpdateStyleAndLayoutTree();
@@ -4601,7 +4601,7 @@ void Document::StyleResolverMayHaveChanged() {
   if (HasNodesWithPlaceholderStyle()) {
     SetNeedsStyleRecalc(kSubtreeStyleChange,
                         StyleChangeReasonForTracing::Create(
-                            StyleChangeReason::kCleanupPlaceholderStyles));
+                            style_change_reason::kCleanupPlaceholderStyles));
   }
 
   if (DidLayoutWithPendingStylesheets() &&
@@ -5789,7 +5789,7 @@ void Document::SetEncodingData(const DocumentEncodingData& new_data) {
     visually_ordered_ = should_use_visual_ordering;
     SetNeedsStyleRecalc(kSubtreeStyleChange,
                         StyleChangeReasonForTracing::Create(
-                            StyleChangeReason::kVisuallyOrdered));
+                            style_change_reason::kVisuallyOrdered));
   }
 }
 
@@ -5914,7 +5914,7 @@ void Document::setDesignMode(const String& value) {
                              ? kNeedsReattachStyleChange
                              : kSubtreeStyleChange;
   SetNeedsStyleRecalc(type, StyleChangeReasonForTracing::Create(
-                                StyleChangeReason::kDesignMode));
+                                style_change_reason::kDesignMode));
 }
 
 Document* Document::ParentDocument() const {
@@ -7405,7 +7405,7 @@ void Document::SetShadowCascadeOrder(ShadowCascadeOrder order) {
       order == ShadowCascadeOrder::kShadowCascadeV1) {
     SetNeedsStyleRecalc(
         kSubtreeStyleChange,
-        StyleChangeReasonForTracing::Create(StyleChangeReason::kShadow));
+        StyleChangeReasonForTracing::Create(style_change_reason::kShadow));
     UseCounter::Count(*this, WebFeature::kMixedShadowRootV0AndV1);
   }
 

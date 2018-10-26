@@ -1015,7 +1015,7 @@ void HTMLElement::AdjustDirectionalityIfNeededAfterChildAttributeChanged(
       if (ElementAffectsDirectionality(element_to_adjust)) {
         element_to_adjust->SetNeedsStyleRecalc(
             kLocalStyleChange, StyleChangeReasonForTracing::Create(
-                                   StyleChangeReason::kWritingModeChange));
+                                   style_change_reason::kWritingModeChange));
         return;
       }
     }
@@ -1025,10 +1025,11 @@ void HTMLElement::AdjustDirectionalityIfNeededAfterChildAttributeChanged(
 void HTMLElement::CalculateAndAdjustDirectionality() {
   TextDirection text_direction = Directionality();
   const ComputedStyle* style = GetComputedStyle();
-  if (style && style->Direction() != text_direction)
+  if (style && style->Direction() != text_direction) {
     SetNeedsStyleRecalc(kLocalStyleChange,
                         StyleChangeReasonForTracing::Create(
-                            StyleChangeReason::kWritingModeChange));
+                            style_change_reason::kWritingModeChange));
+  }
 }
 
 void HTMLElement::AdjustDirectionalityIfNeededAfterChildrenChanged(

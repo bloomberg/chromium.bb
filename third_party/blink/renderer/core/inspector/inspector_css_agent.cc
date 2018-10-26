@@ -1621,7 +1621,7 @@ Response InspectorCSSAgent::forcePseudoState(
     node_id_to_forced_pseudo_state_.erase(node_id);
   element->ownerDocument()->SetNeedsStyleRecalc(
       kSubtreeStyleChange,
-      StyleChangeReasonForTracing::Create(StyleChangeReason::kInspector));
+      StyleChangeReasonForTracing::Create(style_change_reason::kInspector));
   return Response::OK();
 }
 
@@ -2082,7 +2082,7 @@ void InspectorCSSAgent::DidAddDocument(Document* document) {
   document->GetStyleEngine().SetRuleUsageTracker(tracker_);
   document->SetNeedsStyleRecalc(
       kSubtreeStyleChange,
-      StyleChangeReasonForTracing::Create(StyleChangeReason::kInspector));
+      StyleChangeReasonForTracing::Create(style_change_reason::kInspector));
 }
 
 void InspectorCSSAgent::DidRemoveDocument(Document* document) {}
@@ -2133,10 +2133,11 @@ void InspectorCSSAgent::ResetPseudoStates() {
   }
 
   node_id_to_forced_pseudo_state_.clear();
-  for (auto& document : documents_to_change)
+  for (auto& document : documents_to_change) {
     document->SetNeedsStyleRecalc(
         kSubtreeStyleChange,
-        StyleChangeReasonForTracing::Create(StyleChangeReason::kInspector));
+        StyleChangeReasonForTracing::Create(style_change_reason::kInspector));
+  }
 }
 
 HeapVector<Member<CSSStyleDeclaration>> InspectorCSSAgent::MatchingStyles(
@@ -2412,7 +2413,7 @@ Response InspectorCSSAgent::startRuleUsageTracking() {
   for (Document* document : dom_agent_->Documents()) {
     document->SetNeedsStyleRecalc(
         kSubtreeStyleChange,
-        StyleChangeReasonForTracing::Create(StyleChangeReason::kInspector));
+        StyleChangeReasonForTracing::Create(style_change_reason::kInspector));
     document->UpdateStyleAndLayoutTree();
   }
 

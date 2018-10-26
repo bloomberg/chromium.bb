@@ -115,7 +115,7 @@ void HTMLBodyElement::ParseAttribute(
 
     SetNeedsStyleRecalc(kSubtreeStyleChange,
                         StyleChangeReasonForTracing::Create(
-                            StyleChangeReason::kLinkColorChange));
+                            style_change_reason::kLinkColorChange));
   } else if (name == onafterprintAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::afterprint,

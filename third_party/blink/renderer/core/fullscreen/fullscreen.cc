@@ -967,7 +967,7 @@ void Fullscreen::DidUpdateSize(Element& element) {
   // bit surprising.
   element.SetNeedsStyleRecalc(
       kLocalStyleChange,
-      StyleChangeReasonForTracing::Create(StyleChangeReason::kFullscreen));
+      StyleChangeReasonForTracing::Create(style_change_reason::kFullscreen));
 }
 
 void Fullscreen::ElementRemoved(Element& node) {

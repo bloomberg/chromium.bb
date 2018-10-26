@@ -229,7 +229,7 @@ void FileInputType::SetValue(const String&,
   file_list_->clear();
   GetElement().SetNeedsStyleRecalc(
       kSubtreeStyleChange,
-      StyleChangeReasonForTracing::Create(StyleChangeReason::kControlValue));
+      StyleChangeReasonForTracing::Create(style_change_reason::kControlValue));
   GetElement().SetNeedsValidityCheck();
 }
 

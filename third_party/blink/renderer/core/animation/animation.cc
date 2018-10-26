@@ -1269,7 +1269,7 @@ void Animation::InvalidateKeyframeEffect(const TreeScope& tree_scope) {
       CSSAnimations::IsAffectedByKeyframesFromScope(*target, tree_scope)) {
     target->SetNeedsStyleRecalc(kLocalStyleChange,
                                 StyleChangeReasonForTracing::Create(
-                                    StyleChangeReason::kStyleSheetChange));
+                                    style_change_reason::kStyleSheetChange));
   }
 }
 

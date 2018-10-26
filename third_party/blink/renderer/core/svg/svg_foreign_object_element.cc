@@ -106,7 +106,7 @@ void SVGForeignObjectElement::SvgAttributeChanged(
         kLocalStyleChange,
         is_width_height_attribute
             ? StyleChangeReasonForTracing::Create(
-                  StyleChangeReason::kSVGContainerSizeChange)
+                  style_change_reason::kSVGContainerSizeChange)
             : StyleChangeReasonForTracing::FromAttribute(attr_name));
 
     UpdateRelativeLengthsInformation();
