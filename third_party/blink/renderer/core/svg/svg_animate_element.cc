@@ -465,8 +465,8 @@ void SVGAnimateElement::ClearAnimatedType() {
           target_element->EnsureAnimatedSMILStyleProperties();
       if (property_set->RemoveProperty(css_property_id_)) {
         target_element->SetNeedsStyleRecalc(
-            kLocalStyleChange,
-            StyleChangeReasonForTracing::Create(StyleChangeReason::kAnimation));
+            kLocalStyleChange, StyleChangeReasonForTracing::Create(
+                                   style_change_reason::kAnimation));
       }
     }
   }
@@ -507,7 +507,7 @@ void SVGAnimateElement::ApplyResultsToTarget() {
             .did_change) {
       targetElement()->SetNeedsStyleRecalc(
           kLocalStyleChange,
-          StyleChangeReasonForTracing::Create(StyleChangeReason::kAnimation));
+          StyleChangeReasonForTracing::Create(style_change_reason::kAnimation));
     }
   }
   if (IsAnimatingSVGDom()) {

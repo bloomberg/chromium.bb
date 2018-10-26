@@ -342,7 +342,7 @@ void StyleEngine::WatchedSelectorsChanged() {
   // TODO(futhark@chromium.org): Should be able to use RuleSetInvalidation here.
   GetDocument().SetNeedsStyleRecalc(
       kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                               StyleChangeReason::kDeclarativeContent));
+                               style_change_reason::kDeclarativeContent));
 }
 
 bool StyleEngine::ShouldUpdateDocumentStyleSheetCollection() const {
@@ -748,7 +748,7 @@ void StyleEngine::FontsNeedUpdate(FontSelector*) {
     resolver_->InvalidateMatchedPropertiesCache();
   GetDocument().SetNeedsStyleRecalc(
       kSubtreeStyleChange,
-      StyleChangeReasonForTracing::Create(StyleChangeReason::kFonts));
+      StyleChangeReasonForTracing::Create(style_change_reason::kFonts));
   probe::fontsUpdated(document_, nullptr, String(), nullptr);
 }
 
@@ -765,7 +765,7 @@ void StyleEngine::PlatformColorsChanged() {
     resolver_->InvalidateMatchedPropertiesCache();
   GetDocument().SetNeedsStyleRecalc(
       kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                               StyleChangeReason::kPlatformColorChange));
+                               style_change_reason::kPlatformColorChange));
 }
 
 bool StyleEngine::ShouldSkipInvalidationFor(const Element& element) const {
@@ -1081,7 +1081,7 @@ void StyleEngine::ScheduleTypeRuleSetInvalidations(
     if (invalidation_set->InvalidatesTagName(host)) {
       host.SetNeedsStyleRecalc(kLocalStyleChange,
                                StyleChangeReasonForTracing::Create(
-                                   StyleChangeReason::kStyleSheetChange));
+                                   style_change_reason::kStyleSheetChange));
       return;
     }
   }
@@ -1114,7 +1114,7 @@ void StyleEngine::InvalidateSlottedElements(HTMLSlotElement& slot) {
     if (node->IsElementNode()) {
       node->SetNeedsStyleRecalc(kLocalStyleChange,
                                 StyleChangeReasonForTracing::Create(
-                                    StyleChangeReason::kStyleSheetChange));
+                                    style_change_reason::kStyleSheetChange));
     }
   }
 }
@@ -1230,7 +1230,7 @@ void StyleEngine::InitialStyleChanged() {
 
   GetDocument().SetNeedsStyleRecalc(
       kSubtreeStyleChange,
-      StyleChangeReasonForTracing::Create(StyleChangeReason::kSettings));
+      StyleChangeReasonForTracing::Create(style_change_reason::kSettings));
 }
 
 void StyleEngine::InitialViewportChanged() {
@@ -1264,8 +1264,9 @@ void StyleEngine::HtmlImportAddedOrRemoved() {
     MarkDocumentDirty();
     resolver->SetNeedsAppendAllSheets();
     GetDocument().SetNeedsStyleRecalc(
-        kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                                 StyleChangeReason::kActiveStylesheetsUpdate));
+        kSubtreeStyleChange,
+        StyleChangeReasonForTracing::Create(
+            style_change_reason::kActiveStylesheetsUpdate));
   }
 }
 
@@ -1313,8 +1314,9 @@ void StyleEngine::InvalidateForRuleSetChanges(
   if (!tree_scope.GetDocument().body() ||
       tree_scope.GetDocument().HasNodesWithPlaceholderStyle()) {
     tree_scope.GetDocument().SetNeedsStyleRecalc(
-        kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                                 StyleChangeReason::kCleanupPlaceholderStyles));
+        kSubtreeStyleChange,
+        StyleChangeReasonForTracing::Create(
+            style_change_reason::kCleanupPlaceholderStyles));
     return;
   }
 
@@ -1330,8 +1332,9 @@ void StyleEngine::InvalidateForRuleSetChanges(
       ((changed_rule_flags & kFontFaceRules) &&
        tree_scope.RootNode().IsDocumentNode())) {
     invalidation_root.SetNeedsStyleRecalc(
-        kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                                 StyleChangeReason::kActiveStylesheetsUpdate));
+        kSubtreeStyleChange,
+        StyleChangeReasonForTracing::Create(
+            style_change_reason::kActiveStylesheetsUpdate));
     return;
   }
 
@@ -1502,7 +1505,7 @@ void StyleEngine::CustomPropertyRegistered() {
   // TODO(timloh): Invalidate only elements with this custom property set
   GetDocument().SetNeedsStyleRecalc(
       kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                               StyleChangeReason::kPropertyRegistration));
+                               style_change_reason::kPropertyRegistration));
   if (resolver_)
     resolver_->InvalidateMatchedPropertiesCache();
 }
@@ -1510,7 +1513,7 @@ void StyleEngine::CustomPropertyRegistered() {
 void StyleEngine::EnvironmentVariableChanged() {
   GetDocument().SetNeedsStyleRecalc(
       kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                               StyleChangeReason::kPropertyRegistration));
+                               style_change_reason::kPropertyRegistration));
   if (resolver_)
     resolver_->InvalidateMatchedPropertiesCache();
 }

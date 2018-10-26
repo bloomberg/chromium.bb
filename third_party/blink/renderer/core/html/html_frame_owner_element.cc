@@ -133,7 +133,7 @@ void HTMLFrameOwnerElement::SetContentFrame(Frame& frame) {
       layer->SetNeedsCompositingInputsUpdate();
   }
   SetNeedsStyleRecalc(kLocalStyleChange, StyleChangeReasonForTracing::Create(
-                                             StyleChangeReason::kFrame));
+                                             style_change_reason::kFrame));
 
   for (ContainerNode* node = this; node; node = node->ParentOrShadowHostNode())
     node->IncrementConnectedSubframeCount();

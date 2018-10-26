@@ -391,7 +391,7 @@ void HTMLSlotElement::DidRecalcStyle(StyleRecalcChange change) {
     node->SetNeedsStyleRecalc(
         kLocalStyleChange,
         StyleChangeReasonForTracing::Create(
-            StyleChangeReason::kPropagateInheritChangeToDistributedNodes));
+            style_change_reason::kPropagateInheritChangeToDistributedNodes));
   }
 }
 

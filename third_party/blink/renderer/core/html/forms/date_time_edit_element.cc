@@ -764,7 +764,7 @@ void DateTimeEditElement::GetLayout(const LayoutParameters& layout_parameters,
     }
     SetNeedsStyleRecalc(
         kSubtreeStyleChange,
-        StyleChangeReasonForTracing::Create(StyleChangeReason::kControl));
+        StyleChangeReasonForTracing::Create(style_change_reason::kControl));
   }
 }
 

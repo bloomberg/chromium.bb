@@ -1268,7 +1268,7 @@ void Element::InvisibleAttributeChanged(const AtomicString& old_value,
   if (old_value.IsNull() != new_value.IsNull()) {
     SetNeedsStyleRecalc(kLocalStyleChange,
                         StyleChangeReasonForTracing::Create(
-                            StyleChangeReason::kInvisibleChange));
+                            style_change_reason::kInvisibleChange));
   }
   if (EqualIgnoringASCIICase(old_value, "static") &&
       !IsInsideInvisibleStaticSubtree()) {
@@ -2532,7 +2532,7 @@ ShadowRoot& Element::CreateAndAttachShadowRoot(ShadowRootType type) {
   shadow_root->InsertedInto(*this);
   SetChildNeedsStyleRecalc();
   SetNeedsStyleRecalc(kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                                               StyleChangeReason::kShadow));
+                                               style_change_reason::kShadow));
 
   probe::didPushShadowRoot(this, shadow_root);
 
@@ -2576,7 +2576,7 @@ void Element::SetNeedsAnimationStyleRecalc() {
     return;
 
   SetNeedsStyleRecalc(kLocalStyleChange, StyleChangeReasonForTracing::Create(
-                                             StyleChangeReason::kAnimation));
+                                             style_change_reason::kAnimation));
   SetAnimationStyleChange(true);
 }
 
@@ -4802,14 +4802,14 @@ void Element::StyleAttributeChanged(
 
   SetNeedsStyleRecalc(kLocalStyleChange,
                       StyleChangeReasonForTracing::Create(
-                          StyleChangeReason::kStyleSheetChange));
+                          style_change_reason::kStyleSheetChange));
   probe::didInvalidateStyleAttr(this);
 }
 
 void Element::InlineStyleChanged() {
   DCHECK(IsStyledElement());
   SetNeedsStyleRecalc(kLocalStyleChange, StyleChangeReasonForTracing::Create(
-                                             StyleChangeReason::kInline));
+                                             style_change_reason::kInline));
   DCHECK(GetElementData());
   GetElementData()->style_attribute_is_dirty_ = true;
   probe::didInvalidateStyleAttr(this);

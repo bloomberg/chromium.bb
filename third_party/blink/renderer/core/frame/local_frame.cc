@@ -574,7 +574,7 @@ void LocalFrame::SetInheritedEffectiveTouchAction(TouchAction touch_action) {
     GetDocument()->documentElement()->SetNeedsStyleRecalc(
         kSubtreeStyleChange,
         StyleChangeReasonForTracing::Create(
-            StyleChangeReason::kInheritedStyleChangeFromParentFrame));
+            style_change_reason::kInheritedStyleChangeFromParentFrame));
   }
 }
 
@@ -755,7 +755,7 @@ void LocalFrame::SetPageAndTextZoomFactors(float page_zoom_factor,
   document->MediaQueryAffectingValueChanged();
   document->SetNeedsStyleRecalc(
       kSubtreeStyleChange,
-      StyleChangeReasonForTracing::Create(StyleChangeReason::kZoom));
+      StyleChangeReasonForTracing::Create(style_change_reason::kZoom));
   document->UpdateStyleAndLayoutIgnorePendingStylesheets();
 }
 
@@ -763,7 +763,7 @@ void LocalFrame::DeviceScaleFactorChanged() {
   GetDocument()->MediaQueryAffectingValueChanged();
   GetDocument()->SetNeedsStyleRecalc(
       kSubtreeStyleChange,
-      StyleChangeReasonForTracing::Create(StyleChangeReason::kZoom));
+      StyleChangeReasonForTracing::Create(style_change_reason::kZoom));
   for (Frame* child = Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
     if (child->IsLocalFrame())

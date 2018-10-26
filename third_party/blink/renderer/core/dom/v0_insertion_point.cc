@@ -159,7 +159,7 @@ void V0InsertionPoint::DidRecalcStyle(StyleRecalcChange change) {
     node->SetNeedsStyleRecalc(
         style_change_type,
         StyleChangeReasonForTracing::Create(
-            StyleChangeReason::kPropagateInheritChangeToDistributedNodes));
+            style_change_reason::kPropagateInheritChangeToDistributedNodes));
   }
 }
 

@@ -128,9 +128,9 @@ void TextControlInnerEditorElement::DefaultEventHandler(Event& event) {
 void TextControlInnerEditorElement::SetVisibility(bool is_visible) {
   if (is_visible_ != is_visible) {
     is_visible_ = is_visible;
-    SetNeedsStyleRecalc(
-        kLocalStyleChange,
-        StyleChangeReasonForTracing::Create(StyleChangeReason::kControlValue));
+    SetNeedsStyleRecalc(kLocalStyleChange,
+                        StyleChangeReasonForTracing::Create(
+                            style_change_reason::kControlValue));
   }
 }
 

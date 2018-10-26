@@ -1044,7 +1044,7 @@ void ContainerNode::FocusStateChanged() {
   SetNeedsStyleRecalc(
       change_type,
       StyleChangeReasonForTracing::CreateWithExtraData(
-          StyleChangeReason::kPseudoClass, StyleChangeExtraData::g_focus));
+          style_change_reason::kPseudoClass, StyleChangeExtraData::g_focus));
 
   if (IsElementNode() && ToElement(this)->ChildrenOrSiblingsAffectedByFocus())
     ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoFocus);
@@ -1063,7 +1063,7 @@ void ContainerNode::FocusVisibleStateChanged() {
           : kLocalStyleChange;
   SetNeedsStyleRecalc(change_type,
                       StyleChangeReasonForTracing::CreateWithExtraData(
-                          StyleChangeReason::kPseudoClass,
+                          style_change_reason::kPseudoClass,
                           StyleChangeExtraData::g_focus_visible));
 
   if (IsElementNode() &&
@@ -1079,7 +1079,7 @@ void ContainerNode::FocusWithinStateChanged() {
             : kLocalStyleChange;
     SetNeedsStyleRecalc(change_type,
                         StyleChangeReasonForTracing::CreateWithExtraData(
-                            StyleChangeReason::kPseudoClass,
+                            style_change_reason::kPseudoClass,
                             StyleChangeExtraData::g_focus_within));
   }
   if (IsElementNode() &&
@@ -1117,13 +1117,14 @@ void ContainerNode::SetFocused(bool received, WebFocusType focus_type) {
 
   // If :focus sets display: none, we lose focus but still need to recalc our
   // style.
-  if (IsElementNode() && ToElement(this)->ChildrenOrSiblingsAffectedByFocus())
+  if (IsElementNode() && ToElement(this)->ChildrenOrSiblingsAffectedByFocus()) {
     ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoFocus);
-  else
+  } else {
     SetNeedsStyleRecalc(
         kLocalStyleChange,
         StyleChangeReasonForTracing::CreateWithExtraData(
-            StyleChangeReason::kPseudoClass, StyleChangeExtraData::g_focus));
+            style_change_reason::kPseudoClass, StyleChangeExtraData::g_focus));
+  }
 
   if (RuntimeEnabledFeatures::CSSFocusVisibleEnabled()) {
     if (IsElementNode() &&
@@ -1132,7 +1133,7 @@ void ContainerNode::SetFocused(bool received, WebFocusType focus_type) {
     } else {
       SetNeedsStyleRecalc(kLocalStyleChange,
                           StyleChangeReasonForTracing::CreateWithExtraData(
-                              StyleChangeReason::kPseudoClass,
+                              style_change_reason::kPseudoClass,
                               StyleChangeExtraData::g_focus_visible));
     }
   }
@@ -1143,7 +1144,7 @@ void ContainerNode::SetFocused(bool received, WebFocusType focus_type) {
   } else {
     SetNeedsStyleRecalc(kLocalStyleChange,
                         StyleChangeReasonForTracing::CreateWithExtraData(
-                            StyleChangeReason::kPseudoClass,
+                            style_change_reason::kPseudoClass,
                             StyleChangeExtraData::g_focus_within));
   }
 }
@@ -1164,13 +1165,14 @@ void ContainerNode::SetActive(bool down) {
 
   if (!GetLayoutObject()) {
     if (IsElementNode() &&
-        ToElement(this)->ChildrenOrSiblingsAffectedByActive())
+        ToElement(this)->ChildrenOrSiblingsAffectedByActive()) {
       ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoActive);
-    else
-      SetNeedsStyleRecalc(
-          kLocalStyleChange,
-          StyleChangeReasonForTracing::CreateWithExtraData(
-              StyleChangeReason::kPseudoClass, StyleChangeExtraData::g_active));
+    } else {
+      SetNeedsStyleRecalc(kLocalStyleChange,
+                          StyleChangeReasonForTracing::CreateWithExtraData(
+                              style_change_reason::kPseudoClass,
+                              StyleChangeExtraData::g_active));
+    }
     return;
   }
 
@@ -1182,7 +1184,7 @@ void ContainerNode::SetActive(bool down) {
     SetNeedsStyleRecalc(
         change_type,
         StyleChangeReasonForTracing::CreateWithExtraData(
-            StyleChangeReason::kPseudoClass, StyleChangeExtraData::g_active));
+            style_change_reason::kPseudoClass, StyleChangeExtraData::g_active));
   }
   if (IsElementNode() && ToElement(this)->ChildrenOrSiblingsAffectedByActive())
     ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoActive);
@@ -1201,13 +1203,16 @@ void ContainerNode::SetDragged(bool new_value) {
   if (!GetLayoutObject()) {
     if (new_value)
       return;
-    if (IsElementNode() && ToElement(this)->ChildrenOrSiblingsAffectedByDrag())
+    if (IsElementNode() &&
+        ToElement(this)->ChildrenOrSiblingsAffectedByDrag()) {
       ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoDrag);
-    else
+
+    } else {
       SetNeedsStyleRecalc(
           kLocalStyleChange,
           StyleChangeReasonForTracing::CreateWithExtraData(
-              StyleChangeReason::kPseudoClass, StyleChangeExtraData::g_drag));
+              style_change_reason::kPseudoClass, StyleChangeExtraData::g_drag));
+    }
     return;
   }
 
@@ -1219,7 +1224,7 @@ void ContainerNode::SetDragged(bool new_value) {
     SetNeedsStyleRecalc(
         change_type,
         StyleChangeReasonForTracing::CreateWithExtraData(
-            StyleChangeReason::kPseudoClass, StyleChangeExtraData::g_drag));
+            style_change_reason::kPseudoClass, StyleChangeExtraData::g_drag));
   }
   if (IsElementNode() && ToElement(this)->ChildrenOrSiblingsAffectedByDrag())
     ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoDrag);
@@ -1239,7 +1244,7 @@ void ContainerNode::SetHovered(bool over) {
     SetNeedsStyleRecalc(
         change_type,
         StyleChangeReasonForTracing::CreateWithExtraData(
-            StyleChangeReason::kPseudoClass, StyleChangeExtraData::g_hover));
+            style_change_reason::kPseudoClass, StyleChangeExtraData::g_hover));
   }
   if (IsElementNode() && ToElement(this)->ChildrenOrSiblingsAffectedByHover())
     ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoHover);

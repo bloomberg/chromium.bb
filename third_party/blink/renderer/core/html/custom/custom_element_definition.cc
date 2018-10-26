@@ -230,9 +230,9 @@ void CustomElementDefinition::AddDefaultStylesTo(Element& element) {
     for (CSSStyleSheet* sheet : default_styles)
       sheet->AddToCustomElementTagNames(local_tag_name);
   }
-  element.SetNeedsStyleRecalc(kLocalStyleChange,
-                              StyleChangeReasonForTracing::Create(
-                                  StyleChangeReason::kActiveStylesheetsUpdate));
+  element.SetNeedsStyleRecalc(
+      kLocalStyleChange, StyleChangeReasonForTracing::Create(
+                             style_change_reason::kActiveStylesheetsUpdate));
 }
 
 bool CustomElementDefinition::HasAttributeChangedCallback(

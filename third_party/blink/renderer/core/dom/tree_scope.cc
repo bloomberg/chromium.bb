@@ -617,10 +617,11 @@ void TreeScope::SetNeedsStyleRecalcForViewportUnits() {
     if (ShadowRoot* root = element->GetShadowRoot())
       root->SetNeedsStyleRecalcForViewportUnits();
     const ComputedStyle* style = element->GetComputedStyle();
-    if (style && style->HasViewportUnits())
+    if (style && style->HasViewportUnits()) {
       element->SetNeedsStyleRecalc(kLocalStyleChange,
                                    StyleChangeReasonForTracing::Create(
-                                       StyleChangeReason::kViewportUnits));
+                                       style_change_reason::kViewportUnits));
+    }
   }
 }
 

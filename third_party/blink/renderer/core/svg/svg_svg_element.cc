@@ -258,7 +258,7 @@ void SVGSVGElement::SvgAttributeChanged(const QualifiedName& attr_name) {
         InvalidateSVGPresentationAttributeStyle();
         SetNeedsStyleRecalc(kLocalStyleChange,
                             StyleChangeReasonForTracing::Create(
-                                StyleChangeReason::kSVGContainerSizeChange));
+                                style_change_reason::kSVGContainerSizeChange));
         if (layout_object)
           ToLayoutSVGRoot(layout_object)->IntrinsicSizingInfoChanged();
       }
