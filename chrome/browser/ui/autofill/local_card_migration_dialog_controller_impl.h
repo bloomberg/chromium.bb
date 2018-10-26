@@ -42,7 +42,7 @@ class LocalCardMigrationDialogControllerImpl
       const std::vector<std::string>& selected_cards_guids) override;
   void OnCancelButtonClicked() override;
   void OnViewCardsButtonClicked() override;
-  void OnLegalMessageLinkClicked() override;
+  void OnLegalMessageLinkClicked(const GURL& url) override;
   void OnDialogClosed() override;
 
  protected:
@@ -52,6 +52,8 @@ class LocalCardMigrationDialogControllerImpl
  private:
   friend class content::WebContentsUserData<
       LocalCardMigrationDialogControllerImpl>;
+
+  void OpenUrl(const GURL& url);
 
   content::WebContents* web_contents_;
 

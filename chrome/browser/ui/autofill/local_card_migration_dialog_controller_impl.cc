@@ -108,13 +108,12 @@ void LocalCardMigrationDialogControllerImpl::OnCancelButtonClicked() {
 void LocalCardMigrationDialogControllerImpl::OnViewCardsButtonClicked() {
   // TODO(crbug.com/867194): Add metrics.
   constexpr int kPaymentsProfileUserIndex = 0;
-  web_contents_->OpenURL(content::OpenURLParams(
-      payments::GetManageInstrumentsUrl(kPaymentsProfileUserIndex),
-      content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui::PAGE_TRANSITION_LINK, /*is_renderer_initiated=*/false));
+  OpenUrl(payments::GetManageInstrumentsUrl(kPaymentsProfileUserIndex));
 }
 
-void LocalCardMigrationDialogControllerImpl::OnLegalMessageLinkClicked() {
+void LocalCardMigrationDialogControllerImpl::OnLegalMessageLinkClicked(
+    const GURL& url) {
+  OpenUrl(url);
   AutofillMetrics::LogLocalCardMigrationDialogUserInteractionMetric(
       dialog_is_visible_duration_timer_.Elapsed(), 0,
       migratable_credit_cards_.size(),
@@ -124,6 +123,12 @@ void LocalCardMigrationDialogControllerImpl::OnLegalMessageLinkClicked() {
 void LocalCardMigrationDialogControllerImpl::OnDialogClosed() {
   if (local_card_migration_dialog_)
     local_card_migration_dialog_ = nullptr;
+}
+
+void LocalCardMigrationDialogControllerImpl::OpenUrl(const GURL& url) {
+  web_contents_->OpenURL(content::OpenURLParams(
+      url, content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui::PAGE_TRANSITION_LINK, false));
 }
 
 }  // namespace autofill

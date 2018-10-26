@@ -51,8 +51,6 @@ class SaveCardOfferBubbleViews : public SaveCardBubbleViews,
 
   ~SaveCardOfferBubbleViews() override;
 
-  content::WebContents* web_contents_;
-
   views::Textfield* cardholder_name_textfield_ = nullptr;
 
   LegalMessageView* legal_message_view_ = nullptr;

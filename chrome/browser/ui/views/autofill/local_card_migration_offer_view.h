@@ -10,10 +10,6 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/styled_label_listener.h"
 
-namespace content {
-class WebContents;
-}  // namespace content
-
 namespace autofill {
 
 class LocalCardMigrationDialogController;
@@ -27,8 +23,7 @@ class LocalCardMigrationOfferView : public views::View,
                                     public views::StyledLabelListener {
  public:
   LocalCardMigrationOfferView(LocalCardMigrationDialogController* controller,
-                              views::ButtonListener* listener,
-                              content::WebContents* web_contents);
+                              views::ButtonListener* listener);
   ~LocalCardMigrationOfferView() override;
 
   // views::StyledLabelListener:
@@ -42,8 +37,6 @@ class LocalCardMigrationOfferView : public views::View,
   void Init(views::ButtonListener* listener);
 
   LocalCardMigrationDialogController* controller_;
-
-  content::WebContents* web_contents_;
 
   views::View* card_list_view_ = nullptr;
 
