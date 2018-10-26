@@ -506,7 +506,7 @@ def _WorkOnEbuild(overlay, ebuild, manifest, options, ebuild_paths_to_add,
 
       if options.list_revisions:
         info = ebuild.GetSourceInfo(os.path.join(options.buildroot, 'src'),
-                                    manifest, True)
+                                    manifest)
         srcdirs = [os.path.join(options.buildroot, 'src', srcdir)
                    for srcdir in ebuild.cros_workon_vars.localname]
         old_commit_ids = dict(
