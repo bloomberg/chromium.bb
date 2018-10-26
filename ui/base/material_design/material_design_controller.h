@@ -30,26 +30,16 @@ class MaterialDesignControllerTestAPI;
 // Central controller to handle material design modes.
 class UI_BASE_EXPORT MaterialDesignController {
  public:
-  // The different material design modes. The order cannot be changed without
-  // updating references as these are used as array indices.
+  // The different material design modes.
   enum Mode {
-    // Basic material design.
-    MATERIAL_NORMAL = 0,
-    // Material design targeted at mouse/touch hybrid devices.
-    MATERIAL_HYBRID = 1,
-    // Material design that is more optimized for touch devices.
-    MATERIAL_TOUCH_OPTIMIZED = 2,
     // Material Refresh design targeted at mouse devices.
-    MATERIAL_REFRESH = 3,
+    MATERIAL_REFRESH,
     // Material Refresh design optimized for touch devices.
-    MATERIAL_TOUCH_REFRESH = 4,
+    MATERIAL_TOUCH_REFRESH,
   };
 
   // Initializes |mode_|. Must be called before checking |mode_|.
   static void Initialize();
-
-  // Get the current Mode that should be used by the system.
-  static Mode GetMode();
 
   // Returns true if the touch-optimized UI material design mode is enabled.
   static bool IsTouchOptimizedUiEnabled();
@@ -70,7 +60,6 @@ class UI_BASE_EXPORT MaterialDesignController {
   friend class test::MaterialDesignControllerTestAPI;
 
   MaterialDesignController();
-
   ~MaterialDesignController() = delete;
 
   // Resets the initialization state to uninitialized. To be used by tests to
@@ -80,11 +69,6 @@ class UI_BASE_EXPORT MaterialDesignController {
   // Set |mode_| to |mode| and updates |is_mode_initialized_| to true. Can be
   // used by tests to directly set the mode.
   static void SetMode(Mode mode);
-
-  // Sets |is_refresh_dynamic_ui_| to true and initializes the |mode_|. If the
-  // platform does not support tablet mode switching, |mode_| will be set to
-  // MATERIAL_REFRESH and |is_refresh_dynamic_ui_| will be left untouched.
-  static void MaybeSetDynamicRefreshMode();
 
   // Tracks whether |mode_| has been initialized. This is necessary to avoid
   // checking the |mode_| early in initialization before a call to Initialize().

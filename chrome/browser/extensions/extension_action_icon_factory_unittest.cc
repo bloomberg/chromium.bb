@@ -25,9 +25,7 @@
 #include "extensions/common/image_util.h"
 #include "skia/ext/image_operations.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skia_util.h"
@@ -82,7 +80,7 @@ gfx::Image LoadIcon(const std::string& filename) {
 }
 
 class ExtensionActionIconFactoryTest
-    : public testing::TestWithParam<ui::MaterialDesignController::Mode>,
+    : public testing::Test,
       public ExtensionActionIconFactory::Observer {
  public:
   ExtensionActionIconFactoryTest() : quit_in_icon_updated_(false) {}
@@ -134,12 +132,9 @@ class ExtensionActionIconFactoryTest
     extension_service_ = static_cast<extensions::TestExtensionSystem*>(
         extensions::ExtensionSystem::Get(profile_.get()))->
         CreateExtensionService(&command_line, base::FilePath(), false);
-    material_design_state_.reset(
-        new ui::test::MaterialDesignControllerTestAPI(GetParam()));
   }
 
   void TearDown() override {
-    material_design_state_.reset();
     profile_.reset();  // Get all DeleteSoon calls sent to ui_loop_.
     base::RunLoop().RunUntilIdle();
   }
@@ -166,8 +161,6 @@ class ExtensionActionIconFactoryTest
   bool quit_in_icon_updated_;
   std::unique_ptr<TestingProfile> profile_;
   ExtensionService* extension_service_;
-  std::unique_ptr<ui::test::MaterialDesignControllerTestAPI>
-      material_design_state_;
 
 #if defined OS_CHROMEOS
   chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
@@ -177,15 +170,9 @@ class ExtensionActionIconFactoryTest
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionIconFactoryTest);
 };
 
-INSTANTIATE_TEST_CASE_P(
-    ExtensionActionIconFactoryTest_MaterialDesign,
-    ExtensionActionIconFactoryTest,
-    testing::Values(ui::MaterialDesignController::MATERIAL_NORMAL,
-                    ui::MaterialDesignController::MATERIAL_HYBRID));
-
 // If there is no default icon, and the icon has not been set using |SetIcon|,
 // the factory should return the placeholder icon.
-TEST_P(ExtensionActionIconFactoryTest, NoIcons) {
+TEST_F(ExtensionActionIconFactoryTest, NoIcons) {
   // Load an extension that has browser action without default icon set in the
   // manifest and does not call |SetIcon| by default.
   scoped_refptr<Extension> extension(
@@ -209,7 +196,7 @@ TEST_P(ExtensionActionIconFactoryTest, NoIcons) {
 
 // If the explicitly-set icon is invisible, |ExtensionAction::GetIcon| should
 // return the placeholder icon.
-TEST_P(ExtensionActionIconFactoryTest, InvisibleIcon) {
+TEST_F(ExtensionActionIconFactoryTest, InvisibleIcon) {
   // Load an extension that has browser action with a default icon set in the
   // manifest, but that icon is not sufficiently visible.
   scoped_refptr<Extension> extension(
@@ -246,7 +233,7 @@ TEST_P(ExtensionActionIconFactoryTest, InvisibleIcon) {
 
 // If the icon has been set using |SetIcon|, the factory should return that
 // icon.
-TEST_P(ExtensionActionIconFactoryTest, AfterSetIcon) {
+TEST_F(ExtensionActionIconFactoryTest, AfterSetIcon) {
   // Load an extension that has browser action without default icon set in the
   // manifest and does not call |SetIcon| by default (but has an browser action
   // icon resource).
@@ -285,7 +272,7 @@ TEST_P(ExtensionActionIconFactoryTest, AfterSetIcon) {
 
 // If there is a default icon, and the icon has not been set using |SetIcon|,
 // the factory should return the default icon.
-TEST_P(ExtensionActionIconFactoryTest, DefaultIcon) {
+TEST_F(ExtensionActionIconFactoryTest, DefaultIcon) {
   // Load an extension that has browser action without default icon set in the
   // manifest and does not call |SetIcon| by default (but has an browser action
   // icon resource).
