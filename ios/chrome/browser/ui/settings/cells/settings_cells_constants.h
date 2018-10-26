@@ -5,7 +5,12 @@
 #ifndef IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_SETTINGS_CELLS_CONSTANTS_H_
 #define IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_SETTINGS_CELLS_CONSTANTS_H_
 
+#import <UIKit/UIKit.h>
+
 // The color of the detail text for the settings cells.
 extern const int kSettingsCellsDetailTextColor;
+
+// Default height for the settings cells.
+extern const CGFloat kSettingsCellDefaultHeight;
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_SETTINGS_CELLS_CONSTANTS_H_

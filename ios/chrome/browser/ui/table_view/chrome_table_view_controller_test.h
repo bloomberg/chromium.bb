@@ -83,20 +83,21 @@ class ChromeTableViewControllerTest : public BlockCleanupTest {
                                   int section_id,
                                   int item_id);
 
-  // Verifies that the switch cell at |item| in |section| has a title which
-  // matches |expected_title| and is currently in |state|.
-  void CheckSwitchCellStateAndTitle(BOOL expected_state,
-                                    NSString* expected_title,
-                                    int section,
-                                    int item);
+  // Verifies that the switch cell at |item| in |section| has a text property
+  // which matches |expected_title| and a isOn method which matches
+  // |expected_state|.
+  void CheckSwitchCellStateAndText(BOOL expected_state,
+                                   NSString* expected_title,
+                                   int section,
+                                   int item);
 
-  // Verifies that the switch cell at |item| in |section| has a title which
-  // matches the l10n string for |expected_title_id| and is currently in
-  // |state|.
-  void CheckSwitchCellStateAndTitleWithId(BOOL expected_state,
-                                          int expected_title_id,
-                                          int section,
-                                          int item);
+  // Verifies that the switch cell at |item| in |section| has a text property
+  // which matches the l10n string for |expected_title_id| and a isOn method
+  // which matches  |expected_state|.
+  void CheckSwitchCellStateAndTextWithId(BOOL expected_state,
+                                         int expected_title_id,
+                                         int section,
+                                         int item);
 
   // Verifies that the cell at |item| in |section| has the given
   // |accessory_type|.

@@ -99,8 +99,8 @@ source_set("settings") {
     "table_cell_catalog_view_controller.mm",
     "time_range_selector_collection_view_controller.h",
     "time_range_selector_collection_view_controller.mm",
-    "translate_collection_view_controller.h",
-    "translate_collection_view_controller.mm",
+    "translate_table_view_controller.h",
+    "translate_table_view_controller.mm",
     "voicesearch_collection_view_controller.h",
     "voicesearch_collection_view_controller.mm",
   ]
@@ -293,7 +293,7 @@ source_set("unit_tests") {
     "sync_encryption_passphrase_collection_view_controller_unittest.mm",
     "sync_settings_collection_view_controller_unittest.mm",
     "time_range_selector_collection_view_controller_unittest.mm",
-    "translate_collection_view_controller_unittest.mm",
+    "translate_table_view_controller_unittest.mm",
     "voicesearch_collection_view_controller_unittest.mm",
   ]
   deps = [
