@@ -313,8 +313,7 @@ void StorageHandler::ClearDataForOrigin(
 
   storage_partition_->ClearData(
       remove_mask, StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-      GURL(origin), StoragePartition::OriginMatcherFunction(), base::Time(),
-      base::Time::Max(),
+      GURL(origin), base::Time(), base::Time::Max(),
       base::BindOnce(&ClearDataForOriginCallback::sendSuccess,
                      std::move(callback)));
 }

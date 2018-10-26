@@ -402,12 +402,15 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher embedder_matcher;
     if (embedder_delegate_)
       embedder_matcher = embedder_delegate_->GetOriginTypeMatcher();
+    bool perform_cleanup =
+        delete_begin_.is_null() && delete_end_.is_max() &&
+        filter_builder.GetMode() == BrowsingDataFilterBuilder::BLACKLIST;
 
     storage_partition->ClearData(
         storage_partition_remove_mask, quota_storage_remove_mask,
         base::BindRepeating(&DoesOriginMatchMaskAndURLs, origin_type_mask_,
                             filter, std::move(embedder_matcher)),
-        std::move(deletion_filter), delete_begin_, delete_end_,
+        std::move(deletion_filter), perform_cleanup, delete_begin_, delete_end_,
         CreatePendingTaskCompletionClosure());
   }
 

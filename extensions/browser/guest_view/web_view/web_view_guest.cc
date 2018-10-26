@@ -462,6 +462,8 @@ void WebViewGuest::ClearDataInternal(base::Time remove_since,
         network::mojom::CookieDeletionSessionControl::PERSISTENT_COOKIES;
   }
 
+  bool perform_cleanup = remove_since.is_null();
+
   content::StoragePartition* partition =
       content::BrowserContext::GetStoragePartition(
           web_contents()->GetBrowserContext(),
@@ -470,8 +472,8 @@ void WebViewGuest::ClearDataInternal(base::Time remove_since,
       storage_partition_removal_mask,
       content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
       content::StoragePartition::OriginMatcherFunction(),
-      std::move(cookie_delete_filter), remove_since, base::Time::Now(),
-      callback);
+      std::move(cookie_delete_filter), perform_cleanup, remove_since,
+      base::Time::Max(), callback);
 }
 
 void WebViewGuest::GuestViewDidStopLoading() {

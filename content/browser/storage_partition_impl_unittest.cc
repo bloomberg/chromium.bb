@@ -587,21 +587,19 @@ bool DoesOriginMatchUnprotected(
 
 void ClearQuotaData(content::StoragePartition* partition,
                     base::RunLoop* loop_to_quit) {
-  partition->ClearData(kAllQuotaRemoveMask,
-                       StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL, GURL(),
-                       StoragePartition::OriginMatcherFunction(), base::Time(),
-                       base::Time::Max(), loop_to_quit->QuitClosure());
+  partition->ClearData(
+      kAllQuotaRemoveMask, StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
+      GURL(), base::Time(), base::Time::Max(), loop_to_quit->QuitClosure());
 }
 
 void ClearQuotaDataWithOriginMatcher(
     content::StoragePartition* partition,
-    const GURL& remove_origin,
     const StoragePartition::OriginMatcherFunction& origin_matcher,
     const base::Time delete_begin,
     base::RunLoop* loop_to_quit) {
   partition->ClearData(kAllQuotaRemoveMask,
                        StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-                       remove_origin, origin_matcher, delete_begin,
+                       origin_matcher, nullptr, false, delete_begin,
                        base::Time::Max(), loop_to_quit->QuitClosure());
 }
 
@@ -610,32 +608,29 @@ void ClearQuotaDataForOrigin(
     const GURL& remove_origin,
     const base::Time delete_begin,
     base::RunLoop* loop_to_quit) {
-  ClearQuotaDataWithOriginMatcher(
-      partition, remove_origin,
-      StoragePartition::OriginMatcherFunction(), delete_begin,
-      loop_to_quit);
+  partition->ClearData(kAllQuotaRemoveMask,
+                       StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
+                       remove_origin, delete_begin, base::Time::Max(),
+                       loop_to_quit->QuitClosure());
 }
 
 void ClearQuotaDataForNonPersistent(
     content::StoragePartition* partition,
     const base::Time delete_begin,
     base::RunLoop* loop_to_quit) {
-  partition->ClearData(
-      kAllQuotaRemoveMask,
-      ~StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT,
-      GURL(), StoragePartition::OriginMatcherFunction(), delete_begin,
-      base::Time::Max(), loop_to_quit->QuitClosure());
+  partition->ClearData(kAllQuotaRemoveMask,
+                       ~StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT,
+                       GURL(), delete_begin, base::Time::Max(),
+                       loop_to_quit->QuitClosure());
 }
 
 void ClearCookies(content::StoragePartition* partition,
                   const base::Time delete_begin,
                   const base::Time delete_end,
                   base::RunLoop* run_loop) {
-  partition->ClearData(
-      StoragePartition::REMOVE_DATA_MASK_COOKIES,
-      StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-      GURL(), StoragePartition::OriginMatcherFunction(),
-      delete_begin, delete_end, run_loop->QuitClosure());
+  partition->ClearData(StoragePartition::REMOVE_DATA_MASK_COOKIES,
+                       StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL, GURL(),
+                       delete_begin, delete_end, run_loop->QuitClosure());
 }
 
 void ClearCookiesMatchingInfo(content::StoragePartition* partition,
@@ -650,8 +645,8 @@ void ClearCookiesMatchingInfo(content::StoragePartition* partition,
   partition->ClearData(StoragePartition::REMOVE_DATA_MASK_COOKIES,
                        StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
                        StoragePartition::OriginMatcherFunction(),
-                       std::move(delete_filter), delete_begin, delete_end,
-                       run_loop->QuitClosure());
+                       std::move(delete_filter), false, delete_begin,
+                       delete_end, run_loop->QuitClosure());
 }
 
 void ClearStuff(uint32_t remove_mask,
@@ -660,20 +655,18 @@ void ClearStuff(uint32_t remove_mask,
                 const base::Time delete_end,
                 const StoragePartition::OriginMatcherFunction& origin_matcher,
                 base::RunLoop* run_loop) {
-  partition->ClearData(
-      remove_mask, StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-      GURL(), origin_matcher, delete_begin, delete_end,
-      run_loop->QuitClosure());
+  partition->ClearData(remove_mask,
+                       StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
+                       origin_matcher, nullptr, false, delete_begin, delete_end,
+                       run_loop->QuitClosure());
 }
 
 void ClearData(content::StoragePartition* partition,
                base::RunLoop* run_loop) {
   base::Time time;
-  partition->ClearData(
-      StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE,
-      StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-      GURL(), StoragePartition::OriginMatcherFunction(),
-      time, time, run_loop->QuitClosure());
+  partition->ClearData(StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE,
+                       StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL, GURL(),
+                       time, time, run_loop->QuitClosure());
 }
 
 void ClearCodeCache(content::StoragePartition* partition,
@@ -690,8 +683,7 @@ void ClearPluginPrivateData(content::StoragePartition* partition,
   partition->ClearData(
       StoragePartitionImpl::REMOVE_DATA_MASK_PLUGIN_PRIVATE_DATA,
       StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL, storage_origin,
-      StoragePartition::OriginMatcherFunction(), delete_begin, delete_end,
-      run_loop->QuitClosure());
+      delete_begin, delete_end, run_loop->QuitClosure());
 }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
@@ -1056,45 +1048,7 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedUnprotectedOrigins) {
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(&ClearQuotaDataWithOriginMatcher, partition, GURL(),
-                     base::BindRepeating(&DoesOriginMatchForUnprotectedWeb),
-                     base::Time(), &run_loop));
-  run_loop.Run();
-
-  EXPECT_TRUE(
-      GetMockManager()->OriginHasData(kOrigin1, kTemporary, kClientFile));
-  EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin2, kTemporary, kClientFile));
-  EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin3, kTemporary, kClientFile));
-  EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin1, kPersistent, kClientFile));
-  EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin2, kPersistent, kClientFile));
-  EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin3, kPersistent, kClientFile));
-}
-
-TEST_F(StoragePartitionImplTest, RemoveQuotaManagedProtectedSpecificOrigin) {
-  // Protect kOrigin1.
-  scoped_refptr<MockSpecialStoragePolicy> mock_policy =
-      new MockSpecialStoragePolicy;
-  mock_policy->AddProtected(kOrigin1.GetURL());
-
-  PopulateTestQuotaManagedData(GetMockManager());
-
-  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetDefaultStoragePartition(browser_context()));
-  partition->OverrideQuotaManagerForTesting(
-      GetMockManager());
-  partition->OverrideSpecialStoragePolicyForTesting(mock_policy.get());
-
-  // Try to remove kOrigin1. Expect failure.
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
       base::BindOnce(&ClearQuotaDataWithOriginMatcher, partition,
-                     kOrigin1.GetURL(),
                      base::BindRepeating(&DoesOriginMatchForUnprotectedWeb),
                      base::Time(), &run_loop));
   run_loop.Run();
@@ -1103,13 +1057,13 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedProtectedSpecificOrigin) {
       GetMockManager()->OriginHasData(kOrigin1, kTemporary, kClientFile));
   EXPECT_FALSE(
       GetMockManager()->OriginHasData(kOrigin2, kTemporary, kClientFile));
-  EXPECT_TRUE(
+  EXPECT_FALSE(
       GetMockManager()->OriginHasData(kOrigin3, kTemporary, kClientFile));
   EXPECT_FALSE(
       GetMockManager()->OriginHasData(kOrigin1, kPersistent, kClientFile));
-  EXPECT_TRUE(
+  EXPECT_FALSE(
       GetMockManager()->OriginHasData(kOrigin2, kPersistent, kClientFile));
-  EXPECT_TRUE(
+  EXPECT_FALSE(
       GetMockManager()->OriginHasData(kOrigin3, kPersistent, kClientFile));
 }
 
@@ -1130,7 +1084,7 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedProtectedOrigins) {
   partition->OverrideSpecialStoragePolicyForTesting(mock_policy.get());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(&ClearQuotaDataWithOriginMatcher, partition, GURL(),
+      base::BindOnce(&ClearQuotaDataWithOriginMatcher, partition,
                      base::BindRepeating(
                          &DoesOriginMatchForBothProtectedAndUnprotectedWeb),
                      base::Time(), &run_loop));
@@ -1160,7 +1114,7 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedIgnoreDevTools) {
       GetMockManager());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(&ClearQuotaDataWithOriginMatcher, partition, GURL(),
+      base::BindOnce(&ClearQuotaDataWithOriginMatcher, partition,
                      base::BindRepeating(&DoesOriginMatchUnprotected),
                      base::Time(), &run_loop));
   run_loop.Run();

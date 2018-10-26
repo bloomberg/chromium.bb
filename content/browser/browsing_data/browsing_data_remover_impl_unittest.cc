@@ -169,7 +169,6 @@ class StoragePartitionRemovalTestStoragePartition
   void ClearData(uint32_t remove_mask,
                  uint32_t quota_storage_remove_mask,
                  const GURL& storage_origin,
-                 const OriginMatcherFunction& origin_matcher,
                  const base::Time begin,
                  const base::Time end,
                  base::OnceClosure callback) override {
@@ -179,7 +178,6 @@ class StoragePartitionRemovalTestStoragePartition
         quota_storage_remove_mask;
     storage_partition_removal_data_.remove_begin = begin;
     storage_partition_removal_data_.remove_end = end;
-    storage_partition_removal_data_.origin_matcher = origin_matcher;
 
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
@@ -192,6 +190,7 @@ class StoragePartitionRemovalTestStoragePartition
                  uint32_t quota_storage_remove_mask,
                  const OriginMatcherFunction& origin_matcher,
                  CookieDeletionFilterPtr cookie_deletion_filter,
+                 bool perform_cleanup,
                  const base::Time begin,
                  const base::Time end,
                  base::OnceClosure callback) override {

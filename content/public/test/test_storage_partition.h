@@ -145,7 +145,6 @@ class TestStoragePartition : public StoragePartition {
   void ClearData(uint32_t remove_mask,
                  uint32_t quota_storage_remove_mask,
                  const GURL& storage_origin,
-                 const OriginMatcherFunction& origin_matcher,
                  const base::Time begin,
                  const base::Time end,
                  base::OnceClosure callback) override;
@@ -154,6 +153,7 @@ class TestStoragePartition : public StoragePartition {
                  uint32_t quota_storage_remove_mask,
                  const OriginMatcherFunction& origin_matcher,
                  network::mojom::CookieDeletionFilterPtr cookie_deletion_filter,
+                 bool perform_cleanup,
                  const base::Time begin,
                  const base::Time end,
                  base::OnceClosure callback) override;

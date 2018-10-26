@@ -90,7 +90,7 @@ void CollectLocalStorageUsage(
   std::move(done_callback).Run();
 }
 
-void GotMojoDeletionCallback(
+void GotMojoCallback(
     scoped_refptr<base::SingleThreadTaskRunner> reply_task_runner,
     base::OnceClosure callback) {
   reply_task_runner->PostTask(FROM_HERE, std::move(callback));
@@ -253,11 +253,24 @@ void DOMStorageContextWrapper::DeleteLocalStorage(const GURL& origin,
   // further tasks from being queued.
   mojo_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&LocalStorageContextMojo::DeleteStorage,
-                     base::Unretained(mojo_state_), url::Origin::Create(origin),
-                     base::BindOnce(&GotMojoDeletionCallback,
-                                    base::ThreadTaskRunnerHandle::Get(),
-                                    std::move(callback))));
+      base::BindOnce(
+          &LocalStorageContextMojo::DeleteStorage,
+          base::Unretained(mojo_state_), url::Origin::Create(origin),
+          base::BindOnce(&GotMojoCallback, base::ThreadTaskRunnerHandle::Get(),
+                         std::move(callback))));
+}
+
+void DOMStorageContextWrapper::PerformLocalStorageCleanup(
+    base::OnceClosure callback) {
+  DCHECK(context_.get());
+  DCHECK(callback);
+  mojo_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &LocalStorageContextMojo::PerformCleanup,
+          base::Unretained(mojo_state_),
+          base::BindOnce(&GotMojoCallback, base::ThreadTaskRunnerHandle::Get(),
+                         std::move(callback))));
 }
 
 void DOMStorageContextWrapper::DeleteSessionStorage(
