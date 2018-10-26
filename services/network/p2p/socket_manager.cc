@@ -67,8 +67,8 @@ class P2PSocketManager::DnsRequest {
  public:
   typedef base::Callback<void(const net::IPAddressList&)> DoneCallback;
 
-  explicit DnsRequest(net::HostResolver* host_resolver)
-      : resolver_(host_resolver) {}
+  DnsRequest(net::HostResolver* host_resolver, bool enable_mdns)
+      : resolver_(host_resolver), enable_mdns_(enable_mdns) {}
 
   void Resolve(const std::string& host_name,
                const DoneCallback& done_callback) {
@@ -90,9 +90,12 @@ class P2PSocketManager::DnsRequest {
       host_name_ += '.';
 
     net::HostPortPair host(host_name_, 0);
-    // TODO(crbug.com/879746): Pass in a
-    // net::HostResolver::ResolveHostParameters with source set to MDNS if we
-    // have a ".local." TLD (once MDNS is supported).
+    if (enable_mdns_) {
+      // TODO(crbug.com/879746): Pass in a
+      // net::HostResolver::ResolveHostParameters with source set to MDNS if we
+      // have a ".local." TLD and enable_mdns_ is set (once MDNS is supported).
+    }
+
     request_ =
         resolver_->CreateRequest(host, net::NetLogWithSource(), base::nullopt);
     int result = request_->Start(base::BindOnce(
@@ -124,6 +127,8 @@ class P2PSocketManager::DnsRequest {
   std::unique_ptr<net::HostResolver::ResolveHostRequest> request_;
 
   DoneCallback done_callback_;
+
+  const bool enable_mdns_;
 };
 
 P2PSocketManager::P2PSocketManager(
@@ -258,9 +263,10 @@ void P2PSocketManager::StartNetworkNotifications(
 
 void P2PSocketManager::GetHostAddress(
     const std::string& host_name,
+    bool enable_mdns,
     mojom::P2PSocketManager::GetHostAddressCallback callback) {
-  std::unique_ptr<DnsRequest> request =
-      std::make_unique<DnsRequest>(url_request_context_->host_resolver());
+  auto request = std::make_unique<DnsRequest>(
+      url_request_context_->host_resolver(), enable_mdns);
   DnsRequest* request_ptr = request.get();
   dns_requests_.insert(std::move(request));
   request_ptr->Resolve(
