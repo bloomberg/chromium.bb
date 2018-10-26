@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/net/available_offline_content_helper.h"
 
+#include "base/base64.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_value_converter.h"
 #include "base/json/json_writer.h"
@@ -22,13 +23,20 @@ using chrome::mojom::AvailableOfflineContentPtr;
 using chrome::mojom::AvailableContentType;
 
 base::Value AvailableContentToValue(const AvailableOfflineContentPtr& content) {
+  // All pieces of text content downloaded from the web will be base64 encoded
+  // to lessen security risks when this dictionary is passed as a string to
+  // |ExecuteJavaScript|.
+  std::string base64_encoded;
   base::Value value(base::Value::Type::DICTIONARY);
   value.SetKey("ID", base::Value(content->id));
   value.SetKey("name_space", base::Value(content->name_space));
-  value.SetKey("title", base::Value(content->title));
-  value.SetKey("snippet", base::Value(content->snippet));
+  base::Base64Encode(content->title, &base64_encoded);
+  value.SetKey("title_base64", base::Value(base64_encoded));
+  base::Base64Encode(content->snippet, &base64_encoded);
+  value.SetKey("snippet_base64", base::Value(base64_encoded));
   value.SetKey("date_modified", base::Value(content->date_modified));
-  value.SetKey("attribution", base::Value(content->attribution));
+  base::Base64Encode(content->attribution, &base64_encoded);
+  value.SetKey("attribution_base64", base::Value(base64_encoded));
   value.SetKey("thumbnail_data_uri",
                base::Value(content->thumbnail_data_uri.spec()));
   value.SetKey("content_type",
