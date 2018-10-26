@@ -25,6 +25,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestMediaController
   void Suspend() override {}
   void Resume() override {}
   void ToggleSuspendResume() override;
+  void AddObserver(mojom::MediaSessionObserverPtr) override {}
 
   int toggle_suspend_resume_count() const {
     return toggle_suspend_resume_count_;

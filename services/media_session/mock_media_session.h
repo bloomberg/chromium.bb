@@ -11,6 +11,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
+#include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 
 namespace base {
@@ -23,7 +24,11 @@ namespace test {
 // A mock MediaSessionObsever that can be used for waiting for state changes.
 class MockMediaSessionMojoObserver : public mojom::MediaSessionObserver {
  public:
+  // A MediaSessionObserver can observe a MediaSession directly or through a
+  // MediaController.
   explicit MockMediaSessionMojoObserver(mojom::MediaSession& media_session);
+  explicit MockMediaSessionMojoObserver(mojom::MediaControllerPtr& controller);
+
   ~MockMediaSessionMojoObserver() override;
 
   // mojom::MediaSessionObserver overrides.

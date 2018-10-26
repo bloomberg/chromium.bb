@@ -237,4 +237,43 @@ TEST_F(MediaControllerTest, ActiveController_ToggleSuspendResume_Paused) {
   }
 }
 
+TEST_F(MediaControllerTest, ActiveController_Observer_StateTransition) {
+  test::MockMediaSession media_session_1;
+  test::MockMediaSession media_session_2;
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_1);
+    RequestAudioFocus(media_session_1);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer(controller());
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer(controller());
+    controller()->Suspend();
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kSuspended);
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer(controller());
+    RequestAudioFocus(media_session_2);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_1);
+    media_session_1.StartDucking();
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kDucking);
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer(controller());
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+}
+
 }  // namespace media_session
