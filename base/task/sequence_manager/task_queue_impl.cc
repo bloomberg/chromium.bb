@@ -417,15 +417,10 @@ Optional<TimeTicks> TaskQueueImpl::GetNextScheduledWakeUp() {
 void TaskQueueImpl::WakeUpForDelayedWork(LazyNow* lazy_now) {
   // Enqueue all delayed tasks that should be running now, skipping any that
   // have been canceled.
-  const SequenceManagerImpl* sequence_manager =
-      main_thread_only().sequence_manager;
   while (!main_thread_only().delayed_incoming_queue.empty()) {
     Task& task =
         const_cast<Task&>(main_thread_only().delayed_incoming_queue.top());
-    // TODO(alexclarke): Use IsCancelled once we've understood the bug.
-    // See http://crbug.com/798554
-    if (!task.task ||
-        sequence_manager->SetCrashKeysAndCheckIsTaskCancelled(task)) {
+    if (!task.task || task.task.IsCancelled()) {
       main_thread_only().delayed_incoming_queue.pop();
       continue;
     }
@@ -1040,9 +1035,7 @@ void TaskQueueImpl::DelayedIncomingQueue::SweepCancelledTasks(
     const SequenceManagerImpl* sequence_manager) {
   std::priority_queue<Task> remaining_tasks;
   while (!empty()) {
-    // TODO(alexclarke): Use IsCancelled once we've understood the bug.
-    // See http://crbug.com/798554
-    if (!sequence_manager->SetCrashKeysAndCheckIsTaskCancelled(top())) {
+    if (!top().task.IsCancelled()) {
       if (top().is_high_res)
         pending_high_res_tasks_++;
       remaining_tasks.push(std::move(const_cast<Task&>(top())));
