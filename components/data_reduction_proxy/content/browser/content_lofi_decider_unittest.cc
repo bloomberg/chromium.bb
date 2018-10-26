@@ -425,20 +425,6 @@ TEST_F(ContentLoFiDeciderTest, RemoveAcceptTransformHeader) {
   EXPECT_FALSE(headers.HasHeader(chrome_proxy_accept_transform_header()));
 }
 
-TEST_F(ContentLoFiDeciderTest, ShouldRecordLoFiUMA) {
-  std::unique_ptr<data_reduction_proxy::ContentLoFiDecider> lofi_decider(
-      new data_reduction_proxy::ContentLoFiDecider());
-  std::unique_ptr<net::URLRequest> request1 = CreateRequestByType(
-      content::RESOURCE_TYPE_IMAGE, false, content::SERVER_LOFI_ON);
-  EXPECT_TRUE(lofi_decider->ShouldRecordLoFiUMA(*request1));
-  std::unique_ptr<net::URLRequest> request2 = CreateRequestByType(
-      content::RESOURCE_TYPE_MAIN_FRAME, false, content::PREVIEWS_OFF);
-  EXPECT_FALSE(lofi_decider->ShouldRecordLoFiUMA(*request2));
-  std::unique_ptr<net::URLRequest> request3 = CreateRequestByType(
-      content::RESOURCE_TYPE_MAIN_FRAME, false, content::SERVER_LITE_PAGE_ON);
-  EXPECT_TRUE(lofi_decider->ShouldRecordLoFiUMA(*request3));
-}
-
 TEST_F(ContentLoFiDeciderTest, NoTransformDoesNotAddHeader) {
   std::unique_ptr<net::URLRequest> request =
       CreateRequest(false, content::PREVIEWS_NO_TRANSFORM);

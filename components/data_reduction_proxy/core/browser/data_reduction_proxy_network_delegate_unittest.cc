@@ -227,10 +227,6 @@ class TestLoFiDecider : public LoFiDecider {
     headers->RemoveHeader(chrome_proxy_accept_transform_header());
   }
 
-  bool ShouldRecordLoFiUMA(const net::URLRequest& request) const override {
-    return should_request_lofi_resource_;
-  }
-
   bool IsClientLoFiImageRequest(const net::URLRequest& request) const override {
     return should_be_client_lofi_;
   }
@@ -454,7 +450,6 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
       EXPECT_FALSE(data);
     } else {
       EXPECT_TRUE(data->used_data_reduction_proxy());
-      EXPECT_EQ(lofi_used, data->lofi_requested());
     }
   }
 
@@ -1105,7 +1100,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RequestDataConfigurations) {
       EXPECT_TRUE(data->used_data_reduction_proxy());
       EXPECT_EQ(test.main_frame ? GURL(kTestURL) : GURL(), data->request_url());
       EXPECT_EQ(test.main_frame ? "fake-session" : "", data->session_key());
-      EXPECT_EQ(test.lofi_on, data->lofi_requested());
     }
   }
 }
@@ -1213,7 +1207,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RedirectRequestDataCleared) {
   EXPECT_TRUE(data->used_data_reduction_proxy());
   EXPECT_EQ(GURL(kTestURL), data->request_url());
   EXPECT_EQ("fake-session", data->session_key());
-  EXPECT_TRUE(data->lofi_requested());
 
   data_reduction_proxy_info.UseNamedProxy("port.of.other.proxy");
 
