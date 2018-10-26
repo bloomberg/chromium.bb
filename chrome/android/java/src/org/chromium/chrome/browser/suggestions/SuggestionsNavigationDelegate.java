@@ -104,6 +104,7 @@ public class SuggestionsNavigationDelegate extends NativePageNavigationDelegateI
             OfflinePageUtils.getLoadUrlParamsForOpeningOfflineVersion(article.mUrl,
                     article.getOfflinePageOfflineId(), LaunchLocation.SUGGESTION,
                     (loadUrlParams) -> {
+                        if (loadUrlParams == null) return;
                         // Extra headers are not read in loadUrl, but verbatim headers are.
                         loadUrlParams.setVerbatimHeaders(loadUrlParams.getExtraHeadersString());
                         openDownloadSuggestion(windowOpenDisposition, article, loadUrlParams);
