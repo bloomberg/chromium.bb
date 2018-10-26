@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -220,7 +221,7 @@ const char PeopleHandler::kPassphraseFailedPageStatus[] = "passphraseFailed";
 PeopleHandler::PeopleHandler(Profile* profile)
     : profile_(profile),
       configuring_sync_(false),
-      signin_observer_(this),
+      identity_manager_observer_(this),
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
       sync_service_observer_(this),
       account_tracker_observer_(this) {
@@ -310,10 +311,10 @@ void PeopleHandler::OnJavascriptAllowed() {
       prefs::kSigninAllowed,
       base::Bind(&PeopleHandler::UpdateSyncStatus, base::Unretained(this)));
 
-  SigninManagerBase* signin_manager(
-      SigninManagerFactory::GetInstance()->GetForProfile(profile_));
-  if (signin_manager)
-    signin_observer_.Add(signin_manager);
+  identity::IdentityManager* identity_manager(
+      IdentityManagerFactory::GetInstance()->GetForProfile(profile_));
+  if (identity_manager)
+    identity_manager_observer_.Add(identity_manager);
 
   // This is intentionally not using GetSyncService(), to go around the
   // Profile::IsSyncAllowed() check.
@@ -332,7 +333,7 @@ void PeopleHandler::OnJavascriptAllowed() {
 
 void PeopleHandler::OnJavascriptDisallowed() {
   profile_pref_registrar_.RemoveAll();
-  signin_observer_.RemoveAll();
+  identity_manager_observer_.RemoveAll();
   sync_service_observer_.RemoveAll();
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   account_tracker_observer_.RemoveAll();
@@ -923,13 +924,13 @@ void PeopleHandler::CloseUI() {
   FireWebUIListener("page-status-changed", base::Value(kDonePageStatus));
 }
 
-void PeopleHandler::GoogleSigninSucceeded(const std::string& /* account_id */,
-                                          const std::string& /* username */) {
+void PeopleHandler::OnPrimaryAccountSet(
+    const AccountInfo& primary_account_info) {
   UpdateSyncStatus();
 }
 
-void PeopleHandler::GoogleSignedOut(const std::string& /* account_id */,
-                                    const std::string& /* username */) {
+void PeopleHandler::OnPrimaryAccountCleared(
+    const AccountInfo& previous_primary_account_info) {
   UpdateSyncStatus();
 }
 
