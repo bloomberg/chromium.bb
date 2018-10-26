@@ -19,11 +19,7 @@ class MaterialDesignControllerTestAPI {
   explicit MaterialDesignControllerTestAPI(bool touch_ui);
   ~MaterialDesignControllerTestAPI();
 
-  // Wrapper for MaterialDesignController internal function.
-  static void Uninitialize();
-
  private:
-  const bool previous_initialized_;
   const bool previous_touch_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(MaterialDesignControllerTestAPI);

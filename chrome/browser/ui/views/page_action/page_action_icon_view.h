@@ -123,7 +123,7 @@ class PageActionIconView : public IconLabelBubbleView {
 
   // IconLabelBubbleView:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-  void OnMdModeChanged() override;
+  void OnTouchUiChanged() override;
   void UpdateBorder() override;
 
   // Updates the icon image after some state has changed.

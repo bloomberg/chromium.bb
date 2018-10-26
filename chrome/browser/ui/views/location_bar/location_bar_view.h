@@ -391,7 +391,7 @@ class LocationBarView : public LocationBar,
   void SetFocusAndSelection(bool select_all) override;
 
   // ui::MaterialDesignControllerObserver:
-  void OnMdModeChanged() override;
+  void OnTouchUiChanged() override;
 
   // The Browser this LocationBarView is in.  Note that at least
   // chromeos::SimpleWebViewDialog uses a LocationBarView outside any browser

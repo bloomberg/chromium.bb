@@ -10,7 +10,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
-#include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/base/ui_base_switches.h"
 
 namespace ui {
@@ -25,13 +24,13 @@ class TestObserver : public MDObserver {
   TestObserver() = default;
   ~TestObserver() override = default;
 
-  int md_mode_changes() const { return md_mode_changes_; }
+  int touch_ui_changes() const { return touch_ui_changes_; }
 
  private:
   // MDObserver:
-  void OnMdModeChanged() override { ++md_mode_changes_; }
+  void OnTouchUiChanged() override { ++touch_ui_changes_; }
 
-  int md_mode_changes_ = 0;
+  int touch_ui_changes_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
@@ -50,7 +49,6 @@ class MaterialDesignControllerTest : public testing::Test {
   }
 
   void TearDown() override {
-    test::MaterialDesignControllerTestAPI::Uninitialize();
     testing::Test::TearDown();
   }
 
@@ -124,60 +122,38 @@ TEST_F(MaterialDesignControllerTestCommandLineTouchUiAuto, CheckApiReturns) {
   EXPECT_FALSE(MD::touch_ui());
 }
 
-// Verifies that the observer gets called back when the mode changes at
-// startup.
-TEST(MaterialDesignControllerObserver, InitializationOnMdModeChanged) {
-  TestObserver observer;
-  ScopedObserver<MD, MDObserver> scoped_observer(&observer);
-  scoped_observer.Add(MD::GetInstance());
-
-  // Trigger a mode change by setting it for the first time.
-  MD::Initialize();
-  EXPECT_EQ(1, observer.md_mode_changes());
-
-  test::MaterialDesignControllerTestAPI::Uninitialize();
-}
-
 // Verifies that when the mode is set to non-touch and the tablet mode toggles,
 // the touch UI state does not change.
 TEST_F(MaterialDesignControllerTestCommandLineTouchUiDisabled,
-       TabletOnMdModeChanged) {
-  MD::Initialize();
-
+       TabletOnTouchUiChanged) {
   TestObserver observer;
   ScopedObserver<MD, MDObserver> scoped_observer(&observer);
   scoped_observer.Add(MD::GetInstance());
 
   MD::OnTabletModeToggled(true);
   EXPECT_FALSE(MD::touch_ui());
-  EXPECT_EQ(0, observer.md_mode_changes());
+  EXPECT_EQ(0, observer.touch_ui_changes());
 
   MD::OnTabletModeToggled(false);
   EXPECT_FALSE(MD::touch_ui());
-  EXPECT_EQ(0, observer.md_mode_changes());
-
-  test::MaterialDesignControllerTestAPI::Uninitialize();
+  EXPECT_EQ(0, observer.touch_ui_changes());
 }
 
 // Verifies that when the mode is set to auto and the tablet mode toggles, the
 // touch UI state changes and the observer gets called back.
 TEST_F(MaterialDesignControllerTestCommandLineTouchUiAuto,
-       TabletOnMdModeChanged) {
-  MD::Initialize();
-
+       TabletOnTouchUiChanged) {
   TestObserver observer;
   ScopedObserver<MD, MDObserver> scoped_observer(&observer);
   scoped_observer.Add(MD::GetInstance());
 
   MD::OnTabletModeToggled(true);
   EXPECT_TRUE(MD::touch_ui());
-  EXPECT_EQ(1, observer.md_mode_changes());
+  EXPECT_EQ(1, observer.touch_ui_changes());
 
   MD::OnTabletModeToggled(false);
   EXPECT_FALSE(MD::touch_ui());
-  EXPECT_EQ(2, observer.md_mode_changes());
-
-  test::MaterialDesignControllerTestAPI::Uninitialize();
+  EXPECT_EQ(2, observer.touch_ui_changes());
 }
 
 }  // namespace ui

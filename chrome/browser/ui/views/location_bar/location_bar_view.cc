@@ -1297,7 +1297,7 @@ void LocationBarView::SetFocusAndSelection(bool select_all) {
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, private ui::MaterialDesignControllerObserver implementation:
 
-void LocationBarView::OnMdModeChanged() {
+void LocationBarView::OnTouchUiChanged() {
   const gfx::FontList& font_list = views::style::GetFont(
       CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_PRIMARY);
   location_icon_view_->SetFontList(font_list);

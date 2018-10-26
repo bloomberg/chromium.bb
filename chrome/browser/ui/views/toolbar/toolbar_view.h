@@ -175,7 +175,7 @@ class ToolbarView : public views::AccessiblePaneView,
   bool SetPaneFocusAndFocusDefault() override;
 
   // ui::MaterialDesignControllerObserver:
-  void OnMdModeChanged() override;
+  void OnTouchUiChanged() override;
 
   bool is_display_mode_normal() const {
     return display_mode_ == DISPLAYMODE_NORMAL;

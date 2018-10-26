@@ -72,7 +72,7 @@ class AvatarToolbarButton : public ToolbarButton,
   void OnAccountRemoved(const AccountInfo& info) override;
 
   // ui::MaterialDesignControllerObserver:
-  void OnMdModeChanged() override;
+  void OnTouchUiChanged() override;
 
   bool IsIncognito() const;
   bool IsIncognitoCounterActive() const;

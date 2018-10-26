@@ -13,7 +13,7 @@ namespace ui {
 class UI_BASE_EXPORT MaterialDesignControllerObserver
     : public base::CheckedObserver {
  public:
-  virtual void OnMdModeChanged() = 0;
+  virtual void OnTouchUiChanged() = 0;
 
  protected:
   ~MaterialDesignControllerObserver() override {}

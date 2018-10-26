@@ -664,7 +664,7 @@ bool ToolbarView::SetPaneFocusAndFocusDefault() {
 }
 
 // ui::MaterialDesignControllerObserver:
-void ToolbarView::OnMdModeChanged() {
+void ToolbarView::OnTouchUiChanged() {
   if (is_display_mode_normal()) {
     LoadImages();
     PreferredSizeChanged();

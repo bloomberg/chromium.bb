@@ -238,7 +238,7 @@ void BrowserAppMenuButton::SetTrailingMargin(int margin) {
   InvalidateLayout();
 }
 
-void BrowserAppMenuButton::OnMdModeChanged() {
+void BrowserAppMenuButton::OnTouchUiChanged() {
   UpdateIcon(false);
   PreferredSizeChanged();
 }

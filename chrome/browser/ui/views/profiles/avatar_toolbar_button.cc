@@ -219,7 +219,7 @@ void AvatarToolbarButton::OnAccountRemoved(const AccountInfo& info) {
   UpdateIcon();
 }
 
-void AvatarToolbarButton::OnMdModeChanged() {
+void AvatarToolbarButton::OnTouchUiChanged() {
   SetInsets();
   PreferredSizeChanged();
 }
