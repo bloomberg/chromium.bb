@@ -48,14 +48,15 @@ public class TrustedWebActivityDisclosureTest {
         doReturn("any string").when(mResources).getString(anyInt());
         doReturn(false).when(mPreferences).hasUserAcceptedTwaDisclosureForPackage(anyString());
 
-        mDisclosure = new TrustedWebActivityDisclosure(mResources, mPreferences);
+        mDisclosure = new TrustedWebActivityDisclosure(mResources, mPreferences,
+                () -> mSnackbarManager);
     }
 
     @Test
     @Feature("TrustedWebActivities")
     public void showIsIdempotent() {
-        mDisclosure.showSnackbarIfNeeded(mSnackbarManager, TWA_PACKAGE);
-        mDisclosure.showSnackbarIfNeeded(mSnackbarManager, TWA_PACKAGE);
+        mDisclosure.showIfNeeded(TWA_PACKAGE);
+        mDisclosure.showIfNeeded(TWA_PACKAGE);
 
         verify(mSnackbarManager).showSnackbar(any());
     }
@@ -63,10 +64,10 @@ public class TrustedWebActivityDisclosureTest {
     @Test
     @Feature("TrustedWebActivities")
     public void hideIsIdempotent() {
-        mDisclosure.showSnackbarIfNeeded(mSnackbarManager, TWA_PACKAGE);
+        mDisclosure.showIfNeeded(TWA_PACKAGE);
 
-        mDisclosure.dismissSnackbarIfNeeded(mSnackbarManager);
-        mDisclosure.dismissSnackbarIfNeeded(mSnackbarManager);
+        mDisclosure.dismiss();
+        mDisclosure.dismiss();
 
         verify(mSnackbarManager).dismissSnackbars(any());
     }
@@ -76,7 +77,7 @@ public class TrustedWebActivityDisclosureTest {
     public void noShowIfAlreadyAccepted() {
         doReturn(true).when(mPreferences).hasUserAcceptedTwaDisclosureForPackage(anyString());
 
-        mDisclosure.showSnackbarIfNeeded(mSnackbarManager, TWA_PACKAGE);
+        mDisclosure.showIfNeeded(TWA_PACKAGE);
 
         verify(mSnackbarManager, times(0)).showSnackbar(any());
     }
@@ -85,7 +86,7 @@ public class TrustedWebActivityDisclosureTest {
     @Feature("TrustedWebActivities")
     public void recordDismiss() {
         ArgumentCaptor<Snackbar> snackbarCaptor = ArgumentCaptor.forClass(Snackbar.class);
-        mDisclosure.showSnackbarIfNeeded(mSnackbarManager, TWA_PACKAGE);
+        mDisclosure.showIfNeeded(TWA_PACKAGE);
 
         verify(mSnackbarManager).showSnackbar(snackbarCaptor.capture());
 
@@ -101,7 +102,7 @@ public class TrustedWebActivityDisclosureTest {
     @Feature("TrustedWebActivities")
     public void doNothingOnNoSnackbarAction() {
         ArgumentCaptor<Snackbar> snackbarCaptor = ArgumentCaptor.forClass(Snackbar.class);
-        mDisclosure.showSnackbarIfNeeded(mSnackbarManager, TWA_PACKAGE);
+        mDisclosure.showIfNeeded(TWA_PACKAGE);
 
         verify(mSnackbarManager).showSnackbar(snackbarCaptor.capture());
 

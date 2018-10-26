@@ -30,11 +30,14 @@ import org.chromium.chrome.browser.util.test.ShadowUrlUtilities;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /** Tests for {@link DomainDataCleaner}. */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {ShadowUrlUtilities.class})
 public class DomainDataCleanerTest {
+    private final Map<String, String> mUrlToDomain = new HashMap<>();
     @Mock
     private ChromeBrowserInitializer mChromeBrowserInitializer;
     @Mock
@@ -63,6 +66,13 @@ public class DomainDataCleanerTest {
             callback.onWebsitePermissionsAvailable(mSites);
             return null;
         }).when(mWebsitePermissionsFetcher).fetchAllPreferences(any());
+
+        ShadowUrlUtilities.setTestImpl(new ShadowUrlUtilities.TestImpl() {
+            @Override
+            public String getDomainAndRegistry(String url, boolean includePrivateRegistries) {
+                return mUrlToDomain.get(url);
+            }
+        });
 
         mCleaner = new DomainDataCleaner(
                 mChromeBrowserInitializer, mSiteDataCleaner, mWebsitePermissionsFetcher);
@@ -104,9 +114,9 @@ public class DomainDataCleanerTest {
         verify(mFinishCallback).run();
     }
 
-    private Website makeMockWebsite(String origin, String domainAndRegistry) {
+    private Website makeMockWebsite(String origin, String domain) {
         Website website = new Website(WebsiteAddress.create(origin), null);
-        ShadowUrlUtilities.setUrlToToDomainMapping(origin, domainAndRegistry);
+        mUrlToDomain.put(origin, domain);
         return website;
     }
 

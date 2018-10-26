@@ -8,35 +8,44 @@ import android.text.TextUtils;
 
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 import org.chromium.chrome.browser.util.UrlUtilities;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /** Implementation of UrlUtilities which does not rely on native. */
 @Implements(UrlUtilities.class)
 public class ShadowUrlUtilities {
-    private static Map<String, String> sUrlToToDomain = new HashMap<>();
+
+    private static TestImpl sTestImpl = new TestImpl();
+
+    /** Set implementation for tests. Don't forget to call {@link #reset} later. */
+    public static void setTestImpl(TestImpl impl) {
+        sTestImpl = impl;
+    }
+
+    @Resetter
+    public static void reset() {
+        sTestImpl = new TestImpl();
+    }
 
     @Implementation
     public static boolean urlsMatchIgnoringFragments(String url, String url2) {
-        return TextUtils.equals(url, url2);
+        return sTestImpl.urlsMatchIgnoringFragments(url, url2);
     }
 
     @Implementation
-    public static String getDomainAndRegistry(String url, boolean includePrivateRegistries) {
-        String domain = sUrlToToDomain.get(url);
-        return domain == null ? url : domain;
+    public static String getDomainAndRegistry(String uri, boolean includePrivateRegistries) {
+        return sTestImpl.getDomainAndRegistry(uri, includePrivateRegistries);
     }
 
-    /** Add a url to domain mapping. */
-    public static void setUrlToToDomainMapping(String url, String domain) {
-        sUrlToToDomain.put(url, domain);
-    }
+    /** Default implementation for tests. Override methods or add new ones as necessary. */
+    public static class TestImpl {
+        public boolean urlsMatchIgnoringFragments(String url, String url2) {
+            return TextUtils.equals(url, url2);
+        }
 
-    /** Clear the static state. */
-    public static void reset() {
-        sUrlToToDomain.clear();
+        public String getDomainAndRegistry(String uri, boolean includePrivateRegistries) {
+            return uri;
+        }
     }
 }

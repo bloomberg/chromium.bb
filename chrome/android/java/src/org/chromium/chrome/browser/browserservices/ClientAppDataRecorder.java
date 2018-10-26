@@ -4,15 +4,22 @@
 
 package org.chromium.chrome.browser.browserservices;
 
+import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQualifiers.APP_CONTEXT;
+
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.text.TextUtils;
 
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.util.UrlUtilities;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  * Takes care of recording that Chrome contains data for the client app in the
@@ -25,15 +32,14 @@ import java.util.Set;
  * {@link TrustedWebActivityUi}. Having more instances won't effect correctness, but will limit the
  * performance benefits of the cache.
  * Thread safety: All methods on this class should be called from the same thread.
- * Native: The default {@link UrlTransformer} requires native to be loaded.
  */
+@ActivityScope
 public class ClientAppDataRecorder {
     private static final String TAG = "TWAClientAppData";
     private final PackageManager mPackageManager;
 
     /** Underlying data register. */
     private final ClientAppDataRegister mClientAppDataRegister;
-    private final UrlTransformer mUrlTransformer;
 
     /**
      * Cache so we don't send the same request multiple times. {@link #register} is called on each
@@ -42,31 +48,18 @@ public class ClientAppDataRecorder {
      */
     private final Set<String> mCache = new HashSet<>();
 
-    /** Class to allow mocking native calls in unit tests. */
-    /* package */ static class UrlTransformer {
-        /* package */ String getDomain(Origin origin) {
-            return UrlUtilities.getDomainAndRegistry(
-                    origin.toString(), true /* includePrivateRegistries */);
-        }
-    }
-
-    /** Creates a ClientAppDataRecorder with default dependencies. */
-    public ClientAppDataRecorder(PackageManager packageManager) {
-        this(packageManager, new ClientAppDataRegister(), new UrlTransformer());
-    }
-
-    /** Creates a ClientAppDataRecorder providing all dependencies. */
-    public ClientAppDataRecorder(PackageManager packageManager,
-            ClientAppDataRegister clientAppDataRegister, UrlTransformer urlTransformer) {
-        mPackageManager = packageManager;
+    @Inject
+    public ClientAppDataRecorder(@Named(APP_CONTEXT) Context context,
+            ClientAppDataRegister clientAppDataRegister) {
+        mPackageManager = context.getPackageManager();
         mClientAppDataRegister = clientAppDataRegister;
-        mUrlTransformer = urlTransformer;
     }
 
     /**
      * Calls {@link ClientAppDataRegister#registerPackageForDomain}, looking up the uid
      * and app name for the |packageName|, extracting the domain from the origin and deduplicating
      * multiple requests with the same parameters.
+     * Requires native to be loaded.
      */
     /* package */ void register(String packageName, Origin origin) {
         if (mCache.contains(combine(packageName, origin))) return;
@@ -82,7 +75,8 @@ public class ClientAppDataRecorder {
                 return;
             }
 
-            String domain = mUrlTransformer.getDomain(origin);
+            String domain = UrlUtilities.getDomainAndRegistry(
+                    origin.toString(), true /*includePrivateRegistries*/);
 
             Log.d(TAG, "Registering %d (%s) for %s", ai.uid, appLabel, domain);
             mClientAppDataRegister.registerPackageForDomain(ai.uid, appLabel, domain);
