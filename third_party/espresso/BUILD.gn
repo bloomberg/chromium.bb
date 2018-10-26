@@ -60,6 +60,8 @@ android_java_prebuilt("espresso_intents_java") {
 }
 
 android_java_prebuilt("espresso_web_java") {
+  # Uses org/ccil/cowan/tagsoup/Parser which isn't in third_party.
+  enable_bytecode_checks = false
   testonly = true
   jar_path = "lib/espresso-web-release-no-dep.jar"
   deps = [

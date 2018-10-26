@@ -1410,6 +1410,28 @@ if (enable_java_templates) {
 
     _desugar = defined(invoker.supports_android) && invoker.supports_android
     _emma_instrument = invoker.emma_instrument
+    _enable_bytecode_rewriter =
+        _enable_assert || _enable_custom_resources || _enable_thread_annotations
+    _is_prebuilt = defined(invoker.is_prebuilt) && invoker.is_prebuilt
+    _enable_bytecode_checks = defined(invoker.enable_bytecode_checks) &&
+                              invoker.enable_bytecode_checks
+
+    # Release builds don't have asserts enabled, so they often will not run the
+    # bytecode rewriter. We are okay with having release builds not run the
+    # bytecode checks at all, since the dependency errors can be caught in debug
+    # mode.
+    not_needed([
+                 "_is_prebuilt",
+                 "_enable_bytecode_checks",
+               ])
+    if (defined(invoker.enable_bytecode_rewriter)) {
+      not_needed([
+                   "_enable_assert",
+                   "_enable_custom_resources",
+                   "_enable_thread_annotations",
+                 ])
+      _enable_bytecode_rewriter = invoker.enable_bytecode_rewriter
+    }
 
     _jar_excluded_patterns = []
     if (defined(invoker.jar_excluded_patterns)) {
@@ -1427,8 +1449,7 @@ if (enable_java_templates) {
     _deps = []
     _previous_output_jar = _input_jar_path
 
-    if (_enable_assert || _enable_custom_resources ||
-        _enable_thread_annotations) {
+    if (_enable_bytecode_rewriter) {
       _java_bytecode_rewriter_target = "${target_name}__bytecode_rewrite"
       _java_bytecode_rewriter_input_jar = _previous_output_jar
       _java_bytecode_rewriter_output_jar =
@@ -1458,6 +1479,9 @@ if (enable_java_templates) {
           "--output-jar",
           rebase_path(_java_bytecode_rewriter_output_jar, root_build_dir),
         ]
+        if (_is_prebuilt) {
+          args += [ "--is-prebuilt" ]
+        }
         if (_enable_assert) {
           args += [ "--enable-assert" ]
         }
@@ -1467,10 +1491,15 @@ if (enable_java_templates) {
         if (_enable_thread_annotations) {
           args += [ "--enable-thread-annotations" ]
         }
+        if (_enable_bytecode_checks) {
+          args += [ "--enable-check-class-path" ]
+        }
         args += [
-          "--extra-classpath-jar",
+          "--direct-classpath-jars",
+          "@FileArg($_rebased_build_config:javac:classpath)",
+          "--sdk-classpath-jars",
           "@FileArg($_rebased_build_config:android:sdk_jars)",
-          "--extra-classpath-jar",
+          "--extra-classpath-jars",
           "@FileArg($_rebased_build_config:deps_info:javac_full_classpath)",
         ]
       }
@@ -3252,9 +3281,12 @@ if (enable_java_templates) {
         process_java_prebuilt(_process_prebuilt_target_name) {
           forward_variables_from(invoker,
                                  [
+                                   "enable_bytecode_checks",
+                                   "enable_bytecode_rewriter",
                                    "jar_excluded_patterns",
                                    "jar_included_patterns",
                                  ])
+          is_prebuilt = _is_prebuilt
           supports_android = _supports_android
           enable_build_hooks = _enable_build_hooks
           enable_build_hooks_android = _enable_build_hooks_android
