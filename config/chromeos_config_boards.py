@@ -75,7 +75,6 @@ arm_external_boards = frozenset([
 
 x86_internal_release_boards = frozenset([
     'amd64-generic-cheets',
-    'amd64-generic-goofy',
     'asuka',
     'atlas',
     'auron_paine',

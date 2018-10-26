@@ -56,13 +56,13 @@ class PaygenJsonTests(BasePaygenBuildLibTest):
 
   def testGetPaygenJsonCaching(self):
     result = paygen_build_lib.PaygenBuild.GetPaygenJson()
-    self.assertEqual(len(result), 1359)
+    self.assertEqual(len(result), 1358)
     self.mockGetJson.assert_called_once()
 
     # Validate caching, by proving we don't refetch.
     self.mockGetJson.reset_mock()
     result = paygen_build_lib.PaygenBuild.GetPaygenJson()
-    self.assertEqual(len(result), 1359)
+    self.assertEqual(len(result), 1358)
     self.mockGetJson.assert_not_called()
 
   def testGetPaygenJsonBoard(self):
