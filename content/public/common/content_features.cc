@@ -288,6 +288,10 @@ const base::Feature kOriginPolicy{"OriginPolicy",
 const base::Feature kOriginTrials{"OriginTrials",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
+// History navigation in response to horizontal overscroll (aka gesture-nav).
+const base::Feature kOverscrollHistoryNavigation{
+    "OverscrollHistoryNavigation", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Blink PageLifecycle feature. See https://crbug.com/775194
 const base::Feature kPageLifecycle{"PageLifecycle",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
