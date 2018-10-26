@@ -1451,31 +1451,4 @@ static_assert(offsetof(SetActiveURLCHROMIUM, header) == 0,
 static_assert(offsetof(SetActiveURLCHROMIUM, url_bucket_id) == 4,
               "offset of SetActiveURLCHROMIUM url_bucket_id should be 4");
 
-struct ResetActiveURLCHROMIUM {
-  typedef ResetActiveURLCHROMIUM ValueType;
-  static const CommandId kCmdId = kResetActiveURLCHROMIUM;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
-
-  static uint32_t ComputeSize() {
-    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() { header.SetCmd<ValueType>(); }
-
-  void Init() { SetHeader(); }
-
-  void* Set(void* cmd) {
-    static_cast<ValueType*>(cmd)->Init();
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  gpu::CommandHeader header;
-};
-
-static_assert(sizeof(ResetActiveURLCHROMIUM) == 4,
-              "size of ResetActiveURLCHROMIUM should be 4");
-static_assert(offsetof(ResetActiveURLCHROMIUM, header) == 0,
-              "offset of ResetActiveURLCHROMIUM header should be 0");
-
 #endif  // GPU_COMMAND_BUFFER_COMMON_RASTER_CMD_FORMAT_AUTOGEN_H_

@@ -3722,6 +3722,42 @@ TEST_F(GLES2ImplementationTest, TraceBeginCHROMIUM) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
+TEST_F(GLES2ImplementationTest, SetActiveURLCHROMIUM) {
+  const uint32_t kURLBucketId = GLES2Implementation::kResultBucketId;
+  const std::string url = "chrome://test";
+  const size_t kPaddedStringSize =
+      transfer_buffer_->RoundToAlignment(url.size());
+
+  gl_->SetActiveURLCHROMIUM(url.c_str());
+  EXPECT_EQ(GL_NO_ERROR, CheckError());
+
+  struct Cmds {
+    cmd::SetBucketSize url_size;
+    cmd::SetBucketData url_data;
+    cmd::SetToken set_token;
+    cmds::SetActiveURLCHROMIUM set_url_call;
+    cmd::SetBucketSize url_size_end;
+  };
+
+  ExpectedMemoryInfo mem = GetExpectedMemory(kPaddedStringSize);
+  EXPECT_EQ(0,
+            memcmp(url.c_str(), reinterpret_cast<char*>(mem.ptr), url.size()));
+
+  Cmds expected;
+  expected.url_size.Init(kURLBucketId, url.size());
+  expected.url_data.Init(kURLBucketId, 0, url.size(), mem.id, mem.offset);
+  expected.set_token.Init(GetNextToken());
+  expected.set_url_call.Init(kURLBucketId);
+  expected.url_size_end.Init(kURLBucketId, 0);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+
+  // Same URL shouldn't make any commands.
+  EXPECT_FALSE(NoCommandsWritten());
+  ClearCommands();
+  gl_->SetActiveURLCHROMIUM(url.c_str());
+  EXPECT_TRUE(NoCommandsWritten());
+}
+
 TEST_F(GLES2ImplementationTest, AllowNestedTracesCHROMIUM) {
   const std::string category1_name = "test category 1";
   const std::string trace1_name = "test trace 1";

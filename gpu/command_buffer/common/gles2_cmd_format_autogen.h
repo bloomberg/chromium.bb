@@ -14283,6 +14283,39 @@ static_assert(
     offsetof(ScheduleDCLayerCHROMIUM, is_protected_video) == 28,
     "offset of ScheduleDCLayerCHROMIUM is_protected_video should be 28");
 
+struct SetActiveURLCHROMIUM {
+  typedef SetActiveURLCHROMIUM ValueType;
+  static const CommandId kCmdId = kSetActiveURLCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _url_bucket_id) {
+    SetHeader();
+    url_bucket_id = _url_bucket_id;
+  }
+
+  void* Set(void* cmd, GLuint _url_bucket_id) {
+    static_cast<ValueType*>(cmd)->Init(_url_bucket_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t url_bucket_id;
+};
+
+static_assert(sizeof(SetActiveURLCHROMIUM) == 8,
+              "size of SetActiveURLCHROMIUM should be 8");
+static_assert(offsetof(SetActiveURLCHROMIUM, header) == 0,
+              "offset of SetActiveURLCHROMIUM header should be 0");
+static_assert(offsetof(SetActiveURLCHROMIUM, url_bucket_id) == 4,
+              "offset of SetActiveURLCHROMIUM url_bucket_id should be 4");
+
 struct MatrixLoadfCHROMIUMImmediate {
   typedef MatrixLoadfCHROMIUMImmediate ValueType;
   static const CommandId kCmdId = kMatrixLoadfCHROMIUMImmediate;

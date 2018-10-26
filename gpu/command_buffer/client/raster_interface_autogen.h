@@ -69,5 +69,4 @@ virtual void TraceBeginCHROMIUM(const char* category_name,
                                 const char* trace_name) = 0;
 virtual void TraceEndCHROMIUM() = 0;
 virtual void SetActiveURLCHROMIUM(const char* url) = 0;
-virtual void ResetActiveURLCHROMIUM() = 0;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_RASTER_INTERFACE_AUTOGEN_H_

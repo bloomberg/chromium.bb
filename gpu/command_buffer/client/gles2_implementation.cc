@@ -7335,6 +7335,25 @@ CommandBuffer* GLES2Implementation::command_buffer() const {
   return helper_->command_buffer();
 }
 
+void GLES2Implementation::SetActiveURLCHROMIUM(const char* url) {
+  DCHECK(url);
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glSetActiveURLCHROMIUM(" << url);
+
+  if (last_active_url_ == url)
+    return;
+
+  last_active_url_ = url;
+  static constexpr size_t kMaxStrLen = 1024;
+  size_t len = strlen(url);
+  if (len == 0)
+    return;
+
+  SetBucketContents(kResultBucketId, url, std::min(len, kMaxStrLen));
+  helper_->SetActiveURLCHROMIUM(kResultBucketId);
+  helper_->SetBucketSize(kResultBucketId, 0);
+}
+
 // Include the auto-generated part of this file. We split this because it means
 // we can easily edit the non-auto generated parts right here in this file
 // instead of having to edit some template or the code generator.

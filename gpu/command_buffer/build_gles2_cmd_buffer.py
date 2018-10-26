@@ -3687,6 +3687,14 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'extension': 'CHROMIUM_trace_marker',
   },
+  'SetActiveURLCHROMIUM': {
+    'type': 'Custom',
+    'impl_func': False,
+    'client_test': False,
+    'cmd_args': 'GLuint url_bucket_id',
+    'extension': True,
+    'chromium': True,
+  },
   'DiscardFramebufferEXT': {
     'type': 'PUTn',
     'count': 1,

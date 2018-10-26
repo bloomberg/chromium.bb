@@ -2892,6 +2892,14 @@ void ScheduleDCLayerCHROMIUM(GLsizei num_textures,
   }
 }
 
+void SetActiveURLCHROMIUM(GLuint url_bucket_id) {
+  gles2::cmds::SetActiveURLCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::SetActiveURLCHROMIUM>();
+  if (c) {
+    c->Init(url_bucket_id);
+  }
+}
+
 void MatrixLoadfCHROMIUMImmediate(GLenum matrixMode, const GLfloat* m) {
   const uint32_t size =
       gles2::cmds::MatrixLoadfCHROMIUMImmediate::ComputeSize();

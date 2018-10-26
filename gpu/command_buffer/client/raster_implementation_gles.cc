@@ -329,6 +329,10 @@ void RasterImplementationGLES::RasterCHROMIUM(
   NOTREACHED();
 }
 
+void RasterImplementationGLES::SetActiveURLCHROMIUM(const char* url) {
+  gl_->SetActiveURLCHROMIUM(url);
+}
+
 void RasterImplementationGLES::EndRasterCHROMIUM() {
   NOTREACHED();
 }

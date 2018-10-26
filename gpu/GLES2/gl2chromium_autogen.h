@@ -341,6 +341,7 @@
 #define glScheduleDCLayerSharedStateCHROMIUM \
   GLES2_GET_FUN(ScheduleDCLayerSharedStateCHROMIUM)
 #define glScheduleDCLayerCHROMIUM GLES2_GET_FUN(ScheduleDCLayerCHROMIUM)
+#define glSetActiveURLCHROMIUM GLES2_GET_FUN(SetActiveURLCHROMIUM)
 #define glMatrixLoadfCHROMIUM GLES2_GET_FUN(MatrixLoadfCHROMIUM)
 #define glMatrixLoadIdentityCHROMIUM GLES2_GET_FUN(MatrixLoadIdentityCHROMIUM)
 #define glGenPathsCHROMIUM GLES2_GET_FUN(GenPathsCHROMIUM)

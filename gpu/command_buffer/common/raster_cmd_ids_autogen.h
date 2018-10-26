@@ -42,8 +42,7 @@
   OP(CopySubTexture)                           /* 283 */ \
   OP(TraceBeginCHROMIUM)                       /* 284 */ \
   OP(TraceEndCHROMIUM)                         /* 285 */ \
-  OP(SetActiveURLCHROMIUM)                     /* 286 */ \
-  OP(ResetActiveURLCHROMIUM)                   /* 287 */
+  OP(SetActiveURLCHROMIUM)                     /* 286 */
 
 enum CommandId {
   kOneBeforeStartPoint =

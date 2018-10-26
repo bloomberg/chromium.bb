@@ -332,6 +332,7 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
 
   size_t max_inlined_entry_size_;
   ClientTransferCache transfer_cache_;
+  std::string last_active_url_;
 
   // Tracing helpers.
   int raster_chromium_id_ = 0;

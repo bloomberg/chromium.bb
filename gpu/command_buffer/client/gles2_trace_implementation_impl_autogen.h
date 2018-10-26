@@ -2260,6 +2260,11 @@ void GLES2TraceImplementation::ScheduleDCLayerCHROMIUM(
                                bounds_rect, filter, is_protected_video);
 }
 
+void GLES2TraceImplementation::SetActiveURLCHROMIUM(const char* url) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::SetActiveURLCHROMIUM");
+  gl_->SetActiveURLCHROMIUM(url);
+}
+
 void GLES2TraceImplementation::MatrixLoadfCHROMIUM(GLenum matrixMode,
                                                    const GLfloat* m) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::MatrixLoadfCHROMIUM");
