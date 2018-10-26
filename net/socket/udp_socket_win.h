@@ -250,15 +250,29 @@ class NET_EXPORT UDPSocketWin : public base::win::ObjectWatcher::Delegate {
 
   const NetLogWithSource& NetLog() const { return net_log_; }
 
-  // Sets corresponding flags in |socket_options_| to allow the socket
-  // to share the local address to which the socket will be bound with
-  // other processes. Should be called between Open() and Bind().
-  // Returns a net error code.
+  // Sets socket options to allow the socket to share the local address to which
+  // the socket will be bound with other processes. If multiple processes are
+  // bound to the same local address at the same time, behavior is undefined;
+  // e.g., it is not guaranteed that incoming  messages will be sent to all
+  // listening sockets. Returns a net error code.
+  //
+  // Should be called between Open() and Bind().
   int AllowAddressReuse();
 
-  // Sets corresponding flags in |socket_options_| to allow sending
-  // and receiving packets to and from broadcast addresses.
+  // Sets socket options to allow sending and receiving packets to and from
+  // broadcast addresses.
   int SetBroadcast(bool broadcast);
+
+  // Sets socket options to allow the socket to share the local address to which
+  // the socket will be bound with other processes and attempt to allow all such
+  // sockets to receive the same multicast messages. Returns a net error code.
+  //
+  // For Windows, multicast messages should always be shared between sockets
+  // configured thusly as long as the sockets join the same multicast group and
+  // interface.
+  //
+  // Should be called between Open() and Bind().
+  int AllowAddressSharingForMulticast();
 
   // Joins the multicast group.
   // |group_address| is the group address to join, could be either

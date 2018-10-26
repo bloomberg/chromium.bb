@@ -600,6 +600,13 @@ int UDPSocketWin::SetBroadcast(bool broadcast) {
   return rv == 0 ? OK : MapSystemError(WSAGetLastError());
 }
 
+int UDPSocketWin::AllowAddressSharingForMulticast() {
+  // When proper multicast groups are used, Windows further defines the address
+  // resuse option (SO_REUSEADDR) to ensure all listening sockets can receive
+  // all incoming messages for the multicast group.
+  return AllowAddressReuse();
+}
+
 void UDPSocketWin::DoReadCallback(int rv) {
   DCHECK_NE(rv, ERR_IO_PENDING);
   DCHECK(!read_callback_.is_null());
