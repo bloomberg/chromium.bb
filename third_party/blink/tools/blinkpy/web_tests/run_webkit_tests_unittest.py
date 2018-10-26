@@ -919,14 +919,6 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         tests_run = get_test_results(['passes/mismatch.html'])
         self.assertEqual(tests_run[0].references, ['passes/mismatch-expected-mismatch.html'])
 
-    def test_reftest_when_not_listed_in_reftestlist(self):
-        host = MockHost()
-        logging_run(['--no-show-results', 'reftests/foo/'], tests_included=True, host=host)
-        results = parse_full_results(host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
-        self.assertEqual(results['tests']['reftests']['foo']['unlistedtest.html']['actual'], 'MISSING MISSING MISSING MISSING')
-        self.assertEqual(results['num_regressions'], 5)
-        self.assertEqual(results['num_flaky'], 0)
-
     def test_reftest_crash(self):
         test_results = get_test_results(['failures/unexpected/crash-reftest.html'])
         # The list of references should be empty since the test crashed and we didn't run any references.
@@ -1201,49 +1193,6 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertTrue(host.filesystem.exists('/tmp/json_failing_results.json'))
         json_failing_test_results = host.filesystem.read_text_file('/tmp/json_failing_results.json')
         self.assertEqual(json.loads(json_failing_test_results), details.summarized_failing_results)
-
-
-class EndToEndTest(unittest.TestCase):
-
-    def test_reftest_with_two_notrefs(self):
-        # Test that we update expectations in place. If the expectation
-        # is missing, update the expected generic location.
-        host = MockHost()
-        logging_run(['--no-show-results', 'reftests/foo/'], tests_included=True, host=host)
-
-        json_string = host.filesystem.read_text_file('/tmp/layout-test-results/failing_results.json')
-        results = parse_full_results(json_string)
-        self.assertNotIn('multiple-match-success.html', results['tests']['reftests']['foo'])
-        self.assertNotIn('multiple-mismatch-success.html', results['tests']['reftests']['foo'])
-        self.assertNotIn('multiple-both-success.html', results['tests']['reftests']['foo'])
-
-        self.assertEqual(
-            results['tests']['reftests']['foo']['multiple-match-failure.html'],
-            {
-                'expected': 'PASS',
-                'actual': 'IMAGE IMAGE IMAGE IMAGE',
-                'reftest_type': ['=='],
-                'is_regression': True,
-                'is_unexpected': True,
-            })
-        self.assertEqual(
-            results['tests']['reftests']['foo']['multiple-mismatch-failure.html'],
-            {
-                'expected': 'PASS',
-                'actual': 'IMAGE IMAGE IMAGE IMAGE',
-                'reftest_type': ['!='],
-                'is_regression': True,
-                'is_unexpected': True,
-            })
-        self.assertEqual(
-            results['tests']['reftests']['foo']['multiple-both-failure.html'],
-            {
-                'expected': 'PASS',
-                'actual': 'IMAGE IMAGE IMAGE IMAGE',
-                'reftest_type': ['==', '!='],
-                'is_regression': True,
-                'is_unexpected': True,
-            })
 
 
 class RebaselineTest(unittest.TestCase, StreamTestingMixin):
