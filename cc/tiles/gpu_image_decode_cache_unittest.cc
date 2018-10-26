@@ -2271,6 +2271,27 @@ TEST_P(GpuImageDecodeCacheTest, NonLazyImageUploadTaskHasNoDeps) {
   cache->UnrefImage(draw_image);
 }
 
+TEST_P(GpuImageDecodeCacheTest, NonLazyImageUploadTaskCancelled) {
+  auto cache = CreateCache();
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  PaintImage image = CreateBitmapImageInternal(gfx::Size(10, 10));
+  DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
+                       PaintImage::kDefaultFrameIndex, DefaultColorSpace());
+  auto result =
+      cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_TRUE(result.need_unref);
+  EXPECT_TRUE(result.task);
+  EXPECT_TRUE(result.task->dependencies().empty());
+  TestTileTaskRunner::CancelTask(result.task.get());
+  TestTileTaskRunner::CompleteTask(result.task.get());
+
+  cache->UnrefImage(draw_image);
+}
+
 TEST_P(GpuImageDecodeCacheTest, NonLazyImageLargeImageColorConverted) {
   auto cache = CreateCache();
   const bool should_cache_sw_image =
