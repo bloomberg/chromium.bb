@@ -239,7 +239,17 @@ void ClientRoot::OnWindowAddedToRootWindow(aura::Window* window) {
   DCHECK_EQ(window, window_);
   DCHECK(window->GetHost());
   window->GetHost()->AddObserver(this);
-  CheckForScaleFactorChange();
+  window_tree_->window_tree_client_->OnWindowDisplayChanged(
+      window_tree_->TransportIdForWindow(window),
+      window->GetHost()->GetDisplayId());
+
+  // When the addition to a new root window isn't the result of moving across
+  // displays (e.g. destruction of the current display), the window bounds in
+  // screen change even though its bounds in the root window remain the same.
+  if (is_top_level_ && !is_moving_across_displays_)
+    HandleBoundsOrScaleFactorChange(window->GetBoundsInScreen());
+  else
+    CheckForScaleFactorChange();
 }
 
 void ClientRoot::OnWindowRemovingFromRootWindow(aura::Window* window,
@@ -258,9 +268,6 @@ void ClientRoot::OnWillMoveWindowToDisplay(aura::Window* window,
 void ClientRoot::OnDidMoveWindowToDisplay(aura::Window* window) {
   DCHECK(is_moving_across_displays_);
   is_moving_across_displays_ = false;
-  window_tree_->window_tree_client_->OnWindowDisplayChanged(
-      window_tree_->TransportIdForWindow(window),
-      window->GetHost()->GetDisplayId());
   if (scheduled_change_old_bounds_) {
     HandleBoundsOrScaleFactorChange(scheduled_change_old_bounds_.value());
     scheduled_change_old_bounds_.reset();

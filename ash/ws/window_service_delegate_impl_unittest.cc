@@ -368,14 +368,7 @@ TEST_F(WindowServiceDelegateImplTest, MoveAcrossDisplays) {
 
   display::Screen* screen = display::Screen::GetScreen();
   display::Display display1 = screen->GetPrimaryDisplay();
-  display::Display display2;
-  for (const auto& iter : screen->GetAllDisplays()) {
-    if (iter.id() != display1.id()) {
-      display2 = iter;
-      break;
-    }
-  }
-  ASSERT_TRUE(display2.is_valid());
+  display::Display display2 = GetSecondaryDisplay();
   EXPECT_EQ(display1.id(),
             screen->GetDisplayNearestWindow(top_level_.get()).id());
 
@@ -393,6 +386,35 @@ TEST_F(WindowServiceDelegateImplTest, MoveAcrossDisplays) {
       ContainsChange(*GetWindowTreeClientChanges(),
                      std::string("DisplayChanged window_id=0,1 display_id=") +
                          base::NumberToString(display2.id())));
+}
+
+TEST_F(WindowServiceDelegateImplTest, RemoveDisplay) {
+  UpdateDisplay("500x400,500x400");
+  display::Display display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
+  display::Display display2 = GetSecondaryDisplay();
+
+  GetWindowTreeClientChanges()->clear();
+  top_level_->SetBoundsInScreen(gfx::Rect(600, 100, 100, 100),
+                                GetSecondaryDisplay());
+  EXPECT_EQ(Shell::GetRootWindowForDisplayId(display2.id()),
+            top_level_->GetRootWindow());
+  EXPECT_TRUE(
+      ContainsChange(*GetWindowTreeClientChanges(),
+                     std::string("DisplayChanged window_id=0,1 display_id=") +
+                         base::NumberToString(display2.id())));
+
+  GetWindowTreeClientChanges()->clear();
+  UpdateDisplay("500x400");
+  EXPECT_EQ(Shell::GetRootWindowForDisplayId(display1.id()),
+            top_level_->GetRootWindow());
+  EXPECT_TRUE(
+      ContainsChange(*GetWindowTreeClientChanges(),
+                     std::string("DisplayChanged window_id=0,1 display_id=") +
+                         base::NumberToString(display1.id())));
+  EXPECT_TRUE(ContainsChange(
+      *GetWindowTreeClientChanges(),
+      std::string("BoundsChanged window=0,1 old_bounds=* "
+                  "new_bounds=100,100 104x100 local_surface_id=*")));
 }
 
 }  // namespace ash
