@@ -59,23 +59,5 @@
 -TabDragging/DetachToBrowserTabDragControllerTestTouch.PressSecondFingerWhileDetached/0
 -TabDragging/DetachToBrowserTabDragControllerTestTouch.SecondFingerPressTest/0
 
-# TabScrubber: crbug.com/889097
--TabScrubberTest.Bounds
--TabScrubberTest.CloseBrowser
--TabScrubberTest.DeleteBeforeHighlighted
--TabScrubberTest.DeleteHighlighted
--TabScrubberTest.FullScreenBrowser
--TabScrubberTest.MoveAfter
--TabScrubberTest.MoveBefore
--TabScrubberTest.MoveHighlighted
--TabScrubberTest.Multi
--TabScrubberTest.MultiBrowser
--TabScrubberTest.Repeated
--TabScrubberTest.RTLMoveBefore
--TabScrubberTest.RTLMulti
--TabScrubberTest.RTLSkipped
--TabScrubberTest.Single
--TabScrubberTest.Skipped
-
 # This test is flaky. https://crbug.com/897879
 -ExtensionApiTest.DisplayModeWindowIsInFullscreen
