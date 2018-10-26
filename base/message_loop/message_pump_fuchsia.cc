@@ -4,8 +4,10 @@
 
 #include "base/message_loop/message_pump_fuchsia.h"
 
+#include <lib/async-loop/cpp/loop.h>
 #include <lib/fdio/io.h>
 #include <lib/fdio/unsafe.h>
+#include <lib/zx/time.h>
 #include <zircon/status.h>
 #include <zircon/syscalls.h>
 
@@ -28,7 +30,8 @@ bool MessagePumpFuchsia::ZxHandleWatchController::WaitBegin() {
   DCHECK(!handler);
   async_wait_t::handler = &HandleSignal;
 
-  zx_status_t status = async_begin_wait(&weak_pump_->async_dispatcher_, this);
+  zx_status_t status =
+      async_begin_wait(weak_pump_->async_loop_->dispatcher(), this);
   if (status != ZX_OK) {
     ZX_DLOG(ERROR, status) << "async_begin_wait() failed";
     async_wait_t::handler = nullptr;
@@ -60,7 +63,8 @@ bool MessagePumpFuchsia::ZxHandleWatchController::StopWatchingZxHandle() {
 
   async_wait_t::handler = nullptr;
 
-  zx_status_t result = async_cancel_wait(&weak_pump_->async_dispatcher_, this);
+  zx_status_t result =
+      async_cancel_wait(weak_pump_->async_loop_->dispatcher(), this);
   ZX_DLOG_IF(ERROR, result != ZX_OK, result) << "async_cancel_wait failed";
   return result == ZX_OK;
 }
@@ -159,8 +163,9 @@ bool MessagePumpFuchsia::FdWatchController::StopWatchingFileDescriptor() {
   return success;
 }
 
-MessagePumpFuchsia::MessagePumpFuchsia() : weak_factory_(this) {}
-
+MessagePumpFuchsia::MessagePumpFuchsia()
+    : async_loop_(new async::Loop(&kAsyncLoopConfigAttachToThread)),
+      weak_factory_(this) {}
 MessagePumpFuchsia::~MessagePumpFuchsia() = default;
 
 bool MessagePumpFuchsia::WatchFileDescriptor(int fd,
@@ -233,12 +238,15 @@ bool MessagePumpFuchsia::WatchZxHandle(zx_handle_t handle,
 }
 
 bool MessagePumpFuchsia::HandleEvents(zx_time_t deadline) {
-  zx_status_t status = async_dispatcher_.DispatchOrWaitUntil(deadline);
+  zx_status_t status = async_loop_->Run(zx::time(deadline), /*once=*/true);
   switch (status) {
     // Return true if some tasks or events were dispatched or if the dispatcher
     // was stopped by ScheduleWork().
     case ZX_OK:
+      return true;
+
     case ZX_ERR_CANCELED:
+      async_loop_->ResetQuit();
       return true;
 
     case ZX_ERR_TIMED_OUT:
@@ -279,6 +287,7 @@ void MessagePumpFuchsia::Run(Delegate* delegate) {
     zx_time_t deadline = delayed_work_time_.is_null()
                              ? ZX_TIME_INFINITE
                              : delayed_work_time_.ToZxTime();
+
     HandleEvents(deadline);
   }
 }
@@ -288,9 +297,8 @@ void MessagePumpFuchsia::Quit() {
 }
 
 void MessagePumpFuchsia::ScheduleWork() {
-  // Stop AsyncDispatcher to let MessagePumpFuchsia::Run() handle message loop
-  // tasks.
-  async_dispatcher_.Stop();
+  // Stop async_loop to let MessagePumpFuchsia::Run() handle message loop tasks.
+  async_loop_->Quit();
 }
 
 void MessagePumpFuchsia::ScheduleDelayedWork(
