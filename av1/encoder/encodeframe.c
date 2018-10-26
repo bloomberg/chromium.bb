@@ -5637,10 +5637,10 @@ static void encode_frame_internal(AV1_COMP *cpi) {
                    (MAX_PARAMDIM - 1) * sizeof(*params_by_motion));
           }
 
-          compute_global_motion_feature_based(
-              model, cpi->source, ref_buf[frame],
-              cpi->common.seq_params.bit_depth, inliers_by_motion,
-              params_by_motion, RANSAC_NUM_MOTIONS);
+          compute_global_motion(model, cpi->source, ref_buf[frame],
+                                cpi->common.seq_params.bit_depth,
+                                inliers_by_motion, params_by_motion,
+                                RANSAC_NUM_MOTIONS);
 
           for (i = 0; i < RANSAC_NUM_MOTIONS; ++i) {
             if (inliers_by_motion[i] == 0) continue;

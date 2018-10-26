@@ -52,19 +52,10 @@ int64_t refine_integerized_param(WarpedMotionParams *wm,
   number of inlier feature points for each motion. Params for which the
   num_inliers entry is 0 should be ignored by the caller.
 */
-int compute_global_motion_feature_based(TransformationType type,
-                                        YV12_BUFFER_CONFIG *frm,
-                                        YV12_BUFFER_CONFIG *ref, int bit_depth,
-                                        int *num_inliers_by_motion,
-                                        double *params_by_motion,
-                                        int num_motions);
-
-int compute_global_motion_disflow_based(TransformationType type,
-                                        YV12_BUFFER_CONFIG *frm,
-                                        YV12_BUFFER_CONFIG *ref, int bit_depth,
-                                        int *num_inliers_by_motion,
-                                        double *params_by_motion,
-                                        int num_motions);
+int compute_global_motion(TransformationType type, YV12_BUFFER_CONFIG *frm,
+                          YV12_BUFFER_CONFIG *ref, int bit_depth,
+                          int *num_inliers_by_motion, double *params_by_motion,
+                          int num_motions);
 #ifdef __cplusplus
 }  // extern "C"
 #endif

@@ -29,6 +29,7 @@
 #define MIN_INLIER_PROB 0.1
 
 #define MIN_TRANS_THRESH (1 * GM_TRANS_DECODE_FACTOR)
+#define USE_GM_FEATURE_BASED 1
 
 // Border over which to compute the global motion
 #define ERRORADV_BORDER 0
@@ -259,12 +260,11 @@ static unsigned char *downconvert_frame(YV12_BUFFER_CONFIG *frm,
   return buf_8bit;
 }
 
-int compute_global_motion_feature_based(TransformationType type,
-                                        YV12_BUFFER_CONFIG *frm,
-                                        YV12_BUFFER_CONFIG *ref, int bit_depth,
-                                        int *num_inliers_by_motion,
-                                        double *params_by_motion,
-                                        int num_motions) {
+#if USE_GM_FEATURE_BASED
+static int compute_global_motion_feature_based(
+    TransformationType type, YV12_BUFFER_CONFIG *frm, YV12_BUFFER_CONFIG *ref,
+    int bit_depth, int *num_inliers_by_motion, double *params_by_motion,
+    int num_motions) {
   int i;
   int num_frm_corners, num_ref_corners;
   int num_correspondences;
@@ -315,7 +315,7 @@ int compute_global_motion_feature_based(TransformationType type,
   }
   return 0;
 }
-
+#else
 static ImagePyramid *alloc_pyramid(int width, int height, int pad_size) {
   ImagePyramid *pyr = aom_malloc(sizeof(*pyr));
   // 2 * width * height is the upper bound for a buffer that fits
@@ -388,12 +388,10 @@ static void compute_flow_pyramids(unsigned char *frm, const int frm_width,
   }
 }
 
-int compute_global_motion_disflow_based(TransformationType type,
-                                        YV12_BUFFER_CONFIG *frm,
-                                        YV12_BUFFER_CONFIG *ref, int bit_depth,
-                                        int *num_inliers_by_motion,
-                                        double *params_by_motion,
-                                        int num_motions) {
+static int compute_global_motion_disflow_based(
+    TransformationType type, YV12_BUFFER_CONFIG *frm, YV12_BUFFER_CONFIG *ref,
+    int bit_depth, int *num_inliers_by_motion, double *params_by_motion,
+    int num_motions) {
   unsigned char *frm_buffer = frm->y_buffer;
   unsigned char *ref_buffer = ref->y_buffer;
   const int frm_width = frm->y_width;
@@ -436,4 +434,20 @@ int compute_global_motion_disflow_based(TransformationType type,
   free_pyramid(frm_pyr);
   free_pyramid(ref_pyr);
   return 0;
+}
+#endif
+
+int compute_global_motion(TransformationType type, YV12_BUFFER_CONFIG *frm,
+                          YV12_BUFFER_CONFIG *ref, int bit_depth,
+                          int *num_inliers_by_motion, double *params_by_motion,
+                          int num_motions) {
+#if USE_GM_FEATURE_BASED
+  return compute_global_motion_feature_based(type, frm, ref, bit_depth,
+                                             num_inliers_by_motion,
+                                             params_by_motion, num_motions);
+#else
+  return compute_global_motion_disflow_based(type, frm, ref, bit_depth,
+                                             num_inliers_by_motion,
+                                             params_by_motion, num_motions);
+#endif
 }
