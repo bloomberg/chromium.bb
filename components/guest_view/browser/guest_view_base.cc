@@ -137,7 +137,16 @@ class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
     if (destroyed_)
       return;
     destroyed_ = true;
-    guest_->Destroy(true);
+
+    bool also_delete = true;
+    WebContents* guest_web_contents = guest_->web_contents();
+    if (content::GuestMode::IsCrossProcessFrameGuest(guest_web_contents)) {
+      // The outer WebContents have ownership of attached OOPIF-based guests, so
+      // we are not responsible for their deletion.
+      if (guest_web_contents->GetOuterWebContents())
+        also_delete = false;
+    }
+    guest_->Destroy(also_delete);
   }
 
   DISALLOW_COPY_AND_ASSIGN(OwnerContentsObserver);

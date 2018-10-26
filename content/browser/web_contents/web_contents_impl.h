@@ -358,7 +358,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool NeedToFireBeforeUnload() override;
   void DispatchBeforeUnload(bool auto_cancel) override;
   void AttachToOuterWebContentsFrame(
-      WebContents* outer_web_contents,
+      std::unique_ptr<WebContents> current_web_contents,
       RenderFrameHost* outer_contents_frame) override;
   WebContentsImpl* GetOuterWebContents() override;
   WebContentsImpl* GetOutermostWebContents() override;
@@ -1093,8 +1093,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
     explicit WebContentsTreeNode(WebContentsImpl* current_web_contents);
     ~WebContentsTreeNode() final;
 
-    void ConnectToOuterWebContents(WebContentsImpl* outer_web_contents,
-                                   RenderFrameHostImpl* outer_contents_frame);
+    // Connects |current_web_contents| to the outer WebContents that owns
+    // |outer_contents_frame|.
+    void ConnectToOuterWebContents(
+        std::unique_ptr<WebContents> current_web_contents,
+        RenderFrameHostImpl* outer_contents_frame);
 
     WebContentsImpl* outer_web_contents() const { return outer_web_contents_; }
     int outer_contents_frame_tree_node_id() const {
@@ -1109,11 +1112,13 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
     // otherwise.
     WebContentsImpl* GetInnerWebContentsInFrame(const FrameTreeNode* frame);
 
-    const std::vector<WebContentsImpl*>& inner_web_contents() const;
+    std::vector<WebContentsImpl*> GetInnerWebContents() const;
 
    private:
-    void AttachInnerWebContents(WebContentsImpl* inner_web_contents);
-    void DetachInnerWebContents(WebContentsImpl* inner_web_contents);
+    void AttachInnerWebContents(
+        std::unique_ptr<WebContents> inner_web_contents);
+    std::unique_ptr<WebContents> DetachInnerWebContents(
+        WebContentsImpl* inner_web_contents);
 
     // FrameTreeNode::Observer implementation.
     void OnFrameTreeNodeDestroyed(FrameTreeNode* node) final;
@@ -1129,8 +1134,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
     // |current_web_contents_| as an inner WebContents.
     int outer_contents_frame_tree_node_id_;
 
-    // List of inner WebContents that we host.
-    std::vector<WebContentsImpl*> inner_web_contents_;
+    // List of inner WebContents that we host. The outer WebContents owns the
+    // inner WebContents.
+    std::vector<std::unique_ptr<WebContents>> inner_web_contents_;
 
     // Only the root node should have this set. This indicates the WebContents
     // whose frame tree has the focused frame. The WebContents tree could be
