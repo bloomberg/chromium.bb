@@ -66,7 +66,7 @@ void SVGStyleElement::setType(const AtomicString& type) {
 
 const AtomicString& SVGStyleElement::media() const {
   const AtomicString& n = FastGetAttribute(SVGNames::mediaAttr);
-  return n.IsNull() ? MediaTypeNames::all : n;
+  return n.IsNull() ? media_type_names::kAll : n;
 }
 
 void SVGStyleElement::setMedia(const AtomicString& media) {

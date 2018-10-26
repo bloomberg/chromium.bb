@@ -232,7 +232,7 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       first_layout_(true),
       base_background_color_(Color::kWhite),
       last_zoom_factor_(1.0f),
-      media_type_(MediaTypeNames::screen),
+      media_type_(media_type_names::kScreen),
       safe_to_propagate_scroll_to_parent_(true),
       visually_non_empty_character_count_(0),
       visually_non_empty_pixel_count_(0),
@@ -1139,7 +1139,7 @@ void LocalFrameView::AdjustMediaTypeForPrinting(bool printing) {
   if (printing) {
     if (media_type_when_not_printing_.IsNull())
       media_type_when_not_printing_ = MediaType();
-    SetMediaType(MediaTypeNames::print);
+    SetMediaType(media_type_names::kPrint);
   } else {
     if (!media_type_when_not_printing_.IsNull())
       SetMediaType(media_type_when_not_printing_);

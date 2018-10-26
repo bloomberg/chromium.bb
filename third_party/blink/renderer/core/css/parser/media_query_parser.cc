@@ -288,12 +288,12 @@ bool MediaQueryParser::IsMediaFeatureAllowedInMode(
 
 MediaQueryData::MediaQueryData()
     : restrictor_(MediaQuery::kNone),
-      media_type_(MediaTypeNames::all),
+      media_type_(media_type_names::kAll),
       media_type_set_(false) {}
 
 void MediaQueryData::Clear() {
   restrictor_ = MediaQuery::kNone;
-  media_type_ = MediaTypeNames::all;
+  media_type_ = media_type_names::kAll;
   media_type_set_ = false;
   media_feature_ = String();
   expressions_.clear();
