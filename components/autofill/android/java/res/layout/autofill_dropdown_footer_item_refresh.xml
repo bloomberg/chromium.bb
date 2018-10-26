@@ -14,6 +14,7 @@
     android:paddingStart="@dimen/autofill_dropdown_refresh_horizontal_padding"
     android:gravity="center_vertical"
     android:orientation="horizontal"
+    android:background="?android:attr/selectableItemBackground"
     tools:ignore="UseCompoundDrawables" >
 
     <TextView
@@ -29,8 +30,9 @@
 
     <ImageView
         android:id="@+id/dropdown_icon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="@dimen/autofill_dropdown_refresh_icon_width"
+        android:layout_height="@dimen/autofill_dropdown_refresh_footer_icon_height"
+        android:scaleType="centerInside"
         android:layout_marginStart="@dimen/autofill_dropdown_refresh_icon_margin"
         android:layout_marginEnd="0dp"
         tools:ignore="ContentDescription" />
