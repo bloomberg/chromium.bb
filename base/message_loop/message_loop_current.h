@@ -89,6 +89,9 @@ class BASE_EXPORT MessageLoopCurrent {
   // DestructionObserver is receiving a notification callback.
   void RemoveDestructionObserver(DestructionObserver* destruction_observer);
 
+  // Returns the name for the thread associated with this object.
+  std::string GetThreadName() const;
+
   // Forwards to MessageLoop::task_runner().
   // DEPRECATED(https://crbug.com/616447): Use ThreadTaskRunnerHandle::Get()
   // instead of MessageLoopCurrent::Get()->task_runner().
@@ -156,6 +159,9 @@ class BASE_EXPORT MessageLoopCurrent {
     const bool old_state_;
   };
 
+  // Returns true if this is the active MessageLoop for the current thread.
+  bool IsBoundToCurrentThread() const;
+
   // Returns true if the message loop is idle (ignoring delayed tasks). This is
   // the same condition which triggers DoWork() to return false: i.e.
   // out of tasks which can be processed at the current run-level -- there might
@@ -172,10 +178,6 @@ class BASE_EXPORT MessageLoopCurrent {
   // thread that invoked |BindToCurrentThreadInternal(current)|. This is only
   // meant to be invoked by the MessageLoop itself.
   static void UnbindFromCurrentThreadInternal(MessageLoop* current);
-
-  // Returns true if |message_loop| is bound to MessageLoopCurrent on the
-  // current thread. This is only meant to be invoked by the MessageLoop itself.
-  static bool IsBoundToCurrentThreadInternal(MessageLoop* message_loop);
 
  protected:
   explicit MessageLoopCurrent(MessageLoop* current) : current_(current) {}

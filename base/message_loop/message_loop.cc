@@ -258,8 +258,8 @@ MessageLoop::~MessageLoop() {
   // current one on this thread. Otherwise, this loop is being destructed before
   // it was bound to a thread, so a different message loop (or no loop at all)
   // may be current.
-  DCHECK((pump_ && MessageLoopCurrent::IsBoundToCurrentThreadInternal(this)) ||
-         (!pump_ && !MessageLoopCurrent::IsBoundToCurrentThreadInternal(this)));
+  DCHECK((pump_ && IsBoundToCurrentThread()) ||
+         (!pump_ && !IsBoundToCurrentThread()));
 
   // iOS just attaches to the loop, it doesn't Run it.
   // TODO(stuartmorgan): Consider wiring up a Detach().
@@ -267,9 +267,8 @@ MessageLoop::~MessageLoop() {
   // There should be no active RunLoops on this thread, unless this MessageLoop
   // isn't bound to the current thread (see other condition at the top of this
   // method).
-  DCHECK(
-      (!pump_ && !MessageLoopCurrent::IsBoundToCurrentThreadInternal(this)) ||
-      !RunLoop::IsRunningOnCurrentThread());
+  DCHECK((!pump_ && !IsBoundToCurrentThread()) ||
+         !RunLoop::IsRunningOnCurrentThread());
 #endif  // !defined(OS_IOS)
 
 #if defined(OS_WIN)
@@ -316,7 +315,7 @@ MessageLoop::~MessageLoop() {
   underlying_task_runner_->Shutdown();
 
   // OK, now make it so that no one can find us.
-  if (MessageLoopCurrent::IsBoundToCurrentThreadInternal(this))
+  if (IsBoundToCurrentThread())
     MessageLoopCurrent::UnbindFromCurrentThreadInternal(this);
 }
 
@@ -386,6 +385,10 @@ void MessageLoop::RemoveTaskObserver(TaskObserver* task_observer) {
       std::find(task_observers_.begin(), task_observers_.end(), task_observer);
   DCHECK(it != task_observers_.end());
   task_observers_.erase(it);
+}
+
+bool MessageLoop::IsBoundToCurrentThread() const {
+  return GetCurrentDeprecated() == this;
 }
 
 void MessageLoop::SetAddQueueTimeToTasks(bool enable) {

@@ -224,7 +224,7 @@ class BluetoothBlueZTest : public testing::Test {
   // without using this function.
   void DiscoverDevice(const std::string& address) {
     ASSERT_TRUE(adapter_.get() != nullptr);
-    ASSERT_TRUE(base::MessageLoop::current() != nullptr);
+    ASSERT_TRUE(base::MessageLoop::IsSet());
     fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
 
     TestBluetoothAdapterObserver observer(adapter_);

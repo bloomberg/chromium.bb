@@ -79,7 +79,7 @@ void NativeInit() {
 
 bool OnInitThread() {
   DCHECK(g_init_message_loop);
-  return g_init_message_loop == base::MessageLoop::current();
+  return g_init_message_loop->IsBoundToCurrentThread();
 }
 
 // In integrated mode, Cronet native library is built and loaded together with
@@ -110,7 +110,7 @@ void JNI_CronetLibraryLoader_CronetInitOnInitThread(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller) {
   // Initialize message loop for init thread.
-  DCHECK(!base::MessageLoop::current());
+  DCHECK(!base::MessageLoopCurrent::IsSet());
   DCHECK(!g_init_message_loop);
   g_init_message_loop =
       new base::MessageLoop(base::MessageLoop::Type::TYPE_JAVA);

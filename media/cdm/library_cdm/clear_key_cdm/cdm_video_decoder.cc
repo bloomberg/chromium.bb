@@ -139,7 +139,7 @@ bool ToCdmVideoFrame(const VideoFrame& video_frame,
 // they will not be available and we have to setup it by ourselves.
 void SetupGlobalEnvironmentIfNeeded() {
   // Creating a base::MessageLoop to setup base::ThreadTaskRunnerHandle.
-  if (!base::MessageLoop::current()) {
+  if (!base::MessageLoopCurrent::IsSet()) {
     static base::NoDestructor<base::MessageLoop> message_loop;
   }
 
