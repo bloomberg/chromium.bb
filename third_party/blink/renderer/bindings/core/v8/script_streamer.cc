@@ -424,7 +424,7 @@ void ScriptStreamer::NotifyAppendData(ScriptResource* resource) {
       // cancel the task.
       //
       // TODO(leszeks): Decrease the priority of these tasks where possible.
-      BackgroundScheduler::PostOnBackgroundThreadWithTraits(
+      background_scheduler::PostOnBackgroundThreadWithTraits(
           FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
           CrossThreadBind(RunBlockingScriptStreamingTask,
                           WTF::Passed(std::move(script_streaming_task)),
@@ -476,7 +476,7 @@ void ScriptStreamer::NotifyFinished() {
       // The task creation shouldn't fail, since it didn't fail before during
       // NotifyAppendData.
       CHECK(script_streaming_task);
-      BackgroundScheduler::PostOnBackgroundThreadWithTraits(
+      background_scheduler::PostOnBackgroundThreadWithTraits(
           FROM_HERE, {base::TaskPriority::USER_BLOCKING},
           CrossThreadBind(RunNonBlockingScriptStreamingTask,
                           WTF::Passed(std::move(script_streaming_task)),

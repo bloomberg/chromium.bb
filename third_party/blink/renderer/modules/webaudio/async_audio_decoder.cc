@@ -55,7 +55,7 @@ void AsyncAudioDecoder::DecodeAsync(
       context->GetExecutionContext()->GetTaskRunner(
           blink::TaskType::kInternalMedia);
 
-  BackgroundScheduler::PostOnBackgroundThread(
+  background_scheduler::PostOnBackgroundThread(
       FROM_HERE,
       CrossThreadBind(&AsyncAudioDecoder::DecodeOnBackgroundThread,
                       WrapCrossThreadPersistent(audio_data), sample_rate,
