@@ -19,6 +19,14 @@ MockMediaSessionMojoObserver::MockMediaSessionMojoObserver(
   media_session.AddObserver(std::move(observer));
 }
 
+MockMediaSessionMojoObserver::MockMediaSessionMojoObserver(
+    mojom::MediaControllerPtr& controller)
+    : binding_(this) {
+  mojom::MediaSessionObserverPtr observer;
+  binding_.Bind(mojo::MakeRequest(&observer));
+  controller->AddObserver(std::move(observer));
+}
+
 MockMediaSessionMojoObserver::~MockMediaSessionMojoObserver() = default;
 
 void MockMediaSessionMojoObserver::MediaSessionInfoChanged(
@@ -79,6 +87,7 @@ void MockMediaSession::GetMediaSessionInfo(
 }
 
 void MockMediaSession::AddObserver(mojom::MediaSessionObserverPtr observer) {
+  observer->MediaSessionInfoChanged(GetMediaSessionInfoSync());
   observers_.AddPtr(std::move(observer));
 }
 

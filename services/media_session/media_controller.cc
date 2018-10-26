@@ -29,7 +29,10 @@ void MediaController::Resume() {
 void MediaController::ToggleSuspendResume() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  switch (playback_state_) {
+  if (session_info_.is_null())
+    return;
+
+  switch (session_info_->playback_state) {
     case mojom::MediaPlaybackState::kPlaying:
       Suspend();
       break;
@@ -39,17 +42,42 @@ void MediaController::ToggleSuspendResume() {
   }
 }
 
-void MediaController::SetMediaSession(mojom::MediaSession* session,
-                                      mojom::MediaPlaybackState state) {
+void MediaController::AddObserver(mojom::MediaSessionObserverPtr observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Flush the new observer with the latest session info. If there is no info
+  // then we will update |observer| when |MediaSessionInfoChanged| is called.
+  if (!session_info_.is_null())
+    observer->MediaSessionInfoChanged(session_info_.Clone());
+
+  observers_.AddPtr(std::move(observer));
+}
+
+void MediaController::MediaSessionInfoChanged(mojom::MediaSessionInfoPtr info) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  observers_.ForAllPtrs([&info](mojom::MediaSessionObserver* observer) {
+    observer->MediaSessionInfoChanged(info.Clone());
+  });
+
+  session_info_ = std::move(info);
+}
+
+void MediaController::SetMediaSession(mojom::MediaSession* session) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   session_ = session;
-  playback_state_ = state;
+
+  // Add |this| as an observer for |session|.
+  session_binding_.Close();
+  mojom::MediaSessionObserverPtr observer;
+  session_binding_.Bind(mojo::MakeRequest(&observer));
+  session->AddObserver(std::move(observer));
 }
 
 void MediaController::ClearMediaSession() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   session_ = nullptr;
-  playback_state_ = mojom::MediaPlaybackState::kPaused;
+  session_binding_.Close();
 }
 
 void MediaController::BindToInterface(mojom::MediaControllerRequest request) {

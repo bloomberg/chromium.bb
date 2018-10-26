@@ -8,7 +8,9 @@
 #include <memory>
 
 #include "base/sequence_checker.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 
@@ -16,8 +18,10 @@ namespace media_session {
 
 // MediaController provides a control surface over Mojo for controlling a
 // specific MediaSession. If |session_| is nullptr then all commands will be
-// dropped.
-class MediaController : public mojom::MediaController {
+// dropped. MediaController is also a MediaSessionObserver and will forward
+// events to added observers.
+class MediaController : public mojom::MediaController,
+                        public mojom::MediaSessionObserver {
  public:
   MediaController();
   ~MediaController() override;
@@ -26,8 +30,12 @@ class MediaController : public mojom::MediaController {
   void Suspend() override;
   void Resume() override;
   void ToggleSuspendResume() override;
+  void AddObserver(mojom::MediaSessionObserverPtr) override;
 
-  void SetMediaSession(mojom::MediaSession*, mojom::MediaPlaybackState);
+  // mojom::MediaSessionObserver overrides.
+  void MediaSessionInfoChanged(mojom::MediaSessionInfoPtr) override;
+
+  void SetMediaSession(mojom::MediaSession*);
   void ClearMediaSession();
 
   void BindToInterface(mojom::MediaControllerRequest);
@@ -37,13 +45,18 @@ class MediaController : public mojom::MediaController {
   // Holds mojo bindings for mojom::MediaController.
   mojo::BindingSet<mojom::MediaController> bindings_;
 
-  // The current playback state of the |session_|.
-  mojom::MediaPlaybackState playback_state_ =
-      mojom::MediaPlaybackState::kPaused;
+  // The current info for the |session_|.
+  mojom::MediaSessionInfoPtr session_info_;
 
   // Raw pointer to the local proxy. This is used for sending control events to
   // the underlying MediaSession.
   mojom::MediaSession* session_ = nullptr;
+
+  // Observers that are observing |session_|.
+  mojo::InterfacePtrSet<mojom::MediaSessionObserver> observers_;
+
+  // Binding for |this| to act as an observer to |session_|.
+  mojo::Binding<mojom::MediaSessionObserver> session_binding_{this};
 
   // Protects |session_| as it is not thread safe.
   SEQUENCE_CHECKER(sequence_checker_);
