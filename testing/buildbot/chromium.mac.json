@@ -1253,13 +1253,13 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter",
           "--gtest_shuffle"
         ],
+        "experiment_percentage": 50,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "none",
-              "os": "Mac-10.11",
-              "pool": "Chrome-quarantine"
+              "os": "Mac-10.11"
             }
           ],
           "shards": 10
@@ -2391,13 +2391,13 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter",
           "--gtest_shuffle"
         ],
+        "experiment_percentage": 50,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "none",
-              "os": "Mac-10.12.6",
-              "pool": "Chrome-quarantine"
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.12.6"
             }
           ],
           "shards": 10
@@ -3614,13 +3614,13 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter",
           "--gtest_shuffle"
         ],
+        "experiment_percentage": 50,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "none",
-              "os": "Mac-10.13",
-              "pool": "Chrome-quarantine"
+              "os": "Mac-10.13"
             }
           ],
           "shards": 10
@@ -4740,13 +4740,13 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter",
           "--gtest_shuffle"
         ],
+        "experiment_percentage": 50,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "none",
-              "os": "Mac-10.13",
-              "pool": "Chrome-quarantine"
+              "os": "Mac-10.13"
             }
           ],
           "shards": 10
