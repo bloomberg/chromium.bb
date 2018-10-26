@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "cc/input/scroll_snap_data.h"
+#include "cc/input/snap_selection_strategy.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,10 +18,12 @@ TEST_F(ScrollSnapDataTest, StartAlignmentCalculation) {
   SnapAreaData area(ScrollSnapAlign(SnapAlignment::kStart),
                     gfx::RectF(100, 150, 100, 100), false);
   container.AddSnapAreaData(area);
-  gfx::ScrollOffset current_position(0, 0);
+
   gfx::ScrollOffset snap_position;
-  EXPECT_TRUE(
-      container.FindSnapPosition(current_position, true, true, &snap_position));
+  std::unique_ptr<SnapSelectionStrategy> strategy =
+      SnapSelectionStrategy::CreateForEndPosition(gfx::ScrollOffset(0, 0), true,
+                                                  true);
+  EXPECT_TRUE(container.FindSnapPosition(*strategy, &snap_position));
   EXPECT_EQ(90, snap_position.x());
   EXPECT_EQ(140, snap_position.y());
 }
@@ -32,10 +35,12 @@ TEST_F(ScrollSnapDataTest, CenterAlignmentCalculation) {
   SnapAreaData area(ScrollSnapAlign(SnapAlignment::kCenter),
                     gfx::RectF(100, 150, 100, 100), false);
   container.AddSnapAreaData(area);
-  gfx::ScrollOffset current_position(0, 0);
+
   gfx::ScrollOffset snap_position;
-  EXPECT_TRUE(
-      container.FindSnapPosition(current_position, true, true, &snap_position));
+  std::unique_ptr<SnapSelectionStrategy> strategy =
+      SnapSelectionStrategy::CreateForEndPosition(gfx::ScrollOffset(0, 0), true,
+                                                  true);
+  EXPECT_TRUE(container.FindSnapPosition(*strategy, &snap_position));
   EXPECT_EQ(40, snap_position.x());
   EXPECT_EQ(40, snap_position.y());
 }
@@ -47,10 +52,12 @@ TEST_F(ScrollSnapDataTest, EndAlignmentCalculation) {
   SnapAreaData area(ScrollSnapAlign(SnapAlignment::kEnd),
                     gfx::RectF(150, 200, 100, 100), false);
   container.AddSnapAreaData(area);
-  gfx::ScrollOffset current_position(0, 0);
+
   gfx::ScrollOffset snap_position;
-  EXPECT_TRUE(
-      container.FindSnapPosition(current_position, true, true, &snap_position));
+  std::unique_ptr<SnapSelectionStrategy> strategy =
+      SnapSelectionStrategy::CreateForEndPosition(gfx::ScrollOffset(0, 0), true,
+                                                  true);
+  EXPECT_TRUE(container.FindSnapPosition(*strategy, &snap_position));
   EXPECT_EQ(40, snap_position.x());
   EXPECT_EQ(90, snap_position.y());
 }
@@ -62,10 +69,12 @@ TEST_F(ScrollSnapDataTest, UnreachableSnapPositionCalculation) {
   SnapAreaData area(ScrollSnapAlign(SnapAlignment::kEnd, SnapAlignment::kStart),
                     gfx::RectF(200, 0, 100, 100), false);
   container.AddSnapAreaData(area);
-  gfx::ScrollOffset current_position(50, 50);
+
   gfx::ScrollOffset snap_position;
-  EXPECT_TRUE(
-      container.FindSnapPosition(current_position, true, true, &snap_position));
+  std::unique_ptr<SnapSelectionStrategy> strategy =
+      SnapSelectionStrategy::CreateForEndPosition(gfx::ScrollOffset(50, 50),
+                                                  true, true);
+  EXPECT_TRUE(container.FindSnapPosition(*strategy, &snap_position));
   // Aligning to start on x would lead the scroll offset larger than max, and
   // aligning to end on y would lead the scroll offset smaller than zero. So
   // we expect these are clamped.
@@ -85,13 +94,15 @@ TEST_F(ScrollSnapDataTest, FindsClosestSnapPositionIndependently) {
       gfx::RectF(0, 70, 150, 150), false);
   SnapAreaData snap_on_both(ScrollSnapAlign(SnapAlignment::kStart),
                             gfx::RectF(50, 150, 150, 150), false);
-  gfx::ScrollOffset current_position(100, 100);
   container.AddSnapAreaData(snap_x_only);
   container.AddSnapAreaData(snap_y_only);
   container.AddSnapAreaData(snap_on_both);
+
   gfx::ScrollOffset snap_position;
-  EXPECT_TRUE(
-      container.FindSnapPosition(current_position, true, true, &snap_position));
+  std::unique_ptr<SnapSelectionStrategy> strategy =
+      SnapSelectionStrategy::CreateForEndPosition(gfx::ScrollOffset(100, 100),
+                                                  true, true);
+  EXPECT_TRUE(container.FindSnapPosition(*strategy, &snap_position));
   EXPECT_EQ(80, snap_position.x());
   EXPECT_EQ(70, snap_position.y());
 }
@@ -108,13 +119,15 @@ TEST_F(ScrollSnapDataTest, FindsClosestSnapPositionOnAxisValueBoth) {
       gfx::RectF(0, 70, 150, 150), false);
   SnapAreaData snap_on_both(ScrollSnapAlign(SnapAlignment::kStart),
                             gfx::RectF(50, 150, 150, 150), false);
-  gfx::ScrollOffset current_position(40, 120);
+
   container.AddSnapAreaData(snap_x_only);
   container.AddSnapAreaData(snap_y_only);
   container.AddSnapAreaData(snap_on_both);
   gfx::ScrollOffset snap_position;
-  EXPECT_TRUE(
-      container.FindSnapPosition(current_position, true, true, &snap_position));
+  std::unique_ptr<SnapSelectionStrategy> strategy =
+      SnapSelectionStrategy::CreateForEndPosition(gfx::ScrollOffset(40, 120),
+                                                  true, true);
+  EXPECT_TRUE(container.FindSnapPosition(*strategy, &snap_position));
   EXPECT_EQ(50, snap_position.x());
   EXPECT_EQ(150, snap_position.y());
 }
@@ -129,12 +142,14 @@ TEST_F(ScrollSnapDataTest, DoesNotSnapOnNonScrolledAxis) {
   SnapAreaData snap_y_only(
       ScrollSnapAlign(SnapAlignment::kStart, SnapAlignment::kNone),
       gfx::RectF(0, 70, 150, 150), false);
-  gfx::ScrollOffset current_position(100, 100);
   container.AddSnapAreaData(snap_x_only);
   container.AddSnapAreaData(snap_y_only);
+
   gfx::ScrollOffset snap_position;
-  EXPECT_TRUE(container.FindSnapPosition(current_position, true, false,
-                                         &snap_position));
+  std::unique_ptr<SnapSelectionStrategy> strategy =
+      SnapSelectionStrategy::CreateForEndPosition(gfx::ScrollOffset(100, 100),
+                                                  true, false);
+  EXPECT_TRUE(container.FindSnapPosition(*strategy, &snap_position));
   EXPECT_EQ(80, snap_position.x());
   EXPECT_EQ(100, snap_position.y());
 }
@@ -149,19 +164,20 @@ TEST_F(ScrollSnapDataTest, DoesNotSnapOnNonVisibleAreas) {
   SnapAreaData snap_y_only(
       ScrollSnapAlign(SnapAlignment::kStart, SnapAlignment::kNone),
       gfx::RectF(400, 300, 100, 100), false);
-  gfx::ScrollOffset current_position(0, 0);
+
   container.AddSnapAreaData(snap_x_only);
   container.AddSnapAreaData(snap_y_only);
   gfx::ScrollOffset snap_position;
-  EXPECT_FALSE(
-      container.FindSnapPosition(current_position, true, true, &snap_position));
+  std::unique_ptr<SnapSelectionStrategy> strategy =
+      SnapSelectionStrategy::CreateForEndPosition(gfx::ScrollOffset(0, 0), true,
+                                                  true);
+  EXPECT_FALSE(container.FindSnapPosition(*strategy, &snap_position));
 }
 
 TEST_F(ScrollSnapDataTest, SnapOnClosestAxisFirstIfVisibilityConflicts) {
   SnapContainerData container(
       ScrollSnapType(false, SnapAxis::kBoth, SnapStrictness::kMandatory),
       gfx::RectF(0, 0, 200, 200), gfx::ScrollOffset(600, 800));
-  gfx::ScrollOffset current_position(0, 0);
 
   // Both the areas are currently visible.
   // However, if we snap to them on x and y independently, none is visible after
@@ -180,9 +196,12 @@ TEST_F(ScrollSnapDataTest, SnapOnClosestAxisFirstIfVisibilityConflicts) {
   container.AddSnapAreaData(snap_x);
   container.AddSnapAreaData(snap_y1);
   container.AddSnapAreaData(snap_y2);
+
   gfx::ScrollOffset snap_position;
-  EXPECT_TRUE(
-      container.FindSnapPosition(current_position, true, true, &snap_position));
+  std::unique_ptr<SnapSelectionStrategy> strategy =
+      SnapSelectionStrategy::CreateForEndPosition(gfx::ScrollOffset(0, 0), true,
+                                                  true);
+  EXPECT_TRUE(container.FindSnapPosition(*strategy, &snap_position));
   EXPECT_EQ(150, snap_position.x());
   EXPECT_EQ(80, snap_position.y());
 }
@@ -193,13 +212,15 @@ TEST_F(ScrollSnapDataTest, DoesNotSnapToPositionsOutsideProximityRange) {
       gfx::RectF(0, 0, 200, 200), gfx::ScrollOffset(600, 800));
   container.set_proximity_range(gfx::ScrollOffset(50, 50));
 
-  gfx::ScrollOffset current_position(100, 100);
   SnapAreaData area(ScrollSnapAlign(SnapAlignment::kStart),
                     gfx::RectF(80, 160, 100, 100), false);
   container.AddSnapAreaData(area);
+
   gfx::ScrollOffset snap_position;
-  EXPECT_TRUE(
-      container.FindSnapPosition(current_position, true, true, &snap_position));
+  std::unique_ptr<SnapSelectionStrategy> strategy =
+      SnapSelectionStrategy::CreateForEndPosition(gfx::ScrollOffset(100, 100),
+                                                  true, true);
+  EXPECT_TRUE(container.FindSnapPosition(*strategy, &snap_position));
 
   // The snap position on x, 80, is within the proximity range of [50, 150].
   // However, the snap position on y, 160, is outside the proximity range of

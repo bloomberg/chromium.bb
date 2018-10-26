@@ -764,9 +764,12 @@ void Element::setScrollLeft(double new_left) {
     FloatPoint end_point(new_left * box->Style()->EffectiveZoom(),
                          box->ScrollTop().ToFloat());
     if (RuntimeEnabledFeatures::CSSScrollSnapPointsEnabled()) {
+      std::unique_ptr<SnapSelectionStrategy> strategy =
+          SnapSelectionStrategy::CreateForEndPosition(
+              gfx::ScrollOffset(end_point), true, false);
       end_point = GetDocument()
                       .GetSnapCoordinator()
-                      ->GetSnapPositionForPoint(*box, end_point, true, false)
+                      ->GetSnapPosition(*box, *strategy)
                       .value_or(end_point);
     }
     box->SetScrollLeft(LayoutUnit::FromFloatRound(end_point.X()));
@@ -795,9 +798,12 @@ void Element::setScrollTop(double new_top) {
     FloatPoint end_point(box->ScrollLeft().ToFloat(),
                          new_top * box->Style()->EffectiveZoom());
     if (RuntimeEnabledFeatures::CSSScrollSnapPointsEnabled()) {
+      std::unique_ptr<SnapSelectionStrategy> strategy =
+          SnapSelectionStrategy::CreateForEndPosition(
+              gfx::ScrollOffset(end_point), false, true);
       end_point = GetDocument()
                       .GetSnapCoordinator()
-                      ->GetSnapPositionForPoint(*box, end_point, false, true)
+                      ->GetSnapPosition(*box, *strategy)
                       .value_or(end_point);
     }
     box->SetScrollTop(LayoutUnit::FromFloatRound(end_point.Y()));
@@ -893,38 +899,37 @@ void Element::scrollTo(const ScrollToOptions& scroll_to_options) {
 }
 
 void Element::ScrollLayoutBoxBy(const ScrollToOptions& scroll_to_options) {
-  double left =
-      scroll_to_options.hasLeft()
-          ? ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.left())
-          : 0.0;
-  double top =
-      scroll_to_options.hasTop()
-          ? ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.top())
-          : 0.0;
+  gfx::ScrollOffset displacement;
+  if (scroll_to_options.hasLeft()) {
+    displacement.set_x(
+        ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.left()));
+  }
+  if (scroll_to_options.hasTop()) {
+    displacement.set_y(
+        ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.top()));
+  }
 
   ScrollBehavior scroll_behavior = kScrollBehaviorAuto;
   ScrollableArea::ScrollBehaviorFromString(scroll_to_options.behavior(),
                                            scroll_behavior);
   LayoutBox* box = GetLayoutBox();
   if (box) {
-    float current_scaled_left = box->ScrollLeft().ToFloat();
-    float current_scaled_top = box->ScrollTop().ToFloat();
-    float new_scaled_left =
-        left * box->Style()->EffectiveZoom() + current_scaled_left;
-    float new_scaled_top =
-        top * box->Style()->EffectiveZoom() + current_scaled_top;
+    gfx::ScrollOffset current_position(box->ScrollLeft().ToFloat(),
+                                       box->ScrollTop().ToFloat());
+    displacement.Scale(box->Style()->EffectiveZoom());
+    gfx::ScrollOffset new_offset(current_position + displacement);
+    FloatPoint new_position(new_offset.x(), new_offset.y());
 
-    FloatPoint new_scaled_position(new_scaled_left, new_scaled_top);
     if (RuntimeEnabledFeatures::CSSScrollSnapPointsEnabled()) {
-      new_scaled_position =
-          GetDocument()
-              .GetSnapCoordinator()
-              ->GetSnapPositionForPoint(*box, new_scaled_position,
-                                        scroll_to_options.hasLeft(),
-                                        scroll_to_options.hasTop())
-              .value_or(new_scaled_position);
+      std::unique_ptr<SnapSelectionStrategy> strategy =
+          SnapSelectionStrategy::CreateForEndAndDirection(current_position,
+                                                          displacement);
+      new_position = GetDocument()
+                         .GetSnapCoordinator()
+                         ->GetSnapPosition(*box, *strategy)
+                         .value_or(new_position);
     }
-    box->ScrollToPosition(new_scaled_position, scroll_behavior);
+    box->ScrollToPosition(new_position, scroll_behavior);
   }
 }
 
@@ -935,40 +940,43 @@ void Element::ScrollLayoutBoxTo(const ScrollToOptions& scroll_to_options) {
 
   LayoutBox* box = GetLayoutBox();
   if (box) {
-    float scaled_left = box->ScrollLeft().ToFloat();
-    float scaled_top = box->ScrollTop().ToFloat();
-    if (scroll_to_options.hasLeft())
-      scaled_left =
+    FloatPoint new_position(box->ScrollLeft().ToFloat(),
+                            box->ScrollTop().ToFloat());
+    if (scroll_to_options.hasLeft()) {
+      new_position.SetX(
           ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.left()) *
-          box->Style()->EffectiveZoom();
-    if (scroll_to_options.hasTop())
-      scaled_top =
-          ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.top()) *
-          box->Style()->EffectiveZoom();
-
-    FloatPoint new_scaled_position(scaled_left, scaled_top);
-    if (RuntimeEnabledFeatures::CSSScrollSnapPointsEnabled()) {
-      new_scaled_position =
-          GetDocument()
-              .GetSnapCoordinator()
-              ->GetSnapPositionForPoint(*box, new_scaled_position,
-                                        scroll_to_options.hasLeft(),
-                                        scroll_to_options.hasTop())
-              .value_or(new_scaled_position);
+          box->Style()->EffectiveZoom());
     }
-    box->ScrollToPosition(new_scaled_position, scroll_behavior);
+    if (scroll_to_options.hasTop()) {
+      new_position.SetY(
+          ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.top()) *
+          box->Style()->EffectiveZoom());
+    }
+
+    if (RuntimeEnabledFeatures::CSSScrollSnapPointsEnabled()) {
+      std::unique_ptr<SnapSelectionStrategy> strategy =
+          SnapSelectionStrategy::CreateForEndPosition(
+              gfx::ScrollOffset(new_position), scroll_to_options.hasLeft(),
+              scroll_to_options.hasTop());
+      new_position = GetDocument()
+                         .GetSnapCoordinator()
+                         ->GetSnapPosition(*box, *strategy)
+                         .value_or(new_position);
+    }
+    box->ScrollToPosition(new_position, scroll_behavior);
   }
 }
 
 void Element::ScrollFrameBy(const ScrollToOptions& scroll_to_options) {
-  double left =
-      scroll_to_options.hasLeft()
-          ? ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.left())
-          : 0.0;
-  double top =
-      scroll_to_options.hasTop()
-          ? ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.top())
-          : 0.0;
+  gfx::ScrollOffset displacement;
+  if (scroll_to_options.hasLeft()) {
+    displacement.set_x(
+        ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.left()));
+  }
+  if (scroll_to_options.hasTop()) {
+    displacement.set_y(
+        ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.top()));
+  }
 
   ScrollBehavior scroll_behavior = kScrollBehaviorAuto;
   ScrollableArea::ScrollBehaviorFromString(scroll_to_options.behavior(),
@@ -981,25 +989,23 @@ void Element::ScrollFrameBy(const ScrollToOptions& scroll_to_options) {
   if (!viewport)
     return;
 
-  float new_scaled_left =
-      left * frame->PageZoomFactor() + viewport->GetScrollOffset().Width();
-  float new_scaled_top =
-      top * frame->PageZoomFactor() + viewport->GetScrollOffset().Height();
+  displacement.Scale(frame->PageZoomFactor());
+  FloatPoint new_position = viewport->ScrollPosition() +
+                            FloatPoint(displacement.x(), displacement.y());
 
-  FloatPoint new_scaled_position = viewport->ScrollOffsetToPosition(
-      ScrollOffset(new_scaled_left, new_scaled_top));
   if (RuntimeEnabledFeatures::CSSScrollSnapPointsEnabled()) {
-    new_scaled_position =
+    gfx::ScrollOffset current_position(viewport->ScrollPosition());
+    std::unique_ptr<SnapSelectionStrategy> strategy =
+        SnapSelectionStrategy::CreateForEndAndDirection(current_position,
+                                                        displacement);
+    new_position =
         GetDocument()
             .GetSnapCoordinator()
-            ->GetSnapPositionForPoint(
-                *GetDocument().GetLayoutView(), new_scaled_position,
-                scroll_to_options.hasLeft(), scroll_to_options.hasTop())
-            .value_or(new_scaled_position);
+            ->GetSnapPosition(*GetDocument().GetLayoutView(), *strategy)
+            .value_or(new_position);
   }
-  viewport->SetScrollOffset(
-      viewport->ScrollPositionToOffset(new_scaled_position),
-      kProgrammaticScroll, scroll_behavior);
+  viewport->SetScrollOffset(viewport->ScrollPositionToOffset(new_position),
+                            kProgrammaticScroll, scroll_behavior);
 }
 
 void Element::ScrollFrameTo(const ScrollToOptions& scroll_to_options) {
@@ -1014,31 +1020,32 @@ void Element::ScrollFrameTo(const ScrollToOptions& scroll_to_options) {
   if (!viewport)
     return;
 
-  float scaled_left = viewport->GetScrollOffset().Width();
-  float scaled_top = viewport->GetScrollOffset().Height();
-  if (scroll_to_options.hasLeft())
-    scaled_left =
+  ScrollOffset new_offset = viewport->GetScrollOffset();
+  if (scroll_to_options.hasLeft()) {
+    new_offset.SetWidth(
         ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.left()) *
-        frame->PageZoomFactor();
-  if (scroll_to_options.hasTop())
-    scaled_top =
+        frame->PageZoomFactor());
+  }
+  if (scroll_to_options.hasTop()) {
+    new_offset.SetHeight(
         ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.top()) *
-        frame->PageZoomFactor();
+        frame->PageZoomFactor());
+  }
 
-  FloatPoint new_scaled_position =
-      viewport->ScrollOffsetToPosition(ScrollOffset(scaled_left, scaled_top));
   if (RuntimeEnabledFeatures::CSSScrollSnapPointsEnabled()) {
-    new_scaled_position =
+    FloatPoint new_position = viewport->ScrollOffsetToPosition(new_offset);
+    std::unique_ptr<SnapSelectionStrategy> strategy =
+        SnapSelectionStrategy::CreateForEndPosition(
+            gfx::ScrollOffset(new_position), scroll_to_options.hasLeft(),
+            scroll_to_options.hasTop());
+    new_position =
         GetDocument()
             .GetSnapCoordinator()
-            ->GetSnapPositionForPoint(
-                *GetDocument().GetLayoutView(), new_scaled_position,
-                scroll_to_options.hasLeft(), scroll_to_options.hasTop())
-            .value_or(new_scaled_position);
+            ->GetSnapPosition(*GetDocument().GetLayoutView(), *strategy)
+            .value_or(new_position);
+    new_offset = viewport->ScrollPositionToOffset(new_position);
   }
-  viewport->SetScrollOffset(
-      viewport->ScrollPositionToOffset(new_scaled_position),
-      kProgrammaticScroll, scroll_behavior);
+  viewport->SetScrollOffset(new_offset, kProgrammaticScroll, scroll_behavior);
 }
 
 bool Element::HasNonEmptyLayoutSize() const {

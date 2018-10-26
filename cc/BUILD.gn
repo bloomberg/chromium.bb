@@ -54,6 +54,8 @@ cc_component("cc") {
     "input/snap_fling_controller.h",
     "input/snap_fling_curve.cc",
     "input/snap_fling_curve.h",
+    "input/snap_selection_strategy.cc",
+    "input/snap_selection_strategy.h",
     "input/touch_action.h",
     "layers/append_quads_data.cc",
     "layers/append_quads_data.h",
