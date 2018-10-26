@@ -51,13 +51,15 @@ struct LocalizedString {
 void AddOnboardingStrings(content::WebUIDataSource* html_source) {
   static constexpr LocalizedString kLocalizedStrings[] = {
       // Shared strings.
-      {"headerText", IDS_WELCOME_HEADER},
       {"acceptText", IDS_WELCOME_ACCEPT_BUTTON},
-      {"noThanks", IDS_NO_THANKS},
-      {"getStarted", IDS_ONBOARDING_WELCOME_GET_STARTED},
       {"bookmarkAdded", IDS_ONBOARDING_WELCOME_BOOKMARK_ADDED},
       {"bookmarkRemoved", IDS_ONBOARDING_WELCOME_BOOKMARK_REMOVED},
       {"bookmarkReplaced", IDS_ONBOARDING_WELCOME_BOOKMARK_REPLACED},
+      {"getStarted", IDS_ONBOARDING_WELCOME_GET_STARTED},
+      {"headerText", IDS_WELCOME_HEADER},
+      {"next", IDS_ONBOARDING_WELCOME_NEXT},
+      {"noThanks", IDS_NO_THANKS},
+      {"skip", IDS_ONBOARDING_WELCOME_SKIP},
 
       // Sign-in view strings.
       {"signInHeader", IDS_ONBOARDING_WELCOME_SIGNIN_VIEW_HEADER},
@@ -65,8 +67,7 @@ void AddOnboardingStrings(content::WebUIDataSource* html_source) {
       {"signIn", IDS_ONBOARDING_WELCOME_SIGNIN_VIEW_SIGNIN},
 
       // Email provider module strings.
-      {"welcomeTitle", IDS_ONBOARDING_WELCOME_NUX_EMAIL_WELCOME_TITLE},
-      {"emailPrompt", IDS_ONBOARDING_WELCOME_NUX_EMAIL_PROMPT},
+      {"emailProviderTitle", IDS_ONBOARDING_WELCOME_NUX_EMAIL_TITLE},
 
       // Google apps module strings.
       {"googleAppsDescription",
@@ -167,6 +168,19 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
     html_source->AddResourcePath(
         "images/background_svgs/yellow_semicircle.svg",
         IDR_WELCOME_ONBOARDING_WELCOME_IMAGES_BACKGROUND_SVGS_YELLOW_SEMICIRCLE_SVG);
+
+    html_source->AddResourcePath("images/email_provider_1x.png",
+                                 IDR_NUX_EMAIL_PROVIDER_LOGO_1X);
+    html_source->AddResourcePath("images/email_provider_2x.png",
+                                 IDR_NUX_EMAIL_PROVIDER_LOGO_2X);
+    html_source->AddResourcePath("images/set_as_default_1x.png",
+                                 IDR_NUX_SET_AS_DEFAULT_LOGO_1X);
+    html_source->AddResourcePath("images/set_as_default_2x.png",
+                                 IDR_NUX_SET_AS_DEFAULT_LOGO_2X);
+    html_source->AddResourcePath("images/set_as_default_illustration_1x.png",
+                                 IDR_NUX_SET_AS_DEFAULT_ILLUSTRATION_1X);
+    html_source->AddResourcePath("images/set_as_default_illustration_2x.png",
+                                 IDR_NUX_SET_AS_DEFAULT_ILLUSTRATION_2X);
 
     // Add the shared bookmark handler for onboarding modules.
     web_ui->AddMessageHandler(

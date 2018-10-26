@@ -12,40 +12,29 @@
 
       .email-logo {
         content: -webkit-image-set(
-          url(chrome://welcome/logo.png) 1x,
-          url(chrome://welcome/logo2x.png) 2x);
-        height: 48px;
+          url(../images/email_provider_1x.png) 1x,
+          url(../images/email_provider_2x.png) 2x);
+        height: 38px;
         margin: auto;
         margin-bottom: 16px;
-        width: 48px;
+        width: 42px;
       }
 
       h1 {
         color: var(--google-grey-900);
         font-size: 1.5rem;
         font-weight: 500;
-        line-height: 2.5rem;
-        margin: 0;
-      }
-
-      h2 {
-        color: var(--google-grey-900);
-        font-size: 1.125rem;
-        font-weight: unset;
-        line-height: 2rem;
         margin: 0;
         margin-bottom: 48px;
       }
 
       #emailChooser {
         color: var(--google-grey-900);
-        margin-bottom: 48px;
       }
     </style>
     <div class="email-ask">
       <div class="email-logo" alt=""></div>
-      <h1>$i18n{welcomeTitle}</h1>
-      <h2>$i18n{emailPrompt}</h2>
+      <h1>$i18n{emailProviderTitle}</h1>
       <email-chooser id="emailChooser" indicator-model="[[indicatorModel]]">
       </email-chooser>
     </div>
