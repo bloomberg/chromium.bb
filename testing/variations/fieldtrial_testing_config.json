@@ -10,6 +10,12 @@
                     "enable_features": [
                         "AImageReaderMediaPlayer"
                     ]
+                },
+                {
+                    "name": "Use_AImageReaderMediaPlayer_V3",
+                    "enable_features": [
+                        "AImageReaderMediaPlayer"
+                    ]
                 }
             ]
         }
