@@ -41,7 +41,7 @@ class TaskWorklet final : public Worklet,
 
   bool NeedsToCreateGlobalScope() final;
   WorkletGlobalScopeProxy* CreateGlobalScope() final;
-  size_t SelectGlobalScope() final;
+  wtf_size_t SelectGlobalScope() final;
 };
 
 }  // namespace blink

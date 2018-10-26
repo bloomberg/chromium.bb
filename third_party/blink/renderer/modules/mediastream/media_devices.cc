@@ -277,20 +277,21 @@ void MediaDevices::DevicesEnumerated(
     return;
   }
 
-  DCHECK_EQ(static_cast<size_t>(MediaDeviceType::NUM_MEDIA_DEVICE_TYPES),
+  DCHECK_EQ(static_cast<wtf_size_t>(MediaDeviceType::NUM_MEDIA_DEVICE_TYPES),
             enumeration.size());
 
   if (!video_input_capabilities.IsEmpty()) {
     DCHECK_EQ(
-        enumeration[static_cast<size_t>(MediaDeviceType::MEDIA_VIDEO_INPUT)]
+        enumeration[static_cast<wtf_size_t>(MediaDeviceType::MEDIA_VIDEO_INPUT)]
             .size(),
         video_input_capabilities.size());
   }
 
   MediaDeviceInfoVector media_devices;
-  for (size_t i = 0;
-       i < static_cast<size_t>(MediaDeviceType::NUM_MEDIA_DEVICE_TYPES); ++i) {
-    for (size_t j = 0; j < enumeration[i].size(); ++j) {
+  for (wtf_size_t i = 0;
+       i < static_cast<wtf_size_t>(MediaDeviceType::NUM_MEDIA_DEVICE_TYPES);
+       ++i) {
+    for (wtf_size_t j = 0; j < enumeration[i].size(); ++j) {
       MediaDeviceType device_type = static_cast<MediaDeviceType>(i);
       mojom::blink::MediaDeviceInfoPtr device_info =
           std::move(enumeration[i][j]);

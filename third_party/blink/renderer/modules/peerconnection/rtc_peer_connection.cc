@@ -113,6 +113,7 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_answer_options_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/webrtc/api/jsep.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
@@ -404,7 +405,7 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
         configuration.certificates();
     std::vector<rtc::scoped_refptr<rtc::RTCCertificate>> certificates_copy(
         certificates.size());
-    for (size_t i = 0; i < certificates.size(); ++i) {
+    for (wtf_size_t i = 0; i < certificates.size(); ++i) {
       certificates_copy[i] = certificates[i]->Certificate();
     }
     web_configuration.certificates = std::move(certificates_copy);
@@ -461,22 +462,24 @@ bool FingerprintMismatch(String old_sdp, String new_sdp) {
   // It's impossible to generate a valid fingerprint without createOffer
   // or createAnswer, so this only applies when there are no fingerprints.
   // This is allowed.
-  const size_t new_fingerprint_pos = new_sdp.Find("\na=fingerprint:");
+  const wtf_size_t new_fingerprint_pos = new_sdp.Find("\na=fingerprint:");
   if (new_fingerprint_pos == kNotFound) {
     return false;
   }
   // Look for fingerprint having been added. Not allowed.
-  const size_t old_fingerprint_pos = old_sdp.Find("\na=fingerprint:");
+  const wtf_size_t old_fingerprint_pos = old_sdp.Find("\na=fingerprint:");
   if (old_fingerprint_pos == kNotFound) {
     return true;
   }
   // Look for fingerprint being modified. Not allowed.  Handle differences in
   // line endings ('\r\n' vs, '\n' when looking for the end of the fingerprint).
-  size_t old_fingerprint_end = old_sdp.Find("\r\n", old_fingerprint_pos + 1);
+  wtf_size_t old_fingerprint_end =
+      old_sdp.Find("\r\n", old_fingerprint_pos + 1);
   if (old_fingerprint_end == WTF::kNotFound) {
     old_fingerprint_end = old_sdp.Find("\n", old_fingerprint_pos + 1);
   }
-  size_t new_fingerprint_end = new_sdp.Find("\r\n", new_fingerprint_pos + 1);
+  wtf_size_t new_fingerprint_end =
+      new_sdp.Find("\r\n", new_fingerprint_pos + 1);
   if (new_fingerprint_end == WTF::kNotFound) {
     new_fingerprint_end = new_sdp.Find("\n", new_fingerprint_pos + 1);
   }
@@ -1116,14 +1119,15 @@ void RTCPeerConnection::getConfiguration(RTCConfiguration& result) {
   }
 
   HeapVector<RTCIceServer> ice_servers;
-  ice_servers.ReserveCapacity(webrtc_configuration.servers.size());
+  ice_servers.ReserveCapacity(
+      SafeCast<wtf_size_t>(webrtc_configuration.servers.size()));
   for (const auto& webrtc_server : webrtc_configuration.servers) {
     ice_servers.emplace_back();
     auto& ice_server = ice_servers.back();
 
     StringOrStringSequence urls;
     Vector<String> url_vector;
-    url_vector.ReserveCapacity(webrtc_server.urls.size());
+    url_vector.ReserveCapacity(SafeCast<wtf_size_t>(webrtc_server.urls.size()));
     for (const auto& url : webrtc_server.urls) {
       url_vector.emplace_back(url.c_str());
     }
@@ -1137,7 +1141,8 @@ void RTCPeerConnection::getConfiguration(RTCConfiguration& result) {
 
   if (!webrtc_configuration.certificates.empty()) {
     HeapVector<blink::Member<RTCCertificate>> certificates;
-    certificates.ReserveCapacity(webrtc_configuration.certificates.size());
+    certificates.ReserveCapacity(
+        SafeCast<wtf_size_t>(webrtc_configuration.certificates.size()));
     for (const auto& webrtc_certificate : webrtc_configuration.certificates) {
       certificates.emplace_back(new RTCCertificate(webrtc_certificate));
     }
@@ -1761,7 +1766,7 @@ RTCRtpSender* RTCPeerConnection::addTrack(MediaStreamTrack* track,
   }
 
   WebVector<WebMediaStream> web_streams(streams.size());
-  for (size_t i = 0; i < streams.size(); ++i) {
+  for (wtf_size_t i = 0; i < streams.size(); ++i) {
     web_streams[i] = streams[i]->Descriptor();
   }
   webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>

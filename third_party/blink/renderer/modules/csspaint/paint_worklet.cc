@@ -15,7 +15,7 @@
 
 namespace blink {
 
-const size_t PaintWorklet::kNumGlobalScopes = 2u;
+const wtf_size_t PaintWorklet::kNumGlobalScopes = 2u;
 const size_t kMaxPaintCountToSwitch = 30u;
 DocumentPaintDefinition* const kInvalidDocumentPaintDefinition = nullptr;
 
@@ -52,7 +52,7 @@ void PaintWorklet::AddPendingGenerator(const String& name,
 // calls (rand(kMaxPaintCountToSwitch)).
 // This approach ensures non-deterministic of global scope selecting, and that
 // there is a max of one switching within one frame.
-size_t PaintWorklet::SelectGlobalScope() {
+wtf_size_t PaintWorklet::SelectGlobalScope() {
   size_t current_paint_frame_count = GetFrame()->View()->PaintFrameCount();
   // Whether a new frame starts or not.
   bool frame_changed = current_paint_frame_count != active_frame_count_;
@@ -82,8 +82,8 @@ int PaintWorklet::GetPaintsBeforeSwitching() {
   return base::RandInt(0, kMaxPaintCountToSwitch - 1);
 }
 
-size_t PaintWorklet::SelectNewGlobalScope() {
-  return static_cast<size_t>(base::RandGenerator(kNumGlobalScopes));
+wtf_size_t PaintWorklet::SelectNewGlobalScope() {
+  return static_cast<wtf_size_t>(base::RandGenerator(kNumGlobalScopes));
 }
 
 scoped_refptr<Image> PaintWorklet::Paint(const String& name,
