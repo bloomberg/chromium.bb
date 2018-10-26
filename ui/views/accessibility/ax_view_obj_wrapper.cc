@@ -21,7 +21,7 @@ AXViewObjWrapper::AXViewObjWrapper(View* view)  : view_(view) {
 AXViewObjWrapper::~AXViewObjWrapper() {}
 
 bool AXViewObjWrapper::IsIgnored() {
-  return view_->GetViewAccessibility().is_ignored();
+  return view_->GetViewAccessibility().IsIgnored();
 }
 
 AXAuraObjWrapper* AXViewObjWrapper::GetParent() {
