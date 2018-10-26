@@ -127,7 +127,7 @@ TEST_F(PipWindowResizerTest, PipWindowCanDrag) {
   ASSERT_TRUE(resizer.get());
 
   resizer->Drag(CalculateDragPoint(*resizer, 0, 10), 0);
-  EXPECT_EQ("200,210 100x100", test_state()->last_bounds().ToString());
+  EXPECT_EQ(gfx::Rect(200, 210, 100, 100), test_state()->last_bounds());
 }
 
 TEST_F(PipWindowResizerTest, PipWindowCanResize) {
@@ -136,7 +136,7 @@ TEST_F(PipWindowResizerTest, PipWindowCanResize) {
   ASSERT_TRUE(resizer.get());
 
   resizer->Drag(CalculateDragPoint(*resizer, 0, 10), 0);
-  EXPECT_EQ("200,200 100x110", test_state()->last_bounds().ToString());
+  EXPECT_EQ(gfx::Rect(200, 200, 100, 110), test_state()->last_bounds());
 }
 
 TEST_F(PipWindowResizerTest, PipWindowDragIsRestrictedToWorkArea) {
@@ -146,19 +146,19 @@ TEST_F(PipWindowResizerTest, PipWindowDragIsRestrictedToWorkArea) {
 
   // Drag to the right.
   resizer->Drag(CalculateDragPoint(*resizer, 800, 0), 0);
-  EXPECT_EQ("292,200 100x100", test_state()->last_bounds().ToString());
+  EXPECT_EQ(gfx::Rect(292, 200, 100, 100), test_state()->last_bounds());
 
   // Drag down.
   resizer->Drag(CalculateDragPoint(*resizer, 0, 800), 0);
-  EXPECT_EQ("200,292 100x100", test_state()->last_bounds().ToString());
+  EXPECT_EQ(gfx::Rect(200, 292, 100, 100), test_state()->last_bounds());
 
   // Drag to the left.
   resizer->Drag(CalculateDragPoint(*resizer, -800, 0), 0);
-  EXPECT_EQ("8,200 100x100", test_state()->last_bounds().ToString());
+  EXPECT_EQ(gfx::Rect(8, 200, 100, 100), test_state()->last_bounds());
 
   // Drag up.
   resizer->Drag(CalculateDragPoint(*resizer, 0, -800), 0);
-  EXPECT_EQ("200,8 100x100", test_state()->last_bounds().ToString());
+  EXPECT_EQ(gfx::Rect(200, 8, 100, 100), test_state()->last_bounds());
 }
 
 TEST_F(PipWindowResizerTest, PipWindowCanBeDraggedInTabletMode) {
@@ -169,7 +169,7 @@ TEST_F(PipWindowResizerTest, PipWindowCanBeDraggedInTabletMode) {
   ASSERT_TRUE(resizer.get());
 
   resizer->Drag(CalculateDragPoint(*resizer, 0, 10), 0);
-  EXPECT_EQ("200,210 100x100", test_state()->last_bounds().ToString());
+  EXPECT_EQ(gfx::Rect(200, 210, 100, 100), test_state()->last_bounds());
 }
 
 TEST_F(PipWindowResizerTest, PipWindowCanBeResizedInTabletMode) {
@@ -180,7 +180,7 @@ TEST_F(PipWindowResizerTest, PipWindowCanBeResizedInTabletMode) {
   ASSERT_TRUE(resizer.get());
 
   resizer->Drag(CalculateDragPoint(*resizer, 0, 10), 0);
-  EXPECT_EQ("200,200 100x110", test_state()->last_bounds().ToString());
+  EXPECT_EQ(gfx::Rect(200, 200, 100, 110), test_state()->last_bounds());
 }
 
 }  // namespace wm
