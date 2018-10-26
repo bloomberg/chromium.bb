@@ -40,6 +40,7 @@
 #include "cc/input/scroll_state.h"
 #include "cc/input/scrollbar_animation_controller.h"
 #include "cc/input/scroller_size_metrics.h"
+#include "cc/input/snap_selection_strategy.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/effect_tree_layer_list_iterator.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
@@ -4500,12 +4501,13 @@ bool LayerTreeHostImpl::SnapAtScrollEnd() {
   const SnapContainerData& data = scroll_node->snap_container_data.value();
   gfx::ScrollOffset current_position = GetVisualScrollOffset(*scroll_node);
 
+  std::unique_ptr<SnapSelectionStrategy> strategy =
+      SnapSelectionStrategy::CreateForEndPosition(
+          current_position, did_scroll_x_for_scroll_gesture_,
+          did_scroll_y_for_scroll_gesture_);
   gfx::ScrollOffset snap_position;
-  if (!data.FindSnapPosition(current_position, did_scroll_x_for_scroll_gesture_,
-                             did_scroll_y_for_scroll_gesture_,
-                             &snap_position)) {
+  if (!data.FindSnapPosition(*strategy, &snap_position))
     return false;
-  }
 
   gfx::Vector2dF delta =
       ScrollOffsetToVector2dF(snap_position - current_position);
@@ -4548,8 +4550,8 @@ gfx::ScrollOffset LayerTreeHostImpl::GetVisualScrollOffset(
 
 bool LayerTreeHostImpl::GetSnapFlingInfo(
     const gfx::Vector2dF& natural_displacement_in_viewport,
-    gfx::Vector2dF* out_initial_offset,
-    gfx::Vector2dF* out_target_offset) const {
+    gfx::Vector2dF* out_initial_position,
+    gfx::Vector2dF* out_target_position) const {
   const ScrollNode* scroll_node = CurrentlyScrollingNode();
   if (!scroll_node || !scroll_node->snap_container_data.has_value())
     return false;
@@ -4559,24 +4561,19 @@ bool LayerTreeHostImpl::GetSnapFlingInfo(
   gfx::Vector2dF natural_displacement_in_content =
       gfx::ScaleVector2d(natural_displacement_in_viewport, 1.f / scale_factor);
 
-  *out_initial_offset =
-      ScrollOffsetToVector2dF(GetVisualScrollOffset(*scroll_node));
-
-  bool did_scroll_x = did_scroll_x_for_scroll_gesture_ ||
-                      natural_displacement_in_content.x() != 0;
-  bool did_scroll_y = did_scroll_y_for_scroll_gesture_ ||
-                      natural_displacement_in_content.y() != 0;
+  gfx::ScrollOffset current_offset = GetVisualScrollOffset(*scroll_node);
+  *out_initial_position = ScrollOffsetToVector2dF(current_offset);
 
   gfx::ScrollOffset snap_offset;
-  if (!data.FindSnapPosition(gfx::ScrollOffset(*out_initial_offset +
-                                               natural_displacement_in_content),
-                             did_scroll_x, did_scroll_y, &snap_offset)) {
+  std::unique_ptr<SnapSelectionStrategy> strategy =
+      SnapSelectionStrategy::CreateForEndAndDirection(
+          current_offset, gfx::ScrollOffset(natural_displacement_in_content));
+  if (!data.FindSnapPosition(*strategy, &snap_offset))
     return false;
-  }
 
-  *out_target_offset = ScrollOffsetToVector2dF(snap_offset);
-  out_target_offset->Scale(scale_factor);
-  out_initial_offset->Scale(scale_factor);
+  *out_target_position = ScrollOffsetToVector2dF(snap_offset);
+  out_target_position->Scale(scale_factor);
+  out_initial_position->Scale(scale_factor);
   return true;
 }
 

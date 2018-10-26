@@ -1088,18 +1088,20 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions& scroll_to_options) const {
     y = ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.top());
 
   PaintLayerScrollableArea* viewport = view->LayoutViewport();
-  ScrollOffset current_offset = viewport->GetScrollOffset();
-  ScrollOffset scaled_delta(x * GetFrame()->PageZoomFactor(),
-                            y * GetFrame()->PageZoomFactor());
-  FloatPoint new_scaled_position =
-      viewport->ScrollOffsetToPosition(scaled_delta + current_offset);
+  FloatPoint current_position = viewport->ScrollPosition();
+  FloatPoint scaled_delta(x * GetFrame()->PageZoomFactor(),
+                          y * GetFrame()->PageZoomFactor());
+  FloatPoint new_scaled_position = current_position + scaled_delta;
+
   if (RuntimeEnabledFeatures::CSSScrollSnapPointsEnabled()) {
+    std::unique_ptr<SnapSelectionStrategy> strategy =
+        SnapSelectionStrategy::CreateForEndAndDirection(
+            gfx::ScrollOffset(current_position),
+            gfx::ScrollOffset(scaled_delta));
     new_scaled_position =
         document()
             ->GetSnapCoordinator()
-            ->GetSnapPositionForPoint(
-                *document()->GetLayoutView(), new_scaled_position,
-                scroll_to_options.hasLeft(), scroll_to_options.hasTop())
+            ->GetSnapPosition(*document()->GetLayoutView(), *strategy)
             .value_or(new_scaled_position);
   }
 
@@ -1157,20 +1159,21 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scroll_to_options) const {
 
   FloatPoint new_scaled_position =
       viewport->ScrollOffsetToPosition(ScrollOffset(scaled_x, scaled_y));
+
   if (RuntimeEnabledFeatures::CSSScrollSnapPointsEnabled()) {
+    std::unique_ptr<SnapSelectionStrategy> strategy =
+        SnapSelectionStrategy::CreateForEndPosition(
+            gfx::ScrollOffset(new_scaled_position), scroll_to_options.hasLeft(),
+            scroll_to_options.hasTop());
     new_scaled_position =
         document()
             ->GetSnapCoordinator()
-            ->GetSnapPositionForPoint(
-                *document()->GetLayoutView(), new_scaled_position,
-                scroll_to_options.hasLeft(), scroll_to_options.hasTop())
+            ->GetSnapPosition(*document()->GetLayoutView(), *strategy)
             .value_or(new_scaled_position);
   }
-
   ScrollBehavior scroll_behavior = kScrollBehaviorAuto;
   ScrollableArea::ScrollBehaviorFromString(scroll_to_options.behavior(),
                                            scroll_behavior);
-
   viewport->SetScrollOffset(
       viewport->ScrollPositionToOffset(new_scaled_position),
       kProgrammaticScroll, scroll_behavior);

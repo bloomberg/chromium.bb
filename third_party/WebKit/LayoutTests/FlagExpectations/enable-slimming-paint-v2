@@ -835,6 +835,8 @@ Bug(none) fast/forms/suggestion-picker/time-suggestion-picker-mouse-operations.h
 Bug(none) fast/forms/suggestion-picker/week-suggestion-picker-mouse-operations.html [ Failure ]
 
 Bug(none) fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Failure ]
+Bug(none) fast/scroll-snap/snaps-after-keyboard-scrolling.html [ Failure ]
+Bug(none) fast/scroll-snap/snaps-after-keyboard-scrolling-rtl.html [ Failure ]
 Bug(none) fast/events/remove-child-onscroll.html [ Timeout ]
 
 crbug.com/651292 svg/dynamic-updates/SVGImageElement-dom-x-attr.html [ Pass Failure ]

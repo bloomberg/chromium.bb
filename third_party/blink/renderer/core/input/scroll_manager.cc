@@ -275,6 +275,15 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
     }
 
     DCHECK(scrollable_area);
+
+    SnapCoordinator* snap_coordinator =
+        frame_->GetDocument()->GetSnapCoordinator();
+    ScrollOffset delta = ToScrollDelta(physical_direction, 1);
+    delta.Scale(scrollable_area->ScrollStep(granularity, kHorizontalScrollbar),
+                scrollable_area->ScrollStep(granularity, kVerticalScrollbar));
+    if (snap_coordinator->SnapForDirection(*box, delta))
+      return true;
+
     ScrollResult result = scrollable_area->UserScroll(
         granularity, ToScrollDelta(physical_direction, 1));
 
@@ -618,24 +627,34 @@ void ScrollManager::SnapAtGestureScrollEnd() {
   if (!snap_coordinator || !layout_box)
     return;
 
-  snap_coordinator->PerformSnapping(*layout_box,
-                                    did_scroll_x_for_scroll_gesture_,
-                                    did_scroll_y_for_scroll_gesture_);
+  snap_coordinator->SnapForEndPosition(*layout_box,
+                                       did_scroll_x_for_scroll_gesture_,
+                                       did_scroll_y_for_scroll_gesture_);
 }
 
-bool ScrollManager::GetSnapFlingInfo(const gfx::Vector2dF& natural_displacement,
-                                     gfx::Vector2dF* out_initial_offset,
-                                     gfx::Vector2dF* out_target_offset) const {
-  if (!previous_gesture_scrolled_node_)
-    return false;
-
+bool ScrollManager::GetSnapFlingInfo(
+    const gfx::Vector2dF& natural_displacement,
+    gfx::Vector2dF* out_initial_position,
+    gfx::Vector2dF* out_target_position) const {
   SnapCoordinator* snap_coordinator =
       frame_->GetDocument()->GetSnapCoordinator();
   LayoutBox* layout_box = LayoutBoxForSnapping();
-  if (!snap_coordinator || !layout_box || !layout_box->GetScrollableArea())
+  ScrollableArea* scrollable_area = ScrollableAreaForSnapping(layout_box);
+  if (!snap_coordinator || !layout_box || !scrollable_area)
     return false;
-  return snap_coordinator->GetSnapFlingInfo(
-      *layout_box, natural_displacement, out_initial_offset, out_target_offset);
+
+  FloatPoint current_position = scrollable_area->ScrollPosition();
+  *out_initial_position = gfx::Vector2dF(current_position);
+  std::unique_ptr<SnapSelectionStrategy> strategy =
+      SnapSelectionStrategy::CreateForEndAndDirection(
+          gfx::ScrollOffset(*out_initial_position),
+          gfx::ScrollOffset(natural_displacement));
+  base::Optional<FloatPoint> snap_end =
+      snap_coordinator->GetSnapPosition(*layout_box, *strategy);
+  if (!snap_end.has_value())
+    return false;
+  *out_target_position = gfx::Vector2dF(snap_end.value());
+  return true;
 }
 
 gfx::Vector2dF ScrollManager::ScrollByForSnapFling(
