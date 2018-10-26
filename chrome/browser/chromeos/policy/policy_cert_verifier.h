@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_NETWORK_CERT_VERIFIER_WITH_TRUST_ANCHORS_H_
-#define SERVICES_NETWORK_CERT_VERIFIER_WITH_TRUST_ANCHORS_H_
+#ifndef CHROME_BROWSER_CHROMEOS_POLICY_POLICY_CERT_VERIFIER_H_
+#define CHROME_BROWSER_CHROMEOS_POLICY_POLICY_CERT_VERIFIER_H_
 
 #include <memory>
 #include <vector>
@@ -12,7 +12,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/thread_checker.h"
 #include "net/base/completion_once_callback.h"
 #include "net/cert/cert_verifier.h"
 
@@ -20,25 +19,24 @@ namespace net {
 class CertVerifyProc;
 class CertVerifyResult;
 class X509Certificate;
-typedef std::vector<scoped_refptr<X509Certificate>> CertificateList;
-}  // namespace net
+typedef std::vector<scoped_refptr<X509Certificate> > CertificateList;
+}
 
-namespace network {
+namespace policy {
 
 // Wraps a MultiThreadedCertVerifier to make it use the additional trust anchors
 // configured by the ONC user policy.
-class CertVerifierWithTrustAnchors : public net::CertVerifier {
+class PolicyCertVerifier : public net::CertVerifier {
  public:
+  // Except for tests, PolicyCertVerifier should only be created by
+  // PolicyCertService, which is the counterpart of this class on the UI thread.
   // Except of the constructor, all methods and the destructor must be called on
-  // the IO thread. Calls |anchor_used_callback| on the IO thread every time a
+  // the IO thread. Calls |anchor_used_callback| on the IO thread everytime a
   // certificate from the additional trust anchors (set with SetTrustAnchors) is
   // used.
-  explicit CertVerifierWithTrustAnchors(
-      const base::Closure& anchor_used_callback);
-  ~CertVerifierWithTrustAnchors() override;
+  explicit PolicyCertVerifier(const base::Closure& anchor_used_callback);
+  ~PolicyCertVerifier() override;
 
-  // TODO(jam): once the network service is the only path, rename or get rid of
-  // this method.
   void InitializeOnIOThread(
       const scoped_refptr<net::CertVerifyProc>& verify_proc);
 
@@ -58,11 +56,10 @@ class CertVerifierWithTrustAnchors : public net::CertVerifier {
   net::CertificateList trust_anchors_;
   base::Closure anchor_used_callback_;
   std::unique_ptr<CertVerifier> delegate_;
-  THREAD_CHECKER(thread_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(CertVerifierWithTrustAnchors);
+  DISALLOW_COPY_AND_ASSIGN(PolicyCertVerifier);
 };
 
-}  // namespace network
+}  // namespace policy
 
-#endif  // SERVICES_NETWORK_CERT_VERIFIER_WITH_TRUST_ANCHORS_H_
+#endif  // CHROME_BROWSER_CHROMEOS_POLICY_POLICY_CERT_VERIFIER_H_

@@ -92,14 +92,6 @@
 #include "services/network/throttling/throttling_network_transaction_factory.h"
 #include "services/network/url_request_context_builder_mojo.h"
 
-#if defined(OS_CHROMEOS)
-#include "crypto/nss_util_internal.h"
-#include "net/cert/caching_cert_verifier.h"
-#include "net/cert/multi_threaded_cert_verifier.h"
-#include "services/network/cert_verifier_with_trust_anchors.h"
-#include "services/network/cert_verify_proc_chromeos.h"
-#endif
-
 #if !defined(OS_IOS)
 #include "services/network/websocket_factory.h"
 #endif  // !defined(OS_IOS)
@@ -283,18 +275,6 @@ class NetworkContextApplicationStatusListener
   ApplicationStateChangeCallback callback_;
 };
 #endif
-
-struct TestVerifyCertState {
-  net::CertVerifyResult result;
-  std::unique_ptr<net::CertVerifier::Request> request;
-};
-
-void TestVerifyCertCallback(
-    std::unique_ptr<TestVerifyCertState> request,
-    NetworkContext::VerifyCertificateForTestingCallback callback,
-    int result) {
-  std::move(callback).Run(result);
-}
 
 std::string HashesToBase64String(const net::HashValueVector& hashes) {
   std::string str;
@@ -900,13 +880,6 @@ void NetworkContext::SetCTPolicy(
                                          excluded_spkis, excluded_legacy_spkis);
 }
 
-#if defined(OS_CHROMEOS)
-void NetworkContext::UpdateTrustAnchors(
-    const net::CertificateList& trust_anchors) {
-  cert_verifier_with_trust_anchors_->SetTrustAnchors(trust_anchors);
-}
-#endif
-
 void NetworkContext::AddExpectCT(const std::string& domain,
                                  base::Time expiry,
                                  bool enforce,
@@ -1335,25 +1308,6 @@ void NetworkContext::SetFailingHttpTransactionForTesting(
   cache->SetHttpNetworkTransactionFactoryForTesting(std::move(factory));
 
   std::move(callback).Run();
-}
-
-void NetworkContext::VerifyCertificateForTesting(
-    const scoped_refptr<net::X509Certificate>& certificate,
-    const std::string& hostname,
-    const std::string& ocsp_response,
-    VerifyCertificateForTestingCallback callback) {
-  net::CertVerifier* cert_verifier = url_request_context_->cert_verifier();
-
-  auto state = std::make_unique<TestVerifyCertState>();
-  auto* request = &state->request;
-  auto* result = &state->result;
-
-  cert_verifier->Verify(net::CertVerifier::RequestParams(
-                            certificate.get(), hostname, 0, ocsp_response),
-                        result,
-                        base::BindOnce(TestVerifyCertCallback, std::move(state),
-                                       std::move(callback)),
-                        request, net::NetLogWithSource());
 }
 
 void NetworkContext::PreconnectSockets(uint32_t num_streams,
@@ -1794,39 +1748,14 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
 
-  std::unique_ptr<net::CertVerifier> cert_verifier;
   if (g_cert_verifier_for_testing) {
-    cert_verifier = std::make_unique<WrappedTestingCertVerifier>();
+    builder.SetCertVerifier(std::make_unique<WrappedTestingCertVerifier>());
   } else {
-#if defined(OS_CHROMEOS)
-    if (params_->username_hash.empty()) {
-      cert_verifier = std::make_unique<net::CachingCertVerifier>(
-          std::make_unique<net::MultiThreadedCertVerifier>(
-              base::MakeRefCounted<CertVerifyProcChromeOS>()));
-    } else {
-      // Make sure NSS is initialized for the user.
-      crypto::InitializeNSSForChromeOSUser(params_->username_hash,
-                                           params_->nss_path.value());
-
-      crypto::ScopedPK11Slot public_slot =
-          crypto::GetPublicSlotForChromeOSUser(params_->username_hash);
-      scoped_refptr<net::CertVerifyProc> verify_proc(
-          new CertVerifyProcChromeOS(std::move(public_slot)));
-
-      cert_verifier_with_trust_anchors_ = new CertVerifierWithTrustAnchors(
-          base::Bind(&NetworkContext::TrustAnchorUsed, base::Unretained(this)));
-      cert_verifier_with_trust_anchors_->SetTrustAnchors(
-          params_->initial_trust_anchors);
-      cert_verifier_with_trust_anchors_->InitializeOnIOThread(verify_proc);
-      cert_verifier = base::WrapUnique(cert_verifier_with_trust_anchors_);
-    }
-#else
-    cert_verifier = net::CertVerifier::CreateDefault();
-#endif
+    std::unique_ptr<net::CertVerifier> cert_verifier =
+        net::CertVerifier::CreateDefault();
+    builder.SetCertVerifier(IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
+        *command_line, nullptr, std::move(cert_verifier)));
   }
-
-  builder.SetCertVerifier(IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
-      *command_line, nullptr, std::move(cert_verifier)));
 
   std::unique_ptr<net::NetworkDelegate> network_delegate =
       std::make_unique<NetworkServiceNetworkDelegate>(this);
@@ -1955,12 +1884,6 @@ void NetworkContext::OnCertVerifyForSignedExchangeComplete(int cert_verify_id,
   std::move(pending_cert_verify->callback)
       .Run(result, *pending_cert_verify->result.get(), ct_verify_result);
 }
-
-#if defined(OS_CHROMEOS)
-void NetworkContext::TrustAnchorUsed() {
-  network_service_->client()->OnUsedTrustAnchor(params_->username_hash);
-}
-#endif
 
 void NetworkContext::ForceReloadProxyConfig(
     ForceReloadProxyConfigCallback callback) {

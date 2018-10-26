@@ -39,13 +39,6 @@
 #include "net/net_buildflags.h"
 #include "services/network/public/cpp/features.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/policy/policy_cert_service.h"
-#include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "components/user_manager/user.h"
-#endif
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/constants.h"
 #endif
@@ -194,21 +187,6 @@ void ProfileNetworkContextService::SetUpProfileIODataNetworkContext(
   // ownership of on-disk files.
   *network_context_params = network::mojom::NetworkContextParams::New();
 }
-
-#if defined(OS_CHROMEOS)
-void ProfileNetworkContextService::UpdateTrustAnchors(
-    const net::CertificateList& trust_anchors) {
-  content::BrowserContext::ForEachStoragePartition(
-      profile_,
-      base::BindRepeating(
-          [](const net::CertificateList& trust_anchors,
-             content::StoragePartition* storage_partition) {
-            storage_partition->GetNetworkContext()->UpdateTrustAnchors(
-                trust_anchors);
-          },
-          trust_anchors));
-}
-#endif
 
 void ProfileNetworkContextService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -428,29 +406,6 @@ ProfileNetworkContextService::CreateNetworkContextParams(
       drp_settings->SetCustomProxyConfigClient(std::move(config_client_info));
     }
   }
-
-#if defined(OS_CHROMEOS)
-  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      user_manager &&
-      policy::PolicyCertServiceFactory::CreateAndStartObservingForProfile(
-          profile_)) {
-    const user_manager::User* user =
-        chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
-    // No need to initialize NSS for users with empty username hash:
-    // Getters for a user's NSS slots always return NULL slot if the user's
-    // username hash is empty, even when the NSS is not initialized for the
-    // user.
-    if (user && !user->username_hash().empty()) {
-      network_context_params->username_hash = user->username_hash();
-      network_context_params->nss_path = profile_->GetPath();
-
-      policy::PolicyCertService* service =
-          policy::PolicyCertServiceFactory::GetForProfile(profile_);
-      network_context_params->initial_trust_anchors = service->trust_anchors();
-    }
-  }
-#endif
 
   return network_context_params;
 }

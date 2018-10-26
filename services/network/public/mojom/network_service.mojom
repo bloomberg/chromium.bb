@@ -100,11 +100,6 @@ interface NetworkServiceClient {
                         url.mojom.Url url,
                         SSLInfo ssl_info,
                         bool fatal) => (int32 net_error);
-
-  // Notification that a trust anchor was used for the given user.
-  [EnableIf=is_chromeos]
-  OnUsedTrustAnchor(string username_hash);
-
   // Called when file uploading was requested.
   // If the process that requested the uploads has permission to read all of
   // the files referenced by |file_paths|, the callback arguments will be
