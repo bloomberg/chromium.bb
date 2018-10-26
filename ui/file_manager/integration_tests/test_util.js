@@ -643,6 +643,17 @@ var ENTRIES = {
     typeText: 'Zip archive'
   }),
 
+  zipArchiveWithAbsolutePaths: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'absolute_paths.zip',
+    targetPath: 'absolute_paths.zip',
+    mimeType: 'application/x-zip',
+    lastModifiedTime: 'Jan 1, 2014, 1:00 AM',
+    nameText: 'absolute_paths.zip',
+    sizeText: '400 bytes',
+    typeText: 'Zip archive'
+  }),
+
   debPackage: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'package.deb',

@@ -44,6 +44,26 @@ function getUnzippedFileListRowEntriesSjisSubdir() {
 }
 
 /**
+ * Returns the expected file list row entries after opening (unzipping) the
+ * ENTRIES.zipArchiveWithAbsolutePaths file list entry.
+ */
+function getUnzippedFileListRowEntriesAbsolutePathsRoot() {
+  return [
+    ['foo', '--', 'Folder', 'Oct 11, 2018, 9:44 AM'],
+    ['hello.txt', '13 bytes', 'Plain text', 'Oct 11, 2018, 9:44 AM']
+  ];
+}
+
+/**
+ * Returns the expected file list row entries after opening (unzipping) the
+ * ENTRIES.zipArchiveWithAbsolutePaths file list entry and moving into the
+ * subdirectory.
+ */
+function getUnzippedFileListRowEntriesAbsolutePathsSubdir() {
+  return [['bye.txt', '9 bytes', 'Plain text', 'Oct 11, 2018, 9:44 AM']];
+}
+
+/**
  * Tests zip file open (aka unzip) from Downloads.
  */
 testcase.zipFileOpenDownloads = function() {
@@ -71,6 +91,57 @@ testcase.zipFileOpenDownloads = function() {
     function(result) {
       chrome.test.assertTrue(!!result, 'fakeKeyDown failed');
       const files = getUnzippedFileListRowEntries();
+      remoteCall.waitForFiles(appId, files).then(this.next);
+    },
+  ]);
+};
+
+/**
+ * Tests zip file, with absolute paths, open (aka unzip) from Downloads.
+ */
+testcase.zipFileOpenDownloadsWithAbsolutePaths = function() {
+  let appId;
+
+  StepsRunner.run([
+    // Open Files app on Downloads containing a zip file.
+    function() {
+      setupAndWaitUntilReady(
+          null, RootPath.DOWNLOADS, this.next,
+          [ENTRIES.zipArchiveWithAbsolutePaths], []);
+    },
+    // Select the zip file.
+    function(result) {
+      appId = result.windowId;
+      remoteCall.callRemoteTestUtil('selectFile', appId, ['absolute_paths.zip'])
+          .then(this.next);
+    },
+    // Press the Enter key.
+    function(result) {
+      chrome.test.assertTrue(!!result, 'selectFile failed');
+      const key = ['#file-list', 'Enter', false, false, false];
+      remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key, this.next);
+    },
+    // Check: the zip file content should be shown (unzip).
+    function(result) {
+      chrome.test.assertTrue(!!result, 'fakeKeyDown failed');
+      const files = getUnzippedFileListRowEntriesAbsolutePathsRoot();
+      remoteCall.waitForFiles(appId, files).then(this.next);
+    },
+    // Select the directory in the ZIP file.
+    function(result) {
+      remoteCall.callRemoteTestUtil('selectFile', appId, ['foo'])
+          .then(this.next);
+    },
+    // Press the Enter key.
+    function(result) {
+      chrome.test.assertTrue(!!result, 'selectFile failed');
+      const key = ['#file-list', 'Enter', false, false, false];
+      remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key, this.next);
+    },
+    // Check: the zip file content should be shown (unzip).
+    function(result) {
+      chrome.test.assertTrue(!!result, 'fakeKeyDown failed');
+      const files = getUnzippedFileListRowEntriesAbsolutePathsSubdir();
       remoteCall.waitForFiles(appId, files).then(this.next);
     },
   ]);
