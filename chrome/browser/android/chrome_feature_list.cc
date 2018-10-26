@@ -60,7 +60,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kAppNotificationStatusMessaging,
     &features::kClearOldBrowsingData,
     &features::kClipboardContentSetting,
-    &features::kDownloadsForeground,
     &features::kDownloadsLocationChange,
     &features::kExperimentalAppBanners,
     &features::kExperimentalUi,

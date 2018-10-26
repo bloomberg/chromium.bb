@@ -232,12 +232,6 @@ const base::Feature kDoodlesOnLocalNtp{"DoodlesOnLocalNtp",
 #endif
 
 #if defined(OS_ANDROID)
-// Enables downloads as a foreground service for all versions of Android.
-const base::Feature kDownloadsForeground{"DownloadsForeground",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
-#if defined(OS_ANDROID)
 // Enable changing default downloads storage location on Android.
 const base::Feature kDownloadsLocationChange{"DownloadsLocationChange",
                                              base::FEATURE_ENABLED_BY_DEFAULT};

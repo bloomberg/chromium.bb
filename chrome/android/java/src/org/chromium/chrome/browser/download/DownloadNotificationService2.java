@@ -61,6 +61,14 @@ public class DownloadNotificationService2 {
         int FAILED = 4;
     }
 
+    public static final String ACTION_DOWNLOAD_CANCEL =
+            "org.chromium.chrome.browser.download.DOWNLOAD_CANCEL";
+    public static final String ACTION_DOWNLOAD_PAUSE =
+            "org.chromium.chrome.browser.download.DOWNLOAD_PAUSE";
+    public static final String ACTION_DOWNLOAD_RESUME =
+            "org.chromium.chrome.browser.download.DOWNLOAD_RESUME";
+    static final String ACTION_DOWNLOAD_OPEN = "org.chromium.chrome.browser.download.DOWNLOAD_OPEN";
+
     static final String EXTRA_DOWNLOAD_CONTENTID_ID =
             "org.chromium.chrome.browser.download.DownloadContentId_Id";
     static final String EXTRA_DOWNLOAD_CONTENTID_NAMESPACE =
@@ -72,14 +80,6 @@ public class DownloadNotificationService2 {
     // Used to propagate request state information for OfflineItems.StateAtCancel UMA.
     static final String EXTRA_DOWNLOAD_STATE_AT_CANCEL =
             "org.chromium.chrome.browser.download.OfflineItemsStateAtCancel";
-
-    static final String ACTION_DOWNLOAD_CANCEL =
-            "org.chromium.chrome.browser.download.DOWNLOAD_CANCEL";
-    static final String ACTION_DOWNLOAD_PAUSE =
-            "org.chromium.chrome.browser.download.DOWNLOAD_PAUSE";
-    static final String ACTION_DOWNLOAD_RESUME =
-            "org.chromium.chrome.browser.download.DOWNLOAD_RESUME";
-    static final String ACTION_DOWNLOAD_OPEN = "org.chromium.chrome.browser.download.DOWNLOAD_OPEN";
 
     static final String EXTRA_NOTIFICATION_BUNDLE_ICON_ID = "Chrome.NotificationBundleIconIdExtra";
     /** Notification Id starting value, to avoid conflicts from IDs used in prior versions. */

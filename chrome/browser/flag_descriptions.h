@@ -1384,9 +1384,6 @@ extern const char kExploreSitesDescription[];
 extern const char kDontPrefetchLibrariesName[];
 extern const char kDontPrefetchLibrariesDescription[];
 
-extern const char kDownloadsForegroundName[];
-extern const char kDownloadsForegroundDescription[];
-
 extern const char kDownloadsLocationChangeName[];
 extern const char kDownloadsLocationChangeDescription[];
 
