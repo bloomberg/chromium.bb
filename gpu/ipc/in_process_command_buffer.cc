@@ -64,8 +64,8 @@
 #include "gpu/ipc/command_buffer_task_executor.h"
 #include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_client_ids.h"
-#include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
+#include "gpu/ipc/in_process_gpu_thread_holder.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "ui/gfx/geometry/size.h"
@@ -109,63 +109,7 @@ base::OnceClosure WrapTaskWithResult(base::OnceCallback<T(void)> task,
   return base::BindOnce(wrapper, std::move(task), result, completion);
 }
 
-class GpuInProcessThreadHolder : public base::Thread {
- public:
-  GpuInProcessThreadHolder() : base::Thread("GpuThread") { Start(); }
-
-  ~GpuInProcessThreadHolder() override {
-    task_runner()->DeleteSoon(FROM_HERE, std::move(scheduler_));
-    task_runner()->DeleteSoon(FROM_HERE, std::move(sync_point_manager_));
-    Stop();
-  }
-
-  void InitializeOnGpuThread(base::WaitableEvent* completion) {
-    DCHECK(base::CommandLine::InitializedForCurrentProcess());
-    const base::CommandLine* command_line =
-        base::CommandLine::ForCurrentProcess();
-    GpuPreferences gpu_preferences = gles2::ParseGpuPreferences(command_line);
-    gpu_preferences.texture_target_exception_list =
-        CreateBufferUsageAndFormatExceptionList();
-
-    sync_point_manager_ = std::make_unique<SyncPointManager>();
-    scheduler_ =
-        std::make_unique<Scheduler>(task_runner(), sync_point_manager_.get());
-    gpu_thread_service_ = base::MakeRefCounted<GpuInProcessThreadService>(
-        task_runner(), scheduler_.get(), sync_point_manager_.get(), nullptr,
-        nullptr, gl::GLSurfaceFormat(), gpu_feature_info_, gpu_preferences);
-
-    completion->Signal();
-  }
-
-  void SetGpuFeatureInfo(const GpuFeatureInfo& gpu_feature_info) {
-    DCHECK(!gpu_thread_service_.get());
-    gpu_feature_info_ = gpu_feature_info;
-  }
-
-  scoped_refptr<CommandBufferTaskExecutor> GetGpuThreadService() {
-    if (!gpu_thread_service_) {
-      base::WaitableEvent completion(
-          base::WaitableEvent::ResetPolicy::MANUAL,
-          base::WaitableEvent::InitialState::NOT_SIGNALED);
-      task_runner()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&GpuInProcessThreadHolder::InitializeOnGpuThread,
-                         base::Unretained(this), &completion));
-      completion.Wait();
-    }
-    return gpu_thread_service_;
-  }
-
- private:
-  std::unique_ptr<SyncPointManager> sync_point_manager_;
-  std::unique_ptr<Scheduler> scheduler_;
-  scoped_refptr<CommandBufferTaskExecutor> gpu_thread_service_;
-  GpuFeatureInfo gpu_feature_info_;
-
-  DISALLOW_COPY_AND_ASSIGN(GpuInProcessThreadHolder);
-};
-
-base::LazyInstance<GpuInProcessThreadHolder>::DestructorAtExit
+base::LazyInstance<InProcessGpuThreadHolder>::DestructorAtExit
     g_default_task_executer = LAZY_INSTANCE_INITIALIZER;
 
 class ScopedEvent {
@@ -191,7 +135,7 @@ scoped_refptr<CommandBufferTaskExecutor> MaybeGetDefaultTaskExecutor(
   // ThreadTaskRunnerHandle, which will re-add a new task to the, AtExitManager,
   // which causes a deadlock because it's already locked.
   base::ThreadTaskRunnerHandle::IsSet();
-  return g_default_task_executer.Get().GetGpuThreadService();
+  return g_default_task_executer.Get().GetTaskExecutor();
 }
 
 }  // namespace

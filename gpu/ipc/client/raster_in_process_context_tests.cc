@@ -14,6 +14,7 @@
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
+#include "gpu/ipc/in_process_gpu_thread_holder.h"
 #include "gpu/ipc/raster_in_process_context.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,6 +31,15 @@ constexpr gfx::Size kBufferSize(100, 100);
 
 class RasterInProcessCommandBufferTest : public ::testing::Test {
  public:
+  RasterInProcessCommandBufferTest() {
+    // Always enable gpu and oop raster, regardless of platform and blacklist.
+    auto* gpu_feature_info = gpu_thread_holder_.GetGpuFeatureInfo();
+    gpu_feature_info->status_values[gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION] =
+        gpu::kGpuFeatureStatusEnabled;
+    gpu_feature_info->status_values[gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
+        gpu::kGpuFeatureStatusEnabled;
+  }
+
   std::unique_ptr<RasterInProcessContext> CreateRasterInProcessContext() {
     if (!RasterInProcessContext::SupportedInTest())
       return nullptr;
@@ -42,7 +52,7 @@ class RasterInProcessCommandBufferTest : public ::testing::Test {
 
     auto context = std::make_unique<RasterInProcessContext>();
     auto result = context->Initialize(
-        /*service=*/nullptr, attributes, SharedMemoryLimits(),
+        gpu_thread_holder_.GetTaskExecutor(), attributes, SharedMemoryLimits(),
         gpu_memory_buffer_manager_.get(),
         gpu_memory_buffer_factory_->AsImageFactory(),
         /*gpu_channel_manager_delegate=*/nullptr, nullptr, nullptr);
@@ -67,6 +77,7 @@ class RasterInProcessCommandBufferTest : public ::testing::Test {
   }
 
  protected:
+  InProcessGpuThreadHolder gpu_thread_holder_;
   raster::RasterInterface* ri_;  // not owned
   std::unique_ptr<GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
   std::unique_ptr<GpuMemoryBufferManager> gpu_memory_buffer_manager_;
