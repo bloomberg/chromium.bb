@@ -14,7 +14,7 @@
 #include "base/task/common/intrusive_heap.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/task/sequence_manager/work_queue.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 
 namespace base {
 namespace sequence_manager {
