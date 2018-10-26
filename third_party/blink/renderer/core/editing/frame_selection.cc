@@ -652,33 +652,19 @@ void FrameSelection::SelectFrameElementInParentIfFullySelected() {
   if (!blink::HasEditableStyle(*owner_element_parent))
     return;
 
-  // Create compute positions before and after the element.
-  unsigned owner_element_node_index = owner_element->NodeIndex();
-  VisiblePosition before_owner_element = CreateVisiblePosition(
-      Position(owner_element_parent, owner_element_node_index));
-  VisiblePosition after_owner_element = CreateVisiblePosition(
-      Position(owner_element_parent, owner_element_node_index + 1),
-      TextAffinity::kUpstreamIfPossible);
-
-  SelectionInDOMTree::Builder builder;
-  builder
-      .SetBaseAndExtentDeprecated(before_owner_element.DeepEquivalent(),
-                                  after_owner_element.DeepEquivalent())
-      .SetAffinity(before_owner_element.Affinity());
-
   // Focus on the parent frame, and then select from before this element to
   // after.
-  VisibleSelection new_selection = CreateVisibleSelection(builder.Build());
-  // TODO(yosin): We should call |FocusController::setFocusedFrame()| before
-  // |createVisibleSelection()|.
   page->GetFocusController().SetFocusedFrame(parent);
-  // setFocusedFrame can dispatch synchronous focus/blur events.  The document
+  // SetFocusedFrame can dispatch synchronous focus/blur events.  The document
   // tree might be modified.
-  if (!new_selection.IsNone() &&
-      new_selection.IsValidFor(*(ToLocalFrame(parent)->GetDocument()))) {
-    ToLocalFrame(parent)->Selection().SetSelectionAndEndTyping(
-        new_selection.AsSelection());
-  }
+  if (!owner_element->isConnected() ||
+      owner_element->GetDocument() != ToLocalFrame(parent)->GetDocument())
+    return;
+  ToLocalFrame(parent)->Selection().SetSelectionAndEndTyping(
+      SelectionInDOMTree::Builder()
+          .SetBaseAndExtent(Position::BeforeNode(*owner_element),
+                            Position::AfterNode(*owner_element))
+          .Build());
 }
 
 // Returns a shadow tree node for legacy shadow trees, a child of the
