@@ -62,7 +62,7 @@ std::vector<std::string> CastSysInfo::GetFactoryLocaleList() {
 #if BUILDFLAG(IS_ANDROID_THINGS_NON_PUBLIC)
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::AppendJavaStringArrayToStringVector(
-      env, Java_CastSysInfoAndroidThings_getFactoryLocaleList(env).obj(),
+      env, Java_CastSysInfoAndroidThings_getFactoryLocaleList(env),
       &locale_list);
 #endif
   return locale_list;
