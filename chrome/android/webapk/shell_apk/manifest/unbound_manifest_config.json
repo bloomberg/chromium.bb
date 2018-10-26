@@ -1,5 +1,4 @@
 {
-  "manifest_package": "org.chromium.arbitrarypackage",
   "scope_url": "https://pwa.rocks/",
   "intent_filters": {
     "scope_url_scheme": "https",

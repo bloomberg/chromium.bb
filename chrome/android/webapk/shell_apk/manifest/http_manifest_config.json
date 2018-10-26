@@ -1,5 +1,4 @@
 {
-  "manifest_package": "org.chromium.webapk.http",
   "scope_url": "http://pwa.rocks/",
   "intent_filters": {
     "scope_url_scheme": "http",
