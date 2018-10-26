@@ -1186,76 +1186,7 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
   if (!DrawingCanvas())
     return;
 
-  TimeTicks start_time;
-  base::Optional<CustomCountHistogram> timer;
-  if (!IsPaint2D()) {
-    start_time = WTF::CurrentTimeTicks();
-    if (CanCreateCanvas2dResourceProvider() && IsAccelerated()) {
-      if (image_source->IsVideoElement()) {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(
-            CustomCountHistogram, scoped_us_counter_video_gpu,
-            ("Blink.Canvas.DrawImage.Video.GPU", 0, 10000000, 50));
-        timer.emplace(scoped_us_counter_video_gpu);
-      } else if (image_source->IsCanvasElement()) {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(
-            CustomCountHistogram, scoped_us_counter_canvas_gpu,
-            ("Blink.Canvas.DrawImage.Canvas.GPU", 0, 10000000, 50));
-        timer.emplace(scoped_us_counter_canvas_gpu);
-      } else if (image_source->IsSVGSource()) {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(
-            CustomCountHistogram, scoped_us_counter_svggpu,
-            ("Blink.Canvas.DrawImage.SVG.GPU", 0, 10000000, 50));
-        timer.emplace(scoped_us_counter_svggpu);
-      } else if (image_source->IsImageBitmap()) {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(
-            CustomCountHistogram, scoped_us_counter_image_bitmap_gpu,
-            ("Blink.Canvas.DrawImage.ImageBitmap.GPU", 0, 10000000, 50));
-        timer.emplace(scoped_us_counter_image_bitmap_gpu);
-      } else if (image_source->IsOffscreenCanvas()) {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(
-            CustomCountHistogram, scoped_us_counter_offscreencanvas_gpu,
-            ("Blink.Canvas.DrawImage.OffscreenCanvas.GPU", 0, 10000000, 50));
-        timer.emplace(scoped_us_counter_offscreencanvas_gpu);
-      } else {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(
-            CustomCountHistogram, scoped_us_counter_others_gpu,
-            ("Blink.Canvas.DrawImage.Others.GPU", 0, 10000000, 50));
-        timer.emplace(scoped_us_counter_others_gpu);
-      }
-    } else {
-      if (image_source->IsVideoElement()) {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(
-            CustomCountHistogram, scoped_us_counter_video_cpu,
-            ("Blink.Canvas.DrawImage.Video.CPU", 0, 10000000, 50));
-        timer.emplace(scoped_us_counter_video_cpu);
-      } else if (image_source->IsCanvasElement()) {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(
-            CustomCountHistogram, scoped_us_counter_canvas_cpu,
-            ("Blink.Canvas.DrawImage.Canvas.CPU", 0, 10000000, 50));
-        timer.emplace(scoped_us_counter_canvas_cpu);
-      } else if (image_source->IsSVGSource()) {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(
-            CustomCountHistogram, scoped_us_counter_svgcpu,
-            ("Blink.Canvas.DrawImage.SVG.CPU", 0, 10000000, 50));
-        timer.emplace(scoped_us_counter_svgcpu);
-      } else if (image_source->IsImageBitmap()) {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(
-            CustomCountHistogram, scoped_us_counter_image_bitmap_cpu,
-            ("Blink.Canvas.DrawImage.ImageBitmap.CPU", 0, 10000000, 50));
-        timer.emplace(scoped_us_counter_image_bitmap_cpu);
-      } else if (image_source->IsOffscreenCanvas()) {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(
-            CustomCountHistogram, scoped_us_counter_offscreencanvas_cpu,
-            ("Blink.Canvas.DrawImage.OffscreenCanvas.CPU", 0, 10000000, 50));
-        timer.emplace(scoped_us_counter_offscreencanvas_cpu);
-      } else {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(
-            CustomCountHistogram, scoped_us_counter_others_cpu,
-            ("Blink.Canvas.DrawImage.Others.CPU", 0, 10000000, 50));
-        timer.emplace(scoped_us_counter_others_cpu);
-      }
-    }
-  }
+  base::TimeTicks start_time = base::TimeTicks::Now();
 
   scoped_refptr<Image> image;
   FloatSize default_object_size(Width(), Height());
@@ -1362,8 +1293,28 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
   ValidateStateStack();
 
   if (!IsPaint2D()) {
-    DCHECK(!start_time.is_null());
-    timer->CountMicroseconds(WTF::CurrentTimeTicks() - start_time);
+    std::string histogram_name = "Blink.Canvas.DrawImage.Duration.";
+    if (image_source->IsCanvasElement()) {
+      histogram_name.append("Canvas.");
+    } else if (image_source->IsCSSImageValue()) {
+      histogram_name.append("CssImage.");
+    } else if (image_source->IsImageElement()) {
+      histogram_name.append("ImageElement.");
+    } else if (image_source->IsImageBitmap()) {
+      histogram_name.append("ImageBitmap.");
+    } else if (image_source->IsOffscreenCanvas()) {
+      histogram_name.append("OffscreenCanvas.");
+    } else if (image_source->IsSVGSource()) {
+      histogram_name.append("SVG.");
+    } else if (image_source->IsVideoElement()) {
+      histogram_name.append("Video.");
+    } else {  // Unknown source.
+      histogram_name.append("Unknown.");
+    }
+    histogram_name.append(
+        CanCreateCanvas2dResourceProvider() && IsAccelerated() ? "GPU" : "CPU");
+    base::TimeDelta elapsed = TimeTicks::Now() - start_time;
+    UmaHistogramMicrosecondsTimes(histogram_name, elapsed);
   }
 }
 
