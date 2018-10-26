@@ -187,7 +187,7 @@ void ProfileImplIOData::Handle::Init(
 
   io_data_->set_data_reduction_proxy_io_data(
       CreateDataReductionProxyChromeIOData(
-          g_browser_process->io_thread()->net_log(), profile_->GetPrefs(),
+          profile_->GetPrefs(),
           base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
           base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})));
 
