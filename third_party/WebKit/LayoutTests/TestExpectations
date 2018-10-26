@@ -5486,3 +5486,4 @@ crbug.com/874576 http/tests/images/feature-policy-image-compression-cached-image
 
 # Sheriff 2018-10-26
 crbug.com/899087 [ Linux ] virtual/android/fullscreen/full-screen-iframe-allowed-video.html [ Failure Pass ]
+crbug.com/899232 [ Linux ] virtual/user-activation-v2/fast/events/touch/gesture/gesture-scrollbar-touchpad-fling.html [ Failure Pass ]
