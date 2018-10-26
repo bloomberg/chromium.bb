@@ -93,14 +93,6 @@ class TestingProfile : public Profile {
 
     // Adds a testing factory to the TestingProfile. These testing factories
     // are applied before the ProfileKeyedServices are created.
-    // DEPRECATED: use TestingFactory version instead, see
-    // http://crbug.com/809610
-    void AddTestingFactory(
-        BrowserContextKeyedServiceFactory* service_factory,
-        BrowserContextKeyedServiceFactory::TestingFactoryFunction function);
-
-    // Adds a testing factory to the TestingProfile. These testing factories
-    // are applied before the ProfileKeyedServices are created.
     void AddTestingFactory(
         BrowserContextKeyedServiceFactory* service_factory,
         BrowserContextKeyedServiceFactory::TestingFactory testing_factory);
