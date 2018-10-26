@@ -689,6 +689,7 @@
         'ReportPolicyData',
         'ReportMachineIDData',
         'ReportUserIDData',
+        'CloudReportingEnabled',
       ],
     },
     {
@@ -13343,7 +13344,7 @@
       'id': 468,
       'caption': '''Configure list of force-installed Web Apps''',
       'tags': [],
-      'desc': '''Specifies a list of websites that are installed silently, without user interaction, and which cannot be uninstalled nor disabled by the user.
+      'desc': '''Specifies a list of websites that are installed silentl<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>y, without user interaction, and which cannot be uninstalled nor disabled by the user.
 
       Each list item of the policy is an object with two members: "url" and "launch_container". "url" should be the URL of the web app to install and "launch_container" should be either "window" or "tab" to indicate how the Web App will be opened once installed. If "launch_container" is omitted, the app will launch in a window if Chrome considers it a Progressive Web App and in a tab otherwise.''',
       'label': '''URLs for Web Apps to be silently installed.''',
@@ -13427,6 +13428,30 @@
       When this policy is set to False, information that can be used to identify users is not gathered.
 
       This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME">MachineLevelUserCloudPolicyEnrollmentToken</ph>.'''
+    },
+    {
+      'id': 493,
+      'name': 'CloudReportingEnabled',
+      'type': 'main',
+      'schema': {'type': 'boolean' },
+      'tags': ['admin-sharing', 'google-sharing'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'supported_on': ['chrome.*:72-'],
+      'future': True,
+      'caption': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> cloud reporting''',
+      'example_value': True,
+      'desc': '''This policy controls <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> cloud reporting which uploads information about the browser operation to Google Admin console.
+
+      When this policy is left unset or set to False, there is no data collected or uploaded.
+      When this policy is set to True, the data is collected and uploaded to Google Admin console.
+      To control what data is uploaded, please use policies in the group Chrome Reporting Extension.
+
+      This policy is only effective when the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME">MachineLevelUserCloudPolicyEnrollmentToken</ph>.
+
+      This policy force installs <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> for the reporting and overrides any extension policies related to that extension.'''
     },
     {
       'name': 'EnterpriseHardwarePlatformAPIEnabled',
@@ -13705,5 +13730,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 492
+  'highest_id_currently_used': 493
 }

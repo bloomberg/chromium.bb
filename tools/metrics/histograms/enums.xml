@@ -14790,6 +14790,7 @@ Called by update_net_error_codes.py.-->
   <int value="490" label="NetworkFileSharesPreconfiguredShares"/>
   <int value="491" label="AllowWakeLocks"/>
   <int value="492" label="ScreenBrightnessPercent"/>
+  <int value="493" label="CloudReportingEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

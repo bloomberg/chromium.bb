@@ -752,6 +752,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kCloudPolicyOverridesMachinePolicy,
     prefs::kCloudPolicyOverridesMachinePolicy,
     base::Value::Type::BOOLEAN },
+  { key::kCloudReportingEnabled,
+    prefs::kCloudReportingEnabled,
+    base::Value::Type::BOOLEAN },
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
 #if defined(OS_WIN)

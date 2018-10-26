@@ -783,6 +783,10 @@ extern const char kRegisteredSupervisedUserWhitelists[];
 
 extern const char kCloudPolicyOverridesMachinePolicy[];
 
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+extern const char kCloudReportingEnabled[];
+#endif
+
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
 extern const char kRestartInBackground[];
 #endif

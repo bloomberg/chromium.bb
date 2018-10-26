@@ -4151,6 +4151,14 @@
     ]
   },
 
+  "CloudReportingEnabled": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "CloudReportingEnabled": true },
+    "pref_mappings": [
+      { "pref": "enterprise_reporting.chrome_cloud_reporting" }
+    ]
+  },
+
   "VpnConfigAllowed": {
     "os": ["chromeos"],
     "can_be_recommended": false,
