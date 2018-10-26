@@ -1196,6 +1196,17 @@ TEST(UrlFormatterTest, FormatUrl) {
        kFormatUrlOmitHTTP, net::UnescapeRule::NORMAL, L"http://ftp.google.com/",
        7},
 
+      // -------- omit file: --------
+#if defined(OS_WIN)
+      {"omit file on Windows", "file:///C:/Users/homedirname/folder/file.pdf/",
+       kFormatUrlOmitFileScheme, net::UnescapeRule::NORMAL,
+       L"C:/Users/homedirname/folder/file.pdf/", -1},
+#else
+      {"omit file", "file:///Users/homedirname/folder/file.pdf/",
+       kFormatUrlOmitFileScheme, net::UnescapeRule::NORMAL,
+       L"/Users/homedirname/folder/file.pdf/", 0},
+#endif
+
       // -------- omit trailing slash on bare hostname --------
       {"omit slash when it's the entire path", "http://www.google.com/",
        kFormatUrlOmitTrailingSlashOnBareHostname, net::UnescapeRule::NORMAL,

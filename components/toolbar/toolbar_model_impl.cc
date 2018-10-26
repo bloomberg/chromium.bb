@@ -61,6 +61,9 @@ base::string16 ToolbarModelImpl::GetURLForDisplay() const {
   if (toolbar::features::IsHideSteadyStateUrlTrivialSubdomainsEnabled())
     format_types |= url_formatter::kFormatUrlOmitTrivialSubdomains;
 
+  if (base::FeatureList::IsEnabled(toolbar::features::kHideFileUrlScheme))
+    format_types |= url_formatter::kFormatUrlOmitFileScheme;
+
   return GetFormattedURL(format_types);
 }
 

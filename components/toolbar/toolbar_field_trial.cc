@@ -29,6 +29,9 @@ const base::Feature kHideSteadyStateUrlTrivialSubdomains {
 #endif
 };
 
+const base::Feature kHideFileUrlScheme{"OmniboxUIExperimentHideFileUrlScheme",
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kHideSteadyStateUrlPathQueryAndRef {
   "OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRef",
 #if defined(OS_IOS)
