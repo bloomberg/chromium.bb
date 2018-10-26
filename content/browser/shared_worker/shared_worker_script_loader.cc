@@ -251,12 +251,19 @@ bool SharedWorkerScriptLoader::MaybeCreateLoaderForResponse(
     network::mojom::URLLoaderPtr* response_url_loader,
     network::mojom::URLLoaderClientRequest* response_client_request,
     ThrottlingURLLoader* url_loader) {
+  // TODO(crbug/898755): This is odd that NavigationLoaderInterceptor::
+  // MaybeCreateLoader() is called directly from SharedWorkerScriptLoader. But
+  // NavigationLoaderInterceptor::MaybeCreateLoaderForResponse() is called from
+  // SharedWorkerScriptFetcher::OnReceiveResponse(). This is due to the wired
+  // design of SharedWorkerScriptLoader and SharedWorkerScriptFetcher and the
+  // interceptors. The interceptors should be owned by
+  // SharedWorkerScriptFetcher.
   DCHECK(default_loader_used_);
   for (auto& interceptor : interceptors_) {
     bool skip_other_interceptors = false;
     if (interceptor->MaybeCreateLoaderForResponse(
-            response, response_url_loader, response_client_request, url_loader,
-            &skip_other_interceptors)) {
+            resource_request_.url, response, response_url_loader,
+            response_client_request, url_loader, &skip_other_interceptors)) {
       // Both ServiceWorkerRequestHandler and AppCacheRequestHandler don't set
       // skip_other_interceptors.
       DCHECK(!skip_other_interceptors);
