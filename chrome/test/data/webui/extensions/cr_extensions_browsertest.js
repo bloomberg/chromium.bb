@@ -439,6 +439,29 @@ TEST_F(
           extension_manager_tests.TestNames.UrlNavigationToDetails);
     });
 
+TEST_F(
+    'CrExtensionsManagerTestWithIdQueryParam', 'UrlNavigationToActivityLogFail',
+    function() {
+      this.runMochaTest(
+          extension_manager_tests.TestNames.UrlNavigationToActivityLogFail);
+    });
+
+CrExtensionsManagerTestWithActivityLogFlag =
+    class extends CrExtensionsManagerTestWithIdQueryParam {
+  /** @override */
+  get commandLineSwitches() {
+    return [{
+      switchName: 'enable-extension-activity-logging',
+    }];
+  }
+};
+
+TEST_F(
+    'CrExtensionsManagerTestWithActivityLogFlag',
+    'UrlNavigationToActivityLogSuccess', function() {
+      this.runMochaTest(
+          extension_manager_tests.TestNames.UrlNavigationToActivityLogSuccess);
+    });
 
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Keyboard Shortcuts Tests
