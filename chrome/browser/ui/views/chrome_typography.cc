@@ -48,23 +48,18 @@ void ApplyCommonFontStyles(int context,
       // TODO(pbos): Instead of fixing the toolbar button height this way
       // consider dynamically resizing all of the toolbar based on the actual
       // final item height.
-      const int fixed_height =
-          ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 22 : 17;
+      const int height = ui::MaterialDesignController::touch_ui() ? 22 : 17;
       static const int toolbar_button_delta =
-          GetFontSizeDeltaBoundedByAvailableHeight(fixed_height, fixed_height);
+          GetFontSizeDeltaBoundedByAvailableHeight(height, height);
       *size_delta = toolbar_button_delta;
       break;
     }
     case CONTEXT_OMNIBOX_PRIMARY:
     case CONTEXT_OMNIBOX_DEEMPHASIZED: {
-      constexpr int kDesiredFontSizeRegular = 14;
-      constexpr int kDesiredFontSizeTouchable = 15;
       const int omnibox_primary_delta =
           GetFontSizeDeltaBoundedByAvailableHeight(
               LocationBarView::GetAvailableTextHeight(),
-              ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
-                  ? kDesiredFontSizeTouchable
-                  : kDesiredFontSizeRegular);
+              ui::MaterialDesignController::touch_ui() ? 15 : 14);
       *size_delta = omnibox_primary_delta;
       if (context == CONTEXT_OMNIBOX_DEEMPHASIZED) {
         (*size_delta)--;
@@ -77,11 +72,9 @@ void ApplyCommonFontStyles(int context,
       // primary omnibox font and incrementally reduce its size until it fit.
       // In default configurations, it would obtain 11. Deriving fonts is slow,
       // so don't bother starting at 14.
-      constexpr int kDesiredFontSizeDecoration = 11;
       static const int omnibox_decoration_delta =
           GetFontSizeDeltaBoundedByAvailableHeight(
-              LocationBarView::GetAvailableDecorationTextHeight(),
-              kDesiredFontSizeDecoration);
+              LocationBarView::GetAvailableDecorationTextHeight(), 11);
       *size_delta = omnibox_decoration_delta;
       break;
     }

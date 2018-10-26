@@ -50,6 +50,7 @@ ChromeLayoutProvider::CreateLayoutProvider() {
 
 gfx::Insets ChromeLayoutProvider::GetInsetsMetric(int metric) const {
   DCHECK_LT(metric, views::VIEWS_INSETS_MAX);
+  const bool touch_ui = ui::MaterialDesignController::touch_ui();
   switch (metric) {
     case views::INSETS_DIALOG:
     case views::INSETS_DIALOG_SUBSECTION:
@@ -63,13 +64,11 @@ gfx::Insets ChromeLayoutProvider::GetInsetsMetric(int metric) const {
     case views::INSETS_VECTOR_IMAGE_BUTTON:
       return gfx::Insets(kHarmonyLayoutUnit / 4);
     case views::InsetsMetric::INSETS_LABEL_BUTTON:
-      if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
-        return gfx::Insets(kHarmonyLayoutUnit / 2, kHarmonyLayoutUnit / 2);
-      return LayoutProvider::GetInsetsMetric(metric);
+      return touch_ui
+                 ? gfx::Insets(kHarmonyLayoutUnit / 2, kHarmonyLayoutUnit / 2)
+                 : LayoutProvider::GetInsetsMetric(metric);
     case INSETS_BOOKMARKS_BAR_BUTTON:
-      if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
-        return gfx::Insets(8, 12);
-      return gfx::Insets(6);
+      return touch_ui ? gfx::Insets(8, 12) : gfx::Insets(6);
     case INSETS_TOAST:
       return gfx::Insets(0, kHarmonyLayoutUnit);
     default:

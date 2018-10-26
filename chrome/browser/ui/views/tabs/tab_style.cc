@@ -144,11 +144,7 @@ int GetContentsHorizontalInsetSize() {
 
 // Returns the height of the separator between tabs.
 int GetSeparatorHeight() {
-  constexpr int kTabSeparatorHeight = 20;
-  constexpr int kTabSeparatorTouchHeight = 24;
-  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
-             ? kTabSeparatorTouchHeight
-             : kTabSeparatorHeight;
+  return ui::MaterialDesignController::touch_ui() ? 24 : 20;
 }
 
 void DrawHighlight(gfx::Canvas* canvas,

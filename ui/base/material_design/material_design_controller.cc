@@ -103,11 +103,6 @@ void MaterialDesignController::Initialize() {
 }
 
 // static
-bool MaterialDesignController::IsTouchOptimizedUiEnabled() {
-  return touch_ui_;
-}
-
-// static
 void MaterialDesignController::OnTabletModeToggled(bool enabled) {
   if (automatic_touch_ui_)
     SetTouchUi(enabled);

@@ -283,8 +283,7 @@ base::string16 AvatarToolbarButton::GetAvatarTooltipText() const {
 }
 
 gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon() const {
-  const int icon_size =
-      ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 24 : 20;
+  const int icon_size = ui::MaterialDesignController::touch_ui() ? 24 : 20;
 
   SkColor icon_color;
   if (IsIncognitoCounterActive() &&
@@ -380,6 +379,6 @@ AvatarToolbarButton::SyncState AvatarToolbarButton::GetSyncState() const {
 void AvatarToolbarButton::SetInsets() {
   // In non-touch mode we use a larger-than-normal icon size for avatars as 16dp
   // is hard to read for user avatars, so we need to set corresponding insets.
-  SetLayoutInsetDelta(gfx::Insets(
-      ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 0 : -2));
+  SetLayoutInsetDelta(
+      gfx::Insets(ui::MaterialDesignController::touch_ui() ? 0 : -2));
 }

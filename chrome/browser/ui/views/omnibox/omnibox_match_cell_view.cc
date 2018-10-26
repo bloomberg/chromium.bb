@@ -229,13 +229,7 @@ bool OmniboxMatchCellView::CanProcessEventsWithinSubtree() const {
 
 // static
 int OmniboxMatchCellView::GetTextIndent() {
-  constexpr int kTextIndent = 47;
-  int indent = kTextIndent;
-  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled()) {
-    constexpr int kTouchableExtraIndent = 4;
-    indent += kTouchableExtraIndent;
-  }
-  return indent;
+  return ui::MaterialDesignController::touch_ui() ? 51 : 47;
 }
 
 void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,

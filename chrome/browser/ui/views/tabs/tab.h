@@ -59,7 +59,7 @@ class Tab : public gfx::AnimationDelegate,
   // hide the close button on inactive tabs. Any smaller and they're too easy
   // to hit on accident.
   static constexpr int kMinimumContentsWidthForCloseButtons = 68;
-  static constexpr int kTouchableMinimumContentsWidthForCloseButtons = 100;
+  static constexpr int kTouchMinimumContentsWidthForCloseButtons = 100;
 
   Tab(TabController* controller, gfx::AnimationContainer* container);
   ~Tab() override;

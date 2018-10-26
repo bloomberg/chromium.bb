@@ -99,7 +99,7 @@ int GetToolbarHorizontalPadding() {
   // In the touch-optimized UI, we don't use any horizontal paddings; the back
   // button starts from the beginning of the view, and the app menu button ends
   // at the end of the view.
-  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 0 : 8;
+  return ui::MaterialDesignController::touch_ui() ? 0 : 8;
 }
 
 }  // namespace
@@ -767,7 +767,7 @@ gfx::Size ToolbarView::SizeForContentSize(gfx::Size size) const {
     // In the touch-optimized UI, the toolbar buttons are big and occupy the
     // entire view's height, we don't need to add any extra vertical space.
     const int extra_vertical_space =
-        ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 0 : 9;
+        ui::MaterialDesignController::touch_ui() ? 0 : 9;
     size.SetToMax(gfx::Size(0, content_height + extra_vertical_space));
   }
   return size;
@@ -786,25 +786,24 @@ void ToolbarView::LoadImages() {
   browser_actions_->SetSeparatorColor(
       tp->GetColor(ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR));
 
-  const bool is_touch =
-      ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
+  const bool touch_ui = ui::MaterialDesignController::touch_ui();
 
   const gfx::VectorIcon& back_image =
-      is_touch ? kBackArrowTouchIcon : vector_icons::kBackArrowIcon;
+      touch_ui ? kBackArrowTouchIcon : vector_icons::kBackArrowIcon;
   back_->SetImage(views::Button::STATE_NORMAL,
                   gfx::CreateVectorIcon(back_image, normal_color));
   back_->SetImage(views::Button::STATE_DISABLED,
                   gfx::CreateVectorIcon(back_image, disabled_color));
 
   const gfx::VectorIcon& forward_image =
-      is_touch ? kForwardArrowTouchIcon : vector_icons::kForwardArrowIcon;
+      touch_ui ? kForwardArrowTouchIcon : vector_icons::kForwardArrowIcon;
   forward_->SetImage(views::Button::STATE_NORMAL,
                      gfx::CreateVectorIcon(forward_image, normal_color));
   forward_->SetImage(views::Button::STATE_DISABLED,
                      gfx::CreateVectorIcon(forward_image, disabled_color));
 
   const gfx::VectorIcon& home_image =
-      is_touch ? kNavigateHomeTouchIcon : kNavigateHomeIcon;
+      touch_ui ? kNavigateHomeTouchIcon : kNavigateHomeIcon;
   home_->SetImage(views::Button::STATE_NORMAL,
                   gfx::CreateVectorIcon(home_image, normal_color));
 
