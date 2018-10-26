@@ -13,17 +13,15 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
-#include "base/sys_info.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/limits.h"
 #include "media/base/media_switches.h"
 #include "media/filters/frame_buffer_pool.h"
 #include "third_party/libvpx/source/libvpx/vpx/vp8dx.h"
@@ -37,41 +35,24 @@ namespace media {
 
 // Returns the number of threads.
 static int GetVpxVideoDecoderThreadCount(const VideoDecoderConfig& config) {
-  // Always try to use at least two threads for video decoding.  There is little
-  // reason not to since current day CPUs tend to be multi-core and we measured
-  // performance benefits on older machines such as P4s with hyperthreading.
-  constexpr int kDecodeThreads = 2;
-  constexpr int kMaxDecodeThreads = 32;
+  // vp8a doesn't really need more threads.
+  int desired_threads = limits::kMinVideoDecodeThreads;
 
-  // Refer to http://crbug.com/93932 for tsan suppressions on decoding.
-  int decode_threads = kDecodeThreads;
-
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  std::string threads(cmd_line->GetSwitchValueASCII(switches::kVideoThreads));
-  if (threads.empty() || !base::StringToInt(threads, &decode_threads)) {
-    if (config.codec() == kCodecVP9) {
-      // For VP9 decode when using the default thread count, increase the number
-      // of decode threads to equal the maximum number of tiles possible for
-      // higher resolution streams.
-      const int width = config.coded_size().width();
-      if (width >= 8192)
-        decode_threads = 32;
-      else if (width >= 4096)
-        decode_threads = 16;
-      else if (width >= 2048)
-        decode_threads = 8;
-      else if (width >= 1024)
-        decode_threads = 4;
-    }
-
-    decode_threads =
-        std::min(decode_threads, base::SysInfo::NumberOfProcessors());
-    return decode_threads;
+  // For VP9 decoding increase the number of decode threads to equal the
+  // maximum number of tiles possible for higher resolution streams.
+  if (config.codec() == kCodecVP9) {
+    const int width = config.coded_size().width();
+    if (width >= 8192)
+      desired_threads = 32;
+    else if (width >= 4096)
+      desired_threads = 16;
+    else if (width >= 2048)
+      desired_threads = 8;
+    else if (width >= 1024)
+      desired_threads = 4;
   }
 
-  decode_threads = std::max(decode_threads, 0);
-  decode_threads = std::min(decode_threads, kMaxDecodeThreads);
-  return decode_threads;
+  return VideoDecoder::GetRecommendedThreadCount(desired_threads);
 }
 
 static std::unique_ptr<vpx_codec_ctx> InitializeVpxContext(
