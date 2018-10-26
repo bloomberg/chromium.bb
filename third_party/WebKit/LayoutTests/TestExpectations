@@ -4966,9 +4966,6 @@ crbug.com/838254 virtual/video-surface-layer/media/webkit-media-controls-webkit-
 
 crbug.com/839332 [ Mac ] virtual/video-surface-layer/media/video-no-audio.html [ Pass Failure ]
 
-# This will break for now
-crbug.com/841933 http/tests/webaudio/autoplay-crossorigin.html [ Skip ]
-
 # Sheriff 2018-05-22
 crbug.com/845610 [ Win ] http/tests/inspector-protocol/target/target-browser-context.js [ Pass Failure ]
 
