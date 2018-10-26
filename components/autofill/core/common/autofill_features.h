@@ -55,7 +55,6 @@ extern const base::Feature kAutofillSaveCardDialogUnlabeledExpirationDate;
 extern const base::Feature kAutofillSaveCardSignInAfterLocalSave;
 extern const base::Feature kAutofillSaveCreditCardUsesStrikeSystem;
 extern const base::Feature kAutofillSaveOnProbablySubmitted;
-extern const base::Feature kAutofillScanCardholderName;
 extern const base::Feature kAutofillSendExperimentIdsInPaymentsRPCs;
 extern const base::Feature kAutofillSendOnlyCountryInGetUploadDetails;
 extern const base::Feature kAutofillServerCommunication;
