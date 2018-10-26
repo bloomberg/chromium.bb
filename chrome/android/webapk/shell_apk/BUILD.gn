@@ -94,10 +94,15 @@ template("webapk_tmpl") {
 
   # Generate manifest with test values.
   manifest_mustache_pass(_manifest_target_name) {
-    forward_variables_from(invoker, [ "config_file" ])
+    forward_variables_from(invoker,
+                           [
+                             "apk_package_name",
+                             "config_file",
+                           ])
 
     input = _manifest_to_upload_output
     output = _manifest_output
+    extra_variables = [ "manifest_package=$apk_package_name" ]
     deps = [
       ":$_manifest_to_upload_target_name",
     ]
@@ -208,27 +213,32 @@ java_strings_grd("webapk_strings_grd") {
 webapk_tmpl("webapk") {
   config_file = "manifest/bound_manifest_config.json"
   apk_name = "WebApk"
+  apk_package_name = "org.chromium.webapk"
 }
 
 webapk_tmpl("maps_go_webapk") {
   config_file = "manifest/maps_go_manifest_config.json"
   apk_name = "MapsWebApk"
+  apk_package_name = "org.chromium.maps_go_webapk"
 }
 
 webapk_tmpl("unbound_webapk") {
   config_file = "manifest/unbound_manifest_config.json"
   apk_name = "UnboundWebApk"
+  apk_package_name = "org.chromium.arbitrarypackage"
 }
 
 webapk_tmpl("http_webapk") {
   config_file = "manifest/http_manifest_config.json"
   apk_name = "HttpWebApk"
+  apk_package_name = "org.chromium.webapk.http"
 }
 
 webapk_tmpl("new_splash_webapk") {
   use_new_splash = true
-  config_file = "manifest/new_splash_manifest_config.json"
+  config_file = "manifest/bound_manifest_config.json"
   apk_name = "NewSplashWebApk"
+  apk_package_name = "org.chromium.webapk.new.splash"
 }
 
 android_library("shell_apk_javatests") {

@@ -1,5 +1,4 @@
 {
-  "manifest_package": "org.chromium.maps_go_webapk",
   "scope_url": "https://www.google.com/maps",
   "intent_filters": {
     "scope_url_scheme": "https",
