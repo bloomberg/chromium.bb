@@ -521,9 +521,8 @@ void AppListControllerImpl::OnOverviewModeEnding() {
       WindowSelector::EnterExitOverviewType::kWindowsMinimized;
 }
 
-void AppListControllerImpl::OnOverviewModeEndingAnimationComplete(
-    bool canceled) {
-  if (!IsHomeLauncherEnabledInTabletMode() || canceled)
+void AppListControllerImpl::OnOverviewModeEndingAnimationComplete() {
+  if (!IsHomeLauncherEnabledInTabletMode())
     return;
 
   presenter_.ScheduleOverviewModeAnimation(/*start=*/false,

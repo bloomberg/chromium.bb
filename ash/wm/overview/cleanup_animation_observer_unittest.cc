@@ -8,7 +8,6 @@
 
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/window_selector_delegate.h"
-#include "base/containers/unique_ptr_adapters.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -42,13 +41,21 @@ class TestWindowSelectorDelegate : public WindowSelectorDelegate {
 
   void RemoveAndDestroyAnimationObserver(
       DelayedAnimationObserver* animation_observer) override {
-    base::EraseIf(observers_, base::MatchesUniquePtr(animation_observer));
-  }
+    class IsEqual {
+     public:
+      explicit IsEqual(DelayedAnimationObserver* animation_observer)
+          : animation_observer_(animation_observer) {}
+      bool operator()(const std::unique_ptr<DelayedAnimationObserver>& other) {
+        return (other.get() == animation_observer_);
+      }
 
-  void AddStartAnimationObserver(
-      std::unique_ptr<DelayedAnimationObserver> animation_observer) override {}
-  void RemoveAndDestroyStartAnimationObserver(
-      DelayedAnimationObserver* animation_observer) override {}
+     private:
+      const DelayedAnimationObserver* animation_observer_;
+    };
+    observers_.erase(std::remove_if(observers_.begin(), observers_.end(),
+                                    IsEqual(animation_observer)),
+                     observers_.end());
+  }
 
  private:
   std::vector<std::unique_ptr<DelayedAnimationObserver>> observers_;
@@ -71,7 +78,7 @@ class CleanupAnimationObserverTest : public AshTestBase,
   // cause a window to be closed via
   // views::Widget::GetWidgetForNativeView(window)->Close().
   std::unique_ptr<views::Widget> CreateWindowWidget(const gfx::Rect& bounds) {
-    auto widget = std::make_unique<views::Widget>();
+    std::unique_ptr<views::Widget> widget(new views::Widget);
     views::Widget::InitParams params;
     params.bounds = bounds;
     params.type = views::Widget::InitParams::TYPE_WINDOW;
@@ -103,8 +110,10 @@ class CleanupAnimationObserverTest : public AshTestBase,
 // Tests that basic create-destroy sequence does not crash.
 TEST_F(CleanupAnimationObserverTest, CreateDestroy) {
   TestWindowSelectorDelegate delegate;
-  std::unique_ptr<views::Widget> widget = CreateWindowWidget(gfx::Rect(40, 40));
-  auto observer = std::make_unique<CleanupAnimationObserver>(std::move(widget));
+  std::unique_ptr<views::Widget> widget(
+      CreateWindowWidget(gfx::Rect(0, 0, 40, 40)));
+  std::unique_ptr<CleanupAnimationObserver> observer(
+      new CleanupAnimationObserver(std::move(widget)));
   delegate.AddDelayedAnimationObserver(std::move(observer));
 }
 
@@ -113,7 +122,8 @@ TEST_F(CleanupAnimationObserverTest, CreateDestroy) {
 // owns the observer does not crash.
 TEST_F(CleanupAnimationObserverTest, CreateAnimateComplete) {
   TestWindowSelectorDelegate delegate;
-  std::unique_ptr<views::Widget> widget = CreateWindowWidget(gfx::Rect(40, 40));
+  std::unique_ptr<views::Widget> widget(
+      CreateWindowWidget(gfx::Rect(0, 0, 40, 40)));
   aura::Window* widget_window = widget->GetNativeWindow();
   {
     ui::ScopedLayerAnimationSettings animation_settings(
@@ -123,8 +133,8 @@ TEST_F(CleanupAnimationObserverTest, CreateAnimateComplete) {
     animation_settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
 
-    auto observer =
-        std::make_unique<CleanupAnimationObserver>(std::move(widget));
+    std::unique_ptr<CleanupAnimationObserver> observer(
+        new CleanupAnimationObserver(std::move(widget)));
     animation_settings.AddObserver(observer.get());
     delegate.AddDelayedAnimationObserver(std::move(observer));
 
@@ -143,7 +153,8 @@ TEST_F(CleanupAnimationObserverTest, CreateAnimateComplete) {
 // instance in destructor, this test would have crashed.
 TEST_F(CleanupAnimationObserverTest, CreateAnimateShutdown) {
   TestWindowSelectorDelegate delegate;
-  std::unique_ptr<views::Widget> widget = CreateWindowWidget(gfx::Rect(40, 40));
+  std::unique_ptr<views::Widget> widget(
+      CreateWindowWidget(gfx::Rect(0, 0, 40, 40)));
   aura::Window* widget_window = widget->GetNativeWindow();
   {
     // Normal animations for tests have ZERO_DURATION, make sure we are actually
@@ -157,8 +168,8 @@ TEST_F(CleanupAnimationObserverTest, CreateAnimateShutdown) {
     animation_settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
 
-    auto observer =
-        std::make_unique<CleanupAnimationObserver>(std::move(widget));
+    std::unique_ptr<CleanupAnimationObserver> observer(
+        new CleanupAnimationObserver(std::move(widget)));
     animation_settings.AddObserver(observer.get());
     delegate.AddDelayedAnimationObserver(std::move(observer));
 
