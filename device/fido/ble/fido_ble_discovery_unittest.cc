@@ -120,6 +120,7 @@ TEST_F(FidoBleDiscoveryTest,
   EXPECT_CALL(*adapter(), SetPowered).Times(0);
   EXPECT_CALL(*observer(), DiscoveryStarted(discovery(), false));
   discovery()->Start();
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
 }
 
 TEST_F(FidoBleDiscoveryTest, FidoBleDiscoveryResumeScanningAfterPoweredOn) {
@@ -131,6 +132,7 @@ TEST_F(FidoBleDiscoveryTest, FidoBleDiscoveryResumeScanningAfterPoweredOn) {
   // starts again.
   EXPECT_CALL(*adapter(), StartDiscoverySessionWithFilterRaw);
   discovery()->Start();
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
   adapter()->NotifyAdapterPoweredChanged(true);
 }
 
@@ -305,6 +307,7 @@ TEST_F(FidoBleDiscoveryTest,
   EXPECT_CALL(*observer(), AuthenticatorIdChanged(discovery(), kAuthenticatorId,
                                                   kAuthenticatorChangedId));
   discovery()->Start();
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
 
   adapter()->NotifyDeviceChanged(mock_device.get());
   ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(mock_device.get()));
@@ -328,6 +331,7 @@ TEST_F(FidoBleDiscoveryTest, DiscoveryNotifiesObserverWhenDeviceInPairingMode) {
 
   const auto device_id = FidoBleDevice::GetId(kDeviceAddress);
   discovery()->Start();
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
 
   ::testing::InSequence sequence;
   EXPECT_CALL(*observer(),
@@ -350,6 +354,7 @@ TEST_F(FidoBleDiscoveryTest,
 
   const auto device_id = FidoBleDevice::GetId(kDeviceAddress);
   discovery()->Start();
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
 
   ::testing::InSequence sequence;
   EXPECT_CALL(*observer(),
