@@ -17,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.base.LocaleUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -40,6 +41,17 @@ import java.util.List;
  * once at browser startup when no other promo or modals are shown.
  */
 public class LanguageAskPrompt implements ModalDialogView.Controller {
+    // Enum values for the Translate.ExplicitLanguageAsk.Event histogram.
+    private static final int PROMPT_EVENT_SHOWN = 0;
+    private static final int PROMPT_EVENT_SAVED = 1;
+    private static final int PROMPT_EVENT_CANCELLED = 2;
+    private static final int PROMPT_EVENT_MAX = PROMPT_EVENT_CANCELLED;
+
+    private void recordPromptEvent(int event) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "Translate.ExplicitLanguageAsk.Event", event, PROMPT_EVENT_MAX);
+    }
+
     private class SeparatorViewHolder extends ViewHolder {
         SeparatorViewHolder(View view) {
             super(view);
@@ -246,6 +258,8 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
     public void show(ChromeActivity activity) {
         if (activity == null) return;
 
+        recordPromptEvent(PROMPT_EVENT_SHOWN);
+
         List<String> userAcceptLanguagesList =
                 PrefServiceBridge.getInstance().getUserLanguageCodes();
         mInitialLanguages = new HashSet<String>();
@@ -316,5 +330,11 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
     }
 
     @Override
-    public void onDismiss(@DialogDismissalCause int dismissalCause) {}
+    public void onDismiss(@DialogDismissalCause int dismissalCause) {
+        if (dismissalCause == DialogDismissalCause.POSITIVE_BUTTON_CLICKED) {
+            recordPromptEvent(PROMPT_EVENT_SAVED);
+        } else {
+            recordPromptEvent(PROMPT_EVENT_CANCELLED);
+        }
+    }
 }
