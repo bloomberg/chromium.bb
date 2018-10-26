@@ -139,4 +139,12 @@ public class ManualFillingCoordinator {
     ManualFillingMediator getMediatorForTesting() {
         return mMediator;
     }
+
+    /**
+     * Returns whether - at this very moment - the Keyboard is replaced by an accessory sheet.
+     * @return True if an accessory sheet is open and replacing the keyboard.
+     */
+    public boolean isFillingViewShown() {
+        return mMediator.isFillingViewShown();
+    }
 }
