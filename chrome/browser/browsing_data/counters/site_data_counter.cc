@@ -15,7 +15,7 @@ using content::BrowserThread;
 
 namespace {
 bool CheckSyncState(Profile* profile, const syncer::SyncService* sync_service) {
-  return ShouldShowCookieException(profile);
+  return browsing_data_counter_utils::ShouldShowCookieException(profile);
 }
 }  // namespace
 

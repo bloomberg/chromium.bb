@@ -30,6 +30,8 @@
 #include "chrome/browser/browsing_data/counters/media_licenses_counter.h"
 #endif
 
+namespace browsing_data_counter_utils {
+
 class BrowsingDataCounterUtilsTest : public testing::Test {
  public:
   BrowsingDataCounterUtilsTest() {}
@@ -221,3 +223,5 @@ TEST_F(BrowsingDataCounterUtilsTest, DeletePasswordsAndSigninData) {
 
   password_store->ShutdownOnUIThread();
 }
+
+}  // namespace browsing_data_counter_utils
