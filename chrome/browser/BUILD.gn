@@ -4765,7 +4765,7 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/omnibox/OmniboxViewUtil.java",
       "../android/java/src/org/chromium/chrome/browser/omnibox/QueryInOmnibox.java",
       "../android/java/src/org/chromium/chrome/browser/omnibox/geo/GeolocationHeader.java",
-      "../android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AnswersImage.java",
+      "../android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AnswersImageFetcher.java",
       "../android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteController.java",
       "../android/java/src/org/chromium/chrome/browser/page_info/CertificateChainHelper.java",
       "../android/java/src/org/chromium/chrome/browser/page_info/CertificateViewer.java",
