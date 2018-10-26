@@ -162,6 +162,12 @@ Polymer({
     return visibility !== false;
   },
 
+  focusSection: function() {
+    const section = this.getSection(settings.getCurrentRoute().section);
+    assert(section);
+    section.show();
+  },
+
   /**
    * Queues a task to search the basic sections, then another for the advanced
    * sections.

@@ -69,7 +69,7 @@ TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
       return whenDone
           .then(function() {
             const whenClosed = test_util.eventToPromise('close', drawer);
-            drawer.close();
+            drawer.cancel();
             return whenClosed;
           })
           .then(() => {
