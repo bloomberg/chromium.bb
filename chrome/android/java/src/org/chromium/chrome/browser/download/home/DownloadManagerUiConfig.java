@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.download.home;
 
+import static org.chromium.chrome.browser.util.ConversionUtils.BYTES_PER_MEGABYTE;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -33,6 +35,17 @@ public class DownloadManagerUiConfig {
     public final boolean useNewDownloadPathThumbnails;
 
     /**
+     * The in-memory thumbnail size in bytes.
+     */
+    public final int inMemoryThumbnailCacheSizeBytes;
+
+    /**
+     * The maximum thumbnail scale factor, thumbnail on higher dpi devices will downscale the
+     * quality to this level.
+     */
+    public final float maxThumbnailScaleFactor;
+
+    /**
      * The time interval during which a download update is considered recent enough to show
      * in Just Now section.
      */
@@ -46,6 +59,8 @@ public class DownloadManagerUiConfig {
         supportFullWidthImages = builder.mSupportFullWidthImages;
         useNewDownloadPath = builder.mUseNewDownloadPath;
         useNewDownloadPathThumbnails = builder.mUseNewDownloadPathThumbnails;
+        inMemoryThumbnailCacheSizeBytes = builder.mInMemoryThumbnailCacheSizeBytes;
+        maxThumbnailScaleFactor = builder.mMaxThumbnailScaleFactor;
         justNowThresholdSeconds = builder.mJustNowThresholdSeconds;
     }
 
@@ -56,12 +71,16 @@ public class DownloadManagerUiConfig {
         /** Default value for threshold time interval to show up in Just Now section. */
         private static final int JUST_NOW_THRESHOLD_SECONDS_DEFAULT = 30 * 60;
 
+        private static final int IN_MEMORY_THUMBNAIL_CACHE_SIZE_BYTES = 15 * BYTES_PER_MEGABYTE;
+
         private boolean mIsOffTheRecord;
         private boolean mIsSeparateActivity;
         private boolean mUseGenericViewTypes;
         private boolean mSupportFullWidthImages;
         private boolean mUseNewDownloadPath;
         private boolean mUseNewDownloadPathThumbnails;
+        private int mInMemoryThumbnailCacheSizeBytes = IN_MEMORY_THUMBNAIL_CACHE_SIZE_BYTES;
+        private float mMaxThumbnailScaleFactor = 1.f; /* mdpi scale factor. */
         private long mJustNowThresholdSeconds;
 
         public Builder() {
@@ -98,6 +117,16 @@ public class DownloadManagerUiConfig {
 
         public Builder setUseNewDownloadPathThumbnails(boolean useNewDownloadPathThumbnails) {
             mUseNewDownloadPathThumbnails = useNewDownloadPathThumbnails;
+            return this;
+        }
+
+        public Builder setInMemoryThumbnailCacheSizeBytes(int inMemoryThumbnailCacheSizeBytes) {
+            mInMemoryThumbnailCacheSizeBytes = inMemoryThumbnailCacheSizeBytes;
+            return this;
+        }
+
+        public Builder setMaxThumbnailScaleFactor(float maxThumbnailScaleFactor) {
+            mMaxThumbnailScaleFactor = maxThumbnailScaleFactor;
             return this;
         }
 
