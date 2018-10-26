@@ -174,16 +174,6 @@ enum class BackForwardNavigationType {
   BACK_FORWARD_NAVIGATION_TYPE_COUNT
 };
 
-// Constants for storing the source of NSErrors received by WKWebViews:
-// - Errors received by |-webView:didFailProvisionalNavigation:withError:| are
-//   recorded using WKWebViewErrorSource::PROVISIONAL_LOAD.  These should be
-//   cancelled.
-// - Errors received by |-webView:didFailNavigation:withError:| are recorded
-//   using WKWebViewsource::NAVIGATION.  These errors should not be cancelled,
-//   as the WKWebView will automatically retry the load.
-NSString* const kWKWebViewErrorSourceKey = @"ErrorSource";
-typedef enum { NONE = 0, PROVISIONAL_LOAD, NAVIGATION } WKWebViewErrorSource;
-
 // Represents cert verification error, which happened inside
 // |webView:didReceiveAuthenticationChallenge:completionHandler:| and should
 // be checked inside |webView:didFailProvisionalNavigation:withError:|.
@@ -204,21 +194,6 @@ typedef base::MRUCache<web::CertHostPair, CertVerificationError>
 // stored errors is not expected to be high.
 const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 
-// Utility function for getting the source of NSErrors received by WKWebViews.
-WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
-  DCHECK(error);
-  return static_cast<WKWebViewErrorSource>(
-      [error.userInfo[kWKWebViewErrorSourceKey] integerValue]);
-}
-// Utility function for converting the WKWebViewErrorSource to the NSError
-// received by WKWebViews.
-NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
-  DCHECK(error);
-  NSMutableDictionary* userInfo = [error.userInfo mutableCopy];
-  [userInfo setObject:@(source) forKey:kWKWebViewErrorSourceKey];
-  return
-      [NSError errorWithDomain:error.domain code:error.code userInfo:userInfo];
-}
 }  // namespace
 
 #pragma mark -
@@ -911,15 +886,19 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                                        transition:
                                            (ui::PageTransition)pageTransition;
 // Called when a load ends in an error.
-- (void)handleLoadError:(NSError*)error forNavigation:(WKNavigation*)navigation;
+- (void)handleLoadError:(NSError*)error
+          forNavigation:(WKNavigation*)navigation
+        provisionalLoad:(BOOL)provisionalLoad;
 
 // Handles cancelled load in WKWebView (error with NSURLErrorCancelled code).
 - (void)handleCancelledError:(NSError*)error
-               forNavigation:(WKNavigation*)navigation;
+               forNavigation:(WKNavigation*)navigation
+             provisionalLoad:(BOOL)provisionalLoad;
 
 // Used to decide whether a load that generates errors with the
 // NSURLErrorCancelled code should be cancelled.
-- (BOOL)shouldCancelLoadForCancelledError:(NSError*)error;
+- (BOOL)shouldCancelLoadForCancelledError:(NSError*)error
+                          provisionalLoad:(BOOL)provisionalLoad;
 
 // Returns YES if response should be rendered in WKWebView.
 - (BOOL)shouldRenderResponse:(WKNavigationResponse*)WKResponse;
@@ -3066,9 +3045,12 @@ registerLoadRequestForURL:(const GURL&)requestURL
 }
 
 - (void)handleLoadError:(NSError*)error
-          forNavigation:(WKNavigation*)navigation {
+          forNavigation:(WKNavigation*)navigation
+        provisionalLoad:(BOOL)provisionalLoad {
   if (error.code == NSURLErrorCancelled) {
-    [self handleCancelledError:error forNavigation:navigation];
+    [self handleCancelledError:error
+                 forNavigation:navigation
+               provisionalLoad:provisionalLoad];
     // NSURLErrorCancelled errors that aren't handled by aborting the load will
     // automatically be retried by the web view, so early return in this case.
     return;
@@ -3129,12 +3111,11 @@ registerLoadRequestForURL:(const GURL&)requestURL
   if (item) {
     GURL errorURL =
         net::GURLWithNSURL(error.userInfo[NSURLErrorFailingURLErrorKey]);
-    WKWebViewErrorSource source = WKWebViewErrorSourceFromError(error);
     web::ErrorRetryCommand command = web::ErrorRetryCommand::kDoNothing;
-    if (source == PROVISIONAL_LOAD) {
+    if (provisionalLoad) {
       command = item->error_retry_state_machine().DidFailProvisionalNavigation(
           net::GURLWithNSURL(_webView.URL), errorURL);
-    } else if (source == NAVIGATION) {
+    } else {
       command = item->error_retry_state_machine().DidFailNavigation(
           net::GURLWithNSURL(_webView.URL), errorURL);
     }
@@ -3147,16 +3128,17 @@ registerLoadRequestForURL:(const GURL&)requestURL
     self.navigationManagerImpl->CommitPendingItem();
   }
 
-  if ([_navigationStates stateForNavigation:navigation] ==
-      web::WKNavigationState::PROVISIONALY_FAILED) {
+  if (provisionalLoad) {
     _webStateImpl->OnNavigationFinished(navigationContext);
   }
   [self loadCompleteWithSuccess:NO forNavigation:navigation];
 }
 
 - (void)handleCancelledError:(NSError*)error
-               forNavigation:(WKNavigation*)navigation {
-  if ([self shouldCancelLoadForCancelledError:error]) {
+               forNavigation:(WKNavigation*)navigation
+             provisionalLoad:(BOOL)provisionalLoad {
+  if ([self shouldCancelLoadForCancelledError:error
+                              provisionalLoad:provisionalLoad]) {
     [self loadCancelled];
     self.navigationManagerImpl->DiscardNonCommittedItems();
     // If discarding the non-committed entries results in native content URL,
@@ -3174,14 +3156,14 @@ registerLoadRequestForURL:(const GURL&)requestURL
     web::NavigationContextImpl* navigationContext =
         [_navigationStates contextForNavigation:navigation];
 
-    if ([_navigationStates stateForNavigation:navigation] ==
-        web::WKNavigationState::PROVISIONALY_FAILED) {
+    if (provisionalLoad) {
       _webStateImpl->OnNavigationFinished(navigationContext);
     }
   }
 }
 
-- (BOOL)shouldCancelLoadForCancelledError:(NSError*)error {
+- (BOOL)shouldCancelLoadForCancelledError:(NSError*)error
+                          provisionalLoad:(BOOL)provisionalLoad {
   DCHECK(error.code == NSURLErrorCancelled ||
          error.code == web::kWebKitErrorFrameLoadInterruptedByPolicyChange);
   // Do not cancel the load if it is for an app specific URL, as such errors
@@ -3191,10 +3173,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   if (web::GetWebClient()->IsAppSpecificURL(errorURL))
     return NO;
 
-  // Don't cancel NSURLErrorCancelled errors originating from navigation
-  // as the WKWebView will automatically retry these loads.
-  WKWebViewErrorSource source = WKWebViewErrorSourceFromError(error);
-  return source != NAVIGATION;
+  return provisionalLoad;
 }
 
 - (void)didReceiveWebViewNavigationDelegateCallback {
@@ -3836,7 +3815,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // |info.cert| can be null if certChain in NSError is empty or can not be
     // parsed, in this case do not ask delegate if error should be allowed, it
     // should not be.
-    [self handleLoadError:error forNavigation:navigation];
+    [self handleLoadError:error forNavigation:navigation provisionalLoad:YES];
     return;
   }
 
@@ -4137,7 +4116,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
           messageRouter:messageRouter
       completionHandler:^(NSError* loadError) {
         if (loadError)
-          [self handleLoadError:loadError forNavigation:nil];
+          [self handleLoadError:loadError
+                  forNavigation:nil
+                provisionalLoad:YES];
         else
           self.webStateImpl->SetContentsMimeType("text/html");
       }];
@@ -4741,18 +4722,19 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // Handle load cancellation for directly cancelled navigations without
   // handling their potential errors. Otherwise, handle the error.
   if ([_pendingNavigationInfo cancelled]) {
-    [self handleCancelledError:error forNavigation:navigation];
+    [self handleCancelledError:error
+                 forNavigation:navigation
+               provisionalLoad:YES];
   } else if (error.code == NSURLErrorUnsupportedURL &&
              _webStateImpl->HasWebUI()) {
     // This is a navigation to WebUI page.
     DCHECK(web::GetWebClient()->IsAppSpecificURL(
         net::GURLWithNSURL(error.userInfo[NSURLErrorFailingURLErrorKey])));
   } else {
-    error = WKWebViewErrorWithSource(error, PROVISIONAL_LOAD);
     if (web::IsWKWebViewSSLCertError(error)) {
       [self handleSSLCertError:error forNavigation:navigation];
     } else {
-      [self handleLoadError:error forNavigation:navigation];
+      [self handleLoadError:error forNavigation:navigation provisionalLoad:YES];
     }
   }
 
@@ -5084,8 +5066,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   [_navigationStates setState:web::WKNavigationState::FAILED
                 forNavigation:navigation];
 
-  [self handleLoadError:WKWebViewErrorWithSource(error, NAVIGATION)
-          forNavigation:navigation];
+  [self handleLoadError:error forNavigation:navigation provisionalLoad:NO];
 
   [self removeAllWebFrames];
   _certVerificationErrors->Clear();
