@@ -165,6 +165,13 @@ class DiscreteSet {
   std::vector<T> elements_;
 };
 
+// Special case for DiscreteSet<bool> where it is easy to produce an explicit
+// set that contains all possible elements.
+template <>
+inline bool DiscreteSet<bool>::is_universal() const {
+  return Contains(true) && Contains(false);
+}
+
 DiscreteSet<std::string> StringSetFromConstraint(
     const blink::StringConstraint& constraint);
 DiscreteSet<bool> BoolSetFromConstraint(
