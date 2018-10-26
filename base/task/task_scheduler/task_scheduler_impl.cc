@@ -16,14 +16,13 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "base/task/task_scheduler/delayed_task_manager.h"
-#include "base/task/task_scheduler/environment_config.h"
+#include "base/task/task_scheduler/scheduler_parallel_task_runner.h"
+#include "base/task/task_scheduler/scheduler_sequenced_task_runner.h"
 #include "base/task/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task/task_scheduler/sequence.h"
 #include "base/task/task_scheduler/sequence_sort_key.h"
 #include "base/task/task_scheduler/service_thread.h"
 #include "base/task/task_scheduler/task.h"
-#include "base/task/task_scheduler/task_tracker.h"
 #include "base/time/time.h"
 
 namespace base {
@@ -85,8 +84,7 @@ TaskSchedulerImpl::TaskSchedulerImpl(
             "."),
         kEnvironmentParams[environment_type].name_suffix,
         kEnvironmentParams[environment_type].priority_hint,
-        task_tracker_->GetTrackedRef(), &delayed_task_manager_,
-        tracked_ref_factory_.GetTrackedRef()));
+        task_tracker_->GetTrackedRef(), tracked_ref_factory_.GetTrackedRef()));
   }
 
   // Map environment indexes to pools. |kMergeBlockingNonBlockingPools| is
@@ -223,25 +221,21 @@ bool TaskSchedulerImpl::PostDelayedTaskWithTraits(const Location& from_here,
                                                   OnceClosure task,
                                                   TimeDelta delay) {
   // Post |task| as part of a one-off single-task Sequence.
-  const TaskTraits new_traits = SetUserBlockingPriorityIfNeeded(traits);
-  return GetWorkerPoolForTraits(new_traits)
-      ->PostTaskWithSequence(Task(from_here, std::move(task), delay),
-                             MakeRefCounted<Sequence>(new_traits));
+  return PostTaskWithSequence(Task(from_here, std::move(task), delay),
+                              MakeRefCounted<Sequence>(traits));
 }
 
 scoped_refptr<TaskRunner> TaskSchedulerImpl::CreateTaskRunnerWithTraits(
     const TaskTraits& traits) {
   const TaskTraits new_traits = SetUserBlockingPriorityIfNeeded(traits);
-  return GetWorkerPoolForTraits(new_traits)
-      ->CreateTaskRunnerWithTraits(new_traits);
+  return MakeRefCounted<SchedulerParallelTaskRunner>(new_traits, this);
 }
 
 scoped_refptr<SequencedTaskRunner>
 TaskSchedulerImpl::CreateSequencedTaskRunnerWithTraits(
     const TaskTraits& traits) {
   const TaskTraits new_traits = SetUserBlockingPriorityIfNeeded(traits);
-  return GetWorkerPoolForTraits(new_traits)
-      ->CreateSequencedTaskRunnerWithTraits(new_traits);
+  return MakeRefCounted<SchedulerSequencedTaskRunner>(new_traits, this);
 }
 
 scoped_refptr<SingleThreadTaskRunner>
@@ -318,6 +312,46 @@ void TaskSchedulerImpl::ReEnqueueSequence(scoped_refptr<Sequence> sequence) {
   const TaskTraits new_traits =
       SetUserBlockingPriorityIfNeeded(sequence->traits());
   GetWorkerPoolForTraits(new_traits)->ReEnqueueSequence(std::move(sequence));
+}
+
+bool TaskSchedulerImpl::PostTaskWithSequence(Task task,
+                                             scoped_refptr<Sequence> sequence) {
+  // Use CHECK instead of DCHECK to crash earlier. See http://crbug.com/711167
+  // for details.
+  CHECK(task.task);
+  DCHECK(sequence);
+
+  const TaskTraits new_traits =
+      SetUserBlockingPriorityIfNeeded(sequence->traits());
+
+  if (!task_tracker_->WillPostTask(&task, new_traits.shutdown_behavior()))
+    return false;
+
+  if (task.delayed_run_time.is_null()) {
+    GetWorkerPoolForTraits(new_traits)
+        ->PostTaskWithSequenceNow(std::move(task), std::move(sequence));
+  } else {
+    delayed_task_manager_.AddDelayedTask(
+        std::move(task),
+        BindOnce(
+            [](scoped_refptr<Sequence> sequence,
+               TaskSchedulerImpl* task_scheduler_impl, Task task) {
+              const TaskTraits new_traits =
+                  task_scheduler_impl->SetUserBlockingPriorityIfNeeded(
+                      sequence->traits());
+              task_scheduler_impl->GetWorkerPoolForTraits(new_traits)
+                  ->PostTaskWithSequenceNow(std::move(task),
+                                            std::move(sequence));
+            },
+            std::move(sequence), Unretained(this)));
+  }
+
+  return true;
+}
+
+bool TaskSchedulerImpl::IsRunningPoolWithTraits(
+    const TaskTraits& traits) const {
+  return GetWorkerPoolForTraits(traits)->IsBoundToCurrentThread();
 }
 
 SchedulerWorkerPoolImpl* TaskSchedulerImpl::GetWorkerPoolForTraits(

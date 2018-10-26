@@ -386,7 +386,7 @@ TEST_P(TaskSchedulerImplTest, PostDelayedTaskWithTraitsWithDelayBeforeStart) {
   scheduler_.PostDelayedTaskWithTraits(
       FROM_HERE, GetParam().traits,
       BindOnce(&VerifyTimeAndTaskEnvironmentAndSignalEvent, GetParam().traits,
-               SchedulerState::kBeforeSchedulerStart,
+               SchedulerState::kAfterSchedulerStart,
                TimeTicks::Now() + TestTimeouts::tiny_timeout(),
                Unretained(&task_running)),
       TestTimeouts::tiny_timeout());
