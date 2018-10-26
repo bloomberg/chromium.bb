@@ -158,7 +158,7 @@ void LayoutSVGImage::UpdateLayout() {
 
   if (auto* svg_image_element = ToSVGImageElementOrNull(GetElement())) {
     if (svg_image_element->IsDefaultIntrinsicSize())
-      MediaElementParserHelpers::ReportUnsizedMediaViolation(this);
+      media_element_parser_helpers::ReportUnsizedMediaViolation(this);
   }
   ClearNeedsLayout();
 }

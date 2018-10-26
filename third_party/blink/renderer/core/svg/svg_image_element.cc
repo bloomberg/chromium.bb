@@ -67,8 +67,8 @@ inline SVGImageElement::SVGImageElement(Document& document)
   AddToPropertyMap(height_);
   AddToPropertyMap(preserve_aspect_ratio_);
 
-  if (MediaElementParserHelpers::IsMediaElement(this) &&
-      !MediaElementParserHelpers::IsUnsizedMediaEnabled(document)) {
+  if (media_element_parser_helpers::IsMediaElement(this) &&
+      !media_element_parser_helpers::IsUnsizedMediaEnabled(document)) {
     is_default_overridden_intrinsic_size_ = true;
     overridden_intrinsic_size_ =
         IntSize(LayoutReplaced::kDefaultWidth, LayoutReplaced::kDefaultHeight);
@@ -176,7 +176,7 @@ void SVGImageElement::ParseAttribute(
                  ExperimentalProductivityFeaturesEnabled()) {
     String message;
     bool intrinsic_size_changed =
-        MediaElementParserHelpers::ParseIntrinsicSizeAttribute(
+        media_element_parser_helpers::ParseIntrinsicSizeAttribute(
             params.new_value, this, &overridden_intrinsic_size_,
             &is_default_overridden_intrinsic_size_, &message);
     if (!message.IsEmpty()) {

@@ -203,7 +203,7 @@ void LayoutVideo::UpdateAfterLayout() {
   // Report violation of unsized-media policy.
   if (auto* video_element = ToHTMLVideoElementOrNull(GetNode())) {
     if (video_element->IsDefaultIntrinsicSize())
-      MediaElementParserHelpers::ReportUnsizedMediaViolation(this);
+      media_element_parser_helpers::ReportUnsizedMediaViolation(this);
   }
 }
 

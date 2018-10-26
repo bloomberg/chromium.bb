@@ -500,7 +500,7 @@ void LayoutImage::UpdateAfterLayout() {
 
     // Report violation of unsized-media policy.
     if (image_element->IsDefaultIntrinsicSize())
-      MediaElementParserHelpers::ReportUnsizedMediaViolation(this);
+      media_element_parser_helpers::ReportUnsizedMediaViolation(this);
   }
 }
 

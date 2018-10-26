@@ -227,6 +227,7 @@ _CONFIG = [
             'event_handling_util::.+',
             'event_util::.+',
             'media_constraints_impl::.+',
+            'media_element_parser_helpers::.+',
             'network_utils::.+',
             'paint_filter_builder::.+',
             'root_scroller_util::.+',
