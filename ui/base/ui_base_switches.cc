@@ -70,21 +70,11 @@ const char kMaterialDesignInkDropAnimationSpeedFast[] = "fast";
 // Defines that Material Design visual feedback animations should be slow.
 const char kMaterialDesignInkDropAnimationSpeedSlow[] = "slow";
 
-// Enables top Chrome material design elements.
-const char kTopChromeMD[] = "top-chrome-md";
-
-// Material design mode that represents a refresh of the Chrome UI for the
-// |kTopChromeMD| switch.
-const char kTopChromeMDMaterialRefresh[] = "material-refresh";
-
-// Material design mode that represents a touchable version of material-refresh
-// for the |kTopChromeMD| switch.
-const char kTopChromeMDMaterialRefreshTouchOptimized[] =
-    "material-refresh-touch-optimized";
-
-// Switches between material refresh and touchable material refresh depending on
-// the tablet mode.
-const char kTopChromeMDMaterialRefreshDynamic[] = "material-refresh-dynamic";
+// Controls touch-optimized UI layout for top chrome.
+const char kTopChromeTouchUi[] = "top-chrome-touch-ui";
+const char kTopChromeTouchUiAuto[] = "auto";
+const char kTopChromeTouchUiDisabled[] = "disabled";
+const char kTopChromeTouchUiEnabled[] = "enabled";
 
 // Disable partial swap which is needed for some OpenGL drivers / emulators.
 const char kUIDisablePartialSwap[] = "ui-disable-partial-swap";

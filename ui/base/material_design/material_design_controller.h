@@ -30,15 +30,7 @@ class MaterialDesignControllerTestAPI;
 // Central controller to handle material design modes.
 class UI_BASE_EXPORT MaterialDesignController {
  public:
-  // The different material design modes.
-  enum Mode {
-    // Material Refresh design targeted at mouse devices.
-    MATERIAL_REFRESH,
-    // Material Refresh design optimized for touch devices.
-    MATERIAL_TOUCH_REFRESH,
-  };
-
-  // Initializes |mode_|. Must be called before checking |mode_|.
+  // Initializes touch UI state based on command-line flags.
   static void Initialize();
 
   // Returns true if the touch-optimized UI material design mode is enabled.
@@ -47,12 +39,9 @@ class UI_BASE_EXPORT MaterialDesignController {
   // Exposed for TabletModeClient on ChromeOS + ash.
   static void OnTabletModeToggled(bool enabled);
 
-  static bool is_mode_initialized() { return is_mode_initialized_; }
-
   static MaterialDesignController* GetInstance();
 
   void AddObserver(MaterialDesignControllerObserver* observer);
-
   void RemoveObserver(MaterialDesignControllerObserver* observer);
 
  private:
@@ -66,21 +55,18 @@ class UI_BASE_EXPORT MaterialDesignController {
   // allow calling Initialize() more than once.
   static void Uninitialize();
 
-  // Set |mode_| to |mode| and updates |is_mode_initialized_| to true. Can be
-  // used by tests to directly set the mode.
-  static void SetMode(Mode mode);
+  // Sets the touch UI state and notifies observers of the state change.
+  static void SetTouchUi(bool touch_ui);
 
-  // Tracks whether |mode_| has been initialized. This is necessary to avoid
-  // checking the |mode_| early in initialization before a call to Initialize().
+  // Tracks whether |touch_ui_| has been initialized.
   // Tests can use it to reset the state back to a clean state during tear down.
-  static bool is_mode_initialized_;
+  static bool initialized_;
 
-  // The current Mode to be used by the system.
-  static Mode mode_;
+  // Whether the UI layout should be touch-optimized.
+  static bool touch_ui_;
 
-  // Whether |mode_| should toggle between MATERIAL_REFRESH and
-  // MATERIAL_TOUCH_REFRESH depending on the tablet state.
-  static bool is_refresh_dynamic_ui_;
+  // Whether |touch_ui_| should toggle on and off depending on the tablet state.
+  static bool automatic_touch_ui_;
 
 #if defined(OS_WIN)
   std::unique_ptr<gfx::SingletonHwndObserver> singleton_hwnd_observer_;

@@ -693,10 +693,8 @@ OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
   }
 
   // Touch-optimized UI always swaps title and URL.
-  if (ui::MaterialDesignController::is_mode_initialized() &&
-      ui::MaterialDesignController::IsTouchOptimizedUiEnabled()) {
+  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
     return EMPHASIZE_WHEN_NONEMPTY;
-  }
 
   // Check the feature that swaps the title and URL only for zero suggest
   // suggestions.

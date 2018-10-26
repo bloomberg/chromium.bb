@@ -16,16 +16,15 @@ namespace test {
 // state in MaterialDesignController class.
 class MaterialDesignControllerTestAPI {
  public:
-  explicit MaterialDesignControllerTestAPI(MaterialDesignController::Mode mode);
+  explicit MaterialDesignControllerTestAPI(bool touch_ui);
   ~MaterialDesignControllerTestAPI();
 
-  // Wrapper functions for MaterialDesignController internal functions.
-  static void SetDynamicRefreshUi(bool enabled);
+  // Wrapper for MaterialDesignController internal function.
   static void Uninitialize();
 
  private:
-  const MaterialDesignController::Mode previous_mode_;
   const bool previous_initialized_;
+  const bool previous_touch_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(MaterialDesignControllerTestAPI);
 };

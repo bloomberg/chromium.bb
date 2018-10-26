@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -13,7 +14,6 @@
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/trace_event/trace_event.h"
 #include "build/buildflag.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/base/ui_base_features.h"
@@ -33,9 +33,9 @@
 
 namespace ui {
 
+#if defined(OS_WIN)
 namespace {
 
-#if defined(OS_WIN)
 bool IsTabletMode() {
   return base::win::IsWindows10TabletMode(
       gfx::SingletonHwnd::GetInstance()->hwnd());
@@ -48,40 +48,36 @@ void TabletModeWatcherWinProc(HWND hwnd,
   if (message == WM_SETTINGCHANGE)
     MaterialDesignController::OnTabletModeToggled(IsTabletMode());
 }
-#endif  // defined(OS_WIN)
 
 }  // namespace
+#endif  // defined(OS_WIN)
 
-bool MaterialDesignController::is_mode_initialized_ = false;
-
-MaterialDesignController::Mode MaterialDesignController::mode_ =
-    MaterialDesignController::MATERIAL_REFRESH;
-
-bool MaterialDesignController::is_refresh_dynamic_ui_ = false;
+bool MaterialDesignController::initialized_ = false;
+bool MaterialDesignController::touch_ui_ = false;
+bool MaterialDesignController::automatic_touch_ui_ = false;
 
 // static
 void MaterialDesignController::Initialize() {
-  TRACE_EVENT0("startup", "MaterialDesignController::InitializeMode");
-  DCHECK(!is_mode_initialized_);
+  if (initialized_)
+    return;
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   const std::string switch_value =
-      command_line->GetSwitchValueASCII(switches::kTopChromeMD);
-  bool touch =
-      switch_value == switches::kTopChromeMDMaterialRefreshTouchOptimized;
-  is_refresh_dynamic_ui_ = false;
+      command_line->GetSwitchValueASCII(switches::kTopChromeTouchUi);
+  bool touch = switch_value == switches::kTopChromeTouchUiEnabled;
+  automatic_touch_ui_ = switch_value == switches::kTopChromeTouchUiAuto;
 
   // When the mode is not explicitly forced, platforms vary as to the default
   // behavior.
-  if (!touch && (switch_value != switches::kTopChromeMDMaterialRefresh)) {
+  if (!touch && (switch_value != switches::kTopChromeTouchUiDisabled)) {
 #if defined(OS_CHROMEOS)
     // TabletModeClient's default state is in non-tablet mode.
-    is_refresh_dynamic_ui_ = true;
+    automatic_touch_ui_ = true;
 #elif defined(OS_WIN)
     if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
       // Win 10+ uses dynamic mode by default and checks the current tablet mode
       // state to determine whether to start in touch mode.
-      is_refresh_dynamic_ui_ = true;
+      automatic_touch_ui_ = true;
       if (base::MessageLoopForUI::IsCurrent()) {
         MaterialDesignController::GetInstance()->singleton_hwnd_observer_ =
             std::make_unique<gfx::SingletonHwndObserver>(
@@ -91,7 +87,7 @@ void MaterialDesignController::Initialize() {
     }
 #endif
   }
-  SetMode(touch ? MATERIAL_TOUCH_REFRESH : MATERIAL_REFRESH);
+  SetTouchUi(touch);
 
   // Ideally, there would be a more general, "initialize random stuff here"
   // function into which these things and a call to this function can be placed.
@@ -108,14 +104,13 @@ void MaterialDesignController::Initialize() {
 
 // static
 bool MaterialDesignController::IsTouchOptimizedUiEnabled() {
-  DCHECK(is_mode_initialized_);
-  return mode_ == MATERIAL_TOUCH_REFRESH;
+  return touch_ui_;
 }
 
 // static
 void MaterialDesignController::OnTabletModeToggled(bool enabled) {
-  if (is_refresh_dynamic_ui_)
-    SetMode(enabled ? MATERIAL_TOUCH_REFRESH : MATERIAL_REFRESH);
+  if (automatic_touch_ui_)
+    SetTouchUi(enabled);
 }
 
 // static
@@ -138,14 +133,14 @@ MaterialDesignController::MaterialDesignController() = default;
 
 // static
 void MaterialDesignController::Uninitialize() {
-  is_mode_initialized_ = false;
+  initialized_ = false;
 }
 
 // static
-void MaterialDesignController::SetMode(MaterialDesignController::Mode mode) {
-  if (!is_mode_initialized_ || mode_ != mode) {
-    is_mode_initialized_ = true;
-    mode_ = mode;
+void MaterialDesignController::SetTouchUi(bool touch_ui) {
+  if (!initialized_ || touch_ui_ != touch_ui) {
+    initialized_ = true;
+    touch_ui_ = touch_ui;
     for (auto& observer : GetInstance()->observers_)
       observer.OnMdModeChanged();
   }

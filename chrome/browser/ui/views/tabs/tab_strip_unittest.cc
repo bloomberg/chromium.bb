@@ -20,6 +20,7 @@
 #include "chrome/test/views/chrome_test_views_delegate.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/canvas.h"
@@ -136,9 +137,8 @@ class TestTabStripObserver : public TabStripObserver {
   DISALLOW_COPY_AND_ASSIGN(TestTabStripObserver);
 };
 
-class TabStripTest
-    : public ChromeViewsTestBase,
-      public testing::WithParamInterface<ui::MaterialDesignController::Mode> {
+class TabStripTest : public ChromeViewsTestBase,
+                     public testing::WithParamInterface<bool> {
  public:
   TabStripTest() : test_api_(GetParam()) {}
 
@@ -842,8 +842,4 @@ TEST_P(TabStripTest, NewTabButtonInkDrop) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
-    ,
-    TabStripTest,
-    ::testing::Values(ui::MaterialDesignController::MATERIAL_REFRESH,
-                      ui::MaterialDesignController::MATERIAL_TOUCH_REFRESH));
+INSTANTIATE_TEST_CASE_P(, TabStripTest, ::testing::Values(false, true));

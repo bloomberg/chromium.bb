@@ -546,15 +546,14 @@ const FeatureEntry::Choice kExtensionContentVerificationChoices[] = {
      switches::kExtensionContentVerificationEnforceStrict},
 };
 
-const FeatureEntry::Choice kTopChromeMaterialDesignChoices[] = {
+const FeatureEntry::Choice kTopChromeTouchUiChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kTopChromeMdMaterialRefresh, switches::kTopChromeMD,
-     switches::kTopChromeMDMaterialRefresh},
-    {flag_descriptions::kTopChromeMdMaterialRefreshTouchOptimized,
-     switches::kTopChromeMD,
-     switches::kTopChromeMDMaterialRefreshTouchOptimized},
-    {flag_descriptions::kTopChromeMdMaterialRefreshDynamic,
-     switches::kTopChromeMD, switches::kTopChromeMDMaterialRefreshDynamic}};
+    {flags_ui::kGenericExperimentChoiceAutomatic, switches::kTopChromeTouchUi,
+     switches::kTopChromeTouchUiAuto},
+    {flags_ui::kGenericExperimentChoiceDisabled, switches::kTopChromeTouchUi,
+     switches::kTopChromeTouchUiDisabled},
+    {flags_ui::kGenericExperimentChoiceEnabled, switches::kTopChromeTouchUi,
+     switches::kTopChromeTouchUiEnabled}};
 
 const FeatureEntry::Choice kNewTabButtonPositionChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
@@ -1628,9 +1627,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAndroidSpellcheckerDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(spellcheck::kAndroidSpellCheckerNonLowEnd)},
 #endif  // ENABLE_SPELLCHECK && OS_ANDROID
-    {"top-chrome-md", flag_descriptions::kTopChromeMd,
-     flag_descriptions::kTopChromeMdDescription, kOsDesktop,
-     MULTI_VALUE_TYPE(kTopChromeMaterialDesignChoices)},
+    {"top-chrome-touch-ui", flag_descriptions::kTopChromeTouchUiName,
+     flag_descriptions::kTopChromeTouchUiDescription, kOsDesktop,
+     MULTI_VALUE_TYPE(kTopChromeTouchUiChoices)},
     {"new-tab-button-position", flag_descriptions::kNewTabButtonPosition,
      flag_descriptions::kNewTabButtonPositionDescription, kOsDesktop,
      MULTI_VALUE_TYPE(kNewTabButtonPositionChoices)},

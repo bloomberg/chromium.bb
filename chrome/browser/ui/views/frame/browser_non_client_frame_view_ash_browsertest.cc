@@ -142,9 +142,8 @@ BrowserNonClientFrameViewAsh* GetFrameViewAsh(BrowserView* browser_view) {
 // Template to be used as a base class for touch-optimized UI parameterized test
 // fixtures.
 template <class BaseTest>
-class TopChromeMdParamTest
-    : public BaseTest,
-      public ::testing::WithParamInterface<ui::MaterialDesignController::Mode> {
+class TopChromeMdParamTest : public BaseTest,
+                             public ::testing::WithParamInterface<bool> {
  public:
   TopChromeMdParamTest() : test_api_(GetParam()) {}
   ~TopChromeMdParamTest() override = default;
@@ -1443,11 +1442,8 @@ IN_PROC_BROWSER_TEST_P(NonHomeLauncherBrowserNonClientFrameViewAshTest,
   EXPECT_EQ(expected_height, frame_view->frame_header_->GetHeaderHeight());
 }
 
-#define INSTANTIATE_TEST_CASE(name)                                     \
-  INSTANTIATE_TEST_CASE_P(                                              \
-      , name,                                                           \
-      ::testing::Values(ui::MaterialDesignController::MATERIAL_REFRESH, \
-                        ui::MaterialDesignController::MATERIAL_TOUCH_REFRESH))
+#define INSTANTIATE_TEST_CASE(name) \
+  INSTANTIATE_TEST_CASE_P(, name, ::testing::Values(false, true))
 
 INSTANTIATE_TEST_CASE(BrowserNonClientFrameViewAshTest);
 INSTANTIATE_TEST_CASE(ImmersiveModeBrowserViewTest);
