@@ -88,7 +88,11 @@ TestCompositorHostOzone::TestCompositorHostOzone(
                   false /* enable_surface_synchronization */,
                   false /* enable_pixel_canvas */) {}
 
-TestCompositorHostOzone::~TestCompositorHostOzone() {}
+TestCompositorHostOzone::~TestCompositorHostOzone() {
+  // |window_| should be destroyed earlier than |window_delegate_| as it refers
+  // to its delegate on destroying.
+  window_.reset();
+}
 
 void TestCompositorHostOzone::Show() {
   ui::PlatformWindowInitProperties properties;

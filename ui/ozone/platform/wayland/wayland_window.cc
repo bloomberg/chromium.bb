@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"
@@ -79,9 +80,17 @@ WaylandWindow::WaylandWindow(PlatformWindowDelegate* delegate,
   // Set a class property key, which allows |this| to be used for interactive
   // events, e.g. move or resize.
   SetWmMoveResizeHandler(this, AsWmMoveResizeHandler());
+
+  // Set a class property key, which allows |this| to be used for drag action.
+  SetWmDragHandler(this, this);
 }
 
 WaylandWindow::~WaylandWindow() {
+  if (drag_closed_callback_) {
+    std::move(drag_closed_callback_)
+        .Run(DragDropTypes::DragOperation::DRAG_NONE);
+  }
+
   PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
   connection_->RemoveWindow(surface_.id());
 
@@ -214,6 +223,15 @@ void WaylandWindow::DispatchHostWindowDragMovement(
     xdg_surface_->SurfaceResize(connection_, hittest);
 
   connection_->ScheduleFlush();
+}
+
+void WaylandWindow::StartDrag(const ui::OSExchangeData& data,
+                              int operation,
+                              gfx::NativeCursor cursor,
+                              base::OnceCallback<void(int)> callback) {
+  DCHECK(!drag_closed_callback_);
+  drag_closed_callback_ = std::move(callback);
+  connection_->StartDrag(data, operation);
 }
 
 void WaylandWindow::Show() {
@@ -570,7 +588,7 @@ void WaylandWindow::OnDragLeave() {
 }
 
 void WaylandWindow::OnDragSessionClose(uint32_t dnd_action) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  std::move(drag_closed_callback_).Run(dnd_action);
 }
 
 bool WaylandWindow::IsMinimized() const {
