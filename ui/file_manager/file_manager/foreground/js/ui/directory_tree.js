@@ -429,23 +429,6 @@ DirectoryItem.prototype.onExpand_ = function(e) {
 };
 
 /**
- * Returns all (recursive) visible children of parentItem.
- * @param {DirectoryItem} parentItem The parent item to start searching from.
- * @return {!Array<Entry>}
- */
-let getVisibleChildEntries = (parentItem) => {
-  if (parentItem.expanded == false) {
-    return [parentItem.entry];
-  }
-  let visibleChildEntries = [];
-  for (let childItem of parentItem.items) {
-    visibleChildEntries.concat(
-        visibleChildEntries, getVisibleChildEntries(childItem));
-  }
-  return visibleChildEntries;
-};
-
-/**
  * Invoked when the item is being collapsed.
  * @param {!Event} e Event.
  * @private
