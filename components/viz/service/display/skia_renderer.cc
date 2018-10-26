@@ -260,20 +260,6 @@ void SkiaRenderer::FinishDrawingFrame() {
   if (sync_queries_) {
     sync_queries_->EndCurrentFrame();
   }
-
-  if (settings_->show_overdraw_feedback) {
-    sk_sp<SkImage> image = overdraw_surface_->makeImageSnapshot();
-    SkPaint paint;
-    // TODO(xing.xu) : handle this in CPU mode, the R and B should be switched
-    // in CPU mode. (http://crbug.com/896969)
-    static const SkPMColor colors[SkOverdrawColorFilter::kNumColors] = {
-        0x00000000, 0x00000000, 0x2fff0000, 0x2f00ff00, 0x3f0000ff, 0x7f0000ff,
-    };
-    sk_sp<SkColorFilter> color_filter = SkOverdrawColorFilter::Make(colors);
-    paint.setColorFilter(color_filter);
-    root_surface_->getCanvas()->drawImage(image.get(), 0, 0, &paint);
-    root_surface_->getCanvas()->flush();
-  }
   non_root_surface_ = nullptr;
   current_canvas_ = nullptr;
   current_surface_ = nullptr;
@@ -424,7 +410,6 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
     nway_canvas_->addCanvas(overdraw_canvas_.get());
     nway_canvas_->addCanvas(root_canvas_);
     current_canvas_ = nway_canvas_.get();
-    current_surface_ = overdraw_surface_.get();
   }
 }
 
@@ -1120,6 +1105,24 @@ void SkiaRenderer::FinishDrawingQuadList() {
     }
     case DrawMode::GL:  // Fallthrough
     case DrawMode::VULKAN: {
+      // For SkiaRendererPixelTestWithOverdrawFeedback, CopyDrawnRenderPass
+      // happens before FinishDrawingFrame which results in an empty image. So
+      // force a draw here.
+      if (settings_->show_overdraw_feedback &&
+          (current_frame()->current_render_pass ==
+           current_frame()->root_render_pass)) {
+        sk_sp<SkImage> image = overdraw_surface_->makeImageSnapshot();
+        SkPaint paint;
+        // TODO(xing.xu) : handle this in CPU mode, the R and B should be
+        // switched in CPU mode. (http://crbug.com/896969)
+        static const SkPMColor colors[SkOverdrawColorFilter::kNumColors] = {
+            0x00000000, 0x00000000, 0x2fff0000,
+            0x2f00ff00, 0x3f0000ff, 0x7f0000ff,
+        };
+        sk_sp<SkColorFilter> color_filter = SkOverdrawColorFilter::Make(colors);
+        paint.setColorFilter(color_filter);
+        current_surface_->getCanvas()->drawImage(image.get(), 0, 0, &paint);
+      }
       current_canvas_->flush();
       break;
     }
