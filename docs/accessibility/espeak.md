@@ -25,7 +25,7 @@ with eSpeak-NG in October 2016.
 
 The Chrome OS port is heavily based on the emscripten port, but targets
 WebAssembly instead of asm.js, and uses a completely rewritten JavaScript
-glue layer that implement's Chrome's
+glue layer that implements Chrome's
 [TTS Engine Extension API](https://developer.chrome.com/extensions/ttsEngine)
 and outputs audio using an AudioWorklet from the Web Audio API.
 
@@ -34,7 +34,7 @@ and outputs audio using an AudioWorklet from the Web Audio API.
 There are two reasons we include eSpeak-NG in Chrome OS:
 
 1. To maximize our language coverage for text-to-speech and ensure
-   that Chrome OS is accessible to as many users as possible out of the box,
+   that Chrome OS is accessible to as many users as possible out of the box.
 2. As a secondary goal, to provide an alternative speech engine for screen
    reader users that's maximally responsive and works at the highest rates of
    speed.
@@ -52,13 +52,15 @@ for build instructions.
 
 ## Releasing a new version of eSpeak for Chrome OS
 
-First, you should push any changes to Git. As eSpeak-NG is licensed
-under the GPL, Chrome OS should never include any changes to this
-project that haven't been committed to the Git repository first.
-Make sure that the chrome-extension directory is complete and ready
-to use as-is; in particular if changes were made to the native code,
-be sure to fully compile using emscripten and copy and generated wasm
-files to the chrome-extension/js directory.
+First, you should push any changes to the git repository:
+(https://chromium.googlesource.com/chromiumos/third_party/espeak-ng).
+
+As eSpeak-NG is licensed under the GPL, Chrome OS should never include any
+changes to this project that haven't been committed to the Git repository first.
+Make sure that the chrome-extension directory is complete and ready to use
+as-is; in particular if changes were made to the native code, be sure to fully
+compile using emscripten and copy and generated wasm files to the
+chrome-extension/js directory.
 
 Remember, all of the build instructions are in README.chrome in the "chrome"
 branch. To test, open chrome://extensions in Chrome, enable Developer mode,
@@ -77,10 +79,10 @@ should be incremented with each new release of the Chrome OS port for
 that version.
 
 Next, upload this file to chromeos-localmirror/distfiles and make it
-world-readable:
+world-readable (Googlers only):
 
   1. Visit https://pantheon.corp.google.com/storage/browser/chromeos-localmirror/distfiles/?pli=1
-  2. Click "Upload files" and select your tarball.
+  2. Click "Upload files" and select your tarball
   3. Select the uploaded file, and from the More menu, choose
      "Edit permissions"
   4. Click Add item, then enter User -> allUsers -> Reader
