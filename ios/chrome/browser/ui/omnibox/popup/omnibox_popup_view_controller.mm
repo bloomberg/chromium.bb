@@ -245,6 +245,7 @@ UIColor* BackgroundColorIncognito() {
   DCHECK(self.shortcutsViewController);
 
   UITableViewCell* cell = [[UITableViewCell alloc] init];
+  cell.backgroundColor = [UIColor clearColor];
   [self.shortcutsViewController willMoveToParentViewController:self];
   [self addChildViewController:self.shortcutsViewController];
   [cell.contentView addSubview:self.shortcutsViewController.view];
