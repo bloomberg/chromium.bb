@@ -7,12 +7,14 @@ package org.chromium.chrome.browser.autofill_assistant;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
-import org.chromium.base.Callback;
+import com.google.android.libraries.feed.common.functional.Consumer;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.payments.AutofillAssistantPaymentRequest;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -47,7 +49,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
 
     private final WebContents mWebContents;
     private final long mUiControllerAndroid;
-    private final AutofillAssistantUiDelegate mUiDelegate;
+    private final UiDelegateHolder mUiDelegateHolder;
 
     private AutofillAssistantPaymentRequest mAutofillAssistantPaymentRequest;
 
@@ -70,7 +72,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     public AutofillAssistantUiController(CustomTabActivity activity) {
         // Set mUiDelegate before nativeInit, as it can be accessed through native methods from
         // nativeInit already.
-        mUiDelegate = new AutofillAssistantUiDelegate(activity, this);
+        mUiDelegateHolder = new UiDelegateHolder(new AutofillAssistantUiDelegate(activity, this));
 
         Map<String, String> parameters = extractParameters(activity.getInitialIntent().getExtras());
         parameters.remove(PARAMETER_ENABLED);
@@ -109,7 +111,29 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
 
     @Override
     public void onDismiss() {
-        nativeDestroy(mUiControllerAndroid);
+        mUiDelegateHolder.performUiOperation(uiDelegate -> {
+            uiDelegate.hide();
+            mUiDelegateHolder.pauseUiOperations();
+
+            // Show the UI back when unpaused.
+            mUiDelegateHolder.performUiOperation(AutofillAssistantUiDelegate::show);
+
+            // We show a snackbar with "undo" button for a few seconds, and shutdown only if it is
+            // not cancelled.
+            uiDelegate.showAutofillAssistantStoppedSnackbar(
+                    new SnackbarManager.SnackbarController() {
+                        @Override
+                        public void onAction(Object actionData) {
+                            // Shutdown was cancelled.
+                            mUiDelegateHolder.unpauseUiOperations();
+                        }
+
+                        @Override
+                        public void onDismissNoAction(Object actionData) {
+                            nativeDestroy(mUiControllerAndroid);
+                        }
+                    });
+        });
     }
 
     @Override
@@ -150,22 +174,22 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
 
     @CalledByNative
     private void onShowStatusMessage(String message) {
-        mUiDelegate.showStatusMessage(message);
+        mUiDelegateHolder.performUiOperation(uiDelegate -> uiDelegate.showStatusMessage(message));
     }
 
     @CalledByNative
     private void onShowOverlay() {
-        mUiDelegate.showOverlay();
+        mUiDelegateHolder.performUiOperation(AutofillAssistantUiDelegate::showOverlay);
     }
 
     @CalledByNative
     private void onHideOverlay() {
-        mUiDelegate.hideOverlay();
+        mUiDelegateHolder.performUiOperation(AutofillAssistantUiDelegate::hideOverlay);
     }
 
     @CalledByNative
     private void onShutdown() {
-        mUiDelegate.shutdown();
+        nativeDestroy(mUiControllerAndroid);
     }
 
     @CalledByNative
@@ -181,19 +205,24 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
             scriptHandles.add(new AutofillAssistantUiDelegate.ScriptHandle(
                     scriptNames[i], scriptPaths[i], scriptsHighlightFlags[i]));
         }
-        mUiDelegate.updateScripts(scriptHandles);
+
+        mUiDelegateHolder.performUiOperation(uiDelegate -> uiDelegate.updateScripts(scriptHandles));
     }
 
     @CalledByNative
     private void onChooseAddress() {
-        mUiDelegate.showProfiles(PersonalDataManager.getInstance().getProfilesToSuggest(
-                true /* includeNameInLabel */));
+        // TODO(crbug.com/806868): Remove this method once all scripts use payment request.
+        mUiDelegateHolder.performUiOperation(uiDelegate
+                -> uiDelegate.showProfiles(PersonalDataManager.getInstance().getProfilesToSuggest(
+                        true /* includeNameInLabel */)));
     }
 
     @CalledByNative
     private void onChooseCard() {
-        mUiDelegate.showCards(PersonalDataManager.getInstance().getCreditCardsToSuggest(
-                true /* includeServerCards */));
+        // TODO(crbug.com/806868): Remove this method once all scripts use payment request.
+        mUiDelegateHolder.performUiOperation(uiDelegate
+                -> uiDelegate.showCards(PersonalDataManager.getInstance().getCreditCardsToSuggest(
+                        true /* includeServerCards */)));
     }
 
     @CalledByNative
@@ -207,53 +236,104 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         paymentOtions.shippingType = shippingType;
         mAutofillAssistantPaymentRequest =
                 new AutofillAssistantPaymentRequest(mWebContents, paymentOtions);
-        mAutofillAssistantPaymentRequest.show(
-                new Callback<AutofillAssistantPaymentRequest.SelectedPaymentInformation>() {
-                    @Override
-                    public void onResult(AutofillAssistantPaymentRequest.SelectedPaymentInformation
-                                                 selectedPaymentInformation) {
-                        nativeOnGetPaymentInformation(mUiControllerAndroid,
-                                selectedPaymentInformation.succeed,
-                                selectedPaymentInformation.cardGuid,
-                                selectedPaymentInformation.cardIssuerNetwork,
-                                selectedPaymentInformation.addressGuid,
-                                selectedPaymentInformation.payerName,
-                                selectedPaymentInformation.payerPhone,
-                                selectedPaymentInformation.payerEmail);
-                        mAutofillAssistantPaymentRequest.close();
-                        mAutofillAssistantPaymentRequest = null;
-                    }
-                });
+
+        mUiDelegateHolder.performUiOperation(
+                uiDelegate -> mAutofillAssistantPaymentRequest.show(selectedPaymentInformation -> {
+                    nativeOnGetPaymentInformation(mUiControllerAndroid,
+                            selectedPaymentInformation.succeed, selectedPaymentInformation.cardGuid,
+                            selectedPaymentInformation.cardIssuerNetwork,
+                            selectedPaymentInformation.addressGuid,
+                            selectedPaymentInformation.payerName,
+                            selectedPaymentInformation.payerPhone,
+                            selectedPaymentInformation.payerEmail);
+                    mAutofillAssistantPaymentRequest.close();
+                    mAutofillAssistantPaymentRequest = null;
+                }));
     }
 
     @CalledByNative
     private void onHideDetails() {
-        mUiDelegate.hideDetails();
+        mUiDelegateHolder.performUiOperation(AutofillAssistantUiDelegate::hideDetails);
     }
 
     @CalledByNative
     private void onShowDetails(String title, String url, String description, int year, int month,
             int day, int hour, int minute, int second) {
-        Date date = null;
+        Date date;
         if (year > 0 && month > 0 && day > 0 && hour >= 0 && minute >= 0 && second >= 0) {
             Calendar calendar = Calendar.getInstance();
             // Month in Java Date is 0-based, but the one we receive from the server is 1-based.
             calendar.set(year, month - 1, day, hour, minute, second);
             date = calendar.getTime();
+        } else {
+            date = null;
         }
 
-        mUiDelegate.showDetails(
-                new AutofillAssistantUiDelegate.Details(title, url, date, description));
+        mUiDelegateHolder.performUiOperation(uiDelegate
+                -> uiDelegate.showDetails(
+                        new AutofillAssistantUiDelegate.Details(title, url, date, description)));
     }
 
     @CalledByNative
     private void onShowProgressBar(int progress, String message) {
-        mUiDelegate.showProgressBar(progress, message);
+        mUiDelegateHolder.performUiOperation(
+                uiDelegate -> uiDelegate.showProgressBar(progress, message));
     }
 
     @CalledByNative
     private void onHideProgressBar() {
-        mUiDelegate.hideProgressBar();
+        mUiDelegateHolder.performUiOperation(AutofillAssistantUiDelegate::hideProgressBar);
+    }
+
+    /**
+     * Class holder for the AutofillAssistantUiDelegate to make sure we don't make UI changes when
+     * we are in a pause state (i.e. few seconds before stopping completely).
+     */
+    private static class UiDelegateHolder {
+        private final AutofillAssistantUiDelegate mUiDelegate;
+
+        private boolean mShouldQueueUiOperations = false;
+        private final ArrayList<Consumer<AutofillAssistantUiDelegate>> mPendingUiOperations =
+                new ArrayList<>();
+
+        private UiDelegateHolder(AutofillAssistantUiDelegate uiDelegate) {
+            mUiDelegate = uiDelegate;
+        }
+
+        /**
+         * Pause all UI operations such that they can potentially be ran later using {@link
+         * #unpauseUiOperations()}.
+         */
+        public void pauseUiOperations() {
+            mShouldQueueUiOperations = true;
+        }
+
+        /**
+         * Unpause and trigger all UI operations received by {@link #performUiOperation(Consumer)}
+         * since the last {@link #pauseUiOperations()}.
+         */
+        public void unpauseUiOperations() {
+            mShouldQueueUiOperations = false;
+            for (int i = 0; i < mPendingUiOperations.size(); i++) {
+                mPendingUiOperations.get(i).accept(mUiDelegate);
+            }
+            mPendingUiOperations.clear();
+        }
+
+        /**
+         * Perform a UI operation:
+         *  - directly if we are not in a pause state.
+         *  - later if the shutdown is cancelled.
+         *  - never if Autofill Assistant is shut down.
+         */
+        public void performUiOperation(Consumer<AutofillAssistantUiDelegate> operation) {
+            if (mShouldQueueUiOperations) {
+                mPendingUiOperations.add(operation);
+                return;
+            }
+
+            operation.accept(mUiDelegate);
+        }
     }
 
     // native methods.
