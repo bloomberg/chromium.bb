@@ -287,7 +287,7 @@ class BASE_EXPORT TaskQueueImpl {
 
    private:
     std::priority_queue<Task> queue_;
-    // Number of pending tasks in that need high resolution timing.
+    // Number of pending tasks in the queue that need high resolution timing.
     int pending_high_res_tasks_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(DelayedIncomingQueue);
