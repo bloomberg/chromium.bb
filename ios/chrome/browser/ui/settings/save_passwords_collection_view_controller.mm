@@ -831,12 +831,14 @@ blacklistedFormItemWithText:(NSString*)text
     if (!strongSelf)
       return;
     [strongSelf clearSectionWithIdentifier:SectionIdentifierSavedPasswords
-                                   ifEmpty:savedForms_.empty()];
-    [strongSelf clearSectionWithIdentifier:SectionIdentifierBlacklist
-                                   ifEmpty:blacklistedForms_.empty()];
-    [strongSelf clearSectionWithIdentifier:SectionIdentifierSearchPasswordsBox
-                                   ifEmpty:savedForms_.empty() &&
-                                           blacklistedForms_.empty()];
+                                   ifEmpty:strongSelf->savedForms_.empty()];
+    [strongSelf
+        clearSectionWithIdentifier:SectionIdentifierBlacklist
+                           ifEmpty:strongSelf->blacklistedForms_.empty()];
+    [strongSelf
+        clearSectionWithIdentifier:SectionIdentifierSearchPasswordsBox
+                           ifEmpty:strongSelf->savedForms_.empty() &&
+                                   strongSelf->blacklistedForms_.empty()];
   }
       completion:^(BOOL finished) {
         SavePasswordsCollectionViewController* strongSelf = weakSelf;
