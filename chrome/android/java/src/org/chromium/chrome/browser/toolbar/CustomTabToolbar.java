@@ -834,4 +834,7 @@ public class CustomTabToolbar
 
     @Override
     public void setScrim(ScrimView scrim) {}
+
+    @Override
+    public void setUnfocusedWidth(float unfocusedWidth) {}
 }

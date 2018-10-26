@@ -99,7 +99,7 @@ public class LocationBarLayout extends FrameLayout
 
     private final List<Runnable> mDeferredNativeRunnables = new ArrayList<Runnable>();
 
-    protected StatusViewCoordinator mStatusViewCoordiantor;
+    protected StatusViewCoordinator mStatusViewCoordinator;
 
     private String mOriginalUrl = "";
 
@@ -218,7 +218,7 @@ public class LocationBarLayout extends FrameLayout
 
         setLayoutTransition(null);
 
-        mStatusViewCoordiantor = new StatusViewCoordinator(mIsTablet, this, this);
+        mStatusViewCoordinator = new StatusViewCoordinator(mIsTablet, this, this);
 
         mUrlBar.setOnKeyListener(new UrlBarKeyListener());
 
@@ -269,7 +269,7 @@ public class LocationBarLayout extends FrameLayout
         mWindowAndroid = windowAndroid;
 
         mUrlCoordinator.setWindowDelegate(windowDelegate);
-        mStatusViewCoordiantor.setWindowAndroid(windowAndroid);
+        mStatusViewCoordinator.setWindowAndroid(windowAndroid);
     }
 
     /**
@@ -301,7 +301,7 @@ public class LocationBarLayout extends FrameLayout
         mNativeInitialized = true;
 
         mAutocompleteCoordinator.onNativeInitialized();
-        mStatusViewCoordiantor.onNativeInitialized();
+        mStatusViewCoordinator.onNativeInitialized();
         updateMicButtonState();
         mDeleteButton.setOnClickListener(this);
         mMicButton.setOnClickListener(this);
@@ -445,7 +445,7 @@ public class LocationBarLayout extends FrameLayout
 
         if (mToolbarDataProvider.isUsingBrandColor()) updateVisualsForState();
 
-        mStatusViewCoordiantor.onUrlFocusChange(mUrlHasFocus);
+        mStatusViewCoordinator.onUrlFocusChange(mUrlHasFocus);
 
         if (!mUrlFocusedWithoutAnimations) handleUrlFocusAnimation(hasFocus);
 
@@ -543,7 +543,7 @@ public class LocationBarLayout extends FrameLayout
         updateButtonVisibility();
 
         mAutocompleteCoordinator.setToolbarDataProvider(toolbarDataProvider);
-        mStatusViewCoordiantor.setToolbarDataProvider(toolbarDataProvider);
+        mStatusViewCoordinator.setToolbarDataProvider(toolbarDataProvider);
         mUrlCoordinator.setOnFocusChangedCallback(this::onUrlFocusChange);
     }
 
@@ -583,7 +583,7 @@ public class LocationBarLayout extends FrameLayout
             type = StatusViewCoordinator.NavigationButtonType.PAGE;
         }
 
-        mStatusViewCoordiantor.setNavigationButtonType(type);
+        mStatusViewCoordinator.setNavigationButtonType(type);
     }
 
     /**
@@ -591,7 +591,7 @@ public class LocationBarLayout extends FrameLayout
      */
     @Override
     public void updateSecurityIcon() {
-        mStatusViewCoordiantor.updateSecurityIcon();
+        mStatusViewCoordinator.updateSecurityIcon();
         // Update the URL in case the scheme change triggers a URL emphasis change.
         setUrlToPageUrl();
     }
@@ -976,7 +976,7 @@ public class LocationBarLayout extends FrameLayout
     public void updateLoadingState(boolean updateUrl) {
         if (updateUrl) setUrlToPageUrl();
         updateNavigationButton();
-        mStatusViewCoordiantor.updateSecurityIcon();
+        mStatusViewCoordinator.updateSecurityIcon();
     }
 
     /** @return The current active {@link Tab}. */
@@ -1062,6 +1062,11 @@ public class LocationBarLayout extends FrameLayout
     }
 
     @Override
+    public void setUnfocusedWidth(float unfocusedWidth) {
+        mStatusViewCoordinator.setUnfocusedLocationBarWidth(unfocusedWidth);
+    }
+
+    @Override
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         super.onWindowFocusChanged(hasWindowFocus);
         if (!hasWindowFocus && !mAutocompleteCoordinator.isSuggestionModalShown()) {
@@ -1119,7 +1124,7 @@ public class LocationBarLayout extends FrameLayout
      */
     @Override
     public void updateVisualsForState() {
-        if (updateUseDarkColors()) mStatusViewCoordiantor.setUseDarkColors(mUseDarkColors);
+        if (updateUseDarkColors()) mStatusViewCoordinator.setUseDarkColors(mUseDarkColors);
         int id = mUseDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint;
         ColorStateList colorStateList = AppCompatResources.getColorStateList(getContext(), id);
         ApiCompatibilityUtils.setImageTintList(mMicButton, colorStateList);
@@ -1167,7 +1172,7 @@ public class LocationBarLayout extends FrameLayout
 
     @Override
     public View getSecurityIconView() {
-        return mStatusViewCoordiantor.getSecurityIconView();
+        return mStatusViewCoordinator.getSecurityIconView();
     }
 
     @Override
@@ -1183,6 +1188,6 @@ public class LocationBarLayout extends FrameLayout
 
     @VisibleForTesting
     public StatusViewCoordinator getStatusViewCoordinatorForTesting() {
-        return mStatusViewCoordiantor;
+        return mStatusViewCoordinator;
     }
 }

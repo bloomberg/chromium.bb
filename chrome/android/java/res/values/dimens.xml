@@ -263,10 +263,13 @@
     <dimen name="location_bar_icon_width">28dp</dimen>
     <dimen name="location_bar_start_icon_width">28dp</dimen>
     <dimen name="location_bar_lateral_padding">10dp</dimen>
+    <dimen name="location_bar_status_separator_width">1dp</dimen>
+    <dimen name="location_bar_status_separator_spacer">8dp</dimen>
+    <dimen name="location_bar_min_url_width">68dp</dimen>
+    <dimen name="location_bar_min_verbose_status_text_width">48dp</dimen>
 
     <dimen name="tablet_toolbar_start_padding">4dp</dimen>
     <dimen name="tablet_toolbar_end_padding">6dp</dimen>
-    <dimen name="location_bar_status_separator_width">1dp</dimen>
     <dimen name="toolbar_optional_button_animation_translation">10dp</dimen>
 
     <!-- Modern toolbar dimensions -->

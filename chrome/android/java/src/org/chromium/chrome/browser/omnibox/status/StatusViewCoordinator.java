@@ -11,6 +11,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IntDef;
@@ -76,6 +77,10 @@ public class StatusViewCoordinator implements View.OnClickListener {
     private final AppCompatImageButton mSecurityButton;
     private final TextView mVerboseStatusTextView;
 
+    private final float mUrlMinWidth;
+    private final float mVerboseStatusMinWidth;
+    private final float mStatusSeparatorWidth;
+
     private ToolbarDataProvider mToolbarDataProvider;
     private WindowAndroid mWindowAndroid;
 
@@ -95,6 +100,9 @@ public class StatusViewCoordinator implements View.OnClickListener {
 
     private boolean mUrlHasFocus;
     private boolean mUseDarkColors;
+    private float mUnfocusedLocationBarWidth;
+    private int mVerboseStatusTextMaxWidth;
+    private boolean mHasSpaceForVerboseStatus;
 
     /**
      * Creates a new StatusViewCoordinator.
@@ -154,6 +162,16 @@ public class StatusViewCoordinator implements View.OnClickListener {
                 ObjectAnimator.ofFloat(mSecurityButton, View.ALPHA, 0));
         mNavigationIconShowAnimator.setDuration(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS);
         mNavigationIconShowAnimator.addListener(iconChangeAnimatorListener);
+
+        Resources res = mParentView.getResources();
+        mUrlMinWidth = res.getDimensionPixelSize(R.dimen.location_bar_min_url_width)
+                + res.getDimensionPixelSize(R.dimen.location_bar_start_icon_width)
+                + (res.getDimensionPixelSize(R.dimen.location_bar_lateral_padding) * 2);
+        mStatusSeparatorWidth =
+                res.getDimensionPixelSize(R.dimen.location_bar_status_separator_width)
+                + res.getDimensionPixelSize(R.dimen.location_bar_status_separator_spacer);
+        mVerboseStatusMinWidth = mStatusSeparatorWidth
+                + res.getDimensionPixelSize(R.dimen.location_bar_min_verbose_status_text_width);
     }
 
     /**
@@ -356,8 +374,8 @@ public class StatusViewCoordinator implements View.OnClickListener {
      * omnibox.
      */
     private void updateVerboseStatusVisibility() {
-        boolean verboseStatusVisible =
-                !mUrlHasFocus && mToolbarDataProvider.shouldShowVerboseStatus();
+        boolean verboseStatusVisible = !mUrlHasFocus
+                && mToolbarDataProvider.shouldShowVerboseStatus() && mHasSpaceForVerboseStatus;
 
         int verboseStatusVisibility = verboseStatusVisible ? View.VISIBLE : View.GONE;
 
@@ -417,5 +435,38 @@ public class StatusViewCoordinator implements View.OnClickListener {
             PageInfoController.show(activity, mToolbarDataProvider.getTab(), null,
                     PageInfoController.OpenedFromSource.TOOLBAR);
         }
+    }
+
+    /**
+     * Called to set the width of the location bar when the url bar is not focused.
+     * This value is used to determine whether the verbose status text should be visible.
+     * @param unfocusedWidth The unfocused location bar width.
+     */
+    public void setUnfocusedLocationBarWidth(float unfocusedWidth) {
+        if (mUnfocusedLocationBarWidth == unfocusedWidth) return;
+
+        // This unfocused with is used rather than observing #onMeasure() to avoid showing the
+        // verbose status when the animation to unfocus the URL bar has finished. There is a call to
+        // LocationBarLayout#onMeasure() after the URL focus animation has finished and before the
+        // location bar has received its updated width layout param.
+        mUnfocusedLocationBarWidth = unfocusedWidth;
+
+        boolean previousHasSpace = mHasSpaceForVerboseStatus;
+        mHasSpaceForVerboseStatus =
+                mUnfocusedLocationBarWidth >= mUrlMinWidth + mVerboseStatusMinWidth;
+
+        if (mHasSpaceForVerboseStatus) {
+            int previousMaxWidth = mVerboseStatusTextMaxWidth;
+            mVerboseStatusTextMaxWidth =
+                    (int) (mUnfocusedLocationBarWidth - mUrlMinWidth - mStatusSeparatorWidth);
+
+            // Skip setting the max width if it hasn't changed since TextView#setMaxWidth
+            // invalidates the view and requests a layout.
+            if (previousMaxWidth != mVerboseStatusTextMaxWidth) {
+                mVerboseStatusTextView.setMaxWidth(mVerboseStatusTextMaxWidth);
+            }
+        }
+
+        if (previousHasSpace != mHasSpaceForVerboseStatus) updateVerboseStatusVisibility();
     }
 }
