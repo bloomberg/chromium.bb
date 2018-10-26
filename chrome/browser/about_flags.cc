@@ -217,13 +217,6 @@ const FeatureEntry::Choice kTouchEventFeatureDetectionChoices[] = {
      switches::kTouchEventFeatureDetectionAuto}};
 
 #if defined(USE_AURA)
-const FeatureEntry::Choice kOverscrollHistoryNavigationChoices[] = {
-    {flag_descriptions::kOverscrollHistoryNavigationSimpleUi, "", ""},
-    {flags_ui::kGenericExperimentChoiceDisabled,
-     switches::kOverscrollHistoryNavigation, "0"},
-    {flag_descriptions::kOverscrollHistoryNavigationParallaxUi,
-     switches::kOverscrollHistoryNavigation, "1"}};
-
 const FeatureEntry::Choice kOverscrollStartThresholdChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kOverscrollStartThreshold133Percent,
@@ -239,7 +232,6 @@ const FeatureEntry::Choice kPullToRefreshChoices[] = {
     {flags_ui::kGenericExperimentChoiceEnabled, switches::kPullToRefresh, "1"},
     {flag_descriptions::kPullToRefreshEnabledTouchscreen,
      switches::kPullToRefresh, "2"}};
-
 #endif  // USE_AURA
 
 const FeatureEntry::Choice kOverlayStrategiesChoices[] = {
@@ -1869,7 +1861,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"overscroll-history-navigation",
      flag_descriptions::kOverscrollHistoryNavigationName,
      flag_descriptions::kOverscrollHistoryNavigationDescription, kOsAura,
-     MULTI_VALUE_TYPE(kOverscrollHistoryNavigationChoices)},
+     FEATURE_VALUE_TYPE(features::kOverscrollHistoryNavigation)},
     {"overscroll-start-threshold",
      flag_descriptions::kOverscrollStartThresholdName,
      flag_descriptions::kOverscrollStartThresholdDescription, kOsAura,

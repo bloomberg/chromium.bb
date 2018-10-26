@@ -620,19 +620,6 @@ const char kNumRasterThreads[]              = "num-raster-threads";
 const char kOverridePluginPowerSaverForTesting[] =
     "override-plugin-power-saver-for-testing";
 
-// Controls the behavior of history navigation in response to horizontal
-// overscroll.
-// Set the value to '0' to disable.
-// Set the value to '1' to enable the behavior where pages slide in and out in
-// response to the horizontal overscroll gesture and a screenshot of the target
-// page is shown.
-// Set the value to '2' to enable the simplified overscroll UI where a
-// navigation arrow slides in from the side of the screen in response to the
-// horizontal overscroll gesture.
-// Defaults to '2'.
-const char kOverscrollHistoryNavigation[] =
-    "overscroll-history-navigation";
-
 // Controls the value of the threshold to start horizontal overscroll relative
 // to the default value.
 // E.g. set the value to '133' to have the overscroll start threshold be 133%
