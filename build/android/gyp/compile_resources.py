@@ -141,6 +141,17 @@ def _ParseArgs(args):
                           action='store_true',
                           help='Whether to strip xml namespaces from processed '
                                'xml resources')
+  input_opts.add_argument(
+      '--resources-config-path', help='Path to aapt2 resources config file.')
+  input_opts.add_argument(
+      '--optimize-resources',
+      default=False,
+      action='store_true',
+      help='Whether to run the `aapt2 optimize` step on the resources.')
+  input_opts.add_argument(
+      '--unoptimized-resources-path',
+      help='Path to output the intermediate apk before running '
+      '`aapt2 optimize`.')
 
   input_opts.add_argument(
       '--check-resources-pkg-id', type=_PackageIdArgument,
@@ -306,7 +317,6 @@ def _CreateLinkApkArgs(options):
     '--version-name', options.version_name,
     '--auto-add-overlay',
     '--no-version-vectors',
-    '-o', options.apk_path,
   ]
 
   for j in options.include_resources:
@@ -481,7 +491,11 @@ def _CompileDeps(aapt2_path, dep_subdirs, temp_dir):
     partial_path = os.path.join(partials_dir, dirname + '.zip')
     compile_command = (partial_compile_command +
                        ['--dir', directory, '-o', partial_path])
-    build_utils.CheckOutput(compile_command)
+    build_utils.CheckOutput(
+        compile_command,
+        stderr_filter=lambda output:
+            build_utils.FilterLines(
+                output, r'ignoring configuration .* for styleable'))
 
     # Sorting the files in the partial ensures deterministic output from the
     # aapt2 link step which uses order of files in the partial.
@@ -541,7 +555,15 @@ def _PackageApk(options, dep_subdirs, temp_dir, gen_dir, r_txt_path):
   for directory in dep_subdirs:
     renamed_paths.update(_MoveImagesToNonMdpiFolders(directory))
 
+  if options.optimize_resources:
+    if options.unoptimized_resources_path:
+      unoptimized_apk_path = options.unoptimized_resources_path
+    else:
+      unoptimized_apk_path = os.path.join(gen_dir, 'intermediate.ap_')
+  else:
+    unoptimized_apk_path = options.apk_path
   link_command = _CreateLinkApkArgs(options)
+  link_command += ['-o', unoptimized_apk_path]
   link_command += ['--output-text-symbols', r_txt_path]
   # TODO(digit): Is this below actually required for R.txt generation?
   link_command += ['--java', gen_dir]
@@ -557,6 +579,26 @@ def _PackageApk(options, dep_subdirs, temp_dir, gen_dir, r_txt_path):
   # Also creates R.txt
   build_utils.CheckOutput(
       link_command, print_stdout=False, print_stderr=False)
+
+  if options.optimize_resources:
+    # Optimize the resources.arsc file by obfuscating resource names and only
+    # allow usage via R.java constant.
+    optimize_command = [
+        options.aapt2_path,
+        'optimize',
+        '--enable-resource-obfuscation',
+        '-o',
+        options.apk_path,
+        unoptimized_apk_path,
+    ]
+    if options.resources_config_path:
+      optimize_command += [
+          '--resources-config-path',
+          options.resources_config_path,
+      ]
+    build_utils.CheckOutput(
+        optimize_command, print_stdout=False, print_stderr=False)
+
   _CreateResourceInfoFile(
       renamed_paths, options.apk_info_path, options.dependencies_res_zips)
 
@@ -639,25 +681,27 @@ def main(args):
   # Order of these must match order specified in GN so that the correct one
   # appears first in the depfile.
   possible_output_paths = [
-    options.apk_path,
-    options.apk_path + '.info',
-    options.r_text_out,
-    options.srcjar_out,
-    options.proguard_file,
-    options.proguard_file_main_dex,
+      options.apk_path,
+      options.apk_path + '.info',
+      options.r_text_out,
+      options.srcjar_out,
+      options.proguard_file,
+      options.proguard_file_main_dex,
+      options.unoptimized_resources_path,
   ]
   output_paths = [x for x in possible_output_paths if x]
 
   # List python deps in input_strings rather than input_paths since the contents
   # of them does not change what gets written to the depsfile.
   input_strings = options.extra_res_packages + [
-    options.shared_resources,
-    options.resource_blacklist_regex,
-    options.resource_blacklist_exceptions,
-    str(options.debuggable),
-    str(options.png_to_webp),
-    str(options.support_zh_hk),
-    str(options.no_xml_namespaces),
+      options.shared_resources,
+      options.resource_blacklist_regex,
+      options.resource_blacklist_exceptions,
+      str(options.debuggable),
+      str(options.png_to_webp),
+      str(options.support_zh_hk),
+      str(options.no_xml_namespaces),
+      str(options.optimize_resources),
   ]
 
   input_strings.extend(_CreateLinkApkArgs(options))
@@ -669,11 +713,12 @@ def main(args):
 
 
   possible_input_paths = [
-    options.aapt_path,
-    options.aapt2_path,
-    options.android_manifest,
-    debug_temp_resources_dir,
-    options.shared_resources_whitelist,
+      options.aapt_path,
+      options.aapt2_path,
+      options.android_manifest,
+      debug_temp_resources_dir,
+      options.shared_resources_whitelist,
+      options.resources_config_path,
   ]
   possible_input_paths += options.include_resources
   input_paths = [x for x in possible_input_paths if x]
