@@ -8,6 +8,8 @@
 #include <cmath>
 #include <memory>
 
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/checked_math.h"
 #include "third_party/blink/renderer/core/css/cssom/css_url_image_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
@@ -1621,6 +1623,8 @@ ImageData* BaseRenderingContext2D::getImageData(
     return nullptr;
   }
 
+  base::TimeTicks start_time = base::TimeTicks::Now();
+
   usage_counters_.num_get_image_data_calls++;
   usage_counters_.area_get_image_data_calls += sw * sh;
   if (!OriginClean()) {
@@ -1656,20 +1660,6 @@ ImageData* BaseRenderingContext2D::getImageData(
       !base::CheckAdd(sy, sh).IsValid<int>()) {
     exception_state.ThrowRangeError("Out of memory at ImageData creation");
     return nullptr;
-  }
-  base::Optional<ScopedUsHistogramTimer> timer;
-  if (!IsPaint2D()) {
-    if (CanCreateCanvas2dResourceProvider() && IsAccelerated()) {
-      DEFINE_THREAD_SAFE_STATIC_LOCAL(
-          CustomCountHistogram, scoped_us_counter_gpu,
-          ("Blink.Canvas.GetImageData.GPU", 0, 10000000, 50));
-      timer.emplace(scoped_us_counter_gpu);
-    } else {
-      DEFINE_THREAD_SAFE_STATIC_LOCAL(
-          CustomCountHistogram, scoped_us_counter_cpu,
-          ("Blink.Canvas.GetImageData.CPU", 0, 10000000, 50));
-      timer.emplace(scoped_us_counter_cpu);
-    }
   }
 
   IntRect image_data_rect(sx, sy, sw, sh);
@@ -1715,11 +1705,35 @@ ImageData* BaseRenderingContext2D::getImageData(
                              &color_settings);
   }
   DOMArrayBuffer* array_buffer = DOMArrayBuffer::Create(contents);
-  return ImageData::Create(
+
+  ImageData* imageData = ImageData::Create(
       image_data_rect.Size(),
       NotShared<DOMUint8ClampedArray>(DOMUint8ClampedArray::Create(
           array_buffer, 0, array_buffer->ByteLength())),
       &color_settings);
+
+  if (!IsPaint2D()) {
+    int scaled_time = getScaledElapsedTime(
+        image_data_rect.Width(), image_data_rect.Height(), start_time);
+    if (CanCreateCanvas2dResourceProvider() && IsAccelerated()) {
+      UMA_HISTOGRAM_COUNTS_1000("Blink.Canvas.GetImageDataScaledDuration.GPU",
+                                scaled_time);
+    } else {
+      UMA_HISTOGRAM_COUNTS_1000("Blink.Canvas.GetImageDataScaledDuration.CPU",
+                                scaled_time);
+    }
+  }
+
+  return imageData;
+}
+
+int BaseRenderingContext2D::getScaledElapsedTime(int width,
+                                                 int height,
+                                                 base::TimeTicks start_time) {
+  base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time;
+  float sqrt_pixels = std::sqrt(width * height);
+  return elapsed_time.InMicrosecondsF() * 10.0f /
+         (sqrt_pixels == 0 ? 1 : sqrt_pixels);
 }
 
 void BaseRenderingContext2D::putImageData(ImageData* data,
@@ -1741,6 +1755,7 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
   if (!base::CheckMul(dirty_width, dirty_height).IsValid<int>()) {
     return;
   }
+  base::TimeTicks start_time = base::TimeTicks::Now();
   usage_counters_.num_put_image_data_calls++;
   usage_counters_.area_put_image_data_calls += dirty_width * dirty_height;
 
@@ -1772,21 +1787,6 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
   if (dest_rect.IsEmpty())
     return;
 
-  base::Optional<ScopedUsHistogramTimer> timer;
-  if (!IsPaint2D()) {
-    if (hasResourceProvider && IsAccelerated()) {
-      DEFINE_THREAD_SAFE_STATIC_LOCAL(
-          CustomCountHistogram, scoped_us_counter_gpu,
-          ("Blink.Canvas.PutImageData.GPU", 0, 10000000, 50));
-      timer.emplace(scoped_us_counter_gpu);
-    } else {
-      DEFINE_THREAD_SAFE_STATIC_LOCAL(
-          CustomCountHistogram, scoped_us_counter_cpu,
-          ("Blink.Canvas.PutImageData.CPU", 0, 10000000, 50));
-      timer.emplace(scoped_us_counter_cpu);
-    }
-  }
-
   IntRect source_rect(dest_rect);
   source_rect.Move(-dest_offset);
 
@@ -1817,6 +1817,19 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
     PutByteArray(data->data()->Data(), IntSize(data->width(), data->height()),
                  source_rect, IntPoint(dest_offset));
   }
+
+  if (!IsPaint2D()) {
+    int scaled_time =
+        getScaledElapsedTime(dest_rect.Width(), dest_rect.Height(), start_time);
+    if (CanCreateCanvas2dResourceProvider() && IsAccelerated()) {
+      UMA_HISTOGRAM_COUNTS_1000("Blink.Canvas.PutImageDataScaledDuration.GPU",
+                                scaled_time);
+    } else {
+      UMA_HISTOGRAM_COUNTS_1000("Blink.Canvas.PutImageDataScaledDuration.CPU",
+                                scaled_time);
+    }
+  }
+
   DidDraw(dest_rect);
 }
 
