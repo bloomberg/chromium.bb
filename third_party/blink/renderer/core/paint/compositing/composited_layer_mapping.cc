@@ -550,7 +550,7 @@ void CompositedLayerMapping::UpdateAfterPartResize() {
               ? FloatPoint(child_containment_layer_->GetPosition())
               : FloatPoint();
       document_layer->SetPosition(FloatPoint(RoundedIntSize(
-          FloatPoint(ContentsBox().Location()) - parent_position)));
+          ContentsBox().Location() - LayoutPoint(parent_position))));
     }
   }
 }
