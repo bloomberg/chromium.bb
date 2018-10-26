@@ -46,6 +46,7 @@ constexpr char kTeamDrivesDisplayName[] = "Team Drives";
 constexpr char kRootRelativeToDriveMount[] = "root";
 constexpr char kTeamDrivesRelativeToDriveMount[] = "team_drives";
 constexpr char kComputersRelativeToDriveMount[] = "Computers";
+constexpr char kRemovable[] = "removable";
 constexpr char kAndroidFilesMountPointName[] = "android_files";
 
 // Sync with the root name defined with the file provider in ARC++ side.
@@ -207,8 +208,10 @@ bool ConvertFileSystemURLToPathInsideCrostini(
   //   /ChromeOS/<mapping>/path/to/file (path is shared with crostini)
   base::FilePath base_to_exclude(id);
   if (id == mount_point_name_crostini) {
+    // Crostini.
     *inside = crostini::ContainerHomeDirectoryForProfile(profile);
   } else if (id == mount_point_name_downloads) {
+    // Downloads.
     *inside =
         crostini::ContainerChromeOSBaseDirectory().Append(kDownloadsFolderName);
   } else if (id == mount_point_name_drive) {
@@ -227,6 +230,9 @@ bool ConvertFileSystemURLToPathInsideCrostini(
       base_to_exclude = base_to_exclude.Append(kTeamDrivesRelativeToDriveMount);
       *inside = inside->Append(kTeamDrivesDisplayName);
     }
+  } else if (id == kRemovable) {
+    // Removable.
+    *inside = crostini::ContainerChromeOSBaseDirectory().Append(kRemovable);
   } else {
     return false;
   }

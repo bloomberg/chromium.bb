@@ -12,9 +12,10 @@ window.loadTimeData = {
   }
 };
 
-const volumeManagerTest = {
+let volumeManagerRootType = 'testroot';
+const volumeManager = {
   getLocationInfo: (entry) => {
-    return {rootType: 'testroot'};
+    return {rootType: volumeManagerRootType};
   },
 };
 
@@ -26,26 +27,21 @@ function testIsPathShared() {
   const foo2 = new MockDirectoryEntry(mockFileSystem, '/foo2');
   const foobar2 = new MockDirectoryEntry(mockFileSystem, '/foo2/bar2');
 
-  assertFalse(Crostini.isPathShared(foo1, volumeManagerTest));
+  assertFalse(Crostini.isPathShared(foo1, volumeManager));
 
-  Crostini.registerSharedPath(foo1, volumeManagerTest);
-  assertFalse(Crostini.isPathShared(root, volumeManagerTest));
-  assertTrue(Crostini.isPathShared(foo1, volumeManagerTest));
-  assertTrue(Crostini.isPathShared(foobar1, volumeManagerTest));
+  Crostini.registerSharedPath(foo1, volumeManager);
+  assertFalse(Crostini.isPathShared(root, volumeManager));
+  assertTrue(Crostini.isPathShared(foo1, volumeManager));
+  assertTrue(Crostini.isPathShared(foobar1, volumeManager));
 
-  Crostini.registerSharedPath(foobar2, volumeManagerTest);
-  assertFalse(Crostini.isPathShared(foo2, volumeManagerTest));
-  assertTrue(Crostini.isPathShared(foobar2, volumeManagerTest));
+  Crostini.registerSharedPath(foobar2, volumeManager);
+  assertFalse(Crostini.isPathShared(foo2, volumeManager));
+  assertTrue(Crostini.isPathShared(foobar2, volumeManager));
 
-  Crostini.unregisterSharedPath(foobar2, volumeManagerTest);
-  assertFalse(Crostini.isPathShared(foobar2, volumeManagerTest));
+  Crostini.unregisterSharedPath(foobar2, volumeManager);
+  assertFalse(Crostini.isPathShared(foobar2, volumeManager));
 }
 
-const volumeManagerDownloads = {
-  getLocationInfo: (entry) => {
-    return {rootType: 'downloads'};
-  },
-};
 
 function testCanSharePath() {
   Crostini.IS_CROSTINI_FILES_ENABLED = true;
@@ -57,25 +53,30 @@ function testCanSharePath() {
   const fooFile = new MockEntry(mockFileSystem, '/foo/file');
   const fooFolder = new MockDirectoryEntry(mockFileSystem, '/foo/folder');
 
-  assertFalse(Crostini.canSharePath(root, true, volumeManagerTest));
-  assertFalse(Crostini.canSharePath(root, false, volumeManagerTest));
-  assertFalse(Crostini.canSharePath(rootFile, true, volumeManagerTest));
-  assertFalse(Crostini.canSharePath(rootFile, false, volumeManagerTest));
-  assertFalse(Crostini.canSharePath(rootFolder, true, volumeManagerTest));
-  assertFalse(Crostini.canSharePath(rootFolder, false, volumeManagerTest));
-  assertFalse(Crostini.canSharePath(fooFile, true, volumeManagerTest));
-  assertFalse(Crostini.canSharePath(fooFile, false, volumeManagerTest));
-  assertFalse(Crostini.canSharePath(fooFolder, true, volumeManagerTest));
-  assertFalse(Crostini.canSharePath(fooFolder, false, volumeManagerTest));
+  assertFalse(Crostini.canSharePath(root, true, volumeManager));
+  assertFalse(Crostini.canSharePath(root, false, volumeManager));
+  assertFalse(Crostini.canSharePath(rootFile, true, volumeManager));
+  assertFalse(Crostini.canSharePath(rootFile, false, volumeManager));
+  assertFalse(Crostini.canSharePath(rootFolder, true, volumeManager));
+  assertFalse(Crostini.canSharePath(rootFolder, false, volumeManager));
+  assertFalse(Crostini.canSharePath(fooFile, true, volumeManager));
+  assertFalse(Crostini.canSharePath(fooFile, false, volumeManager));
+  assertFalse(Crostini.canSharePath(fooFolder, true, volumeManager));
+  assertFalse(Crostini.canSharePath(fooFolder, false, volumeManager));
 
-  assertFalse(Crostini.canSharePath(root, true, volumeManagerDownloads));
-  assertFalse(Crostini.canSharePath(root, false, volumeManagerDownloads));
-  assertFalse(Crostini.canSharePath(rootFile, true, volumeManagerDownloads));
-  assertTrue(Crostini.canSharePath(rootFile, false, volumeManagerDownloads));
-  assertTrue(Crostini.canSharePath(rootFolder, true, volumeManagerDownloads));
-  assertTrue(Crostini.canSharePath(rootFolder, false, volumeManagerDownloads));
-  assertFalse(Crostini.canSharePath(fooFile, true, volumeManagerDownloads));
-  assertTrue(Crostini.canSharePath(fooFile, false, volumeManagerDownloads));
-  assertTrue(Crostini.canSharePath(fooFolder, true, volumeManagerDownloads));
-  assertTrue(Crostini.canSharePath(fooFolder, false, volumeManagerDownloads));
+  for (type of
+           ['downloads', 'drive', 'team_drive', 'computers_grand_root',
+            'removable']) {
+    volumeManagerRootType = type;
+    assertFalse(Crostini.canSharePath(root, true, volumeManager));
+    assertFalse(Crostini.canSharePath(root, false, volumeManager));
+    assertFalse(Crostini.canSharePath(rootFile, true, volumeManager));
+    assertTrue(Crostini.canSharePath(rootFile, false, volumeManager));
+    assertTrue(Crostini.canSharePath(rootFolder, true, volumeManager));
+    assertTrue(Crostini.canSharePath(rootFolder, false, volumeManager));
+    assertFalse(Crostini.canSharePath(fooFile, true, volumeManager));
+    assertTrue(Crostini.canSharePath(fooFile, false, volumeManager));
+    assertTrue(Crostini.canSharePath(fooFolder, true, volumeManager));
+    assertTrue(Crostini.canSharePath(fooFolder, false, volumeManager));
+  }
 }

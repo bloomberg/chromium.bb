@@ -20,6 +20,7 @@ Crostini.VALID_ROOT_TYPES_FOR_SHARE = new Map([
   [VolumeManagerCommon.RootType.DOWNLOADS, 'Downloads'],
   [VolumeManagerCommon.RootType.DRIVE, 'MyDrive'],
   [VolumeManagerCommon.RootType.TEAM_DRIVE, 'TeamDrive'],
+  [VolumeManagerCommon.RootType.REMOVABLE, 'Removable'],
 ]);
 
 /** @private {string} */
