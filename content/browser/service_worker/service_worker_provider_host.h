@@ -128,7 +128,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       public mojom::ServiceWorkerContainerHost,
       public service_manager::mojom::InterfaceProvider {
  public:
-  using WebContentsGetter = base::Callback<WebContents*(void)>;
+  using WebContentsGetter = base::RepeatingCallback<WebContents*()>;
 
   // Used to pre-create a ServiceWorkerProviderHost for a navigation. The
   // ServiceWorkerNetworkProvider will later be created in the renderer, should
@@ -144,7 +144,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   static base::WeakPtr<ServiceWorkerProviderHost> PreCreateNavigationHost(
       base::WeakPtr<ServiceWorkerContextCore> context,
       bool are_ancestors_secure,
-      const WebContentsGetter& web_contents_getter);
+      WebContentsGetter web_contents_getter);
 
   // Used for starting a service worker. Returns a provider host for the service
   // worker and partially fills |out_provider_info|.  The host stays alive as

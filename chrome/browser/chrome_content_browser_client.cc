@@ -946,7 +946,7 @@ void InvokeCallbackOnThread(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     base::Callback<void(bool)> callback,
     bool result) {
-  task_runner->PostTask(FROM_HERE, base::Bind(std::move(callback), result));
+  task_runner->PostTask(FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 #endif
 
@@ -2299,7 +2299,7 @@ bool ChromeContentBrowserClient::AllowServiceWorker(
     const GURL& scope,
     const GURL& first_party_url,
     content::ResourceContext* context,
-    const base::Callback<content::WebContents*(void)>& wc_getter) {
+    base::RepeatingCallback<content::WebContents*()> wc_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -2336,7 +2336,7 @@ bool ChromeContentBrowserClient::AllowServiceWorker(
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&TabSpecificContentSettings::ServiceWorkerAccessed,
-                       wc_getter, scope, !allow_javascript,
+                       std::move(wc_getter), scope, !allow_javascript,
                        !allow_serviceworker));
   }
   return allow_javascript && allow_serviceworker;

@@ -508,7 +508,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       const GURL& scope,
       const GURL& first_party,
       ResourceContext* context,
-      const base::Callback<WebContents*(void)>& wc_getter);
+      base::RepeatingCallback<WebContents*()> wc_getter);
 
   // Allow the embedder to control if a Shared Worker can be connected from a
   // given tab.

@@ -10,6 +10,7 @@
 #include <map>
 #include <string>
 
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/location.h"
@@ -2049,7 +2050,7 @@ bool ServiceWorkerVersion::IsStartWorkerAllowed() const {
   if ((context_->wrapper()->resource_context() &&
        !GetContentClient()->browser()->AllowServiceWorker(
            scope_, scope_, context_->wrapper()->resource_context(),
-           base::Callback<WebContents*(void)>()))) {
+           base::NullCallback()))) {
     return false;
   }
 

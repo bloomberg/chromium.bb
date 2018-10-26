@@ -93,9 +93,9 @@ class CONTENT_EXPORT ServiceWorkerContextCore
    private:
     friend class ServiceWorkerContextCore;
     using ProviderHostPredicate =
-        base::Callback<bool(ServiceWorkerProviderHost*)>;
+        base::RepeatingCallback<bool(ServiceWorkerProviderHost*)>;
     ProviderHostIterator(ProcessToProviderMap* map,
-                         const ProviderHostPredicate& predicate);
+                         ProviderHostPredicate predicate);
     void Initialize();
     bool ForwardUntilMatchingProviderHost();
 

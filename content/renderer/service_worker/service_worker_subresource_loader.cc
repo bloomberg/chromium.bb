@@ -54,8 +54,9 @@ network::ResourceResponseHead RewriteServiceWorkerTime(
 // whenever a response or redirect is received.
 class HeaderRewritingURLLoaderClient : public network::mojom::URLLoaderClient {
  public:
-  using RewriteHeaderCallback = base::Callback<network::ResourceResponseHead(
-      const network::ResourceResponseHead&)>;
+  using RewriteHeaderCallback =
+      base::RepeatingCallback<network::ResourceResponseHead(
+          const network::ResourceResponseHead&)>;
 
   HeaderRewritingURLLoaderClient(
       network::mojom::URLLoaderClientPtr url_loader_client,
