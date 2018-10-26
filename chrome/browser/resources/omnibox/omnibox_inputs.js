@@ -14,28 +14,29 @@ class OmniboxInputs extends OmniboxElement {
 
   /** @override */
   connectedCallback() {
-    super.connectedCallback();
-    this.setupElementListeners();
+    this.setupElementListeners_();
   }
 
-  setupElementListeners() {
-    const onQueryInputsChanged = this.onQueryInputsChanged.bind(this);
-    const onDisplayInputsChagned = this.onDisplayInputsChagned.bind(this);
+  /** @private */
+  setupElementListeners_() {
+    const onQueryInputsChanged = this.onQueryInputsChanged_.bind(this);
+    const onDisplayInputsChagned = this.onDisplayInputsChagned_.bind(this);
 
     this.$$('input-text').addEventListener('input', onQueryInputsChanged);
     [
       this.$$('prevent-inline-autocomplete'),
       this.$$('prefer-keyword'),
       this.$$('page-classification'),
-    ].forEach(element => element.addEventListener('change', onQueryInputsChanged));
+    ].forEach(elem => elem.addEventListener('change', onQueryInputsChanged));
     [
       this.$$('show-incomplete-results'),
       this.$$('show-details'),
       this.$$('show-all-providers'),
-    ].forEach(element => element.addEventListener('change', onDisplayInputsChagned));
+    ].forEach(elem => elem.addEventListener('change', onDisplayInputsChagned));
   }
 
-  onQueryInputsChanged() {
+  /** @private */
+  onQueryInputsChanged_() {
     this.dispatchEvent(new CustomEvent('query-inputs-changed', {
       detail: {
         inputText: this.$$('input-text').value,
@@ -47,7 +48,8 @@ class OmniboxInputs extends OmniboxElement {
     }));
   }
 
-  onDisplayInputsChagned() {
+  /** @private */
+  onDisplayInputsChagned_() {
     this.dispatchEvent(new CustomEvent('display-inputs-changed'));
   }
 }

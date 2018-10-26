@@ -23,7 +23,10 @@
 .x-mark {
   background-position: center;
   background-repeat: no-repeat;
+  background-size: contain;
   font-size: 0;
+  height: 16px;
+  width: 16px;
 }
 
 .check-mark {
