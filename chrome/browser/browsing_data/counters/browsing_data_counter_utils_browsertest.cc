@@ -26,7 +26,7 @@
 #include "components/signin/core/browser/signin_manager_base.h"
 #endif
 
-namespace {
+namespace browsing_data_counter_utils {
 
 class BrowsingDataCounterUtilsBrowserTest
     : public SyncTest,
@@ -123,4 +123,4 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataCounterUtilsBrowserTest,
 #endif  // !defined(OS_CHROMEOS)
 }
 
-}  // namespace
+}  // namespace browsing_data_counter_utils
