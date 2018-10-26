@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_TASK_SEQUENCE_MANAGER_INTRUSIVE_HEAP_H_
-#define BASE_TASK_SEQUENCE_MANAGER_INTRUSIVE_HEAP_H_
+#ifndef BASE_TASK_COMMON_INTRUSIVE_HEAP_H_
+#define BASE_TASK_COMMON_INTRUSIVE_HEAP_H_
 
 #include <algorithm>
 #include <vector>
@@ -11,7 +11,6 @@
 #include "base/logging.h"
 
 namespace base {
-namespace sequence_manager {
 namespace internal {
 
 template <typename T>
@@ -228,7 +227,6 @@ class IntrusiveHeap {
 };
 
 }  // namespace internal
-}  // namespace sequence_manager
 }  // namespace base
 
-#endif  // BASE_TASK_SEQUENCE_MANAGER_INTRUSIVE_HEAP_H_
+#endif  // BASE_TASK_COMMON_INTRUSIVE_HEAP_H_
