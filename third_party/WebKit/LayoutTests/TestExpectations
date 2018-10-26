@@ -5483,3 +5483,6 @@ crbug.com/889185 [ Win10 ] virtual/gpu-rasterization/images/feature-policy-max-d
 
 # Sheriff 2018-10-25
 crbug.com/874576 http/tests/images/feature-policy-image-compression-cached-image.html [ Skip ]
+
+# Sheriff 2018-10-26
+crbug.com/899087 [ Linux ] virtual/android/fullscreen/full-screen-iframe-allowed-video.html [ Failure Pass ]
