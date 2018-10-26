@@ -6,13 +6,11 @@
 
 #include <sstream>
 #include <string>
-#include <utility>
 
 #include "base/logging.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "gpu/GLES2/gl2chromium.h"
 #include "gpu/GLES2/gl2extchromium.h"
-#include "gpu/command_buffer/common/capabilities.h"
 #include "ui/gfx/color_transform.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
@@ -34,8 +32,12 @@ bool GLScaler::SupportsPreciseColorManagement() const {
   if (!context_provider_) {
     return false;
   }
-  const gpu::Capabilities& caps = context_provider_->ContextCapabilities();
-  return caps.texture_half_float_linear && caps.color_buffer_half_float_rgba;
+  if (!supports_half_floats_.has_value()) {
+    supports_half_floats_ = AreAllGLExtensionsPresent(
+        context_provider_->ContextGL(),
+        {"GL_EXT_color_buffer_half_float", "GL_OES_texture_half_float_linear"});
+  }
+  return supports_half_floats_.value();
 }
 
 int GLScaler::GetMaxDrawBuffersSupported() const {
@@ -48,13 +50,8 @@ int GLScaler::GetMaxDrawBuffersSupported() const {
     // present, the actual platform-supported maximum.
     GLES2Interface* const gl = context_provider_->ContextGL();
     DCHECK(gl);
-    if (const auto* extensions = gl->GetString(GL_EXTENSIONS)) {
-      const std::string extensions_string =
-          " " + std::string(reinterpret_cast<const char*>(extensions)) + " ";
-      if (extensions_string.find(" GL_EXT_draw_buffers ") !=
-          std::string::npos) {
-        gl->GetIntegerv(GL_MAX_DRAW_BUFFERS_EXT, &max_draw_buffers_);
-      }
+    if (AreAllGLExtensionsPresent(gl, {"GL_EXT_draw_buffers"})) {
+      gl->GetIntegerv(GL_MAX_DRAW_BUFFERS_EXT, &max_draw_buffers_);
     }
 
     if (max_draw_buffers_ < 1) {
@@ -223,12 +220,12 @@ void GLScaler::OnContextLost() {
 
 GLScaler::ShaderProgram* GLScaler::GetShaderProgram(
     Shader shader,
-    GLint texture_format,
+    GLenum texture_type,
     const gfx::ColorTransform* color_transform,
     const GLenum swizzle[2]) {
   const ShaderCacheKey key{
       shader,
-      texture_format,
+      texture_type,
       color_transform ? color_transform->GetSrcColorSpace() : gfx::ColorSpace(),
       color_transform ? color_transform->GetDstColorSpace() : gfx::ColorSpace(),
       swizzle[0],
@@ -239,11 +236,29 @@ GLScaler::ShaderProgram* GLScaler::GetShaderProgram(
     DCHECK(gl);
     it = shader_programs_
              .emplace(std::piecewise_construct, std::forward_as_tuple(key),
-                      std::forward_as_tuple(gl, shader, texture_format,
+                      std::forward_as_tuple(gl, shader, texture_type,
                                             color_transform, swizzle))
              .first;
   }
   return &it->second;
+}
+
+// static
+bool GLScaler::AreAllGLExtensionsPresent(
+    gpu::gles2::GLES2Interface* gl,
+    const std::vector<std::string>& names) {
+  DCHECK(gl);
+  if (const auto* extensions = gl->GetString(GL_EXTENSIONS)) {
+    const std::string extensions_string =
+        " " + std::string(reinterpret_cast<const char*>(extensions)) + " ";
+    for (const std::string& name : names) {
+      if (extensions_string.find(" " + name + " ") == std::string::npos) {
+        return false;
+      }
+    }
+    return true;
+  }
+  return false;
 }
 
 GLScaler::Parameters::Parameters() = default;
@@ -260,12 +275,12 @@ const GLfloat GLScaler::ShaderProgram::kVertexAttributes[16] = {
 GLScaler::ShaderProgram::ShaderProgram(
     gpu::gles2::GLES2Interface* gl,
     GLScaler::Shader shader,
-    GLint texture_format,
+    GLenum texture_type,
     const gfx::ColorTransform* color_transform,
     const GLenum swizzle[2])
     : gl_(gl),
       shader_(shader),
-      texture_format_(texture_format),
+      texture_type_(texture_type),
       program_(gl_->CreateProgram()) {
   DCHECK(program_);
 
@@ -283,12 +298,16 @@ GLScaler::ShaderProgram::ShaderProgram(
           "uniform vec4 src_rect;\n");
 
   fragment_header << "precision mediump float;\n";
-  if (texture_format_ == GL_RGBA16F_EXT) {
-    fragment_header << "precision mediump sampler2D;\n";
-  } else if (texture_format_ == GL_RGBA) {
-    fragment_header << "precision lowp sampler2D;\n";
-  } else {
-    NOTIMPLEMENTED();
+  switch (texture_type_) {
+    case GL_FLOAT:
+      fragment_header << "precision highp sampler2D;\n";
+      break;
+    case GL_HALF_FLOAT_OES:
+      fragment_header << "precision mediump sampler2D;\n";
+      break;
+    default:
+      fragment_header << "precision lowp sampler2D;\n";
+      break;
   }
   fragment_header << "uniform sampler2D s_texture;\n";
 
@@ -1088,8 +1107,8 @@ void GLScaler::ScalerStage::EnsureIntermediateTextureDefined(
     gl_->BindTexture(GL_TEXTURE_2D, intermediate_texture_);
     // Note: Not setting the filter or wrap parameters on the texture here
     // because that will be done in ScaleToMultipleOutputs() anyway.
-    gl_->TexImage2D(GL_TEXTURE_2D, 0, program_->texture_format(), size.width(),
-                    size.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    gl_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.width(), size.height(), 0,
+                    GL_RGBA, program_->texture_type(), nullptr);
     intermediate_texture_size_ = size;
   }
 }

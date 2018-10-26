@@ -9,12 +9,15 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <tuple>
 #include <utility>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "components/viz/common/gpu/context_lost_observer.h"
 #include "components/viz/common/viz_common_export.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -285,13 +288,13 @@ class VIZ_COMMON_EXPORT GLScaler : public ContextLostObserver {
    public:
     ShaderProgram(GLES2Interface* gl,
                   Shader shader,
-                  GLint texture_format,
+                  GLenum texture_type,
                   const gfx::ColorTransform* color_transform,
                   const GLenum swizzle[2]);
     ~ShaderProgram();
 
     Shader shader() const { return shader_; }
-    GLint texture_format() const { return texture_format_; }
+    GLenum texture_type() const { return texture_type_; }
 
     // UseProgram must be called with GL_ARRAY_BUFFER bound to a vertex
     // attribute buffer. |src_texture_size| is the size of the entire source
@@ -320,7 +323,7 @@ class VIZ_COMMON_EXPORT GLScaler : public ContextLostObserver {
    private:
     GLES2Interface* const gl_;
     const Shader shader_;
-    const GLint texture_format_;
+    const GLenum texture_type_;
 
     // A program for copying a source texture into a destination texture.
     const GLuint program_;
@@ -421,9 +424,14 @@ class VIZ_COMMON_EXPORT GLScaler : public ContextLostObserver {
 
   // Returns a cached ShaderProgram, creating one on-demand if necessary.
   ShaderProgram* GetShaderProgram(Shader shader,
-                                  GLint texture_format,
+                                  GLenum texture_type,
                                   const gfx::ColorTransform* color_transform,
                                   const GLenum swizzle[2]);
+
+  // Returns true if the given |gl| context mentions all of |names| in its
+  // extensions string.
+  static bool AreAllGLExtensionsPresent(gpu::gles2::GLES2Interface* gl,
+                                        const std::vector<std::string>& names);
 
   // The provider of the GL context. This is non-null while the GL context is
   // valid and GLScaler is observing for context loss.
@@ -432,7 +440,11 @@ class VIZ_COMMON_EXPORT GLScaler : public ContextLostObserver {
   // Set by Configure() to the resolved set of Parameters.
   Parameters params_;
 
-  // The maximum number of simultaneous draw buffers, lazy initialized by
+  // If set to true, half-float textures are supported. This is lazy-initialized
+  // by SupportsPreciseColorManagement().
+  mutable base::Optional<bool> supports_half_floats_;
+
+  // The maximum number of simultaneous draw buffers, lazy-initialized by
   // GetMaxDrawBuffersSupported(). -1 means "not yet known."
   mutable int max_draw_buffers_ = -1;
 
@@ -440,7 +452,7 @@ class VIZ_COMMON_EXPORT GLScaler : public ContextLostObserver {
   // to the arguments of GetShaderProgram(): the shader, the texture format, the
   // source and output color spaces (color transform), and the two swizzles.
   using ShaderCacheKey = std::
-      tuple<Shader, GLint, gfx::ColorSpace, gfx::ColorSpace, GLenum, GLenum>;
+      tuple<Shader, GLenum, gfx::ColorSpace, gfx::ColorSpace, GLenum, GLenum>;
   std::map<ShaderCacheKey, ShaderProgram> shader_programs_;
 
   // The GL_ARRAY_BUFFER that holds the vertices and the texture coordinates
