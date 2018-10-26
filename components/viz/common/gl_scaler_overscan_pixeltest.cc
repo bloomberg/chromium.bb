@@ -39,7 +39,7 @@ class GLScalerOverscanPixelTest : public cc::PixelTest,
     scaler_->chain_ = std::make_unique<ScalerStage>(gl_, shader, primary_axis,
                                                     scale_from, scale_to);
     scaler_->chain_->set_shader_program(scaler_->GetShaderProgram(
-        shader, GL_RGBA, nullptr, GLScaler::Parameters().swizzle));
+        shader, GL_UNSIGNED_BYTE, nullptr, GLScaler::Parameters().swizzle));
   }
 
   // Converts the given |source_rect| into a possibly-larger one that includes
