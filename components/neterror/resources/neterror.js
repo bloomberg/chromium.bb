@@ -203,6 +203,8 @@ function getIconForSuggestedItem(item) {
 function getSuggestedContentDiv(item, index) {
   // Note: See AvailableContentToValue in available_offline_content_helper.cc
   // for the data contained in an |item|.
+  // TODO(carlosk): Present |snippet_base64| when that content becomes
+  // available.
   var visual = '';
   var extraContainerClasses = [];
   // html_inline.py will try to replace src attributes with data URIs using a
@@ -217,7 +219,7 @@ function getSuggestedContentDiv(item, index) {
     visual = `<div><img class="${iconClass}"></div>`;
   }
 
-  if (!item.attribution)
+  if (!item.attribution_base64)
     extraContainerClasses.push('no-attribution');
 
   return `
@@ -264,9 +266,9 @@ function offlineContentAvailable(suggestions) {
   // plain text.
   for (var index = 0; index < suggestions.length; index++) {
     document.getElementById(`offline-content-suggestion-title-${index}`)
-        .textContent = suggestions[index].title;
+        .textContent = atob(suggestions[index].title_base64);
     document.getElementById(`offline-content-suggestion-attribution-${index}`)
-        .textContent = suggestions[index].attribution;
+        .textContent = atob(suggestions[index].attribution_base64);
   }
 
   var contentListElement = document.getElementById('offline-content-list');

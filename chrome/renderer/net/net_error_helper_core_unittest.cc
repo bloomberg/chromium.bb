@@ -2717,27 +2717,29 @@ TEST_F(NetErrorHelperCoreAvailableOfflineContentTest, ListAvailableContent) {
   DoErrorLoad(net::ERR_INTERNET_DISCONNECTED);
   task_environment()->RunUntilIdle();
   // Note: content_type is an AvailableContentType enum value.
-  // Below, 0=kPrefetchedPage and 3=kOtherPage.
+  // Below, 0=kPrefetchedPage and 3=kOtherPage. The base64 encoded values
+  // represent the encoded versions of the values returned by
+  // |TestAvailableContent|.
   std::string want_json = R"([
       {
         "ID": "ID",
-        "attribution": "attribution",
+        "attribution_base64": "YXR0cmlidXRpb24=",
         "content_type": 0,
         "date_modified": "date_modified",
         "name_space": "name_space",
-        "snippet": "snippet",
+        "snippet_base64": "c25pcHBldA==",
         "thumbnail_data_uri": "data:image/png;base64,abc",
-        "title": "title"
+        "title_base64": "dGl0bGU="
       },
       {
         "ID": "ID2",
-        "attribution": "attribution2",
+        "attribution_base64": "YXR0cmlidXRpb24y",
         "content_type": 3,
         "date_modified": "date_modified2",
         "name_space": "name_space2",
-        "snippet": "snippet2",
+        "snippet_base64": "c25pcHBldDI=",
         "thumbnail_data_uri": "data:image/png;base64,abc",
-        "title": "title2"
+        "title_base64": "dGl0bGUy"
       }
     ])";
   base::ReplaceChars(want_json, base::kWhitespaceASCII, "", &want_json);
