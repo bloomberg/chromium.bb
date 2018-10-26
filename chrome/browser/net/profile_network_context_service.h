@@ -66,6 +66,10 @@ class ProfileNetworkContextService : public KeyedService,
       network::mojom::NetworkContextRequest* network_context_request,
       network::mojom::NetworkContextParamsPtr* network_context_params);
 
+#if defined(OS_CHROMEOS)
+  void UpdateTrustAnchors(const net::CertificateList& trust_anchors);
+#endif
+
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Flushes all pending proxy configuration changes.

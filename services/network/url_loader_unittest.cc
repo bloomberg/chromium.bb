@@ -2211,6 +2211,12 @@ class MockNetworkServiceClient : public mojom::NetworkServiceClient {
     NOTREACHED();
   }
 
+#if defined(OS_CHROMEOS)
+  void OnUsedTrustAnchor(const std::string& username_hash) override {
+    NOTREACHED();
+  }
+#endif
+
   void OnFileUploadRequested(uint32_t process_id,
                              bool async,
                              const std::vector<base::FilePath>& file_paths,
