@@ -31,7 +31,6 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.DownloadMetrics.DownloadOpenSource;
 import org.chromium.chrome.browser.download.ui.BackendProvider;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
@@ -234,13 +233,7 @@ public class DownloadManagerService
     public static DownloadManagerService getDownloadManagerService() {
         ThreadUtils.assertOnUiThread();
         if (sDownloadManagerService == null) {
-            // TODO(crbug.com/765327): Remove temporary fix after flag is no longer being used.
-            DownloadNotifier downloadNotifier =
-                    (!BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                                    .isStartupSuccessfullyCompleted()
-                            || !ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOADS_FOREGROUND))
-                    ? new SystemDownloadNotifier()
-                    : new SystemDownloadNotifier2();
+            DownloadNotifier downloadNotifier = new SystemDownloadNotifier2();
             sDownloadManagerService = new DownloadManagerService(
                     downloadNotifier, new Handler(), UPDATE_DELAY_MILLIS);
         }
@@ -417,7 +410,7 @@ public class DownloadManagerService
             mInfoBarController = new DownloadInfoBarController(false);
             mIncognitoInfoBarController = new DownloadInfoBarController(true);
 
-            DownloadNotificationService.clearResumptionAttemptLeft();
+            DownloadNotificationService2.clearResumptionAttemptLeft();
 
             DownloadManagerService.getDownloadManagerService().checkForExternallyRemovedDownloads(
                     /*isOffTheRecord=*/false);
@@ -1511,21 +1504,11 @@ public class DownloadManagerService
     @Override
     public void broadcastDownloadAction(DownloadItem downloadItem, String action) {
         Context appContext = ContextUtils.getApplicationContext();
-        if (!BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isStartupSuccessfullyCompleted()
-                || !ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOADS_FOREGROUND)) {
-            Intent intent = DownloadNotificationService.buildActionIntent(appContext, action,
-                    LegacyHelpers.buildLegacyContentId(false, downloadItem.getId()),
-                    downloadItem.getDownloadInfo().isOffTheRecord());
-            addCancelExtra(intent, downloadItem);
-            appContext.sendBroadcast(intent);
-        } else {
             Intent intent = DownloadNotificationFactory.buildActionIntent(appContext, action,
                     LegacyHelpers.buildLegacyContentId(false, downloadItem.getId()),
                     downloadItem.getDownloadInfo().isOffTheRecord());
             addCancelExtra(intent, downloadItem);
             appContext.startService(intent);
-        }
     }
 
     /**

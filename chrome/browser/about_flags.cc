@@ -3647,12 +3647,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(media::kOverflowIconsForMediaControls)},
 
 #if defined(OS_ANDROID)
-    {"enable-downloads-foreground", flag_descriptions::kDownloadsForegroundName,
-     flag_descriptions::kDownloadsForegroundDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kDownloadsForeground)},
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
     {"enable-downloads-location-change",
      flag_descriptions::kDownloadsLocationChangeName,
      flag_descriptions::kDownloadsLocationChangeDescription, kOsAndroid,
