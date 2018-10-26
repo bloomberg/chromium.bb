@@ -42,26 +42,28 @@ Polymer({
   },
 
   /** @private {nux.NuxGoogleAppsProxy} */
-  appProxy_: null,
+  appsProxy_: null,
 
   /** @private {nux.BookmarkProxy} */
   bookmarkProxy_: null,
 
   /** @override */
   ready() {
-    this.appProxy_ = nux.NuxGoogleAppsProxyImpl.getInstance();
+    this.appsProxy_ = nux.NuxGoogleAppsProxyImpl.getInstance();
     this.bookmarkProxy_ = nux.BookmarkProxyImpl.getInstance();
   },
 
   /** Called when bookmarks should be created for all selected apps. */
   populateAllBookmarks() {
     if (!this.appList_) {
-      this.appProxy_.getGoogleAppsList().then(list => {
+      this.appsProxy_.getGoogleAppsList().then(list => {
         this.appList_ = list;
         this.appList_.forEach(app => {
           // Default select all items.
           app.selected = true;
           this.updateBookmark(app);
+          // Icons only need to be added to the cache once.
+          this.appsProxy_.cacheBookmarkIcon(app.id);
         });
       });
     }

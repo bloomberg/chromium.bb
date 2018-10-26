@@ -61,13 +61,8 @@ GoogleAppsHandler::~GoogleAppsHandler() {}
 
 void GoogleAppsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "rejectGoogleApps",
-      base::BindRepeating(&GoogleAppsHandler::HandleRejectGoogleApps,
-                          base::Unretained(this)));
-
-  web_ui()->RegisterMessageCallback(
-      "addGoogleApps",
-      base::BindRepeating(&GoogleAppsHandler::HandleAddGoogleApps,
+      "cacheGoogleAppIcon",
+      base::BindRepeating(&GoogleAppsHandler::HandleCacheGoogleAppIcon,
                           base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
@@ -76,38 +71,28 @@ void GoogleAppsHandler::RegisterMessages() {
                           base::Unretained(this)));
 }
 
-void GoogleAppsHandler::HandleRejectGoogleApps(const base::ListValue* args) {
-  UMA_HISTOGRAM_ENUMERATION(kGoogleAppsInteractionHistogram,
-                            GoogleAppsInteraction::kNoThanks,
-                            GoogleAppsInteraction::kCount);
-}
+void GoogleAppsHandler::HandleCacheGoogleAppIcon(const base::ListValue* args) {
+  int appId;
+  args->GetInteger(0, &appId);
 
-void GoogleAppsHandler::HandleAddGoogleApps(const base::ListValue* args) {
-  // Add bookmarks for all selected apps.
-  for (size_t i = 0; i < base::size(kGoogleApps); ++i) {
-    bool selected = false;
-    CHECK(args->GetBoolean(i, &selected));
-    if (selected) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "FirstRun.NewUserExperience.GoogleAppsSelection",
-          (GoogleApps)kGoogleApps[i].id, GoogleApps::kCount);
-      GURL app_url = GURL(kGoogleApps[i].url);
-      // TODO(hcarmona): Add bookmark from JS.
-
-      // Preload the favicon cache with Chrome-bundled images. Otherwise, the
-      // pre-populated bookmarks don't have favicons and look bad. Favicons are
-      // updated automatically when a user visits a site.
-      favicon_service_->MergeFavicon(
-          app_url, app_url, favicon_base::IconType::kFavicon,
-          ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-              kGoogleApps[i].icon),
-          gfx::Size(kGoogleAppIconSize, kGoogleAppIconSize));
+  const BookmarkItem* selectedApp = NULL;
+  for (size_t i = 0; i < base::size(kGoogleApps); i++) {
+    if (static_cast<int>(kGoogleApps[i].id) == appId) {
+      selectedApp = &kGoogleApps[i];
+      break;
     }
   }
+  CHECK(selectedApp);  // WebUI should not be able to pass non-existent ID.
 
-  UMA_HISTOGRAM_ENUMERATION(kGoogleAppsInteractionHistogram,
-                            GoogleAppsInteraction::kGetStarted,
-                            GoogleAppsInteraction::kCount);
+  // Preload the favicon cache with Chrome-bundled images. Otherwise, the
+  // pre-populated bookmarks don't have favicons and look bad. Favicons are
+  // updated automatically when a user visits a site.
+  GURL app_url = GURL(selectedApp->url);
+  favicon_service_->MergeFavicon(
+      app_url, app_url, favicon_base::IconType::kFavicon,
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+          selectedApp->icon),
+      gfx::Size(kGoogleAppIconSize, kGoogleAppIconSize));
 }
 
 void GoogleAppsHandler::HandleGetGoogleAppsList(const base::ListValue* args) {
