@@ -48,7 +48,8 @@ class VIEWS_EXPORT AnimatedImageView : public ImageViewBase,
   void SetAnimatedImage(
       std::unique_ptr<gfx::SkiaVectorAnimation> animated_image);
 
-  // Plays the animation in loop.
+  // Plays the animation in loop and must only be called when this view has
+  // access to a widget.
   void Play();
 
   // Stops any animation and resets it to the start frame.
@@ -61,12 +62,14 @@ class VIEWS_EXPORT AnimatedImageView : public ImageViewBase,
   void OnPaint(gfx::Canvas* canvas) override;
   const char* GetClassName() const override;
   void NativeViewHierarchyChanged() override;
-  void AddedToWidget() override;
   void RemovedFromWidget() override;
 
   // Overridden from ui::CompositorAnimationObserver:
   void OnAnimationStep(base::TimeTicks timestamp) override;
   void OnCompositingShuttingDown(ui::Compositor* compositor) override;
+
+  void SetCompositorFromWidget();
+  void ClearCurrentCompositor();
 
   // Overridden from ImageViewBase:
   gfx::Size GetImageSize() const override;
