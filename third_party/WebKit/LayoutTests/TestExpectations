@@ -4397,8 +4397,6 @@ crbug.com/664858 virtual/threaded/fast/scroll-behavior/smooth-scroll/main-thread
 crbug.com/664858 virtual/threaded/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-anchors.html [ Skip ]
 crbug.com/664858 virtual/threaded/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-vertical-rl-anchors.html [ Skip ]
 
-crbug.com/766357 virtual/threaded/fast/scroll-behavior/wheel-and-touch-scroll-use-count.html [ Pass Failure ]
-
 # ====== Random order flaky tests end here ======
 
 # ====== Tests from enabling .any.js/.worker.js tests begin here ======
