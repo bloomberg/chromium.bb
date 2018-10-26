@@ -262,6 +262,7 @@
       'Chromium Linux Goma RBE Staging (dbg) (clobber)': 'debug_bot',
       'Chromium Linux Goma RBE Staging (dbg)': 'debug_bot',
       'Chromium Mac Goma RBE Staging (clobber)': 'release_bot',
+      'Chromium Android ARM 32-bit Goma RBE Staging': 'android_release_bot_minimal_symbols',
     },
 
     'chromium.gpu': {
