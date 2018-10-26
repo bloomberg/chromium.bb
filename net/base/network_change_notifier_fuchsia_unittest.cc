@@ -445,11 +445,10 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, InterfaceAdded) {
               OnNetworkChanged(NetworkChangeNotifier::CONNECTION_NONE));
   EXPECT_CALL(observer_,
               OnNetworkChanged(NetworkChangeNotifier::CONNECTION_WIFI));
-  netstack_.PushInterface(
-      CreateNetInterface(kDefaultNic, fuchsia::netstack::NetInterfaceFlagUp,
-                         fuchsia::netstack::interfaceFeatureWlan,
-                         CreateIPv4Address(169, 254, 0, 1),
-                         CreateIPv4Address(255, 255, 255, 0), {}));
+  netstack_.PushInterface(CreateNetInterface(
+      kDefaultNic, fuchsia::netstack::NetInterfaceFlagUp,
+      zircon::ethernet::INFO_FEATURE_WLAN, CreateIPv4Address(169, 254, 0, 1),
+      CreateIPv4Address(255, 255, 255, 0), {}));
   netstack_.NotifyInterfaces();
   base::RunLoop().RunUntilIdle();
 }
@@ -495,11 +494,10 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, SecondaryInterfaceDeletedNoop) {
 }
 
 TEST_F(NetworkChangeNotifierFuchsiaTest, FoundWiFi) {
-  netstack_.PushInterface(
-      CreateNetInterface(kDefaultNic, fuchsia::netstack::NetInterfaceFlagUp,
-                         fuchsia::netstack::interfaceFeatureWlan,
-                         CreateIPv4Address(169, 254, 0, 1),
-                         CreateIPv4Address(255, 255, 255, 0), {}));
+  netstack_.PushInterface(CreateNetInterface(
+      kDefaultNic, fuchsia::netstack::NetInterfaceFlagUp,
+      zircon::ethernet::INFO_FEATURE_WLAN, CreateIPv4Address(169, 254, 0, 1),
+      CreateIPv4Address(255, 255, 255, 0), {}));
   CreateNotifier();
   EXPECT_EQ(NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI,
             notifier_->GetCurrentConnectionType());
