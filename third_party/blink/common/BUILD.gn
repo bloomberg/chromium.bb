@@ -66,6 +66,10 @@ jumbo_source_set("common") {
   public_deps = [
     "//third_party/blink/public/common:headers",
   ]
+  allow_circular_includes_from = [
+    # It's using common_export.h creating a circular dependency.
+    "//third_party/blink/public/common:headers",
+  ]
 
   deps = [
     "//base",

@@ -90,7 +90,9 @@ source_set("headers") {
 
   deps = [
     "//base",
+    "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
+    "//mojo/public/mojom/base",
     "//net",
   ]
 

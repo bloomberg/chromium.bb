@@ -104,6 +104,7 @@ source_set("test_headers") {
     "platform/scheduler/test/renderer_scheduler_test_support.h",
   ]
   deps = [
+    ":blink_headers",
     "//base:base",
     "//cc:cc",
     "//testing/gmock:gmock",
@@ -540,6 +541,7 @@ source_set("blink_headers") {
 
   deps = [
     ":generate_mojo_bindings",
+    ":mojo_bindings_blink_headers",
     "//base:base",
     "//cc:cc",
     "//cc/paint:paint",
