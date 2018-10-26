@@ -96,6 +96,7 @@ void DesktopWindowTreeHostPlatform::OnNativeWidgetCreated(
     const Widget::InitParams& params) {
   native_widget_delegate_->OnNativeWidgetCreated(true);
 
+#if defined(OS_LINUX)
   // Setup a non_client_window_event_filter, which handles resize/move, double
   // click and other events.
   DCHECK(!non_client_window_event_filter_);
@@ -108,6 +109,7 @@ void DesktopWindowTreeHostPlatform::OnNativeWidgetCreated(
 
   non_client_window_event_filter_ = std::move(window_event_filter);
   window()->AddPreTargetHandler(non_client_window_event_filter_.get());
+#endif
 }
 
 void DesktopWindowTreeHostPlatform::OnWidgetInitDone() {}
@@ -539,11 +541,13 @@ void DesktopWindowTreeHostPlatform::Relayout() {
 }
 
 void DesktopWindowTreeHostPlatform::RemoveNonClientEventFilter() {
+#if defined(OS_LINUX)
   if (!non_client_window_event_filter_)
     return;
 
   window()->RemovePreTargetHandler(non_client_window_event_filter_.get());
   non_client_window_event_filter_.reset();
+#endif
 }
 
 Widget* DesktopWindowTreeHostPlatform::GetWidget() {
