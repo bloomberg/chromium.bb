@@ -505,7 +505,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       // header is verified and parsed, that's where the getter is used.
       interceptors_.push_back(std::make_unique<SignedExchangeRequestHandler>(
           url::Origin::Create(request_info->common_params.url),
-          request_info->common_params.url,
           GetURLLoaderOptions(request_info->is_main_frame),
           request_info->frame_tree_node_id,
           request_info->devtools_navigation_token,
@@ -728,7 +727,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       // header is verified and parsed, that's where the getter is used.
       interceptors_.push_back(std::make_unique<SignedExchangeRequestHandler>(
           url::Origin::Create(request_info->common_params.url),
-          request_info->common_params.url,
           GetURLLoaderOptions(request_info->is_main_frame),
           request_info->frame_tree_node_id,
           request_info->devtools_navigation_token,
@@ -1390,7 +1388,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       network::mojom::URLLoaderClientRequest response_client_request;
       bool skip_other_interceptors = false;
       if (interceptor->MaybeCreateLoaderForResponse(
-              response, &response_url_loader_, &response_client_request,
+              url_, response, &response_url_loader_, &response_client_request,
               url_loader_.get(), &skip_other_interceptors)) {
         if (response_loader_binding_.is_bound())
           response_loader_binding_.Close();

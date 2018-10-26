@@ -310,9 +310,10 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
       forwarding_client_->OnComplete(network::URLLoaderCompletionStatus(error));
       return;
     }
+
     // Make a fallback redirect to |request_url|.
-    DCHECK(!has_redirected_to_fallback_url_);
-    has_redirected_to_fallback_url_ = true;
+    DCHECK(!fallback_url_);
+    fallback_url_ = request_url;
     DCHECK(outer_response_timing_info_);
     forwarding_client_->OnReceiveRedirect(
         CreateRedirectInfo(request_url, outer_request_url_),
@@ -320,6 +321,7 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
     forwarding_client_.reset();
     return;
   }
+  inner_request_url_ = request_url;
 
   // TODO(https://crbug.com/803774): Handle no-GET request_method as a error.
   DCHECK(outer_response_timing_info_);

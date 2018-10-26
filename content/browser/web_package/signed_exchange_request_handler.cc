@@ -31,7 +31,6 @@ bool SignedExchangeRequestHandler::IsSupportedMimeType(
 
 SignedExchangeRequestHandler::SignedExchangeRequestHandler(
     url::Origin request_initiator,
-    const GURL& url,
     uint32_t url_loader_options,
     int frame_tree_node_id,
     const base::UnguessableToken& devtools_navigation_token,
@@ -42,7 +41,6 @@ SignedExchangeRequestHandler::SignedExchangeRequestHandler(
     URLLoaderThrottlesGetter url_loader_throttles_getter,
     scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder)
     : request_initiator_(std::move(request_initiator)),
-      url_(url),
       url_loader_options_(url_loader_options),
       frame_tree_node_id_(frame_tree_node_id),
       devtools_navigation_token_(devtools_navigation_token),
@@ -59,7 +57,7 @@ SignedExchangeRequestHandler::SignedExchangeRequestHandler(
 SignedExchangeRequestHandler::~SignedExchangeRequestHandler() = default;
 
 void SignedExchangeRequestHandler::MaybeCreateLoader(
-    const network::ResourceRequest& /* tentative_resource_request */,
+    const network::ResourceRequest& tentative_resource_request,
     ResourceContext* resource_context,
     LoaderCallback callback,
     FallbackCallback fallback_callback) {
@@ -67,27 +65,33 @@ void SignedExchangeRequestHandler::MaybeCreateLoader(
     std::move(callback).Run({});
     return;
   }
-  if (signed_exchange_loader_->HasRedirectedToFallbackURL()) {
+
+  if (signed_exchange_loader_->fallback_url()) {
+    DCHECK(tentative_resource_request.url.EqualsIgnoringRef(
+        *signed_exchange_loader_->fallback_url()));
     signed_exchange_loader_ = nullptr;
     std::move(fallback_callback)
         .Run(false /* reset_subresource_loader_params */);
     return;
   }
 
+  DCHECK(tentative_resource_request.url.EqualsIgnoringRef(
+      *signed_exchange_loader_->inner_request_url()));
   std::move(callback).Run(
       base::BindOnce(&SignedExchangeRequestHandler::StartResponse,
                      weak_factory_.GetWeakPtr()));
 }
 
 bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
+    const GURL& request_url,
     const network::ResourceResponseHead& response,
     network::mojom::URLLoaderPtr* loader,
     network::mojom::URLLoaderClientRequest* client_request,
     ThrottlingURLLoader* url_loader,
     bool* skip_other_interceptors) {
   DCHECK(!signed_exchange_loader_);
-  if (!signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(
-          request_initiator_.GetURL(), response)) {
+  if (!signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(request_url,
+                                                               response)) {
     return false;
   }
 
@@ -100,11 +104,11 @@ bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
   // the redirected request will be checked when it's restarted we suppose
   // this is fine.
   signed_exchange_loader_ = std::make_unique<SignedExchangeLoader>(
-      url_, response, std::move(client), url_loader->Unbind(),
+      request_url, response, std::move(client), url_loader->Unbind(),
       request_initiator_, url_loader_options_, load_flags_,
       true /* should_redirect_to_fallback */, throttling_profile_id_,
       std::make_unique<SignedExchangeDevToolsProxy>(
-          url_, response,
+          request_url, response,
           base::BindRepeating([](int id) { return id; }, frame_tree_node_id_),
           devtools_navigation_token_, report_raw_headers_),
       url_loader_factory_, url_loader_throttles_getter_,

@@ -82,6 +82,7 @@ class CONTENT_EXPORT NavigationLoaderInterceptor {
   MaybeCreateSubresourceLoaderParams();
 
   // Returns true if the handler creates a loader for the |response| passed.
+  // |request_url| is the latest request URL including URL fragment.
   // An example of where this is used is AppCache, where the handler returns
   // fallback content for the response passed in.
   // The URLLoader interface pointer is returned in the |loader| parameter.
@@ -99,6 +100,7 @@ class CONTENT_EXPORT NavigationLoaderInterceptor {
   // Remove this flag when we support service worker and signed exchange
   // integration. See crbug.com/894755#c1. Nullptr is not allowed.
   virtual bool MaybeCreateLoaderForResponse(
+      const GURL& request_url,
       const network::ResourceResponseHead& response,
       network::mojom::URLLoaderPtr* loader,
       network::mojom::URLLoaderClientRequest* client_request,
