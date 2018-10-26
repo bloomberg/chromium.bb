@@ -437,6 +437,8 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
     return false;
   }
 
+  int getScaledElapsedTime(int width, int height, base::TimeTicks start_time);
+
   bool origin_tainted_by_content_;
 };
 
