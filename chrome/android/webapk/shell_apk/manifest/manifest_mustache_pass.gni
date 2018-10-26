@@ -4,7 +4,7 @@
 
 import("//build/config/android/rules.gni")
 
-template("manifest_processor_template") {
+template("manifest_mustache_pass") {
   set_sources_assignment_filter([])
   forward_variables_from(invoker, [ "testonly" ])
 
@@ -23,7 +23,8 @@ template("manifest_processor_template") {
     if (defined(invoker.config_file)) {
       sources += [ invoker.config_file ]
     }
-    script = "//chrome/android/webapk/shell_apk/manifest_processor.py"
+    script =
+        "//chrome/android/webapk/shell_apk/manifest/manifest_mustache_pass.py"
 
     outputs = [
       invoker.output,

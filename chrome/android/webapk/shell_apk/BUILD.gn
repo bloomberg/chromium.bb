@@ -4,7 +4,7 @@
 
 import("//build/config/android/rules.gni")
 import("current_version/current_version.gni")
-import("manifest_processor.gni")
+import("manifest/manifest_mustache_pass.gni")
 
 android_resources("new_splash_resources") {
   custom_package = "org.chromium.webapk.shell_apk.h2o"
@@ -83,7 +83,7 @@ template("webapk_tmpl") {
 
   # Generate manifest to upload to WebAPK server. Fills in all of the fields
   # that the server cannot customize on a per-site basis.
-  manifest_processor_template(_manifest_to_upload_target_name) {
+  manifest_mustache_pass(_manifest_to_upload_target_name) {
     input = "AndroidManifest.xml"
     output = _manifest_to_upload_output
     extra_variables = [
@@ -93,7 +93,7 @@ template("webapk_tmpl") {
   }
 
   # Generate manifest with test values.
-  manifest_processor_template(_manifest_target_name) {
+  manifest_mustache_pass(_manifest_target_name) {
     forward_variables_from(invoker, [ "config_file" ])
 
     input = _manifest_to_upload_output
@@ -206,28 +206,28 @@ java_strings_grd("webapk_strings_grd") {
 # - Android manifest is customized to the website.
 # - App icon is extracted from the website and added to the APK's resources.
 webapk_tmpl("webapk") {
-  config_file = "bound_manifest_config.json"
+  config_file = "manifest/bound_manifest_config.json"
   apk_name = "WebApk"
 }
 
 webapk_tmpl("maps_go_webapk") {
-  config_file = "maps_go_manifest_config.json"
+  config_file = "manifest/maps_go_manifest_config.json"
   apk_name = "MapsWebApk"
 }
 
 webapk_tmpl("unbound_webapk") {
-  config_file = "unbound_manifest_config.json"
+  config_file = "manifest/unbound_manifest_config.json"
   apk_name = "UnboundWebApk"
 }
 
 webapk_tmpl("http_webapk") {
-  config_file = "http_manifest_config.json"
+  config_file = "manifest/http_manifest_config.json"
   apk_name = "HttpWebApk"
 }
 
 webapk_tmpl("new_splash_webapk") {
   use_new_splash = true
-  config_file = "new_splash_manifest_config.json"
+  config_file = "manifest/new_splash_manifest_config.json"
   apk_name = "NewSplashWebApk"
 }
 
