@@ -1778,7 +1778,6 @@ gfx::SwapResult DirectCompositionSurfaceWin::SwapBuffers(
     const PresentationCallback& callback) {
   gl::GLSurfacePresentationHelper::ScopedSwapBuffers scoped_swap_buffers(
       presentation_helper_.get(), callback);
-  child_window_.ClearInvalidContents();
 
   bool succeeded = true;
   DCHECK(root_surface_);
