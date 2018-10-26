@@ -648,6 +648,7 @@ public class ToolbarPhone extends ToolbarLayout
         mUnfocusedLocationBarLayoutWidth = rightViewBounds - leftViewBounds;
         mUnfocusedLocationBarLayoutLeft = leftViewBounds;
         mUnfocusedLocationBarLayoutRight = rightViewBounds;
+        mLocationBar.setUnfocusedWidth(mUnfocusedLocationBarLayoutWidth);
     }
 
     /**

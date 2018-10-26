@@ -176,4 +176,18 @@ public interface LocationBar extends UrlBarDelegate {
      * @param scrim The scrim for this location bar to use.
      */
     void setScrim(ScrimView scrim);
+
+    /**
+     * Called to set the width of the location bar when the url bar is not focused.
+     *
+     * Immediately after the animation to transition the URL bar from focused to unfocused finishes,
+     * the layout width returned from #getMeasuredWidth() can differ from the final unfocused width
+     * (e.g. this value) until the next layout pass is complete.
+     *
+     * This value may be used to determine whether optional child views should be visible in the
+     * unfocused location bar.
+     *
+     * @param unfocusedWidth The unfocused location bar width.
+     */
+    void setUnfocusedWidth(float unfocusedWidth);
 }

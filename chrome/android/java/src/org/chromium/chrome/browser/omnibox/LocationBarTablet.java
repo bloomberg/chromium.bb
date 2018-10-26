@@ -198,7 +198,7 @@ public class LocationBarTablet extends LocationBarLayout {
     }
 
     private void finishUrlFocusChange(boolean hasFocus) {
-        mStatusViewCoordiantor.setSecurityButtonVisibility(!hasFocus);
+        mStatusViewCoordinator.setSecurityButtonVisibility(!hasFocus);
         if (hasFocus) {
             if (getWindowDelegate().getWindowSoftInputMode()
                     != WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN) {
