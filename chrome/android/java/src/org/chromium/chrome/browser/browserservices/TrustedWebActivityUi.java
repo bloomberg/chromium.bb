@@ -4,78 +4,53 @@
 
 package org.chromium.chrome.browser.browserservices;
 
+import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsService;
 
+import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.customtabs.CustomTabBrowserControlsVisibilityDelegate;
+import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
+import org.chromium.chrome.browser.customtabs.TabObserverRegistrar;
+import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
-import org.chromium.chrome.browser.snackbar.SnackbarManager;
-import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
+import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.InflationObserver;
+import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
+import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+
+import javax.inject.Inject;
 
 /**
  * Class to handle the state and logic for CustomTabActivity to do with Trusted Web Activities.
  *
  * Lifecycle: There should be a 1-1 relationship between this class and
  * {@link org.chromium.chrome.browser.customtabs.CustomTabActivity}.
- * Thread safety: All methods on this class should be called on the UI thread.
  */
-public class TrustedWebActivityUi {
-    // TODO(peconn): Convert this class to use dependency injection, when you do clean up
-    // CustomTabActivityComponent and TrustedWebActivityDisclosure.
+@ActivityScope
+public class TrustedWebActivityUi
+        implements InflationObserver, PauseResumeWithNativeObserver, NativeInitObserver {
     /** The Digital Asset Link relationship used for Trusted Web Activities. */
     private final static int RELATIONSHIP = CustomTabsService.RELATION_HANDLE_ALL_URLS;
 
-    private final TrustedWebActivityUiDelegate mDelegate;
     private final TrustedWebActivityDisclosure mDisclosure;
     private final TrustedWebActivityOpenTimeRecorder mOpenTimeRecorder =
             new TrustedWebActivityOpenTimeRecorder();
+    private final ChromeFullscreenManager mFullscreenManager;
     private final ClientAppDataRecorder mClientAppDataRecorder;
+    private final CustomTabsConnection mCustomTabsConnection;
+    private final CustomTabIntentDataProvider mIntentDataProvider;
+    private final ActivityTabProvider mActivityTabProvider;
+    private final CustomTabBrowserControlsVisibilityDelegate mControlsVisibilityDelegate;
 
     private boolean mInTrustedWebActivity = true;
 
     private int mControlsHidingToken = FullscreenManager.INVALID_TOKEN;
-
-    /**
-     * A delegate for embedders to implement to inject information into this class. The reason for
-     * using this instead of passing these dependencies into the constructor is because they may not
-     * be available at construction.
-     */
-    public interface TrustedWebActivityUiDelegate {
-        /**
-         * Provides a {@link ChromeFullscreenManager} that is used to control visibility of the
-         * toolbar.
-         */
-        ChromeFullscreenManager getFullscreenManager();
-
-        /**
-         * Provides the package name of the client for verification.
-         */
-        String getClientPackageName();
-
-        /**
-         * Gives the SnackbarManager to use to display the disclosure.
-         */
-        SnackbarManager getSnackbarManager();
-    }
-
-    /**
-     * A {@link BrowserControlsVisibilityDelegate} that disallows showing the Browser Controls when
-     * we are in a Trusted Web Activity.
-     */
-    private final BrowserControlsVisibilityDelegate mInTwaVisibilityDelegate =
-            new BrowserControlsVisibilityDelegate() {
-                @Override
-                public boolean canShowBrowserControls() {
-                    return !mInTrustedWebActivity;
-                }
-
-                @Override
-                public boolean canAutoHideBrowserControls() {
-                    return true;
-                }
-            };
 
     /** A {@link TabObserver} that checks whether we are on a verified Origin on page navigation. */
     private final TabObserver mVerifyOnPageLoadObserver = new EmptyTabObserver() {
@@ -86,7 +61,7 @@ public class TrustedWebActivityUi {
                 int httpStatusCode) {
             if (!hasCommitted || !isInMainFrame) return;
 
-            String packageName = mDelegate.getClientPackageName();
+            String packageName = getClientPackageName();
             assert packageName != null;
 
             // This doesn't perform a network request or attempt new verification - it checks to
@@ -95,58 +70,57 @@ public class TrustedWebActivityUi {
             boolean verified =
                     OriginVerifier.isValidOrigin(packageName, origin, RELATIONSHIP);
             if (verified) registerClientAppData(packageName, origin);
-            setTrustedWebActivityMode(verified, tab);
+            setTrustedWebActivityMode(verified);
         }
     };
 
-
-    /** Creates a TrustedWebActivityUi, providing a delegate from the embedder. */
-    public TrustedWebActivityUi(TrustedWebActivityUiDelegate delegate,
-            TrustedWebActivityDisclosure disclosure, ClientAppDataRecorder clientAppDataRecorder) {
-        mDelegate = delegate;
+    @Inject
+    public TrustedWebActivityUi(TrustedWebActivityDisclosure disclosure,
+            ChromeFullscreenManager fullscreenManager, ClientAppDataRecorder clientAppDataRecorder,
+            CustomTabIntentDataProvider intentDataProvider,
+            CustomTabsConnection customTabsConnection,
+            ActivityLifecycleDispatcher lifecycleDispatcher,
+            TabObserverRegistrar tabObserverRegistrar, ActivityTabProvider activityTabProvider,
+            CustomTabBrowserControlsVisibilityDelegate controlsVisibilityDelegate) {
+        mFullscreenManager = fullscreenManager;
         mClientAppDataRecorder = clientAppDataRecorder;
         mDisclosure = disclosure;
+        mCustomTabsConnection = customTabsConnection;
+        mIntentDataProvider = intentDataProvider;
+        mActivityTabProvider = activityTabProvider;
+        mControlsVisibilityDelegate = controlsVisibilityDelegate;
+        tabObserverRegistrar.registerTabObserver(mVerifyOnPageLoadObserver);
+        lifecycleDispatcher.register(this);
     }
 
-    /**
-     * Gets a {@link BrowserControlsVisibilityDelegate} that will hide/show the Custom Tab toolbar
-     * on verification/leaving the verified origin.
-     */
-    public BrowserControlsVisibilityDelegate getBrowserControlsVisibilityDelegate() {
-        return mInTwaVisibilityDelegate;
-    }
-
-    /**
-     * Gets a {@link TabObserver} that watches for navigations and sets whether we are in a Trusted
-     * Web Activity accordingly.
-     */
-    public TabObserver getTabObserver() {
-        return mVerifyOnPageLoadObserver;
+    @Nullable
+    private String getClientPackageName() {
+        return mCustomTabsConnection.getClientPackageNameForSession(
+                mIntentDataProvider.getSession());
     }
 
     /**
      * Shows the disclosure Snackbar if needed on the first Tab. Subsequent navigations will update
      * the disclosure state automatically.
      */
-    public void initialShowSnackbarIfNeeded() {
-        assert mDelegate.getSnackbarManager() != null;
-        assert mDelegate.getClientPackageName() != null;
+    private void initialShowSnackbarIfNeeded() {
+        String packageName = getClientPackageName();
+        assert packageName != null;
 
         // If we have left Trusted Web Activity mode (through onDidFinishNavigation), we don't need
         // to show the Snackbar.
         if (!mInTrustedWebActivity) return;
 
-        mDisclosure.showSnackbarIfNeeded(mDelegate.getSnackbarManager(),
-                mDelegate.getClientPackageName());
+        mDisclosure.showIfNeeded(packageName);
     }
 
     /**
      * Perform verification for the URL that the CustomTabActivity starts on.
      */
     public void attemptVerificationForInitialUrl(String url, Tab tab) {
-        assert mDelegate.getClientPackageName() != null;
+        String packageName = getClientPackageName();
+        assert packageName != null;
 
-        String packageName = mDelegate.getClientPackageName();
         Origin origin = new Origin(url);
 
         new OriginVerifier((packageName2, origin2, verified, online) -> {
@@ -154,55 +128,64 @@ public class TrustedWebActivityUi {
 
             BrowserServicesMetrics.recordTwaOpened();
             if (verified) registerClientAppData(packageName, origin);
-            setTrustedWebActivityMode(verified, tab);
+            setTrustedWebActivityMode(verified);
         }, packageName, RELATIONSHIP).start(origin);
     }
 
+    @Override
+    public void onPreInflationStartup() {}
+
+    @Override
     public void onPostInflationStartup() {
-        // TODO(pshmakov): Move this over to LifecycleObserver or something similar once available.
         if (mInTrustedWebActivity) {
             // Hide Android controls as soon as they are inflated.
-            mControlsHidingToken = mDelegate.getFullscreenManager().hideAndroidControls();
+            mControlsHidingToken = mFullscreenManager.hideAndroidControls();
+            mControlsVisibilityDelegate.setTrustedWebActivityMode(true);
         }
     }
 
-    /** Notify (for metrics purposes) that the TWA has been resumed. */
-    public void onResume() {
-        // TODO(peconn): Move this over to LifecycleObserver or something similar once available.
+    @Override
+    public void onResumeWithNative() {
         mOpenTimeRecorder.onResume();
     }
 
-    /** Notify (for metrics purposes) that the TWA has been paused. */
-    public void onPause() {
-        // TODO(peconn): Move this over to LifecycleObserver or something similar once available.
+    @Override
+    public void onPauseWithNative() {
         mOpenTimeRecorder.onPause();
+    }
+
+    @Override
+    public void onFinishNativeInitialization() {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_POST_MESSAGE)) {
+            mCustomTabsConnection.resetPostMessageHandlerForSession(
+                    mIntentDataProvider.getSession(), null);
+        }
+
+        attemptVerificationForInitialUrl(
+                mIntentDataProvider.getUrlToLoad(), mActivityTabProvider.getActivityTab());
+
+        initialShowSnackbarIfNeeded();
     }
 
     /**
      * Updates the UI appropriately for whether or not Trusted Web Activity mode is enabled.
      */
-    private void setTrustedWebActivityMode(boolean enabled, Tab tab) {
+    private void setTrustedWebActivityMode(boolean enabled) {
         if (mInTrustedWebActivity == enabled) return;
 
         mInTrustedWebActivity = enabled;
-
-        ChromeFullscreenManager fullscreenManager = mDelegate.getFullscreenManager();
+        mControlsVisibilityDelegate.setTrustedWebActivityMode(mInTrustedWebActivity);
 
         if (enabled) {
             mControlsHidingToken =
-                    fullscreenManager.hideAndroidControlsAndClearOldToken(mControlsHidingToken);
-            mDisclosure.showSnackbarIfNeeded(mDelegate.getSnackbarManager(),
-                    mDelegate.getClientPackageName());
-
+                    mFullscreenManager.hideAndroidControlsAndClearOldToken(mControlsHidingToken);
+            mDisclosure.showIfNeeded(getClientPackageName());
         } else {
-            fullscreenManager.releaseAndroidControlsHidingToken(mControlsHidingToken);
+            mFullscreenManager.releaseAndroidControlsHidingToken(mControlsHidingToken);
             // Force showing the controls for a bit when leaving Trusted Web Activity mode.
-            fullscreenManager.getBrowserVisibilityDelegate().showControlsTransient();
-            mDisclosure.dismissSnackbarIfNeeded(mDelegate.getSnackbarManager());
+            mFullscreenManager.getBrowserVisibilityDelegate().showControlsTransient();
+            mDisclosure.dismiss();
         }
-
-        // Apply the change in the BrowserControlsVisibilityDelegate
-        tab.updateFullscreenEnabledState();
     }
 
     /**

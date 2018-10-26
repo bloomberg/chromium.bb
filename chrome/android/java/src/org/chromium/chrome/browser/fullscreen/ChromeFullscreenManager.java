@@ -53,7 +53,7 @@ public class ChromeFullscreenManager
     private final boolean mExitFullscreenOnStop;
     private final TokenHolder mHidingTokenHolder = new TokenHolder(this::scheduleVisibilityUpdate);
 
-    private ControlContainer mControlContainer;
+    @Nullable private ControlContainer mControlContainer;
     private int mTopControlContainerHeight;
     private int mBottomControlContainerHeight;
     private boolean mControlsResizeView;
@@ -225,6 +225,7 @@ public class ChromeFullscreenManager
 
         mRendererTopContentOffset = mTopControlContainerHeight;
         updateControlOffset();
+        scheduleVisibilityUpdate();
     }
 
     /**
@@ -398,8 +399,9 @@ public class ChromeFullscreenManager
     }
 
     /**
-     * @return The toolbar control container.
+     * @return The toolbar control container, null until {@link #initialize} is called.
      */
+    @Nullable
     public ControlContainer getControlContainer() {
         return mControlContainer;
     }
@@ -486,6 +488,9 @@ public class ChromeFullscreenManager
      * animation, preventing message loop stalls due to untimely invalidation.
      */
     private void scheduleVisibilityUpdate() {
+        if (mControlContainer == null) {
+            return;
+        }
         final int desiredVisibility = shouldShowAndroidControls() ? View.VISIBLE : View.INVISIBLE;
         if (mControlContainer.getView().getVisibility() == desiredVisibility) return;
         mControlContainer.getView().removeCallbacks(mUpdateVisibilityRunnable);

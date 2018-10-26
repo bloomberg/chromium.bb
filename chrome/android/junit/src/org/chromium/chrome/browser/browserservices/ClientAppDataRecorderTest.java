@@ -10,12 +10,16 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,35 +29,29 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.util.test.ShadowUrlUtilities;
 
 /**
  * Tests for {@link ClientAppDataRecorder}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE, shadows = {ShadowUrlUtilities.class})
 public class ClientAppDataRecorderTest {
     private static final int APP_UID = 123;
     private static final String APP_NAME = "Example App";
     private static final String APP_PACKAGE = "com.example.app";
     private static final String MISSING_PACKAGE = "com.missing.app";
     private static final Origin ORIGIN = new Origin("https://www.example.com/");
-    private static final Origin OTHER_ORIGIN = new Origin("https://www.example.com/");
+    private static final Origin OTHER_ORIGIN = new Origin("https://www.other.com/");
 
-    @Mock public ClientAppDataRegister mRegister;
-    @Mock public PackageManager mPackageManager;
+    @Mock private ClientAppDataRegister mRegister;
+    @Mock private PackageManager mPackageManager;
 
     private ClientAppDataRecorder mRecorder;
-    private final ClientAppDataRecorder.UrlTransformer mUrlTransformer =
-            new ClientAppDataRecorder.UrlTransformer() {
-                @Override
-                String getDomain(Origin origin) {
-                    return transform(origin);
-                }
-            };
 
-    private static String transform(Origin origin) {
+    private static String transform(String origin) {
         // Just an arbitrary string transformation so we can check it is applied.
-        return origin.toString().toUpperCase();
+        return origin.toUpperCase();
     }
 
     @Before
@@ -72,7 +70,22 @@ public class ClientAppDataRecorderTest {
                 .when(mPackageManager)
                 .getApplicationInfo(eq(MISSING_PACKAGE), anyInt());
 
-        mRecorder = new ClientAppDataRecorder(mPackageManager, mRegister, mUrlTransformer);
+        Context context = mock(Context.class);
+        when(context.getPackageManager()).thenReturn(mPackageManager);
+
+        ShadowUrlUtilities.setTestImpl(new ShadowUrlUtilities.TestImpl() {
+            @Override
+            public String getDomainAndRegistry(String uri, boolean includePrivateRegistries) {
+                return transform(uri);
+            }
+        });
+
+        mRecorder = new ClientAppDataRecorder(context, mRegister);
+    }
+
+    @After
+    public void tearDown() {
+        ShadowUrlUtilities.reset();
     }
 
 
@@ -80,7 +93,7 @@ public class ClientAppDataRecorderTest {
     @Feature("TrustedWebActivities")
     public void testRegister() {
         mRecorder.register(APP_PACKAGE, ORIGIN);
-        verify(mRegister).registerPackageForDomain(APP_UID, APP_NAME, transform(ORIGIN));
+        verify(mRegister).registerPackageForDomain(APP_UID, APP_NAME, transform(ORIGIN.toString()));
     }
 
     @Test
@@ -88,7 +101,7 @@ public class ClientAppDataRecorderTest {
     public void testDeduplicate() {
         mRecorder.register(APP_PACKAGE, ORIGIN);
         mRecorder.register(APP_PACKAGE, ORIGIN);
-        verify(mRegister).registerPackageForDomain(APP_UID, APP_NAME, transform(ORIGIN));
+        verify(mRegister).registerPackageForDomain(APP_UID, APP_NAME, transform(ORIGIN.toString()));
     }
 
     @Test
@@ -96,9 +109,9 @@ public class ClientAppDataRecorderTest {
     public void testDifferentOrigins() {
         mRecorder.register(APP_PACKAGE, ORIGIN);
         mRecorder.register(APP_PACKAGE, OTHER_ORIGIN);
-        verify(mRegister).registerPackageForDomain(APP_UID, APP_NAME, transform(ORIGIN));
+        verify(mRegister).registerPackageForDomain(APP_UID, APP_NAME, transform(ORIGIN.toString()));
         verify(mRegister).registerPackageForDomain(
-                APP_UID, APP_NAME, transform(OTHER_ORIGIN));
+                APP_UID, APP_NAME, transform(OTHER_ORIGIN.toString()));
     }
 
     @Test

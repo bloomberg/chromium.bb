@@ -4,8 +4,12 @@
 
 package org.chromium.chrome.browser.dependency_injection;
 
+import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQualifiers.APP_CONTEXT;
 import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQualifiers.LAST_USED_PROFILE;
 
+import android.content.Context;
+
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.contextual_suggestions.EnabledStateMonitor;
 import org.chromium.chrome.browser.contextual_suggestions.EnabledStateMonitorImpl;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
@@ -40,5 +44,11 @@ public class ChromeAppModule {
     @Provides
     public ChromePreferenceManager providesChromePreferenceManager() {
         return ChromePreferenceManager.getInstance();
+    }
+
+    @Provides
+    @Named(APP_CONTEXT)
+    public Context provideContext() {
+        return ContextUtils.getApplicationContext();
     }
 }

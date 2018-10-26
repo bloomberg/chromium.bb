@@ -14,6 +14,8 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager;
 
 import javax.inject.Inject;
 
+import dagger.Lazy;
+
 /**
  * Shows the Trusted Web Activity disclosure when appropriate and records its acceptance.
  *
@@ -26,6 +28,7 @@ public class TrustedWebActivityDisclosure {
     // TODO(peconn): Make this package private once TrustedWebActivityUi can be injected.
     private final Resources mResources;
     private final ChromePreferenceManager mPreferenceManager;
+    private final Lazy<SnackbarManager> mSnackbarManager;
 
     private boolean mSnackbarShowing;
 
@@ -50,30 +53,31 @@ public class TrustedWebActivityDisclosure {
 
     @Inject
     /* package */ TrustedWebActivityDisclosure(Resources resources,
-            ChromePreferenceManager preferenceManager) {
+            ChromePreferenceManager preferenceManager, Lazy<SnackbarManager> snackbarManager) {
         mResources = resources;
         mPreferenceManager = preferenceManager;
+        mSnackbarManager = snackbarManager;
     }
 
-    /** Dismisses the Snackbar if it is showing. */
-    /* package */ void dismissSnackbarIfNeeded(SnackbarManager snackbarManager) {
+    /** Dismisses the disclosure if it is showing. */
+    /* package */ void dismiss() {
         if (!mSnackbarShowing) return;
 
-        snackbarManager.dismissSnackbars(mSnackbarController);
+        mSnackbarManager.get().dismissSnackbars(mSnackbarController);
         mSnackbarShowing = false;
     }
 
-    /** Shows the Snackbar if it is not already showing and hasn't been accepted. */
-    /* package */ void showSnackbarIfNeeded(SnackbarManager snackbarManager, String packageName) {
+    /** Shows the disclosure if it is not already showing and hasn't been accepted. */
+    /* package */ void showIfNeeded(String packageName) {
         if (mSnackbarShowing) return;
-        if (wasSnackbarDismissed(packageName)) return;
+        if (wasDismissed(packageName)) return;
 
-        snackbarManager.showSnackbar(makeRunningInChromeInfobar(packageName));
+        mSnackbarManager.get().showSnackbar(makeRunningInChromeInfobar(packageName));
         mSnackbarShowing = true;
     }
 
-    /** Has a Snackbar been dismissed for this client package before? */
-    private boolean wasSnackbarDismissed(String packageName) {
+    /** Has a disclosure been dismissed for this client package before? */
+    private boolean wasDismissed(String packageName) {
         return mPreferenceManager.hasUserAcceptedTwaDisclosureForPackage(packageName);
     }
 
