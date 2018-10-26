@@ -158,10 +158,6 @@ class UI_BASE_EXPORT ResourceBundle {
   // Check if the .pak for the given locale exists.
   bool LocaleDataPakExists(const std::string& locale);
 
-  // Inserts |data_pack| to |data_pack_| and updates |max_scale_factor_|
-  // accordingly.
-  void AddDataPack(std::unique_ptr<DataPack> data_pack);
-
   // Registers additional data pack files with this ResourceBundle.  When
   // looking for a DataResource, we will search these files after searching the
   // main module. |path| should be the complete path to the pack file if known
@@ -351,6 +347,10 @@ class UI_BASE_EXPORT ResourceBundle {
   void AddDataPackFromPathInternal(const base::FilePath& path,
                                    ScaleFactor scale_factor,
                                    bool optional);
+
+  // Inserts |data_pack| to |data_pack_| and updates |max_scale_factor_|
+  // accordingly.
+  void AddDataPack(std::unique_ptr<DataPack> data_pack);
 
   // Try to load the locale specific strings from an external data module.
   // Returns the locale that is loaded.
