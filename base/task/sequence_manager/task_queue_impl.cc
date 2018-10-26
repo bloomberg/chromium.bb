@@ -961,6 +961,7 @@ bool TaskQueueImpl::HasPendingImmediateWork() {
 
 void TaskQueueImpl::SetOnTaskStartedHandler(
     TaskQueueImpl::OnTaskStartedHandler handler) {
+  DCHECK(should_notify_observers_ || handler.is_null());
   main_thread_only().on_task_started_handler = std::move(handler);
 }
 
@@ -972,6 +973,7 @@ void TaskQueueImpl::OnTaskStarted(const Task& task,
 
 void TaskQueueImpl::SetOnTaskCompletedHandler(
     TaskQueueImpl::OnTaskCompletedHandler handler) {
+  DCHECK(should_notify_observers_ || handler.is_null());
   main_thread_only().on_task_completed_handler = std::move(handler);
 }
 
