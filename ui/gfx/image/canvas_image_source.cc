@@ -9,6 +9,7 @@
 #include "cc/paint/record_paint_canvas.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/switches.h"
 
@@ -58,10 +59,17 @@ ImageSkiaRep CanvasImageSource::GetImageForScale(float scale) {
             cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer);
     display_item_list->StartPaint();
 
+    SizeF size_in_pixel = ScaleSize(SizeF(size_), scale);
     cc::RecordPaintCanvas record_canvas(
         display_item_list.get(),
-        SkRect::MakeIWH(size_.width(), size_.height()));
+        SkRect::MakeWH(SkFloatToScalar(size_in_pixel.width()),
+                       SkFloatToScalar(size_in_pixel.height())));
     gfx::Canvas canvas(&record_canvas, scale);
+#if DCHECK_IS_ON()
+    Rect clip_rect;
+    DCHECK(canvas.GetClipBounds(&clip_rect));
+    DCHECK(clip_rect.Contains(gfx::Rect(ToCeiledSize(size_in_pixel))));
+#endif
     canvas.Scale(scale, scale);
     Draw(&canvas);
 
