@@ -114,13 +114,6 @@ int ChromeBrowserMainPartsAndroid::PreEarlyInitialization() {
       main_message_loop_ = std::make_unique<base::MessageLoopForUI>();
   }
 
-  // In order for SetLoadSecondaryLocalePaks() to work ResourceBundle must
-  // not have been created yet.
-  DCHECK(!ui::ResourceBundle::HasSharedInstance());
-  // Auto-detect based on en-US whether secondary locale .pak files exist.
-  ui::SetLoadSecondaryLocalePaks(
-      !ui::GetPathForAndroidLocalePakWithinApk("en-US").empty());
-
   return ChromeBrowserMainParts::PreEarlyInitialization();
 }
 

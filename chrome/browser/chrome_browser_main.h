@@ -116,12 +116,12 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // for child processes.
   void SetupOriginTrialsCommandLine(PrefService* local_state);
 
-  // Calling during PreEarlyInitialization() to load local state. Return value
-  // is an exit status, RESULT_CODE_NORMAL_EXIT indicates success.
-  // If the return value is RESULT_CODE_MISSING_DATA, then
-  // |failed_to_load_resource_bundle| indicates if the ResourceBundle couldn't
-  // be loaded.
-  int LoadLocalState(bool* failed_to_load_resource_bundle);
+  // Calling during PreEarlyInitialization() to complete the remaining tasks
+  // after the local state is loaded. Return value is an exit status,
+  // RESULT_CODE_NORMAL_EXIT indicates success. If the return value is
+  // RESULT_CODE_MISSING_DATA, then |failed_to_load_resource_bundle| indicates
+  // if the ResourceBundle couldn't be loaded.
+  int OnLocalStateLoaded(bool* failed_to_load_resource_bundle);
 
   // Applies any preferences (to local state) needed for first run. This is
   // always called and early outs if not first-run. Return value is an exit

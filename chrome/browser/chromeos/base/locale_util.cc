@@ -62,8 +62,7 @@ void SwitchLanguageDoReloadLocale(SwitchLanguageData* data) {
 void FinishSwitchLanguage(std::unique_ptr<SwitchLanguageData> data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (data->result.success) {
-    g_browser_process->SetApplicationLocale(data->result.loaded_locale,
-                                            data->result.requested_locale);
+    g_browser_process->SetApplicationLocale(data->result.loaded_locale);
 
     if (data->enable_locale_keyboard_layouts) {
       input_method::InputMethodManager* manager =

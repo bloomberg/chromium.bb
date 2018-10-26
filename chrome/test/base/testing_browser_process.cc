@@ -367,8 +367,7 @@ const std::string& TestingBrowserProcess::GetApplicationLocale() {
 }
 
 void TestingBrowserProcess::SetApplicationLocale(
-    const std::string& actual_locale,
-    const std::string& preferred_locale) {
+    const std::string& actual_locale) {
   app_locale_ = actual_locale;
 }
 
