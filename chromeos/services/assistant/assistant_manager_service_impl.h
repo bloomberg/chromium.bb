@@ -145,6 +145,7 @@ class AssistantManagerServiceImpl
   void OnVoiceInteractionSettingsEnabled(bool enabled) override;
   void OnVoiceInteractionContextEnabled(bool enabled) override;
   void OnVoiceInteractionHotwordEnabled(bool enabled) override;
+  void OnLocaleChanged(const std::string& locale) override;
 
   // assistant_client::DeviceStateListener overrides:
   void OnStartFinished() override;
@@ -237,6 +238,7 @@ class AssistantManagerServiceImpl
   bool assistant_enabled_ = false;
   bool context_enabled_ = false;
   bool spoken_feedback_enabled_ = false;
+  std::string locale_;
 
   ax::mojom::AssistantExtraPtr assistant_extra_;
   std::unique_ptr<ui::AssistantTree> assistant_tree_;
