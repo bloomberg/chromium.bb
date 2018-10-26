@@ -420,8 +420,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const base::flat_set<media::CdmProxy::Protocol>& cdm_proxy_protocols,
       base::flat_set<media::VideoCodec>* video_codecs,
       base::flat_set<media::EncryptionMode>* encryption_schemes) override;
-  std::unique_ptr<content::MemoryCoordinatorDelegate>
-  GetMemoryCoordinatorDelegate() override;
   ::rappor::RapporService* GetRapporService() override;
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
   void CreateMediaRemoter(content::RenderFrameHost* render_frame_host,

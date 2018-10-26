@@ -57,7 +57,6 @@
 #include "chrome/browser/media/webrtc/audio_debug_recordings_handler.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/webrtc_logging_handler_host.h"
-#include "chrome/browser/memory/chrome_memory_coordinator_delegate.h"
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
@@ -4315,11 +4314,6 @@ void ChromeContentBrowserClient::MaybeCopyDisableWebRtcEncryptionSwitch(
                                       kWebRtcDevSwitchNames,
                                       arraysize(kWebRtcDevSwitchNames));
   }
-}
-
-std::unique_ptr<content::MemoryCoordinatorDelegate>
-ChromeContentBrowserClient::GetMemoryCoordinatorDelegate() {
-  return memory::ChromeMemoryCoordinatorDelegate::Create();
 }
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
