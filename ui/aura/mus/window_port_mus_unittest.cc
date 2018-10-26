@@ -97,7 +97,7 @@ TEST_F(WindowPortMusTest, ClientSurfaceEmbedderUpdatesLayer) {
   auto* window_mus = WindowPortMus::Get(&window);
   viz::LocalSurfaceId local_surface_id = window.GetLocalSurfaceId();
   viz::SurfaceId primary_surface_id =
-      window_mus->client_surface_embedder()->GetPrimarySurfaceIdForTesting();
+      window_mus->client_surface_embedder()->GetSurfaceIdForTesting();
   EXPECT_EQ(local_surface_id, primary_surface_id.local_surface_id());
 }
 
@@ -132,7 +132,7 @@ TEST_F(WindowPortMusTest,
   ASSERT_TRUE(window_mus);
   ASSERT_TRUE(window_mus->client_surface_embedder());
   EXPECT_EQ(updated_id, window_mus->client_surface_embedder()
-                            ->GetPrimarySurfaceIdForTesting()
+                            ->GetSurfaceIdForTesting()
                             .local_surface_id());
 
   // The server is notified of a bounds change, so that it sees the new

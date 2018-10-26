@@ -179,9 +179,9 @@ TEST_F(DelegatedFrameHostAndroidTest, TakeFallbackContentFromUpdatesPrimary) {
   other_frame_host->TakeFallbackContentFrom(frame_host_.get());
 
   EXPECT_TRUE(other_frame_host->SurfaceId().is_valid());
-  EXPECT_EQ(
-      other_frame_host->content_layer_for_testing()->primary_surface_id(),
-      other_frame_host->content_layer_for_testing()->fallback_surface_id());
+  EXPECT_EQ(other_frame_host->content_layer_for_testing()->surface_id(),
+            other_frame_host->content_layer_for_testing()
+                ->oldest_acceptable_fallback());
 }
 
 TEST_F(DelegatedFrameHostAndroidTest, CompositorLockDuringFirstFrame) {

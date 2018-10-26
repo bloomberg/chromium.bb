@@ -908,8 +908,8 @@ TEST_F(LayerWithDelegateTest, SurfaceLayerCloneAndMirror) {
 
   viz::LocalSurfaceId local_surface_id = allocator.GenerateId();
   viz::SurfaceId surface_id_one(arbitrary_frame_sink, local_surface_id);
-  layer->SetShowPrimarySurface(surface_id_one, gfx::Size(10, 10), SK_ColorWHITE,
-                               cc::DeadlinePolicy::UseDefaultDeadline(), false);
+  layer->SetShowSurface(surface_id_one, gfx::Size(10, 10), SK_ColorWHITE,
+                        cc::DeadlinePolicy::UseDefaultDeadline(), false);
   EXPECT_FALSE(layer->StretchContentToFillBounds());
 
   auto clone = layer->Clone();
@@ -919,8 +919,8 @@ TEST_F(LayerWithDelegateTest, SurfaceLayerCloneAndMirror) {
 
   local_surface_id = allocator.GenerateId();
   viz::SurfaceId surface_id_two(arbitrary_frame_sink, local_surface_id);
-  layer->SetShowPrimarySurface(surface_id_two, gfx::Size(10, 10), SK_ColorWHITE,
-                               cc::DeadlinePolicy::UseDefaultDeadline(), true);
+  layer->SetShowSurface(surface_id_two, gfx::Size(10, 10), SK_ColorWHITE,
+                        cc::DeadlinePolicy::UseDefaultDeadline(), true);
   EXPECT_TRUE(layer->StretchContentToFillBounds());
 
   clone = layer->Clone();
@@ -1891,18 +1891,18 @@ TEST_F(LayerWithDelegateTest, ExternalContent) {
   viz::FrameSinkId frame_sink_id(1u, 1u);
   viz::ParentLocalSurfaceIdAllocator allocator;
   before = child->cc_layer_for_testing();
-  child->SetShowPrimarySurface(
-      viz::SurfaceId(frame_sink_id, allocator.GenerateId()), gfx::Size(10, 10),
-      SK_ColorWHITE, cc::DeadlinePolicy::UseDefaultDeadline(), false);
+  child->SetShowSurface(viz::SurfaceId(frame_sink_id, allocator.GenerateId()),
+                        gfx::Size(10, 10), SK_ColorWHITE,
+                        cc::DeadlinePolicy::UseDefaultDeadline(), false);
   scoped_refptr<cc::Layer> after = child->cc_layer_for_testing();
   const auto* surface = static_cast<cc::SurfaceLayer*>(after.get());
   EXPECT_TRUE(after.get());
   EXPECT_NE(before.get(), after.get());
   EXPECT_EQ(base::nullopt, surface->deadline_in_frames());
 
-  child->SetShowPrimarySurface(
-      viz::SurfaceId(frame_sink_id, allocator.GenerateId()), gfx::Size(10, 10),
-      SK_ColorWHITE, cc::DeadlinePolicy::UseSpecifiedDeadline(4u), false);
+  child->SetShowSurface(viz::SurfaceId(frame_sink_id, allocator.GenerateId()),
+                        gfx::Size(10, 10), SK_ColorWHITE,
+                        cc::DeadlinePolicy::UseSpecifiedDeadline(4u), false);
   EXPECT_EQ(4u, surface->deadline_in_frames());
 }
 
@@ -1912,29 +1912,29 @@ TEST_F(LayerWithDelegateTest, ExternalContentMirroring) {
   viz::SurfaceId surface_id(
       viz::FrameSinkId(0, 1),
       viz::LocalSurfaceId(2, base::UnguessableToken::Create()));
-  layer->SetShowPrimarySurface(surface_id, gfx::Size(10, 10), SK_ColorWHITE,
-                               cc::DeadlinePolicy::UseDefaultDeadline(), false);
+  layer->SetShowSurface(surface_id, gfx::Size(10, 10), SK_ColorWHITE,
+                        cc::DeadlinePolicy::UseDefaultDeadline(), false);
 
   const auto mirror = layer->Mirror();
   auto* const cc_layer = mirror->cc_layer_for_testing();
   const auto* surface = static_cast<cc::SurfaceLayer*>(cc_layer);
 
   // Mirroring preserves surface state.
-  EXPECT_EQ(surface_id, surface->primary_surface_id());
+  EXPECT_EQ(surface_id, surface->surface_id());
 
   surface_id =
       viz::SurfaceId(viz::FrameSinkId(1, 2),
                      viz::LocalSurfaceId(3, base::UnguessableToken::Create()));
-  layer->SetShowPrimarySurface(surface_id, gfx::Size(20, 20), SK_ColorWHITE,
-                               cc::DeadlinePolicy::UseDefaultDeadline(), false);
+  layer->SetShowSurface(surface_id, gfx::Size(20, 20), SK_ColorWHITE,
+                        cc::DeadlinePolicy::UseDefaultDeadline(), false);
 
   // The mirror should continue to use the same cc_layer.
   EXPECT_EQ(cc_layer, mirror->cc_layer_for_testing());
-  layer->SetShowPrimarySurface(surface_id, gfx::Size(20, 20), SK_ColorWHITE,
-                               cc::DeadlinePolicy::UseDefaultDeadline(), false);
+  layer->SetShowSurface(surface_id, gfx::Size(20, 20), SK_ColorWHITE,
+                        cc::DeadlinePolicy::UseDefaultDeadline(), false);
 
   // Surface updates propagate to the mirror.
-  EXPECT_EQ(surface_id, surface->primary_surface_id());
+  EXPECT_EQ(surface_id, surface->surface_id());
 }
 
 // Verifies that layer filters still attached after changing implementation
@@ -1951,9 +1951,8 @@ TEST_F(LayerWithDelegateTest, LayerFiltersSurvival) {
 
   // Showing surface content changes the underlying cc layer.
   scoped_refptr<cc::Layer> before = layer->cc_layer_for_testing();
-  layer->SetShowPrimarySurface(viz::SurfaceId(), gfx::Size(10, 10),
-                               SK_ColorWHITE,
-                               cc::DeadlinePolicy::UseDefaultDeadline(), false);
+  layer->SetShowSurface(viz::SurfaceId(), gfx::Size(10, 10), SK_ColorWHITE,
+                        cc::DeadlinePolicy::UseDefaultDeadline(), false);
   EXPECT_EQ(layer->layer_grayscale(), 0.5f);
   EXPECT_TRUE(layer->cc_layer_for_testing());
   EXPECT_NE(before.get(), layer->cc_layer_for_testing());

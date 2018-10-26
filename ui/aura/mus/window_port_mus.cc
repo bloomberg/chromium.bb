@@ -742,7 +742,7 @@ void WindowPortMus::UpdatePrimarySurfaceId() {
         window_, /* inject_gutter */ false, gfx::Insets());
   }
 
-  client_surface_embedder_->SetPrimarySurfaceId(primary_surface_id_);
+  client_surface_embedder_->SetSurfaceId(primary_surface_id_);
   client_surface_embedder_->UpdateSizeAndGutters();
 }
 

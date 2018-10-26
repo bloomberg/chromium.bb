@@ -234,11 +234,11 @@ void WindowPortLocal::TrackOcclusionState() {
 void WindowPortLocal::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
   DCHECK_EQ(surface_info.id().frame_sink_id(), window_->GetFrameSinkId());
-  window_->layer()->SetShowPrimarySurface(
-      surface_info.id(), window_->bounds().size(), SK_ColorWHITE,
-      cc::DeadlinePolicy::UseDefaultDeadline(),
-      false /* stretch_content_to_fill_bounds */);
-  window_->layer()->SetFallbackSurfaceId(surface_info.id());
+  window_->layer()->SetShowSurface(surface_info.id(), window_->bounds().size(),
+                                   SK_ColorWHITE,
+                                   cc::DeadlinePolicy::UseDefaultDeadline(),
+                                   false /* stretch_content_to_fill_bounds */);
+  window_->layer()->SetOldestAcceptableFallback(surface_info.id());
 }
 
 void WindowPortLocal::OnFrameTokenChanged(uint32_t frame_token) {}

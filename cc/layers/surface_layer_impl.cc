@@ -49,8 +49,7 @@ void SurfaceLayerImpl::SetRange(const viz::SurfaceRange& surface_range,
         TRACE_ID_GLOBAL(
             surface_range.end().local_surface_id().embed_trace_id()),
         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
-        "ImplSetPrimarySurfaceId", "surface_id",
-        surface_range.end().ToString());
+        "ImplSetSurfaceId", "surface_id", surface_range.end().ToString());
   }
 
   if (surface_range.start() &&
@@ -61,7 +60,7 @@ void SurfaceLayerImpl::SetRange(const viz::SurfaceRange& surface_range,
         TRACE_ID_GLOBAL(
             surface_range.start()->local_surface_id().submission_trace_id()),
         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
-        "ImplSetFallbackSurfaceId", "surface_id",
+        "ImplSetOldestAcceptableFallback", "surface_id",
         surface_range.start()->ToString());
   }
 

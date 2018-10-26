@@ -3380,14 +3380,12 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   view_->SetSize(gfx::Size(300, 300));
   ASSERT_TRUE(view_->HasPrimarySurface());
   EXPECT_EQ(gfx::Size(300, 300), view_->window_->layer()->size());
-  viz::SurfaceId initial_surface_id =
-      *view_->window_->layer()->GetPrimarySurfaceId();
-  EXPECT_EQ(nullptr, view_->window_->layer()->GetFallbackSurfaceId());
+  viz::SurfaceId initial_surface_id = *view_->window_->layer()->GetSurfaceId();
+  EXPECT_EQ(nullptr, view_->window_->layer()->GetOldestAcceptableFallback());
 
   // Resizing should update the primary SurfaceId.
   aura_test_helper_->test_screen()->SetDeviceScaleFactor(2.0f);
-  viz::SurfaceId new_surface_id =
-      *view_->window_->layer()->GetPrimarySurfaceId();
+  viz::SurfaceId new_surface_id = *view_->window_->layer()->GetSurfaceId();
   EXPECT_NE(new_surface_id, initial_surface_id);
   EXPECT_EQ(gfx::Size(300, 300), view_->window_->layer()->bounds().size());
 }
@@ -3530,9 +3528,9 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   views[1]->SetSize(size2);
   // Show it, it should block until we give it a frame.
   views[1]->Show();
-  ASSERT_TRUE(views[1]->window_->layer()->GetFallbackSurfaceId());
-  EXPECT_EQ(*views[1]->window_->layer()->GetFallbackSurfaceId(),
-            *views[1]->window_->layer()->GetPrimarySurfaceId());
+  ASSERT_TRUE(views[1]->window_->layer()->GetOldestAcceptableFallback());
+  EXPECT_EQ(*views[1]->window_->layer()->GetOldestAcceptableFallback(),
+            *views[1]->window_->layer()->GetSurfaceId());
 
   for (size_t i = 0; i < renderer_count; ++i) {
     views[i]->Destroy();
@@ -5800,9 +5798,9 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   view_->Hide();
   view_->SetSize(gfx::Size(54, 32));
   view_->Show();
-  ASSERT_TRUE(view_->window_->layer()->GetFallbackSurfaceId());
-  EXPECT_EQ(*view_->window_->layer()->GetFallbackSurfaceId(),
-            *view_->window_->layer()->GetPrimarySurfaceId());
+  ASSERT_TRUE(view_->window_->layer()->GetOldestAcceptableFallback());
+  EXPECT_EQ(*view_->window_->layer()->GetOldestAcceptableFallback(),
+            *view_->window_->layer()->GetSurfaceId());
 }
 
 // If a tab is hidden and shown without being resized in the meantime, the
@@ -5822,12 +5820,13 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   // Force fallback being set.
   view_->DidNavigate();
   view_->ResetFallbackToFirstNavigationSurface();
-  ASSERT_TRUE(view_->window_->layer()->GetFallbackSurfaceId());
-  viz::SurfaceId fallback = *view_->window_->layer()->GetFallbackSurfaceId();
+  ASSERT_TRUE(view_->window_->layer()->GetOldestAcceptableFallback());
+  viz::SurfaceId fallback =
+      *view_->window_->layer()->GetOldestAcceptableFallback();
   view_->Hide();
   view_->Show();
-  ASSERT_TRUE(view_->window_->layer()->GetFallbackSurfaceId());
-  EXPECT_EQ(fallback, *view_->window_->layer()->GetPrimarySurfaceId());
+  ASSERT_TRUE(view_->window_->layer()->GetOldestAcceptableFallback());
+  EXPECT_EQ(fallback, *view_->window_->layer()->GetSurfaceId());
 }
 
 // Check that TakeFallbackContentFrom() copies the fallback SurfaceId and
@@ -5855,8 +5854,8 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   // Call TakeFallbackContentFrom(). The second view should obtain a fallback
   // from the first view.
   view2->TakeFallbackContentFrom(view_);
-  EXPECT_EQ(view_->window_->layer()->GetPrimarySurfaceId()->ToSmallestId(),
-            *view2->window_->layer()->GetFallbackSurfaceId());
+  EXPECT_EQ(view_->window_->layer()->GetSurfaceId()->ToSmallestId(),
+            *view2->window_->layer()->GetOldestAcceptableFallback());
 
   DestroyView(view2);
 }

@@ -161,7 +161,7 @@ void ClientRoot::UpdatePrimarySurfaceId() {
   UpdateLocalSurfaceIdIfNecessary();
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window_);
   if (server_window->local_surface_id().has_value()) {
-    client_surface_embedder_->SetPrimarySurfaceId(viz::SurfaceId(
+    client_surface_embedder_->SetSurfaceId(viz::SurfaceId(
         window_->GetFrameSinkId(), *server_window->local_surface_id()));
     if (fallback_surface_info_) {
       client_surface_embedder_->SetFallbackSurfaceInfo(*fallback_surface_info_);

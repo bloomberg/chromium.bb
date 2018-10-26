@@ -35,8 +35,8 @@ scoped_refptr<cc::SurfaceLayer> CreateSurfaceLayer(
     bool surface_opaque) {
   // manager must outlive compositors using it.
   auto layer = cc::SurfaceLayer::Create();
-  layer->SetPrimarySurfaceId(primary_surface_id, deadline_policy);
-  layer->SetFallbackSurfaceId(fallback_surface_id);
+  layer->SetSurfaceId(primary_surface_id, deadline_policy);
+  layer->SetOldestAcceptableFallback(fallback_surface_id);
   layer->SetBounds(size_in_pixels);
   layer->SetIsDrawable(true);
   layer->SetContentsOpaque(surface_opaque);
@@ -186,8 +186,8 @@ bool DelegatedFrameHostAndroid::CanCopyFromCompositingSurface() const {
 void DelegatedFrameHostAndroid::EvictDelegatedFrame() {
   if (!content_layer_)
     return;
-  content_layer_->SetPrimarySurfaceId(viz::SurfaceId(),
-                                      cc::DeadlinePolicy::UseDefaultDeadline());
+  content_layer_->SetSurfaceId(viz::SurfaceId(),
+                               cc::DeadlinePolicy::UseDefaultDeadline());
   if (!enable_surface_synchronization_) {
     content_layer_->RemoveFromParent();
     content_layer_ = nullptr;
@@ -206,20 +206,20 @@ void DelegatedFrameHostAndroid::ResetFallbackToFirstNavigationSurface() {
     return;
   // Don't update the fallback if it's already newer than the first id after
   // navigation.
-  if (content_layer_->fallback_surface_id() &&
-      content_layer_->fallback_surface_id()->frame_sink_id() ==
+  if (content_layer_->oldest_acceptable_fallback() &&
+      content_layer_->oldest_acceptable_fallback()->frame_sink_id() ==
           frame_sink_id_ &&
-      content_layer_->fallback_surface_id()
+      content_layer_->oldest_acceptable_fallback()
           ->local_surface_id()
           .IsSameOrNewerThan(first_local_surface_id_after_navigation_)) {
     return;
   }
-  content_layer_->SetFallbackSurfaceId(
+  content_layer_->SetOldestAcceptableFallback(
       viz::SurfaceId(frame_sink_id_, first_local_surface_id_after_navigation_));
 }
 
 bool DelegatedFrameHostAndroid::HasDelegatedContent() const {
-  return content_layer_ && content_layer_->primary_surface_id().is_valid();
+  return content_layer_ && content_layer_->surface_id().is_valid();
 }
 
 void DelegatedFrameHostAndroid::CompositorFrameSinkChanged() {
@@ -267,7 +267,7 @@ void DelegatedFrameHostAndroid::DetachFromCompositor() {
 }
 
 bool DelegatedFrameHostAndroid::IsPrimarySurfaceEvicted() const {
-  return !content_layer_ || !content_layer_->primary_surface_id().is_valid();
+  return !content_layer_ || !content_layer_->surface_id().is_valid();
 }
 
 bool DelegatedFrameHostAndroid::HasSavedFrame() const {
@@ -301,8 +301,7 @@ void DelegatedFrameHostAndroid::EmbedSurface(
   local_surface_id_ = new_local_surface_id;
   surface_size_in_pixels_ = new_size_in_pixels;
 
-  viz::SurfaceId current_primary_surface_id =
-      content_layer_->primary_surface_id();
+  viz::SurfaceId current_primary_surface_id = content_layer_->surface_id();
   viz::SurfaceId new_primary_surface_id(frame_sink_id_, local_surface_id_);
 
   if (!frame_evictor_->visible()) {
@@ -311,9 +310,9 @@ void DelegatedFrameHostAndroid::EmbedSurface(
     // showing contents of old size. Don't call EvictDelegatedFrame to avoid
     // races when dragging tabs across displays. See https://crbug.com/813157.
     if (surface_size_in_pixels_ != content_layer_->bounds() &&
-        content_layer_->fallback_surface_id() &&
-        content_layer_->fallback_surface_id()->is_valid()) {
-      content_layer_->SetFallbackSurfaceId(new_primary_surface_id);
+        content_layer_->oldest_acceptable_fallback() &&
+        content_layer_->oldest_acceptable_fallback()->is_valid()) {
+      content_layer_->SetOldestAcceptableFallback(new_primary_surface_id);
     }
     // Don't update the SurfaceLayer when invisible to avoid blocking on
     // renderers that do not submit CompositorFrames. Next time the renderer
@@ -342,8 +341,7 @@ void DelegatedFrameHostAndroid::EmbedSurface(
         deadline_policy = cc::DeadlinePolicy::UseSpecifiedDeadline(0u);
       }
     }
-    content_layer_->SetPrimarySurfaceId(new_primary_surface_id,
-                                        deadline_policy);
+    content_layer_->SetSurfaceId(new_primary_surface_id, deadline_policy);
     content_layer_->SetBounds(new_size_in_pixels);
   }
 }
@@ -431,12 +429,12 @@ viz::SurfaceId DelegatedFrameHostAndroid::SurfaceId() const {
 }
 
 bool DelegatedFrameHostAndroid::HasPrimarySurface() const {
-  return content_layer_ && content_layer_->primary_surface_id().is_valid();
+  return content_layer_ && content_layer_->surface_id().is_valid();
 }
 
 bool DelegatedFrameHostAndroid::HasFallbackSurface() const {
-  return content_layer_ && content_layer_->fallback_surface_id() &&
-         content_layer_->fallback_surface_id()->is_valid();
+  return content_layer_ && content_layer_->oldest_acceptable_fallback() &&
+         content_layer_->oldest_acceptable_fallback()->is_valid();
 }
 
 void DelegatedFrameHostAndroid::TakeFallbackContentFrom(
@@ -445,10 +443,9 @@ void DelegatedFrameHostAndroid::TakeFallbackContentFrom(
     return;
 
   if (enable_surface_synchronization_) {
-    const viz::SurfaceId& other_primary =
-        other->content_layer_->primary_surface_id();
+    const viz::SurfaceId& other_primary = other->content_layer_->surface_id();
     const base::Optional<viz::SurfaceId>& other_fallback =
-        other->content_layer_->fallback_surface_id();
+        other->content_layer_->oldest_acceptable_fallback();
     viz::SurfaceId desired_fallback;
     if (!other->HasFallbackSurface() ||
         !other_primary.IsSameOrNewerThan(*other_fallback)) {
@@ -456,14 +453,14 @@ void DelegatedFrameHostAndroid::TakeFallbackContentFrom(
     } else {
       desired_fallback = *other_fallback;
     }
-    content_layer_->SetFallbackSurfaceId(
-        other->content_layer_->primary_surface_id().ToSmallestId());
+    content_layer_->SetOldestAcceptableFallback(
+        other->content_layer_->surface_id().ToSmallestId());
     return;
   }
 
   if (content_layer_) {
-    content_layer_->SetPrimarySurfaceId(
-        *other->content_layer_->fallback_surface_id(),
+    content_layer_->SetSurfaceId(
+        *other->content_layer_->oldest_acceptable_fallback(),
         cc::DeadlinePolicy::UseDefaultDeadline());
   } else {
     const auto& surface_id = other->SurfaceId();
@@ -476,8 +473,8 @@ void DelegatedFrameHostAndroid::TakeFallbackContentFrom(
         other->content_layer_->contents_opaque());
     view_->GetLayer()->AddChild(content_layer_);
   }
-  content_layer_->SetFallbackSurfaceId(
-      *other->content_layer_->fallback_surface_id());
+  content_layer_->SetOldestAcceptableFallback(
+      *other->content_layer_->oldest_acceptable_fallback());
 }
 
 void DelegatedFrameHostAndroid::DidNavigate() {
