@@ -8,9 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <set>
 #include <string>
 
+#include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
@@ -223,8 +223,8 @@ class VIZ_COMMON_EXPORT BackToBackBeginFrameSource
 
  private:
   std::unique_ptr<DelayBasedTimeSource> time_source_;
-  std::unordered_set<BeginFrameObserver*> observers_;
-  std::unordered_set<BeginFrameObserver*> pending_begin_frame_observers_;
+  base::flat_set<BeginFrameObserver*> observers_;
+  base::flat_set<BeginFrameObserver*> pending_begin_frame_observers_;
   uint64_t next_sequence_number_;
   base::WeakPtrFactory<BackToBackBeginFrameSource> weak_factory_;
 
@@ -261,7 +261,7 @@ class VIZ_COMMON_EXPORT DelayBasedBeginFrameSource
                                  const BeginFrameArgs& args);
 
   std::unique_ptr<DelayBasedTimeSource> time_source_;
-  std::unordered_set<BeginFrameObserver*> observers_;
+  base::flat_set<BeginFrameObserver*> observers_;
   base::TimeTicks last_timebase_;
   BeginFrameArgs last_begin_frame_args_;
   uint64_t next_sequence_number_;
@@ -306,7 +306,7 @@ class VIZ_COMMON_EXPORT ExternalBeginFrameSource : public BeginFrameSource {
   virtual BeginFrameArgs GetMissedBeginFrameArgs(BeginFrameObserver* obs);
 
   BeginFrameArgs last_begin_frame_args_;
-  std::unordered_set<BeginFrameObserver*> observers_;
+  base::flat_set<BeginFrameObserver*> observers_;
   ExternalBeginFrameSourceClient* client_;
   bool paused_ = false;
 
