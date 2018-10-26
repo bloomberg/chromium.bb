@@ -58,7 +58,7 @@ class ArcNotificationContentView
   message_center::NotificationControlButtonsView* GetControlButtonsView();
   void UpdateControlButtonsVisibility();
   void UpdateCornerRadius(int top_radius, int bottom_radius);
-  void OnSlideChanged();
+  void OnSlideChanged(bool in_progress);
   void OnContainerAnimationStarted();
   void OnContainerAnimationEnded();
   void ActivateWidget(bool activate);

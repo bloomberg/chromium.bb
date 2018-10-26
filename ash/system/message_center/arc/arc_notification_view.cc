@@ -161,9 +161,9 @@ void ArcNotificationView::OnContainerAnimationEnded() {
   content_view_->OnContainerAnimationEnded();
 }
 
-void ArcNotificationView::OnSlideChanged() {
-  MessageView::OnSlideChanged();
-  content_view_->OnSlideChanged();
+void ArcNotificationView::OnSlideChanged(bool in_progress) {
+  MessageView::OnSlideChanged(in_progress);
+  content_view_->OnSlideChanged(in_progress);
 }
 
 gfx::Size ArcNotificationView::CalculatePreferredSize() const {

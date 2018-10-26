@@ -31,7 +31,9 @@ class MESSAGE_CENTER_EXPORT SlideOutController
     virtual ui::Layer* GetSlideOutLayer() = 0;
 
     // Called when a slide starts, ends, or is updated.
-    virtual void OnSlideChanged() = 0;
+    // The argument is true if the slide starts or in progress, false if it
+    // ends.
+    virtual void OnSlideChanged(bool in_progress) = 0;
 
     // Called when user intends to close the View by sliding it out.
     virtual void OnSlideOut() = 0;

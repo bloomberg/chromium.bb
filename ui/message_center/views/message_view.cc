@@ -313,7 +313,7 @@ ui::Layer* MessageView::GetSlideOutLayer() {
   return is_nested_ ? layer() : GetWidget()->GetLayer();
 }
 
-void MessageView::OnSlideChanged() {
+void MessageView::OnSlideChanged(bool in_progress) {
   for (auto* observer : slide_observers_) {
     observer->OnSlideChanged(notification_id_);
   }

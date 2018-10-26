@@ -126,7 +126,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
 
   // message_center::SlideOutController::Delegate:
   ui::Layer* GetSlideOutLayer() override;
-  void OnSlideChanged() override;
+  void OnSlideChanged(bool in_progress) override;
   void OnSlideOut() override;
 
   // views::FocusChangeListener:
