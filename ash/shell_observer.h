@@ -45,11 +45,6 @@ class ASH_EXPORT ShellObserver {
   // get re-arranged).
   virtual void OnOverviewModeStarting() {}
 
-  // Called after the animations that happen when overview mode is started are
-  // complete. If |canceled| it means overview was quit before the start
-  // animations were finished.
-  virtual void OnOverviewModeStartingAnimationComplete(bool canceled) {}
-
   // Called when the overview mode is about to end (bofore the windows restore
   // themselves).
   virtual void OnOverviewModeEnding() {}
@@ -58,9 +53,8 @@ class ASH_EXPORT ShellObserver {
   virtual void OnOverviewModeEnded() {}
 
   // Called after the animations that happen when overview mode is ended are
-  // complete. If |canceled| it means overview was reentered before the exit
-  // animations were finished.
-  virtual void OnOverviewModeEndingAnimationComplete(bool canceled) {}
+  // complete.
+  virtual void OnOverviewModeEndingAnimationComplete() {}
 
   // Called when the split view mode is about to be started before the window
   // gets snapped and activated).
