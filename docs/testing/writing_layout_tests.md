@@ -505,7 +505,7 @@ dump mode (now the standard), the standard behavior for tests is to
 synchronously composite without rastering (to save time). However, animations
 run upon surface activation, which only happens once rasterization is performed.
 Therefore, for these tests, an additional setting needs to be set. Near the
-beginning of these tests, call `continuouslyRunAnimations()` defined in
+beginning of these tests, call `setAnimationRequiresRaster()` defined in
 [third_party/WebKit/LayoutTests/resources/compositor-controls.js](../../third_party/WebKit/LayoutTests/resources/compositor-controls.js)
 which will enable full rasterization during the test.
 
