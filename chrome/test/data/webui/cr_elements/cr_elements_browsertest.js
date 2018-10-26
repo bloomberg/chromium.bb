@@ -153,6 +153,7 @@ CrElementsScrollableBehaviorTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    '../settings/test_util.js',
     'cr_scrollable_behavior_tests.js',
   ]),
 };
