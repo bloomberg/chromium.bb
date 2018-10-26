@@ -36,15 +36,17 @@ namespace ui {
 namespace {
 
 #if defined(OS_WIN)
+bool IsTabletMode() {
+  return base::win::IsWindows10TabletMode(
+      gfx::SingletonHwnd::GetInstance()->hwnd());
+}
+
 void TabletModeWatcherWinProc(HWND hwnd,
                               UINT message,
                               WPARAM wparam,
                               LPARAM lparam) {
-  if (message == WM_SETTINGCHANGE) {
-    MaterialDesignController::OnTabletModeToggled(
-        base::win::IsWindows10TabletMode(
-            gfx::SingletonHwnd::GetInstance()->hwnd()));
-  }
+  if (message == WM_SETTINGCHANGE)
+    MaterialDesignController::OnTabletModeToggled(IsTabletMode());
 }
 #endif  // defined(OS_WIN)
 
@@ -53,34 +55,43 @@ void TabletModeWatcherWinProc(HWND hwnd,
 bool MaterialDesignController::is_mode_initialized_ = false;
 
 MaterialDesignController::Mode MaterialDesignController::mode_ =
-    MaterialDesignController::MATERIAL_NORMAL;
+    MaterialDesignController::MATERIAL_REFRESH;
 
 bool MaterialDesignController::is_refresh_dynamic_ui_ = false;
 
 // static
 void MaterialDesignController::Initialize() {
   TRACE_EVENT0("startup", "MaterialDesignController::InitializeMode");
-  CHECK(!is_mode_initialized_);
+  DCHECK(!is_mode_initialized_);
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   const std::string switch_value =
       command_line->GetSwitchValueASCII(switches::kTopChromeMD);
+  bool touch =
+      switch_value == switches::kTopChromeMDMaterialRefreshTouchOptimized;
+  is_refresh_dynamic_ui_ = false;
 
-  if (switch_value == switches::kTopChromeMDMaterialRefresh) {
-    SetMode(MATERIAL_REFRESH);
-  } else if (switch_value ==
-             switches::kTopChromeMDMaterialRefreshTouchOptimized) {
-    SetMode(MATERIAL_TOUCH_REFRESH);
-  } else if (switch_value == switches::kTopChromeMDMaterialRefreshDynamic) {
-    MaybeSetDynamicRefreshMode();
-  } else {
-    if (!switch_value.empty()) {
-      LOG(ERROR) << "Invalid value='" << switch_value
-                 << "' for command line switch '" << switches::kTopChromeMD
-                 << "'.";
+  // When the mode is not explicitly forced, platforms vary as to the default
+  // behavior.
+  if (!touch && (switch_value != switches::kTopChromeMDMaterialRefresh)) {
+#if defined(OS_CHROMEOS)
+    // TabletModeClient's default state is in non-tablet mode.
+    is_refresh_dynamic_ui_ = true;
+#elif defined(OS_WIN)
+    if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
+      // Win 10+ uses dynamic mode by default and checks the current tablet mode
+      // state to determine whether to start in touch mode.
+      is_refresh_dynamic_ui_ = true;
+      if (base::MessageLoopForUI::IsCurrent()) {
+        MaterialDesignController::GetInstance()->singleton_hwnd_observer_ =
+            std::make_unique<gfx::SingletonHwndObserver>(
+                base::BindRepeating(TabletModeWatcherWinProc));
+        touch = IsTabletMode();
+      }
     }
-    MaybeSetDynamicRefreshMode();
+#endif
   }
+  SetMode(touch ? MATERIAL_TOUCH_REFRESH : MATERIAL_REFRESH);
 
   // Ideally, there would be a more general, "initialize random stuff here"
   // function into which these things and a call to this function can be placed.
@@ -96,15 +107,9 @@ void MaterialDesignController::Initialize() {
 }
 
 // static
-MaterialDesignController::Mode MaterialDesignController::GetMode() {
-  CHECK(is_mode_initialized_);
-  return mode_;
-}
-
-// static
 bool MaterialDesignController::IsTouchOptimizedUiEnabled() {
-  return GetMode() == MATERIAL_TOUCH_OPTIMIZED ||
-         GetMode() == MATERIAL_TOUCH_REFRESH;
+  DCHECK(is_mode_initialized_);
+  return mode_ == MATERIAL_TOUCH_REFRESH;
 }
 
 // static
@@ -144,32 +149,6 @@ void MaterialDesignController::SetMode(MaterialDesignController::Mode mode) {
     for (auto& observer : GetInstance()->observers_)
       observer.OnMdModeChanged();
   }
-}
-
-// static
-void MaterialDesignController::MaybeSetDynamicRefreshMode() {
-#if defined(OS_CHROMEOS)
-  // TabletModeClient's default state is in non-tablet mode.
-  SetMode(MATERIAL_REFRESH);
-  is_refresh_dynamic_ui_ = true;
-#elif defined(OS_WIN)
-  if (base::win::GetVersion() < base::win::VERSION_WIN10 ||
-      !base::MessageLoopForUI::IsCurrent()) {
-    SetMode(MATERIAL_REFRESH);
-    return;
-  }
-
-  MaterialDesignController::GetInstance()->singleton_hwnd_observer_ =
-      std::make_unique<gfx::SingletonHwndObserver>(
-          base::BindRepeating(TabletModeWatcherWinProc));
-  SetMode(base::win::IsWindows10TabletMode(
-              gfx::SingletonHwnd::GetInstance()->hwnd())
-              ? MATERIAL_TOUCH_REFRESH
-              : MATERIAL_REFRESH);
-  is_refresh_dynamic_ui_ = true;
-#else
-  SetMode(MATERIAL_REFRESH);
-#endif
 }
 
 }  // namespace ui

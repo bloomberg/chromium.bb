@@ -14,12 +14,6 @@
 
 namespace ui {
 
-TEST(MaterialDesignControllerDeathTest, CrashesWithoutInitialization) {
-  ASSERT_FALSE(MaterialDesignController::is_mode_initialized());
-  EXPECT_DEATH_IF_SUPPORTED(
-      MaterialDesignController::IsTouchOptimizedUiEnabled(), "");
-}
-
 namespace {
 
 // Test fixture for the MaterialDesignController class.
@@ -139,9 +133,9 @@ TEST(MaterialDesignControllerObserver, InitializationOnMdModeChanged) {
 TEST(MaterialDesignControllerObserver, TabletOnMdModeChanged) {
   // Verifies that the MaterialDesignControllerObserver gets called back when
   // the tablet mode toggles.
+  MaterialDesignController::Initialize();
   test::MaterialDesignControllerTestAPI::SetDynamicRefreshUi(true);
 
-  MaterialDesignController::Initialize();
   TestObserver tablet_enabled_observer;
   MaterialDesignController::GetInstance()->AddObserver(
       &tablet_enabled_observer);
@@ -166,13 +160,13 @@ TEST(MaterialDesignControllerObserver, TabletOnMdModeChanged) {
 
   EXPECT_TRUE(tablet_disabled_observer.on_md_mode_changed_called());
 
-  test::MaterialDesignControllerTestAPI::Uninitialize();
   MaterialDesignController::GetInstance()->RemoveObserver(
       &tablet_disabled_observer);
   MaterialDesignController::GetInstance()->RemoveObserver(
       &tablet_enabled_observer);
 
   test::MaterialDesignControllerTestAPI::SetDynamicRefreshUi(false);
+  test::MaterialDesignControllerTestAPI::Uninitialize();
 }
 
 }  // namespace ui
