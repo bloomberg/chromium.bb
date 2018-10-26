@@ -1352,20 +1352,6 @@
       ]
     },
     {
-      "id": 143,
-      "description": "Timer queries crash on Intel GPUs on Linux",
-      "cr_bugs": [540543, 576991],
-      "os": {
-        "type": "linux"
-      },
-      "vendor_id": "0x8086",
-      "driver_vendor": "Mesa",
-      "disabled_extensions": [
-        "GL_ARB_timer_query",
-        "GL_EXT_timer_query"
-      ]
-    },
-    {
       "id": 144,
       "cr_bugs": [563714],
       "description": "Pack parameters work incorrectly with pack buffer bound",
