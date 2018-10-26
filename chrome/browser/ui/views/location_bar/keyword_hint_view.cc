@@ -73,7 +73,7 @@ KeywordHintView::KeywordHintView(views::ButtonListener* listener,
   // Use leaf alert role so that name is spoken by screen reader, but redundant
   // child label text is not also spoken.
   GetViewAccessibility().OverrideRole(ax::mojom::Role::kGenericContainer);
-  GetViewAccessibility().OverrideIsLeaf();
+  GetViewAccessibility().OverrideIsLeaf(true);
 }
 
 KeywordHintView::~KeywordHintView() {}
