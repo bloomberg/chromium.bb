@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
+#include "services/network/cert_verifier_with_trust_anchors.h"
 
 #include <memory>
 #include <string>
@@ -12,9 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "base/test/scoped_task_environment.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_test_nss_chromeos_user.h"
 #include "net/base/test_completion_callback.h"
@@ -25,16 +23,20 @@
 #include "net/log/net_log_with_source.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
+#include "services/network/cert_verify_proc_chromeos.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace policy {
+namespace network {
 
-class PolicyCertVerifierTest : public testing::Test {
+class CertVerifierWithTrustAnchorsTest : public testing::Test {
  public:
-  PolicyCertVerifierTest()
-      : trust_anchor_used_(false), test_nss_user_("user1") {}
+  CertVerifierWithTrustAnchorsTest()
+      : trust_anchor_used_(false),
+        test_nss_user_("user1"),
+        scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
 
-  ~PolicyCertVerifierTest() override {}
+  ~CertVerifierWithTrustAnchorsTest() override {}
 
   void SetUp() override {
     ASSERT_TRUE(test_nss_user_.constructed_successfully());
@@ -46,9 +48,10 @@ class PolicyCertVerifierTest : public testing::Test {
             test_nss_user_.username_hash(),
             base::RepeatingCallback<void(crypto::ScopedPK11Slot)>())));
 
-    cert_verifier_.reset(new PolicyCertVerifier(base::BindRepeating(
-        &PolicyCertVerifierTest::OnTrustAnchorUsed, base::Unretained(this))));
-    cert_verifier_->InitializeOnIOThread(new chromeos::CertVerifyProcChromeOS(
+    cert_verifier_.reset(new CertVerifierWithTrustAnchors(base::BindRepeating(
+        &CertVerifierWithTrustAnchorsTest::OnTrustAnchorUsed,
+        base::Unretained(this))));
+    cert_verifier_->InitializeOnIOThread(new network::CertVerifyProcChromeOS(
         crypto::GetPublicSlotForChromeOSUser(test_nss_user_.username_hash())));
 
     test_ca_cert_ = LoadCertificate("root_ca_cert.pem", net::CA_CERT);
@@ -104,7 +107,7 @@ class PolicyCertVerifierTest : public testing::Test {
   scoped_refptr<net::X509Certificate> test_server_cert_;
   net::ScopedCERTCertificateList test_ca_cert_list_;
   std::unique_ptr<net::NSSCertDatabaseChromeOS> test_cert_db_;
-  std::unique_ptr<PolicyCertVerifier> cert_verifier_;
+  std::unique_ptr<CertVerifierWithTrustAnchors> cert_verifier_;
 
  private:
   void OnTrustAnchorUsed() { trust_anchor_used_ = true; }
@@ -126,10 +129,10 @@ class PolicyCertVerifierTest : public testing::Test {
 
   bool trust_anchor_used_;
   crypto::ScopedTestNSSChromeOSUser test_nss_user_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
-TEST_F(PolicyCertVerifierTest, VerifyUntrustedCert) {
+TEST_F(CertVerifierWithTrustAnchorsTest, VerifyUntrustedCert) {
   // |test_server_cert_| is untrusted, so Verify() fails.
   {
     net::CertVerifyResult verify_result;
@@ -155,7 +158,7 @@ TEST_F(PolicyCertVerifierTest, VerifyUntrustedCert) {
   EXPECT_FALSE(WasTrustAnchorUsedAndReset());
 }
 
-TEST_F(PolicyCertVerifierTest, VerifyTrustedCert) {
+TEST_F(CertVerifierWithTrustAnchorsTest, VerifyTrustedCert) {
   // Make the database trust |test_ca_cert_|.
   net::NSSCertDatabase::ImportCertFailureList failure_list;
   ASSERT_TRUE(test_cert_db_->ImportCACerts(
@@ -182,7 +185,7 @@ TEST_F(PolicyCertVerifierTest, VerifyTrustedCert) {
   EXPECT_FALSE(WasTrustAnchorUsedAndReset());
 }
 
-TEST_F(PolicyCertVerifierTest, VerifyUsingAdditionalTrustAnchor) {
+TEST_F(CertVerifierWithTrustAnchorsTest, VerifyUsingAdditionalTrustAnchor) {
   ASSERT_TRUE(SupportsAdditionalTrustAnchors());
 
   // |test_server_cert_| is untrusted, so Verify() fails.
@@ -246,7 +249,7 @@ TEST_F(PolicyCertVerifierTest, VerifyUsingAdditionalTrustAnchor) {
   EXPECT_FALSE(WasTrustAnchorUsedAndReset());
 }
 
-TEST_F(PolicyCertVerifierTest,
+TEST_F(CertVerifierWithTrustAnchorsTest,
        VerifyUsesAdditionalTrustAnchorsAfterConfigChange) {
   ASSERT_TRUE(SupportsAdditionalTrustAnchors());
 
@@ -300,4 +303,4 @@ TEST_F(PolicyCertVerifierTest,
   EXPECT_TRUE(WasTrustAnchorUsedAndReset());
 }
 
-}  // namespace policy
+}  // namespace network

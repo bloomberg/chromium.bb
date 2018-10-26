@@ -48,12 +48,13 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/scoped_test_nss_db.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/cert_database.h"
-#include "net/cert/cert_verifier.h"
 #include "net/cert/nss_cert_database.h"
 #include "net/cert/x509_util_nss.h"
 #include "net/test/cert_test_util.h"
@@ -145,49 +146,17 @@ class CertDatabaseChangedObserver : public net::CertDatabase::Observer {
   DISALLOW_COPY_AND_ASSIGN(CertDatabaseChangedObserver);
 };
 
-// Called on the IO thread to verify the |test_server_cert| using the
-// CertVerifier from |request_context_getter|. The result will be written into
-// |verification_result|.
-void VerifyTestServerCertOnIOThread(
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
-    scoped_refptr<net::X509Certificate> test_server_cert,
-    int* verification_result) {
-  net::CertVerifier* cert_verifier =
-      request_context_getter->GetURLRequestContext()->cert_verifier();
-
-  net::TestCompletionCallback test_callback;
-  net::CertVerifyResult verify_result;
-  std::unique_ptr<net::CertVerifier::Request> request;
-  // CertVerifier will offload work to a worker pool and post a task back to IO
-  // thread. We need to wait for that to happen. TestCompletionCallback performs
-  // a RunLoop when waiting for the notification to allow tasks to run. As this
-  // is effectively a _nested_ RunLoop, we need ScopedNestableTaskAllower to
-  // allow it.
-  base::MessageLoopCurrent::ScopedNestableTaskAllower allow_nested;
-  *verification_result = test_callback.GetResult(cert_verifier->Verify(
-      net::CertVerifier::RequestParams(test_server_cert.get(), "127.0.0.1", 0,
-                                       std::string()),
-      &verify_result, test_callback.callback(), &request,
-      net::NetLogWithSource()));
-}
-
 // Verifies |certificate| with |profile|'s CertVerifier and returns the result.
 int VerifyTestServerCert(
     Profile* profile,
     const scoped_refptr<net::X509Certificate>& certificate) {
-  base::RunLoop().RunUntilIdle();
-  base::RunLoop run_loop;
-  int verification_result;
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter =
-      profile->GetRequestContext();
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&VerifyTestServerCertOnIOThread,
-                     url_request_context_getter, certificate,
-                     &verification_result),
-      run_loop.QuitClosure());
-  run_loop.Run();
-  return verification_result;
+  mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+  int result = net::OK;
+  content::BrowserContext::GetDefaultStoragePartition(profile)
+      ->GetNetworkContext()
+      ->VerifyCertificateForTesting(certificate, "127.0.0.1", std::string(),
+                                    &result);
+  return result;
 }
 
 bool IsSessionStarted() {
