@@ -2256,6 +2256,13 @@ const char kRegisteredSupervisedUserWhitelists[] =
 // machine policy.
 const char kCloudPolicyOverridesMachinePolicy[] = "policy.cloud_override";
 
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+// Boolean that indicates whether Chrome enterprise cloud reporting is enabled
+// or not.
+const char kCloudReportingEnabled[] =
+    "enterprise_reporting.chrome_cloud_reporting";
+#endif
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 // Policy that indicates how to handle animated images.
 const char kAnimationPolicy[] = "settings.a11y.animation_policy";
