@@ -11,10 +11,8 @@ namespace internal {
 
 PlatformNativeWorkerPoolWin::PlatformNativeWorkerPoolWin(
     TrackedRef<TaskTracker> task_tracker,
-    DelayedTaskManager* delayed_task_manager,
     TrackedRef<Delegate> delegate)
     : SchedulerWorkerPool(std::move(task_tracker),
-                          delayed_task_manager,
                           std::move(delegate)) {}
 
 PlatformNativeWorkerPoolWin::~PlatformNativeWorkerPoolWin() {

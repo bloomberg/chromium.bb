@@ -159,10 +159,8 @@ SchedulerWorkerPoolImpl::SchedulerWorkerPoolImpl(
     StringPiece pool_label,
     ThreadPriority priority_hint,
     TrackedRef<TaskTracker> task_tracker,
-    DelayedTaskManager* delayed_task_manager,
     TrackedRef<Delegate> delegate)
     : SchedulerWorkerPool(std::move(task_tracker),
-                          delayed_task_manager,
                           std::move(delegate)),
       pool_label_(pool_label.as_string()),
       priority_hint_(priority_hint),
