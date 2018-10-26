@@ -84,7 +84,7 @@ class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
                                        : EmeSessionTypeSupport::NOT_SUPPORTED;
   }
 
-  EmeSessionTypeSupport GetPersistentReleaseMessageSessionSupport()
+  EmeSessionTypeSupport GetPersistentUsageRecordSessionSupport()
       const override {
     return EmeSessionTypeSupport::NOT_SUPPORTED;
   }
@@ -96,9 +96,11 @@ class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
     return EmeFeatureSupport::ALWAYS_ENABLED;
   }
 
-  bool IsEncryptionSchemeSupported(
+  EmeConfigRule GetEncryptionSchemeConfigRule(
       ::media::EncryptionMode encryption_mode) const override {
-    return encryption_mode == ::media::EncryptionMode::kCenc;
+    if (encryption_mode == ::media::EncryptionMode::kCenc)
+      return EmeConfigRule::SUPPORTED;
+    return EmeConfigRule::NOT_SUPPORTED;
   }
 
  private:

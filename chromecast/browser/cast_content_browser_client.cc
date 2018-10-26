@@ -149,7 +149,7 @@ void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
   PrefService* pref_service = CastBrowserProcess::GetInstance()->pref_service();
   DCHECK(pref_service);
 
-  if (render_frame_host->GetLastCommittedOrigin().unique()) {
+  if (render_frame_host->GetLastCommittedOrigin().opaque()) {
     DVLOG(1) << __func__ << ": Unique origin.";
     return;
   }
