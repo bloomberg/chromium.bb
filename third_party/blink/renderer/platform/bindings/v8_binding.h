@@ -328,12 +328,6 @@ inline v8::Local<v8::String> V8AtomicString(v8::Isolate* isolate,
       .ToLocalChecked();
 }
 
-inline v8::MaybeLocal<v8::Value> V8DateOrNaN(v8::Isolate* isolate,
-                                             double value) {
-  DCHECK(isolate);
-  return v8::Date::New(isolate->GetCurrentContext(), value);
-}
-
 inline bool IsUndefinedOrNull(v8::Local<v8::Value> value) {
   return value.IsEmpty() || value->IsNullOrUndefined();
 }
