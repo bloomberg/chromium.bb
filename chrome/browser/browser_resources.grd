@@ -669,6 +669,8 @@
         <include name="IDR_NUX_EMAIL_ICLOUD_2X" file="resources\welcome\onboarding_welcome\images\icloud_2x.png" type="BINDATA" />
         <include name="IDR_NUX_EMAIL_OUTLOOK_1X" file="resources\welcome\onboarding_welcome\images\outlook_1x.png" type="BINDATA" />
         <include name="IDR_NUX_EMAIL_OUTLOOK_2X" file="resources\welcome\onboarding_welcome\images\outlook_2x.png" type="BINDATA" />
+        <include name="IDR_NUX_EMAIL_PROVIDER_LOGO_1X" file="resources\welcome\onboarding_welcome\images\email_provider_1x.png" type="BINDATA" />
+        <include name="IDR_NUX_EMAIL_PROVIDER_LOGO_2X" file="resources\welcome\onboarding_welcome\images\email_provider_2x.png" type="BINDATA" />
         <include name="IDR_NUX_EMAIL_YAHOO_1X" file="resources\welcome\onboarding_welcome\images\yahoo_1x.png" type="BINDATA" />
         <include name="IDR_NUX_EMAIL_YAHOO_2X" file="resources\welcome\onboarding_welcome\images\yahoo_2x.png" type="BINDATA" />
         <include name="IDR_NUX_GOOGLE_APPS_CHROME_STORE_1X" file="resources\welcome\onboarding_welcome\images\chrome_store_1x.png" type="BINDATA" />
@@ -683,6 +685,10 @@
         <include name="IDR_NUX_GOOGLE_APPS_TRANSLATE_2X" file="resources\welcome\onboarding_welcome\images\translate_2x.png" type="BINDATA" />
         <include name="IDR_NUX_GOOGLE_APPS_YOUTUBE_1X" file="resources\welcome\onboarding_welcome\images\youtube_1x.png" type="BINDATA" />
         <include name="IDR_NUX_GOOGLE_APPS_YOUTUBE_2X" file="resources\welcome\onboarding_welcome\images\youtube_2x.png" type="BINDATA" />
+        <include name="IDR_NUX_SET_AS_DEFAULT_LOGO_1X" file="resources\welcome\onboarding_welcome\images\set_as_default_1x.png" type="BINDATA" />
+        <include name="IDR_NUX_SET_AS_DEFAULT_LOGO_2X" file="resources\welcome\onboarding_welcome\images\set_as_default_2x.png" type="BINDATA" />
+        <include name="IDR_NUX_SET_AS_DEFAULT_ILLUSTRATION_1X" file="resources\welcome\onboarding_welcome\images\set_as_default_illustration_1x.png" type="BINDATA" />
+        <include name="IDR_NUX_SET_AS_DEFAULT_ILLUSTRATION_2X" file="resources\welcome\onboarding_welcome\images\set_as_default_illustration_2x.png" type="BINDATA" />
         <include name="IDR_WELCOME_ONBOARDING_WELCOME_IMAGES_BACKGROUND_SVGS_BLUE_CIRCLE_SVG" file="resources\welcome\onboarding_welcome\images\background_svgs\blue_circle.svg" type="BINDATA" />
         <include name="IDR_WELCOME_ONBOARDING_WELCOME_IMAGES_BACKGROUND_SVGS_GREEN_RECTANGLE_SVG" file="resources\welcome\onboarding_welcome\images\background_svgs\green_rectangle.svg" type="BINDATA" />
         <include name="IDR_WELCOME_ONBOARDING_WELCOME_IMAGES_BACKGROUND_SVGS_GREY_OVAL_SVG" file="resources\welcome\onboarding_welcome\images\background_svgs\grey_oval.svg" type="BINDATA" />

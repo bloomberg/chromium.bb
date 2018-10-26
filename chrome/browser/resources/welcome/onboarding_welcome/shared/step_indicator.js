@@ -25,7 +25,8 @@ Polymer({
    * @private
    */
   computeDots_: function() {
-    return new Array(this.model.total);
+    // If total is 1, show nothing.
+    return new Array(this.model.total > 1 ? this.model.total : 0);
   },
 
   /**

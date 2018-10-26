@@ -14,16 +14,23 @@
     <style include="paper-button-style">
       .container {
         text-align: center;
-        width: 800px;
       }
 
       .logo {
-        /* TODO(scottchen): placeholder; replace when asset is available. */
-        background: red;
+        content: -webkit-image-set(
+          url(../images/set_as_default_1x.png) 1x,
+          url(../images/set_as_default_2x.png) 2x);
         display: inline-block;
-        height: 32px;
+        height: 38px;
         margin-bottom: 16px;
-        width: 32px;
+        width: 42px;
+      }
+
+      .illustration {
+        content: -webkit-image-set(
+          url(../images/set_as_default_illustration_1x.png) 1x,
+          url(../images/set_as_default_illustration_2x.png) 2x);
+        width: 454px;
       }
 
       h1 {
@@ -39,17 +46,10 @@
         font-size: 1.25rem;
         font-weight: unset;
         line-height: 1.875rem;
-        margin: 0;
+        margin: auto;
         margin-bottom: 48px;
         margin-top: 16px;
-      }
-
-      img {
-        /* TODO(scottchen): placeholder; replace when asset is available. */
-        background: red;
-        display: inline-block;
-        height: 186px;
-        width: 454px;
+        max-width: 400px;
       }
 
       .button-bar {
@@ -62,8 +62,7 @@
       <div class="logo"></div>
       <h1>$i18n{setDefaultHeader}</h1>
       <h2>$i18n{setDefaultSubHeader}</h2>
-      <!-- TODO(scottchen): WIP behind feature flag, add src later. -->
-      <img>
+      <div class="illustration"></div>
       <div class="button-bar">
         <paper-button on-click="onDeclineClick_">
           $i18n{setDefaultSkip}

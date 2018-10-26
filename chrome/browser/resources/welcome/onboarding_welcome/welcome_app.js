@@ -65,9 +65,10 @@ Polymer({
   onRouteChange: function(route, step) {
     const setStep = () => {
       // If the specified step doesn't exist, that means there are no more
-      // steps. In that case, go to NTP.
+      // steps. In that case, replace this page with NTP.
       if (!this.$$(`#step-${step}`)) {
-        welcome.WelcomeBrowserProxyImpl.getInstance().goToNewTabPage();
+        welcome.WelcomeBrowserProxyImpl.getInstance().goToNewTabPage(
+            /* replace */ true);
       } else {  // Otherwise, go to the chosen step of that route.
         this.$.viewManager.switchView(`step-${step}`);
       }

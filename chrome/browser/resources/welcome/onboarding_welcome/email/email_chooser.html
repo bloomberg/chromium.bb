@@ -47,6 +47,13 @@
             url(chrome://welcome/email/outlook_1x.png) 1x,
             url(chrome://welcome/email/outlook_2x.png) 2x);
       }
+
+      iron-icon[icon='cr:chevron-right'] {
+        height: 20px;
+        margin-left: 6px;
+        margin-right: -10px;
+        width: 20px;
+      }
     </style>
 
     <template is="dom-repeat" items="[[emailList_]]">
@@ -63,13 +70,14 @@
 
     <div class="button-bar">
       <paper-button on-click="onNoThanksClicked_">
-        $i18n{noThanks}
+        $i18n{skip}
       </paper-button>
       <step-indicator model="[[indicatorModel]]"></step-indicator>
       <div on-click="onActionButtonClicked_">
         <paper-button class="action-button" on-click="onGetStartedClicked_"
             disabled="[[!selectedEmailProvider_]]">
-          $i18n{getStarted}
+          $i18n{next}
+          <iron-icon icon="cr:chevron-right"></iron-icon>
         </paper-button>
       </div>
     </div>

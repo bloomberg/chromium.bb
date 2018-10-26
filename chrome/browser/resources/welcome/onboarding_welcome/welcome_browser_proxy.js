@@ -14,7 +14,8 @@ cr.define('welcome', function() {
     /** @param {?string} redirectUrl the URL to go to, after signing in. */
     handleActivateSignIn(redirectUrl) {}
 
-    goToNewTabPage() {}
+    /** @param {boolean=} replace */
+    goToNewTabPage(replace) {}
 
     /** @param {string} url */
     goToURL(url) {}
@@ -28,8 +29,11 @@ cr.define('welcome', function() {
     }
 
     /** @override */
-    goToNewTabPage() {
-      window.location.assign('chrome://newtab');
+    goToNewTabPage(replace) {
+      if (replace)
+        window.location.replace('chrome://newtab');
+      else
+        window.location.assign('chrome://newtab');
     }
 
     /** @override */
