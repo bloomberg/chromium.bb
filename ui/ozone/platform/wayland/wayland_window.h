@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_WAYLAND_WINDOW_H_
 #define UI_OZONE_PLATFORM_WAYLAND_WAYLAND_WINDOW_H_
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/rect.h"
@@ -12,6 +13,7 @@
 #include "ui/ozone/platform/wayland/wayland_object.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
+#include "ui/platform_window/platform_window_handler/wm_drag_handler.h"
 #include "ui/platform_window/platform_window_handler/wm_move_resize_handler.h"
 
 namespace gfx {
@@ -35,7 +37,8 @@ class XDGShellObjectFactory;
 
 class WaylandWindow : public PlatformWindow,
                       public PlatformEventDispatcher,
-                      public WmMoveResizeHandler {
+                      public WmMoveResizeHandler,
+                      public WmDragHandler {
  public:
   WaylandWindow(PlatformWindowDelegate* delegate,
                 WaylandConnection* connection);
@@ -80,6 +83,12 @@ class WaylandWindow : public PlatformWindow,
   void DispatchHostWindowDragMovement(
       int hittest,
       const gfx::Point& pointer_location) override;
+
+  // WmDragHandler
+  void StartDrag(const ui::OSExchangeData& data,
+                 int operation,
+                 gfx::NativeCursor cursor,
+                 base::OnceCallback<void(int)> callback) override;
 
   // PlatformWindow
   void Show() override;
@@ -161,6 +170,8 @@ class WaylandWindow : public PlatformWindow,
 
   // The current cursor bitmap (immutable).
   scoped_refptr<BitmapCursorOzone> bitmap_;
+
+  base::OnceCallback<void(int)> drag_closed_callback_;
 
   gfx::Rect bounds_;
   gfx::Rect pending_bounds_;

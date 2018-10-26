@@ -8,6 +8,8 @@ jumbo_component("platform_window_handler") {
   output_name = "platform_window_handler_libs"
 
   sources = [
+    "wm_drag_handler.cc",
+    "wm_drag_handler.h",
     "wm_move_resize_handler.cc",
     "wm_move_resize_handler.h",
     "wm_platform_export.h",
