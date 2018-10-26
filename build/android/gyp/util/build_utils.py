@@ -321,6 +321,13 @@ def AddToZipHermetic(zip_file, zip_path, src_path=None, data=None,
     zip_file.writestr(zipinfo, os.readlink(src_path))
     return
 
+  # zipfile.write() does
+  #     external_attr = (os.stat(src_path)[0] & 0xFFFF) << 16L
+  # but we want to use _HERMETIC_FILE_ATTR, so manually set
+  # the few attr bits we care about.
+  if src_path and os.access(src_path, os.X_OK):
+    zipinfo.external_attr |= stat.S_IXUSR << 16L
+
   if src_path:
     with open(src_path, 'rb') as f:
       data = f.read()
