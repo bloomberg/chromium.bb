@@ -1059,10 +1059,18 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         if (params.getReferrer() == null) {
             params.setReferrer(mConnection.getReferrerForSession(mSession));
         }
-        // See ChromeTabCreator#getTransitionType(). This marks the navigation chain as starting
-        // from an external intent (unless otherwise specified by an extra in the intent).
-        params.setTransitionType(IntentHandler.getTransitionTypeFromIntent(intent,
-                PageTransition.LINK | PageTransition.FROM_API));
+
+        // See ChromeTabCreator#getTransitionType(). If the sender of the intent was a WebAPK, mark
+        // the intent as a standard link navigation. Pass the user gesture along since one must have
+        // been active to open a new tab and reach here. Otherwise, mark the navigation chain as
+        // starting from an external intent. See crbug.com/792990.
+        int defaultTransition = PageTransition.LINK | PageTransition.FROM_API;
+        if (mIntentDataProvider != null && mIntentDataProvider.isOpenedByWebApk()) {
+            params.setHasUserGesture(true);
+            defaultTransition = PageTransition.LINK;
+        }
+        params.setTransitionType(
+                IntentHandler.getTransitionTypeFromIntent(intent, defaultTransition));
         tab.loadUrl(params);
     }
 
