@@ -6,6 +6,8 @@ package org.chromium.components.gcm_driver;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import android.os.Bundle;
 
@@ -16,11 +18,40 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 
 /**
- * Unit tests for GCMDriver.
+ * Unit tests for LazySubscriptionsManager.
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-public class GCMDriverTest {
+public class LazySubscriptionsManagerTest {
+    /**
+     * Tests that lazy subscriptions are stored.
+     */
+    @Test
+    public void testMarkSubscriptionAsLazy() {
+        final String subscriptionId = "subscription_id";
+        LazySubscriptionsManager.storeLazinessInformation(subscriptionId, true);
+        assertTrue(LazySubscriptionsManager.isSubscriptionLazy(subscriptionId));
+    }
+
+    /**
+     * Tests that unlazy subscriptions are stored.
+     */
+    @Test
+    public void testMarkSubscriptionAsNotLazy() {
+        final String subscriptionId = "subscription_id";
+        LazySubscriptionsManager.storeLazinessInformation(subscriptionId, false);
+        assertFalse(LazySubscriptionsManager.isSubscriptionLazy(subscriptionId));
+    }
+
+    /**
+     * Tests subscriptions are not lazy be default.
+     */
+    @Test
+    public void testDefaultSubscriptionNotLazy() {
+        final String subscriptionId = "subscription_id";
+        assertFalse(LazySubscriptionsManager.isSubscriptionLazy(subscriptionId));
+    }
+
     /**
      * Tests that GCM messages are persisted and read.
      */
@@ -33,13 +64,13 @@ public class GCMDriverTest {
         extras.putString("subtype", "MyAppId");
         extras.putString("collapse_key", "CollapseKey");
         GCMMessage message = new GCMMessage("MySenderId", extras);
-        GCMDriver.persistMessage(subscriptionId, message);
+        LazySubscriptionsManager.persistMessage(subscriptionId, message);
 
-        GCMMessage messages[] = GCMDriver.readMessages(subscriptionId);
+        GCMMessage messages[] = LazySubscriptionsManager.readMessages(subscriptionId);
         assertEquals(1, messages.length);
         assertEquals(message.getSenderId(), messages[0].getSenderId());
 
-        messages = GCMDriver.readMessages(anotherSubscriptionId);
+        messages = LazySubscriptionsManager.readMessages(anotherSubscriptionId);
         assertEquals(0, messages.length);
     }
 
@@ -57,17 +88,18 @@ public class GCMDriverTest {
         final int extraMessagesCount = 5;
 
         // Persist |MESSAGES_QUEUE_SIZE| + |extraMessagesCount| messages.
-        for (int i = 0; i < GCMDriver.MESSAGES_QUEUE_SIZE + extraMessagesCount; i++) {
+        for (int i = 0; i < LazySubscriptionsManager.MESSAGES_QUEUE_SIZE + extraMessagesCount;
+                i++) {
             Bundle extras = new Bundle();
             extras.putString("subtype", "MyAppId");
             extras.putString("collapse_key", collapseKeyPrefix + i);
             GCMMessage message = new GCMMessage("MySenderId", extras);
-            GCMDriver.persistMessage(subscriptionId, message);
+            LazySubscriptionsManager.persistMessage(subscriptionId, message);
         }
         // Check that only the most recent |MESSAGES_QUEUE_SIZE| are persisted.
-        GCMMessage messages[] = GCMDriver.readMessages(subscriptionId);
-        assertEquals(GCMDriver.MESSAGES_QUEUE_SIZE, messages.length);
-        for (int i = 0; i < GCMDriver.MESSAGES_QUEUE_SIZE; i++) {
+        GCMMessage messages[] = LazySubscriptionsManager.readMessages(subscriptionId);
+        assertEquals(LazySubscriptionsManager.MESSAGES_QUEUE_SIZE, messages.length);
+        for (int i = 0; i < LazySubscriptionsManager.MESSAGES_QUEUE_SIZE; i++) {
             assertEquals(
                     collapseKeyPrefix + (i + extraMessagesCount), messages[i].getCollapseKey());
         }
@@ -90,18 +122,18 @@ public class GCMDriverTest {
 
         // Persist a message and make sure it's persisted.
         GCMMessage message1 = new GCMMessage("MySenderId", extras);
-        GCMDriver.persistMessage(subscriptionId, message1);
+        LazySubscriptionsManager.persistMessage(subscriptionId, message1);
 
-        GCMMessage messages[] = GCMDriver.readMessages(subscriptionId);
+        GCMMessage messages[] = LazySubscriptionsManager.readMessages(subscriptionId);
         assertEquals(1, messages.length);
         assertArrayEquals(rawData1, messages[0].getRawData());
 
         // Persist another message with the same collapse key and another raw data.
         extras.putByteArray("rawData", rawData2);
         GCMMessage message2 = new GCMMessage("MySenderId", extras);
-        GCMDriver.persistMessage(subscriptionId, message2);
+        LazySubscriptionsManager.persistMessage(subscriptionId, message2);
 
-        messages = GCMDriver.readMessages(subscriptionId);
+        messages = LazySubscriptionsManager.readMessages(subscriptionId);
         assertEquals(1, messages.length);
         assertArrayEquals(rawData2, messages[0].getRawData());
     }
