@@ -36,12 +36,9 @@ dedicated thread.
 
 ## Blocking off-CPU
 
-### How to make a call that may block off-CPU and never return?
+### How to make a blocking call without preventing other tasks from being scheduled?
 
-If you can't avoid making a call to a third-party library that may block off-CPU
-and never return, you must take some steps to ensure that it doesn't prevent
-other tasks from running. The steps depend on where the task runs (see [Where
-will a task run?](#On-what-thread-will-a-task-run_)).
+The steps depend on where the task runs (see [Where will a task run?](#On-what-thread-will-a-task-run_)).
 
 If the task runs in a thread pool:
 
@@ -50,10 +47,7 @@ If the task runs in a thread pool:
   after the annotated scope is entered, the capacity of the thread pool is
   incremented. This ensures that your task doesn't reduce the number of tasks
   that can run concurrently on the CPU. If the scope exits, the thread pool
-  capacity goes back to normal. Since tasks posted to the same sequence can't
-  run concurrently, it is advisable to run tasks that may block indefinitely in
-  [parallel](threading_and_tasks.md#posting-a-parallel-task) rather than in
-  [sequence](threading_and_tasks.md#posting-a-sequenced-task).
+  capacity goes back to normal.
 
 If the task runs on the main thread, the IO thread or a `SHARED
 SingleThreadTaskRunner`:
@@ -73,6 +67,19 @@ If the task runs on a `DEDICATED SingleThreadTaskRunner`:
 [base/threading/scoped_blocking_call.h](https://cs.chromium.org/chromium/src/base/threading/scoped_blocking_call.h)
 explains the difference between `MAY_BLOCK ` and  `WILL_BLOCK` and gives
 examples of off-CPU blocking operations.
+
+### How to make a blocking call that may never return without preventing other tasks from being scheduled?
+
+If you can't avoid making a call to a third-party library that may block off-
+CPU, follow recommendations in [How to make a blocking call without affecting
+other tasks?](#How-to-make-a-blocking-call-without-affecting-other-tasks_).
+This ensures that a current task doesn't prevent other tasks from running even
+if it never returns.
+
+Since tasks posted to the same sequence can't run concurrently, it is advisable
+to run tasks that may block indefinitely in
+[parallel](threading_and_tasks.md#posting-a-parallel-task) rather than in
+[sequence](threading_and_tasks.md#posting-a-sequenced-task).
 
 ### Do calls to blocking //base APIs need to be annotated with ScopedBlockingCall?
 
