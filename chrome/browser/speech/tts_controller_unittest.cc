@@ -222,12 +222,12 @@ TEST_F(TtsControllerTest, TestGetMatchingVoice) {
     Utterance utterance(nullptr);
 
     // voice1 is matched against the exact default system language.
-    g_browser_process->SetApplicationLocale("en-US", "en-US");
+    g_browser_process->SetApplicationLocale("en-US");
     utterance.set_lang("");
     EXPECT_EQ(1, tts_controller->GetMatchingVoice(&utterance, voices));
 
     // voice0 is matched against the system language which has no region piece.
-    g_browser_process->SetApplicationLocale("en", "en");
+    g_browser_process->SetApplicationLocale("en");
     utterance.set_lang("");
     EXPECT_EQ(0, tts_controller->GetMatchingVoice(&utterance, voices));
 
@@ -242,7 +242,7 @@ TEST_F(TtsControllerTest, TestGetMatchingVoice) {
                               std::move(lang_to_voices));
 
     // voice0 is matched against the pref over the system language.
-    g_browser_process->SetApplicationLocale("en-US", "en-US");
+    g_browser_process->SetApplicationLocale("en-US");
     EXPECT_EQ(0, tts_controller->GetMatchingVoice(&utterance, voices));
 #endif  // defined(OS_CHROMEOS)
   }
