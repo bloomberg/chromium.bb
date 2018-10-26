@@ -40948,6 +40948,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="ResourceLoadingHints"/>
 </enum>
 
+<enum name="PreviewsUserOmniboxAction">
+  <int value="0" label="User opted out of the preview"/>
+  <int value="1" label="User opened the page info dialog"/>
+  <int value="2" label="The Lite Page badge was displayed at commit"/>
+  <int value="3" label="The Lite Page badge was displayed at page load finish"/>
+</enum>
+
 <enum name="PreviewsUserOptedOut">
   <int value="0" label="The user did not choose to reload the full page."/>
   <int value="1" label="The user chose to reload the full page."/>

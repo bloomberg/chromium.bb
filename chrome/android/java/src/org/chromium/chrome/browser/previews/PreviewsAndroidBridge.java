@@ -55,6 +55,13 @@ public final class PreviewsAndroidBridge {
         nativeLoadOriginal(mNativePreviewsAndroidBridge, webContents);
     }
 
+    /**
+     * Returns the committed preview type as a String.
+     */
+    public String getPreviewsType(WebContents webContents) {
+        return nativeGetPreviewsType(mNativePreviewsAndroidBridge, webContents);
+    }
+
     private native long nativeInit();
     private native boolean nativeShouldShowPreviewUI(
             long nativePreviewsAndroidBridge, WebContents webContents);
@@ -63,5 +70,7 @@ public final class PreviewsAndroidBridge {
     private native String nativeGetStalePreviewTimestamp(
             long nativePreviewsAndroidBridge, WebContents webContents);
     private native void nativeLoadOriginal(
+            long nativePreviewsAndroidBridge, WebContents webContents);
+    private native String nativeGetPreviewsType(
             long nativePreviewsAndroidBridge, WebContents webContents);
 }
