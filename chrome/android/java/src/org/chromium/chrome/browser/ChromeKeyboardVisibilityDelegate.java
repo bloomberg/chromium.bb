@@ -52,4 +52,23 @@ public class ChromeKeyboardVisibilityDelegate extends SingleWindowKeyboardVisibi
     public boolean isSoftKeyboardShowing(Context context, View view) {
         return isAndroidSoftKeyboardShowing(context, view);
     }
+
+    @Override
+    public boolean hideKeyboard(View view) {
+        ChromeActivity activity = getActivity();
+        boolean wasManualFillingViewShowing = false;
+        if (activity != null) {
+            wasManualFillingViewShowing =
+                    activity.getManualFillingController().isFillingViewShown();
+            activity.getManualFillingController().hide();
+        }
+        return super.hideKeyboard(view) || wasManualFillingViewShowing;
+    }
+
+    @Override
+    public boolean isKeyboardShowing(Context context, View view) {
+        ChromeActivity activity = getActivity();
+        return super.isKeyboardShowing(context, view)
+                || (activity != null && activity.getManualFillingController().isFillingViewShown());
+    }
 }

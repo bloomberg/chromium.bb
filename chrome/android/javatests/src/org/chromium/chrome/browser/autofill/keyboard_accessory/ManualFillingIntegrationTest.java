@@ -372,7 +372,11 @@ public class ManualFillingIntegrationTest {
         assertThat(mActivityTestRule.getInfoBarContainer().getVisibility(), is(not(View.VISIBLE)));
 
         // Close the keyboard to bring back the InfoBar.
-        mActivityTestRule.getKeyboardDelegate().hideKeyboard(null);
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mActivityTestRule.getKeyboardDelegate().hideKeyboard(
+                    mActivityTestRule.getActivity().getCurrentFocus());
+            mActivityTestRule.getInfoBarContainer().requestLayout();
+        });
 
         mHelper.waitForKeyboardToDisappear();
         mHelper.waitToBeHidden(withId(R.id.keyboard_accessory));
