@@ -163,7 +163,7 @@ HRESULT CTestCredential::GetGlsCommandline(const wchar_t* /*email*/,
   dict.SetString(kKeyEmail, gls_email_);
   dict.SetString(kKeyFullname, "Full Name");
   dict.SetString(kKeyId, "1234567890");
-  dict.SetString(kKeyMdmAcessToken, "oat-123456");
+  dict.SetString(kKeyMdmIdToken, "idt-123456");
   dict.SetString(kKeyPassword, "password");
   dict.SetString(kKeyRefreshToken, "rt-123456");
   dict.SetString(kKeyTokenHandle, "th-123456");

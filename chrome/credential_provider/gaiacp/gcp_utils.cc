@@ -530,7 +530,7 @@ HRESULT EnrollToGoogleMdmIfNeeded(const base::DictionaryValue& properties) {
 
   if (!is_registered) {
     base::string16 email = GetDictString(&properties, kKeyEmail);
-    base::string16 token = GetDictString(&properties, kKeyMdmAcessToken);
+    base::string16 token = GetDictString(&properties, kKeyMdmIdToken);
     base::string16 mdm_url = GetDictString(&properties, kKeyMdmUrl);
 
     if (email.empty()) {
@@ -539,7 +539,7 @@ HRESULT EnrollToGoogleMdmIfNeeded(const base::DictionaryValue& properties) {
     }
 
     if (token.empty()) {
-      LOGFN(ERROR) << "MDM access token is empty";
+      LOGFN(ERROR) << "MDM id token is empty";
       return E_INVALIDARG;
     }
 
@@ -561,7 +561,7 @@ HRESULT EnrollToGoogleMdmIfNeeded(const base::DictionaryValue& properties) {
     }
 
     registration_data.SetString("serial_number", serial_number);
-    registration_data.SetString("access_token", token);
+    registration_data.SetString("id_token", token);
     std::string registration_data_str;
     if (!base::JSONWriter::Write(registration_data, &registration_data_str)) {
       LOGFN(ERROR) << "JSONWriter::Write(registration_data)";
