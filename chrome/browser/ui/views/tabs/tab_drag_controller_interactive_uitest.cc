@@ -255,10 +255,6 @@ void TabDragControllerTest::SetUp() {
   InProcessBrowserTest::SetUp();
 }
 
-void TabDragControllerTest::SetUpCommandLine(base::CommandLine* command_line) {
-  command_line->AppendSwitch(switches::kDisableResizeLock);
-}
-
 namespace {
 
 enum InputSource {

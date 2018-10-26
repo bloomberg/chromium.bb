@@ -85,7 +85,6 @@ extern const char kDisableRemoteFonts[];
 CONTENT_EXPORT extern const char kDisableRemotePlaybackAPI[];
 extern const char kDisableRendererAccessibility[];
 CONTENT_EXPORT extern const char kDisableRendererBackgrounding[];
-CONTENT_EXPORT extern const char kDisableResizeLock[];
 CONTENT_EXPORT extern const char kDisableResourceScheduler[];
 CONTENT_EXPORT extern const char kDisableSharedWorkers[];
 CONTENT_EXPORT extern const char kDisableSkiaRuntimeOpts[];

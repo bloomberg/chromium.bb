@@ -243,10 +243,8 @@ void DelegatedFrameHost::EmbedSurface(
     client_->DelegatedFrameHostGetLayer()->SetShowSurface(
         new_primary_surface_id, current_frame_size_in_dip_, GetGutterColor(),
         deadline_policy, false /* stretch_content_to_fill_bounds */);
-    if (compositor_ && !base::CommandLine::ForCurrentProcess()->HasSwitch(
-                           switches::kDisableResizeLock)) {
+    if (compositor_)
       compositor_->OnChildResizing();
-    }
   }
 }
 
