@@ -8,42 +8,27 @@
 #include <utility>
 
 #include "ash/shell.h"
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/ui/ash/chrome_keyboard_bounds_observer.h"
+#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/ash/chrome_keyboard_web_contents.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/ime_bridge.h"
-#include "ui/base/ime/input_method.h"
-#include "ui/base/ime/text_input_client.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor_extra/shadow.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_resource_util.h"
-#include "ui/keyboard/keyboard_switches.h"
 #include "ui/wm/core/shadow_types.h"
 
 namespace {
 
 const int kShadowElevationVirtualKeyboard = 2;
 
-GURL& GetOverrideVirtualKeyboardUrl() {
-  static base::NoDestructor<GURL> url;
-  return *url;
-}
-
 }  // namespace
-
-void ChromeKeyboardUI::TestApi::SetOverrideVirtualKeyboardUrl(const GURL& url) {
-  GURL& override_url = GetOverrideVirtualKeyboardUrl();
-  override_url = url;
-}
 
 ChromeKeyboardUI::ChromeKeyboardUI(content::BrowserContext* context)
     : browser_context_(context) {}
@@ -59,7 +44,9 @@ aura::Window* ChromeKeyboardUI::LoadKeyboardWindow(LoadCallback callback) {
   DCHECK(!keyboard_contents_);
 
   keyboard_contents_ = std::make_unique<ChromeKeyboardWebContents>(
-      browser_context_, GetVirtualKeyboardUrl(), std::move(callback));
+      browser_context_,
+      ChromeKeyboardControllerClient::Get()->GetVirtualKeyboardUrl(),
+      std::move(callback));
 
   aura::Window* keyboard_window =
       keyboard_contents_->web_contents()->GetNativeView();
@@ -88,7 +75,8 @@ ui::InputMethod* ChromeKeyboardUI::GetInputMethod() {
 
 void ChromeKeyboardUI::ReloadKeyboardIfNeeded() {
   DCHECK(keyboard_contents_);
-  keyboard_contents_->SetKeyboardUrl(GetVirtualKeyboardUrl());
+  keyboard_contents_->SetKeyboardUrl(
+      ChromeKeyboardControllerClient::Get()->GetVirtualKeyboardUrl());
 }
 
 void ChromeKeyboardUI::InitInsets(const gfx::Rect& new_bounds) {
@@ -120,29 +108,6 @@ void ChromeKeyboardUI::OnWindowParentChanged(aura::Window* window,
 }
 
 // private methods:
-
-GURL ChromeKeyboardUI::GetVirtualKeyboardUrl() {
-  const GURL& override_url = GetOverrideVirtualKeyboardUrl();
-  if (!override_url.is_empty())
-    return override_url;
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          keyboard::switches::kDisableInputView)) {
-    return GURL(keyboard::kKeyboardURL);
-  }
-
-  chromeos::input_method::InputMethodManager* ime_manager =
-      chromeos::input_method::InputMethodManager::Get();
-  if (!ime_manager || !ime_manager->GetActiveIMEState())
-    return GURL(keyboard::kKeyboardURL);
-
-  const GURL& input_view_url =
-      ime_manager->GetActiveIMEState()->GetInputViewUrl();
-  if (!input_view_url.is_valid())
-    return GURL(keyboard::kKeyboardURL);
-
-  return input_view_url;
-}
 
 void ChromeKeyboardUI::SetShadowAroundKeyboard() {
   aura::Window* contents_window = GetKeyboardWindow();

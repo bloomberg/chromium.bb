@@ -11,6 +11,7 @@
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "url/gurl.h"
 
 class Profile;
 
@@ -64,10 +65,17 @@ class ChromeKeyboardControllerClient
   // Returns true if overscroll is enabled by the config or command line.
   bool IsKeyboardOverscrollEnabled();
 
+  // Returns the URL to use for the virtual keyboard.
+  GURL GetVirtualKeyboardUrl();
+
   bool is_keyboard_enabled() { return is_keyboard_enabled_; }
 
   void FlushForTesting();
+
   void set_profile_for_test(Profile* profile) { profile_for_test_ = profile; }
+  void set_virtual_keyboard_url_for_test(const GURL& url) {
+    virtual_keyboard_url_for_test_ = url;
+  }
 
  private:
   void OnGetInitialKeyboardConfig(keyboard::mojom::KeyboardConfigPtr config);
@@ -95,6 +103,7 @@ class ChromeKeyboardControllerClient
   base::ObserverList<Observer> observers_;
 
   Profile* profile_for_test_ = nullptr;
+  GURL virtual_keyboard_url_for_test_;
 
   base::WeakPtrFactory<ChromeKeyboardControllerClient> weak_ptr_factory_{this};
 

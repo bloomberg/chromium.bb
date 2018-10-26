@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/public/interfaces/constants.mojom.h"
+#include "base/command_line.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -16,7 +17,12 @@
 #include "extensions/common/api/virtual_keyboard_private.h"
 #include "extensions/common/extension_messages.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/ime_bridge.h"
+#include "ui/base/ime/input_method.h"
+#include "ui/base/ime/text_input_client.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/keyboard/keyboard_resource_util.h"
 #include "ui/keyboard/keyboard_switches.h"
 
 namespace virtual_keyboard_private = extensions::api::virtual_keyboard_private;
@@ -44,6 +50,9 @@ ChromeKeyboardControllerClient::ChromeKeyboardControllerClient(
     service_manager::Connector* connector) {
   CHECK(!g_chrome_keyboard_controller_client);
   g_chrome_keyboard_controller_client = this;
+
+  if (!connector)
+    return;  // May be null in tests.
 
   connector->BindInterface(ash::mojom::kServiceName, &keyboard_controller_ptr_);
 
@@ -106,6 +115,28 @@ bool ChromeKeyboardControllerClient::IsKeyboardOverscrollEnabled() {
   }
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       keyboard::switches::kDisableVirtualKeyboardOverscroll);
+}
+
+GURL ChromeKeyboardControllerClient::GetVirtualKeyboardUrl() {
+  if (!virtual_keyboard_url_for_test_.is_empty())
+    return virtual_keyboard_url_for_test_;
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          keyboard::switches::kDisableInputView)) {
+    return GURL(keyboard::kKeyboardURL);
+  }
+
+  chromeos::input_method::InputMethodManager* ime_manager =
+      chromeos::input_method::InputMethodManager::Get();
+  if (!ime_manager || !ime_manager->GetActiveIMEState())
+    return GURL(keyboard::kKeyboardURL);
+
+  const GURL& input_view_url =
+      ime_manager->GetActiveIMEState()->GetInputViewUrl();
+  if (!input_view_url.is_valid())
+    return GURL(keyboard::kKeyboardURL);
+
+  return input_view_url;
 }
 
 void ChromeKeyboardControllerClient::FlushForTesting() {
