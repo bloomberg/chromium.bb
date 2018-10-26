@@ -458,8 +458,6 @@ jumbo_component("views") {
     "../views_bridge_mac/views_nswindow_delegate.mm",
     "../views_bridge_mac/views_scrollbar_bridge.h",
     "../views_bridge_mac/views_scrollbar_bridge.mm",
-    "accessibility/ax_virtual_view.cc",
-    "accessibility/ax_virtual_view.h",
     "cocoa/bridge_factory_host.cc",
     "cocoa/bridged_native_widget_host_impl.mm",
     "cocoa/drag_drop_client_mac.h",
@@ -766,6 +764,8 @@ jumbo_component("views") {
 
   if (has_native_accessibility) {
     sources += [
+      "accessibility/ax_virtual_view.cc",
+      "accessibility/ax_virtual_view.h",
       "accessibility/view_ax_platform_node_delegate.cc",
       "accessibility/view_ax_platform_node_delegate.h",
       "accessibility/view_ax_platform_node_delegate_mac.h",
