@@ -189,8 +189,7 @@ TabDragController::EventSource EventSourceFromEvent(
 
 const TabSizeInfo& GetTabSizeInfo() {
   static TabSizeInfo tab_size_info, touch_tab_size_info;
-  TabSizeInfo* info =
-      MD::IsTouchOptimizedUiEnabled() ? &touch_tab_size_info : &tab_size_info;
+  TabSizeInfo* info = MD::touch_ui() ? &touch_tab_size_info : &tab_size_info;
   if (info->standard_size.IsEmpty()) {
     info->pinned_tab_width = TabStyle::GetPinnedWidth();
     info->min_active_width = TabStyle::GetMinimumActiveWidth();
@@ -203,8 +202,7 @@ const TabSizeInfo& GetTabSizeInfo() {
 }
 
 int GetStackableTabWidth() {
-  return TabStyle::GetTabOverlap() +
-         (MD::IsTouchOptimizedUiEnabled() ? 136 : 102);
+  return TabStyle::GetTabOverlap() + (MD::touch_ui() ? 136 : 102);
 }
 
 }  // namespace

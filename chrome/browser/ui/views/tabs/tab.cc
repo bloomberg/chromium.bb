@@ -321,13 +321,8 @@ void Tab::Layout() {
     int right = contents_rect.right();
     if (showing_close_button_) {
       right = close_x;
-      if (extra_alert_indicator_padding_) {
-        constexpr int kTouchableAlertIndicatorCloseButtonPadding = 8;
-        constexpr int kAlertIndicatorCloseButtonPadding = 6;
-        right -= MD::IsTouchOptimizedUiEnabled()
-                     ? kTouchableAlertIndicatorCloseButtonPadding
-                     : kAlertIndicatorCloseButtonPadding;
-      }
+      if (extra_alert_indicator_padding_)
+        right -= MD::touch_ui() ? 8 : 6;
     }
     const gfx::Size image_size = alert_indicator_->GetPreferredSize();
     gfx::Rect bounds(
@@ -638,7 +633,7 @@ void Tab::SetClosing(bool closing) {
 }
 
 SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {
-  const bool is_touch_optimized = MD::IsTouchOptimizedUiEnabled();
+  const bool touch_ui = MD::touch_ui();
   // If theme provider is not yet available, return the default button
   // color.
   const ui::ThemeProvider* theme_provider = GetThemeProvider();
@@ -648,18 +643,17 @@ SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {
   switch (state) {
     case TabAlertState::AUDIO_PLAYING:
     case TabAlertState::AUDIO_MUTING:
-      return is_touch_optimized ? theme_provider->GetColor(
-                                      ThemeProperties::COLOR_TAB_ALERT_AUDIO)
-                                : button_color_;
+      return touch_ui ? theme_provider->GetColor(
+                            ThemeProperties::COLOR_TAB_ALERT_AUDIO)
+                      : button_color_;
     case TabAlertState::MEDIA_RECORDING:
     case TabAlertState::DESKTOP_CAPTURING:
       return theme_provider->GetColor(
           ThemeProperties::COLOR_TAB_ALERT_RECORDING);
     case TabAlertState::TAB_CAPTURING:
-      return is_touch_optimized
-                 ? theme_provider->GetColor(
-                       ThemeProperties::COLOR_TAB_ALERT_CAPTURING)
-                 : button_color_;
+      return touch_ui ? theme_provider->GetColor(
+                            ThemeProperties::COLOR_TAB_ALERT_CAPTURING)
+                      : button_color_;
     case TabAlertState::PIP_PLAYING:
       return theme_provider->GetColor(ThemeProperties::COLOR_TAB_PIP_PLAYING);
     case TabAlertState::BLUETOOTH_CONNECTED:
@@ -886,19 +880,18 @@ void Tab::UpdateIconVisibility() {
 
   int available_width = GetContentsBounds().width();
 
-  const bool is_touch_optimized = MD::IsTouchOptimizedUiEnabled();
+  const bool touch_ui = MD::touch_ui();
   const int favicon_width = gfx::kFaviconSize;
   const int alert_icon_width = alert_indicator_->GetPreferredSize().width();
   // In case of touch optimized UI, the close button has an extra padding on the
   // left that needs to be considered.
   const int close_button_width =
       close_button_->GetPreferredSize().width() -
-      (is_touch_optimized ? close_button_->GetInsets().right()
-                          : close_button_->GetInsets().width());
+      (touch_ui ? close_button_->GetInsets().right()
+                : close_button_->GetInsets().width());
   const bool large_enough_for_close_button =
-      available_width >= (is_touch_optimized
-                              ? kTouchableMinimumContentsWidthForCloseButtons
-                              : kMinimumContentsWidthForCloseButtons);
+      available_width >= (touch_ui ? kTouchMinimumContentsWidthForCloseButtons
+                                   : kMinimumContentsWidthForCloseButtons);
 
   showing_close_button_ = !controller_->ShouldHideCloseButtonForTab(this);
   if (IsActive()) {

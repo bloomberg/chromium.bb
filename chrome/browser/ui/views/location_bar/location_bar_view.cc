@@ -890,10 +890,9 @@ void LocationBarView::ButtonPressed(views::Button* sender,
 }
 
 void LocationBarView::RefreshClearAllButtonIcon() {
-  const gfx::VectorIcon& icon =
-      ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
-          ? omnibox::kClearIcon
-          : kTabCloseNormalIcon;
+  const gfx::VectorIcon& icon = ui::MaterialDesignController::touch_ui()
+                                    ? omnibox::kClearIcon
+                                    : kTabCloseNormalIcon;
   SetImageFromVectorIcon(clear_all_button_, icon,
                          GetColor(OmniboxPart::LOCATION_BAR_CLEAR_ALL));
   clear_all_button_->SetBorder(views::CreateEmptyBorder(

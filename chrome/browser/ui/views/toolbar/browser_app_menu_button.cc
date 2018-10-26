@@ -132,8 +132,7 @@ void BrowserAppMenuButton::ShowMenu(bool for_drop) {
 }
 
 gfx::Size BrowserAppMenuButton::CalculatePreferredSize() const {
-  const int icon_size =
-      ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 24 : 16;
+  const int icon_size = ui::MaterialDesignController::touch_ui() ? 24 : 16;
   gfx::Rect rect(gfx::Size(icon_size, icon_size));
   rect.Inset(-GetLayoutInsets(TOOLBAR_BUTTON));
 
@@ -210,21 +209,20 @@ void BrowserAppMenuButton::UpdateIcon(bool should_animate) {
     return;
   }
 
-  const bool is_touch =
-      ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
+  const bool touch_ui = ui::MaterialDesignController::touch_ui();
   const gfx::VectorIcon* icon_id = nullptr;
   switch (type_) {
     case AppMenuIconController::IconType::NONE:
-      icon_id = is_touch ? &kBrowserToolsTouchIcon : &kBrowserToolsIcon;
+      icon_id = touch_ui ? &kBrowserToolsTouchIcon : &kBrowserToolsIcon;
       DCHECK_EQ(AppMenuIconController::Severity::NONE, severity_);
       break;
     case AppMenuIconController::IconType::UPGRADE_NOTIFICATION:
       icon_id =
-          is_touch ? &kBrowserToolsUpdateTouchIcon : &kBrowserToolsUpdateIcon;
+          touch_ui ? &kBrowserToolsUpdateTouchIcon : &kBrowserToolsUpdateIcon;
       break;
     case AppMenuIconController::IconType::GLOBAL_ERROR:
       icon_id =
-          is_touch ? &kBrowserToolsErrorTouchIcon : &kBrowserToolsErrorIcon;
+          touch_ui ? &kBrowserToolsErrorTouchIcon : &kBrowserToolsErrorIcon;
       break;
   }
 

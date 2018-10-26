@@ -33,8 +33,7 @@ class UI_BASE_EXPORT MaterialDesignController {
   // Initializes touch UI state based on command-line flags.
   static void Initialize();
 
-  // Returns true if the touch-optimized UI material design mode is enabled.
-  static bool IsTouchOptimizedUiEnabled();
+  static bool touch_ui() { return touch_ui_; }
 
   // Exposed for TabletModeClient on ChromeOS + ash.
   static void OnTabletModeToggled(bool enabled);

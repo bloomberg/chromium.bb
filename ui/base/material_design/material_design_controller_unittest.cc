@@ -104,24 +104,24 @@ class MaterialDesignControllerTestCommandLineTouchUiAuto
 TEST_F(MaterialDesignControllerTest, NoCommandLineFlagIsNonTouch) {
   ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kTopChromeTouchUi));
-  EXPECT_FALSE(MD::IsTouchOptimizedUiEnabled());
+  EXPECT_FALSE(MD::touch_ui());
 }
 
 // Verifies that switches::kTopChromeTouchUiDisabled maps to non-touch (the
 // default).
 TEST_F(MaterialDesignControllerTestCommandLineTouchUiDisabled,
        CheckApiReturns) {
-  EXPECT_FALSE(MD::IsTouchOptimizedUiEnabled());
+  EXPECT_FALSE(MD::touch_ui());
 }
 
 // Verifies that switches::kTopChromeTouchUiEnabled maps to touch.
 TEST_F(MaterialDesignControllerTestCommandLineTouchUiEnabled, CheckApiReturns) {
-  EXPECT_TRUE(MD::IsTouchOptimizedUiEnabled());
+  EXPECT_TRUE(MD::touch_ui());
 }
 
 // Verifies that switches::kTopChromeTouchUiAuto maps to non-touch.
 TEST_F(MaterialDesignControllerTestCommandLineTouchUiAuto, CheckApiReturns) {
-  EXPECT_FALSE(MD::IsTouchOptimizedUiEnabled());
+  EXPECT_FALSE(MD::touch_ui());
 }
 
 // Verifies that the observer gets called back when the mode changes at
@@ -149,11 +149,11 @@ TEST_F(MaterialDesignControllerTestCommandLineTouchUiDisabled,
   scoped_observer.Add(MD::GetInstance());
 
   MD::OnTabletModeToggled(true);
-  EXPECT_FALSE(MD::IsTouchOptimizedUiEnabled());
+  EXPECT_FALSE(MD::touch_ui());
   EXPECT_EQ(0, observer.md_mode_changes());
 
   MD::OnTabletModeToggled(false);
-  EXPECT_FALSE(MD::IsTouchOptimizedUiEnabled());
+  EXPECT_FALSE(MD::touch_ui());
   EXPECT_EQ(0, observer.md_mode_changes());
 
   test::MaterialDesignControllerTestAPI::Uninitialize();
@@ -170,11 +170,11 @@ TEST_F(MaterialDesignControllerTestCommandLineTouchUiAuto,
   scoped_observer.Add(MD::GetInstance());
 
   MD::OnTabletModeToggled(true);
-  EXPECT_TRUE(MD::IsTouchOptimizedUiEnabled());
+  EXPECT_TRUE(MD::touch_ui());
   EXPECT_EQ(1, observer.md_mode_changes());
 
   MD::OnTabletModeToggled(false);
-  EXPECT_FALSE(MD::IsTouchOptimizedUiEnabled());
+  EXPECT_FALSE(MD::touch_ui());
   EXPECT_EQ(2, observer.md_mode_changes());
 
   test::MaterialDesignControllerTestAPI::Uninitialize();

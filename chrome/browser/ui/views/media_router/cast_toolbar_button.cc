@@ -87,8 +87,8 @@ void CastToolbarButton::UpdateIcon() {
            gfx::CreateVectorIcon(icon, GetIconColor(&icon)));
   // This icon is smaller than the touchable-UI expected 24dp, so we need to pad
   // the insets to match.
-  SetLayoutInsetDelta(gfx::Insets(
-      ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 4 : 0));
+  SetLayoutInsetDelta(
+      gfx::Insets(ui::MaterialDesignController::touch_ui() ? 4 : 0));
 }
 
 const gfx::VectorIcon& CastToolbarButton::GetCurrentIcon() const {
