@@ -313,6 +313,7 @@ class BASE_EXPORT SequenceManagerImpl
   // Deletes queues marked for deletion and empty queues marked for shutdown.
   void CleanUpQueues();
 
+  bool ShouldRecordTaskTiming(const internal::TaskQueueImpl* task_queue);
   bool ShouldRecordCPUTimeForTask();
 
   // Helper to terminate all scoped trace events to allow starting new ones

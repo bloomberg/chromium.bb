@@ -104,7 +104,6 @@ class SequenceManagerPerfTest : public testing::TestWithParam<PerfTestType> {
     if (manager_) {
       time_domain_ = std::make_unique<PerfTestTimeDomain>();
       manager_->RegisterTimeDomain(time_domain_.get());
-      manager_->AddTaskTimeObserver(&test_task_time_observer_);
     }
   }
 
@@ -336,9 +335,6 @@ class SequenceManagerPerfTest : public testing::TestWithParam<PerfTestType> {
 
   RepeatingClosure delayed_task_closure_;
   RepeatingClosure immediate_task_closure_;
-  // TODO(alexclarke): parameterize so we can measure with and without a
-  // TaskTimeObserver.
-  TestTaskTimeObserver test_task_time_observer_;
 };
 
 INSTANTIATE_TEST_CASE_P(
