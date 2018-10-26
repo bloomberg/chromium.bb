@@ -33,7 +33,6 @@
 #include "ash/wm/overview/window_selector_delegate.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -207,12 +206,7 @@ class WindowGrid::ShieldView : public views::View {
     background_view_ = new views::View();
     background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
     background_view_->layer()->SetColor(kShieldBaseColor);
-    background_view_->layer()->SetOpacity(
-        !Shell::Get()
-                ->tablet_mode_controller()
-                ->IsTabletModeWindowManagerEnabled()
-            ? kShieldOpacity
-            : 0.f);
+    background_view_->layer()->SetOpacity(kShieldOpacity);
 
     label_ = new views::Label(
         l10n_util::GetStringUTF16(IDS_ASH_OVERVIEW_NO_RECENT_ITEMS),
