@@ -37,7 +37,7 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     {"shutdown", "*", nullptr},
     {"task_scheduler", "*", nullptr},
     {"toplevel", "*", nullptr},
-    {TRACE_DISABLED_BY_DEFAULT("cpu_profiler"), "StackCpuSampling", nullptr},
+    {TRACE_DISABLED_BY_DEFAULT("cpu_profiler"), "*", nullptr},
     // Redefined the string since MemoryDumpManager::kTraceCategory causes
     // static initialization of this struct.
     {TRACE_DISABLED_BY_DEFAULT("memory-infra"), "*", kMemoryDumpAllowedArgs},
