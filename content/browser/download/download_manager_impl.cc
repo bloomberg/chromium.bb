@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -546,7 +547,19 @@ void DownloadManagerImpl::OnInProgressDownloadManagerInitialized() {
   uint32_t max_id = download::DownloadItem::kInvalidId;
   for (auto& download : in_progress_downloads) {
     DCHECK(!base::ContainsKey(downloads_by_guid_, download->GetGuid()));
-    DCHECK(!base::ContainsKey(downloads_, download->GetId()));
+    // It is problematic to have 2 downloads with the same ID. Log cases that
+    // this happens (without crashing) to track https://crbug.com/898859. Remove
+    // this once the issue is fixed.
+    if (base::ContainsKey(downloads_, download->GetId())) {
+      static auto* download_id_error = base::debug::AllocateCrashKeyString(
+          "download_id_error", base::debug::CrashKeySize::Size32);
+      base::debug::SetCrashKeyString(
+          download_id_error,
+          base::StringPrintf(
+              "id = %d, same_guid = %d", download->GetId(),
+              download->GetGuid() == downloads_[download->GetId()]->GetGuid()));
+      base::debug::DumpWithoutCrashing();
+    }
     uint32_t id = download->GetId();
     if (id > max_id)
       max_id = id;
