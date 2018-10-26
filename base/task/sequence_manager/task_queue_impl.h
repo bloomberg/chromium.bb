@@ -16,9 +16,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/pending_task.h"
+#include "base/task/common/intrusive_heap.h"
 #include "base/task/sequence_manager/associated_thread_id.h"
 #include "base/task/sequence_manager/enqueue_order.h"
-#include "base/task/sequence_manager/intrusive_heap.h"
 #include "base/task/sequence_manager/lazily_deallocated_deque.h"
 #include "base/task/sequence_manager/sequenced_task_source.h"
 #include "base/task/sequence_manager/task_queue.h"
@@ -181,9 +181,11 @@ class BASE_EXPORT TaskQueueImpl {
   // Must be called from the main thread.
   void WakeUpForDelayedWork(LazyNow* lazy_now);
 
-  HeapHandle heap_handle() const { return main_thread_only().heap_handle; }
+  base::internal::HeapHandle heap_handle() const {
+    return main_thread_only().heap_handle;
+  }
 
-  void set_heap_handle(HeapHandle heap_handle) {
+  void set_heap_handle(base::internal::HeapHandle heap_handle) {
     main_thread_only().heap_handle = heap_handle;
   }
 
@@ -310,7 +312,7 @@ class BASE_EXPORT TaskQueueImpl {
     DelayedIncomingQueue delayed_incoming_queue;
     ObserverList<MessageLoop::TaskObserver>::Unchecked task_observers;
     size_t set_index;
-    HeapHandle heap_handle;
+    base::internal::HeapHandle heap_handle;
     int is_enabled_refcount;
     int voter_refcount;
     trace_event::BlameContext* blame_context;  // Not owned.

@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/task/sequence_manager/intrusive_heap.h"
+#include "base/task/common/intrusive_heap.h"
 #include "base/task/sequence_manager/lazy_now.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/time/time.h"
@@ -122,19 +122,19 @@ class BASE_EXPORT TimeDomain {
       return wake_up <= other.wake_up;
     }
 
-    void SetHeapHandle(internal::HeapHandle handle) {
+    void SetHeapHandle(base::internal::HeapHandle handle) {
       DCHECK(handle.IsValid());
       queue->set_heap_handle(handle);
     }
 
     void ClearHeapHandle() {
       DCHECK(queue->heap_handle().IsValid());
-      queue->set_heap_handle(internal::HeapHandle());
+      queue->set_heap_handle(base::internal::HeapHandle());
     }
   };
 
   internal::SequenceManagerImpl* sequence_manager_;  // Not owned.
-  internal::IntrusiveHeap<ScheduledDelayedWakeUp> delayed_wake_up_queue_;
+  base::internal::IntrusiveHeap<ScheduledDelayedWakeUp> delayed_wake_up_queue_;
   int pending_high_res_wake_up_count_ = 0;
 
   scoped_refptr<internal::AssociatedThreadId> associated_thread_;

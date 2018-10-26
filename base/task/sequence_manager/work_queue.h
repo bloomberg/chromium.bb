@@ -6,8 +6,8 @@
 #define BASE_TASK_SEQUENCE_MANAGER_WORK_QUEUE_H_
 
 #include "base/base_export.h"
+#include "base/task/common/intrusive_heap.h"
 #include "base/task/sequence_manager/enqueue_order.h"
-#include "base/task/sequence_manager/intrusive_heap.h"
 #include "base/task/sequence_manager/sequenced_task_source.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/trace_event/trace_event.h"
@@ -96,9 +96,11 @@ class BASE_EXPORT WorkQueue {
 
   size_t work_queue_set_index() const { return work_queue_set_index_; }
 
-  HeapHandle heap_handle() const { return heap_handle_; }
+  base::internal::HeapHandle heap_handle() const { return heap_handle_; }
 
-  void set_heap_handle(HeapHandle handle) { heap_handle_ = handle; }
+  void set_heap_handle(base::internal::HeapHandle handle) {
+    heap_handle_ = handle;
+  }
 
   QueueType queue_type() const { return queue_type_; }
 
@@ -142,7 +144,7 @@ class BASE_EXPORT WorkQueue {
   WorkQueueSets* work_queue_sets_ = nullptr;  // NOT OWNED.
   TaskQueueImpl* const task_queue_;           // NOT OWNED.
   size_t work_queue_set_index_ = 0;
-  HeapHandle heap_handle_;
+  base::internal::HeapHandle heap_handle_;
   const char* const name_;
   EnqueueOrder fence_;
   const QueueType queue_type_;
