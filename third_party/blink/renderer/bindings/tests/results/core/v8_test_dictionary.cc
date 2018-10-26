@@ -92,6 +92,7 @@ static const v8::Eternal<v8::Name>* eternalV8TestDictionaryKeys(v8::Isolate* iso
     "unionMemberWithSequenceDefault",
     "unionOrNullRecordMember",
     "unionOrNullSequenceMember",
+    "unionWithAnnotatedTypeMember",
     "unionWithTypedefs",
     "unrestrictedDoubleMember",
     "usvStringOrNullMember",
@@ -916,8 +917,23 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     impl.setUnionOrNullSequenceMember(union_or_null_sequence_member_cpp_value);
   }
 
+  v8::Local<v8::Value> union_with_annotated_type_member_value;
+  if (!v8Object->Get(context, keys[57].Get(isolate)).ToLocal(&union_with_annotated_type_member_value)) {
+    exceptionState.RethrowV8Exception(block.Exception());
+    return;
+  }
+  if (union_with_annotated_type_member_value.IsEmpty() || union_with_annotated_type_member_value->IsUndefined()) {
+    // Do nothing.
+  } else {
+    StringTreatNullAsEmptyStringOrLong union_with_annotated_type_member_cpp_value;
+    V8StringTreatNullAsEmptyStringOrLong::ToImpl(isolate, union_with_annotated_type_member_value, union_with_annotated_type_member_cpp_value, UnionTypeConversionMode::kNotNullable, exceptionState);
+    if (exceptionState.HadException())
+      return;
+    impl.setUnionWithAnnotatedTypeMember(union_with_annotated_type_member_cpp_value);
+  }
+
   v8::Local<v8::Value> union_with_typedefs_value;
-  if (!v8Object->Get(context, keys[57].Get(isolate)).ToLocal(&union_with_typedefs_value)) {
+  if (!v8Object->Get(context, keys[58].Get(isolate)).ToLocal(&union_with_typedefs_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -932,7 +948,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> unrestricted_double_member_value;
-  if (!v8Object->Get(context, keys[58].Get(isolate)).ToLocal(&unrestricted_double_member_value)) {
+  if (!v8Object->Get(context, keys[59].Get(isolate)).ToLocal(&unrestricted_double_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -946,7 +962,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> usv_string_or_null_member_value;
-  if (!v8Object->Get(context, keys[59].Get(isolate)).ToLocal(&usv_string_or_null_member_value)) {
+  if (!v8Object->Get(context, keys[60].Get(isolate)).ToLocal(&usv_string_or_null_member_value)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -1679,6 +1695,17 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     return false;
   }
 
+  v8::Local<v8::Value> union_with_annotated_type_member_value;
+  bool union_with_annotated_type_member_has_value_or_default = false;
+  if (impl.hasUnionWithAnnotatedTypeMember()) {
+    union_with_annotated_type_member_value = ToV8(impl.unionWithAnnotatedTypeMember(), creationContext, isolate);
+    union_with_annotated_type_member_has_value_or_default = true;
+  }
+  if (union_with_annotated_type_member_has_value_or_default &&
+      !create_property(57, union_with_annotated_type_member_value)) {
+    return false;
+  }
+
   v8::Local<v8::Value> union_with_typedefs_value;
   bool union_with_typedefs_has_value_or_default = false;
   if (impl.hasUnionWithTypedefs()) {
@@ -1686,7 +1713,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     union_with_typedefs_has_value_or_default = true;
   }
   if (union_with_typedefs_has_value_or_default &&
-      !create_property(57, union_with_typedefs_value)) {
+      !create_property(58, union_with_typedefs_value)) {
     return false;
   }
 
@@ -1700,7 +1727,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     unrestricted_double_member_has_value_or_default = true;
   }
   if (unrestricted_double_member_has_value_or_default &&
-      !create_property(58, unrestricted_double_member_value)) {
+      !create_property(59, unrestricted_double_member_value)) {
     return false;
   }
 
@@ -1714,7 +1741,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     usv_string_or_null_member_has_value_or_default = true;
   }
   if (usv_string_or_null_member_has_value_or_default &&
-      !create_property(59, usv_string_or_null_member_value)) {
+      !create_property(60, usv_string_or_null_member_value)) {
     return false;
   }
 

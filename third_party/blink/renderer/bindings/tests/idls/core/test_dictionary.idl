@@ -46,6 +46,7 @@ dictionary TestDictionary {
     record<ByteString, (long or boolean)> unionInRecordMember;
     record<DOMString, any> anyInRecordMember;
     (Float or BooleanType) unionWithTypedefs;
+    ([TreatNullAs=EmptyString] DOMString or long) unionWithAnnotatedTypeMember;
     [Clamp] long applicableToTypeLongMember;
     [TreatNullAs=EmptyString] DOMString applicableToTypeStringMember;
     (double or sequence<double>) unionMemberWithSequenceDefault = [];
