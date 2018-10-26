@@ -151,7 +151,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   if (applicable_to_type_long_member_value.IsEmpty() || applicable_to_type_long_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    int32_t applicable_to_type_long_member_cpp_value = NativeValueTraits<IDLLong>::NativeValue(isolate, applicable_to_type_long_member_value, exceptionState, kClamp);
+    int32_t applicable_to_type_long_member_cpp_value = NativeValueTraits<IDLLongClamp>::NativeValue(isolate, applicable_to_type_long_member_value, exceptionState);
     if (exceptionState.HadException())
       return;
     impl.setApplicableToTypeLongMember(applicable_to_type_long_member_cpp_value);
@@ -511,7 +511,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   if (long_member_value.IsEmpty() || long_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    int32_t long_member_cpp_value = NativeValueTraits<IDLLong>::NativeValue(isolate, long_member_value, exceptionState, kNormalConversion);
+    int32_t long_member_cpp_value = NativeValueTraits<IDLLong>::NativeValue(isolate, long_member_value, exceptionState);
     if (exceptionState.HadException())
       return;
     impl.setLongMember(long_member_cpp_value);
@@ -671,7 +671,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   if (string_or_null_record_member_value.IsEmpty() || string_or_null_record_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    Vector<std::pair<String, String>> string_or_null_record_member_cpp_value = NativeValueTraits<IDLRecord<IDLString, IDLStringBase<kTreatNullAndUndefinedAsNullString>>>::NativeValue(isolate, string_or_null_record_member_value, exceptionState);
+    Vector<std::pair<String, String>> string_or_null_record_member_cpp_value = NativeValueTraits<IDLRecord<IDLString, IDLStringOrNull>>::NativeValue(isolate, string_or_null_record_member_value, exceptionState);
     if (exceptionState.HadException())
       return;
     impl.setStringOrNullRecordMember(string_or_null_record_member_cpp_value);
@@ -685,7 +685,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   if (string_or_null_sequence_member_value.IsEmpty() || string_or_null_sequence_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    Vector<String> string_or_null_sequence_member_cpp_value = NativeValueTraits<IDLSequence<IDLStringBase<kTreatNullAndUndefinedAsNullString>>>::NativeValue(isolate, string_or_null_sequence_member_value, exceptionState);
+    Vector<String> string_or_null_sequence_member_cpp_value = NativeValueTraits<IDLSequence<IDLStringOrNull>>::NativeValue(isolate, string_or_null_sequence_member_value, exceptionState);
     if (exceptionState.HadException())
       return;
     impl.setStringOrNullSequenceMember(string_or_null_sequence_member_cpp_value);
@@ -835,7 +835,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   if (treat_null_as_string_sequence_member_value.IsEmpty() || treat_null_as_string_sequence_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    Vector<String> treat_null_as_string_sequence_member_cpp_value = NativeValueTraits<IDLSequence<IDLStringBase<kTreatNullAsEmptyString>>>::NativeValue(isolate, treat_null_as_string_sequence_member_value, exceptionState);
+    Vector<String> treat_null_as_string_sequence_member_cpp_value = NativeValueTraits<IDLSequence<IDLStringTreatNullAsEmptyString>>::NativeValue(isolate, treat_null_as_string_sequence_member_value, exceptionState);
     if (exceptionState.HadException())
       return;
     impl.setTreatNullAsStringSequenceMember(treat_null_as_string_sequence_member_cpp_value);
@@ -953,7 +953,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   if (usv_string_or_null_member_value.IsEmpty() || usv_string_or_null_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    V8StringResource<kTreatNullAndUndefinedAsNullString> usv_string_or_null_member_cpp_value = NativeValueTraits<IDLUSVStringBase<kTreatNullAndUndefinedAsNullString>>::NativeValue(isolate, usv_string_or_null_member_value, exceptionState);
+    V8StringResource<kTreatNullAndUndefinedAsNullString> usv_string_or_null_member_cpp_value = NativeValueTraits<IDLUSVStringOrNull>::NativeValue(isolate, usv_string_or_null_member_value, exceptionState);
     if (exceptionState.HadException())
       return;
     impl.setUsvStringOrNullMember(usv_string_or_null_member_cpp_value);

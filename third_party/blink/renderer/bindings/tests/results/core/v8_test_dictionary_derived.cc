@@ -85,7 +85,7 @@ void V8TestDictionaryDerivedImplementedAs::ToImpl(v8::Isolate* isolate, v8::Loca
     exceptionState.ThrowTypeError("required member requiredLongMember is undefined.");
     return;
   } else {
-    int32_t required_long_member_cpp_value = NativeValueTraits<IDLLong>::NativeValue(isolate, required_long_member_value, exceptionState, kNormalConversion);
+    int32_t required_long_member_cpp_value = NativeValueTraits<IDLLong>::NativeValue(isolate, required_long_member_value, exceptionState);
     if (exceptionState.HadException())
       return;
     impl.setRequiredLongMember(required_long_member_cpp_value);

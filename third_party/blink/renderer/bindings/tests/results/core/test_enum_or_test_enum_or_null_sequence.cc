@@ -91,7 +91,7 @@ void V8TestEnumOrTestEnumOrNullSequence::ToImpl(v8::Isolate* isolate, v8::Local<
     return;
 
   if (HasCallableIteratorSymbol(isolate, v8Value, exceptionState)) {
-    Vector<String> cppValue = NativeValueTraits<IDLSequence<IDLStringBase<kTreatNullAndUndefinedAsNullString>>>::NativeValue(isolate, v8Value, exceptionState);
+    Vector<String> cppValue = NativeValueTraits<IDLSequence<IDLStringOrNull>>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
     const char* validValues[] = {

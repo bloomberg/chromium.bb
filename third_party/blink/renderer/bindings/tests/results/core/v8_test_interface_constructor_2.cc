@@ -138,7 +138,7 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return;
   }
 
-  longArg = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), info[1], exceptionState, kNormalConversion);
+  longArg = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), info[1], exceptionState);
   if (exceptionState.HadException())
     return;
 
