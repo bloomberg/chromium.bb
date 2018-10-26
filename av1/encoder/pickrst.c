@@ -116,15 +116,11 @@ typedef struct {
   AV1PixelRect tile_rect;
 } RestSearchCtxt;
 
-static void rsc_on_tile(int tile_row, int tile_col, void *priv) {
-  (void)tile_col;
-
+static void rsc_on_tile(void *priv) {
   RestSearchCtxt *rsc = (RestSearchCtxt *)priv;
   set_default_sgrproj(&rsc->sgrproj);
   set_default_wiener(&rsc->wiener);
-
-  rsc->tile_stripe0 =
-      (tile_row == 0) ? 0 : rsc->cm->rst_end_stripe[tile_row - 1];
+  rsc->tile_stripe0 = 0;
 }
 
 static void reset_rsc(RestSearchCtxt *rsc) {
@@ -1460,7 +1456,8 @@ static double search_rest_type(RestSearchCtxt *rsc, RestorationType rtype) {
   };
 
   reset_rsc(rsc);
-  rsc_on_tile(LR_TILE_ROW, LR_TILE_COL, rsc);
+  rsc_on_tile(rsc);
+
   av1_foreach_rest_unit_in_plane(rsc->cm, rsc->plane, funs[rtype], rsc,
                                  &rsc->tile_rect, rsc->cm->rst_tmpbuf, NULL);
   return RDCOST_DBL(rsc->x->rdmult, rsc->bits >> 4, rsc->sse);

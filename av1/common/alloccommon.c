@@ -134,7 +134,6 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
     const int ext_h = RESTORATION_UNIT_OFFSET + (mi_h << MI_SIZE_LOG2);
     const int tile_stripes = (ext_h + 63) / 64;
     num_stripes += tile_stripes;
-    cm->rst_end_stripe[i] = num_stripes;
   }
 
   // Now we need to allocate enough space to store the line buffers for the
