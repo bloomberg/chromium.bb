@@ -182,13 +182,13 @@ void DelegatedFrameHost::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
 
 bool DelegatedFrameHost::HasPrimarySurface() const {
   const viz::SurfaceId* primary_surface_id =
-      client_->DelegatedFrameHostGetLayer()->GetPrimarySurfaceId();
+      client_->DelegatedFrameHostGetLayer()->GetSurfaceId();
   return primary_surface_id && primary_surface_id->is_valid();
 }
 
 bool DelegatedFrameHost::HasFallbackSurface() const {
   const viz::SurfaceId* fallback_surface_id =
-      client_->DelegatedFrameHostGetLayer()->GetFallbackSurfaceId();
+      client_->DelegatedFrameHostGetLayer()->GetOldestAcceptableFallback();
   return fallback_surface_id && fallback_surface_id->is_valid();
 }
 
@@ -197,7 +197,7 @@ void DelegatedFrameHost::EmbedSurface(
     const gfx::Size& new_dip_size,
     cc::DeadlinePolicy deadline_policy) {
   const viz::SurfaceId* primary_surface_id =
-      client_->DelegatedFrameHostGetLayer()->GetPrimarySurfaceId();
+      client_->DelegatedFrameHostGetLayer()->GetSurfaceId();
 
   local_surface_id_ = new_local_surface_id;
   surface_dip_size_ = new_dip_size;
@@ -210,7 +210,7 @@ void DelegatedFrameHost::EmbedSurface(
     // showing contents of old size. Don't call EvictDelegatedFrame to avoid
     // races when dragging tabs across displays. See https://crbug.com/813157.
     if (surface_dip_size_ != current_frame_size_in_dip_) {
-      client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
+      client_->DelegatedFrameHostGetLayer()->SetOldestAcceptableFallback(
           new_primary_surface_id);
     }
     // Don't update the SurfaceLayer when invisible to avoid blocking on
@@ -240,7 +240,7 @@ void DelegatedFrameHost::EmbedSurface(
     }
 #endif
     current_frame_size_in_dip_ = surface_dip_size_;
-    client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
+    client_->DelegatedFrameHostGetLayer()->SetShowSurface(
         new_primary_surface_id, current_frame_size_in_dip_, GetGutterColor(),
         deadline_policy, false /* stretch_content_to_fill_bounds */);
     if (compositor_ && !base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -319,7 +319,7 @@ void DelegatedFrameHost::OnBeginFrame(const viz::BeginFrameArgs& args) {
 
 void DelegatedFrameHost::ResetFallbackToFirstNavigationSurface() {
   const viz::SurfaceId* fallback_surface_id =
-      client_->DelegatedFrameHostGetLayer()->GetFallbackSurfaceId();
+      client_->DelegatedFrameHostGetLayer()->GetOldestAcceptableFallback();
 
   // Don't update the fallback if it's already newer than the first id after
   // navigation.
@@ -330,14 +330,14 @@ void DelegatedFrameHost::ResetFallbackToFirstNavigationSurface() {
     return;
   }
 
-  client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
+  client_->DelegatedFrameHostGetLayer()->SetOldestAcceptableFallback(
       viz::SurfaceId(frame_sink_id_, first_local_surface_id_after_navigation_));
 }
 
 void DelegatedFrameHost::EvictDelegatedFrame() {
   // Reset primary surface.
   if (HasPrimarySurface()) {
-    client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
+    client_->DelegatedFrameHostGetLayer()->SetShowSurface(
         viz::SurfaceId(), current_frame_size_in_dip_, GetGutterColor(),
         cc::DeadlinePolicy::UseDefaultDeadline(), false);
   }
@@ -451,10 +451,11 @@ void DelegatedFrameHost::TakeFallbackContentFrom(DelegatedFrameHost* other) {
     return;
 
   const viz::SurfaceId* other_primary =
-      other->client_->DelegatedFrameHostGetLayer()->GetPrimarySurfaceId();
+      other->client_->DelegatedFrameHostGetLayer()->GetSurfaceId();
 
   const viz::SurfaceId* other_fallback =
-      other->client_->DelegatedFrameHostGetLayer()->GetFallbackSurfaceId();
+      other->client_->DelegatedFrameHostGetLayer()
+          ->GetOldestAcceptableFallback();
 
   // In two cases we need to obtain a new fallback from the primary id of the
   // other view instead of using its fallback:
@@ -471,14 +472,15 @@ void DelegatedFrameHost::TakeFallbackContentFrom(DelegatedFrameHost* other) {
   }
 
   if (!HasPrimarySurface()) {
-    client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
+    client_->DelegatedFrameHostGetLayer()->SetShowSurface(
         desired_fallback, other->client_->DelegatedFrameHostGetLayer()->size(),
         other->client_->DelegatedFrameHostGetLayer()->background_color(),
         cc::DeadlinePolicy::UseDefaultDeadline(),
         false /* stretch_content_to_fill_bounds */);
   }
 
-  client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(desired_fallback);
+  client_->DelegatedFrameHostGetLayer()->SetOldestAcceptableFallback(
+      desired_fallback);
 }
 
 }  // namespace content

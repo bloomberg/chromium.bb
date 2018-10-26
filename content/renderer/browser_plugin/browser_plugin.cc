@@ -274,7 +274,7 @@ void BrowserPlugin::SynchronizeVisualProperties() {
         capture_sequence_number_changed
             ? cc::DeadlinePolicy::UseInfiniteDeadline()
             : cc::DeadlinePolicy::UseDefaultDeadline();
-    compositing_helper_->SetPrimarySurfaceId(
+    compositing_helper_->SetSurfaceId(
         viz::SurfaceId(frame_sink_id_, GetLocalSurfaceId()),
         screen_space_rect().size(), deadline);
   }

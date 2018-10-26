@@ -270,10 +270,9 @@ void RenderFrameProxy::ResendVisualProperties() {
 }
 
 void RenderFrameProxy::WillBeginCompositorFrame() {
-  if (compositing_helper_ &&
-      compositing_helper_->primary_surface_id().is_valid()) {
+  if (compositing_helper_ && compositing_helper_->surface_id().is_valid()) {
     FrameHostMsg_HittestData_Params params;
-    params.surface_id = compositing_helper_->primary_surface_id();
+    params.surface_id = compositing_helper_->surface_id();
     params.ignored_for_hittest = web_frame_->IsIgnoredForHitTest();
     render_widget_->QueueMessage(
         new FrameHostMsg_HittestData(render_widget_->routing_id(), params));
@@ -466,12 +465,11 @@ void RenderFrameProxy::OnFirstSurfaceActivation(
     return;
 
   if (!enable_surface_synchronization_) {
-    compositing_helper_->SetPrimarySurfaceId(
-        surface_info.id(), local_frame_size(),
-        cc::DeadlinePolicy::UseDefaultDeadline());
+    compositing_helper_->SetSurfaceId(surface_info.id(), local_frame_size(),
+                                      cc::DeadlinePolicy::UseDefaultDeadline());
   }
-  compositing_helper_->SetFallbackSurfaceId(surface_info.id(),
-                                            local_frame_size());
+  compositing_helper_->SetOldestAcceptableFallback(surface_info.id(),
+                                                   local_frame_size());
 }
 
 void RenderFrameProxy::OnIntrinsicSizingInfoOfChildChanged(
@@ -670,8 +668,7 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
         capture_sequence_number_changed
             ? cc::DeadlinePolicy::UseInfiniteDeadline()
             : cc::DeadlinePolicy::UseDefaultDeadline();
-    compositing_helper_->SetPrimarySurfaceId(surface_id, local_frame_size(),
-                                             deadline);
+    compositing_helper_->SetSurfaceId(surface_id, local_frame_size(), deadline);
   }
 
   bool rect_changed = !sent_visual_properties_ ||
