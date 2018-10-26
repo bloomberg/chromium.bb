@@ -240,6 +240,7 @@ void PreviewsUITabHelper::DidFinishNavigation(
       !navigation_handle->HasCommitted() || navigation_handle->IsSameDocument())
     return;
 
+  previews_freshness_ = base::Time();
   previews_user_data_.reset();
 #if defined(OS_ANDROID)
   should_display_android_omnibox_badge_ = false;
