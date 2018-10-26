@@ -1241,6 +1241,18 @@ void GetNetworkChangeManager(
   GetNetworkService()->GetNetworkChangeManager(std::move(request));
 }
 
+std::set<int>& GetCurrentCorbPluginExceptions() {
+  static base::NoDestructor<std::set<int>> s_data;
+  return *s_data;
+}
+
+void OnNetworkServiceCrash() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  network::mojom::NetworkService* network_service = GetNetworkService();
+  for (int process_id : GetCurrentCorbPluginExceptions())
+    network_service->AddCorbExceptionForPlugin(process_id);
+}
+
 void RemoveCorbExceptionForPluginOnIOThread(int process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -1256,6 +1268,7 @@ void RemoveCorbExceptionForPluginOnUIThread(int process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    GetCurrentCorbPluginExceptions().erase(process_id);
     GetNetworkService()->RemoveCorbExceptionForPlugin(process_id);
   } else {
     base::PostTaskWithTraits(
@@ -1279,8 +1292,16 @@ void AddCorbExceptionForPluginOnUIThread(int process_id) {
   }
   process->CleanupCorbExceptionForPluginUponDestruction();
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    static NetworkServiceCrashHandlerId s_crash_handler_id;
+    if (s_crash_handler_id.is_null()) {
+      s_crash_handler_id = RegisterNetworkServiceCrashHandler(
+          base::BindRepeating(&OnNetworkServiceCrash));
+    }
+
+    GetCurrentCorbPluginExceptions().insert(process_id);
     GetNetworkService()->AddCorbExceptionForPlugin(process_id);
+  }
 }
 
 // This is the entry point (i.e. this is called on the IO thread *before*

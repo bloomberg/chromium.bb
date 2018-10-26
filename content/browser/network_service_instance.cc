@@ -4,8 +4,14 @@
 
 #include "content/public/browser/network_service_instance.h"
 
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "base/environment.h"
 #include "base/feature_list.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -50,6 +56,24 @@ void BindNetworkChangeManagerRequest(
   GetNetworkService()->GetNetworkChangeManager(std::move(request));
 }
 
+using CrashHandlersMap =
+    std::map<NetworkServiceCrashHandlerId, base::RepeatingClosure>;
+CrashHandlersMap& GetCrashHandlersMap() {
+  static base::NoDestructor<CrashHandlersMap> s_map;
+  return *s_map;
+}
+
+void OnNetworkServiceCrash() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(g_network_service_ptr);
+  DCHECK(g_network_service_ptr->is_bound());
+  DCHECK(g_network_service_ptr->encountered_error());
+  for (const auto& it : GetCrashHandlersMap()) {
+    const base::RepeatingClosure& handler = it.second;
+    handler.Run();
+  }
+}
+
 }  // namespace
 
 network::mojom::NetworkService* GetNetworkService() {
@@ -71,6 +95,8 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
     if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       connector->BindInterface(mojom::kNetworkServiceName,
                                g_network_service_ptr);
+      g_network_service_ptr->set_connection_error_handler(
+          base::BindOnce(&OnNetworkServiceCrash));
     } else {
       DCHECK(!g_network_service_ptr->is_bound());
       base::PostTaskWithTraits(
@@ -133,6 +159,32 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
           g_network_service_ptr->get());
   }
   return g_network_service_ptr->get();
+}
+
+NetworkServiceCrashHandlerId RegisterNetworkServiceCrashHandler(
+    base::RepeatingClosure handler) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!handler.is_null());
+
+  static int next_handler_id = 1;
+  NetworkServiceCrashHandlerId handler_id =
+      NetworkServiceCrashHandlerId::FromUnsafeValue(next_handler_id++);
+
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    CrashHandlersMap& map = GetCrashHandlersMap();
+    map[handler_id] = std::move(handler);
+  }
+
+  return handler_id;
+}
+
+void UnregisterNetworkServiceCrashHandler(
+    NetworkServiceCrashHandlerId handler_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    CrashHandlersMap& map = GetCrashHandlersMap();
+    map.erase(handler_id);
+  }
 }
 
 network::NetworkService* GetNetworkServiceImpl() {

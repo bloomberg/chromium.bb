@@ -1038,7 +1038,11 @@ test("content_browsertests") {
       "//ppapi/proxy:ipc",
       "//ppapi/shared_impl:test_support",
     ]
-    data_deps += [ "//ppapi:ppapi_tests" ]
+    data_deps += [
+      "//ppapi:corb_test_plugin",
+      "//ppapi:power_saver_test_plugin",
+      "//ppapi:ppapi_tests",
+    ]
     if (is_mac) {
       data += [ "$root_out_dir/ppapi_tests.plugin/" ]
     }

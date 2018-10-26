@@ -35,7 +35,10 @@ bool RegisterTestPluginWithExtraParameters(
     const base::FilePath::StringType& extra_registration_parameters)
     WARN_UNUSED_RESULT;
 
-// Registers the Flash-imitating Power Saver test plugin.
+// Registers the Flash-imitating CORB-testing plugin.
+bool RegisterCorbTestPlugin(base::CommandLine* command_line) WARN_UNUSED_RESULT;
+
+// Registers the Flash-imitating Power-Saver-testing plugin.
 bool RegisterFlashTestPlugin(base::CommandLine* command_line)
     WARN_UNUSED_RESULT;
 
