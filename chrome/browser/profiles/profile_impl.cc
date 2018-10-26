@@ -308,6 +308,17 @@ std::string ExitTypeToSessionTypePrefValue(Profile::ExitType type) {
   return std::string();
 }
 
+#if defined(OS_CHROMEOS)
+// Checks if |new_locale| is the same as |pref_locale| or |pref_locale| is used
+// to show UI translation for |new_locale|. (e.g. "it" is used for "it-CH")
+bool LocaleNotChanged(const std::string& pref_locale,
+                      const std::string& new_locale) {
+  std::string new_locale_converted = new_locale;
+  language::ConvertToActualUILocale(&new_locale_converted);
+  return pref_locale == new_locale_converted;
+}
+#endif  // defined(OS_CHROMEOS)
+
 #if !defined(OS_ANDROID)
 std::unique_ptr<service_manager::Service> CreateAppService(Profile* profile) {
   // TODO(crbug.com/826982): use |profile| to fetch existing registries.
@@ -1295,7 +1306,7 @@ void ProfileImpl::ChangeAppLocale(const std::string& new_locale,
     case APP_LOCALE_CHANGED_VIA_LOGIN:
     case APP_LOCALE_CHANGED_VIA_PUBLIC_SESSION_LOGIN: {
       if (!pref_locale.empty()) {
-        DCHECK(pref_locale == new_locale);
+        DCHECK(LocaleNotChanged(pref_locale, new_locale));
         std::string accepted_locale =
             GetPrefs()->GetString(prefs::kApplicationLocaleAccepted);
         if (accepted_locale == new_locale) {
