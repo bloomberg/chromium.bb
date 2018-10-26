@@ -877,11 +877,6 @@ by a child template that "extends" this file.
             android:exported="false">
         </service>
 
-        <!-- Download service -->
-        <service android:name="org.chromium.chrome.browser.download.DownloadNotificationService"
-            android:exported="false">
-        </service>
-
         <!-- Bookmarks widget -->
         <receiver android:name="com.google.android.apps.chrome.appwidget.bookmarks.BookmarkThumbnailWidgetProvider"
             android:label="@string/bookmark_widget_title">
