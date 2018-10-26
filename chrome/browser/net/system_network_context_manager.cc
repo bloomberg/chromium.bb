@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/process/process_handle.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
@@ -233,7 +234,9 @@ class SystemNetworkContextManager::URLLoaderFactoryForSystem
     : public network::SharedURLLoaderFactory {
  public:
   explicit URLLoaderFactoryForSystem(SystemNetworkContextManager* manager)
-      : manager_(manager) {}
+      : manager_(manager) {
+    DETACH_FROM_SEQUENCE(sequence_checker_);
+  }
 
   // mojom::URLLoaderFactory implementation:
 
@@ -245,7 +248,7 @@ class SystemNetworkContextManager::URLLoaderFactoryForSystem
                             network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     if (!manager_)
       return;
     manager_->GetURLLoaderFactory()->CreateLoaderAndStart(
@@ -261,7 +264,7 @@ class SystemNetworkContextManager::URLLoaderFactoryForSystem
 
   // SharedURLLoaderFactory implementation:
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return std::make_unique<network::CrossThreadSharedURLLoaderFactoryInfo>(
         this);
   }
@@ -272,6 +275,7 @@ class SystemNetworkContextManager::URLLoaderFactoryForSystem
   friend class base::RefCounted<URLLoaderFactoryForSystem>;
   ~URLLoaderFactoryForSystem() override {}
 
+  SEQUENCE_CHECKER(sequence_checker_);
   SystemNetworkContextManager* manager_;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryForSystem);
