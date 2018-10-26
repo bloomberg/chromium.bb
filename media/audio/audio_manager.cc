@@ -17,6 +17,7 @@
 #include "base/power_monitor/power_monitor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_annotations.h"
 #include "build/build_config.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/base/media_switches.h"
@@ -219,8 +220,8 @@ class AudioManagerHelper : public base::PowerObserver {
   scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
 
   base::Lock hang_lock_;
-  bool hang_detection_enabled_ = true;
-  base::TimeTicks last_audio_thread_timer_tick_;
+  bool hang_detection_enabled_ GUARDED_BY(hang_lock_) = true;
+  base::TimeTicks last_audio_thread_timer_tick_ GUARDED_BY(hang_lock_);
   uint32_t failed_pings_ = 0;
   bool io_task_running_ = false;
   bool audio_task_running_ = false;
