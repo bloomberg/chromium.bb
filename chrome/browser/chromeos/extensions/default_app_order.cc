@@ -17,6 +17,7 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/page_break_constants.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -65,10 +66,13 @@ const char* const kDefaultAppOrder[] = {
     app_list::kInternalAppIdDiscover,
     extension_misc::kGeniusAppId,
     extension_misc::kCalculatorAppId,
+    default_web_apps::kCanvasAppId,
     extension_misc::kTextEditorAppId,
     arc::kGoogleDuo,
+    default_web_apps::kYoutubeTVAppId,
     arc::kLightRoom,
     arc::kInfinitePainter,
+    default_web_apps::kShowtimeAppId,
     extension_misc::kGooglePlusAppId,
     extension_misc::kChromeRemoteDesktopAppId,
     extensions::kWebStoreAppId,
