@@ -63,6 +63,8 @@ class CrtcController {
   void SetCursor(uint32_t handle, const gfx::Size& size);
   void MoveCursor(const gfx::Point& location);
 
+  void OnPageFlipComplete();
+
  private:
   void DisableCursor();
 
@@ -74,6 +76,8 @@ class CrtcController {
   const uint32_t connector_;
 
   drmModeModeInfo mode_ = {};
+
+  scoped_refptr<DrmFramebuffer> modeset_framebuffer_;
 
   // Keeps track of the CRTC state. If a surface has been bound, then the value
   // is set to false. Otherwise it is true.
