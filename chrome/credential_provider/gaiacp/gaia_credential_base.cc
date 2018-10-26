@@ -181,9 +181,9 @@ HRESULT ValidateAndFixResult(base::DictionaryValue* result, BSTR* status_text) {
     has_error = true;
   }
 
-  std::string mdm_access_token = GetDictStringUTF8(result, kKeyMdmAcessToken);
-  if (mdm_access_token.empty()) {
-    LOGFN(ERROR) << "mdm access token is empty";
+  std::string mdm_id_token = GetDictStringUTF8(result, kKeyMdmIdToken);
+  if (mdm_id_token.empty()) {
+    LOGFN(ERROR) << "mdm id token is empty";
     has_error = true;
   }
 

@@ -12,7 +12,7 @@ extern const char kKeyEmail[];
 extern const char kKeyFullname[];
 extern const char kKeyId[];
 extern const char kKeyMdmUrl[];
-extern const char kKeyMdmAcessToken[];
+extern const char kKeyMdmIdToken[];
 extern const char kKeyPassword[];
 extern const char kKeyRefreshToken[];
 extern const char kKeySID[];

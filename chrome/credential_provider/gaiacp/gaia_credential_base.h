@@ -45,7 +45,7 @@ class ATL_NO_VTABLE CGaiaCredentialBase
  public:
   // Size in wchar_t of string buffer to pass account information to background
   // process to save that information into the registry.
-  static const int kAccountInfoBufferSize = 1024;
+  static const int kAccountInfoBufferSize = 2048;
 
   // Called when the DLL is registered or unregistered.
   static HRESULT OnDllRegisterServer();
