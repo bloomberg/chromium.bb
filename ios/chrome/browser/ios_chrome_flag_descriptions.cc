@@ -40,6 +40,12 @@ const char kEnableAutofillCreditCardUploadUpdatePromptExplanationDescription[] =
     "If enabled, changes the server save card prompt's explanation to mention "
     "the saving of the billing address.";
 
+const char kEnableAutofillSaveCreditCardUsesStrikeSystemName[] =
+    "Enable limit on offering to save the same credit card repeatedly";
+const char kEnableAutofillSaveCreditCardUsesStrikeSystemDescription[] =
+    "If enabled, prevents popping up the credit card offer-to-save prompt if "
+    "it has repeatedly been ignored, declined, or failed.";
+
 const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =
     "Connects to the testing server for Chrome Sync.";

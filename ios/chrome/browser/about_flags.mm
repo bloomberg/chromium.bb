@@ -236,6 +236,13 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUpstreamUseGooglePayBrandingOnMobile)},
+    {"enable-autofill-save-credit-card-uses-strike-system",
+     flag_descriptions::kEnableAutofillSaveCreditCardUsesStrikeSystemName,
+     flag_descriptions::
+         kEnableAutofillSaveCreditCardUsesStrikeSystemDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillSaveCreditCardUsesStrikeSystem)},
     {"use-sync-sandbox", flag_descriptions::kSyncSandboxName,
      flag_descriptions::kSyncSandboxDescription, flags_ui::kOsIos,
      SINGLE_VALUE_TYPE_AND_VALUE(
