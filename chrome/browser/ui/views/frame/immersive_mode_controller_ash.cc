@@ -296,19 +296,23 @@ void ImmersiveModeControllerAsh::Observe(
 void ImmersiveModeControllerAsh::OnWindowPropertyChanged(aura::Window* window,
                                                          const void* key,
                                                          intptr_t old) {
-  if (key == ash::kWindowStateTypeKey) {
-    ash::mojom::WindowStateType new_state =
-        window->GetProperty(ash::kWindowStateTypeKey);
-    ash::mojom::WindowStateType old_state =
-        static_cast<ash::mojom::WindowStateType>(old);
+  // Track locked fullscreen changes.
+  if (key == ash::kWindowPinTypeKey) {
+    browser_view_->FullscreenStateChanged();
+    return;
+  }
+
+  if (key == aura::client::kShowStateKey) {
+    ui::WindowShowState new_state =
+        window->GetProperty(aura::client::kShowStateKey);
+    auto old_state = static_cast<ui::WindowShowState>(old);
 
     // Make sure the browser stays up to date with the window's state. This is
     // necessary in classic Ash if the user exits fullscreen with the restore
     // button, and it's necessary in OopAsh if the window manager initiates a
     // fullscreen mode change (e.g. due to a WM shortcut).
-    if (controller_->IsEnabled() &&
-        (ash::IsFullscreenOrPinnedWindowStateType(old_state) ||
-         ash::IsFullscreenOrPinnedWindowStateType(new_state))) {
+    if (new_state == ui::SHOW_STATE_FULLSCREEN ||
+        old_state == ui::SHOW_STATE_FULLSCREEN) {
       // If the browser view initiated this state change,
       // BrowserView::ProcessFullscreen will no-op, so this call is harmless.
       browser_view_->FullscreenStateChanged();
