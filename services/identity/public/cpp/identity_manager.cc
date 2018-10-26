@@ -305,6 +305,16 @@ void IdentityManager::OnRefreshTokensLoaded() {
     observer.OnRefreshTokensLoaded();
 }
 
+void IdentityManager::OnStartBatchChanges() {
+  for (auto& observer : observer_list_)
+    observer.OnStartBatchOfRefreshTokenStateChanges();
+}
+
+void IdentityManager::OnEndBatchChanges() {
+  for (auto& observer : observer_list_)
+    observer.OnEndBatchOfRefreshTokenStateChanges();
+}
+
 void IdentityManager::OnGaiaAccountsInCookieUpdated(
     const std::vector<gaia::ListedAccount>& accounts,
     const std::vector<gaia::ListedAccount>& signed_out_accounts,

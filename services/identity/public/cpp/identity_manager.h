@@ -110,6 +110,12 @@ class IdentityManager : public SigninManagerBase::Observer,
     // |accounts| is ordered by the order of the accounts in the cookie.
     virtual void OnAccountsInCookieUpdated(
         const std::vector<AccountInfo>& accounts) {}
+
+    // Called before a batch of refresh token state changes is started.
+    virtual void OnStartBatchOfRefreshTokenStateChanges() {}
+
+    // Called after a batch of refresh token state chagnes is completed.
+    virtual void OnEndBatchOfRefreshTokenStateChanges() {}
   };
 
   // Observer interface for classes that want to monitor status of various
@@ -307,6 +313,8 @@ class IdentityManager : public SigninManagerBase::Observer,
   void OnRefreshTokenAvailable(const std::string& account_id) override;
   void OnRefreshTokenRevoked(const std::string& account_id) override;
   void OnRefreshTokensLoaded() override;
+  void OnStartBatchChanges() override;
+  void OnEndBatchChanges() override;
 
   // GaiaCookieManagerService::Observer:
   void OnGaiaAccountsInCookieUpdated(
