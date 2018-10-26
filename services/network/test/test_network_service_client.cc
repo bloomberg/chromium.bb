@@ -79,6 +79,13 @@ void TestNetworkServiceClient::OnCookieChange(
   NOTREACHED();
 }
 
+#if defined(OS_CHROMEOS)
+void TestNetworkServiceClient::OnUsedTrustAnchor(
+    const std::string& username_hash) {
+  NOTREACHED();
+}
+#endif
+
 void TestNetworkServiceClient::OnFileUploadRequested(
     uint32_t process_id,
     bool async,

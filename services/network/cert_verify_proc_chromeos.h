@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_NET_CERT_VERIFY_PROC_CHROMEOS_H_
-#define CHROME_BROWSER_CHROMEOS_NET_CERT_VERIFY_PROC_CHROMEOS_H_
+#ifndef SERVICES_NETWORK_CERT_VERIFY_PROC_CHROMEOS_H_
+#define SERVICES_NETWORK_CERT_VERIFY_PROC_CHROMEOS_H_
 
 #include "crypto/scoped_nss_types.h"
 #include "net/cert/cert_verify_proc_nss.h"
 #include "net/cert/nss_profile_filter_chromeos.h"
 
-namespace chromeos {
+namespace network {
 
 // Wrapper around CertVerifyProcNSS which allows filtering trust decisions on a
 // per-slot basis.
@@ -54,6 +54,6 @@ class CertVerifyProcChromeOS : public net::CertVerifyProcNSS {
   net::NSSProfileFilterChromeOS profile_filter_;
 };
 
-}  // namespace chromeos
+}  // namespace network
 
-#endif  // CHROME_BROWSER_CHROMEOS_NET_CERT_VERIFY_PROC_CHROMEOS_H_
+#endif  // SERVICES_NETWORK_CERT_VERIFY_PROC_CHROMEOS_H_

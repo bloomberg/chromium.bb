@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
+#include "services/network/cert_verify_proc_chromeos.h"
 
 #include <utility>
 
@@ -14,10 +14,10 @@
 // See https://bugzilla.mozilla.org/show_bug.cgi?id=962413
 // Can be removed once chrome requires NSS version 3.16 to build.
 #ifndef CERT_LIST_TAIL
-#define CERT_LIST_TAIL(l) ((CERTCertListNode *)PR_LIST_TAIL(&l->list))
+#define CERT_LIST_TAIL(l) ((CERTCertListNode*)PR_LIST_TAIL(&l->list))
 #endif
 
-namespace chromeos {
+namespace network {
 
 namespace {
 
@@ -81,8 +81,7 @@ SECStatus CertVerifyProcChromeOS::IsChainValidFunc(
 
   for (net::CertificateList::const_iterator i =
            args->additional_trust_anchors.begin();
-       i != args->additional_trust_anchors.end();
-       ++i) {
+       i != args->additional_trust_anchors.end(); ++i) {
     if (net::x509_util::IsSameCertificate(cert, i->get())) {
       // Certs in the additional_trust_anchors should always be allowed, even if
       // they aren't stored in a slot that would be allowed by the
@@ -103,4 +102,4 @@ SECStatus CertVerifyProcChromeOS::IsChainValidFunc(
   return SECSuccess;
 }
 
-}  // namespace chromeos
+}  // namespace network

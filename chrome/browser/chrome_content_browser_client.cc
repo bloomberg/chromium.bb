@@ -352,6 +352,7 @@
 #include "chrome/browser/chromeos/login/signin_partition_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/ui/ash/chrome_browser_main_extra_parts_ash.h"
@@ -2585,6 +2586,13 @@ net::CookieStore* ChromeContentBrowserClient::OverrideCookieStoreForURL(
 
   return nullptr;
 }
+
+#if defined(OS_CHROMEOS)
+void ChromeContentBrowserClient::OnUsedTrustAnchor(
+    const std::string& username_hash) {
+  policy::PolicyCertServiceFactory::SetUsedPolicyCertificates(username_hash);
+}
+#endif
 
 scoped_refptr<network::SharedURLLoaderFactory>
 ChromeContentBrowserClient::GetSystemSharedURLLoaderFactory() {

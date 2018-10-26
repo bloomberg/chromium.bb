@@ -62,6 +62,7 @@ class TreeStateTracker;
 }  // namespace certificate_transparency
 
 namespace network {
+class CertVerifierWithTrustAnchors;
 class CookieManager;
 class ExpectCTReporter;
 class HostResolver;
@@ -200,6 +201,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       const std::vector<std::string>& excluded_hosts,
       const std::vector<std::string>& excluded_spkis,
       const std::vector<std::string>& excluded_legacy_spkis) override;
+#if defined(OS_CHROMEOS)
+  void UpdateTrustAnchors(const net::CertificateList& trust_anchors) override;
+#endif
   void AddExpectCT(const std::string& domain,
                    base::Time expiry,
                    bool enforce,
@@ -280,6 +284,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void SetFailingHttpTransactionForTesting(
       int32_t rv,
       SetFailingHttpTransactionForTestingCallback callback) override;
+  void VerifyCertificateForTesting(
+      const scoped_refptr<net::X509Certificate>& certificate,
+      const std::string& hostname,
+      const std::string& ocsp_response,
+      VerifyCertificateForTestingCallback callback) override;
   void PreconnectSockets(uint32_t num_streams,
                          const GURL& url,
                          int32_t load_flags,
@@ -346,6 +355,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void DestroySocketManager(P2PSocketManager* socket_manager);
 
   void OnCertVerifyForSignedExchangeComplete(int cert_verify_id, int result);
+
+#if defined(OS_CHROMEOS)
+  void TrustAnchorUsed();
+#endif
 
   void OnSetExpectCTTestReportSuccess();
 
@@ -430,6 +443,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   std::unique_ptr<certificate_transparency::ChromeRequireCTDelegate>
       require_ct_delegate_;
   std::unique_ptr<certificate_transparency::TreeStateTracker> ct_tree_tracker_;
+
+#if defined(OS_CHROMEOS)
+  CertVerifierWithTrustAnchors* cert_verifier_with_trust_anchors_ = nullptr;
+#endif
 
   // Created on-demand. Null if unused.
   std::unique_ptr<HostResolver> internal_host_resolver_;
