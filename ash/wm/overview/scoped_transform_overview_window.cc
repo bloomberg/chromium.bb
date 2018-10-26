@@ -13,8 +13,10 @@
 #include "ash/wm/overview/drop_target_view.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
+#include "ash/wm/overview/start_animation_observer.h"
 #include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/window_mirror_view.h"
 #include "ash/wm/window_state.h"
@@ -269,6 +271,16 @@ void ScopedTransformOverviewWindow::BeginScopedAnimation(
     auto settings = std::make_unique<ScopedOverviewAnimationSettings>(
         animation_type, window);
     settings->DeferPaint();
+
+    // Create a start animation observer if this is an enter overview layout
+    // animation.
+    if (animation_type == OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_ON_ENTER) {
+      auto start_observer = std::make_unique<StartAnimationObserver>();
+      settings->AddObserver(start_observer.get());
+      Shell::Get()->window_selector_controller()->AddStartAnimationObserver(
+          std::move(start_observer));
+    }
+
     animation_settings->push_back(std::move(settings));
   }
 
