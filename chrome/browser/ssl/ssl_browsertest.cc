@@ -121,6 +121,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/service_manager_connection.h"
@@ -170,8 +171,10 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(USE_NSS_CERTS)
+#include "chrome/browser/certificate_manager_model.h"
 #include "chrome/browser/net/nss_context.h"
 #include "net/cert/nss_cert_database.h"
+#include "net/cert/x509_util_nss.h"
 #endif  // defined(USE_NSS_CERTS)
 
 using namespace ssl_test_util;
@@ -6016,6 +6019,78 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, DISABLED_PushStateSSLState) {
   content::WaitForLoadStop(tab);
   CheckAuthenticatedState(tab, AuthState::NONE);
 }
+
+#if defined(OS_CHROMEOS)
+
+// TODO(jam): get rid of duplicates of this method
+bool IsOutOfProcessNetworkService() {
+  return base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+         !base::FeatureList::IsEnabled(features::kNetworkServiceInProcess) &&
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kSingleProcess);
+}
+
+class SSLUITestNoCert : public SSLUITest,
+                        public CertificateManagerModel::Observer {
+ public:
+  SSLUITestNoCert() = default;
+  ~SSLUITestNoCert() = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kDisableTestCerts);
+    SSLUITest::SetUpCommandLine(command_line);
+  }
+
+  // CertificateManagerModel::Observer implementation:
+  void CertificatesRefreshed() override {}
+};
+
+INSTANTIATE_TEST_CASE_P(, SSLUITestNoCert, ::testing::Values(false, true));
+
+// Checks that a newly-added certificate authority is usable immediately.
+IN_PROC_BROWSER_TEST_P(SSLUITestNoCert, NewCertificateAuthority) {
+  if (!IsOutOfProcessNetworkService())
+    return;
+
+  ASSERT_TRUE(https_server_.Start());
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/ssl/google.html"));
+  EXPECT_TRUE(IsShowingInterstitial(tab));
+
+  std::unique_ptr<CertificateManagerModel> model;
+  base::RunLoop run_loop;
+  CertificateManagerModel::Create(
+      browser()->profile(), this,
+      base::BindLambdaForTesting(
+          [&](std::unique_ptr<CertificateManagerModel> model2) {
+            model = std::move(model2);
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+
+  scoped_refptr<net::X509Certificate> cert =
+      net::CreateCertificateChainFromFile(
+          net::GetTestCertsDirectory(), "root_ca_cert.pem",
+          net::X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
+
+  net::ScopedCERTCertificateList nss_certs =
+      net::x509_util::CreateCERTCertificateListFromX509Certificate(cert.get());
+
+  net::NSSCertDatabase::ImportCertFailureList not_imported;
+  EXPECT_TRUE(model->ImportCACerts(nss_certs, net::NSSCertDatabase::TRUSTED_SSL,
+                                   &not_imported));
+  EXPECT_TRUE(not_imported.empty());
+
+  content::FlushNetworkServiceInstanceForTesting();
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/ssl/google.html"));
+  EXPECT_FALSE(IsShowingInterstitial(tab));
+}
+
+#endif  // defined(OS_CHROMEOS)
 
 // Regression test for http://crbug.com/635833 (crash when a window with no
 // NavigationEntry commits).

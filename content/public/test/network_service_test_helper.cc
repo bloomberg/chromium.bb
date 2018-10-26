@@ -226,13 +226,16 @@ void NetworkServiceTestHelper::RegisterNetworkBinders(
 #if defined(OS_ANDROID)
     base::InitAndroidTestPaths(base::android::GetIsolatedTestRoot());
 #endif
-    net::EmbeddedTestServer::RegisterTestCerts();
-    net::SpawnedTestServer::RegisterTestCerts();
 
-    // Also add the QUIC test certificate.
-    net::TestRootCerts* root_certs = net::TestRootCerts::GetInstance();
-    root_certs->AddFromFile(
-        net::GetTestCertsDirectory().AppendASCII("quic-root.pem"));
+    if (!command_line->HasSwitch(switches::kDisableTestCerts)) {
+      net::EmbeddedTestServer::RegisterTestCerts();
+      net::SpawnedTestServer::RegisterTestCerts();
+
+      // Also add the QUIC test certificate.
+      net::TestRootCerts* root_certs = net::TestRootCerts::GetInstance();
+      root_certs->AddFromFile(
+          net::GetTestCertsDirectory().AppendASCII("quic-root.pem"));
+    }
   }
 }
 

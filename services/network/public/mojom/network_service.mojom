@@ -307,6 +307,9 @@ interface NetworkService {
   // this call, will use the same CRLSet.
   UpdateCRLSet(mojo_base.mojom.ReadOnlyBuffer crl_set);
 
+  // Notification that the certificate database has been modified.
+  OnCertDBChanged();
+
   // Sets up OSCrypt for the network service process. Must be called before
   // encrypted cookies can be read or set.
   [EnableIf=needs_crypt_config]

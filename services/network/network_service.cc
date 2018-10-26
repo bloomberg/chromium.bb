@@ -24,6 +24,7 @@
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "net/base/logging_network_change_observer.h"
 #include "net/base/network_change_notifier.h"
+#include "net/cert/cert_database.h"
 #include "net/cert/ct_log_response_parser.h"
 #include "net/cert/signed_tree_head.h"
 #include "net/dns/dns_config_overrides.h"
@@ -447,6 +448,10 @@ void NetworkService::UpdateSignedTreeHead(const net::ct::SignedTreeHead& sth) {
 
 void NetworkService::UpdateCRLSet(base::span<const uint8_t> crl_set) {
   crl_set_distributor_->OnNewCRLSet(crl_set);
+}
+
+void NetworkService::OnCertDBChanged() {
+  net::CertDatabase::GetInstance()->NotifyObserversCertDBChanged();
 }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)

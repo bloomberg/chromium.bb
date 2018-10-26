@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "net/cert/cert_database.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "url/gurl.h"
 
@@ -19,7 +20,8 @@
 namespace content {
 
 class CONTENT_EXPORT NetworkServiceClient
-    : public network::mojom::NetworkServiceClient {
+    : public network::mojom::NetworkServiceClient,
+      public net::CertDatabase::Observer {
  public:
   explicit NetworkServiceClient(network::mojom::NetworkServiceClientRequest
                                     network_service_client_request);
@@ -82,6 +84,9 @@ class CONTENT_EXPORT NetworkServiceClient
   void OnDataUseUpdate(int32_t network_traffic_annotation_id_hash,
                        int64_t recv_bytes,
                        int64_t sent_bytes) override;
+
+  // net::CertDatabase::Observer implementation:
+  void OnCertDBChanged() override;
 
 #if defined(OS_ANDROID)
   void OnApplicationStateChange(base::android::ApplicationState state);
