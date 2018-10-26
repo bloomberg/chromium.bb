@@ -185,7 +185,6 @@ class CanvasResourceProviderTextureGpuMemoryBuffer final
   scoped_refptr<CanvasResource> ProduceFrame() final {
     TRACE_EVENT0("blink",
                  "CanvasResourceProviderTextureGpuMemoreBuffer::ProduceFrame");
-
     DCHECK(GetSkSurface());
 
     if (IsGpuContextLost())
@@ -214,7 +213,6 @@ class CanvasResourceProviderTextureGpuMemoryBuffer final
     output_resource->CopyFromTexture(skia_texture_id,
                                      ColorParams().GLUnsizedInternalFormat(),
                                      ColorParams().GLType());
-
     return output_resource;
   }
 };
@@ -359,10 +357,8 @@ class CanvasResourceProviderSharedBitmap : public CanvasResourceProviderBitmap {
   scoped_refptr<CanvasResource> ProduceFrame() final {
     DCHECK(GetSkSurface());
     scoped_refptr<CanvasResource> output_resource = NewOrRecycledResource();
-    if (!output_resource) {
-      // Not compositable without a SharedBitmap
+    if (!output_resource)
       return nullptr;
-    }
 
     auto paint_image = MakeImageSnapshot();
     if (!paint_image)
@@ -450,8 +446,7 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
       case kTextureGpuMemoryBufferResourceType:
         if (!SharedGpuContext::IsGpuCompositingEnabled())
           continue;
-        if (presentation_mode !=
-            CanvasResourceProvider::kAllowImageChromiumPresentationMode)
+        if (presentation_mode != kAllowImageChromiumPresentationMode)
           continue;
         if (!context_provider_wrapper)
           continue;
