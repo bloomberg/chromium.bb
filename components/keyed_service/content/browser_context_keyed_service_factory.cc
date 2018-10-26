@@ -15,23 +15,6 @@
 
 void BrowserContextKeyedServiceFactory::SetTestingFactory(
     content::BrowserContext* context,
-    TestingFactoryFunction testing_factory) {
-  TestingFactory wrapped_factory;
-  if (testing_factory) {
-    wrapped_factory = base::BindRepeating(testing_factory);
-  }
-  SetTestingFactory(context, std::move(wrapped_factory));
-}
-
-KeyedService* BrowserContextKeyedServiceFactory::SetTestingFactoryAndUse(
-    content::BrowserContext* context,
-    TestingFactoryFunction testing_factory) {
-  DCHECK(testing_factory);
-  return SetTestingFactoryAndUse(context, base::BindRepeating(testing_factory));
-}
-
-void BrowserContextKeyedServiceFactory::SetTestingFactory(
-    content::BrowserContext* context,
     TestingFactory testing_factory) {
   KeyedServiceFactory::TestingFactory wrapped_factory;
   if (testing_factory) {

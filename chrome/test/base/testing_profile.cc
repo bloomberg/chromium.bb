@@ -1058,15 +1058,6 @@ void TestingProfile::Builder::SetProfileName(const std::string& profile_name) {
 
 void TestingProfile::Builder::AddTestingFactory(
     BrowserContextKeyedServiceFactory* service_factory,
-    BrowserContextKeyedServiceFactory::TestingFactoryFunction function) {
-  BrowserContextKeyedServiceFactory::TestingFactory testing_factory;
-  if (function)
-    testing_factory = base::BindRepeating(function);
-  AddTestingFactory(service_factory, std::move(testing_factory));
-}
-
-void TestingProfile::Builder::AddTestingFactory(
-    BrowserContextKeyedServiceFactory* service_factory,
     BrowserContextKeyedServiceFactory::TestingFactory testing_factory) {
   testing_factories_.emplace_back(service_factory, std::move(testing_factory));
 }
