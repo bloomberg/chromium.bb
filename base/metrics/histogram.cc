@@ -194,6 +194,16 @@ HistogramBase* Histogram::Factory::Build() {
 // Temporary check for https://crbug.com/836238
 #if defined(OS_WIN)  // Only Windows has a debugger that makes this useful.
     std::unique_ptr<const BucketRanges> recreated_ranges(CreateRanges());
+    // Most histograms have 50 buckets plus underflow and overflow.
+    const size_t capture_boundaries = 52;
+    Sample created_boundaries[capture_boundaries];
+    Sample recreated_boundaries[capture_boundaries];
+    for (uint32_t i = 0; i < bucket_count_ && i < capture_boundaries; ++i) {
+      created_boundaries[i] = created_ranges->range(i);
+      recreated_boundaries[i] = recreated_ranges->range(i);
+    }
+    debug::Alias(created_boundaries);
+    debug::Alias(recreated_boundaries);
     for (uint32_t i = 0; i < bucket_count_; ++i) {
       uint32_t created_range = created_ranges->range(i);
       uint32_t recreated_range = recreated_ranges->range(i);
