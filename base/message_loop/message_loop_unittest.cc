@@ -2208,7 +2208,7 @@ TEST_F(MessageLoopTest, DeleteUnboundLoop) {
   std::unique_ptr<MessageLoop> unbound_loop(MessageLoop::CreateUnbound(
       MessageLoop::TYPE_DEFAULT, MessageLoop::MessagePumpFactoryCallback()));
   unbound_loop.reset();
-  EXPECT_EQ(&loop, MessageLoop::current());
+  EXPECT_TRUE(loop.IsBoundToCurrentThread());
   EXPECT_EQ(loop.task_runner(), ThreadTaskRunnerHandle::Get());
 }
 

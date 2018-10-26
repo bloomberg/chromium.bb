@@ -12,11 +12,12 @@
 #include "base/callback_helpers.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "media/base/audio_buffer_converter.h"
 #include "media/base/fake_audio_renderer_sink.h"
 #include "media/base/gmock_callback_support.h"
@@ -114,6 +115,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
                          kChannelLayout,
                          kOutputSamplesPerSecond,
                          512),
+        main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         sink_(new FakeAudioRendererSink(hardware_params_)),
         demuxer_stream_(DemuxerStream::AUDIO),
         expected_init_result_(true),
@@ -131,7 +133,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
                                kOutputSamplesPerSecond,
                                512);
     renderer_.reset(new AudioRendererImpl(
-        message_loop_.task_runner(), sink_.get(),
+        main_thread_task_runner_, sink_.get(),
         base::Bind(&AudioRendererImplTest::CreateAudioDecoderForTest,
                    base::Unretained(this)),
         &media_log_));
@@ -158,7 +160,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
     hardware_params_ = params;
     sink_ = new FakeAudioRendererSink(hardware_params_);
     renderer_.reset(new AudioRendererImpl(
-        message_loop_.task_runner(), sink_.get(),
+        main_thread_task_runner_, sink_.get(),
         base::Bind(&AudioRendererImplTest::CreateAudioDecoderForTest,
                    base::Unretained(this)),
         &media_log_));
@@ -172,7 +174,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
     hardware_params_ = hardware_params;
     sink_ = new FakeAudioRendererSink(hardware_params_);
     renderer_.reset(new AudioRendererImpl(
-        message_loop_.task_runner(), sink_.get(),
+        main_thread_task_runner_, sink_.get(),
         base::Bind(&AudioRendererImplTest::CreateAudioDecoderForTest,
                    base::Unretained(this)),
         &media_log_));
@@ -226,7 +228,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
     ConfigureDemuxerStream(true);
 
     renderer_.reset(new AudioRendererImpl(
-        message_loop_.task_runner(), sink_.get(),
+        main_thread_task_runner_, sink_.get(),
         base::Bind(&AudioRendererImplTest::CreateAudioDecoderForTest,
                    base::Unretained(this)),
         &media_log_));
@@ -356,12 +358,12 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
                                  DecoderBuffer::CreateEOSBuffer()));
 
     // Satify pending |decode_cb_| to trigger a new DemuxerStream::Read().
-    message_loop_.task_runner()->PostTask(
+    main_thread_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(std::move(decode_cb_), DecodeStatus::OK));
 
     WaitForPendingRead();
 
-    message_loop_.task_runner()->PostTask(
+    main_thread_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(std::move(decode_cb_), DecodeStatus::OK));
 
     base::RunLoop().RunUntilIdle();
@@ -465,8 +467,8 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
   void DecodeDecoder(scoped_refptr<DecoderBuffer> buffer,
                      const AudioDecoder::DecodeCB& decode_cb) {
     // TODO(scherkus): Make this a DCHECK after threading semantics are fixed.
-    if (base::MessageLoop::current() != &message_loop_) {
-      message_loop_.task_runner()->PostTask(
+    if (!main_thread_task_runner_->BelongsToCurrentThread()) {
+      main_thread_task_runner_->PostTask(
           FROM_HERE, base::BindOnce(&AudioRendererImplTest::DecodeDecoder,
                                     base::Unretained(this), buffer, decode_cb));
       return;
@@ -488,7 +490,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
       return;
     }
 
-    message_loop_.task_runner()->PostTask(FROM_HERE, reset_cb);
+    main_thread_task_runner_->PostTask(FROM_HERE, reset_cb);
   }
 
   void DeliverBuffer(DecodeStatus status,
@@ -507,7 +509,8 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
 
   // Fixture members.
   AudioParameters hardware_params_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
+  const scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   MediaLog media_log_;
   std::unique_ptr<AudioRendererImpl> renderer_;
   scoped_refptr<FakeAudioRendererSink> sink_;

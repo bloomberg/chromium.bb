@@ -73,7 +73,7 @@ class MultiThreadedTest {
 
  private:
   void ExpectOnThread() {
-    EXPECT_EQ(thread_.message_loop(), base::MessageLoop::current());
+    EXPECT_TRUE(thread_.message_loop()->IsBoundToCurrentThread());
   }
 
   void RegisterThreadForEvents() {

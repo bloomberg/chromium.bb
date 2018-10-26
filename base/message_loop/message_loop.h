@@ -190,6 +190,9 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
   // posted tasks.
   void SetAddQueueTimeToTasks(bool enable);
 
+  // Returns true if this is the active MessageLoop for the current thread.
+  bool IsBoundToCurrentThread() const;
+
   // Returns true if the message loop is idle (ignoring delayed tasks). This is
   // the same condition which triggers DoWork() to return false: i.e.
   // out of tasks which can be processed at the current run-level -- there might
@@ -242,6 +245,11 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
   static std::unique_ptr<MessageLoop> CreateUnbound(
       Type type,
       MessagePumpFactoryCallback pump_factory);
+
+  // Return the pointer to MessageLoop for internal needs.
+  // All other callers should call MessageLoopCurrent::Get().
+  // TODO(altimin): Remove this.
+  static MessageLoop* GetCurrentDeprecated();
 
   // Sets the ThreadTaskRunnerHandle for the current thread to point to the
   // task runner for this message loop.
