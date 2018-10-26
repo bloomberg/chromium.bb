@@ -139,13 +139,8 @@ Binary Binary::fromSharedBuffer(scoped_refptr<SharedBuffer> buffer) {
 }
 
 // static
-Binary Binary::fromVector(Vector<uint8_t>&& in) {
+Binary Binary::fromVector(Vector<uint8_t> in) {
   return Binary(base::AdoptRef(new BinaryBasedOnVector(std::move(in))));
-}
-
-// static
-Binary Binary::fromVector(const Vector<uint8_t>& in) {
-  return Binary(base::AdoptRef(new BinaryBasedOnVector(in)));
 }
 
 // static
