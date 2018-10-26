@@ -1856,7 +1856,7 @@
     },
 
     'debug_bot': {
-      'mixins': ['debug', 'shared', 'goma'],
+      'mixins': ['debug', 'shared', 'goma', 'minimal_symbols'],
     },
 
     'debug_symbols_static_bot': {
@@ -1868,7 +1868,7 @@
     },
 
     'debug_trybot': {
-      'mixins': ['debug_bot', 'minimal_symbols'],
+      'mixins': ['debug_bot'],
     },
 
     'disable_nacl': {
