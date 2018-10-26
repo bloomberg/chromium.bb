@@ -103,7 +103,10 @@ crbug.com/891427 virtual/threaded/synthetic_gestures/animated-wheel-tiny-delta.h
 crbug.com/891427 virtual/threaded/synthetic_gestures/smooth-scroll-tiny-delta.html [ Pass Failure Timeout Crash ]
 # Next 1 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/mac10.12-blink-rel/1427
 crbug.com/891427 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchpad-zoom-out-slow.html [ Pass Failure Timeout Crash ]
-
+# Adding three more found by findit:
+crbug.com/891427 virtual/threaded/fast/scroll-behavior/smooth-scroll/scroll-during-selection.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/threaded/fast/scrolling/no-hover-during-scroll.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/fractional_scrolling_threaded/fast/scrolling/no-hover-during-scroll.html [ Pass Failure Timeout Crash ]
 
 # Remove these when --enable-display-compositor-pixel-dump becomes the
 # "default" setting. These will all need to be re-baselined at that point.
