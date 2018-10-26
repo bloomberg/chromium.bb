@@ -29,13 +29,14 @@ import org.chromium.base.test.util.Feature;
         shadows={ ShadowPendingIntent.class })
 public class ClearDataServiceTest {
     @Mock public ClearDataNotificationPublisher mNotificationManager;
+    @Mock public DomainDataCleaner mCleaner;
 
     private ClearDataService mService;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mService = new ClearDataService(mNotificationManager);
+        mService = new ClearDataService(mNotificationManager, mCleaner);
     }
 
     @Test
@@ -46,7 +47,7 @@ public class ClearDataServiceTest {
         ShadowPendingIntent intent = Shadows.shadowOf(
                 ClearDataService.getDismissIntent(RuntimeEnvironment.application, notificationId));
 
-        mService.onHandleIntent(intent.getSavedIntent());
+        mService.onStartCommand(intent.getSavedIntent(), 0, 0);
 
         verify(mNotificationManager).dismissClearDataNotification(any(), eq(notificationId));
     }

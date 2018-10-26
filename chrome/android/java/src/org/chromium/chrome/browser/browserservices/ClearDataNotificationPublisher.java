@@ -24,11 +24,11 @@ import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 public class ClearDataNotificationPublisher {
     private static final String NOTIFICATION_TAG_CLEAR_DATA = "ClearDataNotification.ClearData";
 
-    /* package */ void showClearDataNotification(Context context, String appName, String url,
+    /* package */ void showClearDataNotification(Context context, String appName, String domain,
             boolean uninstall) {
         // We base the notification id on the URL so we don't have duplicate Notifications
         // offering to clear the same URL.
-        int notificationId = url.hashCode();
+        int notificationId = domain.hashCode();
 
         Resources res = context.getResources();
         String title = res.getString(uninstall ? R.string.you_have_uninstalled_app
@@ -38,9 +38,9 @@ public class ClearDataNotificationPublisher {
                 .createChromeNotificationBuilder(true /* preferCompat */,
                         ChannelDefinitions.ChannelId.BROWSER)
                 .setContentTitle(title)
-                .setContentText(res.getString(R.string.clear_related_data, url))
+                .setContentText(res.getString(R.string.clear_related_data, domain))
                 .addAction(R.drawable.btn_star, res.getString(R.string.clear_data_delete),
-                        ClearDataService.getClearDataIntent(context, url, notificationId))
+                        ClearDataService.getClearDataIntent(context, domain, notificationId))
                 .addAction(R.drawable.btn_close, res.getString(R.string.close),
                         ClearDataService.getDismissIntent(context, notificationId))
                 .setSmallIcon(R.drawable.ic_chrome)

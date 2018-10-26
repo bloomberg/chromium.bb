@@ -99,11 +99,11 @@ public class ClientAppBroadcastReceiver extends BroadcastReceiver {
         }
 
         String appName = mRegister.getAppNameForRegisteredUid(uid);
-        Set<String> origins = mRegister.getDomainsForRegisteredUid(uid);
+        Set<String> domains = mRegister.getDomainsForRegisteredUid(uid);
 
-        for (String origin : origins) {
+        for (String domain : domains) {
             boolean uninstalled = Intent.ACTION_PACKAGE_FULLY_REMOVED.equals(intent.getAction());
-            mNotificationPublisher.showClearDataNotification(context, appName, origin, uninstalled);
+            mNotificationPublisher.showClearDataNotification(context, appName, domain, uninstalled);
         }
     }
 }

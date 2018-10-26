@@ -474,13 +474,14 @@ public class SiteSettingsPreferencesTest {
     }
 
     /**
-     * Tests Reset Site not crashing on host names (issue 600232).
+     * Tests that {@link SingleWebsitePreferences#resetSite} doesn't crash
+     * (see e.g. the crash on host names in issue 600232).
      * @throws Exception
      */
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    public void testResetCrash600232() throws Exception {
+    public void testResetDoesntCrash() throws Exception {
         WebsiteAddress address = WebsiteAddress.create("example.com");
         Website website = new Website(address, address);
         final Preferences preferenceActivity = startSingleWebsitePreferences(website);
