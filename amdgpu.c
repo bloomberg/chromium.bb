@@ -143,15 +143,22 @@ static int amdgpu_create_bo(struct bo *bo, uint32_t width, uint32_t height, uint
 	if (!combo)
 		return -EINVAL;
 
-	/* Currently Gralloc does not handle a different map_stride. So to work around,
-	 * aligning the stride to 256 to make bo_stride same as map_stride. b/115946221.
-	 */
+	if (combo->metadata.tiling == TILE_TYPE_DRI) {
 #ifdef __ANDROID__
-	uint32_t bytes_per_pixel = drv_bytes_per_pixel_from_format(format, 0);
-	width = ALIGN(width, 256 / bytes_per_pixel);
+		/*
+		 * Currently, the gralloc API doesn't differentiate between allocation time and map
+		 * time strides. A workaround for amdgpu DRI buffers is to always to align to 256 at
+		 * allocation time.
+		 *
+		 * See b/115946221,b/117942643
+		 */
+		if (use_flags & (BO_USE_SW_MASK)) {
+			uint32_t bytes_per_pixel = drv_bytes_per_pixel_from_format(format, 0);
+			width = ALIGN(width, 256 / bytes_per_pixel);
+		}
 #endif
-	if (combo->metadata.tiling == TILE_TYPE_DRI)
 		return dri_bo_create(bo, width, height, format, use_flags);
+	}
 
 	stride = drv_stride_from_format(format, width, 0);
 	stride = ALIGN(stride, 256);
