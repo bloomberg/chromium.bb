@@ -30,6 +30,12 @@ extern const char kEnableAutofillCreditCardUploadUpdatePromptExplanationName[];
 extern const char
     kEnableAutofillCreditCardUploadUpdatePromptExplanationDescription[];
 
+// Title and description for the flag to control if credit card save should
+// utilize the Autofill StrikeDatabase when determining whether save should be
+// offered.
+extern const char kEnableAutofillSaveCreditCardUsesStrikeSystemName[];
+extern const char kEnableAutofillSaveCreditCardUsesStrikeSystemDescription[];
+
 // Title and description for the flag to control if Chrome Sync should use the
 // sandbox servers.
 extern const char kSyncSandboxName[];
