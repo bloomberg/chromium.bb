@@ -990,7 +990,7 @@ IdlTypeBase.v8_set_return_value = v8_set_return_value
 
 CPP_VALUE_TO_V8_VALUE = {
     # Built-in types
-    'Date': 'V8DateOrNaN({isolate}, {cpp_value})',
+    'Date': 'v8::Date::New({isolate}->GetCurrentContext(), {cpp_value})',
     'DOMString': 'V8String({isolate}, {cpp_value})',
     'ByteString': 'V8String({isolate}, {cpp_value})',
     'USVString': 'V8String({isolate}, {cpp_value})',
