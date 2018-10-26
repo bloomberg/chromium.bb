@@ -2176,8 +2176,10 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestRawHeadersWithRedirectAndHSTS) {
     content::StoragePartition* partition =
         content::BrowserContext::GetDefaultStoragePartition(
             browser()->profile());
-    partition->GetNetworkContext()->AddHSTSForTesting(https_url.host(), expiry,
-                                                      include_subdomains);
+    base::RunLoop run_loop;
+    partition->GetNetworkContext()->AddHSTS(
+        https_url.host(), expiry, include_subdomains, run_loop.QuitClosure());
+    run_loop.Run();
   }
   ASSERT_TRUE(embedded_test_server()->Start());
 

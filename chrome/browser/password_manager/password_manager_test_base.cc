@@ -634,8 +634,8 @@ void PasswordManagerBrowserTestBase::AddHSTSHost(const std::string& host) {
   base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
   bool include_subdomains = false;
   base::RunLoop run_loop;
-  network_context->AddHSTSForTesting(host, expiry, include_subdomains,
-                                     run_loop.QuitClosure());
+  network_context->AddHSTS(host, expiry, include_subdomains,
+                           run_loop.QuitClosure());
   run_loop.Run();
 }
 
