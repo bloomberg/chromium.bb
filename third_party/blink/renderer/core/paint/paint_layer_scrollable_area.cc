@@ -2843,9 +2843,16 @@ PaintLayerScrollableArea::ScrollingBackgroundDisplayItemClient::VisualRect()
   auto scroll_size = scrollable_area_->overflow_rect_.Size();
   // Ensure scrolling contents are at least as large as the scroll clip
   scroll_size = scroll_size.ExpandedTo(overflow_clip_rect.Size());
-  return LayoutRect(
-      box->FirstFragment().PaintOffset() + overflow_clip_rect.Location(),
-      scroll_size);
+  LayoutRect result(overflow_clip_rect.Location(), scroll_size);
+  result.MoveBy(box->FirstFragment().PaintOffset());
+  result = LayoutRect(PixelSnappedIntRect(result));
+#if DCHECK_IS_ON()
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    DCHECK_EQ(result,
+              scrollable_area_->layer_->GraphicsLayerBacking()->VisualRect());
+  }
+#endif
+  return result;
 }
 
 String
