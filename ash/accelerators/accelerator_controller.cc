@@ -406,9 +406,8 @@ void HandleRotateActiveWindow() {
           std::make_unique<WindowRotation>(360, active_window->layer())));
 }
 
-void HandleShowKeyboardOverlay() {
-  base::RecordAction(UserMetricsAction("Accel_Show_Keyboard_Overlay"));
-  Shell::Get()->new_window_controller()->ShowKeyboardOverlay();
+void HandleShowKeyboardShortcutViewer() {
+  Shell::Get()->new_window_controller()->ShowKeyboardShortcutViewer();
 }
 
 void HandleTakeWindowScreenshot() {
@@ -1400,7 +1399,7 @@ bool AcceleratorController::CanPerformAction(
     case RESTORE_TAB:
     case ROTATE_WINDOW:
     case SHOW_IME_MENU_BUBBLE:
-    case SHOW_KEYBOARD_OVERLAY:
+    case SHOW_SHORTCUT_VIEWER:
     case SHOW_TASK_MANAGER:
     case SUSPEND:
     case TAKE_PARTIAL_SCREENSHOT:
@@ -1629,8 +1628,8 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
     case SHOW_IME_MENU_BUBBLE:
       HandleShowImeMenuBubble();
       break;
-    case SHOW_KEYBOARD_OVERLAY:
-      HandleShowKeyboardOverlay();
+    case SHOW_SHORTCUT_VIEWER:
+      HandleShowKeyboardShortcutViewer();
       break;
     case SHOW_STYLUS_TOOLS:
       HandleShowStylusTools();

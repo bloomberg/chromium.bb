@@ -26,11 +26,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kDragAppsInTabletMode;
 // https://crbug.com/823769.
 ASH_PUBLIC_EXPORT extern const base::Feature kDragTabsInTabletMode;
 
-// Enables the keyboard shortcut viewer.
-// TODO(wutao): Remove this after the feature is fully launched.
-// https://crbug.com/755448.
-ASH_PUBLIC_EXPORT extern const base::Feature kKeyboardShortcutViewer;
-
 // Enables the keyboard shortcut viewer mojo app.
 // TODO(msw): Remove this after the feature is fully launched.
 // https://crbug.com/841020.
@@ -83,8 +78,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kViewsLogin;
 ASH_PUBLIC_EXPORT extern const base::Feature kUseBluetoothSystemInAsh;
 
 ASH_PUBLIC_EXPORT bool IsDockedMagnifierEnabled();
-
-ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerEnabled();
 
 ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerAppEnabled();
 

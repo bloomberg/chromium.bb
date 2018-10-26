@@ -147,7 +147,6 @@
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_ui.h"
 #include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
-#include "chrome/browser/ui/webui/chromeos/keyboard_overlay_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/mobile_setup_ui.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
@@ -485,8 +484,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::DriveInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIFirstRunHost)
     return &NewWebUI<chromeos::FirstRunUI>;
-  if (url.host_piece() == chrome::kChromeUIKeyboardOverlayHost)
-    return &NewWebUI<KeyboardOverlayUI>;
   if (url.host_piece() == chrome::kChromeUIMobileSetupHost)
     return &NewWebUI<chromeos::MobileSetupUI>;
   if (url.host_piece() == chrome::kChromeUIMultiDeviceSetupHost)

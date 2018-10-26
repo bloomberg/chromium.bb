@@ -754,13 +754,6 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
         Copied to Chrome
       </message>
 
-      <!-- Chrome OS keyboard overlay-->
-      <if expr="chromeos">
-        <message name="IDS_KEYBOARD_OVERLAY_SHOW_WRENCH_MENU" desc="The text in the keyboard overlay to explain the shortcut that opens the main Chrome menu.">
-          Show Chrome menu
-        </message>
-      </if>
-
       <!-- App list -->
       <if expr="enable_app_list">
         <message name="IDS_APP_LIST_SHORTCUT_NAME" desc="Name for the Chrome App List to appear in the taskbar and in any shortcuts to it.">
