@@ -23,13 +23,13 @@ class TestPaintWorklet : public PaintWorklet {
  public:
   explicit TestPaintWorklet(LocalFrame* frame) : PaintWorklet(frame) {}
 
-  void SetPaintsToSwitch(size_t num) { paints_to_switch_ = num; }
+  void SetPaintsToSwitch(int num) { paints_to_switch_ = num; }
 
   int GetPaintsBeforeSwitching() override { return paints_to_switch_; }
 
   // We always switch to another global scope so that we can tell how often it
   // was switched in the test.
-  size_t SelectNewGlobalScope() override {
+  wtf_size_t SelectNewGlobalScope() override {
     return (GetActiveGlobalScopeForTesting() + 1) %
            PaintWorklet::kNumGlobalScopes;
   }
@@ -37,7 +37,7 @@ class TestPaintWorklet : public PaintWorklet {
   size_t GetActiveGlobalScope() { return GetActiveGlobalScopeForTesting(); }
 
  private:
-  size_t paints_to_switch_;
+  int paints_to_switch_;
 };
 
 class PaintWorkletTest : public PageTestBase {
@@ -66,7 +66,7 @@ class PaintWorkletTest : public PageTestBase {
   // Helper function used in GlobalScopeSelection test.
   void ExpectSwitchGlobalScope(bool expect_switch_within_frame,
                                size_t num_paint_calls,
-                               size_t paint_cnt_to_switch,
+                               int paint_cnt_to_switch,
                                size_t expected_num_paints_before_switch,
                                TestPaintWorklet* paint_worklet_to_test) {
     paint_worklet_to_test->GetFrame()->View()->UpdateAllLifecyclePhases();

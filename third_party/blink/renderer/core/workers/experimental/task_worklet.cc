@@ -113,7 +113,7 @@ WorkletGlobalScopeProxy* TaskWorklet::CreateGlobalScope() {
 }
 
 // We select a global scope without this getting called.
-size_t TaskWorklet::SelectGlobalScope() {
+wtf_size_t TaskWorklet::SelectGlobalScope() {
   NOTREACHED();
   return 0u;
 }

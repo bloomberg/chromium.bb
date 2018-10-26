@@ -60,7 +60,7 @@ class TextDecoderStream::Transformer final : public TransformStreamTransformer {
         return;
       }
       const char* start = static_cast<const char*>(view->BaseAddress());
-      size_t length = view->byteLength();
+      uint32_t length = view->byteLength();
       DecodeAndEnqueue(start, length, WTF::FlushBehavior::kDoNotFlush,
                        controller, exception_state);
       return;
@@ -74,7 +74,7 @@ class TextDecoderStream::Transformer final : public TransformStreamTransformer {
       return;
     }
     const char* start = static_cast<const char*>(array_buffer->Data());
-    size_t length = array_buffer->ByteLength();
+    uint32_t length = array_buffer->ByteLength();
     DecodeAndEnqueue(start, length, WTF::FlushBehavior::kDoNotFlush, controller,
                      exception_state);
   }
@@ -95,7 +95,7 @@ class TextDecoderStream::Transformer final : public TransformStreamTransformer {
   // Implements the second part of "decode and enqueue a chunk" as well as the
   // "flush and enqueue" algorithm.
   void DecodeAndEnqueue(const char* start,
-                        size_t length,
+                        uint32_t length,
                         WTF::FlushBehavior flush,
                         TransformStreamDefaultController* controller,
                         ExceptionState& exception_state) {

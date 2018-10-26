@@ -116,6 +116,10 @@ class RTCStatsReportIterationSource final
 RTCStatsReport::RTCStatsReport(std::unique_ptr<WebRTCStatsReport> report)
     : report_(std::move(report)) {}
 
+uint32_t RTCStatsReport::size() const {
+  return base::saturated_cast<uint32_t>(report_->Size());
+}
+
 PairIterable<String, v8::Local<v8::Value>>::IterationSource*
 RTCStatsReport::StartIteration(ScriptState*, ExceptionState&) {
   return new RTCStatsReportIterationSource(report_->CopyHandle());
