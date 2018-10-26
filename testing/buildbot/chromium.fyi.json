@@ -3188,7 +3188,7 @@
   },
   "fuchsia-fyi-arm64-rel": {
     "additional_compile_targets": [
-      "gn_all"
+      "all"
     ],
     "gtest_tests": [
       {
@@ -3303,7 +3303,7 @@
   },
   "fuchsia-fyi-x64-dbg": {
     "additional_compile_targets": [
-      "gn_all"
+      "all"
     ],
     "gtest_tests": [
       {
@@ -3498,7 +3498,7 @@
   },
   "fuchsia-fyi-x64-rel": {
     "additional_compile_targets": [
-      "gn_all"
+      "all"
     ],
     "gtest_tests": [
       {
