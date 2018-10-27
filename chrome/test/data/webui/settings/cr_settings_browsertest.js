@@ -1960,6 +1960,33 @@ TEST_F('CrSettingsMultidevicePageTest', 'All', function() {
 });
 
 /**
+ * Test fixture for the multidevice Smart Lock subpage.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsMultideviceSmartLockSubpageTest() {}
+
+CrSettingsMultideviceSmartLockSubpageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://settings/multidevice_page/multidevice_smartlock_subpage.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../test_browser_proxy.js',
+    'test_multidevice_browser_proxy.js',
+    'test_util.js',
+    'multidevice_smartlock_subpage_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsMultideviceSmartLockSubpageTest', 'All', function() {
+  mocha.run();
+});
+
+/**
  * Test fixture for the multidevice settings subpage.
  * @constructor
  * @extends {CrSettingsBrowserTest}
