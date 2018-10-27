@@ -21,6 +21,9 @@ class MediaControlOverflowMenuListElement final
  public:
   explicit MediaControlOverflowMenuListElement(MediaControlsImpl&);
 
+  void OpenOverflowMenu();
+  void CloseOverflowMenu();
+
   // Override MediaControlPopupMenuElement
   void SetIsWanted(bool) final;
   Element* PopupAnchor() const final;
