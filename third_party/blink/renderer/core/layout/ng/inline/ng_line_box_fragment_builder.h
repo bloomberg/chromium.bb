@@ -200,6 +200,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
 
   TextDirection base_direction_;
 
+  friend class NGLayoutResult;
   friend class NGPhysicalLineBoxFragment;
 
   DISALLOW_COPY_AND_ASSIGN(NGLineBoxFragmentBuilder);
