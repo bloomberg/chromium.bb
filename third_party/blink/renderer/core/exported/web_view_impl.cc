@@ -3172,12 +3172,6 @@ void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
     // We register viewport layers here since there may not be a layer
     // tree view prior to this point.
     RegisterViewportLayersWithCompositor();
-
-    // TODO(enne): Work around page visibility changes not being
-    // propagated to the WebView in some circumstances.  This needs to
-    // be refreshed here when setting a new root layer to avoid being
-    // stuck in a presumed incorrectly invisible state.
-    layer_tree_view_->SetVisible(GetPage()->IsPageVisible());
   } else {
     root_graphics_layer_ = nullptr;
     visual_viewport_container_layer_ = nullptr;
@@ -3198,7 +3192,6 @@ void WebViewImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   if (layer) {
     root_layer_ = layer;
     layer_tree_view_->SetRootLayer(root_layer_);
-    layer_tree_view_->SetVisible(GetPage()->IsPageVisible());
   } else {
     root_layer_ = nullptr;
     // This means that we're transitioning to a new page. Suppress
