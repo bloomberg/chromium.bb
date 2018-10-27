@@ -243,6 +243,7 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
     if (!mask_) {
       mask_ = views::Painter::CreatePaintedLayer(
           views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK, radius));
+      mask_->layer()->SetFillsBoundsOpaquely(false);
       opaque_background_.SetMaskLayer(mask_->layer());
     }
     if (mask_->layer()->bounds() != opaque_background_bounds)
