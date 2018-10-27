@@ -2112,6 +2112,36 @@
       'crashpad_tests': {},
     },
 
+    'non_viz_fyi_chromium_gtests': {
+      'non_viz_content_browsertests': {
+        'args': [
+          '--disable-features=VizDisplayCompositor',
+        ],
+        'swarming': {
+          'shards': 10,
+        },
+        'test': 'content_browsertests',
+      },
+    },
+
+    'non_viz_non_android_fyi_chromium_gtests': {
+      'non_viz_browser_tests': {
+        'args': [
+          '--disable-features=VizDisplayCompositor',
+        ],
+        'swarming': {
+          'shards': 10,
+        },
+        'test': 'browser_tests',
+      },
+      'non_viz_content_unittests': {
+        'args': [
+          '--disable-features=VizDisplayCompositor',
+        ],
+        'test': 'content_unittests',
+      },
+    },
+
     'ozone_linux_gtests': {
       'services_unittests': {},
     },
@@ -2556,6 +2586,8 @@
       'non_android_chromium_gtests',
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'non_linux_chromium_gtests',
+      'non_viz_fyi_chromium_gtests',
+      'non_viz_non_android_fyi_chromium_gtests',
     ],
 
     'chromium_rel_isolated_scripts': [
@@ -2858,8 +2890,8 @@
     ],
 
     'linux_viz_gtests': [
-      'viz_gtests',
-      'viz_non_android_fyi_gtests',
+      'non_viz_fyi_chromium_gtests',
+      'non_viz_non_android_fyi_chromium_gtests',
     ],
 
     'marshmallow_isolated_scripts': [
@@ -2870,6 +2902,7 @@
 
     'mojo_android_gtests': [
       'network_service_android_gtests',
+      'non_viz_fyi_chromium_gtests',
     ],
 
     'mojo_chromiumos_fyi_gtests': [
@@ -2884,8 +2917,8 @@
     'mojo_windows_gtests': [
       'mojo_windows_specific_gtests',
       'network_service_gtests',
-      'viz_gtests',
-      'viz_non_android_fyi_gtests',
+      'non_viz_fyi_chromium_gtests',
+      'non_viz_non_android_fyi_chromium_gtests',
     ],
 
     'sandboxed_chromium_memory_linux_gtests': [
