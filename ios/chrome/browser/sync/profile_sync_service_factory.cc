@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/invalidation/impl/invalidation_switches.h"
+#include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/signin/core/browser/device_id_helper.h"
@@ -114,12 +115,9 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(IOSChromeGCMProfileServiceFactory::GetInstance());
   DependsOn(IOSChromePasswordStoreFactory::GetInstance());
-  if (base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations)) {
-    DependsOn(IOSChromeProfileInvalidationProviderFactory::GetInstance());
-  } else {
-    DependsOn(
-        IOSChromeDeprecatedProfileInvalidationProviderFactory::GetInstance());
-  }
+  DependsOn(IOSChromeProfileInvalidationProviderFactory::GetInstance());
+  DependsOn(
+      IOSChromeDeprecatedProfileInvalidationProviderFactory::GetInstance());
   DependsOn(ModelTypeStoreServiceFactory::GetInstance());
   DependsOn(ReadingListModelFactory::GetInstance());
   DependsOn(SessionSyncServiceFactory::GetInstance());
@@ -158,6 +156,29 @@ ProfileSyncServiceFactory::BuildServiceInstanceFor(
   init_params.channel = ::GetChannel();
   init_params.user_events_separate_pref_group =
       unified_consent::IsUnifiedConsentFeatureEnabled();
+
+  bool use_fcm_invalidations =
+      base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations);
+  if (use_fcm_invalidations) {
+    auto* fcm_invalidation_provider =
+        IOSChromeProfileInvalidationProviderFactory::GetForBrowserState(
+            browser_state);
+    if (fcm_invalidation_provider) {
+      init_params.invalidations_identity_providers.push_back(
+          fcm_invalidation_provider->GetIdentityProvider());
+    }
+  }
+  // This code should stay here until all invalidation client are
+  // migrated from deprecated invalidation  infructructure.
+  // Since invalidations will work only if ProfileSyncService calls
+  // SetActiveAccountId for all identity providers.
+  auto* deprecated_invalidation_provider =
+      IOSChromeDeprecatedProfileInvalidationProviderFactory::GetForBrowserState(
+          browser_state);
+  if (deprecated_invalidation_provider) {
+    init_params.invalidations_identity_providers.push_back(
+        deprecated_invalidation_provider->GetIdentityProvider());
+  }
 
   auto pss = std::make_unique<ProfileSyncService>(std::move(init_params));
   pss->Initialize();
