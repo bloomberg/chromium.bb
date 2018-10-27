@@ -184,12 +184,6 @@ camera.views.camera.Options.Sound = Object.freeze({
  * Prepares the options.
  */
 camera.views.camera.Options.prototype.prepare = function() {
-  // Show the mirror toggle on flipping-camera chromebooks (crbug.com/847737).
-  camera.util.isChromeOSDevice(
-      ['LENOVO-REKS1', 'LENOVO-REKS3', 'LENOVO-REKS4']).then(result => {
-    this.toggleMirror_.hidden = !result;
-  });
-
   // Set the default or remembered states of the toggle buttons.
   chrome.storage.local.get({
     toggleMic: true,
@@ -459,10 +453,8 @@ camera.views.camera.Options.prototype.updateMirroring_ = function(
   var facingMode = trackSettings && trackSettings.facingMode;
   var enabled = facingMode ? facingMode == 'user' : true;
 
-  // Override mirroring only if the mirror toggle is visible and mirroring was
-  // set manually.
-  if (!this.toggleMirror_.hidden &&
-      this.videoDeviceId_ in this.mirroringToggles_) {
+  // Override mirroring only if mirroring was toggled manually.
+  if (this.videoDeviceId_ in this.mirroringToggles_) {
     enabled = this.mirroringToggles_[this.videoDeviceId_];
   }
   this.changeToggle_(this.toggleMirror_, enabled);
