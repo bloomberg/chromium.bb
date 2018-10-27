@@ -122,6 +122,7 @@ component("gpu") {
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/command_buffer/service:gles2",
     "//gpu/ipc/service",
+    "//third_party/libyuv",
     "//ui/base",
     "//ui/display/types",
     "//ui/gl",
@@ -202,7 +203,6 @@ component("gpu") {
       "//gpu/ipc/common:ipc_common_sources",
       "//media/mojo:buildflags",
       "//services/service_manager/public/cpp:cpp",
-      "//third_party/libyuv",
       "//ui/gl:gl_jni_headers",
     ]
 
@@ -214,16 +214,21 @@ component("gpu") {
     }
   }
 
+  if (is_fuchsia) {
+    sources += [
+      "fuchsia/fuchsia_video_decoder.cc",
+      "fuchsia/fuchsia_video_decoder.h",
+    ]
+    deps += [ "//third_party/fuchsia-sdk/sdk:mediacodec" ]
+  }
+
   if (use_v4lplugin) {
     sources += get_target_outputs(":libv4l2_generate_stubs")
     deps += [ ":libv4l2_generate_stubs" ]
   }
 
   if (use_v4l2_codec) {
-    deps += [
-      "//third_party/libyuv",
-      "//ui/ozone",
-    ]
+    deps += [ "//ui/ozone" ]
     sources += [
       "v4l2/generic_v4l2_device.cc",
       "v4l2/generic_v4l2_device.h",
@@ -288,7 +293,6 @@ component("gpu") {
     public_deps += [ "//media/base/win" ]
     deps += [
       "//third_party/angle:includes",
-      "//third_party/libyuv",
       "//ui/display",
     ]
     libs += [
@@ -634,6 +638,9 @@ source_set("unit_tests") {
   }
   if (use_v4l2_codec || use_vaapi) {
     sources += [ "vp8_decoder_unittest.cc" ]
+  }
+  if (is_fuchsia) {
+    sources += [ "fuchsia/fuchsia_video_decoder_unittest.cc" ]
   }
   if (is_win && enable_library_cdms) {
     sources += [
