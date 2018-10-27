@@ -19,7 +19,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "base/win/registry.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_fallback.h"
@@ -77,6 +79,7 @@ void AppendFont(const std::string& name, int size, std::vector<Font>* fonts) {
 void QueryLinkedFontsFromRegistry(const Font& font,
                                   std::map<std::string, std::string>* font_map,
                                   std::vector<Font>* linked_fonts) {
+  std::string logging_str;
   const wchar_t* kSystemLink =
       L"Software\\Microsoft\\Windows NT\\CurrentVersion\\FontLink\\SystemLink";
 
@@ -91,11 +94,18 @@ void QueryLinkedFontsFromRegistry(const Font& font,
     return;
   }
 
+  base::StringAppendF(&logging_str, "Original font: %s\n",
+                      font.GetFontName().c_str());
+
   std::string filename;
   std::string font_name;
   for (size_t i = 0; i < values.size(); ++i) {
     internal::ParseFontLinkEntry(
         base::WideToUTF8(values[i]), &filename, &font_name);
+
+    base::StringAppendF(&logging_str, "fallback: '%s' '%s'\n",
+                        font_name.c_str(), filename.c_str());
+
     // If the font name is present, add that directly, otherwise add the
     // font names corresponding to the filename.
     if (!font_name.empty()) {
@@ -109,6 +119,13 @@ void QueryLinkedFontsFromRegistry(const Font& font,
   }
 
   key.Close();
+
+  for (const auto& resolved_font : *linked_fonts) {
+    base::StringAppendF(&logging_str, "resolved: '%s'\n",
+                        resolved_font.GetFontName().c_str());
+  }
+
+  TRACE_EVENT1("ui", "QueryLinkedFontsFromRegistry", "results", logging_str);
 }
 
 // CachedFontLinkSettings is a singleton cache of the Windows font settings
@@ -152,6 +169,9 @@ const std::vector<Font>* CachedFontLinkSettings::GetLinkedFonts(
       cached_linked_fonts_.find(font_name);
   if (it != cached_linked_fonts_.end())
     return &it->second;
+
+  TRACE_EVENT1("ui", "CachedFontLinkSettings::GetLinkedFonts", "font_name",
+               font_name);
 
   SCOPED_UMA_HISTOGRAM_LONG_TIMER(
       "FontFallback.GetLinkedFonts.CacheMissTiming");
