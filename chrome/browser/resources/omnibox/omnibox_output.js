@@ -191,6 +191,35 @@ cr.define('omnibox_output', function() {
     }
   }
 
+  /** Helps track and render a list of results. */
+  class OutputResultsTable {
+    /** @param {Array<!mojom.AutocompleteMatch>} results */
+    constructor(results) {
+      /** @type {Array<OutputMatch>} */
+      this.matches = results.map(match => new OutputMatch(match));
+    }
+
+    /**
+     * Creates a HTML Node representing this data.
+     * @param {boolean} showDetails
+     * @return {Node}
+     */
+    render(showDetails) {
+      const resultsTable = OmniboxElement.getTemplate('results-table-template');
+      // The additional properties column only needs be displayed if at least
+      // one of the results have additional properties.
+      const showAdditionalPropertiesHeader = this.matches.some(
+          match => match.showAdditionalProperties(showDetails));
+      resultsTable.querySelector('.results-table-body')
+          .appendChild(OutputMatch.renderHeader_(
+              showDetails, showAdditionalPropertiesHeader));
+      this.matches.forEach(
+          match => resultsTable.querySelector('.results-table-body')
+                       .appendChild(match.render(showDetails)));
+      return resultsTable;
+    }
+  }
+
   /** Helps track and render a single match. */
   class OutputMatch {
     /** @param {!mojom.AutocompleteMatch} match */
@@ -351,8 +380,7 @@ cr.define('omnibox_output', function() {
   // TODO(manukh) use shorthand object creation if/when approved
   // https://chromium.googlesource.com/chromium/src/+/master/styleguide/web/es6.md#object-literal-extensions
   return {
-    PROPERTY_OUTPUT_ORDER: PROPERTY_OUTPUT_ORDER,
     OmniboxOutput: OmniboxOutput,
-    OutputMatch: OutputMatch,
+    OutputResultsTable: OutputResultsTable,
   };
 });

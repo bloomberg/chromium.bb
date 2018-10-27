@@ -82,6 +82,8 @@
    * for each autocomplete match.  The input parameter is an OmniboxResultMojo.
    */
   function addResultToOutput(result) {
+    const inDetailedMode = omniboxInputs.$$('show-details').checked;
+
     // Output the result-level features in detailed mode and in
     // show incomplete results mode.  We do the latter because without
     // these result-level features, one can't make sense of each
@@ -114,7 +116,9 @@
 
     // Add combined/merged result table.
     const p = document.createElement('p');
-    p.appendChild(addResultTableToOutput(result.combinedResults));
+    const table = new omnibox_output.OutputResultsTable(result.combinedResults)
+                      .render(inDetailedMode);
+    p.appendChild(table);
     omniboxOutput.addOutput(p);
 
     // Move forward only if you want to display per provider results.
@@ -136,59 +140,12 @@
       if (providerResults.results.length === 0)
         return;
       const p = document.createElement('p');
-      p.appendChild(addResultTableToOutput(providerResults.results));
+      const table =
+          new omnibox_output.OutputResultsTable(providerResults.results)
+              .render(inDetailedMode);
+      p.appendChild(table);
       omniboxOutput.addOutput(p);
     });
-  }
-
-  /**
-   * @param {Object} result an array of AutocompleteMatchMojos.
-   * @return {Element} that is a user-readable HTML
-   *     representation of this object.
-   */
-  function addResultTableToOutput(result) {
-    const inDetailedMode = omniboxInputs.$$('show-details').checked;
-    // Create a table to hold all the autocomplete items.
-    const table = document.createElement('table');
-    table.className = 'autocomplete-results-table';
-    table.appendChild(createAutocompleteResultTableHeader());
-    // Loop over every autocomplete item and add it as a row in the table.
-    result.forEach(autocompleteSuggestion => {
-      const row = new omnibox_output.OutputMatch(autocompleteSuggestion)
-                      .render(inDetailedMode);
-      table.appendChild(row);
-    });
-    return table;
-  }
-
-  /**
-   * Returns an HTML Element of type table row that contains the
-   * headers we'll use for labeling the columns.  If we're in
-   * detailedMode, we use all the headers.  If not, we only use ones
-   * marked displayAlways.
-   */
-  function createAutocompleteResultTableHeader() {
-    const row = document.createElement('tr');
-    const inDetailedMode = omniboxInputs.$$('show-details').checked;
-    omnibox_output.PROPERTY_OUTPUT_ORDER.forEach(property => {
-      if (inDetailedMode || property.displayAlways) {
-        const headerCell = document.createElement('th');
-        if (property.url !== '') {
-          // Wrap header text in URL.
-          const linkNode = document.createElement('a');
-          linkNode.href = property.url;
-          linkNode.textContent = property.header;
-          headerCell.appendChild(linkNode);
-        } else {
-          // Output header text without a URL.
-          headerCell.textContent = property.header;
-          headerCell.className = 'table-header';
-          headerCell.title = property.tooltip;
-        }
-        row.appendChild(headerCell);
-      }
-    });
-    return row;
   }
 
   /**
