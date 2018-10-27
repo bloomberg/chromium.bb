@@ -176,6 +176,9 @@ const base::Feature kAutofillSaveCreditCardUsesStrikeSystem{
     "AutofillSaveCreditCardUsesStrikeSystem",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kAutofillScanCardholderName{
+    "AutofillScanCardholderName", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether experiment ids should be sent through
 // Google Payments RPCs or not.
 const base::Feature kAutofillSendExperimentIdsInPaymentsRPCs{
