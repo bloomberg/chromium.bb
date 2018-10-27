@@ -93,14 +93,14 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
     base::Optional<viz::HitTestRegionList> hit_test_region_list) {
   DCHECK(!enable_viz_);
 
+  bool id_changed = (local_surface_id_ != local_surface_id);
   viz::RenderPass* root_pass = frame.render_pass_list.back().get();
   const bool has_transparent_background = root_pass->has_transparent_background;
   const gfx::Size surface_size_in_pixels = frame.size_in_pixels();
   // Reset |content_layer_| only if surface-sync is not used. When surface-sync
   // is turned on, |content_layer_| is updated with the appropriate states (see
   // in EmbedSurface()) instead of being recreated.
-  if (!enable_surface_synchronization_ && content_layer_ &&
-      local_surface_id_ != local_surface_id) {
+  if (!enable_surface_synchronization_ && content_layer_ && id_changed) {
     EvictDelegatedFrame();
   }
   support_->SubmitCompositorFrame(local_surface_id, std::move(frame),
@@ -131,7 +131,8 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
   if (content_layer_->bounds() == expected_pixel_size_)
     compositor_pending_resize_lock_.reset();
 
-  frame_evictor_->SwappedFrame(frame_evictor_->visible());
+  if (id_changed)
+    frame_evictor_->OnNewSurfaceEmbedded();
 }
 
 void DelegatedFrameHostAndroid::DidNotProduceFrame(
@@ -197,7 +198,12 @@ void DelegatedFrameHostAndroid::EvictDelegatedFrame() {
   std::vector<viz::SurfaceId> surface_ids = {
       viz::SurfaceId(frame_sink_id_, local_surface_id_)};
   host_frame_sink_manager_->EvictSurfaces(surface_ids);
-  frame_evictor_->DiscardedFrame();
+  frame_evictor_->OnSurfaceDiscarded();
+  // When surface sync is on, this call will force |client_| to allocate a new
+  // LocalSurfaceId which will be embedded the next time the tab is shown. When
+  // surface sync is off, the renderer will always allocate a new LocalSurfaceId
+  // when it becomes visible just in case the previous LocalSurfaceId is evicted
+  // by the browser.
   client_->WasEvicted();
 }
 
@@ -271,7 +277,7 @@ bool DelegatedFrameHostAndroid::IsPrimarySurfaceEvicted() const {
 }
 
 bool DelegatedFrameHostAndroid::HasSavedFrame() const {
-  return frame_evictor_->HasFrame();
+  return frame_evictor_->has_surface();
 }
 
 void DelegatedFrameHostAndroid::WasHidden() {
@@ -320,10 +326,7 @@ void DelegatedFrameHostAndroid::EmbedSurface(
     return;
   }
 
-  // TODO(fsamuel): "SwappedFrame" is a bad name. Also, this method doesn't
-  // really need to take in visibility. FrameEvictor already has the latest
-  // visibility state.
-  frame_evictor_->SwappedFrame(true /* visibility */);
+  frame_evictor_->OnNewSurfaceEmbedded();
 
   if (!current_primary_surface_id.is_valid() ||
       current_primary_surface_id.local_surface_id() != local_surface_id_) {
