@@ -1230,4 +1230,17 @@ void WebMediaPlayerMS::SetGpuMemoryBufferVideoForTesting(
   frame_deliverer_->gpu_memory_buffer_pool_.reset(gpu_memory_buffer_pool);
 }
 
+void WebMediaPlayerMS::OnDisplayTypeChanged(
+    WebMediaPlayer::DisplayType display_type) {
+  if (!bridge_)
+    return;
+
+  compositor_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &WebMediaPlayerMSCompositor::SetForceSubmit,
+          base::Unretained(compositor_.get()),
+          display_type == WebMediaPlayer::DisplayType::kPictureInPicture));
+}
+
 }  // namespace content
