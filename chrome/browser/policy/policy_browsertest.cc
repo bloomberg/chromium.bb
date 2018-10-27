@@ -190,6 +190,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
@@ -4589,12 +4590,8 @@ IN_PROC_BROWSER_TEST_P(SSLPolicyTestCommittedInterstitials,
             browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
 
   // Now ensure that this setting still works after a network process crash.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSingleProcess) ||
-      base::FeatureList::IsEnabled(features::kNetworkServiceInProcess)) {
+  if (!content::IsOutOfProcessNetworkService())
     return;
-  }
 
   ui_test_utils::NavigateToURL(browser(),
                                https_server_ok.GetURL("/title1.html"));

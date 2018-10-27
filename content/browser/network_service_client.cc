@@ -22,24 +22,14 @@
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/resource_request_info.h"
-#include "content/public/common/content_features.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/ssl/client_cert_store.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
 namespace content {
 namespace {
-
-// TODO(jam): get rid of duplicates of this method
-bool IsOutOfProcessNetworkService() {
-  return base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-         !base::FeatureList::IsEnabled(features::kNetworkServiceInProcess) &&
-         !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kSingleProcess);
-}
 
 class SSLErrorDelegate : public SSLErrorHandler::Delegate {
  public:

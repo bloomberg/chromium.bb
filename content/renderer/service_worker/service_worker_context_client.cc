@@ -23,6 +23,7 @@
 #include "content/common/service_worker/service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/document_state.h"
@@ -177,13 +178,6 @@ class StreamHandleListener
   blink::mojom::ServiceWorkerStreamCallbackPtr callback_ptr_;
   std::unique_ptr<ServiceWorkerTimeoutTimer::StayAwakeToken> token_;
 };
-
-bool IsOutOfProcessNetworkService() {
-  return base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-         !base::FeatureList::IsEnabled(features::kNetworkServiceInProcess) &&
-         !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kSingleProcess);
-}
 
 blink::mojom::RequestContextType GetBlinkRequestContext(
     blink::mojom::RequestContextType request_context_type) {

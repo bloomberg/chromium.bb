@@ -16,6 +16,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -203,14 +204,6 @@ class WebServiceWorkerNetworkProviderForSharedWorker
   std::unique_ptr<NavigationResponseOverrideParameters> response_override_;
 };
 
-// "ForSharedWorker" is to avoid collisions in Jumbo builds.
-bool IsOutOfProcessNetworkServiceForSharedWorker() {
-  return base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-         !base::FeatureList::IsEnabled(features::kNetworkServiceInProcess) &&
-         !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kSingleProcess);
-}
-
 }  // namespace
 
 EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
@@ -292,7 +285,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     // The default factory might not be to the network service if a feature like
     // AppCache set itself to the default, but treat a connection error as fatal
     // anyway so clients don't get stuck.
-    if (IsOutOfProcessNetworkServiceForSharedWorker()) {
+    if (IsOutOfProcessNetworkService()) {
       default_factory_connection_error_handler_holder_.Bind(
           std::move(factory_bundle->default_factory_info()));
       default_factory_connection_error_handler_holder_->Clone(

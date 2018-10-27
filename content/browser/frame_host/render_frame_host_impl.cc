@@ -135,6 +135,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/isolated_world_ids.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
@@ -404,13 +405,6 @@ void NotifyResourceSchedulerOfNavigation(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&ResourceSchedulerFilter::OnDidCommitMainframeNavigation,
                      render_process_id, params.render_view_routing_id));
-}
-
-bool IsOutOfProcessNetworkService() {
-  return base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-         !base::FeatureList::IsEnabled(features::kNetworkServiceInProcess) &&
-         !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kSingleProcess);
 }
 
 // Takes the lower 31 bits of the metric-name-hash of a Mojo interface |name|.

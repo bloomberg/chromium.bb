@@ -121,8 +121,8 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
@@ -6022,14 +6022,6 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, DISABLED_PushStateSSLState) {
 
 #if defined(OS_CHROMEOS)
 
-// TODO(jam): get rid of duplicates of this method
-bool IsOutOfProcessNetworkService() {
-  return base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-         !base::FeatureList::IsEnabled(features::kNetworkServiceInProcess) &&
-         !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kSingleProcess);
-}
-
 class SSLUITestNoCert : public SSLUITest,
                         public CertificateManagerModel::Observer {
  public:
@@ -6049,7 +6041,7 @@ INSTANTIATE_TEST_CASE_P(, SSLUITestNoCert, ::testing::Values(false, true));
 
 // Checks that a newly-added certificate authority is usable immediately.
 IN_PROC_BROWSER_TEST_P(SSLUITestNoCert, NewCertificateAuthority) {
-  if (!IsOutOfProcessNetworkService())
+  if (!content::IsOutOfProcessNetworkService())
     return;
 
   ASSERT_TRUE(https_server_.Start());
