@@ -44,6 +44,7 @@
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_application_cache_host.h"
+#include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle.h"
@@ -54,7 +55,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
-#include "third_party/blink/renderer/core/frame/content_settings_client.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -842,8 +842,9 @@ void FrameFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
 bool FrameFetchContext::AllowImage(bool images_enabled, const KURL& url) const {
   if (IsDetached())
     return true;
-
-  return GetContentSettingsClient()->AllowImage(images_enabled, url);
+  if (auto* settings_client = GetContentSettingsClient())
+    images_enabled = settings_client->AllowImage(images_enabled, url);
+  return images_enabled;
 }
 
 blink::mojom::ControllerServiceWorkerMode
@@ -1093,7 +1094,7 @@ MHTMLArchive* FrameFetchContext::Archive() const {
 bool FrameFetchContext::AllowScriptFromSource(const KURL& url) const {
   if (AllowScriptFromSourceWithoutNotifying(url))
     return true;
-  ContentSettingsClient* settings_client = GetContentSettingsClient();
+  WebContentSettingsClient* settings_client = GetContentSettingsClient();
   if (settings_client)
     settings_client->DidNotAllowScript();
   return false;
@@ -1101,13 +1102,11 @@ bool FrameFetchContext::AllowScriptFromSource(const KURL& url) const {
 
 bool FrameFetchContext::AllowScriptFromSourceWithoutNotifying(
     const KURL& url) const {
-  ContentSettingsClient* settings_client = GetContentSettingsClient();
   Settings* settings = GetSettings();
-  if (settings_client && !settings_client->AllowScriptFromSource(
-                             !settings || settings->GetScriptEnabled(), url)) {
-    return false;
-  }
-  return true;
+  bool allow_script = !settings || settings->GetScriptEnabled();
+  if (auto* settings_client = GetContentSettingsClient())
+    allow_script = settings_client->AllowScriptFromSource(allow_script, url);
+  return allow_script;
 }
 
 bool FrameFetchContext::IsFirstPartyOrigin(const KURL& url) const {
@@ -1291,7 +1290,7 @@ void FrameFetchContext::AddConsoleMessage(ConsoleMessage* message) const {
     GetFrame()->Console().AddMessage(message);
 }
 
-ContentSettingsClient* FrameFetchContext::GetContentSettingsClient() const {
+WebContentSettingsClient* FrameFetchContext::GetContentSettingsClient() const {
   if (IsDetached())
     return nullptr;
   return GetFrame()->GetContentSettingsClient();
@@ -1369,8 +1368,10 @@ void FrameFetchContext::ParseAndPersistClientHints(
     return;
   }
 
-  GetContentSettingsClient()->PersistClientHints(
-      enabled_client_hints, persist_duration, response.Url());
+  if (auto* settings_client = GetContentSettingsClient()) {
+    settings_client->PersistClientHints(enabled_client_hints, persist_duration,
+                                        response.Url());
+  }
 }
 
 std::unique_ptr<WebURLLoader> FrameFetchContext::CreateURLLoader(

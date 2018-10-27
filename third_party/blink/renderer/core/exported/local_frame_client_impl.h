@@ -218,7 +218,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   std::unique_ptr<WebServiceWorkerProvider> CreateServiceWorkerProvider()
       override;
-  ContentSettingsClient& GetContentSettingsClient() override;
+  WebContentSettingsClient* GetContentSettingsClient() override;
 
   SharedWorkerRepositoryClient* GetSharedWorkerRepositoryClient() override;
 

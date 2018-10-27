@@ -46,6 +46,7 @@
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_mixed_content.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -59,7 +60,6 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/ignore_opens_during_unload_count_incrementer.h"
 #include "third_party/blink/renderer/core/events/page_transition_event.h"
-#include "third_party/blink/renderer/core/frame/content_settings_client.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -487,8 +487,10 @@ bool FrameLoader::AllowPlugins(ReasonForCallingAllowPlugins reason) {
     return false;
   Settings* settings = frame_->GetSettings();
   bool allowed = settings && settings->GetPluginsEnabled();
-  if (!allowed && reason == kAboutToInstantiatePlugin)
-    frame_->GetContentSettingsClient()->DidNotAllowPlugins();
+  if (!allowed && reason == kAboutToInstantiatePlugin) {
+    if (auto* settings_client = frame_->GetContentSettingsClient())
+      settings_client->DidNotAllowPlugins();
+  }
   return allowed;
 }
 

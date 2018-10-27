@@ -574,7 +574,7 @@ WebVector<WebIconURL> WebLocalFrameImpl::IconURLs(int icon_types_mask) const {
 
 void WebLocalFrameImpl::SetContentSettingsClient(
     WebContentSettingsClient* client) {
-  content_settings_client_.SetClient(client);
+  content_settings_client_ = client;
 }
 
 void WebLocalFrameImpl::SetSharedWorkerRepositoryClient(

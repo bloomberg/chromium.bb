@@ -44,7 +44,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/core/exported/web_input_method_controller_impl.h"
-#include "third_party/blink/renderer/core/frame/content_settings_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
@@ -63,6 +62,7 @@ class TextFinder;
 class WebAssociatedURLLoader;
 struct WebAssociatedURLLoaderOptions;
 class WebAutofillClient;
+class WebContentSettingsClient;
 class WebDevToolsAgentImpl;
 class WebLocalFrameClient;
 class WebFrameWidgetBase;
@@ -399,7 +399,7 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   WebFrameWidgetBase* FrameWidgetImpl() { return frame_widget_; }
 
-  ContentSettingsClient& GetContentSettingsClient() {
+  WebContentSettingsClient* GetContentSettingsClient() {
     return content_settings_client_;
   }
 
@@ -485,7 +485,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   Member<WebDevToolsAgentImpl> dev_tools_agent_;
 
   WebAutofillClient* autofill_client_;
-  ContentSettingsClient content_settings_client_;
+  WebContentSettingsClient* content_settings_client_ = nullptr;
   std::unique_ptr<SharedWorkerRepositoryClientImpl>
       shared_worker_repository_client_;
 

@@ -46,6 +46,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/ukm.mojom-blink.h"
+#include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_prerendering_support.h"
 #include "third_party/blink/renderer/bindings/core/v8/html_script_element_or_svg_script_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
@@ -136,7 +137,6 @@
 #include "third_party/blink/renderer/core/events/visual_viewport_resize_event.h"
 #include "third_party/blink/renderer/core/events/visual_viewport_scroll_event.h"
 #include "third_party/blink/renderer/core/feature_policy/document_policy.h"
-#include "third_party/blink/renderer/core/frame/content_settings_client.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/dom_timer.h"
 #include "third_party/blink/renderer/core/frame/dom_visual_viewport.h"
@@ -6556,20 +6556,20 @@ bool Document::CanExecuteScripts(ReasonForCallingCanExecuteScripts reason) {
     return false;
   }
 
-  ContentSettingsClient* settings_client =
-      GetFrame()->GetContentSettingsClient();
-  if (!settings_client)
+  // No scripting on a detached frame.
+  if (!GetFrame()->Client())
     return false;
+
+  WebContentSettingsClient* settings_client =
+      GetFrame()->GetContentSettingsClient();
 
   Settings* settings = GetFrame()->GetSettings();
-  if (!settings_client->AllowScript(settings && settings->GetScriptEnabled())) {
-    if (reason == kAboutToExecuteScript)
-      settings_client->DidNotAllowScript();
-
-    return false;
-  }
-
-  return true;
+  bool script_enabled = settings && settings->GetScriptEnabled();
+  if (settings_client)
+    script_enabled = settings_client->AllowScript(script_enabled);
+  if (!script_enabled && reason == kAboutToExecuteScript && settings_client)
+    settings_client->DidNotAllowScript();
+  return script_enabled;
 }
 
 bool Document::IsRenderingReady() const {

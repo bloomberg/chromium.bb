@@ -933,7 +933,7 @@ LocalFrameClientImpl::CreateServiceWorkerProvider() {
   return web_frame_->Client()->CreateServiceWorkerProvider();
 }
 
-ContentSettingsClient& LocalFrameClientImpl::GetContentSettingsClient() {
+WebContentSettingsClient* LocalFrameClientImpl::GetContentSettingsClient() {
   return web_frame_->GetContentSettingsClient();
 }
 
