@@ -30,6 +30,10 @@ enum CommandId {
   // Used by AppMenuModelAdapter.
   NOTIFICATION_CONTAINER = 9,
 
+  // Used by CrostiniShelfContextMenu.
+  CROSTINI_USE_LOW_DENSITY = 10,
+  CROSTINI_USE_HIGH_DENSITY = 11,
+
   // Used by AppContextMenu.
   LAUNCH_NEW = 100,
   TOGGLE_PIN = 101,
