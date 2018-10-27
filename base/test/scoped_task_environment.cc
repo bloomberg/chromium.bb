@@ -117,11 +117,10 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
                     slsm_for_mock_time_.get())
               : nullptr),
 #if defined(OS_POSIX)
-      file_descriptor_watcher_(
-          main_thread_type == MainThreadType::IO
-              ? std::make_unique<FileDescriptorWatcher>(
-                    static_cast<MessageLoopForIO*>(message_loop_.get()))
-              : nullptr),
+      file_descriptor_watcher_(main_thread_type == MainThreadType::IO
+                                   ? std::make_unique<FileDescriptorWatcher>(
+                                         message_loop_->task_runner())
+                                   : nullptr),
 #endif  // defined(OS_POSIX)
       task_tracker_(new TestTaskTracker()) {
   CHECK(!TaskScheduler::GetInstance())
