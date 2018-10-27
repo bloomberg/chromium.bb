@@ -240,7 +240,7 @@ scoped_refptr<NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
   // TODO(layout-ng): Come up with a better solution for this
   if (cached_result_->OutOfFlowPositionedDescendants().size())
     return nullptr;
-  return cached_result_->CloneWithoutOffset();
+  return base::AdoptRef(new NGLayoutResult(*cached_result_));
 }
 
 template <typename Base>

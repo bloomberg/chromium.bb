@@ -265,6 +265,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   NGBorderEdges border_edges_;
 
   friend class NGPhysicalBoxFragment;
+  friend class NGLayoutResult;
 };
 
 }  // namespace blink

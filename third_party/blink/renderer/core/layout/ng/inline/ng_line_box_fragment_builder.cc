@@ -86,15 +86,7 @@ scoped_refptr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
   scoped_refptr<const NGPhysicalLineBoxFragment> fragment =
       NGPhysicalLineBoxFragment::Create(this);
 
-  return base::AdoptRef(new NGLayoutResult(
-      std::move(fragment), std::move(oof_positioned_descendants_),
-      std::move(positioned_floats_), unpositioned_list_marker_,
-      std::move(exclusion_space_), bfc_line_offset_, bfc_block_offset_,
-      end_margin_strut_,
-      /* intrinsic_block_size */ LayoutUnit(),
-      /* minimal_space_shortage */ LayoutUnit::Max(), EBreakBetween::kAuto,
-      EBreakBetween::kAuto, /* has_forced_break */ false, is_pushed_by_floats_,
-      adjoining_floats_, NGLayoutResult::kSuccess));
+  return base::AdoptRef(new NGLayoutResult(std::move(fragment), this));
 }
 
 }  // namespace blink
