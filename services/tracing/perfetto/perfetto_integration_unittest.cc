@@ -188,7 +188,7 @@ class MockConsumer : public perfetto::Consumer {
 
   void StartTracing() {
     perfetto::TraceConfig trace_config;
-    trace_config.add_buffers()->set_size_kb(1024 * 32);
+    trace_config.add_buffers()->set_size_kb(4096 * 100);
     auto* ds_config = trace_config.add_data_sources()->mutable_config();
     ds_config->set_name(data_source_name_);
     ds_config->set_target_buffer(0);
