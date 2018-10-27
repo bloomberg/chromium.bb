@@ -335,7 +335,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual std::unique_ptr<WebServiceWorkerProvider>
   CreateServiceWorkerProvider() = 0;
 
-  virtual ContentSettingsClient& GetContentSettingsClient() = 0;
+  virtual WebContentSettingsClient* GetContentSettingsClient() = 0;
 
   virtual SharedWorkerRepositoryClient* GetSharedWorkerRepositoryClient() {
     return nullptr;

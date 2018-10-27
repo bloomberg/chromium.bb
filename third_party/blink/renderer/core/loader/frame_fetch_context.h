@@ -50,7 +50,6 @@ n * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 namespace blink {
 
 class ClientHintsPreferences;
-class ContentSettingsClient;
 class Document;
 class DocumentLoader;
 class LocalFrame;
@@ -58,6 +57,7 @@ class LocalFrameClient;
 class ResourceError;
 class ResourceResponse;
 class Settings;
+class WebContentSettingsClient;
 struct WebEnabledClientHints;
 
 class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
@@ -243,7 +243,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   const ContentSecurityPolicy* GetContentSecurityPolicy() const override;
   void AddConsoleMessage(ConsoleMessage*) const override;
 
-  ContentSettingsClient* GetContentSettingsClient() const;
+  WebContentSettingsClient* GetContentSettingsClient() const;
   Settings* GetSettings() const;
   String GetUserAgent() const;
   const ClientHintsPreferences GetClientHintsPreferences() const;
@@ -252,14 +252,14 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
                             const ClientHintsPreferences&,
                             const WebEnabledClientHints&) const;
   // Checks if the origin requested persisting the client hints, and notifies
-  // the |ContentSettingsClient| with the list of client hints and the
+  // the |WebContentSettingsClient| with the list of client hints and the
   // persistence duration.
   void ParseAndPersistClientHints(const ResourceResponse&);
   void SetFirstPartyCookie(ResourceRequest&);
 
   // Returns true if execution of scripts from the url are allowed. Compared to
   // AllowScriptFromSource(), this method does not generate any
-  // notification to the |ContentSettingsClient| that the execution of the
+  // notification to the |WebContentSettingsClient| that the execution of the
   // script was blocked. This method should be called only when there is a need
   // to check the settings, and where blocked setting doesn't really imply that
   // JavaScript was blocked from being executed.

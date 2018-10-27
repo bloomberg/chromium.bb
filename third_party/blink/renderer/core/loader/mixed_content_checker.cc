@@ -33,12 +33,12 @@
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
+#include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/web_mixed_content.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/frame/content_settings_client.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -148,15 +148,12 @@ const char* RequestContextName(mojom::RequestContextType context) {
   return "resource";
 }
 
-// TODO(nhiroki): Consider adding interfaces for Settings/WorkerSettings and
-// ContentSettingsClient/WorkerContentSettingsClient to avoid using C++
-// template.
-template <typename SettingsType, typename SettingsClientType>
+// TODO(nhiroki): Consider adding interfaces for Settings/WorkerSettings
+// to avoid using C++ template.
+template <typename SettingsType>
 bool IsWebSocketAllowedImpl(const BaseFetchContext& fetch_context,
                             SecurityContext* security_context,
-                            const SecurityOrigin* security_origin,
                             SettingsType* settings,
-                            SettingsClientType* settings_client,
                             const KURL& url) {
   fetch_context.CountUsage(WebFeature::kMixedContentPresent);
   fetch_context.CountUsage(WebFeature::kMixedContentWebSocket);
@@ -174,10 +171,7 @@ bool IsWebSocketAllowedImpl(const BaseFetchContext& fetch_context,
       settings->GetStrictMixedContentChecking();
   if (strict_mode)
     return false;
-  bool allowed_per_settings =
-      settings && settings->GetAllowRunningOfInsecureContent();
-  return settings_client->AllowRunningInsecureContent(allowed_per_settings,
-                                                      security_origin, url);
+  return settings && settings->GetAllowRunningOfInsecureContent();
 }
 
 }  // namespace
@@ -378,7 +372,7 @@ bool MixedContentChecker::ShouldBlockFetch(
   // Use the current local frame's client; the embedder doesn't distinguish
   // mixed content signals from different frames on the same page.
   LocalFrameClient* client = frame->Client();
-  ContentSettingsClient* content_settings_client =
+  WebContentSettingsClient* content_settings_client =
       frame->GetContentSettingsClient();
   const SecurityOrigin* security_origin =
       mixed_frame->GetSecurityContext()->GetSecurityOrigin();
@@ -412,7 +406,8 @@ bool MixedContentChecker::ShouldBlockFetch(
     case WebMixedContentContextType::kOptionallyBlockable:
       allowed = !strict_mode;
       if (allowed) {
-        content_settings_client->PassiveInsecureContentFound(url);
+        if (content_settings_client)
+          content_settings_client->PassiveInsecureContentFound(url);
         client->DidDisplayInsecureContent();
       }
       break;
@@ -439,10 +434,13 @@ bool MixedContentChecker::ShouldBlockFetch(
           !strict_mode && settings &&
           (!settings->GetStrictlyBlockBlockableMixedContent() ||
            settings->GetAllowRunningOfInsecureContent());
-      allowed = should_ask_embedder &&
-                content_settings_client->AllowRunningInsecureContent(
-                    settings && settings->GetAllowRunningOfInsecureContent(),
-                    security_origin, url);
+      if (should_ask_embedder) {
+        allowed = settings && settings->GetAllowRunningOfInsecureContent();
+        if (content_settings_client) {
+          allowed = content_settings_client->AllowRunningInsecureContent(
+              allowed, WebSecurityOrigin(security_origin), url);
+        }
+      }
       if (allowed) {
         client->DidRunInsecureContent(security_origin, url);
         UseCounter::Count(frame, WebFeature::kMixedContentBlockableAllowed);
@@ -561,14 +559,18 @@ bool MixedContentChecker::IsWebSocketAllowed(
   Settings* settings = mixed_frame->GetSettings();
   // Use the current local frame's client; the embedder doesn't distinguish
   // mixed content signals from different frames on the same page.
-  ContentSettingsClient* content_settings_client =
+  WebContentSettingsClient* content_settings_client =
       frame->GetContentSettingsClient();
   SecurityContext* security_context = mixed_frame->GetSecurityContext();
   const SecurityOrigin* security_origin = security_context->GetSecurityOrigin();
 
   bool allowed = IsWebSocketAllowedImpl(frame_fetch_context, security_context,
-                                        security_origin, settings,
-                                        content_settings_client, url);
+                                        settings, url);
+  if (content_settings_client) {
+    allowed = content_settings_client->AllowRunningInsecureContent(
+        allowed, WebSecurityOrigin(security_origin), url);
+  }
+
   if (allowed)
     frame->Client()->DidRunInsecureContent(security_origin, url);
 
@@ -596,8 +598,12 @@ bool MixedContentChecker::IsWebSocketAllowed(
       worker_fetch_context.GetSecurityOrigin();
 
   bool allowed = IsWebSocketAllowedImpl(worker_fetch_context, security_context,
-                                        security_origin, settings,
-                                        content_settings_client, url);
+                                        settings, url);
+  if (content_settings_client) {
+    allowed = content_settings_client->AllowRunningInsecureContent(
+        allowed, security_origin, url);
+  }
+
   if (allowed) {
     worker_fetch_context.GetWebWorkerFetchContext()->DidRunInsecureContent(
         WebSecurityOrigin(security_origin), url);

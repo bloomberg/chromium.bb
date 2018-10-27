@@ -38,6 +38,7 @@
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
+#include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
@@ -61,7 +62,6 @@
 #include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
-#include "third_party/blink/renderer/core/frame/content_settings_client.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -1017,10 +1017,14 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
     //
     // TODO(csharrison,japhet): Consider not logging an error message if the
     // user has allowed popups/redirects.
+    bool allow_popups_and_redirects = false;
+    if (auto* settings_client = Client()->GetContentSettingsClient()) {
+      allow_popups_and_redirects =
+          settings_client->AllowPopupsAndRedirects(allow_popups_and_redirects);
+    }
     if (!RuntimeEnabledFeatures::
             FramebustingNeedsSameOriginOrUserGestureEnabled() ||
-        Client()->GetContentSettingsClient().AllowPopupsAndRedirects(
-            false /* default_value */)) {
+        allow_popups_and_redirects) {
       String target_frame_description =
           target_frame.IsLocalFrame() ? "with URL '" +
                                             ToLocalFrame(target_frame)
@@ -1220,8 +1224,8 @@ LocalFrameClient* LocalFrame::Client() const {
   return static_cast<LocalFrameClient*>(Frame::Client());
 }
 
-ContentSettingsClient* LocalFrame::GetContentSettingsClient() {
-  return Client() ? &Client()->GetContentSettingsClient() : nullptr;
+WebContentSettingsClient* LocalFrame::GetContentSettingsClient() {
+  return Client() ? Client()->GetContentSettingsClient() : nullptr;
 }
 
 FrameResourceCoordinator* LocalFrame::GetFrameResourceCoordinator() {

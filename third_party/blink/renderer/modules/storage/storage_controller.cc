@@ -9,9 +9,9 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_storage_area.h"
 #include "third_party/blink/public/platform/web_storage_namespace.h"
-#include "third_party/blink/renderer/core/frame/content_settings_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/storage/cached_storage_area.h"
 #include "third_party/blink/renderer/modules/storage/storage_namespace.h"
@@ -22,14 +22,6 @@
 
 namespace blink {
 namespace {
-
-#define STATIC_ASSERT_MATCHING_ENUM(enum_name1, enum_name2)                   \
-  static_assert(static_cast<int>(enum_name1) == static_cast<int>(enum_name2), \
-                "mismatching enums: " #enum_name1)
-STATIC_ASSERT_MATCHING_ENUM(StorageArea::StorageType::kLocalStorage,
-                            ContentSettingsClient::StorageType::kLocal);
-STATIC_ASSERT_MATCHING_ENUM(StorageArea::StorageType::kSessionStorage,
-                            ContentSettingsClient::StorageType::kSession);
 
 const size_t kStorageControllerTotalCacheLimitInBytesLowEnd = 1 * 1024 * 1024;
 const size_t kStorageControllerTotalCacheLimitInBytes = 5 * 1024 * 1024;
@@ -57,9 +49,11 @@ StorageController* StorageController::GetInstance() {
 // static
 bool StorageController::CanAccessStorageArea(LocalFrame* frame,
                                              StorageArea::StorageType type) {
-  DCHECK(frame->GetContentSettingsClient());
-  return frame->GetContentSettingsClient()->AllowStorage(
-      static_cast<ContentSettingsClient::StorageType>(type));
+  if (auto* settings_client = frame->GetContentSettingsClient()) {
+    return settings_client->AllowStorage(
+        type == StorageArea::StorageType::kLocalStorage);
+  }
+  return true;
 }
 
 StorageController::StorageController(

@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/autoplay.mojom-blink.h"
+#include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
@@ -14,7 +15,6 @@
 #include "third_party/blink/public/web/web_user_media_client.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_visibility_observer.h"
-#include "third_party/blink/renderer/core/frame/content_settings_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/media/autoplay_uma_helper.h"
@@ -172,7 +172,7 @@ bool AutoplayPolicy::DocumentIsCapturingUserMedia(const Document& document) {
   WebFrame* web_frame = WebFrame::FromFrame(document.GetFrame());
   if (!web_frame)
     return false;
-  
+
   WebLocalFrame* frame = web_frame->ToWebLocalFrame();
   if (!frame || !frame->Client())
     return false;
@@ -470,7 +470,9 @@ bool AutoplayPolicy::IsAutoplayAllowedPerSettings() const {
   LocalFrame* frame = element_->GetDocument().GetFrame();
   if (!frame)
     return false;
-  return frame->GetContentSettingsClient()->AllowAutoplay(true);
+  if (auto* settings_client = frame->GetContentSettingsClient())
+    return settings_client->AllowAutoplay(true /* default_value */);
+  return true;
 }
 
 bool AutoplayPolicy::ShouldAutoplay() {

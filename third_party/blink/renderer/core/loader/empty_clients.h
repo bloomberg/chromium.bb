@@ -41,7 +41,6 @@
 #include "third_party/blink/public/platform/web_spell_check_panel_host_client.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/frame/content_settings_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_client.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -363,7 +362,9 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
 
   std::unique_ptr<WebServiceWorkerProvider> CreateServiceWorkerProvider()
       override;
-  ContentSettingsClient& GetContentSettingsClient() override;
+  WebContentSettingsClient* GetContentSettingsClient() override {
+    return nullptr;
+  }
   std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
       WebApplicationCacheHostClient*) override;
 
@@ -394,7 +395,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   // Not owned
   WebTextCheckClient* text_check_client_;
 
-  ContentSettingsClient content_settings_client_;
   service_manager::InterfaceProvider interface_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(EmptyLocalFrameClient);

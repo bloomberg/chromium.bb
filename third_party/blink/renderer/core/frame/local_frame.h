@@ -68,7 +68,6 @@ class AssociatedInterfaceProvider;
 class Color;
 class ComputedAccessibleNode;
 class ContentSecurityPolicy;
-class ContentSettingsClient;
 class Document;
 class Editor;
 class Element;
@@ -102,6 +101,7 @@ class SmoothScrollSequencer;
 class SpellChecker;
 class TextSuggestionController;
 class WebComputedAXTree;
+class WebContentSettingsClient;
 class WebPluginContainerImpl;
 class WebURLLoaderFactory;
 
@@ -307,7 +307,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   LocalFrameClient* Client() const;
 
-  ContentSettingsClient* GetContentSettingsClient();
+  WebContentSettingsClient* GetContentSettingsClient();
 
   // GetFrameResourceCoordinator may return nullptr when it can not hook up to
   // services/resource_coordinator.

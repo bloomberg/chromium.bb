@@ -12,8 +12,6 @@ blink_core_sources("frame") {
     "bar_prop.h",
     "browser_controls.cc",
     "browser_controls.h",
-    "content_settings_client.cc",
-    "content_settings_client.h",
     "csp/content_security_policy.cc",
     "csp/content_security_policy.h",
     "csp/csp_directive.h",
