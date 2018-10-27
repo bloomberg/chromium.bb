@@ -19,6 +19,11 @@
 #include "ui/views/cocoa/bridge_factory_host.h"
 #include "ui/views_bridge_mac/mojo/bridge_factory.mojom.h"
 
+namespace {
+// Start counting host ids at 1000 to help in debugging.
+uint64_t g_next_host_id = 1000;
+}  // namespace
+
 AppShimHost::AppShimHost(const std::string& app_id,
                          const base::FilePath& profile_path)
     : host_binding_(this),
@@ -28,8 +33,6 @@ AppShimHost::AppShimHost(const std::string& app_id,
   // Create the interfaces used to host windows, so that browser windows may be
   // created before the host process finishes launching.
   if (features::HostWindowsInAppShimProcess()) {
-    // Start counting host ids at 1000 to help in debugging.
-    uint64_t g_next_host_id = 1000;
     uint64_t host_id = g_next_host_id++;
 
     // Create the interface that will be used by views::NativeWidgetMac to
