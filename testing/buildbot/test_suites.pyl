@@ -672,7 +672,9 @@
 
     'chromium_linux_coverage_gtests': {
       'base_unittests': {
-        'shards': 2,
+        'swarming': {
+          'shards': 2,
+        },
       },
     },
 
