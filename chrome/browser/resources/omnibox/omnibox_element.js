@@ -12,7 +12,7 @@ class OmniboxElement extends HTMLElement {
   constructor(templateId) {
     super();
     this.attachShadow({mode: 'open'});
-    const template = $(templateId).content.cloneNode(true);
+    const template = OmniboxElement.getTemplate(templateId);
     this.shadowRoot.appendChild(template);
   }
 
@@ -23,5 +23,13 @@ class OmniboxElement extends HTMLElement {
    */
   $$(id) {
     return this.shadowRoot.getElementById(id);
+  }
+
+  /**
+   * @param {string} templateId
+   * @return {Element}
+   */
+  static getTemplate(templateId) {
+    return $(templateId).content.cloneNode(true);
   }
 }
