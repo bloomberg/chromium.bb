@@ -241,17 +241,27 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
         base::BindRepeating(&GetSigninScopedDeviceIdForProfile, profile);
     init_params.gaia_cookie_manager_service =
         GaiaCookieManagerServiceFactory::GetForProfile(profile);
+
     bool use_fcm_invalidations =
         base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations);
-    auto* invalidation_provider =
-        use_fcm_invalidations
-            ? invalidation::ProfileInvalidationProviderFactory::GetForProfile(
-                  profile)
-            : invalidation::DeprecatedProfileInvalidationProviderFactory::
-                  GetForProfile(profile);
-    if (invalidation_provider) {
-      init_params.invalidations_identity_provider =
-          invalidation_provider->GetIdentityProvider();
+    if (use_fcm_invalidations) {
+      auto* fcm_invalidation_provider =
+          invalidation::ProfileInvalidationProviderFactory::GetForProfile(
+              profile);
+      if (fcm_invalidation_provider) {
+        init_params.invalidations_identity_providers.push_back(
+            fcm_invalidation_provider->GetIdentityProvider());
+      }
+    }
+    // This code should stay here until all invalidation client are
+    // migrated from deprecated invalidation  infructructure.
+    // Since invalidations will work only if ProfileSyncService calls
+    // SetActiveAccountId for all identity providers.
+    auto* deprecated_invalidation_provider = invalidation::
+        DeprecatedProfileInvalidationProviderFactory::GetForProfile(profile);
+    if (deprecated_invalidation_provider) {
+      init_params.invalidations_identity_providers.push_back(
+          deprecated_invalidation_provider->GetIdentityProvider());
     }
 
     // TODO(tim): Currently, AUTO/MANUAL settings refer to the *first* time sync

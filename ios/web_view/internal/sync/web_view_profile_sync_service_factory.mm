@@ -93,10 +93,10 @@ WebViewProfileSyncServiceFactory::BuildServiceInstanceFor(
       &signin::GetSigninScopedDeviceId, browser_state->GetPrefs());
   init_params.network_connection_tracker =
       ApplicationContext::GetInstance()->GetNetworkConnectionTracker();
-  init_params.invalidations_identity_provider =
+  init_params.invalidations_identity_providers.push_back(
       WebViewProfileInvalidationProviderFactory::GetForBrowserState(
           browser_state)
-          ->GetIdentityProvider();
+          ->GetIdentityProvider());
 
   auto profile_sync_service =
       std::make_unique<ProfileSyncService>(std::move(init_params));
