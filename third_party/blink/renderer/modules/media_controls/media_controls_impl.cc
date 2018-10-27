@@ -1154,10 +1154,6 @@ void MediaControlsImpl::DisableShowingTextTracks() {
   }
 }
 
-bool MediaControlsImpl::TextTrackListIsWanted() {
-  return text_track_list_->IsWanted();
-}
-
 String MediaControlsImpl::GetTextTrackLabel(TextTrack* track) const {
   if (!track) {
     return MediaElement().GetLocale().QueryString(
@@ -2100,18 +2096,6 @@ void MediaControlsImpl::NetworkStateChanged() {
       download_button_->ShouldDisplayDownloadButton());
 
   UpdateCSSClassFromState();
-}
-
-void MediaControlsImpl::OpenOverflowMenu() {
-  overflow_list_->OpenOverflowMenu();
-}
-
-void MediaControlsImpl::CloseOverflowMenu() {
-  overflow_list_->CloseOverflowMenu();
-}
-
-bool MediaControlsImpl::OverflowMenuIsWanted() {
-  return overflow_list_->IsWanted();
 }
 
 bool MediaControlsImpl::OverflowMenuVisible() {
