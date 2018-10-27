@@ -315,7 +315,7 @@ bool IsSignoutDisallowedByPolicy(
     case signin_metrics::ProfileSignout::USER_TUNED_OFF_SYNC_FROM_DICE_UI:
       return true;
     case signin_metrics::ProfileSignout::ACCOUNT_REMOVED_FROM_DEVICE:
-      // TODO(chcunningham): Add more of the above cases to this "false" branch.
+      // TODO(msarda): Add more of the above cases to this "false" branch.
       // For now only ACCOUNT_REMOVED_FROM_DEVICE is here to preserve the status
       // quo. Additional internal sources of sign-out will be moved here in a
       // follow up CL.

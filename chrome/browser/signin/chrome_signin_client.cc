@@ -69,7 +69,7 @@ namespace {
 SigninClient::SignoutDecision IsSignoutAllowed(
     Profile* profile,
     const signin_metrics::ProfileSignout signout_source_metric) {
-  // TODO(chcunningham): This logic should be reworked to only prohibit user-
+  // TODO(msarda): This logic should be reworked to only prohibit user-
   // initiated sign-out. For now signin_util::IsUserSignoutAllowedForProfile()
   // prohibits ALL sign-outs with the exception of ACCOUNT_REMOVED_FROM_DEVICE
   // because this preserves the original behavior. A follow-up CL will make the
