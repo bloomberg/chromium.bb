@@ -13,9 +13,11 @@
 #include "components/viz/service/display/sync_query_collection.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/vulkan/buildflags.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/latency/latency_info.h"
 
 class SkNWayCanvas;
+class SkPictureRecorder;
 
 namespace gpu {
 struct Capabilities;
@@ -34,7 +36,7 @@ class YUVVideoDrawQuad;
 class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
  public:
   // Different draw modes that are supported by SkiaRenderer right now.
-  enum DrawMode { GL, DDL, VULKAN };
+  enum DrawMode { GL, DDL, VULKAN, SKPRECORD };
 
   // TODO(penghuang): Remove skia_output_surface when DDL is used everywhere.
   SkiaRenderer(const RendererSettings* settings,
@@ -125,9 +127,17 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
     bool mipmap;
     gfx::ColorSpace color_space;
     ResourceFormat format;
+
+    // Specific for SkPictureRecorder.
+    std::unique_ptr<SkPictureRecorder> recorder;
+    sk_sp<SkPicture> picture;
+
     RenderPassBacking(GrContext* gr_context,
                       const gpu::Capabilities& caps,
                       const gfx::Size& size,
+                      bool mipmap,
+                      const gfx::ColorSpace& color_space);
+    RenderPassBacking(const gfx::Size& size,
                       bool mipmap,
                       const gfx::ColorSpace& color_space);
     ~RenderPassBacking();
@@ -202,6 +212,12 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   base::flat_map<ResourceId, sk_sp<SkImage>> promise_images_;
   using YUVIds = std::tuple<ResourceId, ResourceId, ResourceId, ResourceId>;
   base::flat_map<YUVIds, sk_sp<SkImage>> yuv_promise_images_;
+
+  // Specific for SkPRecord.
+  std::unique_ptr<SkPictureRecorder> root_recorder_;
+  sk_sp<SkPicture> root_picture_;
+  sk_sp<SkPicture>* current_picture_;
+  SkPictureRecorder* current_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaRenderer);
 };

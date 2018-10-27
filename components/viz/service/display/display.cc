@@ -241,9 +241,12 @@ void Display::InitializeRenderer() {
       // GPU compositing with GL.
       DCHECK(output_surface_);
       DCHECK(output_surface_->context_provider());
+      SkiaRenderer::DrawMode mode = settings_.record_sk_picture
+                                        ? SkiaRenderer::DrawMode::SKPRECORD
+                                        : SkiaRenderer::DrawMode::GL;
       renderer_ = std::make_unique<SkiaRenderer>(
           &settings_, output_surface_.get(), resource_provider_.get(),
-          nullptr /* skia_output_surface */, SkiaRenderer::DrawMode::GL);
+          nullptr /* skia_output_surface */, mode);
     }
   } else if (output_surface_->context_provider()) {
     renderer_ = std::make_unique<GLRenderer>(&settings_, output_surface_.get(),
