@@ -137,7 +137,7 @@ if (!is_ios && !is_android) {
     if (is_mac && !is_component_build) {
       ldflags = [
         "-install_name",
-        "@rpath/$_cronet_shared_lib_file_name",
+        "@executable_path/$_cronet_shared_lib_file_name",
       ]
       public_configs = [ ":shared_library_public_config" ]
     }
