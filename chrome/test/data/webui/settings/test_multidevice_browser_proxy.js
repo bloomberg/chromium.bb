@@ -47,11 +47,15 @@ cr.define('multidevice', function() {
         'getPageContentData',
         'setFeatureEnabledState',
         'setUpAndroidSms',
+        'getSmartLockSignInEnabled',
+        'setSmartLockSignInEnabled',
+        'getSmartLockSignInAllowed',
         'getAndroidSmsInfo',
       ]);
       this.data = createFakePageContentData(
           settings.MultiDeviceSettingsMode.NO_HOST_SET);
       this.androidSmsInfo = {origin: TEST_ANDROID_SMS_ORIGIN, enabled: true};
+      this.smartLockSignInAllowed = true;
     }
 
     /** @override */
@@ -79,6 +83,24 @@ cr.define('multidevice', function() {
     /** @override */
     setUpAndroidSms() {
       this.methodCalled('setUpAndroidSms');
+    }
+
+    /** @override */
+    getSmartLockSignInEnabled() {
+      this.methodCalled('getSmartLockSignInEnabled');
+      return Promise.resolve(true);
+    }
+
+    /** @override */
+    setSmartLockSignInEnabled(enabled, opt_authToken) {
+      this.methodCalled('setSmartLockSignInEnabled', [enabled, opt_authToken]);
+      cr.webUIListenerCallback('smart-lock-signin-enabled-changed', enabled);
+    }
+
+    /** @override */
+    getSmartLockSignInAllowed() {
+      this.methodCalled('getSmartLockSignInAllowed');
+      return Promise.resolve(this.smartLockSignInAllowed);
     }
 
     /** @override */
