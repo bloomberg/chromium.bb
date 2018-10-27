@@ -243,7 +243,23 @@ class ExternalFrameBufferMD5Test
     expected_md5[32] = '\0';
 
     ::libaom_test::MD5 md5_res;
-    md5_res.Add(&img);
+#if !CONFIG_LOWBITDEPTH
+    const aom_img_fmt_t shifted_fmt =
+        (aom_img_fmt)(img.fmt & ~AOM_IMG_FMT_HIGHBITDEPTH);
+    if (img.bit_depth == 8 && shifted_fmt != img.fmt) {
+      aom_image_t *img_shifted =
+          aom_img_alloc(NULL, shifted_fmt, img.d_w, img.d_h, 16);
+      img_shifted->bit_depth = img.bit_depth;
+      img_shifted->monochrome = img.monochrome;
+      aom_img_downshift(img_shifted, &img, 0);
+      md5_res.Add(img_shifted);
+      aom_img_free(img_shifted);
+    } else {
+#endif
+      md5_res.Add(&img);
+#if !CONFIG_LOWBITDEPTH
+    }
+#endif
     const char *const actual_md5 = md5_res.Get();
 
     // Check md5 match.
@@ -377,8 +393,9 @@ class ExternalFrameBufferNonRefTest : public ExternalFrameBufferTest {
 // needed. The md5 checksums are computed for each frame in the video file.
 // If md5 checksums match the correct md5 data, then the test is passed.
 // Otherwise, the test failed.
-TEST_P(ExternalFrameBufferMD5Test, DISABLED_ExtFBMD5Match) {
+TEST_P(ExternalFrameBufferMD5Test, ExtFBMD5Match) {
   const std::string filename = GET_PARAM(kVideoNameParam);
+  aom_codec_dec_cfg_t cfg = aom_codec_dec_cfg_t();
 
   // Number of buffers equals #AOM_MAXIMUM_REF_BUFFERS +
   // #AOM_MAXIMUM_WORK_BUFFERS + four jitter buffers.
@@ -407,8 +424,12 @@ TEST_P(ExternalFrameBufferMD5Test, DISABLED_ExtFBMD5Match) {
   const std::string md5_filename = filename + ".md5";
   OpenMD5File(md5_filename);
 
+  // Set decode config.
+  cfg.allow_lowbitdepth = CONFIG_LOWBITDEPTH;
+  set_cfg(cfg);
+
   // Decode frame, and check the md5 matching.
-  ASSERT_NO_FATAL_FAILURE(RunLoop(video.get()));
+  ASSERT_NO_FATAL_FAILURE(RunLoop(video.get(), cfg));
 }
 
 #if CONFIG_WEBM_IO
