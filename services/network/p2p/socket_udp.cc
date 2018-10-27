@@ -426,15 +426,9 @@ void P2PSocketUdp::SetOption(P2PSocketOption option, int32_t value) {
   }
 }
 
-// TODO(crbug.com/812137): We don't call SetDiffServCodePoint for the Windows
-// UDP socket, because this is known to cause a hanging thread.
 int P2PSocketUdp::SetSocketDiffServCodePointInternal(
     net::DiffServCodePoint dscp) {
-#if defined(OS_WIN)
-  return net::OK;
-#else
   return socket_->SetDiffServCodePoint(dscp);
-#endif
 }
 
 }  // namespace network
