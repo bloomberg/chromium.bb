@@ -1719,6 +1719,33 @@ TEST_F(SplitViewControllerTest, DividerClosestRatioOnWorkArea) {
   EXPECT_EQ(divider_closest_ratio(), 0.33f);
 }
 
+// Test that if we snap an always on top window in splitscreen, there should be
+// no crash and the window should stay always on top.
+TEST_F(SplitViewControllerTest, AlwaysOnTopWindow) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> always_on_top_window(CreateWindow(bounds));
+  always_on_top_window->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  std::unique_ptr<aura::Window> normal_window(CreateWindow(bounds));
+
+  split_view_controller()->SnapWindow(always_on_top_window.get(),
+                                      SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(normal_window.get(),
+                                      SplitViewController::RIGHT);
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::BOTH_SNAPPED);
+  EXPECT_TRUE(always_on_top_window->GetProperty(aura::client::kAlwaysOnTopKey));
+
+  wm::ActivateWindow(always_on_top_window.get());
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::BOTH_SNAPPED);
+  EXPECT_TRUE(always_on_top_window->GetProperty(aura::client::kAlwaysOnTopKey));
+
+  wm::ActivateWindow(normal_window.get());
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::BOTH_SNAPPED);
+  EXPECT_TRUE(always_on_top_window->GetProperty(aura::client::kAlwaysOnTopKey));
+}
+
 // Test the tab-dragging related functionalities in tablet mode. Tab(s) can be
 // dragged out of a window and then put in split view mode or merge into another
 // window.

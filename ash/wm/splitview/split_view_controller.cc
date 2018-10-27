@@ -1347,8 +1347,17 @@ void SplitViewController::ActivateAndStackSnappedWindow(aura::Window* window) {
   // active.
   aura::Window* stacking_target =
       (window == left_window_) ? right_window_ : left_window_;
-  if (stacking_target)
-    window->parent()->StackChildBelow(stacking_target, window);
+
+  // Only try to restack the snapped windows if they have the same parent
+  // window. Otherwise, just make sure the |stacking_target| is the top
+  // child window of its parent.
+  // TODO(xdai): Find better ways to handle this case.
+  if (stacking_target) {
+    if (stacking_target->parent() == window->parent())
+      stacking_target->parent()->StackChildBelow(stacking_target, window);
+    else
+      stacking_target->parent()->StackChildAtTop(stacking_target);
+  }
 }
 
 void SplitViewController::SetWindowsTransformDuringResizing() {
