@@ -64,10 +64,15 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest, Pipeline) {
   if (base::FeatureList::IsEnabled(
           blink::features::kRecordAnchorMetricsVisible)) {
     histogram_tester.ExpectUniqueSample(
-        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 2, 1);
+        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 3, 1);
+    // Same document anchor element should be removed after merge.
+    histogram_tester.ExpectUniqueSample(
+        "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
   } else {
     histogram_tester.ExpectTotalCount(
         "AnchorElementMetrics.Visible.NumberOfAnchorElements", 0);
+    histogram_tester.ExpectTotalCount(
+        "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 0);
   }
 }
 

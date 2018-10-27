@@ -242,6 +242,11 @@ void NavigationPredictor::MergeMetricsSameTargetUrl(
   metrics_map.reserve(metrics->size());
 
   for (auto& metric : *metrics) {
+    // Do not include anchor elements that point to the same URL as the URL of
+    // the current navigation since these are unlikely to be clicked.
+    if (metric->target_url == metric->source_url)
+      continue;
+
     const std::string& key = metric->target_url.spec();
     auto iter = metrics_map.find(key);
     if (iter == metrics_map.end()) {
@@ -288,6 +293,10 @@ void NavigationPredictor::MergeMetricsSameTargetUrl(
   }
 
   metrics->clear();
+
+  if (metrics_map.empty())
+    return;
+
   metrics->reserve(metrics_map.size());
   for (auto& metric_mapping : metrics_map) {
     metrics->push_back(std::move(metric_mapping.second));
@@ -320,6 +329,9 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
   document_loaded_timing_ = base::TimeTicks::Now();
 
   MergeMetricsSameTargetUrl(&metrics);
+
+  if (metrics.empty())
+    return;
 
   // Count the number of anchors that have specific metrics.
   for (const auto& metric : metrics) {
