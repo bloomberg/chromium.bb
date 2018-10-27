@@ -19,8 +19,18 @@ enum class NGOutlineType;
 class CORE_EXPORT NGPhysicalBoxFragment final
     : public NGPhysicalContainerFragment {
  public:
-  NGPhysicalBoxFragment(NGBoxFragmentBuilder* builder,
-                        WritingMode block_or_line_writing_mode);
+  static scoped_refptr<const NGPhysicalBoxFragment> Create(
+      NGBoxFragmentBuilder* builder,
+      WritingMode block_or_line_writing_mode);
+
+  ~NGPhysicalBoxFragment() {
+    for (const NGLinkStorage& child : Children())
+      child.fragment->Release();
+  }
+
+  ChildLinkList Children() const final {
+    return ChildLinkList(num_children_, &children_[0]);
+  }
 
   const NGBaseline* Baseline(const NGBaselineRequest&) const;
 
@@ -75,10 +85,14 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   scoped_refptr<const NGPhysicalFragment> CloneWithoutOffset() const;
 
  private:
+  NGPhysicalBoxFragment(NGBoxFragmentBuilder* builder,
+                        WritingMode block_or_line_writing_mode);
+
   Vector<NGBaseline> baselines_;
   NGPhysicalBoxStrut borders_;
   NGPhysicalBoxStrut padding_;
   NGPhysicalOffsetRect descendant_outlines_;
+  NGLinkStorage children_[];
 };
 
 DEFINE_TYPE_CASTS(
