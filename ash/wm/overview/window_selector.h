@@ -214,6 +214,9 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
       const gfx::Rect& work_area,
       UpdateAnimationSettingsCallback callback);
 
+  // Shows or hides all the window selector items' mask and shadow.
+  void UpdateMaskAndShadow(bool show);
+
   WindowSelectorDelegate* delegate() { return delegate_; }
 
   SplitViewDragIndicators* split_view_drag_indicators() {
