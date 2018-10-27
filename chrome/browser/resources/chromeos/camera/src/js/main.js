@@ -285,18 +285,16 @@ camera.App.prototype.onKeyPressed_ = function(event) {
  * Shows an error message.
  * @param {string} identifier Identifier of the error.
  * @param {string} message Message for the error.
- * @param {string=} hint Hint for the error.
  */
-camera.App.onError = function(identifier, message, hint) {
+camera.App.onError = function(identifier, message) {
   // TODO(yuli): Implement error-identifier to look up messages/hints and handle
   // multiple errors. Make 'error' a view to block buttons on other views.
   document.body.classList.add('has-error');
-  document.querySelector('#error-msg').textContent =
-      chrome.i18n.getMessage(message) || message;
-  if (hint) {
-    document.querySelector('#error-msg-hint').textContent =
-        chrome.i18n.getMessage(hint) || hint;
-  }
+  // Use setTimeout to wait for error-view to be visible by screen reader.
+  setTimeout(() => {
+    document.querySelector('#error-msg').textContent =
+        chrome.i18n.getMessage(message) || message;
+  }, 0);
 };
 
 /**
@@ -305,6 +303,7 @@ camera.App.onError = function(identifier, message, hint) {
  */
 camera.App.onErrorRecovered = function(identifier) {
   document.body.classList.remove('has-error');
+  document.querySelector('#error-msg').textContent = '';
 };
 
 /**

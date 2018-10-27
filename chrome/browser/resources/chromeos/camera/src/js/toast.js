@@ -41,7 +41,7 @@ camera.toast.update_ = function(message, spoken) {
   // and clear content once inactive to avoid stale content being read out.
   var element = document.querySelector('#toast');
   camera.util.animateCancel(element); // Cancel the active toast if any.
-  element.textContent = '';
+  element.textContent = ''; // Force to reiterate repeated messages.
   element.textContent = chrome.i18n.getMessage(message) || message;
 
   element.classList.toggle('spoken', spoken);

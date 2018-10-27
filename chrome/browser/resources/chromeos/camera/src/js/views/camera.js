@@ -544,8 +544,7 @@ camera.views.Camera.prototype.start_ = function() {
   }).catch((error) => {
     if (error != 'suspend') {
       console.error(error);
-      camera.App.onError(
-          'no-camera', 'errorMsgNoCamera', 'errorMsgNoCameraHint');
+      camera.App.onError('no-camera', 'errorMsgNoCamera');
     }
     // Schedule to retry.
     if (this.retryStartTimeout_) {

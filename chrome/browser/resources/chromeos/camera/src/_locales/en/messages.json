@@ -12,12 +12,8 @@
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "Your camera is currently unavailable.",
+    "message": "Your camera is currently unavailable.\nPlease check if the camera is properly connected.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
-  },
-  "errorMsgNoCameraHint": {
-    "message": "Check if the camera is properly connected.",
-    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGalleryExportFailed": {
     "message": "Unable to export $file$",
@@ -117,7 +113,7 @@
   },
   "toggleMirrorButton": {
     "message": "Mirroring",
-    "description": "Label for the checkbox to toggle the preview mirroring."
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
   "toggleGridButton": {
     "message": "Grid",
