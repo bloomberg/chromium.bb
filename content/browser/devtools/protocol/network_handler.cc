@@ -1854,7 +1854,7 @@ DispatchResponse NetworkHandler::SetRequestInterception(
 void NetworkHandler::ContinueInterceptedRequest(
     const std::string& interception_id,
     Maybe<std::string> error_reason,
-    Maybe<std::string> base64_raw_response,
+    Maybe<protocol::Binary> raw_response,
     Maybe<std::string> url,
     Maybe<std::string> method,
     Maybe<std::string> post_data,
@@ -1864,27 +1864,24 @@ void NetworkHandler::ContinueInterceptedRequest(
   scoped_refptr<net::HttpResponseHeaders> response_headers;
   std::unique_ptr<std::string> response_body;
 
-  if (base64_raw_response.isJust()) {
-    std::string decoded;
-    if (!base::Base64Decode(base64_raw_response.fromJust(), &decoded)) {
-      callback->sendFailure(Response::InvalidParams("Invalid rawResponse."));
-      return;
-    }
+  if (raw_response.isJust()) {
+    const protocol::Binary& raw = raw_response.fromJust();
 
     std::string raw_headers;
-    int header_size =
-        net::HttpUtil::LocateEndOfHeaders(decoded.c_str(), decoded.size());
+    int header_size = net::HttpUtil::LocateEndOfHeaders(
+        reinterpret_cast<const char*>(raw.data()), raw.size());
     if (header_size == -1) {
       LOG(WARNING) << "Can't find headers in raw response";
       header_size = 0;
     } else {
-      raw_headers =
-          net::HttpUtil::AssembleRawHeaders(decoded.c_str(), header_size);
+      raw_headers = net::HttpUtil::AssembleRawHeaders(
+          reinterpret_cast<const char*>(raw.data()), header_size);
     }
-    CHECK_LE(static_cast<size_t>(header_size), decoded.size());
+    CHECK_LE(static_cast<size_t>(header_size), raw.size());
     response_headers =
         base::MakeRefCounted<net::HttpResponseHeaders>(std::move(raw_headers));
-    response_body = std::make_unique<std::string>(decoded.substr(header_size));
+    response_body = std::make_unique<std::string>(raw.data() + header_size,
+                                                  raw.data() + raw.size());
   }
 
   base::Optional<net::Error> error;

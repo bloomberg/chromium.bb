@@ -386,7 +386,7 @@ void DevToolsURLInterceptorRequestJob::InterceptedRequest::ReadIntoBuffer() {
 class DevToolsURLInterceptorRequestJob::MockResponseDetails {
  public:
   MockResponseDetails(scoped_refptr<net::HttpResponseHeaders> response_headers,
-                      std::unique_ptr<std::string> response_bytes);
+                      std::string response_bytes);
 
   ~MockResponseDetails();
 
@@ -407,9 +407,9 @@ class DevToolsURLInterceptorRequestJob::MockResponseDetails {
 
 DevToolsURLInterceptorRequestJob::MockResponseDetails::MockResponseDetails(
     scoped_refptr<net::HttpResponseHeaders> response_headers,
-    std::unique_ptr<std::string> response_bytes)
+    std::string response_bytes)
     : response_headers_(std::move(response_headers)),
-      response_bytes_(response_bytes ? std::move(*response_bytes) : ""),
+      response_bytes_(std::move(response_bytes)),
       read_offset_(0),
       response_time_(base::TimeTicks::Now()) {
   if (!response_headers) {
@@ -971,7 +971,7 @@ void DevToolsURLInterceptorRequestJob::ProcessRedirect(
   raw_headers.append(new_url);
   raw_headers.append(2, '\0');
   mock_response_details_ = std::make_unique<MockResponseDetails>(
-      base::MakeRefCounted<net::HttpResponseHeaders>(raw_headers), nullptr);
+      base::MakeRefCounted<net::HttpResponseHeaders>(raw_headers), "");
 
   NotifyHeadersComplete();
 }
@@ -1047,7 +1047,8 @@ void DevToolsURLInterceptorRequestJob::ProcessInterceptionResponse(
   if (modifications->response_headers || modifications->response_body) {
     mock_response_details_ = std::make_unique<MockResponseDetails>(
         std::move(modifications->response_headers),
-        std::move(modifications->response_body));
+        modifications->response_body ? std::move(*modifications->response_body)
+                                     : "");
 
     // Set cookies in the network stack.
     net::CookieOptions options;
