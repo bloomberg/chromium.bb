@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
@@ -278,6 +279,83 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectPaintCaching) {
     EXPECT_EQ(LayoutRect(0, 0, 100, 100), touch_action_rect.rect);
     EXPECT_EQ(TouchAction::kTouchActionNone,
               touch_action_rect.whitelisted_touch_action);
+  }
+}
+
+TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectScrollingContents) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      ::-webkit-scrollbar { display: none; }
+      body { margin: 0; }
+      #scroller {
+        width: 100px;
+        height: 100px;
+        overflow: scroll;
+        touch-action: none;
+        will-change: transform;
+        background-color: blue;
+      }
+      #child {
+        width: 10px;
+        height: 400px;
+      }
+    </style>
+    <div id='scroller'>
+      <div id='child'></div>
+    </div>
+  )HTML");
+
+  const auto& root_client = GetLayoutView()
+                                .GetScrollableArea()
+                                ->GetScrollingBackgroundDisplayItemClient();
+  auto* scroller_element = GetElementById("scroller");
+  LayoutBoxModelObject* scroller =
+      static_cast<LayoutBoxModelObject*>(scroller_element->GetLayoutObject());
+  auto* child_element = GetElementById("child");
+  auto* child = child_element->GetLayoutObject();
+  auto& non_scroller_paint_controller = RootPaintController();
+  auto& scroller_paint_controller = scroller->GetScrollableArea()
+                                        ->Layer()
+                                        ->GraphicsLayerBacking()
+                                        ->GetPaintController();
+  EXPECT_DISPLAY_LIST(
+      scroller_paint_controller.GetDisplayItemList(), 3,
+      TestDisplayItem(scroller->GetScrollableArea()
+                          ->GetScrollingBackgroundDisplayItemClient(),
+                      kBackgroundType),
+      TestDisplayItem(*scroller, DisplayItem::kHitTest),
+      TestDisplayItem(*child, DisplayItem::kHitTest));
+  EXPECT_DISPLAY_LIST(non_scroller_paint_controller.GetDisplayItemList(), 1,
+                      TestDisplayItem(root_client, kDocumentBackgroundType));
+
+  {
+    const auto& paint_chunks =
+        scroller_paint_controller.GetPaintArtifact().PaintChunks();
+    EXPECT_EQ(paint_chunks.size(), 1u);
+    auto& hit_test_chunk = paint_chunks[0];
+    DCHECK(hit_test_chunk.GetHitTestData());
+    EXPECT_EQ(2u, hit_test_chunk.GetHitTestData()->touch_action_rects.size());
+    {
+      auto& touch_action_rect =
+          hit_test_chunk.GetHitTestData()->touch_action_rects[0];
+      EXPECT_EQ(LayoutRect(0, 0, 100, 400), touch_action_rect.rect);
+      EXPECT_EQ(TouchAction::kTouchActionNone,
+                touch_action_rect.whitelisted_touch_action);
+    }
+    {
+      auto& touch_action_rect =
+          hit_test_chunk.GetHitTestData()->touch_action_rects[1];
+      EXPECT_EQ(LayoutRect(0, 0, 10, 400), touch_action_rect.rect);
+      EXPECT_EQ(TouchAction::kTouchActionNone,
+                touch_action_rect.whitelisted_touch_action);
+    }
+  }
+  {
+    const auto& paint_chunks =
+        non_scroller_paint_controller.GetPaintArtifact().PaintChunks();
+    EXPECT_EQ(paint_chunks.size(), 1u);
+    auto& hit_test_chunk = paint_chunks[0];
+    EXPECT_FALSE(hit_test_chunk.GetHitTestData());
   }
 }
 

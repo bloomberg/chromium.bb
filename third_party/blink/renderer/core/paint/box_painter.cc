@@ -75,9 +75,19 @@ void BoxPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info,
     paint_rect.MoveBy(paint_offset);
   }
 
-  PaintBoxDecorationBackgroundWithRect(
-      contents_paint_state ? contents_paint_state->GetPaintInfo() : paint_info,
-      paint_rect);
+  // Paint the background if we're visible and this block has a box decoration
+  // (background, border, appearance, or box shadow).
+  const ComputedStyle& style = layout_box_.StyleRef();
+  if (style.Visibility() == EVisibility::kVisible &&
+      layout_box_.HasBoxDecorationBackground()) {
+    PaintBoxDecorationBackgroundWithRect(
+        contents_paint_state ? contents_paint_state->GetPaintInfo()
+                             : paint_info,
+        paint_rect);
+  }
+
+  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
+    RecordHitTestData(paint_info, paint_offset, paint_rect);
 }
 
 bool BoxPainter::BackgroundIsKnownToBeOpaque(const PaintInfo& paint_info) {
@@ -241,6 +251,28 @@ void BoxPainter::PaintMaskImages(const PaintInfo& paint_info,
   painter.PaintMaskImages(paint_info, paint_rect, layout_box_, geometry,
                           include_logical_left_edge,
                           include_logical_right_edge);
+}
+
+void BoxPainter::RecordHitTestData(const PaintInfo& paint_info,
+                                   const LayoutPoint& paint_offset,
+                                   const LayoutRect& paint_rect) {
+  // TODO(sunxd): ReplacedPainter only record hit test data for svg root which
+  // skips clip. We should move the conditions and ReplacedPainter's
+  // RecordHitTestData here.
+  if (layout_box_.IsLayoutReplaced())
+    return;
+
+  // Hit test display items are only needed for compositing. This flag is used
+  // for for printing and drag images which do not need hit testing.
+  if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
+    return;
+
+  auto touch_action = layout_box_.EffectiveWhitelistedTouchAction();
+  if (touch_action == TouchAction::kTouchActionAuto)
+    return;
+
+  HitTestData::RecordHitTestRect(paint_info.context, layout_box_,
+                                 HitTestRect(paint_rect, touch_action));
 }
 
 }  // namespace blink
