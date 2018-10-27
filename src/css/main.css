@@ -143,36 +143,6 @@ body {
   background-image: url(../images/browser_button_delete.svg);
 }
 
-#error {
-  align-items: center;
-  background: black;
-  bottom: 0;
-  color: white;
-  display: none;
-  flex-direction: column;
-  font-size: 18px;
-  justify-content: center;
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
-  z-index: 1;
-}
-
-#error #error-msg,
-#error #error-msg-hint {
-  text-align: center;
-  padding: 2px 0;
-}
-
-#error #error-msg-hint {
-  font-size: 16px;
-}
-
-body.has-error #error {
-  display: flex;
-}
-
 ::-webkit-scrollbar {
   width: 0;
   height: 0;
@@ -445,7 +415,9 @@ body.mode-switching:not(.capturing) #camera-mode {
 }
 
 #camera,
-#browser {
+#browser,
+#dialog,
+#error {
   bottom: 0;
   left: 0;
   opacity: 0;
@@ -457,10 +429,17 @@ body.mode-switching:not(.capturing) #camera-mode {
 }
 
 body.camera #camera,
-body.browser #browser {
+body.browser #browser,
+body.dialog #dialog,
+body.has-error #error {
   opacity: 1;
-  transition: opacity 100ms;
   visibility: visible;
+}
+
+body.camera #camera,
+body.browser #browser,
+body.dialog #dialog {
+  transition: opacity 100ms;
 }
 
 #camera,
@@ -774,25 +753,29 @@ body.capturing.grid #preview-grid-vertical {
   }
 }
 
+#error,
 #dialog {
   align-items: center;
-  background: rgba(0, 0, 0, 0.8);
-  bottom: 0;
   display: flex;
   justify-content: center;
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
-  opacity: 0;
-  visibility: hidden;
   z-index: 1;
 }
 
-body.dialog #dialog {
-  opacity: 1;
-  transition: opacity 200ms;
-  visibility: visible;
+#error {
+  background: black;
+  color: white;
+}
+
+#error #error-msg {
+  text-align: center;
+  font-size: 18px;
+  font-family: 'Roboto', sans-serif;
+  line-height: 32px;
+  white-space: pre-wrap;
+}
+
+#dialog {
+  background: rgba(0, 0, 0, 0.8);
 }
 
 #dialog #dialog-popup {
