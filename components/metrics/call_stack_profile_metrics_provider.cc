@@ -11,10 +11,12 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
 
 namespace metrics {
@@ -53,9 +55,12 @@ std::vector<SampledProfile> MergeProfiles(
   std::vector<SampledProfile> deserialized_profiles;
   deserialized_profiles.reserve(serialized_profiles.size());
   for (const auto& serialized_profile : serialized_profiles) {
+    base::ElapsedTimer timer;
     SampledProfile profile;
     if (profile.ParseFromArray(serialized_profile.data(),
                                serialized_profile.size())) {
+      UMA_HISTOGRAM_TIMES("StackSamplingProfiler.ProfileDeserializationTime",
+                          timer.Elapsed());
       deserialized_profiles.push_back(std::move(profile));
     }
   }
@@ -241,8 +246,12 @@ void PendingProfiles::MaybeCollectProfile(base::TimeTicks profile_start_time,
   // There was no room to store the unserialized profile directly, but there was
   // room to store it in serialized form. Serialize the profile without holding
   // the lock, then try again to store it.
+  base::ElapsedTimer timer;
   std::string serialized_profile;
   profile.SerializeToString(&serialized_profile);
+  UMA_HISTOGRAM_TIMES("StackSamplingProfiler.ProfileSerializationTime",
+                      timer.Elapsed());
+
   MaybeCollectSerializedProfile(profile_start_time,
                                 std::move(serialized_profile));
 }
