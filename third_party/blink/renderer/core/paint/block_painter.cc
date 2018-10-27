@@ -201,30 +201,6 @@ void BlockPainter::PaintScrollHitTestDisplayItem(const PaintInfo& paint_info) {
   }
 }
 
-// TODO(pdr): Non-blocks also need to paint the hit test display item. Move this
-// to a more central place such as BoxPainter.
-void BlockPainter::RecordHitTestData(const PaintInfo& paint_info,
-                                     const LayoutPoint& paint_offset) {
-  // Hit test display items are only needed for compositing. This flag is used
-  // for for printing and drag images which do not need hit testing.
-  if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
-    return;
-
-  auto touch_action = layout_block_.EffectiveWhitelistedTouchAction();
-  if (touch_action == TouchAction::kTouchActionAuto)
-    return;
-
-  // TODO(pdr): If we are painting the background into the scrolling contents
-  // layer, we need to use the overflow rect instead of the border box rect. We
-  // may want to move the call to RecordHitTestRect into
-  // BoxPainter::PaintBoxDecorationBackgroundWithRect and share the logic
-  // the background painting code already uses.
-  auto rect = layout_block_.BorderBoxRect();
-  rect.MoveBy(paint_offset);
-  HitTestData::RecordHitTestRect(paint_info.context, layout_block_,
-                                 HitTestRect(rect, touch_action));
-}
-
 DISABLE_CFI_PERF
 void BlockPainter::PaintObject(const PaintInfo& paint_info,
                                const LayoutPoint& paint_offset) {
@@ -252,14 +228,7 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
   // kSelfBlockBackgroundOnly -  Paint background of the current object only),
   // paint those now. This is steps #1, 2, and 4 of the CSS spec (see above).
   if (ShouldPaintSelfBlockBackground(paint_phase)) {
-    // Paint the background if we're visible and this block has a box decoration
-    // (background, border, appearance, or box shadow).
-    if (layout_block_.StyleRef().Visibility() == EVisibility::kVisible &&
-        layout_block_.HasBoxDecorationBackground()) {
-      layout_block_.PaintBoxDecorationBackground(paint_info, paint_offset);
-    }
-    if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
-      RecordHitTestData(paint_info, paint_offset);
+    layout_block_.PaintBoxDecorationBackground(paint_info, paint_offset);
     // Record the scroll hit test after the background so background squashing
     // is not affected. Hit test order would be equivalent if this were
     // immediately before the background.

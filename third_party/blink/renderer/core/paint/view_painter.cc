@@ -32,6 +32,24 @@ void ViewPainter::Paint(const PaintInfo& paint_info) {
 }
 
 void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
+  PaintBoxDecorationBackgroundInternal(paint_info);
+  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()) {
+    BoxPainter(layout_view_)
+        .RecordHitTestData(paint_info, LayoutPoint(),
+                           layout_view_.BorderBoxRect());
+  }
+}
+
+void ViewPainter::PaintBoxDecorationBackgroundInternal(
+    const PaintInfo& paint_info) {
+  // Paint the background if we're visible and this block has a box decoration
+  // (background, border, appearance, or box shadow).
+  const ComputedStyle& style = layout_view_.StyleRef();
+  if (style.Visibility() != EVisibility::kVisible ||
+      !layout_view_.HasBoxDecorationBackground()) {
+    return;
+  }
+
   if (paint_info.SkipRootBackground())
     return;
 
