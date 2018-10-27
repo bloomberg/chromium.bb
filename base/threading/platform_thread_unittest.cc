@@ -395,4 +395,16 @@ TEST(PlatformThreadTest, SetHugeThreadName) {
   PlatformThread::SetName(long_name);
 }
 
+TEST(PlatformThreadTest, GetDefaultThreadStackSize) {
+  size_t stack_size = PlatformThread::GetDefaultThreadStackSize();
+#if defined(OS_WIN) || defined(OS_IOS) || defined(OS_FUCHSIA) || \
+    (defined(OS_LINUX) && !defined(THREAD_SANITIZER)) ||         \
+    (defined(OS_ANDROID) && !defined(ADDRESS_SANITIZER))
+  EXPECT_EQ(0u, stack_size);
+#else
+  EXPECT_GT(stack_size, 0u);
+  EXPECT_LT(stack_size, 20u * (1 << 20));
+#endif
+}
+
 }  // namespace base

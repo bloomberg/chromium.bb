@@ -359,4 +359,9 @@ ThreadPriority PlatformThread::GetCurrentThreadPriority() {
   return ThreadPriority::NORMAL;
 }
 
+// static
+size_t PlatformThread::GetDefaultThreadStackSize() {
+  return 0;
+}
+
 }  // namespace base
