@@ -53,20 +53,6 @@ inline EBlockAlignment BlockAlignment(const ComputedStyle& style,
 
 }  // anonymous namespace
 
-bool NeedMinMaxSize(const NGConstraintSpace& constraint_space,
-                    const ComputedStyle& style) {
-  // This check is technically too broad (fill-available does not need intrinsic
-  // size computation) but that's a rare case and only affects performance, not
-  // correctness.
-  return constraint_space.IsShrinkToFit() || NeedMinMaxSize(style);
-}
-
-bool NeedMinMaxSize(const ComputedStyle& style) {
-  return style.LogicalWidth().IsIntrinsic() ||
-         style.LogicalMinWidth().IsIntrinsic() ||
-         style.LogicalMaxWidth().IsIntrinsic();
-}
-
 bool NeedMinMaxSizeForContentContribution(WritingMode mode,
                                           const ComputedStyle& style) {
   // During the intrinsic sizes pass percentages/calc() are defined to behave
@@ -295,13 +281,6 @@ LayoutUnit ResolveBlockLength(
       NOTREACHED();
       return border_and_padding.BlockSum();
   }
-}
-
-LayoutUnit ResolveMarginPaddingLength(const NGConstraintSpace& constraint_space,
-                                      const Length& length) {
-  LayoutUnit percentage_resolution_size =
-      constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
-  return ResolveMarginPaddingLength(percentage_resolution_size, length);
 }
 
 LayoutUnit ResolveMarginPaddingLength(LayoutUnit percentage_resolution_size,
@@ -700,14 +679,6 @@ LayoutUnit ResolveUsedColumnGap(LayoutUnit available_size,
 }
 
 NGPhysicalBoxStrut ComputePhysicalMargins(
-    const NGConstraintSpace& constraint_space,
-    const ComputedStyle& style) {
-  LayoutUnit percentage_resolution_size =
-      constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
-  return ComputePhysicalMargins(style, percentage_resolution_size);
-}
-
-NGPhysicalBoxStrut ComputePhysicalMargins(
     const ComputedStyle& style,
     LayoutUnit percentage_resolution_size) {
   if (!style.HasMargin())
@@ -734,39 +705,6 @@ NGBoxStrut ComputeMarginsFor(const NGConstraintSpace& constraint_space,
       constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
   return ComputePhysicalMargins(style, percentage_resolution_size)
       .ConvertToLogical(compute_for.GetWritingMode(), compute_for.Direction());
-}
-
-NGLineBoxStrut ComputeLineMarginsForVisualContainer(
-    const NGConstraintSpace& constraint_space,
-    const ComputedStyle& style) {
-  if (constraint_space.IsAnonymous())
-    return NGLineBoxStrut();
-  LayoutUnit percentage_resolution_size =
-      constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
-  return ComputePhysicalMargins(style, percentage_resolution_size)
-      .ConvertToLineLogical(constraint_space.GetWritingMode(),
-                            TextDirection::kLtr);
-}
-
-NGBoxStrut ComputeMarginsForSelf(const NGConstraintSpace& constraint_space,
-                                 const ComputedStyle& style) {
-  if (constraint_space.IsAnonymous())
-    return NGBoxStrut();
-  LayoutUnit percentage_resolution_size =
-      constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
-  return ComputePhysicalMargins(style, percentage_resolution_size)
-      .ConvertToLogical(style.GetWritingMode(), style.Direction());
-}
-
-NGLineBoxStrut ComputeLineMarginsForSelf(
-    const NGConstraintSpace& constraint_space,
-    const ComputedStyle& style) {
-  if (constraint_space.IsAnonymous())
-    return NGLineBoxStrut();
-  LayoutUnit percentage_resolution_size =
-      constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
-  return ComputePhysicalMargins(style, percentage_resolution_size)
-      .ConvertToLineLogical(style.GetWritingMode(), style.Direction());
 }
 
 NGBoxStrut ComputeMinMaxMargins(const ComputedStyle& parent_style,
@@ -822,12 +760,6 @@ NGBoxStrut ComputeBorders(const NGConstraintSpace& constraint_space,
   return ComputeBorders(constraint_space, node.Style());
 }
 
-NGLineBoxStrut ComputeLineBorders(const NGConstraintSpace& constraint_space,
-                                  const ComputedStyle& style) {
-  return NGLineBoxStrut(ComputeBorders(constraint_space, style),
-                        style.IsFlippedLinesWritingMode());
-}
-
 NGBoxStrut ComputeIntrinsicPadding(const NGConstraintSpace& constraint_space,
                                    const NGLayoutInputNode node) {
   if (constraint_space.IsAnonymous() || !node.IsTableCell())
@@ -864,11 +796,6 @@ NGBoxStrut ComputePadding(const NGConstraintSpace& constraint_space,
   return padding;
 }
 
-NGLineBoxStrut ComputeLinePadding(const NGConstraintSpace& constraint_space,
-                                  const ComputedStyle& style) {
-  return NGLineBoxStrut(ComputePadding(constraint_space, style),
-                        style.IsFlippedLinesWritingMode());
-}
 
 bool NeedsInlineSizeToResolveLineLeft(const ComputedStyle& style,
                                       const ComputedStyle& container_style) {
@@ -953,12 +880,6 @@ LayoutUnit InlineOffsetForTextAlign(const ComputedStyle& container_style,
   LayoutUnit line_offset = LineOffsetForTextAlign(
       container_style.GetTextAlign(), direction, space_left, LayoutUnit());
   return IsLtr(direction) ? line_offset : space_left - line_offset;
-}
-
-LayoutUnit ConstrainByMinMax(LayoutUnit length,
-                             LayoutUnit min,
-                             LayoutUnit max) {
-  return std::max(min, std::min(length, max));
 }
 
 bool ClampScrollbarToContentBox(NGBoxStrut* scrollbars,
