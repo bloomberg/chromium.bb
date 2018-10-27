@@ -219,7 +219,8 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
         std::make_unique<VaapiVP8Accelerator>(this, vaapi_wrapper_)));
   } else if (profile >= VP9PROFILE_MIN && profile <= VP9PROFILE_MAX) {
     decoder_.reset(new VP9Decoder(
-        std::make_unique<VaapiVP9Accelerator>(this, vaapi_wrapper_)));
+        std::make_unique<VaapiVP9Accelerator>(this, vaapi_wrapper_),
+        config.container_color_space));
   } else {
     VLOGF(1) << "Unsupported profile " << GetProfileName(profile);
     return false;

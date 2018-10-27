@@ -113,10 +113,11 @@ void D3D11VideoDecoder::InitializeAcceleratedDecoder(
     CdmProxyContext* proxy_context,
     Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder) {
   if (IsVP9(config)) {
-    accelerated_video_decoder_ =
-        std::make_unique<VP9Decoder>(std::make_unique<D3D11VP9Accelerator>(
-            this, media_log_.get(), proxy_context, video_decoder, video_device_,
-            video_context_));
+    accelerated_video_decoder_ = std::make_unique<VP9Decoder>(
+        std::make_unique<D3D11VP9Accelerator>(this, media_log_.get(),
+                                              proxy_context, video_decoder,
+                                              video_device_, video_context_),
+        config.color_space_info());
     return;
   }
 

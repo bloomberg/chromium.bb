@@ -343,4 +343,13 @@ TEST_P(Vp9ParserTest, VerifyFirstFrame) {
 
 INSTANTIATE_TEST_CASE_P(, Vp9ParserTest, ::testing::ValuesIn(kTestParams));
 
+TEST_F(Vp9ParserTest, CheckColorSpace) {
+  Vp9FrameHeader fhdr{};
+  EXPECT_FALSE(fhdr.GetColorSpace().IsSpecified());
+  fhdr.color_space = Vp9ColorSpace::BT_709;
+  EXPECT_EQ(VideoColorSpace::REC709(), fhdr.GetColorSpace());
+  fhdr.color_space = Vp9ColorSpace::BT_601;
+  EXPECT_EQ(VideoColorSpace::REC601(), fhdr.GetColorSpace());
+}
+
 }  // namespace media
