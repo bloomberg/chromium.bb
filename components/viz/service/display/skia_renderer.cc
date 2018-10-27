@@ -212,13 +212,23 @@ SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
       DCHECK(skia_output_surface_);
       break;
     }
+    case DrawMode::SKPRECORD: {
+      DCHECK(output_surface_);
+      context_provider_ = output_surface_->context_provider();
+      const auto& context_caps = context_provider_->ContextCapabilities();
+      use_swap_with_bounds_ = context_caps.swap_buffers_with_bounds;
+      if (context_caps.sync_query) {
+        sync_queries_ =
+            base::Optional<SyncQueryCollection>(context_provider_->ContextGL());
+      }
+    }
   }
 }
 
 SkiaRenderer::~SkiaRenderer() = default;
 
 bool SkiaRenderer::CanPartialSwap() {
-  if (draw_mode_ != DrawMode::GL)
+  if (draw_mode_ != DrawMode::GL && draw_mode_ != DrawMode::SKPRECORD)
     return false;
 
   DCHECK(context_provider_);
@@ -230,7 +240,7 @@ bool SkiaRenderer::CanPartialSwap() {
 
 void SkiaRenderer::BeginDrawingFrame() {
   TRACE_EVENT0("viz", "SkiaRenderer::BeginDrawingFrame");
-  if (draw_mode_ != DrawMode::GL)
+  if (draw_mode_ != DrawMode::GL && draw_mode_ != DrawMode::SKPRECORD)
     return;
 
   // Copied from GLRenderer.
@@ -310,6 +320,18 @@ void SkiaRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info,
     case DrawMode::GL: {
       output_surface_->SwapBuffers(std::move(output_frame));
       break;
+    }
+    case DrawMode::SKPRECORD: {
+      // write to skp files
+      std::string file_name = "composited-frame.skp";
+      SkFILEWStream file(file_name.c_str());
+      DCHECK(file.isValid());
+
+      auto data = root_picture_->serialize();
+      file.write(data->data(), data->size());
+      file.fsync();
+      root_picture_ = nullptr;
+      root_recorder_.reset();
     }
   }
 
@@ -395,6 +417,16 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
       }
       break;
     }
+    case DrawMode::SKPRECORD: {
+      root_recorder_ = std::make_unique<SkPictureRecorder>();
+
+      current_recorder_ = root_recorder_.get();
+      current_picture_ = &root_picture_;
+      root_canvas_ = root_recorder_->beginRecording(
+          SkRect::MakeWH(current_frame()->device_viewport_size.width(),
+                         current_frame()->device_viewport_size.height()));
+      break;
+    }
   }
 
   current_canvas_ = root_canvas_;
@@ -431,6 +463,13 @@ void SkiaRenderer::BindFramebufferToTexture(const RenderPassId render_pass_id) {
       non_root_surface_ = backing.render_pass_surface;
       current_surface_ = non_root_surface_.get();
       current_canvas_ = non_root_surface_->getCanvas();
+      break;
+    }
+    case DrawMode::SKPRECORD: {
+      current_recorder_ = backing.recorder.get();
+      current_picture_ = &backing.picture;
+      current_canvas_ = current_recorder_->beginRecording(
+          SkRect::MakeWH(backing.size.width(), backing.size.height()));
     }
   }
 }
@@ -904,6 +943,15 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
       case DrawMode::GL:  // Fallthrough
       case DrawMode::VULKAN: {
         content_image = backing.render_pass_surface->makeImageSnapshot();
+        break;
+      }
+      case DrawMode::SKPRECORD: {
+        content_image = SkImage::MakeFromPicture(
+            backing.picture,
+            SkISize::Make(backing.size.width(), backing.size.height()), nullptr,
+            nullptr, SkImage::BitDepth::kU8,
+            backing.color_space.ToSkColorSpace());
+        return;
       }
     }
 
@@ -1076,6 +1124,11 @@ void SkiaRenderer::CopyDrawnRenderPass(
       copy_image->asLegacyBitmap(&bitmap);
       request->SendResult(
           std::make_unique<CopyOutputSkBitmapResult>(copy_rect, bitmap));
+      break;
+    }
+    case DrawMode::SKPRECORD: {
+      NOTIMPLEMENTED();
+      break;
     }
   }
 }
@@ -1126,6 +1179,11 @@ void SkiaRenderer::FinishDrawingQuadList() {
       current_canvas_->flush();
       break;
     }
+    case DrawMode::SKPRECORD: {
+      current_canvas_->flush();
+      sk_sp<SkPicture> picture = current_recorder_->finishRecordingAsPicture();
+      *current_picture_ = picture;
+    }
   }
 }
 
@@ -1160,6 +1218,8 @@ GrContext* SkiaRenderer::GetGrContext() {
 #endif
     case DrawMode::GL:
       return context_provider_->GrContext();
+    case DrawMode::SKPRECORD:
+      return nullptr;
   }
 }
 
@@ -1218,14 +1278,22 @@ void SkiaRenderer::AllocateRenderPassResourceIfNeeded(
     case DrawMode::GL: {
       caps.texture_format_bgra8888 =
           context_provider_->ContextCapabilities().texture_format_bgra8888;
+      break;
+    }
+    case DrawMode::SKPRECORD: {
+      render_pass_backings_.emplace(
+          std::move(render_pass_id),
+          RenderPassBacking(requirements.size, requirements.mipmap,
+                            current_frame()->current_render_pass->color_space));
+      return;
     }
   }
 
-  render_pass_backings_.insert(std::pair<RenderPassId, RenderPassBacking>(
-      render_pass_id,
+  render_pass_backings_.emplace(
+      std::move(render_pass_id),
       RenderPassBacking(gr_context, caps, requirements.size,
                         requirements.mipmap,
-                        current_frame()->current_render_pass->color_space)));
+                        current_frame()->current_render_pass->color_space));
 }
 
 SkiaRenderer::RenderPassBacking::RenderPassBacking(
@@ -1263,6 +1331,14 @@ SkiaRenderer::RenderPassBacking::RenderPassBacking(
       kTopLeft_GrSurfaceOrigin, &surface_props, mipmap);
 }
 
+SkiaRenderer::RenderPassBacking::RenderPassBacking(
+    const gfx::Size& size,
+    bool mipmap,
+    const gfx::ColorSpace& color_space)
+    : size(size), mipmap(mipmap), color_space(color_space) {
+  recorder = std::make_unique<SkPictureRecorder>();
+}
+
 SkiaRenderer::RenderPassBacking::~RenderPassBacking() {}
 
 SkiaRenderer::RenderPassBacking::RenderPassBacking(
@@ -1273,6 +1349,7 @@ SkiaRenderer::RenderPassBacking::RenderPassBacking(
       format(other.format) {
   render_pass_surface = other.render_pass_surface;
   other.render_pass_surface = nullptr;
+  recorder = std::move(other.recorder);
 }
 
 SkiaRenderer::RenderPassBacking& SkiaRenderer::RenderPassBacking::operator=(
@@ -1283,6 +1360,7 @@ SkiaRenderer::RenderPassBacking& SkiaRenderer::RenderPassBacking::operator=(
   format = other.format;
   render_pass_surface = other.render_pass_surface;
   other.render_pass_surface = nullptr;
+  recorder = std::move(other.recorder);
   return *this;
 }
 

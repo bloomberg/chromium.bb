@@ -41,12 +41,16 @@ const base::Feature kEnableVizHitTestDrawQuad{"VizHitTestDrawQuad",
 const base::Feature kEnableVizHitTestSurfaceLayer{
     "VizHitTestSurfaceLayer", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Use the SkiaRenderer.
+// Use the Skia deferred display list.
 const base::Feature kUseSkiaDeferredDisplayList{
     "UseSkiaDeferredDisplayList", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Use the Skia deferred display list.
+// Use the SkiaRenderer.
 const base::Feature kUseSkiaRenderer{"UseSkiaRenderer",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Use the SkiaRenderer to record SkPicture.
+const base::Feature kRecordSkPicture{"RecordSkPicture",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsSurfaceSynchronizationEnabled() {
@@ -81,6 +85,11 @@ bool IsDrawOcclusionEnabled() {
 
 bool IsUsingSkiaRenderer() {
   return base::FeatureList::IsEnabled(kUseSkiaRenderer);
+}
+
+bool IsRecordingSkPicture() {
+  return IsUsingSkiaRenderer() &&
+         base::FeatureList::IsEnabled(kRecordSkPicture);
 }
 
 bool IsUsingSkiaDeferredDisplayList() {
