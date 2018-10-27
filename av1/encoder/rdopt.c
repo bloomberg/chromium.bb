@@ -1875,9 +1875,9 @@ static uint16_t prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
   const int16_t *diff = p->src_diff + 4 * blk_row * diff_stride + 4 * blk_col;
   get_energy_distribution_finer(diff, diff_stride, bw, bh, hfeatures,
                                 vfeatures);
-  av1_get_horver_correlation_full(diff, diff_stride, bw, bh,
-                                  &hfeatures[hfeatures_num - 1],
-                                  &vfeatures[vfeatures_num - 1]);
+  av1_get_horver_correlation_full_c(diff, diff_stride, bw, bh,
+                                    &hfeatures[hfeatures_num - 1],
+                                    &vfeatures[vfeatures_num - 1]);
   av1_nn_predict(hfeatures, nn_config_hor, hscores);
   av1_nn_predict(vfeatures, nn_config_ver, vscores);
 
