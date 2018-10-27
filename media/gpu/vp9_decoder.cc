@@ -17,8 +17,10 @@ VP9Decoder::VP9Accelerator::VP9Accelerator() {}
 
 VP9Decoder::VP9Accelerator::~VP9Accelerator() {}
 
-VP9Decoder::VP9Decoder(std::unique_ptr<VP9Accelerator> accelerator)
+VP9Decoder::VP9Decoder(std::unique_ptr<VP9Accelerator> accelerator,
+                       const VideoColorSpace& container_color_space)
     : state_(kNeedStreamMetadata),
+      container_color_space_(container_color_space),
       accelerator_(std::move(accelerator)),
       parser_(accelerator_->IsFrameContextRequired()) {
   ref_frames_.resize(kVp9NumRefFrames);
@@ -176,6 +178,13 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
 
     pic->set_visible_rect(new_render_rect);
     pic->set_bitstream_id(stream_id_);
+
+    // For VP9, container color spaces override video stream color spaces.
+    if (container_color_space_.IsSpecified()) {
+      pic->set_colorspace(container_color_space_);
+    } else if (curr_frame_hdr_) {
+      pic->set_colorspace(curr_frame_hdr_->GetColorSpace());
+    }
     pic->frame_hdr = std::move(curr_frame_hdr_);
 
     if (!DecodeAndOutputPicture(pic)) {
