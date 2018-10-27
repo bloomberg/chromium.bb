@@ -248,10 +248,14 @@ class GitCL(object):
         url = result_dict['url']
         if url is None:
             return Build(builder_name, None)
-        match = re.match(r'.*/(\d+)/?$', url)
-        if match:
-            build_number = match.group(1)
-            return Build(builder_name, int(build_number))
+        # TODO(martiniss): Switch to using build number once `git cl
+        # try-results` uses buildbucket v2 API.
+        tags = result_dict.get('tags', [])
+        for tag in tags:
+            if tag.startswith("build_address:"):
+                build_number = tag.split('/')[-1]
+                return Build(builder_name, int(build_number))
+
         match = re.match(r'.*/task/([0-9a-f]+)(/?|\?.*)$', url)
         assert match, '%s did not match expected format' % url
         task_id = match.group(1)
