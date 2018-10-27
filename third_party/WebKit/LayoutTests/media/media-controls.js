@@ -106,6 +106,14 @@ function textTrackMenu(video)
   return element;
 }
 
+function textTrackListHeader(video)
+{
+  var element = textTrackMenu(video).childNodes[0];
+  if (!element)
+    throw 'Failed to find the track list header'
+  return element;
+}
+
 function overflowMenu(video)
 {
   var controlID = '-internal-media-controls-overflow-menu-list';
@@ -527,6 +535,11 @@ function singleTapAtCoordinates(xPos, yPos, callback) {
       ]
     }
   ], callback);
+}
+
+function singleTapOutsideControl(control, callback) {
+  const coordinates = coordinatesOutsideElement(control);
+  singleTapAtCoordinates(coordinates[0], coordinates[1], callback);
 }
 
 function singleTapOnControl(control, callback) {
