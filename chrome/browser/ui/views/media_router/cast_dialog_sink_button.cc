@@ -194,15 +194,17 @@ CastDialogSinkButton::~CastDialogSinkButton() = default;
 
 void CastDialogSinkButton::OverrideStatusText(
     const base::string16& status_text) {
-  if (!saved_status_text_) {
-    saved_status_text_ = subtitle()->text();
+  if (subtitle()) {
+    if (!saved_status_text_)
+      saved_status_text_ = subtitle()->text();
+    subtitle()->SetText(status_text);
   }
-  subtitle()->SetText(status_text);
 }
 
 void CastDialogSinkButton::RestoreStatusText() {
   if (saved_status_text_) {
-    subtitle()->SetText(*saved_status_text_);
+    if (subtitle())
+      subtitle()->SetText(*saved_status_text_);
     saved_status_text_.reset();
   }
 }
