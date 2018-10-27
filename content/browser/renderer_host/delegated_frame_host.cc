@@ -57,6 +57,7 @@ DelegatedFrameHost::DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
   host_frame_sink_manager_->SetFrameSinkDebugLabel(frame_sink_id_,
                                                    "DelegatedFrameHost");
   CreateCompositorFrameSinkSupport();
+  frame_evictor_->SetVisible(client_->DelegatedFrameHostIsVisible());
 }
 
 DelegatedFrameHost::~DelegatedFrameHost() {
@@ -79,6 +80,8 @@ void DelegatedFrameHost::WasShown(
         CreateTabSwitchingTimeRecorder(base::TimeTicks::Now()));
   }
 
+  frame_evictor_->SetVisible(true);
+
   // Use the default deadline to synchronize web content with browser UI.
   // TODO(fsamuel): Investigate if there is a better deadline to use here.
   EmbedSurface(new_local_surface_id, new_dip_size,
@@ -86,7 +89,7 @@ void DelegatedFrameHost::WasShown(
 }
 
 bool DelegatedFrameHost::HasSavedFrame() const {
-  return frame_evictor_->HasFrame();
+  return frame_evictor_->has_surface();
 }
 
 void DelegatedFrameHost::WasHidden() {
@@ -219,9 +222,7 @@ void DelegatedFrameHost::EmbedSurface(
     return;
   }
 
-  // Notify |frame_evictor_| that a new surface was embedded.
-  // TODO(samans): Rename this and remove visibility as parameter.
-  frame_evictor_->SwappedFrame(true /* visibility */);
+  frame_evictor_->OnNewSurfaceEmbedded();
 
   if (!primary_surface_id ||
       primary_surface_id->local_surface_id() != local_surface_id_) {
@@ -347,7 +348,7 @@ void DelegatedFrameHost::EvictDelegatedFrame() {
       viz::SurfaceId(frame_sink_id_, local_surface_id_)};
   DCHECK(host_frame_sink_manager_);
   host_frame_sink_manager_->EvictSurfaces(surface_ids);
-  frame_evictor_->DiscardedFrame();
+  frame_evictor_->OnSurfaceDiscarded();
   client_->WasEvicted();
 }
 
@@ -378,7 +379,7 @@ void DelegatedFrameHost::OnLostSharedContext() {}
 
 void DelegatedFrameHost::OnLostVizProcess() {
   if (HasSavedFrame())
-    frame_evictor_->DiscardedFrame();
+    frame_evictor_->OnSurfaceDiscarded();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
