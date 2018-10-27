@@ -21,15 +21,22 @@ camera.views.camera = camera.views.camera || {};
 
 /**
  * Creates a controller for the video preview of Camera view.
- * @param {camera.views.camera.Preview.Observer} observer Observer object.
+ * @param {function()} onNewStreamNeeded Callback to request new stream.
+ * @param {function(number)} onAspectRatio Callback to report aspect ratio.
  * @constructor
  */
-camera.views.camera.Preview = function(observer) {
+camera.views.camera.Preview = function(onNewStreamNeeded, onAspectRatio) {
   /**
-   * @type {camera.views.camera.Preview.Observer}
+   * @type {function()}
    * @private
    */
-  this.observer_ = observer;
+  this.onNewStreamNeeded_ = onNewStreamNeeded;
+
+  /**
+   * @type {function(number)}
+   * @private
+   */
+  this.onAspectRatio_ = onAspectRatio;
 
   /**
    * Video element to capture the stream.
@@ -37,6 +44,20 @@ camera.views.camera.Preview = function(observer) {
    * @private
    */
   this.video_ = document.querySelector('#preview-video');
+
+  /**
+   * Current active stream.
+   * @type {MediaStream}
+   * @private
+   */
+  this.stream_ = null;
+
+  /**
+   * Watchdog for stream-end.
+   * @type {?number}
+   * @private
+   */
+  this.watchdog_ = null;
 
   /**
    * Promise for the current applying focus.
@@ -51,19 +72,10 @@ camera.views.camera.Preview = function(observer) {
   this.video_.cleanup = () => {};
 };
 
-/**
- * Observer interface for preview.
- * @constructor
- */
-camera.views.camera.Preview.Observer = function() {
-};
-
-/**
- * Listens to the changed aspect ratio.
- * @param {number} aspectRatio Aspect ratio of window's inner-bounds.
- */
-camera.views.camera.Preview.Observer.prototype.onAspectRatio = function(
-    aspectRatio) {
+camera.views.camera.Preview.prototype = {
+  get stream() {
+    return this.stream_;
+  }
 };
 
 /**
@@ -75,12 +87,12 @@ camera.views.camera.Preview.prototype.toString = function() {
 };
 
 /**
- * Sets video source.
+ * Sets video element's source.
  * @param {MediaStream} stream Stream to be the source.
- * @return {!Promise<MediaStream>} Promise for the stream set.
+ * @return {!Promise<>} Promise for the operation.
  */
-camera.views.camera.Preview.prototype.setSource = function(stream) {
-  return new Promise(resolve => {
+camera.views.camera.Preview.prototype.setSource_ = function(stream) {
+  return new Promise((resolve) => {
     var video = document.createElement('video');
     video.id = 'preview-video';
     video.setAttribute('aria-hidden', 'true');
@@ -89,8 +101,7 @@ camera.views.camera.Preview.prototype.setSource = function(stream) {
       var onIntrinsicSize = () => {
         // Handles the intrinsic size first fetched or its orientation changes.
         if (this.video_.videoWidth && this.video_.videoHeight) {
-          this.observer_.onAspectRatio(
-              this.video_.videoWidth / this.video_.videoHeight);
+          this.onAspectRatio_(this.video_.videoWidth / this.video_.videoHeight);
         }
         this.cancelFocus_();
       };
@@ -111,7 +122,7 @@ camera.views.camera.Preview.prototype.setSource = function(stream) {
       this.video_.cleanup();
       this.video_ = video;
       onIntrinsicSize();
-      resolve(stream);
+      resolve();
     };
     video.addEventListener('loadedmetadata', onLoadedMetadata);
     video.muted = true;  // Mute to avoid echo from the captured audio.
@@ -120,10 +131,42 @@ camera.views.camera.Preview.prototype.setSource = function(stream) {
 };
 
 /**
- * Pauses the video.
+ * Starts the preview with the source stream.
+ * @param {MediaStream} stream Stream to be the source.
+ * @return {!Promise<>} Promise for the operation.
  */
-camera.views.camera.Preview.prototype.pause = function() {
+camera.views.camera.Preview.prototype.start = function(stream) {
+  return this.setSource_(stream).then(() => {
+    // Use a watchdog since the stream.onended event is unreliable in the
+    // recent version of Chrome. As of 55, the event is still broken.
+    this.watchdog_ = setInterval(() => {
+      // Check if video stream is ended (audio stream may still be live).
+      if (!stream.getVideoTracks().length ||
+          stream.getVideoTracks()[0].readyState == 'ended') {
+        clearInterval(this.watchdog_);
+        this.watchdog_ = null;
+        this.stream_ = null;
+        this.onNewStreamNeeded_();
+      }
+    }, 100);
+    this.stream_ = stream;
+  });
+};
+
+/**
+ * Stops the preview.
+ */
+camera.views.camera.Preview.prototype.stop = function() {
+  if (this.watchdog_) {
+    clearInterval(this.watchdog_);
+    this.watchdog_ = null;
+  }
+  // Pause video element to avoid black frames during transition.
   this.video_.pause();
+  if (this.stream_) {
+    this.stream_.getVideoTracks()[0].stop();
+    this.stream_ = null;
+  }
 };
 
 /**

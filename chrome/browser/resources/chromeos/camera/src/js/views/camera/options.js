@@ -22,8 +22,7 @@ camera.views.camera = camera.views.camera || {};
 /**
  * Creates a controller for the options of Camera view.
  * @param {camera.Router} router View router to switch views.
- * @param {function()} onNewStreamNeeded Callback called when new stream is
- *     needed for the changed options.
+ * @param {function()} onNewStreamNeeded Callback to request new stream.
  * @constructor
  */
 camera.views.camera.Options = function(router, onNewStreamNeeded) {

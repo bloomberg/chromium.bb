@@ -18,10 +18,10 @@ camera.views = camera.views || {};
  * Creates the camera-view controller.
  * @param {camera.Router} router View router to switch views.
  * @param {camera.models.Gallery} model Model object.
- * @param {camera.views.camera.Preview.Observer} observer Observer object.
+ * @param {function(number)} onAspectRatio Callback to report aspect ratio.
  * @constructor
  */
-camera.views.Camera = function(router, model, observer) {
+camera.views.Camera = function(router, model, onAspectRatio) {
   camera.View.call(this, router, document.querySelector('#camera'), 'camera');
 
   /**
@@ -30,27 +30,6 @@ camera.views.Camera = function(router, model, observer) {
    * @private
    */
   this.model_ = model;
-
-  /**
-   * Video preview for the camera.
-   * @type {camera.views.camera.Preview}
-   * @private
-   */
-  this.preview_ = new camera.views.camera.Preview(observer);
-
-  /**
-   * Layout handler for the camera view.
-   * @type {camera.views.camera.Layout}
-   * @private
-   */
-  this.layout_ = new camera.views.camera.Layout();
-
-  /**
-   * Current camera stream.
-   * @type {MediaStream}
-   * @private
-   */
-  this.stream_ = null;
 
   /**
    * MediaRecorder object to record motion pictures.
@@ -74,22 +53,19 @@ camera.views.Camera = function(router, model, observer) {
   this.photoCapabilities_ = null;
 
   /**
-   * @type {?number}
+   * Layout handler for the camera view.
+   * @type {camera.views.camera.Layout}
    * @private
    */
-  this.retryStartTimeout_ = null;
+  this.layout_ = new camera.views.camera.Layout();
 
   /**
-   * @type {?number}
+   * Video preview for the camera.
+   * @type {camera.views.camera.Preview}
    * @private
    */
-  this.watchdog_ = null;
-
-  /**
-   * @type {boolean}
-   * @private
-   */
-  this.locked_ = false;
+  this.preview_ = new camera.views.camera.Preview(
+      this.stop_.bind(this), onAspectRatio);
 
   /**
    * Options for the camera.
@@ -125,6 +101,25 @@ camera.views.Camera = function(router, model, observer) {
    * @private
    */
   this.keyBuffer_ = '';
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.locked_ = false;
+
+  /**
+   * @type {?number}
+   * @private
+   */
+  this.retryStartTimeout_ = null;
+
+  /**
+   * Promise for the operation that starts camera.
+   * @type {Promise<>}
+   * @private
+   */
+  this.started_ = null;
 
   /**
    * Promise for the current timer ticks.
@@ -219,7 +214,7 @@ camera.views.Camera.prototype.onActivate = function() {
  */
 camera.views.Camera.prototype.onShutterButtonClicked_ = function(event) {
   if (this.taking) {
-    // End the prior ongoing take (recording); a new take shouldn't be started
+    // End the prior ongoing take if any; a new take shouldn't be started
     // until the prior one is ended.
     this.endTake_();
     return;
@@ -239,7 +234,7 @@ camera.views.Camera.prototype.onShutterButtonClicked_ = function(event) {
 };
 
 /**
- * Updates UI controls for stream and take-state changes.
+ * Updates UI controls for capturing/taking state changes.
  * @private
  */
 camera.views.Camera.prototype.updateControls_ = function() {
@@ -339,7 +334,7 @@ camera.views.Camera.prototype.endTake_ = function() {
     this.mediaRecorder_.stop();
   }
 
-  return Promise.resolve(this.take_ || null).then(blob => {
+  return Promise.resolve(this.take_).then(blob => {
     if (blob && !blob.handled) {
       // Play a sound and save the result after a successful take.
       blob.handled = true;
@@ -441,7 +436,7 @@ camera.views.Camera.prototype.prepareMediaRecorder_ = function() {
       throw 'The preferred mimeType is not supported.';
     }
     this.mediaRecorder_ =  new MediaRecorder(
-        this.stream_, {mimeType: camera.views.Camera.RECORD_MIMETYPE});
+        this.preview_.stream, {mimeType: camera.views.Camera.RECORD_MIMETYPE});
   }
 };
 
@@ -451,75 +446,9 @@ camera.views.Camera.prototype.prepareMediaRecorder_ = function() {
  */
 camera.views.Camera.prototype.prepareImageCapture_ = function() {
   if (this.imageCapture_ == null) {
-    this.imageCapture_ = new ImageCapture(this.stream_.getVideoTracks()[0]);
+    this.imageCapture_ = new ImageCapture(
+        this.preview_.stream.getVideoTracks()[0]);
   }
-};
-
-/**
- * Starts capturing with the specified constraints.
- * @param {!Object} constraints Constraints passed to WebRTC.
- * @param {function()} onSuccess Success callback.
- * @param {function(*=)} onFailure Failure callback, eg. the constraints are
- *     not supported.
- * @private
- */
-camera.views.Camera.prototype.startWithConstraints_ = function(
-    constraints, onSuccess, onFailure) {
-  navigator.mediaDevices.getUserMedia(constraints).then(
-      this.preview_.setSource.bind(this.preview_)).then(stream => {
-    // Use a watchdog since the stream.onended event is unreliable in the
-    // recent version of Chrome. As of 55, the event is still broken.
-    this.watchdog_ = setInterval(() => {
-      // Check if video stream is ended (audio stream may still be live).
-      if (!stream.getVideoTracks().length ||
-          stream.getVideoTracks()[0].readyState == 'ended') {
-        clearInterval(this.watchdog_);
-        this.watchdog_ = null;
-        this.onstop_();
-      }
-    }, 100);
-    this.stream_ = stream;
-    this.options_.updateStreamOptions(constraints, stream);
-    document.body.classList.remove('mode-switching');
-    document.body.classList.add('capturing');
-    this.updateControls_();
-    onSuccess();
-  }).catch(onFailure);
-};
-
-/**
- * Stop handler when the camera stream is stopped.
- * @private
- */
-camera.views.Camera.prototype.onstop_ = function() {
-  // End the current take if any and then try reconnecting the camera.
-  Promise.resolve((this.taking && this.endTake_()) || null).finally(() => {
-    this.mediaRecorder_ = null;
-    this.imageCapture_ = null;
-    this.photoCapabilities_ = null;
-    this.stream_ = null;
-    document.body.classList.remove('capturing');
-    this.updateControls_();
-    this.start_();
-  });
-};
-
-/**
- * Stops the camera stream so it retries opening the camera stream on new
- * device or with new constraints.
- * @private
- */
-camera.views.Camera.prototype.stop_ = function() {
-  if (this.watchdog_) {
-    clearInterval(this.watchdog_);
-    this.watchdog_ = null;
-  }
-  // TODO(yuli): Ensure stopping stream won't clear paused video element.
-  this.preview_.pause();
-  if (this.stream_) {
-    this.stream_.getVideoTracks()[0].stop();
-  }
-  this.onstop_();
 };
 
 /**
@@ -542,69 +471,84 @@ camera.views.Camera.prototype.constraintsCandidates_ = function(deviceId) {
       }];
 
   // Constraints are ordered by priority.
-  return videoConstraints.map(videoConstraint => {
+  return videoConstraints.map((constraint) => {
     // Each passed-in video-constraint will be modified here.
     if (deviceId) {
-      videoConstraint.deviceId = { exact: deviceId };
+      constraint.deviceId = { exact: deviceId };
     } else {
       // As a default camera use the one which is facing the user.
-      videoConstraint.facingMode = { exact: 'user' };
+      constraint.facingMode = { exact: 'user' };
     }
-    return { audio: recordMode, video: videoConstraint };
+    return { audio: recordMode, video: constraint };
   });
 };
 
 /**
- * Starts capturing the camera with the highest possible resolution.
+ * Stops camera and tries to start camera stream again if possible.
+ * @private
+ */
+camera.views.Camera.prototype.stop_ = function() {
+  // Wait for ongoing 'start' and 'take' done before restarting camera.
+  Promise.all([this.started_, Promise.resolve(!this.taking || this.endTake_())])
+      .finally(() => {
+    this.preview_.stop();
+    this.mediaRecorder_ = null;
+    this.imageCapture_ = null;
+    this.photoCapabilities_ = null;
+    document.body.classList.remove('capturing');
+    this.updateControls_();
+    this.start_();
+  });
+};
+
+/**
+ * Starts camera if the camera stream was stopped.
  * @private
  */
 camera.views.Camera.prototype.start_ = function() {
-  var scheduleRetry = () => {
+  // TODO(yuli): Check 'suspend' before getting device-ids.
+  this.started_ = this.options_.videoDeviceIds().then((deviceIds) => {
+    var candidates = [];
+    deviceIds.forEach((deviceId) => {
+      candidates = candidates.concat(this.constraintsCandidates_(deviceId));
+    });
+
+    var tryStartWithConstraints = (index) => {
+      if (this.locked_ || chrome.app.window.current().isMinimized()) {
+        return Promise.reject('suspend');
+      }
+      if (index >= candidates.length) {
+        return Promise.reject('out-of-candidates');
+      }
+
+      var constraints = candidates[index];
+      return navigator.mediaDevices.getUserMedia(constraints).then(
+          this.preview_.start.bind(this.preview_)).then(() => {
+        this.options_.updateStreamOptions(constraints, this.preview_.stream);
+        document.body.classList.remove('mode-switching');
+        document.body.classList.add('capturing');
+        this.updateControls_();
+        camera.App.onErrorRecovered('no-camera');
+      }).catch((error) => {
+        console.error(error);
+        return new Promise((resolve) => {
+          // TODO(mtomasz): Workaround for crbug.com/383241.
+          setTimeout(() => resolve(tryStartWithConstraints(index + 1)), 0);
+        });
+      });
+    };
+    return tryStartWithConstraints(0);
+  }).catch((error) => {
+    if (error != 'suspend') {
+      console.error(error);
+      camera.App.onError(
+          'no-camera', 'errorMsgNoCamera', 'errorMsgNoCameraHint');
+    }
+    // Schedule to retry.
     if (this.retryStartTimeout_) {
       clearTimeout(this.retryStartTimeout_);
       this.retryStartTimeout_ = null;
     }
     this.retryStartTimeout_ = setTimeout(this.start_.bind(this), 100);
-  };
-
-  var onFailure = (error) => {
-    console.error(error);
-    camera.App.onError('no-camera', 'errorMsgNoCamera', 'errorMsgNoCameraHint');
-    scheduleRetry();
-  };
-
-  var constraintsCandidates = [];
-
-  var tryStartWithConstraints = (index) => {
-    if (this.locked_ || chrome.app.window.current().isMinimized()) {
-      scheduleRetry();
-      return;
-    }
-    if (index >= constraintsCandidates.length) {
-      onFailure();
-      return;
-    }
-    this.startWithConstraints_(constraintsCandidates[index], results => {
-      if (this.retryStartTimeout_) {
-        clearTimeout(this.retryStartTimeout_);
-        this.retryStartTimeout_ = null;
-      }
-      camera.App.onErrorRecovered('no-camera');
-    }, error => {
-      if (error && error.name != 'ConstraintNotSatisfiedError') {
-        // Constraint errors are expected, so don't report them.
-        console.error(error);
-      }
-      // TODO(mtomasz): Workaround for crbug.com/383241.
-      setTimeout(tryStartWithConstraints.bind(this, index + 1), 0);
-    });
-  };
-
-  this.options_.videoDeviceIds().then(deviceIds => {
-    deviceIds.forEach(deviceId => {
-      constraintsCandidates = constraintsCandidates.concat(
-          this.constraintsCandidates_(deviceId));
-    });
-    tryStartWithConstraints(0);
-  }).catch(onFailure);
+  });
 };
