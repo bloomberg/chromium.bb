@@ -342,4 +342,11 @@ ThreadPriority PlatformThread::GetCurrentThreadPriority() {
 
 #endif  // !defined(OS_MACOSX) && !defined(OS_FUCHSIA)
 
+// static
+size_t PlatformThread::GetDefaultThreadStackSize() {
+  pthread_attr_t attributes;
+  pthread_attr_init(&attributes);
+  return base::GetDefaultThreadStackSize(attributes);
+}
+
 }  // namespace base
