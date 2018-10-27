@@ -12,7 +12,6 @@ var camera = camera || {};
 /**
  * Creates the Camera App main object.
  * @param {number} aspectRatio Aspect ratio of app window when launched.
- * @implements {camera.views.camera.Preview.Observer}
  * @constructor
  */
 camera.App = function(aspectRatio) {
@@ -145,7 +144,8 @@ camera.App.ViewsStack.prototype.pop = function(opt_result) {
  */
 camera.App.prototype.start = function() {
   var model = new camera.models.Gallery();
-  this.cameraView_ = new camera.views.Camera(this.router_, model, this);
+  this.cameraView_ = new camera.views.Camera(
+      this.router_, model, this.onWindowResize_.bind(this));
   this.browserView_ = new camera.views.Browser(this.router_, model);
   this.dialogView_ = new camera.views.Dialog(this.router_);
 
@@ -279,13 +279,6 @@ camera.App.prototype.onKeyPressed_ = function(event) {
   if (currentView && !document.body.classList.contains('has-error')) {
     currentView.onKeyPressed(event);
   }
-};
-
-/**
- * @override
- */
-camera.App.prototype.onAspectRatio = function(aspectRatio) {
-  this.onWindowResize_(aspectRatio);
 };
 
 /**
