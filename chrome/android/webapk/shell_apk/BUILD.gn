@@ -98,6 +98,7 @@ template("webapk_tmpl") {
                            [
                              "apk_package_name",
                              "config_file",
+                             "delta_config_file",
                            ])
 
     input = _manifest_to_upload_output
@@ -229,7 +230,8 @@ webapk_tmpl("unbound_webapk") {
 }
 
 webapk_tmpl("http_webapk") {
-  config_file = "manifest/http_manifest_config.json"
+  config_file = "manifest/bound_manifest_config.json"
+  delta_config_file = "manifest/http_manifest_config_delta.json"
   apk_name = "HttpWebApk"
   apk_package_name = "org.chromium.webapk.http"
 }

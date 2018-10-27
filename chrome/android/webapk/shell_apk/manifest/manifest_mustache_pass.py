@@ -32,6 +32,7 @@ def _AppendParsedVariables(initial_variable_list, variables_arg, error_func):
     variables[name] = value
   return variables
 
+
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--template', required=True,
@@ -40,6 +41,8 @@ def main():
                       help='The output file to generate.')
   parser.add_argument('--config_file',
                       help='JSON file with values to put into template.')
+  parser.add_argument('--delta_config_file', help='JSON file with '
+                      'substitutions to |config_file|.')
   parser.add_argument('--extra_variables', help='Variables to be made '
                       'available in the template processing environment (in '
                       'addition to those specified in config file), as a GN '
@@ -47,10 +50,15 @@ def main():
                       default='')
   options = parser.parse_args()
 
-  variables = {}
+  config = {}
   if options.config_file:
     with open(options.config_file, 'r') as f:
-      variables = json.loads(f.read())
+      config = json.loads(f.read())
+  if options.delta_config_file:
+    with open(options.delta_config_file, 'r') as f:
+      config.update(json.loads(f.read()))
+
+  variables = config
   variables = _AppendParsedVariables(variables, options.extra_variables,
                                      parser.error)
 
