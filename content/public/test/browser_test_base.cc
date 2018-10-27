@@ -36,6 +36,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
@@ -498,10 +499,8 @@ void BrowserTestBase::InitializeNetworkProcess() {
 
   // Send the host resolver rules to the network service if it's in use. No need
   // to do this if it's running in the browser process though.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      IsNetworkServiceRunningInProcess()) {
+  if (!IsOutOfProcessNetworkService())
     return;
-  }
 
   net::RuleBasedHostResolverProc::RuleList rules = host_resolver()->GetRules();
   std::vector<network::mojom::RulePtr> mojo_rules;

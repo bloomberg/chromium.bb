@@ -169,6 +169,8 @@ jumbo_source_set("common_sources") {
     "mhtml_generation_params.h",
     "mime_handler_view_mode.cc",
     "mime_handler_view_mode.h",
+    "network_service_util.cc",
+    "network_service_util.h",
     "origin_util.h",
     "page_importance_signals.h",
     "page_state.cc",
