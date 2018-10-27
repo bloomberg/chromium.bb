@@ -5856,9 +5856,9 @@
     "gtest_tests": [
       {
         "isolate_coverage_data": true,
-        "shards": 2,
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 2
         },
         "test": "base_unittests"
       }
