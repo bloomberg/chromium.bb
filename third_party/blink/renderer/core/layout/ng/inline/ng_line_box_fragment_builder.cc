@@ -84,7 +84,7 @@ scoped_refptr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
     break_token_ = NGInlineBreakToken::Create(node_);
 
   scoped_refptr<const NGPhysicalLineBoxFragment> fragment =
-      base::AdoptRef(new NGPhysicalLineBoxFragment(this));
+      NGPhysicalLineBoxFragment::Create(this);
 
   return base::AdoptRef(new NGLayoutResult(
       std::move(fragment), std::move(oof_positioned_descendants_),

@@ -11,10 +11,26 @@
 
 namespace blink {
 
+scoped_refptr<const NGPhysicalLineBoxFragment>
+NGPhysicalLineBoxFragment::Create(NGLineBoxFragmentBuilder* builder) {
+  // We store the children list inline in the fragment as a flexible
+  // array. Therefore, we need to make sure to allocate enough space for
+  // that array here, which requires a manual allocation + placement new.
+  // The initialization of the array is done by NGPhysicalContainerFragment;
+  // we pass the buffer as a constructor argument.
+  void* data = ::WTF::Partitions::FastMalloc(
+      sizeof(NGPhysicalLineBoxFragment) +
+          builder->children_.size() * sizeof(NGLinkStorage),
+      ::WTF::GetStringWithTypeName<NGPhysicalLineBoxFragment>());
+  new (data) NGPhysicalLineBoxFragment(builder);
+  return base::AdoptRef(static_cast<NGPhysicalLineBoxFragment*>(data));
+}
+
 NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
     NGLineBoxFragmentBuilder* builder)
     : NGPhysicalContainerFragment(builder,
                                   builder->GetWritingMode(),
+                                  children_,
                                   kFragmentLineBox,
                                   0),
       metrics_(builder->metrics_) {

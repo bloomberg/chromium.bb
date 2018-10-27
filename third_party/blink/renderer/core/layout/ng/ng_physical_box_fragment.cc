@@ -17,12 +17,29 @@
 
 namespace blink {
 
+scoped_refptr<const NGPhysicalBoxFragment> NGPhysicalBoxFragment::Create(
+    NGBoxFragmentBuilder* builder,
+    WritingMode block_or_line_writing_mode) {
+  // We store the children list inline in the fragment as a flexible
+  // array. Therefore, we need to make sure to allocate enough space for
+  // that array here, which requires a manual allocation + placement new.
+  // The initialization of the array is done by NGPhysicalContainerFragment;
+  // we pass the buffer as a constructor argument.
+  void* data = ::WTF::Partitions::FastMalloc(
+      sizeof(NGPhysicalBoxFragment) +
+          builder->children_.size() * sizeof(NGLinkStorage),
+      ::WTF::GetStringWithTypeName<NGPhysicalBoxFragment>());
+  new (data) NGPhysicalBoxFragment(builder, block_or_line_writing_mode);
+  return base::AdoptRef(static_cast<NGPhysicalBoxFragment*>(data));
+}
+
 NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     NGBoxFragmentBuilder* builder,
     WritingMode block_or_line_writing_mode)
     : NGPhysicalContainerFragment(
           builder,
           block_or_line_writing_mode,
+          children_,
           (builder->node_ && builder->node_.IsRenderedLegend())
               ? kFragmentRenderedLegend
               : kFragmentBox,

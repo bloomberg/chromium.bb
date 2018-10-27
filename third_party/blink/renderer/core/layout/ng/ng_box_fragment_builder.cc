@@ -226,8 +226,8 @@ scoped_refptr<NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(
     }
   }
 
-  scoped_refptr<const NGPhysicalBoxFragment> fragment = base::AdoptRef(
-      new NGPhysicalBoxFragment(this, block_or_line_writing_mode));
+  scoped_refptr<const NGPhysicalBoxFragment> fragment =
+      NGPhysicalBoxFragment::Create(this, block_or_line_writing_mode);
 
   Vector<NGPositionedFloat> positioned_floats;
 

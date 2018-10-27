@@ -17,7 +17,17 @@ class NGLineBoxFragmentBuilder;
 class CORE_EXPORT NGPhysicalLineBoxFragment final
     : public NGPhysicalContainerFragment {
  public:
-  NGPhysicalLineBoxFragment(NGLineBoxFragmentBuilder* builder);
+  static scoped_refptr<const NGPhysicalLineBoxFragment> Create(
+      NGLineBoxFragmentBuilder* builder);
+
+  ~NGPhysicalLineBoxFragment() {
+    for (const NGLinkStorage& child : Children())
+      child.fragment->Release();
+  }
+
+  ChildLinkList Children() const final {
+    return ChildLinkList(num_children_, &children_[0]);
+  }
 
   const NGLineHeightMetrics& Metrics() const { return metrics_; }
 
@@ -54,7 +64,10 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   bool HasSoftWrapToNextLine() const;
 
  private:
+  NGPhysicalLineBoxFragment(NGLineBoxFragmentBuilder* builder);
+
   NGLineHeightMetrics metrics_;
+  NGLinkStorage children_[];
 };
 
 DEFINE_TYPE_CASTS(NGPhysicalLineBoxFragment,

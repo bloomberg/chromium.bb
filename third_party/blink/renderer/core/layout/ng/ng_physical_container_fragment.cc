@@ -17,18 +17,22 @@ namespace blink {
 NGPhysicalContainerFragment::NGPhysicalContainerFragment(
     NGContainerFragmentBuilder* builder,
     WritingMode block_or_line_writing_mode,
+    NGLinkStorage* buffer,
     NGFragmentType type,
     unsigned sub_type)
-    : NGPhysicalFragment(builder, type, sub_type) {
-  children_.ReserveInitialCapacity(children_.size());
-
+    : NGPhysicalFragment(builder, type, sub_type),
+      num_children_(builder->children_.size()) {
   DCHECK_EQ(builder->children_.size(), builder->offsets_.size());
+  // Because flexible arrays need to be the last member in a class, we need to
+  // have the buffer passed as a constructor argument and have the actual
+  // storage be part of the subclass.
   wtf_size_t i = 0;
   for (auto& child : builder->children_) {
-    children_.emplace_back(std::move(child),
-                           builder->offsets_[i].ConvertToPhysical(
-                               block_or_line_writing_mode, builder->Direction(),
-                               Size(), child->Size()));
+    buffer[i].fragment = child.get();
+    buffer[i].fragment->AddRef();
+    buffer[i].offset = builder->offsets_[i].ConvertToPhysical(
+        block_or_line_writing_mode, builder->Direction(), Size(),
+        child->Size());
     ++i;
   }
 }
