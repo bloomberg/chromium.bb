@@ -119,7 +119,7 @@ class NetworkHandler : public DevToolsDomainHandler,
   void ContinueInterceptedRequest(
       const std::string& request_id,
       Maybe<std::string> error_reason,
-      Maybe<std::string> base64_raw_response,
+      Maybe<protocol::Binary> raw_response,
       Maybe<std::string> url,
       Maybe<std::string> method,
       Maybe<std::string> post_data,
