@@ -359,6 +359,7 @@ void InputInjectorX11::Core::SetAutoRepeatEnabled(bool mode) {
   XKeyboardControl control;
   control.auto_repeat_mode = mode ? AutoRepeatModeOn : AutoRepeatModeOff;
   XChangeKeyboardControl(display_, KBAutoRepeatMode, &control);
+  XFlush(display_);
 }
 
 bool InputInjectorX11::Core::IsLockKey(KeyCode keycode) {
