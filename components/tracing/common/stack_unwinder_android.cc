@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/android/jni_generator/jni_generator_helper.h"
 #include "base/debug/proc_maps_linux.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -82,6 +83,9 @@ class ScopedEventSignaller {
   AsyncSafeWaitableEvent* event_;
 };
 
+using JniMarker = jni_generator::JniJavaCallContextUnchecked;
+using JniMarkers = std::vector<const JniMarker*>;
+
 // Unwinds from given |cursor| readable by libunwind, and returns
 // the number of frames added to the output. This function can unwind through
 // android framework and then chrome functions. It cannot handle the cases when
@@ -92,19 +96,28 @@ class ScopedEventSignaller {
 size_t TraceStackWithContext(unw_cursor_t* cursor,
                              CFIBacktraceAndroid* cfi_unwinder,
                              const tracing::StackUnwinderAndroid* unwinder,
-                             uintptr_t stack_segment_base,
+                             const uintptr_t stack_segment_base,
+                             const JniMarkers& jni_markers,
                              const void** out_trace,
-                             size_t max_depth) {
+                             const size_t max_depth) {
   size_t depth = 0;
   unw_word_t ip = 0, sp = 0;
   unw_get_reg(cursor, UNW_REG_SP, &sp);
-  uintptr_t initial_sp = sp;
+  const uintptr_t initial_sp = sp;
+  uintptr_t previous_sp = 0;
   do {
     unw_get_reg(cursor, UNW_REG_IP, &ip);
     unw_get_reg(cursor, UNW_REG_SP, &sp);
     DCHECK_GE(sp, initial_sp);
     if (stack_segment_base > 0)
       DCHECK_LT(sp, stack_segment_base);
+
+    // If SP and IP did not change from previous frame, then unwinding failed.
+    if (previous_sp == sp &&
+        ip == reinterpret_cast<uintptr_t>(out_trace[depth - 1])) {
+      break;
+    }
+    previous_sp = sp;
 
     // If address is in chrome library, then use CFI unwinder since chrome might
     // not have EHABI unwind tables.
@@ -125,11 +138,27 @@ size_t TraceStackWithContext(unw_cursor_t* cursor,
     // library.
     uintptr_t lr = 0;
     unw_get_reg(cursor, UNW_ARM_LR, &lr);
-    return depth + cfi_unwinder->Unwind(ip, sp, lr, out_trace + depth,
-                                        max_depth - depth);
-  } else if (depth == 0) {
-    RecordUnwindResult(SamplingProfilerUnwindResult::kFirstFrameUnmapped);
+    depth +=
+        cfi_unwinder->Unwind(ip, sp, lr, out_trace + depth, max_depth - depth);
   }
+  if (depth >= max_depth)
+    return depth;
+
+  // Try unwinding the rest of frames from Jni markers on stack if present. This
+  // is to skip trying to unwind art frames which do not have unwind
+  // information.
+  for (const auto* marker : jni_markers) {
+    // Skip if we already walked past this marker.
+    if (sp > marker->sp)
+      continue;
+    depth += cfi_unwinder->Unwind(marker->pc, marker->sp, /*lr=*/0,
+                                  out_trace + depth, max_depth - depth);
+    if (depth >= max_depth)
+      break;
+  }
+
+  if (depth == 0)
+    RecordUnwindResult(SamplingProfilerUnwindResult::kFirstFrameUnmapped);
   return depth;
 }
 
@@ -271,7 +300,7 @@ size_t StackUnwinderAndroid::TraceStack(const void** out_trace,
     return 0;
   return TraceStackWithContext(
       &cursor, CFIBacktraceAndroid::GetInitializedInstance(), this,
-      /* stack_segment_base=*/0, out_trace, max_depth);
+      /* stack_segment_base=*/0, JniMarkers(), out_trace, max_depth);
 }
 
 size_t StackUnwinderAndroid::TraceStack(base::PlatformThreadId tid,
@@ -335,10 +364,28 @@ size_t StackUnwinderAndroid::TraceStack(base::PlatformThreadId tid,
   }
   DCHECK(replaced_sp);
 
-  // Unwind can use address on the stack. So, replace them as well. See EHABI
-  // #7.5.4 table 3.
   uintptr_t* new_stack = reinterpret_cast<uintptr_t*>(stack_copy_buffer.get());
+  constexpr uintptr_t marker_l =
+                          jni_generator::kJniStackMarkerValue & 0xFFFFFFFF,
+                      marker_r = jni_generator::kJniStackMarkerValue >> 32;
+  JniMarkers jni_markers;
   for (size_t i = 0; i < stack_size / sizeof(uintptr_t); ++i) {
+    if (new_stack[i] == marker_r && i > 0 && new_stack[i - 1] == marker_l) {
+      // Note: JniJavaCallContext::sp will be replaced with offset below.
+      const JniMarker* marker =
+          reinterpret_cast<const JniMarker*>(new_stack + i - 1);
+      DCHECK_EQ(jni_generator::kJniStackMarkerValue,
+                jni_markers.back()->marker);
+      if (marker->sp >= sp && marker->sp < sp + stack_size &&
+          CFIBacktraceAndroid::is_chrome_address(marker->pc)) {
+        jni_markers.push_back(marker);
+      } else {
+        NOTREACHED();
+      }
+    }
+
+    // Unwind can use address on the stack. So, replace them as well. See EHABI
+    // #7.5.4 table 3.
     if (new_stack[i] >= sp && new_stack[i] < sp + stack_size)
       new_stack[i] += relocation_offset;
   }
@@ -381,7 +428,7 @@ size_t StackUnwinderAndroid::TraceStack(base::PlatformThreadId tid,
   return TraceStackWithContext(
       &cursor, cfi_unwinder, this,
       reinterpret_cast<uintptr_t>(stack_copy_buffer.get()) + stack_size,
-      out_trace, max_depth);
+      jni_markers, out_trace, max_depth);
 }
 
 uintptr_t StackUnwinderAndroid::GetEndAddressOfRegion(uintptr_t addr) const {
