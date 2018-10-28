@@ -313,7 +313,11 @@ void WaylandBufferManager::CreateSucceededInternal(
     }
   }
 
-  DCHECK(buffer);
+  // It can happen that buffer was destroyed by a client while the Wayland
+  // compositor was processing a request to create a wl_buffer.
+  if (!buffer)
+    return;
+
   buffer->wl_buffer.reset(new_buffer);
   buffer->params = nullptr;
   zwp_linux_buffer_params_v1_destroy(params);
@@ -370,7 +374,6 @@ void WaylandBufferManager::CreateSucceeded(
     struct zwp_linux_buffer_params_v1* params,
     struct wl_buffer* new_buffer) {
   WaylandBufferManager* self = static_cast<WaylandBufferManager*>(data);
-
   DCHECK(self);
   self->CreateSucceededInternal(params, new_buffer);
 }

@@ -16,7 +16,8 @@ namespace ui {
 class ClientNativePixmapFactoryWayland : public gfx::ClientNativePixmapFactory {
  public:
   ClientNativePixmapFactoryWayland() {
-    dmabuf_factory_.reset(gfx::CreateClientNativePixmapFactoryDmabuf());
+    dmabuf_factory_.reset(gfx::CreateClientNativePixmapFactoryDmabuf(
+        true /* supports_native_pixmap_import_from_dmabuf */));
   }
   ~ClientNativePixmapFactoryWayland() override {}
 
