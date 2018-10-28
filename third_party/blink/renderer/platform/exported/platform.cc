@@ -68,6 +68,7 @@
 #include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/webrtc/api/rtpparameters.h"
+#include "third_party/webrtc/p2p/base/portallocator.h"
 
 namespace blink {
 
@@ -324,6 +325,11 @@ std::unique_ptr<WebRTCPeerConnectionHandler>
 Platform::CreateRTCPeerConnectionHandler(
     WebRTCPeerConnectionHandlerClient*,
     scoped_refptr<base::SingleThreadTaskRunner>) {
+  return nullptr;
+}
+
+std::unique_ptr<cricket::PortAllocator> Platform::CreateWebRtcPortAllocator(
+    WebLocalFrame* frame) {
   return nullptr;
 }
 
