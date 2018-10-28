@@ -13328,17 +13328,6 @@
       },
       {
         "args": [
-          "--disable-features=VizDisplayCompositor"
-        ],
-        "name": "non_viz_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
           "--enable-features=WebUIPolymer2",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter"
         ],
@@ -13430,17 +13419,6 @@
       },
       {
         "args": [
-          "--disable-features=VizDisplayCompositor"
-        ],
-        "name": "non_viz_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
           "--enable-features=TracingPerfettoBackend",
           "--gtest_filter=TracingControllerTest.*"
         ],
@@ -13451,16 +13429,6 @@
         "test": "content_browsertests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_unittests"
-      },
-      {
-        "args": [
-          "--disable-features=VizDisplayCompositor"
-        ],
-        "name": "non_viz_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -14022,18 +13990,6 @@
       },
       {
         "args": [
-          "--disable-features=VizDisplayCompositor",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "name": "non_viz_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
           "--enable-features=WebUIPolymer2",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter",
           "--test-launcher-print-test-stdio=always"
@@ -14129,18 +14085,6 @@
       },
       {
         "args": [
-          "--disable-features=VizDisplayCompositor",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "name": "non_viz_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
           "--enable-features=TracingPerfettoBackend",
           "--gtest_filter=TracingControllerTest.*",
           "--test-launcher-print-test-stdio=always"
@@ -14155,17 +14099,6 @@
         "args": [
           "--test-launcher-print-test-stdio=always"
         ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_unittests"
-      },
-      {
-        "args": [
-          "--disable-features=VizDisplayCompositor",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "name": "non_viz_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
