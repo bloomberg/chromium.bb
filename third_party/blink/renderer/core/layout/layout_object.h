@@ -749,8 +749,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsBlendingAllowed() const {
     return !IsSVG() || IsSVGShape() || IsSVGImage() || IsSVGText() ||
            IsSVGInline() || IsSVGRoot() || IsSVGForeignObject() ||
-           // TODO(pdr): According to the current spec, blending should apply to
-           // hidden containers (e.g. pattern).
+           // Blending does not apply to non-renderable elements such as
+           // patterns (see: https://github.com/w3c/fxtf-drafts/issues/309).
            (IsSVGContainer() && !IsSVGHiddenContainer());
   }
   virtual bool HasNonIsolatedBlendingDescendants() const {
