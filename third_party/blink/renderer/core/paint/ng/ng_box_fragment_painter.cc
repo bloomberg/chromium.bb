@@ -201,6 +201,10 @@ void NGBoxFragmentPainter::RecordHitTestData(const PaintInfo& paint_info,
   if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
     return;
 
+  // If an object is not visible, it does not participate in hit testing.
+  if (box_fragment_.Style().Visibility() != EVisibility::kVisible)
+    return;
+
   const NGPhysicalFragment& physical_fragment = PhysicalFragment();
   auto touch_action = physical_fragment.EffectiveWhitelistedTouchAction();
   if (touch_action == TouchAction::kTouchActionAuto)

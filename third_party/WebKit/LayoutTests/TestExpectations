@@ -2174,8 +2174,13 @@ crbug.com/567837 virtual/scalefactor150/fast/hidpi/static/popup-menu-with-scroll
 crbug.com/567837 virtual/scalefactor200/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ Skip ]
 crbug.com/567837 virtual/scalefactor200withzoom/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ Skip ]
 
+# These tests currently fail but are fixed with PaintTouchActionRects.
 crbug.com/876305 fast/events/touch/compositor-touch-hit-rects-list-translate.html [ Failure ]
 crbug.com/876305 fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
+crbug.com/897186 fast/events/touch/compositor-touch-hit-rects-visibility-hidden.html [ Failure ]
+crbug.com/897186 virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-visibility-hidden.html [ Failure ]
+crbug.com/897186 virtual/user-activation-v2/fast/events/touch/compositor-touch-hit-rects-visibility-hidden.html [ Failure ]
+crbug.com/897186 virtual/mouseevent_fractional/fast/events/touch/compositor-touch-hit-rects-visibility-hidden.html [ Failure ]
 
 # TODO(ojan): These tests aren't flaky. See crbug.com/517144.
 # Release trybots run asserts, but the main waterfall ones don't. So, even

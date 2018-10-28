@@ -174,6 +174,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectsWithoutPaint) {
       .touchActionNone { touch-action: none; }
       #childVisible { width: 200px; height: 25px; }
       #childHidden { width: 200px; height: 30px; visibility: hidden; }
+      #childDisplayNone { width: 200px; height: 30px; display: none; }
     </style>
     <div id='parent'>
       <div id='childVisible'></div>
@@ -189,19 +190,17 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectsWithoutPaint) {
       TestDisplayItem(scrolling_client, kDocumentBackgroundType));
 
   // Add a touch action to parent and ensure that hit test display items are
-  // created for both the parent and child.
+  // created for both the parent and the visible child.
   auto* parent_element = GetElementById("parent");
   parent_element->setAttribute(HTMLNames::classAttr, "touchActionNone");
   GetDocument().View()->UpdateAllLifecyclePhases();
   auto* parent = GetLayoutObjectByElementId("parent");
   auto* childVisible = GetLayoutObjectByElementId("childVisible");
-  auto* childHidden = GetLayoutObjectByElementId("childHidden");
   EXPECT_DISPLAY_LIST(
-      RootPaintController().GetDisplayItemList(), 4,
+      RootPaintController().GetDisplayItemList(), 3,
       TestDisplayItem(scrolling_client, kDocumentBackgroundType),
       TestDisplayItem(*parent, DisplayItem::kHitTest),
-      TestDisplayItem(*childVisible, DisplayItem::kHitTest),
-      TestDisplayItem(*childHidden, DisplayItem::kHitTest));
+      TestDisplayItem(*childVisible, DisplayItem::kHitTest));
 
   // Remove the touch action from parent and ensure no hit test display items
   // are left.
