@@ -932,7 +932,7 @@
       },
       'Chromium Mac 10.13': {
         'test_suites': {
-          'gtest_tests': 'chromium_mac_gtests',
+          'gtest_tests': 'chromium_mac_fyi_gtests',
           'isolated_scripts': 'chromium_rel_isolated_scripts',
         },
       },
@@ -1407,13 +1407,13 @@
             'mac_10.14',
         ],
         'test_suites': {
-          'gtest_tests': 'chromium_mac_gtests',
+          'gtest_tests': 'chromium_mac_fyi_gtests',
           'isolated_scripts': 'chromium_rel_isolated_scripts',
         },
       },
       'mac-views-rel': {
         'test_suites': {
-          'gtest_tests': 'chromium_mac_gtests',
+          'gtest_tests': 'chromium_mac_fyi_gtests',
         },
         'args': [
           '--enable-features=ViewsBrowserWindows',
