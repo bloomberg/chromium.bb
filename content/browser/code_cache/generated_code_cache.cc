@@ -8,7 +8,8 @@
 #include "content/public/common/url_constants.h"
 #include "net/base/completion_callback.h"
 #include "net/base/completion_once_callback.h"
-#include "net/http/http_util.h"
+#include "net/base/url_util.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -51,14 +52,14 @@ std::string GetCacheKey(const GURL& resource_url, const GURL& origin_lock) {
   // Add a prefix _ so it can't be parsed as a valid URL.
   std::string key = "_key";
   // Remove reference, username and password sections of the URL.
-  key.append(net::HttpUtil::SpecForRequest(resource_url));
+  key.append(net::SimplifyUrlForRequest(resource_url).spec());
   // Add a separator between URL and origin to avoid any possibility of
   // attacks by crafting the URL. URLs do not contain any control ASCII
   // characters, and also space is encoded. So use ' \n' as a seperator.
   key.append(" \n");
 
   if (origin_lock.is_valid())
-    key.append(net::HttpUtil::SpecForRequest(origin_lock));
+    key.append(net::SimplifyUrlForRequest(origin_lock).spec());
   return key;
 }
 }  // namespace
