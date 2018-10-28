@@ -227,22 +227,28 @@ class TransitionAnimationObserver : public ui::ImplicitAnimationObserver {
 // The view for the app list background shield which changes color and radius.
 class AppListBackgroundShieldView : public views::View {
  public:
-  AppListBackgroundShieldView()
+  explicit AppListBackgroundShieldView(ui::LayerType layer_type)
       : color_(AppListView::kDefaultBackgroundColor), corner_radius_(0) {
-    SetPaintToLayer();
+    SetPaintToLayer(layer_type);
     layer()->SetFillsBoundsOpaquely(false);
+    if (layer()->type() == ui::LAYER_SOLID_COLOR)
+      layer()->SetColor(color_);
   }
 
   ~AppListBackgroundShieldView() override = default;
 
   void UpdateColor(SkColor color) {
     color_ = color;
-    SchedulePaint();
+    if (layer()->type() == ui::LAYER_SOLID_COLOR)
+      layer()->SetColor(color);
+    else
+      SchedulePaint();
   }
 
   void UpdateCornerRadius(int corner_radius) {
     corner_radius_ = corner_radius;
-    SchedulePaint();
+    if (!layer())
+      SchedulePaint();
   }
 
   // Overridden from views::View:
@@ -496,11 +502,14 @@ views::View* AppListView::GetAppListBackgroundShieldForTest() {
 void AppListView::InitContents(int initial_apps_page) {
   // The shield view that colors/blurs the background of the app list and
   // makes it transparent.
-  app_list_background_shield_ = new AppListBackgroundShieldView();
+  bool use_background_blur =
+      is_background_blur_enabled_ && !IsHomeLauncherEnabledInTabletMode();
+  app_list_background_shield_ = new AppListBackgroundShieldView(
+      use_background_blur ? ui::LAYER_SOLID_COLOR : ui::LAYER_TEXTURED);
   app_list_background_shield_->layer()->SetOpacity(
       is_background_blur_enabled_ ? kAppListOpacityWithBlur : kAppListOpacity);
   SetBackgroundShieldColor();
-  if (is_background_blur_enabled_ && !IsHomeLauncherEnabledInTabletMode()) {
+  if (use_background_blur) {
     app_list_background_shield_mask_ = views::Painter::CreatePaintedLayer(
         views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK,
                                                     kAppListBackgroundRadius));
@@ -1339,7 +1348,6 @@ void AppListView::UpdateYPositionAndOpacity(int y_position_in_screen,
   gfx::NativeView native_view = fullscreen_widget_->GetNativeView();
   ::wm::ConvertRectFromScreen(native_view->parent(), &new_widget_bounds);
   native_view->SetBounds(new_widget_bounds);
-
   UpdateChildViewsYPositionAndOpacity();
 }
 

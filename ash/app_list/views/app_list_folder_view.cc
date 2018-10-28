@@ -449,8 +449,7 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
   AddChildView(background_view_);
   view_model_->Add(background_view_, kIndexBackground);
 
-  contents_container_->SetPaintToLayer();
-  contents_container_->layer()->SetFillsBoundsOpaquely(false);
+  contents_container_->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
   AddChildView(contents_container_);
   view_model_->Add(contents_container_, kIndexContentsContainer);
 
