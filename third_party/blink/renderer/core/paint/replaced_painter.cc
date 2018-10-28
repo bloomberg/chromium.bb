@@ -186,6 +186,10 @@ void ReplacedPainter::RecordHitTestData(const PaintInfo& paint_info,
   if (paint_info.phase != PaintPhase::kForeground)
     return;
 
+  // If an object is not visible, it does not participate in hit testing.
+  if (layout_replaced_.StyleRef().Visibility() != EVisibility::kVisible)
+    return;
+
   auto touch_action = layout_replaced_.EffectiveWhitelistedTouchAction();
   if (touch_action == TouchAction::kTouchActionAuto)
     return;

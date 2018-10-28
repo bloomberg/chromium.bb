@@ -74,6 +74,10 @@ void TableRowPainter::RecordHitTestData(const PaintInfo& paint_info,
   if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
     return;
 
+  // If an object is not visible, it does not participate in hit testing.
+  if (layout_table_row_.StyleRef().Visibility() != EVisibility::kVisible)
+    return;
+
   auto touch_action = layout_table_row_.EffectiveWhitelistedTouchAction();
   if (touch_action == TouchAction::kTouchActionAuto)
     return;

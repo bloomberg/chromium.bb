@@ -337,6 +337,10 @@ void InlineFlowBoxPainter::RecordHitTestData(const PaintInfo& paint_info,
   LayoutObject* layout_object =
       LineLayoutAPIShim::LayoutObjectFrom(inline_flow_box_.GetLineLayoutItem());
 
+  // If an object is not visible, it does not participate in hit testing.
+  if (layout_object->StyleRef().Visibility() != EVisibility::kVisible)
+    return;
+
   auto touch_action = layout_object->EffectiveWhitelistedTouchAction();
   if (touch_action == TouchAction::kTouchActionAuto)
     return;
