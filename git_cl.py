@@ -4519,6 +4519,8 @@ def CMDcomments(parser, args):
   """Shows or posts review comments for any changelist."""
   parser.add_option('-a', '--add-comment', dest='comment',
                     help='comment to add to an issue')
+  parser.add_option('-p', '--publish', action='store_true',
+                    help='marks CL as ready and sends comment to reviewers')
   parser.add_option('-i', '--issue', dest='issue',
                     help='review issue id (defaults to current issue). '
                          'If given, requires --rietveld or --gerrit')
@@ -4547,7 +4549,7 @@ def CMDcomments(parser, args):
     parser.error('rietveld is not supported')
 
   if options.comment:
-    cl.AddComment(options.comment)
+    cl.AddComment(options.comment, options.publish)
     return 0
 
   summary = sorted(cl.GetCommentsSummary(readable=options.readable),
