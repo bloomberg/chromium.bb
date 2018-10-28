@@ -64,10 +64,13 @@
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
-#include "third_party/webrtc/p2p/base/portallocator.h"
 
 namespace base {
 class SingleThreadTaskRunner;
+}
+
+namespace cricket {
+class PortAllocator;
 }
 
 namespace gpu {
@@ -651,9 +654,7 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // May return null if WebRTC functionality is not implemented.
   virtual std::unique_ptr<cricket::PortAllocator> CreateWebRtcPortAllocator(
-      WebLocalFrame* frame) {
-    return nullptr;
-  }
+      WebLocalFrame* frame);
 
   // Creates a WebCanvasCaptureHandler to capture Canvas output.
   virtual std::unique_ptr<WebCanvasCaptureHandler>
