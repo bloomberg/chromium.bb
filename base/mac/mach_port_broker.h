@@ -78,11 +78,13 @@ class BASE_EXPORT MachPortBroker : public base::PortProvider {
   // incoming message needs to be received.
   void HandleRequest();
 
-  // Updates the mapping for |pid| to include the given |mach_info|.  Does
+  // Updates the mapping for |pid| to include the given |mach_info|. Does
   // nothing if PlaceholderForPid() has not already been called for the given
   // |pid|. Callers MUST acquire the lock given by GetLock() before calling
-  // this method (and release the lock afterwards).
-  void FinalizePid(base::ProcessHandle pid, mach_port_t task_port);
+  // this method (and release the lock afterwards). Returns true if the port
+  // was accepeted for the PID, or false if it was rejected (e.g. due to an
+  // unknown sender).
+  bool FinalizePid(base::ProcessHandle pid, mach_port_t task_port);
 
   // Name used to identify a particular port broker.
   const std::string name_;
