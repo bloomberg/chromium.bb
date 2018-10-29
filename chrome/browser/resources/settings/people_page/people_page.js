@@ -479,9 +479,28 @@ Polymer({
    * @param {?settings.SyncStatus} syncStatus
    * @return {boolean}
    */
-  isAdvancedSyncSettingsVisible_: function(syncStatus) {
+  isPreUnifiedConsentAdvancedSyncSettingsVisible_: function(syncStatus) {
     return !!syncStatus && !!syncStatus.signedIn &&
         !!syncStatus.syncSystemEnabled && !this.unifiedConsentEnabled_;
+  },
+
+  /**
+   * @private
+   * @param {?settings.SyncStatus} syncStatus
+   * @return {boolean}
+   */
+  isAdvancedSyncSettingsSearchable_: function(syncStatus) {
+    return this.isPreUnifiedConsentAdvancedSyncSettingsVisible_(syncStatus) ||
+        !!this.unifiedConsentEnabled_;
+  },
+
+  /**
+   * @private
+   * @return {Element|null}
+   */
+  getAdvancedSyncSettingsAssociatedControl_: function() {
+    return !!this.unifiedConsentEnabled_ ? this.$$('#sync-setup') :
+                                           this.$$('#sync-status');
   },
 
   /**
