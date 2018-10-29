@@ -9,6 +9,7 @@ import android.os.Bundle;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.components.gcm_driver.LazySubscriptionsManager;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
@@ -111,7 +112,10 @@ public class InstanceIDBridge {
             @Override
             protected String doBackgroundWork() {
                 try {
-                    // TODO(https://crbug.com/882887): Store laziness information.
+                    LazySubscriptionsManager.storeLazinessInformation(
+                            LazySubscriptionsManager.buildSubscriptionUniqueId(
+                                    mSubtype, authorizedEntity),
+                            isLazy);
                     return mInstanceID.getToken(authorizedEntity, scope, extras);
                 } catch (IOException ex) {
                     return "";
