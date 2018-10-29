@@ -33,6 +33,7 @@ namespace content {
 #define MAYBE_GetTrackCapabilities GetTrackCapabilities
 #define MAYBE_GetTrackSettings GetTrackSettings
 #define MAYBE_ManipulateZoom DISABLED_ManipulateZoom
+#define MAYBE_ManipulateExposureTime DISABLED_ManipulateExposureTime
 #else
 #define MAYBE_GetPhotoCapabilities GetPhotoCapabilities
 #define MAYBE_GetPhotoSettings GetPhotoSettings
@@ -41,6 +42,7 @@ namespace content {
 #define MAYBE_GetTrackCapabilities GetTrackCapabilities
 #define MAYBE_GetTrackSettings GetTrackSettings
 #define MAYBE_ManipulateZoom ManipulateZoom
+#define MAYBE_ManipulateExposureTime ManipulateExposureTime
 #endif
 
 namespace {
@@ -225,6 +227,12 @@ IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureSucceedsBrowserTest,
                        MAYBE_ManipulateZoom) {
   embedded_test_server()->StartAcceptingConnections();
   ASSERT_TRUE(RunImageCaptureTestCase("testManipulateZoom()"));
+}
+
+IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureSucceedsBrowserTest,
+                       MAYBE_ManipulateExposureTime) {
+  embedded_test_server()->StartAcceptingConnections();
+  ASSERT_TRUE(RunImageCaptureTestCase("testManipulateExposureTime()"));
 }
 
 INSTANTIATE_TEST_CASE_P(
