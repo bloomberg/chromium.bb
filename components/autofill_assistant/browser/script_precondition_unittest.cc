@@ -55,11 +55,12 @@ class DirectCallback {
 class ScriptPreconditionTest : public testing::Test {
  public:
   void SetUp() override {
-    ON_CALL(mock_web_controller_, OnElementExists(ElementsAre("exists"), _))
-        .WillByDefault(RunOnceCallback<1>(true));
     ON_CALL(mock_web_controller_,
-            OnElementExists(ElementsAre("does_not_exist"), _))
-        .WillByDefault(RunOnceCallback<1>(false));
+            OnElementCheck(kExistenceCheck, ElementsAre("exists"), _))
+        .WillByDefault(RunOnceCallback<2>(true));
+    ON_CALL(mock_web_controller_,
+            OnElementCheck(kExistenceCheck, ElementsAre("does_not_exist"), _))
+        .WillByDefault(RunOnceCallback<2>(false));
 
     SetUrl("http://www.example.com/path");
     ON_CALL(mock_web_controller_, OnGetFieldValue(ElementsAre("exists"), _))
@@ -177,8 +178,9 @@ TEST_F(ScriptPreconditionTest, BadPathPattern) {
 }
 
 TEST_F(ScriptPreconditionTest, IgnoreEmptyElementsExist) {
-  EXPECT_CALL(mock_web_controller_, OnElementExists(ElementsAre("exists"), _))
-      .WillOnce(RunOnceCallback<1>(true));
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(kExistenceCheck, ElementsAre("exists"), _))
+      .WillOnce(RunOnceCallback<2>(true));
 
   ScriptPreconditionProto proto;
   proto.add_elements_exist()->add_selectors("exists");

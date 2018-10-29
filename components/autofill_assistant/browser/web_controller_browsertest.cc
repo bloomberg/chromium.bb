@@ -34,25 +34,26 @@ class WebControllerBrowserTest : public content::ContentBrowserTest {
         WebController::CreateForWebContents(shell()->web_contents());
   }
 
-  void AreElementsExist(const std::vector<std::vector<std::string>>& selectors,
+  void RunElementChecks(ElementCheckType check_type,
+                        const std::vector<std::vector<std::string>>& selectors,
                         const std::vector<bool> results) {
     base::RunLoop run_loop;
     ASSERT_EQ(selectors.size(), results.size());
     size_t pending_number_of_checks = selectors.size();
     for (size_t i = 0; i < selectors.size(); i++) {
-      web_controller_->ElementExists(
-          selectors[i],
-          base::BindOnce(&WebControllerBrowserTest::CheckElementExistCallback,
+      web_controller_->ElementCheck(
+          check_type, selectors[i],
+          base::BindOnce(&WebControllerBrowserTest::CheckElementVisibleCallback,
                          base::Unretained(this), run_loop.QuitClosure(),
                          &pending_number_of_checks, results[i]));
     }
     run_loop.Run();
   }
 
-  void CheckElementExistCallback(const base::Closure& done_callback,
-                                 size_t* pending_number_of_checks_output,
-                                 bool expected_result,
-                                 bool result) {
+  void CheckElementVisibleCallback(const base::Closure& done_callback,
+                                   size_t* pending_number_of_checks_output,
+                                   bool expected_result,
+                                   bool result) {
     ASSERT_EQ(expected_result, result);
     *pending_number_of_checks_output -= 1;
     if (*pending_number_of_checks_output == 0) {
@@ -77,8 +78,8 @@ class WebControllerBrowserTest : public content::ContentBrowserTest {
 
   void WaitForElementRemove(const std::vector<std::string>& selectors) {
     base::RunLoop run_loop;
-    web_controller_->ElementExists(
-        selectors,
+    web_controller_->ElementCheck(
+        kExistenceCheck, selectors,
         base::BindOnce(&WebControllerBrowserTest::OnWaitForElementRemove,
                        base::Unretained(this), run_loop.QuitClosure(),
                        selectors));
@@ -255,7 +256,7 @@ class WebControllerBrowserTest : public content::ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(WebControllerBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ConcurrentElementsExist) {
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ConcurrentElementsVisible) {
   std::vector<std::vector<std::string>> selectors;
   std::vector<bool> results;
 
@@ -315,7 +316,33 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ConcurrentElementsExist) {
   selectors.emplace_back(a_selector);
   results.emplace_back(false);
 
-  AreElementsExist(selectors, results);
+  RunElementChecks(kVisibilityCheck, selectors, results);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ElementExists) {
+  std::vector<std::vector<std::string>> selectors;
+  std::vector<bool> results;
+
+  std::vector<std::string> a_selector;
+
+  // A visible element
+  a_selector.emplace_back("#button");
+  selectors.emplace_back(a_selector);
+  results.emplace_back(true);
+
+  // A hidden element.
+  a_selector.clear();
+  a_selector.emplace_back("#hidden");
+  selectors.emplace_back(a_selector);
+  results.emplace_back(true);
+
+  // A nonexistent element.
+  a_selector.clear();
+  a_selector.emplace_back("#doesnotexist");
+  selectors.emplace_back(a_selector);
+  results.emplace_back(false);
+
+  RunElementChecks(kExistenceCheck, selectors, results);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ClickElement) {

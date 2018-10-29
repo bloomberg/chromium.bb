@@ -64,7 +64,7 @@ ScriptExecutor::CreateBatchElementChecker() {
 void ScriptExecutor::WaitForElement(const std::vector<std::string>& selectors,
                                     base::OnceCallback<void(bool)> callback) {
   std::unique_ptr<BatchElementChecker> checker = CreateBatchElementChecker();
-  checker->AddElementExistenceCheck(selectors, base::DoNothing());
+  checker->AddElementCheck(kVisibilityCheck, selectors, base::DoNothing());
   checker->Run(kWaitForSelectorDeadline,
                /* try_done= */ base::DoNothing(),
                /* all_done= */
