@@ -7,8 +7,7 @@
 #include <shlobj.h>
 #include <wrl/client.h>
 
-#include <tuple>
-
+#include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/win/com_init_util.h"
@@ -365,14 +364,15 @@ base::string16 AppendExtensionIfNeeded(const base::string16& filename,
   return return_value;
 }
 
-std::pair<std::vector<base::FilePath>, int> ExecuteSelectFile(
+void ExecuteSelectFile(
     SelectFileDialog::Type type,
     const base::string16& title,
     const base::FilePath& default_path,
     const std::vector<FileFilterSpec>& filter,
     int file_type_index,
     const base::string16& default_extension,
-    HWND owner) {
+    HWND owner,
+    OnSelectFileExecutedCallback on_select_file_executed_callback) {
   base::win::AssertComInitialized();
   std::vector<base::FilePath> paths;
   switch (type) {
@@ -401,7 +401,7 @@ std::pair<std::vector<base::FilePath>, int> ExecuteSelectFile(
       NOTREACHED();
   }
 
-  return std::make_pair(std::move(paths), file_type_index);
+  std::move(on_select_file_executed_callback).Run(paths, file_type_index);
 }
 
 }  // namespace ui

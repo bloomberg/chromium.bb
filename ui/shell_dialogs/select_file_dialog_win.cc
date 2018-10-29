@@ -126,6 +126,18 @@ std::vector<FileFilterSpec> FormatFilterForExtensions(
   return result;
 }
 
+// Forwards the result from a select file operation to the SelectFileDialog
+// object on the UI thread.
+void OnSelectFileExecutedOnDialogTaskRunner(
+    scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
+    OnSelectFileExecutedCallback on_select_file_executed_callback,
+    const std::vector<base::FilePath>& paths,
+    int index) {
+  ui_task_runner->PostTask(
+      FROM_HERE, base::BindOnce(std::move(on_select_file_executed_callback),
+                                paths, index));
+}
+
 // Implementation of SelectFileDialog that shows a Windows common dialog for
 // choosing a file or folder.
 class SelectFileDialogImpl : public ui::SelectFileDialog,
@@ -163,7 +175,8 @@ class SelectFileDialogImpl : public ui::SelectFileDialog,
   void OnSelectFileExecuted(Type type,
                             std::unique_ptr<RunState> run_state,
                             void* params,
-                            std::pair<std::vector<base::FilePath>, int> result);
+                            const std::vector<base::FilePath>& paths,
+                            int index);
 
   bool HasMultipleFileTypeChoicesImpl() override;
 
@@ -190,6 +203,26 @@ SelectFileDialogImpl::SelectFileDialogImpl(
 
 SelectFileDialogImpl::~SelectFileDialogImpl() = default;
 
+// Invokes the |execute_select_file_callback| and returns the result to
+void DoSelectFileOnDialogTaskRunner(
+    const ExecuteSelectFileCallback& execute_select_file_callback,
+    SelectFileDialog::Type type,
+    const base::string16& title,
+    const base::FilePath& default_path,
+    const std::vector<ui::FileFilterSpec>& filter,
+    int file_type_index,
+    const base::string16& default_extension,
+    HWND owner,
+    scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
+    OnSelectFileExecutedCallback on_select_file_executed_callback) {
+  execute_select_file_callback.Run(
+      type, title, default_path, filter, file_type_index, default_extension,
+      owner,
+      base::BindOnce(&OnSelectFileExecutedOnDialogTaskRunner,
+                     std::move(ui_task_runner),
+                     std::move(on_select_file_executed_callback)));
+}
+
 void SelectFileDialogImpl::SelectFileImpl(
     Type type,
     const base::string16& title,
@@ -211,12 +244,14 @@ void SelectFileDialogImpl::SelectFileImpl(
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       run_state->dialog_task_runner;
-  base::PostTaskAndReplyWithResult(
-      task_runner.get(), FROM_HERE,
-      base::BindOnce(execute_select_file_callback_, type, title, default_path,
-                     filter, file_type_index, default_extension, owner),
-      base::BindOnce(&SelectFileDialogImpl::OnSelectFileExecuted, this, type,
-                     std::move(run_state), params));
+  task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&DoSelectFileOnDialogTaskRunner,
+                     execute_select_file_callback_, type, title, default_path,
+                     filter, file_type_index, default_extension, owner,
+                     base::ThreadTaskRunnerHandle::Get(),
+                     base::BindOnce(&SelectFileDialogImpl::OnSelectFileExecuted,
+                                    this, type, std::move(run_state), params)));
 }
 
 bool SelectFileDialogImpl::HasMultipleFileTypeChoicesImpl() {
@@ -240,10 +275,8 @@ void SelectFileDialogImpl::OnSelectFileExecuted(
     Type type,
     std::unique_ptr<RunState> run_state,
     void* params,
-    std::pair<std::vector<base::FilePath>, int> result) {
-  const std::vector<base::FilePath>& paths = result.first;
-  const int index = result.second;
-
+    const std::vector<base::FilePath>& paths,
+    int index) {
   if (listener_) {
     // The paths vector is empty when the user cancels the dialog.
     if (paths.empty()) {
