@@ -627,6 +627,8 @@ TEST(VideoFrame, AllocationSize_OddSize) {
       case PIXEL_FORMAT_XRGB:
       case PIXEL_FORMAT_I420A:
       case PIXEL_FORMAT_RGB32:
+      case PIXEL_FORMAT_ABGR:
+      case PIXEL_FORMAT_XBGR:
         EXPECT_EQ(60u, VideoFrame::AllocationSize(format, size))
             << VideoPixelFormatToString(format);
         break;
