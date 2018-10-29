@@ -26,6 +26,7 @@ source_set("cpp") {
 
   public_deps = [
     "//components/signin/core/browser",
+    "//services/identity/public/cpp:cpp_types",
   ]
 }
 

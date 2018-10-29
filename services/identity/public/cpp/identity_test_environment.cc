@@ -324,7 +324,7 @@ IdentityTestEnvironment::AccessTokenRequestState::operator=(
 void IdentityTestEnvironment::OnAccessTokenRequested(
     const std::string& account_id,
     const std::string& consumer_id,
-    const OAuth2TokenService::ScopeSet& scopes) {
+    const identity::ScopeSet& scopes) {
   // Post a task to handle this access token request in order to support the
   // case where the access token request is handled synchronously in the
   // production code, in which case this callback could be coming in ahead

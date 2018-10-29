@@ -13,6 +13,7 @@
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "services/identity/public/cpp/access_token_fetcher.h"
+#include "services/identity/public/cpp/scope_set.h"
 
 #if !defined(OS_CHROMEOS)
 #include "components/signin/core/browser/signin_manager.h"
@@ -129,10 +130,9 @@ class IdentityManager : public SigninManagerBase::Observer,
     DiagnosticsObserver& operator=(const DiagnosticsObserver&) = delete;
 
     // Called when receiving request for access token.
-    virtual void OnAccessTokenRequested(
-        const std::string& account_id,
-        const std::string& consumer_id,
-        const OAuth2TokenService::ScopeSet& scopes) {}
+    virtual void OnAccessTokenRequested(const std::string& account_id,
+                                        const std::string& consumer_id,
+                                        const identity::ScopeSet& scopes) {}
   };
 
   IdentityManager(
@@ -234,7 +234,7 @@ class IdentityManager : public SigninManagerBase::Observer,
   std::unique_ptr<AccessTokenFetcher> CreateAccessTokenFetcherForAccount(
       const std::string& account_id,
       const std::string& oauth_consumer_name,
-      const OAuth2TokenService::ScopeSet& scopes,
+      const identity::ScopeSet& scopes,
       AccessTokenFetcher::TokenCallback callback,
       AccessTokenFetcher::Mode mode);
 
@@ -244,7 +244,7 @@ class IdentityManager : public SigninManagerBase::Observer,
       const std::string& account_id,
       const std::string& oauth_consumer_name,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const OAuth2TokenService::ScopeSet& scopes,
+      const identity::ScopeSet& scopes,
       AccessTokenFetcher::TokenCallback callback,
       AccessTokenFetcher::Mode mode);
 
@@ -253,7 +253,7 @@ class IdentityManager : public SigninManagerBase::Observer,
   // request for |account_id| and |scopes| will fetch a new token from the
   // network. Otherwise, is a no-op.
   void RemoveAccessTokenFromCache(const std::string& account_id,
-                                  const OAuth2TokenService::ScopeSet& scopes,
+                                  const identity::ScopeSet& scopes,
                                   const std::string& access_token);
 
   // Returns pointer to the object used to change the signed-in state of the

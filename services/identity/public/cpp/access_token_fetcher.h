@@ -14,6 +14,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "services/identity/public/cpp/access_token_info.h"
+#include "services/identity/public/cpp/scope_set.h"
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -52,7 +53,7 @@ class AccessTokenFetcher : public OAuth2TokenService::Observer,
   AccessTokenFetcher(const std::string& account_id,
                      const std::string& oauth_consumer_name,
                      OAuth2TokenService* token_service,
-                     const OAuth2TokenService::ScopeSet& scopes,
+                     const identity::ScopeSet& scopes,
                      TokenCallback callback,
                      Mode mode);
 
@@ -66,7 +67,7 @@ class AccessTokenFetcher : public OAuth2TokenService::Observer,
       const std::string& oauth_consumer_name,
       OAuth2TokenService* token_service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const OAuth2TokenService::ScopeSet& scopes,
+      const identity::ScopeSet& scopes,
       TokenCallback callback,
       Mode mode);
 
@@ -99,7 +100,7 @@ class AccessTokenFetcher : public OAuth2TokenService::Observer,
   const std::string account_id_;
   OAuth2TokenService* token_service_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-  const OAuth2TokenService::ScopeSet scopes_;
+  const identity::ScopeSet scopes_;
   const Mode mode_;
 
   // NOTE: This callback should only be invoked from |RunCallbackAndMaybeDie|,

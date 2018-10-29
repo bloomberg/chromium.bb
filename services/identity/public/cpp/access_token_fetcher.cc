@@ -11,13 +11,12 @@
 
 namespace identity {
 
-AccessTokenFetcher::AccessTokenFetcher(
-    const std::string& account_id,
-    const std::string& oauth_consumer_name,
-    OAuth2TokenService* token_service,
-    const OAuth2TokenService::ScopeSet& scopes,
-    TokenCallback callback,
-    Mode mode)
+AccessTokenFetcher::AccessTokenFetcher(const std::string& account_id,
+                                       const std::string& oauth_consumer_name,
+                                       OAuth2TokenService* token_service,
+                                       const identity::ScopeSet& scopes,
+                                       TokenCallback callback,
+                                       Mode mode)
     : AccessTokenFetcher(account_id,
                          oauth_consumer_name,
                          token_service,
@@ -31,7 +30,7 @@ AccessTokenFetcher::AccessTokenFetcher(
     const std::string& oauth_consumer_name,
     OAuth2TokenService* token_service,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const OAuth2TokenService::ScopeSet& scopes,
+    const identity::ScopeSet& scopes,
     TokenCallback callback,
     Mode mode)
     : OAuth2TokenService::Consumer(oauth_consumer_name),

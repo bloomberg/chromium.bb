@@ -154,7 +154,7 @@ std::unique_ptr<AccessTokenFetcher>
 IdentityManager::CreateAccessTokenFetcherForAccount(
     const std::string& account_id,
     const std::string& oauth_consumer_name,
-    const OAuth2TokenService::ScopeSet& scopes,
+    const identity::ScopeSet& scopes,
     AccessTokenFetcher::TokenCallback callback,
     AccessTokenFetcher::Mode mode) {
   return std::make_unique<AccessTokenFetcher>(account_id, oauth_consumer_name,
@@ -167,7 +167,7 @@ IdentityManager::CreateAccessTokenFetcherForAccount(
     const std::string& account_id,
     const std::string& oauth_consumer_name,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const OAuth2TokenService::ScopeSet& scopes,
+    const identity::ScopeSet& scopes,
     AccessTokenFetcher::TokenCallback callback,
     AccessTokenFetcher::Mode mode) {
   return std::make_unique<AccessTokenFetcher>(
@@ -177,7 +177,7 @@ IdentityManager::CreateAccessTokenFetcherForAccount(
 
 void IdentityManager::RemoveAccessTokenFromCache(
     const std::string& account_id,
-    const OAuth2TokenService::ScopeSet& scopes,
+    const identity::ScopeSet& scopes,
     const std::string& access_token) {
   // TODO(843510): Consider making the request to ProfileOAuth2TokenService
   // asynchronously once there are no direct clients of PO2TS. This change would
