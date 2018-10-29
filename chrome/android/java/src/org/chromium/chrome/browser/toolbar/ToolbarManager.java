@@ -1290,6 +1290,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             }
         });
         mAppMenuButtonHelper = new AppMenuButtonHelper(menuHandler);
+        mAppMenuButtonHelper.setMenuShowsFromBottom(mBottomToolbarCoordinator != null);
         mAppMenuButtonHelper.setOnAppMenuShownListener(() -> {
             RecordUserAction.record("MobileToolbarShowMenu");
             mToolbar.onMenuShown();
