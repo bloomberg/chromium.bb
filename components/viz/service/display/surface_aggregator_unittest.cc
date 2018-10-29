@@ -3022,7 +3022,7 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
     auto* root_pass = root_pass_list[1].get();
     root_pass->shared_quad_state_list.ElementAt(1)
         ->quad_to_target_transform.Translate(10, 10);
-    pass->background_filters.Append(
+    pass->backdrop_filters.Append(
         cc::FilterOperation::CreateOpacityFilter(0.5f));
     root_pass->damage_rect = gfx::Rect(10, 10, 2, 2);
     SubmitPassListAsFrame(support_.get(), root_local_surface_id_,
@@ -3074,7 +3074,7 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
     auto* root_pass = root_pass_list[1].get();
     root_pass->shared_quad_state_list.ElementAt(1)
         ->quad_to_target_transform.Translate(5, 5);
-    pass_with_filter->background_filters.Append(
+    pass_with_filter->backdrop_filters.Append(
         cc::FilterOperation::CreateBlurFilter(2));
     // Damage rect intersects with render passes of |pass_with_filter| and
     // |root_pass|.
@@ -3130,7 +3130,7 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
     auto* root_pass = root_pass_list[1].get();
     root_pass->shared_quad_state_list.ElementAt(1)
         ->quad_to_target_transform.Translate(5, 5);
-    pass_with_filter->background_filters.Append(
+    pass_with_filter->backdrop_filters.Append(
         cc::FilterOperation::CreateBlurFilter(2));
     // Damage rect does not intersect with render pass.
     root_pass->damage_rect = gfx::Rect(6, 6, 3, 3);

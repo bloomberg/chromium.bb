@@ -909,7 +909,7 @@ void GraphicsLayer::SetFilters(CompositorFilterOperations filters) {
 }
 
 void GraphicsLayer::SetBackdropFilters(CompositorFilterOperations filters) {
-  CcLayer()->SetBackgroundFilters(filters.ReleaseCcFilterOperations());
+  CcLayer()->SetBackdropFilters(filters.ReleaseCcFilterOperations());
 }
 
 void GraphicsLayer::SetStickyPositionConstraint(

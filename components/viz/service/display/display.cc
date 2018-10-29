@@ -660,7 +660,7 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
   for (const auto& pass : frame->render_pass_list) {
     // TODO(yiyix): Add filter effects to draw occlusion calculation and perform
     // draw occlusion on render pass.
-    if (!pass->filters.IsEmpty() || !pass->background_filters.IsEmpty()) {
+    if (!pass->filters.IsEmpty() || !pass->backdrop_filters.IsEmpty()) {
       for (auto* const quad : pass->quad_list) {
         total_quad_area_shown_wo_occlusion_px +=
             quad->visible_rect.size().GetCheckedArea();

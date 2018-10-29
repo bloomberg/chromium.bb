@@ -630,14 +630,14 @@ TEST_F(FullscreenOverlayTest, SuccessfulOverlay) {
   // Check for potential candidates.
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   RenderPass* main_pass = pass.get();
   pass_list.push_back(std::move(pass));
 
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   ASSERT_EQ(1U, candidate_list.size());
 
@@ -665,7 +665,7 @@ TEST_F(FullscreenOverlayTest, FailOnOutputColorMatrix) {
   // Check for potential candidates.
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   RenderPass* main_pass = pass.get();
   pass_list.push_back(std::move(pass));
@@ -674,7 +674,7 @@ TEST_F(FullscreenOverlayTest, FailOnOutputColorMatrix) {
   // overlays since color matrices are not supported yet.
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetNonIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   ASSERT_EQ(0U, candidate_list.size());
 
@@ -692,14 +692,14 @@ TEST_F(FullscreenOverlayTest, AlphaFail) {
   // Check for potential candidates.
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   RenderPass* main_pass = pass.get();
   pass_list.push_back(std::move(pass));
 
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
 
   // Check that all the quads are gone.
@@ -718,14 +718,14 @@ TEST_F(FullscreenOverlayTest, SuccessfulResourceSizeInPixels) {
   // Check for potential candidates.
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   RenderPass* main_pass = pass.get();
   pass_list.push_back(std::move(pass));
 
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   ASSERT_EQ(1U, candidate_list.size());
 
@@ -748,14 +748,14 @@ TEST_F(FullscreenOverlayTest, OnTopFail) {
   // Check for potential candidates.
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   RenderPass* main_pass = pass.get();
   pass_list.push_back(std::move(pass));
 
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   ASSERT_EQ(0U, candidate_list.size());
 
@@ -775,13 +775,13 @@ TEST_F(FullscreenOverlayTest, NotCoveringFullscreenFail) {
   // Check for potential candidates.
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   RenderPass* main_pass = pass.get();
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   ASSERT_EQ(0U, candidate_list.size());
 
@@ -807,13 +807,13 @@ TEST_F(FullscreenOverlayTest, RemoveFullscreenQuadFromQuadList) {
   // Check for potential candidates.
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   RenderPass* main_pass = pass.get();
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   ASSERT_EQ(1U, candidate_list.size());
 
@@ -839,13 +839,13 @@ TEST_F(SingleOverlayOnTopTest, SuccessfulOverlay) {
   // Check for potential candidates.
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   RenderPass* main_pass = pass.get();
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   ASSERT_EQ(1U, candidate_list.size());
 
@@ -890,13 +890,13 @@ TEST_F(SingleOverlayOnTopTest, PrioritizeBiggerOne) {
   // Check for potential candidates.
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   RenderPass* main_pass = pass.get();
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   ASSERT_EQ(1U, candidate_list.size());
 
@@ -932,12 +932,12 @@ TEST_F(SingleOverlayOnTopTest, DamageRect) {
   candidate_list.push_back(output_surface_plane);
 
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   EXPECT_TRUE(damage_rect_.IsEmpty());
 }
@@ -957,10 +957,10 @@ TEST_F(SingleOverlayOnTopTest, NoCandidates) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   EXPECT_EQ(0U, candidate_list.size());
   // There should be nothing new here.
@@ -986,10 +986,10 @@ TEST_F(SingleOverlayOnTopTest, OccludedCandidates) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   EXPECT_EQ(0U, candidate_list.size());
   // There should be nothing new here.
@@ -1012,12 +1012,12 @@ TEST_F(SingleOverlayOnTopTest, MultipleRenderPasses) {
   // Check for potential candidates.
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   EXPECT_EQ(1U, candidate_list.size());
 }
@@ -1031,13 +1031,13 @@ TEST_F(SingleOverlayOnTopTest, AcceptBlending) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   damage_rect_ = quad->rect;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   EXPECT_EQ(1U, candidate_list.size());
   EXPECT_FALSE(damage_rect_.IsEmpty());
@@ -1055,12 +1055,12 @@ TEST_F(SingleOverlayOnTopTest, RejectBackgroundColor) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   EXPECT_EQ(0U, candidate_list.size());
 }
@@ -1074,12 +1074,12 @@ TEST_F(SingleOverlayOnTopTest, RejectBlendMode) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   EXPECT_EQ(0U, candidate_list.size());
 }
@@ -1093,12 +1093,12 @@ TEST_F(SingleOverlayOnTopTest, RejectOpacity) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   EXPECT_EQ(0U, candidate_list.size());
 }
@@ -1113,12 +1113,12 @@ TEST_F(SingleOverlayOnTopTest, RejectNonAxisAlignedTransform) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   EXPECT_EQ(0U, candidate_list.size());
 }
@@ -1133,12 +1133,12 @@ TEST_F(SingleOverlayOnTopTest, AllowClipped) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   EXPECT_EQ(1U, candidate_list.size());
 }
@@ -1155,12 +1155,12 @@ TEST_F(UnderlayTest, AllowVerticalFlip) {
                                                                       -1.0f);
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   ASSERT_EQ(1U, candidate_list.size());
   EXPECT_EQ(gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL,
@@ -1180,12 +1180,12 @@ TEST_F(UnderlayTest, AllowHorizontalFlip) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   ASSERT_EQ(1U, candidate_list.size());
   EXPECT_EQ(gfx::OVERLAY_TRANSFORM_FLIP_HORIZONTAL,
@@ -1203,12 +1203,12 @@ TEST_F(SingleOverlayOnTopTest, AllowPositiveScaleTransform) {
                                                                       1.0f);
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   EXPECT_EQ(1U, candidate_list.size());
 }
@@ -1225,12 +1225,12 @@ TEST_F(SingleOverlayOnTopTest, AcceptMirrorYTransform) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   ASSERT_EQ(1U, candidate_list.size());
 }
@@ -1247,12 +1247,12 @@ TEST_F(UnderlayTest, Allow90DegreeRotation) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   ASSERT_EQ(1U, candidate_list.size());
   EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_90, candidate_list.back().transform);
@@ -1270,12 +1270,12 @@ TEST_F(UnderlayTest, Allow180DegreeRotation) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   ASSERT_EQ(1U, candidate_list.size());
   EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_180, candidate_list.back().transform);
@@ -1293,12 +1293,12 @@ TEST_F(UnderlayTest, Allow270DegreeRotation) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   ASSERT_EQ(1U, candidate_list.size());
   EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_270, candidate_list.back().transform);
@@ -1314,12 +1314,12 @@ TEST_F(UnderlayTest, AllowsOpaqueCandidates) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   ASSERT_EQ(1U, candidate_list.size());
 }
@@ -1333,12 +1333,12 @@ TEST_F(UnderlayTest, DisallowsTransparentCandidates) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   ASSERT_EQ(0U, candidate_list.size());
 }
@@ -1364,15 +1364,15 @@ TEST_F(UnderlayTest, DisallowFilteredQuadOnTop) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
 
-  render_pass_background_filters[render_pass_id] = &filters;
+  render_pass_backdrop_filters[render_pass_id] = &filters;
 
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   ASSERT_EQ(0U, candidate_list.size());
 }
@@ -1387,12 +1387,12 @@ TEST_F(TransparentUnderlayTest, AllowsOpaqueCandidates) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   ASSERT_EQ(1U, candidate_list.size());
 }
@@ -1406,12 +1406,12 @@ TEST_F(TransparentUnderlayTest, AllowsTransparentCandidates) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   ASSERT_EQ(1U, candidate_list.size());
 }
@@ -1431,12 +1431,12 @@ TEST_F(SingleOverlayOnTopTest, AllowNotTopIfNotOccluded) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   EXPECT_EQ(1U, candidate_list.size());
 }
@@ -1458,12 +1458,12 @@ TEST_F(SingleOverlayOnTopTest, AllowTransparentOnTop) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   EXPECT_EQ(1U, candidate_list.size());
 }
@@ -1483,12 +1483,12 @@ TEST_F(SingleOverlayOnTopTest, AllowTransparentColorOnTop) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   EXPECT_EQ(1U, candidate_list.size());
 }
@@ -1507,12 +1507,12 @@ TEST_F(SingleOverlayOnTopTest, RejectOpaqueColorOnTop) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   EXPECT_EQ(0U, candidate_list.size());
 }
@@ -1529,12 +1529,12 @@ TEST_F(SingleOverlayOnTopTest, RejectTransparentColorOnTopWithoutBlending) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   EXPECT_EQ(0U, candidate_list.size());
 }
@@ -1567,12 +1567,12 @@ TEST_F(SingleOverlayOnTopTest, RejectVideoSwapTransform) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   EXPECT_EQ(0U, candidate_list.size());
 }
@@ -1613,12 +1613,12 @@ TEST_F(UnderlayTest, AllowVideoXMirrorTransform) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   EXPECT_EQ(1U, candidate_list.size());
 }
@@ -1632,12 +1632,12 @@ TEST_F(UnderlayTest, AllowVideoBothMirrorTransform) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   EXPECT_EQ(1U, candidate_list.size());
 }
@@ -1651,12 +1651,12 @@ TEST_F(UnderlayTest, AllowVideoNormalTransform) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   EXPECT_EQ(1U, candidate_list.size());
 }
@@ -1670,12 +1670,12 @@ TEST_F(SingleOverlayOnTopTest, AllowVideoYMirrorTransform) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   EXPECT_EQ(1U, candidate_list.size());
 }
@@ -1694,13 +1694,13 @@ TEST_F(UnderlayTest, OverlayLayerUnderMainLayer) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   RenderPass* main_pass = pass.get();
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   ASSERT_EQ(1U, candidate_list.size());
   EXPECT_EQ(-1, candidate_list[0].plane_z_order);
@@ -1724,13 +1724,13 @@ TEST_F(UnderlayTest, AllowOnTop) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   RenderPass* main_pass = pass.get();
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   ASSERT_EQ(1U, candidate_list.size());
   EXPECT_EQ(-1, candidate_list[0].plane_z_order);
@@ -1753,12 +1753,12 @@ TEST_F(UnderlayTest, InitialUnderlayDamageNotSubtracted) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
 
   EXPECT_EQ(kOverlayRect, damage_rect_);
@@ -1781,12 +1781,12 @@ TEST_F(UnderlayTest, DamageSubtractedForConsecutiveIdenticalUnderlays) {
 
     OverlayCandidateList candidate_list;
     OverlayProcessor::FilterOperationsMap render_pass_filters;
-    OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+    OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
     RenderPassList pass_list;
     pass_list.push_back(std::move(pass));
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-        render_pass_filters, render_pass_background_filters, &candidate_list,
+        render_pass_filters, render_pass_backdrop_filters, &candidate_list,
         nullptr, nullptr, &damage_rect_, &content_bounds_);
   }
 
@@ -1814,12 +1814,12 @@ TEST_F(UnderlayTest, DamageNotSubtractedForNonIdenticalConsecutiveUnderlays) {
 
     OverlayCandidateList candidate_list;
     OverlayProcessor::FilterOperationsMap render_pass_filters;
-    OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+    OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
     RenderPassList pass_list;
     pass_list.push_back(std::move(pass));
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-        render_pass_filters, render_pass_background_filters, &candidate_list,
+        render_pass_filters, render_pass_backdrop_filters, &candidate_list,
         nullptr, nullptr, &damage_rect_, &content_bounds_);
 
     EXPECT_EQ(overlay_rects[i], damage_rect_);
@@ -1849,12 +1849,12 @@ TEST_F(UnderlayTest, DamageNotSubtractedForNonConsecutiveIdenticalUnderlays) {
 
     OverlayCandidateList candidate_list;
     OverlayProcessor::FilterOperationsMap render_pass_filters;
-    OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+    OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
     RenderPassList pass_list;
     pass_list.push_back(std::move(pass));
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-        render_pass_filters, render_pass_background_filters, &candidate_list,
+        render_pass_filters, render_pass_backdrop_filters, &candidate_list,
         nullptr, nullptr, &damage_rect_, &content_bounds_);
   }
 
@@ -1880,12 +1880,12 @@ TEST_F(UnderlayTest, DamageSubtractedForOneFrameAfterBecomingUnoccluded) {
 
     OverlayCandidateList candidate_list;
     OverlayProcessor::FilterOperationsMap render_pass_filters;
-    OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+    OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
     RenderPassList pass_list;
     pass_list.push_back(std::move(pass));
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-        render_pass_filters, render_pass_background_filters, &candidate_list,
+        render_pass_filters, render_pass_backdrop_filters, &candidate_list,
         nullptr, nullptr, &damage_rect_, &content_bounds_);
 
     // The damage rect should not be subtracted if the underlay is occluded
@@ -1912,12 +1912,12 @@ TEST_F(UnderlayTest, DamageNotSubtractedWhenQuadsAboveOverlap) {
 
     OverlayCandidateList candidate_list;
     OverlayProcessor::FilterOperationsMap render_pass_filters;
-    OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+    OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
     RenderPassList pass_list;
     pass_list.push_back(std::move(pass));
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-        render_pass_filters, render_pass_background_filters, &candidate_list,
+        render_pass_filters, render_pass_backdrop_filters, &candidate_list,
         nullptr, nullptr, &damage_rect_, &content_bounds_);
   }
 
@@ -1943,12 +1943,12 @@ TEST_F(UnderlayTest, DamageSubtractedWhenQuadsAboveDontOverlap) {
 
     OverlayCandidateList candidate_list;
     OverlayProcessor::FilterOperationsMap render_pass_filters;
-    OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+    OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
     RenderPassList pass_list;
     pass_list.push_back(std::move(pass));
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-        render_pass_filters, render_pass_background_filters, &candidate_list,
+        render_pass_filters, render_pass_backdrop_filters, &candidate_list,
         nullptr, nullptr, &damage_rect_, &content_bounds_);
   }
 
@@ -1975,12 +1975,12 @@ TEST_F(UnderlayTest, PrimaryPlaneOverlayIsTransparentWithUnderlay) {
   candidate_list.push_back(candidate);
 
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
 
   EXPECT_EQ(2U, candidate_list.size());
@@ -2008,12 +2008,12 @@ TEST_F(UnderlayTest, UpdateDamageWhenChangingUnderlays) {
 
     OverlayCandidateList candidate_list;
     OverlayProcessor::FilterOperationsMap render_pass_filters;
-    OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+    OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
     RenderPassList pass_list;
     pass_list.push_back(std::move(pass));
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-        render_pass_filters, render_pass_background_filters, &candidate_list,
+        render_pass_filters, render_pass_backdrop_filters, &candidate_list,
         nullptr, nullptr, &damage_rect_, &content_bounds_);
   }
 
@@ -2072,12 +2072,12 @@ TEST_F(UnderlayCastTest, NoOverlayContentBounds) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   EXPECT_EQ(0U, content_bounds_.size());
 }
@@ -2091,12 +2091,12 @@ TEST_F(UnderlayCastTest, FullScreenOverlayContentBounds) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
 
   EXPECT_EQ(1U, content_bounds_.size());
@@ -2124,12 +2124,12 @@ TEST_F(UnderlayCastTest, BlackOutsideOverlayContentBounds) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
 
   EXPECT_EQ(1U, content_bounds_.size());
@@ -2148,12 +2148,12 @@ TEST_F(UnderlayCastTest, OverlayOccludedContentBounds) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
 
   EXPECT_EQ(1U, content_bounds_.size());
@@ -2175,12 +2175,12 @@ TEST_F(UnderlayCastTest, OverlayOccludedUnionContentBounds) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
 
   EXPECT_EQ(1U, content_bounds_.size());
@@ -2208,12 +2208,12 @@ TEST_F(UnderlayCastTest, RoundOverlayContentBounds) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
 
   EXPECT_EQ(1U, content_bounds_.size());
@@ -2242,12 +2242,12 @@ TEST_F(UnderlayCastTest, RoundContentBounds) {
 
   OverlayCandidateList candidate_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
 
   EXPECT_EQ(1U, content_bounds_.size());
@@ -2274,12 +2274,12 @@ TEST_F(UnderlayCastTest, PrimaryPlaneOverlayIsTransparentWithUnderlay) {
   candidate_list.push_back(candidate);
 
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &candidate_list,
+      render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
 
   ASSERT_EQ(false, candidate_list[0].is_opaque);
@@ -2299,12 +2299,12 @@ TEST_F(CALayerOverlayTest, AllowNonAxisAlignedTransform) {
   CALayerOverlayList ca_layer_list;
   OverlayCandidateList overlay_list(BackbufferOverlayList(pass.get()));
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &overlay_list,
+      render_pass_filters, render_pass_backdrop_filters, &overlay_list,
       &ca_layer_list, nullptr, &damage_rect_, &content_bounds_);
   EXPECT_EQ(gfx::Rect(), damage_rect);
   EXPECT_EQ(0U, overlay_list.size());
@@ -2323,12 +2323,12 @@ TEST_F(CALayerOverlayTest, ThreeDTransform) {
   CALayerOverlayList ca_layer_list;
   OverlayCandidateList overlay_list(BackbufferOverlayList(pass.get()));
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &overlay_list,
+      render_pass_filters, render_pass_backdrop_filters, &overlay_list,
       &ca_layer_list, nullptr, &damage_rect_, &content_bounds_);
   EXPECT_EQ(0U, overlay_list.size());
   EXPECT_EQ(1U, ca_layer_list.size());
@@ -2351,12 +2351,12 @@ TEST_F(CALayerOverlayTest, AllowContainingClip) {
   CALayerOverlayList ca_layer_list;
   OverlayCandidateList overlay_list(BackbufferOverlayList(pass.get()));
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &overlay_list,
+      render_pass_filters, render_pass_backdrop_filters, &overlay_list,
       &ca_layer_list, nullptr, &damage_rect_, &content_bounds_);
   EXPECT_EQ(gfx::Rect(), damage_rect);
   EXPECT_EQ(0U, overlay_list.size());
@@ -2376,12 +2376,12 @@ TEST_F(CALayerOverlayTest, NontrivialClip) {
   CALayerOverlayList ca_layer_list;
   OverlayCandidateList overlay_list(BackbufferOverlayList(pass.get()));
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &overlay_list,
+      render_pass_filters, render_pass_backdrop_filters, &overlay_list,
       &ca_layer_list, nullptr, &damage_rect_, &content_bounds_);
   EXPECT_EQ(gfx::Rect(), damage_rect);
   EXPECT_EQ(0U, overlay_list.size());
@@ -2403,12 +2403,12 @@ TEST_F(CALayerOverlayTest, SkipTransparent) {
   CALayerOverlayList ca_layer_list;
   OverlayCandidateList overlay_list(BackbufferOverlayList(pass.get()));
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &overlay_list,
+      render_pass_filters, render_pass_backdrop_filters, &overlay_list,
       &ca_layer_list, nullptr, &damage_rect_, &content_bounds_);
   EXPECT_EQ(gfx::Rect(), damage_rect);
   EXPECT_EQ(0U, overlay_list.size());
@@ -2433,14 +2433,14 @@ TEST_F(DCLayerOverlayTest, AllowNonAxisAlignedTransform) {
   DCLayerOverlayList dc_layer_list;
   OverlayCandidateList overlay_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   damage_rect_ = gfx::Rect(1, 1, 10, 10);
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &overlay_list,
-      nullptr, &dc_layer_list, &damage_rect_, &content_bounds_);
+      render_pass_filters, render_pass_backdrop_filters, &overlay_list, nullptr,
+      &dc_layer_list, &damage_rect_, &content_bounds_);
   EXPECT_EQ(gfx::Rect(), damage_rect);
   EXPECT_EQ(0U, overlay_list.size());
   EXPECT_EQ(1U, dc_layer_list.size());
@@ -2465,14 +2465,14 @@ TEST_F(DCLayerOverlayTest, AllowRequiredNonAxisAlignedTransform) {
   DCLayerOverlayList dc_layer_list;
   OverlayCandidateList overlay_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   damage_rect_ = gfx::Rect(1, 1, 10, 10);
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &overlay_list,
-      nullptr, &dc_layer_list, &damage_rect_, &content_bounds_);
+      render_pass_filters, render_pass_backdrop_filters, &overlay_list, nullptr,
+      &dc_layer_list, &damage_rect_, &content_bounds_);
   EXPECT_EQ(gfx::Rect(), damage_rect);
   EXPECT_EQ(0U, overlay_list.size());
   ASSERT_EQ(1U, dc_layer_list.size());
@@ -2503,13 +2503,13 @@ TEST_F(DCLayerOverlayTest, Occluded) {
     DCLayerOverlayList dc_layer_list;
     OverlayCandidateList overlay_list;
     OverlayProcessor::FilterOperationsMap render_pass_filters;
-    OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+    OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
     damage_rect_ = gfx::Rect(1, 1, 10, 10);
     RenderPassList pass_list;
     pass_list.push_back(std::move(pass));
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-        render_pass_filters, render_pass_background_filters, &overlay_list,
+        render_pass_filters, render_pass_backdrop_filters, &overlay_list,
         nullptr, &dc_layer_list, &damage_rect_, &content_bounds_);
     EXPECT_EQ(0U, overlay_list.size());
     EXPECT_EQ(2U, dc_layer_list.size());
@@ -2537,13 +2537,13 @@ TEST_F(DCLayerOverlayTest, Occluded) {
     DCLayerOverlayList dc_layer_list;
     OverlayCandidateList overlay_list;
     OverlayProcessor::FilterOperationsMap render_pass_filters;
-    OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+    OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
     damage_rect_ = gfx::Rect(1, 1, 10, 10);
     RenderPassList pass_list;
     pass_list.push_back(std::move(pass));
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-        render_pass_filters, render_pass_background_filters, &overlay_list,
+        render_pass_filters, render_pass_backdrop_filters, &overlay_list,
         nullptr, &dc_layer_list, &damage_rect_, &content_bounds_);
     EXPECT_EQ(0U, overlay_list.size());
     EXPECT_EQ(2U, dc_layer_list.size());
@@ -2567,13 +2567,13 @@ TEST_F(DCLayerOverlayTest, DamageRect) {
     DCLayerOverlayList dc_layer_list;
     OverlayCandidateList overlay_list;
     OverlayProcessor::FilterOperationsMap render_pass_filters;
-    OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+    OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
     damage_rect_ = gfx::Rect(1, 1, 10, 10);
     RenderPassList pass_list;
     pass_list.push_back(std::move(pass));
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-        render_pass_filters, render_pass_background_filters, &overlay_list,
+        render_pass_filters, render_pass_backdrop_filters, &overlay_list,
         nullptr, &dc_layer_list, &damage_rect_, &content_bounds_);
     EXPECT_EQ(gfx::Rect(), damage_rect);
     EXPECT_EQ(0U, overlay_list.size());
@@ -2662,15 +2662,15 @@ TEST_F(DCLayerOverlayTest, MultiplePassDamageRect) {
   DCLayerOverlayList dc_layer_list;
   OverlayCandidateList overlay_list;
   OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
   pass_list.push_back(std::move(child_pass1));
   pass_list.push_back(std::move(child_pass2));
   pass_list.push_back(std::move(root_pass));
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_background_filters, &overlay_list,
-      nullptr, &dc_layer_list, &root_damage_rect, &content_bounds_);
+      render_pass_filters, render_pass_backdrop_filters, &overlay_list, nullptr,
+      &dc_layer_list, &root_damage_rect, &content_bounds_);
   EXPECT_EQ(0U, overlay_list.size());
   EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
 
@@ -2756,13 +2756,13 @@ TEST_F(DCLayerOverlayTest, ClipRect) {
     DCLayerOverlayList dc_layer_list;
     OverlayCandidateList overlay_list;
     OverlayProcessor::FilterOperationsMap render_pass_filters;
-    OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+    OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
     RenderPassList pass_list;
     pass_list.push_back(std::move(pass));
     damage_rect_ = gfx::Rect(1, 1, 10, 10);
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-        render_pass_filters, render_pass_background_filters, &overlay_list,
+        render_pass_filters, render_pass_backdrop_filters, &overlay_list,
         nullptr, &dc_layer_list, &damage_rect_, &content_bounds_);
     EXPECT_EQ(0U, overlay_list.size());
     EXPECT_EQ(1U, dc_layer_list.size());
@@ -2793,13 +2793,13 @@ TEST_F(DCLayerOverlayTest, TransparentOnTop) {
     DCLayerOverlayList dc_layer_list;
     OverlayCandidateList overlay_list;
     OverlayProcessor::FilterOperationsMap render_pass_filters;
-    OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+    OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
     damage_rect_ = gfx::Rect(1, 1, 10, 10);
     RenderPassList pass_list;
     pass_list.push_back(std::move(pass));
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-        render_pass_filters, render_pass_background_filters, &overlay_list,
+        render_pass_filters, render_pass_backdrop_filters, &overlay_list,
         nullptr, &dc_layer_list, &damage_rect_, &content_bounds_);
     EXPECT_EQ(0U, overlay_list.size());
     EXPECT_EQ(1U, dc_layer_list.size());
@@ -3406,7 +3406,7 @@ class CALayerOverlayRPDQTest : public CALayerOverlayTest {
     overlay_list_ = BackbufferOverlayList(pass_);
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list_, GetIdentityColorMatrix(),
-        render_pass_filters_, render_pass_background_filters_, &overlay_list_,
+        render_pass_filters_, render_pass_backdrop_filters_, &overlay_list_,
         &ca_layer_list_, nullptr, &damage_rect_, &content_bounds_);
   }
   RenderPassList pass_list_;
@@ -3414,9 +3414,9 @@ class CALayerOverlayRPDQTest : public CALayerOverlayTest {
   RenderPassDrawQuad* quad_;
   int render_pass_id_;
   cc::FilterOperations filters_;
-  cc::FilterOperations background_filters_;
+  cc::FilterOperations backdrop_filters_;
   OverlayProcessor::FilterOperationsMap render_pass_filters_;
-  OverlayProcessor::FilterOperationsMap render_pass_background_filters_;
+  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters_;
   CALayerOverlayList ca_layer_list_;
   OverlayCandidateList overlay_list_;
 };
@@ -3483,8 +3483,8 @@ TEST_F(CALayerOverlayRPDQTest, RenderPassDrawQuadDropShadowFilterScale) {
 }
 
 TEST_F(CALayerOverlayRPDQTest, RenderPassDrawQuadBackgroundFilter) {
-  background_filters_.Append(cc::FilterOperation::CreateGrayscaleFilter(0.1f));
-  render_pass_background_filters_[render_pass_id_] = &background_filters_;
+  backdrop_filters_.Append(cc::FilterOperation::CreateGrayscaleFilter(0.1f));
+  render_pass_backdrop_filters_[render_pass_id_] = &backdrop_filters_;
   quad_->SetNew(pass_->shared_quad_state_list.back(), kOverlayRect,
                 kOverlayRect, render_pass_id_, 0, gfx::RectF(), gfx::Size(),
                 gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false);

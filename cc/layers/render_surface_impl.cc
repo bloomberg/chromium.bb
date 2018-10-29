@@ -149,8 +149,8 @@ gfx::Transform RenderSurfaceImpl::SurfaceScale() const {
   return surface_scale;
 }
 
-const FilterOperations& RenderSurfaceImpl::BackgroundFilters() const {
-  return OwningEffectNode()->background_filters;
+const FilterOperations& RenderSurfaceImpl::BackdropFilters() const {
+  return OwningEffectNode()->backdrop_filters;
 }
 
 bool RenderSurfaceImpl::TrilinearFiltering() const {
@@ -374,7 +374,7 @@ std::unique_ptr<viz::RenderPass> RenderSurfaceImpl::CreateRenderPass() {
   pass->SetNew(id(), content_rect(), damage_rect,
                draw_properties_.screen_space_transform);
   pass->filters = Filters();
-  pass->background_filters = BackgroundFilters();
+  pass->backdrop_filters = BackdropFilters();
   pass->generate_mipmap = TrilinearFiltering();
   pass->cache_render_pass = ShouldCacheRenderSurface();
   pass->has_damage_from_contributing_content =

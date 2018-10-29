@@ -48,7 +48,7 @@ bool EffectNode::operator==(const EffectNode& other) const {
          cache_render_surface == other.cache_render_surface &&
          has_copy_request == other.has_copy_request &&
          filters == other.filters &&
-         background_filters == other.background_filters &&
+         backdrop_filters == other.backdrop_filters &&
          filters_origin == other.filters_origin &&
          blend_mode == other.blend_mode &&
          surface_contents_scale == other.surface_contents_scale &&
