@@ -569,7 +569,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, WebUI) {
                    kDontCheckTitle);
 
   // Check that the new popup displays about:blank.
-  EXPECT_EQ(GURL(url::kAboutBlankURL), popup->GetURL());
+  EXPECT_EQ(GURL(content::kBlockedURL), popup->GetURL());
 }
 
 // Verify that the renderer can't DOS the browser by creating arbitrarily many

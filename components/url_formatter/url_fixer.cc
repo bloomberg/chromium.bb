@@ -553,10 +553,11 @@ GURL FixupURL(const std::string& text, const std::string& desired_tld) {
 
   // 'about:blank' is special-cased in various places in the code so it
   // shouldn't be transformed into 'chrome://blank' as the code below will do.
-  // Instead, just make sure it's all lowercase, so direct string comparisons
-  // elsewhere will work.
-  if (base::LowerCaseEqualsASCII(trimmed, url::kAboutBlankURL))
-    return GURL(url::kAboutBlankURL);
+  if (base::LowerCaseEqualsASCII(scheme, url::kAboutScheme)) {
+    GURL about_url(base::ToLowerASCII(trimmed));
+    if (about_url.IsAboutBlank())
+      return about_url;
+  }
 
   // Parse and rebuild about: and chrome: URLs.
   bool chrome_url =

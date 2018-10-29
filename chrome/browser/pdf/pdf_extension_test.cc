@@ -62,6 +62,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -714,9 +715,9 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkPermissions) {
   rph->FilterURL(true, &valid_link_url);
   rph->FilterURL(true, &invalid_link_url);
 
-  // Invalid link URLs should be changed to "about:blank" when filtered.
+  // Invalid link URLs should be changed to "about:blank#blocked" when filtered.
   EXPECT_EQ(unfiltered_valid_link_url, valid_link_url);
-  EXPECT_EQ(GURL("about:blank"), invalid_link_url);
+  EXPECT_EQ(GURL(content::kBlockedURL), invalid_link_url);
 }
 
 // This test ensures that titles are set properly for PDFs without /Title.

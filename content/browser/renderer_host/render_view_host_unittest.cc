@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -73,8 +74,7 @@ TEST_F(RenderViewHostTest, FilterAbout) {
   main_test_rfh()->NavigateAndCommitRendererInitiated(
       true, GURL("about:cache"));
   ASSERT_TRUE(controller().GetVisibleEntry());
-  EXPECT_EQ(GURL(url::kAboutBlankURL),
-            controller().GetVisibleEntry()->GetURL());
+  EXPECT_EQ(GURL(kBlockedURL), controller().GetVisibleEntry()->GetURL());
 }
 
 // Create a full screen popup RenderWidgetHost and View.
@@ -130,12 +130,13 @@ TEST_F(RenderViewHostTest, StartDragging) {
   web_contents->set_delegate_view(&delegate_view);
 
   DropData drop_data;
+  GURL blocked_url = GURL(kBlockedURL);
   GURL file_url = GURL("file:///home/user/secrets.txt");
   drop_data.url = file_url;
   drop_data.html_base_url = file_url;
   test_rvh()->TestOnStartDragging(drop_data);
-  EXPECT_EQ(GURL(url::kAboutBlankURL), delegate_view.drag_url());
-  EXPECT_EQ(GURL(url::kAboutBlankURL), delegate_view.html_base_url());
+  EXPECT_EQ(blocked_url, delegate_view.drag_url());
+  EXPECT_EQ(blocked_url, delegate_view.html_base_url());
 
   GURL http_url = GURL("http://www.domain.com/index.html");
   drop_data.url = http_url;

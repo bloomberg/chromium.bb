@@ -3237,8 +3237,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeNetworkError) {
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeInvalidURL) {
   GURL url = embedded_test_server()->GetURL(
       "/download/download-attribute.html?target=about:version");
-  auto observer = std::make_unique<content::TestNavigationObserver>(
-      GURL(url::kAboutBlankURL));
+  auto observer =
+      std::make_unique<content::TestNavigationObserver>(GURL(kBlockedURL));
   observer->WatchExistingWebContents();
   observer->StartWatchingNewWebContents();
   NavigateToURL(shell(), url);
