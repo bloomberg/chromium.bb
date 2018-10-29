@@ -36,6 +36,27 @@ FcStrCopy (const FcChar8 *s)
     return FcStrdup (s);
 }
 
+static FcChar8 *
+FcStrMakePair (const FcChar8 *s1, const FcChar8 *s2)
+{
+    int	    s1l = s1 ? strlen ((char *) s1) : 0;
+    int	    s2l = s2 ? strlen ((char *) s2) : 0;
+    int	    l = s1l + 1 + s2l + 1;
+    FcChar8 *s = malloc (l);
+
+    if (!s)
+	return 0;
+    if (s1)
+	memcpy (s, s1, s1l + 1);
+    else
+	s[0] = '\0';
+    if (s2)
+	memcpy (s + s1l + 1, s2, s2l + 1);
+    else
+	s[s1l + 1] = '\0';
+    return s;
+}
+
 FcChar8 *
 FcStrPlus (const FcChar8 *s1, const FcChar8 *s2)
 {
@@ -1234,6 +1255,30 @@ FcStrSetAdd (FcStrSet *set, const FcChar8 *s)
 }
 
 FcBool
+FcStrSetAddPair (FcStrSet *set, const FcChar8 *a, const FcChar8 *b)
+{
+    FcChar8 *new = FcStrMakePair (a, b);
+    if (!new)
+	return FcFalse;
+    if (!_FcStrSetAppend (set, new))
+    {
+	FcStrFree (new);
+	return FcFalse;
+    }
+    return FcTrue;
+}
+
+FcChar8 *
+FcStrPairSecond (FcChar8 *str)
+{
+    FcChar8 *second = str + strlen((char *) str) + 1;
+
+    if (*second == '\0')
+	return 0;
+    return second;
+}
+
+FcBool
 FcStrSetAddFilename (FcStrSet *set, const FcChar8 *s)
 {
     FcChar8 *new = FcStrCopyFilename (s);
@@ -1245,6 +1290,37 @@ FcStrSetAddFilename (FcStrSet *set, const FcChar8 *s)
 	return FcFalse;
     }
     return FcTrue;
+}
+
+FcBool
+FcStrSetAddFilenamePair (FcStrSet *set, const FcChar8 *a, const FcChar8 *b)
+{
+    FcChar8 *new_a = NULL;
+    FcChar8 *new_b = NULL;
+    FcBool  ret;
+
+    if (a)
+    {
+	new_a = FcStrCopyFilename (a);
+	if (!new_a)
+	    return FcFalse;
+    }
+    if (b)
+    {
+	new_b = FcStrCopyFilename(b);
+	if (!new_b)
+	{
+	    if (new_a)
+		FcStrFree(new_a);
+	    return FcFalse;
+	}
+    }
+    ret = FcStrSetAddPair (set, new_a, new_b);
+    if (new_a)
+	FcStrFree (new_a);
+    if (new_b)
+	FcStrFree (new_b);
+    return ret;
 }
 
 FcBool

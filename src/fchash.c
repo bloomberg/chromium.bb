@@ -52,23 +52,6 @@ FcHashStrCopy (const void  *src,
     return *dest != NULL;
 }
 
-FcBool
-FcHashUuidCopy (const void  *src,
-		void       **dest)
-{
-#ifndef _WIN32
-    *dest = malloc (sizeof (uuid_t));
-    uuid_copy (*dest, src);
-#endif
-    return FcTrue;
-}
-
-void
-FcHashUuidFree (void *data)
-{
-    free (data);
-}
-
 FcHashTable *
 FcHashTableCreate (FcHashFunc    hash_func,
 		   FcCompareFunc compare_func,

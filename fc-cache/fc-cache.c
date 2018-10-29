@@ -203,7 +203,6 @@ scanDirs (FcStrList *list, FcConfig *config, FcBool force, FcBool really_force, 
 	if (really_force)
 	{
 	    FcDirCacheUnlink (dir, config);
-	    FcDirCacheCreateUUID ((FcChar8 *) dir, FcTrue, config);
 	}
 
 	cache = NULL;

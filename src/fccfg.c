@@ -52,18 +52,6 @@ retry:
     return config;
 }
 
-static FcChar32
-FcHashAsStrIgnoreCase (const void *data)
-{
-    return FcStrHashIgnoreCase (data);
-}
-
-static int
-FcCompareAsStr (const void *v1, const void *v2)
-{
-    return FcStrCmp (v1, v2);
-}
-
 static void
 FcDestroyAsRule (void *data)
 {
@@ -74,12 +62,6 @@ static void
 FcDestroyAsRuleSet (void *data)
 {
     FcRuleSetDestroy (data);
-}
-
-static void
-FcDestroyAsStr (void *data)
-{
-    FcStrFree (data);
 }
 
 FcBool
@@ -126,6 +108,10 @@ FcConfigCreate (void)
     config->configDirs = FcStrSetCreate ();
     if (!config->configDirs)
 	goto bail1;
+
+    config->configMapDirs = FcStrSetCreate();
+    if (!config->configMapDirs)
+	goto bail1_5;
 
     config->configFiles = FcStrSetCreate ();
     if (!config->configFiles)
@@ -182,13 +168,6 @@ FcConfigCreate (void)
     if (!config->availConfigFiles)
 	goto bail10;
 
-    config->uuid_table = FcHashTableCreate (FcHashAsStrIgnoreCase,
-					    FcCompareAsStr,
-					    FcHashStrCopy,
-					    FcHashUuidCopy,
-					    FcDestroyAsStr,
-					    FcHashUuidFree);
-
     FcRefInit (&config->ref, 1);
 
     return config;
@@ -213,6 +192,8 @@ bail4:
 bail3:
     FcStrSetDestroy (config->configFiles);
 bail2:
+    FcStrSetDestroy (config->configMapDirs);
+bail1_5:
     FcStrSetDestroy (config->configDirs);
 bail1:
     free (config);
@@ -324,6 +305,7 @@ FcConfigDestroy (FcConfig *config)
     (void) fc_atomic_ptr_cmpexch (&_fcConfig, config, NULL);
 
     FcStrSetDestroy (config->configDirs);
+    FcStrSetDestroy (config->configMapDirs);
     FcStrSetDestroy (config->fontDirs);
     FcStrSetDestroy (config->cacheDirs);
     FcStrSetDestroy (config->configFiles);
@@ -349,8 +331,6 @@ FcConfigDestroy (FcConfig *config)
     }
     if (config->sysRoot)
 	FcStrFree (config->sysRoot);
-
-    FcHashTableDestroy (config->uuid_table);
 
     free (config);
 }
@@ -559,9 +539,10 @@ FcConfigGetConfigDirs (FcConfig   *config)
 
 FcBool
 FcConfigAddFontDir (FcConfig	    *config,
-		    const FcChar8   *d)
+		    const FcChar8   *d,
+		    const FcChar8   *m)
 {
-    return FcStrSetAddFilename (config->fontDirs, d);
+    return FcStrSetAddFilenamePair (config->fontDirs, d, m);
 }
 
 FcStrList *
@@ -574,6 +555,47 @@ FcConfigGetFontDirs (FcConfig	*config)
 	    return 0;
     }
     return FcStrListCreate (config->fontDirs);
+}
+
+static FcBool
+FcConfigPathStartsWith(const FcChar8	*path,
+		       const FcChar8	*start)
+{
+    int len = strlen((char *) start);
+
+    if (strncmp((char *) path, (char *) start, len) != 0)
+	return FcFalse;
+
+    switch (path[len]) {
+    case '\0':
+    case FC_DIR_SEPARATOR:
+	return FcTrue;
+    default:
+	return FcFalse;
+    }
+}
+
+FcChar8 *
+FcConfigMapFontPath(FcConfig		*config,
+		    const FcChar8	*path)
+{
+    FcStrList	*list;
+    FcChar8	*dir;
+    FcChar8	*map;
+
+    list = FcConfigGetFontDirs(config);
+    if (!list)
+	return 0;
+    while ((dir = FcStrListNext(list)))
+	if (FcConfigPathStartsWith(path, dir))
+	    break;
+    FcStrListDone(list);
+    if (!dir)
+	return 0;
+    map = FcStrPairSecond(dir);
+    if (!map)
+	return 0;
+    return FcStrBuildFilename(map, path + strlen((char *) dir), NULL);
 }
 
 FcBool

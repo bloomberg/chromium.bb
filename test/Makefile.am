@@ -1,4 +1,4 @@
-check_SCRIPTS=run-test.sh
+check_SCRIPTS=run-test.sh run-test-map.sh
 TEST_EXTENSIONS = \
 	.sh \
 	$(NULL)

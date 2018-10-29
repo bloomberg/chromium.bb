@@ -2071,13 +2071,14 @@ FcParseUnary (FcConfigParse *parse, FcOp op)
 static void
 FcParseDir (FcConfigParse *parse)
 {
-    const FcChar8 *attr, *data;
+    const FcChar8 *attr, *data, *map;
     FcChar8 *prefix = NULL, *p;
 #ifdef _WIN32
     FcChar8         buffer[1000];
 #endif
 
     attr = FcConfigGetAttribute (parse, "prefix");
+    map = FcConfigGetAttribute (parse, "map");
     data = FcStrBufDoneStatic (&parse->pstack->str);
     if (attr)
     {
@@ -2188,7 +2189,7 @@ FcParseDir (FcConfigParse *parse)
 	FcConfigMessage (parse, FcSevereWarning, "empty font directory name ignored");
     else if (!parse->scanOnly && (!FcStrUsesHome (data) || FcConfigHome ()))
     {
-	if (!FcConfigAddFontDir (parse->config, data))
+	if (!FcConfigAddFontDir (parse->config, data, map))
 	    FcConfigMessage (parse, FcSevereError, "out of memory; cannot add directory %s", data);
     }
     FcStrBufDestroy (&parse->pstack->str);

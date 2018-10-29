@@ -73,6 +73,7 @@ dotest () {
 }
 
 sed "s!@FONTDIR@!$FONTDIR!
+s!@MAP@!!
 s!@CACHEDIR@!$CACHEDIR!" < $TESTDIR/fonts.conf.in > fonts.conf
 
 FONTCONFIG_FILE="$MyPWD"/fonts.conf
@@ -145,6 +146,7 @@ sleep 1
 ls -l $CACHEDIR > out1
 TESTTMPDIR=`mktemp -d /tmp/fontconfig.XXXXXXXX`
 sed "s!@FONTDIR@!$TESTTMPDIR/fonts!
+s!@MAP@!map="'"'"$FONTDIR"'"'"!
 s!@CACHEDIR@!$TESTTMPDIR/cache.dir!" < $TESTDIR/fonts.conf.in > bind-fonts.conf
 $BWRAP --bind / / --bind $CACHEDIR $TESTTMPDIR/cache.dir --bind $FONTDIR $TESTTMPDIR/fonts --bind .. $TESTTMPDIR/build --dev-bind /dev /dev --setenv FONTCONFIG_FILE $TESTTMPDIR/build/test/bind-fonts.conf $TESTTMPDIR/build/fc-match/fc-match$EXEEXT -f "%{file}\n" ":foundry=Misc" > xxx
 $BWRAP --bind / / --bind $CACHEDIR $TESTTMPDIR/cache.dir --bind $FONTDIR $TESTTMPDIR/fonts --bind .. $TESTTMPDIR/build --dev-bind /dev /dev --setenv FONTCONFIG_FILE $TESTTMPDIR/build/test/bind-fonts.conf $TESTTMPDIR/build/test/test-bz106618$EXEEXT | sort > flist1
