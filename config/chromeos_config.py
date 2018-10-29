@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import copy
 import os
+import re
 
 from chromite.lib.const import waterfall
 from chromite.lib import config_lib
@@ -3759,18 +3760,22 @@ def BranchScheduleConfig():
   ]
 
   # The three active release branches.
+  # (<branch>, [<android PFQs>], <chrome PFQ>)
   RELEASES = [
       ('release-R71-11151.B',
        ['reef-android-nyc-pre-flight-branch',
-        'grunt-android-pi-pre-flight-branch',
-        'samus-chrome-pre-flight-branch']),
+        'grunt-android-pi-pre-flight-branch'],
+       'samus-chrome-pre-flight-branch'),
+
       ('release-R70-11021.B',
        ['reef-android-nyc-pre-flight-branch',
-        'grunt-android-pi-pre-flight-branch',
-        'samus-chrome-pre-flight-branch']),
+        'grunt-android-pi-pre-flight-branch'],
+       'samus-chrome-pre-flight-branch'),
+
       ('release-R69-10895.B',
-       ['reef-android-nyc-pre-flight-branch',
-        'samus-chrome-pre-flight-branch'])]
+       ['reef-android-nyc-pre-flight-branch'],
+       'samus-chrome-pre-flight-branch'),
+  ]
 
   RELEASE_SCHEDULES = [
       '0 6 * * *',
@@ -3784,15 +3789,24 @@ def BranchScheduleConfig():
       '0 2,6,10,14,18,22 * * *',
   ]
 
-  for (branch, preflights), schedule, preflight_schedule in zip(
+  for (branch, android_pfq, chrome_pfq), schedule, android_schedule in zip(
       RELEASES, RELEASE_SCHEDULES, PFQ_SCHEDULE):
     branch_builds.append([branch, 'master-release',
                           config_lib.DISPLAY_LABEL_RELEASE,
                           schedule, None])
-    branch_builds.extend([[branch, preflight,
+    branch_builds.extend([[branch, pfq,
                            config_lib.DISPLAY_LABEL_RELEASE,
-                           preflight_schedule, None]
-                          for preflight in preflights])
+                           android_schedule, None]
+                          for pfq in android_pfq])
+
+    # We extract the release number from the branch, and use it to
+    # watch for new chrome tags to trigger Chrome PFQ builds.
+    # release-R71-11151.B -> 71 -> regexp:refs/tags/71\..*
+    release_num = re.search(r'release-R(\d+)-.*', branch).group(1)
+    branch_builds.append(
+        [branch, chrome_pfq, config_lib.DISPLAY_LABEL_RELEASE, 'triggered',
+         [['https://chromium.googlesource.com/chromium/src',
+           [r'regexp:refs/tags/%s\..*' % release_num]]]])
 
   # Convert all branch builds into scheduler config entries.
   default_config = config_lib.GetConfig().GetDefault()
