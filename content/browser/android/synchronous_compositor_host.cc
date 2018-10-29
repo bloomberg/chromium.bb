@@ -13,7 +13,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "content/browser/android/synchronous_compositor_sync_call_bridge.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"

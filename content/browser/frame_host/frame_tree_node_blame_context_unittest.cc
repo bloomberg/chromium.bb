@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/test/trace_event_analyzer.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/common/frame_owner_properties.h"

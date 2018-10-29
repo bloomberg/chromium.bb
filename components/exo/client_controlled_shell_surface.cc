@@ -30,7 +30,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"

@@ -19,7 +19,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "components/exo/layer_tree_frame_sink_holder.h"
 #include "components/exo/wm_helper.h"
 #include "components/viz/common/gpu/context_provider.h"
