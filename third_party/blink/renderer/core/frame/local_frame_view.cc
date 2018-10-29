@@ -3547,12 +3547,14 @@ bool LocalFrameView::VisualViewportSuppliesScrollbars() {
       !frame_->GetDocument() || !frame_->GetPage())
     return false;
 
+  const TopDocumentRootScrollerController& controller =
+      frame_->GetPage()->GlobalRootScrollerController();
+
   if (!LayoutViewport())
     return false;
 
-  const TopDocumentRootScrollerController& controller =
-      frame_->GetPage()->GlobalRootScrollerController();
-  return controller.RootScrollerArea() == LayoutViewport();
+  return root_scroller_util::ScrollableAreaForRootScroller(
+             controller.GlobalRootScroller()) == LayoutViewport();
 }
 
 AXObjectCache* LocalFrameView::ExistingAXObjectCache() const {

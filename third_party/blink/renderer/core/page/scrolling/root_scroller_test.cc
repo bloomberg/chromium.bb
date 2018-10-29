@@ -201,9 +201,16 @@ class RootScrollerTest : public testing::Test,
 TEST_F(RootScrollerTest, TestDefaultRootScroller) {
   Initialize("overflow-scrolling.html");
 
+  RootScrollerController& controller =
+      MainFrame()->GetDocument()->GetRootScrollerController();
+
   ASSERT_EQ(nullptr, MainFrame()->GetDocument()->rootScroller());
+
   EXPECT_EQ(MainFrame()->GetDocument(),
             EffectiveRootScroller(MainFrame()->GetDocument()));
+
+  Element* html_element = MainFrame()->GetDocument()->documentElement();
+  EXPECT_TRUE(controller.ScrollsViewport(*html_element));
 }
 
 // Make sure that replacing the documentElement doesn't change the effective
@@ -535,13 +542,13 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback) {
   const TopDocumentRootScrollerController& main_controller =
       MainFrame()->GetDocument()->GetPage()->GlobalRootScrollerController();
 
-  // No root scroller set, the document node should be the global root and the
-  // main LocalFrameView's scroll layer should be the layer to use.
+  // No root scroller set, the documentElement should be the effective root
+  // and the main LocalFrameView's scroll layer should be the layer to use.
   {
     EXPECT_EQ(main_controller.RootScrollerLayer(),
               MainFrameView()->LayoutViewport()->LayerForScrolling());
     EXPECT_TRUE(main_controller.IsViewportScrollCallback(
-        MainFrame()->GetDocument()->GetApplyScroll()));
+        MainFrame()->GetDocument()->documentElement()->GetApplyScroll()));
   }
 
   // Set a root scroller in the iframe. Since the main document didn't set a
@@ -552,7 +559,7 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback) {
     EXPECT_EQ(main_controller.RootScrollerLayer(),
               MainFrameView()->LayoutViewport()->LayerForScrolling());
     EXPECT_TRUE(main_controller.IsViewportScrollCallback(
-        MainFrame()->GetDocument()->GetApplyScroll()));
+        MainFrame()->GetDocument()->documentElement()->GetApplyScroll()));
   }
 
   // Setting the iframe as the root scroller in the main frame should now
@@ -566,14 +573,14 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback) {
     EXPECT_EQ(main_controller.RootScrollerLayer(),
               container_scroller->LayerForScrolling());
     EXPECT_FALSE(main_controller.IsViewportScrollCallback(
-        MainFrame()->GetDocument()->GetApplyScroll()));
+        MainFrame()->GetDocument()->documentElement()->GetApplyScroll()));
     EXPECT_TRUE(
         main_controller.IsViewportScrollCallback(container->GetApplyScroll()));
   }
 
-  // Unsetting the root scroller in the iframe should reset its effective root
-  // scroller to the iframe's document node and thus it becomes the global root
-  // scroller.
+  // Unsetting the root scroller in the iframe should reset its effective
+  // root scroller to the iframe's documentElement and thus the iframe's
+  // documentElement becomes the global root scroller.
   {
     SetAndSelectRootScroller(*iframe->contentDocument(), nullptr);
     EXPECT_EQ(main_controller.RootScrollerLayer(), iframe->contentDocument()
@@ -583,23 +590,23 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback) {
     EXPECT_FALSE(
         main_controller.IsViewportScrollCallback(container->GetApplyScroll()));
     EXPECT_FALSE(main_controller.IsViewportScrollCallback(
-        MainFrame()->GetDocument()->GetApplyScroll()));
+        MainFrame()->GetDocument()->documentElement()->GetApplyScroll()));
     EXPECT_TRUE(main_controller.IsViewportScrollCallback(
-        iframe->contentDocument()->GetApplyScroll()));
+        iframe->contentDocument()->documentElement()->GetApplyScroll()));
   }
 
   // Finally, unsetting the main frame's root scroller should reset it to the
-  // document node and corresponding layer.
+  // documentElement and corresponding layer.
   {
     SetAndSelectRootScroller(*MainFrame()->GetDocument(), nullptr);
     EXPECT_EQ(main_controller.RootScrollerLayer(),
               MainFrameView()->LayoutViewport()->LayerForScrolling());
     EXPECT_TRUE(main_controller.IsViewportScrollCallback(
-        MainFrame()->GetDocument()->GetApplyScroll()));
+        MainFrame()->GetDocument()->documentElement()->GetApplyScroll()));
     EXPECT_FALSE(
         main_controller.IsViewportScrollCallback(container->GetApplyScroll()));
     EXPECT_FALSE(main_controller.IsViewportScrollCallback(
-        iframe->contentDocument()->GetApplyScroll()));
+        iframe->contentDocument()->documentElement()->GetApplyScroll()));
   }
 }
 
@@ -876,7 +883,8 @@ TEST_F(RootScrollerTest, NonMainLocalRootLifecycle) {
   const TopDocumentRootScrollerController& global_controller =
       MainFrame()->GetDocument()->GetPage()->GlobalRootScrollerController();
 
-  ASSERT_EQ(MainFrame()->GetDocument(), global_controller.GlobalRootScroller());
+  ASSERT_EQ(MainFrame()->GetDocument()->documentElement(),
+            global_controller.GlobalRootScroller());
 
   MainFrameView()->UpdateAllLifecyclePhases();
   GraphicsLayer* scroll_layer = global_controller.RootScrollerLayer();
@@ -892,7 +900,8 @@ TEST_F(RootScrollerTest, NonMainLocalRootLifecycle) {
   non_main_local_root->GetFrameView()->UpdateAllLifecyclePhases();
   helper_.LocalMainFrame()->GetFrameView()->UpdateAllLifecyclePhases();
 
-  EXPECT_EQ(MainFrame()->GetDocument(), global_controller.GlobalRootScroller());
+  EXPECT_EQ(MainFrame()->GetDocument()->documentElement(),
+            global_controller.GlobalRootScroller());
   EXPECT_EQ(global_controller.RootScrollerLayer(), scroll_layer);
   EXPECT_EQ(global_controller.RootContainerLayer(), container_layer);
 }
@@ -938,7 +947,8 @@ TEST_F(RootScrollerTest, DocumentElementHasNoLayoutObject) {
   const TopDocumentRootScrollerController& global_controller =
       MainFrame()->GetDocument()->GetPage()->GlobalRootScrollerController();
 
-  EXPECT_EQ(MainFrame()->GetDocument(), global_controller.GlobalRootScroller());
+  EXPECT_EQ(MainFrame()->GetDocument()->documentElement(),
+            global_controller.GlobalRootScroller());
   EXPECT_EQ(MainFrameView()->LayoutViewport()->LayerForScrolling(),
             global_controller.RootScrollerLayer());
 }
