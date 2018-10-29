@@ -16,6 +16,11 @@ const base::Feature kAndroidMessagesIntegration{
 const base::Feature kAndroidMessagesProdEndpoint{
     "AndroidMessagesProdEndpoint", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables auto screen-brightness adjustment when ambient light
+// changes.
+const base::Feature kAutoScreenBrightness{"AutoScreenBrightness",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables native ChromeVox support for Arc.
 const base::Feature kChromeVoxArcSupport{"ChromeVoxArcSupport",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
