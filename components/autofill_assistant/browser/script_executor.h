@@ -71,8 +71,8 @@ class ScriptExecutor : public ActionDelegate {
                     base::OnceCallback<void(bool)> callback) override;
   void GetPaymentInformation(
       payments::mojom::PaymentOptionsPtr payment_options,
-      base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback)
-      override;
+      base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
+      const std::string& title) override;
   void ChooseAddress(
       base::OnceCallback<void(const std::string&)> callback) override;
   void FillAddressForm(const std::string& guid,

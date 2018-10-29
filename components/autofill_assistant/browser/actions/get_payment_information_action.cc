@@ -42,7 +42,8 @@ void GetPaymentInformationAction::InternalProcessAction(
       std::move(payment_options),
       base::BindOnce(&GetPaymentInformationAction::OnGetPaymentInformation,
                      weak_ptr_factory_.GetWeakPtr(), delegate,
-                     std::move(get_payment_information), std::move(callback)));
+                     std::move(get_payment_information), std::move(callback)),
+      get_payment_information.prompt());
 }
 
 void GetPaymentInformationAction::OnGetPaymentInformation(

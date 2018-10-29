@@ -87,9 +87,10 @@ void ScriptExecutor::ClickElement(const std::vector<std::string>& selectors,
 
 void ScriptExecutor::GetPaymentInformation(
     payments::mojom::PaymentOptionsPtr payment_options,
-    base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback) {
+    base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
+    const std::string& title) {
   delegate_->GetUiController()->GetPaymentInformation(
-      std::move(payment_options), std::move(callback));
+      std::move(payment_options), std::move(callback), title);
 }
 
 void ScriptExecutor::ChooseAddress(

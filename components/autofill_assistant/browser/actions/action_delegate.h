@@ -68,8 +68,8 @@ class ActionDelegate {
   // UseCreditCardAction.
   virtual void GetPaymentInformation(
       payments::mojom::PaymentOptionsPtr payment_options,
-      base::OnceCallback<void(std::unique_ptr<PaymentInformation>)>
-          callback) = 0;
+      base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
+      const std::string& title) = 0;
 
   // Fill the address form given by |selectors| with the given address |guid| in
   // personal data manager.

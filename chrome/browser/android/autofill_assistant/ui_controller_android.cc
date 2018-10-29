@@ -219,15 +219,18 @@ void UiControllerAndroid::ChooseCard(
 
 void UiControllerAndroid::GetPaymentInformation(
     payments::mojom::PaymentOptionsPtr payment_options,
-    base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback) {
+    base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
+    const std::string& title) {
   DCHECK(!get_payment_information_callback_);
   get_payment_information_callback_ = std::move(callback);
+  JNIEnv* env = AttachCurrentThread();
   Java_AutofillAssistantUiController_onRequestPaymentInformation(
-      AttachCurrentThread(), java_autofill_assistant_ui_controller_,
+      env, java_autofill_assistant_ui_controller_,
       payment_options->request_shipping, payment_options->request_payer_name,
       payment_options->request_payer_phone,
       payment_options->request_payer_email,
-      static_cast<int>(payment_options->shipping_type));
+      static_cast<int>(payment_options->shipping_type),
+      base::android::ConvertUTF8ToJavaString(env, title));
 }
 
 void UiControllerAndroid::HideDetails() {
