@@ -72,6 +72,8 @@ typedef struct {
   const unsigned char *buf;
   /*! Index into reference buffer array to see result of decoding 1 OBU. */
   int idx;
+  /*! Is a show existing frame. */
+  int show_existing;
 } Av1DecodeReturn;
 
 /*!\brief Structure to hold a tile's start address and size in the bitstream.

@@ -36,10 +36,12 @@ void ifd_clear(insp_frame_data *fd) {
 int ifd_inspect(insp_frame_data *fd, void *decoder) {
   struct AV1Decoder *pbi = (struct AV1Decoder *)decoder;
   AV1_COMMON *const cm = &pbi->common;
+
   if (fd->mi_rows != cm->mi_rows || fd->mi_cols != cm->mi_cols) {
     ifd_clear(fd);
     ifd_init_mi_rc(fd, cm->mi_rows, cm->mi_cols);
   }
+  fd->show_existing_frame = cm->show_existing_frame;
   fd->frame_number = cm->current_video_frame;
   fd->show_frame = cm->show_frame;
   fd->frame_type = cm->frame_type;
