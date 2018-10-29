@@ -339,7 +339,10 @@ test("components_unittests") {
   }
 
   if (is_win) {
-    deps += [ "//components/browser_watcher:unit_tests" ]
+    deps += [
+      "//components/browser_watcher:unit_tests",
+      "//components/gwp_asan/common:unit_tests",
+    ]
   }
 
   if (enable_basic_printing) {
