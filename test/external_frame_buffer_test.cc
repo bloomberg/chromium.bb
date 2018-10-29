@@ -295,7 +295,7 @@ class ExternalFrameBufferMD5Test
 };
 
 #if CONFIG_WEBM_IO
-const char kAV1TestFile[] = "av1-1-b8-01-size-226x226.ivf";
+const char kAV1TestFile[] = "av1-1-b8-03-sizeup.mkv";
 const char kAV1NonRefTestFile[] = "av1-1-b8-01-size-226x226.ivf";
 
 // Class for testing passing in external frame buffers to libvpx.
@@ -304,7 +304,7 @@ class ExternalFrameBufferTest : public ::testing::Test {
   ExternalFrameBufferTest() : video_(NULL), decoder_(NULL), num_buffers_(0) {}
 
   virtual void SetUp() {
-    video_ = new libaom_test::IVFVideoSource(kAV1TestFile);
+    video_ = new libaom_test::WebMVideoSource(kAV1TestFile);
     ASSERT_TRUE(video_ != NULL);
     video_->Init();
     video_->Begin();
@@ -362,7 +362,7 @@ class ExternalFrameBufferTest : public ::testing::Test {
     }
   }
 
-  libaom_test::IVFVideoSource *video_;
+  libaom_test::CompressedVideoSource *video_;
   libaom_test::AV1Decoder *decoder_;
   int num_buffers_;
   ExternalFrameBufferList fb_list_;
@@ -455,7 +455,7 @@ TEST_F(ExternalFrameBufferTest, EightJitterBuffers) {
   ASSERT_EQ(AOM_CODEC_OK, DecodeRemainingFrames());
 }
 
-TEST_F(ExternalFrameBufferTest, DISABLED_NotEnoughBuffers) {
+TEST_F(ExternalFrameBufferTest, NotEnoughBuffers) {
   // Minimum number of external frame buffers for AV1 is
   // #AOM_MAXIMUM_REF_BUFFERS + #AOM_MAXIMUM_WORK_BUFFERS. Most files will
   // only use 5 frame buffers at one time.
@@ -469,7 +469,7 @@ TEST_F(ExternalFrameBufferTest, DISABLED_NotEnoughBuffers) {
   ASSERT_EQ(AOM_CODEC_MEM_ERROR, DecodeRemainingFrames());
 }
 
-TEST_F(ExternalFrameBufferTest, DISABLED_NoRelease) {
+TEST_F(ExternalFrameBufferTest, NoRelease) {
   const int num_buffers = AOM_MAXIMUM_REF_BUFFERS + AOM_MAXIMUM_WORK_BUFFERS;
   ASSERT_EQ(AOM_CODEC_OK,
             SetFrameBufferFunctions(num_buffers, get_aom_frame_buffer,
