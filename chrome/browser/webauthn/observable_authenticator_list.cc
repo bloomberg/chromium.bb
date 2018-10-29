@@ -55,15 +55,9 @@ void ObservableAuthenticatorList::ChangeAuthenticatorPairingMode(
   if (it == authenticator_list_.end())
     return;
 
-  bool previously_in_pairing_mode = it->is_in_pairing_mode();
   it->SetIsInPairingMode(is_in_pairing_mode);
-
-  // TODO(hongjunchoi): Add logic to notify view components when Bluetooth
-  // authenticator changes from being in pairing mode to non-pairing mode.
-  if (observer_ && !previously_in_pairing_mode && is_in_pairing_mode) {
-    observer_->OnAuthenticatorChanged(
-        authenticator_list_[std::distance(authenticator_list_.begin(), it)]);
-  }
+  if (observer_)
+    observer_->OnAuthenticatorPairingModeChanged(*it);
 }
 
 AuthenticatorReference* ObservableAuthenticatorList::GetAuthenticator(

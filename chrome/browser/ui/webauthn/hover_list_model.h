@@ -19,10 +19,17 @@
 // UI view component.
 class HoverListModel {
  public:
+  enum class ListItemChangeType {
+    kAddToViewComponent,
+    kRemoveFromViewComponent,
+  };
+
   class Observer {
    public:
     virtual void OnListItemAdded(int item_tag) = 0;
     virtual void OnListItemRemoved(int removed_list_item_tag) = 0;
+    virtual void OnListItemChanged(int changed_list_item_tag,
+                                   ListItemChangeType type) = 0;
   };
 
   HoverListModel() = default;

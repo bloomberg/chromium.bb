@@ -145,21 +145,8 @@ void HoverListView::CreateAndAppendPlaceholderItem() {
       ListItemViews{placeholder_item.release(), separator});
 }
 
-void HoverListView::RemoveListItemView(ListItemViews list_item) {
-  DCHECK(Contains(list_item.item_view));
-  DCHECK(Contains(list_item.separator_view));
-  RemoveChildView(list_item.item_view);
-  RemoveChildView(list_item.separator_view);
-}
-
-void HoverListView::RequestFocus() {
-  if (!first_list_item_view_)
-    return;
-
-  first_list_item_view_->RequestFocus();
-}
-
-void HoverListView::OnListItemAdded(int item_tag) {
+void HoverListView::AddListItemView(int item_tag) {
+  CHECK(!base::ContainsKey(tags_to_list_item_views_, item_tag));
   if (placeholder_list_item_view_) {
     RemoveListItemView(*placeholder_list_item_view_);
     placeholder_list_item_view_.emplace();
@@ -174,9 +161,10 @@ void HoverListView::OnListItemAdded(int item_tag) {
   Layout();
 }
 
-void HoverListView::OnListItemRemoved(int removed_item_tag) {
-  auto view_it = tags_to_list_item_views_.find(removed_item_tag);
-  CHECK(view_it != tags_to_list_item_views_.end());
+void HoverListView::RemoveListItemView(int item_tag) {
+  auto view_it = tags_to_list_item_views_.find(item_tag);
+  if (view_it == tags_to_list_item_views_.end())
+    return;
 
   auto* list_item_ptr = view_it->second.item_view;
   if (list_item_ptr == first_list_item_view_)
@@ -194,6 +182,37 @@ void HoverListView::OnListItemRemoved(int removed_item_tag) {
   // similarly to what is done in
   // AuthenticatorRequestDialogView::ReplaceSheetWith().
   Layout();
+}
+
+void HoverListView::RemoveListItemView(ListItemViews list_item) {
+  DCHECK(Contains(list_item.item_view));
+  DCHECK(Contains(list_item.separator_view));
+  RemoveChildView(list_item.item_view);
+  RemoveChildView(list_item.separator_view);
+}
+
+void HoverListView::RequestFocus() {
+  if (!first_list_item_view_)
+    return;
+
+  first_list_item_view_->RequestFocus();
+}
+
+void HoverListView::OnListItemAdded(int item_tag) {
+  AddListItemView(item_tag);
+}
+
+void HoverListView::OnListItemRemoved(int removed_item_tag) {
+  RemoveListItemView(removed_item_tag);
+}
+
+void HoverListView::OnListItemChanged(int changed_list_item_tag,
+                                      HoverListModel::ListItemChangeType type) {
+  if (type == HoverListModel::ListItemChangeType::kAddToViewComponent) {
+    AddListItemView(changed_list_item_tag);
+  } else {
+    RemoveListItemView(changed_list_item_tag);
+  }
 }
 
 void HoverListView::ButtonPressed(views::Button* sender,

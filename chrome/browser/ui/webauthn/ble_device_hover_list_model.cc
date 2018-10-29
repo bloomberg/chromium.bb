@@ -123,11 +123,20 @@ void BleDeviceHoverListModel::OnAuthenticatorRemoved(
     observer()->OnListItemRemoved(item_tag);
 }
 
-void BleDeviceHoverListModel::OnAuthenticatorChanged(
+void BleDeviceHoverListModel::OnAuthenticatorPairingModeChanged(
     const AuthenticatorReference& changed_authenticator) {
+  if (!observer())
+    return;
+
   auto it = FindElementByValue(authenticator_tags_,
                                changed_authenticator.authenticator_id());
   CHECK(it != authenticator_tags_.end());
-  if (observer() && ShouldShowItemInView(changed_authenticator))
-    observer()->OnListItemAdded(it->first);
+  const auto changed_item_tag = it->first;
+  if (ShouldShowItemInView(changed_authenticator)) {
+    observer()->OnListItemChanged(changed_item_tag,
+                                  ListItemChangeType::kAddToViewComponent);
+  } else {
+    observer()->OnListItemChanged(changed_item_tag,
+                                  ListItemChangeType::kRemoveFromViewComponent);
+  }
 }
