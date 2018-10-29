@@ -571,6 +571,7 @@ ImageBitmap::ImageBitmap(ImageElementBase* image,
 
   image_->SetOriginClean(
       !image->WouldTaintOrigin(document->GetSecurityOrigin()));
+  UpdateImageBitmapMemoryUsage();
 }
 
 ImageBitmap::ImageBitmap(HTMLVideoElement* video,
@@ -606,6 +607,7 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video,
 
   image_->SetOriginClean(
       !video->WouldTaintOrigin(document->GetSecurityOrigin()));
+  UpdateImageBitmapMemoryUsage();
 }
 
 ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas,
@@ -631,6 +633,7 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas,
     return;
 
   image_->SetOriginClean(canvas->OriginClean());
+  UpdateImageBitmapMemoryUsage();
 }
 
 ImageBitmap::ImageBitmap(OffscreenCanvas* offscreen_canvas,
@@ -657,6 +660,7 @@ ImageBitmap::ImageBitmap(OffscreenCanvas* offscreen_canvas,
   if (!image_)
     return;
   image_->SetOriginClean(offscreen_canvas->OriginClean());
+  UpdateImageBitmapMemoryUsage();
 }
 
 ImageBitmap::ImageBitmap(const void* pixel_data,
@@ -678,6 +682,7 @@ ImageBitmap::ImageBitmap(const void* pixel_data,
   if (!image_)
     return;
   image_->SetOriginClean(is_image_bitmap_origin_clean);
+  UpdateImageBitmapMemoryUsage();
 }
 
 ImageBitmap::ImageBitmap(ImageData* data,
@@ -753,6 +758,8 @@ ImageBitmap::ImageBitmap(ImageData* data,
   // resize if up-scaling
   if (up_scaling)
     image_ = ScaleImage(std::move(image_), parsed_options);
+
+  UpdateImageBitmapMemoryUsage();
 }
 
 ImageBitmap::ImageBitmap(ImageBitmap* bitmap,
@@ -775,6 +782,7 @@ ImageBitmap::ImageBitmap(ImageBitmap* bitmap,
     return;
 
   image_->SetOriginClean(bitmap->OriginClean());
+  UpdateImageBitmapMemoryUsage();
 }
 
 ImageBitmap::ImageBitmap(scoped_refptr<StaticBitmapImage> image,
@@ -795,10 +803,12 @@ ImageBitmap::ImageBitmap(scoped_refptr<StaticBitmapImage> image,
     return;
 
   image_->SetOriginClean(origin_clean);
+  UpdateImageBitmapMemoryUsage();
 }
 
 ImageBitmap::ImageBitmap(scoped_refptr<StaticBitmapImage> image) {
   image_ = std::move(image);
+  UpdateImageBitmapMemoryUsage();
 }
 
 scoped_refptr<StaticBitmapImage> ImageBitmap::Transfer() {
@@ -808,7 +818,25 @@ scoped_refptr<StaticBitmapImage> ImageBitmap::Transfer() {
   return std::move(image_);
 }
 
-ImageBitmap::~ImageBitmap() = default;
+void ImageBitmap::UpdateImageBitmapMemoryUsage() {
+  // TODO(fserb): We should be calling GetCanvasColorParams().BytesPerPixel()
+  // but this is breaking some tests due to the repaint of the image.
+  int bytes_per_pixel = 4;
+
+  base::CheckedNumeric<int32_t> memory_usage_checked = bytes_per_pixel;
+  memory_usage_checked *= image_->width();
+  memory_usage_checked *= image_->height();
+  int32_t new_memory_usage =
+      memory_usage_checked.ValueOrDefault(std::numeric_limits<int32_t>::max());
+  v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
+      new_memory_usage - memory_usage_);
+  memory_usage_ = new_memory_usage;
+}
+
+ImageBitmap::~ImageBitmap() {
+  v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
+      -memory_usage_);
+}
 
 ImageBitmap* ImageBitmap::Create(ImageElementBase* image,
                                  base::Optional<IntRect> crop_rect,
