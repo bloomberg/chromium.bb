@@ -60,16 +60,20 @@ UiControllerAndroid::UiControllerAndroid(
     jobject jcaller,
     const JavaParamRef<jobject>& webContents,
     const base::android::JavaParamRef<jobjectArray>& parameterNames,
-    const base::android::JavaParamRef<jobjectArray>& parameterValues)
+    const base::android::JavaParamRef<jobjectArray>& parameterValues,
+    const base::android::JavaParamRef<jstring>& initialUrlString)
     : ui_delegate_(nullptr) {
   java_autofill_assistant_ui_controller_.Reset(env, jcaller);
 
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(webContents);
   DCHECK(web_contents);
+  GURL initialUrl =
+      GURL(base::android::ConvertJavaStringToUTF8(env, initialUrlString));
   Controller::CreateAndStartForWebContents(
       web_contents, base::WrapUnique(this),
-      BuildParametersFromJava(env, parameterNames, parameterValues));
+      BuildParametersFromJava(env, parameterNames, parameterValues),
+      initialUrl);
   DCHECK(ui_delegate_);
 }
 
@@ -326,9 +330,11 @@ static jlong JNI_AutofillAssistantUiController_Init(
     const base::android::JavaParamRef<jobject>& jcaller,
     const base::android::JavaParamRef<jobject>& webContents,
     const base::android::JavaParamRef<jobjectArray>& parameterNames,
-    const base::android::JavaParamRef<jobjectArray>& parameterValues) {
+    const base::android::JavaParamRef<jobjectArray>& parameterValues,
+    const base::android::JavaParamRef<jstring>& initialUrlString) {
   auto* ui_controller_android = new autofill_assistant::UiControllerAndroid(
-      env, jcaller, webContents, parameterNames, parameterValues);
+      env, jcaller, webContents, parameterNames, parameterValues,
+      initialUrlString);
   return reinterpret_cast<intptr_t>(ui_controller_android);
 }
 

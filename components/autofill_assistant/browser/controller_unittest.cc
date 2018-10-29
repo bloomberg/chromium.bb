@@ -61,6 +61,22 @@ class ControllerTest : public content::RenderViewHostTestHarness {
   ControllerTest() {}
   ~ControllerTest() override {}
 
+  static Controller* CreateController(
+      content::WebContents* web_contents,
+      std::unique_ptr<Client> client,
+      std::unique_ptr<WebController> web_controller,
+      std::unique_ptr<Service> service,
+      std::unique_ptr<std::map<std::string, std::string>> parameters,
+      const GURL& initialUrl) {
+    return new Controller(web_contents, std::move(client),
+                          std::move(web_controller), std::move(service),
+                          std::move(parameters), initialUrl);
+  }
+
+  static void DestroyController(Controller* controller) {
+    controller->OnDestroy();
+  }
+
   void SetUp() override {
     content::RenderViewHostTestHarness::SetUp();
 
@@ -72,10 +88,12 @@ class ControllerTest : public content::RenderViewHostTestHarness {
     mock_service_ = service.get();
     auto parameters = std::make_unique<std::map<std::string, std::string>>();
     parameters->insert(std::make_pair("a", "b"));
+    GURL initialUrl("");
 
     controller_ = new Controller(
         web_contents(), std::make_unique<FakeClient>(std::move(ui_controller)),
-        std::move(web_controller), std::move(service), std::move(parameters));
+        std::move(web_controller), std::move(service), std::move(parameters),
+        initialUrl);
 
     // Fetching scripts succeeds for all URLs, but return nothing.
     ON_CALL(*mock_service_, OnGetScriptsForUrl(_, _, _))
@@ -92,7 +110,7 @@ class ControllerTest : public content::RenderViewHostTestHarness {
   }
 
   void TearDown() override {
-    controller_->OnDestroy();  // deletes the controller and mocks
+    DestroyController(controller_);  // deletes the controller and mocks
     content::RenderViewHostTestHarness::TearDown();
   }
 
@@ -346,6 +364,22 @@ TEST_F(ControllerTest, LoadProgressChanged) {
               OnGetScriptsForUrl(Eq(GURL("http://a.example.com/path")), _, _))
       .WillOnce(RunOnceCallback<2>(true, ""));
   SimulateProgressChanged(0.4);
+}
+
+TEST_F(ControllerTest, InitialUrlLoads) {
+  GURL initialUrl("http://a.example.com/path");
+  auto service = std::make_unique<NiceMock<MockService>>();
+
+  EXPECT_CALL(*service.get(), OnGetScriptsForUrl(Eq(initialUrl), _, _))
+      .WillOnce(RunOnceCallback<2>(true, ""));
+
+  Controller* controller = ControllerTest::CreateController(
+      web_contents(),
+      std::make_unique<FakeClient>(
+          std::make_unique<NiceMock<MockUiController>>()),
+      std::make_unique<NiceMock<MockWebController>>(), std::move(service),
+      std::make_unique<std::map<std::string, std::string>>(), initialUrl);
+  ControllerTest::DestroyController(controller);
 }
 
 }  // namespace autofill_assistant

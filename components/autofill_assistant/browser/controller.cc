@@ -42,7 +42,8 @@ static const char* const kCallerScriptParameterName = "CALLER";
 void Controller::CreateAndStartForWebContents(
     content::WebContents* web_contents,
     std::unique_ptr<Client> client,
-    std::unique_ptr<std::map<std::string, std::string>> parameters) {
+    std::unique_ptr<std::map<std::string, std::string>> parameters,
+    const GURL& initialUrl) {
   // Get the key early since |client| will be invalidated when moved below.
   GURL server_url(client->GetServerUrl());
   DCHECK(server_url.is_valid());
@@ -51,7 +52,7 @@ void Controller::CreateAndStartForWebContents(
       client->GetIdentityManagerForPrimaryAccount());
   new Controller(web_contents, std::move(client),
                  WebController::CreateForWebContents(web_contents),
-                 std::move(service), std::move(parameters));
+                 std::move(service), std::move(parameters), initialUrl);
 }
 
 Service* Controller::GetService() {
@@ -87,7 +88,8 @@ Controller::Controller(
     std::unique_ptr<Client> client,
     std::unique_ptr<WebController> web_controller,
     std::unique_ptr<Service> service,
-    std::unique_ptr<std::map<std::string, std::string>> parameters)
+    std::unique_ptr<std::map<std::string, std::string>> parameters,
+    const GURL& initialUrl)
     : content::WebContentsObserver(web_contents),
       client_(std::move(client)),
       web_controller_(std::move(web_controller)),
@@ -110,9 +112,8 @@ Controller::Controller(
   }
 
   GetUiController()->SetUiDelegate(this);
-  if (!web_contents->IsLoading()) {
-    GetOrCheckScripts(web_contents->GetLastCommittedURL());
-  }
+  if (initialUrl.is_valid())
+    GetOrCheckScripts(initialUrl);
 
   if (allow_autostart_) {
     auto iter = parameters_->find(kCallerScriptParameterName);
