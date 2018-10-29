@@ -533,13 +533,22 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalMixed) {
   EXPECT_EQ(result->Bounds(), composite_result->Bounds());
 }
 
-TEST_P(ShapeParameterTest, MissingGlyph) {
-  // U+FFF0 is not assigned as of Unicode 10.0.
-  String string(
-      u"\uFFF0"
-      u"Hello");
+class ShapeStringTest : public HarfBuzzShaperTest,
+                        public testing::WithParamInterface<const char16_t*> {};
+
+INSTANTIATE_TEST_CASE_P(HarfBuzzShaperTest,
+                        ShapeStringTest,
+                        testing::Values(
+                            // U+FFF0 is not assigned as of Unicode 10.0.
+                            u"\uFFF0",
+                            u"\uFFF0Hello",
+                            // U+00AD SOFT HYPHEN often does not have glyphs.
+                            u"\u00AD"));
+
+TEST_P(ShapeStringTest, MissingGlyph) {
+  String string(GetParam());
   HarfBuzzShaper shaper(string);
-  scoped_refptr<ShapeResult> result = ShapeWithParameter(&shaper);
+  scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
   EXPECT_EQ(0u, result->StartIndexForResult());
   EXPECT_EQ(string.length(), result->EndIndexForResult());
 }

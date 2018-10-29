@@ -1219,18 +1219,6 @@ void ShapeResult::InsertRun(std::unique_ptr<ShapeResult::RunInfo> run) {
   UpdateStartIndex();
 }
 
-// Insert a |RunInfo| without glyphs. |StartIndexForResult()| needs a run to
-// compute the start character index. When all glyphs are missing, this function
-// synthesize a run without glyphs.
-void ShapeResult::InsertRunForIndex(unsigned start_character_index) {
-  DCHECK(runs_.IsEmpty());
-  runs_.push_back(std::make_unique<RunInfo>(
-      primary_font_.get(), !Rtl() ? HB_DIRECTION_LTR : HB_DIRECTION_RTL,
-      CanvasRotationInVertical::kRegular, HB_SCRIPT_UNKNOWN,
-      start_character_index, 0, num_characters_));
-  UpdateStartIndex();
-}
-
 ShapeResult::RunInfo* ShapeResult::InsertRunForTesting(
     unsigned start_index,
     unsigned num_characters,

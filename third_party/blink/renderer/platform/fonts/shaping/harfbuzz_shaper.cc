@@ -1004,9 +1004,9 @@ scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(
     }
   }
 
-  // Ensure we have at least one run for StartIndexForResult().
-  if (UNLIKELY(result->runs_.IsEmpty() && start))
-    result->InsertRunForIndex(start);
+  // Ensure |start_index_| is updated even when no runs were inserted.
+  if (UNLIKELY(result->runs_.IsEmpty()))
+    result->start_index_ = start;
 
 #if DCHECK_IS_ON()
   if (result)
