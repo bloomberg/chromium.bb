@@ -34,7 +34,6 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -97,7 +96,6 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
-    @FlakyTest(message = "https://crbug.com/894796")
     @DisableIf.
     Build(message = "Flaky on K/L crbug.com/762126", sdk_is_less_than = Build.VERSION_CODES.M)
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
@@ -112,7 +110,6 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
-    @FlakyTest(message = "https://crbug.com/894796")
     @DisableIf
             .Build(message = "Flaky on K/L crbug.com/762126",
                     sdk_is_less_than = Build.VERSION_CODES.M)
@@ -261,7 +258,6 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
-    @FlakyTest(message = "https://crbug.com/894796")
     @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testScreenTapsRegisteredOnCardboard() throws InterruptedException {
@@ -292,7 +288,6 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
-    @FlakyTest(message = "https://crbug.com/894796")
     @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
     @CommandLineFlags
             .Remove({"enable-webvr"})
@@ -332,7 +327,6 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
-    @FlakyTest(message = "https://crbug.com/894796")
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testPresentationLocksFocus() throws InterruptedException {
         presentationLocksFocusImpl(
@@ -346,7 +340,6 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
-    @FlakyTest(message = "https://crbug.com/894796")
     @CommandLineFlags
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
@@ -571,7 +564,6 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
-    @FlakyTest(message = "https://crbug.com/894796")
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @CommandLineFlags
             .Remove({"enable-webvr"})
@@ -590,7 +582,6 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
-    @FlakyTest(message = "https://crbug.com/894796")
     @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
     @CommandLineFlags
             .Remove({"enable-webvr"})
@@ -608,7 +599,6 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
-    @FlakyTest(message = "https://crbug.com/894796")
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @CommandLineFlags
             .Remove({"enable-webvr"})
@@ -625,7 +615,6 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
-    @FlakyTest(message = "https://crbug.com/894796")
     @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
     @CommandLineFlags
             .Remove({"enable-webvr"})
@@ -644,7 +633,6 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
-    @FlakyTest(message = "https://crbug.com/894796")
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @CommandLineFlags.Remove({"enable-webvr"})
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
@@ -659,7 +647,6 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
-    @FlakyTest(message = "https://crbug.com/894796")
     @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
     @CommandLineFlags.Remove({"enable-webvr"})
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
