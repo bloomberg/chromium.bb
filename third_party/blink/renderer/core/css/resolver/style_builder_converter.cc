@@ -1714,6 +1714,11 @@ static const CSSValue& ComputeRegisteredPropertyValue(
       auto unit_type = CSSPrimitiveValue::UnitType::kInteger;
       return *CSSPrimitiveValue::Create(std::round(double_value), unit_type);
     }
+
+    if (primitive_value.IsAngle()) {
+      return *CSSPrimitiveValue::Create(primitive_value.ComputeDegrees(),
+                                        CSSPrimitiveValue::UnitType::kDegrees);
+    }
   }
 
   if (value.IsIdentifierValue()) {
