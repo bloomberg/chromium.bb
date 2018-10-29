@@ -422,6 +422,12 @@ class PageLoadMetricsObserver {
   virtual void OnLastImagePaintInMainFrameDocument(
       const mojom::PageLoadTiming& last_candidate,
       const page_load_metrics::PageLoadExtraInfo& info) {}
+  virtual void OnLargestTextPaintInMainFrameDocument(
+      const mojom::PageLoadTiming& last_candidate,
+      const page_load_metrics::PageLoadExtraInfo& info) {}
+  virtual void OnLastTextPaintInMainFrameDocument(
+      const mojom::PageLoadTiming& last_candidate,
+      const page_load_metrics::PageLoadExtraInfo& info) {}
 
   virtual void OnPageInteractive(const mojom::PageLoadTiming& timing,
                                  const PageLoadExtraInfo& extra_info) {}

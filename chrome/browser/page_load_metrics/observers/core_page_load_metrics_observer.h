@@ -27,6 +27,8 @@ extern const char kHistogramFirstContentfulPaint[];
 extern const char kHistogramFirstMeaningfulPaint[];
 extern const char kHistogramLargestImagePaint[];
 extern const char kHistogramLastImagePaint[];
+extern const char kHistogramLargestTextPaint[];
+extern const char kHistogramLastTextPaint[];
 extern const char kHistogramTimeToInteractive[];
 extern const char kHistogramParseDuration[];
 extern const char kHistogramParseBlockedOnScriptLoad[];
@@ -216,6 +218,12 @@ class CorePageLoadMetricsObserver
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnLastImagePaintInMainFrameDocument(
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info) override;
+  void OnLargestTextPaintInMainFrameDocument(
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info) override;
+  void OnLastTextPaintInMainFrameDocument(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
 

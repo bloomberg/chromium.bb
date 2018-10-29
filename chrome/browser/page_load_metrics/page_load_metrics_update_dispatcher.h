@@ -176,6 +176,8 @@ class PageLoadMetricsUpdateDispatcher {
   // current_merged_page_timing_ at the end of the pageload life time.
   base::Optional<base::TimeDelta> largest_image_paint_;
   base::Optional<base::TimeDelta> last_image_paint_;
+  base::Optional<base::TimeDelta> largest_text_paint_;
+  base::Optional<base::TimeDelta> last_text_paint_;
 
   // PageLoadTiming for the currently tracked page. The fields in |paint_timing|
   // are merged across all frames in the document. All other fields are from the
