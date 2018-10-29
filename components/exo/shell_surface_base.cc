@@ -23,7 +23,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
