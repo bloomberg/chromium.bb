@@ -78,3 +78,10 @@ function testCanSharePath() {
     assertTrue(Crostini.canSharePath(fooFolder, false, volumeManager));
   }
 }
+
+function testTaskRequiresSharing() {
+  assertTrue(Crostini.taskRequiresSharing({taskId: 'app|crostini|open-with'}));
+  assertTrue(
+      Crostini.taskRequiresSharing({taskId: 'appId|x|install-linux-package'}));
+  assertFalse(Crostini.taskRequiresSharing({taskId: 'appId|x|open-with'}));
+}
