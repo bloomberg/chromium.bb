@@ -75,6 +75,7 @@ class InputDeviceClient : public mojom::InputDeviceObserverMojo,
   void NotifyObserversDeviceListsComplete();
   void NotifyObserversKeyboardDeviceConfigurationChanged();
   void NotifyObserversTouchscreenDeviceConfigurationChanged();
+  void NotifyObserversTouchpadDeviceConfigurationChanged();
 
   mojo::Binding<mojom::InputDeviceObserverMojo> binding_;
 

@@ -158,4 +158,9 @@ void InputDeviceClient::NotifyObserversTouchscreenDeviceConfigurationChanged() {
     observer.OnTouchscreenDeviceConfigurationChanged();
 }
 
+void InputDeviceClient::NotifyObserversTouchpadDeviceConfigurationChanged() {
+  for (auto& observer : observers_)
+    observer.OnTouchpadDeviceConfigurationChanged();
+}
+
 }  // namespace ws
