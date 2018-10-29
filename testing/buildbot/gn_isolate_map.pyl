@@ -24,11 +24,11 @@
 # needs to be; valid values are:
 #
 #  "windowed_test_launcher"
-#  : the test is a gtest-based test that uses the "brave-new-test-launcher"
+#  : the test is a gtest-based test that uses the parallelizing TestLauncher
 #    from //base/test:test_support and needs to run under Xvfb if run on
 #    some platforms (eg. Linux Desktop and Ozone CrOS).
 #  "console_test_launcher"
-#  : the test is a gtest-based test that uses the "brave-new-test-launcher"
+#  : the test is a gtest-based test that uses the parallelizing TestLauncher
 #    from //base/test:test_support but does not need Xvfb.
 #  "additional_compile_target"
 #  : this isn't actually a test, but we still need a mapping from the
