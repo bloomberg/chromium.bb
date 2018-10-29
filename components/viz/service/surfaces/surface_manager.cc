@@ -172,15 +172,6 @@ void SurfaceManager::RemoveSurfaceReferences(
     RemoveSurfaceReferenceImpl(reference);
 }
 
-void SurfaceManager::DropTemporaryReference(const SurfaceId& surface_id) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  if (!HasTemporaryReference(surface_id))
-    return;
-
-  RemoveTemporaryReference(surface_id, RemovedReason::DROPPED);
-}
-
 void SurfaceManager::GarbageCollectSurfaces() {
   TRACE_EVENT0("viz", "SurfaceManager::GarbageCollectSurfaces");
   if (surfaces_to_destroy_.empty())

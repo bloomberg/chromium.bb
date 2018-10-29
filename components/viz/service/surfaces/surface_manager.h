@@ -170,11 +170,6 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // collection to delete unreachable surfaces.
   void RemoveSurfaceReferences(const std::vector<SurfaceReference>& references);
 
-  // Drops the temporary reference for |surface_id|. If a surface reference has
-  // already been added from the parent to |surface_id| then this will do
-  // nothing.
-  void DropTemporaryReference(const SurfaceId& surface_id);
-
   // Garbage collects all destroyed surfaces that aren't live.
   void GarbageCollectSurfaces();
 
