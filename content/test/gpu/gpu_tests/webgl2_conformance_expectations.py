@@ -1124,6 +1124,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     #     ['linux', 'amd'], bug=483282)
     self.Fail('conformance2/textures/misc/copy-texture-image-luma-format.html',
         ['linux', 'amd'], bug=483282)
+    self.Fail('conformance2/vertex_arrays/' +
+        'vertex-array-object-and-disabled-attributes.html',
+        ['linux', 'amd'], bug=899754)
 
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'teximage2d_pbo_cube_00.html',

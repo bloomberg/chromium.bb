@@ -759,6 +759,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android', 'qualcomm', 'no_passthrough'], bug=499555)
 
     # Nexus 5
+    self.Fail('conformance/attribs/gl-disabled-vertex-attrib-update.html',
+        ['android', ('qualcomm', 'Adreno (TM) 330')], bug=899754)
     self.Fail('conformance/extensions/angle-instanced-arrays.html',
         ['android', ('qualcomm', 'Adreno (TM) 330')], bug=611943)
     self.Fail('conformance/extensions/ext-texture-filter-anisotropic.html',
@@ -875,6 +877,13 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Skip('conformance/more/functions/bindBufferBadArgs.html',
         ['android', 'android-webview-instrumentation',
          ('qualcomm', 'Adreno (TM) 420')], bug=499874)
+    self.Fail('conformance/reading/' +
+        'fbo-remains-unchanged-after-read-pixels.html',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=899754)
+    self.Fail('conformance/reading/read-pixels-pack-alignment.html',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=899754)
+    self.Fail('conformance/reading/read-pixels-test.html',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=899754)
     self.Fail('conformance/rendering/clear-after-copyTexImage2D.html',
         ['android', ('qualcomm', 'Adreno (TM) 420')], bug=737002)
     self.Fail('conformance/rendering/gl-scissor-test.html',
