@@ -16,7 +16,7 @@
 #include "third_party/blink/renderer/platform/scheduler/common/metrics_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/use_case.h"
-#include "third_party/blink/renderer/platform/scheduler/renderer/frame_status.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_status.h"
 #include "third_party/blink/renderer/platform/scheduler/util/thread_load_tracker.h"
 
 namespace blink {
