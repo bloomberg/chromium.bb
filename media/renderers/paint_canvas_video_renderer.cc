@@ -336,8 +336,9 @@ class VideoImageGenerator : public cc::PaintImageGenerator {
     return true;
   }
 
-  bool QueryYUV8(SkYUVSizeInfo* sizeInfo,
-                 SkYUVColorSpace* color_space) const override {
+  bool QueryYUVA8(SkYUVASizeInfo* sizeInfo,
+                  SkYUVAIndex indices[SkYUVAIndex::kIndexCount],
+                  SkYUVColorSpace* color_space) const override {
     if (!media::IsYuvPlanar(frame_->format()) ||
         // TODO(rileya): Skia currently doesn't support YUVA conversion. Remove
         // this case once it does. As-is we will fall back on the pure-software
@@ -363,18 +364,40 @@ class VideoImageGenerator : public cc::PaintImageGenerator {
       sizeInfo->fSizes[plane].set(size.width(), size.height());
       sizeInfo->fWidthBytes[plane] = size.width();
     }
+    sizeInfo->fSizes[VideoFrame::kAPlane] = SkISize::MakeEmpty();
+    sizeInfo->fWidthBytes[VideoFrame::kAPlane] = 0;
+
+    indices[SkYUVAIndex::kY_Index] = {VideoFrame::kYPlane, SkColorChannel::kR};
+    indices[SkYUVAIndex::kU_Index] = {VideoFrame::kUPlane, SkColorChannel::kR};
+    indices[SkYUVAIndex::kV_Index] = {VideoFrame::kVPlane, SkColorChannel::kR};
+    indices[SkYUVAIndex::kA_Index] = {-1, SkColorChannel::kR};
 
     return true;
   }
 
-  bool GetYUV8Planes(const SkYUVSizeInfo& sizeInfo,
-                     void* planes[3],
-                     size_t frame_index,
-                     uint32_t lazy_pixel_ref) override {
+  bool GetYUVA8Planes(const SkYUVASizeInfo& sizeInfo,
+                      const SkYUVAIndex indices[SkYUVAIndex::kIndexCount],
+                      void* planes[4],
+                      size_t frame_index,
+                      uint32_t lazy_pixel_ref) override {
     DCHECK_EQ(frame_index, 0u);
 
     media::VideoPixelFormat format = frame_->format();
     DCHECK(media::IsYuvPlanar(format) && format != PIXEL_FORMAT_I420A);
+
+    for (int i = 0; i <= VideoFrame::kVPlane; ++i) {
+      if (sizeInfo.fSizes[i].isEmpty() || !sizeInfo.fWidthBytes[i]) {
+        return false;
+      }
+    }
+    if (!sizeInfo.fSizes[VideoFrame::kAPlane].isEmpty() ||
+        sizeInfo.fWidthBytes[VideoFrame::kAPlane]) {
+      return false;
+    }
+    int numPlanes;
+    if (!SkYUVAIndex::AreValidIndices(indices, &numPlanes) || numPlanes != 3) {
+      return false;
+    }
 
     for (int plane = VideoFrame::kYPlane; plane <= VideoFrame::kVPlane;
          ++plane) {
