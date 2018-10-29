@@ -15,7 +15,7 @@
 namespace net {
 
 // Observes changes in the network quality.
-class NET_EXPORT RTTAndThroughputEstimatesObserver {
+class NET_EXPORT_PRIVATE RTTAndThroughputEstimatesObserver {
  public:
   // Notifies the observer when estimated HTTP RTT, estimated transport RTT or
   // estimated downstream throughput is computed. NetworkQualityEstimator
