@@ -62,6 +62,7 @@
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/compositor/surface_utils.h"
+#include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -131,6 +132,14 @@ void SendOnForegroundedToGpuService() {
           host->gpu_service()->OnForegrounded();
         }
       }));
+}
+
+void BrowserGpuChannelHostFactorySetApplicationVisible(bool is_visible) {
+  // This code relies on the browser's GpuChannelEstablishFactory being the
+  // BrowserGpuChannelHostFactory.
+  DCHECK_EQ(BrowserMainLoop::GetInstance()->gpu_channel_establish_factory(),
+            BrowserGpuChannelHostFactory::instance());
+  BrowserGpuChannelHostFactory::instance()->SetApplicationVisible(is_visible);
 }
 
 // The client_id used here should not conflict with the client_id generated
@@ -238,6 +247,9 @@ class CompositorDependencies {
                 base::Unretained(this)))) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+    // Ensure we're in the correct state at start up.
+    OnApplicationStateChange(app_listener_->GetState());
+
     bool enable_viz =
         base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
     if (!enable_viz) {
@@ -250,9 +262,6 @@ class CompositorDependencies {
     } else {
       CreateVizFrameSinkManager();
     }
-
-    // Ensure we're in the correct state at start up.
-    OnApplicationStateChange(app_listener_->GetState());
   }
 
   void OnReadyToConnectVizFrameSinkManagerOnMainThread(
@@ -340,18 +349,24 @@ class CompositorDependencies {
       case base::android::APPLICATION_STATE_UNKNOWN:
       case base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES:
       case base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES:
+        if (application_is_foreground_)
+          return;
+        application_is_foreground_ = true;
         GpuDataManagerImpl::GetInstance()->SetApplicationVisible(true);
+        BrowserGpuChannelHostFactorySetApplicationVisible(true);
         SendOnForegroundedToGpuService();
         low_end_background_cleanup_task_.Cancel();
-        application_is_foreground_ = true;
         TryEstablishVizConnectionIfNeeded();
         break;
       case base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES:
       case base::android::APPLICATION_STATE_HAS_DESTROYED_ACTIVITIES:
+        if (!application_is_foreground_)
+          return;
+        application_is_foreground_ = false;
         GpuDataManagerImpl::GetInstance()->SetApplicationVisible(false);
+        BrowserGpuChannelHostFactorySetApplicationVisible(false);
         SendOnBackgroundedToGpuService();
         EnqueueLowEndBackgroundCleanup();
-        application_is_foreground_ = false;
     }
   }
 
