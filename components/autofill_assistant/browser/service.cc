@@ -30,9 +30,6 @@ const char* const kAutofillAssistantAuth = "autofill-assistant-auth";
 // TODO(crbug.com/806868): Provide correct server and endpoint.
 const char* const kScriptEndpoint = "/v1/supportsSite2";
 const char* const kActionEndpoint = "/v1/actions2";
-const char* const kTokenFetchId = "autofill_assistant";
-const char* const kOAuthScope =
-    "https://www.googleapis.com/auth/userinfo.profile";
 
 net::NetworkTrafficAnnotationTag traffic_annotation =
     net::DefineNetworkTrafficAnnotation("autofill_service", R"(
@@ -59,15 +56,14 @@ namespace autofill_assistant {
 Service::Service(const std::string& api_key,
                  const GURL& server_url,
                  content::BrowserContext* context,
-                 identity::IdentityManager* identity_manager)
+                 AccessTokenFetcher* access_token_fetcher)
     : context_(context),
       api_key_(api_key),
-      identity_manager_(identity_manager),
-      auth_enabled_(
-          identity_manager_ &&
-          "false" !=
-              base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                  switches::kAutofillAssistantAuth)),
+      access_token_fetcher_(access_token_fetcher),
+      fetching_token_(false),
+      auth_enabled_("false" !=
+                    base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                        switches::kAutofillAssistantAuth)),
       weak_ptr_factory_(this) {
   DCHECK(server_url.is_valid());
 
@@ -196,9 +192,7 @@ void Service::OnURLLoaderComplete(Loader* loader,
     loader->retried_with_fresh_access_token = true;
     loader->loader.reset();
     // Invalidate access token and load a new one.
-    OAuth2TokenService::ScopeSet scopes{kOAuthScope};
-    identity_manager_->RemoveAccessTokenFromCache(account_id_, scopes,
-                                                  access_token_);
+    access_token_fetcher_->InvalidateAccessToken(access_token_);
     access_token_.clear();
     SendRequest(loader);
     return;
@@ -225,31 +219,26 @@ void Service::OnURLLoaderComplete(Loader* loader,
 }
 
 void Service::FetchAccessToken() {
-  DCHECK(identity_manager_);
-  if (token_fetcher_)
+  if (fetching_token_)
     return;
 
-  OAuth2TokenService::ScopeSet scopes{kOAuthScope};
-  account_id_ = identity_manager_->GetPrimaryAccountId();
-  token_fetcher_ = std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
-      kTokenFetchId, identity_manager_, scopes,
-      base::BindOnce(&Service::OnFetchAccessToken, base::Unretained(this)),
-      identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
-  // Unretained, because token_fetcher_ is owned by this instance.
+  fetching_token_ = true;
+  access_token_fetcher_->FetchAccessToken(base::BindOnce(
+      &Service::OnFetchAccessToken, weak_ptr_factory_.GetWeakPtr()));
 }
 
-void Service::OnFetchAccessToken(GoogleServiceAuthError error,
-                                 identity::AccessTokenInfo access_token_info) {
-  token_fetcher_.reset();
+void Service::OnFetchAccessToken(bool success,
+                                 const std::string& access_token) {
+  fetching_token_ = false;
 
-  if (error.state() != GoogleServiceAuthError::NONE) {
+  if (!success) {
     auth_enabled_ = false;
     // Give up on authentication for this run. Let the pending requests through,
     // which might be rejected, depending on the server configuration.
     return;
   }
 
-  access_token_ = access_token_info.token;
+  access_token_ = access_token;
 
   // Start any pending requests with the access token.
   for (const auto& entry : loaders_) {

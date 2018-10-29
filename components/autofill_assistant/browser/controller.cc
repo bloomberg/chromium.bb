@@ -49,7 +49,7 @@ void Controller::CreateAndStartForWebContents(
   DCHECK(server_url.is_valid());
   std::unique_ptr<Service> service = std::make_unique<Service>(
       client->GetApiKey(), server_url, web_contents->GetBrowserContext(),
-      client->GetIdentityManagerForPrimaryAccount());
+      client->GetAccessTokenFetcher());
   new Controller(web_contents, std::move(client),
                  WebController::CreateForWebContents(web_contents),
                  std::move(service), std::move(parameters), initialUrl);

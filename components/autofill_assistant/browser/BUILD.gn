@@ -13,6 +13,7 @@ proto_library("proto") {
 
 jumbo_static_library("browser") {
   sources = [
+    "access_token_fetcher.h",
     "actions/action.cc",
     "actions/action.h",
     "actions/action_delegate.h",
