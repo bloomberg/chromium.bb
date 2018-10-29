@@ -219,7 +219,7 @@ console-format-startup.html:8 [text]
 globals[35]
 #text
 console-format-startup.html:7 DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-console-format-startup.html:8 [DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of th…]
+console-format-startup.html:8 [DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of t…]
 globals[36]
 DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
 console-format-startup.html:7 Uint8Array [3]
@@ -852,7 +852,7 @@ console-format-startup.html:8 [text]
 globals[35]
 #text
 console-format-startup.html:7 DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-console-format-startup.html:8 [DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of th…]
+console-format-startup.html:8 [DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of t…]
     0: DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
     length: 1
     __proto__: Array(0)
@@ -1223,10 +1223,10 @@ Map(6) {" from str " => " to str ", undefined => undefined, null => null, 42 =>
         length: 6
 console-format-startup.html:7 genFunction {<suspended>}
     __proto__: Generator
+    [[GeneratorLocation]]: console-format-startup.html:128
     [[GeneratorStatus]]: "suspended"
     [[GeneratorFunction]]: ƒ *()
     [[GeneratorReceiver]]: Window
-    [[GeneratorLocation]]: console-format-startup.html:128
     [[Scopes]]: Scopes[2]
 console-format-startup.html:8 [genFunction]
     0: genFunction {<suspended>}
@@ -1235,9 +1235,9 @@ console-format-startup.html:8 [genFunction]
 globals[60]
 genFunction {<suspended>}
     __proto__: Generator
+    [[GeneratorLocation]]: console-format-startup.html:128
     [[GeneratorStatus]]: "suspended"
     [[GeneratorFunction]]: ƒ *()
     [[GeneratorReceiver]]: Window
-    [[GeneratorLocation]]: console-format-startup.html:128
     [[Scopes]]: Scopes[2]
 
