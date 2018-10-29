@@ -520,10 +520,12 @@ void WebRequestAPI::ProxySet::MaybeProxyAuthRequest(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   Proxy* proxy = GetProxyFromRequestId(request_id);
   if (!proxy) {
-    // No proxy found, so the request must already be dead.
+    // The request=>proxy map is maintained on the IO thread so it is not an
+    // error to get here and have no proxy. In this situation run the |callback|
+    // which will display a dialog for the user to enter their auth credentials.
     base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                              base::BindOnce(std::move(callback), base::nullopt,
-                                            true /* should_cancel */));
+                                            false /* should_cancel */));
     return;
   }
 
