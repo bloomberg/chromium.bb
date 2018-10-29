@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
@@ -75,9 +74,9 @@ constexpr int kFrameRetryDelayMs = 100;
 constexpr int kCaptureRetryLimit = 2;
 constexpr int kMaxScreencastFramesInFlight = 2;
 
-std::string EncodeImage(const gfx::Image& image,
-                        const std::string& format,
-                        int quality) {
+Binary EncodeImage(const gfx::Image& image,
+                   const std::string& format,
+                   int quality) {
   DCHECK(!image.IsEmpty());
 
   scoped_refptr<base::RefCountedMemory> data;
@@ -90,20 +89,14 @@ std::string EncodeImage(const gfx::Image& image,
   }
 
   if (!data || !data->front())
-    return std::string();
+    return protocol::Binary();
 
-  std::string base_64_data;
-  base::Base64Encode(
-      base::StringPiece(reinterpret_cast<const char*>(data->front()),
-                        data->size()),
-      &base_64_data);
-
-  return base_64_data;
+  return Binary::fromRefCounted(data);
 }
 
-std::string EncodeSkBitmap(const SkBitmap& image,
-                           const std::string& format,
-                           int quality) {
+Binary EncodeSkBitmap(const SkBitmap& image,
+                      const std::string& format,
+                      int quality) {
   return EncodeImage(gfx::Image::CreateFrom1xBitmap(image), format, quality);
 }
 
@@ -1036,8 +1029,8 @@ void PageHandler::ScreencastFrameCaptured(
 
 void PageHandler::ScreencastFrameEncoded(
     std::unique_ptr<Page::ScreencastFrameMetadata> page_metadata,
-    const std::string& data) {
-  if (data.empty()) {
+    const protocol::Binary& data) {
+  if (data.size() == 0) {
     --frames_in_flight_;
     return;  // Encode failed.
   }
