@@ -41,9 +41,14 @@ ScopedCrosSettingsTestHelper::CreateOwnerSettingsService(Profile* profile) {
 }
 
 void ScopedCrosSettingsTestHelper::ReplaceDeviceSettingsProviderWithStub() {
-  CHECK(!real_settings_provider_);
-  // Swap out the DeviceSettingsProvider with our settings provider.
+  CHECK(CrosSettings::IsInitialized());
   CrosSettings* const cros_settings = CrosSettings::Get();
+
+  // If CrosSettings is already using a stub, then we shouldn't be replacing it
+  // with a different stub - that would be confusing and unnecessary.
+  CHECK(!cros_settings->stubbed_provider_for_test());
+  // And, this function shouldn't be called twice either, for the same reason:
+  CHECK(!real_settings_provider_);
 
   // TODO(olsen): This could be simplified if DeviceSettings and CrosSettings
   // were the same thing, which they nearly are, except for 3 timezone settings.
@@ -68,31 +73,30 @@ void ScopedCrosSettingsTestHelper::RestoreRealDeviceSettingsProvider() {
   real_settings_provider_.reset();
 }
 
-bool ScopedCrosSettingsTestHelper::IsDeviceSettingsProviderStubbed() {
-  return !!real_settings_provider_;
+StubCrosSettingsProvider* ScopedCrosSettingsTestHelper::GetStubbedProvider() {
+  // If CrosSettings was already initialized with kStubCrosSettings, then
+  // we use the StubCrosSettingsProvider that was already initialized:
+  if (CrosSettings::IsInitialized() &&
+      CrosSettings::Get()->stubbed_provider_for_test()) {
+    return CrosSettings::Get()->stubbed_provider_for_test();
+  }
+  // Otherwise, we use this one - it has to be explicitly swapped in using
+  // ReplaceDeviceSettingsProviderWithStub() however.
+  return stub_settings_provider_ptr_;
 }
 
 void ScopedCrosSettingsTestHelper::SetTrustedStatus(
     CrosSettingsProvider::TrustedStatus status) {
-  stub_settings_provider_ptr_->SetTrustedStatus(status);
+  GetStubbedProvider()->SetTrustedStatus(status);
 }
 
 void ScopedCrosSettingsTestHelper::SetCurrentUserIsOwner(bool owner) {
-  stub_settings_provider_ptr_->SetCurrentUserIsOwner(owner);
+  GetStubbedProvider()->SetCurrentUserIsOwner(owner);
 }
 
 void ScopedCrosSettingsTestHelper::Set(const std::string& path,
                                        const base::Value& in_value) {
-  CHECK(DeviceSettingsProvider::IsDeviceSetting(path));
-  if (IsDeviceSettingsProviderStubbed()) {
-    // Set in the stub settings provider.
-    stub_settings_provider_ptr_->Set(path, in_value);
-  } else {
-    // Set in the real settings provider.
-    // TODO(olsen): Separate the write path (OwnerSettingsService) away from the
-    // read path (CrosSettings) - http://crbug.com/433840
-    CrosSettings::Get()->Set(path, in_value);
-  }
+  GetStubbedProvider()->Set(path, in_value);
 }
 
 void ScopedCrosSettingsTestHelper::SetBoolean(const std::string& path,

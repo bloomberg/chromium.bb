@@ -63,6 +63,7 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
         .WillRepeatedly(Return(mock_user_manager_->CreatePublicAccountUser(
             auto_login_account_id_)));
 
+    settings_helper_.ReplaceDeviceSettingsProviderWithStub();
     settings_helper_.SetFakeSessionManager();
 
     std::unique_ptr<base::DictionaryValue> account(new base::DictionaryValue);
