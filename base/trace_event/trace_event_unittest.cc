@@ -1697,10 +1697,10 @@ TEST_F(TraceEventTestFixture, StaticStringVsString) {
     ASSERT_TRUE(event2);
     EXPECT_STREQ("name1", event1->name());
     EXPECT_STREQ("name2", event2->name());
-    EXPECT_FALSE(event1->parameter_copy_storage().empty());
-    EXPECT_FALSE(event2->parameter_copy_storage().empty());
-    EXPECT_GT(event1->parameter_copy_storage().size(), 0u);
-    EXPECT_GT(event2->parameter_copy_storage().size(), 0u);
+    EXPECT_TRUE(event1->parameter_copy_storage() != nullptr);
+    EXPECT_TRUE(event2->parameter_copy_storage() != nullptr);
+    EXPECT_GT(event1->parameter_copy_storage()->size(), 0u);
+    EXPECT_GT(event2->parameter_copy_storage()->size(), 0u);
     EndTraceAndFlush();
   }
 
@@ -1730,8 +1730,8 @@ TEST_F(TraceEventTestFixture, StaticStringVsString) {
     ASSERT_TRUE(event2);
     EXPECT_STREQ("name1", event1->name());
     EXPECT_STREQ("name2", event2->name());
-    EXPECT_TRUE(event1->parameter_copy_storage().empty());
-    EXPECT_TRUE(event2->parameter_copy_storage().empty());
+    EXPECT_TRUE(event1->parameter_copy_storage() == nullptr);
+    EXPECT_TRUE(event2->parameter_copy_storage() == nullptr);
     EndTraceAndFlush();
   }
 }
