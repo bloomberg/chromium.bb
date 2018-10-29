@@ -1943,7 +1943,7 @@ TEST_F(WorkspaceLayoutManagerSystemUiAreaTest,
   EXPECT_GE(test_state()->num_system_ui_area_changes(), 1);
   test_state()->reset_num_system_ui_area_changes();
 
-  keyboard_controller->MoveKeyboard(gfx::Rect(0, 0, 100, 100));
+  keyboard_controller->SetKeyboardWindowBounds(gfx::Rect(0, 0, 100, 100));
   EXPECT_GE(test_state()->num_system_ui_area_changes(), 1);
 }
 
