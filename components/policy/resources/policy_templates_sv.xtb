@@ -110,7 +110,7 @@
 <translation id="1223789468190631420">Säker webbläsning aktiverad för betrodda källor</translation>
 <translation id="122899932962115297">En vitlista som styr vilka metoder för snabb upplåsning som användaren kan konfigurera och använda för att låsa upp låsskärmen.
 
-          Värdet är en lista med strängar. Giltiga värden är all, PIN och FINGERPRINT. Om all finns med i listan betyder det att alla metoder för snabb upplåsning är tillgängliga för användaren, även sådana som implementeras i framtiden. Annars är bara de metoder för snabb upplåsning som anges i listan tillgängliga.
+          Värdet är en lista med strängar. Giltiga värden är all, PIN och FINGERPRINT. Om "all" finns med i listan betyder det att alla metoder för snabb upplåsning är tillgängliga för användaren, även sådana som implementeras i framtiden. Annars är bara de metoder för snabb upplåsning som anges i listan tillgängliga.
 
           Exempel: Använd ["all"] om alla metoder för snabb upplåsning ska vara tillåtna. Om bara upplåsning med pinkod ska vara tillåtet använder du ["PIN"]. Om pinkod och fingeravtryck ska vara tillåtet använder du ["PIN", "FINGERPRINT"]. Använd [] om du vill inaktivera alla metoder för snabb upplåsning.
 
@@ -1015,7 +1015,7 @@
       </translation>
 <translation id="3748900290998155147">Anger om processlås är tillåtna. Tillägg kan begära processlås via tilläggs-API:et för energibesparing och via ARC-appar.
 
-          Om principen är inställd på sant eller har lämnats utan inställning tillåts processlås för energibesparing.
+          Om principen är inställd på sant eller inte har någon inställning tillåts processlås för energibesparing.
 
           Om principen är inställd på falskt ignoreras begäran om processlås.</translation>
 <translation id="3750220015372671395">Blockera nyckelgenerering på dessa webbplatser</translation>

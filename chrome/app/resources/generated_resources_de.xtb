@@ -514,7 +514,7 @@
 <translation id="1731589410171062430">Gesamt: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /> (<ph name="NUMBER_OF_PAGES" /> <ph name="PAGE_OR_PAGES_LABEL" />)</translation>
 <translation id="1731911755844941020">Anfrage wird gesendet...</translation>
 <translation id="1732215134274276513">Tabs loslösen</translation>
-<translation id="1733383495376208985">Alle synchronisierten Daten mit Ihrer eigenen <ph name="BEGIN_LINK" />Synchronisierungspassphrase<ph name="END_LINK" /> verschlüsseln. Dies schließt keine Zahlungsmethoden oder Adressen von Google Pay ein.</translation>
+<translation id="1733383495376208985">Alle synchronisierten Daten mit eigener <ph name="BEGIN_LINK" />Synchronisierungspassphrase<ph name="END_LINK" /> verschlüsseln (außer Zahlungsmethoden oder Adressen von Google Pay)</translation>
 <translation id="1734824808160898225"><ph name="PRODUCT_NAME" /> kann sich möglicherweise nicht selbst aktualisieren</translation>
 <translation id="1736419249208073774">Entdecken</translation>
 <translation id="1736827427463982819">Linux (Beta) herunterfahren</translation>
@@ -957,7 +957,7 @@
 <translation id="2408955596600435184">PIN eingeben</translation>
 <translation id="241082044617551207">Unbekanntes Plug-in</translation>
 <translation id="2413749388954403953">Benutzeroberfläche für Lesezeichen ändern</translation>
-<translation id="241727068219398187">Ihre Daten sind seit dem <ph name="TIME" /> mit Ihrem Google-Passwort verschlüsselt. Dies schließt keine Zahlungsmethoden oder Adressen von Google Pay ein.</translation>
+<translation id="241727068219398187">Ihre Daten wurden mit Ihrem Google-Passwort vom <ph name="TIME" /> verschlüsselt. Davon ausgenommen sind Zahlungsmethoden oder Adressen von Google Pay.</translation>
 <translation id="2419706071571366386">Melden Sie sich zur Sicherheit ab, wenn Ihr Computer nicht verwendet wird.</translation>
 <translation id="2422426094670600218">&lt;unbenannt&gt;</translation>
 <translation id="2423578206845792524">Bi&amp;ld speichern unter...</translation>
@@ -1345,7 +1345,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="2993517869960930405">App-Info</translation>
 <translation id="2994669386200004489"><ph name="FILE_NAME" /> konnte nicht gesichert werden</translation>
 <translation id="299483336428448530">Von deinen Eltern installiert</translation>
-<translation id="2996286169319737844">Daten sind mit Ihrer Synchronisierungspassphrase verschlüsselt. Dies schließt keine Zahlungsmethoden oder Adressen von Google Pay ein.</translation>
+<translation id="2996286169319737844">Daten sind mit Ihrer Synchronisierungspassphrase verschlüsselt. Davon ausgenommen sind Zahlungsmethoden oder Adressen von Google Pay.</translation>
 <translation id="3002017044809397427">Ihr <ph name="PHONE_TYPE" /> wurde gefunden, aber Smart Lock funktioniert nur auf Geräten mit Android 5.0 und höher. &lt;a&gt;Weitere Informationen&lt;/a&gt;</translation>
 <translation id="3003144360685731741">Bevorzugte Netzwerke</translation>
 <translation id="3003623123441819449">CSS-Cache</translation>
@@ -2266,7 +2266,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4412698727486357573">Hilfe</translation>
 <translation id="44141919652824029">"<ph name="APP_NAME" />" erlauben, die Liste der angeschlossenen USB-Geräte abzurufen?</translation>
 <translation id="4414232939543644979">Neues &amp;Inkognito-Fenster</translation>
-<translation id="4415245286584082850">Keine Geräte gefunden. Öffnen Sie einen Hilfe-Artikel in einem neuen Tab.</translation>
+<translation id="4415245286584082850">Keine Geräte gefunden. Durch Klicken wird ein Hilfe-Artikel in einem neuen Tab geöffnet.</translation>
 <translation id="4415748029120993980">Elliptische SECG-Kurve secp384r1 (NIST P-384)</translation>
 <translation id="4416582610654027550">Geben Sie eine gültige URL ein</translation>
 <translation id="4419409365248380979"><ph name="HOST" /> darf immer Cookies setzen</translation>
@@ -2331,7 +2331,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="452039078290142656">unbekannte Geräte von <ph name="VENDOR_NAME" /></translation>
 <translation id="4522570452068850558">Details</translation>
 <translation id="4522600456902129422">Weiterhin zulassen, dass diese Website die Zwischenablage aufruft</translation>
-<translation id="4525382759303819021">Die neuesten Updates und Empfehlungen zu Play Store-Apps erhalten</translation>
+<translation id="4525382759303819021">Ich möchte die neuesten Updates und Empfehlungen zu Play Store-Apps erhalten</translation>
 <translation id="4530494379350999373">Ursprung</translation>
 <translation id="4533985347672295764">CPU-Zeit</translation>
 <translation id="4534661889221639075">Versuchen Sie es noch einmal.</translation>
@@ -4768,7 +4768,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8117620576188476503">Verwalten Sie Verbindungen, Updates und Einstellungen über die Statusleiste. Zum Öffnen über die Tastatur drücken Sie Alt + Umschalttaste + S.</translation>
 <translation id="8118362518458010043">Von Chrome deaktiviert. Diese Erweiterung könnte unsicher sein.</translation>
 <translation id="8118860139461251237">Downloads verwalten</translation>
-<translation id="8123590694679414600">Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase verschlüsselt. Dies schließt keine Zahlungsmethoden oder Adressen von Google Pay ein.</translation>
+<translation id="8123590694679414600">Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase verschlüsselt. Davon ausgenommen sind Zahlungsmethoden oder Adressen von Google Pay.</translation>
 <translation id="81238879832906896">Gelbe und weiße Blume</translation>
 <translation id="8124313775439841391">Verwaltete ONC-Eigenschaften</translation>
 <translation id="813082847718468539">Website-Informationen anzeigen</translation>

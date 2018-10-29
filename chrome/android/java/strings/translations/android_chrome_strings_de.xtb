@@ -48,6 +48,7 @@ Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsac
 <translation id="1291207594882862231">Verlauf, Cookies, Websitedaten, Cache leeren…</translation>
 <translation id="129553762522093515">Kürzlich geschlossen</translation>
 <translation id="1326317727527857210">Melden Sie sich in Chrome an, um Tabs von Ihren anderen Geräten abzurufen.</translation>
+<translation id="1331212799747679585">Chrome kann nicht aktualisiert werden. Weitere Optionen</translation>
 <translation id="1332501820983677155">Tastenkombinationen für Google Chrome-Funktionen</translation>
 <translation id="1360432990279830238">Abmelden &amp; Synchronisierung deaktivieren?</translation>
 <translation id="136248372334525878">Laden Sie Seiten vorab, um das Laden und Offlinelesen zu beschleunigen</translation>
@@ -133,6 +134,7 @@ Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsac
 <translation id="1946005195648379376">Legen Sie fest, wie Google anhand des Browserverlaufs die Suche und andere Google-Dienste für Sie personalisieren soll.</translation>
 <translation id="1952172573699511566">Sofern dies möglich ist, wird Text auf Websites in Ihrer bevorzugten Sprache angezeigt.</translation>
 <translation id="195283394249132567">Personalisierte Google-Dienste</translation>
+<translation id="1960290143419248813">Chrome-Updates werden für diese Version von Android nicht mehr unterstützt</translation>
 <translation id="1966710179511230534">Bitte aktualisieren Sie Ihre Anmeldeinformationen.</translation>
 <translation id="1974060860693918893">Erweitert</translation>
 <translation id="1984937141057606926">Zugelassen, außer Cookies Dritter</translation>
@@ -344,6 +346,7 @@ Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsac
 <translation id="3739899004075612870">Als Lesezeichen in <ph name="PRODUCT_NAME" /> gespeichert</translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB sonstiger Apps</translation>
 <translation id="3744111561329211289">Hintergrundsync</translation>
+<translation id="3745176700485982507">Auf dieser Seite finden Sie Links zu Ihren meistbesuchten Websites</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Aktivieren Sie Bluetooth<ph name="END_LINK" />, um die Kopplung zu ermöglichen</translation>
 <translation id="3778956594442850293">Zum Startbildschirm hinzugefügt</translation>
 <translation id="3781011235031427080">"Weitere ähnliche" halb geöffnet</translation>
@@ -405,7 +408,7 @@ Wenn Sie den Suchbegriff anpassen möchten, halten Sie den entsprechenden Begrif
 <translation id="4209895695669353772">Aktivieren Sie die Synchronisierung, um personalisierte, von Google vorgeschlagene Inhalte zu erhalten</translation>
 <translation id="4225719675976901337">Keine Inhalte gefunden</translation>
 <translation id="4226663524361240545">Bei Benachrichtigungen kann das Gerät vibrieren</translation>
-<translation id="423219824432660969">Ab dem <ph name="TIME" /> alle synchronisierten Daten mit Google-Passwort verschlüsseln</translation>
+<translation id="423219824432660969">Synchronisierte Daten mit dem Google-Passwort vom <ph name="TIME" /> verschlüsseln</translation>
 <translation id="4242533952199664413">Einstellungen öffnen</translation>
 <translation id="4243710787042215766">In privatem Tab öffnen</translation>
 <translation id="424864128008805179">Von Chrome abmelden?</translation>
@@ -427,6 +430,7 @@ Wenn Sie den Suchbegriff anpassen möchten, halten Sie den entsprechenden Begrif
 <translation id="4419556793104466535">Synchronisierung, Personalisierung und mehr steuern</translation>
 <translation id="4432792777822557199">Seiten auf <ph name="SOURCE_LANGUAGE" /> werden ab jetzt auf <ph name="TARGET_LANGUAGE" /> übersetzt</translation>
 <translation id="4434045419905280838">Pop-ups und Weiterleitungen</translation>
+<translation id="4440958355523780886">Lite-Modus-Seite von Google bereitgestellt. Zum Laden der Originalseite tippen.</translation>
 <translation id="4452411734226507615">Tab "<ph name="TAB_TITLE" />" schließen</translation>
 <translation id="4452548195519783679">Als Lesezeichen in "<ph name="FOLDER_NAME" />" gespeichert</translation>
 <translation id="4453340223357552416"><ph name="FILE_NAME" /> in <ph name="PRODUCT_NAME" /> heruntergeladen</translation>
@@ -553,6 +557,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5327248766486351172">Name</translation>
 <translation id="5335288049665977812">Ausführung von JavaScript durch Websites zulassen (empfohlen)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> gelöscht</translation>
+<translation id="5363230136052241468">Tippen Sie auf die Schaltfläche "Startseite", um die "Neuer Tab"-Seite zu laden</translation>
 <translation id="5372829067651257087">URL kopiert.</translation>
 <translation id="5391532827096253100">Die Verbindung zu dieser Website ist nicht sicher. Websiteinformationen</translation>
 <translation id="5400569084694353794">Durch die Verwendung dieser App stimmen Sie den <ph name="BEGIN_LINK1" />Nutzungsbedingungen<ph name="END_LINK1" /> und <ph name="BEGIN_LINK2" />Datenschutzhinweisen<ph name="END_LINK2" /> von Chrome zu.</translation>
@@ -683,6 +688,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6295158916970320988">Alle Websites</translation>
 <translation id="629730747756840877">Konto</translation>
 <translation id="6303969859164067831">Abmelden und die Synchronisierung ausschalten</translation>
+<translation id="6316139424528454185">Android-Version nicht unterst.</translation>
 <translation id="6320088164292336938">Vibrieren</translation>
 <translation id="6324034347079777476">Android-Systemsynchronisierung deaktiviert</translation>
 <translation id="6333140779060797560">Über <ph name="APPLICATION" /> teilen</translation>
@@ -771,6 +777,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6912998170423641340">Websites dürfen keine Texte oder Bilder aus der Zwischenablage abrufen</translation>
 <translation id="6914783257214138813">Ihre Passwörter sind für jeden zugänglich, der die exportierte Passwortdatei aufrufen kann.</translation>
 <translation id="6942665639005891494">Sie können den Standard-Downloadpfad jederzeit über die Option im Menü "Einstellungen" ändern</translation>
+<translation id="6944102653068653326">Tippen, um die "Neuer Tab"-Seite zu laden</translation>
 <translation id="6945221475159498467">Auswählen</translation>
 <translation id="6963642900430330478">Diese Seite ist gefährlich. Websiteinformationen</translation>
 <translation id="6963766334940102469">Lesezeichen löschen</translation>
@@ -962,9 +969,10 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8428213095426709021">Einstellungen</translation>
 <translation id="8438566539970814960">Suchanfragen und das Surfen verbessern</translation>
 <translation id="8441146129660941386">Zurück navigieren</translation>
+<translation id="8443209985646068659">Chrome-Update nicht mögl.</translation>
 <translation id="8445448999790540984">Passwörter können nicht exportiert werden</translation>
 <translation id="8447861592752582886">Zugriffsberechtigung auf Gerät widerrufen</translation>
-<translation id="8461694314515752532">Alle synchronisierten Daten mit Ihrer eigenen Synchronisierungspassphrase verschlüsseln</translation>
+<translation id="8461694314515752532">Synchronisierte Daten mit eigener Synchronisierungspassphrase verschlüsseln</translation>
 <translation id="8477071352266846533">Synchronisierung für <ph name="SYNC_ACCOUNT_USER_NAME" /> deaktiviert</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Offline verfügbar</translation>
@@ -1015,7 +1023,7 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="8816439037877937734"><ph name="APP_NAME" /> wird in Chrome geöffnet. Wenn Sie fortfahren, stimmen Sie den <ph name="BEGIN_LINK1" />Nutzungsbedingungen<ph name="END_LINK1" /> und <ph name="BEGIN_LINK2" />Datenschutzhinweisen<ph name="END_LINK2" /> von Chrome sowie den <ph name="BEGIN_LINK3" />Datenschutzhinweisen für mit Family Link verwaltete Google-Konten<ph name="END_LINK3" /> zu.</translation>
 <translation id="8820817407110198400">Lesezeichen</translation>
 <translation id="8823704566850948458">Passwort vorschlagen…</translation>
-<translation id="8833831881926404480">Auf einer Website wird Ihr Bildschirm freigegeben</translation>
+<translation id="8833831881926404480">Eine Website teilt Ihren Bildschirm</translation>
 <translation id="883806473910249246">Beim Herunterladen des Inhalts ist ein Fehler aufgetreten.</translation>
 <translation id="8840953339110955557">Diese Seite unterscheidet sich gegebenenfalls von der Onlineversion.</translation>
 <translation id="8847988622838149491">USB</translation>

@@ -48,6 +48,7 @@
 <translation id="1291207594882862231">방문 기록, 쿠키, 사이트 데이터, 캐시 삭제…</translation>
 <translation id="129553762522093515">최근에 닫은 탭</translation>
 <translation id="1326317727527857210">다른 기기에서 탭을 가져오려면 Chrome에 로그인하세요.</translation>
+<translation id="1331212799747679585">Chrome을 업데이트할 수 없습니다. 옵션 더보기</translation>
 <translation id="1332501820983677155">Chrome 기능 단축키</translation>
 <translation id="1360432990279830238">로그아웃하고 동기화를 사용 중지하시겠습니까?</translation>
 <translation id="136248372334525878">더 빠른 로드와 오프라인 읽기를 위해 페이지를 미리 로드합니다</translation>
@@ -133,6 +134,7 @@
 <translation id="1946005195648379376">Google이 검색 및 다른 Google 서비스를 맞춤설정하기 위하여 내 인터넷 사용 기록을 사용하는 방법을 제어하세요.</translation>
 <translation id="1952172573699511566">가능한 경우 웹사이트에서 텍스트를 선호하는 언어로 표시합니다.</translation>
 <translation id="195283394249132567">나만의 Google 서비스</translation>
+<translation id="1960290143419248813">Chrome 업데이트는 더 이상 이 버전의 Android에서 지원되지 않습니다.</translation>
 <translation id="1966710179511230534">로그인 세부정보를 업데이트하세요.</translation>
 <translation id="1974060860693918893">고급</translation>
 <translation id="1984937141057606926">타사 쿠키만 제외하고 허용</translation>
@@ -344,6 +346,7 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" />에 북마크됨</translation>
 <translation id="3744111309925758534">기타 앱 <ph name="MEGABYTES" />MB</translation>
 <translation id="3744111561329211289">백그라운드 동기화</translation>
+<translation id="3745176700485982507">이 페이지에서 즐겨찾는 웹사이트 링크를 찾을 수 있습니다.</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />블루투스를 사용 설정<ph name="END_LINK" />하여 페어링을 허용하세요.</translation>
 <translation id="3778956594442850293">홈 화면에 추가됨</translation>
 <translation id="3781011235031427080">중간 높이로 '비슷한 항목 더보기'가 열렸습니다.</translation>
@@ -427,6 +430,7 @@
 <translation id="4419556793104466535">동기화, 맞춤설정 등 관리</translation>
 <translation id="4432792777822557199">지금부터 <ph name="SOURCE_LANGUAGE" />로 된 페이지가 <ph name="TARGET_LANGUAGE" />로 번역됩니다.</translation>
 <translation id="4434045419905280838">팝업 및 리디렉션</translation>
+<translation id="4440958355523780886">Google에서 제공하는 라이트 페이지입니다. 원본 페이지를 로드하려면 탭하세요.</translation>
 <translation id="4452411734226507615"><ph name="TAB_TITLE" /> 탭 닫기</translation>
 <translation id="4452548195519783679">북마크를 <ph name="FOLDER_NAME" />에 추가함</translation>
 <translation id="4453340223357552416"><ph name="PRODUCT_NAME" />에 <ph name="FILE_NAME" /> 파일을 다운로드함</translation>
@@ -553,6 +557,7 @@
 <translation id="5327248766486351172">이름</translation>
 <translation id="5335288049665977812">사이트에서 자바스크립트 실행 허용(권장)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> 삭제됨</translation>
+<translation id="5363230136052241468">새 탭 페이지를 로드하려면 홈 버튼을 탭하세요.</translation>
 <translation id="5372829067651257087">URL이 복사되었습니다.</translation>
 <translation id="5391532827096253100">이 사이트와의 연결은 안전하지 않습니다. 사이트 정보</translation>
 <translation id="5400569084694353794">이 애플리케이션을 사용하면 Chrome의 <ph name="BEGIN_LINK1" />서비스 약관<ph name="END_LINK1" />과 <ph name="BEGIN_LINK2" />개인정보처리방침<ph name="END_LINK2" />에 동의하게 됩니다.</translation>
@@ -683,6 +688,7 @@
 <translation id="6295158916970320988">모든 사이트</translation>
 <translation id="629730747756840877">계정</translation>
 <translation id="6303969859164067831">로그아웃하고 동기화 사용 중지</translation>
+<translation id="6316139424528454185">지원되지 않는 Android 버전입니다.</translation>
 <translation id="6320088164292336938">진동</translation>
 <translation id="6324034347079777476">Android 시스템 동기화 사용 안함</translation>
 <translation id="6333140779060797560">공유 방법: <ph name="APPLICATION" /></translation>
@@ -771,6 +777,7 @@
 <translation id="6912998170423641340">사이트가 클립보드의 텍스트 및 이미지에 액세스하지 못하도록 차단</translation>
 <translation id="6914783257214138813">내보낸 파일을 볼 수 있는 모든 사용자에게 비밀번호가 표시됩니다.</translation>
 <translation id="6942665639005891494">언제든지 설정 메뉴 옵션으로 기본 다운로드 위치 변경 가능</translation>
+<translation id="6944102653068653326">새 탭 페이지를 로드하려면 탭하세요.</translation>
 <translation id="6945221475159498467">선택</translation>
 <translation id="6963642900430330478">이 페이지는 위험합니다. 사이트 정보</translation>
 <translation id="6963766334940102469">북마크 삭제</translation>
@@ -962,6 +969,7 @@
 <translation id="8428213095426709021">설정</translation>
 <translation id="8438566539970814960">검색 및 탐색 기능 개선</translation>
 <translation id="8441146129660941386">뒤로 탐색</translation>
+<translation id="8443209985646068659">Chrome을 업데이트할 수 없습니다.</translation>
 <translation id="8445448999790540984">비밀번호를 내보낼 수 없음</translation>
 <translation id="8447861592752582886">기기 액세스 권한 취소</translation>
 <translation id="8461694314515752532">나만의 동기화 암호로 동기화된 데이터 암호화</translation>

@@ -719,7 +719,7 @@
 <translation id="2040460856718599782">S'ha produït un error quan provàvem d'autenticar-vos. Comproveu les vostres credencials d'inici de sessió i torneu-ho a provar.</translation>
 <translation id="2043818754674261542">Distància necessària perquè el telèfon desbloquegi aquest <ph name="DEVICE_TYPE" /></translation>
 <translation id="204497730941176055">Nom de plantilla de certificat de Microsoft</translation>
-<translation id="2045117674524495717">Aplicació auxiliar de les tecles de drecera</translation>
+<translation id="2045117674524495717">Aplicació d'ajuda de les tecles de drecera</translation>
 <translation id="2045969484888636535">Continua bloquejant les galetes</translation>
 <translation id="204622017488417136">Es restablirà la versió de Chrome que hi havia instal·lada anteriorment al dispositiu. S'eliminaran tots els comptes d'usuari i les dades desades al dispositiu. Aquesta acció no es pot desfer.</translation>
 <translation id="2048182445208425546">Accedir al trànsit de xarxa</translation>
@@ -1314,7 +1314,7 @@
 <translation id="2932085390869194046">Suggereix una contrasenya...</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (compte infantil)</translation>
 <translation id="2932483646085333864">Tanca la sessió i torna-la a iniciar per començar la sincronització</translation>
-<translation id="2932883381142163287">Informa d'un ús inadequat</translation>
+<translation id="2932883381142163287">Informa d'un ús abusiu</translation>
 <translation id="2938225289965773019">Obrir els enllaços del protocol <ph name="PROTOCOL" /></translation>
 <translation id="2939938020978911855">Mostra els dispositius Bluetooth disponibles</translation>
 <translation id="2941112035454246133">Baixa</translation>
@@ -3141,7 +3141,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="5691511426247308406">Família</translation>
 <translation id="5691596662111998220"><ph name="FILE_NAME" /> ja no existeix.</translation>
 <translation id="5694501201003948907">S'estan comprimint $1 elements...</translation>
-<translation id="5696143504434933566">Informa d'un ús inadequat de l'extensió "<ph name="EXTENSION_NAME" />"</translation>
+<translation id="5696143504434933566">Informa d'un ús abusiu de l'extensió "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="5696679855467848181">Fitxer PPD en ús: <ph name="PPD_NAME" /></translation>
 <translation id="5699533844376998780">S'ha afegit l'extensió "<ph name="EXTENSION_NAME" />".</translation>
 <translation id="5700087501958648444">Informació de l'àudio</translation>

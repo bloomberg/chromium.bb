@@ -99,7 +99,7 @@
 <translation id="1223789468190631420">Stanje omogućivanja Sigurnog pregledavanja za pouzdane izvore</translation>
 <translation id="122899932962115297">Popis dopuštenih načina brzog otključavanja koje korisnik može konfigurirati i upotrebljavati za otključavanje zaključanog zaslona.
 
-          Ta je vrijednost popis nizova, a važeće su stavke popisa: "all" (sve), "PIN" i "FINGERPRINT" (otisak prsta). Ako se na popis doda "all", korisniku su dostupni svi načini brzog otključavanja, uključujući one koji se uvedu naknadno. U suprotnom je dostupan samo onaj način brzog otključavanja koji je na popisu.
+          Ta je vrijednost popis nizova, a važeće su stavke popisa: "all", "PIN" i "FINGERPRINT". Ako se na popis doda "all", korisniku su dostupni svi načini brzog otključavanja, uključujući one koji se uvedu naknadno. U suprotnom je dostupan samo onaj način brzog otključavanja koji je na popisu.
 
           Na primjer, da biste omogućili svaki način brzog otključavanja, upotrijebite ["all"]. Da biste omogućili samo otključavanje PIN-om, upotrijebite ["PIN"]. Da biste omogućili PIN i otisak prsta, upotrijebite ["PIN", "FINGERPRINT"]. Da biste onemogućili sve načine brzog otključavanja, upotrijebite [].
 

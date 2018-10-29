@@ -946,7 +946,7 @@
 <translation id="2378075407703503998">Wybrano <ph name="SELCTED_FILE_COUNT" /> pliki(ów)</translation>
 <translation id="237828693408258535">Przetłumaczyć tę stronę?</translation>
 <translation id="2378982052244864789">Wybierz katalog rozszerzenia.</translation>
-<translation id="2379232090534544565">Witryna ma dostęp do wejścia audio i wideo</translation>
+<translation id="2379232090534544565">Strona ma dostęp do wejścia audio i wideo</translation>
 <translation id="2379281330731083556">Drukuj w oknie systemowym <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Pytaj przed wysłaniem (zalecane)</translation>
 <translation id="2384436799579181135">Wystąpił błąd. Sprawdź drukarkę i spróbuj ponownie.</translation>
@@ -1472,7 +1472,7 @@
 <translation id="316854673539778496">Aby korzystać ze wszystkich swoich rozszerzeń na innych urządzeniach, zaloguj się i włącz synchronizację.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">Możesz też pominąć logowanie i <ph name="LINK_START" />przeglądać internet jako gość<ph name="LINK_END" />.</translation>
-<translation id="3172045848207518317">Witryna ma dostęp do wejścia wideo</translation>
+<translation id="3172045848207518317">Strona ma dostęp do wejścia wideo</translation>
 <translation id="3177909033752230686">Język strony:</translation>
 <translation id="3182749001423093222">Sprawdzanie pisowni</translation>
 <translation id="3183139917765991655">Importer profilów</translation>
@@ -1653,7 +1653,7 @@
 <translation id="3461266716147554923"><ph name="URL" /> chce mieć dostęp do tekstu i obrazów skopiowanych do schowka</translation>
 <translation id="3462311546193741693">Spowoduje wylogowanie Cię z większości stron internetowych. Nie nastąpi wylogowanie z konta Google, więc będzie można wyczyścić zsynchronizowane dane.</translation>
 <translation id="3462413494201477527">Anulować konfigurowanie konta?</translation>
-<translation id="3464012987031883895">Witryna ma dostęp do wejścia audio</translation>
+<translation id="3464012987031883895">Strona ma dostęp do wejścia audio</translation>
 <translation id="346431825526753">To jest konto dla dzieci, którym zarządza <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3466147780910026086">Skanuję nośnik danych...</translation>
 <translation id="3467267818798281173">Pytaj Google o sugestie</translation>
@@ -1823,7 +1823,7 @@
 <translation id="3699624789011381381">Adres e-mail</translation>
 <translation id="3699920817649120894">Wyłączyć synchronizację i personalizację?</translation>
 <translation id="3700888195348409686">Wyświetlasz prezentację (<ph name="PAGE_ORIGIN" />)</translation>
-<translation id="3702500414347826004">Strony początkowe zostały zmienione i zawierają <ph name="URL" />.</translation>
+<translation id="3702500414347826004">Strony startowe zostały zmienione i zawierają <ph name="URL" />.</translation>
 <translation id="370415077757856453">JavaScript zablokowany</translation>
 <translation id="3704331259350077894">Zaprzestanie działania</translation>
 <translation id="3705722231355495246">-</translation>
@@ -2128,7 +2128,7 @@
 <translation id="4138267921960073861">Pokaż nazwy użytkowników i zdjęcia na stronie logowania</translation>
 <translation id="4144218403971135344">Lepsza jakość filmów i dłuższy czas pracy na baterii. Filmy będą odtwarzane tylko na ekranie obsługującym Cast.</translation>
 <translation id="4146026355784316281">Zawsze otwieraj w przeglądarce systemowej</translation>
-<translation id="4146785383423576110">Resetowanie komputera i czyszczenie danych</translation>
+<translation id="4146785383423576110">Resetowanie komputera i czyszczenie danych</translation>
 <translation id="4147897805161313378">Zdjęcia Google</translation>
 <translation id="4150201353443180367">Wyświetlacz</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 karta}few{# karty}many{# kart}other{# karty}}</translation>

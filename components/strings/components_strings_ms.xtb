@@ -514,7 +514,6 @@
 <translation id="4277028893293644418">Tetapkan semula kata laluan</translation>
 <translation id="4280429058323657511">, tamat tempoh <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Tukar</translation>
-<translation id="4308131620840579419">Simpan semua kad anda di satu tempat?</translation>
 <translation id="4312866146174492540">Sekat (lalai)</translation>
 <translation id="4325863107915753736">Gagal menemui artikel</translation>
 <translation id="4326324639298822553">Semak tarikh tamat tempoh anda dan cuba lagi</translation>
@@ -961,6 +960,7 @@ Butiran tambahan:
 <translation id="7549584377607005141">Halaman web ini memerlukan data yang anda masukkan sebelum ini agar dapat dipaparkan dengan betul. Anda boleh menghantar data ini semula, tetapi dengan berbuat demikian anda akan mengulangi sebarang tindakan terdahulu yang telah dilakukan oleh halaman ini.</translation>
 <translation id="7552846755917812628">Cuba petua berikut:</translation>
 <translation id="7554791636758816595">Tab Baharu</translation>
+<translation id="7560085949372856518">Dalam langkah seterusnya, anda boleh memilih kad yang hendak disimpan ke Akaun Google anda.</translation>
 <translation id="7564049878696755256">Anda boleh kehilangan akses kepada akaun <ph name="ORG_NAME" /> anda atau mengalami kecurian identiti. Chrome mengesyorkan supaya kata laluan anda ditukar sekarang.</translation>
 <translation id="7567204685887185387">Pelayan ini tidak dapat membuktikan bahawa domainnya ialah <ph name="DOMAIN" />; sijil keselamatannya mungkin telah dikeluarkan melalui penipuan. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintasi sambungan anda.</translation>
 <translation id="7569952961197462199">Alih keluar kad kredit daripada Chrome?</translation>
@@ -978,6 +978,7 @@ Butiran tambahan:
 <translation id="7658239707568436148">Batal</translation>
 <translation id="7662298039739062396">Tetapan dikawal oleh sambungan</translation>
 <translation id="7663736086183791259">Sijil <ph name="CERTIFICATE_VALIDITY" /></translation>
+<translation id="7665886282480776333">Simpan kad anda ke Google?</translation>
 <translation id="7667346355482952095">Token dasar yang dikembalikan kosong atau tidak sepadan dengan token semasa</translation>
 <translation id="7668654391829183341">Peranti tidak diketahui</translation>
 <translation id="7669271284792375604">Penyerang pada tapak ini mungkin cuba menipu dengan meminta anda memasang atur cara yang membahayakan pengalaman penyemakan imbas anda (contohnya, dengan menukar halaman utama anda atau menunjukkan iklan tambahan pada laman yang anda lawati).</translation>

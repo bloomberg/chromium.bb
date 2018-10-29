@@ -2833,7 +2833,7 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
       Se la norma non viene impostata o viene impostata su true, tutti gli utenti potranno utilizzare ARC (a meno che la funzione ARC sia stata disattivata in altri modi).
 
       Le modifiche apportate alla norma verranno applicate soltanto quando ARC non è in esecuzione, ad esempio durante l'avvio di Chrome OS.</translation>
-<translation id="8615400197788843468">Consente di attivare la funzione di accesso limitato di <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare questa impostazione.
+<translation id="8615400197788843468">Consente di attivare la funzione di accesso limitato di <ph name="PRODUCT_NAME" /> in G Suite e di impedire agli utenti di modificare questa impostazione.
 
       Se l'impostazione viene definita, l'utente potrà accedere alle app Google soltanto usando gli account dei domini specificati (tieni presente che per consentire gli account gmail.com/googlemail.com devi aggiungere "consumer_accounts", senza virgolette, all'elenco di domini).
 

@@ -514,7 +514,6 @@
 <translation id="4277028893293644418">Iš naujo nustatyti slaptažodį</translation>
 <translation id="4280429058323657511">, gal. pab. <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Perjungti</translation>
-<translation id="4308131620840579419">Visos jūsų kortelės yra vienoje vietoje?</translation>
 <translation id="4312866146174492540">Užblokuoti (numatytoji parinktis)</translation>
 <translation id="4325863107915753736">Nepavyko rasti straipsnio</translation>
 <translation id="4326324639298822553">Patikrinkite galiojimo pabaigos datą ir bandykite dar kartą</translation>
@@ -961,6 +960,7 @@ Papildoma išsami informacija:
 <translation id="7549584377607005141">Jei norite, kad šis tinklalapis būtų tinkamai pateikiamas, reikalingi anksčiau įvesti duomenys. Galite nusiųsti šiuos duomenis iš naujo, bet taip pakartosite visus anksčiau šiame puslapyje įvykdytus veiksmus.</translation>
 <translation id="7552846755917812628">Išbandykite toliau pateiktus patarimus.</translation>
 <translation id="7554791636758816595">Naujas skirtukas</translation>
+<translation id="7560085949372856518">Atlikdami kitą veiksmą galite pasirinkti, kurias korteles norite išsaugoti „Google“ paskyroje.</translation>
 <translation id="7564049878696755256">Galite prarasti galimybę pasiekti „<ph name="ORG_NAME" />“ paskyrą arba gali būti pavogta tapatybė. „Chrome“ rekomenduoja pakeisti slaptažodį dabar.</translation>
 <translation id="7567204685887185387">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas gali būti neteisėtai išduotas. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
 <translation id="7569952961197462199">Pašalinti kredito kortelės informaciją iš „Chrome“?</translation>
@@ -978,6 +978,7 @@ Papildoma išsami informacija:
 <translation id="7658239707568436148">Atšaukti</translation>
 <translation id="7662298039739062396">Nustatymas valdomas pagal plėtinį</translation>
 <translation id="7663736086183791259">Sertifikatas <ph name="CERTIFICATE_VALIDITY" /></translation>
+<translation id="7665886282480776333">Išsaugoti korteles sistemoje „Google“?</translation>
 <translation id="7667346355482952095">Sugrąžintas politikos prieigos raktas yra tuščias arba neatitinka dabartinio prieigos rakto</translation>
 <translation id="7668654391829183341">Nežinomas įrenginys</translation>
 <translation id="7669271284792375604">Šios svetainės užgrobėjai gali bandyti apgaule priversti jus įdiegti naršymo funkcijas trikdančių programų (pvz., pakeitę pagrindinį puslapį ar rodydami papildomų skelbimų svetainėse, kuriose lankotės).</translation>

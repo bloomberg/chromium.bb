@@ -16,7 +16,7 @@
 <translation id="1074497978438210769">No es seguro</translation>
 <translation id="1080116354587839789">Se ajusta al ancho</translation>
 <translation id="1088860948719068836">Añade el nombre de la tarjeta</translation>
-<translation id="109743633954054152">Gestionar contraseñas en la configuración de Chrome</translation>
+<translation id="109743633954054152">Gestiona contraseñas en la configuración de Chrome</translation>
 <translation id="1103523840287552314">Traducir siempre del <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Si se selecciona, Chrome almacenará una copia de tu tarjeta en este dispositivo para completar formularios más rápidamente.</translation>
 <translation id="1110994991967754504">Seleccionar permiso de <ph name="PERMISSION_NAME" /></translation>
@@ -201,7 +201,7 @@
 <translation id="2239100178324503013">Enviar ahora</translation>
 <translation id="225207911366869382">Este valor ya no se utiliza para esta política.</translation>
 <translation id="2262243747453050782">Error de HTTP</translation>
-<translation id="2263079731045660823">Actualizar la información de autocompletar tarjetas de crédito en la configuración de Chrome</translation>
+<translation id="2263079731045660823">Actualiza la información de autocompletar tarjetas de crédito en la configuración de Chrome</translation>
 <translation id="2270484714375784793">Número de teléfono</translation>
 <translation id="2283340219607151381">Guardar y autocompletar direcciones</translation>
 <translation id="2292556288342944218">Tu acceso a Internet está bloqueado</translation>
@@ -513,7 +513,6 @@
 <translation id="4277028893293644418">Cambiar contraseña</translation>
 <translation id="4280429058323657511">Vcto. <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Cambiar</translation>
-<translation id="4308131620840579419">¿Quieres guardar todas tus tarjetas en un mismo lugar?</translation>
 <translation id="4312866146174492540">Bloquear (predeterminado)</translation>
 <translation id="4325863107915753736">Error al buscar el artículo</translation>
 <translation id="4326324639298822553">Consulta la fecha de vencimiento y vuelve a intentarlo</translation>
@@ -723,7 +722,7 @@
 <translation id="5784606427469807560">Se ha producido un problema al confirmar tu tarjeta. Comprueba tu conexión a Internet y vuelve a intentarlo.</translation>
 <translation id="5785756445106461925">Además, esta página incluye otros recursos que no son seguros. Otros usuarios pueden acceder a estos recursos mientras están en circulación y un atacante puede modificarlos para cambiar el aspecto de la página.</translation>
 <translation id="5786044859038896871">¿Quieres rellenar la información de la tarjeta?</translation>
-<translation id="5798683403665926540">Cambiar la página de inicio en la configuración de Chrome</translation>
+<translation id="5798683403665926540">Cambia la página de inicio en la configuración de Chrome</translation>
 <translation id="5803412860119678065">¿Quieres rellenar la información de <ph name="CARD_DETAIL" />?</translation>
 <translation id="5810442152076338065">Tu conexión con <ph name="DOMAIN" /> está cifrada con un conjunto de cifrado obsoleto.</translation>
 <translation id="5813119285467412249">&amp;Rehacer acción de añadir</translation>
@@ -960,6 +959,7 @@ Más información:
 <translation id="7549584377607005141">Esta página web necesita los datos introducidos anteriormente para mostrarse correctamente. Puedes volver a enviar los datos, pero se repetirán las acciones que haya realizado la página.</translation>
 <translation id="7552846755917812628">Prueba los siguientes consejos:</translation>
 <translation id="7554791636758816595">Nueva pestaña</translation>
+<translation id="7560085949372856518">En el siguiente paso, podrás elegir qué tarjetas quieres guardar en tu cuenta de Google.</translation>
 <translation id="7564049878696755256">Podrías perder el acceso a tu cuenta de <ph name="ORG_NAME" /> o tener problemas de suplantación de identidad. Chrome te recomienda que cambies tu contraseña ahora.</translation>
 <translation id="7567204685887185387">Este servidor no ha podido probar que su dominio es <ph name="DOMAIN" />, su certificado de seguridad podría haberse emitido de forma fraudulenta. El problema puede deberse a una configuración incorrecta o a que un atacante haya interceptado la conexión.</translation>
 <translation id="7569952961197462199">¿Eliminar tarjeta de crédito de Chrome?</translation>
@@ -977,6 +977,7 @@ Más información:
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7662298039739062396">Opción controlada por una extensión</translation>
 <translation id="7663736086183791259">Certificado <ph name="CERTIFICATE_VALIDITY" /></translation>
+<translation id="7665886282480776333">¿Quieres guardar tus tarjetas en Google?</translation>
 <translation id="7667346355482952095">El token de política devuelto está vacío o no coincide con el token actual</translation>
 <translation id="7668654391829183341">Dispositivo desconocido</translation>
 <translation id="7669271284792375604">Es posible que los atacantes que se encuentren en este sitio web intenten engañarte para que instales programas que empeoren tu experiencia de navegación (por ejemplo, que cambien tu página principal o muestren anuncios adicionales en los sitios web a los que accedas).</translation>

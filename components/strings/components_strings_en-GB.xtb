@@ -513,7 +513,6 @@
 <translation id="4277028893293644418">Reset password</translation>
 <translation id="4280429058323657511">, exp <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Switch</translation>
-<translation id="4308131620840579419">Save all your cards in one place?</translation>
 <translation id="4312866146174492540">Block (default)</translation>
 <translation id="4325863107915753736">Failed to find article</translation>
 <translation id="4326324639298822553">Check your expiry date and try again</translation>
@@ -960,6 +959,7 @@ Additional details:
 <translation id="7549584377607005141">This web page requires data that you entered earlier in order to be properly displayed. You can send this data again, but by doing so you will repeat any action this page previously performed.</translation>
 <translation id="7552846755917812628">Try the following tips:</translation>
 <translation id="7554791636758816595">New Tab</translation>
+<translation id="7560085949372856518">In the next step, you can choose which cards to save to your Google account.</translation>
 <translation id="7564049878696755256">You could lose access to your <ph name="ORG_NAME" /> account or experience identity theft. Chrome recommends changing your password now.</translation>
 <translation id="7567204685887185387">This server could not prove that it is <ph name="DOMAIN" />; its security certificate might have been issued fraudulently. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="7569952961197462199">Remove credit card from Chrome?</translation>
@@ -977,6 +977,7 @@ Additional details:
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7662298039739062396">Setting controlled by an extension</translation>
 <translation id="7663736086183791259">Certificate <ph name="CERTIFICATE_VALIDITY" /></translation>
+<translation id="7665886282480776333">Save your cards to Google?</translation>
 <translation id="7667346355482952095">Returned policy token is empty or doesn't match current token</translation>
 <translation id="7668654391829183341">Unknown device</translation>
 <translation id="7669271284792375604">Attackers on this site might try to trick you into installing programs that harm your browsing experience (for example, by changing your homepage or showing extra ads on sites that you visit).</translation>

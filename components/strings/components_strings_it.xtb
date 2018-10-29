@@ -407,7 +407,7 @@
 <translation id="3650584904733503804">Convalida riuscita</translation>
 <translation id="3655670868607891010">Se questo problema si verifica spesso, prova questi <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Revisione</translation>
-<translation id="366077651725703012">Aggiornamento della carta di credito</translation>
+<translation id="366077651725703012">Aggiorna carta di credito</translation>
 <translation id="3676592649209844519">ID dispositivo:</translation>
 <translation id="3678029195006412963">Impossibile firmare la richiesta</translation>
 <translation id="3678529606614285348">Apri la pagina in un'altra finestra di navigazione in incognito (CTRL-MAIUSC-N)</translation>
@@ -510,7 +510,6 @@
 <translation id="4277028893293644418">Reimposta password</translation>
 <translation id="4280429058323657511">, scad.: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Cambia</translation>
-<translation id="4308131620840579419">Salvare tutte le schede in un unico posto?</translation>
 <translation id="4312866146174492540">Blocca (predefinita)</translation>
 <translation id="4325863107915753736">Impossibile trovare l'articolo</translation>
 <translation id="4326324639298822553">Controlla la data di scadenza e riprova</translation>
@@ -869,7 +868,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">L'addebito potrebbe essere singolo oppure ricorrente e potrebbe non essere evidente.</translation>
 <translation id="7029809446516969842">Password</translation>
-<translation id="7041710477964360998">{NUM_CARDS,plural, =1{Questa carta e il relativo indirizzo di fatturazione verranno memorizzati nel tuo Account Google per pagare più rapidamente su tutti i dispositivi.}other{Queste carte e i relativi indirizzi di fatturazione verranno memorizzati nel tuo Account Google per pagare più rapidamente su tutti i dispositivi.}}</translation>
+<translation id="7041710477964360998">{NUM_CARDS,plural, =1{Questa carta e il relativo indirizzo di fatturazione verranno salvati nel tuo Account Google per pagare più rapidamente su tutti i dispositivi.}other{Queste carte e i relativi indirizzi di fatturazione verranno salvati nel tuo Account Google per pagare più rapidamente su tutti i dispositivi.}}</translation>
 <translation id="7050187094878475250">Hai tentato di visitare il sito <ph name="DOMAIN" />, ma il server ha presentato un certificato con periodo di validità troppo lungo per poter essere ritenuto attendibile.</translation>
 <translation id="7053983685419859001">Blocca</translation>
 <translation id="7064851114919012435">Informazioni di contatto</translation>
@@ -956,6 +955,7 @@ Ulteriori dettagli:
 <translation id="7549584377607005141">Questa pagina web richiede dati che hai inserito in precedenza per poter essere visualizzata correttamente. Puoi inviare di nuovo i dati, ma in questo caso ripeterai l'azione precedentemente eseguita nella pagina.</translation>
 <translation id="7552846755917812628">Prova i seguenti suggerimenti:</translation>
 <translation id="7554791636758816595">Nuova scheda</translation>
+<translation id="7560085949372856518">Nel prossimo passaggio potrai scegliere le carte da salvare nel tuo Account Google.</translation>
 <translation id="7564049878696755256">Potresti non riuscire più ad accedere al tuo account <ph name="ORG_NAME" /> o subire un furto d'identità. Chrome ti consiglia di cambiare subito la password.</translation>
 <translation id="7567204685887185387">Questo server non è riuscito a dimostrare che si tratta di <ph name="DOMAIN" />; il relativo certificato di sicurezza potrebbe essere stato emesso in modo fraudolento. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.</translation>
 <translation id="7569952961197462199">Rimuovere la carta di credito da Chrome?</translation>
@@ -973,6 +973,7 @@ Ulteriori dettagli:
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="7662298039739062396">Impostazione controllata da un'estensione</translation>
 <translation id="7663736086183791259">Certificato <ph name="CERTIFICATE_VALIDITY" /></translation>
+<translation id="7665886282480776333">Vuoi salvare le tue carte su Google?</translation>
 <translation id="7667346355482952095">Il token della norma restituito è vuoto o non corrisponde al token corrente</translation>
 <translation id="7668654391829183341">Dispositivo sconosciuto</translation>
 <translation id="7669271284792375604">I malintenzionati su questo sito potrebbero cercare di indurti con l'inganno a installare programmi che danneggiano la tua navigazione (ad esempio cambiando la tua pagina iniziale o mostrando annunci extra sui siti che visiti).</translation>

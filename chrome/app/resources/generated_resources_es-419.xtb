@@ -514,7 +514,7 @@
 <translation id="1731589410171062430">Total: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /> (<ph name="NUMBER_OF_PAGES" /> <ph name="PAGE_OR_PAGES_LABEL" />)</translation>
 <translation id="1731911755844941020">Enviando solicitud...</translation>
 <translation id="1732215134274276513">Desmarcar pestañas</translation>
-<translation id="1733383495376208985">Encriptar los datos sincronizados con tu propia <ph name="BEGIN_LINK" />frase de contraseña de sincronización<ph name="END_LINK" /> (no se incluyen formas de pago ni direcciones de Google Pay)</translation>
+<translation id="1733383495376208985">Encriptar los datos sincronizados con tu propia <ph name="BEGIN_LINK" />frase de contraseña de sincronización<ph name="END_LINK" /> (no se incluyen formas de pago ni direcciones de Google Pay).</translation>
 <translation id="1734824808160898225">Es posible que <ph name="PRODUCT_NAME" /> no se mantenga actualizado</translation>
 <translation id="1736419249208073774">Explorar</translation>
 <translation id="1736827427463982819">Cerrar Linux (Beta)</translation>
@@ -943,7 +943,7 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> archivos seleccionados</translation>
 <translation id="237828693408258535">¿Deseas traducir esta página?</translation>
 <translation id="2378982052244864789">Seleccionar el directorio de extensión.</translation>
-<translation id="2379232090534544565">Un sitio puede acceder a la entrada de audio y video</translation>
+<translation id="2379232090534544565">Un sitio está accediendo a la entrada de audio y video</translation>
 <translation id="2379281330731083556">Imprimir mediante el sistema de diálogo... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Preguntar antes de enviar (recomendado)</translation>
 <translation id="2384436799579181135">Se produjo un error. Revisa la impresora y vuelve a intentarlo.</translation>
@@ -1469,7 +1469,7 @@
 <translation id="316854673539778496">Para obtener todas tus extensiones en todos los dispositivos, accede a tu cuenta y activa la sincronización.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">También puedes omitir el acceso y <ph name="LINK_START" />navegar como invitado<ph name="LINK_END" />.</translation>
-<translation id="3172045848207518317">Un sitio puede acceder a la entrada de video</translation>
+<translation id="3172045848207518317">Un sitio está accediendo a la entrada de video</translation>
 <translation id="3177909033752230686">Idioma de la página:</translation>
 <translation id="3182749001423093222">Corrector ortográfico</translation>
 <translation id="3183139917765991655">Importador de perfiles</translation>
@@ -1650,7 +1650,7 @@
 <translation id="3461266716147554923"><ph name="URL" /> desea ver el texto y las imágenes copiados en el portapapeles</translation>
 <translation id="3462311546193741693">Saldrás de la mayoría de los sitios, pero permanecerás en tu Cuenta de Google para que puedan borrarse tus datos sincronizados.</translation>
 <translation id="3462413494201477527">¿Cancelar la configuración de la cuenta?</translation>
-<translation id="3464012987031883895">Un sitio puede acceder a la entrada de audio</translation>
+<translation id="3464012987031883895">Un sitio está accediendo a la entrada de audio</translation>
 <translation id="346431825526753">Esta es una cuenta para niños administrada por <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3466147780910026086">Analizando el dispositivo de medios…</translation>
 <translation id="3467267818798281173">Pedir sugerencias a Google</translation>
@@ -2037,7 +2037,7 @@
 <translation id="3994878504415702912">&amp;Tamaño</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (puerto lateral derecho trasero)</translation>
 <translation id="4002066346123236978">Título</translation>
-<translation id="4002440992267487163">Configuración de PIN</translation>
+<translation id="4002440992267487163">Configuración del PIN</translation>
 <translation id="40027638859996362">Movimiento de palabra</translation>
 <translation id="4005817994523282006">Método de detección de la zona horaria</translation>
 <translation id="4008291085758151621">La información del sitio no está disponible en RV</translation>

@@ -957,7 +957,7 @@
 <translation id="2408955596600435184">输入您的 PIN 码</translation>
 <translation id="241082044617551207">未知插件</translation>
 <translation id="2413749388954403953">更改书签界面</translation>
-<translation id="241727068219398187">您的数据已于 <ph name="TIME" />使用您的 Google 密码加密。这并不包括 Google Pay 中的付款方式和地址。</translation>
+<translation id="241727068219398187">数据已于 <ph name="TIME" />使用您的 Google 密码加密。这并不包括 Google Pay 中的付款方式和地址。</translation>
 <translation id="2419706071571366386">为了安全起见，当您未使用计算机时，请退出帐号。</translation>
 <translation id="2422426094670600218">&lt;未命名&gt;</translation>
 <translation id="2423578206845792524">图片另存为(&amp;V)...</translation>
@@ -1345,7 +1345,7 @@
 <translation id="2993517869960930405">应用信息</translation>
 <translation id="2994669386200004489">无法备份 <ph name="FILE_NAME" /></translation>
 <translation id="299483336428448530">这是您的家长安装的。</translation>
-<translation id="2996286169319737844">您的数据已使用您的同步密码加密。这并不包括 Google Pay 中的付款方式和地址。</translation>
+<translation id="2996286169319737844">数据已使用您的同步密码加密。这并不包括 Google Pay 中的付款方式和地址。</translation>
 <translation id="3002017044809397427">已找到您的<ph name="PHONE_TYPE" />，但 Smart Lock 仅适用于运行 Android 5.0 或更高版本的设备。&lt;a&gt;了解详情&lt;/a&gt;</translation>
 <translation id="3003144360685731741">首选网络</translation>
 <translation id="3003623123441819449">CSS 缓存</translation>
@@ -2328,7 +2328,7 @@
 <translation id="452039078290142656">来自<ph name="VENDOR_NAME" />的未知设备</translation>
 <translation id="4522570452068850558">详细信息</translation>
 <translation id="4522600456902129422">继续允许此网站查看剪贴板</translation>
-<translation id="4525382759303819021">接收与 Play 商店内的应用相关的最新更新和推荐内容</translation>
+<translation id="4525382759303819021">接收与 Play 商店内的应用相关的最新动态和推荐内容</translation>
 <translation id="4530494379350999373">来源</translation>
 <translation id="4533985347672295764">CPU 时间</translation>
 <translation id="4534661889221639075">请重试。</translation>
@@ -2465,7 +2465,7 @@
 <translation id="4733082559415072992"><ph name="URL" /> 想使用您设备的位置信息</translation>
 <translation id="4733793249294335256">位置</translation>
 <translation id="4734518477988699048">输入的值无效。</translation>
-<translation id="4735265153267957659">请输入您的密码，以启用 Smart Lock。下次，您只需使用配对手机就能解锁您的 <ph name="DEVICE_TYPE" /> 了。您可在“设置”中关闭 Smart Lock。</translation>
+<translation id="4735265153267957659">请输入您的密码，以启用 Smart Lock。下次，您只需使用手机就能解锁您的 <ph name="DEVICE_TYPE" /> 了。您可在“设置”中关闭 Smart Lock。</translation>
 <translation id="473546211690256853">此帐号由 <ph name="DOMAIN" /> 管理</translation>
 <translation id="4737715515457435632">请连接到网络</translation>
 <translation id="473775607612524610">更新</translation>
@@ -3945,7 +3945,7 @@
 <translation id="6921709132208495314">停止在此网页上消耗数据流量</translation>
 <translation id="6922128026973287222">使用 Google 流量节省程序可以节省流量并加速浏览。点击此处即可了解详情。</translation>
 <translation id="6923132443355966645">滚动/点击</translation>
-<translation id="6923633482430812883">装载共享设备时出错。请检查您要连接的文件服务器是否支持 SMBv2 或更高版本。</translation>
+<translation id="6923633482430812883">装载共享时出错。请检查您要连接的文件服务器是否支持 SMBv2 或更高版本。</translation>
 <translation id="6930242544192836755">持续时间</translation>
 <translation id="6934241953272494177">正在扫描您的媒体设备…
     <ph name="LINE_BREAK1" />
@@ -4758,7 +4758,7 @@
 <translation id="8117620576188476503">使用状态栏管理连接、更新和设置。若要通过键盘访问这些内容，请按 Alt + Shift + S 组合键。</translation>
 <translation id="8118362518458010043">已被 Chrome 停用。此扩展程序可能不安全。</translation>
 <translation id="8118860139461251237">管理您的下载内容</translation>
-<translation id="8123590694679414600">您的数据已于 <ph name="TIME" />使用您的同步密码加密。这并不包括 Google Pay 中的付款方式和地址。</translation>
+<translation id="8123590694679414600">数据已于 <ph name="TIME" />使用您的同步密码加密。这并不包括 Google Pay 中的付款方式和地址。</translation>
 <translation id="81238879832906896">黄色和白色花朵</translation>
 <translation id="8124313775439841391">受管理的 ONC</translation>
 <translation id="813082847718468539">查看网站信息</translation>

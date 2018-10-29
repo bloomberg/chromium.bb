@@ -512,7 +512,6 @@
 <translation id="4277028893293644418">Poništi zaporku</translation>
 <translation id="4280429058323657511">, istek <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Prebaci</translation>
-<translation id="4308131620840579419">Spremiti sve kartice na jedno mjesto?</translation>
 <translation id="4312866146174492540">Blokiraj (zadano)</translation>
 <translation id="4325863107915753736">Članak nije pronađen</translation>
 <translation id="4326324639298822553">Provjerite datum isteka, pa pokušajte ponovo</translation>
@@ -959,6 +958,7 @@ Dodatne pojedinosti:
 <translation id="7549584377607005141">Ova web-stranica zahtijeva podatke koje ste ranije unijeli da bi se pravilno prikazala. Te podatke možete poslati ponovo, ali time ćete ponoviti sve radnje koje je ta stranica prethodno izvela.</translation>
 <translation id="7552846755917812628">Pokušajte učiniti sljedeće:</translation>
 <translation id="7554791636758816595">Nova kartica</translation>
+<translation id="7560085949372856518">U sljedećem koraku možete odabrati kartice koje će se spremiti na vaš Google račun.</translation>
 <translation id="7564049878696755256">Mogli biste izgubiti pristup svojem <ph name="ORG_NAME" /> računu ili bi netko mogao ukrasti vaš identitet. Chrome preporučuje da odmah promijenite zaporku.</translation>
 <translation id="7567204685887185387">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; njegov sigurnosni certifikat možda je lažan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="7569952961197462199">Želite li s Chromea ukloniti kreditnu karticu?</translation>
@@ -976,6 +976,7 @@ Dodatne pojedinosti:
 <translation id="7658239707568436148">Odustani</translation>
 <translation id="7662298039739062396">Postavkom upravlja proširenje</translation>
 <translation id="7663736086183791259">Certifikat <ph name="CERTIFICATE_VALIDITY" /></translation>
+<translation id="7665886282480776333">Želite li spremiti svoje kartice na Google?</translation>
 <translation id="7667346355482952095">Vraćeni token pravila prazan je ili ne odgovara trenutačnom tokenu</translation>
 <translation id="7668654391829183341">Nepoznati uređaj</translation>
 <translation id="7669271284792375604">Napadači na ovoj web-lokaciji mogu vas pokušati navesti na instaliranje programa koji smanjuju kvalitetu pregledavanja interneta (npr. promjenom početne stranice ili prikazivanjem dodatnih oglasa na web-lokacijama koje posjetite).</translation>

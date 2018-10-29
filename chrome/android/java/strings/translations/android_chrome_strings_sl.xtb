@@ -48,6 +48,7 @@ Kljub temu niste nevidni. Če uporabljate zasebni način, ne skrijete brskanja p
 <translation id="1291207594882862231">Izbris zgodovine, piškotkov, podatkov spletnih mest, predpomnilnika …</translation>
 <translation id="129553762522093515">Nedavno zaprto</translation>
 <translation id="1326317727527857210">Če želite dostopati do zavihkov v drugih napravah, se prijavite v Chrome.</translation>
+<translation id="1331212799747679585">Posodobitev Chroma ni mogoča. Več možnosti.</translation>
 <translation id="1332501820983677155">Bližnjice za funkcije Google Chroma</translation>
 <translation id="1360432990279830238">Odjava in izklop sinhronizacije?</translation>
 <translation id="136248372334525878">Vnaprejšnje nalaganje strani za hitrejše nalaganje in branje brez povezave</translation>
@@ -133,6 +134,7 @@ Kljub temu niste nevidni. Če uporabljate zasebni način, ne skrijete brskanja p
 <translation id="1946005195648379376">Nadzirajte, kako Google na podlagi vaše zgodovine brskanja prilagaja Iskanje Google in druge Googlove storitve.</translation>
 <translation id="1952172573699511566">Spletna mesta bodo besedilo prikazala v izbranem jeziku, če je mogoče.</translation>
 <translation id="195283394249132567">Prilagojene Googlove storitve</translation>
+<translation id="1960290143419248813">Posodobitve za Chrome v tej različici Androida niso več podprte.</translation>
 <translation id="1966710179511230534">Posodobite podrobnosti prijave.</translation>
 <translation id="1974060860693918893">Dodatno</translation>
 <translation id="1984937141057606926">Dovoljeno, razen za druga spletna mesta</translation>
@@ -344,6 +346,7 @@ Kljub temu niste nevidni. Če uporabljate zasebni način, ne skrijete brskanja p
 <translation id="3739899004075612870">Dodano med zaznamke v izdelku <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB drugih aplikacij</translation>
 <translation id="3744111561329211289">Sinhroniziranje v ozadju</translation>
+<translation id="3745176700485982507">Povezave do vaših priljubljenih spletnih mest so na voljo na tej strani</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Vklopite Bluetooth<ph name="END_LINK" />, če želite dovoliti seznanjanje</translation>
 <translation id="3778956594442850293">Dodano na začetni zaslon</translation>
 <translation id="3781011235031427080">Več podobnega odprtega pri polovični višini</translation>
@@ -427,6 +430,7 @@ Kljub temu niste nevidni. Če uporabljate zasebni način, ne skrijete brskanja p
 <translation id="4419556793104466535">Nadziranje sinhronizacije, prilagajanja in drugega</translation>
 <translation id="4432792777822557199">Strani v jeziku <ph name="SOURCE_LANGUAGE" /> bodo od zdaj naprej prevedene v jezik <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Pojavna okna in preusmeritve</translation>
+<translation id="4440958355523780886">Stran v osnovnem načinu, ki jo je prikazal Google. Dotaknite se, če želite naložiti izvirno stran.</translation>
 <translation id="4452411734226507615">Zapiranje zavihka <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Zaznamek ustvarjen v mapi <ph name="FOLDER_NAME" /></translation>
 <translation id="4453340223357552416"><ph name="FILE_NAME" /> – preneseno v izdelku <ph name="PRODUCT_NAME" /></translation>
@@ -552,6 +556,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5327248766486351172">Ime</translation>
 <translation id="5335288049665977812">Spletnim mestom dovoli izvajanje JavaScripta (priporočeno)</translation>
 <translation id="5345040418939504969">Izbrisano: <ph name="BOOKMARK_TITLE" /></translation>
+<translation id="5363230136052241468">Dotaknite se gumba za začetni zaslon, če želite naložiti nov zavihek s povezavami</translation>
 <translation id="5372829067651257087">URL je kopiran.</translation>
 <translation id="5391532827096253100">Povezava s tem spletnim mestom ni varna. Podatki o spletnem mestu.</translation>
 <translation id="5400569084694353794">Če uporabljate to aplikacijo, se strinjate s <ph name="BEGIN_LINK1" />pogoji storitve<ph name="END_LINK1" /> in <ph name="BEGIN_LINK2" />pravilnikom o zasebnosti<ph name="END_LINK2" /> za Chrome.</translation>
@@ -682,6 +687,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6295158916970320988">Vsa spletna mesta</translation>
 <translation id="629730747756840877">Račun</translation>
 <translation id="6303969859164067831">Odjava in izklop sinhronizacije</translation>
+<translation id="6316139424528454185">Različica Androida ni podprta</translation>
 <translation id="6320088164292336938">Vibriranje</translation>
 <translation id="6324034347079777476">Sinhronizacija sistema Android je onemogočena.</translation>
 <translation id="6333140779060797560">Skupna raba prek: <ph name="APPLICATION" /></translation>
@@ -770,6 +776,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6912998170423641340">Preprečevanje, da spletna mesta berejo besedila in slike v odložišču</translation>
 <translation id="6914783257214138813">Gesla bodo vidna vsakomur, ki si lahko ogleda izvoženo datoteko z gesli.</translation>
 <translation id="6942665639005891494">Z možnostjo v meniju z nastavitvami lahko kadar koli spremenite privzeto mesto za prenose</translation>
+<translation id="6944102653068653326">Dotaknite se, če želite naložiti nov zavihek s povezavami</translation>
 <translation id="6945221475159498467">Izberi</translation>
 <translation id="6963642900430330478">Ta stran je nevarna. Podatki o spletnem mestu.</translation>
 <translation id="6963766334940102469">Izbriši zaznamke</translation>
@@ -961,6 +968,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="8428213095426709021">Nastavitve</translation>
 <translation id="8438566539970814960">Izboljšanje iskanja in brskanja</translation>
 <translation id="8441146129660941386">Išči nazaj</translation>
+<translation id="8443209985646068659">Posod. Chroma ni mogoča</translation>
 <translation id="8445448999790540984">Gesel ni mogoče izvoziti</translation>
 <translation id="8447861592752582886">Umik dovoljenja za dostop do naprave</translation>
 <translation id="8461694314515752532">Šifriranje sinhroniziranih podatkov z vašim geslom za sinhronizacijo</translation>

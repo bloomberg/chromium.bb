@@ -48,6 +48,7 @@ Husk, at du ikke er usynlig. Den private tilstand skjuler ikke dine søgninger o
 <translation id="1291207594882862231">Ryd historik, cookies, websitedata, cache...</translation>
 <translation id="129553762522093515">Senest lukkede</translation>
 <translation id="1326317727527857210">Log ind på Chrome for at få adgang til dine faner på dine andre enheder.</translation>
+<translation id="1331212799747679585">Chrome kan ikke opdateres. Flere valgmuligheder</translation>
 <translation id="1332501820983677155">Funktionsgenveje i Google Chrome</translation>
 <translation id="1360432990279830238">Log ud, og deaktiver synkronisering?</translation>
 <translation id="136248372334525878">Forudindlæs sider, så de indlæses hurtigere og kan ses offline</translation>
@@ -133,6 +134,7 @@ Husk, at du ikke er usynlig. Den private tilstand skjuler ikke dine søgninger o
 <translation id="1946005195648379376">Kontrollér, hvordan Google bruger din browserhistorik til at personliggøre Søgning og andre Google-tjenester.</translation>
 <translation id="1952172573699511566">Websites viser tekst på dit foretrukne sprog, når det er muligt.</translation>
 <translation id="195283394249132567">Tilpassede Google-tjenester</translation>
+<translation id="1960290143419248813">Chrome understøtter ikke længere denne version af Android</translation>
 <translation id="1966710179511230534">Opdater dine loginoplysninger.</translation>
 <translation id="1974060860693918893">Avanceret</translation>
 <translation id="1984937141057606926">Tilladt, undtagen tredjepartscookies</translation>
@@ -344,6 +346,7 @@ Husk, at du ikke er usynlig. Den private tilstand skjuler ikke dine søgninger o
 <translation id="3739899004075612870">Tilføjet som bogmærke i <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB af andre apps</translation>
 <translation id="3744111561329211289">Synkronisering i baggrunden</translation>
+<translation id="3745176700485982507">Du kan finde links til dine yndlingswebsites på denne side</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Slå Bluetooth til<ph name="END_LINK" /> for at tillade parring</translation>
 <translation id="3778956594442850293">Føjet til startskærmen</translation>
 <translation id="3781011235031427080">"Se lignende indhold" er åbnet i halv højde</translation>
@@ -427,6 +430,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4419556793104466535">Styr synkronisering, tilpasning og meget mere</translation>
 <translation id="4432792777822557199">Sider på <ph name="SOURCE_LANGUAGE" /> oversættes fremover til <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Pop op-vinduer og omdirigeringer</translation>
+<translation id="4440958355523780886">Lite-side leveret af Google. Tryk for at indlæse originalen.</translation>
 <translation id="4452411734226507615">Luk fanen <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Bogmærket er gemt i <ph name="FOLDER_NAME" /></translation>
 <translation id="4453340223357552416"><ph name="FILE_NAME" /> downloadet i <ph name="PRODUCT_NAME" /></translation>
@@ -553,6 +557,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5327248766486351172">Navn</translation>
 <translation id="5335288049665977812">Tillad, at websites kører JavaScript (anbefales)</translation>
 <translation id="5345040418939504969">Slettede <ph name="BOOKMARK_TITLE" /></translation>
+<translation id="5363230136052241468">Tryk på knappen Hjem for at indlæse siden Ny fane</translation>
 <translation id="5372829067651257087">Webadressen blev kopieret.</translation>
 <translation id="5391532827096253100">Din forbindelse til dette website er ikke sikker. Websiteoplysninger</translation>
 <translation id="5400569084694353794">Ved at bruge denne applikation accepterer du Chromes <ph name="BEGIN_LINK1" />servicevilkår<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />erklæring om privatliv<ph name="END_LINK2" />.</translation>
@@ -683,6 +688,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6295158916970320988">Alle websites</translation>
 <translation id="629730747756840877">Konto</translation>
 <translation id="6303969859164067831">Log ud, og deaktiver synkronisering</translation>
+<translation id="6316139424528454185">Android-versionen understøttes ikke</translation>
 <translation id="6320088164292336938">Vibrer</translation>
 <translation id="6324034347079777476">Synkronisering af Android-systemet blev deaktiveret</translation>
 <translation id="6333140779060797560">Del via <ph name="APPLICATION" /></translation>
@@ -771,6 +777,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6912998170423641340">Bloker websites, så de ikke kan læse tekst og billeder fra udklipsholderen</translation>
 <translation id="6914783257214138813">Dine adgangskoder vil være synlige for alle, der kan se den eksporterede fil.</translation>
 <translation id="6942665639005891494">Du kan til enhver tid ændre standardplaceringen for downloads via menuen Indstillinger</translation>
+<translation id="6944102653068653326">Tryk for at indlæse siden Ny fane</translation>
 <translation id="6945221475159498467">Vælg</translation>
 <translation id="6963642900430330478">Denne side er farlig. Websiteoplysninger</translation>
 <translation id="6963766334940102469">Slet bogmærker</translation>
@@ -962,6 +969,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8428213095426709021">Indstillinger</translation>
 <translation id="8438566539970814960">Gør søgninger og browsing endnu bedre</translation>
 <translation id="8441146129660941386">Spol tilbage</translation>
+<translation id="8443209985646068659">Chrome kan ikke opdateres</translation>
 <translation id="8445448999790540984">Der kan ikke eksporteres adgangskoder</translation>
 <translation id="8447861592752582886">Tilbagekald adgangstilladelsen til enheden</translation>
 <translation id="8461694314515752532">Kryptér synkroniserede data med din egen adgangssætning til synkronisering</translation>

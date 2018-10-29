@@ -513,7 +513,6 @@
 <translation id="4277028893293644418">Lähtesta parool</translation>
 <translation id="4280429058323657511">, aegub <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Lüliti</translation>
-<translation id="4308131620840579419">Kas soovite salvestada kõik kaardid ühte kohta?</translation>
 <translation id="4312866146174492540">Blokeeri (vaikimisi)</translation>
 <translation id="4325863107915753736">Artiklit ei leitud</translation>
 <translation id="4326324639298822553">Kontrollige aegumiskuupäeva ja proovige uuesti</translation>
@@ -960,6 +959,7 @@ Lisateave:
 <translation id="7549584377607005141">See veebileht vajab korralikult kuvamiseks varem sisestatud andmeid. Võite need andmed uuesti saata, kuid seda tehes kordate lehe iga eelnevat toimingut.</translation>
 <translation id="7552846755917812628">Proovige järgmiseid nõuandeid.</translation>
 <translation id="7554791636758816595">Uus vaheleht</translation>
+<translation id="7560085949372856518">Järgmise toimingu käigus saate valida, millised kaardid soovite Google'i kontole salvestada.</translation>
 <translation id="7564049878696755256">Võite kaotada juurdepääsu oma teenuse <ph name="ORG_NAME" /> kontole või teie identiteet võidakse varastada. Chrome soovitab teil kohe oma parooli muuta.</translation>
 <translation id="7567204685887185387">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />, selle turvasertifikaat võib olla väljastatud pettuse teel. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
 <translation id="7569952961197462199">Kas eemaldada Chrome'ist krediitkaart?</translation>
@@ -977,6 +977,7 @@ Lisateave:
 <translation id="7658239707568436148">Tühista</translation>
 <translation id="7662298039739062396">Seadet juhib laiendus</translation>
 <translation id="7663736086183791259">Sertifikaat <ph name="CERTIFICATE_VALIDITY" /></translation>
+<translation id="7665886282480776333">Kas soovite salvestada kaardid Google'isse?</translation>
 <translation id="7667346355482952095">Tagastatud reegli luba on tühi või ei kattu praeguse loaga</translation>
 <translation id="7668654391829183341">Tundmatu seade</translation>
 <translation id="7669271284792375604">Sellel saidil asuvad ründajad võivad proovida meelitada teid installima programme, mis kahjustavad sirvimiskogemust (nt muudavad avalehte või kuvavad külastatavatel saitidel lisareklaame).</translation>

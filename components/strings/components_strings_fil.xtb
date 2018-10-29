@@ -513,7 +513,6 @@
 <translation id="4277028893293644418">I-reset ang password</translation>
 <translation id="4280429058323657511">, exp <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Lumipat</translation>
-<translation id="4308131620840579419">I-save ang lahat ng iyong card sa iisang lugar?</translation>
 <translation id="4312866146174492540">I-block (default)</translation>
 <translation id="4325863107915753736">Hindi nahanap ang artikulo</translation>
 <translation id="4326324639298822553">Tingnan ang iyong petsa ng pag-expire at subukang muli</translation>
@@ -960,6 +959,7 @@ Mga karagdagang detalye:
 <translation id="7549584377607005141">Kinakailangan ng webpage na ito ng data na inilagay mo dati upang maipakita nang maayos. Maipapadala mong muli ang data na ito, ngunit kapag ginawa mo iyon, mauulit ang anumang pagkilos na isinagawa dati ng pahinang ito.</translation>
 <translation id="7552846755917812628">Subukan ang mga sumusunod na tip:</translation>
 <translation id="7554791636758816595">Bagong Tab</translation>
+<translation id="7560085949372856518">Sa susunod na hakbang, mapipili mo kung aling mga card ang ise-save sa iyong Google Account.</translation>
 <translation id="7564049878696755256">Maaari kang mawalan ng access sa iyong account sa <ph name="ORG_NAME" /> o manakawan ng pagkakakilanlan. Inirerekomenda ng Chrome na palitan ang iyong password ngayon.</translation>
 <translation id="7567204685887185387">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; maaaring mapanlokong ibinigay ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
 <translation id="7569952961197462199">Alisin ang credit card sa Chrome?</translation>
@@ -977,6 +977,7 @@ Mga karagdagang detalye:
 <translation id="7658239707568436148">Ikansela</translation>
 <translation id="7662298039739062396">Kinokontrol ng isang extension ang setting</translation>
 <translation id="7663736086183791259">Certificate <ph name="CERTIFICATE_VALIDITY" /></translation>
+<translation id="7665886282480776333">I-save ang iyong mga card sa Google?</translation>
 <translation id="7667346355482952095">Walang laman ang ibinalik na token ng patakaran o hindi tumutugma sa kasalukuyang token</translation>
 <translation id="7668654391829183341">Hindi kilalang device</translation>
 <translation id="7669271284792375604">Maaaring subukan ng mga attacker sa site na ito na linlangin ka upang mag-install ng mga program na makakasama sa iyong karanasan sa pag-browse (halimbawa, sa pamamagitan ng pagbabago ng iyong homepage o pagpapakita ng mga karagdagang ad sa mga site na binibisita mo).</translation>

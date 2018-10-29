@@ -1010,7 +1010,7 @@ Jika kebijakan ini disetel ke false, permintaan penguncian layar saat aktif akan
 
           Jika kebijakan "EnableMediaRouter" disetel ke false, setelan kebijakan ini tidak akan berpengaruh, dan ikon toolbar tidak akan ditampilkan.</translation>
 <translation id="3788662722837364290">Setelan pengelolaan daya saat pengguna sedang menganggur</translation>
-<translation id="3790085888761753785">Jika setelan ini diaktifkan, pengguna akan diizinkan untuk login ke akun mereka dengan Smart Lock. Setelan ini lebih longgar dibandingkan perilaku Smart Lock biasa yang hanya mengizinkan pengguna membuka kunci layar mereka.
+<translation id="3790085888761753785">Jika setelan ini diaktifkan, pengguna akan diizinkan untuk login ke akunnya dengan Smart Lock. Setelan ini lebih longgar dibandingkan perilaku Smart Lock biasa yang hanya mengizinkan pengguna membuka kunci layarnya.
 
 Jika setelan ini dinonaktifkan, pengguna tidak akan diizinkan untuk menggunakan fitur Smart Lock Signin.
 
@@ -2868,7 +2868,7 @@ Kebijakan akan dihapus pada M75.</translation>
       Jika kebijakan tidak disetel atau disetel ke BENAR, semua pengguna diizinkan menggunakan ARC (kecuali ARC dinonaktifkan dengan cara lain).
 
       Perubahan kebijakan hanya akan diterapkan saat ARC tidak sedang berjalan, mis., saat Chrome OS dimulai.</translation>
-<translation id="8615400197788843468">Mengaktifkan fitur login yang dibatasi <ph name="PRODUCT_NAME" /> di G Suite dan mencegah pengguna untuk mengubah setelan ini.
+<translation id="8615400197788843468">Mengaktifkan fitur login yang dibatasi untuk <ph name="PRODUCT_NAME" /> di G Suite dan mencegah pengguna mengubah setelan ini.
 
 Jika Anda menetapkan setelan ini, pengguna hanya akan dapat mengakses Aplikasi
 Google yang menggunakan akun dari domain yang ditentukan (perlu diperhatikan bahwa untuk mengizinkan

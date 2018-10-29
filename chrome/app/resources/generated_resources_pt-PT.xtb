@@ -1827,7 +1827,7 @@ Pretende pará-lo?</translation>
 <translation id="370415077757856453">JavaScript bloqueado</translation>
 <translation id="3704331259350077894">Cessação da operação</translation>
 <translation id="3705722231355495246">-</translation>
-<translation id="3706463572498736864">Páginas por folha de cálculo</translation>
+<translation id="3706463572498736864">Páginas por folha</translation>
 <translation id="370665806235115550">A carregar...</translation>
 <translation id="3709244229496787112">O navegador foi encerrado antes de a transferência estar concluída.</translation>
 <translation id="3711895659073496551">Suspenso</translation>
@@ -5182,7 +5182,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8758418656925882523">Ativar o ditado (falar para escrever)</translation>
 <translation id="8759408218731716181">Não é possível configurar o início de sessão integrado</translation>
 <translation id="8759753423332885148">Saiba mais.</translation>
-<translation id="8762886931014513155">O seu <ph name="DEVICE_TYPE" /> precisa de uma atualização</translation>
+<translation id="8762886931014513155">O seu <ph name="DEVICE_TYPE" /> precisa de ser atualizado</translation>
 <translation id="8767621466733104912">Atualizar automaticamente o Chrome para todos os utilizadores</translation>
 <translation id="8770406935328356739">Diretório raiz da extensão</translation>
 <translation id="8770507190024617908">Gerir pessoas</translation>

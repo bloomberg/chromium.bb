@@ -511,7 +511,6 @@
 <translation id="4277028893293644418">Jelszó visszaállítása</translation>
 <translation id="4280429058323657511">, lejár: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Váltás</translation>
-<translation id="4308131620840579419">Egyetlen helyre menti az összes kártyát?</translation>
 <translation id="4312866146174492540">Letiltás (alapértelmezett)</translation>
 <translation id="4325863107915753736">Nem sikerült megtalálni a cikket</translation>
 <translation id="4326324639298822553">Ellenőrizze a lejárati dátumot, majd próbálja újra</translation>
@@ -958,6 +957,7 @@ További részletek:
 <translation id="7549584377607005141">Ez a weboldal korábban megadott adatokat kér ahhoz, hogy megfelelően jelenjen meg. Az adatokat újra elküldheti, de ezzel meg fog ismételni minden olyan műveletet, amelyet ez az oldal korábban végrehajtott.</translation>
 <translation id="7552846755917812628">Próbálja ki az alábbi tippeket:</translation>
 <translation id="7554791636758816595">Új lap</translation>
+<translation id="7560085949372856518">A következő lépésben kiválaszthatja, hogy a rendszer mely kártyákat mentse az Ön Google-fiókjába.</translation>
 <translation id="7564049878696755256">Elveszítheti hozzáférést <ph name="ORG_NAME" />-fiókjához, vagy visszaélhetnek személyes adataival. A Chrome azt javasolja, hogy azonnal módosítsa jelszavát.</translation>
 <translation id="7567204685887185387">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványát csalással állíthatták ki. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
 <translation id="7569952961197462199">Eltávolítja a hitelkártyát a Chrome-ból?</translation>
@@ -975,6 +975,7 @@ További részletek:
 <translation id="7658239707568436148">Mégse</translation>
 <translation id="7662298039739062396">A beállítást bővítmény vezérli</translation>
 <translation id="7663736086183791259"><ph name="CERTIFICATE_VALIDITY" /> tanúsítvány</translation>
+<translation id="7665886282480776333">Menti a kártyákat a Google rendszerébe?</translation>
 <translation id="7667346355482952095">A visszaadott irányelvtoken üres vagy nem egyezik az aktuális tokennel</translation>
 <translation id="7668654391829183341">Ismeretlen eszköz</translation>
 <translation id="7669271284792375604">A webhelyen lévő támadók megpróbálhatják csellel rávenni Önt olyan programok telepítésére, amelyek károsak a böngészési élmény szempontjából (például módosítják a kezdőlapot, vagy plusz hirdetéseket jelenítenek meg a felkeresett webhelyeken).</translation>

@@ -48,6 +48,7 @@ Gayunpaman, hindi ka invisible. Kahit na nakapribado ka, makikita pa rin ng iyon
 <translation id="1291207594882862231">I-clear ang history, cookies, site data, cache…</translation>
 <translation id="129553762522093515">Kamakailang isinara</translation>
 <translation id="1326317727527857210">Upang makuha ang iyong mga tab mula sa iba mo pang mga device, mag-sign in sa Chrome.</translation>
+<translation id="1331212799747679585">Hindi ma-update ang Chrome. Higit pang opsyon</translation>
 <translation id="1332501820983677155">Mga shortcut ng feature ng Google Chrome</translation>
 <translation id="1360432990279830238">Mag-sign out at i-off ang pag-sync?</translation>
 <translation id="136248372334525878">Mag-preload ng mga page para sa mas mabilis na pag-load at offline na pagbabasa</translation>
@@ -133,6 +134,7 @@ Gayunpaman, hindi ka invisible. Kahit na nakapribado ka, makikita pa rin ng iyon
 <translation id="1946005195648379376">Kontrolin kung paano ginagamit ng Google ang iyong history ng pagba-browse upang i-personalize ang Search at iba pang mga serbisyo ng Google.</translation>
 <translation id="1952172573699511566">Magpapakita ang mga website ng text sa iyong gustong wika, kung posible.</translation>
 <translation id="195283394249132567">Mga naka-personalize na serbisyo ng Google</translation>
+<translation id="1960290143419248813">Hindi na sinusuportahan ang mga update sa Chrome para sa bersyong ito ng Android.</translation>
 <translation id="1966710179511230534">Paki-update ang iyong mga detalye sa pag-sign in.</translation>
 <translation id="1974060860693918893">Advanced</translation>
 <translation id="1984937141057606926">Pinapayagan, maliban ang third-party</translation>
@@ -344,6 +346,7 @@ Gayunpaman, hindi ka invisible. Kahit na nakapribado ka, makikita pa rin ng iyon
 <translation id="3739899004075612870">Naka-bookmark sa <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB na iba pang mga app</translation>
 <translation id="3744111561329211289">Pag-sync sa background</translation>
+<translation id="3745176700485982507">Makikita sa page na ito ang mga link sa iyong mga paboritong website</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />I-on ang Bluetooth<ph name="END_LINK" /> upang payagan ang pagpapares</translation>
 <translation id="3778956594442850293">Idinagdag sa Home screen</translation>
 <translation id="3781011235031427080">Nakabukas sa kalahating bahagi sa ibaba ng screen ang higit pang tulad nito</translation>
@@ -427,6 +430,7 @@ Para isaayos ang iyong termino para sa paghahanap, pumindot nang matagal para pu
 <translation id="4419556793104466535">Kontrolin ang pag-sync, pag-personalize, at higit pa</translation>
 <translation id="4432792777822557199">Simula ngayon ay isasalin na sa <ph name="TARGET_LANGUAGE" /> ang mga page na nasa <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Mga pop-up at pag-redirect</translation>
+<translation id="4440958355523780886">Lite na page na hatid ng Google. Mag-tap para i-load ang orihinal.</translation>
 <translation id="4452411734226507615">Isara ang tab na <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Na-bookmark sa <ph name="FOLDER_NAME" /></translation>
 <translation id="4453340223357552416">Na-download ang <ph name="FILE_NAME" /> sa <ph name="PRODUCT_NAME" /></translation>
@@ -553,6 +557,7 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5327248766486351172">Pangalan</translation>
 <translation id="5335288049665977812">Payagan ang mga site na magpatakbo ng JavaScript (inirerekomenda)</translation>
 <translation id="5345040418939504969">Na-delete ang <ph name="BOOKMARK_TITLE" /></translation>
+<translation id="5363230136052241468">I-tap ang button ng home para ma-load ang page ng bagong tab</translation>
 <translation id="5372829067651257087">Kinopya ang URL.</translation>
 <translation id="5391532827096253100">Hindi secure ang iyong koneksyon sa site na ito. Impormasyon ng site</translation>
 <translation id="5400569084694353794">Kapag ginamit mo ang application na ito, ang ibig sabihin, sumasang-ayon ka sa <ph name="BEGIN_LINK1" />Mga Tuntunin ng Serbisyo<ph name="END_LINK1" /> at <ph name="BEGIN_LINK2" />Patakaran sa Privacy<ph name="END_LINK2" /> ng Chrome.</translation>
@@ -683,6 +688,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6295158916970320988">Lahat ng site</translation>
 <translation id="629730747756840877">Account</translation>
 <translation id="6303969859164067831">Mag-sign out at i-off ang pag-sync</translation>
+<translation id="6316139424528454185">Hindi sinusuportahan ang bersyon ng Android</translation>
 <translation id="6320088164292336938">Mag-vibrate</translation>
 <translation id="6324034347079777476">Naka-disable ang pag-sync ng Android system</translation>
 <translation id="6333140779060797560">Ibahagi sa pamamagitan ng <ph name="APPLICATION" /></translation>
@@ -771,6 +777,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6912998170423641340">I-block ang mga site sa pag-read ng text at mga larawan mula sa clipboard</translation>
 <translation id="6914783257214138813">Makikita ng sinumang makakatingin sa na-export na file ang iyong mga password.</translation>
 <translation id="6942665639005891494">Baguhin ang default na lokasyon ng pag-download anumang oras gamit ang opsyong menu ng Mga Setting</translation>
+<translation id="6944102653068653326">Mag-tap para ma-load ang page ng bagong tab</translation>
 <translation id="6945221475159498467">Pumili</translation>
 <translation id="6963642900430330478">Mapanganib ang page na ito. Impormasyon ng site</translation>
 <translation id="6963766334940102469">Mag-delete ng mga bookmark</translation>
@@ -962,6 +969,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8428213095426709021">Mga Setting</translation>
 <translation id="8438566539970814960">Mas pahusayin ang mga paghahanap at pag-browse</translation>
 <translation id="8441146129660941386">Maghanap nang pabalik</translation>
+<translation id="8443209985646068659">Hindi ma-update: Chrome</translation>
 <translation id="8445448999790540984">Hindi ma-export ang mga password</translation>
 <translation id="8447861592752582886">Bawiin ang pahintulot ng device</translation>
 <translation id="8461694314515752532">I-encrypt ang naka-sync na data gamit ang iyong sariling passphrase sa pag-sync</translation>

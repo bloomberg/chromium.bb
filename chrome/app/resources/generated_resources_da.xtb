@@ -3957,7 +3957,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6921709132208495314">Stop med at bruge data på denne side</translation>
 <translation id="6922128026973287222">Gem dine data, og få en hurtigere browseroplevelse med Googles datasparefunktion. Klik for at få flere oplysninger.</translation>
 <translation id="6923132443355966645">Rul/klik</translation>
-<translation id="6923633482430812883">Der opstod en fejl ved anvendelse af deling. Tjek, at den filserver, du opretter forbindelse til, understøtter SMVv2 eller nyere.</translation>
+<translation id="6923633482430812883">Delingen kunne ikke anvendes. Tjek, at den filserver, du opretter forbindelse til, understøtter SMBv2 eller nyere.</translation>
 <translation id="6930242544192836755">Varighed</translation>
 <translation id="6934241953272494177">Scanner din medienhed...
     <ph name="LINE_BREAK1" />

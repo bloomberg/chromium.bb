@@ -24,10 +24,10 @@
       Quando esta política está definida como falsa ou não definida, os cookies definidos pelo IdP são transferidos para o perfil do utilizador durante o primeiro início de sessão apenas num dispositivo.
 
       Esta política afeta os utilizadores cujo domínio coincide com o domínio de inscrição apenas do dispositivo. Para todos os outros utilizadores, os cookies definidos pelo IdP são transferidos para o perfil do utilizador durante o seu primeiro início de sessão apenas no dispositivo.</translation>
-<translation id="1035385378988781231">Esta política controla se a funcionalidade Partilhas de ficheiros na rede do <ph name="PRODUCT_NAME" /> utilizará o NTLM for para autenticação.
+<translation id="1035385378988781231">Esta política controla se a funcionalidade Partilhas de ficheiros na rede do <ph name="PRODUCT_NAME" /> utilizará o NTLM para autenticação.
 
-      Se esta política estiver definida como Verdadeira, será utilizada a autenticação NTLM para partilhas SMB, se necessário.
-      Se esta política estiver definida como Falsa, a autenticação NTLM para partilhas SMB estará desativada.
+      Se esta política estiver definida como verdadeira, será utilizada a autenticação NTLM para partilhas SMB, se necessário.
+      Se esta política estiver definida como falsa, a autenticação NTLM para partilhas SMB estará desativada.
 
       Se a política não for definida, a predefinição é desativada para utilizadores geridos pela empresa e ativada para utilizadores não geridos.</translation>
 <translation id="1040446814317236570">Ativar a remoção de URL de PAC (para https://)</translation>

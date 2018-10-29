@@ -1026,7 +1026,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
           Ak je pravidlo EnableMediaRouter nastavené na hodnotu False, hodnota tohto pravidla sa nijak neprejaví a ikona sa na paneli s nástrojmi nebude zobrazovať.</translation>
 <translation id="3788662722837364290">Nastavenia správy spotreby energie, keď je používateľ nečinný</translation>
-<translation id="3790085888761753785">Ak povolíte toto nastavenie, používatelia sa budú môcť prihlásiť do svojich účtov pomocou funkcie Smart Lock. Ide o benevolentnejší postup narozdiel od zvyčajného správania funkcie Smart Lock, ktoré používateľom umožňuje odomknúť iba obrazovku.
+<translation id="3790085888761753785">Ak povolíte toto nastavenie, používatelia sa budú môcť prihlásiť do svojich účtov pomocou funkcie Smart Lock. Ide o benevolentnejší postup na rozdiel od zvyčajného správania funkcie Smart Lock, ktoré používateľom umožňuje odomknúť iba obrazovku.
 
       Ak toto nastavenie zakážete, používatelia nebudú môcť používať prihlásenie pomocou funkcie Smart Lock.
 

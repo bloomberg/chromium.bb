@@ -513,7 +513,6 @@
 <translation id="4277028893293644418">パスワードを再設定</translation>
 <translation id="4280429058323657511">、有効期限: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">切り替え</translation>
-<translation id="4308131620840579419">すべてのカードを 1 か所で管理できます</translation>
 <translation id="4312866146174492540">ブロック（デフォルト）</translation>
 <translation id="4325863107915753736">記事が見つかりませんでした</translation>
 <translation id="4326324639298822553">有効期限の「日」を確認してもう一度お試しください</translation>
@@ -960,6 +959,7 @@
 <translation id="7549584377607005141">このウェブページを正しく表示するには、先ほど入力したデータが必要です。データは再送信できますが、このページで先ほど行った操作を繰り返すことになります。</translation>
 <translation id="7552846755917812628">次のことをお試しください。</translation>
 <translation id="7554791636758816595">新しいタブ</translation>
+<translation id="7560085949372856518">次のステップで、Google アカウントに保存するカードを選択できます。</translation>
 <translation id="7564049878696755256"><ph name="ORG_NAME" /> アカウントにアクセスできなくなったり、個人情報が盗まれたりする可能性があります。今すぐパスワードを変更することをおすすめします。</translation>
 <translation id="7567204685887185387">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は不正に発行されたものである可能性があります。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="7569952961197462199">Chrome からクレジット カードを削除してもよろしいですか？</translation>
@@ -977,6 +977,7 @@
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="7662298039739062396">拡張機能によって指定される設定</translation>
 <translation id="7663736086183791259">証明書 <ph name="CERTIFICATE_VALIDITY" /></translation>
+<translation id="7665886282480776333">Google にカードを保存しますか？</translation>
 <translation id="7667346355482952095">返されたポリシーのトークンが空であるか、現在のトークンと一致しません</translation>
 <translation id="7668654391829183341">不明なデバイス</translation>
 <translation id="7669271284792375604">このサイトを利用すると、悪意のあるユーザーによって、閲覧時のエクスペリエンスを損なうプログラム（ホームページを改ざんする、アクセス先のサイトに追加の広告を表示するなどのプログラム）をインストールするよう誘導される可能性があります。</translation>

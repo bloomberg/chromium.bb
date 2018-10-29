@@ -2898,7 +2898,7 @@ Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, je
 <translation id="8615400197788843468">Włącza w <ph name="PRODUCT_NAME" /> funkcję ograniczonego logowania w G Suite i uniemożliwia użytkownikom zmianę tego ustawienia.
 
       Jeśli zdefiniujesz to ustawienie, użytkownik będzie mógł uzyskać dostęp
-      do Google Apps tylko przy użyciu kont z określonych domen (uwaga:
+      do G Suite tylko przy użyciu kont z określonych domen (uwaga:
       aby zezwolić na konta gmail.com/googlemail.com, dodaj do listy domen
       wpis „consumer_accounts” (bez cudzysłowów)).
 
@@ -2994,7 +2994,7 @@ Jeśli jako stronę główną ustawisz stronę Nowa karta albo adres URL (wpisan
       Jeśli ta zasada jest nieskonfigurowana albo wartość jest mniejsza niż 1 MB, <ph name="PRODUCT_OS_NAME" /> użyje domyślnego rozmiaru pamięci podręcznej.</translation>
 <translation id="8858642179038618439">Wymuś tryb bezpieczny w YouTube</translation>
 <translation id="8860342862142842017">Wyłącz egzekwowanie protokołu Certificate Transparency dla skrótów subjectPublicKeyInfo z listy</translation>
-<translation id="8864975621965365890">Pomija monit o odinstalowanie wyświetlany wtedy, gdy witryna jest renderowana przez <ph name="PRODUCT_FRAME_NAME" />.</translation>
+<translation id="8864975621965365890">Pomija prośbę o odinstalowanie wyświetlaną wtedy, gdy strona jest renderowana przez <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8867464911288727016">Włącza w <ph name="PRODUCT_NAME" /> zintegrowaną usługę Tłumacz Google.
 
       Jeśli włączysz to ustawienie, <ph name="PRODUCT_NAME" /> będzie proponować użytkownikowi funkcje tłumaczenia, wyświetlając (w stosownych sytuacjach) zintegrowany pasek tłumaczenia i opcję tłumaczenia w menu kontekstowym prawego przycisku myszy.

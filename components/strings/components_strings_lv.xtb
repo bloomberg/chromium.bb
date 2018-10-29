@@ -512,7 +512,6 @@
 <translation id="4277028893293644418">Atiestatīt paroli</translation>
 <translation id="4280429058323657511">, derīga līdz <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Pāriet</translation>
-<translation id="4308131620840579419">Vai saglabāt visas jūsu kartes vienuviet?</translation>
 <translation id="4312866146174492540">Bloķēt (pēc noklusējuma)</translation>
 <translation id="4325863107915753736">Rakstu neizdevās atrast.</translation>
 <translation id="4326324639298822553">Pārbaudiet derīguma termiņa datumu un mēģiniet vēlreiz.</translation>
@@ -959,6 +958,7 @@ Papildu informācija:
 <translation id="7549584377607005141">Lai tīmekļa lapu varētu attēlot pareizi, tai nepieciešami jūsu iepriekš ievadītie dati. Varat atkārtoti nosūtīt šos datus, taču tādā gadījumā tiks atkārtota ikviena darbība, ko pirms tam veica lapa.</translation>
 <translation id="7552846755917812628">Izmantojiet tālāk sniegtos padomus.</translation>
 <translation id="7554791636758816595">Jauna cilne</translation>
+<translation id="7560085949372856518">Nākamajā darbībā varēsiet izvēlēties, kuras kartes saglabāt Google kontā.</translation>
 <translation id="7564049878696755256">Varat zaudēt piekļuvi savam <ph name="ORG_NAME" /> kontam, vai jūsu identitāte var tikt nozagta. Chrome iesaka nekavējoties nomainīt paroli.</translation>
 <translation id="7567204685887185387">Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />; tās drošības sertifikāts, iespējams, ir izveidots krāpnieciski. Iespējams, tas ir nepareizas konfigurācijas dēļ vai arī kāds ir ļaunprātīgi izmantojis jūsu savienojumu.</translation>
 <translation id="7569952961197462199">Vai noņemt kredītkarti no pārlūka Chrome?</translation>
@@ -976,6 +976,7 @@ Papildu informācija:
 <translation id="7658239707568436148">Atcelt</translation>
 <translation id="7662298039739062396">Iestatījumu kontrolē paplašinājums</translation>
 <translation id="7663736086183791259">Sertifikāts <ph name="CERTIFICATE_VALIDITY" /></translation>
+<translation id="7665886282480776333">Saglabāt jūsu kartes Google kontā?</translation>
 <translation id="7667346355482952095">Atgrieztais politikas marķieris ir tukšs vai neatbilst pašreizējam marķierim</translation>
 <translation id="7668654391829183341">Nezināma ierīce</translation>
 <translation id="7669271284792375604">Uzbrucēji šajā vietnē var mudināt jūs uz tādu programmu instalēšanu, kuras traucē pārlūkošanu (piemēram, mainot sākumlapu vai apmeklētajās vietnēs rādot papildu reklāmas).</translation>

@@ -517,7 +517,7 @@
 <translation id="1731589410171062430">รวม: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /> หน้า (<ph name="NUMBER_OF_PAGES" /> <ph name="PAGE_OR_PAGES_LABEL" />)</translation>
 <translation id="1731911755844941020">กำลังส่งคำขอ...</translation>
 <translation id="1732215134274276513">เลิกตรึงแท็บ</translation>
-<translation id="1733383495376208985">เข้ารหัสลับข้อมูลที่ซิงค์ด้วย<ph name="BEGIN_LINK" />รหัสผ่านการซิงค์<ph name="END_LINK" />ของคุณเอง ข้อมูลนี้ไม่รวมถึงวิธีการชำระเงินและที่อยู่ใน Google Pay</translation>
+<translation id="1733383495376208985">เข้ารหัสลับข้อมูลที่ซิงค์ด้วย<ph name="BEGIN_LINK" />รหัสผ่านการซิงค์<ph name="END_LINK" />ของคุณเอง ข้อมูลนี้ไม่รวมถึงวิธีการชำระเงินและที่อยู่จาก Google Pay</translation>
 <translation id="1734824808160898225"><ph name="PRODUCT_NAME" /> อาจอัปเดตตัวเองตลอดเวลาไม่ได้</translation>
 <translation id="1736419249208073774">สำรวจ</translation>
 <translation id="1736827427463982819">ปิด Linux (เบต้า)</translation>
@@ -960,8 +960,8 @@
 <translation id="2408955596600435184">ป้อน PIN ของคุณ</translation>
 <translation id="241082044617551207">ปลั๊กอินที่ไม่รู้จัก</translation>
 <translation id="2413749388954403953">เปลี่ยนอินเทอร์เฟซผู้ใช้ของบุ๊กมาร์ก</translation>
-<translation id="241727068219398187">มีการเข้ารหัสลับข้อมูลด้วยรหัสผ่าน Google ของคุณตั้งแต่วันที่
-          <ph name="TIME" /> ข้อมูลนี้ไม่รวมถึงวิธีการชำระเงินและที่อยู่ใน Google Pay</translation>
+<translation id="241727068219398187">มีการเข้ารหัสลับข้อมูลด้วยรหัสผ่าน Google ของคุณตั้งแต่
+          <ph name="TIME" /> ข้อมูลนี้ไม่รวมถึงวิธีการชำระเงินและที่อยู่จาก Google Pay</translation>
 <translation id="2419706071571366386">โปรดออกจากระบบเมื่อไม่ได้ใช้คอมพิวเตอร์เพื่อความปลอดภัย</translation>
 <translation id="2422426094670600218">&lt;ไม่มีชื่อ&gt;</translation>
 <translation id="2423578206845792524">&amp;บันทึกรูปภาพเป็น...</translation>
@@ -1350,7 +1350,7 @@
 <translation id="2993517869960930405">ข้อมูลแอป</translation>
 <translation id="2994669386200004489">สำรอง <ph name="FILE_NAME" /> ไม่ได้</translation>
 <translation id="299483336428448530">ติดตั้งโดยผู้ปกครอง</translation>
-<translation id="2996286169319737844">มีการเข้ารหัสลับข้อมูลด้วยรหัสผ่านการซิงค์ ข้อมูลนี้ไม่รวมถึงวิธีการชำระเงินและที่อยู่ใน Google Pay</translation>
+<translation id="2996286169319737844">มีการเข้ารหัสลับข้อมูลด้วยรหัสผ่านการซิงค์ ข้อมูลนี้ไม่รวมถึงวิธีการชำระเงินและที่อยู่จาก Google Pay</translation>
 <translation id="3002017044809397427">พบ <ph name="PHONE_TYPE" /> แต่ Smart Lock จะทำงานบนอุปกรณ์ที่ใช้ Android 5.0 ขึ้นไปเท่านั้น &lt;a&gt;ดูข้อมูลเพิ่มเติม&lt;/a&gt;</translation>
 <translation id="3003144360685731741">เครือข่ายที่ต้องการ</translation>
 <translation id="3003623123441819449">แคช CSS</translation>
@@ -3207,7 +3207,7 @@
 <translation id="5787146423283493983">ข้อตกลงเกี่ยวกับคีย์</translation>
 <translation id="5788127256798019331">ไฟล์ Play</translation>
 <translation id="5788367137662787332">ขออภัย ไม่สามารถติดตั้งอย่างน้อยหนึ่งพาร์ทิชันลงในอุปกรณ์ <ph name="DEVICE_LABEL" /> ได้</translation>
-<translation id="5793339252089865437">หากดาวน์โหลดอัปเดตผ่านเครือข่ายมือถือ อาจทำให้มีค่าบริการเน็ตมือถือมากเกินไป</translation>
+<translation id="5793339252089865437">หากดาวน์โหลดอัปเดตผ่านเครือข่ายมือถือ อาจทำให้มีค่าบริการเน็ตมือถือเพิ่มเติม</translation>
 <translation id="5794414402486823030">เปิดด้วยโปรแกรมดูของระบบทุกครั้ง</translation>
 <translation id="5794786537412027208">ปิดแอป Chrome ทั้งหมด</translation>
 <translation id="5799508265798272974">เครื่องเสมือนของ Linux: <ph name="LINUX_VM_NAME" /></translation>
@@ -4773,8 +4773,8 @@
 <translation id="8117620576188476503">จัดการการเชื่อมต่อ อัปเดต และการตั้งค่าด้วยถาดสถานะ หากต้องการมาที่นี่โดยใช้แป้นพิมพ์ ให้กด Alt + Shift + S</translation>
 <translation id="8118362518458010043">ปิดใช้โดย Chrome เนื่องจากส่วนขยายนี้อาจไม่ปลอดภัย</translation>
 <translation id="8118860139461251237">จัดการการดาวน์โหลดของคุณ</translation>
-<translation id="8123590694679414600">ได้มีการเข้ารหัสลับข้อมูลด้วยรหัสผ่านการซิงค์ใน
-          <ph name="TIME" /> ข้อมูลนี้ไม่รวมถึงวิธีการชำระเงินและที่อยู่ใน Google Pay</translation>
+<translation id="8123590694679414600">ได้มีการเข้ารหัสลับข้อมูลด้วยรหัสผ่านการซิงค์เมื่อ
+          <ph name="TIME" /> ข้อมูลนี้ไม่รวมถึงวิธีการชำระเงินและที่อยู่จาก Google Pay</translation>
 <translation id="81238879832906896">ดอกไม้สีเหลืองแซมขาว</translation>
 <translation id="8124313775439841391">ONC ที่มีการจัดการ</translation>
 <translation id="813082847718468539">ดูข้อมูลเว็บไซต์</translation>

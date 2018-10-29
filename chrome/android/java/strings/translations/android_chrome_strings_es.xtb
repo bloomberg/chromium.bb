@@ -48,6 +48,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo priva
 <translation id="1291207594882862231">Borrar el historial, las cookies, los datos de sitios web, la caché…</translation>
 <translation id="129553762522093515">Cerrado recientemente</translation>
 <translation id="1326317727527857210">Inicia sesión en Chrome para ver las pestañas de tus otros dispositivos.</translation>
+<translation id="1331212799747679585">No se ha podido actualizar Chrome. Más opciones</translation>
 <translation id="1332501820983677155">Combinaciones de teclas de funciones de Google Chrome</translation>
 <translation id="1360432990279830238">¿Cerrar sesión y detener sincronización?</translation>
 <translation id="136248372334525878">Carga las páginas previamente para mostrarlas más rápido y poder leerlas sin conexión</translation>
@@ -133,6 +134,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo priva
 <translation id="1946005195648379376">Controla cómo utiliza Google tu historial de navegación para personalizar la Búsqueda y otros servicios de Google.</translation>
 <translation id="1952172573699511566">Si es posible, los sitios web muestran texto en tu idioma preferido.</translation>
 <translation id="195283394249132567">Servicios de Google personalizados</translation>
+<translation id="1960290143419248813">Ya no se admiten actualizaciones de Chrome en esta versión de Android.</translation>
 <translation id="1966710179511230534">Actualiza tus datos de inicio de sesión.</translation>
 <translation id="1974060860693918893">Configuración avanzada</translation>
 <translation id="1984937141057606926">Permitidas (excepto cookies de terceros)</translation>
@@ -344,6 +346,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo priva
 <translation id="3739899004075612870">Marcador añadido a <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB de otras aplicaciones</translation>
 <translation id="3744111561329211289">Sincronización en segundo plano</translation>
+<translation id="3745176700485982507">En esta página puedes encontrar enlaces a tus sitios web favoritos</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Activa el Bluetooth<ph name="END_LINK" /> para permitir la vinculación</translation>
 <translation id="3778956594442850293">Se ha añadido a la pantalla de inicio</translation>
 <translation id="3781011235031427080">Se han abierto sugerencias similares y ocupan la mitad inferior de la pantalla</translation>
@@ -427,6 +430,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4419556793104466535">Controlar la sincronización, la personalización y mucho más</translation>
 <translation id="4432792777822557199">Las páginas en <ph name="SOURCE_LANGUAGE" /> se traducirán al <ph name="TARGET_LANGUAGE" /> a partir de ahora</translation>
 <translation id="4434045419905280838">Ventanas emergentes y redirecciones</translation>
+<translation id="4440958355523780886">Página básica ofrecida por Google. Toca para cargar la original.</translation>
 <translation id="4452411734226507615">Cerrar la pestaña <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Marcador añadido a <ph name="FOLDER_NAME" /></translation>
 <translation id="4453340223357552416"><ph name="FILE_NAME" /> se ha descargado en <ph name="PRODUCT_NAME" /></translation>
@@ -553,6 +557,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5327248766486351172">Nombre</translation>
 <translation id="5335288049665977812">Permitir que los sitios web utilicen JavaScript (recomendado)</translation>
 <translation id="5345040418939504969">Se ha eliminado <ph name="BOOKMARK_TITLE" /></translation>
+<translation id="5363230136052241468">Toca el botón de inicio para cargar la página Nueva pestaña</translation>
 <translation id="5372829067651257087">Se ha copiado la URL.</translation>
 <translation id="5391532827096253100">Tu conexión a este sitio web no es segura. Información del sitio web</translation>
 <translation id="5400569084694353794">Al utilizar esta aplicación, aceptas las <ph name="BEGIN_LINK1" />Condiciones de Servicio<ph name="END_LINK1" /> y el <ph name="BEGIN_LINK2" />Aviso de Privacidad<ph name="END_LINK2" /> de Chrome.</translation>
@@ -683,6 +688,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6295158916970320988">Todos los sitios</translation>
 <translation id="629730747756840877">Cuenta</translation>
 <translation id="6303969859164067831">Cerrar sesión y desactivar la sincronización</translation>
+<translation id="6316139424528454185">Esta versión de Android no es compatible</translation>
 <translation id="6320088164292336938">Vibrar</translation>
 <translation id="6324034347079777476">Sincronización del sistema Android inhabilitada</translation>
 <translation id="6333140779060797560">Compartir a través de <ph name="APPLICATION" /></translation>
@@ -771,6 +777,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6912998170423641340">Evitar que los sitios web lean texto e imágenes del portapapeles</translation>
 <translation id="6914783257214138813">Cualquier usuario que pueda ver el archivo exportado podrá ver tus contraseñas.</translation>
 <translation id="6942665639005891494">Cambia la ubicación predeterminada de las descargas en cualquier momento con la opción del menú Configuración</translation>
+<translation id="6944102653068653326">Toca para cargar la página Nueva pestaña</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
 <translation id="6963642900430330478">Esta página es peligrosa. Información del sitio web</translation>
 <translation id="6963766334940102469">Eliminar marcadores</translation>
@@ -962,6 +969,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="8428213095426709021">Configuración</translation>
 <translation id="8438566539970814960">Mejorar las búsquedas y la navegación</translation>
 <translation id="8441146129660941386">Buscar hacia atrás</translation>
+<translation id="8443209985646068659">No se ha podido actualizar Chrome.</translation>
 <translation id="8445448999790540984">No se pueden exportar las contraseñas</translation>
 <translation id="8447861592752582886">Revocar permiso de dispositivo</translation>
 <translation id="8461694314515752532">Cifrar los datos sincronizados con tu propia frase de contraseña de sincronización</translation>

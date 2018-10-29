@@ -509,7 +509,6 @@
 <translation id="4277028893293644418">Resetovat heslo</translation>
 <translation id="4280429058323657511">s platností do <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Přepínač</translation>
-<translation id="4308131620840579419">Chcete všechny platební karty uložit na jedno místo?</translation>
 <translation id="4312866146174492540">Blokovat (výchozí)</translation>
 <translation id="4325863107915753736">Článek nebyl nalezen</translation>
 <translation id="4326324639298822553">Zkontrolujte datum vypršení platnosti a zkuste to znovu.</translation>
@@ -954,6 +953,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7549584377607005141">Tato stránka potřebuje ke správnému zobrazení data, která jste zadali dříve. Tyto údaje můžete odeslat znovu, ale zopakujete tím všechny akce, které tato stránka již předtím provedla.</translation>
 <translation id="7552846755917812628">Vyzkoušejte následující tipy:</translation>
 <translation id="7554791636758816595">Nová karta</translation>
+<translation id="7560085949372856518">V dalším kroku můžete zvolit, které karty chcete uložit do svého účtu Google.</translation>
 <translation id="7564049878696755256">Mohli byste ztratit přístup k účtu <ph name="ORG_NAME" /> nebo by mohlo dojít k odcizení vaší identity. Doporučujeme vám okamžitě změnit heslo.</translation>
 <translation id="7567204685887185387">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Jeho bezpečnostní certifikát byl zřejmě vydán podvodně. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
 <translation id="7569952961197462199">Odstranit platební kartu z Chromu?</translation>
@@ -971,6 +971,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="7662298039739062396">Nastavení je spravováno rozšířením</translation>
 <translation id="7663736086183791259">Certifikát <ph name="CERTIFICATE_VALIDITY" /></translation>
+<translation id="7665886282480776333">Uložit karty do Googlu?</translation>
 <translation id="7667346355482952095">Vrácený klíč zásady je prázdný nebo neodpovídá aktuálnímu klíči.</translation>
 <translation id="7668654391829183341">Neznámé zařízení</translation>
 <translation id="7669271284792375604">Útočníci na tomto webu by se mohli pokusit přimět vás k instalaci programů, které nepříznivě ovlivní procházení webu (například změní vaši domovskou stránku nebo na navštěvovaných stránkách budou zobrazovat další reklamy).</translation>

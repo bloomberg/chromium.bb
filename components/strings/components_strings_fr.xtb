@@ -410,7 +410,7 @@
 <translation id="3650584904733503804">Validation réussie.</translation>
 <translation id="3655670868607891010">Si ce message s'affiche régulièrement, essayez ces <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Révision</translation>
-<translation id="366077651725703012">Mettre à jour la carte de paiement</translation>
+<translation id="366077651725703012">Mettre à jour la carte de crédit</translation>
 <translation id="3676592649209844519">ID de l'appareil :</translation>
 <translation id="3678029195006412963">Impossible de signer la demande</translation>
 <translation id="3678529606614285348">Ouvrir la page dans une nouvelle fenêtre de navigation privée (Ctrl+Maj+N)</translation>
@@ -513,7 +513,6 @@
 <translation id="4277028893293644418">Réinitialiser le mot de passe</translation>
 <translation id="4280429058323657511">, expiration le <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Changer</translation>
-<translation id="4308131620840579419">Vous souhaitez enregistrer toutes vos cartes au même endroit ?</translation>
 <translation id="4312866146174492540">Bloquer (par défaut)</translation>
 <translation id="4325863107915753736">Échec de la recherche de l'article.</translation>
 <translation id="4326324639298822553">Veuillez vérifier la date d'expiration, puis réessayer</translation>
@@ -960,6 +959,7 @@ Informations supplémentaires :
 <translation id="7549584377607005141">Pour s'afficher correctement, cette page Web a besoin des données que vous avez saisies précédemment. Vous pouvez envoyer de nouveau ces données. Cependant, en procédant ainsi, vous répéterez toute action déjà effectuée sur cette page.</translation>
 <translation id="7552846755917812628">Essayez les astuces suivantes :</translation>
 <translation id="7554791636758816595">Nouvel onglet</translation>
+<translation id="7560085949372856518">À l'étape suivante, vous pourrez choisir quelles cartes enregistrer dans votre compte Google.</translation>
 <translation id="7564049878696755256">Vous risquez de perdre l'accès à votre compte <ph name="ORG_NAME" /> ou d'être victime d'usurpation d'identité. L'équipe Chrome vous recommande de modifier votre mot de passe maintenant.</translation>
 <translation id="7567204685887185387">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />. Il se peut que son certificat de sécurité ait été émis de manière frauduleuse. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="7569952961197462199">Supprimer les données de carte de paiement de Chrome ?</translation>
@@ -977,12 +977,13 @@ Informations supplémentaires :
 <translation id="7658239707568436148">Annuler</translation>
 <translation id="7662298039739062396">Paramètre contrôlé par une extension</translation>
 <translation id="7663736086183791259">Certificat <ph name="CERTIFICATE_VALIDITY" /></translation>
+<translation id="7665886282480776333">Vous souhaitez enregistrer vos cartes dans votre compte Google ?</translation>
 <translation id="7667346355482952095">Le jeton de règle renvoyé est vide ou ne correspond pas au jeton actuel.</translation>
 <translation id="7668654391829183341">Appareil inconnu</translation>
 <translation id="7669271284792375604">Des individus malveillants à l'œuvre sur ce site pourraient vous inciter à installer des programmes qui nuisent à votre confort de navigation (par exemple, en changeant votre page d'accueil ou en affichant des annonces supplémentaires sur les sites que vous consultez.</translation>
 <translation id="7681101578153515023">Changer de moteur de recherche</translation>
 <translation id="7682287625158474539">Adresse de livraison</translation>
-<translation id="7687186412095877299">Saisit automatiquement les informations de paiement correspondant aux modes enregistrés</translation>
+<translation id="7687186412095877299">Saisit automatiquement les informations correspondant aux modes de paiement enregistrés</translation>
 <translation id="7699293099605015246">Articles non disponibles pour le moment</translation>
 <translation id="7701040980221191251">Aucun</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Continuer vers le site <ph name="SITE" /> (dangereux)<ph name="END_LINK" /></translation>

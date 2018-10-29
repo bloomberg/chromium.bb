@@ -512,7 +512,6 @@
 <translation id="4277028893293644418">Passwort zurücksetzen</translation>
 <translation id="4280429058323657511">Gültig bis: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Wechseln</translation>
-<translation id="4308131620840579419">Möchten Sie alle Ihre Karten an einem Ort speichern?</translation>
 <translation id="4312866146174492540">Blockieren (Standardeinstellung)</translation>
 <translation id="4325863107915753736">Der Artikel wurde nicht gefunden.</translation>
 <translation id="4326324639298822553">Prüfen Sie Ihr Ablaufdatum und versuchen Sie es dann erneut</translation>
@@ -959,6 +958,7 @@ Weitere Details:
 <translation id="7549584377607005141">Damit diese Webseite richtig angezeigt wird, werden die Daten benötigt, die Sie vorher eingegeben haben. Sie können diese Daten noch einmal senden, dabei werden jedoch sämtliche Aktionen wiederholt, die vorher durch diese Seite ausgeführt wurden.</translation>
 <translation id="7552846755917812628">Probieren Sie folgende Tipps aus:</translation>
 <translation id="7554791636758816595">Neuer Tab</translation>
+<translation id="7560085949372856518">Im nächsten Schritt können Sie auswählen, welche Karten in Ihrem Google-Konto gespeichert werden sollen.</translation>
 <translation id="7564049878696755256">Sie könnten den Zugriff auf Ihr <ph name="ORG_NAME" />-Konto verlieren oder zum Opfer von Identitätsdiebstahl werden. Chrome empfiehlt Ihnen, Ihr Passwort jetzt zu ändern.</translation>
 <translation id="7567204685887185387">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wurde möglicherweise in betrügerischer Absicht ausgegeben. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="7569952961197462199">Kreditkarte aus Chrome entfernen?</translation>
@@ -976,6 +976,7 @@ Weitere Details:
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="7662298039739062396">Einstellung wird von einer Erweiterung gesteuert</translation>
 <translation id="7663736086183791259">Zertifikat <ph name="CERTIFICATE_VALIDITY" /></translation>
+<translation id="7665886282480776333">Ihre Karten bei Google speichern?</translation>
 <translation id="7667346355482952095">Zurückgegebenes Token der Richtlinie ist leer oder entspricht nicht dem aktuellen Token</translation>
 <translation id="7668654391829183341">Unbekanntes Gerät</translation>
 <translation id="7669271284792375604">Unbefugte Dritte auf dieser Website versuchen eventuell, Sie zur Installation von Programmen zu bewegen, die sich nachteilig auf Ihre Browsernutzung auswirken. Dabei kann zum Beispiel Ihre Startseite geändert werden oder es erscheinen zusätzliche Anzeigen auf von Ihnen besuchten Websites.</translation>
@@ -1096,7 +1097,7 @@ Weitere Details:
 <translation id="8428213095426709021">Einstellungen</translation>
 <translation id="8433057134996913067">Dadurch werden Sie von den meisten Websites abgemeldet.</translation>
 <translation id="8437238597147034694">&amp;Verschieben rückgängig machen</translation>
-<translation id="8461694314515752532">Alle synchronisierten Daten mit Ihrer eigenen Synchronisierungspassphrase verschlüsseln</translation>
+<translation id="8461694314515752532">Synchronisierte Daten mit eigener Synchronisierungspassphrase verschlüsseln</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 Kreditkarte}other{# Kreditkarten}}</translation>
 <translation id="8473863474539038330">AutoFill-Einstellungen</translation>
 <translation id="8483780878231876732">Melden Sie sich in Chrome an, um in Ihrem Google-Konto gespeicherte Kreditkarten zu verwenden</translation>

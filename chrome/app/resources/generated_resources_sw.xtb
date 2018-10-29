@@ -514,7 +514,7 @@
 <translation id="1731589410171062430">Jumla: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /> (<ph name="NUMBER_OF_PAGES" /> <ph name="PAGE_OR_PAGES_LABEL" />)</translation>
 <translation id="1731911755844941020">Ombi linatumwa...</translation>
 <translation id="1732215134274276513">Banua Vichupo</translation>
-<translation id="1733383495376208985">Simba kwa njia fiche data iliyosawazishwa ukitumia <ph name="BEGIN_LINK" />kauli yako ya siri ya kusawazisha<ph name="END_LINK" />. Hali hii haijumuishi njia za kulipa na anwani kutoka Google Pay.</translation>
+<translation id="1733383495376208985">Simba data iliyosawazishwa kwa njia fiche ukitumia <ph name="BEGIN_LINK" />kauli yako ya siri ya usawazishaji<ph name="END_LINK" />. Hali hii haijumuishi njia za kulipa na anwani kutoka Google Pay.</translation>
 <translation id="1734824808160898225">Huenda <ph name="PRODUCT_NAME" /> isiweze kujisasisha.</translation>
 <translation id="1736419249208073774">Gundua</translation>
 <translation id="1736827427463982819">Zima Linux (Beta)</translation>
@@ -957,7 +957,7 @@
 <translation id="2408955596600435184">Weka PIN yako</translation>
 <translation id="241082044617551207">Programu jalizi haijulikani</translation>
 <translation id="2413749388954403953">Badilisha kiolesura cha alamisho cha mutumiaji</translation>
-<translation id="241727068219398187">Data yako ilisimbwa kwa njia fiche kupitia nenosiri la Google kuanzia
+<translation id="241727068219398187">Data yako imesimbwa kwa njia fiche kwa kutumia nenosiri la Google lililokuwepo
           <ph name="TIME" />. Hali hii haijumuishi njia za kulipa na anwani kutoka Google Pay.</translation>
 <translation id="2419706071571366386">Kwa usalama, ondoka kwenye akaunti wakati kompyuta yako haitumiki.</translation>
 <translation id="2422426094670600218">&lt;isiyokuwa na jina&gt;</translation>
@@ -1346,7 +1346,7 @@
 <translation id="2993517869960930405">Maelezo ya Programu</translation>
 <translation id="2994669386200004489">Imeshindwa kuhifadhi nakala ya <ph name="FILE_NAME" /></translation>
 <translation id="299483336428448530">Kiendelezi kilisakinishwa na mzazi wako.</translation>
-<translation id="2996286169319737844">Data yako imesimbwa kwa njia fiche kupitia kauli yako ya siri ya kusawazisha. Hali hii haijumuishi njia za kulipa na anwani kutoka Google Pay.</translation>
+<translation id="2996286169319737844">Data yako imesimbwa kwa njia fiche ukitumia kauli yako ya siri ya usawazishaji. Hali hii haijumuishi njia za kulipa na anwani kutoka Google Pay.</translation>
 <translation id="3002017044809397427">Simu yako ya <ph name="PHONE_TYPE" /> imepatikana. Lakini Smart Lock inafanya kazi kwenye vifaa vyenye Android 5.0 na matoleo mapya zaidi pekee. &lt;a&gt;Pata maelezo zaidi&lt;/a&gt;</translation>
 <translation id="3003144360685731741">Mitandao inayopendelewa</translation>
 <translation id="3003623123441819449">Akiba ya CSS</translation>
@@ -4765,7 +4765,7 @@ Weka faili yako ya funguo mahali salama. Utaihitaji kuunda matoleo mapya ya kien
 <translation id="8117620576188476503">Dhibiti miunganisho, masasisho na mipangilio ukitumia treya ya hali. Ili kufikia kwa kutumia kibodi, bonyeza Alt + Shift + S.</translation>
 <translation id="8118362518458010043">Imezimwa na Chrome. Huenda kiendelezi hiki si salama.</translation>
 <translation id="8118860139461251237">Kudhibiti maudhui unayopakua</translation>
-<translation id="8123590694679414600">Data yako imesimbwa kwa njia fiche kupitia kauli siri yako ya kusawazisha
+<translation id="8123590694679414600">Data yako imesimbwa kwa njia fiche kwa kutumia kauli siri yako ya usawazishaji
           <ph name="TIME" />. Hali hii haijumuishi njia za kulipa na anwani kutoka Google Pay.</translation>
 <translation id="81238879832906896">Ua la rangi ya manjano na nyeupe</translation>
 <translation id="8124313775439841391">ONC Inayodhibitiwa</translation>

@@ -510,7 +510,6 @@
 <translation id="4277028893293644418">重置密码</translation>
 <translation id="4280429058323657511">，到期日期：<ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">切换</translation>
-<translation id="4308131620840579419">想集中保存您的所有卡片吗？</translation>
 <translation id="4312866146174492540">屏蔽（默认）</translation>
 <translation id="4325863107915753736">找不到文章</translation>
 <translation id="4326324639298822553">请检查您的信用卡到期日期，然后重试</translation>
@@ -869,7 +868,7 @@
 <translation id="7012363358306927923">中国银联</translation>
 <translation id="7016992613359344582">这些费用可能只收取一次，也可能会周期性收取，而且可能不易察觉。</translation>
 <translation id="7029809446516969842">密码</translation>
-<translation id="7041710477964360998">{NUM_CARDS,plural, =1{此卡及其帐单邮寄地址将会保存到您的 Google 帐号中，以实现更快捷的跨设备结帐。}other{这些卡及其帐单邮寄地址将会保存到您的 Google 帐号中，以实现更快捷的跨设备结帐。}}</translation>
+<translation id="7041710477964360998">{NUM_CARDS,plural, =1{此卡及其帐单邮寄地址将会保存到您的 Google 帐号中，以便在所有设备上更快捷地结帐。}other{这些卡及其帐单邮寄地址将会保存到您的 Google 帐号中，以便在所有设备上更快捷地结帐。}}</translation>
 <translation id="7050187094878475250">您尝试访问 <ph name="DOMAIN" />，但服务器提供的证书不可信（有效期过长）。</translation>
 <translation id="7053983685419859001">禁止</translation>
 <translation id="7064851114919012435">联系信息</translation>
@@ -956,6 +955,7 @@
 <translation id="7549584377607005141">此网页需要使用您之前输入的数据才能正常显示。您可以重新发送这些数据，不过，这么做会重复执行此网页之前执行过的所有操作。</translation>
 <translation id="7552846755917812628">请尝试按以下提示操作：</translation>
 <translation id="7554791636758816595">新标签页</translation>
+<translation id="7560085949372856518">在下一步中，您可以选择要将哪些卡保存到您的 Google 帐号内。</translation>
 <translation id="7564049878696755256">您可能会无法再访问自己的 <ph name="ORG_NAME" /> 帐号，或者身份信息遭到盗用。Chrome 建议您立即更改密码。</translation>
 <translation id="7567204685887185387">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书可能是由骗子发出的。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="7569952961197462199">从 Chrome 中移除信用卡信息？</translation>
@@ -973,6 +973,7 @@
 <translation id="7658239707568436148">取消</translation>
 <translation id="7662298039739062396">设置由某款扩展程序控制</translation>
 <translation id="7663736086183791259">证书<ph name="CERTIFICATE_VALIDITY" /></translation>
+<translation id="7665886282480776333">将您的卡保存到 Google？</translation>
 <translation id="7667346355482952095">返回的政策令牌为空或与当前令牌不匹配</translation>
 <translation id="7668654391829183341">未知设备</translation>
 <translation id="7669271284792375604">此网站上的攻击者可能会试图诱骗您安装有损浏览体验的程序（例如：通过更改您的主页或在您访问的网站上显示额外的广告）。</translation>

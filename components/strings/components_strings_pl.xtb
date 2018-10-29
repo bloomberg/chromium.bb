@@ -148,7 +148,7 @@
 <translation id="1871284979644508959">Pole wymagane</translation>
 <translation id="1874765382782611674">Akceptowane karty debetowe</translation>
 <translation id="1875512691959384712">Formularze Google</translation>
-<translation id="187918866476621466">Otwórz strony początkowe</translation>
+<translation id="187918866476621466">Otwórz strony startowe</translation>
 <translation id="1883255238294161206">Zwiń listę</translation>
 <translation id="1898423065542865115">Filtrowanie</translation>
 <translation id="1916770123977586577">Załaduj stronę ponownie, by zastosować na niej zaktualizowane ustawienia</translation>
@@ -513,7 +513,6 @@
 <translation id="4277028893293644418">Resetuj hasło</translation>
 <translation id="4280429058323657511">, ważna do: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Przełącz</translation>
-<translation id="4308131620840579419">Zapisać wszystkie karty w jednym miejscu?</translation>
 <translation id="4312866146174492540">Blokuj (domyślnie)</translation>
 <translation id="4325863107915753736">Nie udało się znaleźć artykułu</translation>
 <translation id="4326324639298822553">Sprawdź datę ważności i spróbuj ponownie</translation>
@@ -960,6 +959,7 @@ Dodatkowe informacje:
 <translation id="7549584377607005141">Do poprawnego wyświetlenia tej strony internetowej wymagane są dane wpisane przez Ciebie wcześniej. Możesz wysłać je ponownie, ale spowoduje to powtórzenie wszystkich działań wykonanych poprzednio przez stronę.</translation>
 <translation id="7552846755917812628">Skorzystaj z tych wskazówek:</translation>
 <translation id="7554791636758816595">Nowa karta</translation>
+<translation id="7560085949372856518">W następnym kroku możesz wybrać karty, które chcesz zapisać na swoim koncie Google.</translation>
 <translation id="7564049878696755256">Możesz stracić dostęp do swojego konta <ph name="ORG_NAME" /> lub paść ofiarą kradzieży tożsamości. Chrome zaleca natychmiastową zmianę hasła.</translation>
 <translation id="7567204685887185387">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa mógł zostać wydany w celu oszustwa. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="7569952961197462199">Usunąć tę kartę kredytową z Chrome?</translation>
@@ -977,6 +977,7 @@ Dodatkowe informacje:
 <translation id="7658239707568436148">Anuluj</translation>
 <translation id="7662298039739062396">Ustawienie kontrolowane przez rozszerzenie</translation>
 <translation id="7663736086183791259">Certyfikat <ph name="CERTIFICATE_VALIDITY" /></translation>
+<translation id="7665886282480776333">Chcesz zapisać swoje karty na koncie Google?</translation>
 <translation id="7667346355482952095">Zwrócony token zasad jest pusty lub nie pasuje do bieżącego tokena</translation>
 <translation id="7668654391829183341">Nieznane urządzenie</translation>
 <translation id="7669271284792375604">Osoby atakujące tę stronę mogą podstępem próbować nakłonić Cię do zainstalowania programów utrudniających przeglądanie internetu (np. zmieniających stronę główną lub wyświetlających dodatkowe reklamy na stronach, na które wchodzisz).</translation>

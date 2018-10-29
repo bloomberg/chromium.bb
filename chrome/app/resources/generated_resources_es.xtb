@@ -350,7 +350,7 @@
 <translation id="1500297251995790841">Dispositivo desconocido [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">La cuenta de este propietario debe ser la primera cuenta que ha iniciado sesión en un inicio de sesión múltiple.</translation>
 <translation id="1503914375822320413">No se ha podido realizar la operación de copia porque se ha producido un error inesperado ($1).</translation>
-<translation id="150411034776756821">Quitar de <ph name="SITE" /></translation>
+<translation id="150411034776756821">Quitar <ph name="SITE" /></translation>
 <translation id="1505091014076919009">En esta página puedes gestionar todas tus cuentas de Google con las que hayas iniciado sesión en sitios web y aplicaciones.</translation>
 <translation id="1506061864768559482">Buscador</translation>
 <translation id="1507170440449692343">Esta página no tiene permiso para acceder a la cámara</translation>
@@ -1522,7 +1522,7 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="3269093882174072735">Cargar imagen</translation>
 <translation id="326999365752735949">Descargando archivo diff</translation>
 <translation id="3270965368676314374">Leer, modificar y eliminar fotos, música y otros archivos multimedia de tu ordenador</translation>
-<translation id="327147043223061465">Ver todas las cookies y todos los datos del sitio web</translation>
+<translation id="327147043223061465">Ver todas las cookies y datos de sitios web</translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> quiere conectarse</translation>
 <translation id="3274763671541996799">Has activado el modo de pantalla completa.</translation>
 <translation id="3275778913554317645">Abrir como ventana</translation>
@@ -1789,7 +1789,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3650952250015018111">Permitir que "<ph name="APP_NAME" />" acceda a:</translation>
 <translation id="3651488188562686558">Se desconectará de la red Wi-Fi</translation>
 <translation id="3652817283076144888">Inicializando</translation>
-<translation id="3653160965917900914">Sistemas de archivos compartidos de red</translation>
+<translation id="3653160965917900914">Archivos compartidos de red</translation>
 <translation id="3653999333232393305">Seguir permitiendo que <ph name="HOST" /> acceda al micrófono</translation>
 <translation id="3654045516529121250">Leer tu configuración de accesibilidad</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Tiene acceso permanente a un archivo.}other{Tiene acceso permanente a # archivos.}}</translation>

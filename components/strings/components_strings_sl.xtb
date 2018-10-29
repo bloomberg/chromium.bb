@@ -513,7 +513,6 @@
 <translation id="4277028893293644418">Ponastavi geslo</translation>
 <translation id="4280429058323657511">, datum poteka veljavnosti: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Preklopi</translation>
-<translation id="4308131620840579419">Želite shraniti vse kartice na enem mestu?</translation>
 <translation id="4312866146174492540">Blokira (privzeto)</translation>
 <translation id="4325863107915753736">Članka ni bilo mogoče najti</translation>
 <translation id="4326324639298822553">Preverite datum poteka veljavnosti in poskusite znova.</translation>
@@ -960,6 +959,7 @@ Dodatne podrobnosti:
 <translation id="7549584377607005141">Za pravilen prikaz te strani so potrebni podatki, ki ste jih vnesli prej. Podatke lahko pošljete še enkrat, vendar se bodo s tem ponovila vsa prejšnja dejanja strani.</translation>
 <translation id="7552846755917812628">Poskusite te nasvete:</translation>
 <translation id="7554791636758816595">Nov zavihek</translation>
+<translation id="7560085949372856518">V naslednjem koraku lahko izberete, katere kartice želite shraniti v Google Račun.</translation>
 <translation id="7564049878696755256">Izgubite lahko dostop do računa za <ph name="ORG_NAME" /> ali postanete žrtev kraje identitete. Chrome priporoča, da spremenite geslo.</translation>
 <translation id="7567204685887185387">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; njegovo varnostno potrdilo je bilo morda izdano z goljufijo. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
 <translation id="7569952961197462199">Želite odstraniti kreditno kartico iz Chroma?</translation>
@@ -977,6 +977,7 @@ Dodatne podrobnosti:
 <translation id="7658239707568436148">Prekliči</translation>
 <translation id="7662298039739062396">Nastavitev nadzira razširitev</translation>
 <translation id="7663736086183791259">Potrdilo <ph name="CERTIFICATE_VALIDITY" /></translation>
+<translation id="7665886282480776333">Želite shraniti kartice v Google?</translation>
 <translation id="7667346355482952095">Vrnjen žeton pravilnika je prazen ali se ne ujema s trenutnim žetonom</translation>
 <translation id="7668654391829183341">Neznana naprava</translation>
 <translation id="7669271284792375604">Napadalci na tem spletnem mestu vas bodo morda poskusili zavesti, da bi namestili programe, ki škodljivo vplivajo na brskanje (na primer tako, da spremenijo vašo domačo stran ali na spletnih mestih, ki jih obiščete, prikazujejo dodatne oglase).</translation>

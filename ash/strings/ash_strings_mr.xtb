@@ -112,7 +112,7 @@
 <translation id="277257480934873581"><ph name="NAME" /> शी पुन्हा कनेक्ट करीत आहे</translation>
 <translation id="2790844815106384441">वेबसायटी स्थान सेवा किंवा डिव्हाइसचा मायक्रोफोन, कॅमेरा किंवा इतर वैशिष्ट्ये वापरू शकतात की नाही ते निवडा</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
-<translation id="2819276065543622893">आता आपल्याला साइन आउट केले जाईल.</translation>
+<translation id="2819276065543622893">आता तुम्हाला साइन आउट केले जाईल.</translation>
 <translation id="2825619548187458965">शेल्फ</translation>
 <translation id="2844169650293029770">USB-C डिव्‍हाइस (डाव्‍या बाजूचे पुढील पोर्ट)</translation>
 <translation id="2865888419503095837">नेटवर्क माहिती</translation>
@@ -284,7 +284,7 @@
 <translation id="6043212731627905357">हा मॉनिटर आपल्या <ph name="DEVICE_TYPE" /> सह प्राप्त होत नाही (मॉनिटर समर्थित नाही).</translation>
 <translation id="6043994281159824495">आता साइन आउट करा</translation>
 <translation id="6047696787498798094">तुम्ही दुसर्‍या वापरकर्त्यावर स्‍विच करता तेव्‍हा स्क्रीन सामायिकरण थांबेल. तुम्ही सुरु ठेवू इच्छिता?</translation>
-<translation id="6062360702481658777">आपल्याला <ph name="LOGOUT_TIME_LEFT" /> मधून स्वयंचलितपणे साइन आउट केले जाईल.</translation>
+<translation id="6062360702481658777">तुम्हाला <ph name="LOGOUT_TIME_LEFT" /> मधून स्वयंचलितपणे साइन आउट केले जाईल.</translation>
 <translation id="6064337552080329342">सॉरी, तुमच्या पासवर्डची पडताळणी होऊ शकत नाही. कृपया नंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="607652042414456612">तुमचा कॉंप्युटर जवळपासच्या ब्लूटूथ डिव्हाइसवर शोधता येऊ शकतो आणि <ph name="ADDRESS" /> पत्त्यासह "<ph name="NAME" />" म्हणून दिसेल</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> चार्ज करीत आहे</translation>

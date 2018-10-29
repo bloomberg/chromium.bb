@@ -513,7 +513,6 @@
 <translation id="4277028893293644418">Återställ lösenord</translation>
 <translation id="4280429058323657511">, utgångsdatum <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Byt</translation>
-<translation id="4308131620840579419">Vill du spara alla kort på ett ställe?</translation>
 <translation id="4312866146174492540">Blockera (standard)</translation>
 <translation id="4325863107915753736">Det gick inte att hitta artikeln</translation>
 <translation id="4326324639298822553">Kontrollera utgångsdatum och försök igen</translation>
@@ -960,6 +959,7 @@ Mer information.
 <translation id="7549584377607005141">Den här webbsidan kräver uppgifter som du har angett tidigare för att kunna visas korrekt. Du kan skicka uppgifterna igen, men om du gör det upprepas de åtgärder som har utförts av sidan tidigare.</translation>
 <translation id="7552846755917812628">Testa följande tips:</translation>
 <translation id="7554791636758816595">Ny flik</translation>
+<translation id="7560085949372856518">I nästa steg får du välja vilka kort du vill spara i Google-kontot.</translation>
 <translation id="7564049878696755256">Du kan förlora åtkomsten till kontot på <ph name="ORG_NAME" /> eller bli utsatt för identitetsstöld. Du rekommenderas att ändra lösenordet nu.</translation>
 <translation id="7567204685887185387">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat kan ha utfärdats utan behörighet. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
 <translation id="7569952961197462199">Vill du ta bort kreditkortet från Chrome?</translation>
@@ -977,6 +977,7 @@ Mer information.
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7662298039739062396">Inställningen styrs av ett tillägg</translation>
 <translation id="7663736086183791259">Certifikat <ph name="CERTIFICATE_VALIDITY" /></translation>
+<translation id="7665886282480776333">Vill du spara korten på Google?</translation>
 <translation id="7667346355482952095">Policytoken som returnerades är tom eller matchade inte den aktuella token</translation>
 <translation id="7668654391829183341">Okänd enhet</translation>
 <translation id="7669271284792375604">Angripare på den här webbplatsen kan försöka lura dig att installera program som skadar din webbupplevelse (till exempel genom att byta ut din startsida eller visa extra annonser på webbplatser som du besöker).</translation>

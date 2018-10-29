@@ -48,6 +48,7 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 <translation id="1291207594882862231">Rensa historiken, cookies, webbplatsdata, cacheminnet …</translation>
 <translation id="129553762522093515">Nyligen stängda</translation>
 <translation id="1326317727527857210">Logga in i Chrome om du vill ha samma flikar tillgängliga på alla enheter.</translation>
+<translation id="1331212799747679585">Det går inte att uppdatera Chrome. Fler alternativ</translation>
 <translation id="1332501820983677155">Kortkommandon för funktioner i Google Chrome</translation>
 <translation id="1360432990279830238">Logga ut och inaktivera synkronisering?</translation>
 <translation id="136248372334525878">Genom att läsa in sidor i förväg går det snabbare att läsa in sidor och läsa offline</translation>
@@ -133,6 +134,7 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 <translation id="1946005195648379376">Styr hur Google anpassar Sök och andra Google-tjänster utifrån webbhistoriken.</translation>
 <translation id="1952172573699511566">När det är möjligt visas text på webbplatser på önskat språk.</translation>
 <translation id="195283394249132567">Anpassade tjänster från Google</translation>
+<translation id="1960290143419248813">Uppdateringar av Chrome stöds inte längre för den här versionen av Android</translation>
 <translation id="1966710179511230534">Uppdatera dina inloggningsuppgifter.</translation>
 <translation id="1974060860693918893">Avancerat</translation>
 <translation id="1984937141057606926">Tillåts, men inte från tredje part</translation>
@@ -344,6 +346,7 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 <translation id="3739899004075612870">Bokmärket har lagts till i <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB används av övriga appar</translation>
 <translation id="3744111561329211289">Synkronisera i bakgrunden</translation>
+<translation id="3745176700485982507">På den här sidan finns länkar till dina favoritwebbplatser</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Aktivera Bluetooth<ph name="END_LINK" /> om du vill tillåta koppling</translation>
 <translation id="3778956594442850293">Tillagd på startskärmen</translation>
 <translation id="3781011235031427080">Fler liknande har öppnats och tar upp halva skärmen</translation>
@@ -427,6 +430,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill finju
 <translation id="4419556793104466535">Styr synkronisering, anpassning med mera</translation>
 <translation id="4432792777822557199">Sidor på <ph name="SOURCE_LANGUAGE" /> översätts till <ph name="TARGET_LANGUAGE" /> från och med nu</translation>
 <translation id="4434045419905280838">Popup-fönster och omdirigeringar</translation>
+<translation id="4440958355523780886">Lite-sida tillhandahållen av Google. Tryck för att läsa in originalet.</translation>
 <translation id="4452411734226507615">Stäng fliken <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Bokmärkt i <ph name="FOLDER_NAME" /></translation>
 <translation id="4453340223357552416"><ph name="FILE_NAME" /> har laddats ned i <ph name="PRODUCT_NAME" /></translation>
@@ -553,6 +557,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5327248766486351172">Namn</translation>
 <translation id="5335288049665977812">Tillåt att Javascript körs på webbplatser (rekommenderas)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> raderades</translation>
+<translation id="5363230136052241468">Tryck på hemknappen om du vill läsa in sidan Ny flik</translation>
 <translation id="5372829067651257087">Webbadress kopierad.</translation>
 <translation id="5391532827096253100">Anslutningen till webbplatsen är inte säker. Webbplatsinformation</translation>
 <translation id="5400569084694353794">Genom att använda det här programmet godkänner du Chromes <ph name="BEGIN_LINK1" />användarvillkor<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />sekretessmeddelande<ph name="END_LINK2" />.</translation>
@@ -683,6 +688,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6295158916970320988">Alla webbplatser</translation>
 <translation id="629730747756840877">Konto</translation>
 <translation id="6303969859164067831">Logga ut och inaktivera synkronisering</translation>
+<translation id="6316139424528454185">Android-versionen stöds inte</translation>
 <translation id="6320088164292336938">Vibration</translation>
 <translation id="6324034347079777476">Synkronisering av Android-system har inaktiverats</translation>
 <translation id="6333140779060797560">Dela via <ph name="APPLICATION" /></translation>
@@ -771,6 +777,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6912998170423641340">Webbplatser ges inte tillgång till text och bilder i Urklipp</translation>
 <translation id="6914783257214138813">Alla med tillgång till den exporterade filen kan läsa dina lösenord.</translation>
 <translation id="6942665639005891494">Ändra standardplats för nedladdningar när som helst via alternativet i inställningsmenyn</translation>
+<translation id="6944102653068653326">Tryck här om du vill läsa in sidan Ny flik</translation>
 <translation id="6945221475159498467">Välj</translation>
 <translation id="6963642900430330478">Sidan är farlig. Webbplatsinformation</translation>
 <translation id="6963766334940102469">Radera bokmärken</translation>
@@ -962,6 +969,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8428213095426709021">Inställningar</translation>
 <translation id="8438566539970814960">Förbättra sökningar och surfandet</translation>
 <translation id="8441146129660941386">Sök bakåt</translation>
+<translation id="8443209985646068659">Uppdatering inte möjlig</translation>
 <translation id="8445448999790540984">Det gick inte att exportera lösenord</translation>
 <translation id="8447861592752582886">Återkalla enhetsbehörighet</translation>
 <translation id="8461694314515752532">Kryptera synkroniserad data med en egen lösenfras för synkronisering</translation>

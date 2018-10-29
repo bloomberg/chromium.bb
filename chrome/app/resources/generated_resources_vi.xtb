@@ -517,7 +517,7 @@
 <translation id="1731589410171062430">Tổng số: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /> (<ph name="NUMBER_OF_PAGES" /> <ph name="PAGE_OR_PAGES_LABEL" />)</translation>
 <translation id="1731911755844941020">Đang gửi yêu cầu…</translation>
 <translation id="1732215134274276513">Bỏ gắn các tab</translation>
-<translation id="1733383495376208985">Mã hóa dữ liệu đã đồng bộ hóa bằng <ph name="BEGIN_LINK" />cụm mật khẩu đồng bộ hóa<ph name="END_LINK" /> của riêng bạn. Dữ liệu này không bao gồm địa chỉ và phương thức thanh toán từ Google Pay.</translation>
+<translation id="1733383495376208985">Mã hóa dữ liệu đã đồng bộ hóa bằng <ph name="BEGIN_LINK" />cụm mật khẩu đồng bộ hóa<ph name="END_LINK" /> của riêng bạn. Việc này không bao gồm địa chỉ và phương thức thanh toán từ Google Pay.</translation>
 <translation id="1734824808160898225"><ph name="PRODUCT_NAME" /> có thể không tự cập nhật được</translation>
 <translation id="1736419249208073774">Khám phá</translation>
 <translation id="1736827427463982819">Tắt Linux (Beta)</translation>
@@ -946,7 +946,7 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> tệp được chọn</translation>
 <translation id="237828693408258535">Bạn muốn dịch trang này?</translation>
 <translation id="2378982052244864789">Chọn thư mục tiện ích.</translation>
-<translation id="2379232090534544565">Một trang web đang sử dụng thiết bị vào âm thanh và video</translation>
+<translation id="2379232090534544565">Một trang web đang truy cập vào đầu vào âm thanh và video</translation>
 <translation id="2379281330731083556">In bằng hộp thoại hệ thống... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Hỏi trước khi gửi (được đề xuất)</translation>
 <translation id="2384436799579181135">Đã xảy ra lỗi. Vui lòng kiểm tra máy in của bạn và thử lại.</translation>
@@ -960,7 +960,7 @@
 <translation id="2408955596600435184">Nhập mã PIN của bạn</translation>
 <translation id="241082044617551207">Plugin không rõ</translation>
 <translation id="2413749388954403953">Thay đổi giao diện người dùng của dấu trang</translation>
-<translation id="241727068219398187">Dữ liệu được mã hóa bằng mật khẩu Google kể từ
+<translation id="241727068219398187">Dữ liệu được mã hóa bằng mật khẩu Google của bạn kể từ
           <ph name="TIME" />. Dữ liệu này không bao gồm địa chỉ và phương thức thanh toán từ Google Pay.</translation>
 <translation id="2419706071571366386">Vì lý do bảo mật, hãy đăng xuất khi bạn không sử dụng máy tính.</translation>
 <translation id="2422426094670600218">&lt;không có tên&gt;</translation>
@@ -1472,7 +1472,7 @@
 <translation id="316854673539778496">Để có tất cả các tiện ích trên mọi thiết bị của bạn, hãy đăng nhập rồi bật tính năng đồng bộ hóa.</translation>
 <translation id="3169472444629675720">Khám phá</translation>
 <translation id="3170072451822350649">Bạn cũng có thể bỏ qua việc đăng nhập và <ph name="LINK_START" />duyệt với tư cách khách<ph name="LINK_END" />.</translation>
-<translation id="3172045848207518317">Một trang web đang sử dụng thiết bị vào video</translation>
+<translation id="3172045848207518317">Một trang web đang truy cập vào đầu vào video</translation>
 <translation id="3177909033752230686">Ngôn ngữ trang:</translation>
 <translation id="3182749001423093222">Kiểm tra chính tả</translation>
 <translation id="3183139917765991655">Trình nhập hồ sơ</translation>
@@ -1653,7 +1653,7 @@
 <translation id="3461266716147554923"><ph name="URL" /> muốn xem văn bản và hình ảnh đã sao chép sang khay nhớ tạm</translation>
 <translation id="3462311546193741693">Đăng xuất bạn khỏi hầu hết các trang web. Bạn sẽ vẫn được duy trì trạng thái đăng nhập vào Tài khoản Google để có thể xóa dữ liệu đã đồng bộ hóa.</translation>
 <translation id="3462413494201477527">Hủy thiết lập tài khoản?</translation>
-<translation id="3464012987031883895">Một trang web đang sử dụng thiết bị vào âm thanh</translation>
+<translation id="3464012987031883895">Một trang web truy cập vào đầu vào âm thanh</translation>
 <translation id="346431825526753">Đây là tài khoản cho trẻ em do <ph name="CUSTODIAN_EMAIL" /> quản lý.</translation>
 <translation id="3466147780910026086">Đang quét thiết bị truyền thông của bạn...</translation>
 <translation id="3467267818798281173">Yêu cầu Google cung cấp đề xuất</translation>
@@ -2271,7 +2271,7 @@
 <translation id="4412698727486357573">Trung tâm trợ giúp</translation>
 <translation id="44141919652824029">Cho phép "<ph name="APP_NAME" />" nhận danh sách các thiết bị USB đính kèm?</translation>
 <translation id="4414232939543644979">Cửa sổ ẩn &amp;danh mới</translation>
-<translation id="4415245286584082850">Không tìm thấy thiết bị nào. Hãy mở một bài viết trong trung tâm trợ giúp trên tab mới.</translation>
+<translation id="4415245286584082850">Không tìm thấy thiết bị nào. Hãy mở một bài viết trong trung tâm trợ giúp trên một tab mới.</translation>
 <translation id="4415748029120993980">Đường cong elip SECG secp384r1 (aka NIST P-384)</translation>
 <translation id="4416582610654027550">Nhập một URL hợp lệ</translation>
 <translation id="4419409365248380979">Luôn cho phép <ph name="HOST" /> đặt cookie</translation>
@@ -3207,7 +3207,7 @@
 <translation id="5787146423283493983">Thoả thuận về Khoá</translation>
 <translation id="5788127256798019331">Tệp Play</translation>
 <translation id="5788367137662787332">Rất tiếc, ít nhất một phân vùng trên thiết bị <ph name="DEVICE_LABEL" /> không thể kết nối được.</translation>
-<translation id="5793339252089865437">Nếu tải bản cập nhật này xuống qua mạng di động, thì bạn có thể phải trả thêm phí.</translation>
+<translation id="5793339252089865437">Nếu tải bản cập nhật này xuống qua mạng di động, thì bạn có thể phải trả phí phát sinh.</translation>
 <translation id="5794414402486823030">Luôn mở bằng trình xem hệ thống</translation>
 <translation id="5794786537412027208">Thoát khỏi tất cả các ứng dụng Chrome</translation>
 <translation id="5799508265798272974">Máy ảo Linux: <ph name="LINUX_VM_NAME" /></translation>
@@ -3958,7 +3958,7 @@
 <translation id="6921709132208495314">Ngừng sử dụng dữ liệu trên trang này</translation>
 <translation id="6922128026973287222">Tiết kiệm dữ liệu và duyệt web nhanh hơn với Trình tiết kiệm dữ liệu của Google. Nhấp để tìm hiểu thêm.</translation>
 <translation id="6923132443355966645">Cuộn / Nhấp</translation>
-<translation id="6923633482430812883">Lỗi khi kết nối với thư mục chia sẻ. Vui lòng kiểm tra để đảm bảo rằng máy chủ tệp mà bạn đang kết nối hỗ trợ SMBv2 trở lên.</translation>
+<translation id="6923633482430812883">Lỗi kết nối mục chia sẻ. Vui lòng kiểm tra để đảm bảo rằng máy chủ tệp mà bạn đang kết nối hỗ trợ SMBv2 trở lên.</translation>
 <translation id="6930242544192836755">Thời lượng</translation>
 <translation id="6934241953272494177">Đang quét thiết bị truyền thông của bạn...
     <ph name="LINE_BREAK1" />

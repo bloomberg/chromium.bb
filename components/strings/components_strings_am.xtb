@@ -512,7 +512,6 @@
 <translation id="4277028893293644418">የይለፍ ቃል ዳግም አቀናብር</translation>
 <translation id="4280429058323657511">፣ አገልግሎቱ የሚያበቃው በ<ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">ቀይር</translation>
-<translation id="4308131620840579419">ሁሉም ካርዶችዎ በአንዲት ቦታ ይቀመጡ?</translation>
 <translation id="4312866146174492540">አግድ (ነባሪ)</translation>
 <translation id="4325863107915753736">ጽሑፉን ማግኘት አልተቻለም</translation>
 <translation id="4326324639298822553">የእርስዎን የአገልግሎት ማብቂያ ቀን ይመልከቱ እና እንደገና ይሞክሩ</translation>
@@ -959,6 +958,7 @@
 <translation id="7549584377607005141">ይህ ድረ-ገጽ በአግባቡ እንዲታይ ቀደም ብለው ያስገቡት ውሂብ ያስፈልገዋል። ይህን ውሂብ እንደገና መላክ ይችላሉ፣ ነገር ግን ይህን በማድረግዎ ይህ ገጽ ከዚህ በፊት ያከናወነው ማንኛውም እርምጃ ይደግማሉ።</translation>
 <translation id="7552846755917812628">የሚከተሉትን ጠቃሚ ምክሮች ይሞክሩ፦</translation>
 <translation id="7554791636758816595">አዲስ ትር</translation>
+<translation id="7560085949372856518">በሚቀጥለው ደረጃ ላይ የትኛዎቹን ካርዶች ወደ የእርስዎ የGoogle መለያ እንደሚያስቀምጡ መምረጥ ይችላሉ።</translation>
 <translation id="7564049878696755256">የ<ph name="ORG_NAME" /> መለያዎን መዳረሻ ሊያጡ ወይም የማንነት ስርቆት ሊያጋጥመዎት ይችላሉ። Chrome የይለፍ ቃልዎን አሁን እንዲቀይሩ ይመክራል።</translation>
 <translation id="7567204685887185387">ይህ አገልጋይ <ph name="DOMAIN" /> መሆኑን ሊያረጋግጥ አልቻለም፤ የደህንነት እውቅና ማረጋገጫው በተጭበረበረ ሁኔታ ተሰጥቶ ሊሆን ይችላል። ይሄ በተሳሳተ አወቃቀር ወይም አንድ አጥቂ ግንኙነትዎን በመጥለፉ የተከሰተ ሊሆን ይችላል።</translation>
 <translation id="7569952961197462199">ክሬዲት ካርድ ከChrome ይወገድ?</translation>
@@ -976,6 +976,7 @@
 <translation id="7658239707568436148">ይቅር</translation>
 <translation id="7662298039739062396">ቅንብር በቅጥያ ቁጥጥር ይደረግበታል</translation>
 <translation id="7663736086183791259">የእውቅና ማረጋገጫ <ph name="CERTIFICATE_VALIDITY" /></translation>
+<translation id="7665886282480776333">የእርስዎ ካርዶች ወደ Google ይቀመጡ?</translation>
 <translation id="7667346355482952095">የተመለሰው የመመሪያ ማስመሰያ ባዶ ነው ወይም ከአሁኑ ማስመሰያ ጋር አይዛመድም</translation>
 <translation id="7668654391829183341">ያልታወቀ መሣሪያ</translation>
 <translation id="7669271284792375604">በዚህ ጣቢያ ላይ ያሉ አጥቂዎች እርስዎ የአሰሳ ተሞክሮዎን ሊጎዱ (ለምሳሌ፦ መነሻ ገጽዎን በመቀየር ወይም በሚጎበኟቸው ጣቢያዎች ላይ ተጨማሪ ማስታወቂያዎችን በማሳየት) የሚችሉ ፕሮግራሞችን እንዲጭኑ ለማታለል ሊሞክሩ ይችላሉ።</translation>

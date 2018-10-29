@@ -513,7 +513,6 @@
 <translation id="4277028893293644418">重設密碼</translation>
 <translation id="4280429058323657511">，到期日：<ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">切換</translation>
-<translation id="4308131620840579419">要集中儲存所有卡片嗎？</translation>
 <translation id="4312866146174492540">封鎖 (預設)</translation>
 <translation id="4325863107915753736">找不到文章</translation>
 <translation id="4326324639298822553">請檢查信用卡到期日，然後再試一次</translation>
@@ -960,6 +959,7 @@
 <translation id="7549584377607005141">這個網頁需要使用你先前輸入的資料才能正確顯示。你可以重新傳送這些資料，不過這麼做會重複執行這個網頁先前執行過的任何動作。</translation>
 <translation id="7552846755917812628">嘗試按照下列提示操作：</translation>
 <translation id="7554791636758816595">新增分頁</translation>
+<translation id="7560085949372856518">在下一個步驟中，你可以選擇要將哪些卡片儲存至 Google 帳戶。</translation>
 <translation id="7564049878696755256">你可能會失去 <ph name="ORG_NAME" /> 帳戶存取權，或身分遭到冒用。Chrome 建議你立即變更密碼。</translation>
 <translation id="7567204685887185387">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證是以欺詐方式發行。這可能是因為設定錯誤，或有攻擊者攔截你的連線所致。</translation>
 <translation id="7569952961197462199">要從 Chrome 中移除信用卡嗎？</translation>
@@ -977,6 +977,7 @@
 <translation id="7658239707568436148">取消</translation>
 <translation id="7662298039739062396">由擴充功能控制的設定</translation>
 <translation id="7663736086183791259">憑證 <ph name="CERTIFICATE_VALIDITY" /></translation>
+<translation id="7665886282480776333">要將卡片儲存至 Google 嗎？</translation>
 <translation id="7667346355482952095">傳回的政策憑證沒有任何內容，或是與目前的憑證不符</translation>
 <translation id="7668654391829183341">不明的裝置</translation>
 <translation id="7669271284792375604">攻擊者可能會試圖透過這個網站誘使你安裝對瀏覽體驗有害 (例如變更你的首頁，或是在你造訪的網站上顯示多餘的廣告) 的程式。</translation>

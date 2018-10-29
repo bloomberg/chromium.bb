@@ -943,7 +943,7 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> קבצים נבחרו</translation>
 <translation id="237828693408258535">לתרגם את הדף הזה?</translation>
 <translation id="2378982052244864789">בחר את ספריית ההרחבה.</translation>
-<translation id="2379232090534544565">אתר ניגש אל קלט אודיו ווידאו</translation>
+<translation id="2379232090534544565">אתר ניגש אל קלט וידאו ואודיו</translation>
 <translation id="2379281330731083556">הדפס באמצעות תיבת דו-שיח של המערכת... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">שאל לפני שליחה (מומלץ)</translation>
 <translation id="2384436799579181135">אירעה שגיאה. יש לבדוק את המדפסת ולנסות שוב.</translation>
@@ -2491,7 +2491,7 @@
 <translation id="4762718786438001384">שטח האחסון בדיסק כמעט נגמר</translation>
 <translation id="4763408175235639573">‏קובצי ה-Cookie הבאים הוגדרו כשהצגת את הדף הזה</translation>
 <translation id="4763830802490665879">‏קובצי Cookie מאתרים מרובים יימחקו בעת היציאה.</translation>
-<translation id="4765582662863429759">‏מאפשר ל-Android Messages להעביר הודעות טקסטים מהטלפון אל ה-Chromebook</translation>
+<translation id="4765582662863429759">‏מאפשר ל-Android Messages להעביר הודעות טקסט מהטלפון אל ה-Chromebook</translation>
 <translation id="4768332406694066911">יש לך אישורים מארגונים אלה שמזהים אותך</translation>
 <translation id="4772404146526168240">שני המסכים</translation>
 <translation id="4776917500594043016">סיסמה עבור <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -3903,7 +3903,7 @@
 <translation id="6829250331733125857">קבל עזרה בשביל ה-<ph name="DEVICE_TYPE" />.</translation>
 <translation id="6829270497922309893">הירשם לארגון שלך</translation>
 <translation id="682971198310367122">‏מדיניות הפרטיות של Google</translation>
-<translation id="6831043979455480757">תרגם</translation>
+<translation id="6831043979455480757">תרגום</translation>
 <translation id="683373380308365518">החלף לדפדפן חכם ובטוח</translation>
 <translation id="6835762382653651563">התחבר לאינטרנט כדי לעדכן את ה-<ph name="DEVICE_TYPE" />.</translation>
 <translation id="6839225236531462745">שגיאה של מחיקת אישור</translation>

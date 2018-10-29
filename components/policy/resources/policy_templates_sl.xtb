@@ -110,9 +110,9 @@
 <translation id="1223789468190631420">Omogočeno stanje Varnega brskanja za zaupanja vredne vire</translation>
 <translation id="122899932962115297">Seznam dovoljenih, ki upravlja, katere hitre načine odklepanja lahko uporabnik nastavi in uporablja za odklepanje zaklenjenega zaslona.
 
-          Ta vrednost je seznam nizov; veljavni vnosi na seznamu so: »all« (vsi), »PIN« (koda PIN), »FINGERPRINT« (prstni odtis). Če na seznam dodate vnos »all« (vsi), so uporabniku na voljo vsi hitri načini odklepanja, vključno s tistimi, ki bodo uvedeni v prihodnosti. V nasprotnem primeru bodo na voljo samo hitri načini odklepanja s seznama.
+          Ta vrednost je seznam nizov; veljavni vnosi na seznamu so: "all" (vsi), "PIN" (koda PIN), "FINGERPRINT" (prstni odtis). Če na seznam dodate vnos "all" (vsi), so uporabniku na voljo vsi hitri načini odklepanja, vključno s tistimi, ki bodo uvedeni v prihodnosti. V nasprotnem primeru bodo na voljo samo hitri načini odklepanja s seznama.
 
-          Če želite na primer dovoliti vse hitre načine odklepanja, uporabite [»all«] (vsi). Če želite dovoliti samo odklepanje s kodo PIN, uporabite [»PIN«] (koda PIN). Če želite dovoliti odklepanje s kodo PIN in prstnim odtisom, uporabite [»PIN«, »FINGERPRINT«]. Če želite onemogočiti vse hitre načine odklepanja, uporabite [].
+          Če želite na primer dovoliti vse hitre načine odklepanja, uporabite ["all"] (vsi). Če želite dovoliti samo odklepanje s kodo PIN, uporabite ["PIN"] (koda PIN). Če želite dovoliti odklepanje s kodo PIN in prstnim odtisom, uporabite ["PIN", "FINGERPRINT"]. Če želite onemogočiti vse hitre načine odklepanja, uporabite [].
 
           Za upravljane naprave privzeto ni na voljo noben hiter način odklepanja.</translation>
 <translation id="123081309365616809">Omogočanje predvajanje vsebine v napravi</translation>
@@ -1059,7 +1059,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
       Če je ta nastavitev onemogočena, uporabnikom ne bo dovoljeno uporabljati prijave s funkcijo Smart Lock.
 
-      Če ta pravilnik ni nastavljen, funkcije privzeto ni dovoljena za uporabnike, ki jih upravlja podjetje, in je dovoljena za uporabnike, ki niso upravljani.</translation>
+      Če ta pravilnik ni nastavljen, funkcija privzeto ni dovoljena za uporabnike, ki jih upravlja podjetje, in je dovoljena za uporabnike, ki niso upravljani.</translation>
 <translation id="379602782757302612">Omogoča izbiro razširitev, ki jih uporabniki NE morejo namestiti. Razširitve, ki so že nameščene, bodo onemogočene, če so na seznamu prepovedanih, in uporabnik jih ne more omogočiti. Ko je razširitev, ki je onemogočena, ker je na seznamu prepovedanih, odstranjena s seznama, je samodejno znova omogočena.
 
          Vrednost »*« na seznamu blokiranih pomeni, da so vse razširitve na seznamu blokirane, razen če so izrecno navedene na seznamu dovoljenih.
@@ -1164,7 +1164,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3915395663995367577">URL za datoteko .pac v proxyju</translation>
 <translation id="3925020515212192040">Določa seznam vnaprej konfiguriranih omrežnih datotečnih sredstev v skupni rabi.
 
-      Vsak seznam elementov pravilnika je predmet z dvema členoma: »share_url« in »mode«. »share_url« mora biti URL datotečnega sredstva v skupni rabi, »mode« pa mora imeti vrednost »drop_down«, ki kaže, da bo »share_url« dodan v spustni meni odkrivanja datotečnih sredstev v skupni rabi.</translation>
+      Vsak seznam elementov pravilnika je predmet z dvema členoma: "share_url" in "mode". "share_url" mora biti URL datotečnega sredstva v skupni rabi, "mode" pa mora imeti vrednost "drop_down", ki kaže, da bo "share_url" dodan v spustni meni odkrivanja datotečnih sredstev v skupni rabi.</translation>
 <translation id="3939893074578116847">Pošiljanje omrežnih paketov v strežnik za upravljanje zaradi spremljanja stanja povezave, tako da lahko
       strežnik zazna, ali ima naprava povezavo.
 

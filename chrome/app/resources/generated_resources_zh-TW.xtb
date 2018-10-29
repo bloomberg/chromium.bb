@@ -946,7 +946,7 @@
 <translation id="2378075407703503998">已選取 <ph name="SELCTED_FILE_COUNT" /> 個檔案</translation>
 <translation id="237828693408258535">要翻譯這個網頁嗎？</translation>
 <translation id="2378982052244864789">選取擴充功能目錄。</translation>
-<translation id="2379232090534544565">有網站正在存取音訊和視訊輸入</translation>
+<translation id="2379232090534544565">有某個網站正在存取音訊和視訊輸入內容</translation>
 <translation id="2379281330731083556">使用系統對話方塊進行列印... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">傳送前詢問我 (建議)</translation>
 <translation id="2384436799579181135">發生錯誤。請檢查你的印表機，然後再試一次。</translation>
@@ -960,8 +960,7 @@
 <translation id="2408955596600435184">請輸入你的 PIN 碼</translation>
 <translation id="241082044617551207">不明的外掛程式</translation>
 <translation id="2413749388954403953">變更書籤使用者介面</translation>
-<translation id="241727068219398187">資料已採用你在 <ph name="TIME" /> 設定的 Google 密碼
-          進行加密保護。這不包括 Google Pay 的付款方式和地址。</translation>
+<translation id="241727068219398187">系統已採用你在 <ph name="TIME" />設定的 Google 密碼針對資料進行加密處理。加密的資料不包括 Google Pay 的付款方式和地址。</translation>
 <translation id="2419706071571366386">為了安全起見，當你未使用電腦時請登出帳戶。</translation>
 <translation id="2422426094670600218">&lt;未命名&gt;</translation>
 <translation id="2423578206845792524">另存圖檔(&amp;V)...</translation>
@@ -1350,7 +1349,7 @@
 <translation id="2993517869960930405">應用程式資訊</translation>
 <translation id="2994669386200004489">無法備份 <ph name="FILE_NAME" /></translation>
 <translation id="299483336428448530">由您的家長安裝。</translation>
-<translation id="2996286169319737844">資料已採用你的同步通關密語進行加密保護。這不包括 Google Pay 的付款方式和地址。</translation>
+<translation id="2996286169319737844">系統已採用你的同步通關密語針對資料進行加密處理。加密的資料不包括 Google Pay 的付款方式和地址。</translation>
 <translation id="3002017044809397427">找到您的 <ph name="PHONE_TYPE" />，但 Smart Lock 僅適用於搭載 Android 5.0 以上版本的裝置。&lt;a&gt;瞭解詳情&lt;/a&gt;</translation>
 <translation id="3003144360685731741">慣用網路</translation>
 <translation id="3003623123441819449">CSS 快取</translation>
@@ -1472,7 +1471,7 @@
 <translation id="316854673539778496">如要將擴充功能同步到所有裝置，請登入並開啟同步處理功能。</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">你也可以略過登入程序，<ph name="LINK_START" />以訪客身分瀏覽<ph name="LINK_END" />。</translation>
-<translation id="3172045848207518317">有網站正在存取視訊輸入</translation>
+<translation id="3172045848207518317">有某個網站正在存取視訊輸入內容</translation>
 <translation id="3177909033752230686">網頁語言：</translation>
 <translation id="3182749001423093222">拼字檢查</translation>
 <translation id="3183139917765991655">設定檔匯入工具</translation>
@@ -1653,7 +1652,7 @@
 <translation id="3461266716147554923"><ph name="URL" /> 要求讀取已複製到剪貼簿的文字和圖片</translation>
 <translation id="3462311546193741693">你會從大多數網站登出，但不會因此登出 Google 帳戶，所以仍可清除同步資料。</translation>
 <translation id="3462413494201477527">取消設定帳戶？</translation>
-<translation id="3464012987031883895">有網站正在存取音訊輸入</translation>
+<translation id="3464012987031883895">有某個網站正在存取音訊輸入內容</translation>
 <translation id="346431825526753">這是由 <ph name="CUSTODIAN_EMAIL" /> 所管理的兒童專用帳戶。</translation>
 <translation id="3466147780910026086">正在掃描您的媒體裝置...</translation>
 <translation id="3467267818798281173">啟用 Google 拼字建議功能</translation>
@@ -4771,8 +4770,7 @@
 <translation id="8117620576188476503">透過狀態匣管理連線、更新和設定。如要使用鍵盤開啟這個畫面，請按下 Alt + Shift + S 鍵。</translation>
 <translation id="8118362518458010043">這個擴充功能可能不安全，因此遭到 Chrome 停用。</translation>
 <translation id="8118860139461251237">管理下載內容</translation>
-<translation id="8123590694679414600">資料已採用你在 <ph name="TIME" /> 設定的同步通關密語
-          進行加密保護。這不包括 Google Pay 的付款方式和地址。</translation>
+<translation id="8123590694679414600">系統已採用你在 <ph name="TIME" />設定的同步通關密語針對資料進行加密處理。加密的資料不包括 Google Pay 的付款方式和地址。</translation>
 <translation id="81238879832906896">黃色和白色花朵</translation>
 <translation id="8124313775439841391">管理化 ONC</translation>
 <translation id="813082847718468539">查看網站資訊</translation>

@@ -513,7 +513,6 @@
 <translation id="4277028893293644418">Restableix la contrasenya</translation>
 <translation id="4280429058323657511">, caduca el dia <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Canvia</translation>
-<translation id="4308131620840579419">Vols desar totes les teves targetes en un sol lloc?</translation>
 <translation id="4312866146174492540">Bloqueja (opció predeterminada)</translation>
 <translation id="4325863107915753736">No s'ha pogut trobar l'article</translation>
 <translation id="4326324639298822553">Comprova la data de caducitat i torna-ho a provar</translation>
@@ -960,6 +959,7 @@ Detalls addicionals:
 <translation id="7549584377607005141">Aquesta pàgina web necessita dades que heu introduït anteiorment per poder mostrar-la correctament. Podeu tornar a enviar les dades, però es tornarà a repetir qualsevol acció que la pàgina hagi dut a terme prèviament.</translation>
 <translation id="7552846755917812628">Prova els consells següents:</translation>
 <translation id="7554791636758816595">Pestanya nova</translation>
+<translation id="7560085949372856518">Al pas següent pots triar quines targetes vols desar al Compte de Google.</translation>
 <translation id="7564049878696755256">Podries perdre l'accés al compte de <ph name="ORG_NAME" /> o tenir problemes de suplantació d'identitat. Chrome et recomana que canviïs la contrasenya ara.</translation>
 <translation id="7567204685887185387">Aquest servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè és possible que el seu certificat de seguretat s'hagi emès de manera fraudulenta. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
 <translation id="7569952961197462199">Voleu suprimir la targeta de crèdit de Chrome?</translation>
@@ -977,6 +977,7 @@ Detalls addicionals:
 <translation id="7658239707568436148">Cancel·la</translation>
 <translation id="7662298039739062396">Configuració controlada per una extensió</translation>
 <translation id="7663736086183791259">Certificat <ph name="CERTIFICATE_VALIDITY" /></translation>
+<translation id="7665886282480776333">Vols desar les teves targetes a Google?</translation>
 <translation id="7667346355482952095">El testimoni de la política que s'ha retornat és buit o no coincideix amb el testimoni actual</translation>
 <translation id="7668654391829183341">Dispositiu desconegut</translation>
 <translation id="7669271284792375604">És possible que els atacants d'aquest lloc intentin enganyar-te perquè instal·lis programes que perjudiquen la teva navegació (per exemple, et poden canviar la pàgina d'inici o mostrar anuncis addicionals als llocs que visites).</translation>
@@ -1160,7 +1161,7 @@ Detalls addicionals:
 <translation id="8957210676456822347">Autorització de portals captius</translation>
 <translation id="8971063699422889582">El certificat del servidor ha caducat.</translation>
 <translation id="8975012916872825179">Inclou informació com ara números de telèfon, adreces electròniques i adreces d'enviament</translation>
-<translation id="8978053250194585037">Navegació segura de Google ha <ph name="BEGIN_LINK" />detectat recentment activitat de pesca<ph name="END_LINK" /> a <ph name="SITE" />. Els llocs web de pesca es fan passar per altres llocs web per enganyar-te.</translation>
+<translation id="8978053250194585037">Navegació segura de Google ha <ph name="BEGIN_LINK" />detectat recentment activitat de pesca de credencials<ph name="END_LINK" /> a <ph name="SITE" />. Els llocs web de pesca de credencials es fan passar per altres llocs web per enganyar-te.</translation>
 <translation id="8983003182662520383">Formes de pagament i adreces que fan servir Google Pay</translation>
 <translation id="8987927404178983737">Mes</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>

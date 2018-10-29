@@ -202,7 +202,7 @@
 <translation id="1272079795634619415">Berhenti</translation>
 <translation id="1272978324304772054">Akun pengguna ini tidak berada di domain tempat perangkat mendaftar.  Jika Anda ingin mendaftar ke domain lain, Anda perlu melakukan pemulihan perangkat terlebih dulu.</translation>
 <translation id="1274977772557788323">Setelan Penyimpanan Adobe Flash Player</translation>
-<translation id="1274997165432133392">Cookie dan data situs lain</translation>
+<translation id="1274997165432133392">Cookie dan data situs lainnya</translation>
 <translation id="127668050356036882">Tutup semua jendela</translation>
 <translation id="1277908057200820621">Lihat daftar perangkat</translation>
 <translation id="1280820357415527819">Menelusuri jaringan seluler</translation>
@@ -946,7 +946,7 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> file dipilih</translation>
 <translation id="237828693408258535">Terjemahkan halaman ini?</translation>
 <translation id="2378982052244864789">Pilih direktori ekstensi.</translation>
-<translation id="2379232090534544565">Satu situs mengakses masukan video dan audio</translation>
+<translation id="2379232090534544565">Satu situs sedang mengakses masukan video dan audio</translation>
 <translation id="2379281330731083556">Cetak menggunakan dialog sistem... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Tanyakan sebelum mengirim (disarankan)</translation>
 <translation id="2384436799579181135">Terjadi error. Harap periksa printer Anda dan coba lagi.</translation>
@@ -1472,7 +1472,7 @@
 <translation id="316854673539778496">Untuk mendapatkan semua ekstensi di semua perangkat, login dan aktifkan sinkronisasi.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">Anda juga dapat melewati proses masuk dan <ph name="LINK_START" />menjelajah sebagai tamu<ph name="LINK_END" />.</translation>
-<translation id="3172045848207518317">Satu situs mengakses masukan video</translation>
+<translation id="3172045848207518317">Satu situs sedang mengakses masukan video</translation>
 <translation id="3177909033752230686">Bahasa Halaman:</translation>
 <translation id="3182749001423093222">Periksa ejaan</translation>
 <translation id="3183139917765991655">Pengimpor Profil</translation>
@@ -1653,7 +1653,7 @@
 <translation id="3461266716147554923"><ph name="URL" /> ingin melihat teks dan gambar yang disalin ke papan klip</translation>
 <translation id="3462311546193741693">Membuat Anda logout dari sebagian besar situs. Anda akan tetap login di Akun Google sehingga data yang disinkronkan dapat dihapus.</translation>
 <translation id="3462413494201477527">Batalkan penyiapan akun?</translation>
-<translation id="3464012987031883895">Satu situs mengakses masukan audio</translation>
+<translation id="3464012987031883895">Satu situs sedang mengakses masukan audio</translation>
 <translation id="346431825526753">Ini adalah akun untuk anak yang dikelola oleh <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3466147780910026086">Memindai perangkat media Anda...</translation>
 <translation id="3467267818798281173">Minta saran dari Google.</translation>
@@ -2040,7 +2040,7 @@
 <translation id="3994878504415702912">&amp;Zum</translation>
 <translation id="3995138139523574647">Perangkat USB-C (port belakang sebelah kanan)</translation>
 <translation id="4002066346123236978">Judul</translation>
-<translation id="4002440992267487163">Pasang pin penyiapan</translation>
+<translation id="4002440992267487163">Penyiapan pin</translation>
 <translation id="40027638859996362">Perpindahan kata</translation>
 <translation id="4005817994523282006">Metode deteksi zona waktu</translation>
 <translation id="4008291085758151621">Informasi situs tidak tersedia di VR</translation>
@@ -2449,7 +2449,7 @@
 <translation id="4692623383562244444">Mesin telusur</translation>
 <translation id="4694024090038830733">Konfigurasi printer ditangani oleh administrator.</translation>
 <translation id="4697551882387947560">Saat sesi menjelajah berakhir</translation>
-<translation id="4699172675775169585">File dan gambar yang disimpan dalam cache</translation>
+<translation id="4699172675775169585">Gambar dan file dalam cache</translation>
 <translation id="4699357559218762027">(diluncurkan otomatis)</translation>
 <translation id="4707302005824653064">Penggunaan dan histori dapat ditinjau oleh pengelola (<ph name="CUSTODIAN_EMAIL" />) di chrome.com.</translation>
 <translation id="4707579418881001319">L2TP/IPsec + sertifikat pengguna</translation>

@@ -513,7 +513,6 @@
 <translation id="4277028893293644418">איפוס סיסמה</translation>
 <translation id="4280429058323657511">, בתוקף עד <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">מעבר</translation>
-<translation id="4308131620840579419">לשמור את כל הכרטיסים במקום אחד?</translation>
 <translation id="4312866146174492540">חסום (ברירת מחדל)</translation>
 <translation id="4325863107915753736">לא ניתן היה למצוא את הפריט</translation>
 <translation id="4326324639298822553">בדוק את תאריך התפוגה ונסה שוב</translation>
@@ -849,7 +848,7 @@ Del</translation>
 <translation id="6810899417690483278">מזהה של התאמה אישית</translation>
 <translation id="6824266427216888781">נכשלה הטעינה של נתוני האזורים</translation>
 <translation id="6825578344716086703">‏ניסית להגיע אל <ph name="DOMAIN" />, אבל השרת הציג אישור שנחתם באמצעות אלגוריתם חתימה חלש (כמו SHA-1). המשמעות היא שפרטי האבטחה שהוצגו על-ידי השרת עלולים להיות מזויפים, וייתכן שהשרת הוא לא השרת שציפית לו (ייתכן שנוצר קשר בינך לבין התוקף).</translation>
-<translation id="6831043979455480757">תרגם</translation>
+<translation id="6831043979455480757">תרגום</translation>
 <translation id="6839929833149231406">אזור</translation>
 <translation id="6852204201400771460">לטעון מחדש את האפליקציה?</translation>
 <translation id="6865412394715372076">אי אפשר לאמת כרגע את הכרטיס</translation>
@@ -965,6 +964,7 @@ Del</translation>
 <translation id="7549584377607005141">דף אינטרנט זה זקוק לנתונים שהזנת קודם לכן כדי שהוא יוצג כראוי. אתה יכול לשלוח שוב את הנתונים, אך פעולה זו תגרום לחזרה על כל פעולה שדף זה ביצע בעבר.</translation>
 <translation id="7552846755917812628">אולי הטיפים האלו יעזרו לך:</translation>
 <translation id="7554791636758816595">כרטיסייה חדשה</translation>
+<translation id="7560085949372856518">‏בשלב הבא אפשר לבחור אילו כרטיסים לשמור בחשבון Google שלך.</translation>
 <translation id="7564049878696755256">‏הגישה שלך לחשבון <ph name="ORG_NAME" /> עשויה להישלל והזהות שלך עשויה להיגנב. ההמלצה של Chrome היא לשנות את הסיסמה עכשיו.</translation>
 <translation id="7567204685887185387">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. ייתכן שאישור האבטחה שלו נופק כהונאה. הסיבה לכך עשויה להיות הגדרה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="7569952961197462199">‏האם להסיר את כרטיס האשראי מ-Chrome?</translation>
@@ -982,6 +982,7 @@ Del</translation>
 <translation id="7658239707568436148">ביטול</translation>
 <translation id="7662298039739062396">ההגדרה נשלטת על-ידי תוסף</translation>
 <translation id="7663736086183791259">אישור <ph name="CERTIFICATE_VALIDITY" /></translation>
+<translation id="7665886282480776333">‏לשמור את הכרטיסים שלך ב-Google?</translation>
 <translation id="7667346355482952095">אסימון המדיניות שהוחזר הוא ריק או שאינו תואם לאסימון הנוכחי</translation>
 <translation id="7668654391829183341">מכשיר לא ידוע</translation>
 <translation id="7669271284792375604">תוקפים באתר הזה עשויים לגרום לך, בדרכי מרמה, להתקין תוכניות שיפגעו בחוויית הגלישה שלך (לדוגמה, על ידי שינוי דף הבית או הצגת מודעות נוספות באתרים שבהם אתה מבקר).</translation>

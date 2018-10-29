@@ -26,10 +26,10 @@
       Diese Richtlinie betrifft nur Nutzer, deren Domain der Geräteanmeldedomain entspricht. Bei allen anderen Nutzern werden die vom IdP gesetzten Cookies nur während der ersten Anmeldung auf dem Gerät an das Nutzerprofil gesendet.</translation>
 <translation id="1035385378988781231">Mit dieser Richtlinie wird gesteuert, ob die Funktion "Netzwerkfreigaben" für <ph name="PRODUCT_NAME" /> zur Authentifizierung NTLM nutzt.
 
-Wenn diese Richtlinie auf "true" gesetzt ist, wird NTLM zur Authentifizierung von SMB-Freigaben genutzt, falls notwendig.
-Wenn diese Richtlinie auf "false" gesetzt ist, wird die Authentifizierung von SMB-Freigaben durch NTLM deaktiviert.
+Wenn diese Richtlinie auf "true" gesetzt ist, wird NTLM zur Authentifizierung gegenüber SMB-Freigaben genutzt, falls notwendig.
+Wenn diese Richtlinie auf "false" gesetzt ist, wird die NTLM-Authentifizierung gegenüber SMB-Freigaben deaktiviert.
 
-Wenn die Richtlinie nicht festgelegt ist, kommt die Standardeinstellung zum Einsatz, bei der die Funktion für vom Unternehmen verwaltete Nutzer deaktiviert und für nicht verwaltete Nutzer aktiviert ist.</translation>
+Wenn die Richtlinie nicht festgelegt ist, gilt die Standardeinstellung: Vom Unternehmen verwaltete Nutzer werden nicht per NTLM authentifiziert, nicht verwaltete Nutzer werden per NMTL authentifiziert.</translation>
 <translation id="1040446814317236570">Stripping von PAC-URLs für https:// aktivieren</translation>
 <translation id="1044878202534415707">Mit dieser Richtlinie können Hardwarestatistiken wie CPU/RAM-Auslastung abgerufen werden.
 
@@ -108,11 +108,11 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       Standardwert ist RollbackDisabled.</translation>
 <translation id="1221359380862872747">Bei Demo-Anmeldung angegebene URLs laden</translation>
 <translation id="1223789468190631420">Safe Browsing-Aktivierungsstatus für vertrauenswürdige Quellen</translation>
-<translation id="122899932962115297">Eine weiße Liste, in der festgelegt wird, welche Modi für das schnelle Entsperren des Sperrbildschirms der Nutzer konfigurieren und verwenden kann.
+<translation id="122899932962115297">Eine weiße Liste, in der festgelegt wird, welche Modi für das schnelle Entsperren des Sperrbildschirms konfiguriert und verwendet werden können.
 
-Dieser Wert besteht aus einer Liste von Strings; gültige Listeneinträge sind: "alle", "PIN", "FINGERABDRUCK". Durch das Hinzufügen von "alle" zur Liste stehen dem Nutzer alle Modi für das schnelle Entsperren zur Verfügung, einschließlich zukünftig implementierter Modi. Wird "alle" nicht ausgewählt, stehen nur die in der Liste enthaltenen Modi für das schnelle Entsperren zur Verfügung.
+Dieser Wert besteht aus einer Liste von Strings; gültige Listeneinträge sind: "alle", "PIN", "FINGERABDRUCK". Durch das Hinzufügen von "alle" zur Liste stehen dem Nutzer alle Modi für das schnelle Entsperren zur Verfügung, einschließlich von Modi, die erst in der Zukunft implementiert werden. Wird "alle" nicht ausgewählt, stehen für das schnelle Entsperren nur die in der Liste enthaltenen Modi zur Verfügung.
 
-Beispiel: Verwenden Sie ["alle"], wenn Sie alle Modi für das schnelle Entsperren erlauben möchten. Legen Sie ["PIN"] fest, um nur das Entsperren mit der PIN zu erlauben. Damit Nutzer PIN und Fingerabdruck verwenden können, legen Sie ["PIN", "FINGERABDRUCK"] fest. Wenn Sie alle Modi zum schnellen Entsperren deaktivieren möchten, verwenden Sie [].
+Beispiel: Wenn Sie alle Modi für das schnelle Entsperren erlauben möchten, verwenden Sie ["alle"]. Soll nur mit der PIN entsperrt werden können, legen Sie ["PIN"] fest. Wenn PIN und Fingerabdruck erlaubt sein sollen, legen Sie ["PIN", "FINGERABDRUCK"] fest. Möchten Sie alle Modi zum schnellen Entsperren deaktivieren, verwenden Sie [].
 
 Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsperren verfügbar.</translation>
 <translation id="123081309365616809">Streamen von Inhalten an das Gerät aktivieren</translation>
@@ -975,8 +975,8 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
       </translation>
 <translation id="3748900290998155147">Gibt an, ob Wakelocks zulässig sind. Wakelocks können von Erweiterungen über die Power Management Extension API oder ARC-Apps angefordert werden.
 
-Falls diese Richtlinie auf "true" gesetzt oder nicht festgelegt wird, werden Wakelocks bei der Energieverwaltung zugelassen.
-Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Wakelocks ignoriert.</translation>
+Falls diese Richtlinie auf "true" gesetzt oder nicht festgelegt wird, werden Wakelocks bei der Energieverwaltung berücksichtigt.
+Falls die Richtlinie auf "false" gesetzt wird, werden Wakelock-Anfragen ignoriert.</translation>
 <translation id="3750220015372671395">Schlüsselgenerierung auf diesen Websites blockieren</translation>
 <translation id="3756011779061588474">Entwicklermodus blockieren</translation>
 <translation id="3758089716224084329">Ermöglicht Ihnen, den von <ph name="PRODUCT_NAME" /> verwendeten Proxy-Server anzugeben, und verhindert, dass Nutzer die Proxy-Einstellungen ändern.
@@ -1013,7 +1013,7 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Wakelocks ig
 <translation id="3790085888761753785">Wenn diese Einstellung aktiviert ist, können Nutzer sich mit Smart Lock in Ihren Konten anmelden. Sie haben dann mehr Möglichkeiten als mit den üblichen Smart Lock-Einstellungen, mit denen sie lediglich ihre Bildschirme entsperren können.
 
 Wenn diese Einstellung deaktiviert ist, können Nutzer sich nicht mit Smart Lock anmelden.
-Wenn diese Richtlinie nicht festgelegt ist, kommt die Standardeinstellung zum Einsatz, bei der die Funktion für vom Unternehmen verwaltete Nutzer deaktiviert und für nicht verwaltete Nutzer aktiviert ist.</translation>
+Wenn diese Richtlinie nicht festgelegt ist, gilt die Standardeinstellung: Vom Unternehmen verwaltete Nutzer können sich nicht mit Smart Lock anmelden, nicht verwaltete Nutzer können sich mit Smart Lock anmelden.</translation>
 <translation id="379602782757302612">Mit dieser Richtlinie können Sie festlegen, welche Erweiterungen Nutzer NICHT installieren dürfen. Bereits installierte Erweiterungen, die auf die schwarze Liste gesetzt werden, werden entfernt. Der Nutzer hat keine Möglichkeit, diese zu aktivieren. Sollte eine aufgrund der schwarzen Liste deaktivierte Erweiterung aus dieser entfernt werden, wird sie automatisch wieder aktiviert.
 
           Der Wert "*" in der schwarzen Liste gibt an, dass alle Erweiterungen ausgeschlossen werden, sofern diese nicht ausdrücklich auf die weiße Liste gesetzt wurden.
@@ -2254,8 +2254,8 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="717630378807352957">Alle Drucker der Konfigurationsdatei zulassen.</translation>
 <translation id="7176721759719212761">Gibt an, ob Bildschirm-Wakelocks zulässig sind. Bildschirm-Wakelocks können von Erweiterungen über die Power Management Extension API oder ARC-Apps angefordert werden.
 
-Falls diese Richtlinie auf "true" gesetzt oder nicht festgelegt wird, werden Bildschirm-Wakelocks bei der Energieverwaltung zugelassen, es sei denn, "AllowWakeLocks" ist auf "false" gesetzt.
-Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-Wakelocks auf den Status von System-Wakelocks zurückgestuft.</translation>
+Falls diese Richtlinie auf "true" gesetzt oder nicht festgelegt wird, werden Bildschirm-Wakelocks bei der Energieverwaltung berücksichtigt, es sei denn, "AllowWakeLocks" ist auf "false" gesetzt.
+Falls die Richtlinie auf "false" gesetzt wird, werden Bildschirm-Wakelock-Anfragen auf den Status von System-Wakelocks zurückgestuft.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Für Updates zugelassene Verbindungstypen</translation>
 <translation id="7194407337890404814">Name der Standardsuchmaschine</translation>
@@ -2269,7 +2269,7 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
           Die automatische Wiedergabe ist nur für Domains erlaubt, die ausdrücklich in der Richtlinie <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> aufgeführt werden. Wenn Sie die automatische Wiedergabe für alle Websites aktivieren möchten, können Sie http://* und https://* dieser Liste hinzufügen.
 
           Wenn diese Richtlinie nicht aktiviert wird, kann der Nutzer diese Einstellung manuell ändern.</translation>
-<translation id="7229975860249300121">Enthält einen regulären Ausdruck, der festlegt, welche Google-Konten in <ph name="PRODUCT_NAME" /> als primäre Browserkonten eingerichtet werden können, zum Beispiel das Konto, das während der Zustimmung zur Synchronisierung ausgewählt wurde.
+<translation id="7229975860249300121">Enthält einen regulären Ausdruck, der festlegt, welche Google-Konten in <ph name="PRODUCT_NAME" /> als primäre Browserkonten eingerichtet werden können, also als das Konto, das bei der Zustimmung zur Synchronisierung ausgewählt wurde.
 
 Wenn ein Nutzer ein primäres Browserkonto mit einem Nutzernamen einrichten will, der diesem Muster nicht entspricht, wird ein entsprechender Fehler ausgegeben.
 
@@ -2870,13 +2870,13 @@ Ist die Richtlinie auf "false" gesetzt oder nicht konfiguriert, kann der Nutzer 
        Änderungen an dieser Richtlinie werden nur angewendet, wenn ARC nicht ausgeführt wird, z. B. beim Start von Chrome OS.</translation>
 <translation id="8615400197788843468">Aktiviert die eingeschränkten Anmeldefunktionen von <ph name="PRODUCT_NAME" /> in der G Suite und verhindert, dass Nutzer diese Einstellung ändern.
 
-Wenn Sie diese Einstellung festlegen, können Nutzer nur über Konten der angegebenen Domains auf Apps von Google zugreifen. Sie müssen der Liste mit den Domains "consumer_accounts" (ohne Anführungszeichen) hinzufügen, wenn Sie gmail.com/googlemail.com-Konten zulassen möchten.
+Wenn Sie diese Einstellung festlegen, können Nutzer nur über Konten der angegebenen Domains auf Apps von Google zugreifen. Möchten Sie gmail.com- und googlemail.com-Konten zulassen, müssen Sie der Domainliste "consumer_accounts" (ohne Anführungszeichen) hinzufügen.
 
 Diese Einstellung verhindert, dass Nutzer sich auf einem verwalteten Gerät, für das eine Authentifizierung durch Google notwendig ist, anmelden und ein zweites Konto hinzufügen können, wenn dieses Konto nicht zu einer der Domains in der oben erwähnten Liste gehört.
 
-Wenn Sie diese Einstellung leer lassen bzw. nicht konfigurieren, können Nutzer über beliebige Konten auf die G Suite zugreifen.
+Wenn Sie diese Einstellung leer lassen bzw. nicht konfigurieren, können Nutzer über beliebige Konten auf die G Suite zugreifen.
 
-Durch diese Richtlinie wird der Header "X-GoogApps-Allowed-Domains", wie unter https://support.google.com/a/answer/1668854 beschrieben, an alle HTTP- und HTTPS-Anforderungen angehängt, die an google.com-Domains gesendet werden.
+Durch diese Richtlinie wird allen HTTP- und HTTPS-Anforderungen, die an google.com-Domains gesendet werden, der Header "X-GoogApps-Allowed-Domains" angehängt (siehe https://support.google.com/a/answer/1668854).
 
 Nutzer können diese Einstellung weder ändern noch überschreiben.</translation>
 <translation id="8631434304112909927">Bis Version <ph name="UNTIL_VERSION" /></translation>

@@ -257,7 +257,7 @@
 <translation id="8907580949721785412">Chromium పాస్‌వర్డ్‌లను చూపడానికి ప్రయత్నిస్తోంది. దీన్ని అనుమతించడానికి మీ Windows పాస్‌వర్డ్‌ను టైప్ చేయండి.</translation>
 <translation id="8941642502866065432">Chromiumని అప్‌డేట్ చేయడం సాధ్యం కాదు</translation>
 <translation id="8974095189086268230">అదనపు <ph name="BEGIN_LINK_CROS_OSS" />ఓపెన్ సోర్స్ సాఫ్ట్‌వేర్<ph name="END_LINK_CROS_OSS" />పై Chromium OS ఎంతగానో ఆధారపడుతుంది.</translation>
-<translation id="8985587603644336029">ఒకరు ఈ కంప్యూటర్‌లో మునుపు <ph name="ACCOUNT_EMAIL_LAST" />గా Chromiumకు సైన్ ఇన్ చేసారు. అది మీ ఖాతా కాకుంటే, మీ సమాచారాన్ని వేరుగా ఉంచడానికి కొత్త Chromium వినియోగదారును సృష్టించండి.
+<translation id="8985587603644336029">ఒకరు ఈ కంప్యూటర్‌లో మునుపు <ph name="ACCOUNT_EMAIL_LAST" />గా Chromiumకు సైన్ ఇన్ చేసారు. అది మీ ఖాతా కాకుంటే, మీ సమాచారాన్ని వేరుగా ఉంచడానికి క్రొత్త Chromium వినియోగదారును సృష్టించండి.
 
 అలాగే సైన్ ఇన్ చేస్తే బుక్‌మార్క్‌లు, చరిత్ర మరియు ఇతర సెట్టింగ్‌ల వంటి Chromium సమాచారం <ph name="ACCOUNT_EMAIL_NEW" />కు విలీనం చేయబడుతుంది.</translation>
 <translation id="9013087743919948559">Chromiumకు జోడించండి</translation>

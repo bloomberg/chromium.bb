@@ -513,7 +513,6 @@
 <translation id="4277028893293644418">Resetează parola</translation>
 <translation id="4280429058323657511">data expirării: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="4305817255990598646">Comută</translation>
-<translation id="4308131620840579419">Salvezi toate cardurile într-un singur loc?</translation>
 <translation id="4312866146174492540">Blochează (în mod prestabilit)</translation>
 <translation id="4325863107915753736">Articolul nu a fost găsit</translation>
 <translation id="4326324639298822553">Verifică data de expirare și încearcă din nou</translation>
@@ -960,6 +959,7 @@ Detalii suplimentare:
 <translation id="7549584377607005141">Pentru a fi afișată corespunzător, această pagină web necesită date pe care le-ați introdus anterior. Puteți trimite aceste date din nou, dar astfel veți repeta orice acțiuni realizate anterior de această pagină.</translation>
 <translation id="7552846755917812628">Încearcă următoarele sfaturi:</translation>
 <translation id="7554791636758816595">Filă nouă</translation>
+<translation id="7560085949372856518">La pasul următor, poți alege ce carduri să salvezi în Contul tău Google.</translation>
 <translation id="7564049878696755256">Este posibil să pierzi accesul la contul <ph name="ORG_NAME" /> sau să fii victima unui furt de identitate. Chrome îți recomandă să îți schimbi acum parola.</translation>
 <translation id="7567204685887185387">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; este posibil ca certificatul său de securitate să fi fost emis fraudulos. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="7569952961197462199">Elimini cardul de credit din Chrome?</translation>
@@ -977,6 +977,7 @@ Detalii suplimentare:
 <translation id="7658239707568436148">Anulează</translation>
 <translation id="7662298039739062396">Setare controlată de o extensie</translation>
 <translation id="7663736086183791259">Certificat <ph name="CERTIFICATE_VALIDITY" /></translation>
+<translation id="7665886282480776333">Salvezi cardurile în Google?</translation>
 <translation id="7667346355482952095">Indicativul returnat pentru politică este gol sau nu corespunde cu indicativul actual</translation>
 <translation id="7668654391829183341">Dispozitiv necunoscut</translation>
 <translation id="7669271284792375604">Atacatorii de pe acest site pot încerca să te înșele pentru a instala programe care dăunează experienței de navigare (de exemplu, schimbând pagina de pornire sau afișând anunțuri suplimentare pe site-urile pe care le accesezi).</translation>

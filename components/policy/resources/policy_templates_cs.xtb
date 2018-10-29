@@ -29,7 +29,7 @@ Poznámka pro administrátory systému <ph name="MS_WIN_NAME" />: Aktivace tohot
       Když je tato zásada nastavena na hodnotu True, v případě potřeby se k ověření sdílených složek SMB bude používat protokol NTLM.
       Když je tato zásada nastavena na hodnotu False, ověření pomocí protokolu NTLM bude pro sdílené složky SMB zapnuto.
 
-      Pokud tato zásada není nastavena, u uživatelů spravovaných organizací bude toto ověření zapnuto a u ostatních uživatelů bude vypnuto.</translation>
+      Pokud tato zásada není nastavena, u uživatelů spravovaných organizací bude toto ověření vypnuto a u ostatních uživatelů bude zapnuto.</translation>
 <translation id="1040446814317236570">Před odesláním skriptu PAC z adres se schématem https:// odstraňovat citlivá data</translation>
 <translation id="1044878202534415707">Nahlášení statistik hardwaru, například využití CPU/RAM.
 
@@ -98,7 +98,7 @@ Není-li tato zásada nastavena, výchozí frekvence je 3 hodiny. Minimální po
 <translation id="1223789468190631420">Stav povolení Bezpečného prohlížení pro důvěryhodné zdroje</translation>
 <translation id="122899932962115297">Seznam, který určuje, jaké metody rychlého odemknutí obrazovky uzamčení může uživatel nakonfigurovat a používat.
 
-          Hodnotou je seznam řetězců. Platné jsou tyto hodnoty: „all“ a „PIN“, "FINGERPRINT". Když na seznam přidáte hodnotu „all“, uživatel bude moci použít všechny metody rychlého odemknutí, včetně těch, které budou implementovány v budoucnu. V opačném případě budou k dispozici pouze metody uvedené na seznamu.
+          Hodnotou je seznam řetězců. Platné jsou tyto hodnoty: „all“, „PIN“ a "FINGERPRINT". Když na seznam přidáte hodnotu „all“, uživatel bude moci použít všechny metody rychlého odemknutí, včetně těch, které budou implementovány v budoucnu. V opačném případě budou k dispozici pouze metody uvedené na seznamu.
 
           Příklad: Chcete-li povolit všechny metody rychlého odemknutí, použijte hodnotu [„all“]. Chcete-li povolit pouze odemknutí pomocí kódu PIN, použijte hodnotu [„PIN“]. Chcete-li povolit kód PIN a otisk prstu, použijte hodnotu ["PIN", "FINGERPRINT"]. Chcete-li všechny metody rychlého odemknutí zakázat, použijte hodnotu [].
 
@@ -975,7 +975,7 @@ Tuto zásadu lze nastavit pouze jako doporučenou. Zásada slouží k přesunut
 
           Pokud tato zásada není nastavena na hodnotu true nebo je ponechána nenastavená, blokování přechodu do režimu spánku budou při řízení spotřeby dodržována.
 
-          Pokud je tato zásada nastavena na hodnotu false, žádosti o blokování přechodu do režimu spánku budou ignorována.</translation>
+          Pokud je tato zásada nastavena na hodnotu false, žádosti o blokování přechodu do režimu spánku budou ignorovány.</translation>
 <translation id="3750220015372671395">Blokovat generování klíčů na těchto stránkách</translation>
 <translation id="3756011779061588474">Blokovat režim pro vývojáře</translation>
 <translation id="3758089716224084329">Umožňuje zadat proxy server, který bude prohlížeč <ph name="PRODUCT_NAME" /> používat, a brání uživatelům ve změně nastavení proxy serveru.
@@ -2303,7 +2303,7 @@ Pokud je tato zásada ponechána nenastavená, režim na pozadí je ve výchozí
 
           Pokud je tato zásada nastavená na hodnotu true nebo není nastavená a zásada AllowWakeLocks není nastavená na hodnotu false, bude blokování přechodu obrazovky do režimu spánku při řízení spotřeby dodržováno.
 
-          Pokud je tato zásada nastavená na hodnotu false, budou žádosti o blokování přechodu obrazovky do režimu spánku změněny na žádosti o blokování přechodu systému do režimu spánku .</translation>
+          Pokud je tato zásada nastavená na hodnotu false, budou žádosti o blokování přechodu obrazovky do režimu spánku změněny na žádosti o blokování přechodu systému do režimu spánku.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Typy připojení, pro které jsou povoleny aktualizace</translation>
 <translation id="7194407337890404814">Název výchozího poskytovatele vyhledávání</translation>
@@ -2689,7 +2689,7 @@ V systému <ph name="PRODUCT_OS_NAME" /> je doporučeno nastavit na stejnou ho
       Při změně na hodnotu False se pro spouštění nových virtuálních počítačů použije nové nastavení, ale již spuštěné virtuální počítače nebudou ukončeny.
       Pokud na spravovaném zařízení není nastavena tato zásada, je v něm spouštění virtuálních počítačů zakázáno.
       Na zařízeních, která nejsou spravována, je spouštění virtuálních počítačů povoleno.</translation>
-<translation id="8001701200415781021">Omezit, které účty Google je v prohlížeči <ph name="PRODUCT_NAME" /> povoleno nastavit jako primární</translation>
+<translation id="8001701200415781021">Omezení, které účty Google je v prohlížeči <ph name="PRODUCT_NAME" /> povoleno nastavit jako primární</translation>
 <translation id="802147957407376460">Otočit obrazovku o 0 stupňů</translation>
 <translation id="8033913082323846868">Podpora této zásada byla ve verzi M70 ukončena. Použijte namísto ní zásady AutofillAddressEnabled a AutofillCreditCardEnabled.
 
