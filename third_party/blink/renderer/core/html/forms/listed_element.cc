@@ -34,7 +34,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 class FormAttributeTargetObserver : public IdTargetObserver {
  public:
@@ -70,7 +70,7 @@ ValidityState* ListedElement::validity() {
 
 void ListedElement::DidMoveToNewDocument(Document& old_document) {
   HTMLElement* element = ToHTMLElement(this);
-  if (element->FastHasAttribute(formAttr))
+  if (element->FastHasAttribute(kFormAttr))
     SetFormAttributeTargetObserver(nullptr);
 }
 
@@ -84,13 +84,13 @@ void ListedElement::InsertedInto(ContainerNode& insertion_point) {
     return;
 
   HTMLElement* element = ToHTMLElement(this);
-  if (element->FastHasAttribute(formAttr))
+  if (element->FastHasAttribute(kFormAttr))
     ResetFormAttributeTargetObserver();
 }
 
 void ListedElement::RemovedFrom(ContainerNode& insertion_point) {
   HTMLElement* element = ToHTMLElement(this);
-  if (insertion_point.isConnected() && element->FastHasAttribute(formAttr)) {
+  if (insertion_point.isConnected() && element->FastHasAttribute(kFormAttr)) {
     SetFormAttributeTargetObserver(nullptr);
     ResetFormOwner();
     return;
@@ -167,7 +167,7 @@ void ListedElement::DidChangeForm() {
 void ListedElement::ResetFormOwner() {
   form_was_set_by_parser_ = false;
   HTMLElement* element = ToHTMLElement(this);
-  const AtomicString& form_id(element->FastGetAttribute(formAttr));
+  const AtomicString& form_id(element->FastGetAttribute(kFormAttr));
   HTMLFormElement* nearest_form = element->FindFormAncestor();
   // 1. If the element's form owner is not null, and either the element is not
   // reassociateable or its form content attribute is not present, and the
@@ -258,7 +258,7 @@ void ListedElement::SetFormAttributeTargetObserver(
 
 void ListedElement::ResetFormAttributeTargetObserver() {
   HTMLElement* element = ToHTMLElement(this);
-  const AtomicString& form_id(element->FastGetAttribute(formAttr));
+  const AtomicString& form_id(element->FastGetAttribute(kFormAttr));
   if (!form_id.IsNull() && element->isConnected()) {
     SetFormAttributeTargetObserver(
         FormAttributeTargetObserver::Create(form_id, this));

@@ -43,7 +43,7 @@ TEST_F(LayoutTextControlTest,
   auto* selectedText = GetInnerLayoutText(inputElement);
   EXPECT_FALSE(selectedText->ShouldInvalidateSelection());
 
-  inputElement->setAttribute(HTMLNames::classAttr, "pseudoSelection");
+  inputElement->setAttribute(html_names::kClassAttr, "pseudoSelection");
   GetDocument().View()->UpdateLifecycleToLayoutClean();
   EXPECT_TRUE(selectedText->ShouldInvalidateSelection());
 
@@ -68,7 +68,7 @@ TEST_F(LayoutTextControlTest,
   auto* selectedText = GetInnerLayoutText(inputElement);
   EXPECT_FALSE(selectedText->ShouldInvalidateSelection());
 
-  inputElement->setAttribute(HTMLNames::classAttr, "pseudoSelection");
+  inputElement->setAttribute(html_names::kClassAttr, "pseudoSelection");
   GetDocument().View()->UpdateLifecycleToLayoutClean();
   EXPECT_TRUE(selectedText->ShouldInvalidateSelection());
 
@@ -93,7 +93,7 @@ TEST_F(LayoutTextControlTest,
   auto* selectedText = GetInnerLayoutText(inputElement);
   EXPECT_FALSE(selectedText->ShouldInvalidateSelection());
 
-  inputElement->removeAttribute(HTMLNames::classAttr);
+  inputElement->removeAttribute(html_names::kClassAttr);
   GetDocument().View()->UpdateLifecycleToLayoutClean();
   EXPECT_TRUE(selectedText->ShouldInvalidateSelection());
 

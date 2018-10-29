@@ -46,7 +46,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 // When inserting a new line, we want to avoid nesting empty divs if we can.
 // Otherwise, when pasting, it's easy to have each new line be a div deeper than
@@ -111,11 +111,11 @@ void InsertParagraphSeparatorCommand::ApplyStyleAfterInsertion(
     EditingState* editing_state) {
   // Not only do we break out of header tags, but we also do not preserve the
   // typing style, in order to match other browsers.
-  if (original_enclosing_block->HasTagName(h1Tag) ||
-      original_enclosing_block->HasTagName(h2Tag) ||
-      original_enclosing_block->HasTagName(h3Tag) ||
-      original_enclosing_block->HasTagName(h4Tag) ||
-      original_enclosing_block->HasTagName(h5Tag)) {
+  if (original_enclosing_block->HasTagName(kH1Tag) ||
+      original_enclosing_block->HasTagName(kH2Tag) ||
+      original_enclosing_block->HasTagName(kH3Tag) ||
+      original_enclosing_block->HasTagName(kH4Tag) ||
+      original_enclosing_block->HasTagName(kH5Tag)) {
     return;
   }
 
@@ -138,11 +138,11 @@ bool InsertParagraphSeparatorCommand::ShouldUseDefaultParagraphElement(
   if (!IsEndOfBlock(EndingVisibleSelection().VisibleStart()))
     return false;
 
-  return enclosing_block->HasTagName(h1Tag) ||
-         enclosing_block->HasTagName(h2Tag) ||
-         enclosing_block->HasTagName(h3Tag) ||
-         enclosing_block->HasTagName(h4Tag) ||
-         enclosing_block->HasTagName(h5Tag);
+  return enclosing_block->HasTagName(kH1Tag) ||
+         enclosing_block->HasTagName(kH2Tag) ||
+         enclosing_block->HasTagName(kH3Tag) ||
+         enclosing_block->HasTagName(kH4Tag) ||
+         enclosing_block->HasTagName(kH5Tag);
 }
 
 void InsertParagraphSeparatorCommand::GetAncestorsInsideBlock(
@@ -170,7 +170,7 @@ Element* InsertParagraphSeparatorCommand::CloneHierarchyUnderNewBlock(
     Element* child = ancestors[i - 1]->CloneWithoutChildren();
     // It should always be okay to remove id from the cloned elements, since the
     // originals are not deleted.
-    child->removeAttribute(idAttr);
+    child->removeAttribute(kIdAttr);
     AppendNode(child, parent, editing_state);
     if (editing_state->IsAborted())
       return nullptr;

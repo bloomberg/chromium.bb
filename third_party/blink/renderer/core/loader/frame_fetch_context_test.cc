@@ -407,7 +407,7 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
       return;
     }
 
-    iframe->setAttribute(HTMLNames::cspAttr, potential_value);
+    iframe->setAttribute(html_names::kCspAttr, potential_value);
     document->GetFrame()->SetOwner(iframe);
   }
 

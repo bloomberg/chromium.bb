@@ -44,7 +44,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline SearchInputType::SearchInputType(HTMLInputElement& element)
     : BaseTextInputType(element),
@@ -131,7 +131,7 @@ void SearchInputType::SearchEventTimerFired(TimerBase*) {
 }
 
 bool SearchInputType::SearchEventsShouldBeDispatched() const {
-  return GetElement().hasAttribute(incrementalAttr);
+  return GetElement().hasAttribute(kIncrementalAttr);
 }
 
 void SearchInputType::DidSetValueByUserEdit() {

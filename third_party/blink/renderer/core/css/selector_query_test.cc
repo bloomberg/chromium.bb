@@ -330,7 +330,7 @@ TEST(SelectorQueryTest, QuirksModeSlowPath) {
 
 TEST(SelectorQueryTest, DisconnectedSubtree) {
   Document* document = HTMLDocument::CreateForTest();
-  Element* scope = document->CreateRawElement(HTMLNames::divTag);
+  Element* scope = document->CreateRawElement(html_names::kDivTag);
   scope->SetInnerHTMLFromString(R"HTML(
     <section>
       <span id=first>
@@ -357,7 +357,7 @@ TEST(SelectorQueryTest, DisconnectedSubtree) {
 
 TEST(SelectorQueryTest, DisconnectedTreeScope) {
   Document* document = HTMLDocument::CreateForTest();
-  Element* host = document->CreateRawElement(HTMLNames::divTag);
+  Element* host = document->CreateRawElement(html_names::kDivTag);
   ShadowRoot& shadowRoot =
       host->AttachShadowRootInternal(ShadowRootType::kOpen);
   shadowRoot.SetInnerHTMLFromString(R"HTML(

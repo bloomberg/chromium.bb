@@ -81,13 +81,13 @@ bool MediaControlTimelineElement::WillRespondToMouseClickEvents() {
 void MediaControlTimelineElement::SetPosition(double current_time) {
   setValue(String::Number(current_time));
   setAttribute(
-      HTMLNames::aria_valuetextAttr,
+      html_names::kAriaValuetextAttr,
       AtomicString(GetMediaControls().CurrentTimeDisplay().textContent(true)));
   RenderBarSegments();
 }
 
 void MediaControlTimelineElement::SetDuration(double duration) {
-  SetFloatingPointAttribute(HTMLNames::maxAttr,
+  SetFloatingPointAttribute(html_names::kMaxAttr,
                             std::isfinite(duration) ? duration : 0);
   RenderBarSegments();
 }

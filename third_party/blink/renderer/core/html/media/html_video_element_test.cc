@@ -76,7 +76,7 @@ TEST_F(HTMLVideoElementTest, PictureInPictureInterstitialAndTextContainer) {
   scoped_refptr<cc::Layer> layer = cc::Layer::Create();
   SetFakeCcLayer(layer.get());
 
-  video()->SetBooleanAttribute(HTMLNames::controlsAttr, true);
+  video()->SetBooleanAttribute(html_names::kControlsAttr, true);
   video()->SetSrc("http://example.com/foo.mp4");
   test::RunPendingTasks();
 
@@ -100,7 +100,7 @@ TEST_F(HTMLVideoElementTest, PictureInPictureInterstitial_Reattach) {
   scoped_refptr<cc::Layer> layer = cc::Layer::Create();
   SetFakeCcLayer(layer.get());
 
-  video()->SetBooleanAttribute(HTMLNames::controlsAttr, true);
+  video()->SetBooleanAttribute(html_names::kControlsAttr, true);
   video()->SetSrc("http://example.com/foo.mp4");
   test::RunPendingTasks();
 

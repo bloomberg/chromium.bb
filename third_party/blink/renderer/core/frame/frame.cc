@@ -56,8 +56,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 Frame::~Frame() {
   InstanceCounters::DecrementCounter(InstanceCounters::kFrameCounter);
   DCHECK(!owner_);

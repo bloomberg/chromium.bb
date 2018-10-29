@@ -35,8 +35,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 AXListBox::AXListBox(LayoutObject* layout_object,
                      AXObjectCacheImpl& ax_object_cache)
     : AXLayoutObject(layout_object, ax_object_cache), active_index_(-1) {

@@ -45,8 +45,6 @@ HTMLInputElement* NextInputElement(const HTMLInputElement& element,
 
 }  // namespace
 
-using namespace HTMLNames;
-
 InputType* RadioInputType::Create(HTMLInputElement& element) {
   return new RadioInputType(element);
 }

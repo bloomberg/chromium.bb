@@ -66,8 +66,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 static bool IsFrameFocused(const Element& element) {
   return element.GetDocument().GetFrame() && element.GetDocument()
                                                  .GetFrame()

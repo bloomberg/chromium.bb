@@ -43,7 +43,7 @@ void MediaControlOverflowMenuButtonElement::UpdateShownState() {
 
 void MediaControlOverflowMenuButtonElement::DefaultEventHandler(Event& event) {
   // Only respond to a click event if we are not disabled.
-  if (!hasAttribute(HTMLNames::disabledAttr) &&
+  if (!hasAttribute(html_names::kDisabledAttr) &&
       event.type() == EventTypeNames::click) {
     if (GetMediaControls().OverflowMenuVisible()) {
       Platform::Current()->RecordAction(

@@ -46,8 +46,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 static inline PropertyWhitelistType DeterminePropertyWhitelistType(
     const AddRuleFlags add_rule_flags,
     const CSSSelector& selector) {

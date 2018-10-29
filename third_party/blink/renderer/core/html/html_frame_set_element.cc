@@ -39,10 +39,10 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline HTMLFrameSetElement::HTMLFrameSetElement(Document& document)
-    : HTMLElement(framesetTag, document),
+    : HTMLElement(kFramesetTag, document),
       border_(6),
       border_set_(false),
       border_color_set_(false),
@@ -56,7 +56,7 @@ DEFINE_NODE_FACTORY(HTMLFrameSetElement)
 
 bool HTMLFrameSetElement::IsPresentationAttribute(
     const QualifiedName& name) const {
-  if (name == bordercolorAttr)
+  if (name == kBordercolorAttr)
     return true;
   return HTMLElement::IsPresentationAttribute(name);
 }
@@ -65,7 +65,7 @@ void HTMLFrameSetElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  if (name == bordercolorAttr)
+  if (name == kBordercolorAttr)
     AddHTMLColorToStyle(style, CSSPropertyBorderColor, value);
   else
     HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
@@ -75,19 +75,19 @@ void HTMLFrameSetElement::ParseAttribute(
     const AttributeModificationParams& params) {
   const QualifiedName& name = params.name;
   const AtomicString& value = params.new_value;
-  if (name == rowsAttr) {
+  if (name == kRowsAttr) {
     if (!value.IsNull()) {
       row_lengths_ = ParseListOfDimensions(value.GetString());
       SetNeedsStyleRecalc(kSubtreeStyleChange,
                           StyleChangeReasonForTracing::FromAttribute(name));
     }
-  } else if (name == colsAttr) {
+  } else if (name == kColsAttr) {
     if (!value.IsNull()) {
       col_lengths_ = ParseListOfDimensions(value.GetString());
       SetNeedsStyleRecalc(kSubtreeStyleChange,
                           StyleChangeReasonForTracing::FromAttribute(name));
     }
-  } else if (name == frameborderAttr) {
+  } else if (name == kFrameborderAttr) {
     if (!value.IsNull()) {
       if (DeprecatedEqualIgnoringCase(value, "no") ||
           DeprecatedEqualIgnoringCase(value, "0")) {
@@ -101,107 +101,107 @@ void HTMLFrameSetElement::ParseAttribute(
       frameborder_ = false;
       frameborder_set_ = false;
     }
-  } else if (name == noresizeAttr) {
+  } else if (name == kNoresizeAttr) {
     noresize_ = true;
-  } else if (name == borderAttr) {
+  } else if (name == kBorderAttr) {
     if (!value.IsNull()) {
       border_ = value.ToInt();
       border_set_ = true;
     } else {
       border_set_ = false;
     }
-  } else if (name == bordercolorAttr) {
+  } else if (name == kBordercolorAttr) {
     border_color_set_ = !value.IsEmpty();
-  } else if (name == onafterprintAttr) {
+  } else if (name == kOnafterprintAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::afterprint,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
-  } else if (name == onbeforeprintAttr) {
+  } else if (name == kOnbeforeprintAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::beforeprint,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
-  } else if (name == onloadAttr) {
+  } else if (name == kOnloadAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::load,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
-  } else if (name == onbeforeunloadAttr) {
+  } else if (name == kOnbeforeunloadAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::beforeunload,
         CreateAttributeEventListener(
             GetDocument().GetFrame(), name, value,
             JSEventHandler::HandlerType::kOnBeforeUnloadEventHandler));
-  } else if (name == onunloadAttr) {
+  } else if (name == kOnunloadAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::unload,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
-  } else if (name == onpagehideAttr) {
+  } else if (name == kOnpagehideAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::pagehide,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
-  } else if (name == onpageshowAttr) {
+  } else if (name == kOnpageshowAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::pageshow,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
-  } else if (name == onblurAttr) {
+  } else if (name == kOnblurAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::blur,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
-  } else if (name == onerrorAttr) {
+  } else if (name == kOnerrorAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::error,
         CreateAttributeEventListener(
             GetDocument().GetFrame(), name, value,
             JSEventHandler::HandlerType::kOnErrorEventHandler));
-  } else if (name == onfocusAttr) {
+  } else if (name == kOnfocusAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::focus,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
-  } else if (name == onfocusinAttr) {
+  } else if (name == kOnfocusinAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::focusin,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
-  } else if (name == onfocusoutAttr) {
+  } else if (name == kOnfocusoutAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::focusout,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
   } else if (RuntimeEnabledFeatures::OrientationEventEnabled() &&
-             name == onorientationchangeAttr) {
+             name == kOnorientationchangeAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::orientationchange,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
-  } else if (name == onhashchangeAttr) {
+  } else if (name == kOnhashchangeAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::hashchange,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
-  } else if (name == onmessageAttr) {
+  } else if (name == kOnmessageAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::message,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
-  } else if (name == onresizeAttr) {
+  } else if (name == kOnresizeAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::resize,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
-  } else if (name == onscrollAttr) {
+  } else if (name == kOnscrollAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::scroll,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
-  } else if (name == onstorageAttr) {
+  } else if (name == kOnstorageAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::storage,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
-  } else if (name == ononlineAttr) {
+  } else if (name == kOnonlineAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::online,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
-  } else if (name == onofflineAttr) {
+  } else if (name == kOnofflineAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::offline,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
-  } else if (name == onpopstateAttr) {
+  } else if (name == kOnpopstateAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::popstate,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
-  } else if (name == onlanguagechangeAttr) {
+  } else if (name == kOnlanguagechangeAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::languagechange,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value));

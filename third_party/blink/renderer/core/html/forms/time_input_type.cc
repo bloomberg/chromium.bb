@@ -46,7 +46,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 static const int kTimeDefaultStep = 60;
 static const int kTimeDefaultStepBase = 0;
@@ -158,10 +158,10 @@ void TimeInputType::SetupLayoutParameters(
         layout_parameters.locale.ShortTimeFormat();
     layout_parameters.fallback_date_time_format = "HH:mm";
   }
-  if (!ParseToDateComponents(GetElement().FastGetAttribute(minAttr),
+  if (!ParseToDateComponents(GetElement().FastGetAttribute(kMinAttr),
                              &layout_parameters.minimum))
     layout_parameters.minimum = DateComponents();
-  if (!ParseToDateComponents(GetElement().FastGetAttribute(maxAttr),
+  if (!ParseToDateComponents(GetElement().FastGetAttribute(kMaxAttr),
                              &layout_parameters.maximum))
     layout_parameters.maximum = DateComponents();
 }

@@ -30,10 +30,10 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 HTMLAudioElement::HTMLAudioElement(Document& document)
-    : HTMLMediaElement(audioTag, document) {}
+    : HTMLMediaElement(kAudioTag, document) {}
 
 HTMLAudioElement* HTMLAudioElement::Create(Document& document) {
   HTMLAudioElement* audio = new HTMLAudioElement(document);

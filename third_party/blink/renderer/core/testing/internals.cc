@@ -1943,14 +1943,14 @@ bool Internals::executeCommand(Document* document,
 }
 
 AtomicString Internals::htmlNamespace() {
-  return HTMLNames::xhtmlNamespaceURI;
+  return html_names::xhtmlNamespaceURI;
 }
 
 Vector<AtomicString> Internals::htmlTags() {
-  Vector<AtomicString> tags(HTMLNames::kTagsCount);
+  Vector<AtomicString> tags(html_names::kTagsCount);
   std::unique_ptr<const HTMLQualifiedName* []> qualified_names =
-      HTMLNames::GetTags();
-  for (wtf_size_t i = 0; i < HTMLNames::kTagsCount; ++i)
+      html_names::GetTags();
+  for (wtf_size_t i = 0; i < html_names::kTagsCount; ++i)
     tags[i] = qualified_names[i]->LocalName();
   return tags;
 }

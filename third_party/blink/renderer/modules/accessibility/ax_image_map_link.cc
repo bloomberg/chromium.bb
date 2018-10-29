@@ -37,8 +37,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 AXImageMapLink::AXImageMapLink(HTMLAreaElement* area,
                                AXObjectCacheImpl& ax_object_cache)
     : AXNodeObject(area, ax_object_cache) {}

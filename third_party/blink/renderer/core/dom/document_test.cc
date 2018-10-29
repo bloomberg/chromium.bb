@@ -357,8 +357,8 @@ TEST_F(DocumentTest, DomTreeVersionForRemoval) {
   Document& doc = GetDocument();
   {
     DocumentFragment* fragment = DocumentFragment::Create(doc);
-    fragment->appendChild(Element::Create(HTMLNames::divTag, &doc));
-    fragment->appendChild(Element::Create(HTMLNames::spanTag, &doc));
+    fragment->appendChild(Element::Create(html_names::kDivTag, &doc));
+    fragment->appendChild(Element::Create(html_names::kSpanTag, &doc));
     uint64_t original_version = doc.DomTreeVersion();
     fragment->RemoveChildren();
     EXPECT_EQ(original_version + 1, doc.DomTreeVersion())
@@ -367,8 +367,8 @@ TEST_F(DocumentTest, DomTreeVersionForRemoval) {
 
   {
     DocumentFragment* fragment = DocumentFragment::Create(doc);
-    Node* child = Element::Create(HTMLNames::divTag, &doc);
-    child->appendChild(Element::Create(HTMLNames::spanTag, &doc));
+    Node* child = Element::Create(html_names::kDivTag, &doc);
+    child->appendChild(Element::Create(html_names::kSpanTag, &doc));
     fragment->appendChild(child);
     uint64_t original_version = doc.DomTreeVersion();
     fragment->removeChild(child);
@@ -417,50 +417,50 @@ TEST_F(DocumentTest, LinkManifest) {
 
   // Check that we use the first manifest with <link rel=manifest>
   auto* link = HTMLLinkElement::Create(GetDocument(), CreateElementFlags());
-  link->setAttribute(blink::HTMLNames::relAttr, "manifest");
-  link->setAttribute(blink::HTMLNames::hrefAttr, "foo.json");
+  link->setAttribute(blink::html_names::kRelAttr, "manifest");
+  link->setAttribute(blink::html_names::kHrefAttr, "foo.json");
   GetDocument().head()->AppendChild(link);
   EXPECT_EQ(link, GetDocument().LinkManifest());
 
   auto* link2 = HTMLLinkElement::Create(GetDocument(), CreateElementFlags());
-  link2->setAttribute(blink::HTMLNames::relAttr, "manifest");
-  link2->setAttribute(blink::HTMLNames::hrefAttr, "bar.json");
+  link2->setAttribute(blink::html_names::kRelAttr, "manifest");
+  link2->setAttribute(blink::html_names::kHrefAttr, "bar.json");
   GetDocument().head()->InsertBefore(link2, link);
   EXPECT_EQ(link2, GetDocument().LinkManifest());
   GetDocument().head()->AppendChild(link2);
   EXPECT_EQ(link, GetDocument().LinkManifest());
 
   // Check that crazy URLs are accepted.
-  link->setAttribute(blink::HTMLNames::hrefAttr, "http:foo.json");
+  link->setAttribute(blink::html_names::kHrefAttr, "http:foo.json");
   EXPECT_EQ(link, GetDocument().LinkManifest());
 
   // Check that empty URLs are accepted.
-  link->setAttribute(blink::HTMLNames::hrefAttr, "");
+  link->setAttribute(blink::html_names::kHrefAttr, "");
   EXPECT_EQ(link, GetDocument().LinkManifest());
 
   // Check that URLs from different origins are accepted.
-  link->setAttribute(blink::HTMLNames::hrefAttr,
+  link->setAttribute(blink::html_names::kHrefAttr,
                      "http://example.org/manifest.json");
   EXPECT_EQ(link, GetDocument().LinkManifest());
-  link->setAttribute(blink::HTMLNames::hrefAttr,
+  link->setAttribute(blink::html_names::kHrefAttr,
                      "http://foo.example.org/manifest.json");
   EXPECT_EQ(link, GetDocument().LinkManifest());
-  link->setAttribute(blink::HTMLNames::hrefAttr,
+  link->setAttribute(blink::html_names::kHrefAttr,
                      "http://foo.bar/manifest.json");
   EXPECT_EQ(link, GetDocument().LinkManifest());
 
   // More than one token in @rel is accepted.
-  link->setAttribute(blink::HTMLNames::relAttr, "foo bar manifest");
+  link->setAttribute(blink::html_names::kRelAttr, "foo bar manifest");
   EXPECT_EQ(link, GetDocument().LinkManifest());
 
   // Such as spaces around the token.
-  link->setAttribute(blink::HTMLNames::relAttr, " manifest ");
+  link->setAttribute(blink::html_names::kRelAttr, " manifest ");
   EXPECT_EQ(link, GetDocument().LinkManifest());
 
   // Check that rel=manifest actually matters.
-  link->setAttribute(blink::HTMLNames::relAttr, "");
+  link->setAttribute(blink::html_names::kRelAttr, "");
   EXPECT_EQ(link2, GetDocument().LinkManifest());
-  link->setAttribute(blink::HTMLNames::relAttr, "manifest");
+  link->setAttribute(blink::html_names::kRelAttr, "manifest");
 
   // Check that link outside of the <head> are ignored.
   GetDocument().head()->RemoveChild(link);
@@ -472,15 +472,15 @@ TEST_F(DocumentTest, LinkManifest) {
   GetDocument().head()->AppendChild(link2);
 
   // Check that some attribute values do not have an effect.
-  link->setAttribute(blink::HTMLNames::crossoriginAttr, "use-credentials");
+  link->setAttribute(blink::html_names::kCrossoriginAttr, "use-credentials");
   EXPECT_EQ(link, GetDocument().LinkManifest());
-  link->setAttribute(blink::HTMLNames::hreflangAttr, "klingon");
+  link->setAttribute(blink::html_names::kHreflangAttr, "klingon");
   EXPECT_EQ(link, GetDocument().LinkManifest());
-  link->setAttribute(blink::HTMLNames::typeAttr, "image/gif");
+  link->setAttribute(blink::html_names::kTypeAttr, "image/gif");
   EXPECT_EQ(link, GetDocument().LinkManifest());
-  link->setAttribute(blink::HTMLNames::sizesAttr, "16x16");
+  link->setAttribute(blink::html_names::kSizesAttr, "16x16");
   EXPECT_EQ(link, GetDocument().LinkManifest());
-  link->setAttribute(blink::HTMLNames::mediaAttr, "print");
+  link->setAttribute(blink::html_names::kMediaAttr, "print");
   EXPECT_EQ(link, GetDocument().LinkManifest());
 }
 
@@ -558,19 +558,19 @@ TEST_F(DocumentTest, StyleVersion) {
   EXPECT_TRUE(element);
 
   uint64_t previous_style_version = GetDocument().StyleVersion();
-  element->setAttribute(blink::HTMLNames::classAttr, "notfound");
+  element->setAttribute(blink::html_names::kClassAttr, "notfound");
   EXPECT_EQ(previous_style_version, GetDocument().StyleVersion());
 
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   previous_style_version = GetDocument().StyleVersion();
-  element->setAttribute(blink::HTMLNames::classAttr, "a");
+  element->setAttribute(blink::html_names::kClassAttr, "a");
   EXPECT_NE(previous_style_version, GetDocument().StyleVersion());
 
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   previous_style_version = GetDocument().StyleVersion();
-  element->setAttribute(blink::HTMLNames::classAttr, "a b");
+  element->setAttribute(blink::html_names::kClassAttr, "a b");
   EXPECT_NE(previous_style_version, GetDocument().StyleVersion());
 }
 
@@ -620,13 +620,13 @@ TEST_F(DocumentTest, SynchronousMutationNotifier) {
   EXPECT_EQ(GetDocument(), observer.LifecycleContext());
   EXPECT_EQ(0, observer.CountContextDestroyedCalled());
 
-  Element* div_node = GetDocument().CreateRawElement(HTMLNames::divTag);
+  Element* div_node = GetDocument().CreateRawElement(html_names::kDivTag);
   GetDocument().body()->AppendChild(div_node);
 
-  Element* bold_node = GetDocument().CreateRawElement(HTMLNames::bTag);
+  Element* bold_node = GetDocument().CreateRawElement(html_names::kBTag);
   div_node->AppendChild(bold_node);
 
-  Element* italic_node = GetDocument().CreateRawElement(HTMLNames::iTag);
+  Element* italic_node = GetDocument().CreateRawElement(html_names::kITag);
   div_node->AppendChild(italic_node);
 
   Node* text_node = GetDocument().createTextNode("0123456789");
@@ -686,7 +686,7 @@ TEST_F(DocumentTest, SynchronousMutationNotifierMergeTextNodes) {
 TEST_F(DocumentTest, SynchronousMutationNotifierMoveTreeToNewDocument) {
   auto& observer = *new TestSynchronousMutationObserver(GetDocument());
 
-  Node* move_sample = GetDocument().CreateRawElement(HTMLNames::divTag);
+  Node* move_sample = GetDocument().CreateRawElement(html_names::kDivTag);
   move_sample->appendChild(GetDocument().createTextNode("a123"));
   move_sample->appendChild(GetDocument().createTextNode("b456"));
   GetDocument().body()->AppendChild(move_sample);
@@ -710,7 +710,8 @@ TEST_F(DocumentTest, SynchronousMutationNotifieReplaceChild) {
   auto& observer = *new TestSynchronousMutationObserver(GetDocument());
   Element* const replaced_node = GetDocument().body();
   GetDocument().documentElement()->ReplaceChild(
-      GetDocument().CreateRawElement(HTMLNames::divTag), GetDocument().body());
+      GetDocument().CreateRawElement(html_names::kDivTag),
+      GetDocument().body());
   ASSERT_EQ(2u, observer.ChildrenChangedNodes().size());
   EXPECT_EQ(GetDocument().documentElement(),
             observer.ChildrenChangedNodes()[0]);
@@ -820,9 +821,10 @@ TEST_F(DocumentTest, ValidationMessageCleanup) {
   // true. It's necessary to kick unload process.
   GetDocument().ImplicitOpen(kForceSynchronousParsing);
   GetDocument().CancelParsing();
-  GetDocument().AppendChild(GetDocument().CreateRawElement(HTMLNames::htmlTag));
+  GetDocument().AppendChild(
+      GetDocument().CreateRawElement(html_names::kHTMLTag));
   SetHtmlInnerHTML("<body><input required></body>");
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->setTextContent(
       "window.onunload = function() {"
       "document.querySelector('input').reportValidity(); };");

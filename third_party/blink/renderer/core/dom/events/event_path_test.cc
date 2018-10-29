@@ -18,7 +18,7 @@ class EventPathTest : public PageTestBase {};
 
 TEST_F(EventPathTest, ShouldBeEmptyForPseudoElementWithoutParentElement) {
   Element* div = GetDocument().CreateRawElement(
-      HTMLNames::divTag, CreateElementFlags::ByCreateElement());
+      html_names::kDivTag, CreateElementFlags::ByCreateElement());
   PseudoElement* pseudo = PseudoElement::Create(div, kPseudoIdFirstLetter);
   pseudo->Dispose();
   EventPath event_path(*pseudo);

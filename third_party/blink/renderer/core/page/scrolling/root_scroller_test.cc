@@ -219,7 +219,7 @@ TEST_F(RootScrollerTest, defaultEffectiveRootScrollerIsDocumentNode) {
   Initialize("root-scroller.html");
 
   Document* document = MainFrame()->GetDocument();
-  Element* iframe = document->CreateRawElement(HTMLNames::iframeTag);
+  Element* iframe = document->CreateRawElement(html_names::kIFrameTag);
 
   EXPECT_EQ(MainFrame()->GetDocument(),
             EffectiveRootScroller(MainFrame()->GetDocument()));
@@ -1118,11 +1118,11 @@ TEST_F(RootScrollerTest, InvalidDefaultRootScroller) {
 
   Document* document = MainFrame()->GetDocument();
 
-  Element* br = document->CreateRawElement(HTMLNames::brTag);
+  Element* br = document->CreateRawElement(html_names::kBrTag);
   document->ReplaceChild(br, document->documentElement());
   MainFrameView()->UpdateAllLifecyclePhases();
-  Element* html = document->CreateRawElement(HTMLNames::htmlTag);
-  Element* body = document->CreateRawElement(HTMLNames::bodyTag);
+  Element* html = document->CreateRawElement(html_names::kHTMLTag);
+  Element* body = document->CreateRawElement(html_names::kBodyTag);
   html->AppendChild(body);
   body->AppendChild(br);
   document->AppendChild(html);
@@ -1448,7 +1448,7 @@ TEST_F(RootScrollerSimTest, UsePaddingBoxForViewportFillingCondition) {
 
   // Setting a border should cause the element to no longer be valid as its
   // padding box doesn't fill the viewport exactly.
-  container->setAttribute(HTMLNames::styleAttr, "border: 1px solid black");
+  container->setAttribute(html_names::kStyleAttr, "border: 1px solid black");
   Compositor().BeginFrame();
   EXPECT_EQ(&GetDocument(),
             GetDocument().GetRootScrollerController().EffectiveRootScroller());
@@ -1772,12 +1772,12 @@ TEST_F(ImplicitRootScrollerSimTest, CandidateLosesLayoutBoxDontCrash) {
   Element* container = GetDocument().getElementById("container");
 
   // An overflowing box will be added to the implicit candidates list.
-  container->setAttribute(HTMLNames::classAttr, "box");
+  container->setAttribute(html_names::kClassAttr, "box");
   Compositor().BeginFrame();
 
   // This will make change from a box to an inline. Ensure we don't crash when
   // we reevaluate the candidates list.
-  container->setAttribute(HTMLNames::classAttr, "nonbox");
+  container->setAttribute(html_names::kClassAttr, "nonbox");
   Compositor().BeginFrame();
 }
 

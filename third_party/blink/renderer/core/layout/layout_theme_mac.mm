@@ -134,8 +134,6 @@ NSColor* ColorInColorSpace(NSColor* color) {
 
 }  // namespace
 
-using namespace HTMLNames;
-
 LayoutThemeMac::LayoutThemeMac()
     : LayoutTheme(PlatformTheme()),
       notification_observer_(

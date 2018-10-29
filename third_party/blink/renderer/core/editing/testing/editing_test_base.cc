@@ -37,10 +37,11 @@ EditingTestBase::EditingTestBase() = default;
 EditingTestBase::~EditingTestBase() = default;
 
 void EditingTestBase::InsertStyleElement(const std::string& style_rules) {
-  Element* const head = GetOrCreateElement(&GetDocument(), HTMLNames::headTag);
-  DCHECK_EQ(head, GetOrCreateElement(&GetDocument(), HTMLNames::headTag));
+  Element* const head =
+      GetOrCreateElement(&GetDocument(), html_names::kHeadTag);
+  DCHECK_EQ(head, GetOrCreateElement(&GetDocument(), html_names::kHeadTag));
   Element* const style = GetDocument().CreateRawElement(
-      HTMLNames::styleTag, CreateElementFlags::ByCreateElement());
+      html_names::kStyleTag, CreateElementFlags::ByCreateElement());
   style->setTextContent(String(style_rules.data(), style_rules.size()));
   head->appendChild(style);
 }

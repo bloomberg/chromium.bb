@@ -1089,7 +1089,7 @@ TEST_F(LayoutBoxModelObjectTest, InvalidatePaintLayerOnStackedChange) {
   EXPECT_FALSE(parent->StyleRef().IsStacked());
   EXPECT_NE(parent, original_compositing_container->GetLayoutObject());
 
-  target_element->setAttribute(HTMLNames::classAttr, "non-stacked");
+  target_element->setAttribute(html_names::kClassAttr, "non-stacked");
   GetDocument().View()->UpdateLifecycleToLayoutClean();
 
   EXPECT_FALSE(target->StyleRef().IsStacked());
@@ -1099,7 +1099,7 @@ TEST_F(LayoutBoxModelObjectTest, InvalidatePaintLayerOnStackedChange) {
   EXPECT_EQ(parent, new_compositing_container->GetLayoutObject());
 
   GetDocument().View()->UpdateAllLifecyclePhases();
-  target_element->setAttribute(HTMLNames::classAttr, "stacked");
+  target_element->setAttribute(html_names::kClassAttr, "stacked");
   GetDocument().View()->UpdateLifecycleToLayoutClean();
 
   EXPECT_TRUE(target->StyleRef().IsStacked());
@@ -1169,14 +1169,14 @@ TEST_F(LayoutBoxModelObjectTest, BackfaceVisibilityChange) {
   ASSERT_NE(nullptr, target_layer);
   EXPECT_FALSE(target_layer->NeedsRepaint());
 
-  target->setAttribute(HTMLNames::styleAttr,
+  target->setAttribute(html_names::kStyleAttr,
                        base_style + "; backface-visibility: hidden");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_TRUE(target_layer->NeedsRepaint());
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_FALSE(target_layer->NeedsRepaint());
 
-  target->setAttribute(HTMLNames::styleAttr, base_style);
+  target->setAttribute(html_names::kStyleAttr, base_style);
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_TRUE(target_layer->NeedsRepaint());
   GetDocument().View()->UpdateAllLifecyclePhases();

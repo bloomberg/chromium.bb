@@ -51,7 +51,7 @@ class ScrollAnchorTest : public testing::WithParamInterface<bool>,
   }
 
   void SetHeight(Element* element, int height) {
-    element->setAttribute(HTMLNames::styleAttr,
+    element->setAttribute(html_names::kStyleAttr,
                           AtomicString(String::Format("height: %dpx", height)));
     Update();
   }
@@ -268,7 +268,7 @@ TEST_P(ScrollAnchorTest, FractionalOffsetsAreRoundedBeforeComparing) {
   ScrollableArea* viewport = LayoutViewport();
   ScrollLayoutViewport(ScrollOffset(0, 100));
 
-  GetDocument().getElementById("block1")->setAttribute(HTMLNames::styleAttr,
+  GetDocument().getElementById("block1")->setAttribute(html_names::kStyleAttr,
                                                        "height: 50.6px");
   Update();
 
@@ -286,7 +286,7 @@ TEST_P(ScrollAnchorTest, AvoidStickyAnchorWhichMovesWithScroll) {
   ScrollableArea* viewport = LayoutViewport();
   ScrollLayoutViewport(ScrollOffset(0, 60));
 
-  GetDocument().getElementById("block1")->setAttribute(HTMLNames::styleAttr,
+  GetDocument().getElementById("block1")->setAttribute(html_names::kStyleAttr,
                                                        "height: 100px");
   Update();
 
@@ -427,7 +427,7 @@ TEST_P(ScrollAnchorTest, FlexboxDelayedAdjustmentRespectsSANACLAP) {
   Element* scroller = GetDocument().getElementById("scroller");
   scroller->setScrollTop(100);
 
-  GetDocument().getElementById("spacer")->setAttribute(HTMLNames::styleAttr,
+  GetDocument().getElementById("spacer")->setAttribute(html_names::kStyleAttr,
                                                        "margin-top: 50px");
   Update();
   EXPECT_EQ(100, ScrollerForElement(scroller)->ScrollOffsetInt().Height());

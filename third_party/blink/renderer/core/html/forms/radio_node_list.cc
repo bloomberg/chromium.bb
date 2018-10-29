@@ -36,8 +36,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 RadioNodeList::RadioNodeList(ContainerNode& root_node,
                              const AtomicString& name,
                              CollectionType type)

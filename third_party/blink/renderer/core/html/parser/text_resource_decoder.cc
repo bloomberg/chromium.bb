@@ -24,15 +24,12 @@
 
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/html/parser/html_meta_charset_parser.h"
-#include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/platform/text/text_encoding_detector.h"
 #include "third_party/blink/renderer/platform/wtf/string_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_codec.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
 
 namespace blink {
-
-using namespace HTMLNames;
 
 const int kMinimumLengthOfXMLDeclaration = 8;
 

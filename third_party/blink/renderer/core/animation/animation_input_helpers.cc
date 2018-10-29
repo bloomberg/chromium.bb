@@ -104,7 +104,7 @@ const AttributeNameMap& GetSupportedAttributes() {
     // Fill the set for the first use.
     // Animatable attributes from http://www.w3.org/TR/SVG/attindex.html
     const QualifiedName* attributes[] = {
-        &HTMLNames::classAttr,
+        &html_names::kClassAttr,
         &svg_names::kAmplitudeAttr,
         &svg_names::kAzimuthAttr,
         &svg_names::kBaseFrequencyAttr,

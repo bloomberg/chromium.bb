@@ -33,7 +33,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline ClearButtonElement::ClearButtonElement(
     Document& document,
@@ -46,7 +46,7 @@ ClearButtonElement* ClearButtonElement::Create(
   ClearButtonElement* element =
       new ClearButtonElement(document, clear_button_owner);
   element->SetShadowPseudoId(AtomicString("-webkit-clear-button"));
-  element->setAttribute(idAttr, ShadowElementNames::ClearButton());
+  element->setAttribute(kIdAttr, ShadowElementNames::ClearButton());
   return element;
 }
 

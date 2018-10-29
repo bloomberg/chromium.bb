@@ -157,7 +157,7 @@ void AppendUnsafe(StringBuilder& builder, const String& off_thread_string) {
 
 }  // namespace
 
-using namespace HTMLNames;
+using namespace html_names;
 
 struct SameSizeAsNode : EventTarget {
   uint32_t node_flags_;
@@ -1232,7 +1232,7 @@ bool Node::IsInert() const {
                                  ? ToElement(this)
                                  : FlatTreeTraversal::ParentElement(*this);
     while (element) {
-      if (element->hasAttribute(HTMLNames::inertAttr))
+      if (element->hasAttribute(html_names::kInertAttr))
         return true;
       element = FlatTreeTraversal::ParentElement(*element);
     }
@@ -1451,9 +1451,10 @@ bool Node::IsActiveSlotOrActiveV0InsertionPoint() const {
 
 AtomicString Node::SlotName() const {
   DCHECK(IsSlotable());
-  if (IsElementNode())
+  if (IsElementNode()) {
     return HTMLSlotElement::NormalizeSlotName(
-        ToElement(*this).FastGetAttribute(HTMLNames::slotAttr));
+        ToElement(*this).FastGetAttribute(html_names::kSlotAttr));
+  }
   DCHECK(IsTextNode());
   return g_empty_atom;
 }
@@ -2004,9 +2005,9 @@ String Node::ToString() const {
     builder.Append(nodeValue().EncodeForDebugging());
     return builder.ToString();
   }
-  DumpAttributeDesc(*this, HTMLNames::idAttr, builder);
-  DumpAttributeDesc(*this, HTMLNames::classAttr, builder);
-  DumpAttributeDesc(*this, HTMLNames::styleAttr, builder);
+  DumpAttributeDesc(*this, html_names::kIdAttr, builder);
+  DumpAttributeDesc(*this, html_names::kClassAttr, builder);
+  DumpAttributeDesc(*this, html_names::kStyleAttr, builder);
   if (HasEditableStyle(*this))
     builder.Append(" (editable)");
   if (GetDocument().FocusedElement() == this)

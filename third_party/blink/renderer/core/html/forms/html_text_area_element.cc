@@ -53,7 +53,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 static const unsigned kDefaultRows = 2;
 static const unsigned kDefaultCols = 20;
@@ -69,7 +69,7 @@ static inline unsigned ComputeLengthForAPIValue(const String& text) {
 }
 
 HTMLTextAreaElement::HTMLTextAreaElement(Document& document)
-    : TextControlElement(textareaTag, document),
+    : TextControlElement(kTextareaTag, document),
       rows_(kDefaultRows),
       cols_(kDefaultCols),
       wrap_(kSoftWrap),
@@ -111,13 +111,13 @@ void HTMLTextAreaElement::ChildrenChanged(const ChildrenChange& change) {
 
 bool HTMLTextAreaElement::IsPresentationAttribute(
     const QualifiedName& name) const {
-  if (name == alignAttr) {
+  if (name == kAlignAttr) {
     // Don't map 'align' attribute.  This matches what Firefox, Opera and IE do.
     // See http://bugs.webkit.org/show_bug.cgi?id=7075
     return false;
   }
 
-  if (name == wrapAttr)
+  if (name == kWrapAttr)
     return true;
   return TextControlElement::IsPresentationAttribute(name);
 }
@@ -126,7 +126,7 @@ void HTMLTextAreaElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  if (name == wrapAttr) {
+  if (name == kWrapAttr) {
     if (ShouldWrapText()) {
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyWhiteSpace,
                                               CSSValuePreWrap);
@@ -148,7 +148,7 @@ void HTMLTextAreaElement::ParseAttribute(
     const AttributeModificationParams& params) {
   const QualifiedName& name = params.name;
   const AtomicString& value = params.new_value;
-  if (name == rowsAttr) {
+  if (name == kRowsAttr) {
     unsigned rows = 0;
     if (value.IsEmpty() || !ParseHTMLNonNegativeInteger(value, rows) ||
         rows <= 0 || rows > 0x7fffffffu)
@@ -161,7 +161,7 @@ void HTMLTextAreaElement::ParseAttribute(
                 LayoutInvalidationReason::kAttributeChanged);
       }
     }
-  } else if (name == colsAttr) {
+  } else if (name == kColsAttr) {
     unsigned cols = 0;
     if (value.IsEmpty() || !ParseHTMLNonNegativeInteger(value, cols) ||
         cols <= 0 || cols > 0x7fffffffu)
@@ -174,7 +174,7 @@ void HTMLTextAreaElement::ParseAttribute(
                 LayoutInvalidationReason::kAttributeChanged);
       }
     }
-  } else if (name == wrapAttr) {
+  } else if (name == kWrapAttr) {
     // The virtual/physical values were a Netscape extension of HTML 3.0, now
     // deprecated.  The soft/hard /off values are a recommendation for HTML 4
     // extension by IE and NS 4.
@@ -195,12 +195,12 @@ void HTMLTextAreaElement::ParseAttribute(
                 LayoutInvalidationReason::kAttributeChanged);
       }
     }
-  } else if (name == accesskeyAttr) {
+  } else if (name == kAccesskeyAttr) {
     // ignore for the moment
-  } else if (name == maxlengthAttr) {
+  } else if (name == kMaxlengthAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kTextAreaMaxLength);
     SetNeedsValidityCheck();
-  } else if (name == minlengthAttr) {
+  } else if (name == kMinlengthAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kTextAreaMinLength);
     SetNeedsValidityCheck();
   } else {
@@ -222,7 +222,7 @@ void HTMLTextAreaElement::AppendToFormData(FormData& form_data) {
       (wrap_ == kHardWrap) ? ValueWithHardLineBreaks() : value();
   form_data.AppendFromElement(GetName(), text);
 
-  const AtomicString& dirname_attr_value = FastGetAttribute(dirnameAttr);
+  const AtomicString& dirname_attr_value = FastGetAttribute(kDirnameAttr);
   if (!dirname_attr_value.IsNull())
     form_data.AppendFromElement(dirname_attr_value, DirectionForFormData());
 }
@@ -569,12 +569,12 @@ void HTMLTextAreaElement::AccessKeyAction(bool) {
 }
 
 void HTMLTextAreaElement::setCols(unsigned cols) {
-  SetUnsignedIntegralAttribute(colsAttr, cols ? cols : kDefaultCols,
+  SetUnsignedIntegralAttribute(kColsAttr, cols ? cols : kDefaultCols,
                                kDefaultCols);
 }
 
 void HTMLTextAreaElement::setRows(unsigned rows) {
-  SetUnsignedIntegralAttribute(rowsAttr, rows ? rows : kDefaultRows,
+  SetUnsignedIntegralAttribute(kRowsAttr, rows ? rows : kDefaultRows,
                                kDefaultRows);
 }
 
@@ -602,7 +602,7 @@ void HTMLTextAreaElement::UpdatePlaceholderText() {
     HTMLDivElement* new_element = HTMLDivElement::Create(GetDocument());
     placeholder = new_element;
     placeholder->SetShadowPseudoId(AtomicString("-webkit-input-placeholder"));
-    placeholder->setAttribute(idAttr, ShadowElementNames::Placeholder());
+    placeholder->setAttribute(kIdAttr, ShadowElementNames::Placeholder());
     placeholder->SetInlineStyleProperty(
         CSSPropertyDisplay,
         IsPlaceholderVisible() ? CSSValueBlock : CSSValueNone, true);
@@ -613,7 +613,7 @@ void HTMLTextAreaElement::UpdatePlaceholderText() {
 
 String HTMLTextAreaElement::GetPlaceholderValue() const {
   return !SuggestedValue().IsEmpty() ? SuggestedValue()
-                                     : FastGetAttribute(placeholderAttr);
+                                     : FastGetAttribute(kPlaceholderAttr);
 }
 
 bool HTMLTextAreaElement::IsInteractiveContent() const {

@@ -210,7 +210,7 @@ AtomicString GetInputModeAttribute(Element* element) {
 
   // TODO(dtapuska): We may wish to restrict this to a yet to be proposed
   // <contenteditable> or <richtext> element Mozilla discussed at TPAC 2016.
-  return element->FastGetAttribute(HTMLNames::inputmodeAttr).LowerASCII();
+  return element->FastGetAttribute(html_names::kInputmodeAttr).LowerASCII();
 }
 
 constexpr int kInvalidDeletionLength = -1;
@@ -1338,14 +1338,14 @@ int InputMethodController::TextInputFlags() const {
   int flags = 0;
 
   const AtomicString& autocomplete =
-      element->getAttribute(HTMLNames::autocompleteAttr);
+      element->getAttribute(html_names::kAutocompleteAttr);
   if (autocomplete == "on")
     flags |= kWebTextInputFlagAutocompleteOn;
   else if (autocomplete == "off")
     flags |= kWebTextInputFlagAutocompleteOff;
 
   const AtomicString& autocorrect =
-      element->getAttribute(HTMLNames::autocorrectAttr);
+      element->getAttribute(html_names::kAutocorrectAttr);
   if (autocorrect == "on")
     flags |= kWebTextInputFlagAutocorrectOn;
   else if (autocorrect == "off")

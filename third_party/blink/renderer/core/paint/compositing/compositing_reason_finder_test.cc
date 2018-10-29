@@ -205,14 +205,14 @@ TEST_F(CompositingReasonFinderTest, OnlyNonTransformedFixedLayersPromoted) {
   EXPECT_TRUE(paint_layer->GraphicsLayerBacking()->ContentsOpaque());
 
   // Change the parent to have a transform.
-  parent->setAttribute(HTMLNames::styleAttr, "transform: translate(1px, 0);");
+  parent->setAttribute(html_names::kStyleAttr, "transform: translate(1px, 0);");
   GetDocument().View()->UpdateAllLifecyclePhases();
   paint_layer = ToLayoutBoxModelObject(fixed->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
   EXPECT_EQ(kNotComposited, paint_layer->GetCompositingState());
 
   // Change the parent to have no transform again.
-  parent->removeAttribute(HTMLNames::styleAttr);
+  parent->removeAttribute(html_names::kStyleAttr);
   GetDocument().View()->UpdateAllLifecyclePhases();
   paint_layer = ToLayoutBoxModelObject(fixed->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
@@ -220,7 +220,7 @@ TEST_F(CompositingReasonFinderTest, OnlyNonTransformedFixedLayersPromoted) {
   EXPECT_TRUE(paint_layer->GraphicsLayerBacking()->ContentsOpaque());
 
   // Apply a transform to the fixed directly.
-  fixed->setAttribute(HTMLNames::styleAttr, "transform: translate(1px, 0);");
+  fixed->setAttribute(html_names::kStyleAttr, "transform: translate(1px, 0);");
   GetDocument().View()->UpdateAllLifecyclePhases();
   paint_layer = ToLayoutBoxModelObject(fixed->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
@@ -253,14 +253,14 @@ TEST_F(CompositingReasonFinderTest, OnlyOpaqueFixedLayersPromoted) {
   EXPECT_TRUE(paint_layer->GraphicsLayerBacking()->ContentsOpaque());
 
   // Change the parent to be partially translucent.
-  parent->setAttribute(HTMLNames::styleAttr, "opacity: 0.5;");
+  parent->setAttribute(html_names::kStyleAttr, "opacity: 0.5;");
   GetDocument().View()->UpdateAllLifecyclePhases();
   paint_layer = ToLayoutBoxModelObject(fixed->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
   EXPECT_EQ(kNotComposited, paint_layer->GetCompositingState());
 
   // Change the parent to be opaque again.
-  parent->setAttribute(HTMLNames::styleAttr, "opacity: 1;");
+  parent->setAttribute(html_names::kStyleAttr, "opacity: 1;");
   GetDocument().View()->UpdateAllLifecyclePhases();
   paint_layer = ToLayoutBoxModelObject(fixed->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
@@ -268,7 +268,7 @@ TEST_F(CompositingReasonFinderTest, OnlyOpaqueFixedLayersPromoted) {
   EXPECT_TRUE(paint_layer->GraphicsLayerBacking()->ContentsOpaque());
 
   // Make the fixed translucent.
-  fixed->setAttribute(HTMLNames::styleAttr, "opacity: 0.5");
+  fixed->setAttribute(html_names::kStyleAttr, "opacity: 0.5");
   GetDocument().View()->UpdateAllLifecyclePhases();
   paint_layer = ToLayoutBoxModelObject(fixed->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);

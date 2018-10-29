@@ -27,7 +27,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 static bool StyleSheetTypeIsSupported(const String& type) {
   String trimmed_type = ContentType(type).GetType();
@@ -73,7 +73,7 @@ void LinkStyle::NotifyFinished(Resource* resource) {
   // See the comment in pending_script.cc about why this check is necessary
   // here, instead of in the resource fetcher. https://crbug.com/500701.
   if (!cached_style_sheet->ErrorOccurred() &&
-      !owner_->FastGetAttribute(integrityAttr).IsEmpty() &&
+      !owner_->FastGetAttribute(kIntegrityAttr).IsEmpty() &&
       !cached_style_sheet->IntegrityMetadata().IsEmpty()) {
     ResourceIntegrityDisposition disposition =
         cached_style_sheet->IntegrityDisposition();
@@ -321,14 +321,14 @@ void LinkStyle::Process() {
   DCHECK(owner_->ShouldProcessStyle());
   const LinkLoadParameters params(
       owner_->RelAttribute(),
-      GetCrossOriginAttributeValue(owner_->FastGetAttribute(crossoriginAttr)),
+      GetCrossOriginAttributeValue(owner_->FastGetAttribute(kCrossoriginAttr)),
       owner_->TypeValue().DeprecatedLower(),
       owner_->AsValue().DeprecatedLower(), owner_->Media().DeprecatedLower(),
       owner_->nonce(), owner_->IntegrityValue(),
       owner_->ImportanceValue().LowerASCII(), owner_->GetReferrerPolicy(),
-      owner_->GetNonEmptyURLAttribute(hrefAttr),
-      owner_->FastGetAttribute(srcsetAttr),
-      owner_->FastGetAttribute(imgsizesAttr));
+      owner_->GetNonEmptyURLAttribute(kHrefAttr),
+      owner_->FastGetAttribute(kSrcsetAttr),
+      owner_->FastGetAttribute(kImgsizesAttr));
 
   WTF::TextEncoding charset = GetCharset();
 
@@ -368,7 +368,7 @@ void LinkStyle::SetSheetTitle(const String& title) {
   if (title.IsEmpty() || !IsUnset() || owner_->IsAlternate())
     return;
 
-  const KURL& href = owner_->GetNonEmptyURLAttribute(hrefAttr);
+  const KURL& href = owner_->GetNonEmptyURLAttribute(kHrefAttr);
   if (href.IsValid() && !href.IsEmpty())
     GetDocument().GetStyleEngine().SetPreferredStylesheetSetNameIfNotSet(title);
 }

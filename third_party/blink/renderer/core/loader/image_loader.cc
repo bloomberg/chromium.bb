@@ -85,17 +85,17 @@ bool IsLazyLoadingImageAllowed(const LocalFrame* frame,
     return false;
 
   if (EqualIgnoringASCIICase(
-          html_image->FastGetAttribute(HTMLNames::lazyloadAttr), "off") &&
+          html_image->FastGetAttribute(html_names::kLazyloadAttr), "off") &&
       !frame->GetDocument()->IsLazyLoadPolicyEnforced()) {
     return false;
   }
   // Avoid lazyloading if width and height attributes are small. This
   // heuristic helps avoid double fetching tracking pixels.
   double width, height;
-  if (GetAbsoluteDimensionValue(html_image->getAttribute(HTMLNames::widthAttr),
-                                &width) &&
-      GetAbsoluteDimensionValue(html_image->getAttribute(HTMLNames::heightAttr),
-                                &height) &&
+  if (GetAbsoluteDimensionValue(
+          html_image->getAttribute(html_names::kWidthAttr), &width) &&
+      GetAbsoluteDimensionValue(
+          html_image->getAttribute(html_names::kHeightAttr), &height) &&
       width <= kMinDimensionToLazyLoad && height <= kMinDimensionToLazyLoad) {
     return false;
   }
@@ -367,7 +367,7 @@ static void ConfigureRequest(
     params.SetContentSecurityCheck(kDoNotCheckContentSecurityPolicy);
 
   CrossOriginAttributeValue cross_origin = GetCrossOriginAttributeValue(
-      element.FastGetAttribute(HTMLNames::crossoriginAttr));
+      element.FastGetAttribute(html_names::kCrossoriginAttr));
   if (cross_origin != kCrossOriginAttributeNotSet) {
     params.SetCrossOriginAccessControl(
         element.GetDocument().GetSecurityOrigin(), cross_origin);
@@ -376,7 +376,7 @@ static void ConfigureRequest(
   if (RuntimeEnabledFeatures::PriorityHintsEnabled()) {
     mojom::FetchImportanceMode importance_mode =
         GetFetchImportanceAttributeValue(
-            element.FastGetAttribute(HTMLNames::importanceAttr));
+            element.FastGetAttribute(html_names::kImportanceAttr));
     params.SetFetchImportanceMode(importance_mode);
   }
 
@@ -478,7 +478,7 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
 
     // Correct the RequestContext if necessary.
     if (IsHTMLPictureElement(GetElement()->parentNode()) ||
-        !GetElement()->FastGetAttribute(HTMLNames::srcsetAttr).IsNull()) {
+        !GetElement()->FastGetAttribute(html_names::kSrcsetAttr).IsNull()) {
       resource_request.SetRequestContext(mojom::RequestContextType::IMAGE_SET);
     } else if (IsHTMLObjectElement(GetElement())) {
       resource_request.SetRequestContext(mojom::RequestContextType::OBJECT);

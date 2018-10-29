@@ -38,8 +38,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 AXInlineTextBox::AXInlineTextBox(
     scoped_refptr<AbstractInlineTextBox> inline_text_box,
     AXObjectCacheImpl& ax_object_cache)

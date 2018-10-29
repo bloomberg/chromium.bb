@@ -90,7 +90,7 @@ MediaControlSliderElement::MediaControlSliderElement(
           GetDocument(),
           new MediaControlSliderElementResizeObserverDelegate(this))) {
   setType(InputTypeNames::range);
-  setAttribute(HTMLNames::stepAttr, "any");
+  setAttribute(html_names::kStepAttr, "any");
   resize_observer_->observe(this);
 }
 

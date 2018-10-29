@@ -34,7 +34,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 AXList::AXList(LayoutObject* layout_object, AXObjectCacheImpl& ax_object_cache)
     : AXLayoutObject(layout_object, ax_object_cache) {}
@@ -56,7 +56,7 @@ bool AXList::IsDescriptionList() const {
     return false;
 
   Node* node = layout_object_->GetNode();
-  return node && node->HasTagName(dlTag);
+  return node && node->HasTagName(kDlTag);
 }
 
 ax::mojom::Role AXList::RoleValue() const {

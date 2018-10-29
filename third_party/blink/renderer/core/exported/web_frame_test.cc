@@ -2193,9 +2193,9 @@ TEST_F(WebFrameTest, FrameOwnerPropertiesMargin) {
   // properties.
   Document* child_document = local_frame->GetFrame()->GetDocument();
   EXPECT_EQ(11, child_document->FirstBodyElement()->GetIntegralAttribute(
-                    HTMLNames::marginwidthAttr));
+                    html_names::kMarginwidthAttr));
   EXPECT_EQ(22, child_document->FirstBodyElement()->GetIntegralAttribute(
-                    HTMLNames::marginheightAttr));
+                    html_names::kMarginheightAttr));
 
   LocalFrameView* frame_view = local_frame->GetFrameView();
   frame_view->Resize(800, 600);
@@ -2223,9 +2223,9 @@ TEST_F(WebFrameTest, FrameOwnerPropertiesScrolling) {
 
   Document* child_document = local_frame->GetFrame()->GetDocument();
   EXPECT_EQ(0, child_document->FirstBodyElement()->GetIntegralAttribute(
-                   HTMLNames::marginwidthAttr));
+                   html_names::kMarginwidthAttr));
   EXPECT_EQ(0, child_document->FirstBodyElement()->GetIntegralAttribute(
-                   HTMLNames::marginheightAttr));
+                   html_names::kMarginheightAttr));
 
   LocalFrameView* frame_view =
       static_cast<WebLocalFrameImpl*>(local_frame)->GetFrameView();
@@ -12630,7 +12630,7 @@ TEST_F(WebFrameTest, DidScrollCallbackAfterScrollableAreaChanges) {
   EXPECT_EQ(ScrollOffset(0, 1), scrollable_area->GetScrollOffset());
 
   // Make the scrollable area non-scrollable.
-  scrollable->setAttribute(HTMLNames::styleAttr, "overflow: visible");
+  scrollable->setAttribute(html_names::kStyleAttr, "overflow: visible");
 
   // Update layout without updating compositing state.
   WebLocalFrame* frame = web_view_helper.LocalMainFrame();
@@ -12760,7 +12760,7 @@ TEST_P(SlimmingPaintWebFrameTest, DidScrollCallbackAfterScrollableAreaChanges) {
   EXPECT_EQ(ScrollOffset(0, 1), scrollable_area->GetScrollOffset());
 
   // Make the scrollable area non-scrollable.
-  scrollable->setAttribute(HTMLNames::styleAttr, "overflow: visible");
+  scrollable->setAttribute(html_names::kStyleAttr, "overflow: visible");
 
   // Update layout without updating compositing state.
   LocalMainFrame()->ExecuteScript(
@@ -12904,7 +12904,7 @@ TEST_P(SlimmingPaintWebFrameSimTest, LayerUpdatesDoNotInvalidateEarlierLayers) {
   EXPECT_FALSE(host->LayersThatShouldPushProperties().count(b_layer));
 
   // Modifying b should only cause the b layer to need to push properties.
-  b_element->setAttribute(HTMLNames::styleAttr, "opacity: 0.2");
+  b_element->setAttribute(html_names::kStyleAttr, "opacity: 0.2");
   WebView().UpdateAllLifecyclePhases();
   EXPECT_FALSE(host->LayersThatShouldPushProperties().count(a_layer));
   EXPECT_TRUE(host->LayersThatShouldPushProperties().count(b_layer));
@@ -12963,8 +12963,8 @@ TEST_P(SlimmingPaintWebFrameSimTest, LayerUpdatesDoNotInvalidateLaterLayers) {
 
   // Modifying a and b (adding opacity to a and removing opacity from b) should
   // not cause the c layer to push properties.
-  a_element->setAttribute(HTMLNames::styleAttr, "opacity: 0.3");
-  b_element->setAttribute(HTMLNames::styleAttr, "");
+  a_element->setAttribute(html_names::kStyleAttr, "opacity: 0.3");
+  b_element->setAttribute(html_names::kStyleAttr, "");
   WebView().UpdateAllLifecyclePhases();
   EXPECT_TRUE(host->LayersThatShouldPushProperties().count(a_layer));
   EXPECT_TRUE(host->LayersThatShouldPushProperties().count(b_layer));

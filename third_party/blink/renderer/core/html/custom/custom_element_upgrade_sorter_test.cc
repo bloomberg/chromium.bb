@@ -29,7 +29,7 @@ class CustomElementUpgradeSorterTest : public PageTestBase {
     NonThrowableExceptionState no_exceptions;
     Element* element = GetDocument().CreateElementForBinding(
         local_name, StringOrDictionary(), no_exceptions);
-    element->setAttribute(HTMLNames::idAttr, id);
+    element->setAttribute(html_names::kIdAttr, id);
     return element;
   }
 

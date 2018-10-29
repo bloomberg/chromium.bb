@@ -170,7 +170,7 @@ static void reflectStringAttributeAttributeGetter(const v8::FunctionCallbackInfo
 
   TestInterfaceNode* impl = V8TestInterfaceNode::ToImpl(holder);
 
-  V8SetReturnValueString(info, impl->FastGetAttribute(HTMLNames::reflectstringattributeAttr), info.GetIsolate());
+  V8SetReturnValueString(info, impl->FastGetAttribute(html_names::kReflectstringattributeAttr), info.GetIsolate());
 }
 
 static void reflectStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -189,7 +189,7 @@ static void reflectStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   if (!cppValue.Prepare())
     return;
 
-  impl->setAttribute(HTMLNames::reflectstringattributeAttr, cppValue);
+  impl->setAttribute(html_names::kReflectstringattributeAttr, cppValue);
 }
 
 static void reflectUrlStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -197,7 +197,7 @@ static void reflectUrlStringAttributeAttributeGetter(const v8::FunctionCallbackI
 
   TestInterfaceNode* impl = V8TestInterfaceNode::ToImpl(holder);
 
-  V8SetReturnValueString(info, impl->GetURLAttribute(HTMLNames::reflecturlstringattributeAttr), info.GetIsolate());
+  V8SetReturnValueString(info, impl->GetURLAttribute(html_names::kReflecturlstringattributeAttr), info.GetIsolate());
 }
 
 static void reflectUrlStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -216,7 +216,7 @@ static void reflectUrlStringAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
   if (!cppValue.Prepare())
     return;
 
-  impl->setAttribute(HTMLNames::reflecturlstringattributeAttr, cppValue);
+  impl->setAttribute(html_names::kReflecturlstringattributeAttr, cppValue);
 }
 
 static void testInterfaceEmptyMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {

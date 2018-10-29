@@ -42,8 +42,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 void LayoutTableSection::TableGridRow::
     SetRowLogicalHeightToRowStyleLogicalHeight() {
   DCHECK(row);

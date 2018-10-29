@@ -77,7 +77,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 // Upper limit of list_items_. According to the HTML standard, options larger
 // than this limit doesn't work well because |selectedIndex| IDL attribute is
@@ -85,7 +85,7 @@ using namespace HTMLNames;
 static const unsigned kMaxListItems = INT_MAX;
 
 HTMLSelectElement::HTMLSelectElement(Document& document)
-    : HTMLFormControlElementWithState(selectTag, document),
+    : HTMLFormControlElementWithState(kSelectTag, document),
       type_ahead_(this),
       size_(0),
       last_on_change_option_(nullptr),
@@ -108,8 +108,8 @@ HTMLSelectElement::~HTMLSelectElement() = default;
 
 // static
 bool HTMLSelectElement::CanAssignToSelectSlot(const Node& node) {
-  return node.HasTagName(optionTag) || node.HasTagName(optgroupTag) ||
-         node.HasTagName(hrTag);
+  return node.HasTagName(kOptionTag) || node.HasTagName(kOptgroupTag) ||
+         node.HasTagName(kHrTag);
 }
 
 const AtomicString& HTMLSelectElement::FormControlType() const {
@@ -290,7 +290,7 @@ void HTMLSelectElement::SetSuggestedValue(const String& value) {
 
 bool HTMLSelectElement::IsPresentationAttribute(
     const QualifiedName& name) const {
-  if (name == alignAttr) {
+  if (name == kAlignAttr) {
     // Don't map 'align' attribute. This matches what Firefox, Opera and IE do.
     // See http://bugs.webkit.org/show_bug.cgi?id=12072
     return false;
@@ -301,7 +301,7 @@ bool HTMLSelectElement::IsPresentationAttribute(
 
 void HTMLSelectElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == sizeAttr) {
+  if (params.name == kSizeAttr) {
     unsigned old_size = size_;
     if (!ParseHTMLNonNegativeInteger(params.new_value, size_))
       size_ = 0;
@@ -313,9 +313,9 @@ void HTMLSelectElement::ParseAttribute(
       if (!UsesMenuList())
         SaveListboxActiveSelection();
     }
-  } else if (params.name == multipleAttr) {
+  } else if (params.name == kMultipleAttr) {
     ParseMultipleAttribute(params.new_value);
-  } else if (params.name == accesskeyAttr) {
+  } else if (params.name == kAccesskeyAttr) {
     // FIXME: ignore for the moment.
     //
   } else {
@@ -1241,7 +1241,7 @@ void HTMLSelectElement::AppendToFormData(FormData& form_data) {
 
 void HTMLSelectElement::ResetImpl() {
   for (auto* const option : GetOptionList()) {
-    option->SetSelectedState(option->FastHasAttribute(selectedAttr));
+    option->SetSelectedState(option->FastHasAttribute(kSelectedAttr));
     option->SetDirty(false);
   }
   ResetToDefaultSelection();

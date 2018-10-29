@@ -142,8 +142,6 @@ static KURL DocumentURLForScriptExecution(Document* document) {
 
 }  // namespace
 
-using namespace HTMLNames;
-
 HTMLParserScriptRunner::HTMLParserScriptRunner(
     HTMLParserReentryPermit* reentry_permit,
     Document* document,

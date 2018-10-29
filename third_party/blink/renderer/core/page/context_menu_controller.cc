@@ -442,7 +442,7 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
         selected_frame->GetSecurityContext()->GetSecurityOrigin();
     if (origin->CanReadContent(anchor->Url())) {
       data.suggested_filename =
-          anchor->FastGetAttribute(HTMLNames::downloadAttr);
+          anchor->FastGetAttribute(html_names::kDownloadAttr);
     }
 
     // If the anchor wants to suppress the referrer, update the referrerPolicy

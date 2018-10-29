@@ -27,16 +27,16 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline HTMLUListElement::HTMLUListElement(Document& document)
-    : HTMLElement(ulTag, document) {}
+    : HTMLElement(kUlTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLUListElement)
 
 bool HTMLUListElement::IsPresentationAttribute(
     const QualifiedName& name) const {
-  if (name == typeAttr)
+  if (name == kTypeAttr)
     return true;
   return HTMLElement::IsPresentationAttribute(name);
 }
@@ -45,7 +45,7 @@ void HTMLUListElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  if (name == typeAttr) {
+  if (name == kTypeAttr) {
     if (DeprecatedEqualIgnoringCase(value, "disc"))
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
                                               CSSValueDisc);

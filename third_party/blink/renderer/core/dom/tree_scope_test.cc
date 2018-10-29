@@ -15,7 +15,7 @@ TEST(TreeScopeTest, CommonAncestorOfSameTrees) {
   Document* document = Document::CreateForTest();
   EXPECT_EQ(document, document->CommonAncestorTreeScope(*document));
 
-  Element* html = document->CreateRawElement(HTMLNames::htmlTag);
+  Element* html = document->CreateRawElement(html_names::kHTMLTag);
   document->AppendChild(html);
   ShadowRoot& shadow_root = html->CreateV0ShadowRootForTesting();
   EXPECT_EQ(shadow_root, shadow_root.CommonAncestorTreeScope(shadow_root));
@@ -27,7 +27,7 @@ TEST(TreeScopeTest, CommonAncestorOfInclusiveTrees) {
   // shadowRoot
 
   Document* document = Document::CreateForTest();
-  Element* html = document->CreateRawElement(HTMLNames::htmlTag);
+  Element* html = document->CreateRawElement(html_names::kHTMLTag);
   document->AppendChild(html);
   ShadowRoot& shadow_root = html->CreateV0ShadowRootForTesting();
 
@@ -41,11 +41,11 @@ TEST(TreeScopeTest, CommonAncestorOfSiblingTrees) {
   //  A      B
 
   Document* document = Document::CreateForTest();
-  Element* html = document->CreateRawElement(HTMLNames::htmlTag);
+  Element* html = document->CreateRawElement(html_names::kHTMLTag);
   document->AppendChild(html);
-  Element* head = document->CreateRawElement(HTMLNames::headTag);
+  Element* head = document->CreateRawElement(html_names::kHeadTag);
   html->AppendChild(head);
-  Element* body = document->CreateRawElement(HTMLNames::bodyTag);
+  Element* body = document->CreateRawElement(html_names::kBodyTag);
   html->AppendChild(body);
 
   ShadowRoot& shadow_root_a = head->CreateV0ShadowRootForTesting();
@@ -63,17 +63,17 @@ TEST(TreeScopeTest, CommonAncestorOfTreesAtDifferentDepths) {
   // A
 
   Document* document = Document::CreateForTest();
-  Element* html = document->CreateRawElement(HTMLNames::htmlTag);
+  Element* html = document->CreateRawElement(html_names::kHTMLTag);
   document->AppendChild(html);
-  Element* head = document->CreateRawElement(HTMLNames::headTag);
+  Element* head = document->CreateRawElement(html_names::kHeadTag);
   html->AppendChild(head);
-  Element* body = document->CreateRawElement(HTMLNames::bodyTag);
+  Element* body = document->CreateRawElement(html_names::kBodyTag);
   html->AppendChild(body);
 
   ShadowRoot& shadow_root_y = head->CreateV0ShadowRootForTesting();
   ShadowRoot& shadow_root_b = body->CreateV0ShadowRootForTesting();
 
-  Element* div_in_y = document->CreateRawElement(HTMLNames::divTag);
+  Element* div_in_y = document->CreateRawElement(html_names::kDivTag);
   shadow_root_y.AppendChild(div_in_y);
   ShadowRoot& shadow_root_a = div_in_y->CreateV0ShadowRootForTesting();
 

@@ -160,15 +160,15 @@ void SVGSVGElement::ParseAttribute(const AttributeModificationParams& params) {
     bool set_listener = true;
 
     // Only handle events if we're the outermost <svg> element
-    if (name == HTMLNames::onunloadAttr) {
+    if (name == html_names::kOnunloadAttr) {
       GetDocument().SetWindowAttributeEventListener(
           EventTypeNames::unload,
           CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
-    } else if (name == HTMLNames::onresizeAttr) {
+    } else if (name == html_names::kOnresizeAttr) {
       GetDocument().SetWindowAttributeEventListener(
           EventTypeNames::resize,
           CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
-    } else if (name == HTMLNames::onscrollAttr) {
+    } else if (name == html_names::kOnscrollAttr) {
       GetDocument().SetWindowAttributeEventListener(
           EventTypeNames::scroll,
           CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
@@ -180,11 +180,11 @@ void SVGSVGElement::ParseAttribute(const AttributeModificationParams& params) {
       return;
   }
 
-  if (name == HTMLNames::onabortAttr) {
+  if (name == html_names::kOnabortAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::abort,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
-  } else if (name == HTMLNames::onerrorAttr) {
+  } else if (name == html_names::kOnerrorAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::error,
         CreateAttributeEventListener(

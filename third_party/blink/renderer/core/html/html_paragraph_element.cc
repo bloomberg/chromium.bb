@@ -28,10 +28,10 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline HTMLParagraphElement::HTMLParagraphElement(Document& document)
-    : HTMLElement(pTag, document) {}
+    : HTMLElement(kPTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLParagraphElement)
 
@@ -39,7 +39,7 @@ void HTMLParagraphElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  if (name == alignAttr) {
+  if (name == kAlignAttr) {
     if (DeprecatedEqualIgnoringCase(value, "middle") ||
         DeprecatedEqualIgnoringCase(value, "center"))
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,

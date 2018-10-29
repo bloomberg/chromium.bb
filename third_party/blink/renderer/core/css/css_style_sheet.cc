@@ -47,7 +47,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 class StyleSheetCSSRuleList final : public CSSRuleList {
  public:
@@ -551,7 +551,7 @@ void CSSStyleSheet::SetAlternateFromConstructor(
 bool CSSStyleSheet::IsAlternate() const {
   if (owner_node_) {
     return owner_node_->IsElementNode() &&
-           ToElement(owner_node_)->getAttribute(relAttr).Contains("alternate");
+           ToElement(owner_node_)->getAttribute(kRelAttr).Contains("alternate");
   }
   return alternate_from_constructor_;
 }

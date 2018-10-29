@@ -43,7 +43,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 TextControlInnerContainer::TextControlInnerContainer(Document& document)
     : HTMLDivElement(document) {}
@@ -51,7 +51,7 @@ TextControlInnerContainer::TextControlInnerContainer(Document& document)
 TextControlInnerContainer* TextControlInnerContainer::Create(
     Document& document) {
   TextControlInnerContainer* element = new TextControlInnerContainer(document);
-  element->setAttribute(idAttr, ShadowElementNames::TextFieldContainer());
+  element->setAttribute(kIdAttr, ShadowElementNames::TextFieldContainer());
   return element;
 }
 
@@ -69,7 +69,7 @@ EditingViewPortElement::EditingViewPortElement(Document& document)
 
 EditingViewPortElement* EditingViewPortElement::Create(Document& document) {
   EditingViewPortElement* element = new EditingViewPortElement(document);
-  element->setAttribute(idAttr, ShadowElementNames::EditingViewPort());
+  element->setAttribute(kIdAttr, ShadowElementNames::EditingViewPort());
   return element;
 }
 
@@ -224,7 +224,7 @@ SearchFieldCancelButtonElement* SearchFieldCancelButtonElement::Create(
   SearchFieldCancelButtonElement* element =
       new SearchFieldCancelButtonElement(document);
   element->SetShadowPseudoId(AtomicString("-webkit-search-cancel-button"));
-  element->setAttribute(idAttr, ShadowElementNames::SearchClearButton());
+  element->setAttribute(kIdAttr, ShadowElementNames::SearchClearButton());
   return element;
 }
 

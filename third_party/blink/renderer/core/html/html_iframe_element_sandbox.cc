@@ -41,7 +41,7 @@ bool IsTokenSupported(const AtomicString& token) {
 }  // namespace
 
 HTMLIFrameElementSandbox::HTMLIFrameElementSandbox(HTMLIFrameElement* element)
-    : DOMTokenList(*element, HTMLNames::sandboxAttr) {}
+    : DOMTokenList(*element, html_names::kSandboxAttr) {}
 
 bool HTMLIFrameElementSandbox::ValidateTokenValue(
     const AtomicString& token_value,

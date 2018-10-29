@@ -59,8 +59,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 namespace {
 
 static bool IsWhiteSpaceOrPunctuation(UChar c) {

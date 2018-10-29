@@ -68,8 +68,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 StyleEngine::StyleEngine(Document& document)
     : document_(&document),
       is_master_(!document.IsHTMLImport()),
@@ -919,7 +917,7 @@ void StyleEngine::PartChangedForElement(Element& element) {
     return;
   element.SetNeedsStyleRecalc(
       kLocalStyleChange,
-      StyleChangeReasonForTracing::FromAttribute(HTMLNames::partAttr));
+      StyleChangeReasonForTracing::FromAttribute(html_names::kPartAttr));
 }
 
 void StyleEngine::ExportpartsChangedForElement(Element& element) {

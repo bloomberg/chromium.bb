@@ -97,7 +97,7 @@ TEST_F(FrameSelectionTest, FirstEphemeralRangeOf) {
                                    Position(text, 3), Position(text, 6)))
                                .Build(),
                            SetSelectionOptions());
-  sample->setAttribute(HTMLNames::styleAttr, "display:none");
+  sample->setAttribute(html_names::kStyleAttr, "display:none");
   // Move |VisibleSelection| before "abc".
   UpdateAllLifecyclePhases();
   const EphemeralRange& range =
@@ -304,7 +304,7 @@ TEST_F(FrameSelectionTest, SelectAllWithInputElement) {
 }
 
 TEST_F(FrameSelectionTest, SelectAllWithUnselectableRoot) {
-  Element* select = GetDocument().CreateRawElement(HTMLNames::selectTag);
+  Element* select = GetDocument().CreateRawElement(html_names::kSelectTag);
   GetDocument().ReplaceChild(select, GetDocument().documentElement());
   GetDocument().UpdateStyleAndLayout();
   Selection().SelectAll();

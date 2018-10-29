@@ -76,7 +76,7 @@
 namespace blink {
 
 using blink::WebLocalizedString;
-using namespace HTMLNames;
+using namespace html_names;
 
 using InputTypeFactoryFunction = InputType* (*)(HTMLInputElement&);
 using InputTypeFactoryMap = HashMap<AtomicString, InputTypeFactoryFunction>;
@@ -161,7 +161,7 @@ void InputType::AppendToFormData(FormData& form_data) const {
 }
 
 String InputType::ResultForDialogSubmit() const {
-  return GetElement().FastGetAttribute(valueAttr);
+  return GetElement().FastGetAttribute(kValueAttr);
 }
 
 double InputType::ValueAsDate() const {
@@ -361,7 +361,7 @@ std::pair<String, String> InputType::ValidationMessage(
     //   is present, when informing the user that the pattern is not matched
     return std::make_pair(
         GetLocale().QueryString(WebLocalizedString::kValidationPatternMismatch),
-        GetElement().FastGetAttribute(titleAttr).GetString());
+        GetElement().FastGetAttribute(kTitleAttr).GetString());
   }
 
   if (GetElement().TooLong()) {
@@ -702,7 +702,7 @@ void InputType::ApplyStep(const Decimal& current,
   Decimal step = step_range.Step();
   EventQueueScope scope;
   Decimal new_value = current;
-  const AtomicString& step_string = GetElement().FastGetAttribute(stepAttr);
+  const AtomicString& step_string = GetElement().FastGetAttribute(kStepAttr);
   if (!DeprecatedEqualIgnoringCase(step_string, "any") &&
       step_range.StepMismatch(current)) {
     // Snap-to-step / clamping steps
@@ -867,10 +867,11 @@ void InputType::CountUsageIfVisible(WebFeature feature) const {
 
 Decimal InputType::FindStepBase(const Decimal& default_value) const {
   Decimal step_base =
-      ParseToNumber(GetElement().FastGetAttribute(minAttr), Decimal::Nan());
-  if (!step_base.IsFinite())
+      ParseToNumber(GetElement().FastGetAttribute(kMinAttr), Decimal::Nan());
+  if (!step_base.IsFinite()) {
     step_base =
-        ParseToNumber(GetElement().FastGetAttribute(valueAttr), default_value);
+        ParseToNumber(GetElement().FastGetAttribute(kValueAttr), default_value);
+  }
   return step_base;
 }
 
@@ -882,19 +883,19 @@ StepRange InputType::CreateStepRange(
     const StepRange::StepDescription& step_description) const {
   bool has_range_limitations = false;
   const Decimal step_base = FindStepBase(step_base_default);
-  Decimal minimum = ParseToNumberOrNaN(GetElement().FastGetAttribute(minAttr));
+  Decimal minimum = ParseToNumberOrNaN(GetElement().FastGetAttribute(kMinAttr));
   if (minimum.IsFinite())
     has_range_limitations = true;
   else
     minimum = minimum_default;
-  Decimal maximum = ParseToNumberOrNaN(GetElement().FastGetAttribute(maxAttr));
+  Decimal maximum = ParseToNumberOrNaN(GetElement().FastGetAttribute(kMaxAttr));
   if (maximum.IsFinite())
     has_range_limitations = true;
   else
     maximum = maximum_default;
   const Decimal step =
       StepRange::ParseStep(any_step_handling, step_description,
-                           GetElement().FastGetAttribute(stepAttr));
+                           GetElement().FastGetAttribute(kStepAttr));
   return StepRange(step_base, minimum, maximum, has_range_limitations, step,
                    step_description);
 }

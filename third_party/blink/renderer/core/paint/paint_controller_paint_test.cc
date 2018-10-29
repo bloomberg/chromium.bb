@@ -61,7 +61,7 @@ TEST_P(PaintControllerPaintTest, InlineRelayout) {
       TestDisplayItem(ViewScrollingBackgroundClient(), kDocumentBackgroundType),
       TestDisplayItem(first_text_box, kForegroundType));
 
-  div.setAttribute(HTMLNames::styleAttr, "width: 10px; height: 200px");
+  div.setAttribute(html_names::kStyleAttr, "width: 10px; height: 200px");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   LayoutText& new_text = *ToLayoutText(div_block.FirstChild());

@@ -57,7 +57,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 namespace {
 
@@ -408,8 +408,8 @@ WebPluginContainerImpl* HTMLPlugInElement::OwnedPlugin() const {
 
 bool HTMLPlugInElement::IsPresentationAttribute(
     const QualifiedName& name) const {
-  if (name == widthAttr || name == heightAttr || name == vspaceAttr ||
-      name == hspaceAttr || name == alignAttr)
+  if (name == kWidthAttr || name == kHeightAttr || name == kVspaceAttr ||
+      name == kHspaceAttr || name == kAlignAttr)
     return true;
   return HTMLFrameOwnerElement::IsPresentationAttribute(name);
 }
@@ -418,17 +418,17 @@ void HTMLPlugInElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  if (name == widthAttr) {
+  if (name == kWidthAttr) {
     AddHTMLLengthToStyle(style, CSSPropertyWidth, value);
-  } else if (name == heightAttr) {
+  } else if (name == kHeightAttr) {
     AddHTMLLengthToStyle(style, CSSPropertyHeight, value);
-  } else if (name == vspaceAttr) {
+  } else if (name == kVspaceAttr) {
     AddHTMLLengthToStyle(style, CSSPropertyMarginTop, value);
     AddHTMLLengthToStyle(style, CSSPropertyMarginBottom, value);
-  } else if (name == hspaceAttr) {
+  } else if (name == kHspaceAttr) {
     AddHTMLLengthToStyle(style, CSSPropertyMarginLeft, value);
     AddHTMLLengthToStyle(style, CSSPropertyMarginRight, value);
-  } else if (name == alignAttr) {
+  } else if (name == kAlignAttr) {
     ApplyAlignmentAttributeToStyle(value, style);
   } else {
     HTMLFrameOwnerElement::CollectStyleForPresentationAttribute(name, value,
@@ -657,7 +657,7 @@ bool HTMLPlugInElement::AllowedToLoadObject(const KURL& url,
   if (MIMETypeRegistry::IsJavaAppletMIMEType(mime_type))
     return false;
 
-  AtomicString declared_mime_type = FastGetAttribute(HTMLNames::typeAttr);
+  AtomicString declared_mime_type = FastGetAttribute(html_names::kTypeAttr);
   if (!GetDocument().GetContentSecurityPolicy()->AllowObjectFromSource(url) ||
       !GetDocument().GetContentSecurityPolicy()->AllowPluginTypeForDocument(
           GetDocument(), mime_type, declared_mime_type, url)) {

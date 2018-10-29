@@ -20,7 +20,7 @@ TEST(HTMLLinkElementSizesAttributeTest,
   DOMTokenList* sizes = link->sizes();
   EXPECT_EQ(g_null_atom, sizes->value());
   sizes->setValue("   a b  c ");
-  EXPECT_EQ("   a b  c ", link->getAttribute(HTMLNames::sizesAttr));
+  EXPECT_EQ("   a b  c ", link->getAttribute(html_names::kSizesAttr));
   EXPECT_EQ("   a b  c ", sizes->value());
 }
 
@@ -31,7 +31,7 @@ TEST(HTMLLinkElementSizesAttributeTest,
       HTMLLinkElement::Create(*document, CreateElementFlags());
   DOMTokenList* sizes = link->sizes();
   EXPECT_EQ(g_null_atom, sizes->value());
-  link->setAttribute(HTMLNames::sizesAttr, "y  x ");
+  link->setAttribute(html_names::kSizesAttr, "y  x ");
   EXPECT_EQ("y  x ", sizes->value());
 }
 

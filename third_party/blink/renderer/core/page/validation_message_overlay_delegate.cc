@@ -177,7 +177,7 @@ void ValidationMessageOverlayDelegate::EnsurePage(const PageOverlay& overlay,
   container.SetInlineStyleProperty(CSSPropertyMinWidth,
                                    bubble_size_.Width() / zoom_factor,
                                    CSSPrimitiveValue::UnitType::kPixels);
-  container.setAttribute(HTMLNames::classAttr, "shown-initially");
+  container.setAttribute(html_names::kClassAttr, "shown-initially");
   FrameView().UpdateAllLifecyclePhases();
 }
 
@@ -293,7 +293,7 @@ void ValidationMessageOverlayDelegate::AdjustBubblePosition(
     GetElementById("inner-arrow-bottom")
         .SetInlineStyleProperty(CSSPropertyLeft, arrow_x,
                                 CSSPrimitiveValue::UnitType::kPixels);
-    container.setAttribute(HTMLNames::classAttr, "shown-fully bottom-arrow");
+    container.setAttribute(html_names::kClassAttr, "shown-fully bottom-arrow");
     container.SetInlineStyleProperty(
         CSSPropertyTransformOrigin,
         String::Format("%.2f%% bottom", arrow_anchor_percent));
@@ -304,7 +304,7 @@ void ValidationMessageOverlayDelegate::AdjustBubblePosition(
     GetElementById("inner-arrow-top")
         .SetInlineStyleProperty(CSSPropertyLeft, arrow_x,
                                 CSSPrimitiveValue::UnitType::kPixels);
-    container.setAttribute(HTMLNames::classAttr, "shown-fully");
+    container.setAttribute(html_names::kClassAttr, "shown-fully");
     container.SetInlineStyleProperty(
         CSSPropertyTransformOrigin,
         String::Format("%.2f%% top", arrow_anchor_percent));

@@ -82,8 +82,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 static LayoutRect ContentsRect(const LayoutObject& layout_object) {
   if (!layout_object.IsBox())
     return LayoutRect();

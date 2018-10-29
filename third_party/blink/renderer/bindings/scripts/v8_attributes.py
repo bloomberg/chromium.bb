@@ -546,9 +546,8 @@ def scoped_content_attribute_name(interface, attribute):
         namespace = 'svg_names'
         includes.add('core/svg_names.h')
     else:
-        namespace = 'HTMLNames'
+        namespace = 'html_names'
         includes.add('core/html_names.h')
-        symbol_name = content_attribute_name
     return '%s::%sAttr' % (namespace, symbol_name)
 
 

@@ -69,7 +69,7 @@ TEST_F(CompositingRequirementsUpdaterTest,
   EXPECT_FALSE(target->GetCompositingReasons());
 
   // Now make |target| self-painting.
-  GetDocument().getElementById("target")->setAttribute(HTMLNames::styleAttr,
+  GetDocument().getElementById("target")->setAttribute(html_names::kStyleAttr,
                                                        "position: relative");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -96,7 +96,7 @@ TEST_F(CompositingRequirementsUpdaterTest,
   EXPECT_FALSE(target->GetCompositingReasons());
 
   // Now make |target| self-painting.
-  GetDocument().getElementById("target")->setAttribute(HTMLNames::styleAttr,
+  GetDocument().getElementById("target")->setAttribute(html_names::kStyleAttr,
                                                        "position: relative");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(CompositingReason::kAssumedOverlap,
@@ -123,7 +123,7 @@ TEST_F(CompositingRequirementsUpdaterTest,
   EXPECT_FALSE(target->GetCompositingReasons());
 
   // Now make |target| self-painting.
-  GetDocument().getElementById("target")->setAttribute(HTMLNames::styleAttr,
+  GetDocument().getElementById("target")->setAttribute(html_names::kStyleAttr,
                                                        "position: relative");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(CompositingReason::kClipsCompositingDescendants,
@@ -160,7 +160,7 @@ TEST_F(CompositingRequirementsUpdaterTest,
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
 
-  GetDocument().getElementById("target")->setAttribute(HTMLNames::styleAttr,
+  GetDocument().getElementById("target")->setAttribute(html_names::kStyleAttr,
                                                        "display: none");
   GetDocument().View()->UpdateAllLifecyclePhases();
 

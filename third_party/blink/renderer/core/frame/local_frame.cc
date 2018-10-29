@@ -114,8 +114,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 namespace {
 
 inline float ParentPageZoomFactor(LocalFrame* frame) {

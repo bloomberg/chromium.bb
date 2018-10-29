@@ -3049,7 +3049,7 @@ static void reflectTestInterfaceAttributeAttributeGetter(const v8::FunctionCallb
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  V8SetReturnValueFast(info, impl->FastGetAttribute(HTMLNames::reflecttestinterfaceattributeAttr), impl);
+  V8SetReturnValueFast(info, impl->FastGetAttribute(html_names::kReflecttestinterfaceattributeAttr), impl);
 }
 
 static void reflectTestInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3074,7 +3074,7 @@ static void reflectTestInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8
     return;
   }
 
-  impl->setAttribute(HTMLNames::reflecttestinterfaceattributeAttr, cppValue);
+  impl->setAttribute(html_names::kReflecttestinterfaceattributeAttr, cppValue);
 }
 
 static void reflectReflectedNameAttributeTestAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3082,7 +3082,7 @@ static void reflectReflectedNameAttributeTestAttributeAttributeGetter(const v8::
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  V8SetReturnValueFast(info, impl->FastGetAttribute(HTMLNames::reflectedNameAttributeAttr), impl);
+  V8SetReturnValueFast(info, impl->FastGetAttribute(html_names::kReflectedNameAttributeAttr), impl);
 }
 
 static void reflectReflectedNameAttributeTestAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3107,7 +3107,7 @@ static void reflectReflectedNameAttributeTestAttributeAttributeSetter(v8::Local<
     return;
   }
 
-  impl->setAttribute(HTMLNames::reflectedNameAttributeAttr, cppValue);
+  impl->setAttribute(html_names::kReflectedNameAttributeAttr, cppValue);
 }
 
 static void reflectBooleanAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3115,7 +3115,7 @@ static void reflectBooleanAttributeAttributeGetter(const v8::FunctionCallbackInf
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  V8SetReturnValueBool(info, impl->FastHasAttribute(HTMLNames::reflectbooleanattributeAttr));
+  V8SetReturnValueBool(info, impl->FastHasAttribute(html_names::kReflectbooleanattributeAttr));
 }
 
 static void reflectBooleanAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3136,7 +3136,7 @@ static void reflectBooleanAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
   if (exceptionState.HadException())
     return;
 
-  impl->SetBooleanAttribute(HTMLNames::reflectbooleanattributeAttr, cppValue);
+  impl->SetBooleanAttribute(html_names::kReflectbooleanattributeAttr, cppValue);
 }
 
 static void reflectLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3144,7 +3144,7 @@ static void reflectLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  V8SetReturnValueInt(info, impl->GetIntegralAttribute(HTMLNames::reflectlongattributeAttr));
+  V8SetReturnValueInt(info, impl->GetIntegralAttribute(html_names::kReflectlongattributeAttr));
 }
 
 static void reflectLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3165,7 +3165,7 @@ static void reflectLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
   if (exceptionState.HadException())
     return;
 
-  impl->SetIntegralAttribute(HTMLNames::reflectlongattributeAttr, cppValue);
+  impl->SetIntegralAttribute(html_names::kReflectlongattributeAttr, cppValue);
 }
 
 static void reflectUnsignedShortAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3173,7 +3173,7 @@ static void reflectUnsignedShortAttributeAttributeGetter(const v8::FunctionCallb
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  V8SetReturnValueUnsigned(info, std::max(0, static_cast<int>(impl->FastGetAttribute(HTMLNames::reflectunsignedshortattributeAttr))));
+  V8SetReturnValueUnsigned(info, std::max(0, static_cast<int>(impl->FastGetAttribute(html_names::kReflectunsignedshortattributeAttr))));
 }
 
 static void reflectUnsignedShortAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3194,7 +3194,7 @@ static void reflectUnsignedShortAttributeAttributeSetter(v8::Local<v8::Value> v8
   if (exceptionState.HadException())
     return;
 
-  impl->setAttribute(HTMLNames::reflectunsignedshortattributeAttr, cppValue);
+  impl->setAttribute(html_names::kReflectunsignedshortattributeAttr, cppValue);
 }
 
 static void reflectUnsignedLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3202,7 +3202,7 @@ static void reflectUnsignedLongAttributeAttributeGetter(const v8::FunctionCallba
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  V8SetReturnValueUnsigned(info, std::max(0, static_cast<int>(impl->GetIntegralAttribute(HTMLNames::reflectunsignedlongattributeAttr))));
+  V8SetReturnValueUnsigned(info, std::max(0, static_cast<int>(impl->GetIntegralAttribute(html_names::kReflectunsignedlongattributeAttr))));
 }
 
 static void reflectUnsignedLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3223,7 +3223,7 @@ static void reflectUnsignedLongAttributeAttributeSetter(v8::Local<v8::Value> v8V
   if (exceptionState.HadException())
     return;
 
-  impl->SetUnsignedIntegralAttribute(HTMLNames::reflectunsignedlongattributeAttr, cppValue);
+  impl->SetUnsignedIntegralAttribute(html_names::kReflectunsignedlongattributeAttr, cppValue);
 }
 
 static void idAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3250,7 +3250,7 @@ static void idAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCa
   if (!cppValue.Prepare())
     return;
 
-  impl->setAttribute(HTMLNames::idAttr, cppValue);
+  impl->setAttribute(html_names::kIdAttr, cppValue);
 }
 
 static void nameAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3277,7 +3277,7 @@ static void nameAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Function
   if (!cppValue.Prepare())
     return;
 
-  impl->setAttribute(HTMLNames::nameAttr, cppValue);
+  impl->setAttribute(html_names::kNameAttr, cppValue);
 }
 
 static void classAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3304,7 +3304,7 @@ static void classAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Functio
   if (!cppValue.Prepare())
     return;
 
-  impl->setAttribute(HTMLNames::classAttr, cppValue);
+  impl->setAttribute(html_names::kClassAttr, cppValue);
 }
 
 static void reflectedIdAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3331,7 +3331,7 @@ static void reflectedIdAttributeSetter(v8::Local<v8::Value> v8Value, const v8::F
   if (!cppValue.Prepare())
     return;
 
-  impl->setAttribute(HTMLNames::idAttr, cppValue);
+  impl->setAttribute(html_names::kIdAttr, cppValue);
 }
 
 static void reflectedNameAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3358,7 +3358,7 @@ static void reflectedNameAttributeSetter(v8::Local<v8::Value> v8Value, const v8:
   if (!cppValue.Prepare())
     return;
 
-  impl->setAttribute(HTMLNames::nameAttr, cppValue);
+  impl->setAttribute(html_names::kNameAttr, cppValue);
 }
 
 static void reflectedClassAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3385,7 +3385,7 @@ static void reflectedClassAttributeSetter(v8::Local<v8::Value> v8Value, const v8
   if (!cppValue.Prepare())
     return;
 
-  impl->setAttribute(HTMLNames::classAttr, cppValue);
+  impl->setAttribute(html_names::kClassAttr, cppValue);
 }
 
 static void limitedToOnlyOneAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3393,7 +3393,7 @@ static void limitedToOnlyOneAttributeAttributeGetter(const v8::FunctionCallbackI
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  String cppValue(impl->FastGetAttribute(HTMLNames::limitedtoonlyoneattributeAttr));
+  String cppValue(impl->FastGetAttribute(html_names::kLimitedtoonlyoneattributeAttr));
 
   if (cppValue.IsEmpty()) {
     ;
@@ -3422,7 +3422,7 @@ static void limitedToOnlyOneAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
   if (!cppValue.Prepare())
     return;
 
-  impl->setAttribute(HTMLNames::limitedtoonlyoneattributeAttr, cppValue);
+  impl->setAttribute(html_names::kLimitedtoonlyoneattributeAttr, cppValue);
 }
 
 static void limitedToOnlyAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3430,7 +3430,7 @@ static void limitedToOnlyAttributeAttributeGetter(const v8::FunctionCallbackInfo
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  String cppValue(impl->FastGetAttribute(HTMLNames::limitedtoonlyattributeAttr));
+  String cppValue(impl->FastGetAttribute(html_names::kLimitedtoonlyattributeAttr));
 
   if (cppValue.IsEmpty()) {
     ;
@@ -3463,7 +3463,7 @@ static void limitedToOnlyAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   if (!cppValue.Prepare())
     return;
 
-  impl->setAttribute(HTMLNames::limitedtoonlyattributeAttr, cppValue);
+  impl->setAttribute(html_names::kLimitedtoonlyattributeAttr, cppValue);
 }
 
 static void limitedToOnlyOtherAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3471,7 +3471,7 @@ static void limitedToOnlyOtherAttributeAttributeGetter(const v8::FunctionCallbac
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  String cppValue(impl->FastGetAttribute(HTMLNames::otherAttr));
+  String cppValue(impl->FastGetAttribute(html_names::kOtherAttr));
 
   if (cppValue.IsEmpty()) {
     ;
@@ -3502,7 +3502,7 @@ static void limitedToOnlyOtherAttributeAttributeSetter(v8::Local<v8::Value> v8Va
   if (!cppValue.Prepare())
     return;
 
-  impl->setAttribute(HTMLNames::otherAttr, cppValue);
+  impl->setAttribute(html_names::kOtherAttr, cppValue);
 }
 
 static void limitedWithMissingDefaultAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3510,7 +3510,7 @@ static void limitedWithMissingDefaultAttributeAttributeGetter(const v8::Function
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  String cppValue(impl->FastGetAttribute(HTMLNames::limitedwithmissingdefaultattributeAttr));
+  String cppValue(impl->FastGetAttribute(html_names::kLimitedwithmissingdefaultattributeAttr));
 
   if (cppValue.IsEmpty()) {
     cppValue = "rsa";
@@ -3541,7 +3541,7 @@ static void limitedWithMissingDefaultAttributeAttributeSetter(v8::Local<v8::Valu
   if (!cppValue.Prepare())
     return;
 
-  impl->setAttribute(HTMLNames::limitedwithmissingdefaultattributeAttr, cppValue);
+  impl->setAttribute(html_names::kLimitedwithmissingdefaultattributeAttr, cppValue);
 }
 
 static void limitedWithInvalidMissingDefaultAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3549,7 +3549,7 @@ static void limitedWithInvalidMissingDefaultAttributeAttributeGetter(const v8::F
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  String cppValue(impl->FastGetAttribute(HTMLNames::limitedwithinvalidmissingdefaultattributeAttr));
+  String cppValue(impl->FastGetAttribute(html_names::kLimitedwithinvalidmissingdefaultattributeAttr));
 
   if (cppValue.IsEmpty()) {
     cppValue = "auto";
@@ -3582,7 +3582,7 @@ static void limitedWithInvalidMissingDefaultAttributeAttributeSetter(v8::Local<v
   if (!cppValue.Prepare())
     return;
 
-  impl->setAttribute(HTMLNames::limitedwithinvalidmissingdefaultattributeAttr, cppValue);
+  impl->setAttribute(html_names::kLimitedwithinvalidmissingdefaultattributeAttr, cppValue);
 }
 
 static void corsSettingAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3590,7 +3590,7 @@ static void corsSettingAttributeAttributeGetter(const v8::FunctionCallbackInfo<v
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  String cppValue(impl->FastGetAttribute(HTMLNames::corssettingattributeAttr));
+  String cppValue(impl->FastGetAttribute(html_names::kCorssettingattributeAttr));
 
   if (cppValue.IsNull()) {
     ;
@@ -3612,7 +3612,7 @@ static void limitedWithEmptyMissingInvalidAttributeAttributeGetter(const v8::Fun
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  String cppValue(impl->FastGetAttribute(HTMLNames::limitedwithemptymissinginvalidattributeAttr));
+  String cppValue(impl->FastGetAttribute(html_names::kLimitedwithemptymissinginvalidattributeAttr));
 
   if (cppValue.IsNull()) {
     cppValue = "missing";
@@ -3903,7 +3903,7 @@ static void urlStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8:
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  V8SetReturnValueString(info, impl->GetURLAttribute(HTMLNames::urlstringattributeAttr), info.GetIsolate());
+  V8SetReturnValueString(info, impl->GetURLAttribute(html_names::kUrlstringattributeAttr), info.GetIsolate());
 }
 
 static void urlStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3922,7 +3922,7 @@ static void urlStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, cons
   if (!cppValue.Prepare())
     return;
 
-  impl->setAttribute(HTMLNames::urlstringattributeAttr, cppValue);
+  impl->setAttribute(html_names::kUrlstringattributeAttr, cppValue);
 }
 
 static void urlStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3930,7 +3930,7 @@ static void urlStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8:
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  V8SetReturnValueString(info, impl->GetURLAttribute(HTMLNames::reflectUrlAttributeAttr), info.GetIsolate());
+  V8SetReturnValueString(info, impl->GetURLAttribute(html_names::kReflectUrlAttributeAttr), info.GetIsolate());
 }
 
 static void urlStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3949,7 +3949,7 @@ static void urlStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, cons
   if (!cppValue.Prepare())
     return;
 
-  impl->setAttribute(HTMLNames::reflectUrlAttributeAttr, cppValue);
+  impl->setAttribute(html_names::kReflectUrlAttributeAttr, cppValue);
 }
 
 static void unforgeableLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {

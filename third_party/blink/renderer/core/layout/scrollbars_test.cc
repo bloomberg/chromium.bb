@@ -412,8 +412,8 @@ TEST_F(ScrollbarsTest, OverlayScrollbarChangeToDisplayNoneDynamically) {
   DCHECK(!scrollable_root->HorizontalScrollbar());
 
   // Set display:none.
-  div->setAttribute(HTMLNames::classAttr, "noscrollbars");
-  document.body()->setAttribute(HTMLNames::classAttr, "noscrollbars");
+  div->setAttribute(html_names::kClassAttr, "noscrollbars");
+  document.body()->setAttribute(html_names::kClassAttr, "noscrollbars");
   Compositor().BeginFrame();
 
   EXPECT_TRUE(scrollable_div->VerticalScrollbar());
@@ -1264,7 +1264,7 @@ TEST_F(ScrollbarsTest, CustomScrollbarWhenStyleOwnerChange) {
   DCHECK(!div_scrollable->VerticalScrollbar()->IsOverlayScrollbar());
   DCHECK(!div_scrollable->VerticalScrollbar()->GetTheme().IsMockTheme());
 
-  div->setAttribute(HTMLNames::classAttr, "custom");
+  div->setAttribute(html_names::kClassAttr, "custom");
   Compositor().BeginFrame();
 
   EXPECT_TRUE(div_scrollable->VerticalScrollbar()->IsCustomScrollbar());
@@ -1999,7 +1999,7 @@ TEST_F(ScrollbarsTest,
   EXPECT_FALSE(scrollable_div->ScrollbarsHiddenIfOverlay());
 
   // Set display:none calls Dispose().
-  div->setAttribute(HTMLNames::classAttr, "hide");
+  div->setAttribute(html_names::kClassAttr, "hide");
   Compositor().BeginFrame();
 
   // After paint layer in scrollable dispose, we can still call scrollbar hidden
@@ -2045,7 +2045,7 @@ TEST_F(ScrollbarsTest, PLSADisposeShouldClearPointerInLayers) {
   GraphicsLayer* graphics_layer = scrollable_div->LayerForScrolling();
   ASSERT_TRUE(graphics_layer);
 
-  div->setAttribute(HTMLNames::classAttr, "hide");
+  div->setAttribute(html_names::kClassAttr, "hide");
   document.UpdateStyleAndLayout();
 
   EXPECT_FALSE(paint_layer->GetScrollableArea());

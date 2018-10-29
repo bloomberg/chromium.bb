@@ -346,7 +346,7 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersDepromotedOnStyleChange) {
 
   // Change the background to transparent
   scroller->setAttribute(
-      HTMLNames::styleAttr,
+      html_names::kStyleAttr,
       "background: rgba(255,255,255,0.5) local content-box;");
   GetDocument().View()->UpdateAllLifecyclePhases();
   paint_layer = ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
@@ -373,7 +373,7 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersPromotedOnStyleChange) {
   EXPECT_FALSE(paint_layer->NeedsCompositedScrolling());
 
   // Change the background to opaque
-  scroller->setAttribute(HTMLNames::styleAttr,
+  scroller->setAttribute(html_names::kStyleAttr,
                          "background: white local content-box;");
   GetDocument().View()->UpdateAllLifecyclePhases();
   paint_layer = ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
@@ -411,7 +411,7 @@ TEST_F(PaintLayerScrollableAreaTest, OnlyNonTransformedOpaqueLayersPromoted) {
   EXPECT_TRUE(paint_layer->GraphicsLayerBacking()->ContentsOpaque());
 
   // Change the parent to have a transform.
-  parent->setAttribute(HTMLNames::styleAttr, "transform: translate(1px, 0);");
+  parent->setAttribute(html_names::kStyleAttr, "transform: translate(1px, 0);");
   GetDocument().View()->UpdateAllLifecyclePhases();
   paint_layer = ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
@@ -419,7 +419,7 @@ TEST_F(PaintLayerScrollableAreaTest, OnlyNonTransformedOpaqueLayersPromoted) {
   EXPECT_FALSE(paint_layer->GraphicsLayerBacking());
 
   // Change the parent to have no transform again.
-  parent->removeAttribute(HTMLNames::styleAttr);
+  parent->removeAttribute(html_names::kStyleAttr);
   GetDocument().View()->UpdateAllLifecyclePhases();
   paint_layer = ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
@@ -429,7 +429,8 @@ TEST_F(PaintLayerScrollableAreaTest, OnlyNonTransformedOpaqueLayersPromoted) {
   EXPECT_TRUE(paint_layer->GraphicsLayerBacking()->ContentsOpaque());
 
   // Apply a transform to the scroller directly.
-  scroller->setAttribute(HTMLNames::styleAttr, "transform: translate(1px, 0);");
+  scroller->setAttribute(html_names::kStyleAttr,
+                         "transform: translate(1px, 0);");
   GetDocument().View()->UpdateAllLifecyclePhases();
   paint_layer = ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
@@ -463,7 +464,7 @@ TEST_F(PaintLayerScrollableAreaTest, OnlyOpaqueLayersPromoted) {
   EXPECT_TRUE(paint_layer->GraphicsLayerBacking()->ContentsOpaque());
 
   // Change the parent to be partially translucent.
-  parent->setAttribute(HTMLNames::styleAttr, "opacity: 0.5;");
+  parent->setAttribute(html_names::kStyleAttr, "opacity: 0.5;");
   GetDocument().View()->UpdateAllLifecyclePhases();
   paint_layer = ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
@@ -471,7 +472,7 @@ TEST_F(PaintLayerScrollableAreaTest, OnlyOpaqueLayersPromoted) {
   EXPECT_FALSE(paint_layer->GraphicsLayerBacking());
 
   // Change the parent to be opaque again.
-  parent->setAttribute(HTMLNames::styleAttr, "opacity: 1;");
+  parent->setAttribute(html_names::kStyleAttr, "opacity: 1;");
   GetDocument().View()->UpdateAllLifecyclePhases();
   paint_layer = ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
@@ -481,7 +482,7 @@ TEST_F(PaintLayerScrollableAreaTest, OnlyOpaqueLayersPromoted) {
   EXPECT_TRUE(paint_layer->GraphicsLayerBacking()->ContentsOpaque());
 
   // Make the scroller translucent.
-  scroller->setAttribute(HTMLNames::styleAttr, "opacity: 0.5");
+  scroller->setAttribute(html_names::kStyleAttr, "opacity: 0.5");
   GetDocument().View()->UpdateAllLifecyclePhases();
   paint_layer = ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
@@ -602,7 +603,7 @@ TEST_F(PaintLayerScrollableAreaTest,
   EXPECT_TRUE(paint_layer->NeedsCompositedScrolling());
 
   // Add clip to scroller.
-  scroller->setAttribute(HTMLNames::classAttr, "clip");
+  scroller->setAttribute(html_names::kClassAttr, "clip");
   GetDocument().View()->UpdateAllLifecyclePhases();
   paint_layer = ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);

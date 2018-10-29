@@ -270,7 +270,7 @@ bool WebDocument::ManifestUseCredentials() const {
   if (!link_element)
     return false;
   return EqualIgnoringASCIICase(
-      link_element->FastGetAttribute(HTMLNames::crossoriginAttr),
+      link_element->FastGetAttribute(html_names::kCrossoriginAttr),
       "use-credentials");
 }
 

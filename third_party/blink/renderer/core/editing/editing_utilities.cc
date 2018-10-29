@@ -80,7 +80,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 namespace {
 
@@ -1152,10 +1152,10 @@ bool IsPresentationalHTMLElement(const Node* node) {
     return false;
 
   const HTMLElement& element = ToHTMLElement(*node);
-  return element.HasTagName(uTag) || element.HasTagName(sTag) ||
-         element.HasTagName(strikeTag) || element.HasTagName(iTag) ||
-         element.HasTagName(emTag) || element.HasTagName(bTag) ||
-         element.HasTagName(strongTag);
+  return element.HasTagName(kUTag) || element.HasTagName(kSTag) ||
+         element.HasTagName(kStrikeTag) || element.HasTagName(kITag) ||
+         element.HasTagName(kEmTag) || element.HasTagName(kBTag) ||
+         element.HasTagName(kStrongTag);
 }
 
 Element* AssociatedElementOf(const Position& position) {
@@ -1314,7 +1314,7 @@ static HTMLSpanElement* CreateTabSpanElement(Document& document,
                                              Text* tab_text_node) {
   // Make the span to hold the tab.
   HTMLSpanElement* span_element = HTMLSpanElement::Create(document);
-  span_element->setAttribute(styleAttr, "white-space:pre");
+  span_element->setAttribute(kStyleAttr, "white-space:pre");
 
   // Add tab text to that span.
   if (!tab_text_node)
@@ -1405,7 +1405,7 @@ bool IsMailHTMLBlockquoteElement(const Node* node) {
     return false;
 
   const HTMLElement& element = ToHTMLElement(*node);
-  return element.HasTagName(blockquoteTag) &&
+  return element.HasTagName(kBlockquoteTag) &&
          element.getAttribute("type") == "cite";
 }
 
@@ -1529,12 +1529,12 @@ bool IsNonTableCellHTMLBlockElement(const Node* node) {
     return false;
 
   const HTMLElement& element = ToHTMLElement(*node);
-  return element.HasTagName(listingTag) || element.HasTagName(olTag) ||
-         element.HasTagName(preTag) || element.HasTagName(tableTag) ||
-         element.HasTagName(ulTag) || element.HasTagName(xmpTag) ||
-         element.HasTagName(h1Tag) || element.HasTagName(h2Tag) ||
-         element.HasTagName(h3Tag) || element.HasTagName(h4Tag) ||
-         element.HasTagName(h5Tag);
+  return element.HasTagName(kListingTag) || element.HasTagName(kOlTag) ||
+         element.HasTagName(kPreTag) || element.HasTagName(kTableTag) ||
+         element.HasTagName(kUlTag) || element.HasTagName(kXmpTag) ||
+         element.HasTagName(kH1Tag) || element.HasTagName(kH2Tag) ||
+         element.HasTagName(kH3Tag) || element.HasTagName(kH4Tag) ||
+         element.HasTagName(kH5Tag);
 }
 
 bool IsBlockFlowElement(const Node& node) {
@@ -1721,7 +1721,7 @@ AtomicString GetUrlStringFromNode(const Node& node) {
   // TODO(editing-dev): This should probably be reconciled with
   // HitTestResult::absoluteImageURL.
   if (IsHTMLImageElement(node) || IsHTMLInputElement(node))
-    return ToHTMLElement(node).getAttribute(srcAttr);
+    return ToHTMLElement(node).getAttribute(kSrcAttr);
   if (IsSVGImageElement(node))
     return ToSVGElement(node).ImageSourceURL();
   if (IsHTMLEmbedElement(node) || IsHTMLObjectElement(node) ||

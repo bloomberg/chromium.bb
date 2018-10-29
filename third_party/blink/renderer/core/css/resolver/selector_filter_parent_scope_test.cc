@@ -26,7 +26,7 @@ class SelectorFilterParentScopeTest : public testing::Test {
 };
 
 TEST_F(SelectorFilterParentScopeTest, ParentScope) {
-  GetDocument().body()->setAttribute(HTMLNames::classAttr, "match");
+  GetDocument().body()->setAttribute(html_names::kClassAttr, "match");
   GetDocument().documentElement()->SetIdAttribute("myId");
   SelectorFilter& filter =
       GetDocument().EnsureStyleResolver().GetSelectorFilter();

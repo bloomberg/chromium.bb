@@ -134,10 +134,10 @@ TEST_F(LayoutTableCellTest, RepaintContentInTableCell) {
 
   // Create an overflow recalc.
   Element* cell = GetDocument().getElementById("cell");
-  cell->setAttribute(HTMLNames::styleAttr, "outline: 1px solid black;");
+  cell->setAttribute(html_names::kStyleAttr, "outline: 1px solid black;");
   // Trigger a layout on the table that doesn't require cell layout.
   Element* table = GetDocument().getElementById("table");
-  table->setAttribute(HTMLNames::styleAttr, "position: absolute; left: 2px;");
+  table->setAttribute(html_names::kStyleAttr, "position: absolute; left: 2px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Check that overflow was calculated on the cell.
@@ -296,7 +296,7 @@ TEST_F(LayoutTableCellTest, BorderWidthsWithCollapsedBorders) {
   EXPECT_EQ(2u, cell2->CollapsedOuterBorderAfter());
 
   ToElement(cell1->Table()->GetNode())
-      ->setAttribute(HTMLNames::styleAttr,
+      ->setAttribute(html_names::kStyleAttr,
                      "writing-mode: vertical-rl; direction: rtl");
   GetDocument().View()->UpdateAllLifecyclePhases();
 

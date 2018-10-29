@@ -27,13 +27,10 @@
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/html_object_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
-#include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
 
 namespace blink {
-
-using namespace HTMLNames;
 
 HTMLImageLoader::HTMLImageLoader(Element* element) : ImageLoader(element) {}
 

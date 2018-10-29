@@ -57,7 +57,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 class ImageEventListener : public EventListener {
  public:
@@ -225,20 +225,20 @@ void ImageDocument::CreateDocumentStructure() {
 
   HTMLHeadElement* head = HTMLHeadElement::Create(*this);
   HTMLMetaElement* meta = HTMLMetaElement::Create(*this);
-  meta->setAttribute(nameAttr, "viewport");
-  meta->setAttribute(contentAttr, "width=device-width, minimum-scale=0.1");
+  meta->setAttribute(kNameAttr, "viewport");
+  meta->setAttribute(kContentAttr, "width=device-width, minimum-scale=0.1");
   head->AppendChild(meta);
 
   HTMLBodyElement* body = HTMLBodyElement::Create(*this);
 
   if (ShouldShrinkToFit()) {
     // Display the image prominently centered in the frame.
-    body->setAttribute(styleAttr, "margin: 0px; background: #0e0e0e;");
+    body->setAttribute(kStyleAttr, "margin: 0px; background: #0e0e0e;");
 
     // See w3c example on how to center an element:
     // https://www.w3.org/Style/Examples/007/center.en.html
     div_element_ = HTMLDivElement::Create(*this);
-    div_element_->setAttribute(styleAttr,
+    div_element_->setAttribute(kStyleAttr,
                                "display: flex;"
                                "flex-direction: column;"
                                "justify-content: center;"
@@ -257,7 +257,7 @@ void ImageDocument::CreateDocumentStructure() {
     ShadowRoot& shadow_root = body->EnsureUserAgentShadowRoot();
     shadow_root.AppendChild(div_element_);
   } else {
-    body->setAttribute(styleAttr, "margin: 0px;");
+    body->setAttribute(kStyleAttr, "margin: 0px;");
   }
 
   WillInsertBody();
@@ -409,7 +409,7 @@ void ImageDocument::UpdateImageStyle() {
     }
   }
 
-  image_element_->setAttribute(styleAttr, image_style.ToAtomicString());
+  image_element_->setAttribute(kStyleAttr, image_style.ToAtomicString());
 }
 
 void ImageDocument::ImageUpdated() {

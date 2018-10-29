@@ -37,8 +37,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 LayoutTableRow::LayoutTableRow(Element* element)
     : LayoutTableBoxComponent(element), row_index_(kUnsetRowIndex) {
   // init LayoutObject attributes

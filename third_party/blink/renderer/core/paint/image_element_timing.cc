@@ -90,7 +90,7 @@ void ImageElementTiming::NotifyImagePainted(const HTMLImageElement* element,
   visible_new_visual_rect.Intersect(viewport);
 
   const AtomicString attr =
-      element->FastGetAttribute(HTMLNames::elementtimingAttr);
+      element->FastGetAttribute(html_names::kElementtimingAttr);
   // Do not create an entry if 'elementtiming' is not present or the image is
   // below a certain size threshold.
   if (attr.IsEmpty() &&
@@ -103,7 +103,7 @@ void ImageElementTiming::NotifyImagePainted(const HTMLImageElement* element,
   // empty, use the ID. If empty, use 'img'.
   AtomicString name = attr;
   if (name.IsEmpty())
-    name = element->FastGetAttribute(HTMLNames::idAttr);
+    name = element->FastGetAttribute(html_names::kIdAttr);
   if (name.IsEmpty())
     name = "img";
   element_timings_.emplace_back(name, visible_new_visual_rect);

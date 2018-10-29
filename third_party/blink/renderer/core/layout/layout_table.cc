@@ -49,8 +49,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 LayoutTable::LayoutTable(Element* element)
     : LayoutBlock(element),
       head_(nullptr),

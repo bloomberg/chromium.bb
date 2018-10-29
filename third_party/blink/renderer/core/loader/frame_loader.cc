@@ -116,7 +116,7 @@ using blink::WebURLRequest;
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 bool IsBackForwardLoadType(WebFrameLoadType type) {
   return type == WebFrameLoadType::kBackForward;
@@ -1141,7 +1141,7 @@ mojom::CommitResult FrameLoader::CommitSameDocumentNavigation(
 SubstituteData FrameLoader::DefaultSubstituteDataForURL(const KURL& url) {
   if (!ShouldTreatURLAsSrcdocDocument(url))
     return SubstituteData();
-  String srcdoc = frame_->DeprecatedLocalOwner()->FastGetAttribute(srcdocAttr);
+  String srcdoc = frame_->DeprecatedLocalOwner()->FastGetAttribute(kSrcdocAttr);
   DCHECK(!srcdoc.IsNull());
   CString encoded_srcdoc = srcdoc.Utf8();
   return SubstituteData(
@@ -1603,7 +1603,7 @@ bool FrameLoader::ShouldTreatURLAsSrcdocDocument(const KURL& url) const {
   HTMLFrameOwnerElement* owner_element = frame_->DeprecatedLocalOwner();
   if (!IsHTMLIFrameElement(owner_element))
     return false;
-  return owner_element->FastHasAttribute(srcdocAttr);
+  return owner_element->FastHasAttribute(kSrcdocAttr);
 }
 
 void FrameLoader::DispatchDocumentElementAvailable() {

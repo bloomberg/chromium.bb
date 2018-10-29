@@ -41,8 +41,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 TreeOrderedMap* TreeOrderedMap::Create() {
   return new TreeOrderedMap;
 }

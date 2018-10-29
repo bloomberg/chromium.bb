@@ -44,10 +44,10 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 HTMLOptionElement::HTMLOptionElement(Document& document)
-    : HTMLElement(optionTag, document), is_selected_(false) {}
+    : HTMLElement(kOptionTag, document), is_selected_(false) {}
 
 // An explicit empty destructor should be in html_option_element.cc, because
 // if an implicit destructor is used or an empty destructor is defined in
@@ -80,7 +80,7 @@ HTMLOptionElement* HTMLOptionElement::CreateForJSConstructor(
   if (!value.IsNull())
     element->setValue(value);
   if (default_selected)
-    element->setAttribute(selectedAttr, g_empty_atom);
+    element->setAttribute(kSelectedAttr, g_empty_atom);
   element->SetSelected(selected);
 
   return element;
@@ -94,7 +94,7 @@ bool HTMLOptionElement::SupportsFocus() const {
 }
 
 bool HTMLOptionElement::MatchesDefaultPseudoClass() const {
-  return FastHasAttribute(selectedAttr);
+  return FastHasAttribute(kSelectedAttr);
 }
 
 bool HTMLOptionElement::MatchesEnabledPseudoClass() const {
@@ -107,7 +107,7 @@ String HTMLOptionElement::DisplayLabel() const {
 
   // WinIE does not use the label attribute, so as a quirk, we ignore it.
   if (!document.InQuirksMode())
-    text = FastGetAttribute(labelAttr);
+    text = FastGetAttribute(kLabelAttr);
 
   // FIXME: The following treats an element with the label attribute set to
   // the empty string the same as an element with no label attribute at all.
@@ -172,21 +172,21 @@ int HTMLOptionElement::ListIndex() const {
 void HTMLOptionElement::ParseAttribute(
     const AttributeModificationParams& params) {
   const QualifiedName& name = params.name;
-  if (name == valueAttr) {
+  if (name == kValueAttr) {
     if (HTMLDataListElement* data_list = OwnerDataListElement())
       data_list->OptionElementChildrenChanged();
-  } else if (name == disabledAttr) {
+  } else if (name == kDisabledAttr) {
     if (params.old_value.IsNull() != params.new_value.IsNull()) {
       PseudoStateChanged(CSSSelector::kPseudoDisabled);
       PseudoStateChanged(CSSSelector::kPseudoEnabled);
       if (LayoutObject* o = GetLayoutObject())
         o->InvalidateIfControlStateChanged(kEnabledControlState);
     }
-  } else if (name == selectedAttr) {
+  } else if (name == kSelectedAttr) {
     if (params.old_value.IsNull() != params.new_value.IsNull() && !is_dirty_)
       SetSelected(!params.new_value.IsNull());
     PseudoStateChanged(CSSSelector::kPseudoDefault);
-  } else if (name == labelAttr) {
+  } else if (name == kLabelAttr) {
     UpdateLabel();
   } else {
     HTMLElement::ParseAttribute(params);
@@ -194,7 +194,7 @@ void HTMLOptionElement::ParseAttribute(
 }
 
 String HTMLOptionElement::value() const {
-  const AtomicString& value = FastGetAttribute(valueAttr);
+  const AtomicString& value = FastGetAttribute(kValueAttr);
   if (!value.IsNull())
     return value;
   return CollectOptionInnerText()
@@ -203,7 +203,7 @@ String HTMLOptionElement::value() const {
 }
 
 void HTMLOptionElement::setValue(const AtomicString& value) {
-  setAttribute(valueAttr, value);
+  setAttribute(kValueAttr, value);
 }
 
 bool HTMLOptionElement::Selected() const {
@@ -291,7 +291,7 @@ HTMLSelectElement* HTMLOptionElement::OwnerSelectElement() const {
 }
 
 String HTMLOptionElement::label() const {
-  const AtomicString& label = FastGetAttribute(labelAttr);
+  const AtomicString& label = FastGetAttribute(kLabelAttr);
   if (!label.IsNull())
     return label;
   return CollectOptionInnerText()
@@ -300,7 +300,7 @@ String HTMLOptionElement::label() const {
 }
 
 void HTMLOptionElement::setLabel(const AtomicString& label) {
-  setAttribute(labelAttr, label);
+  setAttribute(kLabelAttr, label);
 }
 
 String HTMLOptionElement::TextIndentedToRespectGroupLabel() const {
@@ -311,7 +311,7 @@ String HTMLOptionElement::TextIndentedToRespectGroupLabel() const {
 }
 
 bool HTMLOptionElement::OwnElementDisabled() const {
-  return FastHasAttribute(disabledAttr);
+  return FastHasAttribute(kDisabledAttr);
 }
 
 bool HTMLOptionElement::IsDisabledFormControl() const {

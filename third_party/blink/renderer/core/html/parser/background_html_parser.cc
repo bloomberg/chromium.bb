@@ -66,8 +66,6 @@ static const size_t kPendingTokenLimit = 1000;
 static_assert(kOutstandingTokenLimit > kPendingTokenLimit,
               "Outstanding token limit is applied after pending token limit.");
 
-using namespace HTMLNames;
-
 base::WeakPtr<BackgroundHTMLParser> BackgroundHTMLParser::Create(
     std::unique_ptr<Configuration> config,
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner) {

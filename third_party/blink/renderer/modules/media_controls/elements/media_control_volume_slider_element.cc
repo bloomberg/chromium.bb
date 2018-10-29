@@ -24,7 +24,7 @@ const char kClosedCSSClass[] = "closed";
 MediaControlVolumeSliderElement::MediaControlVolumeSliderElement(
     MediaControlsImpl& media_controls)
     : MediaControlSliderElement(media_controls, kMediaVolumeSlider) {
-  setAttribute(HTMLNames::maxAttr, "1");
+  setAttribute(html_names::kMaxAttr, "1");
   SetShadowPseudoId(AtomicString("-webkit-media-controls-volume-slider"));
   SetVolumeInternal(MediaElement().volume());
 

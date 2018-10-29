@@ -73,7 +73,7 @@ V0CustomElementDefinition* V0CustomElementRegistry::RegisterElement(
   if (!constructor_builder->ValidateOptions(type, tag_name, exception_state))
     return nullptr;
 
-  DCHECK(tag_name.NamespaceURI() == HTMLNames::xhtmlNamespaceURI ||
+  DCHECK(tag_name.NamespaceURI() == html_names::xhtmlNamespaceURI ||
          tag_name.NamespaceURI() == svg_names::kNamespaceURI);
 
   DCHECK(!document_was_detached_);

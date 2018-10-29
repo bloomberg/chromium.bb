@@ -67,8 +67,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 static void PrintBorderStyle(WTF::TextStream& ts,
                              const EBorderStyle border_style) {
   switch (border_style) {

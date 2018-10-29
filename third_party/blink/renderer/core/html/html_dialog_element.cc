@@ -38,7 +38,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 // This function chooses the focused element when show() or showModal() is
 // invoked, as described in their spec.
@@ -96,7 +96,7 @@ static void InertSubtreesChanged(Document& document) {
 }
 
 inline HTMLDialogElement::HTMLDialogElement(Document& document)
-    : HTMLElement(dialogTag, document),
+    : HTMLElement(kDialogTag, document),
       centering_mode_(kNotCentered),
       centered_position_(0),
       return_value_("") {
@@ -108,9 +108,9 @@ DEFINE_NODE_FACTORY(HTMLDialogElement)
 void HTMLDialogElement::close(const String& return_value) {
   // https://html.spec.whatwg.org/#close-the-dialog
 
-  if (!FastHasAttribute(openAttr))
+  if (!FastHasAttribute(kOpenAttr))
     return;
-  SetBooleanAttribute(openAttr, false);
+  SetBooleanAttribute(kOpenAttr, false);
 
   HTMLDialogElement* active_modal_dialog = GetDocument().ActiveModalDialog();
   GetDocument().RemoveFromTopLayer(this);
@@ -137,9 +137,9 @@ void HTMLDialogElement::ScheduleCloseEvent() {
 }
 
 void HTMLDialogElement::show() {
-  if (FastHasAttribute(openAttr))
+  if (FastHasAttribute(kOpenAttr))
     return;
-  SetBooleanAttribute(openAttr, true);
+  SetBooleanAttribute(kOpenAttr, true);
 
   // The layout must be updated here because setFocusForDialog calls
   // Element::isFocusable, which requires an up-to-date layout.
@@ -149,7 +149,7 @@ void HTMLDialogElement::show() {
 }
 
 void HTMLDialogElement::showModal(ExceptionState& exception_state) {
-  if (FastHasAttribute(openAttr)) {
+  if (FastHasAttribute(kOpenAttr)) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "The element already has an 'open' "
                                       "attribute, and therefore cannot be "
@@ -169,7 +169,7 @@ void HTMLDialogElement::showModal(ExceptionState& exception_state) {
   }
 
   GetDocument().AddToTopLayer(this);
-  SetBooleanAttribute(openAttr, true);
+  SetBooleanAttribute(kOpenAttr, true);
 
   ForceLayoutForCentering();
 
@@ -202,7 +202,7 @@ bool HTMLDialogElement::IsPresentationAttribute(
   // FIXME: Workaround for <https://bugs.webkit.org/show_bug.cgi?id=91058>:
   // modifying an attribute for which there is an attribute selector in html.css
   // sometimes does not trigger a style recalc.
-  if (name == openAttr)
+  if (name == kOpenAttr)
     return true;
 
   return HTMLElement::IsPresentationAttribute(name);

@@ -39,10 +39,10 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline HTMLMetaElement::HTMLMetaElement(Document& document)
-    : HTMLElement(metaTag, document) {}
+    : HTMLElement(kMetaTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLMetaElement)
 
@@ -474,12 +474,12 @@ void HTMLMetaElement::ProcessViewportContentAttribute(
 
 void HTMLMetaElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == http_equivAttr || params.name == contentAttr) {
+  if (params.name == kHttpEquivAttr || params.name == kContentAttr) {
     Process();
     return;
   }
 
-  if (params.name != nameAttr)
+  if (params.name != kNameAttr)
     HTMLElement::ParseAttribute(params);
 }
 
@@ -506,11 +506,11 @@ void HTMLMetaElement::Process() {
 
   // All below situations require a content attribute (which can be the empty
   // string).
-  const AtomicString& content_value = FastGetAttribute(contentAttr);
+  const AtomicString& content_value = FastGetAttribute(kContentAttr);
   if (content_value.IsNull())
     return;
 
-  const AtomicString& name_value = FastGetAttribute(nameAttr);
+  const AtomicString& name_value = FastGetAttribute(kNameAttr);
   if (!name_value.IsEmpty()) {
     if (DeprecatedEqualIgnoringCase(name_value, "viewport"))
       ProcessViewportContentAttribute(content_value,
@@ -535,7 +535,7 @@ void HTMLMetaElement::Process() {
   // tree (changing a meta tag while it's not in the tree shouldn't have any
   // effect on the document).
 
-  const AtomicString& http_equiv_value = FastGetAttribute(http_equivAttr);
+  const AtomicString& http_equiv_value = FastGetAttribute(kHttpEquivAttr);
   if (http_equiv_value.IsEmpty())
     return;
 
@@ -552,11 +552,11 @@ WTF::TextEncoding HTMLMetaElement::ComputeEncoding() const {
 }
 
 const AtomicString& HTMLMetaElement::Content() const {
-  return getAttribute(contentAttr);
+  return getAttribute(kContentAttr);
 }
 
 const AtomicString& HTMLMetaElement::HttpEquiv() const {
-  return getAttribute(http_equivAttr);
+  return getAttribute(kHttpEquivAttr);
 }
 
 const AtomicString& HTMLMetaElement::GetName() const {

@@ -86,7 +86,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 // static
 AXObjectCache* AXObjectCacheImpl::Create(Document& document) {
@@ -295,7 +295,7 @@ static bool NodeHasRole(Node* node, const String& role) {
     return false;
 
   // TODO(accessibility) support role strings with multiple roles.
-  return EqualIgnoringASCIICase(ToElement(node)->getAttribute(roleAttr), role);
+  return EqualIgnoringASCIICase(ToElement(node)->getAttribute(kRoleAttr), role);
 }
 
 AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
@@ -1007,40 +1007,40 @@ void AXObjectCacheImpl::HandlePossibleRoleChange(Node* node) {
 
 void AXObjectCacheImpl::HandleAttributeChanged(const QualifiedName& attr_name,
                                                Element* element) {
-  if (attr_name == roleAttr || attr_name == typeAttr || attr_name == sizeAttr ||
-      attr_name == aria_haspopupAttr)
+  if (attr_name == kRoleAttr || attr_name == kTypeAttr ||
+      attr_name == kSizeAttr || attr_name == kAriaHaspopupAttr)
     HandlePossibleRoleChange(element);
-  else if (attr_name == altAttr || attr_name == titleAttr)
+  else if (attr_name == kAltAttr || attr_name == kTitleAttr)
     TextChanged(element);
-  else if (attr_name == forAttr && IsHTMLLabelElement(*element))
+  else if (attr_name == kForAttr && IsHTMLLabelElement(*element))
     LabelChanged(element);
-  else if (attr_name == idAttr)
+  else if (attr_name == kIdAttr)
     MaybeNewRelationTarget(element, Get(element));
 
   if (!attr_name.LocalName().StartsWith("aria-"))
     return;
 
   // Perform updates specific to each attribute.
-  if (attr_name == aria_activedescendantAttr)
+  if (attr_name == kAriaActivedescendantAttr)
     HandleActiveDescendantChanged(element);
-  else if (attr_name == aria_valuenowAttr || attr_name == aria_valuetextAttr)
+  else if (attr_name == kAriaValuenowAttr || attr_name == kAriaValuetextAttr)
     PostNotification(element, ax::mojom::Event::kValueChanged);
-  else if (attr_name == aria_labelAttr || attr_name == aria_labeledbyAttr ||
-           attr_name == aria_labelledbyAttr)
+  else if (attr_name == kAriaLabelAttr || attr_name == kAriaLabeledbyAttr ||
+           attr_name == kAriaLabelledbyAttr)
     TextChanged(element);
-  else if (attr_name == aria_describedbyAttr)
+  else if (attr_name == kAriaDescribedbyAttr)
     TextChanged(element);  // TODO do we need a DescriptionChanged() ?
-  else if (attr_name == aria_checkedAttr || attr_name == aria_pressedAttr)
+  else if (attr_name == kAriaCheckedAttr || attr_name == kAriaPressedAttr)
     CheckedStateChanged(element);
-  else if (attr_name == aria_selectedAttr)
+  else if (attr_name == kAriaSelectedAttr)
     HandleAriaSelectedChanged(element);
-  else if (attr_name == aria_expandedAttr)
+  else if (attr_name == kAriaExpandedAttr)
     HandleAriaExpandedChange(element);
-  else if (attr_name == aria_hiddenAttr)
+  else if (attr_name == kAriaHiddenAttr)
     ChildrenChanged(element->parentNode());
-  else if (attr_name == aria_invalidAttr)
+  else if (attr_name == kAriaInvalidAttr)
     PostNotification(element, ax::mojom::Event::kInvalidStatusChanged);
-  else if (attr_name == aria_ownsAttr)
+  else if (attr_name == kAriaOwnsAttr)
     ChildrenChanged(element);
   else
     PostNotification(element, ax::mojom::Event::kAriaAttributeChanged);

@@ -62,7 +62,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 static bool Match(const StringImpl* impl, const QualifiedName& q_name) {
   return impl == q_name.LocalName().Impl();
@@ -94,16 +94,16 @@ static const StringImpl* TagImplFor(const String& tag_name) {
 
 static String InitiatorFor(const StringImpl* tag_impl) {
   DCHECK(tag_impl);
-  if (Match(tag_impl, imgTag))
-    return imgTag.LocalName();
-  if (Match(tag_impl, inputTag))
-    return inputTag.LocalName();
-  if (Match(tag_impl, linkTag))
-    return linkTag.LocalName();
-  if (Match(tag_impl, scriptTag))
-    return scriptTag.LocalName();
-  if (Match(tag_impl, videoTag))
-    return videoTag.LocalName();
+  if (Match(tag_impl, kImgTag))
+    return kImgTag.LocalName();
+  if (Match(tag_impl, kInputTag))
+    return kInputTag.LocalName();
+  if (Match(tag_impl, kLinkTag))
+    return kLinkTag.LocalName();
+  if (Match(tag_impl, kScriptTag))
+    return kScriptTag.LocalName();
+  if (Match(tag_impl, kVideoTag))
+    return kVideoTag.LocalName();
   NOTREACHED();
   return g_empty_string;
 }
@@ -157,12 +157,12 @@ class TokenPreloadScanner::StartTagScanner {
         width_attr_small_absolute_(false),
         height_attr_small_absolute_(false),
         scanner_type_(scanner_type) {
-    if (Match(tag_impl_, imgTag) || Match(tag_impl_, sourceTag)) {
+    if (Match(tag_impl_, kImgTag) || Match(tag_impl_, kSourceTag)) {
       source_size_ = SizesAttributeParser(media_values_, String()).length();
       return;
     }
-    if (!Match(tag_impl_, inputTag) && !Match(tag_impl_, linkTag) &&
-        !Match(tag_impl_, scriptTag) && !Match(tag_impl_, videoTag))
+    if (!Match(tag_impl_, kInputTag) && !Match(tag_impl_, kLinkTag) &&
+        !Match(tag_impl_, kScriptTag) && !Match(tag_impl_, kVideoTag))
       tag_impl_ = nullptr;
   }
 
@@ -191,14 +191,14 @@ class TokenPreloadScanner::StartTagScanner {
   }
 
   void PostProcessAfterAttributes() {
-    if (Match(tag_impl_, imgTag) ||
+    if (Match(tag_impl_, kImgTag) ||
         (link_is_preload_ && as_attribute_value_ == "image" &&
          RuntimeEnabledFeatures::PreloadImageSrcSetEnabled()))
       SetUrlFromImageAttributes();
   }
 
   void HandlePictureSourceURL(PictureData& picture_data) {
-    if (Match(tag_impl_, sourceTag) && matched_ &&
+    if (Match(tag_impl_, kSourceTag) && matched_ &&
         picture_data.source_url.IsEmpty()) {
       // Must create an IsolatedCopy() since the srcset attribute value will get
       // sent back to the main thread between when we set this, and when we
@@ -210,7 +210,8 @@ class TokenPreloadScanner::StartTagScanner {
       picture_data.source_size_set = source_size_set_;
       picture_data.source_size = source_size_;
       picture_data.picked = true;
-    } else if (Match(tag_impl_, imgTag) && !picture_data.source_url.IsEmpty()) {
+    } else if (Match(tag_impl_, kImgTag) &&
+               !picture_data.source_url.IsEmpty()) {
       SetUrlToLoad(picture_data.source_url, kAllowURLReplacement);
     }
   }
@@ -276,7 +277,7 @@ class TokenPreloadScanner::StartTagScanner {
     if (!request)
       return nullptr;
 
-    if ((Match(tag_impl_, scriptTag) && type_attribute_value_ == "module") ||
+    if ((Match(tag_impl_, kScriptTag) && type_attribute_value_ == "module") ||
         IsLinkRelModulePreload()) {
       request->SetScriptType(ScriptType::kModule);
     }
@@ -297,7 +298,7 @@ class TokenPreloadScanner::StartTagScanner {
 
     // The only link tags that should keep the integrity metadata are
     // stylesheets until crbug.com/677022 is resolved.
-    if (link_is_style_sheet_ || !Match(tag_impl_, linkTag))
+    if (link_is_style_sheet_ || !Match(tag_impl_, kLinkTag))
       request->SetIntegrityMetadata(integrity_metadata_);
 
     if (scanner_type_ == ScannerType::kInsertion)
@@ -311,28 +312,28 @@ class TokenPreloadScanner::StartTagScanner {
   void ProcessScriptAttribute(const NameType& attribute_name,
                               const String& attribute_value) {
     // FIXME - Don't set crossorigin multiple times.
-    if (Match(attribute_name, srcAttr)) {
+    if (Match(attribute_name, kSrcAttr)) {
       SetUrlToLoad(attribute_value, kDisallowURLReplacement);
-    } else if (Match(attribute_name, crossoriginAttr)) {
+    } else if (Match(attribute_name, kCrossoriginAttr)) {
       SetCrossOrigin(attribute_value);
-    } else if (Match(attribute_name, nonceAttr)) {
+    } else if (Match(attribute_name, kNonceAttr)) {
       SetNonce(attribute_value);
-    } else if (Match(attribute_name, asyncAttr)) {
+    } else if (Match(attribute_name, kAsyncAttr)) {
       SetDefer(FetchParameters::kLazyLoad);
-    } else if (Match(attribute_name, deferAttr)) {
+    } else if (Match(attribute_name, kDeferAttr)) {
       SetDefer(FetchParameters::kLazyLoad);
-    } else if (!integrity_attr_set_ && Match(attribute_name, integrityAttr)) {
+    } else if (!integrity_attr_set_ && Match(attribute_name, kIntegrityAttr)) {
       integrity_attr_set_ = true;
       SubresourceIntegrity::ParseIntegrityAttribute(
           attribute_value, integrity_features_, integrity_metadata_);
-    } else if (Match(attribute_name, typeAttr)) {
+    } else if (Match(attribute_name, kTypeAttr)) {
       type_attribute_value_ = attribute_value;
-    } else if (Match(attribute_name, languageAttr)) {
+    } else if (Match(attribute_name, kLanguageAttr)) {
       language_attribute_value_ = attribute_value;
-    } else if (Match(attribute_name, nomoduleAttr)) {
+    } else if (Match(attribute_name, kNomoduleAttr)) {
       nomodule_attribute_value_ = true;
     } else if (!referrer_policy_set_ &&
-               Match(attribute_name, referrerpolicyAttr) &&
+               Match(attribute_name, kReferrerpolicyAttr) &&
                !attribute_value.IsNull()) {
       SetReferrerPolicy(attribute_value,
                         kDoNotSupportReferrerPolicyLegacyKeywords);
@@ -342,34 +343,35 @@ class TokenPreloadScanner::StartTagScanner {
   template <typename NameType>
   void ProcessImgAttribute(const NameType& attribute_name,
                            const String& attribute_value) {
-    if (Match(attribute_name, srcAttr) && img_src_url_.IsNull()) {
+    if (Match(attribute_name, kSrcAttr) && img_src_url_.IsNull()) {
       img_src_url_ = attribute_value;
-    } else if (Match(attribute_name, crossoriginAttr)) {
+    } else if (Match(attribute_name, kCrossoriginAttr)) {
       SetCrossOrigin(attribute_value);
-    } else if (Match(attribute_name, srcsetAttr) &&
+    } else if (Match(attribute_name, kSrcsetAttr) &&
                srcset_attribute_value_.IsNull()) {
       srcset_attribute_value_ = attribute_value;
-    } else if (Match(attribute_name, sizesAttr) && !source_size_set_) {
+    } else if (Match(attribute_name, kSizesAttr) && !source_size_set_) {
       ParseSourceSize(attribute_value);
     } else if (!referrer_policy_set_ &&
-               Match(attribute_name, referrerpolicyAttr) &&
+               Match(attribute_name, kReferrerpolicyAttr) &&
                !attribute_value.IsNull()) {
       SetReferrerPolicy(attribute_value, kSupportReferrerPolicyLegacyKeywords);
-    } else if (!importance_mode_set_ && Match(attribute_name, importanceAttr) &&
+    } else if (!importance_mode_set_ &&
+               Match(attribute_name, kImportanceAttr) &&
                RuntimeEnabledFeatures::PriorityHintsEnabled()) {
       SetImportance(attribute_value);
     } else if (!lazyload_attr_set_to_off_ &&
-               Match(attribute_name, lazyloadAttr) &&
+               Match(attribute_name, kLazyloadAttr) &&
                RuntimeEnabledFeatures::LazyImageLoadingEnabled() &&
                EqualIgnoringASCIICase(attribute_value, "off")) {
       lazyload_attr_set_to_off_ = true;
     } else if (!width_attr_small_absolute_ &&
-               Match(attribute_name, widthAttr) &&
+               Match(attribute_name, kWidthAttr) &&
                RuntimeEnabledFeatures::LazyImageLoadingEnabled()) {
       width_attr_small_absolute_ =
           IsDimensionSmallAndAbsoluteForLazyLoad(attribute_value);
     } else if (!height_attr_small_absolute_ &&
-               Match(attribute_name, heightAttr) &&
+               Match(attribute_name, kHeightAttr) &&
                RuntimeEnabledFeatures::LazyImageLoadingEnabled()) {
       height_attr_small_absolute_ =
           IsDimensionSmallAndAbsoluteForLazyLoad(attribute_value);
@@ -390,11 +392,11 @@ class TokenPreloadScanner::StartTagScanner {
   void ProcessLinkAttribute(const NameType& attribute_name,
                             const String& attribute_value) {
     // FIXME - Don't set rel/media/crossorigin multiple times.
-    if (Match(attribute_name, hrefAttr)) {
+    if (Match(attribute_name, kHrefAttr)) {
       SetUrlToLoad(attribute_value, kDisallowURLReplacement);
       // Used in SetUrlFromImageAttributes() when as=image.
       img_src_url_ = attribute_value;
-    } else if (Match(attribute_name, relAttr)) {
+    } else if (Match(attribute_name, kRelAttr)) {
       LinkRelAttribute rel(attribute_value);
       link_is_style_sheet_ = rel.IsStyleSheet() && !rel.IsAlternate() &&
                              rel.GetIconType() == kInvalidIcon &&
@@ -403,31 +405,32 @@ class TokenPreloadScanner::StartTagScanner {
       link_is_preload_ = rel.IsLinkPreload();
       link_is_modulepreload_ = rel.IsModulePreload();
       link_is_import_ = rel.IsImport();
-    } else if (Match(attribute_name, mediaAttr)) {
+    } else if (Match(attribute_name, kMediaAttr)) {
       matched_ &= MediaAttributeMatches(*media_values_, attribute_value);
-    } else if (Match(attribute_name, crossoriginAttr)) {
+    } else if (Match(attribute_name, kCrossoriginAttr)) {
       SetCrossOrigin(attribute_value);
-    } else if (Match(attribute_name, nonceAttr)) {
+    } else if (Match(attribute_name, kNonceAttr)) {
       SetNonce(attribute_value);
-    } else if (Match(attribute_name, asAttr)) {
+    } else if (Match(attribute_name, kAsAttr)) {
       as_attribute_value_ = attribute_value.DeprecatedLower();
-    } else if (Match(attribute_name, typeAttr)) {
+    } else if (Match(attribute_name, kTypeAttr)) {
       type_attribute_value_ = attribute_value;
     } else if (!referrer_policy_set_ &&
-               Match(attribute_name, referrerpolicyAttr) &&
+               Match(attribute_name, kReferrerpolicyAttr) &&
                !attribute_value.IsNull()) {
       SetReferrerPolicy(attribute_value,
                         kDoNotSupportReferrerPolicyLegacyKeywords);
-    } else if (!integrity_attr_set_ && Match(attribute_name, integrityAttr)) {
+    } else if (!integrity_attr_set_ && Match(attribute_name, kIntegrityAttr)) {
       integrity_attr_set_ = true;
       SubresourceIntegrity::ParseIntegrityAttribute(
           attribute_value, integrity_features_, integrity_metadata_);
-    } else if (Match(attribute_name, srcsetAttr) &&
+    } else if (Match(attribute_name, kSrcsetAttr) &&
                srcset_attribute_value_.IsNull()) {
       srcset_attribute_value_ = attribute_value;
-    } else if (Match(attribute_name, imgsizesAttr) && !source_size_set_) {
+    } else if (Match(attribute_name, kImgsizesAttr) && !source_size_set_) {
       ParseSourceSize(attribute_value);
-    } else if (!importance_mode_set_ && Match(attribute_name, importanceAttr) &&
+    } else if (!importance_mode_set_ &&
+               Match(attribute_name, kImportanceAttr) &&
                RuntimeEnabledFeatures::PriorityHintsEnabled()) {
       SetImportance(attribute_value);
     }
@@ -437,9 +440,9 @@ class TokenPreloadScanner::StartTagScanner {
   void ProcessInputAttribute(const NameType& attribute_name,
                              const String& attribute_value) {
     // FIXME - Don't set type multiple times.
-    if (Match(attribute_name, srcAttr)) {
+    if (Match(attribute_name, kSrcAttr)) {
       SetUrlToLoad(attribute_value, kDisallowURLReplacement);
-    } else if (Match(attribute_name, typeAttr)) {
+    } else if (Match(attribute_name, kTypeAttr)) {
       input_is_image_ =
           DeprecatedEqualIgnoringCase(attribute_value, InputTypeNames::image);
     }
@@ -448,22 +451,22 @@ class TokenPreloadScanner::StartTagScanner {
   template <typename NameType>
   void ProcessSourceAttribute(const NameType& attribute_name,
                               const String& attribute_value) {
-    if (Match(attribute_name, srcsetAttr) &&
+    if (Match(attribute_name, kSrcsetAttr) &&
         srcset_image_candidate_.IsEmpty()) {
       srcset_attribute_value_ = attribute_value;
       srcset_image_candidate_ = BestFitSourceForSrcsetAttribute(
           media_values_->DevicePixelRatio(), source_size_, attribute_value);
-    } else if (Match(attribute_name, sizesAttr) && !source_size_set_) {
+    } else if (Match(attribute_name, kSizesAttr) && !source_size_set_) {
       ParseSourceSize(attribute_value);
       if (!srcset_image_candidate_.IsEmpty()) {
         srcset_image_candidate_ = BestFitSourceForSrcsetAttribute(
             media_values_->DevicePixelRatio(), source_size_,
             srcset_attribute_value_);
       }
-    } else if (Match(attribute_name, mediaAttr)) {
+    } else if (Match(attribute_name, kMediaAttr)) {
       // FIXME - Don't match media multiple times.
       matched_ &= MediaAttributeMatches(*media_values_, attribute_value);
-    } else if (Match(attribute_name, typeAttr)) {
+    } else if (Match(attribute_name, kTypeAttr)) {
       matched_ &= MIMETypeRegistry::IsSupportedImagePrefixedMIMEType(
           ContentType(attribute_value).GetType());
     }
@@ -472,29 +475,29 @@ class TokenPreloadScanner::StartTagScanner {
   template <typename NameType>
   void ProcessVideoAttribute(const NameType& attribute_name,
                              const String& attribute_value) {
-    if (Match(attribute_name, posterAttr))
+    if (Match(attribute_name, kPosterAttr))
       SetUrlToLoad(attribute_value, kDisallowURLReplacement);
-    else if (Match(attribute_name, crossoriginAttr))
+    else if (Match(attribute_name, kCrossoriginAttr))
       SetCrossOrigin(attribute_value);
   }
 
   template <typename NameType>
   void ProcessAttribute(const NameType& attribute_name,
                         const String& attribute_value) {
-    if (Match(attribute_name, charsetAttr))
+    if (Match(attribute_name, kCharsetAttr))
       charset_ = attribute_value;
 
-    if (Match(tag_impl_, scriptTag))
+    if (Match(tag_impl_, kScriptTag))
       ProcessScriptAttribute(attribute_name, attribute_value);
-    else if (Match(tag_impl_, imgTag))
+    else if (Match(tag_impl_, kImgTag))
       ProcessImgAttribute(attribute_name, attribute_value);
-    else if (Match(tag_impl_, linkTag))
+    else if (Match(tag_impl_, kLinkTag))
       ProcessLinkAttribute(attribute_name, attribute_value);
-    else if (Match(tag_impl_, inputTag))
+    else if (Match(tag_impl_, kInputTag))
       ProcessInputAttribute(attribute_name, attribute_value);
-    else if (Match(tag_impl_, sourceTag))
+    else if (Match(tag_impl_, kSourceTag))
       ProcessSourceAttribute(attribute_name, attribute_value);
-    else if (Match(tag_impl_, videoTag))
+    else if (Match(tag_impl_, kVideoTag))
       ProcessVideoAttribute(attribute_name, attribute_value);
   }
 
@@ -512,7 +515,7 @@ class TokenPreloadScanner::StartTagScanner {
   const String& Charset() const {
     // FIXME: Its not clear that this if is needed, the loader probably ignores
     // charset for image requests anyway.
-    if (Match(tag_impl_, imgTag) || Match(tag_impl_, videoTag))
+    if (Match(tag_impl_, kImgTag) || Match(tag_impl_, kVideoTag))
       return g_empty_string;
     return charset_;
   }
@@ -523,34 +526,33 @@ class TokenPreloadScanner::StartTagScanner {
   }
 
   ResourceType GetResourceType() const {
-    if (Match(tag_impl_, scriptTag)) {
+    if (Match(tag_impl_, kScriptTag))
       return ResourceType::kScript;
-    } else if (Match(tag_impl_, imgTag) || Match(tag_impl_, videoTag) ||
-               (Match(tag_impl_, inputTag) && input_is_image_)) {
+    if (Match(tag_impl_, kImgTag) || Match(tag_impl_, kVideoTag) ||
+        (Match(tag_impl_, kInputTag) && input_is_image_))
       return ResourceType::kImage;
-    } else if (Match(tag_impl_, linkTag) && link_is_style_sheet_) {
+    if (Match(tag_impl_, kLinkTag) && link_is_style_sheet_)
       return ResourceType::kCSSStyleSheet;
-    } else if (link_is_preconnect_) {
+    if (link_is_preconnect_)
       return ResourceType::kRaw;
-    } else if (Match(tag_impl_, linkTag) && link_is_import_) {
+    if (Match(tag_impl_, kLinkTag) && link_is_import_)
       return ResourceType::kImportResource;
-    }
     NOTREACHED();
     return ResourceType::kRaw;
   }
 
   bool ShouldPreconnect() const {
-    return Match(tag_impl_, linkTag) && link_is_preconnect_ &&
+    return Match(tag_impl_, kLinkTag) && link_is_preconnect_ &&
            !url_to_load_.IsEmpty();
   }
 
   bool IsLinkRelPreload() const {
-    return Match(tag_impl_, linkTag) && link_is_preload_ &&
+    return Match(tag_impl_, kLinkTag) && link_is_preload_ &&
            !url_to_load_.IsEmpty();
   }
 
   bool IsLinkRelModulePreload() const {
-    return Match(tag_impl_, linkTag) && link_is_modulepreload_ &&
+    return Match(tag_impl_, kLinkTag) && link_is_modulepreload_ &&
            !url_to_load_.IsEmpty();
   }
 
@@ -587,11 +589,11 @@ class TokenPreloadScanner::StartTagScanner {
       return false;
     if (!matched_)
       return false;
-    if (Match(tag_impl_, linkTag))
+    if (Match(tag_impl_, kLinkTag))
       return ShouldPreloadLink(type);
-    if (Match(tag_impl_, inputTag) && !input_is_image_)
+    if (Match(tag_impl_, kInputTag) && !input_is_image_)
       return false;
-    if (Match(tag_impl_, scriptTag)) {
+    if (Match(tag_impl_, kScriptTag)) {
       ScriptType script_type = ScriptType::kClassic;
       if (!ScriptLoader::IsValidScriptTypeAndLanguage(
               type_attribute_value_, language_attribute_value_,
@@ -777,13 +779,13 @@ static void HandleMetaNameAttribute(
     CSSPreloadScanner* css_scanner,
     ViewportDescriptionWrapper* viewport) {
   const typename Token::Attribute* name_attribute =
-      token.GetAttributeItem(nameAttr);
+      token.GetAttributeItem(kNameAttr);
   if (!name_attribute)
     return;
 
   String name_attribute_value(name_attribute->Value());
   const typename Token::Attribute* content_attribute =
-      token.GetAttributeItem(contentAttr);
+      token.GetAttributeItem(kContentAttr);
   if (!content_attribute)
     return;
 
@@ -819,22 +821,22 @@ void TokenPreloadScanner::ScanCommon(const Token& token,
     }
     case HTMLToken::kEndTag: {
       const StringImpl* tag_impl = TagImplFor(token.Data());
-      if (Match(tag_impl, templateTag)) {
+      if (Match(tag_impl, kTemplateTag)) {
         if (template_count_)
           --template_count_;
         return;
       }
-      if (Match(tag_impl, styleTag)) {
+      if (Match(tag_impl, kStyleTag)) {
         if (in_style_)
           css_scanner_.Reset();
         in_style_ = false;
         return;
       }
-      if (Match(tag_impl, scriptTag)) {
+      if (Match(tag_impl, kScriptTag)) {
         in_script_ = false;
         return;
       }
-      if (Match(tag_impl, pictureTag)) {
+      if (Match(tag_impl, kPictureTag)) {
         in_picture_ = false;
         picture_data_.picked = false;
       }
@@ -844,29 +846,29 @@ void TokenPreloadScanner::ScanCommon(const Token& token,
       if (template_count_)
         return;
       const StringImpl* tag_impl = TagImplFor(token.Data());
-      if (Match(tag_impl, templateTag)) {
+      if (Match(tag_impl, kTemplateTag)) {
         ++template_count_;
         return;
       }
-      if (Match(tag_impl, styleTag)) {
+      if (Match(tag_impl, kStyleTag)) {
         in_style_ = true;
         return;
       }
       // Don't early return, because the StartTagScanner needs to look at these
       // too.
-      if (Match(tag_impl, scriptTag)) {
+      if (Match(tag_impl, kScriptTag)) {
         in_script_ = true;
       }
-      if (Match(tag_impl, baseTag)) {
+      if (Match(tag_impl, kBaseTag)) {
         // The first <base> element is the one that wins.
         if (!predicted_base_element_url_.IsEmpty())
           return;
         UpdatePredictedBaseURL(token);
         return;
       }
-      if (Match(tag_impl, metaTag)) {
+      if (Match(tag_impl, kMetaTag)) {
         const typename Token::Attribute* equiv_attribute =
-            token.GetAttributeItem(http_equivAttr);
+            token.GetAttributeItem(kHttpEquivAttr);
         if (equiv_attribute) {
           String equiv_attribute_value(equiv_attribute->Value());
           if (DeprecatedEqualIgnoringCase(equiv_attribute_value,
@@ -875,7 +877,7 @@ void TokenPreloadScanner::ScanCommon(const Token& token,
           } else if (DeprecatedEqualIgnoringCase(equiv_attribute_value,
                                                  "accept-ch")) {
             const typename Token::Attribute* content_attribute =
-                token.GetAttributeItem(contentAttr);
+                token.GetAttributeItem(kContentAttr);
             if (content_attribute) {
               client_hints_preferences_.UpdateFromAcceptClientHintsHeader(
                   content_attribute->Value(), document_url_, nullptr);
@@ -888,7 +890,7 @@ void TokenPreloadScanner::ScanCommon(const Token& token,
                                 media_values_.Get(), &css_scanner_, viewport);
       }
 
-      if (Match(tag_impl, pictureTag)) {
+      if (Match(tag_impl, kPictureTag)) {
         in_picture_ = true;
         picture_data_ = PictureData();
         return;
@@ -918,7 +920,7 @@ template <typename Token>
 void TokenPreloadScanner::UpdatePredictedBaseURL(const Token& token) {
   DCHECK(predicted_base_element_url_.IsEmpty());
   if (const typename Token::Attribute* href_attribute =
-          token.GetAttributeItem(hrefAttr)) {
+          token.GetAttributeItem(kHrefAttr)) {
     KURL url(document_url_, StripLeadingAndTrailingHTMLSpaces(
                                 href_attribute->Value8BitIfNecessary()));
     predicted_base_element_url_ =

@@ -176,7 +176,7 @@ WebElementCollection WebNode::GetElementsByHTMLTagName(
   if (private_->IsContainerNode()) {
     return WebElementCollection(
         ToContainerNode(private_.Get())
-            ->getElementsByTagNameNS(HTMLNames::xhtmlNamespaceURI, tag));
+            ->getElementsByTagNameNS(html_names::xhtmlNamespaceURI, tag));
   }
   return WebElementCollection();
 }

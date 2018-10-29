@@ -57,7 +57,7 @@ class MediaControlInputElementTest : public PageTestBase {
     // Create page and add a video element with controls.
     PageTestBase::SetUp();
     media_element_ = HTMLVideoElement::Create(GetDocument());
-    media_element_->SetBooleanAttribute(HTMLNames::controlsAttr, true);
+    media_element_->SetBooleanAttribute(html_names::kControlsAttr, true);
     GetDocument().body()->AppendChild(media_element_);
 
     // Create instance of MediaControlInputElement to run tests on.
@@ -236,7 +236,7 @@ TEST_F(MediaControlInputElementTest, OverflowElement_DisplayAfterInline) {
 }
 
 TEST_F(MediaControlInputElementTest, ShouldRecordDisplayStates_ReadyState) {
-  MediaElement().setAttribute(HTMLNames::preloadAttr, "auto");
+  MediaElement().setAttribute(html_names::kPreloadAttr, "auto");
 
   SetReadyState(HTMLMediaElement::kHaveNothing);
   EXPECT_FALSE(
@@ -264,15 +264,15 @@ TEST_F(MediaControlInputElementTest, ShouldRecordDisplayStates_Preload) {
   // the result.
   SetReadyState(HTMLMediaElement::kHaveNothing);
 
-  MediaElement().setAttribute(HTMLNames::preloadAttr, "none");
+  MediaElement().setAttribute(html_names::kPreloadAttr, "none");
   EXPECT_TRUE(
       MediaControlInputElement::ShouldRecordDisplayStates(MediaElement()));
 
-  MediaElement().setAttribute(HTMLNames::preloadAttr, "preload");
+  MediaElement().setAttribute(html_names::kPreloadAttr, "preload");
   EXPECT_FALSE(
       MediaControlInputElement::ShouldRecordDisplayStates(MediaElement()));
 
-  MediaElement().setAttribute(HTMLNames::preloadAttr, "auto");
+  MediaElement().setAttribute(html_names::kPreloadAttr, "auto");
   EXPECT_FALSE(
       MediaControlInputElement::ShouldRecordDisplayStates(MediaElement()));
 }

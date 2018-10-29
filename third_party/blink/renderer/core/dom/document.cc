@@ -298,7 +298,7 @@ static WeakDocumentSet& liveDocumentSet();
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 class DocumentOutliveTimeReporter : public BlinkGCObserver {
  public:
@@ -896,7 +896,7 @@ AtomicString Document::ConvertLocalName(const AtomicString& name) {
 Element* Document::CreateRawElement(const QualifiedName& qname,
                                     CreateElementFlags flags) {
   Element* element = nullptr;
-  if (qname.NamespaceURI() == HTMLNames::xhtmlNamespaceURI) {
+  if (qname.NamespaceURI() == html_names::xhtmlNamespaceURI) {
     // https://html.spec.whatwg.org/multipage/dom.html#elements-in-the-dom:element-interface
     element = HTMLElementFactory::Create(qname.LocalName(), *this, flags);
     if (!element) {
@@ -942,13 +942,14 @@ Element* Document::CreateElementForBinding(const AtomicString& name,
     if (CustomElement::ShouldCreateCustomElement(local_name)) {
       return CustomElement::CreateCustomElement(
           *this,
-          QualifiedName(g_null_atom, local_name, HTMLNames::xhtmlNamespaceURI),
+          QualifiedName(g_null_atom, local_name, html_names::xhtmlNamespaceURI),
           CreateElementFlags::ByCreateElement());
     }
     if (auto* element = HTMLElementFactory::Create(
             local_name, *this, CreateElementFlags::ByCreateElement()))
       return element;
-    QualifiedName q_name(g_null_atom, local_name, HTMLNames::xhtmlNamespaceURI);
+    QualifiedName q_name(g_null_atom, local_name,
+                         html_names::xhtmlNamespaceURI);
     if (RegistrationContext() && V0CustomElement::IsValidName(local_name))
       return RegistrationContext()->CreateCustomTagElement(*this, q_name);
     return HTMLUnknownElement::Create(q_name, *this);
@@ -1000,7 +1001,7 @@ Element* Document::CreateElementForBinding(
   const AtomicString& converted_local_name = ConvertLocalName(local_name);
   QualifiedName q_name(g_null_atom, converted_local_name,
                        IsXHTMLDocument() || IsHTMLDocument()
-                           ? HTMLNames::xhtmlNamespaceURI
+                           ? html_names::xhtmlNamespaceURI
                            : g_null_atom);
 
   bool is_v1 = string_or_options.IsDictionary() || !RegistrationContext();
@@ -1021,7 +1022,7 @@ Element* Document::CreateElementForBinding(
 
   // 8. If 'is' is non-null, set 'is' attribute
   if (!is_v1 && !is.IsEmpty())
-    element->setAttribute(HTMLNames::isAttr, is);
+    element->setAttribute(html_names::kIsAttr, is);
 
   return element;
 }
@@ -1104,7 +1105,7 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
 
   // 4. If 'is' is non-null, set 'is' attribute
   if (!is_v1 && !is.IsEmpty())
-    element->setAttribute(HTMLNames::isAttr, is);
+    element->setAttribute(html_names::kIsAttr, is);
 
   return element;
 }
@@ -1116,7 +1117,7 @@ Element* Document::CreateElement(const QualifiedName& q_name,
                                  const AtomicString& is) {
   CustomElementDefinition* definition = nullptr;
   if (flags.IsCustomElementsV1() &&
-      q_name.NamespaceURI() == HTMLNames::xhtmlNamespaceURI) {
+      q_name.NamespaceURI() == html_names::xhtmlNamespaceURI) {
     const CustomElementDescriptor desc(is.IsNull() ? q_name.LocalName() : is,
                                        q_name.LocalName());
     if (CustomElementRegistry* registry = CustomElement::Registry(*this))
@@ -4113,12 +4114,12 @@ void Document::ProcessBaseElement() {
        base && (!href || !target);
        base = Traversal<HTMLBaseElement>::Next(*base)) {
     if (!href) {
-      const AtomicString& value = base->FastGetAttribute(hrefAttr);
+      const AtomicString& value = base->FastGetAttribute(kHrefAttr);
       if (!value.IsNull())
         href = &value;
     }
     if (!target) {
-      const AtomicString& value = base->FastGetAttribute(targetAttr);
+      const AtomicString& value = base->FastGetAttribute(kTargetAttr);
       if (!value.IsNull())
         target = &value;
     }
@@ -5307,12 +5308,12 @@ void Document::WillChangeFrameOwnerProperties(int margin_width,
   // check before each call.
   if (margin_width != owner->MarginWidth()) {
     if (auto* body_element = body()) {
-      body_element->SetIntegralAttribute(marginwidthAttr, margin_width);
+      body_element->SetIntegralAttribute(kMarginwidthAttr, margin_width);
     }
   }
   if (margin_height != owner->MarginHeight()) {
     if (auto* body_element = body()) {
-      body_element->SetIntegralAttribute(marginheightAttr, margin_height);
+      body_element->SetIntegralAttribute(kMarginheightAttr, margin_height);
     }
   }
   if (scrolling_mode != owner->ScrollingMode() && View()) {
@@ -7248,48 +7249,48 @@ void Document::SetBodyAttribute(const QualifiedName& name,
 }
 
 const AtomicString& Document::bgColor() const {
-  return BodyAttributeValue(bgcolorAttr);
+  return BodyAttributeValue(kBgcolorAttr);
 }
 
 void Document::setBgColor(const AtomicString& value) {
   if (!IsFrameSet())
-    SetBodyAttribute(bgcolorAttr, value);
+    SetBodyAttribute(kBgcolorAttr, value);
 }
 
 const AtomicString& Document::fgColor() const {
-  return BodyAttributeValue(textAttr);
+  return BodyAttributeValue(kTextAttr);
 }
 
 void Document::setFgColor(const AtomicString& value) {
   if (!IsFrameSet())
-    SetBodyAttribute(textAttr, value);
+    SetBodyAttribute(kTextAttr, value);
 }
 
 const AtomicString& Document::alinkColor() const {
-  return BodyAttributeValue(alinkAttr);
+  return BodyAttributeValue(kAlinkAttr);
 }
 
 void Document::setAlinkColor(const AtomicString& value) {
   if (!IsFrameSet())
-    SetBodyAttribute(alinkAttr, value);
+    SetBodyAttribute(kAlinkAttr, value);
 }
 
 const AtomicString& Document::linkColor() const {
-  return BodyAttributeValue(linkAttr);
+  return BodyAttributeValue(kLinkAttr);
 }
 
 void Document::setLinkColor(const AtomicString& value) {
   if (!IsFrameSet())
-    SetBodyAttribute(linkAttr, value);
+    SetBodyAttribute(kLinkAttr, value);
 }
 
 const AtomicString& Document::vlinkColor() const {
-  return BodyAttributeValue(vlinkAttr);
+  return BodyAttributeValue(kVlinkAttr);
 }
 
 void Document::setVlinkColor(const AtomicString& value) {
   if (!IsFrameSet())
-    SetBodyAttribute(vlinkAttr, value);
+    SetBodyAttribute(kVlinkAttr, value);
 }
 
 template <unsigned type>

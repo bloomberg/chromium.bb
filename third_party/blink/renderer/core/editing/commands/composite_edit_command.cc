@@ -84,7 +84,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 CompositeEditCommand::CompositeEditCommand(Document& document)
     : EditCommand(document) {
@@ -363,9 +363,9 @@ void CompositeEditCommand::AppendNode(Node* node,
   // TODO(yosin): We should get rid of |canHaveChildrenForEditing()|, since
   // |cloneParagraphUnderNewElement()| attempt to clone non-well-formed HTML,
   // produced by JavaScript.
-  ABORT_EDITING_COMMAND_IF(
-      !CanHaveChildrenForEditing(parent) &&
-      !(parent->IsElementNode() && ToElement(parent)->TagQName() == objectTag));
+  ABORT_EDITING_COMMAND_IF(!CanHaveChildrenForEditing(parent) &&
+                           !(parent->IsElementNode() &&
+                             ToElement(parent)->TagQName() == kObjectTag));
   ABORT_EDITING_COMMAND_IF(!HasEditableStyle(*parent) &&
                            parent->InActiveDocument());
   ApplyCommandToComposite(AppendNodeCommand::Create(parent, node),

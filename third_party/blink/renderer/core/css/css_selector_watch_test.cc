@@ -64,9 +64,9 @@ TEST_F(CSSSelectorWatchTest, RecalcOnDocumentChange) {
   ASSERT_TRUE(y);
   ASSERT_TRUE(z);
 
-  x->removeAttribute(HTMLNames::classAttr);
-  y->removeAttribute(HTMLNames::classAttr);
-  z->setAttribute(HTMLNames::classAttr, "c");
+  x->removeAttribute(html_names::kClassAttr);
+  y->removeAttribute(html_names::kClassAttr);
+  z->setAttribute(html_names::kClassAttr, "c");
 
   ClearAddedRemoved(watch);
 

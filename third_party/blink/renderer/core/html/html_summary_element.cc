@@ -34,7 +34,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 HTMLSummaryElement* HTMLSummaryElement::Create(Document& document) {
   HTMLSummaryElement* summary = new HTMLSummaryElement(document);
@@ -43,7 +43,7 @@ HTMLSummaryElement* HTMLSummaryElement::Create(Document& document) {
 }
 
 HTMLSummaryElement::HTMLSummaryElement(Document& document)
-    : HTMLElement(summaryTag, document) {}
+    : HTMLElement(kSummaryTag, document) {}
 
 LayoutObject* HTMLSummaryElement::CreateLayoutObject(
     const ComputedStyle& style) {

@@ -97,7 +97,7 @@ PseudoElement::PseudoElement(Element* parent, PseudoId pseudo_id)
   SetParentOrShadowHostNode(parent);
   SetHasCustomStyleCallbacks();
   if ((pseudo_id == kPseudoIdBefore || pseudo_id == kPseudoIdAfter) &&
-      parent->HasTagName(HTMLNames::inputTag)) {
+      parent->HasTagName(html_names::kInputTag)) {
     UseCounter::Count(parent->GetDocument(),
                       WebFeature::kPseudoBeforeAfterForInputElement);
   }

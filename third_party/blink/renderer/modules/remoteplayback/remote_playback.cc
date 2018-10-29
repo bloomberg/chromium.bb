@@ -100,7 +100,8 @@ ScriptPromise RemotePlayback::watchAvailability(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  if (media_element_->FastHasAttribute(HTMLNames::disableremoteplaybackAttr)) {
+  if (media_element_->FastHasAttribute(
+          html_names::kDisableremoteplaybackAttr)) {
     resolver->Reject(
         DOMException::Create(DOMExceptionCode::kInvalidStateError,
                              "disableRemotePlayback attribute is present."));
@@ -130,7 +131,8 @@ ScriptPromise RemotePlayback::cancelWatchAvailability(ScriptState* script_state,
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  if (media_element_->FastHasAttribute(HTMLNames::disableremoteplaybackAttr)) {
+  if (media_element_->FastHasAttribute(
+          html_names::kDisableremoteplaybackAttr)) {
     resolver->Reject(
         DOMException::Create(DOMExceptionCode::kInvalidStateError,
                              "disableRemotePlayback attribute is present."));
@@ -153,7 +155,8 @@ ScriptPromise RemotePlayback::cancelWatchAvailability(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  if (media_element_->FastHasAttribute(HTMLNames::disableremoteplaybackAttr)) {
+  if (media_element_->FastHasAttribute(
+          html_names::kDisableremoteplaybackAttr)) {
     resolver->Reject(
         DOMException::Create(DOMExceptionCode::kInvalidStateError,
                              "disableRemotePlayback attribute is present."));
@@ -171,7 +174,8 @@ ScriptPromise RemotePlayback::prompt(ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  if (media_element_->FastHasAttribute(HTMLNames::disableremoteplaybackAttr)) {
+  if (media_element_->FastHasAttribute(
+          html_names::kDisableremoteplaybackAttr)) {
     resolver->Reject(
         DOMException::Create(DOMExceptionCode::kInvalidStateError,
                              "disableRemotePlayback attribute is present."));

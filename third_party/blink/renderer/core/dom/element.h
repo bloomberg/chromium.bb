@@ -1233,23 +1233,23 @@ inline const AtomicString& Element::IdForStyleResolution() const {
 }
 
 inline const AtomicString& Element::GetIdAttribute() const {
-  return HasID() ? FastGetAttribute(HTMLNames::idAttr) : g_null_atom;
+  return HasID() ? FastGetAttribute(html_names::kIdAttr) : g_null_atom;
 }
 
 inline const AtomicString& Element::GetNameAttribute() const {
-  return HasName() ? FastGetAttribute(HTMLNames::nameAttr) : g_null_atom;
+  return HasName() ? FastGetAttribute(html_names::kNameAttr) : g_null_atom;
 }
 
 inline const AtomicString& Element::GetClassAttribute() const {
   if (!HasClass())
     return g_null_atom;
   if (IsSVGElement())
-    return getAttribute(HTMLNames::classAttr);
-  return FastGetAttribute(HTMLNames::classAttr);
+    return getAttribute(html_names::kClassAttr);
+  return FastGetAttribute(html_names::kClassAttr);
 }
 
 inline void Element::SetIdAttribute(const AtomicString& value) {
-  setAttribute(HTMLNames::idAttr, value);
+  setAttribute(html_names::kIdAttr, value);
 }
 
 inline const SpaceSplitString& Element::ClassNames() const {

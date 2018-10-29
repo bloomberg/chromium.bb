@@ -46,7 +46,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 bool WebElement::IsFormControlElement() const {
   return ConstUnwrap<Element>()->IsFormControlElement();
@@ -66,7 +66,7 @@ bool WebElement::IsEditable() const {
       return true;
   }
 
-  return EqualIgnoringASCIICase(element->getAttribute(roleAttr), "textbox");
+  return EqualIgnoringASCIICase(element->getAttribute(kRoleAttr), "textbox");
 }
 
 WebString WebElement::TagName() const {
@@ -80,7 +80,7 @@ bool WebElement::HasHTMLTagName(const WebString& tag_name) const {
   // createElementNS(xhtmlNS, 'input') HTMLInputElement   INPUT    input
   // createElementNS(xhtmlNS, 'INPUT') HTMLUnknownElement INPUT    INPUT
   const Element* element = ConstUnwrap<Element>();
-  return HTMLNames::xhtmlNamespaceURI == element->namespaceURI() &&
+  return html_names::xhtmlNamespaceURI == element->namespaceURI() &&
          element->localName() == String(tag_name).DeprecatedLower();
 }
 

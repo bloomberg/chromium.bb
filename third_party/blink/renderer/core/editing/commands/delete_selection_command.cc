@@ -49,8 +49,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 static bool IsTableCellEmpty(Node* cell) {
   DCHECK(cell);
   DCHECK(IsTableCell(cell)) << cell;

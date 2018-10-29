@@ -79,7 +79,7 @@ class PrintContextTest : public PaintTestConfigurations, public RenderingTest {
   PrintContext& GetPrintContext() { return *print_context_.Get(); }
 
   void SetBodyInnerHTML(String body_content) {
-    GetDocument().body()->setAttribute(HTMLNames::styleAttr, "margin: 0");
+    GetDocument().body()->setAttribute(html_names::kStyleAttr, "margin: 0");
     GetDocument().body()->SetInnerHTMLFromString(body_content);
   }
 

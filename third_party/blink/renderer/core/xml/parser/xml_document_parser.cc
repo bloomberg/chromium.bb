@@ -79,7 +79,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 // FIXME: HTMLConstructionSite has a limit of 512, should these match?
 static const unsigned kMaxXMLTreeDepth = 5000;
@@ -452,8 +452,8 @@ bool XMLDocumentParser::ParseDocumentFragment(
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-xhtml-syntax.html#xml-fragment-parsing-algorithm
   // For now we have a hack for script/style innerHTML support:
   if (context_element &&
-      (context_element->HasLocalName(scriptTag.LocalName()) ||
-       context_element->HasLocalName(styleTag.LocalName()))) {
+      (context_element->HasLocalName(kScriptTag.LocalName()) ||
+       context_element->HasLocalName(kStyleTag.LocalName()))) {
     fragment->ParserAppendChild(fragment->GetDocument().createTextNode(chunk));
     return true;
   }
@@ -977,7 +977,7 @@ void XMLDocumentParser::StartElementNs(const AtomicString& local_name,
                           prefix_to_namespace_map_, exception_state);
   AtomicString is;
   for (const auto& attr : prefixed_attributes) {
-    if (attr.GetName() == isAttr) {
+    if (attr.GetName() == kIsAttr) {
       is = attr.Value();
       break;
     }

@@ -59,7 +59,7 @@ String ContentAfterPastingHTML(DummyPageHolder* page_holder,
   HTMLElement* body = page_holder->GetDocument().body();
 
   // Make the body editable, and put the caret in it.
-  body->setAttribute(HTMLNames::contenteditableAttr, "true");
+  body->setAttribute(html_names::kContenteditableAttr, "true");
   body->focus();
   frame.GetDocument()->UpdateStyleAndLayout();
   frame.Selection().SetSelectionAndEndTyping(

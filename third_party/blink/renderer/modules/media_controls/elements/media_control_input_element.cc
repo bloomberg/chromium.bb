@@ -272,7 +272,7 @@ WebSize MediaControlInputElement::GetSizeOrDefault() const {
 }
 
 bool MediaControlInputElement::IsDisabled() const {
-  return hasAttribute(HTMLNames::disabledAttr);
+  return hasAttribute(html_names::kDisabledAttr);
 }
 
 void MediaControlInputElement::Trace(blink::Visitor* visitor) {

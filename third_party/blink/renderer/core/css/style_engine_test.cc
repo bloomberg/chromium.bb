@@ -871,7 +871,7 @@ TEST_F(StyleEngineTest, StyleMediaAttributeStyleChange) {
   unsigned before_count = GetStyleEngine().StyleForElementCount();
 
   Element* s1 = GetDocument().getElementById("s1");
-  s1->setAttribute(blink::HTMLNames::mediaAttr, "(max-width: 2000px)");
+  s1->setAttribute(blink::html_names::kMediaAttr, "(max-width: 2000px)");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   unsigned after_count = GetStyleEngine().StyleForElementCount();
@@ -897,7 +897,7 @@ TEST_F(StyleEngineTest, StyleMediaAttributeNoStyleChange) {
   unsigned before_count = GetStyleEngine().StyleForElementCount();
 
   Element* s1 = GetDocument().getElementById("s1");
-  s1->setAttribute(blink::HTMLNames::mediaAttr, "(max-width: 2000px)");
+  s1->setAttribute(blink::html_names::kMediaAttr, "(max-width: 2000px)");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   unsigned after_count = GetStyleEngine().StyleForElementCount();
@@ -995,7 +995,7 @@ TEST_F(StyleEngineTest, ScheduleInvalidationAfterSubtreeRecalc) {
   ASSERT_TRUE(t2);
 
   // Sanity test.
-  t1->setAttribute(blink::HTMLNames::classAttr, "t1");
+  t1->setAttribute(blink::html_names::kClassAttr, "t1");
   EXPECT_FALSE(GetDocument().NeedsStyleInvalidation());
   EXPECT_TRUE(GetDocument().ChildNeedsStyleInvalidation());
   EXPECT_TRUE(t1->NeedsStyleInvalidation());
@@ -1011,7 +1011,7 @@ TEST_F(StyleEngineTest, ScheduleInvalidationAfterSubtreeRecalc) {
 
   // Check that no invalidations sets are scheduled when the document node is
   // already SubtreeStyleChange.
-  t2->setAttribute(blink::HTMLNames::classAttr, "t2");
+  t2->setAttribute(blink::html_names::kClassAttr, "t2");
   EXPECT_FALSE(GetDocument().NeedsStyleInvalidation());
   EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
 

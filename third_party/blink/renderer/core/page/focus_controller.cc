@@ -62,8 +62,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 namespace {
 
 // This class defines the navigation order.

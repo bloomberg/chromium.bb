@@ -41,17 +41,17 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline HTMLLabelElement::HTMLLabelElement(Document& document)
-    : HTMLElement(labelTag, document), processing_click_(false) {}
+    : HTMLElement(kLabelTag, document), processing_click_(false) {}
 
 HTMLLabelElement* HTMLLabelElement::Create(Document& document) {
   return new HTMLLabelElement(document);
 }
 
 LabelableElement* HTMLLabelElement::control() const {
-  const AtomicString& control_id = getAttribute(forAttr);
+  const AtomicString& control_id = getAttribute(kForAttr);
   if (control_id.IsNull()) {
     // Search the children and descendants of the label element for a form
     // element.

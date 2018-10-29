@@ -9,7 +9,7 @@
 namespace blink {
 
 HTMLTimeElement::HTMLTimeElement(Document& document)
-    : HTMLElement(HTMLNames::timeTag, document) {
+    : HTMLElement(html_names::kTimeTag, document) {
   UseCounter::Count(document, WebFeature::kTimeElement);
 }
 

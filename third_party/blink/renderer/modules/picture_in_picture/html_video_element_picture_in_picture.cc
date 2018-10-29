@@ -118,7 +118,7 @@ void HTMLVideoElementPictureInPicture::setPictureInPictureControls(
 bool HTMLVideoElementPictureInPicture::FastHasAttribute(
     const QualifiedName& name,
     const HTMLVideoElement& element) {
-  DCHECK(name == HTMLNames::disablepictureinpictureAttr);
+  DCHECK(name == html_names::kDisablepictureinpictureAttr);
   return element.FastHasAttribute(name);
 }
 
@@ -127,7 +127,7 @@ void HTMLVideoElementPictureInPicture::SetBooleanAttribute(
     const QualifiedName& name,
     HTMLVideoElement& element,
     bool value) {
-  DCHECK(name == HTMLNames::disablepictureinpictureAttr);
+  DCHECK(name == html_names::kDisablepictureinpictureAttr);
   element.SetBooleanAttribute(name, value);
 
   if (!value)

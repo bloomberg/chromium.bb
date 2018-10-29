@@ -40,8 +40,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 LayoutTextControlSingleLine::LayoutTextControlSingleLine(
     HTMLInputElement* element)
     : LayoutTextControl(element), should_draw_caps_lock_indicator_(false) {}

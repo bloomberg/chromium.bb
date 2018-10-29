@@ -45,8 +45,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 InsertLineBreakCommand::InsertLineBreakCommand(Document& document)
     : CompositeEditCommand(document) {}
 

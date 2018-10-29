@@ -106,7 +106,7 @@ bool CheckForMaxDownscalingImagePolicy(const LocalFrame& frame,
 
 }  // namespace
 
-using namespace HTMLNames;
+using namespace html_names;
 
 LayoutImage::LayoutImage(Element* element)
     : LayoutReplaced(element, LayoutSize()),
@@ -359,7 +359,7 @@ LayoutUnit LayoutImage::MinimumReplacedHeight() const {
 
 HTMLMapElement* LayoutImage::ImageMap() const {
   HTMLImageElement* i = ToHTMLImageElementOrNull(GetNode());
-  return i ? i->GetTreeScope().GetImageMap(i->FastGetAttribute(usemapAttr))
+  return i ? i->GetTreeScope().GetImageMap(i->FastGetAttribute(kUsemapAttr))
            : nullptr;
 }
 

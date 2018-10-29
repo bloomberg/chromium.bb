@@ -376,7 +376,7 @@ void InternalPopupMenu::AddOption(ItemIterationContext& context,
   if (!element.title().IsEmpty())
     AddProperty("title", element.title(), data);
   const AtomicString& aria_label =
-      element.FastGetAttribute(HTMLNames::aria_labelAttr);
+      element.FastGetAttribute(html_names::kAriaLabelAttr);
   if (!aria_label.IsEmpty())
     AddProperty("ariaLabel", aria_label, data);
   if (element.IsDisabledFormControl())
@@ -392,7 +392,7 @@ void InternalPopupMenu::AddOptGroup(ItemIterationContext& context,
   PagePopupClient::AddString("type: \"optgroup\",\n", data);
   AddProperty("label", element.GroupLabelText(), data);
   AddProperty("title", element.title(), data);
-  AddProperty("ariaLabel", element.FastGetAttribute(HTMLNames::aria_labelAttr),
+  AddProperty("ariaLabel", element.FastGetAttribute(html_names::kAriaLabelAttr),
               data);
   AddProperty("disabled", element.IsDisabledFormControl(), data);
   AddElementStyle(context, element);
@@ -406,7 +406,7 @@ void InternalPopupMenu::AddSeparator(ItemIterationContext& context,
   PagePopupClient::AddString("{\n", data);
   PagePopupClient::AddString("type: \"separator\",\n", data);
   AddProperty("title", element.title(), data);
-  AddProperty("ariaLabel", element.FastGetAttribute(HTMLNames::aria_labelAttr),
+  AddProperty("ariaLabel", element.FastGetAttribute(html_names::kAriaLabelAttr),
               data);
   AddProperty("disabled", element.IsDisabledFormControl(), data);
   AddElementStyle(context, element);

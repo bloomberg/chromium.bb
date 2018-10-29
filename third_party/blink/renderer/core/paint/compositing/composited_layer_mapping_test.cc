@@ -501,17 +501,17 @@ TEST_F(CompositedLayerMappingTestWithoutBGPT, ClippingMaskLayer) {
   EXPECT_FALSE(graphics_layer->MaskLayer());
   EXPECT_FALSE(graphics_layer->ContentsClippingMaskLayer());
 
-  video_element->setAttribute(HTMLNames::styleAttr, style_with_border_radius);
+  video_element->setAttribute(html_names::kStyleAttr, style_with_border_radius);
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_FALSE(graphics_layer->MaskLayer());
   EXPECT_TRUE(graphics_layer->ContentsClippingMaskLayer());
 
-  video_element->setAttribute(HTMLNames::styleAttr, style_with_clip_path);
+  video_element->setAttribute(html_names::kStyleAttr, style_with_clip_path);
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_TRUE(graphics_layer->MaskLayer());
   EXPECT_FALSE(graphics_layer->ContentsClippingMaskLayer());
 
-  video_element->setAttribute(HTMLNames::styleAttr, style_without_clipping);
+  video_element->setAttribute(html_names::kStyleAttr, style_without_clipping);
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_FALSE(graphics_layer->MaskLayer());
   EXPECT_FALSE(graphics_layer->ContentsClippingMaskLayer());
@@ -1097,7 +1097,7 @@ TEST_F(CompositedLayerMappingTest,
   EXPECT_TRUE(mapping->DecorationOutlineLayer());
 
   // No decoration outline layer is created when not composited scrolling.
-  element->setAttribute(HTMLNames::styleAttr, "overflow: visible;");
+  element->setAttribute(html_names::kStyleAttr, "overflow: visible;");
   GetDocument().View()->UpdateAllLifecyclePhases();
   paint_layer = ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
@@ -1131,7 +1131,7 @@ TEST_F(CompositedLayerMappingTest,
 
   // The decoration outline layer is created when composited scrolling
   // with an outline drawn over the composited scrolling region.
-  scroller->setAttribute(HTMLNames::styleAttr, "outline-offset: -2px;");
+  scroller->setAttribute(html_names::kStyleAttr, "outline-offset: -2px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
   paint_layer = ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
@@ -1142,7 +1142,7 @@ TEST_F(CompositedLayerMappingTest,
 
   // The decoration outline layer is destroyed when the scrolling region
   // will not be covered up by the outline.
-  scroller->removeAttribute(HTMLNames::styleAttr);
+  scroller->removeAttribute(html_names::kStyleAttr);
   GetDocument().View()->UpdateAllLifecyclePhases();
   paint_layer = ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
@@ -1291,7 +1291,7 @@ TEST_F(CompositedLayerMappingTestWithoutBGPT,
   ASSERT_FALSE(child_paint_layer);
 
   // Making the child conposited causes creation of an AncestorClippingLayer.
-  child->setAttribute(HTMLNames::styleAttr, "will-change: transform");
+  child->setAttribute(html_names::kStyleAttr, "will-change: transform");
   GetDocument().View()->UpdateAllLifecyclePhases();
   child_paint_layer = ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
   ASSERT_TRUE(child_paint_layer);
@@ -1304,7 +1304,7 @@ TEST_F(CompositedLayerMappingTestWithoutBGPT,
 
   // Adding border radius to the ancestor requires an
   // ancestorClippingMaskLayer for the child
-  ancestor->setAttribute(HTMLNames::styleAttr, "border-radius: 40px;");
+  ancestor->setAttribute(html_names::kStyleAttr, "border-radius: 40px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
   child_paint_layer = ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
   ASSERT_TRUE(child_paint_layer);
@@ -1316,7 +1316,7 @@ TEST_F(CompositedLayerMappingTestWithoutBGPT,
 
   // Removing the border radius should remove the ancestorClippingMaskLayer
   // for the child
-  ancestor->setAttribute(HTMLNames::styleAttr, "border-radius: 0px;");
+  ancestor->setAttribute(html_names::kStyleAttr, "border-radius: 0px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
   child_paint_layer = ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
   ASSERT_TRUE(child_paint_layer);
@@ -1327,12 +1327,12 @@ TEST_F(CompositedLayerMappingTestWithoutBGPT,
   EXPECT_FALSE(child_mapping->AncestorClippingMaskLayer());
 
   // Add border radius back so we can test one more case
-  ancestor->setAttribute(HTMLNames::styleAttr, "border-radius: 40px;");
+  ancestor->setAttribute(html_names::kStyleAttr, "border-radius: 40px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Now change the overflow to remove the need for an ancestor clip
   // on the child
-  ancestor->setAttribute(HTMLNames::styleAttr, "overflow: visible");
+  ancestor->setAttribute(html_names::kStyleAttr, "overflow: visible");
   GetDocument().View()->UpdateAllLifecyclePhases();
   child_paint_layer = ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
   ASSERT_TRUE(child_paint_layer);
@@ -1388,7 +1388,7 @@ TEST_F(CompositedLayerMappingTestWithoutBGPT,
   ASSERT_FALSE(child2_mapping);
 
   // Making child1 composited causes creation of an AncestorClippingLayer.
-  child1->setAttribute(HTMLNames::styleAttr, "will-change: transform");
+  child1->setAttribute(html_names::kStyleAttr, "will-change: transform");
   GetDocument().View()->UpdateAllLifecyclePhases();
   child1_paint_layer =
       ToLayoutBoxModelObject(child1->GetLayoutObject())->Layer();
@@ -1406,7 +1406,7 @@ TEST_F(CompositedLayerMappingTestWithoutBGPT,
 
   // Adding border radius to the ancestor requires an
   // ancestorClippingMaskLayer for child1
-  ancestor->setAttribute(HTMLNames::styleAttr, "border-radius: 40px;");
+  ancestor->setAttribute(html_names::kStyleAttr, "border-radius: 40px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
   child1_paint_layer =
       ToLayoutBoxModelObject(child1->GetLayoutObject())->Layer();
@@ -1424,7 +1424,7 @@ TEST_F(CompositedLayerMappingTestWithoutBGPT,
 
   // Making child2 composited causes creation of an AncestorClippingLayer
   // and a mask layer.
-  child2->setAttribute(HTMLNames::styleAttr, "will-change: transform");
+  child2->setAttribute(html_names::kStyleAttr, "will-change: transform");
   GetDocument().View()->UpdateAllLifecyclePhases();
   child1_paint_layer =
       ToLayoutBoxModelObject(child1->GetLayoutObject())->Layer();
@@ -1445,7 +1445,7 @@ TEST_F(CompositedLayerMappingTestWithoutBGPT,
 
   // Removing will-change: transform on child1 should result in the removal
   // of all clipping and masking layers
-  child1->setAttribute(HTMLNames::styleAttr, "will-change: none");
+  child1->setAttribute(html_names::kStyleAttr, "will-change: none");
   GetDocument().View()->UpdateAllLifecyclePhases();
   child1_paint_layer =
       ToLayoutBoxModelObject(child1->GetLayoutObject())->Layer();
@@ -1463,7 +1463,7 @@ TEST_F(CompositedLayerMappingTestWithoutBGPT,
 
   // Now change the overflow to remove the need for an ancestor clip
   // on the children
-  ancestor->setAttribute(HTMLNames::styleAttr, "overflow: visible");
+  ancestor->setAttribute(html_names::kStyleAttr, "overflow: visible");
   GetDocument().View()->UpdateAllLifecyclePhases();
   child1_paint_layer =
       ToLayoutBoxModelObject(child1->GetLayoutObject())->Layer();
@@ -1526,7 +1526,7 @@ TEST_F(CompositedLayerMappingTestWithoutBGPT,
   ASSERT_FALSE(grandchild_mapping);
 
   // Making grandchild composited causes creation of an AncestorClippingLayer.
-  grandchild->setAttribute(HTMLNames::styleAttr, "will-change: transform");
+  grandchild->setAttribute(html_names::kStyleAttr, "will-change: transform");
   GetDocument().View()->UpdateAllLifecyclePhases();
   child_paint_layer = ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
   ASSERT_TRUE(child_paint_layer);
@@ -1543,7 +1543,7 @@ TEST_F(CompositedLayerMappingTestWithoutBGPT,
 
   // Adding border radius to the ancestor requires an
   // ancestorClippingMaskLayer for grandchild
-  ancestor->setAttribute(HTMLNames::styleAttr, "border-radius: 40px;");
+  ancestor->setAttribute(html_names::kStyleAttr, "border-radius: 40px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
   child_paint_layer = ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
   ASSERT_TRUE(child_paint_layer);
@@ -1561,7 +1561,7 @@ TEST_F(CompositedLayerMappingTestWithoutBGPT,
   // Moving the grandchild out of the clip region should result in removal
   // of the mask layer. It also removes the grandchild from its own mapping
   // because it is now squashed.
-  grandchild->setAttribute(HTMLNames::styleAttr,
+  grandchild->setAttribute(html_names::kStyleAttr,
                            "left: 250px; will-change: transform");
   GetDocument().View()->UpdateAllLifecyclePhases();
   child_paint_layer = ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
@@ -1579,7 +1579,7 @@ TEST_F(CompositedLayerMappingTestWithoutBGPT,
 
   // Now change the overflow to remove the need for an ancestor clip
   // on the children
-  ancestor->setAttribute(HTMLNames::styleAttr, "overflow: visible");
+  ancestor->setAttribute(html_names::kStyleAttr, "overflow: visible");
   GetDocument().View()->UpdateAllLifecyclePhases();
   child_paint_layer = ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
   ASSERT_TRUE(child_paint_layer);
@@ -2435,7 +2435,7 @@ TEST_F(CompositedLayerMappingTestWithoutBGPT,
                   .is_sticky);
 
   // Make the scroller no longer scrollable.
-  GetDocument().getElementById("spacer")->setAttribute(HTMLNames::styleAttr,
+  GetDocument().getElementById("spacer")->setAttribute(html_names::kStyleAttr,
                                                        "height: 0;");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -2449,7 +2449,7 @@ TEST_F(CompositedLayerMappingTestWithoutBGPT,
                    .is_sticky);
 
   // Make the scroller scrollable again.
-  GetDocument().getElementById("spacer")->setAttribute(HTMLNames::styleAttr,
+  GetDocument().getElementById("spacer")->setAttribute(html_names::kStyleAttr,
                                                        "height: 2000px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -2493,13 +2493,13 @@ TEST_F(CompositedLayerMappingTest, ScrollingContainerBoundsChange) {
   EXPECT_EQ(100, scrolling_layer->scroll_container_bounds().height());
 
   scrollerElement->setScrollTop(300);
-  scrollerElement->setAttribute(HTMLNames::styleAttr, "max-height: 25px;");
+  scrollerElement->setAttribute(html_names::kStyleAttr, "max-height: 25px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(50, scrolling_layer->CurrentScrollOffset().y());
   EXPECT_EQ(150, scrolling_layer->bounds().height());
   EXPECT_EQ(25, scrolling_layer->scroll_container_bounds().height());
 
-  scrollerElement->setAttribute(HTMLNames::styleAttr, "max-height: 300px;");
+  scrollerElement->setAttribute(html_names::kStyleAttr, "max-height: 300px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(50, scrolling_layer->CurrentScrollOffset().y());
   EXPECT_EQ(150, scrolling_layer->bounds().height());
@@ -2515,7 +2515,7 @@ TEST_F(CompositedLayerMappingTest, MainFrameLayerBackgroundColor) {
 
   Color base_background(255, 0, 0);
   GetDocument().View()->SetBaseBackgroundColor(base_background);
-  GetDocument().body()->setAttribute(HTMLNames::styleAttr,
+  GetDocument().body()->setAttribute(html_names::kStyleAttr,
                                      "background: rgba(0, 255, 0, 0.5)");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(base_background, GetDocument().View()->BaseBackgroundColor());
@@ -2542,7 +2542,7 @@ TEST_F(CompositedLayerMappingTest, ScrollingLayerBackgroundColor) {
   EXPECT_EQ(Color::kTransparent, graphics_layer->BackgroundColor());
   EXPECT_EQ(Color::kTransparent, scrolling_contents_layer->BackgroundColor());
 
-  target->setAttribute(HTMLNames::classAttr, "color");
+  target->setAttribute(html_names::kClassAttr, "color");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(Color(0, 0, 255), graphics_layer->BackgroundColor());
   EXPECT_EQ(Color(0, 0, 255), scrolling_contents_layer->BackgroundColor());
