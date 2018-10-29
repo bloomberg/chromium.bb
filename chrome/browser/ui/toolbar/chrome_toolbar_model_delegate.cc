@@ -25,8 +25,7 @@
 #include "extensions/common/constants.h"
 
 #if !defined(OS_ANDROID)
-#include "components/omnibox/browser/vector_icons.h" // nogncheck
-#include "components/toolbar/vector_icons.h"  // nogncheck
+#include "components/omnibox/browser/vector_icons.h"  // nogncheck
 #endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
@@ -146,7 +145,7 @@ const gfx::VectorIcon* ChromeToolbarModelDelegate::GetVectorIconOverride()
   GetURL(&url);
 
   if (url.SchemeIs(content::kChromeUIScheme))
-    return &toolbar::kProductIcon;
+    return &omnibox::kProductIcon;
 
   if (url.SchemeIs(extensions::kExtensionScheme))
     return &omnibox::kExtensionAppIcon;

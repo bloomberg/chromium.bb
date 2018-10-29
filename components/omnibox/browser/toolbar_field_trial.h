@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_TOOLBAR_TOOLBAR_FIELD_TRIAL_H_
-#define COMPONENTS_TOOLBAR_TOOLBAR_FIELD_TRIAL_H_
+#ifndef COMPONENTS_OMNIBOX_BROWSER_TOOLBAR_FIELD_TRIAL_H_
+#define COMPONENTS_OMNIBOX_BROWSER_TOOLBAR_FIELD_TRIAL_H_
 
 #include "base/feature_list.h"
 
@@ -56,4 +56,4 @@ extern const char kSimplifyHttpsIndicatorParameterKeepSecureChip[];
 }  // namespace features
 }  // namespace toolbar
 
-#endif  // COMPONENTS_TOOLBAR_TOOLBAR_FIELD_TRIAL_H_
+#endif  // COMPONENTS_OMNIBOX_BROWSER_TOOLBAR_FIELD_TRIAL_H_

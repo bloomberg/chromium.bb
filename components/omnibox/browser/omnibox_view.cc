@@ -20,7 +20,7 @@
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/query_in_omnibox.h"
-#include "components/toolbar/toolbar_model.h"
+#include "components/omnibox/browser/toolbar_model.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
 

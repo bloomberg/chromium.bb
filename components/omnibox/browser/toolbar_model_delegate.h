@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_TOOLBAR_TOOLBAR_MODEL_DELEGATE_H_
-#define COMPONENTS_TOOLBAR_TOOLBAR_MODEL_DELEGATE_H_
+#ifndef COMPONENTS_OMNIBOX_BROWSER_TOOLBAR_MODEL_DELEGATE_H_
+#define COMPONENTS_OMNIBOX_BROWSER_TOOLBAR_MODEL_DELEGATE_H_
 
 #include <string>
 
@@ -67,4 +67,4 @@ class ToolbarModelDelegate {
   virtual ~ToolbarModelDelegate() {}
 };
 
-#endif  // COMPONENTS_TOOLBAR_TOOLBAR_MODEL_DELEGATE_H_
+#endif  // COMPONENTS_OMNIBOX_BROWSER_TOOLBAR_MODEL_DELEGATE_H_

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_TOOLBAR_TEST_TOOLBAR_MODEL_H_
-#define COMPONENTS_TOOLBAR_TEST_TOOLBAR_MODEL_H_
+#ifndef COMPONENTS_OMNIBOX_BROWSER_TEST_TOOLBAR_MODEL_H_
+#define COMPONENTS_OMNIBOX_BROWSER_TEST_TOOLBAR_MODEL_H_
 
 #include <stddef.h>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "components/toolbar/toolbar_model.h"
+#include "components/omnibox/browser/toolbar_model.h"
 
 namespace gfx {
 struct VectorIcon;
@@ -67,4 +67,4 @@ class TestToolbarModel : public ToolbarModel {
   DISALLOW_COPY_AND_ASSIGN(TestToolbarModel);
 };
 
-#endif  // COMPONENTS_TOOLBAR_TEST_TOOLBAR_MODEL_H_
+#endif  // COMPONENTS_OMNIBOX_BROWSER_TEST_TOOLBAR_MODEL_H_

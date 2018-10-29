@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/toolbar/toolbar_model_impl.h"
+#include "components/omnibox/browser/toolbar_model_impl.h"
 
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -10,12 +10,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/omnibox/browser/buildflags.h"
+#include "components/omnibox/browser/toolbar_field_trial.h"
+#include "components/omnibox/browser/toolbar_model_delegate.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/toolbar/buildflags.h"
-#include "components/toolbar/toolbar_field_trial.h"
-#include "components/toolbar/toolbar_model_delegate.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -24,8 +24,8 @@
 #include "ui/gfx/vector_icon_types.h"
 
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
-#include "components/toolbar/vector_icons.h"  // nogncheck
-#include "components/vector_icons/vector_icons.h"  // nogncheck
+#include "components/omnibox/browser/vector_icons.h"  // nogncheck
+#include "components/vector_icons/vector_icons.h"     // nogncheck
 #endif
 
 ToolbarModelImpl::ToolbarModelImpl(ToolbarModelDelegate* delegate,
@@ -34,8 +34,7 @@ ToolbarModelImpl::ToolbarModelImpl(ToolbarModelDelegate* delegate,
   DCHECK(delegate_);
 }
 
-ToolbarModelImpl::~ToolbarModelImpl() {
-}
+ToolbarModelImpl::~ToolbarModelImpl() {}
 
 // ToolbarModelImpl Implementation.
 base::string16 ToolbarModelImpl::GetFormattedFullURL() const {
@@ -108,25 +107,25 @@ const gfx::VectorIcon& ToolbarModelImpl::GetVectorIcon() const {
     return *icon_override;
 
   if (IsOfflinePage())
-    return toolbar::kOfflinePinIcon;
+    return omnibox::kOfflinePinIcon;
 
   switch (GetSecurityLevel(false)) {
     case security_state::NONE:
     case security_state::HTTP_SHOW_WARNING:
-      return toolbar::kHttpIcon;
+      return omnibox::kHttpIcon;
     case security_state::EV_SECURE:
     case security_state::SECURE:
-      return toolbar::kHttpsValidIcon;
+      return omnibox::kHttpsValidIcon;
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
       return vector_icons::kBusinessIcon;
     case security_state::DANGEROUS:
-      return toolbar::kHttpsInvalidIcon;
+      return omnibox::kHttpsInvalidIcon;
     case security_state::SECURITY_LEVEL_COUNT:
       NOTREACHED();
-      return toolbar::kHttpIcon;
+      return omnibox::kHttpIcon;
   }
   NOTREACHED();
-  return toolbar::kHttpIcon;
+  return omnibox::kHttpIcon;
 #else
   NOTREACHED();
   static const gfx::VectorIcon dummy = {};

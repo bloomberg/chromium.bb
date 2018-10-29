@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/toolbar/toolbar_model_impl.h"
+#include "components/omnibox/browser/toolbar_model_impl.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "components/toolbar/toolbar_field_trial.h"
-#include "components/toolbar/toolbar_model_delegate.h"
+#include "components/omnibox/browser/toolbar_field_trial.h"
+#include "components/omnibox/browser/toolbar_model_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

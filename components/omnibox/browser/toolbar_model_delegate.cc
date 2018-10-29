@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/toolbar/toolbar_model_delegate.h"
+#include "components/omnibox/browser/toolbar_model_delegate.h"
 
 bool ToolbarModelDelegate::ShouldDisplayURL() const {
   return true;

@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "components/toolbar/test_toolbar_model.h"
+#include "components/omnibox/browser/test_toolbar_model.h"
 #include "components/variations/variations_http_header_provider.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
