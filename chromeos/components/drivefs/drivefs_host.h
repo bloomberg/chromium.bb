@@ -64,11 +64,20 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost {
 
   class MountObserver {
    public:
+    enum class MountFailure {
+      kUnknown,
+      kNeedsRestart,
+      kIpcDisconnect,
+      kInvocation,
+      kTimeout,
+    };
+
     MountObserver() = default;
     virtual ~MountObserver() = default;
     virtual void OnMounted(const base::FilePath& mount_path) = 0;
     virtual void OnUnmounted(base::Optional<base::TimeDelta> remount_delay) = 0;
     virtual void OnMountFailed(
+        MountFailure failure,
         base::Optional<base::TimeDelta> remount_delay) = 0;
 
    private:
