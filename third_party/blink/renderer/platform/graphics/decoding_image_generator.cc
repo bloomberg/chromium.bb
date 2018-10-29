@@ -192,33 +192,57 @@ bool DecodingImageGenerator::GetPixels(const SkImageInfo& dst_info,
   return decoded;
 }
 
-bool DecodingImageGenerator::QueryYUV8(SkYUVSizeInfo* size_info,
-                                       SkYUVColorSpace* color_space) const {
+bool DecodingImageGenerator::QueryYUVA8(
+    SkYUVASizeInfo* size_info,
+    SkYUVAIndex indices[SkYUVAIndex::kIndexCount],
+    SkYUVColorSpace* color_space) const {
   // YUV decoding does not currently support progressive decoding. See comment
   // in ImageFrameGenerator.h.
   if (!can_yuv_decode_ || !all_data_received_)
     return false;
 
-  TRACE_EVENT0("blink", "DecodingImageGenerator::queryYUV8");
+  TRACE_EVENT0("blink", "DecodingImageGenerator::queryYUVA8");
 
   if (color_space)
     *color_space = kJPEG_SkYUVColorSpace;
 
+  // Indicate that we have three separate planes
+  indices[SkYUVAIndex::kY_Index] = {0, SkColorChannel::kR};
+  indices[SkYUVAIndex::kU_Index] = {1, SkColorChannel::kR};
+  indices[SkYUVAIndex::kV_Index] = {2, SkColorChannel::kR};
+  indices[SkYUVAIndex::kA_Index] = {-1, SkColorChannel::kR};
+
   return frame_generator_->GetYUVComponentSizes(data_.get(), size_info);
 }
 
-bool DecodingImageGenerator::GetYUV8Planes(const SkYUVSizeInfo& size_info,
-                                           void* planes[3],
-                                           size_t frame_index,
-                                           uint32_t lazy_pixel_ref) {
+bool DecodingImageGenerator::GetYUVA8Planes(const SkYUVASizeInfo& size_info,
+                                            const SkYUVAIndex indices[4],
+                                            void* planes[3],
+                                            size_t frame_index,
+                                            uint32_t lazy_pixel_ref) {
   // YUV decoding does not currently support progressive decoding. See comment
   // in ImageFrameGenerator.h.
   DCHECK(can_yuv_decode_);
   DCHECK(all_data_received_);
 
-  TRACE_EVENT0("blink", "DecodingImageGenerator::getYUV8Planes");
+  TRACE_EVENT0("blink", "DecodingImageGenerator::getYUVA8Planes");
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
                "Decode LazyPixelRef", "LazyPixelRef", lazy_pixel_ref);
+
+  // Verify sizes and indices
+  for (int i = 0; i < 3; ++i) {
+    if (size_info.fSizes[i].isEmpty() || !size_info.fWidthBytes[i]) {
+      return false;
+    }
+  }
+  if (!size_info.fSizes[3].isEmpty() || size_info.fWidthBytes[3]) {
+    return false;
+  }
+  int numPlanes;
+  if (!SkYUVAIndex::AreValidIndices(indices, &numPlanes) || numPlanes != 3) {
+    return false;
+  }
+
   bool decoded =
       frame_generator_->DecodeToYUV(data_.get(), frame_index, size_info.fSizes,
                                     planes, size_info.fWidthBytes);
