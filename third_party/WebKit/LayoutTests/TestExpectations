@@ -108,6 +108,8 @@ crbug.com/891427 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gestur
 crbug.com/891427 virtual/threaded/fast/scroll-behavior/smooth-scroll/scroll-during-selection.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 virtual/threaded/fast/scrolling/no-hover-during-scroll.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 virtual/fractional_scrolling_threaded/fast/scrolling/no-hover-during-scroll.html [ Pass Failure Timeout Crash ]
+# Another one found by Fintit:
+crbug.com/891427 virtual/threaded/animations/invisible-composited-animations-prevent-scroll.html [ Pass Failure Timeout Crash ]
 
 # Remove these when --enable-display-compositor-pixel-dump becomes the
 # "default" setting. These will all need to be re-baselined at that point.
