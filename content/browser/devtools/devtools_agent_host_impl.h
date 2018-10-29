@@ -29,15 +29,6 @@ class TargetRegistry;
 // Describes interface for managing devtools agents from the browser process.
 class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
  public:
-  // Asks any interested agents to handle the given certificate error. Returns
-  // |true| if the error was handled, |false| otherwise.
-  using CertErrorCallback =
-      base::RepeatingCallback<void(content::CertificateRequestResultType)>;
-  static bool HandleCertificateError(WebContents* web_contents,
-                                     int cert_error,
-                                     const GURL& request_url,
-                                     CertErrorCallback callback);
-
   // DevToolsAgentHost implementation.
   bool AttachClient(DevToolsAgentHostClient* client) override;
   bool DetachClient(DevToolsAgentHostClient* client) override;

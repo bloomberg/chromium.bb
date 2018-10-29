@@ -13,6 +13,10 @@ namespace content {
 class TargetRegistry;
 
 class BrowserDevToolsAgentHost : public DevToolsAgentHostImpl {
+ public:
+  // TODO(caseq,dgozman): this should probably be a singleton.
+  static const std::set<BrowserDevToolsAgentHost*>& Instances();
+
  private:
   friend class DevToolsAgentHost;
   BrowserDevToolsAgentHost(

@@ -8,6 +8,7 @@
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
+#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/protocol/browser_handler.h"
@@ -36,6 +37,19 @@ scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::CreateForDiscovery() {
   return new BrowserDevToolsAgentHost(nullptr, std::move(null_callback), true);
 }
 
+namespace {
+std::set<BrowserDevToolsAgentHost*>& BrowserDevToolsAgentHostInstances() {
+  static base::NoDestructor<std::set<BrowserDevToolsAgentHost*>> instances;
+  return *instances;
+}
+}  // namespace
+
+// static
+const std::set<BrowserDevToolsAgentHost*>&
+BrowserDevToolsAgentHost::Instances() {
+  return BrowserDevToolsAgentHostInstances();
+}
+
 BrowserDevToolsAgentHost::BrowserDevToolsAgentHost(
     scoped_refptr<base::SingleThreadTaskRunner> tethering_task_runner,
     const CreateServerSocketCallback& socket_callback,
@@ -45,9 +59,11 @@ BrowserDevToolsAgentHost::BrowserDevToolsAgentHost(
       socket_callback_(socket_callback),
       only_discovery_(only_discovery) {
   NotifyCreated();
+  BrowserDevToolsAgentHostInstances().insert(this);
 }
 
 BrowserDevToolsAgentHost::~BrowserDevToolsAgentHost() {
+  BrowserDevToolsAgentHostInstances().erase(this);
 }
 
 bool BrowserDevToolsAgentHost::AttachSession(DevToolsSession* session,
