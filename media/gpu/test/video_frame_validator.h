@@ -102,4 +102,5 @@ class VideoFrameValidator {
 };
 }  // namespace test
 }  // namespace media
+
 #endif  // MEDIA_GPU_TEST_VIDEO_FRAME_VALIDATOR_H_

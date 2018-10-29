@@ -30,4 +30,5 @@ class VideoFrameMapper {
 
 }  // namespace test
 }  // namespace media
+
 #endif  // MEDIA_GPU_TEST_VIDEO_FRAME_MAPPER_H_

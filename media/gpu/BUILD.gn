@@ -439,6 +439,12 @@ if (is_win || is_android || use_v4l2_codec || use_vaapi) {
         "test/generic_dmabuf_video_frame_mapper.cc",
         "test/generic_dmabuf_video_frame_mapper.h",
       ]
+      if (use_vaapi) {
+        sources += [
+          "test/vaapi_dmabuf_video_frame_mapper.cc",
+          "test/vaapi_dmabuf_video_frame_mapper.h",
+        ]
+      }
     }
 
     if (use_x11) {
