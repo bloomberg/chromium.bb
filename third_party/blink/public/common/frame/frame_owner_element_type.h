@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_FRAME_FRAME_OWNER_ELEMENT_TYPE_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_FRAME_FRAME_OWNER_ELEMENT_TYPE_H_
 
-#include "third_party/blink/common/common_export.h"
+#include "third_party/blink/public/common/common_export.h"
 
 namespace blink {
 

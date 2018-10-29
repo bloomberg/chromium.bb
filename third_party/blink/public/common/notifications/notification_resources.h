@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "third_party/blink/common/common_export.h"
+#include "third_party/blink/public/common/common_export.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace blink {

@@ -12,7 +12,7 @@
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
-#include "third_party/blink/common/common_export.h"
+#include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/mojom/blob/serialized_blob.mojom.h"
 
 namespace blink {

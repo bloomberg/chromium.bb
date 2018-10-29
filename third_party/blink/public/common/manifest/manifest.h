@@ -13,7 +13,7 @@
 #include "base/optional.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string16.h"
-#include "third_party/blink/common/common_export.h"
+#include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_lock_type.h"
 #include "third_party/skia/include/core/SkColor.h"

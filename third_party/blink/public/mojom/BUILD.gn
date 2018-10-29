@@ -85,7 +85,7 @@ mojom("mojom_platform") {
 
   export_class_attribute = "BLINK_COMMON_EXPORT"
   export_define = "BLINK_COMMON_IMPLEMENTATION=1"
-  export_header = "third_party/blink/common/common_export.h"
+  export_header = "third_party/blink/public/common/common_export.h"
 
   export_class_attribute_blink = "PLATFORM_EXPORT"
   export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
@@ -105,7 +105,7 @@ mojom("android_mojo_bindings") {
 
   export_class_attribute = "BLINK_COMMON_EXPORT"
   export_define = "BLINK_COMMON_IMPLEMENTATION=1"
-  export_header = "third_party/blink/common/common_export.h"
+  export_header = "third_party/blink/public/common/common_export.h"
 
   export_class_attribute_blink = "PLATFORM_EXPORT"
   export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
@@ -153,7 +153,7 @@ mojom("mojom_core") {
 
   export_class_attribute = "BLINK_COMMON_EXPORT"
   export_define = "BLINK_COMMON_IMPLEMENTATION=1"
-  export_header = "third_party/blink/common/common_export.h"
+  export_header = "third_party/blink/public/common/common_export.h"
 
   export_class_attribute_blink = "CORE_EXPORT"
   export_define_blink = "BLINK_CORE_IMPLEMENTATION=1"
@@ -188,7 +188,7 @@ mojom("mojom_modules") {
 
   export_class_attribute = "BLINK_COMMON_EXPORT"
   export_define = "BLINK_COMMON_IMPLEMENTATION=1"
-  export_header = "third_party/blink/common/common_export.h"
+  export_header = "third_party/blink/public/common/common_export.h"
 
   export_class_attribute_blink = "MODULES_EXPORT"
   export_define_blink = "BLINK_MODULES_IMPLEMENTATION=1"

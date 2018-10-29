@@ -8,7 +8,7 @@
 #include "third_party/blink/public/common/manifest/manifest.h"
 
 #include "mojo/public/cpp/bindings/struct_traits.h"
-#include "third_party/blink/common/common_export.h"
+#include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 
 namespace mojo {

@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/strings/string_piece.h"
-#include "third_party/blink/common/common_export.h"
+#include "third_party/blink/public/common/common_export.h"
 
 namespace blink {
 

@@ -9,7 +9,7 @@
 
 #include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
-#include "third_party/blink/common/common_export.h"
+#include "third_party/blink/public/common/common_export.h"
 
 namespace base {
 class SequencedTaskRunner;
