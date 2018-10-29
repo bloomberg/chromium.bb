@@ -67,7 +67,6 @@ class AutofillAssistantUiDelegate {
     private final AppCompatImageView mDetailsImage;
     private final TextView mDetailsTitle;
     private final TextView mDetailsText;
-    private final TextView mDetailsTime;
     private final int mDetailsImageWidth;
     private final int mDetailsImageHeight;
 
@@ -217,7 +216,6 @@ class AutofillAssistantUiDelegate {
         mDetailsImage = (AppCompatImageView) mDetails.findViewById(R.id.details_image);
         mDetailsTitle = (TextView) mDetails.findViewById(R.id.details_title);
         mDetailsText = (TextView) mDetails.findViewById(R.id.details_text);
-        mDetailsTime = (TextView) mDetails.findViewById(R.id.details_time);
         mDetailsImageWidth = mActivity.getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_details_image_size);
         mDetailsImageHeight = mActivity.getResources().getDimensionPixelSize(
@@ -364,16 +362,17 @@ class AutofillAssistantUiDelegate {
 
     public void hideDetails() {
         mDetails.setVisibility(View.GONE);
+        setCarouselTopPadding();
     }
 
     /** Called to show contextual information. */
     public void showDetails(Details details) {
         mDetailsTitle.setText(details.getTitle());
         mDetailsText.setText(getDetailsText(details));
-        mDetailsTime.setText(getDetailsTime(details.getDate()));
 
         mDetailsImage.setVisibility(View.INVISIBLE);
         mDetails.setVisibility(View.VISIBLE);
+        setCarouselTopPadding();
         ensureFullContainerIsShown();
 
         String url = details.getUrl();
@@ -387,10 +386,21 @@ class AutofillAssistantUiDelegate {
         }
     }
 
+    private void setCarouselTopPadding() {
+        int topPadding = 0;
+        if (mDetails.getVisibility() != View.VISIBLE) {
+            topPadding = (int) TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP, 8, mActivity.getResources().getDisplayMetrics());
+        }
+        mChipsViewContainer.setPadding(mChipsViewContainer.getPaddingLeft(), topPadding,
+                mChipsViewContainer.getPaddingRight(), mChipsViewContainer.getPaddingBottom());
+    }
+
     private String getDetailsText(Details details) {
         List<String> parts = new ArrayList<>();
         Date date = details.getDate();
         if (date != null) {
+            parts.add(sDetailsTimeFormat.format(date).toLowerCase(Locale.getDefault()));
             parts.add(sDetailsDateFormat.format(date));
         }
 
@@ -403,16 +413,12 @@ class AutofillAssistantUiDelegate {
         return TextUtils.join(" • ", parts);
     }
 
-    private String getDetailsTime(@Nullable Date date) {
-        return date != null ? sDetailsTimeFormat.format(date).toLowerCase(Locale.getDefault()) : "";
-    }
-
     private Drawable getRoundedImage(Bitmap bitmap) {
         RoundedBitmapDrawable roundedBitmap = RoundedBitmapDrawableFactory.create(
                 mActivity.getResources(),
                 ThumbnailUtils.extractThumbnail(bitmap, mDetailsImageWidth, mDetailsImageHeight));
-        // TODO(crbug.com/806868): Get radius from resources dimensions.
-        roundedBitmap.setCornerRadius(10);
+        roundedBitmap.setCornerRadius(TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, 4, mActivity.getResources().getDisplayMetrics()));
         return roundedBitmap;
     }
 
