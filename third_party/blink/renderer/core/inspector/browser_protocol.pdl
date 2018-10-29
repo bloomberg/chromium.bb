@@ -1204,7 +1204,7 @@ experimental domain CacheStorage
   type CachedResponse extends object
     properties
       # Entry content, base64-encoded.
-      string body
+      binary body
 
   # Deletes a cache.
   command deleteCache

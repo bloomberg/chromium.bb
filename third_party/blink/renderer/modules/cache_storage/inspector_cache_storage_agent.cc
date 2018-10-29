@@ -34,8 +34,6 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
-#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
-#include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -391,8 +389,7 @@ class CachedResponseFileReaderLoaderClient final
   void DidFinishLoading() override {
     std::unique_ptr<CachedResponse> response =
         CachedResponse::create()
-            .setBody(
-                Base64Encode(data_->Data(), SafeCast<unsigned>(data_->size())))
+            .setBody(protocol::Binary::fromSharedBuffer(data_))
             .build();
     callback_->sendSuccess(std::move(response));
     dispose();
@@ -634,8 +631,9 @@ void InspectorCacheStorageAgent::requestCachedResponse(
               std::unique_ptr<protocol::DictionaryValue> headers =
                   protocol::DictionaryValue::create();
               if (!result->get_response()->blob) {
-                callback->sendSuccess(
-                    CachedResponse::create().setBody("").build());
+                callback->sendSuccess(CachedResponse::create()
+                                          .setBody(protocol::Binary())
+                                          .build());
                 return;
               }
               CachedResponseFileReaderLoaderClient::Load(
