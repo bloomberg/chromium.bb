@@ -3963,12 +3963,20 @@ LayoutUnit LayoutBox::ContainingBlockLogicalWidthForPositioned(
   if (HasOverrideContainingBlockContentLogicalWidth())
     return OverrideContainingBlockContentLogicalWidth();
 
-  // Ensure we compute our width based on the width of our rel-pos inline
-  // container rather than any anonymous block created to manage a block-flow
-  // ancestor of ours in the rel-pos inline's inline flow.
   if (containing_block->IsAnonymousBlock() &&
       containing_block->IsRelPositioned()) {
+    // Ensure we compute our width based on the width of our rel-pos inline
+    // container rather than any anonymous block created to manage a block-flow
+    // ancestor of ours in the rel-pos inline's inline flow.
     containing_block = ToLayoutBox(containing_block)->Continuation();
+    // There may be nested parallel inline continuations. We have now found the
+    // innermost inline (which may not be relatively positioned). Locate the
+    // inline that serves as the containing block of this box.
+    while (!containing_block->CanContainOutOfFlowPositionedElement(
+        StyleRef().GetPosition())) {
+      containing_block = ToLayoutBoxModelObject(containing_block->Container());
+      DCHECK(containing_block->IsLayoutInline());
+    }
   } else if (containing_block->IsBox()) {
     return std::max(LayoutUnit(),
                     ToLayoutBox(containing_block)->ClientLogicalWidth());

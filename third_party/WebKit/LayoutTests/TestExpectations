@@ -670,6 +670,9 @@ crbug.com/591099 external/wpt/css/cssom-view/offsetTopLeftInline.html [ Failure 
 crbug.com/591099 external/wpt/css/css-writing-modes/inline-box-border-vlr-001.html [ Failure ]
 crbug.com/591099 tables/mozilla/bugs/bug14159-1.html [ Failure ]
 
+### virtual/layout_ng/external/wpt/css/CSS2/abspos
+crbug.com/591099 virtual/layout_ng/external/wpt/css/CSS2/abspos/abspos-in-block-in-inline-in-relpos-inline.html [ Failure ]
+
 ### virtual/layout_ng/external/wpt/css/CSS2/floats
 crbug.com/711704 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-rule3-outside-left-002.xht [ Failure ]
 crbug.com/711704 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-rule3-outside-right-002.xht [ Failure ]
