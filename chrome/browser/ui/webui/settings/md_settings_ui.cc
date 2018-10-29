@@ -70,6 +70,7 @@
 #endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -97,7 +98,9 @@
 #include "chrome/browser/ui/webui/settings/chromeos/internet_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/multidevice_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/smb_handler.h"
+#include "chrome/browser/web_applications/bookmark_apps/system_web_app_manager.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/grit/browser_resources.h"
 #include "chromeos/account_manager/account_manager.h"
 #include "chromeos/account_manager/account_manager_factory.h"
 #include "chromeos/chromeos_features.h"
@@ -374,6 +377,18 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   // Add the metrics handler to write uma stats.
   web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
 
+#if defined(OS_CHROMEOS)
+  // Add the System Web App resources for Settings.
+  if (web_app::SystemWebAppManager::ShouldEnableForProfile(profile)) {
+    html_source->AddResourcePath("icon-192.png", IDR_SETTINGS_LOGO_192);
+    html_source->AddResourcePath("pwa.html", IDR_PWA_HTML);
+#if BUILDFLAG(OPTIMIZE_WEBUI)
+    exclude_from_gzip.push_back("icon-192.png");
+    exclude_from_gzip.push_back("pwa.html");
+#endif  // BUILDFLAG(OPTIMIZE_WEBUI)
+  }
+#endif  // defined (OS_CHROMEOS)
+
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   const bool use_polymer_2 =
       base::FeatureList::IsEnabled(features::kWebUIPolymer2);
@@ -388,6 +403,9 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
                                       ? IDR_MD_SETTINGS_VULCANIZED_P2_HTML
                                       : IDR_MD_SETTINGS_VULCANIZED_HTML);
   html_source->UseGzip(exclude_from_gzip);
+#if defined(OS_CHROMEOS)
+  html_source->AddResourcePath("manifest.json", IDR_MD_SETTINGS_MANIFEST);
+#endif  // defined (OS_CHROMEOS)
 #else
   // Add all settings resources.
   for (size_t i = 0; i < kSettingsResourcesSize; ++i) {

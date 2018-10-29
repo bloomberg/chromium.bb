@@ -18,6 +18,7 @@
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
+#include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -46,9 +47,6 @@ constexpr char kSystemAppManifestText[] =
       "theme_color": "#00FF00"
     })";
 
-constexpr char kSystemAppHTMLText[] =
-    R"(<html><head><link rel="manifest" href="manifest.json"></head></html>)";
-
 // WebUIController that serves a System PWA.
 class TestWebUIController : public content::WebUIController {
  public:
@@ -57,19 +55,16 @@ class TestWebUIController : public content::WebUIController {
     content::WebUIDataSource* data_source =
         content::WebUIDataSource::Create("test-system-app");
     data_source->AddResourcePath("icon-256.png", IDR_PRODUCT_LOGO_256);
+    data_source->AddResourcePath("pwa.html", IDR_PWA_HTML);
     data_source->SetRequestFilter(base::BindRepeating(
         [](const std::string& id,
            const content::WebUIDataSource::GotDataCallback& callback) {
           scoped_refptr<base::RefCountedString> ref_contents(
               new base::RefCountedString);
-          if (id == "manifest.json")
-            ref_contents->data() = kSystemAppManifestText;
-
-          if (id == "pwa.html")
-            ref_contents->data() = kSystemAppHTMLText;
-
-          if (ref_contents->data().empty())
+          if (id != "manifest.json")
             return false;
+
+          ref_contents->data() = kSystemAppManifestText;
 
           callback.Run(ref_contents);
           return true;
