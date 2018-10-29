@@ -60,6 +60,9 @@ DesktopAutomationHandler = function(node) {
   /** @private {boolean} */
   this.shouldIgnoreDocumentSelectionFromAction_ = false;
 
+  /** @private {number?} */
+  this.delayedAttributeOutputId_;
+
   this.addListener_(
       EventType.ACTIVEDESCENDANTCHANGED, this.onActiveDescendantChanged);
   this.addListener_(EventType.ALERT, this.onAlert);
@@ -107,6 +110,13 @@ DesktopAutomationHandler = function(node) {
  * @const {number}
  */
 DesktopAutomationHandler.VMIN_VALUE_CHANGE_DELAY_MS = 50;
+
+/**
+ * Time to wait before announcing attribute changes that are otherwise too
+ * disruptive.
+ * @const {number}
+ */
+DesktopAutomationHandler.ATTRIBUTE_DELAY_MS = 1500;
 
 /**
  * Controls announcement of non-user-initiated events.
@@ -186,6 +196,21 @@ DesktopAutomationHandler.prototype = {
       if (evt.target == prevTarget && prevOutput &&
           prevOutput.equals(this.lastAttributeOutput_))
         return;
+
+      // If the target or an ancestor is controlled by another control, we may
+      // want to delay the output.
+      var maybeControlledBy = evt.target;
+      while (maybeControlledBy) {
+        if (maybeControlledBy.controlledBy.length &&
+            maybeControlledBy.controlledBy.find((n) => !!n.autoComplete)) {
+          clearTimeout(this.delayedAttributeOutputId_);
+          this.delayedAttributeOutputId_ = setTimeout(() => {
+            this.lastAttributeOutput_.go();
+          }, DesktopAutomationHandler.ATTRIBUTE_DELAY_MS);
+          return;
+        }
+        maybeControlledBy = maybeControlledBy.parent;
+      }
 
       this.lastAttributeOutput_.go();
     }
