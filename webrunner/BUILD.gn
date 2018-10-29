@@ -279,6 +279,7 @@ process_version("build_id") {
 copy("restaged_packages") {
   sources = [
     "$root_gen_dir/webrunner/chromium/chromium.far",
+    "$root_gen_dir/webrunner/net_http/http/http.far",
     "$root_gen_dir/webrunner/web_runner/web_runner.far",
   ]
   outputs = [
@@ -287,6 +288,7 @@ copy("restaged_packages") {
   deps = [
     ":service_pkg",
     ":webrunner_pkg",
+    "net_http:http_pkg",
   ]
 }
 
