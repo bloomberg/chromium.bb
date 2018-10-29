@@ -100,8 +100,6 @@ void RegisterAutofillPrefs(user_prefs::PrefRegistrySyncable* registry) {
                                 true);
   registry->RegisterIntegerPref(autofill::prefs::kAutofillLastVersionDeduped,
                                 atoi(version_info::GetVersionNumber().c_str()));
-  registry->RegisterIntegerPref(autofill::prefs::kAutofillLastVersionValidated,
-                                atoi(version_info::GetVersionNumber().c_str()));
   registry->RegisterDoublePref(autofill::prefs::kAutofillBillingCustomerNumber,
                                0.0);
   registry->RegisterBooleanPref(
