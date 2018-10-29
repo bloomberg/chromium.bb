@@ -19858,6 +19858,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="UI_DevTools_Connect">
+  <owner>weili@chromium.org</owner>
+  <description>
+    Records when a user connects to a UI DevTools HTTP server, i.e., by clicking
+    on the 'inspect' link on chrome://inspect/#other.
+  </description>
+</action>
+
 <action name="Underline">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
