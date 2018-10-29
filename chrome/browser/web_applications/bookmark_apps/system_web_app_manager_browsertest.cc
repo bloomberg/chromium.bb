@@ -115,7 +115,8 @@ class SystemWebAppManagerIntegrationTest
     : public extensions::ExtensionBrowserTest {
  public:
   SystemWebAppManagerIntegrationTest() {
-    scoped_feature_list_.InitWithFeatures({features::kSystemWebApps}, {});
+    scoped_feature_list_.InitWithFeatures(
+        {features::kDesktopPWAWindowing, features::kSystemWebApps}, {});
     content::WebUIControllerFactory::RegisterFactory(&factory_);
   }
   ~SystemWebAppManagerIntegrationTest() override {
@@ -137,15 +138,8 @@ class SystemWebAppManagerIntegrationTest
   DISALLOW_COPY_AND_ASSIGN(SystemWebAppManagerIntegrationTest);
 };
 
-// Crashes on Mac only. https://crbug.com/898184
-#if defined(OS_MACOSX)
-#define MAYBE_WithManifest DISABLED_WithManifest
-#else
-#define MAYBE_WithManifest WithManifest
-#endif
-
 // Test that System Apps install correctly with a manifest.
-IN_PROC_BROWSER_TEST_F(SystemWebAppManagerIntegrationTest, MAYBE_WithManifest) {
+IN_PROC_BROWSER_TEST_F(SystemWebAppManagerIntegrationTest, WithManifest) {
   std::vector<GURL> system_apps;
   system_apps.emplace_back(GURL("chrome://test-system-app/pwa.html"));
   extensions::PendingBookmarkAppManager pending_app_manager(profile());
