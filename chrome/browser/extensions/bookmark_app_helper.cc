@@ -388,6 +388,13 @@ void BookmarkAppHelper::OnDidPerformInstallableCheck(
   if (contents_->IsBeingDestroyed())
     return;
 
+  if (require_manifest_ && !data.valid_manifest) {
+    LOG(WARNING) << "Did not install " << web_app_info_.app_url.spec()
+                 << " because it didn't have a manifest";
+    callback_.Run(nullptr, web_app_info_);
+    return;
+  }
+
   for_installable_site_ =
       data.error_code == NO_ERROR_DETECTED && !shortcut_app_requested_
           ? ForInstallableSite::kYes

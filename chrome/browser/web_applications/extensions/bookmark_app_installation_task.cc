@@ -139,6 +139,9 @@ void BookmarkAppInstallationTask::OnGetWebApplicationInfo(
   if (app_info_.bypass_service_worker_check)
     helper_->set_bypass_service_worker_check();
 
+  if (app_info_.require_manifest)
+    helper_->set_require_manifest();
+
   helper_->Create(base::Bind(&BookmarkAppInstallationTask::OnInstalled,
                              weak_ptr_factory_.GetWeakPtr(),
                              base::Passed(&result_callback)));

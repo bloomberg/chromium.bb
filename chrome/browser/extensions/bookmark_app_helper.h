@@ -112,6 +112,12 @@ class BookmarkAppHelper : public content::NotificationObserver {
     bypass_service_worker_check_ = true;
   }
 
+  // If called, the installation will only succeed if a manifest is found.
+  void set_require_manifest() {
+    DCHECK(is_default_app());
+    require_manifest_ = true;
+  }
+
   // If called, the installed app will launch in |launch_type|. User might still
   // be able to change the launch type depending on the type of app.
   void set_forced_launch_type(LaunchType launch_type) {
@@ -190,6 +196,8 @@ class BookmarkAppHelper : public content::NotificationObserver {
   bool create_shortcuts_ = true;
 
   bool bypass_service_worker_check_ = false;
+
+  bool require_manifest_ = false;
 
   // The mechanism via which the app creation was triggered.
   WebappInstallSource install_source_;
