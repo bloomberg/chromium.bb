@@ -28,6 +28,7 @@ class Value;
 namespace chromeos {
 
 class DeviceSettingsService;
+class StubCrosSettingsProvider;
 
 // This class manages per-device/global settings.
 class CrosSettings {
@@ -129,6 +130,12 @@ class CrosSettings {
   // Returns the provider that handles settings with the |path| or prefix.
   CrosSettingsProvider* GetProvider(const std::string& path) const;
 
+  // Returns the StubCrosSettingsProvider. Returns |nullptr| unless the
+  // kStubCrosSettings switch is set, which is only true during testing.
+  StubCrosSettingsProvider* stubbed_provider_for_test() const {
+    return stubbed_provider_ptr_;
+  }
+
  private:
   friend class CrosSettingsTest;
 
@@ -137,6 +144,9 @@ class CrosSettings {
 
   // List of ChromeOS system settings providers.
   std::vector<std::unique_ptr<CrosSettingsProvider>> providers_;
+
+  // A stubbed provider - only used if the kStubCrosSettings switch is set.
+  StubCrosSettingsProvider* stubbed_provider_ptr_ = nullptr;
 
   // A map from settings names to a list of observers. Observers get fired in
   // the order they are added.

@@ -165,6 +165,7 @@ class WebviewLoginTest : public OobeBaseTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kOobeSkipPostLogin);
     command_line->AppendSwitch(::switches::kUseFakeDeviceForMediaStream);
+    command_line->AppendSwitch(switches::kStubCrosSettings);
     OobeBaseTest::SetUpCommandLine(command_line);
   }
 
