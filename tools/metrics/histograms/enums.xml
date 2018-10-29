@@ -48833,9 +48833,9 @@ would be helpful to identify which type is being sent.
 
 <enum name="TemporaryReferenceRemovedReason">
   <int value="0" label="Embedded"/>
-  <int value="1" label="Dropped"/>
+  <int value="1" label="Dropped (Obsolete)"/>
   <int value="2" label="Skipped"/>
-  <int value="3" label="Invalidated"/>
+  <int value="3" label="Invalidated (Obsolete)"/>
   <int value="4" label="Expired"/>
 </enum>
 
