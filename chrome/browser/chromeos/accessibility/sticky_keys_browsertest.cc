@@ -4,13 +4,11 @@
 
 #include <stddef.h>
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/sticky_keys/sticky_keys_overlay.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -44,25 +42,19 @@ class StickyKeysBrowserTest : public InProcessBrowserTest {
   }
 
   bool IsSystemTrayBubbleOpen() {
-    return ash::features::IsSystemTrayUnifiedEnabled()
-               ? ash::Shell::Get()
-                     ->GetPrimaryRootWindowController()
-                     ->GetStatusAreaWidget()
-                     ->unified_system_tray()
-                     ->IsBubbleShown()
-               : ash::Shell::Get()->GetPrimarySystemTray()->HasSystemBubble();
+    return ash::Shell::Get()
+        ->GetPrimaryRootWindowController()
+        ->GetStatusAreaWidget()
+        ->unified_system_tray()
+        ->IsBubbleShown();
   }
 
   void CloseSystemTrayBubble() {
-    if (ash::features::IsSystemTrayUnifiedEnabled()) {
-      ash::Shell::Get()
-          ->GetPrimaryRootWindowController()
-          ->GetStatusAreaWidget()
-          ->unified_system_tray()
-          ->CloseBubble();
-    } else {
-      ash::Shell::Get()->GetPrimarySystemTray()->CloseBubble();
-    }
+    ash::Shell::Get()
+        ->GetPrimaryRootWindowController()
+        ->GetStatusAreaWidget()
+        ->unified_system_tray()
+        ->CloseBubble();
   }
 
   void SendKeyPress(ui::KeyboardCode key) {

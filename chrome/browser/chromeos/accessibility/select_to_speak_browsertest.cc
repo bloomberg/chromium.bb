@@ -13,7 +13,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
@@ -158,14 +157,11 @@ class SelectToSpeakTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, SpeakStatusTray) {
-  gfx::Rect tray_bounds =
-      ash::features::IsSystemTrayUnifiedEnabled()
-          ? ash::Shell::Get()
-                ->GetPrimaryRootWindowController()
-                ->GetStatusAreaWidget()
-                ->unified_system_tray()
-                ->GetBoundsInScreen()
-          : ash::Shell::Get()->GetPrimarySystemTray()->GetBoundsInScreen();
+  gfx::Rect tray_bounds = ash::Shell::Get()
+                              ->GetPrimaryRootWindowController()
+                              ->GetStatusAreaWidget()
+                              ->unified_system_tray()
+                              ->GetBoundsInScreen();
 
   // Hold down Search and click a few pixels into the status tray bounds.
   generator_->PressKey(ui::VKEY_LWIN, 0 /* flags */);
