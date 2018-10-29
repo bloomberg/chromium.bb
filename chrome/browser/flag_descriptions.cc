@@ -2755,10 +2755,6 @@ const char kInfiniteSessionRestoreDescription[] =
     "restore, to improve responsiveness of the foreground tab. This requires "
     "#enable-page-almost-idle.";
 
-const char kEnableNewAppMenuIconName[] = "Enable the New App Menu Icon";
-const char kEnableNewAppMenuIconDescription[] =
-    "Use the new app menu icon with update notification animations.";
-
 const char kEnableWebAuthenticationCtap2SupportName[] =
     "Enable Web Authentication API support for CTAP2 security keys";
 const char kEnableWebAuthenticationCtap2SupportDescription[] =

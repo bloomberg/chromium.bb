@@ -55,11 +55,6 @@ AppMenuIconController::Severity SeverityFromUpgradeLevel(
   return AppMenuIconController::Severity::NONE;
 }
 
-// Checks if the app menu icon should be animated for the given severity.
-bool ShouldAnimateSeverity(AppMenuIconController::Severity severity) {
-  return severity != AppMenuIconController::Severity::NONE;
-}
-
 // Returns true if we should show the upgrade recommended icon.
 bool ShouldShowUpgradeRecommended() {
 #if defined(OS_CHROMEOS)
@@ -106,8 +101,7 @@ void AppMenuIconController::UpdateDelegate() {
     UpgradeDetector::UpgradeNotificationAnnoyanceLevel level =
         UpgradeDetector::GetInstance()->upgrade_notification_stage();
     auto severity = SeverityFromUpgradeLevel(is_unstable_channel_, level);
-    delegate_->UpdateSeverity(IconType::UPGRADE_NOTIFICATION, severity,
-                              ShouldAnimateSeverity(severity));
+    delegate_->UpdateSeverity(IconType::UPGRADE_NOTIFICATION, severity);
     return;
   }
 
@@ -115,12 +109,11 @@ void AppMenuIconController::UpdateDelegate() {
           ->GetHighestSeverityGlobalErrorWithAppMenuItem()) {
     // If you change the severity here, make sure to also change the menu icon
     // and the bubble icon.
-    delegate_->UpdateSeverity(IconType::GLOBAL_ERROR,
-                              Severity::MEDIUM, true);
+    delegate_->UpdateSeverity(IconType::GLOBAL_ERROR, Severity::MEDIUM);
     return;
   }
 
-  delegate_->UpdateSeverity(IconType::NONE, Severity::NONE, false);
+  delegate_->UpdateSeverity(IconType::NONE, Severity::NONE);
 }
 
 void AppMenuIconController::Observe(

@@ -191,8 +191,7 @@ class ToolbarView : public views::AccessiblePaneView,
 
   // AppMenuIconController::Delegate:
   void UpdateSeverity(AppMenuIconController::IconType type,
-                      AppMenuIconController::Severity severity,
-                      bool animate) override;
+                      AppMenuIconController::Severity severity) override;
 
   // ToolbarButtonProvider:
   BrowserActionsContainer* GetBrowserActionsContainer() override;

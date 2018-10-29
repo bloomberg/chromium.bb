@@ -39,9 +39,7 @@ class AppMenuIconController :
     // Notifies the UI to update the icon to have the specified |severity|, as
     // well as specifying whether it should |animate|. The |type| parameter
     // specifies the type of change (i.e. the source of the notification).
-    virtual void UpdateSeverity(IconType type,
-                                Severity severity,
-                                bool animate) = 0;
+    virtual void UpdateSeverity(IconType type, Severity severity) = 0;
 
    protected:
     virtual ~Delegate() {}
