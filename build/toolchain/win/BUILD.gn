@@ -208,12 +208,12 @@ template("msvc_toolchain") {
 
     tool("asm") {
       if (toolchain_args.current_cpu == "x64") {
-        ml = "ml64.exe"
+        ml = "ml64.exe /nologo"
       } else if (toolchain_args.current_cpu == "arm64") {
         prefix = rebase_path("$clang_base_path/bin", root_build_dir)
         ml = "${goma_prefix}${prefix}/${clang_cl} --target=arm64-windows"
       } else {
-        ml = "ml.exe"
+        ml = "ml.exe /nologo"
       }
       command = "$python_path $tool_wrapper_path asm-wrapper $env $ml {{defines}} {{include_dirs}} {{asmflags}} "
       if (toolchain_args.current_cpu == "arm64") {
