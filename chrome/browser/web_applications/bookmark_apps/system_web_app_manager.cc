@@ -85,7 +85,8 @@ std::vector<GURL> SystemWebAppManager::CreateSystemWebApps() {
 // TODO(calamity): Split this into per-platform functions.
 #if defined(OS_CHROMEOS)
   urls.emplace_back(chrome::kChromeUIDiscoverURL);
-  urls.emplace_back(chrome::kChromeUISettingsURL);
+  constexpr char kChromeSettingsPWAURL[] = "chrome://settings/pwa.html";
+  urls.emplace_back(kChromeSettingsPWAURL);
 #endif  // OS_CHROMEOS
 
   return urls;
