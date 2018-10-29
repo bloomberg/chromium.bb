@@ -1739,6 +1739,12 @@ void RenderViewImpl::UpdateBrowserControlsState(
     BrowserControlsState constraints,
     BrowserControlsState current,
     bool animate) {
+  TRACE_EVENT2("renderer", "RenderViewImpl::UpdateBrowserControlsState",
+               "Constraint", static_cast<int>(constraints), "Current",
+               static_cast<int>(current));
+  TRACE_EVENT_INSTANT1("renderer", "is_animated", TRACE_EVENT_SCOPE_THREAD,
+                       "animated", animate);
+
   if (GetWidget() && GetWidget()->layer_tree_view()) {
     GetWidget()->layer_tree_view()->UpdateBrowserControlsState(
         ContentToCc(constraints), ContentToCc(current), animate);
