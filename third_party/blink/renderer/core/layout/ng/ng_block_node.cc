@@ -871,7 +871,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
 void NGBlockNode::CopyBaselinesFromOldLayout(
     const NGConstraintSpace& constraint_space,
     NGBoxFragmentBuilder* builder) {
-  const Vector<NGBaselineRequest>& requests =
+  const NGConstraintSpace::NGBaselineRequestVector& requests =
       constraint_space.BaselineRequests();
   if (requests.IsEmpty())
     return;
