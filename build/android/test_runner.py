@@ -844,11 +844,17 @@ def RunTestsInPlatformMode(args):
           lambda: collections.defaultdict(int))
       iteration_count = 0
       for _ in repetitions:
-        raw_results = test_run.RunTests()
-        if not raw_results:
-          continue
-
+        # raw_results will be populated with base_test_result.TestRunResults by
+        # test_run.RunTests(). It is immediately added to all_raw_results so
+        # that in the event of an exception, all_raw_results will already have
+        # the up-to-date results and those can be written to disk.
+        raw_results = []
         all_raw_results.append(raw_results)
+
+        test_run.RunTests(raw_results)
+        if not raw_results:
+          all_raw_results.pop()
+          continue
 
         iteration_results = base_test_result.TestRunResults()
         for r in reversed(raw_results):
