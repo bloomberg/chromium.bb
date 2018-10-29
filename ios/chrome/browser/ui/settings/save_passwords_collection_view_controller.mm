@@ -830,11 +830,14 @@ blacklistedFormItemWithText:(NSString*)text
     SavePasswordsCollectionViewController* strongSelf = weakSelf;
     if (!strongSelf)
       return;
-    [strongSelf clearSectionWithIdentifier:SectionIdentifierSavedPasswords
-                                   ifEmpty:strongSelf->savedForms_.empty()];
+    // Delete in reverse order of section indexes (bottom up of section
+    // displayed), so that indexes in model matches those in the view.  if we
+    // don't we'll cause a crash.
     [strongSelf
         clearSectionWithIdentifier:SectionIdentifierBlacklist
                            ifEmpty:strongSelf->blacklistedForms_.empty()];
+    [strongSelf clearSectionWithIdentifier:SectionIdentifierSavedPasswords
+                                   ifEmpty:strongSelf->savedForms_.empty()];
     [strongSelf
         clearSectionWithIdentifier:SectionIdentifierSearchPasswordsBox
                            ifEmpty:strongSelf->savedForms_.empty() &&
