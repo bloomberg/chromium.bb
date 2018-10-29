@@ -60,10 +60,11 @@ class VIZ_SERVICE_EXPORT HitTestAggregator {
                    int32_t child_count);
 
   // Returns the |trace_id| of the |begin_frame_ack| in the active frame for
-  // the given surface_id if it is different than when it was last queried.
+  // the given |surface_id| if it is different than when it was last queried.
   // This is used in order to ensure that the flow between receiving hit-test
   // data and aggregating is included only once per submission.
-  base::Optional<int64_t> GetTraceIdIfUpdated(const SurfaceId& surface_id);
+  base::Optional<int64_t> GetTraceIdIfUpdated(const SurfaceId& surface_id,
+                                              uint64_t active_frame_index);
 
   const HitTestManager* const hit_test_manager_;
 
@@ -89,7 +90,7 @@ class VIZ_SERVICE_EXPORT HitTestAggregator {
   // to detect cycles.
   base::flat_set<FrameSinkId> referenced_child_regions_;
 
-  base::flat_map<SurfaceId, int32_t> last_active_frame_index_;
+  base::flat_map<FrameSinkId, uint64_t> last_active_frame_index_;
 
   // Handles the case when this object is deleted after
   // the PostTaskAggregation call is scheduled but before invocation.
