@@ -595,10 +595,15 @@ TEST_F(AnimationCompositorAnimationsTest,
   StringKeyframe* keyframe = CreateReplaceOpKeyframe("--foo", "10");
   EXPECT_TRUE(DuplicateSingleKeyframeAndTestIsCandidateOnResult(keyframe));
 
+  // Length-valued properties are not compositable.
   StringKeyframe* non_animatable_keyframe =
       CreateReplaceOpKeyframe("--bar", "10px");
   EXPECT_FALSE(DuplicateSingleKeyframeAndTestIsCandidateOnResult(
       non_animatable_keyframe));
+
+  // Cannot composite due to side effect.
+  SetCustomProperty("opacity", "var(--foo)");
+  EXPECT_FALSE(DuplicateSingleKeyframeAndTestIsCandidateOnResult(keyframe));
 }
 
 TEST_F(AnimationCompositorAnimationsTest,

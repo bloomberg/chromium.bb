@@ -46,7 +46,8 @@ PropertyRegistration::PropertyRegistration(
           CSSInterpolationTypesMap::CreateInterpolationTypesForCSSSyntax(
               name,
               syntax,
-              *this)) {
+              *this)),
+      referenced_(false) {
   DCHECK(RuntimeEnabledFeatures::CSSVariables2Enabled());
 }
 
