@@ -191,7 +191,96 @@ cr.define('omnibox_output', function() {
     }
   }
 
-  /** Helps track and render a list of results. */
+  /**
+   * Helps track and render a results group. C++ Autocomplete typically returns
+   * 3 result groups per query. It may return less if the next query is
+   * submitted before all 3 have been returned. Each result group contains
+   * top level information (e.g., how long the result took to generate), as well
+   * as a single list of combined results and multiple lists of individual
+   * results. Each of these lists is tracked and rendered by OutputResultsTable
+   * below.
+   */
+  class OutputResultsGroup {
+    /** @param {!mojom.OmniboxResult} resultsGroup */
+    constructor(resultsGroup) {
+      /** @struct */
+      this.details = {
+        cursorPosition: 0,
+        time: resultsGroup.timeSinceOmniboxStartedMs,
+        done: resultsGroup.done,
+        host: resultsGroup.host,
+        isTypedHost: resultsGroup.isTypedHost
+      };
+      /** @type {OutputResultsTable} */
+      this.combinedResults =
+          new OutputResultsTable(resultsGroup.combinedResults);
+      /** @type {Array<OutputResultsTable>} */
+      this.individualResultsList =
+          resultsGroup.resultsByProvider
+              .map(resultsWrapper => resultsWrapper.results)
+              .filter(results => results.length > 0)
+              .map(results => new OutputResultsTable(results));
+    }
+
+    /**
+     * Creates a HTML Node representing this data.
+     * @param {boolean} showDetails
+     * @param {boolean} showIncompleteResults
+     * @param {boolean} showAllProviders
+     * @return {Element}
+     */
+    render(showDetails, showIncompleteResults, showAllProviders) {
+      const resultsGroupNode =
+          OmniboxElement.getTemplate('results-group-template');
+      if (showDetails || showIncompleteResults) {
+        resultsGroupNode.querySelector('.details')
+            .appendChild(this.renderDetails_());
+      }
+      resultsGroupNode.querySelector('.combined-results')
+          .appendChild(this.combinedResults.render(showDetails));
+      if (showAllProviders) {
+        resultsGroupNode.querySelector('.individual-results')
+            .appendChild(this.renderIndividualResults_(showDetails));
+      }
+      return resultsGroupNode;
+    }
+
+    /**
+     * @private
+     * @return {Element}
+     */
+    renderDetails_() {
+      const details =
+          OmniboxElement.getTemplate('results-group-details-template');
+      details.querySelector('.cursor-position').textContent =
+          this.details.cursorPosition;
+      details.querySelector('.time').textContent = this.details.time;
+      details.querySelector('.done').textContent = this.details.done;
+      details.querySelector('.host').textContent = this.details.host;
+      details.querySelector('.is-typed-host').textContent =
+          this.details.isTypedHost;
+      return details;
+    }
+
+    /**
+     * @private
+     * @param {boolean} showDetails
+     * @return {Element}
+     */
+    renderIndividualResults_(showDetails) {
+      const individualResultsNode = OmniboxElement.getTemplate(
+          'results-group-individual-results-template');
+      this.individualResultsList.forEach(
+          individualResults => individualResultsNode.appendChild(
+              individualResults.render(showDetails)));
+      return individualResultsNode;
+    }
+  }
+
+  /**
+   * Helps track and render a list of results. Each result is tracked and
+   * rendered by OutputMatch below.
+   */
   class OutputResultsTable {
     /** @param {Array<!mojom.AutocompleteMatch>} results */
     constructor(results) {
@@ -202,7 +291,7 @@ cr.define('omnibox_output', function() {
     /**
      * Creates a HTML Node representing this data.
      * @param {boolean} showDetails
-     * @return {Node}
+     * @return {Element}
      */
     render(showDetails) {
       const resultsTable = OmniboxElement.getTemplate('results-table-template');
@@ -248,10 +337,10 @@ cr.define('omnibox_output', function() {
     /**
      * Creates a HTML Node representing this data.
      * @param {boolean} showDetails
-     * @return {Node}
+     * @return {Element}
      */
     render(showDetails) {
-      const match = document.createElement('tr');
+      const row = document.createElement('tr');
       OutputMatch.displayedProperties(showDetails)
           .map(property => {
             const value = this.properties[property.propertyName];
@@ -261,13 +350,13 @@ cr.define('omnibox_output', function() {
               return OutputMatch.renderBooleanProperty_(value);
             return OutputMatch.renderTextProperty_(value);
           })
-          .forEach(cell => match.appendChild(cell));
+          .forEach(cell => row.appendChild(cell));
 
       if (this.showAdditionalProperties(showDetails)) {
-        match.appendChild(
+        row.appendChild(
             OutputMatch.renderJsonProperty_(this.additionalProperties));
       }
-      return match;
+      return row;
     }
 
     /**
@@ -275,7 +364,7 @@ cr.define('omnibox_output', function() {
      * rendering becomes more substantial
      * @private
      * @param {string} propertyValue
-     * @return {Node}
+     * @return {Element}
      */
     static renderTextProperty_(propertyValue) {
       const cell = document.createElement('td');
@@ -286,7 +375,7 @@ cr.define('omnibox_output', function() {
     /**
      * @private
      * @param {Object} propertyValue
-     * @return {Node}
+     * @return {Element}
      */
     static renderJsonProperty_(propertyValue) {
       const cell = document.createElement('td');
@@ -299,7 +388,7 @@ cr.define('omnibox_output', function() {
     /**
      * @private
      * @param {boolean} propertyValue
-     * @return {Node}
+     * @return {Element}
      */
     static renderBooleanProperty_(propertyValue) {
       const cell = document.createElement('td');
@@ -314,7 +403,7 @@ cr.define('omnibox_output', function() {
      * @private
      * @param {boolean} showDetails
      * @param {boolean} showAdditionalHeader
-     * @return {Node}
+     * @return {Element}
      */
     static renderHeader_(showDetails, showAdditionalHeader) {
       const row = document.createElement('tr');
@@ -337,7 +426,7 @@ cr.define('omnibox_output', function() {
      * @param {string} name
      * @param {string=} url
      * @param {string=} tooltip
-     * @return {Node}
+     * @return {Element}
      */
     static renderHeaderCell_(name, url, tooltip) {
       const cell = document.createElement('th');
@@ -381,6 +470,6 @@ cr.define('omnibox_output', function() {
   // https://chromium.googlesource.com/chromium/src/+/master/styleguide/web/es6.md#object-literal-extensions
   return {
     OmniboxOutput: OmniboxOutput,
-    OutputResultsTable: OutputResultsTable,
+    OutputResultsGroup: OutputResultsGroup,
   };
 });

@@ -82,79 +82,11 @@
    * for each autocomplete match.  The input parameter is an OmniboxResultMojo.
    */
   function addResultToOutput(result) {
-    const inDetailedMode = omniboxInputs.$$('show-details').checked;
-
-    // Output the result-level features in detailed mode and in
-    // show incomplete results mode.  We do the latter because without
-    // these result-level features, one can't make sense of each
-    // batch of results.
-    if (omniboxInputs.$$('show-details').checked
-        || omniboxInputs.$$('show-incomplete-results').checked) {
-      addParagraph(`cursor position = ${cursorPosition}`);
-      addParagraph(`inferred input type = ${result.type}`);
-      addParagraph(`elapsed time = ${result.timeSinceOmniboxStartedMs}ms`);
-      addParagraph(`all providers done = ${result.done}`);
-      const p = document.createElement('p');
-      p.textContent = `host = ${result.host}`;
-      // The field isn't actually optional in the mojo object; instead it assumes
-      // failed lookups are not typed hosts.  Fix this to make it optional.
-      // http://crbug.com/863201
-      if ('isTypedHost' in result) {
-        // Only output the isTypedHost information if available.  (It may
-        // be missing if the history database lookup failed.)
-        p.textContent =
-            p.textContent + ` has isTypedHost = ${result.isTypedHost}`;
-      }
-      omniboxOutput.addOutput(p);
-    }
-
-    // Combined results go after the lines below.
-    const group = document.createElement('a');
-    group.className = 'group-separator';
-    group.textContent = 'Combined results.';
-    omniboxOutput.addOutput(group);
-
-    // Add combined/merged result table.
-    const p = document.createElement('p');
-    const table = new omnibox_output.OutputResultsTable(result.combinedResults)
-                      .render(inDetailedMode);
-    p.appendChild(table);
-    omniboxOutput.addOutput(p);
-
-    // Move forward only if you want to display per provider results.
-    if (!omniboxInputs.$$('show-all-providers').checked) {
-      return;
-    }
-
-    // Individual results go after the lines below.
-    const individualGroup = document.createElement('a');
-    individualGroup.className = 'group-separator';
-    individualGroup.textContent = 'Results for individual providers.';
-    omniboxOutput.addOutput(individualGroup);
-
-    // Add the per-provider result tables with labels. We do not append the
-    // combined/merged result table since we already have the per provider
-    // results.
-    result.resultsByProvider.forEach(providerResults => {
-      // If we have no results we do not display anything.
-      if (providerResults.results.length === 0)
-        return;
-      const p = document.createElement('p');
-      const table =
-          new omnibox_output.OutputResultsTable(providerResults.results)
-              .render(inDetailedMode);
-      p.appendChild(table);
-      omniboxOutput.addOutput(p);
-    });
-  }
-
-  /**
-   * Appends a paragraph node containing text to the parent node.
-   */
-  function addParagraph(text) {
-    const p = document.createElement('p');
-    p.textContent = text;
-    omniboxOutput.addOutput(p);
+    const resultsGroup = new omnibox_output.OutputResultsGroup(result).render(
+        omniboxInputs.$$('show-details').checked,
+        omniboxInputs.$$('show-incomplete-results').checked,
+        omniboxInputs.$$('show-all-providers').checked);
+    omniboxOutput.addOutput(resultsGroup);
   }
 
   class BrowserProxy {
