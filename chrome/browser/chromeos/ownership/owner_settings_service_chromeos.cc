@@ -116,9 +116,12 @@ void ContinueLoadPrivateKeyOnIOThread(
     crypto::ScopedPK11Slot private_slot) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  // TODO(eseckler): It seems loading the key is important for the UsersPrivate
+  // extension API to work correctly during startup, which is why we cannot
+  // currently use the BEST_EFFORT TaskPriority here.
   scoped_refptr<base::TaskRunner> task_runner =
       base::CreateTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   task_runner->PostTask(
       FROM_HERE,

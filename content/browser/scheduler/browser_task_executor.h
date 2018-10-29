@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_SCHEDULER_BROWSER_TASK_EXECUTOR_H_
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/task/task_executor.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
@@ -53,6 +54,8 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
                            EnsureUIThreadTraitPointsToExpectedQueue);
   FRIEND_TEST_ALL_PREFIXES(BrowserTaskExecutorTest,
                            EnsureIOThreadTraitPointsToExpectedQueue);
+  FRIEND_TEST_ALL_PREFIXES(BrowserTaskExecutorTest,
+                           BestEffortTasksRunAfterStartup);
 
   BrowserTaskExecutor();
   ~BrowserTaskExecutor() override;
@@ -61,10 +64,14 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
       const base::TaskTraits& traits);
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
+      const base::TaskTraits& traits,
       const BrowserTaskTraitsExtension& extension);
 
   static scoped_refptr<base::SingleThreadTaskRunner>
   GetProxyTaskRunnerForThread(BrowserThread::ID id);
+
+  static scoped_refptr<base::SingleThreadTaskRunner>
+  GetAfterStartupTaskRunnerForThread(BrowserThread::ID id);
 
   DISALLOW_COPY_AND_ASSIGN(BrowserTaskExecutor);
 };

@@ -165,8 +165,11 @@ base::FilePath GetCrxUnpackDir() {
 }
 
 scoped_refptr<base::SequencedTaskRunner> GetBackgroundTaskRunner() {
+  // TODO(eseckler): The ExternalCacheImpl that uses this TaskRunner seems to be
+  // important during startup, which is why we cannot currently use the
+  // BEST_EFFORT TaskPriority here.
   return base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 

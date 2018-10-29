@@ -91,8 +91,11 @@ void QueueTask(std::unique_ptr<AfterStartupTask> queued_task) {
   CHECK(queued_task->task);
 
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::BindOnce(QueueTask, std::move(queued_task)));
+    // Posted with USER_VISIBLE priority to avoid this becoming an after startup
+    // task itself.
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(QueueTask, std::move(queued_task)));
     return;
   }
 
