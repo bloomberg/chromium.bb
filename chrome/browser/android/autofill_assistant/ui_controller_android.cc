@@ -18,12 +18,15 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/channel_info.h"
+#include "components/autofill_assistant/browser/access_token_fetcher.h"
 #include "components/autofill_assistant/browser/controller.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/channel.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/google_api_keys.h"
 #include "jni/AutofillAssistantUiController_jni.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
@@ -68,6 +71,7 @@ UiControllerAndroid::UiControllerAndroid(
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(webContents);
   DCHECK(web_contents);
+  browser_context_ = web_contents->GetBrowserContext();
   GURL initialUrl =
       GURL(base::android::ConvertJavaStringToUTF8(env, initialUrlString));
   Controller::CreateAndStartForWebContents(
@@ -203,6 +207,27 @@ void UiControllerAndroid::OnGetPaymentInformation(
   std::move(get_payment_information_callback_).Run(std::move(payment_info));
 }
 
+void UiControllerAndroid::OnAccessToken(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    jboolean success,
+    const JavaParamRef<jstring>& access_token) {
+  if (fetch_access_token_callback_) {
+    std::move(fetch_access_token_callback_)
+        .Run(success, base::android::ConvertJavaStringToUTF8(access_token));
+  }
+}
+
+base::android::ScopedJavaLocalRef<jstring>
+UiControllerAndroid::GetPrimaryAccountName(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller) {
+  AccountInfo account_info = IdentityManagerFactory::GetForProfile(
+                                 Profile::FromBrowserContext(browser_context_))
+                                 ->GetPrimaryAccountInfo();
+  return base::android::ConvertUTF8ToJavaString(env, account_info.email);
+}
+
 void UiControllerAndroid::ChooseAddress(
     base::OnceCallback<void(const std::string&)> callback) {
   DCHECK(!address_or_card_callback_);
@@ -288,22 +313,8 @@ std::string UiControllerAndroid::GetApiKey() {
   return api_key;
 }
 
-identity::IdentityManager*
-UiControllerAndroid::GetIdentityManagerForPrimaryAccount() {
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  if (!profile) {
-    DLOG(ERROR) << "No active user profile. Cannot authenticate.";
-    return nullptr;
-  }
-  // TODO(crbug.com/806868): Log in as a specific account, instead of always the
-  // primary.
-  identity::IdentityManager* identity_manager =
-      profile ? IdentityManagerFactory::GetForProfile(profile) : nullptr;
-  if (!identity_manager || !identity_manager->HasPrimaryAccount()) {
-    DLOG(ERROR) << "No primary account. Cannot authenticate.";
-    return nullptr;
-  }
-  return identity_manager;
+AccessTokenFetcher* UiControllerAndroid::GetAccessTokenFetcher() {
+  return this;
 }
 
 autofill::PersonalDataManager* UiControllerAndroid::GetPersonalDataManager() {
@@ -318,6 +329,24 @@ std::string UiControllerAndroid::GetServerUrl() {
 
 UiController* UiControllerAndroid::GetUiController() {
   return this;
+}
+
+void UiControllerAndroid::FetchAccessToken(
+    base::OnceCallback<void(bool, const std::string&)> callback) {
+  DCHECK(!fetch_access_token_callback_);
+
+  fetch_access_token_callback_ = std::move(callback);
+  JNIEnv* env = AttachCurrentThread();
+  Java_AutofillAssistantUiController_fetchAccessToken(
+      env, java_autofill_assistant_ui_controller_);
+}
+
+void UiControllerAndroid::InvalidateAccessToken(
+    const std::string& access_token) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_AutofillAssistantUiController_invalidateAccessToken(
+      env, java_autofill_assistant_ui_controller_,
+      base::android::ConvertUTF8ToJavaString(env, access_token));
 }
 
 void UiControllerAndroid::Destroy(JNIEnv* env,

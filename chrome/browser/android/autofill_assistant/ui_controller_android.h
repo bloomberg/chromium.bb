@@ -5,17 +5,25 @@
 #ifndef CHROME_BROWSER_ANDROID_AUTOFILL_ASSISTANT_UI_CONTROLLER_ANDROID_H_
 #define CHROME_BROWSER_ANDROID_AUTOFILL_ASSISTANT_UI_CONTROLLER_ANDROID_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
+#include "components/autofill_assistant/browser/access_token_fetcher.h"
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
 
+namespace content {
+class BrowserContext;
+}  // namespace content
+
 namespace autofill_assistant {
 // Class implements UiController, Client and starts the Controller.
-class UiControllerAndroid : public UiController, public Client {
+class UiControllerAndroid : public UiController,
+                            public Client,
+                            public AccessTokenFetcher {
  public:
   UiControllerAndroid(
       JNIEnv* env,
@@ -48,10 +56,15 @@ class UiControllerAndroid : public UiController, public Client {
 
   // Overrides Client:
   std::string GetApiKey() override;
-  identity::IdentityManager* GetIdentityManagerForPrimaryAccount() override;
+  AccessTokenFetcher* GetAccessTokenFetcher() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   std::string GetServerUrl() override;
   UiController* GetUiController() override;
+
+  // Overrides AccessTokenFetcher
+  void FetchAccessToken(
+      base::OnceCallback<void(bool, const std::string&)>) override;
+  void InvalidateAccessToken(const std::string& access_token) override;
 
   // Called by Java.
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
@@ -76,6 +89,13 @@ class UiControllerAndroid : public UiController, public Client {
       const base::android::JavaParamRef<jstring>& jpayer_name,
       const base::android::JavaParamRef<jstring>& jpayer_phone,
       const base::android::JavaParamRef<jstring>& jpayer_email);
+  void OnAccessToken(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& jcaller,
+                     jboolean success,
+                     const base::android::JavaParamRef<jstring>& access_token);
+  base::android::ScopedJavaLocalRef<jstring> GetPrimaryAccountName(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller);
 
  private:
   // Java-side AutofillAssistantUiController object.
@@ -83,10 +103,14 @@ class UiControllerAndroid : public UiController, public Client {
       java_autofill_assistant_ui_controller_;
 
   UiDelegate* ui_delegate_;
+  content::BrowserContext* browser_context_;
 
   base::OnceCallback<void(const std::string&)> address_or_card_callback_;
   base::OnceCallback<void(std::unique_ptr<PaymentInformation>)>
       get_payment_information_callback_;
+  std::unique_ptr<AccessTokenFetcher> access_token_fetcher_;
+  base::OnceCallback<void(bool, const std::string&)>
+      fetch_access_token_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(UiControllerAndroid);
 };

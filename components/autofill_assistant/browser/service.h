@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "components/autofill_assistant/browser/access_token_fetcher.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
@@ -22,21 +23,17 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
-namespace identity {
-class IdentityManager;
-}  // namespace identity
-
 namespace autofill_assistant {
 // Autofill assistant service to communicate with the server to get scripts and
 // client actions.
 class Service {
  public:
-  // |context| and |identity_manager| must remain valid for the lifetime of the
-  // service instance. |identity_manager| might be nullptr.
+  // |context| and |token_fetcher| must remain valid for the lifetime of the
+  // service instance.
   Service(const std::string& api_key,
           const GURL& server_url,
           content::BrowserContext* context,
-          identity::IdentityManager* identity_manager);
+          AccessTokenFetcher* token_fetcher);
   virtual ~Service();
 
   using ResponseCallback =
@@ -90,8 +87,7 @@ class Service {
   // Fetches the access token and, once this is done, starts all pending loaders
   // in |loaders_|.
   void FetchAccessToken();
-  void OnFetchAccessToken(GoogleServiceAuthError error,
-                          identity::AccessTokenInfo access_token_info);
+  void OnFetchAccessToken(bool success, const std::string& access_token);
 
   content::BrowserContext* context_;
   GURL script_server_url_;
@@ -103,9 +99,11 @@ class Service {
   // API key to add to the URL of unauthenticated requests.
   std::string api_key_;
 
-  // Pointer must remain valid for the lifetime of the Service instance. Might
-  // be nullptr, if auth_enabled_ is false.
-  identity::IdentityManager* const identity_manager_;
+  // Pointer must remain valid for the lifetime of the Service instance.
+  AccessTokenFetcher* access_token_fetcher_;
+
+  // True while waiting for a response from AccessTokenFetcher.
+  bool fetching_token_;
 
   // Whether requests should be authenticated.
   bool auth_enabled_;
@@ -113,12 +111,6 @@ class Service {
   // An OAuth 2 token. Empty if not fetched yet or if the token has been
   // invalidated.
   std::string access_token_;
-
-  // Account id |access_token_| is for.
-  std::string account_id_;
-
-  // Active OAuth2 token fetcher.
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> token_fetcher_;
 
   base::WeakPtrFactory<Service> weak_ptr_factory_;
 
