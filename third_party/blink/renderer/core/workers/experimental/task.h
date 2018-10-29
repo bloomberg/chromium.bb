@@ -54,8 +54,12 @@ class ThreadPoolTask final : public RefCounted<ThreadPoolTask> {
                  const Vector<ScriptValue>& arguments,
                  TaskType);
 
+  class AsyncFunctionCompleted;
+
   void StartTaskOnWorkerThread() LOCKS_EXCLUDED(mutex_);
-  v8::Local<v8::Value> RunTaskOnWorkerThread(v8::Isolate*);
+  void RunTaskOnWorkerThread();
+  void TaskCompletedOnWorkerThread(v8::Local<v8::Value> return_value, State)
+      LOCKS_EXCLUDED(mutex_);
 
   // Called on ANY thread (main thread, worker_thread_, or a sibling worker).
   void MaybeStartTask() EXCLUSIVE_LOCKS_REQUIRED(mutex_);
