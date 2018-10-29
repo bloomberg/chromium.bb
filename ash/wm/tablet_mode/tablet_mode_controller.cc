@@ -166,6 +166,9 @@ TabletModeController::~TabletModeController() {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
       this);
 
+  for (auto& observer : tablet_mode_observers_)
+    observer.OnTabletControllerDestroyed();
+
   TabletMode::SetCallback(TabletMode::TabletModeCallback());
 }
 

@@ -31,6 +31,10 @@
 namespace ash {
 namespace {
 
+// The value used for alpha to apply a dark filter to the wallpaper in tablet
+// mode. A higher number up to 255 results in a darker wallpaper.
+constexpr int kWallpaperDimnessInTabletMode = 102;
+
 // A view that controls the child view's layer so that the layer always has the
 // same size as the display's original, un-scaled size in DIP. The layer is then
 // transformed to fit to the virtual screen size when laid-out. This is to avoid
@@ -85,6 +89,10 @@ SkColor GetWallpaperDarkenColor() {
   return SkColorSetA(darken_color, login_constants::kTranslucentAlpha);
 }
 
+SkColor GetWallpaperDarkenColorForTabletMode() {
+  return SkColorSetA(GetWallpaperDarkenColor(), kWallpaperDimnessInTabletMode);
+}
+
 }  // namespace
 
 // This event handler receives events in the pre-target phase and takes care of
@@ -131,10 +139,28 @@ WallpaperView::WallpaperView()
     : pre_dispatch_handler_(new PreEventDispatchHandler()) {
   set_context_menu_controller(this);
   AddPreTargetHandler(pre_dispatch_handler_.get());
+  tablet_mode_observer_.Add(Shell::Get()->tablet_mode_controller());
+  is_tablet_mode_ = Shell::Get()
+                        ->tablet_mode_controller()
+                        ->IsTabletModeWindowManagerEnabled();
 }
 
 WallpaperView::~WallpaperView() {
   RemovePreTargetHandler(pre_dispatch_handler_.get());
+}
+
+void WallpaperView::OnTabletModeStarted() {
+  is_tablet_mode_ = true;
+  SchedulePaint();
+}
+
+void WallpaperView::OnTabletModeEnded() {
+  is_tablet_mode_ = false;
+  SchedulePaint();
+}
+
+void WallpaperView::OnTabletControllerDestroyed() {
+  tablet_mode_observer_.RemoveAll();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -160,6 +186,9 @@ void WallpaperView::OnPaint(gfx::Canvas* canvas) {
   if (controller->ShouldApplyDimming()) {
     flags.setColorFilter(SkColorFilter::MakeModeFilter(
         GetWallpaperDarkenColor(), SkBlendMode::kDarken));
+  } else if (is_tablet_mode_) {
+    flags.setColorFilter(SkColorFilter::MakeModeFilter(
+        GetWallpaperDarkenColorForTabletMode(), SkBlendMode::kDarken));
   }
 
   switch (layout) {
