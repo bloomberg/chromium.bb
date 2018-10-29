@@ -360,16 +360,15 @@ class TestIdentityManagerDiagnosticsObserver
   const std::string& token_requestor_consumer_id() {
     return token_requestor_consumer_id_;
   }
-  const OAuth2TokenService::ScopeSet& token_requestor_scopes() {
+  const identity::ScopeSet& token_requestor_scopes() {
     return token_requestor_scopes_;
   }
 
  private:
   // IdentityManager::DiagnosticsObserver:
-  void OnAccessTokenRequested(
-      const std::string& account_id,
-      const std::string& consumer_id,
-      const OAuth2TokenService::ScopeSet& scopes) override {
+  void OnAccessTokenRequested(const std::string& account_id,
+                              const std::string& consumer_id,
+                              const identity::ScopeSet& scopes) override {
     token_requestor_account_id_ = account_id;
     token_requestor_consumer_id_ = consumer_id;
     token_requestor_scopes_ = scopes;
@@ -382,7 +381,7 @@ class TestIdentityManagerDiagnosticsObserver
   base::OnceClosure on_access_token_requested_callback_;
   std::string token_requestor_account_id_;
   std::string token_requestor_consumer_id_;
-  OAuth2TokenService::ScopeSet token_requestor_scopes_;
+  identity::ScopeSet token_requestor_scopes_;
 };
 
 }  // namespace

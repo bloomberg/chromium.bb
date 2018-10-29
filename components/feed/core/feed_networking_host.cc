@@ -107,7 +107,7 @@ void NetworkFetch::Start(FeedNetworkingHost::ResponseCallback done_callback) {
 }
 
 void NetworkFetch::StartAccessTokenFetch() {
-  OAuth2TokenService::ScopeSet scopes{kAuthenticationScope};
+  identity::ScopeSet scopes{kAuthenticationScope};
   // It's safe to pass base::Unretained(this) since deleting the token fetcher
   // will prevent the callback from being completed.
   token_fetcher_ = std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
@@ -231,7 +231,7 @@ void NetworkFetch::OnSimpleLoaderComplete(
     status_code = simple_loader_->ResponseInfo()->headers->response_code();
 
     if (status_code == net::HTTP_UNAUTHORIZED) {
-      OAuth2TokenService::ScopeSet scopes{kAuthenticationScope};
+      identity::ScopeSet scopes{kAuthenticationScope};
       std::string account_id = identity_manager_->GetPrimaryAccountId();
       identity_manager_->RemoveAccessTokenFromCache(account_id, scopes,
                                                     access_token_);

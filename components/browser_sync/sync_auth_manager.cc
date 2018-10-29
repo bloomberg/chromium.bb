@@ -219,8 +219,7 @@ void SyncAuthManager::InvalidateAccessToken() {
 
   identity_manager_->RemoveAccessTokenFromCache(
       sync_account_.account_info.account_id,
-      OAuth2TokenService::ScopeSet{GaiaConstants::kChromeSyncOAuth2Scope},
-      access_token_);
+      identity::ScopeSet{GaiaConstants::kChromeSyncOAuth2Scope}, access_token_);
 
   access_token_.clear();
   credentials_changed_callback_.Run();
@@ -426,7 +425,7 @@ void SyncAuthManager::RequestAccessToken() {
     request_access_token_retry_timer_.Stop();
   }
 
-  const OAuth2TokenService::ScopeSet kOAuth2ScopeSet{
+  const identity::ScopeSet kOAuth2ScopeSet{
       GaiaConstants::kChromeSyncOAuth2Scope};
 
   // Invalidate any previous token, otherwise the token service will return the

@@ -886,7 +886,7 @@ void PaymentsClient::StartTokenFetch(bool invalidate_old) {
 
   DCHECK(account_info_getter_);
 
-  OAuth2TokenService::ScopeSet payments_scopes;
+  identity::ScopeSet payments_scopes;
   payments_scopes.insert(kPaymentsOAuth2Scope);
   std::string account_id =
       account_info_getter_->GetAccountInfoForPaymentsServer().account_id;

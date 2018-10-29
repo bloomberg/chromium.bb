@@ -69,7 +69,7 @@ AuthRequest::AuthRequest(
 
   access_token_fetcher_ = identity_manager->CreateAccessTokenFetcherForAccount(
       account_id, "auth_service", url_loader_factory,
-      OAuth2TokenService::ScopeSet(scopes.begin(), scopes.end()),
+      identity::ScopeSet(scopes.begin(), scopes.end()),
       base::BindOnce(&AuthRequest::OnAccessTokenFetchComplete,
                      base::Unretained(this)),
       identity::AccessTokenFetcher::Mode::kImmediate);
