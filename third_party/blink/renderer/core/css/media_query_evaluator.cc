@@ -55,7 +55,7 @@
 
 namespace blink {
 
-using namespace MediaFeatureNames;
+using namespace media_feature_names;
 
 enum MediaFeaturePrefix { kMinPrefix, kMaxPrefix, kNoPrefix };
 
