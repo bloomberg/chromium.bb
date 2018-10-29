@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/ash_switches.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -165,7 +166,9 @@ const chromeos::OobeScreen kResumableScreens[] = {
 bool CanShowHIDDetectionScreen() {
   return !TabletModeClient::Get()->tablet_mode_enabled() &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             chromeos::switches::kDisableHIDDetectionOnOOBE);
+             chromeos::switches::kDisableHIDDetectionOnOOBE) &&
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             ash::switches::kAshEnableTabletMode);
 }
 
 bool IsResumableScreen(chromeos::OobeScreen screen) {
