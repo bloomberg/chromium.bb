@@ -9,7 +9,7 @@
 
 #include "base/containers/span.h"
 #include "base/macros.h"
-#include "third_party/blink/common/common_export.h"
+#include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/messaging/cloneable_message.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/array_buffer/array_buffer_contents.mojom.h"

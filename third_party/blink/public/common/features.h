@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_FEATURES_H_
 
 #include "base/feature_list.h"
-#include "third_party/blink/common/common_export.h"
+#include "third_party/blink/public/common/common_export.h"
 
 namespace blink {
 namespace features {
