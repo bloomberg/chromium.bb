@@ -4,6 +4,8 @@
 
 #include "ash/media/media_notification_controller.h"
 
+#include "ash/media/media_notification_constants.h"
+#include "ash/media/media_notification_view.h"
 #include "base/strings/string16.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -11,17 +13,19 @@
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
+#include "ui/message_center/views/message_view_factory.h"
 #include "url/gurl.h"
 
 namespace ash {
 
 namespace {
 
-// The ID associated with the media session notification.
-const char kMediaSessionNotificationId[] = "media-session";
-
-// The notifier ID associated with the media session service.
-const char kMediaSessionNotifierId[] = "media-session";
+std::unique_ptr<message_center::MessageView> CreateCustomMediaNotificationView(
+    const message_center::Notification& notification) {
+  DCHECK_EQ(kMediaSessionNotificationCustomViewType,
+            notification.custom_view_type());
+  return std::make_unique<MediaNotificationView>(notification);
+}
 
 bool IsMediaSessionNotificationVisible() {
   return message_center::MessageCenter::Get()->FindVisibleNotificationById(
@@ -32,6 +36,13 @@ bool IsMediaSessionNotificationVisible() {
 
 MediaNotificationController::MediaNotificationController(
     service_manager::Connector* connector) {
+  if (!message_center::MessageViewFactory::HasCustomNotificationViewFactory(
+          kMediaSessionNotificationCustomViewType)) {
+    message_center::MessageViewFactory::SetCustomNotificationViewFactory(
+        kMediaSessionNotificationCustomViewType,
+        base::BindRepeating(&CreateCustomMediaNotificationView));
+  }
+
   // |connector| can be null in tests.
   if (!connector)
     return;
@@ -55,7 +66,7 @@ void MediaNotificationController::OnFocusGained(
 
   std::unique_ptr<message_center::Notification> notification =
       message_center::Notification::CreateSystemNotification(
-          message_center::NotificationType::NOTIFICATION_TYPE_SIMPLE,
+          message_center::NotificationType::NOTIFICATION_TYPE_CUSTOM,
           kMediaSessionNotificationId, base::string16(), base::string16(),
           base::string16(), GURL(),
           message_center::NotifierId(
@@ -69,11 +80,11 @@ void MediaNotificationController::OnFocusGained(
           gfx::VectorIcon(),
           message_center::SystemNotificationWarningLevel::NORMAL);
 
-  notification->set_pinned(true);
-
   // Set the priority to low to prevent the notification showing as a popup and
   // keep it at the bottom of the list.
   notification->set_priority(message_center::LOW_PRIORITY);
+
+  notification->set_custom_view_type(kMediaSessionNotificationCustomViewType);
 
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));

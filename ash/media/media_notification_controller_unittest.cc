@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/media/media_notification_constants.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -23,7 +24,7 @@ namespace {
 
 bool IsMediaNotificationShown() {
   return message_center::MessageCenter::Get()->FindVisibleNotificationById(
-      "media-session");
+      kMediaSessionNotificationId);
 }
 
 int GetVisibleNotificationCount() {
@@ -85,6 +86,20 @@ TEST_F(MediaNotificationControllerTest, OnFocusLost_Noop) {
   Shell::Get()->media_notification_controller()->OnFocusLost(
       MediaSessionInfo::New());
   EXPECT_FALSE(IsMediaNotificationShown());
+}
+
+TEST_F(MediaNotificationControllerTest, NotificationHasCustomViewType) {
+  EXPECT_FALSE(IsMediaNotificationShown());
+
+  Shell::Get()->media_notification_controller()->OnFocusGained(
+      MediaSessionInfo::New(), AudioFocusType::kGain);
+  message_center::Notification* notification =
+      message_center::MessageCenter::Get()->FindVisibleNotificationById(
+          kMediaSessionNotificationId);
+  EXPECT_TRUE(notification);
+
+  EXPECT_EQ(kMediaSessionNotificationCustomViewType,
+            notification->custom_view_type());
 }
 
 }  // namespace ash
