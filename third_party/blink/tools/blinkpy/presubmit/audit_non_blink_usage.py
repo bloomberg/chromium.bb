@@ -155,6 +155,7 @@ _CONFIG = [
             # Feature list checking.
             'base::Feature.*',
             'base::FEATURE_.+',
+            'features::.+',
 
             # PartitionAlloc
             'base::PartitionFree',
