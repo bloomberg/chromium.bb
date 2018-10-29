@@ -68,7 +68,6 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   void HandleAuthenticateUserWithEasyUnlock(
       const AccountId& account_id) override;
   void HandleHardlockPod(const AccountId& account_id) override;
-  void HandleRecordClickOnLockIcon(const AccountId& account_id) override;
   void HandleOnFocusPod(const AccountId& account_id) override;
   void HandleOnNoPodFocused() override;
   bool HandleFocusLockScreenApps(bool reverse) override;

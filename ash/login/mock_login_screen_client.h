@@ -67,7 +67,6 @@ class MockLoginScreenClient : public mojom::LoginScreenClient {
   MOCK_METHOD1(AuthenticateUserWithEasyUnlock,
                void(const AccountId& account_id));
   MOCK_METHOD1(HardlockPod, void(const AccountId& account_id));
-  MOCK_METHOD1(RecordClickOnLockIcon, void(const AccountId& account_id));
   MOCK_METHOD1(OnFocusPod, void(const AccountId& account_id));
   MOCK_METHOD0(OnNoPodFocused, void());
   MOCK_METHOD1(LoadWallpaper, void(const AccountId& account_id));

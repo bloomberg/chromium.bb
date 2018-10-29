@@ -251,10 +251,6 @@ interface LoginScreenClient {
   // |account_id|:    The account id of the user in the user pod.
   HardlockPod(signin.mojom.AccountId account_id);
 
-  // Record clicks on the lock icon in the user pod.
-  // |account_id|:    The account id of the user in the user pod.
-  RecordClickOnLockIcon(signin.mojom.AccountId account_id);
-
   // Focus user pod of user with |account_id|.
   OnFocusPod(signin.mojom.AccountId account_id);
 
