@@ -33,9 +33,9 @@ BlameContext::BlameContext(const char* category,
 BlameContext::~BlameContext() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(WasInitialized());
-  TRACE_EVENT_API_ADD_TRACE_EVENT(
-      TRACE_EVENT_PHASE_DELETE_OBJECT, category_group_enabled_, type_, scope_,
-      id_, 0, nullptr, nullptr, nullptr, nullptr, TRACE_EVENT_FLAG_HAS_ID);
+  TRACE_EVENT_API_ADD_TRACE_EVENT(TRACE_EVENT_PHASE_DELETE_OBJECT,
+                                  category_group_enabled_, type_, scope_, id_,
+                                  nullptr, TRACE_EVENT_FLAG_HAS_ID);
   trace_event::TraceLog::GetInstance()->RemoveAsyncEnabledStateObserver(this);
 }
 
@@ -43,7 +43,6 @@ void BlameContext::Enter() {
   DCHECK(WasInitialized());
   TRACE_EVENT_API_ADD_TRACE_EVENT(TRACE_EVENT_PHASE_ENTER_CONTEXT,
                                   category_group_enabled_, name_, scope_, id_,
-                                  0 /* num_args */, nullptr, nullptr, nullptr,
                                   nullptr, TRACE_EVENT_FLAG_HAS_ID);
 }
 
@@ -51,7 +50,6 @@ void BlameContext::Leave() {
   DCHECK(WasInitialized());
   TRACE_EVENT_API_ADD_TRACE_EVENT(TRACE_EVENT_PHASE_LEAVE_CONTEXT,
                                   category_group_enabled_, name_, scope_, id_,
-                                  0 /* num_args */, nullptr, nullptr, nullptr,
                                   nullptr, TRACE_EVENT_FLAG_HAS_ID);
 }
 
@@ -63,15 +61,10 @@ void BlameContext::TakeSnapshot() {
   std::unique_ptr<trace_event::TracedValue> snapshot(
       new trace_event::TracedValue);
   AsValueInto(snapshot.get());
-  static const char* const kArgName = "snapshot";
-  const int kNumArgs = 1;
-  unsigned char arg_types[1] = {TRACE_VALUE_TYPE_CONVERTABLE};
-  std::unique_ptr<trace_event::ConvertableToTraceFormat> arg_values[1] = {
-      std::move(snapshot)};
+  TraceArguments args("snapshot", std::move(snapshot));
   TRACE_EVENT_API_ADD_TRACE_EVENT(TRACE_EVENT_PHASE_SNAPSHOT_OBJECT,
                                   category_group_enabled_, type_, scope_, id_,
-                                  kNumArgs, &kArgName, arg_types, nullptr,
-                                  arg_values, TRACE_EVENT_FLAG_HAS_ID);
+                                  &args, TRACE_EVENT_FLAG_HAS_ID);
 }
 
 void BlameContext::OnTraceLogEnabled() {
@@ -95,9 +88,9 @@ void BlameContext::Initialize() {
   DCHECK(thread_checker_.CalledOnValidThread());
   category_group_enabled_ =
       TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(category_);
-  TRACE_EVENT_API_ADD_TRACE_EVENT(
-      TRACE_EVENT_PHASE_CREATE_OBJECT, category_group_enabled_, type_, scope_,
-      id_, 0, nullptr, nullptr, nullptr, nullptr, TRACE_EVENT_FLAG_HAS_ID);
+  TRACE_EVENT_API_ADD_TRACE_EVENT(TRACE_EVENT_PHASE_CREATE_OBJECT,
+                                  category_group_enabled_, type_, scope_, id_,
+                                  nullptr, TRACE_EVENT_FLAG_HAS_ID);
   trace_event::TraceLog::GetInstance()->AddAsyncEnabledStateObserver(
       weak_factory_.GetWeakPtr());
   TakeSnapshot();

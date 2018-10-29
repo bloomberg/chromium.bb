@@ -39,32 +39,25 @@ void WriteToATrace(int fd, const char* buffer, size_t size) {
   }
 }
 
-void WriteEvent(
-    char phase,
-    const char* category_group,
-    const char* name,
-    unsigned long long id,
-    const char** arg_names,
-    const unsigned char* arg_types,
-    const TraceEvent::TraceValue* arg_values,
-    const std::unique_ptr<ConvertableToTraceFormat>* convertable_values,
-    unsigned int flags) {
+void WriteEvent(char phase,
+                const char* category_group,
+                const char* name,
+                unsigned long long id,
+                const TraceArguments& args,
+                unsigned int flags) {
   std::string out = StringPrintf("%c|%d|%s", phase, getpid(), name);
   if (flags & TRACE_EVENT_FLAG_HAS_ID)
     StringAppendF(&out, "-%" PRIx64, static_cast<uint64_t>(id));
   out += '|';
 
-  for (int i = 0; i < kTraceMaxNumArgs && arg_names[i];
-       ++i) {
+  const char* const* arg_names = args.names();
+  for (size_t i = 0; i < args.size() && arg_names[i]; ++i) {
     if (i)
       out += ';';
     out += arg_names[i];
     out += '=';
     std::string::size_type value_start = out.length();
-    if (arg_types[i] == TRACE_VALUE_TYPE_CONVERTABLE)
-      convertable_values[i]->AppendAsTraceFormat(&out);
-    else
-      TraceEvent::AppendValueAsJSON(arg_types[i], arg_values[i], &out);
+    args.values()[i].AppendAsJSON(args.types()[i], &out);
 
     // Remove the quotes which may confuse the atrace script.
     ReplaceSubstringsAfterOffset(&out, value_start, "\\\"", "'");
@@ -147,43 +140,35 @@ void TraceEvent::SendToATrace() {
 
   switch (phase_) {
     case TRACE_EVENT_PHASE_BEGIN:
-      WriteEvent('B', category_group, name_, id_,
-                 arg_names_, arg_types_, arg_values_, convertable_values_,
-                 flags_);
+      WriteEvent('B', category_group, name_, id_, args_, flags_);
       break;
 
     case TRACE_EVENT_PHASE_COMPLETE:
-      WriteEvent(duration_.ToInternalValue() == -1 ? 'B' : 'E',
-                 category_group, name_, id_,
-                 arg_names_, arg_types_, arg_values_, convertable_values_,
-                 flags_);
+      WriteEvent(duration_.ToInternalValue() == -1 ? 'B' : 'E', category_group,
+                 name_, id_, args_, flags_);
       break;
 
     case TRACE_EVENT_PHASE_END:
       // Though a single 'E' is enough, here append pid, name and
       // category_group etc. So that unpaired events can be found easily.
-      WriteEvent('E', category_group, name_, id_,
-                 arg_names_, arg_types_, arg_values_, convertable_values_,
-                 flags_);
+      WriteEvent('E', category_group, name_, id_, args_, flags_);
       break;
 
     case TRACE_EVENT_PHASE_INSTANT:
       // Simulate an instance event with a pair of begin/end events.
-      WriteEvent('B', category_group, name_, id_,
-                 arg_names_, arg_types_, arg_values_, convertable_values_,
-                 flags_);
+      WriteEvent('B', category_group, name_, id_, args_, flags_);
       WriteToATrace(g_atrace_fd, "E", 1);
       break;
 
     case TRACE_EVENT_PHASE_COUNTER:
-      for (int i = 0; i < kTraceMaxNumArgs && arg_names_[i]; ++i) {
-        DCHECK(arg_types_[i] == TRACE_VALUE_TYPE_INT);
-        std::string out = base::StringPrintf(
-            "C|%d|%s-%s", getpid(), name_, arg_names_[i]);
+      for (size_t i = 0; i < arg_size() && arg_name(i); ++i) {
+        DCHECK(arg_type(i) == TRACE_VALUE_TYPE_INT);
+        std::string out =
+            base::StringPrintf("C|%d|%s-%s", getpid(), name_, arg_name(i));
         if (flags_ & TRACE_EVENT_FLAG_HAS_ID)
           StringAppendF(&out, "-%" PRIx64, static_cast<uint64_t>(id_));
-        StringAppendF(&out, "|%d|%s",
-                      static_cast<int>(arg_values_[i].as_int), category_group);
+        StringAppendF(&out, "|%d|%s", static_cast<int>(arg_value(i).as_int),
+                      category_group);
         WriteToATrace(g_atrace_fd, out.c_str(), out.size());
       }
       break;
