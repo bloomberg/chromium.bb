@@ -776,9 +776,6 @@ public class CustomTabToolbar
     public void revertChanges() {}
 
     @Override
-    public void hideSuggestions() {}
-
-    @Override
     public void updateMicButtonState() {}
 
     @Override

@@ -298,59 +298,6 @@ public class OmniboxTest {
         }));
     }
 
-    @Test
-    @MediumTest
-    @Feature("Omnibox")
-    public void testSuggestionsTriggeredOnWindowFocusGained() {
-        final LocationBarLayout locationBar =
-                (LocationBarLayout) mActivityTestRule.getActivity().findViewById(R.id.location_bar);
-        final UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
-
-        OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
-
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            TestAutocompleteController controller = new TestAutocompleteController(locationBar,
-                    sEmptySuggestionListener, new HashMap<String, List<SuggestionsResult>>());
-            locationBar.getAutocompleteCoordinator().setAutocompleteController(controller);
-            locationBar.onWindowFocusChanged(false);
-            locationBar.onWindowFocusChanged(true);
-            Assert.assertEquals("Zero suggest not triggered when URL focused but unchanged", 1,
-                    controller.numZeroSuggestRequests());
-        });
-
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            urlBar.setText("");
-
-            TestAutocompleteController controller = new TestAutocompleteController(locationBar,
-                    sEmptySuggestionListener, new HashMap<String, List<SuggestionsResult>>());
-            locationBar.getAutocompleteCoordinator().setAutocompleteController(controller);
-            locationBar.onWindowFocusChanged(false);
-            locationBar.onWindowFocusChanged(true);
-            Assert.assertEquals("Zero suggest not triggered when URL focused but empty", 1,
-                    controller.numZeroSuggestRequests());
-        });
-
-        final TestAutocompleteController controller = new TestAutocompleteController(locationBar,
-                sEmptySuggestionListener, new HashMap<String, List<SuggestionsResult>>());
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            urlBar.setText("cows");
-
-            locationBar.getAutocompleteCoordinator().setAutocompleteController(controller);
-            locationBar.onWindowFocusChanged(false);
-            locationBar.onWindowFocusChanged(true);
-            Assert.assertEquals("Zero suggest incorrectly triggered when URL has changed", 0,
-                    controller.numZeroSuggestRequests());
-        });
-        // Autocomplete is triggered async, so we need to poll to see that it is eventually
-        // requested.
-        CriteriaHelper.pollUiThread(Criteria.equals(true, new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return controller.isStartAutocompleteCalled();
-            }
-        }));
-    }
-
     // Sanity check that no text is displayed in the omnibox when on the NTP page and that the hint
     // text is correct.
     @Test

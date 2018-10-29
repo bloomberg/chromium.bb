@@ -26,6 +26,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlTextChangeListener;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
+import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.omnibox.VoiceSuggestionProvider.VoiceResult;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxResultsAdapter.OmniboxResultItem;
@@ -46,7 +47,7 @@ import java.util.List;
  * Coordinator that handles the interactions with the autocomplete system.
  */
 public class AutocompleteCoordinator
-        implements OnSuggestionsReceivedListener, UrlTextChangeListener {
+        implements OnSuggestionsReceivedListener, UrlFocusChangeListener, UrlTextChangeListener {
     private static final String TAG = "cr_Autocomplete";
 
     // Delay triggering the omnibox results upon key press to allow the location bar to repaint
@@ -176,6 +177,33 @@ public class AutocompleteCoordinator
         mSuggestionListAdapter =
                 new OmniboxResultsAdapter(mContext, mSuggestionItems, mAnswersImageFetcher);
         mAutocomplete = new AutocompleteController(this);
+    }
+
+    @Override
+    public void onUrlFocusChange(boolean hasFocus) {
+        if (hasFocus) {
+            if (mNativeInitialized) {
+                startZeroSuggest();
+            } else {
+                mDeferredNativeRunnables.add(() -> {
+                    if (TextUtils.isEmpty(mUrlBarEditingTextProvider.getTextWithAutocomplete())) {
+                        startZeroSuggest();
+                    }
+                });
+            }
+            maybeShowOmniboxResultsContainer();
+        } else {
+            // Prevent any upcoming omnibox suggestions from showing once a URL is loaded (and as
+            // a consequence the omnibox is unfocused).
+            stopAutocomplete(true);
+
+            updateOmniboxResultsContainerVisibility(false);
+
+            mHasStartedNewOmniboxEditSession = false;
+            mNewOmniboxEditSessionTimestamp = -1;
+            hideSuggestions();
+            mAnswersImageFetcher.clearCache();
+        }
     }
 
     /**
@@ -321,7 +349,6 @@ public class AutocompleteCoordinator
                         updateSuggestionUrlIfNeeded(suggestion, position, false);
                 loadUrlFromOmniboxMatch(
                         suggestionMatchUrl, position, suggestion, mLastActionUpTimestamp);
-                hideSuggestions();
                 mDelegate.hideKeyboard();
             }
 
@@ -465,7 +492,7 @@ public class AutocompleteCoordinator
     /**
      * Conditionally show the omnibox suggestions container.
      */
-    public void maybeShowOmniboxResultsContainer() {
+    private void maybeShowOmniboxResultsContainer() {
         if (isSuggestionsListShown() || mDelegate.isUrlBarFocused()) {
             initOmniboxResultsContainer();
             updateOmniboxResultsContainerVisibility(true);
@@ -475,7 +502,7 @@ public class AutocompleteCoordinator
     /**
      * Update whether the omnibox suggestions container is visible.
      */
-    public void updateOmniboxResultsContainerVisibility(boolean visible) {
+    private void updateOmniboxResultsContainerVisibility(boolean visible) {
         if (mOmniboxResultsContainer == null) return;
 
         boolean currentlyVisible = mOmniboxResultsContainer.getVisibility() == View.VISIBLE;
@@ -851,7 +878,7 @@ public class AutocompleteCoordinator
      * - The URL bar has focus.
      * - The current tab is not incognito.
      */
-    public void startZeroSuggest() {
+    private void startZeroSuggest() {
         // hasWindowFocus() can return true before onWindowFocusChanged has been called, so this
         // is an optimization, but not entirely reliable.  The underlying controller needs to also
         // ensure we do not double trigger zero query.
@@ -917,7 +944,7 @@ public class AutocompleteCoordinator
      *
      * @see AutocompleteController#stop(boolean)
      */
-    public void hideSuggestions() {
+    private void hideSuggestions() {
         if (mAutocomplete == null || !mNativeInitialized) return;
 
         if (mShowSuggestions != null) mParent.removeCallbacks(mShowSuggestions);
@@ -934,7 +961,7 @@ public class AutocompleteCoordinator
      *
      * @param clear Whether to clear the most recent autocomplete results.
      */
-    public void stopAutocomplete(boolean clear) {
+    private void stopAutocomplete(boolean clear) {
         if (mAutocomplete != null) mAutocomplete.stop(clear);
         cancelPendingAutocompleteStart();
     }
@@ -962,28 +989,6 @@ public class AutocompleteCoordinator
         if (mToolbarDataProvider.hasTab()) {
             mAutocomplete.start(mToolbarDataProvider.getProfile(),
                     mToolbarDataProvider.getCurrentUrl(), query, -1, false, false);
-        }
-    }
-
-    /**
-     * Notifies autocomplete that the URL focus state has changed.
-     */
-    public void onUrlFocusChanged(boolean hasFocus) {
-        if (!hasFocus) {
-            mHasStartedNewOmniboxEditSession = false;
-            mNewOmniboxEditSessionTimestamp = -1;
-            hideSuggestions();
-            mAnswersImageFetcher.clearCache();
-        }
-
-        if (mNativeInitialized) {
-            startZeroSuggest();
-        } else {
-            mDeferredNativeRunnables.add(() -> {
-                if (TextUtils.isEmpty(mUrlBarEditingTextProvider.getTextWithAutocomplete())) {
-                    startZeroSuggest();
-                }
-            });
         }
     }
 

@@ -46,7 +46,6 @@ import org.chromium.chrome.browser.omnibox.UrlBar.ScrollType;
 import org.chromium.chrome.browser.omnibox.UrlBarCoordinator.SelectionState;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.omnibox.status.StatusViewCoordinator;
-import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator.AutocompleteDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
@@ -203,6 +202,7 @@ public class LocationBarLayout extends FrameLayout
                 };
         mAutocompleteCoordinator =
                 new AutocompleteCoordinator(this, this, embedder, mUrlCoordinator);
+        addUrlFocusChangeListener(mAutocompleteCoordinator);
         mUrlCoordinator.setUrlTextChangeListener(mAutocompleteCoordinator);
 
         mMicButton = (AppCompatImageButton) findViewById(R.id.mic_button);
@@ -350,6 +350,7 @@ public class LocationBarLayout extends FrameLayout
         if (shouldBeFocused) {
             mUrlBar.requestFocus();
         } else {
+            hideKeyboard();
             mUrlBar.clearFocus();
         }
     }
@@ -376,7 +377,6 @@ public class LocationBarLayout extends FrameLayout
                 setUrlBarText(mToolbarDataProvider.getUrlBarData(), UrlBar.ScrollType.NO_SCROLL,
                         SelectionState.SELECT_ALL);
             }
-            hideSuggestions();
             hideKeyboard();
         }
     }
@@ -464,8 +464,6 @@ public class LocationBarLayout extends FrameLayout
                 });
             }
         }
-
-        mAutocompleteCoordinator.onUrlFocusChanged(hasFocus);
     }
 
     /**
@@ -478,7 +476,6 @@ public class LocationBarLayout extends FrameLayout
             listener.onUrlFocusChange(hasFocus);
         }
 
-        mAutocompleteCoordinator.maybeShowOmniboxResultsContainer();
         updateFadingBackgroundView(hasFocus, false);
     }
 
@@ -697,19 +694,6 @@ public class LocationBarLayout extends FrameLayout
         mDeleteButton.setVisibility(shouldShowDeleteButton() ? VISIBLE : GONE);
     }
 
-    /**
-     * Hides the omnibox suggestion popup.
-     *
-     * <p>
-     * Signals the autocomplete controller to stop generating omnibox suggestions.
-     *
-     * @see AutocompleteController#stop(boolean)
-     */
-    @Override
-    public final void hideSuggestions() {
-        mAutocompleteCoordinator.hideSuggestions();
-    }
-
     @Override
     public void onSuggestionsHidden() {
         updateNavigationButton();
@@ -808,13 +792,9 @@ public class LocationBarLayout extends FrameLayout
     @Override
     public void onClick(View v) {
         if (v == mDeleteButton) {
-            if (!TextUtils.isEmpty(mUrlCoordinator.getTextWithAutocomplete())) {
-                setUrlBarTextEmpty();
-                hideSuggestions();
-                updateButtonVisibility();
-            }
+            setUrlBarTextEmpty();
+            updateButtonVisibility();
 
-            mAutocompleteCoordinator.startZeroSuggest();
             RecordUserAction.record("MobileOmniboxDeleteUrl");
             return;
         } else if (v == mMicButton && mVoiceRecognitionHandler != null) {
@@ -827,8 +807,6 @@ public class LocationBarLayout extends FrameLayout
     @Override
     public void backKeyPressed() {
         setUrlBarFocus(false);
-        hideSuggestions();
-        hideKeyboard();
         // Revert the URL to match the current page.
         setUrlToPageUrl();
         focusCurrentTab();
@@ -911,8 +889,10 @@ public class LocationBarLayout extends FrameLayout
      * @return Whether this changed the existing text.
      */
     private boolean setUrlBarTextEmpty() {
-        return mUrlCoordinator.setUrlBarData(
+        boolean textChanged = mUrlCoordinator.setUrlBarData(
                 UrlBarData.EMPTY, UrlBar.ScrollType.SCROLL_TO_BEGINNING, SelectionState.SELECT_ALL);
+        mAutocompleteCoordinator.onTextChangedForAutocomplete();
+        return textChanged;
     }
 
     @Override
@@ -963,9 +943,6 @@ public class LocationBarLayout extends FrameLayout
         LocaleManager.getInstance().recordLocaleBasedSearchMetrics(false, url, transition);
 
         focusCurrentTab();
-        // Prevent any upcoming omnibox suggestions from showing. We have to do this after we load
-        // the URL as this will hide the suggestions and trigger a cancel of the prerendered page.
-        mAutocompleteCoordinator.stopAutocomplete(true);
     }
 
     /**
@@ -1015,7 +992,6 @@ public class LocationBarLayout extends FrameLayout
             chromeActivity.addViewObscuringAllTabs(mScrim);
         } else {
             chromeActivity.removeViewObscuringAllTabs(mScrim);
-            mAutocompleteCoordinator.updateOmniboxResultsContainerVisibility(false);
         }
     }
 
@@ -1064,23 +1040,6 @@ public class LocationBarLayout extends FrameLayout
     @Override
     public void setUnfocusedWidth(float unfocusedWidth) {
         mStatusViewCoordinator.setUnfocusedLocationBarWidth(unfocusedWidth);
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasWindowFocus) {
-        super.onWindowFocusChanged(hasWindowFocus);
-        if (!hasWindowFocus && !mAutocompleteCoordinator.isSuggestionModalShown()) {
-            hideSuggestions();
-        } else if (hasWindowFocus && mUrlHasFocus && mNativeInitialized) {
-            String currentUrlBarText = mUrlCoordinator.getTextWithAutocomplete();
-            if (TextUtils.isEmpty(currentUrlBarText)
-                    || TextUtils.equals(currentUrlBarText,
-                               mToolbarDataProvider.getUrlBarData().getEditingOrDisplayText())) {
-                mAutocompleteCoordinator.startZeroSuggest();
-            } else {
-                mAutocompleteCoordinator.onTextChangedForAutocomplete();
-            }
-        }
     }
 
     @Override
