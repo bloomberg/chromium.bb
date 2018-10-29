@@ -52,7 +52,11 @@ class CrostiniUninstallerViewBrowserTest : public CrostiniDialogBrowserTest {
   };
 
   CrostiniUninstallerViewBrowserTest()
-      : waiting_fake_concierge_client_(new WaitingFakeConciergeClient()) {
+      : CrostiniUninstallerViewBrowserTest(true /*register_termina*/) {}
+
+  explicit CrostiniUninstallerViewBrowserTest(bool register_termina)
+      : CrostiniDialogBrowserTest(register_termina),
+        waiting_fake_concierge_client_(new WaitingFakeConciergeClient()) {
     chromeos::DBusThreadManager::GetSetterForTesting()->SetConciergeClient(
         base::WrapUnique(waiting_fake_concierge_client_));
   }
@@ -91,17 +95,8 @@ class CrostiniUninstallerViewBrowserTest : public CrostiniDialogBrowserTest {
 class CrostiniUninstalledUninstallerViewBrowserTest
     : public CrostiniUninstallerViewBrowserTest {
  public:
-  CrostiniUninstalledUninstallerViewBrowserTest() = default;
-
-  void SetUpOnMainThread() override {
-    browser()->profile()->GetPrefs()->SetBoolean(
-        crostini::prefs::kCrostiniEnabled, true);
-    // Skips installing the Cros-Termina component.
-  }
-
-  void InitCrosTermina() override {
-    // Skips setting up the Cros-Termina component.
-  }
+  CrostiniUninstalledUninstallerViewBrowserTest()
+      : CrostiniUninstallerViewBrowserTest(false /*register_termina*/) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CrostiniUninstalledUninstallerViewBrowserTest);

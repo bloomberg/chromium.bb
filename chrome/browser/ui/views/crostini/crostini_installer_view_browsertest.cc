@@ -76,7 +76,8 @@ class CrostiniInstallerViewBrowserTest : public CrostiniDialogBrowserTest {
   };
 
   CrostiniInstallerViewBrowserTest()
-      : waiting_fake_concierge_client_(new WaitingFakeConciergeClient()),
+      : CrostiniDialogBrowserTest(true /*register_termina*/),
+        waiting_fake_concierge_client_(new WaitingFakeConciergeClient()),
         waiting_disk_mount_manager_observer_(
             new WaitingDiskMountManagerObserver) {
     chromeos::DBusThreadManager::GetSetterForTesting()->SetConciergeClient(
