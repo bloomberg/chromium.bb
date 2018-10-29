@@ -55,7 +55,8 @@ class ScenicSession : public fuchsia::ui::scenic::SessionListener {
   // the session.
   void ReleaseResource(ResourceId resource_id);
   ResourceId CreateMemory(base::SharedMemoryHandle vmo,
-                          fuchsia::images::MemoryType memory_type);
+                          fuchsia::images::MemoryType memory_type,
+                          uint64_t allocation_size);
   ResourceId CreateImage(ResourceId memory_id,
                          ResourceId memory_offset,
                          fuchsia::images::ImageInfo info);
