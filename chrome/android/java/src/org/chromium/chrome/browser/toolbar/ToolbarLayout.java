@@ -765,7 +765,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * @return Whether or not the current Tab did go back.
      */
     protected boolean back() {
-        getLocationBar().hideSuggestions();
+        if (getLocationBar() != null) getLocationBar().setUrlBarFocus(false);
         return mToolbarTabController != null ? mToolbarTabController.back() : false;
     }
 
@@ -774,7 +774,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * @return Whether or not the current Tab did go forward.
      */
     protected boolean forward() {
-        getLocationBar().hideSuggestions();
+        if (getLocationBar() != null) getLocationBar().setUrlBarFocus(false);
         return mToolbarTabController != null ? mToolbarTabController.forward() : false;
     }
 
@@ -785,7 +785,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * <p>The buttons of the toolbar will be updated as a result of making this call.
      */
     protected void stopOrReloadCurrentTab() {
-        getLocationBar().hideSuggestions();
+        if (getLocationBar() != null) getLocationBar().setUrlBarFocus(false);
         if (mToolbarTabController != null) mToolbarTabController.stopOrReloadCurrentTab();
     }
 
@@ -793,6 +793,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * Opens hompage in the current tab.
      */
     protected void openHomepage() {
+        if (getLocationBar() != null) getLocationBar().setUrlBarFocus(false);
         if (mToolbarTabController != null) mToolbarTabController.openHomepage();
     }
 
@@ -800,7 +801,6 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * Opens the Memex UI in the current tab.
      */
     protected void openMemexUI() {
-        getLocationBar().hideSuggestions();
         if (mToolbarTabController != null) mToolbarTabController.openMemexUI();
     }
 

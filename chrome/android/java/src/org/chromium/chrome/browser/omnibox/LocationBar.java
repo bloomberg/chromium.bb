@@ -156,11 +156,6 @@ public interface LocationBar extends UrlBarDelegate {
     void updateMicButtonState();
 
     /**
-     * Signal to hide the omnibox suggestions.
-     */
-    void hideSuggestions();
-
-    /**
      * Sets the callback to be used by default for text editing action bar.
      * @param callback The callback to use.
      */
