@@ -30,23 +30,33 @@ function sendConsoleMessage(method, originalArgs) {
   });
 }
 
+var originalConsoleLog = console.log;
 console.log = function() {
   sendConsoleMessage('log', arguments);
+  return originalConsoleLog.apply(this, arguments);
 };
 
+var originalConsoleDebug = console.debug;
 console.debug = function() {
   sendConsoleMessage('debug', arguments);
+  return originalConsoleDebug.apply(this, arguments);
 };
 
+var originalConsoleInfo = console.info;
 console.info = function() {
   sendConsoleMessage('info', arguments);
+  return originalConsoleInfo.apply(this, arguments);
 };
 
+var originalConsoleWarn = console.warn;
 console.warn = function() {
   sendConsoleMessage('warn', arguments);
+  return originalConsoleWarn.apply(this, arguments);
 };
 
+var originalConsoleError = console.error;
 console.error = function() {
   sendConsoleMessage('error', arguments);
+  return originalConsoleError.apply(this, arguments);
 };
 }());
