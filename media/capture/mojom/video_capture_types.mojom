@@ -37,7 +37,9 @@ enum VideoCapturePixelFormat {
   YUV420P12,
   YUV422P12,
   YUV444P12,
-  Y16
+  Y16,
+  ABGR,
+  XBGR,
 };
 
 enum ResolutionChangePolicy {
@@ -305,4 +307,3 @@ union VideoBufferHandle {
   SharedMemoryViaRawFileDescriptor shared_memory_via_raw_file_descriptor;
   MailboxBufferHandleSet mailbox_handles;
 };
-
