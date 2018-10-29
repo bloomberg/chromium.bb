@@ -178,11 +178,6 @@ const base::Feature kSpeculativeServiceWorkerStartOnQueryInput{
       base::FEATURE_ENABLED_BY_DEFAULT
 };
 
-// Feature used to allow breaking words at underscores in building
-// URLIndexPrivateData.
-const base::Feature kBreakWordsAtUnderscores{"OmniboxBreakWordsAtUnderscores",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Feature used to fetch document suggestions.
 const base::Feature kDocumentProvider{"OmniboxDocumentProvider",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
