@@ -204,7 +204,7 @@ TEST(CustomElementTest, StateByCreateElement) {
     EXPECT_EQ(data.state, element->GetCustomElementState()) << data.name;
     EXPECT_EQ(data.v0state, element->GetV0CustomElementState()) << data.name;
 
-    element = document.createElementNS(SVGNames::svgNamespaceURI, data.name,
+    element = document.createElementNS(svg_names::kNamespaceURI, data.name,
                                        ASSERT_NO_EXCEPTION);
     EXPECT_EQ(CustomElementState::kUncustomized,
               element->GetCustomElementState())

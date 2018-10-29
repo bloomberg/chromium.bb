@@ -54,9 +54,9 @@ inline bool IsScopeMarker(HTMLStackItem* item) {
          item->HasTagName(mathml_names::kMsTag) ||
          item->HasTagName(mathml_names::kMtextTag) ||
          item->HasTagName(mathml_names::kAnnotationXmlTag) ||
-         item->HasTagName(SVGNames::foreignObjectTag) ||
-         item->HasTagName(SVGNames::descTag) ||
-         item->HasTagName(SVGNames::titleTag) ||
+         item->HasTagName(svg_names::kForeignObjectTag) ||
+         item->HasTagName(svg_names::kDescTag) ||
+         item->HasTagName(svg_names::kTitleTag) ||
          item->HasTagName(templateTag) || IsRootNode(item);
 }
 
@@ -250,9 +250,9 @@ bool HTMLElementStack::IsHTMLIntegrationPoint(HTMLStackItem* item) {
     }
     return false;
   }
-  return item->HasTagName(SVGNames::foreignObjectTag) ||
-         item->HasTagName(SVGNames::descTag) ||
-         item->HasTagName(SVGNames::titleTag);
+  return item->HasTagName(svg_names::kForeignObjectTag) ||
+         item->HasTagName(svg_names::kDescTag) ||
+         item->HasTagName(svg_names::kTitleTag);
 }
 
 void HTMLElementStack::PopUntilForeignContentScopeMarker() {

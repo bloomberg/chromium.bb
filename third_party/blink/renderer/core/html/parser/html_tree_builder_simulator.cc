@@ -116,7 +116,7 @@ HTMLTreeBuilderSimulator::State HTMLTreeBuilderSimulator::StateFor(
            tree_builder->OpenElements()->TopRecord();
        record; record = record->Next()) {
     Namespace current_namespace = HTML;
-    if (record->NamespaceURI() == SVGNames::svgNamespaceURI)
+    if (record->NamespaceURI() == svg_names::kNamespaceURI)
       current_namespace = SVG;
     else if (record->NamespaceURI() == mathml_names::kNamespaceURI)
       current_namespace = kMathML;
@@ -136,7 +136,7 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::Simulate(
 
   if (token.GetType() == HTMLToken::kStartTag) {
     const String& tag_name = token.Data();
-    if (ThreadSafeMatch(tag_name, SVGNames::svgTag))
+    if (ThreadSafeMatch(tag_name, svg_names::kSVGTag))
       namespace_stack_.push_back(SVG);
     if (ThreadSafeMatch(tag_name, mathml_names::kMathTag))
       namespace_stack_.push_back(kMathML);
@@ -210,7 +210,7 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::Simulate(
        InForeignContent())) {
     const String& tag_name = token.Data();
     if ((namespace_stack_.back() == SVG &&
-         ThreadSafeMatch(tag_name, SVGNames::svgTag)) ||
+         ThreadSafeMatch(tag_name, svg_names::kSVGTag)) ||
         (namespace_stack_.back() == kMathML &&
          ThreadSafeMatch(tag_name, mathml_names::kMathTag)) ||
         IsHTMLIntegrationPointForEndTag(token) ||
@@ -253,10 +253,10 @@ bool HTMLTreeBuilderSimulator::IsHTMLIntegrationPointForStartTag(
     // FIXME: It's very fragile that we special case foreignObject here to be
     // case-insensitive.
     if (DeprecatedEqualIgnoringCase(tag_name,
-                                    SVGNames::foreignObjectTag.LocalName()))
+                                    svg_names::kForeignObjectTag.LocalName()))
       return true;
-    return ThreadSafeMatch(tag_name, SVGNames::descTag) ||
-           ThreadSafeMatch(tag_name, SVGNames::titleTag);
+    return ThreadSafeMatch(tag_name, svg_names::kDescTag) ||
+           ThreadSafeMatch(tag_name, svg_names::kTitleTag);
   }
   return false;
 }
@@ -282,10 +282,10 @@ bool HTMLTreeBuilderSimulator::IsHTMLIntegrationPointForEndTag(
     // FIXME: It's very fragile that we special case foreignObject here to be
     // case-insensitive.
     if (DeprecatedEqualIgnoringCase(tag_name,
-                                    SVGNames::foreignObjectTag.LocalName()))
+                                    svg_names::kForeignObjectTag.LocalName()))
       return true;
-    return ThreadSafeMatch(tag_name, SVGNames::descTag) ||
-           ThreadSafeMatch(tag_name, SVGNames::titleTag);
+    return ThreadSafeMatch(tag_name, svg_names::kDescTag) ||
+           ThreadSafeMatch(tag_name, svg_names::kTitleTag);
   }
   return false;
 }

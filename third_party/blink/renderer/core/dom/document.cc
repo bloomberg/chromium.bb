@@ -909,7 +909,7 @@ Element* Document::CreateRawElement(const QualifiedName& qname,
         element = HTMLUnknownElement::Create(qname, *this);
     }
     saw_elements_in_known_namespaces_ = true;
-  } else if (qname.NamespaceURI() == SVGNames::svgNamespaceURI) {
+  } else if (qname.NamespaceURI() == svg_names::kNamespaceURI) {
     element = SVGElementFactory::Create(qname.LocalName(), *this, flags);
     if (!element)
       element = SVGUnknownElement::Create(qname, *this);

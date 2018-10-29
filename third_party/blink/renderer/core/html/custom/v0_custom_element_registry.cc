@@ -74,7 +74,7 @@ V0CustomElementDefinition* V0CustomElementRegistry::RegisterElement(
     return nullptr;
 
   DCHECK(tag_name.NamespaceURI() == HTMLNames::xhtmlNamespaceURI ||
-         tag_name.NamespaceURI() == SVGNames::svgNamespaceURI);
+         tag_name.NamespaceURI() == svg_names::kNamespaceURI);
 
   DCHECK(!document_was_detached_);
 
@@ -109,7 +109,7 @@ V0CustomElementDefinition* V0CustomElementRegistry::RegisterElement(
     return nullptr;
   }
 
-  if (tag_name.NamespaceURI() == SVGNames::svgNamespaceURI) {
+  if (tag_name.NamespaceURI() == svg_names::kNamespaceURI) {
     UseCounter::Count(document,
                       WebFeature::kV0CustomElementsRegisterSVGElement);
   } else {

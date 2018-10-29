@@ -3031,7 +3031,7 @@ String AXNodeObject::NativeTextAlternative(
     }
     DCHECK(GetNode()->IsContainerNode());
     Element* title = ElementTraversal::FirstChild(
-        ToContainerNode(*(GetNode())), HasTagName(SVGNames::titleTag));
+        ToContainerNode(*(GetNode())), HasTagName(svg_names::kTitleTag));
 
     if (title) {
       AXObject* title_ax_object = AXObjectCache().GetOrCreate(title);

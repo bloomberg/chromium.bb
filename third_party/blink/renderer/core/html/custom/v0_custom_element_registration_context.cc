@@ -78,7 +78,7 @@ Element* V0CustomElementRegistrationContext::CreateCustomTagElement(
 
   if (HTMLNames::xhtmlNamespaceURI == tag_name.NamespaceURI()) {
     element = HTMLElement::Create(tag_name, document);
-  } else if (SVGNames::svgNamespaceURI == tag_name.NamespaceURI()) {
+  } else if (svg_names::kNamespaceURI == tag_name.NamespaceURI()) {
     element = SVGUnknownElement::Create(tag_name, document);
   } else {
     // XML elements are not custom elements, so return early.

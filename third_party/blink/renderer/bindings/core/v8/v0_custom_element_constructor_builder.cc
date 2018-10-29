@@ -104,7 +104,7 @@ bool V0CustomElementConstructorBuilder::ValidateOptions(
 
   AtomicString namespace_uri = HTMLNames::xhtmlNamespaceURI;
   if (HasValidPrototypeChainFor(&V8SVGElement::wrapperTypeInfo))
-    namespace_uri = SVGNames::svgNamespaceURI;
+    namespace_uri = svg_names::kNamespaceURI;
 
   DCHECK(!try_catch.HasCaught());
 
@@ -128,7 +128,7 @@ bool V0CustomElementConstructorBuilder::ValidateOptions(
       return false;
     }
   } else {
-    if (namespace_uri == SVGNames::svgNamespaceURI) {
+    if (namespace_uri == svg_names::kNamespaceURI) {
       V0CustomElementException::ThrowException(
           V0CustomElementException::kExtendsIsInvalidName, type,
           exception_state);

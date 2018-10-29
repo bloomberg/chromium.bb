@@ -35,6 +35,12 @@ Extends IdlType with property |constructor_type_name|.
 Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
 
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__),
+                             '..', '..', 'build', 'scripts'))
+from blinkbuild.name_style_converter import NameStyleConverter
 import idl_types
 from idl_types import inherits_interface
 from v8_globals import includes
@@ -535,13 +541,15 @@ def setter_base_name(interface, attribute, arguments):
 
 def scoped_content_attribute_name(interface, attribute):
     content_attribute_name = attribute.extended_attributes['Reflect'] or attribute.name.lower()
+    symbol_name = 'k' + NameStyleConverter(content_attribute_name).to_upper_camel_case()
     if interface.name.startswith('SVG'):
-        namespace = 'SVGNames'
+        namespace = 'svg_names'
         includes.add('core/svg_names.h')
     else:
         namespace = 'HTMLNames'
         includes.add('core/html_names.h')
-    return '%s::%sAttr' % (namespace, content_attribute_name)
+        symbol_name = content_attribute_name
+    return '%s::%sAttr' % (namespace, symbol_name)
 
 
 ################################################################################

@@ -21,7 +21,7 @@ void SVGAnimatedHref::Trace(blink::Visitor* visitor) {
 }
 
 SVGAnimatedHref::SVGAnimatedHref(SVGElement* context_element)
-    : SVGAnimatedString(context_element, SVGNames::hrefAttr),
+    : SVGAnimatedString(context_element, svg_names::kHrefAttr),
       xlink_href_(
           SVGAnimatedString::Create(context_element, xlink_names::kHrefAttr)) {}
 
@@ -31,7 +31,7 @@ void SVGAnimatedHref::AddToPropertyMap(SVGElement* element) {
 }
 
 bool SVGAnimatedHref::IsKnownAttribute(const QualifiedName& attr_name) {
-  return attr_name.Matches(SVGNames::hrefAttr) ||
+  return attr_name.Matches(svg_names::kHrefAttr) ||
          attr_name.Matches(xlink_names::kHrefAttr);
 }
 

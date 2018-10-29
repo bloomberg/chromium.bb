@@ -91,8 +91,9 @@ void CoreInitializer::Initialize() {
   const unsigned kQualifiedNamesCount =
       HTMLNames::kTagsCount + HTMLNames::kAttrsCount +
       mathml_names::kTagsCount + mathml_names::kAttrsCount +
-      SVGNames::kTagsCount + SVGNames::kAttrsCount + xlink_names::kAttrsCount +
-      xml_names::kAttrsCount + xmlns_names::kAttrsCount;
+      svg_names::kTagsCount + svg_names::kAttrsCount +
+      xlink_names::kAttrsCount + xml_names::kAttrsCount +
+      xmlns_names::kAttrsCount;
 
   const unsigned kCoreStaticStringsCount =
       kQualifiedNamesCount + EventNames::kNamesCount +
@@ -110,8 +111,8 @@ void CoreInitializer::Initialize() {
   AtomicStringTable::Instance().ReserveCapacity(kCoreStaticStringsCount);
 
   HTMLNames::init();
-  SVGNames::init();
   mathml_names::init();
+  svg_names::init();
   xlink_names::init();
   xml_names::init();
   xmlns_names::init();
