@@ -143,6 +143,14 @@ void ScriptExecutor::HideProgressBar() {
   delegate_->GetUiController()->HideProgressBar();
 }
 
+void ScriptExecutor::ShowOverlay() {
+  delegate_->GetUiController()->ShowOverlay();
+}
+
+void ScriptExecutor::HideOverlay() {
+  delegate_->GetUiController()->HideOverlay();
+}
+
 void ScriptExecutor::SetFieldValue(const std::vector<std::string>& selectors,
                                    const std::string& value,
                                    bool simulate_key_presses,

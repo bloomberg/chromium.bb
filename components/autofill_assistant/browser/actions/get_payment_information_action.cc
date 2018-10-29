@@ -22,10 +22,9 @@ GetPaymentInformationAction::GetPaymentInformationAction(
 
 GetPaymentInformationAction::~GetPaymentInformationAction() {}
 
-void GetPaymentInformationAction::ProcessAction(
+void GetPaymentInformationAction::InternalProcessAction(
     ActionDelegate* delegate,
     ProcessActionCallback callback) {
-  processed_action_proto_ = std::make_unique<ProcessedActionProto>();
   const GetPaymentInformationProto& get_payment_information =
       proto_.get_payment_information();
 

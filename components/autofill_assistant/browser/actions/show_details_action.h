@@ -15,11 +15,11 @@ class ShowDetailsAction : public Action {
   explicit ShowDetailsAction(const ActionProto& proto);
   ~ShowDetailsAction() override;
 
-  // Overrides Action:
-  void ProcessAction(ActionDelegate* delegate,
-                     ProcessActionCallback callback) override;
-
  private:
+  // Overrides Action:
+  void InternalProcessAction(ActionDelegate* delegate,
+                             ProcessActionCallback callback) override;
+
   DISALLOW_COPY_AND_ASSIGN(ShowDetailsAction);
 };
 

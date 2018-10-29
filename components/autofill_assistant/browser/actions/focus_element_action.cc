@@ -4,6 +4,9 @@
 
 #include "components/autofill_assistant/browser/actions/focus_element_action.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
@@ -13,13 +16,13 @@ namespace autofill_assistant {
 FocusElementAction::FocusElementAction(const ActionProto& proto)
     : Action(proto), weak_ptr_factory_(this) {
   DCHECK(proto_.has_focus_element());
+  show_overlay_ = false;
 }
 
 FocusElementAction::~FocusElementAction() {}
 
-void FocusElementAction::ProcessAction(ActionDelegate* delegate,
-                                       ProcessActionCallback callback) {
-  processed_action_proto_ = std::make_unique<ProcessedActionProto>();
+void FocusElementAction::InternalProcessAction(ActionDelegate* delegate,
+                                               ProcessActionCallback callback) {
   const FocusElementProto& focus_element = proto_.focus_element();
   DCHECK_GT(focus_element.element().selectors_size(), 0);
 

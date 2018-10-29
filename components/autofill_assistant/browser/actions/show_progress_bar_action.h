@@ -17,11 +17,11 @@ class ShowProgressBarAction : public Action {
   explicit ShowProgressBarAction(const ActionProto& proto);
   ~ShowProgressBarAction() override;
 
-  // Overrides Action:
-  void ProcessAction(ActionDelegate* delegate,
-                     ProcessActionCallback callback) override;
-
  private:
+  // Overrides Action:
+  void InternalProcessAction(ActionDelegate* delegate,
+                             ProcessActionCallback callback) override;
+
   DISALLOW_COPY_AND_ASSIGN(ShowProgressBarAction);
 };
 

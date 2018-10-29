@@ -19,9 +19,8 @@ SelectOptionAction::SelectOptionAction(const ActionProto& proto)
 
 SelectOptionAction::~SelectOptionAction() {}
 
-void SelectOptionAction::ProcessAction(ActionDelegate* delegate,
-                                       ProcessActionCallback callback) {
-  processed_action_proto_ = std::make_unique<ProcessedActionProto>();
+void SelectOptionAction::InternalProcessAction(ActionDelegate* delegate,
+                                               ProcessActionCallback callback) {
   const SelectOptionProto& select_option = proto_.select_option();
 
   // A non prefilled |select_option| is not supported.

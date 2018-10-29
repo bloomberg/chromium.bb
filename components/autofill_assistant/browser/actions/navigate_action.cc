@@ -19,11 +19,10 @@ NavigateAction::NavigateAction(const ActionProto& proto) : Action(proto) {
 
 NavigateAction::~NavigateAction() {}
 
-void NavigateAction::ProcessAction(ActionDelegate* delegate,
-                                   ProcessActionCallback callback) {
+void NavigateAction::InternalProcessAction(ActionDelegate* delegate,
+                                           ProcessActionCallback callback) {
   GURL url(proto_.navigate().url());
   delegate->LoadURL(url);
-  processed_action_proto_ = std::make_unique<ProcessedActionProto>();
   UpdateProcessedAction(ACTION_APPLIED);
   std::move(callback).Run(std::move(processed_action_proto_));
 }

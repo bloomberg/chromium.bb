@@ -5,13 +5,13 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_GET_PAYMENT_INFORMATION_ACTION_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_GET_PAYMENT_INFORMATION_ACTION_H_
 
-#include "components/autofill_assistant/browser/actions/action.h"
-
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/autofill_assistant/browser/actions/action.h"
 #include "components/autofill_assistant/browser/payment_information.h"
 
 namespace autofill_assistant {
@@ -22,10 +22,10 @@ class GetPaymentInformationAction : public Action {
   explicit GetPaymentInformationAction(const ActionProto& proto);
   ~GetPaymentInformationAction() override;
 
-  void ProcessAction(ActionDelegate* delegate,
-                     ProcessActionCallback callback) override;
-
  private:
+  void InternalProcessAction(ActionDelegate* delegate,
+                             ProcessActionCallback callback) override;
+
   void OnGetPaymentInformation(
       ActionDelegate* delegate,
       const GetPaymentInformationProto& get_payment_information,

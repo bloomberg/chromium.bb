@@ -19,9 +19,8 @@ ClickAction::ClickAction(const ActionProto& proto)
 
 ClickAction::~ClickAction() {}
 
-void ClickAction::ProcessAction(ActionDelegate* delegate,
-                                ProcessActionCallback callback) {
-  processed_action_proto_ = std::make_unique<ProcessedActionProto>();
+void ClickAction::InternalProcessAction(ActionDelegate* delegate,
+                                        ProcessActionCallback callback) {
   DCHECK_GT(proto_.click().element_to_click().selectors_size(), 0);
   delegate->WaitForElement(
       ExtractSelectors(proto_.click().element_to_click().selectors()),

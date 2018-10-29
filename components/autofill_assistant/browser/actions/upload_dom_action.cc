@@ -19,10 +19,8 @@ UploadDomAction::UploadDomAction(const ActionProto& proto)
 
 UploadDomAction::~UploadDomAction() {}
 
-void UploadDomAction::ProcessAction(ActionDelegate* delegate,
-                                    ProcessActionCallback callback) {
-  processed_action_proto_ = std::make_unique<ProcessedActionProto>();
-
+void UploadDomAction::InternalProcessAction(ActionDelegate* delegate,
+                                            ProcessActionCallback callback) {
   DCHECK_GT(proto_.upload_dom().tree_root().selectors_size(), 0);
   delegate->WaitForElement(
       ExtractSelectors(proto_.upload_dom().tree_root().selectors()),

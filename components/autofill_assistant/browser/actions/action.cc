@@ -2,13 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
+#include "base/callback.h"
 #include "components/autofill_assistant/browser/actions/action.h"
+#include "components/autofill_assistant/browser/actions/action_delegate.h"
 
 namespace autofill_assistant {
 
-Action::Action(const ActionProto& proto) : proto_(proto) {}
+Action::Action(const ActionProto& proto) : proto_(proto), show_overlay_(true) {}
 
 Action::~Action() {}
+
+void Action::ProcessAction(ActionDelegate* delegate,
+                           ProcessActionCallback callback) {
+  if (show_overlay_) {
+    delegate->ShowOverlay();
+  } else {
+    delegate->HideOverlay();
+  }
+  processed_action_proto_ = std::make_unique<ProcessedActionProto>();
+  InternalProcessAction(delegate, std::move(callback));
+}
 
 void Action::UpdateProcessedAction(ProcessedActionStatusProto status) {
   // Safety check in case process action is run twice.

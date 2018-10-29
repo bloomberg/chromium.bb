@@ -27,12 +27,12 @@ class AutofillAction : public Action {
   explicit AutofillAction(const ActionProto& proto);
   ~AutofillAction() override;
 
-  // Overrides Action:
-  void ProcessAction(ActionDelegate* delegate,
-                     ProcessActionCallback callback) override;
-
  private:
   enum FieldValueStatus { UNKNOWN, EMPTY, NOT_EMPTY };
+
+  // Overrides Action:
+  void InternalProcessAction(ActionDelegate* delegate,
+                             ProcessActionCallback callback) override;
 
   void EndAction(bool successful);
 

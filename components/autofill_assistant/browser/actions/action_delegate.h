@@ -153,6 +153,12 @@ class ActionDelegate {
   // Hide the progress bar.
   virtual void HideProgressBar() = 0;
 
+  // Show the overlay.
+  virtual void ShowOverlay() = 0;
+
+  // Hide the overlay.
+  virtual void HideOverlay() = 0;
+
  protected:
   ActionDelegate() = default;
 };

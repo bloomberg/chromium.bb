@@ -119,6 +119,8 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD1(ShowDetails, void(const DetailsProto& details));
   MOCK_METHOD2(ShowProgressBar, void(int progress, const std::string& message));
   MOCK_METHOD0(HideProgressBar, void());
+  MOCK_METHOD0(ShowOverlay, void());
+  MOCK_METHOD0(HideOverlay, void());
 };
 
 }  // namespace autofill_assistant

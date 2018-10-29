@@ -24,6 +24,7 @@ using ::testing::AllOf;
 using ::testing::Contains;
 using ::testing::DoAll;
 using ::testing::Field;
+using ::testing::Invoke;
 using ::testing::NiceMock;
 using ::testing::Pair;
 using ::testing::ReturnRef;
@@ -46,13 +47,22 @@ class ScriptExecutorTest : public testing::Test,
         .WillByDefault(RunOnceCallback<1>(true));
     ON_CALL(mock_web_controller_, OnClickElement(_, _))
         .WillByDefault(RunOnceCallback<1>(false));
+    ON_CALL(mock_web_controller_, OnFocusElement(_, _))
+        .WillByDefault(RunOnceCallback<1>(true));
     ON_CALL(mock_web_controller_, GetUrl()).WillByDefault(ReturnRef(url_));
+    ON_CALL(mock_ui_controller_, ShowOverlay()).WillByDefault(Invoke([this]() {
+      overlay_ = true;
+    }));
+    ON_CALL(mock_ui_controller_, HideOverlay()).WillByDefault(Invoke([this]() {
+      overlay_ = false;
+    }));
   }
 
  protected:
   ScriptExecutorTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+        overlay_(false) {}
 
   Service* GetService() override { return &mock_service_; }
 
@@ -93,6 +103,7 @@ class ScriptExecutorTest : public testing::Test,
   StrictMock<base::MockCallback<ScriptExecutor::RunScriptCallback>>
       executor_callback_;
   GURL url_;
+  bool overlay_;
 };
 
 TEST_F(ScriptExecutorTest, GetActionsFails) {
@@ -302,7 +313,7 @@ TEST_F(ScriptExecutorTest, HideDetailsWhenFinished) {
   ActionProto click_with_clean_contextual_ui;
   click_with_clean_contextual_ui.set_clean_contextual_ui(true);
   click_with_clean_contextual_ui.mutable_tell()->set_message("clean");
-  ;
+
   *actions_response.add_actions() = click_with_clean_contextual_ui;
 
   EXPECT_CALL(mock_service_, OnGetActions(_, _, _))
@@ -350,6 +361,52 @@ TEST_F(ScriptExecutorTest, HideDetailsOnError) {
   EXPECT_CALL(mock_ui_controller_, HideDetails());
 
   executor_->Run(executor_callback_.Get());
+}
+
+TEST_F(ScriptExecutorTest, HideOverlay) {
+  ActionsResponseProto actions_response;
+  actions_response.set_server_payload("payload");
+  actions_response.add_actions()->mutable_tell()->set_message("1");
+  // focus_element hides the overlay
+  actions_response.add_actions()
+      ->mutable_focus_element()
+      ->mutable_element()
+      ->add_selectors("exists");
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _))
+      .WillOnce(RunOnceCallback<2>(true, Serialize(actions_response)));
+
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _))
+      .WillOnce(RunOnceCallback<2>(true, ""));
+
+  EXPECT_CALL(executor_callback_, Run(_));
+
+  overlay_ = true;
+  executor_->Run(executor_callback_.Get());
+  ASSERT_FALSE(overlay_);
+}
+
+TEST_F(ScriptExecutorTest, ShowOverlayAgainAfterHiding) {
+  ActionsResponseProto actions_response;
+  actions_response.set_server_payload("payload");
+  actions_response.add_actions()
+      ->mutable_focus_element()
+      ->mutable_element()
+      ->add_selectors("exists");
+  // tell shows the overlay again, after it's been hidden by focus_element
+  actions_response.add_actions()->mutable_tell()->set_message("1");
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _))
+      .WillOnce(RunOnceCallback<2>(true, Serialize(actions_response)));
+
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _))
+      .WillOnce(RunOnceCallback<2>(true, ""));
+
+  EXPECT_CALL(executor_callback_, Run(_));
+
+  overlay_ = true;
+  executor_->Run(executor_callback_.Get());
+  ASSERT_TRUE(overlay_);
 }
 
 }  // namespace

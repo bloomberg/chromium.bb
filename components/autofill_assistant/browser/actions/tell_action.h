@@ -17,11 +17,11 @@ class TellAction : public Action {
   explicit TellAction(const ActionProto& proto);
   ~TellAction() override;
 
-  // Overrides Action:
-  void ProcessAction(ActionDelegate* delegate,
-                     ProcessActionCallback callback) override;
-
  private:
+  // Overrides Action:
+  void InternalProcessAction(ActionDelegate* delegate,
+                             ProcessActionCallback callback) override;
+
   DISALLOW_COPY_AND_ASSIGN(TellAction);
 };
 

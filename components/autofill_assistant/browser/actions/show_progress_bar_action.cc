@@ -4,6 +4,10 @@
 
 #include "components/autofill_assistant/browser/actions/show_progress_bar_action.h"
 
+#include <algorithm>
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
@@ -17,8 +21,9 @@ ShowProgressBarAction::ShowProgressBarAction(const ActionProto& proto)
 
 ShowProgressBarAction::~ShowProgressBarAction() {}
 
-void ShowProgressBarAction::ProcessAction(ActionDelegate* delegate,
-                                          ProcessActionCallback callback) {
+void ShowProgressBarAction::InternalProcessAction(
+    ActionDelegate* delegate,
+    ProcessActionCallback callback) {
   int progress =
       std::min(100, std::max(0, proto_.show_progress_bar().progress()));
   if (proto_.show_progress_bar().done() || progress == 100) {
@@ -27,7 +32,6 @@ void ShowProgressBarAction::ProcessAction(ActionDelegate* delegate,
     delegate->ShowProgressBar(progress, proto_.show_progress_bar().message());
   }
 
-  processed_action_proto_ = std::make_unique<ProcessedActionProto>();
   UpdateProcessedAction(ACTION_APPLIED);
   std::move(callback).Run(std::move(processed_action_proto_));
 }

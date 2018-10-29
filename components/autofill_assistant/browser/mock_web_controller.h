@@ -33,6 +33,14 @@ class MockWebController : public WebController {
                void(const std::vector<std::string>& selectors,
                     base::OnceCallback<void(bool)>& callback));
 
+  void FocusElement(const std::vector<std::string>& selectors,
+                    base::OnceCallback<void(bool)> callback) override {
+    OnFocusElement(selectors, callback);
+  }
+  MOCK_METHOD2(OnFocusElement,
+               void(const std::vector<std::string>& selectors,
+                    base::OnceCallback<void(bool)>& callback));
+
   void ElementExists(const std::vector<std::string>& selectors,
                      base::OnceCallback<void(bool)> callback) override {
     OnElementExists(selectors, callback);

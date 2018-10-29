@@ -26,15 +26,17 @@ class Action {
   // Delegate should outlive this object.
   using ProcessActionCallback =
       base::OnceCallback<void(std::unique_ptr<ProcessedActionProto>)>;
-  // ProcessAction should create a processed_action_proto_ to be passed to the
-  // callback.
-  virtual void ProcessAction(ActionDelegate* delegate,
-                             ProcessActionCallback callback) = 0;
+
+  void ProcessAction(ActionDelegate* delegate, ProcessActionCallback callback);
 
   const ActionProto& proto() const { return proto_; }
 
  protected:
   explicit Action(const ActionProto& proto);
+
+  // Subclasses must implement this method.
+  virtual void InternalProcessAction(ActionDelegate* delegate,
+                                     ProcessActionCallback callback) = 0;
 
   // Returns selectors as a string from a repeated proto field.
   static std::vector<std::string> ExtractSelectors(
@@ -43,6 +45,7 @@ class Action {
   void UpdateProcessedAction(ProcessedActionStatusProto status);
 
   const ActionProto proto_;
+  bool show_overlay_;
 
   // Accumulate any result of this action during ProcessAction. Is only valid
   // during a run of ProcessAction.
