@@ -260,6 +260,18 @@ public class LocationBarTablet extends LocationBarLayout {
     }
 
     @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int measuredWidth = getMeasuredWidth();
+
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+        if (getMeasuredWidth() != measuredWidth) {
+            setUnfocusedWidth(getMeasuredWidth());
+            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        }
+    }
+
+    @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
         mLayoutLeft = left;
