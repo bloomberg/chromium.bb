@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/util/thread_cpu_throttler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_cpu_throttler.h"
 
 #include "base/atomicops.h"
 #include "base/macros.h"
@@ -79,7 +79,7 @@ ThreadCPUThrottler::ThrottlingThread::ThrottlingThread(double rate)
   SetThrottlingRate(rate);
   CHECK_EQ(base::subtle::NoBarrier_AtomicExchange(&thread_exists_, 1), 0);
   Start();
-}
+}  // namespace scheduler
 
 ThreadCPUThrottler::ThrottlingThread::~ThrottlingThread() {
   Stop();

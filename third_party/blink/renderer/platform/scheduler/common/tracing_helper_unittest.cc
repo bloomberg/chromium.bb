@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/util/tracing_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/common/tracing_helper.h"
 
 #include <unordered_set>
 
@@ -43,7 +43,7 @@ class TraceableStateForTest
     mock_trace_for_test_ = &MockTrace;
   }
 
-  TraceableStateForTest& operator =(const int& value) {
+  TraceableStateForTest& operator=(const int& value) {
     Assign(value);
     return *this;
   }
@@ -74,10 +74,10 @@ TEST(TracingHelperTest, TraceableState) {
 
 TEST(TracingHelperTest, TraceableStateOperators) {
   TraceableVariableController controller;
-  TraceableState<int, kTracingCategoryNameDebug> x(
-      -1, "X", &controller, &controller, SignOfInt);
-  TraceableState<int, kTracingCategoryNameDebug> y(
-      1, "Y", &controller, &controller, SignOfInt);
+  TraceableState<int, kTracingCategoryNameDebug> x(-1, "X", &controller,
+                                                   &controller, SignOfInt);
+  TraceableState<int, kTracingCategoryNameDebug> y(1, "Y", &controller,
+                                                   &controller, SignOfInt);
   EXPECT_EQ(0, x + y);
   EXPECT_FALSE(x == y);
   EXPECT_TRUE(x != y);
