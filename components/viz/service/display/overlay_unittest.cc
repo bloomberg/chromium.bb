@@ -1963,6 +1963,49 @@ TEST_F(UnderlayTest, UpdateDamageWhenChangingUnderlays) {
   EXPECT_EQ(kOverlayRect, damage_rect_);
 }
 
+TEST_F(UnderlayTest, UpdateDamageRectWhenNoPromotion) {
+  // In the first pass there is an overlay promotion and the expected damage
+  // size should be unchanged.
+  // In the second pass there is no overlay promotion, but the damage should be
+  // the union of the damage_rect with CreateRenderPass's output_rect which is
+  // {0, 0, 256, 256}.
+  bool has_fullscreen_candidate[] = {true, false};
+  gfx::Rect damages[] = {gfx::Rect(0, 0, 32, 32), gfx::Rect(0, 0, 312, 16)};
+  gfx::Rect expected_damages[] = {gfx::Rect(0, 0, 32, 32),
+                                  gfx::Rect(0, 0, 312, 256)};
+  size_t expected_candidate_size[] = {1, 0};
+
+  for (int i = 0; i < 2; ++i) {
+    std::unique_ptr<RenderPass> pass = CreateRenderPass();
+
+    if (has_fullscreen_candidate[i]) {
+      CreateFullscreenCandidateQuad(
+          resource_provider_.get(), child_resource_provider_.get(),
+          child_provider_.get(), pass->shared_quad_state_list.back(),
+          pass.get());
+    }
+
+    gfx::Rect damage_rect{damages[i]};
+
+    // Add something behind it.
+    CreateFullscreenOpaqueQuad(resource_provider_.get(),
+                               pass->shared_quad_state_list.back(), pass.get());
+
+    OverlayCandidateList candidate_list;
+    OverlayProcessor::FilterOperationsMap render_pass_filters;
+    OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+    RenderPassList pass_list;
+    pass_list.push_back(std::move(pass));
+    overlay_processor_->ProcessForOverlays(
+        resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
+        render_pass_filters, render_pass_background_filters, &candidate_list,
+        nullptr, nullptr, &damage_rect, &content_bounds_);
+
+    EXPECT_EQ(expected_damages[i], damage_rect);
+    ASSERT_EQ(expected_candidate_size[i], candidate_list.size());
+  }
+}
+
 TEST_F(UnderlayCastTest, NoOverlayContentBounds) {
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
 
