@@ -283,6 +283,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return inputs_.backdrop_filters;
   }
 
+  void SetBackdropFilterQuality(const float quality);
+  float backdrop_filter_quality() const {
+    return inputs_.backdrop_filter_quality;
+  }
+
   // Set or get an optimization hint that the contents of this layer are fully
   // opaque or not. If true, every pixel of content inside the layer's bounds
   // must be opaque or visual errors can occur. This applies only to this layer
@@ -897,6 +902,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     FilterOperations filters;
     FilterOperations backdrop_filters;
     gfx::PointF filters_origin;
+    float backdrop_filter_quality;
 
     gfx::ScrollOffset scroll_offset;
 

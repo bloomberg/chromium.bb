@@ -79,6 +79,7 @@ bool StructTraits<viz::mojom::RenderPassQuadStateDataView, viz::DrawQuad>::Read(
     return false;
   }
   quad->force_anti_aliasing_off = data.force_anti_aliasing_off();
+  quad->backdrop_filter_quality = data.backdrop_filter_quality();
   return true;
 }
 
