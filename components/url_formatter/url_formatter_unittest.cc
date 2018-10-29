@@ -951,7 +951,11 @@ const IDNTestCase idn_cases[] = {
     {"xn--kx8a.com", L"\xa661.com", false},
     // Cyrillic Ext C: ᲂ.com (Narrow o)
     {"xn--43f.com", L"\x1c82.com", false},
-};
+
+    // Test that top domains whose skeletons are the same as the domain name are
+    // handled properly. In this case, tést.net should match test.net top
+    // domain.
+    {"xn--tst-bma.net", L"t\x00e9st.net", false}};
 
 struct AdjustOffsetCase {
   size_t input_offset;
