@@ -42,6 +42,9 @@ class MESSAGE_CENTER_EXPORT SlideOutController
   SlideOutController(ui::EventTarget* target, Delegate* delegate);
   ~SlideOutController() override;
 
+  void set_update_opacity(bool update_opacity) {
+    update_opacity_ = update_opacity;
+  }
   void set_slide_mode(SlideMode mode) {
     // TODO(yoshiki): Close the slide when the slide mode sets to NO_SLIDE.
     mode_ = mode;
@@ -79,6 +82,9 @@ class MESSAGE_CENTER_EXPORT SlideOutController
   // |direction| indicates which way the slide occurs.
   void SlideOutAndClose(int direction);
 
+  // Sets the opacity of the slide out layer if |update_opacity_| is true.
+  void SetOpacityIfNecessary(float opacity);
+
   ui::ScopedTargetHandler target_handling_;
   Delegate* delegate_;
 
@@ -100,6 +106,12 @@ class MESSAGE_CENTER_EXPORT SlideOutController
   // The position where the slided view stays after the touch released.
   // Changed only when |mode_| is FULL and |has_swipe_control_| is true.
   SwipeControlOpenState control_open_state_ = SwipeControlOpenState::CLOSED;
+
+  // If false, it doesn't update the opacity.
+  bool update_opacity_ = true;
+
+  // Last opacity set by SetOpacityIfNecessary.
+  float opacity_ = 1.0;
 
   DISALLOW_COPY_AND_ASSIGN(SlideOutController);
 };
