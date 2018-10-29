@@ -81,7 +81,8 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         mWebContents = activityTab.getWebContents();
         mUiControllerAndroid =
                 nativeInit(mWebContents, parameters.keySet().toArray(new String[parameters.size()]),
-                        parameters.values().toArray(new String[parameters.size()]));
+                        parameters.values().toArray(new String[parameters.size()]),
+                        activity.getInitialIntent().getDataString());
 
         // Shut down Autofill Assistant when the tab is detached from the activity.
         activityTab.addObserver(new EmptyTabObserver() {
@@ -337,8 +338,8 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     }
 
     // native methods.
-    private native long nativeInit(
-            WebContents webContents, String[] parameterNames, String[] parameterValues);
+    private native long nativeInit(WebContents webContents, String[] parameterNames,
+            String[] parameterValues, String initialUrl);
     private native void nativeDestroy(long nativeUiControllerAndroid);
     private native void nativeOnScriptSelected(long nativeUiControllerAndroid, String scriptPath);
     private native void nativeOnAddressSelected(long nativeUiControllerAndroid, String guid);

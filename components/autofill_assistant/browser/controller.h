@@ -42,7 +42,8 @@ class Controller : public ScriptExecutorDelegate,
   static void CreateAndStartForWebContents(
       content::WebContents* web_contents,
       std::unique_ptr<Client> client,
-      std::unique_ptr<std::map<std::string, std::string>> parameters);
+      std::unique_ptr<std::map<std::string, std::string>> parameters,
+      const GURL& initialUrl);
 
   // Overrides ScriptExecutorDelegate:
   Service* GetService() override;
@@ -60,7 +61,8 @@ class Controller : public ScriptExecutorDelegate,
              std::unique_ptr<Client> client,
              std::unique_ptr<WebController> web_controller,
              std::unique_ptr<Service> service,
-             std::unique_ptr<std::map<std::string, std::string>> parameters);
+             std::unique_ptr<std::map<std::string, std::string>> parameters,
+             const GURL& initialUrl);
   ~Controller() override;
 
   void GetOrCheckScripts(const GURL& url);

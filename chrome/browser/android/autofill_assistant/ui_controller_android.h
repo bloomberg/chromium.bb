@@ -22,7 +22,8 @@ class UiControllerAndroid : public UiController, public Client {
       jobject jcaller,
       const base::android::JavaParamRef<jobject>& webContents,
       const base::android::JavaParamRef<jobjectArray>& parameterNames,
-      const base::android::JavaParamRef<jobjectArray>& parameterValues);
+      const base::android::JavaParamRef<jobjectArray>& parameterValues,
+      const base::android::JavaParamRef<jstring>& initialUrlString);
   ~UiControllerAndroid() override;
 
   // Overrides UiController:
