@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "ui/gfx/geometry/rect.h"
@@ -94,7 +95,7 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   static bool ShouldCancelRequest(const PrintHostMsg_PreviewIds& ids);
 
   // Returns an id to uniquely identify this PrintPreviewUI.
-  int32_t GetIDForPrintPreviewUI() const;
+  base::Optional<int32_t> GetIDForPrintPreviewUI() const;
 
   // Notifies the Web UI of a print preview request with |request_id|.
   virtual void OnPrintPreviewRequest(int request_id);
@@ -194,6 +195,14 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   // See ClearAllPreviewData().
   void ClearAllPreviewDataForTest();
 
+  // Sets a new valid Print Preview UI ID for this instance. Called by
+  // PrintPreviewHandler in OnJavascriptAllowed().
+  void SetPreviewUIId();
+
+  // Clears the UI ID. Called by PrintPreviewHandler in
+  // OnJavascriptDisallowed().
+  void ClearPreviewUIId();
+
  protected:
   // Alternate constructor for tests
   PrintPreviewUI(content::WebUI* web_ui,
@@ -217,7 +226,7 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
 
   // The unique ID for this class instance. Stored here to avoid calling
   // GetIDForPrintPreviewUI() everywhere.
-  const int32_t id_;
+  base::Optional<int32_t> id_;
 
   // Weak pointer to the WebUI handler.
   PrintPreviewHandler* const handler_;

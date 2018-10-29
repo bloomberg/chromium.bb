@@ -628,6 +628,7 @@ void PrintPreviewHandler::RegisterMessages() {
 }
 
 void PrintPreviewHandler::OnJavascriptAllowed() {
+  print_preview_ui()->SetPreviewUIId();
   // Now that the UI is initialized, any future account changes will require
   // a printer list refresh.
   RegisterForGaiaCookieChanges();
@@ -637,6 +638,7 @@ void PrintPreviewHandler::OnJavascriptDisallowed() {
   // Normally the handler and print preview will be destroyed together, but
   // this is necessary for refresh or navigation from the chrome://print page.
   weak_factory_.InvalidateWeakPtrs();
+  print_preview_ui()->ClearPreviewUIId();
   preview_callbacks_.clear();
   preview_failures_.clear();
   UnregisterForGaiaCookieChanges();
@@ -773,7 +775,7 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
   // Add an additional key in order to identify |print_preview_ui| later on
   // when calling PrintPreviewUI::ShouldCancelRequest() on the IO thread.
   settings->SetInteger(printing::kPreviewUIID,
-                       print_preview_ui()->GetIDForPrintPreviewUI());
+                       print_preview_ui()->GetIDForPrintPreviewUI().value());
 
   // Increment request count.
   ++regenerate_preview_request_count_;
