@@ -755,6 +755,14 @@ void MediaSessionImpl::FinishSystemAudioFocusRequest(
   }
 }
 
+void MediaSessionImpl::PreviousTrack() {
+  DidReceiveAction(blink::mojom::MediaSessionAction::PREVIOUS_TRACK);
+}
+
+void MediaSessionImpl::NextTrack() {
+  DidReceiveAction(blink::mojom::MediaSessionAction::NEXT_TRACK);
+}
+
 void MediaSessionImpl::AbandonSystemAudioFocusIfNeeded() {
   if (audio_focus_state_ == State::INACTIVE || !normal_players_.empty() ||
       !pepper_players_.empty() || !one_shot_players_.empty()) {

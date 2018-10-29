@@ -63,6 +63,20 @@ void MediaController::MediaSessionInfoChanged(mojom::MediaSessionInfoPtr info) {
   session_info_ = std::move(info);
 }
 
+void MediaController::PreviousTrack() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (session_)
+    session_->PreviousTrack();
+}
+
+void MediaController::NextTrack() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (session_)
+    session_->NextTrack();
+}
+
 void MediaController::SetMediaSession(mojom::MediaSession* session) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   session_ = session;

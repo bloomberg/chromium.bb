@@ -85,6 +85,14 @@ class MediaSession : public media_session::mojom::MediaSession {
   void AddObserver(
       media_session::mojom::MediaSessionObserverPtr observer) override = 0;
 
+  // Skip to the previous track. If there is no previous track then this will be
+  // a no-op.
+  void PreviousTrack() override = 0;
+
+  // Skip to the next track. If there is no next track then this will be a
+  // no-op.
+  void NextTrack() override = 0;
+
  protected:
   MediaSession() = default;
 
