@@ -63,8 +63,8 @@ class UiController {
   // forms.
   virtual void GetPaymentInformation(
       payments::mojom::PaymentOptionsPtr payment_options,
-      base::OnceCallback<void(std::unique_ptr<PaymentInformation>)>
-          callback) = 0;
+      base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
+      const std::string& title) = 0;
 
   // Hide contextual information.
   virtual void HideDetails() = 0;

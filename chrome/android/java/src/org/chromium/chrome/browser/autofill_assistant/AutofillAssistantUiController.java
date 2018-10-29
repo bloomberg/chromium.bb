@@ -227,7 +227,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
 
     @CalledByNative
     private void onRequestPaymentInformation(boolean requestShipping, boolean requestPayerName,
-            boolean requestPayerPhone, boolean requestPayerEmail, int shippingType) {
+            boolean requestPayerPhone, boolean requestPayerEmail, int shippingType, String title) {
         PaymentOptions paymentOtions = new PaymentOptions();
         paymentOtions.requestShipping = requestShipping;
         paymentOtions.requestPayerName = requestPayerName;
@@ -235,7 +235,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         paymentOtions.requestPayerEmail = requestPayerEmail;
         paymentOtions.shippingType = shippingType;
         mAutofillAssistantPaymentRequest =
-                new AutofillAssistantPaymentRequest(mWebContents, paymentOtions);
+                new AutofillAssistantPaymentRequest(mWebContents, paymentOtions, title);
 
         mUiDelegateHolder.performUiOperation(
                 uiDelegate -> mAutofillAssistantPaymentRequest.show(selectedPaymentInformation -> {

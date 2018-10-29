@@ -38,8 +38,8 @@ class UiControllerAndroid : public UiController, public Client {
       base::OnceCallback<void(const std::string&)> callback) override;
   void GetPaymentInformation(
       payments::mojom::PaymentOptionsPtr payment_options,
-      base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback)
-      override;
+      base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
+      const std::string& title) override;
   void HideDetails() override;
   void ShowDetails(const DetailsProto& details) override;
   void ShowProgressBar(int progress, const std::string& message) override;

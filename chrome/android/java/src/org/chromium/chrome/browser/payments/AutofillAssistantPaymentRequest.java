@@ -48,6 +48,7 @@ public class AutofillAssistantPaymentRequest implements PaymentRequestUI.Client 
 
     private final WebContents mWebContents;
     private final PaymentOptions mPaymentOptions;
+    private final String mTitle;
     private final CardEditor mCardEditor;
     private final AddressEditor mAddressEditor;
     private final Map<String, PaymentMethodData> mMethodData;
@@ -89,10 +90,13 @@ public class AutofillAssistantPaymentRequest implements PaymentRequestUI.Client 
      *
      * @webContents    The web contents of the payment request associated with.
      * @paymentOptions The options to request payment information.
+     * @title          The title to display in the payment request.
      */
-    public AutofillAssistantPaymentRequest(WebContents webContents, PaymentOptions paymentOptions) {
+    public AutofillAssistantPaymentRequest(
+            WebContents webContents, PaymentOptions paymentOptions, String title) {
         mWebContents = webContents;
         mPaymentOptions = paymentOptions;
+        mTitle = title;
 
         // This feature should only works in non-incognito mode.
         mAddressEditor = new AddressEditor(/* emailFieldIncluded= */ true, /* saveToDisk= */ true);
@@ -158,7 +162,8 @@ public class AutofillAssistantPaymentRequest implements PaymentRequestUI.Client 
                 /* requestShippingOption= */ false,
                 mPaymentOptions.requestPayerName || mPaymentOptions.requestPayerPhone
                         || mPaymentOptions.requestPayerEmail,
-                /* canAddCards= */ true, /* showDataSource= */ true, mWebContents.getTitle(),
+                /* canAddCards= */ true, /* showDataSource= */ true,
+                mTitle.isEmpty() ? mWebContents.getTitle() : mTitle,
                 UrlFormatter.formatUrlForSecurityDisplay(mWebContents.getLastCommittedUrl()),
                 SecurityStateModel.getSecurityLevelForWebContents(mWebContents),
                 new ShippingStrings(mPaymentOptions.shippingType));
