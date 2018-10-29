@@ -395,11 +395,6 @@ void LoginDisplayHostMojo::HandleHardlockPod(const AccountId& account_id) {
   user_selection_screen_->HardLockPod(account_id);
 }
 
-void LoginDisplayHostMojo::HandleRecordClickOnLockIcon(
-    const AccountId& account_id) {
-  user_selection_screen_->RecordClickOnLockIcon(account_id);
-}
-
 void LoginDisplayHostMojo::HandleOnFocusPod(const AccountId& account_id) {
   // TODO(jdufault): Share common code between this and
   // ViewsScreenLocker::HandleOnFocusPod See https://crbug.com/831787.

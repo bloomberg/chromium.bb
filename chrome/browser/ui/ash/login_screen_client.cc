@@ -125,11 +125,6 @@ void LoginScreenClient::HardlockPod(const AccountId& account_id) {
     delegate_->HandleHardlockPod(account_id);
 }
 
-void LoginScreenClient::RecordClickOnLockIcon(const AccountId& account_id) {
-  if (delegate_)
-    delegate_->HandleRecordClickOnLockIcon(account_id);
-}
-
 void LoginScreenClient::OnFocusPod(const AccountId& account_id) {
   if (delegate_)
     delegate_->HandleOnFocusPod(account_id);

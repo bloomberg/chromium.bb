@@ -252,11 +252,6 @@ void ViewsScreenLocker::HandleHardlockPod(const AccountId& account_id) {
   user_selection_screen_->HardLockPod(account_id);
 }
 
-void ViewsScreenLocker::HandleRecordClickOnLockIcon(
-    const AccountId& account_id) {
-  user_selection_screen_->RecordClickOnLockIcon(account_id);
-}
-
 void ViewsScreenLocker::HandleOnFocusPod(const AccountId& account_id) {
   proximity_auth::ScreenlockBridge::Get()->SetFocusedUser(account_id);
   if (user_selection_screen_)

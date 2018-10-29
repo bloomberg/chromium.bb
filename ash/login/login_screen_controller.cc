@@ -181,12 +181,6 @@ void LoginScreenController::HardlockPod(const AccountId& account_id) {
   login_screen_client_->HardlockPod(account_id);
 }
 
-void LoginScreenController::RecordClickOnLockIcon(const AccountId& account_id) {
-  if (!login_screen_client_)
-    return;
-  login_screen_client_->RecordClickOnLockIcon(account_id);
-}
-
 void LoginScreenController::OnFocusPod(const AccountId& account_id) {
   if (!login_screen_client_)
     return;

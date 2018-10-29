@@ -752,13 +752,6 @@ void UserSelectionScreen::AttemptEasyUnlock(const AccountId& account_id) {
   service->AttemptAuth(account_id);
 }
 
-void UserSelectionScreen::RecordClickOnLockIcon(const AccountId& account_id) {
-  EasyUnlockService* service = GetEasyUnlockServiceForUser(account_id);
-  if (!service)
-    return;
-  service->RecordClickOnLockIcon();
-}
-
 std::unique_ptr<base::ListValue>
 UserSelectionScreen::UpdateAndReturnUserListForWebUI() {
   std::unique_ptr<base::ListValue> users_list =

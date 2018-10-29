@@ -502,11 +502,6 @@ void EasyUnlockService::SetTrialRun() {
     handler->SetTrialRun();
 }
 
-void EasyUnlockService::RecordClickOnLockIcon() {
-  if (screenlock_state_handler_)
-    screenlock_state_handler_->RecordClickOnLockIcon();
-}
-
 void EasyUnlockService::AddObserver(EasyUnlockServiceObserver* observer) {
   observers_.AddObserver(observer);
 }
