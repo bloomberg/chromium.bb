@@ -2891,7 +2891,7 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
       (INACTIVE, 'firmware-poppy-10431.B', ['poppy', 'soraka', 'nautilus']),
       (ACTIVE, 'firmware-nami-10775.B', ['nami']),
       (ACTIVE, 'firmware-nocturne-10984.B', ['nocturne']),
-      (ACTIVE, 'firmware-grunt-11031.B', ['grunt']),
+      (INACTIVE, 'firmware-grunt-11031.B', ['grunt']),
   ]
 
   for active, branch, boards in firmware_branch_builders:
