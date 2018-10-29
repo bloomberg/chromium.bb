@@ -109,7 +109,10 @@ void PostContextProviderToCallback(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<viz::ContextProvider> unwanted_context_provider,
     blink::WebSubmitterConfigurationCallback set_context_provider_callback) {
-  main_task_runner->PostTask(
+  // |unwanted_context_provider| needs to be destroyed on the current thread.
+  // Therefore, post a reply-callback that retains a reference to it, so that it
+  // doesn't get destroyed on the main thread.
+  main_task_runner->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(
           [](scoped_refptr<viz::ContextProvider> unwanted_context_provider,
@@ -120,8 +123,11 @@ void PostContextProviderToCallback(
             std::move(cb).Run(!rti->IsGpuCompositingDisabled(),
                               std::move(context_provider));
           },
-          std::move(unwanted_context_provider),
-          media::BindToCurrentLoop(std::move(set_context_provider_callback))));
+          unwanted_context_provider,
+          media::BindToCurrentLoop(std::move(set_context_provider_callback))),
+      base::BindOnce(
+          [](scoped_refptr<viz::ContextProvider> unwanted_context_provider) {},
+          unwanted_context_provider));
 }
 
 }  // namespace
