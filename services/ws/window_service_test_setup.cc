@@ -15,6 +15,7 @@
 #include "services/ws/window_tree_binding.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/test/event_generator_delegate_aura.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_target_iterator.h"
 #include "ui/gl/test/gl_surface_test_support.h"
@@ -154,8 +155,8 @@ std::unique_ptr<ui::test::EventGeneratorDelegate> CreateEventGeneratorDelegate(
   DCHECK(root_window->GetHost());
   return std::make_unique<EventGeneratorDelegateWs>(
       test_setup,
-      test_setup->service()->event_queue()->FindHostEventQueueForWindowTreeHost(
-          root_window->GetHost()));
+      test_setup->service()->event_queue()->GetHostEventQueueForDisplay(
+          root_window->GetHost()->GetDisplayId()));
 }
 
 }  // namespace

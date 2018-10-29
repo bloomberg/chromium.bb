@@ -38,7 +38,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) HostEventQueue {
 
   // If necessary, queues the event. If the event need not be queued,
   // HostEventDispatcher::DispatchEventFromQueue() is called synchronously.
-  void DispatchOrQueueEvent(ui::Event* event);
+  void DispatchOrQueueEvent(ui::Event* event, bool honor_rewriters = true);
 
   aura::WindowTreeHost* window_tree_host() { return window_tree_host_; }
 
@@ -47,6 +47,12 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) HostEventQueue {
   }
 
  private:
+  friend class EventQueue;
+
+  // Dispatches an event directly, circumventing any queuing. This is private as
+  // it's only useful internally.
+  void DispatchEventDontQueue(ui::Event* event, bool honor_rewriters);
+
   // Because of shutdown ordering, HostEventQueue may be deleted *after*
   // EventQueue.
   base::WeakPtr<EventQueue> event_queue_;

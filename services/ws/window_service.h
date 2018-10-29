@@ -188,6 +188,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
 
  private:
   friend class WindowServerTestImpl;
+  friend class WindowServiceTestHelper;
 
   // Sets a callback to be called whenever a surface is activated. This
   // corresponds to a client submitting a new CompositorFrame for a Window. This

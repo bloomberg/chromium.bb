@@ -49,10 +49,15 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) EventQueue
       HostEventDispatcher* dispatcher);
 
   // Convenience to locate the HostEventDispatcher for |window_tree_host|
-  // and call DispatchOrQueueEvent() on it with |event|.
+  // and call DispatchOrQueueEvent() on it with |event|. If |honor_rewriters|
+  // is true, the event is passed through EventRewriters first. Events received
+  // from the platform go through EventRewriters, so generally
+  // |honor_rewriters| should be true, remote injection may need to circumvent
+  // that though.
   static void DispatchOrQueueEvent(WindowService* service,
                                    aura::WindowTreeHost* window_tree_host,
-                                   ui::Event* event);
+                                   ui::Event* event,
+                                   bool honor_rewriters);
 
   // Returns true if |event| should be queued at this time.
   bool ShouldQueueEvent(HostEventQueue* host, const ui::Event& event);
@@ -61,9 +66,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) EventQueue
   // which may be immediately.
   void NotifyWhenReadyToDispatch(base::OnceClosure closure);
 
-  // Returns the HostEventQueue associated with |host|.
-  HostEventQueue* FindHostEventQueueForWindowTreeHost(
-      aura::WindowTreeHost* host);
+  // Returns the HostEventQueue associated with the specified display.
+  HostEventQueue* GetHostEventQueueForDisplay(int64_t display_id);
 
  private:
   friend class EventQueueTestHelper;
@@ -82,7 +86,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) EventQueue
   void OnHostEventQueueDestroyed(HostEventQueue* host);
 
   // Adds |event| to |queued_events_|.
-  void QueueEvent(HostEventQueue* host, const ui::Event& event);
+  void QueueEvent(HostEventQueue* host,
+                  const ui::Event& event,
+                  bool honor_rewriters);
 
   // Processes QueuedEvents until |queued_events_| is empty, or there is an
   // event sent to a client.

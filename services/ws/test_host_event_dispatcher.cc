@@ -6,6 +6,7 @@
 
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_sink.h"
+#include "ui/events/test/events_test_utils.h"
 
 namespace ws {
 
@@ -18,7 +19,8 @@ TestHostEventDispatcher::TestHostEventDispatcher(
 TestHostEventDispatcher::~TestHostEventDispatcher() = default;
 
 void TestHostEventDispatcher::DispatchEventFromQueue(ui::Event* event) {
-  ignore_result(window_tree_host_->event_sink()->OnEventFromSource(event));
+  ignore_result(
+      ui::EventSourceTestApi(window_tree_host_).SendEventToSink(event));
 }
 
 }  // namespace ws

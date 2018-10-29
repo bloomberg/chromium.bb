@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "services/ws/event_queue.h"
+#include "services/ws/host_event_queue.h"
 #include "services/ws/injected_event_handler.h"
 #include "services/ws/window_service.h"
-#include "services/ws/window_service_delegate.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -65,12 +65,19 @@ void EventInjector::OnEventDispatched(InjectedEventHandler* handler) {
   NOTREACHED();
 }
 
+aura::WindowTreeHost* EventInjector::GetWindowTreeHostForDisplayId(
+    int64_t display_id) {
+  HostEventQueue* host_event_queue =
+      window_service_->event_queue()->GetHostEventQueueForDisplay(display_id);
+  return host_event_queue ? host_event_queue->window_tree_host() : nullptr;
+}
+
 EventInjector::EventAndHost EventInjector::DetermineEventAndHost(
     int64_t display_id,
     std::unique_ptr<ui::Event> event) {
   EventAndHost event_and_host;
   aura::WindowTreeHost* window_tree_host =
-      window_service_->delegate()->GetWindowTreeHostForDisplayId(display_id);
+      GetWindowTreeHostForDisplayId(display_id);
   if (!window_tree_host) {
     DVLOG(1) << "InjectEvent(): invalid display " << display_id;
     return event_and_host;
@@ -100,8 +107,7 @@ void EventInjector::DispatchNextQueuedEvent() {
   queued_events_.pop_front();
 
   aura::WindowTreeHost* window_tree_host =
-      window_service_->delegate()->GetWindowTreeHostForDisplayId(
-          queued_event.display_id);
+      GetWindowTreeHostForDisplayId(queued_event.display_id);
   if (!window_tree_host) {
     std::move(queued_event.callback).Run(false);
     return;
@@ -117,6 +123,19 @@ void EventInjector::DispatchNextQueuedEvent() {
   auto callback = base::BindOnce(&EventInjector::OnEventDispatched,
                                  base::Unretained(this), handler);
   handler->Inject(std::move(queued_event.event), std::move(callback));
+}
+
+void EventInjector::InjectEventNoAckImpl(int64_t display_id,
+                                         std::unique_ptr<ui::Event> event,
+                                         bool honor_rewriters) {
+  EventAndHost event_and_host =
+      DetermineEventAndHost(display_id, std::move(event));
+  if (!event_and_host.window_tree_host)
+    return;
+
+  EventQueue::DispatchOrQueueEvent(window_service_,
+                                   event_and_host.window_tree_host,
+                                   event_and_host.event.get(), honor_rewriters);
 }
 
 void EventInjector::InjectEvent(int64_t display_id,
@@ -143,14 +162,15 @@ void EventInjector::InjectEvent(int64_t display_id,
 
 void EventInjector::InjectEventNoAck(int64_t display_id,
                                      std::unique_ptr<ui::Event> event) {
-  EventAndHost event_and_host =
-      DetermineEventAndHost(display_id, std::move(event));
-  if (!event_and_host.window_tree_host)
-    return;
+  InjectEventNoAckImpl(display_id, std::move(event),
+                       /* honor_rewriters */ true);
+}
 
-  EventQueue::DispatchOrQueueEvent(window_service_,
-                                   event_and_host.window_tree_host,
-                                   event_and_host.event.get());
+void EventInjector::InjectEventNoAckNoRewriters(
+    int64_t display_id,
+    std::unique_ptr<ui::Event> event) {
+  InjectEventNoAckImpl(display_id, std::move(event),
+                       /* honor_rewriters */ false);
 }
 
 }  // namespace ws

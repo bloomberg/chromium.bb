@@ -21,4 +21,7 @@ interface EventInjector {
   // Takes an event and dispatches it as if it came from the native platform.
   // Similar to InjectEvent() but does not respond when processing is complete.
   InjectEventNoAck(int64 display_id, ui.mojom.Event event);
+
+  // Similar to InjectEventNoAck(), but skips event rewriters.
+  InjectEventNoAckNoRewriters(int64 display_id, ui.mojom.Event event);
 };

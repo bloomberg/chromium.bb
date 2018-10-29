@@ -218,13 +218,6 @@ ui::SystemInputInjector* WindowServiceDelegateImpl::GetSystemInputInjector() {
   return system_input_injector_.get();
 }
 
-aura::WindowTreeHost* WindowServiceDelegateImpl::GetWindowTreeHostForDisplayId(
-    int64_t display_id) {
-  RootWindowController* root_window_controller =
-      Shell::GetRootWindowControllerWithDisplayId(display_id);
-  return root_window_controller ? root_window_controller->GetHost() : nullptr;
-}
-
 aura::Window* WindowServiceDelegateImpl::GetTopmostWindowAtPoint(
     const gfx::Point& location_in_screen,
     const std::set<aura::Window*>& ignore,

@@ -27,6 +27,8 @@ bool IsQueableEvent(const ui::Event& event) {
 struct EventQueue::QueuedEvent {
   HostEventQueue* host = nullptr;
   std::unique_ptr<ui::Event> event;
+  bool honor_rewriters = false;
+
   base::OnceClosure callback;
 };
 
@@ -48,13 +50,14 @@ std::unique_ptr<HostEventQueue> EventQueue::RegisterHostEventDispatcher(
 // static
 void EventQueue::DispatchOrQueueEvent(WindowService* service,
                                       aura::WindowTreeHost* window_tree_host,
-                                      ui::Event* event) {
+                                      ui::Event* event,
+                                      bool honor_rewriters) {
   DCHECK(window_tree_host);
   HostEventQueue* host_event_queue =
-      service->event_queue()->FindHostEventQueueForWindowTreeHost(
-          window_tree_host);
+      service->event_queue()->GetHostEventQueueForDisplay(
+          window_tree_host->GetDisplayId());
   DCHECK(host_event_queue);
-  host_event_queue->DispatchOrQueueEvent(event);
+  host_event_queue->DispatchOrQueueEvent(event, honor_rewriters);
 }
 
 bool EventQueue::ShouldQueueEvent(HostEventQueue* host_queue,
@@ -81,10 +84,9 @@ void EventQueue::NotifyWhenReadyToDispatch(base::OnceClosure closure) {
   }
 }
 
-HostEventQueue* EventQueue::FindHostEventQueueForWindowTreeHost(
-    aura::WindowTreeHost* host) {
+HostEventQueue* EventQueue::GetHostEventQueueForDisplay(int64_t display_id) {
   for (HostEventQueue* host_queue : host_event_queues_) {
-    if (host_queue->window_tree_host() == host)
+    if (host_queue->window_tree_host()->GetDisplayId() == display_id)
       return host_queue;
   }
   return nullptr;
@@ -102,11 +104,14 @@ void EventQueue::OnHostEventQueueDestroyed(HostEventQueue* host) {
   host_event_queues_.erase(host);
 }
 
-void EventQueue::QueueEvent(HostEventQueue* host, const ui::Event& event) {
+void EventQueue::QueueEvent(HostEventQueue* host,
+                            const ui::Event& event,
+                            bool honor_rewriters) {
   DCHECK(ShouldQueueEvent(host, event));
   std::unique_ptr<QueuedEvent> queued_event = std::make_unique<QueuedEvent>();
   queued_event->host = host;
   queued_event->event = ui::Event::Clone(event);
+  queued_event->honor_rewriters = honor_rewriters;
   queued_events_.push_back(std::move(queued_event));
 }
 
@@ -118,8 +123,8 @@ void EventQueue::DispatchNextQueuedEvent() {
     if (queued_event->callback) {
       std::move(queued_event->callback).Run();
     } else {
-      queued_event->host->host_event_dispatcher()->DispatchEventFromQueue(
-          queued_event->event.get());
+      queued_event->host->DispatchEventDontQueue(queued_event->event.get(),
+                                                 queued_event->honor_rewriters);
     }
   }
 }
