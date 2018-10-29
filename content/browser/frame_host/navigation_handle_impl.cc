@@ -14,7 +14,7 @@
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/devtools/render_frame_devtools_agent_host.h"
+#include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/frame_host/ancestor_throttle.h"
 #include "content/browser/frame_host/blocked_scheme_navigation_throttle.h"
 #include "content/browser/frame_host/debug_urls.h"
@@ -1374,7 +1374,7 @@ void NavigationHandleImpl::RegisterNavigationThrottles() {
   AddThrottle(OriginPolicyThrottle::MaybeCreateThrottleFor(this));
 
   for (auto& throttle :
-       RenderFrameDevToolsAgentHost::CreateNavigationThrottles(this)) {
+       devtools_instrumentation::CreateNavigationThrottles(this)) {
     AddThrottle(std::move(throttle));
   }
 

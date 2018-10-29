@@ -15,7 +15,7 @@
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/devtools/render_frame_devtools_agent_host.h"
+#include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -509,7 +509,7 @@ NavigationRequest::NavigationRequest(
 NavigationRequest::~NavigationRequest() {
   TRACE_EVENT_ASYNC_END0("navigation", "NavigationRequest", this);
   if (state_ == STARTED) {
-    RenderFrameDevToolsAgentHost::OnNavigationRequestFailed(
+    devtools_instrumentation::OnNavigationRequestFailed(
         *this, network::URLLoaderCompletionStatus(net::ERR_ABORTED));
   }
 }
@@ -1061,7 +1061,7 @@ void NavigationRequest::OnResponseStarted(
     }
   }
 
-  RenderFrameDevToolsAgentHost::OnNavigationResponseReceived(*this, *response);
+  devtools_instrumentation::OnNavigationResponseReceived(*this, *response);
 
   // The response code indicates that this is an error page, but we don't
   // know how to display the content.  We follow Firefox here and show our
@@ -1127,7 +1127,7 @@ void NavigationRequest::OnRequestFailedInternal(
            error_page_content.has_value()));
   common_params_.previews_state = content::PREVIEWS_OFF;
 
-  RenderFrameDevToolsAgentHost::OnNavigationRequestFailed(*this, status);
+  devtools_instrumentation::OnNavigationRequestFailed(*this, status);
 
   // TODO(https://crbug.com/757633): Check that ssl_info.has_value() if
   // net_error is a certificate error.
@@ -1370,9 +1370,9 @@ void NavigationRequest::OnStartChecksComplete(
   // Give DevTools a chance to override begin params (headers, skip SW)
   // before actually loading resource.
   bool report_raw_headers = false;
-  RenderFrameDevToolsAgentHost::ApplyOverrides(
+  devtools_instrumentation::ApplyNetworkRequestOverrides(
       frame_tree_node_, begin_params_.get(), &report_raw_headers);
-  RenderFrameDevToolsAgentHost::OnNavigationRequestWillBeSent(*this);
+  devtools_instrumentation::OnNavigationRequestWillBeSent(*this);
 
   loader_ = NavigationURLLoader::Create(
       browser_context->GetResourceContext(), partition,
@@ -1429,7 +1429,7 @@ void NavigationRequest::OnRedirectChecksComplete(
     return;
   }
 
-  RenderFrameDevToolsAgentHost::OnNavigationRequestWillBeSent(*this);
+  devtools_instrumentation::OnNavigationRequestWillBeSent(*this);
 
   base::Optional<net::HttpRequestHeaders> embedder_additional_headers;
   GetContentClient()->browser()->NavigationRequestRedirected(

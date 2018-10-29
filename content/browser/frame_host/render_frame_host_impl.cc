@@ -36,7 +36,7 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/dedicated_worker/dedicated_worker_host.h"
-#include "content/browser/devtools/render_frame_devtools_agent_host.h"
+#include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/download/mhtml_generation_manager.h"
 #include "content/browser/file_url_loader_factory.h"
@@ -4313,8 +4313,8 @@ void RenderFrameHostImpl::CommitNavigation(
           browser_context, this, false /* is_navigation */,
           GetOriginForURLLoaderFactory(common_params.url, GetSiteInstance()),
           &factory_request, nullptr /* bypass_redirect_checks */);
-      // Keep DevTools proxy lasy, i.e. closest to the network.
-      RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
+      // Keep DevTools proxy last, i.e. closest to the network.
+      devtools_instrumentation::WillCreateURLLoaderFactory(
           this, false /* is_navigation */, false /* is_download */,
           &factory_request);
       factory.second->Clone(std::move(factory_request));
@@ -5047,7 +5047,7 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
   }
 
   // Keep DevTools proxy last, i.e. closest to the network.
-  RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
+  devtools_instrumentation::WillCreateURLLoaderFactory(
       this, false /* is_navigation */, false /* is_download */,
       &default_factory_request);
 

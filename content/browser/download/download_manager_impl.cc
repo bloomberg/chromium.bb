@@ -40,7 +40,7 @@
 #include "components/download/public/common/url_download_handler_factory.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/devtools/render_frame_devtools_agent_host.h"
+#include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/download/byte_stream_input_stream.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/download_utils.h"
@@ -279,7 +279,7 @@ CreateDownloadURLLoaderFactoryGetter(StoragePartitionImpl* storage_partition,
     network::mojom::URLLoaderFactoryPtrInfo devtools_factory_ptr_info;
     network::mojom::URLLoaderFactoryRequest devtools_factory_request =
         MakeRequest(&devtools_factory_ptr_info);
-    if (RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
+    if (devtools_instrumentation::WillCreateURLLoaderFactory(
             static_cast<RenderFrameHostImpl*>(rfh), true, is_download,
             &devtools_factory_request)) {
       proxy_factory_ptr_info = std::move(devtools_factory_ptr_info);

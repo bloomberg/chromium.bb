@@ -623,6 +623,8 @@ jumbo_source_set("browser") {
     "devtools/devtools_frame_trace_recorder.h",
     "devtools/devtools_http_handler.cc",
     "devtools/devtools_http_handler.h",
+    "devtools/devtools_instrumentation.cc",
+    "devtools/devtools_instrumentation.h",
     "devtools/devtools_interceptor_controller.cc",
     "devtools/devtools_interceptor_controller.h",
     "devtools/devtools_io_context.cc",
