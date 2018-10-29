@@ -63,6 +63,8 @@ class MockMediaSession : public mojom::MediaSession {
   void GetMediaSessionInfo(GetMediaSessionInfoCallback) override;
   void AddObserver(mojom::MediaSessionObserverPtr) override;
   void GetDebugInfo(GetDebugInfoCallback) override;
+  void PreviousTrack() override;
+  void NextTrack() override;
 
   void Stop();
 
@@ -80,6 +82,9 @@ class MockMediaSession : public mojom::MediaSession {
   }
   void FlushForTesting();
 
+  int prev_track_count() const { return prev_track_count_; }
+  int next_track_count() const { return next_track_count_; }
+
  private:
   void SetState(mojom::MediaSessionInfo::SessionState);
   void NotifyObservers();
@@ -89,6 +94,9 @@ class MockMediaSession : public mojom::MediaSession {
 
   const bool force_duck_ = false;
   bool is_ducking_ = false;
+
+  int prev_track_count_ = 0;
+  int next_track_count_ = 0;
 
   mojom::MediaSessionInfo::SessionState state_ =
       mojom::MediaSessionInfo::SessionState::kInactive;

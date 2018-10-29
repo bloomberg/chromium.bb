@@ -227,6 +227,12 @@ class MediaSessionImpl : public MediaSession,
       media_session::mojom::AudioFocusType type,
       bool result);
 
+  // Skip to the previous track.
+  CONTENT_EXPORT void PreviousTrack() override;
+
+  // Skip to the next track.
+  CONTENT_EXPORT void NextTrack() override;
+
  private:
   friend class content::WebContentsUserData<MediaSessionImpl>;
   friend class ::MediaSessionImplBrowserTest;

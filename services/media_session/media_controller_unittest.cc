@@ -276,4 +276,38 @@ TEST_F(MediaControllerTest, ActiveController_Observer_StateTransition) {
   }
 }
 
+TEST_F(MediaControllerTest, ActiveController_PreviousTrack) {
+  test::MockMediaSession media_session;
+  EXPECT_EQ(0, media_session.prev_track_count());
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+    EXPECT_EQ(0, media_session.prev_track_count());
+  }
+
+  controller()->PreviousTrack();
+  controller().FlushForTesting();
+
+  EXPECT_EQ(1, media_session.prev_track_count());
+}
+
+TEST_F(MediaControllerTest, ActiveController_NextTrack) {
+  test::MockMediaSession media_session;
+  EXPECT_EQ(0, media_session.next_track_count());
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+    EXPECT_EQ(0, media_session.next_track_count());
+  }
+
+  controller()->NextTrack();
+  controller().FlushForTesting();
+
+  EXPECT_EQ(1, media_session.next_track_count());
+}
+
 }  // namespace media_session
