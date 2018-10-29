@@ -997,6 +997,11 @@
                   'content/renderer/indexed_db|'\
                   'content/test/data/indexeddb',
     },
+    'infra': {
+      'filepath': 'infra/config|'\
+                  'testing/buildbot|'\
+                  'tools/mb|',
+    },
     'ink_drop': {
       'filepath': 'ui/views/animation/test/.*ink_drop.*|' \
                   'ui/views/animation/.*ink_drop.*'
@@ -2191,6 +2196,7 @@
     'incident_reporting': ['grt+watch@chromium.org'],
     'indexed_db': ['cmumford@chromium.org',
                    'jsbell+idb@chromium.org'],
+    'infra': ['jbudorick+watch@chromium.org'],
     'ink_drop': ['bruthig+ink_drop@chromium.org'],
     'input': ['dtapuska+chromiumwatch@chromium.org'],
     'input_devices': ['spang+watch@chromium.org'],
