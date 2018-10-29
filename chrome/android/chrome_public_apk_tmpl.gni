@@ -107,8 +107,6 @@ template("chrome_public_common_apk_or_module_tmpl") {
     # Use zh-TW strings for zh-HK (https://crbug.com/780847).
     support_zh_hk = true
 
-    optimize_resources = true
-
     if (defined(shared_libraries) && shared_libraries != []) {
       _native_lib_file =
           rebase_path("$root_gen_dir/CHROME_VERSION.json", root_out_dir)
@@ -228,9 +226,6 @@ template("monochrome_public_common_apk_or_module_tmpl") {
 
     # Webview supports all locales (has no omitted ones).
     aapt_locale_whitelist = locales
-
-    # Resources config for blocklisting resource names from obfuscation
-    resources_config_path = "//android_webview/aapt2.config"
 
     if (!defined(invoker.target_type) || invoker.target_type == "android_apk") {
       # Incremental install doesn't work for monochrome. See crbug.com/663492.
