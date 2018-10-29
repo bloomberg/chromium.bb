@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include "ash/system/message_center/arc/arc_notification_constants.h"
 #include "ash/system/message_center/arc/arc_notification_content_view.h"
 #include "ash/system/message_center/arc/arc_notification_surface.h"
 #include "ash/system/message_center/arc/arc_notification_surface_manager.h"
@@ -153,13 +154,15 @@ class ArcAccessibilityHelperBridgeTest : public ChromeViewsTestBase {
   }
 
   std::unique_ptr<message_center::Notification> CreateNotification() {
-    return std::make_unique<message_center::Notification>(
+    auto notification = std::make_unique<message_center::Notification>(
         message_center::NOTIFICATION_TYPE_CUSTOM, kNotificationKey,
         base::UTF8ToUTF16("title"), base::UTF8ToUTF16("message"), gfx::Image(),
         base::UTF8ToUTF16("display_source"), GURL(),
         message_center::NotifierId(message_center::NotifierId::ARC_APPLICATION,
                                    "test_app_id"),
         message_center::RichNotificationData(), nullptr);
+    notification->set_custom_view_type(ash::kArcNotificationCustomViewType);
+    return notification;
   }
 
   std::unique_ptr<ArcNotificationView> CreateArcNotificationView(

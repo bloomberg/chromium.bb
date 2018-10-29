@@ -123,6 +123,7 @@ void ArcNotificationItemImpl::OnUpdatedFromAndroid(
       notifier_id, rich_data,
       new ArcNotificationDelegate(weak_ptr_factory_.GetWeakPtr()));
   notification->set_timestamp(base::Time::FromJavaTime(data->time));
+  notification->set_custom_view_type(kArcNotificationCustomViewType);
 
   if (expand_state_ != ArcNotificationExpandState::FIXED_SIZE &&
       data->expand_state != ArcNotificationExpandState::FIXED_SIZE &&

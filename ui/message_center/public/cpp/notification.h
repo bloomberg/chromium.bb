@@ -430,6 +430,12 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
   // method explicitly, to avoid setting it accidentally.
   void SetSystemPriority();
 
+  const std::string& custom_view_type() const { return custom_view_type_; }
+  void set_custom_view_type(const std::string& custom_view_type) {
+    DCHECK_EQ(type(), NotificationType::NOTIFICATION_TYPE_CUSTOM);
+    custom_view_type_ = custom_view_type;
+  }
+
   // Helper method to create a simple system notification. |click_callback|
   // will be invoked when the notification is clicked.
   //
@@ -497,6 +503,11 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
   // A proxy object that allows access back to the JavaScript object that
   // represents the notification, for firing events.
   scoped_refptr<NotificationDelegate> delegate_;
+
+  // For custom notifications this determines which factory will be used for
+  // creating the view for this notification. The type should match the type
+  // used to register the factory in MessageViewFactory.
+  std::string custom_view_type_;
 };
 
 // Registering a vector icon allows it to later be looked up by name. This is

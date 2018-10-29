@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "ash/shell.h"
+#include "ash/system/message_center/arc/arc_notification_constants.h"
 #include "ash/system/message_center/arc/arc_notification_content_view.h"
 #include "ash/system/message_center/arc/arc_notification_delegate.h"
 #include "ash/system/message_center/arc/arc_notification_item.h"
@@ -120,6 +121,10 @@ class ArcNotificationContentViewTest : public AshTestBase {
     DCHECK(exo::WMHelper::HasInstance());
 
     surface_manager_ = std::make_unique<ArcNotificationSurfaceManagerImpl>();
+
+    message_center::MessageViewFactory::
+        ClearCustomNotificationViewFactoryForTest(
+            kArcNotificationCustomViewType);
     ArcNotificationManager::SetCustomNotificationViewFactory();
   }
 
@@ -207,7 +212,7 @@ class ArcNotificationContentViewTest : public AshTestBase {
     message_center::RichNotificationData optional_fields;
     optional_fields.settings_button_handler =
         message_center::SettingsButtonHandler::DELEGATE;
-    return Notification(
+    Notification notification(
         message_center::NOTIFICATION_TYPE_CUSTOM,
         notification_item->GetNotificationId(), base::UTF8ToUTF16("title"),
         base::UTF8ToUTF16("message"), gfx::Image(), base::UTF8ToUTF16("arc"),
@@ -216,6 +221,8 @@ class ArcNotificationContentViewTest : public AshTestBase {
                                    "ARC_NOTIFICATION"),
         optional_fields,
         new ArcNotificationDelegate(notification_item->GetWeakPtr()));
+    notification.set_custom_view_type(kArcNotificationCustomViewType);
+    return notification;
   }
 
   ArcNotificationSurfaceManagerImpl* surface_manager() {
@@ -327,10 +334,14 @@ TEST_F(ArcNotificationContentViewTest, CloseButton) {
 TEST_F(ArcNotificationContentViewTest, CloseButtonInMessageCenterView) {
   std::string notification_key("notification id");
 
+  message_center::MessageViewFactory::ClearCustomNotificationViewFactoryForTest(
+      kArcNotificationCustomViewType);
+
   // Override MessageView factory to capture the created notification view in
   // |notification_view|.
   ArcNotificationView* notification_view = nullptr;
   message_center::MessageViewFactory::SetCustomNotificationViewFactory(
+      kArcNotificationCustomViewType,
       base::BindLambdaForTesting(
           [&notification_view](const message_center::Notification& notification)
               -> std::unique_ptr<message_center::MessageView> {
