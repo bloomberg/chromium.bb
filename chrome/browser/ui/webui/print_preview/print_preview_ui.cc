@@ -584,17 +584,13 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui,
                                std::unique_ptr<PrintPreviewHandler> handler)
     : ConstrainedWebDialogUI(web_ui),
       initial_preview_start_time_(base::TimeTicks::Now()),
-      id_(g_print_preview_ui_id_map.Get().Add(this)),
       handler_(handler.get()) {
   web_ui->AddMessageHandler(std::move(handler));
-
-  g_print_preview_request_id_map.Get().Set(id_, -1);
 }
 
 PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
     : ConstrainedWebDialogUI(web_ui),
       initial_preview_start_time_(base::TimeTicks::Now()),
-      id_(g_print_preview_ui_id_map.Get().Add(this)),
       handler_(CreatePrintPreviewHandlers(web_ui)) {
   // Set up the chrome://print/ data source.
   Profile* profile = Profile::FromWebUI(web_ui);
@@ -611,31 +607,37 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
 
   // Set up the chrome://theme/ source.
   content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));
-
-  g_print_preview_request_id_map.Get().Set(id_, -1);
 }
 
 PrintPreviewUI::~PrintPreviewUI() {
-  PrintPreviewDataService::GetInstance()->RemoveEntry(id_);
-  g_print_preview_request_id_map.Get().Erase(id_);
-  g_print_preview_ui_id_map.Get().Remove(id_);
+  ClearPreviewUIId();
+}
+
+void PrintPreviewUI::ClearPreviewUIId() {
+  if (!id_)
+    return;
+
+  PrintPreviewDataService::GetInstance()->RemoveEntry(*id_);
+  g_print_preview_request_id_map.Get().Erase(*id_);
+  g_print_preview_ui_id_map.Get().Remove(*id_);
+  id_.reset();
 }
 
 void PrintPreviewUI::GetPrintPreviewDataForIndex(
     int index,
     scoped_refptr<base::RefCountedMemory>* data) const {
-  PrintPreviewDataService::GetInstance()->GetDataEntry(id_, index, data);
+  PrintPreviewDataService::GetInstance()->GetDataEntry(*id_, index, data);
 }
 
 void PrintPreviewUI::SetPrintPreviewDataForIndex(
     int index,
     scoped_refptr<base::RefCountedMemory> data) {
-  PrintPreviewDataService::GetInstance()->SetDataEntry(id_, index,
+  PrintPreviewDataService::GetInstance()->SetDataEntry(*id_, index,
                                                        std::move(data));
 }
 
 void PrintPreviewUI::ClearAllPreviewData() {
-  PrintPreviewDataService::GetInstance()->RemoveEntry(id_);
+  PrintPreviewDataService::GetInstance()->RemoveEntry(*id_);
 }
 
 void PrintPreviewUI::SetInitiatorTitle(
@@ -689,7 +691,7 @@ bool PrintPreviewUI::ShouldCancelRequest(const PrintHostMsg_PreviewIds& ids) {
   return ids.request_id != current_id;
 }
 
-int32_t PrintPreviewUI::GetIDForPrintPreviewUI() const {
+base::Optional<int32_t> PrintPreviewUI::GetIDForPrintPreviewUI() const {
   return id_;
 }
 
@@ -728,7 +730,7 @@ void PrintPreviewUI::OnPrintPreviewRequest(int request_id) {
     UMA_HISTOGRAM_TIMES("PrintPreview.InitializationTime",
                         base::TimeTicks::Now() - initial_preview_start_time_);
   }
-  g_print_preview_request_id_map.Get().Set(id_, request_id);
+  g_print_preview_request_id_map.Get().Set(*id_, request_id);
 }
 
 void PrintPreviewUI::OnDidStartPreview(
@@ -799,7 +801,7 @@ void PrintPreviewUI::OnDidPreviewPage(
 
   if (g_testing_delegate)
     g_testing_delegate->DidRenderPreviewPage(web_ui()->GetWebContents());
-  handler_->SendPagePreviewReady(page_number, id_, preview_request_id);
+  handler_->SendPagePreviewReady(page_number, *id_, preview_request_id);
 }
 
 void PrintPreviewUI::OnPreviewDataIsAvailable(
@@ -823,11 +825,11 @@ void PrintPreviewUI::OnPreviewDataIsAvailable(
   SetPrintPreviewDataForIndex(printing::COMPLETE_PREVIEW_DOCUMENT_INDEX,
                               std::move(data));
 
-  handler_->OnPrintPreviewReady(id_, preview_request_id);
+  handler_->OnPrintPreviewReady(*id_, preview_request_id);
 }
 
 void PrintPreviewUI::OnCancelPendingPreviewRequest() {
-  g_print_preview_request_id_map.Get().Set(id_, -1);
+  g_print_preview_request_id_map.Get().Set(*id_, -1);
 }
 
 void PrintPreviewUI::OnPrintPreviewFailed(int request_id) {
@@ -905,4 +907,10 @@ void PrintPreviewUI::SetPrintPreviewDataForIndexForTest(
 
 void PrintPreviewUI::ClearAllPreviewDataForTest() {
   ClearAllPreviewData();
+}
+
+void PrintPreviewUI::SetPreviewUIId() {
+  DCHECK(!id_);
+  id_ = g_print_preview_ui_id_map.Get().Add(this);
+  g_print_preview_request_id_map.Get().Set(*id_, -1);
 }

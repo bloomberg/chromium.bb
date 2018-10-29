@@ -90,8 +90,8 @@ PrintPreviewUI* PrintPreviewMessageHandler::GetPrintPreviewUI(
     return nullptr;
   PrintPreviewUI* preview_ui =
       static_cast<PrintPreviewUI*>(dialog->GetWebUI()->GetController());
-  return preview_ui->GetIDForPrintPreviewUI() == preview_ui_id ? preview_ui
-                                                               : nullptr;
+  base::Optional<int32_t> id = preview_ui->GetIDForPrintPreviewUI();
+  return (id && *id == preview_ui_id) ? preview_ui : nullptr;
 }
 
 void PrintPreviewMessageHandler::OnRequestPrintPreview(
