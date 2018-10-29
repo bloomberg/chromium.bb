@@ -7,6 +7,8 @@
 
 #include "scroll_snap_data.h"
 
+#include <memory>
+
 namespace cc {
 
 // This class represents an abstract strategy that decide which snap selection
