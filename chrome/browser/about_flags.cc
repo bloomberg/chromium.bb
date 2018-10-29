@@ -4107,6 +4107,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAppShortcutSearchDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableAppShortcutSearch)},
 
+    {"enable-play-store-search", flag_descriptions::kEnablePlayStoreSearchName,
+     flag_descriptions::kEnablePlayStoreSearchDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(app_list_features::kEnablePlayStoreAppSearch)},
+
+    {"enable-app-data-search", flag_descriptions::kEnableAppDataSearchName,
+     flag_descriptions::kEnableAppDataSearchDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(app_list_features::kEnableAppDataSearch)},
+
     {"enable-drag-tabs-in-tablet-mode",
      flag_descriptions::kEnableDragTabsInTabletModeName,
      flag_descriptions::kEnableDragTabsInTabletModeDescription, kOsCrOS,

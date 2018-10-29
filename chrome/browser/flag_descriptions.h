@@ -1933,6 +1933,9 @@ extern const char kEnableAppListSearchAutocompleteDescription[];
 extern const char kEnableAppShortcutSearchName[];
 extern const char kEnableAppShortcutSearchDescription[];
 
+extern const char kEnableAppDataSearchName[];
+extern const char kEnableAppDataSearchDescription[];
+
 extern const char kEnableAppsGridGapFeatureName[];
 extern const char kEnableAppsGridGapFeatureDescription[];
 
@@ -1992,6 +1995,9 @@ extern const char kEnableOobeRecommendAppsScreenDescription[];
 
 extern const char kEnablePerUserTimezoneName[];
 extern const char kEnablePerUserTimezoneDescription[];
+
+extern const char kEnablePlayStoreSearchName[];
+extern const char kEnablePlayStoreSearchDescription[];
 
 extern const char kEnableSettingsShortcutSearchName[];
 extern const char kEnableSettingsShortcutSearchDescription[];

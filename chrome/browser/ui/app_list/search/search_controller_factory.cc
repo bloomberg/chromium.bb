@@ -48,7 +48,7 @@ constexpr size_t kMaxLauncherSearchResults = 2;
 constexpr size_t kMaxPlayStoreResults = 12;
 
 // TODO(warx): Need UX spec.
-constexpr size_t kMaxAppDataResults = 6;
+constexpr size_t kMaxAppDataResults = 4;
 constexpr size_t kMaxAppShortcutResults = 4;
 
 // TODO(wutao): Need UX spec.
@@ -116,11 +116,13 @@ std::unique_ptr<SearchController> CreateSearchController(
                                                      profile, list_controller));
   }
 
-  size_t app_data_api_group_id =
-      controller->AddGroup(kMaxAppDataResults, 1.0, kBoostOfApps);
-  controller->AddProvider(app_data_api_group_id,
-                          std::make_unique<ArcAppDataSearchProvider>(
-                              kMaxAppDataResults, list_controller));
+  if (app_list_features::IsAppDataSearchEnabled()) {
+    size_t app_data_api_group_id =
+        controller->AddGroup(kMaxAppDataResults, 1.0, kBoostOfApps);
+    controller->AddProvider(app_data_api_group_id,
+                            std::make_unique<ArcAppDataSearchProvider>(
+                                kMaxAppDataResults, list_controller));
+  }
 
   if (app_list_features::IsSettingsShortcutSearchEnabled()) {
     size_t settings_shortcut_group_id = controller->AddGroup(

@@ -18,6 +18,8 @@ const base::Feature kEnableBackgroundBlur{"EnableBackgroundBlur",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnablePlayStoreAppSearch{
     "EnablePlayStoreAppSearch", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableAppDataSearch{"EnableAppDataSearch",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableHomeLauncher{"EnableHomeLauncher",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableHomeLauncherGestures{
@@ -53,6 +55,10 @@ bool IsBackgroundBlurEnabled() {
 bool IsPlayStoreAppSearchEnabled() {
   // Not using local static variable to allow tests to change this value.
   return base::FeatureList::IsEnabled(kEnablePlayStoreAppSearch);
+}
+
+bool IsAppDataSearchEnabled() {
+  return base::FeatureList::IsEnabled(kEnableAppDataSearch);
 }
 
 bool IsHomeLauncherEnabled() {
