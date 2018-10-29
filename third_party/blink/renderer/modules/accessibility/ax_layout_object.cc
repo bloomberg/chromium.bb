@@ -1900,6 +1900,11 @@ AXObject* AXLayoutObject::RawFirstChild() const {
     return AXObjectCache().GetOrCreate(table->TopSection());
   }
 
+  if (layout_object_->IsLayoutNGListMarker()) {
+    // We don't care tree structure of list marker.
+    return nullptr;
+  }
+
   LayoutObject* first_child = layout_object_->SlowFirstChild();
 
   // CSS first-letter pseudo element is handled as continuation. Returning it

@@ -58,15 +58,6 @@ crbug.com/855279 fast/css/text-overflow-ellipsis-vertical-hittest.html [ Failure
 crbug.com/591099 fast/dom/nodesFromRect/nodesFromRect-basic.html [ Failure ]
 
 # New failures are appended below by the script.
-crbug.com/591099 accessibility/aom-relation-list-properties.html [ Failure ]
-crbug.com/591099 accessibility/aria-labelledby-stay-within.html [ Failure ]
-crbug.com/591099 accessibility/aria-owns.html [ Failure ]
-crbug.com/591099 accessibility/aria-tab-roles.html [ Failure ]
-crbug.com/591099 accessibility/focusable-div.html [ Failure ]
-crbug.com/591099 accessibility/listitem-presentation-inherited.html [ Failure ]
-crbug.com/591099 accessibility/name-calc-aria-owns.html [ Failure ]
-crbug.com/591099 accessibility/presentation-owned-elements.html [ Failure ]
-crbug.com/591099 accessibility/role-attribute.html [ Failure ]
 crbug.com/728378 compositing/culling/tile-occlusion-boundaries.html [ Failure ]
 crbug.com/864398 compositing/iframes/floating-self-painting-frame.html [ Failure ]
 crbug.com/591099 compositing/masks/mask-with-removed-filters.html [ Pass ]
