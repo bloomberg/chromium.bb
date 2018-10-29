@@ -901,6 +901,11 @@ bool MetricsService::PrepareProviderMetricsLog() {
       // but those will be overwritten when an embedded profile is extracted.
       std::unique_ptr<MetricsLog> log = CreateLog(MetricsLog::INDEPENDENT_LOG);
 
+      // Note that something is happening. This must be set before the
+      // operation is requested in case the loader decides to do everything
+      // immediately rather than as a background task.
+      independent_loader_active_ = true;
+
       // Give the new log to a loader for management and then run it on the
       // provider that has something to give. A copy of the pointer is needed
       // because the unique_ptr may get moved before the value can be used
@@ -913,7 +918,6 @@ bool MetricsService::PrepareProviderMetricsLog() {
           base::BindOnce(&MetricsService::PrepareProviderMetricsLogDone,
                          self_ptr_factory_.GetWeakPtr(), std::move(loader)),
           provider.get());
-      independent_loader_active_ = true;
 
       // Something was found so there may still be more work to do.
       return true;
