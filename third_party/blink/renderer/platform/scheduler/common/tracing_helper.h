@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_UTIL_TRACING_HELPER_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_UTIL_TRACING_HELPER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_COMMON_TRACING_HELPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_COMMON_TRACING_HELPER_H_
 
 #include <string>
 #include <unordered_set>
@@ -101,9 +101,7 @@ class StateTracer {
 
   // Trace compile-time defined const string, so no copy needed.
   // Null may be passed to indicate the absence of state.
-  void TraceCompileTimeString(const char* state) {
-    TraceImpl(state, false);
-  }
+  void TraceCompileTimeString(const char* state) { TraceImpl(state, false); }
 
  protected:
   bool is_enabled() const {
@@ -168,25 +166,19 @@ class TraceableState : public TraceableVariable, private StateTracer<category> {
 
   ~TraceableState() override = default;
 
-  TraceableState& operator =(const T& value) {
+  TraceableState& operator=(const T& value) {
     Assign(value);
     return *this;
   }
-  TraceableState& operator =(const TraceableState& another) {
+  TraceableState& operator=(const TraceableState& another) {
     Assign(another.state_);
     return *this;
   }
 
-  operator T() const {
-    return state_;
-  }
-  const T& get() const {
-    return state_;
-  }
+  operator T() const { return state_; }
+  const T& get() const { return state_; }
 
-  void OnTraceLogEnabled() final {
-    Trace();
-  }
+  void OnTraceLogEnabled() final { Trace(); }
 
  protected:
   void Assign(T new_state) {
@@ -254,48 +246,40 @@ class TraceableCounter : public TraceableVariable {
     Trace();
   }
 
-  TraceableCounter& operator =(const T& value) {
+  TraceableCounter& operator=(const T& value) {
     value_ = value;
     Trace();
     return *this;
   }
-  TraceableCounter& operator =(const TraceableCounter& another) {
+  TraceableCounter& operator=(const TraceableCounter& another) {
     value_ = another.value_;
     Trace();
     return *this;
   }
 
-  TraceableCounter& operator +=(const T& value) {
+  TraceableCounter& operator+=(const T& value) {
     value_ += value;
     Trace();
     return *this;
   }
-  TraceableCounter& operator -=(const T& value) {
+  TraceableCounter& operator-=(const T& value) {
     value_ -= value;
     Trace();
     return *this;
   }
 
-  const T& value() const {
-    return value_;
-  }
-  const T* operator ->() const {
-    return &value_;
-  }
-  operator T() const {
-    return value_;
-  }
+  const T& value() const { return value_; }
+  const T* operator->() const { return &value_; }
+  operator T() const { return value_; }
 
-  void OnTraceLogEnabled() final {
-    Trace();
-  }
+  void OnTraceLogEnabled() final { Trace(); }
 
   void Trace() const {
     TRACE_COUNTER_ID1(category, name_, object_, converter_(value_));
   }
 
  private:
-  const char* const name_;  // Not owned.
+  const char* const name_;    // Not owned.
   const void* const object_;  // Not owned.
   const ConverterFuncPtr converter_;
 
@@ -306,54 +290,54 @@ class TraceableCounter : public TraceableVariable {
 // Add operators when it's needed.
 
 template <typename T, const char* category>
-constexpr T operator -(const TraceableCounter<T, category>& counter) {
+constexpr T operator-(const TraceableCounter<T, category>& counter) {
   return -counter.value();
 }
 
 template <typename T, const char* category>
-constexpr T operator /(const TraceableCounter<T, category>& lhs, const T& rhs) {
+constexpr T operator/(const TraceableCounter<T, category>& lhs, const T& rhs) {
   return lhs.value() / rhs;
 }
 
 template <typename T, const char* category>
-constexpr bool operator >(
-    const TraceableCounter<T, category>& lhs, const T& rhs) {
+constexpr bool operator>(const TraceableCounter<T, category>& lhs,
+                         const T& rhs) {
   return lhs.value() > rhs;
 }
 
 template <typename T, const char* category>
-constexpr bool operator <(
-    const TraceableCounter<T, category>& lhs, const T& rhs) {
+constexpr bool operator<(const TraceableCounter<T, category>& lhs,
+                         const T& rhs) {
   return lhs.value() < rhs;
 }
 
 template <typename T, const char* category>
-constexpr bool operator !=(
-    const TraceableCounter<T, category>& lhs, const T& rhs) {
+constexpr bool operator!=(const TraceableCounter<T, category>& lhs,
+                          const T& rhs) {
   return lhs.value() != rhs;
 }
 
 template <typename T, const char* category>
-constexpr T operator ++(TraceableCounter<T, category>& counter) {
+constexpr T operator++(TraceableCounter<T, category>& counter) {
   counter = counter.value() + 1;
   return counter.value();
 }
 
 template <typename T, const char* category>
-constexpr T operator --(TraceableCounter<T, category>& counter) {
+constexpr T operator--(TraceableCounter<T, category>& counter) {
   counter = counter.value() - 1;
   return counter.value();
 }
 
 template <typename T, const char* category>
-constexpr T operator ++(TraceableCounter<T, category>& counter, int) {
+constexpr T operator++(TraceableCounter<T, category>& counter, int) {
   T value = counter.value();
   counter = value + 1;
   return value;
 }
 
 template <typename T, const char* category>
-constexpr T operator --(TraceableCounter<T, category>& counter, int) {
+constexpr T operator--(TraceableCounter<T, category>& counter, int) {
   T value = counter.value();
   counter = value - 1;
   return value;
@@ -362,4 +346,4 @@ constexpr T operator --(TraceableCounter<T, category>& counter, int) {
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_UTIL_TRACING_HELPER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_COMMON_TRACING_HELPER_H_

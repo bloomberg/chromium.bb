@@ -7,8 +7,8 @@
 
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/common/metrics_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/common/thread_load_tracker.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_origin_type.h"
-#include "third_party/blink/renderer/platform/scheduler/util/thread_load_tracker.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_task_queue.h"
 
 namespace blink {

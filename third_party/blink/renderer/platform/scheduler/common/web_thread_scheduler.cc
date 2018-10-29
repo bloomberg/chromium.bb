@@ -7,8 +7,8 @@
 #include <utility>
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "third_party/blink/renderer/platform/scheduler/common/tracing_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
-#include "third_party/blink/renderer/platform/scheduler/util/tracing_helper.h"
 
 namespace blink {
 namespace scheduler {

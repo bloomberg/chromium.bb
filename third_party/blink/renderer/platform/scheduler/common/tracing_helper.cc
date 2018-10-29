@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/util/tracing_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/common/tracing_helper.h"
 
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
@@ -57,8 +57,7 @@ const char* YesNoStateToString(bool is_yes) {
   }
 }
 
-TraceableVariableController::TraceableVariableController() {
-}
+TraceableVariableController::TraceableVariableController() {}
 
 TraceableVariableController::~TraceableVariableController() {
   // Controller should have very same lifetime as their tracers.
