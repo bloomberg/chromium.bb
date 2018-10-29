@@ -78,8 +78,7 @@ TEST_F(InMemoryURLIndexTypesTest, StaticFunctions) {
   base::string16 string_d(
       base::UTF8ToUTF16("http://www.google.com/frammy_the_brammy"));
   WordStarts actual_starts_d;
-  string_vec =
-      String16VectorFromString16(string_d, false, true, &actual_starts_d);
+  string_vec = String16VectorFromString16(string_d, false, &actual_starts_d);
   ASSERT_EQ(7U, string_vec.size());
   EXPECT_EQ(UTF8ToUTF16("http"), string_vec[0]);
   EXPECT_EQ(UTF8ToUTF16("www"), string_vec[1]);

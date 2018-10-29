@@ -88,34 +88,28 @@ typedef std::vector<size_t> WordStarts;
 String16Set String16SetFromString16(const base::string16& cleaned_uni_string,
                                     WordStarts* word_starts);
 
-// Breaks the |cleaned_uni_string| string down into individual words
-// and return a vector with the individual words in their original
-// order.  Use CleanUpUrlForMatching() or CleanUpUrlTitleMatching()
-// before passing |cleaned_uni_string| to this function.  If
-// |break_on_space| is false then the resulting list will contain only
-// words containing alpha-numeric characters. If |break_on_space| is
-// true then the resulting list will contain strings broken at
-// whitespace. (|break_on_space| indicates that the
-// BreakIterator::BREAK_SPACE (equivalent to BREAK_LINE) approach is
-// to be used. For a complete description of this algorithm refer to
-// the comments in base/i18n/break_iterator.h.) If |word_starts| is
-// not NULL then clears and pushes the word starts onto |word_starts|.
+// Breaks the |cleaned_uni_string| string down into individual words and
+// return a vector with the individual words in their original order. Use
+// CleanUpUrlForMatching() or CleanUpUrlTitleMatching() before passing
+// |cleaned_uni_string| to this function. If |break_on_space| is false then
+// the string is broken using BreakIterator's BREAK_WORD detection logic,
+// augmented so that it additionally breaks words at underscores. The resulting
+// list will contain only words containing alpha-numeric characters. If
+// |break_on_space| is true then the string is broken only at whitespace (no
+// word-boundary logic, no breaking at underscores). (|break_on_space| tells
+// BreakIterator to use BREAK_SPACE logic.) For more details, refer to the
+// comments in base/i18n/break_iterator.h.) If |word_starts| is not NULL
+// then clears and pushes the word starts onto |word_starts|.
 //
 // Example:
-//   Given: |cleaned_uni_string|: "http://www.google.com/ harry the rabbit."
+//   Given: |cleaned_uni_string|: "http://www.google.com/ harry the_rabbit."
 //   With |break_on_space| false the returned list will contain:
 //    "http", "www", "google", "com", "harry", "the", "rabbit"
 //   With |break_on_space| true the returned list will contain:
-//    "http://", "www.google.com/", "harry", "the", "rabbit."
+//    "http://", "www.google.com/", "harry", "the_rabbit."
 String16Vector String16VectorFromString16(
     const base::string16& cleaned_uni_string,
     bool break_on_space,
-    WordStarts* word_starts);
-
-String16Vector String16VectorFromString16(
-    const base::string16& cleaned_uni_string,
-    bool break_on_space,
-    bool break_on_underscore,
     WordStarts* word_starts);
 
 // Breaks the |uni_word| string down into its individual characters.
