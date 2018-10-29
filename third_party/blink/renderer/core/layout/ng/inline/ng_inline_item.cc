@@ -23,15 +23,33 @@ const char* kNGInlineItemTypeStrings[] = {
 // While the spec defines "non-zero margins, padding, or borders" prevents
 // line boxes to be zero-height, tests indicate that only inline direction
 // of them do so. https://drafts.csswg.org/css2/visuren.html
-bool IsInlineBoxEmpty(const ComputedStyle& style,
-                      const LayoutObject& layout_object) {
-  if (style.BorderStart().NonZero() || !style.PaddingStart().IsZero() ||
-      style.BorderEnd().NonZero() || !style.PaddingEnd().IsZero())
+bool IsInlineBoxStartEmpty(const ComputedStyle& style,
+                           const LayoutObject& layout_object) {
+  if (style.BorderStartWidth() || !style.PaddingStart().IsZero())
     return false;
 
   // Non-zero margin can prevent "empty" only in non-quirks mode.
   // https://quirks.spec.whatwg.org/#the-line-height-calculation-quirk
-  if ((!style.MarginStart().IsZero() || !style.MarginEnd().IsZero()) &&
+  if (!style.MarginStart().IsZero() &&
+      !layout_object.GetDocument().InLineHeightQuirksMode())
+    return false;
+
+  return true;
+}
+
+// Determines if the end of a box is "empty" as defined above.
+//
+// Keeping the "empty" state for start and end separately is important when they
+// belong to different lines, as non-empty item can force the line it belongs to
+// as non-empty.
+bool IsInlineBoxEndEmpty(const ComputedStyle& style,
+                         const LayoutObject& layout_object) {
+  if (style.BorderEndWidth() || !style.PaddingEnd().IsZero())
+    return false;
+
+  // Non-zero margin can prevent "empty" only in non-quirks mode.
+  // https://quirks.spec.whatwg.org/#the-line-height-calculation-quirk
+  if (!style.MarginEnd().IsZero() &&
       !layout_object.GetDocument().InLineHeightQuirksMode())
     return false;
 
@@ -118,7 +136,7 @@ void NGInlineItem::ComputeBoxProperties() {
     DCHECK(style_ && layout_object_ && layout_object_->IsLayoutInline());
     if (style_->HasBoxDecorationBackground() || style_->HasPadding() ||
         style_->HasMargin()) {
-      is_empty_item_ = IsInlineBoxEmpty(*style_, *layout_object_);
+      is_empty_item_ = IsInlineBoxStartEmpty(*style_, *layout_object_);
       should_create_box_fragment_ = true;
     } else {
       is_empty_item_ = true;
@@ -134,6 +152,12 @@ void NGInlineItem::ComputeBoxProperties() {
               ->ShouldApplyLayoutContainment() ||
           CanBeHitTestTargetPseudoNodeStyle(*style_);
     }
+    return;
+  }
+
+  if (type_ == NGInlineItem::kCloseTag) {
+    DCHECK(style_ && layout_object_ && layout_object_->IsLayoutInline());
+    is_empty_item_ = IsInlineBoxEndEmpty(*style_, *layout_object_);
     return;
   }
 
