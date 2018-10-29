@@ -59,6 +59,20 @@ blink::WebSecurityStyle SecurityLevelToSecurityStyle(
 void ExplainHTTPSecurity(
     const security_state::SecurityInfo& security_info,
     content::SecurityStyleExplanations* security_style_explanations) {
+  // If the page triggers an HTTP-Bad dangerous warning, then override the main
+  // summary for the page and add a bullet describing the issue.
+  if (security_info.security_level == security_state::DANGEROUS &&
+      !security_info.scheme_is_cryptographic) {
+    security_style_explanations->summary =
+        l10n_util::GetStringUTF8(IDS_EDITED_NONSECURE_SUMMARY);
+    if (security_info.insecure_input_events.insecure_field_edited) {
+      security_style_explanations->insecure_explanations.push_back(
+          content::SecurityStyleExplanation(
+              l10n_util::GetStringUTF8(IDS_EDITED_NONSECURE),
+              l10n_util::GetStringUTF8(IDS_EDITED_NONSECURE_DESCRIPTION)));
+    }
+  }
+
   if (security_info.security_level != security_state::HTTP_SHOW_WARNING)
     return;
 

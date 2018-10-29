@@ -711,6 +711,22 @@ TEST(SecurityStateContentUtilsTest, HTTPWarning) {
   EXPECT_EQ(1u, explanations.neutral_explanations.size());
 }
 
+// Tests that a security level of DANGEROUS on an HTTP page with insecure form
+// edits produces blink::WebSecurityStyleInsecure and an explanation.
+TEST(SecurityStateContentUtilsTest, HTTPDangerous) {
+  security_state::SecurityInfo security_info;
+  content::SecurityStyleExplanations explanations;
+  security_info.security_level = security_state::DANGEROUS;
+  security_info.scheme_is_cryptographic = false;
+  security_info.insecure_input_events.insecure_field_edited = true;
+  blink::WebSecurityStyle security_style =
+      GetSecurityStyle(security_info, &explanations);
+  // Verify that the security style was downgraded and an explanation shown
+  // because a form was edited.
+  EXPECT_EQ(blink::kWebSecurityStyleInsecure, security_style);
+  EXPECT_EQ(1u, explanations.insecure_explanations.size());
+}
+
 // Tests that an explanation is provided if a certificate is missing a
 // subjectAltName extension containing a domain name or IP address.
 TEST(SecurityStateContentUtilsTest, SubjectAltNameWarning) {

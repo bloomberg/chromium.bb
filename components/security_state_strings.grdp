@@ -13,7 +13,10 @@
   <message name="IDS_INCOGNITO_NONSECURE_DESCRIPTION" desc="Description of a security problem where the site is non-secure (HTTP) and the user is browsing Incognito, which results in an omnibox warning." translateable="false">
     This page was loaded non-securely in an incognito window. A warning has been added to the URL bar.
   </message>
-   <message name="IDS_EDITED_NONSECURE" desc="Summary phrase for a security problem where the site is non-secure (HTTP) and user has entered data in a form field." translateable="false">
+  <message name="IDS_EDITED_NONSECURE_SUMMARY" desc="Main summary for an HTTP page where a user has entered data in a form field." translateable="false">
+    This page is insecure (unencrypted HTTP).
+  </message>
+  <message name="IDS_EDITED_NONSECURE" desc="Summary phrase for a security problem where the site is non-secure (HTTP) and user has entered data in a form field." translateable="false">
     Form field edited on a non-secure page
   </message>
   <message name="IDS_EDITED_NONSECURE_DESCRIPTION" desc="Description of a security problem where the site is non-secure (HTTP) and user has entered data in a form field." translateable="false">
