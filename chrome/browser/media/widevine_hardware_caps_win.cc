@@ -114,14 +114,16 @@ void GetWidevineHardwareCaps(
     return;
   }
 
-  // There are contents encrypted with kCencVersion1 out there. Therefore we
-  // require kCencVersion1 to declare "cenc" support.
-  if (!capability.test(IntelWidevineCaps::kCencVersion1)) {
-    DVLOG(1) << "CENC version 1 not supported";
+  // Query for CENC.
+  // TODO(crbug.com/899984): There are contents encrypted with kCencVersion1 out
+  // there, so this check is not sufficient. Update this to check kCencVersion1.
+  if (!capability.test(IntelWidevineCaps::kCencVersion3)) {
+    DVLOG(1) << "CENC version 3 not supported";
     return;
   }
 
-  DVLOG(1) << "Widevine hardware secure H264/CENC decryption supported";
+  DVLOG(1) << "Widevine hardware secure H264 CENC-v3 decryption supported. "
+              "CENC-v1 playback may fail!";
   video_codecs->insert(media::VideoCodec::kCodecH264);
   encryption_schemes->insert(media::EncryptionMode::kCenc);
 }
