@@ -508,24 +508,23 @@ class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> {
                   "instead of HeapVector<>");
   }
 
-  void* operator new(size_t size) {
-    static_assert(
-        inlineCapacity == 0 || !VectorTraits<T>::kNeedsDestruction,
-        "on-heap HeapVector<Persistent<>> should not have an inline capacity");
-    return Base::operator new(size);
+  static void* AllocateObject(size_t size, bool eagerly_sweep) {
+    // On-heap HeapVectors generally should not have inline capacity, but it is
+    // hard to avoid when using a type alias. Hence we only disallow the
+    // VectorTraits<T>::kNeedsDestruction case for now.
+    static_assert(inlineCapacity == 0 || !VectorTraits<T>::kNeedsDestruction,
+                  "on-heap HeapVector<> should not have an inline capacity");
+    return ThreadHeap::Allocate<HeapVector<T, inlineCapacity>>(size,
+                                                               eagerly_sweep);
   }
+
+  // TODO(keishi): Delete new/delete after transition to MakeGarbageCollected is
+  // complete.
+  void* operator new(size_t size) { return Base::operator new(size); }
   void operator delete(void* p) { return Base::operator delete(p); };
-  void* operator new[](size_t size) {
-    static_assert(
-        inlineCapacity == 0 || !VectorTraits<T>::kNeedsDestruction,
-        "on-heap HeapVector<Persistent<>> should not have an inline capacity");
-    return Base::operator new[](size);
-  }
-  void operator delete[](void* p) { return Base::operator delete[](p); };
+  void* operator new[](size_t size) = delete;
+  void operator delete[](void* p) = delete;
   void* operator new(size_t size, NotNullTag null_tag, void* location) {
-    static_assert(
-        inlineCapacity == 0 || !VectorTraits<T>::kNeedsDestruction,
-        "on-heap HeapVector<Persistent<>> should not have an inline capacity");
     return Base::operator new(size, null_tag, location);
   }
   void* operator new(size_t size, void* location) {
@@ -555,24 +554,23 @@ class HeapDeque : public Deque<T, inlineCapacity, HeapAllocator> {
                   "of HeapDeque<>");
   }
 
-  void* operator new(size_t size) {
-    static_assert(
-        inlineCapacity == 0 || !VectorTraits<T>::kNeedsDestruction,
-        "on-heap HeapDeque<Persistent<>> should not have an inline capacity");
-    return Base::operator new(size);
+  static void* AllocateObject(size_t size, bool eagerly_sweep) {
+    // On-heap HeapDeques generally should not have inline capacity, but it is
+    // hard to avoid when using a type alias. Hence we only disallow the
+    // VectorTraits<T>::kNeedsDestruction case for now.
+    static_assert(inlineCapacity == 0 || !VectorTraits<T>::kNeedsDestruction,
+                  "on-heap HeapDeque<> should not have an inline capacity");
+    return ThreadHeap::Allocate<HeapVector<T, inlineCapacity>>(size,
+                                                               eagerly_sweep);
   }
+
+  // TODO(keishi): Delete new/delete after transition to MakeGarbageCollected is
+  // complete.
+  void* operator new(size_t size) { return Base::operator new(size); }
   void operator delete(void* p) { return Base::operator delete(p); };
-  void* operator new[](size_t size) {
-    static_assert(
-        inlineCapacity == 0 || !VectorTraits<T>::kNeedsDestruction,
-        "on-heap HeapDequer<Persistent<>> should not have an inline capacity");
-    return Base::operator new[](size);
-  }
-  void operator delete[](void* p) { return Base::operator delete[](p); };
+  void* operator new[](size_t size) = delete;
+  void operator delete[](void* p) = delete;
   void* operator new(size_t size, NotNullTag null_tag, void* location) {
-    static_assert(
-        inlineCapacity == 0 || !VectorTraits<T>::kNeedsDestruction,
-        "on-heap HeapDeque<Persistent<>> should not have an inline capacity");
     return Base::operator new(size, null_tag, location);
   }
   void* operator new(size_t size, void* location) {
