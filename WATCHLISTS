@@ -1000,7 +1000,7 @@
     'infra': {
       'filepath': 'infra/config|'\
                   'testing/buildbot|'\
-                  'tools/mb|',
+                  'tools/mb',
     },
     'ink_drop': {
       'filepath': 'ui/views/animation/test/.*ink_drop.*|' \
