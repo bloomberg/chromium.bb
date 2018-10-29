@@ -410,6 +410,17 @@ function handleU2fEnrollRequest(messageSender, request, sendResponse) {
       }));
     }
 
+    var decodedRegistrationData =
+        new ByteString(decodeWebSafeBase64ToArray(registrationData));
+    var magicValue = decodedRegistrationData.getBytes(1);
+    if (magicValue[0] == 4) {
+      // This is a gNubby with obsolete firmware. We can't parse the reply from
+      // this device and users need to be guided to reflashing them. Therefore
+      // let attestation data pass directly so that can happen on
+      // accounts.google.com.
+      isDirect = true;
+    }
+
     if (isDirect) {
       return registrationData;
     }
