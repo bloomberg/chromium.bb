@@ -175,7 +175,8 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     return *this;
   }
 
-  void AddBaselineRequests(const Vector<NGBaselineRequest>& requests) {
+  void AddBaselineRequests(
+      const NGConstraintSpace::NGBaselineRequestVector& requests) {
     DCHECK(baseline_requests_.IsEmpty());
     baseline_requests_.AppendVector(requests);
   }
@@ -225,7 +226,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   base::Optional<LayoutUnit> floats_bfc_block_offset_;
   const NGExclusionSpace* exclusion_space_ = nullptr;
   LayoutUnit clearance_offset_;
-  Vector<NGBaselineRequest> baseline_requests_;
+  NGConstraintSpace::NGBaselineRequestVector baseline_requests_;
 
   friend class NGConstraintSpace;
 };

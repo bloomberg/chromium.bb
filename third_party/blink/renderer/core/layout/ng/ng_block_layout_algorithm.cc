@@ -2023,7 +2023,7 @@ bool NGBlockLayoutAlgorithm::AddBaseline(const NGBaselineRequest& request,
 // Propagate computed baselines from children.
 // Skip children that do not produce baselines (e.g., empty blocks.)
 void NGBlockLayoutAlgorithm::PropagateBaselinesFromChildren() {
-  const Vector<NGBaselineRequest>& requests =
+  const NGConstraintSpace::NGBaselineRequestVector& requests =
       ConstraintSpace().BaselineRequests();
   if (requests.IsEmpty())
     return;
