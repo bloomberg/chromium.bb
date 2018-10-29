@@ -409,9 +409,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   // Accessibility announcement dialogue.
   base::string16 state_announcement_;
 
-  // Whether FocusManager can handle arrow key before this class is constructed.
-  const bool previous_arrow_key_traversal_enabled_;
-
   // Metric reporter for state change animations.
   const std::unique_ptr<ui::AnimationMetricsReporter>
       state_animation_metrics_reporter_;

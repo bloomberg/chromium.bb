@@ -289,8 +289,6 @@ AppListView::AppListView(AppListViewDelegate* delegate)
           std::make_unique<HideViewAnimationObserver>()),
       transition_animation_observer_(
           std::make_unique<TransitionAnimationObserver>(this)),
-      previous_arrow_key_traversal_enabled_(
-          views::FocusManager::arrow_key_traversal_enabled()),
       state_animation_metrics_reporter_(
           std::make_unique<StateAnimationMetricsReporter>()),
       is_home_launcher_enabled_(app_list_features::IsHomeLauncherEnabled()),
@@ -298,18 +296,12 @@ AppListView::AppListView(AppListViewDelegate* delegate)
           app_list_features::IsNewStyleLauncherEnabled()),
       weak_ptr_factory_(this) {
   CHECK(delegate);
-
-  // Enable arrow key in FocusManager. Arrow left/right and up/down triggers
-  // the same focus movement as tab/shift+tab.
-  views::FocusManager::set_arrow_key_traversal_enabled(true);
 }
 
 AppListView::~AppListView() {
   hide_view_animation_observer_.reset();
   // Remove child views first to ensure no remaining dependencies on delegate_.
   RemoveAllChildViews(true);
-  views::FocusManager::set_arrow_key_traversal_enabled(
-      previous_arrow_key_traversal_enabled_);
 }
 
 // static
@@ -591,6 +583,11 @@ void AppListView::InitializeFullscreen(gfx::NativeView parent) {
   // The initial bounds of app list should be the same as that in closed state.
   fullscreen_widget_->GetNativeView()->SetBounds(
       GetPreferredWidgetBoundsForState(AppListViewState::CLOSED));
+
+  // Enable arrow key in FocusManager. Arrow left/right and up/down triggers
+  // the same focus movement as tab/shift+tab.
+  fullscreen_widget_->GetFocusManager()
+      ->set_arrow_key_traversal_enabled_for_widget(true);
 
   widget_observer_ = std::make_unique<FullscreenWidgetObserver>(this);
 }
