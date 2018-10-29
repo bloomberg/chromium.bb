@@ -916,6 +916,11 @@ TEST_F(ArcInputMethodManagerServiceTest, IMEOperations) {
       test_context_handler.last_update_composition_arg().composition_text.text);
   EXPECT_EQ(1, test_context_handler.commit_text_call_count());
 
+  // CommitText should clear the composing text.
+  connection->FinishComposingText();
+  // commit_text_call_count() doesn't change.
+  EXPECT_EQ(1, test_context_handler.commit_text_call_count());
+
   test_context_handler.Reset();
   connection->SetComposingText(text, 0, base::make_optional<gfx::Range>(1, 3));
   EXPECT_EQ(1u, test_context_handler.last_update_composition_arg()
