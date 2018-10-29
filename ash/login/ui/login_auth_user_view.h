@@ -16,6 +16,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
+#include "base/time/time.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -34,8 +36,10 @@ class LoginPinView;
 // This class will make call mojo authentication APIs directly. The embedder can
 // receive some events about the results of those mojo
 // authentication attempts (ie, success/failure).
-class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
-                                     public views::ButtonListener {
+class ASH_EXPORT LoginAuthUserView
+    : public NonAccessibleView,
+      public views::ButtonListener,
+      public chromeos::PowerManagerClient::Observer {
  public:
   // TestApi is used for tests to get internal implementation details.
   class ASH_EXPORT TestApi {
@@ -48,6 +52,8 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
     LoginPinView* pin_view() const;
     views::Button* online_sign_in_message() const;
     views::View* disabled_auth_message() const;
+    views::Button* external_binary_auth_button() const;
+    views::Button* external_binary_enrollment_button() const;
 
    private:
     LoginAuthUserView* const view_;
@@ -137,6 +143,10 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // chromeos::PowerManagerClient::Observer:
+  void LidEventReceived(chromeos::PowerManagerClient::LidState state,
+                        const base::TimeTicks& timestamp) override;
+
  private:
   struct AnimationState;
   class FingerprintView;
@@ -160,6 +170,10 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
   // Helper method to check if an auth method is enable. Use it like this:
   // bool has_tap = HasAuthMethod(AUTH_TAP).
   bool HasAuthMethod(AuthMethods auth_method) const;
+
+  // TODO(crbug/899812): remove this and pass a handler in via the Callbacks
+  // struct instead.
+  void AttemptAuthenticateWithExternalBinary();
 
   AuthMethods auth_methods_ = AUTH_NONE;
   // True if the user's password might be a PIN. PIN is hashed differently from
@@ -187,6 +201,10 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
   // |CaptureStateForAnimationPreLayout| and consumed by
   // |ApplyAnimationPostLayout|.
   std::unique_ptr<AnimationState> cached_animation_state_;
+
+  ScopedObserver<chromeos::PowerManagerClient,
+                 chromeos::PowerManagerClient::Observer>
+      power_manager_client_observer_{this};
 
   base::WeakPtrFactory<LoginAuthUserView> weak_factory_{this};
 
