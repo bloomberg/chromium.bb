@@ -10,6 +10,7 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -224,6 +225,8 @@ void AddLockDisplayTypeDefaultResources(content::WebUIDataSource* source) {
 void AddDiscoverDisplayTypeDefaultResources(content::WebUIDataSource* source) {
   source->SetDefaultResource(IDR_CHROMEOS_DISCOVER_APP_HTML);
   source->AddResourcePath(kDiscoverJSPath, IDR_CHROMEOS_DISCOVER_APP_JS);
+  source->AddResourcePath("manifest.json", IDR_CHROMEOS_DISCOVER_MANIFEST);
+  source->AddResourcePath("logo.png", IDR_DISCOVER_APP_192);
 }
 
 // Default and non-shared resource definition for kLoginDisplay display type.
