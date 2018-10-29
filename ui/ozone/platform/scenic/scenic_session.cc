@@ -69,12 +69,14 @@ void ScenicSession::ReleaseResource(ResourceId resource_id) {
 
 ScenicSession::ResourceId ScenicSession::CreateMemory(
     base::SharedMemoryHandle vmo,
-    fuchsia::images::MemoryType memory_type) {
+    fuchsia::images::MemoryType memory_type,
+    uint64_t allocation_size) {
   DCHECK(vmo.IsValid());
 
   fuchsia::ui::gfx::MemoryArgs memory;
   memory.vmo = zx::vmo(vmo.GetHandle());
   memory.memory_type = memory_type;
+  memory.allocation_size = allocation_size;
 
   fuchsia::ui::gfx::ResourceArgs resource;
   resource.set_memory(std::move(memory));

@@ -23,15 +23,17 @@ void ScenicWindowCanvas::Frame::Initialize(gfx::Size size,
                                            ScenicSession* scenic) {
   memory.Unmap();
 
-  int bytes_per_row = size.width() * SkColorTypeBytesPerPixel(kN32_SkColorType);
-  int buffer_size = bytes_per_row * size.height();
+  size_t bytes_per_row =
+      size.width() * SkColorTypeBytesPerPixel(kN32_SkColorType);
+  size_t buffer_size = bytes_per_row * size.height();
   if (!memory.CreateAndMapAnonymous(buffer_size)) {
     LOG(WARNING) << "Failed to map memory for ScenicWindowCanvas.";
     memory.Unmap();
     surface.reset();
   } else {
     memory_id = scenic->CreateMemory(memory.GetReadOnlyHandle(),
-                                     fuchsia::images::MemoryType::HOST_MEMORY);
+                                     fuchsia::images::MemoryType::HOST_MEMORY,
+                                     buffer_size);
     surface = SkSurface::MakeRasterDirect(
         SkImageInfo::MakeN32Premul(size.width(), size.height()),
         memory.memory(), bytes_per_row);
@@ -53,8 +55,8 @@ void ScenicWindowCanvas::Frame::CopyDirtyRegionFrom(const Frame& frame) {
   dirty_region.setEmpty();
 }
 
-ScenicWindowCanvas::ScenicWindowCanvas(ScenicWindow* window) : window_(window) {
-}
+ScenicWindowCanvas::ScenicWindowCanvas(ScenicWindow* window)
+    : window_(window) {}
 
 ScenicWindowCanvas::~ScenicWindowCanvas() {
   ScenicSession* scenic = window_->scenic_session();
