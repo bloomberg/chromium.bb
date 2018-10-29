@@ -233,6 +233,7 @@ _CONFIG = [
             'root_scroller_util::.+',
             'scheduler::.+',
             'style_change_reason::.+',
+            'svg_path_parser::.+',
             'touch_action_util::.+',
             'vector_math::.+',
             'web_core_test_support::.+',
