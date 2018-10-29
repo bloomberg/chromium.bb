@@ -61,5 +61,7 @@ void FakeNotificationsInstance::PerformDeferredUserAction(uint32_t action_id) {}
 void FakeNotificationsInstance::CancelDeferredUserAction(uint32_t action_id) {}
 void FakeNotificationsInstance::SetLockScreenSettingOnAndroid(
     mojom::ArcLockScreenNotificationSettingPtr setting) {}
+void FakeNotificationsInstance::SetNotificationConfiguration(
+    mojom::NotificationConfigurationPtr configuration) {}
 
 }  // namespace arc

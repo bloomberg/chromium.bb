@@ -40,6 +40,9 @@ const base::Feature kMediaSessionNotification{
 
 const base::Feature kNightLight{"NightLight", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kNotificationExpansionAnimation{
+    "NotificationExpansionAnimation", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kNotificationScrollBar{"NotificationScrollBar",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -80,6 +83,10 @@ bool IsLockScreenHideSensitiveNotificationsSupported() {
 
 bool IsNightLightEnabled() {
   return base::FeatureList::IsEnabled(kNightLight);
+}
+
+bool IsNotificationExpansionAnimationEnabled() {
+  return base::FeatureList::IsEnabled(kNotificationExpansionAnimation);
 }
 
 bool IsNotificationScrollBarEnabled() {

@@ -7,10 +7,12 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/system/message_center/arc/arc_notification_delegate.h"
 #include "ash/system/message_center/arc/arc_notification_item_impl.h"
 #include "ash/system/message_center/arc/arc_notification_manager_delegate.h"
 #include "ash/system/message_center/arc/arc_notification_view.h"
+#include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/arc/mojo_channel.h"
@@ -27,6 +29,8 @@ using arc::mojom::ArcNotificationEvent;
 using arc::mojom::ArcNotificationPriority;
 using arc::mojom::ArcDoNotDisturbStatus;
 using arc::mojom::ArcDoNotDisturbStatusPtr;
+using arc::mojom::NotificationConfiguration;
+using arc::mojom::NotificationConfigurationPtr;
 using arc::mojom::NotificationsHost;
 using arc::mojom::NotificationsInstance;
 using arc::mojom::NotificationsInstancePtr;
@@ -144,6 +148,9 @@ void ArcNotificationManager::OnConnectionReady() {
 
   // Sync the initial quiet mode state with Android.
   SetDoNotDisturbStatusOnAndroid(message_center_->IsQuietMode());
+
+  // Set configuration variables for notifications on arc.
+  SetNotificationConfiguration();
 }
 
 void ArcNotificationManager::OnConnectionClosed() {
@@ -515,6 +522,24 @@ void ArcNotificationManager::CancelLongPress(const std::string& key) {
   }
 
   notifications_instance->CancelLongPress(key);
+}
+
+void ArcNotificationManager::SetNotificationConfiguration() {
+  auto* notifications_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      instance_owner_->holder(), SetNotificationConfiguration);
+
+  if (!notifications_instance) {
+    VLOG(2) << "Trying to set notification expansion animations"
+            << ", but the ARC channel has already gone.";
+    return;
+  }
+
+  NotificationConfigurationPtr configuration = NotificationConfiguration::New();
+  configuration->expansion_animation =
+      ash::features::IsNotificationExpansionAnimationEnabled();
+
+  notifications_instance->SetNotificationConfiguration(
+      std::move(configuration));
 }
 
 }  // namespace ash

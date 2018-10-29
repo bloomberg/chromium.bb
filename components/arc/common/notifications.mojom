@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 22
+// Next MinVersion: 23
 
 module arc.mojom;
 
@@ -187,6 +187,13 @@ struct ArcLockScreenNotificationSetting {
   bool show_private_notification;
 };
 
+[MinVersion=22]
+struct NotificationConfiguration {
+  // Flag to enable notification expansion animations on arc.
+  // See b/35786193.
+  bool expansion_animation;
+};
+
 // Next Method ID: 11
 interface NotificationsHost {
   // Set the Do-Not-Disturb status on Chrome side from Android side.
@@ -225,7 +232,7 @@ interface NotificationsHost {
   OnLockScreenSettingUpdated@10(ArcLockScreenNotificationSetting setting);
 };
 
-// Next Method ID: 12
+// Next Method ID: 13
 // TODO(lhchavez): Migrate all request/response messages to Mojo.
 interface NotificationsInstance {
   // DEPRECATED: Please use Init@5 instead.
@@ -283,4 +290,8 @@ interface NotificationsInstance {
   // Sets the lock screen notification setting on Android side from Chrome side.
   [MinVersion=21]
   SetLockScreenSettingOnAndroid@11(ArcLockScreenNotificationSetting setting);
+
+  // Set configuration variables for notifications.
+  [MinVersion=22]
+  SetNotificationConfiguration@12(NotificationConfiguration configuration);
 };

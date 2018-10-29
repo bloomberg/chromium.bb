@@ -4435,6 +4435,15 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-send-tab-to-self", flag_descriptions::kSendTabToSelfName,
      flag_descriptions::kSendTabToSelfDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kSendTabToSelf)},
+
+#if defined(OS_CHROMEOS)
+    {"ash-enable-notification-expansion-animation",
+     flag_descriptions::kEnableNotificationExpansionAnimationName,
+     flag_descriptions::kEnableNotificationExpansionAnimationDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kNotificationExpansionAnimation)},
+
+#endif  // defined(OS_CHROMEOS)
 };
 
 class FlagsStateSingleton {
