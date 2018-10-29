@@ -1002,7 +1002,7 @@ Output.prototype = {
    */
   go: function() {
     // Speech.
-    var queueMode = cvox.QueueMode.CATEGORY_FLUSH;
+    var queueMode = cvox.QueueMode.QUEUE;
     if (Output.forceModeForNextSpeechUtterance_ !== undefined) {
       queueMode = /** @type{cvox.QueueMode} */ (
           Output.forceModeForNextSpeechUtterance_);

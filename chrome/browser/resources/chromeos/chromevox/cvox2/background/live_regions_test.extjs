@@ -46,6 +46,14 @@ ChromeVoxLiveRegionsTest.prototype = {
       CommandHandler.onCommand(cmd);
     };
   },
+
+  /**
+   * Simulates work done when users interact using keyboard, braille, or
+   * touch.
+ */
+  simulateUserInteraction: function() {
+    Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
+  },
 };
 
 TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionAddElement', function() {
@@ -183,9 +191,10 @@ TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionThenFocus', function() {
     */},
     function(rootNode) {
       var go = rootNode.find({ role: RoleType.BUTTON });
-      mockFeedback.call(go.doDefault.bind(go))
-          .expectCategoryFlushSpeech('Live')
-          .expectCategoryFlushSpeech('Focus');
+      mockFeedback.call(this.simulateUserInteraction.bind(this))
+          .call(go.doDefault.bind(go))
+          .expectFlushingSpeech('Live')
+          .expectQueuedSpeech('Focus');
       mockFeedback.replay();
     });
 });
@@ -208,8 +217,9 @@ TEST_F('ChromeVoxLiveRegionsTest', 'FocusThenLiveRegion', function() {
     */},
     function(rootNode) {
       var go = rootNode.find({ role: RoleType.BUTTON });
-      mockFeedback.call(go.doDefault.bind(go))
-          .expectCategoryFlushSpeech('Focus')
+      mockFeedback.call(this.simulateUserInteraction.bind(this))
+          .call(go.doDefault.bind(go))
+          .expectFlushingSpeech('Focus')
           .expectCategoryFlushSpeech('Live');
       mockFeedback.replay();
     });
