@@ -33,7 +33,7 @@ namespace blink {
 
 LayoutSearchField::LayoutSearchField(HTMLInputElement* element)
     : LayoutTextControlSingleLine(element) {
-  DCHECK_EQ(element->type(), InputTypeNames::search);
+  DCHECK_EQ(element->type(), input_type_names::kSearch);
 }
 
 LayoutSearchField::~LayoutSearchField() = default;

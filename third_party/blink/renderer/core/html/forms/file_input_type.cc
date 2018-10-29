@@ -97,7 +97,7 @@ FileChooserFileInfoList FileInputType::FilesFromFormControlState(
 }
 
 const AtomicString& FileInputType::FormControlType() const {
-  return InputTypeNames::file;
+  return input_type_names::kFile;
 }
 
 FormControlState FileInputType::SaveFormControlState() const {
@@ -296,7 +296,7 @@ void FileInputType::CreateShadowSubtree() {
   DCHECK(IsShadowHost(GetElement()));
   auto* button = HTMLInputElement::Create(GetElement().GetDocument(),
                                           CreateElementFlags());
-  button->setType(InputTypeNames::button);
+  button->setType(input_type_names::kButton);
   button->setAttribute(
       kValueAttr,
       AtomicString(GetLocale().QueryString(

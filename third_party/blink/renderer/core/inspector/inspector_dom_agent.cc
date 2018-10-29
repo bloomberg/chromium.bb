@@ -1269,7 +1269,7 @@ Response InspectorDOMAgent::setFileInputFiles(
   if (!response.isSuccess())
     return response;
   if (!IsHTMLInputElement(*node) ||
-      ToHTMLInputElement(*node).type() != InputTypeNames::file)
+      ToHTMLInputElement(*node).type() != input_type_names::kFile)
     return Response::Error("Node is not a file input element");
 
   Vector<String> paths;

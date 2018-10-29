@@ -756,7 +756,7 @@ bool AXObject::IsNativeCheckboxInMixedState(const Node* node) {
 
   const HTMLInputElement* input = ToHTMLInputElement(node);
   const auto inputType = input->type();
-  if (inputType != InputTypeNames::checkbox)
+  if (inputType != input_type_names::kCheckbox)
     return false;
   return input->ShouldAppearIndeterminate();
 }

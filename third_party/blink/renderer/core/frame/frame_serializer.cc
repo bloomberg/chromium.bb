@@ -334,7 +334,7 @@ void FrameSerializer::SerializeFrame(const LocalFrame& frame) {
       ImageResourceContent* cached_image = image->CachedImage();
       AddImageToResources(cached_image, url);
     } else if (auto* input = ToHTMLInputElementOrNull(element)) {
-      if (input->type() == InputTypeNames::image && input->ImageLoader()) {
+      if (input->type() == input_type_names::kImage && input->ImageLoader()) {
         KURL url = input->Src();
         ImageResourceContent* cached_image = input->ImageLoader()->GetContent();
         AddImageToResources(cached_image, url);

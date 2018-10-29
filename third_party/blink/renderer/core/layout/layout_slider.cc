@@ -33,7 +33,7 @@ const int LayoutSlider::kDefaultTrackLength = 129;
 LayoutSlider::LayoutSlider(HTMLInputElement* element)
     : LayoutFlexibleBox(element) {
   // We assume LayoutSlider works only with <input type=range>.
-  DCHECK_EQ(element->type(), InputTypeNames::range);
+  DCHECK_EQ(element->type(), input_type_names::kRange);
 }
 
 LayoutSlider::~LayoutSlider() = default;

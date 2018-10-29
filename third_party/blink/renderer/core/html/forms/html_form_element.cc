@@ -418,7 +418,7 @@ void HTMLFormElement::ConstructFormDataSet(
     if (!element.IsDisabledFormControl())
       control->AppendToFormData(form_data);
     if (auto* input = ToHTMLInputElementOrNull(element)) {
-      if (input->type() == InputTypeNames::password &&
+      if (input->type() == input_type_names::kPassword &&
           !input->value().IsEmpty())
         form_data.SetContainsPasswordData(true);
     }

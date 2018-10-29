@@ -45,7 +45,7 @@ LayoutFileUploadControl::~LayoutFileUploadControl() = default;
 
 void LayoutFileUploadControl::UpdateFromElement() {
   HTMLInputElement* input = ToHTMLInputElement(GetNode());
-  DCHECK_EQ(input->type(), InputTypeNames::file);
+  DCHECK_EQ(input->type(), input_type_names::kFile);
 
   if (HTMLInputElement* button = UploadButton()) {
     bool new_can_receive_dropped_files_state = input->CanReceiveDroppedFiles();

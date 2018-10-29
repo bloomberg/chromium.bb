@@ -18,7 +18,7 @@ MediaControlDisplayCutoutFullscreenButtonElement::
         MediaControlsImpl& media_controls)
     : MediaControlInputElement(media_controls,
                                kMediaDisplayCutoutFullscreenButton) {
-  setType(InputTypeNames::button);
+  setType(input_type_names::kButton);
   SetShadowPseudoId(AtomicString(
       "-internal-media-controls-display-cutout-fullscreen-button"));
   SetIsWanted(false);

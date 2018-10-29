@@ -318,7 +318,7 @@ AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
     return AXListBoxOption::Create(layout_object, *this);
 
   if (IsHTMLInputElement(node) &&
-      ToHTMLInputElement(node)->type() == InputTypeNames::radio)
+      ToHTMLInputElement(node)->type() == input_type_names::kRadio)
     return AXRadioInput::Create(layout_object, *this);
 
   if (layout_object->IsSVGRoot())

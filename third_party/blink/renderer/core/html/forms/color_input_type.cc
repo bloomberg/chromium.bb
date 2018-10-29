@@ -102,7 +102,7 @@ void ColorInputType::CountUsage() {
 }
 
 const AtomicString& ColorInputType::FormControlType() const {
-  return InputTypeNames::color;
+  return input_type_names::kColor;
 }
 
 bool ColorInputType::SupportsRequired() const {

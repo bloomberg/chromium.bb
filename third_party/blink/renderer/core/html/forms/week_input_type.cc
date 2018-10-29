@@ -57,7 +57,7 @@ void WeekInputType::CountUsage() {
 }
 
 const AtomicString& WeekInputType::FormControlType() const {
-  return InputTypeNames::week;
+  return input_type_names::kWeek;
 }
 
 StepRange WeekInputType::CreateStepRange(

@@ -177,7 +177,7 @@ void EmailInputType::CountUsage() {
 }
 
 const AtomicString& EmailInputType::FormControlType() const {
-  return InputTypeNames::email;
+  return input_type_names::kEmail;
 }
 
 ScriptRegexp& EmailInputType::EnsureEmailRegexp() const {

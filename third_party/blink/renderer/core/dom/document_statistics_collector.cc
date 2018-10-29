@@ -130,9 +130,9 @@ void CollectFeatures(Element& root,
       features.form_count++;
     } else if (element.HasTagName(kInputTag)) {
       const HTMLInputElement& input = ToHTMLInputElement(element);
-      if (input.type() == InputTypeNames::text) {
+      if (input.type() == input_type_names::kText) {
         features.text_input_count++;
-      } else if (input.type() == InputTypeNames::password) {
+      } else if (input.type() == input_type_names::kPassword) {
         features.password_input_count++;
       }
     } else if (element.HasTagName(kPTag) || element.HasTagName(kPreTag)) {

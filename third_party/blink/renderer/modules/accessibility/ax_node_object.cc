@@ -326,7 +326,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
     const AtomicString& type = input->type();
     if (input->DataList())
       return ax::mojom::Role::kTextFieldWithComboBox;
-    if (type == InputTypeNames::button) {
+    if (type == input_type_names::kButton) {
       if ((GetNode()->parentNode() &&
            IsHTMLMenuElement(GetNode()->parentNode())) ||
           (ParentObject() &&
@@ -334,7 +334,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
         return ax::mojom::Role::kMenuItem;
       return ButtonRoleType();
     }
-    if (type == InputTypeNames::checkbox) {
+    if (type == input_type_names::kCheckbox) {
       if ((GetNode()->parentNode() &&
            IsHTMLMenuElement(GetNode()->parentNode())) ||
           (ParentObject() &&
@@ -342,15 +342,15 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
         return ax::mojom::Role::kMenuItemCheckBox;
       return ax::mojom::Role::kCheckBox;
     }
-    if (type == InputTypeNames::date)
+    if (type == input_type_names::kDate)
       return ax::mojom::Role::kDate;
-    if (type == InputTypeNames::datetime ||
-        type == InputTypeNames::datetime_local ||
-        type == InputTypeNames::month || type == InputTypeNames::week)
+    if (type == input_type_names::kDatetime ||
+        type == input_type_names::kDatetimeLocal ||
+        type == input_type_names::kMonth || type == input_type_names::kWeek)
       return ax::mojom::Role::kDateTime;
-    if (type == InputTypeNames::file)
+    if (type == input_type_names::kFile)
       return ax::mojom::Role::kButton;
-    if (type == InputTypeNames::radio) {
+    if (type == input_type_names::kRadio) {
       if ((GetNode()->parentNode() &&
            IsHTMLMenuElement(GetNode()->parentNode())) ||
           (ParentObject() &&
@@ -358,15 +358,15 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
         return ax::mojom::Role::kMenuItemRadio;
       return ax::mojom::Role::kRadioButton;
     }
-    if (type == InputTypeNames::number)
+    if (type == input_type_names::kNumber)
       return ax::mojom::Role::kSpinButton;
     if (input->IsTextButton())
       return ButtonRoleType();
-    if (type == InputTypeNames::range)
+    if (type == input_type_names::kRange)
       return ax::mojom::Role::kSlider;
-    if (type == InputTypeNames::color)
+    if (type == input_type_names::kColor)
       return ax::mojom::Role::kColorWell;
-    if (type == InputTypeNames::time)
+    if (type == input_type_names::kTime)
       return ax::mojom::Role::kInputTime;
     return ax::mojom::Role::kTextField;
   }
@@ -786,7 +786,7 @@ bool AXNodeObject::IsImageButton() const {
 bool AXNodeObject::IsInputImage() const {
   Node* node = this->GetNode();
   if (RoleValue() == ax::mojom::Role::kButton && IsHTMLInputElement(node))
-    return ToHTMLInputElement(*node).type() == InputTypeNames::image;
+    return ToHTMLInputElement(*node).type() == input_type_names::kImage;
 
   return false;
 }
@@ -854,8 +854,8 @@ bool AXNodeObject::IsMultiSelectable() const {
 
 bool AXNodeObject::IsNativeCheckboxOrRadio() const {
   if (const auto* input = ToHTMLInputElementOrNull(GetNode())) {
-    return input->type() == InputTypeNames::checkbox ||
-           input->type() == InputTypeNames::radio;
+    return input->type() == input_type_names::kCheckbox ||
+           input->type() == input_type_names::kRadio;
   }
   return false;
 }
@@ -872,7 +872,7 @@ bool AXNodeObject::IsNativeImage() const {
     return true;
 
   if (const auto* input = ToHTMLInputElementOrNull(*node))
-    return input->type() == InputTypeNames::image;
+    return input->type() == input_type_names::kImage;
 
   return false;
 }
@@ -914,7 +914,7 @@ bool AXNodeObject::IsPasswordField() const {
       aria_role != ax::mojom::Role::kUnknown)
     return false;
 
-  return ToHTMLInputElement(node)->type() == InputTypeNames::password;
+  return ToHTMLInputElement(node)->type() == input_type_names::kPassword;
 }
 
 bool AXNodeObject::IsProgressIndicator() const {
@@ -935,13 +935,13 @@ bool AXNodeObject::IsSpinButton() const {
 
 bool AXNodeObject::IsNativeSlider() const {
   if (const auto* input = ToHTMLInputElementOrNull(GetNode()))
-    return input->type() == InputTypeNames::range;
+    return input->type() == input_type_names::kRange;
   return false;
 }
 
 bool AXNodeObject::IsNativeSpinButton() const {
   if (const auto* input = ToHTMLInputElementOrNull(GetNode()))
-    return input->type() == InputTypeNames::number;
+    return input->type() == input_type_names::kNumber;
   return false;
 }
 
@@ -1320,7 +1320,7 @@ AXObject::AXObjectVector AXNodeObject::RadioButtonsInGroup() const {
 HeapVector<Member<HTMLInputElement>>
 AXNodeObject::FindAllRadioButtonsWithSameName(HTMLInputElement* radio_button) {
   HeapVector<Member<HTMLInputElement>> all_radio_buttons;
-  if (!radio_button || radio_button->type() != InputTypeNames::radio)
+  if (!radio_button || radio_button->type() != input_type_names::kRadio)
     return all_radio_buttons;
 
   constexpr bool kTraverseForward = true;
@@ -1710,12 +1710,12 @@ String AXNodeObject::StringValue() const {
   // buttons which will return their name.
   // https://html.spec.whatwg.org/multipage/forms.html#dom-input-value
   if (const auto* input = ToHTMLInputElementOrNull(node)) {
-    if (input->type() != InputTypeNames::button &&
-        input->type() != InputTypeNames::checkbox &&
-        input->type() != InputTypeNames::image &&
-        input->type() != InputTypeNames::radio &&
-        input->type() != InputTypeNames::reset &&
-        input->type() != InputTypeNames::submit) {
+    if (input->type() != input_type_names::kButton &&
+        input->type() != input_type_names::kCheckbox &&
+        input->type() != input_type_names::kImage &&
+        input->type() != input_type_names::kRadio &&
+        input->type() != input_type_names::kReset &&
+        input->type() != input_type_names::kSubmit) {
       return input->value();
     }
   }
@@ -2772,7 +2772,7 @@ String AXNodeObject::NativeTextAlternative(
 
   // 5.3 input type="image"
   if (input_element &&
-      input_element->getAttribute(kTypeAttr) == InputTypeNames::image) {
+      input_element->getAttribute(kTypeAttr) == input_type_names::kImage) {
     // alt attr
     const AtomicString& alt = input_element->getAttribute(kAltAttr);
     const bool is_empty = alt.IsEmpty() && !alt.IsNull();

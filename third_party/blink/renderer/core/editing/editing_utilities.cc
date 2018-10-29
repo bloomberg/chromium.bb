@@ -1546,7 +1546,8 @@ bool IsBlockFlowElement(const Node& node) {
 bool IsInPasswordField(const Position& position) {
   TextControlElement* text_control = EnclosingTextControl(position);
   return IsHTMLInputElement(text_control) &&
-         ToHTMLInputElement(text_control)->type() == InputTypeNames::password;
+         ToHTMLInputElement(text_control)->type() ==
+             input_type_names::kPassword;
 }
 
 // If current position is at grapheme boundary, return 0; otherwise, return the

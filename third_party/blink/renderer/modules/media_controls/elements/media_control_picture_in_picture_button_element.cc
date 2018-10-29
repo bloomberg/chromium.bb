@@ -18,7 +18,7 @@ namespace blink {
 MediaControlPictureInPictureButtonElement::
     MediaControlPictureInPictureButtonElement(MediaControlsImpl& media_controls)
     : MediaControlInputElement(media_controls, kMediaPlayButton) {
-  setType(InputTypeNames::button);
+  setType(input_type_names::kButton);
   SetShadowPseudoId(
       AtomicString("-internal-media-controls-picture-in-picture-button"));
   SetIsWanted(false);

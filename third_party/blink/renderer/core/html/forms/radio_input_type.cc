@@ -50,7 +50,7 @@ InputType* RadioInputType::Create(HTMLInputElement& element) {
 }
 
 const AtomicString& RadioInputType::FormControlType() const {
-  return InputTypeNames::radio;
+  return input_type_names::kRadio;
 }
 
 bool RadioInputType::ValueMissing(const String&) const {
@@ -160,7 +160,7 @@ bool RadioInputType::IsKeyboardFocusable() const {
   Element* current_focused_element =
       GetElement().GetDocument().FocusedElement();
   if (auto* focused_input = ToHTMLInputElementOrNull(current_focused_element)) {
-    if (focused_input->type() == InputTypeNames::radio &&
+    if (focused_input->type() == input_type_names::kRadio &&
         focused_input->Form() == GetElement().Form() &&
         focused_input->GetName() == GetElement().GetName())
       return false;
@@ -205,7 +205,7 @@ void RadioInputType::DidDispatchClick(Event& event,
     HTMLInputElement* checked_radio_button = state.checked_radio_button.Get();
     if (!checked_radio_button)
       GetElement().setChecked(false);
-    else if (checked_radio_button->type() == InputTypeNames::radio &&
+    else if (checked_radio_button->type() == input_type_names::kRadio &&
              checked_radio_button->Form() == GetElement().Form() &&
              checked_radio_button->GetName() == GetElement().GetName())
       checked_radio_button->setChecked(true);
@@ -233,7 +233,7 @@ HTMLInputElement* RadioInputType::NextRadioButtonInGroup(
        input_element; input_element = NextInputElement(
                           *input_element, current->Form(), forward)) {
     if (current->Form() == input_element->Form() &&
-        input_element->type() == InputTypeNames::radio &&
+        input_element->type() == input_type_names::kRadio &&
         input_element->GetName() == current->GetName())
       return input_element;
   }

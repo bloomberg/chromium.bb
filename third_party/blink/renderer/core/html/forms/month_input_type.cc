@@ -59,7 +59,7 @@ void MonthInputType::CountUsage() {
 }
 
 const AtomicString& MonthInputType::FormControlType() const {
-  return InputTypeNames::month;
+  return input_type_names::kMonth;
 }
 
 double MonthInputType::ValueAsDate() const {

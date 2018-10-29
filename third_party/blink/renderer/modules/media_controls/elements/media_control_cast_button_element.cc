@@ -39,7 +39,7 @@ MediaControlCastButtonElement::MediaControlCastButtonElement(
   SetShadowPseudoId(is_overlay_button
                         ? "-internal-media-controls-overlay-cast-button"
                         : "-internal-media-controls-cast-button");
-  setType(InputTypeNames::button);
+  setType(input_type_names::kButton);
   UpdateDisplayType();
 }
 

@@ -47,7 +47,7 @@ InputType* SubmitInputType::Create(HTMLInputElement& element) {
 }
 
 const AtomicString& SubmitInputType::FormControlType() const {
-  return InputTypeNames::submit;
+  return input_type_names::kSubmit;
 }
 
 void SubmitInputType::AppendToFormData(FormData& form_data) const {

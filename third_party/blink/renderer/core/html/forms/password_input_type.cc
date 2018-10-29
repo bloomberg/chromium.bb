@@ -55,7 +55,7 @@ void PasswordInputType::CountUsage() {
 }
 
 const AtomicString& PasswordInputType::FormControlType() const {
-  return InputTypeNames::password;
+  return input_type_names::kPassword;
 }
 
 bool PasswordInputType::ShouldSaveAndRestoreFormControlState() const {

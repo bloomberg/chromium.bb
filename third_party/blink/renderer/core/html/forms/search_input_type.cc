@@ -66,7 +66,7 @@ LayoutObject* SearchInputType::CreateLayoutObject(const ComputedStyle&) const {
 }
 
 const AtomicString& SearchInputType::FormControlType() const {
-  return InputTypeNames::search;
+  return input_type_names::kSearch;
 }
 
 bool SearchInputType::NeedsContainer() const {

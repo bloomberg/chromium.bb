@@ -62,7 +62,7 @@ WebString WebFormControlElement::FormControlType() const {
 WebString WebFormControlElement::FormControlTypeForAutofill() const {
   if (auto* input = ToHTMLInputElementOrNull(*private_)) {
     if (input->IsTextField() && input->HasBeenPasswordField())
-      return InputTypeNames::password;
+      return input_type_names::kPassword;
   }
 
   return ConstUnwrap<HTMLFormControlElement>()->type();

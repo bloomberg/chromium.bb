@@ -99,14 +99,14 @@ bool ThemePainter::Paint(const LayoutObject& o,
     case kCheckboxPart: {
       COUNT_APPEARANCE(doc, Checkbox);
       auto* input = ToHTMLInputElementOrNull(node);
-      if (!input || input->type() != InputTypeNames::checkbox)
+      if (!input || input->type() != input_type_names::kCheckbox)
         COUNT_APPEARANCE(doc, CheckboxForOthers);
       return PaintCheckbox(node, o.GetDocument(), style, paint_info, r);
     }
     case kRadioPart: {
       COUNT_APPEARANCE(doc, Radio);
       auto* input = ToHTMLInputElementOrNull(node);
-      if (!input || input->type() != InputTypeNames::radio)
+      if (!input || input->type() != input_type_names::kRadio)
         COUNT_APPEARANCE(doc, RadioForOthers);
       return PaintRadio(node, o.GetDocument(), style, paint_info, r);
     }
@@ -120,7 +120,7 @@ bool ThemePainter::Paint(const LayoutObject& o,
     case kSquareButtonPart: {
       COUNT_APPEARANCE(doc, SquareButton);
       auto* input = ToHTMLInputElementOrNull(node);
-      if (!input || input->type() != InputTypeNames::color)
+      if (!input || input->type() != input_type_names::kColor)
         COUNT_APPEARANCE(doc, SquareButtonForOthers);
       return PaintButton(node, o.GetDocument(), style, paint_info, r);
     }
@@ -148,14 +148,14 @@ bool ThemePainter::Paint(const LayoutObject& o,
     case kSliderHorizontalPart: {
       COUNT_APPEARANCE(doc, SliderHorizontal);
       auto* input = ToHTMLInputElementOrNull(node);
-      if (!input || input->type() != InputTypeNames::range)
+      if (!input || input->type() != input_type_names::kRange)
         COUNT_APPEARANCE(doc, SliderHorizontalForOthers);
       return PaintSliderTrack(o, paint_info, r);
     }
     case kSliderVerticalPart: {
       COUNT_APPEARANCE(doc, SliderVertical);
       auto* input = ToHTMLInputElementOrNull(node);
-      if (!input || input->type() != InputTypeNames::range)
+      if (!input || input->type() != input_type_names::kRange)
         COUNT_APPEARANCE(doc, SliderVerticalForOthers);
       return PaintSliderTrack(o, paint_info, r);
     }
@@ -163,7 +163,7 @@ bool ThemePainter::Paint(const LayoutObject& o,
       COUNT_APPEARANCE(doc, SliderThumbHorizontal);
       auto* input =
           ToHTMLInputElementOrNull(node ? node->OwnerShadowHost() : nullptr);
-      if (!input || input->type() != InputTypeNames::range)
+      if (!input || input->type() != input_type_names::kRange)
         COUNT_APPEARANCE(doc, SliderThumbHorizontalForOthers);
       return PaintSliderThumb(node, style, paint_info, r);
     }
@@ -171,7 +171,7 @@ bool ThemePainter::Paint(const LayoutObject& o,
       COUNT_APPEARANCE(doc, SliderThumbVertical);
       auto* input =
           ToHTMLInputElementOrNull(node ? node->OwnerShadowHost() : nullptr);
-      if (!input || input->type() != InputTypeNames::range)
+      if (!input || input->type() != input_type_names::kRange)
         COUNT_APPEARANCE(doc, SliderThumbVerticalForOthers);
       return PaintSliderThumb(node, style, paint_info, r);
     }
@@ -205,7 +205,7 @@ bool ThemePainter::Paint(const LayoutObject& o,
     case kSearchFieldPart: {
       COUNT_APPEARANCE(doc, SearchField);
       auto* input = ToHTMLInputElementOrNull(node);
-      if (!input || input->type() != InputTypeNames::search)
+      if (!input || input->type() != input_type_names::kSearch)
         COUNT_APPEARANCE(doc, SearchFieldForOthers);
       return PaintSearchField(node, style, paint_info, r);
     }
@@ -237,7 +237,7 @@ bool ThemePainter::PaintBorderOnly(const Node* node,
         UseCounter::Count(node->GetDocument(),
                           WebFeature::kCSSValueAppearanceTextFieldRendered);
         if (auto* input = ToHTMLInputElementOrNull(node)) {
-          if (input->type() == InputTypeNames::search) {
+          if (input->type() == input_type_names::kSearch) {
             UseCounter::Count(
                 node->GetDocument(),
                 WebFeature::kCSSValueAppearanceTextFieldForSearch);
@@ -326,7 +326,7 @@ void ThemePainter::PaintSliderTicks(const LayoutObject& o,
     return;
 
   HTMLInputElement* input = ToHTMLInputElement(node);
-  if (input->type() != InputTypeNames::range ||
+  if (input->type() != input_type_names::kRange ||
       !input->UserAgentShadowRoot()->HasChildren())
     return;
 

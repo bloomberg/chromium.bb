@@ -177,7 +177,7 @@ void LayoutTextControlSingleLine::CapsLockStateMayHaveChanged() {
 
   if (LocalFrame* frame = GetDocument().GetFrame())
     should_draw_caps_lock_indicator =
-        InputElement()->type() == InputTypeNames::password &&
+        InputElement()->type() == input_type_names::kPassword &&
         frame->Selection().FrameIsFocusedAndActive() &&
         GetDocument().FocusedElement() == GetNode() &&
         KeyboardEventManager::CurrentCapsLockState();

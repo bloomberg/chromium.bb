@@ -103,7 +103,7 @@ void RangeInputType::CountUsage() {
 }
 
 const AtomicString& RangeInputType::FormControlType() const {
-  return InputTypeNames::range;
+  return input_type_names::kRange;
 }
 
 double RangeInputType::ValueAsDouble() const {
