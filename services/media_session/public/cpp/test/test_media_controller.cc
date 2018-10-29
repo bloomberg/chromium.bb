@@ -21,5 +21,13 @@ void TestMediaController::ToggleSuspendResume() {
   ++toggle_suspend_resume_count_;
 }
 
+void TestMediaController::PreviousTrack() {
+  ++previous_track_count_;
+}
+
+void TestMediaController::NextTrack() {
+  ++next_track_count_;
+}
+
 }  // namespace test
 }  // namespace media_session

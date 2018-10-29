@@ -52,14 +52,14 @@ class ASH_EXPORT MediaController : public mojom::MediaController {
       const base::flat_map<AccountId, mojom::MediaCaptureState>& capture_states)
       override;
 
-  // If media session accelerators are enabled then this method will use the
+  // If media session accelerators are enabled then these methods will use the
   // media session service to control playback. Otherwise it will forward to
   // |client_|.
   void HandleMediaPlayPause();
-
-  // Methods that forward to |client_|.
   void HandleMediaNextTrack();
   void HandleMediaPrevTrack();
+
+  // Methods that forward to |client_|.
   void RequestCaptureState();
   void SuspendMediaSessions();
 

@@ -52,14 +52,26 @@ void MediaController::HandleMediaPlayPause() {
 }
 
 void MediaController::HandleMediaNextTrack() {
-  // TODO(beccahughes): Add media session service integration.
+  // If media session media key handling is enabled. Fire next track using the
+  // media session service.
+  if (base::FeatureList::IsEnabled(features::kMediaSessionAccelerators)) {
+    if (GetMediaSessionController())
+      GetMediaSessionController()->NextTrack();
+    return;
+  }
 
   if (client_)
     client_->HandleMediaNextTrack();
 }
 
 void MediaController::HandleMediaPrevTrack() {
-  // TODO(beccahughes): Add media session service integration.
+  // If media session media key handling is enabled. Fire previous track using
+  // the media session service.
+  if (base::FeatureList::IsEnabled(features::kMediaSessionAccelerators)) {
+    if (GetMediaSessionController())
+      GetMediaSessionController()->PreviousTrack();
+    return;
+  }
 
   if (client_)
     client_->HandleMediaPrevTrack();

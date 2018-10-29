@@ -26,15 +26,20 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestMediaController
   void Resume() override {}
   void ToggleSuspendResume() override;
   void AddObserver(mojom::MediaSessionObserverPtr) override {}
-  void PreviousTrack() override {}
-  void NextTrack() override {}
+  void PreviousTrack() override;
+  void NextTrack() override;
 
   int toggle_suspend_resume_count() const {
     return toggle_suspend_resume_count_;
   }
 
+  int previous_track_count() const { return previous_track_count_; }
+  int next_track_count() const { return next_track_count_; }
+
  private:
   int toggle_suspend_resume_count_ = 0;
+  int previous_track_count_ = 0;
+  int next_track_count_ = 0;
 
   mojo::Binding<mojom::MediaController> binding_{this};
 
