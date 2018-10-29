@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <!-- Move to external/wpt/css/selectors/invalidation once the selector name is resolved. -->
     <title>CSS Selectors Invalidation: :where()</title>
     <link rel="author" title="Victoria Su" href="mailto:victoriaytsu@google.com">
     <link rel="help" href="https://drafts.csswg.org/selectors-4/#zero-matches">
     <meta name="assert" content="This tests that the :where() selector is effective">
-    <script src="../../../resources/testharness.js"></script>
-    <script src="../../../resources/testharnessreport.js"></script>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
     <style>
+      * {
+        color: black;
+      }
       .b {
         color: yellow;
       }
