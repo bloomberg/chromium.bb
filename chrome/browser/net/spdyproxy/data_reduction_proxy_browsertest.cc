@@ -150,10 +150,12 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
     base::RunLoop().RunUntilIdle();
   }
 
-  std::string GetBody() {
+  std::string GetBody() { return GetBody(browser()); }
+
+  std::string GetBody(Browser* browser) {
     std::string body;
     EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        browser()->tab_strip_model()->GetActiveWebContents(),
+        browser->tab_strip_model()->GetActiveWebContents(),
         "window.domAutomationController.send(document.body.textContent);",
         &body));
     return body;
@@ -243,6 +245,35 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, ChromeProxyHeaderSet) {
   std::string body = GetBody();
   EXPECT_THAT(body, HasSubstr(kSessionKey));
   EXPECT_THAT(body, HasSubstr("pid="));
+}
+
+IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, DisabledOnIncognito) {
+  net::EmbeddedTestServer test_server;
+  test_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kDummyBody));
+  ASSERT_TRUE(test_server.Start());
+
+  Browser* incognito = CreateIncognitoBrowser();
+  ui_test_utils::NavigateToURL(
+      incognito, GetURLWithMockHost(test_server, "/echoheader?Chrome-Proxy"));
+  EXPECT_EQ(GetBody(incognito), kDummyBody);
+
+  // Make sure subresource doesn't use DRP either.
+  std::string script = R"((url => {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.onload = () => domAutomationController.send(xhr.responseText);
+    xhr.send();
+  }))";
+  std::string result;
+  ASSERT_TRUE(ExecuteScriptAndExtractString(
+      incognito->tab_strip_model()->GetActiveWebContents(),
+      script + "('" +
+          GetURLWithMockHost(test_server, "/echoheader?Chrome-Proxy").spec() +
+          "')",
+      &result));
+
+  EXPECT_EQ(result, kDummyBody);
 }
 
 IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest,
