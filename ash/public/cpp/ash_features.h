@@ -57,6 +57,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kMediaSessionNotification;
 // Enables the Night Light feature.
 ASH_PUBLIC_EXPORT extern const base::Feature kNightLight;
 
+// Enabled notification expansion animation.
+ASH_PUBLIC_EXPORT extern const base::Feature kNotificationExpansionAnimation;
+
 // Enables notification scroll bar in UnifiedSystemTray.
 ASH_PUBLIC_EXPORT extern const base::Feature kNotificationScrollBar;
 
@@ -88,6 +91,8 @@ ASH_PUBLIC_EXPORT bool IsLockScreenInlineReplyEnabled();
 ASH_PUBLIC_EXPORT bool IsLockScreenHideSensitiveNotificationsSupported();
 
 ASH_PUBLIC_EXPORT bool IsNightLightEnabled();
+
+ASH_PUBLIC_EXPORT bool IsNotificationExpansionAnimationEnabled();
 
 ASH_PUBLIC_EXPORT bool IsNotificationScrollBarEnabled();
 
