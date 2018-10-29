@@ -10,12 +10,6 @@
 # Unknown failure.
 -BrowserTabRestoreTest.*
 
-# Extensive use of ash::WindowState.
--InitiallyMaximized/AcceleratorCommandsFullscreenBrowserTest.*
--InitiallyMaximized/AcceleratorCommandsPlatformAppFullscreenBrowserTest.*
--InitiallyRestored/AcceleratorCommandsFullscreenBrowserTest.*
--InitiallyRestored/AcceleratorCommandsPlatformAppFullscreenBrowserTest.*
-
 # Volume adjustment fails.
 -WizardControllerTest.*ChromeVox
 

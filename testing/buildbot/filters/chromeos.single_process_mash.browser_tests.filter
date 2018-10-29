@@ -5,12 +5,6 @@
 # Tests that are also blacklisted for Mash.
 # --------------------------------------------------
 
-# Extensive use of ash::WindowState.
--InitiallyMaximized/AcceleratorCommandsFullscreenBrowserTest.*
--InitiallyMaximized/AcceleratorCommandsPlatformAppFullscreenBrowserTest.*
--InitiallyRestored/AcceleratorCommandsFullscreenBrowserTest.*
--InitiallyRestored/AcceleratorCommandsPlatformAppFullscreenBrowserTest.*
-
 # Virtual keyboard not supported.
 -DefaultKeyboardExtensionBrowserTest.*
 -KeyboardEndToEndFocusTest.*
