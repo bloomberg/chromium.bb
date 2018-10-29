@@ -231,6 +231,7 @@ class AutofillProfile : public AutofillDataModel,
                                  ValidationSource source) const;
 
   // Sets the validity state of the specified autofill type.
+  // This should only be called from autofill profile validtion API or in tests.
   void SetValidityState(ServerFieldType type,
                         ValidityState validity,
                         ValidationSource validation_source);
@@ -256,7 +257,7 @@ class AutofillProfile : public AutofillDataModel,
 
   const std::map<ServerFieldType, ValidityState>& GetServerValidityMap() const {
     return server_validity_states_;
-  };
+  }
 
   bool is_client_validity_states_updated() const {
     return is_client_validity_states_updated_;
