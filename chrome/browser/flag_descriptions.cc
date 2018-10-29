@@ -3173,6 +3173,11 @@ const char kEnableAppShortcutSearchName[] =
 const char kEnableAppShortcutSearchDescription[] =
     "Enables app shortcut search in launcher";
 
+const char kEnableAppDataSearchName[] = "Enable app data search in launcher";
+const char kEnableAppDataSearchDescription[] =
+    "Allow launcher search to access data available through Firebase App "
+    "Indexing";
+
 const char kEnableAppsGridGapFeatureName[] =
     "Enable apps grid gap feature in launcher.";
 const char kEnableAppsGridGapFeatureDescription[] =
@@ -3275,6 +3280,10 @@ const char kEnablePerUserTimezoneDescription[] =
     "Chrome OS system timezone preference is stored and handled for each user "
     "individually.";
 
+const char kEnablePlayStoreSearchName[] = "Enable Play Store search";
+const char kEnablePlayStoreSearchDescription[] =
+    "Enable Play Store search in launcher.";
+
 const char kEnableSettingsShortcutSearchName[] =
     "Enable Settings shortcut search";
 const char kEnableSettingsShortcutSearchDescription[] =
@@ -3309,7 +3318,7 @@ const char kEnableVirtualKeyboardUkmDescription[] =
 const char kEnableZeroStateSuggestionsName[] = "Enable Zero State Suggetions";
 const char kEnableZeroStateSuggestionsDescription[] =
     "Enable Zero State Suggestions feature in Launcher, which will show "
-    "suggetions when launcher search box is active with an empty query";
+    "suggestions when launcher search box is active with an empty query";
 
 const char kEolNotificationName[] = "Disable Device End of Life notification.";
 const char kEolNotificationDescription[] =

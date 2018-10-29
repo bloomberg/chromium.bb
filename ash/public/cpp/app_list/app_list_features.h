@@ -32,6 +32,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableBackgroundBlur;
 // Enables the Play Store app search.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnablePlayStoreAppSearch;
 
+// Enables in-app data search.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppDataSearch;
+
 // Enables the home launcher in tablet mode. In this mode, the launcher will be
 // always shown right on top of the wallpaper. Home button will minimize all
 // windows instead of toggling the launcher.
@@ -67,6 +70,7 @@ bool ASH_PUBLIC_EXPORT IsAnswerCardEnabled();
 bool ASH_PUBLIC_EXPORT IsAppShortcutSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsBackgroundBlurEnabled();
 bool ASH_PUBLIC_EXPORT IsPlayStoreAppSearchEnabled();
+bool ASH_PUBLIC_EXPORT IsAppDataSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsHomeLauncherEnabled();
 bool ASH_PUBLIC_EXPORT IsHomeLauncherGesturesEnabled();
 bool ASH_PUBLIC_EXPORT IsSettingsShortcutSearchEnabled();
