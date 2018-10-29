@@ -215,7 +215,10 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
                               base::Unretained(this)),
           helper_.ControlMainThreadTaskQueue()->CreateTaskRunner(
               TaskType::kMainThreadTaskQueueControl)),
-      queueing_time_estimator_(this, kQueueingTimeWindowDuration, 20),
+      queueing_time_estimator_(this,
+                               kQueueingTimeWindowDuration,
+                               20,
+                               kLaunchingProcessIsBackgrounded),
       main_thread_only_(this,
                         compositor_task_queue_,
                         helper_.GetClock(),
@@ -995,7 +998,7 @@ void MainThreadSchedulerImpl::SetRendererBackgrounded(bool backgrounded) {
   internal::ProcessState::Get()->is_process_backgrounded = backgrounded;
 
   main_thread_only().background_status_changed_at = tick_clock()->NowTicks();
-  queueing_time_estimator_.OnRendererStateChanged(
+  queueing_time_estimator_.OnRecordingStateChanged(
       backgrounded, main_thread_only().background_status_changed_at);
 
   UpdatePolicy();
