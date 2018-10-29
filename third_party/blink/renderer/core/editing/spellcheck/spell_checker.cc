@@ -754,7 +754,7 @@ bool SpellChecker::IsSpellCheckingEnabledAt(const Position& position) {
     if (auto* input = ToHTMLInputElementOrNull(text_control)) {
       // TODO(tkent): The following password type check should be done in
       // HTMLElement::spellcheck(). crbug.com/371567
-      if (input->type() == InputTypeNames::password)
+      if (input->type() == input_type_names::kPassword)
         return false;
       if (!input->IsFocusedElementInDocument())
         return false;

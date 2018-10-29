@@ -46,7 +46,7 @@ MediaControlToggleClosedCaptionsButtonElement::
     MediaControlToggleClosedCaptionsButtonElement(
         MediaControlsImpl& media_controls)
     : MediaControlInputElement(media_controls, kMediaShowClosedCaptionsButton) {
-  setType(InputTypeNames::button);
+  setType(input_type_names::kButton);
   SetShadowPseudoId(
       AtomicString("-webkit-media-controls-toggle-closed-captions-button"));
   SetClass(kClosedCaptionClass, UseClosedCaptionsIcon());

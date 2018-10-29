@@ -142,7 +142,7 @@ bool HTMLFormControlElementWithState::ShouldAutocomplete() const {
 }
 
 bool HTMLFormControlElementWithState::IsWearingAutofillAnchorMantle() const {
-  return FormControlType() == InputTypeNames::hidden;
+  return FormControlType() == input_type_names::kHidden;
 }
 
 String HTMLFormControlElementWithState::IDLExposedAutofillValue() const {

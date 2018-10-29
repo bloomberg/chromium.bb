@@ -44,7 +44,7 @@ InputType* ResetInputType::Create(HTMLInputElement& element) {
 }
 
 const AtomicString& ResetInputType::FormControlType() const {
-  return InputTypeNames::reset;
+  return input_type_names::kReset;
 }
 
 bool ResetInputType::SupportsValidation() const {

@@ -443,8 +443,8 @@ class TokenPreloadScanner::StartTagScanner {
     if (Match(attribute_name, kSrcAttr)) {
       SetUrlToLoad(attribute_value, kDisallowURLReplacement);
     } else if (Match(attribute_name, kTypeAttr)) {
-      input_is_image_ =
-          DeprecatedEqualIgnoringCase(attribute_value, InputTypeNames::image);
+      input_is_image_ = DeprecatedEqualIgnoringCase(attribute_value,
+                                                    input_type_names::kImage);
     }
   }
 

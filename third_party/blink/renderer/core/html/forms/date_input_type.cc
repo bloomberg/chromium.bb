@@ -60,7 +60,7 @@ void DateInputType::CountUsage() {
 }
 
 const AtomicString& DateInputType::FormControlType() const {
-  return InputTypeNames::date;
+  return input_type_names::kDate;
 }
 
 StepRange DateInputType::CreateStepRange(

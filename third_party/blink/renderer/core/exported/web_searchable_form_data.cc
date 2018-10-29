@@ -119,8 +119,8 @@ bool IsSelectInDefaultState(const HTMLSelectElement& select) {
 // attribute.
 bool IsInDefaultState(const HTMLFormControlElement& form_element) {
   if (auto* input = ToHTMLInputElementOrNull(form_element)) {
-    if (input->type() == InputTypeNames::checkbox ||
-        input->type() == InputTypeNames::radio)
+    if (input->type() == input_type_names::kCheckbox ||
+        input->type() == input_type_names::kRadio)
       return input->checked() == input->FastHasAttribute(kCheckedAttr);
   } else if (auto* select = ToHTMLSelectElementOrNull(form_element)) {
     return IsSelectInDefaultState(*select);
@@ -153,8 +153,8 @@ HTMLInputElement* FindSuitableSearchInputElement(const HTMLFormElement& form) {
 
       // Return nothing if a file upload field or a password field are
       // found.
-      if (input.type() == InputTypeNames::file ||
-          input.type() == InputTypeNames::password)
+      if (input.type() == input_type_names::kFile ||
+          input.type() == input_type_names::kPassword)
         return nullptr;
 
       if (input.IsTextField()) {

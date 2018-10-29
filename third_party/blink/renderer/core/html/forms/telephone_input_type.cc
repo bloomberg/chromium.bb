@@ -44,7 +44,7 @@ void TelephoneInputType::CountUsage() {
 }
 
 const AtomicString& TelephoneInputType::FormControlType() const {
-  return InputTypeNames::tel;
+  return input_type_names::kTel;
 }
 
 }  // namespace blink

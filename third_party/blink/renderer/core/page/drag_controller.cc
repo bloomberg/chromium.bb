@@ -348,7 +348,7 @@ static HTMLInputElement* AsFileInput(Node* node) {
   DCHECK(node);
   for (; node; node = node->OwnerShadowHost()) {
     if (IsHTMLInputElement(*node) &&
-        ToHTMLInputElement(node)->type() == InputTypeNames::file)
+        ToHTMLInputElement(node)->type() == input_type_names::kFile)
       return ToHTMLInputElement(node);
   }
   return nullptr;

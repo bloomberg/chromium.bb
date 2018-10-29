@@ -100,7 +100,7 @@ void CoreInitializer::Initialize() {
       EventTargetNames::kNamesCount + EventTypeNames::kNamesCount +
       FetchInitiatorTypeNames::kNamesCount + FontFamilyNames::kNamesCount +
       HTMLTokenizerNames::kNamesCount + HTTPNames::kNamesCount +
-      InputModeNames::kNamesCount + InputTypeNames::kNamesCount +
+      InputModeNames::kNamesCount + input_type_names::kNamesCount +
       media_feature_names::kNamesCount + media_type_names::kNamesCount +
       performance_entry_names::kNamesCount;
 
@@ -125,7 +125,7 @@ void CoreInitializer::Initialize() {
   HTMLTokenizerNames::init();
   HTTPNames::init();
   InputModeNames::init();
-  InputTypeNames::init();
+  input_type_names::init();
   media_feature_names::init();
   media_type_names::init();
   performance_entry_names::init();

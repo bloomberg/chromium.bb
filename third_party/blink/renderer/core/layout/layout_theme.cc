@@ -642,7 +642,7 @@ TimeDelta LayoutTheme::AnimationDurationForProgressBar() const {
 
 bool LayoutTheme::ShouldHaveSpinButton(HTMLInputElement* input_element) const {
   return input_element->IsSteppable() &&
-         input_element->type() != InputTypeNames::range;
+         input_element->type() != input_type_names::kRange;
 }
 
 void LayoutTheme::AdjustMenuListButtonStyle(ComputedStyle&, Element*) const {}
@@ -872,9 +872,10 @@ bool LayoutTheme::ShouldOpenPickerWithF4Key() const {
 
 bool LayoutTheme::SupportsCalendarPicker(const AtomicString& type) const {
   DCHECK(RuntimeEnabledFeatures::InputMultipleFieldsUIEnabled());
-  return type == InputTypeNames::date || type == InputTypeNames::datetime ||
-         type == InputTypeNames::datetime_local ||
-         type == InputTypeNames::month || type == InputTypeNames::week;
+  return type == input_type_names::kDate ||
+         type == input_type_names::kDatetime ||
+         type == input_type_names::kDatetimeLocal ||
+         type == input_type_names::kMonth || type == input_type_names::kWeek;
 }
 
 bool LayoutTheme::ShouldUseFallbackTheme(const ComputedStyle&) const {

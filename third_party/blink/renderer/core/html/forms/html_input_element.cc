@@ -377,7 +377,7 @@ void HTMLInputElement::InitializeTypeInParsing() {
   String default_value = FastGetAttribute(kValueAttr);
   if (input_type_->GetValueMode() == ValueMode::kValue)
     non_attribute_value_ = SanitizeValue(default_value);
-  has_been_password_field_ |= new_type_name == InputTypeNames::password;
+  has_been_password_field_ |= new_type_name == input_type_names::kPassword;
 
   if (input_type_view_->NeedsShadowSubtree()) {
     CreateUserAgentShadowRoot();
@@ -434,7 +434,7 @@ void HTMLInputElement::UpdateType() {
   bool placeholder_changed =
       input_type_->SupportsPlaceholder() != new_type->SupportsPlaceholder();
 
-  has_been_password_field_ |= new_type_name == InputTypeNames::password;
+  has_been_password_field_ |= new_type_name == input_type_names::kPassword;
 
   input_type_ = new_type;
   input_type_view_ = input_type_->CreateView();
@@ -693,7 +693,7 @@ bool HTMLInputElement::IsPresentationAttribute(
   // FIXME: Remove type check.
   if (name == kVspaceAttr || name == kHspaceAttr || name == kAlignAttr ||
       name == kWidthAttr || name == kHeightAttr ||
-      (name == kBorderAttr && type() == InputTypeNames::image))
+      (name == kBorderAttr && type() == input_type_names::kImage))
     return true;
   return TextControlElement::IsPresentationAttribute(name);
 }
@@ -718,7 +718,7 @@ void HTMLInputElement::CollectStyleForPresentationAttribute(
     if (input_type_->ShouldRespectHeightAndWidthAttributes())
       AddHTMLLengthToStyle(style, CSSPropertyHeight, value);
   } else if (name == kBorderAttr &&
-             type() == InputTypeNames::image) {  // FIXME: Remove type check.
+             type() == input_type_names::kImage) {  // FIXME: Remove type check.
     ApplyBorderAttributeToStyle(value, style);
   } else {
     TextControlElement::CollectStyleForPresentationAttribute(name, value,
@@ -1104,7 +1104,7 @@ void HTMLInputElement::setValue(const String& value,
                                 ExceptionState& exception_state,
                                 TextFieldEventBehavior event_behavior) {
   // FIXME: Remove type check.
-  if (type() == InputTypeNames::file && !value.IsEmpty()) {
+  if (type() == input_type_names::kFile && !value.IsEmpty()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "This input element accepts a filename, "
                                       "which may only be programmatically set "
@@ -1204,7 +1204,7 @@ void HTMLInputElement::setValueAsNumber(double new_value,
 
 void HTMLInputElement::SetValueFromRenderer(const String& value) {
   // File upload controls will never use this.
-  DCHECK_NE(type(), InputTypeNames::file);
+  DCHECK_NE(type(), input_type_names::kFile);
 
   // Clear the suggested value. Use the base class version to not trigger a view
   // update.
@@ -1313,7 +1313,7 @@ void HTMLInputElement::DefaultEventHandler(Event& evt) {
 
   if (input_type_view_->ShouldSubmitImplicitly(evt)) {
     // FIXME: Remove type check.
-    if (type() == InputTypeNames::search) {
+    if (type() == input_type_names::kSearch) {
       GetDocument()
           .GetTaskRunner(TaskType::kUserInteraction)
           ->PostTask(FROM_HERE, WTF::Bind(&HTMLInputElement::OnSearch,
@@ -1568,7 +1568,7 @@ void HTMLInputElement::DidMoveToNewDocument(Document& old_document) {
     ImageLoader()->ElementDidMoveToNewDocument();
 
   // FIXME: Remove type check.
-  if (type() == InputTypeNames::radio)
+  if (type() == input_type_names::kRadio)
     GetTreeScope().GetRadioButtonGroupScope().RemoveButton(this);
 
   TextControlElement::DidMoveToNewDocument(old_document);
@@ -1637,7 +1637,7 @@ HTMLInputElement::FilteredDataListOptions() const {
     return filtered;
 
   String value = InnerEditorValue();
-  if (Multiple() && type() == InputTypeNames::email) {
+  if (Multiple() && type() == input_type_names::kEmail) {
     Vector<String> emails;
     value.Split(',', true, emails);
     if (!emails.IsEmpty())
@@ -1737,7 +1737,7 @@ bool HTMLInputElement::ShouldAppearIndeterminate() const {
 
 bool HTMLInputElement::IsInRequiredRadioButtonGroup() {
   // TODO(tkent): Remove type check.
-  DCHECK_EQ(type(), InputTypeNames::radio);
+  DCHECK_EQ(type(), input_type_names::kRadio);
   if (RadioButtonGroupScope* scope = GetRadioButtonGroupScope())
     return scope->IsInRequiredGroup(this);
   return false;
@@ -1753,7 +1753,7 @@ HTMLInputElement* HTMLInputElement::CheckedRadioButtonForGroup() {
 
 RadioButtonGroupScope* HTMLInputElement::GetRadioButtonGroupScope() const {
   // FIXME: Remove type check.
-  if (type() != InputTypeNames::radio)
+  if (type() != input_type_names::kRadio)
     return nullptr;
   if (HTMLFormElement* form_element = Form())
     return &form_element->GetRadioButtonGroupScope();

@@ -64,7 +64,7 @@ void TimeInputType::CountUsage() {
 }
 
 const AtomicString& TimeInputType::FormControlType() const {
-  return InputTypeNames::time;
+  return input_type_names::kTime;
 }
 
 Decimal TimeInputType::DefaultValueForStepUp() const {

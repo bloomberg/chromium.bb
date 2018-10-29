@@ -39,7 +39,7 @@ MediaControlOverlayPlayButtonElement::MediaControlOverlayPlayButtonElement(
     : MediaControlInputElement(media_controls, kMediaPlayButton),
       internal_button_(nullptr) {
   EnsureUserAgentShadowRoot();
-  setType(InputTypeNames::button);
+  setType(input_type_names::kButton);
   SetShadowPseudoId(AtomicString("-webkit-media-controls-overlay-play-button"));
 
   if (MediaControlsImpl::IsModern()) {

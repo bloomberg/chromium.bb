@@ -108,7 +108,7 @@ Element* MediaControlTextTrackListElement::CreateTextTrackListItem(
       HTMLInputElement::Create(GetDocument(), CreateElementFlags());
   track_item_input->SetShadowPseudoId(
       AtomicString("-internal-media-controls-text-track-list-item-input"));
-  track_item_input->setType(InputTypeNames::checkbox);
+  track_item_input->setType(input_type_names::kCheckbox);
   track_item_input->SetIntegralAttribute(TrackIndexAttrName(), track_index);
   if (!MediaElement().TextTracksVisible()) {
     if (!track)

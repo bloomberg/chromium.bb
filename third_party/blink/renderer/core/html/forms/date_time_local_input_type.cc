@@ -58,7 +58,7 @@ void DateTimeLocalInputType::CountUsage() {
 }
 
 const AtomicString& DateTimeLocalInputType::FormControlType() const {
-  return InputTypeNames::datetime_local;
+  return input_type_names::kDatetimeLocal;
 }
 
 double DateTimeLocalInputType::ValueAsDate() const {

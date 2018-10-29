@@ -107,7 +107,7 @@ class CORE_EXPORT HTMLInputElement
   bool IsTextField() const;
   // Do not add type check predicates for concrete input types; e.g.  isImage,
   // isRadio, isFile.  If you want to check the input type, you may use
-  // |input->type() == InputTypeNames::image|, etc.
+  // |input->type() == input_type_names::kImage|, etc.
 
   // Returns whether this field is or has ever been a password field so that
   // its value can be protected from memorization by autofill or keyboards.

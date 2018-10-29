@@ -324,9 +324,9 @@ int ComputeAutocapitalizeFlags(const Element* element) {
   // https://html.spec.whatwg.org/multipage/interaction.html#used-autocapitalization-hint
   if (auto* input = ToHTMLInputElementOrNull(*html_element)) {
     const AtomicString& input_type = input->type();
-    if (input_type == InputTypeNames::email ||
-        input_type == InputTypeNames::url ||
-        input_type == InputTypeNames::password) {
+    if (input_type == input_type_names::kEmail ||
+        input_type == input_type_names::kUrl ||
+        input_type == input_type_names::kPassword) {
       // The autocapitalize IDL attribute value is ignored for these input
       // types, so we set the None flag.
       return kWebTextInputFlagAutocapitalizeNone;
@@ -1440,19 +1440,19 @@ WebTextInputType InputMethodController::TextInputType() const {
     if (input->IsDisabledOrReadOnly())
       return kWebTextInputTypeNone;
 
-    if (type == InputTypeNames::password)
+    if (type == input_type_names::kPassword)
       return kWebTextInputTypePassword;
-    if (type == InputTypeNames::search)
+    if (type == input_type_names::kSearch)
       return kWebTextInputTypeSearch;
-    if (type == InputTypeNames::email)
+    if (type == input_type_names::kEmail)
       return kWebTextInputTypeEmail;
-    if (type == InputTypeNames::number)
+    if (type == input_type_names::kNumber)
       return kWebTextInputTypeNumber;
-    if (type == InputTypeNames::tel)
+    if (type == input_type_names::kTel)
       return kWebTextInputTypeTelephone;
-    if (type == InputTypeNames::url)
+    if (type == input_type_names::kUrl)
       return kWebTextInputTypeURL;
-    if (type == InputTypeNames::text)
+    if (type == input_type_names::kText)
       return kWebTextInputTypeText;
 
     return kWebTextInputTypeNone;

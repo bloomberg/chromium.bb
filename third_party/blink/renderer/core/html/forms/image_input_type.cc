@@ -51,7 +51,7 @@ InputType* ImageInputType::Create(HTMLInputElement& element) {
 }
 
 const AtomicString& ImageInputType::FormControlType() const {
-  return InputTypeNames::image;
+  return input_type_names::kImage;
 }
 
 bool ImageInputType::IsFormDataAppendable() const {

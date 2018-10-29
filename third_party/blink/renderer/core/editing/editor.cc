@@ -100,7 +100,7 @@ namespace {
 
 bool IsInPasswordFieldWithUnrevealedPassword(const Position& position) {
   if (auto* input = ToHTMLInputElementOrNull(EnclosingTextControl(position))) {
-    return (input->type() == InputTypeNames::password) &&
+    return (input->type() == input_type_names::kPassword) &&
            !input->ShouldRevealPassword();
   }
   return false;

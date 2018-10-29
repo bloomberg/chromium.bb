@@ -103,7 +103,7 @@ void NumberInputType::CountUsage() {
 }
 
 const AtomicString& NumberInputType::FormControlType() const {
-  return InputTypeNames::number;
+  return input_type_names::kNumber;
 }
 
 void NumberInputType::SetValue(const String& sanitized_value,

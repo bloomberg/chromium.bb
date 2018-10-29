@@ -30,7 +30,7 @@ class MediaControlInputElementImpl final : public MediaControlInputElement {
   MediaControlInputElementImpl(MediaControlsImpl& media_controls)
       // Using arbitrary MediaControlElementType. It should have no impact.
       : MediaControlInputElement(media_controls, kMediaDownloadButton) {
-    setType(InputTypeNames::button);
+    setType(input_type_names::kButton);
     SetIsWanted(false);
   }
 

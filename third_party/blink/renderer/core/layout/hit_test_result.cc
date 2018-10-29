@@ -298,7 +298,7 @@ KURL HitTestResult::AbsoluteImageURL() const {
   if (IsHTMLImageElement(*inner_node_or_image_map_image) ||
       (IsHTMLInputElement(*inner_node_or_image_map_image) &&
        ToHTMLInputElement(inner_node_or_image_map_image)->type() ==
-           InputTypeNames::image))
+           input_type_names::kImage))
     url_string = ToElement(*inner_node_or_image_map_image).ImageSourceURL();
   else if ((inner_node_or_image_map_image->GetLayoutObject() &&
             inner_node_or_image_map_image->GetLayoutObject()->IsImage()) &&

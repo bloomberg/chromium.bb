@@ -489,7 +489,7 @@ bool TextIteratorAlgorithm<Strategy>::SupportsAltText(const Node& node) {
   if (IsHTMLImageElement(element))
     return true;
   if (IsHTMLInputElement(element) &&
-      ToHTMLInputElement(node).type() == InputTypeNames::image)
+      ToHTMLInputElement(node).type() == input_type_names::kImage)
     return true;
   return false;
 }
