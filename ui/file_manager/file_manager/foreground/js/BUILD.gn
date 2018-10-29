@@ -111,6 +111,10 @@ js_type_check("test_support_type_check") {
   testonly = true
   deps = [
     ":mock_actions_model",
+    ":mock_directory_model",
+    ":mock_folder_shortcut_data_model",
+    ":mock_navigation_list_model",
+    ":mock_thumbnail_loader",
   ]
 }
 
@@ -144,6 +148,37 @@ js_library("mock_actions_model") {
   deps = [
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js/cr:event_target",
+  ]
+}
+
+js_library("mock_directory_model") {
+  testonly = true
+  deps = [
+    ":directory_contents",
+    ":directory_model",
+    "//ui/file_manager/file_manager/common/js:mock_entry",
+    "//ui/file_manager/file_manager/common/js:util",
+  ]
+}
+
+js_library("mock_folder_shortcut_data_model") {
+  testonly = true
+  deps = [
+    "//ui/file_manager/file_manager/common/js:mock_entry",
+  ]
+}
+
+js_library("mock_navigation_list_model") {
+  testonly = true
+  deps = [
+    ":navigation_list_model",
+  ]
+}
+
+js_library("mock_thumbnail_loader") {
+  testonly = true
+  deps = [
+    ":thumbnail_loader",
   ]
 }
 
