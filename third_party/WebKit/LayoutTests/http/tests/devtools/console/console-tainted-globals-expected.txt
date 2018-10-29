@@ -19,21 +19,21 @@ testOverriddenError()
 restoreError()
 {result: "PASS"}
 testOverriddenToString(function func() {}, true)
-ƒ #<Function>
+ƒ Function
 testOverriddenToString(function func() {}, false)
-ƒ #<Function>
+ƒ Function
 testOverriddenToString(new Function, true)
-ƒ #<Function>
+ƒ Function
 testOverriddenToString(new Function, false)
-ƒ #<Function>
+ƒ Function
 testOverriddenToString(/^regex$/, true)
-#<RegExp>
+/^regex$/
 testOverriddenToString(/^regex$/, false)
-#<RegExp>
+/^regex$/
 testOverriddenToString(new Date, true)
-#<Date>
+Date
 testOverriddenToString(new Date, false)
-#<Date>
+Date
 testOverriddenToString({}, true)
 {toString: ƒ, valueOf: ƒ}
 testOverriddenToString({}, false)

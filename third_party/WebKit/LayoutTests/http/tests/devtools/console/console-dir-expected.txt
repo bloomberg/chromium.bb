@@ -10,8 +10,13 @@ console-dir.js:13 NodeList(1)
     length: 1
     __proto__: NodeList
 console-dir.js:14 XPathResult
+    booleanValue: (...)
     invalidIteratorState: false
+    numberValue: (...)
     resultType: 4
+    singleNodeValue: (...)
+    snapshotLength: (...)
+    stringValue: (...)
     __proto__: XPathResult
 console-dir.js:24 Object
     "": ""

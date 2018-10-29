@@ -1,5 +1,5 @@
 Tests RemoteObject.getProperties.
 
 property.name=="testBar" isOwn=="true"
-property.name=="testFoo" isOwn=="undefined"
+property.name=="testFoo" isOwn=="false"
 

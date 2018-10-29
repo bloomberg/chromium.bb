@@ -172,7 +172,7 @@ console-format.js:22 [text]
 globals[35]
 #text
 console-format.js:21 DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-console-format.js:22 [DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of th…]
+console-format.js:22 [DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of t…]
 globals[36]
 DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
 console-format.js:21 Uint8Array [3]
@@ -617,7 +617,7 @@ console-format.js:22 [text]
 globals[35]
 #text
 console-format.js:21 DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-console-format.js:22 [DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of th…]
+console-format.js:22 [DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of t…]
     0: DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
     length: 1
     __proto__: Array(0)
