@@ -85,9 +85,11 @@ public class ChromeApplication extends Application {
             // Chrome is just the browser process).
             ApplicationStatus.initialize(this);
 
-            // Register application status listener for crashes, this needs to be done as early as
-            // possible so that this value is set before any crashes are reported.
-            ApplicationStatusTracker.getInstance().registerListener();
+            // Register and initialize application status listener for crashes, this needs to be
+            // done as early as possible so that this value is set before any crashes are reported.
+            ApplicationStatusTracker tracker = new ApplicationStatusTracker();
+            tracker.onApplicationStateChange(ApplicationStatus.getStateForApplication());
+            ApplicationStatus.registerApplicationStateListener(tracker);
 
             // Only browser process requires custom resources.
             BuildHooksAndroid.initCustomResources(this);

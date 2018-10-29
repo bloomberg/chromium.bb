@@ -11,28 +11,18 @@ import org.chromium.base.ThreadUtils;
 /**
  * This class updates crash keys when the application state changes.
  */
-public class ApplicationStatusTracker {
+public class ApplicationStatusTracker implements ApplicationStatus.ApplicationStateListener {
     private static final String APP_FOREGROUND = "app_foreground";
     private static final String APP_BACKGROUND = "app_background";
 
-    private static class Holder {
-        static final ApplicationStatusTracker INSTANCE = new ApplicationStatusTracker();
-    }
-
     private String mCurrentState;
 
-    private ApplicationStatusTracker() {}
-
-    public void registerListener() {
-        setApplicationStatus(ApplicationStatus.getStateForApplication());
-        ApplicationStatus.registerApplicationStateListener(this::setApplicationStatus);
-    }
-
-    private void setApplicationStatus(@ApplicationState int state) {
+    @Override
+    public void onApplicationStateChange(int newState) {
         ThreadUtils.assertOnUiThread();
         String appStatus;
         // TODO(wnwen): Add foreground service as another state.
-        if (isApplicationInForeground(state)) {
+        if (isApplicationInForeground(newState)) {
             appStatus = APP_FOREGROUND;
         } else {
             appStatus = APP_BACKGROUND;
@@ -46,12 +36,5 @@ public class ApplicationStatusTracker {
     private static boolean isApplicationInForeground(@ApplicationState int state) {
         return state == ApplicationState.HAS_RUNNING_ACTIVITIES
                 || state == ApplicationState.HAS_PAUSED_ACTIVITIES;
-    }
-
-    /**
-     * @return The shared instance of this class.
-     */
-    public static ApplicationStatusTracker getInstance() {
-        return Holder.INSTANCE;
     }
 }
