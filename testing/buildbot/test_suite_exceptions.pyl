@@ -1290,6 +1290,11 @@
       },
     },
   },
+  'webgl_conformance_vulkan_passthrough_tests': {
+    'remove_from': [
+      'Win7 FYI Debug (AMD)',
+    ],
+  },
   'webkit_layout_tests': {
     'remove_from': [
       # chromium.fyi
