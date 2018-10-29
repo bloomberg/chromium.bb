@@ -217,16 +217,17 @@ function generateSearchableUrl_(form) {
     if (isSubmitElement_(element)) {
       // Only append the active submit element's name-value pair.
       if (element === activeSubmitElement) {
+        var value = element.value;
         // <input type="submit"> will have "Submit" as default "value" when
         // submitted with empty "value" and non-empty "name". This probably
         // comes from the default label text of <input type="submit">:
         //   https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/submit
-        if (element.tagName == 'INPUT' && !element.value) {
-          element.value = 'Submit';
+        if (element.tagName == 'INPUT' && !value) {
+          value = 'Submit';
         }
         queryArgs.push(
             encodeFormData_(element.name) + '=' +
-            encodeFormData_(element.value));
+            encodeFormData_(value));
       }
       continue;
     }
