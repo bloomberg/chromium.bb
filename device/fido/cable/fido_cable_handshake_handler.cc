@@ -9,9 +9,9 @@
 
 #include "base/containers/span.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/cbor/cbor_reader.h"
-#include "components/cbor/cbor_values.h"
-#include "components/cbor/cbor_writer.h"
+#include "components/cbor/reader.h"
+#include "components/cbor/values.h"
+#include "components/cbor/writer.h"
 #include "crypto/hkdf.h"
 #include "crypto/hmac.h"
 #include "crypto/random.h"

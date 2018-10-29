@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CBOR_CBOR_READER_H_
-#define COMPONENTS_CBOR_CBOR_READER_H_
+#ifndef COMPONENTS_CBOR_READER_H_
+#define COMPONENTS_CBOR_READER_H_
 
 #include <stddef.h>
 
@@ -13,7 +13,7 @@
 #include "base/containers/span.h"
 #include "base/optional.h"
 #include "components/cbor/cbor_export.h"
-#include "components/cbor/cbor_values.h"
+#include "components/cbor/values.h"
 
 // Concise Binary Object Representation (CBOR) decoder as defined by
 // https://tools.ietf.org/html/rfc7049. This decoder only accepts canonical CBOR
@@ -158,4 +158,4 @@ class CBOR_EXPORT Reader {
 
 }  // namespace cbor
 
-#endif  // COMPONENTS_CBOR_CBOR_READER_H_
+#endif  // COMPONENTS_CBOR_READER_H_

@@ -11,7 +11,7 @@
 
 #include "base/component_export.h"
 #include "base/optional.h"
-#include "components/cbor/cbor_values.h"
+#include "components/cbor/values.h"
 #include "url/gurl.h"
 
 namespace device {

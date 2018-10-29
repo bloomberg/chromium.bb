@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "components/cbor/cbor_values.h"
-#include "components/cbor/cbor_writer.h"
+#include "components/cbor/values.h"
+#include "components/cbor/writer.h"
 #include "device/fido/attestation_statement.h"
 #include "device/fido/fido_constants.h"
 

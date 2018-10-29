@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cbor/cbor_reader.h"
+#include "components/cbor/reader.h"
 
 #include <math.h>
 
@@ -12,7 +12,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "components/cbor/cbor_constants.h"
+#include "components/cbor/constants.h"
 
 namespace cbor {
 
@@ -33,7 +33,7 @@ uint8_t GetAdditionalInfo(uint8_t initial_data_byte) {
 }
 
 // Error messages that correspond to each of the error codes. There is 1
-// exception: we declare |kUnsupportedMajorType| in cbor_constants.h in the
+// exception: we declare |kUnsupportedMajorType| in constants.h in the
 // `constants` namespace, because we use it in several files.
 const char kNoError[] = "Successfully deserialized to a CBOR value.";
 const char kUnknownAdditionalInfo[] =

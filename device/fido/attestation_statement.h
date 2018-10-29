@@ -11,7 +11,7 @@
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "components/cbor/cbor_values.h"
+#include "components/cbor/values.h"
 
 namespace device {
 

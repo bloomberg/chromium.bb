@@ -5,7 +5,7 @@
 #include <limits>
 #include <utility>
 
-#include "components/cbor/cbor_reader.h"
+#include "components/cbor/reader.h"
 
 #include "base/containers/span.h"
 #include "testing/gmock/include/gmock/gmock.h"
