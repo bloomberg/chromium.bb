@@ -1445,6 +1445,111 @@ bool AutofillTable::GetServerAddressesMetadata(
   return s.Succeeded();
 }
 
+void AutofillTable::SetServerCardsData(
+    const std::vector<CreditCard>& credit_cards) {
+  sql::Transaction transaction(db_);
+  if (!transaction.Begin())
+    return;
+
+  // Delete all old values.
+  sql::Statement masked_delete(
+      db_->GetUniqueStatement("DELETE FROM masked_credit_cards"));
+  masked_delete.Run();
+
+  // Add all the masked cards.
+  sql::Statement masked_insert(
+      db_->GetUniqueStatement("INSERT INTO masked_credit_cards("
+                              "id,"            // 0
+                              "network,"       // 1
+                              "type,"          // 2
+                              "status,"        // 3
+                              "name_on_card,"  // 4
+                              "last_four,"     // 5
+                              "exp_month,"     // 6
+                              "exp_year,"      // 7
+                              "bank_name)"     // 8
+                              "VALUES (?,?,?,?,?,?,?,?,?)"));
+  for (const CreditCard& card : credit_cards) {
+    DCHECK_EQ(CreditCard::MASKED_SERVER_CARD, card.record_type());
+    masked_insert.BindString(0, card.server_id());
+    masked_insert.BindString(1, card.network());
+    masked_insert.BindInt(2, card.card_type());
+    masked_insert.BindString(3,
+                             ServerStatusEnumToString(card.GetServerStatus()));
+    masked_insert.BindString16(4, card.GetRawInfo(CREDIT_CARD_NAME_FULL));
+    masked_insert.BindString16(5, card.LastFourDigits());
+    masked_insert.BindString16(6, card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
+    masked_insert.BindString16(7,
+                               card.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+    masked_insert.BindString(8, card.bank_name());
+    masked_insert.Run();
+    masked_insert.Reset(true);
+  }
+
+  // Delete all items in the unmasked table that aren't in the new set.
+  sql::Statement unmasked_delete(db_->GetUniqueStatement(
+      "DELETE FROM unmasked_credit_cards WHERE id NOT IN "
+      "(SELECT id FROM masked_credit_cards)"));
+  unmasked_delete.Run();
+
+  transaction.Commit();
+}
+
+void AutofillTable::SetServerAddressesData(
+    const std::vector<AutofillProfile>& profiles) {
+  sql::Transaction transaction(db_);
+  if (!transaction.Begin())
+    return;
+
+  // Delete existing server addresses.
+  sql::Statement delete_old(
+      db_->GetUniqueStatement("DELETE FROM server_addresses"));
+  delete_old.Run();
+
+  // Add the new server addresses.
+  sql::Statement insert(db_->GetUniqueStatement(
+      "INSERT INTO server_addresses("
+      "id,"
+      "recipient_name,"
+      "company_name,"
+      "street_address,"
+      "address_1,"     // ADDRESS_HOME_STATE
+      "address_2,"     // ADDRESS_HOME_CITY
+      "address_3,"     // ADDRESS_HOME_DEPENDENT_LOCALITY
+      "address_4,"     // Not supported in AutofillProfile yet.
+      "postal_code,"   // ADDRESS_HOME_ZIP
+      "sorting_code,"  // ADDRESS_HOME_SORTING_CODE
+      "country_code,"  // ADDRESS_HOME_COUNTRY
+      "phone_number,"  // PHONE_HOME_WHOLE_NUMBER
+      "language_code) "
+      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)"));
+  for (const auto& profile : profiles) {
+    DCHECK(profile.record_type() == AutofillProfile::SERVER_PROFILE);
+
+    int index = 0;
+    insert.BindString(index++, profile.server_id());
+    insert.BindString16(index++, profile.GetRawInfo(NAME_FULL));
+    insert.BindString16(index++, profile.GetRawInfo(COMPANY_NAME));
+    insert.BindString16(index++,
+                        profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
+    insert.BindString16(index++, profile.GetRawInfo(ADDRESS_HOME_STATE));
+    insert.BindString16(index++, profile.GetRawInfo(ADDRESS_HOME_CITY));
+    insert.BindString16(index++,
+                        profile.GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY));
+    index++;  // SKip address_4 which we haven't added to AutofillProfile yet.
+    insert.BindString16(index++, profile.GetRawInfo(ADDRESS_HOME_ZIP));
+    insert.BindString16(index++, profile.GetRawInfo(ADDRESS_HOME_SORTING_CODE));
+    insert.BindString16(index++, profile.GetRawInfo(ADDRESS_HOME_COUNTRY));
+    insert.BindString16(index++, profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
+    insert.BindString(index++, profile.language_code());
+
+    insert.Run();
+    insert.Reset(true);
+  }
+
+  transaction.Commit();
+}
+
 void AutofillTable::SetPaymentsCustomerData(
     const PaymentsCustomerData* customer_data) {
   sql::Transaction transaction(db_);

@@ -418,6 +418,11 @@ class AutofillTable : public WebDatabaseTable,
   bool GetServerAddressesMetadata(
       std::map<std::string, AutofillMetadata>* addresses_metadata) const;
 
+  // Methods to add the server cards and addresses data independently from the
+  // metadata.
+  void SetServerCardsData(const std::vector<CreditCard>& credit_cards);
+  void SetServerAddressesData(const std::vector<AutofillProfile>& profiles);
+
   // Setters and getters related to the Google Payments customer data.
   // Passing null to the setter will clear the data.
   void SetPaymentsCustomerData(const PaymentsCustomerData* customer_data);
