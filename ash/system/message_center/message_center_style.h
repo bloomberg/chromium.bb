@@ -26,6 +26,14 @@ constexpr int kScrollShadowBlur = 2;
 
 constexpr int kSettingsTransitionDurationMs = 500;
 
+// Layout parameters for swipe control of notifications in message center.
+constexpr int kSwipeControlButtonImageSize = 20;
+constexpr int kSwipeControlButtonSize = 36;
+constexpr int kSwipeControlButtonVerticalMargin = 24;
+constexpr int kSwipeControlButtonHorizontalMargin = 8;
+constexpr SkColor kSwipeControlBackgroundColor =
+    SkColorSetRGB(0xee, 0xee, 0xee);
+
 }  // namespace message_center_style
 
 }  // namespace ash
