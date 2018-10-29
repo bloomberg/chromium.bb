@@ -27,7 +27,6 @@ extern const char kAutofillCreditCardSigninPromoImpressionCount[];
 extern const char kAutofillEnabledDeprecated[];
 extern const char kAutofillJapanCityFieldMigrated[];
 extern const char kAutofillLastVersionDeduped[];
-extern const char kAutofillLastVersionValidated[];
 extern const char kAutofillLastVersionDisusedAddressesDeleted[];
 extern const char kAutofillLastVersionDisusedCreditCardsDeleted[];
 extern const char kAutofillMigrateLocalCardsCancelledPrompt[];
