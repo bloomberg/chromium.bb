@@ -98,6 +98,7 @@ crbug.com/891427 virtual/threaded/fast/scrolling/scroll-non-composited-scroller.
 crbug.com/891427 virtual/fractional_scrolling_threaded/fast/scrolling/editor-command-scroll-page-scale.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 virtual/fractional_scrolling_threaded/fast/scrolling/fractional-scroll-offset-document.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 virtual/fractional_scrolling_threaded/fast/scrolling/scroll-non-composited-scroller.html [ Pass Failure Timeout Crash ]
+crbug.com/891427 virtual/fractional_scrolling_threaded/fast/scrolling/overflow-scrollability.html [ Pass Failure ]
 crbug.com/891427 virtual/threaded/fast/scrolling/fractional-scroll-offset-document.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 virtual/threaded/synthetic_gestures/animated-wheel-tiny-delta.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 virtual/threaded/synthetic_gestures/smooth-scroll-tiny-delta.html [ Pass Failure Timeout Crash ]
