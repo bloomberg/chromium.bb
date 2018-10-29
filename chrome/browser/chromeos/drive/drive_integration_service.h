@@ -61,7 +61,10 @@ enum class DriveMountStatus {
   kSuccess = 0,
   kUnknownFailure = 1,
   kTemporaryUnavailable = 2,
-  kMaxValue = kTemporaryUnavailable,
+  kInvocationFailure = 3,
+  kUnexpectedDisconnect = 4,
+  kTimeout = 5,
+  kMaxValue = kTimeout,
 };
 
 // Interface for classes that need to observe events from
@@ -149,7 +152,8 @@ class DriveIntegrationService : public KeyedService,
   // MountObserver implementation.
   void OnMounted(const base::FilePath& mount_path) override;
   void OnUnmounted(base::Optional<base::TimeDelta> remount_delay) override;
-  void OnMountFailed(base::Optional<base::TimeDelta> remount_delay) override;
+  void OnMountFailed(MountFailure failure,
+                     base::Optional<base::TimeDelta> remount_delay) override;
 
   EventLogger* event_logger() { return logger_.get(); }
   DriveServiceInterface* drive_service() { return drive_service_.get(); }

@@ -291,7 +291,11 @@ class DriveFsHost::MountState
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
     drivefs_has_mounted_ = false;
     drivefs_has_terminated_ = true;
-    host_->mount_observer_->OnMountFailed(std::move(remount_delay));
+    bool needs_restart = remount_delay.has_value();
+    host_->mount_observer_->OnMountFailed(
+        needs_restart ? MountObserver::MountFailure::kNeedsRestart
+                      : MountObserver::MountFailure::kUnknown,
+        std::move(remount_delay));
   }
 
   void OnUnmounted(base::Optional<base::TimeDelta> remount_delay) override {
@@ -351,17 +355,23 @@ class DriveFsHost::MountState
   void OnConnectionError() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
     if (!drivefs_has_terminated_) {
-      if (mounted())
+      if (mounted()) {
         host_->mount_observer_->OnUnmounted({});
-      else
-        host_->mount_observer_->OnMountFailed({});
+      } else {
+        host_->mount_observer_->OnMountFailed(
+            MountObserver::MountFailure::kIpcDisconnect, {});
+      }
       drivefs_has_terminated_ = true;
     }
   }
 
   void OnTimedOut() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
     host_->timer_->Stop();
-    OnMountFailed({});
+    drivefs_has_mounted_ = false;
+    drivefs_has_terminated_ = true;
+    host_->mount_observer_->OnMountFailed(MountObserver::MountFailure::kTimeout,
+                                          {});
   }
 
   void MaybeNotifyDelegateOnMounted() {
@@ -387,7 +397,7 @@ class DriveFsHost::MountState
 
       // Deletes |this|.
       host_->Unmount();
-      observer->OnMountFailed({});
+      observer->OnMountFailed(MountObserver::MountFailure::kInvocation, {});
       return;
     }
     DCHECK(!mount_info.mount_path.empty());

@@ -342,9 +342,29 @@ std::vector<base::FilePath> GetPinnedFiles(
   return pinned_files;
 }
 
-void UmaEmitMountOutcome(DriveMountStatus status,
-                         const base::TimeTicks& time_started) {
+DriveMountStatus ConvertMountFailure(
+    drivefs::DriveFsHost::MountObserver::MountFailure failure) {
+  switch (failure) {
+    case drivefs::DriveFsHost::MountObserver::MountFailure::kInvocation:
+      return DriveMountStatus::kInvocationFailure;
+    case drivefs::DriveFsHost::MountObserver::MountFailure::kIpcDisconnect:
+      return DriveMountStatus::kUnexpectedDisconnect;
+    case drivefs::DriveFsHost::MountObserver::MountFailure::kNeedsRestart:
+      return DriveMountStatus::kTemporaryUnavailable;
+    case drivefs::DriveFsHost::MountObserver::MountFailure::kTimeout:
+      return DriveMountStatus::kTimeout;
+    case drivefs::DriveFsHost::MountObserver::MountFailure::kUnknown:
+      return DriveMountStatus::kUnknownFailure;
+  }
+  NOTREACHED();
+}
+
+void UmaEmitMountStatus(DriveMountStatus status) {
   UMA_HISTOGRAM_ENUMERATION("DriveCommon.Lifecycle.Mount", status);
+}
+
+void UmaEmitMountTime(DriveMountStatus status,
+                      const base::TimeTicks& time_started) {
   if (status == DriveMountStatus::kSuccess) {
     UMA_HISTOGRAM_MEDIUM_TIMES("DriveCommon.Lifecycle.MountTime.SuccessTime",
                                base::TimeTicks::Now() - time_started);
@@ -352,6 +372,12 @@ void UmaEmitMountOutcome(DriveMountStatus status,
     UMA_HISTOGRAM_MEDIUM_TIMES("DriveCommon.Lifecycle.MountTime.FailTime",
                                base::TimeTicks::Now() - time_started);
   }
+}
+
+void UmaEmitMountOutcome(DriveMountStatus status,
+                         const base::TimeTicks& time_started) {
+  UmaEmitMountStatus(status);
+  UmaEmitMountTime(status, time_started);
 }
 
 void UmaEmitUnmountOutcome(DriveMountStatus status) {
@@ -493,8 +519,9 @@ class DriveIntegrationService::DriveFsHolder
     return *DriveNotificationManagerFactory::GetForBrowserContext(profile_);
   }
 
-  void OnMountFailed(base::Optional<base::TimeDelta> remount_delay) override {
-    mount_observer_->OnMountFailed(remount_delay);
+  void OnMountFailed(MountFailure failure,
+                     base::Optional<base::TimeDelta> remount_delay) override {
+    mount_observer_->OnMountFailed(failure, std::move(remount_delay));
   }
 
   void OnMounted(const base::FilePath& path) override {
@@ -502,7 +529,7 @@ class DriveIntegrationService::DriveFsHolder
   }
 
   void OnUnmounted(base::Optional<base::TimeDelta> remount_delay) override {
-    mount_observer_->OnUnmounted(remount_delay);
+    mount_observer_->OnUnmounted(std::move(remount_delay));
   }
 
   const std::string& GetProfileSalt() {
@@ -1006,14 +1033,15 @@ void DriveIntegrationService::OnUnmounted(
 }
 
 void DriveIntegrationService::OnMountFailed(
+    MountFailure failure,
     base::Optional<base::TimeDelta> remount_delay) {
   PrefService* prefs = profile_->GetPrefs();
+  DriveMountStatus status = ConvertMountFailure(failure);
+  UmaEmitMountStatus(status);
   bool was_ever_mounted =
       prefs->GetBoolean(prefs::kDriveFsWasLaunchedAtLeastOnce);
   if (was_ever_mounted) {
-    UmaEmitMountOutcome(remount_delay ? DriveMountStatus::kTemporaryUnavailable
-                                      : DriveMountStatus::kUnknownFailure,
-                        mount_start_);
+    UmaEmitMountTime(status, mount_start_);
   } else {
     // We don't record mount time until we mount successfully at least once.
   }

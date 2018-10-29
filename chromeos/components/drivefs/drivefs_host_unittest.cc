@@ -36,6 +36,7 @@ namespace drivefs {
 namespace {
 
 using testing::_;
+using MountFailure = DriveFsHost::MountObserver::MountFailure;
 
 class TestingMojoConnectionDelegate
     : public DriveFsHost::MojoConnectionDelegate {
@@ -159,7 +160,8 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate,
 
   // DriveFsHost::MountObserver:
   MOCK_METHOD1(OnMounted, void(const base::FilePath&));
-  MOCK_METHOD1(OnMountFailed, void(base::Optional<base::TimeDelta>));
+  MOCK_METHOD2(OnMountFailed,
+               void(MountFailure, base::Optional<base::TimeDelta>));
   MOCK_METHOD1(OnUnmounted, void(base::Optional<base::TimeDelta>));
 
   drive::DriveNotificationManager& GetDriveNotificationManager() override {
@@ -501,7 +503,7 @@ TEST_F(DriveFsHostTest, OnMountFailedFromMojo) {
   ASSERT_NO_FATAL_FAILURE(EstablishConnection());
   base::RunLoop run_loop;
   base::OnceClosure quit_closure = run_loop.QuitClosure();
-  EXPECT_CALL(*host_delegate_, OnMountFailed(_))
+  EXPECT_CALL(*host_delegate_, OnMountFailed(MountFailure::kUnknown, _))
       .WillOnce(RunQuitClosure(&quit_closure));
   SendMountFailed({});
   run_loop.Run();
@@ -515,7 +517,7 @@ TEST_F(DriveFsHostTest, OnMountFailedFromDbus) {
 
   base::RunLoop run_loop;
   base::OnceClosure quit_closure = run_loop.QuitClosure();
-  EXPECT_CALL(*host_delegate_, OnMountFailed(_))
+  EXPECT_CALL(*host_delegate_, OnMountFailed(MountFailure::kInvocation, _))
       .WillOnce(RunQuitClosure(&quit_closure));
   DispatchMountEvent(chromeos::disks::DiskMountManager::MOUNTING,
                      chromeos::MOUNT_ERROR_INVALID_MOUNT_OPTIONS,
@@ -535,7 +537,7 @@ TEST_F(DriveFsHostTest, OnMountFailed_UnmountInObserver) {
 
   base::RunLoop run_loop;
   base::OnceClosure quit_closure = run_loop.QuitClosure();
-  EXPECT_CALL(*host_delegate_, OnMountFailed(_))
+  EXPECT_CALL(*host_delegate_, OnMountFailed(MountFailure::kInvocation, _))
       .WillOnce(testing::InvokeWithoutArgs([&]() {
         std::move(quit_closure).Run();
         host_->Unmount();
@@ -635,7 +637,7 @@ TEST_F(DriveFsHostTest, ObserveOtherMount) {
 TEST_F(DriveFsHostTest, MountError) {
   auto token = StartMount();
   EXPECT_CALL(*disk_manager_, UnmountPath(_, _, _)).Times(0);
-  EXPECT_CALL(*host_delegate_, OnMountFailed(_));
+  EXPECT_CALL(*host_delegate_, OnMountFailed(MountFailure::kInvocation, _));
 
   DispatchMountEvent(chromeos::disks::DiskMountManager::MOUNTING,
                      chromeos::MOUNT_ERROR_DIRECTORY_CREATION_FAILED,
@@ -674,7 +676,8 @@ TEST_F(DriveFsHostTest, BreakConnectionBeforeMount) {
   EXPECT_FALSE(host_->IsMounted());
 
   base::Optional<base::TimeDelta> empty;
-  EXPECT_CALL(*host_delegate_, OnMountFailed(empty));
+  EXPECT_CALL(*host_delegate_,
+              OnMountFailed(MountFailure::kIpcDisconnect, empty));
   delegate_ptr_.reset();
   base::RunLoop().RunUntilIdle();
 }
@@ -685,7 +688,7 @@ TEST_F(DriveFsHostTest, MountTimeout) {
   EXPECT_FALSE(host_->IsMounted());
 
   base::Optional<base::TimeDelta> empty;
-  EXPECT_CALL(*host_delegate_, OnMountFailed(empty));
+  EXPECT_CALL(*host_delegate_, OnMountFailed(MountFailure::kTimeout, empty));
   timer_->Fire();
 }
 
