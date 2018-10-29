@@ -62,6 +62,7 @@ class CONTENT_EXPORT RTCVideoEncoder : public webrtc::VideoEncoder {
                             uint32_t framerate) override;
   bool SupportsNativeHandle() const override;
   const char* ImplementationName() const override;
+  EncoderInfo GetEncoderInfo() const override;
 
  private:
   class Impl;
