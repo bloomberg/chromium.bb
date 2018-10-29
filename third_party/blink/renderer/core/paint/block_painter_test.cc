@@ -192,7 +192,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectsWithoutPaint) {
   // Add a touch action to parent and ensure that hit test display items are
   // created for both the parent and the visible child.
   auto* parent_element = GetElementById("parent");
-  parent_element->setAttribute(HTMLNames::classAttr, "touchActionNone");
+  parent_element->setAttribute(html_names::kClassAttr, "touchActionNone");
   GetDocument().View()->UpdateAllLifecyclePhases();
   auto* parent = GetLayoutObjectByElementId("parent");
   auto* childVisible = GetLayoutObjectByElementId("childVisible");
@@ -204,7 +204,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectsWithoutPaint) {
 
   // Remove the touch action from parent and ensure no hit test display items
   // are left.
-  parent_element->removeAttribute(HTMLNames::classAttr);
+  parent_element->removeAttribute(html_names::kClassAttr);
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 1,
@@ -257,7 +257,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectPaintCaching) {
               touch_action_rect.whitelisted_touch_action);
   }
 
-  sibling_element->setAttribute(HTMLNames::styleAttr, "background: green;");
+  sibling_element->setAttribute(html_names::kStyleAttr, "background: green;");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_TRUE(PaintWithoutCommit());
   // Only the background display item of the sibling should be invalidated.
@@ -384,7 +384,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectPaintChunkChanges) {
     EXPECT_EQ(nullptr, paint_chunks[0].GetHitTestData());
   }
 
-  touchaction_element->setAttribute(HTMLNames::styleAttr,
+  touchaction_element->setAttribute(html_names::kStyleAttr,
                                     "touch-action: none;");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_DISPLAY_LIST(
@@ -408,7 +408,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectPaintChunkChanges) {
               touch_action_rect.whitelisted_touch_action);
   }
 
-  touchaction_element->removeAttribute(HTMLNames::styleAttr);
+  touchaction_element->removeAttribute(html_names::kStyleAttr);
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 1,

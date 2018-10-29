@@ -56,7 +56,7 @@ class CaretDisplayItemClientTest : public PaintAndRasterInvalidationTest {
   }
 
   Element* AppendBlock(const String& data) {
-    Element* block = GetDocument().CreateRawElement(HTMLNames::divTag);
+    Element* block = GetDocument().CreateRawElement(html_names::kDivTag);
     Text* text = GetDocument().createTextNode(data);
     block->AppendChild(text);
     GetDocument().body()->AppendChild(block);
@@ -356,7 +356,7 @@ TEST_P(CaretDisplayItemClientTest, CompositingChange) {
             GetCaretDisplayItemClient().VisualRect());
 
   // Composite container.
-  container->setAttribute(HTMLNames::styleAttr, "will-change: transform");
+  container->setAttribute(html_names::kStyleAttr, "will-change: transform");
   UpdateAllLifecyclePhases();
   // TODO(wangxianzhu): Why will-change:transform doens't trigger compositing
   // in SPv2?
@@ -366,7 +366,7 @@ TEST_P(CaretDisplayItemClientTest, CompositingChange) {
   }
 
   // Uncomposite container.
-  container->setAttribute(HTMLNames::styleAttr, "");
+  container->setAttribute(html_names::kStyleAttr, "");
   UpdateAllLifecyclePhases();
   EXPECT_EQ(LayoutRect(116, 105, 1, 1),
             GetCaretDisplayItemClient().VisualRect());

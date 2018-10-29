@@ -320,7 +320,7 @@ void WebFrameSerializerImpl::OpenTagToString(Element* element,
     String attr_value = it.Value();
 
     // Skip srcdoc attribute if we will emit src attribute (for frames).
-    if (should_rewrite_frame_src && attr_name == HTMLNames::srcdocAttr)
+    if (should_rewrite_frame_src && attr_name == html_names::kSrcdocAttr)
       continue;
 
     // Rewrite the attribute value if requested.
@@ -353,7 +353,7 @@ void WebFrameSerializerImpl::OpenTagToString(Element* element,
   if (should_rewrite_frame_src && !did_rewrite_frame_src &&
       IsHTMLIFrameElement(element)) {
     AppendAttribute(result, param->is_html_document,
-                    HTMLNames::srcAttr.ToString(), rewritten_frame_link);
+                    html_names::kSrcAttr.ToString(), rewritten_frame_link);
   }
 
   // Do post action for open tag.

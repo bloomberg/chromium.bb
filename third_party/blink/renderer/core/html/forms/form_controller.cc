@@ -37,14 +37,14 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 static inline HTMLFormElement* OwnerFormForState(
     const HTMLFormControlElementWithState& control) {
   // Assume controls with form attribute have no owners because we restore
   // state during parsing and form owners of such controls might be
   // indeterminate.
-  return control.FastHasAttribute(formAttr) ? nullptr : control.Form();
+  return control.FastHasAttribute(kFormAttr) ? nullptr : control.Form();
 }
 
 // ----------------------------------------------------------------------------
@@ -357,7 +357,7 @@ static inline void RecordFormStructure(const HTMLFormElement& form,
 }
 
 static inline String FormSignature(const HTMLFormElement& form) {
-  KURL action_url = form.GetURLAttribute(actionAttr);
+  KURL action_url = form.GetURLAttribute(kActionAttr);
   // Remove the query part because it might contain volatile parameters such
   // as a session key.
   if (!action_url.IsEmpty())

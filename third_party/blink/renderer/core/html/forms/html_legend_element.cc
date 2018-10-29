@@ -33,10 +33,10 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline HTMLLegendElement::HTMLLegendElement(Document& document)
-    : HTMLElement(legendTag, document) {}
+    : HTMLElement(kLegendTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLLegendElement)
 

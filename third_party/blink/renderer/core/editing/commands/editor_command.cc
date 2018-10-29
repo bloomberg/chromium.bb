@@ -73,7 +73,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 namespace {
 
@@ -312,7 +312,8 @@ static EditingTriState SelectionListState(const FrameSelection& selection,
       // If the selected list has the different type of list as child, return
       // |FalseTriState|.
       // See http://crbug.com/385374
-      if (HasChildTags(*start_element, tag_name.Matches(ulTag) ? olTag : ulTag))
+      if (HasChildTags(*start_element,
+                       tag_name.Matches(kUlTag) ? kOlTag : kUlTag))
         return EditingTriState::kFalse;
       return EditingTriState::kTrue;
     }
@@ -1196,11 +1197,11 @@ static EditingTriState StateNone(LocalFrame&, Event*) {
 }
 
 EditingTriState StateOrderedList(LocalFrame& frame, Event*) {
-  return SelectionListState(frame.Selection(), olTag);
+  return SelectionListState(frame.Selection(), kOlTag);
 }
 
 static EditingTriState StateUnorderedList(LocalFrame& frame, Event*) {
-  return SelectionListState(frame.Selection(), ulTag);
+  return SelectionListState(frame.Selection(), kUlTag);
 }
 
 static EditingTriState StateJustifyCenter(LocalFrame& frame, Event*) {
@@ -1243,9 +1244,9 @@ static String ValueDefaultParagraphSeparator(const EditorInternalCommand&,
                                              Event*) {
   switch (frame.GetEditor().DefaultParagraphSeparator()) {
     case EditorParagraphSeparator::kIsDiv:
-      return divTag.LocalName();
+      return kDivTag.LocalName();
     case EditorParagraphSeparator::kIsP:
-      return pTag.LocalName();
+      return kPTag.LocalName();
   }
 
   NOTREACHED();

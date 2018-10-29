@@ -14,7 +14,7 @@ namespace blink {
 namespace {
 
 AtomicString Id(const HTMLOptionElement* option) {
-  return option->FastGetAttribute(HTMLNames::idAttr);
+  return option->FastGetAttribute(html_names::kIdAttr);
 }
 
 }  // namespace
@@ -43,8 +43,8 @@ TEST_F(OptionListTest, OptionOnly) {
   Select().SetInnerHTMLFromString(
       "text<input><option id=o1></option><input><option "
       "id=o2></option><input>");
-  auto* div =
-      ToHTMLElement(Select().GetDocument().CreateRawElement(HTMLNames::divTag));
+  auto* div = ToHTMLElement(
+      Select().GetDocument().CreateRawElement(html_names::kDivTag));
   div->SetInnerHTMLFromString("<option id=o3></option>");
   Select().AppendChild(div);
   OptionList list = Select().GetOptionList();

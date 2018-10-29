@@ -176,7 +176,7 @@ bool ShouldShowPictureInPictureButton(HTMLMediaElement& media_element) {
 }
 
 bool ShouldShowCastButton(HTMLMediaElement& media_element) {
-  if (media_element.FastHasAttribute(HTMLNames::disableremoteplaybackAttr))
+  if (media_element.FastHasAttribute(html_names::kDisableremoteplaybackAttr))
     return false;
 
   // Explicitly do not show cast button when:
@@ -283,9 +283,10 @@ class MediaControlsImpl::MediaElementMutationCallback
     MutationObserverInit init;
     init.setAttributeOldValue(true);
     init.setAttributes(true);
-    init.setAttributeFilter({HTMLNames::disableremoteplaybackAttr.ToString(),
-                             HTMLNames::disablepictureinpictureAttr.ToString(),
-                             HTMLNames::posterAttr.ToString()});
+    init.setAttributeFilter(
+        {html_names::kDisableremoteplaybackAttr.ToString(),
+         html_names::kDisablepictureinpictureAttr.ToString(),
+         html_names::kPosterAttr.ToString()});
     observer_->observe(&controls_->MediaElement(), init, ASSERT_NO_EXCEPTION);
   }
 
@@ -304,18 +305,18 @@ class MediaControlsImpl::MediaElementMutationCallback
         continue;
 
       if (record->attributeName() ==
-          HTMLNames::disableremoteplaybackAttr.ToString()) {
+          html_names::kDisableremoteplaybackAttr.ToString()) {
         controls_->RefreshCastButtonVisibilityWithoutUpdate();
       }
 
       if (record->attributeName() ==
-              HTMLNames::disablepictureinpictureAttr.ToString() &&
+              html_names::kDisablepictureinpictureAttr.ToString() &&
           controls_->picture_in_picture_button_) {
         controls_->picture_in_picture_button_->SetIsWanted(
             ShouldShowPictureInPictureButton(controls_->MediaElement()));
       }
 
-      if (record->attributeName() == HTMLNames::posterAttr.ToString())
+      if (record->attributeName() == html_names::kPosterAttr.ToString())
         controls_->UpdateCSSClassFromState();
 
       BatchedControlUpdate batch(controls_);
@@ -764,24 +765,24 @@ void MediaControlsImpl::UpdateCSSClassFromState() {
     if (state == kNoSource) {
       // Check if the play button or overflow menu has the "disabled" attribute
       // set so we avoid unnecessarily resetting it.
-      if (!play_button_->hasAttribute(HTMLNames::disabledAttr)) {
-        play_button_->setAttribute(HTMLNames::disabledAttr, "");
+      if (!play_button_->hasAttribute(html_names::kDisabledAttr)) {
+        play_button_->setAttribute(html_names::kDisabledAttr, "");
         updated = true;
       }
 
       if (ShouldShowVideoControls() &&
-          !overflow_menu_->hasAttribute(HTMLNames::disabledAttr)) {
-        overflow_menu_->setAttribute(HTMLNames::disabledAttr, "");
+          !overflow_menu_->hasAttribute(html_names::kDisabledAttr)) {
+        overflow_menu_->setAttribute(html_names::kDisabledAttr, "");
         updated = true;
       }
     } else {
-      if (play_button_->hasAttribute(HTMLNames::disabledAttr)) {
-        play_button_->removeAttribute(HTMLNames::disabledAttr);
+      if (play_button_->hasAttribute(html_names::kDisabledAttr)) {
+        play_button_->removeAttribute(html_names::kDisabledAttr);
         updated = true;
       }
 
-      if (overflow_menu_->hasAttribute(HTMLNames::disabledAttr)) {
-        overflow_menu_->removeAttribute(HTMLNames::disabledAttr);
+      if (overflow_menu_->hasAttribute(html_names::kDisabledAttr)) {
+        overflow_menu_->removeAttribute(html_names::kDisabledAttr);
         updated = true;
       }
     }
@@ -894,13 +895,13 @@ void MediaControlsImpl::OnControlsListUpdated() {
 
   if (IsModern() && ShouldShowVideoControls()) {
     fullscreen_button_->SetIsWanted(true);
-    fullscreen_button_->setAttribute(HTMLNames::disabledAttr,
+    fullscreen_button_->setAttribute(html_names::kDisabledAttr,
                                      ShouldShowFullscreenButton(MediaElement())
                                          ? AtomicString()
                                          : AtomicString(""));
   } else {
     fullscreen_button_->SetIsWanted(ShouldShowFullscreenButton(MediaElement()));
-    fullscreen_button_->removeAttribute(HTMLNames::disabledAttr);
+    fullscreen_button_->removeAttribute(html_names::kDisabledAttr);
   }
 
   RefreshCastButtonVisibilityWithoutUpdate();
@@ -1234,7 +1235,7 @@ void MediaControlsImpl::ExitFullscreen() {
 
 bool MediaControlsImpl::IsFullscreenEnabled() const {
   return fullscreen_button_->IsWanted() &&
-         !fullscreen_button_->hasAttribute(HTMLNames::disabledAttr);
+         !fullscreen_button_->hasAttribute(html_names::kDisabledAttr);
 }
 
 void MediaControlsImpl::RemotePlaybackStateChanged() {
@@ -1351,8 +1352,8 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
   }
 
   // The overflow menu is always wanted if it has the "disabled" attr set.
-  overflow_wanted =
-      overflow_wanted || overflow_menu_->hasAttribute(HTMLNames::disabledAttr);
+  overflow_wanted = overflow_wanted ||
+                    overflow_menu_->hasAttribute(html_names::kDisabledAttr);
   overflow_menu_->SetDoesFit(overflow_wanted);
   overflow_menu_->SetIsWanted(overflow_wanted);
 
@@ -1687,11 +1688,11 @@ void MediaControlsImpl::OnVolumeChange() {
   if (IsModern()) {
     mute_button_->SetIsWanted(true);
     mute_button_->setAttribute(
-        HTMLNames::disabledAttr,
+        html_names::kDisabledAttr,
         MediaElement().HasAudio() ? AtomicString() : AtomicString(""));
   } else {
     mute_button_->SetIsWanted(MediaElement().HasAudio());
-    mute_button_->removeAttribute(HTMLNames::disabledAttr);
+    mute_button_->removeAttribute(html_names::kDisabledAttr);
   }
 
   // On modern media controls, if the volume slider is being used we don't want

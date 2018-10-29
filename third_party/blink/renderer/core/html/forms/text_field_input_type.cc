@@ -56,7 +56,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 class DataListIndicatorElement final : public HTMLDivElement {
  private:
@@ -101,7 +101,7 @@ class DataListIndicatorElement final : public HTMLDivElement {
     DataListIndicatorElement* element = new DataListIndicatorElement(document);
     element->SetShadowPseudoId(
         AtomicString("-webkit-calendar-picker-indicator"));
-    element->setAttribute(idAttr, ShadowElementNames::PickerIndicator());
+    element->setAttribute(kIdAttr, ShadowElementNames::PickerIndicator());
     return element;
   }
 };
@@ -377,11 +377,11 @@ void TextFieldInputType::DisabledOrReadonlyAttributeChanged(
 }
 
 void TextFieldInputType::DisabledAttributeChanged() {
-  DisabledOrReadonlyAttributeChanged(disabledAttr);
+  DisabledOrReadonlyAttributeChanged(kDisabledAttr);
 }
 
 void TextFieldInputType::ReadonlyAttributeChanged() {
-  DisabledOrReadonlyAttributeChanged(readonlyAttr);
+  DisabledOrReadonlyAttributeChanged(kReadonlyAttr);
 }
 
 bool TextFieldInputType::SupportsReadOnly() const {
@@ -482,7 +482,7 @@ void TextFieldInputType::UpdatePlaceholderText() {
         CSSPropertyDisplay,
         GetElement().IsPlaceholderVisible() ? CSSValueBlock : CSSValueNone,
         true);
-    placeholder->setAttribute(idAttr, ShadowElementNames::Placeholder());
+    placeholder->setAttribute(kIdAttr, ShadowElementNames::Placeholder());
     Element* container = ContainerElement();
     Node* previous = container ? container : GetElement().InnerEditorElement();
     previous->parentNode()->InsertBefore(placeholder, previous);
@@ -494,7 +494,7 @@ void TextFieldInputType::UpdatePlaceholderText() {
 void TextFieldInputType::AppendToFormData(FormData& form_data) const {
   InputType::AppendToFormData(form_data);
   const AtomicString& dirname_attr_value =
-      GetElement().FastGetAttribute(dirnameAttr);
+      GetElement().FastGetAttribute(kDirnameAttr);
   if (!dirname_attr_value.IsNull()) {
     form_data.AppendFromElement(dirname_attr_value,
                                 GetElement().DirectionForFormData());

@@ -213,7 +213,7 @@ void AbstractPropertySetCSSStyleDeclaration::SetPropertyInternal(
   Element* parent = ParentElement();
   if (parent) {
     parent->GetDocument().GetStyleEngine().AttributeChangedForElement(
-        HTMLNames::styleAttr, *parent);
+        html_names::kStyleAttr, *parent);
   }
   mutation_scope.EnqueueMutationRecord();
 }

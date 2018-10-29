@@ -50,7 +50,7 @@ InputType* PasswordInputType::Create(HTMLInputElement& element) {
 
 void PasswordInputType::CountUsage() {
   CountUsageIfVisible(WebFeature::kInputTypePassword);
-  if (GetElement().FastHasAttribute(HTMLNames::maxlengthAttr))
+  if (GetElement().FastHasAttribute(html_names::kMaxlengthAttr))
     CountUsageIfVisible(WebFeature::kInputTypePasswordMaxLength);
 }
 

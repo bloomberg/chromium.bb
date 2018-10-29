@@ -41,7 +41,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline SpinButtonElement::SpinButtonElement(Document& document,
                                             SpinButtonOwner& spin_button_owner)
@@ -60,7 +60,7 @@ SpinButtonElement* SpinButtonElement::Create(
   SpinButtonElement* element =
       new SpinButtonElement(document, spin_button_owner);
   element->SetShadowPseudoId(AtomicString("-webkit-inner-spin-button"));
-  element->setAttribute(idAttr, ShadowElementNames::SpinButton());
+  element->setAttribute(kIdAttr, ShadowElementNames::SpinButton());
   return element;
 }
 

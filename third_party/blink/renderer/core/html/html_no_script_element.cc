@@ -37,10 +37,10 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline HTMLNoScriptElement::HTMLNoScriptElement(Document& document)
-    : HTMLElement(noscriptTag, document) {}
+    : HTMLElement(kNoscriptTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLNoScriptElement)
 

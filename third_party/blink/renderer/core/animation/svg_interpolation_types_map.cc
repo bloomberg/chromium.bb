@@ -134,7 +134,7 @@ const InterpolationTypes& SVGInterpolationTypesMap::Get(
              attribute == svg_names::kTransformAttr) {
     applicable_types->push_back(
         std::make_unique<SVGTransformListInterpolationType>(attribute));
-  } else if (attribute == HTMLNames::classAttr ||
+  } else if (attribute == html_names::kClassAttr ||
              attribute == svg_names::kClipPathUnitsAttr ||
              attribute == svg_names::kEdgeModeAttr ||
              attribute == svg_names::kFilterUnitsAttr ||

@@ -102,7 +102,7 @@ bool V0CustomElementConstructorBuilder::ValidateOptions(
     }
   }
 
-  AtomicString namespace_uri = HTMLNames::xhtmlNamespaceURI;
+  AtomicString namespace_uri = html_names::xhtmlNamespaceURI;
   if (HasValidPrototypeChainFor(&V8SVGElement::wrapperTypeInfo))
     namespace_uri = svg_names::kNamespaceURI;
 

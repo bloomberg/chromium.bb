@@ -33,8 +33,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 LayoutVideo::LayoutVideo(HTMLVideoElement* video) : LayoutMedia(video) {
   SetIntrinsicSize(CalculateIntrinsicSize());
 }

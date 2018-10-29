@@ -68,7 +68,7 @@ using blink::WebLocalizedString;
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 namespace {
 
@@ -1039,7 +1039,7 @@ const AXObject* AXObject::InertRoot() const {
                          ? ToElement(node)
                          : FlatTreeTraversal::ParentElement(*node);
   while (element) {
-    if (element->hasAttribute(inertAttr))
+    if (element->hasAttribute(kInertAttr))
       return AXObjectCache().GetOrCreate(element);
     element = FlatTreeTraversal::ParentElement(*element);
   }
@@ -1197,7 +1197,7 @@ bool AXObject::CanReceiveAccessibilityFocus() const {
     return true;
 
   // aria-activedescendant focus
-  return elem->FastHasAttribute(idAttr) && CanBeActiveDescendant();
+  return elem->FastHasAttribute(kIdAttr) && CanBeActiveDescendant();
 }
 
 bool AXObject::CanSetValueAttribute() const {
@@ -1516,7 +1516,7 @@ String AXObject::AriaTextAlternative(bool recursive,
     if (HasAOMProperty(AOMRelationListProperty::kLabeledBy, elements)) {
       if (name_sources) {
         name_sources->push_back(
-            NameSource(*found_text_alternative, aria_labelledbyAttr));
+            NameSource(*found_text_alternative, kAriaLabelledbyAttr));
         name_sources->back().type = name_from;
       }
 
@@ -1543,9 +1543,9 @@ String AXObject::AriaTextAlternative(bool recursive,
     } else {
       // Now check ARIA attribute
       const QualifiedName& attr =
-          HasAttribute(aria_labeledbyAttr) && !HasAttribute(aria_labelledbyAttr)
-              ? aria_labeledbyAttr
-              : aria_labelledbyAttr;
+          HasAttribute(kAriaLabeledbyAttr) && !HasAttribute(kAriaLabelledbyAttr)
+              ? kAriaLabeledbyAttr
+              : kAriaLabelledbyAttr;
 
       if (name_sources) {
         name_sources->push_back(NameSource(*found_text_alternative, attr));
@@ -1589,7 +1589,7 @@ String AXObject::AriaTextAlternative(bool recursive,
   name_from = ax::mojom::NameFrom::kAttribute;
   if (name_sources) {
     name_sources->push_back(
-        NameSource(*found_text_alternative, aria_labelAttr));
+        NameSource(*found_text_alternative, kAriaLabelAttr));
     name_sources->back().type = name_from;
   }
   const AtomicString& aria_label =
@@ -1675,9 +1675,9 @@ void AXObject::AriaLabelledbyElementVector(
     HeapVector<Member<Element>>& elements,
     Vector<String>& ids) const {
   // Try both spellings, but prefer aria-labelledby, which is the official spec.
-  ElementsFromAttribute(elements, aria_labelledbyAttr, ids);
+  ElementsFromAttribute(elements, kAriaLabelledbyAttr, ids);
   if (!ids.size())
-    ElementsFromAttribute(elements, aria_labeledbyAttr, ids);
+    ElementsFromAttribute(elements, kAriaLabeledbyAttr, ids);
 }
 
 String AXObject::TextFromAriaLabelledby(AXObjectSet& visited,
@@ -1692,7 +1692,7 @@ String AXObject::TextFromAriaDescribedby(AXRelatedObjectVector* related_objects,
                                          Vector<String>& ids) const {
   AXObjectSet visited;
   HeapVector<Member<Element>> elements;
-  ElementsFromAttribute(elements, aria_describedbyAttr, ids);
+  ElementsFromAttribute(elements, kAriaDescribedbyAttr, ids);
   return TextFromElements(true, visited, elements, related_objects);
 }
 
@@ -2338,7 +2338,7 @@ AtomicString AXObject::Language() const {
   // 2. The list of languages the browser sends in the [Accept-Language] header.
   // 3. The browser's default language.
 
-  const AtomicString& lang = GetAttribute(langAttr);
+  const AtomicString& lang = GetAttribute(kLangAttr);
   if (!lang.IsEmpty())
     return lang;
 

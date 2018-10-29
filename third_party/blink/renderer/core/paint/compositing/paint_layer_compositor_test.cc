@@ -104,7 +104,7 @@ TEST_F(PaintLayerCompositorTest, UpdateDoesNotOrphanMainGraphicsLayer) {
 
   // Force CompositedLayerMapping to update the internal layer hierarchy.
   auto* box = GetDocument().getElementById("box");
-  box->setAttribute(HTMLNames::styleAttr, "height: 1000px;");
+  box->setAttribute(html_names::kStyleAttr, "height: 1000px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_EQ(main_graphics_layer_parent, main_graphics_layer->Parent());

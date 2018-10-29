@@ -20,10 +20,10 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 static bool NoImageSourceSpecified(const Element& element) {
-  return element.getAttribute(srcAttr).IsEmpty();
+  return element.getAttribute(kSrcAttr).IsEmpty();
 }
 
 static bool ElementRepresentsNothing(const Element& element) {
@@ -52,22 +52,22 @@ void HTMLImageFallbackHelper::CreateAltTextShadowTree(Element& element) {
 
   HTMLSpanElement* container = HTMLSpanElement::Create(element.GetDocument());
   root.AppendChild(container);
-  container->setAttribute(idAttr, AtomicString("alttext-container"));
+  container->setAttribute(kIdAttr, AtomicString("alttext-container"));
 
   HTMLImageElement* broken_image =
       HTMLImageElement::Create(element.GetDocument());
   container->AppendChild(broken_image);
   broken_image->SetIsFallbackImage();
-  broken_image->setAttribute(idAttr, AtomicString("alttext-image"));
-  broken_image->setAttribute(widthAttr, AtomicString("16"));
-  broken_image->setAttribute(heightAttr, AtomicString("16"));
-  broken_image->setAttribute(alignAttr, AtomicString("left"));
+  broken_image->setAttribute(kIdAttr, AtomicString("alttext-image"));
+  broken_image->setAttribute(kWidthAttr, AtomicString("16"));
+  broken_image->setAttribute(kHeightAttr, AtomicString("16"));
+  broken_image->setAttribute(kAlignAttr, AtomicString("left"));
   broken_image->SetInlineStyleProperty(CSSPropertyMargin, 0,
                                        CSSPrimitiveValue::UnitType::kPixels);
 
   HTMLSpanElement* alt_text = HTMLSpanElement::Create(element.GetDocument());
   container->AppendChild(alt_text);
-  alt_text->setAttribute(idAttr, AtomicString("alttext"));
+  alt_text->setAttribute(kIdAttr, AtomicString("alttext"));
 
   Text* text =
       Text::Create(element.GetDocument(), ToHTMLElement(element).AltText());

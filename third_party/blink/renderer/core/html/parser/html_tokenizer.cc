@@ -38,7 +38,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 static inline UChar ToLowerCase(UChar cc) {
   DCHECK(IsASCIIAlpha(cc));
@@ -603,7 +603,7 @@ bool HTMLTokenizer::NextToken(SegmentedString& source, HTMLToken& token) {
     HTML_BEGIN_STATE(kScriptDataDoubleEscapeStartState) {
       if (IsTokenizerWhitespace(cc) || cc == '/' || cc == '>') {
         BufferCharacter(cc);
-        if (TemporaryBufferIs(scriptTag.LocalName()))
+        if (TemporaryBufferIs(kScriptTag.LocalName()))
           HTML_ADVANCE_TO(kScriptDataDoubleEscapedState);
         else
           HTML_ADVANCE_TO(kScriptDataEscapedState);
@@ -683,7 +683,7 @@ bool HTMLTokenizer::NextToken(SegmentedString& source, HTMLToken& token) {
     HTML_BEGIN_STATE(kScriptDataDoubleEscapeEndState) {
       if (IsTokenizerWhitespace(cc) || cc == '/' || cc == '>') {
         BufferCharacter(cc);
-        if (TemporaryBufferIs(scriptTag.LocalName()))
+        if (TemporaryBufferIs(kScriptTag.LocalName()))
           HTML_ADVANCE_TO(kScriptDataEscapedState);
         else
           HTML_ADVANCE_TO(kScriptDataDoubleEscapedState);
@@ -1454,20 +1454,20 @@ String HTMLTokenizer::BufferedCharacters() const {
 }
 
 void HTMLTokenizer::UpdateStateFor(const String& tag_name) {
-  if (ThreadSafeMatch(tag_name, textareaTag) ||
-      ThreadSafeMatch(tag_name, titleTag))
+  if (ThreadSafeMatch(tag_name, kTextareaTag) ||
+      ThreadSafeMatch(tag_name, kTitleTag))
     SetState(HTMLTokenizer::kRCDATAState);
-  else if (ThreadSafeMatch(tag_name, plaintextTag))
+  else if (ThreadSafeMatch(tag_name, kPlaintextTag))
     SetState(HTMLTokenizer::kPLAINTEXTState);
-  else if (ThreadSafeMatch(tag_name, scriptTag))
+  else if (ThreadSafeMatch(tag_name, kScriptTag))
     SetState(HTMLTokenizer::kScriptDataState);
-  else if (ThreadSafeMatch(tag_name, styleTag) ||
-           ThreadSafeMatch(tag_name, iframeTag) ||
-           ThreadSafeMatch(tag_name, xmpTag) ||
-           (ThreadSafeMatch(tag_name, noembedTag) &&
+  else if (ThreadSafeMatch(tag_name, kStyleTag) ||
+           ThreadSafeMatch(tag_name, kIFrameTag) ||
+           ThreadSafeMatch(tag_name, kXmpTag) ||
+           (ThreadSafeMatch(tag_name, kNoembedTag) &&
             options_.plugins_enabled) ||
-           ThreadSafeMatch(tag_name, noframesTag) ||
-           (ThreadSafeMatch(tag_name, noscriptTag) && options_.script_enabled))
+           ThreadSafeMatch(tag_name, kNoframesTag) ||
+           (ThreadSafeMatch(tag_name, kNoscriptTag) && options_.script_enabled))
     SetState(HTMLTokenizer::kRAWTEXTState);
 }
 

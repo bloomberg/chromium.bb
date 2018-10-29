@@ -76,7 +76,7 @@
 namespace blink {
 
 using namespace cssvalue;
-using namespace HTMLNames;
+using namespace html_names;
 
 using AttributeChangedFunction =
     void (HTMLElement::*)(const Element::AttributeModificationParams& params);
@@ -153,18 +153,19 @@ String HTMLElement::nodeName() const {
 
 bool HTMLElement::ShouldSerializeEndTag() const {
   // See https://www.w3.org/TR/DOM-Parsing/
-  if (HasTagName(areaTag) || HasTagName(baseTag) || HasTagName(basefontTag) ||
-      HasTagName(bgsoundTag) || HasTagName(brTag) || HasTagName(colTag) ||
-      HasTagName(embedTag) || HasTagName(frameTag) || HasTagName(hrTag) ||
-      HasTagName(imgTag) || HasTagName(inputTag) || HasTagName(keygenTag) ||
-      HasTagName(linkTag) || HasTagName(metaTag) || HasTagName(paramTag) ||
-      HasTagName(sourceTag) || HasTagName(trackTag) || HasTagName(wbrTag))
+  if (HasTagName(kAreaTag) || HasTagName(kBaseTag) ||
+      HasTagName(kBasefontTag) || HasTagName(kBgsoundTag) ||
+      HasTagName(kBrTag) || HasTagName(kColTag) || HasTagName(kEmbedTag) ||
+      HasTagName(kFrameTag) || HasTagName(kHrTag) || HasTagName(kImgTag) ||
+      HasTagName(kInputTag) || HasTagName(kKeygenTag) || HasTagName(kLinkTag) ||
+      HasTagName(kMetaTag) || HasTagName(kParamTag) || HasTagName(kSourceTag) ||
+      HasTagName(kTrackTag) || HasTagName(kWbrTag))
     return false;
   return true;
 }
 
 static inline CSSValueID UnicodeBidiAttributeForDirAuto(HTMLElement* element) {
-  if (element->HasTagName(preTag) || element->HasTagName(textareaTag))
+  if (element->HasTagName(kPreTag) || element->HasTagName(kTextareaTag))
     return CSSValueWebkitPlaintext;
   // FIXME: For bdo element, dir="auto" should result in "bidi-override isolate"
   // but we don't support having multiple values in unicode-bidi yet.
@@ -176,7 +177,7 @@ unsigned HTMLElement::ParseBorderWidthAttribute(
     const AtomicString& value) const {
   unsigned border_width = 0;
   if (value.IsEmpty() || !ParseHTMLNonNegativeInteger(value, border_width)) {
-    if (HasTagName(tableTag) && !value.IsNull())
+    if (HasTagName(kTableTag) && !value.IsNull())
       return 1;
   }
   return border_width;
@@ -231,9 +232,10 @@ void HTMLElement::MapLanguageAttributeToLocale(
 }
 
 bool HTMLElement::IsPresentationAttribute(const QualifiedName& name) const {
-  if (name == alignAttr || name == contenteditableAttr || name == hiddenAttr ||
-      name == langAttr || name.Matches(xml_names::kLangAttr) ||
-      name == draggableAttr || name == dirAttr)
+  if (name == kAlignAttr || name == kContenteditableAttr ||
+      name == kHiddenAttr || name == kLangAttr ||
+      name.Matches(xml_names::kLangAttr) || name == kDraggableAttr ||
+      name == kDirAttr)
     return true;
   return Element::IsPresentationAttribute(name);
 }
@@ -248,14 +250,14 @@ void HTMLElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  if (name == alignAttr) {
+  if (name == kAlignAttr) {
     if (DeprecatedEqualIgnoringCase(value, "middle"))
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
                                               CSSValueCenter);
     else
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
                                               value);
-  } else if (name == contenteditableAttr) {
+  } else if (name == kContenteditableAttr) {
     if (value.IsEmpty() || DeprecatedEqualIgnoringCase(value, "true")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyWebkitUserModify, CSSValueReadWrite);
@@ -264,7 +266,7 @@ void HTMLElement::CollectStyleForPresentationAttribute(
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitLineBreak,
                                               CSSValueAfterWhiteSpace);
       UseCounter::Count(GetDocument(), WebFeature::kContentEditableTrue);
-      if (HasTagName(htmlTag)) {
+      if (HasTagName(kHTMLTag)) {
         UseCounter::Count(GetDocument(),
                           WebFeature::kContentEditableTrueOnHTML);
       }
@@ -281,10 +283,10 @@ void HTMLElement::CollectStyleForPresentationAttribute(
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyWebkitUserModify, CSSValueReadOnly);
     }
-  } else if (name == hiddenAttr) {
+  } else if (name == kHiddenAttr) {
     AddPropertyToPresentationAttributeStyle(style, CSSPropertyDisplay,
                                             CSSValueNone);
-  } else if (name == draggableAttr) {
+  } else if (name == kDraggableAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kDraggableAttribute);
     if (DeprecatedEqualIgnoringCase(value, "true")) {
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitUserDrag,
@@ -295,7 +297,7 @@ void HTMLElement::CollectStyleForPresentationAttribute(
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitUserDrag,
                                               CSSValueNone);
     }
-  } else if (name == dirAttr) {
+  } else if (name == kDirAttr) {
     if (DeprecatedEqualIgnoringCase(value, "auto")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyUnicodeBidi, UnicodeBidiAttributeForDirAuto(this));
@@ -306,13 +308,14 @@ void HTMLElement::CollectStyleForPresentationAttribute(
       else if (IsHTMLBodyElement(*this))
         AddPropertyToPresentationAttributeStyle(style, CSSPropertyDirection,
                                                 "ltr");
-      if (!HasTagName(bdiTag) && !HasTagName(bdoTag) && !HasTagName(outputTag))
+      if (!HasTagName(kBdiTag) && !HasTagName(kBdoTag) &&
+          !HasTagName(kOutputTag))
         AddPropertyToPresentationAttributeStyle(style, CSSPropertyUnicodeBidi,
                                                 CSSValueIsolate);
     }
   } else if (name.Matches(xml_names::kLangAttr)) {
     MapLanguageAttributeToLocale(value, style);
-  } else if (name == langAttr) {
+  } else if (name == kLangAttr) {
     // xml:lang has a higher priority than lang.
     if (!FastHasAttribute(xml_names::kLangAttr))
       MapLanguageAttributeToLocale(value, style);
@@ -326,215 +329,215 @@ AttributeTriggers* HTMLElement::TriggersForAttributeName(
     const QualifiedName& attr_name) {
   const AtomicString& kNoEvent = g_null_atom;
   static AttributeTriggers attribute_triggers[] = {
-      {dirAttr, kNoWebFeature, kNoEvent, &HTMLElement::OnDirAttrChanged},
-      {inertAttr, WebFeature::kInertAttribute, kNoEvent,
+      {kDirAttr, kNoWebFeature, kNoEvent, &HTMLElement::OnDirAttrChanged},
+      {kInertAttr, WebFeature::kInertAttribute, kNoEvent,
        &HTMLElement::OnInertAttrChanged},
-      {langAttr, kNoWebFeature, kNoEvent, &HTMLElement::OnLangAttrChanged},
-      {nonceAttr, kNoWebFeature, kNoEvent, &HTMLElement::OnNonceAttrChanged},
-      {tabindexAttr, kNoWebFeature, kNoEvent,
+      {kLangAttr, kNoWebFeature, kNoEvent, &HTMLElement::OnLangAttrChanged},
+      {kNonceAttr, kNoWebFeature, kNoEvent, &HTMLElement::OnNonceAttrChanged},
+      {kTabindexAttr, kNoWebFeature, kNoEvent,
        &HTMLElement::OnTabIndexAttrChanged},
       {xml_names::kLangAttr, kNoWebFeature, kNoEvent,
        &HTMLElement::OnXMLLangAttrChanged},
 
-      {onabortAttr, kNoWebFeature, EventTypeNames::abort, nullptr},
-      {onactivateinvisibleAttr, kNoWebFeature,
+      {kOnabortAttr, kNoWebFeature, EventTypeNames::abort, nullptr},
+      {kOnactivateinvisibleAttr, kNoWebFeature,
        EventTypeNames::activateinvisible, nullptr},
-      {onanimationendAttr, kNoWebFeature, EventTypeNames::animationend,
+      {kOnanimationendAttr, kNoWebFeature, EventTypeNames::animationend,
        nullptr},
-      {onanimationiterationAttr, kNoWebFeature,
+      {kOnanimationiterationAttr, kNoWebFeature,
        EventTypeNames::animationiteration, nullptr},
-      {onanimationstartAttr, kNoWebFeature, EventTypeNames::animationstart,
+      {kOnanimationstartAttr, kNoWebFeature, EventTypeNames::animationstart,
        nullptr},
-      {onauxclickAttr, kNoWebFeature, EventTypeNames::auxclick, nullptr},
-      {onbeforecopyAttr, kNoWebFeature, EventTypeNames::beforecopy, nullptr},
-      {onbeforecutAttr, kNoWebFeature, EventTypeNames::beforecut, nullptr},
-      {onbeforepasteAttr, kNoWebFeature, EventTypeNames::beforepaste, nullptr},
-      {onblurAttr, kNoWebFeature, EventTypeNames::blur, nullptr},
-      {oncancelAttr, kNoWebFeature, EventTypeNames::cancel, nullptr},
-      {oncanplayAttr, kNoWebFeature, EventTypeNames::canplay, nullptr},
-      {oncanplaythroughAttr, kNoWebFeature, EventTypeNames::canplaythrough,
+      {kOnauxclickAttr, kNoWebFeature, EventTypeNames::auxclick, nullptr},
+      {kOnbeforecopyAttr, kNoWebFeature, EventTypeNames::beforecopy, nullptr},
+      {kOnbeforecutAttr, kNoWebFeature, EventTypeNames::beforecut, nullptr},
+      {kOnbeforepasteAttr, kNoWebFeature, EventTypeNames::beforepaste, nullptr},
+      {kOnblurAttr, kNoWebFeature, EventTypeNames::blur, nullptr},
+      {kOncancelAttr, kNoWebFeature, EventTypeNames::cancel, nullptr},
+      {kOncanplayAttr, kNoWebFeature, EventTypeNames::canplay, nullptr},
+      {kOncanplaythroughAttr, kNoWebFeature, EventTypeNames::canplaythrough,
        nullptr},
-      {onchangeAttr, kNoWebFeature, EventTypeNames::change, nullptr},
-      {onclickAttr, kNoWebFeature, EventTypeNames::click, nullptr},
-      {oncloseAttr, kNoWebFeature, EventTypeNames::close, nullptr},
-      {oncontextmenuAttr, kNoWebFeature, EventTypeNames::contextmenu, nullptr},
-      {oncopyAttr, kNoWebFeature, EventTypeNames::copy, nullptr},
-      {oncuechangeAttr, kNoWebFeature, EventTypeNames::cuechange, nullptr},
-      {oncutAttr, kNoWebFeature, EventTypeNames::cut, nullptr},
-      {ondblclickAttr, kNoWebFeature, EventTypeNames::dblclick, nullptr},
-      {ondragAttr, kNoWebFeature, EventTypeNames::drag, nullptr},
-      {ondragendAttr, kNoWebFeature, EventTypeNames::dragend, nullptr},
-      {ondragenterAttr, kNoWebFeature, EventTypeNames::dragenter, nullptr},
-      {ondragleaveAttr, kNoWebFeature, EventTypeNames::dragleave, nullptr},
-      {ondragoverAttr, kNoWebFeature, EventTypeNames::dragover, nullptr},
-      {ondragstartAttr, kNoWebFeature, EventTypeNames::dragstart, nullptr},
-      {ondropAttr, kNoWebFeature, EventTypeNames::drop, nullptr},
-      {ondurationchangeAttr, kNoWebFeature, EventTypeNames::durationchange,
+      {kOnchangeAttr, kNoWebFeature, EventTypeNames::change, nullptr},
+      {kOnclickAttr, kNoWebFeature, EventTypeNames::click, nullptr},
+      {kOncloseAttr, kNoWebFeature, EventTypeNames::close, nullptr},
+      {kOncontextmenuAttr, kNoWebFeature, EventTypeNames::contextmenu, nullptr},
+      {kOncopyAttr, kNoWebFeature, EventTypeNames::copy, nullptr},
+      {kOncuechangeAttr, kNoWebFeature, EventTypeNames::cuechange, nullptr},
+      {kOncutAttr, kNoWebFeature, EventTypeNames::cut, nullptr},
+      {kOndblclickAttr, kNoWebFeature, EventTypeNames::dblclick, nullptr},
+      {kOndragAttr, kNoWebFeature, EventTypeNames::drag, nullptr},
+      {kOndragendAttr, kNoWebFeature, EventTypeNames::dragend, nullptr},
+      {kOndragenterAttr, kNoWebFeature, EventTypeNames::dragenter, nullptr},
+      {kOndragleaveAttr, kNoWebFeature, EventTypeNames::dragleave, nullptr},
+      {kOndragoverAttr, kNoWebFeature, EventTypeNames::dragover, nullptr},
+      {kOndragstartAttr, kNoWebFeature, EventTypeNames::dragstart, nullptr},
+      {kOndropAttr, kNoWebFeature, EventTypeNames::drop, nullptr},
+      {kOndurationchangeAttr, kNoWebFeature, EventTypeNames::durationchange,
        nullptr},
-      {onemptiedAttr, kNoWebFeature, EventTypeNames::emptied, nullptr},
-      {onendedAttr, kNoWebFeature, EventTypeNames::ended, nullptr},
-      {onerrorAttr, kNoWebFeature, EventTypeNames::error, nullptr},
-      {onfocusAttr, kNoWebFeature, EventTypeNames::focus, nullptr},
-      {onfocusinAttr, kNoWebFeature, EventTypeNames::focusin, nullptr},
-      {onfocusoutAttr, kNoWebFeature, EventTypeNames::focusout, nullptr},
-      {onformdataAttr, kNoWebFeature, EventTypeNames::formdata, nullptr},
-      {ongotpointercaptureAttr, kNoWebFeature,
+      {kOnemptiedAttr, kNoWebFeature, EventTypeNames::emptied, nullptr},
+      {kOnendedAttr, kNoWebFeature, EventTypeNames::ended, nullptr},
+      {kOnerrorAttr, kNoWebFeature, EventTypeNames::error, nullptr},
+      {kOnfocusAttr, kNoWebFeature, EventTypeNames::focus, nullptr},
+      {kOnfocusinAttr, kNoWebFeature, EventTypeNames::focusin, nullptr},
+      {kOnfocusoutAttr, kNoWebFeature, EventTypeNames::focusout, nullptr},
+      {kOnformdataAttr, kNoWebFeature, EventTypeNames::formdata, nullptr},
+      {kOngotpointercaptureAttr, kNoWebFeature,
        EventTypeNames::gotpointercapture, nullptr},
-      {oninputAttr, kNoWebFeature, EventTypeNames::input, nullptr},
-      {oninvalidAttr, kNoWebFeature, EventTypeNames::invalid, nullptr},
-      {onkeydownAttr, kNoWebFeature, EventTypeNames::keydown, nullptr},
-      {onkeypressAttr, kNoWebFeature, EventTypeNames::keypress, nullptr},
-      {onkeyupAttr, kNoWebFeature, EventTypeNames::keyup, nullptr},
-      {onloadAttr, kNoWebFeature, EventTypeNames::load, nullptr},
-      {onloadeddataAttr, kNoWebFeature, EventTypeNames::loadeddata, nullptr},
-      {onloadedmetadataAttr, kNoWebFeature, EventTypeNames::loadedmetadata,
+      {kOninputAttr, kNoWebFeature, EventTypeNames::input, nullptr},
+      {kOninvalidAttr, kNoWebFeature, EventTypeNames::invalid, nullptr},
+      {kOnkeydownAttr, kNoWebFeature, EventTypeNames::keydown, nullptr},
+      {kOnkeypressAttr, kNoWebFeature, EventTypeNames::keypress, nullptr},
+      {kOnkeyupAttr, kNoWebFeature, EventTypeNames::keyup, nullptr},
+      {kOnloadAttr, kNoWebFeature, EventTypeNames::load, nullptr},
+      {kOnloadeddataAttr, kNoWebFeature, EventTypeNames::loadeddata, nullptr},
+      {kOnloadedmetadataAttr, kNoWebFeature, EventTypeNames::loadedmetadata,
        nullptr},
-      {onloadstartAttr, kNoWebFeature, EventTypeNames::loadstart, nullptr},
-      {onlostpointercaptureAttr, kNoWebFeature,
+      {kOnloadstartAttr, kNoWebFeature, EventTypeNames::loadstart, nullptr},
+      {kOnlostpointercaptureAttr, kNoWebFeature,
        EventTypeNames::lostpointercapture, nullptr},
-      {onmousedownAttr, kNoWebFeature, EventTypeNames::mousedown, nullptr},
-      {onmouseenterAttr, kNoWebFeature, EventTypeNames::mouseenter, nullptr},
-      {onmouseleaveAttr, kNoWebFeature, EventTypeNames::mouseleave, nullptr},
-      {onmousemoveAttr, kNoWebFeature, EventTypeNames::mousemove, nullptr},
-      {onmouseoutAttr, kNoWebFeature, EventTypeNames::mouseout, nullptr},
-      {onmouseoverAttr, kNoWebFeature, EventTypeNames::mouseover, nullptr},
-      {onmouseupAttr, kNoWebFeature, EventTypeNames::mouseup, nullptr},
-      {onmousewheelAttr, kNoWebFeature, EventTypeNames::mousewheel, nullptr},
-      {onpasteAttr, kNoWebFeature, EventTypeNames::paste, nullptr},
-      {onpauseAttr, kNoWebFeature, EventTypeNames::pause, nullptr},
-      {onplayAttr, kNoWebFeature, EventTypeNames::play, nullptr},
-      {onplayingAttr, kNoWebFeature, EventTypeNames::playing, nullptr},
-      {onpointercancelAttr, kNoWebFeature, EventTypeNames::pointercancel,
+      {kOnmousedownAttr, kNoWebFeature, EventTypeNames::mousedown, nullptr},
+      {kOnmouseenterAttr, kNoWebFeature, EventTypeNames::mouseenter, nullptr},
+      {kOnmouseleaveAttr, kNoWebFeature, EventTypeNames::mouseleave, nullptr},
+      {kOnmousemoveAttr, kNoWebFeature, EventTypeNames::mousemove, nullptr},
+      {kOnmouseoutAttr, kNoWebFeature, EventTypeNames::mouseout, nullptr},
+      {kOnmouseoverAttr, kNoWebFeature, EventTypeNames::mouseover, nullptr},
+      {kOnmouseupAttr, kNoWebFeature, EventTypeNames::mouseup, nullptr},
+      {kOnmousewheelAttr, kNoWebFeature, EventTypeNames::mousewheel, nullptr},
+      {kOnpasteAttr, kNoWebFeature, EventTypeNames::paste, nullptr},
+      {kOnpauseAttr, kNoWebFeature, EventTypeNames::pause, nullptr},
+      {kOnplayAttr, kNoWebFeature, EventTypeNames::play, nullptr},
+      {kOnplayingAttr, kNoWebFeature, EventTypeNames::playing, nullptr},
+      {kOnpointercancelAttr, kNoWebFeature, EventTypeNames::pointercancel,
        nullptr},
-      {onpointerdownAttr, kNoWebFeature, EventTypeNames::pointerdown, nullptr},
-      {onpointerenterAttr, kNoWebFeature, EventTypeNames::pointerenter,
+      {kOnpointerdownAttr, kNoWebFeature, EventTypeNames::pointerdown, nullptr},
+      {kOnpointerenterAttr, kNoWebFeature, EventTypeNames::pointerenter,
        nullptr},
-      {onpointerleaveAttr, kNoWebFeature, EventTypeNames::pointerleave,
+      {kOnpointerleaveAttr, kNoWebFeature, EventTypeNames::pointerleave,
        nullptr},
-      {onpointermoveAttr, kNoWebFeature, EventTypeNames::pointermove, nullptr},
-      {onpointeroutAttr, kNoWebFeature, EventTypeNames::pointerout, nullptr},
-      {onpointeroverAttr, kNoWebFeature, EventTypeNames::pointerover, nullptr},
-      {onpointerrawmoveAttr, kNoWebFeature, EventTypeNames::pointerrawmove,
+      {kOnpointermoveAttr, kNoWebFeature, EventTypeNames::pointermove, nullptr},
+      {kOnpointeroutAttr, kNoWebFeature, EventTypeNames::pointerout, nullptr},
+      {kOnpointeroverAttr, kNoWebFeature, EventTypeNames::pointerover, nullptr},
+      {kOnpointerrawmoveAttr, kNoWebFeature, EventTypeNames::pointerrawmove,
        nullptr},
-      {onpointerupAttr, kNoWebFeature, EventTypeNames::pointerup, nullptr},
-      {onprogressAttr, kNoWebFeature, EventTypeNames::progress, nullptr},
-      {onratechangeAttr, kNoWebFeature, EventTypeNames::ratechange, nullptr},
-      {onresetAttr, kNoWebFeature, EventTypeNames::reset, nullptr},
-      {onresizeAttr, kNoWebFeature, EventTypeNames::resize, nullptr},
-      {onscrollAttr, kNoWebFeature, EventTypeNames::scroll, nullptr},
-      {onseekedAttr, kNoWebFeature, EventTypeNames::seeked, nullptr},
-      {onseekingAttr, kNoWebFeature, EventTypeNames::seeking, nullptr},
-      {onselectAttr, kNoWebFeature, EventTypeNames::select, nullptr},
-      {onselectstartAttr, kNoWebFeature, EventTypeNames::selectstart, nullptr},
-      {onstalledAttr, kNoWebFeature, EventTypeNames::stalled, nullptr},
-      {onsubmitAttr, kNoWebFeature, EventTypeNames::submit, nullptr},
-      {onsuspendAttr, kNoWebFeature, EventTypeNames::suspend, nullptr},
-      {ontimeupdateAttr, kNoWebFeature, EventTypeNames::timeupdate, nullptr},
-      {ontoggleAttr, kNoWebFeature, EventTypeNames::toggle, nullptr},
-      {ontouchcancelAttr, kNoWebFeature, EventTypeNames::touchcancel, nullptr},
-      {ontouchendAttr, kNoWebFeature, EventTypeNames::touchend, nullptr},
-      {ontouchmoveAttr, kNoWebFeature, EventTypeNames::touchmove, nullptr},
-      {ontouchstartAttr, kNoWebFeature, EventTypeNames::touchstart, nullptr},
-      {ontransitionendAttr, kNoWebFeature, EventTypeNames::webkitTransitionEnd,
+      {kOnpointerupAttr, kNoWebFeature, EventTypeNames::pointerup, nullptr},
+      {kOnprogressAttr, kNoWebFeature, EventTypeNames::progress, nullptr},
+      {kOnratechangeAttr, kNoWebFeature, EventTypeNames::ratechange, nullptr},
+      {kOnresetAttr, kNoWebFeature, EventTypeNames::reset, nullptr},
+      {kOnresizeAttr, kNoWebFeature, EventTypeNames::resize, nullptr},
+      {kOnscrollAttr, kNoWebFeature, EventTypeNames::scroll, nullptr},
+      {kOnseekedAttr, kNoWebFeature, EventTypeNames::seeked, nullptr},
+      {kOnseekingAttr, kNoWebFeature, EventTypeNames::seeking, nullptr},
+      {kOnselectAttr, kNoWebFeature, EventTypeNames::select, nullptr},
+      {kOnselectstartAttr, kNoWebFeature, EventTypeNames::selectstart, nullptr},
+      {kOnstalledAttr, kNoWebFeature, EventTypeNames::stalled, nullptr},
+      {kOnsubmitAttr, kNoWebFeature, EventTypeNames::submit, nullptr},
+      {kOnsuspendAttr, kNoWebFeature, EventTypeNames::suspend, nullptr},
+      {kOntimeupdateAttr, kNoWebFeature, EventTypeNames::timeupdate, nullptr},
+      {kOntoggleAttr, kNoWebFeature, EventTypeNames::toggle, nullptr},
+      {kOntouchcancelAttr, kNoWebFeature, EventTypeNames::touchcancel, nullptr},
+      {kOntouchendAttr, kNoWebFeature, EventTypeNames::touchend, nullptr},
+      {kOntouchmoveAttr, kNoWebFeature, EventTypeNames::touchmove, nullptr},
+      {kOntouchstartAttr, kNoWebFeature, EventTypeNames::touchstart, nullptr},
+      {kOntransitionendAttr, kNoWebFeature, EventTypeNames::webkitTransitionEnd,
        nullptr},
-      {onvolumechangeAttr, kNoWebFeature, EventTypeNames::volumechange,
+      {kOnvolumechangeAttr, kNoWebFeature, EventTypeNames::volumechange,
        nullptr},
-      {onwaitingAttr, kNoWebFeature, EventTypeNames::waiting, nullptr},
-      {onwebkitanimationendAttr, kNoWebFeature,
+      {kOnwaitingAttr, kNoWebFeature, EventTypeNames::waiting, nullptr},
+      {kOnwebkitanimationendAttr, kNoWebFeature,
        EventTypeNames::webkitAnimationEnd, nullptr},
-      {onwebkitanimationiterationAttr, kNoWebFeature,
+      {kOnwebkitanimationiterationAttr, kNoWebFeature,
        EventTypeNames::webkitAnimationIteration, nullptr},
-      {onwebkitanimationstartAttr, kNoWebFeature,
+      {kOnwebkitanimationstartAttr, kNoWebFeature,
        EventTypeNames::webkitAnimationStart, nullptr},
-      {onwebkitfullscreenchangeAttr, kNoWebFeature,
+      {kOnwebkitfullscreenchangeAttr, kNoWebFeature,
        EventTypeNames::webkitfullscreenchange, nullptr},
-      {onwebkitfullscreenerrorAttr, kNoWebFeature,
+      {kOnwebkitfullscreenerrorAttr, kNoWebFeature,
        EventTypeNames::webkitfullscreenerror, nullptr},
-      {onwebkittransitionendAttr, kNoWebFeature,
+      {kOnwebkittransitionendAttr, kNoWebFeature,
        EventTypeNames::webkitTransitionEnd, nullptr},
-      {onwheelAttr, kNoWebFeature, EventTypeNames::wheel, nullptr},
+      {kOnwheelAttr, kNoWebFeature, EventTypeNames::wheel, nullptr},
 
-      {aria_activedescendantAttr, WebFeature::kARIAActiveDescendantAttribute,
+      {kAriaActivedescendantAttr, WebFeature::kARIAActiveDescendantAttribute,
        kNoEvent, nullptr},
-      {aria_atomicAttr, WebFeature::kARIAAtomicAttribute, kNoEvent, nullptr},
-      {aria_autocompleteAttr, WebFeature::kARIAAutocompleteAttribute, kNoEvent,
+      {kAriaAtomicAttr, WebFeature::kARIAAtomicAttribute, kNoEvent, nullptr},
+      {kAriaAutocompleteAttr, WebFeature::kARIAAutocompleteAttribute, kNoEvent,
        nullptr},
-      {aria_busyAttr, WebFeature::kARIABusyAttribute, kNoEvent, nullptr},
-      {aria_checkedAttr, WebFeature::kARIACheckedAttribute, kNoEvent, nullptr},
-      {aria_colcountAttr, WebFeature::kARIAColCountAttribute, kNoEvent,
+      {kAriaBusyAttr, WebFeature::kARIABusyAttribute, kNoEvent, nullptr},
+      {kAriaCheckedAttr, WebFeature::kARIACheckedAttribute, kNoEvent, nullptr},
+      {kAriaColcountAttr, WebFeature::kARIAColCountAttribute, kNoEvent,
        nullptr},
-      {aria_colindexAttr, WebFeature::kARIAColIndexAttribute, kNoEvent,
+      {kAriaColindexAttr, WebFeature::kARIAColIndexAttribute, kNoEvent,
        nullptr},
-      {aria_colspanAttr, WebFeature::kARIAColSpanAttribute, kNoEvent, nullptr},
-      {aria_controlsAttr, WebFeature::kARIAControlsAttribute, kNoEvent,
+      {kAriaColspanAttr, WebFeature::kARIAColSpanAttribute, kNoEvent, nullptr},
+      {kAriaControlsAttr, WebFeature::kARIAControlsAttribute, kNoEvent,
        nullptr},
-      {aria_currentAttr, WebFeature::kARIACurrentAttribute, kNoEvent, nullptr},
-      {aria_describedbyAttr, WebFeature::kARIADescribedByAttribute, kNoEvent,
+      {kAriaCurrentAttr, WebFeature::kARIACurrentAttribute, kNoEvent, nullptr},
+      {kAriaDescribedbyAttr, WebFeature::kARIADescribedByAttribute, kNoEvent,
        nullptr},
-      {aria_detailsAttr, WebFeature::kARIADetailsAttribute, kNoEvent, nullptr},
-      {aria_disabledAttr, WebFeature::kARIADisabledAttribute, kNoEvent,
+      {kAriaDetailsAttr, WebFeature::kARIADetailsAttribute, kNoEvent, nullptr},
+      {kAriaDisabledAttr, WebFeature::kARIADisabledAttribute, kNoEvent,
        nullptr},
-      {aria_dropeffectAttr, WebFeature::kARIADropEffectAttribute, kNoEvent,
+      {kAriaDropeffectAttr, WebFeature::kARIADropEffectAttribute, kNoEvent,
        nullptr},
-      {aria_errormessageAttr, WebFeature::kARIAErrorMessageAttribute, kNoEvent,
+      {kAriaErrormessageAttr, WebFeature::kARIAErrorMessageAttribute, kNoEvent,
        nullptr},
-      {aria_expandedAttr, WebFeature::kARIAExpandedAttribute, kNoEvent,
+      {kAriaExpandedAttr, WebFeature::kARIAExpandedAttribute, kNoEvent,
        nullptr},
-      {aria_flowtoAttr, WebFeature::kARIAFlowToAttribute, kNoEvent, nullptr},
-      {aria_grabbedAttr, WebFeature::kARIAGrabbedAttribute, kNoEvent, nullptr},
-      {aria_haspopupAttr, WebFeature::kARIAHasPopupAttribute, kNoEvent,
+      {kAriaFlowtoAttr, WebFeature::kARIAFlowToAttribute, kNoEvent, nullptr},
+      {kAriaGrabbedAttr, WebFeature::kARIAGrabbedAttribute, kNoEvent, nullptr},
+      {kAriaHaspopupAttr, WebFeature::kARIAHasPopupAttribute, kNoEvent,
        nullptr},
-      {aria_helpAttr, WebFeature::kARIAHelpAttribute, kNoEvent, nullptr},
-      {aria_hiddenAttr, WebFeature::kARIAHiddenAttribute, kNoEvent, nullptr},
-      {aria_invalidAttr, WebFeature::kARIAInvalidAttribute, kNoEvent, nullptr},
-      {aria_keyshortcutsAttr, WebFeature::kARIAKeyShortcutsAttribute, kNoEvent,
+      {kAriaHelpAttr, WebFeature::kARIAHelpAttribute, kNoEvent, nullptr},
+      {kAriaHiddenAttr, WebFeature::kARIAHiddenAttribute, kNoEvent, nullptr},
+      {kAriaInvalidAttr, WebFeature::kARIAInvalidAttribute, kNoEvent, nullptr},
+      {kAriaKeyshortcutsAttr, WebFeature::kARIAKeyShortcutsAttribute, kNoEvent,
        nullptr},
-      {aria_labelAttr, WebFeature::kARIALabelAttribute, kNoEvent, nullptr},
-      {aria_labeledbyAttr, WebFeature::kARIALabeledByAttribute, kNoEvent,
+      {kAriaLabelAttr, WebFeature::kARIALabelAttribute, kNoEvent, nullptr},
+      {kAriaLabeledbyAttr, WebFeature::kARIALabeledByAttribute, kNoEvent,
        nullptr},
-      {aria_labelledbyAttr, WebFeature::kARIALabelledByAttribute, kNoEvent,
+      {kAriaLabelledbyAttr, WebFeature::kARIALabelledByAttribute, kNoEvent,
        nullptr},
-      {aria_levelAttr, WebFeature::kARIALevelAttribute, kNoEvent, nullptr},
-      {aria_liveAttr, WebFeature::kARIALiveAttribute, kNoEvent, nullptr},
-      {aria_modalAttr, WebFeature::kARIAModalAttribute, kNoEvent, nullptr},
-      {aria_multilineAttr, WebFeature::kARIAMultilineAttribute, kNoEvent,
+      {kAriaLevelAttr, WebFeature::kARIALevelAttribute, kNoEvent, nullptr},
+      {kAriaLiveAttr, WebFeature::kARIALiveAttribute, kNoEvent, nullptr},
+      {kAriaModalAttr, WebFeature::kARIAModalAttribute, kNoEvent, nullptr},
+      {kAriaMultilineAttr, WebFeature::kARIAMultilineAttribute, kNoEvent,
        nullptr},
-      {aria_multiselectableAttr, WebFeature::kARIAMultiselectableAttribute,
+      {kAriaMultiselectableAttr, WebFeature::kARIAMultiselectableAttribute,
        kNoEvent, nullptr},
-      {aria_orientationAttr, WebFeature::kARIAOrientationAttribute, kNoEvent,
+      {kAriaOrientationAttr, WebFeature::kARIAOrientationAttribute, kNoEvent,
        nullptr},
-      {aria_ownsAttr, WebFeature::kARIAOwnsAttribute, kNoEvent, nullptr},
-      {aria_placeholderAttr, WebFeature::kARIAPlaceholderAttribute, kNoEvent,
+      {kAriaOwnsAttr, WebFeature::kARIAOwnsAttribute, kNoEvent, nullptr},
+      {kAriaPlaceholderAttr, WebFeature::kARIAPlaceholderAttribute, kNoEvent,
        nullptr},
-      {aria_posinsetAttr, WebFeature::kARIAPosInSetAttribute, kNoEvent,
+      {kAriaPosinsetAttr, WebFeature::kARIAPosInSetAttribute, kNoEvent,
        nullptr},
-      {aria_pressedAttr, WebFeature::kARIAPressedAttribute, kNoEvent, nullptr},
-      {aria_readonlyAttr, WebFeature::kARIAReadOnlyAttribute, kNoEvent,
+      {kAriaPressedAttr, WebFeature::kARIAPressedAttribute, kNoEvent, nullptr},
+      {kAriaReadonlyAttr, WebFeature::kARIAReadOnlyAttribute, kNoEvent,
        nullptr},
-      {aria_relevantAttr, WebFeature::kARIARelevantAttribute, kNoEvent,
+      {kAriaRelevantAttr, WebFeature::kARIARelevantAttribute, kNoEvent,
        nullptr},
-      {aria_requiredAttr, WebFeature::kARIARequiredAttribute, kNoEvent,
+      {kAriaRequiredAttr, WebFeature::kARIARequiredAttribute, kNoEvent,
        nullptr},
-      {aria_roledescriptionAttr, WebFeature::kARIARoleDescriptionAttribute,
+      {kAriaRoledescriptionAttr, WebFeature::kARIARoleDescriptionAttribute,
        kNoEvent, nullptr},
-      {aria_rowcountAttr, WebFeature::kARIARowCountAttribute, kNoEvent,
+      {kAriaRowcountAttr, WebFeature::kARIARowCountAttribute, kNoEvent,
        nullptr},
-      {aria_rowindexAttr, WebFeature::kARIARowIndexAttribute, kNoEvent,
+      {kAriaRowindexAttr, WebFeature::kARIARowIndexAttribute, kNoEvent,
        nullptr},
-      {aria_rowspanAttr, WebFeature::kARIARowSpanAttribute, kNoEvent, nullptr},
-      {aria_selectedAttr, WebFeature::kARIASelectedAttribute, kNoEvent,
+      {kAriaRowspanAttr, WebFeature::kARIARowSpanAttribute, kNoEvent, nullptr},
+      {kAriaSelectedAttr, WebFeature::kARIASelectedAttribute, kNoEvent,
        nullptr},
-      {aria_setsizeAttr, WebFeature::kARIASetSizeAttribute, kNoEvent, nullptr},
-      {aria_sortAttr, WebFeature::kARIASortAttribute, kNoEvent, nullptr},
-      {aria_valuemaxAttr, WebFeature::kARIAValueMaxAttribute, kNoEvent,
+      {kAriaSetsizeAttr, WebFeature::kARIASetSizeAttribute, kNoEvent, nullptr},
+      {kAriaSortAttr, WebFeature::kARIASortAttribute, kNoEvent, nullptr},
+      {kAriaValuemaxAttr, WebFeature::kARIAValueMaxAttribute, kNoEvent,
        nullptr},
-      {aria_valueminAttr, WebFeature::kARIAValueMinAttribute, kNoEvent,
+      {kAriaValueminAttr, WebFeature::kARIAValueMinAttribute, kNoEvent,
        nullptr},
-      {aria_valuenowAttr, WebFeature::kARIAValueNowAttribute, kNoEvent,
+      {kAriaValuenowAttr, WebFeature::kARIAValueNowAttribute, kNoEvent,
        nullptr},
-      {aria_valuetextAttr, WebFeature::kARIAValueTextAttribute, kNoEvent,
+      {kAriaValuetextAttr, WebFeature::kARIAValueTextAttribute, kNoEvent,
        nullptr},
-      {autocapitalizeAttr, WebFeature::kAutocapitalizeAttribute, kNoEvent,
+      {kAutocapitalizeAttr, WebFeature::kAutocapitalizeAttribute, kNoEvent,
        nullptr},
   };
 
@@ -567,10 +570,10 @@ void HTMLElement::AttributeChanged(const AttributeModificationParams& params) {
     return;
   // adjustedFocusedElementInTreeScope() is not trivial. We should check
   // attribute names, then call adjustedFocusedElementInTreeScope().
-  if (params.name == hiddenAttr && !params.new_value.IsNull()) {
+  if (params.name == kHiddenAttr && !params.new_value.IsNull()) {
     if (AdjustedFocusedElementInTreeScope() == this)
       blur();
-  } else if (params.name == contenteditableAttr) {
+  } else if (params.name == kContenteditableAttr) {
     if (GetDocument().GetFrame()) {
       GetDocument()
           .GetFrame()
@@ -754,7 +757,7 @@ bool HTMLElement::HasCustomFocusLogic() const {
 }
 
 String HTMLElement::contentEditable() const {
-  const AtomicString& value = FastGetAttribute(contenteditableAttr);
+  const AtomicString& value = FastGetAttribute(kContenteditableAttr);
 
   if (value.IsNull())
     return "inherit";
@@ -771,13 +774,13 @@ String HTMLElement::contentEditable() const {
 void HTMLElement::setContentEditable(const String& enabled,
                                      ExceptionState& exception_state) {
   if (DeprecatedEqualIgnoringCase(enabled, "true"))
-    setAttribute(contenteditableAttr, "true");
+    setAttribute(kContenteditableAttr, "true");
   else if (DeprecatedEqualIgnoringCase(enabled, "false"))
-    setAttribute(contenteditableAttr, "false");
+    setAttribute(kContenteditableAttr, "false");
   else if (DeprecatedEqualIgnoringCase(enabled, "plaintext-only"))
-    setAttribute(contenteditableAttr, "plaintext-only");
+    setAttribute(kContenteditableAttr, "plaintext-only");
   else if (DeprecatedEqualIgnoringCase(enabled, "inherit"))
-    removeAttribute(contenteditableAttr);
+    removeAttribute(kContenteditableAttr);
   else
     exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
                                       "The value provided ('" + enabled +
@@ -792,7 +795,7 @@ const AtomicString& HTMLElement::autocapitalize() const {
   DEFINE_STATIC_LOCAL(const AtomicString, kWords, ("words"));
   DEFINE_STATIC_LOCAL(const AtomicString, kSentences, ("sentences"));
 
-  const AtomicString& value = FastGetAttribute(autocapitalizeAttr);
+  const AtomicString& value = FastGetAttribute(kAutocapitalizeAttr);
   if (value.IsEmpty())
     return g_empty_atom;
 
@@ -808,7 +811,7 @@ const AtomicString& HTMLElement::autocapitalize() const {
 }
 
 void HTMLElement::setAutocapitalize(const AtomicString& value) {
-  setAttribute(autocapitalizeAttr, value);
+  setAttribute(kAutocapitalizeAttr, value);
 }
 
 bool HTMLElement::isContentEditableForBinding() const {
@@ -816,11 +819,11 @@ bool HTMLElement::isContentEditableForBinding() const {
 }
 
 bool HTMLElement::draggable() const {
-  return DeprecatedEqualIgnoringCase(getAttribute(draggableAttr), "true");
+  return DeprecatedEqualIgnoringCase(getAttribute(kDraggableAttr), "true");
 }
 
 void HTMLElement::setDraggable(bool value) {
-  setAttribute(draggableAttr, value ? "true" : "false");
+  setAttribute(kDraggableAttr, value ? "true" : "false");
 }
 
 bool HTMLElement::spellcheck() const {
@@ -828,7 +831,7 @@ bool HTMLElement::spellcheck() const {
 }
 
 void HTMLElement::setSpellcheck(bool enable) {
-  setAttribute(spellcheckAttr, enable ? "true" : "false");
+  setAttribute(kSpellcheckAttr, enable ? "true" : "false");
 }
 
 void HTMLElement::click() {
@@ -842,7 +845,7 @@ void HTMLElement::AccessKeyAction(bool send_mouse_events) {
 }
 
 String HTMLElement::title() const {
-  return FastGetAttribute(titleAttr);
+  return FastGetAttribute(kTitleAttr);
 }
 
 int HTMLElement::tabIndex() const {
@@ -852,7 +855,7 @@ int HTMLElement::tabIndex() const {
 }
 
 TranslateAttributeMode HTMLElement::GetTranslateAttributeMode() const {
-  const AtomicString& value = getAttribute(translateAttr);
+  const AtomicString& value = getAttribute(kTranslateAttr);
 
   if (value == g_null_atom)
     return kTranslateAttributeInherit;
@@ -880,7 +883,7 @@ bool HTMLElement::translate() const {
 }
 
 void HTMLElement::setTranslate(bool enable) {
-  setAttribute(translateAttr, enable ? "yes" : "no");
+  setAttribute(kTranslateAttr, enable ? "yes" : "no");
 }
 
 // Returns the conforming 'dir' value associated with the state the attribute is
@@ -904,11 +907,11 @@ static inline const AtomicString& ToValidDirValue(const AtomicString& value) {
 }
 
 const AtomicString& HTMLElement::dir() {
-  return ToValidDirValue(FastGetAttribute(dirAttr));
+  return ToValidDirValue(FastGetAttribute(kDirAttr));
 }
 
 void HTMLElement::setDir(const AtomicString& value) {
-  setAttribute(dirAttr, value);
+  setAttribute(kDirAttr, value);
 }
 
 HTMLFormElement* HTMLElement::FindFormAncestor() const {
@@ -917,7 +920,7 @@ HTMLFormElement* HTMLElement::FindFormAncestor() const {
 
 static inline bool ElementAffectsDirectionality(const Node* node) {
   return node->IsHTMLElement() && (IsHTMLBDIElement(ToHTMLElement(*node)) ||
-                                   ToHTMLElement(*node).hasAttribute(dirAttr));
+                                   ToHTMLElement(*node).hasAttribute(kDirAttr));
 }
 
 void HTMLElement::ChildrenChanged(const ChildrenChange& change) {
@@ -928,7 +931,7 @@ void HTMLElement::ChildrenChanged(const ChildrenChange& change) {
 bool HTMLElement::HasDirectionAuto() const {
   // <bdi> defaults to dir="auto"
   // https://html.spec.whatwg.org/multipage/semantics.html#the-bdi-element
-  const AtomicString& direction = FastGetAttribute(dirAttr);
+  const AtomicString& direction = FastGetAttribute(kDirAttr);
   return (IsHTMLBDIElement(*this) && direction == g_null_atom) ||
          DeprecatedEqualIgnoringCase(direction, "auto");
 }
@@ -971,7 +974,7 @@ TextDirection HTMLElement::Directionality(
     // Skip elements with valid dir attribute
     if (node->IsElementNode()) {
       AtomicString dir_attribute_value =
-          ToElement(node)->FastGetAttribute(dirAttr);
+          ToElement(node)->FastGetAttribute(kDirAttr);
       if (IsValidDirAttribute(dir_attribute_value)) {
         node = FlatTreeTraversal::NextSkippingChildren(*node, this);
         continue;
@@ -1056,8 +1059,8 @@ Node::InsertionNotificationRequest HTMLElement::InsertedInto(
   Element::InsertedInto(insertion_point);
 
   if (GetDocument().GetContentSecurityPolicy()->HasHeaderDeliveredPolicy() &&
-      InActiveDocument() && FastHasAttribute(nonceAttr)) {
-    setAttribute(nonceAttr, g_empty_atom);
+      InActiveDocument() && FastHasAttribute(kNonceAttr)) {
+    setAttribute(kNonceAttr, g_empty_atom);
   }
 
   return kInsertionDone;
@@ -1216,8 +1219,8 @@ bool HTMLElement::MatchesReadOnlyPseudoClass() const {
 }
 
 bool HTMLElement::MatchesReadWritePseudoClass() const {
-  if (FastHasAttribute(contenteditableAttr)) {
-    const AtomicString& value = FastGetAttribute(contenteditableAttr);
+  if (FastHasAttribute(kContenteditableAttr)) {
+    const AtomicString& value = FastGetAttribute(kContenteditableAttr);
 
     if (value.IsEmpty() || DeprecatedEqualIgnoringCase(value, "true") ||
         DeprecatedEqualIgnoringCase(value, "plaintext-only"))

@@ -61,7 +61,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 using namespace svg_names;
 
 SVGElement::SVGElement(const QualifiedName& tag_name,
@@ -69,7 +69,7 @@ SVGElement::SVGElement(const QualifiedName& tag_name,
                        ConstructionType construction_type)
     : Element(tag_name, &document, construction_type),
       svg_rare_data_(nullptr),
-      class_name_(SVGAnimatedString::Create(this, HTMLNames::classAttr)) {
+      class_name_(SVGAnimatedString::Create(this, html_names::kClassAttr)) {
   AddToPropertyMap(class_name_);
   SetHasCustomStyleCallbacks();
 }
@@ -376,12 +376,12 @@ Node::InsertionNotificationRequest SVGElement::InsertedInto(
   Element::InsertedInto(root_parent);
   UpdateRelativeLengthsInformation();
 
-  const AtomicString& nonce_value = FastGetAttribute(nonceAttr);
+  const AtomicString& nonce_value = FastGetAttribute(kNonceAttr);
   if (!nonce_value.IsEmpty()) {
     setNonce(nonce_value);
     if (InActiveDocument() &&
         GetDocument().GetContentSecurityPolicy()->HasHeaderDeliveredPolicy()) {
-      setAttribute(nonceAttr, g_empty_atom);
+      setAttribute(kNonceAttr, g_empty_atom);
     }
   }
   return kInsertionDone;
@@ -936,7 +936,7 @@ void SVGElement::SendSVGLoadEventToSelfAndAncestorChainIfPossible() {
 void SVGElement::AttributeChanged(const AttributeModificationParams& params) {
   Element::AttributeChanged(params);
 
-  if (params.name == HTMLNames::idAttr) {
+  if (params.name == html_names::kIdAttr) {
     RebuildAllIncomingReferences();
     InvalidateInstances();
     return;
@@ -945,7 +945,7 @@ void SVGElement::AttributeChanged(const AttributeModificationParams& params) {
   // Changes to the style attribute are processed lazily (see
   // Element::getAttribute() and related methods), so we don't want changes to
   // the style attribute to result in extra work here.
-  if (params.name == HTMLNames::styleAttr)
+  if (params.name == html_names::kStyleAttr)
     return;
 
   SvgAttributeBaseValChanged(params.name);
@@ -959,7 +959,7 @@ void SVGElement::SvgAttributeChanged(const QualifiedName& attr_name) {
     return;
   }
 
-  if (attr_name == HTMLNames::classAttr) {
+  if (attr_name == html_names::kClassAttr) {
     ClassAttributeChanged(AtomicString(class_name_->CurrentValue()->Value()));
     InvalidateInstances();
     return;
@@ -1226,7 +1226,7 @@ bool SVGElement::IsAnimatableAttribute(const QualifiedName& name) const {
                                       svg_names::kZAttr,
                                   }));
 
-  if (name == classAttr)
+  if (name == kClassAttr)
     return true;
 
   return animatable_attributes.Contains(name);

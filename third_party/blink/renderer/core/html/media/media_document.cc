@@ -52,7 +52,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 // FIXME: Share more code with PluginDocumentParser.
 class MediaDocumentParser : public RawDataDocumentParser {
@@ -83,14 +83,14 @@ void MediaDocumentParser::CreateDocumentStructure() {
 
   HTMLHeadElement* head = HTMLHeadElement::Create(*GetDocument());
   HTMLMetaElement* meta = HTMLMetaElement::Create(*GetDocument());
-  meta->setAttribute(nameAttr, "viewport");
-  meta->setAttribute(contentAttr, "width=device-width");
+  meta->setAttribute(kNameAttr, "viewport");
+  meta->setAttribute(kContentAttr, "width=device-width");
   head->AppendChild(meta);
 
   HTMLVideoElement* media = HTMLVideoElement::Create(*GetDocument());
-  media->setAttribute(controlsAttr, "");
-  media->setAttribute(autoplayAttr, "");
-  media->setAttribute(nameAttr, "media");
+  media->setAttribute(kControlsAttr, "");
+  media->setAttribute(kAutoplayAttr, "");
+  media->setAttribute(kNameAttr, "media");
 
   HTMLSourceElement* source = HTMLSourceElement::Create(*GetDocument());
   source->SetSrc(GetDocument()->Url());

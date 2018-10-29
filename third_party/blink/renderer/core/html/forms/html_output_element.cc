@@ -36,10 +36,10 @@
 namespace blink {
 
 inline HTMLOutputElement::HTMLOutputElement(Document& document)
-    : HTMLFormControlElement(HTMLNames::outputTag, document),
+    : HTMLFormControlElement(html_names::kOutputTag, document),
       is_default_value_mode_(true),
       default_value_(""),
-      tokens_(DOMTokenList::Create(*this, HTMLNames::forAttr)) {}
+      tokens_(DOMTokenList::Create(*this, html_names::kForAttr)) {}
 
 HTMLOutputElement::~HTMLOutputElement() = default;
 
@@ -66,7 +66,7 @@ bool HTMLOutputElement::SupportsFocus() const {
 
 void HTMLOutputElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == HTMLNames::forAttr)
+  if (params.name == html_names::kForAttr)
     tokens_->DidUpdateAttributeValue(params.old_value, params.new_value);
   else
     HTMLFormControlElement::ParseAttribute(params);

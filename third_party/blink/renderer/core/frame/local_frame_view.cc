@@ -207,8 +207,6 @@ void LogCursorSizeCounter(LocalFrame* frame, const Cursor& cursor) {
   auto scoped_ukm_hierarchical_timer =     \
       EnsureUkmAggregator().GetScopedTimer(static_cast<size_t>(ukm_enum));
 
-using namespace HTMLNames;
-
 // The maximum number of updatePlugins iterations that should be done before
 // returning.
 static const unsigned kMaxUpdatePluginsIterations = 2;

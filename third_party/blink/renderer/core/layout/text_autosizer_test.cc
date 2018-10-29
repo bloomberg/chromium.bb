@@ -158,28 +158,28 @@ TEST_F(TextAutosizerTest, ParagraphWithChangingTextSizeAdjustment) {
   EXPECT_FLOAT_EQ(
       40.f, autosized_div->GetLayoutObject()->StyleRef().ComputedFontSize());
 
-  autosized_div->setAttribute(HTMLNames::classAttr, "none");
+  autosized_div->setAttribute(html_names::kClassAttr, "none");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_FLOAT_EQ(
       16.f, autosized_div->GetLayoutObject()->StyleRef().SpecifiedFontSize());
   EXPECT_FLOAT_EQ(
       16.f, autosized_div->GetLayoutObject()->StyleRef().ComputedFontSize());
 
-  autosized_div->setAttribute(HTMLNames::classAttr, "small");
+  autosized_div->setAttribute(html_names::kClassAttr, "small");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_FLOAT_EQ(
       16.f, autosized_div->GetLayoutObject()->StyleRef().SpecifiedFontSize());
   EXPECT_FLOAT_EQ(
       8.f, autosized_div->GetLayoutObject()->StyleRef().ComputedFontSize());
 
-  autosized_div->setAttribute(HTMLNames::classAttr, "large");
+  autosized_div->setAttribute(html_names::kClassAttr, "large");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_FLOAT_EQ(
       16.f, autosized_div->GetLayoutObject()->StyleRef().SpecifiedFontSize());
   EXPECT_FLOAT_EQ(
       24.f, autosized_div->GetLayoutObject()->StyleRef().ComputedFontSize());
 
-  autosized_div->removeAttribute(HTMLNames::classAttr);
+  autosized_div->removeAttribute(html_names::kClassAttr);
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_FLOAT_EQ(
       16.f, autosized_div->GetLayoutObject()->StyleRef().SpecifiedFontSize());

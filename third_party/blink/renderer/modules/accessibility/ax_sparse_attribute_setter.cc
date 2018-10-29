@@ -7,7 +7,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 class BoolAttributeSetter : public AXSparseAttributeSetter {
  public:
@@ -118,28 +118,28 @@ AXSparseAttributeSetterMap& GetSparseAttributeSetterMap() {
                       ax_sparse_attribute_setter_map, ());
   if (ax_sparse_attribute_setter_map.IsEmpty()) {
     ax_sparse_attribute_setter_map.Set(
-        aria_activedescendantAttr,
+        kAriaActivedescendantAttr,
         new ObjectAttributeSetter(AXObjectAttribute::kAriaActiveDescendant));
     ax_sparse_attribute_setter_map.Set(
-        aria_controlsAttr, new ObjectVectorAttributeSetter(
+        kAriaControlsAttr, new ObjectVectorAttributeSetter(
                                AXObjectVectorAttribute::kAriaControls));
     ax_sparse_attribute_setter_map.Set(
-        aria_flowtoAttr,
+        kAriaFlowtoAttr,
         new ObjectVectorAttributeSetter(AXObjectVectorAttribute::kAriaFlowTo));
     ax_sparse_attribute_setter_map.Set(
-        aria_detailsAttr,
+        kAriaDetailsAttr,
         new ObjectAttributeSetter(AXObjectAttribute::kAriaDetails));
     ax_sparse_attribute_setter_map.Set(
-        aria_errormessageAttr,
+        kAriaErrormessageAttr,
         new ObjectAttributeSetter(AXObjectAttribute::kAriaErrorMessage));
     ax_sparse_attribute_setter_map.Set(
-        aria_keyshortcutsAttr,
+        kAriaKeyshortcutsAttr,
         new StringAttributeSetter(AXStringAttribute::kAriaKeyShortcuts));
     ax_sparse_attribute_setter_map.Set(
-        aria_roledescriptionAttr,
+        kAriaRoledescriptionAttr,
         new StringAttributeSetter(AXStringAttribute::kAriaRoleDescription));
     ax_sparse_attribute_setter_map.Set(
-        aria_busyAttr, new BoolAttributeSetter(AXBoolAttribute::kAriaBusy));
+        kAriaBusyAttr, new BoolAttributeSetter(AXBoolAttribute::kAriaBusy));
   }
   return ax_sparse_attribute_setter_map;
 }

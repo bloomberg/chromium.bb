@@ -51,7 +51,7 @@ class StyleTraversalRootTest : public testing::Test {
     document_ = Document::CreateForTest();
     elements_ = new HeapVector<Member<Element>, 7>;
     for (size_t i = 0; i < kElementCount; i++) {
-      elements_->push_back(GetDocument().CreateRawElement(HTMLNames::divTag));
+      elements_->push_back(GetDocument().CreateRawElement(html_names::kDivTag));
     }
     GetDocument().appendChild(DivElement(kA));
     DivElement(kA)->appendChild(DivElement(kB));

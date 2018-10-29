@@ -163,7 +163,7 @@ Node* SmartClip::FindBestOverlappingNode(Node* root_node,
 
     if (node->IsElementNode() &&
         DeprecatedEqualIgnoringCase(
-            ToElement(node)->FastGetAttribute(HTMLNames::aria_hiddenAttr),
+            ToElement(node)->FastGetAttribute(html_names::kAriaHiddenAttr),
             "true")) {
       node = NodeTraversal::NextSkippingChildren(*node, root_node);
       continue;

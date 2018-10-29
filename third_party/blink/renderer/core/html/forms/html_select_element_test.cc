@@ -158,7 +158,7 @@ TEST_F(HTMLSelectElementTest, FirstSelectableOption) {
     HTMLSelectElement* select =
         ToHTMLSelectElement(GetDocument().body()->firstChild());
     EXPECT_EQ("o1", select->FirstSelectableOption()->FastGetAttribute(
-                        HTMLNames::idAttr));
+                        html_names::kIdAttr));
   }
   {
     SetHtmlInnerHTML(
@@ -167,7 +167,7 @@ TEST_F(HTMLSelectElementTest, FirstSelectableOption) {
     HTMLSelectElement* select =
         ToHTMLSelectElement(GetDocument().body()->firstChild());
     EXPECT_EQ("o2", select->FirstSelectableOption()->FastGetAttribute(
-                        HTMLNames::idAttr));
+                        html_names::kIdAttr));
   }
   {
     SetHtmlInnerHTML(
@@ -176,7 +176,7 @@ TEST_F(HTMLSelectElementTest, FirstSelectableOption) {
     HTMLSelectElement* select =
         ToHTMLSelectElement(GetDocument().body()->firstChild());
     EXPECT_EQ("o2", select->FirstSelectableOption()->FastGetAttribute(
-                        HTMLNames::idAttr));
+                        html_names::kIdAttr));
   }
   {
     SetHtmlInnerHTML(
@@ -185,7 +185,7 @@ TEST_F(HTMLSelectElementTest, FirstSelectableOption) {
     HTMLSelectElement* select =
         ToHTMLSelectElement(GetDocument().body()->firstChild());
     EXPECT_EQ("o1", select->FirstSelectableOption()->FastGetAttribute(
-                        HTMLNames::idAttr));
+                        html_names::kIdAttr));
   }
 }
 
@@ -202,7 +202,7 @@ TEST_F(HTMLSelectElementTest, LastSelectableOption) {
     HTMLSelectElement* select =
         ToHTMLSelectElement(GetDocument().body()->firstChild());
     EXPECT_EQ("o2", select->LastSelectableOption()->FastGetAttribute(
-                        HTMLNames::idAttr));
+                        html_names::kIdAttr));
   }
   {
     SetHtmlInnerHTML(
@@ -211,7 +211,7 @@ TEST_F(HTMLSelectElementTest, LastSelectableOption) {
     HTMLSelectElement* select =
         ToHTMLSelectElement(GetDocument().body()->firstChild());
     EXPECT_EQ("o1", select->LastSelectableOption()->FastGetAttribute(
-                        HTMLNames::idAttr));
+                        html_names::kIdAttr));
   }
   {
     SetHtmlInnerHTML(
@@ -220,7 +220,7 @@ TEST_F(HTMLSelectElementTest, LastSelectableOption) {
     HTMLSelectElement* select =
         ToHTMLSelectElement(GetDocument().body()->firstChild());
     EXPECT_EQ("o1", select->LastSelectableOption()->FastGetAttribute(
-                        HTMLNames::idAttr));
+                        html_names::kIdAttr));
   }
   {
     SetHtmlInnerHTML(
@@ -229,7 +229,7 @@ TEST_F(HTMLSelectElementTest, LastSelectableOption) {
     HTMLSelectElement* select =
         ToHTMLSelectElement(GetDocument().body()->firstChild());
     EXPECT_EQ("o2", select->LastSelectableOption()->FastGetAttribute(
-                        HTMLNames::idAttr));
+                        html_names::kIdAttr));
   }
 }
 
@@ -246,7 +246,7 @@ TEST_F(HTMLSelectElementTest, NextSelectableOption) {
     HTMLSelectElement* select =
         ToHTMLSelectElement(GetDocument().body()->firstChild());
     EXPECT_EQ("o1", select->NextSelectableOption(nullptr)->FastGetAttribute(
-                        HTMLNames::idAttr));
+                        html_names::kIdAttr));
   }
   {
     SetHtmlInnerHTML(
@@ -255,7 +255,7 @@ TEST_F(HTMLSelectElementTest, NextSelectableOption) {
     HTMLSelectElement* select =
         ToHTMLSelectElement(GetDocument().body()->firstChild());
     EXPECT_EQ("o2", select->NextSelectableOption(nullptr)->FastGetAttribute(
-                        HTMLNames::idAttr));
+                        html_names::kIdAttr));
   }
   {
     SetHtmlInnerHTML(
@@ -264,7 +264,7 @@ TEST_F(HTMLSelectElementTest, NextSelectableOption) {
     HTMLSelectElement* select =
         ToHTMLSelectElement(GetDocument().body()->firstChild());
     EXPECT_EQ("o2", select->NextSelectableOption(nullptr)->FastGetAttribute(
-                        HTMLNames::idAttr));
+                        html_names::kIdAttr));
   }
   {
     SetHtmlInnerHTML(
@@ -273,7 +273,7 @@ TEST_F(HTMLSelectElementTest, NextSelectableOption) {
     HTMLSelectElement* select =
         ToHTMLSelectElement(GetDocument().body()->firstChild());
     EXPECT_EQ("o1", select->NextSelectableOption(nullptr)->FastGetAttribute(
-                        HTMLNames::idAttr));
+                        html_names::kIdAttr));
   }
   {
     SetHtmlInnerHTML(
@@ -282,7 +282,7 @@ TEST_F(HTMLSelectElementTest, NextSelectableOption) {
         ToHTMLSelectElement(GetDocument().body()->firstChild());
     HTMLOptionElement* option = ToHTMLOptionElement(GetElementById("o1"));
     EXPECT_EQ("o2", select->NextSelectableOption(option)->FastGetAttribute(
-                        HTMLNames::idAttr));
+                        html_names::kIdAttr));
 
     EXPECT_EQ(nullptr, select->NextSelectableOption(
                            ToHTMLOptionElement(GetElementById("o2"))));
@@ -295,7 +295,7 @@ TEST_F(HTMLSelectElementTest, NextSelectableOption) {
         ToHTMLSelectElement(GetDocument().body()->firstChild());
     HTMLOptionElement* option = ToHTMLOptionElement(GetElementById("o1"));
     EXPECT_EQ("o2", select->NextSelectableOption(option)->FastGetAttribute(
-                        HTMLNames::idAttr));
+                        html_names::kIdAttr));
   }
 }
 
@@ -312,7 +312,7 @@ TEST_F(HTMLSelectElementTest, PreviousSelectableOption) {
     HTMLSelectElement* select =
         ToHTMLSelectElement(GetDocument().body()->firstChild());
     EXPECT_EQ("o2", select->PreviousSelectableOption(nullptr)->FastGetAttribute(
-                        HTMLNames::idAttr));
+                        html_names::kIdAttr));
   }
   {
     SetHtmlInnerHTML(
@@ -321,7 +321,7 @@ TEST_F(HTMLSelectElementTest, PreviousSelectableOption) {
     HTMLSelectElement* select =
         ToHTMLSelectElement(GetDocument().body()->firstChild());
     EXPECT_EQ("o1", select->PreviousSelectableOption(nullptr)->FastGetAttribute(
-                        HTMLNames::idAttr));
+                        html_names::kIdAttr));
   }
   {
     SetHtmlInnerHTML(
@@ -330,7 +330,7 @@ TEST_F(HTMLSelectElementTest, PreviousSelectableOption) {
     HTMLSelectElement* select =
         ToHTMLSelectElement(GetDocument().body()->firstChild());
     EXPECT_EQ("o1", select->PreviousSelectableOption(nullptr)->FastGetAttribute(
-                        HTMLNames::idAttr));
+                        html_names::kIdAttr));
   }
   {
     SetHtmlInnerHTML(
@@ -339,7 +339,7 @@ TEST_F(HTMLSelectElementTest, PreviousSelectableOption) {
     HTMLSelectElement* select =
         ToHTMLSelectElement(GetDocument().body()->firstChild());
     EXPECT_EQ("o2", select->PreviousSelectableOption(nullptr)->FastGetAttribute(
-                        HTMLNames::idAttr));
+                        html_names::kIdAttr));
   }
   {
     SetHtmlInnerHTML(
@@ -348,7 +348,7 @@ TEST_F(HTMLSelectElementTest, PreviousSelectableOption) {
         ToHTMLSelectElement(GetDocument().body()->firstChild());
     HTMLOptionElement* option = ToHTMLOptionElement(GetElementById("o2"));
     EXPECT_EQ("o1", select->PreviousSelectableOption(option)->FastGetAttribute(
-                        HTMLNames::idAttr));
+                        html_names::kIdAttr));
 
     EXPECT_EQ(nullptr, select->PreviousSelectableOption(
                            ToHTMLOptionElement(GetElementById("o1"))));
@@ -361,7 +361,7 @@ TEST_F(HTMLSelectElementTest, PreviousSelectableOption) {
         ToHTMLSelectElement(GetDocument().body()->firstChild());
     HTMLOptionElement* option = ToHTMLOptionElement(GetElementById("o2"));
     EXPECT_EQ("o1", select->PreviousSelectableOption(option)->FastGetAttribute(
-                        HTMLNames::idAttr));
+                        html_names::kIdAttr));
   }
 }
 
@@ -394,7 +394,7 @@ TEST_F(HTMLSelectElementTest, DefaultToolTip) {
   EXPECT_EQ(select->DefaultToolTip(), option->DefaultToolTip());
   EXPECT_EQ(select->DefaultToolTip(), optgroup->DefaultToolTip());
 
-  select->SetBooleanAttribute(HTMLNames::requiredAttr, true);
+  select->SetBooleanAttribute(html_names::kRequiredAttr, true);
   EXPECT_EQ("<<ValidationValueMissingForSelect>>", select->DefaultToolTip())
       << "defaultToolTip for SELECT without FORM and with required attribute "
          "should return a valueMissing message.";
@@ -410,7 +410,7 @@ TEST_F(HTMLSelectElementTest, DefaultToolTip) {
   EXPECT_EQ(select->DefaultToolTip(), option->DefaultToolTip());
   EXPECT_EQ(select->DefaultToolTip(), optgroup->DefaultToolTip());
 
-  form->SetBooleanAttribute(HTMLNames::novalidateAttr, true);
+  form->SetBooleanAttribute(html_names::kNovalidateAttr, true);
   EXPECT_EQ(String(), select->DefaultToolTip())
       << "defaultToolTip for SELECT with FORM[novalidate] and required "
          "attribute should return null string.";

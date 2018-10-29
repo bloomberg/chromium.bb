@@ -32,8 +32,8 @@ TEST_F(HTMLContentElementTest, FallbackRecalcForReattach) {
   ShadowRoot& root = host->CreateV0ShadowRootForTesting();
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  auto* content = GetDocument().CreateRawElement(HTMLNames::contentTag);
-  auto* fallback = GetDocument().CreateRawElement(HTMLNames::spanTag);
+  auto* content = GetDocument().CreateRawElement(html_names::kContentTag);
+  auto* fallback = GetDocument().CreateRawElement(html_names::kSpanTag);
   content->AppendChild(fallback);
   root.AppendChild(content);
 

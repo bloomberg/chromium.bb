@@ -47,7 +47,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 class PluginDocument::BeforeUnloadEventListener : public EventListener {
  public:
@@ -136,7 +136,7 @@ void PluginDocumentParser::CreateDocumentStructure() {
     return;  // runScriptsAtDocumentElementAvailable can detach the frame.
 
   HTMLBodyElement* body = HTMLBodyElement::Create(*GetDocument());
-  body->setAttribute(styleAttr,
+  body->setAttribute(kStyleAttr,
                      "height: 100%; width: 100%; overflow: hidden; margin: 0");
   body->SetInlineStyleProperty(
       CSSPropertyBackgroundColor,
@@ -149,13 +149,13 @@ void PluginDocumentParser::CreateDocumentStructure() {
   }
 
   embed_element_ = HTMLEmbedElement::Create(*GetDocument());
-  embed_element_->setAttribute(widthAttr, "100%");
-  embed_element_->setAttribute(heightAttr, "100%");
-  embed_element_->setAttribute(nameAttr, "plugin");
-  embed_element_->setAttribute(idAttr, "plugin");
-  embed_element_->setAttribute(srcAttr,
+  embed_element_->setAttribute(kWidthAttr, "100%");
+  embed_element_->setAttribute(kHeightAttr, "100%");
+  embed_element_->setAttribute(kNameAttr, "plugin");
+  embed_element_->setAttribute(kIdAttr, "plugin");
+  embed_element_->setAttribute(kSrcAttr,
                                AtomicString(GetDocument()->Url().GetString()));
-  embed_element_->setAttribute(typeAttr, GetDocument()->Loader()->MimeType());
+  embed_element_->setAttribute(kTypeAttr, GetDocument()->Loader()->MimeType());
   body->AppendChild(embed_element_);
   if (IsStopped()) {
     // Possibly detached by a mutation event listener installed in

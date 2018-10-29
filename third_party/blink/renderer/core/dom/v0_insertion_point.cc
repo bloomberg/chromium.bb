@@ -41,8 +41,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 V0InsertionPoint::V0InsertionPoint(const QualifiedName& tag_name,
                                    Document& document)
     : HTMLElement(tag_name, document, kCreateV0InsertionPoint),

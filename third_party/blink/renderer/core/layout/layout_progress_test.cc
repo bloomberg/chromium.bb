@@ -39,7 +39,7 @@ TEST_F(LayoutProgressTest, AnimationScheduling) {
   EXPECT_TRUE(LayoutProgressTest::IsAnimationTimerActive(layout_progress));
   EXPECT_TRUE(LayoutProgressTest::IsAnimatiing(layout_progress));
 
-  progress_element->setAttribute(HTMLNames::valueAttr, "0.7");
+  progress_element->setAttribute(html_names::kValueAttr, "0.7");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Verify that we cancel the timer for a determinant progress element

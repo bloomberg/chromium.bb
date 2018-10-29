@@ -18,15 +18,15 @@ class LayoutTableSectionTest : public RenderingTest {
   }
 
   LayoutTableSection* CreateSection(unsigned rows, unsigned columns) {
-    auto* table = GetDocument().CreateRawElement(HTMLNames::tableTag);
+    auto* table = GetDocument().CreateRawElement(html_names::kTableTag);
     GetDocument().body()->appendChild(table);
-    auto* section = GetDocument().CreateRawElement(HTMLNames::tbodyTag);
+    auto* section = GetDocument().CreateRawElement(html_names::kTbodyTag);
     table->appendChild(section);
     for (unsigned i = 0; i < rows; ++i) {
-      auto* row = GetDocument().CreateRawElement(HTMLNames::trTag);
+      auto* row = GetDocument().CreateRawElement(html_names::kTrTag);
       section->appendChild(row);
       for (unsigned i = 0; i < columns; ++i)
-        row->appendChild(GetDocument().CreateRawElement(HTMLNames::tdTag));
+        row->appendChild(GetDocument().CreateRawElement(html_names::kTdTag));
     }
     GetDocument().View()->UpdateAllLifecyclePhases();
     return ToLayoutTableSection(section->GetLayoutObject());
@@ -316,8 +316,10 @@ TEST_F(LayoutTableSectionTest, VisualOverflowWithCollapsedBorders) {
 }
 
 static void SetCellsOverflowInRow(LayoutTableRow* row) {
-  for (auto* cell = row->FirstCell(); cell; cell = cell->NextCell())
-    ToElement(cell->GetNode())->setAttribute(HTMLNames::classAttr, "overflow");
+  for (auto* cell = row->FirstCell(); cell; cell = cell->NextCell()) {
+    ToElement(cell->GetNode())
+        ->setAttribute(html_names::kClassAttr, "overflow");
+  }
 }
 
 TEST_F(LayoutTableSectionTest, OverflowingCells) {

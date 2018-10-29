@@ -104,7 +104,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   void RenderFallbackContent(Frame*) override {}
   void IntrinsicSizingInfoChanged() override {}
   AtomicString BrowsingContextContainerName() const override {
-    return getAttribute(HTMLNames::nameAttr);
+    return getAttribute(html_names::kNameAttr);
   }
   ScrollbarMode ScrollingMode() const override { return kScrollbarAuto; }
   int MarginWidth() const override { return -1; }

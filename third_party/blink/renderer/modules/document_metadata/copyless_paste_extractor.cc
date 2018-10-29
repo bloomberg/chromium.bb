@@ -255,8 +255,8 @@ enum ExtractionStatus { kOK, kEmpty, kParseFailure, kWrongType, kCount };
 ExtractionStatus extractMetadata(const Element& root,
                                  Vector<EntityPtr>& entities) {
   for (Element& element : ElementTraversal::DescendantsOf(root)) {
-    if (element.HasTagName(HTMLNames::scriptTag) &&
-        element.getAttribute(HTMLNames::typeAttr) == "application/ld+json") {
+    if (element.HasTagName(html_names::kScriptTag) &&
+        element.getAttribute(html_names::kTypeAttr) == "application/ld+json") {
       std::unique_ptr<JSONValue> json = ParseJSON(element.textContent());
       if (!json) {
         LOG(ERROR) << "Failed to parse json.";

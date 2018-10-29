@@ -50,7 +50,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 namespace {
 
@@ -577,16 +577,16 @@ static bool ShouldEmitNewlinesBeforeAndAfterNode(const Node& node) {
   if (!r) {
     if (HasDisplayContents(node))
       return false;
-    return (node.HasTagName(blockquoteTag) || node.HasTagName(ddTag) ||
-            node.HasTagName(divTag) || node.HasTagName(dlTag) ||
-            node.HasTagName(dtTag) || node.HasTagName(h1Tag) ||
-            node.HasTagName(h2Tag) || node.HasTagName(h3Tag) ||
-            node.HasTagName(h4Tag) || node.HasTagName(h5Tag) ||
-            node.HasTagName(h6Tag) || node.HasTagName(hrTag) ||
-            node.HasTagName(liTag) || node.HasTagName(listingTag) ||
-            node.HasTagName(olTag) || node.HasTagName(pTag) ||
-            node.HasTagName(preTag) || node.HasTagName(trTag) ||
-            node.HasTagName(ulTag));
+    return (node.HasTagName(kBlockquoteTag) || node.HasTagName(kDdTag) ||
+            node.HasTagName(kDivTag) || node.HasTagName(kDlTag) ||
+            node.HasTagName(kDtTag) || node.HasTagName(kH1Tag) ||
+            node.HasTagName(kH2Tag) || node.HasTagName(kH3Tag) ||
+            node.HasTagName(kH4Tag) || node.HasTagName(kH5Tag) ||
+            node.HasTagName(kH6Tag) || node.HasTagName(kHrTag) ||
+            node.HasTagName(kLiTag) || node.HasTagName(kListingTag) ||
+            node.HasTagName(kOlTag) || node.HasTagName(kPTag) ||
+            node.HasTagName(kPreTag) || node.HasTagName(kTrTag) ||
+            node.HasTagName(kUlTag));
   }
 
   // Need to make an exception for option and optgroup, because we want to
@@ -642,7 +642,7 @@ static bool ShouldEmitExtraNewlineForNode(const Node* node) {
   if (!r || !r->IsBox())
     return false;
 
-  return node->HasTagName(pTag);
+  return node->HasTagName(kPTag);
 }
 
 // Whether or not we should emit a character as we enter node_ (if it's a

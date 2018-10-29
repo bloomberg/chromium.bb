@@ -1066,7 +1066,7 @@ TEST_F(TextIteratorTest, BasicIterationInputiWithBr) {
   SetBodyContent("<input id='a' value='b'>");
   auto* input_element = ToTextControl(GetDocument().getElementById("a"));
   Element* inner_editor = input_element->InnerEditorElement();
-  Element* br = GetDocument().CreateRawElement(HTMLNames::brTag);
+  Element* br = GetDocument().CreateRawElement(html_names::kBrTag);
   inner_editor->AppendChild(br);
   const ShadowRoot* shadow_root = input_element->UserAgentShadowRoot();
   const Position start = Position::FirstPositionInNode(*shadow_root);

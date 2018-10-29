@@ -213,7 +213,7 @@ bool ThemePainter::Paint(const LayoutObject& o,
       COUNT_APPEARANCE(doc, SearchCancel);
       auto* element = ToElementOrNull(node);
       if (!element || !element->OwnerShadowHost() ||
-          element->FastGetAttribute(HTMLNames::idAttr) !=
+          element->FastGetAttribute(html_names::kIdAttr) !=
               ShadowElementNames::SearchClearButton())
         COUNT_APPEARANCE(doc, SearchCancelForOthers);
       return PaintSearchFieldCancelButton(o, paint_info, r);

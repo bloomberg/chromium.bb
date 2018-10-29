@@ -41,8 +41,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 template <typename Strategy>
 VisiblePositionTemplate<Strategy>::VisiblePositionTemplate()
 #if DCHECK_IS_ON()

@@ -56,13 +56,14 @@ class HasTagName {
 // that defines operator(). HasTagName above is an example of a matcher.
 //
 // For example, a caller could do this:
-//   Traversal<Element>::firstChild(someNode, HasTagName(HTMLNames::titleTag));
+//   Traversal<Element>::firstChild(some_node,
+//                                  HasTagName(html_names::kTitleTag));
 //
-// This invocation would return the first child of |someNode| (which has to be a
-// ContainerNode) for which HasTagName(HTMLNames::titleTag) returned true, so it
-// would return the first child of |someNode| which is a <title> element. If the
-// caller needs to traverse a Node this way, it's necessary to first check
-// Node::isContainerNode() and then use toContainerNode().
+// This invocation would return the first child of |some_node| (which has to be
+// a ContainerNode) for which HasTagName(html_names::kTitleTag) returned true,
+// so it would return the first child of |someNode| which is a <title> element.
+// If the caller needs to traverse a Node this way, it's necessary to first
+// check Node::IsContainerNode() and then use ToContainerNode().
 //
 // When looking for a specific element type, it is more efficient to do this:
 //   Traversal<HTMLTitleElement>::firstChild(someNode);

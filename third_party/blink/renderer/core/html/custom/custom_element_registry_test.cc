@@ -170,7 +170,7 @@ class LogUpgradeDefinition : public TestCustomElementDefinition {
       : TestCustomElementDefinition(
             descriptor,
             {
-                "attr1", "attr2", HTMLNames::contenteditableAttr.LocalName(),
+                "attr1", "attr2", html_names::kContenteditableAttr.LocalName(),
             }) {}
 
   void Trace(blink::Visitor* visitor) override {
@@ -276,8 +276,8 @@ TEST_F(CustomElementRegistryTest, define_upgradesInDocumentElements) {
 
   Element* element = CreateElement("a-a").InDocument(&GetDocument());
   element->setAttribute(
-      QualifiedName(g_null_atom, "attr1", HTMLNames::xhtmlNamespaceURI), "v1");
-  element->SetBooleanAttribute(HTMLNames::contenteditableAttr, true);
+      QualifiedName(g_null_atom, "attr1", html_names::xhtmlNamespaceURI), "v1");
+  element->SetBooleanAttribute(html_names::kContenteditableAttr, true);
   GetDocument().documentElement()->AppendChild(element);
 
   LogUpgradeBuilder builder;
@@ -335,7 +335,7 @@ TEST_F(CustomElementRegistryTest, attributeChangedCallback) {
   {
     CEReactionsScope reactions;
     element->setAttribute(
-        QualifiedName(g_null_atom, "attr2", HTMLNames::xhtmlNamespaceURI),
+        QualifiedName(g_null_atom, "attr2", html_names::xhtmlNamespaceURI),
         "v2");
   }
   EXPECT_EQ(LogUpgradeDefinition::kAttributeChangedCallback,

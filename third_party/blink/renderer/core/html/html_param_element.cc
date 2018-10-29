@@ -28,10 +28,10 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline HTMLParamElement::HTMLParamElement(Document& document)
-    : HTMLElement(paramTag, document) {}
+    : HTMLElement(kParamTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLParamElement)
 
@@ -42,7 +42,7 @@ const AtomicString& HTMLParamElement::GetName() const {
 }
 
 const AtomicString& HTMLParamElement::Value() const {
-  return FastGetAttribute(valueAttr);
+  return FastGetAttribute(kValueAttr);
 }
 
 // HTML5 says that an object resource's URL is specified by the object's
@@ -58,7 +58,7 @@ bool HTMLParamElement::IsURLParameter(const String& name) {
 }
 
 bool HTMLParamElement::IsURLAttribute(const Attribute& attribute) const {
-  if (attribute.GetName() == valueAttr && IsURLParameter(GetName()))
+  if (attribute.GetName() == kValueAttr && IsURLParameter(GetName()))
     return true;
   return HTMLElement::IsURLAttribute(attribute);
 }

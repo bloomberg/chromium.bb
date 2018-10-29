@@ -46,8 +46,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 static void DeflateIfOverlapped(LayoutRect&, LayoutRect&);
 static bool IsScrollableNode(const Node*);
 

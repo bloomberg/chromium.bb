@@ -2492,7 +2492,7 @@ void WebLocalFrameImpl::PerformMediaPlayerAction(
       media_element->SetLoop(action.enable);
       break;
     case WebMediaPlayerAction::kControls:
-      media_element->SetBooleanAttribute(HTMLNames::controlsAttr,
+      media_element->SetBooleanAttribute(html_names::kControlsAttr,
                                          action.enable);
       break;
     case WebMediaPlayerAction::kPictureInPicture:

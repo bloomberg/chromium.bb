@@ -1383,7 +1383,8 @@ TEST_P(ScrollingCoordinatorTest, CustomScrollbarShouldTriggerMainThreadScroll) {
   Document* document = GetFrame()->GetDocument();
   Element* container = document->getElementById("container");
   Element* content = document->getElementById("content");
-  DCHECK_EQ(container->getAttribute(HTMLNames::classAttr), "custom_scrollbar");
+  DCHECK_EQ(container->getAttribute(html_names::kClassAttr),
+            "custom_scrollbar");
   DCHECK(container);
   DCHECK(content);
 
@@ -1569,14 +1570,14 @@ TEST_P(ScrollingCoordinatorTest, FrameIsScrollableDidChange) {
 
   // A change to background color should not change the frame's scrollability.
   auto* background = GetFrame()->GetDocument()->getElementById("bg");
-  background->removeAttribute(HTMLNames::styleAttr);
+  background->removeAttribute(html_names::kStyleAttr);
   EXPECT_FALSE(GetFrame()->View()->FrameIsScrollableDidChange());
 
   ForceFullCompositingUpdate();
 
   // Making the frame not scroll should change the frame's scrollability.
   auto* forcescroll = GetFrame()->GetDocument()->getElementById("forcescroll");
-  forcescroll->removeAttribute(HTMLNames::styleAttr);
+  forcescroll->removeAttribute(html_names::kStyleAttr);
   GetFrame()->View()->UpdateLifecycleToLayoutClean();
   EXPECT_TRUE(GetFrame()->View()->FrameIsScrollableDidChange());
 
@@ -1606,13 +1607,13 @@ TEST_P(ScrollingCoordinatorTest, UpdateUMAMetricUpdated) {
 
   // A change to background color should not cause a scrolling update.
   auto* background = GetFrame()->GetDocument()->getElementById("bg");
-  background->removeAttribute(HTMLNames::styleAttr);
+  background->removeAttribute(html_names::kStyleAttr);
   ForceFullCompositingUpdate();
   histogram_tester.ExpectTotalCount("Blink.ScrollingCoordinator.UpdateTime", 1);
 
   // Removing a scrollable area should cause a scrolling update.
   auto* scroller = GetFrame()->GetDocument()->getElementById("scroller");
-  scroller->removeAttribute(HTMLNames::styleAttr);
+  scroller->removeAttribute(html_names::kStyleAttr);
   ForceFullCompositingUpdate();
   histogram_tester.ExpectTotalCount("Blink.ScrollingCoordinator.UpdateTime", 2);
 }
@@ -1714,7 +1715,7 @@ TEST_P(NonCompositedMainThreadScrollingReasonTest, ClipPathTest) {
   // Test ancestor with ClipPath
   Element* element = document->body();
   ASSERT_TRUE(element);
-  element->setAttribute(HTMLNames::styleAttr,
+  element->setAttribute(html_names::kStyleAttr,
                         "clip-path:circle(115px at 20px 20px);");
   Element* container = document->getElementById("scroller1");
   ASSERT_TRUE(container);
@@ -1731,7 +1732,7 @@ TEST_P(NonCompositedMainThreadScrollingReasonTest, ClipPathTest) {
   EXPECT_FALSE(frame_view->GetMainThreadScrollingReasons() & clip_reason);
 
   // Remove clip path from ancestor.
-  element->removeAttribute(HTMLNames::styleAttr);
+  element->removeAttribute(html_names::kStyleAttr);
   ForceFullCompositingUpdate();
 
   EXPECT_FALSE(scrollable_area->GetNonCompositedMainThreadScrollingReasons() &
@@ -1741,7 +1742,7 @@ TEST_P(NonCompositedMainThreadScrollingReasonTest, ClipPathTest) {
   // Test descendant with ClipPath
   element = document->getElementById("content1");
   ASSERT_TRUE(element);
-  element->setAttribute(HTMLNames::styleAttr,
+  element->setAttribute(html_names::kStyleAttr,
                         "clip-path:circle(115px at 20px 20px);");
   ForceFullCompositingUpdate();
   EXPECT_TRUE(scrollable_area->GetNonCompositedMainThreadScrollingReasons() &
@@ -1749,7 +1750,7 @@ TEST_P(NonCompositedMainThreadScrollingReasonTest, ClipPathTest) {
   EXPECT_FALSE(frame_view->GetMainThreadScrollingReasons() & clip_reason);
 
   // Remove clip path from descendant.
-  element->removeAttribute(HTMLNames::styleAttr);
+  element->removeAttribute(html_names::kStyleAttr);
   ForceFullCompositingUpdate();
   EXPECT_FALSE(scrollable_area->GetNonCompositedMainThreadScrollingReasons() &
                clip_reason);

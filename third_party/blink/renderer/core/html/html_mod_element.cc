@@ -26,7 +26,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline HTMLModElement::HTMLModElement(const QualifiedName& tag_name,
                                       Document& document)
@@ -35,16 +35,16 @@ inline HTMLModElement::HTMLModElement(const QualifiedName& tag_name,
 DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLModElement)
 
 bool HTMLModElement::IsURLAttribute(const Attribute& attribute) const {
-  return attribute.GetName() == citeAttr ||
+  return attribute.GetName() == kCiteAttr ||
          HTMLElement::IsURLAttribute(attribute);
 }
 
 bool HTMLModElement::HasLegalLinkAttribute(const QualifiedName& name) const {
-  return name == citeAttr || HTMLElement::HasLegalLinkAttribute(name);
+  return name == kCiteAttr || HTMLElement::HasLegalLinkAttribute(name);
 }
 
 const QualifiedName& HTMLModElement::SubResourceAttributeName() const {
-  return citeAttr;
+  return kCiteAttr;
 }
 
 }  // namespace blink

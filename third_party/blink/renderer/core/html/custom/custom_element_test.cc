@@ -199,7 +199,7 @@ TEST(CustomElementTest, StateByCreateElement) {
     EXPECT_EQ(data.state, element->GetCustomElementState()) << data.name;
     EXPECT_EQ(data.v0state, element->GetV0CustomElementState()) << data.name;
 
-    element = document.createElementNS(HTMLNames::xhtmlNamespaceURI, data.name,
+    element = document.createElementNS(html_names::xhtmlNamespaceURI, data.name,
                                        ASSERT_NO_EXCEPTION);
     EXPECT_EQ(data.state, element->GetCustomElementState()) << data.name;
     EXPECT_EQ(data.v0state, element->GetV0CustomElementState()) << data.name;

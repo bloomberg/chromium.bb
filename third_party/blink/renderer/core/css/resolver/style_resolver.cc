@@ -114,7 +114,7 @@ void SetAnimationUpdateIfNeeded(StyleResolverState& state, Element& element) {
 
 }  // namespace
 
-using namespace HTMLNames;
+using namespace html_names;
 
 ComputedStyle* StyleResolver::style_not_yet_available_;
 
@@ -741,7 +741,7 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
                   matching_behavior != kMatchAllRulesExcludingSMIL);
 
     // TODO(dominicc): Remove this counter when Issue 590014 is fixed.
-    if (element->HasTagName(HTMLNames::summaryTag)) {
+    if (element->HasTagName(html_names::kSummaryTag)) {
       MatchedPropertiesRange matched_range =
           collector.MatchedResult().AuthorRules();
       for (const auto& matched : matched_range) {

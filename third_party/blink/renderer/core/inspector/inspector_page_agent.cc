@@ -1035,7 +1035,7 @@ std::unique_ptr<protocol::Page::Frame> InspectorPageAgent::BuildObjectForFrame(
     frame_object->setParentId(IdentifiersFactory::FrameId(parent_frame));
     AtomicString name = frame->Tree().GetName();
     if (name.IsEmpty() && frame->DeprecatedLocalOwner())
-      name = frame->DeprecatedLocalOwner()->getAttribute(HTMLNames::idAttr);
+      name = frame->DeprecatedLocalOwner()->getAttribute(html_names::kIdAttr);
     frame_object->setName(name);
   }
   if (loader && !loader->UnreachableURL().IsEmpty())

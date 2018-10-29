@@ -39,10 +39,6 @@ from aria_properties import ARIAReader
 from json5_generator import Json5File
 
 
-def _legacy_symbol(entry):
-    return entry['name'].original.replace('-', '_')
-
-
 def _symbol(entry):
     return 'k' + entry['name'].to_upper_camel_case()
 
@@ -91,11 +87,6 @@ class MakeQualifiedNamesWriter(json5_generator.Writer):
         self.namespace = self._metadata('namespace')
         cpp_namespace = self.namespace.lower() + '_names'
         namespace_prefix = self._metadata('namespacePrefix') or 'k'
-        # TODO(tkent): Remove the following branch.  crbug.com/889726
-        if self.namespace == 'HTML':
-            cpp_namespace = self.namespace + 'Names'
-            MakeQualifiedNamesWriter.filters['symbol'] = _legacy_symbol
-            namespace_prefix = self._metadata('namespacePrefix') or self.namespace.lower()
 
         namespace_uri = self._metadata('namespaceURI')
         use_namespace_for_attrs = self.attrs_json5_file.metadata['attrsNullNamespace'] is None

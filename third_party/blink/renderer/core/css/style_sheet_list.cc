@@ -29,8 +29,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 StyleSheetList* StyleSheetList::Create() {
   DCHECK(RuntimeEnabledFeatures::ConstructableStylesheetsEnabled());
   return new StyleSheetList();

@@ -39,7 +39,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 InputType* HiddenInputType::Create(HTMLInputElement& element) {
   return new HiddenInputType(element);
@@ -85,7 +85,7 @@ void HiddenInputType::SetValue(const String& sanitized_value,
                                bool,
                                TextFieldEventBehavior,
                                TextControlSetValueSelection) {
-  GetElement().setAttribute(valueAttr, AtomicString(sanitized_value));
+  GetElement().setAttribute(kValueAttr, AtomicString(sanitized_value));
 }
 
 void HiddenInputType::AppendToFormData(FormData& form_data) const {

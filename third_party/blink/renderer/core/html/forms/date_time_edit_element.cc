@@ -42,7 +42,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 class DateTimeEditBuilder : private DateTimeFormat::TokenHandler {
  public:
@@ -559,7 +559,7 @@ DateTimeEditElement* DateTimeEditElement::Create(
   DateTimeEditElement* container =
       new DateTimeEditElement(document, edit_control_owner);
   container->SetShadowPseudoId(AtomicString("-webkit-datetime-edit"));
-  container->setAttribute(idAttr, ShadowElementNames::DateTimeEdit());
+  container->setAttribute(kIdAttr, ShadowElementNames::DateTimeEdit());
   return container;
 }
 

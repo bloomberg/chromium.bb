@@ -63,8 +63,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 namespace {
 
 TouchAction AdjustTouchActionForElement(TouchAction touch_action,

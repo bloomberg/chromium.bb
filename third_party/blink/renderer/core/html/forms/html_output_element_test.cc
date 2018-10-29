@@ -15,9 +15,9 @@ TEST(HTMLLinkElementSizesAttributeTest,
      setHTMLForProperty_updatesForAttribute) {
   Document* document = Document::CreateForTest();
   HTMLOutputElement* element = HTMLOutputElement::Create(*document);
-  EXPECT_EQ(g_null_atom, element->getAttribute(HTMLNames::forAttr));
+  EXPECT_EQ(g_null_atom, element->getAttribute(html_names::kForAttr));
   element->htmlFor()->setValue("  strawberry ");
-  EXPECT_EQ("  strawberry ", element->getAttribute(HTMLNames::forAttr));
+  EXPECT_EQ("  strawberry ", element->getAttribute(html_names::kForAttr));
 }
 
 TEST(HTMLOutputElementTest, setForAttribute_updatesHTMLForPropertyValue) {
@@ -25,7 +25,7 @@ TEST(HTMLOutputElementTest, setForAttribute_updatesHTMLForPropertyValue) {
   HTMLOutputElement* element = HTMLOutputElement::Create(*document);
   DOMTokenList* for_tokens = element->htmlFor();
   EXPECT_EQ(g_null_atom, for_tokens->value());
-  element->setAttribute(HTMLNames::forAttr, "orange grape");
+  element->setAttribute(html_names::kForAttr, "orange grape");
   EXPECT_EQ("orange grape", for_tokens->value());
 }
 

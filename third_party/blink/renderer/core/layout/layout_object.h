@@ -642,7 +642,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   // isBody is called from LayoutBox::styleWillChange and is thus quite hot.
   bool IsBody() const {
-    return GetNode() && GetNode()->HasTagName(HTMLNames::bodyTag);
+    return GetNode() && GetNode()->HasTagName(html_names::kBodyTag);
   }
   bool IsHR() const;
 

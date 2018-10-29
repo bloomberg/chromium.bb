@@ -49,7 +49,7 @@ class CORE_EXPORT CustomElementDescriptor final {
   bool Matches(const Element& element) const {
     return LocalName() == element.localName() &&
            (IsAutonomous() || GetName() == element.IsValue()) &&
-           element.namespaceURI() == HTMLNames::xhtmlNamespaceURI;
+           element.namespaceURI() == html_names::xhtmlNamespaceURI;
   }
 
   bool IsAutonomous() const { return name_ == local_name_; }

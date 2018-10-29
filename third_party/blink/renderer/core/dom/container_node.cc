@@ -63,8 +63,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 static void DispatchChildInsertionEvents(Node&);
 static void DispatchChildRemovalEvents(Node&);
 

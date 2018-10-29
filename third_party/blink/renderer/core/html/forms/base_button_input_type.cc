@@ -41,7 +41,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 BaseButtonInputType::BaseButtonInputType(HTMLInputElement& element)
     : InputType(element), KeyboardClickableInputTypeView(element) {}
@@ -89,7 +89,7 @@ void BaseButtonInputType::SetValue(const String& sanitized_value,
                                    bool,
                                    TextFieldEventBehavior,
                                    TextControlSetValueSelection) {
-  GetElement().setAttribute(valueAttr, AtomicString(sanitized_value));
+  GetElement().setAttribute(kValueAttr, AtomicString(sanitized_value));
 }
 
 bool BaseButtonInputType::MatchesDefaultPseudoClass() {

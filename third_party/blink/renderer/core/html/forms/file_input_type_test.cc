@@ -117,7 +117,7 @@ TEST(FileInputTypeTest, setFilesFromPaths) {
   EXPECT_EQ(String("/native/path1"), file_input->Files()->item(0)->GetPath());
 
   // Try to upload multiple files with multipleAttr
-  input->SetBooleanAttribute(HTMLNames::multipleAttr, true);
+  input->SetBooleanAttribute(html_names::kMultipleAttr, true);
   paths.clear();
   paths.push_back("/native/real/path1");
   paths.push_back("/native/real/path2");

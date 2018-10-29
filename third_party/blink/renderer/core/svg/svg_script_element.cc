@@ -47,7 +47,7 @@ SVGScriptElement* SVGScriptElement::Create(Document& document,
 
 void SVGScriptElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == HTMLNames::onerrorAttr) {
+  if (params.name == html_names::kOnerrorAttr) {
     SetAttributeEventListener(
         EventTypeNames::error,
         CreateAttributeEventListener(

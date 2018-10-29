@@ -219,7 +219,7 @@ TEST_F(DocumentMarkerControllerTest, UpdateRenderedRects) {
       MarkerController().LayoutRectsForTextMatchMarkers();
   EXPECT_EQ(1u, rendered_rects.size());
 
-  div->setAttribute(HTMLNames::styleAttr, "margin: 200px");
+  div->setAttribute(html_names::kStyleAttr, "margin: 200px");
   GetDocument().UpdateStyleAndLayout();
   Vector<IntRect> new_rendered_rects =
       MarkerController().LayoutRectsForTextMatchMarkers();

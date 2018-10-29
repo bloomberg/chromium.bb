@@ -9,7 +9,7 @@
 namespace blink {
 
 HTMLDataElement::HTMLDataElement(Document& document)
-    : HTMLElement(HTMLNames::dataTag, document) {
+    : HTMLElement(html_names::kDataTag, document) {
   UseCounter::Count(document, WebFeature::kDataElement);
 }
 

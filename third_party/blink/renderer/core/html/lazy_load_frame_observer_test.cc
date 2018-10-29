@@ -907,7 +907,7 @@ TEST_P(LazyLoadFramesTest,
 
   Element* child_frame_element = GetDocument().getElementById("child_frame");
   ASSERT_TRUE(child_frame_element);
-  child_frame_element->setAttribute(HTMLNames::lazyloadAttr, "off");
+  child_frame_element->setAttribute(html_names::kLazyloadAttr, "off");
 
   ExpectInitialDeferralActionHistogramSamplesIfApplicable(
       LazyLoadFrameObserver::FrameInitialDeferralAction::kDeferred, 1);

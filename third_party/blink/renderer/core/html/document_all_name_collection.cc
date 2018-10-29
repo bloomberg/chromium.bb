@@ -14,20 +14,20 @@ DocumentAllNameCollection::DocumentAllNameCollection(ContainerNode& document,
 bool DocumentAllNameCollection::ElementMatches(const Element& element) const {
   // https://html.spec.whatwg.org/multipage/common-dom-interfaces.html#all-named-elements
   // Match below type of elements by name but any type of element by id.
-  if (element.HasTagName(HTMLNames::aTag) ||
-      element.HasTagName(HTMLNames::buttonTag) ||
-      element.HasTagName(HTMLNames::embedTag) ||
-      element.HasTagName(HTMLNames::formTag) ||
-      element.HasTagName(HTMLNames::frameTag) ||
-      element.HasTagName(HTMLNames::framesetTag) ||
-      element.HasTagName(HTMLNames::iframeTag) ||
-      element.HasTagName(HTMLNames::imgTag) ||
-      element.HasTagName(HTMLNames::inputTag) ||
-      element.HasTagName(HTMLNames::mapTag) ||
-      element.HasTagName(HTMLNames::metaTag) ||
-      element.HasTagName(HTMLNames::objectTag) ||
-      element.HasTagName(HTMLNames::selectTag) ||
-      element.HasTagName(HTMLNames::textareaTag)) {
+  if (element.HasTagName(html_names::kATag) ||
+      element.HasTagName(html_names::kButtonTag) ||
+      element.HasTagName(html_names::kEmbedTag) ||
+      element.HasTagName(html_names::kFormTag) ||
+      element.HasTagName(html_names::kFrameTag) ||
+      element.HasTagName(html_names::kFramesetTag) ||
+      element.HasTagName(html_names::kIFrameTag) ||
+      element.HasTagName(html_names::kImgTag) ||
+      element.HasTagName(html_names::kInputTag) ||
+      element.HasTagName(html_names::kMapTag) ||
+      element.HasTagName(html_names::kMetaTag) ||
+      element.HasTagName(html_names::kObjectTag) ||
+      element.HasTagName(html_names::kSelectTag) ||
+      element.HasTagName(html_names::kTextareaTag)) {
     if (element.GetNameAttribute() == name_)
       return true;
   }

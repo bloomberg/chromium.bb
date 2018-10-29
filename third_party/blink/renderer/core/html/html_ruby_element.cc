@@ -9,10 +9,10 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline HTMLRubyElement::HTMLRubyElement(Document& document)
-    : HTMLElement(rubyTag, document) {}
+    : HTMLElement(kRubyTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLRubyElement)
 

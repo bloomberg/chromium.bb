@@ -206,7 +206,8 @@ void PrintContext::CollectLinkedDestinations(Node* node) {
 
   if (!node->IsLink() || !node->IsElementNode())
     return;
-  const AtomicString& href = ToElement(node)->getAttribute(HTMLNames::hrefAttr);
+  const AtomicString& href =
+      ToElement(node)->getAttribute(html_names::kHrefAttr);
   if (href.IsNull())
     return;
   KURL url = node->GetDocument().CompleteURL(href);

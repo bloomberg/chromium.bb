@@ -26,7 +26,7 @@ class MediaControlScrubbingMessageElementTest : public PageTestBase {
     // Create page and add a video element with controls.
     PageTestBase::SetUp();
     media_element_ = HTMLVideoElement::Create(GetDocument());
-    media_element_->SetBooleanAttribute(HTMLNames::controlsAttr, true);
+    media_element_->SetBooleanAttribute(html_names::kControlsAttr, true);
     GetDocument().body()->AppendChild(media_element_);
 
     // Create instance of MediaControlScrubbingMessageElement to run tests on.

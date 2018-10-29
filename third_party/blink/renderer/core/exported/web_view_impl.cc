@@ -2073,7 +2073,7 @@ static bool IsElementEditable(const Element* element) {
       return true;
   }
 
-  return EqualIgnoringASCIICase(element->getAttribute(HTMLNames::roleAttr),
+  return EqualIgnoringASCIICase(element->getAttribute(html_names::kRoleAttr),
                                 "textbox");
 }
 

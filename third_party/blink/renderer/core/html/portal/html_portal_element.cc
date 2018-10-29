@@ -22,18 +22,18 @@
 namespace blink {
 
 HTMLPortalElement::HTMLPortalElement(Document& document)
-    : HTMLFrameOwnerElement(HTMLNames::portalTag, document) {}
+    : HTMLFrameOwnerElement(html_names::kPortalTag, document) {}
 
 HTMLPortalElement::~HTMLPortalElement() {}
 
 HTMLElement* HTMLPortalElement::Create(Document& document) {
   if (RuntimeEnabledFeatures::PortalsEnabled())
     return new HTMLPortalElement(document);
-  return HTMLUnknownElement::Create(HTMLNames::portalTag, document);
+  return HTMLUnknownElement::Create(html_names::kPortalTag, document);
 }
 
 void HTMLPortalElement::Navigate() {
-  KURL url = GetNonEmptyURLAttribute(HTMLNames::srcAttr);
+  KURL url = GetNonEmptyURLAttribute(html_names::kSrcAttr);
   if (!url.IsEmpty() && portal_ptr_) {
     portal_ptr_->Navigate(url);
   }
@@ -104,7 +104,7 @@ void HTMLPortalElement::RemovedFrom(ContainerNode& node) {
 }
 
 bool HTMLPortalElement::IsURLAttribute(const Attribute& attribute) const {
-  return attribute.GetName() == HTMLNames::srcAttr ||
+  return attribute.GetName() == html_names::kSrcAttr ||
          HTMLFrameOwnerElement::IsURLAttribute(attribute);
 }
 
@@ -112,7 +112,7 @@ void HTMLPortalElement::ParseAttribute(
     const AttributeModificationParams& params) {
   HTMLFrameOwnerElement::ParseAttribute(params);
 
-  if (params.name == HTMLNames::srcAttr)
+  if (params.name == html_names::kSrcAttr)
     Navigate();
 }
 

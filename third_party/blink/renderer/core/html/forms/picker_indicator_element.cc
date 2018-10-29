@@ -42,7 +42,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline PickerIndicatorElement::PickerIndicatorElement(
     Document& document,
@@ -56,7 +56,7 @@ PickerIndicatorElement* PickerIndicatorElement::Create(
   PickerIndicatorElement* element =
       new PickerIndicatorElement(document, picker_indicator_owner);
   element->SetShadowPseudoId(AtomicString("-webkit-calendar-picker-indicator"));
-  element->setAttribute(idAttr, ShadowElementNames::PickerIndicator());
+  element->setAttribute(kIdAttr, ShadowElementNames::PickerIndicator());
   return element;
 }
 
@@ -166,10 +166,10 @@ void PickerIndicatorElement::DidNotifySubtreeInsertionsToDocument() {
   // FIXME: We should have a way to disable accessibility in layout tests.
   if (LayoutTestSupport::IsRunningLayoutTest())
     return;
-  setAttribute(tabindexAttr, "0");
-  setAttribute(aria_haspopupAttr, "menu");
-  setAttribute(roleAttr, "button");
-  setAttribute(aria_labelAttr,
+  setAttribute(kTabindexAttr, "0");
+  setAttribute(kAriaHaspopupAttr, "menu");
+  setAttribute(kRoleAttr, "button");
+  setAttribute(kAriaLabelAttr,
                AtomicString(GetLocale().QueryString(
                    WebLocalizedString::kAXCalendarShowDatePicker)));
 }

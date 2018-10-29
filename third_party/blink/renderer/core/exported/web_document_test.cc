@@ -143,12 +143,12 @@ TEST_F(WebDocumentTest, ManifestURL) {
   ASSERT_EQ(link_manifest->Href(), static_cast<KURL>(web_doc.ManifestURL()));
 
   // Set to some absolute url.
-  link_manifest->setAttribute(HTMLNames::hrefAttr,
+  link_manifest->setAttribute(html_names::kHrefAttr,
                               "http://example.com/manifest.json");
   ASSERT_EQ(link_manifest->Href(), static_cast<KURL>(web_doc.ManifestURL()));
 
   // Set to some relative url.
-  link_manifest->setAttribute(HTMLNames::hrefAttr, "static/manifest.json");
+  link_manifest->setAttribute(html_names::kHrefAttr, "static/manifest.json");
   ASSERT_EQ(link_manifest->Href(), static_cast<KURL>(web_doc.ManifestURL()));
 }
 
@@ -160,19 +160,19 @@ TEST_F(WebDocumentTest, ManifestUseCredentials) {
   HTMLLinkElement* link_manifest = document->LinkManifest();
 
   // No crossorigin attribute was set so credentials shouldn't be used.
-  ASSERT_FALSE(link_manifest->FastHasAttribute(HTMLNames::crossoriginAttr));
+  ASSERT_FALSE(link_manifest->FastHasAttribute(html_names::kCrossoriginAttr));
   ASSERT_FALSE(web_doc.ManifestUseCredentials());
 
   // Crossorigin set to a random string shouldn't trigger using credentials.
-  link_manifest->setAttribute(HTMLNames::crossoriginAttr, "foobar");
+  link_manifest->setAttribute(html_names::kCrossoriginAttr, "foobar");
   ASSERT_FALSE(web_doc.ManifestUseCredentials());
 
   // Crossorigin set to 'anonymous' shouldn't trigger using credentials.
-  link_manifest->setAttribute(HTMLNames::crossoriginAttr, "anonymous");
+  link_manifest->setAttribute(html_names::kCrossoriginAttr, "anonymous");
   ASSERT_FALSE(web_doc.ManifestUseCredentials());
 
   // Crossorigin set to 'use-credentials' should trigger using credentials.
-  link_manifest->setAttribute(HTMLNames::crossoriginAttr, "use-credentials");
+  link_manifest->setAttribute(html_names::kCrossoriginAttr, "use-credentials");
   ASSERT_TRUE(web_doc.ManifestUseCredentials());
 }
 

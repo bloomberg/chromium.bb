@@ -41,7 +41,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 class HTMLSourceElement::Listener final : public MediaQueryListListener {
  public:
@@ -62,7 +62,7 @@ class HTMLSourceElement::Listener final : public MediaQueryListListener {
 };
 
 inline HTMLSourceElement::HTMLSourceElement(Document& document)
-    : HTMLElement(sourceTag, document), listener_(new Listener(this)) {
+    : HTMLElement(kSourceTag, document), listener_(new Listener(this)) {
   DVLOG(SOURCE_LOG_LEVEL) << "HTMLSourceElement - " << (void*)this;
 }
 
@@ -90,7 +90,7 @@ void HTMLSourceElement::CreateMediaQueryList(const AtomicString& media) {
 }
 
 void HTMLSourceElement::DidMoveToNewDocument(Document& old_document) {
-  CreateMediaQueryList(FastGetAttribute(mediaAttr));
+  CreateMediaQueryList(FastGetAttribute(kMediaAttr));
   HTMLElement::DidMoveToNewDocument(old_document);
 }
 
@@ -129,20 +129,20 @@ void HTMLSourceElement::AddMediaQueryListListener() {
 }
 
 void HTMLSourceElement::SetSrc(const String& url) {
-  setAttribute(srcAttr, AtomicString(url));
+  setAttribute(kSrcAttr, AtomicString(url));
 }
 
 void HTMLSourceElement::SetSrc(const USVStringOrTrustedURL& usvStringOrURL,
                                ExceptionState& exception_state) {
-  setAttribute(srcAttr, usvStringOrURL, exception_state);
+  setAttribute(kSrcAttr, usvStringOrURL, exception_state);
 }
 
 const AtomicString& HTMLSourceElement::type() const {
-  return getAttribute(typeAttr);
+  return getAttribute(kTypeAttr);
 }
 
 void HTMLSourceElement::setType(const AtomicString& type) {
-  setAttribute(typeAttr, type);
+  setAttribute(kTypeAttr, type);
 }
 
 void HTMLSourceElement::ScheduleErrorEvent() {
@@ -172,7 +172,7 @@ bool HTMLSourceElement::MediaQueryMatches() const {
 }
 
 bool HTMLSourceElement::IsURLAttribute(const Attribute& attribute) const {
-  return attribute.GetName() == srcAttr ||
+  return attribute.GetName() == kSrcAttr ||
          HTMLElement::IsURLAttribute(attribute);
 }
 
@@ -180,10 +180,10 @@ void HTMLSourceElement::ParseAttribute(
     const AttributeModificationParams& params) {
   HTMLElement::ParseAttribute(params);
   const QualifiedName& name = params.name;
-  if (name == mediaAttr)
+  if (name == kMediaAttr)
     CreateMediaQueryList(params.new_value);
-  if (name == srcsetAttr || name == sizesAttr || name == mediaAttr ||
-      name == typeAttr) {
+  if (name == kSrcsetAttr || name == kSizesAttr || name == kMediaAttr ||
+      name == kTypeAttr) {
     if (auto* picture = ToHTMLPictureElementOrNull(parentElement()))
       picture->SourceOrMediaChanged();
   }

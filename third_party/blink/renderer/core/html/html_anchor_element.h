@@ -132,9 +132,10 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
 };
 
 inline LinkHash HTMLAnchorElement::VisitedLinkHash() const {
-  if (!cached_visited_link_hash_)
+  if (!cached_visited_link_hash_) {
     cached_visited_link_hash_ = blink::VisitedLinkHash(
-        GetDocument().BaseURL(), FastGetAttribute(HTMLNames::hrefAttr));
+        GetDocument().BaseURL(), FastGetAttribute(html_names::kHrefAttr));
+  }
   return cached_visited_link_hash_;
 }
 

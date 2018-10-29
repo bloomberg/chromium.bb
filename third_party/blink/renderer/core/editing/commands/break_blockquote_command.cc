@@ -42,7 +42,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 namespace {
 
@@ -238,7 +238,7 @@ void BreakBlockquoteCommand::DoApply(EditingState* editing_state) {
         list_child_node = list_child_node->nextSibling();
       if (IsListItem(list_child_node))
         SetNodeAttribute(
-            cloned_child, startAttr,
+            cloned_child, kStartAttr,
             AtomicString::Number(
                 ToLayoutListItem(list_child_node->GetLayoutObject())->Value()));
     }

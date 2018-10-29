@@ -125,11 +125,11 @@ TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_ReportFirstPaintTime) {
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
 
   TimeTicks time2 = CurrentTimeTicks();
-  GetDocument().getElementById("b")->setAttribute(HTMLNames::styleAttr,
+  GetDocument().getElementById("b")->setAttribute(html_names::kStyleAttr,
                                                   AtomicString("height:50px"));
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
 
-  GetDocument().getElementById("b")->setAttribute(HTMLNames::styleAttr,
+  GetDocument().getElementById("b")->setAttribute(html_names::kStyleAttr,
                                                   AtomicString("height:100px"));
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
 
@@ -239,7 +239,7 @@ TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_CompareSizesAtFirstPaint) {
   // viewport.
   GetDocument()
       .getElementById("shorteningText")
-      ->setAttribute(HTMLNames::styleAttr,
+      ->setAttribute(html_names::kStyleAttr,
                      AtomicString("position:fixed;left:-10px"));
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
   TextRecord* record = GetPaintTracker()
@@ -301,11 +301,11 @@ TEST_F(TextPaintTimingDetectorTest, LastTextPaint_ReportFirstPaintTime) {
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
 
   TimeTicks time2 = CurrentTimeTicks();
-  GetDocument().getElementById("b")->setAttribute(HTMLNames::styleAttr,
+  GetDocument().getElementById("b")->setAttribute(html_names::kStyleAttr,
                                                   AtomicString("height:50px"));
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
 
-  GetDocument().getElementById("b")->setAttribute(HTMLNames::styleAttr,
+  GetDocument().getElementById("b")->setAttribute(html_names::kStyleAttr,
                                                   AtomicString("height:100px"));
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
 
@@ -344,9 +344,9 @@ TEST_F(TextPaintTimingDetectorTest, LastTextPaint_StopRecordingOverNodeLimit) {
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
 
   for (int i = 1; i <= 4999; i++) {
-    Element* div = GetDocument().CreateRawElement(HTMLNames::divTag);
+    Element* div = GetDocument().CreateRawElement(html_names::kDivTag);
     div->appendChild(GetDocument().createTextNode(WTF::String::Number(i)));
-    div->setAttribute(HTMLNames::styleAttr,
+    div->setAttribute(html_names::kStyleAttr,
                       AtomicString("position:fixed;left:0px"));
     GetDocument().body()->AppendChild(div);
   }

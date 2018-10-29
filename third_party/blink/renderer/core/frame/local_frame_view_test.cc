@@ -78,7 +78,7 @@ class LocalFrameViewTest : public RenderingTest {
 
 TEST_F(LocalFrameViewTest, SetPaintInvalidationDuringUpdateAllLifecyclePhases) {
   SetBodyInnerHTML("<div id='a' style='color: blue'>A</div>");
-  GetDocument().getElementById("a")->setAttribute(HTMLNames::styleAttr,
+  GetDocument().getElementById("a")->setAttribute(html_names::kStyleAttr,
                                                   "color: green");
   GetAnimationMockChromeClient().has_scheduled_animation_ = false;
   GetDocument().View()->UpdateAllLifecyclePhases();

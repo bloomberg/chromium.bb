@@ -72,7 +72,7 @@ void LinkImport::Process() {
   if (!ShouldLoadResource())
     return;
 
-  const KURL& url = owner_->GetNonEmptyURLAttribute(HTMLNames::hrefAttr);
+  const KURL& url = owner_->GetNonEmptyURLAttribute(html_names::kHrefAttr);
   if (url.IsEmpty() || !url.IsValid()) {
     DidFinish();
     return;

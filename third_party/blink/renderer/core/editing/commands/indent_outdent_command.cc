@@ -41,7 +41,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 // Returns true if |node| is UL, OL, or BLOCKQUOTE with "display:block".
 // "Outdent" command considers <BLOCKQUOTE style="display:inline"> makes
@@ -55,14 +55,14 @@ static bool IsHTMLListOrBlockquoteElement(const Node* node) {
   // TODO(yosin): We should check OL/UL element has "list-style-type" CSS
   // property to make sure they layout contents as list.
   return IsHTMLUListElement(element) || IsHTMLOListElement(element) ||
-         element.HasTagName(blockquoteTag);
+         element.HasTagName(kBlockquoteTag);
 }
 
 IndentOutdentCommand::IndentOutdentCommand(Document& document,
                                            EIndentType type_of_action)
     : ApplyBlockElementCommand(
           document,
-          blockquoteTag,
+          kBlockquoteTag,
           "margin: 0 0 0 40px; border: none; padding: 0px;"),
       type_of_action_(type_of_action) {}
 
@@ -184,7 +184,7 @@ void IndentOutdentCommand::IndentIntoBlockquote(const Position& start,
     if (outer_block == start.ComputeContainerNode()) {
       // When we apply indent to an empty <blockquote>, we should call
       // insertNodeAfter(). See http://crbug.com/625802 for more details.
-      if (outer_block->HasTagName(blockquoteTag))
+      if (outer_block->HasTagName(kBlockquoteTag))
         InsertNodeAfter(target_blockquote, outer_block, editing_state);
       else
         InsertNodeAt(target_blockquote, start, editing_state);
@@ -262,8 +262,8 @@ void IndentOutdentCommand::OutdentParagraph(EditingState* editing_state) {
     if (split_point) {
       if (Element* split_point_parent = split_point->parentElement()) {
         // We can't outdent if there is no place to go!
-        if (split_point_parent->HasTagName(blockquoteTag) &&
-            !split_point->HasTagName(blockquoteTag) &&
+        if (split_point_parent->HasTagName(kBlockquoteTag) &&
+            !split_point->HasTagName(kBlockquoteTag) &&
             HasEditableStyle(*split_point_parent->parentNode()))
           SplitElement(split_point_parent, split_point);
       }

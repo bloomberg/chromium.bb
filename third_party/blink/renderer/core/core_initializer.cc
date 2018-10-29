@@ -89,7 +89,7 @@ void CoreInitializer::Initialize() {
   // TODO(mikhail.pozdnyakov@intel.com): We should generate static strings
   // initialization code.
   const unsigned kQualifiedNamesCount =
-      HTMLNames::kTagsCount + HTMLNames::kAttrsCount +
+      html_names::kTagsCount + html_names::kAttrsCount +
       mathml_names::kTagsCount + mathml_names::kAttrsCount +
       svg_names::kTagsCount + svg_names::kAttrsCount +
       xlink_names::kAttrsCount + xml_names::kAttrsCount +
@@ -110,7 +110,7 @@ void CoreInitializer::Initialize() {
 
   AtomicStringTable::Instance().ReserveCapacity(kCoreStaticStringsCount);
 
-  HTMLNames::init();
+  html_names::init();
   mathml_names::init();
   svg_names::init();
   xlink_names::init();

@@ -40,8 +40,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 ShadowTreeStyleSheetCollection::ShadowTreeStyleSheetCollection(
     ShadowRoot& shadow_root)
     : TreeScopeStyleSheetCollection(shadow_root) {}

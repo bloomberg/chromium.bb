@@ -544,8 +544,8 @@ TEST_F(CanvasRenderingContext2DTest, detectOverdrawWithCompositeOperations) {
 }
 
 TEST_F(CanvasRenderingContext2DTest, ImageResourceLifetime) {
-  auto* canvas =
-      ToHTMLCanvasElement(GetDocument().CreateRawElement(HTMLNames::canvasTag));
+  auto* canvas = ToHTMLCanvasElement(
+      GetDocument().CreateRawElement(html_names::kCanvasTag));
   canvas->SetSize(IntSize(40, 40));
   ImageBitmap* image_bitmap_derived = nullptr;
   {

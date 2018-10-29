@@ -225,7 +225,8 @@ inline void HTMLCollection::InvalidateCacheForAttribute(
   if (!attr_name ||
       ShouldInvalidateTypeOnAttributeChange(InvalidationType(), *attr_name))
     InvalidateCache();
-  else if (*attr_name == HTMLNames::idAttr || *attr_name == HTMLNames::nameAttr)
+  else if (*attr_name == html_names::kIdAttr ||
+           *attr_name == html_names::kNameAttr)
     InvalidateIdNameCacheMaps();
 }
 

@@ -22,7 +22,7 @@ TEST_F(HTMLFrameElementTest, DefaultContainerPolicy) {
 
   HTMLFrameElement* frame_element = HTMLFrameElement::Create(*document);
 
-  frame_element->setAttribute(HTMLNames::srcAttr, "http://example.net/");
+  frame_element->setAttribute(html_names::kSrcAttr, "http://example.net/");
   frame_element->UpdateContainerPolicyForTests();
 
   const ParsedFeaturePolicy& container_policy =

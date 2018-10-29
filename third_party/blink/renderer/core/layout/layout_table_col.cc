@@ -32,8 +32,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 LayoutTableCol::LayoutTableCol(Element* element)
     : LayoutTableBoxComponent(element), span_(1) {
   // init LayoutObject attributes

@@ -46,7 +46,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 struct EntityDescription {
   UChar entity;
@@ -476,11 +476,11 @@ EntityMask MarkupFormatter::EntityMaskForText(const Text& text) const {
     parent_name = &(text.parentElement())->TagQName();
 
   if (parent_name &&
-      (*parent_name == scriptTag || *parent_name == styleTag ||
-       *parent_name == xmpTag || *parent_name == iframeTag ||
-       *parent_name == plaintextTag || *parent_name == noembedTag ||
-       *parent_name == noframesTag ||
-       (*parent_name == noscriptTag && text.GetDocument().GetFrame() &&
+      (*parent_name == kScriptTag || *parent_name == kStyleTag ||
+       *parent_name == kXmpTag || *parent_name == kIFrameTag ||
+       *parent_name == kPlaintextTag || *parent_name == kNoembedTag ||
+       *parent_name == kNoframesTag ||
+       (*parent_name == kNoscriptTag && text.GetDocument().GetFrame() &&
         text.GetDocument().CanExecuteScripts(kNotAboutToExecuteScript))))
     return kEntityMaskInCDATA;
   return kEntityMaskInHTMLPCDATA;

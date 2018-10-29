@@ -384,8 +384,8 @@ class HTMLFontSizeEquivalent final : public HTMLAttributeEquivalent {
 
 HTMLFontSizeEquivalent::HTMLFontSizeEquivalent()
     : HTMLAttributeEquivalent(CSSPropertyFontSize,
-                              HTMLNames::fontTag,
-                              HTMLNames::sizeAttr) {}
+                              html_names::kFontTag,
+                              html_names::kSizeAttr) {}
 
 const CSSValue* HTMLFontSizeEquivalent::AttributeValueAsCSSValue(
     Element* element) const {
@@ -975,24 +975,24 @@ HtmlElementEquivalents() {
                       (new HeapVector<Member<HTMLElementEquivalent>>));
   if (!html_element_equivalents->size()) {
     html_element_equivalents->push_back(HTMLElementEquivalent::Create(
-        CSSPropertyFontWeight, CSSValueBold, HTMLNames::bTag));
+        CSSPropertyFontWeight, CSSValueBold, html_names::kBTag));
     html_element_equivalents->push_back(HTMLElementEquivalent::Create(
-        CSSPropertyFontWeight, CSSValueBold, HTMLNames::strongTag));
+        CSSPropertyFontWeight, CSSValueBold, html_names::kStrongTag));
     html_element_equivalents->push_back(HTMLElementEquivalent::Create(
-        CSSPropertyVerticalAlign, CSSValueSub, HTMLNames::subTag));
+        CSSPropertyVerticalAlign, CSSValueSub, html_names::kSubTag));
     html_element_equivalents->push_back(HTMLElementEquivalent::Create(
-        CSSPropertyVerticalAlign, CSSValueSuper, HTMLNames::supTag));
+        CSSPropertyVerticalAlign, CSSValueSuper, html_names::kSupTag));
     html_element_equivalents->push_back(HTMLElementEquivalent::Create(
-        CSSPropertyFontStyle, CSSValueItalic, HTMLNames::iTag));
+        CSSPropertyFontStyle, CSSValueItalic, html_names::kITag));
     html_element_equivalents->push_back(HTMLElementEquivalent::Create(
-        CSSPropertyFontStyle, CSSValueItalic, HTMLNames::emTag));
+        CSSPropertyFontStyle, CSSValueItalic, html_names::kEmTag));
 
     html_element_equivalents->push_back(HTMLTextDecorationEquivalent::Create(
-        CSSValueUnderline, HTMLNames::uTag));
+        CSSValueUnderline, html_names::kUTag));
     html_element_equivalents->push_back(HTMLTextDecorationEquivalent::Create(
-        CSSValueLineThrough, HTMLNames::sTag));
+        CSSValueLineThrough, html_names::kSTag));
     html_element_equivalents->push_back(HTMLTextDecorationEquivalent::Create(
-        CSSValueLineThrough, HTMLNames::strikeTag));
+        CSSValueLineThrough, html_names::kStrikeTag));
   }
 
   return *html_element_equivalents;
@@ -1031,15 +1031,15 @@ HtmlAttributeEquivalents() {
     // HTMLAttriuteEquivalent matches exactly one attribute of exactly one
     // element except dirAttr.
     html_attribute_equivalents->push_back(HTMLAttributeEquivalent::Create(
-        CSSPropertyColor, HTMLNames::fontTag, HTMLNames::colorAttr));
+        CSSPropertyColor, html_names::kFontTag, html_names::kColorAttr));
     html_attribute_equivalents->push_back(HTMLAttributeEquivalent::Create(
-        CSSPropertyFontFamily, HTMLNames::fontTag, HTMLNames::faceAttr));
+        CSSPropertyFontFamily, html_names::kFontTag, html_names::kFaceAttr));
     html_attribute_equivalents->push_back(HTMLFontSizeEquivalent::Create());
 
     html_attribute_equivalents->push_back(HTMLAttributeEquivalent::Create(
-        CSSPropertyDirection, HTMLNames::dirAttr));
+        CSSPropertyDirection, html_names::kDirAttr));
     html_attribute_equivalents->push_back(HTMLAttributeEquivalent::Create(
-        CSSPropertyUnicodeBidi, HTMLNames::dirAttr));
+        CSSPropertyUnicodeBidi, html_names::kDirAttr));
   }
 
   return *html_attribute_equivalents;
@@ -1086,7 +1086,7 @@ bool EditingStyle::ExtractConflictingImplicitStyleOfAttributes(
     // unicode-bidi and direction are pushed down separately so don't push down
     // with other styles.
     if (should_preserve_writing_direction == kPreserveWritingDirection &&
-        equivalent->AttributeName() == HTMLNames::dirAttr)
+        equivalent->AttributeName() == html_names::kDirAttr)
       continue;
 
     if (!equivalent->Matches(element) ||
@@ -1141,7 +1141,7 @@ bool EditingStyle::ElementIsStyledSpanOrHTMLEquivalent(
       html_attribute_equivalents = HtmlAttributeEquivalents();
   for (const auto& equivalent : html_attribute_equivalents) {
     if (equivalent->Matches(element) &&
-        equivalent->AttributeName() != HTMLNames::dirAttr)
+        equivalent->AttributeName() != html_names::kDirAttr)
       matched_attributes++;
   }
 
@@ -1150,7 +1150,7 @@ bool EditingStyle::ElementIsStyledSpanOrHTMLEquivalent(
     return false;
   }
 
-  if (element->hasAttribute(HTMLNames::styleAttr)) {
+  if (element->hasAttribute(html_names::kStyleAttr)) {
     if (const CSSPropertyValueSet* style = element->InlineStyle()) {
       unsigned property_count = style->PropertyCount();
       for (unsigned i = 0; i < property_count; ++i) {
@@ -1306,7 +1306,7 @@ void EditingStyle::MergeInlineAndImplicitStyleOfElement(
   const HeapVector<Member<HTMLAttributeEquivalent>>& attribute_equivalents =
       HtmlAttributeEquivalents();
   for (const auto& attribute : attribute_equivalents) {
-    if (attribute->AttributeName() == HTMLNames::dirAttr)
+    if (attribute->AttributeName() == html_names::kDirAttr)
       continue;  // We don't want to include directionality
     if (ElementMatchesAndPropertyIsNotInInlineStyleDecl(
             attribute.Get(), element, mode, mutable_style_.Get()))

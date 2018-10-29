@@ -407,18 +407,18 @@ TEST_F(MediaControlsImplTest, CastButtonDisableRemotePlaybackAttr) {
   ASSERT_TRUE(IsElementVisible(*cast_button));
 
   MediaControls().MediaElement().SetBooleanAttribute(
-      HTMLNames::disableremoteplaybackAttr, true);
+      html_names::kDisableremoteplaybackAttr, true);
   test::RunPendingTasks();
   ASSERT_FALSE(IsElementVisible(*cast_button));
 
   MediaControls().MediaElement().SetBooleanAttribute(
-      HTMLNames::disableremoteplaybackAttr, false);
+      html_names::kDisableremoteplaybackAttr, false);
   test::RunPendingTasks();
   ASSERT_TRUE(IsElementVisible(*cast_button));
 }
 
 TEST_F(MediaControlsImplTest, CastOverlayDefault) {
-  MediaControls().MediaElement().SetBooleanAttribute(HTMLNames::controlsAttr,
+  MediaControls().MediaElement().SetBooleanAttribute(html_names::kControlsAttr,
                                                      false);
 
   Element* cast_overlay_button = GetElementByShadowPseudoId(
@@ -430,7 +430,7 @@ TEST_F(MediaControlsImplTest, CastOverlayDefault) {
 }
 
 TEST_F(MediaControlsImplTest, CastOverlayDisabled) {
-  MediaControls().MediaElement().SetBooleanAttribute(HTMLNames::controlsAttr,
+  MediaControls().MediaElement().SetBooleanAttribute(html_names::kControlsAttr,
                                                      false);
 
   ScopedMediaCastOverlayButtonForTest media_cast_overlay_button(false);
@@ -444,7 +444,7 @@ TEST_F(MediaControlsImplTest, CastOverlayDisabled) {
 }
 
 TEST_F(MediaControlsImplTest, CastOverlayDisableRemotePlaybackAttr) {
-  MediaControls().MediaElement().SetBooleanAttribute(HTMLNames::controlsAttr,
+  MediaControls().MediaElement().SetBooleanAttribute(html_names::kControlsAttr,
                                                      false);
 
   Element* cast_overlay_button = GetElementByShadowPseudoId(
@@ -456,18 +456,18 @@ TEST_F(MediaControlsImplTest, CastOverlayDisableRemotePlaybackAttr) {
   ASSERT_TRUE(IsElementVisible(*cast_overlay_button));
 
   MediaControls().MediaElement().SetBooleanAttribute(
-      HTMLNames::disableremoteplaybackAttr, true);
+      html_names::kDisableremoteplaybackAttr, true);
   test::RunPendingTasks();
   ASSERT_FALSE(IsElementVisible(*cast_overlay_button));
 
   MediaControls().MediaElement().SetBooleanAttribute(
-      HTMLNames::disableremoteplaybackAttr, false);
+      html_names::kDisableremoteplaybackAttr, false);
   test::RunPendingTasks();
   ASSERT_TRUE(IsElementVisible(*cast_overlay_button));
 }
 
 TEST_F(MediaControlsImplTest, CastOverlayMediaControlsDisabled) {
-  MediaControls().MediaElement().SetBooleanAttribute(HTMLNames::controlsAttr,
+  MediaControls().MediaElement().SetBooleanAttribute(html_names::kControlsAttr,
                                                      false);
 
   Element* cast_overlay_button = GetElementByShadowPseudoId(
@@ -486,7 +486,7 @@ TEST_F(MediaControlsImplTest, CastOverlayMediaControlsDisabled) {
 }
 
 TEST_F(MediaControlsImplTest, CastOverlayDisabledMediaControlsDisabled) {
-  MediaControls().MediaElement().SetBooleanAttribute(HTMLNames::controlsAttr,
+  MediaControls().MediaElement().SetBooleanAttribute(html_names::kControlsAttr,
                                                      false);
 
   ScopedMediaCastOverlayButtonForTest media_cast_overlay_button(false);
@@ -627,7 +627,7 @@ TEST_F(MediaControlsImplPictureInPictureTest, PictureInPictureButtonVisible) {
   ASSERT_FALSE(IsElementVisible(*picture_in_picture_button));
 
   MediaControls().MediaElement().SetBooleanAttribute(
-      HTMLNames::disablepictureinpictureAttr, true);
+      html_names::kDisablepictureinpictureAttr, true);
   MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
   test::RunPendingTasks();
   SetReady();
@@ -636,7 +636,7 @@ TEST_F(MediaControlsImplPictureInPictureTest, PictureInPictureButtonVisible) {
   ASSERT_FALSE(IsElementVisible(*picture_in_picture_button));
 
   MediaControls().MediaElement().SetBooleanAttribute(
-      HTMLNames::disablepictureinpictureAttr, false);
+      html_names::kDisablepictureinpictureAttr, false);
   test::RunPendingTasks();
   ASSERT_TRUE(IsElementVisible(*picture_in_picture_button));
 }
@@ -1266,7 +1266,7 @@ TEST_F(MediaControlsImplTest, OverflowMenuMetricsTimeToDismiss) {
 }
 
 TEST_F(MediaControlsImplTest, CastOverlayDefaultHidesOnTimer) {
-  MediaControls().MediaElement().SetBooleanAttribute(HTMLNames::controlsAttr,
+  MediaControls().MediaElement().SetBooleanAttribute(html_names::kControlsAttr,
                                                      false);
 
   Element* cast_overlay_button = GetElementByShadowPseudoId(
@@ -1286,7 +1286,7 @@ TEST_F(MediaControlsImplTest, CastOverlayDefaultHidesOnTimer) {
 }
 
 TEST_F(MediaControlsImplTest, CastOverlayShowsOnSomeEvents) {
-  MediaControls().MediaElement().SetBooleanAttribute(HTMLNames::controlsAttr,
+  MediaControls().MediaElement().SetBooleanAttribute(html_names::kControlsAttr,
                                                      false);
 
   Element* cast_overlay_button = GetElementByShadowPseudoId(

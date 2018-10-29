@@ -38,11 +38,11 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline HTMLScriptElement::HTMLScriptElement(Document& document,
                                             const CreateElementFlags flags)
-    : HTMLElement(scriptTag, document),
+    : HTMLElement(kScriptTag, document),
       loader_(InitializeScriptLoader(flags.IsCreatedByParser(),
                                      flags.WasAlreadyStarted())) {}
 
@@ -58,16 +58,16 @@ const HashSet<AtomicString>& HTMLScriptElement::GetCheckedAttributeNames()
 }
 
 bool HTMLScriptElement::IsURLAttribute(const Attribute& attribute) const {
-  return attribute.GetName() == srcAttr ||
+  return attribute.GetName() == kSrcAttr ||
          HTMLElement::IsURLAttribute(attribute);
 }
 
 bool HTMLScriptElement::HasLegalLinkAttribute(const QualifiedName& name) const {
-  return name == srcAttr || HTMLElement::HasLegalLinkAttribute(name);
+  return name == kSrcAttr || HTMLElement::HasLegalLinkAttribute(name);
 }
 
 const QualifiedName& HTMLScriptElement::SubResourceAttributeName() const {
-  return srcAttr;
+  return kSrcAttr;
 }
 
 void HTMLScriptElement::ChildrenChanged(const ChildrenChange& change) {
@@ -83,10 +83,10 @@ void HTMLScriptElement::DidMoveToNewDocument(Document& old_document) {
 
 void HTMLScriptElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == srcAttr) {
+  if (params.name == kSrcAttr) {
     loader_->HandleSourceAttribute(params.new_value);
     LogUpdateAttributeIfIsolatedWorldAndInDocument("script", params);
-  } else if (params.name == asyncAttr) {
+  } else if (params.name == kAsyncAttr) {
     loader_->HandleAsyncAttribute();
   } else {
     HTMLElement::ParseAttribute(params);
@@ -104,7 +104,7 @@ Node::InsertionNotificationRequest HTMLScriptElement::InsertedInto(
                       WebFeature::kScriptElementWithInvalidTypeHasSrc);
   }
   HTMLElement::InsertedInto(insertion_point);
-  LogAddElementIfIsolatedWorldAndInDocument("script", srcAttr);
+  LogAddElementIfIsolatedWorldAndInDocument("script", kSrcAttr);
 
   return kInsertionShouldCallDidNotifySubtreeInsertions;
 }
@@ -118,12 +118,12 @@ void HTMLScriptElement::setText(const String& value) {
 }
 
 void HTMLScriptElement::setAsync(bool async) {
-  SetBooleanAttribute(asyncAttr, async);
+  SetBooleanAttribute(kAsyncAttr, async);
   loader_->HandleAsyncAttribute();
 }
 
 bool HTMLScriptElement::async() const {
-  return FastHasAttribute(asyncAttr) || loader_->IsNonBlocking();
+  return FastHasAttribute(kAsyncAttr) || loader_->IsNonBlocking();
 }
 
 KURL HTMLScriptElement::Src() const {
@@ -131,43 +131,43 @@ KURL HTMLScriptElement::Src() const {
 }
 
 String HTMLScriptElement::SourceAttributeValue() const {
-  return getAttribute(srcAttr).GetString();
+  return getAttribute(kSrcAttr).GetString();
 }
 
 String HTMLScriptElement::CharsetAttributeValue() const {
-  return getAttribute(charsetAttr).GetString();
+  return getAttribute(kCharsetAttr).GetString();
 }
 
 String HTMLScriptElement::TypeAttributeValue() const {
-  return getAttribute(typeAttr).GetString();
+  return getAttribute(kTypeAttr).GetString();
 }
 
 String HTMLScriptElement::LanguageAttributeValue() const {
-  return getAttribute(languageAttr).GetString();
+  return getAttribute(kLanguageAttr).GetString();
 }
 
 bool HTMLScriptElement::NomoduleAttributeValue() const {
-  return FastHasAttribute(nomoduleAttr);
+  return FastHasAttribute(kNomoduleAttr);
 }
 
 String HTMLScriptElement::ForAttributeValue() const {
-  return getAttribute(forAttr).GetString();
+  return getAttribute(kForAttr).GetString();
 }
 
 String HTMLScriptElement::EventAttributeValue() const {
-  return getAttribute(eventAttr).GetString();
+  return getAttribute(kEventAttr).GetString();
 }
 
 String HTMLScriptElement::CrossOriginAttributeValue() const {
-  return getAttribute(crossoriginAttr);
+  return getAttribute(kCrossoriginAttr);
 }
 
 String HTMLScriptElement::IntegrityAttributeValue() const {
-  return getAttribute(integrityAttr);
+  return getAttribute(kIntegrityAttr);
 }
 
 String HTMLScriptElement::ReferrerPolicyAttributeValue() const {
-  return getAttribute(referrerpolicyAttr);
+  return getAttribute(kReferrerpolicyAttr);
 }
 
 String HTMLScriptElement::TextFromChildren() {
@@ -175,15 +175,15 @@ String HTMLScriptElement::TextFromChildren() {
 }
 
 bool HTMLScriptElement::AsyncAttributeValue() const {
-  return FastHasAttribute(asyncAttr);
+  return FastHasAttribute(kAsyncAttr);
 }
 
 bool HTMLScriptElement::DeferAttributeValue() const {
-  return FastHasAttribute(deferAttr);
+  return FastHasAttribute(kDeferAttr);
 }
 
 bool HTMLScriptElement::HasSourceAttribute() const {
-  return FastHasAttribute(srcAttr);
+  return FastHasAttribute(kSrcAttr);
 }
 
 bool HTMLScriptElement::IsConnected() const {

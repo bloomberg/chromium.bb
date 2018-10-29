@@ -685,7 +685,7 @@ TEST_F(VisibleSelectionTest, updateIfNeededWithShadowHost) {
 // This is a regression test for https://crbug.com/825120
 TEST_F(VisibleSelectionTest, BackwardSelectionWithMultipleEmptyBodies) {
   Element* body = GetDocument().body();
-  Element* new_body = GetDocument().CreateRawElement(HTMLNames::bodyTag);
+  Element* new_body = GetDocument().CreateRawElement(html_names::kBodyTag);
   body->appendChild(new_body);
   GetDocument().UpdateStyleAndLayout();
 

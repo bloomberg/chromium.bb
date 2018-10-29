@@ -72,7 +72,7 @@ TEST_F(CSSAnimationsTest, RetargetedTransition) {
     <div id='test'></div>
   )HTML");
   Element* element = GetDocument().getElementById("test");
-  element->setAttribute(HTMLNames::classAttr, "contrast1");
+  element->setAttribute(html_names::kClassAttr, "contrast1");
   GetDocument().View()->UpdateAllLifecyclePhases();
   ElementAnimations* animations = element->GetElementAnimations();
   EXPECT_EQ(1u, animations->Animations().size());
@@ -83,7 +83,7 @@ TEST_F(CSSAnimationsTest, RetargetedTransition) {
   AdvanceClockSeconds(0.8);
 
   // Starting the second transition should retarget the active transition.
-  element->setAttribute(HTMLNames::classAttr, "contrast2");
+  element->setAttribute(html_names::kClassAttr, "contrast2");
   GetPage().Animator().ServiceScriptedAnimations(CurrentTimeTicks());
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_DOUBLE_EQ(0.6, GetContrastFilterAmount(element));
@@ -108,7 +108,7 @@ TEST_F(CSSAnimationsTest, IncompatibleRetargetedTransition) {
     <div id='test'></div>
   )HTML");
   Element* element = GetDocument().getElementById("test");
-  element->setAttribute(HTMLNames::classAttr, "saturate");
+  element->setAttribute(html_names::kClassAttr, "saturate");
   GetDocument().View()->UpdateAllLifecyclePhases();
   ElementAnimations* animations = element->GetElementAnimations();
   EXPECT_EQ(1u, animations->Animations().size());
@@ -125,7 +125,7 @@ TEST_F(CSSAnimationsTest, IncompatibleRetargetedTransition) {
   // Now we start a contrast filter. Since it will try to combine with
   // the in progress saturate filter, and be incompatible, there should
   // be no transition and it should immediately apply on the next frame.
-  element->setAttribute(HTMLNames::classAttr, "contrast");
+  element->setAttribute(html_names::kClassAttr, "contrast");
   EXPECT_TRUE(element->GetComputedStyle()->Filter().IsEmpty());
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(0.2, GetContrastFilterAmount(element));

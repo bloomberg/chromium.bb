@@ -34,8 +34,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 LayoutHTMLCanvas::LayoutHTMLCanvas(HTMLCanvasElement* element)
     : LayoutReplaced(element, LayoutSize(element->Size())) {
   View()->GetFrameView()->SetIsVisuallyNonEmpty();

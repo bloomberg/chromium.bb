@@ -43,7 +43,7 @@ namespace blink {
 static inline const AtomicString& LinkAttribute(const Element& element) {
   DCHECK(element.IsLink());
   if (element.IsHTMLElement())
-    return element.FastGetAttribute(HTMLNames::hrefAttr);
+    return element.FastGetAttribute(html_names::kHrefAttr);
   DCHECK(element.IsSVGElement());
   return SVGURIReference::LegacyHrefString(ToSVGElement(element));
 }

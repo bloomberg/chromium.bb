@@ -37,10 +37,10 @@
 namespace blink {
 
 using namespace cssvalue;
-using namespace HTMLNames;
+using namespace html_names;
 
 inline HTMLFontElement::HTMLFontElement(Document& document)
-    : HTMLElement(fontTag, document) {}
+    : HTMLElement(kFontTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLFontElement)
 
@@ -170,7 +170,7 @@ bool HTMLFontElement::CssValueFromFontSizeNumber(const String& s,
 }
 
 bool HTMLFontElement::IsPresentationAttribute(const QualifiedName& name) const {
-  if (name == sizeAttr || name == colorAttr || name == faceAttr)
+  if (name == kSizeAttr || name == kColorAttr || name == kFaceAttr)
     return true;
   return HTMLElement::IsPresentationAttribute(name);
 }
@@ -179,13 +179,13 @@ void HTMLFontElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  if (name == sizeAttr) {
+  if (name == kSizeAttr) {
     CSSValueID size = CSSValueInvalid;
     if (CssValueFromFontSizeNumber(value, size))
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyFontSize, size);
-  } else if (name == colorAttr) {
+  } else if (name == kColorAttr) {
     AddHTMLColorToStyle(style, CSSPropertyColor, value);
-  } else if (name == faceAttr && !value.IsEmpty()) {
+  } else if (name == kFaceAttr && !value.IsEmpty()) {
     if (const CSSValueList* font_face_value = CreateFontFaceValueWithPool(
             value, GetDocument().GetSecureContextMode())) {
       style->SetProperty(

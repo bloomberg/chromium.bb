@@ -47,7 +47,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline SVGAElement::SVGAElement(Document& document)
     : SVGGraphicsElement(svg_names::kATag, document),
@@ -172,7 +172,7 @@ bool SVGAElement::ShouldHaveFocusAppearance() const {
 }
 
 bool SVGAElement::IsURLAttribute(const Attribute& attribute) const {
-  return attribute.GetName().LocalName() == hrefAttr ||
+  return attribute.GetName().LocalName() == kHrefAttr ||
          SVGGraphicsElement::IsURLAttribute(attribute);
 }
 

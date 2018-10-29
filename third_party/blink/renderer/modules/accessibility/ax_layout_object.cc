@@ -110,7 +110,7 @@ using blink::WebLocalizedString;
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 AXLayoutObject::AXLayoutObject(LayoutObject* layout_object,
                                AXObjectCacheImpl& ax_object_cache)
@@ -687,7 +687,7 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   // Header and footer tags may also be exposed as landmark roles but not
   // always.
   if (GetNode() &&
-      (GetNode()->HasTagName(headerTag) || GetNode()->HasTagName(footerTag)))
+      (GetNode()->HasTagName(kHeaderTag) || GetNode()->HasTagName(kFooterTag)))
     return false;
 
   // all controls are accessible
@@ -793,8 +793,8 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   // These checks are simplified in the interest of execution speed;
   // for example, any element having an alt attribute will make it
   // not ignored, rather than just images.
-  if (HasAriaAttribute(GetElement()) || !GetAttribute(altAttr).IsEmpty() ||
-      !GetAttribute(titleAttr).IsEmpty())
+  if (HasAriaAttribute(GetElement()) || !GetAttribute(kAltAttr).IsEmpty() ||
+      !GetAttribute(kTitleAttr).IsEmpty())
     return false;
 
   // <span> tags are inline tags and not meant to convey information if they
@@ -848,7 +848,7 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
 
 bool AXLayoutObject::HasAriaCellRole(Element* elem) const {
   DCHECK(elem);
-  const AtomicString& aria_role_str = elem->FastGetAttribute(roleAttr);
+  const AtomicString& aria_role_str = elem->FastGetAttribute(kRoleAttr);
   if (aria_role_str.IsEmpty())
     return false;
 
@@ -966,7 +966,7 @@ const AtomicString& AXLayoutObject::AccessKey() const {
     return g_null_atom;
   if (!node->IsElementNode())
     return g_null_atom;
-  return ToElement(node)->getAttribute(accesskeyAttr);
+  return ToElement(node)->getAttribute(kAccesskeyAttr);
 }
 
 RGBA32 AXLayoutObject::ComputeBackgroundColor() const {
@@ -1442,7 +1442,7 @@ String AXLayoutObject::StringValue() const {
     if (selected_index >= 0 &&
         static_cast<size_t>(selected_index) < list_items.size()) {
       const AtomicString& overridden_description =
-          list_items[selected_index]->FastGetAttribute(aria_labelAttr);
+          list_items[selected_index]->FastGetAttribute(kAriaLabelAttr);
       if (!overridden_description.IsNull())
         return overridden_description;
     }
@@ -1602,24 +1602,24 @@ ax::mojom::HasPopup AXLayoutObject::HasPopup() const {
 // a future version of WAI-ARIA. After that we will re-implement them
 // following new spec.
 bool AXLayoutObject::SupportsARIADragging() const {
-  const AtomicString& grabbed = GetAttribute(aria_grabbedAttr);
+  const AtomicString& grabbed = GetAttribute(kAriaGrabbedAttr);
   return EqualIgnoringASCIICase(grabbed, "true") ||
          EqualIgnoringASCIICase(grabbed, "false");
 }
 
 bool AXLayoutObject::SupportsARIADropping() const {
-  const AtomicString& drop_effect = GetAttribute(aria_dropeffectAttr);
+  const AtomicString& drop_effect = GetAttribute(kAriaDropeffectAttr);
   return !drop_effect.IsEmpty();
 }
 
 bool AXLayoutObject::SupportsARIAFlowTo() const {
-  return !GetAttribute(aria_flowtoAttr).IsEmpty();
+  return !GetAttribute(kAriaFlowtoAttr).IsEmpty();
 }
 
 bool AXLayoutObject::SupportsARIAOwns() const {
   if (!layout_object_)
     return false;
-  const AtomicString& aria_owns = GetAttribute(aria_ownsAttr);
+  const AtomicString& aria_owns = GetAttribute(kAriaOwnsAttr);
 
   return !aria_owns.IsEmpty();
 }
@@ -2865,7 +2865,7 @@ bool AXLayoutObject::IsDataTable() const {
       valid_cell_count++;
 
       // Any <th> tag -> treat as data table.
-      if (cell_node->HasTagName(thTag))
+      if (cell_node->HasTagName(kThTag))
         return true;
 
       // In this case, the developer explicitly assigned a "data" table
@@ -2874,7 +2874,7 @@ bool AXLayoutObject::IsDataTable() const {
         HTMLTableCellElement& cell_element = ToHTMLTableCellElement(*cell_node);
         if (!cell_element.Headers().IsEmpty() ||
             !cell_element.Abbr().IsEmpty() || !cell_element.Axis().IsEmpty() ||
-            !cell_element.FastGetAttribute(scopeAttr).IsEmpty())
+            !cell_element.FastGetAttribute(kScopeAttr).IsEmpty())
           return true;
       }
 
@@ -3109,9 +3109,9 @@ static ax::mojom::Role DecideRoleFromSibling(LayoutTableCell* sibling_cell) {
     return ax::mojom::Role::kCell;
 
   if (Node* sibling_node = sibling_cell->GetNode()) {
-    if (sibling_node->HasTagName(thTag))
+    if (sibling_node->HasTagName(kThTag))
       return ax::mojom::Role::kColumnHeader;
-    if (sibling_node->HasTagName(tdTag))
+    if (sibling_node->HasTagName(kTdTag))
       return ax::mojom::Role::kRowHeader;
   }
 
@@ -3149,10 +3149,10 @@ ax::mojom::Role AXLayoutObject::DetermineTableCellRole() const {
   if (!parent->IsTableRowLikeRole())
     return ax::mojom::Role::kGenericContainer;
 
-  if (!GetNode() || !GetNode()->HasTagName(thTag))
+  if (!GetNode() || !GetNode()->HasTagName(kThTag))
     return ax::mojom::Role::kCell;
 
-  const AtomicString& scope = GetAttribute(scopeAttr);
+  const AtomicString& scope = GetAttribute(kScopeAttr);
   if (EqualIgnoringASCIICase(scope, "row") ||
       EqualIgnoringASCIICase(scope, "rowgroup"))
     return ax::mojom::Role::kRowHeader;

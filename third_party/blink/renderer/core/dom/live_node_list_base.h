@@ -113,21 +113,22 @@ ALWAYS_INLINE bool LiveNodeListBase::ShouldInvalidateTypeOnAttributeChange(
     const QualifiedName& attr_name) {
   switch (type) {
     case kInvalidateOnClassAttrChange:
-      return attr_name == HTMLNames::classAttr;
+      return attr_name == html_names::kClassAttr;
     case kInvalidateOnNameAttrChange:
-      return attr_name == HTMLNames::nameAttr;
+      return attr_name == html_names::kNameAttr;
     case kInvalidateOnIdNameAttrChange:
-      return attr_name == HTMLNames::idAttr || attr_name == HTMLNames::nameAttr;
+      return attr_name == html_names::kIdAttr ||
+             attr_name == html_names::kNameAttr;
     case kInvalidateOnForAttrChange:
-      return attr_name == HTMLNames::forAttr;
+      return attr_name == html_names::kForAttr;
     case kInvalidateForFormControls:
-      return attr_name == HTMLNames::nameAttr ||
-             attr_name == HTMLNames::idAttr ||
-             attr_name == HTMLNames::forAttr ||
-             attr_name == HTMLNames::formAttr ||
-             attr_name == HTMLNames::typeAttr;
+      return attr_name == html_names::kNameAttr ||
+             attr_name == html_names::kIdAttr ||
+             attr_name == html_names::kForAttr ||
+             attr_name == html_names::kFormAttr ||
+             attr_name == html_names::kTypeAttr;
     case kInvalidateOnHRefAttrChange:
-      return attr_name == HTMLNames::hrefAttr;
+      return attr_name == html_names::kHrefAttr;
     case kDoNotInvalidateOnAttributeChanges:
       return false;
     case kInvalidateOnAnyAttrChange:

@@ -105,8 +105,6 @@ void SetMockThemeEnabledForTest(bool value) {
   LayoutTheme::GetTheme().DidChangeThemeEngine();
 }
 
-using namespace HTMLNames;
-
 LayoutTheme& LayoutTheme::GetTheme() {
   if (RuntimeEnabledFeatures::MobileLayoutThemeEnabled()) {
     DEFINE_STATIC_REF(LayoutTheme, layout_theme_mobile,

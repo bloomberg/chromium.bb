@@ -53,7 +53,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 // Upper limit of number of datalist suggestions shown.
 static const unsigned kMaxSuggestions = 1000;
@@ -243,7 +243,7 @@ Color ColorInputType::CurrentColor() {
 }
 
 bool ColorInputType::ShouldShowSuggestions() const {
-  return GetElement().FastHasAttribute(listAttr);
+  return GetElement().FastHasAttribute(kListAttr);
 }
 
 Vector<mojom::blink::ColorSuggestionPtr> ColorInputType::Suggestions() const {

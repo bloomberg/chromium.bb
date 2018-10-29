@@ -77,7 +77,7 @@ TEST_P(PrePaintTreeWalkTest, PropertyTreesRebuiltWithBorderInvalidation) {
   EXPECT_EQ(nullptr, transformed_properties->Transform());
 
   // Cause a paint invalidation.
-  transformed_element->setAttribute(HTMLNames::classAttr, "border");
+  transformed_element->setAttribute(html_names::kClassAttr, "border");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Should have changed back.
@@ -115,7 +115,7 @@ TEST_P(PrePaintTreeWalkTest, PropertyTreesRebuiltWithCSSTransformInvalidation) {
             transformed_properties->Transform()->Matrix());
 
   // Invalidate the CSS transform property.
-  transformed_element->setAttribute(HTMLNames::classAttr, "transformB");
+  transformed_element->setAttribute(html_names::kClassAttr, "transformB");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // The transform should have changed.
@@ -138,7 +138,7 @@ TEST_P(PrePaintTreeWalkTest, PropertyTreesRebuiltWithOpacityInvalidation) {
   EXPECT_EQ(0.9f, transparent_properties->Effect()->Opacity());
 
   // Invalidate the opacity property.
-  transparent_element->setAttribute(HTMLNames::classAttr, "opacityB");
+  transparent_element->setAttribute(html_names::kClassAttr, "opacityB");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // The opacity should have changed.
@@ -165,7 +165,7 @@ TEST_P(PrePaintTreeWalkTest, ClearSubsequenceCachingClipChange) {
   EXPECT_FALSE(child_paint_layer->NeedsRepaint());
   EXPECT_FALSE(child_paint_layer->NeedsPaintPhaseFloat());
 
-  parent->setAttribute(HTMLNames::classAttr, "clip");
+  parent->setAttribute(html_names::kClassAttr, "clip");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
 
   EXPECT_TRUE(child_paint_layer->NeedsRepaint());
@@ -191,7 +191,7 @@ TEST_P(PrePaintTreeWalkTest, ClearSubsequenceCachingClipChange2DTransform) {
   EXPECT_FALSE(child_paint_layer->NeedsRepaint());
   EXPECT_FALSE(child_paint_layer->NeedsPaintPhaseFloat());
 
-  parent->setAttribute(HTMLNames::classAttr, "clip");
+  parent->setAttribute(html_names::kClassAttr, "clip");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
 
   EXPECT_TRUE(child_paint_layer->NeedsRepaint());
@@ -220,7 +220,7 @@ TEST_P(PrePaintTreeWalkTest, ClearSubsequenceCachingClipChangePosAbs) {
 
   // This changes clips for absolute-positioned descendants of "child" but not
   // normal-position ones, which are already clipped to 50x50.
-  parent->setAttribute(HTMLNames::classAttr, "clip");
+  parent->setAttribute(html_names::kClassAttr, "clip");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
 
   EXPECT_TRUE(child_paint_layer->NeedsRepaint());
@@ -249,7 +249,7 @@ TEST_P(PrePaintTreeWalkTest, ClearSubsequenceCachingClipChangePosFixed) {
 
   // This changes clips for absolute-positioned descendants of "child" but not
   // normal-position ones, which are already clipped to 50x50.
-  parent->setAttribute(HTMLNames::classAttr, "clip");
+  parent->setAttribute(html_names::kClassAttr, "clip");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
 
   EXPECT_TRUE(child_paint_layer->NeedsRepaint());
@@ -295,7 +295,7 @@ TEST_P(PrePaintTreeWalkTest, ClipChangeHasRadius) {
 
   auto* target = GetDocument().getElementById("target");
   auto* target_object = ToLayoutBoxModelObject(target->GetLayoutObject());
-  target->setAttribute(HTMLNames::styleAttr, "border-radius: 5px");
+  target->setAttribute(html_names::kStyleAttr, "border-radius: 5px");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_TRUE(target_object->Layer()->NeedsRepaint());
   // And should not trigger any assert failure.
@@ -396,7 +396,7 @@ TEST_P(PrePaintTreeWalkTest, EffectiveTouchActionStyleUpdate) {
 
   GetDocument()
       .getElementById("touchaction")
-      ->setAttribute(HTMLNames::classAttr, "touchaction");
+      ->setAttribute(html_names::kClassAttr, "touchaction");
   GetDocument().View()->UpdateLifecycleToLayoutClean();
   EXPECT_FALSE(ancestor.EffectiveWhitelistedTouchActionChanged());
   EXPECT_TRUE(touchaction.EffectiveWhitelistedTouchActionChanged());
@@ -424,7 +424,7 @@ TEST_P(PrePaintTreeWalkTest, ClipChangesDoNotCauseVisualRectUpdates) {
     </div>
   )HTML");
 
-  GetDocument().getElementById("parent")->setAttribute(HTMLNames::styleAttr,
+  GetDocument().getElementById("parent")->setAttribute(html_names::kStyleAttr,
                                                        "border-radius: 5px");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -442,7 +442,7 @@ TEST_P(PrePaintTreeWalkTest, ClipChangesDoNotCauseVisualRectUpdates) {
 
   // Cause the child clip to change without changing paint property tree
   // topology.
-  GetDocument().getElementById("parent")->setAttribute(HTMLNames::styleAttr,
+  GetDocument().getElementById("parent")->setAttribute(html_names::kStyleAttr,
                                                        "border-radius: 6px");
 
   GetDocument().View()->UpdateAllLifecyclePhases();

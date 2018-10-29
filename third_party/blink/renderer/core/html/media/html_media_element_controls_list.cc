@@ -21,7 +21,7 @@ const char* const kSupportedTokens[] = {kNoDownload, kNoFullscreen,
 
 HTMLMediaElementControlsList::HTMLMediaElementControlsList(
     HTMLMediaElement* element)
-    : DOMTokenList(*element, HTMLNames::controlslistAttr) {}
+    : DOMTokenList(*element, html_names::kControlslistAttr) {}
 
 bool HTMLMediaElementControlsList::ValidateTokenValue(
     const AtomicString& token_value,

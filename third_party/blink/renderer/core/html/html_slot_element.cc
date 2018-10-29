@@ -49,7 +49,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 namespace {
 constexpr size_t kLCSTableSizeLimit = 16;
@@ -62,19 +62,19 @@ HTMLSlotElement* HTMLSlotElement::Create(Document& document) {
 HTMLSlotElement* HTMLSlotElement::CreateUserAgentDefaultSlot(
     Document& document) {
   HTMLSlotElement* slot = new HTMLSlotElement(document);
-  slot->setAttribute(nameAttr, UserAgentDefaultSlotName());
+  slot->setAttribute(kNameAttr, UserAgentDefaultSlotName());
   return slot;
 }
 
 HTMLSlotElement* HTMLSlotElement::CreateUserAgentCustomAssignSlot(
     Document& document) {
   HTMLSlotElement* slot = new HTMLSlotElement(document);
-  slot->setAttribute(nameAttr, UserAgentCustomAssignSlotName());
+  slot->setAttribute(kNameAttr, UserAgentCustomAssignSlotName());
   return slot;
 }
 
 inline HTMLSlotElement::HTMLSlotElement(Document& document)
-    : HTMLElement(slotTag, document) {
+    : HTMLElement(kSlotTag, document) {
   UseCounter::Count(document, WebFeature::kHTMLSlotElement);
   SetHasCustomStyleCallbacks();
 }
@@ -243,7 +243,7 @@ Node* HTMLSlotElement::AssignedNodePreviousTo(const Node& node) const {
 }
 
 AtomicString HTMLSlotElement::GetName() const {
-  return NormalizeSlotName(FastGetAttribute(nameAttr));
+  return NormalizeSlotName(FastGetAttribute(kNameAttr));
 }
 
 void HTMLSlotElement::AttachLayoutTree(AttachContext& context) {
@@ -286,7 +286,7 @@ void HTMLSlotElement::RebuildDistributedChildrenLayoutTrees(
 
 void HTMLSlotElement::AttributeChanged(
     const AttributeModificationParams& params) {
-  if (params.name == nameAttr) {
+  if (params.name == kNameAttr) {
     if (ShadowRoot* root = ContainingShadowRoot()) {
       if (root->IsV1() && params.old_value != params.new_value) {
         root->GetSlotAssignment().DidRenameSlot(

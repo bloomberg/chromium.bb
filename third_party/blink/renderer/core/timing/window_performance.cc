@@ -325,9 +325,9 @@ void WindowPerformance::ReportLongTask(
         culprit_dom_window->GetFrame()->DeprecatedLocalOwner();
     AddLongTaskTiming(
         start_time, end_time, attribution.first,
-        GetFrameAttribute(frame_owner, HTMLNames::srcAttr, false),
-        GetFrameAttribute(frame_owner, HTMLNames::idAttr, false),
-        GetFrameAttribute(frame_owner, HTMLNames::nameAttr, true),
+        GetFrameAttribute(frame_owner, html_names::kSrcAttr, false),
+        GetFrameAttribute(frame_owner, html_names::kIdAttr, false),
+        GetFrameAttribute(frame_owner, html_names::kNameAttr, true),
         IsSameOrigin(attribution.first) ? sub_task_attributions : empty_vector);
   }
 }

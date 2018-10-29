@@ -165,7 +165,8 @@ InputType* EmailInputType::Create(HTMLInputElement& element) {
 
 void EmailInputType::CountUsage() {
   CountUsageIfVisible(WebFeature::kInputTypeEmail);
-  bool has_max_length = GetElement().FastHasAttribute(HTMLNames::maxlengthAttr);
+  bool has_max_length =
+      GetElement().FastHasAttribute(html_names::kMaxlengthAttr);
   if (has_max_length)
     CountUsageIfVisible(WebFeature::kInputTypeEmailMaxLength);
   if (GetElement().Multiple()) {

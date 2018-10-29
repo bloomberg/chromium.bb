@@ -56,7 +56,7 @@ void InputMethodControllerTest::CreateHTMLWithCompositionInputEventListeners() {
   GetDocument().GetSettings()->SetScriptEnabled(true);
   Element* editable =
       InsertHTMLElement("<div id='sample' contenteditable></div>", "sample");
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('beforeinput', "
       "  event => document.title = `beforeinput.data:${event.data};`);"
@@ -74,7 +74,7 @@ void InputMethodControllerTest::CreateHTMLWithCompositionEndEventListener(
   GetDocument().GetSettings()->SetScriptEnabled(true);
   Element* editable =
       InsertHTMLElement("<div id='sample' contentEditable></div>", "sample");
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
 
   switch (type) {
     case kNoSelection:
@@ -1192,7 +1192,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventIsComposing) {
   GetDocument().GetSettings()->SetScriptEnabled(true);
   Element* editable =
       InsertHTMLElement("<div id='sample' contenteditable></div>", "sample");
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('beforeinput', "
       "  event => document.title = "
@@ -2546,7 +2546,7 @@ TEST_F(InputMethodControllerTest,
   InsertHTMLElement("<div id='sample' contenteditable>hello</div>", "sample");
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('input', "
       "  event => {"
@@ -2581,7 +2581,7 @@ TEST_F(InputMethodControllerTest,
       "<div id='sample' contenteditable>hello world</div>", "sample");
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('input', "
       "  event => {"
@@ -2619,7 +2619,7 @@ TEST_F(
                     "sample");
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('input', "
       "  event => {"
@@ -2652,7 +2652,7 @@ TEST_F(InputMethodControllerTest,
                     "sample");
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('input', "
       "  event => {"
@@ -2686,7 +2686,7 @@ TEST_F(InputMethodControllerTest,
                     "sample");
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('input', "
       "  event => {"
@@ -2720,7 +2720,7 @@ TEST_F(InputMethodControllerTest,
                     "sample");
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('input', "
       "  event => {"
@@ -2753,7 +2753,7 @@ TEST_F(InputMethodControllerTest,
       "<div id='sample' contenteditable>hello world</div>", "sample");
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('input', "
       "  event => {"
@@ -2790,7 +2790,7 @@ TEST_F(InputMethodControllerTest,
   InsertHTMLElement("<div id='sample' contenteditable>hello</div>", "sample");
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('compositionend', "
       "  event => {"
@@ -2826,7 +2826,7 @@ TEST_F(
                     "sample");
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('compositionend', "
       "  event => {"
@@ -2860,7 +2860,7 @@ TEST_F(
                     "sample");
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('compositionend', "
       "  event => {"
@@ -2893,7 +2893,7 @@ TEST_F(InputMethodControllerTest,
                     "sample");
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('compositionend', "
       "  event => {"
@@ -2925,7 +2925,7 @@ TEST_F(InputMethodControllerTest,
                     "sample");
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('compositionend', "
       "  event => {"
@@ -2957,7 +2957,7 @@ TEST_F(InputMethodControllerTest,
       InsertHTMLElement("<input id='sample' maxlength='2'>", "sample"));
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('input', "
       "  event => {"
@@ -2987,7 +2987,7 @@ TEST_F(InputMethodControllerTest,
       InsertHTMLElement("<input id='sample' maxlength='2'>", "sample"));
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('input', "
       "  event => {"
@@ -3017,7 +3017,7 @@ TEST_F(InputMethodControllerTest,
       InsertHTMLElement("<input id='sample' maxlength='2'>", "sample"));
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('compositionend', "
       "  event => {"
@@ -3049,7 +3049,7 @@ TEST_F(
       InsertHTMLElement("<input id='sample' maxlength='2'>", "sample"));
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('compositionend', "
       "  event => {"

@@ -88,26 +88,26 @@ TEST_F(TextControlElementTest, IndexForPosition) {
 }
 
 TEST_F(TextControlElementTest, ReadOnlyAttributeChangeEditability) {
-  Input().setAttribute(HTMLNames::styleAttr, "all:initial");
-  Input().setAttribute(HTMLNames::readonlyAttr, "");
+  Input().setAttribute(html_names::kStyleAttr, "all:initial");
+  Input().setAttribute(html_names::kReadonlyAttr, "");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(EUserModify::kReadOnly,
             Input().InnerEditorElement()->GetComputedStyle()->UserModify());
 
-  Input().removeAttribute(HTMLNames::readonlyAttr);
+  Input().removeAttribute(html_names::kReadonlyAttr);
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(EUserModify::kReadWritePlaintextOnly,
             Input().InnerEditorElement()->GetComputedStyle()->UserModify());
 }
 
 TEST_F(TextControlElementTest, DisabledAttributeChangeEditability) {
-  Input().setAttribute(HTMLNames::styleAttr, "all:initial");
-  Input().setAttribute(HTMLNames::disabledAttr, "");
+  Input().setAttribute(html_names::kStyleAttr, "all:initial");
+  Input().setAttribute(html_names::kDisabledAttr, "");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(EUserModify::kReadOnly,
             Input().InnerEditorElement()->GetComputedStyle()->UserModify());
 
-  Input().removeAttribute(HTMLNames::disabledAttr);
+  Input().removeAttribute(html_names::kDisabledAttr);
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(EUserModify::kReadWritePlaintextOnly,
             Input().InnerEditorElement()->GetComputedStyle()->UserModify());

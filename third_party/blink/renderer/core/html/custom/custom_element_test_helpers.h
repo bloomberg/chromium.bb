@@ -104,7 +104,8 @@ class CreateElement {
 
  public:
   CreateElement(const AtomicString& local_name)
-      : namespace_uri_(HTMLNames::xhtmlNamespaceURI), local_name_(local_name) {}
+      : namespace_uri_(html_names::xhtmlNamespaceURI),
+        local_name_(local_name) {}
 
   CreateElement& InDocument(Document* document) {
     document_ = document;
@@ -117,7 +118,7 @@ class CreateElement {
   }
 
   CreateElement& WithId(const AtomicString& id) {
-    attributes_.push_back(std::make_pair(HTMLNames::idAttr, id));
+    attributes_.push_back(std::make_pair(html_names::kIdAttr, id));
     return *this;
   }
 

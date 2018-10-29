@@ -76,9 +76,9 @@ class VTTParser final : public GarbageCollectedFinalized<VTTParser> {
   ~VTTParser() = default;
 
   static inline bool IsRecognizedTag(const AtomicString& tag_name) {
-    return tag_name == HTMLNames::iTag || tag_name == HTMLNames::bTag ||
-           tag_name == HTMLNames::uTag || tag_name == HTMLNames::rubyTag ||
-           tag_name == HTMLNames::rtTag;
+    return tag_name == html_names::kITag || tag_name == html_names::kBTag ||
+           tag_name == html_names::kUTag || tag_name == html_names::kRubyTag ||
+           tag_name == html_names::kRtTag;
   }
   static inline bool IsASpace(UChar c) {
     // WebVTT space characters are U+0020 SPACE, U+0009 CHARACTER

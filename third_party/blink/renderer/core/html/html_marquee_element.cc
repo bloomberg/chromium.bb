@@ -52,7 +52,7 @@
 namespace blink {
 
 inline HTMLMarqueeElement::HTMLMarqueeElement(Document& document)
-    : HTMLElement(HTMLNames::marqueeTag, document) {
+    : HTMLElement(html_names::kMarqueeTag, document) {
   UseCounter::Count(document, WebFeature::kHTMLMarqueeElement);
 }
 
@@ -151,7 +151,7 @@ bool HTMLMarqueeElement::IsHorizontal() const {
 
 unsigned HTMLMarqueeElement::scrollAmount() const {
   unsigned scroll_amount = 0;
-  AtomicString value = FastGetAttribute(HTMLNames::scrollamountAttr);
+  AtomicString value = FastGetAttribute(html_names::kScrollamountAttr);
   if (value.IsEmpty() || !ParseHTMLNonNegativeInteger(value, scroll_amount) ||
       scroll_amount > 0x7fffffffu)
     return kDefaultScrollAmount;
@@ -159,13 +159,13 @@ unsigned HTMLMarqueeElement::scrollAmount() const {
 }
 
 void HTMLMarqueeElement::setScrollAmount(unsigned value) {
-  SetUnsignedIntegralAttribute(HTMLNames::scrollamountAttr, value,
+  SetUnsignedIntegralAttribute(html_names::kScrollamountAttr, value,
                                kDefaultScrollAmount);
 }
 
 unsigned HTMLMarqueeElement::scrollDelay() const {
   unsigned scroll_delay = 0;
-  AtomicString value = FastGetAttribute(HTMLNames::scrolldelayAttr);
+  AtomicString value = FastGetAttribute(html_names::kScrolldelayAttr);
   if (value.IsEmpty() || !ParseHTMLNonNegativeInteger(value, scroll_delay) ||
       scroll_delay > 0x7fffffffu)
     return kDefaultScrollDelayMS;
@@ -173,13 +173,13 @@ unsigned HTMLMarqueeElement::scrollDelay() const {
 }
 
 void HTMLMarqueeElement::setScrollDelay(unsigned value) {
-  SetUnsignedIntegralAttribute(HTMLNames::scrolldelayAttr, value,
+  SetUnsignedIntegralAttribute(html_names::kScrolldelayAttr, value,
                                kDefaultScrollDelayMS);
 }
 
 int HTMLMarqueeElement::loop() const {
   bool ok;
-  int loop = FastGetAttribute(HTMLNames::loopAttr).ToInt(&ok);
+  int loop = FastGetAttribute(html_names::kLoopAttr).ToInt(&ok);
   if (!ok || loop <= 0)
     return kDefaultLoopLimit;
   return loop;
@@ -193,7 +193,7 @@ void HTMLMarqueeElement::setLoop(int value, ExceptionState& exception_state) {
                                           ") is neither positive nor -1.");
     return;
   }
-  SetIntegralAttribute(HTMLNames::loopAttr, value);
+  SetIntegralAttribute(html_names::kLoopAttr, value);
 }
 
 void HTMLMarqueeElement::start() {
@@ -218,9 +218,9 @@ void HTMLMarqueeElement::stop() {
 
 bool HTMLMarqueeElement::IsPresentationAttribute(
     const QualifiedName& attr) const {
-  if (attr == HTMLNames::bgcolorAttr || attr == HTMLNames::heightAttr ||
-      attr == HTMLNames::hspaceAttr || attr == HTMLNames::vspaceAttr ||
-      attr == HTMLNames::widthAttr) {
+  if (attr == html_names::kBgcolorAttr || attr == html_names::kHeightAttr ||
+      attr == html_names::kHspaceAttr || attr == html_names::kVspaceAttr ||
+      attr == html_names::kWidthAttr) {
     return true;
   }
   return HTMLElement::IsPresentationAttribute(attr);
@@ -230,17 +230,17 @@ void HTMLMarqueeElement::CollectStyleForPresentationAttribute(
     const QualifiedName& attr,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  if (attr == HTMLNames::bgcolorAttr) {
+  if (attr == html_names::kBgcolorAttr) {
     AddHTMLColorToStyle(style, CSSPropertyBackgroundColor, value);
-  } else if (attr == HTMLNames::heightAttr) {
+  } else if (attr == html_names::kHeightAttr) {
     AddHTMLLengthToStyle(style, CSSPropertyHeight, value);
-  } else if (attr == HTMLNames::hspaceAttr) {
+  } else if (attr == html_names::kHspaceAttr) {
     AddHTMLLengthToStyle(style, CSSPropertyMarginLeft, value);
     AddHTMLLengthToStyle(style, CSSPropertyMarginRight, value);
-  } else if (attr == HTMLNames::vspaceAttr) {
+  } else if (attr == html_names::kVspaceAttr) {
     AddHTMLLengthToStyle(style, CSSPropertyMarginTop, value);
     AddHTMLLengthToStyle(style, CSSPropertyMarginBottom, value);
-  } else if (attr == HTMLNames::widthAttr) {
+  } else if (attr == html_names::kWidthAttr) {
     AddHTMLLengthToStyle(style, CSSPropertyWidth, value);
   } else {
     HTMLElement::CollectStyleForPresentationAttribute(attr, value, style);
@@ -290,7 +290,7 @@ void HTMLMarqueeElement::ContinueAnimation() {
   int scroll_amount = scrollAmount();
 
   if (scroll_delay < kMinimumScrollDelayMS &&
-      !FastHasAttribute(HTMLNames::truespeedAttr))
+      !FastHasAttribute(html_names::kTruespeedAttr))
     scroll_delay = kDefaultScrollDelayMS;
   double duration = 0;
   if (scroll_amount)
@@ -328,7 +328,7 @@ bool HTMLMarqueeElement::ShouldContinue() {
 }
 
 HTMLMarqueeElement::Behavior HTMLMarqueeElement::GetBehavior() const {
-  const AtomicString& behavior = FastGetAttribute(HTMLNames::behaviorAttr);
+  const AtomicString& behavior = FastGetAttribute(html_names::kBehaviorAttr);
   if (EqualIgnoringASCIICase(behavior, "alternate"))
     return kAlternate;
   if (EqualIgnoringASCIICase(behavior, "slide"))
@@ -337,7 +337,7 @@ HTMLMarqueeElement::Behavior HTMLMarqueeElement::GetBehavior() const {
 }
 
 HTMLMarqueeElement::Direction HTMLMarqueeElement::GetDirection() const {
-  const AtomicString& direction = FastGetAttribute(HTMLNames::directionAttr);
+  const AtomicString& direction = FastGetAttribute(html_names::kDirectionAttr);
   if (EqualIgnoringASCIICase(direction, "down"))
     return kDown;
   if (EqualIgnoringASCIICase(direction, "up"))

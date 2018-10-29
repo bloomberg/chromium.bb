@@ -29,15 +29,15 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline HTMLBRElement::HTMLBRElement(Document& document)
-    : HTMLElement(brTag, document) {}
+    : HTMLElement(kBrTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLBRElement)
 
 bool HTMLBRElement::IsPresentationAttribute(const QualifiedName& name) const {
-  if (name == clearAttr)
+  if (name == kClearAttr)
     return true;
   return HTMLElement::IsPresentationAttribute(name);
 }
@@ -46,7 +46,7 @@ void HTMLBRElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  if (name == clearAttr) {
+  if (name == kClearAttr) {
     // If the string is empty, then don't add the clear property.
     // <br clear> and <br clear=""> are just treated like <br> by Gecko, Mac IE,
     // etc. -dwh

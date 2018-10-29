@@ -103,7 +103,7 @@ TEST_F(VisibleUnitsTest, canonicalPositionOfWithHTMLHtmlElement) {
   Node* two = GetDocument().QuerySelector("#two");
   Node* three = GetDocument().QuerySelector("#three");
   Node* four = GetDocument().QuerySelector("#four");
-  Element* html = GetDocument().CreateRawElement(HTMLNames::htmlTag);
+  Element* html = GetDocument().CreateRawElement(html_names::kHTMLTag);
   // Move two, three and four into second html element.
   html->AppendChild(two);
   html->AppendChild(three);
@@ -282,7 +282,7 @@ TEST_F(VisibleUnitsTest, IsVisuallyEquivalentCandidateWithHTMLHtmlElement) {
   Node* two = GetDocument().QuerySelector("#two");
   Node* three = GetDocument().QuerySelector("#three");
   Node* four = GetDocument().QuerySelector("#four");
-  Element* html = GetDocument().CreateRawElement(HTMLNames::htmlTag);
+  Element* html = GetDocument().CreateRawElement(html_names::kHTMLTag);
   // Move two, three and four into second html element.
   html->AppendChild(two);
   html->AppendChild(three);
@@ -319,10 +319,10 @@ TEST_F(VisibleUnitsTest, isVisuallyEquivalentCandidateWithHTMLBodyElement) {
   Node* two = GetDocument().QuerySelector("#two");
   Node* three = GetDocument().QuerySelector("#three");
   Node* four = GetDocument().QuerySelector("#four");
-  Element* body = GetDocument().CreateRawElement(HTMLNames::bodyTag);
-  Element* empty_body = GetDocument().CreateRawElement(HTMLNames::bodyTag);
-  Element* div = GetDocument().CreateRawElement(HTMLNames::divTag);
-  Element* br = GetDocument().CreateRawElement(HTMLNames::brTag);
+  Element* body = GetDocument().CreateRawElement(html_names::kBodyTag);
+  Element* empty_body = GetDocument().CreateRawElement(html_names::kBodyTag);
+  Element* div = GetDocument().CreateRawElement(html_names::kDivTag);
+  Element* br = GetDocument().CreateRawElement(html_names::kBrTag);
   empty_body->appendChild(div);
   empty_body->appendChild(br);
   one->appendChild(empty_body);

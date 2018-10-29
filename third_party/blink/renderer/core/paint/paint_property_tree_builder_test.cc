@@ -558,7 +558,7 @@ TEST_P(PaintPropertyTreeBuilderTest, Perspective) {
                           inner->GetLayoutObject(),
                           GetDocument().View()->GetLayoutView());
 
-  perspective->setAttribute(HTMLNames::styleAttr, "perspective: 200px");
+  perspective->setAttribute(html_names::kStyleAttr, "perspective: 200px");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(TransformationMatrix().ApplyPerspective(200),
             perspective_properties->Perspective()->Matrix());
@@ -574,7 +574,8 @@ TEST_P(PaintPropertyTreeBuilderTest, Perspective) {
               perspective_properties->Perspective()->Parent());
   }
 
-  perspective->setAttribute(HTMLNames::styleAttr, "perspective-origin: 5% 20%");
+  perspective->setAttribute(html_names::kStyleAttr,
+                            "perspective-origin: 5% 20%");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(TransformationMatrix().ApplyPerspective(100),
             perspective_properties->Perspective()->Matrix());
@@ -625,14 +626,14 @@ TEST_P(PaintPropertyTreeBuilderTest, Transform) {
                           GetDocument().View()->GetLayoutView());
 
   transform->setAttribute(
-      HTMLNames::styleAttr,
+      html_names::kStyleAttr,
       "margin-left: 50px; margin-top: 100px; width: 400px; height: 300px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(nullptr,
             transform->GetLayoutObject()->FirstFragment().PaintProperties());
 
   transform->setAttribute(
-      HTMLNames::styleAttr,
+      html_names::kStyleAttr,
       "margin-left: 50px; margin-top: 100px; width: 400px; height: 300px; "
       "transform: translate3d(123px, 456px, 789px)");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -752,14 +753,14 @@ TEST_P(PaintPropertyTreeBuilderTest, WillChangeTransform) {
                           GetDocument().View()->GetLayoutView());
 
   transform->setAttribute(
-      HTMLNames::styleAttr,
+      html_names::kStyleAttr,
       "margin-left: 50px; margin-top: 100px; width: 400px; height: 300px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(nullptr,
             transform->GetLayoutObject()->FirstFragment().PaintProperties());
 
   transform->setAttribute(
-      HTMLNames::styleAttr,
+      html_names::kStyleAttr,
       "margin-left: 50px; margin-top: 100px; width: 400px; height: 300px; "
       "will-change: transform");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -1902,7 +1903,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FramesEstablishIsolation) {
 
   // This causes a tree topology change which forces the subtree to be updated.
   // However, isolation stops this recursion.
-  GetDocument().getElementById("parent")->setAttribute(HTMLNames::classAttr,
+  GetDocument().getElementById("parent")->setAttribute(html_names::kClassAttr,
                                                        "transformed");
   frame_view->UpdateAllLifecyclePhases();
 
@@ -3254,7 +3255,7 @@ TEST_P(PaintPropertyTreeBuilderTest, CachedProperties) {
   // Change transform of b. B's transform node should be a new node with the new
   // value, and a and c's transform nodes should be unchanged (with c's parent
   // adjusted).
-  b->setAttribute(HTMLNames::styleAttr, "transform: translate(111px, 222px)");
+  b->setAttribute(html_names::kStyleAttr, "transform: translate(111px, 222px)");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_EQ(a_properties,
@@ -3283,7 +3284,7 @@ TEST_P(PaintPropertyTreeBuilderTest, CachedProperties) {
   // Remove transform from b. B's transform node should be removed from the
   // tree, and a and c's transform nodes should be unchanged (with c's parent
   // adjusted).
-  b->setAttribute(HTMLNames::styleAttr, "");
+  b->setAttribute(html_names::kStyleAttr, "");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_EQ(a_properties,
@@ -3307,7 +3308,7 @@ TEST_P(PaintPropertyTreeBuilderTest, CachedProperties) {
   // Re-add transform to b. B's transform node should be inserted into the tree,
   // and a and c's transform nodes should be unchanged (with c's parent
   // adjusted).
-  b->setAttribute(HTMLNames::styleAttr, "transform: translate(4px, 5px)");
+  b->setAttribute(html_names::kStyleAttr, "transform: translate(4px, 5px)");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_EQ(a_properties,
@@ -4660,7 +4661,7 @@ TEST_P(PaintPropertyTreeBuilderTest,
   EXPECT_EQ(LayoutUnit(20), target->FirstFragment().LogicalTopInFlowThread());
   Element* target_element = GetDocument().getElementById("target");
 
-  target_element->setAttribute(HTMLNames::styleAttr, "position: absolute");
+  target_element->setAttribute(html_names::kStyleAttr, "position: absolute");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(LayoutPoint(0, 0), target->FirstFragment().PaginationOffset());
   EXPECT_EQ(LayoutUnit(), target->FirstFragment().LogicalTopInFlowThread());
@@ -4819,7 +4820,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ChangePositionUpdateDescendantProperties) {
             descendant->FirstFragment().LocalBorderBoxProperties().Clip());
 
   ToElement(ancestor->GetNode())
-      ->setAttribute(HTMLNames::styleAttr, "position: static");
+      ->setAttribute(html_names::kStyleAttr, "position: static");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_NE(ancestor->FirstFragment().PaintProperties()->OverflowClip(),
             descendant->FirstFragment().LocalBorderBoxProperties().Clip());
@@ -5274,7 +5275,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ScrollBoundsOffset) {
   // And the scroll node should not.
   EXPECT_EQ(IntRect(0, 0, 100, 100), scroll_node->ContainerRect());
 
-  scroller->setAttribute(HTMLNames::styleAttr, "border: 20px solid black;");
+  scroller->setAttribute(html_names::kStyleAttr, "border: 20px solid black;");
   GetDocument().View()->UpdateAllLifecyclePhases();
   // The paint offset node should be offset by the margin.
   EXPECT_EQ(FloatSize(7, 11),
@@ -5282,7 +5283,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ScrollBoundsOffset) {
   // The scroll node should be offset by the border.
   EXPECT_EQ(IntRect(20, 20, 100, 100), scroll_node->ContainerRect());
 
-  scroller->setAttribute(HTMLNames::styleAttr,
+  scroller->setAttribute(html_names::kStyleAttr,
                          "border: 20px solid black;"
                          "transform: translate(20px, 30px);");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -5328,7 +5329,7 @@ TEST_P(PaintPropertyTreeBuilderTest, BackfaceHidden) {
     EXPECT_EQ(nullptr, transform);
   }
 
-  ToElement(target->GetNode())->setAttribute(HTMLNames::styleAttr, "");
+  ToElement(target->GetNode())->setAttribute(html_names::kStyleAttr, "");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(LayoutPoint(60, 50), target->FirstFragment().PaintOffset());
   EXPECT_EQ(nullptr, target->FirstFragment().PaintProperties());
@@ -5553,7 +5554,7 @@ TEST_P(PaintPropertyTreeBuilderTest,
 
   EXPECT_FALSE(ToLayoutBoxModelObject(target)->Layer()->NeedsRepaint());
 
-  opacity_element->setAttribute(HTMLNames::styleAttr, "opacity: 0.5");
+  opacity_element->setAttribute(html_names::kStyleAttr, "opacity: 0.5");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
 
   // All paint chunks contained by the new opacity effect node need to be
@@ -5632,7 +5633,7 @@ TEST_P(PaintPropertyTreeBuilderTest, RootHasCompositedScrolling) {
 
   // Remove scrolling from the root.
   Element* force_scroll_element = GetDocument().getElementById("forceScroll");
-  force_scroll_element->setAttribute(HTMLNames::styleAttr, "");
+  force_scroll_element->setAttribute(html_names::kStyleAttr, "");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   // TODO(crbug.com/732611): SPv2 invalidations are incorrect if there is
   // scrolling.
@@ -5749,7 +5750,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ClipHitTestChangeDoesNotCauseFullRepaint) {
   auto* child_layer = ToLayoutBox(GetLayoutObjectByElementId("child"))->Layer();
   EXPECT_FALSE(child_layer->NeedsRepaint());
 
-  GetDocument().body()->setAttribute(HTMLNames::classAttr, "noscrollbars");
+  GetDocument().body()->setAttribute(html_names::kClassAttr, "noscrollbars");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_FALSE(child_layer->NeedsRepaint());
 }
@@ -6093,7 +6094,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ClipInvalidationForReplacedElement) {
   }
 
   GetDocument().getElementById("target")->setAttribute(
-      HTMLNames::styleAttr, "padding: 1px 2px 3px 4px;");
+      html_names::kStyleAttr, "padding: 1px 2px 3px 4px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   {
@@ -6309,7 +6310,7 @@ TEST_P(PaintPropertyTreeBuilderTest, WillChangeOpacityInducesAnEffectNode) {
   EXPECT_FLOAT_EQ(properties->Effect()->Opacity(), 1.f);
 
   auto* div = GetDocument().getElementById("div");
-  div->setAttribute(HTMLNames::classAttr, "transluscent");
+  div->setAttribute(html_names::kClassAttr, "transluscent");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_FALSE(ToLayoutBox(div->GetLayoutObject())->Layer()->NeedsRepaint());
 

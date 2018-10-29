@@ -36,10 +36,10 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline HTMLTemplateElement::HTMLTemplateElement(Document& document)
-    : HTMLElement(templateTag, document) {}
+    : HTMLElement(kTemplateTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLTemplateElement)
 

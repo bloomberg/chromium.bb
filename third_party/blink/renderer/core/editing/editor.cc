@@ -94,7 +94,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 namespace {
 
@@ -649,7 +649,7 @@ void Editor::SetBaseWritingDirection(WritingDirection direction) {
     if (direction == WritingDirection::kNatural)
       return;
     focused_element->setAttribute(
-        dirAttr, direction == WritingDirection::kLeftToRight ? "ltr" : "rtl");
+        kDirAttr, direction == WritingDirection::kLeftToRight ? "ltr" : "rtl");
     focused_element->DispatchInputEvent();
     return;
   }

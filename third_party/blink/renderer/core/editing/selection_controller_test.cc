@@ -110,7 +110,7 @@ TEST_F(SelectionControllerTest, setCaretAtHitTestResult) {
   const char* body_content = "<div id='sample' contenteditable>sample</div>";
   SetBodyContent(body_content);
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "var sample = document.getElementById('sample');"
       "sample.addEventListener('onselectstart', "
@@ -144,7 +144,7 @@ TEST_F(SelectionControllerTest, setCaretAtHitTestResultWithNullPosition) {
 TEST_F(SelectionControllerTest,
        SetCaretAtHitTestResultWithDisconnectedPosition) {
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.designMode = 'on';"
       "const selection = window.getSelection();"

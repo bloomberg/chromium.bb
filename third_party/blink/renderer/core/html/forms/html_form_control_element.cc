@@ -47,7 +47,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tag_name,
                                                Document& document)
@@ -75,29 +75,29 @@ void HTMLFormControlElement::Trace(blink::Visitor* visitor) {
 }
 
 String HTMLFormControlElement::formAction() const {
-  const AtomicString& action = FastGetAttribute(formactionAttr);
+  const AtomicString& action = FastGetAttribute(kFormactionAttr);
   if (action.IsEmpty())
     return GetDocument().Url();
   return GetDocument().CompleteURL(StripLeadingAndTrailingHTMLSpaces(action));
 }
 
 void HTMLFormControlElement::setFormAction(const AtomicString& value) {
-  setAttribute(formactionAttr, value);
+  setAttribute(kFormactionAttr, value);
 }
 
 String HTMLFormControlElement::formEnctype() const {
-  const AtomicString& form_enctype_attr = FastGetAttribute(formenctypeAttr);
+  const AtomicString& form_enctype_attr = FastGetAttribute(kFormenctypeAttr);
   if (form_enctype_attr.IsNull())
     return g_empty_string;
   return FormSubmission::Attributes::ParseEncodingType(form_enctype_attr);
 }
 
 void HTMLFormControlElement::setFormEnctype(const AtomicString& value) {
-  setAttribute(formenctypeAttr, value);
+  setAttribute(kFormenctypeAttr, value);
 }
 
 String HTMLFormControlElement::formMethod() const {
-  const AtomicString& form_method_attr = FastGetAttribute(formmethodAttr);
+  const AtomicString& form_method_attr = FastGetAttribute(kFormmethodAttr);
   if (form_method_attr.IsNull())
     return g_empty_string;
   return FormSubmission::Attributes::MethodString(
@@ -105,11 +105,11 @@ String HTMLFormControlElement::formMethod() const {
 }
 
 void HTMLFormControlElement::setFormMethod(const AtomicString& value) {
-  setAttribute(formmethodAttr, value);
+  setAttribute(kFormmethodAttr, value);
 }
 
 bool HTMLFormControlElement::FormNoValidate() const {
-  return FastHasAttribute(formnovalidateAttr);
+  return FastHasAttribute(kFormnovalidateAttr);
 }
 
 void HTMLFormControlElement::UpdateAncestorDisabledState() const {
@@ -154,7 +154,7 @@ void HTMLFormControlElement::Reset() {
 void HTMLFormControlElement::AttributeChanged(
     const AttributeModificationParams& params) {
   HTMLElement::AttributeChanged(params);
-  if (params.name == disabledAttr &&
+  if (params.name == kDisabledAttr &&
       params.old_value.IsNull() != params.new_value.IsNull()) {
     DisabledAttributeChanged();
     if (params.reason == AttributeModificationReason::kDirectly &&
@@ -166,10 +166,10 @@ void HTMLFormControlElement::AttributeChanged(
 void HTMLFormControlElement::ParseAttribute(
     const AttributeModificationParams& params) {
   const QualifiedName& name = params.name;
-  if (name == formAttr) {
+  if (name == kFormAttr) {
     FormAttributeChanged();
     UseCounter::Count(GetDocument(), WebFeature::kFormAttribute);
-  } else if (name == readonlyAttr) {
+  } else if (name == kReadonlyAttr) {
     if (params.old_value.IsNull() != params.new_value.IsNull()) {
       SetNeedsWillValidateCheck();
       PseudoStateChanged(CSSSelector::kPseudoReadOnly);
@@ -177,11 +177,11 @@ void HTMLFormControlElement::ParseAttribute(
       if (LayoutObject* o = GetLayoutObject())
         o->InvalidateIfControlStateChanged(kReadOnlyControlState);
     }
-  } else if (name == requiredAttr) {
+  } else if (name == kRequiredAttr) {
     if (params.old_value.IsNull() != params.new_value.IsNull())
       RequiredAttributeChanged();
     UseCounter::Count(GetDocument(), WebFeature::kRequiredAttribute);
-  } else if (name == autofocusAttr) {
+  } else if (name == kAutofocusAttr) {
     HTMLElement::ParseAttribute(params);
     UseCounter::Count(GetDocument(), WebFeature::kAutoFocusAttribute);
   } else {
@@ -217,7 +217,7 @@ void HTMLFormControlElement::RequiredAttributeChanged() {
 }
 
 bool HTMLFormControlElement::IsReadOnly() const {
-  return FastHasAttribute(HTMLNames::readonlyAttr);
+  return FastHasAttribute(html_names::kReadonlyAttr);
 }
 
 bool HTMLFormControlElement::IsDisabledOrReadOnly() const {
@@ -229,7 +229,7 @@ bool HTMLFormControlElement::SupportsAutofocus() const {
 }
 
 bool HTMLFormControlElement::IsAutofocusable() const {
-  return FastHasAttribute(autofocusAttr) && SupportsAutofocus();
+  return FastHasAttribute(kAutofocusAttr) && SupportsAutofocus();
 }
 
 void HTMLFormControlElement::SetAutofillState(WebAutofillState autofill_state) {
@@ -247,7 +247,7 @@ void HTMLFormControlElement::SetAutofillSection(const WebString& section) {
 }
 
 const AtomicString& HTMLFormControlElement::autocapitalize() const {
-  if (!FastGetAttribute(autocapitalizeAttr).IsEmpty())
+  if (!FastGetAttribute(kAutocapitalizeAttr).IsEmpty())
     return HTMLElement::autocapitalize();
 
   // If the form control itself does not have the autocapitalize attribute set,
@@ -371,7 +371,7 @@ HTMLFormElement* HTMLFormControlElement::formOwner() const {
 }
 
 bool HTMLFormControlElement::IsDisabledFormControl() const {
-  if (FastHasAttribute(disabledAttr))
+  if (FastHasAttribute(kDisabledAttr))
     return true;
 
   // Since the MHTML is loaded in sandboxing mode with form submission and
@@ -390,11 +390,11 @@ bool HTMLFormControlElement::MatchesEnabledPseudoClass() const {
 }
 
 bool HTMLFormControlElement::IsRequired() const {
-  return FastHasAttribute(requiredAttr);
+  return FastHasAttribute(kRequiredAttr);
 }
 
 String HTMLFormControlElement::ResultForDialogSubmit() {
-  return FastGetAttribute(valueAttr);
+  return FastGetAttribute(kValueAttr);
 }
 
 void HTMLFormControlElement::DidRecalcStyle(StyleRecalcChange) {

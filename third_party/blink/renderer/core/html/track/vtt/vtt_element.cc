@@ -88,39 +88,39 @@ HTMLElement* VTTElement::CreateEquivalentHTMLElement(Document& document) {
     case kVTTNodeTypeClass:
     case kVTTNodeTypeLanguage:
     case kVTTNodeTypeVoice:
-      html_element = document.CreateRawElement(HTMLNames::spanTag,
+      html_element = document.CreateRawElement(html_names::kSpanTag,
                                                CreateElementFlags::ByParser());
-      html_element->setAttribute(HTMLNames::titleAttr,
+      html_element->setAttribute(html_names::kTitleAttr,
                                  getAttribute(VoiceAttributeName()));
-      html_element->setAttribute(HTMLNames::langAttr,
+      html_element->setAttribute(html_names::kLangAttr,
                                  getAttribute(LangAttributeName()));
       break;
     case kVTTNodeTypeItalic:
-      html_element = document.CreateRawElement(HTMLNames::iTag,
+      html_element = document.CreateRawElement(html_names::kITag,
                                                CreateElementFlags::ByParser());
       break;
     case kVTTNodeTypeBold:
-      html_element = document.CreateRawElement(HTMLNames::bTag,
+      html_element = document.CreateRawElement(html_names::kBTag,
                                                CreateElementFlags::ByParser());
       break;
     case kVTTNodeTypeUnderline:
-      html_element = document.CreateRawElement(HTMLNames::uTag,
+      html_element = document.CreateRawElement(html_names::kUTag,
                                                CreateElementFlags::ByParser());
       break;
     case kVTTNodeTypeRuby:
-      html_element = document.CreateRawElement(HTMLNames::rubyTag,
+      html_element = document.CreateRawElement(html_names::kRubyTag,
                                                CreateElementFlags::ByParser());
       break;
     case kVTTNodeTypeRubyText:
-      html_element = document.CreateRawElement(HTMLNames::rtTag,
+      html_element = document.CreateRawElement(html_names::kRtTag,
                                                CreateElementFlags::ByParser());
       break;
     default:
       NOTREACHED();
   }
 
-  html_element->setAttribute(HTMLNames::classAttr,
-                             getAttribute(HTMLNames::classAttr));
+  html_element->setAttribute(html_names::kClassAttr,
+                             getAttribute(html_names::kClassAttr));
   return ToHTMLElement(html_element);
 }
 

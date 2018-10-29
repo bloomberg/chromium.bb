@@ -395,8 +395,8 @@ TEST_F(ImagePaintTimingDetectorTest,
   EXPECT_GE(result1, time1);
   EXPECT_GE(time2, result1);
 
-  Element* image = GetDocument().CreateRawElement(HTMLNames::imgTag);
-  image->setAttribute(HTMLNames::idAttr, "target2");
+  Element* image = GetDocument().CreateRawElement(html_names::kImgTag);
+  image->setAttribute(html_names::kIdAttr, "target2");
   GetDocument().getElementById("parent")->appendChild(image);
   SetImageAndPaint("target2", 2, 2);
   UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();

@@ -90,8 +90,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 static inline bool ShouldAlwaysUseDirectionalSelection(LocalFrame* frame) {
   return frame->GetEditor().Behavior().ShouldConsiderSelectionAsDirectional();
 }

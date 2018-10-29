@@ -8,12 +8,7 @@ from collections import defaultdict
 
 import hasher
 import json5_generator
-import name_utilities
 import template_expander
-
-
-def _legacy_symbol(tag):
-    return name_utilities.cpp_name(tag).replace('-', '_')
 
 
 def _symbol(tag):
@@ -53,11 +48,6 @@ class MakeElementTypeHelpersWriter(json5_generator.Writer):
         self.fallback_interface = self.json5_file.metadata['fallbackInterfaceName'].strip('"')
 
         assert self.namespace, 'A namespace is required.'
-        cpp_namespace = self.namespace.lower() + '_names'
-        # TODO(tkent): Remove the following branch.  crbug.com/889726
-        if self.namespace == 'HTML':
-            cpp_namespace = self.namespace + 'Names'
-            MakeElementTypeHelpersWriter.filters['symbol'] = _legacy_symbol
 
         basename = self.namespace.lower() + '_element_type_helpers'
         self._outputs = {
@@ -69,7 +59,7 @@ class MakeElementTypeHelpersWriter(json5_generator.Writer):
                               '{0}/{0}_element.h'.format(self.namespace.lower())
         self._template_context = {
             'base_element_header': base_element_header,
-            'cpp_namespace': cpp_namespace,
+            'cpp_namespace': self.namespace.lower() + '_names',
             'input_files': self._input_files,
             'namespace': self.namespace,
             'tags': self.json5_file.name_dictionaries,

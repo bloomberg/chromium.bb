@@ -88,7 +88,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 namespace {
 
@@ -122,7 +122,7 @@ constexpr int kUndefinedQualityValue = -1.0;
 }  // namespace
 
 inline HTMLCanvasElement::HTMLCanvasElement(Document& document)
-    : HTMLElement(canvasTag, document),
+    : HTMLElement(kCanvasTag, document),
       ContextLifecycleObserver(&document),
       PageVisibilityObserver(document.GetPage()),
       size_(kDefaultCanvasWidth, kDefaultCanvasHeight),
@@ -176,7 +176,7 @@ void HTMLCanvasElement::Dispose() {
 
 void HTMLCanvasElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == widthAttr || params.name == heightAttr)
+  if (params.name == kWidthAttr || params.name == kHeightAttr)
     Reset();
   HTMLElement::ParseAttribute(params);
 }
@@ -203,7 +203,7 @@ void HTMLCanvasElement::setHeight(unsigned value,
         "Cannot resize canvas after call to transferControlToOffscreen().");
     return;
   }
-  SetUnsignedIntegralAttribute(heightAttr, value, kDefaultCanvasHeight);
+  SetUnsignedIntegralAttribute(kHeightAttr, value, kDefaultCanvasHeight);
 }
 
 void HTMLCanvasElement::setWidth(unsigned value,
@@ -214,15 +214,15 @@ void HTMLCanvasElement::setWidth(unsigned value,
         "Cannot resize canvas after call to transferControlToOffscreen().");
     return;
   }
-  SetUnsignedIntegralAttribute(widthAttr, value, kDefaultCanvasWidth);
+  SetUnsignedIntegralAttribute(kWidthAttr, value, kDefaultCanvasWidth);
 }
 
 void HTMLCanvasElement::SetSize(const IntSize& new_size) {
   if (new_size == Size())
     return;
   ignore_reset_ = true;
-  SetIntegralAttribute(widthAttr, new_size.Width());
-  SetIntegralAttribute(heightAttr, new_size.Height());
+  SetIntegralAttribute(kWidthAttr, new_size.Width());
+  SetIntegralAttribute(kHeightAttr, new_size.Height());
   ignore_reset_ = false;
   Reset();
 }
@@ -550,14 +550,14 @@ void HTMLCanvasElement::Reset() {
   bool had_resource_provider = HasResourceProvider();
 
   unsigned w = 0;
-  AtomicString value = getAttribute(widthAttr);
+  AtomicString value = getAttribute(kWidthAttr);
   if (value.IsEmpty() || !ParseHTMLNonNegativeInteger(value, w) ||
       w > 0x7fffffffu) {
     w = kDefaultCanvasWidth;
   }
 
   unsigned h = 0;
-  value = getAttribute(heightAttr);
+  value = getAttribute(kHeightAttr);
   if (value.IsEmpty() || !ParseHTMLNonNegativeInteger(value, h) ||
       h > 0x7fffffffu) {
     h = kDefaultCanvasHeight;
@@ -1112,8 +1112,8 @@ void HTMLCanvasElement::SetResourceProviderForTesting(
     std::unique_ptr<Canvas2DLayerBridge> bridge,
     const IntSize& size) {
   DiscardResourceProvider();
-  SetIntegralAttribute(widthAttr, size.Width());
-  SetIntegralAttribute(heightAttr, size.Height());
+  SetIntegralAttribute(kWidthAttr, size.Width());
+  SetIntegralAttribute(kHeightAttr, size.Height());
   SetCanvas2DLayerBridgeInternal(std::move(bridge));
   ReplaceResourceProvider(std::move(resource_provider));
 }
@@ -1327,19 +1327,19 @@ bool HTMLCanvasElement::IsSupportedInteractiveCanvasFallback(
 
   // An element that would not be interactive content except for having the
   // tabindex attribute specified.
-  if (element.FastHasAttribute(HTMLNames::tabindexAttr))
+  if (element.FastHasAttribute(html_names::kTabindexAttr))
     return true;
 
   // A non-interactive table, caption, thead, tbody, tfoot, tr, td, or th
   // element.
   if (IsHTMLTableElement(element) ||
-      element.HasTagName(HTMLNames::captionTag) ||
-      element.HasTagName(HTMLNames::theadTag) ||
-      element.HasTagName(HTMLNames::tbodyTag) ||
-      element.HasTagName(HTMLNames::tfootTag) ||
-      element.HasTagName(HTMLNames::trTag) ||
-      element.HasTagName(HTMLNames::tdTag) ||
-      element.HasTagName(HTMLNames::thTag))
+      element.HasTagName(html_names::kCaptionTag) ||
+      element.HasTagName(html_names::kTheadTag) ||
+      element.HasTagName(html_names::kTbodyTag) ||
+      element.HasTagName(html_names::kTfootTag) ||
+      element.HasTagName(html_names::kTrTag) ||
+      element.HasTagName(html_names::kTdTag) ||
+      element.HasTagName(html_names::kThTag))
     return true;
 
   return false;

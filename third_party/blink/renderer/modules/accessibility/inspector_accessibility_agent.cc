@@ -35,7 +35,7 @@ using protocol::Accessibility::AXValue;
 using protocol::Maybe;
 using protocol::Response;
 
-using namespace HTMLNames;
+using namespace html_names;
 
 namespace {
 
@@ -237,7 +237,7 @@ void FillWidgetProperties(AXObject& ax_object,
   }
   int hierarchical_level = ax_object.HierarchicalLevel();
   if (hierarchical_level > 0 ||
-      ax_object.HasAttribute(HTMLNames::aria_levelAttr)) {
+      ax_object.HasAttribute(html_names::kAriaLevelAttr)) {
     properties.addItem(CreateProperty(AXPropertyNameEnum::Level,
                                       CreateValue(hierarchical_level)));
   }
@@ -455,11 +455,11 @@ class SparseAttributeAXPropertyAdapter
       case AXObjectVectorAttribute::kAriaControls:
         properties_.addItem(
             CreateRelatedNodeListProperty(AXPropertyNameEnum::Controls, objects,
-                                          aria_controlsAttr, *ax_object_));
+                                          kAriaControlsAttr, *ax_object_));
         break;
       case AXObjectVectorAttribute::kAriaFlowTo:
         properties_.addItem(CreateRelatedNodeListProperty(
-            AXPropertyNameEnum::Flowto, objects, aria_flowtoAttr, *ax_object_));
+            AXPropertyNameEnum::Flowto, objects, kAriaFlowtoAttr, *ax_object_));
         break;
     }
   }
@@ -472,14 +472,14 @@ void FillRelationships(AXObject& ax_object,
   if (!results.IsEmpty()) {
     properties.addItem(
         CreateRelatedNodeListProperty(AXPropertyNameEnum::Describedby, results,
-                                      aria_describedbyAttr, ax_object));
+                                      kAriaDescribedbyAttr, ax_object));
   }
   results.clear();
 
   ax_object.AriaOwnsElements(results);
   if (!results.IsEmpty()) {
     properties.addItem(CreateRelatedNodeListProperty(
-        AXPropertyNameEnum::Owns, results, aria_ownsAttr, ax_object));
+        AXPropertyNameEnum::Owns, results, kAriaOwnsAttr, ax_object));
   }
   results.clear();
 }

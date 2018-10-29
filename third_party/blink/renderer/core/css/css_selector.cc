@@ -44,8 +44,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 struct SameSizeAsCSSSelector {
   unsigned bitfields;
   void* pointers[1];

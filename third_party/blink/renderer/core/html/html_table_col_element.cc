@@ -35,7 +35,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline HTMLTableColElement::HTMLTableColElement(const QualifiedName& tag_name,
                                                 Document& document)
@@ -45,7 +45,7 @@ DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableColElement)
 
 bool HTMLTableColElement::IsPresentationAttribute(
     const QualifiedName& name) const {
-  if (name == widthAttr)
+  if (name == kWidthAttr)
     return true;
   return HTMLTablePartElement::IsPresentationAttribute(name);
 }
@@ -54,7 +54,7 @@ void HTMLTableColElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  if (name == widthAttr)
+  if (name == kWidthAttr)
     AddHTMLLengthToStyle(style, CSSPropertyWidth, value);
   else
     HTMLTablePartElement::CollectStyleForPresentationAttribute(name, value,
@@ -63,7 +63,7 @@ void HTMLTableColElement::CollectStyleForPresentationAttribute(
 
 void HTMLTableColElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == spanAttr) {
+  if (params.name == kSpanAttr) {
     unsigned new_span = 0;
     if (!ParseHTMLClampedNonNegativeInteger(params.new_value, kMinColSpan,
                                             kMaxColSpan, new_span)) {
@@ -72,7 +72,7 @@ void HTMLTableColElement::ParseAttribute(
     span_ = new_span;
     if (GetLayoutObject() && GetLayoutObject()->IsLayoutTableCol())
       GetLayoutObject()->UpdateFromElement();
-  } else if (params.name == widthAttr) {
+  } else if (params.name == kWidthAttr) {
     if (!params.new_value.IsEmpty()) {
       if (GetLayoutObject() && GetLayoutObject()->IsLayoutTableCol()) {
         LayoutTableCol* col = ToLayoutTableCol(GetLayoutObject());
@@ -89,7 +89,7 @@ void HTMLTableColElement::ParseAttribute(
 
 const CSSPropertyValueSet*
 HTMLTableColElement::AdditionalPresentationAttributeStyle() {
-  if (!HasTagName(colgroupTag))
+  if (!HasTagName(kColgroupTag))
     return nullptr;
   if (HTMLTableElement* table = FindParentTable())
     return table->AdditionalGroupStyle(false);
@@ -97,11 +97,11 @@ HTMLTableColElement::AdditionalPresentationAttributeStyle() {
 }
 
 void HTMLTableColElement::setSpan(unsigned n) {
-  SetUnsignedIntegralAttribute(spanAttr, n, kDefaultColSpan);
+  SetUnsignedIntegralAttribute(kSpanAttr, n, kDefaultColSpan);
 }
 
 const AtomicString& HTMLTableColElement::Width() const {
-  return getAttribute(widthAttr);
+  return getAttribute(kWidthAttr);
 }
 
 }  // namespace blink

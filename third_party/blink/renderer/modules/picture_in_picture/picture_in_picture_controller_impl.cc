@@ -76,7 +76,7 @@ PictureInPictureControllerImpl::IsElementAllowed(
   if (!element.HasVideo())
     return Status::kVideoTrackNotAvailable;
 
-  if (element.FastHasAttribute(HTMLNames::disablepictureinpictureAttr))
+  if (element.FastHasAttribute(html_names::kDisablepictureinpictureAttr))
     return Status::kDisabledByAttribute;
 
   return Status::kEnabled;

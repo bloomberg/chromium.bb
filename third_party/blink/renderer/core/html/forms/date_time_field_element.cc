@@ -37,7 +37,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 DateTimeFieldElement::FieldOwner::~FieldOwner() = default;
 
@@ -154,12 +154,12 @@ void DateTimeFieldElement::Initialize(const AtomicString& pseudo,
                                       int ax_minimum,
                                       int ax_maximum) {
   // On accessibility, DateTimeFieldElement acts like spin button.
-  setAttribute(roleAttr, AtomicString("spinbutton"));
-  setAttribute(aria_placeholderAttr, AtomicString(Placeholder()));
-  setAttribute(aria_valueminAttr, AtomicString::Number(ax_minimum));
-  setAttribute(aria_valuemaxAttr, AtomicString::Number(ax_maximum));
+  setAttribute(kRoleAttr, AtomicString("spinbutton"));
+  setAttribute(kAriaPlaceholderAttr, AtomicString(Placeholder()));
+  setAttribute(kAriaValueminAttr, AtomicString::Number(ax_minimum));
+  setAttribute(kAriaValuemaxAttr, AtomicString::Number(ax_maximum));
 
-  setAttribute(aria_labelAttr, AtomicString(ax_help_text));
+  setAttribute(kAriaLabelAttr, AtomicString(ax_help_text));
   SetShadowPseudoId(pseudo);
   AppendChild(Text::Create(GetDocument(), VisibleValue()));
 }
@@ -177,7 +177,7 @@ bool DateTimeFieldElement::IsFieldOwnerReadOnly() const {
 }
 
 bool DateTimeFieldElement::IsDisabled() const {
-  return FastHasAttribute(disabledAttr);
+  return FastHasAttribute(kDisabledAttr);
 }
 
 Locale& DateTimeFieldElement::LocaleForOwner() const {
@@ -195,7 +195,7 @@ float DateTimeFieldElement::MaximumWidth(const ComputedStyle&) {
 
 void DateTimeFieldElement::SetDisabled() {
   // Set HTML attribute disabled to change apperance.
-  SetBooleanAttribute(disabledAttr, true);
+  SetBooleanAttribute(kDisabledAttr, true);
   SetNeedsStyleRecalc(
       kSubtreeStyleChange,
       StyleChangeReasonForTracing::CreateWithExtraData(
@@ -216,12 +216,12 @@ void DateTimeFieldElement::UpdateVisibleValue(EventBehavior event_behavior) {
 
   text_node->ReplaceWholeText(new_visible_value);
   if (HasValue()) {
-    setAttribute(aria_valuenowAttr,
+    setAttribute(kAriaValuenowAttr,
                  AtomicString::Number(ValueForARIAValueNow()));
-    setAttribute(aria_valuetextAttr, AtomicString(new_visible_value));
+    setAttribute(kAriaValuetextAttr, AtomicString(new_visible_value));
   } else {
-    removeAttribute(aria_valuenowAttr);
-    removeAttribute(aria_valuetextAttr);
+    removeAttribute(kAriaValuenowAttr);
+    removeAttribute(kAriaValuetextAttr);
   }
 
   if (event_behavior == kDispatchEvent && field_owner_)

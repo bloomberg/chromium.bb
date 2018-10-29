@@ -124,8 +124,6 @@ static_assert(sizeof(PaintLayer) == sizeof(SameSizeAsPaintLayer),
 
 }  // namespace
 
-using namespace HTMLNames;
-
 PaintLayerRareData::PaintLayerRareData()
     : enclosing_pagination_layer(nullptr),
       potential_compositing_reasons_from_style(CompositingReason::kNone),

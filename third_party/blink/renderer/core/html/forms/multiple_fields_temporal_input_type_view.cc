@@ -549,7 +549,7 @@ void MultipleFieldsTemporalInputTypeView::UpdateView() {
   edit->setAttribute(datetimeformat_attr,
                      AtomicString(layout_parameters.date_time_format),
                      ASSERT_NO_EXCEPTION);
-  const AtomicString pattern = edit->FastGetAttribute(HTMLNames::patternAttr);
+  const AtomicString pattern = edit->FastGetAttribute(html_names::kPatternAttr);
   if (!pattern.IsEmpty())
     layout_parameters.date_time_format = pattern;
 

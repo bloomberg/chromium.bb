@@ -28,8 +28,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 StepRange::StepRange()
     : maximum_(100),
       minimum_(0),
