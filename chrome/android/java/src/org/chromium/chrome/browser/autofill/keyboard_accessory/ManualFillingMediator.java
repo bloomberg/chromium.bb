@@ -47,6 +47,7 @@ class ManualFillingMediator
             this::onKeyboardVisibilityChanged;
     private Supplier<InsetObserverView> mInsetObserverViewSupplier;
     private boolean mShouldShow = false;
+    private @Px int mPreviousControlHeight; // TODO(fhorschig): Remove after crrev.com/c/1286426.
     private final KeyboardExtensionSizeManager mKeyboardExtensionSizeManager =
             new KeyboardExtensionSizeManager();
 
@@ -159,6 +160,7 @@ class ManualFillingMediator
             @Override
             public void didSelectTab(Tab tab, @TabModel.TabSelectionType int type, int lastId) {
                 mActiveBrowserTab = tab;
+                mPreviousControlHeight = mActivity.getFullscreenManager().getBottomControlsHeight();
                 restoreCachedState(tab);
             }
 
@@ -284,6 +286,8 @@ class ManualFillingMediator
         }
         mKeyboardAccessory.requestShowing();
         mKeyboardExtensionSizeManager.setKeyboardExtensionHeight(calculateAccessoryBarHeight());
+        // TODO(fhorschig): Remove after crrev.com/c/1286426:
+        mActivity.getFullscreenManager().setBottomControlsHeight(0);
         mKeyboardAccessory.closeActiveTab();
         updateInfobarState(true);
         mKeyboardAccessory.setBottomOffset(0);
@@ -315,6 +319,7 @@ class ManualFillingMediator
         if (mWindowAndroid.getKeyboardDelegate().isKeyboardShowing(mActivity, contentView)) {
             return; // If the keyboard is showing or is starting to show, the sheet closes gently.
         }
+        mActivity.getFullscreenManager().setBottomControlsHeight(mPreviousControlHeight);
         mKeyboardExtensionSizeManager.setKeyboardExtensionHeight(0);
         mKeyboardAccessory.closeActiveTab();
         updateInfobarState(false);
@@ -349,6 +354,8 @@ class ManualFillingMediator
         mKeyboardAccessory.setBottomOffset(newControlsOffset);
         mKeyboardExtensionSizeManager.setKeyboardExtensionHeight(
                 mKeyboardAccessory.isShown() ? newControlsHeight : 0);
+        mActivity.getFullscreenManager().setBottomControlsHeight(
+                mKeyboardAccessory.isShown() ? 0 : mPreviousControlHeight);
         mActivity.getFullscreenManager().updateViewportSize();
     }
 
