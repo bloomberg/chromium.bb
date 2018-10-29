@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.autofill_assistant;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
 import android.media.ThumbnailUtils;
 import android.os.AsyncTask;
 import android.support.annotation.Nullable;
@@ -16,9 +15,11 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.widget.AppCompatImageView;
 import android.text.TextUtils;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -57,6 +58,7 @@ class AutofillAssistantUiDelegate {
     private final View mFullContainer;
     private final View mOverlay;
     private final LinearLayout mBottomBar;
+    private final HorizontalScrollView mCarouselScroll;
     private final ViewGroup mChipsViewContainer;
     private final TextView mStatusMessageView;
     private final MaterialProgressBar mProgressBar;
@@ -176,6 +178,11 @@ class AutofillAssistantUiDelegate {
         }
     }
 
+    // Names borrowed from :
+    // - https://guidelines.googleplex.com/googlematerial/components/chips.html
+    // - https://guidelines.googleplex.com/googlematerial/components/buttons.html
+    private enum ChipStyle { CHIP_ASSISTIVE, BUTTON_FILLED, BUTTON_HAIRLINE }
+
     /**
      * Constructs an assistant UI delegate.
      *
@@ -201,7 +208,8 @@ class AutofillAssistantUiDelegate {
                         -> HelpAndFeedback.getInstance(mActivity).showFeedback(mActivity,
                                 Profile.getLastUsedProfile(), mActivity.getActivityTab().getUrl(),
                                 FEEDBACK_CATEGORY_TAG));
-        mChipsViewContainer = mBottomBar.findViewById(R.id.carousel);
+        mCarouselScroll = mBottomBar.findViewById(R.id.carousel_scroll);
+        mChipsViewContainer = mCarouselScroll.findViewById(R.id.carousel);
         mStatusMessageView = mBottomBar.findViewById(R.id.status_message);
         mProgressBar = mBottomBar.findViewById(R.id.progress_bar);
 
@@ -245,28 +253,47 @@ class AutofillAssistantUiDelegate {
             return;
         }
 
+        boolean hasHighlightedScript = hasHighlightedScript(scriptHandles);
+        ChipStyle nonHighlightStyle =
+                hasHighlightedScript ? ChipStyle.BUTTON_HAIRLINE : ChipStyle.CHIP_ASSISTIVE;
+
         for (int i = 0; i < scriptHandles.size(); i++) {
-            ScriptHandle scriptHandle = scriptHandles.get(i);
-            TextView chipView = createChipView(scriptHandle.getName());
+            // Add scripts in reverse order if the chips are right aligned.
+            int j = hasHighlightedScript ? scriptHandles.size() - i - 1 : i;
+            ScriptHandle scriptHandle = scriptHandles.get(j);
+            ChipStyle chipStyle =
+                    scriptHandle.isHighlight() ? ChipStyle.BUTTON_FILLED : nonHighlightStyle;
+            TextView chipView = createChipView(scriptHandle.getName(), chipStyle);
             chipView.setOnClickListener((unusedView) -> {
                 clearChipsViewContainer();
                 mClient.onScriptSelected(scriptHandle.getPath());
             });
 
-            if (scriptHandle.isHighlight()) {
-                int highlightColor = mActivity.getResources().getColor(
-                        org.chromium.chrome.R.color.modern_blue_600);
-                int strokeWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1,
-                        mActivity.getResources().getDisplayMetrics());
-                ((GradientDrawable) chipView.getBackground().getCurrent())
-                        .setStroke(strokeWidth, highlightColor);
-                chipView.setTextColor(highlightColor);
-            }
-
             addChipViewToContainer(chipView);
         }
 
+        setChipViewContainerGravity(hasHighlightedScript);
         ensureFullContainerIsShown();
+    }
+
+    private boolean hasHighlightedScript(ArrayList<ScriptHandle> scripts) {
+        for (int i = 0; i < scripts.size(); i++) {
+            if (scripts.get(i).isHighlight()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void setChipViewContainerGravity(boolean alignRight) {
+        ViewGroup.LayoutParams currentLayoutParams = mCarouselScroll.getLayoutParams();
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(currentLayoutParams);
+        layoutParams.gravity = alignRight ? Gravity.END : Gravity.START;
+        mCarouselScroll.setLayoutParams(layoutParams);
+
+        // Reset the scroll position.
+        mCarouselScroll.post(
+                () -> mCarouselScroll.fullScroll(alignRight ? View.FOCUS_RIGHT : View.FOCUS_LEFT));
     }
 
     private void addChipViewToContainer(TextView newChild) {
@@ -284,9 +311,22 @@ class AutofillAssistantUiDelegate {
         mChipsViewContainer.setVisibility(View.VISIBLE);
     }
 
-    private TextView createChipView(String text) {
+    private TextView createChipView(String text, ChipStyle style) {
+        int resId = -1;
+        switch (style) {
+            case CHIP_ASSISTIVE:
+                resId = R.layout.autofill_assistant_chip_assistive;
+                break;
+            case BUTTON_FILLED:
+                resId = R.layout.autofill_assistant_button_filled;
+                break;
+            case BUTTON_HAIRLINE:
+                resId = R.layout.autofill_assistant_button_hairline;
+                break;
+        }
+
         TextView chipView = (TextView) (LayoutInflater.from(mActivity).inflate(
-                R.layout.autofill_assistant_chip, mChipsViewContainer, false));
+                resId, mChipsViewContainer, false));
         chipView.setText(text);
         return chipView;
     }
@@ -407,7 +447,8 @@ class AutofillAssistantUiDelegate {
         for (int i = 0; i < profiles.size(); i++) {
             AutofillProfile profile = profiles.get(i);
             // TODO(crbug.com/806868): Show more information than the street.
-            TextView chipView = createChipView(profile.getStreetAddress());
+            TextView chipView =
+                    createChipView(profile.getStreetAddress(), ChipStyle.CHIP_ASSISTIVE);
             chipView.setOnClickListener((unusedView) -> {
                 clearChipsViewContainer();
                 mClient.onAddressSelected(profile.getGUID());
@@ -415,6 +456,7 @@ class AutofillAssistantUiDelegate {
             addChipViewToContainer(chipView);
         }
 
+        setChipViewContainerGravity(false);
         ensureFullContainerIsShown();
     }
 
@@ -439,7 +481,8 @@ class AutofillAssistantUiDelegate {
         for (int i = 0; i < cards.size(); i++) {
             CreditCard card = cards.get(i);
             // TODO(crbug.com/806868): Show more information than the card number.
-            TextView chipView = createChipView(card.getObfuscatedNumber());
+            TextView chipView =
+                    createChipView(card.getObfuscatedNumber(), ChipStyle.CHIP_ASSISTIVE);
             chipView.setOnClickListener((unusedView) -> {
                 clearChipsViewContainer();
                 mClient.onCardSelected(card.getGUID());
@@ -447,6 +490,7 @@ class AutofillAssistantUiDelegate {
             addChipViewToContainer(chipView);
         }
 
+        setChipViewContainerGravity(false);
         ensureFullContainerIsShown();
     }
 

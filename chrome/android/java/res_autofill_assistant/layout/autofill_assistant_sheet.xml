@@ -138,7 +138,8 @@
         </RelativeLayout>
 
         <HorizontalScrollView
-            android:layout_width="match_parent"
+            android:id="@+id/carousel_scroll"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:animateLayoutChanges="true"
             android:scrollbars="none">
