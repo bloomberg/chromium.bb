@@ -18,9 +18,22 @@
 # exists.
 #
 # TODO: Potentially switch structure. It's possible we want swarming dimensions
-# to live in their own 'swarming' top level key. This could make things more
-# clear for users, but would require moving mixins into sections. Re-evaluate
-# if there are more uses of this potential feature.
+# to live in their own 'swarming' top level key in this file. The file would
+# then look something like:
+#
+# {
+#   'swarming': {
+#     'x86-64': {
+#       'cpu': 'x86-64',
+#     },
+#   },
+#   'coverage_data': {
+#     'isolate_coverage_data': True,
+#   },
+# }
+#
+# This could make things more clear for users, but would require moving mixins
+# into sections. Re-evaluate if there are more uses of this potential feature.
 #
 # Examples:
 #
