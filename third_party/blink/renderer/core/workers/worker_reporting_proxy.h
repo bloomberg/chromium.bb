@@ -60,7 +60,6 @@ class CORE_EXPORT WorkerReportingProxy {
                                     MessageLevel,
                                     const String& message,
                                     SourceLocation*) {}
-  virtual void PostMessageToPageInspector(int session_id, const String&) {}
 
   // Invoked when the new WorkerGlobalScope is created on
   // WorkerThread::InitializeOnWorkerThread.

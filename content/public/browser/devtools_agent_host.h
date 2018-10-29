@@ -40,6 +40,7 @@ class CONTENT_EXPORT DevToolsAgentHost
  public:
   static const char kTypePage[];
   static const char kTypeFrame[];
+  static const char kTypeDedicatedWorker[];
   static const char kTypeSharedWorker[];
   static const char kTypeServiceWorker[];
   static const char kTypeBrowser[];

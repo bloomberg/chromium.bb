@@ -18,6 +18,7 @@
 namespace content {
 
 class DevToolsAgentHostImpl;
+class DevToolsRendererChannel;
 class NavigationHandle;
 class NavigationThrottle;
 class RenderFrameHostImpl;
@@ -41,6 +42,7 @@ class TargetHandler : public DevToolsDomainHandler,
   };
   TargetHandler(AccessMode access_mode,
                 const std::string& owner_target_id,
+                DevToolsRendererChannel* renderer_channel,
                 TargetRegistry* target_registry);
   ~TargetHandler() override;
 
@@ -52,7 +54,6 @@ class TargetHandler : public DevToolsDomainHandler,
   Response Disable() override;
 
   void DidCommitNavigation();
-  void RenderFrameHostChanged();
   std::unique_ptr<NavigationThrottle> CreateThrottleForNavigation(
       NavigationHandle* navigation_handle);
 
@@ -104,8 +105,7 @@ class TargetHandler : public DevToolsDomainHandler,
   void AutoDetach(DevToolsAgentHost* host);
   Response FindSession(Maybe<std::string> session_id,
                        Maybe<std::string> target_id,
-                       Session** session,
-                       bool fall_through);
+                       Session** session);
   void ClearThrottles();
 
   // DevToolsAgentHostObserver implementation.

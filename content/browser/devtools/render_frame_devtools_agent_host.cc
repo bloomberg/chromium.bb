@@ -247,7 +247,7 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session,
       session->client()->MayDiscoverTargets()
           ? protocol::TargetHandler::AccessMode::kRegular
           : protocol::TargetHandler::AccessMode::kAutoAttachOnly,
-      GetId(), registry)));
+      GetId(), GetRendererChannel(), registry)));
   session->AddHandler(base::WrapUnique(new protocol::PageHandler(
       emulation_handler, session->client()->MayAffectLocalFiles())));
   session->AddHandler(base::WrapUnique(new protocol::SecurityHandler()));
@@ -721,7 +721,7 @@ void RenderFrameDevToolsAgentHost::UpdateRendererChannel(bool force) {
   }
   int process_id = frame_host_ ? frame_host_->GetProcess()->GetID()
                                : ChildProcessHost::kInvalidUniqueID;
-  GetRendererChannel()->SetRenderer(
+  GetRendererChannel()->SetRendererAssociated(
       std::move(agent_ptr), std::move(host_request), process_id, frame_host_);
 }
 

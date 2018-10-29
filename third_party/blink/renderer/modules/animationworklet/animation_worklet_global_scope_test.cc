@@ -85,8 +85,7 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
             OriginTrialContext::GetTokens(document).get(),
             base::UnguessableToken::Create(), nullptr /* worker_settings */,
             kV8CacheOptionsDefault, new WorkletModuleResponsesMap),
-        base::nullopt, WorkerInspectorProxy::PauseOnWorkerStart::kDontPause,
-        ParentExecutionContextTaskRunners::Create());
+        base::nullopt, nullptr, ParentExecutionContextTaskRunners::Create());
     return thread;
   }
 

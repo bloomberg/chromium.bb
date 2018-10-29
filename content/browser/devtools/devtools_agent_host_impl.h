@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/macros.h"
 #include "base/process/kill.h"
 #include "content/browser/devtools/devtools_io_context.h"
 #include "content/browser/devtools/devtools_renderer_channel.h"
@@ -19,7 +20,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "third_party/blink/public/web/devtools_agent.mojom.h"
 
 namespace content {
 
@@ -114,6 +114,8 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   DevToolsIOContext io_context_;
   DevToolsRendererChannel renderer_channel_;
   static int s_force_creation_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(DevToolsAgentHostImpl);
 };
 
 }  // namespace content

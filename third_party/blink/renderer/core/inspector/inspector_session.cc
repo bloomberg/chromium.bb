@@ -103,25 +103,6 @@ void InspectorSession::DispatchProtocolMessage(int call_id,
   }
 }
 
-void InspectorSession::DispatchProtocolMessage(const String& message) {
-  DCHECK(!disposed_);
-  int call_id;
-  String method;
-  std::unique_ptr<protocol::Value> parsed_message =
-      protocol::StringUtil::parseJSON(message);
-  if (!inspector_backend_dispatcher_->parseCommand(parsed_message.get(),
-                                                   &call_id, &method)) {
-    return;
-  }
-  if (v8_inspector::V8InspectorSession::canDispatchMethod(
-          ToV8InspectorStringView(method))) {
-    v8_session_->dispatchProtocolMessage(ToV8InspectorStringView(message));
-  } else {
-    inspector_backend_dispatcher_->dispatch(call_id, method,
-                                            std::move(parsed_message), message);
-  }
-}
-
 void InspectorSession::DidStartProvisionalLoad(LocalFrame* frame) {
   if (inspected_frames_->Root() == frame) {
     v8_session_->setSkipAllPauses(true);

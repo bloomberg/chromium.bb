@@ -8,28 +8,17 @@
   `);
   testRunner.log('Started worker');
 
-  var workerRequestId = 1;
-  function sendCommandToWorker(method, params) {
-    var message = {method, params, id: workerRequestId};
-    dp.Target.sendMessageToTarget({targetId: workerId, message: JSON.stringify(message)});
-    return workerRequestId++;
-  }
-
   dp.Target.setAutoAttach({autoAttach: true, waitForDebuggerOnStart: false});
 
-  var messageObject = await dp.Target.onceAttachedToTarget();
-  var workerId = messageObject.params.targetInfo.targetId;
+  let event = await dp.Target.onceAttachedToTarget();
+  const worker = new WorkerProtocol(dp, event.params.sessionId);
   testRunner.log('Worker created');
   testRunner.log('didConnectToWorker');
-  sendCommandToWorker('Debugger.enable', {});
-  sendCommandToWorker('Debugger.pause', {});
 
-  dp.Target.onReceivedMessageFromTarget(messageObject => {
-    var message = JSON.parse(messageObject.params.message);
-    if (message.method === 'Debugger.paused') {
-      testRunner.log('SUCCESS: Worker paused');
-      sendCommandToWorker('Debugger.disable', {});
-      testRunner.completeTest();
-    }
-  });
+  await worker.dp.Debugger.enable({});
+  worker.dp.Debugger.pause({});
+  await worker.dp.Debugger.oncePaused();
+  testRunner.log('SUCCESS: Worker paused');
+  await worker.dp.Debugger.disable({});
+  testRunner.completeTest();
 })

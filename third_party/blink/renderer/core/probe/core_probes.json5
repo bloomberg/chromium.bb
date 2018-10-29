@@ -208,13 +208,6 @@
         "willSendRequest",
       ]
     },
-    InspectorWorkerAgent: {
-      probes: [
-        "didStartWorker",
-        "shouldWaitForDebuggerOnWorkerStart",
-        "workerTerminated",
-      ]
-    },
     InspectorSession: {
       probes: [
         "didStartProvisionalLoad",

@@ -39,9 +39,9 @@
 #include "third_party/blink/public/platform/web_thread_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/inspector/devtools_agent.h"
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
-#include "third_party/blink/renderer/core/workers/worker_inspector_proxy.h"
 #include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
@@ -101,7 +101,7 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   // (https://crbug.com/710364)
   void Start(std::unique_ptr<GlobalScopeCreationParams>,
              const base::Optional<WorkerBackingThreadStartupData>&,
-             WorkerInspectorProxy::PauseOnWorkerStart,
+             DevToolsAgent*,
              ParentExecutionContextTaskRunners*);
 
   // Posts a task to evaluate a top-level classic script on the worker thread.
@@ -156,19 +156,9 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
     return worker_reporting_proxy_;
   }
 
-  // Only constructible on the main thread.
-  class CORE_EXPORT ScopedDebuggerTask {
-    STACK_ALLOCATED();
-
-   public:
-    explicit ScopedDebuggerTask(WorkerThread*);
-    ~ScopedDebuggerTask();
-
-   private:
-    WorkerThread* thread_;
-    DISALLOW_COPY_AND_ASSIGN(ScopedDebuggerTask);
-  };
-  InspectorTaskRunner* GetInspectorTaskRunner();
+  // Only callable on the parent thread.
+  void DebuggerTaskStarted();
+  void DebuggerTaskFinished();
 
   // Callable on both the main thread and the worker thread.
   const base::UnguessableToken& GetDevToolsWorkerToken() const {
@@ -290,7 +280,9 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   void InitializeOnWorkerThread(
       std::unique_ptr<GlobalScopeCreationParams>,
       const base::Optional<WorkerBackingThreadStartupData>&,
-      WorkerInspectorProxy::PauseOnWorkerStart) LOCKS_EXCLUDED(mutex_);
+      bool wait_for_debugger,
+      mojom::blink::DevToolsAgentRequest,
+      mojom::blink::DevToolsAgentHostPtrInfo) LOCKS_EXCLUDED(mutex_);
 
   void EvaluateClassicScriptOnWorkerThread(
       const KURL& script_url,

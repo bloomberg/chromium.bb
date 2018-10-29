@@ -122,8 +122,6 @@ interface CoreProbes {
   void frameStoppedLoading([Keep] LocalFrame*);
   void frameScheduledNavigation([Keep] LocalFrame*, ScheduledNavigation*);
   void frameClearedScheduledNavigation([Keep] LocalFrame*);
-  void didStartWorker(ExecutionContext*, WorkerInspectorProxy* proxy, bool waitingForDebugger);
-  void workerTerminated(ExecutionContext*, WorkerInspectorProxy* proxy);
   void didCreateWebSocket([Keep] ExecutionContext*, unsigned long identifier, const KURL& requestURL, const String& protocol);
   void willSendWebSocketHandshakeRequest([Keep] ExecutionContext*, unsigned long identifier, network::mojom::blink::WebSocketHandshakeRequest* request);
   void didReceiveWebSocketHandshakeResponse([Keep] ExecutionContext*, unsigned long identifier, network::mojom::blink::WebSocketHandshakeRequest* request, network::mojom::blink::WebSocketHandshakeResponse* response);
@@ -153,7 +151,6 @@ interface CoreProbes {
   V8Compile([Keep] ExecutionContext* context, const String& file_name, int line, int column);
   ParseHTML(Document* document, HTMLDocumentParser* parser);
   void forcePseudoState([Keep] Element* element, CSSSelector::PseudoType pseudoState, bool* result);
-  void shouldWaitForDebuggerOnWorkerStart(ExecutionContext* context, bool* result);
   void shouldForceCORSPreflight(ExecutionContext*, bool* result);
   void shouldBlockRequest(ExecutionContext*, const KURL&, bool* result);
   void shouldBypassServiceWorker(ExecutionContext* context, bool* result);

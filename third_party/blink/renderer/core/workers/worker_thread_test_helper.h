@@ -101,8 +101,7 @@ class WorkerThreadForTest : public WorkerThread {
         kV8CacheOptionsDefault, nullptr /* worklet_module_responses_map */);
 
     Start(std::move(creation_params),
-          WorkerBackingThreadStartupData::CreateDefault(),
-          WorkerInspectorProxy::PauseOnWorkerStart::kDontPause,
+          WorkerBackingThreadStartupData::CreateDefault(), nullptr,
           parent_execution_context_task_runners);
     EvaluateClassicScript(script_url, kOpaqueResource, source,
                           nullptr /* cached_meta_data */,

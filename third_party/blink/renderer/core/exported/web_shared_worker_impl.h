@@ -65,7 +65,6 @@ class WebSharedWorkerClient;
 class WebString;
 class WebURL;
 class WorkerClassicScriptLoader;
-class WorkerInspectorProxy;
 
 // This class is used by the worker process code to talk to the SharedWorker
 // implementation. This is basically accessed on the main thread, but some
@@ -110,7 +109,6 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
 
   // Callback methods for SharedWorkerReportingProxy.
   void CountFeature(WebFeature);
-  void PostMessageToPageInspector(int session_id, const String& message);
   void DidCloseWorkerGlobalScope();
   void DidTerminateWorkerThread();
 
@@ -130,8 +128,6 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
   // Unique worker token used by DevTools to attribute different instrumentation
   // to the same worker.
   base::UnguessableToken devtools_worker_token_;
-
-  Persistent<WorkerInspectorProxy> worker_inspector_proxy_;
 
   Persistent<SharedWorkerReportingProxy> reporting_proxy_;
   std::unique_ptr<WorkerThread> worker_thread_;

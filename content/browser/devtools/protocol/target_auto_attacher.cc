@@ -5,6 +5,7 @@
 #include "content/browser/devtools/protocol/target_auto_attacher.h"
 
 #include "base/containers/queue.h"
+#include "content/browser/devtools/devtools_renderer_channel.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -86,10 +87,13 @@ ServiceWorkerDevToolsAgentHost::Map GetMatchingServiceWorkers(
 
 }  // namespace
 
-TargetAutoAttacher::TargetAutoAttacher(AttachCallback attach_callback,
-                                       DetachCallback detach_callback)
+TargetAutoAttacher::TargetAutoAttacher(
+    AttachCallback attach_callback,
+    DetachCallback detach_callback,
+    DevToolsRendererChannel* renderer_channel)
     : attach_callback_(attach_callback),
       detach_callback_(detach_callback),
+      renderer_channel_(renderer_channel),
       render_frame_host_(nullptr),
       auto_attach_(false),
       wait_for_debugger_on_start_(false) {}
@@ -222,10 +226,8 @@ void TargetAutoAttacher::ReattachTargetsOfType(const Hosts& new_hosts,
 void TargetAutoAttacher::SetAutoAttach(bool auto_attach,
                                        bool wait_for_debugger_on_start) {
   wait_for_debugger_on_start_ = wait_for_debugger_on_start;
-  if (auto_attach_ == auto_attach)
-    return;
-  auto_attach_ = auto_attach;
-  if (auto_attach_) {
+  if (auto_attach && !auto_attach_) {
+    auto_attach_ = true;
     auto_attaching_service_workers_ =
         render_frame_host_ && !render_frame_host_->GetParent();
     if (auto_attaching_service_workers_) {
@@ -233,7 +235,8 @@ void TargetAutoAttacher::SetAutoAttach(bool auto_attach,
       ReattachServiceWorkers(false);
     }
     UpdateFrames();
-  } else {
+  } else if (!auto_attach && auto_attach_) {
+    auto_attach_ = false;
     Hosts empty;
     ReattachTargetsOfType(empty, DevToolsAgentHost::kTypeFrame, false);
     if (auto_attaching_service_workers_) {
@@ -242,8 +245,12 @@ void TargetAutoAttacher::SetAutoAttach(bool auto_attach,
                             false);
       auto_attaching_service_workers_ = false;
     }
+    ReattachTargetsOfType(empty, DevToolsAgentHost::kTypeDedicatedWorker,
+                          false);
     DCHECK(auto_attached_hosts_.empty());
   }
+  renderer_channel_->SetReportChildWorkers(this, auto_attach,
+                                           wait_for_debugger_on_start);
 }
 
 // -------- ServiceWorkerDevToolsManager::Observer ----------
@@ -276,6 +283,12 @@ void TargetAutoAttacher::WorkerVersionDoomed(
 
 void TargetAutoAttacher::WorkerDestroyed(ServiceWorkerDevToolsAgentHost* host) {
   ReattachServiceWorkers(false);
+}
+
+void TargetAutoAttacher::ChildWorkerCreated(DevToolsAgentHostImpl* agent_host,
+                                            bool waiting_for_debugger) {
+  attach_callback_.Run(agent_host, waiting_for_debugger);
+  auto_attached_hosts_.insert(scoped_refptr<DevToolsAgentHost>(agent_host));
 }
 
 }  // namespace protocol

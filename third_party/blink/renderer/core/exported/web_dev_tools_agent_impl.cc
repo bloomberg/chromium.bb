@@ -77,7 +77,6 @@
 #include "third_party/blink/renderer/core/inspector/inspector_session.h"
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
 #include "third_party/blink/renderer/core/inspector/inspector_testing_agent.h"
-#include "third_party/blink/renderer/core/inspector/inspector_worker_agent.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
@@ -239,9 +238,6 @@ InspectorSession* WebDevToolsAgentImpl::AttachSession(
   inspector_session->Append(
       InspectorApplicationCacheAgent::Create(inspected_frames));
 
-  inspector_session->Append(
-      new InspectorWorkerAgent(inspected_frames, nullptr));
-
   InspectorPageAgent* page_agent = InspectorPageAgent::Create(
       inspected_frames, this, resource_content_loader_.Get(),
       inspector_session->V8Session());
@@ -355,7 +351,7 @@ void WebDevToolsAgentImpl::BindRequest(
     mojom::blink::DevToolsAgentAssociatedRequest request) {
   agent_->BindRequest(
       std::move(host_ptr_info), std::move(request),
-      web_local_frame_impl_->GetTaskRunner(blink::TaskType::kInternalDefault));
+      web_local_frame_impl_->GetTaskRunner(TaskType::kInternalInspector));
 }
 
 void WebDevToolsAgentImpl::DetachSession(InspectorSession* session) {
@@ -409,6 +405,10 @@ void WebDevToolsAgentImpl::InspectElement(const WebPoint& point_in_local_root) {
     node_to_inspect_ = node;
   }
 }
+
+void WebDevToolsAgentImpl::DebuggerTaskStarted() {}
+
+void WebDevToolsAgentImpl::DebuggerTaskFinished() {}
 
 void WebDevToolsAgentImpl::DidCommitLoadForLocalFrame(LocalFrame* frame) {
   resource_container_->DidCommitLoadForLocalFrame(frame);

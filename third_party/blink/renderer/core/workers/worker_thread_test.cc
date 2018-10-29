@@ -65,8 +65,9 @@ void WaitForSignalTask(WorkerThread* worker_thread,
       *worker_thread->GetParentExecutionContextTaskRunners()->Get(
           TaskType::kInternalTest),
       FROM_HERE, CrossThreadBind(&test::ExitRunLoop));
-  WorkerThread::ScopedDebuggerTask debugger_task(worker_thread);
+  worker_thread->DebuggerTaskStarted();
   waitable_event->Wait();
+  worker_thread->DebuggerTaskFinished();
 }
 
 void TerminateParentOfNestedWorker(WorkerThread* parent_thread,
@@ -400,8 +401,7 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
   // on initialization to run debugger tasks.
   worker_thread_->Start(std::move(global_scope_creation_params),
                         WorkerBackingThreadStartupData::CreateDefault(),
-                        WorkerInspectorProxy::PauseOnWorkerStart::kPause,
-                        ParentExecutionContextTaskRunners::Create());
+                        nullptr, ParentExecutionContextTaskRunners::Create());
 
   // Used to wait for worker thread termination in a debugger task on the
   // worker thread.

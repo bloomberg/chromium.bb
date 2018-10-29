@@ -129,6 +129,10 @@ void InspectorEmulationAgent::Restore() {
 Response InspectorEmulationAgent::disable() {
   if (enabled_)
     instrumenting_agents_->removeInspectorEmulationAgent(this);
+  setUserAgentOverride(String(), protocol::Maybe<String>(),
+                       protocol::Maybe<String>());
+  if (!web_local_frame_)
+    return Response::OK();
   setScriptExecutionDisabled(false);
   setScrollbarsHidden(false);
   setDocumentCookieDisabled(false);
@@ -142,8 +146,6 @@ Response InspectorEmulationAgent::disable() {
     web_local_frame_->View()->Scheduler()->RemoveVirtualTimeObserver(this);
     virtual_time_setup_ = false;
   }
-  setUserAgentOverride(String(), protocol::Maybe<String>(),
-                       protocol::Maybe<String>());
   return Response::OK();
 }
 
