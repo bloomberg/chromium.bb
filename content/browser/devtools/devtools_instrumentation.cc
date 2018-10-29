@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 #include "content/browser/devtools/devtools_instrumentation.h"
 
+#include "content/browser/devtools/browser_devtools_agent_host.h"
 #include "content/browser/devtools/protocol/emulation_handler.h"
 #include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/devtools/protocol/page_handler.h"
+#include "content/browser/devtools/protocol/security_handler.h"
 #include "content/browser/devtools/protocol/target_handler.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -216,6 +218,45 @@ void OnNavigationRequestWillBeSent(
   DispatchToAgents(navigation_request.frame_tree_node(),
                    &protocol::NetworkHandler::NavigationRequestWillBeSent,
                    navigation_request);
+}
+
+// Notify the provided agent host of a certificate error. Returns true if one of
+// the host's handlers will handle the certificate error.
+bool NotifyCertificateError(DevToolsAgentHost* host,
+                            int cert_error,
+                            const GURL& request_url,
+                            const CertErrorCallback& callback) {
+  DevToolsAgentHostImpl* host_impl = static_cast<DevToolsAgentHostImpl*>(host);
+  for (auto* security_handler :
+       protocol::SecurityHandler::ForAgentHost(host_impl)) {
+    if (security_handler->NotifyCertificateError(cert_error, request_url,
+                                                 callback)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool HandleCertificateError(WebContents* web_contents,
+                            int cert_error,
+                            const GURL& request_url,
+                            CertErrorCallback callback) {
+  scoped_refptr<DevToolsAgentHost> agent_host =
+      DevToolsAgentHost::GetOrCreateFor(web_contents).get();
+  if (NotifyCertificateError(agent_host.get(), cert_error, request_url,
+                             callback)) {
+    // Only allow a single agent host to handle the error.
+    callback.Reset();
+  }
+
+  for (auto* browser_agent_host : BrowserDevToolsAgentHost::Instances()) {
+    if (NotifyCertificateError(browser_agent_host, cert_error, request_url,
+                               callback)) {
+      // Only allow a single agent host to handle the error.
+      callback.Reset();
+    }
+  }
+  return !callback;
 }
 
 }  // namespace devtools_instrumentation

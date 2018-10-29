@@ -36,34 +36,6 @@ base::LazyInstance<DevToolsMap>::Leaky g_devtools_instances =
 
 base::LazyInstance<base::ObserverList<DevToolsAgentHostObserver>::Unchecked>::
     Leaky g_devtools_observers = LAZY_INSTANCE_INITIALIZER;
-
-// Returns a list of all active hosts on browser targets.
-DevToolsAgentHost::List GetBrowserAgentHosts() {
-  DevToolsAgentHost::List result;
-  for (const auto& id_host : g_devtools_instances.Get()) {
-    if (id_host.second->GetType() == DevToolsAgentHost::kTypeBrowser)
-      result.push_back(id_host.second);
-  }
-  return result;
-}
-
-// Notify the provided agent host of a certificate error. Returns true if one of
-// the host's handlers will handle the certificate error.
-bool NotifyCertificateError(
-    DevToolsAgentHost* host,
-    int cert_error,
-    const GURL& request_url,
-    const DevToolsAgentHostImpl::CertErrorCallback& callback) {
-  DevToolsAgentHostImpl* host_impl = static_cast<DevToolsAgentHostImpl*>(host);
-  for (auto* security_handler :
-       protocol::SecurityHandler::ForAgentHost(host_impl)) {
-    if (security_handler->NotifyCertificateError(cert_error, request_url,
-                                                 callback)) {
-      return true;
-    }
-  }
-  return false;
-}
 }  // namespace
 
 const char DevToolsAgentHost::kTypePage[] = "page";
@@ -143,31 +115,6 @@ scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::Forward(
   if (result)
     return result;
   return new ForwardingAgentHost(id, std::move(delegate));
-}
-
-// static
-bool DevToolsAgentHostImpl::HandleCertificateError(WebContents* web_contents,
-                                                   int cert_error,
-                                                   const GURL& request_url,
-                                                   CertErrorCallback callback) {
-  scoped_refptr<DevToolsAgentHost> agent_host =
-      DevToolsAgentHost::GetOrCreateFor(web_contents).get();
-  if (NotifyCertificateError(agent_host.get(), cert_error, request_url,
-                             callback)) {
-    // Only allow a single agent host to handle the error.
-    callback.Reset();
-  }
-
-  for (scoped_refptr<DevToolsAgentHost> browser_agent_host :
-       GetBrowserAgentHosts()) {
-    if (NotifyCertificateError(browser_agent_host.get(), cert_error,
-                               request_url, callback)) {
-      // Only allow a single agent host to handle the error.
-      callback.Reset();
-    }
-  }
-
-  return !callback;
 }
 
 DevToolsSession* DevToolsAgentHostImpl::SessionByClient(

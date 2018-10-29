@@ -13,6 +13,7 @@
 
 #include "base/optional.h"
 #include "content/common/navigation_params.mojom.h"
+#include "content/public/browser/certificate_request_result_type.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 class GURL;
@@ -37,6 +38,8 @@ class NavigationHandleImpl;
 class NavigationRequest;
 class NavigationThrottle;
 class RenderFrameHostImpl;
+class WebContents;
+
 struct SignedExchangeError;
 
 namespace devtools_instrumentation {
@@ -87,6 +90,15 @@ void OnSignedExchangeCertificateRequestCompleted(
 
 std::vector<std::unique_ptr<NavigationThrottle>> CreateNavigationThrottles(
     NavigationHandleImpl* navigation_handle);
+
+// Asks any interested agents to handle the given certificate error. Returns
+// |true| if the error was handled, |false| otherwise.
+using CertErrorCallback =
+    base::RepeatingCallback<void(content::CertificateRequestResultType)>;
+bool HandleCertificateError(WebContents* web_contents,
+                            int cert_error,
+                            const GURL& request_url,
+                            CertErrorCallback callback);
 
 }  // namespace devtools_instrumentation
 
