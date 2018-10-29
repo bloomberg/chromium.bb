@@ -101,15 +101,6 @@ class ArcInputMethodManagerService::InputMethodEngineObserver
   // input_method::InputMethodEngineBase::Observer overrides:
   void OnActivate(const std::string& engine_id) override {
     owner_->OnArcImeActivated();
-    // ash::Shell is not created in the unit tests.
-    if (!ash::Shell::HasInstance())
-      return;
-    const bool was_enabled = keyboard::IsKeyboardEnabled();
-    // Disable fallback virtual keyboard while Android IME is activated.
-    keyboard::SetKeyboardShowOverride(
-        keyboard::KEYBOARD_SHOW_OVERRIDE_DISABLED);
-    if (was_enabled)
-      ash::Shell::Get()->DisableKeyboard();
   }
   void OnFocus(
       const ui::IMEEngineHandlerInterface::InputContext& context) override {
@@ -132,16 +123,6 @@ class ArcInputMethodManagerService::InputMethodEngineObserver
   void OnReset(const std::string& engine_id) override {}
   void OnDeactivated(const std::string& engine_id) override {
     owner_->OnArcImeDeactivated();
-    // ash::Shell is not created in the unit tests.
-    if (!ash::Shell::HasInstance())
-      return;
-    const bool was_enabled = keyboard::IsKeyboardEnabled();
-    // Stop overriding virtual keyboard availability.
-    keyboard::SetKeyboardShowOverride(keyboard::KEYBOARD_SHOW_OVERRIDE_NONE);
-    // If the device is still in tablet mode, virtual keyboard may be enabled.
-    const bool is_enabled = keyboard::IsKeyboardEnabled();
-    if (!was_enabled && is_enabled)
-      ash::Shell::Get()->EnableKeyboard();
   }
   void OnCompositionBoundsChanged(
       const std::vector<gfx::Rect>& bounds) override {
@@ -426,6 +407,26 @@ void ArcInputMethodManagerService::InputMethodChanged(
   if (!state)
     return;
   SwitchImeTo(state->GetCurrentInputMethod().id());
+
+  // ash::Shell is not created in the unit tests.
+  if (!ash::Shell::HasInstance())
+    return;
+  const bool was_enabled = keyboard::IsKeyboardEnabled();
+  if (chromeos::extension_ime_util::IsArcIME(
+          state->GetCurrentInputMethod().id())) {
+    // Disable fallback virtual keyboard while Android IME is activated.
+    keyboard::SetKeyboardShowOverride(
+        keyboard::KEYBOARD_SHOW_OVERRIDE_DISABLED);
+    if (was_enabled)
+      ash::Shell::Get()->DisableKeyboard();
+  } else {
+    // Stop overriding virtual keyboard availability.
+    keyboard::SetKeyboardShowOverride(keyboard::KEYBOARD_SHOW_OVERRIDE_NONE);
+    // If the device is still in tablet mode, virtual keyboard may be enabled.
+    const bool is_enabled = keyboard::IsKeyboardEnabled();
+    if (!was_enabled && is_enabled)
+      ash::Shell::Get()->EnableKeyboard();
+  }
 }
 
 InputConnectionImpl*

@@ -315,6 +315,11 @@ void ArcImeService::OnCursorRectChangedWithSurroundingText(
 }
 
 void ArcImeService::RequestHideIme() {
+  // Ignore the request when the ARC app is not focused.
+  ui::InputMethod* const input_method = GetInputMethod();
+  if (!input_method || input_method->GetTextInputClient() != nullptr)
+    return;
+
   // TODO(mash): Support virtual keyboard under MASH. There is no
   // KeyboardController in the browser process under MASH.
   if (!features::IsUsingWindowService() &&
