@@ -1603,11 +1603,18 @@ TEST_P(MediaSessionAcceleratorTest, MediaPlaybackAcceleratorsBehavior) {
 
 TEST_P(MediaSessionAcceleratorTest, MediaGlobalAccelerators_NextTrack) {
   EXPECT_EQ(0, client()->handle_media_next_track_count());
+  EXPECT_EQ(0, controller()->next_track_count());
 
   ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_NEXT_TRACK, ui::EF_NONE));
   Shell::Get()->media_controller()->FlushForTesting();
 
-  EXPECT_EQ(1, client()->handle_media_next_track_count());
+  if (service_enabled()) {
+    EXPECT_EQ(0, client()->handle_media_next_track_count());
+    EXPECT_EQ(1, controller()->next_track_count());
+  } else {
+    EXPECT_EQ(1, client()->handle_media_next_track_count());
+    EXPECT_EQ(0, controller()->next_track_count());
+  }
 }
 
 TEST_P(MediaSessionAcceleratorTest, MediaGlobalAccelerators_PlayPause) {
@@ -1628,11 +1635,18 @@ TEST_P(MediaSessionAcceleratorTest, MediaGlobalAccelerators_PlayPause) {
 
 TEST_P(MediaSessionAcceleratorTest, MediaGlobalAccelerators_PrevTrack) {
   EXPECT_EQ(0, client()->handle_media_prev_track_count());
+  EXPECT_EQ(0, controller()->previous_track_count());
 
   ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_PREV_TRACK, ui::EF_NONE));
   Shell::Get()->media_controller()->FlushForTesting();
 
-  EXPECT_EQ(1, client()->handle_media_prev_track_count());
+  if (service_enabled()) {
+    EXPECT_EQ(0, client()->handle_media_prev_track_count());
+    EXPECT_EQ(1, controller()->previous_track_count());
+  } else {
+    EXPECT_EQ(1, client()->handle_media_prev_track_count());
+    EXPECT_EQ(0, controller()->previous_track_count());
+  }
 }
 
 }  // namespace ash
