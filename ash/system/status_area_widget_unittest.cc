@@ -5,7 +5,6 @@
 #include "ash/system/status_area_widget.h"
 
 #include "ash/focus_cycler.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
@@ -54,12 +53,7 @@ TEST_F(StatusAreaWidgetTest, Basics) {
 
   // Default trays are constructed.
   EXPECT_TRUE(status->overview_button_tray());
-  if (features::IsSystemTrayUnifiedEnabled()) {
-    EXPECT_TRUE(status->unified_system_tray());
-  } else {
-    EXPECT_TRUE(status->system_tray());
-    EXPECT_TRUE(status->notification_tray());
-  }
+  EXPECT_TRUE(status->unified_system_tray());
   EXPECT_TRUE(status->logout_button_tray_for_testing());
   EXPECT_TRUE(status->ime_menu_tray());
   EXPECT_TRUE(status->virtual_keyboard_tray_for_testing());
@@ -71,12 +65,7 @@ TEST_F(StatusAreaWidgetTest, Basics) {
 
   // Default trays are visible.
   EXPECT_FALSE(status->overview_button_tray()->visible());
-  if (features::IsSystemTrayUnifiedEnabled()) {
-    EXPECT_TRUE(status->unified_system_tray()->visible());
-  } else {
-    EXPECT_TRUE(status->system_tray()->visible());
-    EXPECT_TRUE(status->notification_tray()->visible());
-  }
+  EXPECT_TRUE(status->unified_system_tray()->visible());
   EXPECT_FALSE(status->logout_button_tray_for_testing()->visible());
   EXPECT_FALSE(status->ime_menu_tray()->visible());
   EXPECT_FALSE(status->virtual_keyboard_tray_for_testing()->visible());
@@ -142,72 +131,7 @@ class StatusAreaWidgetFocusTest : public AshTestBase {
 
 // Tests that tab traversal through status area widget in non-active session
 // could properly send FocusOut event.
-TEST_F(StatusAreaWidgetFocusTest, FocusOutObserver) {
-  // This is old SystemTray version.
-  if (features::IsSystemTrayUnifiedEnabled())
-    return;
-
-  // Set session state to LOCKED.
-  SessionController* session = Shell::Get()->session_controller();
-  ASSERT_TRUE(session->IsActiveUserSessionStarted());
-  TestSessionControllerClient* client = GetSessionControllerClient();
-  client->SetSessionState(SessionState::LOCKED);
-  ASSERT_TRUE(session->IsScreenLocked());
-
-  StatusAreaWidget* status = StatusAreaWidgetTestHelper::GetStatusAreaWidget();
-  // Default trays are constructed.
-  ASSERT_TRUE(status->overview_button_tray());
-  ASSERT_TRUE(status->system_tray());
-  ASSERT_TRUE(status->notification_tray());
-  ASSERT_TRUE(status->logout_button_tray_for_testing());
-  ASSERT_TRUE(status->ime_menu_tray());
-  ASSERT_TRUE(status->virtual_keyboard_tray_for_testing());
-
-  // Needed because NotificationTray updates its initial visibility
-  // asynchronously.
-  base::RunLoop().RunUntilIdle();
-
-  // Default trays are visible.
-  ASSERT_FALSE(status->overview_button_tray()->visible());
-  ASSERT_TRUE(status->system_tray()->visible());
-  ASSERT_TRUE(status->notification_tray()->visible());
-  ASSERT_FALSE(status->logout_button_tray_for_testing()->visible());
-  ASSERT_FALSE(status->ime_menu_tray()->visible());
-  ASSERT_FALSE(status->virtual_keyboard_tray_for_testing()->visible());
-
-  // Set focus to status area widget, which will be be system tray.
-  ASSERT_TRUE(Shell::Get()->focus_cycler()->FocusWidget(status));
-  views::FocusManager* focus_manager = status->GetFocusManager();
-  EXPECT_EQ(status->system_tray(), focus_manager->GetFocusedView());
-
-  // A tab key event will move focus to notification tray.
-  GenerateTabEvent(false);
-  EXPECT_EQ(status->notification_tray(), focus_manager->GetFocusedView());
-  EXPECT_EQ(0, test_observer_->focus_out_count());
-  EXPECT_EQ(0, test_observer_->reverse_focus_out_count());
-
-  // Another tab key event will send FocusOut event, since we are not handling
-  // this event, focus will still be moved to system tray.
-  GenerateTabEvent(false);
-  EXPECT_EQ(status->system_tray(), focus_manager->GetFocusedView());
-  EXPECT_EQ(1, test_observer_->focus_out_count());
-  EXPECT_EQ(0, test_observer_->reverse_focus_out_count());
-
-  // A reverse tab key event will send reverse FocusOut event, since we are not
-  // handling this event, focus will still be moved to notification tray.
-  GenerateTabEvent(true);
-  EXPECT_EQ(status->notification_tray(), focus_manager->GetFocusedView());
-  EXPECT_EQ(1, test_observer_->focus_out_count());
-  EXPECT_EQ(1, test_observer_->reverse_focus_out_count());
-}
-
-// Tests that tab traversal through status area widget in non-active session
-// could properly send FocusOut event.
 TEST_F(StatusAreaWidgetFocusTest, FocusOutObserverUnified) {
-  // This is UnifiedSystemTray version.
-  if (!features::IsSystemTrayUnifiedEnabled())
-    return;
-
   // Set session state to LOCKED.
   SessionController* session = Shell::Get()->session_controller();
   ASSERT_TRUE(session->IsActiveUserSessionStarted());

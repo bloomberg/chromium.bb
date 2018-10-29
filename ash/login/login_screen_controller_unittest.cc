@@ -6,7 +6,6 @@
 
 #include "ash/login/mock_login_screen_client.h"
 #include "ash/login/ui/lock_screen.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -38,11 +37,7 @@ bool IsSystemTrayForWindowVisible(WindowType index) {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   RootWindowController* controller =
       RootWindowController::ForWindow(root_windows[index]);
-  return features::IsSystemTrayUnifiedEnabled()
-             ? controller->GetStatusAreaWidget()
-                   ->unified_system_tray()
-                   ->visible()
-             : controller->GetSystemTray()->visible();
+  return controller->GetStatusAreaWidget()->unified_system_tray()->visible();
 }
 
 TEST_F(LoginScreenControllerTest, RequestAuthentication) {

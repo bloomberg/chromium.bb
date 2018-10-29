@@ -237,6 +237,7 @@ constexpr int kUnifiedTopShortcutButtonMinSpacing = 4;
 constexpr gfx::Insets kUnifiedDetailedViewTitlePadding(0, 0, 0, 16);
 constexpr int kUnifiedDetailedViewTitleRowHeight = 64;
 
+// TODO(tetsui): Remove this class.
 class TrayConstants {
  public:
   // Returns the width of a line used to separate tray items in the shelf.

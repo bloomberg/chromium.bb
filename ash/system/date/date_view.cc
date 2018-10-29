@@ -4,7 +4,6 @@
 
 #include "ash/system/date/date_view.h"
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -278,7 +277,7 @@ void TimeView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void TimeView::UpdateClockLayout(ClockLayout clock_layout) {
-  SetBorderFromLayout(clock_layout);
+  SetBorder(views::NullBorder());
   if (clock_layout == ClockLayout::HORIZONTAL_CLOCK) {
     RemoveChildView(vertical_label_hours_.get());
     RemoveChildView(vertical_label_minutes_.get());
@@ -317,15 +316,6 @@ void TimeView::SetTextColorBasedOnSession(
 
 void TimeView::Refresh() {
   UpdateText();
-}
-
-void TimeView::SetBorderFromLayout(ClockLayout clock_layout) {
-  if (!features::IsSystemTrayUnifiedEnabled() &&
-      clock_layout == ClockLayout::HORIZONTAL_CLOCK) {
-    SetBorder(views::CreateEmptyBorder(gfx::Insets(0, kTrayImageItemPadding)));
-  } else {
-    SetBorder(views::NullBorder());
-  }
 }
 
 void TimeView::SetupLabels() {

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -164,15 +163,11 @@ class ExtendedDesktopTest : public AshTestBase {
 
  protected:
   bool IsBubbleShown() {
-    return features::IsSystemTrayUnifiedEnabled()
-               ? GetPrimaryUnifiedSystemTray()->IsBubbleShown()
-               : GetPrimarySystemTray()->HasSystemBubble();
+    return GetPrimaryUnifiedSystemTray()->IsBubbleShown();
   }
 
   gfx::Rect GetSystemTrayBoundsInScreen() {
-    return features::IsSystemTrayUnifiedEnabled()
-               ? GetPrimaryUnifiedSystemTray()->GetBoundsInScreen()
-               : GetPrimarySystemTray()->GetBoundsInScreen();
+    return GetPrimaryUnifiedSystemTray()->GetBoundsInScreen();
   }
 
  private:

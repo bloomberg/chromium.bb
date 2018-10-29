@@ -8,7 +8,6 @@
 #include "ash/ime/ime_switch_type.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/keyboard/virtual_keyboard_controller.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/interfaces/ime_info.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
@@ -188,7 +187,7 @@ class KeyboardStatusRow : public views::View {
 };
 
 ImeListView::ImeListView(DetailedViewDelegate* delegate)
-    : ImeListView(delegate, features::IsSystemTrayUnifiedEnabled()) {}
+    : ImeListView(delegate, true) {}
 
 ImeListView::ImeListView(DetailedViewDelegate* delegate, bool use_unified_theme)
     : TrayDetailedView(delegate),

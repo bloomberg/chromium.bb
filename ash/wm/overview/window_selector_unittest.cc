@@ -25,7 +25,6 @@
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
@@ -1717,12 +1716,7 @@ TEST_F(WindowSelectorTest, ShowTextFilterMenu) {
   EXPECT_TRUE(showing_filter_widget());
 
   // Open system bubble shifting focus from the text filter.
-  if (features::IsSystemTrayUnifiedEnabled()) {
-    GetPrimaryUnifiedSystemTray()->ShowBubble(false /* show_by_click */);
-  } else {
-    SystemTray* tray = GetPrimarySystemTray();
-    tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
-  }
+  GetPrimaryUnifiedSystemTray()->ShowBubble(false /* show_by_click */);
 
   base::RunLoop().RunUntilIdle();
 
