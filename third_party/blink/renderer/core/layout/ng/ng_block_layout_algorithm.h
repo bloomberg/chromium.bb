@@ -41,6 +41,7 @@ struct NGInflowChildData {
   NGBoxStrut margins;
   bool margins_fully_resolved;
   bool force_clearance;
+  bool is_new_fc;
 };
 
 // A class for general block layout (e.g. a <div> with no special style).
@@ -87,6 +88,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   }
 
   NGBoxStrut CalculateMargins(NGLayoutInputNode child,
+                              bool is_new_fc,
                               const NGBreakToken* child_break_token,
                               bool* margins_fully_resolved);
 
@@ -101,7 +103,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   NGInflowChildData ComputeChildData(const NGPreviousInflowPosition&,
                                      NGLayoutInputNode,
                                      const NGBreakToken* child_break_token,
-                                     bool force_clearance);
+                                     bool force_clearance,
+                                     bool is_new_fc);
 
   NGPreviousInflowPosition ComputeInflowPosition(
       const NGPreviousInflowPosition&,
