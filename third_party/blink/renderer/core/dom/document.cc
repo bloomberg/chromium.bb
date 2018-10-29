@@ -956,31 +956,27 @@ Element* Document::CreateElementForBinding(const AtomicString& name,
   return Element::Create(QualifiedName(g_null_atom, name, g_null_atom), this);
 }
 
-String GetTypeExtension(Document* document,
-                        const StringOrDictionary& string_or_options,
-                        ExceptionState& exception_state) {
+AtomicString GetTypeExtension(Document* document,
+                              const StringOrDictionary& string_or_options,
+                              ExceptionState& exception_state) {
   if (string_or_options.IsNull())
-    return String();
+    return AtomicString();
 
   if (string_or_options.IsString()) {
     UseCounter::Count(document,
                       WebFeature::kDocumentCreateElement2ndArgStringHandling);
-    return string_or_options.GetAsString();
+    return AtomicString(string_or_options.GetAsString());
   }
 
   if (string_or_options.IsDictionary()) {
     Dictionary dict = string_or_options.GetAsDictionary();
-    ElementCreationOptions impl;
-    V8ElementCreationOptions::ToImpl(dict.GetIsolate(), dict.V8Value(), impl,
-                                     exception_state);
-    if (exception_state.HadException())
-      return String();
-
-    if (impl.hasIs())
-      return impl.is();
+    v8::Local<v8::Value> value;
+    if (dict.HasProperty("is", exception_state) && dict.Get("is", value)) {
+      return ToCoreAtomicString(v8::Local<v8::String>::Cast(value));
+    }
   }
 
-  return String();
+  return AtomicString();
 }
 
 // https://dom.spec.whatwg.org/#dom-document-createelement
@@ -1014,7 +1010,7 @@ Element* Document::CreateElementForBinding(
 
   // 3.
   const AtomicString& is =
-      AtomicString(GetTypeExtension(this, string_or_options, exception_state));
+      GetTypeExtension(this, string_or_options, exception_state);
 
   // 5. Let element be the result of creating an element given ...
   Element* element =
@@ -1089,7 +1085,7 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
 
   // 2.
   const AtomicString& is =
-      AtomicString(GetTypeExtension(this, string_or_options, exception_state));
+      GetTypeExtension(this, string_or_options, exception_state);
 
   if (!IsValidElementName(this, qualified_name)) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidCharacterError,
