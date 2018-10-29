@@ -21,11 +21,11 @@ class WaitForDomAction : public Action {
   explicit WaitForDomAction(const ActionProto& proto);
   ~WaitForDomAction() override;
 
-  // Overrides Action:
-  void ProcessAction(ActionDelegate* delegate,
-                     ProcessActionCallback callback) override;
-
  private:
+  // Overrides Action:
+  void InternalProcessAction(ActionDelegate* delegate,
+                             ProcessActionCallback callback) override;
+
   void OnCheckDone(ProcessActionCallback callback);
 
   std::unique_ptr<BatchElementChecker> batch_element_checker_;

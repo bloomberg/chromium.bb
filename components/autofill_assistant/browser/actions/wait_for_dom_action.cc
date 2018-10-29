@@ -25,8 +25,8 @@ WaitForDomAction::WaitForDomAction(const ActionProto& proto) : Action(proto) {}
 
 WaitForDomAction::~WaitForDomAction() {}
 
-void WaitForDomAction::ProcessAction(ActionDelegate* delegate,
-                                     ProcessActionCallback callback) {
+void WaitForDomAction::InternalProcessAction(ActionDelegate* delegate,
+                                             ProcessActionCallback callback) {
   DCHECK_GT(proto_.wait_for_dom().selectors_size(), 0);
   batch_element_checker_ = delegate->CreateBatchElementChecker();
   batch_element_checker_->AddElementExistenceCheck(
@@ -47,7 +47,6 @@ void WaitForDomAction::ProcessAction(ActionDelegate* delegate,
 }
 
 void WaitForDomAction::OnCheckDone(ProcessActionCallback callback) {
-  processed_action_proto_ = std::make_unique<ProcessedActionProto>();
   UpdateProcessedAction(batch_element_checker_->all_found()
                             ? ACTION_APPLIED
                             : ELEMENT_RESOLUTION_FAILED);

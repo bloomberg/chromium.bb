@@ -19,9 +19,9 @@ HighlightElementAction::HighlightElementAction(const ActionProto& proto)
 
 HighlightElementAction::~HighlightElementAction() {}
 
-void HighlightElementAction::ProcessAction(ActionDelegate* delegate,
-                                           ProcessActionCallback callback) {
-  processed_action_proto_ = std::make_unique<ProcessedActionProto>();
+void HighlightElementAction::InternalProcessAction(
+    ActionDelegate* delegate,
+    ProcessActionCallback callback) {
   DCHECK_GT(proto_.highlight_element().element().selectors_size(), 0);
   delegate->WaitForElement(
       ExtractSelectors(proto_.highlight_element().element().selectors()),

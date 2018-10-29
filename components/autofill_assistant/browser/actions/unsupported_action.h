@@ -15,11 +15,11 @@ class UnsupportedAction : public Action {
   explicit UnsupportedAction(const ActionProto& proto);
   ~UnsupportedAction() override;
 
-  // Overrides Action:
-  void ProcessAction(ActionDelegate* delegate,
-                     ProcessActionCallback callback) override;
-
  private:
+  // Overrides Action:
+  void InternalProcessAction(ActionDelegate* delegate,
+                             ProcessActionCallback callback) override;
+
   void OnUnsupported(ProcessActionCallback callback, bool status);
 
   DISALLOW_COPY_AND_ASSIGN(UnsupportedAction);

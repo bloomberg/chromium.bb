@@ -101,6 +101,7 @@ AutofillAction::AutofillAction(const ActionProto& proto)
     check_form_message_ = proto.use_address().strings().check_form();
     required_fields_value_status_.resize(
         proto_.use_address().required_fields_size(), UNKNOWN);
+    show_overlay_ = proto.use_address().show_overlay();
   } else {
     DCHECK(proto.has_use_card());
     is_autofill_card_ = true;
@@ -110,15 +111,16 @@ AutofillAction::AutofillAction(const ActionProto& proto)
         ExtractSelectors(proto.use_card().form_field_element().selectors());
     fill_form_message_ = proto.use_card().strings().fill_form();
     check_form_message_ = proto.use_card().strings().check_form();
+    show_overlay_ = proto.use_card().show_overlay();
   }
 }
 
 AutofillAction::~AutofillAction() = default;
 
-void AutofillAction::ProcessAction(ActionDelegate* delegate,
-                                   ProcessActionCallback action_callback) {
+void AutofillAction::InternalProcessAction(
+    ActionDelegate* delegate,
+    ProcessActionCallback action_callback) {
   process_action_callback_ = std::move(action_callback);
-  processed_action_proto_ = std::make_unique<ProcessedActionProto>();
   // Check data already selected in a previous action.
   base::Optional<std::string> selected_data;
   if (is_autofill_card_) {

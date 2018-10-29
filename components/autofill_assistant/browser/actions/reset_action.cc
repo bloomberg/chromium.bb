@@ -18,10 +18,9 @@ ResetAction::ResetAction(const ActionProto& proto) : Action(proto) {
 
 ResetAction::~ResetAction() {}
 
-void ResetAction::ProcessAction(ActionDelegate* delegate,
-                                ProcessActionCallback callback) {
+void ResetAction::InternalProcessAction(ActionDelegate* delegate,
+                                        ProcessActionCallback callback) {
   delegate->Restart();
-  processed_action_proto_ = std::make_unique<ProcessedActionProto>();
   UpdateProcessedAction(ACTION_APPLIED);
   std::move(callback).Run(std::move(processed_action_proto_));
 }

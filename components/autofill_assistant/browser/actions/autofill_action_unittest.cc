@@ -314,6 +314,5 @@ TEST_F(AutofillActionTest, FallbackSucceeds) {
   }
   EXPECT_TRUE(ProcessAction(action_proto));
 }
-
 }  // namespace
 }  // namespace autofill_assistant

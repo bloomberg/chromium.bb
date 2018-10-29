@@ -4,6 +4,8 @@
 
 #include "components/autofill_assistant/browser/actions/show_details_action.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 
@@ -15,15 +17,14 @@ ShowDetailsAction::ShowDetailsAction(const ActionProto& proto) : Action(proto) {
 
 ShowDetailsAction::~ShowDetailsAction() {}
 
-void ShowDetailsAction::ProcessAction(ActionDelegate* delegate,
-                                      ProcessActionCallback callback) {
+void ShowDetailsAction::InternalProcessAction(ActionDelegate* delegate,
+                                              ProcessActionCallback callback) {
   if (!proto_.show_details().has_details()) {
     delegate->HideDetails();
   } else {
     delegate->ShowDetails(proto_.show_details().details());
   }
 
-  processed_action_proto_ = std::make_unique<ProcessedActionProto>();
   UpdateProcessedAction(ACTION_APPLIED);
   std::move(callback).Run(std::move(processed_action_proto_));
 }

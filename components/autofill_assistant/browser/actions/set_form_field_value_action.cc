@@ -22,9 +22,9 @@ SetFormFieldValueAction::SetFormFieldValueAction(const ActionProto& proto)
 
 SetFormFieldValueAction::~SetFormFieldValueAction() {}
 
-void SetFormFieldValueAction::ProcessAction(ActionDelegate* delegate,
-                                            ProcessActionCallback callback) {
-  processed_action_proto_ = std::make_unique<ProcessedActionProto>();
+void SetFormFieldValueAction::InternalProcessAction(
+    ActionDelegate* delegate,
+    ProcessActionCallback callback) {
   delegate->WaitForElement(
       ExtractSelectors(proto_.set_form_value().element().selectors()),
       base::BindOnce(&SetFormFieldValueAction::OnWaitForElement,
