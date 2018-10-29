@@ -1643,6 +1643,41 @@ PasswordForm CreateSampleFormWithIndex(int index) {
       assertWithMatcher:grey_notNil()];
 }
 
+// Test search and delete all passwords and blacklisted items.
+- (void)testSearchAndDeleteAllPasswords {
+  SaveExamplePasswordForms();
+  SaveExampleBlacklistedForms();
+
+  OpenPasswordSettings();
+
+  [[EarlGrey selectElementWithMatcher:SearchTextField()]
+      performAction:grey_typeText(@"u\n")];
+
+  TapEdit();
+
+  // Select all.
+  [GetInteractionForPasswordEntry(@"example11.com, user1")
+      performAction:grey_tap()];
+  [GetInteractionForPasswordEntry(@"example12.com, user2")
+      performAction:grey_tap()];
+  [GetInteractionForPasswordEntry(@"exclude1.com") performAction:grey_tap()];
+  [GetInteractionForPasswordEntry(@"exclude2.com") performAction:grey_tap()];
+
+  // Delete them.
+  [[EarlGrey selectElementWithMatcher:DeleteButtonAtBottom()]
+      performAction:grey_tap()];
+
+  // All should be gone.
+  [GetInteractionForPasswordEntry(@"example11.com, user1")
+      assertWithMatcher:grey_nil()];
+  [GetInteractionForPasswordEntry(@"example12.com, user2")
+      assertWithMatcher:grey_nil()];
+  [GetInteractionForPasswordEntry(@"exclude1.com")
+      assertWithMatcher:grey_nil()];
+  [GetInteractionForPasswordEntry(@"exclude2.com")
+      assertWithMatcher:grey_nil()];
+}
+
 // Test that user can't search passwords while in edit mode.
 - (void)testCantSearchPasswordsWhileInEditMode {
   SaveExamplePasswordForms();
