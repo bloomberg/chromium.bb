@@ -21,7 +21,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/omnibox/browser/toolbar_field_trial.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/toolbar_model_impl.h"
 #include "components/security_state/core/security_state.h"
 #include "components/zoom/zoom_controller.h"
@@ -253,11 +253,11 @@ IN_PROC_BROWSER_TEST_F(SecurityIndicatorTest, CheckIndicatorText) {
 
   const std::string kDefaultVariation = std::string();
   const std::string kEvToSecureVariation(
-      toolbar::features::kSimplifyHttpsIndicatorParameterEvToSecure);
+      OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterEvToSecure);
   const std::string kBothToLockVariation(
-      toolbar::features::kSimplifyHttpsIndicatorParameterBothToLock);
+      OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterBothToLock);
   const std::string kKeepSecureChipVariation(
-      toolbar::features::kSimplifyHttpsIndicatorParameterKeepSecureChip);
+      OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterKeepSecureChip);
 
   const struct {
     std::string feature_param;
@@ -307,11 +307,11 @@ IN_PROC_BROWSER_TEST_F(SecurityIndicatorTest, CheckIndicatorText) {
     base::test::ScopedFeatureList scoped_feature_list;
     if (c.feature_param.empty()) {
       scoped_feature_list.InitAndDisableFeature(
-          toolbar::features::kSimplifyHttpsIndicator);
+          omnibox::kSimplifyHttpsIndicator);
     } else {
       scoped_feature_list.InitAndEnableFeatureWithParameters(
-          toolbar::features::kSimplifyHttpsIndicator,
-          {{toolbar::features::kSimplifyHttpsIndicatorParameterName,
+          omnibox::kSimplifyHttpsIndicator,
+          {{OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterName,
             c.feature_param}});
     }
     SetUpInterceptor(c.cert_status);

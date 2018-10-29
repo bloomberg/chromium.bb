@@ -25,6 +25,11 @@ class TimeDelta;
 
 namespace omnibox {
 
+extern const base::Feature kHideFileUrlScheme;
+extern const base::Feature kHideSteadyStateUrlScheme;
+extern const base::Feature kHideSteadyStateUrlTrivialSubdomains;
+extern const base::Feature kHideSteadyStateUrlPathQueryAndRef;
+extern const base::Feature kSimplifyHttpsIndicator;
 extern const base::Feature kOmniboxRichEntitySuggestions;
 extern const base::Feature kOmniboxNewAnswerLayout;
 extern const base::Feature kOmniboxReverseAnswers;
@@ -422,7 +427,7 @@ class OmniboxFieldTrial {
       const AutocompleteInput& input);
 
   // ---------------------------------------------------------
-  // For tab switch suggestions related experiments.
+  // For UI experiments.
 
   // Returns true if the rich entities flag is enabled.
   static bool IsRichEntitySuggestionsEnabled();
@@ -444,6 +449,14 @@ class OmniboxFieldTrial {
 
   // Returns true if the jog textfield flag is enabled.
   static bool IsJogTextfieldOnPopupEnabled();
+
+  // Returns true if either the steady-state elision flag for scheme or the
+  // #upcoming-ui-features flag is enabled.
+  static bool IsHideSteadyStateUrlSchemeEnabled();
+
+  // Returns true if either the steady-state elision flag for trivial
+  // subdomains or the #upcoming-ui-features flag is enabled.
+  static bool IsHideSteadyStateUrlTrivialSubdomainsEnabled();
 
   // Returns true if either the show suggestion favicons flag or the
   // #upcoming-ui-features flag is enabled.
@@ -513,6 +526,13 @@ class OmniboxFieldTrial {
   static const char kUIMaxAutocompleteMatchesParam[];
   static const char kUIVerticalMarginParam[];
   static const char kPedalSuggestionModeParam[];
+
+  // Parameter name and values used by the Simplify HTTPS experiment.
+  static const char kSimplifyHttpsIndicatorParameterName[];
+  static const char kSimplifyHttpsIndicatorParameterEvToSecure[];
+  static const char kSimplifyHttpsIndicatorParameterSecureToLock[];
+  static const char kSimplifyHttpsIndicatorParameterBothToLock[];
+  static const char kSimplifyHttpsIndicatorParameterKeepSecureChip[];
 
   // Parameter names used by Zero Suggest Redirect to Chrome.
   static const char kZeroSuggestRedirectToChromeExperimentIdParam[];

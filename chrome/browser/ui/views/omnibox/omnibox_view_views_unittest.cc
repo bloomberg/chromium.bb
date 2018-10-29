@@ -28,7 +28,6 @@
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/test_toolbar_model.h"
-#include "components/omnibox/browser/toolbar_field_trial.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/input_method.h"
@@ -533,8 +532,8 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
  public:
   OmniboxViewViewsSteadyStateElisionsTest()
       : OmniboxViewViewsTest({
-            toolbar::features::kHideSteadyStateUrlScheme,
-            toolbar::features::kHideSteadyStateUrlTrivialSubdomains,
+            omnibox::kHideSteadyStateUrlScheme,
+            omnibox::kHideSteadyStateUrlTrivialSubdomains,
         }) {}
 
  protected:
@@ -948,8 +947,8 @@ class OmniboxViewViewsSteadyStateElisionsAndQueryInOmniboxTest
  public:
   OmniboxViewViewsSteadyStateElisionsAndQueryInOmniboxTest()
       : OmniboxViewViewsSteadyStateElisionsTest({
-            toolbar::features::kHideSteadyStateUrlScheme,
-            toolbar::features::kHideSteadyStateUrlTrivialSubdomains,
+            omnibox::kHideSteadyStateUrlScheme,
+            omnibox::kHideSteadyStateUrlTrivialSubdomains,
             omnibox::kQueryInOmnibox,
         }) {}
 

@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "components/omnibox/browser/toolbar_field_trial.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/toolbar_model.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/ssl_status.h"
@@ -194,10 +194,9 @@ void ToolbarModelTest::NavigateAndCheckElided(const GURL& url) {
 // Test URL display.
 TEST_F(ToolbarModelTest, ShouldDisplayURL) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {toolbar::features::kHideSteadyStateUrlScheme,
-       toolbar::features::kHideSteadyStateUrlTrivialSubdomains},
-      {});
+  feature_list.InitWithFeatures({omnibox::kHideSteadyStateUrlScheme,
+                                 omnibox::kHideSteadyStateUrlTrivialSubdomains},
+                                {});
 
   AddTab(browser(), GURL(url::kAboutBlankURL));
 
@@ -217,8 +216,8 @@ TEST_F(ToolbarModelTest, SteadyStateElisionsFlags) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitWithFeatures(
-        {}, {toolbar::features::kHideSteadyStateUrlScheme,
-             toolbar::features::kHideSteadyStateUrlTrivialSubdomains});
+        {}, {omnibox::kHideSteadyStateUrlScheme,
+             omnibox::kHideSteadyStateUrlTrivialSubdomains});
     NavigateAndCheckText(GURL("https://www.google.com/"),
                          base::ASCIIToUTF16("https://www.google.com"),
                          base::ASCIIToUTF16("https://www.google.com"));
@@ -228,8 +227,8 @@ TEST_F(ToolbarModelTest, SteadyStateElisionsFlags) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitWithFeatures(
-        {toolbar::features::kHideSteadyStateUrlScheme},
-        {toolbar::features::kHideSteadyStateUrlTrivialSubdomains});
+        {omnibox::kHideSteadyStateUrlScheme},
+        {omnibox::kHideSteadyStateUrlTrivialSubdomains});
     NavigateAndCheckText(GURL("https://www.google.com/"),
                          base::ASCIIToUTF16("https://www.google.com"),
                          base::ASCIIToUTF16("www.google.com"));
@@ -239,8 +238,8 @@ TEST_F(ToolbarModelTest, SteadyStateElisionsFlags) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitWithFeatures(
-        {toolbar::features::kHideSteadyStateUrlTrivialSubdomains},
-        {toolbar::features::kHideSteadyStateUrlScheme});
+        {omnibox::kHideSteadyStateUrlTrivialSubdomains},
+        {omnibox::kHideSteadyStateUrlScheme});
     NavigateAndCheckText(GURL("https://www.google.com/"),
                          base::ASCIIToUTF16("https://www.google.com"),
                          base::ASCIIToUTF16("https://google.com"));
@@ -250,8 +249,8 @@ TEST_F(ToolbarModelTest, SteadyStateElisionsFlags) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitWithFeatures(
-        {toolbar::features::kHideSteadyStateUrlScheme,
-         toolbar::features::kHideSteadyStateUrlTrivialSubdomains},
+        {omnibox::kHideSteadyStateUrlScheme,
+         omnibox::kHideSteadyStateUrlTrivialSubdomains},
         {});
     NavigateAndCheckText(GURL("https://www.google.com/"),
                          base::ASCIIToUTF16("https://www.google.com"),
