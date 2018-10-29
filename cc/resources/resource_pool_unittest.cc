@@ -46,6 +46,7 @@ class ResourcePoolTest : public testing::Test {
 
   void SetBackingOnResource(const ResourcePool::InUsePoolResource& resource) {
     auto backing = std::make_unique<StubGpuBacking>();
+    backing->mailbox = gpu::Mailbox::Generate();
     backing->mailbox_sync_token.Set(
         gpu::GPU_IO, gpu::CommandBufferId::FromUnsafeValue(1), 1);
     resource.set_gpu_backing(std::move(backing));
@@ -165,7 +166,7 @@ TEST_F(ResourcePoolTest, LostResource) {
       resource_pool_->AcquireResource(size, format, color_space);
 
   SetBackingOnResource(resource);
-  resource_pool_->PrepareForExport(resource);
+  EXPECT_TRUE(resource_pool_->PrepareForExport(resource));
 
   std::vector<viz::ResourceId> export_ids = {resource.resource_id_for_export()};
   std::vector<viz::TransferableResource> transferable_resources;
@@ -204,7 +205,7 @@ TEST_F(ResourcePoolTest, BusyResourcesNotFreed) {
   EXPECT_EQ(1u, resource_pool_->resource_count());
 
   SetBackingOnResource(resource);
-  resource_pool_->PrepareForExport(resource);
+  EXPECT_TRUE(resource_pool_->PrepareForExport(resource));
 
   std::vector<viz::TransferableResource> transfers;
   resource_provider_->PrepareSendToParent({resource.resource_id_for_export()},
@@ -254,7 +255,7 @@ TEST_F(ResourcePoolTest, UnusedResourcesEventuallyFreed) {
 
   // Export the resource to the display compositor.
   SetBackingOnResource(resource);
-  resource_pool_->PrepareForExport(resource);
+  EXPECT_TRUE(resource_pool_->PrepareForExport(resource));
   std::vector<viz::TransferableResource> transfers;
   resource_provider_->PrepareSendToParent({resource.resource_id_for_export()},
                                           &transfers, context_provider_.get());
@@ -463,7 +464,7 @@ TEST_F(ResourcePoolTest, PurgedMemory) {
   ResourcePool::InUsePoolResource resource =
       resource_pool_->AcquireResource(size, format, color_space);
   SetBackingOnResource(resource);
-  resource_pool_->PrepareForExport(resource);
+  EXPECT_TRUE(resource_pool_->PrepareForExport(resource));
 
   EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
   EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
@@ -516,7 +517,7 @@ TEST_F(ResourcePoolTest, InvalidateResources) {
   ResourcePool::InUsePoolResource busy_resource =
       resource_pool_->AcquireResource(size, format, color_space);
   SetBackingOnResource(busy_resource);
-  resource_pool_->PrepareForExport(busy_resource);
+  EXPECT_TRUE(resource_pool_->PrepareForExport(busy_resource));
   EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
   EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
   EXPECT_EQ(1u, resource_pool_->resource_count());
@@ -635,7 +636,7 @@ TEST_F(ResourcePoolTest, MetadataSentToDisplayCompositor) {
   resource.gpu_backing()->wait_on_fence_required = true;
   resource.gpu_backing()->overlay_candidate = true;
 
-  resource_pool_->PrepareForExport(resource);
+  EXPECT_TRUE(resource_pool_->PrepareForExport(resource));
 
   std::vector<viz::TransferableResource> transfer;
   resource_provider_->PrepareSendToParent({resource.resource_id_for_export()},
@@ -654,6 +655,39 @@ TEST_F(ResourcePoolTest, MetadataSentToDisplayCompositor) {
   EXPECT_TRUE(transfer[0].read_lock_fences_enabled);
   EXPECT_TRUE(transfer[0].is_overlay_candidate);
 
+  resource_pool_->ReleaseResource(std::move(resource));
+}
+
+TEST_F(ResourcePoolTest, InvalidResource) {
+  // Limits high enough to not be hit by this test.
+  size_t bytes_limit = 10 * 1024 * 1024;
+  size_t count_limit = 100;
+  resource_pool_->SetResourceUsageLimits(bytes_limit, count_limit);
+
+  // These values are all non-default values so we can tell they are propagated.
+  gfx::Size size(100, 101);
+  viz::ResourceFormat format = viz::RGBA_4444;
+  EXPECT_NE(gfx::BufferFormat::RGBA_8888, viz::BufferFormat(format));
+  gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
+  uint32_t target = 5;
+
+  ResourcePool::InUsePoolResource resource =
+      resource_pool_->AcquireResource(size, format, color_space);
+
+  // Keep a zero mailbox
+  auto backing = std::make_unique<StubGpuBacking>();
+  backing->texture_target = target;
+  backing->wait_on_fence_required = true;
+  backing->overlay_candidate = true;
+  resource.set_gpu_backing(std::move(backing));
+
+  EXPECT_FALSE(resource_pool_->PrepareForExport(resource));
+
+  resource_pool_->ReleaseResource(std::move(resource));
+
+  // Acquire another resource. The resource should not be reused.
+  resource = resource_pool_->AcquireResource(size, format, color_space);
+  EXPECT_FALSE(resource.gpu_backing());
   resource_pool_->ReleaseResource(std::move(resource));
 }
 

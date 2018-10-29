@@ -220,7 +220,10 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
   // acquired InUsePoolResource will be only metadata, and the backing is given
   // to it by code which is aware of the expected backing type - currently by
   // RasterBufferProvider::AcquireBufferForRaster().
-  void PrepareForExport(const InUsePoolResource& resource);
+  // Returns false if the backing does not contain valid data, in particular
+  // a zero mailbox for GpuBacking, in which case the resource is not exported,
+  // and true otherwise.
+  bool PrepareForExport(const InUsePoolResource& resource);
 
   // Marks any resources in the pool as invalid, preventing their reuse. Call if
   // previous resources were allocated in one way, but future resources should

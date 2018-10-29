@@ -359,7 +359,8 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
 
   // Exports the backing to the ResourceProvider, giving it a ResourceId that
   // can be used in a DrawQuad.
-  pool_->PrepareForExport(pool_resource);
+  bool exported = pool_->PrepareForExport(pool_resource);
+  DCHECK(exported);
   viz::ResourceId resource_id = pool_resource.resource_id_for_export();
 
   // Save the resource to prevent reuse until it is exported to the display

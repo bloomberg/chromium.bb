@@ -1301,7 +1301,7 @@ void TileManager::OnRasterTaskCompleted(
 
   // Once raster is done, allow the resource to be exported to the display
   // compositor, by giving it a ResourceId.
-  resource_pool_->PrepareForExport(resource);
+  bool exported = resource_pool_->PrepareForExport(resource);
 
   // In SMOOTHNESS_TAKES_PRIORITY mode, we wait for GPU work to complete for a
   // tile before setting it as ready to draw.
@@ -1312,11 +1312,16 @@ void TileManager::OnRasterTaskCompleted(
   }
 
   TileDrawInfo& draw_info = tile->draw_info();
-  bool needs_swizzle = raster_buffer_provider_->IsResourceSwizzleRequired();
-  bool is_premultiplied = raster_buffer_provider_->IsResourcePremultiplied();
-  draw_info.SetResource(std::move(resource),
-                        raster_task_was_scheduled_with_checker_images,
-                        needs_swizzle, is_premultiplied);
+  if (exported) {
+    bool needs_swizzle = raster_buffer_provider_->IsResourceSwizzleRequired();
+    bool is_premultiplied = raster_buffer_provider_->IsResourcePremultiplied();
+    draw_info.SetResource(std::move(resource),
+                          raster_task_was_scheduled_with_checker_images,
+                          needs_swizzle, is_premultiplied);
+  } else {
+    resource_pool_->ReleaseResource(std::move(resource));
+    draw_info.set_oom();
+  }
   if (raster_task_was_scheduled_with_checker_images)
     num_of_tiles_with_checker_images_++;
 
