@@ -322,9 +322,6 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
       pending_auth_callback_;
   TakeResponseBodyPipeCallback pending_response_body_pipe_callback_;
 
-  // TODO(https://crbug.com/882661): Remove this as soon as the bug is fixed.
-  bool on_receive_response_sent_ = false;
-
   DISALLOW_COPY_AND_ASSIGN(InterceptionJob);
 };
 
@@ -880,7 +877,6 @@ Response InterceptionJob::InnerContinueRequest(
     DCHECK_EQ(State::kResponseReceived, state_);
     DCHECK(!body_reader_);
     client_->OnReceiveResponse(response_metadata_->head);
-    on_receive_response_sent_ = true;
     response_metadata_.reset();
     loader_->ResumeReadingBodyFromNet();
     client_binding_.ResumeIncomingMethodCallProcessing();
@@ -1071,7 +1067,6 @@ void InterceptionJob::ProcessRedirectByClient(const GURL& redirect_url) {
 
 void InterceptionJob::SendResponse(const base::StringPiece& body) {
   client_->OnReceiveResponse(response_metadata_->head);
-  on_receive_response_sent_ = true;
 
   // We shouldn't be able to transfer a string that big over the protocol,
   // but just in case...
@@ -1086,7 +1081,6 @@ void InterceptionJob::SendResponse(const base::StringPiece& body) {
 
   if (!response_metadata_->cached_metadata.empty())
     client_->OnReceiveCachedMetadata(response_metadata_->cached_metadata);
-  CHECK(on_receive_response_sent_);
   client_->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
   if (response_metadata_->transfer_size)
     client_->OnTransferSizeUpdated(response_metadata_->transfer_size);
@@ -1325,7 +1319,6 @@ void InterceptionJob::OnReceiveResponse(
   DCHECK(!response_metadata_);
   if (!(stage_ & InterceptionStage::RESPONSE)) {
     client_->OnReceiveResponse(head);
-    on_receive_response_sent_ = true;
     return;
   }
   loader_->PauseReadingBodyFromNet();
@@ -1398,13 +1391,10 @@ void InterceptionJob::OnStartLoadingResponseBody(
     return;
   }
   DCHECK_EQ(State::kResponseReceived, state_);
-  if (ShouldBypassForResponse()) {
-    // Remove this CHECK once https://crbug.com/882661 is fixed.
-    CHECK(on_receive_response_sent_);
+  if (ShouldBypassForResponse())
     client_->OnStartLoadingResponseBody(std::move(body));
-  } else {
+  else
     body_reader_->StartReading(std::move(body));
-  }
 }
 
 void InterceptionJob::OnComplete(
