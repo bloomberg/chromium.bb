@@ -123,51 +123,6 @@ mkdir $FONTDIR/a
 cp $FONT2 $FONTDIR/a
 check
 
-if [ "x$EXEEXT" = "x" ]; then
-dotest "Re-creating .uuid"
-prep
-cp $FONT1 $FONTDIR
-$FCCACHE $FONTDIR
-cat $FONTDIR/.uuid > out1
-$FCCACHE -f $FONTDIR
-cat $FONTDIR/.uuid > out2
-if cmp out1 out2 > /dev/null ; then : ; else
-  echo "*** Test failed: $TEST"
-  echo "*** .uuid was modified unexpectedly"
-  exit 1
-fi
-$FCCACHE -r $FONTDIR
-cat $FONTDIR/.uuid > out2
-if cmp out1 out2 > /dev/null ; then
-  echo "*** Test failed: $TEST"
-  echo "*** .uuid wasn't modified"
-  exit 1
-fi
-rm -f out1 out2
-
-dotest "Consistency between .uuid and cache name"
-prep
-cp $FONT1 $FONTDIR
-$FCCACHE $FONTDIR
-cat $FONTDIR/.uuid
-$FCCACHE -r $FONTDIR
-uuid=`cat $FONTDIR/.uuid`
-ls $CACHEDIR/$uuid*
-if [ $? != 0 ]; then
-  echo "*** Test failed: $TEST"
-  echo "No cache for $uuid"
-  ls $CACHEDIR
-  exit 1
-fi
-n=`ls -1 $CACHEDIR/*cache-* | wc -l`
-if [ $n != 1 ]; then
-  echo "*** Test failed: $TEST"
-  echo "Unexpected cache was created"
-  ls $CACHEDIR
-  exit 1
-fi
-fi
-
 dotest "Keep mtime of the font directory"
 prep
 cp $FONT1 $FONTDIR
@@ -194,12 +149,6 @@ s!@CACHEDIR@!$TESTTMPDIR/cache.dir!" < $TESTDIR/fonts.conf.in > bind-fonts.conf
 $BWRAP --bind / / --bind $CACHEDIR $TESTTMPDIR/cache.dir --bind $FONTDIR $TESTTMPDIR/fonts --bind .. $TESTTMPDIR/build --dev-bind /dev /dev --setenv FONTCONFIG_FILE $TESTTMPDIR/build/test/bind-fonts.conf $TESTTMPDIR/build/fc-match/fc-match$EXEEXT -f "%{file}\n" ":foundry=Misc" > xxx
 $BWRAP --bind / / --bind $CACHEDIR $TESTTMPDIR/cache.dir --bind $FONTDIR $TESTTMPDIR/fonts --bind .. $TESTTMPDIR/build --dev-bind /dev /dev --setenv FONTCONFIG_FILE $TESTTMPDIR/build/test/bind-fonts.conf $TESTTMPDIR/build/test/test-bz106618$EXEEXT | sort > flist1
 $BWRAP --bind / / --bind $CACHEDIR $TESTTMPDIR/cache.dir --bind $FONTDIR $TESTTMPDIR/fonts --bind .. $TESTTMPDIR/build --dev-bind /dev /dev find $TESTTMPDIR/fonts/ -type f -name '*.pcf' | sort > flist2
-ls -l $CACHEDIR > out2
-if cmp out1 out2 > /dev/null ; then : ; else
-  echo "*** Test failed: $TEST"
-  echo "cache was updated."
-  exit 1
-fi
 if [ x`cat xxx` != "x$TESTTMPDIR/fonts/4x6.pcf" ]; then
   echo "*** Test failed: $TEST"
   echo "file property doesn't point to the new place: $TESTTMPDIR/fonts/4x6.pcf"
@@ -225,18 +174,14 @@ mkdir -p $MyPWD/sysroot/$CACHEDIR
 cp $FONT1 $MyPWD/sysroot/$FONTDIR
 cp $MyPWD/fonts.conf $MyPWD/sysroot/$MyPWD/fonts.conf
 $FCCACHE -y $MyPWD/sysroot
-stat $MyPWD/sysroot/$FONTDIR/.uuid
-if test $? != 0; then
-  echo "*** Test failed: $TEST"
-  exit 1
-fi
 
-dotest "creating uuid-based cache file on sysroot"
-uuid=`cat $MyPWD/sysroot/$FONTDIR/.uuid`
-ls $MyPWD/sysroot/$CACHEDIR/$uuid*
+dotest "creating cache file on sysroot"
+md5=`echo -n $FONTDIR | md5sum | sed 's/ .*$//'`
+echo "checking for cache file $md5"
+ls "$MyPWD/sysroot/$CACHEDIR/$md5"*
 if [ $? != 0 ]; then
   echo "*** Test failed: $TEST"
-  echo "No cache for $uuid"
+  echo "No cache for $FONTDIR ($md5)"
   ls $MyPWD/sysroot/$CACHEDIR
   exit 1
 fi
@@ -244,20 +189,5 @@ fi
 rm -rf $MyPWD/sysroot
 
 fi
-
-# dotest "deleting .uuid file on empty dir"
-# prep
-# cp $FONT1 $FONT2 $FONTDIR
-# $FCCACHE $FONTDIR
-# sleep 1
-# rm -f $FONTDIR/*pcf
-# $FCCACHE $FONTDIR
-# rmdir $FONTDIR > /dev/null 2>&1
-# if [ $? != 0 ]; then
-#   echo "*** Test failed: $TEST"
-#   echo "$FONTDIR isn't empty"
-#   ls -al $FONTDIR
-#   exit 1
-# fi
 
 rm -rf $FONTDIR $CACHEFILE $CACHEDIR $FONTCONFIG_FILE out
