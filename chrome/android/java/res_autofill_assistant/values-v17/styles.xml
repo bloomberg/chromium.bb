@@ -21,4 +21,8 @@
         parent="@style/BlackBodyDefault">
         <item name="android:textColor">@color/google_green_700</item>
     </style>
+    <style name="TextAppearance.AutofillAssistantButtonHairline" parent="RobotoMediumStyle">
+        <item name="android:textColor">@color/modern_blue_600</item>
+        <item name="android:textSize">@dimen/text_size_medium</item>
+    </style>
 </resources>
