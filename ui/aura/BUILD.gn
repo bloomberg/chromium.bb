@@ -138,6 +138,8 @@ jumbo_component("aura") {
     "mus/window_tree_client_delegate.cc",
     "mus/window_tree_host_mus.cc",
     "mus/window_tree_host_mus_init_params.cc",
+    "native_window_occlusion_tracker_win.cc",
+    "native_window_occlusion_tracker_win.h",
     "null_window_targeter.cc",
     "scoped_keyboard_hook.cc",
     "scoped_simple_keyboard_hook.cc",
@@ -153,6 +155,12 @@ jumbo_component("aura") {
     "window_targeter.cc",
     "window_tree_host.cc",
     "window_tree_host_platform.cc",
+  ]
+
+  # aura_interactive_ui_tests needs access to native_window_occlusion_tracker.h.
+  friend = [
+    ":aura_interactive_ui_tests",
+    ":aura_unittests",
   ]
 
   defines = [ "AURA_IMPLEMENTATION" ]
@@ -394,6 +402,10 @@ test("aura_unittests") {
     "window_unittest.cc",
   ]
 
+  if (is_win) {
+    sources += [ "native_window_occlusion_tracker_unittest.cc" ]
+  }
+
   deps = [
     ":test_support",
     "//base/test:test_support",
@@ -423,4 +435,30 @@ test("aura_unittests") {
   data_deps = [
     "//third_party/mesa_headers",
   ]
+}
+
+# This target is added as a dependency of browser interactive_ui_tests. It must
+# be source_set, otherwise the linker will drop the tests as dead code.
+source_set("aura_interactive_ui_tests") {
+  testonly = true
+  if (is_win) {
+    sources = [
+      "native_window_occlusion_tracker_win_interactive_test.cc",
+    ]
+
+    deps = [
+      ":aura",
+      ":test_support",
+      "//base/test:test_support",
+      "//net",
+      "//testing/gtest",
+      "//ui/base/ime:ime",
+      "//ui/display:display",
+      "//ui/gfx",
+      "//ui/gfx/geometry",
+      "//ui/gl:test_support",
+      "//ui/gl/init",
+      "//ui/views:views",
+    ]
+  }
 }

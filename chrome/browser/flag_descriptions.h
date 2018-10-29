@@ -1720,6 +1720,9 @@ extern const char kGoogleBrandedContextMenuDescription[];
 
 #if defined(OS_WIN)
 
+extern const char kCalculateNativeWinOcclusionName[];
+extern const char kCalculateNativeWinOcclusionDescription[];
+
 extern const char kCloudPrintXpsName[];
 extern const char kCloudPrintXpsDescription[];
 
