@@ -243,11 +243,12 @@ class PersonalDataManager : public KeyedService,
 
   // Updates the validity states of |profiles| according to server validity map.
   void UpdateProfilesValidityMapsIfNeeded(
-      std::vector<AutofillProfile*>& profiles);
+      const std::vector<AutofillProfile*>& profiles);
 
   // Updates the validity states of |profiles| according to client side
   // validation API: |client_profile_validator_|.
-  void UpdateClientValidityStates(std::vector<AutofillProfile*>& profiles);
+  void UpdateClientValidityStates(
+      const std::vector<AutofillProfile*>& profiles);
 
   // Returns the profiles to suggest to the user, ordered by frecency.
   std::vector<AutofillProfile*> GetProfilesToSuggest() const;
@@ -542,6 +543,9 @@ class PersonalDataManager : public KeyedService,
   // https://crbug.com/871301
   void MoveJapanCityToStreetAddress();
 
+  // Called when the |profile| is validated by the AutofillProfileValidator.
+  virtual void OnValidated(AutofillProfile* profile);
+
   // Get the profiles fields validity map by |guid|.
   const ProfileValidityMap& GetProfileValidityByGUID(const std::string& guid);
 
@@ -712,10 +716,7 @@ class PersonalDataManager : public KeyedService,
   void ResetProfileValidity() {
     synced_profile_validity_.reset();
     profile_validities_need_update = true;
-  };
-
-  // Called when the |profile| is validated by the AutofillProfileValidator.
-  void OnValidated(AutofillProfile* profile);
+  }
 
   const std::string app_locale_;
 

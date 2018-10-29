@@ -1178,7 +1178,7 @@ std::vector<AutofillProfile*> PersonalDataManager::GetProfiles() const {
 }
 
 void PersonalDataManager::UpdateProfilesValidityMapsIfNeeded(
-    std::vector<AutofillProfile*>& profiles) {
+    const std::vector<AutofillProfile*>& profiles) {
   if (!profile_validities_need_update)
     return;
   profile_validities_need_update = false;
@@ -1187,24 +1187,27 @@ void PersonalDataManager::UpdateProfilesValidityMapsIfNeeded(
   }
 }
 
-void PersonalDataManager::OnValidated(AutofillProfile* profile) {
-  // We always set a value for country validity state.
-  DCHECK(profile->GetValidityState(ServerFieldType::ADDRESS_HOME_COUNTRY,
-                                   AutofillProfile::CLIENT) !=
-         AutofillProfile::UNVALIDATED);
-  profile->set_is_client_validity_states_updated(true);
-}
-
 void PersonalDataManager::UpdateClientValidityStates(
-    std::vector<AutofillProfile*>& profiles) {
+    const std::vector<AutofillProfile*>& profiles) {
   if (!client_profile_validator_)
     return;
+
+  // The profiles' validity states need to be updated for each major version, to
+  // keep up with the validation logic.
+  bool update_validation =
+      pref_service_->GetInteger(prefs::kAutofillLastVersionValidated) <
+      atoi(version_info::GetVersionNumber().c_str());
   for (auto* profile : profiles) {
-    if (!profile->is_client_validity_states_updated())
+    if (!profile->is_client_validity_states_updated() || update_validation) {
       client_profile_validator_->StartProfileValidation(
           profile, base::BindOnce(&PersonalDataManager::OnValidated,
                                   base::Unretained(this)));
+    }
   }
+  // Set the pref to the current major version if already not set.
+  if (update_validation)
+    pref_service_->SetInteger(prefs::kAutofillLastVersionValidated,
+                              atoi(version_info::GetVersionNumber().c_str()));
 }
 
 std::vector<AutofillProfile*> PersonalDataManager::GetServerProfiles() const {
@@ -1648,6 +1651,20 @@ void PersonalDataManager::MoveJapanCityToStreetAddress() {
 
   // Set the pref so that this migration is never run again.
   pref_service_->SetBoolean(prefs::kAutofillJapanCityFieldMigrated, true);
+}
+
+void PersonalDataManager::OnValidated(AutofillProfile* profile) {
+  // We always set a value for country validity state.
+  DCHECK(profile->GetValidityState(ServerFieldType::ADDRESS_HOME_COUNTRY,
+                                   AutofillProfile::CLIENT) !=
+         AutofillProfile::UNVALIDATED);
+
+  // Set the validity states updated, only when the validation has occurred. If
+  // the rules were not loaded for any reason, don't set the flag.
+  if (profile->GetValidityState(ServerFieldType::ADDRESS_HOME_COUNTRY,
+                                AutofillProfile::CLIENT) !=
+      AutofillProfile::UNVALIDATED)
+    profile->set_is_client_validity_states_updated(true);
 }
 
 const ProfileValidityMap& PersonalDataManager::GetProfileValidityByGUID(
