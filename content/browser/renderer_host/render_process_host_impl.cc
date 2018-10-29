@@ -3683,7 +3683,7 @@ void RenderProcessHostImpl::FilterURL(RenderProcessHost* rph,
     // This is because the browser treats navigation to an empty GURL as a
     // navigation to the home page. This is often a privileged page
     // (chrome://newtab/) which is exactly what we don't want.
-    *url = GURL(url::kAboutBlankURL);
+    *url = GURL(kBlockedURL);
     return;
   }
 
@@ -3692,7 +3692,7 @@ void RenderProcessHostImpl::FilterURL(RenderProcessHost* rph,
     // URL.  This prevents us from storing the blocked URL and becoming confused
     // later.
     VLOG(1) << "Blocked URL " << url->spec();
-    *url = GURL(url::kAboutBlankURL);
+    *url = GURL(kBlockedURL);
   }
 }
 

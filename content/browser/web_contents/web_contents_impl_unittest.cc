@@ -2481,6 +2481,7 @@ TEST_F(WebContentsImplTest, FilterURLs) {
   // about:blank
   GURL url_normalized(url::kAboutBlankURL);
   GURL url_from_ipc("about:whatever");
+  GURL url_blocked(kBlockedURL);
 
   // We navigate the test WebContents to about:blank, since NavigateAndCommit
   // will use the given URL to create the NavigationEntry as well, and that
@@ -2490,7 +2491,7 @@ TEST_F(WebContentsImplTest, FilterURLs) {
   // Check that an IPC with about:whatever is correctly normalized.
   contents()->TestDidFinishLoad(url_from_ipc);
 
-  EXPECT_EQ(url_normalized, observer.last_url());
+  EXPECT_EQ(url_blocked, observer.last_url());
 
   // Create and navigate another WebContents.
   std::unique_ptr<TestWebContents> other_contents(
@@ -2500,7 +2501,7 @@ TEST_F(WebContentsImplTest, FilterURLs) {
 
   // Check that an IPC with about:whatever is correctly normalized.
   other_contents->TestDidFailLoadWithError(url_from_ipc, 1, base::string16());
-  EXPECT_EQ(url_normalized, other_observer.last_url());
+  EXPECT_EQ(url_blocked, other_observer.last_url());
 }
 
 // Test that if a pending contents is deleted before it is shown, we don't

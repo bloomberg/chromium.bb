@@ -463,7 +463,7 @@ class HeadlessWebContentsBeginFrameControlTest
 
     browser_devtools_client_->GetTarget()->GetExperimental()->CreateTarget(
         target::CreateTargetParams::Builder()
-            .SetUrl("about://blank")
+            .SetUrl("about:blank")
             .SetWidth(200)
             .SetHeight(200)
             .SetEnableBeginFrameControl(true)

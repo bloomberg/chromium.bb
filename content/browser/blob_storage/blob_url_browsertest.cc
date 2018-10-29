@@ -137,8 +137,8 @@ IN_PROC_BROWSER_TEST_P(BlobUrlBrowserTest, LinkToSameOriginBlobWithAuthority) {
   EXPECT_FALSE(
       base::MatchPattern(new_contents->GetVisibleURL().spec(), "*spoof*"));
   // The currently implemented behavior is that the URL gets rewritten to
-  // about:blank.
-  EXPECT_EQ("about:blank", new_contents->GetVisibleURL().spec());
+  // about:blank#blocked.
+  EXPECT_EQ(kBlockedURL, new_contents->GetVisibleURL().spec());
   std::string page_content;
   EXPECT_TRUE(ExecuteScriptAndExtractString(
       new_contents,
@@ -177,8 +177,8 @@ IN_PROC_BROWSER_TEST_P(BlobUrlBrowserTest, ReplaceStateToAddAuthorityToBlob) {
       base::MatchPattern(new_contents->GetVisibleURL().spec(), "*spoof*"));
 
   // The currently implemented behavior is that the URL gets rewritten to
-  // about:blank. The content of the page stays the same.
-  EXPECT_EQ("about:blank", new_contents->GetVisibleURL().spec());
+  // about:blank#blocked. The content of the page stays the same.
+  EXPECT_EQ(kBlockedURL, new_contents->GetVisibleURL().spec());
   std::string page_content;
   EXPECT_TRUE(ExecuteScriptAndExtractString(
       new_contents,
