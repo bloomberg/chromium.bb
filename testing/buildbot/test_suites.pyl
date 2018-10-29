@@ -2335,7 +2335,10 @@
       # Run capture unittests as well since our bots have real webcams.
       'capture_unittests': {
         'args': ['--enable-logging', '--v=1', '--test-launcher-jobs=1',
-                 '--test-launcher-print-test-stdio=always'],
+                 '--test-launcher-print-test-stdio=always',
+                 # TODO(crbug.com/893494): Remove once real webcams are fixed
+                 # on chromium.webrtc Mac and Win bots.
+                 '--gtest_filter=-*UsingRealWebcam*'],
         'swarming': {
           'can_use_on_swarming_builders': False,
         },
