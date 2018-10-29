@@ -17,6 +17,7 @@ namespace features {
 
 CHROMEOS_EXPORT extern const base::Feature kAndroidMessagesIntegration;
 CHROMEOS_EXPORT extern const base::Feature kAndroidMessagesProdEndpoint;
+CHROMEOS_EXPORT extern const base::Feature kAutoScreenBrightness;
 CHROMEOS_EXPORT extern const base::Feature kChromeVoxArcSupport;
 CHROMEOS_EXPORT extern const base::Feature kDriveFs;
 CHROMEOS_EXPORT extern const base::Feature kMyFilesVolume;
