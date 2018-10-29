@@ -42,8 +42,6 @@ class WindowServiceDelegateImpl : public ws::WindowServiceDelegate {
                            ui::mojom::TextInputStatePtr state) override;
   void SetModalType(aura::Window* window, ui::ModalType type) override;
   ui::SystemInputInjector* GetSystemInputInjector() override;
-  aura::WindowTreeHost* GetWindowTreeHostForDisplayId(
-      int64_t display_id) override;
   aura::Window* GetTopmostWindowAtPoint(const gfx::Point& location_in_screen,
                                         const std::set<aura::Window*>& ignores,
                                         aura::Window** real_topmost) override;

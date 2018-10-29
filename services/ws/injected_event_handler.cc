@@ -57,7 +57,7 @@ void InjectedEventHandler::Inject(std::unique_ptr<ui::Event> event,
   pre_target_register_ = std::make_unique<ScopedPreTargetRegister>(
       window_tree_host_->window(), this);
   EventQueue::DispatchOrQueueEvent(window_service_, window_tree_host_,
-                                   event.get());
+                                   event.get(), /* honors_rewriters */ true);
   if (!this_ref)
     return;
   // |pre_target_register_| needs to be a member to ensure it's destroyed

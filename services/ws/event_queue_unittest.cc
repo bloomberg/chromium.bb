@@ -11,16 +11,15 @@
 #include "services/ws/event_queue_test_helper.h"
 #include "services/ws/window_service.h"
 #include "services/ws/window_service_test_setup.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/window.h"
-#include "ui/events/event.h"
-#include "ui/events/test/event_generator.h"
-
 #include "services/ws/window_tree_test_helper.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/mus/property_converter.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/events/event.h"
+#include "ui/events/test/event_generator.h"
 
 namespace ws {
 namespace {

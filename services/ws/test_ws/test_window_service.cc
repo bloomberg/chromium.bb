@@ -92,11 +92,6 @@ void TestWindowService::CancelDragLoop(aura::Window* window) {
   drag_drop_client_.DragCancel();
 }
 
-aura::WindowTreeHost* TestWindowService::GetWindowTreeHostForDisplayId(
-    int64_t display_id) {
-  return aura_test_helper_->host();
-}
-
 void TestWindowService::OnStart() {
   CHECK(!started_);
   started_ = true;
