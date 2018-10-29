@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/workers/experimental/task.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
@@ -15,6 +16,29 @@
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 
 namespace blink {
+
+class ThreadPoolTask::AsyncFunctionCompleted : public ScriptFunction {
+ public:
+  static v8::Local<v8::Function> CreateFunction(ScriptState* script_state,
+                                                ThreadPoolTask* task,
+                                                State state) {
+    return (new AsyncFunctionCompleted(script_state, task, state))
+        ->BindToV8Function();
+  }
+
+  ScriptValue Call(ScriptValue v) override {
+    task_->TaskCompletedOnWorkerThread(v.V8Value(), state_);
+    return ScriptValue();
+  }
+
+ private:
+  AsyncFunctionCompleted(ScriptState* script_state,
+                         ThreadPoolTask* task,
+                         State state)
+      : ScriptFunction(script_state), task_(task), state_(state) {}
+  ThreadPoolTask* task_;
+  const State state_;
+};
 
 ThreadPoolTask::ThreadPoolTask(ThreadPoolThreadProvider* thread_provider,
                                ScriptState* script_state,
@@ -232,29 +256,27 @@ void ThreadPoolTask::StartTaskOnWorkerThread() {
     }
   }
 
-  WorkerOrWorkletGlobalScope* global_scope = worker_thread_->GlobalScope();
-  v8::Isolate* isolate = ToIsolate(global_scope);
-  ScriptState::Scope scope(global_scope->ScriptController()->GetScriptState());
-
-  v8::TryCatch block(isolate);
-  v8::Local<v8::Value> return_value;
   if (was_cancelled) {
-    return_value = V8String(isolate, "Task aborted");
-  } else {
-    return_value = RunTaskOnWorkerThread(isolate);
-    if (return_value.IsEmpty()) {
-      if (block.HasCaught())
-        return_value = block.Exception()->ToString(isolate);
-      else
-        return_value = V8String(isolate, "Invalid task");
-    }
+    WorkerOrWorkletGlobalScope* global_scope = worker_thread_->GlobalScope();
+    v8::Isolate* isolate = ToIsolate(global_scope);
+    ScriptState::Scope scope(
+        global_scope->ScriptController()->GetScriptState());
+    TaskCompletedOnWorkerThread(V8String(isolate, "Task aborted"),
+                                State::kFailed);
+    return;
   }
 
+  RunTaskOnWorkerThread();
+}
+
+void ThreadPoolTask::TaskCompletedOnWorkerThread(
+    v8::Local<v8::Value> return_value,
+    State state) {
+  DCHECK(worker_thread_->IsCurrentThread());
+
   scoped_refptr<SerializedScriptValue> local_result =
-      SerializedScriptValue::SerializeAndSwallowExceptions(isolate,
-                                                           return_value);
-  State local_state =
-      block.HasCaught() || was_cancelled ? State::kFailed : State::kCompleted;
+      SerializedScriptValue::SerializeAndSwallowExceptions(
+          ToIsolate(worker_thread_->GlobalScope()), return_value);
 
   function_ = nullptr;
   arguments_.clear();
@@ -263,13 +285,13 @@ void ThreadPoolTask::StartTaskOnWorkerThread() {
   {
     MutexLocker lock(mutex_);
     serialized_result_ = local_result;
-    AdvanceState(local_state);
+    AdvanceState(state);
     dependents_to_notify.swap(dependents_);
   }
 
   for (auto& dependent : dependents_to_notify) {
     dependent->task->PrerequisiteFinished(dependent->index, return_value,
-                                          local_result, local_state);
+                                          local_result, state);
   }
 
   PostCrossThreadTask(
@@ -281,20 +303,23 @@ void ThreadPoolTask::StartTaskOnWorkerThread() {
   // TaskCompleted may delete |this| at any time after this point.
 }
 
-v8::Local<v8::Value> ThreadPoolTask::RunTaskOnWorkerThread(
-    v8::Isolate* isolate) {
+void ThreadPoolTask::RunTaskOnWorkerThread() {
   DCHECK(worker_thread_->IsCurrentThread());
   // No other thread should be touching function_ or arguments_ at this point,
   // so no mutex needed while actually running the task.
+  WorkerOrWorkletGlobalScope* global_scope = worker_thread_->GlobalScope();
+  ScriptState::Scope scope(global_scope->ScriptController()->GetScriptState());
+  v8::Isolate* isolate = ToIsolate(global_scope);
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
+
   v8::Local<v8::Function> script_function;
   v8::Local<v8::Value> receiver;
   if (function_) {
     String core_script =
         "(" + ToCoreString(function_->Deserialize(isolate).As<v8::String>()) +
         ")";
-    v8::MaybeLocal<v8::Script> script = v8::Script::Compile(
-        isolate->GetCurrentContext(), V8String(isolate, core_script));
+    v8::MaybeLocal<v8::Script> script =
+        v8::Script::Compile(context, V8String(isolate, core_script));
     script_function = script.ToLocalChecked()
                           ->Run(context)
                           .ToLocalChecked()
@@ -302,15 +327,18 @@ v8::Local<v8::Value> ThreadPoolTask::RunTaskOnWorkerThread(
     receiver = script_function;
   } else if (worker_thread_->IsWorklet()) {
     TaskWorkletGlobalScope* task_worklet_global_scope =
-        static_cast<TaskWorkletGlobalScope*>(worker_thread_->GlobalScope());
+        static_cast<TaskWorkletGlobalScope*>(global_scope);
     script_function = task_worklet_global_scope->GetProcessFunctionForName(
         function_name_, isolate);
     receiver =
         task_worklet_global_scope->GetInstanceForName(function_name_, isolate);
   }
 
-  if (script_function.IsEmpty())
-    return v8::Local<v8::Value>();
+  if (script_function.IsEmpty()) {
+    TaskCompletedOnWorkerThread(V8String(isolate, "Invalid task"),
+                                State::kFailed);
+    return;
+  }
 
   Vector<v8::Local<v8::Value>> params(arguments_.size());
   for (size_t i = 0; i < arguments_.size(); i++) {
@@ -321,16 +349,33 @@ v8::Local<v8::Value> ThreadPoolTask::RunTaskOnWorkerThread(
       params[i] = arguments_[i].v8_value->NewLocal(isolate);
   }
 
+  v8::TryCatch block(isolate);
   v8::MaybeLocal<v8::Value> ret =
       script_function->Call(context, receiver, params.size(), params.data());
-
-  v8::Local<v8::Value> return_value;
-  if (!ret.IsEmpty()) {
-    return_value = ret.ToLocalChecked();
-    if (return_value->IsPromise())
-      return_value = return_value.As<v8::Promise>()->Result();
+  if (block.HasCaught()) {
+    TaskCompletedOnWorkerThread(block.Exception()->ToString(isolate),
+                                State::kFailed);
+    return;
   }
-  return return_value;
+
+  DCHECK(!ret.IsEmpty());
+  v8::Local<v8::Value> return_value = ret.ToLocalChecked();
+  if (return_value->IsPromise()) {
+    v8::Local<v8::Promise> promise = return_value.As<v8::Promise>();
+    if (promise->State() == v8::Promise::kPending) {
+      // Wait for the promise to resolve before calling
+      // TaskCompletedOnWorkerThread.
+      ScriptState* script_state = ScriptState::Current(isolate);
+      ScriptPromise(script_state, promise)
+          .Then(AsyncFunctionCompleted::CreateFunction(script_state, this,
+                                                       State::kCompleted),
+                AsyncFunctionCompleted::CreateFunction(script_state, this,
+                                                       State::kFailed));
+      return;
+    }
+    return_value = promise->Result();
+  }
+  TaskCompletedOnWorkerThread(return_value, State::kCompleted);
 }
 
 void ThreadPoolTask::TaskCompleted() {
