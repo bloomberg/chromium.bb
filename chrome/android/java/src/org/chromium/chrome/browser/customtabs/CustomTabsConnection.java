@@ -23,6 +23,7 @@ import android.support.customtabs.CustomTabsCallback;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.CustomTabsSessionToken;
+import android.support.customtabs.PostMessageServiceConnection;
 import android.text.TextUtils;
 import android.widget.RemoteViews;
 
@@ -359,8 +360,10 @@ public class CustomTabsConnection {
                 cancelSpeculation(session);
             }
         };
-        PostMessageHandler handler = new PostMessageHandler(session);
-        return mClientManager.newSession(session, Binder.getCallingUid(), onDisconnect, handler);
+        PostMessageServiceConnection serviceConnection = new PostMessageServiceConnection(session);
+        PostMessageHandler handler = new PostMessageHandler(serviceConnection);
+        return mClientManager.newSession(
+                session, Binder.getCallingUid(), onDisconnect, handler, serviceConnection);
     }
 
     /**
