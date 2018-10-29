@@ -215,18 +215,7 @@ class WinTool(object):
 
     # 2. Run Microsoft rc.exe.
     if sys.platform == 'win32' and rc_exe_exit_code == 0:
-      popen = subprocess.Popen(args, shell=True, env=env,
-                               stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-      out, _ = popen.communicate()
-      # Filter logo banner from invocations of rc.exe. Older versions of RC
-      # don't support the /nologo flag.
-      for line in out.splitlines():
-        if (not line.startswith('Microsoft (R) Windows (R) Resource Compiler')
-            and not line.startswith('Copy' + 'right (C' +
-                                ') Microsoft Corporation')
-            and line):
-          print line
-      rc_exe_exit_code = popen.returncode
+      rc_exe_exit_code = subprocess.call(args, shell=True, env=env)
       # Assert Microsoft rc.exe and rc.py produced identical .res files.
       if rc_exe_exit_code == 0:
         import filecmp
