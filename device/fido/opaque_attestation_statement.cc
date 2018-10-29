@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "components/cbor/cbor_values.h"
+#include "components/cbor/values.h"
 
 using cbor::Value;
 

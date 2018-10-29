@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
-#include "components/cbor/cbor_values.h"
+#include "components/cbor/values.h"
 #include "device/fido/fido_constants.h"
 
 namespace device {

@@ -5,8 +5,8 @@
 #include <stdint.h>
 #include <algorithm>
 
-#include "components/cbor/cbor_reader.h"  // nogncheck
-#include "components/cbor/cbor_writer.h"  // nogncheck
+#include "components/cbor/reader.h"  // nogncheck
+#include "components/cbor/writer.h"  // nogncheck
 
 namespace cbor {
 

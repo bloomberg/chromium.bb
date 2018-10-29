@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "components/cbor/cbor_writer.h"
+#include "components/cbor/writer.h"
 #include "device/fido/fido_parsing_utils.h"
 
 namespace device {

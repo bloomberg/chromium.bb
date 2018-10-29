@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CBOR_CBOR_WRITER_H_
-#define COMPONENTS_CBOR_CBOR_WRITER_H_
+#ifndef COMPONENTS_CBOR_WRITER_H_
+#define COMPONENTS_CBOR_WRITER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -11,7 +11,7 @@
 
 #include "base/optional.h"
 #include "components/cbor/cbor_export.h"
-#include "components/cbor/cbor_values.h"
+#include "components/cbor/values.h"
 
 // A basic Concise Binary Object Representation (CBOR) encoder as defined by
 // https://tools.ietf.org/html/rfc7049. This is a generic encoder that supplies
@@ -97,4 +97,4 @@ class CBOR_EXPORT Writer {
 
 }  // namespace cbor
 
-#endif  // COMPONENTS_CBOR_CBOR_WRITER_H_
+#endif  // COMPONENTS_CBOR_WRITER_H_

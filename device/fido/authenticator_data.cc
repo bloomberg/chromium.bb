@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "components/cbor/cbor_reader.h"
-#include "components/cbor/cbor_writer.h"
+#include "components/cbor/reader.h"
+#include "components/cbor/writer.h"
 #include "device/fido/attested_credential_data.h"
 #include "device/fido/fido_parsing_utils.h"
 

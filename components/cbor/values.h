@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CBOR_CBOR_VALUES_H_
-#define COMPONENTS_CBOR_CBOR_VALUES_H_
+#ifndef COMPONENTS_CBOR_VALUES_H_
+#define COMPONENTS_CBOR_VALUES_H_
 
 #include <stdint.h>
 
@@ -187,4 +187,4 @@ class CBOR_EXPORT Value {
 };
 }  // namespace cbor
 
-#endif  // COMPONENTS_CBOR_CBOR_VALUES_H_
+#endif  // COMPONENTS_CBOR_VALUES_H_

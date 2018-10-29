@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CBOR_CBOR_CONSTANTS_H_
-#define COMPONENTS_CBOR_CBOR_CONSTANTS_H_
+#ifndef COMPONENTS_CBOR_CONSTANTS_H_
+#define COMPONENTS_CBOR_CONSTANTS_H_
 
 #include <stdint.h>
 
@@ -34,4 +34,4 @@ extern const char kUnsupportedMajorType[];
 }  // namespace constants
 }  // namespace cbor
 
-#endif  // COMPONENTS_CBOR_CBOR_CONSTANTS_H_
+#endif  // COMPONENTS_CBOR_CONSTANTS_H_

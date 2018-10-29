@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/numerics/safe_math.h"
-#include "components/cbor/cbor_reader.h"
+#include "components/cbor/reader.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/opaque_public_key.h"

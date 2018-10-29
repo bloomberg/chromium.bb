@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cbor/cbor_writer.h"
+#include "components/cbor/writer.h"
 
 #include <string>
 
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
-#include "components/cbor/cbor_constants.h"
+#include "components/cbor/constants.h"
 
 namespace cbor {
 

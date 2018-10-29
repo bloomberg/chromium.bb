@@ -12,7 +12,7 @@
 #include "base/component_export.h"
 #include "base/containers/flat_set.h"
 #include "base/optional.h"
-#include "components/cbor/cbor_values.h"
+#include "components/cbor/values.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_transport_protocol.h"
 
