@@ -235,6 +235,7 @@ _CONFIG = [
             'style_change_reason::.+',
             'touch_action_util::.+',
             'vector_math::.+',
+            'web_core_test_support::.+',
             'xpath::.+',
             '[a-z_]+_names::.+',
 
