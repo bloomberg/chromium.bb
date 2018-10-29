@@ -110,6 +110,8 @@ crbug.com/891427 virtual/threaded/fast/scrolling/no-hover-during-scroll.html [ P
 crbug.com/891427 virtual/fractional_scrolling_threaded/fast/scrolling/no-hover-during-scroll.html [ Pass Failure Timeout Crash ]
 # More found by Findit:
 crbug.com/891427 virtual/threaded/animations/invisible-composited-animations-prevent-scroll.html [ Pass Failure Timeout Crash ]
+# One more from Findit: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_chromium_rel_ng/220243
+crbug.com/891427 rootscroller/set-root-scroller.html [ Pass Failure Timeout Crash ]
 
 # Remove these when --enable-display-compositor-pixel-dump becomes the
 # "default" setting. These will all need to be re-baselined at that point.
