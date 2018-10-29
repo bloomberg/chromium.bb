@@ -58,16 +58,15 @@ void HitTestAggregator::SendHitTestData() {
 }
 
 base::Optional<int64_t> HitTestAggregator::GetTraceIdIfUpdated(
-    const SurfaceId& surface_id) {
+    const SurfaceId& surface_id,
+    uint64_t active_frame_index) {
   bool enabled;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(
       TRACE_DISABLED_BY_DEFAULT("viz.hit_testing_flow"), &enabled);
   if (!enabled)
     return base::nullopt;
 
-  int32_t active_frame_index =
-      hit_test_manager_->GetActiveFrameIndex(surface_id);
-  int32_t& frame_index = last_active_frame_index_[surface_id];
+  uint64_t& frame_index = last_active_frame_index_[surface_id.frame_sink_id()];
   if (frame_index == active_frame_index)
     return base::nullopt;
   frame_index = active_frame_index;
@@ -75,13 +74,17 @@ base::Optional<int64_t> HitTestAggregator::GetTraceIdIfUpdated(
 }
 
 void HitTestAggregator::AppendRoot(const SurfaceId& surface_id) {
+  uint64_t active_frame_index;
   const HitTestRegionList* hit_test_region_list =
       hit_test_manager_->GetActiveHitTestRegionList(
-          local_surface_id_lookup_delegate_, surface_id.frame_sink_id());
+          local_surface_id_lookup_delegate_, surface_id.frame_sink_id(),
+          &active_frame_index);
+
   if (!hit_test_region_list)
     return;
 
-  base::Optional<int64_t> trace_id = GetTraceIdIfUpdated(surface_id);
+  base::Optional<int64_t> trace_id =
+      GetTraceIdIfUpdated(surface_id, active_frame_index);
   TRACE_EVENT_WITH_FLOW1(
       TRACE_DISABLED_BY_DEFAULT("viz.hit_testing_flow"), "Event.Pipeline",
       TRACE_ID_GLOBAL(trace_id.value_or(-1)),
@@ -126,9 +129,11 @@ size_t HitTestAggregator::AppendRegion(size_t region_index,
 
     referenced_child_regions_.insert(region.frame_sink_id);
 
+    uint64_t active_frame_index;
     const HitTestRegionList* hit_test_region_list =
         hit_test_manager_->GetActiveHitTestRegionList(
-            local_surface_id_lookup_delegate_, region.frame_sink_id);
+            local_surface_id_lookup_delegate_, region.frame_sink_id,
+            &active_frame_index);
     if (!hit_test_region_list) {
       // Hit-test data not found with this FrameSinkId. This means that it
       // failed to find a surface corresponding to this FrameSinkId at surface
@@ -156,7 +161,8 @@ size_t HitTestAggregator::AppendRegion(size_t region_index,
                 region.frame_sink_id);
         SurfaceId surface_id(region.frame_sink_id, local_surface_id);
 
-        base::Optional<int64_t> trace_id = GetTraceIdIfUpdated(surface_id);
+        base::Optional<int64_t> trace_id =
+            GetTraceIdIfUpdated(surface_id, active_frame_index);
         TRACE_EVENT_WITH_FLOW1(
             TRACE_DISABLED_BY_DEFAULT("viz.hit_testing_flow"), "Event.Pipeline",
             TRACE_ID_GLOBAL(trace_id.value_or(-1)),
