@@ -8,9 +8,6 @@
 # ChromeOS.
 -BrowserKeyEventsTest.AccessKeys
 
-# misc.
--DevToolsManagerDelegateTest.ShowMinimizedWindow
-
 # Broken tests related to accessibility. crbug.com/888750 and crbug.com/889093
 -GuestSpokenFeedbackTest.FocusToolbar
 -SelectToSpeakTest.ActivatesWithTapOnSelectToSpeakTray
