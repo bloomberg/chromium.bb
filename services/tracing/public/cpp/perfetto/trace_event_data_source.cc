@@ -178,7 +178,7 @@ class TraceEventDataSource::ThreadLocalEventSink {
 
     int name_index = 0;
     int category_name_index = 0;
-    int arg_name_indices[base::trace_event::kTraceMaxNumArgs] = {0};
+    int arg_name_indices[base::trace_event::TraceArguments::kMaxSize] = {0};
 
     // Populate any new string table parts first; has to be done before
     // the add_trace_events() call (as the string table is part of the outer
@@ -192,8 +192,7 @@ class TraceEventDataSource::ThreadLocalEventSink {
       category_name_index = GetStringTableIndexForString(
           TraceLog::GetCategoryGroupName(trace_event.category_group_enabled()));
 
-      for (int i = 0;
-           i < base::trace_event::kTraceMaxNumArgs && trace_event.arg_name(i);
+      for (size_t i = 0; i < trace_event.arg_size() && trace_event.arg_name(i);
            ++i) {
         arg_name_indices[i] =
             GetStringTableIndexForString(trace_event.arg_name(i));
@@ -238,8 +237,7 @@ class TraceEventDataSource::ThreadLocalEventSink {
     char phase = trace_event.phase();
     new_trace_event->set_phase(phase);
 
-    for (int i = 0;
-         i < base::trace_event::kTraceMaxNumArgs && trace_event.arg_name(i);
+    for (size_t i = 0; i < trace_event.arg_size() && trace_event.arg_name(i);
          ++i) {
       auto type = trace_event.arg_type(i);
       auto* new_arg = new_trace_event->add_args();

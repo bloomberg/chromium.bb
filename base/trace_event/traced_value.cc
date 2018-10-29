@@ -521,10 +521,10 @@ void TracedValue::AppendAsTraceFormat(std::string* out) const {
       }
 
       case kTypeBool: {
-        TraceEvent::TraceValue json_value;
+        TraceValue json_value;
         CHECK(it.ReadBool(&json_value.as_bool));
         maybe_append_key_name(state_stack[current_state_index], &it, out);
-        TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_BOOL, json_value, out);
+        json_value.AppendAsJSON(TRACE_VALUE_TYPE_BOOL, out);
         break;
       }
 
@@ -532,17 +532,17 @@ void TracedValue::AppendAsTraceFormat(std::string* out) const {
         int value;
         CHECK(it.ReadInt(&value));
         maybe_append_key_name(state_stack[current_state_index], &it, out);
-        TraceEvent::TraceValue json_value;
+        TraceValue json_value;
         json_value.as_int = value;
-        TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_INT, json_value, out);
+        json_value.AppendAsJSON(TRACE_VALUE_TYPE_INT, out);
         break;
       }
 
       case kTypeDouble: {
-        TraceEvent::TraceValue json_value;
+        TraceValue json_value;
         CHECK(it.ReadDouble(&json_value.as_double));
         maybe_append_key_name(state_stack[current_state_index], &it, out);
-        TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_DOUBLE, json_value, out);
+        json_value.AppendAsJSON(TRACE_VALUE_TYPE_DOUBLE, out);
         break;
       }
 
@@ -550,9 +550,9 @@ void TracedValue::AppendAsTraceFormat(std::string* out) const {
         std::string value;
         CHECK(it.ReadString(&value));
         maybe_append_key_name(state_stack[current_state_index], &it, out);
-        TraceEvent::TraceValue json_value;
+        TraceValue json_value;
         json_value.as_string = value.c_str();
-        TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_STRING, json_value, out);
+        json_value.AppendAsJSON(TRACE_VALUE_TYPE_STRING, out);
         break;
       }
 

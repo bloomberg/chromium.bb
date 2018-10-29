@@ -12,11 +12,10 @@ namespace base {
 namespace trace_event {
 
 const TraceEvent& MakeTraceEvent(const char* name) {
-  static TraceEvent event;
-  event.Reset();
-  event.Initialize(0, TimeTicks(), ThreadTicks(), 'b', nullptr, name, "", 0, 0,
-                   0, nullptr, nullptr, nullptr, nullptr, 0);
-  return event;
+  static TraceEvent trace_event;
+  trace_event = TraceEvent(0, TimeTicks(), ThreadTicks(), 'b', nullptr, name,
+                           "", 0, 0, nullptr, 0);
+  return trace_event;
 }
 
 TEST(TraceEventNameFilterTest, Whitelist) {
