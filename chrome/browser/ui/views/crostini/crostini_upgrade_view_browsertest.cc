@@ -22,7 +22,8 @@
 
 class CrostiniUpgradeViewBrowserTest : public CrostiniDialogBrowserTest {
  public:
-  CrostiniUpgradeViewBrowserTest() = default;
+  CrostiniUpgradeViewBrowserTest()
+      : CrostiniDialogBrowserTest(true /*register_termina*/) {}
 
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
