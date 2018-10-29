@@ -23,7 +23,6 @@
 #include "components/ntp_tiles/constants.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
-#include "components/omnibox/browser/toolbar_field_trial.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/payments/core/features.h"
 #include "components/safe_browsing/features.h"
@@ -170,14 +169,14 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &offline_pages::kOfflinePagesSharingFeature,
     &offline_pages::kOfflinePagesLivePageSharingFeature,
     &offline_pages::kPrefetchingOfflinePagesFeature,
+    &omnibox::kHideSteadyStateUrlScheme,
+    &omnibox::kHideSteadyStateUrlTrivialSubdomains,
     &omnibox::kQueryInOmnibox,
     &password_manager::features::kPasswordSearchMobile,
     &password_manager::features::kPasswordsKeyboardAccessory,
     &translate::kTranslateAndroidManualTrigger,
     &unified_consent::kUnifiedConsent,
     &subresource_filter::kSafeBrowsingSubresourceFilter,
-    &toolbar::features::kHideSteadyStateUrlScheme,
-    &toolbar::features::kHideSteadyStateUrlTrivialSubdomains,
 };
 
 const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {

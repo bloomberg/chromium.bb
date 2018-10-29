@@ -6,7 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "components/omnibox/browser/toolbar_field_trial.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/toolbar_model_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -36,10 +36,9 @@ class FakeToolbarModelDelegate : public ToolbarModelDelegate {
 TEST(ToolbarModelImplTest,
      DisplayUrlAppliesFormattedStringWithEquivalentMeaning) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {toolbar::features::kHideSteadyStateUrlScheme,
-       toolbar::features::kHideSteadyStateUrlTrivialSubdomains},
-      {});
+  feature_list.InitWithFeatures({omnibox::kHideSteadyStateUrlScheme,
+                                 omnibox::kHideSteadyStateUrlTrivialSubdomains},
+                                {});
 
   FakeToolbarModelDelegate delegate;
   auto model = std::make_unique<ToolbarModelImpl>(&delegate, 1024);

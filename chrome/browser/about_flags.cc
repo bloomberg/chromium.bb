@@ -78,7 +78,6 @@
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_switches.h"
-#include "components/omnibox/browser/toolbar_field_trial.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/payments/core/features.h"
 #include "components/previews/core/previews_features.h"
@@ -1166,17 +1165,17 @@ const FeatureEntry::FeatureVariation kUnifiedConsentVariations[] = {
      arraysize(kUnifiedConsentShowBump), nullptr}};
 
 const FeatureEntry::FeatureParam kSimplifyHttpsIndicatorEvToSecure[] = {
-    {toolbar::features::kSimplifyHttpsIndicatorParameterName,
-     toolbar::features::kSimplifyHttpsIndicatorParameterEvToSecure}};
+    {OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterName,
+     OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterEvToSecure}};
 const FeatureEntry::FeatureParam kSimplifyHttpsIndicatorSecureToLock[] = {
-    {toolbar::features::kSimplifyHttpsIndicatorParameterName,
-     toolbar::features::kSimplifyHttpsIndicatorParameterSecureToLock}};
+    {OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterName,
+     OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterSecureToLock}};
 const FeatureEntry::FeatureParam kSimplifyHttpsIndicatorBothToLock[] = {
-    {toolbar::features::kSimplifyHttpsIndicatorParameterName,
-     toolbar::features::kSimplifyHttpsIndicatorParameterBothToLock}};
+    {OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterName,
+     OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterBothToLock}};
 const FeatureEntry::FeatureParam kSimplifyHttpsIndicatorKeepSecureChip[] = {
-    {toolbar::features::kSimplifyHttpsIndicatorParameterName,
-     toolbar::features::kSimplifyHttpsIndicatorParameterKeepSecureChip}};
+    {OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterName,
+     OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterKeepSecureChip}};
 
 const FeatureEntry::FeatureVariation kSimplifyHttpsIndicatorVariations[] = {
     {"(show Secure chip for EV pages)", kSimplifyHttpsIndicatorEvToSecure,
@@ -3365,21 +3364,18 @@ const FeatureEntry kFeatureEntries[] = {
     {"omnibox-ui-hide-steady-state-url-scheme",
      flag_descriptions::kOmniboxUIHideSteadyStateUrlSchemeName,
      flag_descriptions::kOmniboxUIHideSteadyStateUrlSchemeDescription, kOsAll,
-     FEATURE_VALUE_TYPE(toolbar::features::kHideSteadyStateUrlScheme)},
+     FEATURE_VALUE_TYPE(omnibox::kHideSteadyStateUrlScheme)},
 
     {"omnibox-ui-hide-steady-state-url-trivial-subdomains",
      flag_descriptions::kOmniboxUIHideSteadyStateUrlTrivialSubdomainsName,
      flag_descriptions::
          kOmniboxUIHideSteadyStateUrlTrivialSubdomainsDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         toolbar::features::kHideSteadyStateUrlTrivialSubdomains)},
+     kOsAll, FEATURE_VALUE_TYPE(omnibox::kHideSteadyStateUrlTrivialSubdomains)},
 
     {"omnibox-ui-hide-steady-state-url-path-query-and-ref",
      flag_descriptions::kOmniboxUIHideSteadyStateUrlPathQueryAndRefName,
      flag_descriptions::kOmniboxUIHideSteadyStateUrlPathQueryAndRefDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(toolbar::features::kHideSteadyStateUrlPathQueryAndRef)},
+     kOsAll, FEATURE_VALUE_TYPE(omnibox::kHideSteadyStateUrlPathQueryAndRef)},
 
     {"omnibox-ui-jog-textfield-on-popup",
      flag_descriptions::kOmniboxUIJogTextfieldOnPopupName,
@@ -3804,7 +3800,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"simplify-https-indicator", flag_descriptions::kSimplifyHttpsIndicatorName,
      flag_descriptions::kSimplifyHttpsIndicatorDescription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(toolbar::features::kSimplifyHttpsIndicator,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kSimplifyHttpsIndicator,
                                     kSimplifyHttpsIndicatorVariations,
                                     "SimplifyHttpsIndicator")},
 

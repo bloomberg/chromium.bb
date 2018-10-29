@@ -33,7 +33,6 @@
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
-#include "components/omnibox/browser/toolbar_field_trial.h"
 #include "components/omnibox/browser/toolbar_model.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -644,8 +643,8 @@ void OmniboxViewViews::ClearAccessibilityLabel() {
 
 bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
   // Early exit if no steady state elision features are enabled.
-  if (!toolbar::features::IsHideSteadyStateUrlSchemeEnabled() &&
-      !toolbar::features::IsHideSteadyStateUrlTrivialSubdomainsEnabled()) {
+  if (!OmniboxFieldTrial::IsHideSteadyStateUrlSchemeEnabled() &&
+      !OmniboxFieldTrial::IsHideSteadyStateUrlTrivialSubdomainsEnabled()) {
     return false;
   }
 

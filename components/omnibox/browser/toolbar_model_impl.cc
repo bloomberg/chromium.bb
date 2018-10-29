@@ -11,7 +11,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/buildflags.h"
-#include "components/omnibox/browser/toolbar_field_trial.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/toolbar_model_delegate.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_state/core/security_state.h"
@@ -49,18 +49,18 @@ base::string16 ToolbarModelImpl::GetURLForDisplay() const {
   format_types |= url_formatter::kFormatUrlTrimAfterHost;
 #else
   if (base::FeatureList::IsEnabled(
-          toolbar::features::kHideSteadyStateUrlPathQueryAndRef)) {
+          omnibox::kHideSteadyStateUrlPathQueryAndRef)) {
     format_types |= url_formatter::kFormatUrlTrimAfterHost;
   }
 #endif
 
-  if (toolbar::features::IsHideSteadyStateUrlSchemeEnabled())
+  if (OmniboxFieldTrial::IsHideSteadyStateUrlSchemeEnabled())
     format_types |= url_formatter::kFormatUrlOmitHTTPS;
 
-  if (toolbar::features::IsHideSteadyStateUrlTrivialSubdomainsEnabled())
+  if (OmniboxFieldTrial::IsHideSteadyStateUrlTrivialSubdomainsEnabled())
     format_types |= url_formatter::kFormatUrlOmitTrivialSubdomains;
 
-  if (base::FeatureList::IsEnabled(toolbar::features::kHideFileUrlScheme))
+  if (base::FeatureList::IsEnabled(omnibox::kHideFileUrlScheme))
     format_types |= url_formatter::kFormatUrlOmitFileScheme;
 
   return GetFormattedURL(format_types);
@@ -177,26 +177,26 @@ base::string16 ToolbarModelImpl::GetSecureVerboseText() const {
 
   // Security UI study (https://crbug.com/803501): Change EV/Secure text.
   const std::string parameter =
-      base::FeatureList::IsEnabled(toolbar::features::kSimplifyHttpsIndicator)
+      base::FeatureList::IsEnabled(omnibox::kSimplifyHttpsIndicator)
           ? base::GetFieldTrialParamValueByFeature(
-                toolbar::features::kSimplifyHttpsIndicator,
-                toolbar::features::kSimplifyHttpsIndicatorParameterName)
+                omnibox::kSimplifyHttpsIndicator,
+                OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterName)
           : std::string();
 
   auto security_level = GetSecurityLevel(false);
   if (security_level == security_state::EV_SECURE) {
     if (parameter ==
-        toolbar::features::kSimplifyHttpsIndicatorParameterEvToSecure) {
+        OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterEvToSecure) {
       return l10n_util::GetStringUTF16(IDS_SECURE_VERBOSE_STATE);
     }
     if (parameter ==
-        toolbar::features::kSimplifyHttpsIndicatorParameterBothToLock) {
+        OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterBothToLock) {
       return base::string16();
     }
   }
   if (security_level == security_state::SECURE) {
     if (parameter !=
-        toolbar::features::kSimplifyHttpsIndicatorParameterKeepSecureChip) {
+        OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterKeepSecureChip) {
       return base::string16();
     }
   }

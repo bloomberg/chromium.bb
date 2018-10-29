@@ -173,8 +173,6 @@ jumbo_static_library("browser") {
     "tailored_word_break_iterator.h",
     "titled_url_match_utils.cc",
     "titled_url_match_utils.h",
-    "toolbar_field_trial.cc",
-    "toolbar_field_trial.h",
     "toolbar_model.h",
     "toolbar_model_delegate.cc",
     "toolbar_model_delegate.h",
