@@ -564,6 +564,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'vulkan', 'nvidia'], bug=2918) # ANGLE bug ID
     self.Fail('conformance/context/premultiplyalpha-test.html',
         ['win', 'passthrough', 'vulkan', 'nvidia'], bug=2922) # ANGLE bug ID
+    self.Flaky('conformance/rendering/gl-scissor-fbo-test.html',
+        ['win', 'passthrough', 'vulkan', 'nvidia', 'debug'],
+        bug=2939) # ANGLE bug ID
     self.Fail('conformance/textures/misc/texture-size.html',
         ['win', 'passthrough', 'vulkan', 'nvidia'], bug=2915) # ANGLE bug ID
     self.Fail('conformance/textures/misc/texture-size-cube-maps.html',
@@ -572,6 +575,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'vulkan', 'nvidia'], bug=2915) # ANGLE bug ID
     self.Fail('deqp/data/gles2/shaders/conversions.html',
         ['win', 'passthrough', 'vulkan', 'nvidia'], bug=2926) # ANGLE bug ID
+    self.Flaky('deqp/data/gles2/shaders/swizzles.html',
+        ['win', 'passthrough', 'vulkan', 'nvidia', 'debug'],
+        bug=2940) # ANGLE bug ID
 
     # Vulkan / Win / Intel / Passthough command decoder
     self.Fail('conformance/rendering/clipping-wide-points.html',
