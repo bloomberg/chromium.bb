@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_TOOLBAR_TOOLBAR_MODEL_IMPL_H_
-#define COMPONENTS_TOOLBAR_TOOLBAR_MODEL_IMPL_H_
+#ifndef COMPONENTS_OMNIBOX_BROWSER_TOOLBAR_MODEL_IMPL_H_
+#define COMPONENTS_OMNIBOX_BROWSER_TOOLBAR_MODEL_IMPL_H_
 
 #include <stddef.h>
 
@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "components/toolbar/toolbar_model.h"
+#include "components/omnibox/browser/toolbar_model.h"
 #include "components/url_formatter/url_formatter.h"
 #include "url/gurl.h"
 
@@ -52,4 +52,4 @@ class ToolbarModelImpl : public ToolbarModel {
   DISALLOW_IMPLICIT_CONSTRUCTORS(ToolbarModelImpl);
 };
 
-#endif  // COMPONENTS_TOOLBAR_TOOLBAR_MODEL_IMPL_H_
+#endif  // COMPONENTS_OMNIBOX_BROWSER_TOOLBAR_MODEL_IMPL_H_

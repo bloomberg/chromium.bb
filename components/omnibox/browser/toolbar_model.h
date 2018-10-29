@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_TOOLBAR_TOOLBAR_MODEL_H_
-#define COMPONENTS_TOOLBAR_TOOLBAR_MODEL_H_
+#ifndef COMPONENTS_OMNIBOX_BROWSER_TOOLBAR_MODEL_H_
+#define COMPONENTS_OMNIBOX_BROWSER_TOOLBAR_MODEL_H_
 
 #include <stddef.h>
 
@@ -88,4 +88,4 @@ class ToolbarModel {
   DISALLOW_COPY_AND_ASSIGN(ToolbarModel);
 };
 
-#endif  // COMPONENTS_TOOLBAR_TOOLBAR_MODEL_H_
+#endif  // COMPONENTS_OMNIBOX_BROWSER_TOOLBAR_MODEL_H_

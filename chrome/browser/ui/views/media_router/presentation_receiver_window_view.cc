@@ -25,7 +25,7 @@
 #include "chrome/browser/ui/views/accelerator_table.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 #include "chrome/browser/ui/views/media_router/presentation_receiver_window_frame.h"
-#include "components/toolbar/toolbar_model_impl.h"
+#include "components/omnibox/browser/toolbar_model_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
 #include "ui/base/accelerators/accelerator_manager.h"

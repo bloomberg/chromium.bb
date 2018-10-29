@@ -20,7 +20,7 @@
 #include "components/omnibox/browser/test_omnibox_edit_controller.h"
 #include "components/omnibox/browser/test_omnibox_edit_model.h"
 #include "components/omnibox/browser/test_omnibox_view.h"
-#include "components/toolbar/test_toolbar_model.h"
+#include "components/omnibox/browser/test_toolbar_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class OmniboxEditModelTest : public testing::Test {

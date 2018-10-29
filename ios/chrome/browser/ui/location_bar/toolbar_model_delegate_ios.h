@@ -6,7 +6,7 @@
 #define IOS_CHROME_BROWSER_UI_LOCATION_BAR_TOOLBAR_MODEL_DELEGATE_IOS_H_
 
 #include "base/macros.h"
-#include "components/toolbar/toolbar_model_delegate.h"
+#include "components/omnibox/browser/toolbar_model_delegate.h"
 
 class WebStateList;
 

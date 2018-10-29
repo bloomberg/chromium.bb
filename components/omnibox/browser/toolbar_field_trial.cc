@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/toolbar/toolbar_field_trial.h"
+#include "components/omnibox/browser/toolbar_field_trial.h"
 
 #include "base/feature_list.h"
 #include "build/build_config.h"

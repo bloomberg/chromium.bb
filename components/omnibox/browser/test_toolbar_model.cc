@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/toolbar/test_toolbar_model.h"
+#include "components/omnibox/browser/test_toolbar_model.h"
 
 #if defined(TOOLKIT_VIEWS)
-#include "components/toolbar/vector_icons.h"  // nogncheck
+#include "components/omnibox/browser/vector_icons.h"  // nogncheck
 #endif
 
 TestToolbarModel::TestToolbarModel()
     : security_level_(security_state::NONE),
 #if defined(TOOLKIT_VIEWS)
-      icon_(&toolbar::kHttpIcon),
+      icon_(&omnibox::kHttpIcon),
 #endif
       should_display_url_(true) {
 }
