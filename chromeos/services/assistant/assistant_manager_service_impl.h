@@ -210,6 +210,8 @@ class AssistantManagerServiceImpl
       std::unique_ptr<ui::AssistantTree> assistant_tree,
       const std::vector<uint8_t>& assistant_screenshot);
 
+  void FillServerExperimentIds(std::vector<std::string>& server_experiment_ids);
+
   State state_ = State::STOPPED;
   std::unique_ptr<PlatformApiImpl> platform_api_;
   bool enable_hotword_;
