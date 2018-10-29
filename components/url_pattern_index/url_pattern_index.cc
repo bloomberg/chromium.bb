@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <limits>
 #include <string>
+#include <utility>
 
 #include "base/containers/flat_map.h"
 #include "base/logging.h"
@@ -169,25 +170,10 @@ class UrlRuleFlatBufferConverter {
         else
           domains_included.push_back(offset);
       }
-
-      // The comparator ensuring the domains order necessary for fast matching.
-      auto precedes = [&builder](FlatStringOffset lhs, FlatStringOffset rhs) {
-        return CompareDomains(ToStringPiece(flatbuffers::GetTemporaryPointer(
-                                  *builder, lhs)),
-                              ToStringPiece(flatbuffers::GetTemporaryPointer(
-                                  *builder, rhs))) < 0;
-      };
-
       // The domains are stored in sorted order to support fast matching.
-      if (!domains_included.empty()) {
-        // TODO(pkalinnikov): Don't sort if it is already sorted offline.
-        std::sort(domains_included.begin(), domains_included.end(), precedes);
-        domains_included_offset = builder->CreateVector(domains_included);
-      }
-      if (!domains_excluded.empty()) {
-        std::sort(domains_excluded.begin(), domains_excluded.end(), precedes);
-        domains_excluded_offset = builder->CreateVector(domains_excluded);
-      }
+      domains_included_offset = SerializeDomainList(std::move(domains_included), builder);
+      domains_excluded_offset =
+          SerializeDomainList(std::move(domains_excluded), builder);
     }
 
     // Non-ascii characters in patterns are unsupported.
@@ -205,6 +191,22 @@ class UrlRuleFlatBufferConverter {
   }
 
  private:
+  FlatDomainsOffset SerializeDomainList(
+      std::vector<FlatStringOffset> domains,
+      flatbuffers::FlatBufferBuilder* builder) const {
+    // The comparator ensuring the domains order necessary for fast matching.
+    auto precedes = [&builder](FlatStringOffset lhs, FlatStringOffset rhs) {
+      return CompareDomains(
+                 ToStringPiece(flatbuffers::GetTemporaryPointer(*builder, lhs)),
+                 ToStringPiece(
+                     flatbuffers::GetTemporaryPointer(*builder, rhs))) < 0;
+    };
+    if (domains.empty())
+      return FlatDomainsOffset();
+    std::sort(domains.begin(), domains.end(), precedes);
+    return builder->CreateVector(domains);
+  }
+
   static bool ConvertAnchorType(proto::AnchorType anchor_type,
                                 flat::AnchorType* result) {
     switch (anchor_type) {
