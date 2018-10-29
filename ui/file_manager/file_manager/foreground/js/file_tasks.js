@@ -176,12 +176,14 @@ FileTasks.create = function(
       }
 
       // Linux package installation is currently only supported for a single
-      // file already inside the Linux container.
+      // file which is inside the Linux container, or in a sharable volume.
       // TODO(timloh): Instead of filtering these out, we probably should show
       // a dialog with an error message, similar to when attempting to run
       // Crostini tasks with non-Crostini entries.
       if (entries.length !== 1 ||
-          !Crostini.isCrostiniEntry(entries[0], volumeManager)) {
+          !(Crostini.isCrostiniEntry(entries[0], volumeManager) ||
+            Crostini.canSharePath(
+                entries[0], false /* persist */, volumeManager))) {
         taskItems = taskItems.filter(function(item) {
           var taskParts = item.taskId.split('|');
           var appId = taskParts[0];
@@ -558,7 +560,7 @@ FileTasks.annotateTasks_ = function(tasks, entries) {
 FileTasks.prototype.maybeShareWithCrostiniOrShowDialog_ = function(
     task, callback) {
   // Check if this is a crostini task.
-  if (task.taskId.split('|', 2)[1] !== 'crostini' || this.entries_.length < 1)
+  if (!Crostini.taskRequiresSharing(task))
     return callback();
 
   let showUnableToOpen = false;

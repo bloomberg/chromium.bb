@@ -132,3 +132,15 @@ Crostini.canSharePath = function(entry, persist, volumeManager) {
       (loadTimeData.getBoolean('DRIVE_FS_ENABLED') &&
        Crostini.VALID_ROOT_TYPES_FOR_SHARE.has(rootType));
 };
+
+/**
+ * Returns true if task requires entries to be shared before executing task.
+ * @param {!chrome.fileManagerPrivate.FileTask} task Task to run.
+ * @return {boolean} true if task requires entries to be shared.
+ */
+Crostini.taskRequiresSharing = function(task) {
+  const taskParts = task.taskId.split('|');
+  const taskType = taskParts[1];
+  const actionId = taskParts[2];
+  return taskType === 'crostini' || actionId === 'install-linux-package';
+};
