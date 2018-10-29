@@ -58,9 +58,9 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
              const gfx::Rect& bounds_in_screen);
   ~WindowGrid() override;
 
-  // The opacity of the shield widget that is used to darden the background of
+  // The opacity of the shield widget that is used to darken the background of
   // the grid.
-  static constexpr float kShieldOpacity = 0.6f;
+  static constexpr float kShieldOpacity = 0.4f;
 
   // Returns the shield color that is used to darken the background of the grid.
   static SkColor GetShieldColor();
