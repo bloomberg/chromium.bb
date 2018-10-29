@@ -46,16 +46,12 @@ ScriptPromise WorkerTaskQueue::postFunction(
   DCHECK(task.IsFunction());
 
   ThreadPoolTask* thread_pool_task = new ThreadPoolTask(
-      ThreadPool::From(*document_), script_state->GetIsolate(), task, arguments,
-      task_type_);
+      ThreadPool::From(*document_), script_state, task, arguments, task_type_);
   if (signal) {
     signal->AddAlgorithm(
         WTF::Bind(&ThreadPoolTask::Cancel, thread_pool_task->GetWeakPtr()));
   }
-  ScriptValue value = thread_pool_task->GetResult(script_state);
-  DCHECK(value.V8Value()->IsPromise());
-
-  return ScriptPromise(script_state, value.V8Value());
+  return thread_pool_task->GetResult();
 }
 
 Task* WorkerTaskQueue::postTask(ScriptState* script_state,
@@ -64,9 +60,9 @@ Task* WorkerTaskQueue::postTask(ScriptState* script_state,
   DCHECK(document_->IsContextThread());
   DCHECK(function.IsFunction());
 
-  ThreadPoolTask* thread_pool_task = new ThreadPoolTask(
-      ThreadPool::From(*document_), script_state->GetIsolate(), function,
-      arguments, task_type_);
+  ThreadPoolTask* thread_pool_task =
+      new ThreadPoolTask(ThreadPool::From(*document_), script_state, function,
+                         arguments, task_type_);
   return new Task(thread_pool_task);
 }
 
