@@ -27,6 +27,7 @@
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/user_manager/user.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -459,6 +460,15 @@ views::View* LoginAuthUserView::TestApi::disabled_auth_message() const {
   return view_->disabled_auth_message_;
 }
 
+views::Button* LoginAuthUserView::TestApi::external_binary_auth_button() const {
+  return view_->external_binary_auth_button_;
+}
+
+views::Button* LoginAuthUserView::TestApi::external_binary_enrollment_button()
+    const {
+  return view_->external_binary_enrollment_button_;
+}
+
 LoginAuthUserView::Callbacks::Callbacks() = default;
 
 LoginAuthUserView::Callbacks::Callbacks(const Callbacks& other) = default;
@@ -639,6 +649,11 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   fingerprint_view_->SetVisible(has_fingerprint);
   external_binary_auth_button_->SetVisible(has_external_binary);
   external_binary_enrollment_button_->SetVisible(has_external_binary);
+
+  if (has_external_binary) {
+    power_manager_client_observer_.Add(
+        chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
+  }
 
   int padding_view_height = kDistanceBetweenPasswordFieldAndPinKeyboardDp;
   if (has_fingerprint && !has_pin) {
@@ -853,13 +868,7 @@ void LoginAuthUserView::ButtonPressed(views::Button* sender,
   if (sender == online_sign_in_message_) {
     OnOnlineSignInMessageTap();
   } else if (sender == external_binary_auth_button_) {
-    password_view_->SetReadOnly(true);
-    external_binary_auth_button_->SetEnabled(false);
-    external_binary_enrollment_button_->SetEnabled(false);
-    Shell::Get()->login_screen_controller()->AuthenticateUserWithExternalBinary(
-        current_user()->basic_user_info->account_id,
-        base::BindOnce(&LoginAuthUserView::OnAuthComplete,
-                       weak_factory_.GetWeakPtr()));
+    AttemptAuthenticateWithExternalBinary();
   } else if (sender == external_binary_enrollment_button_) {
     password_view_->SetReadOnly(true);
     external_binary_auth_button_->SetEnabled(false);
@@ -868,6 +877,13 @@ void LoginAuthUserView::ButtonPressed(views::Button* sender,
         base::BindOnce(&LoginAuthUserView::OnEnrollmentComplete,
                        weak_factory_.GetWeakPtr()));
   }
+}
+
+void LoginAuthUserView::LidEventReceived(
+    chromeos::PowerManagerClient::LidState state,
+    const base::TimeTicks& timestamp) {
+  if (state == chromeos::PowerManagerClient::LidState::OPEN)
+    AttemptAuthenticateWithExternalBinary();
 }
 
 void LoginAuthUserView::OnAuthSubmit(const base::string16& password) {
@@ -940,6 +956,16 @@ void LoginAuthUserView::OnOnlineSignInMessageTap() {
 
 bool LoginAuthUserView::HasAuthMethod(AuthMethods auth_method) const {
   return (auth_methods_ & auth_method) != 0;
+}
+
+void LoginAuthUserView::AttemptAuthenticateWithExternalBinary() {
+  password_view_->SetReadOnly(true);
+  external_binary_auth_button_->SetEnabled(false);
+  external_binary_enrollment_button_->SetEnabled(false);
+  Shell::Get()->login_screen_controller()->AuthenticateUserWithExternalBinary(
+      current_user()->basic_user_info->account_id,
+      base::BindOnce(&LoginAuthUserView::OnAuthComplete,
+                     weak_factory_.GetWeakPtr()));
 }
 
 }  // namespace ash
