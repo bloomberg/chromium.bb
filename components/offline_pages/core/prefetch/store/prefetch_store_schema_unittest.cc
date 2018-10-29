@@ -247,6 +247,18 @@ TEST(PrefetchStoreSchemaPreconditionTest,
   EXPECT_TRUE(db.DoesColumnExist("some_table", "value"));
 }
 
+TEST(PrefetchStoreSchemaTest, TestInvalidMetaTable) {
+  // Verify CreateOrUpgradeIfNeeded will raze the db if it can't be used.
+  sql::Database db;
+  ASSERT_TRUE(db.OpenInMemory());
+  sql::MetaTable meta;
+  meta.Init(&db, 100, 99);  // Some future version.
+  ASSERT_TRUE(db.Execute("CREATE TABLE prefetch_items (x INTEGER DEFAULT 1);"));
+  ASSERT_TRUE(PrefetchStoreSchema::CreateOrUpgradeIfNeeded(&db));
+
+  ExpectDbIsCurrent(&db);
+}
+
 // Verify the latest v#.sql accurately represents the current schema.
 //
 // Note: We keep the creation code for the current schema version duplicated in
