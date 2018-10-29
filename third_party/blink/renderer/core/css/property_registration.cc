@@ -146,8 +146,8 @@ void PropertyRegistration::registerProperty(
           "The initial value provided is not computationally independent.");
       return;
     }
-    initial =
-        &StyleBuilderConverter::ConvertRegisteredPropertyInitialValue(*initial);
+    initial = &StyleBuilderConverter::ConvertRegisteredPropertyInitialValue(
+        *document, *initial);
     initial_variable_data = CSSVariableData::Create(
         CSSParserTokenRange(tokens), is_animation_tainted, false,
         parser_context->BaseURL(), parser_context->Charset());

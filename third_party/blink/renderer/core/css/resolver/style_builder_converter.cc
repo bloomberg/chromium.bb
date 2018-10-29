@@ -1665,6 +1665,7 @@ scoped_refptr<BasicShape> StyleBuilderConverter::ConvertOffsetPath(
 }
 
 static const CSSValue& ComputeRegisteredPropertyValue(
+    const Document& document,
     const CSSToLengthConversionData& css_to_length_conversion_data,
     const CSSValue& value) {
   // TODO(timloh): Images values can also contain lengths.
@@ -1674,7 +1675,7 @@ static const CSSValue& ComputeRegisteredPropertyValue(
         CSSFunctionValue::Create(function_value.FunctionType());
     for (const CSSValue* inner_value : ToCSSValueList(value)) {
       new_function->Append(ComputeRegisteredPropertyValue(
-          css_to_length_conversion_data, *inner_value));
+          document, css_to_length_conversion_data, *inner_value));
     }
     return *new_function;
   }
@@ -1684,7 +1685,7 @@ static const CSSValue& ComputeRegisteredPropertyValue(
     CSSValueList* new_list = CSSValueList::CreateWithSeparatorFrom(old_list);
     for (const CSSValue* inner_value : old_list) {
       new_list->Append(ComputeRegisteredPropertyValue(
-          css_to_length_conversion_data, *inner_value));
+          document, css_to_length_conversion_data, *inner_value));
     }
     return *new_list;
   }
@@ -1714,19 +1715,34 @@ static const CSSValue& ComputeRegisteredPropertyValue(
       return *CSSPrimitiveValue::Create(std::round(double_value), unit_type);
     }
   }
+
+  if (value.IsIdentifierValue()) {
+    const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
+    CSSValueID value_id = identifier_value.GetValueID();
+    if (value_id == CSSValueCurrentcolor)
+      return value;
+    if (StyleColor::IsColorKeyword(value_id)) {
+      Color color =
+          document.GetTextLinkColors().ColorFromCSSValue(value, Color(), false);
+      return *CSSColorValue::Create(color.Rgb());
+    }
+  }
+
   return value;
 }
 
 const CSSValue& StyleBuilderConverter::ConvertRegisteredPropertyInitialValue(
+    const Document& document,
     const CSSValue& value) {
-  return ComputeRegisteredPropertyValue(CSSToLengthConversionData(), value);
+  return ComputeRegisteredPropertyValue(document, CSSToLengthConversionData(),
+                                        value);
 }
 
 const CSSValue& StyleBuilderConverter::ConvertRegisteredPropertyValue(
     const StyleResolverState& state,
     const CSSValue& value) {
-  return ComputeRegisteredPropertyValue(state.CssToLengthConversionData(),
-                                        value);
+  return ComputeRegisteredPropertyValue(
+      state.GetDocument(), state.CssToLengthConversionData(), value);
 }
 
 const CSSToLengthConversionData&
