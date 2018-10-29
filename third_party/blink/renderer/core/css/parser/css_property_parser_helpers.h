@@ -59,6 +59,8 @@ CSSPrimitiveValue* ConsumeLengthOrPercent(
     CSSParserMode,
     ValueRange,
     UnitlessQuirk = UnitlessQuirk::kForbid);
+CSSPrimitiveValue* ConsumeSVGGeometryPropertyLength(CSSParserTokenRange&,
+                                                    const CSSParserContext&);
 
 CSSPrimitiveValue* ConsumeAngle(
     CSSParserTokenRange&,
