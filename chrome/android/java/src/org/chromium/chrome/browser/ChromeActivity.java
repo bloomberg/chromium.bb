@@ -1301,11 +1301,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             mBottomSheet = null;
         }
 
-        if (mTabModelsInitialized) {
-            TabModelSelector selector = getTabModelSelector();
-            if (selector != null) selector.destroy();
-        }
-
         if (mDidAddPolicyChangeListener) {
             CombinedPolicyProvider.get().removePolicyChangeListener(this);
             mDidAddPolicyChangeListener = false;
@@ -1326,6 +1321,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (mFullscreenManager != null) {
             mFullscreenManager.destroy();
             mFullscreenManager = null;
+        }
+
+        if (mTabModelsInitialized) {
+            TabModelSelector selector = getTabModelSelector();
+            if (selector != null) selector.destroy();
         }
 
         AccessibilityManager manager = (AccessibilityManager)
