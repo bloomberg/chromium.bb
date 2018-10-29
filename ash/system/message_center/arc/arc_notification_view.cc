@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/system/message_center/arc/arc_notification_constants.h"
 #include "ash/system/message_center/arc/arc_notification_content_view.h"
 #include "ash/system/message_center/arc/arc_notification_item.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -41,6 +42,7 @@ ArcNotificationView::ArcNotificationView(
       item_(item),
       content_view_(new ArcNotificationContentView(item_, notification, this)) {
   DCHECK_EQ(message_center::NOTIFICATION_TYPE_CUSTOM, notification.type());
+  DCHECK_EQ(kArcNotificationCustomViewType, notification.custom_view_type());
 
   SetProperty(kArcNotificationViewPropertyKey, this);
 

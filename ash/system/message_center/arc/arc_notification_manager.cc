@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/public/cpp/ash_features.h"
+#include "ash/system/message_center/arc/arc_notification_constants.h"
 #include "ash/system/message_center/arc/arc_notification_delegate.h"
 #include "ash/system/message_center/arc/arc_notification_item_impl.h"
 #include "ash/system/message_center/arc/arc_notification_manager_delegate.h"
@@ -44,6 +45,7 @@ std::unique_ptr<message_center::MessageView> CreateCustomMessageView(
     const message_center::Notification& notification) {
   DCHECK_EQ(notification.notifier_id().type,
             message_center::NotifierId::ARC_APPLICATION);
+  DCHECK_EQ(kArcNotificationCustomViewType, notification.custom_view_type());
   auto* arc_delegate =
       static_cast<ArcNotificationDelegate*>(notification.delegate());
   return arc_delegate->CreateCustomMessageView(notification);
@@ -99,6 +101,7 @@ class ArcNotificationManager::InstanceOwner {
 // static
 void ArcNotificationManager::SetCustomNotificationViewFactory() {
   message_center::MessageViewFactory::SetCustomNotificationViewFactory(
+      kArcNotificationCustomViewType,
       base::BindRepeating(&CreateCustomMessageView));
 }
 
@@ -115,8 +118,10 @@ ArcNotificationManager::ArcNotificationManager(
 
   instance_owner_->holder()->SetHost(this);
   instance_owner_->holder()->AddObserver(this);
-  if (!message_center::MessageViewFactory::HasCustomNotificationViewFactory())
+  if (!message_center::MessageViewFactory::HasCustomNotificationViewFactory(
+          kArcNotificationCustomViewType)) {
     SetCustomNotificationViewFactory();
+  }
 
   message_center_->AddObserver(do_not_disturb_manager_.get());
 }
