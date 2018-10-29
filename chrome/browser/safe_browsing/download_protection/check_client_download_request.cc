@@ -190,7 +190,6 @@ void CheckClientDownloadRequest::Cancel(bool download_destroyed) {
 void CheckClientDownloadRequest::OnDownloadDestroyed(
     download::DownloadItem* download) {
   Cancel(/*download_destroyed=*/true);
-  DCHECK(item_ == NULL);
 }
 
 // TODO: this method puts "DownloadProtectionService::" in front of a lot of
