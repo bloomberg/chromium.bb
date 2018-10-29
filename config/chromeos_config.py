@@ -3599,7 +3599,6 @@ def TryjobMirrors(site_config):
         # Generally make tryjobs safer.
         chroot_replace=True,
         debug=True,
-        paygen=False,
         push_image=False,
         # Force uprev. This is so patched in changes are always built.
         uprev=True,
@@ -3628,6 +3627,9 @@ def TryjobMirrors(site_config):
 
     if build_name in cidb_unsafe or tryjob_config.master:
       tryjob_config.apply(debug_cidb=True)
+
+    if tryjob_config.build_type != constants.PAYLOADS_TYPE:
+      tryjob_config.apply(paygen=False)
 
     # Save off the new config so we can insert into site_config.
     tryjob_configs[tryjob_name] = tryjob_config

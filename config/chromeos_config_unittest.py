@@ -984,9 +984,10 @@ class CBuildBotTest(ChromeosConfigTestBase):
     """paygen testing requires upload_hw_test_artifacts."""
     for build_name, config in self.site_config.iteritems():
 
-      # This requirement doesn't apply to payloads builds. Payloads are
-      # using artifacts from a previous build.
-      if build_name.endswith('-payloads'):
+      # This requirement doesn't apply to payloads(-tryjob)
+      # builds. Payloads(-tryjob) are using artifacts from a previous build.
+      if build_name.endswith('-payloads') or \
+         build_name.endswith('-payloads-tryjob'):
         continue
 
       if config['paygen'] and not config['paygen_skip_testing']:
