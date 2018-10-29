@@ -333,4 +333,14 @@ bool IsUIASelectable(const ax::mojom::Role role) {
   }
 }
 
+bool IsStaticList(const ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kList:
+    case ax::mojom::Role::kDescriptionList:
+      return true;
+    default:
+      return false;
+  }
+}
+
 }  // namespace ui
