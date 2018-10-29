@@ -527,14 +527,14 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
 // Previews InfoBar (which these tests trigger) does not work on Mac.
 // See https://crbug.com/782322 for detail.
 // Also occasional flakes on win7 (https://crbug.com/789542).
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-#define MAYBE_LitePagePreviewsTriggering LitePagePreviewsTriggering
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#define DISABLE_ON_WIN_MAC(x) DISABLED_##x
 #else
-#define MAYBE_LitePagePreviewsTriggering DISABLED_LitePagePreviewsTriggering
+#define DISABLE_ON_WIN_MAC(x) x
 #endif
 
 IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
-                       MAYBE_LitePagePreviewsTriggering) {
+                       DISABLE_ON_WIN_MAC(LitePagePreviewsTriggering)) {
   // TODO(crbug.com/874150): Use ExpectUniqueSample in these tests.
   // The histograms in these tests can only be checked by the expected bucket,
   // and not by a unique sample. This is because each navigation to a preview
@@ -693,16 +693,8 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   }
 }
 
-// Previews InfoBar (which these tests trigger) does not work on Mac.
-// See https://crbug.com/782322 for detail.
-// Also occasional flakes on win7 (https://crbug.com/789542).
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-#define MAYBE_LitePagePreviewsReload LitePagePreviewsReload
-#else
-#define MAYBE_LitePagePreviewsReload DISABLED_LitePagePreviewsReload
-#endif
 IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
-                       MAYBE_LitePagePreviewsReload) {
+                       DISABLE_ON_WIN_MAC(LitePagePreviewsReload)) {
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewLoaded();
 
@@ -719,16 +711,8 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
       1);
 }
 
-// Previews InfoBar (which these tests trigger) does not work on Mac.
-// See https://crbug.com/782322 for detail.
-// Also occasional flakes on win7 (https://crbug.com/789542).
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-#define MAYBE_LitePagePreviewsRedirect LitePagePreviewsRedirect
-#else
-#define MAYBE_LitePagePreviewsRedirect DISABLED_LitePagePreviewsRedirect
-#endif
 IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
-                       MAYBE_LitePagePreviewsRedirect) {
+                       DISABLE_ON_WIN_MAC(LitePagePreviewsRedirect)) {
   {
     // Verify the preview is triggered when an HTTP page redirects to HTTPS.
     base::HistogramTester histogram_tester;
@@ -761,16 +745,8 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   }
 }
 
-// Previews InfoBar (which these tests trigger) does not work on Mac.
-// See https://crbug.com/782322 for detail.
-// Also occasional flakes on win7 (https://crbug.com/789542).
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-#define MAYBE_LitePagePreviewsResponse LitePagePreviewsResponse
-#else
-#define MAYBE_LitePagePreviewsResponse DISABLED_LitePagePreviewsResponse
-#endif
 IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
-                       MAYBE_LitePagePreviewsResponse) {
+                       DISABLE_ON_WIN_MAC(LitePagePreviewsResponse)) {
   {
     // Verify the preview is not triggered when the server responds with bypass
     // 307.
@@ -852,16 +828,8 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   }
 }
 
-// Previews InfoBar (which these tests trigger) does not work on Mac.
-// See https://crbug.com/782322 for detail.
-// Also occasional flakes on win7 (https://crbug.com/789542).
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-#define MAYBE_LitePagePreviewsLoadshed LitePagePreviewsLoadshed
-#else
-#define MAYBE_LitePagePreviewsLoadshed DISABLED_LitePagePreviewsLoadshed
-#endif
 IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
-                       MAYBE_LitePagePreviewsLoadshed) {
+                       DISABLE_ON_WIN_MAC(LitePagePreviewsLoadshed)) {
   PreviewsService* previews_service =
       PreviewsServiceFactory::GetForProfile(browser()->profile());
   ASSERT_TRUE(previews_service);
@@ -905,17 +873,8 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   VerifyPreviewLoaded();
 }
 
-// Previews InfoBar (which these tests trigger) does not work on Mac.
-// See https://crbug.com/782322 for detail.
-// Also occasional flakes on win7 (https://crbug.com/789542).
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-#define MAYBE_LitePagePreviewsReportSavings LitePagePreviewsReportSavings
-#else
-#define MAYBE_LitePagePreviewsReportSavings \
-  DISABLED_LitePagePreviewsReportSavings
-#endif
 IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
-                       MAYBE_LitePagePreviewsReportSavings) {
+                       DISABLE_ON_WIN_MAC(LitePagePreviewsReportSavings)) {
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetBoolean(data_reduction_proxy::prefs::kDataUsageReportingEnabled,
                     true);
@@ -931,16 +890,8 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   EXPECT_EQ(GetDataUsage(), 20U);
 }
 
-// Previews InfoBar (which these tests trigger) does not work on Mac.
-// See https://crbug.com/782322 for detail.
-// Also occasional flakes on win7 (https://crbug.com/789542).
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-#define MAYBE_LitePagePreviewsNavigation LitePagePreviewsNavigation
-#else
-#define MAYBE_LitePagePreviewsNavigation DISABLED_LitePagePreviewsNavigation
-#endif
 IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
-                       MAYBE_LitePagePreviewsNavigation) {
+                       DISABLE_ON_WIN_MAC(LitePagePreviewsNavigation)) {
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewLoaded();
 
@@ -980,16 +931,8 @@ class PreviewsLitePageServerTimeoutBrowserTest
   }
 };
 
-// Previews InfoBar (which these tests trigger) does not work on Mac.
-// See https://crbug.com/782322 for detail.
-// Also occasional flakes on win7 (https://crbug.com/789542).
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-#define MAYBE_LitePagePreviewsTimeout LitePagePreviewsTimeout
-#else
-#define MAYBE_LitePagePreviewsTimeout DISABLED_LitePagePreviewsTimeout
-#endif
 IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerTimeoutBrowserTest,
-                       MAYBE_LitePagePreviewsTimeout) {
+                       DISABLE_ON_WIN_MAC(LitePagePreviewsTimeout)) {
   {
     // Ensure that a hung previews navigation doesn't wind up at the previews
     // server.
@@ -1027,17 +970,8 @@ class PreviewsLitePageServerBadServerBrowserTest
   }
 };
 
-// Previews InfoBar (which these tests trigger) does not work on Mac.
-// See https://crbug.com/782322 for detail.
-// Also occasional flakes on win7 (https://crbug.com/789542).
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-#define MAYBE_LitePagePreviewsBadServer LitePagePreviewsBadServer
-#else
-#define MAYBE_LitePagePreviewsBadServer DISABLED_LitePagePreviewsBadServer
-#endif
-
 IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBadServerBrowserTest,
-                       MAYBE_LitePagePreviewsBadServer) {
+                       DISABLE_ON_WIN_MAC(LitePagePreviewsBadServer)) {
   // TODO(crbug.com/874150): Use ExpectUniqueSample in this tests.
   // The histograms in this tests can only be checked by the expected bucket,
   // and not by a unique sample. This is because each navigation to a preview
@@ -1077,16 +1011,8 @@ class PreviewsLitePageServerDataSaverBrowserTest
   }
 };
 
-// Previews InfoBar (which these tests trigger) does not work on Mac.
-// See https://crbug.com/782322 for detail.
-// Also occasional flakes on win7 (https://crbug.com/789542).
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-#define MAYBE_LitePagePreviewsDSTriggering LitePagePreviewsDSTriggering
-#else
-#define MAYBE_LitePagePreviewsDSTriggering DISABLED_LitePagePreviewsDSTriggering
-#endif
 IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerDataSaverBrowserTest,
-                       MAYBE_LitePagePreviewsDSTriggering) {
+                       DISABLE_ON_WIN_MAC(LitePagePreviewsDSTriggering)) {
   // Verify the preview is not triggered on HTTPS pageloads without DataSaver.
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
@@ -1112,18 +1038,9 @@ class PreviewsLitePageServerNoDataSaverHeaderBrowserTest
   }
 };
 
-// Previews InfoBar (which these tests trigger) does not work on Mac.
-// See https://crbug.com/782322 for detail.
-// Also occasional flakes on win7 (https://crbug.com/789542).
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-#define MAYBE_LitePagePreviewsDSNoHeaderTriggering \
-  LitePagePreviewsDSNoHeaderTriggering
-#else
-#define MAYBE_LitePagePreviewsDSNoHeaderTriggering \
-  DISABLED_LitePagePreviewsDSNoHeaderTriggering
-#endif
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerNoDataSaverHeaderBrowserTest,
-                       MAYBE_LitePagePreviewsDSNoHeaderTriggering) {
+IN_PROC_BROWSER_TEST_F(
+    PreviewsLitePageServerNoDataSaverHeaderBrowserTest,
+    DISABLE_ON_WIN_MAC(LitePagePreviewsDSNoHeaderTriggering)) {
   // Verify the preview is not triggered on HTTPS pageloads without data saver.
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
@@ -1152,18 +1069,9 @@ class PreviewsLitePageNotificationDSEnabledBrowserTest
   }
 };
 
-// Previews InfoBar (which these tests trigger) does not work on Mac.
-// See https://crbug.com/782322 for detail.
-// Also occasional flakes on win7 (https://crbug.com/789542).
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-#define MAYBE_LitePagePreviewsInfoBarDataSaverUser \
-  LitePagePreviewsInfoBarDataSaverUser
-#else
-#define MAYBE_LitePagePreviewsInfoBarDataSaverUser \
-  DISABLED_LitePagePreviewsInfoBarDataSaverUser
-#endif
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageNotificationDSEnabledBrowserTest,
-                       MAYBE_LitePagePreviewsInfoBarDataSaverUser) {
+IN_PROC_BROWSER_TEST_F(
+    PreviewsLitePageNotificationDSEnabledBrowserTest,
+    DISABLE_ON_WIN_MAC(LitePagePreviewsInfoBarDataSaverUser)) {
   // Ensure the preview is not shown the first time before the infobar is shown
   // for users who have DRP enabled.
   base::HistogramTester histogram_tester;
@@ -1213,18 +1121,9 @@ class PreviewsLitePageNotificationDSDisabledBrowserTest
   }
 };
 
-// Previews InfoBar (which these tests trigger) does not work on Mac.
-// See https://crbug.com/782322 for detail.
-// Also occasional flakes on win7 (https://crbug.com/789542).
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-#define MAYBE_LitePagePreviewsInfoBarNonDataSaverUser \
-  LitePagePreviewsInfoBarNonDataSaverUser
-#else
-#define MAYBE_LitePagePreviewsInfoBarNonDataSaverUser \
-  DISABLED_LitePagePreviewsInfoBarNonDataSaverUser
-#endif
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageNotificationDSDisabledBrowserTest,
-                       MAYBE_LitePagePreviewsInfoBarNonDataSaverUser) {
+IN_PROC_BROWSER_TEST_F(
+    PreviewsLitePageNotificationDSDisabledBrowserTest,
+    DISABLE_ON_WIN_MAC(LitePagePreviewsInfoBarNonDataSaverUser)) {
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
   ClearDeciderState();
