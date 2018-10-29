@@ -53,7 +53,7 @@ class BleDeviceHoverListModel : public HoverListModel,
   // Invoked when Bluetooth authenticator already included in
   // |authenticator_list_| changes from being in non-pairable state to pairable
   // state.
-  void OnAuthenticatorChanged(
+  void OnAuthenticatorPairingModeChanged(
       const AuthenticatorReference& changed_authenticator) override;
 
   ObservableAuthenticatorList* const authenticator_list_;

@@ -20,7 +20,7 @@ class AuthenticatorListObserver {
       const AuthenticatorReference& added_authenticator) = 0;
   virtual void OnAuthenticatorRemoved(
       const AuthenticatorReference& removed_authenticator) = 0;
-  virtual void OnAuthenticatorChanged(
+  virtual void OnAuthenticatorPairingModeChanged(
       const AuthenticatorReference& changed_authenticator) = 0;
 };
 

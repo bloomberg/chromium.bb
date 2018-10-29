@@ -53,6 +53,8 @@ class HoverListView : public views::View,
                           base::string16 item_text,
                           int item_tag);
   void CreateAndAppendPlaceholderItem();
+  void AddListItemView(int item_tag);
+  void RemoveListItemView(int item_tag);
   void RemoveListItemView(ListItemViews list_item);
 
   // views::View:
@@ -61,6 +63,8 @@ class HoverListView : public views::View,
   // HoverListModel::Observer:
   void OnListItemAdded(int item_tag) override;
   void OnListItemRemoved(int removed_item_view_tag) override;
+  void OnListItemChanged(int changed_list_item_tag,
+                         HoverListModel::ListItemChangeType type) override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
