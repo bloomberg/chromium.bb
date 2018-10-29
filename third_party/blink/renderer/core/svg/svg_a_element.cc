@@ -50,9 +50,9 @@ namespace blink {
 using namespace HTMLNames;
 
 inline SVGAElement::SVGAElement(Document& document)
-    : SVGGraphicsElement(SVGNames::aTag, document),
+    : SVGGraphicsElement(svg_names::kATag, document),
       SVGURIReference(this),
-      svg_target_(SVGAnimatedString::Create(this, SVGNames::targetAttr)) {
+      svg_target_(SVGAnimatedString::Create(this, svg_names::kTargetAttr)) {
   AddToPropertyMap(svg_target_);
 }
 

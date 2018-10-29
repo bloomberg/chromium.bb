@@ -29,7 +29,7 @@
 namespace blink {
 
 inline SVGFEFloodElement::SVGFEFloodElement(Document& document)
-    : SVGFilterPrimitiveStandardAttributes(SVGNames::feFloodTag, document) {}
+    : SVGFilterPrimitiveStandardAttributes(svg_names::kFEFloodTag, document) {}
 
 DEFINE_NODE_FACTORY(SVGFEFloodElement)
 
@@ -39,11 +39,11 @@ bool SVGFEFloodElement::SetFilterEffectAttribute(
   const ComputedStyle& style = ComputedStyleRef();
 
   FEFlood* flood = static_cast<FEFlood*>(effect);
-  if (attr_name == SVGNames::flood_colorAttr) {
+  if (attr_name == svg_names::kFloodColorAttr) {
     return flood->SetFloodColor(
         style.VisitedDependentColor(GetCSSPropertyFloodColor()));
   }
-  if (attr_name == SVGNames::flood_opacityAttr)
+  if (attr_name == svg_names::kFloodOpacityAttr)
     return flood->SetFloodOpacity(style.SvgStyle().FloodOpacity());
 
   return SVGFilterPrimitiveStandardAttributes::SetFilterEffectAttribute(

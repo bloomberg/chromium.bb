@@ -70,7 +70,7 @@ static void typeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 
   SVGTestInterface* impl = V8SVGTestInterface::ToImpl(holder);
 
-  V8SetReturnValueString(info, impl->FastGetAttribute(SVGNames::typeAttr), info.GetIsolate());
+  V8SetReturnValueString(info, impl->FastGetAttribute(svg_names::kTypeAttr), info.GetIsolate());
 }
 
 static void typeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -89,7 +89,7 @@ static void typeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Function
   if (!cppValue.Prepare())
     return;
 
-  impl->setAttribute(SVGNames::typeAttr, cppValue);
+  impl->setAttribute(svg_names::kTypeAttr, cppValue);
 }
 
 }  // namespace svg_test_interface_v8_internal

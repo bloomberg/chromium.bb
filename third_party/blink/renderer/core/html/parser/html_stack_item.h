@@ -120,8 +120,8 @@ class HTMLStackItem : public GarbageCollectedFinalized<HTMLStackItem> {
         HasTagName(mathml_names::kMnTag) || HasTagName(mathml_names::kMsTag) ||
         HasTagName(mathml_names::kMtextTag) ||
         HasTagName(mathml_names::kAnnotationXmlTag) ||
-        HasTagName(SVGNames::foreignObjectTag) ||
-        HasTagName(SVGNames::descTag) || HasTagName(SVGNames::titleTag))
+        HasTagName(svg_names::kForeignObjectTag) ||
+        HasTagName(svg_names::kDescTag) || HasTagName(svg_names::kTitleTag))
       return true;
     if (IsDocumentFragmentNode())
       return true;

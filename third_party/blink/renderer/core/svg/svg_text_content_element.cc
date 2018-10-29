@@ -71,7 +71,7 @@ class SVGAnimatedTextLength final : public SVGAnimatedLength {
  private:
   SVGAnimatedTextLength(SVGTextContentElement* context_element)
       : SVGAnimatedLength(context_element,
-                          SVGNames::textLengthAttr,
+                          svg_names::kTextLengthAttr,
                           SVGLengthMode::kWidth,
                           SVGLength::Initial::kUnitlessZero) {}
 };
@@ -83,7 +83,7 @@ SVGTextContentElement::SVGTextContentElement(const QualifiedName& tag_name,
       text_length_is_specified_by_user_(false),
       length_adjust_(SVGAnimatedEnumeration<SVGLengthAdjustType>::Create(
           this,
-          SVGNames::lengthAdjustAttr,
+          svg_names::kLengthAdjustAttr,
           kSVGLengthAdjustSpacing)) {
   AddToPropertyMap(text_length_);
   AddToPropertyMap(length_adjust_);
@@ -254,11 +254,11 @@ void SVGTextContentElement::CollectStyleForPresentationAttribute(
 
 void SVGTextContentElement::SvgAttributeChanged(
     const QualifiedName& attr_name) {
-  if (attr_name == SVGNames::textLengthAttr)
+  if (attr_name == svg_names::kTextLengthAttr)
     text_length_is_specified_by_user_ = true;
 
-  if (attr_name == SVGNames::textLengthAttr ||
-      attr_name == SVGNames::lengthAdjustAttr ||
+  if (attr_name == svg_names::kTextLengthAttr ||
+      attr_name == svg_names::kLengthAdjustAttr ||
       attr_name == xml_names::kSpaceAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
 

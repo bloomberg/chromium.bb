@@ -325,7 +325,7 @@ static void TruncateForSemicolonSeparatedScriptLikeAttribute(
 
 static bool IsSemicolonSeparatedAttribute(
     const HTMLToken::Attribute& attribute) {
-  return ThreadSafeMatch(attribute.NameAsVector(), SVGNames::valuesAttr);
+  return ThreadSafeMatch(attribute.NameAsVector(), svg_names::kValuesAttr);
 }
 
 static bool IsSemicolonSeparatedValueContainingJavaScriptURL(
@@ -590,7 +590,7 @@ bool XSSAuditor::FilterScriptToken(const FilterTokenRequest& request) {
   if (script_tag_found_in_request_) {
     did_block_script |= EraseAttributeIfInjected(
         request, srcAttr, BlankURL().GetString(), kSrcLikeAttributeTruncation);
-    did_block_script |= EraseAttributeIfInjected(request, SVGNames::hrefAttr,
+    did_block_script |= EraseAttributeIfInjected(request, svg_names::kHrefAttr,
                                                  BlankURL().GetString(),
                                                  kSrcLikeAttributeTruncation);
     did_block_script |= EraseAttributeIfInjected(

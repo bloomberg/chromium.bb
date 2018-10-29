@@ -56,7 +56,7 @@ class SVGAnimatedPathLength final : public SVGAnimatedNumber {
  private:
   explicit SVGAnimatedPathLength(SVGGeometryElement* context_element)
       : SVGAnimatedNumber(context_element,
-                          SVGNames::pathLengthAttr,
+                          svg_names::kPathLengthAttr,
                           SVGNumber::Create()) {}
 };
 
@@ -69,7 +69,7 @@ SVGGeometryElement::SVGGeometryElement(const QualifiedName& tag_name,
 }
 
 void SVGGeometryElement::SvgAttributeChanged(const QualifiedName& attr_name) {
-  if (attr_name == SVGNames::pathLengthAttr) {
+  if (attr_name == svg_names::kPathLengthAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
     if (LayoutObject* layout_object = GetLayoutObject())
       MarkForLayoutAndParentResourceInvalidation(*layout_object);
