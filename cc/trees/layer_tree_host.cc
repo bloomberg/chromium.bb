@@ -28,7 +28,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/base/histograms.h"

@@ -20,7 +20,7 @@
 #include "base/optional.h"
 #include "base/sys_info.h"
 #include "base/threading/thread_checker.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/base/histograms.h"
 #include "cc/layers/picture_layer_impl.h"

@@ -16,7 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/raster/scoped_gpu_raster.h"
 #include "cc/resources/memory_history.h"

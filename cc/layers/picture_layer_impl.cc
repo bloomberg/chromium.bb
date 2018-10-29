@@ -15,7 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/time/time.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
 #include "cc/benchmarks/micro_benchmark_impl.h"

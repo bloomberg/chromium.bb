@@ -5,7 +5,7 @@
 #include "cc/input/main_thread_scrolling_reason.h"
 
 #include "base/stl_util.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 
 namespace cc {
 
