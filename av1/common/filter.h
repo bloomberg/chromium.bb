@@ -218,12 +218,13 @@ static INLINE const int16_t *av1_get_interp_filter_subpel_kernel(
 
 static INLINE const InterpFilterParams *av1_get_filter(int subpel_search) {
   assert(subpel_search >= USE_2_TAPS);
-  return (subpel_search == USE_2_TAPS)
-             ? get_4tap_interp_filter_params(BILINEAR)
-             : ((subpel_search == USE_4_TAPS)
-                    ? get_4tap_interp_filter_params(EIGHTTAP_REGULAR)
-                    : av1_get_interp_filter_params_with_block_size(
-                          EIGHTTAP_REGULAR, 8));
+
+  switch (subpel_search) {
+    case USE_2_TAPS: return get_4tap_interp_filter_params(BILINEAR);
+    case USE_4_TAPS: return get_4tap_interp_filter_params(EIGHTTAP_REGULAR);
+    case USE_8_TAPS: return &av1_interp_filter_params_list[EIGHTTAP_REGULAR];
+    default: assert(0); return NULL;
+  }
 }
 
 #ifdef __cplusplus

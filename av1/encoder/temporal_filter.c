@@ -263,7 +263,7 @@ static int temporal_filter_find_matching_mb_c(AV1_COMP *cpi,
         cpi->common.allow_high_precision_mv, x->errorperbit,
         &cpi->fn_ptr[BLOCK_16X16], 0, mv_sf->subpel_iters_per_step,
         cond_cost_list(cpi, cost_list), NULL, NULL, &distortion, &sse, NULL,
-        NULL, 0, 0, 16, 16, USE_2_TAPS_ORIG, 1);
+        NULL, 0, 0, 16, 16, USE_8_TAPS, 1);
   }
 
   x->e_mbd.mi[0]->mv[0] = x->best_mv;
@@ -278,8 +278,7 @@ static int temporal_filter_find_matching_mb_c(AV1_COMP *cpi,
 static void temporal_filter_iterate_c(AV1_COMP *cpi,
                                       YV12_BUFFER_CONFIG **frames,
                                       int frame_count, int alt_ref_index,
-                                      int strength,
-                                      struct scale_factors *scale) {
+                                      int strength, RefBuffer *ref_buf) {
   const AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   int byte;
@@ -309,6 +308,9 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
   } else {
     predictor = predictor8;
   }
+
+  mbd->block_refs[0] = ref_buf;
+  mbd->block_refs[1] = ref_buf;
 
   for (i = 0; i < num_planes; i++) input_buffer[i] = mbd->plane[i].pre[0].buf;
 
@@ -373,7 +375,7 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
               frames[frame]->u_buffer + mb_uv_offset,
               frames[frame]->v_buffer + mb_uv_offset, frames[frame]->y_stride,
               mb_uv_width, mb_uv_height, mbd->mi[0]->mv[0].as_mv.row,
-              mbd->mi[0]->mv[0].as_mv.col, predictor, scale, mb_col * 16,
+              mbd->mi[0]->mv[0].as_mv.col, predictor, &ref_buf->sf, mb_col * 16,
               mb_row * 16, cm->allow_warped_motion, num_planes);
 
           // Apply the filter (YUV)
@@ -661,7 +663,11 @@ void av1_temporal_filter(AV1_COMP *cpi, int distance) {
   int strength;
   int frames_to_blur_backward;
   int frames_to_blur_forward;
-  struct scale_factors sf;
+  RefBuffer ref_buf;
+  ref_buf.idx = INVALID_IDX;
+  ref_buf.idx = INVALID_IDX;
+  ref_buf.buf = NULL;
+
   YV12_BUFFER_CONFIG *frames[MAX_LAG_BUFFERS] = { NULL };
   const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
   int rdmult = 0;
@@ -705,7 +711,7 @@ void av1_temporal_filter(AV1_COMP *cpi, int distance) {
     // supported.
     // ARF is produced at the native frame size and resized when coded.
     av1_setup_scale_factors_for_frame(
-        &sf, frames[0]->y_crop_width, frames[0]->y_crop_height,
+        &ref_buf.sf, frames[0]->y_crop_width, frames[0]->y_crop_height,
         frames[0]->y_crop_width, frames[0]->y_crop_height);
   }
 
@@ -717,5 +723,5 @@ void av1_temporal_filter(AV1_COMP *cpi, int distance) {
   av1_initialize_cost_tables(&cpi->common, &cpi->td.mb);
 
   temporal_filter_iterate_c(cpi, frames, frames_to_blur,
-                            frames_to_blur_backward, strength, &sf);
+                            frames_to_blur_backward, strength, &ref_buf);
 }
