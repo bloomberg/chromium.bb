@@ -419,6 +419,28 @@ CSSPrimitiveValue* ConsumeLengthOrPercent(CSSParserTokenRange& range,
   return nullptr;
 }
 
+namespace {
+
+bool IsNonZeroUserUnitsValue(const CSSPrimitiveValue* value) {
+  return value &&
+         value->TypeWithCalcResolved() ==
+             CSSPrimitiveValue::UnitType::kUserUnits &&
+         value->GetDoubleValue() != 0;
+}
+
+}  // namespace
+
+CSSPrimitiveValue* ConsumeSVGGeometryPropertyLength(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context) {
+  // TODO(fs): Not all callers should be using kValueRangeAll.
+  CSSPrimitiveValue* value = ConsumeLengthOrPercent(
+      range, kSVGAttributeMode, kValueRangeAll, UnitlessQuirk::kForbid);
+  if (IsNonZeroUserUnitsValue(value))
+    context.Count(WebFeature::kSVGGeometryPropertyHasNonZeroUnitlessValue);
+  return value;
+}
+
 CSSPrimitiveValue* ConsumeGradientLengthOrPercent(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
