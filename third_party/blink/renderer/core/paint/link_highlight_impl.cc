@@ -348,6 +348,12 @@ class LinkHighlightDisplayItemClientForTracking : public DisplayItemClient {
 };
 
 void LinkHighlightImpl::UpdateGeometry() {
+  if (!node_ || !node_->GetLayoutObject()) {
+    ClearGraphicsLayerLinkHighlightPointer();
+    ReleaseResources();
+    return;
+  }
+
   // To avoid unnecessary updates (e.g. other entities have requested animations
   // from our WebViewImpl), only proceed if we actually requested an update.
   if (!geometry_needs_update_)
@@ -355,28 +361,22 @@ void LinkHighlightImpl::UpdateGeometry() {
 
   geometry_needs_update_ = false;
 
-  bool has_layout_object = node_ && node_->GetLayoutObject();
-  if (has_layout_object) {
-    const LayoutBoxModelObject& paint_invalidation_container =
-        node_->GetLayoutObject()->ContainerForPaintInvalidation();
-    AttachLinkHighlightToCompositingLayer(paint_invalidation_container);
-    if (ComputeHighlightLayerPathAndPosition(paint_invalidation_container)) {
-      // We only need to invalidate the layer if the highlight size has changed,
-      // otherwise we can just re-position the layer without needing to
-      // repaint.
-      content_layer_->SetNeedsDisplay();
+  const LayoutBoxModelObject& paint_invalidation_container =
+      node_->GetLayoutObject()->ContainerForPaintInvalidation();
+  AttachLinkHighlightToCompositingLayer(paint_invalidation_container);
+  if (ComputeHighlightLayerPathAndPosition(paint_invalidation_container)) {
+    // We only need to invalidate the layer if the highlight size has changed,
+    // otherwise we can just re-position the layer without needing to
+    // repaint.
+    content_layer_->SetNeedsDisplay();
 
-      if (current_graphics_layer_) {
-        gfx::Rect rect = gfx::ToEnclosingRect(
-            gfx::RectF(Layer()->position(), gfx::SizeF(Layer()->bounds())));
-        current_graphics_layer_->TrackRasterInvalidation(
-            LinkHighlightDisplayItemClientForTracking(), IntRect(rect),
-            PaintInvalidationReason::kFullLayer);
-      }
+    if (current_graphics_layer_) {
+      gfx::Rect rect = gfx::ToEnclosingRect(
+          gfx::RectF(Layer()->position(), gfx::SizeF(Layer()->bounds())));
+      current_graphics_layer_->TrackRasterInvalidation(
+          LinkHighlightDisplayItemClientForTracking(), IntRect(rect),
+          PaintInvalidationReason::kFullLayer);
     }
-  } else {
-    ClearGraphicsLayerLinkHighlightPointer();
-    ReleaseResources();
   }
 }
 
