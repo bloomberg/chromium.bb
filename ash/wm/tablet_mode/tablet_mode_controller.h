@@ -137,6 +137,7 @@ class ASH_EXPORT TabletModeController
 
   // ui::InputDeviceEventObserver:
   void OnMouseDeviceConfigurationChanged() override;
+  void OnTouchpadDeviceConfigurationChanged() override;
   void OnDeviceListsComplete() override;
 
  private:
@@ -200,9 +201,9 @@ class ASH_EXPORT TabletModeController
   // software to behave in a certain way regardless of configuration.
   bool AllowUiModeChange() const;
 
-  // Called when a mouse config is changed, or when a device list is
+  // Called when a pointing device config is changed, or when a device list is
   // sent from device manager. This will exit tablet mode if needed.
-  void HandleMouseAddedOrRemoved();
+  void HandlePointingDeviceAddedOrRemoved();
 
   // Callback function for |bluetooth_devices_observer_|. Called when |device|
   // changes.
@@ -261,9 +262,9 @@ class ASH_EXPORT TabletModeController
   // Last computed lid angle.
   double lid_angle_ = 0.0f;
 
-  // Tracks if the device has an external mouse. The device will
+  // Tracks if the device has an external pointing device. The device will
   // not enter tablet mode if this is true.
-  bool has_external_mouse_ = false;
+  bool has_external_pointing_device_ = false;
 
   // Tracks smoothed accelerometer data over time. This is done when the hinge
   // is approaching vertical to remove abrupt acceleration that can lead to

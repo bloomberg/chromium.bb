@@ -36,10 +36,12 @@ class InputDeviceClientTestApi {
   void NotifyObserversKeyboardDeviceConfigurationChanged();
   void NotifyObserversStylusStateChanged(ui::StylusState stylus_state);
   void NotifyObserversTouchscreenDeviceConfigurationChanged();
+  void NotifyObserversTouchpadDeviceConfigurationChanged();
   void OnDeviceListsComplete();
 
   void SetKeyboardDevices(const std::vector<ui::InputDevice>& devices);
   void SetMouseDevices(const std::vector<ui::InputDevice>& devices);
+  void SetTouchpadDevices(const std::vector<ui::InputDevice>& devices);
 
   // |are_touchscreen_target_displays_valid| is only applicable to
   // InputDeviceClient. See
