@@ -108,7 +108,7 @@ crbug.com/891427 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gestur
 crbug.com/891427 virtual/threaded/fast/scroll-behavior/smooth-scroll/scroll-during-selection.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 virtual/threaded/fast/scrolling/no-hover-during-scroll.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 virtual/fractional_scrolling_threaded/fast/scrolling/no-hover-during-scroll.html [ Pass Failure Timeout Crash ]
-# Another one found by Fintit:
+# More found by Findit:
 crbug.com/891427 virtual/threaded/animations/invisible-composited-animations-prevent-scroll.html [ Pass Failure Timeout Crash ]
 
 # Remove these when --enable-display-compositor-pixel-dump becomes the
@@ -5590,7 +5590,8 @@ crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-modal-scrollable-ifra
 crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-modal-scrollable-iframe-div.html [ Skip ]
 crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-modal-scrollable-iframe-div.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Skip ]
-crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Skip ]
+# The next also fails due to crbug.com/891427, thus disabled on all platforms.
+crbug.com/874162 virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Skip ]
 crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-nested-divs.html [ Skip ]
 crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-nested-divs.html [ Skip ]
