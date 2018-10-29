@@ -1755,6 +1755,10 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
                   tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
       .WillOnce(SetDosHeaderContents("dummy dos header"));
 #endif  // OS_MACOSX
+
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
+
   RunLoop run_loop;
   download_service_->CheckClientDownload(
       &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
@@ -1828,6 +1832,9 @@ TEST_F(DownloadProtectionServiceTest,
                   tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _));
 #endif  // OS_MACOSX
 
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
+
   RunLoop run_loop;
   download_service_->CheckClientDownload(
       &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
@@ -1896,6 +1903,9 @@ TEST_F(DownloadProtectionServiceTest,
                 interceptor_run_loop.Quit();
             }));
 
+    PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
+                    net::URLRequestStatus::SUCCESS);
+
     RunLoop run_loop;
     download_service_->CheckClientDownload(
         &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
@@ -1963,6 +1973,9 @@ TEST_F(DownloadProtectionServiceTest,
         ->AddPage(tab_url, base::Time::Now(),
                   reinterpret_cast<history::ContextID>(1), 0, GURL(), redirects,
                   ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED, false);
+
+    PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
+                    net::URLRequestStatus::SUCCESS);
 
     RunLoop run_loop;
     download_service_->CheckClientDownload(
