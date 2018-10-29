@@ -192,5 +192,7 @@ public abstract class FullscreenManager {
     /**
      * Destroys the FullscreenManager
      */
-    public void destroy() {}
+    public void destroy() {
+        setTab(null);
+    }
 }
