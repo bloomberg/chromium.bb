@@ -201,10 +201,12 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
       // The raster here never really happened, cuz tests. So just add an
       // arbitrary sync token.
       if (resource.gpu_backing()) {
+        resource.gpu_backing()->mailbox = gpu::Mailbox::Generate();
         resource.gpu_backing()->mailbox_sync_token.Set(
             gpu::GPU_IO, gpu::CommandBufferId::FromUnsafeValue(1), 1);
       }
-      resource_pool_->PrepareForExport(resource);
+      bool exported = resource_pool_->PrepareForExport(resource);
+      DCHECK(exported);
       draw_info.SetResource(std::move(resource), false, false, false);
       draw_info.set_resource_ready_for_draw();
     }

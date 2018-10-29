@@ -302,34 +302,40 @@ void ResourcePool::OnResourceReleased(size_t unique_id,
   busy_resources_.erase(busy_it);
 }
 
-void ResourcePool::PrepareForExport(const InUsePoolResource& resource) {
+bool ResourcePool::PrepareForExport(const InUsePoolResource& in_use_resource) {
+  PoolResource* resource = in_use_resource.resource_;
   // Exactly one of gpu or software backing should exist.
-  DCHECK(resource.resource_->gpu_backing() ||
-         resource.resource_->software_backing());
-  DCHECK(!resource.resource_->gpu_backing() ||
-         !resource.resource_->software_backing());
+  DCHECK(resource->gpu_backing() || resource->software_backing());
+  DCHECK(!resource->gpu_backing() || !resource->software_backing());
   viz::TransferableResource transferable;
-  if (resource.resource_->gpu_backing()) {
+  if (resource->gpu_backing()) {
+    GpuBacking* gpu_backing = resource->gpu_backing();
+    if (gpu_backing->mailbox.IsZero()) {
+      // This can happen if we failed to allocate a GpuMemoryBuffer. Avoid
+      // sending an invalid resource to the parent in that case, and avoid
+      // caching/reusing the resource.
+      resource->set_resource_id(0);
+      resource->mark_avoid_reuse();
+      return false;
+    }
     transferable = viz::TransferableResource::MakeGLOverlay(
-        resource.resource_->gpu_backing()->mailbox, GL_LINEAR,
-        resource.resource_->gpu_backing()->texture_target,
-        resource.resource_->gpu_backing()->mailbox_sync_token,
-        resource.resource_->size(),
-        resource.resource_->gpu_backing()->overlay_candidate);
-    transferable.read_lock_fences_enabled =
-        resource.resource_->gpu_backing()->wait_on_fence_required;
+        gpu_backing->mailbox, GL_LINEAR, gpu_backing->texture_target,
+        gpu_backing->mailbox_sync_token, resource->size(),
+        gpu_backing->overlay_candidate);
+    transferable.read_lock_fences_enabled = gpu_backing->wait_on_fence_required;
   } else {
     transferable = viz::TransferableResource::MakeSoftware(
-        resource.resource_->software_backing()->shared_bitmap_id,
-        resource.resource_->size(), resource.resource_->format());
+        resource->software_backing()->shared_bitmap_id, resource->size(),
+        resource->format());
   }
-  transferable.format = resource.resource_->format();
-  transferable.color_space = resource.resource_->color_space();
-  resource.resource_->set_resource_id(resource_provider_->ImportResource(
+  transferable.format = resource->format();
+  transferable.color_space = resource->color_space();
+  resource->set_resource_id(resource_provider_->ImportResource(
       std::move(transferable),
       viz::SingleReleaseCallback::Create(base::BindOnce(
           &ResourcePool::OnResourceReleased, weak_ptr_factory_.GetWeakPtr(),
-          resource.resource_->unique_id()))));
+          resource->unique_id()))));
+  return true;
 }
 
 void ResourcePool::InvalidateResources() {

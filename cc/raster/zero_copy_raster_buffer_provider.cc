@@ -81,6 +81,14 @@ class ZeroCopyRasterBufferImpl : public RasterBuffer {
         gpu_memory_buffer_(std::move(backing_->gpu_memory_buffer)) {}
 
   ~ZeroCopyRasterBufferImpl() override {
+    // If GpuMemoryBuffer allocation failed (https://crbug.com/554541), then
+    // we don't have anything to give to the display compositor, so we report a
+    // zero mailbox that will result in checkerboarding.
+    if (!gpu_memory_buffer_) {
+      DCHECK(backing_->mailbox.IsZero());
+      return;
+    }
+
     // This is destroyed on the compositor thread when raster is complete, but
     // before the backing is prepared for export to the display compositor. So
     // we can set up the texture and SyncToken here.
@@ -125,19 +133,10 @@ class ZeroCopyRasterBufferImpl : public RasterBuffer {
     }
 
     if (!backing_->image_id) {
-      // If GpuMemoryBuffer allocation failed (https://crbug.com/554541), then
-      // we don't have anything to give to the display compositor, but also no
-      // way to report an error, so we just make a texture but don't bind
-      // anything to it. Many blink layout tests on macOS fail to have no
-      // |gpu_memory_buffer_| here, so any error reporting will spam console
-      // logs (https://crbug.com/871031).
-      if (gpu_memory_buffer_) {
-        backing_->image_id = gl->CreateImageCHROMIUM(
-            gpu_memory_buffer_->AsClientBuffer(), resource_size_.width(),
-            resource_size_.height(), viz::GLInternalFormat(resource_format_));
-        gl->BindTexImage2DCHROMIUM(backing_->texture_target,
-                                   backing_->image_id);
-      }
+      backing_->image_id = gl->CreateImageCHROMIUM(
+          gpu_memory_buffer_->AsClientBuffer(), resource_size_.width(),
+          resource_size_.height(), viz::GLInternalFormat(resource_format_));
+      gl->BindTexImage2DCHROMIUM(backing_->texture_target, backing_->image_id);
     } else {
       gl->ReleaseTexImage2DCHROMIUM(backing_->texture_target,
                                     backing_->image_id);
