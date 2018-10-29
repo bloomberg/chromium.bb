@@ -138,17 +138,17 @@ TEST(FileManagerPathUtilTest, GetPathDisplayTextForSettings) {
     base::test::ScopedFeatureList features;
     features.InitAndDisableFeature(chromeos::features::kDriveFs);
     drive::DriveIntegrationServiceFactory::GetForProfile(&profile);
-    EXPECT_EQ("Google Drive \u203a foo",
+    EXPECT_EQ("Google Drive \u203a My Drive \u203a foo",
               GetPathDisplayTextForSettings(
                   &profile, "/special/drive-0123456789abcdef/root/foo"));
     EXPECT_EQ(
-        "Team Drives \u203a A Team Drive \u203a foo",
+        "Google Drive \u203a Team Drives \u203a A Team Drive \u203a foo",
         GetPathDisplayTextForSettings(
             &profile,
             "/special/drive-0123456789abcdef/team_drives/A Team Drive/foo"));
 
     EXPECT_EQ(
-        "Computers \u203a My Other Computer \u203a bar",
+        "Google Drive \u203a Computers \u203a My Other Computer \u203a bar",
         GetPathDisplayTextForSettings(
             &profile,
             "/special/drive-0123456789abcdef/Computers/My Other Computer/bar"));
@@ -167,20 +167,21 @@ TEST(FileManagerPathUtilTest, GetPathDisplayTextForSettings) {
 
     drive::DriveIntegrationServiceFactory::GetForProfile(&profile2);
     EXPECT_EQ(
-        "Google Drive \u203a foo",
+        "Google Drive \u203a My Drive \u203a foo",
         GetPathDisplayTextForSettings(
             &profile2,
             "/media/fuse/drivefs-84675c855b63e12f384d45f033826980/root/foo"));
-    EXPECT_EQ("Team Drives \u203a A Team Drive \u203a foo",
+    EXPECT_EQ("Google Drive \u203a Team Drives \u203a A Team Drive \u203a foo",
               GetPathDisplayTextForSettings(
                   &profile2,
                   "/media/fuse/drivefs-84675c855b63e12f384d45f033826980/"
                   "team_drives/A Team Drive/foo"));
-    EXPECT_EQ("Computers \u203a My Other Computer \u203a bar",
-              GetPathDisplayTextForSettings(
-                  &profile2,
-                  "/media/fuse/drivefs-84675c855b63e12f384d45f033826980/"
-                  "Computers/My Other Computer/bar"));
+    EXPECT_EQ(
+        "Google Drive \u203a Computers \u203a My Other Computer \u203a bar",
+        GetPathDisplayTextForSettings(
+            &profile2,
+            "/media/fuse/drivefs-84675c855b63e12f384d45f033826980/"
+            "Computers/My Other Computer/bar"));
   }
   chromeos::disks::DiskMountManager::Shutdown();
 }

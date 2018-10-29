@@ -418,21 +418,28 @@ std::string GetPathDisplayTextForSettings(Profile* profile,
                            drive_integration_service->GetMountPointPath()
                                .Append(kRootRelativeToDriveMount)
                                .value(),
-                           kGoogleDriveDisplayName)) {
+                           base::FilePath(kGoogleDriveDisplayName)
+                               .Append(l10n_util::GetStringUTF8(
+                                   IDS_FILE_BROWSER_DRIVE_MY_DRIVE_LABEL))
+                               .value())) {
   } else if (drive_integration_service &&
              ReplacePrefix(&result,
                            drive_integration_service->GetMountPointPath()
                                .Append(kTeamDrivesRelativeToDriveMount)
                                .value(),
-                           l10n_util::GetStringUTF8(
-                               IDS_FILE_BROWSER_DRIVE_TEAM_DRIVES_LABEL))) {
+                           base::FilePath(kGoogleDriveDisplayName)
+                               .Append(l10n_util::GetStringUTF8(
+                                   IDS_FILE_BROWSER_DRIVE_TEAM_DRIVES_LABEL))
+                               .value())) {
   } else if (drive_integration_service &&
              ReplacePrefix(&result,
                            drive_integration_service->GetMountPointPath()
                                .Append(kComputersRelativeToDriveMount)
                                .value(),
-                           l10n_util::GetStringUTF8(
-                               IDS_FILE_BROWSER_DRIVE_COMPUTERS_LABEL))) {
+                           base::FilePath(kGoogleDriveDisplayName)
+                               .Append(l10n_util::GetStringUTF8(
+                                   IDS_FILE_BROWSER_DRIVE_COMPUTERS_LABEL))
+                               .value())) {
   } else if (ReplacePrefix(&result, kAndroidFilesPath,
                            l10n_util::GetStringUTF8(
                                IDS_FILE_BROWSER_ANDROID_FILES_ROOT_LABEL))) {
