@@ -236,7 +236,10 @@ public class CastWebContentsActivity extends Activity {
 
         // Similar condition for all single-click events.
         if (action == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
-            if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER
+            if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER || keyCode == KeyEvent.KEYCODE_DPAD_LEFT
+                    || keyCode == KeyEvent.KEYCODE_MEDIA_REWIND
+                    || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT
+                    || keyCode == KeyEvent.KEYCODE_MEDIA_FAST_FORWARD
                     || keyCode == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE
                     || keyCode == KeyEvent.KEYCODE_MEDIA_PLAY
                     || keyCode == KeyEvent.KEYCODE_MEDIA_PAUSE
