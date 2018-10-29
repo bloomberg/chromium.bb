@@ -12,6 +12,7 @@
 #include <assert.h>
 #include <emmintrin.h>
 #include "aom_dsp/x86/synonyms.h"
+#include "aom_ports/system_state.h"
 
 #include "config/av1_rtcd.h"
 #include "av1/encoder/rdopt.h"
@@ -67,7 +68,7 @@ INLINE static void horver_correlation_4x4(const int16_t *diff, int stride,
   const __m128i sum_slli_a = _mm_hadd_epi16(slli_a, slli_a);
   const __m128i sum_slli_a32 = _mm_cvtepi16_epi32(sum_slli_a);
   // sum_slli_a32 = [c+b a k+j i] as i32
-  const __m128i swap_b32 = _mm_cvtepu16_epi32(swap_b);
+  const __m128i swap_b32 = _mm_cvtepi16_epi32(swap_b);
   // swap_b32 = [g f e 0] as i32
   *x_sum_32 = _mm_add_epi32(*x_sum_32, sum_slli_a32);
   *x_sum_32 = _mm_add_epi32(*x_sum_32, swap_b32);
@@ -244,6 +245,8 @@ void av1_get_horver_correlation_full_sse4_1(const int16_t *diff, int stride,
   int64_t x2ver_sum = x2_sum - x2_finalrow;
   int64_t y2_sum = x2_sum - x2_firstcol;
   int64_t z2_sum = x2_sum - x2_firstrow;
+
+  aom_clear_system_state();
 
   const float num_hor = (float)(height * (width - 1));
   const float num_ver = (float)((height - 1) * width);

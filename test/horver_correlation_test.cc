@@ -59,7 +59,7 @@ void HorverTest::runHorverTest(void) {
       float hcorr_test = 0.0, vcorr_test = 0.0;
 
       for (int i = 0; i < MAX_SB_SQUARE; ++i) {
-        data_buf[i] = rng_.Rand16() % (1 << 12);
+        data_buf[i] = (rng_.Rand16() % (1 << 12)) - (1 << 11);
       }
 
       av1_get_horver_correlation_full_c(data_buf, MAX_SB_SIZE, w, h, &hcorr_ref,
