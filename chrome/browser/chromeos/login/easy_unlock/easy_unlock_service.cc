@@ -494,14 +494,6 @@ void EasyUnlockService::CheckCryptohomeKeysAndMaybeHardlock() {
                  weak_ptr_factory_.GetWeakPtr(), account_id, paired_devices));
 }
 
-void EasyUnlockService::SetTrialRun() {
-  DCHECK_EQ(GetType(), TYPE_REGULAR);
-
-  EasyUnlockScreenlockStateHandler* handler = GetScreenlockStateHandler();
-  if (handler)
-    handler->SetTrialRun();
-}
-
 void EasyUnlockService::AddObserver(EasyUnlockServiceObserver* observer) {
   observers_.AddObserver(observer);
 }

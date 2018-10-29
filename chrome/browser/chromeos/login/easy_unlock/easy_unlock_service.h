@@ -183,10 +183,6 @@ class EasyUnlockService : public KeyedService {
   // hardlock state if the two do not match.
   void CheckCryptohomeKeysAndMaybeHardlock();
 
-  // Marks the Easy Unlock screen lock state as the one associated with the
-  // trial run initiated by Easy Unlock app.
-  void SetTrialRun();
-
   // Called when the user reauths (e.g. in chrome://settings) so we can cache
   // the user context for the setup flow.
   virtual void HandleUserReauth(const UserContext& user_context);

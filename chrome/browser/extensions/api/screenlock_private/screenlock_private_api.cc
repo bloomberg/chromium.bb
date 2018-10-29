@@ -72,15 +72,6 @@ bool ScreenlockPrivateSetLockedFunction::RunAsync() {
   chromeos::EasyUnlockService* service =
       chromeos::EasyUnlockService::Get(GetProfile());
   if (params->locked) {
-    if (extension()->id() == extension_misc::kEasyUnlockAppId &&
-        AppWindowRegistry::Get(browser_context())
-            ->GetAppWindowForAppAndKey(extension()->id(),
-                                       "easy_unlock_pairing")) {
-      // Mark the Easy Unlock behaviour on the lock screen as the one initiated
-      // by the Easy Unlock setup app as a trial one.
-      // TODO(tbarzic): Move this logic to a new easyUnlockPrivate function.
-      service->SetTrialRun();
-    }
     proximity_auth::ScreenlockBridge::Get()->Lock();
   } else {
     proximity_auth::ScreenlockBridge::Get()->Unlock(AccountId::FromUserEmail(

@@ -3637,9 +3637,6 @@
   <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PHONE_LOCKED_AND_RSSI_TOO_LOW" desc="Tooltip for an icon on a user's lock screen pod shown by Easy Unlock when a phone eligible to unlock the Chromebook is detected, but it's both (a) locked and (b) not in the Chromebook's proximity (> 1 foot away).">
     Unlock your phone and bring it closer to unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
   </message>
-  <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_INITIAL_AUTHENTICATED" desc="Tooltip text shown on lock screen when a phone eligible to unlock the Chromebook via Easy Unlock is detected and authenticated for the first time.">
-    When your phone is unlocked and nearby, just select to unlock. Otherwise, enter your password or PIN.
-  </message>
   <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_INSTRUCTIONS" desc="Tooltip for an icon on user's lock screen pod shown by Easy Unlock when a phone eligible to unlock the Chromebook is detected and authenticated. The tooltip shows instructions for hard-locking the Chromebook.">
     If you click this icon, you will manually lock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. Next time, you’ll need to type your password to enter.
   </message>

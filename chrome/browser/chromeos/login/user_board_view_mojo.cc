@@ -56,9 +56,6 @@ ash::mojom::EasyUnlockIconOptionsPtr ToEasyUnlockIconOptionsPtr(
   if (icon_options.hardlock_on_click())
     options->hardlock_on_click = true;
 
-  if (icon_options.is_trial_run())
-    options->is_trial_run = true;
-
   return options;
 }
 

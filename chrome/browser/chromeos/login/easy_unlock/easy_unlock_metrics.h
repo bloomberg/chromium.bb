@@ -74,20 +74,11 @@ enum EasyUnlockAuthEvent {
   EASY_UNLOCK_AUTH_EVENT_COUNT  // Must be the last entry.
 };
 
-enum EasyUnlockTrialRunEvent {
-  // A trial run was initiated from the Easy Unlock setup app.
-  EASY_UNLOCK_TRIAL_RUN_EVENT_LAUNCHED = 0,
-  // The user clicked on the lock icon during the trial run.
-  EASY_UNLOCK_TRIAL_RUN_EVENT_CLICKED_LOCK_ICON = 1,
-  EASY_UNLOCK_TRIAL_RUN_EVENT_COUNT  // Must be the last entry.
-};
-
 void RecordEasyUnlockDidUserManuallyUnlockPhone(bool did_unlock);
 void RecordEasyUnlockSigninDuration(const base::TimeDelta& duration);
 void RecordEasyUnlockSigninEvent(EasyUnlockAuthEvent event);
 void RecordEasyUnlockScreenUnlockDuration(const base::TimeDelta& duration);
 void RecordEasyUnlockScreenUnlockEvent(EasyUnlockAuthEvent event);
-void RecordEasyUnlockTrialRunEvent(EasyUnlockTrialRunEvent event);
 
 }  // namespace chromeos
 
