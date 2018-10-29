@@ -36,6 +36,9 @@ class CORE_EXPORT PropertyRegistry : public GarbageCollected<PropertyRegistry> {
                                            const AtomicString& property_name,
                                            const CSSValue*);
 
+  void MarkReferenced(const AtomicString&) const;
+  bool WasReferenced(const AtomicString&) const;
+
  private:
   RegistrationMap registrations_;
 };

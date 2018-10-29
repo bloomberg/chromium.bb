@@ -337,6 +337,10 @@ bool CSSVariableResolver::ResolveVariableReference(CSSParserTokenRange range,
     non_inherited_variables_ = state_.Style()->NonInheritedVariables();
   }
 
+  if (registry_ && !is_env_variable) {
+    registry_->MarkReferenced(variable_name);
+  }
+
   scoped_refptr<CSSVariableData> variable_data =
       is_env_variable ? ValueForEnvironmentVariable(variable_name)
                       : ValueForCustomProperty(variable_name, options);
