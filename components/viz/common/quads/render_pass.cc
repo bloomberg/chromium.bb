@@ -110,7 +110,7 @@ std::unique_ptr<RenderPass> RenderPass::Copy(int new_id) const {
   std::unique_ptr<RenderPass> copy_pass(
       Create(shared_quad_state_list.size(), quad_list.size()));
   copy_pass->SetAll(new_id, output_rect, damage_rect, transform_to_root_target,
-                    filters, background_filters, color_space,
+                    filters, backdrop_filters, color_space,
                     has_transparent_background, cache_render_pass,
                     has_damage_from_contributing_content, generate_mipmap);
   return copy_pass;
@@ -124,7 +124,7 @@ std::unique_ptr<RenderPass> RenderPass::DeepCopy() const {
   std::unique_ptr<RenderPass> copy_pass(
       Create(shared_quad_state_list.size(), quad_list.size()));
   copy_pass->SetAll(id, output_rect, damage_rect, transform_to_root_target,
-                    filters, background_filters, color_space,
+                    filters, backdrop_filters, color_space,
                     has_transparent_background, cache_render_pass,
                     has_damage_from_contributing_content, generate_mipmap);
 
@@ -188,7 +188,7 @@ void RenderPass::SetAll(uint64_t id,
                         const gfx::Rect& damage_rect,
                         const gfx::Transform& transform_to_root_target,
                         const cc::FilterOperations& filters,
-                        const cc::FilterOperations& background_filters,
+                        const cc::FilterOperations& backdrop_filters,
                         const gfx::ColorSpace& color_space,
                         bool has_transparent_background,
                         bool cache_render_pass,
@@ -201,7 +201,7 @@ void RenderPass::SetAll(uint64_t id,
   this->damage_rect = damage_rect;
   this->transform_to_root_target = transform_to_root_target;
   this->filters = filters;
-  this->background_filters = background_filters;
+  this->backdrop_filters = backdrop_filters;
   this->color_space = color_space;
   this->has_transparent_background = has_transparent_background;
   this->cache_render_pass = cache_render_pass;
@@ -230,8 +230,8 @@ void RenderPass::AsValueInto(base::trace_event::TracedValue* value) const {
   filters.AsValueInto(value);
   value->EndArray();
 
-  value->BeginArray("background_filters");
-  background_filters.AsValueInto(value);
+  value->BeginArray("backdrop_filters");
+  backdrop_filters.AsValueInto(value);
   value->EndArray();
 
   value->BeginArray("shared_quad_state_list");

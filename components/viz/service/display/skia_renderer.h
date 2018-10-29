@@ -116,7 +116,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
                            DrawRenderPassDrawQuadParams* params);
   bool ShouldApplyBackgroundFilters(
       const RenderPassDrawQuad* quad,
-      const cc::FilterOperations* background_filters) const;
+      const cc::FilterOperations* backdrop_filters) const;
   bool IsUsingVulkan() const;
   const TileDrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass) override;
 

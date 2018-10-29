@@ -997,10 +997,10 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
     DCHECK(mask_filter);
   }
 
-  const cc::FilterOperations* background_filters =
+  const cc::FilterOperations* backdrop_filters =
       BackgroundFiltersForPass(quad->render_pass_id);
   // Without backdrop effect.
-  if (!ShouldApplyBackgroundFilters(quad, background_filters)) {
+  if (!ShouldApplyBackgroundFilters(quad, backdrop_filters)) {
     if (!mask_filter) {
       // Not mask, so we just draw the context_image directly.
       current_canvas_->drawImageRect(content_image, content_rect,
@@ -1025,7 +1025,7 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
 
   // Draw render pass with backdrop effects.
   auto background_paint_filter = cc::RenderSurfaceFilters::BuildImageFilter(
-      *background_filters,
+      *backdrop_filters,
       gfx::SizeF(content_image->width(), content_image->height()));
   auto background_image_filter =
       background_paint_filter ? background_paint_filter->cached_sk_filter_
@@ -1194,10 +1194,10 @@ void SkiaRenderer::GenerateMipmap() {
 
 bool SkiaRenderer::ShouldApplyBackgroundFilters(
     const RenderPassDrawQuad* quad,
-    const cc::FilterOperations* background_filters) const {
-  if (!background_filters)
+    const cc::FilterOperations* backdrop_filters) const {
+  if (!backdrop_filters)
     return false;
-  DCHECK(!background_filters->IsEmpty());
+  DCHECK(!backdrop_filters->IsEmpty());
 
   // TODO(hendrikw): Look into allowing background filters to see pixels from
   // other render targets.  See crbug.com/314867.

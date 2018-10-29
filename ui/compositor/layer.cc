@@ -523,7 +523,7 @@ void Layer::SetLayerBackgroundFilters() {
         background_blur_sigma_, SkBlurImageFilter::kClamp_TileMode));
   }
 
-  cc_layer_->SetBackgroundFilters(filters);
+  cc_layer_->SetBackdropFilters(filters);
 }
 
 float Layer::GetTargetOpacity() const {

@@ -2489,7 +2489,7 @@ class RendererPixelTestWithBackgroundFilter
     gfx::Transform transform_to_root;
     std::unique_ptr<RenderPass> filter_pass = CreateTestRenderPass(
         filter_pass_id, filter_pass_layer_rect_, transform_to_root);
-    filter_pass->background_filters = this->background_filters_;
+    filter_pass->backdrop_filters = this->backdrop_filters_;
 
     // A non-visible quad in the filtering render pass.
     {
@@ -2568,7 +2568,7 @@ class RendererPixelTestWithBackgroundFilter
   }
 
   RenderPassList pass_list_;
-  cc::FilterOperations background_filters_;
+  cc::FilterOperations backdrop_filters_;
   gfx::Transform filter_pass_to_target_transform_;
   gfx::Rect filter_pass_layer_rect_;
 };
@@ -2581,8 +2581,7 @@ TYPED_TEST_CASE(RendererPixelTestWithBackgroundFilter,
                 BackgroundFilterRendererTypes);
 
 TYPED_TEST(RendererPixelTestWithBackgroundFilter, InvertFilter) {
-  this->background_filters_.Append(
-      cc::FilterOperation::CreateInvertFilter(1.f));
+  this->backdrop_filters_.Append(cc::FilterOperation::CreateInvertFilter(1.f));
 
   this->filter_pass_layer_rect_ = gfx::Rect(this->device_viewport_size_);
   this->filter_pass_layer_rect_.Inset(12, 14, 16, 18);
@@ -2590,7 +2589,7 @@ TYPED_TEST(RendererPixelTestWithBackgroundFilter, InvertFilter) {
   this->SetUpRenderPassList();
   EXPECT_TRUE(this->RunPixelTest(
       &this->pass_list_,
-      base::FilePath(FILE_PATH_LITERAL("background_filter.png")),
+      base::FilePath(FILE_PATH_LITERAL("backdrop_filter.png")),
       cc::ExactPixelComparator(true)));
 }
 

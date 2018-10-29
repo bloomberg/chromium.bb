@@ -323,8 +323,8 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   for (const auto& pass : *render_passes_in_draw_order) {
     if (!pass->filters.IsEmpty())
       render_pass_filters_[pass->id] = &pass->filters;
-    if (!pass->background_filters.IsEmpty())
-      render_pass_background_filters_[pass->id] = &pass->background_filters;
+    if (!pass->backdrop_filters.IsEmpty())
+      render_pass_backdrop_filters_[pass->id] = &pass->backdrop_filters;
   }
 
   // Create the overlay candidate for the output surface, and mark it as
@@ -346,7 +346,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   overlay_processor_->ProcessForOverlays(
       resource_provider_, render_passes_in_draw_order,
       output_surface_->color_matrix(), render_pass_filters_,
-      render_pass_background_filters_, &current_frame()->overlay_list,
+      render_pass_backdrop_filters_, &current_frame()->overlay_list,
       &current_frame()->ca_layer_overlay_list,
       &current_frame()->dc_layer_overlay_list,
       &current_frame()->root_damage_rect,
@@ -405,7 +405,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   FinishDrawingFrame();
   render_passes_in_draw_order->clear();
   render_pass_filters_.clear();
-  render_pass_background_filters_.clear();
+  render_pass_backdrop_filters_.clear();
 
   current_frame_valid_ = false;
 }
@@ -495,8 +495,8 @@ const cc::FilterOperations* DirectRenderer::FiltersForPass(
 
 const cc::FilterOperations* DirectRenderer::BackgroundFiltersForPass(
     RenderPassId render_pass_id) const {
-  auto it = render_pass_background_filters_.find(render_pass_id);
-  return it == render_pass_background_filters_.end() ? nullptr : it->second;
+  auto it = render_pass_backdrop_filters_.find(render_pass_id);
+  return it == render_pass_backdrop_filters_.end() ? nullptr : it->second;
 }
 
 void DirectRenderer::FlushPolygons(

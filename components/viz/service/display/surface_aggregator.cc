@@ -328,7 +328,7 @@ void SurfaceAggregator::EmitSurfaceContent(
     copy_pass->SetAll(
         remapped_pass_id, source.output_rect, source.output_rect,
         source.transform_to_root_target, source.filters,
-        source.background_filters, blending_color_space_,
+        source.backdrop_filters, blending_color_space_,
         source.has_transparent_background, source.cache_render_pass,
         source.has_damage_from_contributing_content, source.generate_mipmap);
 
@@ -730,7 +730,7 @@ void SurfaceAggregator::CopyPasses(const CompositorFrame& frame,
     copy_pass->SetAll(
         remapped_pass_id, source.output_rect, source.output_rect,
         source.transform_to_root_target, source.filters,
-        source.background_filters, blending_color_space_,
+        source.backdrop_filters, blending_color_space_,
         source.has_transparent_background, source.cache_render_pass,
         source.has_damage_from_contributing_content, source.generate_mipmap);
 
@@ -838,16 +838,16 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
   };
   std::vector<SurfaceInfo> child_surfaces;
 
-  gfx::Rect pixel_moving_background_filters_rect;
+  gfx::Rect pixel_moving_backdrop_filters_rect;
   // This data is created once and typically small or empty. Collect all items
   // and pass to a flat_vector to sort once.
   std::vector<RenderPassId> pixel_moving_background_filter_passes_data;
   for (const auto& render_pass : frame.render_pass_list) {
-    if (render_pass->background_filters.HasFilterThatMovesPixels()) {
+    if (render_pass->backdrop_filters.HasFilterThatMovesPixels()) {
       pixel_moving_background_filter_passes_data.push_back(
           RemapPassId(render_pass->id, surface->surface_id()));
 
-      pixel_moving_background_filters_rect.Union(
+      pixel_moving_backdrop_filters_rect.Union(
           cc::MathUtil::MapEnclosingClippedRect(
               render_pass->transform_to_root_target, render_pass->output_rect));
     }
@@ -1020,8 +1020,8 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
   if (!damage_rect.IsEmpty() && frame.metadata.may_contain_video)
     result->may_contain_video = true;
 
-  if (damage_rect.Intersects(pixel_moving_background_filters_rect))
-    damage_rect.Union(pixel_moving_background_filters_rect);
+  if (damage_rect.Intersects(pixel_moving_backdrop_filters_rect))
+    damage_rect.Union(pixel_moving_backdrop_filters_rect);
 
   return damage_rect;
 }

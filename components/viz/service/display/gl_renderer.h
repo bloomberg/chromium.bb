@@ -195,7 +195,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
       const RenderPassDrawQuad* quad,
       const gfx::Transform& contents_device_transform,
       const cc::FilterOperations* filters,
-      const cc::FilterOperations* background_filters,
+      const cc::FilterOperations* backdrop_filters,
       const gfx::QuadF* clip_region,
       bool use_aa,
       gfx::Rect* unclipped_rect);
@@ -205,10 +205,10 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
 
   static bool ShouldApplyBackgroundFilters(
       const RenderPassDrawQuad* quad,
-      const cc::FilterOperations* background_filters);
+      const cc::FilterOperations* backdrop_filters);
   sk_sp<SkImage> ApplyBackgroundFilters(
       const RenderPassDrawQuad* quad,
-      const cc::FilterOperations& background_filters,
+      const cc::FilterOperations& backdrop_filters,
       uint32_t background_texture,
       const gfx::Rect& rect,
       const gfx::Rect& unclipped_rect);
