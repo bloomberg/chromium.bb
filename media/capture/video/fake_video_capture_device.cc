@@ -42,6 +42,10 @@ static const double kMinZoom = 100.0;
 static const double kMaxZoom = 400.0;
 static const double kZoomStep = 1.0;
 
+static const double kMinExposureTime = 10.0;
+static const double kMaxExposureTime = 100.0;
+static const double kExposureTimeStep = 5.0;
+
 // Larger int means better.
 enum class PixelFormatMatchType : int {
   INCOMPATIBLE = 0,
@@ -457,11 +461,21 @@ void FakePhotoDevice::GetPhotoState(
   mojom::PhotoStatePtr photo_state = mojo::CreateEmptyPhotoState();
 
   photo_state->current_white_balance_mode = mojom::MeteringMode::NONE;
-  photo_state->current_exposure_mode = mojom::MeteringMode::NONE;
+
+  photo_state->supported_exposure_modes.push_back(mojom::MeteringMode::MANUAL);
+  photo_state->supported_exposure_modes.push_back(
+      mojom::MeteringMode::CONTINUOUS);
+  photo_state->current_exposure_mode = fake_device_state_->exposure_mode;
   photo_state->current_focus_mode = mojom::MeteringMode::NONE;
 
   photo_state->exposure_compensation = mojom::Range::New();
+
   photo_state->exposure_time = mojom::Range::New();
+  photo_state->exposure_time->current = fake_device_state_->exposure_time;
+  photo_state->exposure_time->max = kMaxExposureTime;
+  photo_state->exposure_time->min = kMinExposureTime;
+  photo_state->exposure_time->step = kExposureTimeStep;
+
   photo_state->color_temperature = mojom::Range::New();
   photo_state->iso = mojom::Range::New();
   photo_state->iso->current = 100.0;
@@ -522,6 +536,12 @@ void FakePhotoDevice::SetPhotoOptions(
     device_state_write_access->zoom =
         std::max(kMinZoom, std::min(settings->zoom, kMaxZoom));
   }
+  if (settings->has_exposure_time) {
+    device_state_write_access->exposure_time = std::max(
+        kMinExposureTime, std::min(settings->exposure_time, kMaxExposureTime));
+  }
+  if (settings->has_exposure_mode)
+    device_state_write_access->exposure_mode = mojom::MeteringMode::MANUAL;
 
   std::move(callback).Run(true);
 }
