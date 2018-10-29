@@ -63,7 +63,7 @@ class URLRequest;
 // A single instance of NQE can be attached to multiple URLRequestContexts,
 // thereby increasing the single NQE instance's accuracy by providing more
 // observed traffic characteristics.
-class NET_EXPORT NetworkQualityEstimator
+class NET_EXPORT_PRIVATE NetworkQualityEstimator
     : public NetworkChangeNotifier::ConnectionTypeObserver {
  public:
   // Observes measurements of round trip time.

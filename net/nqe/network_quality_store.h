@@ -27,7 +27,7 @@ namespace internal {
 class NET_EXPORT_PRIVATE NetworkQualityStore {
  public:
   // Observes changes in the cached network qualities.
-  class NET_EXPORT NetworkQualitiesCacheObserver {
+  class NET_EXPORT_PRIVATE NetworkQualitiesCacheObserver {
    public:
     // Notifies the observer of a change in the cached network quality. The
     // observer must register and unregister itself on the IO thread. All the
