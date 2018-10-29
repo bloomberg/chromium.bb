@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_RESULT_RANKER_APP_LAUNCH_PREDICTOR_H_
 
 #include <string>
+#include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
@@ -155,6 +156,8 @@ class HourAppLaunchPredictor : public AppLaunchPredictor {
   base::Time last_save_timestamp_;
   // Coefficient that controls the decay of previous record.
   static constexpr float kWeeklyDecayCoeff = 0.8;
+  // Weights that are used to combine adjacent bins.
+  const std::vector<float> bin_weights_;
 
   DISALLOW_COPY_AND_ASSIGN(HourAppLaunchPredictor);
 };
