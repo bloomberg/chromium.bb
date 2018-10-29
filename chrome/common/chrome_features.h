@@ -40,8 +40,6 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kViewsTaskManager;
 #endif  // defined(OS_MACOSX)
 
 #if !defined(OS_ANDROID)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kAnimatedAppMenuIcon;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kAppBanners;
 #endif  // !defined(OS_ANDROID)
 

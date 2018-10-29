@@ -487,10 +487,16 @@ void ToolbarView::Layout() {
   //                http://crbug.com/5540
   const bool maximized =
       browser_->window() && browser_->window()->IsMaximized();
-  // The padding at either end of the toolbar.
-  const int end_padding = GetToolbarHorizontalPadding();
-  back_->SetLeadingMargin(maximized ? end_padding : 0);
-  back_->SetBounds(maximized ? 0 : end_padding, toolbar_button_y,
+
+  // When maximized, insert padding into the first and last control instead of
+  // padding outside of them.
+  const int end_padding = maximized ? 0 : GetToolbarHorizontalPadding();
+  const int end_control_internal_margin =
+      maximized ? GetToolbarHorizontalPadding() : 0;
+  back_->SetLeadingMargin(end_control_internal_margin);
+  app_menu_button_->SetTrailingMargin(end_control_internal_margin);
+
+  back_->SetBounds(end_padding, toolbar_button_y,
                    back_->GetPreferredSize().width(), toolbar_button_height);
   const int element_padding = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
   int next_element_x = back_->bounds().right() + element_padding;
@@ -519,7 +525,7 @@ void ToolbarView::Layout() {
 
   next_element_x += GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
 
-  int app_menu_width = app_menu_button_->GetPreferredSize().width();
+  const int app_menu_width = app_menu_button_->GetPreferredSize().width();
   const int right_padding = GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
 
   // Note that the browser actions container has its own internal left and right
@@ -529,8 +535,8 @@ void ToolbarView::Layout() {
   int available_width = std::max(
       0,
       width() - end_padding - app_menu_width -
-      (browser_actions_->GetPreferredSize().IsEmpty() ? right_padding : 0) -
-      next_element_x);
+          (browser_actions_->GetPreferredSize().IsEmpty() ? right_padding : 0) -
+          next_element_x);
   if (cast_ && cast_->visible()) {
     available_width -= cast_->GetPreferredSize().width();
     available_width -= element_padding;
@@ -583,14 +589,6 @@ void ToolbarView::Layout() {
     next_element_x = avatar_->bounds().right() + element_padding;
   }
 
-  // Extend the app menu to the screen's right edge in maximized mode just like
-  // we extend the back button to the left edge.
-  if (maximized)
-    app_menu_width += end_padding;
-
-  // Set trailing margin before updating the bounds so OnBoundsChange can use
-  // the trailing margin.
-  app_menu_button_->SetTrailingMargin(maximized ? end_padding : 0);
   app_menu_button_->SetBounds(next_element_x, toolbar_button_y, app_menu_width,
                               toolbar_button_height);
 }
@@ -676,8 +674,7 @@ void ToolbarView::OnTouchUiChanged() {
 
 // AppMenuIconController::Delegate:
 void ToolbarView::UpdateSeverity(AppMenuIconController::IconType type,
-                                 AppMenuIconController::Severity severity,
-                                 bool animate) {
+                                 AppMenuIconController::Severity severity) {
   // There's no app menu in tabless windows.
   if (!app_menu_button_)
     return;
@@ -688,7 +685,7 @@ void ToolbarView::UpdateSeverity(AppMenuIconController::IconType type,
         IDS_ACCNAME_APP_UPGRADE_RECOMMENDED, accname_app);
   }
   app_menu_button_->SetAccessibleName(accname_app);
-  app_menu_button_->SetSeverity(type, severity, animate);
+  app_menu_button_->SetSeverity(type, severity);
 }
 
 // ToolbarButtonProvider:
@@ -812,7 +809,7 @@ void ToolbarView::LoadImages() {
   if (avatar_)
     avatar_->UpdateIcon();
 
-  app_menu_button_->UpdateIcon(false);
+  app_menu_button_->UpdateIcon();
 
   reload_->LoadImages();
 }

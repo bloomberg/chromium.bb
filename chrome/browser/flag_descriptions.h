@@ -1659,9 +1659,6 @@ extern const char kEnableAudioFocusEnabled[];
 extern const char kEnableAudioFocusEnabledDuckFlash[];
 extern const char kEnableAudioFocusEnabledNoEnforce[];
 
-extern const char kEnableNewAppMenuIconName[];
-extern const char kEnableNewAppMenuIconDescription[];
-
 extern const char kEnableWebAuthenticationCtap2SupportName[];
 extern const char kEnableWebAuthenticationCtap2SupportDescription[];
 
