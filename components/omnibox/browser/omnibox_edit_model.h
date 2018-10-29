@@ -176,10 +176,11 @@ class OmniboxEditModel {
   // Sets the user_text_ to |text|.
   void SetUserText(const base::string16& text);
 
-  // Sets the user text to be url_for_editing_. This also selects all and
-  // enters user-input-in-progress mode. This method is used to exit both
-  // Steady State Elisions and Query in Omnibox mode.
-  void SetUserTextToURLForEditing();
+  // Unapplies any Steady State Elisions by setting the user text to be
+  // url_for_editing_. This also selects all and enters user-input-in-progress
+  // mode. If |exit_query_in_omnibox| is set to true, this will alse exit
+  // Query in Omnibox mode if the omnibox is showing a query.
+  void Unelide(bool exit_query_in_omnibox);
 
   // Invoked any time the text may have changed in the edit. Notifies the
   // controller.

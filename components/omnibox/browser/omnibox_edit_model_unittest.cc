@@ -158,8 +158,7 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
 // Tests that AdjustTextForCopy behaves properly with Query in Omnibox enabled.
 // For more general tests of copy adjustment, see the AdjustTextForCopy test.
 TEST_F(OmniboxEditModelTest, AdjustTextForCopyQueryInOmnibox) {
-  toolbar_model()->set_formatted_full_url(
-      base::ASCIIToUTF16("https://www.example.com/"));
+  toolbar_model()->set_url(GURL("https://www.example.com/"));
   toolbar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
 
   TestOmniboxClient* client =
@@ -255,8 +254,7 @@ TEST_F(OmniboxEditModelTest, AlternateNavHasHTTP) {
 }
 
 TEST_F(OmniboxEditModelTest, CurrentMatch) {
-  toolbar_model()->set_formatted_full_url(
-      base::ASCIIToUTF16("http://localhost/"));
+  toolbar_model()->set_url(GURL("http://localhost/"));
   toolbar_model()->set_url_for_display(base::ASCIIToUTF16("localhost"));
   model()->ResetDisplayTexts();
 
@@ -283,29 +281,38 @@ TEST_F(OmniboxEditModelTest, CurrentMatch) {
 }
 
 TEST_F(OmniboxEditModelTest, DisplayText) {
-  toolbar_model()->set_formatted_full_url(
-      base::ASCIIToUTF16("https://www.example.com/"));
+  toolbar_model()->set_url(GURL("https://www.example.com/"));
   toolbar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
 
   // Verify we show the display text when there is no Query in Omnibox match.
-  {
-    model()->ResetDisplayTexts();
+  model()->ResetDisplayTexts();
 #if defined(OS_IOS)
-    // iOS OmniboxEditModel always provides the full URL as the OmniboxView
-    // permanent display text.
-    EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"),
-              model()->GetPermanentDisplayText());
+  // iOS OmniboxEditModel always provides the full URL as the OmniboxView
+  // permanent display text.
+  EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"),
+            model()->GetPermanentDisplayText());
 #else
-    EXPECT_EQ(base::ASCIIToUTF16("example.com"),
-              model()->GetPermanentDisplayText());
+  EXPECT_EQ(base::ASCIIToUTF16("example.com"),
+            model()->GetPermanentDisplayText());
 #endif
 
-    base::string16 search_terms;
-    EXPECT_FALSE(model()->GetQueryInOmniboxSearchTerms(&search_terms));
-    EXPECT_TRUE(search_terms.empty());
+  base::string16 search_terms;
+  EXPECT_FALSE(model()->GetQueryInOmniboxSearchTerms(&search_terms));
+  EXPECT_TRUE(search_terms.empty());
 
-    EXPECT_TRUE(model()->CurrentTextIsURL());
-  }
+  EXPECT_TRUE(model()->CurrentTextIsURL());
+
+  // Verify we can unelide and show the full URL properly.
+  model()->Unelide(false /* exit_query_in_omnibox */);
+  EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"), view()->GetText());
+  EXPECT_TRUE(model()->user_input_in_progress());
+  EXPECT_TRUE(view()->IsSelectAll());
+  EXPECT_TRUE(model()->CurrentTextIsURL());
+}
+
+TEST_F(OmniboxEditModelTest, DisplayAndExitQueryInOmnibox) {
+  toolbar_model()->set_url(GURL("https://www.example.com/"));
+  toolbar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
 
   // Verify the displayed text when there is a Query in Omnibox match.
   TestOmniboxClient* client =
@@ -321,10 +328,11 @@ TEST_F(OmniboxEditModelTest, DisplayText) {
   EXPECT_FALSE(model()->CurrentTextIsURL());
 
   // Verify we can exit Query in Omnibox mode properly.
-  model()->SetUserTextToURLForEditing();
+  model()->Unelide(true /* exit_query_in_omnibox */);
   EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"), view()->GetText());
   EXPECT_TRUE(model()->user_input_in_progress());
   EXPECT_TRUE(view()->IsSelectAll());
+  EXPECT_TRUE(model()->CurrentTextIsURL());
 }
 
 TEST_F(OmniboxEditModelTest, DisablePasteAndGoForLongTexts) {
