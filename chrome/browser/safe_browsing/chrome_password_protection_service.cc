@@ -24,7 +24,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -50,7 +50,6 @@
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
 #include "components/sync/user_events/user_event_service.h"
@@ -62,6 +61,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
@@ -975,12 +975,11 @@ bool ChromePasswordProtectionService::UserClickedThroughSBInterstitial(
 }
 
 AccountInfo ChromePasswordProtectionService::GetAccountInfo() const {
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfileIfExists(
-          profile_->GetOriginalProfile());
+  auto* identity_manager = IdentityManagerFactory::GetForProfileIfExists(
+      profile_->GetOriginalProfile());
 
-  return signin_manager ? signin_manager->GetAuthenticatedAccountInfo()
-                        : AccountInfo();
+  return identity_manager ? identity_manager->GetPrimaryAccountInfo()
+                          : AccountInfo();
 }
 
 GURL ChromePasswordProtectionService::GetEnterpriseChangePasswordURL() const {
