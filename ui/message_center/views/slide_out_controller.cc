@@ -98,7 +98,7 @@ void SlideOutController::OnGestureEvent(ui::GestureEvent* event) {
         break;
     }
 
-    layer->SetOpacity(opacity);
+    SetOpacityIfNecessary(opacity);
     gfx::Transform transform;
     transform.Translate(scroll_amount, 0.0);
     layer->SetTransform(transform);
@@ -139,7 +139,7 @@ void SlideOutController::RestoreVisualState() {
       break;
   }
 
-  if (layer->transform() == transform && layer->opacity() == 1.f) {
+  if (layer->transform() == transform && opacity_ == 1.f) {
     // Here, nothing are changed and no animation starts. In this case, just
     // calls OnSlideChanged(in_progress = false) to notify end of horizontal
     // slide (including animations) to observers.
@@ -150,14 +150,14 @@ void SlideOutController::RestoreVisualState() {
   // In this case, animation starts. OnImplicitAnimationsCompleted will be
   // called just after the animation finishes.
   layer->SetTransform(transform);
-  layer->SetOpacity(1.f);
+  SetOpacityIfNecessary(1.f);
   delegate_->OnSlideChanged(true);
 }
 
 void SlideOutController::SlideOutAndClose(int direction) {
   ui::Layer* layer = delegate_->GetSlideOutLayer();
   const int kSwipeOutTotalDurationMS = 150;
-  int swipe_out_duration = kSwipeOutTotalDurationMS * layer->opacity();
+  int swipe_out_duration = kSwipeOutTotalDurationMS * opacity_;
   ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
   settings.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(swipe_out_duration));
@@ -170,17 +170,21 @@ void SlideOutController::SlideOutAndClose(int direction) {
   // An animation starts. OnImplicitAnimationsCompleted will be called just
   // after the animation finishes.
   layer->SetTransform(transform);
-  layer->SetOpacity(0.f);
+  SetOpacityIfNecessary(0.f);
   delegate_->OnSlideChanged(true);
+}
+
+void SlideOutController::SetOpacityIfNecessary(float opacity) {
+  if (update_opacity_)
+    delegate_->GetSlideOutLayer()->SetOpacity(opacity);
+  opacity_ = opacity;
 }
 
 void SlideOutController::OnImplicitAnimationsCompleted() {
   delegate_->OnSlideChanged(false);
 
-  // Call Delegate::OnSlideOut() if this animation came from
-  // SlideOutAndClose().
-  ui::Layer* layer = delegate_->GetSlideOutLayer();
-  if (layer->opacity() == 0)
+  // Call Delegate::OnSlideOut() if this animation came from SlideOutAndClose().
+  if (opacity_ == 0)
     delegate_->OnSlideOut();
 }
 

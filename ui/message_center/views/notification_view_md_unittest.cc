@@ -260,7 +260,6 @@ void NotificationViewMDTest::UpdateNotificationViews(
     // created by the method.
     notification_view_ = std::make_unique<NotificationViewMD>(notification);
     notification_view_->AddObserver(this);
-    notification_view_->SetIsNested();
     notification_view_->set_owned_by_client();
 
     views::Widget::InitParams init_params(
@@ -659,6 +658,7 @@ TEST_F(NotificationViewMDTest, SlideOut) {
 }
 
 TEST_F(NotificationViewMDTest, SlideOutNested) {
+  notification_view()->SetIsNested();
   ui::ScopedAnimationDurationScaleMode zero_duration_scope(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 
@@ -706,6 +706,7 @@ TEST_F(NotificationViewMDTest, DisableSlideForcibly) {
 #if defined(OS_CHROMEOS)
 
 TEST_F(NotificationViewMDTest, SlideOutPinned) {
+  notification_view()->SetIsNested();
   ui::ScopedAnimationDurationScaleMode zero_duration_scope(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 
@@ -722,6 +723,7 @@ TEST_F(NotificationViewMDTest, SlideOutPinned) {
 }
 
 TEST_F(NotificationViewMDTest, Pinned) {
+  notification_view()->SetIsNested();
   std::unique_ptr<Notification> notification = CreateSimpleNotification();
 
   // Visible at the initial state.

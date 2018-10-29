@@ -118,6 +118,7 @@ void MessageView::SetIsNested() {
   is_nested_ = true;
   // Update enability since it might be changed by "is_nested" flag.
   slide_out_controller_.set_slide_mode(CalculateSlideMode());
+  slide_out_controller_.set_update_opacity(false);
 
   SetBorder(views::CreateRoundedRectBorder(
       kNotificationBorderThickness, kNotificationCornerRadius, kBorderColor));
