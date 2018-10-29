@@ -67,6 +67,8 @@ class ASH_EXPORT AutoclickController : public ui::EventHandler,
   void OnActionCompleted();
   void InitClickTimer();
   void UpdateRingWidget(const gfx::Point& mouse_location);
+  void RecordUserAction(mojom::AutoclickEventType event_type) const;
+  bool DragInProgress() const;
 
   // ui::EventHandler overrides:
   void OnMouseEvent(ui::MouseEvent* event) override;

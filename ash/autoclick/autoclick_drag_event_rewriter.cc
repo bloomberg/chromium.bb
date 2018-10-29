@@ -18,9 +18,19 @@ ui::EventRewriteStatus AutoclickDragEventRewriter::RewriteEvent(
     const ui::Event& event,
     std::unique_ptr<ui::Event>* new_event) {
   // Only rewrite mouse moved events to drag events when enabled.
-  if (!enabled_ || event.type() != ui::ET_MOUSE_MOVED)
+  if (!enabled_)
     return ui::EVENT_REWRITE_CONTINUE;
-  // TODO(katie): Should this have an ui::EF_LEFT_MOUSE_BUTTON flag for drag?
+
+  // On touchpads, a SCROLL_FLING_CANCEL can also indicate the start of a drag.
+  // If this rewriter is enabled, a SCROLL_FLING_CANCEL should simply be
+  // ignored.
+  if (event.type() == ui::ET_SCROLL_FLING_CANCEL)
+    return ui::EVENT_REWRITE_DISCARD;
+
+  // Only rewrite move events, but any other type should still go through.
+  if (event.type() != ui::ET_MOUSE_MOVED)
+    return ui::EVENT_REWRITE_CONTINUE;
+
   const ui::MouseEvent* mouse_event = event.AsMouseEvent();
   ui::MouseEvent* rewritten_event = new ui::MouseEvent(
       ui::ET_MOUSE_DRAGGED, mouse_event->location(),

@@ -36,30 +36,6 @@ bool IsModifierKey(const ui::KeyboardCode key_code) {
          key_code == ui::VKEY_LMENU || key_code == ui::VKEY_RMENU;
 }
 
-void RecordUserAction(mojom::AutoclickEventType event_type) {
-  switch (event_type) {
-    case mojom::AutoclickEventType::kLeftClick:
-      base::RecordAction(
-          base::UserMetricsAction("Accessibility.Autoclick.LeftClick"));
-      return;
-    case mojom::AutoclickEventType::kRightClick:
-      base::RecordAction(
-          base::UserMetricsAction("Accessibility.Autoclick.RightClick"));
-      return;
-    case mojom::AutoclickEventType::kDoubleClick:
-      base::RecordAction(
-          base::UserMetricsAction("Accessibility.Autoclick.DoubleClick"));
-      return;
-    case mojom::AutoclickEventType::kDragAndDrop:
-      base::RecordAction(
-          base::UserMetricsAction("Accessibility.Autoclick.DragAndDrop"));
-      return;
-    case mojom::AutoclickEventType::kNoAction:
-      // No action shouldn't have a UserAction, so we return null.
-      return;
-  }
-}
-
 }  // namespace
 
 // static.
@@ -183,8 +159,7 @@ void AutoclickController::DoAutoclickAction() {
 
   bool drag_start = event_type_ == mojom::AutoclickEventType::kDragAndDrop &&
                     !drag_event_rewriter_->IsEnabled();
-  bool drag_stop = event_type_ == mojom::AutoclickEventType::kDragAndDrop &&
-                   drag_event_rewriter_->IsEnabled();
+  bool drag_stop = DragInProgress();
 
   if (event_type_ == mojom::AutoclickEventType::kLeftClick ||
       event_type_ == mojom::AutoclickEventType::kRightClick ||
@@ -248,6 +223,12 @@ void AutoclickController::CancelAutoclickAction() {
     autoclick_timer_->Stop();
   }
   autoclick_ring_handler_->StopGesture();
+
+  // If we are dragging, complete the drag, so as not to leave the UI in a
+  // weird state.
+  if (DragInProgress()) {
+    DoAutoclickAction();
+  }
   drag_event_rewriter_->SetEnabled(false);
   SetTapDownTarget(nullptr);
 }
@@ -275,6 +256,42 @@ void AutoclickController::UpdateRingWidget(const gfx::Point& point_in_screen) {
     CreateAutoclickRingWidget(point_in_screen);
   } else {
     UpdateAutoclickRingWidget(widget_.get(), point_in_screen);
+  }
+}
+
+bool AutoclickController::DragInProgress() const {
+  return event_type_ == mojom::AutoclickEventType::kDragAndDrop &&
+         drag_event_rewriter_->IsEnabled();
+}
+
+void AutoclickController::RecordUserAction(
+    mojom::AutoclickEventType event_type) const {
+  switch (event_type) {
+    case mojom::AutoclickEventType::kLeftClick:
+      base::RecordAction(
+          base::UserMetricsAction("Accessibility.Autoclick.LeftClick"));
+      return;
+    case mojom::AutoclickEventType::kRightClick:
+      base::RecordAction(
+          base::UserMetricsAction("Accessibility.Autoclick.RightClick"));
+      return;
+    case mojom::AutoclickEventType::kDoubleClick:
+      base::RecordAction(
+          base::UserMetricsAction("Accessibility.Autoclick.DoubleClick"));
+      return;
+    case mojom::AutoclickEventType::kDragAndDrop:
+      // Only log drag-and-drop once per drag-and-drop. It takes two "dwells"
+      // to complete a full drag-and-drop cycle, which could lead to double
+      // the events logged.
+      if (DragInProgress())
+        return;
+      LOG(ERROR) << "Recording a drag&drop";
+      base::RecordAction(
+          base::UserMetricsAction("Accessibility.Autoclick.DragAndDrop"));
+      return;
+    case mojom::AutoclickEventType::kNoAction:
+      // No action shouldn't have a UserAction, so we return null.
+      return;
   }
 }
 
