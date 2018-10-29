@@ -65,7 +65,6 @@ class CORE_EXPORT InspectorSession
   void DispatchProtocolMessage(int call_id,
                                const String& method,
                                const String& message);
-  void DispatchProtocolMessage(const String& message);
   void flushProtocolNotifications() override;
 
   void Trace(blink::Visitor*);

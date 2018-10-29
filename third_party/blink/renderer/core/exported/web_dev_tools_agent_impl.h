@@ -72,6 +72,7 @@ class CORE_EXPORT WebDevToolsAgentImpl final
                                                WorkerClient*);
   ~WebDevToolsAgentImpl() override;
   virtual void Trace(blink::Visitor*);
+  DevToolsAgent* GetDevToolsAgent() const { return agent_.Get(); }
 
   void WillBeDestroyed();
   void FlushProtocolNotifications();
@@ -100,6 +101,8 @@ class CORE_EXPORT WebDevToolsAgentImpl final
       mojom::blink::DevToolsSessionStatePtr reattach_session_state) override;
   void DetachSession(InspectorSession*) override;
   void InspectElement(const WebPoint& point_in_local_root) override;
+  void DebuggerTaskStarted() override;
+  void DebuggerTaskFinished() override;
 
   // InspectorPageAgent::Client implementation.
   void PageLayoutInvalidated(bool resized) override;

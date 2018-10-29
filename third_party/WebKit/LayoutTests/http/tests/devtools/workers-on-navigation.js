@@ -11,6 +11,8 @@
 
   var workerTargetId;
   var navigated = false;
+  var workerAddedCallback;
+  var workerAddedPromise = new Promise(f => workerAddedCallback = f);
   var observer = {
     targetAdded(target) {
       if (!TestRunner.isDedicatedWorker(target))
@@ -19,6 +21,8 @@
       workerTargetId = target.id();
       if (navigated)
         TestRunner.completeTest();
+      else
+        workerAddedCallback();
     },
     targetRemoved(target) {
       if (!TestRunner.isDedicatedWorker(target))
@@ -33,7 +37,8 @@
   };
   SDK.targetManager.observeTargets(observer);
   await TestRunner.navigatePromise('resources/workers-on-navigation-resource.html');
-  await TestRunner.evaluateInPagePromise('startWorker()');
+  TestRunner.evaluateInPagePromise('startWorker()');
+  await workerAddedPromise;
   await TestRunner.reloadPagePromise();
   navigated = true;
   await TestRunner.evaluateInPagePromise('startWorker()');

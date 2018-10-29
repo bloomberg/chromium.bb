@@ -40,10 +40,20 @@
   workerEventHandler['Runtime.consoleAPICalled'] = onConsoleAPICalledFromWorker;
 
   var workerId;
+  var workerCreateCallback;
 
   function onWorkerCreated(payload) {
     testRunner.log('Worker.created');
     workerId = payload.params.targetInfo.targetId;
+    if (workerCreateCallback) {
+      var tmp = workerCreateCallback;
+      workerCreateCallback = null;
+      tmp();
+    }
+  }
+
+  function waitForWorkerCreated(next) {
+    workerCreateCallback = next;
   }
 
   var requestId = 0;
@@ -80,13 +90,15 @@
     }
   }
 
+  var lastPageLog = '';
   function logInWorker(message, next) {
+    lastPageLog = '';
     testRunner.log('Logging in worker: ' + message);
     dp.Log.onEntryAdded(onLogEntry);
     session.evaluate('logInWorkerFromPage(\'' + message + '\')');
 
     function onLogEntry(payload) {
-      testRunner.log('Got log message from page: ' + payload.params.entry.text);
+      lastPageLog = payload.params.entry.text;
       dp.Log.offEntryAdded(onLogEntry);
       next();
     }
@@ -128,6 +140,7 @@
     },
 
     function stop0(next) {
+      testRunner.log('Got log message from page: ' + lastPageLog);
       testRunner.log('Stopping worker');
       session.evaluate('stopWorker()').then(next);
     },
@@ -142,8 +155,10 @@
     },
 
     function enable1(next) {
+      testRunner.log('Got log message from page: ' + lastPageLog);
       testRunner.log('Starting autoattach');
-      dp.Target.setAutoAttach({autoAttach: true, waitForDebuggerOnStart: false}).then(next);
+      dp.Target.setAutoAttach({autoAttach: true, waitForDebuggerOnStart: false});
+      waitForWorkerCreated(next);
     },
 
     function consoleEnable1(next) {
@@ -161,10 +176,12 @@
     },
 
     function throw1(next) {
+      testRunner.log('Got log message from page: ' + lastPageLog);
       logInWorker('throw1', next);
     },
 
     function disable1(next) {
+      testRunner.log('Got log message from page: ' + lastPageLog);
       testRunner.log('Stopping autoattach');
       dp.Target.setAutoAttach({autoAttach: false, waitForDebuggerOnStart: false}).then(next);
     },
@@ -174,6 +191,7 @@
     },
 
     function stop1(next) {
+      testRunner.log('Got log message from page: ' + lastPageLog);
       testRunner.log('Stopping worker');
       session.evaluate('stopWorker()').then(next);
     },
@@ -185,7 +203,8 @@
 
     function start2(next) {
       testRunner.log('Starting worker');
-      session.evaluateAsync('startWorker()').then(next);
+      session.evaluateAsync('startWorker()');
+      waitForWorkerCreated(next);
     },
 
     function log4(next) {
@@ -199,6 +218,7 @@
     },
 
     function log5(next) {
+      testRunner.log('Got log message from page: ' + lastPageLog);
       logInWorker('message5', next);
     },
 
@@ -207,13 +227,15 @@
     },
 
     function stop2(next) {
+      testRunner.log('Got log message from page: ' + lastPageLog);
       testRunner.log('Stopping worker');
       session.evaluate('stopWorker()').then(next);
     },
 
     function start3(next) {
       testRunner.log('Starting worker');
-      session.evaluateAsync('startWorker()').then(next);
+      session.evaluateAsync('startWorker()');
+      waitForWorkerCreated(next);
     },
 
     function log6(next) {
@@ -221,6 +243,7 @@
     },
 
     function stop3(next) {
+      testRunner.log('Got log message from page: ' + lastPageLog);
       testRunner.log('Stopping worker');
       session.evaluate('stopWorker()').then(next);
     },

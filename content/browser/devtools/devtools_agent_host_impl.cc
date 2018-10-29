@@ -40,6 +40,7 @@ base::LazyInstance<base::ObserverList<DevToolsAgentHostObserver>::Unchecked>::
 
 const char DevToolsAgentHost::kTypePage[] = "page";
 const char DevToolsAgentHost::kTypeFrame[] = "iframe";
+const char DevToolsAgentHost::kTypeDedicatedWorker[] = "worker";
 const char DevToolsAgentHost::kTypeSharedWorker[] = "shared_worker";
 const char DevToolsAgentHost::kTypeServiceWorker[] = "service_worker";
 const char DevToolsAgentHost::kTypeBrowser[] = "browser";
@@ -73,6 +74,8 @@ DevToolsAgentHost::List DevToolsAgentHost::GetOrCreateAll() {
   for (const auto& host : service_list)
     result.push_back(host);
 
+  // TODO(dgozman): we should add dedicated workers here, but clients are not
+  // ready.
   RenderFrameDevToolsAgentHost::AddAllAgentHosts(&result);
 
 #if DCHECK_IS_ON()

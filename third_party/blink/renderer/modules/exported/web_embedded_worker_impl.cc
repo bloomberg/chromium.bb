@@ -55,7 +55,6 @@
 #include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
 #include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
-#include "third_party/blink/renderer/core/workers/worker_inspector_proxy.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_client.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_client.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_proxy.h"
@@ -122,7 +121,6 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
         interface_provider_info)
     : worker_context_client_(std::move(client)),
       content_settings_client_(std::move(content_settings_client)),
-      worker_inspector_proxy_(WorkerInspectorProxy::Create()),
       pause_after_download_state_(kDontPauseAfterDownload),
       waiting_for_debugger_state_(kNotWaitingForDebugger),
       cache_storage_info_(std::move(cache_storage_info)),
@@ -230,7 +228,8 @@ void WebEmbeddedWorkerImpl::TerminateWorkerContext() {
     return;
   }
   worker_thread_->Terminate();
-  worker_inspector_proxy_->WorkerThreadTerminated();
+  if (DevToolsAgent* agent = DevToolsAgent::From(shadow_page_->GetDocument()))
+    agent->ChildWorkerThreadTerminated(worker_thread_.get());
 }
 
 void WebEmbeddedWorkerImpl::ResumeAfterDownload() {
@@ -277,11 +276,6 @@ void WebEmbeddedWorkerImpl::BindDevToolsAgent(
           mojom::blink::DevToolsAgentHost::Version_),
       mojom::blink::DevToolsAgentAssociatedRequest(
           std::move(devtools_agent_request)));
-}
-
-void WebEmbeddedWorkerImpl::PostMessageToPageInspector(int session_id,
-                                                       const String& message) {
-  worker_inspector_proxy_->DispatchMessageFromWorker(session_id, message);
 }
 
 std::unique_ptr<WebApplicationCacheHost>
@@ -460,14 +454,10 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   // We have a dummy document here for loading but it doesn't really represent
   // the document/frame of associated document(s) for this worker. Here we
   // populate the task runners with default task runners of the main thread.
-  worker_thread_->Start(
-      std::move(global_scope_creation_params),
-      WorkerBackingThreadStartupData::CreateDefault(),
-      worker_inspector_proxy_->ShouldPauseOnWorkerStart(document),
-      ParentExecutionContextTaskRunners::Create());
-
-  worker_inspector_proxy_->WorkerThreadCreated(document, worker_thread_.get(),
-                                               worker_start_data_.script_url);
+  worker_thread_->Start(std::move(global_scope_creation_params),
+                        WorkerBackingThreadStartupData::CreateDefault(),
+                        DevToolsAgent::From(document),
+                        ParentExecutionContextTaskRunners::Create());
 
   // > Switching on job’s worker type, run these substeps with the following
   // > options:

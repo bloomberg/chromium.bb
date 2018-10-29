@@ -79,7 +79,8 @@ bool BrowserDevToolsAgentHost::AttachSession(DevToolsSession* session,
   }
   session->SetBrowserOnly(true);
   session->AddHandler(std::make_unique<protocol::TargetHandler>(
-      protocol::TargetHandler::AccessMode::kBrowser, GetId(), registry));
+      protocol::TargetHandler::AccessMode::kBrowser, GetId(),
+      GetRendererChannel(), registry));
   if (only_discovery_)
     return true;
 

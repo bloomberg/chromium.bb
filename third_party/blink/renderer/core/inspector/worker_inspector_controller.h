@@ -31,17 +31,18 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_WORKER_INSPECTOR_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_WORKER_INSPECTOR_CONTROLLER_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/unguessable_token.h"
-#include "third_party/blink/renderer/core/inspector/inspector_session.h"
+#include "third_party/blink/renderer/core/inspector/devtools_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
@@ -52,34 +53,28 @@ class WorkerThreadDebugger;
 class WorkerInspectorController final
     : public GarbageCollectedFinalized<WorkerInspectorController>,
       public TraceEvent::EnabledStateObserver,
-      public InspectorSession::Client,
+      public DevToolsAgent::Client,
       private Thread::TaskObserver {
  public:
-  static WorkerInspectorController* Create(WorkerThread*);
+  static WorkerInspectorController* Create(
+      WorkerThread*,
+      scoped_refptr<InspectorTaskRunner>,
+      mojom::blink::DevToolsAgentRequest,
+      mojom::blink::DevToolsAgentHostPtrInfo);
   ~WorkerInspectorController() override;
   void Trace(blink::Visitor*);
 
   CoreProbeSink* GetProbeSink() const { return probe_sink_.Get(); }
-
-  void ConnectFrontend(int session_id);
-  void DisconnectFrontend(int session_id);
-  void DispatchMessageFromFrontend(int session_id, const String& message);
+  DevToolsAgent* GetDevToolsAgent() const { return agent_.Get(); }
   void Dispose();
   void FlushProtocolNotifications();
 
  private:
-  WorkerInspectorController(WorkerThread*, WorkerThreadDebugger*);
-
-  // InspectorSession::Client implementation.
-  void SendProtocolResponse(
-      int session_id,
-      int call_id,
-      const String& response,
-      mojom::blink::DevToolsSessionStatePtr updates) override;
-  void SendProtocolNotification(
-      int session_id,
-      const String& message,
-      mojom::blink::DevToolsSessionStatePtr updates) override;
+  WorkerInspectorController(WorkerThread*,
+                            WorkerThreadDebugger*,
+                            scoped_refptr<InspectorTaskRunner>,
+                            mojom::blink::DevToolsAgentRequest,
+                            mojom::blink::DevToolsAgentHostPtrInfo);
 
   // Thread::TaskObserver implementation.
   void WillProcessTask(const base::PendingTask&) override;
@@ -91,10 +86,20 @@ class WorkerInspectorController final
 
   void EmitTraceEvent();
 
+  // DevToolsAgent::Client implementation.
+  InspectorSession* AttachSession(
+      InspectorSession::Client*,
+      mojom::blink::DevToolsSessionStatePtr reattach_session_state) override;
+  void DetachSession(InspectorSession*) override;
+  void InspectElement(const WebPoint&) override;
+  void DebuggerTaskStarted() override;
+  void DebuggerTaskFinished() override;
+
+  Member<DevToolsAgent> agent_;
   WorkerThreadDebugger* debugger_;
   WorkerThread* thread_;
   Member<CoreProbeSink> probe_sink_;
-  HeapHashMap<int, Member<InspectorSession>> sessions_;
+  HeapHashSet<Member<InspectorSession>> sessions_;
 
   // These fields are set up in the constructor and then read
   // on a random thread from EmitTraceEvent().

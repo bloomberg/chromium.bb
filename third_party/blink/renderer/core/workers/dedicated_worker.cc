@@ -312,17 +312,17 @@ void DedicatedWorker::OnFinished(const v8_inspector::V8StackTraceId& stack_id) {
 
 std::unique_ptr<GlobalScopeCreationParams>
 DedicatedWorker::CreateGlobalScopeCreationParams(const KURL& script_url) {
-  base::UnguessableToken devtools_worker_token;
+  base::UnguessableToken parent_devtools_token;
   std::unique_ptr<WorkerSettings> settings;
   if (auto* document = DynamicTo<Document>(GetExecutionContext())) {
-    devtools_worker_token = document->GetFrame()
-                                ? document->GetFrame()->GetDevToolsFrameToken()
-                                : base::UnguessableToken::Create();
+    if (document->GetFrame())
+      parent_devtools_token = document->GetFrame()->GetDevToolsFrameToken();
     settings = std::make_unique<WorkerSettings>(document->GetSettings());
   } else {
     WorkerGlobalScope* worker_global_scope =
         To<WorkerGlobalScope>(GetExecutionContext());
-    devtools_worker_token = worker_global_scope->GetParentDevToolsToken();
+    parent_devtools_token =
+        worker_global_scope->GetThread()->GetDevToolsWorkerToken();
     settings = WorkerSettings::Copy(worker_global_scope->GetWorkerSettings());
   }
 
@@ -336,7 +336,7 @@ DedicatedWorker::CreateGlobalScopeCreationParams(const KURL& script_url) {
       GetExecutionContext()->GetHttpsState(), CreateWorkerClients(),
       GetExecutionContext()->GetSecurityContext().AddressSpace(),
       OriginTrialContext::GetTokens(GetExecutionContext()).get(),
-      devtools_worker_token, std::move(settings), kV8CacheOptionsDefault,
+      parent_devtools_token, std::move(settings), kV8CacheOptionsDefault,
       nullptr /* worklet_module_responses_map */,
       ConnectToWorkerInterfaceProvider(GetExecutionContext(),
                                        SecurityOrigin::Create(script_url)),

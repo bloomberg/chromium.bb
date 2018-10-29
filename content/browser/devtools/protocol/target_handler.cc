@@ -421,11 +421,14 @@ void TargetHandler::Throttle::Clear() {
 
 TargetHandler::TargetHandler(AccessMode access_mode,
                              const std::string& owner_target_id,
+                             DevToolsRendererChannel* renderer_channel,
                              TargetRegistry* target_registry)
     : DevToolsDomainHandler(Target::Metainfo::domainName),
-      auto_attacher_(
-          base::Bind(&TargetHandler::AutoAttach, base::Unretained(this)),
-          base::Bind(&TargetHandler::AutoDetach, base::Unretained(this))),
+      auto_attacher_(base::BindRepeating(&TargetHandler::AutoAttach,
+                                         base::Unretained(this)),
+                     base::BindRepeating(&TargetHandler::AutoDetach,
+                                         base::Unretained(this)),
+                     renderer_channel),
       discover_(false),
       access_mode_(access_mode),
       owner_target_id_(owner_target_id),
@@ -494,17 +497,12 @@ void TargetHandler::AutoDetach(DevToolsAgentHost* host) {
 
 Response TargetHandler::FindSession(Maybe<std::string> session_id,
                                     Maybe<std::string> target_id,
-                                    Session** session,
-                                    bool fall_through) {
+                                    Session** session) {
   *session = nullptr;
-  fall_through &= access_mode_ != AccessMode::kBrowser;
   if (session_id.isJust()) {
     auto it = attached_sessions_.find(session_id.fromJust());
-    if (it == attached_sessions_.end()) {
-      if (fall_through)
-        return Response::FallThrough();
+    if (it == attached_sessions_.end())
       return Response::InvalidParams("No session with given id");
-    }
     *session = it->second.get();
     return Response::OK();
   }
@@ -516,15 +514,10 @@ Response TargetHandler::FindSession(Maybe<std::string> session_id,
         *session = it.second.get();
       }
     }
-    if (!*session) {
-      if (fall_through)
-        return Response::FallThrough();
+    if (!*session)
       return Response::InvalidParams("No session for given target id");
-    }
     return Response::OK();
   }
-  if (fall_through)
-    return Response::FallThrough();
   return Response::InvalidParams("Session id must be specified");
 }
 
@@ -556,8 +549,7 @@ Response TargetHandler::SetAutoAttach(bool auto_attach,
   auto_attacher_.SetAutoAttach(auto_attach, wait_for_debugger_on_start);
   if (!auto_attacher_.ShouldThrottleFramesNavigation())
     ClearThrottles();
-  return access_mode_ == AccessMode::kBrowser ? Response::OK()
-                                              : Response::FallThrough();
+  return Response::OK();
 }
 
 Response TargetHandler::SetRemoteLocations(
@@ -600,7 +592,7 @@ Response TargetHandler::DetachFromTarget(Maybe<std::string> session_id,
     return Response::Error(kNotAllowedError);
   Session* session = nullptr;
   Response response =
-      FindSession(std::move(session_id), std::move(target_id), &session, false);
+      FindSession(std::move(session_id), std::move(target_id), &session);
   if (!response.isSuccess())
     return response;
   session->Detach(false);
@@ -612,7 +604,7 @@ Response TargetHandler::SendMessageToTarget(const std::string& message,
                                             Maybe<std::string> target_id) {
   Session* session = nullptr;
   Response response =
-      FindSession(std::move(session_id), std::move(target_id), &session, true);
+      FindSession(std::move(session_id), std::move(target_id), &session);
   if (!response.isSuccess())
     return response;
   if (session->flatten_protocol_) {

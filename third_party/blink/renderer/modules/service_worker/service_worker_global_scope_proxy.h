@@ -151,7 +151,6 @@ class ServiceWorkerGlobalScopeProxy final
                             MessageLevel,
                             const String& message,
                             SourceLocation*) override;
-  void PostMessageToPageInspector(int session_id, const String&) override;
   void DidCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) override;
   void DidInitializeWorkerContext() override;
   void DidLoadInstalledScript() override;

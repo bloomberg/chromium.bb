@@ -60,7 +60,6 @@
 #include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
 #include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
-#include "third_party/blink/renderer/core/workers/worker_inspector_proxy.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -75,8 +74,7 @@
 namespace blink {
 
 WebSharedWorkerImpl::WebSharedWorkerImpl(WebSharedWorkerClient* client)
-    : worker_inspector_proxy_(WorkerInspectorProxy::Create()),
-      client_(client),
+    : client_(client),
       creation_address_space_(mojom::IPAddressSpace::kPublic),
       parent_execution_context_task_runners_(
           ParentExecutionContextTaskRunners::Create()),
@@ -105,9 +103,11 @@ void WebSharedWorkerImpl::TerminateWorkerThread() {
     // |this| is deleted at this point.
     return;
   }
-  if (worker_thread_)
+  if (worker_thread_) {
     worker_thread_->Terminate();
-  worker_inspector_proxy_->WorkerThreadTerminated();
+    if (DevToolsAgent* agent = DevToolsAgent::From(shadow_page_->GetDocument()))
+      agent->ChildWorkerThreadTerminated(worker_thread_.get());
+  }
 }
 
 std::unique_ptr<WebApplicationCacheHost>
@@ -158,12 +158,6 @@ const base::UnguessableToken& WebSharedWorkerImpl::GetDevToolsWorkerToken() {
 void WebSharedWorkerImpl::CountFeature(WebFeature feature) {
   DCHECK(IsMainThread());
   client_->CountFeature(feature);
-}
-
-void WebSharedWorkerImpl::PostMessageToPageInspector(int session_id,
-                                                     const String& message) {
-  DCHECK(IsMainThread());
-  worker_inspector_proxy_->DispatchMessageFromWorker(session_id, message);
 }
 
 void WebSharedWorkerImpl::DidCloseWorkerGlobalScope() {
@@ -356,12 +350,9 @@ void WebSharedWorkerImpl::ContinueOnScriptLoaderFinished() {
   thread_startup_data.atomics_wait_mode =
       WorkerBackingThreadStartupData::AtomicsWaitMode::kAllow;
 
-  GetWorkerThread()->Start(
-      std::move(global_scope_creation_params), thread_startup_data,
-      worker_inspector_proxy_->ShouldPauseOnWorkerStart(document),
-      parent_execution_context_task_runners_);
-  worker_inspector_proxy_->WorkerThreadCreated(document, GetWorkerThread(),
-                                               script_response_url);
+  GetWorkerThread()->Start(std::move(global_scope_creation_params),
+                           thread_startup_data, DevToolsAgent::From(document),
+                           parent_execution_context_task_runners_);
   // TODO(nhiroki): Support module workers (https://crbug.com/680046).
   // Shared worker is origin-bound, so use kSharableCrossOrigin.
   GetWorkerThread()->EvaluateClassicScript(

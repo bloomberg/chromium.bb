@@ -627,19 +627,6 @@ void ServiceWorkerGlobalScopeProxy::ReportConsoleMessage(
                                 location->Url());
 }
 
-void ServiceWorkerGlobalScopeProxy::PostMessageToPageInspector(
-    int session_id,
-    const String& message) {
-  DCHECK(embedded_worker_);
-  PostCrossThreadTask(
-      *parent_execution_context_task_runners_->Get(
-          TaskType::kInternalInspector),
-      FROM_HERE,
-      CrossThreadBind(&WebEmbeddedWorkerImpl::PostMessageToPageInspector,
-                      CrossThreadUnretained(embedded_worker_), session_id,
-                      message));
-}
-
 void ServiceWorkerGlobalScopeProxy::DidCreateWorkerGlobalScope(
     WorkerOrWorkletGlobalScope* worker_global_scope) {
   DCHECK(!worker_global_scope_);

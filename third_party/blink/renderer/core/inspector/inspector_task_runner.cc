@@ -122,7 +122,6 @@ void InspectorTaskRunner::PerformSingleTaskDontWait() {
 
 void InspectorTaskRunner::V8InterruptCallback(v8::Isolate*, void* data) {
   InspectorTaskRunner* runner = static_cast<InspectorTaskRunner*>(data);
-  DCHECK(runner->isolate_task_runner_->BelongsToCurrentThread());
   if (runner->ignore_interrupts_)
     return;
   while (true) {

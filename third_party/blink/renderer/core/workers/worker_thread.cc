@@ -107,19 +107,6 @@ class WorkerThread::RefCountedWaitableEvent
   DISALLOW_COPY_AND_ASSIGN(RefCountedWaitableEvent);
 };
 
-WorkerThread::ScopedDebuggerTask::ScopedDebuggerTask(WorkerThread* thread)
-    : thread_(thread) {
-  MutexLocker lock(thread_->mutex_);
-  DCHECK(thread_->IsCurrentThread());
-  thread_->debugger_task_counter_++;
-}
-
-WorkerThread::ScopedDebuggerTask::~ScopedDebuggerTask() {
-  MutexLocker lock(thread_->mutex_);
-  DCHECK(thread_->IsCurrentThread());
-  thread_->debugger_task_counter_--;
-}
-
 WorkerThread::~WorkerThread() {
   MutexLocker lock(ThreadSetMutex());
   DCHECK(WorkerThreads().Contains(this));
@@ -136,7 +123,7 @@ WorkerThread::~WorkerThread() {
 void WorkerThread::Start(
     std::unique_ptr<GlobalScopeCreationParams> global_scope_creation_params,
     const base::Optional<WorkerBackingThreadStartupData>& thread_startup_data,
-    WorkerInspectorProxy::PauseOnWorkerStart pause_on_start,
+    DevToolsAgent* devtools_agent,
     ParentExecutionContextTaskRunners* parent_execution_context_task_runners) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   DCHECK(!parent_execution_context_task_runners_);
@@ -156,12 +143,24 @@ void WorkerThread::Start(
   inspector_task_runner_ =
       InspectorTaskRunner::Create(GetTaskRunner(TaskType::kInternalInspector));
 
+  bool wait_for_debugger = false;
+  mojom::blink::DevToolsAgentRequest devtools_agent_request;
+  mojom::blink::DevToolsAgentHostPtrInfo devtools_agent_host_ptr_info;
+  if (devtools_agent) {
+    devtools_agent->ChildWorkerThreadCreated(
+        this, global_scope_creation_params->script_url.Copy(),
+        devtools_agent_request, devtools_agent_host_ptr_info,
+        wait_for_debugger);
+  }
+
   GetWorkerBackingThread().BackingThread().PostTask(
       FROM_HERE,
       CrossThreadBind(&WorkerThread::InitializeOnWorkerThread,
                       CrossThreadUnretained(this),
                       WTF::Passed(std::move(global_scope_creation_params)),
-                      thread_startup_data, pause_on_start));
+                      thread_startup_data, wait_for_debugger,
+                      WTF::Passed(std::move(devtools_agent_request)),
+                      WTF::Passed(std::move(devtools_agent_host_ptr_info))));
 }
 
 void WorkerThread::EvaluateClassicScript(
@@ -275,9 +274,16 @@ bool WorkerThread::IsCurrentThread() {
   return GetWorkerBackingThread().BackingThread().IsCurrentThread();
 }
 
-InspectorTaskRunner* WorkerThread::GetInspectorTaskRunner() {
-  DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
-  return inspector_task_runner_.get();
+void WorkerThread::DebuggerTaskStarted() {
+  MutexLocker lock(mutex_);
+  DCHECK(IsCurrentThread());
+  debugger_task_counter_++;
+}
+
+void WorkerThread::DebuggerTaskFinished() {
+  MutexLocker lock(mutex_);
+  DCHECK(IsCurrentThread());
+  debugger_task_counter_--;
 }
 
 WorkerOrWorkletGlobalScope* WorkerThread::GlobalScope() {
@@ -427,7 +433,9 @@ void WorkerThread::InitializeSchedulerOnWorkerThread(
 void WorkerThread::InitializeOnWorkerThread(
     std::unique_ptr<GlobalScopeCreationParams> global_scope_creation_params,
     const base::Optional<WorkerBackingThreadStartupData>& thread_startup_data,
-    WorkerInspectorProxy::PauseOnWorkerStart pause_on_start) {
+    bool wait_for_debugger,
+    mojom::blink::DevToolsAgentRequest devtools_agent_request,
+    mojom::blink::DevToolsAgentHostPtrInfo devtools_agent_host_ptr_info) {
   DCHECK(IsCurrentThread());
   {
     MutexLocker lock(mutex_);
@@ -447,7 +455,10 @@ void WorkerThread::InitializeOnWorkerThread(
     global_scope_ =
         CreateWorkerGlobalScope(std::move(global_scope_creation_params));
     worker_reporting_proxy_.DidCreateWorkerGlobalScope(GlobalScope());
-    worker_inspector_controller_ = WorkerInspectorController::Create(this);
+
+    worker_inspector_controller_ = WorkerInspectorController::Create(
+        this, inspector_task_runner_, std::move(devtools_agent_request),
+        std::move(devtools_agent_host_ptr_info));
 
     // Since context initialization below may fail, we should notify debugger
     // about the new worker thread separately, so that it can resolve it by id
@@ -483,7 +494,7 @@ void WorkerThread::InitializeOnWorkerThread(
   // Otherwise, InspectorTaskRunner might interrupt isolate execution
   // from another thread and try to resume "pause on start" before
   // we even paused.
-  if (pause_on_start == WorkerInspectorProxy::PauseOnWorkerStart::kPause) {
+  if (wait_for_debugger) {
     WorkerThreadDebugger* debugger = WorkerThreadDebugger::From(GetIsolate());
     if (debugger)
       debugger->PauseWorkerOnStart(this);
