@@ -19,6 +19,9 @@
 namespace autofill_assistant {
 class WebController;
 
+// Types of element checks.
+enum ElementCheckType { kExistenceCheck, kVisibilityCheck };
+
 // Helper for checking a set of elements at the same time. It avoids duplicate
 // checks and supports retries.
 //
@@ -27,12 +30,12 @@ class WebController;
 // The simplest way of using a BatchElementChecker is to:
 // - create an instance, using WebController::CreateBatchElementChecker or
 //   ActionDelegate::CreateBatchElementChecker
-// - call AddElementExistenceCheck() and AddFieldValueCheck()
+// - call AddElementCheck() and AddFieldValueCheck()
 // - call Run() with duration set to 0.
 //
 // The result of the checks is reported to the callbacks passed to
-// AddElementExistenceCheck() and AddFieldValueCheck(), then the callback passed
-// to Run() is called, to report the end of the a run.
+// AddElementCheck(kExistenceCheck, ) and AddFieldValueCheck(), then the
+// callback passed to Run() is called, to report the end of the a run.
 //
 // Check with retries:
 //
@@ -46,19 +49,34 @@ class BatchElementChecker {
   explicit BatchElementChecker(WebController* web_controller);
   virtual ~BatchElementChecker();
 
-  // Checks whether the element given by |selectors| exists on the web page.
+  // Callback for AddElementCheck. Argument is true if the check passed.
+  using ElementCheckCallback = base::OnceCallback<void(bool)>;
+
+  // Callback for AddFieldValueCheck. Argument is true is the element exists.
+  // The string contains the field value, or an empty string if accessing the
+  // value failed.
+  using GetFieldValueCallback =
+      base::OnceCallback<void(bool, const std::string&)>;
+
+  // Checks an an element.
   //
-  // New element existence checks cannot be added once Run has been called.
-  void AddElementExistenceCheck(const std::vector<std::string>& selectors,
-                                base::OnceCallback<void(bool)> callback);
+  // kElementCheck checks whether at least one element given by |selectors|
+  // exists on the web page.
+  //
+  // kVisibilityCheck checks whether at least one element given by |selectors|
+  // is visible on the page.
+  //
+  // New element checks cannot be added once Run has been called.
+  void AddElementCheck(ElementCheckType check_type,
+                       const std::vector<std::string>& selectors,
+                       ElementCheckCallback callback);
 
   // Gets the value of |selectors| and return the result through |callback|. The
   // returned value will be the empty string in case of error or empty value.
   //
   // New field checks cannot be added once Run has been called.
-  void AddFieldValueCheck(
-      const std::vector<std::string>& selectors,
-      base::OnceCallback<void(bool, const std::string&)> callback);
+  void AddFieldValueCheck(const std::vector<std::string>& selectors,
+                          GetFieldValueCallback callback);
 
   // Runs the checks until all elements exist or for |duration|, whichever one
   // comes first. Elements found are reported as soon as they're founds.
@@ -78,58 +96,52 @@ class BatchElementChecker {
   bool all_found() { return all_found_; }
 
  private:
-  // Checks to run on a specific element, and the callbacks to report them to.
-  struct ElementCallbacks {
-    ElementCallbacks();
-    ~ElementCallbacks();
-
-    // All the callbacks registered for that element by separate calls to
-    // AddElementExistenceCheck with the same selector.
-    std::vector<base::OnceCallback<void(bool)>> element_exists_callbacks;
-
-    // All the callbacks registered for that field by separate calls to
-    // AddFieldValueCheck with the same selector.
-    std::vector<base::OnceCallback<void(bool, const std::string&)>>
-        get_field_value_callbacks;
-  };
-
-  using ElementCallbackMap =
-      std::map<std::vector<std::string>, ElementCallbacks>;
-
   // Tries running the checks, reporting only successes.
   //
   // Calls |try_done_callback| at the end of the run.
   void Try(base::OnceCallback<void()> try_done_callback);
+
+  void OnTryDone(int64_t remaining_attempts,
+                 base::RepeatingCallback<void()> try_done,
+                 base::OnceCallback<void()> all_done);
 
   // If there are still callbacks not called by a previous call to Try, call
   // them now. When this method returns, all callbacks are guaranteed to have
   // been run.
   void GiveUp();
 
-  void OnTryDone(int64_t remaining_attempts,
-                 base::RepeatingCallback<void()> try_done,
-                 base::OnceCallback<void()> all_done);
-  bool HasMoreChecksToRun();
-  void OnElementExists(ElementCallbackMap::iterator iter, bool exists);
-  void OnGetFieldValue(ElementCallbackMap::iterator iter,
+  void OnElementChecked(std::vector<ElementCheckCallback>* callbacks,
+                        bool exists);
+  void OnGetFieldValue(std::vector<GetFieldValueCallback>* callbacks,
                        bool exists,
                        const std::string& value);
   void CheckTryDone();
-  void RunElementExistsCallbacks(ElementCallbacks* element, bool result);
-  void RunGetFieldValueCallbacks(ElementCallbacks* element,
-                                 bool exists,
-                                 const std::string& value);
+  void RunCallbacks(std::vector<ElementCheckCallback>* callbacks, bool result);
+  void RunCallbacks(std::vector<GetFieldValueCallback>* callbacks,
+                    bool result,
+                    const std::string& value);
+  bool HasMoreChecksToRun();
 
   WebController* const web_controller_;
-  ElementCallbackMap element_callback_map_;
-  int pending_preconditions_to_check_count_;
+
+  // A map of ElementCheck arguments (check_type, selectors) to callbacks that
+  // take the result of the check.
+  std::map<std::pair<ElementCheckType, std::vector<std::string>>,
+           std::vector<ElementCheckCallback>>
+      element_check_callbacks_;
+
+  // A map of GetFieldValue arguments (selectors) to callbacks that take the
+  // field value.
+  std::map<std::vector<std::string>, std::vector<GetFieldValueCallback>>
+      get_field_value_callbacks_;
+  int pending_checks_count_;
   bool all_found_;
   bool stopped_;
 
-  // The callback built for Try(). It is kept around while going through
-  // |element_callback_map_| and called once all selectors in that map have been
-  // looked up once, whether that lookup was successful or not. Also used to
-  // guarantee that only one Try runs at a time.
+  // The callback built for Try(). It is kept around while going through the
+  // maps and called once all selectors in that map have been looked up once,
+  // whether that lookup was successful or not. Also used to guarantee that only
+  // one Try runs at a time.
   base::OnceCallback<void()> try_done_callback_;
 
   base::WeakPtrFactory<BatchElementChecker> weak_ptr_factory_;

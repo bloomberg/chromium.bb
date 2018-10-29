@@ -115,13 +115,18 @@ class WebController {
  protected:
   friend class BatchElementChecker;
 
-  // Check whether at least one element given by |selectors| exists on the web
-  // page. The element must have a valid BoxModel (i.e. it must be visible and
-  // have a size greater than 0).
+  // Checks an element for:
+  //
+  // kExistenceCheck: Checks whether at least one element given by |selectors|
+  // exists on the web page.
+  //
+  // kVisibilityCheck: Checks whether at least on element given by |selectors|
+  // is visible on the web page.
   //
   // Normally done through BatchElementChecker.
-  virtual void ElementExists(const std::vector<std::string>& selectors,
-                             base::OnceCallback<void(bool)> callback);
+  virtual void ElementCheck(ElementCheckType type,
+                            const std::vector<std::string>& selectors,
+                            base::OnceCallback<void(bool)> callback);
 
   // Get the value of |selectors| and return the result through |callback|. The
   // returned value might be false, if the element cannot be found, true and the
@@ -183,10 +188,11 @@ class WebController {
   void OnDispatchReleaseMouseEvent(
       base::OnceCallback<void(bool)> callback,
       std::unique_ptr<input::DispatchMouseEventResult> result);
-  void OnFindElementForExist(base::OnceCallback<void(bool)> callback,
+  void OnFindElementForCheck(ElementCheckType check_type,
+                             base::OnceCallback<void(bool)> callback,
                              std::unique_ptr<FindElementResult> result);
-  void OnGetBoxModelForExist(base::OnceCallback<void(bool)> callback,
-                             std::unique_ptr<dom::GetBoxModelResult> result);
+  void OnGetBoxModelForVisible(base::OnceCallback<void(bool)> callback,
+                               std::unique_ptr<dom::GetBoxModelResult> result);
 
   // Find the element given by |selectors|. If multiple elements match
   // |selectors| and if |strict_mode| is false, return the first one that is

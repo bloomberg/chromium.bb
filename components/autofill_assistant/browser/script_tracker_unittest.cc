@@ -32,11 +32,12 @@ class ScriptTrackerTest : public testing::Test,
                           public ScriptExecutorDelegate {
  public:
   void SetUp() override {
-    ON_CALL(mock_web_controller_, OnElementExists(ElementsAre("exists"), _))
-        .WillByDefault(RunOnceCallback<1>(true));
     ON_CALL(mock_web_controller_,
-            OnElementExists(ElementsAre("does_not_exist"), _))
-        .WillByDefault(RunOnceCallback<1>(false));
+            OnElementCheck(kExistenceCheck, ElementsAre("exists"), _))
+        .WillByDefault(RunOnceCallback<2>(true));
+    ON_CALL(mock_web_controller_,
+            OnElementCheck(kExistenceCheck, ElementsAre("does_not_exist"), _))
+        .WillByDefault(RunOnceCallback<2>(false));
     ON_CALL(mock_web_controller_, GetUrl()).WillByDefault(ReturnRef(url_));
 
     // Scripts run, but have no actions.
@@ -250,8 +251,8 @@ TEST_F(ScriptTrackerTest, CheckScriptsAgainAfterScriptEnd) {
 
 TEST_F(ScriptTrackerTest, CheckScriptsAfterDOMChange) {
   EXPECT_CALL(mock_web_controller_,
-              OnElementExists(ElementsAre("maybe_exists"), _))
-      .WillOnce(RunOnceCallback<1>(false));
+              OnElementCheck(kExistenceCheck, ElementsAre("maybe_exists"), _))
+      .WillOnce(RunOnceCallback<2>(false));
 
   SupportsScriptResponseProto scripts;
   AddScript(&scripts, "script name", "script path", "maybe_exists");
@@ -262,8 +263,8 @@ TEST_F(ScriptTrackerTest, CheckScriptsAfterDOMChange) {
 
   // DOM has changed; OnElementExists now returns true.
   EXPECT_CALL(mock_web_controller_,
-              OnElementExists(ElementsAre("maybe_exists"), _))
-      .WillOnce(RunOnceCallback<1>(true));
+              OnElementCheck(kExistenceCheck, ElementsAre("maybe_exists"), _))
+      .WillOnce(RunOnceCallback<2>(true));
   tracker_.CheckScripts(base::TimeDelta::FromSeconds(0));
 
   // The script can now run
@@ -275,9 +276,10 @@ TEST_F(ScriptTrackerTest, DuplicateCheckCalls) {
   AddScript(&scripts, "runnable name", "runnable path", "exists");
 
   base::OnceCallback<void(bool)> captured_callback;
-  EXPECT_CALL(mock_web_controller_, OnElementExists(ElementsAre("exists"), _))
-      .WillOnce(CaptureOnceCallback<1>(&captured_callback))
-      .WillOnce(RunOnceCallback<1>(false));
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(kExistenceCheck, ElementsAre("exists"), _))
+      .WillOnce(CaptureOnceCallback<2>(&captured_callback))
+      .WillOnce(RunOnceCallback<2>(false));
   SetAndCheckScripts(scripts);
 
   // At this point, since the callback hasn't been run, there's still a check in

@@ -41,12 +41,14 @@ class MockWebController : public WebController {
                void(const std::vector<std::string>& selectors,
                     base::OnceCallback<void(bool)>& callback));
 
-  void ElementExists(const std::vector<std::string>& selectors,
-                     base::OnceCallback<void(bool)> callback) override {
-    OnElementExists(selectors, callback);
+  void ElementCheck(ElementCheckType check_type,
+                    const std::vector<std::string>& selectors,
+                    base::OnceCallback<void(bool)> callback) override {
+    OnElementCheck(check_type, selectors, callback);
   }
-  MOCK_METHOD2(OnElementExists,
-               void(const std::vector<std::string>& selectors,
+  MOCK_METHOD3(OnElementCheck,
+               void(ElementCheckType check_type,
+                    const std::vector<std::string>& selectors,
                     base::OnceCallback<void(bool)>& callback));
 
   void GetFieldValue(

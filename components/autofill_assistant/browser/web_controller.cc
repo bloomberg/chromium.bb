@@ -238,32 +238,39 @@ void WebController::OnDispatchReleaseMouseEvent(
   OnResult(true, std::move(callback));
 }
 
-void WebController::ElementExists(const std::vector<std::string>& selectors,
-                                  base::OnceCallback<void(bool)> callback) {
+void WebController::ElementCheck(ElementCheckType check_type,
+                                 const std::vector<std::string>& selectors,
+                                 base::OnceCallback<void(bool)> callback) {
   DCHECK(!selectors.empty());
-  // We don't use strict_mode because we only check for the existence of an
-  // element and we don't act on it.
-  FindElement(
-      selectors, /* strict_mode= */ false,
-      base::BindOnce(&WebController::OnFindElementForExist,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  // We don't use strict_mode because we only check for the existence of at
+  // least one such element and we don't act on it.
+  FindElement(selectors, /* strict_mode= */ false,
+              base::BindOnce(&WebController::OnFindElementForCheck,
+                             weak_ptr_factory_.GetWeakPtr(), check_type,
+                             std::move(callback)));
 }
 
-void WebController::OnFindElementForExist(
+void WebController::OnFindElementForCheck(
+    ElementCheckType check_type,
     base::OnceCallback<void(bool)> callback,
     std::unique_ptr<FindElementResult> result) {
   if (result->object_id.empty()) {
     OnResult(false, std::move(callback));
     return;
   }
+  if (check_type == kExistenceCheck) {
+    OnResult(true, std::move(callback));
+    return;
+  }
+  DCHECK_EQ(check_type, kVisibilityCheck);
 
   devtools_client_->GetDOM()->GetBoxModel(
       dom::GetBoxModelParams::Builder().SetObjectId(result->object_id).Build(),
-      base::BindOnce(&WebController::OnGetBoxModelForExist,
+      base::BindOnce(&WebController::OnGetBoxModelForVisible,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void WebController::OnGetBoxModelForExist(
+void WebController::OnGetBoxModelForVisible(
     base::OnceCallback<void(bool)> callback,
     std::unique_ptr<dom::GetBoxModelResult> result) {
   OnResult(result && result->GetModel() && result->GetModel()->GetContent(),

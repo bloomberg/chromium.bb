@@ -98,7 +98,8 @@ void ScriptPrecondition::Check(
     base::OnceCallback<void(bool)> callback =
         base::BindOnce(&ScriptPrecondition::OnCheckElementExists,
                        weak_ptr_factory_.GetWeakPtr());
-    batch_checks->AddElementExistenceCheck(selector, std::move(callback));
+    batch_checks->AddElementCheck(kExistenceCheck, selector,
+                                  std::move(callback));
   }
   for (const auto& value_match : form_value_match_) {
     DCHECK(!value_match.element().selectors().empty());
