@@ -35,16 +35,20 @@
 
 namespace blink {
 
-OffscreenCanvas::OffscreenCanvas(const IntSize& size) : size_(size) {}
+OffscreenCanvas::OffscreenCanvas(const IntSize& size) : size_(size) {
+  UpdateMemoryUsage();
+}
 
 OffscreenCanvas* OffscreenCanvas::Create(unsigned width, unsigned height) {
   UMA_HISTOGRAM_BOOLEAN("Blink.OffscreenCanvas.NewOffscreenCanvas", true);
-  CanvasRenderingContextHost::RecordCanvasSizeToUMA(width, height, true);
   return new OffscreenCanvas(
       IntSize(clampTo<int>(width), clampTo<int>(height)));
 }
 
-OffscreenCanvas::~OffscreenCanvas() = default;
+OffscreenCanvas::~OffscreenCanvas() {
+  v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
+      -memory_usage_);
+}
 
 void OffscreenCanvas::Commit(scoped_refptr<CanvasResource> canvas_resource,
                              const SkIRect& damage_rect) {
@@ -111,8 +115,7 @@ void OffscreenCanvas::SetSize(const IntSize& size) {
     }
   }
   if (size != size_) {
-    CanvasRenderingContextHost::RecordCanvasSizeToUMA(size.Width(),
-                                                      size.Height(), true);
+    UpdateMemoryUsage();
   }
   size_ = size;
   if (frame_dispatcher_)
@@ -149,12 +152,14 @@ ImageBitmap* OffscreenCanvas::transferToImageBitmap(
                                       "OffscreenCanvas with no context");
     return nullptr;
   }
+
   ImageBitmap* image = context_->TransferToImageBitmap(script_state);
   if (!image) {
     // Undocumented exception (not in spec)
     exception_state.ThrowDOMException(DOMExceptionCode::kUnknownError,
                                       "Out of memory");
   }
+
   return image;
 }
 
@@ -415,6 +420,23 @@ FontSelector* OffscreenCanvas::GetFontSelector() {
     return document->GetStyleEngine().GetFontSelector();
   }
   return To<WorkerGlobalScope>(GetExecutionContext())->GetFontSelector();
+}
+
+void OffscreenCanvas::UpdateMemoryUsage() {
+  CanvasRenderingContextHost::RecordCanvasSizeToUMA(
+      Size().Width(), Size().Height(), true /* OffscreenCanvas */);
+
+  int bytes_per_pixel = ColorParams().BytesPerPixel();
+
+  base::CheckedNumeric<int32_t> memory_usage_checked = bytes_per_pixel;
+  memory_usage_checked *= Size().Width();
+  memory_usage_checked *= Size().Height();
+  int32_t new_memory_usage =
+      memory_usage_checked.ValueOrDefault(std::numeric_limits<int32_t>::max());
+
+  v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
+      new_memory_usage - memory_usage_);
+  memory_usage_ = new_memory_usage;
 }
 
 void OffscreenCanvas::Trace(blink::Visitor* visitor) {
