@@ -51,7 +51,6 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/toast/toast_data.h"
 #include "ash/system/toast/toast_manager.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/touch/touch_observer_hud.h"
@@ -426,61 +425,27 @@ void HandleTakeScreenshot() {
   Shell::Get()->screenshot_controller()->TakeScreenshotForAllRootWindows();
 }
 
-bool CanHandleToggleMessageCenterBubble() {
-  if (features::IsSystemTrayUnifiedEnabled())
-    return true;
+void HandleToggleSystemTrayBubbleInternal() {
   aura::Window* target_root = Shell::GetRootWindowForNewWindows();
-  StatusAreaWidget* status_area_widget =
-      Shelf::ForWindow(target_root)->shelf_widget()->status_area_widget();
-  return status_area_widget &&
-         status_area_widget->notification_tray()->visible();
+  UnifiedSystemTray* tray = RootWindowController::ForWindow(target_root)
+                                ->GetStatusAreaWidget()
+                                ->unified_system_tray();
+  if (tray->IsBubbleShown()) {
+    tray->CloseBubble();
+  } else {
+    tray->ShowBubble(false /* show_by_click */);
+    tray->ActivateBubble();
+  }
 }
 
 void HandleToggleSystemTrayBubble() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_System_Tray_Bubble"));
-  aura::Window* target_root = Shell::GetRootWindowForNewWindows();
-  if (features::IsSystemTrayUnifiedEnabled()) {
-    UnifiedSystemTray* tray = RootWindowController::ForWindow(target_root)
-                                  ->GetStatusAreaWidget()
-                                  ->unified_system_tray();
-    if (tray->IsBubbleShown()) {
-      tray->CloseBubble();
-    } else {
-      tray->ShowBubble(false /* show_by_click */);
-      tray->ActivateBubble();
-    }
-  } else {
-    SystemTray* tray =
-        RootWindowController::ForWindow(target_root)->GetSystemTray();
-    if (tray->HasSystemBubble()) {
-      tray->CloseBubble();
-    } else {
-      tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
-      tray->ActivateBubble();
-    }
-  }
+  HandleToggleSystemTrayBubbleInternal();
 }
 
 void HandleToggleMessageCenterBubble() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Message_Center_Bubble"));
-  if (features::IsSystemTrayUnifiedEnabled()) {
-    HandleToggleSystemTrayBubble();
-    return;
-  }
-  aura::Window* target_root = Shell::GetRootWindowForNewWindows();
-  StatusAreaWidget* status_area_widget =
-      Shelf::ForWindow(target_root)->shelf_widget()->status_area_widget();
-  if (!status_area_widget)
-    return;
-  NotificationTray* notification_tray = status_area_widget->notification_tray();
-  if (!notification_tray->visible())
-    return;
-  if (notification_tray->IsMessageCenterVisible()) {
-    notification_tray->CloseBubble();
-  } else {
-    notification_tray->ShowBubble(false /* show_by_click */);
-    notification_tray->ActivateBubble();
-  }
+  HandleToggleSystemTrayBubbleInternal();
 }
 
 void HandleShowTaskManager() {
@@ -1350,7 +1315,7 @@ bool AcceleratorController::CanPerformAction(
     case TOGGLE_FULLSCREEN_MAGNIFIER:
       return true;
     case TOGGLE_MESSAGE_CENTER_BUBBLE:
-      return CanHandleToggleMessageCenterBubble();
+      return true;
     case TOGGLE_MIRROR_MODE:
       return true;
     case TOUCH_HUD_CLEAR:

@@ -21,7 +21,6 @@
 #include "ash/lock_screen_action/lock_screen_action_background_controller.h"
 #include "ash/login_status.h"
 #include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -373,11 +372,7 @@ SystemTray* RootWindowController::GetSystemTray() {
 }
 
 bool RootWindowController::IsSystemTrayVisible() {
-  TrayBackgroundView* tray = nullptr;
-  if (features::IsSystemTrayUnifiedEnabled())
-    tray = GetStatusAreaWidget()->unified_system_tray();
-  else
-    tray = GetSystemTray();
+  TrayBackgroundView* tray = GetStatusAreaWidget()->unified_system_tray();
   return tray && tray->GetWidget()->IsVisible() && tray->visible();
 }
 

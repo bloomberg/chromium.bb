@@ -12,7 +12,6 @@
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/focus_cycler.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -910,15 +909,9 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
   EXPECT_EQ(display_bottom, display.work_area().bottom());
 
   // Tap the system tray when shelf is shown should open the system tray menu.
-  if (features::IsSystemTrayUnifiedEnabled()) {
-    generator->GestureTapAt(
-        GetPrimaryUnifiedSystemTray()->GetBoundsInScreen().CenterPoint());
-    EXPECT_TRUE(GetPrimaryUnifiedSystemTray()->IsBubbleShown());
-  } else {
-    generator->GestureTapAt(
-        GetPrimarySystemTray()->GetBoundsInScreen().CenterPoint());
-    EXPECT_TRUE(GetPrimarySystemTray()->HasSystemBubble());
-  }
+  generator->GestureTapAt(
+      GetPrimaryUnifiedSystemTray()->GetBoundsInScreen().CenterPoint());
+  EXPECT_TRUE(GetPrimaryUnifiedSystemTray()->IsBubbleShown());
 
   // Move mouse back up and click to dismiss the opened system tray menu.
   generator->MoveMouseTo(0, 0);
@@ -2126,10 +2119,7 @@ TEST_F(ShelfLayoutManagerTest, ShelfFlickerOnTrayActivation) {
       TOGGLE_SYSTEM_TRAY_BUBBLE);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
-  if (features::IsSystemTrayUnifiedEnabled())
-    EXPECT_TRUE(GetPrimaryUnifiedSystemTray()->IsBubbleShown());
-  else
-    EXPECT_TRUE(GetPrimarySystemTray()->HasSystemBubble());
+  EXPECT_TRUE(GetPrimaryUnifiedSystemTray()->IsBubbleShown());
 }
 
 TEST_F(ShelfLayoutManagerTest, WorkAreaChangeWorkspace) {

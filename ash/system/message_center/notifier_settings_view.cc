@@ -10,7 +10,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -92,8 +91,6 @@ constexpr gfx::Insets kHeaderViewPadding(4, 0);
 constexpr gfx::Insets kQuietModeViewPadding(0, 18, 0, 0);
 constexpr gfx::Insets kQuietModeLabelPadding(16, 0, 15, 0);
 constexpr gfx::Insets kQuietModeTogglePadding(0, 14);
-constexpr SkColor kTopLabelColor = gfx::kGoogleBlue500;
-constexpr SkColor kLabelColor = SkColorSetA(SK_ColorBLACK, 0xDE);
 constexpr SkColor kTopBorderColor = SkColorSetA(SK_ColorBLACK, 0x1F);
 constexpr SkColor kDisabledNotifierFilterColor =
     SkColorSetA(SK_ColorWHITE, 0xB8);
@@ -253,9 +250,7 @@ class ScrollContentsView : public views::View {
 class EmptyNotifierView : public views::View {
  public:
   EmptyNotifierView() {
-    SkColor color = features::IsSystemTrayUnifiedEnabled()
-                        ? kUnifiedMenuTextColor
-                        : message_center_style::kEmptyViewColor;
+    SkColor color = kUnifiedMenuTextColor;
     auto layout = std::make_unique<views::BoxLayout>(
         views::BoxLayout::kVertical, gfx::Insets(), 0);
     layout->set_main_axis_alignment(
@@ -302,9 +297,7 @@ NotifierSettingsView::NotifierButton::NotifierButton(
       name_view_(new views::Label(notifier_ui_data.name)),
       checkbox_(new views::Checkbox(base::string16(), this /* listener */)) {
   name_view_->SetAutoColorReadabilityEnabled(false);
-  name_view_->SetEnabledColor(features::IsSystemTrayUnifiedEnabled()
-                                  ? kUnifiedMenuTextColor
-                                  : kLabelColor);
+  name_view_->SetEnabledColor(kUnifiedMenuTextColor);
   name_view_->SetSubpixelRenderingEnabled(false);
   // "Roboto-Regular, 13sp" is specified in the mock.
   name_view_->SetFontList(
@@ -328,9 +321,7 @@ void NotifierSettingsView::NotifierButton::UpdateIconImage(
     const gfx::ImageSkia& icon) {
   if (icon.isNull()) {
     icon_view_->SetImage(gfx::CreateVectorIcon(
-        message_center::kProductIcon, kEntryIconSize,
-        features::IsSystemTrayUnifiedEnabled() ? kUnifiedMenuIconColor
-                                               : gfx::kChromeIconGrey));
+        message_center::kProductIcon, kEntryIconSize, kUnifiedMenuIconColor));
   } else {
     icon_view_->SetImage(icon);
     icon_view_->SetImageSize(gfx::Size(kEntryIconSize, kEntryIconSize));
@@ -394,9 +385,7 @@ void NotifierSettingsView::NotifierButton::GridChanged() {
   if (!enabled()) {
     views::ImageView* policy_enforced_icon = new views::ImageView();
     policy_enforced_icon->SetImage(gfx::CreateVectorIcon(
-        kSystemMenuBusinessIcon, kEntryIconSize,
-        features::IsSystemTrayUnifiedEnabled() ? kUnifiedMenuIconColor
-                                               : gfx::kChromeIconGrey));
+        kSystemMenuBusinessIcon, kEntryIconSize, kUnifiedMenuIconColor));
     cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0, GridLayout::FIXED,
                   kEntryIconSize, 0);
     layout->AddView(policy_enforced_icon);
@@ -443,9 +432,7 @@ NotifierSettingsView::NotifierSettingsView()
   quiet_mode_label->SetFontList(
       gfx::FontList().DeriveWithSizeDelta(kLabelFontSizeDelta));
   quiet_mode_label->SetAutoColorReadabilityEnabled(false);
-  quiet_mode_label->SetEnabledColor(features::IsSystemTrayUnifiedEnabled()
-                                        ? kUnifiedMenuTextColor
-                                        : kLabelColor);
+  quiet_mode_label->SetEnabledColor(kUnifiedMenuTextColor);
   quiet_mode_label->SetSubpixelRenderingEnabled(false);
   quiet_mode_label->SetBorder(views::CreateEmptyBorder(kQuietModeLabelPadding));
   quiet_mode_view->AddChildView(quiet_mode_label);
@@ -468,9 +455,7 @@ NotifierSettingsView::NotifierSettingsView()
   top_label_->SetFontList(gfx::FontList().Derive(
       kLabelFontSizeDelta, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
   top_label_->SetAutoColorReadabilityEnabled(false);
-  top_label_->SetEnabledColor(features::IsSystemTrayUnifiedEnabled()
-                                  ? kUnifiedMenuTextColor
-                                  : kTopLabelColor);
+  top_label_->SetEnabledColor(kUnifiedMenuTextColor);
   top_label_->SetSubpixelRenderingEnabled(false);
   top_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   top_label_->SetMultiLine(true);
@@ -505,15 +490,13 @@ bool NotifierSettingsView::IsScrollable() {
 void NotifierSettingsView::SetQuietModeState(bool is_quiet_mode) {
   quiet_mode_toggle_->SetIsOn(is_quiet_mode, false /* animate */);
   if (is_quiet_mode) {
-    quiet_mode_icon_->SetImage(gfx::CreateVectorIcon(
-        kNotificationCenterDoNotDisturbOnIcon, kMenuIconSize,
-        features::IsSystemTrayUnifiedEnabled() ? kUnifiedMenuIconColor
-                                               : kMenuIconColor));
+    quiet_mode_icon_->SetImage(
+        gfx::CreateVectorIcon(kNotificationCenterDoNotDisturbOnIcon,
+                              kMenuIconSize, kUnifiedMenuIconColor));
   } else {
-    quiet_mode_icon_->SetImage(gfx::CreateVectorIcon(
-        kNotificationCenterDoNotDisturbOffIcon, kMenuIconSize,
-        features::IsSystemTrayUnifiedEnabled() ? kUnifiedMenuIconColorDisabled
-                                               : kMenuIconColorDisabled));
+    quiet_mode_icon_->SetImage(
+        gfx::CreateVectorIcon(kNotificationCenterDoNotDisturbOffIcon,
+                              kMenuIconSize, kUnifiedMenuIconColorDisabled));
   }
 }
 

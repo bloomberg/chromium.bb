@@ -4,7 +4,6 @@
 
 #include "ash/system/tray/hover_highlight_view.h"
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
@@ -21,7 +20,7 @@
 namespace ash {
 
 HoverHighlightView::HoverHighlightView(ViewClickListener* listener)
-    : HoverHighlightView(listener, features::IsSystemTrayUnifiedEnabled()) {}
+    : HoverHighlightView(listener, true) {}
 
 HoverHighlightView::HoverHighlightView(ViewClickListener* listener,
                                        bool use_unified_theme)
