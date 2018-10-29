@@ -29,6 +29,7 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/reflector.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"

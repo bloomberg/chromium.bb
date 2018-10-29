@@ -73,7 +73,8 @@ enum class KeyboardControllerState {
 class KEYBOARD_EXPORT KeyboardController
     : public ui::InputMethodObserver,
       public aura::WindowObserver,
-      public ui::InputMethodKeyboardController {
+      public ui::InputMethodKeyboardController,
+      public ContainerBehavior::Delegate {
  public:
   KeyboardController();
   ~KeyboardController() override;
@@ -116,9 +117,6 @@ class KEYBOARD_EXPORT KeyboardController
   // null if the keyboard has not been attached to any root window.
   aura::Window* GetRootWindow();
 
-  // Moves an already loaded keyboard.
-  void MoveKeyboard(const gfx::Rect& new_bounds);
-
   // Sets the bounds of the keyboard window.
   void SetKeyboardWindowBounds(const gfx::Rect& new_bounds);
 
@@ -153,13 +151,6 @@ class KEYBOARD_EXPORT KeyboardController
 
   // Returns true if keyboard overscroll is enabled.
   bool IsKeyboardOverscrollEnabled() const;
-
-  void set_keyboard_locked(bool lock) { keyboard_locked_ = lock; }
-
-  bool keyboard_locked() const { return keyboard_locked_; }
-
-  void MoveToDisplayWithTransition(display::Display display,
-                                   gfx::Rect new_bounds_in_local);
 
   // Hide the keyboard because the user has chosen to specifically hide the
   // keyboard, such as pressing the dismiss button.
@@ -251,7 +242,7 @@ class KEYBOARD_EXPORT KeyboardController
   // Sets floating keyboard draggable rect.
   bool SetDraggableArea(const gfx::Rect& rect);
 
-  // InputMethodKeyboardController overrides.
+  // InputMethodKeyboardController overrides:
   bool DisplayVirtualKeyboard() override;
   void DismissVirtualKeyboard() override;
   void AddObserver(
@@ -259,6 +250,9 @@ class KEYBOARD_EXPORT KeyboardController
   void RemoveObserver(
       ui::InputMethodKeyboardControllerObserver* observer) override;
   bool IsKeyboardVisible() override;
+
+  bool keyboard_locked() const { return keyboard_locked_; }
+  void set_keyboard_locked(bool lock) { keyboard_locked_ = lock; }
 
   KeyboardControllerState GetStateForTest() const { return state_; }
   ui::InputMethod* GetInputMethodForTest();
@@ -297,6 +291,13 @@ class KEYBOARD_EXPORT KeyboardController
     // shelf status area. Does not hide locked keyboards.
     HIDE_REASON_USER_IMPLICIT,
   };
+
+  // ContainerBehavior::Delegate overrides
+  bool IsKeyboardLocked() const override;
+  gfx::Rect GetBoundsInScreen() const override;
+  void MoveKeyboardWindow(const gfx::Rect& new_bounds) override;
+  void MoveKeyboardWindowToDisplay(const display::Display& display,
+                                   const gfx::Rect& new_bounds) override;
 
   // aura::WindowObserver overrides
   void OnWindowAddedToRootWindow(aura::Window* window) override;
