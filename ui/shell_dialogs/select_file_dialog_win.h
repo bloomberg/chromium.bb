@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/shell_dialogs/execute_select_file_win.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/shell_dialogs_export.h"
 
@@ -24,15 +25,15 @@ namespace ui {
 class SelectFilePolicy;
 struct FileFilterSpec;
 
-using ExecuteSelectFileCallback =
-    base::RepeatingCallback<std::pair<std::vector<base::FilePath>, int>(
-        SelectFileDialog::Type type,
-        const base::string16& title,
-        const base::FilePath& default_path,
-        const std::vector<FileFilterSpec>& filter,
-        int file_type_index,
-        const base::string16& default_extension,
-        HWND owner)>;
+using ExecuteSelectFileCallback = base::RepeatingCallback<void(
+    SelectFileDialog::Type type,
+    const base::string16& title,
+    const base::FilePath& default_path,
+    const std::vector<FileFilterSpec>& filter,
+    int file_type_index,
+    const base::string16& default_extension,
+    HWND owner,
+    OnSelectFileExecutedCallback on_select_file_executed_callback)>;
 
 SHELL_DIALOGS_EXPORT SelectFileDialog* CreateWinSelectFileDialog(
     SelectFileDialog::Listener* listener,

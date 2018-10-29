@@ -22,16 +22,17 @@ using content::WebContents;
 
 namespace {
 
-std::pair<std::vector<base::FilePath>, int> ExecuteCancelledSelectFileDialog(
+void ExecuteCancelledSelectFileDialog(
     ui::SelectFileDialog::Type type,
     const base::string16& title,
     const base::FilePath& default_path,
     const std::vector<ui::FileFilterSpec>& filter,
     int file_type_index,
     const base::string16& default_extension,
-    HWND owner) {
-  // Return an empty result to simulate a cancelled dialog.
-  return {{}, 0};
+    HWND owner,
+    ui::OnSelectFileExecutedCallback on_select_file_executed_callback) {
+  // Send an empty result to simulate a cancelled dialog.
+  std::move(on_select_file_executed_callback).Run({}, 0);
 }
 
 class FakePdfPrinterHandler : public PdfPrinterHandler {

@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/strings/string16.h"
 #include "base/win/windows_types.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -35,18 +36,22 @@ struct FileFilterSpec {
   base::string16 extension_spec;
 };
 
-// Shows the file selection dialog modal to |owner| returns the selected
-// file(s) and file type index via the return value. The file path vector will
-// be empty on failure.
+using OnSelectFileExecutedCallback =
+    base::OnceCallback<void(const std::vector<base::FilePath>&, int)>;
+
+// Shows the file selection dialog modal to |owner| returns the selected file(s)
+// and file type index using the |on_select_file_executed_callback|. The file
+// path vector will be empty on failure.
 SHELL_DIALOGS_EXPORT
-std::pair<std::vector<base::FilePath>, int> ExecuteSelectFile(
+void ExecuteSelectFile(
     SelectFileDialog::Type type,
     const base::string16& title,
     const base::FilePath& default_path,
     const std::vector<FileFilterSpec>& filter,
     int file_type_index,
     const base::string16& default_extension,
-    HWND owner);
+    HWND owner,
+    OnSelectFileExecutedCallback on_select_file_executed_callback);
 
 }  // namespace ui
 

@@ -8,6 +8,8 @@
 #include <shldisp.h>
 #include <wrl/client.h>
 
+#include <utility>
+
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
@@ -20,6 +22,7 @@
 #include "base/win/win_util.h"
 #include "chrome/installer/util/install_util.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "ui/shell_dialogs/execute_select_file_win.h"
 
 namespace {
 
@@ -224,24 +227,19 @@ void ShellUtilWinImpl::IsPinnedToTaskbar(IsPinnedToTaskbarCallback callback) {
   std::move(callback).Run(!helper.error_occured(), is_pinned_to_taskbar);
 }
 
-void ShellUtilWinImpl::CallGetOpenFileName(
+void ShellUtilWinImpl::CallExecuteSelectFile(
+    ui::SelectFileDialog::Type type,
     uint32_t owner,
-    uint32_t flags,
-    const std::vector<std::tuple<base::string16, base::string16>>& filters,
-    const base::FilePath& initial_directory,
-    const base::FilePath& initial_filename,
-    CallGetOpenFileNameCallback callback) {
-  std::move(callback).Run(base::FilePath(), std::vector<base::FilePath>());
-}
-
-void ShellUtilWinImpl::CallGetSaveFileName(
-    uint32_t owner,
-    uint32_t flags,
-    const std::vector<std::tuple<base::string16, base::string16>>& filters,
-    uint32_t one_based_filter_index,
-    const base::FilePath& initial_directory,
-    const base::FilePath& suggested_filename,
+    const base::string16& title,
+    const base::FilePath& default_path,
+    const std::vector<ui::FileFilterSpec>& filter,
+    int32_t file_type_index,
     const base::string16& default_extension,
-    CallGetSaveFileNameCallback callback) {
-  std::move(callback).Run(base::FilePath(), 0);
+    CallExecuteSelectFileCallback callback) {
+  base::win::ScopedCOMInitializer scoped_com_initializer;
+
+  ui::ExecuteSelectFile(
+      type, title, default_path, filter, file_type_index, default_extension,
+      reinterpret_cast<HWND>(base::win::Uint32ToHandle(owner)),
+      base::BindOnce(std::move(callback)));
 }
