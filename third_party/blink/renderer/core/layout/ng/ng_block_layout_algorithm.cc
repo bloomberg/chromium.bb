@@ -78,7 +78,7 @@ bool ApplyClearance(const NGConstraintSpace& constraint_space,
 // Returns if the resulting fragment should be considered an "empty block".
 // There is special casing for fragments like this, e.g. margins "collapse
 // through", etc.
-bool IsEmptyBlock(bool is_new_fc, const NGLayoutResult& layout_result) {
+inline bool IsEmptyBlock(bool is_new_fc, const NGLayoutResult& layout_result) {
   // TODO(ikilpatrick): This should be a DCHECK.
   if (is_new_fc)
     return false;
@@ -101,8 +101,8 @@ bool IsEmptyBlock(bool is_new_fc, const NGLayoutResult& layout_result) {
 }
 
 // As above; for convenience if you have a child_space.
-bool IsEmptyBlock(const NGConstraintSpace& child_space,
-                  const NGLayoutResult& layout_result) {
+inline bool IsEmptyBlock(const NGConstraintSpace& child_space,
+                         const NGLayoutResult& layout_result) {
   return IsEmptyBlock(child_space.IsNewFormattingContext(), layout_result);
 }
 
