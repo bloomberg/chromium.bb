@@ -26,19 +26,18 @@ class ThreadPoolTask final : public RefCounted<ThreadPoolTask> {
  public:
   // Called on main thread
   ThreadPoolTask(ThreadPoolThreadProvider*,
-                 v8::Isolate*,
+                 ScriptState*,
                  const ScriptValue& function,
                  const Vector<ScriptValue>& arguments,
                  TaskType);
   ThreadPoolTask(ThreadPoolThreadProvider*,
-                 v8::Isolate*,
+                 ScriptState*,
                  const String& function_name,
                  const Vector<ScriptValue>& arguments,
                  TaskType);
   ~ThreadPoolTask();
-  // Returns the result of this task, or a promise that will be resolved with
-  // the result when it completes.
-  ScriptValue GetResult(ScriptState*) LOCKS_EXCLUDED(mutex_);
+  // Returns a promise that will be resolved with the result when it completes.
+  ScriptPromise GetResult();
   void Cancel() LOCKS_EXCLUDED(mutex_);
 
   base::WeakPtr<ThreadPoolTask> GetWeakPtr() {
@@ -49,7 +48,7 @@ class ThreadPoolTask final : public RefCounted<ThreadPoolTask> {
   enum class State { kPending, kStarted, kCancelPending, kCompleted, kFailed };
 
   ThreadPoolTask(ThreadPoolThreadProvider*,
-                 v8::Isolate*,
+                 ScriptState*,
                  const ScriptValue& function,
                  const String& function_name,
                  const Vector<ScriptValue>& arguments,
@@ -85,7 +84,6 @@ class ThreadPoolTask final : public RefCounted<ThreadPoolTask> {
 
   // Main thread only
   scoped_refptr<ThreadPoolTask> self_keep_alive_;
-  ScriptValue deserialized_result_;
   Persistent<ScriptPromiseResolver> resolver_;
 
   // Created in constructor on the main thread, consumed and cleared on
@@ -143,9 +141,7 @@ class Task : public ScriptWrappable {
       : thread_pool_task_(thread_pool_task) {}
   ~Task() override = default;
 
-  ScriptValue result(ScriptState* script_state) {
-    return thread_pool_task_->GetResult(script_state);
-  }
+  ScriptPromise result() { return thread_pool_task_->GetResult(); }
   void cancel() { thread_pool_task_->Cancel(); }
 
   ThreadPoolTask* GetThreadPoolTask() const { return thread_pool_task_.get(); }

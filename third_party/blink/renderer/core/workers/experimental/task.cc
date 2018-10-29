@@ -17,37 +17,38 @@
 namespace blink {
 
 ThreadPoolTask::ThreadPoolTask(ThreadPoolThreadProvider* thread_provider,
-                               v8::Isolate* isolate,
+                               ScriptState* script_state,
                                const ScriptValue& function,
                                const Vector<ScriptValue>& arguments,
                                TaskType task_type)
     : ThreadPoolTask(thread_provider,
-                     isolate,
+                     script_state,
                      function,
                      String(),
                      arguments,
                      task_type) {}
 
 ThreadPoolTask::ThreadPoolTask(ThreadPoolThreadProvider* thread_provider,
-                               v8::Isolate* isolate,
+                               ScriptState* script_state,
                                const String& function_name,
                                const Vector<ScriptValue>& arguments,
                                TaskType task_type)
     : ThreadPoolTask(thread_provider,
-                     isolate,
+                     script_state,
                      ScriptValue(),
                      function_name,
                      arguments,
                      task_type) {}
 
 ThreadPoolTask::ThreadPoolTask(ThreadPoolThreadProvider* thread_provider,
-                               v8::Isolate* isolate,
+                               ScriptState* script_state,
                                const ScriptValue& function,
                                const String& function_name,
                                const Vector<ScriptValue>& arguments,
                                TaskType task_type)
     : task_type_(task_type),
       self_keep_alive_(base::AdoptRef(this)),
+      resolver_(ScriptPromiseResolver::Create(script_state)),
       function_name_(function_name.IsolatedCopy()),
       arguments_(arguments.size()),
       weak_factory_(this) {
@@ -55,6 +56,7 @@ ThreadPoolTask::ThreadPoolTask(ThreadPoolThreadProvider* thread_provider,
   DCHECK_EQ(!function.IsEmpty(), function_name.IsNull());
   DCHECK(task_type_ == TaskType::kUserInteraction ||
          task_type_ == TaskType::kIdleTask);
+  v8::Isolate* isolate = script_state->GetIsolate();
 
   // TODO(japhet): Handle serialization failures
   if (!function.IsEmpty()) {
@@ -167,7 +169,6 @@ void ThreadPoolTask::RegisterDependencies(
 
 ThreadPoolTask::~ThreadPoolTask() {
   DCHECK(IsMainThread());
-  DCHECK(!resolver_);
   DCHECK(HasFinished());
   DCHECK(!function_);
   DCHECK(arguments_.IsEmpty());
@@ -340,37 +341,28 @@ void ThreadPoolTask::TaskCompleted() {
     DCHECK(HasFinished());
     rejected = state_ == State::kFailed;
   }
-  if (resolver_ && resolver_->GetScriptState()->ContextIsValid()) {
-    ScriptState::Scope scope(resolver_->GetScriptState());
-    ScriptValue value = GetResult(resolver_->GetScriptState());
+
+  ScriptState* script_state = resolver_->GetScriptState();
+  if (script_state->ContextIsValid()) {
+    ScriptState::Scope scope(script_state);
+    v8::Local<v8::Value> value;
+    {
+      MutexLocker lock(mutex_);
+      value = serialized_result_->Deserialize(script_state->GetIsolate());
+    }
     if (rejected)
-      resolver_->Reject(v8::Exception::Error(value.V8Value().As<v8::String>()));
+      resolver_->Reject(v8::Exception::Error(value.As<v8::String>()));
     else
       resolver_->Resolve(value);
   }
-  resolver_ = nullptr;
   worker_thread_->DecrementTasksInProgressCount();
   self_keep_alive_.reset();
   // |this| may be deleted here.
 }
 
-ScriptValue ThreadPoolTask::GetResult(ScriptState* script_state) {
+ScriptPromise ThreadPoolTask::GetResult() {
   DCHECK(IsMainThread());
-  MutexLocker lock(mutex_);
-  if (!HasFinished()) {
-    DCHECK(!serialized_result_);
-    DCHECK(deserialized_result_.IsEmpty());
-    if (!resolver_)
-      resolver_ = ScriptPromiseResolver::Create(script_state);
-    return resolver_->Promise().GetScriptValue();
-  }
-  if (deserialized_result_.IsEmpty()) {
-    ScriptState::Scope scope(script_state);
-    deserialized_result_ = ScriptValue(
-        script_state,
-        serialized_result_->Deserialize(script_state->GetIsolate()));
-  }
-  return deserialized_result_;
+  return resolver_->Promise();
 }
 
 void ThreadPoolTask::Cancel() {

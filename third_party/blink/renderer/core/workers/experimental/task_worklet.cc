@@ -55,18 +55,16 @@ Task* TaskWorklet::postTask(ScriptState* script_state,
   // TODO(japhet): Here and below: it's unclear what task type should be used,
   // and whether the API should allow it to be configured. Using kIdleTask as a
   // placeholder for now.
-  ThreadPoolTask* thread_pool_task =
-      new ThreadPoolTask(this, script_state->GetIsolate(), function, arguments,
-                         TaskType::kIdleTask);
+  ThreadPoolTask* thread_pool_task = new ThreadPoolTask(
+      this, script_state, function, arguments, TaskType::kIdleTask);
   return new Task(thread_pool_task);
 }
 
 Task* TaskWorklet::postTask(ScriptState* script_state,
                             const String& function_name,
                             const Vector<ScriptValue>& arguments) {
-  ThreadPoolTask* thread_pool_task =
-      new ThreadPoolTask(this, script_state->GetIsolate(), function_name,
-                         arguments, TaskType::kIdleTask);
+  ThreadPoolTask* thread_pool_task = new ThreadPoolTask(
+      this, script_state, function_name, arguments, TaskType::kIdleTask);
   return new Task(thread_pool_task);
 }
 
