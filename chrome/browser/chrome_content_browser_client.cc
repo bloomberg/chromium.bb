@@ -4365,7 +4365,8 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
     io_data = ProfileIOData::FromResourceContext(resource_context);
   }
 
-  if (io_data && data_reduction_proxy::params::IsEnabledWithNetworkService()) {
+  if (io_data && io_data->data_reduction_proxy_io_data() &&
+      data_reduction_proxy::params::IsEnabledWithNetworkService()) {
     net::HttpRequestHeaders headers;
     data_reduction_proxy::DataReductionProxyRequestOptions* request_options =
         io_data->data_reduction_proxy_io_data()->request_options();
