@@ -515,9 +515,9 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
     case WebFeature::kPresentationRequestStartInsecureOrigin:
     case WebFeature::kPresentationReceiverInsecureOrigin:
       return {
-          "PresentationInsecureOrigin", kM71,
+          "PresentationInsecureOrigin", kM72,
           String("Using the Presentation API on insecure origins is "
-                 "deprecated and will be removed in M71. You should consider "
+                 "deprecated and will be removed in M72. You should consider "
                  "switching your application to a secure origin, such as "
                  "HTTPS. See "
                  "https://goo.gl/rStTGz for more details.")};
