@@ -4,11 +4,9 @@
 
 #include <string>
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -194,11 +192,7 @@ void TestSystemTrayIsVisible(bool otr) {
   aura::Window* primary_win = ash::Shell::GetPrimaryRootWindow();
   ash::Shelf* shelf = ash::Shelf::ForWindow(primary_win);
   ash::TrayBackgroundView* tray =
-      ash::features::IsSystemTrayUnifiedEnabled()
-          ? static_cast<ash::TrayBackgroundView*>(
-                shelf->GetStatusAreaWidget()->unified_system_tray())
-          : static_cast<ash::TrayBackgroundView*>(
-                shelf->GetStatusAreaWidget()->system_tray());
+      shelf->GetStatusAreaWidget()->unified_system_tray();
   SCOPED_TRACE(testing::Message()
                << "ShelfVisibilityState=" << shelf->GetVisibilityState()
                << " ShelfAutoHideBehavior=" << shelf->auto_hide_behavior());
