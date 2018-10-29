@@ -642,6 +642,9 @@ void ProfileSyncService::Shutdown() {
 
   if (sync_thread_)
     sync_thread_->Stop();
+
+  DCHECK(!data_type_manager_);
+  data_type_controllers_.clear();
 }
 
 void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
