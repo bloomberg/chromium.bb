@@ -283,7 +283,7 @@ scoped_refptr<MediaQuerySet> MediaQueryParser::ParseImpl(
 bool MediaQueryParser::IsMediaFeatureAllowedInMode(
     const String& media_feature) const {
   return mode_ == kUASheetMode ||
-         media_feature != MediaFeatureNames::immersiveMediaFeature;
+         media_feature != media_feature_names::kImmersiveMediaFeature;
 }
 
 MediaQueryData::MediaQueryData()

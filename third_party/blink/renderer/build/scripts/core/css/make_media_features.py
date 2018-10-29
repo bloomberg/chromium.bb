@@ -21,7 +21,8 @@ class MakeMediaFeaturesWriter(json5_generator.Writer):
     }
     filters = {
         'symbol': media_feature_symbol.getMediaFeatureSymbolWithSuffix(''),
-        'to_function_name': lambda symbol: NameStyleConverter(symbol).to_function_name(),
+        # symbol[1:] removes the leading 'k' produced by the above function.
+        'to_function_name': lambda symbol: NameStyleConverter(symbol[1:]).to_function_name(),
     }
 
     def __init__(self, json5_file_path, output_dir):

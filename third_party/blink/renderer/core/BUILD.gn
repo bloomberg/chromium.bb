@@ -1160,6 +1160,8 @@ code_generator("make_core_generated_atrule_names") {
 code_generator("make_core_generated_media_features") {
   script = "../build/scripts/core/css/make_media_features.py"
   json_inputs = [ "css/media_feature_names.json5" ]
+  other_inputs =
+      scripts_for_json5_files + [ "../build/scripts/media_feature_symbol.py" ]
   templates = [ "../build/scripts/core/css/templates/media_features.h.tmpl" ]
   outputs = [
     "$blink_core_output_dir/css/media_features.h",
@@ -1286,7 +1288,8 @@ code_generator("make_core_generated_media_feature_names") {
     "../build/scripts/templates/make_names.cc.tmpl",
     "../build/scripts/templates/make_names.h.tmpl",
   ]
-  other_inputs = make_names_files
+  other_inputs =
+      make_names_files + [ "../build/scripts/media_feature_symbol.py" ]
   outputs = [
     "$blink_core_output_dir/css/media_feature_names.cc",
     "$blink_core_output_dir/css/media_feature_names.h",
