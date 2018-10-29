@@ -582,6 +582,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   UpdateShapeOutsideInfoIfNeeded(
       constraint_space.PercentageResolutionSize().inline_size);
 
+  // Overflow computation depends on this being set.
   if (box_->IsLayoutBlockFlow()) {
     LayoutBlockFlow* block_flow = ToLayoutBlockFlow(box_);
     block_flow->UpdateIsSelfCollapsing();
