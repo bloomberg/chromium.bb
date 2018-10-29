@@ -4,6 +4,8 @@
 
 #include "components/omnibox/browser/test_toolbar_model.h"
 
+#include "base/strings/utf_string_conversions.h"
+
 #if defined(TOOLKIT_VIEWS)
 #include "components/omnibox/browser/vector_icons.h"  // nogncheck
 #endif
@@ -19,11 +21,17 @@ TestToolbarModel::TestToolbarModel()
 TestToolbarModel::~TestToolbarModel() {}
 
 base::string16 TestToolbarModel::GetFormattedFullURL() const {
-  return formatted_full_url_;
+  if (!formatted_full_url_)
+    return base::UTF8ToUTF16(url_.spec());
+
+  return *formatted_full_url_;
 }
 
 base::string16 TestToolbarModel::GetURLForDisplay() const {
-  return url_for_display_;
+  if (!url_for_display_)
+    return base::UTF8ToUTF16(url_.spec());
+
+  return *url_for_display_;
 }
 
 GURL TestToolbarModel::GetURL() const {

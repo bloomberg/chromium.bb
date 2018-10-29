@@ -318,11 +318,14 @@ void OmniboxViewViews::SetFocus() {
   // Temporarily reveal the top-of-window views (if not already revealed) so
   // that the location bar view is visible and is considered focusable. When it
   // actually receives focus, ImmersiveFocusWatcher will add another lock to
-  // keep it revealed.
-  std::unique_ptr<ImmersiveRevealedLock> focus_reveal_lock(
-      BrowserView::GetBrowserViewForBrowser(location_bar_view_->browser())
-          ->immersive_mode_controller()
-          ->GetRevealedLock(ImmersiveModeController::ANIMATE_REVEAL_YES));
+  // keep it revealed. |location_bar_view_| can be nullptr in unit tests.
+  std::unique_ptr<ImmersiveRevealedLock> focus_reveal_lock;
+  if (location_bar_view_) {
+    focus_reveal_lock.reset(
+        BrowserView::GetBrowserViewForBrowser(location_bar_view_->browser())
+            ->immersive_mode_controller()
+            ->GetRevealedLock(ImmersiveModeController::ANIMATE_REVEAL_YES));
+  }
 
   RequestFocus();
   // Restore caret visibility if focus is explicitly requested. This is
@@ -650,7 +653,8 @@ bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
   if (model()->user_input_in_progress())
     return false;
 
-  // Don't unelide if we are currently displaying Query in Omnibox search terms.
+  // Don't unelide if we are currently displaying Query in Omnibox search terms,
+  // as otherwise, it would be impossible to refine query terms.
   if (model()->GetQueryInOmniboxSearchTerms(nullptr /* search_terms */))
     return false;
 
@@ -692,7 +696,8 @@ bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
     OffsetDoubleClickWord(offset);
   }
 
-  model()->SetUserTextToURLForEditing();
+  // We have already early-exited if Query in Omnibox is active.
+  model()->Unelide(false /* exit_query_in_omnibox */);
   SelectRange(gfx::Range(start, end));
   return true;
 }

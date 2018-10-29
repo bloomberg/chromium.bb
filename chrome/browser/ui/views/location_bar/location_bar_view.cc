@@ -111,6 +111,16 @@
 #include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 #endif
 
+namespace {
+
+// This feature shows the full URL when the user focuses the omnibox via
+// keyboard shortcut. This feature flag only exists so we have a remote
+// killswitch for this behavior.
+base::Feature kOmniboxShowFullUrlOnKeyboardShortcut{
+    "OmniboxShowFullUrlOnKeyboardShortcut", base::FEATURE_ENABLED_BY_DEFAULT};
+
+}  // namespace
+
 using content::WebContents;
 using views::View;
 
@@ -368,7 +378,7 @@ bool LocationBarView::ShowPageInfoDialog(WebContents* contents) {
   // We are currently gating this behavior on the Query in Omnibox flag, since
   // it's still under active experimentation.
   if (base::FeatureList::IsEnabled(omnibox::kQueryInOmnibox))
-    omnibox_view()->model()->SetUserTextToURLForEditing();
+    omnibox_view()->model()->Unelide(true /* exit_query_in_omnibox */);
 
   return true;
 }
@@ -377,7 +387,10 @@ bool LocationBarView::ShowPageInfoDialog(WebContents* contents) {
 // LocationBarView, public LocationBar implementation:
 
 void LocationBarView::FocusLocation(bool select_all) {
-  bool already_focused = omnibox_view_->HasFocus();
+  // Only exit Query in Omnibox mode on focus command if the location bar was
+  // already focused to begin with, i.e. user presses Ctrl+L twice.
+  bool exit_query_in_omnibox = omnibox_view_->HasFocus();
+
   omnibox_view_->SetFocus();
 
   if (!select_all)
@@ -385,12 +398,8 @@ void LocationBarView::FocusLocation(bool select_all) {
 
   omnibox_view_->SelectAll(true);
 
-  // If the location bar is already focused, a second command to focus it
-  // should expose the full URL, temporarily disabling Steady State Elisions
-  // and Query in Omnibox. This behavior is currently gated on the Query in
-  // Omnibox flag, as it's still under active experimentation.
-  if (already_focused && base::FeatureList::IsEnabled(omnibox::kQueryInOmnibox))
-    omnibox_view()->model()->SetUserTextToURLForEditing();
+  if (base::FeatureList::IsEnabled(kOmniboxShowFullUrlOnKeyboardShortcut))
+    omnibox_view()->model()->Unelide(exit_query_in_omnibox);
 }
 
 void LocationBarView::Revert() {
