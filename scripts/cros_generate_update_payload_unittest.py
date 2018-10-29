@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import os
-import tempfile
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
@@ -111,8 +110,6 @@ class DeltaGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
     }
     self.PatchObject(cros_build_lib, 'GetImageDiskPartitionInfo',
                      return_value=fake_partitions)
-    self.PatchObject(tempfile, 'NamedTemporaryFile',
-                     return_value=type('file', (object,), {'name': temp}))
     cros_generate_update_payload.main([
         '--image', '/dev/null',
         '--src_image', '/dev/null',
@@ -120,10 +117,10 @@ class DeltaGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
     ])
 
     self.assertCommandContains([
-        '--major_version=2',
-        '--partition_names=root:kernel',
-        '--new_partitions=' + ':'.join([temp, temp]),
-        '--new_postinstall_config_file=' + temp,
-        '--old_partitions=' + ':'.join([temp, temp]),
+        '--major_version=1',
+        '--new_image=' + temp,
+        '--new_kernel=' + temp,
+        '--old_image=' + temp,
+        '--old_kernel=' + temp,
         '--rootfs_partition_size=4',
     ])
