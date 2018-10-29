@@ -6,6 +6,7 @@
 #define UI_MESSAGE_CENTER_VIEWS_NOTIFICATION_HEADER_VIEW_H_
 
 #include "base/macros.h"
+#include "ui/message_center/message_center_export.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/views/controls/button/button.h"
 
@@ -18,7 +19,7 @@ namespace message_center {
 
 class NotificationControlButtonsView;
 
-class NotificationHeaderView : public views::Button {
+class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
  public:
   NotificationHeaderView(NotificationControlButtonsView* control_buttons_view,
                          views::ButtonListener* listener);

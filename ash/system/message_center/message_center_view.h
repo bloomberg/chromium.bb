@@ -103,6 +103,7 @@ class ASH_EXPORT MessageCenterView
 
  private:
   friend class ArcNotificationContentViewTest;
+  friend class MediaNotificationViewTest;
   friend class MessageCenterViewTest;
 
   // NOTIFICATIONS: Normal notification list (MessageListView) is shown.
