@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/trees/layer_tree_impl.h"

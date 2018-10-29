@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/trace_event/trace_event_argument.h"
-#include "cc/layers/layer.h"
 #include "cc/trees/effect_node.h"
+#include "base/trace_event/traced_value.h"
+#include "cc/layers/layer.h"
 #include "cc/trees/property_tree.h"
 
 namespace cc {
