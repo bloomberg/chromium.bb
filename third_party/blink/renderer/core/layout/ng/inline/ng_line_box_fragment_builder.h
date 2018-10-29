@@ -139,6 +139,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     }
 
     Child& operator[](wtf_size_t i) { return children_[i]; }
+    const Child& operator[](wtf_size_t i) const { return children_[i]; }
 
     wtf_size_t size() const { return children_.size(); }
     bool IsEmpty() const { return children_.IsEmpty(); }

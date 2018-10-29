@@ -265,7 +265,6 @@ crbug.com/591099 external/wpt/picture-in-picture/picture-in-picture-window.html 
 crbug.com/591099 external/wpt/picture-in-picture/request-picture-in-picture-twice.html [ Pass ]
 crbug.com/591099 external/wpt/picture-in-picture/request-picture-in-picture.html [ Pass ]
 crbug.com/591099 external/wpt/picture-in-picture/shadow-dom.html [ Pass ]
-crbug.com/591099 external/wpt/quirks/line-height-calculation.html [ Failure ]
 crbug.com/591099 external/wpt/requestidlecallback/callback-iframe.html [ Pass Timeout ]
 crbug.com/591099 external/wpt/service-workers/service-worker/navigation-preload/broken-chunked-encoding.https.html [ Pass ]
 crbug.com/591099 external/wpt/service-workers/service-worker/update-after-navigation-redirect.https.html [ Pass ]

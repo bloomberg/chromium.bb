@@ -69,6 +69,9 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
   NGInlineBoxState* HandleOpenTag(const NGInlineItem&,
                                   const NGInlineItemResult&,
                                   NGInlineLayoutStateStack*) const;
+  NGInlineBoxState* HandleCloseTag(const NGInlineItem&,
+                                   const NGInlineItemResult&,
+                                   NGInlineBoxState*);
 
   void BidiReorder();
 

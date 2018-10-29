@@ -95,10 +95,6 @@ struct NGInlineBoxState {
   // inline box.
   bool CanAddTextOfStyle(const ComputedStyle&) const;
 
-  // Compute the metrics for when 'vertical-align' is 'top' and 'bottom' from
-  // |pending_descendants|.
-  NGLineHeightMetrics MetricsForTopAndBottomAlign() const;
-
 #if DCHECK_IS_ON()
   void CheckSame(const NGInlineBoxState&) const;
 #endif
@@ -182,6 +178,12 @@ class CORE_EXPORT NGInlineLayoutStateStack {
   PositionPending ApplyBaselineShift(NGInlineBoxState*,
                                      NGLineBoxFragmentBuilder::ChildList*,
                                      FontBaseline);
+
+  // Compute the metrics for when 'vertical-align' is 'top' and 'bottom' from
+  // |pending_descendants|.
+  NGLineHeightMetrics MetricsForTopAndBottomAlign(
+      const NGInlineBoxState&,
+      const NGLineBoxFragmentBuilder::ChildList&) const;
 
   // Data for a box fragment. See AddBoxFragmentPlaceholder().
   // This is a transient object only while building a line box.

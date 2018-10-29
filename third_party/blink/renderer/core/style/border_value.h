@@ -60,10 +60,6 @@ class BorderValue {
     SetWidth(width);
   }
 
-  bool NonZero() const {
-    return Width() && (style_ != static_cast<unsigned>(EBorderStyle::kNone));
-  }
-
   bool IsTransparent() const {
     return !color_is_current_color_ && !color_.Alpha();
   }

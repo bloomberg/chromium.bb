@@ -533,7 +533,7 @@ NGInlineLayoutStateStack::ApplyBaselineShift(
   // |pending_descendants|.
   LayoutUnit baseline_shift;
   if (!box->pending_descendants.IsEmpty()) {
-    NGLineHeightMetrics max = box->MetricsForTopAndBottomAlign();
+    NGLineHeightMetrics max = MetricsForTopAndBottomAlign(*box, *line_box);
     for (NGPendingPositions& child : box->pending_descendants) {
       // In quirks mode, metrics is empty if no content.
       if (child.metrics.IsEmpty())
@@ -646,30 +646,42 @@ NGInlineLayoutStateStack::ApplyBaselineShift(
   return kPositionNotPending;
 }
 
-NGLineHeightMetrics NGInlineBoxState::MetricsForTopAndBottomAlign() const {
+NGLineHeightMetrics NGInlineLayoutStateStack::MetricsForTopAndBottomAlign(
+    const NGInlineBoxState& box,
+    const NGLineBoxFragmentBuilder::ChildList& line_box) const {
+  DCHECK(!box.pending_descendants.IsEmpty());
+
   // |metrics| is the bounds of "aligned subtree", that is, bounds of
   // descendants that are not 'vertical-align: top' nor 'bottom'.
   // https://drafts.csswg.org/css2/visudet.html#propdef-vertical-align
-  NGLineHeightMetrics box = metrics;
+  NGLineHeightMetrics metrics = box.metrics;
+
+  // BoxData contains inline boxes to be created later. Take them into account.
+  for (const BoxData& box_data : box_data_list_) {
+    LayoutUnit box_ascent =
+        -line_box[box_data.fragment_end].offset.block_offset;
+    metrics.Unite(
+        NGLineHeightMetrics(box_ascent, box_data.size.block_size - box_ascent));
+  }
 
   // In quirks mode, metrics is empty if no content.
-  if (box.IsEmpty())
-    box = NGLineHeightMetrics::Zero();
+  if (metrics.IsEmpty())
+    metrics = NGLineHeightMetrics::Zero();
 
   // If the height of a box that has 'vertical-align: top' or 'bottom' exceeds
   // the height of the "aligned subtree", align the edge to the "aligned
   // subtree" and extend the other edge.
-  NGLineHeightMetrics max = box;
-  for (const NGPendingPositions& child : pending_descendants) {
+  NGLineHeightMetrics max = metrics;
+  for (const NGPendingPositions& child : box.pending_descendants) {
     if ((child.vertical_align == EVerticalAlign::kTop ||
          child.vertical_align == EVerticalAlign::kBottom) &&
         child.metrics.LineHeight() > max.LineHeight()) {
       if (child.vertical_align == EVerticalAlign::kTop) {
-        max = NGLineHeightMetrics(box.ascent,
-                                  child.metrics.LineHeight() - box.ascent);
+        max = NGLineHeightMetrics(metrics.ascent,
+                                  child.metrics.LineHeight() - metrics.ascent);
       } else if (child.vertical_align == EVerticalAlign::kBottom) {
-        max = NGLineHeightMetrics(child.metrics.LineHeight() - box.descent,
-                                  box.descent);
+        max = NGLineHeightMetrics(child.metrics.LineHeight() - metrics.descent,
+                                  metrics.descent);
       }
     }
   }

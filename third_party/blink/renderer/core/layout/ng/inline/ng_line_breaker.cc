@@ -943,9 +943,7 @@ void NGLineBreaker::HandleOpenTag(const NGInlineItem& item) {
     // line boxes to be zero-height, tests indicate that only inline direction
     // of them do so. See should_create_line_box_.
     // Force to create a box, because such inline boxes affect line heights.
-    if (!item_result->should_create_line_box &&
-        (item_result->inline_size ||
-         (item_result->margins.inline_start && !in_line_height_quirks_mode_)))
+    if (!item_result->should_create_line_box && !item.IsEmptyItem())
       item_result->should_create_line_box = true;
   }
 
@@ -968,9 +966,7 @@ void NGLineBreaker::HandleCloseTag(const NGInlineItem& item) {
         margins.inline_end + borders.inline_end + paddings.inline_end;
     position_ += item_result->inline_size;
 
-    if (!item_result->should_create_line_box &&
-        (item_result->inline_size ||
-         (margins.inline_end && !in_line_height_quirks_mode_)))
+    if (!item_result->should_create_line_box && !item.IsEmptyItem())
       item_result->should_create_line_box = true;
   }
   DCHECK(item.GetLayoutObject() && item.GetLayoutObject()->Parent());
