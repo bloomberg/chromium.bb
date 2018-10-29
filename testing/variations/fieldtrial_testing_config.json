@@ -5019,6 +5019,25 @@
             ]
         }
     ],
+    "V8SiteIsolatedCodeCache": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "IsolatedCodeCache"
+                    ]
+                }
+            ]
+        }
+    ],
     "V8WasmTrapHandler": [
         {
             "platforms": [
