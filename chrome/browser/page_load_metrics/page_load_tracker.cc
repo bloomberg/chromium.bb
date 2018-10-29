@@ -157,6 +157,12 @@ void DispatchObserverTimingCallbacks(
   if (new_timing.paint_timing->last_image_paint &&
       !last_timing.paint_timing->last_image_paint)
     observer->OnLastImagePaintInMainFrameDocument(new_timing, extra_info);
+  if (new_timing.paint_timing->largest_text_paint &&
+      !last_timing.paint_timing->largest_text_paint)
+    observer->OnLargestTextPaintInMainFrameDocument(new_timing, extra_info);
+  if (new_timing.paint_timing->last_text_paint &&
+      !last_timing.paint_timing->last_text_paint)
+    observer->OnLastTextPaintInMainFrameDocument(new_timing, extra_info);
   if (new_timing.interactive_timing->interactive &&
       !last_timing.interactive_timing->interactive)
     observer->OnPageInteractive(new_timing, extra_info);

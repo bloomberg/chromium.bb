@@ -441,6 +441,21 @@ void PageLoadMetricsUpdateDispatcher::ShutDown() {
     should_dispatch = true;
   }
 
+  if (largest_text_paint_) {
+    pending_merged_page_timing_->paint_timing->largest_text_paint.swap(
+        largest_text_paint_);
+    // Reset it so multiple shutdowns will have only one dispatch.
+    largest_text_paint_.reset();
+    should_dispatch = true;
+  }
+  if (last_text_paint_) {
+    pending_merged_page_timing_->paint_timing->last_text_paint.swap(
+        last_text_paint_);
+    // Reset it so multiple shutdowns will have only one dispatch.
+    last_text_paint_.reset();
+    should_dispatch = true;
+  }
+
   if (should_dispatch) {
     DispatchTimingUpdates();
   }
@@ -573,6 +588,10 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameTiming(
   new_timing.paint_timing->largest_image_paint.reset();
   last_image_paint_.swap(new_timing.paint_timing->last_image_paint);
   new_timing.paint_timing->last_image_paint.reset();
+  largest_text_paint_.swap(new_timing.paint_timing->largest_text_paint);
+  new_timing.paint_timing->largest_text_paint.reset();
+  last_text_paint_.swap(new_timing.paint_timing->last_text_paint);
+  new_timing.paint_timing->last_text_paint.reset();
 
   // Update the pending_merged_page_timing_, making sure to merge the previously
   // observed |paint_timing| and |interactive_timing|, which are tracked across

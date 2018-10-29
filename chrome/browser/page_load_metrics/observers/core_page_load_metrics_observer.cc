@@ -93,6 +93,10 @@ const char kHistogramLargestImagePaint[] =
     "PageLoad.Experimental.PaintTiming.NavigationToLargestImagePaint";
 const char kHistogramLastImagePaint[] =
     "PageLoad.Experimental.PaintTiming.NavigationToLastImagePaint";
+const char kHistogramLargestTextPaint[] =
+    "PageLoad.Experimental.PaintTiming.NavigationToLargestTextPaint";
+const char kHistogramLastTextPaint[] =
+    "PageLoad.Experimental.PaintTiming.NavigationToLastTextPaint";
 const char kHistogramTimeToInteractive[] =
     "PageLoad.Experimental.NavigationToInteractive";
 const char kHistogramInteractiveToInteractiveDetection[] =
@@ -544,6 +548,31 @@ void CorePageLoadMetricsObserver::OnLastImagePaintInMainFrameDocument(
       WasStartedInForegroundOptionalEventInForeground(last_image_paint, info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramLastImagePaint,
                         last_image_paint.value());
+  }
+}
+
+void CorePageLoadMetricsObserver::OnLargestTextPaintInMainFrameDocument(
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  base::Optional<base::TimeDelta>& largest_text_paint =
+      timing.paint_timing->largest_text_paint;
+  if (largest_text_paint.has_value() &&
+      WasStartedInForegroundOptionalEventInForeground(largest_text_paint,
+                                                      info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestTextPaint,
+                        largest_text_paint.value());
+  }
+}
+
+void CorePageLoadMetricsObserver::OnLastTextPaintInMainFrameDocument(
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  base::Optional<base::TimeDelta>& last_text_paint =
+      timing.paint_timing->last_text_paint;
+  if (last_text_paint.has_value() &&
+      WasStartedInForegroundOptionalEventInForeground(last_text_paint, info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramLastTextPaint,
+                        last_text_paint.value());
   }
 }
 
