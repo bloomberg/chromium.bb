@@ -478,17 +478,42 @@ class GitCLTest(unittest.TestCase):
     def test_filter_latest_none(self):
         self.assertIsNone(GitCL.filter_latest(None))
 
-    def test_try_job_results_with_task_id_in_url(self):
+    def test_try_job_results_url_format_fallback(self):
         git_cl = GitCL(MockHost())
         git_cl.fetch_raw_try_job_results = lambda **_: [
             {
                 'builder_name': 'builder-a',
                 'status': 'COMPLETED',
                 'result': 'FAILURE',
-                'failure_reason': 'BUILD_FAILURE',
-                'url': ('https://ci.chromium.org/swarming/task/'
-                        '36a767f405d9ee10'),
+                'tags': [
+                    'build_address:luci.chromium.try/chromium_presubmit/100',
+                ],
+                'url': 'http://ci.chromium.org/p/master/builders/builder-b/builds/10',
             },
+            {
+                'builder_name': 'builder-b',
+                'status': 'COMPLETED',
+                'result': 'FAILURE',
+                'url': 'http://ci.chromium.org/p/master/builders/builder-b/builds/20',
+            },
+            {
+                'builder_name': 'builder-c',
+                'status': 'COMPLETED',
+                'result': 'FAILURE',
+                'url': 'https://ci.chromium.org/swarming/task/36a767f405d9ee10',
+            },
+        ]
+        self.assertEqual(
+            git_cl.try_job_results(),
+            {
+                Build('builder-a', 100): TryJobStatus('COMPLETED', 'FAILURE'),
+                Build('builder-b', 20): TryJobStatus('COMPLETED', 'FAILURE'),
+                Build('builder-c', '36a767f405d9ee10'): TryJobStatus('COMPLETED', 'FAILURE'),
+            })
+
+    def test_try_job_results_with_swarming_url_with_query(self):
+        git_cl = GitCL(MockHost())
+        git_cl.fetch_raw_try_job_results = lambda **_: [
             {
                 'builder_name': 'builder-b',
                 'status': 'COMPLETED',
@@ -500,7 +525,6 @@ class GitCLTest(unittest.TestCase):
         self.assertEqual(
             git_cl.try_job_results(),
             {
-                Build('builder-a', '36a767f405d9ee10'): TryJobStatus('COMPLETED', 'FAILURE'),
                 Build('builder-b', '38740befcd9c0010'): TryJobStatus('COMPLETED', 'SUCCESS'),
             })
 
