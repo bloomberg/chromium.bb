@@ -73,6 +73,12 @@ bool EnumTraits<arc::mojom::VideoEncodeAccelerator::Error,
       "enum ##value mismatch")
 
 CHECK_PIXEL_FORMAT_ENUM(PIXEL_FORMAT_I420);
+CHECK_PIXEL_FORMAT_ENUM(PIXEL_FORMAT_YV12);
+CHECK_PIXEL_FORMAT_ENUM(PIXEL_FORMAT_NV12);
+CHECK_PIXEL_FORMAT_ENUM(PIXEL_FORMAT_NV21);
+CHECK_PIXEL_FORMAT_ENUM(PIXEL_FORMAT_ARGB);
+CHECK_PIXEL_FORMAT_ENUM(PIXEL_FORMAT_ABGR);
+CHECK_PIXEL_FORMAT_ENUM(PIXEL_FORMAT_XBGR);
 
 #undef CHECK_PXIEL_FORMAT_ENUM
 
@@ -89,13 +95,19 @@ bool EnumTraits<arc::mojom::VideoPixelFormat, media::VideoPixelFormat>::
     FromMojom(arc::mojom::VideoPixelFormat input,
               media::VideoPixelFormat* output) {
   switch (input) {
+    case arc::mojom::VideoPixelFormat::PIXEL_FORMAT_UNKNOWN:
     case arc::mojom::VideoPixelFormat::PIXEL_FORMAT_I420:
+    case arc::mojom::VideoPixelFormat::PIXEL_FORMAT_YV12:
+    case arc::mojom::VideoPixelFormat::PIXEL_FORMAT_NV12:
+    case arc::mojom::VideoPixelFormat::PIXEL_FORMAT_NV21:
+    case arc::mojom::VideoPixelFormat::PIXEL_FORMAT_ARGB:
+    case arc::mojom::VideoPixelFormat::PIXEL_FORMAT_ABGR:
+    case arc::mojom::VideoPixelFormat::PIXEL_FORMAT_XBGR:
       *output = static_cast<media::VideoPixelFormat>(input);
       return true;
-    default:
-      DLOG(ERROR) << "Unknown VideoPixelFormat: " << input;
-      return false;
   }
+  NOTREACHED();
+  return false;
 }
 
 // static
