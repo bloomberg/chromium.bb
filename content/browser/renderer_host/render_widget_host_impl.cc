@@ -1326,22 +1326,15 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
         // the GFS are directly injected to RWHI rather than being generated
         // from wheel events in MouseWheelEventQueue.
         is_in_gesture_scroll_[gesture_event.SourceDevice()] = false;
-      } else {
-        // No GSE is sent before GFS, so is_in_gesture_scroll must be true.
-        // TODO(sahel): This often gets tripped on Debug builds in ChromeOS
-        // indicating some kind of gesture event ordering race.
-        // https://crbug.com/821237.
-        // DCHECK(is_in_gesture_scroll_[gesture_event.SourceDevice()]);
-
-        // The FlingController handles GFS with touchpad source and sends wheel
-        // events to progress the fling, the wheel events will get processed by
-        // the MouseWheelEventQueue and GSU events with inertial phase will be
-        // sent to the renderer. is_in_gesture_scroll must stay true till the
-        // fling progress is finished. Then the FlingController will generate
-        // and send a wheel event with phaseEnded. MouseWheelEventQueue will
-        // process the wheel event to generate and send a GSE which shows the
-        // end of a scroll sequence.
       }
+      // a GSB event is generated from the first wheel event in a sequence after
+      // the event is acked as not consumed by the renderer. Sometimes when the
+      // main thread is busy/slow (e.g ChromeOS debug builds) a GFS arrives
+      // before the first wheel is acked. In these cases no GSB will arrive
+      // before the GFS. With browser side fling the out of order GFS arrival
+      // does not need a DCHECK since the fling controller will process the GFS
+      // and start queuing wheel events which will follow the one currently
+      // awaiting ACK and the renderer receives the events in order.
 
       is_in_touchpad_gesture_fling_ = true;
     } else {
