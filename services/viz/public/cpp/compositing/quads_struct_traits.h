@@ -189,6 +189,12 @@ struct StructTraits<viz::mojom::RenderPassQuadStateDataView, viz::DrawQuad> {
     return quad->force_anti_aliasing_off;
   }
 
+  static float backdrop_filter_quality(const viz::DrawQuad& input) {
+    const viz::RenderPassDrawQuad* quad =
+        viz::RenderPassDrawQuad::MaterialCast(&input);
+    return quad->backdrop_filter_quality;
+  }
+
   static bool Read(viz::mojom::RenderPassQuadStateDataView data,
                    viz::DrawQuad* out);
 };

@@ -114,7 +114,7 @@ void AddRenderPassQuad(viz::RenderPass* to_pass,
   auto* quad = to_pass->CreateAndAppendDrawQuad<viz::RenderPassDrawQuad>();
   quad->SetNew(shared_state, output_rect, output_rect, contributing_pass->id, 0,
                gfx::RectF(), gfx::Size(), gfx::Vector2dF(), gfx::PointF(),
-               gfx::RectF(), false);
+               gfx::RectF(), false, 1.0f);
 }
 
 void AddRenderPassQuad(viz::RenderPass* to_pass,
@@ -132,7 +132,7 @@ void AddRenderPassQuad(viz::RenderPass* to_pass,
   quad->SetNew(shared_state, output_rect, output_rect, contributing_pass->id,
                mask_resource_id, gfx::RectF(output_rect),
                arbitrary_nonzero_size, gfx::Vector2dF(), gfx::PointF(),
-               gfx::RectF(), false);
+               gfx::RectF(), false, 1.0f);
 }
 
 std::vector<viz::ResourceId> AddOneOfEveryQuadType(
@@ -184,7 +184,7 @@ std::vector<viz::ResourceId> AddOneOfEveryQuadType(
     render_pass_quad->SetNew(shared_state, rect, visible_rect, child_pass_id,
                              resource5, gfx::RectF(rect), gfx::Size(73, 26),
                              gfx::Vector2dF(), gfx::PointF(), gfx::RectF(),
-                             false);
+                             false, 1.0f);
   }
 
   auto* solid_color_quad =
@@ -360,7 +360,7 @@ void AddOneOfEveryQuadTypeInDisplayResourceProvider(
     render_pass_quad->SetNew(shared_state, rect, visible_rect, child_pass_id,
                              mapped_resource5, gfx::RectF(rect),
                              gfx::Size(73, 26), gfx::Vector2dF(), gfx::PointF(),
-                             gfx::RectF(), false);
+                             gfx::RectF(), false, 1.0f);
   }
 
   viz::SolidColorDrawQuad* solid_color_quad =

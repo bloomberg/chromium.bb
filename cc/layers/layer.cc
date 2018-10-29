@@ -53,6 +53,7 @@ Layer::Inputs::Inputs(int layer_id)
       sorting_context_id(0),
       use_parent_backface_visibility(false),
       background_color(0),
+      backdrop_filter_quality(1.0f),
       scrollable(false),
       is_scrollbar(false),
       user_scrollable_horizontal(true),
@@ -552,6 +553,10 @@ void Layer::SetBackdropFilters(const FilterOperations& filters) {
   SetSubtreePropertyChanged();
   SetPropertyTreesNeedRebuild();
   SetNeedsCommit();
+}
+
+void Layer::SetBackdropFilterQuality(const float quality) {
+  inputs_.backdrop_filter_quality = quality;
 }
 
 void Layer::SetFiltersOrigin(const gfx::PointF& filters_origin) {

@@ -113,6 +113,7 @@ Layer::Layer()
       device_scale_factor_(1.0f),
       cache_render_surface_requests_(0),
       deferred_paint_requests_(0),
+      backdrop_filter_quality_(1.0f),
       trilinear_filtering_request_(0),
       weak_ptr_factory_(this) {
   CreateCcLayer();
@@ -141,6 +142,7 @@ Layer::Layer(LayerType type)
       device_scale_factor_(1.0f),
       cache_render_surface_requests_(0),
       deferred_paint_requests_(0),
+      backdrop_filter_quality_(1.0f),
       trilinear_filtering_request_(0),
       weak_ptr_factory_(this) {
   CreateCcLayer();
@@ -638,6 +640,7 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   cc_layer_->SetContentsOpaque(fills_bounds_opaquely_);
   cc_layer_->SetIsDrawable(type_ != LAYER_NOT_DRAWN);
   cc_layer_->SetHideLayerAndSubtree(!visible_);
+  cc_layer_->SetBackdropFilterQuality(backdrop_filter_quality_);
   cc_layer_->SetElementId(cc::ElementId(cc_layer_->id()));
 
   SetLayerFilters();
@@ -673,6 +676,10 @@ void Layer::RemoveCacheRenderSurfaceRequest() {
     cc_layer_->SetCacheRenderSurface(false);
 }
 
+void Layer::SetBackdropFilterQuality(const float quality) {
+  backdrop_filter_quality_ = quality / GetDeviceScaleFactor();
+  cc_layer_->SetBackdropFilterQuality(backdrop_filter_quality_);
+}
 void Layer::AddDeferredPaintRequest() {
   ++deferred_paint_requests_;
   TRACE_COUNTER_ID1("ui", "DeferredPaintRequests", this,
