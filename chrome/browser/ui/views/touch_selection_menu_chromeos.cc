@@ -12,6 +12,8 @@
 #include "components/arc/arc_service_manager.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/label_button.h"
 
 namespace {
 
@@ -24,7 +26,7 @@ TouchSelectionMenuChromeOS::TouchSelectionMenuChromeOS(
     ui::TouchSelectionMenuClient* client,
     aura::Window* context,
     arc::mojom::TextSelectionActionPtr action)
-    : views::TouchSelectionMenuRunnerViews::Menu(owner, client, context),
+    : views::TouchSelectionMenuViews(owner, client, context),
       action_(std::move(action)) {}
 
 void TouchSelectionMenuChromeOS::SetActionsForTesting(
@@ -58,13 +60,13 @@ void TouchSelectionMenuChromeOS::CreateButtons() {
     AddChildView(button);
   }
 
-  views::TouchSelectionMenuRunnerViews::Menu::CreateButtons();
+  views::TouchSelectionMenuViews::CreateButtons();
 }
 
 void TouchSelectionMenuChromeOS::ButtonPressed(views::Button* sender,
                                                const ui::Event& event) {
   if (sender->tag() != kSmartTextSelectionActionTag) {
-    views::TouchSelectionMenuRunnerViews::Menu::ButtonPressed(sender, event);
+    views::TouchSelectionMenuViews::ButtonPressed(sender, event);
     return;
   }
 
