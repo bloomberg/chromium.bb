@@ -54,9 +54,6 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "net/base/load_flags.h"
-#include "net/http/http_request_headers.h"
-#include "net/ssl/ssl_info.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/web/devtools_agent.mojom.h"
@@ -99,27 +96,6 @@ FrameTreeNode* GetFrameTreeNodeAncestor(FrameTreeNode* frame_tree_node) {
 
 }  // namespace
 
-template <typename Handler, typename... MethodArgs, typename... Args>
-void DispatchToAgents(FrameTreeNode* frame_tree_node,
-                      void (Handler::*method)(MethodArgs...),
-                      Args&&... args) {
-  RenderFrameDevToolsAgentHost* agent_host =
-      FindAgentHost(GetFrameTreeNodeAncestor(frame_tree_node));
-  if (!agent_host)
-    return;
-  for (auto* h : Handler::ForAgentHost(agent_host))
-    (h->*method)(std::forward<Args>(args)...);
-}
-
-template <typename Handler, typename... MethodArgs, typename... Args>
-void DispatchToAgents(int frame_tree_node_id,
-                      void (Handler::*method)(MethodArgs...),
-                      Args&&... args) {
-  FrameTreeNode* ftn = FrameTreeNode::GloballyFindByID(frame_tree_node_id);
-  if (ftn)
-    DispatchToAgents(ftn, method, std::forward<Args>(args)...);
-}
-
 // static
 scoped_refptr<DevToolsAgentHost>
 DevToolsAgentHost::GetOrCreateFor(WebContents* web_contents) {
@@ -133,6 +109,12 @@ DevToolsAgentHost::GetOrCreateFor(WebContents* web_contents) {
 }
 
 // static
+DevToolsAgentHostImpl* RenderFrameDevToolsAgentHost::GetFor(
+    FrameTreeNode* frame_tree_node) {
+  frame_tree_node = GetFrameTreeNodeAncestor(frame_tree_node);
+  return FindAgentHost(frame_tree_node);
+}
+
 scoped_refptr<DevToolsAgentHost> RenderFrameDevToolsAgentHost::GetOrCreateFor(
     FrameTreeNode* frame_tree_node) {
   frame_tree_node = GetFrameTreeNodeAncestor(frame_tree_node);
@@ -190,199 +172,6 @@ void RenderFrameDevToolsAgentHost::AddAllAgentHosts(
       result->push_back(RenderFrameDevToolsAgentHost::GetOrCreateFor(node));
     }
   }
-}
-
-// static
-void RenderFrameDevToolsAgentHost::OnResetNavigationRequest(
-    NavigationRequest* navigation_request) {
-  // Traverse frame chain all the way to the top and report to all
-  // page handlers that the navigation completed.
-  for (FrameTreeNode* node = navigation_request->frame_tree_node(); node;
-       node = node->parent()) {
-    DispatchToAgents(node, &protocol::PageHandler::NavigationReset,
-                     navigation_request);
-  }
-}
-
-// static
-void RenderFrameDevToolsAgentHost::OnNavigationResponseReceived(
-    const NavigationRequest& nav_request,
-    const network::ResourceResponse& response) {
-  FrameTreeNode* ftn = nav_request.frame_tree_node();
-  std::string id = nav_request.devtools_navigation_token().ToString();
-  std::string frame_id = ftn->devtools_frame_token().ToString();
-  GURL url = nav_request.common_params().url;
-  DispatchToAgents(ftn, &protocol::NetworkHandler::ResponseReceived, id, id,
-                   url, protocol::Network::ResourceTypeEnum::Document,
-                   response.head, frame_id);
-}
-
-// static
-void RenderFrameDevToolsAgentHost::OnNavigationRequestFailed(
-    const NavigationRequest& nav_request,
-    const network::URLLoaderCompletionStatus& status) {
-  FrameTreeNode* ftn = nav_request.frame_tree_node();
-  std::string id = nav_request.devtools_navigation_token().ToString();
-  DispatchToAgents(ftn, &protocol::NetworkHandler::LoadingComplete, id,
-                   protocol::Network::ResourceTypeEnum::Document, status);
-}
-
-// static
-void RenderFrameDevToolsAgentHost::OnSignedExchangeReceived(
-    FrameTreeNode* frame_tree_node,
-    base::Optional<const base::UnguessableToken> devtools_navigation_token,
-    const GURL& outer_request_url,
-    const network::ResourceResponseHead& outer_response,
-    const base::Optional<SignedExchangeEnvelope>& envelope,
-    const scoped_refptr<net::X509Certificate>& certificate,
-    const base::Optional<net::SSLInfo>& ssl_info,
-    const std::vector<SignedExchangeError>& errors) {
-  DispatchToAgents(frame_tree_node,
-                   &protocol::NetworkHandler::OnSignedExchangeReceived,
-                   devtools_navigation_token, outer_request_url, outer_response,
-                   envelope, certificate, ssl_info, errors);
-}
-
-// static
-void RenderFrameDevToolsAgentHost::OnSignedExchangeCertificateRequestSent(
-    FrameTreeNode* frame_tree_node,
-    const base::UnguessableToken& request_id,
-    const base::UnguessableToken& loader_id,
-    const network::ResourceRequest& request,
-    const GURL& signed_exchange_url) {
-  DispatchToAgents(frame_tree_node, &protocol::NetworkHandler::RequestSent,
-                   request_id.ToString(), loader_id.ToString(), request,
-                   protocol::Network::Initiator::TypeEnum::SignedExchange,
-                   signed_exchange_url);
-}
-
-// static
-void RenderFrameDevToolsAgentHost::OnSignedExchangeCertificateResponseReceived(
-    FrameTreeNode* frame_tree_node,
-    const base::UnguessableToken& request_id,
-    const base::UnguessableToken& loader_id,
-    const GURL& url,
-    const network::ResourceResponseHead& head) {
-  DispatchToAgents(frame_tree_node, &protocol::NetworkHandler::ResponseReceived,
-                   request_id.ToString(), loader_id.ToString(), url,
-                   protocol::Network::ResourceTypeEnum::Other, head,
-                   protocol::Maybe<std::string>());
-}
-
-// static
-void RenderFrameDevToolsAgentHost::OnSignedExchangeCertificateRequestCompleted(
-    FrameTreeNode* frame_tree_node,
-    const base::UnguessableToken& request_id,
-    const network::URLLoaderCompletionStatus& status) {
-  DispatchToAgents(frame_tree_node, &protocol::NetworkHandler::LoadingComplete,
-                   request_id.ToString(),
-                   protocol::Network::ResourceTypeEnum::Other, status);
-}
-
-// static
-std::vector<std::unique_ptr<NavigationThrottle>>
-RenderFrameDevToolsAgentHost::CreateNavigationThrottles(
-    NavigationHandleImpl* navigation_handle) {
-  std::vector<std::unique_ptr<NavigationThrottle>> result;
-  FrameTreeNode* frame_tree_node = navigation_handle->frame_tree_node();
-
-  // Interception might throttle navigations in inspected frames.
-  RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(frame_tree_node);
-  if (agent_host) {
-    for (auto* network_handler :
-         protocol::NetworkHandler::ForAgentHost(agent_host)) {
-      std::unique_ptr<NavigationThrottle> throttle =
-          network_handler->CreateThrottleForNavigation(navigation_handle);
-      if (throttle)
-        result.push_back(std::move(throttle));
-    }
-  }
-
-  agent_host = nullptr;
-  if (frame_tree_node->parent()) {
-    // Target domain of the parent frame's DevTools may want to pause
-    // this frame to do some setup.
-    agent_host =
-        FindAgentHost(GetFrameTreeNodeAncestor(frame_tree_node->parent()));
-  }
-  if (agent_host) {
-    for (auto* target_handler :
-         protocol::TargetHandler::ForAgentHost(agent_host)) {
-      std::unique_ptr<NavigationThrottle> throttle =
-          target_handler->CreateThrottleForNavigation(navigation_handle);
-      if (throttle)
-        result.push_back(std::move(throttle));
-    }
-  }
-
-  return result;
-}
-
-// static
-void RenderFrameDevToolsAgentHost::ApplyOverrides(
-    FrameTreeNode* frame_tree_node,
-    mojom::BeginNavigationParams* begin_params,
-    bool* report_raw_headers) {
-  bool disable_cache = false;
-  frame_tree_node = GetFrameTreeNodeAncestor(frame_tree_node);
-  RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(frame_tree_node);
-  if (!agent_host)
-    return;
-  net::HttpRequestHeaders headers;
-  headers.AddHeadersFromString(begin_params->headers);
-  for (auto* network : protocol::NetworkHandler::ForAgentHost(agent_host)) {
-    // TODO(caseq): consider chaining intercepting proxies from multiple agents.
-    if (!network->enabled())
-      continue;
-    *report_raw_headers = true;
-    network->ApplyOverrides(&headers, &begin_params->skip_service_worker,
-                            &disable_cache);
-  }
-
-  for (auto* emulation : protocol::EmulationHandler::ForAgentHost(agent_host))
-    emulation->ApplyOverrides(&headers);
-
-  if (disable_cache) {
-    begin_params->load_flags &=
-        ~(net::LOAD_VALIDATE_CACHE | net::LOAD_SKIP_CACHE_VALIDATION |
-          net::LOAD_ONLY_FROM_CACHE | net::LOAD_DISABLE_CACHE);
-    begin_params->load_flags |= net::LOAD_BYPASS_CACHE;
-  }
-
-  begin_params->headers = headers.ToString();
-}
-
-// static
-bool RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
-    RenderFrameHostImpl* rfh,
-    bool is_navigation,
-    bool is_download,
-    network::mojom::URLLoaderFactoryRequest* target_factory_request) {
-  FrameTreeNode* frame_tree_node = rfh->frame_tree_node();
-  frame_tree_node = GetFrameTreeNodeAncestor(frame_tree_node);
-  RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(frame_tree_node);
-  if (!agent_host)
-    return false;
-  DCHECK(!is_download || is_navigation);
-  bool had_interceptors = false;
-  const auto& network_handlers =
-      protocol::NetworkHandler::ForAgentHost(agent_host);
-  for (auto it = network_handlers.rbegin(); it != network_handlers.rend();
-       ++it) {
-    had_interceptors =
-        (*it)->MaybeCreateProxyForInterception(rfh, is_navigation, is_download,
-                                               target_factory_request) ||
-        had_interceptors;
-  }
-  return had_interceptors;
-}
-
-// static
-void RenderFrameDevToolsAgentHost::OnNavigationRequestWillBeSent(
-    const NavigationRequest& navigation_request) {
-  DispatchToAgents(navigation_request.frame_tree_node(),
-                   &protocol::NetworkHandler::NavigationRequestWillBeSent,
-                   navigation_request);
 }
 
 // static

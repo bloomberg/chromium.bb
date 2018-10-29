@@ -22,7 +22,7 @@
 #include "content/browser/appcache/appcache_navigation_handle_core.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
-#include "content/browser/devtools/render_frame_devtools_agent_host.h"
+#include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/file_url_loader_factory.h"
 #include "content/browser/fileapi/file_system_url_loader_factory.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -1652,7 +1652,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
         partition->browser_context(), frame_tree_node->current_frame_host(),
         true /* is_navigation */, navigation_request_initiator,
         &factory_request, &bypass_redirect_checks);
-    if (RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
+    if (devtools_instrumentation::WillCreateURLLoaderFactory(
             frame_tree_node->current_frame_host(), true, false,
             &factory_request)) {
       use_proxy = true;
