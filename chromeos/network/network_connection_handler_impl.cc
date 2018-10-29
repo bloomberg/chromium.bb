@@ -537,7 +537,7 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
     // Check certificate properties from policy.
     if (cert_config_from_policy.client_cert_type ==
         onc::client_cert::kPattern) {
-      if (!ClientCertResolver::ResolveCertificatePatternSync(
+      if (!ClientCertResolver::ResolveClientCertificateSync(
               client_cert_type, cert_config_from_policy, &config_properties)) {
         NET_LOG(ERROR) << "Non matching certificate for: " << service_path;
         ErrorCallbackForPendingRequest(service_path, kErrorCertificateRequired);
