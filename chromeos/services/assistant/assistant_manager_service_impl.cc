@@ -57,6 +57,9 @@ constexpr char kTimerFireNotificationGroupId[] = "assistant/timer_fire";
 constexpr char kQueryDeeplinkPrefix[] = "googleassistant://send-query?q=";
 constexpr base::Feature kAssistantTimerNotificationFeature{
     "ChromeOSAssistantTimerNotification", base::FEATURE_ENABLED_BY_DEFAULT};
+constexpr base::Feature kChromeOSAssistantDogfood{
+    "ChromeOSAssistantDogfood", base::FEATURE_DISABLED_BY_DEFAULT};
+constexpr char kServersideDogfoodExperimentId[] = "20347368";
 
 constexpr float kDefaultSliderStep = 0.1f;
 }  // namespace
@@ -777,6 +780,12 @@ void AssistantManagerServiceImpl::StartAssistantInternal(
   assistant_manager_->AddConversationStateListener(this);
   assistant_manager_->AddDeviceStateListener(this);
 
+  std::vector<std::string> server_experiment_ids;
+  FillServerExperimentIds(server_experiment_ids);
+
+  if (server_experiment_ids.size() > 0)
+    assistant_manager_internal_->AddExtraExperimentIds(server_experiment_ids);
+
   SetAccessToken(access_token);
 
   assistant_manager_->Start();
@@ -1162,5 +1171,13 @@ std::string AssistantManagerServiceImpl::GetLastSearchSource() {
   last_search_source_ = std::string();
   return search_source;
 }
+
+void AssistantManagerServiceImpl::FillServerExperimentIds(
+    std::vector<std::string>& server_experiment_ids) {
+  if (base::FeatureList::IsEnabled(kChromeOSAssistantDogfood)) {
+    server_experiment_ids.emplace_back(kServersideDogfoodExperimentId);
+  }
+}
+
 }  // namespace assistant
 }  // namespace chromeos
