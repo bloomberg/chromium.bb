@@ -45,6 +45,7 @@ namespace {
 
 constexpr int kShelfRoundedCornerRadius = 28;
 constexpr int kShelfBlurRadius = 10;
+constexpr float kShelfBlurQuality = 0.25f;
 
 // Return the first or last focusable child of |root|.
 views::View* FindFirstOrLastFocusableChild(views::View* root,
@@ -198,6 +199,7 @@ void ShelfWidget::DelegateView::UpdateBackgroundBlur() {
 
   opaque_background_.SetBackgroundBlur(should_blur_background ? kShelfBlurRadius
                                                               : 0);
+  opaque_background_.SetBackdropFilterQuality(kShelfBlurQuality);
 
   background_is_currently_blurred_ = should_blur_background;
 }
