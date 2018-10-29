@@ -34,10 +34,4 @@ void RecordEasyUnlockScreenUnlockEvent(EasyUnlockAuthEvent event) {
                             EASY_UNLOCK_AUTH_EVENT_COUNT);
 }
 
-void RecordEasyUnlockTrialRunEvent(EasyUnlockTrialRunEvent event) {
-  DCHECK_LT(event, EASY_UNLOCK_TRIAL_RUN_EVENT_COUNT);
-  UMA_HISTOGRAM_ENUMERATION("EasyUnlock.TrialRun.Events", event,
-                            EASY_UNLOCK_TRIAL_RUN_EVENT_COUNT);
-}
-
 }  // namespace chromeos

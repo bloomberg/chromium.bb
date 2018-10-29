@@ -75,11 +75,6 @@ struct EasyUnlockIconOptions {
   // display via a separate EasyUnlockIconsOption update. See
   // login_screen.mojom::HardlockPod.
   bool hardlock_on_click;
-  // If true, the lock screen is being demoed so the user can test out easy
-  // unlock. The flow operates as normal. Hardlocking is disabled in this
-  // scenario.
-  // TODO(jdufault): This should be removed, as it does not change UI.
-  bool is_trial_run;
 };
 
 // Infomation of each input method. This is used to populate keyboard layouts
