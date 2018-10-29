@@ -59,6 +59,7 @@ extern const base::Feature kHomepageTile;
 extern const base::Feature kHorizontalTabSwitcherAndroid;
 extern const base::Feature kImprovedA2HS;
 extern const base::Feature kInflateToolbarOnBackgroundThread;
+extern const base::Feature kIntentBlockExternalFormRedirectsNoGesture;
 extern const base::Feature kJellyBeanSupported;
 extern const base::Feature kLanguagesPreference;
 extern const base::Feature kModalPermissionDialogView;

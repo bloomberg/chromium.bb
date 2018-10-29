@@ -24,6 +24,7 @@ import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
@@ -309,6 +310,20 @@ public class ExternalNavigationHandler {
         if (!typedRedirectToExternalProtocol) {
             if (!linkNotFromIntent && !incomingIntentRedirect && !isRedirectFromFormSubmit) {
                 if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Incoming intent (not a redirect)");
+                return OverrideUrlLoadingResult.NO_OVERRIDE;
+            }
+            // http://crbug.com/839751: Require user gestures for form submits to external
+            //                          protocols.
+            // TODO(tedchoc): Remove the ChromeFeatureList check once we verify this change does
+            //                not break the world.
+            if (isRedirectFromFormSubmit && !params.hasUserGesture()
+                    && ChromeFeatureList.isEnabled(
+                               ChromeFeatureList.INTENT_BLOCK_EXTERNAL_FORM_REDIRECT_NO_GESTURE)) {
+                if (DEBUG) {
+                    Log.i(TAG,
+                            "NO_OVERRIDE: Incoming form intent attempting to redirect without "
+                                    + "user gesture");
+                }
                 return OverrideUrlLoadingResult.NO_OVERRIDE;
             }
             if (params.getRedirectHandler() != null
