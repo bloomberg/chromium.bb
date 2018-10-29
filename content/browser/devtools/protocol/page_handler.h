@@ -165,7 +165,7 @@ class PageHandler : public DevToolsDomainHandler,
       const SkBitmap& bitmap);
   void ScreencastFrameEncoded(
       std::unique_ptr<Page::ScreencastFrameMetadata> metadata,
-      const std::string& data);
+      const protocol::Binary& data);
 
   void ScreenshotCaptured(
       std::unique_ptr<CaptureScreenshotCallback> callback,

@@ -21,13 +21,14 @@ class CORE_EXPORT InspectorAuditsAgent final
   void Trace(blink::Visitor*) override;
 
   // Protocol methods.
-  protocol::Response getEncodedResponse(const String& request_id,
-                                        const String& encoding,
-                                        protocol::Maybe<double> quality,
-                                        protocol::Maybe<bool> size_only,
-                                        protocol::Maybe<String>* out_body,
-                                        int* out_original_size,
-                                        int* out_encoded_size) override;
+  protocol::Response getEncodedResponse(
+      const String& request_id,
+      const String& encoding,
+      protocol::Maybe<double> quality,
+      protocol::Maybe<bool> size_only,
+      protocol::Maybe<protocol::Binary>* out_body,
+      int* out_original_size,
+      int* out_encoded_size) override;
 
  private:
   Member<InspectorNetworkAgent> network_agent_;

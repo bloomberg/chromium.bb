@@ -4,7 +4,6 @@
 
 #include "headless/lib/browser/protocol/headless_handler.h"
 
-#include "base/base64.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -34,9 +33,9 @@ base::LazyInstance<std::set<HeadlessHandler*>>::Leaky g_instances =
 enum class ImageEncoding { kPng, kJpeg };
 constexpr int kDefaultScreenshotQuality = 80;
 
-std::string EncodeBitmap(const SkBitmap& bitmap,
-                         ImageEncoding encoding,
-                         int quality) {
+protocol::Binary EncodeBitmap(const SkBitmap& bitmap,
+                              ImageEncoding encoding,
+                              int quality) {
   gfx::Image image = gfx::Image::CreateFrom1xBitmap(bitmap);
   DCHECK(!image.IsEmpty());
 
@@ -48,16 +47,9 @@ std::string EncodeBitmap(const SkBitmap& bitmap,
     if (gfx::JPEG1xEncodedDataFromImage(image, quality, &bytes->data()))
       data = bytes;
   }
-
   if (!data || !data->front())
-    return std::string();
-
-  std::string base_64_data;
-  base::Base64Encode(
-      base::StringPiece(reinterpret_cast<const char*>(data->front()),
-                        data->size()),
-      &base_64_data);
-  return base_64_data;
+    return protocol::Binary();
+  return protocol::Binary::fromRefCounted(data);
 }
 
 void OnBeginFrameFinished(
@@ -67,11 +59,10 @@ void OnBeginFrameFinished(
     bool has_damage,
     std::unique_ptr<SkBitmap> bitmap) {
   if (!bitmap || bitmap->drawsNothing()) {
-    callback->sendSuccess(has_damage, Maybe<String>());
+    callback->sendSuccess(has_damage, Maybe<protocol::Binary>());
     return;
   }
-  std::string data = EncodeBitmap(*bitmap, encoding, quality);
-  callback->sendSuccess(has_damage, std::move(data));
+  callback->sendSuccess(has_damage, EncodeBitmap(*bitmap, encoding, quality));
 }
 
 }  // namespace

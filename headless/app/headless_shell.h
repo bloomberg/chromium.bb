@@ -80,10 +80,10 @@ class HeadlessShell : public HeadlessWebContents::Observer,
 
   void OnPDFCreated(std::unique_ptr<page::PrintToPDFResult> result);
 
-  void WriteFile(const std::string& switch_string,
+  void WriteFile(const std::string& file_path_switch,
                  const std::string& default_file_name,
-                 const std::string& base64_data);
-  void OnFileOpened(const std::string& decoded_data,
+                 const protocol::Binary& data);
+  void OnFileOpened(const protocol::Binary& data,
                     const base::FilePath file_name,
                     base::File::Error error_code);
   void OnFileWritten(const base::FilePath file_name,

@@ -57,8 +57,9 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/picture_snapshot.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
-#include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/skia/include/core/SkPicture.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace blink {
@@ -478,8 +479,9 @@ Response InspectorLayerTreeAgent::loadSnapshot(
     protocol::LayerTree::PictureTile* tile = tiles->get(i);
     decoded_tiles[i] = base::AdoptRef(new PictureSnapshot::TilePictureStream());
     decoded_tiles[i]->layer_offset.Set(tile->getX(), tile->getY());
-    if (!Base64Decode(tile->getPicture(), decoded_tiles[i]->data))
-      return Response::Error("Invalid base64 encoding");
+    const protocol::Binary& data = tile->getPicture();
+    decoded_tiles[i]->picture =
+        SkPicture::MakeFromData(data.data(), data.size());
   }
   scoped_refptr<PictureSnapshot> snapshot =
       PictureSnapshot::Load(decoded_tiles);
