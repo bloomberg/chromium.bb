@@ -237,6 +237,36 @@ void OnMoveLoopEnd(bool* out_success,
 
 }  // namespace
 
+// See description in RestoreToPreminimizedState() for details.
+class DesktopWindowTreeHostMus::RestoreWindowObserver
+    : public aura::WindowObserver {
+ public:
+  explicit RestoreWindowObserver(DesktopWindowTreeHostMus* host) : host_(host) {
+    host->window()->AddObserver(this);
+  }
+  ~RestoreWindowObserver() override { host_->window()->RemoveObserver(this); }
+
+  // aura::WindowObserver:
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override {
+    if (key == aura::client::kShowStateKey) {
+      host_->restore_window_observer_.reset();
+      // WARNING: this has been deleted.
+    }
+  }
+  void OnWindowDestroying(aura::Window* window) override {
+    // This is owned by DesktopWindowTreeHostMus, which should be destroyed
+    // before the Window.
+    NOTREACHED();
+  }
+
+ private:
+  DesktopWindowTreeHostMus* host_;
+
+  DISALLOW_COPY_AND_ASSIGN(RestoreWindowObserver);
+};
+
 DesktopWindowTreeHostMus::DesktopWindowTreeHostMus(
     aura::WindowTreeHostMusInitParams init_params,
     internal::NativeWidgetDelegate* native_widget_delegate,
@@ -318,6 +348,12 @@ bool DesktopWindowTreeHostMus::ShouldSendClientAreaToServer() const {
   using WIP = views::Widget::InitParams;
   const WIP::Type type = desktop_native_widget_aura_->widget_type();
   return type == WIP::TYPE_WINDOW || type == WIP::TYPE_PANEL;
+}
+
+void DesktopWindowTreeHostMus::RestoreToPreminimizedState() {
+  DCHECK(IsMinimized());
+  restore_window_observer_ = std::make_unique<RestoreWindowObserver>(this);
+  window()->Show();
 }
 
 void DesktopWindowTreeHostMus::Init(const Widget::InitParams& params) {
@@ -490,6 +526,11 @@ void DesktopWindowTreeHostMus::Show(ui::WindowShowState show_state,
                                     const gfx::Rect& restore_bounds) {
   native_widget_delegate_->OnNativeWidgetVisibilityChanging(true);
 
+  // NOTE: this code is called from Widget::Show() (no args). Widget::Show()
+  // supplies ui::SHOW_STATE_DEFAULT as the |show_state| after the first call.
+  // If SHOW_STATE_DEFAULT is supplied, and the Window is currently minimized,
+  // the window should be restored to its preminimized state.
+
   if (show_state == ui::SHOW_STATE_MAXIMIZED && !restore_bounds.IsEmpty()) {
     window()->SetProperty(aura::client::kRestoreBoundsKey,
                           new gfx::Rect(restore_bounds));
@@ -497,6 +538,9 @@ void DesktopWindowTreeHostMus::Show(ui::WindowShowState show_state,
   if (show_state == ui::SHOW_STATE_MAXIMIZED ||
       show_state == ui::SHOW_STATE_FULLSCREEN) {
     window()->SetProperty(aura::client::kShowStateKey, show_state);
+    restore_window_observer_.reset();
+  } else if (show_state == ui::SHOW_STATE_DEFAULT && IsMinimized()) {
+    RestoreToPreminimizedState();
   }
   // DesktopWindowTreeHostMus is unique in that it calls window()->Show() here.
   // All other implementations call window()->Show() from the constructor. This
@@ -515,8 +559,10 @@ void DesktopWindowTreeHostMus::Show(ui::WindowShowState show_state,
   native_widget_delegate_->OnNativeWidgetVisibilityChanged(true);
 
   if (native_widget_delegate_->CanActivate()) {
-    if (show_state != ui::SHOW_STATE_INACTIVE)
+    if (show_state != ui::SHOW_STATE_INACTIVE &&
+        show_state != ui::SHOW_STATE_MINIMIZED) {
       Activate();
+    }
 
     // SetInitialFocus() should be always be called, even for
     // SHOW_STATE_INACTIVE. If the window has to stay inactive, the method will
@@ -586,7 +632,13 @@ void DesktopWindowTreeHostMus::GetWindowPlacement(
     ui::WindowShowState* show_state) const {
   // Implementation matches that of NativeWidgetAura.
   *bounds = GetRestoredBounds();
-  *show_state = window()->GetProperty(aura::client::kShowStateKey);
+  if (IsWaitingForRestoreToComplete()) {
+    // The real state is not known, use ui::SHOW_STATE_NORMAL to avoid saving
+    // the minimized state.
+    *show_state = ui::SHOW_STATE_NORMAL;
+  } else {
+    *show_state = window()->GetProperty(aura::client::kShowStateKey);
+  }
 }
 
 gfx::Rect DesktopWindowTreeHostMus::GetWindowBoundsInScreen() const {
@@ -632,6 +684,10 @@ void DesktopWindowTreeHostMus::Activate() {
   if (!IsVisible())
     return;
 
+  // Activate() is expected to restore a minimized window.
+  if (IsMinimized())
+    RestoreToPreminimizedState();
+
   // This should result in OnActiveFocusClientChanged() being called, which
   // triggers a call to DesktopNativeWidgetAura::HandleActivationChanged(),
   // which focuses the right window.
@@ -671,6 +727,14 @@ void DesktopWindowTreeHostMus::Maximize() {
 
 void DesktopWindowTreeHostMus::Minimize() {
   window()->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
+
+  // When minimized, this should no longer be active.
+  if (IsFocusClientInstalledOnFocusSynchronizer()) {
+    MusClient::Get()
+        ->window_tree_client()
+        ->focus_synchronizer()
+        ->SetActiveFocusClient(nullptr, nullptr);
+  }
 }
 
 void DesktopWindowTreeHostMus::Restore() {
@@ -684,7 +748,8 @@ bool DesktopWindowTreeHostMus::IsMaximized() const {
 
 bool DesktopWindowTreeHostMus::IsMinimized() const {
   return window()->GetProperty(aura::client::kShowStateKey) ==
-         ui::SHOW_STATE_MINIMIZED;
+             ui::SHOW_STATE_MINIMIZED &&
+         !IsWaitingForRestoreToComplete();
 }
 
 bool DesktopWindowTreeHostMus::HasCapture() const {
