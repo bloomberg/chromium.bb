@@ -75,6 +75,9 @@ void UmaSessionStats::UmaEndSession(JNIEnv* env,
     // Note: This metric is recorded separately on desktop in
     // DesktopSessionDurationTracker::EndSession.
     UMA_HISTOGRAM_LONG_TIMES("Session.TotalDuration", duration);
+    UMA_HISTOGRAM_CUSTOM_TIMES("Session.TotalDurationMax1Day", duration,
+                               base::TimeDelta::FromMilliseconds(1),
+                               base::TimeDelta::FromHours(24), 50);
 
     DCHECK(g_browser_process);
     // Tell the metrics services they were cleanly shutdown.

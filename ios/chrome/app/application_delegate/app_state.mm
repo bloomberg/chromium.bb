@@ -421,6 +421,9 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 
   base::TimeDelta duration = base::TimeTicks::Now() - _sessionStartTime;
   UMA_HISTOGRAM_LONG_TIMES("Session.TotalDuration", duration);
+  UMA_HISTOGRAM_CUSTOM_TIMES("Session.TotalDurationMax1Day", duration,
+                             base::TimeDelta::FromMilliseconds(1),
+                             base::TimeDelta::FromHours(24), 50);
   [[[_browserLauncher browserViewInformation] mainTabModel]
       recordSessionMetrics];
 }
