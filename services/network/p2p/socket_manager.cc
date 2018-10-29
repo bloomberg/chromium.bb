@@ -61,6 +61,14 @@ bool IsRtcpPacket(base::span<const uint8_t> data) {
   return type >= 64 && type < 96;
 }
 
+// Names ending in ".local." are link-local and used with Multicast DNS as
+// described in RFC6762 (https://tools.ietf.org/html/rfc6762#section-3).
+constexpr char kLocalTld[] = ".local.";
+
+bool HasLocalTld(const std::string& host_name) {
+  return EndsWith(host_name, kLocalTld, base::CompareCase::INSENSITIVE_ASCII);
+}
+
 }  // namespace
 
 class P2PSocketManager::DnsRequest {
@@ -90,14 +98,18 @@ class P2PSocketManager::DnsRequest {
       host_name_ += '.';
 
     net::HostPortPair host(host_name_, 0);
-    if (enable_mdns_) {
-      // TODO(crbug.com/879746): Pass in a
-      // net::HostResolver::ResolveHostParameters with source set to MDNS if we
-      // have a ".local." TLD and enable_mdns_ is set (once MDNS is supported).
-    }
 
+    net::HostResolver::ResolveHostParameters parameters;
+    if (enable_mdns_ && HasLocalTld(host_name_)) {
+#if BUILDFLAG(ENABLE_MDNS)
+      // HostResolver/MDnsClient expects a key without a trailing dot.
+      host.set_host(host_name_.substr(0, host_name_.size() - 1));
+      parameters.source = net::HostResolverSource::MULTICAST_DNS;
+#endif  // ENABLE_MDNS
+    }
     request_ =
-        resolver_->CreateRequest(host, net::NetLogWithSource(), base::nullopt);
+        resolver_->CreateRequest(host, net::NetLogWithSource(), parameters);
+
     int result = request_->Start(base::BindOnce(
         &P2PSocketManager::DnsRequest::OnDone, base::Unretained(this)));
     if (result != net::ERR_IO_PENDING)
