@@ -1963,6 +1963,12 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     if (node->is_folder()) {
       [self handleSelectFolderForNavigation:node];
     } else {
+      if (self.sharedState.currentlyShowingSearchResults) {
+        // Set the searchController active property to NO or the SearchBar will
+        // cause the navigation controller to linger for a second  when
+        // dismissing.
+        self.searchController.active = NO;
+      }
       // Open URL. Pass this to the delegate.
       [self handleSelectUrlForNavigation:node->url()];
     }
