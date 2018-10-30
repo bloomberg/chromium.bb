@@ -1143,9 +1143,6 @@ void WebMediaPlayerMS::OnFirstFrameReceived(media::VideoRotation video_rotation,
   DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  OnRotationChanged(video_rotation);
-  OnOpacityChanged(is_opaque);
-
   if (surface_layer_mode_ == blink::WebMediaPlayer::SurfaceLayerMode::kAlways) {
     ActivateSurfaceLayerForVideo();
   }
