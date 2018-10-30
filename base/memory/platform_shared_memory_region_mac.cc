@@ -57,7 +57,6 @@ PlatformSharedMemoryRegion::TakeFromSharedMemoryHandle(
     const SharedMemoryHandle& handle,
     Mode mode) {
   CHECK(mode == Mode::kReadOnly || mode == Mode::kUnsafe);
-  CHECK(handle.GetType() == SharedMemoryHandle::MACH);
   if (!handle.IsValid())
     return {};
 
