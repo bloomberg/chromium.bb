@@ -150,6 +150,8 @@ public class UpdateMenuItemHelper {
         switch (getUpdateType()) {
             case UpdateType.UPDATE_AVAILABLE:
                 title.setText(context.getString(R.string.menu_update));
+                // See crbug.com/899695 for why this line is necessary.
+                title.setContentDescription(context.getString(R.string.menu_update));
                 title.setTextColor(Color.RED);
 
                 String customSummary = getStringParamValue(CUSTOM_SUMMARY);
@@ -164,6 +166,8 @@ public class UpdateMenuItemHelper {
                 break;
             case UpdateType.UNSUPPORTED_OS_VERSION:
                 title.setText(R.string.menu_update_unsupported);
+                // See crbug.com/899695 for why this line is necessary.
+                title.setContentDescription(context.getString(R.string.menu_update_unsupported));
                 title.setTextColor(ApiCompatibilityUtils.getColor(
                         context.getResources(), R.color.default_text_color));
 

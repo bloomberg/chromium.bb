@@ -826,7 +826,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         if (mMenuBadge == null) return;
         boolean wasShowingMenuBadge = mShowMenuBadge;
         mShowMenuBadge = false;
-        setMenuButtonContentDescription();
+        setMenuButtonContentDescription(false);
 
         if (!animate || !wasShowingMenuBadge) {
             mMenuButtonWrapper.setUpdateBadgeVisibilityIfValidState(false);
@@ -890,7 +890,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      */
     protected void setAppMenuUpdateBadgeToVisible(boolean animate) {
         if (mMenuBadge == null || mMenuButton == null || mMenuButtonWrapper == null) return;
-        setMenuButtonContentDescription();
+        setMenuButtonContentDescription(true);
         if (!animate || mIsMenuBadgeAnimationRunning) {
             mMenuButtonWrapper.setUpdateBadgeVisibilityIfValidState(true);
             return;
@@ -964,10 +964,11 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
 
     /**
      * Sets the content description for the menu button.
+     * @param isUpdateBadgeVisible Whether the update menu badge is visible
      */
-    protected void setMenuButtonContentDescription() {
+    protected void setMenuButtonContentDescription(boolean isUpdateBadgeVisible) {
         if (mMenuButtonWrapper == null) return;
-        mMenuButtonWrapper.updateContentDescription();
+        mMenuButtonWrapper.updateContentDescription(isUpdateBadgeVisible);
     }
 
     /**

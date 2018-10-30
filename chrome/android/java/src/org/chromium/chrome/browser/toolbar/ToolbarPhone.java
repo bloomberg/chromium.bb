@@ -1830,7 +1830,7 @@ public class ToolbarPhone extends ToolbarLayout
             view.setVisibility(browsingViewsVisibility);
         }
         if (mShowMenuBadge) {
-            setMenuButtonContentDescription();
+            setMenuButtonContentDescription(mTabSwitcherState == STATIC_TAB);
         }
 
         updateProgressBarVisibility();
