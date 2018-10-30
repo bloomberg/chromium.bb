@@ -155,9 +155,6 @@ constexpr base::TimeDelta kPrerollAttemptTimeout =
 // Maximum number, per-WMPI, of media logs of playback rate changes.
 constexpr int kMaxNumPlaybackRateLogs = 10;
 
-constexpr base::TimeDelta kMaxKeyframeDistance =
-    base::TimeDelta::FromSeconds(5);
-
 blink::WebLocalizedString::Name GetSwitchToLocalMessage(
     MediaObserverClient::ReasonToSwitchToLocal reason) {
   switch (reason) {
@@ -3114,12 +3111,16 @@ bool WebMediaPlayerImpl::IsBackgroundOptimizationCandidate() const {
   // Videos shorter than the maximum allowed keyframe distance can be optimized.
   base::TimeDelta duration = GetPipelineMediaDuration();
 
-  if (duration < kMaxKeyframeDistance)
+  constexpr base::TimeDelta kMaxKeyframeDistanceToDisableBackgroundVideo =
+      base::TimeDelta::FromMilliseconds(
+          kMaxKeyframeDistanceToDisableBackgroundVideoMs);
+  if (duration < kMaxKeyframeDistanceToDisableBackgroundVideo)
     return true;
 
   // Otherwise, only optimize videos with shorter average keyframe distance.
   PipelineStatistics stats = GetPipelineStatistics();
-  return stats.video_keyframe_distance_average < kMaxKeyframeDistance;
+  return stats.video_keyframe_distance_average <
+         kMaxKeyframeDistanceToDisableBackgroundVideo;
 }
 
 void WebMediaPlayerImpl::UpdateBackgroundVideoOptimizationState() {

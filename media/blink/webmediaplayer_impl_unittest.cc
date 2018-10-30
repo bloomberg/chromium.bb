@@ -80,10 +80,6 @@ namespace media {
 constexpr char kAudioOnlyTestFile[] = "sfx-opus-441.webm";
 constexpr char kVideoOnlyTestFile[] = "bear-320x240-video-only.webm";
 
-// Specify different values for testing.
-constexpr base::TimeDelta kMaxKeyframeDistanceToDisableBackgroundVideo =
-    base::TimeDelta::FromSeconds(5);
-
 MATCHER(WmpiDestroyed, "") {
   return CONTAINS_STRING(arg, "WEBMEDIAPLAYER_DESTROYED {}");
 }
@@ -494,9 +490,7 @@ class WebMediaPlayerImplTest : public testing::Test {
     wmpi_->OnError(status);
   }
 
-  void OnMetadata(PipelineMetadata metadata) {
-    wmpi_->OnMetadata(metadata);
-  }
+  void OnMetadata(PipelineMetadata metadata) { wmpi_->OnMetadata(metadata); }
 
   void OnVideoNaturalSizeChange(const gfx::Size& size) {
     wmpi_->OnVideoNaturalSizeChange(size);
@@ -1587,7 +1581,8 @@ class WebMediaPlayerImplBackgroundBehaviorTest
   }
 
   int GetMaxKeyframeDistanceSec() const {
-    return kMaxKeyframeDistanceToDisableBackgroundVideo.InSeconds();
+    return WebMediaPlayerImpl::kMaxKeyframeDistanceToDisableBackgroundVideoMs /
+           base::Time::kMillisecondsPerSecond;
   }
 
   bool IsAndroid() {
@@ -1679,15 +1674,25 @@ TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, AudioVideo) {
   EXPECT_TRUE(IsDisableVideoTrackPending());
 }
 
-INSTANTIATE_TEST_CASE_P(BackgroundBehaviorTestInstances,
-                        WebMediaPlayerImplBackgroundBehaviorTest,
-                        ::testing::Combine(::testing::Bool(),
-                                           ::testing::Bool(),
-                                           ::testing::Values(5, 300),
-                                           ::testing::Values(5, 100),
-                                           ::testing::Bool(),
-                                           ::testing::Bool(),
-                                           ::testing::Bool(),
-                                           ::testing::Bool()));
+INSTANTIATE_TEST_CASE_P(
+    BackgroundBehaviorTestInstances,
+    WebMediaPlayerImplBackgroundBehaviorTest,
+    ::testing::Combine(
+        ::testing::Bool(),
+        ::testing::Bool(),
+        ::testing::Values(
+            WebMediaPlayerImpl::kMaxKeyframeDistanceToDisableBackgroundVideoMs /
+                    base::Time::kMillisecondsPerSecond +
+                1,
+            300),
+        ::testing::Values(
+            WebMediaPlayerImpl::kMaxKeyframeDistanceToDisableBackgroundVideoMs /
+                    base::Time::kMillisecondsPerSecond +
+                1,
+            100),
+        ::testing::Bool(),
+        ::testing::Bool(),
+        ::testing::Bool(),
+        ::testing::Bool()));
 
 }  // namespace media

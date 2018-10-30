@@ -309,6 +309,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
     bool is_suspended;
   };
 
+  // Allow background video tracks with ~5 second keyframes (rounding down) to
+  // be disabled to save resources.
+  enum { kMaxKeyframeDistanceToDisableBackgroundVideoMs = 5500 };
+
  private:
   friend class WebMediaPlayerImplTest;
   friend class WebMediaPlayerImplBackgroundBehaviorTest;
