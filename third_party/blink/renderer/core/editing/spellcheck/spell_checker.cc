@@ -163,8 +163,9 @@ void SpellChecker::AdvanceToNextMisspelling(bool start_before_selection) {
 
     if (!GetFrame().GetDocument()->documentElement())
       return;
-    position = FirstEditableVisiblePositionAfterPositionInRoot(
-                   position, *GetFrame().GetDocument()->documentElement())
+    position = CreateVisiblePosition(
+                   FirstEditablePositionAfterPositionInRoot(
+                       position, *GetFrame().GetDocument()->documentElement()))
                    .DeepEquivalent();
     if (position.IsNull())
       return;
