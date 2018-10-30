@@ -5756,3 +5756,4 @@ crbug.com/898987 [ Android ] synthetic_gestures/smooth-scroll-tiny-delta.html [ 
 
 # Sheriff 2018-10-30
 crbug.com/867668 [ Linux ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-click-hyperlink.html [ Failure Pass ]
+crbug.com/867668 [ Linux ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Failure Pass ]
