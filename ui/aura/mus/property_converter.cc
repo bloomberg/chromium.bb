@@ -81,6 +81,10 @@ PropertyConverter::PropertyConverter() {
   RegisterPrimitiveProperty(client::kDrawAttentionKey,
                             ws::mojom::WindowManager::kDrawAttention_Property,
                             CreateAcceptAnyValueCallback());
+  RegisterPrimitiveProperty(
+      client::kImmersiveFullscreenKey,
+      ws::mojom::WindowManager::kImmersiveFullscreen_Property,
+      CreateAcceptAnyValueCallback());
   RegisterPrimitiveProperty(client::kResizeBehaviorKey,
                             ws::mojom::WindowManager::kResizeBehavior_Property,
                             base::Bind(&ValidateResizeBehaviour));
