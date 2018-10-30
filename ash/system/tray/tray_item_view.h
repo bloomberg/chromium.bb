@@ -23,6 +23,7 @@ class Label;
 
 namespace ash {
 class SystemTrayItem;
+class Shelf;
 
 // Base-class for items in the tray. It makes sure the widget is updated
 // correctly when the visibility/size of the tray item changes. It also adds
@@ -30,7 +31,10 @@ class SystemTrayItem;
 class ASH_EXPORT TrayItemView : public views::View,
                                 public gfx::AnimationDelegate {
  public:
+  // TODO(tetsui): Remove this with old SystemTray.  https://crbug.com/898419
   explicit TrayItemView(SystemTrayItem* owner);
+
+  explicit TrayItemView(Shelf* shelf);
   ~TrayItemView() override;
 
   // Convenience function for creating a child Label or ImageView.
@@ -38,7 +42,6 @@ class ASH_EXPORT TrayItemView : public views::View,
   void CreateLabel();
   void CreateImageView();
 
-  SystemTrayItem* owner() const { return owner_; }
   views::Label* label() const { return label_; }
   views::ImageView* image_view() const { return image_view_; }
 
@@ -60,7 +63,7 @@ class ASH_EXPORT TrayItemView : public views::View,
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;
 
-  SystemTrayItem* owner_;
+  Shelf* const shelf_;
   std::unique_ptr<gfx::SlideAnimation> animation_;
   // Only one of |label_| and |image_view_| should be non-null.
   views::Label* label_;

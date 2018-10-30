@@ -15,8 +15,6 @@ class NetworkState;
 }  // namespace chromeos
 
 namespace ash {
-class TrayNetwork;
-
 namespace tray {
 
 // Returns the connected, non-virtual (aka VPN), network.
@@ -26,7 +24,7 @@ class NetworkTrayView : public TrayItemView,
                         public network_icon::AnimationObserver,
                         public SessionObserver {
  public:
-  explicit NetworkTrayView(TrayNetwork* network_tray);
+  explicit NetworkTrayView(Shelf* shelf);
 
   ~NetworkTrayView() override;
 

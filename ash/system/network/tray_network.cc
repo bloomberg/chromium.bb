@@ -116,7 +116,7 @@ views::View* TrayNetwork::CreateTrayView(LoginStatus status) {
   CHECK(tray_ == nullptr);
   if (!chromeos::NetworkHandler::IsInitialized())
     return nullptr;
-  tray_ = new tray::NetworkTrayView(this);
+  tray_ = new tray::NetworkTrayView(system_tray()->shelf());
   return tray_;
 }
 

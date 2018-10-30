@@ -26,7 +26,7 @@ class TimeView;
 
 class TimeTrayItemView : public TrayItemView, public SessionObserver {
  public:
-  TimeTrayItemView(SystemTrayItem* owner, Shelf* shelf);
+  explicit TimeTrayItemView(Shelf* shelf);
   ~TimeTrayItemView() override;
 
   void UpdateAlignmentForShelf(Shelf* shelf);

@@ -150,11 +150,11 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
       model_(std::make_unique<UnifiedSystemTrayModel>()),
       slider_bubble_controller_(
           std::make_unique<UnifiedSliderBubbleController>(this)),
-      ime_mode_view_(new ImeModeView()),
-      managed_device_view_(new ManagedDeviceView()),
-      notification_counter_item_(new NotificationCounterView()),
-      quiet_mode_view_(new QuietModeView()),
-      time_view_(new tray::TimeTrayItemView(nullptr, shelf)) {
+      ime_mode_view_(new ImeModeView(shelf)),
+      managed_device_view_(new ManagedDeviceView(shelf)),
+      notification_counter_item_(new NotificationCounterView(shelf)),
+      quiet_mode_view_(new QuietModeView(shelf)),
+      time_view_(new tray::TimeTrayItemView(shelf)) {
   tray_container()->SetMargin(kUnifiedTrayContentPadding, 0);
   tray_container()->AddChildView(ime_mode_view_);
   tray_container()->AddChildView(managed_device_view_);
@@ -163,13 +163,13 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
 
   // It is possible in unit tests that it's missing.
   if (chromeos::NetworkHandler::IsInitialized()) {
-    tray::NetworkTrayView* network_item = new tray::NetworkTrayView(nullptr);
+    tray::NetworkTrayView* network_item = new tray::NetworkTrayView(shelf);
     network_state_delegate_ =
         std::make_unique<NetworkStateDelegate>(network_item);
     tray_container()->AddChildView(network_item);
   }
 
-  tray_container()->AddChildView(new tray::PowerTrayView(nullptr));
+  tray_container()->AddChildView(new tray::PowerTrayView(shelf));
   tray_container()->AddChildView(time_view_);
 
   SetInkDropMode(InkDropMode::ON);

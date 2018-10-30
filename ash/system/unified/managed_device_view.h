@@ -17,7 +17,7 @@ namespace ash {
 class ManagedDeviceView : public TrayItemView,
                           public SessionObserver {
  public:
-  ManagedDeviceView();
+  explicit ManagedDeviceView(Shelf* shelf);
   ~ManagedDeviceView() override;
 
   // SessionObserver:

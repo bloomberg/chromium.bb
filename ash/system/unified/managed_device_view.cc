@@ -16,7 +16,7 @@
 
 namespace ash {
 
-ManagedDeviceView::ManagedDeviceView() : TrayItemView(nullptr) {
+ManagedDeviceView::ManagedDeviceView(Shelf* shelf) : TrayItemView(shelf) {
   Shell::Get()->session_controller()->AddObserver(this);
   CreateImageView();
   OnLoginStatusChanged(Shell::Get()->session_controller()->login_status());
