@@ -13,7 +13,6 @@
 #include "net/third_party/http2/platform/api/http2_string.h"
 #include "net/third_party/http2/platform/api/http2_string_piece.h"
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
-#include "net/third_party/http2/platform/api/random_util_helper.h"
 #include "net/third_party/http2/tools/random_decoder_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -97,7 +96,7 @@ class HpackHuffmanTranscoderTest : public RandomDecoderTest {
   }
 
   Http2String RandomAsciiNonControlString(int length) {
-    return RandomString(RandomPtr(), length, ascii_non_control_set_);
+    return Random().RandStringWithAlphabet(length, ascii_non_control_set_);
   }
 
   Http2String RandomBytes(int length) { return Random().RandString(length); }

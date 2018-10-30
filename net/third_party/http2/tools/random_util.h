@@ -8,33 +8,20 @@
 #include <stddef.h>
 
 #include "net/third_party/http2/platform/api/http2_string.h"
-#include "net/third_party/http2/platform/api/http2_string_piece.h"
+#include "net/third_party/http2/test_tools/http2_random.h"
 
 namespace http2 {
 namespace test {
 
-class RandomBase;
-
-// Returns a random string of length |len|, each character drawn uniformly and
-// independently fom |alphabet|.
-Http2String RandomString(RandomBase* rng, int len, Http2StringPiece alphabet);
-
-// Returns a random integer in the range [lo, hi).
-size_t GenerateUniformInRange(size_t lo, size_t hi, RandomBase* rng);
-
 // Generate a string with the allowed character set for HTTP/2 / HPACK header
 // names.
-Http2String GenerateHttp2HeaderName(size_t len, RandomBase* rng);
+Http2String GenerateHttp2HeaderName(size_t len, Http2Random* rng);
 
 // Generate a string with the web-safe string character set of specified len.
-Http2String GenerateWebSafeString(size_t len, RandomBase* rng);
+Http2String GenerateWebSafeString(size_t len, Http2Random* rng);
 
 // Generate a string with the web-safe string character set of length [lo, hi).
-Http2String GenerateWebSafeString(size_t lo, size_t hi, RandomBase* rng);
-
-// Returns a random integer in the range [0, max], with a bias towards producing
-// lower numbers.
-size_t GenerateRandomSizeSkewedLow(size_t max, RandomBase* rng);
+Http2String GenerateWebSafeString(size_t lo, size_t hi, Http2Random* rng);
 
 }  // namespace test
 }  // namespace http2

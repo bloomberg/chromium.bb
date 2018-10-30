@@ -23,11 +23,10 @@
 #include "net/third_party/http2/hpack/tools/hpack_block_builder.h"
 #include "net/third_party/http2/platform/api/http2_string.h"
 #include "net/third_party/http2/platform/api/http2_string_piece.h"
+#include "net/third_party/http2/test_tools/http2_random.h"
 
 namespace http2 {
 namespace test {
-
-class RandomBase;
 
 class HpackBlockCollector : public HpackEntryDecoderListener {
  public:
@@ -76,7 +75,7 @@ class HpackBlockCollector : public HpackEntryDecoderListener {
 
   // Shuffle the entries, in support of generating an HPACK block of entries
   // in some random order.
-  void ShuffleEntries(RandomBase* rng);
+  void ShuffleEntries(Http2Random* rng);
 
   // Serialize entries_ to the HpackBlockBuilder.
   void AppendToHpackBlockBuilder(HpackBlockBuilder* hbb) const;

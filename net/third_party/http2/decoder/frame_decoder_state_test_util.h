@@ -19,7 +19,7 @@ class FrameDecoderStatePeer {
   // decode buffer to the payload decoder, which increases the likelihood of
   // detecting any use of prior states of the decoder on the decoding of
   // future payloads.
-  static void Randomize(FrameDecoderState* p, RandomBase* rng);
+  static void Randomize(FrameDecoderState* p, Http2Random* rng);
 
   // Inject a frame header into the FrameDecoderState.
   // PayloadDecoderBaseTest::StartDecoding calls this just after calling
