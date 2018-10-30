@@ -363,6 +363,9 @@ class WprProxySimulatorTestRunnerTest(TestCase):
               lambda _: 'fake-bundle-id')
     self.mock(os.path, 'abspath', lambda path: '/abs/path/to/%s' % path)
     self.mock(os.path, 'exists', lambda _: True)
+    self.mock(test_runner.SimulatorTestRunner, 'getSimulator', lambda _: 'fake-id')
+    self.mock(test_runner.SimulatorTestRunner, 'deleteSimulator', lambda a, b: True)
+    self.mock(test_runner.WprProxySimulatorTestRunner, 'copy_trusted_certificate', lambda a, b: True)
 
   def test_replay_path_not_found(self):
     """Ensures ReplayPathNotFoundError is raised."""
