@@ -40,36 +40,36 @@ class RunLoopUntilNonEmptyPaint : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(RunLoopUntilNonEmptyPaint);
 };
 
-class NoBackgroundTasksTest : public InProcessBrowserTest {
+class NoBestEffortTasksTest : public InProcessBrowserTest {
  protected:
-  NoBackgroundTasksTest() = default;
-  ~NoBackgroundTasksTest() override = default;
+  NoBestEffortTasksTest() = default;
+  ~NoBestEffortTasksTest() override = default;
 
  private:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kDisableBackgroundTasks);
   }
 
-  DISALLOW_COPY_AND_ASSIGN(NoBackgroundTasksTest);
+  DISALLOW_COPY_AND_ASSIGN(NoBestEffortTasksTest);
 };
 
 }  // namespace
 
 // Verify that it is possible to get the first non-empty paint without running
-// background tasks.
+// BEST_EFFORT tasks.
 //
 // TODO(fdoray) https://crbug.com/833989:
 // - Flaky timeout on ChromeOS ASAN
 // - Consistent timeout on Win ASAN
 #if defined(ADDRESS_SANITIZER) && (defined(OS_CHROMEOS) || defined(OS_WIN))
-#define MAYBE_FirstNonEmptyPaintWithoutBackgroundTasks \
-  DISABLED_FirstNonEmptyPaintWithoutBackgroundTasks
+#define MAYBE_FirstNonEmptyPaintWithoutBestEffortTasks \
+  DISABLED_FirstNonEmptyPaintWithoutBestEffortTasks
 #else
-#define MAYBE_FirstNonEmptyPaintWithoutBackgroundTasks \
-  FirstNonEmptyPaintWithoutBackgroundTasks
+#define MAYBE_FirstNonEmptyPaintWithoutBestEffortTasks \
+  FirstNonEmptyPaintWithoutBestEffortTasks
 #endif
-IN_PROC_BROWSER_TEST_F(NoBackgroundTasksTest,
-                       MAYBE_FirstNonEmptyPaintWithoutBackgroundTasks) {
+IN_PROC_BROWSER_TEST_F(NoBestEffortTasksTest,
+                       MAYBE_FirstNonEmptyPaintWithoutBestEffortTasks) {
   RunLoopUntilNonEmptyPaint run_loop_until_non_empty_paint(
       browser()->tab_strip_model()->GetActiveWebContents());
   run_loop_until_non_empty_paint.RunUntilNonEmptyPaint();
