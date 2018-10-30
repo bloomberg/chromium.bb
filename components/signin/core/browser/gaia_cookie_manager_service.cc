@@ -847,11 +847,10 @@ void GaiaCookieManagerService::OnOAuthMultiloginFinished(
     const OAuthMultiloginResult& result) {
   DCHECK(requests_.front().request_type() ==
          GaiaCookieRequestType::SET_ACCOUNTS);
-
+  RecordMultiloginFinished(result.error());
   if (result.error().state() == GoogleServiceAuthError::NONE) {
     VLOG(1) << "Multilogin successful accounts="
             << base::JoinString(requests_.front().account_ids(), " ");
-    RecordMultiloginFinished(GoogleServiceAuthError::AuthErrorNone());
     std::vector<std::string> account_ids = requests_.front().account_ids();
     access_tokens_.clear();
     fetcher_backoff_.InformOfRequest(true);
@@ -871,7 +870,6 @@ void GaiaCookieManagerService::OnOAuthMultiloginFinished(
                        base::Unretained(this))));
     return;
   }
-  RecordMultiloginFinished(result.error());
   // If Gaia responded with status: "INVALID_TOKENS", we have to mark tokens as
   // invalid.
   if (result.error().state() ==

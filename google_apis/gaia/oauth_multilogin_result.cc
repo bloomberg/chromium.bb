@@ -3,11 +3,28 @@
 // found in the LICENSE file.
 
 #include "google_apis/gaia/oauth_multilogin_result.h"
+
+#include "base/compiler_specific.h"
 #include "base/json/json_reader.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece_forward.h"
 
-OAuthMultiloginResult::OAuthMultiloginResult() {}
+OAuthMultiloginResponseStatus ParseOAuthMultiloginResponseStatus(
+    const std::string& status) {
+  if (status == "OK")
+    return OAuthMultiloginResponseStatus::kOk;
+  if (status == "RETRY")
+    return OAuthMultiloginResponseStatus::kRetry;
+  if (status == "INVALID_TOKENS")
+    return OAuthMultiloginResponseStatus::kInvalidTokens;
+  if (status == "INVALID_INPUT")
+    return OAuthMultiloginResponseStatus::kInvalidInput;
+  if (status == "ERROR")
+    return OAuthMultiloginResponseStatus::kError;
+
+  return OAuthMultiloginResponseStatus::kUnknownStatus;
+}
 
 OAuthMultiloginResult::OAuthMultiloginResult(
     const OAuthMultiloginResult& other) {
@@ -30,19 +47,32 @@ OAuthMultiloginResult::OAuthMultiloginResult(
 
 void OAuthMultiloginResult::TryParseStatusFromValue(
     base::DictionaryValue* dictionary_value) {
-  std::string status;
-  dictionary_value->GetString("status", &status);
-  if (status == "OK") {
-    error_ = GoogleServiceAuthError::AuthErrorNone();
-  } else if (status == "RETRY") {
-    // This is a transient error.
-    error_ =
-        GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE);
-  } else if (status == "INVALID_TOKENS") {
-    error_ = GoogleServiceAuthError(
-        GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  } else {
-    error_ = GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_ERROR);
+  std::string status_string;
+  dictionary_value->GetString("status", &status_string);
+  OAuthMultiloginResponseStatus status =
+      ParseOAuthMultiloginResponseStatus(status_string);
+  UMA_HISTOGRAM_ENUMERATION("Signin.OAuthMultiloginResponseStatus", status);
+  switch (status) {
+    case OAuthMultiloginResponseStatus::kUnknownStatus:
+      error_ = GoogleServiceAuthError(
+          GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE);
+      break;
+    case OAuthMultiloginResponseStatus::kOk:
+      error_ = GoogleServiceAuthError::AuthErrorNone();
+      break;
+    case OAuthMultiloginResponseStatus::kRetry:
+      // This is a transient error.
+      error_ =
+          GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE);
+      break;
+    case OAuthMultiloginResponseStatus::kInvalidTokens:
+      error_ = GoogleServiceAuthError(
+          GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+      break;
+    case OAuthMultiloginResponseStatus::kError:
+    case OAuthMultiloginResponseStatus::kInvalidInput:
+      error_ = GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_ERROR);
+      break;
   }
 }
 

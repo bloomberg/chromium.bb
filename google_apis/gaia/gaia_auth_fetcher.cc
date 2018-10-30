@@ -733,6 +733,9 @@ void GaiaAuthFetcher::StartOAuthMultilogin(
     const std::vector<MultiloginTokenIDPair>& accounts) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
+  UMA_HISTOGRAM_COUNTS_100("Signin.Multilogin.NumberOfAccounts",
+                           accounts.size());
+
   std::vector<std::string> authorization_header_parts;
   for (const MultiloginTokenIDPair& account : accounts) {
     authorization_header_parts.push_back(base::StringPrintf(
