@@ -255,6 +255,9 @@ PageLoadTracker::~PageLoadTracker() {
     if (failed_provisional_load_info_) {
       observer->OnFailedProvisionalLoad(*failed_provisional_load_info_, info);
     } else if (did_commit_) {
+      observer->OnFinalLayoutStabilityUpdate(
+          metrics_update_dispatcher_.main_frame_render_data()
+              .layout_jank_score);
       observer->OnComplete(metrics_update_dispatcher_.timing(), info);
     }
   }

@@ -120,12 +120,12 @@ class PageLoadMetricsUpdateDispatcher {
       PageLoadMetricsEmbedderInterface* embedder_interface);
   ~PageLoadMetricsUpdateDispatcher();
 
-  void UpdateMetrics(
-      content::RenderFrameHost* render_frame_host,
-      const mojom::PageLoadTiming& new_timing,
-      const mojom::PageLoadMetadata& new_metadata,
-      const mojom::PageLoadFeatures& new_features,
-      const std::vector<mojom::ResourceDataUpdatePtr>& resources);
+  void UpdateMetrics(content::RenderFrameHost* render_frame_host,
+                     const mojom::PageLoadTiming& new_timing,
+                     const mojom::PageLoadMetadata& new_metadata,
+                     const mojom::PageLoadFeatures& new_features,
+                     const std::vector<mojom::ResourceDataUpdatePtr>& resources,
+                     const mojom::PageRenderData& render_data);
 
   // This method is only intended to be called for PageLoadFeatures being
   // recorded directly from the browser process. Features coming from the
@@ -148,6 +148,9 @@ class PageLoadMetricsUpdateDispatcher {
   const mojom::PageLoadMetadata& subframe_metadata() const {
     return *(subframe_metadata_.get());
   }
+  const mojom::PageRenderData& main_frame_render_data() const {
+    return *(main_frame_render_data_.get());
+  }
 
  private:
   using FrameTreeNodeId = int;
@@ -158,6 +161,8 @@ class PageLoadMetricsUpdateDispatcher {
 
   void UpdateMainFrameMetadata(const mojom::PageLoadMetadata& new_metadata);
   void UpdateSubFrameMetadata(const mojom::PageLoadMetadata& subframe_metadata);
+
+  void UpdateMainFrameRenderData(const mojom::PageRenderData& render_data);
 
   void MaybeDispatchTimingUpdates(bool did_merge_new_timing_value);
   void DispatchTimingUpdates();
@@ -192,6 +197,8 @@ class PageLoadMetricsUpdateDispatcher {
 
   mojom::PageLoadMetadataPtr main_frame_metadata_;
   mojom::PageLoadMetadataPtr subframe_metadata_;
+
+  mojom::PageRenderDataPtr main_frame_render_data_;
 
   // Navigation start offsets for the most recently committed document in each
   // frame.

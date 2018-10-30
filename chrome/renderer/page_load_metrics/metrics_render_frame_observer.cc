@@ -44,10 +44,9 @@ class MojoPageTimingSender : public PageTimingSender {
                   std::vector<mojom::ResourceDataUpdatePtr> resources,
                   const mojom::PageRenderData& render_data) override {
     DCHECK(page_load_metrics_);
-    // TODO: Include render_data in IPC.
     page_load_metrics_->UpdateTiming(timing->Clone(), metadata->Clone(),
                                      std::move(new_features),
-                                     std::move(resources));
+                                     std::move(resources), render_data.Clone());
   }
 
  private:

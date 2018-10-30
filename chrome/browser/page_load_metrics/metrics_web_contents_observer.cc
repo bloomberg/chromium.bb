@@ -642,7 +642,8 @@ void MetricsWebContentsObserver::OnTimingUpdated(
     const mojom::PageLoadTiming& timing,
     const mojom::PageLoadMetadata& metadata,
     const mojom::PageLoadFeatures& new_features,
-    const std::vector<mojom::ResourceDataUpdatePtr>& resources) {
+    const std::vector<mojom::ResourceDataUpdatePtr>& resources,
+    const mojom::PageRenderData& render_data) {
   // We may receive notifications from frames that have been navigated away
   // from. We simply ignore them.
   if (GetMainFrame(render_frame_host) != web_contents()->GetMainFrame()) {
@@ -675,7 +676,8 @@ void MetricsWebContentsObserver::OnTimingUpdated(
 
   if (committed_load_) {
     committed_load_->metrics_update_dispatcher()->UpdateMetrics(
-        render_frame_host, timing, metadata, new_features, resources);
+        render_frame_host, timing, metadata, new_features, resources,
+        render_data);
   }
 }
 
@@ -683,11 +685,12 @@ void MetricsWebContentsObserver::UpdateTiming(
     const mojom::PageLoadTimingPtr timing,
     const mojom::PageLoadMetadataPtr metadata,
     const mojom::PageLoadFeaturesPtr new_features,
-    const std::vector<mojom::ResourceDataUpdatePtr> resources) {
+    const std::vector<mojom::ResourceDataUpdatePtr> resources,
+    const mojom::PageRenderDataPtr render_data) {
   content::RenderFrameHost* render_frame_host =
       page_load_metrics_binding_.GetCurrentTargetFrame();
   OnTimingUpdated(render_frame_host, *timing, *metadata, *new_features,
-                  resources);
+                  resources, *render_data);
 }
 
 bool MetricsWebContentsObserver::ShouldTrackNavigation(

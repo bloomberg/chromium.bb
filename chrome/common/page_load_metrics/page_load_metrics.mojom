@@ -218,5 +218,6 @@ interface PageLoadMetrics {
   UpdateTiming(PageLoadTiming page_load_timing,
                PageLoadMetadata page_load_metadata,
                PageLoadFeatures new_features,
-               array<ResourceDataUpdate> resources);
+               array<ResourceDataUpdate> resources,
+               PageRenderData render_data);
 };
