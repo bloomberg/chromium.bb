@@ -6,6 +6,7 @@
 
 #include "base/ios/block_types.h"
 #include "base/mac/foundation_util.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_mediator.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_presentation_delegate.h"
@@ -57,10 +58,13 @@
   recentTabsTableViewController.navigationItem.rightBarButtonItem =
       dismissButton;
 
-  // Initialize and configure RecentTabsMediator.
+  // Initialize and configure RecentTabsMediator. Make sure to use the
+  // OriginalChromeBrowserState since the mediator services need a SignIn
+  // manager which is not present in an OffTheRecord BrowserState.
   DCHECK(!self.mediator);
   self.mediator = [[RecentTabsMediator alloc] init];
-  self.mediator.browserState = self.browserState;
+  self.mediator.browserState =
+      self.browserState->GetOriginalChromeBrowserState();
   // Set the consumer first before calling [self.mediator initObservers] and
   // then [self.mediator configureConsumer].
   self.mediator.consumer = recentTabsTableViewController;
