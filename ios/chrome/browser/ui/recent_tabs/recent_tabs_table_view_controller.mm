@@ -114,6 +114,8 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 // Handles displaying the context menu for all form factors.
 @property(nonatomic, strong) ContextMenuCoordinator* contextMenuCoordinator;
 @property(nonatomic, strong) SigninPromoViewMediator* signinPromoViewMediator;
+// YES if this ViewController is being presented on incognito mode.
+@property(nonatomic, assign, getter=isIncognito) BOOL incognito;
 @end
 
 @implementation RecentTabsTableViewController : ChromeTableViewController
@@ -171,6 +173,18 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 - (void)viewWillDisappear:(BOOL)animated {
   self.updatesTableView = NO;
   [super viewWillDisappear:animated];
+}
+
+#pragma mark - Setters & Getters
+// Some RecentTabs services depend on objects not present in the OffTheRecord
+// BrowserState, in order to prevent crashes set |_browserState| to
+// |browserState|->OriginalChromeBrowserState. While doing this check if
+// incognito or not so that pages are loaded accordingly.
+- (void)setBrowserState:(ios::ChromeBrowserState*)browserState {
+  if (browserState) {
+    _browserState = browserState->GetOriginalChromeBrowserState();
+    _incognito = browserState->IsOffTheRecord();
+  }
 }
 
 #pragma mark - TableViewModel
@@ -1045,7 +1059,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
     OpenNewTabCommand* command =
         [[OpenNewTabCommand alloc] initWithURL:tab->virtual_url
                                       referrer:web::Referrer()
-                                   inIncognito:NO
+                                   inIncognito:[self isIncognito]
                                   inBackground:YES
                                       appendTo:kLastTab];
 
