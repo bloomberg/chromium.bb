@@ -1143,7 +1143,11 @@ void WebMediaPlayerMS::OnFirstFrameReceived(media::VideoRotation video_rotation,
   DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (surface_layer_mode_ == blink::WebMediaPlayer::SurfaceLayerMode::kAlways) {
+  if (surface_layer_mode_ == blink::WebMediaPlayer::SurfaceLayerMode::kAlways ||
+      (surface_layer_mode_ ==
+           blink::WebMediaPlayer::SurfaceLayerMode::kOnDemand &&
+       client_->DisplayType() ==
+           WebMediaPlayer::DisplayType::kPictureInPicture)) {
     ActivateSurfaceLayerForVideo();
   }
 
