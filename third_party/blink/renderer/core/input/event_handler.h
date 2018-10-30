@@ -78,6 +78,7 @@ class WebGestureEvent;
 class WebMouseEvent;
 class WebMouseWheelEvent;
 
+// Handles events for Pointers (Mouse/Touch), HitTests, DragAndDrop, etc.
 class CORE_EXPORT EventHandler final
     : public GarbageCollectedFinalized<EventHandler> {
  public:
