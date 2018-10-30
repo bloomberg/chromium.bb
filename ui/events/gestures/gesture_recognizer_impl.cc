@@ -337,13 +337,15 @@ bool GestureRecognizerImpl::CancelActiveTouchesImpl(
 
   std::vector<std::unique_ptr<TouchEvent>> cancelling_touches =
       GetEventPerPointForConsumer(consumer, ET_TOUCH_CANCELLED);
+  if (cancelling_touches.empty())
+    return false;
   for (const std::unique_ptr<TouchEvent>& cancelling_touch : cancelling_touches)
     helper->DispatchSyntheticTouchEvent(cancelling_touch.get());
   if (should_notify == kNotifyObservers) {
     for (GestureRecognizerObserver& observer : observers())
       observer.OnActiveTouchesCanceled(consumer);
   }
-  return !cancelling_touches.empty();
+  return true;
 }
 
 bool GestureRecognizerImpl::CleanupStateForConsumer(
