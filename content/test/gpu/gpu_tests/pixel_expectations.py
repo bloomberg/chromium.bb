@@ -16,10 +16,6 @@ class PixelExpectations(GpuTestExpectations):
     self.Flaky('Pixel_GpuRasterization_BlueBox',
         ['win', ('amd', 0x6613)], bug=653538)
 
-    # TODO(senorblanco) generate new reference images after Edge-AA tess change.
-    self.Fail('Pixel_OffscreenCanvasAccelerated2D')
-    self.Fail('Pixel_OffscreenCanvasAccelerated2DWorker')
-
     # Software compositing is not supported on Android: we skip the tests that
     # disable GPU compositing (--disable-gpu-compositing).
     self.Skip('Pixel_OffscreenCanvasUnaccelerated2D', ['android'])
