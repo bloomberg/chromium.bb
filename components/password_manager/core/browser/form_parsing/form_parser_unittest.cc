@@ -1163,10 +1163,10 @@ TEST(FormParserTest, AllPossiblePasswords) {
           .fields =
               {
                   {.form_control_type = "password", .value = ""},
-                  {.role = ElementRole::USERNAME,
+                  {.role_filling = ElementRole::USERNAME,
                    .form_control_type = "text",
                    .autocomplete_attribute = "username"},
-                  {.role = ElementRole::CURRENT_PASSWORD,
+                  {.role_filling = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = "password",
                    .autocomplete_attribute = "current-password",
                    .value = ""},
@@ -1176,6 +1176,26 @@ TEST(FormParserTest, AllPossiblePasswords) {
                   {.form_control_type = "password", .value = ""},
               },
           .number_of_all_possible_passwords = 0,
+      },
+      {
+          .description_for_logging = "Empty values don't get added to "
+                                     "all_possible_passwords even if form gets "
+                                     "parsed",
+          .fields =
+              {
+                  {.form_control_type = "password", .value = ""},
+                  {.role = ElementRole::USERNAME,
+                   .form_control_type = "text",
+                   .autocomplete_attribute = "username"},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .form_control_type = "password",
+                   .autocomplete_attribute = "current-password"},
+                  {.form_control_type = "text"},
+                  {.form_control_type = "text"},
+                  {.form_control_type = "password", .value = ""},
+                  {.form_control_type = "password", .value = ""},
+              },
+          .number_of_all_possible_passwords = 1,
       },
       {
           .description_for_logging =
@@ -1413,6 +1433,62 @@ TEST(FormParserTest, ReadonlyStatus) {
           },
           .readonly_status =
               FormDataParser::ReadonlyPasswordFields::kAllIgnored,
+      },
+  });
+}
+
+// Check that empty values are ignored when parsing for saving.
+TEST(FormParserTest, NoEmptyValues) {
+  CheckTestData({
+      {
+          "Server hints overridden for non-empty values.",
+          {
+              {.role_filling = ElementRole::USERNAME,
+               .form_control_type = "text",
+               .prediction = {.type = autofill::USERNAME},
+               .value = ""},
+              {.role_saving = ElementRole::USERNAME,
+               .form_control_type = "text"},
+              {.role_saving = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password"},
+              {.role_filling = ElementRole::NEW_PASSWORD,
+               .form_control_type = "password",
+               .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD},
+               .value = ""},
+          },
+      },
+      {
+          "Autocomplete attributes overridden for non-empty values.",
+          {
+              {.role_filling = ElementRole::USERNAME,
+               .form_control_type = "text",
+               .autocomplete_attribute = "username",
+               .value = ""},
+              {.role_saving = ElementRole::USERNAME,
+               .form_control_type = "text"},
+              {.role_filling = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password",
+               .autocomplete_attribute = "current-password",
+               .value = ""},
+              {.role = ElementRole::NEW_PASSWORD,
+               .form_control_type = "password",
+               .autocomplete_attribute = "new-password"},
+          },
+      },
+      {
+          "Structure heuristics overridden for non-empty values.",
+          {
+              {.role_saving = ElementRole::USERNAME,
+               .form_control_type = "text"},
+              {.role_filling = ElementRole::USERNAME,
+               .form_control_type = "text",
+               .value = ""},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password"},
+              {.role_filling = ElementRole::NEW_PASSWORD,
+               .form_control_type = "password",
+               .value = ""},
+          },
       },
   });
 }
