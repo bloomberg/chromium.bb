@@ -24,9 +24,6 @@
     },
     {
       "app": "ios_chrome_reading_list_egtests",
-      "test args": [
-        "--enable-reading-list"
-      ],
       "xctest": true
     },
     {
