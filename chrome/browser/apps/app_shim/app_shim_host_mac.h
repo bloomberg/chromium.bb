@@ -33,10 +33,23 @@ class AppShimHost : public chrome::mojom::AppShimHost,
                     public apps::AppShimHandler::Host {
  public:
   AppShimHost(const std::string& app_id, const base::FilePath& profile_path);
+  ~AppShimHost() override;
+
+  void OnBootstrapConnected(std::unique_ptr<AppShimHostBootstrap> bootstrap);
+
+ protected:
+  void ChannelError(uint32_t custom_reason, const std::string& description);
+
+  // Closes the channel and destroys the AppShimHost.
+  void Close();
+
+  // chrome::mojom::AppShimHost.
+  void FocusApp(apps::AppShimFocusType focus_type,
+                const std::vector<base::FilePath>& files) override;
+  void SetAppHidden(bool hidden) override;
+  void QuitApp() override;
 
   // apps::AppShimHandler::Host overrides:
-  void OnBootstrapConnected(
-      std::unique_ptr<AppShimHostBootstrap> bootstrap) override;
   void OnAppLaunchComplete(apps::AppShimLaunchResult result) override;
   void OnAppClosed() override;
   void OnAppHide() override;
@@ -45,24 +58,6 @@ class AppShimHost : public chrome::mojom::AppShimHost,
   base::FilePath GetProfilePath() const override;
   std::string GetAppId() const override;
   views::BridgeFactoryHost* GetViewsBridgeFactoryHost() const override;
-
- protected:
-  // AppShimHost is owned by itself. It will delete itself in Close (called on
-  // channel error and OnAppClosed).
-  ~AppShimHost() override;
-  void ChannelError(uint32_t custom_reason, const std::string& description);
-
-  // Closes the channel and destroys the AppShimHost.
-  void Close();
-
-  // Return the AppShimHandler for this app (virtual for tests).
-  virtual apps::AppShimHandler* GetAppShimHandler() const;
-
-  // chrome::mojom::AppShimHost.
-  void FocusApp(apps::AppShimFocusType focus_type,
-                const std::vector<base::FilePath>& files) override;
-  void SetAppHidden(bool hidden) override;
-  void QuitApp() override;
 
   mojo::Binding<chrome::mojom::AppShimHost> host_binding_;
   chrome::mojom::AppShimPtr app_shim_;

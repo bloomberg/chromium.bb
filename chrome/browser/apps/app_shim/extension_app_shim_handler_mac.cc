@@ -8,12 +8,9 @@
 
 #include "apps/app_lifetime_monitor_factory.h"
 #include "apps/launcher.h"
-#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
-#include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_manager_mac.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -60,6 +57,18 @@ using extensions::ExtensionRegistry;
 namespace {
 
 typedef AppWindowRegistry::AppWindowList AppWindowList;
+
+void ProfileLoadedCallback(base::Callback<void(Profile*)> callback,
+                           Profile* profile,
+                           Profile::CreateStatus status) {
+  if (status == Profile::CREATE_STATUS_INITIALIZED) {
+    callback.Run(profile);
+    return;
+  }
+
+  // This should never get an error since it only loads existing profiles.
+  DCHECK_EQ(Profile::CREATE_STATUS_CREATED, status);
+}
 
 void SetAppHidden(Profile* profile, const std::string& app_id, bool hidden) {
   AppWindowList windows =
@@ -174,10 +183,13 @@ Profile* ExtensionAppShimHandler::Delegate::ProfileForPath(
 
 void ExtensionAppShimHandler::Delegate::LoadProfileAsync(
     const base::FilePath& path,
-    base::OnceCallback<void(Profile*)> callback) {
+    base::Callback<void(Profile*)> callback) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   base::FilePath full_path = profile_manager->user_data_dir().Append(path);
-  profile_manager->LoadProfileByPath(full_path, false, std::move(callback));
+  profile_manager->CreateProfileAsync(
+      full_path,
+      base::Bind(&ProfileLoadedCallback, callback),
+      base::string16(), std::string());
 }
 
 bool ExtensionAppShimHandler::Delegate::IsProfileLockedForPath(
@@ -197,12 +209,6 @@ const Extension* ExtensionAppShimHandler::Delegate::MaybeGetAppExtension(
     content::BrowserContext* context,
     const std::string& extension_id) {
   return ExtensionAppShimHandler::MaybeGetAppExtension(context, extension_id);
-}
-
-AppShimHandler::Host* ExtensionAppShimHandler::Delegate::CreateHost(
-    const std::string& app_id,
-    const base::FilePath& profile_path) {
-  return new AppShimHost(app_id, profile_path);
 }
 
 void ExtensionAppShimHandler::Delegate::EnableExtension(
@@ -412,12 +418,13 @@ void ExtensionAppShimHandler::OnChromeWillHide() {
 }
 
 void ExtensionAppShimHandler::OnShimLaunch(
-    std::unique_ptr<AppShimHostBootstrap> bootstrap) {
-  const std::string& app_id = bootstrap->GetAppId();
-  AppShimLaunchType launch_type = bootstrap->GetLaunchType();
+    Host* host,
+    AppShimLaunchType launch_type,
+    const std::vector<base::FilePath>& files) {
+  const std::string& app_id = host->GetAppId();
   DCHECK(crx_file::id_util::IdIsValid(app_id));
 
-  const base::FilePath& profile_path = bootstrap->GetProfilePath();
+  const base::FilePath& profile_path = host->GetProfilePath();
   DCHECK(!profile_path.empty());
 
   if (!delegate_->ProfileExistsForPath(profile_path)) {
@@ -425,30 +432,33 @@ void ExtensionAppShimHandler::OnShimLaunch(
     // TODO(jackhou): Add some UI for this case and remove the LOG.
     LOG(ERROR) << "Requested directory is not a known profile '"
                << profile_path.value() << "'.";
-    bootstrap->OnLaunchAppFailed(APP_SHIM_LAUNCH_PROFILE_NOT_FOUND);
+    host->OnAppLaunchComplete(APP_SHIM_LAUNCH_PROFILE_NOT_FOUND);
     return;
   }
 
   if (delegate_->IsProfileLockedForPath(profile_path)) {
     LOG(WARNING) << "Requested profile is locked.  Showing User Manager.";
-    bootstrap->OnLaunchAppFailed(APP_SHIM_LAUNCH_PROFILE_LOCKED);
+    host->OnAppLaunchComplete(APP_SHIM_LAUNCH_PROFILE_LOCKED);
     delegate_->LaunchUserManager();
     return;
   }
 
   Profile* profile = delegate_->ProfileForPath(profile_path);
+
   if (profile) {
-    OnProfileLoaded(std::move(bootstrap), profile);
-  } else {
-    // If the profile is not loaded, this must have been a launch by the shim.
-    // Load the profile asynchronously, the host will be registered in
-    // OnProfileLoaded.
-    DCHECK_EQ(APP_SHIM_LAUNCH_NORMAL, launch_type);
-    delegate_->LoadProfileAsync(
-        profile_path,
-        base::BindOnce(&ExtensionAppShimHandler::OnProfileLoaded,
-                       weak_factory_.GetWeakPtr(), std::move(bootstrap)));
+    OnProfileLoaded(host, launch_type, files, profile);
+    return;
   }
+
+  // If the profile is not loaded, this must have been a launch by the shim.
+  // Load the profile asynchronously, the host will be registered in
+  // OnProfileLoaded.
+  DCHECK_EQ(APP_SHIM_LAUNCH_NORMAL, launch_type);
+  delegate_->LoadProfileAsync(
+      profile_path,
+      base::Bind(&ExtensionAppShimHandler::OnProfileLoaded,
+                 weak_factory_.GetWeakPtr(),
+                 host, launch_type, files));
 
   // Return now. OnAppLaunchComplete will be called when the app is activated.
 }
@@ -493,26 +503,23 @@ void ExtensionAppShimHandler::CloseBrowsersForApp(const std::string& app_id) {
 }
 
 void ExtensionAppShimHandler::OnProfileLoaded(
-    std::unique_ptr<AppShimHostBootstrap> bootstrap,
+    Host* host,
+    AppShimLaunchType launch_type,
+    const std::vector<base::FilePath>& files,
     Profile* profile) {
-  const std::string& app_id = bootstrap->GetAppId();
-  AppShimLaunchType launch_type = bootstrap->GetLaunchType();
-  const std::vector<base::FilePath>& files = bootstrap->GetLaunchFiles();
+  const std::string& app_id = host->GetAppId();
 
   // The first host to claim this (profile, app_id) becomes the main host.
   // For any others, focus or relaunch the app.
-  Host*& host = hosts_[make_pair(profile, app_id)];
-  if (!host) {
-    host = delegate_->CreateHost(app_id, bootstrap->GetProfilePath());
-  } else {
+  if (!hosts_.insert(make_pair(make_pair(profile, app_id), host)).second) {
     OnShimFocus(host,
                 launch_type == APP_SHIM_LAUNCH_NORMAL ?
                     APP_SHIM_FOCUS_REOPEN : APP_SHIM_FOCUS_NORMAL,
                 files);
-    bootstrap->OnLaunchAppFailed(APP_SHIM_LAUNCH_DUPLICATE_HOST);
+    host->OnAppLaunchComplete(APP_SHIM_LAUNCH_DUPLICATE_HOST);
     return;
   }
-  host->OnBootstrapConnected(std::move(bootstrap));
+
   if (launch_type != APP_SHIM_LAUNCH_NORMAL) {
     host->OnAppLaunchComplete(APP_SHIM_LAUNCH_SUCCESS);
     return;
