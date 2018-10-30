@@ -511,6 +511,7 @@ test("gpu_unittests") {
     "//ipc:test_support",
     "//mojo/core/embedder",
     "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/test_support:test_utils",
     "//net:test_support",
     "//skia",
     "//testing/gmock",
