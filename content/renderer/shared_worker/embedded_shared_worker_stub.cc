@@ -242,8 +242,6 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     response_override_->url_loader_client_endpoints =
         std::move(main_script_load_params->url_loader_client_endpoints);
     response_override_->response = main_script_load_params->response_head;
-    // TODO(nhiroki): Set |response_override_->redirects|.
-    // (https://crbug.com/715632)
     response_override_->redirect_responses =
         main_script_load_params->redirect_response_heads;
     response_override_->redirect_infos =

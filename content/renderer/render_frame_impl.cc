@@ -6519,7 +6519,6 @@ WebURLRequest RenderFrameImpl::CreateURLRequestForCommit(
   response_override->url_loader_client_endpoints =
       std::move(url_loader_client_endpoints);
   response_override->response = head;
-  response_override->redirects = request_params.redirects;
   response_override->redirect_responses = request_params.redirect_response;
   response_override->redirect_infos = request_params.redirect_infos;
 
