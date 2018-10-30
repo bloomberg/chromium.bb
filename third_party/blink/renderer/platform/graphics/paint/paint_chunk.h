@@ -7,7 +7,6 @@
 
 #include <iosfwd>
 #include <memory>
-#include "base/auto_reset.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/hit_test_data.h"
