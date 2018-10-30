@@ -380,7 +380,6 @@ crbug.com/591099 media/picture-in-picture/picture-in-picture-enabled.html [ Pass
 crbug.com/591099 media/picture-in-picture/picture-in-picture-interstitial.html [ Pass ]
 crbug.com/591099 paint/float/float-under-inline-self-painting-change.html [ Failure ]
 crbug.com/835484 paint/inline/focus-ring-under-absolute-with-relative-continuation.html [ Failure ]
-crbug.com/591099 paint/invalidation/clip/control-clip.html [ Failure ]
 crbug.com/591099 paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html [ Failure ]
 crbug.com/591099 paint/invalidation/flexbox/align-content-change-keeping-geometry.html [ Failure ]
 crbug.com/591099 paint/invalidation/flexbox/align-self-change-keeping-geometry-grid.html [ Failure ]
