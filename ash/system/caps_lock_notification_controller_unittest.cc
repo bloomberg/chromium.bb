@@ -7,29 +7,11 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/shell.h"
-#include "ash/system/message_center/notification_tray.h"
 #include "ash/test/ash_test_base.h"
 
 namespace ash {
 
-class CapsLockNotificationControllerTest : public AshTestBase {
- public:
-  CapsLockNotificationControllerTest() = default;
-  ~CapsLockNotificationControllerTest() override = default;
-
-  void SetUp() override {
-    AshTestBase::SetUp();
-    NotificationTray::DisableAnimationsForTest(true);
-  }
-
-  void TearDown() override {
-    NotificationTray::DisableAnimationsForTest(false);
-    AshTestBase::TearDown();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CapsLockNotificationControllerTest);
-};
+using CapsLockNotificationControllerTest = AshTestBase;
 
 // Tests that a11y alert is sent on toggling caps lock.
 TEST_F(CapsLockNotificationControllerTest, A11yAlert) {

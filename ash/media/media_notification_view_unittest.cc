@@ -11,7 +11,6 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
-#include "ash/system/message_center/message_center_view.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/system/unified/unified_system_tray.h"
@@ -38,8 +37,6 @@ class MediaNotificationViewTest : public AshTestBase {
         features::kMediaSessionNotification);
 
     AshTestBase::SetUp();
-
-    MessageCenterView::disable_animation_for_testing = true;
 
     // Set a custom view factory to create and capture the notification view.
     message_center::MessageViewFactory::
@@ -74,7 +71,6 @@ class MediaNotificationViewTest : public AshTestBase {
   }
 
   void TearDown() override {
-    MessageCenterView::disable_animation_for_testing = false;
     view_ = nullptr;
 
     message_center::MessageViewFactory::

@@ -10,7 +10,6 @@
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/system/ime_menu/ime_menu_tray.h"
-#include "ash/system/message_center/notification_tray.h"
 #include "ash/system/overview/overview_button_tray.h"
 #include "ash/system/palette/palette_tray.h"
 #include "ash/system/session/logout_button_tray.h"
@@ -58,10 +57,6 @@ TEST_F(StatusAreaWidgetTest, Basics) {
   EXPECT_TRUE(status->ime_menu_tray());
   EXPECT_TRUE(status->virtual_keyboard_tray_for_testing());
   EXPECT_TRUE(status->palette_tray());
-
-  // Needed because NotificationTray updates its initial visibility
-  // asynchronously.
-  RunAllPendingInMessageLoop();
 
   // Default trays are visible.
   EXPECT_FALSE(status->overview_button_tray()->visible());
@@ -146,10 +141,6 @@ TEST_F(StatusAreaWidgetFocusTest, FocusOutObserverUnified) {
   ASSERT_TRUE(status->logout_button_tray_for_testing());
   ASSERT_TRUE(status->ime_menu_tray());
   ASSERT_TRUE(status->virtual_keyboard_tray_for_testing());
-
-  // Needed because NotificationTray updates its initial visibility
-  // asynchronously.
-  base::RunLoop().RunUntilIdle();
 
   // Default trays are visible.
   ASSERT_FALSE(status->overview_button_tray()->visible());

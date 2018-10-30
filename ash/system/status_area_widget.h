@@ -30,7 +30,6 @@ class SystemTray;
 class UnifiedSystemTray;
 class TrayBackgroundView;
 class VirtualKeyboardTray;
-class NotificationTray;
 
 // Widget showing the system tray, notification tray, and other tray views in
 // the bottom-right of the screen. Exists separately from ShelfView/ShelfWidget
@@ -72,8 +71,6 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   UnifiedSystemTray* unified_system_tray() {
     return unified_system_tray_.get();
   }
-  // TODO(tetsui): Remove this getter.  https://crbug.com/898419
-  NotificationTray* notification_tray() { return nullptr; }
   DictationButtonTray* dictation_button_tray() {
     return dictation_button_tray_.get();
   }

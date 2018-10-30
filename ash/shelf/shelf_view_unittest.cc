@@ -36,7 +36,6 @@
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
 #include "ash/system/flag_warning/flag_warning_tray.h"
-#include "ash/system/message_center/notification_tray.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
@@ -264,8 +263,6 @@ class ShelfViewTest : public AshTestBase {
     model_ = Shell::Get()->shelf_model();
     shelf_view_ = GetPrimaryShelf()->GetShelfViewForTesting();
 
-    NotificationTray::DisableAnimationsForTest(true);
-
     // Several tests in this file are brittle and fail when the shelf width
     // changes due to the flag warning button. Since we won't show this button
     // to users in production, hide it in the tests. https://crbug.com/891080
@@ -290,7 +287,6 @@ class ShelfViewTest : public AshTestBase {
   }
 
   void TearDown() override {
-    NotificationTray::DisableAnimationsForTest(false);  // Reenable animation
     test_api_.reset();
     AshTestBase::TearDown();
   }

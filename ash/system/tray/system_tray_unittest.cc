@@ -19,7 +19,6 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/system/message_center/notification_tray.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/system/tray/system_tray_bubble.h"
@@ -1056,32 +1055,6 @@ TEST_F(SystemTrayTest, SetVisibleDuringHideAnimation) {
   tray->layer()->GetAnimator()->StopAnimating();
   EXPECT_TRUE(tray->visible());
   EXPECT_EQ(1.0f, tray->layer()->GetTargetOpacity());
-}
-
-TEST_F(SystemTrayTest, SystemTrayHeightWithBubble) {
-  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
-  // https://crbug.com/847104
-  if (features::IsSystemTrayUnifiedEnabled())
-    return;
-
-  SystemTray* tray = GetPrimarySystemTray();
-  NotificationTray* notification_tray =
-      StatusAreaWidgetTestHelper::GetStatusAreaWidget()->notification_tray();
-
-  // Ensure the initial tray bubble height is zero.
-  EXPECT_EQ(0, notification_tray->tray_bubble_height_for_test());
-
-  // Show the default view, ensure the tray bubble height is changed.
-  tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
-  RunAllPendingInMessageLoop();
-  EXPECT_LT(0, notification_tray->tray_bubble_height_for_test());
-
-  // Hide the default view, ensure the tray bubble height is back to zero.
-  ASSERT_TRUE(tray->HasSystemBubble());
-  tray->CloseBubble();
-  RunAllPendingInMessageLoop();
-
-  EXPECT_EQ(0, notification_tray->tray_bubble_height_for_test());
 }
 
 TEST_F(SystemTrayTest, SeparatorThickness) {
