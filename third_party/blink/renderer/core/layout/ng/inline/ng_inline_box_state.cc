@@ -394,6 +394,7 @@ LayoutUnit NGInlineLayoutStateStack::ComputeInlinePositions(
   // origins at (0, 0). Accumulate inline offset from left to right.
   LayoutUnit position;
   for (NGLineBoxFragmentBuilder::Child& child : *line_box) {
+    child.margin_line_left = child.offset.inline_offset;
     child.offset.inline_offset += position;
     // Box margins/boders/paddings will be processed later.
     // TODO(kojii): we could optimize this if the reordering did not occur.
@@ -439,7 +440,8 @@ LayoutUnit NGInlineLayoutStateStack::ComputeInlinePositions(
     // boxes, while accumulating its margin/border/padding.
     unsigned start = box_data.fragment_start;
     NGLineBoxFragmentBuilder::Child& start_child = (*line_box)[start];
-    LayoutUnit line_left_offset = start_child.offset.inline_offset;
+    LayoutUnit line_left_offset =
+        start_child.offset.inline_offset - start_child.margin_line_left;
     LinePadding& start_padding = accumulated_padding[start];
     start_padding.line_left += box_data.margin_border_padding_line_left;
     line_left_offset -= start_padding.line_left - box_data.margin_line_left;
@@ -447,8 +449,9 @@ LayoutUnit NGInlineLayoutStateStack::ComputeInlinePositions(
     DCHECK_GT(box_data.fragment_end, start);
     unsigned last = box_data.fragment_end - 1;
     NGLineBoxFragmentBuilder::Child& last_child = (*line_box)[last];
-    LayoutUnit line_right_offset =
-        last_child.offset.inline_offset + last_child.inline_size;
+    LayoutUnit line_right_offset = last_child.offset.inline_offset -
+                                   last_child.margin_line_left +
+                                   last_child.inline_size;
     LinePadding& last_padding = accumulated_padding[last];
     last_padding.line_right += box_data.margin_border_padding_line_right;
     line_right_offset += last_padding.line_right - box_data.margin_line_right;

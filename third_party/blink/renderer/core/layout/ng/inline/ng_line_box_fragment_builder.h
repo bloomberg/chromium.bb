@@ -66,8 +66,14 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     scoped_refptr<const NGPhysicalFragment> fragment;
     LayoutObject* out_of_flow_positioned_box = nullptr;
     LayoutObject* out_of_flow_containing_box = nullptr;
+    // The offset of the border box, initially in this child coordinate system.
+    // |ComputeInlinePositions()| converts it to the offset within the line box.
     NGLogicalOffset offset;
+    // The inline size of the margin box.
     LayoutUnit inline_size;
+    LayoutUnit margin_line_left;
+    // The index of |box_data_list_|, used in |PrepareForReorder()| and
+    // |UpdateAfterReorder()| to track children of boxes across BiDi reorder.
     unsigned box_data_index = 0;
     UBiDiLevel bidi_level = 0xff;
 
