@@ -58,14 +58,15 @@ ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
   init_params.network_time_update_callback = base::DoNothing();
   bool fcm_invalidations_enabled =
       base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations);
-  init_params.invalidations_identity_provider =
-      fcm_invalidations_enabled
-          ? invalidation::ProfileInvalidationProviderFactory::GetForProfile(
-                profile)
-                ->GetIdentityProvider()
-          : invalidation::DeprecatedProfileInvalidationProviderFactory::
-                GetForProfile(profile)
-                    ->GetIdentityProvider();
+  if (fcm_invalidations_enabled) {
+    init_params.invalidations_identity_providers.push_back(
+        invalidation::ProfileInvalidationProviderFactory::GetForProfile(profile)
+            ->GetIdentityProvider());
+  }
+  init_params.invalidations_identity_providers.push_back(
+      invalidation::DeprecatedProfileInvalidationProviderFactory::GetForProfile(
+          profile)
+          ->GetIdentityProvider());
   init_params.url_loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess();
