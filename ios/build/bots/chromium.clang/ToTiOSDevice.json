@@ -7,7 +7,6 @@
     "is_debug=false",
     "llvm_force_head_revision=true",
     "target_os=\"ios\"",
-    "additional_target_cpus=[\"arm\"]",
     "target_cpu=\"arm64\""
   ],
   "additional_compile_targets": [

@@ -11,6 +11,7 @@
     "is_component_build=false",
     "is_debug=false",
     "target_cpu=\"arm\"",
+    "ios_deployment_target=\"10.0\"",
     "target_os=\"ios\"",
     "use_goma=true"
   ],

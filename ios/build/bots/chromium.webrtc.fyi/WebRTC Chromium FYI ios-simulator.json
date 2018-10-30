@@ -11,6 +11,7 @@
     "is_debug=true",
     "symbol_level=1",
     "target_cpu=\"x64\"",
+    "ios_deployment_target=\"10.0\"",
     "target_os=\"ios\"",
     "use_goma=true"
   ],
