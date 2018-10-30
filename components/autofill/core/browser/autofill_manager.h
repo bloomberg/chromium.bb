@@ -111,7 +111,7 @@ class AutofillManager : public AutofillHandler,
                           const FormFieldData& field);
 
   // Called from autofill assistant.
-  virtual void FillProfileForm(const std::string& guid,
+  virtual void FillProfileForm(const autofill::AutofillProfile& profile,
                                const FormData& form,
                                const FormFieldData& field);
 

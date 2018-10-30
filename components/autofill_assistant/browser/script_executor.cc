@@ -98,10 +98,10 @@ void ScriptExecutor::ChooseAddress(
   delegate_->GetUiController()->ChooseAddress(std::move(callback));
 }
 
-void ScriptExecutor::FillAddressForm(const std::string& guid,
+void ScriptExecutor::FillAddressForm(const autofill::AutofillProfile* profile,
                                      const std::vector<std::string>& selectors,
                                      base::OnceCallback<void(bool)> callback) {
-  delegate_->GetWebController()->FillAddressForm(guid, selectors,
+  delegate_->GetWebController()->FillAddressForm(profile, selectors,
                                                  std::move(callback));
 }
 

@@ -75,7 +75,7 @@ class ScriptExecutor : public ActionDelegate {
       const std::string& title) override;
   void ChooseAddress(
       base::OnceCallback<void(const std::string&)> callback) override;
-  void FillAddressForm(const std::string& guid,
+  void FillAddressForm(const autofill::AutofillProfile* profile,
                        const std::vector<std::string>& selectors,
                        base::OnceCallback<void(bool)> callback) override;
   void ChooseCard(

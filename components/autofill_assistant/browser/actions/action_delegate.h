@@ -16,6 +16,7 @@
 class GURL;
 
 namespace autofill {
+class AutofillProfile;
 class CreditCard;
 class PersonalDataManager;
 }  // namespace autofill
@@ -71,9 +72,9 @@ class ActionDelegate {
       base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
       const std::string& title) = 0;
 
-  // Fill the address form given by |selectors| with the given address |guid| in
-  // personal data manager.
-  virtual void FillAddressForm(const std::string& guid,
+  // Fill the address form given by |selectors| with the given address
+  // |profile|. |profile| cannot be nullptr.
+  virtual void FillAddressForm(const autofill::AutofillProfile* profile,
                                const std::vector<std::string>& selectors,
                                base::OnceCallback<void(bool)> callback) = 0;
 

@@ -46,14 +46,14 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD1(OnChooseAddress,
                void(base::OnceCallback<void(const std::string&)>& callback));
 
-  void FillAddressForm(const std::string& guid,
+  void FillAddressForm(const autofill::AutofillProfile* profile,
                        const std::vector<std::string>& selectors,
                        base::OnceCallback<void(bool)> callback) override {
-    OnFillAddressForm(guid, selectors, callback);
+    OnFillAddressForm(profile, selectors, callback);
   }
 
   MOCK_METHOD3(OnFillAddressForm,
-               void(const std::string& guid,
+               void(const autofill::AutofillProfile* profile,
                     const std::vector<std::string>& selectors,
                     base::OnceCallback<void(bool)>& callback));
 

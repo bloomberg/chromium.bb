@@ -699,12 +699,11 @@ void AutofillManager::FillCreditCardForm(int query_id,
       /*is_credit_card=*/true, cvc, form_structure, autofill_field);
 }
 
-void AutofillManager::FillProfileForm(const std::string& guid,
+void AutofillManager::FillProfileForm(const autofill::AutofillProfile& profile,
                                       const FormData& form,
                                       const FormFieldData& field) {
   FillOrPreviewProfileForm(AutofillDriver::FORM_DATA_ACTION_FILL,
-                           /*query_id=*/-1, form, field,
-                           *personal_data_->GetProfileByGUID(guid));
+                           /*query_id=*/-1, form, field, profile);
 }
 
 void AutofillManager::OnFocusNoLongerOnForm() {
