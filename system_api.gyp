@@ -215,6 +215,19 @@
       ],
     },
     {
+      'target_name': 'system_api-metrics_event-goprotos-gen',
+      'type': 'none',
+      'variables': {
+        'gen_go': 1,
+        'proto_in_dir': 'dbus/metrics_event',
+        'proto_out_dir': 'go/src/chromiumos/system_api/metrics_event_proto',
+      },
+      'sources': [
+        '<(proto_in_dir)/metrics_event.proto',
+      ],
+      'includes': ['../common-mk/protoc.gypi'],
+    },
+    {
       'target_name': 'system_api-smbprovider-protos-gen',
       'type': 'none',
       'variables': {
