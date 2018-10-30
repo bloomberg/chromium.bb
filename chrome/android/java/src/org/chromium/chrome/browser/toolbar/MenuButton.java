@@ -70,6 +70,7 @@ class MenuButton extends FrameLayout {
             case UpdateMenuItemHelper.UpdateType.UNSUPPORTED_OS_VERSION:
                 mUpdateBadgeView.setVisibility(visible ? View.VISIBLE : View.GONE);
                 updateImageResources();
+                updateContentDescription(visible);
                 break;
             case UpdateMenuItemHelper.UpdateType.NONE:
             // Intentional fall through.
@@ -77,6 +78,7 @@ class MenuButton extends FrameLayout {
             // Intentional fall through.
             default:
                 mUpdateBadgeView.setVisibility(View.GONE);
+                updateContentDescription(false);
                 break;
         }
     }
@@ -110,8 +112,12 @@ class MenuButton extends FrameLayout {
         return mUpdateBadgeView.getVisibility() == View.VISIBLE;
     }
 
-    void updateContentDescription() {
-        if (isShowingAppMenuUpdateBadge()) {
+    /**
+     * Sets the content description for the menu button.
+     * @param isUpdateBadgeVisible Whether the update menu badge is visible.
+     */
+    void updateContentDescription(boolean isUpdateBadgeVisible) {
+        if (isUpdateBadgeVisible) {
             switch (UpdateMenuItemHelper.getInstance().getUpdateType()) {
                 case UpdateMenuItemHelper.UpdateType.UPDATE_AVAILABLE:
                     setContentDescription(getResources().getString(
