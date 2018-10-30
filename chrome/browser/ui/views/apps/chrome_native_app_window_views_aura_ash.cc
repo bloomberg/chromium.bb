@@ -507,6 +507,7 @@ void ChromeNativeAppWindowViewsAuraAsh::OnPostWindowStateTypeChange(
     ash::wm::WindowState* window_state,
     ash::mojom::WindowStateType old_type) {
   DCHECK(!features::IsUsingWindowService());
+  DCHECK(!IsFrameless());
   DCHECK_EQ(GetNativeWindow(), window_state->window());
   if (window_state->IsFullscreen() != app_window()->IsFullscreen()) {
     // Report OS-initiated state changes to |app_window()|. This is done in
@@ -587,8 +588,8 @@ void ChromeNativeAppWindowViewsAuraAsh::OnMenuClosed() {
 }
 
 bool ChromeNativeAppWindowViewsAuraAsh::ShouldEnableImmersiveMode() const {
-  // No immersive mode for forced fullscreen.
-  if (app_window()->IsForcedFullscreen())
+  // No immersive mode for forced fullscreen or frameless windows.
+  if (app_window()->IsForcedFullscreen() || IsFrameless())
     return false;
 
   // Always use immersive mode in a public session in fullscreen state.
@@ -605,8 +606,6 @@ bool ChromeNativeAppWindowViewsAuraAsh::ShouldEnableImmersiveMode() const {
   // have access to window controls. Non resizable windows do not gain
   // size by hidding the title bar, so it is not hidden and thus there
   // is no need for immersive mode.
-  // TODO(sammiequon): Investigate whether we should check
-  // resizability using WindowState instead of CanResize.
   // TODO(crbug.com/801619): This adds a little extra animation
   // when minimizing or unminimizing window.
   return client && client->tablet_mode_enabled() && CanResize() &&
