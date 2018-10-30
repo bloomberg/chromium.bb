@@ -51,7 +51,13 @@ SystemSettingsProvider::~SystemSettingsProvider() {
 
 void SystemSettingsProvider::DoSet(const std::string& path,
                                    const base::Value& in_value) {
+  // TODO(olsen): crbug.com/433840 - separate read path and write path.
+  // The write path which goes through CrosSettings and SystemSettingsProvider,
+  // should more simply go straight through TimezoneUtil.
+
   // Guest, public, or child accounts cannot change the time zone.
+  // TODO(olsen): This logic is duplicated in TimezoneUtil::CanSetSystemTimezone
+  // and can be removed once the write path goes through there.
   if (!LoginState::Get()->IsUserLoggedIn() ||
       LoginState::Get()->IsGuestSessionUser() ||
       LoginState::Get()->IsPublicSessionUser() ||
