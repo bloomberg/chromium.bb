@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
 #include "chrome/browser/sync/test/integration/feature_toggler.h"
 #include "chrome/browser/sync/test/integration/preferences_helper.h"
@@ -93,6 +95,30 @@ IN_PROC_BROWSER_TEST_P(SingleClientPreferencesSyncTest,
       BuildPrefStoreFromPrefsFile(GetProfile(0));
   const base::Value* result;
   EXPECT_FALSE(pref_store->GetValue("testing.my-test-preference", &result));
+}
+
+// Regression test to verify that pagination during GetUpdates() contributes
+// properly to UMA histograms.
+IN_PROC_BROWSER_TEST_P(SingleClientPreferencesSyncTest,
+                       EmitModelTypeEntityChangeToUma) {
+  const int kNumEntities = 17;
+
+  fake_server_->SetMaxGetUpdatesBatchSize(7);
+
+  sync_pb::EntitySpecifics specifics;
+  for (int i = 0; i < kNumEntities; i++) {
+    specifics.mutable_preference()->set_name(base::StringPrintf("pref%d", i));
+    fake_server_->InjectEntity(
+        syncer::PersistentUniqueClientEntity::CreateFromEntitySpecifics(
+            specifics.preference().name(), specifics, /*creation_time=*/0,
+            /*last_modified_time=*/0));
+  }
+
+  base::HistogramTester histogram_tester;
+  ASSERT_TRUE(SetupSync());
+  EXPECT_EQ(kNumEntities, histogram_tester.GetBucketCount(
+                              "Sync.ModelTypeEntityChange3.PREFERENCE",
+                              /*REMOTE_INITIAL_UPDATE=*/5));
 }
 
 INSTANTIATE_TEST_CASE_P(USS,

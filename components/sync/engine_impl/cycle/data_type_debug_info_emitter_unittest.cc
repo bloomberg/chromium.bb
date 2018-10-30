@@ -22,13 +22,13 @@ TEST(DataTypeDebugInfoEmitterTest, ShouldEmitCommitsToUMAIfChanged) {
   base::HistogramTester histogram_tester;
   emitter.EmitCommitCountersUpdate();
   EXPECT_EQ(
-      3, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange2.BOOKMARK",
+      3, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.BOOKMARK",
                                          /*LOCAL_DELETION=*/0));
   EXPECT_EQ(
-      2, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange2.BOOKMARK",
+      2, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.BOOKMARK",
                                          /*LOCAL_CREATION=*/1));
   EXPECT_EQ(1, histogram_tester.GetBucketCount(
-                   "Sync.ModelTypeEntityChange2.BOOKMARK", /*LOCAL_UPDATE=*/2));
+                   "Sync.ModelTypeEntityChange3.BOOKMARK", /*LOCAL_UPDATE=*/2));
 }
 
 TEST(DataTypeDebugInfoEmitterTest, ShouldNotEmitCommitsToUMAIfNotChanged) {
@@ -37,7 +37,7 @@ TEST(DataTypeDebugInfoEmitterTest, ShouldNotEmitCommitsToUMAIfNotChanged) {
 
   base::HistogramTester histogram_tester;
   emitter.EmitCommitCountersUpdate();
-  histogram_tester.ExpectTotalCount("Sync.ModelTypeEntityChange2.BOOKMARK", 0);
+  histogram_tester.ExpectTotalCount("Sync.ModelTypeEntityChange3.BOOKMARK", 0);
 }
 
 // Tests that at each EmitCommitCountersUpdate() call, only the changes since
@@ -63,13 +63,13 @@ TEST(DataTypeDebugInfoEmitterTest, ShouldEmitCommitsToUMAIncrementally) {
   base::HistogramTester histogram_tester;
   emitter.EmitCommitCountersUpdate();
   EXPECT_EQ(
-      1, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange2.BOOKMARK",
+      1, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.BOOKMARK",
                                          /*LOCAL_DELETION=*/0));
   EXPECT_EQ(
-      2, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange2.BOOKMARK",
+      2, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.BOOKMARK",
                                          /*LOCAL_CREATION=*/1));
   EXPECT_EQ(3, histogram_tester.GetBucketCount(
-                   "Sync.ModelTypeEntityChange2.BOOKMARK", /*LOCAL_UPDATE=*/2));
+                   "Sync.ModelTypeEntityChange3.BOOKMARK", /*LOCAL_UPDATE=*/2));
 }
 
 TEST(DataTypeDebugInfoEmitterTest, ShouldEmitUpdatesToUMAIfChanged) {
@@ -84,13 +84,13 @@ TEST(DataTypeDebugInfoEmitterTest, ShouldEmitUpdatesToUMAIfChanged) {
   base::HistogramTester histogram_tester;
   emitter.EmitUpdateCountersUpdate();
   EXPECT_EQ(
-      1, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange2.BOOKMARK",
+      1, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.BOOKMARK",
                                          /*REMOTE_DELETION=*/3));
   EXPECT_EQ(
-      2, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange2.BOOKMARK",
+      2, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.BOOKMARK",
                                          /*REMOTE_NON_INITIAL_UPDATE=*/4));
   EXPECT_EQ(
-      5, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange2.BOOKMARK",
+      5, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.BOOKMARK",
                                          /*REMOTE_INITIAL_UPDATE=*/5));
 }
 
@@ -100,7 +100,7 @@ TEST(DataTypeDebugInfoEmitterTest, ShouldNotEmitUpdatesToUMAIfNotChanged) {
 
   base::HistogramTester histogram_tester;
   emitter.EmitUpdateCountersUpdate();
-  histogram_tester.ExpectTotalCount("Sync.ModelTypeEntityChange2.BOOKMARK", 0);
+  histogram_tester.ExpectTotalCount("Sync.ModelTypeEntityChange3.BOOKMARK", 0);
 }
 
 // Tests that at each EmitUpdateCountersUpdate() call, only the changes since
@@ -126,13 +126,13 @@ TEST(DataTypeDebugInfoEmitterTest, ShouldEmitUpdatesToUMAIncrementally) {
   base::HistogramTester histogram_tester;
   emitter.EmitUpdateCountersUpdate();
   EXPECT_EQ(
-      2, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange2.BOOKMARK",
+      2, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.BOOKMARK",
                                          /*REMOTE_DELETION=*/3));
   EXPECT_EQ(
-      1, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange2.BOOKMARK",
+      1, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.BOOKMARK",
                                          /*REMOTE_NON_INITIAL_UPDATE=*/4));
   EXPECT_EQ(
-      4, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange2.BOOKMARK",
+      4, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.BOOKMARK",
                                          /*REMOTE_INITIAL_UPDATE=*/5));
 }
 
