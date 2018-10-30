@@ -1194,8 +1194,9 @@ bool ShelfLayoutManager::ShouldHomeGestureHandleEvent(float scroll_y) const {
   if (!IsVisible())
     return false;
 
-  // Scroll down events should never be handled.
-  if (scroll_y >= 0)
+  // Scroll down events should never be handled, unless they are currently being
+  // handled
+  if (scroll_y >= 0 && gesture_drag_status_ != GESTURE_DRAG_APPLIST_IN_PROGRESS)
     return false;
 
   return true;
