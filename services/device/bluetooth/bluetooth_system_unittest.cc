@@ -47,12 +47,17 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
               callback) {}
     ~Properties() override = default;
 
-    void ResetCallCount() { set_powered_call_count_ = 0; }
+    void ResetCallCount() {
+      set_powered_call_count_ = 0;
+      last_set_powered_value_.reset();
+    }
 
     void SetNextSetPoweredResponse(bool next_response) {
       DCHECK(!next_set_powered_response_);
       next_set_powered_response_ = next_response;
     }
+
+    bool GetLastSetPoweredValue() { return last_set_powered_value_.value(); }
 
     // dbus::PropertySet override
     void Get(dbus::PropertyBase* property,
@@ -71,6 +76,7 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
       DVLOG(1) << "Set " << property->name();
       if (property->name() == powered.name()) {
         ++set_powered_call_count_;
+        last_set_powered_value_ = powered.GetSetValueForTesting();
         base::Optional<bool> response;
         response.swap(next_set_powered_response_);
         callback.Run(response.value());
@@ -81,6 +87,7 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
 
     size_t set_powered_call_count_ = 0;
     base::Optional<bool> next_set_powered_response_;
+    base::Optional<bool> last_set_powered_value_;
   };
 
   TestBluetoothAdapterClient() = default;
@@ -151,11 +158,9 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
     return it->second.set_powered_call_count_;
   }
 
-  // Simulates the adapter changing states in response to a previous call to
-  // change the "powered" property.
-  void SimulateSetPoweredCompleted(const std::string& object_path_str) {
-    GetProperties(dbus::ObjectPath(object_path_str))
-        ->powered.ReplaceValueWithSetValue();
+  bool GetLastSetPoweredValue(const std::string& object_path_str) {
+    return GetProperties(dbus::ObjectPath(object_path_str))
+        ->GetLastSetPoweredValue();
   }
 
   // Simulates adapter at |object_path_str| changing its discovering state to
@@ -629,20 +634,24 @@ TEST_F(BluetoothSystemTest, SetPoweredOff_SucceedsAdapterInitiallyOn) {
   auto system = CreateBluetoothSystem();
   EXPECT_EQ(mojom::BluetoothSystem::State::kPoweredOn, GetStateAndWait(system));
 
+  // Try to power off the adapter.
   test_bluetooth_adapter_client_->SetNextSetPoweredResponse(kFooObjectPathStr,
                                                             true);
   EXPECT_EQ(mojom::BluetoothSystem::SetPoweredResult::kSuccess,
             SetPoweredAndWait(system, false));
   EXPECT_EQ(1u, test_bluetooth_adapter_client_->GetSetPoweredCallCount(
                     kFooObjectPathStr));
+  EXPECT_FALSE(test_bluetooth_adapter_client_->GetLastSetPoweredValue(
+      kFooObjectPathStr));
   EXPECT_EQ(mojom::BluetoothSystem::State::kTransitioning,
             GetStateAndWait(system));
   EXPECT_EQ(StateVector({mojom::BluetoothSystem::State::kTransitioning}),
             on_state_changed_states_);
   ResetResults();
 
-  test_bluetooth_adapter_client_->SimulateSetPoweredCompleted(
-      kFooObjectPathStr);
+  // Simulate the adapter actually powering off.
+  test_bluetooth_adapter_client_->SimulateAdapterPowerStateChanged(
+      kFooObjectPathStr, false);
 
   EXPECT_EQ(mojom::BluetoothSystem::State::kPoweredOff,
             GetStateAndWait(system));
@@ -657,20 +666,24 @@ TEST_F(BluetoothSystemTest, SetPoweredOn_SucceedsAdapterInitiallyOff) {
 
   auto system = CreateBluetoothSystem();
 
+  // Try to power on the adapter.
   test_bluetooth_adapter_client_->SetNextSetPoweredResponse(kFooObjectPathStr,
                                                             true);
   EXPECT_EQ(mojom::BluetoothSystem::SetPoweredResult::kSuccess,
             SetPoweredAndWait(system, true));
   EXPECT_EQ(1u, test_bluetooth_adapter_client_->GetSetPoweredCallCount(
                     kFooObjectPathStr));
+  EXPECT_TRUE(test_bluetooth_adapter_client_->GetLastSetPoweredValue(
+      kFooObjectPathStr));
   EXPECT_EQ(mojom::BluetoothSystem::State::kTransitioning,
             GetStateAndWait(system));
   EXPECT_EQ(StateVector({mojom::BluetoothSystem::State::kTransitioning}),
             on_state_changed_states_);
   ResetResults();
 
-  test_bluetooth_adapter_client_->SimulateSetPoweredCompleted(
-      kFooObjectPathStr);
+  // Simulate the adapter actually powering on.
+  test_bluetooth_adapter_client_->SimulateAdapterPowerStateChanged(
+      kFooObjectPathStr, true);
 
   EXPECT_EQ(mojom::BluetoothSystem::State::kPoweredOn, GetStateAndWait(system));
   EXPECT_EQ(StateVector({mojom::BluetoothSystem::State::kPoweredOn}),
@@ -690,6 +703,8 @@ TEST_F(BluetoothSystemTest, SetPoweredOff_FailsAdapterInitiallyOn) {
             SetPoweredAndWait(system, false));
   EXPECT_EQ(1u, test_bluetooth_adapter_client_->GetSetPoweredCallCount(
                     kFooObjectPathStr));
+  EXPECT_FALSE(test_bluetooth_adapter_client_->GetLastSetPoweredValue(
+      kFooObjectPathStr));
   EXPECT_EQ(mojom::BluetoothSystem::State::kPoweredOn, GetStateAndWait(system));
   EXPECT_EQ(StateVector({mojom::BluetoothSystem::State::kTransitioning,
                          mojom::BluetoothSystem::State::kPoweredOn}),
@@ -709,6 +724,8 @@ TEST_F(BluetoothSystemTest, SetPoweredOn_FailsAdapterInitiallyOff) {
             SetPoweredAndWait(system, true));
   EXPECT_EQ(1u, test_bluetooth_adapter_client_->GetSetPoweredCallCount(
                     kFooObjectPathStr));
+  EXPECT_TRUE(test_bluetooth_adapter_client_->GetLastSetPoweredValue(
+      kFooObjectPathStr));
   EXPECT_EQ(mojom::BluetoothSystem::State::kPoweredOff,
             GetStateAndWait(system));
   EXPECT_EQ(StateVector({mojom::BluetoothSystem::State::kTransitioning,
