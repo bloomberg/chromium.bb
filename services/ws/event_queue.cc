@@ -18,6 +18,13 @@
 namespace ws {
 namespace {
 
+constexpr base::TimeDelta kEventAckTimeout =
+#if defined(NDEBUG)
+    base::TimeDelta::FromMilliseconds(100);
+#else
+    base::TimeDelta::FromMilliseconds(1000);
+#endif
+
 bool IsQueableEvent(const ui::Event& event) {
   return event.IsKeyEvent();
 }
@@ -92,6 +99,12 @@ HostEventQueue* EventQueue::GetHostEventQueueForDisplay(int64_t display_id) {
   return nullptr;
 }
 
+void EventQueue::OnClientTookTooLongToAckEvent() {
+  DVLOG(1) << "Client took too long to respond to event";
+  DCHECK(in_flight_event_);
+  OnClientAckedEvent(in_flight_event_->client_id, in_flight_event_->event_id);
+}
+
 void EventQueue::OnHostEventQueueCreated(HostEventQueue* host) {
   host_event_queues_.insert(host);
 }
@@ -137,7 +150,8 @@ void EventQueue::OnWillSendEventToClient(ClientSpecificId client_id,
     in_flight_event_ = InFlightEvent();
     in_flight_event_->client_id = client_id;
     in_flight_event_->event_id = event_id;
-    // TODO(sky): kick off timer.
+    ack_timer_.Start(FROM_HERE, kEventAckTimeout, this,
+                     &EventQueue::OnClientTookTooLongToAckEvent);
   }
 }
 
@@ -148,6 +162,7 @@ void EventQueue::OnClientAckedEvent(ClientSpecificId client_id,
     return;
   }
   in_flight_event_.reset();
+  ack_timer_.Stop();
   DispatchNextQueuedEvent();
 }
 

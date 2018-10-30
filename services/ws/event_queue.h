@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/timer/timer.h"
 #include "services/ws/ids.h"
 #include "services/ws/window_service_observer.h"
 
@@ -81,6 +82,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) EventQueue
     uint32_t event_id = 0u;
   };
 
+  // Called by |ack_timer_| if the client does not respond to the event in a
+  // timely manner.
+  void OnClientTookTooLongToAckEvent();
+
   // Called when a HostEventQueue is created/deleted.
   void OnHostEventQueueCreated(HostEventQueue* host);
   void OnHostEventQueueDestroyed(HostEventQueue* host);
@@ -111,6 +116,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) EventQueue
 
   // Set of HostEventQueues.
   std::set<HostEventQueue*> host_event_queues_;
+
+  base::OneShotTimer ack_timer_;
 
   // Because of destruction order HostEventQueues may outlive this.
   base::WeakPtrFactory<EventQueue> weak_factory_{this};

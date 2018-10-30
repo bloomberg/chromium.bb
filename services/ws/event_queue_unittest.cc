@@ -117,5 +117,33 @@ TEST(EventQueueTest, NotifyWhenReadyToDispatch) {
   EXPECT_TRUE(was_dispatch_closure_run);
 }
 
+TEST(EventQueueTest, Timeout) {
+  WindowServiceTestSetup setup;
+  setup.set_ack_events_immediately(false);
+
+  // Events are only queued if they target a window with a remote client.
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level);
+  top_level->Show();
+  top_level->Focus();
+  EXPECT_TRUE(top_level->HasFocus());
+
+  // Generate a single key event.
+  EventQueueTestHelper event_queue_test_helper(setup.service()->event_queue());
+  ui::test::EventGenerator event_generator(setup.root());
+  event_generator.PressKey(ui::VKEY_A, ui::EF_NONE);
+  EXPECT_TRUE(event_queue_test_helper.HasInFlightEvent());
+
+  // Add a closure to be run when the event is acked, or the timeout occurs.
+  bool was_dispatch_closure_run = false;
+  setup.service()->event_queue()->NotifyWhenReadyToDispatch(
+      base::BindLambdaForTesting([&]() { was_dispatch_closure_run = true; }));
+  EXPECT_FALSE(was_dispatch_closure_run);
+
+  event_queue_test_helper.RunAckTimer();
+  EXPECT_TRUE(was_dispatch_closure_run);
+}
+
 }  // namespace
 }  // namespace ws
