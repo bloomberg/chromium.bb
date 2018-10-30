@@ -27,7 +27,6 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
-#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 
@@ -63,14 +62,8 @@ class PerfTestTimeDomain : public MockTimeDomain {
 enum class PerfTestType : int {
   kUseSequenceManagerWithMessageLoop = 0,
   kUseSequenceManagerWithMessagePump = 1,
-  kUseSequenceManagerWithUIMessageLoop = 2,
-  kUseSequenceManagerWithUIMessagePump = 3,
-  kUseSequenceManagerWithIOMessageLoop = 4,
-  kUseSequenceManagerWithIOMessagePump = 5,
-  kUseMessageLoop = 6,
-  kUseUIMessageLoop = 7,
-  kUseIOMessageLoop = 8,
-  kUseSingleThreadInWorkerPool = 9,
+  kUseMessageLoop = 2,
+  kUseSingleThreadInWorkerPool = 3,
 };
 
 class SequenceManagerPerfTest : public testing::TestWithParam<PerfTestType> {
@@ -95,38 +88,13 @@ class SequenceManagerPerfTest : public testing::TestWithParam<PerfTestType> {
 
     switch (GetParam()) {
       case PerfTestType::kUseSequenceManagerWithMessageLoop:
-        CreateSequenceManagerWithMessageLoop(std::make_unique<MessageLoop>());
+        CreateSequenceManagerWithMessageLoop();
         break;
       case PerfTestType::kUseSequenceManagerWithMessagePump:
-        CreateSequenceManagerWithMessagePump(
-            std::make_unique<MessagePumpDefault>());
-        break;
-      case PerfTestType::kUseSequenceManagerWithUIMessageLoop:
-        CreateSequenceManagerWithMessageLoop(
-            std::make_unique<MessageLoopForUI>());
-        break;
-      case PerfTestType::kUseSequenceManagerWithUIMessagePump:
-#if !defined(OS_IOS)
-        CreateSequenceManagerWithMessagePump(
-            std::make_unique<MessagePumpForUI>());
-#endif
-        break;
-      case PerfTestType::kUseSequenceManagerWithIOMessageLoop:
-        CreateSequenceManagerWithMessageLoop(
-            std::make_unique<MessageLoopForIO>());
-        break;
-      case PerfTestType::kUseSequenceManagerWithIOMessagePump:
-        CreateSequenceManagerWithMessagePump(
-            std::make_unique<MessagePumpForIO>());
+        CreateSequenceManagerWithMessagePump();
         break;
       case PerfTestType::kUseMessageLoop:
-        CreateMessageLoop(std::make_unique<MessageLoop>());
-        break;
-      case PerfTestType::kUseUIMessageLoop:
-        CreateMessageLoop(std::make_unique<MessageLoopForUI>());
-        break;
-      case PerfTestType::kUseIOMessageLoop:
-        CreateMessageLoop(std::make_unique<MessageLoopForIO>());
+        CreateMessageLoop();
         break;
       case PerfTestType::kUseSingleThreadInWorkerPool:
         CreateTaskScheduler();
@@ -139,19 +107,18 @@ class SequenceManagerPerfTest : public testing::TestWithParam<PerfTestType> {
     }
   }
 
-  void CreateSequenceManagerWithMessageLoop(
-      std::unique_ptr<MessageLoop> message_loop) {
-    message_loop_ = std::move(message_loop);
+  void CreateSequenceManagerWithMessageLoop() {
+    message_loop_ = std::make_unique<MessageLoop>();
     manager_ = SequenceManagerForTest::Create(message_loop_.get(),
                                               message_loop_->task_runner(),
                                               DefaultTickClock::GetInstance());
   }
 
-  void CreateSequenceManagerWithMessagePump(
-      std::unique_ptr<MessagePump> message_pump) {
+  void CreateSequenceManagerWithMessagePump() {
     manager_ = SequenceManagerForTest::Create(
         std::make_unique<internal::ThreadControllerWithMessagePumpImpl>(
-            std::move(message_pump), DefaultTickClock::GetInstance()));
+            std::make_unique<MessagePumpDefault>(),
+            DefaultTickClock::GetInstance()));
     // ThreadControllerWithMessagePumpImpl doesn't provide a default task
     // runner.
     scoped_refptr<TaskQueue> default_task_queue =
@@ -159,9 +126,7 @@ class SequenceManagerPerfTest : public testing::TestWithParam<PerfTestType> {
     manager_->SetDefaultTaskRunner(default_task_queue->task_runner());
   }
 
-  void CreateMessageLoop(std::unique_ptr<MessageLoop> message_loop) {
-    message_loop_ = std::move(message_loop);
-  }
+  void CreateMessageLoop() { message_loop_ = std::make_unique<MessageLoop>(); }
 
   void CreateTaskScheduler() {
     TaskScheduler::SetInstance(
@@ -184,11 +149,7 @@ class SequenceManagerPerfTest : public testing::TestWithParam<PerfTestType> {
   scoped_refptr<TaskRunner> CreateTaskRunner() {
     switch (GetParam()) {
       case PerfTestType::kUseSequenceManagerWithMessageLoop:
-      case PerfTestType::kUseSequenceManagerWithMessagePump:
-      case PerfTestType::kUseSequenceManagerWithUIMessageLoop:
-      case PerfTestType::kUseSequenceManagerWithUIMessagePump:
-      case PerfTestType::kUseSequenceManagerWithIOMessageLoop:
-      case PerfTestType::kUseSequenceManagerWithIOMessagePump: {
+      case PerfTestType::kUseSequenceManagerWithMessagePump: {
         scoped_refptr<TestTaskQueue> task_queue =
             manager_->CreateTaskQueue<TestTaskQueue>(
                 TaskQueue::Spec("test").SetTimeDomain(time_domain_.get()));
@@ -197,8 +158,6 @@ class SequenceManagerPerfTest : public testing::TestWithParam<PerfTestType> {
       }
 
       case PerfTestType::kUseMessageLoop:
-      case PerfTestType::kUseUIMessageLoop:
-      case PerfTestType::kUseIOMessageLoop:
         return message_loop_->task_runner();
 
       case PerfTestType::kUseSingleThreadInWorkerPool:
@@ -219,13 +178,7 @@ class SequenceManagerPerfTest : public testing::TestWithParam<PerfTestType> {
     switch (GetParam()) {
       case PerfTestType::kUseSequenceManagerWithMessageLoop:
       case PerfTestType::kUseSequenceManagerWithMessagePump:
-      case PerfTestType::kUseSequenceManagerWithUIMessageLoop:
-      case PerfTestType::kUseSequenceManagerWithUIMessagePump:
-      case PerfTestType::kUseSequenceManagerWithIOMessageLoop:
-      case PerfTestType::kUseSequenceManagerWithIOMessagePump:
       case PerfTestType::kUseMessageLoop:
-      case PerfTestType::kUseUIMessageLoop:
-      case PerfTestType::kUseIOMessageLoop:
         run_loop_.reset(new RunLoop());
         run_loop_->Run();
         break;
@@ -241,13 +194,7 @@ class SequenceManagerPerfTest : public testing::TestWithParam<PerfTestType> {
     switch (GetParam()) {
       case PerfTestType::kUseSequenceManagerWithMessageLoop:
       case PerfTestType::kUseSequenceManagerWithMessagePump:
-      case PerfTestType::kUseSequenceManagerWithUIMessageLoop:
-      case PerfTestType::kUseSequenceManagerWithUIMessagePump:
-      case PerfTestType::kUseSequenceManagerWithIOMessageLoop:
-      case PerfTestType::kUseSequenceManagerWithIOMessagePump:
       case PerfTestType::kUseMessageLoop:
-      case PerfTestType::kUseUIMessageLoop:
-      case PerfTestType::kUseIOMessageLoop:
         run_loop_->Quit();
         break;
       case PerfTestType::kUseSingleThreadInWorkerPool: {
@@ -350,34 +297,16 @@ class SequenceManagerPerfTest : public testing::TestWithParam<PerfTestType> {
     std::string trace_suffix;
     switch (GetParam()) {
       case PerfTestType::kUseSequenceManagerWithMessageLoop:
-        trace_suffix = " SequenceManager with message loop ";
+        trace_suffix = " SequenceManager with message loop";
         break;
       case PerfTestType::kUseSequenceManagerWithMessagePump:
-        trace_suffix = " SequenceManager with message pump ";
-        break;
-      case PerfTestType::kUseSequenceManagerWithUIMessageLoop:
-        trace_suffix = " SequenceManager with UI message loop ";
-        break;
-      case PerfTestType::kUseSequenceManagerWithUIMessagePump:
-        trace_suffix = " SequenceManager with UI message pump ";
-        break;
-      case PerfTestType::kUseSequenceManagerWithIOMessageLoop:
-        trace_suffix = " SequenceManager with IO message loop ";
-        break;
-      case PerfTestType::kUseSequenceManagerWithIOMessagePump:
-        trace_suffix = " SequenceManager with IO message pump ";
+        trace_suffix = " SequenceManager with message pump";
         break;
       case PerfTestType::kUseMessageLoop:
-        trace_suffix = " message loop ";
-        break;
-      case PerfTestType::kUseUIMessageLoop:
-        trace_suffix = " message loop for UI ";
-        break;
-      case PerfTestType::kUseIOMessageLoop:
-        trace_suffix = " message loop for IO ";
+        trace_suffix = " message loop";
         break;
       case PerfTestType::kUseSingleThreadInWorkerPool:
-        trace_suffix = " single thread in WorkerPool ";
+        trace_suffix = " single thread in WorkerPool";
         break;
     }
 
@@ -413,15 +342,7 @@ INSTANTIATE_TEST_CASE_P(
     SequenceManagerPerfTest,
     testing::Values(PerfTestType::kUseSequenceManagerWithMessageLoop,
                     PerfTestType::kUseSequenceManagerWithMessagePump,
-                    PerfTestType::kUseSequenceManagerWithUIMessageLoop,
-#if !defined(OS_IOS)
-                    PerfTestType::kUseSequenceManagerWithUIMessagePump,
-#endif
-                    PerfTestType::kUseSequenceManagerWithIOMessageLoop,
-                    PerfTestType::kUseSequenceManagerWithIOMessagePump,
                     PerfTestType::kUseMessageLoop,
-                    PerfTestType::kUseUIMessageLoop,
-                    PerfTestType::kUseIOMessageLoop,
                     PerfTestType::kUseSingleThreadInWorkerPool));
 
 TEST_P(SequenceManagerPerfTest, RunTenThousandDelayedTasks_OneQueue) {
@@ -431,8 +352,6 @@ TEST_P(SequenceManagerPerfTest, RunTenThousandDelayedTasks_OneQueue) {
   switch (GetParam()) {
     // Virtual time is not supported for MessageLoop or WorkerPool.
     case PerfTestType::kUseMessageLoop:
-    case PerfTestType::kUseUIMessageLoop:
-    case PerfTestType::kUseIOMessageLoop:
     case PerfTestType::kUseSingleThreadInWorkerPool:
       LOG(INFO) << "Unsupported";
       return;
@@ -456,8 +375,6 @@ TEST_P(SequenceManagerPerfTest, RunTenThousandDelayedTasks_FourQueues) {
   switch (GetParam()) {
     // Virtual time is not supported for MessageLoop or WorkerPool.
     case PerfTestType::kUseMessageLoop:
-    case PerfTestType::kUseUIMessageLoop:
-    case PerfTestType::kUseIOMessageLoop:
     case PerfTestType::kUseSingleThreadInWorkerPool:
       LOG(INFO) << "Unsupported";
       return;
@@ -481,8 +398,6 @@ TEST_P(SequenceManagerPerfTest, RunTenThousandDelayedTasks_EightQueues) {
   switch (GetParam()) {
     // Virtual time is not supported for MessageLoop or WorkerPool.
     case PerfTestType::kUseMessageLoop:
-    case PerfTestType::kUseUIMessageLoop:
-    case PerfTestType::kUseIOMessageLoop:
     case PerfTestType::kUseSingleThreadInWorkerPool:
       LOG(INFO) << "Unsupported";
       return;
@@ -505,8 +420,6 @@ TEST_P(SequenceManagerPerfTest, RunTenThousandDelayedTasks_ThirtyTwoQueues) {
 
   switch (GetParam()) {
     case PerfTestType::kUseMessageLoop:
-    case PerfTestType::kUseUIMessageLoop:
-    case PerfTestType::kUseIOMessageLoop:
     case PerfTestType::kUseSingleThreadInWorkerPool:
       LOG(INFO) << "Unsupported";
       return;
@@ -542,8 +455,6 @@ TEST_P(SequenceManagerPerfTest, RunTenThousandImmediateTasks_FourQueues) {
   switch (GetParam()) {
     // We only support a single queue on the MessageLoop.
     case PerfTestType::kUseMessageLoop:
-    case PerfTestType::kUseUIMessageLoop:
-    case PerfTestType::kUseIOMessageLoop:
       LOG(INFO) << "Unsupported";
       return;
 
@@ -567,8 +478,6 @@ TEST_P(SequenceManagerPerfTest, RunTenThousandImmediateTasks_EightQueues) {
   switch (GetParam()) {
     // We only support a single queue on the MessageLoop.
     case PerfTestType::kUseMessageLoop:
-    case PerfTestType::kUseUIMessageLoop:
-    case PerfTestType::kUseIOMessageLoop:
       LOG(INFO) << "Unsupported";
       return;
 
@@ -591,8 +500,6 @@ TEST_P(SequenceManagerPerfTest, RunTenThousandImmediateTasks_ThirtyTwoQueues) {
   switch (GetParam()) {
     // We only support a single queue on the MessageLoop.
     case PerfTestType::kUseMessageLoop:
-    case PerfTestType::kUseUIMessageLoop:
-    case PerfTestType::kUseIOMessageLoop:
       LOG(INFO) << "Unsupported";
       return;
 
