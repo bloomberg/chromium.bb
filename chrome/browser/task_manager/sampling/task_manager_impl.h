@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/task_manager/providers/task_provider.h"
 #include "chrome/browser/task_manager/providers/task_provider_observer.h"
+#include "chrome/browser/task_manager/sampling/arc_shared_sampler.h"
 #include "chrome/browser/task_manager/sampling/task_group.h"
 #include "chrome/browser/task_manager/sampling/task_manager_io_thread_helper.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
@@ -180,6 +181,12 @@ class TaskManagerImpl : public TaskManagerInterface,
   // A special sampler shared with all instances of TaskGroup that calculates a
   // subset of resources for all processes at once.
   scoped_refptr<SharedSampler> shared_sampler_;
+
+#if defined(OS_CHROMEOS)
+  // A sampler shared with all instances of TaskGroup that hold ARC tasks and
+  // calculates memory footprint for all processes at once.
+  std::unique_ptr<ArcSharedSampler> arc_shared_sampler_;
+#endif  // defined(OS_CHROMEOS)
 
   // This will be set to true while there are observers and the task manager is
   // running.

@@ -27,7 +27,8 @@ enum ProcessType {
   RENDERER,
   GPU,
   UTILITY,
-  PLUGIN
+  PLUGIN,
+  ARC
 };
 
 enum MemoryMapOption {

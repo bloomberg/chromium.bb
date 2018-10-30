@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/task_manager/providers/task.h"
+#include "chrome/browser/task_manager/sampling/arc_shared_sampler.h"
 #include "chrome/browser/task_manager/sampling/shared_sampler.h"
 #include "chrome/browser/task_manager/sampling/task_group_sampler.h"
 #include "chrome/browser/task_manager/task_manager_observer.h"
@@ -62,6 +63,10 @@ class TaskGroup {
   // process represented by this TaskGroup have completed.
   bool AreBackgroundCalculationsDone() const;
 
+#if defined(OS_CHROMEOS)
+  void SetArcSampler(ArcSharedSampler* sampler);
+#endif  // defined(OS_CHROMEOS)
+
   const base::ProcessHandle& process_handle() const { return process_handle_; }
   const base::ProcessId& process_id() const { return process_id_; }
 
@@ -106,7 +111,6 @@ class TaskGroup {
 #endif  // defined(OS_LINUX)
 
   int idle_wakeups_per_second() const { return idle_wakeups_per_second_; }
-
  private:
   void RefreshGpuMemory(const gpu::VideoMemoryUsageStats& gpu_memory_stats);
 
@@ -129,6 +133,11 @@ class TaskGroup {
   void OnSamplerRefreshDone(
       base::Optional<SharedSampler::SamplingResult> results);
 
+#if defined(OS_CHROMEOS)
+  void OnArcSamplerRefreshDone(
+      base::Optional<ArcSharedSampler::MemoryFootprintBytes> results);
+#endif  // defined(OS_CHROMEOS)
+
   void OnBackgroundRefreshTypeFinished(int64_t finished_refresh_type);
 
   // The process' handle and ID.
@@ -142,6 +151,10 @@ class TaskGroup {
   scoped_refptr<TaskGroupSampler> worker_thread_sampler_;
 
   scoped_refptr<SharedSampler> shared_sampler_;
+#if defined(OS_CHROMEOS)
+  // Shared sampler that retrieves memory footprint for all ARC processes.
+  ArcSharedSampler* arc_shared_sampler_;  // Not owned
+#endif                                    // defined(OS_CHROMEOS)
 
   // Lists the Tasks in this TaskGroup.
   // Tasks are not owned by the TaskGroup. They're owned by the TaskProviders.
