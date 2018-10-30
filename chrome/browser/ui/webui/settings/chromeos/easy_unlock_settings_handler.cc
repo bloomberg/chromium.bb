@@ -25,9 +25,7 @@ EasyUnlockSettingsHandler::EasyUnlockSettingsHandler(Profile* profile)
   profile_pref_registrar_.Init(profile->GetPrefs());
 }
 
-EasyUnlockSettingsHandler::~EasyUnlockSettingsHandler() {
-  EasyUnlockService::Get(profile_)->RemoveObserver(this);
-}
+EasyUnlockSettingsHandler::~EasyUnlockSettingsHandler() {}
 
 EasyUnlockSettingsHandler* EasyUnlockSettingsHandler::Create(
     content::WebUIDataSource* html_source,
@@ -56,24 +54,9 @@ void EasyUnlockSettingsHandler::RegisterMessages() {
       "easyUnlockGetEnabledStatus",
       base::BindRepeating(&EasyUnlockSettingsHandler::HandleGetEnabledStatus,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "easyUnlockGetTurnOffFlowStatus",
-      base::BindRepeating(
-          &EasyUnlockSettingsHandler::HandleGetTurnOffFlowStatus,
-          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "easyUnlockStartTurnOffFlow",
-      base::BindRepeating(&EasyUnlockSettingsHandler::HandleStartTurnOffFlow,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "easyUnlockCancelTurnOffFlow",
-      base::BindRepeating(&EasyUnlockSettingsHandler::HandleCancelTurnOffFlow,
-                          base::Unretained(this)));
 }
 
 void EasyUnlockSettingsHandler::OnJavascriptAllowed() {
-  EasyUnlockService::Get(profile_)->AddObserver(this);
-
   profile_pref_registrar_.Add(
       prefs::kEasyUnlockPairing,
       base::Bind(&EasyUnlockSettingsHandler::SendEnabledStatus,
@@ -81,45 +64,13 @@ void EasyUnlockSettingsHandler::OnJavascriptAllowed() {
 }
 
 void EasyUnlockSettingsHandler::OnJavascriptDisallowed() {
-  EasyUnlockService::Get(profile_)->RemoveObserver(this);
   profile_pref_registrar_.RemoveAll();
-}
-
-void EasyUnlockSettingsHandler::OnTurnOffOperationStatusChanged() {
-  FireWebUIListener("easy-unlock-turn-off-flow-status",
-                    base::Value(GetTurnOffFlowStatus()));
 }
 
 void EasyUnlockSettingsHandler::SendEnabledStatus() {
   CallJavascriptFunction(
       "cr.webUIListenerCallback", base::Value("easy-unlock-enabled-status"),
       base::Value(EasyUnlockService::Get(profile_)->IsEnabled()));
-}
-
-std::string EasyUnlockSettingsHandler::GetTurnOffFlowStatus() {
-  EasyUnlockService::TurnOffFlowStatus status =
-      EasyUnlockService::Get(profile_)->GetTurnOffFlowStatus();
-
-  // Translate status into JS UI state string. Note the translated string
-  // should match UIState defined in easy_unlock_turn_off_dialog.js.
-  std::string status_string;
-  switch (status) {
-    case EasyUnlockService::IDLE:
-      status_string = "idle";
-      break;
-    case EasyUnlockService::PENDING:
-      status_string = "pending";
-      break;
-    case EasyUnlockService::FAIL:
-      status_string = "server-error";
-      break;
-    default:
-      LOG(ERROR) << "Unknown Easy unlock turn-off operation status: " << status;
-      status_string = "idle";
-      break;
-  }
-
-  return status_string;
 }
 
 void EasyUnlockSettingsHandler::HandleGetEnabledStatus(
@@ -131,24 +82,6 @@ void EasyUnlockSettingsHandler::HandleGetEnabledStatus(
   CHECK(args->Get(0, &callback_id));
   ResolveJavascriptCallback(
       *callback_id, base::Value(EasyUnlockService::Get(profile_)->IsEnabled()));
-}
-
-void EasyUnlockSettingsHandler::HandleGetTurnOffFlowStatus(
-    const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
-  const base::Value* callback_id;
-  CHECK(args->Get(0, &callback_id));
-  ResolveJavascriptCallback(*callback_id, base::Value(GetTurnOffFlowStatus()));
-}
-
-void EasyUnlockSettingsHandler::HandleStartTurnOffFlow(
-    const base::ListValue* args) {
-  EasyUnlockService::Get(profile_)->RunTurnOffFlow();
-}
-
-void EasyUnlockSettingsHandler::HandleCancelTurnOffFlow(
-    const base::ListValue* args) {
-  EasyUnlockService::Get(profile_)->ResetTurnOffFlow();
 }
 
 }  // namespace settings

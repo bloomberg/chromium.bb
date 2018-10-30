@@ -1112,16 +1112,6 @@ void AddDateTimeStrings(content::WebUIDataSource* html_source) {
 void AddEasyUnlockStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"easyUnlockSectionTitle", IDS_SETTINGS_EASY_UNLOCK_SECTION_TITLE},
-      // Easy Unlock turn-off dialog.
-      {"easyUnlockTurnOffButton", IDS_SETTINGS_EASY_UNLOCK_TURN_OFF},
-      {"easyUnlockTurnOffOfflineTitle",
-       IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_OFFLINE_TITLE},
-      {"easyUnlockTurnOffOfflineMessage",
-       IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_OFFLINE_MESSAGE},
-      {"easyUnlockTurnOffErrorTitle",
-       IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_ERROR_TITLE},
-      {"easyUnlockTurnOffErrorMessage",
-       IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_ERROR_MESSAGE},
       {"easyUnlockAllowSignInLabel",
        IDS_SETTINGS_EASY_UNLOCK_ALLOW_SIGN_IN_LABEL},
       {"easyUnlockProximityThresholdLabel",
@@ -1151,14 +1141,6 @@ void AddEasyUnlockStrings(content::WebUIDataSource* html_source) {
   html_source->AddString(
       "easyUnlockDescription",
       l10n_util::GetStringFUTF16(IDS_SETTINGS_EASY_UNLOCK_DESCRIPTION,
-                                 device_name));
-  html_source->AddString(
-      "easyUnlockTurnOffTitle",
-      l10n_util::GetStringFUTF16(IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_TITLE,
-                                 device_name));
-  html_source->AddString(
-      "easyUnlockTurnOffDescription",
-      l10n_util::GetStringFUTF16(IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_DESCRIPTION,
                                  device_name));
   html_source->AddString(
       "easyUnlockProximityThresholdLabel",

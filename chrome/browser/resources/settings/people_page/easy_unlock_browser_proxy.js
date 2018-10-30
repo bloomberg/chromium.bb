@@ -16,22 +16,6 @@ cr.define('settings', function() {
      * @return {!Promise<boolean>}
      */
     getEnabledStatus() {}
-
-    /**
-     * Returns the Easy Unlock turn off flow status.
-     * @return {!Promise<string>}
-     */
-    getTurnOffFlowStatus() {}
-
-    /**
-     * Begins the Easy Unlock turn off flow.
-     */
-    startTurnOffFlow() {}
-
-    /**
-     * Cancels any in-progress Easy Unlock turn-off flows.
-     */
-    cancelTurnOffFlow() {}
   }
 
   /**
@@ -41,21 +25,6 @@ cr.define('settings', function() {
     /** @override */
     getEnabledStatus() {
       return cr.sendWithPromise('easyUnlockGetEnabledStatus');
-    }
-
-    /** @override */
-    getTurnOffFlowStatus() {
-      return cr.sendWithPromise('easyUnlockGetTurnOffFlowStatus');
-    }
-
-    /** @override */
-    startTurnOffFlow() {
-      chrome.send('easyUnlockStartTurnOffFlow');
-    }
-
-    /** @override */
-    cancelTurnOffFlow() {
-      chrome.send('easyUnlockCancelTurnOffFlow');
     }
   }
 

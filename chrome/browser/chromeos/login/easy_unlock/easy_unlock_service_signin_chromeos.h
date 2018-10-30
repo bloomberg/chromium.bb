@@ -95,9 +95,6 @@ class EasyUnlockServiceSignin
   void ClearPermitAccess() override;
   const base::ListValue* GetRemoteDevices() const override;
   void SetRemoteDevices(const base::ListValue& devices) override;
-  void RunTurnOffFlow() override;
-  void ResetTurnOffFlow() override;
-  TurnOffFlowStatus GetTurnOffFlowStatus() const override;
   std::string GetChallenge() const override;
   std::string GetWrappedSecret() const override;
   void RecordEasySignInOutcome(const AccountId& account_id,

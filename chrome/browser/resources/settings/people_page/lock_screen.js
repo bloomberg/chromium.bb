@@ -214,12 +214,6 @@ Polymer({
     },
 
     /** @private */
-    showEasyUnlockTurnOffDialog_: {
-      type: Boolean,
-      value: false,
-    },
-
-    /** @private */
     showPasswordPromptDialog_: Boolean,
 
     /** @private */
@@ -401,28 +395,6 @@ Polymer({
    */
   handleEasyUnlockEnabledStatusChanged_: function(easyUnlockEnabled) {
     this.easyUnlockEnabled_ = easyUnlockEnabled;
-    this.showEasyUnlockTurnOffDialog_ =
-        easyUnlockEnabled && this.showEasyUnlockTurnOffDialog_;
-  },
-
-  /**
-   * @param {!Event} e
-   * @private
-   */
-  onEasyUnlockTurnOffTap_: function(e) {
-    // Prevent the end of the tap event from focusing what is underneath the
-    // button.
-    e.preventDefault();
-    this.showEasyUnlockTurnOffDialog_ = true;
-  },
-
-  /** @private */
-  onEasyUnlockTurnOffDialogClose_: function() {
-    this.showEasyUnlockTurnOffDialog_ = false;
-
-    // Restores focus on close to either the turn-off or set-up button,
-    // whichever is being displayed.
-    cr.ui.focusWithoutInk(assert(this.$$('.secondary-button')));
   },
 
   /**

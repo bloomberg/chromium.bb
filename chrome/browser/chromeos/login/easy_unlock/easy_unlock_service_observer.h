@@ -11,9 +11,6 @@ namespace chromeos {
 
 class EasyUnlockServiceObserver {
  public:
-  // Invoked when turn-off operation status changes.
-  virtual void OnTurnOffOperationStatusChanged() {}
-
   // Invoked when screenlock state changes.
   virtual void OnScreenlockStateChanged(proximity_auth::ScreenlockState state) {
   }
