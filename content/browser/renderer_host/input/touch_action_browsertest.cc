@@ -319,6 +319,42 @@ class TouchActionBrowserTest : public ContentBrowserTest {
                       expected_scroll_position_after_scroll);
   }
 
+  void DoTwoFingerPan() {
+    DCHECK(URLLoaded());
+
+    const std::string pointer_actions_json = R"HTML(
+        [{"source": "touch", "id": 0,
+              "actions": [
+                { "name": "pointerDown", "x": 10, "y": 125 },
+                { "name": "pointerMove", "x": 10, "y": 155 },
+                { "name": "pointerUp" }]},
+             {"source": "touch", "id": 1,
+              "actions": [
+                { "name": "pointerDown", "x": 15, "y": 125 },
+                { "name": "pointerMove", "x": 15, "y": 155 },
+                { "name": "pointerUp"}]}]
+        )HTML";
+
+    base::JSONReader json_reader;
+    std::unique_ptr<base::Value> params =
+        json_reader.ReadToValue(pointer_actions_json);
+    ASSERT_TRUE(params.get()) << json_reader.GetErrorMessage();
+    ActionsParser actions_parser(params.get());
+
+    ASSERT_TRUE(actions_parser.ParsePointerActionSequence());
+
+    run_loop_ = std::make_unique<base::RunLoop>();
+
+    GetWidgetHost()->QueueSyntheticGesture(
+        SyntheticGesture::Create(actions_parser.gesture_params()),
+        base::BindOnce(&TouchActionBrowserTest::OnSyntheticGestureCompleted,
+                       base::Unretained(this)));
+
+    // Runs until we get the OnSyntheticGestureCompleted callback
+    run_loop_->Run();
+    run_loop_.reset();
+  }
+
   // Generate touch events for a double tap and drag zoom gesture at
   // coordinates (50, 50).
   void DoDoubleTapDragZoom() {
@@ -358,7 +394,6 @@ class TouchActionBrowserTest : public ContentBrowserTest {
     run_loop_.reset();
   }
 
- private:
   void CheckScrollOffset(
       bool wait_until_scrolled,
       const gfx::Vector2d& expected_scroll_position_after_scroll) {
@@ -390,6 +425,7 @@ class TouchActionBrowserTest : public ContentBrowserTest {
     EXPECT_LE(expected_scroll_position_after_scroll.x() / 2, scroll_left);
   }
 
+ private:
   std::unique_ptr<RenderFrameSubmissionObserver> frame_observer_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
@@ -572,6 +608,21 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest,
 
   DoTouchScroll(gfx::Point(125, 75), gfx::Vector2d(45, 20), false, 10000,
                 gfx::Vector2d(45, 0), kShortJankTime);
+}
+
+// TODO(crbug.com/899005): Make this test work on Android.
+#if defined(OS_ANDROID)
+#define MAYBE_TwoFingerPanYDisallowed DISABLED_TwoFingerPanYDisallowed
+#else
+#define MAYBE_TwoFingerPanYDisallowed TwoFingerPanYDisallowed
+#endif
+// Test that two finger panning is treated as pinch zoom and is disallowed when
+// touching the pan-y area.
+IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, MAYBE_TwoFingerPanYDisallowed) {
+  LoadURL(kTouchActionURLWithOverlapArea);
+
+  DoTwoFingerPan();
+  CheckScrollOffset(true, gfx::Vector2d(0, 0));
 }
 
 namespace {
