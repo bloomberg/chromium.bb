@@ -36,10 +36,7 @@ class FilePath;
 
 // Options for creating a shared memory object.
 struct BASE_EXPORT SharedMemoryCreateOptions {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // The type of OS primitive that should back the SharedMemory object.
-  SharedMemoryHandle::Type type = SharedMemoryHandle::MACH;
-#elif !defined(OS_FUCHSIA)
+#if !defined(OS_FUCHSIA)
   // DEPRECATED (crbug.com/345734):
   // If NULL, the object is anonymous.  This pointer is owned by the caller
   // and must live through the call to Create().
@@ -51,7 +48,7 @@ struct BASE_EXPORT SharedMemoryCreateOptions {
   // shared memory must not exist.  This flag is meaningless unless
   // name_deprecated is non-NULL.
   bool open_existing_deprecated = false;
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif
 
   // Size of the shared memory object to be created.
   // When opening an existing object, this has no effect.
@@ -106,7 +103,7 @@ class BASE_EXPORT SharedMemory {
   // primitive.
   static SharedMemoryHandle DuplicateHandle(const SharedMemoryHandle& handle);
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !(defined(OS_MACOSX) && !defined(OS_IOS))
   // This method requires that the SharedMemoryHandle is backed by a POSIX fd.
   static int GetFdFromSharedMemoryHandle(const SharedMemoryHandle& handle);
 #endif
@@ -229,12 +226,6 @@ class BASE_EXPORT SharedMemory {
   // If valid, points to the same memory region as shm_, but with readonly
   // permissions.
   SharedMemoryHandle readonly_shm_;
-#endif
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // The mechanism by which the memory is mapped. Only valid if |memory_| is not
-  // |nullptr|.
-  SharedMemoryHandle::Type mapped_memory_mechanism_ = SharedMemoryHandle::MACH;
 #endif
 
   // The OS primitive that backs the shared memory region.

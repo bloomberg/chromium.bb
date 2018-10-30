@@ -11,8 +11,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "base/files/file_util.h"
-#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
@@ -21,12 +19,10 @@
 #include "base/memory/shared_memory_tracker.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/posix/eintr_wrapper.h"
 #include "base/posix/safe_strerror.h"
 #include "base/process/process_metrics.h"
 #include "base/scoped_generic.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 
@@ -85,9 +81,7 @@ bool MakeMachSharedMemoryHandleReadOnly(SharedMemoryHandle* new_handle,
 SharedMemory::SharedMemory() {}
 
 SharedMemory::SharedMemory(const SharedMemoryHandle& handle, bool read_only)
-    : mapped_memory_mechanism_(SharedMemoryHandle::POSIX),
-      shm_(handle),
-      read_only_(read_only) {}
+    : shm_(handle), read_only_(read_only) {}
 
 SharedMemory::~SharedMemory() {
   Unmap();
@@ -115,12 +109,6 @@ SharedMemoryHandle SharedMemory::DuplicateHandle(
   return handle.Duplicate();
 }
 
-// static
-int SharedMemory::GetFdFromSharedMemoryHandle(
-    const SharedMemoryHandle& handle) {
-  return handle.file_descriptor_.fd;
-}
-
 bool SharedMemory::CreateAndMapAnonymous(size_t size) {
   return CreateAnonymous(size) && Map(size);
 }
@@ -135,48 +123,9 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
   if (options.size > static_cast<size_t>(std::numeric_limits<int>::max()))
     return false;
 
-  if (options.type == SharedMemoryHandle::MACH) {
-    shm_ = SharedMemoryHandle(options.size, UnguessableToken::Create());
-    requested_size_ = options.size;
-    return shm_.IsValid();
-  }
-
-  // This function theoretically can block on the disk. Both profiling of real
-  // users and local instrumentation shows that this is a real problem.
-  // https://code.google.com/p/chromium/issues/detail?id=466437
-  ThreadRestrictions::ScopedAllowIO allow_io;
-
-  ScopedFD fd;
-  ScopedFD readonly_fd;
-
-  FilePath path;
-  bool result = CreateAnonymousSharedMemory(options, &fd, &readonly_fd, &path);
-  if (!result)
-    return false;
-  // Should be guaranteed by CreateAnonymousSharedMemory().
-  DCHECK(fd.is_valid());
-
-  // Get current size.
-  struct stat stat;
-  if (fstat(fd.get(), &stat) != 0)
-    return false;
-  const size_t current_size = stat.st_size;
-  if (current_size != options.size) {
-    if (HANDLE_EINTR(ftruncate(fd.get(), options.size)) != 0)
-      return false;
-  }
+  shm_ = SharedMemoryHandle(options.size, UnguessableToken::Create());
   requested_size_ = options.size;
-
-  int mapped_file = -1;
-  int readonly_mapped_file = -1;
-  result = PrepareMapFile(std::move(fd), std::move(readonly_fd), &mapped_file,
-                          &readonly_mapped_file);
-  shm_ = SharedMemoryHandle(FileDescriptor(mapped_file, false), options.size,
-                            UnguessableToken::Create());
-  readonly_shm_ =
-      SharedMemoryHandle(FileDescriptor(readonly_mapped_file, false),
-                         options.size, shm_.GetGUID());
-  return result;
+  return shm_.IsValid();
 }
 
 bool SharedMemory::MapAt(off_t offset, size_t bytes) {
@@ -192,7 +141,6 @@ bool SharedMemory::MapAt(off_t offset, size_t bytes) {
     mapped_size_ = bytes;
     DCHECK_EQ(0U, reinterpret_cast<uintptr_t>(memory_) &
                       (SharedMemory::MAP_MINIMUM_ALIGNMENT - 1));
-    mapped_memory_mechanism_ = shm_.type_;
     mapped_id_ = shm_.GetGUID();
     SharedMemoryTracker::GetInstance()->IncrementMemoryUsage(*this);
   } else {
@@ -207,16 +155,9 @@ bool SharedMemory::Unmap() {
     return false;
 
   SharedMemoryTracker::GetInstance()->DecrementMemoryUsage(*this);
-  switch (mapped_memory_mechanism_) {
-    case SharedMemoryHandle::POSIX:
-      munmap(memory_, mapped_size_);
-      break;
-    case SharedMemoryHandle::MACH:
       mach_vm_deallocate(mach_task_self(),
                          reinterpret_cast<mach_vm_address_t>(memory_),
                          mapped_size_);
-      break;
-  }
   memory_ = nullptr;
   mapped_size_ = 0;
   mapped_id_ = UnguessableToken();
@@ -237,22 +178,9 @@ SharedMemoryHandle SharedMemory::TakeHandle() {
 void SharedMemory::Close() {
   shm_.Close();
   shm_ = SharedMemoryHandle();
-  if (shm_.type_ == SharedMemoryHandle::POSIX) {
-    if (readonly_shm_.IsValid()) {
-      readonly_shm_.Close();
-      readonly_shm_ = SharedMemoryHandle();
-    }
-  }
 }
 
 SharedMemoryHandle SharedMemory::GetReadOnlyHandle() const {
-  if (shm_.type_ == SharedMemoryHandle::POSIX) {
-    // We could imagine re-opening the file from /dev/fd, but that can't make it
-    // readonly on Mac: https://codereview.chromium.org/27265002/#msg10.
-    CHECK(readonly_shm_.IsValid());
-    return readonly_shm_.Duplicate();
-  }
-
   DCHECK(shm_.IsValid());
   SharedMemoryHandle new_handle;
   bool success = MakeMachSharedMemoryHandleReadOnly(&new_handle, shm_, memory_);
