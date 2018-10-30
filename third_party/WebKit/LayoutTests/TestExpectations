@@ -3287,10 +3287,6 @@ crbug.com/626703 external/wpt/service-workers/service-worker/update-not-allowed.
 crbug.com/626703 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-block-margins-2.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-block-margins-2.html [ Failure ]
 crbug.com/626703 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/update-not-allowed.https.html [ Timeout ]
-crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/postmessage-to-client.https.html [ Timeout ]
-crbug.com/626703 external/wpt/service-workers/service-worker/postmessage-to-client.https.html [ Timeout ]
-crbug.com/626703 virtual/outofblink-cors/external/wpt/service-workers/service-worker/postmessage-to-client.https.html [ Timeout ]
-crbug.com/626703 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/postmessage-to-client.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-text/white-space/line-edge-white-space-collapse-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/white-space/line-edge-white-space-collapse-001.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_center_position_50.html [ Failure ]
@@ -4339,6 +4335,13 @@ crbug.com/595993 external/wpt/service-workers/service-worker/request-end-to-end.
 crbug.com/595993 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/595993 virtual/outofblink-cors/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/595993 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
+
+# These tests fail because ServiceWorkerContainer.startMessages() is not
+# implemented yet.
+crbug.com/894682 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/postmessage-to-client-message-queue.https.html [ Skip ]
+crbug.com/894682 external/wpt/service-workers/service-worker/postmessage-to-client-message-queue.https.html [ Skip ]
+crbug.com/894682 virtual/outofblink-cors/external/wpt/service-workers/service-worker/postmessage-to-client-message-queue.https.html [ Skip ]
+crbug.com/894682 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/postmessage-to-client-message-queue.https.html [ Skip ]
 
 crbug.com/619427 [ Mac Linux ] fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
 
