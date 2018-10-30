@@ -199,7 +199,7 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
   static bool IsTime(UnitType unit) {
     return unit == UnitType::kSeconds || unit == UnitType::kMilliseconds;
   }
-  bool IsTime() const { return IsTime(GetType()); }
+  bool IsTime() const { return IsTime(TypeWithCalcResolved()); }
   static bool IsFrequency(UnitType unit) {
     return unit == UnitType::kHertz || unit == UnitType::kKilohertz;
   }

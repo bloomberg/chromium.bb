@@ -1728,6 +1728,7 @@ jumbo_source_set("unit_tests") {
     "css/css_gradient_value_test.cc",
     "css/css_page_rule_test.cc",
     "css/css_paint_value_test.cc",
+    "css/css_primitive_value_test.cc",
     "css/css_selector_test.cc",
     "css/css_selector_watch_test.cc",
     "css/css_style_declaration_test.cc",
