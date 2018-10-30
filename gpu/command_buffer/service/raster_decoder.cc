@@ -280,17 +280,23 @@ bool AllowedBetweenBeginEndRaster(CommandId command) {
 // matches GrContext state tracking.
 bool PermitsInconsistentContextState(CommandId command) {
   switch (command) {
+    case kBeginQueryEXT:
     case kBeginRasterCHROMIUMImmediate:
     case kCreateAndConsumeTextureINTERNALImmediate:
     case kCreateTransferCacheEntryINTERNAL:
+    case kDeleteQueriesEXTImmediate:
     case kDeleteTexturesImmediate:
     case kDeleteTransferCacheEntryINTERNAL:
+    case kEndQueryEXT:
     case kEndRasterCHROMIUM:
     case kFinish:
     case kFlush:
+    case kGenQueriesEXTImmediate:
     case kGetError:
     case kInsertFenceSyncCHROMIUM:
     case kRasterCHROMIUM:
+    case kResetActiveURLCHROMIUM:
+    case kSetActiveURLCHROMIUM:
     case kUnlockTransferCacheEntryINTERNAL:
     case kWaitSyncTokenCHROMIUM:
       return true;
