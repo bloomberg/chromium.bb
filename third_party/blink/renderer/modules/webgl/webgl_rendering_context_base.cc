@@ -1119,6 +1119,7 @@ void WebGLRenderingContextBase::InitializeNewContext() {
   // into account here?
 
   marked_canvas_dirty_ = false;
+  must_paint_to_canvas_ = false;
   active_texture_unit_ = 0;
   pack_alignment_ = 4;
   unpack_alignment_ = 4;
@@ -1347,6 +1348,11 @@ void WebGLRenderingContextBase::MarkContextChanged(
     return;
   }
 
+  // Regardless of whether dirty propagations are optimized away, the back
+  // buffer is now out of sync with respect to the canvas's internal backing
+  // store -- which is only used for certain purposes, like printing.
+  must_paint_to_canvas_ = true;
+
   if (!GetDrawingBuffer()->MarkContentsChanged() && marked_canvas_dirty_) {
     return;
   }
@@ -1541,13 +1547,11 @@ bool WebGLRenderingContextBase::PaintRenderingResultsToCanvas(
   if (isContextLost())
     return false;
 
-  ClearIfComposited();
+  bool must_clear_now = ClearIfComposited() != kSkipped;
+  if (!must_paint_to_canvas_ && !must_clear_now)
+    return false;
 
-  // This method will be called after FinalizeFrame() in certain
-  // situations, for example when printing a page containing the canvas.
-  // Unfortunately it's not feasible to track whether the canvas is dirty
-  // at this point and whether this paint operation can be skipped, so we
-  // do it all the time.
+  must_paint_to_canvas_ = false;
 
   if (Host()->ResourceProvider() &&
       Host()->ResourceProvider()->Size() != GetDrawingBuffer()->Size()) {

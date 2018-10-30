@@ -730,6 +730,10 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   bool destruction_in_progress_ = false;
   bool marked_canvas_dirty_;
+  // For performance reasons we must separately track whether we've
+  // copied WebGL's drawing buffer to the canvas's backing store, for
+  // example for printing.
+  bool must_paint_to_canvas_;
 
   // List of bound VBO's. Used to maintain info about sizes for ARRAY_BUFFER and
   // stored values for ELEMENT_ARRAY_BUFFER
