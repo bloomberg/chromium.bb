@@ -66,7 +66,9 @@ enum class CrashAction {
 void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
                               const DataReductionProxyPageLoadTiming& timing,
                               PageloadMetrics_RendererCrashType crash_type,
+                              std::string channel,
                               PageloadMetrics* request) {
+  request->set_channel(channel);
   request->set_session_key(request_data.session_key());
   request->set_holdback_group(params::HoldbackFieldTrialGroup());
   // For the timing events, any of them could be zero. Fill the message as a
@@ -221,13 +223,15 @@ std::string AddBatchInfoAndSerializeRequest(
 
 DataReductionProxyPingbackClientImpl::DataReductionProxyPingbackClientImpl(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    const std::string& channel)
     : url_loader_factory_(std::move(url_loader_factory)),
       pingback_url_(util::AddApiKeyToUrl(params::GetPingbackURL())),
       pingback_reporting_fraction_(0.0),
       current_loader_message_count_(0u),
       current_loader_crash_count_(0u),
       ui_task_runner_(std::move(ui_task_runner)),
+      channel_(channel),
 #if defined(OS_ANDROID)
       scoped_observer_(this),
       weak_factory_(this) {
@@ -368,7 +372,8 @@ void DataReductionProxyPingbackClientImpl::CreateReport(
     PageloadMetrics_RendererCrashType crash_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   PageloadMetrics* pageload_metrics = metrics_request_.add_pageloads();
-  AddDataToPageloadMetrics(request_data, timing, crash_type, pageload_metrics);
+  AddDataToPageloadMetrics(request_data, timing, crash_type, channel_,
+                           pageload_metrics);
   if (current_loader_)
     return;
   DCHECK_EQ(1, metrics_request_.pageloads_size());

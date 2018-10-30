@@ -49,6 +49,7 @@ static const char kHistogramAttempted[] =
     "DataReductionProxy.Pingback.Attempted";
 static const char kSessionKey[] = "fake-session";
 static const char kFakeURL[] = "http://www.google.com/";
+static const char kChannel[] = "channel";
 static const int64_t kBytes = 10000;
 static const int64_t kBytesOriginal = 1000000;
 static const int64_t kTotalPageSizeBytes = 20000;
@@ -81,7 +82,8 @@ class TestDataReductionProxyPingbackClientImpl
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner)
       : DataReductionProxyPingbackClientImpl(url_loader_factory,
-                                             std::move(thread_task_runner)),
+                                             std::move(thread_task_runner),
+                                             kChannel),
         should_override_random_(false),
         override_value_(0.0f),
         current_time_(base::Time::Now()) {}
@@ -314,6 +316,7 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyPingbackContent) {
       protobuf_parser::DurationToTimeDelta(pageload_metrics.page_end_time()));
 
   EXPECT_EQ(kSessionKey, pageload_metrics.session_key());
+  EXPECT_EQ(kChannel, pageload_metrics.channel());
   EXPECT_EQ(kFakeURL, pageload_metrics.first_request_url());
   EXPECT_EQ(kBytes, pageload_metrics.compressed_page_size_bytes());
   EXPECT_EQ(kBytesOriginal, pageload_metrics.original_page_size_bytes());
@@ -485,6 +488,7 @@ TEST_F(DataReductionProxyPingbackClientImplTest,
         protobuf_parser::DurationToTimeDelta(pageload_metrics.page_end_time()));
 
     EXPECT_EQ(kSessionKey, pageload_metrics.session_key());
+    EXPECT_EQ(kChannel, pageload_metrics.channel());
     EXPECT_EQ(kFakeURL, pageload_metrics.first_request_url());
     EXPECT_EQ(kBytes, pageload_metrics.compressed_page_size_bytes());
     EXPECT_EQ(kBytesOriginal, pageload_metrics.original_page_size_bytes());

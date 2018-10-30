@@ -79,7 +79,8 @@ class TestPingbackClient
   TestPingbackClient()
       : data_reduction_proxy::DataReductionProxyPingbackClientImpl(
             nullptr,
-            base::ThreadTaskRunnerHandle::Get()),
+            base::ThreadTaskRunnerHandle::Get(),
+            "unknown"),
         send_pingback_called_(false) {}
   ~TestPingbackClient() override {}
 

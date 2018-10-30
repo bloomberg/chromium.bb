@@ -23,6 +23,7 @@
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/content/browser/data_reduction_proxy_pingback_client_impl.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
@@ -37,6 +38,7 @@
 #include "components/previews/content/previews_ui_service.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/proxy_config/proxy_prefs.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/network_service_instance.h"
@@ -223,7 +225,8 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
           std::move(store),
           std::make_unique<
               data_reduction_proxy::DataReductionProxyPingbackClientImpl>(
-              url_loader_factory, ui_task_runner),
+              url_loader_factory, ui_task_runner,
+              version_info::GetChannelString(chrome::GetChannel())),
           g_browser_process->network_quality_tracker(),
           content::GetNetworkConnectionTracker(),
           data_use_measurement::ChromeDataUseMeasurement::GetInstance(),
