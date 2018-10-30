@@ -13,6 +13,8 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "services/data_decoder/public/cpp/test_data_decoder_service.h"
+#include "services/data_decoder/public/mojom/constants.mojom.h"
+#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
@@ -45,13 +47,9 @@ const int kUpperBoundCorner = 26;
 
 class ExploreSitesImageHelperTest : public testing::Test {
  public:
-  ExploreSitesImageHelperTest() {
-    std::unique_ptr<service_manager::Service> service =
-        data_decoder::DataDecoderService::Create();
-    connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForUniqueService(
-            std::move(service));
-  }
+  ExploreSitesImageHelperTest()
+      : data_decoder_(connector_factory_.RegisterInstance(
+            data_decoder::mojom::kServiceName)) {}
 
   ~ExploreSitesImageHelperTest() override{};
 
@@ -70,10 +68,11 @@ class ExploreSitesImageHelperTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::unique_ptr<service_manager::Connector> GetConnector() {
-    return connector_factory_->CreateConnector();
+    return connector_factory_.CreateConnector();
   }
 
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
+  service_manager::TestConnectorFactory connector_factory_;
+  data_decoder::DataDecoderService data_decoder_;
   base::HistogramTester histogram_tester_;
 };
 

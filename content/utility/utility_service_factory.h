@@ -28,6 +28,9 @@ class UtilityServiceFactory : public ServiceFactory {
       const std::string& name,
       service_manager::mojom::PIDReceiverPtr pid_receiver) override;
   void RegisterServices(ServiceMap* services) override;
+  bool HandleServiceRequest(
+      const std::string& name,
+      service_manager::mojom::ServiceRequest request) override;
   void OnServiceQuit() override;
 
  private:
@@ -40,6 +43,8 @@ class UtilityServiceFactory : public ServiceFactory {
   // network or audio services are created. Used for testing.
   std::unique_ptr<service_manager::BinderRegistry> network_registry_;
   std::unique_ptr<service_manager::BinderRegistry> audio_registry_;
+
+  std::unique_ptr<service_manager::Service> running_service_;
 
   DISALLOW_COPY_AND_ASSIGN(UtilityServiceFactory);
 };

@@ -18,6 +18,7 @@
 #include "base/values.h"
 #include "components/crx_file/id_util.h"
 #include "components/services/unzip/public/cpp/test_unzip_service.h"
+#include "components/services/unzip/public/interfaces/constants.mojom.h"
 #include "components/services/unzip/unzip_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -34,7 +35,9 @@
 #include "extensions/test/test_extensions_client.h"
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/data_decoder/public/cpp/test_data_decoder_service.h"
+#include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -156,25 +159,33 @@ class SandboxedUnpackerTest : public ExtensionsTest {
   }
 
   void InitSanboxedUnpacker(
-      std::unique_ptr<service_manager::Service> data_decode_service,
+      std::unique_ptr<service_manager::Service> data_decoder_service,
       std::unique_ptr<service_manager::Service> unzip_service) {
-    service_manager::TestConnectorFactory::NameToServiceMap services;
-    if (!data_decode_service)
-      data_decode_service = data_decoder::DataDecoderService::Create();
+    if (data_decoder_service) {
+      data_decoder_service_ = std::move(data_decoder_service);
+    } else {
+      data_decoder_service_ =
+          std::make_unique<data_decoder::DataDecoderService>(
+              RegisterDataDecoder());
+    }
+
     if (!unzip_service)
       unzip_service = unzip::UnzipService::CreateService();
-    services.insert(
-        std::make_pair("data_decoder", std::move(data_decode_service)));
-    services.insert(std::make_pair("unzip_service", std::move(unzip_service)));
-    test_connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForServices(
-            std::move(services));
-    connector_ = test_connector_factory_->CreateConnector();
+    unzip_service_context_ = std::make_unique<service_manager::ServiceContext>(
+        std::move(unzip_service),
+        test_connector_factory_.RegisterInstance(unzip::mojom::kServiceName));
+
+    connector_ = test_connector_factory_.CreateConnector();
 
     sandboxed_unpacker_ =
         new SandboxedUnpacker(connector_->Clone(), Manifest::INTERNAL,
                               Extension::NO_FLAGS, extensions_dir_.GetPath(),
                               base::ThreadTaskRunnerHandle::Get(), client_);
+  }
+
+  service_manager::mojom::ServiceRequest RegisterDataDecoder() {
+    return test_connector_factory_.RegisterInstance(
+        data_decoder::mojom::kServiceName);
   }
 
   void TearDown() override {
@@ -264,9 +275,12 @@ class SandboxedUnpackerTest : public ExtensionsTest {
   scoped_refptr<SandboxedUnpacker> sandboxed_unpacker_;
   std::unique_ptr<content::InProcessUtilityThreadHelper>
       in_process_utility_thread_helper_;
-  std::unique_ptr<service_manager::TestConnectorFactory>
-      test_connector_factory_;
+
+  service_manager::TestConnectorFactory test_connector_factory_;
   std::unique_ptr<service_manager::Connector> connector_;
+
+  std::unique_ptr<service_manager::Service> data_decoder_service_;
+  std::unique_ptr<service_manager::ServiceContext> unzip_service_context_;
 };
 
 TEST_F(SandboxedUnpackerTest, EmptyDefaultLocale) {
@@ -469,9 +483,10 @@ TEST_F(SandboxedUnpackerTest, UnzipperServiceFails) {
 }
 
 TEST_F(SandboxedUnpackerTest, JsonParserFails) {
-  InitSanboxedUnpacker(std::make_unique<data_decoder::CrashyDataDecoderService>(
-                           /*crash_json=*/true, /*crash_image=*/false),
-                       /*unzip_service=*/nullptr);
+  InitSanboxedUnpacker(
+      std::make_unique<data_decoder::CrashyDataDecoderService>(
+          RegisterDataDecoder(), /*crash_json=*/true, /*crash_image=*/false),
+      /*unzip_service=*/nullptr);
   SetupUnpacker("good_package.crx", "");
   EXPECT_FALSE(InstallSucceeded());
   EXPECT_FALSE(GetInstallErrorMessage().empty());
@@ -480,9 +495,10 @@ TEST_F(SandboxedUnpackerTest, JsonParserFails) {
 }
 
 TEST_F(SandboxedUnpackerTest, ImageDecoderFails) {
-  InitSanboxedUnpacker(std::make_unique<data_decoder::CrashyDataDecoderService>(
-                           /*crash_json=*/false, /*crash_image=*/true),
-                       /*unzip_service=*/nullptr);
+  InitSanboxedUnpacker(
+      std::make_unique<data_decoder::CrashyDataDecoderService>(
+          RegisterDataDecoder(), /*crash_json=*/false, /*crash_image=*/true),
+      /*unzip_service=*/nullptr);
   SetupUnpacker("good_package.crx", "");
   EXPECT_FALSE(InstallSucceeded());
   EXPECT_FALSE(GetInstallErrorMessage().empty());

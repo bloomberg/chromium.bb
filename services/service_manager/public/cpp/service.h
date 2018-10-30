@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -22,6 +23,13 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Service {
  public:
   Service();
   virtual ~Service();
+
+  // Sets a closure to run when the service wants to self-terminate. This may be
+  // used by whomever created the Service instance in order to clean up
+  // associated resources.
+  void set_termination_closure(base::OnceClosure callback) {
+    termination_closure_ = std::move(callback);
+  }
 
   // Called exactly once when a bidirectional connection with the Service
   // Manager has been established. No calls to OnBindInterface() will be made
@@ -42,7 +50,7 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Service {
   // Service, and no further communication with the Service Manager is possible.
   //
   // The Service may continue to operate and service existing client connections
-  // as it deems appropriate.
+  // as it deems appropriate. The default implementation invokes |Terminate()|.
   virtual void OnDisconnected();
 
   // Called when the Service Manager has stopped tracking this instance. The
@@ -63,6 +71,21 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Service {
   virtual bool OnServiceManagerConnectionLost();
 
  protected:
+  // Subclasses should always invoke |Terminate()| when they want to
+  // self-terminate. This should generally only be done once the service is
+  // disconnected from the Service Manager and has no outstanding interface
+  // connections servicing clients. Calling |Terminate()| should be considered
+  // roughly equivalent to calling |exit(0)| in a normal POSIX process
+  // environment, except that services allow for the host environment to define
+  // exactly what termination means (see |set_termination_closure| above).
+  //
+  // Note that if no termination closure is set on this Service instance,
+  // calls to |Terminate()| do nothing.
+  //
+  // As a general rule, subclasses should *ALWAYS* assume that |Terminate()| may
+  // delete |*this| before returning.
+  void Terminate();
+
   // Accesses the ServiceContext associated with this Service. Note that this is
   // only valid AFTER the Service's constructor has run.
   ServiceContext* context() const;
@@ -71,6 +94,8 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Service {
   friend class ForwardingService;
   friend class ServiceContext;
   friend class TestServiceDecorator;
+
+  base::OnceClosure termination_closure_;
 
   // NOTE: This MUST be called before any public Service methods. ServiceContext
   // satisfies this guarantee for any Service instance it owns.
