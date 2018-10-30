@@ -219,9 +219,12 @@
     "name": "my repo rebase abort"
   },
   {
-    "name": "$result",
-    "reason": "Infra Failure: Step('my repo rebase') returned 1",
-    "recipe_result": null,
-    "status_code": 1
+    "failure": {
+      "failure": {
+        "step": "my repo rebase"
+      },
+      "humanReason": "Infra Failure: Step('my repo rebase') returned 1"
+    },
+    "name": "$result"
   }
 ]

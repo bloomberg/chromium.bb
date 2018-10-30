@@ -77,9 +77,12 @@
     ]
   },
   {
-    "name": "$result",
-    "reason": "Infra Failure: Step('bot_update') returned 1",
-    "recipe_result": null,
-    "status_code": 1
+    "failure": {
+      "failure": {
+        "step": "bot_update"
+      },
+      "humanReason": "Infra Failure: Step('bot_update') returned 1"
+    },
+    "name": "$result"
   }
 ]
