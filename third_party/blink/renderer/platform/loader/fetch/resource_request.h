@@ -127,17 +127,17 @@ class PLATFORM_EXPORT ResourceRequest final {
   void ClearHTTPHeaderField(const AtomicString& name);
 
   const AtomicString& HttpContentType() const {
-    return HttpHeaderField(HTTPNames::Content_Type);
+    return HttpHeaderField(http_names::kContentType);
   }
   void SetHTTPContentType(const AtomicString& http_content_type) {
-    SetHTTPHeaderField(HTTPNames::Content_Type, http_content_type);
+    SetHTTPHeaderField(http_names::kContentType, http_content_type);
   }
 
   // TODO(domfarolino): Remove this once we stop storing the generated referrer
   // as a header, and instead use a separate member. See
   // https://crbug.com/850813.
   const AtomicString& HttpReferrer() const {
-    return HttpHeaderField(HTTPNames::Referer);
+    return HttpHeaderField(http_names::kReferer);
   }
   void SetHTTPReferrer(const Referrer&);
   bool DidSetHTTPReferrer() const { return did_set_http_referrer_; }
@@ -154,7 +154,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   const String& ReferrerString() const { return referrer_string_; }
 
   const AtomicString& HttpOrigin() const {
-    return HttpHeaderField(HTTPNames::Origin);
+    return HttpHeaderField(http_names::kOrigin);
   }
   void SetHTTPOrigin(const SecurityOrigin*);
   void ClearHTTPOrigin();
@@ -162,12 +162,12 @@ class PLATFORM_EXPORT ResourceRequest final {
   void SetHTTPOriginToMatchReferrerIfNeeded();
 
   void SetHTTPUserAgent(const AtomicString& http_user_agent) {
-    SetHTTPHeaderField(HTTPNames::User_Agent, http_user_agent);
+    SetHTTPHeaderField(http_names::kUserAgent, http_user_agent);
   }
   void ClearHTTPUserAgent();
 
   void SetHTTPAccept(const AtomicString& http_accept) {
-    SetHTTPHeaderField(HTTPNames::Accept, http_accept);
+    SetHTTPHeaderField(http_names::kAccept, http_accept);
   }
 
   EncodedFormData* HttpBody() const;

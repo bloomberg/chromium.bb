@@ -1072,7 +1072,7 @@ bool Resource::HasCacheControlNoStoreHeader() const {
 
 bool Resource::MustReloadDueToVaryHeader(
     const ResourceRequest& new_request) const {
-  const AtomicString& vary = GetResponse().HttpHeaderField(HTTPNames::Vary);
+  const AtomicString& vary = GetResponse().HttpHeaderField(http_names::kVary);
   if (vary.IsNull())
     return false;
   if (vary == "*")

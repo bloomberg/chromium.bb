@@ -48,7 +48,7 @@ ResourceRequest::ResourceRequest(const String& url_string)
 ResourceRequest::ResourceRequest(const KURL& url)
     : url_(url),
       timeout_interval_(default_timeout_interval_),
-      http_method_(HTTPNames::GET),
+      http_method_(http_names::kGET),
       allow_stored_credentials_(true),
       report_upload_progress_(false),
       report_raw_headers_(false),
@@ -203,25 +203,25 @@ void ResourceRequest::SetHTTPHeaderField(const AtomicString& name,
 
 void ResourceRequest::SetHTTPReferrer(const Referrer& referrer) {
   if (referrer.referrer.IsEmpty())
-    http_header_fields_.Remove(HTTPNames::Referer);
+    http_header_fields_.Remove(http_names::kReferer);
   else
-    SetHTTPHeaderField(HTTPNames::Referer, referrer.referrer);
+    SetHTTPHeaderField(http_names::kReferer, referrer.referrer);
   referrer_policy_ = referrer.referrer_policy;
   did_set_http_referrer_ = true;
 }
 
 void ResourceRequest::ClearHTTPReferrer() {
-  http_header_fields_.Remove(HTTPNames::Referer);
+  http_header_fields_.Remove(http_names::kReferer);
   referrer_policy_ = kReferrerPolicyDefault;
   did_set_http_referrer_ = false;
 }
 
 void ResourceRequest::SetHTTPOrigin(const SecurityOrigin* origin) {
-  SetHTTPHeaderField(HTTPNames::Origin, origin->ToAtomicString());
+  SetHTTPHeaderField(http_names::kOrigin, origin->ToAtomicString());
 }
 
 void ResourceRequest::ClearHTTPOrigin() {
-  http_header_fields_.Remove(HTTPNames::Origin);
+  http_header_fields_.Remove(http_names::kOrigin);
 }
 
 void ResourceRequest::SetHTTPOriginIfNeeded(const SecurityOrigin* origin) {
@@ -232,13 +232,13 @@ void ResourceRequest::SetHTTPOriginIfNeeded(const SecurityOrigin* origin) {
 void ResourceRequest::SetHTTPOriginToMatchReferrerIfNeeded() {
   if (NeedsHTTPOrigin()) {
     SetHTTPOrigin(
-        SecurityOrigin::CreateFromString(HttpHeaderField(HTTPNames::Referer))
+        SecurityOrigin::CreateFromString(HttpHeaderField(http_names::kReferer))
             .get());
   }
 }
 
 void ResourceRequest::ClearHTTPUserAgent() {
-  http_header_fields_.Remove(HTTPNames::User_Agent);
+  http_header_fields_.Remove(http_names::kUserAgent);
 }
 
 EncodedFormData* ResourceRequest::HttpBody() const {
@@ -321,11 +321,11 @@ void ResourceRequest::SetNavigationStartTime(TimeTicks navigation_start) {
 }
 
 bool ResourceRequest::IsConditional() const {
-  return (http_header_fields_.Contains(HTTPNames::If_Match) ||
-          http_header_fields_.Contains(HTTPNames::If_Modified_Since) ||
-          http_header_fields_.Contains(HTTPNames::If_None_Match) ||
-          http_header_fields_.Contains(HTTPNames::If_Range) ||
-          http_header_fields_.Contains(HTTPNames::If_Unmodified_Since));
+  return (http_header_fields_.Contains(http_names::kIfMatch) ||
+          http_header_fields_.Contains(http_names::kIfModifiedSince) ||
+          http_header_fields_.Contains(http_names::kIfNoneMatch) ||
+          http_header_fields_.Contains(http_names::kIfRange) ||
+          http_header_fields_.Contains(http_names::kIfUnmodifiedSince));
 }
 
 void ResourceRequest::SetHasUserGesture(bool has_user_gesture) {
@@ -335,8 +335,8 @@ void ResourceRequest::SetHasUserGesture(bool has_user_gesture) {
 const CacheControlHeader& ResourceRequest::GetCacheControlHeader() const {
   if (!cache_control_header_cache_.parsed) {
     cache_control_header_cache_ = ParseCacheControlDirectives(
-        http_header_fields_.Get(HTTPNames::Cache_Control),
-        http_header_fields_.Get(HTTPNames::Pragma));
+        http_header_fields_.Get(http_names::kCacheControl),
+        http_header_fields_.Get(http_names::kPragma));
   }
   return cache_control_header_cache_;
 }
@@ -350,8 +350,8 @@ bool ResourceRequest::CacheControlContainsNoStore() const {
 }
 
 bool ResourceRequest::HasCacheValidatorFields() const {
-  return !http_header_fields_.Get(HTTPNames::Last_Modified).IsEmpty() ||
-         !http_header_fields_.Get(HTTPNames::ETag).IsEmpty();
+  return !http_header_fields_.Get(http_names::kLastModified).IsEmpty() ||
+         !http_header_fields_.Get(http_names::kETag).IsEmpty();
 }
 
 bool ResourceRequest::NeedsHTTPOrigin() const {
@@ -364,7 +364,7 @@ bool ResourceRequest::NeedsHTTPOrigin() const {
   // will leak the internal host name. Similar privacy concerns have lead
   // to the widespread suppression of the Referer header at the network
   // layer.
-  if (HttpMethod() == HTTPNames::GET || HttpMethod() == HTTPNames::HEAD)
+  if (HttpMethod() == http_names::kGET || HttpMethod() == http_names::kHEAD)
     return false;
 
   // For non-GET and non-HEAD methods, always send an Origin header so the

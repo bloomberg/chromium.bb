@@ -646,7 +646,7 @@ bool ParseMultipartFormHeadersFromBody(const char* bytes,
 
   // Copy selected header fields.
   const AtomicString* const headerNamePointers[] = {
-      &HTTPNames::Content_Disposition, &HTTPNames::Content_Type};
+      &http_names::kContentDisposition, &http_names::kContentType};
   for (const AtomicString* headerNamePointer : headerNamePointers) {
     StringUTF8Adaptor adaptor(*headerNamePointer);
     size_t iterator = 0;

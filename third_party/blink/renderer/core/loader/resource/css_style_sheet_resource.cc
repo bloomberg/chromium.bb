@@ -95,7 +95,7 @@ void CSSStyleSheetResource::Trace(blink::Visitor* visitor) {
 ReferrerPolicy CSSStyleSheetResource::GetReferrerPolicy() const {
   ReferrerPolicy referrer_policy = kReferrerPolicyDefault;
   String referrer_policy_header =
-      GetResponse().HttpHeaderField(HTTPNames::Referrer_Policy);
+      GetResponse().HttpHeaderField(http_names::kReferrerPolicy);
   if (!referrer_policy_header.IsNull()) {
     SecurityPolicy::ReferrerPolicyFromHeaderValue(
         referrer_policy_header, kDoNotSupportReferrerPolicyLegacyKeywords,

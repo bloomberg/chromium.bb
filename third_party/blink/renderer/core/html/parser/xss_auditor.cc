@@ -402,7 +402,7 @@ void XSSAuditor::Init(Document* document,
           document->GetFrame()->Loader().GetDocumentLoader()) {
     const AtomicString& header_value =
         document_loader->GetResponse().HttpHeaderField(
-            HTTPNames::X_XSS_Protection);
+            http_names::kXXSSProtection);
     String error_details;
     unsigned error_position = 0;
     String report_url;

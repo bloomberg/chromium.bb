@@ -312,7 +312,7 @@ bool ContentSecurityPolicy::ShouldEnforceEmbeddersPolicy(
   if (parent_origin->CanAccess(SecurityOrigin::Create(response.Url()).get()))
     return true;
 
-  String header = response.HttpHeaderField(HTTPNames::Allow_CSP_From);
+  String header = response.HttpHeaderField(http_names::kAllowCSPFrom);
   header = header.StripWhiteSpace();
   if (header == "*")
     return true;

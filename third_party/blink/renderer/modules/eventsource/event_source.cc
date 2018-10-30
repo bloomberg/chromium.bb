@@ -123,9 +123,9 @@ void EventSource::Connect() {
 
   ExecutionContext& execution_context = *this->GetExecutionContext();
   ResourceRequest request(current_url_);
-  request.SetHTTPMethod(HTTPNames::GET);
-  request.SetHTTPHeaderField(HTTPNames::Accept, "text/event-stream");
-  request.SetHTTPHeaderField(HTTPNames::Cache_Control, "no-cache");
+  request.SetHTTPMethod(http_names::kGET);
+  request.SetHTTPHeaderField(http_names::kAccept, "text/event-stream");
+  request.SetHTTPHeaderField(http_names::kCacheControl, "no-cache");
   request.SetRequestContext(mojom::RequestContextType::EVENT_SOURCE);
   request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCORS);
   request.SetFetchCredentialsMode(
@@ -143,7 +143,7 @@ void EventSource::Connect() {
     // setHTTPHeaderField's arguments.
     CString last_event_id_utf8 = parser_->LastEventId().Utf8();
     request.SetHTTPHeaderField(
-        HTTPNames::Last_Event_ID,
+        http_names::kLastEventID,
         AtomicString(reinterpret_cast<const LChar*>(last_event_id_utf8.data()),
                      last_event_id_utf8.length()));
   }

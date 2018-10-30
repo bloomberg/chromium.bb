@@ -356,14 +356,14 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
 
     EXPECT_EQ(
         should_prefer ? String("1") : String(),
-        resource_request.HttpHeaderField(HTTPNames::Upgrade_Insecure_Requests));
+        resource_request.HttpHeaderField(http_names::kUpgradeInsecureRequests));
 
     // Calling modifyRequestForCSP more than once shouldn't affect the
     // header.
     if (should_prefer) {
       fetch_context->ModifyRequestForCSP(resource_request);
       EXPECT_EQ("1", resource_request.HttpHeaderField(
-                         HTTPNames::Upgrade_Insecure_Requests));
+                         http_names::kUpgradeInsecureRequests));
     }
   }
 
@@ -395,7 +395,7 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
     fetch_context->ModifyRequestForCSP(resource_request);
 
     EXPECT_EQ(expected_required_csp,
-              resource_request.HttpHeaderField(HTTPNames::Sec_Required_CSP));
+              resource_request.HttpHeaderField(http_names::kSecRequiredCSP));
   }
 
   void SetFrameOwnerBasedOnFrameType(
@@ -848,7 +848,7 @@ TEST_F(FrameFetchContextTest, MainResourceCachePolicy) {
 
   // Post
   ResourceRequest post_request("http://www.example.com");
-  post_request.SetHTTPMethod(HTTPNames::POST);
+  post_request.SetHTTPMethod(http_names::kPOST);
   EXPECT_EQ(mojom::FetchCacheMode::kValidateCache,
             fetch_context->ResourceRequestCachePolicy(
                 post_request, ResourceType::kMainResource,
@@ -871,7 +871,7 @@ TEST_F(FrameFetchContextTest, MainResourceCachePolicy) {
   // Conditional request
   document->Loader()->SetLoadType(WebFrameLoadType::kStandard);
   ResourceRequest conditional("http://www.example.com");
-  conditional.SetHTTPHeaderField(HTTPNames::If_Modified_Since, "foo");
+  conditional.SetHTTPHeaderField(http_names::kIfModifiedSince, "foo");
   EXPECT_EQ(
       mojom::FetchCacheMode::kValidateCache,
       fetch_context->ResourceRequestCachePolicy(
@@ -955,7 +955,7 @@ TEST_F(FrameFetchContextTest, SubResourceCachePolicy) {
   // Conditional request
   document->Loader()->SetLoadType(WebFrameLoadType::kStandard);
   ResourceRequest conditional("http://www.example.com/mock");
-  conditional.SetHTTPHeaderField(HTTPNames::If_Modified_Since, "foo");
+  conditional.SetHTTPHeaderField(http_names::kIfModifiedSince, "foo");
   EXPECT_EQ(mojom::FetchCacheMode::kValidateCache,
             fetch_context->ResourceRequestCachePolicy(
                 conditional, ResourceType::kMock, FetchParameters::kNoDefer));
@@ -1214,8 +1214,9 @@ TEST_F(FrameFetchContextTest, AddAdditionalRequestHeadersWhenDetached) {
 
   fetch_context->AddAdditionalRequestHeaders(request, kFetchSubresource);
 
-  EXPECT_EQ(origin, request.HttpHeaderField(HTTPNames::Origin));
-  EXPECT_EQ(String(origin + "/"), request.HttpHeaderField(HTTPNames::Referer));
+  EXPECT_EQ(origin, request.HttpHeaderField(http_names::kOrigin));
+  EXPECT_EQ(String(origin + "/"),
+            request.HttpHeaderField(http_names::kReferer));
   EXPECT_EQ(String(), request.HttpHeaderField("Save-Data"));
 }
 
@@ -1253,7 +1254,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
   fetch_context->PrepareRequest(request,
                                 FetchContext::RedirectType::kNotForRedirect);
 
-  EXPECT_EQ("hi", request.HttpHeaderField(HTTPNames::User_Agent));
+  EXPECT_EQ("hi", request.HttpHeaderField(http_names::kUserAgent));
 }
 
 TEST_F(FrameFetchContextTest, DispatchWillSendRequestWhenDetached) {

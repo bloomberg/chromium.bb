@@ -312,7 +312,7 @@ void DocumentLoader::DispatchLinkHeaderPreloads(
     LinkLoader::MediaPreloadPolicy media_policy) {
   DCHECK_GE(state_, kCommitted);
   LinkLoader::LoadLinksFromHeader(
-      GetResponse().HttpHeaderField(HTTPNames::Link), GetResponse().Url(),
+      GetResponse().HttpHeaderField(http_names::kLink), GetResponse().Url(),
       *frame_, frame_->GetDocument(), NetworkHintsInterfaceImpl(),
       LinkLoader::kOnlyLoadResources, media_policy, viewport);
 }
@@ -368,7 +368,7 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
   request_.SetURL(new_url);
   SetReplacesCurrentHistoryItem(type != WebFrameLoadType::kStandard);
   if (same_document_navigation_source == kSameDocumentNavigationHistoryApi) {
-    request_.SetHTTPMethod(HTTPNames::GET);
+    request_.SetHTTPMethod(http_names::kGET);
     request_.SetHTTPBody(nullptr);
   }
   ClearRedirectChain();
@@ -594,7 +594,7 @@ bool DocumentLoader::ShouldContinueForResponse() const {
   }
 
   if (IsContentDispositionAttachment(
-          response_.HttpHeaderField(HTTPNames::Content_Disposition))) {
+          response_.HttpHeaderField(http_names::kContentDisposition))) {
     // The server wants us to download instead of replacing the page contents.
     // Downloading is handled by the embedder, but we still get the initial
     // response so that we can ignore it and clean up properly.
@@ -786,7 +786,7 @@ void DocumentLoader::CommitNavigation(const AtomicString& mime_type,
   if (request_.WasDiscarded())
     frame_->GetDocument()->SetWasDiscarded(true);
   frame_->GetDocument()->MaybeHandleHttpRefresh(
-      response_.HttpHeaderField(HTTPNames::Refresh),
+      response_.HttpHeaderField(http_names::kRefresh),
       Document::kHttpRefreshFromHeader);
 }
 
@@ -999,12 +999,12 @@ void DocumentLoader::DidInstallNewDocument(
   fetcher_->SetAutoLoadImages(settings->GetLoadsImagesAutomatically());
 
   const AtomicString& dns_prefetch_control =
-      response_.HttpHeaderField(HTTPNames::X_DNS_Prefetch_Control);
+      response_.HttpHeaderField(http_names::kXDNSPrefetchControl);
   if (!dns_prefetch_control.IsEmpty())
     document->ParseDNSPrefetchControlHeader(dns_prefetch_control);
 
   String header_content_language =
-      response_.HttpHeaderField(HTTPNames::Content_Language);
+      response_.HttpHeaderField(http_names::kContentLanguage);
   if (!header_content_language.IsEmpty()) {
     size_t comma_index = header_content_language.find(',');
     // kNotFound == -1 == don't truncate
@@ -1016,7 +1016,7 @@ void DocumentLoader::DidInstallNewDocument(
   }
 
   String referrer_policy_header =
-      response_.HttpHeaderField(HTTPNames::Referrer_Policy);
+      response_.HttpHeaderField(http_names::kReferrerPolicy);
   if (!referrer_policy_header.IsNull()) {
     UseCounter::Count(*document, WebFeature::kReferrerPolicyHeader);
     document->ParseAndSetReferrerPolicy(referrer_policy_header);
@@ -1212,7 +1212,7 @@ void DocumentLoader::InstallNewDocument(
           "ForceTouchEventFeatureDetectionForInspector");
     }
     OriginTrialContext::AddTokensFromHeader(
-        document, response_.HttpHeaderField(HTTPNames::Origin_Trial));
+        document, response_.HttpHeaderField(http_names::kOriginTrial));
   }
   bool stale_while_revalidate_enabled =
       OriginTrials::StaleWhileRevalidateEnabled(document);
@@ -1238,7 +1238,7 @@ void DocumentLoader::InstallNewDocument(
   // be initialized and replicated to the browser process after commit messages
   // are sent in didCommitNavigation().
   document->ApplyFeaturePolicyFromHeader(
-      response_.HttpHeaderField(HTTPNames::Feature_Policy));
+      response_.HttpHeaderField(http_names::kFeaturePolicy));
 
   GetFrameLoader().DispatchDidClearDocumentOfWindowObject();
 }

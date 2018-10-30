@@ -140,7 +140,7 @@ bool MimeTypeAsScriptImpl(ExecutionContext* execution_context,
 
   // Allowed by nosniff?
   if (!(ParseContentTypeOptionsHeader(response.HttpHeaderField(
-            HTTPNames::X_Content_Type_Options)) != kContentTypeOptionsNosniff ||
+            http_names::kXContentTypeOptions)) != kContentTypeOptionsNosniff ||
         MIMETypeRegistry::IsSupportedJavaScriptMIMEType(mime_type))) {
     execution_context->AddConsoleMessage(ConsoleMessage::Create(
         kSecurityMessageSource, kErrorMessageLevel,

@@ -170,7 +170,7 @@ ResourceRequest HistoryItem::GenerateResourceRequest(
   request.SetHTTPReferrer(referrer_);
   request.SetCacheMode(cache_mode);
   if (form_data_) {
-    request.SetHTTPMethod(HTTPNames::POST);
+    request.SetHTTPMethod(http_names::kPOST);
     request.SetHTTPBody(form_data_);
     request.SetHTTPContentType(form_content_type_);
     request.SetHTTPOriginToMatchReferrerIfNeeded();

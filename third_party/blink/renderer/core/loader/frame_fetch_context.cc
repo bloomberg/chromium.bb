@@ -422,10 +422,10 @@ void FrameFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
 
   // Reload should reflect the current data saver setting.
   if (IsReloadLoadType(MasterDocumentLoader()->LoadType()))
-    request.ClearHTTPHeaderField(HTTPNames::Save_Data);
+    request.ClearHTTPHeaderField(http_names::kSaveData);
 
   if (save_data_enabled_)
-    request.SetHTTPHeaderField(HTTPNames::Save_Data, "on");
+    request.SetHTTPHeaderField(http_names::kSaveData, "on");
 
   if (GetLocalFrameClient()->GetPreviewsStateForFrame() &
       WebURLRequest::kNoScriptOn) {
@@ -466,8 +466,8 @@ mojom::FetchCacheMode FrameFetchContext::ResourceRequestCachePolicy(
   DCHECK(GetFrame());
   if (type == ResourceType::kMainResource) {
     const auto cache_mode = DetermineCacheMode(
-        request.HttpMethod() == HTTPNames::POST ? RequestMethod::kIsPost
-                                                : RequestMethod::kIsNotPost,
+        request.HttpMethod() == http_names::kPOST ? RequestMethod::kIsPost
+                                                  : RequestMethod::kIsNotPost,
         request.IsConditional() ? RequestType::kIsConditional
                                 : RequestType::kIsNotConditional,
         MainResourceType::kIsMainResource, MasterDocumentLoader()->LoadType());
@@ -634,7 +634,7 @@ void FrameFetchContext::DispatchDidReceiveResponse(
   }
 
   LinkLoader::LoadLinksFromHeader(
-      response.HttpHeaderField(HTTPNames::Link), response.Url(), *GetFrame(),
+      response.HttpHeaderField(http_names::kLink), response.Url(), *GetFrame(),
       document_, NetworkHintsInterfaceImpl(), resource_loading_policy,
       LinkLoader::kLoadAll, nullptr);
 
@@ -1347,12 +1347,12 @@ void FrameFetchContext::ParseAndPersistClientHints(
 
   document_loader_->GetClientHintsPreferences()
       .UpdateFromAcceptClientHintsLifetimeHeader(
-          response.HttpHeaderField(HTTPNames::Accept_CH_Lifetime),
+          response.HttpHeaderField(http_names::kAcceptCHLifetime),
           response.Url(), &hints_context);
 
   document_loader_->GetClientHintsPreferences()
       .UpdateFromAcceptClientHintsHeader(
-          response.HttpHeaderField(HTTPNames::Accept_CH), response.Url(),
+          response.HttpHeaderField(http_names::kAcceptCH), response.Url(),
           &hints_context);
 
   // Notify content settings client of persistent client hints.

@@ -593,7 +593,7 @@ ScriptPromise Cache::MatchImpl(ScriptState* script_state,
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   const ScriptPromise promise = resolver->Promise();
-  if (request->method() != HTTPNames::GET && !options.ignoreMethod()) {
+  if (request->method() != http_names::kGET && !options.ignoreMethod()) {
     resolver->Resolve();
     return promise;
   }
@@ -650,7 +650,7 @@ ScriptPromise Cache::MatchAllImpl(ScriptState* script_state,
   if (request) {
     request->PopulateWebServiceWorkerRequest(web_request.emplace());
 
-    if (request->method() != HTTPNames::GET && !options.ignoreMethod()) {
+    if (request->method() != http_names::kGET && !options.ignoreMethod()) {
       resolver->Resolve(HeapVector<Member<Response>>());
       return promise;
     }
@@ -714,7 +714,7 @@ ScriptPromise Cache::AddAllImpl(ScriptState* script_state,
                                        "Add/AddAll does not support schemes "
                                        "other than \"http\" or \"https\""));
     }
-    if (requests[i]->method() != HTTPNames::GET) {
+    if (requests[i]->method() != http_names::kGET) {
       return ScriptPromise::Reject(
           script_state,
           V8ThrowException::CreateTypeError(
@@ -737,7 +737,7 @@ ScriptPromise Cache::DeleteImpl(ScriptState* script_state,
                                 const CacheQueryOptions& options) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   const ScriptPromise promise = resolver->Promise();
-  if (request->method() != HTTPNames::GET && !options.ignoreMethod()) {
+  if (request->method() != http_names::kGET && !options.ignoreMethod()) {
     resolver->Resolve(false);
     return promise;
   }
@@ -818,7 +818,7 @@ ScriptPromise Cache::PutImpl(ScriptState* script_state,
                                 "' is unsupported");
       return promise;
     }
-    if (requests[i]->method() != HTTPNames::GET) {
+    if (requests[i]->method() != http_names::kGET) {
       barrier_callback->OnError("Request method '" + requests[i]->method() +
                                 "' is unsupported");
       return promise;
@@ -900,7 +900,7 @@ ScriptPromise Cache::KeysImpl(ScriptState* script_state,
   if (request) {
     request->PopulateWebServiceWorkerRequest(web_request.emplace());
 
-    if (request->method() != HTTPNames::GET && !options.ignoreMethod()) {
+    if (request->method() != http_names::kGET && !options.ignoreMethod()) {
       resolver->Resolve(HeapVector<Member<Response>>());
       return promise;
     }

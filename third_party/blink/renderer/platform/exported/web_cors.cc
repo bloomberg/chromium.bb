@@ -145,7 +145,7 @@ WebHTTPHeaderSet ExtractCorsExposedHeaderNamesList(
 
   WebHTTPHeaderSet header_set;
   HTTPHeaderNameListParser parser(response.HttpHeaderField(
-      WebString(HTTPNames::Access_Control_Expose_Headers)));
+      WebString(http_names::kAccessControlExposeHeaders)));
   parser.Parse(header_set);
 
   if (credentials_mode != network::mojom::FetchCredentialsMode::kInclude &&

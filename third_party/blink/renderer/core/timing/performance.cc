@@ -312,7 +312,7 @@ bool Performance::PassesTimingAllowCheck(
 
   const AtomicString& timing_allow_origin_string =
       original_timing_allow_origin.IsEmpty()
-          ? response.HttpHeaderField(HTTPNames::Timing_Allow_Origin)
+          ? response.HttpHeaderField(http_names::kTimingAllowOrigin)
           : original_timing_allow_origin;
   if (timing_allow_origin_string.IsEmpty() ||
       EqualIgnoringASCIICase(timing_allow_origin_string, "null"))

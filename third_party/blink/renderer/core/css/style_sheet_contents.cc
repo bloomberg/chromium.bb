@@ -360,10 +360,10 @@ void StyleSheetContents::ParseAuthorStyleSheet(
       cached_style_sheet->SheetText(parser_context_, mime_type_check);
 
   const ResourceResponse& response = cached_style_sheet->GetResponse();
-  source_map_url_ = response.HttpHeaderField(HTTPNames::SourceMap);
+  source_map_url_ = response.HttpHeaderField(http_names::kSourceMap);
   if (source_map_url_.IsEmpty()) {
     // Try to get deprecated header.
-    source_map_url_ = response.HttpHeaderField(HTTPNames::X_SourceMap);
+    source_map_url_ = response.HttpHeaderField(http_names::kXSourceMap);
   }
 
   const CSSParserContext* context =

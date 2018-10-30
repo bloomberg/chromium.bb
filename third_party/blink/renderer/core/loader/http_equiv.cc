@@ -108,9 +108,9 @@ void HttpEquiv::Process(Document& document,
         kSecurityMessageSource, kErrorMessageLevel,
         "X-Frame-Options may only be set via an HTTP header sent along with a "
         "document. It may not be set inside <meta>."));
-  } else if (EqualIgnoringASCIICase(equiv, HTTPNames::Accept_CH)) {
+  } else if (EqualIgnoringASCIICase(equiv, http_names::kAcceptCH)) {
     ProcessHttpEquivAcceptCH(document, content);
-  } else if (EqualIgnoringASCIICase(equiv, HTTPNames::Accept_CH_Lifetime)) {
+  } else if (EqualIgnoringASCIICase(equiv, http_names::kAcceptCHLifetime)) {
     ProcessHttpEquivAcceptCHLifetime(document, content);
   } else if (EqualIgnoringASCIICase(equiv, "content-security-policy") ||
              EqualIgnoringASCIICase(equiv,
@@ -119,7 +119,7 @@ void HttpEquiv::Process(Document& document,
       ProcessHttpEquivContentSecurityPolicy(document, equiv, content);
     else
       document.GetContentSecurityPolicy()->ReportMetaOutsideHead(content);
-  } else if (EqualIgnoringASCIICase(equiv, HTTPNames::Origin_Trial)) {
+  } else if (EqualIgnoringASCIICase(equiv, http_names::kOriginTrial)) {
     if (in_document_head_element)
       OriginTrialContext::FromOrCreate(&document)->AddToken(content);
   }
