@@ -507,7 +507,7 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
 
   oracle_.RecordCapture(utilization);
   const int64_t frame_number = next_capture_frame_number_++;
-  TRACE_EVENT_ASYNC_BEGIN2("gpu.capture", "Capture", frame.get(),
+  TRACE_EVENT_ASYNC_BEGIN2("gpu.capture", "Capture", oracle_frame_number,
                            "frame_number", frame_number, "trigger",
                            VideoCaptureOracle::EventAsString(event));
 
@@ -673,18 +673,13 @@ void FrameSinkVideoCapturerImpl::MaybeDeliverFrame(
   // also rewrites the media timestamp in terms of the smooth flow of the
   // original source content.
   base::TimeTicks media_ticks;
-  const bool should_deliver_frame =
-      oracle_.CompleteCapture(oracle_frame_number, !!frame, &media_ticks);
-  DCHECK(frame || !should_deliver_frame);
+  if (!oracle_.CompleteCapture(oracle_frame_number, !!frame, &media_ticks)) {
+    // The following is used by
+    // chrome/browser/extension/api/cast_streaming/performance_test.cc, in
+    // addition to the usual runtime tracing.
+    TRACE_EVENT_ASYNC_END1("gpu.capture", "Capture", oracle_frame_number,
+                           "success", false);
 
-  // The following is used by
-  // chrome/browser/extension/api/cast_streaming/performance_test.cc, in
-  // addition to the usual runtime tracing.
-  TRACE_EVENT_ASYNC_END2("gpu.capture", "Capture", frame.get(), "success",
-                         should_deliver_frame, "timestamp",
-                         (media_ticks - base::TimeTicks()).InMicroseconds());
-
-  if (!should_deliver_frame) {
     // Mark the whole source as dirty, since this frame may have contained
     // updated content that will not be delivered.
     dirty_rect_ = kMaxRect;
@@ -697,6 +692,13 @@ void FrameSinkVideoCapturerImpl::MaybeDeliverFrame(
     first_frame_media_ticks_ = media_ticks;
   }
   frame->set_timestamp(media_ticks - *first_frame_media_ticks_);
+
+  // The following is used by
+  // chrome/browser/extension/api/cast_streaming/performance_test.cc, in
+  // addition to the usual runtime tracing.
+  TRACE_EVENT_ASYNC_END2("gpu.capture", "Capture", oracle_frame_number,
+                         "success", true, "time_delta",
+                         frame->timestamp().InMicroseconds());
 
   // Clone a handle to the shared memory backing the populated video frame, to
   // send to the consumer. The handle is READ_WRITE because the consumer is free
