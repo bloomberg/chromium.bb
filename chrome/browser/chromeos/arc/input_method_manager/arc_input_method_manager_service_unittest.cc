@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -649,6 +650,67 @@ TEST_F(ArcInputMethodManagerServiceTest, AllowArcIMEsOnlyInTabletMode) {
   EXPECT_FALSE(imm()->state()->IsInputMethodAllowed(extension_ime_id));
   EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(component_extension_ime_id));
   EXPECT_FALSE(imm()->state()->IsInputMethodAllowed(arc_ime_id));
+}
+
+TEST_F(ArcInputMethodManagerServiceTest,
+       DisallowArcIMEsWhenAccessibilityKeyboardEnabled) {
+  namespace ceiu = chromeos::extension_ime_util;
+  using crx_file::id_util::GenerateId;
+
+  base::test::ScopedFeatureList feature;
+  feature.InitAndEnableFeature(kEnableInputMethodFeature);
+
+  const std::string extension_ime_id =
+      ceiu::GetInputMethodID(GenerateId("test.extension.ime"), "us");
+  const std::string component_extension_ime_id =
+      ceiu::GetComponentInputMethodID(
+          GenerateId("test.component.extension.ime"), "us");
+  const std::string arc_ime_id =
+      ceiu::GetArcInputMethodID(GenerateId("test.arc.ime"), "us");
+
+  // Start from tablet mode.
+  ToggleTabletMode(true);
+
+  // Activate 3 IMEs.
+  imm()->state()->AddActiveInputMethodId(extension_ime_id);
+  imm()->state()->AddActiveInputMethodId(component_extension_ime_id);
+  imm()->state()->AddActiveInputMethodId(arc_ime_id);
+
+  // Update the prefs because the testee checks them. Note that toggling the
+  // mode never changes the prefs.
+  profile()->GetPrefs()->SetString(
+      prefs::kLanguageEnabledImes,
+      base::StringPrintf("%s,%s,%s", extension_ime_id.c_str(),
+                         component_extension_ime_id.c_str(),
+                         arc_ime_id.c_str()));
+
+  // All IMEs are allowed to use.
+  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(extension_ime_id));
+  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(component_extension_ime_id));
+  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(arc_ime_id));
+
+  // Enable a11y keyboard option.
+  profile()->GetPrefs()->SetBoolean(
+      ash::prefs::kAccessibilityVirtualKeyboardEnabled, true);
+  // Notify ArcInputMethodManagerService.
+  service()->OnAccessibilityStatusChanged(
+      {chromeos::ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD, true});
+
+  // ARC IME is not allowed.
+  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(extension_ime_id));
+  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(component_extension_ime_id));
+  EXPECT_FALSE(imm()->state()->IsInputMethodAllowed(arc_ime_id));
+
+  // Disable a11y keyboard option.
+  profile()->GetPrefs()->SetBoolean(
+      ash::prefs::kAccessibilityVirtualKeyboardEnabled, false);
+  // Notify ArcInputMethodManagerService.
+  service()->OnAccessibilityStatusChanged(
+      {chromeos::ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD, false});
+
+  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(extension_ime_id));
+  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(component_extension_ime_id));
+  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(arc_ime_id));
 }
 
 TEST_F(ArcInputMethodManagerServiceTest, FocusAndBlur) {
