@@ -56,6 +56,7 @@ class HoverListView : public views::View,
   void AddListItemView(int item_tag);
   void RemoveListItemView(int item_tag);
   void RemoveListItemView(ListItemViews list_item);
+  views::Button& GetTopListItemView() const;
 
   // views::View:
   void RequestFocus() override;
@@ -70,7 +71,6 @@ class HoverListView : public views::View,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   std::unique_ptr<HoverListModel> model_;
-  views::Button* first_list_item_view_ = nullptr;
   std::map<int, ListItemViews> tags_to_list_item_views_;
   base::Optional<ListItemViews> placeholder_list_item_view_;
 
