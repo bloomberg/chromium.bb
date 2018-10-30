@@ -2872,8 +2872,12 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     cc = filter(None, [email.strip() for email in cc])
     if change_desc.get_cced():
       cc.extend(change_desc.get_cced())
-    valid_accounts = gerrit_util.ValidAccounts(
-        self._GetGerritHost(), reviewers + cc)
+    if self._GetGerritHost() == 'chromium-review.googlesource.com':
+      valid_accounts = set(reviewers + cc)
+      # TODO(crbug/877717): relax this for all hosts.
+    else:
+      valid_accounts = gerrit_util.ValidAccounts(
+          self._GetGerritHost(), reviewers + cc)
     logging.info('accounts %s are recognized, %s invalid',
                  sorted(valid_accounts),
                  set(reviewers + cc).difference(set(valid_accounts)))
@@ -2917,7 +2921,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       if c in valid_accounts:
         refspec_opts.append('cc=%s' % c)
         cc.remove(c)
-
 
     if options.topic:
       # Documentation on Gerrit topics is here:

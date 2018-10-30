@@ -795,7 +795,8 @@ class TestGitCl(TestCase):
     ]
 
   @classmethod
-  def _gerrit_ensure_auth_calls(cls, issue=None, skip_auth_check=False):
+  def _gerrit_ensure_auth_calls(
+      cls, issue=None, skip_auth_check=False, short_hostname='chromium'):
     cmd = ['git', 'config', '--bool', 'gerrit.skip-ensure-authenticated']
     if skip_auth_check:
       return [((cmd, ), 'true')]
@@ -809,14 +810,14 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'branch.master.merge'],), 'refs/heads/master'),
         ((['git', 'config', 'branch.master.remote'],), 'origin'),
         ((['git', 'config', 'remote.origin.url'],),
-         'https://chromium.googlesource.com/my/repo'),
+         'https://%s.googlesource.com/my/repo' % short_hostname),
     ])
     return calls
 
   @classmethod
   def _gerrit_base_calls(cls, issue=None, fetched_description=None,
                          fetched_status=None, other_cl_owner=None,
-                         custom_cl_base=None):
+                         custom_cl_base=None, short_hostname='chromium'):
     calls = cls._is_gerrit_calls(True)
     calls += [
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
@@ -838,11 +839,12 @@ class TestGitCl(TestCase):
       ]
 
     # Calls to verify branch point is ancestor
-    calls += cls._gerrit_ensure_auth_calls(issue=issue)
+    calls += cls._gerrit_ensure_auth_calls(
+        issue=issue, short_hostname=short_hostname)
 
     if issue:
       calls += [
-        (('GetChangeDetail', 'chromium-review.googlesource.com',
+        (('GetChangeDetail', '%s-review.googlesource.com' % short_hostname,
           'my%2Frepo~123456',
           ['DETAILED_ACCOUNTS', 'CURRENT_REVISION', 'CURRENT_COMMIT', 'LABELS']
          ),
@@ -858,9 +860,9 @@ class TestGitCl(TestCase):
       ]
       if fetched_status == 'ABANDONED':
         calls += [
-          (('DieWithError', 'Change https://chromium-review.googlesource.com/'
+          (('DieWithError', 'Change https://%s-review.googlesource.com/'
                             '123456 has been abandoned, new uploads are not '
-                            'allowed'), SystemExitMock()),
+                            'allowed' % short_hostname), SystemExitMock()),
         ]
         return calls
       if other_cl_owner:
@@ -902,7 +904,8 @@ class TestGitCl(TestCase):
                            expected_upstream_ref='origin/refs/heads/master',
                            title=None, notify=False,
                            post_amend_description=None, issue=None, cc=None,
-                           custom_cl_base=None, tbr=None):
+                           custom_cl_base=None, tbr=None,
+                           short_hostname='chromium'):
     if post_amend_description is None:
       post_amend_description = description
     cc = cc or []
@@ -1016,41 +1019,54 @@ class TestGitCl(TestCase):
 
     calls += [
       ((['git', 'config', 'rietveld.cc'],), ''),
-      (('ValidAccounts', 'chromium-review.googlesource.com',
-        sorted(reviewers) + ['joe@example.com',
-        'chromium-reviews+test-more-cc@chromium.org'] + cc),
-       {
-         e: {'email': e}
-         for e in (reviewers + ['joe@example.com'] + cc)
-       }),
     ]
-    for r in sorted(reviewers):
-      if r != 'bad-account-or-email':
-        ref_suffix  += ',r=%s' % r
-        reviewers.remove(r)
-    for c in sorted(['joe@example.com'] + cc):
-      ref_suffix += ',cc=%s' % c
-      if c in cc:
-        cc.remove(c)
+    if short_hostname == 'chromium':
+      # All reviwers and ccs get into ref_suffix.
+      for r in sorted(reviewers):
+        ref_suffix += ',r=%s' % r
+      for c in sorted(['chromium-reviews+test-more-cc@chromium.org',
+                      'joe@example.com'] + cc):
+        ref_suffix += ',cc=%s' % c
+      reviewers, cc = [], []
+    else:
+      # TODO(crbug/877717): remove this case.
+      calls += [
+        (('ValidAccounts', '%s-review.googlesource.com' % short_hostname,
+          sorted(reviewers) + ['joe@example.com',
+          'chromium-reviews+test-more-cc@chromium.org'] + cc),
+         {
+           e: {'email': e}
+           for e in (reviewers + ['joe@example.com'] + cc)
+         })
+      ]
+      for r in sorted(reviewers):
+        if r != 'bad-account-or-email':
+          ref_suffix  += ',r=%s' % r
+          reviewers.remove(r)
+      for c in sorted(['joe@example.com'] + cc):
+        ref_suffix += ',cc=%s' % c
+        if c in cc:
+          cc.remove(c)
 
     calls.append((
       (['git', 'push',
-        'https://chromium.googlesource.com/my/repo',
+        'https://%s.googlesource.com/my/repo' % short_hostname,
         ref_to_push + ':refs/for/refs/heads/master' + ref_suffix],),
-      ('remote:\n'
-       'remote: Processing changes: (\)\n'
-       'remote: Processing changes: (|)\n'
-       'remote: Processing changes: (/)\n'
-       'remote: Processing changes: (-)\n'
-       'remote: Processing changes: new: 1 (/)\n'
-       'remote: Processing changes: new: 1, done\n'
-       'remote:\n'
-       'remote: New Changes:\n'
-       'remote:   https://chromium-review.googlesource.com/#/c/my/repo/+/123456'
-           ' XXX\n'
-       'remote:\n'
-       'To https://chromium.googlesource.com/my/repo\n'
-       ' * [new branch]      hhhh -> refs/for/refs/heads/master\n')
+      (('remote:\n'
+        'remote: Processing changes: (\)\n'
+        'remote: Processing changes: (|)\n'
+        'remote: Processing changes: (/)\n'
+        'remote: Processing changes: (-)\n'
+        'remote: Processing changes: new: 1 (/)\n'
+        'remote: Processing changes: new: 1, done\n'
+        'remote:\n'
+        'remote: New Changes:\n'
+        'remote:   https://%s-review.googlesource.com/#/c/my/repo/+/123456'
+            ' XXX\n'
+        'remote:\n'
+        'To https://%s.googlesource.com/my/repo\n'
+        ' * [new branch]      hhhh -> refs/for/refs/heads/master\n'
+       ) % (short_hostname, short_hostname))
     ))
     if squash:
       calls += [
@@ -1061,7 +1077,8 @@ class TestGitCl(TestCase):
           ((['git', 'config', 'branch.master.gerritsquashhash',
              'abcdef0123456789'],), ''),
       ]
-    if squash:
+    # TODO(crbug/877717): this should never be used.
+    if squash and short_hostname != 'chromium':
       calls += [
           (('AddReviewers',
             'chromium-review.googlesource.com', 'my%2Frepo~123456',
@@ -1112,7 +1129,8 @@ class TestGitCl(TestCase):
       fetched_status=None,
       other_cl_owner=None,
       custom_cl_base=None,
-      tbr=None):
+      tbr=None,
+      short_hostname='chromium'):
     """Generic gerrit upload test framework."""
     if squash_mode is None:
       if '--no-squash' in upload_args:
@@ -1140,7 +1158,8 @@ class TestGitCl(TestCase):
         fetched_description=description,
         fetched_status=fetched_status,
         other_cl_owner=other_cl_owner,
-        custom_cl_base=custom_cl_base)
+        custom_cl_base=custom_cl_base,
+        short_hostname=short_hostname)
     if fetched_status != 'ABANDONED':
       self.mock(tempfile, 'NamedTemporaryFile', MakeNamedTemporaryFileMock(
           expected_content=description))
@@ -1152,7 +1171,8 @@ class TestGitCl(TestCase):
           title=title, notify=notify,
           post_amend_description=post_amend_description,
           issue=issue, cc=cc,
-          custom_cl_base=custom_cl_base, tbr=tbr)
+          custom_cl_base=custom_cl_base, tbr=tbr,
+          short_hostname=short_hostname)
     # Uncomment when debugging.
     # print '\n'.join(map(lambda x: '%2i: %s' % x, enumerate(self.calls)))
     git_cl.main(['upload'] + upload_args)
@@ -1181,6 +1201,16 @@ class TestGitCl(TestCase):
         [],
         squash=False,
         squash_mode='override_nosquash')
+
+  def test_gerrit_no_reviewer_non_chromium_host(self):
+    # TODO(crbug/877717): remove this test case.
+    self._run_gerrit_upload_test(
+        [],
+        'desc\n\nBUG=\n\nChange-Id: I123456789\n',
+        [],
+        squash=False,
+        squash_mode='override_nosquash',
+        short_hostname='other')
 
   def test_gerrit_patchset_title_special_chars(self):
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
