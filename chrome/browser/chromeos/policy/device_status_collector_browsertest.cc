@@ -1095,6 +1095,48 @@ TEST_F(DeviceStatusCollectorTest, DevSwitchBootMode) {
   EXPECT_EQ("Dev", device_status_.boot_mode());
 }
 
+TEST_F(DeviceStatusCollectorTest, WriteProtectSwitch) {
+  // Test that write protect switch is reported by default.
+  fake_statistics_provider_.SetMachineStatistic(
+      chromeos::system::kFirmwareWriteProtectBootKey,
+      chromeos::system::kFirmwareWriteProtectBootValueOn);
+  GetStatus();
+  EXPECT_TRUE(device_status_.write_protect_switch());
+
+  // Test that write protect switch is not reported if the hardware report pref
+  // is off.
+  settings_helper_.SetBoolean(chromeos::kReportDeviceHardwareStatus, false);
+
+  GetStatus();
+  EXPECT_FALSE(device_status_.has_write_protect_switch());
+
+  // Turn the pref on, and check that the status is reported iff the
+  // statistics provider returns valid data.
+  settings_helper_.SetBoolean(chromeos::kReportDeviceHardwareStatus, true);
+
+  fake_statistics_provider_.SetMachineStatistic(
+      chromeos::system::kFirmwareWriteProtectBootKey, "(error)");
+  GetStatus();
+  EXPECT_FALSE(device_status_.has_write_protect_switch());
+
+  fake_statistics_provider_.SetMachineStatistic(
+      chromeos::system::kFirmwareWriteProtectBootKey, " ");
+  GetStatus();
+  EXPECT_FALSE(device_status_.has_write_protect_switch());
+
+  fake_statistics_provider_.SetMachineStatistic(
+      chromeos::system::kFirmwareWriteProtectBootKey,
+      chromeos::system::kFirmwareWriteProtectBootValueOn);
+  GetStatus();
+  EXPECT_TRUE(device_status_.write_protect_switch());
+
+  fake_statistics_provider_.SetMachineStatistic(
+      chromeos::system::kFirmwareWriteProtectBootKey,
+      chromeos::system::kFirmwareWriteProtectBootValueOff);
+  GetStatus();
+  EXPECT_FALSE(device_status_.write_protect_switch());
+}
+
 TEST_F(DeviceStatusCollectorTest, VersionInfo) {
   // Expect the version info to be reported by default.
   GetStatus();
@@ -2362,6 +2404,17 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest, ReportingBootMode) {
 
   EXPECT_TRUE(device_status_.has_boot_mode());
   EXPECT_EQ("Verified", device_status_.boot_mode());
+}
+
+TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest,
+       NotReportingWriteProtectSwitch) {
+  fake_statistics_provider_.SetMachineStatistic(
+      chromeos::system::kFirmwareWriteProtectBootKey,
+      chromeos::system::kFirmwareWriteProtectBootValueOn);
+
+  GetStatus();
+
+  EXPECT_FALSE(device_status_.has_write_protect_switch());
 }
 
 TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest, ReportingArcStatus) {
