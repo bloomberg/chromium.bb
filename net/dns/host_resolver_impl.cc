@@ -2186,7 +2186,10 @@ void HostResolverImpl::SetDnsClient(std::unique_ptr<DnsClient> dns_client) {
   dns_client_ = std::move(dns_client);
   if (dns_client_ && !dns_client_->GetConfig() &&
       num_dns_failures_ < kMaximumDnsFailures) {
-    DnsConfig dns_config = GetBaseDnsConfig();
+    DnsConfig dns_config;
+    // Skip retrieving the base config if all values will be overridden.
+    if (!dns_config_overrides_.OverridesEverything())
+      dns_config = GetBaseDnsConfig();
     DnsConfig overridden_config =
         dns_config_overrides_.ApplyOverrides(dns_config);
     dns_client_->SetConfig(overridden_config);
@@ -2345,7 +2348,7 @@ void HostResolverImpl::SetDnsConfigOverrides(
     return;
 
   dns_config_overrides_ = overrides;
-  if (dns_client_.get() && dns_client_->GetConfig())
+  if (dns_client_.get())
     UpdateDNSConfig(true);
 }
 
@@ -2875,8 +2878,9 @@ void HostResolverImpl::OnInitialDNSConfigRead() {
 }
 
 void HostResolverImpl::OnDNSChanged() {
-  // Ignore changes if we're using a test config.
-  if (test_base_config_)
+  // Ignore changes if we're using a test config or if we have overriding
+  // configuration that overrides everything from the base config.
+  if (test_base_config_ || dns_config_overrides_.OverridesEverything())
     return;
 
   UpdateDNSConfig(true);
@@ -2892,15 +2896,21 @@ DnsConfig HostResolverImpl::GetBaseDnsConfig() const {
 }
 
 void HostResolverImpl::UpdateDNSConfig(bool config_changed) {
-  DnsConfig dns_config = GetBaseDnsConfig();
+  DnsConfig dns_config;
 
-  if (net_log_) {
-    net_log_->AddGlobalEntry(NetLogEventType::DNS_CONFIG_CHANGED,
-                             base::Bind(&NetLogDnsConfigCallback, &dns_config));
+  // Skip retrieving the base config if all values will be overridden.
+  if (!dns_config_overrides_.OverridesEverything()) {
+    dns_config = GetBaseDnsConfig();
+
+    if (net_log_) {
+      net_log_->AddGlobalEntry(
+          NetLogEventType::DNS_CONFIG_CHANGED,
+          base::BindRepeating(&NetLogDnsConfigCallback, &dns_config));
+    }
+
+    // TODO(szym): Remove once http://crbug.com/137914 is resolved.
+    received_dns_config_ = dns_config.IsValid();
   }
-
-  // TODO(szym): Remove once http://crbug.com/137914 is resolved.
-  received_dns_config_ = dns_config.IsValid();
 
   dns_config = dns_config_overrides_.ApplyOverrides(dns_config);
 

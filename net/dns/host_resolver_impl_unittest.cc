@@ -5819,6 +5819,9 @@ TEST_F(HostResolverImplDnsTest, SetDnsConfigOverrides) {
           DnsConfig::DnsOverHttpsServerConfig("dns.example.com", true)};
   overrides.dns_over_https_servers = dns_over_https_servers;
 
+  // This test is expected to test overriding all fields.
+  EXPECT_TRUE(overrides.OverridesEverything());
+
   resolver_->SetDnsConfigOverrides(overrides);
 
   const DnsConfig* overridden_config = dns_client_->GetConfig();
@@ -5835,6 +5838,31 @@ TEST_F(HostResolverImplDnsTest, SetDnsConfigOverrides) {
   EXPECT_EQ(dns_over_https_servers, overridden_config->dns_over_https_servers);
 }
 
+TEST_F(HostResolverImplDnsTest,
+       SetDnsConfigOverrides_OverrideEverythingCreation) {
+  DnsConfig original_config = CreateValidDnsConfig();
+  ChangeDnsConfig(original_config);
+
+  // Confirm pre-override state.
+  ASSERT_TRUE(original_config.Equals(*dns_client_->GetConfig()));
+  ASSERT_FALSE(original_config.Equals(DnsConfig()));
+
+  DnsConfigOverrides overrides =
+      DnsConfigOverrides::CreateOverridingEverythingWithDefaults();
+  EXPECT_TRUE(overrides.OverridesEverything());
+
+  // Ensure config is valid by setting a nameserver.
+  std::vector<IPEndPoint> nameservers = {CreateExpected("1.2.3.4", 50)};
+  overrides.nameservers = nameservers;
+  EXPECT_TRUE(overrides.OverridesEverything());
+
+  resolver_->SetDnsConfigOverrides(overrides);
+
+  DnsConfig expected;
+  expected.nameservers = nameservers;
+  EXPECT_TRUE(dns_client_->GetConfig()->Equals(DnsConfig(expected)));
+}
+
 TEST_F(HostResolverImplDnsTest, SetDnsConfigOverrides_PartialOverride) {
   DnsConfig original_config = CreateValidDnsConfig();
   ChangeDnsConfig(original_config);
@@ -5847,6 +5875,7 @@ TEST_F(HostResolverImplDnsTest, SetDnsConfigOverrides_PartialOverride) {
       CreateExpected("192.168.0.2", 192)};
   overrides.nameservers = nameservers;
   overrides.rotate = true;
+  EXPECT_FALSE(overrides.OverridesEverything());
 
   resolver_->SetDnsConfigOverrides(overrides);
 
@@ -5906,12 +5935,59 @@ TEST_F(HostResolverImplDnsTest, SetDnsConfigOverrides_ClearOverrides) {
   EXPECT_TRUE(original_config.Equals(*dns_client_->GetConfig()));
 }
 
+// Test that even when using config overrides, a change to the base system
+// config cancels pending requests.
+TEST_F(HostResolverImplDnsTest, CancellationOnBaseConfigChange) {
+  DnsConfig original_config = CreateValidDnsConfig();
+  ChangeDnsConfig(original_config);
+
+  DnsConfigOverrides overrides;
+  overrides.nameservers.emplace({CreateExpected("123.123.123.123", 80)});
+  ASSERT_FALSE(overrides.OverridesEverything());
+  resolver_->SetDnsConfigOverrides(overrides);
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("4slow_ok", 80), NetLogWithSource(), base::nullopt));
+  ASSERT_FALSE(response.complete());
+
+  DnsConfig new_config = original_config;
+  new_config.attempts = 103;
+  ChangeDnsConfig(new_config);
+
+  EXPECT_THAT(response.result_error(), IsError(ERR_NETWORK_CHANGED));
+}
+
+// Test that when all configuration is overridden, system configuration changes
+// do not cancel requests.
+TEST_F(HostResolverImplDnsTest,
+       CancellationOnBaseConfigChange_OverridesEverything) {
+  DnsConfig original_config = CreateValidDnsConfig();
+  ChangeDnsConfig(original_config);
+
+  DnsConfigOverrides overrides =
+      DnsConfigOverrides::CreateOverridingEverythingWithDefaults();
+  overrides.nameservers.emplace({CreateExpected("123.123.123.123", 80)});
+  ASSERT_TRUE(overrides.OverridesEverything());
+  resolver_->SetDnsConfigOverrides(overrides);
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("4slow_ok", 80), NetLogWithSource(), base::nullopt));
+  ASSERT_FALSE(response.complete());
+
+  DnsConfig new_config = original_config;
+  new_config.attempts = 103;
+  ChangeDnsConfig(new_config);
+
+  dns_client_->CompleteDelayedTransactions();
+  EXPECT_THAT(response.result_error(), IsOk());
+}
+
 // Test that in-progress queries are cancelled on applying new DNS config
 // overrides, same as receiving a new DnsConfig from the system.
 TEST_F(HostResolverImplDnsTest, CancelQueriesOnSettingOverrides) {
   ChangeDnsConfig(CreateValidDnsConfig());
   ResolveHostResponseHelper response(resolver_->CreateRequest(
-      HostPortPair("ok", 80), NetLogWithSource(), base::nullopt));
+      HostPortPair("4slow_ok", 80), NetLogWithSource(), base::nullopt));
   ASSERT_FALSE(response.complete());
 
   DnsConfigOverrides overrides;
@@ -5929,11 +6005,12 @@ TEST_F(HostResolverImplDnsTest, CancelQueriesOnSettingOverrides_SameOverrides) {
   resolver_->SetDnsConfigOverrides(overrides);
 
   ResolveHostResponseHelper response(resolver_->CreateRequest(
-      HostPortPair("ok", 80), NetLogWithSource(), base::nullopt));
+      HostPortPair("4slow_ok", 80), NetLogWithSource(), base::nullopt));
   ASSERT_FALSE(response.complete());
 
   resolver_->SetDnsConfigOverrides(overrides);
 
+  dns_client_->CompleteDelayedTransactions();
   EXPECT_THAT(response.result_error(), IsOk());
 }
 
@@ -5946,7 +6023,7 @@ TEST_F(HostResolverImplDnsTest, CancelQueriesOnClearingOverrides) {
   resolver_->SetDnsConfigOverrides(overrides);
 
   ResolveHostResponseHelper response(resolver_->CreateRequest(
-      HostPortPair("ok", 80), NetLogWithSource(), base::nullopt));
+      HostPortPair("4slow_ok", 80), NetLogWithSource(), base::nullopt));
   ASSERT_FALSE(response.complete());
 
   resolver_->SetDnsConfigOverrides(DnsConfigOverrides());
@@ -5959,11 +6036,12 @@ TEST_F(HostResolverImplDnsTest, CancelQueriesOnClearingOverrides) {
 TEST_F(HostResolverImplDnsTest, CancelQueriesOnClearingOverrides_NoOverrides) {
   ChangeDnsConfig(CreateValidDnsConfig());
   ResolveHostResponseHelper response(resolver_->CreateRequest(
-      HostPortPair("ok", 80), NetLogWithSource(), base::nullopt));
+      HostPortPair("4slow_ok", 80), NetLogWithSource(), base::nullopt));
   ASSERT_FALSE(response.complete());
 
   resolver_->SetDnsConfigOverrides(DnsConfigOverrides());
 
+  dns_client_->CompleteDelayedTransactions();
   EXPECT_THAT(response.result_error(), IsOk());
 }
 
