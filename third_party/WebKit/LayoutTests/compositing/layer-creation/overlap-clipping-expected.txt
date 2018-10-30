@@ -18,6 +18,12 @@
       "backgroundColor": "#FFFFFF"
     },
     {
+      "name": "Ancestor Clipping Layer",
+      "position": [50, 50],
+      "bounds": [100, 100],
+      "drawsContent": false
+    },
+    {
       "name": "LayoutBlockFlow DIV id='child'",
       "bounds": [500, 100],
       "contentsOpaque": true,
@@ -49,7 +55,8 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [50, 50, 0, 1]
-      ]
+      ],
+      "flattenInheritedTransform": false
     },
     {
       "id": 2,

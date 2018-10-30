@@ -10,6 +10,10 @@
       "drawsContent": false
     },
     {
+      "name": "Overscroll Elasticity Layer",
+      "drawsContent": false
+    },
+    {
       "name": "Page Scale Layer",
       "drawsContent": false
     },

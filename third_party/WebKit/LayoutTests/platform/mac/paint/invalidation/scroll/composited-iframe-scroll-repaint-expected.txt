@@ -20,7 +20,7 @@
     {
       "name": "Ancestor Clipping Layer",
       "position": [8, 8],
-      "bounds": [784, 159],
+      "bounds": [784, 158],
       "drawsContent": false
     },
     {

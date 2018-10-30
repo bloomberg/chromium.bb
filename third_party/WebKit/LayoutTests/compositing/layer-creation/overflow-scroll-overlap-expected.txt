@@ -33,7 +33,9 @@
       "bounds": [306, 206]
     },
     {
-      "name": "Squashing Containment Layer",
+      "name": "Ancestor Clipping Layer",
+      "position": [23, 23],
+      "bounds": [285, 200],
       "drawsContent": false
     },
     {

@@ -28,6 +28,12 @@
       "bounds": [280, 200]
     },
     {
+      "name": "Child Containment Layer",
+      "position": [22, 122],
+      "bounds": [280, 200],
+      "drawsContent": false
+    },
+    {
       "name": "LayoutIFrame IFRAME",
       "position": [30, 130],
       "bounds": [252, 172]
@@ -37,6 +43,12 @@
       "position": [31, 131],
       "bounds": [250, 170],
       "backgroundColor": "#C0C0C0"
+    },
+    {
+      "name": "Child Containment Layer",
+      "position": [31, 131],
+      "bounds": [250, 170],
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow DIV id='iframe-content' class='box'",
@@ -56,6 +68,12 @@
       "bounds": [280, 200]
     },
     {
+      "name": "Child Containment Layer",
+      "position": [22, 346],
+      "bounds": [280, 200],
+      "drawsContent": false
+    },
+    {
       "name": "LayoutIFrame IFRAME",
       "position": [30, 354],
       "bounds": [252, 172]
@@ -65,6 +83,12 @@
       "position": [31, 355],
       "bounds": [250, 170],
       "backgroundColor": "#C0C0C0"
+    },
+    {
+      "name": "Child Containment Layer",
+      "position": [31, 355],
+      "bounds": [250, 170],
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow DIV id='iframe-content' class='box'",

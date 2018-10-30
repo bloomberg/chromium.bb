@@ -9,34 +9,40 @@ Layer tree:
       "drawsContent": false,
       "children": [
         {
-          "name": "Page Scale Layer",
+          "name": "Overscroll Elasticity Layer",
           "drawsContent": false,
           "children": [
             {
-              "name": "Inner Viewport Scroll Layer",
-              "bounds": [800, 600],
+              "name": "Page Scale Layer",
               "drawsContent": false,
               "children": [
                 {
-                  "name": "LayoutView #document",
+                  "name": "Inner Viewport Scroll Layer",
                   "bounds": [800, 600],
                   "drawsContent": false,
-                  "backgroundColor": "#FFFFFF",
-                  "shouldFlattenTransform": false,
                   "children": [
                     {
-                      "name": "Scrolling Layer",
-                      "bounds": [780, 580],
+                      "name": "LayoutView #document",
+                      "bounds": [800, 600],
                       "drawsContent": false,
-                      "flattenInheritedTransform": false,
+                      "backgroundColor": "#FFFFFF",
                       "shouldFlattenTransform": false,
                       "children": [
                         {
-                          "name": "Scrolling Contents Layer",
-                          "bounds": [1200, 900],
-                          "contentsOpaque": true,
-                          "backgroundColor": "#FFFFFF",
-                          "flattenInheritedTransform": false
+                          "name": "Scrolling Layer",
+                          "bounds": [780, 580],
+                          "drawsContent": false,
+                          "flattenInheritedTransform": false,
+                          "shouldFlattenTransform": false,
+                          "children": [
+                            {
+                              "name": "Scrolling Contents Layer",
+                              "bounds": [1200, 900],
+                              "contentsOpaque": true,
+                              "backgroundColor": "#FFFFFF",
+                              "flattenInheritedTransform": false
+                            }
+                          ]
                         }
                       ]
                     }
@@ -83,6 +89,10 @@ Layer list
     {
       "name": "Inner Viewport Container Layer",
       "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Overscroll Elasticity Layer",
       "drawsContent": false
     },
     {

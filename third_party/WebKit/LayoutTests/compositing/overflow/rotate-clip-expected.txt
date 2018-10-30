@@ -23,6 +23,13 @@
       "transform": 2
     },
     {
+      "name": "Child Containment Layer",
+      "position": [20, 20],
+      "bounds": [200, 200],
+      "drawsContent": false,
+      "transform": 2
+    },
+    {
       "name": "LayoutBlockFlow DIV",
       "position": [20, 20],
       "bounds": [400, 400],
