@@ -2,24 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_FACTORY_IMPL_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_FACTORY_IMPL_H_
+#ifndef CONTENT_RENDERER_INDEXED_DB_WEBIDBFACTORY_IMPL_H_
+#define CONTENT_RENDERER_INDEXED_DB_WEBIDBFACTORY_IMPL_H_
 
-#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
+#include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
+#include "content/renderer/indexed_db/indexed_db_callbacks_impl.h"
+#include "content/renderer/indexed_db/indexed_db_database_callbacks_impl.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_callbacks.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_callbacks.h"
-#include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
-#include "third_party/blink/renderer/modules/indexeddb/indexed_db_callbacks_impl.h"
-#include "third_party/blink/renderer/modules/indexeddb/indexed_db_database_callbacks_impl.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_factory.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_factory.h"
 
 namespace blink {
 class WebSecurityOrigin;
 class WebString;
+}  // namespace blink
+
+namespace content {
 
 class WebIDBFactoryImpl : public blink::WebIDBFactory {
  public:
-  explicit WebIDBFactoryImpl(mojom::blink::IDBFactoryPtrInfo factory_info);
+  explicit WebIDBFactoryImpl(blink::mojom::IDBFactoryPtrInfo factory_info);
   ~WebIDBFactoryImpl() override;
 
   // See WebIDBFactory.h for documentation on these functions.
@@ -46,14 +50,14 @@ class WebIDBFactoryImpl : public blink::WebIDBFactory {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
 
  private:
-  mojom::blink::IDBCallbacksAssociatedPtrInfo GetCallbacksProxy(
-      std::unique_ptr<blink::IndexedDBCallbacksImpl> callbacks);
-  mojom::blink::IDBDatabaseCallbacksAssociatedPtrInfo GetDatabaseCallbacksProxy(
-      std::unique_ptr<blink::IndexedDBDatabaseCallbacksImpl> callbacks);
+  blink::mojom::IDBCallbacksAssociatedPtrInfo GetCallbacksProxy(
+      std::unique_ptr<IndexedDBCallbacksImpl> callbacks);
+  blink::mojom::IDBDatabaseCallbacksAssociatedPtrInfo GetDatabaseCallbacksProxy(
+      std::unique_ptr<IndexedDBDatabaseCallbacksImpl> callbacks);
 
-  mojom::blink::IDBFactoryPtr factory_;
+  blink::mojom::IDBFactoryPtr factory_;
 };
 
-}  // namespace blink
+}  // namespace content
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_FACTORY_IMPL_H_
+#endif  // CONTENT_RENDERER_INDEXED_DB_WEBIDBFACTORY_IMPL_H_

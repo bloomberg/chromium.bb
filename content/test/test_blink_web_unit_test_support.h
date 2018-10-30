@@ -34,6 +34,7 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
   ~TestBlinkWebUnitTestSupport() override;
 
   blink::WebBlobRegistry* GetBlobRegistry() override;
+  std::unique_ptr<blink::WebIDBFactory> CreateIdbFactory() override;
 
   std::unique_ptr<blink::WebURLLoaderFactory> CreateDefaultURLLoaderFactory()
       override;

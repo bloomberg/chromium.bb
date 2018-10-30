@@ -88,6 +88,7 @@
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/effective_connection_type_helper.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
+#include "content/renderer/indexed_db/indexed_db_dispatcher.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/low_memory_mode_controller.h"
@@ -763,6 +764,7 @@ void RenderThreadImpl::Init() {
                           base::Unretained(appcache_dispatcher())),
       GetWebMainThreadScheduler()->IPCTaskRunner());
   dom_storage_dispatcher_.reset(new DomStorageDispatcher());
+  main_thread_indexed_db_dispatcher_.reset(new IndexedDBDispatcher());
 
   vc_manager_.reset(new VideoCaptureImplManager());
 

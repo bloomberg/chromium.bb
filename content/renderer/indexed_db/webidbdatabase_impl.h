@@ -2,43 +2,49 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_DATABASE_IMPL_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_DATABASE_IMPL_H_
+#ifndef CONTENT_RENDERER_INDEXED_DB_WEBIDBDATABASE_IMPL_H_
+#define CONTENT_RENDERER_INDEXED_DB_WEBIDBDATABASE_IMPL_H_
 
 #include <stdint.h>
 
 #include <set>
 
+#include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
+#include "content/common/content_export.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
-#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_database.h"
-#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_cursor.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database.h"
 
 namespace blink {
-class IndexedDBCallbacksImpl;
 class WebBlobInfo;
 class WebIDBCallbacks;
+class WebString;
+}  // namespace blink
 
-class MODULES_EXPORT WebIDBDatabaseImpl : public blink::WebIDBDatabase {
+namespace content {
+
+class IndexedDBCallbacksImpl;
+
+class CONTENT_EXPORT WebIDBDatabaseImpl : public blink::WebIDBDatabase {
  public:
-  WebIDBDatabaseImpl(mojom::blink::IDBDatabaseAssociatedPtrInfo database);
+  WebIDBDatabaseImpl(blink::mojom::IDBDatabaseAssociatedPtrInfo database);
   ~WebIDBDatabaseImpl() override;
 
   // blink::WebIDBDatabase
   void CreateObjectStore(long long transaction_id,
                          long long objectstore_id,
-                         const String& name,
+                         const blink::WebString& name,
                          const blink::WebIDBKeyPath&,
                          bool auto_increment) override;
   void DeleteObjectStore(long long transaction_id,
                          long long object_store_id) override;
   void RenameObjectStore(long long transaction_id,
                          long long object_store_id,
-                         const String& new_name) override;
+                         const blink::WebString& new_name) override;
   void CreateTransaction(long long transaction_id,
-                         const Vector<int64_t>& scope,
+                         const blink::WebVector<long long>& scope,
                          blink::WebIDBTransactionMode mode) override;
 
   void Close() override;
@@ -51,7 +57,8 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public blink::WebIDBDatabase {
                    bool values,
                    const std::bitset<blink::kWebIDBOperationTypeCount>&
                        operation_types) override;
-  void RemoveObservers(const Vector<int32_t>& observer_ids) override;
+  void RemoveObservers(
+      const blink::WebVector<int32_t>& observer_ids_to_remove) override;
 
   void Get(long long transaction_id,
            long long object_store_id,
@@ -69,18 +76,18 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public blink::WebIDBDatabase {
   void Put(long long transaction_id,
            long long object_store_id,
            const blink::WebData& value,
-           const Vector<blink::WebBlobInfo>&,
+           const blink::WebVector<blink::WebBlobInfo>&,
            blink::WebIDBKeyView primary_key,
            blink::WebIDBPutMode,
            blink::WebIDBCallbacks*,
-           const Vector<blink::WebIDBIndexKeys>&) override;
+           const blink::WebVector<blink::WebIDBIndexKeys>&) override;
   void SetIndexKeys(long long transaction_id,
                     long long object_store_id,
                     blink::WebIDBKeyView primary_key,
-                    const Vector<blink::WebIDBIndexKeys>&) override;
+                    const blink::WebVector<blink::WebIDBIndexKeys>&) override;
   void SetIndexesReady(long long transaction_id,
                        long long object_store_id,
-                       const Vector<int64_t>& index_ids) override;
+                       const blink::WebVector<long long>& index_ids) override;
   void OpenCursor(long long transaction_id,
                   long long object_store_id,
                   long long index_id,
@@ -108,7 +115,7 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public blink::WebIDBDatabase {
   void CreateIndex(long long transaction_id,
                    long long object_store_id,
                    long long index_id,
-                   const String& name,
+                   const blink::WebString& name,
                    const blink::WebIDBKeyPath&,
                    bool unique,
                    bool multi_entry) override;
@@ -118,12 +125,12 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public blink::WebIDBDatabase {
   void RenameIndex(long long transaction_id,
                    long long object_store_id,
                    long long index_id,
-                   const String& new_name) override;
+                   const blink::WebString& new_name) override;
   void Abort(long long transaction_id) override;
   void Commit(long long transaction_id) override;
 
  private:
-  mojom::blink::IDBCallbacksAssociatedPtrInfo GetCallbacksProxy(
+  blink::mojom::IDBCallbacksAssociatedPtrInfo GetCallbacksProxy(
       std::unique_ptr<IndexedDBCallbacksImpl> callbacks);
 
   FRIEND_TEST_ALL_PREFIXES(WebIDBDatabaseImplTest, ValueSizeTest);
@@ -134,12 +141,12 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public blink::WebIDBDatabase {
   // Used by unit tests to exercise behavior without allocating huge chunks
   // of memory.
   size_t max_put_value_size_ =
-      mojom::blink::kIDBMaxMessageSize - mojom::blink::kIDBMaxMessageOverhead;
+      blink::mojom::kIDBMaxMessageSize - blink::mojom::kIDBMaxMessageOverhead;
 
   std::set<int32_t> observer_ids_;
-  mojom::blink::IDBDatabaseAssociatedPtr database_;
+  blink::mojom::IDBDatabaseAssociatedPtr database_;
 };
 
-}  // namespace blink
+}  // namespace content
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_DATABASE_IMPL_H_
+#endif  // CONTENT_RENDERER_INDEXED_DB_WEBIDBDATABASE_IMPL_H_

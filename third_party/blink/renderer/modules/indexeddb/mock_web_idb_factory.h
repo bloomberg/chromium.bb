@@ -9,9 +9,9 @@
 #include <memory>
 
 #include "base/single_thread_task_runner.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_factory.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_factory.h"
 
 namespace base {
 class SingleThreadTaskRunner;
