@@ -181,9 +181,9 @@ TouchDispositionGestureFilter::OnGesturePacket(
                     Tail().back().unique_touch_event_id()));
   }
   if (!Head().empty()) {
-    DCHECK_NE(packet.unique_touch_event_id(),
-              Head().front().unique_touch_event_id());
-
+    DCHECK((packet.gesture_source() == GestureEventDataPacket::TOUCH_TIMEOUT) ||
+           packet.unique_touch_event_id() !=
+               Head().front().unique_touch_event_id());
   }
 
   Tail().push(packet);
