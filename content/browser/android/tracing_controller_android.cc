@@ -14,7 +14,7 @@
 #include "base/trace_event/trace_event.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/browser/tracing_controller.h"
-#include "jni/TracingControllerAndroid_jni.h"
+#include "jni/TracingControllerAndroidImpl_jni.h"
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
@@ -22,7 +22,7 @@ using base::android::ScopedJavaGlobalRef;
 
 namespace content {
 
-static jlong JNI_TracingControllerAndroid_Init(
+static jlong JNI_TracingControllerAndroidImpl_Init(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   TracingControllerAndroid* profiler = new TracingControllerAndroid(env, obj);
@@ -85,7 +85,7 @@ void TracingControllerAndroid::GenerateTracingFilePath(
     base::FilePath* file_path) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jfilename =
-      Java_TracingControllerAndroid_generateTracingFilePath(env);
+      Java_TracingControllerAndroidImpl_generateTracingFilePath(env);
   *file_path = base::FilePath(
       base::android::ConvertJavaStringToUTF8(env, jfilename.obj()));
 }
@@ -95,7 +95,7 @@ void TracingControllerAndroid::OnTracingStopped(
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> obj = weak_java_object_.get(env);
   if (obj.obj())
-    Java_TracingControllerAndroid_onTracingStopped(env, obj, callback);
+    Java_TracingControllerAndroidImpl_onTracingStopped(env, obj, callback);
 }
 
 bool TracingControllerAndroid::GetKnownCategoriesAsync(
@@ -128,13 +128,13 @@ void TracingControllerAndroid::OnKnownCategoriesReceived(
                                              categories_received.end());
     base::android::ScopedJavaLocalRef<jobjectArray> jcategories =
         base::android::ToJavaArrayOfStrings(env, category_vector);
-    Java_TracingControllerAndroid_onKnownCategoriesReceived(
+    Java_TracingControllerAndroidImpl_onKnownCategoriesReceived(
         env, obj, jcategories, callback);
   }
 }
 
 static ScopedJavaLocalRef<jstring>
-JNI_TracingControllerAndroid_GetDefaultCategories(
+JNI_TracingControllerAndroidImpl_GetDefaultCategories(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   base::trace_event::TraceConfig trace_config;
@@ -159,7 +159,7 @@ void TracingControllerAndroid::OnTraceBufferUsageReceived(
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> obj = weak_java_object_.get(env);
   if (obj.obj()) {
-    Java_TracingControllerAndroid_onTraceBufferUsageReceived(
+    Java_TracingControllerAndroidImpl_onTraceBufferUsageReceived(
         env, obj, percent_full, approximate_event_count, callback);
   }
 }

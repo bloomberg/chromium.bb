@@ -21,7 +21,6 @@ import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.app.ContentMain;
 import org.chromium.content_public.browser.BrowserStartupController;
-import org.chromium.content_public.browser.BrowserStartupController.StartupCallback;
 import org.chromium.ui.resources.ResourceExtractor;
 
 import java.lang.annotation.Retention;
@@ -121,7 +120,7 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
     // Whether ServiceManager is started.
     private boolean mServiceManagerStarted;
 
-    private TracingControllerAndroid mTracingController;
+    private TracingControllerAndroidImpl mTracingController;
 
     BrowserStartupControllerImpl(int libraryProcessType) {
         mAsyncStartupCallbacks = new ArrayList<>();
@@ -135,7 +134,7 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
                     public void onSuccess() {
                         assert mTracingController == null;
                         Context context = ContextUtils.getApplicationContext();
-                        mTracingController = new TracingControllerAndroid(context);
+                        mTracingController = new TracingControllerAndroidImpl(context);
                         mTracingController.registerReceiver(context);
                     }
 
