@@ -3,14 +3,13 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview 'settings-add-smb-share-dialog' is a component for adding
- * an SMB Share.
+ * @fileoverview 'add-smb-share-dialog' is a component for adding an SMB Share.
  */
 
 Polymer({
-  is: 'settings-add-smb-share-dialog',
+  is: 'add-smb-share-dialog',
 
-  behaviors: [WebUIListenerBehavior],
+  behaviors: [I18nBehavior, WebUIListenerBehavior],
 
   properties: {
     /** @private {string} */
@@ -63,12 +62,12 @@ Polymer({
     },
   },
 
-  /** @private {?settings.SmbBrowserProxy} */
+  /** @private {?smb_shares.SmbBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
   created: function() {
-    this.browserProxy_ = settings.SmbBrowserProxyImpl.getInstance();
+    this.browserProxy_ = smb_shares.SmbBrowserProxyImpl.getInstance();
   },
 
   /** @override */

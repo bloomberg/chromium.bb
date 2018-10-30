@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview A helper object used from the "SMB Share" section to
+ * @fileoverview A helper object used from the "add SMB share" dialog to
  * interact with the browser. Used only on Chrome OS.
  */
 
@@ -28,7 +28,7 @@ const SmbAuthMethod = {
   CREDENTIALS: 'credentials',
 };
 
-cr.define('settings', function() {
+cr.define('smb_shares', function() {
   /** @interface */
   class SmbBrowserProxy {
     /**
@@ -47,7 +47,7 @@ cr.define('settings', function() {
     startDiscovery() {}
   }
 
-  /** @implements {settings.SmbBrowserProxy} */
+  /** @implements {smb_shares.SmbBrowserProxy} */
   class SmbBrowserProxyImpl {
     /** @override */
     smbMount(smbUrl, smbName, username, password, authMethod) {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @implements {settings.SmbBrowserProxy} */
+/** @implements {smb_shares.SmbBrowserProxy} */
 class TestSmbBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
@@ -27,12 +27,12 @@ suite('AddSmbShareDialogTests', function() {
   let page = null;
   let addDialog = null;
 
-  /** @type {?settings.TestSmbBrowserProxy} */
+  /** @type {?smb_shares.TestSmbBrowserProxy} */
   let smbBrowserProxy = null;
 
   setup(function() {
     smbBrowserProxy = new TestSmbBrowserProxy();
-    settings.SmbBrowserProxyImpl.instance_ = smbBrowserProxy;
+    smb_shares.SmbBrowserProxyImpl.instance_ = smbBrowserProxy;
 
     PolymerTest.clearBody();
 
@@ -44,7 +44,7 @@ suite('AddSmbShareDialogTests', function() {
     button.click();
     Polymer.dom.flush();
 
-    addDialog = page.$$('settings-add-smb-share-dialog');
+    addDialog = page.$$('add-smb-share-dialog');
     assertTrue(!!addDialog);
 
     Polymer.dom.flush();
