@@ -2902,8 +2902,10 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     private void setTabSwitcherAnimationMenuDrawable() {
-        mTabSwitcherAnimationMenuDrawable = ApiCompatibilityUtils.getDrawable(
-                getResources(), R.drawable.ic_more_vert_black_24dp);
+        mTabSwitcherAnimationMenuDrawable =
+                ApiCompatibilityUtils
+                        .getDrawable(getResources(), R.drawable.ic_more_vert_black_24dp)
+                        .mutate();
         ((BitmapDrawable) mTabSwitcherAnimationMenuDrawable).setGravity(Gravity.CENTER);
     }
 
