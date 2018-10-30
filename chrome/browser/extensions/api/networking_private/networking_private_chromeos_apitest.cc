@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
@@ -490,6 +491,7 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
   }
 
   bool SetupCertificates() {
+    base::ScopedAllowBlockingForTesting allow_io;
     net::ScopedCERTCertificateList cert_list =
         net::CreateCERTCertificateListFromFile(
             net::GetTestCertsDirectory(), "client_1_ca.pem",

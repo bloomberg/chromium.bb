@@ -11,6 +11,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chromeos/chromeos_test_utils.h"
 
@@ -26,6 +27,7 @@ const char kNetworkComponentDirectory[] = "network";
 }  // namespace
 
 std::string ReadTestData(const std::string& filename) {
+  base::ScopedAllowBlockingForTesting allow_io;
   base::FilePath path;
   if (!chromeos::test_utils::GetTestDataPath(kNetworkComponentDirectory,
                                              filename,

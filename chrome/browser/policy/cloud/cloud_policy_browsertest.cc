@@ -439,7 +439,10 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyTest, FetchPolicyWithRotatedKey) {
 
   // Read the initial key.
   std::string initial_key;
-  ASSERT_TRUE(base::ReadFileToString(user_policy_key_file_, &initial_key));
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+    ASSERT_TRUE(base::ReadFileToString(user_policy_key_file_, &initial_key));
+  }
 
   PolicyMap default_policy;
   GetExpectedDefaultPolicy(&default_policy);
@@ -461,7 +464,10 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyTest, FetchPolicyWithRotatedKey) {
 
   // Verify that the key was rotated.
   std::string rotated_key;
-  ASSERT_TRUE(base::ReadFileToString(user_policy_key_file_, &rotated_key));
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+    ASSERT_TRUE(base::ReadFileToString(user_policy_key_file_, &rotated_key));
+  }
   EXPECT_NE(rotated_key, initial_key);
 
   // Another refresh using the same key won't rotate it again.
@@ -473,7 +479,10 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyTest, FetchPolicyWithRotatedKey) {
   EXPECT_TRUE(expected.Equals(policy_service->GetPolicies(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))));
   std::string current_key;
-  ASSERT_TRUE(base::ReadFileToString(user_policy_key_file_, &current_key));
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+    ASSERT_TRUE(base::ReadFileToString(user_policy_key_file_, &current_key));
+  }
   EXPECT_EQ(rotated_key, current_key);
 }
 #endif

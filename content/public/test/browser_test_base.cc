@@ -131,8 +131,7 @@ BrowserTestBase::BrowserTestBase()
       expected_exit_code_(0),
       enable_pixel_output_(false),
       use_software_compositing_(false),
-      set_up_called_(false),
-      disable_io_checks_(false) {
+      set_up_called_(false) {
   ui::test::EnableTestConfigForPlatformWindows();
 
 #if defined(OS_POSIX)
@@ -419,11 +418,9 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
     InitializeNetworkProcess();
 
     bool old_io_allowed_value = false;
-    if (!disable_io_checks_)
-      old_io_allowed_value = base::ThreadRestrictions::SetIOAllowed(false);
+    old_io_allowed_value = base::ThreadRestrictions::SetIOAllowed(false);
     RunTestOnMainThread();
-    if (!disable_io_checks_)
-      base::ThreadRestrictions::SetIOAllowed(old_io_allowed_value);
+    base::ThreadRestrictions::SetIOAllowed(old_io_allowed_value);
     TearDownOnMainThread();
   }
 

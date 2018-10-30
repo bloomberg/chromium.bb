@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/task/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -343,8 +344,11 @@ IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateAPIUserTest,
   session_manager::SessionManager::Get()->CreateSession(
       AccountId::FromUserEmailGaiaId(kTestUserName, kTestUserGaiaId),
       kTestUserName, false);
-  g_browser_process->profile_manager()->GetProfile(
-      ProfileHelper::Get()->GetProfilePathByUserIdHash(kTestUserName));
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+    g_browser_process->profile_manager()->GetProfile(
+        ProfileHelper::Get()->GetProfilePathByUserIdHash(kTestUserName));
+  }
   session_manager::SessionManager::Get()->SessionStarted();
   Profile* profile = ProfileManager::GetActiveUserProfile();
   ASSERT_FALSE(

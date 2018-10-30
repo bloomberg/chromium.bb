@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/chromeos_paths.h"
@@ -35,6 +36,7 @@ void WriteInstallAttributesFile(const std::string& install_attrs_blob) {
   base::FilePath install_attrs_file;
   ASSERT_TRUE(base::PathService::Get(chromeos::FILE_INSTALL_ATTRIBUTES,
                                      &install_attrs_file));
+  base::ScopedAllowBlockingForTesting allow_io;
   ASSERT_EQ(base::checked_cast<int>(install_attrs_blob.size()),
             base::WriteFile(install_attrs_file, install_attrs_blob.c_str(),
                             install_attrs_blob.size()));
@@ -79,6 +81,7 @@ void DevicePolicyCrosTestHelper::OverridePaths() {
   // the paths are overridden before using them.
   base::FilePath user_data_dir;
   ASSERT_TRUE(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
+  base::ScopedAllowBlockingForTesting allow_io;
   chromeos::RegisterStubPathOverrides(user_data_dir);
 }
 

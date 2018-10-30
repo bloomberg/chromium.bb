@@ -160,9 +160,12 @@ class UserImageManagerTest : public LoginManagerTest,
     std::string profile_image_data;
     base::FilePath test_data_dir;
     EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
-    EXPECT_TRUE(
-        ReadFileToString(test_data_dir.Append("chromeos").Append("avatar1.jpg"),
-                         &profile_image_data));
+    {
+      base::ScopedAllowBlockingForTesting allow_io;
+      EXPECT_TRUE(ReadFileToString(
+          test_data_dir.Append("chromeos").Append("avatar1.jpg"),
+          &profile_image_data));
+    }
     std::unique_ptr<net::test_server::BasicHttpResponse> response =
         std::make_unique<net::test_server::BasicHttpResponse>();
     response->set_content_type("image/jpeg");
@@ -505,6 +508,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromFile) {
   // The saved image should have transparent pixels (i.e. not opaque).
   EXPECT_FALSE(SkBitmap::ComputeIsOpaque(*new_saved_image->bitmap()));
 
+  base::ScopedAllowBlockingForTesting allow_io;
   // The old user image file in JPEG should be deleted. Only the PNG version
   // should stay.
   EXPECT_FALSE(base::PathExists(GetUserImagePath(test_account_id1_, "jpg")));
@@ -664,6 +668,7 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
   }
 
   std::string ConstructPolicy(const std::string& relative_path) {
+    base::ScopedAllowBlockingForTesting allow_io;
     std::string image_data;
     if (!base::ReadFileToString(test_data_dir_.Append(relative_path),
                                 &image_data)) {

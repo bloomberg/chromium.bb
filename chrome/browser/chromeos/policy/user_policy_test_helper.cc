@@ -137,6 +137,7 @@ void UserPolicyTestHelper::UpdatePolicy(
 }
 
 void UserPolicyTestHelper::DeletePolicyFile() {
+  base::ScopedAllowBlockingForTesting allow_io;
   base::DeleteFile(PolicyFilePath(), false);
 }
 
@@ -145,6 +146,8 @@ void UserPolicyTestHelper::WritePolicyFile(
     const base::DictionaryValue& recommended) {
   const std::string policy = BuildPolicy(
       mandatory, recommended, dm_protocol::kChromeUserPolicyType, account_id_);
+
+  base::ScopedAllowBlockingForTesting allow_io;
   const int bytes_written =
       base::WriteFile(PolicyFilePath(), policy.data(), policy.size());
   ASSERT_EQ(static_cast<int>(policy.size()), bytes_written);

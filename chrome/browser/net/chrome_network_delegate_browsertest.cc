@@ -31,6 +31,14 @@ class ChromeNetworkDelegateBrowserTest : public InProcessBrowserTest {
     ChromeNetworkDelegate::EnableAccessToAllFilesForTesting(false);
   }
 
+  void SetUpOnMainThread() override {
+    base::FilePath temp_dir;
+    ASSERT_TRUE(base::PathService::Get(base::DIR_TEMP, &temp_dir));
+    ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDirUnderPath(temp_dir));
+  }
+
+  base::ScopedTempDir scoped_temp_dir_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeNetworkDelegateBrowserTest);
 };
@@ -65,9 +73,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNetworkDelegateBrowserTest, AccessToSymlink) {
 
   base::FilePath temp_dir;
   ASSERT_TRUE(base::PathService::Get(base::DIR_TEMP, &temp_dir));
-  base::ScopedTempDir scoped_temp_dir;
-  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDirUnderPath(temp_dir));
-  base::FilePath symlink = scoped_temp_dir.GetPath().AppendASCII("symlink");
+  base::FilePath symlink = scoped_temp_dir_.GetPath().AppendASCII("symlink");
   ASSERT_TRUE(base::CreateSymbolicLink(test_file, symlink));
   ASSERT_TRUE(
       ChromeNetworkDelegate::IsAccessAllowed(symlink, base::FilePath()));

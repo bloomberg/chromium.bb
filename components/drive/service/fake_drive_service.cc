@@ -1225,10 +1225,14 @@ CancelCallback FakeDriveService::ResumeUpload(
   }
 
   std::string content_data;
-  if (!base::ReadFileToString(local_file_path, &content_data)) {
-    session->uploaded_size = end_position;
-    completion_callback.Run(DRIVE_FILE_ERROR, std::unique_ptr<FileResource>());
-    return CancelCallback();
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+    if (!base::ReadFileToString(local_file_path, &content_data)) {
+      session->uploaded_size = end_position;
+      completion_callback.Run(DRIVE_FILE_ERROR,
+                              std::unique_ptr<FileResource>());
+      return CancelCallback();
+    }
   }
   session->uploaded_size = end_position;
 

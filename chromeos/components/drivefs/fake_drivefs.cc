@@ -17,6 +17,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -287,7 +288,10 @@ void FakeDriveFs::SetMetadata(const base::FilePath& path,
 void FakeDriveFs::Init(drivefs::mojom::DriveFsConfigurationPtr config,
                        drivefs::mojom::DriveFsRequest drive_fs_request,
                        drivefs::mojom::DriveFsDelegatePtr delegate) {
-  CHECK(base::CreateDirectory(mount_path_.Append(".Trash")));
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+    CHECK(base::CreateDirectory(mount_path_.Append(".Trash")));
+  }
   mojo::FuseInterface(std::move(pending_delegate_request_),
                       delegate.PassInterface());
   if (binding_.is_bound())
@@ -300,9 +304,12 @@ void FakeDriveFs::GetMetadata(const base::FilePath& path,
   base::FilePath absolute_path = mount_path_;
   CHECK(base::FilePath("/").AppendRelativePath(path, &absolute_path));
   base::File::Info info;
-  if (!base::GetFileInfo(absolute_path, &info)) {
-    std::move(callback).Run(drive::FILE_ERROR_NOT_FOUND, nullptr);
-    return;
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+    if (!base::GetFileInfo(absolute_path, &info)) {
+      std::move(callback).Run(drive::FILE_ERROR_NOT_FOUND, nullptr);
+      return;
+    }
   }
   auto metadata = drivefs::mojom::FileMetadata::New();
   metadata->size = info.size;
@@ -360,6 +367,7 @@ void FakeDriveFs::GetThumbnail(const base::FilePath& path,
 void FakeDriveFs::CopyFile(const base::FilePath& source,
                            const base::FilePath& target,
                            CopyFileCallback callback) {
+  base::ScopedAllowBlockingForTesting allow_io;
   base::FilePath source_absolute_path = mount_path_;
   base::FilePath target_absolute_path = mount_path_;
   CHECK(base::FilePath("/").AppendRelativePath(source, &source_absolute_path));

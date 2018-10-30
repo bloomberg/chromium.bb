@@ -151,10 +151,6 @@ class BrowserTestBase : public testing::Test {
   // code necessary.
   void SetInitialWebContents(WebContents* web_contents);
 
-  // Temporary
-  // TODO(jam): remove this.
-  void disable_io_checks() { disable_io_checks_ = true; }
-
  private:
   void ProxyRunTestOnMainThreadLoop();
 
@@ -192,11 +188,6 @@ class BrowserTestBase : public testing::Test {
   // class to ensure that SetUp was called. If it's not called, the test will
   // not run and report a false positive result.
   bool set_up_called_;
-
-  // Tests should keep on the IO thread checks to test that production code
-  // paths don't make file access. Keep this for now since src/chrome didn't
-  // check this.
-  bool disable_io_checks_;
 
   bool initialized_network_process_ = false;
 
