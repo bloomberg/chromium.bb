@@ -9,7 +9,7 @@
  */
 
 #include <string>
-
+#include "common/tools_common.h"
 #include "config/aom_config.h"
 #include "test/codec_factory.h"
 #include "test/decode_test_driver.h"
