@@ -21,6 +21,9 @@ class EventQueueTestHelper {
 
   void AckInFlightEvent();
 
+  // Forces |EventQueue::ack_timer_| to run now.
+  void RunAckTimer();
+
  private:
   EventQueue* event_queue_;
 

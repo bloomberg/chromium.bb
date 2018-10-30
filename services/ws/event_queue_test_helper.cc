@@ -34,4 +34,8 @@ void EventQueueTestHelper::AckInFlightEvent() {
   NOTREACHED();
 }
 
+void EventQueueTestHelper::RunAckTimer() {
+  event_queue_->ack_timer_.FireNow();
+}
+
 }  // namespace ws
