@@ -328,7 +328,7 @@ TypeConverter<PublicKeyCredentialDescriptorPtr,
 
   mojo_descriptor->type = ConvertTo<PublicKeyCredentialType>(descriptor.type());
   mojo_descriptor->id = ConvertTo<Vector<uint8_t>>(descriptor.id());
-  if (descriptor.hasTransports()) {
+  if (descriptor.hasTransports() && !descriptor.transports().IsEmpty()) {
     for (const auto& transport : descriptor.transports()) {
       mojo_descriptor->transports.push_back(
           ConvertTo<AuthenticatorTransport>(transport));
