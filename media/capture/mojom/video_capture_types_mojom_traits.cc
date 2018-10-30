@@ -1521,6 +1521,7 @@ bool StructTraits<media::mojom::VideoCaptureParamsDataView,
     return false;
   if (!data.ReadPowerLineFrequency(&out->power_line_frequency))
     return false;
+  out->enable_face_detection = data.enable_face_detection();
   return true;
 }
 

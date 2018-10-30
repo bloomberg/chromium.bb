@@ -292,6 +292,12 @@ struct CAPTURE_EXPORT VideoCaptureParams {
 
   // User-specified power line frequency.
   PowerLineFrequency power_line_frequency;
+
+  // Flag indicating if face detection should be enabled. This is for
+  // allowing the driver to apply appropriate settings for optimal
+  // exposures around the face area. Currently only applicable on
+  // Android platform with Camera2 driver support.
+  bool enable_face_detection;
 };
 
 }  // namespace media

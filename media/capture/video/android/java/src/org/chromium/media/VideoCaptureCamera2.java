@@ -936,6 +936,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
     private boolean mRedEyeReduction;
     private int mFillLightMode = AndroidFillLightMode.OFF;
     private boolean mTorch;
+    private boolean mEnableFaceDetection;
 
     // Service function to grab CameraCharacteristics and handle exceptions.
     private static CameraCharacteristics getCameraCharacteristics(int id) {
@@ -1010,6 +1011,14 @@ public class VideoCaptureCamera2 extends VideoCapture {
         }
 
         configureCommonCaptureSettings(mPreviewRequestBuilder);
+
+        // Overwrite settings to enable face detection.
+        if (mEnableFaceDetection) {
+            mPreviewRequestBuilder.set(
+                    CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_USE_SCENE_MODE);
+            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_SCENE_MODE,
+                    CameraMetadata.CONTROL_SCENE_MODE_FACE_PRIORITY);
+        }
 
         List<Surface> surfaceList = new ArrayList<Surface>(1);
         // TODO(mcasas): release this Surface when not needed, https://crbug.com/643884.
@@ -1336,7 +1345,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
     }
 
     @Override
-    public boolean allocate(int width, int height, int frameRate) {
+    public boolean allocate(int width, int height, int frameRate, boolean enableFaceDetection) {
         Log.d(TAG, "allocate: requested (%d x %d) @%dfps", width, height, frameRate);
         nativeDCheckCurrentlyOnIncomingTaskRunner(mNativeVideoCaptureDeviceAndroid);
         synchronized (mCameraStateLock) {
@@ -1389,6 +1398,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
         mInvertDeviceOrientationReadings =
                 cameraCharacteristics.get(CameraCharacteristics.LENS_FACING)
                 == CameraCharacteristics.LENS_FACING_BACK;
+
+        mEnableFaceDetection = enableFaceDetection;
         return true;
     }
 
