@@ -177,6 +177,11 @@ DebugDaemonClient* DBusThreadManager::GetDebugDaemonClient() {
                           : nullptr;
 }
 
+DiagnosticsdClient* DBusThreadManager::GetDiagnosticsdClient() {
+  return clients_browser_ ? clients_browser_->diagnosticsd_client_.get()
+                          : nullptr;
+}
+
 EasyUnlockClient* DBusThreadManager::GetEasyUnlockClient() {
   return clients_browser_ ? clients_browser_->easy_unlock_client_.get()
                           : nullptr;

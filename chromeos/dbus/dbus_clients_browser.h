@@ -25,6 +25,7 @@ class CiceroneClient;
 class ConciergeClient;
 class CrosDisksClient;
 class DebugDaemonClient;
+class DiagnosticsdClient;
 class EasyUnlockClient;
 class ImageBurnerClient;
 class ImageLoaderClient;
@@ -59,6 +60,7 @@ class CHROMEOS_EXPORT DBusClientsBrowser {
   std::unique_ptr<ConciergeClient> concierge_client_;
   std::unique_ptr<CrosDisksClient> cros_disks_client_;
   std::unique_ptr<DebugDaemonClient> debug_daemon_client_;
+  std::unique_ptr<DiagnosticsdClient> diagnosticsd_client_;
   std::unique_ptr<EasyUnlockClient> easy_unlock_client_;
   std::unique_ptr<ImageBurnerClient> image_burner_client_;
   std::unique_ptr<ImageLoaderClient> image_loader_client_;

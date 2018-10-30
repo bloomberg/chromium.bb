@@ -40,6 +40,7 @@ class DBusClientsBrowser;
 class DBusClientsCommon;
 class DBusThreadManagerSetter;
 class DebugDaemonClient;
+class DiagnosticsdClient;
 class EasyUnlockClient;
 class GsmSMSClient;
 class HammerdClient;
@@ -147,6 +148,7 @@ class CHROMEOS_EXPORT DBusThreadManager {
   CrosDisksClient* GetCrosDisksClient();
   CryptohomeClient* GetCryptohomeClient();
   DebugDaemonClient* GetDebugDaemonClient();
+  DiagnosticsdClient* GetDiagnosticsdClient();
   EasyUnlockClient* GetEasyUnlockClient();
   GsmSMSClient* GetGsmSMSClient();
   HammerdClient* GetHammerdClient();

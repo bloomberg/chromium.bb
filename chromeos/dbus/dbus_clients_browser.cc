@@ -16,6 +16,7 @@
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
+#include "chromeos/dbus/diagnosticsd_client.h"
 #include "chromeos/dbus/easy_unlock_client.h"
 #include "chromeos/dbus/fake_arc_appfuse_provider_client.h"
 #include "chromeos/dbus/fake_arc_midis_client.h"
@@ -25,6 +26,7 @@
 #include "chromeos/dbus/fake_cicerone_client.h"
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "chromeos/dbus/fake_debug_daemon_client.h"
+#include "chromeos/dbus/fake_diagnosticsd_client.h"
 #include "chromeos/dbus/fake_easy_unlock_client.h"
 #include "chromeos/dbus/fake_image_burner_client.h"
 #include "chromeos/dbus/fake_image_loader_client.h"
@@ -93,6 +95,11 @@ DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
     debug_daemon_client_.reset(new FakeDebugDaemonClient);
 
   if (use_real_clients)
+    diagnosticsd_client_ = DiagnosticsdClient::Create();
+  else
+    diagnosticsd_client_ = std::make_unique<FakeDiagnosticsdClient>();
+
+  if (use_real_clients)
     easy_unlock_client_.reset(EasyUnlockClient::Create());
   else
     easy_unlock_client_.reset(new FakeEasyUnlockClient);
@@ -152,6 +159,7 @@ void DBusClientsBrowser::Initialize(dbus::Bus* system_bus) {
   concierge_client_->Init(system_bus);
   cros_disks_client_->Init(system_bus);
   debug_daemon_client_->Init(system_bus);
+  diagnosticsd_client_->Init(system_bus);
   easy_unlock_client_->Init(system_bus);
   image_burner_client_->Init(system_bus);
   image_loader_client_->Init(system_bus);
