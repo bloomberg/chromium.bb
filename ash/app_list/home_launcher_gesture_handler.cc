@@ -209,8 +209,16 @@ bool HomeLauncherGestureHandler::OnScrollEvent(const gfx::Point& location,
 
 bool HomeLauncherGestureHandler::OnReleaseEvent(const gfx::Point& location,
                                                 bool* out_dragged_down) {
-  if (!IsDragInProgress())
+  if (!IsDragInProgress()) {
+    if (window_) {
+      // |window_| may not be nullptr when this release event is triggered by
+      // opening |window_| with modal dialog in OnPressEvent(). In that case,
+      // just leave the |window_| in show state and stop tracking.
+      RemoveObserversAndStopTracking();
+      return true;
+    }
     return false;
+  }
 
   last_event_location_ = base::make_optional(location);
   if (out_dragged_down) {
@@ -657,6 +665,13 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
   if (mode == Mode::kSlideDownToHide) {
     ScopedAnimationDisabler disable(window_);
     window_->Show();
+
+    // When |window_| has a modal dialog child, window_->Show() above would
+    // cancel the current gesture and trigger OnReleaseEvent() to reset
+    // |window_|.
+    if (!window_)
+      return false;
+
     wm::ActivateWindow(window_);
     window_->layer()->SetOpacity(1.f);
   }
