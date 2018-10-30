@@ -62,6 +62,26 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
 NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
     scoped_refptr<const NGPhysicalFragment> child,
     const NGLogicalOffset& child_offset) {
+  NGBreakToken* child_break_token = child->BreakToken();
+  if (child_break_token) {
+    switch (child->Type()) {
+      case NGPhysicalFragment::kFragmentBox:
+      case NGPhysicalFragment::kFragmentRenderedLegend:
+        child_break_tokens_.push_back(child_break_token);
+        break;
+      case NGPhysicalFragment::kFragmentLineBox:
+        // NGInlineNode produces multiple line boxes in an anonymous box. We
+        // won't know up front which line box to insert a fragment break before
+        // (due to widows), so keep them all until we know.
+        inline_break_tokens_.push_back(child_break_token);
+        break;
+      case NGPhysicalFragment::kFragmentText:
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+
   if (!has_last_resort_break_) {
     if (const auto* token = child->BreakToken()) {
       if (token->IsBlockType() &&

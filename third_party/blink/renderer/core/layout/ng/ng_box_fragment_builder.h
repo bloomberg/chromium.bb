@@ -74,12 +74,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     return *this;
   }
 
-  using NGContainerFragmentBuilder::AddChild;
-
-  // Our version of AddChild captures any child NGBreakTokens.
-  NGContainerFragmentBuilder& AddChild(scoped_refptr<const NGPhysicalFragment>,
-                                       const NGLogicalOffset&) final;
-
   // Remove all children.
   void RemoveChildren();
 
@@ -256,9 +250,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 
   // The break-after value of the previous in-flow sibling.
   EBreakBetween previous_break_after_ = EBreakBetween::kAuto;
-
-  NGBreakTokenVector child_break_tokens_;
-  NGBreakTokenVector inline_break_tokens_;
 
   Vector<NGBaseline> baselines_;
 

@@ -41,34 +41,6 @@ NGPhysicalFragment::NGBoxType BoxTypeFromLayoutObject(
 
 }  // namespace
 
-NGContainerFragmentBuilder& NGBoxFragmentBuilder::AddChild(
-    scoped_refptr<const NGPhysicalFragment> child,
-    const NGLogicalOffset& child_offset) {
-  switch (child->Type()) {
-    case NGPhysicalBoxFragment::kFragmentBox:
-    case NGPhysicalBoxFragment::kFragmentRenderedLegend:
-      if (child->BreakToken())
-        child_break_tokens_.push_back(child->BreakToken());
-      break;
-    case NGPhysicalBoxFragment::kFragmentLineBox:
-      // NGInlineNode produces multiple line boxes in an anonymous box. We won't
-      // know up front which line box to insert a fragment break before (due to
-      // widows), so keep them all until we know.
-      DCHECK(child->BreakToken());
-      DCHECK(child->BreakToken()->InputNode() == node_);
-      inline_break_tokens_.push_back(child->BreakToken());
-      break;
-    case NGPhysicalBoxFragment::kFragmentText:
-      DCHECK(!child->BreakToken());
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-
-  return NGContainerFragmentBuilder::AddChild(std::move(child), child_offset);
-}
-
 void NGBoxFragmentBuilder::RemoveChildren() {
   child_break_tokens_.resize(0);
   inline_break_tokens_.resize(0);
