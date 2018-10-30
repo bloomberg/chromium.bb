@@ -856,10 +856,16 @@ void ArcAppListPrefs::SetDefaultAppsFilterLevel() {
   // Match this requirement and don't show pre-installed apps for managed users
   // in app list.
   if (arc::policy_util::IsAccountManaged(profile_)) {
-    default_apps_->set_filter_level(
-        arc::IsArcPlayStoreEnabledForProfile(profile_)
-            ? ArcDefaultAppList::FilterLevel::OPTIONAL_APPS
-            : ArcDefaultAppList::FilterLevel::ALL);
+    if (profile_->IsChild()) {
+      // For child accounts, filter only optional apps.
+      default_apps_->set_filter_level(
+          ArcDefaultAppList::FilterLevel::OPTIONAL_APPS);
+    } else {
+      default_apps_->set_filter_level(
+          arc::IsArcPlayStoreEnabledForProfile(profile_)
+              ? ArcDefaultAppList::FilterLevel::OPTIONAL_APPS
+              : ArcDefaultAppList::FilterLevel::ALL);
+    }
   } else {
     default_apps_->set_filter_level(ArcDefaultAppList::FilterLevel::NOTHING);
   }
