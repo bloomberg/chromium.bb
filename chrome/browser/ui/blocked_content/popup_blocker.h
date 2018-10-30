@@ -19,6 +19,8 @@ struct NavigateParams;
 
 // Classifies what caused a popup to be blocked.
 enum class PopupBlockType {
+  kNotBlocked,
+
   // Popup blocked due to no user gesture.
   kNoGesture,
   // Popup blocked due to the abusive popup blocker.
