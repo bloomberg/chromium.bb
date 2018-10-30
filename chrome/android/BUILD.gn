@@ -228,6 +228,16 @@ android_aidl("photo_picker_aidl") {
   ]
 }
 
+java_cpp_template("vr_build_config") {
+  package_path = "org/chromium/chrome/browser/vr"
+  sources = [
+    "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrBuildConfig.template",
+  ]
+  if (enable_vr) {
+    defines = [ "ENABLE_VR" ]
+  }
+}
+
 android_library("chrome_java") {
   deps = [
     ":chrome_app_java_resources",
@@ -379,6 +389,7 @@ android_library("chrome_java") {
     "//components/signin/core/browser:investigated_scenario_java",
     "//components/supervised_user_error_page:enums_srcjar",
     "//components/ui_metrics:ui_metrics_enums_java",
+    ":vr_build_config",
   ]
 
   android_manifest_for_lint = chrome_public_android_manifest

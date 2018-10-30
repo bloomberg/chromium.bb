@@ -1424,6 +1424,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         maybeRemoveWindowBackground();
         DownloadManagerService.getDownloadManagerService().onActivityLaunched();
 
+        VrModuleProvider.maybeInit();
         VrModuleProvider.getDelegate().onNativeLibraryAvailable();
         if (getSavedInstanceState() == null && getIntent() != null) {
             VrModuleProvider.getDelegate().onNewIntentWithNative(this, getIntent());
