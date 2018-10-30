@@ -299,10 +299,10 @@
     "messages": [24050],
   },
   "ash/components/resources/ash_components_resources.grd": {
-    "structures": [24250],
+    "structures": [24270],
   },
   "ash/public/cpp/resources/ash_public_unscaled_resources.grd": {
-    "includes": [24260],
+    "includes": [24280],
   },
   "ash/shell/ash_shell_resources.grd": {
     "includes": [24290],
