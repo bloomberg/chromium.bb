@@ -95,6 +95,9 @@ interface DriveFsDelegate {
 
   // Invoked whenever a Team Drive root changes or gets deleted.
   OnTeamDriveChanged(string team_drive_id, CreateOrDelete change_type);
+
+  // Invoked from time to time to indicate that drivefs is operational.
+  OnHeartbeat();
 };
 
 struct DriveFsConfiguration {
