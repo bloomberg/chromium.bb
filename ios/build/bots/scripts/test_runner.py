@@ -944,22 +944,22 @@ class SimulatorTestRunner(TestRunner):
 
     # TODO(crbug.com/892381): Remove this debug logging
     print 'ERICALE copy_trusted_certificate DEBUG START'
-    print os.path.expanduser('~')
-    print glob.glob(
+    simLocs = glob.glob(
         '{}/Library/Developer/CoreSimulator/Devices/*/data/Library/'.
         format(os.path.expanduser('~')))
-    print glob.glob(
-        '/Users/chrome-bot/Library/Developer/CoreSimulator/Devices/*/data/Library/'.
-        format(os.path.expanduser('~')))
-    print subprocess.check_output(['ls', '-lsr', '/Users/chrome-bot/Library/Developer/CoreSimulator/Devices'])
+    for loc in simLocs:
+      print loc
+      print subprocess.check_output(['ls', '-lsr', loc])
+      print "--"
     print 'ERICALE copy_trusted_certificate DEBUG END'
 
     trustStores = glob.glob(
-        '{}/Library/Developer/CoreSimulator/Devices/*/data/Library/Keychains/{}'.
-        format(os.path.expanduser('~'), 'TrustStore.sqlite3'))
+        '{}/Library/Developer/CoreSimulator/Devices/*/data/Library'.
+        format(os.path.expanduser('~')))
     for trustStore in trustStores:
       print 'Copying TrustStore to {}'.format(trustStore)
-      shutil.copy(cert_path, trustStore)
+      os.makedirs(trustStore + "/Keychains/",exist_ok=True)
+      shutil.copy(cert_path, trustStore + "/Keychains/TrustStore.sqlite3")
 
 
 class WprProxySimulatorTestRunner(SimulatorTestRunner):
