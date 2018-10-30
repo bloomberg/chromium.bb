@@ -1719,6 +1719,11 @@ static const CSSValue& ComputeRegisteredPropertyValue(
       return *CSSPrimitiveValue::Create(primitive_value.ComputeDegrees(),
                                         CSSPrimitiveValue::UnitType::kDegrees);
     }
+
+    if (primitive_value.IsTime()) {
+      return *CSSPrimitiveValue::Create(primitive_value.ComputeSeconds(),
+                                        CSSPrimitiveValue::UnitType::kSeconds);
+    }
   }
 
   if (value.IsIdentifierValue()) {
