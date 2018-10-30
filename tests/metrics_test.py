@@ -40,6 +40,8 @@ class MetricsCollectorTest(unittest.TestCase):
     self.FileWrite = mock.Mock()
     self.FileRead = mock.Mock()
 
+    # So that we don't have to update the tests everytime we change the version.
+    mock.patch('metrics.metrics_utils.CURRENT_VERSION', 0).start()
     mock.patch('metrics.urllib2', self.urllib2).start()
     mock.patch('metrics.subprocess.Popen', self.Popen).start()
     mock.patch('metrics.gclient_utils.FileWrite', self.FileWrite).start()
