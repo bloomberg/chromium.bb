@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/profiles/incognito_window_count_view.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -152,10 +153,17 @@ void AvatarToolbarButton::NotifyClick(const ui::Event& event) {
   // TODO(bsep): Other toolbar buttons have ToolbarView as a listener and let it
   // call ExecuteCommandWithDisposition on their behalf. Unfortunately, it's not
   // possible to plumb IsKeyEvent through, so this has to be a special case.
-  browser_->window()->ShowAvatarBubbleFromAvatarButton(
-      BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT, signin::ManageAccountsParams(),
-      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
-      event.IsKeyEvent());
+  if (IsIncognitoCounterActive()) {
+    IncognitoWindowCountView::ShowBubble(
+        this, browser_,
+        BrowserList::GetIncognitoSessionsActiveForProfile(profile_));
+  } else {
+    browser_->window()->ShowAvatarBubbleFromAvatarButton(
+        BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT,
+        signin::ManageAccountsParams(),
+        signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
+        event.IsKeyEvent());
+  }
 }
 
 void AvatarToolbarButton::OnAvatarErrorChanged() {
