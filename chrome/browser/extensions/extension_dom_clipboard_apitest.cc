@@ -4,6 +4,7 @@
 
 #include "base/feature_list.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -98,7 +99,13 @@ IN_PROC_BROWSER_TEST_F(ClipboardApiTest, Extension) {
   ASSERT_TRUE(RunExtensionTest("clipboard/extension")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ClipboardApiTest, ExtensionNoPermission) {
+// Flaky on Mac. See https://crbug.com/900301.
+#if defined(OS_MACOSX)
+#define MAYBE_ExtensionNoPermission DISABLED_ExtensionNoPermission
+#else
+#define MAYBE_ExtensionNoPermission ExtensionNoPermission
+#endif
+IN_PROC_BROWSER_TEST_F(ClipboardApiTest, MAYBE_ExtensionNoPermission) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("clipboard/extension_no_permission"))
       << message_;
