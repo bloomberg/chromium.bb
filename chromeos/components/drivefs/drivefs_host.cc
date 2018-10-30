@@ -281,6 +281,13 @@ class DriveFsHost::MountState
     token_fetch_attempted_ = true;
   }
 
+  void OnHeartbeat() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
+    if (host_->timer_->IsRunning()) {
+      host_->timer_->Reset();
+    }
+  }
+
   void OnMounted() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
     drivefs_has_mounted_ = true;
