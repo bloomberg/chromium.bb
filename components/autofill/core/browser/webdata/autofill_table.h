@@ -527,6 +527,7 @@ class AutofillTable : public WebDatabaseTable,
   bool MigrateToVersion75AddProfileValidityBitfieldColumn();
   bool MigrateToVersion78AddModelTypeColumns();
   bool MigrateToVersion80AddIsClientValidityStatesUpdatedColumn();
+  bool MigrateToVersion81CleanUpWrongModelTypeData();
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.
   // Copied to components/autofill/ios/browser/resources/autofill_controller.js.
