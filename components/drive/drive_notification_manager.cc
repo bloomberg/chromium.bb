@@ -107,7 +107,8 @@ void DriveNotificationManager::OnIncomingInvalidation(
       unpacked_id = id.name().substr(kTeamDriveChangePrefixLength);
     }
     auto invalidations = invalidation_map.ForObject(id);
-    int64_t& invalidation_version = invalidated_change_ids_[unpacked_id] = -1;
+    int64_t& invalidation_version =
+        invalidated_change_ids_.emplace(unpacked_id, -1).first->second;
     for (auto& invalidation : invalidations) {
       if (!invalidation.is_unknown_version() &&
           invalidation.version() > invalidation_version) {
@@ -189,6 +190,13 @@ void DriveNotificationManager::NotifyObserversToUpdate(
   DVLOG(1) << "Notifying observers: " << NotificationSourceToString(source);
 
   if (source == NOTIFICATION_XMPP) {
+    auto my_drive_invalidation = invalidations.find("");
+    if (my_drive_invalidation != invalidations.end() &&
+        my_drive_invalidation->second != -1) {
+      // The invalidation version for My Drive is smaller than what's expected
+      // for fetch requests by 1. Increment it unless it hasn't been set.
+      ++my_drive_invalidation->second;
+    }
     for (auto& observer : observers_)
       observer.OnNotificationReceived(invalidations);
   } else {
@@ -249,7 +257,7 @@ void DriveNotificationManager::OnBatchTimerExpired() {
   std::map<std::string, int64_t> change_ids_to_update;
   invalidated_change_ids_.swap(change_ids_to_update);
   if (!change_ids_to_update.empty()) {
-    NotifyObserversToUpdate(NOTIFICATION_XMPP, change_ids_to_update);
+    NotifyObserversToUpdate(NOTIFICATION_XMPP, std::move(change_ids_to_update));
   }
 }
 
