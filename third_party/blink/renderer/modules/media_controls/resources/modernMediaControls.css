@@ -659,11 +659,10 @@ video::-internal-media-controls-overflow-menu-list-item {
   padding-right: 16px;
 }
 
-video::-webkit-media-controls.sizing-small div[pseudo="-internal-media-controls-overflow-menu-list" i],
-video::-webkit-media-controls.sizing-medium div[pseudo="-internal-media-controls-overflow-menu-list" i] {
-  min-width: 180px;
-  max-width: 180px;
-  max-height: 250px;
+video::-internal-media-controls-text-track-list,
+video::-internal-media-controls-overflow-menu-list {
+  max-width: 260px;
+  width: 95%;
 }
 
 video::-webkit-media-controls.sizing-small label[pseudo="-internal-media-controls-overflow-menu-list-item" i] input,
