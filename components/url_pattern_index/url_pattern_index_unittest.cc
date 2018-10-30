@@ -30,7 +30,7 @@ class UrlPatternIndexTest : public ::testing::Test {
 
  protected:
   bool AddUrlRule(const proto::UrlRule& rule) {
-    auto offset = SerializeUrlRule(rule, flat_builder_.get());
+    auto offset = SerializeUrlRule(rule, flat_builder_.get(), &domain_map_);
     if (offset.o)
       index_builder_->IndexUrlRule(offset);
     return !!offset.o;
@@ -98,12 +98,15 @@ class UrlPatternIndexTest : public ::testing::Test {
     index_builder_.reset();
     flat_builder_.reset(new flatbuffers::FlatBufferBuilder());
     index_builder_.reset(new UrlPatternIndexBuilder(flat_builder_.get()));
+    domain_map_.clear();
   }
 
  private:
   std::unique_ptr<flatbuffers::FlatBufferBuilder> flat_builder_;
   std::unique_ptr<UrlPatternIndexBuilder> index_builder_;
   std::unique_ptr<UrlPatternIndexMatcher> index_matcher_;
+
+  FlatDomainMap domain_map_;
 
   DISALLOW_COPY_AND_ASSIGN(UrlPatternIndexTest);
 };
