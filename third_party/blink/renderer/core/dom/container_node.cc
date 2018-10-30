@@ -1042,7 +1042,7 @@ void ContainerNode::FocusStateChanged() {
   SetNeedsStyleRecalc(
       change_type,
       StyleChangeReasonForTracing::CreateWithExtraData(
-          style_change_reason::kPseudoClass, StyleChangeExtraData::g_focus));
+          style_change_reason::kPseudoClass, style_change_extra_data::g_focus));
 
   if (IsElementNode() && ToElement(this)->ChildrenOrSiblingsAffectedByFocus())
     ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoFocus);
@@ -1062,7 +1062,7 @@ void ContainerNode::FocusVisibleStateChanged() {
   SetNeedsStyleRecalc(change_type,
                       StyleChangeReasonForTracing::CreateWithExtraData(
                           style_change_reason::kPseudoClass,
-                          StyleChangeExtraData::g_focus_visible));
+                          style_change_extra_data::g_focus_visible));
 
   if (IsElementNode() &&
       ToElement(this)->ChildrenOrSiblingsAffectedByFocusVisible())
@@ -1078,7 +1078,7 @@ void ContainerNode::FocusWithinStateChanged() {
     SetNeedsStyleRecalc(change_type,
                         StyleChangeReasonForTracing::CreateWithExtraData(
                             style_change_reason::kPseudoClass,
-                            StyleChangeExtraData::g_focus_within));
+                            style_change_extra_data::g_focus_within));
   }
   if (IsElementNode() &&
       ToElement(this)->ChildrenOrSiblingsAffectedByFocusWithin())
@@ -1118,10 +1118,10 @@ void ContainerNode::SetFocused(bool received, WebFocusType focus_type) {
   if (IsElementNode() && ToElement(this)->ChildrenOrSiblingsAffectedByFocus()) {
     ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoFocus);
   } else {
-    SetNeedsStyleRecalc(
-        kLocalStyleChange,
-        StyleChangeReasonForTracing::CreateWithExtraData(
-            style_change_reason::kPseudoClass, StyleChangeExtraData::g_focus));
+    SetNeedsStyleRecalc(kLocalStyleChange,
+                        StyleChangeReasonForTracing::CreateWithExtraData(
+                            style_change_reason::kPseudoClass,
+                            style_change_extra_data::g_focus));
   }
 
   if (RuntimeEnabledFeatures::CSSFocusVisibleEnabled()) {
@@ -1132,7 +1132,7 @@ void ContainerNode::SetFocused(bool received, WebFocusType focus_type) {
       SetNeedsStyleRecalc(kLocalStyleChange,
                           StyleChangeReasonForTracing::CreateWithExtraData(
                               style_change_reason::kPseudoClass,
-                              StyleChangeExtraData::g_focus_visible));
+                              style_change_extra_data::g_focus_visible));
     }
   }
 
@@ -1143,7 +1143,7 @@ void ContainerNode::SetFocused(bool received, WebFocusType focus_type) {
     SetNeedsStyleRecalc(kLocalStyleChange,
                         StyleChangeReasonForTracing::CreateWithExtraData(
                             style_change_reason::kPseudoClass,
-                            StyleChangeExtraData::g_focus_within));
+                            style_change_extra_data::g_focus_within));
   }
 }
 
@@ -1169,7 +1169,7 @@ void ContainerNode::SetActive(bool down) {
       SetNeedsStyleRecalc(kLocalStyleChange,
                           StyleChangeReasonForTracing::CreateWithExtraData(
                               style_change_reason::kPseudoClass,
-                              StyleChangeExtraData::g_active));
+                              style_change_extra_data::g_active));
     }
     return;
   }
@@ -1179,10 +1179,10 @@ void ContainerNode::SetActive(bool down) {
         GetComputedStyle()->HasPseudoStyle(kPseudoIdFirstLetter)
             ? kSubtreeStyleChange
             : kLocalStyleChange;
-    SetNeedsStyleRecalc(
-        change_type,
-        StyleChangeReasonForTracing::CreateWithExtraData(
-            style_change_reason::kPseudoClass, StyleChangeExtraData::g_active));
+    SetNeedsStyleRecalc(change_type,
+                        StyleChangeReasonForTracing::CreateWithExtraData(
+                            style_change_reason::kPseudoClass,
+                            style_change_extra_data::g_active));
   }
   if (IsElementNode() && ToElement(this)->ChildrenOrSiblingsAffectedByActive())
     ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoActive);
@@ -1206,10 +1206,10 @@ void ContainerNode::SetDragged(bool new_value) {
       ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoDrag);
 
     } else {
-      SetNeedsStyleRecalc(
-          kLocalStyleChange,
-          StyleChangeReasonForTracing::CreateWithExtraData(
-              style_change_reason::kPseudoClass, StyleChangeExtraData::g_drag));
+      SetNeedsStyleRecalc(kLocalStyleChange,
+                          StyleChangeReasonForTracing::CreateWithExtraData(
+                              style_change_reason::kPseudoClass,
+                              style_change_extra_data::g_drag));
     }
     return;
   }
@@ -1219,10 +1219,10 @@ void ContainerNode::SetDragged(bool new_value) {
         GetComputedStyle()->HasPseudoStyle(kPseudoIdFirstLetter)
             ? kSubtreeStyleChange
             : kLocalStyleChange;
-    SetNeedsStyleRecalc(
-        change_type,
-        StyleChangeReasonForTracing::CreateWithExtraData(
-            style_change_reason::kPseudoClass, StyleChangeExtraData::g_drag));
+    SetNeedsStyleRecalc(change_type,
+                        StyleChangeReasonForTracing::CreateWithExtraData(
+                            style_change_reason::kPseudoClass,
+                            style_change_extra_data::g_drag));
   }
   if (IsElementNode() && ToElement(this)->ChildrenOrSiblingsAffectedByDrag())
     ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoDrag);
@@ -1239,10 +1239,10 @@ void ContainerNode::SetHovered(bool over) {
     StyleChangeType change_type = kLocalStyleChange;
     if (style && style->HasPseudoStyle(kPseudoIdFirstLetter))
       change_type = kSubtreeStyleChange;
-    SetNeedsStyleRecalc(
-        change_type,
-        StyleChangeReasonForTracing::CreateWithExtraData(
-            style_change_reason::kPseudoClass, StyleChangeExtraData::g_hover));
+    SetNeedsStyleRecalc(change_type,
+                        StyleChangeReasonForTracing::CreateWithExtraData(
+                            style_change_reason::kPseudoClass,
+                            style_change_extra_data::g_hover));
   }
   if (IsElementNode() && ToElement(this)->ChildrenOrSiblingsAffectedByHover())
     ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoHover);

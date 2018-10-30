@@ -53,7 +53,7 @@ extern const char kZoom[];
 }  // namespace style_change_reason
 typedef const char StyleChangeReasonString[];
 
-namespace StyleChangeExtraData {
+namespace style_change_extra_data {
 extern const AtomicString& g_active;
 extern const AtomicString& g_disabled;
 extern const AtomicString& g_drag;
@@ -65,7 +65,7 @@ extern const AtomicString& g_past;
 extern const AtomicString& g_unresolved;
 
 void Init();
-}  // namespace StyleChangeExtraData
+}  // namespace style_change_extra_data
 
 // |StyleChangeReasonForTracing| is used to trace the reason a
 // |Node::setNeedsStyleRecalc| call was made to show it in DevTools or in

@@ -133,7 +133,7 @@ void CoreInitializer::Initialize() {
   MediaQueryEvaluator::Init();
   CSSParserTokenRange::InitStaticEOFToken();
 
-  StyleChangeExtraData::Init();
+  style_change_extra_data::Init();
 
   KURL::Initialize();
   SchemeRegistry::Initialize();

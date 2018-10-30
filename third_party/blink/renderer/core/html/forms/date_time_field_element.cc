@@ -196,10 +196,10 @@ float DateTimeFieldElement::MaximumWidth(const ComputedStyle&) {
 void DateTimeFieldElement::SetDisabled() {
   // Set HTML attribute disabled to change apperance.
   SetBooleanAttribute(kDisabledAttr, true);
-  SetNeedsStyleRecalc(
-      kSubtreeStyleChange,
-      StyleChangeReasonForTracing::CreateWithExtraData(
-          style_change_reason::kPseudoClass, StyleChangeExtraData::g_disabled));
+  SetNeedsStyleRecalc(kSubtreeStyleChange,
+                      StyleChangeReasonForTracing::CreateWithExtraData(
+                          style_change_reason::kPseudoClass,
+                          style_change_extra_data::g_disabled));
 }
 
 bool DateTimeFieldElement::SupportsFocus() const {
