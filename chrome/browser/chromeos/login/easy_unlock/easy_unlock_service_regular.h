@@ -164,10 +164,6 @@ class EasyUnlockServiceRegular
   void OnTurnOffEasyUnlockSuccess();
   void OnTurnOffEasyUnlockFailure();
 
-  // Called with the user's credentials (e.g. username and password) after the
-  // user reauthenticates to begin setup.
-  void OpenSetupAppAfterReauth(const UserContext& user_context);
-
   // Called after a cryptohome RemoveKey or RefreshKey operation to set the
   // proper hardlock state if the operation is successful.
   void SetHardlockAfterKeyOperation(
