@@ -4448,6 +4448,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(ash::features::kNotificationExpansionAnimation)},
 
 #endif  // defined(OS_CHROMEOS)
+
+    {"enable-data-reduction-proxy-with-network-service",
+     flag_descriptions::kEnableDataReductionProxyNetworkServiceName,
+     flag_descriptions::kEnableDataReductionProxyNetworkServiceDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(data_reduction_proxy::features::
+                            kDataReductionProxyEnabledWithNetworkService)},
 };
 
 class FlagsStateSingleton {

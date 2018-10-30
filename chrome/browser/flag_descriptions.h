@@ -332,6 +332,8 @@ extern const char kDataReductionProxyServerAlternative7[];
 extern const char kDataReductionProxyServerAlternative8[];
 extern const char kDataReductionProxyServerAlternative9[];
 extern const char kDataReductionProxyServerAlternative10[];
+extern const char kEnableDataReductionProxyNetworkServiceName[];
+extern const char kEnableDataReductionProxyNetworkServiceDescription[];
 extern const char kEnableDataReductionProxyServerExperimentName[];
 extern const char kEnableDataReductionProxyServerExperimentDescription[];
 
