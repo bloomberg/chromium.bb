@@ -418,6 +418,11 @@ public class FeedNewTabPage extends NewTabPage {
     }
 
     @VisibleForTesting
+    public static boolean isDummy() {
+        return false;
+    }
+
+    @VisibleForTesting
     FeedNewTabPageMediator getMediatorForTesting() {
         return mMediator;
     }

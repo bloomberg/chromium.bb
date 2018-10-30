@@ -8,8 +8,7 @@ import android.accounts.Account;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
-import com.google.android.libraries.feed.common.functional.Consumer;
-
+import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
@@ -317,7 +316,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         private final AutofillAssistantUiDelegate mUiDelegate;
 
         private boolean mShouldQueueUiOperations = false;
-        private final ArrayList<Consumer<AutofillAssistantUiDelegate>> mPendingUiOperations =
+        private final ArrayList<Callback<AutofillAssistantUiDelegate>> mPendingUiOperations =
                 new ArrayList<>();
 
         private UiDelegateHolder(AutofillAssistantUiDelegate uiDelegate) {
@@ -333,13 +332,13 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         }
 
         /**
-         * Unpause and trigger all UI operations received by {@link #performUiOperation(Consumer)}
+         * Unpause and trigger all UI operations received by {@link #performUiOperation(Callback)}
          * since the last {@link #pauseUiOperations()}.
          */
         public void unpauseUiOperations() {
             mShouldQueueUiOperations = false;
             for (int i = 0; i < mPendingUiOperations.size(); i++) {
-                mPendingUiOperations.get(i).accept(mUiDelegate);
+                mPendingUiOperations.get(i).onResult(mUiDelegate);
             }
             mPendingUiOperations.clear();
         }
@@ -350,13 +349,13 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
          *  - later if the shutdown is cancelled.
          *  - never if Autofill Assistant is shut down.
          */
-        public void performUiOperation(Consumer<AutofillAssistantUiDelegate> operation) {
+        public void performUiOperation(Callback<AutofillAssistantUiDelegate> operation) {
             if (mShouldQueueUiOperations) {
                 mPendingUiOperations.add(operation);
                 return;
             }
 
-            operation.accept(mUiDelegate);
+            operation.onResult(mUiDelegate);
         }
     }
 

@@ -51,6 +51,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.feed.FeedNewTabPage;
 import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
 import org.chromium.chrome.browser.feed.TestNetworkClient;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
@@ -94,6 +95,7 @@ import org.chromium.ui.base.PageTransition;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -121,8 +123,15 @@ public class NewTabPageTest {
     public static class InterestFeedParams implements ParameterProvider {
         @Override
         public Iterable<ParameterSet> getParameters() {
-            return Arrays.asList(new ParameterSet().value(false).name("DisableInterestFeed"),
-                    new ParameterSet().value(true).name("EnableInterestFeed"));
+            // Don't run tests for the dummy version of the FeedNewTabPage because content
+            // suggestions dependencies may not be initialized.
+            if (FeedNewTabPage.isDummy()) {
+                return Collections.singletonList(
+                        new ParameterSet().value(false).name("DisableInterestFeed"));
+            } else {
+                return Arrays.asList(new ParameterSet().value(false).name("DisableInterestFeed"),
+                        new ParameterSet().value(true).name("EnableInterestFeed"));
+            }
         }
     }
 

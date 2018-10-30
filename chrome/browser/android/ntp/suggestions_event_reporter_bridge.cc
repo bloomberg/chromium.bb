@@ -28,15 +28,19 @@ using ntp_snippets::UserClassifier;
 
 namespace {
 
-UserClassifier* GetUserClassifier() {
+void NotifyEvent(UserClassifier::Metric metric) {
   ntp_snippets::ContentSuggestionsService* content_suggestions_service =
       ContentSuggestionsServiceFactory::GetForProfile(
           ProfileManager::GetLastUsedProfile());
   // Can maybe be null in some cases? (Incognito profile?) crbug.com/647920
-  if (!content_suggestions_service) {
-    return nullptr;
+  UserClassifier* user_classifier =
+      content_suggestions_service
+          ? content_suggestions_service->user_classifier()
+          : nullptr;
+
+  if (user_classifier) {
+    user_classifier->OnEvent(metric);
   }
-  return content_suggestions_service->user_classifier();
 }
 
 }  // namespace
@@ -76,7 +80,7 @@ static void JNI_SuggestionsEventReporterBridge_OnPageShown(
 
   ntp_snippets::metrics::OnPageShown(categories, suggestions_per_category,
                                      is_category_visible);
-  GetUserClassifier()->OnEvent(UserClassifier::Metric::NTP_OPENED);
+  NotifyEvent(UserClassifier::Metric::NTP_OPENED);
 }
 
 static void JNI_SuggestionsEventReporterBridge_OnSuggestionShown(
@@ -93,7 +97,7 @@ static void JNI_SuggestionsEventReporterBridge_OnSuggestionShown(
       position_in_category, base::Time::FromJavaTime(publish_timestamp_ms),
       score, base::Time::FromJavaTime(fetch_timestamp_ms));
   if (global_position == 0) {
-    GetUserClassifier()->OnEvent(UserClassifier::Metric::SUGGESTIONS_SHOWN);
+    NotifyEvent(UserClassifier::Metric::SUGGESTIONS_SHOWN);
   }
 }
 
@@ -155,7 +159,7 @@ static void JNI_SuggestionsEventReporterBridge_OnMoreButtonClicked(
     jint position) {
   ntp_snippets::metrics::OnMoreButtonClicked(
       Category::FromIDValue(j_category_id), position);
-  GetUserClassifier()->OnEvent(UserClassifier::Metric::SUGGESTIONS_USED);
+  NotifyEvent(UserClassifier::Metric::SUGGESTIONS_USED);
 }
 
 static void JNI_SuggestionsEventReporterBridge_OnSurfaceOpened(
