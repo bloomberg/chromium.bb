@@ -7,11 +7,14 @@
 
 #include "cc/layers/video_frame_provider.h"
 #include "components/viz/common/surfaces/surface_id.h"
-#include "media/base/video_rotation.h"
 #include "third_party/blink/public/platform/web_common.h"
 
 namespace cc {
 class LayerTreeSettings;
+}
+
+namespace media {
+enum VideoRotation : int;
 }
 
 namespace viz {
