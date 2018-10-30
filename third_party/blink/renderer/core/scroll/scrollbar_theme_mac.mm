@@ -104,6 +104,11 @@
 
 namespace blink {
 
+static float s_initial_button_delay = 0.5f;
+static float s_autoscroll_button_delay = 0.05f;
+static NSScrollerStyle s_preferred_scroller_style = NSScrollerStyleLegacy;
+static bool s_jump_on_track_click = false;
+
 typedef HeapHashSet<WeakMember<Scrollbar>> ScrollbarSet;
 
 static ScrollbarSet& GetScrollbarSet() {
@@ -130,7 +135,6 @@ static bool SupportsExpandedScrollbars() {
 }
 
 ScrollbarThemeMac::ScrollbarThemeMac() {
-  WebScrollbarTheme::RegisterClient(*this);
 }
 
 ScrollbarTheme& ScrollbarTheme::NativeTheme() {
@@ -151,19 +155,18 @@ bool ScrollbarThemeMac::ShouldCenterOnThumb(const Scrollbar& scrollbar,
                                             const WebMouseEvent& event) {
   bool alt_key_pressed = event.GetModifiers() & WebInputEvent::kAltKey;
   return (event.button == WebPointerProperties::Button::kLeft) &&
-         (WebScrollbarTheme::JumpOnTrackClick() != alt_key_pressed);
+         (s_jump_on_track_click != alt_key_pressed);
 }
 
 ScrollbarThemeMac::~ScrollbarThemeMac() {
-  WebScrollbarTheme::UnregisterClient(*this);
 }
 
 TimeDelta ScrollbarThemeMac::InitialAutoscrollTimerDelay() {
-  return TimeDelta::FromSecondsD(WebScrollbarTheme::InitialButtonDelay());
+  return TimeDelta::FromSecondsD(s_initial_button_delay);
 }
 
 TimeDelta ScrollbarThemeMac::AutoscrollTimerDelay() {
-  return TimeDelta::FromSecondsD(WebScrollbarTheme::AutoscrollButtonDelay());
+  return TimeDelta::FromSecondsD(s_autoscroll_button_delay);
 }
 
 bool ScrollbarThemeMac::ShouldDragDocumentInsteadOfThumb(
@@ -412,10 +415,22 @@ float ScrollbarThemeMac::ThumbOpacity(const Scrollbar& scrollbar) const {
   return [scrollbar_painter knobAlpha];
 }
 
-void ScrollbarThemeMac::PreferencesChanged() {
-  for (const auto& scrollbar : GetScrollbarSet()) {
-    scrollbar->StyleChanged();
-    scrollbar->SetNeedsPaintInvalidation(kAllParts);
+// static
+void ScrollbarThemeMac::UpdateScrollbarsWithNSDefaults(
+    float initial_button_delay,
+    float autoscroll_button_delay,
+    NSScrollerStyle preferred_scroller_style,
+    bool redraw,
+    bool jump_on_track_click) {
+  s_initial_button_delay = initial_button_delay;
+  s_autoscroll_button_delay = autoscroll_button_delay;
+  s_preferred_scroller_style = preferred_scroller_style;
+  s_jump_on_track_click = jump_on_track_click;
+  if (redraw) {
+    for (const auto& scrollbar : GetScrollbarSet()) {
+      scrollbar->StyleChanged();
+      scrollbar->SetNeedsPaintInvalidation(kAllParts);
+    }
   }
 }
 
@@ -423,8 +438,7 @@ void ScrollbarThemeMac::PreferencesChanged() {
 NSScrollerStyle ScrollbarThemeMac::RecommendedScrollerStyle() {
   if (RuntimeEnabledFeatures::OverlayScrollbarsEnabled())
     return NSScrollerStyleOverlay;
-  return static_cast<NSScrollerStyle>(
-      WebScrollbarTheme::PreferredScrollerStyle());
+  return s_preferred_scroller_style;
 }
 
 }  // namespace blink
