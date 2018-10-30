@@ -22,10 +22,13 @@ RasterDecoderContextState::RasterDecoderContextState(
     scoped_refptr<gl::GLShareGroup> share_group,
     scoped_refptr<gl::GLSurface> surface,
     scoped_refptr<gl::GLContext> context,
-    bool use_virtualized_gl_contexts)
+    bool use_virtualized_gl_contexts,
+    GrContext* vulkan_gr_context)
     : share_group(std::move(share_group)),
       surface(std::move(surface)),
       context(std::move(context)),
+      gr_context(vulkan_gr_context),
+      use_vulkan_gr_context(!!gr_context),
       use_virtualized_gl_contexts(use_virtualized_gl_contexts) {
   if (base::ThreadTaskRunnerHandle::IsSet()) {
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
@@ -45,52 +48,54 @@ void RasterDecoderContextState::InitializeGrContext(
     GrContextOptions::PersistentCache* cache,
     GpuProcessActivityFlags* activity_flags,
     gl::ProgressReporter* progress_reporter) {
-  DCHECK(context->IsCurrent(surface.get()));
+  if (!use_vulkan_gr_context) {
+    DCHECK(context->IsCurrent(surface.get()));
 
-  sk_sp<GrGLInterface> interface(gl::init::CreateGrGLInterface(
-      *context->GetVersionInfo(), workarounds.use_es2_for_oopr,
-      progress_reporter));
-  if (!interface) {
-    LOG(ERROR) << "OOP raster support disabled: GrGLInterface creation "
-                  "failed.";
-    return;
+    sk_sp<GrGLInterface> interface(gl::init::CreateGrGLInterface(
+        *context->GetVersionInfo(), workarounds.use_es2_for_oopr,
+        progress_reporter));
+    if (!interface) {
+      LOG(ERROR) << "OOP raster support disabled: GrGLInterface creation "
+                    "failed.";
+      return;
+    }
+
+    if (activity_flags && cache) {
+      // |activity_flags| is safe to capture here since it must outlive the
+      // this context state.
+      interface->fFunctions.fProgramBinary =
+          [activity_flags](GrGLuint program, GrGLenum binaryFormat,
+                           void* binary, GrGLsizei length) {
+            GpuProcessActivityFlags::ScopedSetFlag scoped_set_flag(
+                activity_flags, ActivityFlagsBase::FLAG_LOADING_PROGRAM_BINARY);
+            glProgramBinary(program, binaryFormat, binary, length);
+          };
+    }
+
+    // If you make any changes to the GrContext::Options here that could
+    // affect text rendering, make sure to match the capabilities initialized
+    // in GetCapabilities and ensuring these are also used by the
+    // PaintOpBufferSerializer.
+    GrContextOptions options;
+    options.fDriverBugWorkarounds =
+        GrDriverBugWorkarounds(workarounds.ToIntSet());
+    size_t max_resource_cache_bytes = 0u;
+    raster::DetermineGrCacheLimitsFromAvailableMemory(
+        &max_resource_cache_bytes, &glyph_cache_max_texture_bytes);
+    options.fGlyphCacheTextureMaximumBytes = glyph_cache_max_texture_bytes;
+    options.fPersistentCache = cache;
+    options.fAvoidStencilBuffers = workarounds.avoid_stencil_buffers;
+    owned_gr_context = GrContext::MakeGL(std::move(interface), options);
+    gr_context = owned_gr_context.get();
+    if (!gr_context) {
+      LOG(ERROR) << "OOP raster support disabled: GrContext creation "
+                    "failed.";
+    } else {
+      constexpr int kMaxGaneshResourceCacheCount = 16384;
+      gr_context->setResourceCacheLimits(kMaxGaneshResourceCacheCount,
+                                         max_resource_cache_bytes);
+    }
   }
-
-  if (activity_flags && cache) {
-    // |activity_flags| is safe to capture here since it must outlive the
-    // this context state.
-    interface->fFunctions.fProgramBinary =
-        [activity_flags](GrGLuint program, GrGLenum binaryFormat, void* binary,
-                         GrGLsizei length) {
-          GpuProcessActivityFlags::ScopedSetFlag scoped_set_flag(
-              activity_flags, ActivityFlagsBase::FLAG_LOADING_PROGRAM_BINARY);
-          glProgramBinary(program, binaryFormat, binary, length);
-        };
-  }
-
-  // If you make any changes to the GrContext::Options here that could
-  // affect text rendering, make sure to match the capabilities initialized
-  // in GetCapabilities and ensuring these are also used by the
-  // PaintOpBufferSerializer.
-  GrContextOptions options;
-  options.fDriverBugWorkarounds =
-      GrDriverBugWorkarounds(workarounds.ToIntSet());
-  size_t max_resource_cache_bytes = 0u;
-  raster::DetermineGrCacheLimitsFromAvailableMemory(
-      &max_resource_cache_bytes, &glyph_cache_max_texture_bytes);
-  options.fGlyphCacheTextureMaximumBytes = glyph_cache_max_texture_bytes;
-  options.fPersistentCache = cache;
-  options.fAvoidStencilBuffers = workarounds.avoid_stencil_buffers;
-  gr_context = GrContext::MakeGL(std::move(interface), options);
-  if (!gr_context) {
-    LOG(ERROR) << "OOP raster support disabled: GrContext creation "
-                  "failed.";
-  } else {
-    constexpr int kMaxGaneshResourceCacheCount = 16384;
-    gr_context->setResourceCacheLimits(kMaxGaneshResourceCacheCount,
-                                       max_resource_cache_bytes);
-  }
-
   transfer_cache = std::make_unique<ServiceTransferCache>();
 }
 
@@ -98,7 +103,7 @@ bool RasterDecoderContextState::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
   if (gr_context)
-    DumpGrMemoryStatistics(gr_context.get(), pmd, base::nullopt);
+    DumpGrMemoryStatistics(gr_context, pmd, base::nullopt);
   return true;
 }
 

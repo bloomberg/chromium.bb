@@ -9,6 +9,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
+#include "components/viz/common/gpu/context_lost_observer.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
@@ -559,6 +560,16 @@ void SkiaOutputSurfaceImpl::CopyOutput(
       sequence_id, std::move(callback), std::vector<gpu::SyncToken>()));
 }
 
+void SkiaOutputSurfaceImpl::AddContextLostObserver(
+    ContextLostObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void SkiaOutputSurfaceImpl::RemoveContextLostObserver(
+    ContextLostObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void SkiaOutputSurfaceImpl::InitializeOnGpuThread(base::WaitableEvent* event) {
   base::ScopedClosureRunner scoped_runner(
       base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(event)));
@@ -566,12 +577,14 @@ void SkiaOutputSurfaceImpl::InitializeOnGpuThread(base::WaitableEvent* event) {
       &SkiaOutputSurfaceImpl::DidSwapBuffersComplete, weak_ptr_);
   auto buffer_presented_callback =
       base::BindRepeating(&SkiaOutputSurfaceImpl::BufferPresented, weak_ptr_);
+  auto context_lost_callback =
+      base::BindRepeating(&SkiaOutputSurfaceImpl::ContextLost, weak_ptr_);
   impl_on_gpu_ = std::make_unique<SkiaOutputSurfaceImplOnGpu>(
       gpu_service_, surface_handle_,
       CreateSafeCallback(client_thread_task_runner_,
                          did_swap_buffer_complete_callback),
-      CreateSafeCallback(client_thread_task_runner_,
-                         buffer_presented_callback));
+      CreateSafeCallback(client_thread_task_runner_, buffer_presented_callback),
+      CreateSafeCallback(client_thread_task_runner_, context_lost_callback));
   capabilities_ = impl_on_gpu_->capabilities();
 }
 
@@ -612,6 +625,12 @@ void SkiaOutputSurfaceImpl::BufferPresented(
                                 ? BeginFrameArgs::DefaultInterval()
                                 : feedback.interval);
   }
+}
+
+void SkiaOutputSurfaceImpl::ContextLost() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  for (auto& observer : observers_)
+    observer.OnContextLost();
 }
 
 void SkiaOutputSurfaceImpl::SetNeedsSwapSizeNotifications(

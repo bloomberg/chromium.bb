@@ -33,7 +33,8 @@ struct GPU_GLES2_EXPORT RasterDecoderContextState
   RasterDecoderContextState(scoped_refptr<gl::GLShareGroup> share_group,
                             scoped_refptr<gl::GLSurface> surface,
                             scoped_refptr<gl::GLContext> context,
-                            bool use_virtualized_gl_contexts);
+                            bool use_virtualized_gl_contexts,
+                            GrContext* vulkan_gr_context = nullptr);
   void InitializeGrContext(const GpuDriverBugWorkarounds& workarounds,
                            GrContextOptions::PersistentCache* cache,
                            GpuProcessActivityFlags* activity_flags = nullptr,
@@ -44,9 +45,11 @@ struct GPU_GLES2_EXPORT RasterDecoderContextState
   scoped_refptr<gl::GLShareGroup> share_group;
   scoped_refptr<gl::GLSurface> surface;
   scoped_refptr<gl::GLContext> context;
-  sk_sp<GrContext> gr_context;
+  GrContext* gr_context;
+  sk_sp<GrContext> owned_gr_context;
   std::unique_ptr<ServiceTransferCache> transfer_cache;
-  bool use_virtualized_gl_contexts = false;
+  const bool use_vulkan_gr_context = false;
+  const bool use_virtualized_gl_contexts = false;
   bool context_lost = false;
   size_t glyph_cache_max_texture_bytes = 0u;
 

@@ -37,6 +37,8 @@
 #include "ui/gl/gl_surface.h"
 #include "url/gurl.h"
 
+class GrContext;
+
 namespace gl {
 class GLShareGroup;
 }
@@ -76,7 +78,8 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
                     GpuMemoryBufferFactory* gpu_memory_buffer_factory,
                     const GpuFeatureInfo& gpu_feature_info,
                     GpuProcessActivityFlags activity_flags,
-                    scoped_refptr<gl::GLSurface> default_offscreen_surface);
+                    scoped_refptr<gl::GLSurface> default_offscreen_surface,
+                    GrContext* vulkan_gr_context = nullptr);
   ~GpuChannelManager() override;
 
   GpuChannelManagerDelegate* delegate() const { return delegate_; }
@@ -237,6 +240,10 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   base::Optional<raster::GrCacheController> gr_cache_controller_;
   scoped_refptr<raster::RasterDecoderContextState>
       raster_decoder_context_state_;
+
+  // With --enable-vulkan, the vulkan_gr_context_ will be set from
+  // viz::GpuServiceImpl. The raster decoders will use it for rasterization.
+  GrContext* vulkan_gr_context_;
 
   // Member variables should appear before the WeakPtrFactory, to ensure
   // that any WeakPtrs to Controller are invalidated before its members

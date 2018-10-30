@@ -8,6 +8,7 @@ include_rules = [
   "+gpu/command_buffer/common/context_creation_attribs.h",
   "+gpu/command_buffer/common/skia_utils.h",
   "+gpu/command_buffer/service/image_factory.h",
+  "+gpu/config/gpu_feature_type.h",
   "+gpu/config/gpu_info.h",
   "+gpu/ipc",
   "+gpu/skia_bindings/grcontext_for_gles2_interface.h",

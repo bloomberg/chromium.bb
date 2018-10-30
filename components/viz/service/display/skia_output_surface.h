@@ -14,6 +14,7 @@ class SkImage;
 
 namespace viz {
 
+class ContextLostObserver;
 class CopyOutputRequest;
 struct ResourceMetadata;
 
@@ -94,6 +95,12 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface {
   virtual void CopyOutput(RenderPassId id,
                           const gfx::Rect& copy_rect,
                           std::unique_ptr<CopyOutputRequest> request) = 0;
+
+  // Add context lost observer.
+  virtual void AddContextLostObserver(ContextLostObserver* observer) = 0;
+
+  // Remove context lost observer.
+  virtual void RemoveContextLostObserver(ContextLostObserver* observer) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputSurface);

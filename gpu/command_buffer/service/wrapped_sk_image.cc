@@ -77,7 +77,7 @@ class WrappedSkImage : public SharedImageBacking {
         image_->getBackendTexture(/*flushPendingGrContextIO=*/true);
     DCHECK(gr_texture.isValid());
     return SkSurface::MakeFromBackendTextureAsRenderTarget(
-        context_state_->gr_context.get(), gr_texture, kTopLeft_GrSurfaceOrigin,
+        context_state_->gr_context, gr_texture, kTopLeft_GrSurfaceOrigin,
         final_msaa_count, color_type, /*colorSpace=*/nullptr, &surface_props);
   }
 
@@ -119,7 +119,7 @@ class WrappedSkImage : public SharedImageBacking {
     size_t stride = info.minRowBytes();
     estimated_size_ = info.computeByteSize(stride);
 
-    auto surface = SkSurface::MakeRenderTarget(context_state_->gr_context.get(),
+    auto surface = SkSurface::MakeRenderTarget(context_state_->gr_context,
                                                SkBudgeted::kNo, info);
     if (!surface)
       return false;
