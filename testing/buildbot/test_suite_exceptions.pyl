@@ -221,16 +221,17 @@
     ],
   },
   'chrome_public_test_apk': {
-    'remove_from': [
-      # TODO(crbug.com/877280): Add it back when we have the capacity.
-      'android-marshmallow-arm64-rel',
-    ],
     'modifications': {
       # chromium.android
       'android-kitkat-arm-rel': {
         'swarming': {
           'shards': 12,
         },
+      },
+      'android-marshmallow-arm64-rel': {
+        # TODO(crbug.com/731759): Enable this once we're confident that it
+        # passes.
+        'experiment_percentage': 50,
       },
       'KitKat Phone Tester (dbg)': {
         'swarming': {
