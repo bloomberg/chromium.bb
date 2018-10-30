@@ -5,6 +5,7 @@
 #include "extensions/browser/app_window/native_app_window.h"
 
 #import <Cocoa/Cocoa.h>
+#include <memory>
 
 #import "base/mac/foundation_util.h"
 #import "base/mac/mac_util.h"
@@ -12,6 +13,8 @@
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
+#include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/apps/app_shim/test/app_shim_host_manager_test_api_mac.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
@@ -139,19 +142,19 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, HideShowWithApp) {
 
 namespace {
 
-class MockAppShimHost : public apps::AppShimHandler::Host {
+class MockAppShimHost : public AppShimHost {
  public:
-  MockAppShimHost() {}
+  MockAppShimHost()
+      : AppShimHost("app", base::FilePath("Profile")), weak_factory_(this) {}
   ~MockAppShimHost() override {}
 
-  MOCK_METHOD1(OnAppLaunchComplete, void(apps::AppShimLaunchResult));
-  MOCK_METHOD0(OnAppClosed, void());
-  MOCK_METHOD0(OnAppHide, void());
   MOCK_METHOD0(OnAppUnhideWithoutActivation, void());
-  MOCK_METHOD1(OnAppRequestUserAttention, void(apps::AppShimAttentionType));
-  MOCK_CONST_METHOD0(GetProfilePath, base::FilePath());
-  MOCK_CONST_METHOD0(GetAppId, std::string());
-  MOCK_CONST_METHOD0(GetViewsBridgeFactoryHost, views::BridgeFactoryHost*());
+  base::WeakPtr<MockAppShimHost> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
+ private:
+  base::WeakPtrFactory<MockAppShimHost> weak_factory_;
 };
 
 class MockExtensionAppShimHandler : public apps::ExtensionAppShimHandler {
@@ -176,7 +179,8 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest,
   test_api.SetExtensionAppShimHandler(
       std::unique_ptr<apps::ExtensionAppShimHandler>(
           mock));  // Takes ownership.
-  MockAppShimHost mock_host;
+  base::WeakPtr<MockAppShimHost> mock_host =
+      (new MockAppShimHost)->GetWeakPtr();
 
   SetUpAppWithWindows(1);
   extensions::AppWindowRegistry::AppWindowList windows =
@@ -191,24 +195,24 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest,
   EXPECT_FALSE([ns_window isVisible]);
 
   // Show notifies the shim to unhide.
-  EXPECT_CALL(mock_host, OnAppUnhideWithoutActivation());
-  EXPECT_CALL(*mock, FindHost(_, _)).WillOnce(Return(&mock_host));
+  EXPECT_CALL(*mock_host, OnAppUnhideWithoutActivation());
+  EXPECT_CALL(*mock, FindHost(_, _)).WillOnce(Return(mock_host.get()));
   app_window->Show(extensions::AppWindow::SHOW_ACTIVE);
   EXPECT_TRUE([ns_window isVisible]);
   testing::Mock::VerifyAndClearExpectations(mock);
-  testing::Mock::VerifyAndClearExpectations(&mock_host);
+  testing::Mock::VerifyAndClearExpectations(mock_host.get());
 
   // HideWithApp
   native_window->HideWithApp();
   EXPECT_FALSE([ns_window isVisible]);
 
   // Activate does the same.
-  EXPECT_CALL(mock_host, OnAppUnhideWithoutActivation());
-  EXPECT_CALL(*mock, FindHost(_, _)).WillOnce(Return(&mock_host));
+  EXPECT_CALL(*mock_host, OnAppUnhideWithoutActivation());
+  EXPECT_CALL(*mock, FindHost(_, _)).WillOnce(Return(mock_host.get()));
   native_window->Activate();
   EXPECT_TRUE([ns_window isVisible]);
   testing::Mock::VerifyAndClearExpectations(mock);
-  testing::Mock::VerifyAndClearExpectations(&mock_host);
+  testing::Mock::VerifyAndClearExpectations(mock_host.get());
 }
 
 // Test that NativeAppWindow and AppWindow fullscreen state is updated when

@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "apps/app_lifetime_monitor_factory.h"
@@ -24,6 +26,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_manager_mac.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
@@ -95,13 +98,11 @@ class WindowedAppShimLaunchObserver : public apps::AppShimHandler {
   }
 
   // AppShimHandler overrides:
-  void OnShimLaunch(Host* host,
-                    apps::AppShimLaunchType launch_type,
-                    const std::vector<base::FilePath>& files) override {
+  void OnShimLaunch(std::unique_ptr<AppShimHostBootstrap> bootstrap) override {
     // Remove self and pass through to the default handler.
     apps::AppShimHandler::RemoveHandler(app_mode_id_);
     apps::AppShimHandler::GetForAppMode(app_mode_id_)
-        ->OnShimLaunch(host, launch_type, files);
+        ->OnShimLaunch(std::move(bootstrap));
     observed_ = true;
     if (run_loop_.get())
       run_loop_->Quit();

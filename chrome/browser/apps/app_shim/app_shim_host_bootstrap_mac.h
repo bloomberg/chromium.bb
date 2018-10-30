@@ -25,19 +25,20 @@ class AppShimHostBootstrap : public chrome::mojom::AppShimHostBootstrap {
   static void CreateForChannel(mojo::PlatformChannelEndpoint endpoint);
   ~AppShimHostBootstrap() override;
 
-  void OnLaunchAppComplete(apps::AppShimLaunchResult result,
-                           chrome::mojom::AppShimRequest app_shim_request);
+  void OnLaunchAppSucceeded(chrome::mojom::AppShimRequest app_shim_request);
+  void OnLaunchAppFailed(apps::AppShimLaunchResult result);
 
   chrome::mojom::AppShimHostRequest GetLaunchAppShimHostRequest();
-  apps::AppShimLaunchType GetLaunchType() const;
-  const std::vector<base::FilePath>& GetLaunchFiles() const;
-
-  apps::AppShimHandler::Host* GetHostForTesting();
+  const std::string& GetAppId() const { return app_id_; }
+  const base::FilePath& GetProfilePath() const { return profile_path_; }
+  apps::AppShimLaunchType GetLaunchType() const { return launch_type_; }
+  const std::vector<base::FilePath>& GetLaunchFiles() const { return files_; }
 
  protected:
   AppShimHostBootstrap();
   void ServeChannel(mojo::PlatformChannelEndpoint endpoint);
   void ChannelError(uint32_t custom_reason, const std::string& description);
+  virtual apps::AppShimHandler* GetHandler();
 
   // chrome::mojom::AppShimHostBootstrap.
   void LaunchApp(chrome::mojom::AppShimHostRequest app_shim_host_request,
@@ -54,13 +55,11 @@ class AppShimHostBootstrap : public chrome::mojom::AppShimHostBootstrap {
   // yet.
   bool has_received_launch_app_ = false;
   chrome::mojom::AppShimHostRequest app_shim_host_request_;
+  base::FilePath profile_path_;
+  std::string app_id_;
   apps::AppShimLaunchType launch_type_;
   std::vector<base::FilePath> files_;
   LaunchAppCallback launch_app_callback_;
-
-  // The AppShimHost that has taken ownership of this object. Weak, set in
-  // LaunchApp.
-  AppShimHost* connected_host_ = nullptr;
 
   THREAD_CHECKER(thread_checker_);
   DISALLOW_COPY_AND_ASSIGN(AppShimHostBootstrap);
