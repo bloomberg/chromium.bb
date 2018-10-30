@@ -941,6 +941,19 @@ class SimulatorTestRunner(TestRunner):
       Args:
         cert_path: Path to the certificate to copy to all emulators
     '''
+
+    # TODO(crbug.com/892381): Remove this debug logging
+    print 'ERICALE copy_trusted_certificate DEBUG START'
+    print os.path.expanduser('~')
+    print glob.glob(
+        '{}/Library/Developer/CoreSimulator/Devices/*/data/Library/'.
+        format(os.path.expanduser('~')))
+    print glob.glob(
+        '/Users/chrome-bot/Library/Developer/CoreSimulator/Devices/*/data/Library/'.
+        format(os.path.expanduser('~')))
+    print subprocess.check_output(['ls', '-lsr', '/Users/chrome-bot/Library/Developer/CoreSimulator/Devices'])
+    print 'ERICALE copy_trusted_certificate DEBUG END'
+
     trustStores = glob.glob(
         '{}/Library/Developer/CoreSimulator/Devices/*/data/Library/Keychains/{}'.
         format(os.path.expanduser('~'), 'TrustStore.sqlite3'))
