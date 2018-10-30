@@ -1851,12 +1851,16 @@ jumbo_split_static_library("ui") {
       "webui/signin/sync_confirmation_ui.h",
       "webui/signin/user_manager_screen_handler.cc",
       "webui/signin/user_manager_screen_handler.h",
-
-      # TODO(scottchen): nux/set_as_default_handler is here because it depends
-      #     on settings_default_browser_handler, but that deps currently can't
-      #     be added in nux/BUILD.gn due to circular dependency.
-      #     Should move back to nux/BUILD.gn once settings's build config is in
-      #     a shareable location (e.g. ui/webui/settings/BUILD.gn).
+      "webui/welcome/nux/bookmark_handler.cc",
+      "webui/welcome/nux/bookmark_handler.h",
+      "webui/welcome/nux/bookmark_item.cc",
+      "webui/welcome/nux/bookmark_item.h",
+      "webui/welcome/nux/constants.cc",
+      "webui/welcome/nux/constants.h",
+      "webui/welcome/nux/email_handler.cc",
+      "webui/welcome/nux/email_handler.h",
+      "webui/welcome/nux/google_apps_handler.cc",
+      "webui/welcome/nux/google_apps_handler.h",
       "webui/welcome/nux/set_as_default_handler.cc",
       "webui/welcome/nux/set_as_default_handler.h",
       "webui/welcome/nux_helper.cc",
@@ -1865,13 +1869,6 @@ jumbo_split_static_library("ui") {
       "webui/welcome/welcome_handler.h",
       "webui/welcome/welcome_ui.cc",
       "webui/welcome/welcome_ui.h",
-    ]
-
-    deps += [
-      "//chrome/browser/ui/webui/welcome/nux:bookmark_handler",
-      "//chrome/browser/ui/webui/welcome/nux:constants",
-      "//chrome/browser/ui/webui/welcome/nux:email_feature",
-      "//chrome/browser/ui/webui/welcome/nux:google_apps_feature",
     ]
 
     if (enable_dice_support) {
