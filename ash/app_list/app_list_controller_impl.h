@@ -196,7 +196,7 @@ class ASH_EXPORT AppListControllerImpl
   // ShellObserver:
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnding() override;
-  void OnOverviewModeEndingAnimationComplete() override;
+  void OnOverviewModeEndingAnimationComplete(bool canceled) override;
 
   // TabletModeObserver:
   void OnTabletModeStarted() override;

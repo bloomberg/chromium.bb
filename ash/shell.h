@@ -615,15 +615,18 @@ class ASH_EXPORT Shell : public SessionObserver,
   // windows get re-arranged).
   void NotifyOverviewModeStarting();
 
-  // Notifies observers that overview mode is about to end (bofore the windows
+  // Notifies observers that the start overview mode animation has completed.
+  void NotifyOverviewModeStartingAnimationComplete(bool canceled);
+
+  // Notifies observers that overview mode is about to end (before the windows
   // restore themselves).
   void NotifyOverviewModeEnding();
 
   // Notifies observers that overview mode has ended.
   void NotifyOverviewModeEnded();
 
-  // Notifies observers that the end overivew mode animation has completed.
-  void NotifyOverviewModeEndingAnimationComplete();
+  // Notifies observers that the end overview mode animation has completed.
+  void NotifyOverviewModeEndingAnimationComplete(bool canceled);
 
   // Notifies observers that split view mode is about to be started (before the
   // window gets snapped and activated).

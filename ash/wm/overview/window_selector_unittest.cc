@@ -28,6 +28,7 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
 #include "ash/wm/overview/window_grid.h"
@@ -3107,19 +3108,25 @@ namespace {
 // Test class that allows us to check what whether the last overview enter or
 // exit was using a slide animation. This is needed because the cached slide
 // animation variable may be reset or the WindowSelector object may not be
-// available after a toggle has completed.
-class TestOverviewAnimationTypeObserver : public ShellObserver {
+// available after a toggle has completed. Also stores whether the animation
+// complete observers fired because an animation completed or was canceled.
+class TestOverviewObserver : public ShellObserver {
  public:
-  TestOverviewAnimationTypeObserver() { Shell::Get()->AddShellObserver(this); }
-  ~TestOverviewAnimationTypeObserver() override {
-    Shell::Get()->RemoveShellObserver(this);
-  }
+  TestOverviewObserver() { Shell::Get()->AddShellObserver(this); }
+  ~TestOverviewObserver() override { Shell::Get()->RemoveShellObserver(this); }
 
   // ShellObserver:
   void OnOverviewModeStarting() override { UpdateLastAnimationWasSlide(); }
   void OnOverviewModeEnding() override { UpdateLastAnimationWasSlide(); }
+  void OnOverviewModeStartingAnimationComplete(bool canceled) override {
+    animation_canceled_ = canceled;
+  }
+  void OnOverviewModeEndingAnimationComplete(bool canceled) override {
+    animation_canceled_ = canceled;
+  }
 
   bool last_animation_was_slide() const { return last_animation_was_slide_; }
+  bool animation_canceled() const { return animation_canceled_; }
 
  private:
   void UpdateLastAnimationWasSlide() {
@@ -3132,18 +3139,19 @@ class TestOverviewAnimationTypeObserver : public ShellObserver {
   }
 
   bool last_animation_was_slide_ = false;
+  bool animation_canceled_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(TestOverviewAnimationTypeObserver);
+  DISALLOW_COPY_AND_ASSIGN(TestOverviewObserver);
 };
 
 }  // namespace
 
 // Tests the slide animation for overview is never used in clamshell.
 TEST_F(WindowSelectorTest, OverviewEnterExitAnimation) {
-  TestOverviewAnimationTypeObserver observer;
+  TestOverviewObserver observer;
 
   const gfx::Rect bounds(200, 200);
-  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window(CreateWindow(bounds));
 
   ToggleOverview();
   EXPECT_FALSE(observer.last_animation_was_slide());
@@ -3153,7 +3161,7 @@ TEST_F(WindowSelectorTest, OverviewEnterExitAnimation) {
 
   // Even with all window minimized, there should not be a slide animation.
   ASSERT_FALSE(IsSelecting());
-  wm::GetWindowState(window1.get())->Minimize();
+  wm::GetWindowState(window.get())->Minimize();
   ToggleOverview();
   EXPECT_FALSE(observer.last_animation_was_slide());
 }
@@ -3162,7 +3170,7 @@ TEST_F(WindowSelectorTest, OverviewEnterExitAnimation) {
 // are minimized, and that if overview is exited from the home launcher all
 // windows are minimized.
 TEST_F(WindowSelectorTest, OverviewEnterExitAnimationTablet) {
-  TestOverviewAnimationTypeObserver observer;
+  TestOverviewObserver observer;
 
   // Ensure calls to EnableTabletModeWindowManager complete.
   base::RunLoop().RunUntilIdle();
@@ -3170,7 +3178,7 @@ TEST_F(WindowSelectorTest, OverviewEnterExitAnimationTablet) {
   base::RunLoop().RunUntilIdle();
 
   const gfx::Rect bounds(200, 200);
-  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window(CreateWindow(bounds));
 
   ToggleOverview();
   EXPECT_FALSE(observer.last_animation_was_slide());
@@ -3180,11 +3188,100 @@ TEST_F(WindowSelectorTest, OverviewEnterExitAnimationTablet) {
   ToggleOverview(WindowSelector::EnterExitOverviewType::kWindowsMinimized);
   EXPECT_TRUE(observer.last_animation_was_slide());
   ASSERT_FALSE(IsSelecting());
-  EXPECT_TRUE(wm::GetWindowState(window1.get())->IsMinimized());
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMinimized());
 
   // All windows are minimized, so we should use the slide animation.
   ToggleOverview();
   EXPECT_TRUE(observer.last_animation_was_slide());
+}
+
+// Tests that the overview enter animation observer works as expected.
+TEST_F(WindowSelectorTest, OverviewEnterAnimationObserver) {
+  TestOverviewObserver observer;
+
+  ui::ScopedAnimationDurationScaleMode animation_scale_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  const gfx::Rect bounds(200, 200);
+  std::unique_ptr<aura::Window> window(CreateWindow(bounds));
+
+  // Test that if the animations are allowed to run out on enter the observer
+  // will be notified of complete animations.
+  ToggleOverview();
+  WindowSelectorItem* item = GetWindowItemForWindow(0, window.get());
+  window->layer()->GetAnimator()->StopAnimating();
+  item_widget(item)->GetNativeWindow()->layer()->GetAnimator()->StopAnimating();
+  EXPECT_FALSE(observer.animation_canceled());
+
+  ToggleOverview();
+
+  // Test that if the animations are canceled after entering by exiting overview
+  // right away, the observer will be notified of incomplete animations.
+  ToggleOverview();
+  ToggleOverview();
+  EXPECT_TRUE(observer.animation_canceled());
+}
+
+// Tests that the overview exit animation observer works as expected.
+TEST_F(WindowSelectorTest, OverviewExitAnimationObserver) {
+  TestOverviewObserver observer;
+
+  ui::ScopedAnimationDurationScaleMode animation_scale_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  const gfx::Rect bounds(200, 200);
+  std::unique_ptr<aura::Window> window(CreateWindow(bounds));
+
+  ToggleOverview();
+
+  // Test that if the animations are allowed to run out on exit the observer
+  // will be notified of complete animations.
+  ToggleOverview();
+  window->layer()->GetAnimator()->StopAnimating();
+  std::vector<std::unique_ptr<DelayedAnimationObserver>>& delayed_animations =
+      window_selector_controller()->delayed_animations_;
+  // On animation complete |delayed_animations| will erase its own members, so
+  // use a while loop to avoid indexing errors.
+  ASSERT_FALSE(delayed_animations.empty());
+  while (!delayed_animations.empty()) {
+    views::Widget* item_widget =
+        static_cast<CleanupAnimationObserver*>(delayed_animations.back().get())
+            ->widget_.get();
+    item_widget->GetNativeWindow()->layer()->GetAnimator()->StopAnimating();
+  }
+  EXPECT_FALSE(observer.animation_canceled());
+
+  // Test that if the animations are canceled after exiting by reentering
+  // overview right away, the observer will be notified of incomplete
+  // animations.
+  ToggleOverview();
+  ToggleOverview();
+  EXPECT_TRUE(observer.animation_canceled());
+}
+
+// Tests that overview mode is entered with kWindowDragged mode when an app is
+// dragged from the top of the screen.
+TEST_F(WindowSelectorTest, DraggingFromTopAnimation) {
+  // Ensure calls to EnableTabletModeWindowManager complete.
+  base::RunLoop().RunUntilIdle();
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  base::RunLoop().RunUntilIdle();
+
+  const gfx::Rect bounds(200, 200);
+  std::unique_ptr<aura::Window> window(CreateWindow(bounds));
+  std::unique_ptr<views::Widget> widget(CreateWindowWidget(bounds));
+
+  // Drag from the the top of the app to enter overview.
+  auto drag_controller = std::make_unique<TabletModeAppWindowDragController>();
+  ui::GestureEvent event(0, 0, 0, base::TimeTicks(),
+                         ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN));
+  ui::Event::DispatcherApi dispatch_helper(&event);
+  dispatch_helper.set_target(widget->GetNativeWindow());
+  drag_controller->DragWindowFromTop(&event);
+
+  ASSERT_TRUE(IsSelecting());
+  EXPECT_EQ(WindowSelector::EnterExitOverviewType::kWindowDragged,
+            window_selector()->enter_exit_overview_type());
 }
 
 class SplitViewWindowSelectorTest : public WindowSelectorTest {

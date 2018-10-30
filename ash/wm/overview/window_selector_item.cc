@@ -18,6 +18,7 @@
 #include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/scoped_transform_overview_window.h"
+#include "ash/wm/overview/start_animation_observer.h"
 #include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_constants.h"
@@ -1155,6 +1156,16 @@ void WindowSelectorItem::UpdateHeaderLayout(
       mode == HeaderFadeInMode::kFirstUpdate ? OVERVIEW_ANIMATION_NONE
                                              : animation_type,
       widget_window);
+
+  // Create a start animation observer if this is an enter overview layout
+  // animation.
+  if (animation_type == OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_ON_ENTER) {
+    auto start_observer = std::make_unique<StartAnimationObserver>();
+    animation_settings.AddObserver(start_observer.get());
+    Shell::Get()->window_selector_controller()->AddStartAnimationObserver(
+        std::move(start_observer));
+  }
+
   // |widget_window| covers both the transformed window and the header
   // as well as the gap between the windows to prevent events from reaching
   // the window including its sizing borders.

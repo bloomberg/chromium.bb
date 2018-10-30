@@ -595,6 +595,11 @@ void Shell::NotifyOverviewModeStarting() {
     observer.OnOverviewModeStarting();
 }
 
+void Shell::NotifyOverviewModeStartingAnimationComplete(bool canceled) {
+  for (auto& observer : shell_observers_)
+    observer.OnOverviewModeStartingAnimationComplete(canceled);
+}
+
 void Shell::NotifyOverviewModeEnding() {
   for (auto& observer : shell_observers_)
     observer.OnOverviewModeEnding();
@@ -605,9 +610,9 @@ void Shell::NotifyOverviewModeEnded() {
     observer.OnOverviewModeEnded();
 }
 
-void Shell::NotifyOverviewModeEndingAnimationComplete() {
+void Shell::NotifyOverviewModeEndingAnimationComplete(bool canceled) {
   for (auto& observer : shell_observers_)
-    observer.OnOverviewModeEndingAnimationComplete();
+    observer.OnOverviewModeEndingAnimationComplete(canceled);
 }
 
 void Shell::NotifySplitViewModeStarting() {
