@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
+#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/viz_common_export.h"
 
@@ -50,16 +51,15 @@ class VIZ_COMMON_EXPORT ParentLocalSurfaceIdAllocator {
 
   static const LocalSurfaceId& InvalidLocalSurfaceId();
 
-  base::TimeTicks allocation_time() const { return allocation_time_; }
+  base::TimeTicks allocation_time() const {
+    return current_local_surface_id_allocation_.allocation_time();
+  }
 
   bool is_allocation_suppressed() const { return is_allocation_suppressed_; }
 
  private:
   static const LocalSurfaceId invalid_local_surface_id_;
-  LocalSurfaceId current_local_surface_id_;
-
-  // Time at which |current_local_surface_id_| was allocated.
-  base::TimeTicks allocation_time_;
+  LocalSurfaceIdAllocation current_local_surface_id_allocation_;
 
   // When true, the last known LocalSurfaceId is an invalid LocalSurfaceId.
   // TODO(fsamuel): Once the parent sequence number is only monotonically

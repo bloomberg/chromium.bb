@@ -12,22 +12,28 @@
 namespace viz {
 
 ChildLocalSurfaceIdAllocator::ChildLocalSurfaceIdAllocator()
-    : current_local_surface_id_(kInvalidParentSequenceNumber,
-                                kInitialChildSequenceNumber,
-                                base::UnguessableToken()) {}
+    : current_local_surface_id_allocation_(
+          LocalSurfaceId(kInvalidParentSequenceNumber,
+                         kInitialChildSequenceNumber,
+                         base::UnguessableToken()),
+          base::TimeTicks()) {}
 
 bool ChildLocalSurfaceIdAllocator::UpdateFromParent(
     const LocalSurfaceId& parent_allocated_local_surface_id,
     base::TimeTicks parent_local_surface_id_allocation_time) {
   if ((parent_allocated_local_surface_id.parent_sequence_number() >
-       current_local_surface_id_.parent_sequence_number()) ||
+       current_local_surface_id_allocation_.local_surface_id_
+           .parent_sequence_number()) ||
       parent_allocated_local_surface_id.embed_token() !=
-          current_local_surface_id_.embed_token()) {
-    current_local_surface_id_.parent_sequence_number_ =
+          current_local_surface_id_allocation_.local_surface_id_
+              .embed_token()) {
+    current_local_surface_id_allocation_.local_surface_id_
+        .parent_sequence_number_ =
         parent_allocated_local_surface_id.parent_sequence_number_;
-    current_local_surface_id_.embed_token_ =
+    current_local_surface_id_allocation_.local_surface_id_.embed_token_ =
         parent_allocated_local_surface_id.embed_token_;
-    allocation_time_ = parent_local_surface_id_allocation_time;
+    current_local_surface_id_allocation_.allocation_time_ =
+        parent_local_surface_id_allocation_time;
     return true;
   }
   return false;
@@ -35,28 +41,33 @@ bool ChildLocalSurfaceIdAllocator::UpdateFromParent(
 
 const LocalSurfaceId& ChildLocalSurfaceIdAllocator::GenerateId() {
   // UpdateFromParent must be called before we can generate a valid ID.
-  DCHECK_NE(current_local_surface_id_.parent_sequence_number(),
+  DCHECK_NE(current_local_surface_id_allocation_.local_surface_id_
+                .parent_sequence_number(),
             kInvalidParentSequenceNumber);
 
-  ++current_local_surface_id_.child_sequence_number_;
-  allocation_time_ = base::TimeTicks::Now();
+  ++current_local_surface_id_allocation_.local_surface_id_
+        .child_sequence_number_;
+  current_local_surface_id_allocation_.allocation_time_ =
+      base::TimeTicks::Now();
 
   TRACE_EVENT_WITH_FLOW2(
       TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
       "LocalSurfaceId.Embed.Flow",
-      TRACE_ID_GLOBAL(current_local_surface_id_.embed_trace_id()),
+      TRACE_ID_GLOBAL(current_local_surface_id_allocation_.local_surface_id_
+                          .embed_trace_id()),
       TRACE_EVENT_FLAG_FLOW_OUT, "step",
       "ChildLocalSurfaceIdAllocator::GenerateId", "local_surface_id",
-      current_local_surface_id_.ToString());
+      current_local_surface_id_allocation_.local_surface_id_.ToString());
   TRACE_EVENT_WITH_FLOW2(
       TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
       "LocalSurfaceId.Submission.Flow",
-      TRACE_ID_GLOBAL(current_local_surface_id_.submission_trace_id()),
+      TRACE_ID_GLOBAL(current_local_surface_id_allocation_.local_surface_id_
+                          .submission_trace_id()),
       TRACE_EVENT_FLAG_FLOW_OUT, "step",
       "ChildLocalSurfaceIdAllocator::GenerateId", "local_surface_id",
-      current_local_surface_id_.ToString());
+      current_local_surface_id_allocation_.local_surface_id_.ToString());
 
-  return current_local_surface_id_;
+  return current_local_surface_id_allocation_.local_surface_id();
 }
 
 }  // namespace viz
