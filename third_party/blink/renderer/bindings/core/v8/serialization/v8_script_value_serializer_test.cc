@@ -931,20 +931,20 @@ TEST(V8ScriptValueSerializerTest, OutOfRangeMessagePortIndex) {
   }
   {
     V8ScriptValueDeserializer::Options options;
-    options.message_ports = new MessagePortArray;
+    options.message_ports = MakeGarbageCollected<MessagePortArray>();
     V8ScriptValueDeserializer deserializer(script_state, input, options);
     ASSERT_TRUE(deserializer.Deserialize()->IsNull());
   }
   {
     V8ScriptValueDeserializer::Options options;
-    options.message_ports = new MessagePortArray;
+    options.message_ports = MakeGarbageCollected<MessagePortArray>();
     options.message_ports->push_back(port1);
     V8ScriptValueDeserializer deserializer(script_state, input, options);
     ASSERT_TRUE(deserializer.Deserialize()->IsNull());
   }
   {
     V8ScriptValueDeserializer::Options options;
-    options.message_ports = new MessagePortArray;
+    options.message_ports = MakeGarbageCollected<MessagePortArray>();
     options.message_ports->push_back(port1);
     options.message_ports->push_back(port2);
     V8ScriptValueDeserializer deserializer(script_state, input, options);

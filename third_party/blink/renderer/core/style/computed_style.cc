@@ -853,7 +853,7 @@ void ComputedStyle::AddCursor(StyleImage* image,
                               bool hot_spot_specified,
                               const IntPoint& hot_spot) {
   if (!CursorDataInternal())
-    SetCursorDataInternal(new CursorList);
+    SetCursorDataInternal(MakeGarbageCollected<CursorList>());
   MutableCursorDataInternal()->push_back(
       CursorData(image, hot_spot_specified, hot_spot));
 }

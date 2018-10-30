@@ -51,8 +51,8 @@ ScriptProcessorHandler::ScriptProcessorHandler(
     unsigned number_of_output_channels)
     : AudioHandler(kNodeTypeScriptProcessor, node, sample_rate),
       double_buffer_index_(0),
-      input_buffers_(new HeapVector<Member<AudioBuffer>>()),
-      output_buffers_(new HeapVector<Member<AudioBuffer>>()),
+      input_buffers_(MakeGarbageCollected<HeapVector<Member<AudioBuffer>>>()),
+      output_buffers_(MakeGarbageCollected<HeapVector<Member<AudioBuffer>>>()),
       buffer_size_(buffer_size),
       buffer_read_write_index_(0),
       number_of_input_channels_(number_of_input_channels),

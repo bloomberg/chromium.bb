@@ -246,7 +246,7 @@ MessagePortArray* MessagePort::EntanglePorts(
   // https://html.spec.whatwg.org/multipage/comms.html#message-ports
   // |ports| should be an empty array, not null even when there is no ports.
   wtf_size_t count = SafeCast<wtf_size_t>(channels.size());
-  MessagePortArray* port_array = new MessagePortArray(count);
+  MessagePortArray* port_array = MakeGarbageCollected<MessagePortArray>(count);
   for (wtf_size_t i = 0; i < count; ++i) {
     MessagePort* port = MessagePort::Create(context);
     port->Entangle(std::move(channels[i]));

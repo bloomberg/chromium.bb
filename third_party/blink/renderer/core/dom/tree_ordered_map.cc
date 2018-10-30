@@ -154,7 +154,7 @@ const HeapVector<Member<Element>>& TreeOrderedMap::GetAllElementsById(
     const TreeScope& scope) const {
   DCHECK(key);
   DEFINE_STATIC_LOCAL(Persistent<HeapVector<Member<Element>>>, empty_vector,
-                      (new HeapVector<Member<Element>>));
+                      (MakeGarbageCollected<HeapVector<Member<Element>>>()));
 
   Map::iterator it = map_.find(key);
   if (it == map_.end())

@@ -2539,9 +2539,10 @@ void PaintLayerScrollableArea::PreventRelayoutScope::ResetRelayoutNeeded() {
 
 HeapVector<Member<PaintLayerScrollableArea>>&
 PaintLayerScrollableArea::PreventRelayoutScope::NeedsRelayoutList() {
-  DEFINE_STATIC_LOCAL(Persistent<HeapVector<Member<PaintLayerScrollableArea>>>,
-                      needs_relayout_list,
-                      (new HeapVector<Member<PaintLayerScrollableArea>>));
+  DEFINE_STATIC_LOCAL(
+      Persistent<HeapVector<Member<PaintLayerScrollableArea>>>,
+      needs_relayout_list,
+      (MakeGarbageCollected<HeapVector<Member<PaintLayerScrollableArea>>>()));
   return *needs_relayout_list;
 }
 
@@ -2578,9 +2579,10 @@ void PaintLayerScrollableArea::DelayScrollOffsetClampScope::
 
 HeapVector<Member<PaintLayerScrollableArea>>&
 PaintLayerScrollableArea::DelayScrollOffsetClampScope::NeedsClampList() {
-  DEFINE_STATIC_LOCAL(Persistent<HeapVector<Member<PaintLayerScrollableArea>>>,
-                      needs_clamp_list,
-                      (new HeapVector<Member<PaintLayerScrollableArea>>));
+  DEFINE_STATIC_LOCAL(
+      Persistent<HeapVector<Member<PaintLayerScrollableArea>>>,
+      needs_clamp_list,
+      (MakeGarbageCollected<HeapVector<Member<PaintLayerScrollableArea>>>()));
   return *needs_clamp_list;
 }
 

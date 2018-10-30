@@ -231,7 +231,7 @@ using SlotChangeList = HeapVector<Member<HTMLSlotElement>>;
 // https://html.spec.whatwg.org/multipage/browsers.html#unit-of-related-similar-origin-browsing-contexts
 static SlotChangeList& ActiveSlotChangeList() {
   DEFINE_STATIC_LOCAL(Persistent<SlotChangeList>, slot_change_list,
-                      (new SlotChangeList));
+                      (MakeGarbageCollected<SlotChangeList>()));
   return *slot_change_list;
 }
 

@@ -111,7 +111,7 @@ ExtendableMessageEvent::ExtendableMessageEvent(
       source_as_message_port_ = initializer.source().GetAsMessagePort();
   }
   if (initializer.hasPorts())
-    ports_ = new MessagePortArray(initializer.ports());
+    ports_ = MakeGarbageCollected<MessagePortArray>(initializer.ports());
 }
 
 ExtendableMessageEvent::ExtendableMessageEvent(

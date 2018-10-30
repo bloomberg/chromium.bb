@@ -81,8 +81,9 @@ void SharedWorkerGlobalScope::ConnectPausable(MessagePortChannel channel) {
 
   MessagePort* port = MessagePort::Create(*this);
   port->Entangle(std::move(channel));
-  MessageEvent* event = MessageEvent::Create(new MessagePortArray(1, port),
-                                             String(), String(), port);
+  MessageEvent* event =
+      MessageEvent::Create(MakeGarbageCollected<MessagePortArray>(1, port),
+                           String(), String(), port);
   event->initEvent(EventTypeNames::connect, false, false);
   DispatchEvent(*event);
 }

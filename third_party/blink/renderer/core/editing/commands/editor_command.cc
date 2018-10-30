@@ -202,7 +202,7 @@ StaticRangeVector* RangesFromCurrentSelectionOrExtendCaret(
   if (selection_modifier.Selection().IsCaret())
     selection_modifier.Modify(SelectionModifyAlteration::kExtend, direction,
                               granularity);
-  StaticRangeVector* ranges = new StaticRangeVector;
+  StaticRangeVector* ranges = MakeGarbageCollected<StaticRangeVector>();
   // We only supports single selections.
   if (selection_modifier.Selection().IsNone())
     return ranges;
@@ -899,10 +899,11 @@ static bool ExecuteTranspose(LocalFrame& frame,
     return false;
   const String& transposed = text.Right(1) + text.Left(1);
 
-  if (DispatchBeforeInputInsertText(
-          EventTargetNodeForDocument(document), transposed,
-          InputEvent::InputType::kInsertTranspose,
-          new StaticRangeVector(1, StaticRange::Create(range))) !=
+  if (DispatchBeforeInputInsertText(EventTargetNodeForDocument(document),
+                                    transposed,
+                                    InputEvent::InputType::kInsertTranspose,
+                                    MakeGarbageCollected<StaticRangeVector>(
+                                        1, StaticRange::Create(range))) !=
       DispatchEventResult::kNotCanceled)
     return false;
 

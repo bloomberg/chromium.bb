@@ -518,10 +518,8 @@ class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> {
                                                                eagerly_sweep);
   }
 
-  // TODO(keishi): Delete new/delete after transition to MakeGarbageCollected is
-  // complete.
-  void* operator new(size_t size) { return Base::operator new(size); }
-  void operator delete(void* p) { return Base::operator delete(p); };
+  void* operator new(size_t size) = delete;
+  void operator delete(void* p) = delete;
   void* operator new[](size_t size) = delete;
   void operator delete[](void* p) = delete;
   void* operator new(size_t size, NotNullTag null_tag, void* location) {

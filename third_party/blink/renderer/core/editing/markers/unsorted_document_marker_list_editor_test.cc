@@ -16,7 +16,8 @@ namespace blink {
 class UnsortedDocumentMarkerListEditorTest : public testing::Test {
  public:
   UnsortedDocumentMarkerListEditorTest()
-      : marker_list_(new HeapVector<Member<DocumentMarker>>) {}
+      : marker_list_(
+            MakeGarbageCollected<HeapVector<Member<DocumentMarker>>>()) {}
 
  protected:
   DocumentMarker* CreateMarker(unsigned start_offset, unsigned end_offset) {

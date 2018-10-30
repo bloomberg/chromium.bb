@@ -131,7 +131,7 @@ void V8MessageEvent::initMessageEventMethodCustom(
   MessagePortArray* port_array = nullptr;
   const int kPortArrayIndex = 7;
   if (!IsUndefinedOrNull(info[kPortArrayIndex])) {
-    port_array = new MessagePortArray;
+    port_array = MakeGarbageCollected<MessagePortArray>();
     *port_array = NativeValueTraits<IDLSequence<MessagePort>>::NativeValue(
         info.GetIsolate(), info[kPortArrayIndex], exception_state);
     if (exception_state.HadException())

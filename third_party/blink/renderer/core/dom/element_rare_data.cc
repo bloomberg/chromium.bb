@@ -79,7 +79,7 @@ void ElementRareData::ClearComputedStyle() {
 
 AttrNodeList& ElementRareData::EnsureAttrNodeList() {
   if (!attr_node_list_)
-    attr_node_list_ = new AttrNodeList;
+    attr_node_list_ = MakeGarbageCollected<AttrNodeList>();
   return *attr_node_list_;
 }
 

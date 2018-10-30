@@ -282,7 +282,7 @@ void DocumentMarkerController::AddMarkerToNode(const Text& text,
   Member<MarkerLists>& markers =
       markers_.insert(&text, nullptr).stored_value->value;
   if (!markers) {
-    markers = new MarkerLists;
+    markers = MakeGarbageCollected<MarkerLists>();
     markers->Grow(DocumentMarker::kMarkerTypeIndexesCount);
   }
 
@@ -313,8 +313,8 @@ void DocumentMarkerController::MoveMarkers(const Text& src_node,
     return;
 
   if (!markers_.Contains(&dst_node)) {
-    markers_.insert(&dst_node,
-                    new MarkerLists(DocumentMarker::kMarkerTypeIndexesCount));
+    markers_.insert(&dst_node, MakeGarbageCollected<MarkerLists>(
+                                   DocumentMarker::kMarkerTypeIndexesCount));
   }
   MarkerLists* const dst_markers = markers_.at(&dst_node);
 

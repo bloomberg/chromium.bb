@@ -1564,7 +1564,7 @@ const StaticRangeVector* TargetRangesForInputEvent(const Node& node) {
                                 .ComputeVisibleSelectionInDOMTree());
   if (range.IsNull())
     return nullptr;
-  return new StaticRangeVector(1, StaticRange::Create(range));
+  return MakeGarbageCollected<StaticRangeVector>(1, StaticRange::Create(range));
 }
 
 DispatchEventResult DispatchBeforeInputInsertText(
