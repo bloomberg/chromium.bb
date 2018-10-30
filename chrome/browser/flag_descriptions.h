@@ -1906,6 +1906,9 @@ extern const char kCrosRegionsModeHide[];
 extern const char kCrostiniFilesName[];
 extern const char kCrostiniFilesDescription[];
 
+extern const char kCrostiniUsbSupportName[];
+extern const char kCrostiniUsbSupportDescription[];
+
 extern const char kDisableExplicitDmaFencesName[];
 extern const char kDisableExplicitDmaFencesDescription[];
 
