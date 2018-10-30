@@ -27,6 +27,8 @@ nuxGoogleApps.AppItemModel;
 Polymer({
   is: 'apps-chooser',
 
+  behaviors: [I18nBehavior],
+
   properties: {
     /**
      * @type {!Array<!nuxGoogleApps.AppItem>}
@@ -50,6 +52,13 @@ Polymer({
   bookmarkProxy_: null,
 
   /** @override */
+  attached: function() {
+    Polymer.RenderStatus.afterNextRender(this, () => {
+      Polymer.IronA11yAnnouncer.requestAvailability();
+    });
+  },
+
+  /** @override */
   ready() {
     this.appsProxy_ = nux.NuxGoogleAppsProxyImpl.getInstance();
     this.bookmarkProxy_ = nux.BookmarkProxyImpl.getInstance();
@@ -65,19 +74,27 @@ Polymer({
           app.selected = true;
           this.updateBookmark(app);
         });
+        this.updateHasAppsSelected();
+        this.fire('iron-announce', {text: this.i18n('bookmarksAdded')});
       });
     }
   },
 
   /** Called when bookmarks should be removed for all selected apps. */
   removeAllBookmarks() {
+    let removedBookmarks = false;
     this.appList_.forEach(app => {
       if (app.selected) {
         app.selected = false;
         this.updateBookmark(app);
+        removedBookmarks = true;
       }
     });
-    this.updateHasAppsSelected();
+    // Only update and announce if we removed bookmarks.
+    if (removedBookmarks) {
+      this.updateHasAppsSelected();
+      this.fire('iron-announce', {text: this.i18n('bookmarksRemoved')});
+    }
   },
 
   /**
@@ -114,6 +131,12 @@ Polymer({
     e.model.set('item.selected', !item.selected);
     this.updateBookmark(item);
     this.updateHasAppsSelected();
+    // Announcements should NOT be in |updateBookmark| because there should be a
+    // different utterance when all app bookmarks are added/removed.
+    if (item.selected)
+      this.fire('iron-announce', {text: this.i18n('bookmarkAdded')});
+    else
+      this.fire('iron-announce', {text: this.i18n('bookmarkRemoved')});
   },
 
   /**
