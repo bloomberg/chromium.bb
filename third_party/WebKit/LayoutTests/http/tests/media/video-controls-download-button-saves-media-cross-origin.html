@@ -17,6 +17,7 @@ async_test(function(t) {
   // Set up video
   var video = document.querySelector("video");
   video.src = "http://localhost:8000/media/resources/test.ogv";
+  enableTestMode(video);
 
   video.onloadeddata = t.step_func(function() {
     // Click on the download button

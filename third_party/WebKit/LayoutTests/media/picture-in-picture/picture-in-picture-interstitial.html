@@ -13,6 +13,7 @@ async_test(t => {
 
   var video = document.querySelector("video");
   video.src = "../content/test.ogv";
+  enableTestMode(video);
 
   video.onloadedmetadata = t.step_func(function() {
     assert_true(isPictureInPictureButtonEnabled(video), "button should exist");

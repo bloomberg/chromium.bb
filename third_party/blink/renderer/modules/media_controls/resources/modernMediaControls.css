@@ -637,7 +637,28 @@ video::-internal-media-controls-overflow-menu-list {
   background: #FFFFFF;
   box-shadow: 0 1px 9px 0 rgba(0,0,0,0.40);
   border-radius: 2px;
+  transition: transform .2s ease-out, opacity .2s linear;
+  transform-origin: bottom right;
 }
+
+audio::-internal-media-controls-overflow-menu-list.closed,
+video::-internal-media-controls-overflow-menu-list.closed {
+  transform: scale(0);
+  opacity: 0;
+}
+
+
+audio::-webkit-media-controls div[pseudo="-internal-media-controls-overflow-menu-list" i].closed > *,
+video::-webkit-media-controls div[pseudo="-internal-media-controls-overflow-menu-list" i].closed > * {
+  opacity: 0;
+}
+
+audio::-webkit-media-controls div[pseudo="-internal-media-controls-overflow-menu-list" i] > *,
+video::-webkit-media-controls div[pseudo="-internal-media-controls-overflow-menu-list" i] > * {
+  transition: opacity .2s linear .2s;
+}
+
+
 
 audio::-internal-media-controls-text-track-list-header,
 video::-internal-media-controls-text-track-list-header,

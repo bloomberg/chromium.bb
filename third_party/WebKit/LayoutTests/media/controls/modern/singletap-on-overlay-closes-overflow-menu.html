@@ -38,14 +38,12 @@ async_test(t => {
     const overlayCoordinates = coordinatesOutsideElement(mediaControlsOverlayPlayButton(video));
     singleTapAtCoordinates(overlayCoordinates[0] + 1,
                            overlayCoordinates[1] + 1,
-                           t.step_func(checkOverflowMenuDisappeared));
+                           t.step_func_done(checkOverflowMenuDisappeared));
   }
 
   function checkOverflowMenuDisappeared() {
     // The overflow menu should disappear.
-    setTimeout(t.step_func_done(() => {
-      assert_false(isControlVisible(menu));
-    }));
+    assert_false(isControlVisible(menu));
   }
 });
 </script>

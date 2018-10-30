@@ -63,6 +63,9 @@ void MediaControlTextTrackListElement::SetIsWanted(bool wanted) {
   if (wanted)
     RefreshTextTrackListMenu();
 
+  if (!wanted && !GetMediaControls().OverflowMenuIsWanted())
+    GetMediaControls().CloseOverflowMenu();
+
   MediaControlPopupMenuElement::SetIsWanted(wanted);
 }
 
