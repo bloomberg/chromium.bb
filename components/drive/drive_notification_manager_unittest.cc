@@ -184,7 +184,7 @@ TEST_F(DriveNotificationManagerTest, TestBatchInvalidation) {
   task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(5));
 
   // Default corpus is has the id "" when sent to observers.
-  expected_ids = {{"", 1}};
+  expected_ids = {{"", 2}};
   EXPECT_EQ(expected_ids, drive_notification_observer_->GetNotificationIds());
   drive_notification_observer_->ClearNotificationIds();
 
@@ -203,10 +203,19 @@ TEST_F(DriveNotificationManagerTest, TestBatchInvalidation) {
       syncer::Invalidation::Init(kDefaultCorpusObjectId, 1, ""));
   fake_invalidation_service_->EmitInvalidationForTest(
       syncer::Invalidation::Init(team_drive_1_object_id, 2, ""));
+
+  // Emit with an earlier version. This should be ignored.
+  fake_invalidation_service_->EmitInvalidationForTest(
+      syncer::Invalidation::Init(kDefaultCorpusObjectId, 0, ""));
+
+  // Emit without a version. This should be ignored too.
+  fake_invalidation_service_->EmitInvalidationForTest(
+      syncer::Invalidation::InitUnknownVersion(kDefaultCorpusObjectId));
+
   EXPECT_TRUE(drive_notification_observer_->GetNotificationIds().empty());
 
   task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(5));
-  expected_ids = {{"", 1}, {team_drive_id_1, 2}};
+  expected_ids = {{"", 2}, {team_drive_id_1, 2}};
   EXPECT_EQ(expected_ids, drive_notification_observer_->GetNotificationIds());
 }
 
