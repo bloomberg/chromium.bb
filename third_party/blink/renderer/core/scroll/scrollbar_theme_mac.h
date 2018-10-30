@@ -30,7 +30,6 @@
 
 #include "third_party/blink/renderer/core/scroll/ns_scroller_imp_details.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
-#include "third_party/blink/renderer/platform/scroll/web_scrollbar_theme_client.h"
 
 typedef id ScrollbarPainter;
 
@@ -38,8 +37,7 @@ namespace blink {
 
 class Pattern;
 
-class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme,
-                                          public WebScrollbarThemeClient {
+class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
  public:
   ScrollbarThemeMac();
   ~ScrollbarThemeMac() override;
@@ -94,10 +92,15 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme,
 
   float ThumbOpacity(const Scrollbar&) const override;
 
-  void PreferencesChanged() override;
-
   static NSScrollerStyle RecommendedScrollerStyle();
-  static void SetJumpOnTrackClick(bool);
+
+  // See WebScrollbarTheme for parameters description.
+  static void UpdateScrollbarsWithNSDefaults(
+      float initial_button_delay,
+      float autoscroll_button_delay,
+      NSScrollerStyle preferred_scroller_style,
+      bool redraw,
+      bool jump_on_track_click);
 
  protected:
   int MaxOverlapBetweenPages() override { return 40; }
