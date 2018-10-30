@@ -20,7 +20,7 @@ class SampleForAnnotationProcessor {
      */
     @JniStaticNatives
     interface Natives {
-        void foo(String a, int b, char c, int[] d);
+        void foo();
         SampleForAnnotationProcessor bar(SampleForAnnotationProcessor sample);
         String revString(String stringToReverse);
         String[] sendToNative(String[] strs);
@@ -38,7 +38,7 @@ class SampleForAnnotationProcessor {
         samples = SampleForAnnotationProcessorJni.get().sendSamplesToNative(samples);
 
         // Instance of Natives accessed through (classname + "Jni").get().
-        SampleForAnnotationProcessorJni.get().foo("Test", 5, 'c', x);
+        SampleForAnnotationProcessorJni.get().foo();
         SampleForAnnotationProcessor sample = SampleForAnnotationProcessorJni.get().bar(this);
         boolean hasPhalange = SampleForAnnotationProcessorJni.get().hasPhalange();
         String s = SampleForAnnotationProcessorJni.get().revString("abcd");
