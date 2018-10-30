@@ -522,7 +522,7 @@ class CastV2PerformanceTest : public extensions::ExtensionApiTest,
     // prior stage, in whatever form it had, and so it's possible to track
     // specific frames all the way from capture until playout at the receiver.
     std::vector<std::pair<EventMap*, std::string>> event_maps;
-    event_maps.push_back(std::make_pair(&onbuffer, "timestamp"));
+    event_maps.push_back(std::make_pair(&onbuffer, "time_delta"));
     event_maps.push_back(std::make_pair(&sink, "time_delta"));
     event_maps.push_back(std::make_pair(&inserted, "timestamp"));
     event_maps.push_back(std::make_pair(&encoded, "rtp_timestamp"));
@@ -695,13 +695,7 @@ class CastV2PerformanceTest : public extensions::ExtensionApiTest,
 
 }  // namespace
 
-#if defined(OS_WIN)
-#define MAYBE_Performance DISABLED_Performance
-#else
-#define MAYBE_Performance Performance
-#endif
-
-IN_PROC_BROWSER_TEST_P(CastV2PerformanceTest, MAYBE_Performance) {
+IN_PROC_BROWSER_TEST_P(CastV2PerformanceTest, Performance) {
   RunTest("CastV2Performance");
 }
 
