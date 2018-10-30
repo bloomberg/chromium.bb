@@ -32,7 +32,9 @@ int GetLayoutConstant(LayoutConstant constant) {
     case BOOKMARK_BAR_HEIGHT:
       // The fixed margin ensures the bookmark buttons appear centered relative
       // to the white space above and below.
-      return GetLayoutConstant(BOOKMARK_BAR_BUTTON_HEIGHT) + 4;
+      static constexpr int kBookmarkBarAttachedVerticalMargin = 5;
+      return GetLayoutConstant(BOOKMARK_BAR_BUTTON_HEIGHT) +
+             kBookmarkBarAttachedVerticalMargin;
     case BOOKMARK_BAR_BUTTON_HEIGHT:
       return touch_ui ? 36 : 28;
     case BOOKMARK_BAR_NTP_HEIGHT:
