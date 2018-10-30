@@ -61,6 +61,7 @@ const CGFloat kVerticalSpacing = 16;
     _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _textLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+    _textLabel.numberOfLines = 0;
     _textLabel.textColor =
         UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
     _textLabel.backgroundColor = [UIColor clearColor];
