@@ -1182,6 +1182,25 @@ bool ShelfLayoutManager::ShouldBlurShelfBackground() {
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfLayoutManager, Gesture functions:
 
+bool ShelfLayoutManager::ShouldHomeGestureHandleEvent(float scroll_y) const {
+  HomeLauncherGestureHandler* home_launcher_handler =
+      Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
+
+  // If there is no |home_launcher_handler|, return early.
+  if (!home_launcher_handler)
+    return false;
+
+  // If the shelf is not visible, home gesture shouldn't trigger.
+  if (!IsVisible())
+    return false;
+
+  // Scroll down events should never be handled.
+  if (scroll_y >= 0)
+    return false;
+
+  return true;
+}
+
 bool ShelfLayoutManager::StartGestureDrag(
     const ui::GestureEvent& gesture_in_screen) {
   if (CanStartFullscreenAppListDrag(
@@ -1201,14 +1220,16 @@ bool ShelfLayoutManager::StartGestureDrag(
     return true;
   }
 
-  HomeLauncherGestureHandler* home_launcher_handler =
-      Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
-  if (home_launcher_handler && IsVisible() &&
-      home_launcher_handler->OnPressEvent(
-          HomeLauncherGestureHandler::Mode::kSlideUpToShow,
-          gesture_in_screen.location())) {
-    gesture_drag_status_ = GESTURE_DRAG_APPLIST_IN_PROGRESS;
-    return true;
+  if (ShouldHomeGestureHandleEvent(
+          gesture_in_screen.details().scroll_y_hint())) {
+    HomeLauncherGestureHandler* home_launcher_handler =
+        Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
+    if (home_launcher_handler->OnPressEvent(
+            HomeLauncherGestureHandler::Mode::kSlideUpToShow,
+            gesture_in_screen.location())) {
+      gesture_drag_status_ = GESTURE_DRAG_APPLIST_IN_PROGRESS;
+      return true;
+    }
   }
 
   // Disable the shelf dragging if the fullscreen app list is opened.
@@ -1226,13 +1247,14 @@ bool ShelfLayoutManager::StartGestureDrag(
 
 void ShelfLayoutManager::UpdateGestureDrag(
     const ui::GestureEvent& gesture_in_screen) {
-  HomeLauncherGestureHandler* home_launcher_handler =
-      Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
-  if (home_launcher_handler && IsVisible() &&
-      home_launcher_handler->OnScrollEvent(
-          gesture_in_screen.location(),
-          gesture_in_screen.details().scroll_y())) {
-    return;
+  if (ShouldHomeGestureHandleEvent(gesture_in_screen.details().scroll_y())) {
+    HomeLauncherGestureHandler* home_launcher_handler =
+        Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
+    if (home_launcher_handler->OnScrollEvent(
+            gesture_in_screen.location(),
+            gesture_in_screen.details().scroll_y())) {
+      return;
+    }
   }
 
   if (gesture_drag_status_ == GESTURE_DRAG_APPLIST_IN_PROGRESS) {
