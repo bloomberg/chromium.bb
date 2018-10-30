@@ -12,7 +12,7 @@
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
-#include "components/omnibox/browser/test_toolbar_model.h"
+#include "components/omnibox/browser/test_location_bar_model.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/core/tab_restore_service.h"
@@ -354,7 +354,7 @@ TEST_F(BrowserViewControllerTest,
        TestLocationBarBeganEdit_whenPageLoadIsInProgress) {
   OCMockObject* tabMock = static_cast<OCMockObject*>(tab_);
 
-  // Have the TestToolbarModel indicate that a page load is in progress.
+  // Have the TestLocationBarModel indicate that a page load is in progress.
   id partialMock = OCMPartialMock(bvcHelper_);
   OCMExpect([partialMock isToolbarLoading:static_cast<web::WebState*>(
                                               [OCMArg anyPointer])])

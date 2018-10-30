@@ -33,7 +33,7 @@ namespace security_state {
 // numeric values should never be reused.
 //
 // If you change this enum, you may need to update the UI icons in
-// ToolbarModelImpl::GetVectorIcon and GetIconForSecurityState.
+// LocationBarModelImpl::GetVectorIcon and GetIconForSecurityState.
 //
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.security_state

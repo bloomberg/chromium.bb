@@ -4,7 +4,7 @@
 
 #include "chrome/browser/vr/vr_web_contents_observer.h"
 
-#include "chrome/browser/vr/toolbar_helper.h"
+#include "chrome/browser/vr/location_bar_helper.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -13,7 +13,7 @@ namespace vr {
 
 VrWebContentsObserver::VrWebContentsObserver(content::WebContents* web_contents,
                                              BrowserUiInterface* ui_interface,
-                                             ToolbarHelper* toolbar,
+                                             LocationBarHelper* toolbar,
                                              base::OnceClosure on_destroy)
     : WebContentsObserver(web_contents),
       ui_interface_(ui_interface),

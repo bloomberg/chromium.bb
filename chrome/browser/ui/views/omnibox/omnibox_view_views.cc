@@ -28,12 +28,12 @@
 #include "components/feature_engagement/buildflags.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/omnibox_client.h"
 #include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
-#include "components/omnibox/browser/toolbar_model.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
@@ -537,7 +537,8 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
 }
 
 void OmniboxViewViews::UpdateSecurityLevel() {
-  security_level_ = controller()->GetToolbarModel()->GetSecurityLevel(false);
+  security_level_ =
+      controller()->GetLocationBarModel()->GetSecurityLevel(false);
 }
 
 void OmniboxViewViews::SetWindowTextAndCaretPos(const base::string16& text,
@@ -664,7 +665,7 @@ bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
     return false;
 
   base::string16 full_url =
-      controller()->GetToolbarModel()->GetFormattedFullURL();
+      controller()->GetLocationBarModel()->GetFormattedFullURL();
   size_t start, end;
   GetSelectionBounds(&start, &end);
 
@@ -1064,7 +1065,7 @@ void OmniboxViewViews::OnFocus() {
 // it would be immediately useful.
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   if (location_bar_view_ &&
-      controller()->GetToolbarModel()->ShouldDisplayURL()) {
+      controller()->GetLocationBarModel()->ShouldDisplayURL()) {
     feature_engagement::NewTabTrackerFactory::GetInstance()
         ->GetForProfile(location_bar_view_->profile())
         ->OnOmniboxFocused();

@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/omnibox/browser/toolbar_model_impl.h"
+#include "components/omnibox/browser/location_bar_model_impl.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/omnibox/browser/location_bar_model_delegate.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
-#include "components/omnibox/browser/toolbar_model_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace {
 
-class FakeToolbarModelDelegate : public ToolbarModelDelegate {
+class FakeLocationBarModelDelegate : public LocationBarModelDelegate {
  public:
   void SetURL(const GURL& url) { url_ = url; }
 
-  // ToolbarModelDelegate:
+  // LocationBarModelDelegate:
   base::string16 FormattedStringWithEquivalentMeaning(
       const GURL& url,
       const base::string16& formatted_url) const override {
@@ -33,15 +33,15 @@ class FakeToolbarModelDelegate : public ToolbarModelDelegate {
   GURL url_;
 };
 
-TEST(ToolbarModelImplTest,
+TEST(LocationBarModelImplTest,
      DisplayUrlAppliesFormattedStringWithEquivalentMeaning) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures({omnibox::kHideSteadyStateUrlScheme,
                                  omnibox::kHideSteadyStateUrlTrivialSubdomains},
                                 {});
 
-  FakeToolbarModelDelegate delegate;
-  auto model = std::make_unique<ToolbarModelImpl>(&delegate, 1024);
+  FakeLocationBarModelDelegate delegate;
+  auto model = std::make_unique<LocationBarModelImpl>(&delegate, 1024);
 
   delegate.SetURL(GURL("http://www.google.com/"));
 

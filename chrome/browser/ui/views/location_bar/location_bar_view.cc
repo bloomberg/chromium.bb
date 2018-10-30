@@ -61,10 +61,10 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/favicon/content/content_favicon_driver.h"
+#include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
-#include "components/omnibox/browser/toolbar_model.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
@@ -656,8 +656,8 @@ void LocationBarView::UpdateWithoutTabRestore() {
   Update(nullptr);
 }
 
-ToolbarModel* LocationBarView::GetToolbarModel() {
-  return delegate_->GetToolbarModel();
+LocationBarModel* LocationBarView::GetLocationBarModel() {
+  return delegate_->GetLocationBarModel();
 }
 
 WebContents* LocationBarView::GetWebContents() {
@@ -672,7 +672,8 @@ SkColor LocationBarView::GetContentSettingInkDropColor() const {
 }
 
 content::WebContents* LocationBarView::GetContentSettingWebContents() {
-  return GetToolbarModel()->input_in_progress() ? nullptr : GetWebContents();
+  return GetLocationBarModel()->input_in_progress() ? nullptr
+                                                    : GetWebContents();
 }
 
 ContentSettingBubbleModelDelegate*
@@ -948,11 +949,11 @@ void LocationBarView::UpdateLocalCardMigrationIcon() {
 
 void LocationBarView::UpdateBookmarkStarVisibility() {
   if (star_view_) {
-    star_view_->SetVisible(
-        browser_defaults::bookmarks_enabled && !is_popup_mode_ &&
-        !GetToolbarModel()->input_in_progress() &&
-        edit_bookmarks_enabled_.GetValue() &&
-        !IsBookmarkStarHiddenByExtension());
+    star_view_->SetVisible(browser_defaults::bookmarks_enabled &&
+                           !is_popup_mode_ &&
+                           !GetLocationBarModel()->input_in_progress() &&
+                           edit_bookmarks_enabled_.GetValue() &&
+                           !IsBookmarkStarHiddenByExtension());
   }
 }
 
@@ -1112,7 +1113,7 @@ void LocationBarView::AnimationCanceled(const gfx::Animation* animation) {
 
 void LocationBarView::OnChanged() {
   location_icon_view_->Update();
-  clear_all_button_->SetVisible(GetToolbarModel()->input_in_progress() &&
+  clear_all_button_->SetVisible(GetLocationBarModel()->input_in_progress() &&
                                 !omnibox_view_->text().empty() &&
                                 IsVirtualKeyboardVisible(GetWidget()));
   Layout();
@@ -1132,8 +1133,8 @@ void LocationBarView::OnPopupVisibilityChanged() {
   }
 }
 
-const ToolbarModel* LocationBarView::GetToolbarModel() const {
-  return delegate_->GetToolbarModel();
+const LocationBarModel* LocationBarView::GetLocationBarModel() const {
+  return delegate_->GetLocationBarModel();
 }
 
 void LocationBarView::OnOmniboxFocused() {
@@ -1270,12 +1271,13 @@ bool LocationBarView::ShowPageInfoDialog() {
 
 gfx::ImageSkia LocationBarView::GetLocationIcon(
     LocationIconView::Delegate::IconFetchedCallback on_icon_fetched) const {
-  return omnibox_view() ? omnibox_view()->GetIcon(
-                              GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
-                              GetSecurityChipColor(
-                                  GetToolbarModel()->GetSecurityLevel(false)),
-                              std::move(on_icon_fetched))
-                        : gfx::ImageSkia();
+  return omnibox_view()
+             ? omnibox_view()->GetIcon(
+                   GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
+                   GetSecurityChipColor(
+                       GetLocationBarModel()->GetSecurityLevel(false)),
+                   std::move(on_icon_fetched))
+             : gfx::ImageSkia();
 }
 
 SkColor LocationBarView::GetLocationIconInkDropColor() const {

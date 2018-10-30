@@ -11,7 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
-#include "components/omnibox/browser/test_toolbar_model.h"
+#include "components/omnibox/browser/test_location_bar_model.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_test_navigation_manager.h"
@@ -80,7 +80,7 @@ TEST_F(BrowserViewControllerHelperTest, TestIsLoading) {
 
 TEST_F(BrowserViewControllerHelperTest, TestisWebStateBookmarked) {
   // Set the curent tab to |kWebUrl| and create a bookmark for |kWebUrl|, then
-  // verify that the toolbar model indicates that the URL is bookmarked.
+  // verify that the location bar model indicates that the URL is bookmarked.
   web_state_->SetCurrentURL(GURL(kWebUrl));
   bookmarks::BookmarkModel* bookmark_model =
       ios::BookmarkModelFactory::GetForBrowserState(
@@ -92,8 +92,8 @@ TEST_F(BrowserViewControllerHelperTest, TestisWebStateBookmarked) {
                              base::UTF8ToUTF16(kWebUrl), GURL(kWebUrl));
   EXPECT_TRUE([helper_ isWebStateBookmarked:web_state_.get()]);
 
-  // Remove the bookmark and verify the toolbar model indicates that the URL is
-  // not bookmarked.
+  // Remove the bookmark and verify the location bar model indicates that the
+  // URL is not bookmarked.
   bookmark_model->Remove(node);
   EXPECT_FALSE([helper_ isWebStateBookmarked:web_state_.get()]);
 }

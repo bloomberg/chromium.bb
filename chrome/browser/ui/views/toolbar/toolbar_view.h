@@ -132,8 +132,8 @@ class ToolbarView : public views::AccessiblePaneView,
 
   // LocationBarView::Delegate:
   content::WebContents* GetWebContents() override;
-  ToolbarModel* GetToolbarModel() override;
-  const ToolbarModel* GetToolbarModel() const override;
+  LocationBarModel* GetLocationBarModel() override;
+  const LocationBarModel* GetLocationBarModel() const override;
   ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
       override;
 

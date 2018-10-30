@@ -758,9 +758,10 @@ std::unique_ptr<UiElement> CreateWebVrIndicator(Model* model,
   icon_element->set_y_anchoring(TOP);
   icon_element->SetSize(kWebVrPermissionIconSize, kWebVrPermissionIconSize);
   if (spec.is_url) {
-    icon_element->AddBinding(VR_BIND_FUNC(
-        const gfx::VectorIcon*, Model, model, model->toolbar_state.vector_icon,
-        VectorIcon, icon_element.get(), SetIcon));
+    icon_element->AddBinding(VR_BIND_FUNC(const gfx::VectorIcon*, Model, model,
+                                          model->location_bar_state.vector_icon,
+                                          VectorIcon, icon_element.get(),
+                                          SetIcon));
   } else {
     icon_element->SetIcon(spec.icon);
   }
@@ -776,7 +777,7 @@ std::unique_ptr<UiElement> CreateWebVrIndicator(Model* model,
             );
     url_text->SetFieldWidth(kWebVrPermissionTextWidth);
     url_text->AddBinding(VR_BIND_FUNC(GURL, Model, model,
-                                      model->toolbar_state.gurl, UrlText,
+                                      model->location_bar_state.gurl, UrlText,
                                       url_text.get(), SetUrl));
     VR_BIND_COLOR(model, url_text.get(),
                   &ColorScheme::webvr_permission_foreground,
@@ -2099,14 +2100,16 @@ void UiSceneCreator::CreateUrlBar() {
   // This layout contains the page info icon and URL.
   auto origin_layout = Create<LinearLayout>(kUrlBarOriginLayout, kPhaseNone,
                                             LinearLayout::kRight);
-  VR_BIND_VISIBILITY(origin_layout, model->toolbar_state.should_display_url);
+  VR_BIND_VISIBILITY(origin_layout,
+                     model->location_bar_state.should_display_url);
 
   scene_->AddUiElement(kUrlBarOriginRegion, std::move(origin_layout));
 
   // This layout contains hint-text items, shown when there's no origin.
   auto hint_layout =
       Create<LinearLayout>(kUrlBarHintLayout, kPhaseNone, LinearLayout::kRight);
-  VR_BIND_VISIBILITY(hint_layout, !model->toolbar_state.should_display_url);
+  VR_BIND_VISIBILITY(hint_layout,
+                     !model->location_bar_state.should_display_url);
   scene_->AddUiElement(kUrlBarOriginRegion, std::move(hint_layout));
 
   auto security_button_region =
@@ -2127,7 +2130,7 @@ void UiSceneCreator::CreateUrlBar() {
   VR_BIND_BUTTON_COLORS(model_, security_button.get(),
                         &ColorScheme::url_bar_button, &Button::SetButtonColors);
   security_button->AddBinding(std::make_unique<Binding<const gfx::VectorIcon*>>(
-      VR_BIND_LAMBDA([](Model* m) { return m->toolbar_state.vector_icon; },
+      VR_BIND_LAMBDA([](Model* m) { return m->location_bar_state.vector_icon; },
                      base::Unretained(model_)),
       VR_BIND_LAMBDA(
           [](VectorIconButton* e, const gfx::VectorIcon* const& icon) {
@@ -2140,7 +2143,7 @@ void UiSceneCreator::CreateUrlBar() {
       VR_BIND_LAMBDA(
           [](Model* m) {
             ButtonColors colors = m->color_scheme().url_bar_button;
-            if (m->toolbar_state.security_level ==
+            if (m->location_bar_state.security_level ==
                 security_state::SecurityLevel::DANGEROUS) {
               colors.foreground = m->color_scheme().url_bar_dangerous_icon;
             }
@@ -2161,7 +2164,7 @@ void UiSceneCreator::CreateUrlBar() {
                           UiUnsupportedMode::kUnhandledCodePoint));
   url_text->SetFieldWidth(kUrlBarUrlWidthDMM);
   url_text->AddBinding(VR_BIND_FUNC(GURL, Model, model_,
-                                    model->toolbar_state.gurl, UrlText,
+                                    model->location_bar_state.gurl, UrlText,
                                     url_text.get(), SetUrl));
   VR_BIND_COLOR(model_, url_text.get(), &ColorScheme::url_text_emphasized,
                 &UrlText::SetEmphasizedColor);
@@ -2716,7 +2719,7 @@ void UiSceneCreator::CreateOmnibox() {
           [](Model* m) {
             bool editing_omnibox = m->has_mode_in_stack(kModeEditingOmnibox);
             base::string16 url_text =
-                FormatUrlForVr(m->toolbar_state.gurl, nullptr);
+                FormatUrlForVr(m->location_bar_state.gurl, nullptr);
             return std::make_pair(editing_omnibox, url_text);
           },
           base::Unretained(model_)),

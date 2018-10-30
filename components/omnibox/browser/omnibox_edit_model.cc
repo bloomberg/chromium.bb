@@ -26,6 +26,7 @@
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/history_url_provider.h"
 #include "components/omnibox/browser/keyword_provider.h"
+#include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/omnibox_client.h"
 #include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
@@ -38,7 +39,6 @@
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/omnibox/browser/query_in_omnibox.h"
 #include "components/omnibox/browser/search_provider.h"
-#include "components/omnibox/browser/toolbar_model.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
@@ -230,8 +230,8 @@ bool OmniboxEditModel::ResetDisplayTexts() {
   // the user has merely made a partial selection.
   bool user_has_modified_text = view_->GetText() != old_display_text;
 
-  ToolbarModel* toolbar_model = controller()->GetToolbarModel();
-  url_for_editing_ = toolbar_model->GetFormattedFullURL();
+  LocationBarModel* location_bar_model = controller()->GetLocationBarModel();
+  url_for_editing_ = location_bar_model->GetFormattedFullURL();
 
   if (GetQueryInOmniboxSearchTerms(&display_text_)) {
     // The search query has been inserted into |display_text_|.
@@ -239,11 +239,11 @@ bool OmniboxEditModel::ResetDisplayTexts() {
   } else {
 #if defined(OS_IOS)
     // iOS is unusual in that it uses a separate LocationView to show the
-    // ToolbarModel's display-only URL. The actual OmniboxViewIOS widget is
+    // LocationBarModel's display-only URL. The actual OmniboxViewIOS widget is
     // hidden in the defocused state, and always contains the URL for editing.
     display_text_ = url_for_editing_;
 #else
-    display_text_ = toolbar_model->GetURLForDisplay();
+    display_text_ = location_bar_model->GetURLForDisplay();
 #endif
   }
 
@@ -1365,10 +1365,10 @@ bool OmniboxEditModel::GetQueryInOmniboxSearchTerms(
   if (!query_in_omnibox)
     return false;
 
-  ToolbarModel* toolbar_model = controller()->GetToolbarModel();
+  LocationBarModel* location_bar_model = controller()->GetLocationBarModel();
   return query_in_omnibox->GetDisplaySearchTerms(
-      toolbar_model->GetSecurityLevel(false /* ignore_editing */),
-      toolbar_model->GetURL(), search_terms);
+      location_bar_model->GetSecurityLevel(false /* ignore_editing */),
+      location_bar_model->GetURL(), search_terms);
 }
 
 // static

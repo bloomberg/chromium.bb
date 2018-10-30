@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_VR_TEST_UI_PIXEL_TEST_H_
 #define CHROME_BROWSER_VR_TEST_UI_PIXEL_TEST_H_
 
-#include "chrome/browser/vr/model/toolbar_state.h"
+#include "chrome/browser/vr/model/location_bar_state.h"
 #include "chrome/browser/vr/test/gl_test_environment.h"
 #include "chrome/browser/vr/test/mock_content_input_delegate.h"
 #include "chrome/browser/vr/test/mock_ui_browser_interface.h"
@@ -27,7 +27,7 @@ class UiPixelTest : public testing::Test {
 
  protected:
   void MakeUi(const UiInitialState& ui_initial_state,
-              const ToolbarState& toolbar_state);
+              const LocationBarState& location_bar_state);
   void DrawUi(const gfx::Vector3dF& laser_direction,
               const gfx::Point3F& laser_origin,
               ControllerModel::ButtonState button_state,

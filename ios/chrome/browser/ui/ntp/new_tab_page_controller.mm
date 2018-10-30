@@ -42,7 +42,7 @@ using base::UserMetricsAction;
   // Delegate to focus and blur the omnibox.
   __weak id<OmniboxFocuser> _focuser;
 
-  // Delegate to fetch the ToolbarModel and current web state from.
+  // Delegate to fetch the LocationBarModel and current web state from.
   __weak id<NewTabPageControllerDelegate> _toolbarDelegate;
 
   TabModel* _tabModel;

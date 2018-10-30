@@ -532,7 +532,7 @@ public class ToolbarPhone extends ToolbarLayout
         if (mNewTabButton != null) mNewTabButton.postNativeInitialization();
 
         setTabSwitcherAnimationMenuDrawable();
-        updateVisualsForToolbarState();
+        updateVisualsForLocationBarState();
     }
 
     @Override
@@ -1834,7 +1834,7 @@ public class ToolbarPhone extends ToolbarLayout
         }
 
         updateProgressBarVisibility();
-        updateVisualsForToolbarState();
+        updateVisualsForLocationBarState();
         updateTabSwitcherButtonRipple();
     }
 
@@ -1844,7 +1844,7 @@ public class ToolbarPhone extends ToolbarLayout
 
     @Override
     protected void setContentAttached(boolean attached) {
-        updateVisualsForToolbarState();
+        updateVisualsForLocationBarState();
     }
 
     @Override
@@ -1937,7 +1937,7 @@ public class ToolbarPhone extends ToolbarLayout
         if (mTabSwitcherState == EXITING_TAB_SWITCHER) {
             mLocationBar.setUrlBarFocusable(true);
             mTabSwitcherState = STATIC_TAB;
-            updateVisualsForToolbarState();
+            updateVisualsForLocationBarState();
         }
         if (mTabSwitcherState == ENTERING_TAB_SWITCHER) mTabSwitcherState = TAB_SWITCHER;
 
@@ -1945,7 +1945,7 @@ public class ToolbarPhone extends ToolbarLayout
 
         if (!mAnimateNormalToolbar) {
             finishAnimations();
-            updateVisualsForToolbarState();
+            updateVisualsForLocationBarState();
         }
 
         if (mDelayingTabSwitcherAnimation) {
@@ -2269,14 +2269,14 @@ public class ToolbarPhone extends ToolbarLayout
     protected void onTabContentViewChanged() {
         super.onTabContentViewChanged();
         updateNtpAnimationState();
-        updateVisualsForToolbarState();
+        updateVisualsForLocationBarState();
     }
 
     @Override
     protected void onTabOrModelChanged() {
         super.onTabOrModelChanged();
         updateNtpAnimationState();
-        updateVisualsForToolbarState();
+        updateVisualsForLocationBarState();
     }
 
     private static boolean isVisualStateValidForBrandColorTransition(@VisualState int state) {
@@ -2328,7 +2328,7 @@ public class ToolbarPhone extends ToolbarLayout
             @Override
             public void onAnimationEnd(Animator animation) {
                 mBrandColorTransitionActive = false;
-                updateVisualsForToolbarState();
+                updateVisualsForLocationBarState();
             }
         });
         mBrandColorTransitionAnimation.start();
@@ -2379,14 +2379,14 @@ public class ToolbarPhone extends ToolbarLayout
         post(new Runnable() {
             @Override
             public void run() {
-                updateVisualsForToolbarState();
+                updateVisualsForLocationBarState();
                 updateNtpAnimationState();
             }
         });
     }
 
     @Override
-    protected void handleFindToolbarStateChange(boolean showing) {
+    protected void handleFindLocationBarStateChange(boolean showing) {
         setVisibility(showing ? View.GONE : View.VISIBLE);
     }
 
@@ -2443,7 +2443,7 @@ public class ToolbarPhone extends ToolbarLayout
         return getToolbarDataProvider().getPrimaryColor();
     }
 
-    protected void updateVisualsForToolbarState() {
+    protected void updateVisualsForLocationBarState() {
         final boolean isIncognito = isIncognito();
 
         // These are important for setting visual state while the entering or leaving the tab

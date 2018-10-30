@@ -30,11 +30,11 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 
 /**
- * Tests for ToolbarModel.
+ * Tests for LocationBarModel.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class ToolbarModelTest {
+public class LocationBarModelTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
@@ -44,7 +44,7 @@ public class ToolbarModelTest {
     }
 
     /**
-     * After closing all {@link Tab}s, the {@link ToolbarModel} should know that it is not
+     * After closing all {@link Tab}s, the {@link LocationBarModel} should know that it is not
      * showing any {@link Tab}.
      * @throws InterruptedException
      */
@@ -59,7 +59,7 @@ public class ToolbarModelTest {
                 InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
         Assert.assertEquals("Didn't close all tabs.", 0,
                 ChromeTabUtils.getNumOpenTabs(mActivityTestRule.getActivity()));
-        Assert.assertEquals("ToolbarModel is still trying to show a tab.", Tab.INVALID_TAB_ID,
+        Assert.assertEquals("LocationBarModel is still trying to show a tab.", Tab.INVALID_TAB_ID,
                 getCurrentTabId(mActivityTestRule.getActivity()));
     }
 
@@ -67,7 +67,7 @@ public class ToolbarModelTest {
     @SmallTest
     public void testDisplayAndEditText() throws Exception {
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            TestToolbarModel model = new TestToolbarModel();
+            TestLocationBarModel model = new TestLocationBarModel();
             model.mUrl = UrlConstants.NTP_URL;
             assertDisplayAndEditText(model, "", null);
 
@@ -101,7 +101,7 @@ public class ToolbarModelTest {
     /**
      * @param activity A reference to {@link ChromeTabbedActivity} to pull
      *            {@link android.view.View} data from.
-     * @return The id of the current {@link Tab} as far as the {@link ToolbarModel} sees it.
+     * @return The id of the current {@link Tab} as far as the {@link LocationBarModel} sees it.
      */
     public static int getCurrentTabId(final ChromeTabbedActivity activity) {
         ToolbarLayout toolbar = (ToolbarLayout) activity.findViewById(R.id.toolbar);
@@ -112,12 +112,12 @@ public class ToolbarModelTest {
         return tab != null ? tab.getId() : Tab.INVALID_TAB_ID;
     }
 
-    private class TestToolbarModel extends ToolbarModel {
+    private class TestLocationBarModel extends LocationBarModel {
         private String mDisplayUrl;
         private String mFullUrl;
         private String mUrl;
 
-        public TestToolbarModel() {
+        public TestLocationBarModel() {
             super(ContextUtils.getApplicationContext());
             initializeWithNative();
 

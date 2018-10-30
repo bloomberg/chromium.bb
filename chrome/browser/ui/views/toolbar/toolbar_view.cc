@@ -357,12 +357,12 @@ WebContents* ToolbarView::GetWebContents() {
   return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
-ToolbarModel* ToolbarView::GetToolbarModel() {
-  return browser_->toolbar_model();
+LocationBarModel* ToolbarView::GetLocationBarModel() {
+  return browser_->location_bar_model();
 }
 
-const ToolbarModel* ToolbarView::GetToolbarModel() const {
-  return browser_->toolbar_model();
+const LocationBarModel* ToolbarView::GetLocationBarModel() const {
+  return browser_->location_bar_model();
 }
 
 ContentSettingBubbleModelDelegate*

@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/command_updater_delegate.h"
-#include "chrome/browser/ui/toolbar/chrome_toolbar_model_delegate.h"
+#include "chrome/browser/ui/toolbar/chrome_location_bar_model_delegate.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -21,7 +21,7 @@
 class CommandUpdaterImpl;
 class Profile;
 class ReloadButton;
-class ToolbarModel;
+class LocationBarModel;
 
 namespace views {
 class WebView;
@@ -40,7 +40,7 @@ class StubBubbleModelDelegate;
 class SimpleWebViewDialog : public views::ButtonListener,
                             public views::WidgetDelegateView,
                             public LocationBarView::Delegate,
-                            public ChromeToolbarModelDelegate,
+                            public ChromeLocationBarModelDelegate,
                             public CommandUpdaterDelegate,
                             public content::PageNavigator,
                             public content::WebContentsDelegate {
@@ -74,12 +74,12 @@ class SimpleWebViewDialog : public views::ButtonListener,
 
   // Implements LocationBarView::Delegate:
   content::WebContents* GetWebContents() override;
-  ToolbarModel* GetToolbarModel() override;
-  const ToolbarModel* GetToolbarModel() const override;
+  LocationBarModel* GetLocationBarModel() override;
+  const LocationBarModel* GetLocationBarModel() const override;
   ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
       override;
 
-  // Implements ChromeToolbarModelDelegate:
+  // Implements ChromeLocationBarModelDelegate:
   content::WebContents* GetActiveWebContents() const override;
 
   // Implements CommandUpdaterDelegate:
@@ -93,7 +93,7 @@ class SimpleWebViewDialog : public views::ButtonListener,
   void UpdateReload(bool is_loading, bool force);
 
   Profile* profile_;
-  std::unique_ptr<ToolbarModel> toolbar_model_;
+  std::unique_ptr<LocationBarModel> location_bar_model_;
   std::unique_ptr<CommandUpdaterImpl> command_updater_;
 
   // Controls

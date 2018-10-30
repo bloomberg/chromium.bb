@@ -1063,7 +1063,7 @@ public class Tab
     /**
      * @return The current {@link ConnectionSecurityLevel} for the tab.
      */
-    // TODO(tedchoc): Remove this and transition all clients to use ToolbarModel directly.
+    // TODO(tedchoc): Remove this and transition all clients to use LocationBarModel directly.
     public int getSecurityLevel() {
         return SecurityStateModel.getSecurityLevelForWebContents(getWebContents());
     }

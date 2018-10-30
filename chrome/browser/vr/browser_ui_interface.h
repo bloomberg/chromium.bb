@@ -22,7 +22,7 @@ namespace vr {
 struct Assets;
 struct KeyboardTestInput;
 struct OmniboxSuggestions;
-struct ToolbarState;
+struct LocationBarState;
 
 // The browser communicates state changes to the VR UI via this interface.
 // A GL thread would also implement this interface to provide a convenient way
@@ -33,7 +33,7 @@ class VR_EXPORT BrowserUiInterface {
 
   virtual void SetWebVrMode(bool enabled) = 0;
   virtual void SetFullscreen(bool enabled) = 0;
-  virtual void SetToolbarState(const ToolbarState& state) = 0;
+  virtual void SetLocationBarState(const LocationBarState& state) = 0;
   virtual void SetIncognito(bool enabled) = 0;
   virtual void SetLoading(bool loading) = 0;
   virtual void SetLoadProgress(float progress) = 0;

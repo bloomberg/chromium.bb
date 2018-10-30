@@ -122,7 +122,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
   // BrowserUiInterface implementation (Browser calling to UI).
   void SetWebVrMode(bool enabled) override;
   void SetFullscreen(bool enabled) override;
-  void SetToolbarState(const ToolbarState& state) override;
+  void SetLocationBarState(const LocationBarState& state) override;
   void SetIncognito(bool incognito) override;
   void SetLoading(bool loading) override;
   void SetLoadProgress(float progress) override;

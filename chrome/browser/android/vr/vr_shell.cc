@@ -38,12 +38,12 @@
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/vr/assets_loader.h"
 #include "chrome/browser/vr/browser_renderer.h"
+#include "chrome/browser/vr/location_bar_helper.h"
 #include "chrome/browser/vr/metrics/metrics_helper.h"
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
 #include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/text_input_info.h"
-#include "chrome/browser/vr/toolbar_helper.h"
 #include "chrome/browser/vr/ui_test_input.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/browser/vr/vr_web_contents_observer.h"
@@ -174,7 +174,7 @@ VrShell::VrShell(JNIEnv* env,
       pause_content, low_density, &gl_surface_created_event_,
       std::move(surface_callback));
   ui_ = gl_thread_.get();
-  toolbar_ = std::make_unique<ToolbarHelper>(ui_, this);
+  toolbar_ = std::make_unique<LocationBarHelper>(ui_, this);
   autocomplete_controller_ =
       std::make_unique<AutocompleteController>(base::BindRepeating(
           &BrowserUiInterface::SetOmniboxSuggestions, base::Unretained(ui_)));
@@ -1130,7 +1130,7 @@ content::WebContents* VrShell::GetActiveWebContents() const {
 bool VrShell::ShouldDisplayURL() const {
   content::NavigationEntry* entry = GetNavigationEntry();
   if (!entry) {
-    return ChromeToolbarModelDelegate::ShouldDisplayURL();
+    return ChromeLocationBarModelDelegate::ShouldDisplayURL();
   }
   GURL url = entry->GetVirtualURL();
   // URL is of the form chrome-native://.... This is not useful for the user.
@@ -1142,7 +1142,7 @@ bool VrShell::ShouldDisplayURL() const {
   if (url.SchemeIs(content::kChromeUIScheme)) {
     return true;
   }
-  return ChromeToolbarModelDelegate::ShouldDisplayURL();
+  return ChromeLocationBarModelDelegate::ShouldDisplayURL();
 }
 
 void VrShell::OnVoiceResults(const base::string16& result) {

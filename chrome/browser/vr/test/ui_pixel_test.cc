@@ -42,12 +42,12 @@ void UiPixelTest::TearDown() {
 }
 
 void UiPixelTest::MakeUi(const UiInitialState& ui_initial_state,
-                         const ToolbarState& toolbar_state) {
+                         const LocationBarState& location_bar_state) {
   ui_ = std::make_unique<Ui>(browser_.get(), nullptr, nullptr, nullptr, nullptr,
                              ui_initial_state);
   ui_->OnGlInitialized(kGlTextureLocationLocal, content_texture_,
                        content_overlay_texture_, 0);
-  ui_->GetBrowserUiWeakPtr()->SetToolbarState(toolbar_state);
+  ui_->GetBrowserUiWeakPtr()->SetLocationBarState(location_bar_state);
 }
 
 void UiPixelTest::DrawUi(const gfx::Vector3dF& laser_direction,

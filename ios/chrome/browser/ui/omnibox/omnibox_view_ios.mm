@@ -17,9 +17,9 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
-#include "components/omnibox/browser/toolbar_model.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/ui/omnibox/chrome_omnibox_client_ios.h"
@@ -720,7 +720,7 @@ void OmniboxViewIOS::UpdateSchemeStyle(const gfx::Range& range) {
     return;
 
   const security_state::SecurityLevel security_level =
-      controller()->GetToolbarModel()->GetSecurityLevel(false);
+      controller()->GetLocationBarModel()->GetSecurityLevel(false);
 
   if ((security_level == security_state::NONE) ||
       (security_level == security_state::HTTP_SHOW_WARNING)) {
@@ -944,7 +944,7 @@ int OmniboxViewIOS::GetIcon(bool offlinePage) const {
       return IDR_IOS_OMNIBOX_OFFLINE;
     }
     return GetIconForSecurityState(
-        controller()->GetToolbarModel()->GetSecurityLevel(false));
+        controller()->GetLocationBarModel()->GetSecurityLevel(false));
   }
   return GetIconForAutocompleteMatchType(
       model() ? model()->CurrentMatch(nullptr).type

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_OMNIBOX_BROWSER_TEST_TOOLBAR_MODEL_H_
-#define COMPONENTS_OMNIBOX_BROWSER_TEST_TOOLBAR_MODEL_H_
+#ifndef COMPONENTS_OMNIBOX_BROWSER_TEST_LOCATION_BAR_MODEL_H_
+#define COMPONENTS_OMNIBOX_BROWSER_TEST_LOCATION_BAR_MODEL_H_
 
 #include <stddef.h>
 #include <memory>
@@ -11,19 +11,19 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "components/omnibox/browser/toolbar_model.h"
+#include "components/omnibox/browser/location_bar_model.h"
 
 namespace gfx {
 struct VectorIcon;
 }
 
-// A ToolbarModel that is backed by instance variables, which are initialized
-// with some basic values that can be changed with the provided setters. This
-// should be used only for testing.
-class TestToolbarModel : public ToolbarModel {
+// A LocationBarModel that is backed by instance variables, which are
+// initialized with some basic values that can be changed with the provided
+// setters. This should be used only for testing.
+class TestLocationBarModel : public LocationBarModel {
  public:
-  TestToolbarModel();
-  ~TestToolbarModel() override;
+  TestLocationBarModel();
+  ~TestLocationBarModel() override;
   base::string16 GetFormattedFullURL() const override;
   base::string16 GetURLForDisplay() const override;
   GURL GetURL() const override;
@@ -68,7 +68,7 @@ class TestToolbarModel : public ToolbarModel {
   bool should_display_url_ = false;
   bool offline_page_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(TestToolbarModel);
+  DISALLOW_COPY_AND_ASSIGN(TestLocationBarModel);
 };
 
-#endif  // COMPONENTS_OMNIBOX_BROWSER_TEST_TOOLBAR_MODEL_H_
+#endif  // COMPONENTS_OMNIBOX_BROWSER_TEST_LOCATION_BAR_MODEL_H_

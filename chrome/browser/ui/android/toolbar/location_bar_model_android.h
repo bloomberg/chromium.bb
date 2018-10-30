@@ -2,26 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ANDROID_TOOLBAR_TOOLBAR_MODEL_ANDROID_H_
-#define CHROME_BROWSER_UI_ANDROID_TOOLBAR_TOOLBAR_MODEL_ANDROID_H_
+#ifndef CHROME_BROWSER_UI_ANDROID_TOOLBAR_LOCATION_BAR_MODEL_ANDROID_H_
+#define CHROME_BROWSER_UI_ANDROID_TOOLBAR_LOCATION_BAR_MODEL_ANDROID_H_
 
 #include <memory>
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/toolbar/chrome_toolbar_model_delegate.h"
-#include "components/omnibox/browser/toolbar_model.h"
+#include "chrome/browser/ui/toolbar/chrome_location_bar_model_delegate.h"
+#include "components/omnibox/browser/location_bar_model.h"
 
 namespace content {
 class WebContents;
-}  // content
+}  // namespace content
 
-// Owns a ToolbarModel and provides a way for Java to interact with it.
-class ToolbarModelAndroid : public ChromeToolbarModelDelegate {
+// Owns a LocationBarModel and provides a way for Java to interact with it.
+class LocationBarModelAndroid : public ChromeLocationBarModelDelegate {
  public:
-  ToolbarModelAndroid(JNIEnv* env, const base::android::JavaRef<jobject>& obj);
-  ~ToolbarModelAndroid() override;
+  LocationBarModelAndroid(JNIEnv* env,
+                          const base::android::JavaRef<jobject>& obj);
+  ~LocationBarModelAndroid() override;
 
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   base::android::ScopedJavaLocalRef<jstring> GetFormattedFullURL(
@@ -31,14 +32,14 @@ class ToolbarModelAndroid : public ChromeToolbarModelDelegate {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
-  // ChromeToolbarModelDelegate:
+  // ChromeLocationBarModelDelegate:
   content::WebContents* GetActiveWebContents() const override;
 
  private:
-  std::unique_ptr<ToolbarModel> toolbar_model_;
+  std::unique_ptr<LocationBarModel> location_bar_model_;
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ToolbarModelAndroid);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(LocationBarModelAndroid);
 };
 
-#endif  // CHROME_BROWSER_UI_ANDROID_TOOLBAR_TOOLBAR_MODEL_ANDROID_H_
+#endif  // CHROME_BROWSER_UI_ANDROID_TOOLBAR_LOCATION_BAR_MODEL_ANDROID_H_

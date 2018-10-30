@@ -27,7 +27,7 @@
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
-#include "components/omnibox/browser/test_toolbar_model.h"
+#include "components/omnibox/browser/test_location_bar_model.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/input_method.h"
@@ -166,18 +166,20 @@ void TestingOmniboxView::UpdateSchemeStyle(const Range& range) {
 class TestingOmniboxEditController : public ChromeOmniboxEditController {
  public:
   TestingOmniboxEditController(CommandUpdater* command_updater,
-                               ToolbarModel* toolbar_model)
+                               LocationBarModel* location_bar_model)
       : ChromeOmniboxEditController(command_updater),
-        toolbar_model_(toolbar_model) {}
+        location_bar_model_(location_bar_model) {}
 
  private:
   // ChromeOmniboxEditController:
-  ToolbarModel* GetToolbarModel() override { return toolbar_model_; }
-  const ToolbarModel* GetToolbarModel() const override {
-    return toolbar_model_;
+  LocationBarModel* GetLocationBarModel() override {
+    return location_bar_model_;
+  }
+  const LocationBarModel* GetLocationBarModel() const override {
+    return location_bar_model_;
   }
 
-  ToolbarModel* toolbar_model_;
+  LocationBarModel* location_bar_model_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingOmniboxEditController);
 };
@@ -205,7 +207,7 @@ class OmniboxViewViewsTest : public OmniboxViewViewsTestBase {
 
   OmniboxViewViewsTest() : OmniboxViewViewsTest(std::vector<base::Feature>()) {}
 
-  TestToolbarModel* toolbar_model() { return &toolbar_model_; }
+  TestLocationBarModel* location_bar_model() { return &location_bar_model_; }
   TestingOmniboxView* omnibox_view() const { return omnibox_view_; }
   views::Textfield* omnibox_textfield() const { return omnibox_view(); }
   ui::TextEditCommand scheduled_text_edit_command() const {
@@ -236,7 +238,7 @@ class OmniboxViewViewsTest : public OmniboxViewViewsTestBase {
   TestingProfile profile_;
   TemplateURLServiceFactoryTestUtil util_;
   CommandUpdaterImpl command_updater_;
-  TestToolbarModel toolbar_model_;
+  TestLocationBarModel location_bar_model_;
   TestingOmniboxEditController omnibox_edit_controller_;
 
   std::unique_ptr<views::Widget> widget_;
@@ -254,7 +256,7 @@ OmniboxViewViewsTest::OmniboxViewViewsTest(
     : OmniboxViewViewsTestBase(enabled_features),
       util_(&profile_),
       command_updater_(nullptr),
-      omnibox_edit_controller_(&command_updater_, &toolbar_model_) {}
+      omnibox_edit_controller_(&command_updater_, &location_bar_model_) {}
 
 void OmniboxViewViewsTest::SetAndEmphasizeText(const std::string& new_text,
                                                bool accept_input) {
@@ -478,7 +480,7 @@ TEST_F(OmniboxViewViewsTest, Emphasis) {
 }
 
 TEST_F(OmniboxViewViewsTest, RevertOnBlur) {
-  toolbar_model()->set_url(GURL("https://permanent-text.com/"));
+  location_bar_model()->set_url(GURL("https://permanent-text.com/"));
   omnibox_view()->model()->ResetDisplayTexts();
   omnibox_view()->RevertAll();
 
@@ -551,8 +553,9 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
     clock_.Advance(base::TimeDelta::FromSeconds(5));
     ui::SetEventTickClockForTesting(&clock_);
 
-    toolbar_model()->set_url(kFullUrl);
-    toolbar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
+    location_bar_model()->set_url(kFullUrl);
+    location_bar_model()->set_url_for_display(
+        base::ASCIIToUTF16("example.com"));
 
     gfx::test::RenderTextTestApi render_text_test_api(
         omnibox_view()->GetRenderText());
@@ -959,8 +962,9 @@ class OmniboxViewViewsSteadyStateElisionsAndQueryInOmniboxTest
   void SetUp() override {
     OmniboxViewViewsSteadyStateElisionsTest::SetUp();
 
-    toolbar_model()->set_url(kValidSearchResultsPage);
-    toolbar_model()->set_security_level(security_state::SecurityLevel::SECURE);
+    location_bar_model()->set_url(kValidSearchResultsPage);
+    location_bar_model()->set_security_level(
+        security_state::SecurityLevel::SECURE);
 
     omnibox_view()->model()->ResetDisplayTexts();
     omnibox_view()->RevertAll();

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_OMNIBOX_BROWSER_TOOLBAR_MODEL_H_
-#define COMPONENTS_OMNIBOX_BROWSER_TOOLBAR_MODEL_H_
+#ifndef COMPONENTS_OMNIBOX_BROWSER_LOCATION_BAR_MODEL_H_
+#define COMPONENTS_OMNIBOX_BROWSER_LOCATION_BAR_MODEL_H_
 
 #include <stddef.h>
 
@@ -21,9 +21,9 @@ struct VectorIcon;
 // This class is the model used by the toolbar, location bar and autocomplete
 // edit.  It populates its states from the current navigation entry retrieved
 // from the navigation controller returned by GetNavigationController().
-class ToolbarModel {
+class LocationBarModel {
  public:
-  virtual ~ToolbarModel() = default;
+  virtual ~LocationBarModel() = default;
 
   // Returns the formatted full URL for the toolbar. The formatting includes:
   //   - Some characters may be unescaped.
@@ -80,12 +80,12 @@ class ToolbarModel {
   bool input_in_progress() const { return input_in_progress_; }
 
  protected:
-  ToolbarModel() : input_in_progress_(false) {}
+  LocationBarModel() : input_in_progress_(false) {}
 
  private:
   bool input_in_progress_;
 
-  DISALLOW_COPY_AND_ASSIGN(ToolbarModel);
+  DISALLOW_COPY_AND_ASSIGN(LocationBarModel);
 };
 
-#endif  // COMPONENTS_OMNIBOX_BROWSER_TOOLBAR_MODEL_H_
+#endif  // COMPONENTS_OMNIBOX_BROWSER_LOCATION_BAR_MODEL_H_

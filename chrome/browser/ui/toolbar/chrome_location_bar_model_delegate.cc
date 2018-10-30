@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/toolbar/chrome_toolbar_model_delegate.h"
+#include "chrome/browser/ui/toolbar/chrome_location_bar_model_delegate.h"
 
 #include "base/logging.h"
 #include "build/build_config.h"
@@ -26,23 +26,24 @@
 
 #if !defined(OS_ANDROID)
 #include "components/omnibox/browser/vector_icons.h"  // nogncheck
-#endif  // !defined(OS_ANDROID)
+#endif                                                // !defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
-ChromeToolbarModelDelegate::ChromeToolbarModelDelegate() {}
+ChromeLocationBarModelDelegate::ChromeLocationBarModelDelegate() {}
 
-ChromeToolbarModelDelegate::~ChromeToolbarModelDelegate() {}
+ChromeLocationBarModelDelegate::~ChromeLocationBarModelDelegate() {}
 
-content::NavigationEntry* ChromeToolbarModelDelegate::GetNavigationEntry()
+content::NavigationEntry* ChromeLocationBarModelDelegate::GetNavigationEntry()
     const {
   content::NavigationController* controller = GetNavigationController();
   return controller ? controller->GetVisibleEntry() : nullptr;
 }
 
-base::string16 ChromeToolbarModelDelegate::FormattedStringWithEquivalentMeaning(
+base::string16
+ChromeLocationBarModelDelegate::FormattedStringWithEquivalentMeaning(
     const GURL& url,
     const base::string16& formatted_url) const {
   return AutocompleteInput::FormattedStringWithEquivalentMeaning(
@@ -50,7 +51,7 @@ base::string16 ChromeToolbarModelDelegate::FormattedStringWithEquivalentMeaning(
       nullptr);
 }
 
-bool ChromeToolbarModelDelegate::GetURL(GURL* url) const {
+bool ChromeLocationBarModelDelegate::GetURL(GURL* url) const {
   DCHECK(url);
   content::NavigationEntry* entry = GetNavigationEntry();
   if (!entry)
@@ -60,7 +61,7 @@ bool ChromeToolbarModelDelegate::GetURL(GURL* url) const {
   return true;
 }
 
-bool ChromeToolbarModelDelegate::ShouldDisplayURL() const {
+bool ChromeLocationBarModelDelegate::ShouldDisplayURL() const {
   // Note: The order here is important.
   // - The WebUI test must come before the extension scheme test because there
   //   can be WebUIs that have extension schemes (e.g. the bookmark manager). In
@@ -90,7 +91,7 @@ bool ChromeToolbarModelDelegate::ShouldDisplayURL() const {
   return !profile || !search::IsInstantNTPURL(url, profile);
 }
 
-security_state::SecurityLevel ChromeToolbarModelDelegate::GetSecurityLevel()
+security_state::SecurityLevel ChromeLocationBarModelDelegate::GetSecurityLevel()
     const {
   content::WebContents* web_contents = GetActiveWebContents();
   // If there is no active WebContents (which can happen during toolbar
@@ -103,15 +104,15 @@ security_state::SecurityLevel ChromeToolbarModelDelegate::GetSecurityLevel()
   return security_info.security_level;
 }
 
-scoped_refptr<net::X509Certificate> ChromeToolbarModelDelegate::GetCertificate()
-    const {
+scoped_refptr<net::X509Certificate>
+ChromeLocationBarModelDelegate::GetCertificate() const {
   content::NavigationEntry* entry = GetNavigationEntry();
   if (!entry)
     return scoped_refptr<net::X509Certificate>();
   return entry->GetSSL().certificate;
 }
 
-bool ChromeToolbarModelDelegate::FailsBillingCheck() const {
+bool ChromeLocationBarModelDelegate::FailsBillingCheck() const {
   content::WebContents* web_contents = GetActiveWebContents();
   // If there is no active WebContents (which can happen during toolbar
   // initialization), nothing can fail.
@@ -124,7 +125,7 @@ bool ChromeToolbarModelDelegate::FailsBillingCheck() const {
          security_state::MALICIOUS_CONTENT_STATUS_BILLING;
 }
 
-bool ChromeToolbarModelDelegate::FailsMalwareCheck() const {
+bool ChromeLocationBarModelDelegate::FailsMalwareCheck() const {
   content::WebContents* web_contents = GetActiveWebContents();
   // If there is no active WebContents (which can happen during toolbar
   // initialization), nothing can fail.
@@ -138,7 +139,7 @@ bool ChromeToolbarModelDelegate::FailsMalwareCheck() const {
          status != security_state::MALICIOUS_CONTENT_STATUS_NONE;
 }
 
-const gfx::VectorIcon* ChromeToolbarModelDelegate::GetVectorIconOverride()
+const gfx::VectorIcon* ChromeLocationBarModelDelegate::GetVectorIconOverride()
     const {
 #if !defined(OS_ANDROID)
   GURL url;
@@ -154,7 +155,7 @@ const gfx::VectorIcon* ChromeToolbarModelDelegate::GetVectorIconOverride()
   return nullptr;
 }
 
-bool ChromeToolbarModelDelegate::IsOfflinePage() const {
+bool ChromeLocationBarModelDelegate::IsOfflinePage() const {
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   content::WebContents* web_contents = GetActiveWebContents();
   return web_contents &&
@@ -166,7 +167,7 @@ bool ChromeToolbarModelDelegate::IsOfflinePage() const {
 }
 
 content::NavigationController*
-ChromeToolbarModelDelegate::GetNavigationController() const {
+ChromeLocationBarModelDelegate::GetNavigationController() const {
   // This |current_tab| can be null during the initialization of the toolbar
   // during window creation (i.e. before any tabs have been added to the
   // window).
@@ -174,7 +175,7 @@ ChromeToolbarModelDelegate::GetNavigationController() const {
   return current_tab ? &current_tab->GetController() : nullptr;
 }
 
-Profile* ChromeToolbarModelDelegate::GetProfile() const {
+Profile* ChromeLocationBarModelDelegate::GetProfile() const {
   content::NavigationController* controller = GetNavigationController();
   return controller
              ? Profile::FromBrowserContext(controller->GetBrowserContext())

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_TOOLBAR_CHROME_TOOLBAR_MODEL_DELEGATE_H_
-#define CHROME_BROWSER_UI_TOOLBAR_CHROME_TOOLBAR_MODEL_DELEGATE_H_
+#ifndef CHROME_BROWSER_UI_TOOLBAR_CHROME_LOCATION_BAR_MODEL_DELEGATE_H_
+#define CHROME_BROWSER_UI_TOOLBAR_CHROME_LOCATION_BAR_MODEL_DELEGATE_H_
 
 #include "base/macros.h"
-#include "components/omnibox/browser/toolbar_model_delegate.h"
+#include "components/omnibox/browser/location_bar_model_delegate.h"
 
 class Profile;
 
@@ -14,21 +14,21 @@ namespace content {
 class NavigationEntry;
 class NavigationController;
 class WebContents;
-}
+}  // namespace content
 
-// Implementation of ToolbarModelDelegate for the Chrome embedder. It leaves out
-// how to fetch the active WebContents to its subclasses.
-class ChromeToolbarModelDelegate : public ToolbarModelDelegate {
+// Implementation of LocationBarModelDelegate for the Chrome embedder. It leaves
+// out how to fetch the active WebContents to its subclasses.
+class ChromeLocationBarModelDelegate : public LocationBarModelDelegate {
  public:
   // Returns active WebContents.
   virtual content::WebContents* GetActiveWebContents() const = 0;
 
-  // ToolbarModelDelegate:
+  // LocationBarModelDelegate:
   bool ShouldDisplayURL() const override;
 
  protected:
-  ChromeToolbarModelDelegate();
-  ~ChromeToolbarModelDelegate() override;
+  ChromeLocationBarModelDelegate();
+  ~ChromeLocationBarModelDelegate() override;
 
   // Helper method to get the navigation entry from the navigation controller.
   content::NavigationEntry* GetNavigationEntry() const;
@@ -53,7 +53,7 @@ class ChromeToolbarModelDelegate : public ToolbarModelDelegate {
   // Helper method to extract the profile from the navigation controller.
   Profile* GetProfile() const;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeToolbarModelDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ChromeLocationBarModelDelegate);
 };
 
-#endif  // CHROME_BROWSER_UI_TOOLBAR_CHROME_TOOLBAR_MODEL_DELEGATE_H_
+#endif  // CHROME_BROWSER_UI_TOOLBAR_CHROME_LOCATION_BAR_MODEL_DELEGATE_H_

@@ -18,9 +18,9 @@
 #include "chrome/browser/vr/gl_texture_location.h"
 #include "chrome/browser/vr/graphics_delegate.h"
 #include "chrome/browser/vr/model/assets.h"
+#include "chrome/browser/vr/model/location_bar_state.h"
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
-#include "chrome/browser/vr/model/toolbar_state.h"
 #include "chrome/browser/vr/render_info.h"
 #include "chrome/browser/vr/speech_recognizer.h"
 #include "chrome/browser/vr/test/constants.h"
@@ -579,9 +579,9 @@ void VrTestContext::ExitFullscreen() {
 }
 
 void VrTestContext::Navigate(GURL gurl, NavigationMethod method) {
-  ToolbarState state(gurl, security_state::SecurityLevel::HTTP_SHOW_WARNING,
-                     &omnibox::kHttpIcon, true, false);
-  ui_->GetBrowserUiWeakPtr()->SetToolbarState(state);
+  LocationBarState state(gurl, security_state::SecurityLevel::HTTP_SHOW_WARNING,
+                         &omnibox::kHttpIcon, true, false);
+  ui_->GetBrowserUiWeakPtr()->SetLocationBarState(state);
   page_load_start_ = base::TimeTicks::Now();
 }
 
@@ -739,7 +739,7 @@ void VrTestContext::CycleIndicators() {
 }
 
 void VrTestContext::CycleOrigin() {
-  const std::vector<ToolbarState> states = {
+  const std::vector<LocationBarState> states = {
       {GURL("http://domain.com"),
        security_state::SecurityLevel::HTTP_SHOW_WARNING, &omnibox::kHttpIcon,
        true, false},
@@ -791,7 +791,7 @@ void VrTestContext::CycleOrigin() {
   };
 
   static int state = 0;
-  ui_->GetBrowserUiWeakPtr()->SetToolbarState(states[state]);
+  ui_->GetBrowserUiWeakPtr()->SetLocationBarState(states[state]);
   state = (state + 1) % states.size();
 }
 
