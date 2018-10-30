@@ -5,7 +5,6 @@
 #include "content/browser/devtools/protocol/system_info_handler.h"
 
 #include <stdint.h>
-
 #include <utility>
 
 #include "base/bind.h"
@@ -16,7 +15,9 @@
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
+#include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/render_process_host.h"
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_switches.h"
@@ -230,6 +231,66 @@ void SystemInfoHandler::GetInfo(std::unique_ptr<GetInfoCallback> callback) {
   // Register a transient observer with it to call us back when the
   // information is available.
   new SystemInfoHandlerGpuObserver(std::move(callback));
+}
+
+namespace {
+
+std::unique_ptr<base::ProcessMetrics> CreateProcessMetrics(
+    base::ProcessHandle handle) {
+#if defined(OS_MACOSX)
+  return base::ProcessMetrics::CreateProcessMetrics(
+      handle, content::BrowserChildProcessHost::GetPortProvider());
+#else
+  return base::ProcessMetrics::CreateProcessMetrics(handle);
+#endif
+}
+
+std::unique_ptr<protocol::SystemInfo::ProcessInfo> MakeProcessInfo(
+    const base::Process& process,
+    const String& process_type) {
+  std::unique_ptr<base::ProcessMetrics> pm =
+      CreateProcessMetrics(process.Handle());
+  base::TimeDelta cpu_usage = pm->GetCumulativeCPUUsage();
+
+  return SystemInfo::ProcessInfo::Create()
+      .SetId(process.Pid())
+      .SetType(process_type)
+      .SetCpuTime(cpu_usage.InSecondsF())
+      .Build();
+}
+
+void AddBrowserProcessInfo(
+    protocol::Array<protocol::SystemInfo::ProcessInfo>* process_info) {
+  process_info->addItem(
+      MakeProcessInfo(base::Process::Current(),
+                      protocol::SystemInfo::ProcessTypeEnum::Browser));
+}
+
+void AddRendererProcessInfo(
+    protocol::Array<protocol::SystemInfo::ProcessInfo>* process_info) {
+  for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
+       !it.IsAtEnd(); it.Advance()) {
+    RenderProcessHost* host = it.GetCurrentValue();
+    if (host->GetProcess().IsValid()) {
+      process_info->addItem(MakeProcessInfo(
+          host->GetProcess(), protocol::SystemInfo::ProcessTypeEnum::Renderer));
+    }
+  }
+}
+
+}  // namespace
+
+Response SystemInfoHandler::GetProcessInfo(
+    std::unique_ptr<protocol::Array<protocol::SystemInfo::ProcessInfo>>*
+        process_info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  *process_info = protocol::Array<SystemInfo::ProcessInfo>::create();
+
+  AddBrowserProcessInfo(process_info->get());
+  AddRendererProcessInfo(process_info->get());
+
+  return Response::OK();
 }
 
 }  // namespace protocol
