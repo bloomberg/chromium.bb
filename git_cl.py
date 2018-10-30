@@ -5878,6 +5878,22 @@ class OptionParser(optparse.OptionParser):
         help='Use 2 times for more debugging info')
 
   def parse_args(self, args=None, _values=None):
+    try:
+      return self._parse_args(args)
+    finally:
+      # Regardless of success or failure of args parsing, we want to report
+      # metrics, but only after logging has been initialized (if parsing
+      # succeeded).
+      global settings
+      settings = Settings()
+
+      if not metrics.DISABLE_METRICS_COLLECTION:
+        # GetViewVCUrl ultimately calls logging method.
+        project_url = settings.GetViewVCUrl().strip('/+')
+        if project_url in metrics_utils.KNOWN_PROJECT_URLS:
+          metrics.collector.add('project_urls', [project_url])
+
+  def _parse_args(self, args=None):
     # Create an optparse.Values object that will store only the actual passed
     # options, without the defaults.
     actual_options = optparse.Values()
@@ -5905,15 +5921,6 @@ def main(argv):
     print('\nYour python version %s is unsupported, please upgrade.\n' %
           (sys.version.split(' ', 1)[0],), file=sys.stderr)
     return 2
-
-  # Reload settings.
-  global settings
-  settings = Settings()
-
-  if not metrics.DISABLE_METRICS_COLLECTION:
-    project_url = settings.GetViewVCUrl().strip('/+')
-    if project_url in metrics_utils.KNOWN_PROJECT_URLS:
-      metrics.collector.add('project_urls', [project_url])
 
   colorize_CMDstatus_doc()
   dispatcher = subcommand.CommandDispatcher(__name__)
