@@ -835,7 +835,7 @@ void InspectorNetworkAgent::WillSendRequest(
       // use ResourceRequest::referrer_. See https://crbug.com/850813. This
       // seems to require storing the referrer info that is currently stored
       // inside state_'s kExtraRequestHeaders, somewhere else.
-      if (header_name.LowerASCII() == HTTPNames::Referer.LowerASCII())
+      if (header_name.LowerASCII() == http_names::kReferer.LowerASCII())
         request.SetHTTPReferrer(Referrer(value, kReferrerPolicyAlways));
       else
         request.SetHTTPHeaderField(header_name, AtomicString(value));

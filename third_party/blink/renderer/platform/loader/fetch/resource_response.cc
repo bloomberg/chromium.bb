@@ -342,7 +342,7 @@ double ResourceResponse::LastModified() const {
 
 bool ResourceResponse::IsAttachment() const {
   static const char kAttachmentString[] = "attachment";
-  String value = http_header_fields_.Get(HTTPNames::Content_Disposition);
+  String value = http_header_fields_.Get(http_names::kContentDisposition);
   size_t loc = value.find(';');
   if (loc != kNotFound)
     value = value.Left(loc);
@@ -352,7 +352,7 @@ bool ResourceResponse::IsAttachment() const {
 
 AtomicString ResourceResponse::HttpContentType() const {
   return ExtractMIMETypeFromMediaType(
-      HttpHeaderField(HTTPNames::Content_Type).DeprecatedLower());
+      HttpHeaderField(http_names::kContentType).DeprecatedLower());
 }
 
 bool ResourceResponse::WasCached() const {

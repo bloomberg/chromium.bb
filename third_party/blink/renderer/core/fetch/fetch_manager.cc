@@ -106,7 +106,7 @@ class EmptyDataHandle final : public WebDataConsumerHandle {
 
 bool HasNonEmptyLocationHeader(const FetchHeaderList* headers) {
   String value;
-  if (!headers->Get(HTTPNames::Location, value))
+  if (!headers->Get(http_names::kLocation, value))
     return false;
   return !value.IsEmpty();
 }
@@ -839,8 +839,8 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
                                AtomicString(header.second));
   }
 
-  if (fetch_request_data_->Method() != HTTPNames::GET &&
-      fetch_request_data_->Method() != HTTPNames::HEAD) {
+  if (fetch_request_data_->Method() != http_names::kGET &&
+      fetch_request_data_->Method() != http_names::kHEAD) {
     if (fetch_request_data_->Buffer()) {
       request.SetHTTPBody(
           fetch_request_data_->Buffer()->DrainAsFormData(exception_state));

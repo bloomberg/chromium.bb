@@ -1176,7 +1176,7 @@ ResourceLoader::CheckResponseNosniff(mojom::RequestContextType request_context,
                                      const ResourceResponse& response) const {
   bool sniffing_allowed =
       ParseContentTypeOptionsHeader(response.HttpHeaderField(
-          HTTPNames::X_Content_Type_Options)) != kContentTypeOptionsNosniff;
+          http_names::kXContentTypeOptions)) != kContentTypeOptionsNosniff;
   if (sniffing_allowed)
     return base::nullopt;
 

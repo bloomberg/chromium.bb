@@ -1412,7 +1412,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderPostRequest) {
   KURL test_url(kTestURL);
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
   ResourceRequest resource_request(test_url);
-  resource_request.SetHTTPMethod(HTTPNames::POST);
+  resource_request.SetHTTPMethod(http_names::kPOST);
   FetchParameters params(resource_request);
   params.SetAllowImagePlaceholder();
   ImageResource* image_resource = ImageResource::Fetch(params, CreateFetcher());

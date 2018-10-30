@@ -481,7 +481,7 @@ static void WriteImageToDataObject(DataObject* data_object,
   data_object->AddSharedBuffer(
       image_buffer, image_url, image->FilenameExtension(),
       cached_image->GetResponse().HttpHeaderFields().Get(
-          HTTPNames::Content_Disposition));
+          http_names::kContentDisposition));
 }
 
 void DataTransfer::DeclareAndWriteDragImage(Element* element,

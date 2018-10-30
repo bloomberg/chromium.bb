@@ -140,7 +140,7 @@ TEST_F(ResourceFetcherTest, UseExistingResource) {
   KURL url("http://127.0.0.1:8000/foo.html");
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
-  response.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
+  response.SetHTTPHeaderField(http_names::kCacheControl, "max-age=3600");
   RegisterMockedURLLoadWithCustomResponse(url, response);
 
   FetchParameters fetch_params{ResourceRequest(url)};
@@ -167,7 +167,7 @@ TEST_F(ResourceFetcherTest, WillSendRequestAdBit) {
   AddResourceToMemoryCache(resource);
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
-  response.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
+  response.SetHTTPHeaderField(http_names::kCacheControl, "max-age=3600");
   resource->ResponseReceived(response, nullptr);
   resource->FinishForTest();
 
@@ -200,8 +200,8 @@ TEST_F(ResourceFetcherTest, Vary) {
 
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
-  response.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
-  response.SetHTTPHeaderField(HTTPNames::Vary, "*");
+  response.SetHTTPHeaderField(http_names::kCacheControl, "max-age=3600");
+  response.SetHTTPHeaderField(http_names::kVary, "*");
   resource->ResponseReceived(response, nullptr);
   resource->FinishForTest();
   ASSERT_TRUE(resource->MustReloadDueToVaryHeader(ResourceRequest(url)));
@@ -268,8 +268,8 @@ TEST_F(ResourceFetcherTest, VaryOnBack) {
 
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
-  response.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
-  response.SetHTTPHeaderField(HTTPNames::Vary, "*");
+  response.SetHTTPHeaderField(http_names::kCacheControl, "max-age=3600");
+  response.SetHTTPHeaderField(http_names::kVary, "*");
   resource->ResponseReceived(response, nullptr);
   resource->FinishForTest();
   ASSERT_TRUE(resource->MustReloadDueToVaryHeader(ResourceRequest(url)));
@@ -288,8 +288,8 @@ TEST_F(ResourceFetcherTest, VaryResource) {
   KURL url("http://127.0.0.1:8000/foo.html");
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
-  response.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
-  response.SetHTTPHeaderField(HTTPNames::Vary, "*");
+  response.SetHTTPHeaderField(http_names::kCacheControl, "max-age=3600");
+  response.SetHTTPHeaderField(http_names::kVary, "*");
   RegisterMockedURLLoadWithCustomResponse(url, response);
 
   FetchParameters fetch_params_original{ResourceRequest(url)};
@@ -353,13 +353,13 @@ TEST_F(ResourceFetcherTest, RevalidateWhileFinishingLoading) {
 
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
-  response.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
-  response.SetHTTPHeaderField(HTTPNames::ETag, "1234567890");
+  response.SetHTTPHeaderField(http_names::kCacheControl, "max-age=3600");
+  response.SetHTTPHeaderField(http_names::kETag, "1234567890");
   RegisterMockedURLLoadWithCustomResponse(url, response);
 
   ResourceFetcher* fetcher1 = ResourceFetcher::Create(Context());
   ResourceRequest request1(url);
-  request1.SetHTTPHeaderField(HTTPNames::Cache_Control, "no-cache");
+  request1.SetHTTPHeaderField(http_names::kCacheControl, "no-cache");
   FetchParameters fetch_params1(request1);
   Persistent<RequestSameResourceOnComplete> client =
       new RequestSameResourceOnComplete(fetch_params1, fetcher1);
@@ -464,7 +464,7 @@ class ScopedMockRedirectRequester {
     WebURLResponse redirect_response;
     redirect_response.SetURL(redirect_url);
     redirect_response.SetHTTPStatusCode(301);
-    redirect_response.SetHTTPHeaderField(HTTPNames::Location, to_url);
+    redirect_response.SetHTTPHeaderField(http_names::kLocation, to_url);
     redirect_response.SetEncodedDataLength(kRedirectResponseOverheadBytes);
     Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
         redirect_url, redirect_response, "");
@@ -883,7 +883,7 @@ TEST_F(ResourceFetcherTest, StaleWhileRevalidate) {
 
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
-  response.SetHTTPHeaderField(HTTPNames::Cache_Control,
+  response.SetHTTPHeaderField(http_names::kCacheControl,
                               "max-age=0, stale-while-revalidate=40");
 
   RegisterMockedURLLoadWithCustomResponse(url, response);

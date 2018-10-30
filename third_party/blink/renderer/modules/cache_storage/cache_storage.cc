@@ -170,7 +170,7 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   const ScriptPromise promise = resolver->Promise();
 
-  if (request->method() != HTTPNames::GET && !options.ignoreMethod()) {
+  if (request->method() != http_names::kGET && !options.ignoreMethod()) {
     resolver->Resolve();
     return promise;
   }

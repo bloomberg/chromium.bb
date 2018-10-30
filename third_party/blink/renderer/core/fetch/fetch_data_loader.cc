@@ -343,7 +343,7 @@ class FetchDataLoaderAsFormData final : public FetchDataLoader,
    public:
     bool Initialize(const HTTPHeaderMap& header_fields) {
       const ParsedContentDisposition disposition(
-          header_fields.Get(HTTPNames::Content_Disposition));
+          header_fields.Get(http_names::kContentDisposition));
       const String disposition_type = disposition.Type();
       filename_ = disposition.Filename();
       name_ = disposition.ParameterValueForName("name");
@@ -354,7 +354,7 @@ class FetchDataLoaderAsFormData final : public FetchDataLoader,
       if (!filename_.IsNull()) {
         blob_data_ = BlobData::Create();
         const AtomicString& content_type =
-            header_fields.Get(HTTPNames::Content_Type);
+            header_fields.Get(http_names::kContentType);
         blob_data_->SetContentType(content_type.IsNull() ? "text/plain"
                                                          : content_type);
       } else {

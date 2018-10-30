@@ -504,8 +504,8 @@ Request* Request::CreateRequestWithRequestOrString(
   v8::Local<v8::Value> init_body =
       init.hasBody() ? init.body().V8Value() : v8::Local<v8::Value>();
   if ((!init_body.IsEmpty() && !init_body->IsNull()) || temporary_body) {
-    if (request->Method() == HTTPNames::GET ||
-        request->Method() == HTTPNames::HEAD) {
+    if (request->Method() == http_names::kGET ||
+        request->Method() == http_names::kHEAD) {
       exception_state.ThrowTypeError(
           "Request with GET/HEAD method cannot have body.");
       return nullptr;
@@ -529,8 +529,8 @@ Request* Request::CreateRequestWithRequestOrString(
     temporary_body =
         ExtractBody(script_state, exception_state, init_body, content_type);
     if (!content_type.IsEmpty() &&
-        !r->getHeaders()->has(HTTPNames::Content_Type, exception_state)) {
-      r->getHeaders()->append(HTTPNames::Content_Type, content_type,
+        !r->getHeaders()->has(http_names::kContentType, exception_state)) {
+      r->getHeaders()->append(http_names::kContentType, content_type,
                               exception_state);
     }
     if (exception_state.HadException())
@@ -910,7 +910,7 @@ String Request::MimeType() const {
 
 String Request::ContentType() const {
   String result;
-  request_->HeaderList()->Get(HTTPNames::Content_Type, result);
+  request_->HeaderList()->Get(http_names::kContentType, result);
   return result;
 }
 

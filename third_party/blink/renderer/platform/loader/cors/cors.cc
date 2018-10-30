@@ -87,9 +87,9 @@ base::Optional<network::CORSErrorStatus> CheckAccess(
     const SecurityOrigin& origin) {
   return network::cors::CheckAccess(
       response_url, response_status_code,
-      GetHeaderValue(response_header, HTTPNames::Access_Control_Allow_Origin),
+      GetHeaderValue(response_header, http_names::kAccessControlAllowOrigin),
       GetHeaderValue(response_header,
-                     HTTPNames::Access_Control_Allow_Credentials),
+                     http_names::kAccessControlAllowCredentials),
       credentials_mode, AsUrlOrigin(origin));
 }
 
@@ -101,9 +101,9 @@ base::Optional<network::CORSErrorStatus> CheckPreflightAccess(
     const SecurityOrigin& origin) {
   return network::cors::CheckPreflightAccess(
       response_url, response_status_code,
-      GetHeaderValue(response_header, HTTPNames::Access_Control_Allow_Origin),
+      GetHeaderValue(response_header, http_names::kAccessControlAllowOrigin),
       GetHeaderValue(response_header,
-                     HTTPNames::Access_Control_Allow_Credentials),
+                     http_names::kAccessControlAllowCredentials),
       actual_credentials_mode, AsUrlOrigin(origin));
 }
 
@@ -129,8 +129,8 @@ base::Optional<network::mojom::CORSError> CheckPreflight(
 
 base::Optional<network::CORSErrorStatus> CheckExternalPreflight(
     const HTTPHeaderMap& response_header) {
-  return network::cors::CheckExternalPreflight(GetHeaderValue(
-      response_header, HTTPNames::Access_Control_Allow_External));
+  return network::cors::CheckExternalPreflight(
+      GetHeaderValue(response_header, http_names::kAccessControlAllowExternal));
 }
 
 bool IsCORSEnabledRequestMode(network::mojom::FetchRequestMode request_mode) {
@@ -153,11 +153,11 @@ base::Optional<network::CORSErrorStatus> EnsurePreflightResultAndCacheOnSuccess(
       network::cors::PreflightResult::Create(
           request_credentials_mode,
           GetOptionalHeaderValue(response_header_map,
-                                 HTTPNames::Access_Control_Allow_Methods),
+                                 http_names::kAccessControlAllowMethods),
           GetOptionalHeaderValue(response_header_map,
-                                 HTTPNames::Access_Control_Allow_Headers),
+                                 http_names::kAccessControlAllowHeaders),
           GetOptionalHeaderValue(response_header_map,
-                                 HTTPNames::Access_Control_Max_Age),
+                                 http_names::kAccessControlMaxAge),
           &error);
   if (error)
     return network::CORSErrorStatus(*error);

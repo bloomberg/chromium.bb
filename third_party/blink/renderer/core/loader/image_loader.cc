@@ -489,7 +489,7 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
     bool page_is_being_dismissed =
         document.PageDismissalEventBeingDispatched() != Document::kNoDismissal;
     if (page_is_being_dismissed) {
-      resource_request.SetHTTPHeaderField(HTTPNames::Cache_Control,
+      resource_request.SetHTTPHeaderField(http_names::kCacheControl,
                                           "max-age=0");
       resource_request.SetKeepalive(true);
       resource_request.SetRequestContext(mojom::RequestContextType::PING);

@@ -68,7 +68,7 @@ void WorkerClassicScriptLoader::LoadSynchronously(
   execution_context_ = &execution_context;
 
   ResourceRequest request(url);
-  request.SetHTTPMethod(HTTPNames::GET);
+  request.SetHTTPMethod(http_names::kGET);
   request.SetExternalRequestStateFromRequestorAddressSpace(
       creation_address_space);
   request.SetRequestContext(request_context);
@@ -102,7 +102,7 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
   forbid_cross_origin_redirects_ = true;
 
   ResourceRequest request(url);
-  request.SetHTTPMethod(HTTPNames::GET);
+  request.SetHTTPMethod(http_names::kGET);
   request.SetExternalRequestStateFromRequestorAddressSpace(
       creation_address_space);
   request.SetRequestContext(request_context);
@@ -165,10 +165,10 @@ void WorkerClassicScriptLoader::DidReceiveResponse(
   response_encoding_ = response.TextEncodingName();
   app_cache_id_ = response.AppCacheID();
 
-  referrer_policy_ = response.HttpHeaderField(HTTPNames::Referrer_Policy);
+  referrer_policy_ = response.HttpHeaderField(http_names::kReferrerPolicy);
   ProcessContentSecurityPolicy(response);
   origin_trial_tokens_ = OriginTrialContext::ParseHeaderValue(
-      response.HttpHeaderField(HTTPNames::Origin_Trial));
+      response.HttpHeaderField(http_names::kOriginTrial));
 
   if (network_utils::IsReservedIPAddress(response.RemoteIPAddress())) {
     response_address_space_ =

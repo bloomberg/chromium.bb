@@ -160,7 +160,7 @@ ResourceLoadPriority TypeToPriority(ResourceType type) {
 static bool IsCacheableHTTPMethod(const AtomicString& method) {
   // Per http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.10,
   // these methods always invalidate the cache entry.
-  return method != HTTPNames::POST && method != HTTPNames::PUT &&
+  return method != http_names::kPOST && method != http_names::kPUT &&
          method != "DELETE";
 }
 
@@ -701,7 +701,7 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
         resource_type, kImageNotImageSet, Context().IsMainFrame()));
   }
   if (resource_type == ResourceType::kLinkPrefetch)
-    resource_request.SetHTTPHeaderField(HTTPNames::Purpose, "prefetch");
+    resource_request.SetHTTPHeaderField(http_names::kPurpose, "prefetch");
 
   // Indicate whether the network stack can return a stale resource. If a
   // stale resource is returned a StaleRevalidation request will be scheduled.
@@ -712,7 +712,7 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   // critical.
   resource_request.SetAllowStaleResponse(
       stale_while_revalidate_enabled_ &&
-      resource_request.HttpMethod() == HTTPNames::GET &&
+      resource_request.HttpMethod() == http_names::kGET &&
       !IsRawResource(resource_type) && !params.IsStaleRevalidation());
 
   Context().AddAdditionalRequestHeaders(
@@ -955,24 +955,24 @@ void ResourceFetcher::InitializeRevalidation(
   revalidating_request.SetIsRevalidating(true);
 
   const AtomicString& last_modified =
-      resource->GetResponse().HttpHeaderField(HTTPNames::Last_Modified);
+      resource->GetResponse().HttpHeaderField(http_names::kLastModified);
   const AtomicString& e_tag =
-      resource->GetResponse().HttpHeaderField(HTTPNames::ETag);
+      resource->GetResponse().HttpHeaderField(http_names::kETag);
   if (!last_modified.IsEmpty() || !e_tag.IsEmpty()) {
     DCHECK_NE(mojom::FetchCacheMode::kBypassCache,
               revalidating_request.GetCacheMode());
     if (revalidating_request.GetCacheMode() ==
         mojom::FetchCacheMode::kValidateCache) {
-      revalidating_request.SetHTTPHeaderField(HTTPNames::Cache_Control,
+      revalidating_request.SetHTTPHeaderField(http_names::kCacheControl,
                                               "max-age=0");
     }
   }
   if (!last_modified.IsEmpty()) {
-    revalidating_request.SetHTTPHeaderField(HTTPNames::If_Modified_Since,
+    revalidating_request.SetHTTPHeaderField(http_names::kIfModifiedSince,
                                             last_modified);
   }
   if (!e_tag.IsEmpty())
-    revalidating_request.SetHTTPHeaderField(HTTPNames::If_None_Match, e_tag);
+    revalidating_request.SetHTTPHeaderField(http_names::kIfNoneMatch, e_tag);
 
   resource->SetRevalidatingRequest(revalidating_request);
 }
@@ -1033,7 +1033,7 @@ void ResourceFetcher::StorePerformanceTimingInitiatorInformation(
 
   if (resource->IsCacheValidator()) {
     const AtomicString& timing_allow_origin =
-        resource->GetResponse().HttpHeaderField(HTTPNames::Timing_Allow_Origin);
+        resource->GetResponse().HttpHeaderField(http_names::kTimingAllowOrigin);
     if (!timing_allow_origin.IsEmpty())
       info->SetOriginalTimingAllowOrigin(timing_allow_origin);
   }
@@ -1630,7 +1630,7 @@ void ResourceFetcher::HandleLoaderFinish(
           WebString::FromUTF8(timing_info.alpn_negotiated_protocol));
       response.SetConnectionInfo(timing_info.connection_info);
       response.SetHTTPHeaderField(
-          HTTPNames::Timing_Allow_Origin,
+          http_names::kTimingAllowOrigin,
           WebString::FromUTF8(timing_info.timing_allow_origin));
       response.SetEncodedDataLength(timing_info.transfer_size);
       preflight_info->SetFinalResponse(response);

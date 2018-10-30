@@ -41,7 +41,7 @@ TEST_F(FontResourceTest,
   KURL url("http://127.0.0.1:8000/font.woff");
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
-  response.SetHTTPHeaderField(HTTPNames::ETag, "1234567890");
+  response.SetHTTPHeaderField(http_names::kETag, "1234567890");
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       url, WrappedResourceResponse(response), "");
 

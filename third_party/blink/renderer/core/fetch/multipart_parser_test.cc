@@ -83,18 +83,18 @@ TEST(MultipartParserTest, AppendDataInChunks) {
     EXPECT_TRUE(client->GetPart(0).data_fully_received);
     EXPECT_EQ(1u, client->GetPart(1).header_fields.size());
     EXPECT_EQ("application/xhtml+xml",
-              client->GetPart(1).header_fields.Get(HTTPNames::Content_Type));
+              client->GetPart(1).header_fields.Get(http_names::kContentType));
     EXPECT_EQ("1", toString(client->GetPart(1).data));
     EXPECT_TRUE(client->GetPart(1).data_fully_received);
     EXPECT_EQ(1u, client->GetPart(2).header_fields.size());
     EXPECT_EQ("text/html",
-              client->GetPart(2).header_fields.Get(HTTPNames::Content_Type));
+              client->GetPart(2).header_fields.Get(http_names::kContentType));
     EXPECT_EQ("2\r\n--\r\n--bound--\r\n--\r\n2\r\n",
               toString(client->GetPart(2).data));
     EXPECT_TRUE(client->GetPart(2).data_fully_received);
     EXPECT_EQ(1u, client->GetPart(3).header_fields.size());
     EXPECT_EQ("text/plain; charset=iso-8859-1",
-              client->GetPart(3).header_fields.Get(HTTPNames::Content_Type));
+              client->GetPart(3).header_fields.Get(http_names::kContentType));
     EXPECT_EQ("333", toString(client->GetPart(3).data));
     EXPECT_TRUE(client->GetPart(3).data_fully_received);
   }
@@ -126,18 +126,18 @@ TEST(MultipartParserTest, Epilogue) {
     EXPECT_TRUE(client->GetPart(0).data_fully_received);
     EXPECT_EQ(1u, client->GetPart(1).header_fields.size());
     EXPECT_EQ("application/xhtml+xml",
-              client->GetPart(1).header_fields.Get(HTTPNames::Content_Type));
+              client->GetPart(1).header_fields.Get(http_names::kContentType));
     EXPECT_EQ("1", toString(client->GetPart(1).data));
     EXPECT_TRUE(client->GetPart(1).data_fully_received);
     EXPECT_EQ(1u, client->GetPart(2).header_fields.size());
     EXPECT_EQ("text/html",
-              client->GetPart(2).header_fields.Get(HTTPNames::Content_Type));
+              client->GetPart(2).header_fields.Get(http_names::kContentType));
     EXPECT_EQ("2\r\n--\r\n--bound--\r\n--\r\n2\r\n",
               toString(client->GetPart(2).data));
     EXPECT_TRUE(client->GetPart(2).data_fully_received);
     EXPECT_EQ(1u, client->GetPart(3).header_fields.size());
     EXPECT_EQ("text/plain; charset=iso-8859-1",
-              client->GetPart(3).header_fields.Get(HTTPNames::Content_Type));
+              client->GetPart(3).header_fields.Get(http_names::kContentType));
     switch (end) {
       case 15u:
         EXPECT_EQ("333\r\n--boundar", toString(client->GetPart(3).data));
@@ -165,7 +165,7 @@ TEST(MultipartParserTest, NoEndBoundary) {
   EXPECT_EQ(1u, client->NumberOfParts());
   EXPECT_EQ(1u, client->GetPart(0).header_fields.size());
   EXPECT_EQ("application/xhtml+xml",
-            client->GetPart(0).header_fields.Get(HTTPNames::Content_Type));
+            client->GetPart(0).header_fields.Get(http_names::kContentType));
   EXPECT_EQ("1", toString(client->GetPart(0).data));
   EXPECT_FALSE(client->GetPart(0).data_fully_received);
 }
@@ -220,19 +220,19 @@ TEST(MultipartParserTest, Preamble) {
         EXPECT_EQ(3u, client->NumberOfParts()) << " start=" << start;
         EXPECT_EQ(1u, client->GetPart(0).header_fields.size());
         EXPECT_EQ("application/xhtml+xml", client->GetPart(0).header_fields.Get(
-                                               HTTPNames::Content_Type));
+                                               http_names::kContentType));
         EXPECT_EQ("1", toString(client->GetPart(0).data));
         EXPECT_TRUE(client->GetPart(0).data_fully_received);
         EXPECT_EQ(1u, client->GetPart(1).header_fields.size());
         EXPECT_EQ("text/html", client->GetPart(1).header_fields.Get(
-                                   HTTPNames::Content_Type));
+                                   http_names::kContentType));
         EXPECT_EQ("2\r\n--\r\n--bound--\r\n--\r\n2\r\n",
                   toString(client->GetPart(1).data));
         EXPECT_TRUE(client->GetPart(1).data_fully_received);
         EXPECT_EQ(1u, client->GetPart(2).header_fields.size());
         EXPECT_EQ(
             "text/plain; charset=iso-8859-1",
-            client->GetPart(2).header_fields.Get(HTTPNames::Content_Type));
+            client->GetPart(2).header_fields.Get(http_names::kContentType));
         EXPECT_EQ("333", toString(client->GetPart(2).data));
         EXPECT_TRUE(client->GetPart(2).data_fully_received);
         break;
@@ -243,19 +243,19 @@ TEST(MultipartParserTest, Preamble) {
         EXPECT_TRUE(client->GetPart(0).data_fully_received);
         EXPECT_EQ(1u, client->GetPart(1).header_fields.size());
         EXPECT_EQ("application/xhtml+xml", client->GetPart(1).header_fields.Get(
-                                               HTTPNames::Content_Type));
+                                               http_names::kContentType));
         EXPECT_EQ("1", toString(client->GetPart(1).data));
         EXPECT_TRUE(client->GetPart(1).data_fully_received);
         EXPECT_EQ(1u, client->GetPart(2).header_fields.size());
         EXPECT_EQ("text/html", client->GetPart(2).header_fields.Get(
-                                   HTTPNames::Content_Type));
+                                   http_names::kContentType));
         EXPECT_EQ("2\r\n--\r\n--bound--\r\n--\r\n2\r\n",
                   toString(client->GetPart(2).data));
         EXPECT_TRUE(client->GetPart(2).data_fully_received);
         EXPECT_EQ(1u, client->GetPart(3).header_fields.size());
         EXPECT_EQ(
             "text/plain; charset=iso-8859-1",
-            client->GetPart(3).header_fields.Get(HTTPNames::Content_Type));
+            client->GetPart(3).header_fields.Get(http_names::kContentType));
         EXPECT_EQ("333", toString(client->GetPart(3).data));
         EXPECT_TRUE(client->GetPart(3).data_fully_received);
         break;

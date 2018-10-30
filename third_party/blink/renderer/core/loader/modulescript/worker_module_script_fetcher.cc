@@ -82,7 +82,7 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
     // Step 13.5. "Set worker global scope's referrer policy to the result of
     // parsing the `Referrer-Policy` header of response." [spec text]
     const String referrer_policy_header =
-        resource->GetResponse().HttpHeaderField(HTTPNames::Referrer_Policy);
+        resource->GetResponse().HttpHeaderField(http_names::kReferrerPolicy);
     if (!referrer_policy_header.IsNull()) {
       ReferrerPolicy referrer_policy = kReferrerPolicyDefault;
       SecurityPolicy::ReferrerPolicyFromHeaderValue(

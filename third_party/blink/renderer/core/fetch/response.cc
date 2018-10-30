@@ -498,7 +498,7 @@ String Response::MimeType() const {
 
 String Response::ContentType() const {
   String result;
-  response_->HeaderList()->Get(HTTPNames::Content_Type, result);
+  response_->HeaderList()->Get(http_names::kContentType, result);
   return result;
 }
 

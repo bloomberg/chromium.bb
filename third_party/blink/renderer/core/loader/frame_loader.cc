@@ -683,7 +683,7 @@ WebFrameLoadType FrameLoader::DetermineFrameLoadType(
     return WebFrameLoadType::kReplaceCurrentItem;
 
   if (resource_request.Url() == document_loader_->UrlForHistory()) {
-    if (resource_request.HttpMethod() == HTTPNames::POST)
+    if (resource_request.HttpMethod() == http_names::kPOST)
       return WebFrameLoadType::kStandard;
     if (!origin_document)
       return WebFrameLoadType::kReload;
@@ -1419,7 +1419,7 @@ bool FrameLoader::ShouldPerformFragmentNavigation(bool is_form_submission,
   // We don't do this if we are submitting a form with method other than "GET",
   // explicitly reloading, currently displaying a frameset, or if the URL does
   // not have a fragment.
-  return DeprecatedEqualIgnoringCase(http_method, HTTPNames::GET) &&
+  return DeprecatedEqualIgnoringCase(http_method, http_names::kGET) &&
          !IsReloadLoadType(load_type) &&
          load_type != WebFrameLoadType::kBackForward &&
          url.HasFragmentIdentifier() &&
@@ -1666,7 +1666,7 @@ void FrameLoader::ModifyRequestForCSP(ResourceRequest& resource_request,
   if (!RequiredCSP().IsEmpty()) {
     DCHECK(
         ContentSecurityPolicy::IsValidCSPAttr(RequiredCSP().GetString(), ""));
-    resource_request.SetHTTPHeaderField(HTTPNames::Sec_Required_CSP,
+    resource_request.SetHTTPHeaderField(http_names::kSecRequiredCSP,
                                         RequiredCSP());
   }
 
@@ -1676,12 +1676,12 @@ void FrameLoader::ModifyRequestForCSP(ResourceRequest& resource_request,
   if (resource_request.GetFrameType() !=
       network::mojom::RequestContextFrameType::kNone) {
     // Early return if the request has already been upgraded.
-    if (!resource_request.HttpHeaderField(HTTPNames::Upgrade_Insecure_Requests)
+    if (!resource_request.HttpHeaderField(http_names::kUpgradeInsecureRequests)
              .IsNull()) {
       return;
     }
 
-    resource_request.SetHTTPHeaderField(HTTPNames::Upgrade_Insecure_Requests,
+    resource_request.SetHTTPHeaderField(http_names::kUpgradeInsecureRequests,
                                         "1");
   }
 

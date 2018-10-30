@@ -5487,7 +5487,7 @@ String Document::lastModified() const {
     if (DocumentLoader* document_loader = Loader()) {
       const AtomicString& http_last_modified =
           document_loader->GetResponse().HttpHeaderField(
-              HTTPNames::Last_Modified);
+              http_names::kLastModified);
       if (!http_last_modified.IsEmpty()) {
         double date_value = ParseDate(http_last_modified);
         if (!std::isnan(date_value)) {

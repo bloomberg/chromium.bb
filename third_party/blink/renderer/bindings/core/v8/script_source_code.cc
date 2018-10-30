@@ -38,12 +38,12 @@ KURL StripFragmentIdentifier(const KURL& url) {
 }
 
 String SourceMapUrlFromResponse(const ResourceResponse& response) {
-  String source_map_url = response.HttpHeaderField(HTTPNames::SourceMap);
+  String source_map_url = response.HttpHeaderField(http_names::kSourceMap);
   if (!source_map_url.IsEmpty())
     return source_map_url;
 
   // Try to get deprecated header.
-  return response.HttpHeaderField(HTTPNames::X_SourceMap);
+  return response.HttpHeaderField(http_names::kXSourceMap);
 }
 
 }  // namespace

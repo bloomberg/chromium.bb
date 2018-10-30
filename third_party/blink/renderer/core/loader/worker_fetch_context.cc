@@ -319,7 +319,7 @@ void WorkerFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
     return;
 
   if (save_data_enabled_)
-    request.SetHTTPHeaderField(HTTPNames::Save_Data, "on");
+    request.SetHTTPHeaderField(http_names::kSaveData, "on");
 }
 
 void WorkerFetchContext::DispatchWillSendRequest(

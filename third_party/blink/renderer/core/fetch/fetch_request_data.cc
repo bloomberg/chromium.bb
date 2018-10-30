@@ -124,7 +124,7 @@ FetchRequestData* FetchRequestData::Pass(ScriptState* script_state,
 FetchRequestData::~FetchRequestData() {}
 
 FetchRequestData::FetchRequestData()
-    : method_(HTTPNames::GET),
+    : method_(http_names::kGET),
       header_list_(FetchHeaderList::Create()),
       context_(mojom::RequestContextType::UNSPECIFIED),
       same_origin_data_url_flag_(false),

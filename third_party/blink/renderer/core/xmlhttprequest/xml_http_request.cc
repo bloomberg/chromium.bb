@@ -809,7 +809,7 @@ void XMLHttpRequest::send(
 }
 
 bool XMLHttpRequest::AreMethodAndURLValidForSend() {
-  return method_ != HTTPNames::GET && method_ != HTTPNames::HEAD &&
+  return method_ != http_names::kGET && method_ != http_names::kHEAD &&
          url_.ProtocolIsInHTTPFamily();
 }
 
@@ -868,7 +868,7 @@ void XMLHttpRequest::send(Blob* body, ExceptionState& exception_state) {
     if (!HasContentTypeRequestHeader()) {
       const String& blob_type = FetchUtils::NormalizeHeaderValue(body->type());
       if (!blob_type.IsEmpty() && ParsedContentType(blob_type).IsValid()) {
-        SetRequestHeaderInternal(HTTPNames::Content_Type,
+        SetRequestHeaderInternal(http_names::kContentType,
                                  AtomicString(blob_type));
       }
     }
@@ -906,7 +906,7 @@ void XMLHttpRequest::send(FormData* body, ExceptionState& exception_state) {
       AtomicString content_type =
           AtomicString("multipart/form-data; boundary=") +
           FetchUtils::NormalizeHeaderValue(http_body->Boundary().data());
-      SetRequestHeaderInternal(HTTPNames::Content_Type, content_type);
+      SetRequestHeaderInternal(http_names::kContentType, content_type);
     }
   }
 
@@ -993,7 +993,7 @@ void XMLHttpRequest::ThrowForLoadFailureIfNeeded(
 void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
                                    ExceptionState& exception_state) {
   // Only GET request is supported for blob URL.
-  if (url_.ProtocolIs("blob") && method_ != HTTPNames::GET) {
+  if (url_.ProtocolIs("blob") && method_ != http_names::kGET) {
     HandleNetworkError();
 
     if (!async_) {
@@ -1063,8 +1063,8 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
                      request_headers_, with_credentials_);
 
   if (http_body) {
-    DCHECK_NE(method_, HTTPNames::GET);
-    DCHECK_NE(method_, HTTPNames::HEAD);
+    DCHECK_NE(method_, http_names::kGET);
+    DCHECK_NE(method_, http_names::kHEAD);
     request.SetHTTPBody(std::move(http_body));
   }
 
@@ -1436,7 +1436,7 @@ void XMLHttpRequest::SetRequestHeaderInternal(const AtomicString& name,
 }
 
 bool XMLHttpRequest::HasContentTypeRequestHeader() const {
-  return request_headers_.Find(HTTPNames::Content_Type) !=
+  return request_headers_.Find(http_names::kContentType) !=
          request_headers_.end();
 }
 
@@ -1517,9 +1517,10 @@ AtomicString XMLHttpRequest::FinalResponseMIMEType() const {
   if (!overridden_type.IsEmpty())
     return overridden_type;
 
-  if (response_.IsHTTP())
+  if (response_.IsHTTP()) {
     return ExtractMIMETypeFromMediaType(
-        response_.HttpHeaderField(HTTPNames::Content_Type));
+        response_.HttpHeaderField(http_names::kContentType));
+  }
 
   return response_.MimeType();
 }
@@ -1545,14 +1546,14 @@ void XMLHttpRequest::UpdateContentTypeAndCharset(
     const String& charset) {
   // http://xhr.spec.whatwg.org/#the-send()-method step 4's concilliation of
   // "charset=" in any author-provided Content-Type: request header.
-  String content_type = request_headers_.Get(HTTPNames::Content_Type);
+  String content_type = request_headers_.Get(http_names::kContentType);
   if (content_type.IsNull()) {
-    SetRequestHeaderInternal(HTTPNames::Content_Type, default_content_type);
+    SetRequestHeaderInternal(http_names::kContentType, default_content_type);
     return;
   }
   String original_content_type = content_type;
   ReplaceCharsetInMediaType(content_type, charset);
-  request_headers_.Set(HTTPNames::Content_Type, AtomicString(content_type));
+  request_headers_.Set(http_names::kContentType, AtomicString(content_type));
 
   if (original_content_type != content_type) {
     UseCounter::Count(GetExecutionContext(), WebFeature::kReplaceCharsetInXHR);
