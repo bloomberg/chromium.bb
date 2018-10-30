@@ -429,7 +429,7 @@ VideoCaptureSettings ComputeVideoDeviceCaptureSettings(
   auto track_adapter_settings = SelectVideoTrackAdapterSettings(
       basic_constraint_set, candidate_format.resolution_set(),
       candidate_format.constrained_frame_rate(),
-      capture_params.requested_format);
+      capture_params.requested_format, true /* enable_rescale */);
 
   return VideoCaptureSettings(device->device_id, capture_params,
                               noise_reduction, track_adapter_settings,
