@@ -36,7 +36,7 @@ class ExoClientPerfTestSuite : public ash::AshTestSuite {
     client_thread.Start();
 
     base::RunLoop run_loop;
-    client_thread.message_loop()->task_runner()->PostTask(
+    client_thread.task_runner()->PostTask(
         FROM_HERE,
         base::BindOnce(&ExoClientPerfTestSuite::RunTestsOnClientThread,
                        base::Unretained(this), run_loop.QuitWhenIdleClosure()));

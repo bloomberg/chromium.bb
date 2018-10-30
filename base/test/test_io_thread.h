@@ -40,12 +40,8 @@ class TestIOThread {
   // Post |task| to the IO thread.
   void PostTask(const Location& from_here, base::OnceClosure task);
 
-  base::MessageLoopForIO* message_loop() {
-    return static_cast<base::MessageLoopForIO*>(io_thread_.message_loop());
-  }
-
   scoped_refptr<SingleThreadTaskRunner> task_runner() {
-    return message_loop()->task_runner();
+    return io_thread_.task_runner();
   }
 
  private:

@@ -73,7 +73,7 @@ class MultiThreadedTest {
 
  private:
   void ExpectOnThread() {
-    EXPECT_TRUE(thread_.message_loop()->IsBoundToCurrentThread());
+    EXPECT_TRUE(thread_.task_runner()->BelongsToCurrentThread());
   }
 
   void RegisterThreadForEvents() {

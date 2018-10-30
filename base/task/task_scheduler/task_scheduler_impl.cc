@@ -157,9 +157,8 @@ void TaskSchedulerImpl::Start(
 
 #if defined(OS_POSIX) && !defined(OS_NACL_SFI)
   // Needs to happen after starting the service thread to get its
-  // message_loop().
-  task_tracker_->set_watch_file_descriptor_message_loop(
-      static_cast<MessageLoopForIO*>(service_thread_->message_loop()));
+  // task_runner().
+  task_tracker_->set_io_thread_task_runner(service_thread_->task_runner());
 #endif  // defined(OS_POSIX) && !defined(OS_NACL_SFI)
 
   // Needs to happen after starting the service thread to get its task_runner().

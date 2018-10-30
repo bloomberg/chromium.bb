@@ -132,23 +132,22 @@ bool PostTaskHelper(WebThread::ID identifier,
   if (!target_thread_outlives_current)
     globals.lock.Acquire();
 
-  base::MessageLoop* message_loop =
-      globals.threads[identifier] ? globals.threads[identifier]->message_loop()
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      globals.threads[identifier] ? globals.threads[identifier]->task_runner()
                                   : nullptr;
-  if (message_loop) {
+  if (task_runner) {
     if (nestable) {
-      message_loop->task_runner()->PostDelayedTask(from_here, std::move(task),
-                                                   delay);
+      task_runner->PostDelayedTask(from_here, std::move(task), delay);
     } else {
-      message_loop->task_runner()->PostNonNestableDelayedTask(
-          from_here, std::move(task), delay);
+      task_runner->PostNonNestableDelayedTask(from_here, std::move(task),
+                                              delay);
     }
   }
 
   if (!target_thread_outlives_current)
     globals.lock.Release();
 
-  return !!message_loop;
+  return !!task_runner;
 }
 
 class WebThreadTaskExecutor : public base::TaskExecutor {

@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
@@ -201,34 +202,6 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // relationship with this one.
   void DetachFromSequence();
 
-  // Returns the message loop for this thread.  Use the MessageLoop's
-  // PostTask methods to execute code on the thread.  This only returns
-  // non-null after a successful call to Start.  After Stop has been called,
-  // this will return nullptr.
-  //
-  // NOTE: You must not call this MessageLoop's Quit method directly.  Use
-  // the Thread's Stop method instead.
-  //
-  // In addition to this Thread's owning sequence, this can also safely be
-  // called from the underlying thread itself.
-  MessageLoop* message_loop() const {
-    // This class doesn't provide synchronization around |message_loop_| and as
-    // such only the owner should access it (and the underlying thread which
-    // never sees it before it's set). In practice, many callers are coming from
-    // unrelated threads but provide their own implicit (e.g. memory barriers
-    // from task posting) or explicit (e.g. locks) synchronization making the
-    // access of |message_loop_| safe... Changing all of those callers is
-    // unfeasible; instead verify that they can reliably see
-    // |message_loop_ != nullptr| without synchronization as a proof that their
-    // external synchronization catches the unsynchronized effects of Start().
-    // TODO(gab): Despite all of the above this test has to be disabled for now
-    // per crbug.com/629139#c6.
-    // DCHECK(owning_sequence_checker_.CalledOnValidSequence() ||
-    //        (id_event_.IsSignaled() && id_ == PlatformThread::CurrentId()) ||
-    //        message_loop_);
-    return message_loop_;
-  }
-
   // Returns a TaskRunner for this thread. Use the TaskRunner's PostTask
   // methods to execute code on the thread. Returns nullptr if the thread is not
   // running (e.g. before Start or after Stop have been called). Callers can
@@ -238,7 +211,15 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // In addition to this Thread's owning sequence, this can also safely be
   // called from the underlying thread itself.
   scoped_refptr<SingleThreadTaskRunner> task_runner() const {
-    // Refer to the DCHECK and comment inside |message_loop()|.
+    // This class doesn't provide synchronization around |message_loop_| and as
+    // such only the owner should access it (and the underlying thread which
+    // never sees it before it's set). In practice, many callers are coming from
+    // unrelated threads but provide their own implicit (e.g. memory barriers
+    // from task posting) or explicit (e.g. locks) synchronization making the
+    // access of |message_loop_| safe... Changing all of those callers is
+    // unfeasible; instead verify that they can reliably see
+    // |message_loop_ != nullptr| without synchronization as a proof that their
+    // external synchronization catches the unsynchronized effects of Start().
     DCHECK(owning_sequence_checker_.CalledOnValidSequence() ||
            (id_event_.IsSignaled() && id_ == PlatformThread::CurrentId()) ||
            message_loop_);
@@ -283,7 +264,29 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
     return using_external_message_loop_;
   }
 
+  // Returns the message loop for this thread.  Use the MessageLoop's
+  // PostTask methods to execute code on the thread.  This only returns
+  // non-null after a successful call to Start.  After Stop has been called,
+  // this will return nullptr.
+  //
+  // NOTE: You must not call this MessageLoop's Quit method directly.  Use
+  // the Thread's Stop method instead.
+  //
+  // In addition to this Thread's owning sequence, this can also safely be
+  // called from the underlying thread itself.
+  MessageLoop* message_loop() const {
+    // See the comment inside |task_runner()|.
+    DCHECK(owning_sequence_checker_.CalledOnValidSequence() ||
+           (id_event_.IsSignaled() && id_ == PlatformThread::CurrentId()) ||
+           message_loop_);
+    return message_loop_;
+  }
+
  private:
+  // Friends for message_loop() access:
+  friend class MessageLoopTaskRunnerTest;
+  friend class ScheduleWorkTest;
+
 #if defined(OS_WIN)
   enum ComStatus {
     NONE,

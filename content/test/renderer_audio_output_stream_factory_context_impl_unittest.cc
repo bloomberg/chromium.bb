@@ -235,8 +235,7 @@ TEST_F(RendererAudioOutputStreamFactoryIntegrationTest,
 
   base::Thread renderer_side_ipc_thread("Renderer IPC thread");
   ASSERT_TRUE(renderer_side_ipc_thread.Start());
-  auto renderer_ipc_task_runner =
-      renderer_side_ipc_thread.message_loop()->task_runner();
+  auto renderer_ipc_task_runner = renderer_side_ipc_thread.task_runner();
 
   // Bind |stream_factory| to |renderer_ipc_task_runner|.
   mojom::RendererAudioOutputStreamFactory* factory_ptr;

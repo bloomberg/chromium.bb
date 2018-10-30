@@ -458,16 +458,15 @@ void BrowserTestBase::PostTaskToInProcessRendererAndWait(
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kSingleProcess));
 
-  scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner;
+  scoped_refptr<base::SingleThreadTaskRunner> renderer_task_runner =
+      RenderProcessHostImpl::GetInProcessRendererThreadTaskRunnerForTesting();
+  CHECK(renderer_task_runner);
 
-  base::MessageLoop* renderer_loop =
-      RenderProcessHostImpl::GetInProcessRendererThreadForTesting();
-  CHECK(renderer_loop);
-
-  renderer_loop->task_runner()->PostTask(
+  base::RunLoop run_loop;
+  renderer_task_runner->PostTask(
       FROM_HERE,
-      base::BindOnce(&RunTaskOnRendererThread, task, runner->QuitClosure()));
-  runner->Run();
+      base::BindOnce(&RunTaskOnRendererThread, task, run_loop.QuitClosure()));
+  run_loop.Run();
 }
 
 void BrowserTestBase::EnablePixelOutput() { enable_pixel_output_ = true; }

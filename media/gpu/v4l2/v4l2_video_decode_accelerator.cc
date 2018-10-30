@@ -1232,7 +1232,7 @@ void V4L2VideoDecodeAccelerator::ServiceDeviceTask(bool event_pending) {
   // * device_poll_thread_ scheduled us, but then a ResetTask() or DestroyTask()
   //   shut it down, in which case we're either in kResetting or kError states
   //   respectively, and we should have early-outed already.
-  DCHECK(device_poll_thread_.message_loop());
+  DCHECK(device_poll_thread_.task_runner());
   // Queue the DevicePollTask() now.
   device_poll_thread_.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&V4L2VideoDecodeAccelerator::DevicePollTask,

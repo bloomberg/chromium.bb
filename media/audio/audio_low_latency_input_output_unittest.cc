@@ -12,11 +12,11 @@
 #include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -82,10 +82,13 @@ class AudioLowLatencyInputOutputTest : public testing::Test {
   ~AudioLowLatencyInputOutputTest() override { audio_manager_->Shutdown(); }
 
   AudioManager* audio_manager() { return audio_manager_.get(); }
-  base::MessageLoopForUI* message_loop() { return &message_loop_; }
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
+    return task_environment_.GetMainThreadTaskRunner();
+  }
 
  private:
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::UI};
   std::unique_ptr<AudioManager> audio_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioLowLatencyInputOutputTest);
@@ -387,7 +390,7 @@ TEST_F(AudioLowLatencyInputOutputTest, DISABLED_FullDuplexDelayMeasurement) {
   // Wait for approximately 10 seconds. The user will hear their own voice
   // in loop back during this time. At the same time, delay recordings are
   // performed and stored in the output text file.
-  message_loop()->task_runner()->PostDelayedTask(
+  task_runner()->PostDelayedTask(
       FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
       TestTimeouts::action_timeout());
   base::RunLoop().Run();

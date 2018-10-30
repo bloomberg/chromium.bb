@@ -37,8 +37,7 @@ class TaskSchedulerTaskTrackerPosixTest : public testing::Test {
     Thread::Options service_thread_options;
     service_thread_options.message_loop_type = MessageLoop::TYPE_IO;
     service_thread_.StartWithOptions(service_thread_options);
-    tracker_.set_watch_file_descriptor_message_loop(
-        static_cast<MessageLoopForIO*>(service_thread_.message_loop()));
+    tracker_.set_io_thread_task_runner(service_thread_.task_runner());
   }
 
  protected:

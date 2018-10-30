@@ -321,7 +321,7 @@ class BatteryStatusManagerLinux::BatteryStatusNotificationThread
   ~BatteryStatusNotificationThread() override {
     // Make sure to shutdown the dbus connection if it is still open in the very
     // end. It needs to happen on the BatteryStatusNotificationThread.
-    message_loop()->task_runner()->PostTask(
+    task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&BatteryStatusNotificationThread::ShutdownDBusConnection,
                    base::Unretained(this)));
@@ -475,7 +475,7 @@ class BatteryStatusManagerLinux::BatteryStatusNotificationThread
 
     // Shutdown DBus connection later because there may be pending tasks on
     // this thread.
-    message_loop()->task_runner()->PostTask(
+    task_runner()->PostTask(
         FROM_HERE, base::Bind(&dbus::Bus::ShutdownAndBlock, system_bus_));
     system_bus_ = nullptr;
   }

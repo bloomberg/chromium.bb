@@ -18,9 +18,8 @@ TaskTrackerPosix::~TaskTrackerPosix() = default;
 void TaskTrackerPosix::RunOrSkipTask(Task task,
                                      Sequence* sequence,
                                      bool can_run_task) {
-  DCHECK(watch_file_descriptor_message_loop_);
-  FileDescriptorWatcher file_descriptor_watcher(
-      watch_file_descriptor_message_loop_->task_runner());
+  DCHECK(io_thread_task_runner_);
+  FileDescriptorWatcher file_descriptor_watcher(io_thread_task_runner_);
   TaskTracker::RunOrSkipTask(std::move(task), sequence, can_run_task);
 }
 

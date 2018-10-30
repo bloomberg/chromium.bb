@@ -860,7 +860,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
 
   // This class has most of the implementation and runs on the 'thread_'.
   // You MUST communicate with this class ONLY through the thread_'s
-  // message_loop().
+  // task_runner().
   //
   // This pointer will be null once Cleanup() has been called, meaning no
   // more calls should be made to the history thread.

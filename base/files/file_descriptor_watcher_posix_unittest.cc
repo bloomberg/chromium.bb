@@ -57,20 +57,19 @@ class FileDescriptorWatcherTest
   void SetUp() override {
     ASSERT_EQ(0, pipe(pipe_fds_));
 
-    MessageLoop* message_loop_for_io;
+    scoped_refptr<SingleThreadTaskRunner> io_thread_task_runner;
     if (GetParam() ==
         FileDescriptorWatcherTestType::MESSAGE_LOOP_FOR_IO_ON_OTHER_THREAD) {
       Thread::Options options;
       options.message_loop_type = MessageLoop::TYPE_IO;
       ASSERT_TRUE(other_thread_.StartWithOptions(options));
-      message_loop_for_io = other_thread_.message_loop();
+      io_thread_task_runner = other_thread_.task_runner();
     } else {
-      message_loop_for_io = message_loop_.get();
+      io_thread_task_runner = message_loop_->task_runner();
     }
 
-    ASSERT_TRUE(message_loop_for_io->IsType(MessageLoop::TYPE_IO));
     file_descriptor_watcher_ = std::make_unique<FileDescriptorWatcher>(
-        message_loop_for_io->task_runner());
+        std::move(io_thread_task_runner));
   }
 
   void TearDown() override {
@@ -144,6 +143,8 @@ class FileDescriptorWatcherTest
   testing::StrictMock<Mock> mock_;
 
   // MessageLoop bound to the main thread.
+  // Use MessageLoop instead of ScopedTaskEnvironment here to keep a minimal
+  // and controlled task environment.
   std::unique_ptr<MessageLoop> message_loop_;
 
   // Thread running a MessageLoopForIO. Used when the test type is

@@ -571,7 +571,7 @@ void V4L2ImageProcessor::ServiceDeviceTask() {
   // * device_poll_thread_ is running normally
   // * device_poll_thread_ scheduled us, but then a DestroyTask() shut it down,
   //   in which case we should early-out.
-  if (!device_poll_thread_.message_loop())
+  if (!device_poll_thread_.task_runner())
     return;
 
   Dequeue();
