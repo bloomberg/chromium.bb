@@ -21,7 +21,7 @@ class IntRect;
 class LayoutObject;
 class TracedValue;
 class LocalFrameView;
-class LayoutImage;
+class ImageResourceContent;
 
 class ImageRecord : public base::SupportsWeakPtr<ImageRecord> {
  public:
@@ -64,9 +64,8 @@ class CORE_EXPORT ImagePaintTimingDetector final
   friend class ImagePaintTimingDetectorTest;
 
  public:
-  ImagePaintTimingDetector(LocalFrameView* frame_view);
-  void RecordImage(const LayoutObject& object,
-                   const PaintLayer& painting_layer);
+  ImagePaintTimingDetector(LocalFrameView*);
+  void RecordImage(const LayoutObject&, const PaintLayer&);
   void OnPrePaintFinished();
   void NotifyNodeRemoved(DOMNodeId);
   base::TimeTicks LargestImagePaint() const { return largest_image_paint_; }
@@ -76,11 +75,11 @@ class CORE_EXPORT ImagePaintTimingDetector final
  private:
   ImageRecord* FindLargestPaintCandidate();
   ImageRecord* FindLastPaintCandidate();
-  void PopulateTraceValue(TracedValue& value,
+  void PopulateTraceValue(TracedValue&,
                           const ImageRecord& first_image_paint,
                           unsigned report_count) const;
   IntRect CalculateTransformedRect(LayoutRect& visual_rect,
-                                   const PaintLayer& painting_layer) const;
+                                   const PaintLayer&) const;
   // This is provided for unit test to force invoking swap promise callback.
   void ReportSwapTime(unsigned max_frame_index_to_time,
                       WebLayerTreeView::SwapResult,
@@ -89,7 +88,8 @@ class CORE_EXPORT ImagePaintTimingDetector final
   void OnLargestImagePaintDetected(const ImageRecord&);
   void OnLastImagePaintDetected(const ImageRecord&);
 
-  bool IsJustLoaded(const LayoutImage*, const ImageRecord&) const;
+  bool IsJustLoaded(const ImageResourceContent* cachedImg,
+                    const ImageRecord&) const;
   void Analyze();
 
   base::RepeatingCallback<void(WebLayerTreeView::ReportTimeCallback)>

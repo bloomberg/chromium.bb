@@ -7,7 +7,9 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
+#include "third_party/blink/renderer/core/layout/layout_image_resource.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -234,11 +236,22 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
   if (size_zero_ids_.Contains(node_id))
     return;
 
-  const LayoutImage* image = ToLayoutImage(&object);
+  ImageResourceContent* cachedImg;
+  if (object.IsSVGImage()) {
+    const LayoutImageResource* imageResource =
+        ToLayoutSVGImage(&object)->ImageResource();
+    if (imageResource)
+      cachedImg = imageResource->CachedImage();
+  } else {
+    DCHECK(object.IsImage() || object.IsVideo());
+    // Both image and video can be casted to LayoutImage, since LayoutVideo
+    // inherits from LayoutImage.
+    cachedImg = ToLayoutImage(&object)->CachedImage();
+  }
   if (!id_record_map_.Contains(node_id)) {
     recorded_node_count_++;
     if (recorded_node_count_ < kImageNodeNumberLimit) {
-      LayoutRect invalidated_rect = image->FirstFragment().VisualRect();
+      LayoutRect invalidated_rect = object.FirstFragment().VisualRect();
       // Do not record first size until invalidated_rect's size becomes
       // non-empty.
       if (invalidated_rect.IsEmpty())
@@ -259,7 +272,6 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
       record->frame_index = frame_index_;
       record->first_size = rect_size;
       record->first_paint_index = ++first_paint_index_max_;
-      ImageResourceContent* cachedImg = image->CachedImage();
       record->image_url =
           !cachedImg ? "" : cachedImg->Url().StrippedForUseAsReferrer();
       largest_image_heap_.push(record->AsWeakPtr());
@@ -275,15 +287,15 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
   }
 
   if (id_record_map_.Contains(node_id) &&
-      IsJustLoaded(image, *id_record_map_.at(node_id))) {
+      IsJustLoaded(cachedImg, *id_record_map_.at(node_id))) {
     records_pending_timing_.push(node_id);
     id_record_map_.at(node_id)->loaded = true;
   }
 }
 
-bool ImagePaintTimingDetector::IsJustLoaded(const LayoutImage* image,
-                                            const ImageRecord& record) const {
-  ImageResourceContent* cachedImg = image->CachedImage();
+bool ImagePaintTimingDetector::IsJustLoaded(
+    const ImageResourceContent* cachedImg,
+    const ImageRecord& record) const {
   return cachedImg && cachedImg->IsLoaded() && !record.loaded;
 }
 
