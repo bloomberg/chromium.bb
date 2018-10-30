@@ -85,6 +85,10 @@ class RulesetIndexer {
   url_pattern_index::UrlPatternIndexBuilder whitelist_;
   url_pattern_index::UrlPatternIndexBuilder deactivation_;
 
+  // Maintains a map of domain vectors to their existing offsets, to avoid
+  // storing a particular vector more than once.
+  url_pattern_index::FlatDomainMap domain_map_;
+
   DISALLOW_COPY_AND_ASSIGN(RulesetIndexer);
 };
 

@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <map>
 #include <vector>
 
 #include "base/macros.h"
@@ -37,6 +38,17 @@ using NGramHashTableProber = DefaultProber<NGram, NGramHasher>;
 using UrlRuleOffset = flatbuffers::Offset<flat::UrlRule>;
 using UrlPatternIndexOffset = flatbuffers::Offset<flat::UrlPatternIndex>;
 
+using FlatStringOffset = flatbuffers::Offset<flatbuffers::String>;
+using FlatDomains = flatbuffers::Vector<FlatStringOffset>;
+using FlatDomainsOffset = flatbuffers::Offset<FlatDomains>;
+
+struct OffsetVectorCompare {
+  bool operator()(const std::vector<FlatStringOffset>& a,
+                  const std::vector<FlatStringOffset>& b) const;
+};
+using FlatDomainMap = std::
+    map<std::vector<FlatStringOffset>, FlatDomainsOffset, OffsetVectorCompare>;
+
 constexpr size_t kNGramSize = 5;
 static_assert(kNGramSize <= sizeof(NGram), "NGram type is too narrow.");
 
@@ -51,8 +63,13 @@ constexpr uint32_t kDefaultProtoElementTypesMask =
 // Serializes the |rule| to the FlatBuffer |builder|, and returns an offset to
 // it in the resulting buffer. Returns null offset iff the |rule| could not be
 // serialized because of unsupported options or it is otherwise invalid.
+//
+// |domain_map| Should point to a non-nullptr map of domain vectors to their
+// existing offsets. It is used to de-dupe domain vectors in the serialized
+// rules.
 UrlRuleOffset SerializeUrlRule(const proto::UrlRule& rule,
-                               flatbuffers::FlatBufferBuilder* builder);
+                               flatbuffers::FlatBufferBuilder* builder,
+                               FlatDomainMap* domain_map);
 
 // Performs three-way comparison between two domains. In the total order defined
 // by this predicate, the lengths of domains will be monotonically decreasing.
