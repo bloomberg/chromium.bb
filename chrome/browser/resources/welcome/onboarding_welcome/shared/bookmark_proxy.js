@@ -25,6 +25,9 @@ cr.define('nux', function() {
 
     /** @param {boolean} show */
     toggleBookmarkBar(show) {}
+
+    /** @return {!Promise<boolean>} */
+    isBookmarkBarShown() {}
   }
 
   /** @implements {nux.BookmarkProxy} */
@@ -42,6 +45,11 @@ cr.define('nux', function() {
     /** @override */
     toggleBookmarkBar(show) {
       chrome.send('toggleBookmarkBar', [show]);
+    }
+
+    /** @override */
+    isBookmarkBarShown() {
+      return cr.sendWithPromise('isBookmarkBarShown');
     }
   }
 

@@ -5,8 +5,25 @@
 Polymer({
   is: 'nux-email',
 
+  behaviors: [welcome.NavigationBehavior],
+
   properties: {
     /** @type {nux.stepIndicatorModel} */
     indicatorModel: Object,
+  },
+
+  /**
+   * Elements can override onRouteChange to handle route changes.
+   * Overrides function in behavior.
+   * @param {!welcome.Routes} route
+   * @param {number} step
+   */
+  onRouteChange: function(route, step) {
+    if (`step-${step}` == this.id) {
+      nux.BookmarkProxyImpl.getInstance().isBookmarkBarShown().then(
+          bookmarkBarShown => {
+            this.$.emailChooser.bookmarkBarWasShown = bookmarkBarShown;
+          });
+    }
   },
 });

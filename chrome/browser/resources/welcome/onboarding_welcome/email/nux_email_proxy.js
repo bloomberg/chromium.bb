@@ -133,10 +133,9 @@ cr.define('nux', function() {
     /** @override */
     recordProviderSelected(providerId, length) {
       this.savedProvider_ = providerId;
-      // TODO(hcarmona): get enum's max from loadTimeData instead, since length
-      //     might not be accurate once we start localizing.
       chrome.metricsPrivate.recordEnumerationValue(
-          SELECTION_METRIC_NAME, providerId, length);
+          SELECTION_METRIC_NAME, providerId,
+          loadTimeData.getInteger('email_providers_count'));
     }
 
     /** @override */

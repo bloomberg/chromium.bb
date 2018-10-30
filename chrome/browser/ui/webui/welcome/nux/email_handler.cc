@@ -119,6 +119,11 @@ void EmailHandler::AddSources(content::WebUIDataSource* html_source) {
                                IDR_NUX_EMAIL_OUTLOOK_2X);
   html_source->AddResourcePath("email/yahoo_1x.png", IDR_NUX_EMAIL_YAHOO_1X);
   html_source->AddResourcePath("email/yahoo_2x.png", IDR_NUX_EMAIL_YAHOO_2X);
+
+  // Add constants to loadtime data
+  html_source->AddInteger("email_providers_count",
+                          static_cast<int>(EmailProviders::kCount));
+  html_source->SetJsonPath("strings.js");
 }
 
 }  // namespace nux

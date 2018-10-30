@@ -185,7 +185,6 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
     // Add the shared bookmark handler for onboarding modules.
     web_ui->AddMessageHandler(
         std::make_unique<nux::BookmarkHandler>(profile->GetPrefs()));
-    nux::BookmarkHandler::AddSources(html_source, profile->GetPrefs());
 
     // Add email provider bookmarking onboarding module.
     web_ui->AddMessageHandler(std::make_unique<nux::EmailHandler>(

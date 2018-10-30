@@ -22,13 +22,19 @@ Polymer({
    * @param {number} step
    */
   onRouteChange: function(route, step) {
-    if (`step-${step}` == this.id)
+    if (`step-${step}` == this.id) {
+      nux.BookmarkProxyImpl.getInstance().isBookmarkBarShown().then(
+          bookmarkBarShown => {
+            this.$.appChooser.bookmarkBarWasShown = bookmarkBarShown;
+          });
       this.$.appChooser.populateAllBookmarks();
+    }
   },
 
   /** @private */
   onNoThanksClicked_: function() {
     // TODO(hcarmona): Add metrics.
+    this.$.appChooser.removeAllBookmarks();
     welcome.navigateToNextStep();
   },
 

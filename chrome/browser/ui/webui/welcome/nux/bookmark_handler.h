@@ -11,10 +11,6 @@
 
 class PrefService;
 
-namespace content {
-class WebUIDataSource;
-}  // namespace content
-
 namespace nux {
 
 class BookmarkHandler : public content::WebUIMessageHandler {
@@ -27,10 +23,7 @@ class BookmarkHandler : public content::WebUIMessageHandler {
 
   // Callbacks for JS APIs.
   void HandleToggleBookmarkBar(const base::ListValue* args);
-
-  // Adds webui sources.
-  static void AddSources(content::WebUIDataSource* html_source,
-                         PrefService* prefs);
+  void HandleIsBookmarkBarShown(const base::ListValue* args);
 
  private:
   // Weak reference.
