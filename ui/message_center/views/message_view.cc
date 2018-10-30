@@ -122,6 +122,8 @@ void MessageView::SetIsNested() {
 
   SetBorder(views::CreateRoundedRectBorder(
       kNotificationBorderThickness, kNotificationCornerRadius, kBorderColor));
+  if (GetControlButtonsView())
+    GetControlButtonsView()->ShowCloseButton(GetMode() != Mode::PINNED);
 }
 
 void MessageView::CloseSwipeControl() {
