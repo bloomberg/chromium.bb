@@ -21,6 +21,11 @@ void BookmarkHandler::RegisterMessages() {
       "toggleBookmarkBar",
       base::BindRepeating(&BookmarkHandler::HandleToggleBookmarkBar,
                           base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "isBookmarkBarShown",
+      base::BindRepeating(&BookmarkHandler::HandleIsBookmarkBarShown,
+                          base::Unretained(this)));
 }
 
 void BookmarkHandler::HandleToggleBookmarkBar(const base::ListValue* args) {
@@ -29,13 +34,16 @@ void BookmarkHandler::HandleToggleBookmarkBar(const base::ListValue* args) {
   prefs_->SetBoolean(bookmarks::prefs::kShowBookmarkBar, show);
 }
 
-void BookmarkHandler::AddSources(content::WebUIDataSource* html_source,
-                                 PrefService* prefs) {
-  // Add constants to loadtime data
-  html_source->AddBoolean(
-      "bookmark_bar_shown",
-      prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar));
-  html_source->SetJsonPath("strings.js");
+void BookmarkHandler::HandleIsBookmarkBarShown(const base::ListValue* args) {
+  AllowJavascript();
+
+  CHECK_EQ(1U, args->GetSize());
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+
+  ResolveJavascriptCallback(
+      *callback_id,
+      base::Value(prefs_->GetBoolean(bookmarks::prefs::kShowBookmarkBar)));
 }
 
 }  // namespace nux

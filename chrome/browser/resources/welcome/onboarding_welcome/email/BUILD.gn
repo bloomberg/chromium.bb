@@ -13,6 +13,7 @@ js_type_check("closure_compile") {
 
 js_library("nux_email") {
   deps = [
+    "../:navigation_behavior",
     "../shared:nux_types",
   ]
 }

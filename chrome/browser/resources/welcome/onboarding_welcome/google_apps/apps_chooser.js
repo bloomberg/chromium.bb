@@ -34,6 +34,8 @@ Polymer({
      */
     appList_: Array,
 
+    bookmarkBarWasShown: Boolean,
+
     hasAppsSelected: {
       type: Boolean,
       notify: true,
@@ -62,22 +64,20 @@ Polymer({
           // Default select all items.
           app.selected = true;
           this.updateBookmark(app);
-          // Icons only need to be added to the cache once.
-          this.appsProxy_.cacheBookmarkIcon(app.id);
         });
       });
     }
   },
 
-  /**
-   * Returns an array of booleans for each selected app.
-   * @return {!Array<boolean>}
-   */
-  getSelectedAppList() {
-    if (this.appList_)
-      return this.appList_.map(a => a.selected);
-    else
-      return [];
+  /** Called when bookmarks should be removed for all selected apps. */
+  removeAllBookmarks() {
+    this.appList_.forEach(app => {
+      if (app.selected) {
+        app.selected = false;
+        this.updateBookmark(app);
+      }
+    });
+    this.updateHasAppsSelected();
   },
 
   /**
@@ -96,6 +96,8 @@ Polymer({
           result => {
             item.bookmarkId = result.id;
           });
+      // Cache bookmark icon.
+      this.appsProxy_.cacheBookmarkIcon(item.id);
     } else if (!item.selected && item.bookmarkId) {
       this.bookmarkProxy_.removeBookmark(item.bookmarkId);
       item.bookmarkId = null;
@@ -111,7 +113,7 @@ Polymer({
     let item = e.model.item;
     e.model.set('item.selected', !item.selected);
     this.updateBookmark(item);
-    this.hasAppsSelected = this.computeHasAppsSelected_();
+    this.updateHasAppsSelected();
   },
 
   /**
@@ -131,10 +133,12 @@ Polymer({
   },
 
   /**
-   * @return {boolean}
+   * Updates the value of hasAppsSelected.
    * @private
    */
-  computeHasAppsSelected_: function() {
-    return this.appList_ && this.appList_.some(a => a.selected);
+  updateHasAppsSelected: function() {
+    this.hasAppsSelected = this.appList_ && this.appList_.some(a => a.selected);
+    if (!this.hasAppsSelected)
+      this.bookmarkProxy_.toggleBookmarkBar(this.bookmarkBarWasShown);
   },
 });

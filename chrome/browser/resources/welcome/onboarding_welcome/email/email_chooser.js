@@ -27,11 +27,7 @@ Polymer({
      */
     emailList_: Array,
 
-    /** @private */
-    bookmarkBarWasShown_: {
-      type: Boolean,
-      value: loadTimeData.getBoolean('bookmark_bar_shown'),
-    },
+    bookmarkBarWasShown: Boolean,
 
     /** @private */
     finalized_: Boolean,
@@ -165,7 +161,7 @@ Polymer({
             this.selectedEmailProvider_.bookmarkId = results.id;
           });
     } else {
-      this.bookmarkProxy_.toggleBookmarkBar(this.bookmarkBarWasShown_);
+      this.bookmarkProxy_.toggleBookmarkBar(this.bookmarkBarWasShown);
     }
 
     // Announcements are mutually exclusive, so keeping separate.
@@ -182,7 +178,7 @@ Polymer({
   onNoThanksClicked_: function() {
     this.finalized_ = true;
     this.revertBookmark_();
-    this.bookmarkProxy_.toggleBookmarkBar(this.bookmarkBarWasShown_);
+    this.bookmarkProxy_.toggleBookmarkBar(this.bookmarkBarWasShown);
     this.emailProxy_.recordNoThanks();
     welcome.navigateToNextStep();
   },
