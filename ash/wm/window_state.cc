@@ -451,12 +451,7 @@ void WindowState::SetCanConsumeSystemKeys(bool can_consume_system_keys) {
 }
 
 bool WindowState::IsInImmersiveFullscreen() const {
-  return window_->GetProperty(aura::client::kImmersiveFullscreenKey);
-}
-
-void WindowState::SetInImmersiveFullscreen(bool enabled) {
-  base::AutoReset<bool> resetter(&ignore_property_change_, true);
-  window_->SetProperty(aura::client::kImmersiveFullscreenKey, enabled);
+  return window_->GetProperty(ash::kImmersiveIsActive);
 }
 
 void WindowState::set_bounds_changed_by_user(bool bounds_changed_by_user) {
@@ -754,8 +749,7 @@ void WindowState::OnWindowPropertyChanged(aura::Window* window,
     }
     return;
   }
-  if (key == kHideShelfWhenFullscreenKey ||
-      key == aura::client::kImmersiveFullscreenKey) {
+  if (key == kHideShelfWhenFullscreenKey || key == ash::kImmersiveIsActive) {
     if (!ignore_property_change_) {
       // This change came from outside ash. Update our shelf visibility based
       // on our changed state.

@@ -816,7 +816,7 @@ views::NonClientFrameView* ShellSurfaceBase::CreateNonClientFrameView(
     views::Widget* widget) {
   aura::Window* window = widget_->GetNativeWindow();
   // ShellSurfaces always use immersive mode.
-  window->SetProperty(aura::client::kImmersiveFullscreenKey, true);
+  window->SetProperty(ash::kImmersiveIsActive, true);
   ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
   if (!frame_enabled() && !window_state->HasDelegate()) {
     window_state->SetDelegate(std::make_unique<CustomWindowStateDelegate>());

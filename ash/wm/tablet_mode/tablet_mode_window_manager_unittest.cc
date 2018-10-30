@@ -1522,7 +1522,7 @@ TEST_F(TabletModeWindowManagerTest, NoExitImmersiveModeWithEdgeSwipeFromTop) {
   EXPECT_FALSE(window_state->IsInImmersiveFullscreen());
   EXPECT_EQ(window.get(), wm::GetActiveWindow());
 
-  window_state->SetInImmersiveFullscreen(true);
+  window->SetProperty(kImmersiveIsActive, true);
 
   // Do an edge swipe top into screen.
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
@@ -1551,7 +1551,7 @@ TEST_F(TabletModeWindowManagerTest,
   EXPECT_TRUE(window_state->IsFullscreen());
   EXPECT_FALSE(window_state->IsInImmersiveFullscreen());
   EXPECT_EQ(window.get(), wm::GetActiveWindow());
-  window_state->SetInImmersiveFullscreen(true);
+  window->SetProperty(kImmersiveIsActive, true);
   EXPECT_TRUE(window_state->IsInImmersiveFullscreen());
 
   // Do an edge swipe bottom into screen.
@@ -1819,7 +1819,7 @@ TEST_F(TabletModeWindowManagerTest, DontChangeBoundsForTabDraggingWindow) {
   std::unique_ptr<aura::Window> window(
       CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect));
   // Now put the window in tab-dragging process.
-  window->SetProperty(ash::kIsDraggingTabsKey, true);
+  window->SetProperty(kIsDraggingTabsKey, true);
 
   TabletModeWindowManager* manager = CreateTabletModeWindowManager();
   ASSERT_TRUE(manager);
