@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1103 tests; 1079 PASS, 24 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1102 tests; 1078 PASS, 24 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS Partial interface Window: original interface defined
 PASS Event interface: existence and properties of interface object
@@ -1102,6 +1102,5 @@ PASS DOMTokenList interface: document.body.classList must inherit property "supp
 PASS DOMTokenList interface: calling supports(DOMString) on document.body.classList with too few arguments must throw TypeError
 PASS DOMTokenList interface: document.body.classList must inherit property "value" with the proper type
 FAIL Window interface: attribute event assert_true: property should be enumerable expected true got false
-PASS WorkerGlobalScope interface: existence and properties of interface object
 Harness: the test ran to completion.
 

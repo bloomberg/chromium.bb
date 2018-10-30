@@ -3152,6 +3152,7 @@ crbug.com/893480 external/wpt/infrastructure/testdriver/actions/eventOrder.html 
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/html/rendering/replaced-elements/the-select-element/select-1-line-height.html [ Failure ]
 crbug.com/626703 external/wpt/wasm/webapi/instantiateStreaming-bad-imports.any.serviceworker.html [ Crash ]
 crbug.com/626703 external/wpt/wasm/webapi/rejected-arg.any.html [ Timeout ]
 crbug.com/626703 external/wpt/wasm/webapi/instantiateStreaming.any.serviceworker.html [ Crash ]
@@ -3292,7 +3293,6 @@ crbug.com/626703 virtual/outofblink-cors/external/wpt/service-workers/service-wo
 crbug.com/626703 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/postmessage-to-client.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-text/white-space/line-edge-white-space-collapse-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/white-space/line-edge-white-space-collapse-001.html [ Failure ]
-crbug.com/626703 [ Win10 ] external/wpt/speech-api/idlharness.window.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_center_position_50.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_center_wrapped.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_center_position_lt_50.html [ Failure ]
@@ -5711,7 +5711,6 @@ crbug.com/897075 [ Win10 ] inspector-protocol/css/css-coverage-new-stylesheet.js
 
 #Sheriff 2018-10-23
 crbug.com/898156 [ Linux Mac Win ] inspector-protocol/runtime/runtime-console-log-handle-navigate.js [ Crash ]
-crbug.com/898214 [ Mac10.10 Mac10.11 ] external/wpt/html/dom/interfaces.https.html?exclude=(Document|Window|HTML.*) [ Failure ]
 crbug.com/898214 [ Mac10.11 ] virtual/outofblink-cors-ns/external/wpt/fetch/api/credentials/authentication-basic.any.html [ Failure ]
 crbug.com/898050 [ Mac Win ] fast/workers/taskqueue/basic.html [ Pass Timeout ]
 crbug.com/898378 [ Mac10.13 ] fast/scroll-behavior/smooth-scroll/keyboard-scroll.html [ Timeout ]

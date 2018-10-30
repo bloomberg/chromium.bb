@@ -82,6 +82,5 @@ PASS MIDIConnectionEvent must be primary interface of new MIDIConnectionEvent("t
 PASS Stringification of new MIDIConnectionEvent("type")
 PASS MIDIConnectionEvent interface: new MIDIConnectionEvent("type") must inherit property "port" with the proper type
 PASS Navigator interface: operation requestMIDIAccess(MIDIOptions)
-PASS WorkerNavigator interface: existence and properties of interface object
 Harness: the test ran to completion.
 

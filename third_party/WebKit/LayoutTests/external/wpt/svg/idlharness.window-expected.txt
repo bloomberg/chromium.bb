@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1601 tests; 1478 PASS, 123 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1600 tests; 1477 PASS, 123 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Document: original interface defined
 PASS SVGElement interface: existence and properties of interface object
@@ -1599,7 +1599,6 @@ PASS SVGElement interface: objects.view must inherit property "ownerSVGElement" 
 PASS SVGElement interface: objects.view must inherit property "viewportElement" with the proper type
 FAIL SVGElement interface: objects.view must inherit property "correspondingElement" with the proper type assert_inherits: property "correspondingElement" not found in prototype chain
 FAIL SVGElement interface: objects.view must inherit property "correspondingUseElement" with the proper type assert_inherits: property "correspondingUseElement" not found in prototype chain
-PASS WorkerGlobalScope interface: existence and properties of interface object
 PASS Document interface: attribute rootElement
 Harness: the test ran to completion.
 
