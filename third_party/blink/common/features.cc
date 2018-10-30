@@ -18,6 +18,12 @@ const base::Feature kEagerCacheStorageSetupForServiceWorkers{
     "EagerCacheStorageSetupForServiceWorkers",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls the user-specified viewport restriction for GPU Rasterization on
+// mobile. See https://crbug.com/899399
+const base::Feature kEnableGpuRasterizationViewportRestriction{
+    "EnableGpuRasterizationViewportRestriction",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enable LayoutNG.
 const base::Feature kLayoutNG{"LayoutNG", base::FEATURE_DISABLED_BY_DEFAULT};
 
