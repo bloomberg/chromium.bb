@@ -25,6 +25,7 @@ MERGEABLE_KEYS = [
     'JNI_NATIVE_METHOD',
     'JNI_NATIVE_METHOD_ARRAY',
     'PROXY_NATIVE_METHOD_ARRAY',
+    'PROXY_NATIVE_METHOD_ARRAY_MAIN_DEX',
     'REGISTER_MAIN_DEX_NATIVES',
     'REGISTER_NON_MAIN_DEX_NATIVES',
 ]
@@ -73,24 +74,23 @@ def _DictForPath(path):
   fully_qualified_class = jni_generator.ExtractFullyQualifiedJavaClassName(
       path, contents)
   natives = jni_generator.ExtractNatives(contents, 'long')
+
   natives += jni_generator.NativeProxyHelpers.ExtractStaticProxyNatives(
-      fully_qualified_class, contents, 'long')
+      fully_qualified_class=fully_qualified_class,
+      contents=contents,
+      ptr_type='long')
   if len(natives) == 0:
     return None
   namespace = jni_generator.ExtractJNINamespace(contents)
   jni_params = jni_generator.JniParams(fully_qualified_class)
   jni_params.ExtractImportsAndInnerClasses(contents)
-  main_dex = jni_generator.IsMainDexJavaClass(contents)
-  header_generator = HeaderGenerator(
-      namespace, fully_qualified_class, natives, jni_params, main_dex)
+  is_main_dex = jni_generator.IsMainDexJavaClass(contents)
+  header_generator = HeaderGenerator(namespace, fully_qualified_class, natives,
+                                     jni_params, is_main_dex)
   return header_generator.Generate()
 
-
 def _SetProxyRegistrationFields(registration_dict):
-  if registration_dict['PROXY_NATIVE_METHOD_ARRAY']:
-    registration_name = jni_generator.GetRegistrationFunctionName(
-        jni_generator.NATIVE_PROXY_QUALIFIED_NAME)
-    proxy_native_array = string.Template("""\
+  registration_template = string.Template("""\
 
 static const JNINativeMethod kMethods_${ESCAPED_PROXY_CLASS}[] = {
 ${KMETHODS}
@@ -111,33 +111,48 @@ JNI_REGISTRATION_EXPORT bool ${REGISTRATION_NAME}(JNIEnv* env) {
 
   return true;
 }
-    """).substitute({
-        'ESCAPED_PROXY_CLASS':
-            jni_generator.NativeProxyHelpers.ESCAPED_NATIVE_PROXY_CLASS,
-        'PROXY_CLASS':
-            jni_generator.NATIVE_PROXY_QUALIFIED_NAME,
-        'KMETHODS':
-            registration_dict['PROXY_NATIVE_METHOD_ARRAY'],
-        'REGISTRATION_NAME':
-            registration_name
-    })
+""")
 
-    proxy_natives_registration = string.Template("""\
+  registration_call = string.Template("""\
 
-// Register natives in a proxy.
-if (!${REGISTRATION_NAME}(env)) {
-  return false;
-}
-    """).substitute({
-        'REGISTRATION_NAME': registration_name
-    })
+  // Register natives in a proxy.
+  if (!${REGISTRATION_NAME}(env)) {
+    return false;
+  }
+""")
 
+  sub_dict = {
+      'ESCAPED_PROXY_CLASS':
+          jni_generator.NativeProxyHelpers.ESCAPED_NATIVE_PROXY_CLASS,
+      'PROXY_CLASS':
+          jni_generator.NATIVE_PROXY_QUALIFIED_NAME,
+      'KMETHODS':
+          registration_dict['PROXY_NATIVE_METHOD_ARRAY'],
+      'REGISTRATION_NAME':
+          jni_generator.GetRegistrationFunctionName(
+              jni_generator.NATIVE_PROXY_QUALIFIED_NAME)
+  }
+
+  if registration_dict['PROXY_NATIVE_METHOD_ARRAY']:
+    proxy_native_array = registration_template.substitute(sub_dict)
+    proxy_natives_registration = registration_call.substitute(sub_dict)
   else:
     proxy_native_array = ''
     proxy_natives_registration = ''
 
+  if registration_dict['PROXY_NATIVE_METHOD_ARRAY_MAIN_DEX']:
+    sub_dict['REGISTRATION_NAME'] += 'MAIN_DEX'
+    sub_dict['ESCAPED_PROXY_CLASS'] += 'MAIN_DEX'
+    sub_dict['KMETHODS'] = (
+        registration_dict['PROXY_NATIVE_METHOD_ARRAY_MAIN_DEX'])
+    proxy_native_array += registration_template.substitute(sub_dict)
+    main_dex_call = registration_call.substitute(sub_dict)
+  else:
+    main_dex_call = ''
+
   registration_dict['PROXY_NATIVE_METHOD_ARRAY'] = proxy_native_array
   registration_dict['REGISTER_PROXY_NATIVES'] = proxy_natives_registration
+  registration_dict['REGISTER_MAIN_DEX_PROXY_NATIVES'] = main_dex_call
 
 
 def CreateFromDict(registration_dict):
@@ -179,7 +194,8 @@ ${JNI_NATIVE_METHOD}
 
 namespace ${NAMESPACE} {
 
-bool RegisterMainDexNatives(JNIEnv* env) {
+bool RegisterMainDexNatives(JNIEnv* env) {\
+${REGISTER_MAIN_DEX_PROXY_NATIVES}
 ${REGISTER_MAIN_DEX_NATIVES}
   return true;
 }
@@ -209,6 +225,8 @@ class HeaderGenerator(object):
                main_dex):
     self.namespace = namespace
     self.natives = natives
+    self.proxy_natives = [n for n in natives if n.is_proxy]
+    self.non_proxy_natives = [n for n in natives if not n.is_proxy]
     self.fully_qualified_class = fully_qualified_class
     self.jni_params = jni_params
     self.class_name = self.fully_qualified_class.split('/')[-1]
@@ -256,7 +274,7 @@ JNI_GENERATOR_EXPORT ${RETURN} ${STUB_NAME}(
     """Add the body of the RegisterNativesImpl method to the dictionary."""
 
     # Only register if there is at least 1 non-proxy native
-    if all(native.is_proxy for native in self.natives):
+    if len(self.non_proxy_natives) == 0:
       return ''
 
     template = string.Template("""\
@@ -298,12 +316,7 @@ ${KMETHODS}
 
   def _GetKMethodsString(self, clazz):
     ret = []
-    for native in self.natives:
-      if native.is_proxy:
-        # Proxy natives are registered for the native proxy class.
-        if clazz == jni_generator.NATIVE_PROXY_CLASS_NAME:
-          ret += [self._GetKMethodArrayEntry(native)]
-        continue
+    for native in self.non_proxy_natives:
       if (native.java_class_name == clazz or
           (not native.java_class_name and clazz == self.class_name)):
         ret += [self._GetKMethodArrayEntry(native)]
@@ -331,17 +344,15 @@ ${KMETHODS}
   def _AddProxyNativeMethodKStrings(self):
     """Returns KMethodString for wrapped native methods in all_classes """
 
-    all_classes = self.helper.GetUniqueClasses(self.natives)
-    all_classes[self.class_name] = self.fully_qualified_class
+    if self.main_dex:
+      key = 'PROXY_NATIVE_METHOD_ARRAY_MAIN_DEX'
+    else:
+      key = 'PROXY_NATIVE_METHOD_ARRAY'
 
-    wrapped_native_methods = ''
+    proxy_k_strings = ('\n'.join(
+        [self._GetKMethodArrayEntry(p) for p in self.proxy_natives]))
 
-    for clazz in all_classes:
-      if clazz != jni_generator.NATIVE_PROXY_CLASS_NAME:
-        continue
-      wrapped_native_methods += self._GetKMethodsString(clazz)
-
-    self._SetDictValue('PROXY_NATIVE_METHOD_ARRAY', wrapped_native_methods)
+    self._SetDictValue(key, proxy_k_strings)
 
   def _SubstituteNativeMethods(self, template, sub_proxy=False):
     """Substitutes NAMESPACE, JAVA_CLASS and KMETHODS in the provided
@@ -416,9 +427,8 @@ ${NATIVES}\
 """)
     # Only register if there is a native method not in a proxy,
     # since all the proxies will be registered together.
-    for n in self.natives:
-      if not n.is_proxy:
-        return self._SubstituteNativeMethods(template)
+    if len(self.non_proxy_natives) != 0:
+      return self._SubstituteNativeMethods(template)
     return ''
 
 

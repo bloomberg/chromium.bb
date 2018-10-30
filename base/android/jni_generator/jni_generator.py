@@ -72,8 +72,6 @@ _NATIVE_PROXY_EXTRACTION_REGEX = re.compile(
     r'@JniStaticNatives\s*interface\s*'
     r'(?P<interface_name>\w*)\s*(?P<interface_body>{(\s*.*)+?\s*})')
 
-
-
 # Use 100 columns rather than 80 because it makes many lines more readable.
 _WRAP_LINE_LENGTH = 100
 # WrapOutput() is fairly slow. Pre-creating TextWrappers helps a bit.

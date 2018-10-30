@@ -97,6 +97,21 @@ class TestGenerator(unittest.TestCase):
     print 'REBASELINE=1', sys.argv[0]
     print 'to regenerate the data files.'
 
+  @staticmethod
+  def _MergeRegistrationForTests(results,
+                                 header_guard='HEADER_GUARD',
+                                 namespace='test'):
+
+    results.sort(key=lambda d: d['FULL_CLASS_NAME'])
+
+    combined_dict = {}
+    for key in jni_registration_generator.MERGEABLE_KEYS:
+      combined_dict[key] = ''.join(d.get(key, '') for d in results)
+
+    combined_dict['HEADER_GUARD'] = header_guard
+    combined_dict['NAMESPACE'] = namespace
+    return combined_dict
+
   def _ReadGoldenFile(self, golden_file):
     if not os.path.exists(golden_file):
       return None
@@ -171,6 +186,72 @@ class TestGenerator(unittest.TestCase):
     ]
 
     self.assertListEquals(natives, golden_natives)
+
+  def testProxyNativesMainDex(self):
+    test_data = """
+    @MainDex
+    class Foo() {
+      @JniStaticNatives
+      interface Natives {
+        void thisismaindex();
+      }
+      void dontmatchme();
+      public static void metoo();
+      public static native void this_is_a_non_proxy_native();
+    }
+    """
+
+    non_main_dex_test_data = """
+    class Bar() {
+      @JniStaticNatives
+      interface Natives {
+        void foo();
+        void bar();
+      }
+    }
+    """
+    qualified_clazz = 'test/foo/Foo'
+    jni_params = TestOptions()
+
+    natives = jni_generator.NativeProxyHelpers.ExtractStaticProxyNatives(
+        qualified_clazz, test_data, 'long')
+
+    golden_natives = [
+        NativeMethod(
+            return_type='void',
+            static=True,
+            name='thisismaindex',
+            params=[],
+            java_class_name=None,
+            is_proxy=True,
+            proxy_name='test_foo_Foo_thisismaindex',
+            type='function'),
+    ]
+
+    self.assertListEquals(natives, golden_natives)
+
+    jni_params = jni_generator.JniParams(qualified_clazz)
+    main_dex_header = jni_registration_generator.HeaderGenerator(
+        '', qualified_clazz, natives, jni_params, main_dex=True).Generate()
+    content = TestGenerator._MergeRegistrationForTests([main_dex_header])
+
+    self.assertGoldenTextEquals(
+        jni_registration_generator.CreateFromDict(content))
+
+    other_qualified_clazz = 'test/foo/Bar'
+    other_natives = jni_generator.NativeProxyHelpers.ExtractStaticProxyNatives(
+        other_qualified_clazz, non_main_dex_test_data, 'long')
+
+    jni_params = jni_generator.JniParams(other_qualified_clazz)
+    non_main_dex_header = jni_registration_generator.HeaderGenerator(
+        '', other_qualified_clazz, other_natives, jni_params,
+        main_dex=False).Generate()
+
+    content = TestGenerator._MergeRegistrationForTests([main_dex_header] +
+                                                       [non_main_dex_header])
+
+    self.assertGoldenTextEquals(
+        jni_registration_generator.CreateFromDict(content), 'AndNonMainDex')
 
   def testProxyNatives(self):
     test_data = """
@@ -252,12 +333,8 @@ class TestGenerator(unittest.TestCase):
                                               [], jni_params, TestOptions())
     self.assertGoldenTextEquals(h1.GetContent())
     h2 = jni_registration_generator.HeaderGenerator('', qualified_clazz,
-                                                    natives, jni_params, True)
-    content = h2.Generate()
-    for k in jni_registration_generator.MERGEABLE_KEYS:
-      content[k] = content.get(k, '')
-    content['HEADER_GUARD'] = 'HEADER_GUARD'
-    content['NAMESPACE'] = 'test'
+                                                    natives, jni_params, False)
+    content = TestGenerator._MergeRegistrationForTests([h2.Generate()])
 
     self.assertGoldenTextEquals(
         jni_registration_generator.CreateFromDict(content),
@@ -431,11 +508,7 @@ class TestGenerator(unittest.TestCase):
     self.assertGoldenTextEquals(h1.GetContent())
     h2 = jni_registration_generator.HeaderGenerator(
         '', 'org/chromium/TestJni', natives, jni_params, True)
-    content = h2.Generate()
-    for k in jni_registration_generator.MERGEABLE_KEYS:
-      content[k] = content.get(k, '')
-    content['HEADER_GUARD'] = 'HEADER_GUARD'
-    content['NAMESPACE'] = 'test'
+    content = TestGenerator._MergeRegistrationForTests([h2.Generate()])
 
     self.assertGoldenTextEquals(
         jni_registration_generator.CreateFromDict(content),
@@ -522,11 +595,7 @@ class TestGenerator(unittest.TestCase):
 
     h2 = jni_registration_generator.HeaderGenerator(
         '', 'org/chromium/TestJni', natives, jni_params, True)
-    content = h2.Generate()
-    for k in jni_registration_generator.MERGEABLE_KEYS:
-      content[k] = content.get(k, '')
-    content['HEADER_GUARD'] = 'HEADER_GUARD'
-    content['NAMESPACE'] = 'test'
+    content = TestGenerator._MergeRegistrationForTests([h2.Generate()])
 
     self.assertGoldenTextEquals(
         jni_registration_generator.CreateFromDict(content),
@@ -1034,21 +1103,21 @@ public class java.util.HashSet {
         'org/chromium/example/jni_generator/SampleForAnnotationProcessor', opts)
     self.assertGoldenTextEquals(
         generated_text,
-        golden_file="HashedSampleForAnnotationProcessor_jni.golden")
+        golden_file='HashedSampleForAnnotationProcessor_jni.golden')
 
   def testJniProxyExample(self):
     generated_text = self._createJniHeaderFromFile(
         'java/src/org/chromium/example/jni_generator/SampleForAnnotationProcessor.java',
         'org/chromium/example/jni_generator/SampleForAnnotationProcessor')
     self.assertGoldenTextEquals(
-        generated_text, golden_file="SampleForAnnotationProcessor_jni.golden")
+        generated_text, golden_file='SampleForAnnotationProcessor_jni.golden')
 
   def testJniSelfDocumentingExample(self):
     generated_text = self._createJniHeaderFromFile(
         'java/src/org/chromium/example/jni_generator/SampleForTests.java',
         'org/chromium/example/jni_generator/SampleForTests')
     self.assertGoldenTextEquals(
-        generated_text, golden_file="SampleForTests_jni.golden")
+        generated_text, golden_file='SampleForTests_jni.golden')
 
   def testNoWrappingPreprocessorLines(self):
     test_data = """
@@ -1358,7 +1427,7 @@ def TouchStamp(stamp_path):
 def main(argv):
   parser = optparse.OptionParser()
   parser.add_option('--stamp', help='Path to touch on success.')
-  parser.add_option('--verbose', action="store_true",
+  parser.add_option('--verbose', action='store_true',
                     help='Whether to output details.')
   options, _ = parser.parse_args(argv[1:])
 
