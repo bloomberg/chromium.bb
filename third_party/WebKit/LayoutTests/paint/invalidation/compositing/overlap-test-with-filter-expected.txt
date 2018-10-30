@@ -27,6 +27,11 @@
       "backgroundColor": "#FFFF00"
     },
     {
+      "name": "Child Containment Layer",
+      "bounds": [300, 100],
+      "drawsContent": false
+    },
+    {
       "name": "LayoutBlockFlow BODY",
       "bounds": [284, 84],
       "backgroundColor": "#FFFF00",

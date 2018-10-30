@@ -28,8 +28,7 @@
     {
       "name": "LayoutBlockFlow DIV id='scroller'",
       "position": [98, 90],
-      "bounds": [102, 102],
-      "backfaceVisibility": "hidden"
+      "bounds": [102, 102]
     },
     {
       "name": "Scrolling Layer",
@@ -41,8 +40,7 @@
       "name": "Scrolling Contents Layer",
       "position": [99, 91],
       "bounds": [100, 180],
-      "drawsContent": false,
-      "backfaceVisibility": "hidden"
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='fixed'",
@@ -60,14 +58,12 @@
       "position": [103, 95],
       "bounds": [60, 40],
       "contentsOpaque": true,
-      "backfaceVisibility": "hidden",
       "backgroundColor": "#0000FF"
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='scrolled')",
       "position": [103, 139],
-      "bounds": [60, 128],
-      "backfaceVisibility": "hidden"
+      "bounds": [60, 128]
     },
     {
       "name": "Overflow Controls Host Layer",

@@ -24,6 +24,12 @@
       "transform": 2
     },
     {
+      "name": "Ancestor Clipping Layer",
+      "position": [215, 15],
+      "bounds": [110, 110],
+      "drawsContent": false
+    },
+    {
       "name": "LayoutBlockFlow (relative positioned) DIV class='composited inner'",
       "bounds": [120, 120],
       "backgroundColor": "#00000033",
@@ -57,7 +63,8 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [210, 10, 0, 1]
-      ]
+      ],
+      "flattenInheritedTransform": false
     },
     {
       "id": 4,
@@ -67,7 +74,8 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [0, 0, 1, 1]
-      ]
+      ],
+      "flattenInheritedTransform": false
     }
   ]
 }

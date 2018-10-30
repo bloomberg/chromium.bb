@@ -1292,3 +1292,18 @@ Bug(none) compositing/overflow/overlap-testing-ancestor-scroller-high-dpi.html [
 Bug(none) virtual/outofblink-cors-ns/http/tests/navigation/same-document-scroll-position-restore.html [ Timeout ]
 Bug(none) virtual/threaded/external/wpt/css/css-scroll-snap/snap-at-user-scroll-end-manual.html [ Timeout ]
 Bug(none) synthetic_gestures/animated-wheel-tiny-delta.html [ Failure ]
+
+# These tests have failures that were introduced between enabling BGPT for the
+# first time and later disabling it. These are not real failures and can be
+# rebaselined.
+Bug(none) compositing/overflow/siblings-composited-with-border-radius-ancestor.html [ Failure ]
+Bug(none) compositing/composited-translated-child-with-border-radius-parent-clip.html [ Failure ]
+Bug(none) compositing/composited-scaled-child-with-border-radius-parent-clip.html [ Failure ]
+Bug(none) compositing/overflow/border-radius-on-two-ancestors-composited-grandchild.html [ Failure ]
+Bug(none) compositing/overflow/border-radius-on-parent-composited-grandchild.html [ Failure ]
+Bug(none) compositing/overflow-trumps-transform-style.html [ Failure ]
+Bug(none) compositing/overflow/border-radius-on-grandparent-composited-grandchild.html [ Failure ]
+Bug(none) compositing/overflow/siblings-composited-with-border-radius-ancestor-one-clipped.html [ Failure ]
+Bug(none) compositing/overflow/grandchild-with-border-radius-ancestor.html [ Failure ]
+Bug(none) compositing/overflow/siblings-with-border-radius-ancestor.html [ Failure ]
+Bug(none) compositing/overflow/grandchild-composited-with-border-radius-ancestor.html [ Failure ]
