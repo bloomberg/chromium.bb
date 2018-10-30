@@ -3170,7 +3170,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Intervention_R8",
+                    "name": "Intervention_R9",
                     "params": {
                         "navigate_ads": "true",
                         "pause_renderer": "true",
