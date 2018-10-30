@@ -87,6 +87,8 @@ void MockMediaSession::GetMediaSessionInfo(
 }
 
 void MockMediaSession::AddObserver(mojom::MediaSessionObserverPtr observer) {
+  ++add_observer_count_;
+
   observer->MediaSessionInfoChanged(GetMediaSessionInfoSync());
   observers_.AddPtr(std::move(observer));
 }

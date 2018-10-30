@@ -41,9 +41,9 @@ class MediaControllerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void RequestAudioFocus(test::MockMediaSession& session) {
-    session.RequestAudioFocusFromService(audio_focus_ptr_,
-                                         mojom::AudioFocusType::kGainTransient);
+  void RequestAudioFocus(test::MockMediaSession& session,
+                         mojom::AudioFocusType type) {
+    session.RequestAudioFocusFromService(audio_focus_ptr_, type);
   }
 
   mojom::MediaControllerPtr& controller() { return media_controller_ptr_; }
@@ -63,7 +63,7 @@ TEST_F(MediaControllerTest, ActiveController_Suspend) {
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
-    RequestAudioFocus(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
     observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
   }
 
@@ -74,22 +74,90 @@ TEST_F(MediaControllerTest, ActiveController_Suspend) {
   }
 }
 
-TEST_F(MediaControllerTest, ActiveController_Suspend_Multiple) {
+TEST_F(MediaControllerTest, ActiveController_Multiple_Abandon_Top) {
   test::MockMediaSession media_session_1;
+  test::MockMediaSession media_session_2;
 
   {
     test::MockMediaSessionMojoObserver observer(media_session_1);
-    RequestAudioFocus(media_session_1);
+    RequestAudioFocus(media_session_1, mojom::AudioFocusType::kGain);
     observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
   }
-
-  test::MockMediaSession media_session_2;
 
   {
     test::MockMediaSessionMojoObserver observer_1(media_session_1);
     test::MockMediaSessionMojoObserver observer_2(media_session_2);
 
-    RequestAudioFocus(media_session_2);
+    RequestAudioFocus(media_session_2, mojom::AudioFocusType::kGain);
+
+    observer_1.WaitForPlaybackState(mojom::MediaPlaybackState::kPaused);
+    observer_2.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  media_session_2.AbandonAudioFocusFromClient();
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_1);
+    controller()->Resume();
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
+  }
+}
+
+TEST_F(MediaControllerTest, ActiveController_Multiple_Abandon_UnderTransient) {
+  test::MockMediaSession media_session_1;
+  test::MockMediaSession media_session_2;
+  test::MockMediaSession media_session_3;
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_1);
+    RequestAudioFocus(media_session_1, mojom::AudioFocusType::kGain);
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer_1(media_session_1);
+    test::MockMediaSessionMojoObserver observer_2(media_session_2);
+
+    RequestAudioFocus(media_session_2, mojom::AudioFocusType::kGain);
+
+    observer_1.WaitForPlaybackState(mojom::MediaPlaybackState::kPaused);
+    observer_2.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer_2(media_session_2);
+    test::MockMediaSessionMojoObserver observer_3(media_session_3);
+
+    RequestAudioFocus(media_session_3, mojom::AudioFocusType::kGainTransient);
+
+    observer_2.WaitForPlaybackState(mojom::MediaPlaybackState::kPaused);
+    observer_3.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
+  }
+
+  media_session_2.AbandonAudioFocusFromClient();
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_1);
+    controller()->Resume();
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
+  }
+}
+
+TEST_F(MediaControllerTest, ActiveController_Multiple_Gain) {
+  test::MockMediaSession media_session_1;
+  test::MockMediaSession media_session_2;
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_1);
+    RequestAudioFocus(media_session_1, mojom::AudioFocusType::kGain);
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer_1(media_session_1);
+    test::MockMediaSessionMojoObserver observer_2(media_session_2);
+
+    RequestAudioFocus(media_session_2, mojom::AudioFocusType::kGain);
 
     observer_1.WaitForPlaybackState(mojom::MediaPlaybackState::kPaused);
     observer_2.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
@@ -100,18 +168,79 @@ TEST_F(MediaControllerTest, ActiveController_Suspend_Multiple) {
     controller()->Suspend();
     observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPaused);
   }
+}
+
+TEST_F(MediaControllerTest, ActiveController_Multiple_GainTransient) {
+  test::MockMediaSession media_session_1;
+  test::MockMediaSession media_session_2;
 
   {
     test::MockMediaSessionMojoObserver observer(media_session_1);
-    media_session_2.AbandonAudioFocusFromClient();
+    RequestAudioFocus(media_session_1, mojom::AudioFocusType::kGain);
     observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
   }
+
+  EXPECT_EQ(2, media_session_1.add_observer_count());
+
+  {
+    test::MockMediaSessionMojoObserver observer_1(media_session_1);
+    test::MockMediaSessionMojoObserver observer_2(media_session_2);
+
+    RequestAudioFocus(media_session_2, mojom::AudioFocusType::kGainTransient);
+
+    observer_1.WaitForPlaybackState(mojom::MediaPlaybackState::kPaused);
+    observer_2.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
+  }
+
+  // The top session has changed but the controller is still bound to
+  // |media_session_1|. We should make sure we do not add an observer if we
+  // already have one.
+  EXPECT_EQ(3, media_session_1.add_observer_count());
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_1);
+    controller()->Resume();
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
+  }
+
+  EXPECT_EQ(4, media_session_1.add_observer_count());
+}
+
+TEST_F(MediaControllerTest, ActiveController_Multiple_GainTransientMayDuck) {
+  test::MockMediaSession media_session_1;
+  test::MockMediaSession media_session_2;
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_1);
+    RequestAudioFocus(media_session_1, mojom::AudioFocusType::kGain);
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
+  }
+
+  EXPECT_EQ(2, media_session_1.add_observer_count());
+
+  {
+    test::MockMediaSessionMojoObserver observer_1(media_session_1);
+    test::MockMediaSessionMojoObserver observer_2(media_session_2);
+
+    RequestAudioFocus(media_session_2,
+                      mojom::AudioFocusType::kGainTransientMayDuck);
+
+    observer_1.WaitForState(mojom::MediaSessionInfo::SessionState::kDucking);
+    observer_2.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
+  }
+
+  // The top session has changed but the controller is still bound to
+  // |media_session_1|. We should make sure we do not add an observer if we
+  // already have one.
+  EXPECT_EQ(3, media_session_1.add_observer_count());
 
   {
     test::MockMediaSessionMojoObserver observer(media_session_1);
     controller()->Suspend();
     observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPaused);
   }
+
+  EXPECT_EQ(4, media_session_1.add_observer_count());
 }
 
 TEST_F(MediaControllerTest, ActiveController_Suspend_Noop) {
@@ -123,7 +252,7 @@ TEST_F(MediaControllerTest, ActiveController_Suspend_Noop_Abandoned) {
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
-    RequestAudioFocus(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
     observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
   }
 
@@ -133,7 +262,7 @@ TEST_F(MediaControllerTest, ActiveController_Suspend_Noop_Abandoned) {
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
-    RequestAudioFocus(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
     observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
   }
 }
@@ -143,7 +272,7 @@ TEST_F(MediaControllerTest, ActiveController_SuspendResume) {
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
-    RequestAudioFocus(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
     observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
   }
 
@@ -165,7 +294,7 @@ TEST_F(MediaControllerTest, ActiveController_ToggleSuspendResume_Playing) {
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
-    RequestAudioFocus(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
     observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
   }
 
@@ -181,7 +310,7 @@ TEST_F(MediaControllerTest, ActiveController_ToggleSuspendResume_Ducked) {
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
-    RequestAudioFocus(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
     observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
   }
 
@@ -203,7 +332,7 @@ TEST_F(MediaControllerTest, ActiveController_ToggleSuspendResume_Inactive) {
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
-    RequestAudioFocus(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
     media_session.Stop();
     observer.WaitForState(mojom::MediaSessionInfo::SessionState::kInactive);
   }
@@ -220,7 +349,7 @@ TEST_F(MediaControllerTest, ActiveController_ToggleSuspendResume_Paused) {
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
-    RequestAudioFocus(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
     observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
   }
 
@@ -243,7 +372,7 @@ TEST_F(MediaControllerTest, ActiveController_Observer_StateTransition) {
 
   {
     test::MockMediaSessionMojoObserver observer(media_session_1);
-    RequestAudioFocus(media_session_1);
+    RequestAudioFocus(media_session_1, mojom::AudioFocusType::kGain);
     observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
   }
 
@@ -260,7 +389,7 @@ TEST_F(MediaControllerTest, ActiveController_Observer_StateTransition) {
 
   {
     test::MockMediaSessionMojoObserver observer(controller());
-    RequestAudioFocus(media_session_2);
+    RequestAudioFocus(media_session_2, mojom::AudioFocusType::kGain);
     observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
   }
 
@@ -282,7 +411,7 @@ TEST_F(MediaControllerTest, ActiveController_PreviousTrack) {
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
-    RequestAudioFocus(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
     observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
     EXPECT_EQ(0, media_session.prev_track_count());
   }
@@ -299,7 +428,7 @@ TEST_F(MediaControllerTest, ActiveController_NextTrack) {
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
-    RequestAudioFocus(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
     observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
     EXPECT_EQ(0, media_session.next_track_count());
   }

@@ -88,8 +88,8 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   void AbandonAudioFocusInternal(RequestId);
   void EnforceAudioFocusAbandon(mojom::AudioFocusType);
 
-  // Called when the active media session with audio focus changes.
-  void DidChangeFocus();
+  // Get the top most media session with the gain audio focus type.
+  mojom::MediaSession* GetActiveGainSession() const;
 
   std::unique_ptr<StackRow> RemoveFocusEntryIfPresent(RequestId id);
 
