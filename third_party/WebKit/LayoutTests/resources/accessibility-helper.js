@@ -1,4 +1,13 @@
 function buildAccessibilityTree(accessibilityObject, indent, allAttributesRequired, rolesToIgnore, targetObject, targetString) {
+    // Progressively appending to a string is slow (https://crbug.com/900098),
+    // instead we build a list of lines and join that at the end.
+    var consoleLines = [];
+    var result = _buildAccessibilityTreeInner(accessibilityObject, indent, consoleLines, allAttributesRequired, rolesToIgnore, targetObject, targetString);
+    document.getElementById("console").innerText += consoleLines.join("");
+    return result;
+}
+
+function _buildAccessibilityTreeInner(accessibilityObject, indent, consoleLines, allAttributesRequired, rolesToIgnore, targetObject, targetString) {
     if (rolesToIgnore) {
         for (var i = 0; i < rolesToIgnore.length; i++) {
             if (accessibilityObject.role  == 'AXRole: ' + rolesToIgnore[i])
@@ -18,14 +27,14 @@ function buildAccessibilityTree(accessibilityObject, indent, allAttributesRequir
     str += targetObject && accessibilityObject.isEqual(targetObject) ? "     " + targetString : '';
     str += "\n";
 
-    document.getElementById("console").innerText += str;
+    consoleLines.push(str)
 
     if (accessibilityObject.name.indexOf('End of test') >= 0)
         return false;
 
     var count = accessibilityObject.childrenCount;
     for (var i = 0; i < count; i++) {
-        if (!buildAccessibilityTree(accessibilityObject.childAtIndex(i), indent + 1, allAttributesRequired, rolesToIgnore, targetObject, targetString))
+        if (!_buildAccessibilityTreeInner(accessibilityObject.childAtIndex(i), indent + 1, consoleLines, allAttributesRequired, rolesToIgnore, targetObject, targetString))
             return false;
     }
 
@@ -37,4 +46,3 @@ function traverseAccessibilityTree(accessibilityObject) {
     for (var i = 0; i < count; i++)
         traverseAccessibilityTree(accessibilityObject.childAtIndex(i));
 }
-
