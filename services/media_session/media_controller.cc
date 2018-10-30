@@ -79,19 +79,18 @@ void MediaController::NextTrack() {
 
 void MediaController::SetMediaSession(mojom::MediaSession* session) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (session == nullptr) {
+    session_binding_.Close();
+  } else if (session_ != session) {
+    // Add |this| as an observer for |session|.
+    session_binding_.Close();
+    mojom::MediaSessionObserverPtr observer;
+    session_binding_.Bind(mojo::MakeRequest(&observer));
+    session->AddObserver(std::move(observer));
+  }
+
   session_ = session;
-
-  // Add |this| as an observer for |session|.
-  session_binding_.Close();
-  mojom::MediaSessionObserverPtr observer;
-  session_binding_.Bind(mojo::MakeRequest(&observer));
-  session->AddObserver(std::move(observer));
-}
-
-void MediaController::ClearMediaSession() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  session_ = nullptr;
-  session_binding_.Close();
 }
 
 void MediaController::BindToInterface(mojom::MediaControllerRequest request) {

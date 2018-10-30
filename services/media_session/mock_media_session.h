@@ -84,6 +84,7 @@ class MockMediaSession : public mojom::MediaSession {
 
   int prev_track_count() const { return prev_track_count_; }
   int next_track_count() const { return next_track_count_; }
+  int add_observer_count() const { return add_observer_count_; }
 
  private:
   void SetState(mojom::MediaSessionInfo::SessionState);
@@ -97,6 +98,7 @@ class MockMediaSession : public mojom::MediaSession {
 
   int prev_track_count_ = 0;
   int next_track_count_ = 0;
+  int add_observer_count_ = 0;
 
   mojom::MediaSessionInfo::SessionState state_ =
       mojom::MediaSessionInfo::SessionState::kInactive;

@@ -38,7 +38,6 @@ class MediaController : public mojom::MediaController,
   void MediaSessionInfoChanged(mojom::MediaSessionInfoPtr) override;
 
   void SetMediaSession(mojom::MediaSession*);
-  void ClearMediaSession();
 
   void BindToInterface(mojom::MediaControllerRequest);
   void FlushForTesting();
