@@ -217,7 +217,7 @@ class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
   //
   // TODO(scherkus): Replace this by changing AudioRendererSink to either accept
   // the callback via Start(). See http://crbug.com/151051 for details.
-  bool stopping_hack_;
+  bool stopping_hack_ GUARDED_BY(audio_thread_lock_);
 
   base::WaitableEvent did_receive_auth_;
   AudioParameters output_params_;
