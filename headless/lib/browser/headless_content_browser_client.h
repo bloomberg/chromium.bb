@@ -59,8 +59,6 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
       net::ClientCertIdentityList client_certs,
       std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
   void ResourceDispatcherHostCreated() override;
-  bool DoesSiteRequireDedicatedProcess(content::BrowserContext* browser_context,
-                                       const GURL& effective_site_url) override;
   bool ShouldEnableStrictSiteIsolation() override;
 
   ::network::mojom::NetworkContextPtr CreateNetworkContext(

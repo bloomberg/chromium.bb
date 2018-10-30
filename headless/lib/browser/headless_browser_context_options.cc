@@ -65,11 +65,6 @@ bool HeadlessBrowserContextOptions::incognito_mode() const {
                                browser_options_->incognito_mode);
 }
 
-bool HeadlessBrowserContextOptions::site_per_process() const {
-  return ReturnOverriddenValue(site_per_process_,
-                               browser_options_->site_per_process);
-}
-
 bool HeadlessBrowserContextOptions::block_new_web_contents() const {
   return ReturnOverriddenValue(block_new_web_contents_,
                                browser_options_->block_new_web_contents);

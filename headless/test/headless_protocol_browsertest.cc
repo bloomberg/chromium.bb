@@ -53,6 +53,10 @@ class HeadlessProtocolBrowserTest
     command_line->AppendSwitchASCII(::network::switches::kHostResolverRules,
                                     "MAP *.test 127.0.0.1");
     HeadlessAsyncDevTooledBrowserTest::SetUpCommandLine(command_line);
+
+    // Make sure the navigations spawn new processes. We run test harness
+    // in one process (harness.test) and tests in another.
+    command_line->AppendSwitch(::switches::kSitePerProcess);
   }
 
  private:
@@ -173,14 +177,6 @@ class HeadlessProtocolBrowserTest
   void FinishTest() {
     test_finished_ = true;
     FinishAsynchronousTest();
-  }
-
-  // HeadlessBrowserTest overrides.
-  void CustomizeHeadlessBrowserContext(
-      HeadlessBrowserContext::Builder& builder) override {
-    // Make sure the navigations spawn new processes. We run test harness
-    // in one process (harness.test) and tests in another.
-    builder.SetSitePerProcess(true);
   }
 
  protected:
