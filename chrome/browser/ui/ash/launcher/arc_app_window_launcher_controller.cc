@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
@@ -34,6 +35,17 @@
 namespace {
 
 constexpr size_t kMaxIconPngSize = 64 * 1024;  // 64 kb
+
+// Generated as ArcAppListPrefs::GetAppIdByPackageName(
+//     "com.google.android.GoogleCameraArc").
+constexpr char kAndroidCameraAppId[] = "goamfaniemdfcajgcmmflhchgkmbngka";
+// Generated as ArcAppListPrefs::GetAppIdByPackageName(
+//     "com.android.camera2").
+constexpr char kAndroidLegacyCameraAppId[] = "obfofkigjfamlldmipdegnjlcpincibc";
+// Generated as ArcAppListPrefs::GetAppIdByPackageName(
+//     "com.android.googlecameramigration").
+constexpr char kAndroidCameraMigrationAppId[] =
+    "ngmkobaiicipbagcngcmilfkhejlnfci";
 
 }  // namespace
 
@@ -295,8 +307,17 @@ void ArcAppWindowLauncherController::OnTaskCreated(
   DCHECK(!GetAppWindowForTask(task_id));
   const std::string arc_app_id =
       ArcAppListPrefs::GetAppId(package_name, activity_name);
+  std::string app_id_consolidated = arc_app_id;
+
+  // For camera app, always put the internal app icon onto shelf.
+  if (arc_app_id.compare(kAndroidCameraAppId) == 0 ||
+      arc_app_id.compare(kAndroidCameraMigrationAppId) == 0 ||
+      arc_app_id.compare(kAndroidLegacyCameraAppId) == 0) {
+    app_id_consolidated = app_list::kInternalAppIdCamera;
+  }
+
   const arc::ArcAppShelfId arc_app_shelf_id =
-      arc::ArcAppShelfId::FromIntentAndAppId(intent, arc_app_id);
+      arc::ArcAppShelfId::FromIntentAndAppId(intent, app_id_consolidated);
   task_id_to_app_window_info_[task_id] =
       std::make_unique<AppWindowInfo>(arc_app_shelf_id, intent, package_name);
   // Don't create shelf icon for non-primary user.
