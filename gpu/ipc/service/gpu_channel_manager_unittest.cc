@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
@@ -26,7 +27,8 @@ class GpuChannelManagerTest : public GpuChannelTestCommon {
     GpuChannel* channel = CreateChannel(kClientId, true);
     EXPECT_TRUE(channel);
 
-    int32_t kRouteId = 1;
+    int32_t kRouteId =
+        static_cast<int32_t>(GpuChannelReservedRoutes::kMaxValue) + 1;
     const SurfaceHandle kFakeSurfaceHandle = 1;
     SurfaceHandle surface_handle = kFakeSurfaceHandle;
     GPUCreateCommandBufferConfig init_params;

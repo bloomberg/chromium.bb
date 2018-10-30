@@ -128,6 +128,8 @@ source_set("ipc_common_sources") {
     "//gpu/command_buffer/common:common_sources",
     "//gpu/config:config_sources",
     "//ui/base",
+    "//ui/gfx:color_space",
+    "//ui/gfx/geometry",
     "//ui/gfx/ipc",
     "//ui/gfx/ipc/buffer_types",
     "//ui/gfx/ipc/color",
