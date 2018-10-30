@@ -2414,7 +2414,6 @@ bool RasterDecoderImpl::TexStorage2DImage(
   }
 
   DCHECK(GLSupportsFormat(texture_metadata.format()));
-  GLint untyped_format = viz::GLDataFormat(texture_metadata.format());
 
   if (!GetContextGroup()->image_factory()) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glTexStorage2DImage",
@@ -2426,7 +2425,7 @@ bool RasterDecoderImpl::TexStorage2DImage(
   scoped_refptr<gl::GLImage> image =
       GetContextGroup()->image_factory()->CreateAnonymousImage(
           gfx::Size(width, height), buffer_format, gfx::BufferUsage::SCANOUT,
-          untyped_format, &is_cleared);
+          &is_cleared);
 
   ScopedTextureBinder binder(&state_, texture_manager(), texture_ref,
                              texture_metadata.target(), gr_context());

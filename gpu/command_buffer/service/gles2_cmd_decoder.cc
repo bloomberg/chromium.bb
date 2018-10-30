@@ -37,6 +37,7 @@
 #include "gpu/command_buffer/common/debug_marker_manager.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
@@ -3068,23 +3069,22 @@ bool BackTexture::AllocateNativeGpuMemoryBuffer(const gfx::Size& size,
 
   DCHECK(format == GL_RGB || format == GL_RGBA);
   bool is_cleared = false;
+  gfx::BufferFormat buffer_format = gfx::BufferFormat::RGBA_8888;
+  if (format == GL_RGB) {
+#if defined(USE_OZONE)
+    // BGRX format is preferred for Ozone as it matches the format used by the
+    // buffer queue and is as a result guaranteed to work on all devices.
+    // TODO(reveman): Define this format in one place instead of having to
+    // duplicate BGRX_8888.
+    buffer_format = gfx::BufferFormat::BGRX_8888;
+#else
+    buffer_format = gfx::BufferFormat::RGBX_8888;
+#endif
+  }
+  DCHECK_EQ(format, gpu::InternalFormatForGpuMemoryBufferFormat(buffer_format));
   scoped_refptr<gl::GLImage> image =
       decoder_->GetContextGroup()->image_factory()->CreateAnonymousImage(
-          size,
-          format == GL_RGB
-              ?
-#if defined(USE_OZONE)
-              // BGRX format is preferred for Ozone as it matches the format
-              // used by the buffer queue and is as a result guaranteed to work
-              // on all devices.
-              // TODO(reveman): Define this format in one place instead of
-              // having to duplicate BGRX_8888.
-              gfx::BufferFormat::BGRX_8888
-#else
-              gfx::BufferFormat::RGBX_8888
-#endif
-              : gfx::BufferFormat::RGBA_8888,
-          gfx::BufferUsage::SCANOUT, format, &is_cleared);
+          size, buffer_format, gfx::BufferUsage::SCANOUT, &is_cleared);
   if (!image || !image->BindTexImage(Target()))
     return false;
 
@@ -17592,23 +17592,18 @@ void GLES2DecoderImpl::DoTexStorage2DImageCHROMIUM(GLenum target,
   }
 
   gfx::BufferFormat buffer_format;
-  GLint untyped_format;
   switch (internal_format) {
     case GL_RGBA8_OES:
       buffer_format = gfx::BufferFormat::RGBA_8888;
-      untyped_format = GL_RGBA;
       break;
     case GL_BGRA8_EXT:
       buffer_format = gfx::BufferFormat::BGRA_8888;
-      untyped_format = GL_BGRA_EXT;
       break;
     case GL_RGBA16F_EXT:
       buffer_format = gfx::BufferFormat::RGBA_F16;
-      untyped_format = GL_RGBA;
       break;
     case GL_R8_EXT:
       buffer_format = gfx::BufferFormat::R_8;
-      untyped_format = GL_RED_EXT;
       break;
     default:
       LOCAL_SET_GL_ERROR(GL_INVALID_ENUM, "glTexStorage2DImageCHROMIUM",
@@ -17628,7 +17623,7 @@ void GLES2DecoderImpl::DoTexStorage2DImageCHROMIUM(GLenum target,
   scoped_refptr<gl::GLImage> image =
       GetContextGroup()->image_factory()->CreateAnonymousImage(
           gfx::Size(width, height), buffer_format, gfx::BufferUsage::SCANOUT,
-          untyped_format, &is_cleared);
+          &is_cleared);
   if (!image || !image->BindTexImage(target)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glTexStorage2DImageCHROMIUM",
                        "Failed to create or bind GL Image");

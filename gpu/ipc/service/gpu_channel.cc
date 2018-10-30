@@ -725,11 +725,12 @@ scoped_refptr<gl::GLImage> GpuChannel::CreateImageForGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     SurfaceHandle surface_handle) {
-  unsigned internalformat = gpu::InternalFormatForGpuMemoryBufferFormat(format);
   switch (handle.type) {
     case gfx::SHARED_MEMORY_BUFFER: {
       if (!base::IsValueInRangeForNumericType<size_t>(handle.stride))
         return nullptr;
+      unsigned internalformat =
+          gpu::InternalFormatForGpuMemoryBufferFormat(format);
       scoped_refptr<gl::GLImageSharedMemory> image(
           new gl::GLImageSharedMemory(size, internalformat));
       if (!image->Initialize(handle.region, handle.id, format, handle.offset,
@@ -747,8 +748,7 @@ scoped_refptr<gl::GLImage> GpuChannel::CreateImageForGpuMemoryBuffer(
       return manager->gpu_memory_buffer_factory()
           ->AsImageFactory()
           ->CreateImageForGpuMemoryBuffer(std::move(handle), size, format,
-                                          internalformat, client_id_,
-                                          surface_handle);
+                                          client_id_, surface_handle);
     }
   }
 }
