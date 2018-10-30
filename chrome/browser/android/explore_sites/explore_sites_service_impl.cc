@@ -14,6 +14,7 @@
 #include "chrome/browser/android/explore_sites/explore_sites_store.h"
 #include "chrome/browser/android/explore_sites/get_catalog_task.h"
 #include "chrome/browser/android/explore_sites/get_images_task.h"
+#include "chrome/browser/android/explore_sites/get_version_task.h"
 #include "chrome/browser/android/explore_sites/image_helper.h"
 #include "chrome/browser/android/explore_sites/import_catalog_task.h"
 #include "components/offline_pages/task/task.h"
@@ -92,17 +93,13 @@ void ExploreSitesServiceImpl::UpdateCatalogFromNetwork(
       explore_sites_fetcher_->RestartAsImmediateFetchIfNotYet();
     return;
   }
-
-  // TODO(petewil): Eventually get the catalog version from DB.
-  std::string catalog_version = "";
-
-  // Create a fetcher and start fetching the protobuf (async).
-  explore_sites_fetcher_ = ExploreSitesFetcher::CreateForGetCatalog(
-      is_immediate_fetch, catalog_version, accept_languages,
-      url_loader_factory_,
-      base::BindOnce(&ExploreSitesServiceImpl::OnCatalogFetched,
-                     weak_ptr_factory_.GetWeakPtr()));
-  explore_sites_fetcher_->Start();
+  // We want to create the fetcher, but need to grab the current version from
+  // the DB first.
+  task_queue_.AddTask(std::make_unique<GetVersionTask>(
+      explore_sites_store_.get(),
+      base::BindOnce(&ExploreSitesServiceImpl::GotVersionToStartFetch,
+                     weak_ptr_factory_.GetWeakPtr(), is_immediate_fetch,
+                     accept_languages)));
 }
 
 void ExploreSitesServiceImpl::BlacklistSite(const std::string& url) {
@@ -124,6 +121,24 @@ void ValidateCatalog(Catalog* catalog) {
       site.set_site_url(GURL(site.site_url()).spec());
     }
   }
+}
+
+void ExploreSitesServiceImpl::GotVersionToStartFetch(
+    bool is_immediate_fetch,
+    const std::string& accept_languages,
+    std::string catalog_version) {
+  if (explore_sites_fetcher_) {
+    // There was a race.
+    return;
+  }
+
+  // Create a fetcher and start fetching the protobuf (async).
+  explore_sites_fetcher_ = ExploreSitesFetcher::CreateForGetCatalog(
+      is_immediate_fetch, catalog_version, accept_languages,
+      url_loader_factory_,
+      base::BindOnce(&ExploreSitesServiceImpl::OnCatalogFetched,
+                     weak_ptr_factory_.GetWeakPtr()));
+  explore_sites_fetcher_->Start();
 }
 
 void ExploreSitesServiceImpl::OnCatalogFetched(
@@ -153,14 +168,18 @@ void ExploreSitesServiceImpl::OnCatalogFetched(
   std::unique_ptr<Catalog> catalog(catalog_response->release_catalog());
 
   // Check the catalog, canonicalizing any URLs in it.
-  ValidateCatalog(catalog.get());
+  if (catalog) {
+    ValidateCatalog(catalog.get());
 
-  // Add the catalog to our internal database.
-  task_queue_.AddTask(std::make_unique<ImportCatalogTask>(
-      explore_sites_store_.get(), catalog_version, std::move(catalog),
-      base::BindOnce(&ExploreSitesServiceImpl::NotifyCatalogUpdated,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     std::move(update_catalog_callbacks_))));
+    // Add the catalog to our internal database.
+    task_queue_.AddTask(std::make_unique<ImportCatalogTask>(
+        explore_sites_store_.get(), catalog_version, std::move(catalog),
+        base::BindOnce(&ExploreSitesServiceImpl::NotifyCatalogUpdated,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(update_catalog_callbacks_))));
+  } else {
+    NotifyCatalogUpdated(std::move(update_catalog_callbacks_), true);
+  }
   update_catalog_callbacks_.clear();
 }
 

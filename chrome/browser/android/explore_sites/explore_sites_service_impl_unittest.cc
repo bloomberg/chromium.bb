@@ -14,6 +14,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -27,6 +28,9 @@ const char kAcceptLanguages[] = "en-US,en;q=0.5";
 }  // namespace
 
 namespace explore_sites {
+
+using testing::HasSubstr;
+using testing::Not;
 
 class ExploreSitesServiceImplTest : public testing::Test {
  public:
@@ -77,9 +81,11 @@ class ExploreSitesServiceImplTest : public testing::Test {
 
   void SimulateFetcherData(const std::string& response_data);
 
- private:
   network::TestURLLoaderFactory::PendingRequest* GetLastPendingRequest();
 
+  void ValidateTestCatalog();
+
+ private:
   std::unique_ptr<explore_sites::ExploreSitesServiceImpl> service_;
   bool success_;
   int callback_count_;
@@ -110,6 +116,8 @@ ExploreSitesServiceImplTest::ExploreSitesServiceImplTest()
 // response from the network.
 void ExploreSitesServiceImplTest::SimulateFetcherData(
     const std::string& response_data) {
+  PumpLoop();
+
   DCHECK(test_url_loader_factory_.pending_requests()->size() > 0);
   test_url_loader_factory_.SimulateResponseForPendingRequest(
       GetLastPendingRequest()->request.url.spec(), response_data, net::HTTP_OK,
@@ -122,6 +130,30 @@ ExploreSitesServiceImplTest::GetLastPendingRequest() {
   network::TestURLLoaderFactory::PendingRequest* request =
       &(test_url_loader_factory_.pending_requests()->back());
   return request;
+}
+
+void ExploreSitesServiceImplTest::ValidateTestCatalog() {
+  EXPECT_EQ(GetCatalogStatus::kSuccess, database_status());
+  EXPECT_NE(nullptr, database_categories());
+  EXPECT_EQ(1U, database_categories()->size());
+
+  const ExploreSitesCategory& database_category = database_categories()->at(0);
+  EXPECT_EQ(Category_CategoryType_TECHNOLOGY, database_category.category_type);
+  EXPECT_EQ(std::string(kCategoryName), database_category.label);
+  EXPECT_EQ(2U, database_category.sites.size());
+
+  // Since the site name and url might come back in a different order than we
+  // started with, accept either order as long as one name and url match.
+  EXPECT_NE(database_category.sites[0].site_id,
+            database_category.sites[1].site_id);
+  std::string site1Url = database_category.sites[0].url.spec();
+  std::string site2Url = database_category.sites[1].url.spec();
+  std::string site1Name = database_category.sites[0].title;
+  std::string site2Name = database_category.sites[1].title;
+  EXPECT_TRUE(site1Url == kSite1Url || site1Url == kSite2Url);
+  EXPECT_TRUE(site2Url == kSite1Url || site2Url == kSite2Url);
+  EXPECT_TRUE(site1Name == kSite1Name || site1Name == kSite2Name);
+  EXPECT_TRUE(site2Name == kSite1Name || site2Name == kSite2Name);
 }
 
 // This is a helper to generate testing data to use in tests.
@@ -184,25 +216,7 @@ TEST_F(ExploreSitesServiceImplTest, UpdateCatalogFromNetwork) {
       &ExploreSitesServiceImplTest::CatalogCallback, base::Unretained(this)));
   PumpLoop();
 
-  EXPECT_EQ(GetCatalogStatus::kSuccess, database_status());
-  EXPECT_NE(nullptr, database_categories());
-  EXPECT_EQ(1U, database_categories()->size());
-
-  const ExploreSitesCategory& category = database_categories()->at(0);
-  EXPECT_EQ(Category_CategoryType_TECHNOLOGY, category.category_type);
-  EXPECT_EQ(std::string(kCategoryName), category.label);
-  EXPECT_EQ(2U, category.sites.size());
-
-  // Since the site name and url might come back in a different order than we
-  // started with, accept either order as long as one name and url match.
-  std::string site1Url = category.sites[0].url.spec();
-  std::string site2Url = category.sites[1].url.spec();
-  std::string site1Name = category.sites[0].title;
-  std::string site2Name = category.sites[1].title;
-  EXPECT_TRUE(site1Url == kSite1Url || site1Url == kSite2Url);
-  EXPECT_TRUE(site2Url == kSite1Url || site2Url == kSite2Url);
-  EXPECT_TRUE(site1Name == kSite1Name || site1Name == kSite2Name);
-  EXPECT_TRUE(site2Name == kSite1Name || site2Name == kSite2Name);
+  ValidateTestCatalog();
 }
 
 TEST_F(ExploreSitesServiceImplTest, MultipleUpdateCatalogFromNetwork) {
@@ -232,6 +246,52 @@ TEST_F(ExploreSitesServiceImplTest, MultipleUpdateCatalogFromNetwork) {
 
   EXPECT_TRUE(success());
   EXPECT_EQ(3, callback_count());
+}
+
+TEST_F(ExploreSitesServiceImplTest, GetCachedCatalogFromNetwork) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(chrome::android::kExploreSites);
+
+  service()->UpdateCatalogFromNetwork(
+      false /*is_immediate_fetch*/, kAcceptLanguages,
+      base::BindOnce(&ExploreSitesServiceImplTest::UpdateCatalogDoneCallback,
+                     base::Unretained(this)));
+  PumpLoop();
+  EXPECT_THAT(GetLastPendingRequest()->request.url.query(),
+              Not(HasSubstr("version_token=abcd")));
+
+  SimulateFetcherData(test_data());
+  PumpLoop();
+  EXPECT_TRUE(success());
+
+  service()->UpdateCatalogFromNetwork(
+      false /*is_immediate_fetch*/, kAcceptLanguages,
+      base::BindOnce(&ExploreSitesServiceImplTest::UpdateCatalogDoneCallback,
+                     base::Unretained(this)));
+  PumpLoop();
+  EXPECT_THAT(GetLastPendingRequest()->request.url.query(),
+              HasSubstr("version_token=abcd"));
+
+  explore_sites::GetCatalogResponse catalog_response;
+  catalog_response.set_version_token("abcd");
+  std::string serialized_response;
+  catalog_response.SerializeToString(&serialized_response);
+  SimulateFetcherData(serialized_response);
+
+  PumpLoop();
+
+  // Get the catalog and verify the contents.
+
+  // First call is to get update_catalog out of the way.  If GetCatalog has
+  // never been called before in this session, it won't return anything, it will
+  // just start the update process.  For our test, we've already put data into
+  // the catalog, but GetCatalog doesn't know that.
+  // TODO(petewil): Fix get catalog so it always returns data if it has some.
+  service()->GetCatalog(base::BindOnce(
+      &ExploreSitesServiceImplTest::CatalogCallback, base::Unretained(this)));
+  PumpLoop();
+
+  ValidateTestCatalog();
 }
 
 }  // namespace explore_sites
