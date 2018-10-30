@@ -46,6 +46,7 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
+import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -559,6 +560,31 @@ public class ContextualSuggestionsTest {
 
         assertEquals(
                 "Toolbar button should be visible", View.VISIBLE, toolbarButton.getVisibility());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"ContextualSuggestions"})
+    public void testSuggestionRanking() throws Exception {
+        ClusterList clusters = mModel.getClusterList();
+
+        ContextualSuggestionsCluster cluster1 = clusters.getClusterForTesting(0);
+        for (int i = 0; i < cluster1.getSuggestions().size(); i++) {
+            SnippetArticle article = cluster1.getSuggestions().get(i);
+            assertEquals("Cluster rank incorrect for item " + i + " in cluster1", i,
+                    article.getPerSectionRank());
+            assertEquals("Global rank incorrect for item " + i + " in cluster1", i,
+                    article.getGlobalRank());
+        }
+
+        ContextualSuggestionsCluster cluster2 = clusters.getClusterForTesting(1);
+        for (int i = 0; i < cluster2.getSuggestions().size(); i++) {
+            SnippetArticle article = cluster2.getSuggestions().get(i);
+            assertEquals("Cluster rank incorrect for item " + i + " in cluster2", i,
+                    article.getPerSectionRank());
+            assertEquals("Global rank incorrect for item " + i + " in cluster2",
+                    i + cluster1.getSuggestions().size(), article.getGlobalRank());
+        }
     }
 
     private void simulateClickOnCloseButton() {
