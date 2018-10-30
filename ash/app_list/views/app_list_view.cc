@@ -96,9 +96,6 @@ constexpr int kAppListBackgroundRadius = 28;
 // home launcher gestures, if they can be processed.
 constexpr int kAppListHomeLaucherGesturesThreshold = 32;
 
-// Quality of the shield background blur.
-constexpr float kAppListBlurQuality = 0.25f;
-
 // Set animation durations to 0 for testing.
 static bool short_animations_for_testing;
 
@@ -510,8 +507,6 @@ void AppListView::InitContents(int initial_apps_page) {
         app_list_background_shield_mask_->layer());
     app_list_background_shield_->layer()->SetBackgroundBlur(
         AppListConfig::instance().blur_radius());
-    app_list_background_shield_->layer()->SetBackdropFilterQuality(
-        kAppListBlurQuality);
   }
   AddChildView(app_list_background_shield_);
   app_list_main_view_ = new AppListMainView(delegate_, this);
