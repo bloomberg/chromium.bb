@@ -12,6 +12,7 @@
 #include "base/system/system_monitor.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
+#include "components/crash/core/common/crash_key.h"
 #include "media/audio/audio_manager.h"
 #include "services/audio/debug_recording.h"
 #include "services/audio/device_notifier.h"
@@ -27,6 +28,12 @@
 
 namespace audio {
 
+namespace {
+// TODO(crbug.com/888478): Remove this after diagnosis.
+crash_reporter::CrashKeyString<64> g_service_state_for_crashing(
+    "audio-service-state");
+}  // namespace
+
 Service::Service(std::unique_ptr<AudioManagerAccessor> audio_manager_accessor,
                  base::TimeDelta quit_timeout,
                  bool enable_remote_client_support,
@@ -35,6 +42,8 @@ Service::Service(std::unique_ptr<AudioManagerAccessor> audio_manager_accessor,
       audio_manager_accessor_(std::move(audio_manager_accessor)),
       enable_remote_client_support_(enable_remote_client_support),
       registry_(std::move(registry)) {
+  magic_bytes_ = 0x600DC0DEu;
+  g_service_state_for_crashing.Set("constructing");
   DCHECK(audio_manager_accessor_);
   if (enable_remote_client_support_) {
     log_factory_manager_ = std::make_unique<LogFactoryManager>();
@@ -45,30 +54,41 @@ Service::Service(std::unique_ptr<AudioManagerAccessor> audio_manager_accessor,
     // created. This is required for in-process device notifications.
     InitializeDeviceMonitor();
   }
+  g_service_state_for_crashing.Set("constructed");
 }
 
 Service::~Service() {
+  CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  g_service_state_for_crashing.Set("destructing");
   TRACE_EVENT0("audio", "audio::Service::~Service");
 
   metrics_.reset();
+  g_service_state_for_crashing.Set("destructing - killed metrics");
 
   // |ref_factory_| may reentrantly call its |quit_closure| when we reset the
   // members below. Destroy it ahead of time to prevent this.
   ref_factory_.reset();
+  g_service_state_for_crashing.Set("destructing - killed ref_factory");
 
   // Stop all streams cleanly before shutting down the audio manager.
   stream_factory_.reset();
+  g_service_state_for_crashing.Set("destructing - killed stream_factory");
 
   // Reset |debug_recording_| to disable debug recording before AudioManager
   // shutdown.
   debug_recording_.reset();
+  g_service_state_for_crashing.Set("destructing - killed debug_recording");
 
   audio_manager_accessor_->Shutdown();
+  g_service_state_for_crashing.Set("destructing - did shut down manager");
+  magic_bytes_ = 0xDEADBEEFu;
 }
 
 void Service::OnStart() {
+  CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  g_service_state_for_crashing.Set("starting");
   TRACE_EVENT0("audio", "audio::Service::OnStart")
 
   // This will pre-create AudioManager if AudioManagerAccessor owns it.
@@ -91,14 +111,17 @@ void Service::OnStart() {
     registry_->AddInterface<mojom::LogFactoryManager>(base::BindRepeating(
         &Service::BindLogFactoryManagerRequest, base::Unretained(this)));
   }
+  g_service_state_for_crashing.Set("started");
 }
 
 void Service::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
+  CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK(ref_factory_);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  g_service_state_for_crashing.Set("binding " + interface_name);
   TRACE_EVENT1("audio", "audio::Service::OnBindInterface", "interface",
                interface_name);
 
@@ -108,19 +131,24 @@ void Service::OnBindInterface(
   registry_->BindInterface(interface_name, std::move(interface_pipe));
   DCHECK(!ref_factory_->HasNoRefs());
   quit_timer_.AbandonAndStop();
+  g_service_state_for_crashing.Set("bound " + interface_name);
 }
 
 bool Service::OnServiceManagerConnectionLost() {
+  CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  g_service_state_for_crashing.Set("connection lost");
   return true;
 }
 
 void Service::SetQuitClosureForTesting(base::RepeatingClosure quit_closure) {
+  CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   quit_closure_ = std::move(quit_closure);
 }
 
 void Service::BindSystemInfoRequest(mojom::SystemInfoRequest request) {
+  CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ref_factory_);
 
@@ -134,6 +162,7 @@ void Service::BindSystemInfoRequest(mojom::SystemInfoRequest request) {
 }
 
 void Service::BindDebugRecordingRequest(mojom::DebugRecordingRequest request) {
+  CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ref_factory_);
   TracedServiceRef service_ref(ref_factory_->CreateRef(),
@@ -149,6 +178,7 @@ void Service::BindDebugRecordingRequest(mojom::DebugRecordingRequest request) {
 }
 
 void Service::BindStreamFactoryRequest(mojom::StreamFactoryRequest request) {
+  CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ref_factory_);
 
@@ -160,6 +190,7 @@ void Service::BindStreamFactoryRequest(mojom::StreamFactoryRequest request) {
 }
 
 void Service::BindDeviceNotifierRequest(mojom::DeviceNotifierRequest request) {
+  CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ref_factory_);
   DCHECK(enable_remote_client_support_);
@@ -178,6 +209,7 @@ void Service::BindDeviceNotifierRequest(mojom::DeviceNotifierRequest request) {
 
 void Service::BindLogFactoryManagerRequest(
     mojom::LogFactoryManagerRequest request) {
+  CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ref_factory_);
   DCHECK(log_factory_manager_);
@@ -188,6 +220,7 @@ void Service::BindLogFactoryManagerRequest(
 }
 
 void Service::MaybeRequestQuitDelayed() {
+  CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   metrics_->HasNoConnections();
   if (quit_timeout_ <= base::TimeDelta())
@@ -196,6 +229,7 @@ void Service::MaybeRequestQuitDelayed() {
 }
 
 void Service::MaybeRequestQuit() {
+  CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ref_factory_ && ref_factory_->HasNoRefs() &&
          quit_timeout_ > base::TimeDelta());
@@ -207,6 +241,7 @@ void Service::MaybeRequestQuit() {
 }
 
 void Service::InitializeDeviceMonitor() {
+  CHECK_EQ(magic_bytes_, 0x600DC0DEu);
 #if defined(OS_MACOSX)
   if (audio_device_listener_mac_)
     return;
