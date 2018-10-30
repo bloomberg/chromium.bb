@@ -255,9 +255,9 @@ cr.define('cr.FirstRun', function() {
     },
   };
 
-  var HelpStep = cr.ui.define('div');
+  var TrayStep = cr.ui.define('div');
 
-  HelpStep.prototype = {
+  TrayStep.prototype = {
     __proto__: Bubble.prototype,
 
     decorate: function() {
@@ -270,37 +270,8 @@ cr.define('cr.FirstRun', function() {
     },
   };
 
-  var TrayStep = cr.ui.define('div');
-
-  TrayStep.prototype = {
-    __proto__: HelpStep.prototype,
-
-    decorate: function() {
-      HelpStep.prototype.decorate.call(this);
-      this.setUnifiedSystemTrayEnabled(false);
-    },
-
-    /**
-     * Updates UI when UnifiedSystemTray is enabled.
-     */
-    setUnifiedSystemTrayEnabled: function(enabled) {
-      Array.prototype.forEach.call(
-          this.getElementsByClassName('unified-system-tray-enabled'),
-          function(el) {
-            el.hidden = !enabled;
-          }.bind(this));
-      Array.prototype.forEach.call(
-          this.getElementsByClassName('unified-system-tray-disabled'),
-          function(el) {
-            el.hidden = enabled;
-          }.bind(this));
-    },
-  };
-
   var DecorateStep = function(el) {
-    if (el.id == 'help')
-      HelpStep.decorate(el);
-    else if (el.id == 'tray')
+    if (el.id == 'tray')
       TrayStep.decorate(el);
     else if (el.classList.contains('bubble'))
       Bubble.decorate(el);

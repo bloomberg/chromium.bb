@@ -70,10 +70,6 @@ void FirstRunHelper::CloseTrayBubble() {
       ->CloseBubble();
 }
 
-void FirstRunHelper::GetHelpButtonBounds(GetHelpButtonBoundsCallback cb) {
-  std::move(cb).Run(gfx::Rect());
-}
-
 void FirstRunHelper::OnLockStateChanged(bool locked) {
   Cancel();
 }

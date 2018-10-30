@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/first_run/first_run_controller.h"
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_prefs.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/constants.mojom.h"
@@ -17,7 +16,6 @@
 #include "chrome/browser/chromeos/first_run/first_run_view.h"
 #include "chrome/browser/chromeos/first_run/metrics.h"
 #include "chrome/browser/chromeos/first_run/steps/app_list_step.h"
-#include "chrome/browser/chromeos/first_run/steps/help_step.h"
 #include "chrome/browser/chromeos/first_run/steps/tray_step.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/ash/ash_util.h"
@@ -206,9 +204,6 @@ void FirstRunController::OnCancelled() {
 void FirstRunController::RegisterSteps() {
   steps_.push_back(std::make_unique<first_run::AppListStep>(this, actor_));
   steps_.push_back(std::make_unique<first_run::TrayStep>(this, actor_));
-  // UnifiedSystemTray does not have a help button. https://crbug.com/837502
-  if (!ash::features::IsSystemTrayUnifiedEnabled())
-    steps_.push_back(std::make_unique<first_run::HelpStep>(this, actor_));
 }
 
 void FirstRunController::ShowNextStep() {

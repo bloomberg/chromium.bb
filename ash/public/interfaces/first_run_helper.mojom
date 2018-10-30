@@ -30,10 +30,6 @@ interface FirstRunHelper {
   // Closes the system tray bubble menu. Does nothing if the bubble is already
   // closed.
   CloseTrayBubble();
-
-  // Returns the bounds of the help button on the system tray bubble menu in
-  // screen coordinates. Returns empty bounds if the bubble is not open.
-  GetHelpButtonBounds() => (gfx.mojom.Rect screen_bounds);
 };
 
 // The client for the FirstRunHelper interface, e.g. chrome.

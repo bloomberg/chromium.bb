@@ -32,7 +32,6 @@ class ASH_EXPORT FirstRunHelper : public mojom::FirstRunHelper,
   void GetAppListButtonBounds(GetAppListButtonBoundsCallback cb) override;
   void OpenTrayBubble(OpenTrayBubbleCallback cb) override;
   void CloseTrayBubble() override;
-  void GetHelpButtonBounds(GetHelpButtonBoundsCallback cb) override;
 
   // SessionObserver:
   void OnLockStateChanged(bool locked) override;
