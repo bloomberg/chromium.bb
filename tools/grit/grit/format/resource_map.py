@@ -16,14 +16,16 @@ from grit import util
 def GetFormatter(type):
   if type == 'resource_map_header':
     return _FormatHeader
-  if type == 'resource_map_source':
-    return partial(_FormatSource, _GetItemName)
   if type == 'resource_file_map_source':
     return partial(_FormatSource, _GetItemPath)
+  if type == 'resource_map_source':
+    return partial(_FormatSource, _GetItemName)
   if type == 'gzipped_resource_map_header':
     return partial(_FormatHeader, include_gzipped=True)
   if type == 'gzipped_resource_file_map_source':
     return partial(_FormatSource, _GetItemPath, include_gzipped=True)
+  if type == 'gzipped_resource_map_source':
+    return partial(_FormatSource, _GetItemName, include_gzipped=True)
 
 
 def GetMapName(root):

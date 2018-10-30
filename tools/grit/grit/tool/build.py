@@ -34,6 +34,7 @@ _format_modules = {
   'data_package': 'data_pack',
   'gzipped_resource_file_map_source': 'resource_map',
   'gzipped_resource_map_header': 'resource_map',
+  'gzipped_resource_map_source': 'resource_map',
   'js_map_format': 'js_map_format',
   'policy_templates': 'policy_templates_json',
   'rc_all': 'rc',
@@ -332,10 +333,12 @@ are exported to translation interchange files (e.g. XMB files), etc.
     # Microsoft's RC compiler can only deal with single-byte or double-byte
     # files (no UTF-8), so we make all RC files UTF-16 to support all
     # character sets.
-    if output_type in ('rc_header', 'resource_map_header',
-                       'resource_map_source', 'resource_file_map_source',
+    if output_type in ('rc_header', 'resource_file_map_source',
+                       'resource_map_header', 'resource_map_source',
+                       'gzipped_resource_file_map_source',
                        'gzipped_resource_map_header',
-                       'gzipped_resource_file_map_source'):
+                       'gzipped_resource_map_source',
+                      ):
       return 'cp1252'
     if output_type in ('android', 'c_format', 'js_map_format', 'plist',
                        'plist_strings', 'doc', 'json', 'android_policy',
