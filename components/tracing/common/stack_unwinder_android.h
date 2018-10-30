@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/debug/proc_maps_linux.h"
+#include "base/profiler/native_stack_sampler.h"
 #include "base/threading/platform_thread.h"
 #include "components/tracing/tracing_export.h"
 
@@ -38,6 +39,7 @@ class TRACING_EXPORT StackUnwinderAndroid {
   // Same as above function, but pauses the thread with the given |tid| and then
   // unwinds. |tid| should not be current thread's.
   size_t TraceStack(base::PlatformThreadId tid,
+                    base::NativeStackSampler::StackBuffer* stack_buffer,
                     const void** out_trace,
                     size_t max_depth) const;
 

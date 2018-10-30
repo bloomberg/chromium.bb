@@ -66,7 +66,10 @@ TEST_F(StackUnwinderTest, UnwindOtherThread) {
                      base::WaitableEvent* unwind_finished_event,
                      uintptr_t test_pc) {
     const void* frames[kMaxStackFrames];
-    size_t result = unwinder->TraceStack(tid, frames, kMaxStackFrames);
+    auto stack_buffer = base::NativeStackSampler::CreateStackBuffer();
+    EXPECT_GT(stack_buffer->size(), 0u);
+    size_t result =
+        unwinder->TraceStack(tid, stack_buffer.get(), frames, kMaxStackFrames);
     EXPECT_GT(result, 0u);
     for (size_t i = 0; i < result; ++i) {
       uintptr_t addr = reinterpret_cast<uintptr_t>(frames[i]);
@@ -104,7 +107,11 @@ TEST_F(StackUnwinderTest, UnwindOtherThreadOnJNICall) {
   auto callback = [](StackUnwinderAndroid* unwinder, base::PlatformThreadId tid,
                      uintptr_t test_pc) {
     const void* frames[kMaxStackFrames];
-    size_t result = unwinder->TraceStack(tid, frames, kMaxStackFrames);
+    auto stack_buffer = base::NativeStackSampler::CreateStackBuffer();
+    EXPECT_GT(stack_buffer->size(), 0u);
+    size_t result =
+        unwinder->TraceStack(tid, stack_buffer.get(), frames, kMaxStackFrames);
+
     bool found_jni = false;
     uintptr_t jni_address =
         reinterpret_cast<uintptr_t>(&Java_UnwindTestHelper_blockCurrentThread);

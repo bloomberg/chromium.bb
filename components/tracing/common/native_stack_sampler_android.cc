@@ -29,7 +29,7 @@ NativeStackSamplerAndroid::RecordStackFrames(
     unwinder_.Initialize();
   }
   const void* pcs[kMaxFrameDepth];
-  size_t depth = unwinder_.TraceStack(tid_, pcs, kMaxFrameDepth);
+  size_t depth = unwinder_.TraceStack(tid_, stack_buffer, pcs, kMaxFrameDepth);
   std::vector<base::StackSamplingProfiler::Frame> frames;
   frames.reserve(depth);
   for (size_t i = 0; i < depth; ++i) {
