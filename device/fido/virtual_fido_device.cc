@@ -173,8 +173,7 @@ std::string VirtualFidoDevice::GetId() const {
 }
 
 FidoTransportProtocol VirtualFidoDevice::DeviceTransport() const {
-  // Virtual device are injected as HID devices.
-  return FidoTransportProtocol::kUsbHumanInterfaceDevice;
+  return state_->transport;
 }
 
 }  // namespace device

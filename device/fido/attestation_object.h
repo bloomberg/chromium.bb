@@ -36,10 +36,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AttestationObject {
 
   std::vector<uint8_t> GetCredentialId() const;
 
-  // Replaces the attestation statement with a “none” attestation and replaces
-  // device AAGUID with zero bytes as specified for step 20.3 in
+  enum class AAGUID {
+    kErase,
+    kInclude,
+  };
+
+  // Replaces the attestation statement with a “none” attestation, and replaces
+  // device AAGUID with zero bytes (unless |erase_aaguid| is kInclude) as
+  // specified for step 20.3 in
   // https://w3c.github.io/webauthn/#createCredential.
-  void EraseAttestationStatement();
+  void EraseAttestationStatement(AAGUID erase_aaguid);
 
   // Returns true if the attestation is a "self" attestation, i.e. is just the
   // private key signing itself to show that it is fresh. See

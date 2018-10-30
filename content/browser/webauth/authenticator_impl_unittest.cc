@@ -55,6 +55,7 @@ using blink::mojom::AuthenticatorPtr;
 using blink::mojom::AuthenticatorSelectionCriteria;
 using blink::mojom::AuthenticatorSelectionCriteriaPtr;
 using blink::mojom::AuthenticatorStatus;
+using blink::mojom::AuthenticatorTransport;
 using blink::mojom::GetAssertionAuthenticatorResponsePtr;
 using blink::mojom::MakeCredentialAuthenticatorResponsePtr;
 using blink::mojom::PublicKeyCredentialCreationOptions;
@@ -70,9 +71,8 @@ using blink::mojom::PublicKeyCredentialRpEntityPtr;
 using blink::mojom::PublicKeyCredentialType;
 using blink::mojom::PublicKeyCredentialUserEntity;
 using blink::mojom::PublicKeyCredentialUserEntityPtr;
-using blink::mojom::AuthenticatorTransport;
-using cbor::Value;
 using cbor::Reader;
+using cbor::Value;
 
 namespace {
 
@@ -1104,8 +1104,10 @@ enum class AttestationConsent {
 enum class AttestationType {
   ANY,
   NONE,
+  NONE_WITH_NONZERO_AAGUID,
   U2F,
   SELF,
+  SELF_WITH_NONZERO_AAGUID,
 };
 
 class TestAuthenticatorRequestDelegate
@@ -1263,6 +1265,14 @@ class AuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
       ASSERT_TRUE(attestation_value->is_map());
       const auto& attestation = attestation_value->GetMap();
 
+      base::Optional<device::AuthenticatorData> auth_data = base::nullopt;
+      const auto auth_data_it = attestation.find(Value("authData"));
+      if (auth_data_it != attestation.end() &&
+          auth_data_it->second.is_bytestring()) {
+        auth_data = device::AuthenticatorData::DecodeAuthenticatorData(
+            auth_data_it->second.GetBytestring());
+      }
+
       switch (test.expected_attestation) {
         case AttestationType::ANY:
           ASSERT_STREQ("", test.expected_certificate_substring);
@@ -1271,6 +1281,13 @@ class AuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
         case AttestationType::NONE:
           ASSERT_STREQ("", test.expected_certificate_substring);
           ExpectMapHasKeyWithStringValue(attestation, "fmt", "none");
+          EXPECT_TRUE(auth_data->attested_data()->IsAaguidZero());
+          break;
+
+        case AttestationType::NONE_WITH_NONZERO_AAGUID:
+          ASSERT_STREQ("", test.expected_certificate_substring);
+          ExpectMapHasKeyWithStringValue(attestation, "fmt", "none");
+          EXPECT_FALSE(auth_data->attested_data()->IsAaguidZero());
           break;
 
         case AttestationType::U2F:
@@ -1281,7 +1298,7 @@ class AuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
           }
           break;
 
-        case AttestationType::SELF:
+        case AttestationType::SELF: {
           ASSERT_STREQ("", test.expected_certificate_substring);
           ExpectMapHasKeyWithStringValue(attestation, "fmt", "packed");
 
@@ -1297,21 +1314,28 @@ class AuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
                       attestation_statement.end());
           ASSERT_TRUE(attestation_statement.find(Value("ecdaaKeyId")) ==
                       attestation_statement.end());
-
-          // The AAGUID should be all zero.
-          const auto auth_data_it = attestation.find(Value("authData"));
-          ASSERT_TRUE(auth_data_it != attestation.end());
-          ASSERT_TRUE(auth_data_it->second.is_bytestring());
-          const std::vector<uint8_t>& auth_data =
-              auth_data_it->second.GetBytestring();
-          base::Optional<device::AuthenticatorData> parsed_auth_data =
-              device::AuthenticatorData::DecodeAuthenticatorData(auth_data);
-          ASSERT_TRUE(parsed_auth_data);
-          const base::Optional<device::AttestedCredentialData>& cred_data(
-              parsed_auth_data->attested_data());
-          ASSERT_TRUE(cred_data);
-          EXPECT_TRUE(cred_data->IsAaguidZero());
+          EXPECT_TRUE(auth_data->attested_data()->IsAaguidZero());
           break;
+        }
+        case AttestationType::SELF_WITH_NONZERO_AAGUID: {
+          ASSERT_STREQ("", test.expected_certificate_substring);
+          ExpectMapHasKeyWithStringValue(attestation, "fmt", "packed");
+
+          // A self-attestation should not include an X.509 chain nor ECDAA key.
+          const auto attestation_statement_it =
+              attestation.find(Value("attStmt"));
+          ASSERT_TRUE(attestation_statement_it != attestation.end());
+          ASSERT_TRUE(attestation_statement_it->second.is_map());
+          const auto& attestation_statement =
+              attestation_statement_it->second.GetMap();
+
+          ASSERT_TRUE(attestation_statement.find(Value("x5c")) ==
+                      attestation_statement.end());
+          ASSERT_TRUE(attestation_statement.find(Value("ecdaaKeyId")) ==
+                      attestation_statement.end());
+          EXPECT_FALSE(auth_data->attested_data()->IsAaguidZero());
+          break;
+        }
       }
     }
   }
@@ -1354,8 +1378,8 @@ class AuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
         << "', but expected to find '" << expected << "'";
   }
 
-  // Asserts that the webauthn attestation CBOR map in
-  // |attestation| contains a single X.509 certificate containing |substring|.
+  // Asserts that the webauthn attestation CBOR map in |attestation| contains a
+  // single X.509 certificate containing |substring|.
   static void ExpectCertificateContainingSubstring(
       const Value::MapValue& attestation,
       const std::string& substring) {
@@ -1488,8 +1512,8 @@ TEST_F(AuthenticatorContentBrowserClientTest,
           IndividualAttestation::NOT_REQUESTED, AttestationConsent::GRANTED,
           AuthenticatorStatus::SUCCESS,
           // If individual attestation was not requested then the attestation
-          // certificate will be removed, even if consent is given, because
-          // the consent isn't to be tracked.
+          // certificate will be removed, even if consent is given, because the
+          // consent isn't to be tracked.
           AttestationType::NONE, "",
       },
       {
@@ -1497,8 +1521,8 @@ TEST_F(AuthenticatorContentBrowserClientTest,
           IndividualAttestation::NOT_REQUESTED, AttestationConsent::GRANTED,
           AuthenticatorStatus::SUCCESS,
           // If individual attestation was not requested then the attestation
-          // certificate will be removed, even if consent is given, because
-          // the consent isn't to be tracked.
+          // certificate will be removed, even if consent is given, because the
+          // consent isn't to be tracked.
           AttestationType::NONE, "",
       },
 
@@ -1513,6 +1537,49 @@ TEST_F(AuthenticatorContentBrowserClientTest,
   virtual_device_.mutable_state()->individual_attestation_cert_common_name =
       kCommonName;
   NavigateAndCommit(GURL("https://example.com"));
+
+  RunTestCases(kTests);
+}
+
+// Test attestation erasure for an authenticator that uses self-attestation
+// (which requires a zero AAGUID), but has a non-zero AAGUID. This mirrors the
+// behavior of the Touch ID platform authenticator.
+TEST_F(AuthenticatorContentBrowserClientTest,
+       PlatformAuthenticatorAttestation) {
+  virtual_device_.SetSupportedProtocol(device::ProtocolVersion::kCtap);
+  virtual_device_.mutable_state()->transport =
+      device::FidoTransportProtocol::kInternal;
+  virtual_device_.mutable_state()->self_attestation = true;
+  virtual_device_.mutable_state()->non_zero_aaguid_with_self_attestation = true;
+  NavigateAndCommit(GURL("https://example.com"));
+
+  const std::vector<TestCase> kTests = {
+      {
+          // Self-attestation is defined as having a zero AAGUID, but
+          // |non_zero_aaguid_with_self_attestation| is set above. Thus, if no
+          // attestation is requested, the self-attestation will be removed but,
+          // because the transport is kInternal, the AAGUID will be preserved.
+          AttestationConveyancePreference::NONE,
+          IndividualAttestation::NOT_REQUESTED, AttestationConsent::DENIED,
+          AuthenticatorStatus::SUCCESS,
+          AttestationType::NONE_WITH_NONZERO_AAGUID, "",
+      },
+      {
+          // If attestation is requested, but denied, we'll still fail the
+          // request.
+          AttestationConveyancePreference::DIRECT,
+          IndividualAttestation::NOT_REQUESTED, AttestationConsent::DENIED,
+          AuthenticatorStatus::NOT_ALLOWED_ERROR, AttestationType::ANY, "",
+      },
+      {
+          // If attestation is requested and granted, the self attestation
+          // will be returned.
+          AttestationConveyancePreference::DIRECT,
+          IndividualAttestation::NOT_REQUESTED, AttestationConsent::GRANTED,
+          AuthenticatorStatus::SUCCESS,
+          AttestationType::SELF_WITH_NONZERO_AAGUID, "",
+      },
+  };
 
   RunTestCases(kTests);
 }
@@ -1538,8 +1605,8 @@ TEST_F(AuthenticatorContentBrowserClientTest, Ctap2SelfAttestation) {
           AuthenticatorStatus::NOT_ALLOWED_ERROR, AttestationType::ANY, "",
       },
       {
-          // If attestation is requested and granted, the self attestation
-          // will be returned.
+          // If attestation is requested and granted, the self attestation will
+          // be returned.
           AttestationConveyancePreference::DIRECT,
           IndividualAttestation::NOT_REQUESTED, AttestationConsent::GRANTED,
           AuthenticatorStatus::SUCCESS, AttestationType::SELF, "",
@@ -1558,8 +1625,8 @@ TEST_F(AuthenticatorContentBrowserClientTest,
 
   const std::vector<TestCase> kTests = {
       {
-          // Since the virtual device is configured to set a non-zero AAGUID
-          // the self-attestation should still be replaced with a "none"
+          // Since the virtual device is configured to set a non-zero AAGUID the
+          // self-attestation should still be replaced with a "none"
           // attestation.
           AttestationConveyancePreference::NONE,
           IndividualAttestation::NOT_REQUESTED, AttestationConsent::DENIED,
