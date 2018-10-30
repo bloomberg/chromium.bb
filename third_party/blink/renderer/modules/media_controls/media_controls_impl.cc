@@ -1542,7 +1542,21 @@ void MediaControlsImpl::HandleClickEvent(Event* event) {
       ExitFullscreen();
     else
       EnterFullscreen();
+
+    // If we paused for the first click of this double-click, then we need to
+    // resume playback, since the user was just toggling fullscreen.
+    if (is_paused_for_double_tap_) {
+      MediaElement().Play();
+      is_paused_for_double_tap_ = false;
+    }
   } else {
+    // If the video is not paused, assume the user is clicking to pause the
+    // video. If the user clicks again for a fullscreen-toggling double-tap, we
+    // will resume playback.
+    if (!MediaElement().paused()) {
+      MediaElement().pause();
+      is_paused_for_double_tap_ = true;
+    }
     tap_timer_.StartOneShot(kDoubleTapDelay, FROM_HERE);
   }
 }
@@ -1624,8 +1638,23 @@ bool MediaControlsImpl::IsOnLeftSide(Event* event) {
 }
 
 void MediaControlsImpl::TapTimerFired(TimerBase*) {
-  if (is_touch_interaction_)
+  if (is_touch_interaction_) {
     MaybeToggleControlsFromTap();
+  } else if (MediaElement().paused()) {
+    // If this is not a touch interaction and the video is paused, then either
+    // the user has just paused via click (in which case we've already paused
+    // and there's nothing to do), or the user is playing by click (in which
+    // case we need to start playing).
+    if (is_paused_for_double_tap_) {
+      // TODO(https://crbug.com/896255): Add and record useraction.
+      // TODO(https://crbug.com/896252): Show overlay pause animation.
+      is_paused_for_double_tap_ = false;
+    } else {
+      // TODO(https://crbug.com/896255): Add and record useraction.
+      // TODO(https://crbug.com/896252): Show overlay play animation.
+      MediaElement().Play();
+    }
+  }
 }
 
 void MediaControlsImpl::HideMediaControlsTimerFired(TimerBase*) {

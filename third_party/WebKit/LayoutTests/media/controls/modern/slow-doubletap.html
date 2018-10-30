@@ -13,12 +13,8 @@ async_test(t => {
     // Double tap on the left side.
     const coordinates = videoLeftEdgeCoordinates(video);
     doubleTapAtCoordinates(
-        coordinates[0], coordinates[1], 400, t.step_func_done(() => {
-      assert_false(video.paused);
-    }));
+        coordinates[0], coordinates[1], 400, t.done.bind(t));
   });
-
-  video.addEventListener('pause', t.unreached_func());
 
   video.addEventListener('webkitfullscreenchange', t.unreached_func());
 
