@@ -21,10 +21,12 @@
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
 #import "content/public/browser/render_widget_host_view_mac_delegate.h"
+#include "content/public/common/content_features.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #import "ui/base/clipboard/clipboard_util_mac.h"
 #import "ui/base/cocoa/appkit_utils.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
+#import "ui/base/cocoa/touch_bar_util.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
@@ -51,6 +53,9 @@ using blink::WebGestureEvent;
 using blink::WebTouchEvent;
 
 namespace {
+
+// Touch bar identifier.
+NSString* const kWebContentTouchBarId = @"web-content";
 
 // Whether a keyboard event has been reserved by OSX.
 BOOL EventIsReservedBySystem(NSEvent* event) {
@@ -119,6 +124,10 @@ void ExtractUnderlines(NSAttributedString* string,
 @interface RenderWidgetHostViewCocoa () {
   bool keyboardLockActive_;
   base::Optional<base::flat_set<ui::DomCode>> lockedKeys_;
+
+  API_AVAILABLE(macos(10.12.2))
+  base::scoped_nsobject<NSCandidateListTouchBarItem> candidateListTouchBarItem_;
+  NSInteger textSuggestionsSequenceNumber_;
 }
 - (void)processedWheelEvent:(const blink::WebMouseWheelEvent&)event
                    consumed:(BOOL)consumed;
@@ -128,13 +137,24 @@ void ExtractUnderlines(NSAttributedString* string,
 - (void)windowDidBecomeKey:(NSNotification*)notification;
 - (void)windowDidResignKey:(NSNotification*)notification;
 - (void)sendViewBoundsInWindowToClient;
+- (void)requestTextSuggestions API_AVAILABLE(macos(10.12.2));
 - (void)sendWindowFrameInScreenToClient;
 - (bool)clientIsDisconnected;
+- (void)invalidateTouchBar API_AVAILABLE(macos(10.12.2));
+
+// NSCandidateListTouchBarItemDelegate implementation
+- (void)candidateListTouchBarItem:(NSCandidateListTouchBarItem*)anItem
+     endSelectingCandidateAtIndex:(NSInteger)index
+    API_AVAILABLE(macos(10.12.2));
+- (void)candidateListTouchBarItem:(NSCandidateListTouchBarItem*)anItem
+    changedCandidateListVisibility:(BOOL)isVisible
+    API_AVAILABLE(macos(10.12.2));
 @end
 
 @implementation RenderWidgetHostViewCocoa
 @synthesize markedRange = markedRange_;
 @synthesize textInputType = textInputType_;
+@synthesize spellCheckerForTesting = spellCheckerForTesting_;
 
 - (id)initWithClient:(RenderWidgetHostNSViewClient*)client
     withClientHelper:(RenderWidgetHostNSViewClientHelper*)clientHelper {
@@ -191,12 +211,82 @@ void ExtractUnderlines(NSAttributedString* string,
   client_->OnBoundsInWindowChanged(gfxViewBoundsInWindow, true);
 }
 
+- (void)requestTextSuggestions {
+  auto* touchBarItem = candidateListTouchBarItem_.get();
+  if (!touchBarItem)
+    return;
+  [touchBarItem
+      updateWithInsertionPointVisibility:textSelectionRange_.is_empty()];
+  if (!touchBarItem.candidateListVisible)
+    return;
+  if (!textSelectionRange_.IsValid()) {
+    [touchBarItem setCandidates:@[]
+               forSelectedRange:NSMakeRange(NSNotFound, 0)
+                       inString:nil];
+
+    // Bump the sequence number so that any request in flight is ignored.
+    textSuggestionsSequenceNumber_ += 1;
+    return;
+  }
+
+  NSRange selectionRange = textSelectionRange_.ToNSRange();
+  NSString* selectionText = base::SysUTF16ToNSString(textSelectionText_);
+  selectionRange.location -= textSelectionOffset_;
+  NSSpellChecker* spell_checker = spellCheckerForTesting_
+                                      ? spellCheckerForTesting_
+                                      : [NSSpellChecker sharedSpellChecker];
+  textSuggestionsSequenceNumber_ = [spell_checker
+      requestCandidatesForSelectedRange:selectionRange
+                               inString:selectionText
+                                  types:NSTextCheckingAllSystemTypes
+                                options:nil
+                 inSpellDocumentWithTag:0
+                      completionHandler:^(
+                          NSInteger sequenceNumber,
+                          NSArray<NSTextCheckingResult*>* candidates) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                          if (sequenceNumber != textSuggestionsSequenceNumber_)
+                            return;
+                          [touchBarItem setCandidates:candidates
+                                     forSelectedRange:selectionRange
+                                             inString:selectionText];
+                        });
+                      }];
+}
+
 - (void)setTextSelectionText:(base::string16)text
                       offset:(size_t)offset
                        range:(gfx::Range)range {
   textSelectionText_ = text;
   textSelectionOffset_ = offset;
   textSelectionRange_ = range;
+  if (@available(macOS 10.12.2, *))
+    [self requestTextSuggestions];
+}
+
+- (void)candidateListTouchBarItem:(NSCandidateListTouchBarItem*)anItem
+     endSelectingCandidateAtIndex:(NSInteger)index {
+  if (index == NSNotFound)
+    return;
+  NSTextCheckingResult* selectedResult = anItem.candidates[index];
+  NSRange replacementRange = selectedResult.range;
+  replacementRange.location += textSelectionOffset_;
+  [self insertText:selectedResult.replacementString
+      replacementRange:replacementRange];
+}
+
+- (void)candidateListTouchBarItem:(NSCandidateListTouchBarItem*)anItem
+    changedCandidateListVisibility:(BOOL)isVisible {
+  [self requestTextSuggestions];
+}
+
+- (void)setTextInputType:(ui::TextInputType)textInputType {
+  if (textInputType_ == textInputType)
+    return;
+  textInputType_ = textInputType;
+
+  if (@available(macOS 10.12.2, *))
+    [self invalidateTouchBar];
 }
 
 - (base::string16)selectedText {
@@ -1840,6 +1930,36 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 - (void)popupWindowWillClose:(NSNotification*)notification {
   [self setHidden:YES];
   client_->RequestShutdown();
+}
+
+- (void)invalidateTouchBar {
+  candidateListTouchBarItem_.reset();
+  self.touchBar = nil;
+}
+
+- (NSTouchBar*)makeTouchBar {
+  if (textInputType_ != ui::TEXT_INPUT_TYPE_NONE &&
+      textInputType_ != ui::TEXT_INPUT_TYPE_PASSWORD &&
+      (base::FeatureList::IsEnabled(features::kTextSuggestionsTouchBar) ||
+       base::FeatureList::IsEnabled(features::kExperimentalUi))) {
+    candidateListTouchBarItem_.reset([[NSCandidateListTouchBarItem alloc]
+        initWithIdentifier:NSTouchBarItemIdentifierCandidateList]);
+    auto* candidateListItem = candidateListTouchBarItem_.get();
+
+    candidateListItem.delegate = self;
+    candidateListItem.client = self;
+    [self requestTextSuggestions];
+
+    base::scoped_nsobject<NSTouchBar> scopedTouchBar([[NSTouchBar alloc] init]);
+    auto* touchBar = scopedTouchBar.get();
+    touchBar.customizationIdentifier = ui::GetTouchBarId(kWebContentTouchBarId);
+    touchBar.templateItems = [NSSet setWithObject:candidateListTouchBarItem_];
+    touchBar.defaultItemIdentifiers =
+        @[ NSTouchBarItemIdentifierCandidateList ];
+    return scopedTouchBar.autorelease();
+  }
+
+  return [super makeTouchBar];
 }
 
 @end

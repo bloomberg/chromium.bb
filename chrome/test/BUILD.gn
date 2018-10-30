@@ -1957,7 +1957,6 @@ test("browser_tests") {
         "../browser/ui/cocoa/share_menu_controller_browsertest.mm",
         "../browser/ui/cocoa/task_manager_mac_browsertest.mm",
         "../browser/ui/cocoa/touchbar/browser_window_touch_bar_controller_browsertest.mm",
-        "../browser/ui/cocoa/touchbar/text_suggestions_touch_bar_controller_browsertest.mm",
         "../browser/ui/views/certificate_viewer_mac_browsertest.mm",
         "../browser/ui/views/ssl_client_certificate_selector_mac_browsertest.mm",
 
@@ -4143,7 +4142,6 @@ test("unit_tests") {
       "../browser/ui/cocoa/test/run_loop_testing_unittest.mm",
       "../browser/ui/cocoa/touchbar/browser_window_default_touch_bar_unittest.mm",
       "../browser/ui/cocoa/touchbar/credit_card_autofill_touch_bar_controller_unittest.mm",
-      "../browser/ui/cocoa/touchbar/text_suggestions_touch_bar_controller_unittest.mm",
       "../browser/ui/cocoa/window_size_autosaver_unittest.mm",
     ]
 
