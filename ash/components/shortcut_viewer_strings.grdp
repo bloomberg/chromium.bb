@@ -459,6 +459,12 @@
   <message name="IDS_KSV_DESCRIPTION_GO_TO_BEGINNING_OF_DOCUMENT" desc="Description of the command in keyboard shortcut viewer.">
     Go to beginning of document
   </message>
+  <message name="IDS_KSV_DESCRIPTION_GO_TO_END_OF_LINE" desc="Description of the command in keyboard shortcut viewer.">
+    Go to end of line
+  </message>
+  <message name="IDS_KSV_DESCRIPTION_GO_TO_BEGINNING_OF_LINE" desc="Description of the command in keyboard shortcut viewer.">
+    Go to beginning of line
+  </message>
   <message name="IDS_KSV_DESCRIPTION_PASTE_CONTENT_AS_TEXT" desc="Description of the command in keyboard shortcut viewer.">
     Paste content from the clipboard as plain text
   </message>

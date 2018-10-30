@@ -937,7 +937,7 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
 
       {// |categories|
        {ShortcutCategory::kTextEditing},
-       IDS_KSV_DESCRIPTION_GO_TO_END_OF_DOCUMENT,
+       IDS_KSV_DESCRIPTION_GO_TO_END_OF_LINE,
        IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
        // |accelerator_ids|
        {},
@@ -956,7 +956,7 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
 
       {// |categories|
        {ShortcutCategory::kTextEditing},
-       IDS_KSV_DESCRIPTION_GO_TO_BEGINNING_OF_DOCUMENT,
+       IDS_KSV_DESCRIPTION_GO_TO_BEGINNING_OF_LINE,
        IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
        // |accelerator_ids|
        {},
