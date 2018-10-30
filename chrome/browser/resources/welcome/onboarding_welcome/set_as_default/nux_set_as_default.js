@@ -13,6 +13,13 @@ Polymer({
   properties: {
     /** @type {nux.stepIndicatorModel} */
     indicatorModel: Object,
+
+    // <if expr="is_win">
+    isWin10: {
+      type: Boolean,
+      value: loadTimeData.getBoolean('is_win10'),
+    },
+    // </if>
   },
 
   /** @override */

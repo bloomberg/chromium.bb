@@ -15,6 +15,7 @@ js_library("nux_set_as_default") {
     ":nux_set_as_default_proxy",
     "../:navigation_behavior",
     "../shared:nux_types",
+    "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
 }
