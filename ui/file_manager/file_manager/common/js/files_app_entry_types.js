@@ -114,33 +114,92 @@ class FilesAppEntry {
  * that reads a static list of entries, provided at construction time.
  * https://developer.mozilla.org/en-US/docs/Web/API/FileSystemDirectoryReader
  * It can be used by DirectoryEntry-like such as EntryList to return its
- * children entries.
+ * entries.
+ * @extends {DirectoryReader}
  */
 class StaticReader {
   /**
-   * @param {!Array<!Entry|!FilesAppEntry>} children: Array of Entry-like
+   * @param {!Array<!Entry|!FilesAppEntry>} entries: Array of Entry-like
    * instances that will be returned/read by this reader.
    */
-  constructor(children) {
-    this.children_ = children;
+  constructor(entries) {
+    this.entries_ = entries;
   }
 
   /**
    * Reads array of entries via |success| callback.
    *
-   * @param {function(Array<Entry|FilesAppEntry>)} success: A callback that will
-   * be called multiple times with the entries, last call will be called with an
-   * empty array indicating that no more entries available.
-   * @param {function(Array<Entry|FilesAppEntry>)} error: A callback that's
-   * never called, it's here to match the signature from the Web Standards.
+   * @param {function(!Array<!Entry|!FilesAppEntry>)} success: A callback that
+   *     will be called multiple times with the entries, last call will be
+   *     called with an empty array indicating that no more entries available.
+   * @param {function(!FileError)=} error: A callback that's never
+   *     called, it's here to match the signature from the Web Standards.
+   * @override
    */
   readEntries(success, error) {
-    const children = this.children_;
+    const entries = this.entries_;
     // readEntries is suppose to return empty result when there are no more
-    // files to return, so we clear the children_ attribute for next call.
-    this.children_ = [];
+    // files to return, so we clear the entries_ attribute for next call.
+    this.entries_ = [];
     // Triggers callback asynchronously.
-    setTimeout(success, 0, children);
+    setTimeout(success, 0, entries);
+  }
+}
+
+/**
+ * A reader compatible with DirectoryEntry.createReader (from Web Standards),
+ * It chains entries from one reader to another, creating a combined set of
+ * entries from all readers.
+ * @extends {DirectoryReader}
+ */
+class CombinedReaders {
+  /**
+   * @param {!Array<!DirectoryReader>} readers Array of all readers that will
+   * have their entries combined.
+   */
+  constructor(readers) {
+    /**
+     * @private {!Array<!DirectoryReader>} Reversed readers so the readEntries
+     *     can just use pop() to get the next
+     */
+    this.readers_ = readers.reverse();
+
+    /** @private {!DirectoryReader} */
+    this.currentReader_ = readers.pop();
+  }
+
+  /**
+   * @param {function(!Array<!Entry|!FilesAppEntry>)} success returning entries
+   *     of all readers, it's called with empty Array when there is no more
+   *     entries to return.
+   * @param {function(!FileError)=} error called when error happens when reading
+   *    from readers.
+   * for this implementation.
+   * @override
+   */
+  readEntries(success, error) {
+    if (!this.currentReader_) {
+      // If there is no more reader to consume, just return an empty result
+      // which indicates that read has finished.
+      success([]);
+      return;
+    }
+    this.currentReader_.readEntries((results) => {
+      if (results.length) {
+        success(results);
+      } else {
+        // If there isn't no more readers, finish by calling success with no
+        // results.
+        if (!this.readers_.length) {
+          success([]);
+          return;
+        }
+        // Move to next reader and start consuming it.
+        this.currentReader_ = this.readers_.pop();
+        this.readEntries(success, error);
+      }
+
+    }, error);
   }
 }
 
@@ -171,7 +230,7 @@ class FilesAppDirEntry extends FilesAppEntry {
   }
 
   /**
-   * @return {!StaticReader|!DirectoryReader} Returns a reader compatible with
+   * @return {!DirectoryReader} Returns a reader compatible with
    * DirectoryEntry.createReader (from Web Standards) that reads the children of
    * this instance.
    * This method is defined on DirectoryEntry.
@@ -277,7 +336,7 @@ class EntryList {
   }
 
   /**
-   * @return {!StaticReader} Returns a reader compatible with
+   * @return {!DirectoryReader} Returns a reader compatible with
    * DirectoryEntry.createReader (from Web Standards) that reads the children of
    * this EntryList instance.
    * This method is defined on DirectoryEntry.
@@ -464,8 +523,8 @@ class VolumeEntry {
   }
 
   /**
-   * @return {!StaticReader|!DirectoryReader} Returns a reader from root entry,
-   * which is compatible with DirectoryEntry.createReader (from Web Standards).
+   * @return {!DirectoryReader} Returns a reader from root entry, which is
+   * compatible with DirectoryEntry.createReader (from Web Standards).
    * This method is defined on DirectoryEntry.
    * @override
    */
@@ -563,7 +622,7 @@ class FakeEntry {
   }
 
   /**
-   * @return {!StaticReader} Returns a reader compatible with
+   * @return {!DirectoryReader} Returns a reader compatible with
    * DirectoryEntry.createReader (from Web Standards) that reads 0 entries.
    * @override
    */

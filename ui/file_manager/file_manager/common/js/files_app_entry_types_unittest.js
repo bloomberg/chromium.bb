@@ -203,6 +203,86 @@ function testStaticReader(testReportCallback) {
       testReportCallback);
 }
 
+/** Tests CombinedReader.readEntries. */
+function testCombinedReader(testReportCallback) {
+  const innerReaders = [
+    new StaticReader(['file1']),
+    new StaticReader(['file2']),
+  ];
+  const reader = new CombinedReaders(innerReaders);
+  const testResults = [];
+  // How many times the reader callback |accumulateResults| has been called?
+  let callCounter = 0;
+  const accumulateResults = (readerResult) => {
+    callCounter++;
+    // merge on testResults.
+    readerResult.map(f => testResults.push(f));
+    if (readerResult.length > 0)
+      reader.readEntries(accumulateResults, () => {});
+  };
+
+  reader.readEntries(accumulateResults, () => {});
+  // readEntries runs asynchronously, so let's wait it to be called.
+  reportPromise(
+      waitUntil(() => {
+        // accumulateResults should be called 2x in normal conditions;
+        return callCounter >= 3;
+      }).then(() => {
+        // Now we can check the final result.
+        assertEquals(3, callCounter);
+        assertEquals(2, testResults.length);
+        assertEquals('file1', testResults[0]);
+        assertEquals('file2', testResults[1]);
+      }),
+      testReportCallback);
+}
+
+function testCombinedReaderError(testReportCallback) {
+  const expectedError = new Error('a fake error');
+  const alwaysFailReader = {
+    readEntries: (success, error) => {
+      error(expectedError);
+    },
+  };
+  const innerReaders = [
+    new StaticReader(['file1']),
+    alwaysFailReader,
+  ];
+  const reader = new CombinedReaders(innerReaders);
+  const errors = [];
+  const accumulateFailures = (error) => {
+    errors.push(error);
+  };
+
+  let callCounter = 0;
+  const testResults = [];
+  const accumulateResults = (readerResult) => {
+    callCounter++;
+    // merge on testResults.
+    readerResult.map(f => testResults.push(f));
+    if (readerResult.length > 0)
+      reader.readEntries(accumulateResults, accumulateFailures);
+  };
+
+
+  reader.readEntries(accumulateResults, accumulateFailures);
+  // readEntries runs asynchronously, so let's wait it to be called.
+  reportPromise(
+      waitUntil(() => {
+        // accumulateResults should be called 2x in normal conditions;
+        return callCounter >= 1 && errors.length >= 1;
+      }).then(() => {
+        // Now we can check the final result.
+        assertEquals(1, callCounter);
+        assertEquals(1, testResults.length);
+        assertEquals('file1', testResults[0]);
+
+        assertEquals(1, errors.length);
+        assertEquals(expectedError, errors[0]);
+      }),
+      testReportCallback);
+}
+
 /**
  * Returns an object that can be used as displayRoot on a FakeVolumeInfo.
  * VolumeEntry delegates many attributes and methods to displayRoot.
