@@ -2,7 +2,6 @@ This tests the constructor for the MIDIMessageEvent DOM class.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS new MIDIMessageEvent('eventType').bubbles is false
 PASS new MIDIMessageEvent('eventType').cancelable is false
 PASS new MIDIMessageEvent('eventType').data is null

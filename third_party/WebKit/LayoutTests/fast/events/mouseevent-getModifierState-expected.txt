@@ -2,7 +2,6 @@ Tests MouseEvent.getModifierState()
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS lastMouseEvent.type is "mousedown"
 PASS lastMouseEvent.button is 0
 PASS typeof lastMouseEvent.getModifierState('Control') is 'boolean'

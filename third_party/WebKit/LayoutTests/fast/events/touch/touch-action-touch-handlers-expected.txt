@@ -3,6 +3,7 @@ This test verifies the touch event handlers tracked for the compositor for eleme
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 Should start with no handlers
 PASS getTouchHandlerCount(document) is 0
 touch-action: auto should not add any handlers
@@ -30,4 +31,3 @@ PASS getTouchHandlerCount(document) is 1
 touch-action on div inside frame should add a handler
 PASS getTouchHandlerCount(nestedDocument) is 2
 PASS getTouchHandlerCount(document) is 2
-

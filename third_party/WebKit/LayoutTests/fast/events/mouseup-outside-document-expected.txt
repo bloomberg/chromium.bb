@@ -7,5 +7,6 @@ To run this test in Safari:
 Mouse down inside the document.
 Move the mouse outside the window.
 Mouse up.
+
 PASS: mouseup event fired
 

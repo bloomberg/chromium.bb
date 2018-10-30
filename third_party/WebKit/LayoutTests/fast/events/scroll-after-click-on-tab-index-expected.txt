@@ -1,5 +1,6 @@
 ALERT: Scroll position 0
 Click the text below and then try to scroll.
+
 Scroll position is more than 0
 PASS document.scrollingElement.scrollTop > 0 became true
 PASS successfullyParsed is true
@@ -15,7 +16,8 @@ TEST COMPLETE
 
 
 
-My span 
+
+My span
 
 
 

@@ -2,7 +2,6 @@ Verifies the compatibility mouse events are sent correctly when the node is dele
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
  ======= Nothing is removed  =======
    **** mouse move *****
 green received pointermove
@@ -13,6 +12,7 @@ green received mousedown
    **** mouse up *****
 green received pointerup
 green received mouseup
+
 
  ======= Remove green on pointerdown  =======
    **** mouse move *****
@@ -26,6 +26,7 @@ grey received mousedown
 grey received pointerup
 grey received mouseup
 
+
  ======= Remove green on pointerup  =======
    **** mouse move *****
 green received pointermove
@@ -38,6 +39,7 @@ green received pointerup
      ==> Green box removed
 grey received mouseup
 
+
  ======= Remove green on pointermove  =======
    **** mouse move *****
 green received pointermove
@@ -49,6 +51,7 @@ grey received mousedown
    **** mouse up *****
 grey received pointerup
 grey received mouseup
+
 
 PASS successfullyParsed is true
 

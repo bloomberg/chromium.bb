@@ -2,7 +2,6 @@ This test checks that we correctly update the touch event handler count as event
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Test addEventListener/removeEventListener on the document.
 PASS internals.touchStartOrMoveEventHandlerCount(document) is 0
 PASS internals.touchStartOrMoveEventHandlerCount(document) is 1

@@ -2,10 +2,10 @@ This tests makes sure the touch event's radius property is scaled to account for
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 ===Initial Zoom===
 PASS radiusX is 4
 PASS radiusY is 10

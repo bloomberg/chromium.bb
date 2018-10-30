@@ -2,7 +2,6 @@ This tests that the input events are dispatched when contentEditable nodes are e
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS event.target.id is 'target0'
 PASS event.target.innerHTML is 'Text'
 PASS event.target.id is 'target2'

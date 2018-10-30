@@ -2,7 +2,6 @@ Test that keyboard events should have a sourceCapabilities and its firesTouchEve
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 keydown
 PASS event.sourceCapabilities is non-null.
 PASS event.sourceCapabilities.firesTouchEvents is false

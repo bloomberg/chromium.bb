@@ -2,7 +2,6 @@ This tests the constructor for the HashChangeEvent DOM class.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS new HashChangeEvent('eventType').bubbles is false
 PASS new HashChangeEvent('eventType').cancelable is false
 PASS new HashChangeEvent('eventType').oldURL is ""

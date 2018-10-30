@@ -2,7 +2,6 @@ This test checks that Page Visibility state events are propagated to child frame
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Main Page:
 PASS document.visibilityState is "visible"
 PASS document.hidden is false
@@ -24,4 +23,5 @@ PASS childFrame.contentDocument.hidden is false
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

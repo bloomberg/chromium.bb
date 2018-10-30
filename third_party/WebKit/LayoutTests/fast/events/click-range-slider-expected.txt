@@ -4,4 +4,5 @@ Test that click events are fired for a slider when the range of values is dense 
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 PASS clickCount is 3

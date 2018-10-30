@@ -2,7 +2,6 @@ Verifies that a tap occurring in a scrolled page has the correct co-ordinates
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Sending GestureTapDown to 50,50
 Sending GestureShowPress
 Sending GestureTap

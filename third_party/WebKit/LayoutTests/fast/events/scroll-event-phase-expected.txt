@@ -2,7 +2,6 @@ Tests that we can listen for scroll events on the document in both the capture a
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Both capture and bubble phase listeners were invoked.
 PASS successfullyParsed is true
 

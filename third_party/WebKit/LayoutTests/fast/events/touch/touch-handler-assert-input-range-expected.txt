@@ -2,7 +2,6 @@ Make sure we don't ASSERT when an input element with a built-in touch handler is
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS rects.length is 1
 PASS rects.length is 0
 PASS successfullyParsed is true

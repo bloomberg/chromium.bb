@@ -2,7 +2,6 @@ Verifies that dragging mouse in/out of an element doesn't fire redundant mouseen
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 --- drag across inner ---
 outer received mouseover
 outer received mouseenter
@@ -21,6 +20,7 @@ outer received mouseout
 outer received mouseleave
 PASS wasInside['outer'] is true
 
+
 --- drag into inner ---
 outer received mouseover
 outer received mouseenter
@@ -32,6 +32,7 @@ inner received mouseenter
 PASS wasInside['inner'] is false
 inner received mouseup
 
+
 --- drag out of inner ---
 inner received mousedown
 inner received mouseout
@@ -39,6 +40,7 @@ inner received mouseleave
 PASS wasInside['inner'] is true
 outer received mouseover
 outer received mouseup
+
 
 PASS successfullyParsed is true
 

@@ -2,7 +2,6 @@ Count how many hit tests are required for various event scenarios. Hit tests can
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS successfullyParsed is true
 
 TEST COMPLETE
@@ -90,5 +89,6 @@ DoubleFingerTouch: 2+0
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 
 

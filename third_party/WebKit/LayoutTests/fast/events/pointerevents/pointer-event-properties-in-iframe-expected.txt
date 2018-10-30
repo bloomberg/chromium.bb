@@ -1,12 +1,11 @@
-
 This test verifies clientX/Y of pointer events inside iframe.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 ===== scrollX=25, scrollY=100, zoomFactor=1
  *** Mouse events inside iframe ***
 pointermove of mouse is received:
@@ -101,6 +100,7 @@ pageY = 200
 screenX = 200
 screenY = 200
 
+
 ===== scrollX=40, scrollY=140, zoomFactor=1
  *** Mouse events inside iframe ***
 pointermove of mouse is received:
@@ -194,6 +194,7 @@ pageX = 190
 pageY = 240
 screenX = 200
 screenY = 200
+
 
 ===== scrollX=40, scrollY=140, zoomFactor=2
  *** Mouse events inside iframe ***

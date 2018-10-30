@@ -5,7 +5,6 @@ Verifies that tapping in the whitespace at the end of a paragraph sends mouse ev
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS point.x is > span.getBoundingClientRect().right
 PASS document.elementFromPoint(point.x, point.y).id is "target"
 Sending GestureTapDown

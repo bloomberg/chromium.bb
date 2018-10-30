@@ -2,7 +2,6 @@ Check which type of events trigger layout when it's dirty. Events that do a hit-
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Forcing initial layout
 PASS internals.needsLayoutCount() is 0
 Sending touchstart

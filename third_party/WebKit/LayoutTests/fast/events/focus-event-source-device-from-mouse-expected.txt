@@ -2,7 +2,6 @@ Test that focus events from a mouse device should have a sourceCapabilities and 
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 tests on div
 focus
 PASS event.sourceCapabilities is non-null.
@@ -16,6 +15,7 @@ PASS event.sourceCapabilities.firesTouchEvents is false
 focusout
 PASS event.sourceCapabilities is non-null.
 PASS event.sourceCapabilities.firesTouchEvents is false
+
 
 tests on input
 focus
@@ -31,6 +31,7 @@ focusout
 PASS event.sourceCapabilities is non-null.
 PASS event.sourceCapabilities.firesTouchEvents is false
 
+
 tests on button
 focus
 PASS event.sourceCapabilities is non-null.
@@ -44,6 +45,7 @@ PASS event.sourceCapabilities.firesTouchEvents is false
 focusout
 PASS event.sourceCapabilities is non-null.
 PASS event.sourceCapabilities.firesTouchEvents is false
+
 
 tests on textarea
 focus
@@ -59,6 +61,7 @@ focusout
 PASS event.sourceCapabilities is non-null.
 PASS event.sourceCapabilities.firesTouchEvents is false
 
+
 tests on select
 focus
 PASS event.sourceCapabilities is non-null.
@@ -73,6 +76,7 @@ focusout
 PASS event.sourceCapabilities is non-null.
 PASS event.sourceCapabilities.firesTouchEvents is false
 
+
 tests on a
 focus
 PASS event.sourceCapabilities is non-null.
@@ -86,6 +90,7 @@ PASS event.sourceCapabilities.firesTouchEvents is false
 focusout
 PASS event.sourceCapabilities is non-null.
 PASS event.sourceCapabilities.firesTouchEvents is false
+
 
 PASS successfullyParsed is true
 

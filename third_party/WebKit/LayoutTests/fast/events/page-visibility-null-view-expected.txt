@@ -2,7 +2,6 @@ This test checks that Page Visibility state values are correct when a document h
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS subdocument.defaultView == null is true
 PASS subdocument.visibilityState is "hidden"
 PASS subdocument.hidden is true

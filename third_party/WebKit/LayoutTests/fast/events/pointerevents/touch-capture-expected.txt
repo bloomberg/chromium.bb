@@ -2,7 +2,6 @@ Verifies that pointer capture works for touch.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
  ======= Touch and release =======
     **** First touch on green box & jiggle ****
 green received pointerover 2
@@ -26,6 +25,7 @@ green received pointerleave 2
 grey received pointerleave 2
 green received touchend
 
+
  ======= Touch and cancel =======
     **** First touch on green box & jiggle ****
 green received pointerover 3
@@ -48,6 +48,7 @@ green received pointerout 3
 green received pointerleave 3
 grey received pointerleave 3
 green received touchcancel
+
 
  ======= Multitouch and release =======
     **** First touch on green & second touch on blue & jiggle ****
@@ -88,6 +89,7 @@ blue received pointerout 5
 blue received pointerleave 5
 blue received touchend
 
+
  ======= Multitouch and cancel =======
     **** First touch on green & second touch on blue & jiggle ****
 green received pointerover 6
@@ -127,6 +129,7 @@ blue received pointerout 7
 blue received pointerleave 7
 blue received touchcancel
 
+
  ======= Touch and release with capture release =======
     **** First touch on green box & jiggle ****
 green received pointerover 8
@@ -155,6 +158,7 @@ blue received pointerout 8
 blue received pointerleave 8
 green received touchend
 
+
  ======= Touch and cancel with capture release =======
     **** First touch on green box & jiggle ****
 green received pointerover 9
@@ -182,6 +186,7 @@ blue received pointercancel 9
 blue received pointerout 9
 blue received pointerleave 9
 green received touchcancel
+
 
  ======= Multitouch and release with capture release =======
     **** First touch on green & second touch on blue & jiggle ****
@@ -229,6 +234,7 @@ green received pointerleave 11
 grey received pointerleave 11
 blue received touchend
 
+
  ======= Multitouch and cancel with capture release =======
     **** First touch on green & second touch on blue & jiggle ****
 green received pointerover 12
@@ -275,6 +281,7 @@ green received pointerleave 13
 grey received pointerleave 13
 blue received touchcancel
 
+
  ======= Touch and release with capture reset =======
     **** First touch on green box & jiggle ****
 green received pointerover 14
@@ -303,6 +310,7 @@ blue received pointerout 14
 blue received pointerleave 14
 green received touchend
 
+
  ======= Touch and cancel with capture reset =======
     **** First touch on green box & jiggle ****
 green received pointerover 15
@@ -330,6 +338,7 @@ blue received lostpointercapture 15
 blue received pointerout 15
 blue received pointerleave 15
 green received touchcancel
+
 
  ======= Multitouch and release with capture reset =======
     **** First touch on green & second touch on blue & jiggle ****
@@ -375,6 +384,7 @@ blue received pointerout 17
 blue received pointerleave 17
 blue received touchend
 
+
  ======= Multitouch and cancel with capture reset =======
     **** First touch on green & second touch on blue & jiggle ****
 green received pointerover 18
@@ -418,6 +428,7 @@ blue received lostpointercapture 19
 blue received pointerout 19
 blue received pointerleave 19
 blue received touchcancel
+
 
 PASS successfullyParsed is true
 

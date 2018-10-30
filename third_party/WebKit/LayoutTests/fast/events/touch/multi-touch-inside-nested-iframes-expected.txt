@@ -1,12 +1,11 @@
-
 Test multi-touch is sent to the same iframe.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 First touch is on inner iframe.
 PASS ev.type is "touchstart"
 PASS touchreceiver is "iframe1"
@@ -19,7 +18,9 @@ PASS ev.touches[0].target.ownerDocument.title is "iframe1"
 PASS ev.changedTouches[0].target.ownerDocument.title is "iframe1"
 PASS ev.targetTouches[0].target.ownerDocument.title is "iframe1"
 
+
 Second touch is on outer iframe, nothing should happen.
+
 
 Moves the first touch outside inner iframe.
 PASS ev.type is "touchmove"
@@ -35,6 +36,7 @@ PASS ev.targetTouches[0].target.ownerDocument.title is "iframe1"
 PASS ev.touches[1].target.nodeName is "#document"
 PASS ev.touches[1].target.title is "iframe1"
 
+
 Release the first touch.
 PASS ev.type is "touchend"
 PASS touchreceiver is "iframe1"
@@ -47,7 +49,9 @@ PASS ev.touches[0].identifier is 1
 PASS ev.touches[0].target.nodeName is "#document"
 PASS ev.touches[0].target.title is "iframe1"
 
+
 Third touch is on outer iframe, nothing should happen.
+
 
 Release all touches on outer iframe, and touch outer iframe again.
 PASS ev.type is "touchstart"
@@ -61,6 +65,7 @@ PASS ev.touches[0].target.ownerDocument.title is "iframe2"
 PASS ev.changedTouches[0].target.ownerDocument.title is "iframe2"
 PASS ev.targetTouches[0].target.ownerDocument.title is "iframe2"
 
+
 Touch inner iframe, this will trigger onTouch as it is inside outer iframe.
 PASS ev.type is "touchstart"
 PASS touchreceiver is "iframe2"
@@ -72,6 +77,7 @@ PASS ev.touches[0].pageY is 30
 PASS ev.touches[0].target.ownerDocument.title is "iframe2"
 PASS ev.changedTouches[0].target.ownerDocument.title is "iframe2"
 PASS ev.targetTouches[0].target.ownerDocument.title is "iframe2"
+
 
 Release all touches.
 PASS ev.type is "touchend"

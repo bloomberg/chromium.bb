@@ -6,4 +6,6 @@ PASS onerrorColumn is window.event.colno
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
+
 This tests that when 'window.onerror' handler is called, 'window.event' is the corresponding ErrorEvent object.

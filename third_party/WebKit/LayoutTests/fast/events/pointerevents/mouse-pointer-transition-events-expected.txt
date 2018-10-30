@@ -2,7 +2,6 @@ Verifies that pointerenter/leave/over/out are fired correctly for corresponding 
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 green received pointerover, at phase=target
 grey received pointerover, at phase=bubble
 grey received pointerenter, at phase=target

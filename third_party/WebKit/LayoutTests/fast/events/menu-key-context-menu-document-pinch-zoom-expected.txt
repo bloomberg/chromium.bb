@@ -2,10 +2,10 @@ This test checks if contextmenu event target is correct when handled at the docu
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 PASS event.clientX is expectedX
 PASS event.clientY is expectedY
 PASS event.screenX is expectedScreenX
@@ -19,4 +19,3 @@ PASS event.clientY is expectedY
 PASS event.screenX is expectedScreenX
 PASS event.screenY is expectedScreenY
 Target
-

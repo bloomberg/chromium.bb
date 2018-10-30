@@ -2,7 +2,6 @@ Verifies the effect of pointer event prevent-default on pointerdown & mouse/pen 
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 --- test with preventDefault on non-primary none ---
 - start with mouse, primary pen and non-primary pen outside target -
 - move mouse into target & press -
@@ -42,6 +41,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 - release primary pen -
 27. target received pointerup primary pen
 28. target received mouseup
+
 
 --- test with preventDefault on primary mouse ---
 - start with mouse, primary pen and non-primary pen outside target -
@@ -88,6 +88,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 32. target received pointerup primary pen
 33. target received mouseup
 
+
 --- test with preventDefault on primary pen ---
 - start with mouse, primary pen and non-primary pen outside target -
 1. target received pointerout primary mouse
@@ -132,6 +133,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 32. target received pointerup non-primary pen
 - release primary pen -
 33. target received pointerup primary pen
+
 
 --- test with preventDefault on non-primary pen ---
 - start with mouse, primary pen and non-primary pen outside target -
@@ -180,6 +182,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 - release primary pen -
 35. target received pointerup primary pen
 36. target received mouseup
+
 
 PASS successfullyParsed is true
 

@@ -2,7 +2,6 @@ This tests that document.createEvent is hooked up for all Event interfaces (and 
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS document.createEvent('AnimationEvent') instanceof window.AnimationEvent is true
 PASS document.createEvent('AnimationEvent') instanceof window.Event is true
 PASS document.createEvent('AnimationEvent').constructor === window.AnimationEvent is true

@@ -11,5 +11,3 @@ CONSOLE MESSAGE: line 11: state was {"foo":5,"bar":"hello","targetWorld":"main"}
 CONSOLE MESSAGE: PopStateEvent received in isolated world
 CONSOLE MESSAGE: state was {"foo":5,"bar":"hello","targetWorld":"isolated"}
 Tests that properties of various events are cloned between isolated worlds.
-
-

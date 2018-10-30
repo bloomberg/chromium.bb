@@ -2,7 +2,6 @@ Tests the constructor of the standard wheel event
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS testEvent = new WheelEvent('wheel') did not throw exception.
 PASS testEvent.__proto__ is WheelEvent.prototype
 PASS testEvent.deltaX is 0

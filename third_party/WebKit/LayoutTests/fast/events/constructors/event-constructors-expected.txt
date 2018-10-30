@@ -2,7 +2,6 @@ This tests the constructors for all the event DOM classes that have them.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS (new Event('eventType')).bubbles is false
 PASS (new Event('eventType')).cancelable is false
 PASS (new Event('eventType', { bubbles: true, cancelable: true })).bubbles is true

@@ -14,5 +14,7 @@ Target = [object HTMLDivElement] (ID: Self); Phase = BUBBLE; CurrentTarget = [ob
 Target = [object HTMLDivElement] (ID: Self); Phase = BUBBLE; CurrentTarget = [object HTMLDocument];
 Target = [object HTMLDivElement] (ID: Self); Phase = BUBBLE; CurrentTarget = [object Window];
 
+
+
 Parent
 Self

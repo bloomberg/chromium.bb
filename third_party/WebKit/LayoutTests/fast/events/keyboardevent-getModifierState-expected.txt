@@ -1,8 +1,6 @@
-
 Tests KeyboardEvent.getModifierState()
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
 
 PASS lastKeyboardEvent.type is "keydown"
 PASS lastKeyboardEvent.keyCode is 33

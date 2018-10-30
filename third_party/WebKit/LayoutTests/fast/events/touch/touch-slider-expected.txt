@@ -2,8 +2,6 @@ Tests that the touch events originating on an input element with type=range upda
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
-
 PASS event.touches[0].target.id is "slider1"
 PASS sliderValue is "50"
 PASS sliderValue is "50"
@@ -25,6 +23,7 @@ PASS sliderValue is "50"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 PASS successfullyParsed is true
 
 TEST COMPLETE

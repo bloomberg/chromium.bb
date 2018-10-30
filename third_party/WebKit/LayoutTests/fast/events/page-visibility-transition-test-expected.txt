@@ -2,7 +2,6 @@ This test checks that Page Visibility state values are correct and the event cha
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS document.visibilityState is "visible"
 PASS document.hidden is false
 PASS document.visibilityState is "hidden"

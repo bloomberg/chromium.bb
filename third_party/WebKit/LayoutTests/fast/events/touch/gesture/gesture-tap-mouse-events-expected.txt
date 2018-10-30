@@ -2,7 +2,6 @@ Verifies that tapping on an element sends mouse events to appropriate ancestors 
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 --- Tap-only tests ---
 -- sending gestureTap to green --
 green received mouseover

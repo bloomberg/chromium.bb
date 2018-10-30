@@ -6,6 +6,7 @@ To run this test in Safari:
 
 Right mouse down inside the box.
 Right mouse up.
+
 box
 
 type: mousedown, button: 0, 

@@ -2,7 +2,6 @@ Verifies that trasition events are correctly fired in different pointer capture 
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
     ==== 'none' is capturing and then 'blue' will capture; will move pointer to 'blue' ====
  **** Move mouse to green and press *****
 green received pointerover
@@ -40,6 +39,7 @@ blue received mouseout
 blue received mouseleave
 grey received mouseleave
 
+
     ==== 'none' is capturing and then 'green' will capture; will move pointer to 'blue' ====
  **** Move mouse to green and press *****
 green received pointerover
@@ -68,6 +68,7 @@ grey received pointerleave
 green received mouseout
 green received mouseleave
 grey received mouseleave
+
 
     ==== 'blue' is capturing and then 'none' will capture; will move pointer to 'blue' ====
  **** Move mouse to green and press *****
@@ -105,6 +106,7 @@ blue received mouseout
 blue received mouseleave
 grey received mouseleave
 
+
     ==== 'green' is capturing and then 'none' will capture; will move pointer to 'blue' ====
  **** Move mouse to green and press *****
 green received pointerover
@@ -140,6 +142,7 @@ grey received pointerleave
 blue received mouseout
 blue received mouseleave
 grey received mouseleave
+
 
     ==== 'blue' is capturing and then 'green' will capture; will move pointer to 'blue' ====
  **** Move mouse to green and press *****
@@ -189,6 +192,7 @@ green received mouseout
 green received mouseleave
 grey received mouseleave
 
+
     ==== 'green' is capturing and then 'blue' will capture; will move pointer to 'blue' ====
  **** Move mouse to green and press *****
 green received pointerover
@@ -229,6 +233,7 @@ blue received mouseout
 blue received mouseleave
 grey received mouseleave
 
+
     ==== 'none' is capturing and then 'blue' will capture ====
  **** Move mouse to green and press *****
 green received pointerover
@@ -266,6 +271,7 @@ blue received mouseout
 blue received mouseleave
 grey received mouseleave
 
+
     ==== 'none' is capturing and then 'green' will capture ====
  **** Move mouse to green and press *****
 green received pointerover
@@ -294,6 +300,7 @@ grey received pointerleave
 green received mouseout
 green received mouseleave
 grey received mouseleave
+
 
     ==== 'blue' is capturing and then 'none' will capture ====
  **** Move mouse to green and press *****
@@ -339,6 +346,7 @@ green received mouseout
 green received mouseleave
 grey received mouseleave
 
+
     ==== 'green' is capturing and then 'none' will capture ====
  **** Move mouse to green and press *****
 green received pointerover
@@ -366,6 +374,7 @@ grey received pointerleave
 green received mouseout
 green received mouseleave
 grey received mouseleave
+
 
     ==== 'blue' is capturing and then 'green' will capture ====
  **** Move mouse to green and press *****
@@ -415,6 +424,7 @@ green received mouseout
 green received mouseleave
 grey received mouseleave
 
+
     ==== 'green' is capturing and then 'blue' will capture ====
  **** Move mouse to green and press *****
 green received pointerover
@@ -454,6 +464,7 @@ grey received pointerleave
 blue received mouseout
 blue received mouseleave
 grey received mouseleave
+
 
 PASS successfullyParsed is true
 

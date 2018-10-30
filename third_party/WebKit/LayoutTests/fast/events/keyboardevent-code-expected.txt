@@ -2,7 +2,6 @@ Tests KeyboardEvent.code attribute
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 AlphaNumeric Keys
 PASS lastKeyboardDownEvent.code is 'KeyA'
 PASS lastKeyboardUpEvent.code is 'KeyA'
@@ -63,4 +62,5 @@ PASS lastKeyboardUpEvent.code is 'PrintScreen'
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 - 

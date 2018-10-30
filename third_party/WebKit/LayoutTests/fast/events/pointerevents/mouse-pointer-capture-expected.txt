@@ -2,7 +2,6 @@ Verifies that pointer capture works for mouse.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
  ======= Set pointer capture and release implicitly  =======
     **** Move to green box & mouse press & jiggle ***** 
 green received pointerover
@@ -60,6 +59,7 @@ blue received pointerleave
 blue received mouseout
 blue received mouseleave
 
+
  ======= Set pointer capture and release implicitly outside of the page =======
     **** Move to green box & mouse press & jiggle ***** 
 green received pointerover
@@ -107,6 +107,7 @@ blue received pointerout
 blue received pointerleave
 blue received mouseout
 blue received mouseleave
+
 
  ======= Set pointer capture and release explicitly  =======
     **** Move to green box & mouse press & jiggle ***** 
@@ -185,6 +186,7 @@ blue received pointerout
 blue received pointerleave
 blue received mouseout
 blue received mouseleave
+
 
  ======= Set pointer capture and remove element  =======
     **** Move to green box & mouse press & jiggle ***** 

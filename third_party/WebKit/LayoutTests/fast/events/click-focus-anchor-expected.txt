@@ -2,7 +2,6 @@ This test ensures that we can click to focus an a element.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 a1 received focus
 a3 received focus
 a4 received focus

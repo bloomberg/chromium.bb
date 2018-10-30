@@ -2,7 +2,6 @@ This tests the constructor for the GamepadEvent DOM class.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS new GamepadEvent('eventType').bubbles is false
 PASS new GamepadEvent('eventType').cancelable is false
 PASS new GamepadEvent('eventType').gamepad is null

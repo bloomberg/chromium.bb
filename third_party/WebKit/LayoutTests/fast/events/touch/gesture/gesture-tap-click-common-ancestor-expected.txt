@@ -2,7 +2,6 @@ Verifies that each mouse event that occurs when tapping on an element reflects t
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Sending GestureTapDown
 Sending GestureShowPress
 Sending GestureTap
