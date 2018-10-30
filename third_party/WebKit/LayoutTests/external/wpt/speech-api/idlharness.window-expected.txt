@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
-Found 216 tests; 67 PASS, 149 FAIL, 0 TIMEOUT, 0 NOTRUN.
-PASS idl_test setup
+Found 222 tests; 65 PASS, 157 FAIL, 0 TIMEOUT, 0 NOTRUN.
+FAIL idl_test setup promise_test: Unhandled rejection with value: "Timed out waiting for voice"
 PASS Partial interface Window: original interface defined
 FAIL SpeechRecognition interface: existence and properties of interface object assert_own_property: self does not have own property "SpeechRecognition" expected property "SpeechRecognition" missing
 FAIL SpeechRecognition interface object length assert_own_property: self does not have own property "SpeechRecognition" expected property "SpeechRecognition" missing
@@ -213,8 +213,14 @@ FAIL SpeechSynthesisVoice interface: attribute name assert_own_property: self do
 FAIL SpeechSynthesisVoice interface: attribute lang assert_own_property: self does not have own property "SpeechSynthesisVoice" expected property "SpeechSynthesisVoice" missing
 FAIL SpeechSynthesisVoice interface: attribute localService assert_own_property: self does not have own property "SpeechSynthesisVoice" expected property "SpeechSynthesisVoice" missing
 FAIL SpeechSynthesisVoice interface: attribute default assert_own_property: self does not have own property "SpeechSynthesisVoice" expected property "SpeechSynthesisVoice" missing
+FAIL SpeechSynthesisVoice must be primary interface of voice assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: voice is not defined"
+FAIL Stringification of voice assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: voice is not defined"
+FAIL SpeechSynthesisVoice interface: voice must inherit property "voiceURI" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: voice is not defined"
+FAIL SpeechSynthesisVoice interface: voice must inherit property "name" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: voice is not defined"
+FAIL SpeechSynthesisVoice interface: voice must inherit property "lang" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: voice is not defined"
+FAIL SpeechSynthesisVoice interface: voice must inherit property "localService" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: voice is not defined"
+FAIL SpeechSynthesisVoice interface: voice must inherit property "default" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: voice is not defined"
 PASS Window interface: attribute speechSynthesis
 PASS Window interface: self must inherit property "speechSynthesis" with the proper type
-PASS WorkerGlobalScope interface: existence and properties of interface object
 Harness: the test ran to completion.
 
