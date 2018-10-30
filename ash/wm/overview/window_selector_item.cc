@@ -1002,6 +1002,20 @@ void WindowSelectorItem::SetShadowBounds(
   shadow_->SetContentBounds(bounds_in_item);
 }
 
+void WindowSelectorItem::UpdateMaskAndShadow(bool show) {
+  transform_window_.UpdateMask(show);
+
+  // Do not apply the shadow for the drop target in overview.
+  if (!show || window_grid_->IsDropTargetWindow(GetWindow())) {
+    SetShadowBounds(base::nullopt);
+    DisableBackdrop();
+    return;
+  }
+
+  SetShadowBounds(transform_window_.GetTransformedBounds());
+  EnableBackdropIfNeeded();
+}
+
 void WindowSelectorItem::SetOpacity(float opacity) {
   item_widget_->SetOpacity(opacity);
   transform_window_.SetOpacity(opacity);

@@ -343,7 +343,7 @@ bool WindowSelectorController::ToggleOverview(
 }
 
 bool WindowSelectorController::IsSelecting() const {
-  return window_selector_.get() != nullptr;
+  return window_selector_ != nullptr;
 }
 
 bool WindowSelectorController::IsCompletingShutdownAnimations() {
@@ -488,6 +488,7 @@ void WindowSelectorController::OnSelectionEnded() {
   is_shutting_down_ = true;
   Shell::Get()->NotifyOverviewModeEnding();
   auto* window_selector = window_selector_.release();
+  window_selector->UpdateMaskAndShadow(/*show=*/false);
   window_selector->Shutdown();
   // There may be no delayed animations in tests, so unblur right away.
   if (delayed_animations_.empty() && IsBlurAllowed())
@@ -536,6 +537,7 @@ void WindowSelectorController::RemoveAndDestroyStartAnimationObserver(
   if (!previous_empty && start_animations_.empty()) {
     Shell::Get()->NotifyOverviewModeStartingAnimationComplete(
         /*canceled=*/false);
+    window_selector_->UpdateMaskAndShadow(/*show=*/true);
   }
 }
 

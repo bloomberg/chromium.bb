@@ -739,6 +739,13 @@ void WindowSelector::UpdateGridAtLocationYPositionAndOpacity(
     grid->UpdateYPositionAndOpacity(new_y, opacity, work_area, callback);
 }
 
+void WindowSelector::UpdateMaskAndShadow(bool show) {
+  for (auto& grid : grid_list_) {
+    for (auto& window : grid->window_list())
+      window->UpdateMaskAndShadow(show);
+  }
+}
+
 void WindowSelector::OnDisplayRemoved(const display::Display& display) {
   // TODO(flackr): Keep window selection active on remaining displays.
   CancelSelection();
