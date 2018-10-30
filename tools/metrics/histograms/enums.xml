@@ -36745,6 +36745,15 @@ Called by update_net_trust_anchors.py.-->
       label="Account was not seeded before FireRefreshTokenAvailable"/>
 </enum>
 
+<enum name="OAuthMultiloginResponseStatus">
+  <int value="0" label="UNKNOWN_STATUS"/>
+  <int value="1" label="OK"/>
+  <int value="2" label="RETRY"/>
+  <int value="3" label="INVALID_INPUT"/>
+  <int value="4" label="INVALID_TOKENS"/>
+  <int value="5" label="ERROR"/>
+</enum>
+
 <enum name="OCSPResponseStatus">
   <int value="0" label="Not checked"/>
   <int value="1" label="Missing"/>

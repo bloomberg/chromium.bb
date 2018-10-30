@@ -21,7 +21,7 @@ using ::testing::Property;
 using ::testing::_;
 
 TEST(OAuthMultiloginResultTest, TryParseCookiesFromValue) {
-  OAuthMultiloginResult result;
+  OAuthMultiloginResult result("");
   // SID: typical response for a domain cookie
   // APISID: typical response for a host cookie
   // SSID: not canonical cookie because of the wrong path, should not be added
@@ -307,4 +307,46 @@ TEST(OAuthMultiloginResultTest, ProduceErrorFromResponseStatus) {
             GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS);
   EXPECT_TRUE(result4.error().IsPersistentError());
   EXPECT_THAT(result4.failed_accounts(), ElementsAre(Eq("account1")));
+
+  // Unknown status.
+  OAuthMultiloginResult unknown_status(R"()]}'
+        {
+          "status": "Foo",
+          "cookies":[
+            {
+              "name":"SID",
+              "value":"vAlUe1",
+              "domain":".google.ru",
+              "path":"/",
+              "isSecure":true,
+              "isHttpOnly":false,
+              "priority":"HIGH",
+              "maxAge":63070000
+            }
+          ]
+        }
+      )");
+  EXPECT_EQ(unknown_status.error().state(),
+            GoogleServiceAuthError::State::UNEXPECTED_SERVICE_RESPONSE);
+  EXPECT_TRUE(unknown_status.cookies().empty());
+}
+
+TEST(OAuthMultiloginResultTest, ParseResponseStatus) {
+  struct TestCase {
+    std::string status_string;
+    OAuthMultiloginResponseStatus expected_status;
+  };
+
+  std::vector<TestCase> test_cases = {
+      {"FOO", OAuthMultiloginResponseStatus::kUnknownStatus},
+      {"OK", OAuthMultiloginResponseStatus::kOk},
+      {"RETRY", OAuthMultiloginResponseStatus::kRetry},
+      {"INVALID_INPUT", OAuthMultiloginResponseStatus::kInvalidInput},
+      {"INVALID_TOKENS", OAuthMultiloginResponseStatus::kInvalidTokens},
+      {"ERROR", OAuthMultiloginResponseStatus::kError}};
+
+  for (const auto& test_case : test_cases) {
+    EXPECT_EQ(test_case.expected_status,
+              ParseOAuthMultiloginResponseStatus(test_case.status_string));
+  }
 }
