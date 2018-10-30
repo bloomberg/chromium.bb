@@ -22,12 +22,12 @@
 namespace safe_browsing {
 
 using ::testing::_;
+using ::testing::DoAll;
 using ::testing::IsEmpty;
 using ::testing::Return;
 using ::testing::SetArgPointee;
 using ::testing::SizeIs;
 using ::testing::StrEq;
-using ::testing::DoAll;
 
 class FileAnalyzerTest : public testing::Test {
  public:
@@ -40,13 +40,17 @@ class FileAnalyzerTest : public testing::Test {
   }
 
  protected:
-  void SetUp() override { has_result_ = false; }
+  void SetUp() override {
+    has_result_ = false;
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  }
 
   void TearDown() override {}
 
  protected:
   bool has_result_;
   FileAnalyzer::Results result_;
+  base::ScopedTempDir temp_dir_;
 
  private:
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
@@ -60,7 +64,8 @@ TEST_F(FileAnalyzerTest, TypeWinExecutable) {
   base::RunLoop run_loop;
 
   base::FilePath target_path(FILE_PATH_LITERAL("target.exe"));
-  base::FilePath tmp_path(FILE_PATH_LITERAL("tmp.crdownload"));
+  base::FilePath tmp_path =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("tmp.crdownload"));
 
   EXPECT_CALL(*extractor, CheckSignature(tmp_path, _)).WillOnce(Return());
   EXPECT_CALL(*extractor, ExtractImageFeatures(tmp_path, _, _, _))
@@ -83,7 +88,8 @@ TEST_F(FileAnalyzerTest, TypeChromeExtension) {
   base::RunLoop run_loop;
 
   base::FilePath target_path(FILE_PATH_LITERAL("target.crx"));
-  base::FilePath tmp_path(FILE_PATH_LITERAL("tmp.crdownload"));
+  base::FilePath tmp_path =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("tmp.crdownload"));
 
   EXPECT_CALL(*extractor, CheckSignature(tmp_path, _)).WillOnce(Return());
   EXPECT_CALL(*extractor, ExtractImageFeatures(tmp_path, _, _, _))
@@ -106,7 +112,8 @@ TEST_F(FileAnalyzerTest, TypeAndroidApk) {
   base::RunLoop run_loop;
 
   base::FilePath target_path(FILE_PATH_LITERAL("target.apk"));
-  base::FilePath tmp_path(FILE_PATH_LITERAL("tmp.crdownload"));
+  base::FilePath tmp_path =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("tmp.crdownload"));
 
   EXPECT_CALL(*extractor, CheckSignature(tmp_path, _)).WillOnce(Return());
   EXPECT_CALL(*extractor, ExtractImageFeatures(tmp_path, _, _, _))
@@ -129,7 +136,8 @@ TEST_F(FileAnalyzerTest, TypeZippedExecutable) {
   base::RunLoop run_loop;
 
   base::FilePath target_path(FILE_PATH_LITERAL("target.zip"));
-  base::FilePath tmp_path(FILE_PATH_LITERAL("tmp.crdownload"));
+  base::FilePath tmp_path =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("tmp.crdownload"));
 
   base::ScopedTempDir zip_source_dir;
   ASSERT_TRUE(zip_source_dir.CreateUniqueTempDir());
@@ -158,7 +166,8 @@ TEST_F(FileAnalyzerTest, TypeMacExecutable) {
   base::RunLoop run_loop;
 
   base::FilePath target_path(FILE_PATH_LITERAL("target.pkg"));
-  base::FilePath tmp_path(FILE_PATH_LITERAL("tmp.crdownload"));
+  base::FilePath tmp_path =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("tmp.crdownload"));
 
   EXPECT_CALL(*extractor, CheckSignature(tmp_path, _)).WillOnce(Return());
   EXPECT_CALL(*extractor, ExtractImageFeatures(tmp_path, _, _, _))
@@ -181,7 +190,8 @@ TEST_F(FileAnalyzerTest, TypeZippedArchive) {
   base::RunLoop run_loop;
 
   base::FilePath target_path(FILE_PATH_LITERAL("target.zip"));
-  base::FilePath tmp_path(FILE_PATH_LITERAL("tmp.crdownload"));
+  base::FilePath tmp_path =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("tmp.crdownload"));
 
   base::ScopedTempDir zip_source_dir;
   ASSERT_TRUE(zip_source_dir.CreateUniqueTempDir());
@@ -210,7 +220,8 @@ TEST_F(FileAnalyzerTest, TypeInvalidZip) {
   base::RunLoop run_loop;
 
   base::FilePath target_path(FILE_PATH_LITERAL("target.zip"));
-  base::FilePath tmp_path(FILE_PATH_LITERAL("tmp.crdownload"));
+  base::FilePath tmp_path =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("tmp.crdownload"));
 
   std::string file_contents = "invalid contents";
   ASSERT_EQ(
@@ -237,7 +248,8 @@ TEST_F(FileAnalyzerTest, TypeInvalidDmg) {
   base::RunLoop run_loop;
 
   base::FilePath target_path(FILE_PATH_LITERAL("target.dmg"));
-  base::FilePath tmp_path(FILE_PATH_LITERAL("tmp.crdownload"));
+  base::FilePath tmp_path =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("tmp.crdownload"));
 
   std::string file_contents = "invalid contents";
   ASSERT_EQ(
@@ -264,7 +276,8 @@ TEST_F(FileAnalyzerTest, ArchiveIsValidUnsetForNonArchive) {
   base::RunLoop run_loop;
 
   base::FilePath target_path(FILE_PATH_LITERAL("target.exe"));
-  base::FilePath tmp_path(FILE_PATH_LITERAL("tmp.crdownload"));
+  base::FilePath tmp_path =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("tmp.crdownload"));
 
   EXPECT_CALL(*extractor, CheckSignature(tmp_path, _)).WillOnce(Return());
   EXPECT_CALL(*extractor, ExtractImageFeatures(tmp_path, _, _, _))
@@ -287,7 +300,8 @@ TEST_F(FileAnalyzerTest, ArchiveIsValidSetForValidArchive) {
   base::RunLoop run_loop;
 
   base::FilePath target_path(FILE_PATH_LITERAL("target.zip"));
-  base::FilePath tmp_path(FILE_PATH_LITERAL("tmp.crdownload"));
+  base::FilePath tmp_path =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("tmp.crdownload"));
 
   base::ScopedTempDir zip_source_dir;
   ASSERT_TRUE(zip_source_dir.CreateUniqueTempDir());
@@ -316,7 +330,8 @@ TEST_F(FileAnalyzerTest, ArchiveIsValidSetForInvalidArchive) {
   base::RunLoop run_loop;
 
   base::FilePath target_path(FILE_PATH_LITERAL("target.zip"));
-  base::FilePath tmp_path(FILE_PATH_LITERAL("tmp.crdownload"));
+  base::FilePath tmp_path =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("tmp.crdownload"));
 
   std::string file_contents = "invalid zip";
   ASSERT_EQ(
@@ -340,7 +355,8 @@ TEST_F(FileAnalyzerTest, ArchivedExecutableSetForZipWithExecutable) {
   base::RunLoop run_loop;
 
   base::FilePath target_path(FILE_PATH_LITERAL("target.zip"));
-  base::FilePath tmp_path(FILE_PATH_LITERAL("tmp.crdownload"));
+  base::FilePath tmp_path =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("tmp.crdownload"));
 
   base::ScopedTempDir zip_source_dir;
   ASSERT_TRUE(zip_source_dir.CreateUniqueTempDir());
@@ -369,7 +385,8 @@ TEST_F(FileAnalyzerTest, ArchivedExecutableFalseForZipNoExecutable) {
   base::RunLoop run_loop;
 
   base::FilePath target_path(FILE_PATH_LITERAL("target.zip"));
-  base::FilePath tmp_path(FILE_PATH_LITERAL("tmp.crdownload"));
+  base::FilePath tmp_path =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("tmp.crdownload"));
 
   base::ScopedTempDir zip_source_dir;
   ASSERT_TRUE(zip_source_dir.CreateUniqueTempDir());
@@ -398,7 +415,8 @@ TEST_F(FileAnalyzerTest, ArchivedArchiveSetForZipWithArchive) {
   base::RunLoop run_loop;
 
   base::FilePath target_path(FILE_PATH_LITERAL("target.zip"));
-  base::FilePath tmp_path(FILE_PATH_LITERAL("tmp.crdownload"));
+  base::FilePath tmp_path =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("tmp.crdownload"));
 
   base::ScopedTempDir zip_source_dir;
   ASSERT_TRUE(zip_source_dir.CreateUniqueTempDir());
@@ -427,7 +445,8 @@ TEST_F(FileAnalyzerTest, ArchivedArchiveSetForZipNoArchive) {
   base::RunLoop run_loop;
 
   base::FilePath target_path(FILE_PATH_LITERAL("target.zip"));
-  base::FilePath tmp_path(FILE_PATH_LITERAL("tmp.crdownload"));
+  base::FilePath tmp_path =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("tmp.crdownload"));
 
   base::ScopedTempDir zip_source_dir;
   ASSERT_TRUE(zip_source_dir.CreateUniqueTempDir());
@@ -456,7 +475,8 @@ TEST_F(FileAnalyzerTest, ArchivedBinariesHasArchiveAndExecutable) {
   base::RunLoop run_loop;
 
   base::FilePath target_path(FILE_PATH_LITERAL("target.zip"));
-  base::FilePath tmp_path(FILE_PATH_LITERAL("tmp.crdownload"));
+  base::FilePath tmp_path =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("tmp.crdownload"));
 
   base::ScopedTempDir zip_source_dir;
   ASSERT_TRUE(zip_source_dir.CreateUniqueTempDir());
@@ -489,7 +509,8 @@ TEST_F(FileAnalyzerTest, ArchivedBinariesSkipsSafeFiles) {
   base::RunLoop run_loop;
 
   base::FilePath target_path(FILE_PATH_LITERAL("target.zip"));
-  base::FilePath tmp_path(FILE_PATH_LITERAL("tmp.crdownload"));
+  base::FilePath tmp_path =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("tmp.crdownload"));
 
   base::ScopedTempDir zip_source_dir;
   ASSERT_TRUE(zip_source_dir.CreateUniqueTempDir());
@@ -525,7 +546,8 @@ TEST_F(FileAnalyzerTest, ArchivedBinariesRespectsPolicyMaximum) {
   base::RunLoop run_loop;
 
   base::FilePath target_path(FILE_PATH_LITERAL("target.zip"));
-  base::FilePath tmp_path(FILE_PATH_LITERAL("tmp.crdownload"));
+  base::FilePath tmp_path =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("tmp.crdownload"));
 
   base::ScopedTempDir zip_source_dir;
   ASSERT_TRUE(zip_source_dir.CreateUniqueTempDir());
@@ -558,7 +580,8 @@ TEST_F(FileAnalyzerTest, ExtractsFileSignatureForExe) {
   base::RunLoop run_loop;
 
   base::FilePath target_path(FILE_PATH_LITERAL("target.exe"));
-  base::FilePath tmp_path(FILE_PATH_LITERAL("tmp.exe"));
+  base::FilePath tmp_path =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("tmp.crdownload"));
 
   ClientDownloadRequest::SignatureInfo signature;
   *signature.add_signed_data() = "signature";
