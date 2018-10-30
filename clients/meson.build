@@ -54,6 +54,8 @@ simple_clients = [
 			'simple-dmabuf-egl.c',
 			linux_dmabuf_unstable_v1_client_protocol_h,
 			linux_dmabuf_unstable_v1_protocol_c,
+			linux_explicit_synchronization_unstable_v1_client_protocol_h,
+			linux_explicit_synchronization_unstable_v1_protocol_c,
 			xdg_shell_unstable_v6_client_protocol_h,
 			xdg_shell_unstable_v6_protocol_c,
 			fullscreen_shell_unstable_v1_client_protocol_h,

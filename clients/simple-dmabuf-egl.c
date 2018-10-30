@@ -50,6 +50,7 @@
 #include "xdg-shell-unstable-v6-client-protocol.h"
 #include "fullscreen-shell-unstable-v1-client-protocol.h"
 #include "linux-dmabuf-unstable-v1-client-protocol.h"
+#include "linux-explicit-synchronization-unstable-v1-client-protocol.h"
 
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
@@ -63,7 +64,8 @@
 #endif
 
 /* Possible options that affect the displayed image */
-#define OPT_IMMEDIATE  1  /* create wl_buffer immediately */
+#define OPT_IMMEDIATE     (1 << 0)  /* create wl_buffer immediately */
+#define OPT_IMPLICIT_SYNC (1 << 1)  /* force implicit sync */
 
 #define BUFFER_FORMAT DRM_FORMAT_XRGB8888
 #define MAX_BUFFER_PLANES 4
@@ -75,9 +77,11 @@ struct display {
 	struct zxdg_shell_v6 *shell;
 	struct zwp_fullscreen_shell_v1 *fshell;
 	struct zwp_linux_dmabuf_v1 *dmabuf;
+	struct zwp_linux_explicit_synchronization_v1 *explicit_sync;
 	uint64_t *modifiers;
 	int modifiers_count;
 	int req_dmabuf_immediate;
+	bool use_explicit_sync;
 	struct {
 		EGLDisplay display;
 		EGLContext context;
@@ -86,6 +90,11 @@ struct display {
 		PFNEGLCREATEIMAGEKHRPROC create_image;
 		PFNEGLDESTROYIMAGEKHRPROC destroy_image;
 		PFNGLEGLIMAGETARGETTEXTURE2DOESPROC image_target_texture_2d;
+		PFNEGLCREATESYNCKHRPROC create_sync;
+		PFNEGLDESTROYSYNCKHRPROC destroy_sync;
+		PFNEGLCLIENTWAITSYNCKHRPROC client_wait_sync;
+		PFNEGLDUPNATIVEFENCEFDANDROIDPROC dup_native_fence_fd;
+		PFNEGLWAITSYNCKHRPROC wait_sync;
 	} egl;
 	struct {
 		int drm_fd;
@@ -112,6 +121,11 @@ struct buffer {
 	EGLImageKHR egl_image;
 	GLuint gl_texture;
 	GLuint gl_fbo;
+
+	struct zwp_linux_buffer_release_v1 *buffer_release;
+	/* The buffer owns the release_fence_fd, until it passes ownership
+	 * to it to EGL (see wait_for_buffer_release_fence). */
+	int release_fence_fd;
 };
 
 #define NUM_BUFFERS 3
@@ -122,6 +136,7 @@ struct window {
 	struct wl_surface *surface;
 	struct zxdg_surface_v6 *xdg_surface;
 	struct zxdg_toplevel_v6 *xdg_toplevel;
+	struct zwp_linux_surface_synchronization_v1 *surface_sync;
 	struct buffer buffers[NUM_BUFFERS];
 	struct wl_callback *callback;
 	bool initialized;
@@ -156,6 +171,12 @@ buffer_free(struct buffer *buf)
 {
 	int i;
 
+	if (buf->release_fence_fd >= 0)
+		close(buf->release_fence_fd);
+
+	if (buf->buffer_release)
+		zwp_linux_buffer_release_v1_destroy(buf->buffer_release);
+
 	if (buf->gl_fbo)
 		glDeleteFramebuffers(1, &buf->gl_fbo);
 
@@ -187,7 +208,13 @@ create_succeeded(void *data,
 	struct buffer *buffer = data;
 
 	buffer->buffer = new_buffer;
-	wl_buffer_add_listener(buffer->buffer, &buffer_listener, buffer);
+	/* When not using explicit synchronization listen to wl_buffer.release
+	 * for release notifications, otherwise we are going to use
+	 * zwp_linux_buffer_release_v1. */
+	if (!buffer->display->use_explicit_sync) {
+		wl_buffer_add_listener(buffer->buffer, &buffer_listener,
+				       buffer);
+	}
 
 	zwp_linux_buffer_params_v1_destroy(params);
 }
@@ -308,6 +335,7 @@ create_dmabuf_buffer(struct display *display, struct buffer *buffer,
 	buffer->width = width;
 	buffer->height = height;
 	buffer->format = BUFFER_FORMAT;
+	buffer->release_fence_fd = -1;
 
 #ifdef HAVE_GBM_MODIFIERS
 	if (display->modifiers_count > 0) {
@@ -378,7 +406,14 @@ create_dmabuf_buffer(struct display *display, struct buffer *buffer,
 								buffer->height,
 								buffer->format,
 								flags);
-		wl_buffer_add_listener(buffer->buffer, &buffer_listener, buffer);
+		/* When not using explicit synchronization listen to
+		 * wl_buffer.release for release notifications, otherwise we
+		 * are going to use zwp_linux_buffer_release_v1. */
+		if (!buffer->display->use_explicit_sync) {
+			wl_buffer_add_listener(buffer->buffer,
+					       &buffer_listener,
+					       buffer);
+		}
 	}
 	else {
 		zwp_linux_buffer_params_v1_create(params,
@@ -540,6 +575,8 @@ destroy_window(struct window *window)
 		zxdg_toplevel_v6_destroy(window->xdg_toplevel);
 	if (window->xdg_surface)
 		zxdg_surface_v6_destroy(window->xdg_surface);
+	if (window->surface_sync)
+		zwp_linux_surface_synchronization_v1_destroy(window->surface_sync);
 	wl_surface_destroy(window->surface);
 	free(window);
 }
@@ -592,6 +629,13 @@ create_window(struct display *display, int width, int height)
 		assert(0);
 	}
 
+	if (display->explicit_sync) {
+		window->surface_sync =
+			zwp_linux_explicit_synchronization_v1_get_synchronization(
+					display->explicit_sync, window->surface);
+		assert(window->surface_sync);
+	}
+
 	for (i = 0; i < NUM_BUFFERS; ++i) {
 		int j;
 		for (j = 0; j < MAX_BUFFER_PLANES; ++j)
@@ -617,6 +661,26 @@ error:
 		destroy_window(window);
 
 	return NULL;
+}
+
+static int
+create_egl_fence_fd(struct window *window)
+{
+	struct display *d = window->display;
+	EGLSyncKHR sync = d->egl.create_sync(d->egl.display,
+					     EGL_SYNC_NATIVE_FENCE_ANDROID,
+					     NULL);
+	int fd;
+
+	assert(sync != EGL_NO_SYNC_KHR);
+	/* We need to flush before we can get the fence fd. */
+	glFlush();
+	fd = d->egl.dup_native_fence_fd(d->egl.display, sync);
+	assert(fd >= 0);
+
+	d->egl.destroy_sync(d->egl.display, sync);
+
+	return fd;
 }
 
 static struct buffer *
@@ -692,6 +756,70 @@ render(struct window *window, struct buffer *buffer)
 }
 
 static void
+buffer_fenced_release(void *data,
+		      struct zwp_linux_buffer_release_v1 *release,
+                      int32_t fence)
+{
+	struct buffer *buffer = data;
+
+	assert(release == buffer->buffer_release);
+	assert(buffer->release_fence_fd == -1);
+
+	buffer->busy = 0;
+	buffer->release_fence_fd = fence;
+	zwp_linux_buffer_release_v1_destroy(buffer->buffer_release);
+	buffer->buffer_release = NULL;
+}
+
+static void
+buffer_immediate_release(void *data,
+			 struct zwp_linux_buffer_release_v1 *release)
+{
+	struct buffer *buffer = data;
+
+	assert(release == buffer->buffer_release);
+	assert(buffer->release_fence_fd == -1);
+
+	buffer->busy = 0;
+	zwp_linux_buffer_release_v1_destroy(buffer->buffer_release);
+	buffer->buffer_release = NULL;
+}
+
+static const struct zwp_linux_buffer_release_v1_listener buffer_release_listener = {
+       buffer_fenced_release,
+       buffer_immediate_release,
+};
+
+static void
+wait_for_buffer_release_fence(struct buffer *buffer)
+{
+	struct display *d = buffer->display;
+	EGLint attrib_list[] = {
+		EGL_SYNC_NATIVE_FENCE_FD_ANDROID, buffer->release_fence_fd,
+		EGL_NONE,
+	};
+	EGLSyncKHR sync = d->egl.create_sync(d->egl.display,
+					     EGL_SYNC_NATIVE_FENCE_ANDROID,
+					     attrib_list);
+	int ret;
+
+	assert(sync);
+
+	/* EGLSyncKHR takes ownership of the fence fd. */
+	buffer->release_fence_fd = -1;
+
+	if (d->egl.wait_sync)
+		ret = d->egl.wait_sync(d->egl.display, sync, 0);
+	else
+		ret = d->egl.client_wait_sync(d->egl.display, sync, 0,
+					      EGL_FOREVER_KHR);
+	assert(ret == EGL_TRUE);
+
+	ret = d->egl.destroy_sync(d->egl.display, sync);
+	assert(ret == EGL_TRUE);
+}
+
+static void
 redraw(void *data, struct wl_callback *callback, uint32_t time)
 {
 	struct window *window = data;
@@ -705,8 +833,24 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 		abort();
 	}
 
+	if (buffer->release_fence_fd >= 0)
+		wait_for_buffer_release_fence(buffer);
+
 	render(window, buffer);
-	glFinish();
+
+	if (window->display->use_explicit_sync) {
+		int fence_fd = create_egl_fence_fd(window);
+		zwp_linux_surface_synchronization_v1_set_acquire_fence(
+			window->surface_sync, fence_fd);
+		close(fence_fd);
+
+		buffer->buffer_release =
+			zwp_linux_surface_synchronization_v1_get_release(window->surface_sync);
+		zwp_linux_buffer_release_v1_add_listener(
+			buffer->buffer_release, &buffer_release_listener, buffer);
+	} else {
+		glFinish();
+	}
 
 	wl_surface_attach(window->surface, buffer->buffer, 0, 0);
 	wl_surface_damage(window->surface, 0, 0, window->width, window->height);
@@ -787,6 +931,10 @@ registry_handle_global(void *data, struct wl_registry *registry,
 		d->dmabuf = wl_registry_bind(registry,
 					     id, &zwp_linux_dmabuf_v1_interface, 3);
 		zwp_linux_dmabuf_v1_add_listener(d->dmabuf, &dmabuf_listener, d);
+	} else if (strcmp(interface, "zwp_linux_explicit_synchronization_v1") == 0) {
+		d->explicit_sync = wl_registry_bind(
+			registry, id,
+			&zwp_linux_explicit_synchronization_v1_interface, 1);
 	}
 }
 
@@ -932,6 +1080,33 @@ display_set_up_egl(struct display *display)
 		(void *) eglGetProcAddress("glEGLImageTargetTexture2DOES");
 	assert(display->egl.image_target_texture_2d);
 
+	if (weston_check_egl_extension(egl_extensions, "EGL_KHR_fence_sync") &&
+	    weston_check_egl_extension(egl_extensions,
+				       "EGL_ANDROID_native_fence_sync")) {
+		display->egl.create_sync =
+			(void *) eglGetProcAddress("eglCreateSyncKHR");
+		assert(display->egl.create_sync);
+
+		display->egl.destroy_sync =
+			(void *) eglGetProcAddress("eglDestroySyncKHR");
+		assert(display->egl.destroy_sync);
+
+		display->egl.client_wait_sync =
+			(void *) eglGetProcAddress("eglClientWaitSyncKHR");
+		assert(display->egl.client_wait_sync);
+
+		display->egl.dup_native_fence_fd =
+			(void *) eglGetProcAddress("eglDupNativeFenceFDANDROID");
+		assert(display->egl.dup_native_fence_fd);
+	}
+
+	if (weston_check_egl_extension(egl_extensions,
+				       "EGL_KHR_wait_sync")) {
+		display->egl.wait_sync =
+			(void *) eglGetProcAddress("eglWaitSyncKHR");
+		assert(display->egl.wait_sync);
+	}
+
 	return true;
 
 error:
@@ -1070,6 +1245,29 @@ create_display(char const *drm_render_node, int opts)
 	if (!display_set_up_gbm(display, drm_render_node))
 		goto error;
 
+	/* We use explicit synchronization only if the user hasn't disabled it,
+	 * the compositor supports it, we can handle fence fds. */
+	display->use_explicit_sync =
+		!(opts & OPT_IMPLICIT_SYNC) &&
+		display->explicit_sync &&
+		display->egl.dup_native_fence_fd;
+
+	if (opts & OPT_IMPLICIT_SYNC) {
+		fprintf(stderr, "Warning: Not using explicit sync, disabled by user\n");
+	} else if (!display->explicit_sync) {
+		fprintf(stderr,
+			"Warning: zwp_linux_explicit_synchronization_v1 not supported,\n"
+			"         will not use explicit synchronization\n");
+	} else if (!display->egl.dup_native_fence_fd) {
+		fprintf(stderr,
+			"Warning: EGL_ANDROID_native_fence_sync not supported,\n"
+			"         will not use explicit synchronization\n");
+	} else if (!display->egl.wait_sync) {
+		fprintf(stderr,
+			"Warning: EGL_KHR_wait_sync not supported,\n"
+			"         will not use server-side wait\n");
+	}
+
 	return display;
 
 error:
@@ -1092,7 +1290,12 @@ print_usage_and_exit(void)
 		"\n\t\t0 to import dmabuf via roundtrip, "
 		"\n\t\t1 to enable import without roundtrip\n"
 		"\t'-d,--drm-render-node=<>'"
-		"\n\t\tthe full path to the drm render node to use\n");
+		"\n\t\tthe full path to the drm render node to use\n"
+		"\t'-s,--size=<>'"
+		"\n\t\tthe window size in pixels (default: 256)\n"
+		"\t'-e,--explicit-sync=<>'"
+		"\n\t\t0 to disable explicit sync, "
+		"\n\t\t1 to enable explicit sync (default: 1)\n");
 	exit(0);
 }
 
@@ -1118,15 +1321,18 @@ main(int argc, char **argv)
 	int opts = 0;
 	char const *drm_render_node = "/dev/dri/renderD128";
 	int c, option_index, ret = 0;
+	int window_size = 256;
 
 	static struct option long_options[] = {
 		{"import-immediate", required_argument, 0,  'i' },
 		{"drm-render-node",  required_argument, 0,  'd' },
+		{"size",	     required_argument, 0,  's' },
+		{"explicit-sync",    required_argument, 0,  'e' },
 		{"help",             no_argument      , 0,  'h' },
 		{0, 0, 0, 0}
 	};
 
-	while ((c = getopt_long(argc, argv, "hi:d:",
+	while ((c = getopt_long(argc, argv, "hi:d:s:e:",
 				  long_options, &option_index)) != -1) {
 		switch (c) {
 		case 'i':
@@ -1136,6 +1342,13 @@ main(int argc, char **argv)
 		case 'd':
 			drm_render_node = optarg;
 			break;
+		case 's':
+			window_size = strtol(optarg, NULL, 10);
+			break;
+		case 'e':
+			if (!is_true(optarg))
+				opts |= OPT_IMPLICIT_SYNC;
+			break;
 		default:
 			print_usage_and_exit();
 		}
@@ -1144,7 +1357,7 @@ main(int argc, char **argv)
 	display = create_display(drm_render_node, opts);
 	if (!display)
 		return 1;
-	window = create_window(display, 256, 256);
+	window = create_window(display, window_size, window_size);
 	if (!window)
 		return 1;
 
