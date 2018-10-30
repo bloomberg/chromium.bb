@@ -55,6 +55,7 @@
 #include "chrome/browser/chromeos/dbus/screen_lock_service_provider.h"
 #include "chrome/browser/chromeos/dbus/virtual_file_request_service_provider.h"
 #include "chrome/browser/chromeos/dbus/vm_applications_service_provider.h"
+#include "chrome/browser/chromeos/diagnosticsd/diagnosticsd_bridge.h"
 #include "chrome/browser/chromeos/display/quirks_manager_delegate_impl.h"
 #include "chrome/browser/chromeos/events/event_rewriter_delegate_impl.h"
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
@@ -655,6 +656,8 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
 
   discover_manager_ = std::make_unique<DiscoverManager>();
 
+  diagnosticsd_bridge_ = std::make_unique<DiagnosticsdBridge>();
+
   ChromeBrowserMainPartsLinux::PreMainMessageLoopRun();
 }
 
@@ -1077,6 +1080,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   demo_mode_resources_remover_.reset();
   user_activity_controller_.reset();
   adaptive_screen_brightness_manager_.reset();
+  diagnosticsd_bridge_.reset();
 
   // Detach D-Bus clients before DBusThreadManager is shut down.
   idle_action_warning_observer_.reset();
