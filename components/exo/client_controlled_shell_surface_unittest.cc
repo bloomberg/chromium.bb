@@ -662,54 +662,8 @@ TEST_F(ClientControlledShellSurfaceTest, CompositorLockInRotation) {
 
 // If system tray is shown by click. It should be activated if user presses tab
 // key while shell surface is active.
-TEST_F(ClientControlledShellSurfaceTest, KeyboardNavigationWithSystemTray) {
-  // This is old SystemTray version.
-  if (ash::features::IsSystemTrayUnifiedEnabled())
-    return;
-
-  const gfx::Size buffer_size(800, 600);
-  std::unique_ptr<Buffer> buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
-  std::unique_ptr<Surface> surface(new Surface());
-  auto shell_surface =
-      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
-
-  surface->Attach(buffer.get());
-  surface->Commit();
-
-  EXPECT_TRUE(shell_surface->GetWidget()->IsActive());
-
-  // Show system tray by perfoming a gesture tap at tray.
-  ash::SystemTray* system_tray = GetPrimarySystemTray();
-  ui::GestureEvent tap(0, 0, 0, base::TimeTicks(),
-                       ui::GestureEventDetails(ui::ET_GESTURE_TAP));
-  system_tray->PerformAction(tap);
-  ASSERT_TRUE(system_tray->GetWidget());
-
-  // Confirm that system tray is not active at this time.
-  EXPECT_TRUE(shell_surface->GetWidget()->IsActive());
-  EXPECT_FALSE(
-      system_tray->GetSystemBubble()->bubble_view()->GetWidget()->IsActive());
-
-  // Send tab key event.
-  ui::test::EventGenerator* event_generator = GetEventGenerator();
-  event_generator->PressKey(ui::VKEY_TAB, ui::EF_NONE);
-  event_generator->ReleaseKey(ui::VKEY_TAB, ui::EF_NONE);
-
-  // Confirm that system tray is activated.
-  EXPECT_FALSE(shell_surface->GetWidget()->IsActive());
-  EXPECT_TRUE(
-      system_tray->GetSystemBubble()->bubble_view()->GetWidget()->IsActive());
-}
-
-// If system tray is shown by click. It should be activated if user presses tab
-// key while shell surface is active.
 TEST_F(ClientControlledShellSurfaceTest,
        KeyboardNavigationWithUnifiedSystemTray) {
-  // This is UnifiedSystemTray version.
-  if (!ash::features::IsSystemTrayUnifiedEnabled())
-    return;
-
   const gfx::Size buffer_size(800, 600);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
