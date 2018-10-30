@@ -43,7 +43,7 @@ cr.define('invalid_settings_browsertest', function() {
 
     /** @override */
     setup(function() {
-      cloudprint.CloudPrintInterface = print_preview.CloudPrintInterfaceStub;
+      cloudprint.CloudPrintInterfaceJS = print_preview.CloudPrintInterfaceStub;
       nativeLayer = new print_preview.NativeLayerStub();
       print_preview.NativeLayer.setInstance(nativeLayer);
       PolymerTest.clearBody();

@@ -258,7 +258,7 @@ cr.define('print_preview', function() {
     /**
      * Interface to the Google Cloud Print API. Null if Google Cloud Print
      * integration is disabled.
-     * @type {cloudprint.CloudPrintInterface}
+     * @type {cloudprint.CloudPrintInterfaceJS}
      * @private
      */
     this.cloudPrintInterface_ = null;
@@ -761,7 +761,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onCloudPrintEnable_: function(cloudPrintUrl, appKioskMode) {
-      this.cloudPrintInterface_ = new cloudprint.CloudPrintInterface(
+      this.cloudPrintInterface_ = new cloudprint.CloudPrintInterfaceJS(
           cloudPrintUrl, this.nativeLayer_, this.userInfo_, appKioskMode);
       this.tracker.add(
           this.cloudPrintInterface_,
@@ -1387,7 +1387,7 @@ cr.define('print_preview', function() {
 
 // <include src="native_layer.js">
 // <include src="print_preview_animations.js">
-// <include src="cloud_print_interface.js">
+// <include src="cloud_print_interface_js.js">
 // <include src="print_preview_utils.js">
 // <include src="print_header.js">
 // <include src="metrics.js">

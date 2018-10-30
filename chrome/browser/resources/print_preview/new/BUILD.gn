@@ -63,7 +63,7 @@ js_library("app") {
     ":preview_area",
     ":scaling_settings",
     ":state",
-    "..:cloud_print_interface",
+    "..:cloud_print_interface_js",
     "..:metrics",
     "..:native_layer",
     "../data:destination",

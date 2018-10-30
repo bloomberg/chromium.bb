@@ -30,11 +30,11 @@
       <structure name="IDR_PRINT_PREVIEW_NEW_MODEL_JS"
                  file="new/model.js"
                  type="chrome_html" />
-      <structure name="IDR_PRINT_PREVIEW_CLOUD_PRINT_INTERFACE_HTML"
-                 file="cloud_print_interface.html"
+      <structure name="IDR_PRINT_PREVIEW_CLOUD_PRINT_INTERFACE_JS_HTML"
+                 file="cloud_print_interface_js.html"
                  type="chrome_html" />
-      <structure name="IDR_PRINT_PREVIEW_CLOUD_PRINT_INTERFACE_JS"
-                 file="cloud_print_interface.js"
+      <structure name="IDR_PRINT_PREVIEW_CLOUD_PRINT_INTERFACE_JS_JS"
+                 file="cloud_print_interface_js.js"
                  type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_NATIVE_LAYER_HTML"
                  file="native_layer.html"

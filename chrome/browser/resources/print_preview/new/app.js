@@ -148,7 +148,7 @@ Polymer({
   /** @private {?print_preview.NativeLayer} */
   nativeLayer_: null,
 
-  /** @private {?cloudprint.CloudPrintInterface} */
+  /** @private {?cloudprint.CloudPrintInterfaceJS} */
   cloudPrintInterface_: null,
 
   /** @private {!EventTracker} */
@@ -367,7 +367,7 @@ Polymer({
    */
   onCloudPrintEnable_: function(cloudPrintUrl, appKioskMode) {
     assert(!this.cloudPrintInterface_);
-    this.cloudPrintInterface_ = new cloudprint.CloudPrintInterface(
+    this.cloudPrintInterface_ = new cloudprint.CloudPrintInterfaceJS(
         cloudPrintUrl, assert(this.nativeLayer_), assert(this.userInfo_),
         appKioskMode);
     this.tracker_.add(

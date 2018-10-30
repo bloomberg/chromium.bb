@@ -63,7 +63,7 @@ group("closure_compile") {
 
 js_type_check("print_preview_resources") {
   deps = [
-    ":cloud_print_interface",
+    ":cloud_print_interface_js",
     ":metrics",
     ":native_layer",
     ":print_preview",
@@ -88,7 +88,7 @@ js_library("print_preview") {
   ]
 
   sources = [
-    "cloud_print_interface.js",
+    "cloud_print_interface_js.js",
     "common/overlay.js",
     "common/search_box.js",
     "common/search_bubble.js",
@@ -186,7 +186,7 @@ js_library("component") {
 js_library("print_preview_focus_manager") {
 }
 
-js_library("cloud_print_interface") {
+js_library("cloud_print_interface_js") {
   deps = [
     ":native_layer",
     "data:cloud_parsers",

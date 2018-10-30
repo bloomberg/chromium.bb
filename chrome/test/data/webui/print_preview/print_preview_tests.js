@@ -279,7 +279,7 @@ cr.define('print_preview_test', function() {
 
   suite(suiteName, function() {
     suiteSetup(function() {
-      cloudprint.CloudPrintInterface = print_preview.CloudPrintInterfaceStub;
+      cloudprint.CloudPrintInterfaceJS = print_preview.CloudPrintInterfaceStub;
       print_preview.PreviewArea.prototype.checkPluginCompatibility_ =
           function() {
         return true;
