@@ -308,14 +308,11 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
 
   box_states_->OnEndPlaceItems(&line_box_, baseline_type_);
 
-  // TODO(kojii): For LTR, we can optimize ComputeInlinePositions() to compute
-  // without PrepareForReorder() and UpdateAfterReorder() even when
-  // HasBoxFragments(). We do this to share the logic between LTR and RTL, and
-  // to get more coverage for RTL, but when we're more stabilized, we could have
-  // optimized code path for LTR.
-  box_states_->PrepareForReorder(&line_box_);
-  BidiReorder();
-  box_states_->UpdateAfterReorder(&line_box_);
+  if (UNLIKELY(Node().IsBidiEnabled())) {
+    box_states_->PrepareForReorder(&line_box_);
+    BidiReorder();
+    box_states_->UpdateAfterReorder(&line_box_);
+  }
   LayoutUnit inline_size = box_states_->ComputeInlinePositions(&line_box_);
 
   // Truncate the line if 'text-overflow: ellipsis' is set.
