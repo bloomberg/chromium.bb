@@ -179,8 +179,7 @@ void CreateTestRenderPassDrawQuad(const SharedQuadState* shared_state,
                gfx::Vector2dF(),  // filters scale
                gfx::PointF(),     // filter origin
                gfx::RectF(rect),  // tex_coord_rect
-               false,             // force_anti_aliasing_off
-               1.0f);             // backdrop_filter_quality
+               false);            // force_anti_aliasing_off
 }
 
 void CreateTestTwoColoredTextureDrawQuad(
@@ -1965,7 +1964,7 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
   render_pass_quad->SetNew(pass_shared_state, pass_rect, pass_rect,
                            child_pass_id, 0, gfx::RectF(), gfx::Size(),
                            gfx::Vector2dF(), gfx::PointF(),
-                           gfx::RectF(pass_rect), false, 1.0f);
+                           gfx::RectF(pass_rect), false);
 
   RenderPassList pass_list;
   pass_list.push_back(std::move(child_pass));
@@ -2025,7 +2024,7 @@ TYPED_TEST(RendererPixelTest, FastPassSaturateFilter) {
   render_pass_quad->SetNew(pass_shared_state, pass_rect, pass_rect,
                            child_pass_id, 0, gfx::RectF(), gfx::Size(),
                            gfx::Vector2dF(), gfx::PointF(),
-                           gfx::RectF(pass_rect), false, 1.0f);
+                           gfx::RectF(pass_rect), false);
 
   RenderPassList pass_list;
   pass_list.push_back(std::move(child_pass));
@@ -2086,7 +2085,7 @@ TYPED_TEST(RendererPixelTest, FastPassFilterChain) {
   render_pass_quad->SetNew(pass_shared_state, pass_rect, pass_rect,
                            child_pass_id, 0, gfx::RectF(), gfx::Size(),
                            gfx::Vector2dF(), gfx::PointF(),
-                           gfx::RectF(pass_rect), false, 1.0f);
+                           gfx::RectF(pass_rect), false);
 
   RenderPassList pass_list;
   pass_list.push_back(std::move(child_pass));
@@ -2168,7 +2167,7 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
   render_pass_quad->SetNew(pass_shared_state, pass_rect, pass_rect,
                            child_pass_id, 0, gfx::RectF(), gfx::Size(),
                            gfx::Vector2dF(), gfx::PointF(),
-                           gfx::RectF(pass_rect), false, 1.0f);
+                           gfx::RectF(pass_rect), false);
 
   RenderPassList pass_list;
 
@@ -2361,8 +2360,7 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
       gfx::Vector2dF(),                          // filters scale
       gfx::PointF(),                             // filter origin
       gfx::RectF(sub_rect),                      // tex_coord_rect
-      false,                                     // force_anti_aliasing_off
-      1.0f);                                     // backdrop_filter_quality
+      false);                                    // force_anti_aliasing_off
   // White background behind the masked render pass.
   auto* white = root_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   white->SetNew(root_pass_shared_state, viewport_rect, viewport_rect,
@@ -2458,8 +2456,7 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad2) {
       gfx::Vector2dF(),                          // filters scale
       gfx::PointF(),                             // filter origin
       gfx::RectF(sub_rect),                      // tex_coord_rect
-      false,                                     // force_anti_aliasing_off
-      1.0f);                                     // backdrop_filter_quality
+      false);                                    // force_anti_aliasing_off
   // White background behind the masked render pass.
   auto* white = root_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   white->SetNew(root_pass_shared_state, viewport_rect, viewport_rect,
@@ -2519,8 +2516,7 @@ class RendererPixelTestWithBackgroundFilter
                                gfx::Vector2dF(1.0f, 1.0f),  // filters_scale
                                gfx::PointF(),               // filters_origin
                                gfx::RectF(),                // tex_coord_rect
-                               false,  // force_anti_aliasing_off
-                               1.0f);  // backdrop_filter_quality
+                               false);  // force_anti_aliasing_off
     }
 
     const int kColumnWidth = device_viewport_rect.width() / 3;
@@ -2860,7 +2856,6 @@ TEST_F(GLRendererPixelTest, RenderPassDrawQuadForceAntiAliasingOff) {
 
   bool needs_blending = false;
   bool force_anti_aliasing_off = true;
-  float backdrop_filter_quality = 1.0f;
   gfx::Transform hole_pass_to_target_transform;
   hole_pass_to_target_transform.Translate(50, 50);
   hole_pass_to_target_transform.Scale(0.5f + 1.0f / (rect.width() * 2.0f),
@@ -2872,7 +2867,7 @@ TEST_F(GLRendererPixelTest, RenderPassDrawQuadForceAntiAliasingOff) {
   pass_quad->SetAll(pass_shared_state, rect, rect, needs_blending,
                     child_pass_id, 0, gfx::RectF(), gfx::Size(),
                     gfx::Vector2dF(), gfx::PointF(), gfx::RectF(rect),
-                    force_anti_aliasing_off, backdrop_filter_quality);
+                    force_anti_aliasing_off);
 
   gfx::Transform green_quad_to_target_transform;
   SharedQuadState* green_shared_state = CreateTestSharedQuadState(
@@ -3040,7 +3035,7 @@ TEST_F(GLRendererPixelTest, TrilinearFiltering) {
   child_pass_quad->SetNew(child_pass_shared_state, child_pass_rect,
                           child_pass_rect, child_pass_id, 0, gfx::RectF(),
                           gfx::Size(), gfx::Vector2dF(), gfx::PointF(),
-                          gfx::RectF(child_pass_rect), false, 1.0f);
+                          gfx::RectF(child_pass_rect), false);
 
   RenderPassList pass_list;
   pass_list.push_back(std::move(child_pass));
