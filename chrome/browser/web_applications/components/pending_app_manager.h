@@ -40,6 +40,7 @@ class PendingAppManager {
     static const bool kDefaultCreateShortcuts;
     static const bool kDefaultOverridePreviousUserUninstall;
     static const bool kDefaultBypassServiceWorkerCheck;
+    static const bool kDefaultAlwaysUpdate;
     static const bool kDefaultRequireManifest;
 
     AppInfo(GURL url,
@@ -49,6 +50,7 @@ class PendingAppManager {
             bool override_previous_user_uninstall =
                 kDefaultOverridePreviousUserUninstall,
             bool bypass_service_worker_check = kDefaultBypassServiceWorkerCheck,
+            bool always_update = kDefaultAlwaysUpdate,
             bool require_manifest = kDefaultRequireManifest);
     AppInfo(AppInfo&& other);
     ~AppInfo();
@@ -61,12 +63,18 @@ class PendingAppManager {
     const LaunchContainer launch_container;
     const InstallSource install_source;
     const bool create_shortcuts;
+
+    // Whether the app should be reinstalled even if the user has previously
+    // uninstalled it.
     const bool override_previous_user_uninstall;
 
     // This must only be used by pre-installed default or system apps that are
     // valid PWAs if loading the real service worker is too costly to verify
     // programmatically.
     const bool bypass_service_worker_check;
+
+    // Whether the app should be reinstalled even if it is already installed.
+    const bool always_update;
 
     // This should be used for installing all default apps so that good metadata
     // is ensured.

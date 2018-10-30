@@ -30,12 +30,12 @@ namespace {
 PendingAppManager::AppInfo CreateAppInfoForSystemApp(const GURL& url) {
   DCHECK_EQ(content::kChromeUIScheme, url.scheme());
   return {
-      url,
-      LaunchContainer::kWindow,
-      InstallSource::kSystemInstalled,
+      url, LaunchContainer::kWindow, InstallSource::kSystemInstalled,
       false /* create_shortcuts */,
       PendingAppManager::AppInfo::kDefaultOverridePreviousUserUninstall,
       true /* bypass_service_worker_check */,
+      // TODO(calamity): Design a less heavy-handed update condition.
+      true /* always_update */,
   };
 }
 

@@ -30,24 +30,26 @@ class PendingBookmarkAppManagerBrowserTest : public InProcessBrowserTest {
  protected:
   void InstallApp(const GURL& url,
                   bool bypass_service_worker_check = false,
+                  bool always_update = false,
                   bool require_manifest = false) {
     base::RunLoop run_loop;
     web_app::WebAppProvider::Get(browser()->profile())
         ->pending_app_manager()
-        .Install(web_app::PendingAppManager::AppInfo(
-                     url, web_app::LaunchContainer::kWindow,
-                     web_app::InstallSource::kInternal,
-                     false /* create_shortcuts */,  // Avoid creating real
-                                                    // shortcuts in tests.
-                     web_app::PendingAppManager::AppInfo::
-                         kDefaultOverridePreviousUserUninstall,
-                     bypass_service_worker_check, require_manifest),
-                 base::BindLambdaForTesting(
-                     [this, &run_loop](const GURL& provided_url,
-                                       web_app::InstallResultCode code) {
-                       result_code_ = code;
-                       run_loop.QuitClosure().Run();
-                     }));
+        .Install(
+            web_app::PendingAppManager::AppInfo(
+                url, web_app::LaunchContainer::kWindow,
+                web_app::InstallSource::kInternal,
+                false /* create_shortcuts */,  // Avoid creating real
+                                               // shortcuts in tests.
+                web_app::PendingAppManager::AppInfo::
+                    kDefaultOverridePreviousUserUninstall,
+                bypass_service_worker_check, always_update, require_manifest),
+            base::BindLambdaForTesting(
+                [this, &run_loop](const GURL& provided_url,
+                                  web_app::InstallResultCode code) {
+                  result_code_ = code;
+                  run_loop.QuitClosure().Run();
+                }));
     run_loop.Run();
     ASSERT_TRUE(result_code_.has_value());
   }
@@ -122,6 +124,33 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest,
   EXPECT_FALSE(app);
 }
 
+IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest, AlwaysUpdate) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  {
+    GURL url(embedded_test_server()->GetURL(
+        "/banners/"
+        "manifest_test_page.html?manifest=manifest_short_name_only.json"));
+    InstallApp(url, false /* bypass_service_worker_check */,
+               true /* always_update */);
+    const extensions::Extension* app =
+        extensions::util::GetInstalledPwaForUrl(browser()->profile(), url);
+    EXPECT_TRUE(app);
+    EXPECT_EQ("Manifest", app->name());
+  }
+  {
+    GURL url(
+        embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
+    InstallApp(url, false /* bypass_service_worker_check */,
+               true /* always_update */);
+    const extensions::Extension* app =
+        extensions::util::GetInstalledPwaForUrl(browser()->profile(), url);
+    EXPECT_TRUE(app);
+    EXPECT_EQ("Manifest test app", app->name());
+  }
+}
+
 // Test that adding a manifest that points to a chrome:// URL does not actually
 // install a bookmark app that points to a chrome:// URL.
 IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest,
@@ -154,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest,
   GURL url(
       embedded_test_server()->GetURL("/banners/no_manifest_test_page.html"));
   InstallApp(url, false /* bypass_service_worker_check */,
-             true /* require_manifest */);
+             false /* always_update */, true /* require_manifest */);
   EXPECT_EQ(web_app::InstallResultCode::kFailedUnknownReason,
             result_code_.value());
   base::Optional<std::string> id =
