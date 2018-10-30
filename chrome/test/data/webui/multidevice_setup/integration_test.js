@@ -99,6 +99,9 @@ cr.define('multidevice_setup', () => {
       /** @type {!settings.FakeQuickUnlockPrivate} */
       let fakeQuickUnlockPrivate;
 
+      /** @type {?TestMultideviceSetupBrowserProxy} */
+      let browserProxy = null;
+
       const PASSWORD = 'password-page';
       const SUCCESS = 'setup-succeeded-page';
       const START = 'start-setup-page';
@@ -107,6 +110,9 @@ cr.define('multidevice_setup', () => {
       const WRONG_PASSWORD = 'wrongPassword';
 
       setup(() => {
+        browserProxy = new TestMultideviceSetupBrowserProxy();
+        multidevice_setup.BrowserProxyImpl.instance_ = browserProxy;
+
         multiDeviceSetupElement = document.createElement('multidevice-setup');
         multiDeviceSetupElement.delegate = new FakeDelegate();
         fakeMojoService = new FakeMojoService();

@@ -12,12 +12,18 @@
  */
 class TestMultideviceSetupBrowserProxy extends TestBrowserProxy {
   constructor() {
-    super(['openMultiDeviceSettings']);
+    super(['getProfileInfo', 'openMultiDeviceSettings']);
   }
 
   /** @override */
   openMultiDeviceSettings() {
     this.methodCalled('openMultiDeviceSettings');
+  }
+
+  /** @override */
+  getProfileInfo() {
+    this.methodCalled('getProfileInfo');
+    return Promise.resolve({});
   }
 }
 
