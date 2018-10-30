@@ -30,25 +30,3 @@ js_library("paper-input-error-extracted") {
     ":paper-input-addon-behavior-extracted",
   ]
 }
-
-js_library("paper-input-extracted") {
-  deps = [
-    ":paper-input-behavior-extracted",
-    ":paper-input-char-counter-extracted",
-    ":paper-input-container-extracted",
-    ":paper-input-error-extracted",
-    "../iron-form-element-behavior:iron-form-element-behavior-extracted",
-    "../iron-input:iron-input-extracted",
-  ]
-}
-
-js_library("paper-textarea-extracted") {
-  deps = [
-    ":paper-input-behavior-extracted",
-    ":paper-input-char-counter-extracted",
-    ":paper-input-container-extracted",
-    ":paper-input-error-extracted",
-    "../iron-autogrow-textarea:iron-autogrow-textarea-extracted",
-    "../iron-form-element-behavior:iron-form-element-behavior-extracted",
-  ]
-}
