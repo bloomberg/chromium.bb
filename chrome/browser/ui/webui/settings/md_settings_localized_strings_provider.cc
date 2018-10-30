@@ -880,8 +880,6 @@ void AddDownloadsStrings(content::WebUIDataSource* html_source) {
                           arraysize(localized_strings));
 
 #if defined(OS_CHROMEOS)
-  html_source->AddBoolean("enableNativeSmbSetting",
-                          base::FeatureList::IsEnabled(features::kNativeSmb));
   html_source->AddString("smbSharesLearnMoreURL",
                          GetHelpUrlWithBoard(chrome::kSmbSharesLearnMoreURL));
 #endif

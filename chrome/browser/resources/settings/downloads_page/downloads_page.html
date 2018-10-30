@@ -52,15 +52,13 @@
           label="$i18n{disconnectGoogleDriveAccount}"
           hidden="[[!pageVisibility.googleDrive]]">
       </settings-toggle-button>
-      <template is="dom-if" if="[[enableSmbSettings_]]">
-        <div id="smbShares" class="settings-box"
-            on-click="onTapSmbShares_" actionable>
-          <div class="start"> $i18n{smbSharesTitle} </div>
-          <paper-icon-button-light class="subpage-arrow">
-            <button aria-label="$i18n{smbSharesTitle}"></button>
-          </paper-icon-button-light>
-        </div>
-      </template>
+      <div id="smbShares" class="settings-box"
+          on-click="onTapSmbShares_" actionable>
+        <div class="start"> $i18n{smbSharesTitle} </div>
+        <paper-icon-button-light class="subpage-arrow">
+          <button aria-label="$i18n{smbSharesTitle}"></button>
+        </paper-icon-button-light>
+      </div>
 </if>
       <template is="dom-if" if="[[autoOpenDownloads_]]" restamp>
         <div class="settings-box">
@@ -77,15 +75,13 @@
     </neon-animatable>
 
 <if expr="chromeos">
-    <template is="dom-if" if="[[enableSmbSettings_]]">
-      <template is="dom-if" route-path="/smbShares">
-        <settings-subpage
-            associated-control="[[$$('#smbShares')]]"
-            page-title="$i18n{smbSharesTitle}">
-          <settings-smb-shares-page prefs="[[prefs]]">
-          </settings-smb-shares-page>
-        </settings-subpage>
-      </template>
+    <template is="dom-if" route-path="/smbShares">
+      <settings-subpage
+          associated-control="[[$$('#smbShares')]]"
+          page-title="$i18n{smbSharesTitle}">
+        <settings-smb-shares-page prefs="[[prefs]]">
+        </settings-smb-shares-page>
+      </settings-subpage>
     </template>
 </if>
   </settings-animated-pages>
