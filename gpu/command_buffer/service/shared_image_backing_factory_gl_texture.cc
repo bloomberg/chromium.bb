@@ -352,7 +352,8 @@ SharedImageBackingFactoryGLTexture::SharedImageBackingFactoryGLTexture(
             feature_info.get(), gl_format);
       }
     }
-    if (!info.enabled || !enable_scanout_images)
+    if (!info.enabled || !enable_scanout_images ||
+        !IsGpuMemoryBufferFormatSupported(format))
       continue;
     gfx::BufferFormat buffer_format = viz::BufferFormat(format);
     switch (buffer_format) {
@@ -366,6 +367,8 @@ SharedImageBackingFactoryGLTexture::SharedImageBackingFactoryGLTexture(
     }
     info.allow_scanout = true;
     info.buffer_format = buffer_format;
+    DCHECK_EQ(info.gl_format,
+              gpu::InternalFormatForGpuMemoryBufferFormat(buffer_format));
     if (base::ContainsValue(gpu_preferences.texture_target_exception_list,
                             gfx::BufferUsageAndFormat(gfx::BufferUsage::SCANOUT,
                                                       buffer_format)))
@@ -448,7 +451,7 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
     bool is_cleared = false;
     image = image_factory_->CreateAnonymousImage(
         size, format_info.buffer_format, gfx::BufferUsage::SCANOUT,
-        format_info.gl_format, &is_cleared);
+        &is_cleared);
     if (!image || !image->BindTexImage(target)) {
       LOG(ERROR) << "CreateSharedImage: Failed to create image";
       api->glBindTextureFn(target, old_texture_binding);

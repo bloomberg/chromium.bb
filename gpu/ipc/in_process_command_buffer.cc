@@ -1009,14 +1009,14 @@ void InProcessCommandBuffer::CreateImageOnGpuThread(
     return;
   }
 
-  unsigned internalformat = gpu::InternalFormatForGpuMemoryBufferFormat(format);
-
   switch (handle.type) {
     case gfx::SHARED_MEMORY_BUFFER: {
       if (!base::IsValueInRangeForNumericType<size_t>(handle.stride)) {
         LOG(ERROR) << "Invalid stride for image.";
         return;
       }
+      unsigned internalformat =
+          gpu::InternalFormatForGpuMemoryBufferFormat(format);
       scoped_refptr<gl::GLImageSharedMemory> image(
           new gl::GLImageSharedMemory(size, internalformat));
       if (!image->Initialize(handle.region, handle.id, format, handle.offset,
@@ -1036,8 +1036,8 @@ void InProcessCommandBuffer::CreateImageOnGpuThread(
 
       scoped_refptr<gl::GLImage> image =
           image_factory_->CreateImageForGpuMemoryBuffer(
-              std::move(handle), size, format, internalformat,
-              kInProcessCommandBufferClientId, kNullSurfaceHandle);
+              std::move(handle), size, format, kInProcessCommandBufferClientId,
+              kNullSurfaceHandle);
       if (!image.get()) {
         LOG(ERROR) << "Failed to create image for buffer.";
         return;
