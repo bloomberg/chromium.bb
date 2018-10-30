@@ -3166,6 +3166,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"crostini-files", flag_descriptions::kCrostiniFilesName,
      flag_descriptions::kCrostiniFilesDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kCrostiniFiles)},
+    {"crostini-usb-support", flag_descriptions::kCrostiniUsbSupportName,
+     flag_descriptions::kCrostiniUsbSupportDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kCrostiniUsbSupport)},
 #endif  // OS_CHROMEOS
 
 #if defined(OS_WIN)

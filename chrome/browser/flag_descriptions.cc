@@ -3126,6 +3126,10 @@ const char kCrostiniFilesName[] = "Crostini Files";
 const char kCrostiniFilesDescription[] =
     "Enable Crostini file sharing in Files app.";
 
+const char kCrostiniUsbSupportName[] = "Crostini Usb Support";
+const char kCrostiniUsbSupportDescription[] =
+    "Enable mounting Usb devices in Crostini.";
+
 const char kDisableExplicitDmaFencesName[] = "Disable explicit dma-fences";
 const char kDisableExplicitDmaFencesDescription[] =
     "Always rely on implicit syncrhonization between GPU and display "
