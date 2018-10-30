@@ -89,7 +89,8 @@ class NumberIconImageSource : public gfx::CanvasImageSource {
 
 }  // namespace
 
-NotificationCounterView::NotificationCounterView() : TrayItemView(nullptr) {
+NotificationCounterView::NotificationCounterView(Shelf* shelf)
+    : TrayItemView(shelf) {
   CreateImageView();
   image_view()->set_tooltip_text(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NOTIFICATIONS_LABEL));
@@ -123,7 +124,7 @@ void NotificationCounterView::OnSessionStateChanged(
   Update();
 }
 
-QuietModeView::QuietModeView() : TrayItemView(nullptr) {
+QuietModeView::QuietModeView(Shelf* shelf) : TrayItemView(shelf) {
   CreateImageView();
   SetVisible(false);
   Shell::Get()->session_controller()->AddObserver(this);

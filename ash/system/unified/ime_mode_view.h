@@ -19,7 +19,7 @@ class ImeModeView : public TrayItemView,
                     public TabletModeObserver,
                     public SessionObserver {
  public:
-  ImeModeView();
+  explicit ImeModeView(Shelf* shelf);
   ~ImeModeView() override;
 
   // IMEObserver:

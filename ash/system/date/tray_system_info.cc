@@ -17,8 +17,8 @@ namespace ash {
 
 namespace tray {
 
-TimeTrayItemView::TimeTrayItemView(SystemTrayItem* owner, Shelf* shelf)
-    : TrayItemView(owner), session_observer_(this) {
+TimeTrayItemView::TimeTrayItemView(Shelf* shelf)
+    : TrayItemView(shelf), session_observer_(this) {
   tray::TimeView::ClockLayout clock_layout =
       shelf->IsHorizontalAlignment()
           ? tray::TimeView::ClockLayout::HORIZONTAL_CLOCK
@@ -56,7 +56,7 @@ const tray::TimeView* TraySystemInfo::GetTimeTrayForTesting() const {
 
 views::View* TraySystemInfo::CreateTrayView(LoginStatus status) {
   CHECK(tray_view_ == nullptr);
-  tray_view_ = new tray::TimeTrayItemView(this, system_tray()->shelf());
+  tray_view_ = new tray::TimeTrayItemView(system_tray()->shelf());
   return tray_view_;
 }
 

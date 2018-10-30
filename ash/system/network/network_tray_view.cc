@@ -30,8 +30,7 @@ const NetworkState* GetConnectedNetwork() {
   return handler->ConnectedNetworkByType(NetworkTypePattern::NonVirtual());
 }
 
-NetworkTrayView::NetworkTrayView(TrayNetwork* network_tray)
-    : TrayItemView(network_tray) {
+NetworkTrayView::NetworkTrayView(Shelf* shelf) : TrayItemView(shelf) {
   CreateImageView();
   UpdateNetworkStateHandlerIcon();
   UpdateConnectionStatus(GetConnectedNetwork(), true /* notify_a11y */);

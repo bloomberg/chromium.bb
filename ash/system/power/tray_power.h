@@ -21,7 +21,7 @@ class PowerTrayView : public TrayItemView,
                       public PowerStatus::Observer,
                       public SessionObserver {
  public:
-  explicit PowerTrayView(SystemTrayItem* owner);
+  explicit PowerTrayView(Shelf* shelf);
 
   ~PowerTrayView() override;
 
