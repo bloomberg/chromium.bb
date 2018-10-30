@@ -29,7 +29,8 @@ const std::string& ExtensionIconSet::Get(int size, MatchType match_type) const {
   if (match_type == MATCH_EXACTLY) {
     auto result = map_.find(size);
     return result == map_.end() ? base::EmptyString() : result->second;
-  } else if (match_type == MATCH_SMALLER) {
+  }
+  if (match_type == MATCH_SMALLER) {
     auto result = map_.rend();
     for (auto iter = map_.rbegin(); iter != map_.rend(); ++iter) {
       if (iter->first <= size) {
@@ -38,17 +39,17 @@ const std::string& ExtensionIconSet::Get(int size, MatchType match_type) const {
       }
     }
     return result == map_.rend() ? base::EmptyString() : result->second;
-  } else {
-    DCHECK(match_type == MATCH_BIGGER);
-    auto result = map_.cend();
-    for (auto iter = map_.cbegin(); iter != map_.cend(); ++iter) {
-      if (iter->first >= size) {
-        result = iter;
-        break;
-      }
-    }
-    return result == map_.cend() ? base::EmptyString() : result->second;
   }
+
+  DCHECK(match_type == MATCH_BIGGER);
+  auto result = map_.cend();
+  for (auto iter = map_.cbegin(); iter != map_.cend(); ++iter) {
+    if (iter->first >= size) {
+      result = iter;
+      break;
+    }
+  }
+  return result == map_.cend() ? base::EmptyString() : result->second;
 }
 
 bool ExtensionIconSet::ContainsPath(base::StringPiece path) const {
