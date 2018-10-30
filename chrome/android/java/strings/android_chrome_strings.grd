@@ -81,6 +81,7 @@ CHAR-LIMIT guidelines:
     <file lang="am" path="translations/android_chrome_strings_am.xtb" />
     <file lang="ar" path="translations/android_chrome_strings_ar.xtb" />
     <file lang="bg" path="translations/android_chrome_strings_bg.xtb" />
+    <file lang="bn" path="translations/android_chrome_strings_bn.xtb" />
     <file lang="ca" path="translations/android_chrome_strings_ca.xtb" />
     <file lang="cs" path="translations/android_chrome_strings_cs.xtb" />
     <file lang="da" path="translations/android_chrome_strings_da.xtb" />
