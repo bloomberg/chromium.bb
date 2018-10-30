@@ -4,6 +4,8 @@
 
 #include "ash/assistant/ui/assistant_container_view_animator_legacy_impl.h"
 
+#include <algorithm>
+
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/ui/assistant_container_view.h"
@@ -126,7 +128,7 @@ void AssistantContainerViewAnimatorLegacyImpl::AnimationProgressed(
   bounds.set_size(gfx::Size(size.width(), size.height()));
 
   // Maintain original |center_x| and |bottom| positions.
-  bounds.set_x(center_x - (bounds.width() / 2));
+  bounds.set_x(std::max(center_x - (bounds.width() / 2), 0));
   bounds.set_y(bottom - bounds.height());
 
   // Interpolate the correct corner radius.
