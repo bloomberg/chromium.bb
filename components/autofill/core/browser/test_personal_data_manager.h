@@ -126,7 +126,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   base::Optional<bool> autofill_profile_enabled_;
   base::Optional<bool> autofill_credit_card_enabled_;
   base::Optional<bool> autofill_wallet_import_enabled_;
-  bool sync_feature_enabled_;
+  bool sync_feature_enabled_ = false;
   AccountInfo account_info_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPersonalDataManager);
