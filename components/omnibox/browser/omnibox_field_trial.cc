@@ -36,8 +36,16 @@ namespace omnibox {
 
 // Feature used to hide the scheme from steady state URLs displayed in the
 // toolbar. It is restored during editing.
-const base::Feature kHideFileUrlScheme{"OmniboxUIExperimentHideFileUrlScheme",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kHideFileUrlScheme {
+  "OmniboxUIExperimentHideFileUrlScheme",
+// Android and iOS don't have the File security chip, and therefore still
+// need to show the file scheme.
+#if defined(OS_ANDROID) || defined(OS_IOS)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Feature used to hide the scheme from steady state URLs displayed in the
 // toolbar. It is restored during editing.
