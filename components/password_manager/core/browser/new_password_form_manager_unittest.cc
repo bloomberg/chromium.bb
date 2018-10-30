@@ -576,6 +576,27 @@ TEST_F(NewPasswordFormManagerTest,
   CheckPendingCredentials(expected, form_manager_->GetPendingCredentials());
 }
 
+// Tests creating pending credentials when the password field has an empty name.
+TEST_F(NewPasswordFormManagerTest, CreatePendingCredentialsEmptyName) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  fetcher_->SetNonFederated({}, 0u);
+
+  FormData anonymous_signup = observed_form_;
+  // There is an anonymous password field.
+  anonymous_signup.fields[2].name.clear();
+  anonymous_signup.fields[2].value = ASCIIToUTF16("a password");
+  // Mark the password field as new-password.
+  FormStructure form_structure(observed_form_);
+  form_structure.field(2)->set_server_type(autofill::ACCOUNT_CREATION_PASSWORD);
+  std::vector<FormStructure*> predictions{&form_structure};
+  form_manager_->ProcessServerPredictions(predictions);
+
+  EXPECT_TRUE(
+      form_manager_->SetSubmittedFormIfIsManaged(anonymous_signup, &driver_));
+  EXPECT_EQ(ASCIIToUTF16("a password"),
+            form_manager_->GetPendingCredentials().password_value);
+}
+
 // Tests that there is no crash even when the observed form is a not password
 // form and the submitted form is password form.
 TEST_F(NewPasswordFormManagerTest, NoCrashOnNonPasswordForm) {
