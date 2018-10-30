@@ -168,8 +168,10 @@ CastContentBrowserClient::CastContentBrowserClient()
       url_request_context_factory_(new URLRequestContextFactory()) {}
 
 CastContentBrowserClient::~CastContentBrowserClient() {
+#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
   DCHECK(!media_resource_tracker_)
       << "ResetMediaResourceTracker was not called";
+#endif  // BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
   content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
                                      url_request_context_factory_.release());
 }

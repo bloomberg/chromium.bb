@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "chromecast/common/mojom/constants.mojom.h"
 #include "chromecast/common/mojom/multiroom.mojom.h"
 #include "chromecast/media/cma/backend/cma_backend.h"
@@ -23,6 +24,9 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#if defined(OS_ANDROID)
+#include "media/audio/android/audio_track_output_stream.h"
+#endif  // defined(OS_ANDROID)
 
 using testing::_;
 using testing::AnyNumber;
@@ -188,6 +192,29 @@ TEST_F(CastAudioManagerTest, CanMakeStream) {
 
   stream->Close();
 }
+
+#if defined(OS_ANDROID)
+TEST_F(CastAudioManagerTest, CanMakeAC3Stream) {
+  const ::media::AudioParameters kAC3AudioParams(
+      ::media::AudioParameters::AUDIO_BITSTREAM_AC3,
+      ::media::CHANNEL_LAYOUT_5_1, ::media::AudioParameters::kAudioCDSampleRate,
+      256);
+  ::media::AudioOutputStream* stream = audio_manager_->MakeAudioOutputStream(
+      kAC3AudioParams, "", ::media::AudioManager::LogCallback());
+  EXPECT_TRUE(stream->Open());
+
+  EXPECT_CALL(mock_source_callback_, OnMoreData(_, _, _, _))
+      .WillRepeatedly(Invoke(OnMoreData));
+  EXPECT_CALL(mock_source_callback_, OnError()).Times(0);
+  stream->Start(&mock_source_callback_);
+  scoped_task_environment_.RunUntilIdle();
+
+  stream->Stop();
+  scoped_task_environment_.RunUntilIdle();
+
+  stream->Close();
+}
+#endif  // defined(OS_ANDROID)
 
 TEST_F(CastAudioManagerTest, CanMakeStreamProxy) {
   SetUpBackendAndDecoder();
