@@ -44,11 +44,13 @@ void SlideOutController::OnGestureEvent(ui::GestureEvent* event) {
     if (mode_ == SlideMode::FULL &&
         fabsf(event->details().velocity_x()) > kFlingThresholdForClose) {
       SlideOutAndClose(event->details().velocity_x());
+      delegate_->OnSlideChanged(false);
       event->StopPropagation();
       return;
     }
     CaptureControlOpenState();
     RestoreVisualState();
+    delegate_->OnSlideChanged(false);
     return;
   }
 
@@ -69,7 +71,7 @@ void SlideOutController::OnGestureEvent(ui::GestureEvent* event) {
       default:
         NOTREACHED();
     }
-    delegate_->OnSlideChanged(true);
+    delegate_->OnSlideStarted();
   } else if (event->type() == ui::ET_GESTURE_SCROLL_UPDATE) {
     // The scroll-update events include the incremental scroll amount.
     gesture_amount_ += event->details().scroll_x();
@@ -108,11 +110,13 @@ void SlideOutController::OnGestureEvent(ui::GestureEvent* event) {
     if (mode_ == SlideMode::FULL &&
         scrolled_ratio >= scroll_amount_for_closing_notification / width) {
       SlideOutAndClose(gesture_amount_);
+      delegate_->OnSlideChanged(false);
       event->StopPropagation();
       return;
     }
     CaptureControlOpenState();
     RestoreVisualState();
+    delegate_->OnSlideChanged(false);
   }
 
   event->SetHandled();
@@ -140,10 +144,7 @@ void SlideOutController::RestoreVisualState() {
   }
 
   if (layer->transform() == transform && opacity_ == 1.f) {
-    // Here, nothing are changed and no animation starts. In this case, just
-    // calls OnSlideChanged(in_progress = false) to notify end of horizontal
-    // slide (including animations) to observers.
-    delegate_->OnSlideChanged(false);
+    // Nothing are changed and no animation starts.
     return;
   }
 
@@ -181,8 +182,6 @@ void SlideOutController::SetOpacityIfNecessary(float opacity) {
 }
 
 void SlideOutController::OnImplicitAnimationsCompleted() {
-  delegate_->OnSlideChanged(false);
-
   // Call Delegate::OnSlideOut() if this animation came from SlideOutAndClose().
   if (opacity_ == 0)
     delegate_->OnSlideOut();
