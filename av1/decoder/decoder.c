@@ -343,8 +343,6 @@ static void release_frame_buffers(AV1Decoder *pbi) {
     }
 
     // Current thread releases the holding of reference frame.
-    // TODO(wtc): Remove this assertion after 2018-10-31.
-    assert(!cm->show_existing_frame || cm->reset_decoder_state);
     for (; ref_index < REF_FRAMES; ++ref_index) {
       const int old_idx = cm->ref_frame_map[ref_index];
       decrease_ref_count(old_idx, frame_bufs, pool);
