@@ -12,7 +12,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-form-element-behavior/iron-form-element-behavior.html">
 <link rel="import" href="../iron-range-behavior/iron-range-behavior.html">
 <link rel="import" href="../paper-behaviors/paper-inky-focus-behavior.html">
-<link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-progress/paper-progress.html">
 <link rel="import" href="../paper-styles/color.html">
 
@@ -331,11 +330,6 @@ Custom property | Description | Default
           <div class="slider-knob-inner" value$="[[immediateValue]]"></div>
       </div>
     </div>
-
-    <template is="dom-if" if="[[editable]]">
-      <paper-input id="input" type="number" step="[[step]]" min="[[min]]" max="[[max]]" class="slider-input" disabled$="[[disabled]]" value="[[immediateValue]]" on-change="_changeValue" on-keydown="_inputKeyDown" no-label-float="">
-      </paper-input>
-    </template>
   </template>
 
   </dom-module>

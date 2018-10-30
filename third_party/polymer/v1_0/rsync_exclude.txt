@@ -28,6 +28,13 @@ package-lock.json
 */site/
 */templates/
 
+# iron-autogrow-textarea
+iron-autogrow-textarea/*
+
+# paper-input
+paper-input/paper-input.html
+paper-input/paper-textarea.html
+
 # paper-spinner
 paper-spinner/paper-spinner.html
 

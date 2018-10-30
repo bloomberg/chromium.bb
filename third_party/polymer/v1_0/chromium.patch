@@ -9,50 +9,6 @@ index 7a24999..4eefcba 100644
 -<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic">
 -<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,700">
 +<link rel="stylesheet" href="chrome://resources/css/roboto.css">
-diff --git a/components-chromium/paper-input/paper-input-extracted.js b/components-chromium/paper-input/paper-input-extracted.js
-index 754820fb5d0c..3f8e640ffa71 100644
---- a/components-chromium/paper-input/paper-input-extracted.js
-+++ b/components-chromium/paper-input/paper-input-extracted.js
-@@ -7,13 +7,7 @@ Polymer({
-     ],
- 
-     beforeRegister: function() {
--      // We need to tell which kind of of template to stamp based on
--      // what kind of `iron-input` we got, but because of polyfills and
--      // custom elements differences between v0 and v1, the safest bet is
--      // to check a particular method we know the iron-input#2.x can have.
--      // If it doesn't have it, then it's an iron-input#1.x.
--      var ironInput = document.createElement('iron-input');
--      var version = typeof ironInput._initSlottedInput == 'function' ? 'v1' : 'v0';
-+      var version = 'v1';  // Hard coded Polymer 2 style iron-input.
-       var template = Polymer.DomModule.import('paper-input', 'template');
-       var inputTemplate = Polymer.DomModule.import('paper-input', 'template#' + version);
-       var inputPlaceholder = template.content.querySelector('#template-placeholder');
-@@ -30,7 +24,8 @@ Polymer({
-      * @return {!HTMLElement}
-      */
-     get _focusableElement() {
--      return Polymer.Element ? this.inputElement._inputElement : this.inputElement;
-+      // TODO(hcarmona): remove this patch after polymer is v2.
-+      return this.inputElement._inputElement;
-     },
- 
-     // Note: This event is only available in the 1.0 version of this element.
-diff --git a/components-chromium/paper-input/paper-textarea-extracted.js b/components-chromium/paper-input/paper-textarea-extracted.js
-index 11bc05a37471..8d425e02c30b 100644
---- a/components-chromium/paper-input/paper-textarea-extracted.js
-+++ b/components-chromium/paper-input/paper-textarea-extracted.js
-@@ -57,8 +57,8 @@ Polymer({
-       this.$.input.textarea.selectionEnd = end;
-     },
-
--    _ariaLabelledByChanged: function(ariaLabelledBy) {
--      this._focusableElement.setAttribute('aria-labelledby', ariaLabelledBy);
-+    _ariaLabelledByChanged: function() {
-+      this._focusableElement.setAttribute('aria-label', this.label);
-     },
-
-     _ariaDescribedByChanged: function(ariaDescribedBy) {
 diff --git a/components-chromium/iron-list/iron-list-extracted.js b/components-chromium/iron-list/iron-list-extracted.js
 index 43c59653a39b..26652936735c 100644
 --- a/components-chromium/iron-list/iron-list-extracted.js
@@ -128,10 +84,18 @@ index 082b0c1e4af2..d985829702a2 100644
 +</body></html>
 \ No newline at end of file
 diff --git a/components-chromium/paper-slider/paper-slider.html b/components-chromium/paper-slider/paper-slider.html
-index 646c22c2fb93..952818290c1e 100644
+index 233808adc822..4117f3590a61 100644
 --- a/components-chromium/paper-slider/paper-slider.html
 +++ b/components-chromium/paper-slider/paper-slider.html
-@@ -279,6 +279,7 @@ Custom property | Description | Default
+@@ -12,7 +12,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
+ <link rel="import" href="../iron-form-element-behavior/iron-form-element-behavior.html">
+ <link rel="import" href="../iron-range-behavior/iron-range-behavior.html">
+ <link rel="import" href="../paper-behaviors/paper-inky-focus-behavior.html">
+-<link rel="import" href="../paper-input/paper-input.html">
+ <link rel="import" href="../paper-progress/paper-progress.html">
+ <link rel="import" href="../paper-styles/color.html">
+ 
+@@ -279,6 +278,7 @@ Custom property | Description | Default
  
        .pin.expand > .slider-knob > .slider-knob-inner::after {
          transform: scale(1) translate(0, -17px);
@@ -139,6 +103,18 @@ index 646c22c2fb93..952818290c1e 100644
        }
  
        /* paper-input */
+@@ -330,11 +330,6 @@ Custom property | Description | Default
+           <div class="slider-knob-inner" value$="[[immediateValue]]"></div>
+       </div>
+     </div>
+-
+-    <template is="dom-if" if="[[editable]]">
+-      <paper-input id="input" type="number" step="[[step]]" min="[[min]]" max="[[max]]" class="slider-input" disabled$="[[disabled]]" value="[[immediateValue]]" on-change="_changeValue" on-keydown="_inputKeyDown" no-label-float="">
+-      </paper-input>
+-    </template>
+   </template>
+ 
+   </dom-module>
 diff --git a/components-chromium/paper-slider/paper-slider-extracted.js b/components-chromium/paper-slider/paper-slider-extracted.js
 index 2e63d3731be1..217c7ff1414c 100644
 --- a/components-chromium/paper-slider/paper-slider-extracted.js
