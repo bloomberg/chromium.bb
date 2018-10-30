@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
+#include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "components/prefs/pref_member.h"
@@ -78,6 +79,7 @@ class LocationBarView : public LocationBar,
                         public ChromeOmniboxEditController,
                         public DropdownBarHostDelegate,
                         public views::ButtonListener,
+                        public LocationIconView::Delegate,
                         public ContentSettingImageView::Delegate,
                         public PageActionIconView::Delegate,
                         public ui::MaterialDesignControllerObserver {
@@ -125,14 +127,6 @@ class LocationBarView : public LocationBar,
   // Returns the location bar border color blended with the toolbar color.
   // It's guaranteed to be opaque.
   SkColor GetOpaqueBorderColor(bool incognito) const;
-
-  // Returns the color to be used for the security chip in the context of
-  // |security_level|.
-  SkColor GetSecurityChipColor(
-      security_state::SecurityLevel security_level) const;
-
-  // Returns the color to use for icon ink highlights.
-  SkColor GetIconInkDropColor() const;
 
   // Returns the cached theme color tint for the location bar and results.
   OmniboxTint tint() const { return tint_; }
@@ -201,10 +195,6 @@ class LocationBarView : public LocationBar,
     return selected_keyword_view_;
   }
 
-  // Show a page info dialog for |web_contents|.
-  // Returns true if a dialog was shown, false otherwise.
-  bool ShowPageInfoDialog(content::WebContents* web_contents);
-
   OmniboxViewViews* omnibox_view() { return omnibox_view_; }
   const OmniboxViewViews* omnibox_view() const { return omnibox_view_; }
 
@@ -264,6 +254,17 @@ class LocationBarView : public LocationBar,
 
   Browser* browser() { return browser_; }
 
+  // LocationIconView::Delegate
+  bool IsEditingOrEmpty() override;
+  void OnLocationIconPressed(const ui::MouseEvent& event) override;
+  void OnLocationIconDragged(const ui::MouseEvent& event) override;
+  bool ShowPageInfoDialog() override;
+  SkColor GetSecurityChipColor(
+      security_state::SecurityLevel security_level) const override;
+  gfx::ImageSkia GetLocationIcon(LocationIconView::Delegate::IconFetchedCallback
+                                     on_icon_fetched) const override;
+  SkColor GetLocationIconInkDropColor() const override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(SecurityIndicatorTest, CheckIndicatorText);
   FRIEND_TEST_ALL_PREFIXES(TouchLocationBarViewBrowserTest,
@@ -287,12 +288,6 @@ class LocationBarView : public LocationBar,
   // Updates the background on a theme change, or dropdown state change.
   void RefreshBackground();
 
-  // Updates |location_icon_view_| based on the current state and theme.
-  void RefreshLocationIcon();
-
-  // Handles the arrival of an asynchronously fetched location bar icon.
-  void OnLocationIconFetched(const gfx::Image& image);
-
   // Updates the visibility state of the Content Blocked icons to reflect what
   // is actually blocked on the current page. Returns true if the visibility
   // of at least one of the views in |content_setting_views_| changed.
@@ -308,24 +303,8 @@ class LocationBarView : public LocationBar,
   // Updates the focus ring.
   void RefreshFocusRing();
 
-  // Returns text to be placed in the location icon view.
-  // - For secure/insecure pages, returns text describing the URL's security
-  // level.
-  // - For extension URLs, returns the extension name.
-  // - For chrome:// URLs, returns the short product name (e.g. Chrome).
-  // - For file:// URLs, returns the text "File".
-  base::string16 GetLocationIconText() const;
-
   // Returns true if a keyword is selected in the model.
   bool ShouldShowKeywordBubble() const;
-
-  // Returns true if any of the following is true:
-  // - the current page is explicitly secure or insecure.
-  // - the current page URL is a chrome-extension:// URL.
-  bool ShouldShowLocationIconText() const;
-
-  // Returns true if the location icon text should be animated.
-  bool ShouldAnimateLocationIconTextVisibilityChange() const;
 
   // Gets the OmniboxPopupView associated with the model in |omnibox_view_|.
   OmniboxPopupView* GetOmniboxPopupView();
@@ -476,11 +455,6 @@ class LocationBarView : public LocationBar,
   // A list of all page action icons that haven't yet migrated into the
   // PageActionIconContainerView (https://crbug.com/788051), ordered by focus.
   std::vector<PageActionIconView*> page_action_icons_;
-
-  // The security level when the location bar was last updated. Used to decide
-  // whether to animate security level transitions.
-  security_state::SecurityLevel last_update_security_level_ =
-      security_state::NONE;
 
   // The focus ring, if one is in use.
   std::unique_ptr<views::FocusRing> focus_ring_;

@@ -46,7 +46,7 @@ SkColor SelectedKeywordView::GetTextColor() const {
 }
 
 SkColor SelectedKeywordView::GetInkDropBaseColor() const {
-  return location_bar_->GetIconInkDropColor();
+  return location_bar_->GetLocationIconInkDropColor();
 }
 
 gfx::Size SelectedKeywordView::CalculatePreferredSize() const {
