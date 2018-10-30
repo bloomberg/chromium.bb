@@ -547,11 +547,6 @@ void EasyUnlockService::DisableAppWithoutResettingScreenlockState() {
   app_manager_->DisableAppIfLoaded();
 }
 
-void EasyUnlockService::NotifyTurnOffOperationStatusChanged() {
-  for (EasyUnlockServiceObserver& observer : observers_)
-    observer.OnTurnOffOperationStatusChanged();
-}
-
 void EasyUnlockService::ResetScreenlockState() {
   screenlock_state_handler_.reset();
   auth_attempt_.reset();

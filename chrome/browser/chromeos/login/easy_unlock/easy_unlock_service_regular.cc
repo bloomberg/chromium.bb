@@ -45,7 +45,6 @@
 #include "chromeos/components/proximity_auth/proximity_auth_system.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/components/proximity_auth/switches.h"
-#include "components/cryptauth/cryptauth_client_impl.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/cryptauth_enrollment_utils.h"
 #include "components/cryptauth/cryptauth_gcm_manager_impl.h"
@@ -88,15 +87,6 @@ enum class SmartLockEnabledState {
   COUNT
 };
 
-void LogToggleFeature(SmartLockToggleFeature toggle) {
-  UMA_HISTOGRAM_BOOLEAN("SmartLock.ToggleFeature", static_cast<bool>(toggle));
-}
-
-void LogToggleFeatureDisableResult(SmartLockResult result) {
-  UMA_HISTOGRAM_BOOLEAN("SmartLock.ToggleFeature.Disable.Result",
-                        static_cast<bool>(result));
-}
-
 void LogSmartLockEnabledState(SmartLockEnabledState state) {
   UMA_HISTOGRAM_ENUMERATION("SmartLock.EnabledState", state,
                             SmartLockEnabledState::COUNT);
@@ -123,7 +113,6 @@ EasyUnlockServiceRegular::EasyUnlockServiceRegular(
     device_sync::DeviceSyncClient* device_sync_client,
     multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client)
     : EasyUnlockService(profile, secure_channel_client),
-      turn_off_flow_status_(EasyUnlockService::IDLE),
       scoped_crypt_auth_device_manager_observer_(this),
       will_unlock_using_easy_unlock_(false),
       lock_screen_last_shown_timestamp_(base::TimeTicks::Now()),
@@ -424,51 +413,6 @@ void EasyUnlockServiceRegular::SetRemoteDevices(
   RefreshCryptohomeKeysIfPossible();
 }
 
-void EasyUnlockServiceRegular::RunTurnOffFlow() {
-  if (turn_off_flow_status_ == PENDING)
-    return;
-
-  LogToggleFeature(SmartLockToggleFeature::DISABLE);
-
-  SetTurnOffFlowStatus(PENDING);
-
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-    // Disabling EASY_UNLOCK_HOST is a special case that does not require a
-    // public key to be passed; EASY_UNLOCK_HOST will be disabled for all hosts.
-    device_sync_client_->SetSoftwareFeatureState(
-        std::string() /* public_key */,
-        cryptauth::SoftwareFeature::EASY_UNLOCK_HOST, false /* enabled */,
-        false /* is_exclusive */,
-        base::BindOnce(&EasyUnlockServiceRegular::OnTurnOffEasyUnlockCompleted,
-                       weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    DCHECK(!cryptauth_client_);
-    std::unique_ptr<cryptauth::CryptAuthClientFactory> factory =
-        proximity_auth_client()->CreateCryptAuthClientFactory();
-    cryptauth_client_ = factory->CreateInstance();
-
-    cryptauth::ToggleEasyUnlockRequest request;
-    request.set_enable(false);
-    request.set_apply_to_all(true);
-    cryptauth_client_->ToggleEasyUnlock(
-        request,
-        base::Bind(&EasyUnlockServiceRegular::OnToggleEasyUnlockApiComplete,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&EasyUnlockServiceRegular::OnToggleEasyUnlockApiFailed,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
-}
-
-void EasyUnlockServiceRegular::ResetTurnOffFlow() {
-  cryptauth_client_.reset();
-  SetTurnOffFlowStatus(IDLE);
-}
-
-EasyUnlockService::TurnOffFlowStatus
-EasyUnlockServiceRegular::GetTurnOffFlowStatus() const {
-  return turn_off_flow_status_;
-}
-
 std::string EasyUnlockServiceRegular::GetChallenge() const {
   return std::string();
 }
@@ -522,7 +466,6 @@ void EasyUnlockServiceRegular::ShutdownInternal() {
   short_lived_user_context_.reset();
   pref_manager_.reset();
 
-  turn_off_flow_status_ = EasyUnlockService::IDLE;
   proximity_auth::ScreenlockBridge::Get()->RemoveObserver(this);
 
   if (!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
@@ -844,63 +787,6 @@ void EasyUnlockServiceRegular::OnScreenDidUnlock(
 void EasyUnlockServiceRegular::OnFocusedUserChanged(
     const AccountId& account_id) {
   // Nothing to do.
-}
-
-void EasyUnlockServiceRegular::SetTurnOffFlowStatus(TurnOffFlowStatus status) {
-  turn_off_flow_status_ = status;
-  NotifyTurnOffOperationStatusChanged();
-}
-
-void EasyUnlockServiceRegular::OnToggleEasyUnlockApiComplete(
-    const cryptauth::ToggleEasyUnlockResponse& response) {
-  DCHECK(!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
-  cryptauth_client_.reset();
-  OnTurnOffEasyUnlockSuccess();
-}
-
-void EasyUnlockServiceRegular::OnToggleEasyUnlockApiFailed(
-    cryptauth::NetworkRequestError error) {
-  PA_LOG(WARNING) << "ToggleEasyUnlock call failed: " << error;
-  DCHECK(!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
-  OnTurnOffEasyUnlockFailure();
-}
-
-void EasyUnlockServiceRegular::OnTurnOffEasyUnlockCompleted(
-    device_sync::mojom::NetworkRequestResult result_code) {
-  DCHECK(base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
-
-  if (result_code != device_sync::mojom::NetworkRequestResult::kSuccess) {
-    PA_LOG(WARNING) << "ToggleEasyUnlock call failed: " << result_code;
-    OnTurnOffEasyUnlockFailure();
-  } else {
-    OnTurnOffEasyUnlockSuccess();
-  }
-}
-
-void EasyUnlockServiceRegular::OnTurnOffEasyUnlockSuccess() {
-  PA_LOG(INFO) << "Successfully turned off Smart Lock.";
-  LogToggleFeatureDisableResult(SmartLockResult::SUCCESS);
-
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-    remote_device_unlock_keys_before_sync_ = GetUnlockKeys();
-  } else {
-    GetCryptAuthDeviceManager()->ForceSyncNow(
-        cryptauth::InvocationReason::INVOCATION_REASON_FEATURE_TOGGLED);
-  }
-
-  EasyUnlockService::ResetLocalStateForUser(GetAccountId());
-  SetRemoteDevices(base::ListValue());
-  SetProximityAuthDevices(GetAccountId(), cryptauth::RemoteDeviceRefList(),
-                          base::nullopt /* local_device */);
-  pref_manager_->SetIsEasyUnlockEnabled(false);
-  SetTurnOffFlowStatus(IDLE);
-  ResetScreenlockState();
-  registrar_.RemoveAll();
-}
-
-void EasyUnlockServiceRegular::OnTurnOffEasyUnlockFailure() {
-  LogToggleFeatureDisableResult(SmartLockResult::FAILURE);
-  SetTurnOffFlowStatus(FAIL);
 }
 
 cryptauth::CryptAuthEnrollmentManager*

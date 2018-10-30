@@ -10,7 +10,6 @@
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="easy_unlock_browser_proxy.html">
-<link rel="import" href="easy_unlock_turn_off_dialog.html">
 <link rel="import" href="fingerprint_browser_proxy.html">
 <link rel="import" href="lock_state_behavior.html">
 <link rel="import" href="lock_screen_password_prompt_dialog.html">
@@ -187,17 +186,6 @@
               </a>
             </div>
           </div>
-          <template is="dom-if" if="[[easyUnlockAvailable_(
-          multideviceSettingsEnabled_, easyUnlockAllowed_,
-          easyUnlockInLegacyHostMode_)]]">
-            <div class="separator"></div>
-            <template is="dom-if" if="[[easyUnlockEnabled_]]">
-              <paper-button id="easyUnlockTurnOff" class="secondary-button"
-                  on-click="onEasyUnlockTurnOffTap_">
-                $i18n{easyUnlockTurnOffButton}
-              </paper-button>
-            </template>
-          </template>
         </div>
         <iron-collapse opened="[[easyUnlockEnabled_]]"
             id="easyUnlockSettingsCollapsible">
@@ -230,12 +218,6 @@
         <settings-setup-pin-dialog id="setupPin" set-modes="[[setModes_]]"
             on-close="onSetupPinDialogClose_">
         </settings-setup-pin-dialog>
-      </template>
-
-      <template is="dom-if" if="[[showEasyUnlockTurnOffDialog_]]" restamp>
-        <easy-unlock-turn-off-dialog id="easyUnlockTurnOffDialog"
-            on-close="onEasyUnlockTurnOffDialogClose_">
-        </easy-unlock-turn-off-dialog>
       </template>
     </div>
   </template>

@@ -241,19 +241,6 @@ void EasyUnlockServiceSignin::SetRemoteDevices(const base::ListValue& devices) {
   NOTREACHED();
 }
 
-void EasyUnlockServiceSignin::RunTurnOffFlow() {
-  NOTREACHED();
-}
-
-void EasyUnlockServiceSignin::ResetTurnOffFlow() {
-  NOTREACHED();
-}
-
-EasyUnlockService::TurnOffFlowStatus
-EasyUnlockServiceSignin::GetTurnOffFlowStatus() const {
-  return EasyUnlockService::IDLE;
-}
-
 std::string EasyUnlockServiceSignin::GetChallenge() const {
   const UserData* data = FindLoadedDataForCurrentUser();
   if (!data)

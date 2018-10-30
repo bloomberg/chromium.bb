@@ -19,8 +19,7 @@ class Profile;
 namespace chromeos {
 namespace settings {
 
-class EasyUnlockSettingsHandler : public ::settings::SettingsPageUIHandler,
-                                  public EasyUnlockServiceObserver {
+class EasyUnlockSettingsHandler : public ::settings::SettingsPageUIHandler {
  public:
   // Returns nullptr if EasyUnlock is not allowed for this device.
   static EasyUnlockSettingsHandler* Create(
@@ -34,25 +33,16 @@ class EasyUnlockSettingsHandler : public ::settings::SettingsPageUIHandler,
   void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
 
-  // EasyUnlockServiceObserver:
-  void OnTurnOffOperationStatusChanged() override;
-
  protected:
   explicit EasyUnlockSettingsHandler(Profile* profile);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(EasyUnlockSettingsHandlerTest, EnabledStatus);
-  FRIEND_TEST_ALL_PREFIXES(EasyUnlockSettingsHandlerTest, TurnOffFlowStatus);
 
   void SendEnabledStatus();
-  std::string GetTurnOffFlowStatus();
 
   // JS callbacks.
   void HandleGetEnabledStatus(const base::ListValue* args);
-  void HandleStartTurnOnFlow(const base::ListValue* args);
-  void HandleGetTurnOffFlowStatus(const base::ListValue* args);
-  void HandleStartTurnOffFlow(const base::ListValue* args);
-  void HandleCancelTurnOffFlow(const base::ListValue* args);
 
   Profile* const profile_;
 

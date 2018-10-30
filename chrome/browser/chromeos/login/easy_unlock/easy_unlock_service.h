@@ -57,12 +57,6 @@ class UserContext;
 
 class EasyUnlockService : public KeyedService {
  public:
-  enum TurnOffFlowStatus {
-    IDLE,
-    PENDING,
-    FAIL,
-  };
-
   enum Type { TYPE_REGULAR, TYPE_SIGNIN };
 
   // Gets EasyUnlockService instance.
@@ -98,15 +92,6 @@ class EasyUnlockService : public KeyedService {
   // Gets/Sets the remote devices list.
   virtual const base::ListValue* GetRemoteDevices() const = 0;
   virtual void SetRemoteDevices(const base::ListValue& devices) = 0;
-
-  // Runs the flow for turning Easy unlock off.
-  virtual void RunTurnOffFlow() = 0;
-
-  // Resets the turn off flow if one is in progress.
-  virtual void ResetTurnOffFlow() = 0;
-
-  // Returns the current turn off flow status.
-  virtual TurnOffFlowStatus GetTurnOffFlowStatus() const = 0;
 
   // Gets the challenge bytes for the user currently associated with the
   // service.
@@ -232,9 +217,6 @@ class EasyUnlockService : public KeyedService {
   // is imminent and the app can be safely unloaded, but, for esthetic reasons,
   // the lock screen UI should remain unchanged until the screen unlocks.
   void DisableAppWithoutResettingScreenlockState();
-
-  // Notifies observers that the turn off flow status changed.
-  void NotifyTurnOffOperationStatusChanged();
 
   // Resets the screenlock state set by this service.
   void ResetScreenlockState();
