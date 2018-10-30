@@ -35,7 +35,6 @@ crbug.com/891427 virtual/threaded/fast/scrolling/editor-command-scroll-page-scal
 crbug.com/891427 fast/replaced/replaced-breaking.html [ Failure ]
 crbug.com/891427 http/tests/devtools/tracing/decode-resize.js [ Failure ]
 crbug.com/891427 virtual/threaded/http/tests/devtools/tracing/decode-resize.js [ Failure ]
-crbug.com/891427 media/picture-in-picture/mediastream.html [ Crash ]
 crbug.com/891427 virtual/android/fullscreen/rendering/backdrop-video.html [ Failure ]
 crbug.com/891427 virtual/android/rootscroller/set-root-scroller.html [ Failure ]
 crbug.com/891427 virtual/android/rootscroller/set-rootscroller-before-load.html [ Failure ]
@@ -140,7 +139,6 @@ crbug.com/881040 virtual/new-remote-playback-pipeline/http/tests/media/controls/
 crbug.com/881040 virtual/new-remote-playback-pipeline/media/controls/lazy-loaded-style.html [ Failure ]
 crbug.com/881040 virtual/new-remote-playback-pipeline/media/controls/paint-controls-webkit-appearance-none-custom-bg.html [ Failure ]
 crbug.com/881040 virtual/new-remote-playback-pipeline/media/controls/paint-controls-webkit-appearance-none.html [ Failure ]
-crbug.com/881040 external/wpt/picture-in-picture/idlharness.window.html [ Failure ]
 crbug.com/881040 media/video-layer-crash.html [ Failure ]
 
 # Remove these when --enable-display-compositor-pixel-dump becomes the
@@ -5059,38 +5057,6 @@ crbug.com/811565 [ Fuchsia ] fast/css3-text/css3-text-decoration/text-decoration
 crbug.com/811565 [ Fuchsia ] tables/mozilla/bugs/bug1188.html [ Failure Pass ]
 crbug.com/811565 [ Fuchsia ] tables/mozilla/bugs/bug2479-3.html [ Failure Pass ]
 crbug.com/811565 [ Fuchsia ] tables/mozilla/core/bloomberg.html [ Failure Pass ]
-
-# TODO(apacible): Remove these once SurfaceLayerForVideo works on LayoutTests.
-crbug.com/806249 external/wpt/picture-in-picture/picture-in-picture-window.html [ Failure ]
-crbug.com/806249 external/wpt/picture-in-picture/picture-in-picture-element.html [ Failure ]
-crbug.com/806249 external/wpt/picture-in-picture/disable-picture-in-picture.html [ Failure ]
-crbug.com/806249 external/wpt/picture-in-picture/shadow-dom.html [ Failure ]
-crbug.com/806249 external/wpt/picture-in-picture/request-picture-in-picture.html [ Failure ]
-crbug.com/806249 external/wpt/picture-in-picture/request-picture-in-picture-twice.html [ Failure ]
-crbug.com/806249 external/wpt/picture-in-picture/leave-picture-in-picture.html [ Failure ]
-crbug.com/806249 external/wpt/picture-in-picture/enter-picture-in-picture.html [ Failure ]
-crbug.com/806249 external/wpt/picture-in-picture/exit-picture-in-picture.html [ Failure ]
-crbug.com/806249 external/wpt/feature-policy/picture-in-picture-allowed-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Failure ]
-crbug.com/806249 external/wpt/feature-policy/picture-in-picture-allowed-by-feature-policy-attribute.https.sub.html [ Failure ]
-crbug.com/806249 external/wpt/feature-policy/picture-in-picture-allowed-by-feature-policy.https.sub.html [ Failure ]
-crbug.com/806249 external/wpt/feature-policy/picture-in-picture-default-feature-policy.https.sub.html [ Failure ]
-crbug.com/806249 external/wpt/feature-policy/reporting/picture-in-picture-reporting.html [ Failure ]
-### See crbug.com/891427 comment near the top of this file:
-####crbug.com/806249 http/tests/devtools/sources/debugger-breakpoints/picture-in-picture-event-listener-breakpoints.js [ Timeout ]
-crbug.com/806249 media/picture-in-picture/controls/picture-in-picture-button.html [ Failure ]
-crbug.com/806249 media/picture-in-picture/controls/picture-in-picture-video-with-audio-only-button.html [ Failure ]
-crbug.com/806249 media/picture-in-picture/picture-in-picture-enabled.html [ Failure ]
-crbug.com/811977 media/picture-in-picture/picture-in-picture-interstitial.html [ Failure ]
-### See crbug.com/891427 comment near the top of this file:
-###crbug.com/811977 media/picture-in-picture/mediastream.html [ Failure ]
-crbug.com/806249 virtual/unified-autoplay/external/wpt/feature-policy/picture-in-picture-allowed-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Failure ]
-crbug.com/806249 virtual/unified-autoplay/external/wpt/feature-policy/picture-in-picture-allowed-by-feature-policy-attribute.https.sub.html [ Failure ]
-crbug.com/806249 virtual/unified-autoplay/external/wpt/feature-policy/picture-in-picture-allowed-by-feature-policy.https.sub.html [ Failure ]
-crbug.com/806249 virtual/unified-autoplay/external/wpt/feature-policy/picture-in-picture-default-feature-policy.https.sub.html [ Failure ]
-crbug.com/806249 virtual/unified-autoplay/external/wpt/feature-policy/reporting/picture-in-picture-reporting.html [ Failure ]
-crbug.com/806249 virtual/video-surface-layer/external/wpt/html/semantics/embedded-content/media-elements/autoplay-allowed-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Skip ]
-crbug.com/806249 virtual/video-surface-layer/external/wpt/html/semantics/embedded-content/media-elements/autoplay-default-feature-policy.https.sub.html [ Skip ]
-crbug.com/806249 virtual/video-surface-layer/external/wpt/html/semantics/embedded-content/media-elements/autoplay-disabled-by-feature-policy.https.sub.html [ Skip ]
 
 ### See crbug.com/891427 comment near the top of this file:
 ###crbug.com/816914 [ Mac ] fast/canvas/canvas-drawImage-live-video.html [ Failure Pass ]
