@@ -49521,6 +49521,12 @@ Full version information for the fingerprint enum values:
   <int value="6" label="Translation error"/>
 </enum>
 
+<enum name="TranslateExplicitAskPromptEventType">
+  <int value="0" label="Shown"/>
+  <int value="1" label="Saved"/>
+  <int value="2" label="Cancelled"/>
+</enum>
+
 <enum name="TranslateInitiationStatus">
   <int value="0" label="Completely disabled by prefs"/>
   <int value="1" label="Completely disabled by switch"/>
