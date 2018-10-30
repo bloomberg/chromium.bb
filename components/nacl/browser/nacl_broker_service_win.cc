@@ -50,8 +50,7 @@ bool NaClBrokerService::LaunchLoader(
   return true;
 }
 
-void NaClBrokerService::OnLoaderLaunched(int launch_id,
-                                         base::ProcessHandle handle) {
+void NaClBrokerService::OnLoaderLaunched(int launch_id, base::Process process) {
   PendingLaunchesMap::iterator it = pending_launches_.find(launch_id);
   if (pending_launches_.end() == it) {
     NOTREACHED();
@@ -60,7 +59,7 @@ void NaClBrokerService::OnLoaderLaunched(int launch_id,
 
   NaClProcessHost* client = it->second.get();
   if (client)
-    client->OnProcessLaunchedByBroker(handle);
+    client->OnProcessLaunchedByBroker(std::move(process));
   pending_launches_.erase(it);
   ++loaders_running_;
 }

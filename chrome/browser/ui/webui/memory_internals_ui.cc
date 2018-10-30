@@ -288,8 +288,8 @@ void MemoryInternalsDOMHandler::GetChildProcessesOnIOThread(
 
     if (data.process_type == content::PROCESS_TYPE_GPU ||
         data.process_type == content::PROCESS_TYPE_UTILITY) {
-      result.push_back(MakeProcessInfo(base::GetProcId(data.GetHandle()),
-                                       GetChildDescription(data)));
+      result.push_back(
+          MakeProcessInfo(data.GetProcess().Pid(), GetChildDescription(data)));
     }
   }
 
