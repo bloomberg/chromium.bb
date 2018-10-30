@@ -205,6 +205,34 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
         }
     }
 
+    private class ListScrollListener extends RecyclerView.OnScrollListener {
+        private RecyclerView mList;
+        private ImageView mTopShadow;
+        private ImageView mBottomShadow;
+
+        public ListScrollListener(RecyclerView list, ImageView topShadow, ImageView bottomShadow) {
+            mList = list;
+            mTopShadow = topShadow;
+            mBottomShadow = bottomShadow;
+            mList.setOnScrollListener(this);
+        }
+
+        @Override
+        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+            if (mList.canScrollVertically(-1)) {
+                mTopShadow.setVisibility(View.VISIBLE);
+            } else {
+                mTopShadow.setVisibility(View.GONE);
+            }
+
+            if (mList.canScrollVertically(1)) {
+                mBottomShadow.setVisibility(View.VISIBLE);
+            } else {
+                mBottomShadow.setVisibility(View.GONE);
+            }
+        }
+    }
+
     /**
      * Displays the Explicit Language Ask prompt if the experiment is enabled.
      * @param activity The current activity to display the prompt into.
@@ -222,6 +250,7 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
         return true;
     }
 
+    private ListScrollListener mListScrollListener;
     private ModalDialogManager mModalDialogManager;
     private ModalDialogView mDialog;
     private HashSet<String> mLanguagesUpdate;
@@ -272,14 +301,19 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
         params.negativeButtonTextId = R.string.cancel;
         params.cancelOnTouchOutside = true;
 
-        RecyclerView list = new RecyclerView(activity);
+        params.customView = LayoutInflater.from(activity).inflate(
+                R.layout.language_ask_prompt_content, null, false);
+        RecyclerView list = (RecyclerView) params.customView.findViewById(R.id.recycler_view);
         LanguageItemAdapter adapter = new LanguageItemAdapter(activity, mLanguagesUpdate);
         list.setAdapter(adapter);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(activity);
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         list.setLayoutManager(linearLayoutManager);
         list.setHasFixedSize(true);
-        params.customView = list;
+
+        ImageView topShadow = (ImageView) params.customView.findViewById(R.id.top_shadow);
+        ImageView bottomShadow = (ImageView) params.customView.findViewById(R.id.bottom_shadow);
+        mListScrollListener = new ListScrollListener(list, topShadow, bottomShadow);
 
         List<LanguageItem> languages = PrefServiceBridge.getInstance().getChromeLanguageList();
         LinkedHashSet<String> currentGeoLanguages =
