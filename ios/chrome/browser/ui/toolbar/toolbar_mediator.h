@@ -22,6 +22,9 @@ class WebStateList;
 // to a consumer.
 @interface ToolbarMediator : NSObject
 
+// Whether the search icon should be in dark mode or not.
+@property(nonatomic, assign, getter=isIncognito) BOOL incognito;
+
 // TemplateURLService used to check the default search engine.
 @property(nonatomic, assign) TemplateURLService* templateURLService;
 
