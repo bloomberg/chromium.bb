@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/threading/thread_restrictions.h"
 
 namespace chromeos {
 namespace test_utils {
@@ -20,8 +21,11 @@ bool GetTestDataPath(const std::string& component,
   path = path.Append(FILE_PATH_LITERAL("chromeos"));
   path = path.Append(FILE_PATH_LITERAL("test"));
   path = path.Append(FILE_PATH_LITERAL("data"));
-  if (!base::PathExists(path))  // We don't want to create this.
-    return false;
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+    if (!base::PathExists(path))  // We don't want to create this.
+      return false;
+  }
   DCHECK(data_dir);
   path = path.Append(component);
   *data_dir = path.Append(filename);

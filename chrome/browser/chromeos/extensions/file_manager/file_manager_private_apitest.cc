@@ -166,10 +166,13 @@ void AddLocalFileSystem(Profile* profile, base::FilePath root) {
   const char kLocalMountPointName[] = "local";
   const char kTestFileContent[] = "The five boxing wizards jumped quickly";
 
-  ASSERT_TRUE(base::CreateDirectory(root.AppendASCII("test_dir")));
-  ASSERT_TRUE(google_apis::test_util::WriteStringToFile(
-      root.AppendASCII("test_dir").AppendASCII("test_file.txt"),
-      kTestFileContent));
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+    ASSERT_TRUE(base::CreateDirectory(root.AppendASCII("test_dir")));
+    ASSERT_TRUE(google_apis::test_util::WriteStringToFile(
+        root.AppendASCII("test_dir").AppendASCII("test_file.txt"),
+        kTestFileContent));
+  }
 
   ASSERT_TRUE(
       content::BrowserContext::GetMountPoints(profile)->RegisterFileSystem(
@@ -200,6 +203,7 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
 
   void SetUpOnMainThread() override {
     extensions::ExtensionApiTest::SetUpOnMainThread();
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     testing_profile_ = std::make_unique<TestingProfile>();
     event_router_ =
@@ -385,6 +389,7 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
         .WillOnce(Invoke(this, &FileManagerPrivateApiTest::SshfsMount));
   }
 
+  base::ScopedTempDir temp_dir_;
   chromeos::disks::MockDiskMountManager* disk_mount_manager_mock_;
   DiskMountManager::DiskMap volumes_;
   DiskMountManager::MountPointMap mount_points_;
@@ -520,23 +525,20 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, OnFileChanged) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, ContentChecksum) {
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  AddLocalFileSystem(browser()->profile(), temp_dir.GetPath());
+  AddLocalFileSystem(browser()->profile(), temp_dir_.GetPath());
 
   ASSERT_TRUE(RunComponentExtensionTest("file_browser/content_checksum_test"));
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Recent) {
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  const base::FilePath downloads_dir = temp_dir.GetPath();
+  const base::FilePath downloads_dir = temp_dir_.GetPath();
 
   ASSERT_TRUE(file_manager::VolumeManager::Get(browser()->profile())
                   ->RegisterDownloadsDirectoryForTesting(downloads_dir));
 
   // Create an empty file.
   {
+    base::ScopedAllowBlockingForTesting allow_io;
     base::File file(downloads_dir.Append("all-justice.jpg"),
                     base::File::FLAG_CREATE | base::File::FLAG_WRITE);
     ASSERT_TRUE(file.IsValid());
@@ -560,21 +562,21 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Crostini) {
   ExpectCrostiniMount();
 
   // Add 'testing' volume with 'test_dir', create 'share_dir' in Downloads.
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  AddLocalFileSystem(browser()->profile(), temp_dir.GetPath());
+  AddLocalFileSystem(browser()->profile(), temp_dir_.GetPath());
   base::FilePath downloads;
   ASSERT_TRUE(
       storage::ExternalMountPoints::GetSystemInstance()->GetRegisteredPath(
           file_manager::util::GetDownloadsMountPointName(browser()->profile()),
           &downloads));
-  ASSERT_TRUE(base::CreateDirectory(downloads.AppendASCII("share_dir")));
-
   // Setup prefs crostini.shared_paths.
   base::FilePath shared1 = downloads.AppendASCII("shared1");
   base::FilePath shared2 = downloads.AppendASCII("shared2");
-  ASSERT_TRUE(base::CreateDirectory(shared1));
-  ASSERT_TRUE(base::CreateDirectory(shared2));
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+    ASSERT_TRUE(base::CreateDirectory(downloads.AppendASCII("share_dir")));
+    ASSERT_TRUE(base::CreateDirectory(shared1));
+    ASSERT_TRUE(base::CreateDirectory(shared2));
+  }
   base::ListValue shared_paths;
   shared_paths.AppendString(shared1.value());
   shared_paths.AppendString(shared2.value());

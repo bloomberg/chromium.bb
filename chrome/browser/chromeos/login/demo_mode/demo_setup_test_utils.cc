@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 
 namespace chromeos {
@@ -14,6 +15,7 @@ namespace test {
 
 bool SetupDummyOfflinePolicyDir(const std::string& account_id,
                                 base::ScopedTempDir* temp_dir) {
+  base::ScopedAllowBlockingForTesting allow_io;
   if (!temp_dir->CreateUniqueTempDir()) {
     LOG(ERROR) << "Failed to create unique tempdir";
     return false;

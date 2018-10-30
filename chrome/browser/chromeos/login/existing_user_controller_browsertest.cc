@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/authpolicy/auth_policy_credentials_manager.h"
@@ -159,6 +160,7 @@ class KerberosFilesChangeWaiter {
 
   // Should be called once.
   void Wait() {
+    base::ScopedAllowBlockingForTesting allow_io;
     loop_.Run();
     config_watcher_.reset();
     creds_watcher_.reset();
@@ -168,6 +170,7 @@ class KerberosFilesChangeWaiter {
   void MaybeStartWatch(std::unique_ptr<base::FilePathWatcher>* watcher,
                        const base::FilePath& path,
                        bool files_must_exist) {
+    base::ScopedAllowBlockingForTesting allow_io;
     (*watcher)->Watch(path, false /* recursive */, watch_callback_);
     if (!files_must_exist && base::PathExists(path)) {
       watch_callback_.Run(path, false /* error */);
@@ -179,6 +182,7 @@ class KerberosFilesChangeWaiter {
 
   base::RepeatingCallback<void(const base::FilePath& path, bool error)>
       watch_callback_;
+
   std::unique_ptr<base::FilePathWatcher> config_watcher_;
   std::unique_ptr<base::FilePathWatcher> creds_watcher_;
 };
@@ -899,6 +903,7 @@ class ExistingUserControllerActiveDirectoryTest
   }
 
   void CheckKerberosFiles(bool enable_dns_cname_lookup) {
+    base::ScopedAllowBlockingForTesting allow_io;
     std::string file_contents;
     EXPECT_TRUE(base::ReadFileToString(
         base::FilePath(GetKerberosConfigFileName()), &file_contents));

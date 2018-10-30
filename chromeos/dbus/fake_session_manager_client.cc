@@ -471,7 +471,14 @@ void FakeSessionManagerClient::StorePolicy(
         base::FilePath key_path;
         GetStubPolicyFilePath(descriptor, &key_path);
         DCHECK(!key_path.empty());
-        StoreFiles({{key_path, response.new_public_key()}});
+
+        base::PostTaskWithTraits(
+            FROM_HERE,
+            {base::MayBlock(),
+             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+            base::BindOnce(StoreFiles,
+                           std::map<base::FilePath, std::string>{
+                               {key_path, response.new_public_key()}}));
         for (auto& observer : observers_)
           observer.OwnerKeySet(true /* success */);
       }

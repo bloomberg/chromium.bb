@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_browsertest_base.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -907,6 +908,7 @@ IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest, MigratePinnedFiles) {
   set_test_case_name("driveMigratePinnedFile");
   StartTest();
 
+  base::ScopedAllowBlockingForTesting allow_io;
   EXPECT_TRUE(base::IsDirectoryEmpty(GetDriveDataDirectory()));
 }
 
@@ -914,18 +916,25 @@ IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest, PRE_RecoverDirtyFiles) {
   set_test_case_name("PRE_driveRecoverDirtyFiles");
   StartTest();
 
-  // Create a non-dirty file in the cache.
-  base::WriteFile(GetDriveDataDirectory().Append("files/foo"), "data", 4);
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+
+    // Create a non-dirty file in the cache.
+    base::WriteFile(GetDriveDataDirectory().Append("files/foo"), "data", 4);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest, RecoverDirtyFiles) {
   set_test_case_name("driveRecoverDirtyFiles");
   StartTest();
 
+  base::ScopedAllowBlockingForTesting allow_io;
   EXPECT_TRUE(base::IsDirectoryEmpty(GetDriveDataDirectory()));
 }
 
 IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest, LaunchWithoutOldDriveData) {
+  base::ScopedAllowBlockingForTesting allow_io;
+
   // After starting up, GCache/v1 should still be empty.
   EXPECT_TRUE(base::IsDirectoryEmpty(GetDriveDataDirectory()));
 }

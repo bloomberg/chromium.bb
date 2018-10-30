@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -431,6 +432,7 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
 
     // Import a second client cert signed by another CA than client_1 into the
     // system wide key slot.
+    base::ScopedAllowBlockingForTesting allow_io;
     client_cert_ = net::ImportClientCertAndKeyFromFile(
         net::GetTestCertsDirectory(), "client_1.pem", "client_1.pk8",
         test_system_slot_->slot());
@@ -463,7 +465,10 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
   void SetIntermediateAuthorityInDeviceOncPolicy(
       const base::FilePath& authority_file_path) {
     std::string x509_contents;
-    ASSERT_TRUE(base::ReadFileToString(authority_file_path, &x509_contents));
+    {
+      base::ScopedAllowBlockingForTesting allow_io;
+      ASSERT_TRUE(base::ReadFileToString(authority_file_path, &x509_contents));
+    }
     base::DictionaryValue onc_dict =
         BuildDeviceOncDictForUntrustedAuthority(x509_contents);
 

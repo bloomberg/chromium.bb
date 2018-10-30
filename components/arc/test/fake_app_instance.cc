@@ -17,6 +17,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_restrictions.h"
 #include "components/arc/app/arc_playstore_search_request_state.h"
 
 namespace mojo {
@@ -188,8 +189,11 @@ bool FakeAppInstance::GenerateIconResponse(int dimension,
           .AppendASCII("arc")
           .AppendASCII(base::StringPrintf(
               "icon_%s_%d.png", app_icon ? "app" : "shortcut", dimension));
-  CHECK(base::PathExists(icon_file_path)) << icon_file_path.MaybeAsASCII();
-  CHECK(base::ReadFileToString(icon_file_path, png_data_as_string));
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+    CHECK(base::PathExists(icon_file_path)) << icon_file_path.MaybeAsASCII();
+    CHECK(base::ReadFileToString(icon_file_path, png_data_as_string));
+  }
   icon_responses_[dimension] = *png_data_as_string;
   return true;
 }

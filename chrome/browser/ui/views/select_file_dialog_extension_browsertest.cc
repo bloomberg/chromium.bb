@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_test_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
@@ -365,9 +366,12 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
   // Create an empty file to provide the file to open.
   const base::FilePath test_file =
       downloads_dir_.AppendASCII("file_manager_test.html");
-  FILE* fp = base::OpenFile(test_file, "w");
-  ASSERT_TRUE(fp != NULL);
-  ASSERT_TRUE(base::CloseFile(fp));
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+    FILE* fp = base::OpenFile(test_file, "w");
+    ASSERT_TRUE(fp != NULL);
+    ASSERT_TRUE(base::CloseFile(fp));
+  }
 
   // Open the file dialog, providing a path to the file to open so the dialog
   // will automatically select it.  Ensure the "Open" button is enabled by

@@ -36,6 +36,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -770,6 +771,11 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
 
   content::WebContents* contents_;
 
+  // These are member variables so they're guaranteed that the destructors
+  // (which may delete a directory) run in a scope where file IO is allowed.
+  base::ScopedTempDir temp_dir_;
+  base::ScopedTempDir cache_dir_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DeviceLocalAccountTest);
 };
@@ -1137,17 +1143,23 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
 
   // Pre-populate the device local account's extension cache with a hosted app
   // and an extension.
-  EXPECT_TRUE(base::CreateDirectory(
-      GetExtensionCacheDirectoryForAccountID(kAccountId1)));
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    EXPECT_TRUE(base::CreateDirectory(
+        GetExtensionCacheDirectoryForAccountID(kAccountId1)));
+  }
   base::FilePath test_dir;
   ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
   const base::FilePath cached_hosted_app =
       GetCacheCRXFile(kAccountId1, kHostedAppID, kHostedAppVersion);
-  EXPECT_TRUE(CopyFile(test_dir.Append(kHostedAppCRXPath),
-                       cached_hosted_app));
-  EXPECT_TRUE(CopyFile(
-      test_dir.Append(kGoodExtensionCRXPath),
-      GetCacheCRXFile(kAccountId1, kGoodExtensionID, kGoodExtensionVersion)));
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    EXPECT_TRUE(
+        CopyFile(test_dir.Append(kHostedAppCRXPath), cached_hosted_app));
+    EXPECT_TRUE(CopyFile(
+        test_dir.Append(kGoodExtensionCRXPath),
+        GetCacheCRXFile(kAccountId1, kGoodExtensionID, kGoodExtensionVersion)));
+  }
 
   // Specify policy to force-install the hosted app.
   em::StringList* forcelist = device_local_account_policy_.payload()
@@ -1190,7 +1202,10 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
   EXPECT_FALSE(extension_service->GetExtensionById(kGoodExtensionID, true));
 
   // Verify that the app is still in the account's extension cache.
-  EXPECT_TRUE(PathExists(cached_hosted_app));
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    EXPECT_TRUE(PathExists(cached_hosted_app));
+  }
 
   // Verify that the extension was removed from the account's extension cache.
   DeviceLocalAccountPolicyBroker* broker =
@@ -1221,6 +1236,7 @@ static void OnExtensionCacheImplInitialized(
 static void CreateFile(const base::FilePath& file,
                 size_t size,
                 const base::Time& timestamp) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
   std::string data(size, 0);
   EXPECT_EQ(base::WriteFile(file, data.data(), data.size()), int(size));
   EXPECT_TRUE(base::TouchFile(file, timestamp, timestamp));
@@ -1242,10 +1258,13 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionCacheImplTest) {
                  testing_update_manifest_provider));
   embedded_test_server()->StartAcceptingConnections();
   // Create and initialize local cache.
-  base::ScopedTempDir cache_dir;
-  EXPECT_TRUE(cache_dir.CreateUniqueTempDir());
-  const base::FilePath impl_path = cache_dir.GetPath();
-  EXPECT_TRUE(base::CreateDirectory(impl_path));
+  base::FilePath impl_path;
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    EXPECT_TRUE(cache_dir_.CreateUniqueTempDir());
+    impl_path = cache_dir_.GetPath();
+    EXPECT_TRUE(base::CreateDirectory(impl_path));
+  }
   CreateFile(impl_path.Append(
                  extensions::LocalExtensionCache::kCacheReadyFlagFileName),
              0, base::Time::Now());
@@ -1257,16 +1276,22 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionCacheImplTest) {
   run_loop->Run();
 
   // Put extension in the local cache.
-  base::ScopedTempDir temp_dir;
-  EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
-  const base::FilePath temp_path = temp_dir.GetPath();
-  EXPECT_TRUE(base::CreateDirectory(temp_path));
+  base::FilePath temp_path;
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
+    temp_path = temp_dir_.GetPath();
+    EXPECT_TRUE(base::CreateDirectory(temp_path));
+  }
   const base::FilePath temp_file =
       GetCacheCRXFilePath(kGoodExtensionID, kGoodExtensionVersion, temp_path);
   base::FilePath test_dir;
   std::string hash;
   ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
-  EXPECT_TRUE(CopyFile(test_dir.Append(kGoodExtensionCRXPath), temp_file));
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    EXPECT_TRUE(CopyFile(test_dir.Append(kGoodExtensionCRXPath), temp_file));
+  }
   cache_impl.AllowCaching(kGoodExtensionID);
   run_loop.reset(new base::RunLoop);
   cache_impl.PutExtension(kGoodExtensionID, hash, temp_file,
@@ -1277,7 +1302,10 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionCacheImplTest) {
   // Verify that the extension file was added to the local cache.
   const base::FilePath local_file =
       GetCacheCRXFilePath(kGoodExtensionID, kGoodExtensionVersion, impl_path);
-  EXPECT_TRUE(PathExists(local_file));
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    EXPECT_TRUE(PathExists(local_file));
+  }
 
   // Specify policy to force-install the hosted app and the extension.
   em::StringList* forcelist = device_local_account_policy_.payload()
@@ -1313,8 +1341,11 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionCacheImplTest) {
   // Verify that the extension was kept in the local cache.
   EXPECT_TRUE(cache_impl.GetExtension(kGoodExtensionID, hash, NULL, NULL));
 
-  // Verify that the extension file was kept in the local cache.
-  EXPECT_TRUE(PathExists(local_file));
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    // Verify that the extension file was kept in the local cache.
+    EXPECT_TRUE(PathExists(local_file));
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExternalData) {
@@ -1433,9 +1464,12 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
   base::FilePath test_dir;
   ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
   std::string image_data;
-  ASSERT_TRUE(base::ReadFileToString(
-      test_dir.Append(chromeos::test::kUserAvatarImage1RelativePath),
-      &image_data));
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    ASSERT_TRUE(base::ReadFileToString(
+        test_dir.Append(chromeos::test::kUserAvatarImage1RelativePath),
+        &image_data));
+  }
 
   std::string policy;
   base::JSONWriter::Write(
@@ -2435,8 +2469,11 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, TermsOfServiceScreen) {
   base::FilePath test_dir;
   ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
   std::string terms_of_service;
-  ASSERT_TRUE(base::ReadFileToString(
-      test_dir.Append(kExistentTermsOfServicePath), &terms_of_service));
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    ASSERT_TRUE(base::ReadFileToString(
+        test_dir.Append(kExistentTermsOfServicePath), &terms_of_service));
+  }
   EXPECT_EQ(terms_of_service, content);
   EXPECT_FALSE(error);
   EXPECT_TRUE(accept_enabled);

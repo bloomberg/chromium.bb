@@ -992,6 +992,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
 
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, KioskOnlyTest) {
+  base::ScopedAllowBlockingForTesting allow_io;
   // kiosk_only is whitelisted from non-chromeos.
   base::FilePath crx_path =
       test_data_dir_.AppendASCII("kiosk/kiosk_only.crx");
@@ -1009,6 +1010,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, KioskOnlyTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, InstallToSharedLocation) {
+  base::ScopedAllowBlockingForTesting allow_io;
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       chromeos::switches::kEnableExtensionAssetsSharing);
   base::ScopedTempDir cache_dir;
@@ -1021,7 +1023,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, InstallToSharedLocation) {
       crx_path, 1, extensions::Manifest::EXTERNAL_PREF);
   base::FilePath extension_path = extension->path();
   EXPECT_TRUE(cache_dir.GetPath().IsParent(extension_path));
-  base::ScopedAllowBlockingForTesting allow_io;
   EXPECT_TRUE(base::PathExists(extension_path));
 
   std::string extension_id = extension->id();
