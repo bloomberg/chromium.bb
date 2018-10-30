@@ -1237,7 +1237,7 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
         ],
         cwd='{}/tsproxy'.format(self.wpr_tools_path),
         env=self.get_launch_env(),
-        stdout=open('stdout_proxy.txt', 'wb+'),
+        stdout=open(os.path.join(self.out_dir, 'stdout_proxy.txt'), 'wb+'),
         stderr=subprocess.STDOUT,
     )
 
@@ -1271,7 +1271,7 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
         ],
         cwd='{}/web_page_replay_go/'.format(self.wpr_tools_path),
         env=self.get_launch_env(),
-        stdout=open('stdout_wprgo.txt', 'wb+'),
+        stdout=open(os.path.join(self.out_dir, 'stdout_wprgo.txt'), 'wb+'),
         stderr=subprocess.STDOUT,
     )
 
