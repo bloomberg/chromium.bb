@@ -7,7 +7,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_shape.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 
 namespace blink {
 
@@ -39,6 +41,29 @@ TEST_F(LayoutSVGRootTest, VisualRectMappingWithoutViewportClipWithBorder) {
   rect = root_visual_rect;
   EXPECT_TRUE(root.MapToVisualRectInAncestorSpace(&root, rect));
   EXPECT_EQ(LayoutRect(0, 0, 220, 190), rect);
+}
+
+TEST_F(LayoutSVGRootTest, VisualOverflowExpandsLayer) {
+  EnableCompositing();
+  SetBodyInnerHTML(R"HTML(
+    <svg id='root' style='width: 100px; will-change: transform; height:
+    100px; overflow: visible; position: absolute;'>
+       <rect id='rect' x='0' y='0' width='100' height='100'/>
+    </svg>
+  )HTML");
+
+  const LayoutSVGRoot& root =
+      *ToLayoutSVGRoot(GetLayoutObjectByElementId("root"));
+  auto* paint_layer = root.Layer();
+  ASSERT_TRUE(paint_layer);
+  auto* graphics_layer = paint_layer->GraphicsLayerBacking(&root);
+  ASSERT_TRUE(graphics_layer);
+  EXPECT_EQ(graphics_layer->Size(), gfx::Size(100, 100));
+
+  GetDocument().getElementById("rect")->setAttribute("height", "200");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_EQ(graphics_layer->Size(), gfx::Size(100, 200));
 }
 
 TEST_F(LayoutSVGRootTest, VisualRectMappingWithViewportClipAndBorder) {
