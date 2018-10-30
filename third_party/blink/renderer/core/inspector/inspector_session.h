@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_DEVTOOLS_SESSION_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_DEVTOOLS_SESSION_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_SESSION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_SESSION_H_
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "third_party/blink/public/web/devtools_agent.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/inspector/inspector_session_state.h"
@@ -19,56 +18,66 @@
 
 namespace blink {
 
-class DevToolsAgent;
-class DocumentLoader;
 class InspectorAgent;
+class InspectedFrames;
+class CoreProbeSink;
 class LocalFrame;
 
-class CORE_EXPORT DevToolsSession
-    : public GarbageCollectedFinalized<DevToolsSession>,
-      public mojom::blink::DevToolsSession,
+class CORE_EXPORT InspectorSession
+    : public GarbageCollectedFinalized<InspectorSession>,
       public protocol::FrontendChannel,
       public v8_inspector::V8Inspector::Channel {
  public:
-  DevToolsSession(
-      DevToolsAgent*,
-      mojom::blink::DevToolsSessionHostAssociatedPtrInfo host_ptr_info,
-      mojom::blink::DevToolsSessionAssociatedRequest main_request,
-      mojom::blink::DevToolsSessionRequest io_request,
-      mojom::blink::DevToolsSessionStatePtr reattach_session_state);
-  ~DevToolsSession() override;
+  class Client {
+   public:
+    virtual void SendProtocolResponse(
+        int session_id,
+        int call_id,
+        const String& response,
+        mojom::blink::DevToolsSessionStatePtr updates) = 0;
+    virtual void SendProtocolNotification(
+        int session_id,
+        const String& message,
+        mojom::blink::DevToolsSessionStatePtr updates) = 0;
+    virtual ~Client() = default;
+  };
 
-  void ConnectToV8(v8_inspector::V8Inspector*, int context_group_id);
+  InspectorSession(
+      Client*,
+      CoreProbeSink*,
+      InspectedFrames*,
+      int session_id,
+      v8_inspector::V8Inspector*,
+      int context_group_id,
+      mojom::blink::DevToolsSessionStatePtr reattach_session_state);
+  ~InspectorSession() override;
+  // TODO(dgozman): remove session id once WokrerInspectorController
+  // does not use it anymore.
+  int SessionId() { return session_id_; }
   v8_inspector::V8InspectorSession* V8Session() { return v8_session_.get(); }
 
   void Append(InspectorAgent*);
-  void Detach();
-  void FlushProtocolNotifications();
-  void Trace(blink::Visitor*);
-
-  // Core probes.
+  void Restore();
+  void Dispose();
   void DidStartProvisionalLoad(LocalFrame*);
   void DidFailProvisionalLoad(LocalFrame*);
-  void DidCommitLoad(LocalFrame*, DocumentLoader*);
+  void DidCommitLoadForLocalFrame(LocalFrame*);
+  void DispatchProtocolMessage(int call_id,
+                               const String& method,
+                               const String& message);
+  void flushProtocolNotifications() override;
+
+  void Trace(blink::Visitor*);
+
+  static bool ShouldInterruptForMethod(const String& method);
 
  private:
-  class IOSession;
-
-  // mojom::blink::DevToolsSession implementation.
-  void DispatchProtocolCommand(int call_id,
-                               const String& method,
-                               const String& message) override;
-
   // protocol::FrontendChannel implementation.
   void sendProtocolResponse(
       int call_id,
       std::unique_ptr<protocol::Serializable> message) override;
   void sendProtocolNotification(
       std::unique_ptr<protocol::Serializable> message) override;
-  void fallThrough(int call_id,
-                   const String& method,
-                   const String& message) override;
-  void flushProtocolNotifications() override;
 
   // v8_inspector::V8Inspector::Channel implementation.
   void sendResponse(
@@ -77,14 +86,17 @@ class CORE_EXPORT DevToolsSession
   void sendNotification(
       std::unique_ptr<v8_inspector::StringBuffer> message) override;
 
-  bool IsDetached();
   void SendProtocolResponse(int call_id, const String& message);
+  void fallThrough(int call_id,
+                   const String& method,
+                   const String& message) override;
 
-  Member<DevToolsAgent> agent_;
-  mojo::AssociatedBinding<mojom::blink::DevToolsSession> binding_;
-  mojom::blink::DevToolsSessionHostAssociatedPtr host_ptr_;
-  IOSession* io_session_;
+  Client* client_;
   std::unique_ptr<v8_inspector::V8InspectorSession> v8_session_;
+  int session_id_;
+  bool disposed_;
+  Member<CoreProbeSink> instrumenting_agents_;
+  Member<InspectedFrames> inspected_frames_;
   std::unique_ptr<protocol::UberDispatcher> inspector_backend_dispatcher_;
   InspectorSessionState session_state_;
   HeapVector<Member<InspectorAgent>> agents_;
@@ -93,9 +105,9 @@ class CORE_EXPORT DevToolsSession
   InspectorAgentState v8_session_state_;
   InspectorAgentState::String v8_session_state_json_;
 
-  DISALLOW_COPY_AND_ASSIGN(DevToolsSession);
+  DISALLOW_COPY_AND_ASSIGN(InspectorSession);
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_DEVTOOLS_SESSION_H_
+#endif  // !defined(InspectorSession_h)
