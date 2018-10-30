@@ -2927,6 +2927,17 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       # https://gerrit-review.googlesource.com/Documentation/user-upload.html#topic
       refspec_opts.append('topic=%s' % options.topic)
 
+    if not change_desc.get_reviewers(tbr_only=True):
+      # Change is not TBR, so we can inline setting other labels, too.
+      # TODO(crbug.com/877717): make this working for TBR, too, by figuring out
+      # max score for CR label somehow.
+      if options.enable_auto_submit:
+        refspec_opts.append('l=Auto-Submit+1')
+      if options.use_commit_queue:
+        refspec_opts.append('l=Commit-Queue+2')
+      elif options.cq_dry_run:
+        refspec_opts.append('l=Commit-Queue+1')
+
     # Gerrit sorts hashtags, so order is not important.
     hashtags = {change_desc.sanitize_hash_tag(t) for t in options.hashtags}
     if not self.GetIssue():
@@ -3042,9 +3053,9 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           self._GerritChangeIdentifier(),
           msg='Self-approving for TBR',
           labels={'Code-Review': score})
-
-    self.SetLabels(options.enable_auto_submit, options.use_commit_queue,
-                   options.cq_dry_run)
+      # Labels aren't set through refspec only if tbr is set (see check above).
+      self.SetLabels(options.enable_auto_submit, options.use_commit_queue,
+                     options.cq_dry_run)
     return 0
 
   def _ComputeParent(self, remote, upstream_branch, custom_cl_base, force,

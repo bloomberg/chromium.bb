@@ -905,7 +905,8 @@ class TestGitCl(TestCase):
                            title=None, notify=False,
                            post_amend_description=None, issue=None, cc=None,
                            custom_cl_base=None, tbr=None,
-                           short_hostname='chromium'):
+                           short_hostname='chromium',
+                           labels=None):
     if post_amend_description is None:
       post_amend_description = description
     cc = cc or []
@@ -1048,6 +1049,10 @@ class TestGitCl(TestCase):
         if c in cc:
           cc.remove(c)
 
+    if not tbr:
+      for k, v in sorted((labels or {}).items()):
+        ref_suffix += ',l=%s+%d' % (k, v)
+
     calls.append((
       (['git', 'push',
         'https://%s.googlesource.com/my/repo' % short_hostname,
@@ -1130,7 +1135,8 @@ class TestGitCl(TestCase):
       other_cl_owner=None,
       custom_cl_base=None,
       tbr=None,
-      short_hostname='chromium'):
+      short_hostname='chromium',
+      labels=None):
     """Generic gerrit upload test framework."""
     if squash_mode is None:
       if '--no-squash' in upload_args:
@@ -1172,7 +1178,8 @@ class TestGitCl(TestCase):
           post_amend_description=post_amend_description,
           issue=issue, cc=cc,
           custom_cl_base=custom_cl_base, tbr=tbr,
-          short_hostname=short_hostname)
+          short_hostname=short_hostname,
+          labels=labels)
     # Uncomment when debugging.
     # print '\n'.join(map(lambda x: '%2i: %s' % x, enumerate(self.calls)))
     git_cl.main(['upload'] + upload_args)
@@ -1255,6 +1262,15 @@ class TestGitCl(TestCase):
         [],
         squash=True,
         expected_upstream_ref='origin/master')
+
+  def test_gerrit_upload_squash_first_with_labels(self):
+    self._run_gerrit_upload_test(
+        ['--squash', '--cq-dry-run', '--enable-auto-submit'],
+        'desc\nBUG=\n\nChange-Id: 123456789',
+        [],
+        squash=True,
+        expected_upstream_ref='origin/master',
+        labels={'Commit-Queue': 1, 'Auto-Submit': 1})
 
   def test_gerrit_upload_squash_first_against_rev(self):
     custom_cl_base = 'custom_cl_base_rev_or_branch'
