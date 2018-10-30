@@ -207,8 +207,14 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_LONG_PRESS_TOOLBAR_IPH_PROMOTION_VOICE_OVER" desc="Text to be read by VoiceOver when the LongPress Toolbar Tip is presented to the user. Read by Text-to-Speech.">
         Chromium tip. For more tab options, press and hold the Show Tabs button in the toolbar, which is at the bottom or top of your screen.
       </message>
-      <message name="IDS_IOS_MANAGED_DISCONNECT_DIALOG_INFO" desc="Message explaini ng that signing out of a managed account will clear all the Chromium data.[Length: 200em, may be line wrapped to multiple lines at run time.].">
+      <message name="IDS_IOS_MANAGED_DISCONNECT_DIALOG_INFO" desc="Message explaining that signing out of a managed account will clear all the Chromium data.[Length: 200em, may be line wrapped to multiple lines at run time.] [iOS only].">
         You are signing out of an account managed by <ph name="SIGNOUT_MANAGED_DOMAIN">$1<ex>google.com</ex></ph>. This will delete your Chromium data from this device, but your data will remain in your Google account.
+      </message>
+      <message name="IDS_IOS_MANAGED_DISCONNECT_DIALOG_INFO_UNITY" desc="Message explaining that signing out of a managed account will clear all the Chromium data.[Length: 200em, may be line wrapped to multiple lines at run time.] [iOS only].">
+        Because you're signing out of an account managed by <ph name="SIGNOUT_MANAGED_DOMAIN">$1<ex>google.com</ex></ph>, your Chromium data will be deleted from this device. Your data will remain in your Google Account.
+      </message>
+      <message name="IDS_IOS_MANAGED_DISCONNECT_DIALOG_TITLE_UNITY" desc="Title of the dialog shown when signing out of a managed account.[Length: 50em] [iOS only].">
+        Clear your Chromium data from this device?
       </message>
       <message name="IDS_IOS_MANAGED_SIGNIN_SUBTITLE" desc="The subtitle of the Sign in to a managed account dialog. [300em]">
         You are signing in with an account managed by <ph name="DOMAIN">$1<ex>doe.com</ex></ph> and giving its administrator control over your Chromium data. Your data will become permanently tied to this account. Signing out of Chromium will delete your data from this device, but it will remain stored in your Google Account.

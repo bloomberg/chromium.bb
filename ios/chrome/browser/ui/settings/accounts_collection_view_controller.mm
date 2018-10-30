@@ -364,7 +364,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (CollectionViewItem*)signOutItem {
   SettingsTextItem* item =
       [[SettingsTextItem alloc] initWithType:ItemTypeSignOut];
-  item.text = l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_SIGNOUT);
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    item.text =
+        l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_SIGN_OUT_TURN_OFF_SYNC);
+  } else {
+    item.text = l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_SIGNOUT);
+  }
   item.accessibilityTraits |= UIAccessibilityTraitButton;
   item.accessibilityIdentifier = kSettingsAccountsSignoutCellId;
   return item;
@@ -562,22 +567,35 @@ typedef NS_ENUM(NSInteger, ItemType) {
     return;
   }
 
-  NSString* title;
-  NSString* message;
-  NSString* continueButtonTitle;
+  NSString* title = l10n_util::GetNSString(IDS_IOS_DISCONNECT_DIALOG_TITLE);
+  NSString* message =
+      l10n_util::GetNSString(IDS_IOS_DISCONNECT_DIALOG_INFO_MOBILE);
+  NSString* continueButtonTitle =
+      l10n_util::GetNSString(IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE);
   if ([self authService]->IsAuthenticatedIdentityManaged()) {
     std::string hosted_domain =
         ios::SigninManagerFactory::GetForBrowserState(_browserState)
             ->GetAuthenticatedAccountInfo()
             .hosted_domain;
-    title = l10n_util::GetNSString(IDS_IOS_MANAGED_DISCONNECT_DIALOG_TITLE);
-    message = l10n_util::GetNSStringF(IDS_IOS_MANAGED_DISCONNECT_DIALOG_INFO,
-                                      base::UTF8ToUTF16(hosted_domain));
-    continueButtonTitle =
-        l10n_util::GetNSString(IDS_IOS_MANAGED_DISCONNECT_DIALOG_ACCEPT);
-  } else {
-    title = l10n_util::GetNSString(IDS_IOS_DISCONNECT_DIALOG_TITLE);
-    message = l10n_util::GetNSString(IDS_IOS_DISCONNECT_DIALOG_INFO_MOBILE);
+    if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+      title =
+          l10n_util::GetNSString(IDS_IOS_MANAGED_DISCONNECT_DIALOG_TITLE_UNITY);
+      message =
+          l10n_util::GetNSStringF(IDS_IOS_MANAGED_DISCONNECT_DIALOG_INFO_UNITY,
+                                  base::UTF8ToUTF16(hosted_domain));
+      continueButtonTitle = l10n_util::GetNSString(
+          IDS_IOS_MANAGED_DISCONNECT_DIALOG_ACCEPT_UNITY);
+    } else {
+      title = l10n_util::GetNSString(IDS_IOS_MANAGED_DISCONNECT_DIALOG_TITLE);
+      message = l10n_util::GetNSStringF(IDS_IOS_MANAGED_DISCONNECT_DIALOG_INFO,
+                                        base::UTF8ToUTF16(hosted_domain));
+      continueButtonTitle =
+          l10n_util::GetNSString(IDS_IOS_MANAGED_DISCONNECT_DIALOG_ACCEPT);
+    }
+  } else if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    title = l10n_util::GetNSString(IDS_IOS_DISCONNECT_DIALOG_TITLE_UNITY);
+    message =
+        l10n_util::GetNSString(IDS_IOS_DISCONNECT_DIALOG_INFO_MOBILE_UNITY);
     continueButtonTitle = l10n_util::GetNSString(
         IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE);
   }
