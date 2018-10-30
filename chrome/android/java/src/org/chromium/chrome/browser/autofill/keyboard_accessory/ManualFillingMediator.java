@@ -291,7 +291,7 @@ class ManualFillingMediator extends EmptyTabObserver
         }
         mKeyboardAccessory.requestShowing();
         mKeyboardExtensionSizeManager.setKeyboardExtensionHeight(calculateAccessoryBarHeight());
-        mKeyboardAccessory.closeActiveTab();
+        if (mAccessorySheet.isShown()) mKeyboardAccessory.closeActiveTab();
         mKeyboardAccessory.setBottomOffset(0);
         mAccessorySheet.hide();
     }
