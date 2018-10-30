@@ -29,10 +29,10 @@ import java.io.FileInputStream;
 import java.util.Arrays;
 
 /**
- * Test suite for TracingControllerAndroid.
+ * Test suite for TracingControllerAndroidImpl.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
-public class TracingControllerAndroidTest {
+public class TracingControllerAndroidImplTest {
     @Rule
     public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();
 
@@ -45,7 +45,8 @@ public class TracingControllerAndroidTest {
         ContentShellActivity activity = mActivityTestRule.launchContentShellWithUrl("about:blank");
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
 
-        final TracingControllerAndroid tracingController = new TracingControllerAndroid(activity);
+        final TracingControllerAndroidImpl tracingController =
+                new TracingControllerAndroidImpl(activity);
         Assert.assertFalse(tracingController.isTracing());
         Assert.assertNull(tracingController.getOutputPath());
 
@@ -88,7 +89,8 @@ public class TracingControllerAndroidTest {
         ContentShellActivity activity = mActivityTestRule.launchContentShellWithUrl("about:blank");
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
 
-        final TracingControllerAndroid tracingController = new TracingControllerAndroid(activity);
+        final TracingControllerAndroidImpl tracingController =
+                new TracingControllerAndroidImpl(activity);
         Assert.assertFalse(tracingController.isTracing());
 
         TestCallback<String[]> callback = new TestCallback<>();
@@ -107,7 +109,8 @@ public class TracingControllerAndroidTest {
         ContentShellActivity activity = mActivityTestRule.launchContentShellWithUrl("about:blank");
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
 
-        final TracingControllerAndroid tracingController = new TracingControllerAndroid(activity);
+        final TracingControllerAndroidImpl tracingController =
+                new TracingControllerAndroidImpl(activity);
         Assert.assertFalse(tracingController.isTracing());
 
         // This should obtain an empty buffer usage, since we aren't tracing.
@@ -128,7 +131,8 @@ public class TracingControllerAndroidTest {
         ContentShellActivity activity = mActivityTestRule.launchContentShellWithUrl("about:blank");
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
 
-        final TracingControllerAndroid tracingController = new TracingControllerAndroid(activity);
+        final TracingControllerAndroidImpl tracingController =
+                new TracingControllerAndroidImpl(activity);
         Assert.assertFalse(tracingController.isTracing());
         Assert.assertNull(tracingController.getOutputPath());
 
