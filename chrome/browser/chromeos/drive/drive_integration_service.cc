@@ -758,6 +758,8 @@ void DriveIntegrationService::SetEnabled(bool enabled) {
   } else {
     RemoveDriveMountPoint();
     enabled_ = false;
+    drivefs_total_failures_count_ = 0;
+    drivefs_consecutive_failures_count_ = 0;
   }
 }
 
