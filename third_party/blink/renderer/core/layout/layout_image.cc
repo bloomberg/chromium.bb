@@ -441,14 +441,23 @@ void LayoutImage::ComputeIntrinsicSizingInfo(
     if (intrinsic_sizing_info.size.IsEmpty() &&
         image_resource_->ImageHasRelativeSize() &&
         !IsLayoutNGListMarkerImage()) {
-      LayoutObject* containing_block =
-          IsOutOfFlowPositioned() ? Container() : ContainingBlock();
-      if (containing_block->IsBox()) {
-        LayoutBox* box = ToLayoutBox(containing_block);
+      if (HasOverrideContainingBlockContentLogicalWidth() &&
+          HasOverrideContainingBlockContentLogicalHeight()) {
         intrinsic_sizing_info.size.SetWidth(
-            box->AvailableLogicalWidth().ToFloat());
+            OverrideContainingBlockContentLogicalWidth().ToFloat());
         intrinsic_sizing_info.size.SetHeight(
-            box->AvailableLogicalHeight(kIncludeMarginBorderPadding).ToFloat());
+            OverrideContainingBlockContentLogicalHeight().ToFloat());
+      } else {
+        LayoutObject* containing_block =
+            IsOutOfFlowPositioned() ? Container() : ContainingBlock();
+        if (containing_block->IsBox()) {
+          LayoutBox* box = ToLayoutBox(containing_block);
+          intrinsic_sizing_info.size.SetWidth(
+              box->AvailableLogicalWidth().ToFloat());
+          intrinsic_sizing_info.size.SetHeight(
+              box->AvailableLogicalHeight(kIncludeMarginBorderPadding)
+                  .ToFloat());
+        }
       }
     }
   }
