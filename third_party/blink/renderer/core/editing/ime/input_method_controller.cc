@@ -1396,21 +1396,21 @@ WebTextInputMode InputMethodController::InputModeOfFocusedElement() const {
 
   if (mode.IsEmpty())
     return kWebTextInputModeDefault;
-  if (mode == InputModeNames::none)
+  if (mode == input_mode_names::kNone)
     return kWebTextInputModeNone;
-  if (mode == InputModeNames::text)
+  if (mode == input_mode_names::kText)
     return kWebTextInputModeText;
-  if (mode == InputModeNames::tel)
+  if (mode == input_mode_names::kTel)
     return kWebTextInputModeTel;
-  if (mode == InputModeNames::url)
+  if (mode == input_mode_names::kUrl)
     return kWebTextInputModeUrl;
-  if (mode == InputModeNames::email)
+  if (mode == input_mode_names::kEmail)
     return kWebTextInputModeEmail;
-  if (mode == InputModeNames::numeric)
+  if (mode == input_mode_names::kNumeric)
     return kWebTextInputModeNumeric;
-  if (mode == InputModeNames::decimal)
+  if (mode == input_mode_names::kDecimal)
     return kWebTextInputModeDecimal;
-  if (mode == InputModeNames::search)
+  if (mode == input_mode_names::kSearch)
     return kWebTextInputModeSearch;
   return kWebTextInputModeDefault;
 }
