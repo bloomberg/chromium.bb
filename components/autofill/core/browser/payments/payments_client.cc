@@ -319,14 +319,16 @@ class GetUploadDetailsRequest : public PaymentsRequest {
       base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                               const base::string16&,
                               std::unique_ptr<base::DictionaryValue>)> callback,
-      const int billable_service_number)
+      const int billable_service_number,
+      PaymentsClient::MigrationSource migration_source)
       : addresses_(addresses),
         detected_values_(detected_values),
         active_experiments_(active_experiments),
         full_sync_enabled_(full_sync_enabled),
         app_locale_(app_locale),
         callback_(std::move(callback)),
-        billable_service_number_(billable_service_number) {}
+        billable_service_number_(billable_service_number),
+        migration_source_(migration_source) {}
   ~GetUploadDetailsRequest() override {}
 
   std::string GetRequestUrlPath() override {
@@ -369,6 +371,20 @@ class GetUploadDetailsRequest : public PaymentsRequest {
 
     SetActiveExperiments(active_experiments_, &request_dict);
 
+    switch (migration_source_) {
+      case PaymentsClient::MigrationSource::UNKNOWN_MIGRATION_SOURCE:
+        request_dict.SetString("migration_source", "UNKNOWN_MIGRATION_SOURCE");
+        break;
+      case PaymentsClient::MigrationSource::CHECKOUT_FLOW:
+        request_dict.SetString("migration_source", "CHECKOUT_FLOW");
+        break;
+      case PaymentsClient::MigrationSource::SETTINGS_PAGE:
+        request_dict.SetString("migration_source", "SETTINGS_PAGE");
+        break;
+      default:
+        NOTREACHED();
+    }
+
     std::string request_content;
     base::JSONWriter::Write(request_dict, &request_content);
     VLOG(3) << "getdetailsforsavecard request body: " << request_content;
@@ -403,6 +419,7 @@ class GetUploadDetailsRequest : public PaymentsRequest {
   base::string16 context_token_;
   std::unique_ptr<base::DictionaryValue> legal_message_;
   const int billable_service_number_;
+  PaymentsClient::MigrationSource migration_source_;
 };
 
 class UploadCardRequest : public PaymentsRequest {
@@ -700,12 +717,14 @@ void PaymentsClient::GetUploadDetails(
     base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                             const base::string16&,
                             std::unique_ptr<base::DictionaryValue>)> callback,
-    const int billable_service_number) {
-  IssueRequest(std::make_unique<GetUploadDetailsRequest>(
-                   addresses, detected_values, active_experiments,
-                   account_info_getter_->IsSyncFeatureEnabled(), app_locale,
-                   std::move(callback), billable_service_number),
-               false);
+    const int billable_service_number,
+    MigrationSource migration_source) {
+  IssueRequest(
+      std::make_unique<GetUploadDetailsRequest>(
+          addresses, detected_values, active_experiments,
+          account_info_getter_->IsSyncFeatureEnabled(), app_locale,
+          std::move(callback), billable_service_number, migration_source),
+      false);
 }
 
 void PaymentsClient::UploadCard(

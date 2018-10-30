@@ -92,7 +92,10 @@ void LocalCardMigrationManager::AttemptToOfferLocalCardMigration(
       /*active_experiments=*/std::vector<const char*>(), app_locale_,
       base::BindOnce(&LocalCardMigrationManager::OnDidGetUploadDetails,
                      weak_ptr_factory_.GetWeakPtr(), is_from_settings_page),
-      payments::kMigrateCardsBillableServiceNumber);
+      payments::kMigrateCardsBillableServiceNumber,
+      is_from_settings_page
+          ? payments::PaymentsClient::MigrationSource::SETTINGS_PAGE
+          : payments::PaymentsClient::MigrationSource::CHECKOUT_FLOW);
 }
 
 // Callback function when user agrees to migration on the intermediate dialog.
