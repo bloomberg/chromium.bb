@@ -239,12 +239,6 @@ def parse_args(args):
                 help=('Passes that environment variable to the tests '
                       '(--additional-env-var=NAME=VALUE)')),
             optparse.make_option(
-                '--batch-size',
-                type='int',
-                default=None,
-                help=('Run a the tests in batches (n), after every n tests, the driver is '
-                      'relaunched.')),
-            optparse.make_option(
                 '--build',
                 dest='build',
                 action='store_true',
@@ -337,23 +331,18 @@ def parse_args(args):
                 help='Output per-test profile information, using the specified profiler.'),
             optparse.make_option(
                 '--restart-shell-between-tests',
-                action='store_true',
-                default=False,
-                help='Restarting the shell between tests causes the tests to '
-                     'take twice as long to run on average, but provides more '
-                     'consistent results. This is automatically enabled if '
-                     '--repeat-each or --gtest_repeat is specified with '
-                     'iterations > 1. This is equivalent to setting '
-                     '--batch-size=1'),
-            optparse.make_option(
-                '--reuse-shell-between-tests',
-                action='store_true',
-                default=False,
-                help='Reusing the shell between tests causes tests to run more '
-                     'quickly but has less consistent results. This is '
-                     'primarily useful for debugging flakiness that only '
-                     'occurs when content shell is reused. This is equivalent '
-                     'to setting --batch-size=0.'),
+                type='choice',
+                action='store',
+                choices=['always', 'never', 'on_retry',],
+                default='on_retry',
+                help=(
+                    'Restarting the shell between tests produces more '
+                    'consistent results, as it prevents state from carrying over '
+                    'from previous tests. It also increases test run time by at '
+                    'least 2X. By default, the shell is restarted when tests get '
+                    'retried, since leaking state between retries can sometimes '
+                    'mask underlying flakiness, and the whole point of retries is '
+                    'to look for flakiness.')),
             optparse.make_option(
                 '--repeat-each',
                 type='int',
@@ -524,26 +513,14 @@ def parse_args(args):
 
 def _set_up_derived_options(port, options, args):
     """Sets the options values that depend on other options values."""
-    if options.restart_shell_between_tests:
-        # --restart-shell-between-tests is identical to setting --batch-size=1.
-        assert not options.reuse_shell_between_tests, (
-            '--restart-shell-between-tests is not compatible with '
-            '--reuse-shell-between-tests.')
-        assert options.batch_size is None, (
-            '--restart-shell-between-tests is not compatible with --batch-size')
+    # --restart-shell-between-tests is implemented by changing the batch size.
+    if options.restart_shell_between_tests == 'always':
         options.derived_batch_size = 1
         options.must_use_derived_batch_size = True
-    elif options.reuse_shell_between_tests:
-        # --reuse-shell-between-tests is identical to setting --batch-size=0
-        assert options.batch_size is None, (
-            '--reuse-shell-between-tests is not compatible with --batch-size')
+    elif options.restart_shell_between_tests == 'never':
         options.derived_batch_size = 0
         options.must_use_derived_batch_size = True
-    elif options.batch_size is not None:
-        options.derived_batch_size = options.batch_size
-        options.must_use_derived_batch_size = True
     else:
-        # No flag has explicitly set the batch size.
         # If 'repeat_each' or 'iterations' has been set, then implicitly set the
         # batch size to 1. If we're already repeating the tests more than once,
         # then we're not particularly concerned with speed. Restarting content
