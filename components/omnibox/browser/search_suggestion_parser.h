@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -15,6 +16,7 @@
 #include "base/strings/string_piece.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
+#include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "url/gurl.h"
 
@@ -341,7 +343,16 @@ class SearchSuggestionParser {
       bool is_keyword_result,
       Results* results);
 
+  // Creates or returns a WordMap for |input_text|. A WordMap is a mapping from
+  // characters to groups of words that start with those characters. See
+  // comments by AutocompleteProvider::CreateWordMapForString() for details.
+  static const AutocompleteProvider::WordMap& GetOrCreateWordMapForInputText(
+      const base::string16& input_text);
+
  private:
+  static std::pair<base::string16, AutocompleteProvider::WordMap>&
+  GetWordMapCache();
+
   DISALLOW_COPY_AND_ASSIGN(SearchSuggestionParser);
 };
 

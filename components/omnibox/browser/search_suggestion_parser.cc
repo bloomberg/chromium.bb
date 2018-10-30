@@ -8,7 +8,6 @@
 
 #include <algorithm>
 #include <memory>
-#include <utility>
 
 #include "base/i18n/icu_string_conversions.h"
 #include "base/json/json_reader.h"
@@ -17,10 +16,15 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/omnibox/browser/autocomplete_i18n.h"
 #include "components/omnibox/browser/autocomplete_input.h"
+#include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/url_prefix.h"
 #include "components/url_formatter/url_fixer.h"
@@ -175,42 +179,11 @@ void SearchSuggestionParser::SuggestResult::ClassifyMatchContents(
     // so, leave it as is.
     return;
   }
-  match_contents_class_.clear();
-  // We do intra-string highlighting for suggestions - the suggested segment
-  // will be highlighted, e.g. for input_text = "you" the suggestion may be
-  // "youtube", so we'll bold the "tube" section: you*tube*.
-  if (input_text != match_contents_) {
-    if (lookup_position == match_contents_.end()) {
-      // The input text is not a substring of the query string, e.g. input
-      // text is "slasdot" and the query string is "slashdot", so we bold the
-      // whole thing.
-      match_contents_class_.push_back(
-          ACMatchClassification(0, ACMatchClassification::MATCH));
-    } else {
-      // We don't iterate over the string here annotating all matches because
-      // it looks odd to have every occurrence of a substring that may be as
-      // short as a single character highlighted in a query suggestion result,
-      // e.g. for input text "s" and query string "southwest airlines", it
-      // looks odd if both the first and last s are highlighted.
-      const size_t lookup_index = lookup_position - match_contents_.begin();
-      if (lookup_index != 0) {
-        match_contents_class_.push_back(
-            ACMatchClassification(0, ACMatchClassification::MATCH));
-      }
-      match_contents_class_.push_back(
-          ACMatchClassification(lookup_index, ACMatchClassification::NONE));
-      size_t next_fragment_position = lookup_index + lookup_text.length();
-      if (next_fragment_position < match_contents_.length()) {
-        match_contents_class_.push_back(ACMatchClassification(
-            next_fragment_position, ACMatchClassification::MATCH));
-      }
-    }
-  } else {
-    // Otherwise, match_contents_ is a verbatim (what-you-typed) match, either
-    // for the default provider or a keyword search provider.
-    match_contents_class_.push_back(
-        ACMatchClassification(0, ACMatchClassification::NONE));
-  }
+
+  match_contents_class_ = AutocompleteProvider::ClassifyAllMatchesInString(
+      input_text,
+      SearchSuggestionParser::GetOrCreateWordMapForInputText(input_text),
+      match_contents_, true);
 }
 
 void SearchSuggestionParser::SuggestResult::SetAnswer(
@@ -613,4 +586,26 @@ bool SearchSuggestionParser::ParseSuggestResults(
   }
   results->relevances_from_server = relevances != nullptr;
   return true;
+}
+
+// static
+const AutocompleteProvider::WordMap&
+SearchSuggestionParser::GetOrCreateWordMapForInputText(
+    const base::string16& input_text) {
+  auto& cache = GetWordMapCache();
+  if (cache.first != input_text) {
+    auto new_cache = std::make_pair(
+        input_text, AutocompleteProvider::CreateWordMapForString(input_text));
+    cache.swap(new_cache);
+  }
+  return cache.second;
+}
+
+// static
+std::pair<base::string16, AutocompleteProvider::WordMap>&
+SearchSuggestionParser::GetWordMapCache() {
+  static base::NoDestructor<
+      std::pair<base::string16, AutocompleteProvider::WordMap>>
+      word_map_cache;
+  return *word_map_cache;
 }

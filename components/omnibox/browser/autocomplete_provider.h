@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <map>
 #include <utility>
 #include <vector>
 
@@ -207,6 +208,13 @@ class AutocompleteProvider
   // with the previous session.
   virtual void ResetSession();
 
+  // Estimates dynamic memory usage.
+  // See base/trace_event/memory_usage_estimator.h for more info.
+  //
+  // Note: Subclasses that override this method must call the base class
+  // method and include the response in their estimate.
+  virtual size_t EstimateMemoryUsage() const;
+
   // Returns the set of matches for the current query.
   const ACMatches& matches() const { return matches_; }
 
@@ -219,18 +227,59 @@ class AutocompleteProvider
   // Returns a string describing this provider's type.
   const char* GetName() const;
 
+  typedef std::multimap<base::char16, base::string16> WordMap;
+
+  // Returns a map mapping characters to groups of words from |text| that start
+  // with those characters, ordered lexicographically descending so that longer
+  // words appear before their prefixes (if any) within a particular
+  // equal_range().
+  static WordMap CreateWordMapForString(const base::string16& text);
+
+  // Finds all instances of the words from |find_words| within |text|, adds
+  // classifications to |original_class| according to the logic described below,
+  // and returns the result.
+  //
+  //   - if |text_is_search_query| is false, the function adds
+  //   ACMatchClassification::MATCH markers for all such instances.
+  //
+  //   For example, given the |text|
+  //   "Sports and News at sports.somesite.com - visit us!" and |original_class|
+  //   {{0, NONE}, {18, URL}, {37, NONE}} (marking "sports.somesite.com" as a
+  //   URL), calling with |find_text| set to "sp ew" would return
+  //   {{0, MATCH}, {2, NONE}, {12, MATCH}, {14, NONE}, {18, URL|MATCH},
+  //   {20, URL}, {37, NONE}}.
+  //
+  //
+  //   - if |text_is_search_query| is true, applies the same logic, but uses
+  //   NONE for the matching text and MATCH for the non-matching text. This is
+  //   done to mimic the behavior of SearchProvider which decorates matches
+  //   according to the approach used by Google Suggest.
+  //
+  //   For example, given that |text| corresponds to a search query "panama
+  //   canal" and |original class| is {{0, NONE}}, calling with |find_text| set
+  //   to "canal" would return {{0,MATCH}, {7, NONE}}.
+  //
+  // |find_text| is provided as the original string used to create
+  // |find_words|. This is supplied because it's common for this to be a prefix
+  // of |text|, so we can quickly check for that and mark that entire substring
+  // as a match before proceeding with the more generic algorithm.
+  //
+  // |find_words| should be as constructed by CreateWordMapForString(find_text).
+  //
+  // |find_text| (and thus |find_words|) are expected to be lowercase. |text|
+  // will be lowercase in this function.
+  static ACMatchClassifications ClassifyAllMatchesInString(
+      const base::string16& find_text,
+      const WordMap& find_words,
+      const base::string16& text,
+      const bool text_is_search_query,
+      const ACMatchClassifications& original_class = ACMatchClassifications());
+
   // A suggested upper bound for how many matches a provider should return.
   // TODO(pkasting): http://b/1111299 , http://b/933133 This should go away once
   // we have good relevance heuristics; the controller should handle all
   // culling.
   static const size_t kMaxMatches;
-
-  // Estimates dynamic memory usage.
-  // See base/trace_event/memory_usage_estimator.h for more info.
-  //
-  // Note: Subclasses that override this method must call the base class
-  // method and include the response in their estimate.
-  virtual size_t EstimateMemoryUsage() const;
 
  protected:
   friend class base::RefCountedThreadSafe<AutocompleteProvider>;
