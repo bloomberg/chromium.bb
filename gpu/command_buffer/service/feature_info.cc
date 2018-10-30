@@ -1520,6 +1520,11 @@ void FeatureInfo::InitializeFeatures() {
     validators_.shader_parameter.AddValue(GL_COMPLETION_STATUS_KHR);
     validators_.program_parameter.AddValue(GL_COMPLETION_STATUS_KHR);
   }
+
+  if (gfx::HasExtension(extensions, "GL_KHR_robust_buffer_access_behavior")) {
+    AddExtensionString("GL_KHR_robust_buffer_access_behavior");
+    feature_flags_.khr_robust_buffer_access_behavior = true;
+  }
 }
 
 void FeatureInfo::InitializeFloatAndHalfFloatFeatures(

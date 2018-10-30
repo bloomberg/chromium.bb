@@ -733,6 +733,7 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
           "GL_EXT_texture_storage",
           "GL_EXT_unpack_subimage",
           "GL_KHR_parallel_shader_compile",
+          "GL_KHR_robust_buffer_access_behavior",
           "GL_KHR_texture_compression_astc_hdr",
           "GL_KHR_texture_compression_astc_ldr",
           "GL_NV_pack_subimage",
@@ -766,27 +767,40 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
   // TODO(geofflang): verify
   // feature_info_->feature_flags().angle_robust_resource_initialization and
   // api()->glIsEnabledFn(GL_ROBUST_RESOURCE_INITIALIZATION_ANGLE)
-  if (!feature_info_->feature_flags().angle_robust_client_memory ||
-      !feature_info_->feature_flags().chromium_bind_generates_resource ||
-      !feature_info_->feature_flags().chromium_copy_texture ||
-      !feature_info_->feature_flags().angle_client_arrays ||
-      api()->glIsEnabledFn(GL_CLIENT_ARRAYS_ANGLE) != GL_FALSE ||
-      feature_info_->feature_flags().angle_webgl_compatibility !=
-          IsWebGLContextType(attrib_helper.context_type) ||
-      !feature_info_->feature_flags().angle_request_extension ||
-      !feature_info_->feature_flags().khr_debug) {
-    Destroy(true);
-    LOG(ERROR) << "ContextResult::kFatalFailure: "
-                  "missing required extension";
-    return gpu::ContextResult::kFatalFailure;
+
+#define FAIL_INIT_IF_NOT(feature, message)                       \
+  if (!(feature)) {                                              \
+    Destroy(true);                                               \
+    LOG(ERROR) << "ContextResult::kFatalFailure: " << (message); \
+    return gpu::ContextResult::kFatalFailure;                    \
   }
 
-  if (attrib_helper.enable_oop_rasterization) {
-    Destroy(true);
-    LOG(ERROR) << "ContextResult::kFatalFailure: "
-                  "oop rasterization not supported";
-    return gpu::ContextResult::kFatalFailure;
-  }
+  FAIL_INIT_IF_NOT(feature_info_->feature_flags().angle_robust_client_memory,
+                   "missing GL_ANGLE_robust_client_memory");
+  FAIL_INIT_IF_NOT(
+      feature_info_->feature_flags().chromium_bind_generates_resource,
+      "missing GL_CHROMIUM_bind_generates_resource");
+  FAIL_INIT_IF_NOT(feature_info_->feature_flags().chromium_copy_texture,
+                   "missing GL_CHROMIUM_copy_texture");
+  FAIL_INIT_IF_NOT(feature_info_->feature_flags().angle_client_arrays,
+                   "missing GL_ANGLE_client_arrays");
+  FAIL_INIT_IF_NOT(api()->glIsEnabledFn(GL_CLIENT_ARRAYS_ANGLE) == GL_FALSE,
+                   "GL_ANGLE_client_arrays shouldn't be enabled");
+  FAIL_INIT_IF_NOT(feature_info_->feature_flags().angle_webgl_compatibility ==
+                       IsWebGLContextType(attrib_helper.context_type),
+                   "missing GL_ANGLE_webgl_compatibility");
+  FAIL_INIT_IF_NOT(feature_info_->feature_flags().angle_request_extension,
+                   "missing  GL_ANGLE_request_extension");
+  FAIL_INIT_IF_NOT(feature_info_->feature_flags().khr_debug,
+                   "missing GL_KHR_debug");
+  FAIL_INIT_IF_NOT(
+      !IsWebGL2ComputeContextType(attrib_helper.context_type) ||
+          feature_info_->feature_flags().khr_robust_buffer_access_behavior,
+      "missing GL_KHR_robust_buffer_access_behavior");
+  FAIL_INIT_IF_NOT(!attrib_helper.enable_oop_rasterization,
+                   "oop rasterization not supported");
+
+#undef FAIL_INIT_IF_NOT
 
   bind_generates_resource_ = group_->bind_generates_resource();
 
