@@ -60,7 +60,7 @@ class SharedImageBackingFactoryGLTextureTest
     return GetParam() && gles2::PassthroughCommandDecoderSupported();
   }
 
-  GrContext* gr_context() { return context_state_->gr_context.get(); }
+  GrContext* gr_context() { return context_state_->gr_context; }
 
  protected:
   scoped_refptr<gl::GLSurface> surface_;

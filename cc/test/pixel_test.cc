@@ -10,6 +10,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/switches.h"
 #include "cc/raster/raster_buffer_provider.h"
@@ -37,6 +38,7 @@
 #include "components/viz/test/test_shared_bitmap_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
+#include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
@@ -246,10 +248,16 @@ void PixelTest::SetUpSkiaRenderer() {
 
 void PixelTest::SetUpGpuServiceOnGpuThread(base::WaitableEvent* event) {
   ASSERT_TRUE(gpu_thread_->task_runner()->BelongsToCurrentThread());
+  gpu::GpuFeatureInfo gpu_feature_info;
+  // To test SkiaRenderer with DDL, we need enable OOP-R.
+  gpu_feature_info.status_values[gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
+      gpu::kGpuFeatureStatusEnabled;
   gpu_service_ = std::make_unique<viz::GpuServiceImpl>(
       gpu::GPUInfo(), nullptr /* watchdog_thread */, io_thread_->task_runner(),
-      gpu::GpuFeatureInfo(), gpu::GpuPreferences(), gpu::GPUInfo(),
-      gpu::GpuFeatureInfo(), nullptr /* vulkan_implementation */,
+      gpu_feature_info, gpu::GpuPreferences(),
+      gpu::GPUInfo() /* gpu_info_for_hardware_gpu */,
+      gpu::GpuFeatureInfo() /* gpu_feature_info_for_hardware_gpu */,
+      nullptr /* vulkan_implementation */,
       base::DoNothing() /* exit_callback */);
 
   // Uses a null gpu_host here, because we don't want to receive any message.
@@ -275,6 +283,12 @@ void PixelTest::SetUpGpuServiceOnGpuThread(base::WaitableEvent* event) {
 
 void PixelTest::SetUpSkiaRendererDDL() {
   // Set up the GPU service.
+  const char enable_features[] =
+      "VizDisplayCompositor,UseSkiaRenderer,UseSkiaDeferredDisplayList";
+  const char disable_features[] = "";
+  scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list_->InitFromCommandLine(enable_features, disable_features);
+
   gpu_thread_ = std::make_unique<base::Thread>("GPUMainThread");
   ASSERT_TRUE(gpu_thread_->Start());
   io_thread_ = std::make_unique<base::Thread>("GPUIOThread");
@@ -353,6 +367,7 @@ void PixelTest::TearDown() {
   }
   io_thread_ = nullptr;
   gpu_thread_ = nullptr;
+  scoped_feature_list_ = nullptr;
 }
 
 void PixelTest::EnableExternalStencilTest() {

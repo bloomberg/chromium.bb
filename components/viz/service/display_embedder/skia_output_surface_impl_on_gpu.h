@@ -14,6 +14,7 @@
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display/resource_metadata.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "gpu/command_buffer/service/raster_decoder_context_state.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
@@ -51,11 +52,13 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
                                    const gfx::Size& pixel_size)>;
   using BufferPresentedCallback =
       base::RepeatingCallback<void(const gfx::PresentationFeedback& feedback)>;
+  using ContextLostCallback = base::RepeatingCallback<void()>;
   SkiaOutputSurfaceImplOnGpu(
       GpuServiceImpl* gpu_service,
       gpu::SurfaceHandle surface_handle,
       const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
-      const BufferPresentedCallback& buffer_presented_callback);
+      const BufferPresentedCallback& buffer_presented_callback,
+      const ContextLostCallback& context_lost_callback);
   ~SkiaOutputSurfaceImplOnGpu() override;
 
   gpu::CommandBufferId command_buffer_id() const { return command_buffer_id_; }
@@ -126,17 +129,25 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
 
   void CreateSkSurfaceForVulkan();
 
+  // Make context current for GL, and return false if the context is lost.
+  // It will do nothing when Vulkan is used.
+  bool MakeCurrent();
+
+  GrContext* gr_context() { return context_state_->gr_context; }
+  gl::GLContext* gl_context() { return context_state_->context.get(); }
+
   const gpu::CommandBufferId command_buffer_id_;
   GpuServiceImpl* const gpu_service_;
   const gpu::SurfaceHandle surface_handle_;
   DidSwapBufferCompleteCallback did_swap_buffer_complete_callback_;
   BufferPresentedCallback buffer_presented_callback_;
+  ContextLostCallback context_lost_callback_;
+
   scoped_refptr<gpu::SyncPointClientState> sync_point_client_state_;
   gpu::GpuPreferences gpu_preferences_;
   scoped_refptr<gl::GLSurface> gl_surface_;
   sk_sp<SkSurface> sk_surface_;
-  GrContext* gr_context_ = nullptr;
-  scoped_refptr<gl::GLContext> gl_context_;
+  scoped_refptr<gpu::raster::RasterDecoderContextState> context_state_;
   const gl::GLVersionInfo* gl_version_info_ = nullptr;
   OutputSurface::Capabilities capabilities_;
 

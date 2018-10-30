@@ -492,7 +492,7 @@ class RasterDecoderImpl final : public RasterDecoder,
 
   gl::GLApi* api() const { return state_.api(); }
   GrContext* gr_context() const {
-    return raster_decoder_context_state_->gr_context.get();
+    return raster_decoder_context_state_->gr_context;
   }
   ServiceTransferCache* transfer_cache() {
     return raster_decoder_context_state_->transfer_cache.get();

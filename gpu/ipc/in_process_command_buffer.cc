@@ -28,6 +28,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/viz/common/features.h"
 #include "gpu/command_buffer/client/gpu_control_client.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
@@ -385,6 +386,19 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
 
   use_virtualized_gl_context_ |=
       context_group_->feature_info()->workarounds().use_virtualized_gl_contexts;
+
+  const auto& gpu_feature_info = task_executor_->gpu_feature_info();
+  const bool use_oop_rasterization =
+      gpu_feature_info.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
+      gpu::kGpuFeatureStatusEnabled;
+
+  // With OOP-R, SkiaRenderer and Skia DDL, we will only have one GLContext
+  // and share it with RasterDecoders and DisplayCompositor. So it is not
+  // necessary to use virtualized gl context anymore.
+  // TODO(penghuang): Make virtualized gl context work with SkiaRenderer + DDL +
+  // OOPR. https://crbug.com/838899
+  if (features::IsUsingSkiaDeferredDisplayList() && use_oop_rasterization)
+    use_virtualized_gl_context_ = false;
 
   // TODO(sunnyps): Should this use ScopedCrashKey instead?
   crash_keys::gpu_gl_context_is_virtual.Set(use_virtualized_gl_context_ ? "1"

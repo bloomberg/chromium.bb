@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_SURFACE_IMPL_H_
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "components/viz/service/display/skia_output_surface.h"
@@ -91,6 +92,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   void CopyOutput(RenderPassId id,
                   const gfx::Rect& copy_rect,
                   std::unique_ptr<CopyOutputRequest> request) override;
+  void AddContextLostObserver(ContextLostObserver* observer) override;
+  void RemoveContextLostObserver(ContextLostObserver* observer) override;
 
  private:
   template <class T>
@@ -101,6 +104,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   void DidSwapBuffersComplete(gpu::SwapBuffersCompleteParams params,
                               const gfx::Size& pixel_size);
   void BufferPresented(const gfx::PresentationFeedback& feedback);
+  void ContextLost();
 
   uint64_t sync_fence_release_ = 0;
   GpuServiceImpl* const gpu_service_;
@@ -130,6 +134,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
 
   // Whether to send OutputSurfaceClient::DidSwapWithSize notifications.
   bool needs_swap_size_notifications_ = false;
+
+  base::ObserverList<ContextLostObserver>::Unchecked observers_;
 
   THREAD_CHECKER(thread_checker_);
 

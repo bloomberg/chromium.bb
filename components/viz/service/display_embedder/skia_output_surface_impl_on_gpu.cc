@@ -6,11 +6,13 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/callback_helpers.h"
+#include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
+#include "gpu/command_buffer/service/gr_shader_cache.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
@@ -19,6 +21,7 @@
 #include "gpu/command_buffer/service/texture_base.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/config/gpu_preferences.h"
+#include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "gpu/vulkan/buildflags.h"
@@ -45,13 +48,15 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
     GpuServiceImpl* gpu_service,
     gpu::SurfaceHandle surface_handle,
     const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
-    const BufferPresentedCallback& buffer_presented_callback)
+    const BufferPresentedCallback& buffer_presented_callback,
+    const ContextLostCallback& context_lost_callback)
     : command_buffer_id_(gpu::CommandBufferId::FromUnsafeValue(
           g_next_command_buffer_id.GetNext() + 1)),
       gpu_service_(gpu_service),
       surface_handle_(surface_handle),
       did_swap_buffer_complete_callback_(did_swap_buffer_complete_callback),
       buffer_presented_callback_(buffer_presented_callback),
+      context_lost_callback_(context_lost_callback),
       weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
@@ -95,10 +100,8 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
   }
 
   if (!gpu_service_->is_using_vulkan()) {
-    if (!gl_context_->MakeCurrent(gl_surface_.get())) {
-      LOG(FATAL) << "Failed to make current.";
-      // TODO(penghuang): Handle the failure.
-    }
+    if (!MakeCurrent())
+      return;
     gl::GLSurface::ColorSpace surface_color_space =
         color_space == gfx::ColorSpace::CreateSCRGBLinear()
             ? gl::GLSurface::ColorSpace::SCRGB_LINEAR
@@ -108,8 +111,8 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
       LOG(FATAL) << "Failed to resize.";
       // TODO(penghuang): Handle the failure.
     }
-    DCHECK(gl_context_->IsCurrent(gl_surface_.get()));
-    DCHECK(gr_context_);
+    DCHECK(gl_context()->IsCurrent(gl_surface_.get()));
+    DCHECK(gr_context());
 
     SkSurfaceProps surface_props =
         SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
@@ -123,7 +126,7 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
                                         framebuffer_info);
 
     sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
-        gr_context_, render_target, kBottomLeft_GrSurfaceOrigin,
+        gr_context(), render_target, kBottomLeft_GrSurfaceOrigin,
         kBGRA_8888_SkColorType, nullptr, &surface_props);
     DCHECK(sk_surface_);
   } else {
@@ -176,14 +179,17 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
   DCHECK(ddl);
   DCHECK(sk_surface_);
 
-  if (!gpu_service_->is_using_vulkan() &&
-      !gl_context_->MakeCurrent(gl_surface_.get())) {
-    LOG(FATAL) << "Failed to make current.";
-    // TODO(penghuang): Handle the failure.
-  }
+  if (!MakeCurrent())
+    return;
 
-  sk_surface_->draw(ddl.get());
-  gr_context_->flush();
+  {
+    base::Optional<gpu::raster::GrShaderCache::ScopedCacheUse> cache_use;
+    if (gpu_service_->gr_shader_cache())
+      cache_use.emplace(gpu_service_->gr_shader_cache(),
+                        gpu::kInProcessCommandBufferClientId);
+    sk_surface_->draw(ddl.get());
+    gr_context()->flush();
+  }
   sync_point_client_state_->ReleaseFenceSync(sync_fence_release);
 }
 
@@ -192,10 +198,8 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
   DCHECK(sk_surface_);
   base::TimeTicks swap_start, swap_end;
   if (!gpu_service_->is_using_vulkan()) {
-    if (!gl_context_->MakeCurrent(gl_surface_.get())) {
-      LOG(FATAL) << "Failed to make current.";
-      // TODO(penghuang): Handle the failure.
-    }
+    if (!MakeCurrent())
+      return;
     swap_start = base::TimeTicks::Now();
     OnSwapBuffers();
     gl_surface_->SwapBuffers(frame.need_presentation_feedback
@@ -241,11 +245,8 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ddl);
 
-  if (!gpu_service_->is_using_vulkan() &&
-      !gl_context_->MakeCurrent(gl_surface_.get())) {
-    LOG(FATAL) << "Failed to make current.";
-    // TODO(penghuang): Handle the failure.
-  }
+  if (!MakeCurrent())
+    return;
 
   auto& surface = offscreen_surfaces_[id];
   SkSurfaceCharacterization characterization;
@@ -253,12 +254,18 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
   // the SkSurfaceCharacterization::operator!= is implemented in Skia.
   if (!surface || !surface->characterize(&characterization) ||
       characterization != ddl->characterization()) {
-    surface = SkSurface::MakeRenderTarget(gr_context_, ddl->characterization(),
+    surface = SkSurface::MakeRenderTarget(gr_context(), ddl->characterization(),
                                           SkBudgeted::kNo);
     DCHECK(surface);
   }
-  surface->draw(ddl.get());
-  surface->flush();
+  {
+    base::Optional<gpu::raster::GrShaderCache::ScopedCacheUse> cache_use;
+    if (gpu_service_->gr_shader_cache())
+      cache_use.emplace(gpu_service_->gr_shader_cache(),
+                        gpu::kInProcessCommandBufferClientId);
+    surface->draw(ddl.get());
+    gr_context()->flush();
+  }
   sync_point_client_state_->ReleaseFenceSync(sync_fence_release);
 }
 
@@ -318,17 +325,10 @@ void SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
     return;
   }
 
-  // Legacy mailbox path. TODO: Remove this once everything goes through
-  // SharedImages.
-  if (gpu_service_->is_using_vulkan()) {
-    // TODO(https://crbug.com/838899): Use SkSurface as raster decoder target.
-    // NOTIMPLEMENTED();
-    return;
-  }
   auto* mailbox_manager = gpu_service_->mailbox_manager();
   auto* texture_base = mailbox_manager->ConsumeTexture(metadata.mailbox);
   if (!texture_base) {
-    DLOG(ERROR) << "Failed to full fill the promise texture.";
+    DLOG(ERROR) << "Failed to fulfill the promise texture.";
     return;
   }
   BindOrCopyTextureIfNecessary(texture_base);
@@ -347,13 +347,13 @@ void SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
   *backend_texture =
       surface->getBackendTexture(SkSurface::kFlushRead_BackendHandleAccess);
   DLOG_IF(ERROR, !backend_texture->isValid())
-      << "Failed to full fill the promise texture created from RenderPassId:"
+      << "Failed to fulfill the promise texture created from RenderPassId:"
       << id;
 }
 
 sk_sp<GrContextThreadSafeProxy>
 SkiaOutputSurfaceImplOnGpu::GetGrContextThreadSafeProxy() {
-  return gr_context_->threadSafeProxy();
+  return gr_context()->threadSafeProxy();
 }
 
 #if defined(OS_WIN)
@@ -414,27 +414,21 @@ void SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
   }
   DCHECK(gl_surface_);
 
-  gl::GLContext* gl_context = nullptr;
-  if (!gpu_service_->GetGrContextForGLSurface(gl_surface_.get(), &gr_context_,
-                                              &gl_context)) {
+  context_state_ = gpu_service_->GetContextStateForGLSurface(gl_surface_.get());
+  if (!context_state_) {
     LOG(FATAL) << "Failed to create GrContext";
     // TODO(penghuang): handle the failure.
   }
-  gl_context_ = gl_context;
-  DCHECK(gr_context_);
-  DCHECK(gl_context_);
 
-  if (!gl_context_->MakeCurrent(gl_surface_.get())) {
-    LOG(FATAL) << "Failed to make current.";
-    // TODO(penghuang): Handle the failure.
-  }
+  if (!MakeCurrent())
+    return;
 
-  gl_version_info_ = gl_context_->GetVersionInfo();
+  gl_version_info_ = gl_context()->GetVersionInfo();
 
   capabilities_.flipped_output_surface = gl_surface_->FlipsVertically();
 
   // Get stencil bits from the default frame buffer.
-  auto* current_gl = gl_context_->GetCurrentGL();
+  auto* current_gl = gl_context()->GetCurrentGL();
   const auto* version = current_gl->Version;
   auto* api = current_gl->Api;
   GLint stencil_bits = 0;
@@ -450,8 +444,8 @@ void SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
 }
 
 void SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
-  gr_context_ = gpu_service_->GetGrContextForVulkan();
-  DCHECK(gr_context_);
+  context_state_ = gpu_service_->GetContextStateForVulkan();
+  DCHECK(context_state_);
 }
 
 void SkiaOutputSurfaceImplOnGpu::BindOrCopyTextureIfNecessary(
@@ -506,7 +500,7 @@ void SkiaOutputSurfaceImplOnGpu::CreateSkSurfaceForVulkan() {
                                         vulkan_surface_->size().height(), 0, 0,
                                         vk_image_info);
     sk_surface = SkSurface::MakeFromBackendRenderTarget(
-        gr_context_, render_target, kTopLeft_GrSurfaceOrigin,
+        gr_context(), render_target, kTopLeft_GrSurfaceOrigin,
         kBGRA_8888_SkColorType, nullptr, &surface_props);
   } else {
     auto backend = sk_surface->getBackendRenderTarget(
@@ -516,6 +510,19 @@ void SkiaOutputSurfaceImplOnGpu::CreateSkSurfaceForVulkan() {
 
   sk_surface_ = sk_surface;
 #endif
+}
+
+bool SkiaOutputSurfaceImplOnGpu::MakeCurrent() {
+  if (!gpu_service_->is_using_vulkan()) {
+    if (context_state_->context_lost ||
+        !gl_context()->MakeCurrent(gl_surface_.get())) {
+      LOG(ERROR) << "Failed to make current.";
+      context_state_->context_lost = true;
+      context_lost_callback_.Run();
+      return false;
+    }
+  }
+  return true;
 }
 
 }  // namespace viz

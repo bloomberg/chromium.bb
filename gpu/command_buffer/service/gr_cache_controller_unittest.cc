@@ -49,7 +49,7 @@ class GrCacheControllerTest : public testing::Test {
     gl::init::ShutdownGL(false);
   }
 
-  GrContext* gr_context() { return context_state_->gr_context.get(); }
+  GrContext* gr_context() { return context_state_->gr_context; }
 
  protected:
   scoped_refptr<RasterDecoderContextState> context_state_;

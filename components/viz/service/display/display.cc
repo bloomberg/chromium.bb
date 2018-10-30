@@ -90,6 +90,8 @@ Display::~Display() {
   if (client_) {
     if (auto* context = output_surface_->context_provider())
       context->RemoveObserver(this);
+    if (skia_output_surface_)
+      skia_output_surface_->RemoveContextLostObserver(this);
     if (scheduler_)
       surface_manager_->RemoveObserver(scheduler_.get());
   }
@@ -122,6 +124,9 @@ void Display::Initialize(DisplayClient* client,
   // it could miss a callback before setting this.
   if (auto* context = output_surface_->context_provider())
     context->AddObserver(this);
+
+  if (skia_output_surface_)
+    skia_output_surface_->AddContextLostObserver(this);
 }
 
 void Display::AddObserver(DisplayObserver* observer) {
