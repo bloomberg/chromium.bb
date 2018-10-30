@@ -89,10 +89,12 @@ source_set("lib") {
     "user_input_monitor.h",
   ]
 
+  deps = [
+    "//components/crash/core/common:crash_key",  # Temporary: crbug.com/888478
+  ]
+
   if (audio_processing_in_audio_service_supported) {
-    deps = [
-      "//media/webrtc",
-    ]
+    deps += [ "//media/webrtc" ]
   }
 
   public_deps = [

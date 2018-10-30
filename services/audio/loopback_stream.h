@@ -5,6 +5,7 @@
 #ifndef SERVICES_AUDIO_LOOPBACK_STREAM_H_
 #define SERVICES_AUDIO_LOOPBACK_STREAM_H_
 
+#include <atomic>
 #include <map>
 #include <memory>
 #include <utility>
@@ -159,6 +160,12 @@ class LoopbackStream : public media::mojom::AudioInputStream,
     // becomes stopped.
     void GenerateMoreAudio();
 
+    // TODO(crbug.com/888478): Remove this and all call points after diagnosis.
+    // This generates crash key strings exposing the current state of the flow
+    // network, and also ensures |mix_bus_| is valid, hasn't been corrupted, and
+    // that writing to its data arrays will not cause a page fault.
+    void HelpDiagnoseCauseOfLoopbackCrash(const char* event);
+
     const base::TickClock* clock_;
 
     // Task runner that calls GenerateMoreAudio() to drive all the audio data
@@ -200,6 +207,10 @@ class LoopbackStream : public media::mojom::AudioInputStream,
     // needed.
     std::unique_ptr<media::AudioBus> transfer_bus_;
     const std::unique_ptr<media::AudioBus> mix_bus_;
+
+    // TODO(crbug.com/888478): Remove these after diagnosis.
+    volatile uint32_t magic_bytes_;
+    static std::atomic<int> instance_count_;
 
     SEQUENCE_CHECKER(control_sequence_);
 

@@ -129,6 +129,9 @@ class Service : public service_manager::Service {
 
   std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
 
+  // TODO(crbug.com/888478): Remove this after diagnosis.
+  volatile uint32_t magic_bytes_;
+
   DISALLOW_COPY_AND_ASSIGN(Service);
 };
 
