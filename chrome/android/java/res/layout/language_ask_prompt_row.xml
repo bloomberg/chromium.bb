@@ -38,4 +38,14 @@
         android:singleLine="true"
         android:layout_alignStart="@+id/ui_language_representation"
         android:layout_below="@+id/ui_language_representation" />
+
+    <ImageView
+        android:id="@+id/device_language_icon"
+        android:importantForAccessibility="no"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_mobile_friendly_grey600_24dp"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="@dimen/list_item_default_margin"
+        android:visibility="invisible" />
 </RelativeLayout>

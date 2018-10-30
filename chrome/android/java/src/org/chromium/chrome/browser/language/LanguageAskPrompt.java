@@ -13,8 +13,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.chromium.base.LocaleUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -49,6 +51,7 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
         private TextView mLanguageNameTextView;
         private TextView mNativeNameTextView;
         private CheckBox mCheckbox;
+        private ImageView mDeviceLanguageIcon;
         private String mCode;
         private HashSet<String> mLanguagesUpdate;
 
@@ -60,6 +63,7 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
             mNativeNameTextView =
                     ((TextView) itemView.findViewById(R.id.native_language_representation));
             mCheckbox = ((CheckBox) itemView.findViewById(R.id.language_ask_checkbox));
+            mDeviceLanguageIcon = ((ImageView) itemView.findViewById(R.id.device_language_icon));
             mCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton button, boolean isChecked) {
@@ -93,6 +97,9 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
             mCode = code;
             mLanguagesUpdate = languagesUpdate;
             mCheckbox.setChecked(mLanguagesUpdate.contains(mCode));
+            mDeviceLanguageIcon.setVisibility(LocaleUtils.getDefaultLocaleString().equals(code)
+                            ? View.VISIBLE
+                            : View.INVISIBLE);
         }
     }
 
