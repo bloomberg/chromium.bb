@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/omnibox/browser/toolbar_model_impl.h"
+#include "components/omnibox/browser/location_bar_model_impl.h"
 
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -11,8 +11,8 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/buildflags.h"
+#include "components/omnibox/browser/location_bar_model_delegate.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
-#include "components/omnibox/browser/toolbar_model_delegate.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
@@ -28,20 +28,20 @@
 #include "components/vector_icons/vector_icons.h"     // nogncheck
 #endif
 
-ToolbarModelImpl::ToolbarModelImpl(ToolbarModelDelegate* delegate,
-                                   size_t max_url_display_chars)
+LocationBarModelImpl::LocationBarModelImpl(LocationBarModelDelegate* delegate,
+                                           size_t max_url_display_chars)
     : delegate_(delegate), max_url_display_chars_(max_url_display_chars) {
   DCHECK(delegate_);
 }
 
-ToolbarModelImpl::~ToolbarModelImpl() {}
+LocationBarModelImpl::~LocationBarModelImpl() {}
 
-// ToolbarModelImpl Implementation.
-base::string16 ToolbarModelImpl::GetFormattedFullURL() const {
+// LocationBarModelImpl Implementation.
+base::string16 LocationBarModelImpl::GetFormattedFullURL() const {
   return GetFormattedURL(url_formatter::kFormatUrlOmitDefaults);
 }
 
-base::string16 ToolbarModelImpl::GetURLForDisplay() const {
+base::string16 LocationBarModelImpl::GetURLForDisplay() const {
   url_formatter::FormatUrlTypes format_types =
       url_formatter::kFormatUrlOmitDefaults;
 
@@ -66,7 +66,7 @@ base::string16 ToolbarModelImpl::GetURLForDisplay() const {
   return GetFormattedURL(format_types);
 }
 
-base::string16 ToolbarModelImpl::GetFormattedURL(
+base::string16 LocationBarModelImpl::GetFormattedURL(
     url_formatter::FormatUrlTypes format_types) const {
   GURL url(GetURL());
   // Note that we can't unescape spaces here, because if the user copies this
@@ -87,12 +87,12 @@ base::string16 ToolbarModelImpl::GetFormattedURL(
                              gfx::CHARACTER_BREAK);
 }
 
-GURL ToolbarModelImpl::GetURL() const {
+GURL LocationBarModelImpl::GetURL() const {
   GURL url;
   return delegate_->GetURL(&url) ? url : GURL(url::kAboutBlankURL);
 }
 
-security_state::SecurityLevel ToolbarModelImpl::GetSecurityLevel(
+security_state::SecurityLevel LocationBarModelImpl::GetSecurityLevel(
     bool ignore_editing) const {
   // When editing or empty, assume no security style.
   return ((input_in_progress() && !ignore_editing) || !ShouldDisplayURL())
@@ -100,7 +100,7 @@ security_state::SecurityLevel ToolbarModelImpl::GetSecurityLevel(
              : delegate_->GetSecurityLevel();
 }
 
-const gfx::VectorIcon& ToolbarModelImpl::GetVectorIcon() const {
+const gfx::VectorIcon& LocationBarModelImpl::GetVectorIcon() const {
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
   auto* const icon_override = delegate_->GetVectorIconOverride();
   if (icon_override)
@@ -133,7 +133,7 @@ const gfx::VectorIcon& ToolbarModelImpl::GetVectorIcon() const {
 #endif
 }
 
-base::string16 ToolbarModelImpl::GetEVCertName() const {
+base::string16 LocationBarModelImpl::GetEVCertName() const {
   if (GetSecurityLevel(false) != security_state::EV_SECURE)
     return base::string16();
 
@@ -150,7 +150,7 @@ base::string16 ToolbarModelImpl::GetEVCertName() const {
       base::UTF8ToUTF16(cert->subject().country_name));
 }
 
-base::string16 ToolbarModelImpl::GetSecureText() const {
+base::string16 LocationBarModelImpl::GetSecureText() const {
   switch (GetSecurityLevel(false)) {
     case security_state::HTTP_SHOW_WARNING:
       return l10n_util::GetStringUTF16(IDS_NOT_SECURE_VERBOSE_STATE);
@@ -171,7 +171,7 @@ base::string16 ToolbarModelImpl::GetSecureText() const {
   }
 }
 
-base::string16 ToolbarModelImpl::GetSecureVerboseText() const {
+base::string16 LocationBarModelImpl::GetSecureVerboseText() const {
   if (IsOfflinePage())
     return l10n_util::GetStringUTF16(IDS_OFFLINE_VERBOSE_STATE);
 
@@ -203,17 +203,17 @@ base::string16 ToolbarModelImpl::GetSecureVerboseText() const {
   return GetSecureText();
 }
 
-base::string16 ToolbarModelImpl::GetSecureAccessibilityText() const {
+base::string16 LocationBarModelImpl::GetSecureAccessibilityText() const {
   if (IsOfflinePage())
     return l10n_util::GetStringUTF16(IDS_OFFLINE_VERBOSE_STATE);
 
   return GetSecureText();
 }
 
-bool ToolbarModelImpl::ShouldDisplayURL() const {
+bool LocationBarModelImpl::ShouldDisplayURL() const {
   return delegate_->ShouldDisplayURL();
 }
 
-bool ToolbarModelImpl::IsOfflinePage() const {
+bool LocationBarModelImpl::IsOfflinePage() const {
   return delegate_->IsOfflinePage();
 }

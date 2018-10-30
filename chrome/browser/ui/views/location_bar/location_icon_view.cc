@@ -13,7 +13,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
-#include "components/omnibox/browser/toolbar_model.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
@@ -62,7 +61,7 @@ bool LocationIconView::GetTooltipText(const gfx::Point& p,
 
 SkColor LocationIconView::GetTextColor() const {
   return delegate_->GetSecurityChipColor(
-      delegate_->GetToolbarModel()->GetSecurityLevel(false));
+      delegate_->GetLocationBarModel()->GetSecurityLevel(false));
 }
 
 bool LocationIconView::ShouldShowSeparator() const {
@@ -98,7 +97,7 @@ void LocationIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   }
 
   security_state::SecurityLevel security_level =
-      delegate_->GetToolbarModel()->GetSecurityLevel(false);
+      delegate_->GetLocationBarModel()->GetSecurityLevel(false);
   if (label()->text().empty() && (security_level == security_state::EV_SECURE ||
                                   security_level == security_state::SECURE)) {
     node_data->AddStringAttribute(
@@ -132,24 +131,25 @@ int LocationIconView::GetMinimumLabelTextWidth() const {
 }
 
 bool LocationIconView::ShouldShowText() const {
-  const auto* toolbar_model = delegate_->GetToolbarModel();
+  const auto* location_bar_model = delegate_->GetLocationBarModel();
 
-  if (!toolbar_model->input_in_progress()) {
-    const GURL& url = toolbar_model->GetURL();
+  if (!location_bar_model->input_in_progress()) {
+    const GURL& url = location_bar_model->GetURL();
     if (url.SchemeIs(content::kChromeUIScheme) ||
         url.SchemeIs(extensions::kExtensionScheme) ||
         url.SchemeIs(url::kFileScheme))
       return true;
   }
 
-  return !toolbar_model->GetSecureVerboseText().empty();
+  return !location_bar_model->GetSecureVerboseText().empty();
 }
 
 base::string16 LocationIconView::GetText() const {
-  if (delegate_->GetToolbarModel()->GetURL().SchemeIs(content::kChromeUIScheme))
+  if (delegate_->GetLocationBarModel()->GetURL().SchemeIs(
+          content::kChromeUIScheme))
     return l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
 
-  if (delegate_->GetToolbarModel()->GetURL().SchemeIs(url::kFileScheme))
+  if (delegate_->GetLocationBarModel()->GetURL().SchemeIs(url::kFileScheme))
     return l10n_util::GetStringUTF16(IDS_OMNIBOX_FILE);
 
   if (delegate_->GetWebContents()) {
@@ -160,18 +160,19 @@ base::string16 LocationIconView::GetText() const {
     // instead.
     const base::string16 extension_name =
         extensions::ui_util::GetEnabledExtensionNameForUrl(
-            delegate_->GetToolbarModel()->GetURL(),
+            delegate_->GetLocationBarModel()->GetURL(),
             delegate_->GetWebContents()->GetBrowserContext());
     if (!extension_name.empty())
       return extension_name;
   }
 
-  return delegate_->GetToolbarModel()->GetSecureVerboseText();
+  return delegate_->GetLocationBarModel()->GetSecureVerboseText();
 }
 
 bool LocationIconView::ShouldAnimateTextVisibilityChange() const {
   using SecurityLevel = security_state::SecurityLevel;
-  SecurityLevel level = delegate_->GetToolbarModel()->GetSecurityLevel(false);
+  SecurityLevel level =
+      delegate_->GetLocationBarModel()->GetSecurityLevel(false);
   // Do not animate transitions from HTTP_SHOW_WARNING to DANGEROUS, since the
   // transition can look confusing/messy.
   if (level == SecurityLevel::DANGEROUS &&
@@ -238,7 +239,7 @@ void LocationIconView::Update() {
 #endif
 
   last_update_security_level_ =
-      delegate_->GetToolbarModel()->GetSecurityLevel(false);
+      delegate_->GetLocationBarModel()->GetSecurityLevel(false);
 }
 
 bool LocationIconView::IsTriggerableEvent(const ui::Event& event) {

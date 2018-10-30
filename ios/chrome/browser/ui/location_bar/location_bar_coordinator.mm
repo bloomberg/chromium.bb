@@ -146,8 +146,8 @@ const int kLocationAuthorizationStatusCount = 4;
   self.omniboxPopupCoordinator.webStateList = self.webStateList;
   [self.omniboxPopupCoordinator start];
 
-  self.mediator =
-      [[LocationBarMediator alloc] initWithToolbarModel:[self toolbarModel]];
+  self.mediator = [[LocationBarMediator alloc]
+      initWithLocationBarModel:[self locationBarModel]];
   self.mediator.webStateList = self.webStateList;
   self.mediator.consumer = self;
 
@@ -293,8 +293,8 @@ const int kLocationAuthorizationStatusCount = 4;
   return self.webStateList->GetActiveWebState();
 }
 
-- (ToolbarModel*)toolbarModel {
-  return [self.delegate toolbarModel];
+- (LocationBarModel*)locationBarModel {
+  return [self.delegate locationBarModel];
 }
 
 #pragma mark - LocationBarViewControllerDelegate

@@ -878,7 +878,7 @@ public class CustomTabActivityTest {
         Assert.assertEquals(expectedColor, toolbar.getBackground().getColor());
         Assert.assertFalse(mCustomTabActivityTestRule.getActivity()
                                    .getToolbarManager()
-                                   .getToolbarModelForTesting()
+                                   .getLocationBarModelForTesting()
                                    .shouldEmphasizeHttpsScheme());
         // TODO(https://crbug.com/871805): Use helper class to determine whether dark status icons
         // are supported.

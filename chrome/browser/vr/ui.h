@@ -90,7 +90,7 @@ class VR_UI_EXPORT Ui : public UiInterface,
   // BrowserUiInterface
   void SetWebVrMode(bool enabled) override;
   void SetFullscreen(bool enabled) override;
-  void SetToolbarState(const ToolbarState& state) override;
+  void SetLocationBarState(const LocationBarState& state) override;
   void SetIncognito(bool enabled) override;
   void SetLoading(bool loading) override;
   void SetLoadProgress(float progress) override;

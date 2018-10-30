@@ -398,7 +398,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * {@link org.chromium.chrome.browser.widget.findinpage.FindToolbar} state changes.
      * @param showing Whether or not the {@code FindToolbar} will be showing.
      */
-    protected void handleFindToolbarStateChange(boolean showing) {
+    protected void handleFindLocationBarStateChange(boolean showing) {
         mFindInPageToolbarShowing = showing;
     }
 

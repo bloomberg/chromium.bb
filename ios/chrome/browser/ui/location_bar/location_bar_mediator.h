@@ -9,12 +9,12 @@
 
 @protocol LocationBarConsumer;
 class WebStateList;
-class ToolbarModel;
+class LocationBarModel;
 
 // A mediator object that updates the mediator when the web state changes.
 @interface LocationBarMediator : NSObject
 
-- (instancetype)initWithToolbarModel:(ToolbarModel*)toolbarModel
+- (instancetype)initWithLocationBarModel:(LocationBarModel*)locationBarModel
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -22,9 +22,9 @@ class ToolbarModel;
 // state.
 @property(nonatomic, assign) WebStateList* webStateList;
 
-// The toolbar model used by this mediator to extract the current URL and the
-// security state.
-@property(nonatomic, assign, readonly) ToolbarModel* toolbarModel;
+// The location bar model used by this mediator to extract the current URL and
+// the security state.
+@property(nonatomic, assign, readonly) LocationBarModel* locationBarModel;
 
 // The consumer for this object. This can change during the lifetime of this
 // object and may be nil.

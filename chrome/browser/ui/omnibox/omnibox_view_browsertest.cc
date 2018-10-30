@@ -42,7 +42,7 @@
 #include "components/omnibox/browser/history_quick_provider.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
-#include "components/omnibox/browser/test_toolbar_model.h"
+#include "components/omnibox/browser/test_location_bar_model.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/search_engines/template_url.h"
@@ -357,17 +357,18 @@ class OmniboxViewTest : public InProcessBrowserTest,
     OmniboxEditModel* edit_model = omnibox_view->model();
     ASSERT_NE(nullptr, edit_model);
 
-    if (!test_toolbar_model_) {
-      test_toolbar_model_ = new TestToolbarModel;
-      std::unique_ptr<ToolbarModel> toolbar_model(test_toolbar_model_);
-      browser()->swap_toolbar_models(&toolbar_model);
+    if (!test_location_bar_model_) {
+      test_location_bar_model_ = new TestLocationBarModel;
+      std::unique_ptr<LocationBarModel> location_bar_model(
+          test_location_bar_model_);
+      browser()->swap_location_bar_models(&location_bar_model);
     }
 
-    test_toolbar_model_->set_formatted_full_url(text);
+    test_location_bar_model_->set_formatted_full_url(text);
 
     // Normally the URL for display has portions elided. We aren't doing that in
     // this case, because that is irrevelant for these tests.
-    test_toolbar_model_->set_url_for_display(text);
+    test_location_bar_model_->set_url_for_display(text);
 
     omnibox_view->Update();
   }
@@ -394,7 +395,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
   policy::MockConfigurationPolicyProvider policy_provider_;
 
   // Non-owning pointer.
-  TestToolbarModel* test_toolbar_model_ = nullptr;
+  TestLocationBarModel* test_location_bar_model_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewTest);
 };

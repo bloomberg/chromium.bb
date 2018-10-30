@@ -1004,8 +1004,11 @@ void EmailPageLocation(Browser* browser) {
 }
 
 bool CanEmailPageLocation(const Browser* browser) {
-  return browser->toolbar_model()->ShouldDisplayURL() &&
-      browser->tab_strip_model()->GetActiveWebContents()->GetURL().is_valid();
+  return browser->location_bar_model()->ShouldDisplayURL() &&
+         browser->tab_strip_model()
+             ->GetActiveWebContents()
+             ->GetURL()
+             .is_valid();
 }
 
 void CutCopyPaste(Browser* browser, int command_id) {

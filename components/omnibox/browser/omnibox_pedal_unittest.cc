@@ -19,10 +19,6 @@ class OmniboxPedalTest : public testing::Test {
       : omnibox_client_(new TestOmniboxClient),
         omnibox_edit_controller_(new TestOmniboxEditController) {}
 
-  TestToolbarModel* toolbar() {
-    return omnibox_edit_controller_->GetToolbarModel();
-  }
-
   base::MessageLoop message_loop_;
   std::unique_ptr<TestOmniboxClient> omnibox_client_;
   std::unique_ptr<TestOmniboxEditController> omnibox_edit_controller_;

@@ -24,7 +24,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
-#include "components/omnibox/browser/toolbar_model.h"
+#include "components/omnibox/browser/location_bar_model.h"
 #include "components/payments/core/can_make_payment_query.h"
 #include "components/payments/core/features.h"
 #include "components/payments/core/journey_logger.h"
@@ -268,7 +268,7 @@ struct PendingPaymentResponse {
 
 @implementation PaymentRequestManager
 
-@synthesize toolbarModel = _toolbarModel;
+@synthesize locationBarModel = _locationBarModel;
 @synthesize browserState = _browserState;
 @synthesize enabled = _enabled;
 @synthesize activeWebState = _activeWebState;
@@ -956,7 +956,7 @@ paymentRequestFromMessage:(const base::DictionaryValue&)message
     return NO;
   }
 
-  if (!self.toolbarModel) {
+  if (!self.locationBarModel) {
     return NO;
   }
 
@@ -982,7 +982,7 @@ paymentRequestFromMessage:(const base::DictionaryValue&)message
   // If the scheme is cryptographic, the SSL certificate must also be valid.
   return !security_state::IsSchemeCryptographic(lastCommittedURL) ||
          security_state::IsSslCertificateValid(
-             self.toolbarModel->GetSecurityLevel(true));
+             self.locationBarModel->GetSecurityLevel(true));
 }
 
 #pragma mark - PaymentRequestUIDelegate

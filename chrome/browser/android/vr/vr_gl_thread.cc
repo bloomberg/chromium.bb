@@ -15,8 +15,8 @@
 #include "chrome/browser/vr/browser_renderer.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
 #include "chrome/browser/vr/model/assets.h"
+#include "chrome/browser/vr/model/location_bar_state.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
-#include "chrome/browser/vr/model/toolbar_state.h"
 #include "chrome/browser/vr/sounds_manager_audio_delegate.h"
 #include "chrome/browser/vr/ui_factory.h"
 #include "chrome/browser/vr/ui_test_input.h"
@@ -380,11 +380,11 @@ void VrGLThread::SetLoading(bool loading) {
                                          weak_browser_ui_, loading));
 }
 
-void VrGLThread::SetToolbarState(const ToolbarState& state) {
+void VrGLThread::SetLocationBarState(const LocationBarState& state) {
   DCHECK(OnMainThread());
-  task_runner()->PostTask(FROM_HERE,
-                          base::BindOnce(&BrowserUiInterface::SetToolbarState,
-                                         weak_browser_ui_, state));
+  task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&BrowserUiInterface::SetLocationBarState,
+                                weak_browser_ui_, state));
 }
 
 void VrGLThread::SetWebVrMode(bool enabled) {

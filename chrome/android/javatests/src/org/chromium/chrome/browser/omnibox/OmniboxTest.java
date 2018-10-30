@@ -730,12 +730,12 @@ public class OmniboxTest {
             if (mActivityTestRule.getActivity().isTablet()) {
                 Assert.assertTrue(mActivityTestRule.getActivity()
                                           .getToolbarManager()
-                                          .getToolbarModelForTesting()
+                                          .getLocationBarModelForTesting()
                                           .shouldEmphasizeHttpsScheme());
             } else {
                 Assert.assertFalse(mActivityTestRule.getActivity()
                                            .getToolbarManager()
-                                           .getToolbarModelForTesting()
+                                           .getLocationBarModelForTesting()
                                            .shouldEmphasizeHttpsScheme());
             }
         } finally {

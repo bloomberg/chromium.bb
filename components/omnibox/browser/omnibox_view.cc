@@ -16,11 +16,11 @@
 #include "build/build_config.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/query_in_omnibox.h"
-#include "components/omnibox/browser/toolbar_model.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -128,7 +128,7 @@ gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
     }
 
     return gfx::CreateVectorIcon(
-        controller_->GetToolbarModel()->GetVectorIcon(), dip_size, color);
+        controller_->GetLocationBarModel()->GetVectorIcon(), dip_size, color);
   }
 
   // For tests, model_ will be null.

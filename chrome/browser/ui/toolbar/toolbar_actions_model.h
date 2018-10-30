@@ -192,7 +192,7 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
   void OnActionToolbarPrefChange();
 
   // Highlights the actions specified by |action_ids|. This will cause
-  // the ToolbarModel to only display those actions.
+  // the LocationBarModel to only display those actions.
   // Highlighting mode is only entered if there is at least one action to be
   // shown.
   // Returns true if highlighting mode is entered, false otherwise.

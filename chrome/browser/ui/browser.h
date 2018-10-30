@@ -33,7 +33,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "components/omnibox/browser/toolbar_model.h"
+#include "components/omnibox/browser/location_bar_model.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sessions/core/session_id.h"
 #include "components/translate/content/browser/content_translate_driver.h"
@@ -62,7 +62,7 @@
 class BrowserContentSettingBubbleModelDelegate;
 class BrowserInstantController;
 class BrowserSyncedWindowDelegate;
-class BrowserToolbarModelDelegate;
+class BrowserLocationBarModelDelegate;
 class BrowserLiveTabContext;
 class BrowserWindow;
 class FastUnloadController;
@@ -256,11 +256,14 @@ class Browser : public TabStripModelObserver,
   // |window()| will return NULL if called before |CreateBrowserWindow()|
   // is done.
   BrowserWindow* window() const { return window_; }
-  ToolbarModel* toolbar_model() { return toolbar_model_.get(); }
-  const ToolbarModel* toolbar_model() const { return toolbar_model_.get(); }
+  LocationBarModel* location_bar_model() { return location_bar_model_.get(); }
+  const LocationBarModel* location_bar_model() const {
+    return location_bar_model_.get();
+  }
 #if defined(UNIT_TEST)
-  void swap_toolbar_models(std::unique_ptr<ToolbarModel>* toolbar_model) {
-    toolbar_model->swap(toolbar_model_);
+  void swap_location_bar_models(
+      std::unique_ptr<LocationBarModel>* location_bar_model) {
+    location_bar_model->swap(location_bar_model_);
   }
 #endif
   TabStripModel* tab_strip_model() const { return tab_strip_model_.get(); }
@@ -931,7 +934,7 @@ class Browser : public TabStripModelObserver,
   const SessionID session_id_;
 
   // The model for the toolbar view.
-  std::unique_ptr<ToolbarModel> toolbar_model_;
+  std::unique_ptr<LocationBarModel> location_bar_model_;
 
   // UI update coalescing and handling ////////////////////////////////////////
 
@@ -987,8 +990,8 @@ class Browser : public TabStripModelObserver,
   std::unique_ptr<BrowserContentSettingBubbleModelDelegate>
       content_setting_bubble_model_delegate_;
 
-  // Helper which implements the ToolbarModelDelegate interface.
-  std::unique_ptr<BrowserToolbarModelDelegate> toolbar_model_delegate_;
+  // Helper which implements the LocationBarModelDelegate interface.
+  std::unique_ptr<BrowserLocationBarModelDelegate> location_bar_model_delegate_;
 
   // Helper which implements the LiveTabContext interface.
   std::unique_ptr<BrowserLiveTabContext> live_tab_context_;

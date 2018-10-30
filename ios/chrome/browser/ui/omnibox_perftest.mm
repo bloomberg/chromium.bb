@@ -8,13 +8,13 @@
 
 #import "base/test/ios/wait_util.h"
 #include "base/time/time.h"
-#include "components/omnibox/browser/test_toolbar_model.h"
-#include "components/omnibox/browser/toolbar_model_impl.h"
+#include "components/omnibox/browser/location_bar_model_impl.h"
+#include "components/omnibox/browser/test_location_bar_model.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
-#include "ios/chrome/browser/ui/location_bar/toolbar_model_delegate_ios.h"
+#include "ios/chrome/browser/ui/location_bar/location_bar_model_delegate_ios.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #import "ios/chrome/browser/ui/toolbar/primary_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_delegate.h"
@@ -95,17 +95,17 @@ class OmniboxPerfTest : public PerfTest {
                                     WebStateOpener());
 
     // Creates the Toolbar for testing and sizes it to the width of the screen.
-    toolbar_model_delegate_.reset(
-        new ToolbarModelDelegateIOS(web_state_list_.get()));
-    toolbar_model_ = std::make_unique<ToolbarModelImpl>(
-        toolbar_model_delegate_.get(), kMaxURLDisplayChars);
+    location_bar_model_delegate_.reset(
+        new LocationBarModelDelegateIOS(web_state_list_.get()));
+    location_bar_model_ = std::make_unique<LocationBarModelImpl>(
+        location_bar_model_delegate_.get(), kMaxURLDisplayChars);
 
     // The OCMOCK_VALUE macro doesn't like std::unique_ptr, but it works just
     // fine if a temporary variable is used.
-    ToolbarModel* model_for_mock = toolbar_model_.get();
+    LocationBarModel* model_for_mock = location_bar_model_.get();
     id toolbarDelegate = OCMProtocolMock(@protocol(ToolbarCoordinatorDelegate));
     [[[toolbarDelegate stub] andReturnValue:OCMOCK_VALUE(model_for_mock)]
-        toolbarModel];
+        locationBarModel];
 
     CommandDispatcher* dispatcher = [[CommandDispatcher alloc] init];
 
@@ -227,8 +227,8 @@ class OmniboxPerfTest : public PerfTest {
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   FakeWebStateListDelegate web_state_list_delegate_;
   std::unique_ptr<WebStateList> web_state_list_;
-  std::unique_ptr<ToolbarModelDelegateIOS> toolbar_model_delegate_;
-  std::unique_ptr<ToolbarModel> toolbar_model_;
+  std::unique_ptr<LocationBarModelDelegateIOS> location_bar_model_delegate_;
+  std::unique_ptr<LocationBarModel> location_bar_model_;
   PrimaryToolbarCoordinator* coordinator_;
   UIWindow* window_;
   KeyboardAppearanceListener* keyboard_listener_;

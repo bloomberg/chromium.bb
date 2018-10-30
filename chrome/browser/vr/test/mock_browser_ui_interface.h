@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
 #include "chrome/browser/vr/model/assets.h"
+#include "chrome/browser/vr/model/location_bar_state.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
-#include "chrome/browser/vr/model/toolbar_state.h"
 #include "chrome/browser/vr/ui_test_input.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -22,7 +22,7 @@ class MockBrowserUiInterface : public BrowserUiInterface {
 
   MOCK_METHOD1(SetWebVrMode, void(bool enabled));
   MOCK_METHOD1(SetFullscreen, void(bool enabled));
-  MOCK_METHOD1(SetToolbarState, void(const ToolbarState& state));
+  MOCK_METHOD1(SetLocationBarState, void(const LocationBarState& state));
   MOCK_METHOD1(SetIncognito, void(bool enabled));
   MOCK_METHOD1(SetLoading, void(bool loading));
   MOCK_METHOD1(SetLoadProgress, void(float progress));

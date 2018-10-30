@@ -433,7 +433,7 @@ class TemplateURLService : public WebDataServiceConsumer,
                            ResolveSyncKeywordConflict);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest, PreSyncDeletes);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest, MergeInSyncTemplateURL);
-  FRIEND_TEST_ALL_PREFIXES(ToolbarModelTest, GoogleBaseURL);
+  FRIEND_TEST_ALL_PREFIXES(LocationBarModelTest, GoogleBaseURL);
 
   friend class InstantUnitTestBase;
   friend class Scoper;

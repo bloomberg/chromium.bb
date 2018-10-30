@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "components/omnibox/browser/test_toolbar_model.h"
+#include "components/omnibox/browser/test_location_bar_model.h"
 #include "components/variations/variations_http_header_provider.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -34,7 +34,7 @@ using variations::VariationsHttpHeaderProvider;
 @end
 
 @implementation TestToolbarCoordinatorDelegate {
-  std::unique_ptr<ToolbarModel> _model;
+  std::unique_ptr<LocationBarModel> _model;
 }
 
 - (void)locationBarDidBecomeFirstResponder {
@@ -44,9 +44,9 @@ using variations::VariationsHttpHeaderProvider;
 - (void)locationBarBeganEdit {
 }
 
-- (ToolbarModel*)toolbarModel {
+- (LocationBarModel*)locationBarModel {
   if (!_model) {
-    _model = std::make_unique<TestToolbarModel>();
+    _model = std::make_unique<TestLocationBarModel>();
   }
 
   return _model.get();

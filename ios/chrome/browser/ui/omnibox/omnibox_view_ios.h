@@ -8,8 +8,8 @@
 #import <UIKit/UIKit.h>
 
 #include <memory>
+#include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
-#include "components/omnibox/browser/toolbar_model.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_left_image_consumer.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_provider.h"

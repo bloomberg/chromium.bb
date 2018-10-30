@@ -37,8 +37,8 @@ class WebOmniboxEditControllerImpl : public WebOmniboxEditController {
                             base::TimeTicks match_selection_timestamp) override;
   void OnInputInProgress(bool in_progress) override;
   void OnChanged() override;
-  ToolbarModel* GetToolbarModel() override;
-  const ToolbarModel* GetToolbarModel() const override;
+  LocationBarModel* GetLocationBarModel() override;
+  const LocationBarModel* GetLocationBarModel() const override;
 
  private:
   __weak id<LocationBarDelegate> delegate_;

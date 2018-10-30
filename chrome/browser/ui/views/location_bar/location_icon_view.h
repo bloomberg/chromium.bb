@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
-#include "components/omnibox/browser/toolbar_model.h"
+#include "components/omnibox/browser/location_bar_model.h"
 
 namespace content {
 class WebContents;
@@ -50,8 +50,8 @@ class LocationIconView : public IconLabelBubbleView {
     // false otherwise.
     virtual bool ShowPageInfoDialog() = 0;
 
-    // Gets the ToolbarModel.
-    const virtual ToolbarModel* GetToolbarModel() const = 0;
+    // Gets the LocationBarModel.
+    const virtual LocationBarModel* GetLocationBarModel() const = 0;
 
     // Gets an icon for the location bar icon chip.
     virtual gfx::ImageSkia GetLocationIcon(

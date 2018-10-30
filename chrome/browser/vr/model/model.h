@@ -13,6 +13,7 @@
 #include "chrome/browser/vr/model/color_scheme.h"
 #include "chrome/browser/vr/model/controller_model.h"
 #include "chrome/browser/vr/model/hosted_platform_ui.h"
+#include "chrome/browser/vr/model/location_bar_state.h"
 #include "chrome/browser/vr/model/modal_prompt_type.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/platform_toast.h"
@@ -20,7 +21,6 @@
 #include "chrome/browser/vr/model/speech_recognition_model.h"
 #include "chrome/browser/vr/model/tab_model.h"
 #include "chrome/browser/vr/model/text_input_info.h"
-#include "chrome/browser/vr/model/toolbar_state.h"
 #include "chrome/browser/vr/model/ui_mode.h"
 #include "chrome/browser/vr/model/web_vr_model.h"
 #include "chrome/browser/vr/vr_ui_export.h"
@@ -39,7 +39,7 @@ struct VR_UI_EXPORT Model {
   bool incognito = false;
   bool can_navigate_back = false;
   bool can_navigate_forward = false;
-  ToolbarState toolbar_state;
+  LocationBarState location_bar_state;
   std::vector<OmniboxSuggestion> omnibox_suggestions;
   SpeechRecognitionModel speech;
   const ColorScheme& color_scheme() const;

@@ -38,7 +38,7 @@
 #include "components/feature_engagement/public/tracker.h"
 #include "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
 #import "components/language/ios/browser/ios_language_detection_tab_helper.h"
-#include "components/omnibox/browser/toolbar_model_impl.h"
+#include "components/omnibox/browser/location_bar_model_impl.h"
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/search_engines/search_engines_pref_names.h"
@@ -157,7 +157,7 @@
 #import "ios/chrome/browser/ui/infobars/infobar_coordinator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_positioner.h"
 #import "ios/chrome/browser/ui/key_commands_provider.h"
-#include "ios/chrome/browser/ui/location_bar/toolbar_model_delegate_ios.h"
+#include "ios/chrome/browser/ui/location_bar/location_bar_model_delegate_ios.h"
 #import "ios/chrome/browser/ui/location_bar_notification_names.h"
 #import "ios/chrome/browser/ui/main_content/main_content_ui.h"
 #import "ios/chrome/browser/ui/main_content/main_content_ui_broadcasting_util.h"
@@ -448,8 +448,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Facade objects used by |_toolbarCoordinator|.
   // Must outlive |_toolbarCoordinator|.
-  std::unique_ptr<ToolbarModelDelegateIOS> _toolbarModelDelegate;
-  std::unique_ptr<ToolbarModel> _toolbarModel;
+  std::unique_ptr<LocationBarModelDelegateIOS> _locationBarModelDelegate;
+  std::unique_ptr<LocationBarModel> _locationBarModel;
 
   // Controller for edge swipe gestures for page and tab navigation.
   SideSwipeController* _sideSwipeController;
@@ -1805,8 +1805,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     self.toolbarInterface = nil;
     [_toolbarUIUpdater stopUpdating];
     _toolbarUIUpdater = nil;
-    _toolbarModelDelegate = nil;
-    _toolbarModel = nil;
+    _locationBarModelDelegate = nil;
+    _locationBarModel = nil;
     self.helper = nil;
     [self.tabStripCoordinator stop];
     self.tabStripCoordinator = nil;
@@ -2090,7 +2090,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 // Create the UI elements.  May or may not have valid browser state & tab model.
 - (void)buildToolbarAndTabStrip {
   DCHECK([self isViewLoaded]);
-  DCHECK(!_toolbarModelDelegate);
+  DCHECK(!_locationBarModelDelegate);
 
   // Initialize the prerender service before creating the toolbar controller.
   PrerenderService* prerenderService =
@@ -2099,11 +2099,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     prerenderService->SetDelegate(self);
   }
 
-  // Create the toolbar model and controller.
-  _toolbarModelDelegate.reset(
-      new ToolbarModelDelegateIOS([_model webStateList]));
-  _toolbarModel = std::make_unique<ToolbarModelImpl>(
-      _toolbarModelDelegate.get(), kMaxURLDisplayChars);
+  // Create the location bar model and controller.
+  _locationBarModelDelegate.reset(
+      new LocationBarModelDelegateIOS([_model webStateList]));
+  _locationBarModel = std::make_unique<LocationBarModelImpl>(
+      _locationBarModelDelegate.get(), kMaxURLDisplayChars);
   self.helper = [_dependencyFactory newBrowserViewControllerHelper];
 
   PrimaryToolbarCoordinator* topToolbarCoordinator =
@@ -2348,7 +2348,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 // both browser state and tab model are valid.
 - (void)addUIFunctionalityForModelAndBrowserState {
   DCHECK(_browserState);
-  DCHECK(_toolbarModel);
+  DCHECK(_locationBarModel);
   DCHECK(_model);
   DCHECK([self isViewLoaded]);
 
@@ -2420,7 +2420,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       initWithBaseViewController:self
                     browserState:_browserState
                       dispatcher:self.dispatcher];
-  [_paymentRequestManager setToolbarModel:_toolbarModel.get()];
+  [_paymentRequestManager setLocationBarModel:_locationBarModel.get()];
   [_paymentRequestManager setActiveWebState:[_model currentTab].webState];
 }
 
@@ -4502,8 +4502,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
 }
 
-- (ToolbarModel*)toolbarModel {
-  return _toolbarModel.get();
+- (LocationBarModel*)locationBarModel {
+  return _locationBarModel.get();
 }
 
 #pragma mark - BrowserCommands

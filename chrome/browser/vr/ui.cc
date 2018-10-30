@@ -163,8 +163,8 @@ void Ui::SetFullscreen(bool enabled) {
   }
 }
 
-void Ui::SetToolbarState(const ToolbarState& state) {
-  model_->toolbar_state = state;
+void Ui::SetLocationBarState(const LocationBarState& state) {
+  model_->location_bar_state = state;
 }
 
 void Ui::SetIncognito(bool enabled) {

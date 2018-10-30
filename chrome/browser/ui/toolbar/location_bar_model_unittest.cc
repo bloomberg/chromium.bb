@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/omnibox/browser/toolbar_model.h"
+#include "components/omnibox/browser/location_bar_model.h"
 
 #include <stddef.h>
 
@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
-#include "components/omnibox/browser/toolbar_model.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/common/content_constants.h"
@@ -81,13 +80,13 @@ struct TestItem {
 
 }  // namespace
 
+// LocationBarModelTest
+// -----------------------------------------------------------
 
-// ToolbarModelTest -----------------------------------------------------------
-
-class ToolbarModelTest : public BrowserWithTestWindowTest {
+class LocationBarModelTest : public BrowserWithTestWindowTest {
  public:
-  ToolbarModelTest();
-  ~ToolbarModelTest() override;
+  LocationBarModelTest();
+  ~LocationBarModelTest() override;
 
   // BrowserWithTestWindowTest:
   void SetUp() override;
@@ -100,16 +99,14 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
   void NavigateAndCheckElided(const GURL& https_url);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ToolbarModelTest);
+  DISALLOW_COPY_AND_ASSIGN(LocationBarModelTest);
 };
 
-ToolbarModelTest::ToolbarModelTest() {
-}
+LocationBarModelTest::LocationBarModelTest() {}
 
-ToolbarModelTest::~ToolbarModelTest() {
-}
+LocationBarModelTest::~LocationBarModelTest() {}
 
-void ToolbarModelTest::SetUp() {
+void LocationBarModelTest::SetUp() {
   BrowserWithTestWindowTest::SetUp();
   AutocompleteClassifierFactory::GetInstance()->SetTestingFactoryAndUse(
       profile(),
@@ -132,7 +129,7 @@ void ToolbarModelTest::SetUp() {
 #endif
 }
 
-void ToolbarModelTest::NavigateAndCheckText(
+void LocationBarModelTest::NavigateAndCheckText(
     const GURL& url,
     const base::string16& expected_formatted_full_url,
     const base::string16& expected_elided_url_for_display) {
@@ -141,34 +138,39 @@ void ToolbarModelTest::NavigateAndCheckText(
       &browser()->tab_strip_model()->GetActiveWebContents()->GetController();
   controller->LoadURL(url, content::Referrer(), ui::PAGE_TRANSITION_LINK,
                       std::string());
-  ToolbarModel* toolbar_model = browser()->toolbar_model();
-  EXPECT_EQ(expected_formatted_full_url, toolbar_model->GetFormattedFullURL());
+  LocationBarModel* location_bar_model = browser()->location_bar_model();
+  EXPECT_EQ(expected_formatted_full_url,
+            location_bar_model->GetFormattedFullURL());
   EXPECT_NE(expected_formatted_full_url.empty(),
-            toolbar_model->ShouldDisplayURL());
-  EXPECT_EQ(expected_elided_url_for_display, toolbar_model->GetURLForDisplay());
+            location_bar_model->ShouldDisplayURL());
+  EXPECT_EQ(expected_elided_url_for_display,
+            location_bar_model->GetURLForDisplay());
 
   // Check after commit.
   CommitPendingLoad(controller);
-  EXPECT_EQ(expected_formatted_full_url, toolbar_model->GetFormattedFullURL());
+  EXPECT_EQ(expected_formatted_full_url,
+            location_bar_model->GetFormattedFullURL());
   EXPECT_NE(expected_formatted_full_url.empty(),
-            toolbar_model->ShouldDisplayURL());
-  EXPECT_EQ(expected_elided_url_for_display, toolbar_model->GetURLForDisplay());
+            location_bar_model->ShouldDisplayURL());
+  EXPECT_EQ(expected_elided_url_for_display,
+            location_bar_model->GetURLForDisplay());
 }
 
-void ToolbarModelTest::NavigateAndCheckElided(const GURL& url) {
+void LocationBarModelTest::NavigateAndCheckElided(const GURL& url) {
   // Check while loading.
   content::NavigationController* controller =
       &browser()->tab_strip_model()->GetActiveWebContents()->GetController();
   controller->LoadURL(url, content::Referrer(), ui::PAGE_TRANSITION_LINK,
                       std::string());
-  ToolbarModel* toolbar_model = browser()->toolbar_model();
+  LocationBarModel* location_bar_model = browser()->location_bar_model();
   const base::string16 formatted_full_url_before(
-      toolbar_model->GetFormattedFullURL());
+      location_bar_model->GetFormattedFullURL());
   EXPECT_LT(formatted_full_url_before.size(), url.spec().size());
   EXPECT_TRUE(base::EndsWith(formatted_full_url_before,
                              base::string16(gfx::kEllipsisUTF16),
                              base::CompareCase::SENSITIVE));
-  const base::string16 display_url_before(toolbar_model->GetURLForDisplay());
+  const base::string16 display_url_before(
+      location_bar_model->GetURLForDisplay());
   EXPECT_LT(display_url_before.size(), url.spec().size());
   EXPECT_TRUE(base::EndsWith(display_url_before,
                              base::string16(gfx::kEllipsisUTF16),
@@ -177,12 +179,13 @@ void ToolbarModelTest::NavigateAndCheckElided(const GURL& url) {
   // Check after commit.
   CommitPendingLoad(controller);
   const base::string16 formatted_full_url_after(
-      toolbar_model->GetFormattedFullURL());
+      location_bar_model->GetFormattedFullURL());
   EXPECT_LT(formatted_full_url_after.size(), url.spec().size());
   EXPECT_TRUE(base::EndsWith(formatted_full_url_after,
                              base::string16(gfx::kEllipsisUTF16),
                              base::CompareCase::SENSITIVE));
-  const base::string16 display_url_after(toolbar_model->GetURLForDisplay());
+  const base::string16 display_url_after(
+      location_bar_model->GetURLForDisplay());
   EXPECT_LT(display_url_after.size(), url.spec().size());
   EXPECT_TRUE(base::EndsWith(display_url_after,
                              base::string16(gfx::kEllipsisUTF16),
@@ -192,7 +195,7 @@ void ToolbarModelTest::NavigateAndCheckElided(const GURL& url) {
 // Actual tests ---------------------------------------------------------------
 
 // Test URL display.
-TEST_F(ToolbarModelTest, ShouldDisplayURL) {
+TEST_F(LocationBarModelTest, ShouldDisplayURL) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures({omnibox::kHideSteadyStateUrlScheme,
                                  omnibox::kHideSteadyStateUrlTrivialSubdomains},
@@ -209,7 +212,7 @@ TEST_F(ToolbarModelTest, ShouldDisplayURL) {
 }
 
 // Tests every combination of Steady State Elision flags.
-TEST_F(ToolbarModelTest, SteadyStateElisionsFlags) {
+TEST_F(LocationBarModelTest, SteadyStateElisionsFlags) {
   AddTab(browser(), GURL(url::kAboutBlankURL));
 
   // Hide Scheme and Hide Trivial Subdomains both Disabled.
@@ -258,7 +261,7 @@ TEST_F(ToolbarModelTest, SteadyStateElisionsFlags) {
   }
 }
 
-TEST_F(ToolbarModelTest, ShouldElideLongURLs) {
+TEST_F(LocationBarModelTest, ShouldElideLongURLs) {
   AddTab(browser(), GURL(url::kAboutBlankURL));
   const std::string long_text(content::kMaxURLDisplayChars + 1024, '0');
   NavigateAndCheckElided(
@@ -267,13 +270,13 @@ TEST_F(ToolbarModelTest, ShouldElideLongURLs) {
 }
 
 // Regression test for crbug.com/792401.
-TEST_F(ToolbarModelTest, ShouldDisplayURLWhileNavigatingAwayFromNTP) {
-  ToolbarModel* toolbar_model = browser()->toolbar_model();
+TEST_F(LocationBarModelTest, ShouldDisplayURLWhileNavigatingAwayFromNTP) {
+  LocationBarModel* location_bar_model = browser()->location_bar_model();
 
   // Open an NTP. Its URL should not be displayed.
   AddTab(browser(), GURL("chrome://newtab"));
-  ASSERT_FALSE(toolbar_model->ShouldDisplayURL());
-  ASSERT_TRUE(toolbar_model->GetFormattedFullURL().empty());
+  ASSERT_FALSE(location_bar_model->ShouldDisplayURL());
+  ASSERT_TRUE(location_bar_model->GetFormattedFullURL().empty());
 
   const std::string other_url = "https://www.foo.com";
 
@@ -283,13 +286,13 @@ TEST_F(ToolbarModelTest, ShouldDisplayURLWhileNavigatingAwayFromNTP) {
       &browser()->tab_strip_model()->GetActiveWebContents()->GetController();
   controller->LoadURL(GURL(other_url), content::Referrer(),
                       ui::PAGE_TRANSITION_LINK, std::string());
-  EXPECT_TRUE(toolbar_model->ShouldDisplayURL());
+  EXPECT_TRUE(location_bar_model->ShouldDisplayURL());
   EXPECT_EQ(base::ASCIIToUTF16(other_url),
-            toolbar_model->GetFormattedFullURL());
+            location_bar_model->GetFormattedFullURL());
 
   // Of course the same should still hold after committing.
   CommitPendingLoad(controller);
-  EXPECT_TRUE(toolbar_model->ShouldDisplayURL());
+  EXPECT_TRUE(location_bar_model->ShouldDisplayURL());
   EXPECT_EQ(base::ASCIIToUTF16(other_url),
-            toolbar_model->GetFormattedFullURL());
+            location_bar_model->GetFormattedFullURL());
 }

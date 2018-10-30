@@ -109,11 +109,11 @@
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_live_tab_context.h"
+#include "chrome/browser/ui/browser_location_bar_model_delegate.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tab_strip_model_delegate.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/browser_toolbar_model_delegate.h"
 #include "chrome/browser/ui/browser_ui_prefs.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_bubble_manager.h"
@@ -166,7 +166,7 @@
 #include "components/keep_alive_registry/keep_alive_registry.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
-#include "components/omnibox/browser/toolbar_model_impl.h"
+#include "components/omnibox/browser/location_bar_model_impl.h"
 #include "components/prefs/pref_service.h"
 #include "components/search/search.h"
 #include "components/security_state/content/content_utils.h"
@@ -400,7 +400,7 @@ Browser::Browser(const CreateParams& params)
       is_session_restore_(params.is_session_restore),
       content_setting_bubble_model_delegate_(
           new BrowserContentSettingBubbleModelDelegate(this)),
-      toolbar_model_delegate_(new BrowserToolbarModelDelegate(this)),
+      location_bar_model_delegate_(new BrowserLocationBarModelDelegate(this)),
       live_tab_context_(new BrowserLiveTabContext(this)),
       synced_window_delegate_(new BrowserSyncedWindowDelegate(this)),
       hosted_app_controller_(MaybeCreateHostedAppController(this)),
@@ -426,8 +426,8 @@ Browser::Browser(const CreateParams& params)
 
   tab_strip_model_->AddObserver(this);
 
-  toolbar_model_.reset(new ToolbarModelImpl(toolbar_model_delegate_.get(),
-                                            content::kMaxURLDisplayChars));
+  location_bar_model_.reset(new LocationBarModelImpl(
+      location_bar_model_delegate_.get(), content::kMaxURLDisplayChars));
 
   extension_registry_observer_.Add(
       extensions::ExtensionRegistry::Get(profile_));

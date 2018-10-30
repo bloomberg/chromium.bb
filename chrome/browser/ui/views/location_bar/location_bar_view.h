@@ -89,8 +89,8 @@ class LocationBarView : public LocationBar,
     // Should return the current web contents.
     virtual content::WebContents* GetWebContents() = 0;
 
-    virtual ToolbarModel* GetToolbarModel() = 0;
-    virtual const ToolbarModel* GetToolbarModel() const = 0;
+    virtual LocationBarModel* GetLocationBarModel() = 0;
+    virtual const LocationBarModel* GetLocationBarModel() const = 0;
 
     // Returns ContentSettingBubbleModelDelegate.
     virtual ContentSettingBubbleModelDelegate*
@@ -225,7 +225,7 @@ class LocationBarView : public LocationBar,
 
   // ChromeOmniboxEditController:
   void UpdateWithoutTabRestore() override;
-  ToolbarModel* GetToolbarModel() override;
+  LocationBarModel* GetLocationBarModel() override;
   content::WebContents* GetWebContents() override;
 
   // ContentSettingImageView::Delegate:
@@ -364,7 +364,7 @@ class LocationBarView : public LocationBar,
   // ChromeOmniboxEditController:
   void OnChanged() override;
   void OnPopupVisibilityChanged() override;
-  const ToolbarModel* GetToolbarModel() const override;
+  const LocationBarModel* GetLocationBarModel() const override;
 
   // DropdownBarHostDelegate:
   void SetFocusAndSelection(bool select_all) override;

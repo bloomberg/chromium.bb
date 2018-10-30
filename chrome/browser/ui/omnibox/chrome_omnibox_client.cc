@@ -57,8 +57,8 @@
 #include "components/feature_engagement/buildflags.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_result.h"
+#include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/search_provider.h"
-#include "components/omnibox/browser/toolbar_model.h"
 #include "components/prefs/pref_service.h"
 #include "components/search/search.h"
 #include "components/search_engines/search_engines_pref_names.h"
@@ -471,7 +471,7 @@ void ChromeOmniboxClient::OnURLOpenedFromOmnibox(OmniboxLog* log) {
 // and current URLs, but users edit URLs rarely enough that this is a
 // reasonable approximation.
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
-  if (controller_->GetToolbarModel()->ShouldDisplayURL()) {
+  if (controller_->GetLocationBarModel()->ShouldDisplayURL()) {
     feature_engagement::NewTabTrackerFactory::GetInstance()
         ->GetForProfile(profile_)
         ->OnOmniboxNavigation();

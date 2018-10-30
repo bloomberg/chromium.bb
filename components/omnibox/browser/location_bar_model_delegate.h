@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_OMNIBOX_BROWSER_TOOLBAR_MODEL_DELEGATE_H_
-#define COMPONENTS_OMNIBOX_BROWSER_TOOLBAR_MODEL_DELEGATE_H_
+#ifndef COMPONENTS_OMNIBOX_BROWSER_LOCATION_BAR_MODEL_DELEGATE_H_
+#define COMPONENTS_OMNIBOX_BROWSER_LOCATION_BAR_MODEL_DELEGATE_H_
 
 #include <string>
 
@@ -21,8 +21,8 @@ namespace net {
 class X509Certificate;
 }
 
-// Delegate which is used by ToolbarModel class.
-class ToolbarModelDelegate {
+// Delegate which is used by LocationBarModel class.
+class LocationBarModelDelegate {
  public:
   using SecurityLevel = security_state::SecurityLevel;
 
@@ -64,7 +64,7 @@ class ToolbarModelDelegate {
   virtual bool IsOfflinePage() const;
 
  protected:
-  virtual ~ToolbarModelDelegate() {}
+  virtual ~LocationBarModelDelegate() {}
 };
 
-#endif  // COMPONENTS_OMNIBOX_BROWSER_TOOLBAR_MODEL_DELEGATE_H_
+#endif  // COMPONENTS_OMNIBOX_BROWSER_LOCATION_BAR_MODEL_DELEGATE_H_

@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/ui/omnibox/web_omnibox_edit_controller_impl.h"
 
-#include "components/omnibox/browser/toolbar_model.h"
+#include "components/omnibox/browser/location_bar_model.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_url_loader.h"
 #import "ios/chrome/browser/ui/omnibox/location_bar_delegate.h"
 #include "url/gurl.h"
@@ -49,8 +49,8 @@ void WebOmniboxEditControllerImpl::OnAutocompleteAccept(
 }
 
 void WebOmniboxEditControllerImpl::OnInputInProgress(bool in_progress) {
-  if ([delegate_ toolbarModel])
-    [delegate_ toolbarModel]->set_input_in_progress(in_progress);
+  if ([delegate_ locationBarModel])
+    [delegate_ locationBarModel]->set_input_in_progress(in_progress);
   // TODO(crbug.com/818649): see if this is really used.
   if (in_progress)
     [delegate_ locationBarBeganEdit];
@@ -62,10 +62,11 @@ void WebOmniboxEditControllerImpl::OnChanged() {
   // TODO(crbug.com/818645): update the security icon in LocationBarMediator.
 }
 
-ToolbarModel* WebOmniboxEditControllerImpl::GetToolbarModel() {
-  return [delegate_ toolbarModel];
+LocationBarModel* WebOmniboxEditControllerImpl::GetLocationBarModel() {
+  return [delegate_ locationBarModel];
 }
 
-const ToolbarModel* WebOmniboxEditControllerImpl::GetToolbarModel() const {
-  return [delegate_ toolbarModel];
+const LocationBarModel* WebOmniboxEditControllerImpl::GetLocationBarModel()
+    const {
+  return [delegate_ locationBarModel];
 }

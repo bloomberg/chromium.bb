@@ -179,7 +179,7 @@ class OmniboxViewViews : public OmniboxView,
   // Handle keyword hint tab-to-search and tabbing through dropdown results.
   bool HandleEarlyTabActions(const ui::KeyEvent& event);
 
-  // Updates |security_level_| based on the toolbar model's current value.
+  // Updates |security_level_| based on the location bar model's current value.
   void UpdateSecurityLevel();
 
   void ClearAccessibilityLabel();

@@ -44,7 +44,7 @@ import java.net.URISyntaxException;
 /**
  * Provides a way of accessing toolbar data and state.
  */
-public class ToolbarModel implements ToolbarDataProvider {
+public class LocationBarModel implements ToolbarDataProvider {
     private final Context mContext;
 
     private Tab mTab;
@@ -52,13 +52,13 @@ public class ToolbarModel implements ToolbarDataProvider {
     private int mPrimaryColor;
     private boolean mIsUsingBrandColor;
 
-    private long mNativeToolbarModelAndroid;
+    private long mNativeLocationBarModelAndroid;
 
     /**
      * Default constructor for this class.
      * @param context The Context used for styling the toolbar visuals.
      */
-    public ToolbarModel(Context context) {
+    public LocationBarModel(Context context) {
         mContext = context;
         mPrimaryColor = ColorUtils.getDefaultThemeColor(context.getResources(), false);
     }
@@ -67,16 +67,16 @@ public class ToolbarModel implements ToolbarDataProvider {
      * Handle any initialization that must occur after native has been initialized.
      */
     public void initializeWithNative() {
-        mNativeToolbarModelAndroid = nativeInit();
+        mNativeLocationBarModelAndroid = nativeInit();
     }
 
     /**
-     * Destroys the native ToolbarModel.
+     * Destroys the native LocationBarModel.
      */
     public void destroy() {
-        if (mNativeToolbarModelAndroid == 0) return;
-        nativeDestroy(mNativeToolbarModelAndroid);
-        mNativeToolbarModelAndroid = 0;
+        if (mNativeLocationBarModelAndroid == 0) return;
+        nativeDestroy(mNativeLocationBarModelAndroid);
+        mNativeLocationBarModelAndroid = 0;
     }
 
     /**
@@ -205,7 +205,7 @@ public class ToolbarModel implements ToolbarDataProvider {
     private UrlBarData buildUrlBarData(String url, String displayText, String editingText) {
         SpannableStringBuilder spannableDisplayText = new SpannableStringBuilder(displayText);
 
-        if (mNativeToolbarModelAndroid != 0 && spannableDisplayText.length() > 0
+        if (mNativeLocationBarModelAndroid != 0 && spannableDisplayText.length() > 0
                 && shouldEmphasizeUrl()) {
             boolean isInternalPage = false;
             try {
@@ -456,18 +456,18 @@ public class ToolbarModel implements ToolbarDataProvider {
 
     /** @return The formatted URL suitable for editing. */
     public String getFormattedFullUrl() {
-        if (mNativeToolbarModelAndroid == 0) return "";
-        return nativeGetFormattedFullURL(mNativeToolbarModelAndroid);
+        if (mNativeLocationBarModelAndroid == 0) return "";
+        return nativeGetFormattedFullURL(mNativeLocationBarModelAndroid);
     }
 
     /** @return The formatted URL suitable for display only. */
     public String getUrlForDisplay() {
-        if (mNativeToolbarModelAndroid == 0) return "";
-        return nativeGetURLForDisplay(mNativeToolbarModelAndroid);
+        if (mNativeLocationBarModelAndroid == 0) return "";
+        return nativeGetURLForDisplay(mNativeLocationBarModelAndroid);
     }
 
     private native long nativeInit();
-    private native void nativeDestroy(long nativeToolbarModelAndroid);
-    private native String nativeGetFormattedFullURL(long nativeToolbarModelAndroid);
-    private native String nativeGetURLForDisplay(long nativeToolbarModelAndroid);
+    private native void nativeDestroy(long nativeLocationBarModelAndroid);
+    private native String nativeGetFormattedFullURL(long nativeLocationBarModelAndroid);
+    private native String nativeGetURLForDisplay(long nativeLocationBarModelAndroid);
 }

@@ -356,7 +356,7 @@ const Extension* GetInstalledPwaForUrl(
 }
 
 const Extension* GetPwaForSecureActiveTab(Browser* browser) {
-  switch (browser->toolbar_model()->GetSecurityLevel(true)) {
+  switch (browser->location_bar_model()->GetSecurityLevel(true)) {
     case security_state::SECURITY_LEVEL_COUNT:
       NOTREACHED();
       FALLTHROUGH;

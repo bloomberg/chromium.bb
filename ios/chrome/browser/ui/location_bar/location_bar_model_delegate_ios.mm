@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/location_bar/toolbar_model_delegate_ios.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_model_delegate_ios.h"
 
 #include "base/logging.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
@@ -24,30 +24,32 @@
 #error "This file requires ARC support."
 #endif
 
-ToolbarModelDelegateIOS::ToolbarModelDelegateIOS(WebStateList* web_state_list)
+LocationBarModelDelegateIOS::LocationBarModelDelegateIOS(
+    WebStateList* web_state_list)
     : web_state_list_(web_state_list) {}
 
-ToolbarModelDelegateIOS::~ToolbarModelDelegateIOS() {}
+LocationBarModelDelegateIOS::~LocationBarModelDelegateIOS() {}
 
-web::WebState* ToolbarModelDelegateIOS::GetActiveWebState() const {
+web::WebState* LocationBarModelDelegateIOS::GetActiveWebState() const {
   return web_state_list_->GetActiveWebState();
 }
 
-web::NavigationItem* ToolbarModelDelegateIOS::GetNavigationItem() const {
+web::NavigationItem* LocationBarModelDelegateIOS::GetNavigationItem() const {
   web::WebState* web_state = GetActiveWebState();
   web::NavigationManager* navigation_manager =
       web_state ? web_state->GetNavigationManager() : nullptr;
   return navigation_manager ? navigation_manager->GetVisibleItem() : nullptr;
 }
 
-base::string16 ToolbarModelDelegateIOS::FormattedStringWithEquivalentMeaning(
+base::string16
+LocationBarModelDelegateIOS::FormattedStringWithEquivalentMeaning(
     const GURL& url,
     const base::string16& formatted_url) const {
   return AutocompleteInput::FormattedStringWithEquivalentMeaning(
       url, formatted_url, AutocompleteSchemeClassifierImpl(), nullptr);
 }
 
-bool ToolbarModelDelegateIOS::GetURL(GURL* url) const {
+bool LocationBarModelDelegateIOS::GetURL(GURL* url) const {
   DCHECK(url);
   web::NavigationItem* item = GetNavigationItem();
   if (!item)
@@ -56,7 +58,7 @@ bool ToolbarModelDelegateIOS::GetURL(GURL* url) const {
   return true;
 }
 
-bool ToolbarModelDelegateIOS::ShouldDisplayURL() const {
+bool LocationBarModelDelegateIOS::ShouldDisplayURL() const {
   web::NavigationItem* item = GetNavigationItem();
   if (item) {
     GURL url = item->GetURL();
@@ -72,7 +74,7 @@ bool ToolbarModelDelegateIOS::ShouldDisplayURL() const {
   return true;
 }
 
-security_state::SecurityLevel ToolbarModelDelegateIOS::GetSecurityLevel()
+security_state::SecurityLevel LocationBarModelDelegateIOS::GetSecurityLevel()
     const {
   web::WebState* web_state = GetActiveWebState();
   // If there is no active WebState (which can happen during toolbar
@@ -85,15 +87,15 @@ security_state::SecurityLevel ToolbarModelDelegateIOS::GetSecurityLevel()
   return result.security_level;
 }
 
-scoped_refptr<net::X509Certificate> ToolbarModelDelegateIOS::GetCertificate()
-    const {
+scoped_refptr<net::X509Certificate>
+LocationBarModelDelegateIOS::GetCertificate() const {
   web::NavigationItem* item = GetNavigationItem();
   if (item)
     return item->GetSSL().certificate;
   return scoped_refptr<net::X509Certificate>();
 }
 
-bool ToolbarModelDelegateIOS::FailsMalwareCheck() const {
+bool LocationBarModelDelegateIOS::FailsMalwareCheck() const {
   web::WebState* web_state = GetActiveWebState();
   // If there is no active WebState (which can happen during toolbar
   // initialization), so nothing can fail.
@@ -106,11 +108,12 @@ bool ToolbarModelDelegateIOS::FailsMalwareCheck() const {
          security_state::MALICIOUS_CONTENT_STATUS_NONE;
 }
 
-const gfx::VectorIcon* ToolbarModelDelegateIOS::GetVectorIconOverride() const {
+const gfx::VectorIcon* LocationBarModelDelegateIOS::GetVectorIconOverride()
+    const {
   return nullptr;
 }
 
-bool ToolbarModelDelegateIOS::IsOfflinePage() const {
+bool LocationBarModelDelegateIOS::IsOfflinePage() const {
   web::WebState* web_state = GetActiveWebState();
   if (!web_state)
     return false;
