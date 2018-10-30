@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/services/unzip/public/interfaces/constants.mojom.h"
 #include "components/services/unzip/unzip_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -29,7 +30,9 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "services/data_decoder/data_decoder_service.h"
+#include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -96,17 +99,13 @@ struct UnzipFileFilterTestCase {
 class ZipFileInstallerTest : public testing::Test {
  public:
   ZipFileInstallerTest()
-      : browser_threads_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
-    service_manager::TestConnectorFactory::NameToServiceMap services;
-    services.insert(std::make_pair("data_decoder",
-                                   data_decoder::DataDecoderService::Create()));
-    services.insert(
-        std::make_pair("unzip_service", unzip::UnzipService::CreateService()));
-    test_connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForServices(
-            std::move(services));
-    connector_ = test_connector_factory_->CreateConnector();
-  }
+      : browser_threads_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+        data_decoder_(test_connector_factory_.RegisterInstance(
+            data_decoder::mojom::kServiceName)),
+        unzip_service_context_(unzip::UnzipService::CreateService(),
+                               test_connector_factory_.RegisterInstance(
+                                   unzip::mojom::kServiceName)),
+        connector_(test_connector_factory_.CreateConnector()) {}
 
   void SetUp() override {
     extensions::LoadErrorReporter::Init(/*enable_noisy_errors=*/false);
@@ -180,8 +179,9 @@ class ZipFileInstallerTest : public testing::Test {
 #endif
 
  private:
-  std::unique_ptr<service_manager::TestConnectorFactory>
-      test_connector_factory_;
+  service_manager::TestConnectorFactory test_connector_factory_;
+  data_decoder::DataDecoderService data_decoder_;
+  service_manager::ServiceContext unzip_service_context_;
   std::unique_ptr<service_manager::Connector> connector_;
 };
 

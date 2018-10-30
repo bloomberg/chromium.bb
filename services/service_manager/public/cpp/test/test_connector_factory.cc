@@ -187,7 +187,81 @@ class MultipleServiceConnector : public TestConnectorImplBase {
   DISALLOW_COPY_AND_ASSIGN(MultipleServiceConnector);
 };
 
+class ProxiedServiceConnector : public mojom::Connector {
+ public:
+  ProxiedServiceConnector(TestConnectorFactory::NameToServiceProxyMap* proxies,
+                          const std::string& test_user_id)
+      : proxies_(proxies), test_user_id_(test_user_id) {}
+
+  ~ProxiedServiceConnector() override = default;
+
+ private:
+  // mojom::Connector:
+  void BindInterface(const Identity& target,
+                     const std::string& interface_name,
+                     mojo::ScopedMessagePipeHandle interface_pipe,
+                     BindInterfaceCallback callback) override {
+    auto it = proxies_->find(target.name());
+    CHECK(it != proxies_->end())
+        << "TestConnectorFactory received a BindInterface request for an "
+        << "unregistered service '" << target.name() << "'";
+    mojom::ServicePtr& proxy = it->second;
+    proxy->OnBindInterface(
+        BindSourceInfo(Identity("TestConnectorFactory", test_user_id_),
+                       CapabilitySet()),
+        interface_name, std::move(interface_pipe), base::DoNothing());
+    std::move(callback).Run(mojom::ConnectResult::SUCCEEDED, Identity());
+  }
+
+  void StartService(const Identity& target,
+                    StartServiceCallback callback) override {
+    NOTREACHED();
+  }
+
+  void QueryService(const Identity& target,
+                    QueryServiceCallback callback) override {
+    NOTREACHED();
+  }
+
+  void StartServiceWithProcess(
+      const Identity& identity,
+      mojo::ScopedMessagePipeHandle service,
+      mojom::PIDReceiverRequest pid_receiver_request,
+      StartServiceWithProcessCallback callback) override {
+    NOTREACHED();
+  }
+
+  void Clone(mojom::ConnectorRequest request) override {
+    bindings_.AddBinding(this, std::move(request));
+  }
+
+  void FilterInterfaces(const std::string& spec,
+                        const Identity& source,
+                        mojom::InterfaceProviderRequest source_request,
+                        mojom::InterfaceProviderPtr target) override {
+    NOTREACHED();
+  }
+
+  TestConnectorFactory::NameToServiceProxyMap* const proxies_;
+  const std::string test_user_id_;
+  mojo::BindingSet<mojom::Connector> bindings_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProxiedServiceConnector);
+};
+
+void OnStartResponse(mojom::Connector* connector,
+                     mojom::ConnectorRequest connector_request,
+                     mojom::ServiceControlAssociatedRequest control_request) {
+  connector->Clone(std::move(connector_request));
+}
+
 }  // namespace
+
+TestConnectorFactory::TestConnectorFactory() {
+  std::string guid = base::GenerateGUID();
+  impl_ = std::make_unique<ProxiedServiceConnector>(&service_proxies_, guid);
+  test_user_id_ = guid;
+}
 
 TestConnectorFactory::TestConnectorFactory(
     std::unique_ptr<mojom::Connector> impl,
@@ -225,6 +299,16 @@ std::unique_ptr<Connector> TestConnectorFactory::CreateConnector() {
   mojom::ConnectorPtr proxy;
   impl_->Clone(mojo::MakeRequest(&proxy));
   return std::make_unique<Connector>(std::move(proxy));
+}
+
+mojom::ServiceRequest TestConnectorFactory::RegisterInstance(
+    const std::string& service_name) {
+  mojom::ServicePtr proxy;
+  mojom::ServiceRequest request = mojo::MakeRequest(&proxy);
+  proxy->OnStart(Identity(service_name, test_user_id_),
+                 base::BindOnce(&OnStartResponse, impl_.get()));
+  service_proxies_[service_name] = std::move(proxy);
+  return request;
 }
 
 }  // namespace service_manager

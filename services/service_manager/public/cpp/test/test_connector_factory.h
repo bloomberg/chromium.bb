@@ -52,8 +52,16 @@ class Service;
 //   ...
 class TestConnectorFactory {
  public:
+  // Creates a simple TestConnectorFactory which can be used register unowned
+  // Service instances and vend Connectors which can connect to them.
+  TestConnectorFactory();
   ~TestConnectorFactory();
 
+  // A mapping from service names to Service proxies for unowned Service
+  // instances.
+  using NameToServiceProxyMap = std::map<std::string, mojom::ServicePtr>;
+
+  // Used to hold a mapping from service names to owned Service instances.
   using NameToServiceMap = std::map<std::string, std::unique_ptr<Service>>;
 
   // Constructs a new TestConnectorFactory which creates Connectors whose
@@ -77,6 +85,11 @@ class TestConnectorFactory {
   // the Service instance associated with this factory.
   std::unique_ptr<Connector> CreateConnector();
 
+  // Registers a Service instance not owned by this TestConnectorFactory.
+  // Returns a ServiceRequest which the instance must bind in order to receive
+  // simulated events from this object.
+  mojom::ServiceRequest RegisterInstance(const std::string& service_name);
+
   const std::string& test_user_id() const { return test_user_id_; }
 
  private:
@@ -87,6 +100,11 @@ class TestConnectorFactory {
 
   std::unique_ptr<mojom::Connector> impl_;
   std::string test_user_id_;
+
+  // Mapping used only in the default-constructed case where Service instances
+  // are unowned by the TestConnectorFactory. Maps service names to their
+  // proxies.
+  NameToServiceProxyMap service_proxies_;
 
   DISALLOW_COPY_AND_ASSIGN(TestConnectorFactory);
 };

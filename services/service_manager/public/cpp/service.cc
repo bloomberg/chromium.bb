@@ -19,10 +19,17 @@ void Service::OnBindInterface(const BindSourceInfo& source,
                               const std::string& interface_name,
                               mojo::ScopedMessagePipeHandle interface_pipe) {}
 
-void Service::OnDisconnected() {}
+void Service::OnDisconnected() {
+  Terminate();
+}
 
 bool Service::OnServiceManagerConnectionLost() {
   return true;
+}
+
+void Service::Terminate() {
+  if (termination_closure_)
+    std::move(termination_closure_).Run();
 }
 
 ServiceContext* Service::context() const {

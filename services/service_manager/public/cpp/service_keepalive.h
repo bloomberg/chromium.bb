@@ -15,6 +15,7 @@
 
 namespace service_manager {
 
+class ServiceBinding;
 class ServiceContext;
 
 // Helper class which vends ServiceContextRefs from its own
@@ -39,11 +40,17 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT ServiceKeepalive {
     virtual void OnTimeoutCancelled() = 0;
   };
 
+  ServiceKeepalive(ServiceBinding* binding,
+                   base::Optional<base::TimeDelta> idle_timeout);
+
   // Creates a keepalive which allows the service to be idle for |idle_timeout|
   // before requesting termination. If |idle_timeout| is not given, the
   // ServiceKeepalive will never request termination, i.e. the service will
   // stay alive indefinitely. Both |context| and |timeout_observer| are not
   // owned and must outlive the ServiceKeepalive instance.
+  //
+  // DEPRECATED: Please consider switching from ServiceContext to ServiceBinding
+  // and using the constructor above.
   ServiceKeepalive(ServiceContext* context,
                    base::Optional<base::TimeDelta> idle_timeout,
                    TimeoutObserver* timeout_observer = nullptr);
@@ -57,12 +64,12 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT ServiceKeepalive {
   void OnRefCountZero();
   void OnTimerExpired();
 
-  ServiceContext* const context_;
+  ServiceBinding* const binding_ = nullptr;
+  ServiceContext* const context_ = nullptr;
   const base::Optional<base::TimeDelta> idle_timeout_;
-  TimeoutObserver* const timeout_observer_;
-  base::OneShotTimer idle_timer_;
+  base::Optional<base::OneShotTimer> idle_timer_;
+  TimeoutObserver* const timeout_observer_ = nullptr;
   ServiceContextRefFactory ref_factory_;
-  base::WeakPtrFactory<ServiceKeepalive> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceKeepalive);
 };

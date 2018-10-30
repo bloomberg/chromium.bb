@@ -1705,31 +1705,7 @@ TEST_F(DeveloperPrivateApiUnitTest, ExtensionUpdatedEventOnPermissionsChange) {
                                                    dummy_extension->id()));
 }
 
-class DeveloperPrivateZipInstallerUnitTest
-    : public DeveloperPrivateApiUnitTest {
- public:
-  DeveloperPrivateZipInstallerUnitTest() {
-    service_manager::TestConnectorFactory::NameToServiceMap services;
-    services.insert(std::make_pair("data_decoder",
-                                   data_decoder::DataDecoderService::Create()));
-    services.insert(
-        std::make_pair("unzip_service", unzip::UnzipService::CreateService()));
-    test_connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForServices(
-            std::move(services));
-    connector_ = test_connector_factory_->CreateConnector();
-  }
-  ~DeveloperPrivateZipInstallerUnitTest() override {}
-
- private:
-  std::unique_ptr<service_manager::TestConnectorFactory>
-      test_connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateZipInstallerUnitTest);
-};
-
-TEST_F(DeveloperPrivateZipInstallerUnitTest, InstallDroppedFileZip) {
+TEST_F(DeveloperPrivateApiUnitTest, InstallDroppedFileZip) {
   base::FilePath zip_path = data_dir().AppendASCII("simple_empty.zip");
   extensions::ExtensionInstallUI::set_disable_ui_for_tests();
   ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::ACCEPT);

@@ -107,11 +107,6 @@ std::unique_ptr<service_manager::Service> CreateCdmService() {
 }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
-std::unique_ptr<service_manager::Service> CreateDataDecoderService() {
-  content::UtilityThread::Get()->EnsureBlinkInitialized();
-  return data_decoder::DataDecoderService::Create();
-}
-
 std::unique_ptr<service_manager::Service> CreateVizService() {
   return std::make_unique<viz::Service>();
 }
@@ -168,11 +163,6 @@ void UtilityServiceFactory::RegisterServices(ServiceMap* services) {
 #endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #endif
 
-  service_manager::EmbeddedServiceInfo data_decoder_info;
-  data_decoder_info.factory = base::Bind(&CreateDataDecoderService);
-  services->insert(
-      std::make_pair(data_decoder::mojom::kServiceName, data_decoder_info));
-
   service_manager::EmbeddedServiceInfo viz_info;
   viz_info.factory = base::Bind(&CreateVizService);
   services->insert(std::make_pair(viz::mojom::kVizServiceName, viz_info));
@@ -187,6 +177,26 @@ void UtilityServiceFactory::RegisterServices(ServiceMap* services) {
     services->insert(
         std::make_pair(content::mojom::kNetworkServiceName, network_info));
   }
+}
+
+bool UtilityServiceFactory::HandleServiceRequest(
+    const std::string& name,
+    service_manager::mojom::ServiceRequest request) {
+  if (name == data_decoder::mojom::kServiceName) {
+    content::UtilityThread::Get()->EnsureBlinkInitialized();
+    running_service_ =
+        std::make_unique<data_decoder::DataDecoderService>(std::move(request));
+  }
+
+  if (running_service_) {
+    // If we actually started a service for this request, make sure its
+    // self-termination results in full process termination.
+    running_service_->set_termination_closure(base::BindOnce(
+        &UtilityServiceFactory::OnServiceQuit, base::Unretained(this)));
+    return true;
+  }
+
+  return false;
 }
 
 void UtilityServiceFactory::OnServiceQuit() {
