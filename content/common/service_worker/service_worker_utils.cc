@@ -276,6 +276,14 @@ ServiceWorkerFetchRequest ServiceWorkerUtils::DeserializeFetchRequestFromString(
   return request;
 }
 
+// static
+ServiceWorkerHeaderMap ServiceWorkerUtils::ToServiceWorkerHeaderMap(
+    const RequestHeaderMap& header_) {
+  content::ServiceWorkerHeaderMap header;
+  header.insert(header_.begin(), header_.end());
+  return header;
+}
+
 bool LongestScopeMatcher::MatchLongest(const GURL& scope) {
   if (!ServiceWorkerUtils::ScopeMatches(scope, url_))
     return false;

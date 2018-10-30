@@ -1,5 +1,6 @@
 include_rules = [
   "-content",
+  "+content/common/service_worker/service_worker_types.h",
   "+content/public",
   "+components/download/public/common",
   "+components/viz/common",

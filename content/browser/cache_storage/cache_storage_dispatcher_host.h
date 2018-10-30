@@ -20,6 +20,7 @@
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 
 namespace url {
 class Origin;
@@ -69,7 +70,7 @@ class CONTENT_EXPORT CacheStorageDispatcherHost
               blink::mojom::CacheStorage::DeleteCallback callback) override;
   void Has(const base::string16& cache_name,
            blink::mojom::CacheStorage::HasCallback callback) override;
-  void Match(const content::ServiceWorkerFetchRequest& request,
+  void Match(blink::mojom::FetchAPIRequestPtr request,
              blink::mojom::QueryParamsPtr match_params,
              blink::mojom::CacheStorage::MatchCallback callback) override;
   void Open(const base::string16& cache_name,

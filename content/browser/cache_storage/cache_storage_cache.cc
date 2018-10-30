@@ -33,6 +33,8 @@
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/cache_storage/cache_storage_quota_client.h"
 #include "content/browser/cache_storage/cache_storage_scheduler.h"
+#include "content/common/service_worker/service_worker_type_converter.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
@@ -146,8 +148,8 @@ bool VaryMatches(const ServiceWorkerHeaderMap& request,
     return true;
 
   for (const std::string& trimmed :
-       base::SplitString(vary_iter->second, ",",
-                         base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+       base::SplitString(vary_iter->second, ",", base::TRIM_WHITESPACE,
+                         base::SPLIT_WANT_NONEMPTY)) {
     if (trimmed == "*")
       return false;
 
@@ -197,7 +199,7 @@ bool FindDuplicateOperations(
   }
   std::sort(sorted->begin(), sorted->end(),
             [](BatchOperation* left, BatchOperation* right) {
-              return left->request.url < right->request.url;
+              return left->request->url < right->request->url;
             });
 
   // Check each entry in the sorted vector for any duplicates.  Since the
@@ -219,7 +221,7 @@ bool FindDuplicateOperations(
     // If this entry already matches a duplicate we found, then just skip
     // ahead to find any remaining duplicates.
     if (!duplicate_url_list_out->empty() &&
-        outer_op->request.url.spec() == duplicate_url_list_out->back()) {
+        outer_op->request->url.spec() == duplicate_url_list_out->back()) {
       continue;
     }
 
@@ -227,18 +229,27 @@ bool FindDuplicateOperations(
       const BatchOperation* inner_op = *inner;
       // Since the list is sorted we can stop looking at neighbors after
       // the first different URL.
-      if (outer_op->request.url != inner_op->request.url) {
+      if (outer_op->request->url != inner_op->request->url) {
         break;
       }
+
+      // This conversion is temporary and it will be removed once
+      // ServiceWorkerHeaderMap is removed.
+      ServiceWorkerHeaderMap request_header_map =
+          ServiceWorkerUtils::ToServiceWorkerHeaderMap(
+              outer_op->request->headers);
+      ServiceWorkerHeaderMap request_header_map_cached =
+          ServiceWorkerUtils::ToServiceWorkerHeaderMap(
+              inner_op->request->headers);
       // VaryMatches() is asymmetric since the operation depends on the VARY
       // header in the target response.  Since we only visit each pair of
       // entries once we need to perform the VaryMatches() call in both
       // directions.
-      if (VaryMatches(outer_op->request.headers, inner_op->request.headers,
+      if (VaryMatches(request_header_map, request_header_map_cached,
                       inner_op->response->headers) ||
-          VaryMatches(outer_op->request.headers, inner_op->request.headers,
+          VaryMatches(request_header_map, request_header_map_cached,
                       outer_op->response->headers)) {
-        duplicate_url_list_out->push_back(inner_op->request.url.spec());
+        duplicate_url_list_out->push_back(inner_op->request->url.spec());
         break;
       }
     }
@@ -1314,7 +1325,6 @@ void CacheStorageCache::WriteSideDataImpl(ErrorCallback callback,
                      expected_response_time, buffer, buf_len,
                      std::move(scoped_entry_ptr)));
 
-
   // Use LOWEST priority here as writing side data is less important than
   // loading resources on the page.
   int rv = backend_->OpenEntry(url.spec(), net::LOWEST, entry_ptr,
@@ -1350,9 +1360,8 @@ void CacheStorageCache::WriteSideDataDidReadMetaData(
     int buf_len,
     disk_cache::ScopedEntryPtr entry,
     std::unique_ptr<proto::CacheMetadata> headers) {
-  if (!headers ||
-      headers->response().response_time() !=
-          expected_response_time.ToInternalValue()) {
+  if (!headers || headers->response().response_time() !=
+                      expected_response_time.ToInternalValue()) {
     std::move(callback).Run(CacheStorageError::kErrorNotFound);
     return;
   }
@@ -1416,9 +1425,7 @@ void CacheStorageCache::Put(blink::mojom::BatchOperationPtr operation,
 
   std::unique_ptr<ServiceWorkerFetchRequest> request(
       new ServiceWorkerFetchRequest(
-          operation->request.url, operation->request.method,
-          operation->request.headers, operation->request.referrer,
-          operation->request.is_reload));
+          mojo::ConvertTo<ServiceWorkerFetchRequest>(operation->request)));
 
   Put(std::move(request), std::move(operation->response), std::move(callback));
 }
@@ -1826,9 +1833,10 @@ void CacheStorageCache::Delete(blink::mojom::BatchOperationPtr operation,
 
   std::unique_ptr<ServiceWorkerFetchRequest> request(
       new ServiceWorkerFetchRequest(
-          operation->request.url, operation->request.method,
-          operation->request.headers, operation->request.referrer,
-          operation->request.is_reload));
+          operation->request->url, operation->request->method,
+          ServiceWorkerUtils::ToServiceWorkerHeaderMap(
+              operation->request->headers),
+          operation->request->referrer, operation->request->is_reload));
 
   scheduler_->ScheduleOperation(base::BindOnce(
       &CacheStorageCache::DeleteImpl, weak_ptr_factory_.GetWeakPtr(),

@@ -5,7 +5,6 @@
 #include "content/common/background_fetch/background_fetch_struct_traits.h"
 
 #include "content/common/service_worker/service_worker.mojom.h"
-#include "content/common/service_worker/service_worker_fetch_request_mojom_traits.h"
 #include "mojo/public/cpp/bindings/array_data_view.h"
 #include "third_party/blink/public/common/manifest/manifest_mojom_traits.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"

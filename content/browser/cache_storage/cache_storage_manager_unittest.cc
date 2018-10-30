@@ -32,6 +32,7 @@
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/cache_storage/cache_storage_index.h"
 #include "content/browser/cache_storage/cache_storage_quota_client.h"
+#include "content/common/service_worker/service_worker_type_converter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cache_storage_usage_info.h"
 #include "content/public/browser/storage_partition.h"
@@ -55,6 +56,7 @@
 #include "storage/common/blob_storage/blob_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "url/origin.h"
 
 using blink::mojom::CacheStorageError;
@@ -492,7 +494,8 @@ class CacheStorageManagerTest : public testing::Test {
     blink::mojom::BatchOperationPtr operation =
         blink::mojom::BatchOperation::New();
     operation->operation_type = blink::mojom::OperationType::kPut;
-    operation->request = request;
+    operation->request =
+        mojo::ConvertTo<blink::mojom::FetchAPIRequestPtr>(request);
     operation->response = std::move(response);
 
     std::vector<blink::mojom::BatchOperationPtr> operations;
@@ -515,7 +518,8 @@ class CacheStorageManagerTest : public testing::Test {
     blink::mojom::BatchOperationPtr operation =
         blink::mojom::BatchOperation::New();
     operation->operation_type = blink::mojom::OperationType::kDelete;
-    operation->request = request;
+    operation->request =
+        mojo::ConvertTo<blink::mojom::FetchAPIRequestPtr>(request);
     operation->response = blink::mojom::FetchAPIResponse::New();
 
     std::vector<blink::mojom::BatchOperationPtr> operations;

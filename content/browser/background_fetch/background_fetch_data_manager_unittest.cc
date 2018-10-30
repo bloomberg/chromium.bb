@@ -28,15 +28,18 @@
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/common/service_worker/service_worker_type_converter.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/test/test_utils.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -477,7 +480,8 @@ class BackgroundFetchDataManagerTest
       operation_ptr_vec.push_back(blink::mojom::BatchOperation::New());
       operation_ptr_vec[0]->operation_type =
           blink::mojom::OperationType::kDelete;
-      operation_ptr_vec[0]->request = request;
+      operation_ptr_vec[0]->request =
+          mojo::ConvertTo<blink::mojom::FetchAPIRequestPtr>(request);
 
       handle.value()->BatchOperation(
           std::move(operation_ptr_vec), true /* fail_on_duplicates */,
