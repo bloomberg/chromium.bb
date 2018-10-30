@@ -54,6 +54,7 @@
   self.viewController.longPressDelegate = self.longPressDelegate;
 
   self.mediator = [[ToolbarMediator alloc] init];
+  self.mediator.incognito = self.browserState->IsOffTheRecord();
   self.mediator.templateURLService =
       ios::TemplateURLServiceFactory::GetForBrowserState(self.browserState);
   self.mediator.consumer = self.viewController;
