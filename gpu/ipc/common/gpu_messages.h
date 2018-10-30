@@ -30,6 +30,7 @@
 #include "gpu/ipc/common/surface_handle.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -82,6 +83,17 @@ IPC_STRUCT_BEGIN(GpuChannelMsg_CreateSharedImage_Params)
   IPC_STRUCT_MEMBER(uint32_t, release_id)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(GpuChannelMsg_ScheduleImageDecode_Params)
+  IPC_STRUCT_MEMBER(std::vector<uint8_t>, encoded_data)
+  IPC_STRUCT_MEMBER(gfx::Size, output_size)
+  IPC_STRUCT_MEMBER(int32_t, raster_decoder_route_id)
+  IPC_STRUCT_MEMBER(uint32_t, transfer_cache_entry_id)
+  IPC_STRUCT_MEMBER(int32_t, discardable_handle_shm_id)
+  IPC_STRUCT_MEMBER(uint32_t, discardable_handle_shm_offset)
+  IPC_STRUCT_MEMBER(gfx::ColorSpace, target_color_space)
+  IPC_STRUCT_MEMBER(bool, needs_mips)
+IPC_STRUCT_END()
+
 IPC_STRUCT_BEGIN(GpuDeferredMessage)
   IPC_STRUCT_MEMBER(IPC::Message, message)
   IPC_STRUCT_MEMBER(std::vector<gpu::SyncToken>, sync_token_fences)
@@ -115,6 +127,14 @@ IPC_MESSAGE_CONTROL1(GpuChannelMsg_FlushDeferredMessages,
 IPC_MESSAGE_ROUTED1(GpuChannelMsg_CreateSharedImage,
                     GpuChannelMsg_CreateSharedImage_Params /* params */)
 IPC_MESSAGE_ROUTED1(GpuChannelMsg_DestroySharedImage, gpu::Mailbox /* id */)
+
+// Schedules a hardware-accelerated image decode in the GPU process. Renderers
+// should use gpu::ImageDecodeAcceleratorProxy to schedule decode requests which
+// are processed by gpu::ImageDecodeAcceleratorStub on the service side.
+IPC_MESSAGE_ROUTED2(
+    GpuChannelMsg_ScheduleImageDecode,
+    GpuChannelMsg_ScheduleImageDecode_Params /* decode_params */,
+    uint64_t /* release_count */)
 
 // Crash the GPU process in similar way to how chrome://gpucrash does.
 // This is only supported in testing environments, and is otherwise ignored.

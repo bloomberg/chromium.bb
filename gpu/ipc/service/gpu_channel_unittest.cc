@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/gpu_channel_test_common.h"
@@ -27,7 +28,8 @@ TEST_F(GpuChannelTest, CreateViewCommandBufferAllowed) {
   SurfaceHandle surface_handle = kFakeSurfaceHandle;
   DCHECK_NE(surface_handle, kNullSurfaceHandle);
 
-  int32_t kRouteId = 1;
+  int32_t kRouteId =
+      static_cast<int32_t>(GpuChannelReservedRoutes::kMaxValue) + 1;
   GPUCreateCommandBufferConfig init_params;
   init_params.surface_handle = surface_handle;
   init_params.share_group_id = MSG_ROUTING_NONE;
@@ -55,7 +57,8 @@ TEST_F(GpuChannelTest, CreateViewCommandBufferDisallowed) {
   SurfaceHandle surface_handle = kFakeSurfaceHandle;
   DCHECK_NE(surface_handle, kNullSurfaceHandle);
 
-  int32_t kRouteId = 1;
+  int32_t kRouteId =
+      static_cast<int32_t>(GpuChannelReservedRoutes::kMaxValue) + 1;
   GPUCreateCommandBufferConfig init_params;
   init_params.surface_handle = surface_handle;
   init_params.share_group_id = MSG_ROUTING_NONE;
@@ -79,7 +82,8 @@ TEST_F(GpuChannelTest, CreateOffscreenCommandBuffer) {
   GpuChannel* channel = CreateChannel(kClientId, true);
   ASSERT_TRUE(channel);
 
-  int32_t kRouteId = 1;
+  int32_t kRouteId =
+      static_cast<int32_t>(GpuChannelReservedRoutes::kMaxValue) + 1;
   GPUCreateCommandBufferConfig init_params;
   init_params.surface_handle = kNullSurfaceHandle;
   init_params.share_group_id = MSG_ROUTING_NONE;
@@ -104,7 +108,8 @@ TEST_F(GpuChannelTest, IncompatibleStreamIds) {
   ASSERT_TRUE(channel);
 
   // Create first context.
-  int32_t kRouteId1 = 1;
+  int32_t kRouteId1 =
+      static_cast<int32_t>(GpuChannelReservedRoutes::kMaxValue) + 1;
   int32_t kStreamId1 = 1;
   GPUCreateCommandBufferConfig init_params;
   init_params.surface_handle = kNullSurfaceHandle;
@@ -124,7 +129,7 @@ TEST_F(GpuChannelTest, IncompatibleStreamIds) {
   EXPECT_TRUE(stub);
 
   // Create second context in same share group but different stream.
-  int32_t kRouteId2 = 2;
+  int32_t kRouteId2 = kRouteId1 + 1;
   int32_t kStreamId2 = 2;
 
   init_params.share_group_id = kRouteId1;
@@ -147,7 +152,8 @@ TEST_F(GpuChannelTest, CreateFailsIfSharedContextIsLost) {
   ASSERT_TRUE(channel);
 
   // Create first context, we will share this one.
-  int32_t kSharedRouteId = 1;
+  int32_t kSharedRouteId =
+      static_cast<int32_t>(GpuChannelReservedRoutes::kMaxValue) + 1;
   {
     SCOPED_TRACE("kSharedRouteId");
     GPUCreateCommandBufferConfig init_params;
@@ -168,7 +174,7 @@ TEST_F(GpuChannelTest, CreateFailsIfSharedContextIsLost) {
   EXPECT_TRUE(channel->LookupCommandBuffer(kSharedRouteId));
 
   // This context shares with the first one, this should be possible.
-  int32_t kFriendlyRouteId = 2;
+  int32_t kFriendlyRouteId = kSharedRouteId + 1;
   {
     SCOPED_TRACE("kFriendlyRouteId");
     GPUCreateCommandBufferConfig init_params;
@@ -193,7 +199,7 @@ TEST_F(GpuChannelTest, CreateFailsIfSharedContextIsLost) {
 
   // Meanwhile another context is being made pointing to the shared one. This
   // should fail.
-  int32_t kAnotherRouteId = 3;
+  int32_t kAnotherRouteId = kFriendlyRouteId + 1;
   {
     SCOPED_TRACE("kAnotherRouteId");
     GPUCreateCommandBufferConfig init_params;

@@ -44,7 +44,11 @@ GpuChannelHost::GpuChannelHost(int channel_id,
       shared_image_interface_(
           this,
           static_cast<int32_t>(
-              GpuChannelReservedRoutes::kSharedImageInterface)) {
+              GpuChannelReservedRoutes::kSharedImageInterface)),
+      image_decode_accelerator_proxy_(
+          this,
+          static_cast<int32_t>(
+              GpuChannelReservedRoutes::kImageDecodeAccelerator)) {
   next_image_id_.GetNext();
   for (int32_t i = 0;
        i <= static_cast<int32_t>(GpuChannelReservedRoutes::kMaxValue); ++i)

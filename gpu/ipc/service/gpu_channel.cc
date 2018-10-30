@@ -45,6 +45,7 @@
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
+#include "gpu/ipc/service/image_decode_accelerator_stub.h"
 #include "gpu/ipc/service/raster_command_buffer_stub.h"
 #include "gpu/ipc/service/webgpu_command_buffer_stub.h"
 #include "ipc/ipc_channel.h"
@@ -119,6 +120,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelMessageFilter
   Scheduler* scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
+  scoped_refptr<ImageDecodeAcceleratorStub> image_decode_accelerator_stub_;
   base::ThreadChecker io_thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannelMessageFilter);
@@ -130,7 +132,12 @@ GpuChannelMessageFilter::GpuChannelMessageFilter(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
     : gpu_channel_(gpu_channel),
       scheduler_(scheduler),
-      main_task_runner_(std::move(main_task_runner)) {
+      main_task_runner_(std::move(main_task_runner)),
+      image_decode_accelerator_stub_(
+          base::MakeRefCounted<ImageDecodeAcceleratorStub>(
+              gpu_channel,
+              static_cast<int32_t>(
+                  GpuChannelReservedRoutes::kImageDecodeAccelerator))) {
   io_thread_checker_.DetachFromThread();
 }
 
@@ -140,6 +147,7 @@ GpuChannelMessageFilter::~GpuChannelMessageFilter() {
 
 void GpuChannelMessageFilter::Destroy() {
   base::AutoLock auto_lock(gpu_channel_lock_);
+  image_decode_accelerator_stub_->Shutdown();
   gpu_channel_ = nullptr;
 }
 
@@ -270,7 +278,11 @@ bool GpuChannelMessageFilter::OnMessageReceived(const IPC::Message& message) {
     }
 
     scheduler_->ScheduleTasks(std::move(tasks));
-
+  } else if (message.routing_id() ==
+             static_cast<int32_t>(
+                 GpuChannelReservedRoutes::kImageDecodeAccelerator)) {
+    if (!image_decode_accelerator_stub_->OnMessageReceived(message))
+      return MessageErrorHandler(message, "Invalid image decode request");
   } else if (message.routing_id() == MSG_ROUTING_CONTROL ||
              message.type() == GpuCommandBufferMsg_WaitForTokenInRange::ID ||
              message.type() ==
