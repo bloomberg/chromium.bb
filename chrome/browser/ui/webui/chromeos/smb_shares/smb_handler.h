@@ -2,33 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_SMB_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_SMB_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_SMB_SHARES_SMB_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_CHROMEOS_SMB_SHARES_SMB_HANDLER_H_
 
 #include "base/callback_forward.h"
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/smb_client/smb_service.h"
-#include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
+#include "content/public/browser/web_ui_message_handler.h"
 
 class Profile;
 
 namespace chromeos {
-namespace settings {
+namespace smb_dialog {
 
 using smb_client::SmbMountResult;
 
-class SmbHandler : public ::settings::SettingsPageUIHandler {
+class SmbHandler : public content::WebUIMessageHandler {
  public:
   explicit SmbHandler(Profile* profile);
   ~SmbHandler() override;
 
-  void RegisterMessages() override;
-  void OnJavascriptAllowed() override {}
-  void OnJavascriptDisallowed() override {}
-
  private:
+  // content::WebUIMessageHandler
+  void RegisterMessages() override;
+
   // WebUI call to mount an Smb Filesystem.
   void HandleSmbMount(const base::ListValue* args);
 
@@ -53,7 +52,7 @@ class SmbHandler : public ::settings::SettingsPageUIHandler {
   DISALLOW_COPY_AND_ASSIGN(SmbHandler);
 };
 
-}  // namespace settings
+}  // namespace smb_dialog
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_SMB_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_SMB_SHARES_SMB_HANDLER_H_

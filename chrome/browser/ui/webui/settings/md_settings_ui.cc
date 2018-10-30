@@ -80,6 +80,7 @@
 #include "chrome/browser/chromeos/multidevice_setup/android_sms_app_helper_delegate_impl.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/ui/webui/chromeos/smb_shares/smb_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/accessibility_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/account_manager_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/android_apps_handler.h"
@@ -97,7 +98,6 @@
 #include "chrome/browser/ui/webui/settings/chromeos/google_assistant_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/internet_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/multidevice_handler.h"
-#include "chrome/browser/ui/webui/settings/chromeos/smb_handler.h"
 #include "chrome/browser/web_applications/bookmark_apps/system_web_app_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/browser_resources.h"
@@ -237,14 +237,14 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::PointerHandler>());
   AddSettingsPageUIHandler(
-      std::make_unique<chromeos::settings::SmbHandler>(profile));
-  AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::StorageHandler>(profile));
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::StylusHandler>());
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::InternetHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<TtsHandler>());
+  AddSettingsPageUIHandler(
+      std::make_unique<chromeos::smb_dialog::SmbHandler>(profile));
 #else
   AddSettingsPageUIHandler(std::make_unique<DefaultBrowserHandler>());
   AddSettingsPageUIHandler(std::make_unique<ManageProfileHandler>(profile));
