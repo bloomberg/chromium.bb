@@ -17,7 +17,7 @@
 #include "net/third_party/http2/hpack/decoder/hpack_decoder_state.h"
 #include "net/third_party/http2/hpack/decoder/hpack_decoder_tables.h"
 #include "net/third_party/http2/hpack/tools/hpack_block_builder.h"
-#include "net/third_party/http2/tools/http2_random.h"
+#include "net/third_party/http2/test_tools/http2_random.h"
 #include "net/third_party/spdy/core/hpack/hpack_constants.h"
 #include "net/third_party/spdy/core/hpack/hpack_encoder.h"
 #include "net/third_party/spdy/core/hpack/hpack_output_stream.h"

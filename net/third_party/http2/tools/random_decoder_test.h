@@ -21,8 +21,8 @@
 #include "net/third_party/http2/decoder/decode_status.h"
 #include "net/third_party/http2/platform/api/http2_string.h"
 #include "net/third_party/http2/platform/api/http2_string_piece.h"
+#include "net/third_party/http2/test_tools/http2_random.h"
 #include "net/third_party/http2/tools/failure.h"
-#include "net/third_party/http2/tools/http2_random.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace http2 {
@@ -39,7 +39,7 @@ Http2StringPiece ToStringPiece(T (&data)[N]) {
 // the enum type, but which fits into its storage.
 template <typename T,
           typename E = typename std::enable_if<std::is_enum<T>::value>::type>
-void CorruptEnum(T* out, RandomBase* rng) {
+void CorruptEnum(T* out, Http2Random* rng) {
   // Per cppreference.com, if the destination type of a static_cast is
   // smaller than the source type (i.e. type of r and uint32 below), the
   // resulting value is the smallest unsigned value equal to the source value
@@ -236,11 +236,11 @@ class RandomDecoderTest : public ::testing::Test {
     return ValidateDoneAndOffset(offset, validator);
   }
 
-  // Expose |random_| as RandomBase so callers do not have to care about which
-  // sub-class of RandomBase is used, nor can they rely on the specific
+  // Expose |random_| as Http2Random so callers do not have to care about which
+  // sub-class of Http2Random is used, nor can they rely on the specific
   // sub-class that RandomDecoderTest uses.
-  RandomBase& Random() { return random_; }
-  RandomBase* RandomPtr() { return &random_; }
+  Http2Random& Random() { return random_; }
+  Http2Random* RandomPtr() { return &random_; }
 
   uint32_t RandStreamId();
 

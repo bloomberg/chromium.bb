@@ -5,7 +5,7 @@
 #include "net/third_party/http2/decoder/decode_buffer.h"
 
 #include "base/logging.h"
-#include "net/third_party/http2/tools/http2_random.h"
+#include "net/third_party/http2/test_tools/http2_random.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace http2 {

@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "base/rand_util.h"
 #include "net/third_party/http2/tools/failure.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -91,8 +90,8 @@ void HpackBlockCollector::ExpectLiteralNameAndValue(HpackEntryType type,
       HpackEntryCollector(type, name_huffman, name, value_huffman, value));
 }
 
-void HpackBlockCollector::ShuffleEntries(RandomBase* rng) {
-  base::RandomShuffle(entries_.begin(), entries_.end());
+void HpackBlockCollector::ShuffleEntries(Http2Random* rng) {
+  std::shuffle(entries_.begin(), entries_.end(), *rng);
 }
 
 void HpackBlockCollector::AppendToHpackBlockBuilder(

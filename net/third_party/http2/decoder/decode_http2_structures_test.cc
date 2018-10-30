@@ -16,8 +16,8 @@
 #include "net/third_party/http2/http2_structures_test_util.h"
 #include "net/third_party/http2/platform/api/http2_string.h"
 #include "net/third_party/http2/platform/api/http2_string_piece.h"
+#include "net/third_party/http2/test_tools/http2_random.h"
 #include "net/third_party/http2/tools/http2_frame_builder.h"
-#include "net/third_party/http2/tools/http2_random.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::AssertionResult;
