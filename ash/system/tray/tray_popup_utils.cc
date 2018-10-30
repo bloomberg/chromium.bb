@@ -367,7 +367,7 @@ bool TrayPopupUtils::CanOpenWebUISettings() {
 void TrayPopupUtils::InitializeAsCheckableRow(HoverHighlightView* container,
                                               bool checked) {
   gfx::ImageSkia check_mark =
-      CreateVectorIcon(kCheckCircleIcon, gfx::kGoogleGreen700);
+      CreateVectorIcon(kCheckCircleIcon, gfx::kGoogleGreenDark600);
   container->AddRightIcon(check_mark, check_mark.width());
   UpdateCheckMarkVisibility(container, checked);
 }
