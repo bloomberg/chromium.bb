@@ -151,8 +151,10 @@ public class MediaViewerUtils {
     public static void setOriginalUrlAndReferralExtraToIntent(
             Intent intent, String originalUrl, String referrer) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) return;
-        if (originalUrl != null) intent.putExtra(Intent.EXTRA_ORIGINATING_URI, originalUrl);
-        if (referrer != null) intent.putExtra(Intent.EXTRA_REFERRER, referrer);
+        if (originalUrl != null) {
+            intent.putExtra(Intent.EXTRA_ORIGINATING_URI, Uri.parse(originalUrl));
+        }
+        if (referrer != null) intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse(originalUrl));
     }
 
     /**
