@@ -426,6 +426,7 @@ void PopulateMetrics(GlobalMemoryDumpPtr& global_dump,
       return;
     case ProcessType::PLUGIN:
     case ProcessType::OTHER:
+    case ProcessType::ARC:
       break;
   }
 
@@ -446,6 +447,7 @@ base::flat_map<const char*, int64_t> GetExpectedProcessMetrics(
       return GetExpectedAudioServiceMetrics();
     case ProcessType::PLUGIN:
     case ProcessType::OTHER:
+    case ProcessType::ARC:
       break;
   }
 

@@ -70,6 +70,7 @@ int GetContentProcessType(
     case ProcessType::PLUGIN:
       return content::ProcessType::PROCESS_TYPE_PLUGIN_DEPRECATED;
 
+    case ProcessType::ARC:
     case ProcessType::OTHER:
       return content::ProcessType::PROCESS_TYPE_UNKNOWN;
   }

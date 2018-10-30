@@ -67,6 +67,7 @@ if (is_chromeos) {
       "//device/usb/public/mojom",
       "//mojo/public/mojom/base",
       "//services/media_session/public/mojom",
+      "//services/resource_coordinator/public/mojom",
       "//ui/accessibility/mojom",
       "//ui/gfx/geometry/mojo",
       "//url/mojom:url_mojom_gurl",

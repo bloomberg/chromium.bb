@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 7
+// Next MinVersion: 8
 
 module arc.mojom;
+
+import "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom";
 
 // Describes the current process state, as defined by AOSP in
 // android.app.ActivityManager.
@@ -107,6 +109,7 @@ struct RunningAppProcessInfo {
   int64 last_activity_time;
 };
 
+// Next Method ID: 8
 interface ProcessInstance {
   // Requests ARC instance to kill a process.
   [MinVersion=1]
@@ -114,4 +117,14 @@ interface ProcessInstance {
 
   [MinVersion=6]
   RequestProcessList@5() => (array<RunningAppProcessInfo> processes);
+
+  // Requests memory usage dumps for all ARC application processes.
+  [MinVersion=7]
+  RequestApplicationProcessMemoryInfo@6()
+      => (memory_instrumentation.mojom.GlobalMemoryDump dump);
+
+  // Requests memory usage dumps for all ARC system processes.
+  [MinVersion=7]
+  RequestSystemProcessMemoryInfo@7(array<uint32> nspids)
+      => (memory_instrumentation.mojom.GlobalMemoryDump dump);
 };
