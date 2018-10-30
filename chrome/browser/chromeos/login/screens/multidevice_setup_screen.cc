@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chromeos/login/screens/multidevice_setup_screen_view.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/chromeos/multidevice_setup/oobe_completion_tracker_factory.h"
@@ -18,7 +19,8 @@ namespace chromeos {
 
 namespace {
 
-constexpr const char kFinishedUserAction[] = "setup-finished";
+constexpr const char kAcceptedSetupUserAction[] = "setup-accepted";
+constexpr const char kDeclinedSetupUserAction[] = "setup-declined";
 
 }  // namespace
 
@@ -84,12 +86,23 @@ void MultiDeviceSetupScreen::Hide() {
 }
 
 void MultiDeviceSetupScreen::OnUserAction(const std::string& action_id) {
-  if (action_id == kFinishedUserAction) {
+  if (action_id == kAcceptedSetupUserAction) {
+    RecordMultiDeviceSetupOOBEUserChoiceHistogram(
+        MultiDeviceSetupOOBEUserChoice::kAccepted);
     ExitScreen();
-    return;
+  } else if (action_id == kDeclinedSetupUserAction) {
+    RecordMultiDeviceSetupOOBEUserChoiceHistogram(
+        MultiDeviceSetupOOBEUserChoice::kDeclined);
+    ExitScreen();
+  } else {
+    BaseScreen::OnUserAction(action_id);
+    NOTREACHED();
   }
+}
 
-  BaseScreen::OnUserAction(action_id);
+void MultiDeviceSetupScreen::RecordMultiDeviceSetupOOBEUserChoiceHistogram(
+    MultiDeviceSetupOOBEUserChoice value) {
+  UMA_HISTOGRAM_ENUMERATION("MultiDeviceSetup.OOBE.UserChoice", value);
 }
 
 void MultiDeviceSetupScreen::ExitScreen() {
