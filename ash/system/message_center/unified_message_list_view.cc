@@ -273,7 +273,7 @@ void UnifiedMessageListView::OnNotificationUpdated(const std::string& id) {
   ResetBounds();
 }
 
-void UnifiedMessageListView::OnSlideChanged(
+void UnifiedMessageListView::OnSlideStarted(
     const std::string& notification_id) {
   // When the swipe control for |notification_id| is shown, hide all other swipe
   // controls.

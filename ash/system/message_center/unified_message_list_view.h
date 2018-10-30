@@ -62,7 +62,7 @@ class ASH_EXPORT UnifiedMessageListView
   void OnNotificationUpdated(const std::string& id) override;
 
   // message_center::MessageView::SlideObserver:
-  void OnSlideChanged(const std::string& notification_id) override;
+  void OnSlideStarted(const std::string& notification_id) override;
 
   // gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;

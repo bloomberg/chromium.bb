@@ -50,7 +50,10 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
 
   class SlideObserver {
    public:
-    virtual void OnSlideChanged(const std::string& notification_id) = 0;
+    virtual ~SlideObserver() = default;
+
+    virtual void OnSlideStarted(const std::string& notification_id) {}
+    virtual void OnSlideChanged(const std::string& notification_id) {}
   };
 
   enum class Mode {
@@ -126,6 +129,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
 
   // message_center::SlideOutController::Delegate:
   ui::Layer* GetSlideOutLayer() override;
+  void OnSlideStarted() override;
   void OnSlideChanged(bool in_progress) override;
   void OnSlideOut() override;
 
