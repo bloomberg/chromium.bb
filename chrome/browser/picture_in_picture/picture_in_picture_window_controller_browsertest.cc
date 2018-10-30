@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views/overlay/overlay_window_views.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -189,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
 }
 
-#if (defined(OS_MACOSX) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 class PictureInPicturePixelComparisonBrowserTest
     : public PictureInPictureWindowControllerBrowserTest {
  public:
@@ -232,7 +233,8 @@ class PictureInPicturePixelComparisonBrowserTest
             base::BindOnce(
                 &PictureInPicturePixelComparisonBrowserTest::ReadbackResult,
                 base::Unretained(this), run_loop.QuitClosure()));
-    overlay_window_views->GetLayer()->RequestCopyOfOutput(std::move(request));
+    overlay_window_views->GetNativeWindow()->layer()->RequestCopyOfOutput(
+        std::move(request));
     run_loop.Run();
   }
 
@@ -269,7 +271,8 @@ class PictureInPicturePixelComparisonBrowserTest
   std::unique_ptr<SkBitmap> result_bitmap_;
 };
 
-// TODO(cliffordcheng): enable on Windows when compile errors are resolved.
+// TODO(cliffordcheng): enable this tests on other platforms when
+// Windows and Mac capture screen problem is solved.
 // Plays a video and then trigger Picture-in-Picture. Grabs a screenshot of
 // Picture-in-Picture window and verifies it's as expected.
 IN_PROC_BROWSER_TEST_F(PictureInPicturePixelComparisonBrowserTest, VideoPlay) {
@@ -317,7 +320,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPicturePixelComparisonBrowserTest, VideoPlay) {
   ASSERT_TRUE(SaveBitmap(test_image_path, GetResultBitmap()));
   EXPECT_TRUE(CompareImages(GetResultBitmap()));
 }
-#endif  // (defined(OS_MACOSX) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 // Tests that when an active WebContents accurately tracks whether a video
 // is in Picture-in-Picture.
