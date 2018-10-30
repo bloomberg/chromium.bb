@@ -667,7 +667,8 @@ void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds,
 void WindowState::UpdatePipRoundedCorners() {
   auto* layer = window()->layer();
   if (!IsPip()) {
-    if (layer)
+    // Only remove the mask layer if it is from the existing PIP mask.
+    if (layer && pip_mask_ && layer->layer_mask_layer() == pip_mask_->layer())
       layer->SetMaskLayer(nullptr);
     pip_mask_.reset();
     return;
