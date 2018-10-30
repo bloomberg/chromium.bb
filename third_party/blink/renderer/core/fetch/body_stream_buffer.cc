@@ -402,11 +402,6 @@ void BodyStreamBuffer::CloseAndLockAndDisturb(ExceptionState& exception_state) {
   if (exception_state.HadException())
     return;
 
-  // This IsEmpty() CHECK and the other ones in this method are temporary to
-  // help diagnose https://crbug.com/882599.
-  // TODO(ricea): Remove these checks before M71 becomes stable.
-  CHECK(!stream_.IsEmpty());
-
   DCHECK(is_readable.has_value());
   if (is_readable.value()) {
     // Note that the stream cannot be "draining", because it doesn't have
@@ -417,13 +412,9 @@ void BodyStreamBuffer::CloseAndLockAndDisturb(ExceptionState& exception_state) {
 
   ScriptState::Scope scope(script_state_);
 
-  CHECK(!stream_.IsEmpty());
-
   const base::Optional<bool> is_locked = IsStreamLocked(exception_state);
   if (exception_state.HadException() || is_locked.value())
     return;
-
-  CHECK(!stream_.IsEmpty());
 
   ScriptValue reader = ReadableStreamOperations::GetReader(
       script_state_, Stream(), exception_state);
@@ -431,8 +422,6 @@ void BodyStreamBuffer::CloseAndLockAndDisturb(ExceptionState& exception_state) {
     stream_broken_ = true;
     return;
   }
-
-  CHECK(!stream_.IsEmpty());
 
   ReadableStreamOperations::DefaultReaderRead(script_state_, reader);
 }
