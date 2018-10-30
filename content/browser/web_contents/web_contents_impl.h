@@ -360,7 +360,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void AttachToOuterWebContentsFrame(
       std::unique_ptr<WebContents> current_web_contents,
       RenderFrameHost* outer_contents_frame) override;
-  WebContentsImpl* GetOuterWebContents() override;
+  WebContentsImpl* GetOuterWebContents() const override;
   WebContentsImpl* GetOutermostWebContents() override;
   void DidChangeVisibleSecurityState() override;
   void NotifyPreferencesChanged() override;

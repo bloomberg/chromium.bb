@@ -16,7 +16,7 @@ class CONTENT_EXPORT GuestMode {
  public:
   // Returns true if |web_contents| is an inner WebContents based on cross
   // process frames.
-  static bool IsCrossProcessFrameGuest(WebContents* web_contents);
+  static bool IsCrossProcessFrameGuest(const WebContents* web_contents);
 
  private:
   GuestMode();

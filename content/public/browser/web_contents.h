@@ -535,7 +535,7 @@ class WebContents : public PageNavigator,
 
   // Returns the outer WebContents of this WebContents if any.
   // Otherwise, return nullptr.
-  virtual WebContents* GetOuterWebContents() = 0;
+  virtual WebContents* GetOuterWebContents() const = 0;
 
   // Returns the root WebContents of the WebContents tree. Always returns
   // non-null value.
