@@ -259,6 +259,9 @@ struct GLRenderer::DrawRenderPassDrawQuadParams {
   // Filtered background texture.
   sk_sp<SkImage> background_image;
   GLuint background_image_id = 0;
+  // A multiplier for the temporary surface we create to apply the backdrop
+  // filter.
+  float backdrop_filter_quality = 1.0;
   // Whether the original background texture is needed for the mask.
   bool mask_for_background = false;
 };
@@ -805,7 +808,8 @@ sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
     const cc::FilterOperations& backdrop_filters,
     uint32_t background_texture,
     const gfx::Rect& rect,
-    const gfx::Rect& unclipped_rect) {
+    const gfx::Rect& unclipped_rect,
+    const float backdrop_filter_quality) {
   DCHECK(ShouldApplyBackgroundFilters(quad, &backdrop_filters));
   auto use_gr_context = ScopedUseGrContext::Create(this);
 
@@ -834,9 +838,12 @@ sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
     return nullptr;
   }
 
+  gfx::Rect quality_adjusted_rect =
+      ScaleToEnclosingRect(rect, backdrop_filter_quality);
+
   // Create surface to draw into.
-  SkImageInfo dst_info =
-      SkImageInfo::MakeN32Premul(rect.width(), rect.height());
+  SkImageInfo dst_info = SkImageInfo::MakeN32Premul(
+      quality_adjusted_rect.width(), quality_adjusted_rect.height());
   sk_sp<SkSurface> surface = SkSurface::MakeRenderTarget(
       use_gr_context->context(), SkBudgeted::kYes, dst_info);
   if (!surface) {
@@ -850,12 +857,17 @@ sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
   // to disable subnormal floats for performance and security reasons.
   cc::ScopedSubnormalFloatDisabler disabler;
   SkMatrix local_matrix;
-  local_matrix.setScale(quad->filters_scale.x(), quad->filters_scale.y());
+  local_matrix.setScale(quad->filters_scale.x() * backdrop_filter_quality,
+                        quad->filters_scale.y() * backdrop_filter_quality);
 
   SkPaint paint;
   paint.setImageFilter(filter->makeWithLocalMatrix(local_matrix));
-  surface->getCanvas()->translate(-rect.x(), -rect.y());
-  surface->getCanvas()->drawImage(src_image, rect.x(), rect.y(), &paint);
+  surface->getCanvas()->translate(-quality_adjusted_rect.x(),
+                                  -quality_adjusted_rect.y());
+  surface->getCanvas()->drawImageRect(
+      src_image, SkRect::MakeWH(rect.width(), rect.height()),
+      RectToSkRect(quality_adjusted_rect), &paint);
+
   // Flush the drawing before source texture read lock goes out of scope.
   // Skia API does not guarantee that when the SkImage goes out of scope,
   // its externally referenced resources would force the rendering to be
@@ -883,6 +895,7 @@ void GLRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
   params.window_matrix = current_frame()->window_matrix;
   params.projection_matrix = current_frame()->projection_matrix;
   params.tex_coord_rect = quad->tex_coord_rect;
+  params.backdrop_filter_quality = quad->backdrop_filter_quality;
   if (bypass != render_pass_bypass_quads_.end()) {
     TileDrawQuad* tile_quad = &bypass->second;
     // The projection matrix used by GLRenderer has a flip.  As tile texture
@@ -1034,7 +1047,8 @@ void GLRenderer::UpdateRPDQShadersForBlending(
         // pixels' coordinate space.
         params->background_image = ApplyBackgroundFilters(
             quad, *params->backdrop_filters, params->background_texture,
-            params->background_rect, unclipped_rect);
+            params->background_rect, unclipped_rect,
+            params->backdrop_filter_quality);
         if (params->background_image) {
           params->background_image_id =
               GetGLTextureIDFromSkImage(params->background_image.get());
@@ -1352,6 +1366,8 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
     if (params->background_image_id) {
       gl_->ActiveTexture(GL_TEXTURE0 + last_texture_unit);
       gl_->BindTexture(GL_TEXTURE_2D, params->background_image_id);
+      if (params->backdrop_filter_quality != 1.0f)
+        gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
       gl_->ActiveTexture(GL_TEXTURE0);
     }
     // If |mask_for_background| then we have both |background_image_id| and

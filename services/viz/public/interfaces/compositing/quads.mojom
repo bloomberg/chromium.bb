@@ -41,6 +41,7 @@ struct RenderPassQuadState {
   gfx.mojom.RectF tex_coord_rect;
 
   bool force_anti_aliasing_off;
+  float backdrop_filter_quality;
 };
 
 struct SolidColorQuadState {
