@@ -92,9 +92,6 @@ class EasyUnlockService : public KeyedService {
   // Returns the user currently associated with the service.
   virtual AccountId GetAccountId() const = 0;
 
-  // Launches Easy Unlock setup app.
-  virtual void LaunchSetup() = 0;
-
   // Gets/Sets/Clears the permit access for the local device.
   virtual void ClearPermitAccess() = 0;
 
@@ -225,9 +222,6 @@ class EasyUnlockService : public KeyedService {
 
   // Exposes the profile to which the service is attached to subclasses.
   Profile* profile() const { return profile_; }
-
-  // Opens an Easy Unlock Setup app window.
-  void OpenSetupApp();
 
   // Checks whether Easy unlock should be running and updates app state.
   void UpdateAppState();

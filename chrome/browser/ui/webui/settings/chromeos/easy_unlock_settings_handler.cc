@@ -57,10 +57,6 @@ void EasyUnlockSettingsHandler::RegisterMessages() {
       base::BindRepeating(&EasyUnlockSettingsHandler::HandleGetEnabledStatus,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "easyUnlockStartTurnOnFlow",
-      base::BindRepeating(&EasyUnlockSettingsHandler::HandleStartTurnOnFlow,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
       "easyUnlockGetTurnOffFlowStatus",
       base::BindRepeating(
           &EasyUnlockSettingsHandler::HandleGetTurnOffFlowStatus,
@@ -135,11 +131,6 @@ void EasyUnlockSettingsHandler::HandleGetEnabledStatus(
   CHECK(args->Get(0, &callback_id));
   ResolveJavascriptCallback(
       *callback_id, base::Value(EasyUnlockService::Get(profile_)->IsEnabled()));
-}
-
-void EasyUnlockSettingsHandler::HandleStartTurnOnFlow(
-    const base::ListValue* args) {
-  EasyUnlockService::Get(profile_)->LaunchSetup();
 }
 
 void EasyUnlockSettingsHandler::HandleGetTurnOffFlowStatus(

@@ -226,10 +226,6 @@ AccountId EasyUnlockServiceSignin::GetAccountId() const {
   return account_id_;
 }
 
-void EasyUnlockServiceSignin::LaunchSetup() {
-  NOTREACHED();
-}
-
 void EasyUnlockServiceSignin::ClearPermitAccess() {
   NOTREACHED();
 }

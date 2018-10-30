@@ -39,7 +39,6 @@ TEST_F('SettingsEasyUnlockBrowserTest', 'DISABLED_EasyUnlock', function() {
     constructor() {
       super([
         'getEnabledStatus',
-        'startTurnOnFlow',
         'getTurnOffFlowStatus',
         'startTurnOffFlow',
         'cancelTurnOffFlow',
@@ -60,11 +59,6 @@ TEST_F('SettingsEasyUnlockBrowserTest', 'DISABLED_EasyUnlock', function() {
     getEnabledStatus() {
       this.methodCalled('getEnabledStatus');
       return Promise.resolve(this.isEnabled_);
-    }
-
-    /** @override */
-    startTurnOnFlow() {
-      this.methodCalled('startTurnOnFlow');
     }
 
     /** @override */
@@ -102,7 +96,6 @@ TEST_F('SettingsEasyUnlockBrowserTest', 'DISABLED_EasyUnlock', function() {
         easyUnlockSectionTitle: '',
         easyUnlockLearnMoreURL: '',
         easyUnlockSetupIntro: '',
-        easyUnlockSetupButton: '',
 
         easyUnlockDescription: '',
         easyUnlockTurnOffTitle: '',
@@ -117,24 +110,6 @@ TEST_F('SettingsEasyUnlockBrowserTest', 'DISABLED_EasyUnlock', function() {
 
       PolymerTest.clearBody();
       lockScreen = document.createElement('settings-lock-screen');
-    });
-
-    test('setup button', function() {
-      document.body.appendChild(lockScreen);
-
-      return browserProxy.whenCalled('getEnabledStatus').then(function() {
-        assertTrue(lockScreen.easyUnlockAllowed_);
-        expectFalse(lockScreen.easyUnlockEnabled_);
-
-        Polymer.dom.flush();
-
-        const setupButton = lockScreen.$$('#easyUnlockSetup');
-        assertTrue(!!setupButton);
-        expectFalse(setupButton.hidden);
-
-        setupButton.click();
-        return browserProxy.whenCalled('startTurnOnFlow');
-      });
     });
 
     test('turn off dialog', function() {
