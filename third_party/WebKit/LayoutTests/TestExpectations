@@ -47,7 +47,7 @@ crbug.com/891427 editing/selection/drag-in-iframe.html [ Failure ]
 crbug.com/891427 fast/overflow/scrollRevealButton.html [ Crash ]
 crbug.com/891427 fast/overflow/transformed-frame-scrollIntoView.html [ Crash ]
 ## Next 1 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win7_chromium_rel_ng/114099
-crbug.com/891427 [ Win ] external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-all.https.sub.html [ Timeout ]
+crbug.com/891427 [ Win Mac10.12 ] external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-all.https.sub.html [ Timeout ]
 
 ### Flaky on trybots:
 ### Note: this list includes anything that flaked even once during my (many)
@@ -3496,7 +3496,7 @@ crbug.com/626703 virtual/outofblink-cors/external/wpt/service-workers/service-wo
 crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ Skip ]
-crbug.com/626703 [ Mac10.12 ] virtual/video-surface-layer/external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-all.https.sub.html [ Timeout ]
+crbug.com/626703 [ Mac10.12 Win7 ] virtual/video-surface-layer/external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-all.https.sub.html [ Timeout ]
 crbug.com/626703 external/wpt/fetch/security/redirect-to-url-with-credentials.https.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/security/redirect-to-url-with-credentials.https.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/fetch/security/redirect-to-url-with-credentials.https.html [ Timeout ]
