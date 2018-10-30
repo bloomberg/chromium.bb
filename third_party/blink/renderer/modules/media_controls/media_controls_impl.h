@@ -413,6 +413,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
 
   // Timer for distinguishing double-taps.
   TaskRunnerTimer<MediaControlsImpl> tap_timer_;
+  bool is_paused_for_double_tap_ = false;
 
   bool is_test_mode_ = false;
 };
