@@ -57,7 +57,9 @@ void AddOnboardingStrings(content::WebUIDataSource* html_source) {
       // Shared strings.
       {"acceptText", IDS_WELCOME_ACCEPT_BUTTON},
       {"bookmarkAdded", IDS_ONBOARDING_WELCOME_BOOKMARK_ADDED},
+      {"bookmarksAdded", IDS_ONBOARDING_WELCOME_BOOKMARKS_ADDED},
       {"bookmarkRemoved", IDS_ONBOARDING_WELCOME_BOOKMARK_REMOVED},
+      {"bookmarksRemoved", IDS_ONBOARDING_WELCOME_BOOKMARKS_REMOVED},
       {"bookmarkReplaced", IDS_ONBOARDING_WELCOME_BOOKMARK_REPLACED},
       {"getStarted", IDS_ONBOARDING_WELCOME_GET_STARTED},
       {"headerText", IDS_WELCOME_HEADER},
