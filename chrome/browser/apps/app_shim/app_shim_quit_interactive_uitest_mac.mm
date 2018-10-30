@@ -8,7 +8,10 @@
 #include <vector>
 
 #include "apps/switches.h"
+#include "base/bind.h"
 #include "base/macros.h"
+#include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_manager_mac.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
@@ -28,32 +31,14 @@ namespace apps {
 
 namespace {
 
-class FakeHost : public apps::AppShimHandler::Host {
+// Test class used to expose protected methods of AppShimHostBootstrap.
+class TestAppShimHostBootstrap : public AppShimHostBootstrap {
  public:
-  FakeHost(const base::FilePath& profile_path,
-           const std::string& app_id,
-           ExtensionAppShimHandler* handler)
-      : profile_path_(profile_path),
-        app_id_(app_id),
-        handler_(handler) {}
-
-  void OnAppLaunchComplete(AppShimLaunchResult result) override {}
-  void OnAppClosed() override { handler_->OnShimClose(this); }
-  void OnAppHide() override {}
-  void OnAppUnhideWithoutActivation() override {}
-  void OnAppRequestUserAttention(AppShimAttentionType type) override {}
-  base::FilePath GetProfilePath() const override { return profile_path_; }
-  std::string GetAppId() const override { return app_id_; }
-  views::BridgeFactoryHost* GetViewsBridgeFactoryHost() const override {
-    return nullptr;
-  }
+  TestAppShimHostBootstrap() {}
+  using AppShimHostBootstrap::LaunchApp;
 
  private:
-  base::FilePath profile_path_;
-  std::string app_id_;
-  ExtensionAppShimHandler* handler_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeHost);
+  DISALLOW_COPY_AND_ASSIGN(TestAppShimHostBootstrap);
 };
 
 // Starts an app without a browser window using --load_and_launch_app and
@@ -76,19 +61,23 @@ class AppShimQuitTest : public PlatformAppBrowserTest {
         extensions::ExtensionRegistry::Get(profile());
     extension_id_ =
         GetExtensionByPath(registry->enabled_extensions(), app_path_)->id();
-    host_.reset(new FakeHost(profile()->GetPath().BaseName(),
-                             extension_id_,
-                             handler_));
-    handler_->OnShimLaunch(host_.get(),
-                           APP_SHIM_LAUNCH_REGISTER_ONLY,
-                           std::vector<base::FilePath>());
-    EXPECT_EQ(host_.get(), handler_->FindHost(profile(), extension_id_));
+    chrome::mojom::AppShimHostPtr host_ptr;
+    (new TestAppShimHostBootstrap)
+        ->LaunchApp(mojo::MakeRequest(&host_ptr),
+                    profile()->GetPath().BaseName(), extension_id_,
+                    APP_SHIM_LAUNCH_REGISTER_ONLY,
+                    std::vector<base::FilePath>(),
+                    base::BindOnce(&AppShimQuitTest::DoShimLaunchDone,
+                                   base::Unretained(this)));
 
     // Focus the app window.
     NSWindow* window = [[NSApp windows] objectAtIndex:0];
     EXPECT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(window));
     content::RunAllPendingInMessageLoop();
   }
+
+  void DoShimLaunchDone(apps::AppShimLaunchResult result,
+                        chrome::mojom::AppShimRequest app_shim_request) {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PlatformAppBrowserTest::SetUpCommandLine(command_line);
@@ -104,7 +93,6 @@ class AppShimQuitTest : public PlatformAppBrowserTest {
   base::FilePath app_path_;
   ExtensionAppShimHandler* handler_;
   std::string extension_id_;
-  std::unique_ptr<FakeHost> host_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimQuitTest);
 };
