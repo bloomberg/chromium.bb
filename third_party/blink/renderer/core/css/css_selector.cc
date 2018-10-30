@@ -409,24 +409,6 @@ const static NameToPseudoStruct kPseudoTypeWithArgumentsMap[] = {
     {"where", CSSSelector::kPseudoWhere},
 };
 
-class NameToPseudoCompare {
- public:
-  NameToPseudoCompare(const AtomicString& key) : key_(key) {
-    DCHECK(key_.Is8Bit());
-  }
-
-  bool operator()(const NameToPseudoStruct& entry, const NameToPseudoStruct&) {
-    DCHECK(entry.string);
-    const char* key = reinterpret_cast<const char*>(key_.Characters8());
-    // If strncmp returns 0, then either the keys are equal, or |key_| sorts
-    // before |entry|.
-    return strncmp(entry.string, key, key_.length()) < 0;
-  }
-
- private:
-  const AtomicString& key_;
-};
-
 static CSSSelector::PseudoType NameToPseudoType(const AtomicString& name,
                                                 bool has_arguments) {
   if (name.IsNull() || !name.Is8Bit())
@@ -443,10 +425,17 @@ static CSSSelector::PseudoType NameToPseudoType(const AtomicString& name,
     pseudo_type_map_end = kPseudoTypeWithoutArgumentsMap +
                           arraysize(kPseudoTypeWithoutArgumentsMap);
   }
-  NameToPseudoStruct dummy_key = {nullptr, CSSSelector::kPseudoUnknown};
-  const NameToPseudoStruct* match =
-      std::lower_bound(pseudo_type_map, pseudo_type_map_end, dummy_key,
-                       NameToPseudoCompare(name));
+  const NameToPseudoStruct* match = std::lower_bound(
+      pseudo_type_map, pseudo_type_map_end, name,
+      [](const NameToPseudoStruct& entry, const AtomicString& name) -> bool {
+        DCHECK(name.Is8Bit());
+        DCHECK(entry.string);
+        // If strncmp returns 0, then either the keys are equal, or |name| sorts
+        // before |entry|.
+        return strncmp(entry.string,
+                       reinterpret_cast<const char*>(name.Characters8()),
+                       name.length()) < 0;
+      });
   if (match == pseudo_type_map_end || match->string != name.GetString())
     return CSSSelector::kPseudoUnknown;
 
