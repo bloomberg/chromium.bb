@@ -567,11 +567,13 @@ void SetFields(const SignificantFields& significant_fields,
 // ProcessedField instances, or an empty vector if there was not a single
 // password field. Also, computes the vector of all password values and
 // associated element names in |all_possible_passwords|, and similarly for
-// usernames and |all_possible_usernames|.
+// usernames and |all_possible_usernames|. If |mode| is |kSaving|, fields with
+// empty values are ignored.
 std::vector<ProcessedField> ProcessFields(
     const std::vector<FormFieldData>& fields,
     autofill::ValueElementVector* all_possible_passwords,
-    autofill::ValueElementVector* all_possible_usernames) {
+    autofill::ValueElementVector* all_possible_usernames,
+    FormDataParser::Mode mode) {
   DCHECK(all_possible_passwords);
   DCHECK(all_possible_passwords->empty());
 
@@ -586,8 +588,11 @@ std::vector<ProcessedField> ProcessFields(
   // Similarly for usernames.
   std::set<base::StringPiece16> seen_username_values;
 
+  const bool consider_only_non_empty = mode == FormDataParser::Mode::kSaving;
   for (const FormFieldData& field : fields) {
     if (!field.IsTextInputElement())
+      continue;
+    if (consider_only_non_empty && field.value.empty())
       continue;
 
     const bool is_password = field.form_control_type == "password";
@@ -717,7 +722,7 @@ std::unique_ptr<PasswordForm> FormDataParser::Parse(
   autofill::ValueElementVector all_possible_passwords;
   autofill::ValueElementVector all_possible_usernames;
   std::vector<ProcessedField> processed_fields = ProcessFields(
-      form_data.fields, &all_possible_passwords, &all_possible_usernames);
+      form_data.fields, &all_possible_passwords, &all_possible_usernames, mode);
 
   if (processed_fields.empty())
     return nullptr;
