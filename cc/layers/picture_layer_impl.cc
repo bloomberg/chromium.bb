@@ -718,19 +718,14 @@ void PictureLayerImpl::UpdateViewportRectForTilePriorityInContentSpace() {
     // reflect the fact that we may be hiding the top or bottom controls. Thus,
     // it would believe that the viewport is smaller than it actually is which
     // can cause activation flickering issues. So, if we're in this situation
-    // adjust the visible rect by the amount the controls are expanded beyond
-    // the current viewport size (this is also called the "bounds delta" in
-    // LayerImpl and LTHI::UpdateViewportContainerBounds().
+    // adjust the visible rect by the the controls height.
     if (layer_tree_impl()->IsPendingTree() &&
         layer_tree_impl()->browser_controls_shrink_blink_size()) {
-      float hidden_ratio =
-          1.f - layer_tree_impl()->CurrentBrowserControlsShownRatio();
-
       viewport_rect_for_tile_priority_in_content_space_.Inset(
-          0,                                                  // left
-          0,                                                  // top,
-          0,                                                  // right,
-          std::ceil(-total_controls_height * hidden_ratio));  // bottom
+          0,                        // left
+          0,                        // top,
+          0,                        // right,
+          -total_controls_height);  // bottom
     }
   }
 }
