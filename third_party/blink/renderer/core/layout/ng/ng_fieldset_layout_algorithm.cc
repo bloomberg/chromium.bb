@@ -201,7 +201,7 @@ NGFieldsetLayoutAlgorithm::CreateConstraintSpaceForLegend(
       CalculateChildPercentageSize(ConstraintSpace(), Node(), available_size);
   builder.SetPercentageResolutionSize(percentage_size);
   builder.SetIsNewFormattingContext(true);
-  builder.SetIsShrinkToFit(true);
+  builder.SetIsShrinkToFit(legend.Style().LogicalWidth().IsAuto());
   builder.SetTextDirection(legend.Style().Direction());
   return builder.ToConstraintSpace(legend.Style().GetWritingMode());
 }
