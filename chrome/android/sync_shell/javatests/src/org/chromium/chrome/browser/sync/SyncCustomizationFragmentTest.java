@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.sync;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.app.FragmentTransaction;
+import android.os.Build;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.SwitchPreference;
@@ -27,6 +28,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
@@ -340,6 +342,7 @@ public class SyncCustomizationFragmentTest {
     @Test
     @SmallTest
     @Feature({"Sync"})
+    @DisableIf.Build(message = "crbug.com/899989 ", sdk_is_less_than = Build.VERSION_CODES.M)
     public void testPaymentsIntegrationCheckboxEnablesPaymentsIntegration() {
         mSyncTestRule.setUpTestAccountAndSignIn();
 
@@ -581,6 +584,7 @@ public class SyncCustomizationFragmentTest {
     @Test
     @SmallTest
     @Feature({"Sync"})
+    @DisableIf.Build(message = "crbug.com/899989 ", sdk_is_less_than = Build.VERSION_CODES.M)
     public void testPassphraseCreation() {
         mSyncTestRule.setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
