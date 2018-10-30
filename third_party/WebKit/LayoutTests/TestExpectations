@@ -29,6 +29,7 @@ crbug.com/891427 virtual/threaded/animations/responsive/viewport-unit-transform-
 crbug.com/891427 virtual/threaded/animations/responsive/viewport-unit-translate-responsive.html [ Timeout ]
 crbug.com/891427 virtual/threaded/http/tests/devtools/tracing/frame-model-instrumentation.js [ Failure ]
 crbug.com/891427 fast/scrolling/editor-command-scroll-page-scale.html [ Failure ]
+crbug.com/891427 virtual/fractional_scrolling/fast/scrolling/editor-command-scroll-page-scale.html [ Pass Failure ]
 crbug.com/891427 virtual/scroll_customization/fast/scrolling/editor-command-scroll-page-scale.html [ Failure ]
 crbug.com/891427 virtual/threaded/fast/scrolling/editor-command-scroll-page-scale.html [ Failure ]
 crbug.com/891427 fast/replaced/replaced-breaking.html [ Failure ]
