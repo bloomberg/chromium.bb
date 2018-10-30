@@ -30,7 +30,6 @@ class VMTest(object):
     self.start_time = datetime.datetime.utcnow()
 
     self.start_vm = opts.start_vm
-    self.board = opts.board
     self.cache_dir = opts.cache_dir
 
     self.build = opts.build
@@ -118,8 +117,8 @@ class VMTest(object):
         '--to', 'localhost',
         '--port', str(self._vm.ssh_port),
     ]
-    if self.board:
-      deploy_cmd += ['--board', self.board]
+    if self._vm.board:
+      deploy_cmd += ['--board', self._vm.board]
     if self.cache_dir:
       deploy_cmd += ['--cache-dir', self.cache_dir]
     if self.nostrip:
@@ -154,8 +153,8 @@ class VMTest(object):
       cros_build_lib.CommandResult object.
     """
     cmd = ['test_that']
-    if self.board:
-      cmd += ['--board', self.board]
+    if self._vm.board:
+      cmd += ['--board', self._vm.board]
     if self.results_dir:
       cmd += ['--results_dir', self.results_dir]
     if self._vm.private_key:
@@ -212,7 +211,7 @@ class VMTest(object):
     suppress_list = [
         r'Warning: Permanently added .* to the list of known hosts']
     with open(self.output, 'w') as f:
-      lines = result.output.splitlines(True)
+      lines = result.output.splitlines(True) if result.output else []
       for line in lines:
         for suppress in suppress_list:
           if not re.search(suppress, line):
@@ -299,10 +298,10 @@ def ParseCommandLine(argv):
                       help='Catapult test pattern to run, passed to run_tests.')
   parser.add_argument('--autotest', nargs='+',
                       help='Autotest test pattern to run, passed to test_that.')
-  parser.add_argument('--output', help='Save output to file.')
+  parser.add_argument('--output', type='path', help='Save output to file.')
   parser.add_argument('--guest', action='store_true', default=False,
                       help='Run tests in incognito mode.')
-  parser.add_argument('--build-dir',
+  parser.add_argument('--build-dir', type='path',
                       help='Directory for building and deploying chrome.')
   parser.add_argument('--build', action='store_true', default=False,
                       help='Before running tests, build chrome using ninja, '
@@ -312,17 +311,17 @@ def ParseCommandLine(argv):
                       '--build-dir must be specified.')
   parser.add_argument('--nostrip', action='store_true', default=False,
                       help="Don't strip symbols from binaries if deploying.")
-  parser.add_argument('--cwd', help='Change working directory.'
+  parser.add_argument('--cwd', type='path', help='Change working directory. '
                       'An absolute path or a path relative to CWD on the host.')
   parser.add_argument('--files', default=[], action='append',
                       help='Files to scp to the VM.')
-  parser.add_argument('--files-from',
+  parser.add_argument('--files-from', type='path',
                       help='File with list of files to copy to the VM.')
   parser.add_argument('--results-src', default=[], action='append',
                       help='Files/Directories to copy from '
                       'the VM into CWD after running the test.')
-  parser.add_argument('--results-dest-dir', help='Destination directory to '
-                      'copy results to.')
+  parser.add_argument('--results-dest-dir', type='path',
+                      help='Destination directory to copy results to.')
   parser.add_argument('--remote-cmd', action='store_true', default=False,
                       help='Run a command in the VM.')
   parser.add_argument('--as-chronos', action='store_true',
@@ -331,7 +330,8 @@ def ParseCommandLine(argv):
                            'Runs as root if not set.')
   parser.add_argument('--host-cmd', action='store_true', default=False,
                       help='Run a command on the host.')
-  parser.add_argument('--results-dir', help='Autotest results directory.')
+  parser.add_argument('--results-dir', type='path',
+                      help='Autotest results directory.')
   parser.add_argument('--test_that-args', action='append_option_value',
                       help='Args to pass directly to test_that for autotest.')
 
