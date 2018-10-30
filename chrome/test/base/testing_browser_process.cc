@@ -452,11 +452,6 @@ TestingBrowserProcess::pref_service_factory() const {
   return nullptr;
 }
 
-data_use_measurement::ChromeDataUseMeasurement*
-TestingBrowserProcess::data_use_measurement() {
-  return nullptr;
-}
-
 void TestingBrowserProcess::SetSystemRequestContext(
     net::URLRequestContextGetter* context_getter) {
   system_request_context_ = context_getter;
