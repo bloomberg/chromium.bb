@@ -26,7 +26,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.task.AsyncTask;
@@ -142,15 +141,13 @@ public class AccountManagerFacade {
      */
     @MainThread
     public static void initializeAccountManagerFacade(AccountManagerDelegate delegate) {
-        try (TraceEvent e = TraceEvent.scoped("initializeAccountManagerFacade()")) {
-            ThreadUtils.assertOnUiThread();
-            if (sInstance != null) {
-                throw new IllegalStateException("AccountManagerFacade is already initialized!");
-            }
-            sInstance = new AccountManagerFacade(delegate);
-            if (sTestingInstance != null) return;
-            sAtomicInstance.set(sInstance);
+        ThreadUtils.assertOnUiThread();
+        if (sInstance != null) {
+            throw new IllegalStateException("AccountManagerFacade is already initialized!");
         }
+        sInstance = new AccountManagerFacade(delegate);
+        if (sTestingInstance != null) return;
+        sAtomicInstance.set(sInstance);
     }
 
     /**
