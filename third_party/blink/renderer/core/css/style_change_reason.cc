@@ -52,7 +52,7 @@ const char kWritingModeChange[] = "WritingModeChange";
 const char kZoom[] = "Zoom";
 }  // namespace style_change_reason
 
-namespace StyleChangeExtraData {
+namespace style_change_extra_data {
 DEFINE_GLOBAL(AtomicString, g_active);
 DEFINE_GLOBAL(AtomicString, g_disabled);
 DEFINE_GLOBAL(AtomicString, g_drag);
@@ -77,6 +77,6 @@ void Init() {
   new (NotNull, (void*)&g_unresolved) AtomicString(":unresolved");
 }
 
-}  // namespace StyleChangeExtraData
+}  // namespace style_change_extra_data
 
 }  // namespace blink
