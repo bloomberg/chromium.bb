@@ -134,7 +134,6 @@ bool ServiceWorkerGlobalScope::ShouldInstallV8Extensions() const {
 
 void ServiceWorkerGlobalScope::EvaluateClassicScript(
     const KURL& script_url,
-    AccessControlStatus access_control_status,
     String source_code,
     std::unique_ptr<Vector<char>> cached_meta_data) {
   DCHECK(IsContextThread());
@@ -142,8 +141,8 @@ void ServiceWorkerGlobalScope::EvaluateClassicScript(
   if (!evaluate_script_ready_) {
     evaluate_script_ =
         WTF::Bind(&ServiceWorkerGlobalScope::EvaluateClassicScript,
-                  WrapWeakPersistent(this), script_url, access_control_status,
-                  std::move(source_code), std::move(cached_meta_data));
+                  WrapWeakPersistent(this), script_url, std::move(source_code),
+                  std::move(cached_meta_data));
     return;
   }
 
@@ -182,8 +181,7 @@ void ServiceWorkerGlobalScope::EvaluateClassicScript(
     ReportingProxy().DidLoadInstalledScript();
   }
 
-  WorkerGlobalScope::EvaluateClassicScript(script_url, access_control_status,
-                                           source_code,
+  WorkerGlobalScope::EvaluateClassicScript(script_url, source_code,
                                            std::move(cached_meta_data));
 }
 

@@ -165,7 +165,6 @@ void WorkerThread::Start(
 
 void WorkerThread::EvaluateClassicScript(
     const KURL& script_url,
-    AccessControlStatus access_control_status,
     const String& source_code,
     std::unique_ptr<Vector<char>> cached_meta_data,
     const v8_inspector::V8StackTraceId& stack_id) {
@@ -173,8 +172,7 @@ void WorkerThread::EvaluateClassicScript(
   PostCrossThreadTask(
       *GetTaskRunner(TaskType::kInternalWorker), FROM_HERE,
       CrossThreadBind(&WorkerThread::EvaluateClassicScriptOnWorkerThread,
-                      CrossThreadUnretained(this), script_url,
-                      access_control_status, source_code,
+                      CrossThreadUnretained(this), script_url, source_code,
                       WTF::Passed(std::move(cached_meta_data)), stack_id));
 }
 
@@ -503,13 +501,11 @@ void WorkerThread::InitializeOnWorkerThread(
 
 void WorkerThread::EvaluateClassicScriptOnWorkerThread(
     const KURL& script_url,
-    AccessControlStatus access_control_status,
     String source_code,
     std::unique_ptr<Vector<char>> cached_meta_data,
     const v8_inspector::V8StackTraceId& stack_id) {
   To<WorkerGlobalScope>(GlobalScope())
-      ->EvaluateClassicScriptPausable(script_url, access_control_status,
-                                      std::move(source_code),
+      ->EvaluateClassicScriptPausable(script_url, std::move(source_code),
                                       std::move(cached_meta_data), stack_id);
 }
 

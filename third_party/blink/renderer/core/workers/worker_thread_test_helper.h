@@ -27,7 +27,6 @@
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
 #include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
@@ -103,8 +102,7 @@ class WorkerThreadForTest : public WorkerThread {
     Start(std::move(creation_params),
           WorkerBackingThreadStartupData::CreateDefault(), nullptr,
           parent_execution_context_task_runners);
-    EvaluateClassicScript(script_url, kOpaqueResource, source,
-                          nullptr /* cached_meta_data */,
+    EvaluateClassicScript(script_url, source, nullptr /* cached_meta_data */,
                           v8_inspector::V8StackTraceId());
   }
 
