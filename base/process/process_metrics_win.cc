@@ -18,6 +18,7 @@
 #include "base/process/memory.h"
 #include "base/process/process_metrics_iocounters.h"
 #include "base/sys_info.h"
+#include "base/threading/scoped_blocking_call.h"
 
 namespace base {
 namespace {
@@ -345,12 +346,15 @@ BASE_EXPORT bool GetSystemPerformanceInfo(SystemPerformanceInfo* info) {
     return false;
 
   SYSTEM_PERFORMANCE_INFORMATION counters = {};
-  const NTSTATUS status = query_system_information_ptr(
-      ::SystemPerformanceInformation, &counters,
-      sizeof(SYSTEM_PERFORMANCE_INFORMATION), nullptr);
-
-  if (status != STATUS_SUCCESS)
-    return false;
+  {
+    // The call to NtQuerySystemInformation might block on a lock.
+    base::ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+    if (query_system_information_ptr(::SystemPerformanceInformation, &counters,
+                                     sizeof(SYSTEM_PERFORMANCE_INFORMATION),
+                                     nullptr) != STATUS_SUCCESS) {
+      return false;
+    }
+  }
 
   info->idle_time = counters.IdleTime.QuadPart;
   info->read_transfer_count = counters.ReadTransferCount.QuadPart;
