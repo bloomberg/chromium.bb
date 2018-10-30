@@ -13,6 +13,7 @@
 #include "base/observer_list.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind_test_util.h"
 #include "device/bluetooth/dbus/bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -27,6 +28,12 @@ constexpr const char kFooObjectPathStr[] = "fake/hci0";
 constexpr const char kBarObjectPathStr[] = "fake/hci1";
 
 namespace {
+
+bool GetValueAndReset(base::Optional<bool>* opt) {
+  base::Optional<bool> tmp;
+  tmp.swap(*opt);
+  return tmp.value();
+}
 
 // Exposes high-level methods to simulate Bluetooth events e.g. a new adapter
 // was added, adapter power state changed, etc.
@@ -77,17 +84,24 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
       if (property->name() == powered.name()) {
         ++set_powered_call_count_;
         last_set_powered_value_ = powered.GetSetValueForTesting();
-        base::Optional<bool> response;
-        response.swap(next_set_powered_response_);
-        callback.Run(response.value());
-        return;
+        if (next_set_powered_response_) {
+          callback.Run(GetValueAndReset(&next_set_powered_response_));
+          return;
+        }
+        set_property_callbacks_.push_back(callback);
+      } else {
+        NOTIMPLEMENTED();
       }
-      NOTIMPLEMENTED();
     }
 
     size_t set_powered_call_count_ = 0;
     base::Optional<bool> next_set_powered_response_;
     base::Optional<bool> last_set_powered_value_;
+
+    // Saved `Set()` callbacks. If there is no next response set for a `Set()`
+    // call, then the callback is saved here. TestBluetoothAdapterClient
+    // runs all these callbacks after the adapter is removed.
+    std::vector<base::OnceCallback<void(bool)>> set_property_callbacks_;
   };
 
   TestBluetoothAdapterClient() = default;
@@ -95,7 +109,7 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
 
   void ResetCallCount() {
     for (auto& path_to_properties : adapter_object_paths_to_properties_) {
-      path_to_properties.second.ResetCallCount();
+      path_to_properties.second->ResetCallCount();
     }
   }
 
@@ -109,9 +123,9 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
     ObjectPathToProperties::iterator it;
     bool was_inserted;
     std::tie(it, was_inserted) = adapter_object_paths_to_properties_.emplace(
-        object_path,
-        base::BindRepeating(&TestBluetoothAdapterClient::OnPropertyChanged,
-                            base::Unretained(this), object_path));
+        object_path, std::make_unique<Properties>(base::BindRepeating(
+                         &TestBluetoothAdapterClient::OnPropertyChanged,
+                         base::Unretained(this), object_path)));
     DCHECK(was_inserted);
 
     for (auto& observer : observers_)
@@ -132,8 +146,15 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
     for (auto& observer : observers_)
       observer.AdapterRemoved(object_path);
 
+    auto properties =
+        std::move(adapter_object_paths_to_properties_[object_path]);
     size_t removed = adapter_object_paths_to_properties_.erase(object_path);
     DCHECK_EQ(1u, removed);
+
+    // After the adapter is removed, any pending Set calls get run with `false`.
+    for (auto& set_property_callback : properties->set_property_callbacks_) {
+      std::move(set_property_callback).Run(false);
+    }
   }
 
   // Simulates adapter at |object_path_str| changing its powered state to
@@ -155,7 +176,7 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
         dbus::ObjectPath(object_path_str));
     DCHECK(it != adapter_object_paths_to_properties_.end());
 
-    return it->second.set_powered_call_count_;
+    return it->second->set_powered_call_count_;
   }
 
   bool GetLastSetPoweredValue(const std::string& object_path_str) {
@@ -205,7 +226,7 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
     auto it = adapter_object_paths_to_properties_.find(object_path);
     if (it == adapter_object_paths_to_properties_.end())
       return nullptr;
-    return &(it->second);
+    return it->second.get();
   }
 
   void StartDiscovery(const dbus::ObjectPath& object_path,
@@ -268,7 +289,8 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
     }
   }
 
-  using ObjectPathToProperties = std::map<dbus::ObjectPath, Properties>;
+  using ObjectPathToProperties =
+      std::map<dbus::ObjectPath, std::unique_ptr<Properties>>;
   ObjectPathToProperties adapter_object_paths_to_properties_;
 
   base::ObserverList<Observer>::Unchecked observers_;
@@ -731,6 +753,92 @@ TEST_F(BluetoothSystemTest, SetPoweredOn_FailsAdapterInitiallyOff) {
   EXPECT_EQ(StateVector({mojom::BluetoothSystem::State::kTransitioning,
                          mojom::BluetoothSystem::State::kPoweredOff}),
             on_state_changed_states_);
+}
+
+// Tests that the state is correctly updated if the adapter is removed
+// when a call to set powered to "On" is pending.
+TEST_F(BluetoothSystemTest, SetPoweredOn_AdapterRemovedWhilePending) {
+  test_bluetooth_adapter_client_->SimulateAdapterAdded(kFooObjectPathStr);
+  // Added adapters are Off by default.
+
+  auto system = CreateBluetoothSystem();
+
+  base::Optional<mojom::BluetoothSystem::SetPoweredResult> result;
+
+  // Start a SetPowered call and wait for the state to change to kTransitioning.
+  base::RunLoop set_powered_run_loop;
+  system->SetPowered(true, base::BindLambdaForTesting(
+                               [&](mojom::BluetoothSystem::SetPoweredResult r) {
+                                 result = r;
+                                 set_powered_run_loop.Quit();
+                               }));
+  EXPECT_EQ(mojom::BluetoothSystem::State::kTransitioning,
+            GetStateAndWait(system));
+  EXPECT_EQ(StateVector({mojom::BluetoothSystem::State::kTransitioning}),
+            on_state_changed_states_);
+  ResetResults();
+
+  // Simulate the adapter being removed. This immediately changes the "powered"
+  // property of the adapter to `false` and then removes the adapter.
+  test_bluetooth_adapter_client_->SimulateAdapterRemoved(kFooObjectPathStr);
+  EXPECT_EQ(mojom::BluetoothSystem::State::kUnavailable,
+            GetStateAndWait(system));
+  EXPECT_EQ(StateVector({mojom::BluetoothSystem::State::kPoweredOff,
+                         mojom::BluetoothSystem::State::kUnavailable}),
+            on_state_changed_states_);
+  ResetResults();
+
+  // Wait for SetPowered() to reply.
+  set_powered_run_loop.Run();
+
+  EXPECT_EQ(mojom::BluetoothSystem::SetPoweredResult::kFailedUnknownReason,
+            result.value());
+
+  // There should not be any state changes when SetPowered eventually fails.
+  EXPECT_TRUE(on_state_changed_states_.empty());
+}
+
+// Tests that the state is correctly updated if the adapter is removed
+// when a call to set powered to "Off" is pending.
+TEST_F(BluetoothSystemTest, SetPoweredOff_AdapterRemovedWhilePending) {
+  test_bluetooth_adapter_client_->SimulatePoweredOnAdapter(kFooObjectPathStr);
+
+  auto system = CreateBluetoothSystem();
+
+  base::Optional<mojom::BluetoothSystem::SetPoweredResult> result;
+
+  // Start a SetPowered call and wait for the state to change to kTransitioning.
+  base::RunLoop set_powered_run_loop;
+  system->SetPowered(false,
+                     base::BindLambdaForTesting(
+                         [&](mojom::BluetoothSystem::SetPoweredResult r) {
+                           result = r;
+                           set_powered_run_loop.Quit();
+                         }));
+  EXPECT_EQ(mojom::BluetoothSystem::State::kTransitioning,
+            GetStateAndWait(system));
+  EXPECT_EQ(StateVector({mojom::BluetoothSystem::State::kTransitioning}),
+            on_state_changed_states_);
+  ResetResults();
+
+  // Simulate the adapter being removed. This immediately changes the "powered"
+  // property of the adapter to `false` and then removes the adapter.
+  test_bluetooth_adapter_client_->SimulateAdapterRemoved(kFooObjectPathStr);
+  EXPECT_EQ(mojom::BluetoothSystem::State::kUnavailable,
+            GetStateAndWait(system));
+  EXPECT_EQ(StateVector({mojom::BluetoothSystem::State::kPoweredOff,
+                         mojom::BluetoothSystem::State::kUnavailable}),
+            on_state_changed_states_);
+  ResetResults();
+
+  // Wait for SetPowered() to reply.
+  set_powered_run_loop.Run();
+
+  EXPECT_EQ(mojom::BluetoothSystem::SetPoweredResult::kFailedUnknownReason,
+            result.value());
+
+  // There should not be any state changes when SetPowered eventually fails.
+  EXPECT_TRUE(on_state_changed_states_.empty());
 }
 
 // Tests scan state is kNotScanning when there is no adapter.
