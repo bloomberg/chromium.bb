@@ -441,6 +441,10 @@ class CHROME_DBUS_EXPORT Property : public PropertyBase {
   // |set_value_| of a property.
   void ReplaceSetValueForTesting(const T& value) { set_value_ = value; }
 
+  // Method used by test and stub implementations to retrieve the |set_value|
+  // of a property.
+  const T& GetSetValueForTesting() const { return set_value_; }
+
  private:
   // Current cached value of the property.
   T value_;
