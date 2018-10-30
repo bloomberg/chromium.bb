@@ -40,28 +40,25 @@ using UsernameDetectionMethod = FormDataParser::UsernameDetectionMethod;
 constexpr char kNonimportantValue[] = "non-important unique";
 
 // Use this in FieldDataDescription below to mark the expected username and
-// password fields. The *_FILLING variants apply to
-// FormDataParser::Mode::kFilling only, the *_SAVING variants to
-// FormDataParser::Mode::kSaving only, the suffix-less variants to both.
+// password fields.
 enum class ElementRole {
   NONE,
-  USERNAME_FILLING,
-  USERNAME_SAVING,
   USERNAME,
-  CURRENT_PASSWORD_FILLING,
-  CURRENT_PASSWORD_SAVING,
   CURRENT_PASSWORD,
-  NEW_PASSWORD_FILLING,
-  NEW_PASSWORD_SAVING,
   NEW_PASSWORD,
-  CONFIRMATION_PASSWORD_FILLING,
-  CONFIRMATION_PASSWORD_SAVING,
   CONFIRMATION_PASSWORD
 };
 
 // Expected FormFieldData are constructed based on these descriptions.
 struct FieldDataDescription {
+  // The |role*| fields state the expected role of the field. The
+  // |role_filling| speaks specifically about parsing in
+  // FormDataParser::Mode::kFilling only, the |role_saving| about
+  // FormDataParser::Mode::kSaving. If set, |role| overrides both of the
+  // others.
   ElementRole role = ElementRole::NONE;
+  ElementRole role_filling = ElementRole::NONE;
+  ElementRole role_saving = ElementRole::NONE;
   bool is_focusable = true;
   bool is_enabled = true;
   bool is_readonly = false;
@@ -122,6 +119,30 @@ struct ParseResultIds {
   }
 };
 
+// Updates |result| by putting |id| in the appropriate |result|'s field based
+// on |role|.
+void UpdateResultWithIdByRole(ParseResultIds* result,
+                              uint32_t id,
+                              ElementRole role) {
+  switch (role) {
+    case ElementRole::NONE:
+      // Nothing to update.
+      break;
+    case ElementRole::USERNAME:
+      result->username_id = id;
+      break;
+    case ElementRole::CURRENT_PASSWORD:
+      result->password_id = id;
+      break;
+    case ElementRole::NEW_PASSWORD:
+      result->new_password_id = id;
+      break;
+    case ElementRole::CONFIRMATION_PASSWORD:
+      result->confirmation_password_id = id;
+      break;
+  }
+}
+
 // Creates a FormData to be fed to the parser. Includes FormFieldData as
 // described in |fields_description|. Generates |fill_result| and |save_result|
 // expectations about the result in FILLING and SAVING mode, respectively. Also
@@ -157,49 +178,14 @@ FormData GetFormDataAndExpectation(
     if (field_description.autocomplete_attribute)
       field.autocomplete_attribute = field_description.autocomplete_attribute;
     form_data.fields.push_back(field);
-    switch (field_description.role) {
-      case ElementRole::NONE:
-        break;
-      case ElementRole::USERNAME_FILLING:
-        fill_result->username_id = unique_id;
-        break;
-      case ElementRole::USERNAME_SAVING:
-        save_result->username_id = unique_id;
-        break;
-      case ElementRole::USERNAME:
-        fill_result->username_id = unique_id;
-        save_result->username_id = unique_id;
-        break;
-      case ElementRole::CURRENT_PASSWORD_FILLING:
-        fill_result->password_id = unique_id;
-        break;
-      case ElementRole::CURRENT_PASSWORD_SAVING:
-        save_result->password_id = unique_id;
-        break;
-      case ElementRole::CURRENT_PASSWORD:
-        fill_result->password_id = unique_id;
-        save_result->password_id = unique_id;
-        break;
-      case ElementRole::NEW_PASSWORD_FILLING:
-        fill_result->new_password_id = unique_id;
-        break;
-      case ElementRole::NEW_PASSWORD_SAVING:
-        save_result->new_password_id = unique_id;
-        break;
-      case ElementRole::NEW_PASSWORD:
-        fill_result->new_password_id = unique_id;
-        save_result->new_password_id = unique_id;
-        break;
-      case ElementRole::CONFIRMATION_PASSWORD_FILLING:
-        fill_result->confirmation_password_id = unique_id;
-        break;
-      case ElementRole::CONFIRMATION_PASSWORD_SAVING:
-        save_result->confirmation_password_id = unique_id;
-        break;
-      case ElementRole::CONFIRMATION_PASSWORD:
-        fill_result->confirmation_password_id = unique_id;
-        save_result->confirmation_password_id = unique_id;
-        break;
+    if (field_description.role == ElementRole::NONE) {
+      UpdateResultWithIdByRole(fill_result, unique_id,
+                               field_description.role_filling);
+      UpdateResultWithIdByRole(save_result, unique_id,
+                               field_description.role_saving);
+    } else {
+      UpdateResultWithIdByRole(fill_result, unique_id, field_description.role);
+      UpdateResultWithIdByRole(save_result, unique_id, field_description.role);
     }
     if (field_description.prediction.type != autofill::MAX_VALID_FIELD_TYPE) {
       (*predictions)[unique_id] = field_description.prediction;
@@ -584,10 +570,10 @@ TEST(FormParserTest, TextAndPasswordFields) {
           // Forms with empty fields cannot be saved, so the parsing result for
           // saving is empty.
           {
-              {.role = ElementRole::USERNAME_FILLING,
+              {.role_filling = ElementRole::USERNAME,
                .form_control_type = "text",
                .value = ""},
-              {.role = ElementRole::CURRENT_PASSWORD_FILLING,
+              {.role_filling = ElementRole::CURRENT_PASSWORD,
                .form_control_type = "password",
                .value = ""},
           },
@@ -609,10 +595,10 @@ TEST(FormParserTest, TextAndPasswordFields) {
           "Empty sign-in form with an extra text field",
           {
               {.form_control_type = "text", .value = ""},
-              {.role = ElementRole::USERNAME_FILLING,
+              {.role_filling = ElementRole::USERNAME,
                .form_control_type = "text",
                .value = ""},
-              {.role = ElementRole::CURRENT_PASSWORD_FILLING,
+              {.role_filling = ElementRole::CURRENT_PASSWORD,
                .form_control_type = "password",
                .value = ""},
           },
@@ -620,9 +606,9 @@ TEST(FormParserTest, TextAndPasswordFields) {
       {
           "Non-empty sign-in form with an extra text field",
           {
-              {.role = ElementRole::USERNAME_SAVING,
+              {.role_saving = ElementRole::USERNAME,
                .form_control_type = "text"},
-              {.role = ElementRole::USERNAME_FILLING,
+              {.role_filling = ElementRole::USERNAME,
                .form_control_type = "text",
                .value = ""},
               {.role = ElementRole::CURRENT_PASSWORD,
@@ -632,11 +618,11 @@ TEST(FormParserTest, TextAndPasswordFields) {
       {
           "Empty sign-in form with an extra invisible text field",
           {
-              {.role = ElementRole::USERNAME_FILLING,
+              {.role_filling = ElementRole::USERNAME,
                .form_control_type = "text",
                .value = ""},
               {.form_control_type = "text", .is_focusable = false, .value = ""},
-              {.role = ElementRole::CURRENT_PASSWORD_FILLING,
+              {.role_filling = ElementRole::CURRENT_PASSWORD,
                .form_control_type = "password",
                .value = ""},
           },
@@ -655,7 +641,7 @@ TEST(FormParserTest, TextAndPasswordFields) {
           // Filled forms with a username field which is left empty are
           // suspicious. The parser will just omit the username altogether.
           {
-              {.role = ElementRole::USERNAME_FILLING,
+              {.role_filling = ElementRole::USERNAME,
                .form_control_type = "text",
                .value = ""},
               {.role = ElementRole::CURRENT_PASSWORD,
@@ -666,9 +652,9 @@ TEST(FormParserTest, TextAndPasswordFields) {
           "Simple empty sign-in form with empty password",
           // Empty password, nothing to save.
           {
-              {.role = ElementRole::USERNAME_FILLING,
+              {.role_filling = ElementRole::USERNAME,
                .form_control_type = "text"},
-              {.role = ElementRole::CURRENT_PASSWORD_FILLING,
+              {.role_filling = ElementRole::CURRENT_PASSWORD,
                .form_control_type = "password",
                .value = ""},
           },
@@ -1229,11 +1215,11 @@ TEST(FormParserTest, UsernamePredictions) {
           "Username prediction does not override structure if empty and mode "
           "is SAVING",
           {
-              {.role = ElementRole::USERNAME_FILLING,
+              {.role_filling = ElementRole::USERNAME,
                .form_control_type = "text",
                .predicted_username = 2,
                .value = ""},
-              {.role = ElementRole::USERNAME_SAVING,
+              {.role_saving = ElementRole::USERNAME,
                .form_control_type = "text"},
               {.role = ElementRole::CURRENT_PASSWORD,
                .form_control_type = "password"},
