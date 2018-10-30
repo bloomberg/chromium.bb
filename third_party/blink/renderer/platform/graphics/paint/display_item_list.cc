@@ -49,9 +49,13 @@ void DisplayItemList::AppendSubsequenceAsJSON(size_t begin_index,
     if (flags & kShownOnlyDisplayItemTypes) {
       json->SetString("type", DisplayItem::TypeAsDebugString(item.GetType()));
     } else {
-      json->SetString("clientDebugName",
-                      DisplayItemClient::SafeDebugName(
-                          item.Client(), flags & kClientKnownToBeAlive));
+      json->SetString("clientDebugName", item.Client().SafeDebugName(
+                                             flags & kClientKnownToBeAlive));
+      if (flags & kClientKnownToBeAlive) {
+        json->SetString("invalidation",
+                        PaintInvalidationReasonToString(
+                            item.Client().GetPaintInvalidationReason()));
+      }
       item.PropertiesAsJSON(*json);
     }
 

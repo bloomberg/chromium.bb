@@ -138,6 +138,8 @@ class ContiguousContainer : public ContiguousContainerBase {
       IteratorWrapper<Vector<void*>::const_reverse_iterator,
                       const BaseElementType>;
 
+  using value_type = BaseElementType;
+
   explicit ContiguousContainer(size_t max_object_size)
       : ContiguousContainerBase(Align(max_object_size)) {}
 

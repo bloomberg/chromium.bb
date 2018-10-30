@@ -129,6 +129,18 @@ class PaintControllerPaintTest : public PaintTestConfigurations,
       : PaintControllerPaintTestBase(local_frame_client) {}
 };
 
+// Shorter names for frequently used display item types in core/ tests.
+const DisplayItem::Type kNonScrollingBackgroundChunkType =
+    DisplayItem::PaintPhaseToDrawingType(PaintPhase::kSelfBlockBackgroundOnly);
+const DisplayItem::Type kScrollingBackgroundChunkType =
+    DisplayItem::PaintPhaseToClipType(PaintPhase::kSelfBlockBackgroundOnly);
+const DisplayItem::Type kNonScrollingContentsBackgroundChunkType =
+    DisplayItem::PaintPhaseToDrawingType(
+        PaintPhase::kDescendantBlockBackgroundsOnly);
+const DisplayItem::Type kScrollingContentsBackgroundChunkType =
+    DisplayItem::PaintPhaseToClipType(
+        PaintPhase::kDescendantBlockBackgroundsOnly);
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_CONTROLLER_PAINT_TEST_H_

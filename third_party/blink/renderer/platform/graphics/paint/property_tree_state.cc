@@ -64,4 +64,8 @@ size_t PropertyTreeState::CacheMemoryUsageInBytes() const {
          Transform()->CacheMemoryUsageInBytes();
 }
 
+std::ostream& operator<<(std::ostream& os, const PropertyTreeState& state) {
+  return os << state.ToString().Utf8().data();
+}
+
 }  // namespace blink

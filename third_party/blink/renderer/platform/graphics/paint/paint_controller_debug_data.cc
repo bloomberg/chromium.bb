@@ -146,17 +146,20 @@ void PaintController::DisplayItemListAsJSON::AppendSubsequenceAsJSON(
 
 String PaintController::DisplayItemListAsJSON::ClientName(
     const DisplayItemClient& client) const {
-  return DisplayItemClient::SafeDebugName(
-      client, flags_ & DisplayItemList::kClientKnownToBeAlive);
+  return client.SafeDebugName(flags_ & DisplayItemList::kClientKnownToBeAlive);
 }
 
 void PaintController::ShowDebugDataInternal(
     DisplayItemList::JsonFlags flags) const {
+  auto current_list_flags = flags;
+  // The clients in the current list are known to be alive before FinishCycle().
+  if (committed_)
+    current_list_flags |= DisplayItemList::kClientKnownToBeAlive;
   LOG(ERROR) << "current display item list: "
              << DisplayItemListAsJSON(
                     current_paint_artifact_->GetDisplayItemList(),
                     current_cached_subsequences_,
-                    current_paint_artifact_->PaintChunks(), flags)
+                    current_paint_artifact_->PaintChunks(), current_list_flags)
                     .ToString()
                     .Utf8()
                     .data();

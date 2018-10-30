@@ -86,15 +86,15 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
           ? *GetLayoutView().Layer()
           : view_display_item_client;
 
-  EXPECT_DISPLAY_LIST(
-      RootPaintController().GetDisplayItemList(), 7,
-      TestDisplayItem(view_display_item_client, kDocumentBackgroundType),
-      TestDisplayItem(container1, kBackgroundType),
-      TestDisplayItem(content1, kBackgroundType),
-      TestDisplayItem(filler1, kBackgroundType),
-      TestDisplayItem(container2, kBackgroundType),
-      TestDisplayItem(content2, kBackgroundType),
-      TestDisplayItem(filler2, kBackgroundType));
+  EXPECT_THAT(
+      RootPaintController().GetDisplayItemList(),
+      ElementsAre(IsSameId(&view_display_item_client, kDocumentBackgroundType),
+                  IsSameId(&container1, kBackgroundType),
+                  IsSameId(&content1, kBackgroundType),
+                  IsSameId(&filler1, kBackgroundType),
+                  IsSameId(&container2, kBackgroundType),
+                  IsSameId(&content2, kBackgroundType),
+                  IsSameId(&filler2, kBackgroundType)));
 
   auto* container1_layer = ToLayoutBoxModelObject(container1).Layer();
   auto* filler1_layer = ToLayoutBoxModelObject(filler1).Layer();
@@ -119,37 +119,30 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
   auto check_chunks = [&]() {
     // Check that new paint chunks were forced for |container1| and
     // |container2|.
-    const auto& paint_chunks =
-        RootPaintController().GetPaintArtifact().PaintChunks();
-    EXPECT_EQ(paint_chunks.size(), 7u);
-    EXPECT_EQ(
-        paint_chunks[0],
-        PaintChunk(0, 1, PaintChunk::Id(view_chunk_client, view_chunk_type),
-                   view_chunk_state));
-    EXPECT_EQ(paint_chunks[1], PaintChunk(1, 2,
-                                          PaintChunk::Id(*container1_layer,
-                                                         chunk_background_type),
-                                          other_chunk_state));
-    EXPECT_EQ(paint_chunks[2], PaintChunk(2, 3,
-                                          PaintChunk::Id(*container1_layer,
-                                                         chunk_foreground_type),
-                                          other_chunk_state));
-    EXPECT_EQ(
-        paint_chunks[3],
-        PaintChunk(3, 4, PaintChunk::Id(*filler1_layer, filler_chunk_type),
-                   other_chunk_state));
-    EXPECT_EQ(paint_chunks[4], PaintChunk(4, 5,
-                                          PaintChunk::Id(*container2_layer,
-                                                         chunk_background_type),
-                                          other_chunk_state));
-    EXPECT_EQ(paint_chunks[5], PaintChunk(5, 6,
-                                          PaintChunk::Id(*container2_layer,
-                                                         chunk_foreground_type),
-                                          other_chunk_state));
-    EXPECT_EQ(
-        paint_chunks[6],
-        PaintChunk(6, 7, PaintChunk::Id(*filler2_layer, filler_chunk_type),
-                   other_chunk_state));
+    EXPECT_THAT(
+        RootPaintController().PaintChunks(),
+        ElementsAre(
+            IsPaintChunk(0, 1,
+                         PaintChunk::Id(view_chunk_client, view_chunk_type),
+                         view_chunk_state),
+            IsPaintChunk(
+                1, 2, PaintChunk::Id(*container1_layer, chunk_background_type),
+                other_chunk_state),
+            IsPaintChunk(
+                2, 3, PaintChunk::Id(*container1_layer, chunk_foreground_type),
+                other_chunk_state),
+            IsPaintChunk(3, 4,
+                         PaintChunk::Id(*filler1_layer, filler_chunk_type),
+                         other_chunk_state),
+            IsPaintChunk(
+                4, 5, PaintChunk::Id(*container2_layer, chunk_background_type),
+                other_chunk_state),
+            IsPaintChunk(
+                5, 6, PaintChunk::Id(*container2_layer, chunk_foreground_type),
+                other_chunk_state),
+            IsPaintChunk(6, 7,
+                         PaintChunk::Id(*filler2_layer, filler_chunk_type),
+                         other_chunk_state)));
   };
 
   check_chunks();
@@ -164,15 +157,15 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
 
   CommitAndFinishCycle();
 
-  EXPECT_DISPLAY_LIST(
-      RootPaintController().GetDisplayItemList(), 7,
-      TestDisplayItem(view_display_item_client, kDocumentBackgroundType),
-      TestDisplayItem(container1, kBackgroundType),
-      TestDisplayItem(content1, kBackgroundType),
-      TestDisplayItem(filler1, kBackgroundType),
-      TestDisplayItem(container2, kBackgroundType),
-      TestDisplayItem(content2, kBackgroundType),
-      TestDisplayItem(filler2, kBackgroundType));
+  EXPECT_THAT(
+      RootPaintController().GetDisplayItemList(),
+      ElementsAre(IsSameId(&view_display_item_client, kDocumentBackgroundType),
+                  IsSameId(&container1, kBackgroundType),
+                  IsSameId(&content1, kBackgroundType),
+                  IsSameId(&filler1, kBackgroundType),
+                  IsSameId(&container2, kBackgroundType),
+                  IsSameId(&content2, kBackgroundType),
+                  IsSameId(&filler2, kBackgroundType)));
 
   // We should still have the paint chunks forced by the cached subsequences.
   check_chunks();
@@ -231,15 +224,15 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange) {
   // Container2 is partly (including its stacking chidren) in the interest rect;
   // Content2b is out of the interest rect and output nothing;
   // Container3 is partly in the interest rect.
-  EXPECT_DISPLAY_LIST(
-      RootPaintController().GetDisplayItemList(), 7,
-      TestDisplayItem(background_display_item_client, kDocumentBackgroundType),
-      TestDisplayItem(container1, kBackgroundType),
-      TestDisplayItem(content1, kBackgroundType),
-      TestDisplayItem(container2, kBackgroundType),
-      TestDisplayItem(content2a, kBackgroundType),
-      TestDisplayItem(container3, kBackgroundType),
-      TestDisplayItem(content3, kBackgroundType));
+  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
+              ElementsAre(IsSameId(&background_display_item_client,
+                                   kDocumentBackgroundType),
+                          IsSameId(&container1, kBackgroundType),
+                          IsSameId(&content1, kBackgroundType),
+                          IsSameId(&container2, kBackgroundType),
+                          IsSameId(&content2a, kBackgroundType),
+                          IsSameId(&container3, kBackgroundType),
+                          IsSameId(&content3, kBackgroundType)));
 
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   IntRect new_interest_rect(0, 100, 300, 1000);
@@ -255,14 +248,14 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange) {
 
   CommitAndFinishCycle();
 
-  EXPECT_DISPLAY_LIST(
-      RootPaintController().GetDisplayItemList(), 6,
-      TestDisplayItem(background_display_item_client, kDocumentBackgroundType),
-      TestDisplayItem(container1, kBackgroundType),
-      TestDisplayItem(content1, kBackgroundType),
-      TestDisplayItem(container2, kBackgroundType),
-      TestDisplayItem(content2a, kBackgroundType),
-      TestDisplayItem(content2b, kBackgroundType));
+  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
+              ElementsAre(IsSameId(&background_display_item_client,
+                                   kDocumentBackgroundType),
+                          IsSameId(&container1, kBackgroundType),
+                          IsSameId(&content1, kBackgroundType),
+                          IsSameId(&container2, kBackgroundType),
+                          IsSameId(&content2a, kBackgroundType),
+                          IsSameId(&content2b, kBackgroundType)));
 }
 
 TEST_P(PaintLayerPainterTest,
@@ -318,13 +311,13 @@ TEST_P(PaintLayerPainterTest,
       *GetDocument().getElementById("content2")->GetLayoutObject();
 
   const auto& background_display_item_client = ViewScrollingBackgroundClient();
-  EXPECT_DISPLAY_LIST(
-      RootPaintController().GetDisplayItemList(), 5,
-      TestDisplayItem(background_display_item_client, kDocumentBackgroundType),
-      TestDisplayItem(container1, kBackgroundType),
-      TestDisplayItem(content1, kBackgroundType),
-      TestDisplayItem(container2, kBackgroundType),
-      TestDisplayItem(content2, kBackgroundType));
+  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
+              ElementsAre(IsSameId(&background_display_item_client,
+                                   kDocumentBackgroundType),
+                          IsSameId(&container1, kBackgroundType),
+                          IsSameId(&content1, kBackgroundType),
+                          IsSameId(&container2, kBackgroundType),
+                          IsSameId(&content2, kBackgroundType)));
 
   ToHTMLElement(content1.GetNode())
       ->setAttribute(html_names::kStyleAttr,
@@ -336,13 +329,13 @@ TEST_P(PaintLayerPainterTest,
 
   CommitAndFinishCycle();
 
-  EXPECT_DISPLAY_LIST(
-      RootPaintController().GetDisplayItemList(), 5,
-      TestDisplayItem(background_display_item_client, kDocumentBackgroundType),
-      TestDisplayItem(container1, kBackgroundType),
-      TestDisplayItem(content1, kBackgroundType),
-      TestDisplayItem(container2, kBackgroundType),
-      TestDisplayItem(content2, kBackgroundType));
+  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
+              ElementsAre(IsSameId(&background_display_item_client,
+                                   kDocumentBackgroundType),
+                          IsSameId(&container1, kBackgroundType),
+                          IsSameId(&content1, kBackgroundType),
+                          IsSameId(&container2, kBackgroundType),
+                          IsSameId(&content2, kBackgroundType)));
 }
 
 TEST_P(PaintLayerPainterTest, PaintPhaseOutline) {

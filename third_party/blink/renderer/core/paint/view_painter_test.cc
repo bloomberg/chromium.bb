@@ -9,6 +9,8 @@
 #include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 
+using testing::ElementsAre;
+
 namespace blink {
 
 class ViewPainterTest : public PaintControllerPaintTest {
@@ -101,9 +103,9 @@ TEST_P(ViewPainterTest, DocumentBackgroundWithScroll) {
 
   SetBodyInnerHTML("<div style='height: 5000px'></div>");
 
-  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 1,
-                      TestDisplayItem(ViewScrollingBackgroundClient(),
-                                      kDocumentBackgroundType));
+  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
+              ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
+                                   kDocumentBackgroundType)));
 
   const auto& chunks = RootPaintController().GetPaintArtifact().PaintChunks();
   EXPECT_EQ(1u, chunks.size());

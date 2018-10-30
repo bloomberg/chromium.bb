@@ -1747,7 +1747,8 @@ void LayoutObject::DirtyLinesFromChangedChild(LayoutObject*, MarkingBehavior) {}
 std::ostream& operator<<(std::ostream& out, const LayoutObject& object) {
   StringBuilder string_builder;
   object.DumpLayoutObject(string_builder, false, 0);
-  return out << string_builder.ToString().Utf8().data();
+  return out << static_cast<const void*>(&object) << ":"
+             << string_builder.ToString().Utf8().data();
 }
 
 std::ostream& operator<<(std::ostream& out, const LayoutObject* object) {
