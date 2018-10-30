@@ -2627,12 +2627,12 @@ TEST(HeapTest, HeapCollectionTypes) {
   Persistent<VectorWU> vector_wu2 = MakeGarbageCollected<VectorWU>();
   Persistent<VectorUW> vector_uw = MakeGarbageCollected<VectorUW>();
   Persistent<VectorUW> vector_uw2 = MakeGarbageCollected<VectorUW>();
-  Persistent<MemberDeque> deque = new MemberDeque();
-  Persistent<MemberDeque> deque2 = new MemberDeque();
-  Persistent<DequeWU> deque_wu = new DequeWU();
-  Persistent<DequeWU> deque_wu2 = new DequeWU();
-  Persistent<DequeUW> deque_uw = new DequeUW();
-  Persistent<DequeUW> deque_uw2 = new DequeUW();
+  Persistent<MemberDeque> deque = MakeGarbageCollected<MemberDeque>();
+  Persistent<MemberDeque> deque2 = MakeGarbageCollected<MemberDeque>();
+  Persistent<DequeWU> deque_wu = MakeGarbageCollected<DequeWU>();
+  Persistent<DequeWU> deque_wu2 = MakeGarbageCollected<DequeWU>();
+  Persistent<DequeUW> deque_uw = MakeGarbageCollected<DequeUW>();
+  Persistent<DequeUW> deque_uw2 = MakeGarbageCollected<DequeUW>();
   Persistent<Container> container = Container::Create();
 
   ClearOutOldGarbage();
@@ -4187,7 +4187,7 @@ TEST(HeapTest, CollectionNesting3) {
   typedef HeapVector<Member<IntWrapper>> IntVector;
   typedef HeapDeque<Member<IntWrapper>> IntDeque;
   HeapVector<IntVector>* vector = MakeGarbageCollected<HeapVector<IntVector>>();
-  HeapDeque<IntDeque>* deque = new HeapDeque<IntDeque>();
+  HeapDeque<IntDeque>* deque = MakeGarbageCollected<HeapDeque<IntDeque>>();
 
   vector->push_back(IntVector());
   deque->push_back(IntDeque());
@@ -4244,9 +4244,9 @@ TEST(HeapTest, EmbeddedInDeque) {
   SimpleFinalizedObject::destructor_calls_ = 0;
   {
     Persistent<HeapDeque<VectorObject, 2>> inline_deque =
-        new HeapDeque<VectorObject, 2>;
+        MakeGarbageCollected<HeapDeque<VectorObject, 2>>();
     Persistent<HeapDeque<VectorObject>> outline_deque =
-        new HeapDeque<VectorObject>;
+        MakeGarbageCollected<HeapDeque<VectorObject>>();
     VectorObject i1, i2;
     inline_deque->push_back(i1);
     inline_deque->push_back(i2);
@@ -4256,7 +4256,7 @@ TEST(HeapTest, EmbeddedInDeque) {
     outline_deque->push_back(o2);
 
     Persistent<HeapDeque<VectorObjectInheritedTrace>> deque_inherited_trace =
-        new HeapDeque<VectorObjectInheritedTrace>;
+        MakeGarbageCollected<HeapDeque<VectorObjectInheritedTrace>>();
     VectorObjectInheritedTrace it1, it2;
     deque_inherited_trace->push_back(it1);
     deque_inherited_trace->push_back(it2);
@@ -6049,7 +6049,7 @@ TEST(HeapTest, DequeExpand) {
 
   typedef HeapDeque<Member<IntWrapper>> IntDeque;
 
-  Persistent<IntDeque> deque = new IntDeque();
+  Persistent<IntDeque> deque = MakeGarbageCollected<IntDeque>();
 
   // Append a sequence, bringing about repeated expansions of the
   // deque's buffer.
@@ -6131,9 +6131,9 @@ TEST(HeapTest, DequePartObjectsExpand) {
 
   using PartDeque = HeapDeque<PartObjectWithRef>;
 
-  Persistent<PartDeque> deque = new PartDeque();
+  Persistent<PartDeque> deque = MakeGarbageCollected<PartDeque>();
   // Auxillary Deque used to prevent 'inline' buffer expansion.
-  Persistent<PartDeque> deque_unused = new PartDeque();
+  Persistent<PartDeque> deque_unused = MakeGarbageCollected<PartDeque>();
 
   // Append a sequence, bringing about repeated expansions of the
   // deque's buffer.
