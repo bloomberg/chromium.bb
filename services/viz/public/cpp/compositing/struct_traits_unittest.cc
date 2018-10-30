@@ -903,6 +903,7 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   const gfx::Rect rect2(2468, 8642, 4321, 1234);
   const uint32_t color2 = 0xffffffff;
   const bool force_anti_aliasing_off = true;
+  const float backdrop_filter_quality = 1.0f;
   SolidColorDrawQuad* solid_quad =
       render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   solid_quad->SetNew(sqs, rect2, rect2, color2, force_anti_aliasing_off);
@@ -934,7 +935,7 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   render_pass_quad->SetNew(sqs, rect4, rect4, render_pass_id, resource_id4,
                            mask_uv_rect, mask_texture_size, filters_scale,
                            filters_origin, tex_coord_rect,
-                           force_anti_aliasing_off);
+                           force_anti_aliasing_off, backdrop_filter_quality);
 
   const gfx::Rect rect5(123, 567, 91011, 131415);
   const ResourceId resource_id5(1337);

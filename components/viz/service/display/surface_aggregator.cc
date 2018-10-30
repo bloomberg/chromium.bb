@@ -425,7 +425,8 @@ void SurfaceAggregator::EmitSurfaceContent(
     quad->SetNew(shared_quad_state, scaled_rect, scaled_visible_rect,
                  remapped_pass_id, 0, gfx::RectF(), gfx::Size(),
                  gfx::Vector2dF(), gfx::PointF(), gfx::RectF(scaled_rect),
-                 /*force_anti_aliasing_off=*/false);
+                 /*force_anti_aliasing_off=*/false,
+                 /* backdrop_filter_quality*/ 1.0f);
   }
 
   // Need to re-query since referenced_surfaces_ iterators are not stable.
@@ -534,7 +535,8 @@ void SurfaceAggregator::AddColorConversionPass() {
   quad->SetNew(shared_quad_state, output_rect, output_rect,
                root_render_pass->id, 0, gfx::RectF(), gfx::Size(),
                gfx::Vector2dF(), gfx::PointF(), gfx::RectF(output_rect),
-               /*force_anti_aliasing_off=*/false);
+               /*force_anti_aliasing_off=*/false,
+               /*backdrop_filter_quality*/ 1.0f);
   dest_pass_list_->push_back(std::move(color_conversion_pass));
 }
 
