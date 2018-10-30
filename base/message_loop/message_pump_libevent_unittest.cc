@@ -39,7 +39,6 @@ class MessagePumpLibeventTest : public testing::Test {
   void SetUp() override {
     Thread::Options options(MessageLoop::TYPE_IO, 0);
     ASSERT_TRUE(io_thread_.StartWithOptions(options));
-    ASSERT_EQ(MessageLoop::TYPE_IO, io_thread_.message_loop()->type());
     int ret = pipe(pipefds_);
     ASSERT_EQ(0, ret);
   }

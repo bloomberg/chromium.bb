@@ -2224,7 +2224,7 @@ TEST_F(MessageLoopTest, ThreadName) {
     std::string kThreadName("bar");
     base::Thread thread(kThreadName);
     ASSERT_TRUE(thread.StartAndWaitForTesting());
-    EXPECT_EQ(kThreadName, thread.message_loop()->GetThreadName());
+    EXPECT_EQ(kThreadName, thread.thread_name());
   }
 }
 

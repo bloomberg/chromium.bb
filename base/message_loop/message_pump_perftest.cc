@@ -27,6 +27,13 @@
 
 namespace base {
 
+class ThreadForTest : public Thread {
+ public:
+  ThreadForTest() : Thread("test") {}
+
+  using Thread::message_loop;
+};
+
 class ScheduleWorkTest : public testing::Test {
  public:
   ScheduleWorkTest() : counter_(0) {}
@@ -78,7 +85,7 @@ class ScheduleWorkTest : public testing::Test {
     } else
 #endif
     {
-      target_.reset(new Thread("target"));
+      target_.reset(new ThreadForTest());
       target_->StartWithOptions(Thread::Options(target_type, 0u));
 
       // Without this, it's possible for the scheduling threads to start and run
@@ -176,7 +183,7 @@ class ScheduleWorkTest : public testing::Test {
   }
 
  private:
-  std::unique_ptr<Thread> target_;
+  std::unique_ptr<ThreadForTest> target_;
 #if defined(OS_ANDROID)
   std::unique_ptr<android::JavaHandlerThread> java_thread_;
 #endif

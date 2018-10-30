@@ -70,7 +70,6 @@
 
 namespace base {
 class CommandLine;
-class MessageLoop;
 class SharedPersistentMemoryAllocator;
 }
 
@@ -352,7 +351,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
     kMaxValue = kRefusedBySiteInstance
   };
 
-  static base::MessageLoop* GetInProcessRendererThreadForTesting();
+  static scoped_refptr<base::SingleThreadTaskRunner>
+  GetInProcessRendererThreadTaskRunnerForTesting();
 
   // This forces a renderer that is running "in process" to shut down.
   static void ShutDownInProcessRenderer();

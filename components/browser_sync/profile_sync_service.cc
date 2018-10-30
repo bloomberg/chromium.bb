@@ -2146,9 +2146,10 @@ void ProfileSyncService::NotifyForeignSessionUpdated() {
     observer.OnForeignSessionUpdated(this);
 }
 
-base::MessageLoop* ProfileSyncService::GetSyncLoopForTest() const {
+scoped_refptr<base::SingleThreadTaskRunner>
+ProfileSyncService::GetSyncThreadTaskRunnerForTest() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return sync_thread_ ? sync_thread_->message_loop() : nullptr;
+  return sync_thread_ ? sync_thread_->task_runner() : nullptr;
 }
 
 syncer::SyncEncryptionHandler::Observer*

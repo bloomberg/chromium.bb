@@ -128,7 +128,6 @@ TEST(PrintJobTest, SimplePrintLateInit) {
   job->Observe();
   job->GetSettingsDone();
   job->DetachWorker();
-  job->message_loop();
   job->settings();
   job->cookie();
   job->GetSettings(DEFAULTS, ASK_USER, nullptr);

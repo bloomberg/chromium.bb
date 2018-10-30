@@ -295,7 +295,7 @@ RendererMainThreadFactoryFunction g_renderer_main_thread_factory = nullptr;
 RenderProcessHostImpl::CreateStoragePartitionServiceFunction
     g_create_storage_partition = nullptr;
 
-base::MessageLoop* g_in_process_thread;
+base::Thread* g_in_process_thread;
 
 const RenderProcessHostFactory* g_render_process_host_factory_ = nullptr;
 const char kSiteProcessMapKeyName[] = "content_site_process_map";
@@ -1407,9 +1407,9 @@ void RenderProcessHostImpl::ConnectionFilterController::DisableFilter() {
     filter_->Disable();
 }
 
-base::MessageLoop*
-RenderProcessHostImpl::GetInProcessRendererThreadForTesting() {
-  return g_in_process_thread;
+scoped_refptr<base::SingleThreadTaskRunner>
+RenderProcessHostImpl::GetInProcessRendererThreadTaskRunnerForTesting() {
+  return g_in_process_thread->task_runner();
 }
 
 // static
@@ -1688,6 +1688,7 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
   // Make sure to clean up the in-process renderer before the channel, otherwise
   // it may still run and have its IPCs fail, causing asserts.
   in_process_renderer_.reset();
+  g_in_process_thread = nullptr;
 
   ChildProcessSecurityPolicyImpl::GetInstance()->Remove(GetID());
 
@@ -1821,7 +1822,7 @@ bool RenderProcessHostImpl::Init() {
 
     in_process_renderer_->StartWithOptions(options);
 
-    g_in_process_thread = in_process_renderer_->message_loop();
+    g_in_process_thread = in_process_renderer_.get();
 
     // Make sure any queued messages on the channel are flushed in the case
     // where we aren't launching a child process.

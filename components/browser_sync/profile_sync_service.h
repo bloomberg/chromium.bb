@@ -14,9 +14,11 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -46,10 +48,6 @@
 #include "components/version_info/version_info.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "url/gurl.h"
-
-namespace base {
-class MessageLoop;
-}
 
 namespace identity {
 class IdentityManager;
@@ -457,7 +455,8 @@ class ProfileSyncService : public syncer::SyncService,
   void SetSyncAllowedByPlatform(bool allowed);
 
   // Sometimes we need to wait for tasks on the sync thread in tests.
-  base::MessageLoop* GetSyncLoopForTest() const;
+  scoped_refptr<base::SingleThreadTaskRunner> GetSyncThreadTaskRunnerForTest()
+      const;
 
   // Some tests rely on injecting calls to the encryption observer.
   syncer::SyncEncryptionHandler::Observer* GetEncryptionObserverForTest();

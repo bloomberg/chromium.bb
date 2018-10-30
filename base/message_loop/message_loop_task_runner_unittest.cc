@@ -24,11 +24,15 @@ class MessageLoopTaskRunnerTest : public testing::Test {
  public:
   MessageLoopTaskRunnerTest()
       : current_loop_(new MessageLoop()),
-        task_thread_("task_thread"),
+        task_thread_("test thread"),
         thread_sync_(WaitableEvent::ResetPolicy::MANUAL,
                      WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   void DeleteCurrentMessageLoop() { current_loop_.reset(); }
+
+  MessageLoop* MessageLoopForThread(base::Thread* thread) {
+    return thread->message_loop();
+  }
 
  protected:
   void SetUp() override {
@@ -126,8 +130,8 @@ TEST_F(MessageLoopTaskRunnerTest, PostTaskAndReply_Basic) {
   UnblockTaskThread();
   RunLoop().Run();
 
-  EXPECT_EQ(task_thread_.message_loop(), task_run_on);
-  EXPECT_EQ(task_thread_.message_loop(), task_deleted_on);
+  EXPECT_EQ(MessageLoopForThread(&task_thread_), task_run_on);
+  EXPECT_EQ(MessageLoopForThread(&task_thread_), task_deleted_on);
   EXPECT_EQ(current_loop_.get(), reply_run_on);
   EXPECT_EQ(current_loop_.get(), reply_deleted_on);
   EXPECT_LT(task_delete_order, reply_delete_order);
@@ -236,7 +240,7 @@ TEST_F(MessageLoopTaskRunnerTest,
   // This should ensure the relay has been run.  We need to record the
   // MessageLoop pointer before stopping the thread because Thread::Stop() will
   // NULL out its own pointer.
-  MessageLoop* task_loop = task_thread_.message_loop();
+  MessageLoop* task_loop = MessageLoopForThread(&task_thread_);
   task_thread_.Stop();
 
   // Even if the reply task runner is already gone, the original task should

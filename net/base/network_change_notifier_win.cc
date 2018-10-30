@@ -11,7 +11,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
@@ -210,8 +209,7 @@ void NetworkChangeNotifierWin::RecomputeCurrentConnectionTypeOnDnsThread(
   // Unretained is safe in this call because this object owns the thread and the
   // thread is stopped in this object's destructor.
   base::PostTaskAndReplyWithResult(
-      dns_config_service_thread_->message_loop()->task_runner().get(),
-      FROM_HERE,
+      dns_config_service_thread_->task_runner().get(), FROM_HERE,
       base::Bind(&NetworkChangeNotifierWin::RecomputeCurrentConnectionType,
                  base::Unretained(this)),
       reply_callback);
