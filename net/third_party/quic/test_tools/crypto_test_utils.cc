@@ -458,7 +458,8 @@ int HandshakeWithFakeClient(MockQuicConnectionHelper* helper,
     crypto_config.tb_key_params = options.token_binding_params;
   }
   TestQuicSpdyClientSession client_session(client_conn, DefaultQuicConfig(),
-                                           server_id, &crypto_config);
+                                           supported_versions, server_id,
+                                           &crypto_config);
 
   EXPECT_CALL(client_session, OnProofValid(testing::_))
       .Times(testing::AnyNumber());

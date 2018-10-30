@@ -53,11 +53,6 @@ class QUIC_EXPORT_PRIVATE QuartcStream : public QuicStream {
   bool cancel_on_loss();
   void set_cancel_on_loss(bool cancel_on_loss);
 
-  // If true, stream data will only be delivered after the FIN bit arrives and
-  // all data has been received.
-  bool deliver_on_complete();
-  void set_deliver_on_complete(bool deliver_on_complete);
-
   QuicByteCount BytesPendingRetransmission();
 
   // Marks this stream as finished writing.  Asynchronously sends a FIN and
@@ -71,13 +66,16 @@ class QUIC_EXPORT_PRIVATE QuartcStream : public QuicStream {
    public:
     virtual ~Delegate() {}
 
-    // Called when the stream receives data.  Called with |size| == 0 after all
-    // stream data has been delivered (once the stream receives a FIN bit).
-    // Note that the same packet may include both data and a FIN bit, causing
-    // this method to be called twice.
-    virtual void OnReceived(QuartcStream* stream,
-                            const char* data,
-                            size_t size) = 0;
+    // Called when the stream receives data. |iov| is a pointer to the first of
+    // |iov_length| readable regions. |iov| points to readable data within
+    // |stream|'s sequencer buffer. QUIC may modify or delete this data after
+    // the application consumes it. |fin| indicates the end of stream data.
+    // Returns the number of bytes consumed. May return 0 if the delegate is
+    // unable to consume any bytes at this time.
+    virtual size_t OnReceived(QuartcStream* stream,
+                              iovec* iov,
+                              size_t iov_length,
+                              bool fin) = 0;
 
     // Called when the stream is closed, either locally or by the remote
     // endpoint.  Streams close when (a) fin bits are both sent and received,
@@ -98,9 +96,6 @@ class QUIC_EXPORT_PRIVATE QuartcStream : public QuicStream {
 
   // Whether the stream should cancel itself instead of retransmitting frames.
   bool cancel_on_loss_ = false;
-
-  // Whether stream data should only be delivered after all data is received.
-  bool deliver_on_complete_ = true;
 };
 
 }  // namespace quic

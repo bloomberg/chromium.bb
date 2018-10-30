@@ -242,7 +242,8 @@ class MockFramerVisitor : public QuicFramerVisitorInterface {
 
   MOCK_METHOD1(OnError, void(QuicFramer* framer));
   // The constructor sets this up to return false by default.
-  MOCK_METHOD1(OnProtocolVersionMismatch, bool(ParsedQuicVersion version));
+  MOCK_METHOD2(OnProtocolVersionMismatch,
+               bool(ParsedQuicVersion version, PacketHeaderFormat form));
   MOCK_METHOD0(OnPacket, void());
   MOCK_METHOD1(OnPublicResetPacket, void(const QuicPublicResetPacket& header));
   MOCK_METHOD1(OnVersionNegotiationPacket,
@@ -300,7 +301,8 @@ class NoOpFramerVisitor : public QuicFramerVisitorInterface {
   void OnPublicResetPacket(const QuicPublicResetPacket& packet) override {}
   void OnVersionNegotiationPacket(
       const QuicVersionNegotiationPacket& packet) override {}
-  bool OnProtocolVersionMismatch(ParsedQuicVersion version) override;
+  bool OnProtocolVersionMismatch(ParsedQuicVersion version,
+                                 PacketHeaderFormat form) override;
   bool OnUnauthenticatedHeader(const QuicPacketHeader& header) override;
   bool OnUnauthenticatedPublicHeader(const QuicPacketHeader& header) override;
   void OnDecryptedPacket(EncryptionLevel level) override {}
@@ -510,7 +512,8 @@ class MockQuicConnection : public QuicConnection {
     QuicConnection::ProcessUdpPacket(self_address, peer_address, packet);
   }
 
-  bool OnProtocolVersionMismatch(ParsedQuicVersion version) override;
+  bool OnProtocolVersionMismatch(ParsedQuicVersion version,
+                                 PacketHeaderFormat form) override;
 
   bool ReallySendControlFrame(const QuicFrame& frame) {
     return QuicConnection::SendControlFrame(frame);
@@ -776,6 +779,7 @@ class TestQuicSpdyClientSession : public QuicSpdyClientSessionBase {
  public:
   TestQuicSpdyClientSession(QuicConnection* connection,
                             const QuicConfig& config,
+                            const ParsedQuicVersionVector& supported_versions,
                             const QuicServerId& server_id,
                             QuicCryptoClientConfig* crypto_config);
   TestQuicSpdyClientSession(const TestQuicSpdyClientSession&) = delete;
@@ -803,9 +807,21 @@ class TestQuicSpdyClientSession : public QuicSpdyClientSessionBase {
   QuicCryptoClientStream* GetMutableCryptoStream() override;
   const QuicCryptoClientStream* GetCryptoStream() const override;
 
+  // Override to save sent crypto handshake messages.
+  void OnCryptoHandshakeMessageSent(
+      const CryptoHandshakeMessage& message) override {
+    sent_crypto_handshake_messages_.push_back(message);
+  }
+
+  const std::vector<CryptoHandshakeMessage>& sent_crypto_handshake_messages()
+      const {
+    return sent_crypto_handshake_messages_;
+  }
+
  private:
   std::unique_ptr<QuicCryptoClientStream> crypto_stream_;
   QuicClientPushPromiseIndex push_promise_index_;
+  std::vector<CryptoHandshakeMessage> sent_crypto_handshake_messages_;
 };
 
 class MockPacketWriter : public QuicPacketWriter {

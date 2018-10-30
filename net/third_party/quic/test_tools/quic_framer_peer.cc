@@ -328,12 +328,6 @@ QuicEncrypter* QuicFramerPeer::GetEncrypter(QuicFramer* framer,
 }
 
 // static
-void QuicFramerPeer::SetLastPacketIsIetfQuic(QuicFramer* framer,
-                                             bool last_packet_is_ietf_quic) {
-  framer->last_packet_is_ietf_quic_ = last_packet_is_ietf_quic;
-}
-
-// static
 size_t QuicFramerPeer::ComputeFrameLength(
     QuicFramer* framer,
     const QuicFrame& frame,

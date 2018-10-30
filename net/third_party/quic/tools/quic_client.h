@@ -62,6 +62,7 @@ class QuicClient : public QuicSpdyClientBase {
   ~QuicClient() override;
 
   std::unique_ptr<QuicSession> CreateQuicClientSession(
+      const ParsedQuicVersionVector& supported_versions,
       QuicConnection* connection) override;
 
   // Exposed for the quic client test.

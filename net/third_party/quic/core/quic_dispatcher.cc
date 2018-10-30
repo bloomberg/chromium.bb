@@ -128,7 +128,8 @@ class StatelessConnectionTerminator {
   // Generates a packet containing a CONNECTION_CLOSE frame specifying
   // |error_code| and |error_details| and add the connection to time wait.
   void CloseConnection(QuicErrorCode error_code,
-                       const QuicString& error_details) {
+                       const QuicString& error_details,
+                       bool ietf_quic) {
     QuicConnectionCloseFrame* frame = new QuicConnectionCloseFrame;
     frame->error_code = error_code;
     frame->error_details = error_details;
@@ -143,7 +144,7 @@ class StatelessConnectionTerminator {
     creator_.Flush();
     DCHECK_EQ(1u, collector_.packets()->size());
     time_wait_list_manager_->AddConnectionIdToTimeWait(
-        connection_id_, framer_->last_packet_is_ietf_quic(),
+        connection_id_, ietf_quic,
         QuicTimeWaitListManager::SEND_TERMINATION_PACKETS,
         collector_.packets());
   }
@@ -151,7 +152,7 @@ class StatelessConnectionTerminator {
   // Generates a series of termination packets containing the crypto handshake
   // message |reject|.  Adds the connection to time wait list with the
   // generated packets.
-  void RejectConnection(QuicStringPiece reject) {
+  void RejectConnection(QuicStringPiece reject, bool ietf_quic) {
     QuicStreamOffset offset = 0;
     collector_.SaveStatelessRejectFrameData(reject);
     while (offset < reject.length()) {
@@ -174,7 +175,7 @@ class StatelessConnectionTerminator {
       creator_.Flush();
     }
     time_wait_list_manager_->AddConnectionIdToTimeWait(
-        connection_id_, framer_->last_packet_is_ietf_quic(),
+        connection_id_, ietf_quic,
         QuicTimeWaitListManager::SEND_TERMINATION_PACKETS,
         collector_.packets());
     DCHECK(time_wait_list_manager_->IsConnectionIdInTimeWait(connection_id_));
@@ -345,7 +346,7 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
   }
 
   if (buffered_packets_.HasChloForConnection(connection_id)) {
-    BufferEarlyPacket(connection_id, framer_.last_packet_is_ietf_quic());
+    BufferEarlyPacket(connection_id, header.form != GOOGLE_QUIC_PACKET);
     return false;
   }
 
@@ -354,7 +355,7 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
       temporarily_buffered_connections_.end()) {
     // This packet was received while the a CHLO for the same connection ID was
     // being processed.  Buffer it.
-    BufferEarlyPacket(connection_id, framer_.last_packet_is_ietf_quic());
+    BufferEarlyPacket(connection_id, header.form != GOOGLE_QUIC_PACKET);
     return false;
   }
 
@@ -394,7 +395,7 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
       // Since the version is not supported, send a version negotiation
       // packet and stop processing the current packet.
       time_wait_list_manager()->SendVersionNegotiationPacket(
-          connection_id, framer_.last_packet_is_ietf_quic(),
+          connection_id, header.form != GOOGLE_QUIC_PACKET,
           GetSupportedVersions(), current_self_address_, current_peer_address_);
       return false;
     }
@@ -412,11 +413,11 @@ bool QuicDispatcher::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
   if (fate == kFateProcess) {
     // Execute stateless rejection logic to determine the packet fate, then
     // invoke ProcessUnauthenticatedHeaderFate.
-    MaybeRejectStatelessly(connection_id, header.version);
+    MaybeRejectStatelessly(connection_id, header.version, header.form);
   } else {
     // If the fate is already known, process it without executing stateless
     // rejection logic.
-    ProcessUnauthenticatedHeaderFate(fate, connection_id);
+    ProcessUnauthenticatedHeaderFate(fate, connection_id, header.form);
   }
 
   return false;
@@ -424,10 +425,11 @@ bool QuicDispatcher::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
 
 void QuicDispatcher::ProcessUnauthenticatedHeaderFate(
     QuicPacketFate fate,
-    QuicConnectionId connection_id) {
+    QuicConnectionId connection_id,
+    PacketHeaderFormat form) {
   switch (fate) {
     case kFateProcess: {
-      ProcessChlo();
+      ProcessChlo(form);
       break;
     }
     case kFateTimeWait:
@@ -440,8 +442,7 @@ void QuicDispatcher::ProcessUnauthenticatedHeaderFate(
         QUIC_DLOG(INFO) << "Adding connection ID " << connection_id
                         << "to time-wait list.";
         StatelesslyTerminateConnection(
-            connection_id, framer()->GetLastPacketFormat(),
-            QUIC_HANDSHAKE_FAILED, "Reject connection",
+            connection_id, form, QUIC_HANDSHAKE_FAILED, "Reject connection",
             quic::QuicTimeWaitListManager::SEND_STATELESS_RESET);
       }
       DCHECK(time_wait_list_manager_->IsConnectionIdInTimeWait(connection_id));
@@ -458,7 +459,7 @@ void QuicDispatcher::ProcessUnauthenticatedHeaderFate(
       // This packet is a non-CHLO packet which has arrived before the
       // corresponding CHLO, *or* this packet was received while the
       // corresponding CHLO was being processed.  Buffer it.
-      BufferEarlyPacket(connection_id, framer_.last_packet_is_ietf_quic());
+      BufferEarlyPacket(connection_id, form != GOOGLE_QUIC_PACKET);
       break;
     case kFateDrop:
       // Do nothing with the packet.
@@ -649,7 +650,7 @@ void QuicDispatcher::StatelesslyTerminateConnection(
     // connection to time wait list.
     StatelessConnectionTerminator terminator(
         connection_id, &framer_, helper_.get(), time_wait_list_manager_.get());
-    terminator.CloseConnection(error_code, error_details);
+    terminator.CloseConnection(error_code, error_details, true);
     return;
   }
 
@@ -672,7 +673,8 @@ bool QuicDispatcher::ShouldCreateSessionForUnknownVersion(
 }
 
 bool QuicDispatcher::OnProtocolVersionMismatch(
-    ParsedQuicVersion /*received_version*/) {
+    ParsedQuicVersion /*received_version*/,
+    PacketHeaderFormat /*form*/) {
   QUIC_BUG_IF(
       !time_wait_list_manager_->IsConnectionIdInTimeWait(
           current_connection_id_) &&
@@ -870,8 +872,9 @@ void QuicDispatcher::ProcessBufferedChlos(size_t max_connections_to_create) {
     if (packets.empty()) {
       return;
     }
-    QuicSession* session = CreateQuicSession(
-        connection_id, packets.front().client_address, packet_list.alpn);
+    QuicSession* session =
+        CreateQuicSession(connection_id, packets.front().client_address,
+                          packet_list.alpn, packet_list.version);
     QUIC_DLOG(INFO) << "Created new session for " << connection_id;
     session_map_.insert(std::make_pair(connection_id, QuicWrapUnique(session)));
     DeliverPacketsToSession(packets, session);
@@ -883,7 +886,8 @@ bool QuicDispatcher::HasChlosBuffered() const {
 }
 
 bool QuicDispatcher::ShouldCreateOrBufferPacketForConnection(
-    QuicConnectionId connection_id) {
+    QuicConnectionId connection_id,
+    bool ietf_quic) {
   VLOG(1) << "Received packet from new connection " << connection_id;
   return true;
 }
@@ -916,23 +920,25 @@ void QuicDispatcher::BufferEarlyPacket(QuicConnectionId connection_id,
                                        bool ietf_quic) {
   bool is_new_connection = !buffered_packets_.HasBufferedPackets(connection_id);
   if (is_new_connection &&
-      !ShouldCreateOrBufferPacketForConnection(connection_id)) {
+      !ShouldCreateOrBufferPacketForConnection(connection_id, ietf_quic)) {
     return;
   }
+  ParsedQuicVersion version(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED);
   EnqueuePacketResult rs = buffered_packets_.EnqueuePacket(
       connection_id, ietf_quic, *current_packet_, current_self_address_,
-      current_peer_address_, /*is_chlo=*/false, /*alpn=*/"");
+      current_peer_address_, /*is_chlo=*/false,
+      /*alpn=*/"", version);
   if (rs != EnqueuePacketResult::SUCCESS) {
     OnBufferPacketFailure(rs, connection_id);
   }
 }
 
-void QuicDispatcher::ProcessChlo() {
+void QuicDispatcher::ProcessChlo(quic::PacketHeaderFormat form) {
   if (!accept_new_connections_) {
     // Don't any create new connection.
     StatelesslyTerminateConnection(
-        current_connection_id(), framer()->GetLastPacketFormat(),
-        QUIC_HANDSHAKE_FAILED, "Stop accepting new connections",
+        current_connection_id(), form, QUIC_HANDSHAKE_FAILED,
+        "Stop accepting new connections",
         quic::QuicTimeWaitListManager::SEND_STATELESS_RESET);
     // Time wait list will reject the packet correspondingly.
     time_wait_list_manager()->ProcessPacket(current_self_address(),
@@ -941,7 +947,8 @@ void QuicDispatcher::ProcessChlo() {
     return;
   }
   if (!buffered_packets_.HasBufferedPackets(current_connection_id_) &&
-      !ShouldCreateOrBufferPacketForConnection(current_connection_id_)) {
+      !ShouldCreateOrBufferPacketForConnection(current_connection_id_,
+                                               form != GOOGLE_QUIC_PACKET)) {
     return;
   }
   if (FLAGS_quic_allow_chlo_buffering &&
@@ -949,17 +956,18 @@ void QuicDispatcher::ProcessChlo() {
     // Can't create new session any more. Wait till next event loop.
     QUIC_BUG_IF(buffered_packets_.HasChloForConnection(current_connection_id_));
     EnqueuePacketResult rs = buffered_packets_.EnqueuePacket(
-        current_connection_id_, framer_.last_packet_is_ietf_quic(),
-        *current_packet_, current_self_address_, current_peer_address_,
-        /*is_chlo=*/true, current_alpn_);
+        current_connection_id_, form != GOOGLE_QUIC_PACKET, *current_packet_,
+        current_self_address_, current_peer_address_,
+        /*is_chlo=*/true, current_alpn_, framer_.version());
     if (rs != EnqueuePacketResult::SUCCESS) {
       OnBufferPacketFailure(rs, current_connection_id_);
     }
     return;
   }
   // Creates a new session and process all buffered packets for this connection.
-  QuicSession* session = CreateQuicSession(
-      current_connection_id_, current_peer_address_, current_alpn_);
+  QuicSession* session =
+      CreateQuicSession(current_connection_id_, current_peer_address_,
+                        current_alpn_, framer_.version());
   QUIC_DLOG(INFO) << "Created new session for " << current_connection_id_;
   session_map_.insert(
       std::make_pair(current_connection_id_, QuicWrapUnique(session)));
@@ -996,7 +1004,8 @@ class StatelessRejectorProcessDoneCallback
     : public StatelessRejector::ProcessDoneCallback {
  public:
   StatelessRejectorProcessDoneCallback(QuicDispatcher* dispatcher,
-                                       ParsedQuicVersion first_version)
+                                       ParsedQuicVersion first_version,
+                                       PacketHeaderFormat form)
       : dispatcher_(dispatcher),
         current_client_address_(dispatcher->current_client_address_),
         current_peer_address_(dispatcher->current_peer_address_),
@@ -1005,8 +1014,7 @@ class StatelessRejectorProcessDoneCallback
         current_packet_(
             dispatcher->current_packet_->Clone()),  // Note: copies the packet
         first_version_(first_version),
-        current_packet_is_ietf_quic_(
-            dispatcher->framer()->last_packet_is_ietf_quic()) {}
+        current_packet_format_(form) {}
 
   void Run(std::unique_ptr<StatelessRejector> rejector) override {
     if (additional_context_ != nullptr) {
@@ -1015,7 +1023,7 @@ class StatelessRejectorProcessDoneCallback
     dispatcher_->OnStatelessRejectorProcessDone(
         std::move(rejector), current_client_address_, current_peer_address_,
         current_self_address_, std::move(current_packet_), first_version_,
-        current_packet_is_ietf_quic_);
+        current_packet_format_);
   }
 
  private:
@@ -1028,13 +1036,14 @@ class StatelessRejectorProcessDoneCallback
   std::unique_ptr<QuicDispatcher::PerPacketContext> additional_context_;
   std::unique_ptr<QuicReceivedPacket> current_packet_;
   ParsedQuicVersion first_version_;
-  const bool current_packet_is_ietf_quic_;
+  const PacketHeaderFormat current_packet_format_;
 };
 
 void QuicDispatcher::MaybeRejectStatelessly(QuicConnectionId connection_id,
-                                            ParsedQuicVersion version) {
+                                            ParsedQuicVersion version,
+                                            PacketHeaderFormat form) {
   if (version.handshake_protocol == PROTOCOL_TLS1_3) {
-    ProcessUnauthenticatedHeaderFate(kFateProcess, connection_id);
+    ProcessUnauthenticatedHeaderFate(kFateProcess, connection_id, form);
     return;
     // TODO(nharper): Support buffering non-ClientHello packets when using TLS.
   }
@@ -1050,11 +1059,11 @@ void QuicDispatcher::MaybeRejectStatelessly(QuicConnectionId connection_id,
                                 config_.create_session_tag_indicators(),
                                 &alpn_extractor)) {
       // Buffer non-CHLO packets.
-      ProcessUnauthenticatedHeaderFate(kFateBuffer, connection_id);
+      ProcessUnauthenticatedHeaderFate(kFateBuffer, connection_id, form);
       return;
     }
     current_alpn_ = alpn_extractor.ConsumeAlpn();
-    ProcessUnauthenticatedHeaderFate(kFateProcess, connection_id);
+    ProcessUnauthenticatedHeaderFate(kFateProcess, connection_id, form);
     return;
   }
 
@@ -1069,7 +1078,7 @@ void QuicDispatcher::MaybeRejectStatelessly(QuicConnectionId connection_id,
   if (!ChloExtractor::Extract(*current_packet_, GetSupportedVersions(),
                               config_.create_session_tag_indicators(),
                               &validator)) {
-    ProcessUnauthenticatedHeaderFate(kFateBuffer, connection_id);
+    ProcessUnauthenticatedHeaderFate(kFateBuffer, connection_id, form);
     return;
   }
   current_alpn_ = validator.ConsumeAlpn();
@@ -1078,10 +1087,10 @@ void QuicDispatcher::MaybeRejectStatelessly(QuicConnectionId connection_id,
     // This CHLO is prohibited by policy.
     StatelessConnectionTerminator terminator(connection_id, &framer_, helper(),
                                              time_wait_list_manager_.get());
-    terminator.CloseConnection(QUIC_HANDSHAKE_FAILED,
-                               validator.error_details());
+    terminator.CloseConnection(QUIC_HANDSHAKE_FAILED, validator.error_details(),
+                               form != GOOGLE_QUIC_PACKET);
     OnConnectionClosedStatelessly(QUIC_HANDSHAKE_FAILED);
-    ProcessUnauthenticatedHeaderFate(kFateTimeWait, connection_id);
+    ProcessUnauthenticatedHeaderFate(kFateTimeWait, connection_id, form);
     return;
   }
 
@@ -1089,7 +1098,7 @@ void QuicDispatcher::MaybeRejectStatelessly(QuicConnectionId connection_id,
   // information available in OnChlo, just invoke the done callback immediately.
   if (rejector->state() != StatelessRejector::UNKNOWN) {
     ProcessStatelessRejectorState(std::move(rejector),
-                                  version.transport_version);
+                                  version.transport_version, form);
     return;
   }
 
@@ -1102,7 +1111,7 @@ void QuicDispatcher::MaybeRejectStatelessly(QuicConnectionId connection_id,
 
   // Continue stateless rejector processing
   std::unique_ptr<StatelessRejectorProcessDoneCallback> cb(
-      new StatelessRejectorProcessDoneCallback(this, version));
+      new StatelessRejectorProcessDoneCallback(this, version, form));
   StatelessRejector::Process(std::move(rejector), std::move(cb));
 }
 
@@ -1113,7 +1122,7 @@ void QuicDispatcher::OnStatelessRejectorProcessDone(
     const QuicSocketAddress& current_self_address,
     std::unique_ptr<QuicReceivedPacket> current_packet,
     ParsedQuicVersion first_version,
-    bool current_packet_is_ietf_quic) {
+    PacketHeaderFormat current_packet_format) {
   // Reset current_* to correspond to the packet which initiated the stateless
   // reject logic.
   current_client_address_ = current_client_address;
@@ -1123,10 +1132,10 @@ void QuicDispatcher::OnStatelessRejectorProcessDone(
   current_connection_id_ = rejector->connection_id();
   framer_.set_version(first_version);
   if (GetQuicReloadableFlag(quic_fix_last_packet_is_ietf_quic)) {
-    if (framer_.last_packet_is_ietf_quic() != current_packet_is_ietf_quic) {
+    if (GetLastPacketFormat() != current_packet_format) {
       QUIC_FLAG_COUNT(quic_reloadable_flag_quic_fix_last_packet_is_ietf_quic);
     }
-    framer_.set_last_packet_is_ietf_quic(current_packet_is_ietf_quic);
+    framer_.set_last_packet_form(current_packet_format);
   }
 
   // Stop buffering packets on this connection
@@ -1146,12 +1155,14 @@ void QuicDispatcher::OnStatelessRejectorProcessDone(
   }
 
   ProcessStatelessRejectorState(std::move(rejector),
-                                first_version.transport_version);
+                                first_version.transport_version,
+                                current_packet_format);
 }
 
 void QuicDispatcher::ProcessStatelessRejectorState(
     std::unique_ptr<StatelessRejector> rejector,
-    QuicTransportVersion first_version) {
+    QuicTransportVersion first_version,
+    PacketHeaderFormat form) {
   QuicPacketFate fate;
   switch (rejector->state()) {
     case StatelessRejector::FAILED: {
@@ -1159,7 +1170,8 @@ void QuicDispatcher::ProcessStatelessRejectorState(
       StatelessConnectionTerminator terminator(rejector->connection_id(),
                                                &framer_, helper(),
                                                time_wait_list_manager_.get());
-      terminator.CloseConnection(rejector->error(), rejector->error_details());
+      terminator.CloseConnection(rejector->error(), rejector->error_details(),
+                                 form != GOOGLE_QUIC_PACKET);
       fate = kFateTimeWait;
       break;
     }
@@ -1183,7 +1195,8 @@ void QuicDispatcher::ProcessStatelessRejectorState(
                                                &framer_, helper(),
                                                time_wait_list_manager_.get());
       terminator.RejectConnection(
-          rejector->reply().GetSerialized().AsStringPiece());
+          rejector->reply().GetSerialized().AsStringPiece(),
+          form != GOOGLE_QUIC_PACKET);
       OnConnectionRejectedStatelessly();
       fate = kFateTimeWait;
       break;
@@ -1194,7 +1207,7 @@ void QuicDispatcher::ProcessStatelessRejectorState(
       fate = kFateDrop;
       break;
   }
-  ProcessUnauthenticatedHeaderFate(fate, rejector->connection_id());
+  ProcessUnauthenticatedHeaderFate(fate, rejector->connection_id(), form);
 }
 
 const QuicTransportVersionVector&
@@ -1213,6 +1226,14 @@ void QuicDispatcher::DeliverPacketsToSession(
     session->ProcessUdpPacket(packet.server_address, packet.client_address,
                               *(packet.packet));
   }
+}
+
+void QuicDispatcher::DisableFlagValidation() {
+  framer_.set_validate_flags(false);
+}
+
+PacketHeaderFormat QuicDispatcher::GetLastPacketFormat() const {
+  return framer_.GetLastPacketFormat();
 }
 
 }  // namespace quic

@@ -178,7 +178,8 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
         QuicMakeUnique<QuicVersionNegotiationPacket>((packet));
   }
 
-  bool OnProtocolVersionMismatch(ParsedQuicVersion received_version) override {
+  bool OnProtocolVersionMismatch(ParsedQuicVersion received_version,
+                                 PacketHeaderFormat /*form*/) override {
     QUIC_DLOG(INFO) << "QuicFramer Version Mismatch, version: "
                     << received_version;
     ++version_mismatch_;

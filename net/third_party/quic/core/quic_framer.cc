@@ -241,8 +241,7 @@ QuicFramer::QuicFramer(const ParsedQuicVersionVector& supported_versions,
       largest_packet_number_(0),
       last_serialized_connection_id_(0),
       last_version_label_(0),
-      last_packet_is_ietf_quic_(false),
-      last_header_form_(LONG_HEADER),
+      last_header_form_(GOOGLE_QUIC_PACKET),
       version_(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED),
       supported_versions_(supported_versions),
       decrypter_level_(ENCRYPTION_NONE),
@@ -1270,14 +1269,14 @@ QuicFramer::BuildIetfVersionNegotiationPacket(
 bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
   QuicDataReader reader(packet.data(), packet.length(), endianness());
 
-  last_packet_is_ietf_quic_ = false;
+  bool last_packet_is_ietf_quic = false;
   if (perspective_ == Perspective::IS_CLIENT) {
-    last_packet_is_ietf_quic_ = version_.transport_version > QUIC_VERSION_43;
+    last_packet_is_ietf_quic = version_.transport_version > QUIC_VERSION_43;
   } else if (!reader.IsDoneReading()) {
     uint8_t type = reader.PeekByte();
-    last_packet_is_ietf_quic_ = QuicUtils::IsIetfPacketHeader(type);
+    last_packet_is_ietf_quic = QuicUtils::IsIetfPacketHeader(type);
   }
-  if (last_packet_is_ietf_quic_) {
+  if (last_packet_is_ietf_quic) {
     QUIC_DVLOG(1) << ENDPOINT << "Processing IETF QUIC packet.";
     reader.set_endianness(NETWORK_BYTE_ORDER);
   }
@@ -1285,13 +1284,14 @@ bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
   visitor_->OnPacket();
 
   QuicPacketHeader header;
-  if (!ProcessPublicHeader(&reader, &header)) {
+  if (!ProcessPublicHeader(&reader, last_packet_is_ietf_quic, &header)) {
     DCHECK_NE("", detailed_error_);
     QUIC_DVLOG(1) << ENDPOINT << "Unable to process public header. Error: "
                   << detailed_error_;
     DCHECK_NE("", detailed_error_);
     return RaiseError(QUIC_INVALID_PACKET_HEADER);
   }
+  last_header_form_ = header.form;
 
   if (!visitor_->OnUnauthenticatedPublicHeader(header)) {
     // The visitor suppresses further processing of the packet.
@@ -1300,7 +1300,7 @@ bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
 
   if (perspective_ == Perspective::IS_SERVER && header.version_flag &&
       header.version != version_) {
-    if (!visitor_->OnProtocolVersionMismatch(header.version)) {
+    if (!visitor_->OnProtocolVersionMismatch(header.version, header.form)) {
       return true;
     }
   }
@@ -1309,7 +1309,7 @@ bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
   reader.set_endianness(endianness());
 
   bool rv;
-  if (IsVersionNegotiation(header)) {
+  if (IsVersionNegotiation(header, last_packet_is_ietf_quic)) {
     QUIC_DVLOG(1) << ENDPOINT << "Received version negotiation packet";
     rv = ProcessVersionNegotiationPacket(&reader, header);
   } else if (header.reset_flag) {
@@ -1318,7 +1318,7 @@ bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
     // The optimized decryption algorithm implementations run faster when
     // operating on aligned memory.
     QUIC_CACHELINE_ALIGNED char buffer[kMaxPacketSize];
-    if (last_packet_is_ietf_quic_) {
+    if (last_packet_is_ietf_quic) {
       rv = ProcessIetfDataPacket(&reader, &header, packet, buffer,
                                  kMaxPacketSize);
     } else {
@@ -1326,7 +1326,7 @@ bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
     }
   } else {
     std::unique_ptr<char[]> large_buffer(new char[packet.length()]);
-    if (last_packet_is_ietf_quic_) {
+    if (last_packet_is_ietf_quic) {
       rv = ProcessIetfDataPacket(&reader, &header, packet, large_buffer.get(),
                                  packet.length());
     } else {
@@ -1366,8 +1366,9 @@ bool QuicFramer::ProcessIetfDataPacket(QuicDataReader* encrypted_reader,
                                        const QuicEncryptedPacket& packet,
                                        char* decrypted_buffer,
                                        size_t buffer_length) {
+  DCHECK_NE(GOOGLE_QUIC_PACKET, header->form);
   DCHECK(!header->has_possible_stateless_reset_token);
-  if (header->form == SHORT_HEADER) {
+  if (header->form == IETF_QUIC_SHORT_HEADER_PACKET) {
     if (!process_stateless_reset_at_client_only_) {
       // Peak possible stateless reset token. Will only be used on decryption
       // failure.
@@ -1400,7 +1401,7 @@ bool QuicFramer::ProcessIetfDataPacket(QuicDataReader* encrypted_reader,
     }
   }
 
-  if (header->form == SHORT_HEADER ||
+  if (header->form == IETF_QUIC_SHORT_HEADER_PACKET ||
       header->long_packet_type != VERSION_NEGOTIATION) {
     // Process packet number.
     QuicPacketNumber base_packet_number = largest_packet_number_;
@@ -1427,7 +1428,7 @@ bool QuicFramer::ProcessIetfDataPacket(QuicDataReader* encrypted_reader,
 
   // A nonce should only present in SHLO from the server to the client when
   // using QUIC crypto.
-  if (header->form == LONG_HEADER &&
+  if (header->form == IETF_QUIC_LONG_HEADER_PACKET &&
       header->long_packet_type == ZERO_RTT_PROTECTED &&
       perspective_ == Perspective::IS_CLIENT) {
     if (!encrypted_reader->ReadBytes(
@@ -1591,7 +1592,7 @@ bool QuicFramer::ProcessPublicResetPacket(QuicDataReader* reader,
 bool QuicFramer::IsIetfStatelessResetPacket(
     const QuicPacketHeader& header) const {
   return perspective_ == Perspective::IS_CLIENT &&
-         header.form == SHORT_HEADER &&
+         header.form == IETF_QUIC_SHORT_HEADER_PACKET &&
          (!process_stateless_reset_at_client_only_ ||
           header.has_possible_stateless_reset_token) &&
          visitor_->IsValidStatelessResetToken(
@@ -1772,8 +1773,9 @@ QuicPacketNumber QuicFramer::CalculatePacketNumberFromWire(
 }
 
 bool QuicFramer::ProcessPublicHeader(QuicDataReader* reader,
+                                     bool last_packet_is_ietf_quic,
                                      QuicPacketHeader* header) {
-  if (last_packet_is_ietf_quic_) {
+  if (last_packet_is_ietf_quic) {
     return ProcessIetfPacketHeader(reader, header);
   }
   uint8_t public_flags;
@@ -1954,9 +1956,9 @@ bool QuicFramer::ProcessIetfPacketHeader(QuicDataReader* reader,
     return false;
   }
   // Determine whether this is a long or short header.
-  header->form = type & FLAGS_LONG_HEADER ? LONG_HEADER : SHORT_HEADER;
-  last_header_form_ = header->form;
-  if (header->form == LONG_HEADER) {
+  header->form = type & FLAGS_LONG_HEADER ? IETF_QUIC_LONG_HEADER_PACKET
+                                          : IETF_QUIC_SHORT_HEADER_PACKET;
+  if (header->form == IETF_QUIC_LONG_HEADER_PACKET) {
     // Get long packet type.
     header->long_packet_type =
         static_cast<QuicLongHeaderType>(type & kQuicLongHeaderTypeMask);
@@ -2008,7 +2010,7 @@ bool QuicFramer::ProcessIetfPacketHeader(QuicDataReader* reader,
   }
 
   QuicVersionLabel version_label;
-  if (header->form == LONG_HEADER) {
+  if (header->form == IETF_QUIC_LONG_HEADER_PACKET) {
     // Read version tag.
     if (!reader->ReadTag(&version_label)) {
       set_detailed_error("Unable to read protocol version.");
@@ -4493,14 +4495,15 @@ bool QuicFramer::RaiseError(QuicErrorCode error) {
   return false;
 }
 
-bool QuicFramer::IsVersionNegotiation(const QuicPacketHeader& header) const {
+bool QuicFramer::IsVersionNegotiation(const QuicPacketHeader& header,
+                                      bool last_packet_is_ietf_quic) const {
   if (perspective_ == Perspective::IS_SERVER) {
     return false;
   }
-  if (!last_packet_is_ietf_quic_) {
+  if (!last_packet_is_ietf_quic) {
     return header.version_flag;
   }
-  if (header.form == SHORT_HEADER) {
+  if (header.form == IETF_QUIC_SHORT_HEADER_PACKET) {
     return false;
   }
   return header.long_packet_type == VERSION_NEGOTIATION;
@@ -4531,11 +4534,7 @@ bool QuicFramer::StartsWithChlo(QuicStreamId id,
 }
 
 PacketHeaderFormat QuicFramer::GetLastPacketFormat() const {
-  if (!last_packet_is_ietf_quic_) {
-    return GOOGLE_QUIC_PACKET;
-  }
-  return last_header_form_ == LONG_HEADER ? IETF_QUIC_LONG_HEADER_PACKET
-                                          : IETF_QUIC_SHORT_HEADER_PACKET;
+  return last_header_form_;
 }
 
 bool QuicFramer::AppendIetfConnectionCloseFrame(

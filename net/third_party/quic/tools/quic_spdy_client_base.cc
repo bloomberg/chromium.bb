@@ -92,10 +92,11 @@ void QuicSpdyClientBase::OnClose(QuicSpdyStream* stream) {
 }
 
 std::unique_ptr<QuicSession> QuicSpdyClientBase::CreateQuicClientSession(
+    const quic::ParsedQuicVersionVector& supported_versions,
     QuicConnection* connection) {
-  return QuicMakeUnique<QuicSpdyClientSession>(*config(), connection,
-                                               server_id(), crypto_config(),
-                                               &push_promise_index_);
+  return QuicMakeUnique<QuicSpdyClientSession>(
+      *config(), supported_versions, connection, server_id(), crypto_config(),
+      &push_promise_index_);
 }
 
 void QuicSpdyClientBase::SendRequest(const spdy::SpdyHeaderBlock& headers,

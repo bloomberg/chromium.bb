@@ -524,7 +524,11 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
     EXPECT_EQ(0u, client_stats.packets_discarded);
     // When doing 0-RTT with stateless rejects, the encrypted requests cause
     // a retranmission of the SREJ packets which are dropped by the client.
-    if (!BothSidesSupportStatelessRejects()) {
+    // When client starts with an unsupported version, the version negotiation
+    // packet sent by server for the old connection (respond for the connection
+    // close packet) will be dropped by the client.
+    if (!BothSidesSupportStatelessRejects() &&
+        !ServerSendsVersionNegotiation()) {
       EXPECT_EQ(0u, client_stats.packets_dropped);
     }
     if (!ClientSupportsIetfQuicNotSupportedByServer()) {
@@ -567,6 +571,14 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
                QUIC_VERSION_43 &&
            FilterSupportedVersions(GetParam().server_supported_versions)[0]
                    .transport_version <= QUIC_VERSION_43;
+  }
+
+  // Returns true when client starts with an unsupported version, and client
+  // closes connection when version negotiation is received.
+  bool ServerSendsVersionNegotiation() {
+    return GetQuicReloadableFlag(quic_no_client_conn_ver_negotiation) &&
+           GetParam().client_supported_versions[0] !=
+               FilterSupportedVersions(GetParam().server_supported_versions)[0];
   }
 
   bool SupportsIetfQuicWithTls(ParsedQuicVersion version) {
@@ -655,7 +667,15 @@ TEST_P(EndToEndTestWithStatelessReject, SimpleRequestResponseStatless) {
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
-  EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
+  int expected_num_client_hellos = 2;
+  if (ServerSendsVersionNegotiation()) {
+    ++expected_num_client_hellos;
+    if (BothSidesSupportStatelessRejects()) {
+      ++expected_num_client_hellos;
+    }
+  }
+  EXPECT_EQ(expected_num_client_hellos,
+            client_->client()->GetNumSentClientHellos());
 }
 
 TEST_P(EndToEndTest, SimpleRequestResponse) {
@@ -663,7 +683,15 @@ TEST_P(EndToEndTest, SimpleRequestResponse) {
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
-  EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
+  int expected_num_client_hellos = 2;
+  if (ServerSendsVersionNegotiation()) {
+    ++expected_num_client_hellos;
+    if (BothSidesSupportStatelessRejects()) {
+      ++expected_num_client_hellos;
+    }
+  }
+  EXPECT_EQ(expected_num_client_hellos,
+            client_->client()->GetNumSentClientHellos());
 }
 
 TEST_P(EndToEndTest, SimpleRequestResponseWithLargeReject) {
@@ -672,7 +700,11 @@ TEST_P(EndToEndTest, SimpleRequestResponseWithLargeReject) {
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
-  EXPECT_EQ(3, client_->client()->GetNumSentClientHellos());
+  if (ServerSendsVersionNegotiation()) {
+    EXPECT_EQ(4, client_->client()->GetNumSentClientHellos());
+  } else {
+    EXPECT_EQ(3, client_->client()->GetNumSentClientHellos());
+  }
 }
 
 TEST_P(EndToEndTestWithTls, SimpleRequestResponsev6) {
@@ -977,22 +1009,32 @@ TEST_P(EndToEndTest, LargePostZeroRTTFailure) {
   // torn down after the reject.  The number of hellos on the latest
   // session is 1.
   const int expected_num_hellos_latest_session =
-      BothSidesSupportStatelessRejects() ? 1 : 2;
+      (BothSidesSupportStatelessRejects() && !ServerSendsVersionNegotiation())
+          ? 1
+          : 2;
   EXPECT_EQ(expected_num_hellos_latest_session,
             client_->client()->client_session()->GetNumSentClientHellos());
-  EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
+  if (ServerSendsVersionNegotiation()) {
+    EXPECT_EQ(3, client_->client()->GetNumSentClientHellos());
+  } else {
+    EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
+  }
 
   client_->Disconnect();
 
   // The 0-RTT handshake should succeed.
   client_->Connect();
-  client_->WaitForInitialResponse();
+  EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
   ASSERT_TRUE(client_->client()->connected());
   EXPECT_EQ(kFooResponseBody,
             client_->SendCustomSynchronousRequest(headers, body));
 
   EXPECT_EQ(1, client_->client()->client_session()->GetNumSentClientHellos());
-  EXPECT_EQ(1, client_->client()->GetNumSentClientHellos());
+  if (ServerSendsVersionNegotiation()) {
+    EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
+  } else {
+    EXPECT_EQ(1, client_->client()->GetNumSentClientHellos());
+  }
 
   client_->Disconnect();
 
@@ -1002,6 +1044,7 @@ TEST_P(EndToEndTest, LargePostZeroRTTFailure) {
   StartServer();
 
   client_->Connect();
+  EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
   ASSERT_TRUE(client_->client()->connected());
   EXPECT_EQ(kFooResponseBody,
             client_->SendCustomSynchronousRequest(headers, body));
@@ -1012,7 +1055,11 @@ TEST_P(EndToEndTest, LargePostZeroRTTFailure) {
   // latest session is 1.
   EXPECT_EQ(expected_num_hellos_latest_session,
             client_->client()->client_session()->GetNumSentClientHellos());
-  EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
+  if (ServerSendsVersionNegotiation()) {
+    EXPECT_EQ(3, client_->client()->GetNumSentClientHellos());
+  } else {
+    EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
+  }
 
   VerifyCleanConnection(false);
 }
@@ -1029,21 +1076,31 @@ TEST_P(EndToEndTest, SynchronousRequestZeroRTTFailure) {
   // torn down after the reject.  The number of hellos on that second
   // latest session is 1.
   const int expected_num_hellos_latest_session =
-      BothSidesSupportStatelessRejects() ? 1 : 2;
+      (BothSidesSupportStatelessRejects() && !ServerSendsVersionNegotiation())
+          ? 1
+          : 2;
   EXPECT_EQ(expected_num_hellos_latest_session,
             client_->client()->client_session()->GetNumSentClientHellos());
-  EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
+  if (ServerSendsVersionNegotiation()) {
+    EXPECT_EQ(3, client_->client()->GetNumSentClientHellos());
+  } else {
+    EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
+  }
 
   client_->Disconnect();
 
   // The 0-RTT handshake should succeed.
   client_->Connect();
-  client_->WaitForInitialResponse();
+  EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
   ASSERT_TRUE(client_->client()->connected());
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
 
   EXPECT_EQ(1, client_->client()->client_session()->GetNumSentClientHellos());
-  EXPECT_EQ(1, client_->client()->GetNumSentClientHellos());
+  if (ServerSendsVersionNegotiation()) {
+    EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
+  } else {
+    EXPECT_EQ(1, client_->client()->GetNumSentClientHellos());
+  }
 
   client_->Disconnect();
 
@@ -1053,6 +1110,7 @@ TEST_P(EndToEndTest, SynchronousRequestZeroRTTFailure) {
   StartServer();
 
   client_->Connect();
+  EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
   ASSERT_TRUE(client_->client()->connected());
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
   // In the non-stateless case, the same session is used for both
@@ -1062,7 +1120,11 @@ TEST_P(EndToEndTest, SynchronousRequestZeroRTTFailure) {
   // latest session is 1.
   EXPECT_EQ(expected_num_hellos_latest_session,
             client_->client()->client_session()->GetNumSentClientHellos());
-  EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
+  if (ServerSendsVersionNegotiation()) {
+    EXPECT_EQ(3, client_->client()->GetNumSentClientHellos());
+  } else {
+    EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
+  }
 
   VerifyCleanConnection(false);
 }
@@ -1087,22 +1149,32 @@ TEST_P(EndToEndTest, LargePostSynchronousRequest) {
   // torn down after the reject.  The number of hellos on the latest
   // session is 1.
   const int expected_num_hellos_latest_session =
-      BothSidesSupportStatelessRejects() ? 1 : 2;
+      (BothSidesSupportStatelessRejects() && !ServerSendsVersionNegotiation())
+          ? 1
+          : 2;
   EXPECT_EQ(expected_num_hellos_latest_session,
             client_->client()->client_session()->GetNumSentClientHellos());
-  EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
+  if (ServerSendsVersionNegotiation()) {
+    EXPECT_EQ(3, client_->client()->GetNumSentClientHellos());
+  } else {
+    EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
+  }
 
   client_->Disconnect();
 
   // The 0-RTT handshake should succeed.
   client_->Connect();
-  client_->WaitForInitialResponse();
+  EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
   ASSERT_TRUE(client_->client()->connected());
   EXPECT_EQ(kFooResponseBody,
             client_->SendCustomSynchronousRequest(headers, body));
 
   EXPECT_EQ(1, client_->client()->client_session()->GetNumSentClientHellos());
-  EXPECT_EQ(1, client_->client()->GetNumSentClientHellos());
+  if (ServerSendsVersionNegotiation()) {
+    EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
+  } else {
+    EXPECT_EQ(1, client_->client()->GetNumSentClientHellos());
+  }
 
   client_->Disconnect();
 
@@ -1112,6 +1184,7 @@ TEST_P(EndToEndTest, LargePostSynchronousRequest) {
   StartServer();
 
   client_->Connect();
+  EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
   ASSERT_TRUE(client_->client()->connected());
   EXPECT_EQ(kFooResponseBody,
             client_->SendCustomSynchronousRequest(headers, body));
@@ -1122,7 +1195,11 @@ TEST_P(EndToEndTest, LargePostSynchronousRequest) {
   // latest session is 1.
   EXPECT_EQ(expected_num_hellos_latest_session,
             client_->client()->client_session()->GetNumSentClientHellos());
-  EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
+  if (ServerSendsVersionNegotiation()) {
+    EXPECT_EQ(3, client_->client()->GetNumSentClientHellos());
+  } else {
+    EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
+  }
 
   VerifyCleanConnection(false);
 }
@@ -1583,6 +1660,7 @@ TEST_P(EndToEndTestWithTls, ResetConnection) {
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
   client_->ResetConnection();
+  EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
   EXPECT_EQ(kBarResponseBody, client_->SendSynchronousRequest("/bar"));
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 }
@@ -3212,6 +3290,9 @@ TEST_P(EndToEndTest, RequestAndStreamRstInOnePacket) {
 TEST_P(EndToEndTest, ResetStreamOnTtlExpires) {
   ASSERT_TRUE(Initialize());
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
+  if (!client_->client()->client_session()->session_decides_what_to_write()) {
+    return;
+  }
   SetPacketLossPercentage(30);
 
   QuicSpdyClientStream* stream = client_->GetOrCreateStream();
@@ -3357,6 +3438,7 @@ TEST_P(EndToEndPacketReorderingTest, Buffer0RttRequest) {
   // Only send out a CHLO.
   client_->client()->Initialize();
   client_->client()->StartConnect();
+  EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
   ASSERT_TRUE(client_->client()->connected());
 
   // Send a request before handshake finishes.
@@ -3372,7 +3454,11 @@ TEST_P(EndToEndPacketReorderingTest, Buffer0RttRequest) {
   QuicConnectionStats client_stats =
       client_->client()->client_session()->connection()->GetStats();
   EXPECT_EQ(0u, client_stats.packets_lost);
-  EXPECT_EQ(1, client_->client()->GetNumSentClientHellos());
+  if (ServerSendsVersionNegotiation()) {
+    EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
+  } else {
+    EXPECT_EQ(1, client_->client()->GetNumSentClientHellos());
+  }
 }
 
 }  // namespace

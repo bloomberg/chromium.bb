@@ -93,7 +93,8 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
   void OnVersionNegotiationPacket(
       const QuicVersionNegotiationPacket& packet) override {}
 
-  bool OnProtocolVersionMismatch(ParsedQuicVersion received_version) override {
+  bool OnProtocolVersionMismatch(ParsedQuicVersion received_version,
+                                 PacketHeaderFormat form) override {
     return true;
   }
 

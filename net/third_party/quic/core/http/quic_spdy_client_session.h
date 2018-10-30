@@ -26,6 +26,7 @@ class QuicSpdyClientSession : public QuicSpdyClientSessionBase {
   // Takes ownership of |connection|. Caller retains ownership of
   // |promised_by_url|.
   QuicSpdyClientSession(const QuicConfig& config,
+                        const ParsedQuicVersionVector& supported_versions,
                         QuicConnection* connection,
                         const QuicServerId& server_id,
                         QuicCryptoClientConfig* crypto_config,

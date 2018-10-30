@@ -16,26 +16,23 @@ QuartcStream::QuartcStream(QuicStreamId id, QuicSession* session)
 QuartcStream::~QuartcStream() {}
 
 void QuartcStream::OnDataAvailable() {
-  // Do not deliver data until the entire stream's data is available.
-  if (deliver_on_complete_ &&
-      sequencer()->ReadableBytes() + sequencer()->NumBytesConsumed() <
-          sequencer()->close_offset()) {
-    return;
-  }
+  bool fin = sequencer()->ReadableBytes() + sequencer()->NumBytesConsumed() ==
+             sequencer()->close_offset();
 
-  struct iovec iov;
-  while (sequencer()->GetReadableRegion(&iov)) {
-    DCHECK(delegate_);
-    delegate_->OnReceived(this, reinterpret_cast<const char*>(iov.iov_base),
-                          iov.iov_len);
-    sequencer()->MarkConsumed(iov.iov_len);
-  }
-  // All the data has been received if the sequencer is closed.
-  // Notify the delegate by calling the callback function one more time with
-  // iov_len = 0.
+  // Upper bound on number of readable regions.  Each complete block's worth of
+  // data crosses at most one region boundary.  The remainder may cross one more
+  // boundary.  Number of regions is one more than the number of region
+  // boundaries crossed.
+  size_t iov_length = sequencer()->ReadableBytes() /
+                          QuicStreamSequencerBuffer::kBlockSizeBytes +
+                      2;
+  std::unique_ptr<iovec[]> iovecs = QuicMakeUnique<iovec[]>(iov_length);
+  iov_length = sequencer()->GetReadableRegions(iovecs.get(), iov_length);
+
+  sequencer()->MarkConsumed(
+      delegate_->OnReceived(this, iovecs.get(), iov_length, fin));
   if (sequencer()->IsClosed()) {
     OnFinRead();
-    delegate_->OnReceived(this, reinterpret_cast<const char*>(iov.iov_base), 0);
   }
 }
 
@@ -93,14 +90,6 @@ bool QuartcStream::cancel_on_loss() {
 
 void QuartcStream::set_cancel_on_loss(bool cancel_on_loss) {
   cancel_on_loss_ = cancel_on_loss;
-}
-
-bool QuartcStream::deliver_on_complete() {
-  return deliver_on_complete_;
-}
-
-void QuartcStream::set_deliver_on_complete(bool deliver_on_complete) {
-  deliver_on_complete_ = deliver_on_complete;
 }
 
 QuicByteCount QuartcStream::BytesPendingRetransmission() {

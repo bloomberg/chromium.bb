@@ -112,6 +112,13 @@ class QUIC_EXPORT_PRIVATE QuicTime {
     return QuicTime(Delta::kQuicInfiniteTimeUs);
   }
 
+  QuicTime(const QuicTime& other) = default;
+
+  QuicTime& operator=(const QuicTime& other) {
+    time_ = other.time_;
+    return *this;
+  }
+
   // Produce the internal value to be used when logging.  This value
   // represents the number of microseconds since some epoch.  It may
   // be the UNIX epoch on some platforms.  On others, it may

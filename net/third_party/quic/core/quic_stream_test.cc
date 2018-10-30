@@ -258,7 +258,6 @@ TEST_F(QuicStreamTest, WriteOrBufferData) {
 }
 
 TEST_F(QuicStreamTest, WriteOrBufferDataReachStreamLimit) {
-  SetQuicReloadableFlag(quic_stream_too_long, true);
   Initialize();
   QuicString data("aaaaa");
   QuicStreamPeer::SetStreamBytesWritten(kMaxStreamLength - data.length(),
@@ -536,7 +535,6 @@ TEST_F(QuicStreamTest, FinalByteOffsetFromZeroLengthStreamFrame) {
 }
 
 TEST_F(QuicStreamTest, OnStreamResetOffsetOverflow) {
-  SetQuicReloadableFlag(quic_stream_too_long, true);
   Initialize();
   QuicRstStreamFrame rst_frame(kInvalidControlFrameId, stream_->id(),
                                QUIC_STREAM_CANCELLED, kMaxStreamLength + 1);
@@ -545,7 +543,6 @@ TEST_F(QuicStreamTest, OnStreamResetOffsetOverflow) {
 }
 
 TEST_F(QuicStreamTest, OnStreamFrameUpperLimit) {
-  SetQuicReloadableFlag(quic_stream_too_long, true);
   Initialize();
 
   // Modify receive window offset and sequencer buffer total_bytes_read_ to
@@ -568,7 +565,6 @@ TEST_F(QuicStreamTest, OnStreamFrameUpperLimit) {
 }
 
 TEST_F(QuicStreamTest, StreamTooLong) {
-  SetQuicReloadableFlag(quic_stream_too_long, true);
   Initialize();
   EXPECT_CALL(*connection_, CloseConnection(QUIC_STREAM_LENGTH_OVERFLOW, _, _))
       .Times(1);
@@ -926,7 +922,6 @@ TEST_F(QuicStreamTest, WriteBufferedData) {
 }
 
 TEST_F(QuicStreamTest, WritevDataReachStreamLimit) {
-  SetQuicReloadableFlag(quic_stream_too_long, true);
   Initialize();
   QuicString data("aaaaa");
   QuicStreamPeer::SetStreamBytesWritten(kMaxStreamLength - data.length(),
@@ -1009,7 +1004,6 @@ TEST_F(QuicStreamTest, WriteMemSlices) {
 }
 
 TEST_F(QuicStreamTest, WriteMemSlicesReachStreamLimit) {
-  SetQuicReloadableFlag(quic_stream_too_long, true);
   Initialize();
   QuicStreamPeer::SetStreamBytesWritten(kMaxStreamLength - 5u, stream_);
   char data[5];

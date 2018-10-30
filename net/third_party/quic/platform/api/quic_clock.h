@@ -26,7 +26,7 @@ class QUIC_EXPORT_PRIVATE QuicClock {
   // calibrate the clock, or all instances of this clock type.
   QuicTime::Delta ComputeCalibrationOffset() const;
 
-  // Calibrate this clock. A calibrated clock gurantees that the
+  // Calibrate this clock. A calibrated clock guarantees that the
   // ConvertWallTimeToQuicTime() function always return the same result for the
   // same walltime.
   // Should not be called more than once for each QuicClock.

@@ -88,18 +88,20 @@ class QuicTestDispatcher : public QuicSimpleDispatcher {
         stream_factory_(nullptr),
         crypto_stream_factory_(nullptr) {}
 
-  QuicServerSessionBase* CreateQuicSession(QuicConnectionId id,
-                                           const QuicSocketAddress& client,
-                                           QuicStringPiece alpn) override {
+  QuicServerSessionBase* CreateQuicSession(
+      QuicConnectionId id,
+      const QuicSocketAddress& client,
+      QuicStringPiece alpn,
+      const ParsedQuicVersion& version) override {
     QuicReaderMutexLock lock(&factory_lock_);
     if (session_factory_ == nullptr && stream_factory_ == nullptr &&
         crypto_stream_factory_ == nullptr) {
-      return QuicSimpleDispatcher::CreateQuicSession(id, client, alpn);
+      return QuicSimpleDispatcher::CreateQuicSession(id, client, alpn, version);
     }
     QuicConnection* connection =
         new QuicConnection(id, client, helper(), alarm_factory(), writer(),
                            /* owns_writer= */ false, Perspective::IS_SERVER,
-                           ParsedQuicVersionVector{framer()->version()});
+                           ParsedQuicVersionVector{version});
 
     QuicServerSessionBase* session = nullptr;
     if (stream_factory_ != nullptr || crypto_stream_factory_ != nullptr) {

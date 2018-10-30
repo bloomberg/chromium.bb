@@ -77,8 +77,8 @@ class QUIC_EXPORT_PRIVATE QuicFramerVisitorInterface {
   // |quic_version_|. The visitor should return true after it updates the
   // version of the |framer_| to |received_version| or false to stop processing
   // this packet.
-  virtual bool OnProtocolVersionMismatch(
-      ParsedQuicVersion received_version) = 0;
+  virtual bool OnProtocolVersionMismatch(ParsedQuicVersion received_version,
+                                         PacketHeaderFormat form) = 0;
 
   // Called when a new packet has been received, before it
   // has been validated or processed.
@@ -499,6 +499,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool IsIetfStatelessResetPacket(const QuicPacketHeader& header) const;
 
   // Returns header wire format of last received packet.
+  // Please do not use this method.
+  // TODO(fayang): Remove last_header_form_ when deprecating
+  // quic_reloadable_flag_quic_proxy_use_real_packet_format_when_reject.
   PacketHeaderFormat GetLastPacketFormat() const;
 
   void set_validate_flags(bool value) { validate_flags_ = value; }
@@ -507,10 +510,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   QuicVersionLabel last_version_label() const { return last_version_label_; }
 
-  bool last_packet_is_ietf_quic() const { return last_packet_is_ietf_quic_; }
-
-  void set_last_packet_is_ietf_quic(bool last_packet_is_ietf_quic) {
-    last_packet_is_ietf_quic_ = last_packet_is_ietf_quic;
+  void set_last_packet_form(PacketHeaderFormat form) {
+    last_header_form_ = form;
   }
 
   void set_data_producer(QuicStreamFrameDataProducer* data_producer) {
@@ -570,7 +571,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool ProcessVersionNegotiationPacket(QuicDataReader* reader,
                                        const QuicPacketHeader& header);
 
-  bool ProcessPublicHeader(QuicDataReader* reader, QuicPacketHeader* header);
+  bool ProcessPublicHeader(QuicDataReader* reader,
+                           bool last_packet_is_ietf_quic,
+                           QuicPacketHeader* header);
 
   // Processes the unauthenticated portion of the header into |header| from
   // the current QuicDataReader.  Returns true on success, false on failure.
@@ -798,7 +801,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool RaiseError(QuicErrorCode error);
 
   // Returns true if |header| indicates a version negotiation packet.
-  bool IsVersionNegotiation(const QuicPacketHeader& header) const;
+  bool IsVersionNegotiation(const QuicPacketHeader& header,
+                            bool last_packet_is_ietf_quic) const;
 
   // Calculates and returns type byte of stream frame.
   uint8_t GetStreamFrameTypeByte(const QuicStreamFrame& frame,
@@ -819,11 +823,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   QuicConnectionId last_serialized_connection_id_;
   // The last QUIC version label received.
   QuicVersionLabel last_version_label_;
-  // Whether last received packet is IETF QUIC packet.
-  bool last_packet_is_ietf_quic_;
-  // Whether last received IETF QUIC packet has long or short header. Only used
-  // when last_packet_is_ietf_quic_ is true.
-  QuicIetfPacketHeaderForm last_header_form_;
+  // Format of last received packet header, whether it is Google QUIC, IETF long
+  // header packet or IETF short header packet.
+  PacketHeaderFormat last_header_form_;
   // Version of the protocol being used.
   ParsedQuicVersion version_;
   // This vector contains QUIC versions which we currently support.
