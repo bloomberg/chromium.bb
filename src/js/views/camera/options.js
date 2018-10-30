@@ -119,11 +119,11 @@ camera.views.camera.Options = function(router, onNewStreamNeeded) {
   this.refreshingVideoDeviceIds_ = false;
 
   /**
-   * List of available video device ids.
-   * @type {Promise<!Array<string>>}
+   * List of available video devices.
+   * @type {Promise<!Array<MediaDeviceInfo>>}
    * @private
    */
-  this.videoDeviceIds_ = null;
+  this.videoDevices_ = null;
 
   /**
    * Mirroring set per device.
@@ -205,25 +205,6 @@ camera.views.camera.Options.prototype.prepare = function() {
 };
 
 /**
- * Updates UI controls' disabled status for capturing/taking state changes.
- * @param {boolean} capturing Whether camera is capturing.
- * @param {boolean} capturing Whether camera is taking.
- */
-camera.views.camera.Options.prototype.updateControls = function(
-    capturing, taking) {
-  var disabled = !capturing;
-  this.toggleMirror_.disabled = disabled;
-  this.toggleGrid_.disabled = disabled;
-  this.toggleTimer_.disabled = disabled;
-  this.toggleMic_.disabled = disabled;
-
-  disabled = disabled || taking;
-  this.switchDevice_.disabled = disabled;
-  this.switchRecordVideo_.disabled = disabled;
-  this.switchTakePhoto_.disabled = disabled;
-};
-
-/**
  * Switches mode to either video-recording or photo-taking.
  * @param {boolean} record True for record-mode, false otherwise.
  * @private
@@ -231,9 +212,9 @@ camera.views.camera.Options.prototype.updateControls = function(
 camera.views.camera.Options.prototype.switchMode_ = function(record) {
   document.body.classList.toggle('record-mode', record);
   document.body.classList.add('mode-switching');
-  // TODO(yuli): Use Promise requesting new streams to better handle transitions
-  // for switching modes and devices.
-  this.onNewStreamNeeded_();
+  this.onNewStreamNeeded_().then(() => {
+    document.body.classList.remove('mode-switching');
+  });
 };
 
 /**
@@ -262,17 +243,25 @@ camera.views.camera.Options.prototype.onSwitchTakePhotoClicked_ = function(
  * @private
  */
 camera.views.camera.Options.prototype.onSwitchDeviceClicked_ = function(event) {
-  this.videoDeviceIds_.then(deviceIds => {
+  this.videoDevices_.then((devices) => {
     camera.util.animateOnce(this.switchDevice_);
-    var index = deviceIds.indexOf(this.videoDeviceId_);
+    var index = devices.findIndex(
+        (entry) => entry.deviceId == this.videoDeviceId_);
     if (index == -1) {
       index = 0;
     }
-    if (deviceIds.length > 0) {
-      index = (index + 1) % deviceIds.length;
-      this.videoDeviceId_ = deviceIds[index];
+    if (devices.length > 0) {
+      index = (index + 1) % devices.length;
+      this.videoDeviceId_ = devices[index].deviceId;
     }
-    this.onNewStreamNeeded_();
+    return this.onNewStreamNeeded_();
+  }).then(() => this.videoDevices_).then((devices) => {
+    // Make the active camera announced by screen reader.
+    var found = devices.find((entry) => entry.deviceId == this.videoDeviceId_);
+    if (found) {
+      camera.toast.speak(chrome.i18n.getMessage(
+          'statusMsgCameraSwitched', found.label));
+    }
   });
 };
 
@@ -404,11 +393,30 @@ camera.views.camera.Options.prototype.timerTicks = function() {
 };
 
 /**
- * Updates the options related to the stream.
+ * Updates UI controls' disabled status for capturing/taking state changes.
+ * @param {boolean} capturing Whether camera is capturing.
+ * @param {boolean} capturing Whether camera is taking.
+ */
+camera.views.camera.Options.prototype.updateControls = function(
+    capturing, taking) {
+  var disabled = !capturing;
+  this.toggleMirror_.disabled = disabled;
+  this.toggleGrid_.disabled = disabled;
+  this.toggleTimer_.disabled = disabled;
+  this.toggleMic_.disabled = disabled;
+
+  disabled = disabled || taking;
+  this.switchDevice_.disabled = disabled;
+  this.switchRecordVideo_.disabled = disabled;
+  this.switchTakePhoto_.disabled = disabled;
+};
+
+/**
+ * Updates the options' values for the current constraints and stream.
  * @param {Object} constraints Current stream constraints in use.
  * @param {MediaStream} stream Current Stream in use.
  */
-camera.views.camera.Options.prototype.updateStreamOptions = function(
+camera.views.camera.Options.prototype.updateValues = function(
     constraints, stream) {
   var track = stream.getVideoTracks()[0];
   var trackSettings = track.getSettings && track.getSettings();
@@ -471,21 +479,13 @@ camera.views.camera.Options.prototype.maybeRefreshVideoDeviceIds_ = function() {
   }
   this.refreshingVideoDeviceIds_ = true;
 
-  this.videoDeviceIds_ =
-      navigator.mediaDevices.enumerateDevices().then(devices => {
-    var availableVideoDevices = [];
-    devices.forEach(device => {
-      if (device.kind == 'videoinput') {
-        availableVideoDevices.push(device.deviceId);
-      }
-    });
-    return availableVideoDevices;
-  });
+  this.videoDevices_ = navigator.mediaDevices.enumerateDevices().then(
+      (devices) => devices.filter((device) => device.kind == 'videoinput'));
 
   // Show switch-device button only when more than one camera.
-  this.videoDeviceIds_.then(deviceIds => {
-    this.switchDevice_.hidden = deviceIds.length < 2;
-  }).catch(error => {
+  this.videoDevices_.then((devices) => {
+    this.switchDevice_.hidden = devices.length < 2;
+  }).catch((error) => {
     console.error(error);
     this.switchDevice_.hidden = true;
   }).finally(() => {
@@ -498,12 +498,12 @@ camera.views.camera.Options.prototype.maybeRefreshVideoDeviceIds_ = function() {
  * @return {!Promise<!Array<string>}
  */
 camera.views.camera.Options.prototype.videoDeviceIds = function() {
-  return this.videoDeviceIds_.then(deviceIds => {
-    if (deviceIds.length == 0) {
+  return this.videoDevices_.then((devices) => {
+    if (devices.length == 0) {
       throw 'Device list empty.';
     }
     // Put the selected video device id first.
-    var sorted = deviceIds.slice(0).sort((a, b) => {
+    var sorted = devices.map((device) => device.deviceId).sort((a, b) => {
       if (a == b) {
         return 0;
       }
