@@ -320,6 +320,11 @@ template("write_build_config") {
       args += [ "--apk-proto-resources=$_rebased_proto_resources" ]
     }
 
+    if (defined(invoker.module_rtxt_path)) {
+      _rebased_rtxt_path = rebase_path(invoker.module_rtxt_path, root_build_dir)
+      args += [ "--module-rtxt-path=$_rebased_rtxt_path" ]
+    }
+
     if (defined(invoker.shared_libraries_runtime_deps_file)) {
       # Don't list shared_libraries_runtime_deps_file as an input in order to
       # avoid having to depend on the runtime_deps target. See comment in
@@ -2891,7 +2896,7 @@ if (enable_java_templates) {
   #  jar_included_patterns: Optional list of .class file patterns to include
   #    in the final .jar file. jar_excluded_patterns take precedence over this.
   #
-  # For 'android_apk' targets only:
+  # For 'android_apk' and 'android_app_bundle_module' targets only:
   #
   #  apk_path: Path to the final APK file.
   #  android_manifest: Path to AndroidManifest.xml file for the APK.
@@ -2913,6 +2918,11 @@ if (enable_java_templates) {
   #    be stored in the APK.
   #  uncompress_shared_libraries: Optional. True to store native shared
   #    libraries uncompressed and page-aligned.
+  #  proto_resources_path: The path of an zip archive containing the APK's
+  #    resources compiled to the protocol buffer format (instead of regular
+  #    binary xml + resources.arsc).
+  #  module_rtxt_path: The path of the R.txt file generated when compiling the
+  #    resources for the bundle module.
   #
   # For 'java_binary' and 'junit_binary' targets only. Ignored by others:
   #
@@ -3129,7 +3139,11 @@ if (enable_java_templates) {
                                ])
       }
       if (type == "android_app_bundle_module") {
-        forward_variables_from(invoker, [ "proto_resources_path" ])
+        forward_variables_from(invoker,
+                               [
+                                 "proto_resources_path",
+                                 "module_rtxt_path",
+                               ])
       }
       build_config = _build_config
       is_prebuilt = _is_prebuilt
