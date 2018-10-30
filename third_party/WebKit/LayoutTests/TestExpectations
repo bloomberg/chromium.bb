@@ -5752,3 +5752,6 @@ crbug.com/899232 [ Linux ] virtual/user-activation-v2/fast/events/touch/gesture/
 crbug.com/899710 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Failure Pass ]
 crbug.com/899715 [ Linux ] virtual/threaded/fast/scroll-behavior/wheel-and-touch-scroll-use-count.html [ Failure Pass ]
 crbug.com/898987 [ Android ] synthetic_gestures/smooth-scroll-tiny-delta.html [ Failure Pass ]
+
+# Sheriff 2018-10-30
+crbug.com/867668 [ Linux ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-click-hyperlink.html [ Failure Pass ]
