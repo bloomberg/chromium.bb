@@ -386,42 +386,6 @@ NavigationListModel.prototype.reorderNavigationItems_ = function() {
 };
 
 /**
- * Reorder navigation items in the following order:
- *  1. Volumes.
- *  2. If Downloads exists, then immediately after Downloads should be:
- *  2a. Recent if it exists.
- *  2b. Linux files if it exists and is not mounted.
- *      When mounted, it will be located in Volumes at this position.
- *  3. Shortcuts.
- *  4. Add new services if it exists.
- * @private
- */
-NavigationListModel.prototype.flatNavigationItems_ = function() {
-  // Check if Linux files already mounted.
-  let linuxFilesMounted = false;
-  for (let i = 0; i < this.volumeList_.length; i++) {
-    if (this.volumeList_[i].volumeInfo.volumeType ===
-        VolumeManagerCommon.VolumeType.CROSTINI) {
-      linuxFilesMounted = true;
-      break;
-    }
-  }
-
-  // Items as per required order.
-  this.navigationItems_ = this.volumeList_.slice();
-  var downloadsVolumeIndex = this.findDownloadsVolumeIndex_();
-  if (this.linuxFilesItem_ && !linuxFilesMounted && downloadsVolumeIndex >= 0)
-    this.navigationItems_.splice(
-        downloadsVolumeIndex + 1, 0, this.linuxFilesItem_);
-  if (this.recentModelItem_ && downloadsVolumeIndex >= 0)
-    this.navigationItems_.splice(
-        downloadsVolumeIndex + 1, 0, this.recentModelItem_);
-  Array.prototype.push.apply(this.navigationItems_, this.shortcutList_);
-  if (this.addNewServicesItem_)
-    this.navigationItems_.push(this.addNewServicesItem_);
-};
-
-/**
  * Reorder navigation items and nest some within "Downloads"
  * which will be displayed as "My-Files". Desired order:
  *  1. Recents.
