@@ -468,9 +468,6 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   // Current vsync refresh rate per second.
   float refresh_rate_ = 0.f;
 
-  // If nonzero, this is the refresh rate forced from the command-line.
-  double forced_refresh_rate_ = 0.f;
-
   // A map from child id to parent id.
   std::unordered_set<viz::FrameSinkId, viz::FrameSinkIdHash> child_frame_sinks_;
   bool widget_valid_ = false;

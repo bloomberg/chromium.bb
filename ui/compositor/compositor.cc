@@ -114,15 +114,6 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
   // Disable edge anti-aliasing in order to increase support for HW overlays.
   settings.enable_edge_anti_aliasing = false;
 
-  if (command_line->HasSwitch(switches::kLimitFps)) {
-    std::string fps_str =
-        command_line->GetSwitchValueASCII(switches::kLimitFps);
-    double fps;
-    if (base::StringToDouble(fps_str, &fps) && fps > 0) {
-      forced_refresh_rate_ = fps;
-    }
-  }
-
   if (command_line->HasSwitch(cc::switches::kUIShowCompositedLayerBorders)) {
     std::string layer_borders_string = command_line->GetSwitchValueASCII(
         cc::switches::kUIShowCompositedLayerBorders);
@@ -468,10 +459,6 @@ void Compositor::SetDisplayVSyncParameters(base::TimeTicks timebase,
   if (is_frame_rate_limit_disabled)
     return;
 
-  if (forced_refresh_rate_) {
-    timebase = base::TimeTicks();
-    interval = base::TimeDelta::FromSeconds(1) / forced_refresh_rate_;
-  }
   if (interval.is_zero()) {
     // TODO(brianderson): We should not be receiving 0 intervals.
     interval = viz::BeginFrameArgs::DefaultInterval();
