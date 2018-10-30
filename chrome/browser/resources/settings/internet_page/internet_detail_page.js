@@ -605,10 +605,26 @@ Polymer({
 
   /**
    * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!chrome.settingsPrivate.PrefObject} vpn_config_allowed
    * @return {boolean}
    * @private
    */
-  disableConfigure_: function(networkProperties) {
+  disableForget_: function(networkProperties, vpn_config_allowed) {
+    return this.isVpn_(networkProperties) && vpn_config_allowed &&
+        !vpn_config_allowed.value;
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!chrome.settingsPrivate.PrefObject} vpn_config_allowed
+   * @return {boolean}
+   * @private
+   */
+  disableConfigure_: function(networkProperties, vpn_config_allowed) {
+    if (this.isVpn_(networkProperties) && vpn_config_allowed &&
+        !vpn_config_allowed.value) {
+      return true;
+    }
     return this.isPolicySource(networkProperties.Source) &&
         !this.hasRecommendedFields_(networkProperties);
   },
@@ -695,6 +711,36 @@ Polymer({
     if (networkProperties.Type == CrOnc.Type.VPN && !defaultNetwork)
       return false;
     return true;
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @return {boolean} Whether or not we are looking at VPN configuration.
+   * @private
+   */
+  isVpn_: function(networkProperties) {
+    return networkProperties.Type == CrOnc.Type.VPN;
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!chrome.settingsPrivate.PrefObject} prefButtonAllowed
+   * @return {Object} Fake pref that is enforced
+   * whenever the original pref is true
+   * @private
+   */
+  getVpnConfigPrefFromValue_: function(networkProperties, prefButtonAllowed) {
+    if (!this.isVpn_(networkProperties) || !prefButtonAllowed) {
+      return null;
+    }
+    let fakePref = Object.assign({}, prefButtonAllowed);
+    if (prefButtonAllowed.value) {
+      delete fakePref.enforcement;
+      delete fakePref.controlledBy;
+    } else {
+      fakePref.enforcement = chrome.settingsPrivate.Enforcement.ENFORCED;
+    }
+    return fakePref;
   },
 
   /**

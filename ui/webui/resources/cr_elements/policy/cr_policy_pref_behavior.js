@@ -32,6 +32,9 @@ var CrPolicyPrefBehavior = {
    * @return {boolean} True if |this.pref| has a recommended or enforced policy.
    */
   hasPrefPolicyIndicator: function() {
+    if (!this.pref) {
+      return false;
+    }
     if (this.noExtensionIndicator &&
         this.pref.controlledBy ==
             chrome.settingsPrivate.ControlledBy.EXTENSION) {

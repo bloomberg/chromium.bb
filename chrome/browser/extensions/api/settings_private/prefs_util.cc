@@ -412,6 +412,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::ash::prefs::kUserBluetoothAdapterEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[::prefs::kVpnConfigAllowed] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Timezone settings.
   (*s_whitelist)[chromeos::kSystemTimezone] =

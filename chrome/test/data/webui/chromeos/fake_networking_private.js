@@ -37,6 +37,7 @@ cr.define('chrome', function() {
         WiFi: {Type: 'WiFi', State: ''},
         Cellular: {Type: 'Cellular', State: ''},
         Tether: {Type: 'Tether', State: ''},
+        VPN: {Type: 'VPN', State: ''},
         WiMAX: {Type: 'WiMAX', State: ''},
       };
 
