@@ -278,7 +278,7 @@ AccessibilityPrivateSendSyntheticKeyEventFunction::Run() {
       content::ServiceManagerConnection::GetForProcess();
   connection->GetConnector()->BindInterface(ws::mojom::kServiceName,
                                             &event_injector_ptr);
-  event_injector_ptr->InjectEventNoAck(
+  event_injector_ptr->InjectEventNoAckNoRewriters(
       display::Screen::GetScreen()->GetPrimaryDisplay().id(),
       std::move(synthetic_key_event));
 
@@ -287,7 +287,6 @@ AccessibilityPrivateSendSyntheticKeyEventFunction::Run() {
 
 ExtensionFunction::ResponseAction
 AccessibilityPrivateEnableChromeVoxMouseEventsFunction::Run() {
-#if defined(OS_CHROMEOS)
   bool enabled = false;
   EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &enabled));
   ash::mojom::EventRewriterControllerPtr event_rewriter_controller_ptr;
@@ -297,9 +296,6 @@ AccessibilityPrivateEnableChromeVoxMouseEventsFunction::Run() {
                                             &event_rewriter_controller_ptr);
   event_rewriter_controller_ptr->SetSendMouseEventsToDelegate(enabled);
   return RespondNow(NoArguments());
-#else
-  return RespondNow(Error(kErrorNotSupported));
-#endif
 }
 
 ExtensionFunction::ResponseAction
@@ -352,8 +348,8 @@ AccessibilityPrivateSendSyntheticMouseEventFunction::Run() {
       content::ServiceManagerConnection::GetForProcess();
   connection->GetConnector()->BindInterface(ws::mojom::kServiceName,
                                             &event_injector_ptr);
-  event_injector_ptr->InjectEventNoAck(display.id(),
-                                       std::move(synthetic_mouse_event));
+  event_injector_ptr->InjectEventNoAckNoRewriters(
+      display.id(), std::move(synthetic_mouse_event));
 
   return RespondNow(NoArguments());
 }
