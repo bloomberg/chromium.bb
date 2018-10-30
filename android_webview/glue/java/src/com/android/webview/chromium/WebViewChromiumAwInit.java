@@ -38,6 +38,7 @@ import org.chromium.android_webview.WebViewChromiumRunQueue;
 import org.chromium.android_webview.command_line.CommandLineUtil;
 import org.chromium.base.BuildConfig;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.FieldTrialList;
 import org.chromium.base.PathService;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
@@ -47,6 +48,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.task.AsyncTask;
 import org.chromium.net.NetworkChangeNotifier;
 
 /**
@@ -199,6 +201,8 @@ public class WebViewChromiumAwInit {
             }
 
             mFactory.getRunQueue().drainQueue();
+
+            maybeLogActiveTrials(context);
         }
     }
 
@@ -450,6 +454,23 @@ public class WebViewChromiumAwInit {
             mSeedLoader.finishVariationsInit();
             mSeedLoader = null; // Allow this to be GC'd after its background thread finishes.
         }
+    }
+
+    // If a certain app is installed, log field trials as they become active, for debugging
+    // purposes. Check for the app asyncronously because PackageManager is slow.
+    private static void maybeLogActiveTrials(final Context ctx) {
+        AsyncTask.THREAD_POOL_EXECUTOR.execute(() -> {
+            try {
+                // This must match the package name in:
+                // android_webview/tools/webview_log_verbosifier/AndroidManifest.xml
+                ctx.getPackageManager().getPackageInfo(
+                        "org.chromium.webview_log_verbosifier", /*flags=*/0);
+            } catch (PackageManager.NameNotFoundException e) {
+                return;
+            }
+
+            ThreadUtils.postOnUiThread(() -> FieldTrialList.logActiveTrials());
+        });
     }
 
     public WebViewChromiumRunQueue getRunQueue() {
