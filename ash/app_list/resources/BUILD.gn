@@ -15,8 +15,6 @@ grit("resources_grd") {
   source = "app_list_resources.grd"
   outputs = [
     "grit/app_list_resources.h",
-    "grit/app_list_resources_map.cc",
-    "grit/app_list_resources_map.h",
     "app_list_resources_100_percent.pak",
     "app_list_resources_200_percent.pak",
     "app_list_resources_300_percent.pak",
