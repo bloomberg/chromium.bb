@@ -230,7 +230,8 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
   EXPECT_FALSE(scheduler_->damaged);
   EXPECT_FALSE(scheduler_->has_new_root_surface);
-  display_->SetLocalSurfaceId(id_allocator_.GenerateId(), 1.f);
+  id_allocator_.GenerateId();
+  display_->SetLocalSurfaceId(id_allocator_.GetCurrentLocalSurfaceId(), 1.f);
   EXPECT_FALSE(scheduler_->damaged);
   EXPECT_FALSE(scheduler_->display_resized_);
   EXPECT_TRUE(scheduler_->has_new_root_surface);
@@ -318,7 +319,8 @@ TEST_F(DisplayTest, DisplayDamaged) {
   // Pass is wrong size so shouldn't be swapped. However, damage should
   // result in latency info being stored for the next swap.
   {
-    display_->SetLocalSurfaceId(id_allocator_.GenerateId(), 1.f);
+    id_allocator_.GenerateId();
+    display_->SetLocalSurfaceId(id_allocator_.GetCurrentLocalSurfaceId(), 1.f);
 
     scheduler_->ResetDamageForTest();
 
@@ -348,7 +350,8 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass->damage_rect = gfx::Rect(10, 10, 0, 0);
     pass->id = 1u;
 
-    display_->SetLocalSurfaceId(id_allocator_.GenerateId(), 1.f);
+    id_allocator_.GenerateId();
+    display_->SetLocalSurfaceId(id_allocator_.GetCurrentLocalSurfaceId(), 1.f);
 
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
@@ -421,7 +424,8 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
   // Resize should cause a swap if no frame was swapped at the previous size.
   {
-    display_->SetLocalSurfaceId(id_allocator_.GenerateId(), 1.f);
+    id_allocator_.GenerateId();
+    display_->SetLocalSurfaceId(id_allocator_.GetCurrentLocalSurfaceId(), 1.f);
     scheduler_->swapped = false;
     display_->Resize(gfx::Size(200, 200));
     EXPECT_FALSE(scheduler_->swapped);
@@ -452,7 +456,8 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
   // Surface that's damaged completely should be resized and swapped.
   {
-    display_->SetLocalSurfaceId(id_allocator_.GenerateId(), 1.0f);
+    id_allocator_.GenerateId();
+    display_->SetLocalSurfaceId(id_allocator_.GetCurrentLocalSurfaceId(), 1.0f);
     pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 99, 99);
     pass->damage_rect = gfx::Rect(0, 0, 99, 99);
@@ -489,7 +494,8 @@ void DisplayTest::LatencyInfoCapTest(bool over_capacity) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  LocalSurfaceId local_surface_id(id_allocator_.GenerateId());
+  id_allocator_.GenerateId();
+  LocalSurfaceId local_surface_id(id_allocator_.GetCurrentLocalSurfaceId());
   display_->SetLocalSurfaceId(local_surface_id, 1.f);
 
   display_->Resize(gfx::Size(100, 100));
@@ -558,8 +564,10 @@ class MockedGLES2Interface : public TestGLES2Interface {
 };
 
 TEST_F(DisplayTest, Finish) {
-  LocalSurfaceId local_surface_id1(id_allocator_.GenerateId());
-  LocalSurfaceId local_surface_id2(id_allocator_.GenerateId());
+  id_allocator_.GenerateId();
+  LocalSurfaceId local_surface_id1(id_allocator_.GetCurrentLocalSurfaceId());
+  id_allocator_.GenerateId();
+  LocalSurfaceId local_surface_id2(id_allocator_.GetCurrentLocalSurfaceId());
 
   RendererSettings settings;
   settings.partial_swap_enabled = true;
@@ -658,7 +666,8 @@ TEST_F(DisplayTest, ContextLossInformsClient) {
 // There should not be a side-effect on other Displays.
 TEST_F(DisplayTest, CompositorFrameDamagesCorrectDisplay) {
   RendererSettings settings;
-  LocalSurfaceId local_surface_id(id_allocator_.GenerateId());
+  id_allocator_.GenerateId();
+  LocalSurfaceId local_surface_id(id_allocator_.GetCurrentLocalSurfaceId());
 
   // Set up first display.
   SetUpSoftwareDisplay(settings);
@@ -3213,7 +3222,9 @@ TEST_F(DisplayTest, DrawOcclusionWithLargeDrawQuad) {
 
 TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
   RendererSettings settings;
-  const LocalSurfaceId local_surface_id(id_allocator_.GenerateId());
+  id_allocator_.GenerateId();
+  const LocalSurfaceId local_surface_id(
+      id_allocator_.GetCurrentLocalSurfaceId());
 
   // Set up first display.
   SetUpSoftwareDisplay(settings);

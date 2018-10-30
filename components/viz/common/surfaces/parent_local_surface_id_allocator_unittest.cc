@@ -87,8 +87,9 @@ TEST(ParentLocalSurfaceIdAllocatorTest,
 TEST(ParentLocalSurfaceIdAllocatorTest,
      UpdateFromChildOnlyUpdatesExpectedLocalSurfaceIdComponents) {
   ParentLocalSurfaceIdAllocator child_updated_parent_allocator;
+  child_updated_parent_allocator.GenerateId();
   LocalSurfaceId preupdate_local_surface_id =
-      child_updated_parent_allocator.GenerateId();
+      child_updated_parent_allocator.GetCurrentLocalSurfaceId();
   LocalSurfaceId child_allocated_local_surface_id =
       GetFakeChildAllocatedLocalSurfaceId(child_updated_parent_allocator);
   EXPECT_EQ(preupdate_local_surface_id.parent_sequence_number(),
@@ -122,8 +123,9 @@ TEST(ParentLocalSurfaceIdAllocatorTest,
   LocalSurfaceId pregenerateid_local_surface_id =
       generating_parent_allocator.GetCurrentLocalSurfaceId();
 
+  generating_parent_allocator.GenerateId();
   const LocalSurfaceId& returned_local_surface_id =
-      generating_parent_allocator.GenerateId();
+      generating_parent_allocator.GetCurrentLocalSurfaceId();
 
   const LocalSurfaceId& postgenerateid_local_surface_id =
       generating_parent_allocator.GetCurrentLocalSurfaceId();
@@ -157,8 +159,9 @@ TEST(ParentLocalSurfaceIdAllocatorTest, ResetUpdatesComponents) {
   EXPECT_EQ(new_local_surface_id,
             default_constructed_parent_allocator.GetCurrentLocalSurfaceId());
 
+  default_constructed_parent_allocator.GenerateId();
   LocalSurfaceId generated_id =
-      default_constructed_parent_allocator.GenerateId();
+      default_constructed_parent_allocator.GetCurrentLocalSurfaceId();
 
   EXPECT_EQ(generated_id.embed_token(), new_local_surface_id.embed_token());
   EXPECT_EQ(generated_id.child_sequence_number(),

@@ -1442,8 +1442,12 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
 }
 
 viz::LocalSurfaceId CompositorImpl::GenerateLocalSurfaceId() const {
-  if (enable_surface_synchronization_)
-    return CompositorDependencies::Get().surface_id_allocator.GenerateId();
+  if (enable_surface_synchronization_) {
+    viz::ParentLocalSurfaceIdAllocator& allocator =
+        CompositorDependencies::Get().surface_id_allocator;
+    allocator.GenerateId();
+    return allocator.GetCurrentLocalSurfaceId();
+  }
 
   return viz::LocalSurfaceId();
 }

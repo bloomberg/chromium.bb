@@ -260,15 +260,18 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
 
     if (!root_local_surface_id_.is_valid() || display_size_ != display_size ||
         device_scale_factor_ != frame.metadata.device_scale_factor) {
-      root_local_surface_id_ = parent_local_surface_id_allocator_->GenerateId();
+      parent_local_surface_id_allocator_->GenerateId();
+      root_local_surface_id_ =
+          parent_local_surface_id_allocator_->GetCurrentLocalSurfaceId();
       display_size_ = display_size;
       device_scale_factor_ = frame.metadata.device_scale_factor;
     }
 
     if (!child_local_surface_id_.is_valid() || child_size_ != child_size ||
         device_scale_factor_ != frame.metadata.device_scale_factor) {
+      parent_local_surface_id_allocator_->GenerateId();
       child_local_surface_id_ =
-          parent_local_surface_id_allocator_->GenerateId();
+          parent_local_surface_id_allocator_->GetCurrentLocalSurfaceId();
       child_size_ = child_size;
       device_scale_factor_ = frame.metadata.device_scale_factor;
     }

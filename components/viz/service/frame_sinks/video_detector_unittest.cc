@@ -95,8 +95,9 @@ class VideoDetectorTest : public testing::Test {
     detector_->AddObserver(std::move(video_detector_observer));
 
     root_frame_sink_ = CreateFrameSink();
+    parent_local_surface_id_allocator_.GenerateId();
     root_frame_sink_->SubmitCompositorFrame(
-        parent_local_surface_id_allocator_.GenerateId(),
+        parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
         MakeDefaultCompositorFrame());
   }
 
@@ -145,9 +146,12 @@ class VideoDetectorTest : public testing::Test {
   void SendUpdate(CompositorFrameSinkSupport* frame_sink,
                   const gfx::Rect& damage) {
     LocalSurfaceId local_surface_id =
-        frame_sink->last_activated_local_surface_id().is_valid()
-            ? frame_sink->last_activated_local_surface_id()
-            : parent_local_surface_id_allocator_.GenerateId();
+        frame_sink->last_activated_local_surface_id();
+    if (!local_surface_id.is_valid()) {
+      parent_local_surface_id_allocator_.GenerateId();
+      local_surface_id =
+          parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
+    }
     frame_sink->SubmitCompositorFrame(local_surface_id,
                                       MakeDamagedCompositorFrame(damage));
   }
