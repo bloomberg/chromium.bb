@@ -2874,8 +2874,9 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       cc.extend(change_desc.get_cced())
     valid_accounts = gerrit_util.ValidAccounts(
         self._GetGerritHost(), reviewers + cc)
-    logging.debug('accounts %s are valid, %s invalid', sorted(valid_accounts),
-                   set(reviewers + cc).difference(set(valid_accounts)))
+    logging.info('accounts %s are recognized, %s invalid',
+                 sorted(valid_accounts),
+                 set(reviewers + cc).difference(set(valid_accounts)))
 
     # Extra options that can be specified at push time. Doc:
     # https://gerrit-review.googlesource.com/Documentation/user-upload.html
