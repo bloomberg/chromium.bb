@@ -5,7 +5,9 @@
 #include "third_party/blink/renderer/core/paint/image_paint_timing_detector.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/paint/paint_tracker.h"
+#include "third_party/blink/renderer/core/svg/svg_image_element.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -71,14 +73,29 @@ class ImagePaintTimingDetectorTest : public PageTestBase,
   void SetImageAndPaint(AtomicString id, int width, int height) {
     Element* element = GetDocument().getElementById(id);
     // Set image and make it loaded.
-    SetImageForTest(ToHTMLImageElement(element), width, height);
+    ImageResourceContent* content = CreateImageForTest(width, height);
+    ToHTMLImageElement(element)->SetImageForTest(content);
+  }
+
+  void SetVideoImageAndPaint(AtomicString id, int width, int height) {
+    Element* element = GetDocument().getElementById(id);
+    // Set image and make it loaded.
+    ImageResourceContent* content = CreateImageForTest(width, height);
+    ToHTMLVideoElement(element)->SetImageForTest(content);
+  }
+
+  void SetSVGImageAndPaint(AtomicString id, int width, int height) {
+    Element* element = GetDocument().getElementById(id);
+    // Set image and make it loaded.
+    ImageResourceContent* content = CreateImageForTest(width, height);
+    ToSVGImageElement(element)->SetImageForTest(content);
   }
 
  private:
   void FakeNotifySwapTime(WebLayerTreeView::ReportTimeCallback callback) {
     callback_queue_.push(std::move(callback));
   }
-  void SetImageForTest(HTMLImageElement* image_element, int width, int height) {
+  ImageResourceContent* CreateImageForTest(int width, int height) {
     sk_sp<SkColorSpace> src_rgb_color_space = SkColorSpace::MakeSRGB();
     SkImageInfo raster_image_info =
         SkImageInfo::MakeN32Premul(width, height, src_rgb_color_space);
@@ -87,7 +104,7 @@ class ImagePaintTimingDetectorTest : public PageTestBase,
     ImageResourceContent* original_image_resource =
         ImageResourceContent::CreateLoaded(
             StaticBitmapImage::Create(image).get());
-    image_element->SetImageForTest(original_image_resource);
+    return original_image_resource;
   }
 
   CallbackQueue callback_queue_;
@@ -404,6 +421,47 @@ TEST_F(ImagePaintTimingDetectorTest,
   TimeTicks result2 = LastPaintStoredResult();
   EXPECT_GE(result2, time2);
   EXPECT_GE(time3, result2);
+}
+
+TEST_F(ImagePaintTimingDetectorTest, VideoImage) {
+  SetBodyInnerHTML(R"HTML(
+    <video id="target" poster="http://example.com/nonexistant.gif"></video>
+  )HTML");
+
+  SetVideoImageAndPaint("target", 5, 5);
+
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  ImageRecord* record = FindLastPaintCandidate();
+  EXPECT_TRUE(record);
+  EXPECT_GT(record->first_size, 0);
+  EXPECT_TRUE(record->loaded);
+}
+
+TEST_F(ImagePaintTimingDetectorTest, VideoImage_ImageNotLoaded) {
+  SetBodyInnerHTML(R"HTML(
+    <video id="target" poster="http://example.com/nonexistant.gif"></video>
+  )HTML");
+
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  ImageRecord* record = FindLastPaintCandidate();
+  EXPECT_FALSE(record);
+}
+
+TEST_F(ImagePaintTimingDetectorTest, SVGImage) {
+  SetBodyInnerHTML(R"HTML(
+    <svg>
+      <image id="target" width="10" height="10"
+        xlink:href="http://example.com/nonexistant.jpg"/>
+    </svg>
+  )HTML");
+
+  SetSVGImageAndPaint("target", 5, 5);
+
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  ImageRecord* record = FindLastPaintCandidate();
+  EXPECT_TRUE(record);
+  EXPECT_GT(record->first_size, 0);
+  EXPECT_TRUE(record->loaded);
 }
 
 }  // namespace blink

@@ -192,6 +192,11 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
 
   void SetIsEffectivelyFullscreen(blink::WebFullscreenVideoStatus);
 
+  void SetImageForTest(ImageResourceContent* content) {
+    DCHECK(image_loader_);
+    image_loader_->SetImageForTest(content);
+  }
+
  protected:
   // EventTarget overrides.
   void AddedEventListener(const AtomicString& event_type,
