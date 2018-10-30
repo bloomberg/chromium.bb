@@ -273,8 +273,10 @@ class ContextualSuggestionsMediator
 
             if (clusters.isEmpty() || clusters.get(0).getSuggestions().isEmpty()) return;
 
+            int globalSuggestionsCount = 0;
             for (ContextualSuggestionsCluster cluster : clusters) {
-                cluster.buildChildren();
+                cluster.buildChildren(globalSuggestionsCount);
+                globalSuggestionsCount += cluster.getSuggestions().size();
             }
 
             prepareModel(clusters, suggestionsResult.getPeekText());
