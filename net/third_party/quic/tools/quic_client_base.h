@@ -267,6 +267,7 @@ class QuicClientBase {
   // TODO(rch): Change the connection parameter to take in a
   // std::unique_ptr<QuicConnection> instead.
   virtual std::unique_ptr<QuicSession> CreateQuicClientSession(
+      const ParsedQuicVersionVector& supported_versions,
       QuicConnection* connection) = 0;
 
   // Generates the next ConnectionId for |server_id_|.  By default, if the
@@ -290,6 +291,10 @@ class QuicClientBase {
   void ResetSession() { session_.reset(); }
 
  private:
+  // Returns true and set |version| if client can reconnect with a different
+  // version.
+  bool CanReconnectWithDifferentVersion(ParsedQuicVersion* version) const;
+
   // |server_id_| is a tuple (hostname, port, is_https) of the server.
   QuicServerId server_id_;
 

@@ -462,14 +462,6 @@ enum QuicIetfTransportErrorCodes : uint16_t {
   FRAME_ERROR_base = 0x100,  // add frame type to this base
 };
 
-enum QuicIetfPacketHeaderForm : uint8_t {
-  // Long header is used for packets that are sent prior to the completion of
-  // version negotiation and establishment of 1-RTT keys.
-  LONG_HEADER,
-  // Short header is used after the version and 1-RTT keys are negotiated.
-  SHORT_HEADER,
-};
-
 // Used in long header to explicitly indicate the packet type.
 enum QuicLongHeaderType : uint8_t {
   VERSION_NEGOTIATION = 0,  // Value does not matter.

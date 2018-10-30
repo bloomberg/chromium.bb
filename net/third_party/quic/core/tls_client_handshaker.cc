@@ -99,8 +99,8 @@ bool TlsClientHandshaker::CryptoConnect() {
 bool TlsClientHandshaker::SetTransportParameters() {
   TransportParameters params;
   params.perspective = Perspective::IS_CLIENT;
-  params.version = CreateQuicVersionLabel(
-      session()->connection()->supported_versions().front());
+  params.version =
+      CreateQuicVersionLabel(session()->supported_versions().front());
 
   if (!session()->config()->FillTransportParameters(&params)) {
     return false;

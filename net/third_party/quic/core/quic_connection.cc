@@ -258,6 +258,7 @@ QuicConnection::QuicConnection(
       max_undecryptable_packets_(0),
       max_tracked_packets_(kMaxTrackedPackets),
       pending_version_negotiation_packet_(false),
+      send_ietf_version_negotiation_packet_(false),
       save_crypto_packets_as_termination_packets_(false),
       idle_timeout_connection_close_behavior_(
           ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET),
@@ -378,7 +379,7 @@ QuicConnection::QuicConnection(
                          : kDefaultMaxPacketSize);
   received_packet_manager_.set_max_ack_ranges(255);
   MaybeEnableSessionDecidesWhatToWrite();
-  DCHECK(!GetQuicRestartFlag(quic_no_server_conn_ver_negotiation) ||
+  DCHECK(!GetQuicRestartFlag(quic_no_server_conn_ver_negotiation2) ||
          perspective_ == Perspective::IS_CLIENT ||
          supported_versions.size() == 1);
 }
@@ -561,7 +562,8 @@ void QuicConnection::OnPublicResetPacket(const QuicPublicResetPacket& packet) {
 }
 
 bool QuicConnection::OnProtocolVersionMismatch(
-    ParsedQuicVersion received_version) {
+    ParsedQuicVersion received_version,
+    PacketHeaderFormat form) {
   QUIC_DLOG(INFO) << ENDPOINT << "Received packet with mismatched version "
                   << ParsedQuicVersionToString(received_version);
   if (perspective_ == Perspective::IS_CLIENT) {
@@ -585,7 +587,7 @@ bool QuicConnection::OnProtocolVersionMismatch(
   switch (version_negotiation_state_) {
     case START_NEGOTIATION:
       if (!framer_.IsSupportedVersion(received_version)) {
-        SendVersionNegotiationPacket();
+        SendVersionNegotiationPacket(form != GOOGLE_QUIC_PACKET);
         version_negotiation_state_ = NEGOTIATION_IN_PROGRESS;
         return false;
       }
@@ -593,7 +595,7 @@ bool QuicConnection::OnProtocolVersionMismatch(
 
     case NEGOTIATION_IN_PROGRESS:
       if (!framer_.IsSupportedVersion(received_version)) {
-        SendVersionNegotiationPacket();
+        SendVersionNegotiationPacket(form != GOOGLE_QUIC_PACKET);
         return false;
       }
       break;
@@ -664,6 +666,19 @@ void QuicConnection::OnVersionNegotiationPacket(
   }
 
   server_supported_versions_ = packet.versions;
+
+  if (GetQuicReloadableFlag(quic_no_client_conn_ver_negotiation)) {
+    CloseConnection(
+        QUIC_INVALID_VERSION,
+        QuicStrCat(
+            "Client may support one of the versions in the server's list, but "
+            "it's going to close the connection anyway. Supported versions: {",
+            ParsedQuicVersionVectorToString(framer_.supported_versions()),
+            "}, peer supported versions: {",
+            ParsedQuicVersionVectorToString(packet.versions), "}"),
+        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+    return;
+  }
 
   if (!SelectMutualVersion(packet.versions)) {
     CloseConnection(
@@ -1557,8 +1572,9 @@ void QuicConnection::MaybeSendInResponseToPacket() {
   }
 }
 
-void QuicConnection::SendVersionNegotiationPacket() {
+void QuicConnection::SendVersionNegotiationPacket(bool ietf_quic) {
   pending_version_negotiation_packet_ = true;
+  send_ietf_version_negotiation_packet_ = ietf_quic;
 
   if (HandleWriteBlocked()) {
     return;
@@ -1567,10 +1583,10 @@ void QuicConnection::SendVersionNegotiationPacket() {
   QUIC_DLOG(INFO) << ENDPOINT << "Sending version negotiation packet: {"
                   << ParsedQuicVersionVectorToString(
                          framer_.supported_versions())
-                  << "}, ietf_quic: " << framer_.last_packet_is_ietf_quic();
+                  << "}, ietf_quic: " << ietf_quic;
   std::unique_ptr<QuicEncryptedPacket> version_packet(
       packet_generator_.SerializeVersionNegotiationPacket(
-          framer_.last_packet_is_ietf_quic(), framer_.supported_versions()));
+          ietf_quic, framer_.supported_versions()));
   WriteResult result = writer_->WritePacket(
       version_packet->data(), version_packet->length(), self_address().host(),
       peer_address(), per_packet_options_);
@@ -1692,6 +1708,8 @@ void QuicConnection::ProcessUdpPacket(const QuicSocketAddress& self_address,
   if (!connected_) {
     return;
   }
+  QUIC_BUG_IF(current_packet_data_ != nullptr)
+      << "ProcessUdpPacket must not be called while processing a packet.";
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnPacketReceived(self_address, peer_address, packet);
   }
@@ -1916,7 +1934,7 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
 
   if (version_negotiation_state_ != NEGOTIATED_VERSION) {
     if (perspective_ == Perspective::IS_CLIENT) {
-      DCHECK(!header.version_flag || framer_.last_packet_is_ietf_quic());
+      DCHECK(!header.version_flag || header.form != GOOGLE_QUIC_PACKET);
       if (framer_.transport_version() <= QUIC_VERSION_43) {
         // If the client gets a packet without the version flag from the server
         // it should stop sending version since the version negotiation is done.
@@ -1948,7 +1966,7 @@ void QuicConnection::WriteQueuedPackets() {
   DCHECK(!writer_->IsWriteBlocked());
 
   if (pending_version_negotiation_packet_) {
-    SendVersionNegotiationPacket();
+    SendVersionNegotiationPacket(send_ietf_version_negotiation_packet_);
   }
 
   UMA_HISTOGRAM_COUNTS_1000("Net.QuicSession.NumQueuedPacketsBeforeWrite",

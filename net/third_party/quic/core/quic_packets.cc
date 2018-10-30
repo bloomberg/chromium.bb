@@ -76,7 +76,7 @@ QuicPacketHeader::QuicPacketHeader()
           ParsedQuicVersion(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED)),
       nonce(nullptr),
       packet_number(0),
-      form(LONG_HEADER),
+      form(GOOGLE_QUIC_PACKET),
       long_packet_type(INITIAL),
       possible_stateless_reset_token(0) {}
 

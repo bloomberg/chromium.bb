@@ -125,7 +125,7 @@ void SimpleRandom::RandBytes(void* data, size_t len) {
 
 MockFramerVisitor::MockFramerVisitor() {
   // By default, we want to accept packets.
-  ON_CALL(*this, OnProtocolVersionMismatch(_))
+  ON_CALL(*this, OnProtocolVersionMismatch(_, _))
       .WillByDefault(testing::Return(false));
 
   // By default, we want to accept packets.
@@ -169,7 +169,8 @@ MockFramerVisitor::MockFramerVisitor() {
 
 MockFramerVisitor::~MockFramerVisitor() {}
 
-bool NoOpFramerVisitor::OnProtocolVersionMismatch(ParsedQuicVersion version) {
+bool NoOpFramerVisitor::OnProtocolVersionMismatch(ParsedQuicVersion version,
+                                                  PacketHeaderFormat form) {
   return false;
 }
 
@@ -407,7 +408,8 @@ void MockQuicConnection::AdvanceTime(QuicTime::Delta delta) {
   static_cast<MockQuicConnectionHelper*>(helper())->AdvanceTime(delta);
 }
 
-bool MockQuicConnection::OnProtocolVersionMismatch(ParsedQuicVersion version) {
+bool MockQuicConnection::OnProtocolVersionMismatch(ParsedQuicVersion version,
+                                                   PacketHeaderFormat form) {
   return false;
 }
 
@@ -610,9 +612,13 @@ const QuicCryptoServerStream* TestQuicSpdyServerSession::GetCryptoStream()
 TestQuicSpdyClientSession::TestQuicSpdyClientSession(
     QuicConnection* connection,
     const QuicConfig& config,
+    const ParsedQuicVersionVector& supported_versions,
     const QuicServerId& server_id,
     QuicCryptoClientConfig* crypto_config)
-    : QuicSpdyClientSessionBase(connection, &push_promise_index_, config) {
+    : QuicSpdyClientSessionBase(connection,
+                                &push_promise_index_,
+                                config,
+                                supported_versions) {
   crypto_stream_ = QuicMakeUnique<QuicCryptoClientStream>(
       server_id, this, crypto_test_utils::ProofVerifyContextForTesting(),
       crypto_config, this);
@@ -1036,8 +1042,9 @@ void CreateClientSessionForTest(
                           : DefaultQuicConfig();
   *client_connection = new PacketSavingConnection(
       helper, alarm_factory, Perspective::IS_CLIENT, supported_versions);
-  *client_session = new TestQuicSpdyClientSession(
-      *client_connection, config, server_id, crypto_client_config);
+  *client_session = new TestQuicSpdyClientSession(*client_connection, config,
+                                                  supported_versions, server_id,
+                                                  crypto_client_config);
   (*client_connection)->AdvanceTime(connection_start_time);
 }
 

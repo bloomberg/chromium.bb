@@ -44,11 +44,13 @@ class TestQuicSpdyClientSession : public QuicSpdyClientSession {
  public:
   explicit TestQuicSpdyClientSession(
       const QuicConfig& config,
+      const ParsedQuicVersionVector& supported_versions,
       QuicConnection* connection,
       const QuicServerId& server_id,
       QuicCryptoClientConfig* crypto_config,
       QuicClientPushPromiseIndex* push_promise_index)
       : QuicSpdyClientSession(config,
+                              supported_versions,
                               connection,
                               server_id,
                               crypto_config,
@@ -92,7 +94,7 @@ class QuicSpdyClientSessionTest : public QuicTestWithParam<ParsedQuicVersion> {
                                              Perspective::IS_CLIENT,
                                              SupportedVersions(GetParam()));
     session_ = QuicMakeUnique<TestQuicSpdyClientSession>(
-        DefaultQuicConfig(), connection_,
+        DefaultQuicConfig(), SupportedVersions(GetParam()), connection_,
         QuicServerId(kServerHostname, kPort, false), &crypto_config_,
         &push_promise_index_);
     session_->Initialize();

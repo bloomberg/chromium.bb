@@ -50,7 +50,6 @@ class FakeQuartcSessionDelegate : public QuartcSession::Delegate {
   void OnIncomingStream(QuartcStream* quartc_stream) override {
     last_incoming_stream_ = quartc_stream;
     last_incoming_stream_->SetDelegate(stream_delegate_);
-    quartc_stream->set_deliver_on_complete(false);
   }
 
   void OnCongestionControlChange(QuicBandwidth bandwidth_estimate,
@@ -69,10 +68,17 @@ class FakeQuartcSessionDelegate : public QuartcSession::Delegate {
 
 class FakeQuartcStreamDelegate : public QuartcStream::Delegate {
  public:
-  void OnReceived(QuartcStream* stream,
-                  const char* data,
-                  size_t size) override {
-    received_data_[stream->id()] += QuicString(data, size);
+  size_t OnReceived(QuartcStream* stream,
+                    iovec* iov,
+                    size_t iov_length,
+                    bool fin) override {
+    size_t bytes_consumed = 0;
+    for (size_t i = 0; i < iov_length; ++i) {
+      received_data_[stream->id()] +=
+          QuicString(static_cast<const char*>(iov[i].iov_base), iov[i].iov_len);
+      bytes_consumed += iov[i].iov_len;
+    }
+    return bytes_consumed;
   }
 
   void OnClose(QuartcStream* stream) override {
@@ -187,7 +193,6 @@ class QuartcSessionTest : public QuicTest {
     EXPECT_TRUE(server_peer_->HasOpenDynamicStreams());
 
     outgoing_stream->SetDelegate(server_stream_delegate_.get());
-    outgoing_stream->set_deliver_on_complete(false);
 
     // Send a test message from peer 1 to peer 2.
     char kTestMessage[] = "Hello";

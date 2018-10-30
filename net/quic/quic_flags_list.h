@@ -83,9 +83,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_43, true)
 // Enables 3 new connection options to make PROBE_RTT more aggressive
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_less_probe_rtt, false)
 
-// If true, limit quic stream length to be below 2^62.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_stream_too_long, true)
-
 // If true, enable QUIC v99.
 QUIC_FLAG(bool, FLAGS_quic_enable_version_99, false)
 
@@ -268,7 +265,7 @@ QUIC_FLAG(bool,
 // If true, dispatcher passes in a single version when creating a server
 // connection, such that version negotiation is not supported in connection.
 QUIC_FLAG(bool,
-          FLAGS_quic_restart_flag_quic_no_server_conn_ver_negotiation,
+          FLAGS_quic_restart_flag_quic_no_server_conn_ver_negotiation2,
           false)
 
 // If true, enable QUIC version 46 which adds CRYPTO frames.
@@ -293,3 +290,13 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_faster_detect_loss, false)
 // If true, use common code for checking whether a new stream ID may be
 // allocated.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_common_stream_check, false)
+
+// If true, QuicEpollClock::Now() will monotonically increase.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_monotonic_epoll_clock, false)
+
+// If true, a client connection would be closed when a version negotiation
+// packet is received. It would be the higher layer's responsibility to do the
+// reconnection.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_no_client_conn_ver_negotiation,
+          false)

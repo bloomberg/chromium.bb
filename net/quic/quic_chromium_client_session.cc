@@ -687,7 +687,10 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     base::SequencedTaskRunner* task_runner,
     std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
     NetLog* net_log)
-    : quic::QuicSpdyClientSessionBase(connection, push_promise_index, config),
+    : quic::QuicSpdyClientSessionBase(connection,
+                                      push_promise_index,
+                                      config,
+                                      connection->supported_versions()),
       session_key_(session_key),
       require_confirmation_(require_confirmation),
       migrate_session_early_v2_(migrate_session_early_v2),

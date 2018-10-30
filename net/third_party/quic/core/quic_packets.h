@@ -86,8 +86,8 @@ struct QUIC_EXPORT_PRIVATE QuicPacketHeader {
   // packet, |nonce| will be empty.
   DiversificationNonce* nonce;
   QuicPacketNumber packet_number;
-  // Only used if this is an IETF QUIC packet.
-  QuicIetfPacketHeaderForm form;
+  // Format of this header.
+  PacketHeaderFormat form;
   // Short packet type is reflected in packet_number_length.
   QuicLongHeaderType long_packet_type;
   // Only valid if |has_possible_stateless_reset_token| is true.

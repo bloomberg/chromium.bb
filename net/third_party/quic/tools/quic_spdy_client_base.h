@@ -142,6 +142,7 @@ class QuicSpdyClientBase : public QuicClientBase,
 
   // Takes ownership of |connection|.
   std::unique_ptr<QuicSession> CreateQuicClientSession(
+      const quic::ParsedQuicVersionVector& supported_versions,
       QuicConnection* connection) override;
 
   // If the crypto handshake has not yet been confirmed, adds the data to the

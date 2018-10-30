@@ -6213,11 +6213,20 @@ TEST_P(QuicConnectionTest, ClientHandlesVersionNegotiation) {
 
   // Send a version negotiation packet.
   std::unique_ptr<QuicEncryptedPacket> encrypted(
-      peer_framer_.BuildVersionNegotiationPacket(connection_id_, false,
-                                                 AllSupportedVersions()));
+      peer_framer_.BuildVersionNegotiationPacket(
+          connection_id_, connection_.transport_version() > QUIC_VERSION_43,
+          AllSupportedVersions()));
   std::unique_ptr<QuicReceivedPacket> received(
       ConstructReceivedPacket(*encrypted, QuicTime::Zero()));
+  if (GetQuicReloadableFlag(quic_no_client_conn_ver_negotiation)) {
+    EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INVALID_VERSION, _,
+                                             ConnectionCloseSource::FROM_SELF));
+  }
   connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *received);
+  if (GetQuicReloadableFlag(quic_no_client_conn_ver_negotiation)) {
+    EXPECT_FALSE(connection_.connected());
+    return;
+  }
 
   // Now force another packet.  The connection should transition into
   // NEGOTIATED_VERSION state and tell the packet creator to StopSendingVersion.
@@ -6419,8 +6428,7 @@ TEST_P(QuicConnectionTest, OnPacketHeaderDebugVisitor) {
   QuicPacketHeader header;
   header.packet_number = 1;
   if (GetParam().version.transport_version > QUIC_VERSION_43) {
-    QuicFramerPeer::SetLastPacketIsIetfQuic(
-        QuicConnectionPeer::GetFramer(&connection_), true);
+    header.form = IETF_QUIC_LONG_HEADER_PACKET;
   }
 
   MockQuicConnectionDebugVisitor debug_visitor;
