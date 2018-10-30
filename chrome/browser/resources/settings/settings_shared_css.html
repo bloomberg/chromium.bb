@@ -80,7 +80,10 @@
       }
 
       /* Space out multiple buttons in the same row. */
-      .settings-box paper-button + paper-button {
+      .settings-box paper-button + paper-button,
+      .settings-box paper-button + controlled-button,
+      .settings-box controlled-button + controlled-button,
+      .settings-box controlled-button + paper-button {
         margin-inline-start: 16px;
       }
 

@@ -11,6 +11,11 @@ Polymer({
   ],
 
   properties: {
+    actionButton: {
+      type: Boolean,
+      value: false,
+    },
+
     endJustified: {
       type: Boolean,
       value: false,
@@ -35,5 +40,14 @@ Polymer({
     // Disallow <controlled-button on-click="..."> when controlled.
     e.preventDefault();
     e.stopPropagation();
+  },
+
+  /**
+   * @param {!boolean} actionButton
+   * @return {string} Class of the paper-button.
+   * @private
+   */
+  getClass_: function(actionButton) {
+    return actionButton ? "action-button" : "";
   },
 });

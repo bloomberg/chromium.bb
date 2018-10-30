@@ -19,6 +19,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="../controls/controlled_button.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="../prefs/prefs.html">
 <link rel="import" href="../route.html">
@@ -81,7 +82,9 @@
         </template>
       </div>
       <paper-button on-click="onForgetTap_"
-          hidden$="[[!showForget_(networkProperties)]]">
+          hidden$="[[!showForget_(networkProperties)]]"
+          disabled="[[disableForget_(networkProperties,
+              prefs.vpn_config_allowed)]]">
         $i18n{networkButtonForget}
       </paper-button>
       <paper-button on-click="onViewAccountTap_"
@@ -95,21 +98,26 @@
       <paper-button on-click="onConfigureTap_"
           hidden$="[[!showConfigure_(networkProperties, globalPolicy,
               managedNetworkAvailable)]]"
-          disabled="[[disableConfigure_(networkProperties)]]">
+          disabled="[[disableConfigure_(networkProperties,
+              prefs.vpn_config_allowed)]]">
         $i18n{networkButtonConfigure}
       </paper-button>
-      <paper-button class="action-button" on-click="onConnectTap_"
+      <controlled-button action-button on-click="onConnectTap_"
           hidden$="[[!showConnect_(networkProperties, globalPolicy,
               managedNetworkAvailable)]]"
           disabled="[[!enableConnect_(networkProperties, defaultNetwork,
               networkPropertiesReceived_, outOfRange_, globalPolicy,
-              managedNetworkAvailable)]]">
-        $i18n{networkButtonConnect}
-      </paper-button>
-      <paper-button class="action-button" on-click="onDisconnectTap_"
-          hidden$="[[!showDisconnect_(networkProperties)]]">
-        $i18n{networkButtonDisconnect}
-      </paper-button>
+              managedNetworkAvailable)]]"
+          label="$i18n{networkButtonConnect}"
+          pref="[[getVpnConfigPrefFromValue_(networkProperties,
+              prefs.vpn_config_allowed)]]">
+      </controlled-button>
+      <controlled-button action-button on-click="onDisconnectTap_"
+          hidden$="[[!showDisconnect_(networkProperties)]]"
+          label="$i18n{networkButtonDisconnect}"
+          pref="[[getVpnConfigPrefFromValue_(networkProperties,
+              prefs.vpn_config_allowed)]]">
+      </controlled-button>
     </div>
 
     <!-- Disabled by policy / Shared messages. -->

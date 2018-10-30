@@ -58,4 +58,25 @@ suite('controlled button', function() {
     assertFalse(controlledButton.$$('paper-button').disabled);
     assertFalse(!!controlledButton.$$('cr-policy-pref-indicator'));
   });
+
+  test('null pref', function() {
+    controlledButton.pref = extensionControlledPref;
+    Polymer.dom.flush();
+    assertTrue(controlledButton.$$('paper-button').disabled);
+    assertTrue(!!controlledButton.$$('cr-policy-pref-indicator'));
+
+    controlledButton.pref = null;
+    Polymer.dom.flush();
+    assertFalse(controlledButton.$$('paper-button').disabled);
+    assertFalse(!!controlledButton.$$('cr-policy-pref-indicator'));
+  });
+
+  test('action-button', function() {
+    assertNotEquals("action-button",
+        controlledButton.$$('paper-button').className);
+    controlledButton.actionButton = true;
+    Polymer.dom.flush();
+    assertEquals("action-button",
+        controlledButton.$$('paper-button').className);
+  });
 });

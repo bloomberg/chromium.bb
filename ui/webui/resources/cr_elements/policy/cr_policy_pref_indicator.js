@@ -71,7 +71,7 @@ Polymer({
    * @private
    */
   getIndicatorTooltipForPref_: function(indicatorType) {
-    if (this.pref === undefined)
+    if (!this.pref)
       return '';
 
     var matches = this.pref && this.pref.value == this.pref.recommendedValue;
