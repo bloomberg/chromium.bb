@@ -20,7 +20,7 @@
 #include "url/url_constants.h"
 #include "url/url_export.h"
 
-// Represents a URL.
+// Represents a URL. GURL is Google's URL parsing library.
 //
 // A parsed canonicalized URL is guaranteed to be UTF-8. Any non-ASCII input
 // characters are UTF-8 encoded and % escaped to ASCII.
